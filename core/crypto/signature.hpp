@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <tuple>
 
 #include "../domain/entity.hpp"
 
@@ -11,7 +12,7 @@ namespace signature{
   //=== Deprecated use for debug. ===
   bool verify(std::string signature,std::string message, std::string publicKeyName);
   std::string sign(std::string message,std::string privateKeyName,std::string publicKeyName);
-  bool generateKeyPair(std::string filenamePrefix,std::string keyPath);
+  bool generateKeyPairAndSave(std::string filenamePrefix,std::string keyPath);
   //===
 
   template<typename T>
@@ -40,10 +41,17 @@ namespace signature{
     const std::shared_ptr<Entity> entity){
     //ToDo
   }
-  template<>
-  std::string generateKeyPair<std::shared_ptr<Entity>>(
-    const std::shared_ptr<Entity> entity){
-    //ToDo throw illegal type exception
+
+  std::tuple<
+    unsigned char*,
+    unsigned char*
+  > generateKeyPair(){
+
+    unsigned char publicKey[32], privateKey[64], seed[32];
+    ed25519_create_seed(seed);
+    ed25519_create_keypair(publicKey, privateKey, seed);
+
+    return std::make_tuple( publicKey, privateKey);
   }
 
 };
