@@ -1,3 +1,0 @@
-[submodule "core/vendor/Aeron"]
-	path = core/vendor/Aeron
-	url = https://github.com/real-logic/Aeron.git
