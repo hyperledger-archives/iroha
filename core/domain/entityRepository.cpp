@@ -6,6 +6,7 @@
 #include <leveldb/write_batch.h>
 
 #include <memory>
+#include <msgpack.hpp>
 
 // WIP
 #include <iostream>
@@ -25,15 +26,31 @@ namespace EntityRepository{
     return true;
   }
 
-  void loadDb(){
-    leveldb::Options options;
-    options.create_if_missing = true;
-    printStatus(leveldb::DB::Open(options, "/tmp/irohadb", &*db));
+  Entity convertEntity(std::string buffer){
+    Entity entity;
+    msgpack::object_handle oh = msgpack::unpack( buffer.data(), buffer.size());
+    msgpack::object obj = oh.get();
+    obj.convert(entity);
+    return entity;
   }
 
-  bool add(std::string uuid,Entity value){
+  std::string convertBuffer(Entity entity){
+    msgpack::sbuffer buf;
+    msgpack::pack(buf, entity);
+    return buf.data();
+  }
+
+  void loadDb(){
+    leveldb::DB* tmpDb;
+    leveldb::Options options;
+    options.create_if_missing = true;
+    printStatus(leveldb::DB::Open(options, "/tmp/irohadb", &tmpDb));
+    db.reset(tmpDb);
+  }
+
+  bool add(std::string uuid,Entity entity){
     if(db == nullptr) loadDb();
-    return printStatus(db->Put(leveldb::WriteOptions(), uuid, value));
+    return printStatus(db->Put(leveldb::WriteOptions(), uuid, convertBuffer(entity)));
   }
 
   bool remove(std::string uuid){
@@ -41,21 +58,23 @@ namespace EntityRepository{
     return printStatus(db->Delete(leveldb::WriteOptions(), uuid));
   }
 
-  bool update(std::string uuid,Entity value){
+  bool update(std::string uuid,Entity entity){
     if(db == nullptr) loadDb();
-    Entity tmpValue;
+    std::string tmpValue;
     if(printStatus(db->Get(leveldb::ReadOptions(), uuid, &tmpValue))) {
       leveldb::WriteBatch batch;
       batch.Delete(uuid);
-      batch.Put(uuid, value);
+      batch.Put(uuid, convertBuffer(entity));
       return printStatus(db->Write(leveldb::WriteOptions(), &batch));
     }
     return false;
   }
+  
   Entity find(std::string uuid){
     if(db == nullptr) loadDb();
     Entity value;
-    printStatus(db->Get(leveldb::ReadOptions(), uuid, &value));
-    return value;
+    std::string readData;
+    printStatus(db->Get(leveldb::ReadOptions(), uuid, &readData));
+    return convertEntity(readData);
   }
 }
