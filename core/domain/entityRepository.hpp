@@ -4,9 +4,9 @@
 #include <string>
 
 namespace EntityRepository{
-  void add(Entity e);
-  void update(std::string uuid,Entity e);
-  void delete(std::string uuid);
+  bool add(std::string uuid,Entity e);
+  bool update(std::string uuid,Entity e);
+  bool remove(std::string uuid);
 
   Entity find(std::string uuid);
 };
