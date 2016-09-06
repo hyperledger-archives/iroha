@@ -1,17 +1,14 @@
+#ifndef __ENTITY_REPOSITORY__
+#define __ENTITY_REPOSITORY__
 
+#include <string>
 
-class EntityRepository{
-public:
-  void add(Entity e){
+namespace EntityRepository{
+  void add(Entity e);
+  void update(std::string uuid,Entity e);
+  void delete(std::string uuid);
 
-  }
-  void update(Entity e){
-
-  }
-  void delete(Entity e){
-
-  }
-  void find(Entity e){
-
-  }
+  Entity find(std::string uuid);
 };
+
+#endif
