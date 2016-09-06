@@ -6,8 +6,6 @@
 #include <stdio.h>
 #include <vector>
 
-#include "../crypto/signature.hpp"
-
 class Entity{
   public:
     std::string uuid;
@@ -19,9 +17,27 @@ class Entity{
 
     MSGPACK_DEFINE( uuid, publicKeyVec, privateKeyVec);
 
-    Entity(std::string aUuid){
-      uuid = aUuid;
+    Entity():
+      uuid(""),
+      publicKey((unsigned char*)""),
+      privateKey((unsigned char*)"")
+    {}
 
+    Entity(
+      std::string aUuid,
+      unsigned char* aPublicKey,
+      unsigned char* aPrivateKey
+    ):
+      uuid(aUuid),
+      publicKey(aPublicKey),
+      privateKey(aPrivateKey)
+    {
+      for(size_t i = 0;i < strlen((char*)publicKey);i++){
+        publicKeyVec.push_back( publicKey[i] );
+      }
+      for(size_t i = 0;i < strlen((char*)privateKey);i++){
+        privateKeyVec.push_back( privateKey[i] );
+      }
     }
 };
 
