@@ -7,6 +7,11 @@
 
 #include <memory>
 
+// WIP
+#include <iostream>
+
+#include "entity.hpp"
+
 namespace EntityRepository{
 
   std::shared_ptr<leveldb::DB> db;
@@ -27,17 +32,17 @@ namespace EntityRepository{
   }
 
   bool add(std::string uuid,Entity value){
-    if(db == nulptr) loadDb();
+    if(db == nullptr) loadDb();
     return printStatus(db->Put(leveldb::WriteOptions(), uuid, value));
   }
 
-  bool remove(std::string key){
-    if(db == nulptr) loadDb();
+  bool remove(std::string uuid){
+    if(db == nullptr) loadDb();
     return printStatus(db->Delete(leveldb::WriteOptions(), uuid));
   }
 
   bool update(std::string uuid,Entity value){
-    if(db == nulptr) loadDb();
+    if(db == nullptr) loadDb();
     Entity tmpValue;
     if(printStatus(db->Get(leveldb::ReadOptions(), uuid, &tmpValue))) {
       leveldb::WriteBatch batch;
@@ -48,9 +53,9 @@ namespace EntityRepository{
     return false;
   }
   Entity find(std::string uuid){
-    if(db == nulptr) loadDb();
+    if(db == nullptr) loadDb();
     Entity value;
     printStatus(db->Get(leveldb::ReadOptions(), uuid, &value));
-    return std::make_shared<T>(value);
+    return value;
   }
 }
