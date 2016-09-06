@@ -1,4 +1,0 @@
-
-namespace http{
-  void server();
-}
