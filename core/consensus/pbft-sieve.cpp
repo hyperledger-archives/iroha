@@ -8,7 +8,7 @@
 namespace pbft_sieve{
 
   struct Context{
-    int numberOfPeer; //peerの数
+    int numberOfPeer; //peerの数 // TODO: get this from membership service
     std::string name; //name Options
     bool isLeader;
     int myPeerNumber;
@@ -52,18 +52,17 @@ namespace pbft_sieve{
     return hash::sha3_256_hex(message);
   }
 
-  void initialize_pbft_sieve(int myNumber,int aNumberOfPeer, int leaderNumer){
-    logger( "initialize_pbft_sieve my number:"+std::to_string( myNumber )+" leader:"+std::to_string(myNumber == leaderNumer)+"");
+  void initialize_pbft_sieve(int myNumber, int aNumberOfPeer, int leaderNumber){
+    logger( "initialize_pbft_sieve my number:"+std::to_string( myNumber )+" leader:"+std::to_string(myNumber == leaderNumber)+"");
     context->myPeerNumber = myNumber;
     context->numberOfPeer = aNumberOfPeer;
-    context->isLeader = myNumber == leaderNumer;
+    context->isLeader = myNumber == leaderNumber;
     context->leaderNumber = std::to_string(leaderNumer);
     context->timeCounter = 0;
     context->peerCounter = 0;
     context->repository = std::make_unique<ConsensusRepository>();
     buffer = "";
   }
-
 
   void loopMember(){
     std::shared_ptr<std::string> tx;
@@ -179,6 +178,5 @@ namespace pbft_sieve{
       }
     }
   }
-
 
 };
