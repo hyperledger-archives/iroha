@@ -4,3 +4,6 @@
 [submodule "core/vendor/ed25519"]
 	path = core/vendor/ed25519
 	url = https://github.com/orlp/ed25519.git
+[submodule "core/vendor/leveldb"]
+	path = core/vendor/leveldb
+	url = https://github.com/google/leveldb.git
