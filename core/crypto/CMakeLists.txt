@@ -34,6 +34,6 @@ ADD_LIBRARY(libhash STATIC
 SET(CMAKE_SHARED_LINKER_FLAGS "-lpthread -lssl -led25519 -L../vendor/ed25519")
 include_directories(../vendor/ed25519/src)
 
-ADD_LIBRARY(libsignature STATIC signature.cpp)
-ADD_LIBRARY(libbase64 STATIC base64.cpp)
+ADD_LIBRARY(signature STATIC signature.cpp)
+ADD_LIBRARY(base64 STATIC base64.cpp)
 
