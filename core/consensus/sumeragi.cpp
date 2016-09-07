@@ -15,11 +15,12 @@ namespace sumeragi{
     int timeCounter;
     int peerCounter;
     std::unique_ptr<ConsensusRepository> repository;
+    std::unique_ptr<TransactionCache> txCache;
   };
   void initialize_sumeragi(int myNumber, int aNumberOfPeer, int leaderNumber){
-      logger( "initialize_sumeragi my number:"+std::to_string( myNumber )+" leader:"+std::to_string(myNumber == leaderNumber)+"");
+      logger("initialize_sumeragi, my number:"+std::to_string( myNumber )+" leader:"+std::to_string(myNumber == leaderNumber)+"");
       context->myPeerNumber = myNumber;
-      context->numberOfPeer = aNumberOfPeer;
+      context->numberOfPeers = aNumberOfPeer;
       context->isLeader = myNumber == leaderNumber;
       context->leaderNumber = std::to_string(leaderNumber);
       context->timeCounter = 0;
@@ -28,25 +29,30 @@ namespace sumeragi{
       buffer = "";
   }
 
-  void loopMember(){
+  void loopLeader(td::shared_ptr<std::string> tx){
 
   }
 
-  void loopLeader(){
+  void loopMember(td::shared_ptr<std::string> tx, const int currLeader){
 
   }
 
   void loop(){
      logger( "start loop" );
      int count = 0;
-     while(true){
+     while(true){ // TODO: replace with callback function
+
+        if (context->txCache::hasTx()) {
+            const std::shared_ptr<Transaction> tx = context->repository->popTx();
+        }
 
         context->timeCounter++;
 
-        if(context->isLeader){
-          loopLeader();
+        const int currLeader = context->numberOfPeers;
+        if(tx->hash % currLeader == context->myPeerNumber){
+          loopLeader(tx);
         }else{
-          loopMember();
+          loopMember(tx, currLeader);
         }
       }
   }
