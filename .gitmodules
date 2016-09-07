@@ -1,4 +1,3 @@
-
 [submodule "core/vendor/KeccakCodePackage"]
 	path = core/vendor/KeccakCodePackage
 	url = https://github.com/gvanas/KeccakCodePackage.git

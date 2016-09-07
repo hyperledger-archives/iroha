@@ -1,9 +1,11 @@
-#ifndef __HASH_H_
-#define __HASH_H_
+#ifndef __BASE64__
+#define __BASE64__
 
 #include <string>
 
-namespace hash{
-  std::string sha3_256_hex(std::string message);
+namespace base64{
+  std::string encode(const unsigned char*);
+  unsigned char* decode(std::string);
 };
+
 #endif

@@ -1,10 +1,6 @@
 #include <SimpleFIPS202.h>
 #include <string>
 
-#include <openssl/rsa.h>
-#include <openssl/engine.h>
-#include <openssl/pem.h>
-
 namespace hash{
 
   std::string sha3_256_hex(std::string message){
@@ -25,4 +21,5 @@ namespace hash{
     }
     return res;
   }
+
 };
