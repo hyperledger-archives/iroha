@@ -1,4 +1,3 @@
-
 #include "../util/logger.hpp"
 #include "../db/ConsensusRepository.hpp"
 #include "../peer/connection.hpp"
@@ -178,5 +177,4 @@ namespace pbft_sieve{
       }
     }
   }
-
 };
