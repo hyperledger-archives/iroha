@@ -20,3 +20,19 @@ git submodule update
 
 AERON:
 ./gradlew
+./gradlew
+./cppbuild/cppbuild
+
+mkdir -p cppbuild/Debug
+cd cppbuild/Debug
+cmake ../..
+cmake --build . --clean-first
+ctest
+
+yaml-cpp:
+cd yaml-cpp-0.5.1
+mkdir build
+cd build
+cmake ..
+make
+sudo make install

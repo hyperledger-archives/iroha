@@ -57,7 +57,7 @@ namespace pbft_sieve{
     context->myPeerNumber = myNumber;
     context->numberOfPeer = aNumberOfPeer;
     context->isLeader = myNumber == leaderNumber;
-    context->leaderNumber = std::to_string(leaderNumer);
+    context->leaderNumber = std::to_string(leaderNumber);
     context->timeCounter = 0;
     context->peerCounter = 0;
     context->repository = std::make_unique<ConsensusRepository>();
