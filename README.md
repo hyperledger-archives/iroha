@@ -30,7 +30,6 @@ cmake --build . --clean-first
 ctest
 
 yaml-cpp:
-cd yaml-cpp-0.5.1
 mkdir build
 cd build
 cmake ..
