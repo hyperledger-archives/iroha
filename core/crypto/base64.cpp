@@ -125,10 +125,10 @@ namespace base64{
   }
 
   std::string encode(const unsigned char* message){
-    return vendor::base64_encode(message,strlen((char*)message);
+    return vendor::base64_encode(message,strlen((char*)message));
   }
-  unsigned char* decode(std::string enc){
-    return reinterpret_cast<const unsigned char*>(vendor::base64_decode(enc));
+  const unsigned char* decode(std::string enc){
+    return reinterpret_cast<const unsigned char*>(vendor::base64_decode(enc).c_str());
   }
 
 };

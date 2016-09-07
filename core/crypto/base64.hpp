@@ -5,7 +5,7 @@
 
 namespace base64{
   std::string encode(const unsigned char*);
-  unsigned char* decode(std::string);
+  const unsigned char* decode(std::string);
 };
 
 #endif
