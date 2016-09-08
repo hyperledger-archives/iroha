@@ -24,13 +24,13 @@ namespace util {
     }
   }
 
-  bool equals(const unsigned char* a, const unsigned char*  b) {
+  bool equals(const unsigned char* a, const unsigned char* b) {
     if (
-      strlen(reinterpret_cast<char*>(a)) !=
-       strlen(reinterpret_cast<char*>(b))) {
+      strlen(reinterpret_cast<const char*>(a)) !=
+       strlen(reinterpret_cast<const char*>(b))) {
       return false;
     }
-    for (size_t i=0; i<strlen(reinterpret_cast<char*>(a)); i++) {
+    for (size_t i=0; i<strlen(reinterpret_cast<const char*>(a)); i++) {
       if (a[i] != b[i]) {
         std::cout << a[i] <<" != "<< b[i] << std::endl;
         return false;

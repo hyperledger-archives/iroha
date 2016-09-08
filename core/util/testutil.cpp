@@ -5,8 +5,6 @@
 
 #include <cassert>
 
-#include "testutil.hpp"
-
 namespace util {
   static int successful = 0;
   static std::function<void()> before_function = [](){};
