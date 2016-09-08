@@ -1,5 +1,5 @@
-#ifndef __TEST_H_
-#define __TEST_H_
+#ifndef CORE_UTIL_TESTUTIL_HPP_
+#define CORE_UTIL_TESTUTIL_HPP_
 
 #include <string.h>
 
@@ -7,7 +7,7 @@
 #include <functional>
 #include <iostream>
 
-namespace util{
+namespace util {
 
   int  finish();
   void test(const std::string test_name, std::function<bool()> f);
@@ -15,27 +15,29 @@ namespace util{
   void after(std::function<void()> f);
 
   template<typename T>
-  bool equals(T a, T b){
-    if(a == b){
+  bool equals(T a, T b) {
+    if (a == b) {
       return true;
-    }else{
+    } else {
       std::cout << a <<" != "<< b << std::endl;
       return false;
     }
   }
 
-  bool equals(const unsigned char* a,const unsigned char*  b){
-    if(strlen((char*)a) != strlen((char*)b)){
+  bool equals(const unsigned char* a, const unsigned char*  b) {
+    if (
+      strlen(reinterpret_cast<char*>(a)) !=
+       strlen(reinterpret_cast<char*>(b))) {
       return false;
     }
-    for(size_t i=0;i<strlen((char*)a);i++){
-      if( a[i] != b[i]){
+    for (size_t i=0; i<strlen(reinterpret_cast<char*>(a)); i++) {
+      if (a[i] != b[i]) {
         std::cout << a[i] <<" != "<< b[i] << std::endl;
         return false;
       }
     }
     return true;
   }
-}
+}  // namespace util
 
-#endif
+#endif  // CORE_UTIL_TESTUTIL_HPP_
