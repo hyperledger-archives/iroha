@@ -23,7 +23,7 @@ include_directories(${KECCAK_PATH}/SnP/KeccakP-1600/Optimized64/ufull)
 include_directories(${KECCAK_PATH}/SnP/KeccakP-1600/Optimized/)
 include_directories(${KECCAK_PATH}/SnP/KeccakP-1600/Optimized64/)
 
-ADD_LIBRARY(libhash STATIC
+ADD_LIBRARY(hash STATIC
   hash.cpp
   ${KECCAK_PATH}/SnP/KeccakP-1600/Optimized64/KeccakP-1600-opt64.c
   ${KECCAK_PATH}/Constructions/KeccakSponge.c

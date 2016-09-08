@@ -7,13 +7,13 @@
 
 namespace util{
   static int successful = 0;
-  static std::function<()> before_function = [](){};
-  static std::function<()> after_function = [](){};
+  static std::function<void()> before_function = [](){};
+  static std::function<void()> after_function = [](){};
 
-  void before(std::function<()> f){
+  void before(std::function<void()> f){
     before_function = f;
   }
-  void after(std::function<()> f){
+  void after(std::function<void()> f){
     after_function = f;
   }
 

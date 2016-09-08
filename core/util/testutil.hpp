@@ -9,11 +9,10 @@
 
 namespace util{
 
-
   int  finish();
   void test(const std::string test_name, std::function<bool()> f);
-  void before(std::function<()> f);
-  void after(std::function<()> f);
+  void before(std::function<void()> f);
+  void after(std::function<void()> f);
 
   template<typename T>
   bool equals(T a, T b){
@@ -29,7 +28,7 @@ namespace util{
     if(strlen((char*)a) != strlen((char*)b)){
       return false;
     }
-    for(int i=0;i<strlen((char*)a);i++){
+    for(size_t i=0;i<strlen((char*)a);i++){
       if( a[i] != b[i]){
         std::cout << a[i] <<" != "<< b[i] << std::endl;
         return false;
