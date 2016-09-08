@@ -1,5 +1,5 @@
-#ifndef __BASE64__
-#define __BASE64__
+#ifndef CORE_CRYPTO_HASH_HPP__
+#define CORE_CRYPTO_HASH_HPP__
 
 #include <string>
 
@@ -8,4 +8,4 @@ namespace base64{
   unsigned char* decode(std::string);
 };
 
-#endif
+#endif  // CORE_CRYPTO_HASH_HPP_
