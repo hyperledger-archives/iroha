@@ -1,11 +1,10 @@
-#ifndef __BASE64__
-#define __BASE64__
+#ifndef CORE_CRYPTO_HASH_HPP__
+#define CORE_CRYPTO_HASH_HPP__
 
 #include <string>
 
-namespace base64{
-  std::string encode(const unsigned char*);
-  unsigned char* decode(std::string);
+namespace hash{
+  std::string sha3_256_hex(std::string message);
 };
 
-#endif
+#endif  // CORE_CRYPTO_HASH_HPP_

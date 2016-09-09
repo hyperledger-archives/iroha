@@ -11,4 +11,4 @@ SET(CROW_PATH "../vendor/crow")
 
 include_directories(${CROW_PATH}/include)
 
-ADD_LIBRARY(libhttpserver STATIC http_server.cpp)
+ADD_LIBRARY(httpserver STATIC http_server.cpp)

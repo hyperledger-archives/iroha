@@ -1,8 +1,10 @@
 
 #include <crow.h>
 
-namespace http{
-  void server(){
+#include "http_server.hpp"
+
+namespace http {
+  void server() {
     crow::SimpleApp app;
 
     CROW_ROUTE(app, "/")([](){
@@ -11,4 +13,4 @@ namespace http{
 
     app.port(8080).multithreaded().run();
   }
-}
+}  // namespace http

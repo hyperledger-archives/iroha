@@ -3,6 +3,7 @@
 
  いろは(iroha) is ...
 
+<<<<<<< HEAD
 
 準備：
 
@@ -30,8 +31,19 @@ cmake --build . --clean-first
 ctest
 
 yaml-cpp:
+=======
+# Required
+
+# Usage
+```
+>>>>>>> feature/test
 mkdir build
 cd build
 cmake ..
 make
+<<<<<<< HEAD
 sudo make install
+=======
+ctest
+```
+>>>>>>> feature/test

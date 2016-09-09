@@ -23,7 +23,7 @@ include_directories(${KECCAK_PATH}/SnP/KeccakP-1600/Optimized64/ufull)
 include_directories(${KECCAK_PATH}/SnP/KeccakP-1600/Optimized/)
 include_directories(${KECCAK_PATH}/SnP/KeccakP-1600/Optimized64/)
 
-ADD_LIBRARY(libhash STATIC
+ADD_LIBRARY(hash STATIC
   hash.cpp
   ${KECCAK_PATH}/SnP/KeccakP-1600/Optimized64/KeccakP-1600-opt64.c
   ${KECCAK_PATH}/Constructions/KeccakSponge.c
@@ -34,4 +34,6 @@ ADD_LIBRARY(libhash STATIC
 SET(CMAKE_SHARED_LINKER_FLAGS "-lpthread -lssl -led25519 -L../vendor/ed25519")
 include_directories(../vendor/ed25519/src)
 
-ADD_LIBRARY(libsignature STATIC signature.cpp)
+ADD_LIBRARY(signature STATIC signature.cpp)
+ADD_LIBRARY(base64 STATIC base64.cpp)
+
