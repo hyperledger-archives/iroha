@@ -1,0 +1,7 @@
+dependencies:
+  override:
+    - mkdir build; cd build; cmake ..
+test:
+  override:
+    - cd build/test; ./base64-test
+
