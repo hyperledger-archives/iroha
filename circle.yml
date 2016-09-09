@@ -4,6 +4,7 @@ dependencies:
 checkout:
   post:
     - git submodule init 
+    - git submodule sync
     - git submodule update
     - cd core/vendor/ed25519; make
 test:
