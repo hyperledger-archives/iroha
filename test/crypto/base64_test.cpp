@@ -9,6 +9,18 @@ TEST(Base64, EncodeAndDecodeNormalText){
     ASSERT_STREQ( (char*)text, (char*)base64::decode(base64::encode(text)));
 }
 
+TEST(Base64, EncodeAndDecodeJapaneseText){
+    unsigned char* text = (unsigned char*)("ソラミツ株式会社\
+                                            以呂波耳本へ止\
+                                            千利奴流乎和加\
+                                            餘多連曽津祢那\
+                                            良牟有為能於久\
+                                            耶万計不己衣天\
+                                            阿佐伎喩女美之\
+                                            恵比毛勢須");
+    ASSERT_STREQ( (char*)text, (char*)base64::decode(base64::encode(text)));
+}
+
 TEST(Base64, EncodeAndDecodeEmptyText){
     unsigned char* text = (unsigned char*)"";
     ASSERT_STREQ( (char*)text, (char*)base64::decode(base64::encode(text)));
@@ -72,4 +84,3 @@ TEST(Base64, EncodeAndDecodeLongText){
     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     ASSERT_STREQ( (char*)text, (char*)base64::decode(base64::encode(text)));
 }
-
