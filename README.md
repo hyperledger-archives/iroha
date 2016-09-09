@@ -3,8 +3,6 @@
 
  いろは(iroha) is ...
 
-<<<<<<< HEAD
-
 準備：
 
 add-apt-repository ppa:webupd8team/java
@@ -31,19 +29,19 @@ cmake --build . --clean-first
 ctest
 
 yaml-cpp:
-=======
-# Required
-
-# Usage
-```
->>>>>>> feature/test
 mkdir build
 cd build
 cmake ..
 make
-<<<<<<< HEAD
 sudo make install
-=======
+
+# Required
+
+# Usage
+```
+mkdir build
+cd build
+cmake ..
+make
 ctest
 ```
->>>>>>> feature/test
