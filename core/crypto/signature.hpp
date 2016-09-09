@@ -5,6 +5,8 @@
 #include <memory>
 #include <tuple>
 
+#include <ed25519.h>
+
 #include "../domain/entity.hpp"
 
 namespace signature{

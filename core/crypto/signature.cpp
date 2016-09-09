@@ -1,6 +1,4 @@
 
-#include <ed25519.h>
-
 
 #include <iostream>
 #include <fstream>
