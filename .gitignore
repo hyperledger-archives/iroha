@@ -1,3 +1,3 @@
 build/*
-*.DS_Store
 *cmake
+*.DS_Store

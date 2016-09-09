@@ -1,0 +1,13 @@
+dependencies:
+  override:
+    - mkdir build; cd build; cmake ..
+checkout:
+  post:
+    - git submodule init 
+    - git submodule sync
+    - git submodule update
+    - cd core/vendor/ed25519; make
+test:
+  override:
+    - cd build/test; ./base64-test
+
