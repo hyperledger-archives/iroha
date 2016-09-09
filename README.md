@@ -3,7 +3,6 @@
 
  いろは(iroha) is ...
 
-
 準備：
 
 add-apt-repository ppa:webupd8team/java
@@ -35,3 +34,14 @@ cd build
 cmake ..
 make
 sudo make install
+
+# Required
+
+# Usage
+```
+mkdir build
+cd build
+cmake ..
+make
+ctest
+```
