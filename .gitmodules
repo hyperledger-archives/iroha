@@ -13,3 +13,6 @@
 [submodule "core/vendor/Aeron"]
 	path = core/vendor/Aeron
 	url = https://github.com/real-logic/Aeron.git
+[submodule "core/vendor/yaml-cpp"]
+	path = core/vendor/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp.git
