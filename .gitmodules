@@ -10,3 +10,6 @@
 [submodule "core/vendor/crow"]
 	path = core/vendor/crow
 	url = https://github.com/ipkn/crow.git
+[submodule "core/vendor/Aeron"]
+	path = core/vendor/Aeron
+	url = https://github.com/real-logic/Aeron.git
