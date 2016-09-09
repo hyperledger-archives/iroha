@@ -3,9 +3,8 @@
 
 #include <string>
 
-namespace base64{
-  std::string encode(const unsigned char*);
-  unsigned char* decode(std::string);
+namespace hash{
+  std::string sha3_256_hex(std::string message);
 };
 
 #endif  // CORE_CRYPTO_HASH_HPP_

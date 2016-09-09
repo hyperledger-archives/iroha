@@ -27,7 +27,6 @@ namespace signature{
       (std::istreambuf_iterator<char>(ifs) ),
       std::istreambuf_iterator<char>() );
   }
-
   bool generateKeyPair(std::string filenamePrefix, std::string keyPath) {
     std::ofstream publicOfs(keyPath +"/"+ filenamePrefix + "_public.pem");
     std::ofstream privateOfs(keyPath +"/"+ filenamePrefix + "_private.pem");
@@ -42,7 +41,6 @@ namespace signature{
 
     return true;
   }
-
   std::string sign(
     std::string message,
     std::string privateKeyName,
@@ -71,5 +69,6 @@ namespace signature{
         message.size(),
         reinterpret_cast<const unsigned char*>(base64::decode(publicKey)));
   }
+  // ===
 
 };  // namespace signature

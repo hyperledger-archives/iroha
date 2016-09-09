@@ -65,7 +65,6 @@ namespace signature{
     ed25519_create_keypair(publicKey, privateKey, seed);
     return std::make_tuple( publicKey, privateKey);
   }
-
 };  // namespace signature
 
 #endif  // CORE_CRYPTO_SIGNATURE_HPP_
