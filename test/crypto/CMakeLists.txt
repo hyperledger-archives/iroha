@@ -3,9 +3,7 @@ set(CMAKE_BUILD_TYPE Debug)
 SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++14")
 SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -DDEBUG -O0 -std=c++14")
 
-SET(CMAKE_SHARED_LINKER_FLAGS "-lpthread -L${PROJECT_BINARY_DIR}/lib")
-
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test)
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
 
 SET(CRYPTO_PATH  "${PROJECT_SOURCE_DIR}/core/crypto")
 SET(ED25519_PATH "${PROJECT_SOURCE_DIR}/core/vendor/ed25519")
@@ -17,7 +15,10 @@ include_directories(
   ${GTEST_INCLUDE_DIR}
   ${PROJECT_SOURCE_DIR}/core/vendor/ed25519/src
 )
-link_directories(${ED25519_PATH})
+link_directories(
+  ${ED25519_PATH}
+  ${PROJECT_BINARY_DIR}/lib
+)
 
 add_executable(base64-test base64_test.cpp)
 target_link_libraries(base64-test base64
