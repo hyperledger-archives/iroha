@@ -13,6 +13,3 @@
 [submodule "core/vendor/yaml-cpp"]
   path = core/vendor/yaml-cpp
   url = https://github.com/jbeder/yaml-cpp.git
-[submodule "core/vendor/ed25519"]
-  path = core/vendor/ed25519
-  url = https://github.com/orlp/ed25519.git
