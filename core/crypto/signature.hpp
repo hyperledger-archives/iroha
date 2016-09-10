@@ -10,15 +10,25 @@
 #include "../domain/entity.hpp"
 
 namespace signature{
+  
+  class KeyPair{  
+   public:
+    unsigned char* publicKey;
+    unsigned char* privateKey;
+    KeyPair(unsigned char* pub,unsigned char* pri):
+      publicKey(pub),
+      privateKey(pri)
+    {}
+  };
 
   //=== Deprecated use for debug. ===
   bool verify(
-    std::string signature,
+    std::string encdSignature,
     std::string message,
     std::string publicKeyName);
 
   std::string sign(
-    std::string message,
+    std::string encdMessage,
     std::string privateKeyName,
     std::string publicKeyName);
 
@@ -58,14 +68,11 @@ namespace signature{
     // ToDo
   }
 
-  std::tuple<
-    unsigned char*,
-    unsigned char*
-  > generateKeyPair() {
+  KeyPair generateKeyPair() {
     unsigned char publicKey[32], privateKey[64], seed[32];
     ed25519_create_seed(seed);
     ed25519_create_keypair(publicKey, privateKey, seed);
-    return std::make_tuple( publicKey, privateKey);
+    return KeyPair( publicKey, privateKey);
   }
 };  // namespace signature
 
