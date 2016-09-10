@@ -5,14 +5,8 @@ checkout:
   post:
     - cd /tmp
     - sudo apt-get -y purge cmake
-    - sudo apt-get install build-essential
-    - wget http://www.cmake.org/files/v3.5/cmake-3.5.2.tar.gz
-    - tar xf cmake-3.5.2.tar.gz
-    - cd cmake-3.5.2
-    - ./configure
-    - make
-    - sudo make install 
-    - cd ~/iroha
+    - curl -sSL https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz | sudo tar -xzC /opt
+    - export PATH=$PATH:/opt/cmake-3.5.2-Linux-x86_64/bin
     - git submodule init 
     - git submodule sync
     - git submodule update
