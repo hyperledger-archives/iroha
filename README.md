@@ -5,6 +5,9 @@
  いろは(iroha) is ...
 
 # Required
+```
+cmake(3.5.2)
+```
 
 # Usage
 ```
