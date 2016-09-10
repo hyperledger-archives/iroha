@@ -24,7 +24,7 @@ struct Context {
     std::unique_ptr<TransactionCache> txCache;
 };
 
-void initializeSumeragi(int myNumber, int numberOfPeers, int leaderNumber, int batchSize) {
+void initializeSumeragi(int const myNumber, int const numberOfPeers, int const leaderNumber, int const batchSize) {
     logger("initialize_sumeragi, my number:"+std::to_string(myNumber)+" leader:"+std::to_string(myNumber == leaderNumber)+"");
     context->batchSize = batchSize;
     context->myPeerNumber = myNumber;
@@ -53,12 +53,19 @@ void loopLeader(td::shared_ptr<std::string> const tx) {
     ::setAwkTimer();
 }
 
+void setAwkTimer(int const sleepMillisecs) {
+    std::thread([sleepMillisecs]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+        checkforAwk();
+    }).detach();
+}
+
 void loopMember(td::shared_ptr<std::string> const tx, int const currLeader) {
     if (tx::isChain()) {
         ::validateTx(tx);
         ::addSignature();
         ::broadcastToNextValidator(tx);
-        ::setAwkTimer();
+        setAwkTimer(5000);
 
     } else if (tx::isAwk()) {
 
@@ -104,6 +111,12 @@ void loop() {
             std::shared_ptr<Panic> const panic = context->repository->popPanic();
 
             ::broadcastToPreviousPeers(panic);
+        }
+
+        Timeout.Start(5000);
+        while ((TimeOut.TimeOut() == false) && (completed == false))
+        {
+        completed = WorkToDo()
         }
     }
 }
