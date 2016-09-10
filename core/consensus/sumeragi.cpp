@@ -25,6 +25,7 @@ void initialize_sumeragi(int myNumber, int aNumberOfPeer, int leaderNumber, int 
     context->batchSize = batchSize;
     context->myPeerNumber = myNumber;
     context->numberOfPeers = aNumberOfPeer;
+    context->validatingPeers;
     context->isLeader = myNumber == leaderNumber;
     context->leaderNumber = std::to_string(leaderNumber);
     context->timeCounter = 0;
@@ -37,39 +38,20 @@ void initialize_sumeragi(int myNumber, int aNumberOfPeer, int leaderNumber, int 
 void loopLeader(td::shared_ptr<std::string> tx) {
     seq++;
 
-    ::broadcastAllValidators(tx);
-    ::replyClient(viewNumber, localTimestamp, seq, client);
+    determineOrder();
+
+
 }
 
 void loopMember(td::shared_ptr<std::string> const tx, int const currLeader) {
-    if (tx::isCommit()) {
-        if (match(seq)) {
-            addCommitMsg();
-        }
+    if (tx::isChain()) {
 
-        if (numCommits == f+1) {
-            ::broadcastAllValidators(commit);
-            ::replyClient(viewNumber, localTimestamp, seq, client);
 
-            if (conflictWithMyself) {
-                ::broadcastAllValidators(viewChange);
-            }
-        } else if (numCommits = 2f) {
-            complete(tx);  // Finality is achieved
-        }
+    } else if (tx::isAwk()) {
 
-    } else if (tx::isPrepare()) {
-        if (tx.seq == seq + 1) {
-            seq = tx.seq;
-            applyTx(tx);
-            ::broadcastAllValidators(txCommit);
-            ::replyClient(viewNumber, localTimestamp, seq, client);
-        }
 
     } else if (tx::isPanic()) {
-        if (!context->isPanic) {
-
-        }
+        
     }
 }
 

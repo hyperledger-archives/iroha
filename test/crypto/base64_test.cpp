@@ -36,6 +36,11 @@ TEST(Base64, EncodeAndDecodeBin){
     ASSERT_STREQ( (char*)text, (char*)base64::decode(base64::encode(text)));
 }
 
+TEST(Base64, EncodeAndDecodeLongBin){
+    unsigned char* text = (unsigned char*)"\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF";
+    ASSERT_STREQ( (char*)text, (char*)base64::decode(base64::encode(text)));
+}
+
 TEST(Base64, EncodeAndDecodeJapanese){
     unsigned char* text = (unsigned char*)"水樹素子";
     ASSERT_STREQ( (char*)text, (char*)base64::decode(base64::encode(text)));
