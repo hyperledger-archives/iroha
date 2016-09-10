@@ -16,6 +16,7 @@ enum TransactionType {
 class Transaction {
  public:
     std::string hash;
+    std::string prevTxHash;  // Assume chains of transactions
     
     TransactionType type;
     
@@ -37,7 +38,7 @@ class Transaction {
       uuid(aUuid),
       publicKey(aPublicKey),
       privateKey(aPrivateKey) {
-          
+
       for (size_t i = 0; i < strlen(reinterpret_cast<char*>(publicKey) ); i++) {
         publicKeyVec.push_back(publicKey[i]);
       }

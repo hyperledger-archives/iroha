@@ -2,13 +2,21 @@
 
 #include "../util/logger.hpp"
 #include "../domain/entityRepository.hpp"
-#include "../peer/connection.hpp"
+#include "../domain/transaction.hpp"
+#include "../peer/connection.hpp" // TODO: rather than this low-level interface, abstract out events and broadcasts
 #include "../crypto/hash.hpp"
+#include "../validation/transactionValidator.hpp"
 
 /**
-* Duan, S., Meling, H., Peisert, S., & Zhang, H. (2014, December). Bchain: Byzantine replication 
-* with high throughput and embedded reconfiguration. In International Conference on Principles of 
-* Distributed Systems (pp. 91-106). Springer International Publishing.
+* |ーーー|　|ーーー|　|ーーー|　|ーーー|
+* |　ス　|ー|　メ　|ー|　ラ　|ー|　ギ　|
+* |ーーー|　|ーーー|　|ーーー|　|ーーー|
+*
+* A chain-based byzantine fault tolerant consensus algorithm, based in large part on BChain: 
+*
+* Duan, S., Meling, H., Peisert, S., & Zhang, H. (2014). Bchain: Byzantine replication with 
+* high throughput and embedded reconfiguration. In International Conference on Principles of 
+* Distributed Systems (pp. 91-106). Springer.
 */
 namespace sumeragi {
 
@@ -61,12 +69,12 @@ void loopLeader(td::shared_ptr<std::string> const tx) {
 * For example, given:
 * |---|  |---|  |---|  |---|  |---|  |---|
 * | H |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
-* |---|  |---|  |---|  |---|  |---|  |---|
+* |---|  |---|  |---|  |---|  |---|  |---|,
 *
-* If [2] suspects [3] and f := 2, then the validation chain order will become:
+* if [2] suspects [3] and f := 2, then the validation chain order will become:
 * |---|  |---|  |---|  |---|  |---|  |---|
 * | H |--| 1 |--| 4 |--| 5 |--| 2 |--| 3 |
-* |---|  |---|  |---|  |---|  |---|  |---|
+* |---|  |---|  |---|  |---|  |---|  |---|.
 */
 void reconfigureSuspects(int const suspected, int const suspector) {
 
@@ -116,7 +124,7 @@ void loopProxyTail(td::shared_ptr<std::string> const tx, int const currLeader) {
         ::broadcastFinalized(tx);
 
     } else if (tx::isPanic()) {
-        if (panicMessages >= 2f) {
+        if (panicMessages.length >= context->maxFaulty) {
             ::broadcastPanic();
         }
     }
@@ -125,11 +133,11 @@ void loopProxyTail(td::shared_ptr<std::string> const tx, int const currLeader) {
 void loop() {
     logger("start loop");
     int count = 0;
-    while (true) {  // TODO(M->M): replace with callback function
-        if (context->txCache::hasTx()) {
+    while (true) {  // TODO(M->M): replace with callback linking aeron
+        if (context->txCache::hasTx()) { // TODO: make tx cache
             std::shared_ptr<Transaction> const tx = context->repository->popUnconfirmedTx();
 
-            if (txValidator::isValid()) {
+            if (txValidator::isValid()) { //TODO: write validation code (check signatures and account balances, if applicable)
                 context->timeCounter++;
 
                 int const currLeader = context->numberOfPeers;

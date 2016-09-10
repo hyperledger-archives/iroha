@@ -6,7 +6,6 @@ namespace sumeragi {
   void loop();
   void loopMember(td::shared_ptr<std::string> tx, int const currLeader);
   void loopLeader(td::shared_ptr<std::string> tx);
-  void command(std::string command,std::vector<std::string> args);
   void execute();
 };
 
