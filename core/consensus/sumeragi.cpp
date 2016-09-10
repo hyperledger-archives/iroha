@@ -1,11 +1,14 @@
 #include "sumeragi.hpp"
 
 #include "../util/logger.hpp"
-#include "../db/ConsensusRepository.hpp"
+#include "../domain/entityRepository.hpp"
 #include "../peer/connection.hpp"
 #include "../crypto/hash.hpp"
 
-namespace sumeragi{
+/**
+* Bchain
+*/
+namespace sumeragi {
 
 struct Context {
     int numberOfPeers;  // peerの数 // TODO: get this from membership service
@@ -35,21 +38,44 @@ void initialize_sumeragi(int myNumber, int aNumberOfPeer, int leaderNumber, int 
     buffer = "";
 }
 
-void loopLeader(td::shared_ptr<std::string> tx) {
+void loopLeader(td::shared_ptr<std::string> const tx) {
+    ::validateTx(tx);
+
     seq++;
 
-    determineOrder();
+    context->processingOrder = ::determineProcessingOrder();
+    ::prepareTransaction();
+    
+    ::addSignature();
+    ::broadcastToNextValidator(tx);
+    ::setAwkTimer();
 }
 
 void loopMember(td::shared_ptr<std::string> const tx, int const currLeader) {
     if (tx::isChain()) {
-
+        ::validateTx(tx);
+        ::addSignature();
+        ::broadcastToNextValidator(tx);
+        ::setAwkTimer();
 
     } else if (tx::isAwk()) {
 
 
     } else if (tx::isPanic()) {
 
+    }
+}
+
+void loopProxyTail(td::shared_ptr<std::string> const tx, int const currLeader) {
+    if (tx::isChain()) {
+        ::validateTx(tx);
+        ::addSignature();
+        ::broadcastFinalized(tx);
+
+    } else if (tx::isPanic()) {
+        if (panicMessages >= 2f) {
+            ::broadcastPanic();
+        }
     }
 }
 
