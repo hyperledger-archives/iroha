@@ -12,6 +12,7 @@ namespace sumeragi {
 
 struct Context {
     int numberOfPeers;  // peerの数 // TODO: get this from membership service
+    int maxFaulty;  // f
     std::string name;  // name Options
     bool isLeader;
     bool isPanic;
@@ -23,11 +24,12 @@ struct Context {
     std::unique_ptr<TransactionCache> txCache;
 };
 
-void initialize_sumeragi(int myNumber, int aNumberOfPeer, int leaderNumber, int batchSize) {
+void initializeSumeragi(int myNumber, int numberOfPeers, int leaderNumber, int batchSize) {
     logger("initialize_sumeragi, my number:"+std::to_string(myNumber)+" leader:"+std::to_string(myNumber == leaderNumber)+"");
     context->batchSize = batchSize;
     context->myPeerNumber = myNumber;
-    context->numberOfPeers = aNumberOfPeer;
+    context->numberOfPeers = numberOfPeers; // TODO(M→I): これは大丈夫？
+    context->maxFaulty = numberOfPeers/3;  // Default to approx. 1/3 of the network. TODO(M→M): make this configurable 
     context->validatingPeers;
     context->isLeader = myNumber == leaderNumber;
     context->leaderNumber = std::to_string(leaderNumber);
