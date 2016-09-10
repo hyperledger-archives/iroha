@@ -17,10 +17,7 @@
 
 namespace base64 {
 
-  const unsigned char* decode(std::string encoded) { //Decodes a base64 encoded string
-    if(encoded.size() == 0){
-      return (unsigned char*)"";
-    }
+  std::shared_ptr<unsigned char[]> decode(std::string encoded) { //Decodes a base64 encoded string
 
     BIO *bio;
 
@@ -44,11 +41,11 @@ namespace base64 {
       std::cout << status <<" "<< length << "Decode failed \n";
       // ToDo Error 
     }
-    return message;
+    return std::make_shared<unsigned char[]>(message);
   }
 
-  std::string encode(const unsigned char* message) {
-    if(strlen((const char*)message) == 0){
+  std::string encode(std::shared_ptr<unsigned char[]> message) {
+    if(strlen((const char*)message.get()) == 0){
       return "";
     }
 
@@ -60,7 +57,7 @@ namespace base64 {
     );
 
     BIO_set_flags(bio.get(), BIO_FLAGS_BASE64_NO_NL);
-    BIO_write(bio.get(), message, strlen((const char*)message));
+    BIO_write(bio.get(), message.get(), strlen((const char*)message.get()));
     BIO_flush(bio.get());
     BIO_get_mem_ptr(bio.get(), &bufMem);
 
