@@ -8,6 +8,8 @@
 #include <openssl/pem.h>
 #include <openssl/bio.h>
 
+#include <cstring>
+
 #include <memory>
 #include <vector>
 
@@ -34,7 +36,7 @@ namespace base64 {
     unsigned char* message = (unsigned char*)malloc(length + 1);
     message[length] = '\0';
     std::shared_ptr<BIO> b64(BIO_new(BIO_f_base64()),BIO_free_all);
-    bio = BIO_new_mem_buf(encoded.c_str(), -1);
+    bio = BIO_new_mem_buf((void*)encoded.c_str(), -1);
     bio = BIO_push(b64.get(), bio);
     BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
     int status = BIO_read(bio, message, encoded.size());
