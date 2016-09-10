@@ -1,12 +1,11 @@
 dependencies:
   override:
-    - mkdir build; cd build; cmake ..
+    - mkdir build; cd build; cmake ..; make
 checkout:
   post:
     - git submodule init 
     - git submodule sync
     - git submodule update
-    - cat .git/config
     - cd core/vendor/ed25519; make
 test:
   override:
