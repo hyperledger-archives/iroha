@@ -8,9 +8,13 @@
 
 # Usage
 ```
+git submodule init 
+git submodule update
+cd core/vendor/ed25519; make
+cd core/vendor/msgpack-c; cmake -DMSGPACK_CXX11=ON .; sudo make install
 mkdir build
 cd build
 cmake ..
-make
-ctest
+make 
+../test.ch
 ```
