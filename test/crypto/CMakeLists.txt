@@ -34,6 +34,7 @@ add_test(
 
 add_executable(signature-test signature_test.cpp)
 target_link_libraries(signature-test signature
+  base64
   ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread)
 add_test(
   NAME signature-test

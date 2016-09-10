@@ -11,11 +11,14 @@
 
 namespace signature{
   
-  class KeyPair{  
+  class KeyPair{
    public:
     unsigned char* publicKey;
     unsigned char* privateKey;
-    KeyPair(unsigned char* pub,unsigned char* pri):
+    KeyPair(
+      unsigned char* pub,
+      unsigned char* pri
+    ):
       publicKey(pub),
       privateKey(pri)
     {}
@@ -23,12 +26,12 @@ namespace signature{
 
   //=== Deprecated use for debug. ===
   bool verify(
-    std::string encdSignature,
+    std::string signature,
     std::string message,
     std::string publicKeyName);
 
   std::string sign(
-    std::string encdMessage,
+    std::string message,
     std::string privateKeyName,
     std::string publicKeyName);
 
