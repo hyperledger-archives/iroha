@@ -75,9 +75,12 @@ void loopLeader(td::shared_ptr<std::string> const tx) {
 * |---|  |---|  |---|  |---|  |---|  |---|
 * | H |--| 1 |--| 4 |--| 5 |--| 2 |--| 3 |
 * |---|  |---|  |---|  |---|  |---|  |---|.
+*
+* Only the head (H) can reconfigure the chain order. If the head has a problem, other nodes should 
+* request a view change.
 */
 void reconfigureSuspects(int const suspected, int const suspector) {
-
+//TODO:
 }
 
 void reconfigure() {
@@ -98,11 +101,10 @@ void setAwkTimer(int const sleepMillisecs, std::function<void(void)> action, act
 void checkForAwk(tx) {
     if (!context->repository->txHashFinalized(tx)) {
         // Panic
-        
     }
 }
 
-void loopMember(td::shared_ptr<std::string> const tx, int const currLeader) {
+void loopMember(td::shared_ptr<Transaction> const tx, int const currLeader) { //TODO(M->I): I want to use const like final in Java. Is this good practice and/or correct?
     if (tx::isChain()) {
         ::validateTx(tx);
         ::addSignature();
@@ -112,7 +114,10 @@ void loopMember(td::shared_ptr<std::string> const tx, int const currLeader) {
     } else if (tx::isAwk()) {
 
 
-    } else if (tx::isPanic()) {
+    } else if (tx::isSuspect()) {
+
+
+    } else if (tx::isViewChange()) {
 
     }
 }
