@@ -8,7 +8,7 @@ TEST(Base64, EncodeAndDecodeNormalText){
     ASSERT_STREQ( (char*)text, (char*)base64::decode(base64::encode(text)));
 }
 
-TEST(Base64, EncodeAndDecodeJapaneseText){
+TEST(Base64, EncodeAndDecodeJapaneseTextWithNL){
     unsigned char* text = (unsigned char*)("ソラミツ株式会社\
                                             以呂波耳本へ止\
                                             千利奴流乎和加\
@@ -17,6 +17,19 @@ TEST(Base64, EncodeAndDecodeJapaneseText){
                                             耶万計不己衣天\
                                             阿佐伎喩女美之\
                                             恵比毛勢須");
+    ASSERT_STREQ( (char*)text, (char*)base64::decode(base64::encode(text)));
+}
+
+TEST(Base64, EncodeAndDecodeLineText){
+    unsigned char* text = (unsigned char*)"\n \
+ \n \
+ \n \ 
+";
+    ASSERT_STREQ( (char*)text, (char*)base64::decode(base64::encode(text)));
+}
+
+TEST(Base64, EncodeAndDecodeJapaneseText){
+    unsigned char* text = (unsigned char*)"ソラミツ株式会社以呂波耳本へ止千利奴流乎和加餘多連曽津祢那良牟有為能於久耶万計不己衣天阿佐伎喩女美之恵比毛勢須";
     ASSERT_STREQ( (char*)text, (char*)base64::decode(base64::encode(text)));
 }
 
