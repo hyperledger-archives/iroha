@@ -6,6 +6,7 @@ checkout:
     - git submodule init 
     - git submodule sync
     - git submodule update
+    - cat .git/config
     - cd core/vendor/ed25519; make
 test:
   override:
