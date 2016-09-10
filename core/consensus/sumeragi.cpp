@@ -39,8 +39,6 @@ void loopLeader(td::shared_ptr<std::string> tx) {
     seq++;
 
     determineOrder();
-
-
 }
 
 void loopMember(td::shared_ptr<std::string> const tx, int const currLeader) {
@@ -51,7 +49,7 @@ void loopMember(td::shared_ptr<std::string> const tx, int const currLeader) {
 
 
     } else if (tx::isPanic()) {
-        
+
     }
 }
 
