@@ -10,5 +10,5 @@ checkout:
     - cd core/vendor/msgpack-c; cmake -DMSGPACK_CXX11=ON .; sudo make install
 test:
   override:
-    - cd build/test_bin; ./base64-test
+    - ./test.sh
 
