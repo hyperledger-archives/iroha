@@ -50,14 +50,29 @@ void loopLeader(td::shared_ptr<std::string> const tx) {
     
     ::addSignature();
     ::broadcastToNextValidator(tx);
-    ::setAwkTimer();
+    setAwkTimer(5000, [&]{ reconfigure(); };);
 }
 
-void setAwkTimer(int const sleepMillisecs) {
-    std::thread([sleepMillisecs]() {
+void reconfigure() {
+    // Any suspects?
+    getSuspects();
+    reconfigureSuspects();
+
+    // If no suspects, kick the second node to the end of the chain
+}
+
+void setAwkTimer(int const sleepMillisecs, std::function<void(void)> action, actionArgs ...) {
+    std::thread([sleepMillisecs, tx]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
-        checkforAwk();
+        action();
     }).detach();
+}
+
+void checkForAwk(tx) {
+    if (!context->repository->txHashFinalized(tx)) {
+        // Panic
+        
+    }
 }
 
 void loopMember(td::shared_ptr<std::string> const tx, int const currLeader) {
@@ -111,12 +126,6 @@ void loop() {
             std::shared_ptr<Panic> const panic = context->repository->popPanic();
 
             ::broadcastToPreviousPeers(panic);
-        }
-
-        Timeout.Start(5000);
-        while ((TimeOut.TimeOut() == false) && (completed == false))
-        {
-        completed = WorkToDo()
         }
     }
 }
