@@ -78,16 +78,16 @@ void loop() {
     int count = 0;
     while (true) {  // TODO(M->M): replace with callback function
         if (context->txCache::hasTx()) {
-            std::shared_ptr<Transaction> const tx = context->repository->popTx();
+            std::shared_ptr<Transaction> const tx = context->repository->popUnconfirmedTx();
 
             if (txValidator::isValid()) {
                 context->timeCounter++;
 
                 int const currLeader = context->numberOfPeers;
-                if (tx->hash % currLeader == context->myPeerNumber) {
+                if (tx->hash % Context->numberOfPeers == context->myPeerNumber) {
                     loopLeader(tx);
                 } else {
-                    loopMember(tx, currLeader);
+                    loopMember(tx, txContext);
                 }
             }
         }
@@ -95,11 +95,7 @@ void loop() {
         if (context->panicCache::hasPanic()) {
             std::shared_ptr<Panic> const panic = context->repository->popPanic();
 
-            if (panic.isFromClient()){
-                ::broadcastAllValidators(panic);
-            } else {
-                
-            }
+            ::broadcastToPreviousPeers(panic);
         }
     }
 }
