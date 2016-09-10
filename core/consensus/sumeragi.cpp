@@ -6,7 +6,9 @@
 #include "../crypto/hash.hpp"
 
 /**
-* Bchain
+* Duan, S., Meling, H., Peisert, S., & Zhang, H. (2014, December). Bchain: Byzantine replication 
+* with high throughput and embedded reconfiguration. In International Conference on Principles of 
+* Distributed Systems (pp. 91-106). Springer International Publishing.
 */
 namespace sumeragi {
 
@@ -28,7 +30,7 @@ void initializeSumeragi(int const myNumber, int const numberOfPeers, int const l
     logger("initialize_sumeragi, my number:"+std::to_string(myNumber)+" leader:"+std::to_string(myNumber == leaderNumber)+"");
     context->batchSize = batchSize;
     context->myPeerNumber = myNumber;
-    context->numberOfPeers = numberOfPeers; // TODO(M→I): これは大丈夫？
+    context->numberOfPeers = numberOfPeers; // TODO(M→I): C++として、このsyntaxは大丈夫？
     context->maxFaulty = numberOfPeers/3;  // Default to approx. 1/3 of the network. TODO(M→M): make this configurable 
     context->validatingPeers;
     context->isLeader = myNumber == leaderNumber;
@@ -51,6 +53,23 @@ void loopLeader(td::shared_ptr<std::string> const tx) {
     ::addSignature();
     ::broadcastToNextValidator(tx);
     setAwkTimer(5000, [&]{ reconfigure(); };);
+}
+
+/**
+* Move the suspected validator to the end of the chain and the suspector to the 2f+1'th position.
+* 
+* For example, given:
+* |---|  |---|  |---|  |---|  |---|  |---|
+* | H |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
+* |---|  |---|  |---|  |---|  |---|  |---|
+*
+* If [2] suspects [3] and f := 2, then the validation chain order will become:
+* |---|  |---|  |---|  |---|  |---|  |---|
+* | H |--| 1 |--| 4 |--| 5 |--| 2 |--| 3 |
+* |---|  |---|  |---|  |---|  |---|  |---|
+*/
+void reconfigureSuspects(int const suspected, int const suspector) {
+
 }
 
 void reconfigure() {
