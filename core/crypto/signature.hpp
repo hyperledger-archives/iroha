@@ -23,12 +23,12 @@ namespace signature{
 
   //=== Deprecated use for debug. ===
   bool verify(
-    std::string signature,
+    std::string encdSignature,
     std::string message,
     std::string publicKeyName);
 
   std::string sign(
-    std::string message,
+    std::string encdMessage,
     std::string privateKeyName,
     std::string publicKeyName);
 
