@@ -138,28 +138,44 @@ void loopProxyTail(td::shared_ptr<std::string> const tx, int const currLeader) {
 
 void loop() {
     logger("start loop");
-    int count = 0;
+    // int count = 0;
     while (true) {  // TODO(M->M): replace with callback linking aeron
-        if (context->txCache::hasTx()) { // TODO: make tx cache (std::map in memory is fine)
-            std::shared_ptr<Transaction> const tx = context->txRepository->popUnconfirmedTx();
+        if (context->eventCache::hasConsensusEvent()) { // TODO: make event cache (std::map in memory is fine)
+            std::shared_ptr<ConsensusEvent> const event = context->eventCache::popConsensusEvent();
 
-            if (txValidator::isValid()) { //TODO: write validation code (check signatures and account balances, if applicable)
-                // context->timeCounter++;
+            if (ConsensusEvent.types.transaction == event->type) {
 
-                int const currLeader = context->numberOfPeers;
-                if (tx->hash % context->numberOfPeers == context->myPeerNumber) {
-                    loopLeader(tx);
-                } else {
-                    loopMember(tx, txContext);
-                }
+            } else if (ConsensusEvent.types.awk == event->type) {
+
+            } else if (ConsensusEvent.types.suspicion == event->type) {
+
+            } else if (ConsensusEvent.types.viewChange == event->type) {
+
             }
-        }
 
-        if (context->panicCache::hasPanic()) {
-            std::shared_ptr<Panic> const panic = context->repository->popPanic();
+        //     if (txValidator::isValid()) { //TODO: write validation code (check signatures and account balances, if applicable)
+        //         // context->timeCounter++;
 
-            peerConnection::broadcastUpchain(panic);
-        }
+        //         int const currLeader = context->numberOfPeers;
+        //         if (tx->hash % context->numberOfPeers == context->myPeerNumber) {
+        //             loopLeader(tx);
+        //         } else {
+        //             loopMember(tx, txContext);
+        //         }
+        //     }
+        // }
+
+        // if (context->panicCache::hasAwk()) {
+        //     std::shared_ptr<Panic> const panic = context->repository->popPanic();
+
+        //     peerConnection::broadcastUpchain(panic);
+        // }
+
+        // if (context->panicCache::hasPanic()) {
+        //     std::shared_ptr<Panic> const panic = context->repository->popPanic();
+
+        //     peerConnection::broadcastUpchain(panic);
+        // }
     }
 }
 
