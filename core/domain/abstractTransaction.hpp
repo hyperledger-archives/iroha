@@ -23,8 +23,6 @@ class AbstractTransaction {
     std::vector<unsigned char> senderPublicKey;
     std::vector<unsigned char> receiverPublicKey; //TODO(M->I): depending on the type, the applicable variables are different, so how should this be structured?
 
-    MSGPACK_DEFINE(hash, type, senderPublicKey, receiverPublicKey); //TODO: http://stackoverflow.com/questions/39425975/defining-optional-parameters-using-msgpack-define-in-c14
-
     AbstractTransaction():
       hash(""),
       senderPublicKey((unsigned char*)""),
