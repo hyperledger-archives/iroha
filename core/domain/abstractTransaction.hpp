@@ -21,7 +21,7 @@ class AbstractTransaction {
     TransactionType type;
     
     std::vector<unsigned char> senderPublicKey;
-    std::vector<unsigned char> receiverPublicKey; //TODO(M->I): depending on the type, the applicable variables are different, so how should this be structured?
+    std::vector<unsigned char> receiverPublicKey;
 
     AbstractTransaction():
       hash(""),
