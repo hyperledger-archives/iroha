@@ -28,7 +28,7 @@ namespace signature{
   //===
 
   template<typename T>
-  bool verify(
+  bool signatureIsValid (
     std::string signature,
     std::string message,
     T dummy

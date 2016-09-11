@@ -2,7 +2,8 @@
 #define CORE_VALIDATION_TRANSACTIONVALIDATOR_HPP_
 
 namespace transactionValidator {
-  //TODO:
+  bool isValid(Transaction const tx);
+  bool signaturesAreValid(Transaction const tx);
 };
 
 #endif  // CORE_VALIDATION_TRANSACTIONVALIDATOR_HPP_

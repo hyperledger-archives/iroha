@@ -11,4 +11,15 @@ void transactionValidator(/*TODO:*/) {
     //TODO:
 }
 
+bool isValid(Transaction const tx) {
+    return signaturesAreValid; // TODO: add more
+}
+
+bool signaturesAreValid(Transaction const tx) {
+    tx->signatures::foreach { // TODO: learn c++ syntax for this!
+
+    }
+    return true; // TODO: change this!
+}
+
 };  // namespace transactionValidator

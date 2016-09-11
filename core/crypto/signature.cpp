@@ -56,7 +56,7 @@ namespace signature{
     return base64::encode(signature);
   }
 
-  bool verify(
+  bool signatureIsValid (
     std::string signature,
     std::string message,
     std::string publicKeyName) {
