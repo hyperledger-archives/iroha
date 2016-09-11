@@ -1,4 +1,4 @@
-<img src="https://circleci.com/gh/soramitsu/iroha/tree/master.svg?style=shield&circle-token=:circle-token"/>
+[logo]: https://circleci.com/gh/soramitsu/iroha/tree/master.png?style=shield&circle-token=:circle-token "Build Status"
 
 # いろは(iroha)
 
