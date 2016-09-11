@@ -1,4 +1,4 @@
-https://circleci.com/gh/soramitsu/iroha/tree/master.svg?style=shield&circle-token=:circle-token
+<img src="https://circleci.com/gh/soramitsu/iroha/tree/master.svg?style=shield&circle-token=:circle-token"/>
 
 # いろは(iroha)
 
