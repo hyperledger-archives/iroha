@@ -1,5 +1,7 @@
 #include "transactionValidator.hpp"
 
+#include "../crypto/signature.hpp"
+
 namespace transactionValidator {
 
 struct Context {

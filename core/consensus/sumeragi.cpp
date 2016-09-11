@@ -25,13 +25,14 @@ struct Context {
     int maxFaulty;  // f
     std::string name;  // name Options
     bool isLeader;
-    bool isPanic;
+    // bool isPanic;
     int myPeerNumber;
     std::string leaderNumber;
     int timeCounter;
     int peerCounter;
     std::unique_ptr<TransactionRepository> repository;
     std::unique_ptr<TransactionCache> txCache;
+    std::unique_ptr<TransactionValidator> txValidator;
 };
 
 void initializeSumeragi(int const myNumber, int const numberOfPeers, int const leaderNumber, int const batchSize) {
@@ -51,15 +52,15 @@ void initializeSumeragi(int const myNumber, int const numberOfPeers, int const l
 }
 
 void loopLeader(td::shared_ptr<std::string> const tx) {
-    ::validateTx(tx);
+    txValidator::isValid(tx);
 
     seq++;
 
     context->processingOrder = ::determineProcessingOrder();
     ::prepareTransaction();
     
-    ::addSignature();
-    ::broadcastToNextValidator(tx);
+    tx::addSignature();
+    peerConnection::broadcastToNextValidator(tx);
     setAwkTimer(5000, [&]{ reconfigure(); };);
 }
 
@@ -106,9 +107,9 @@ void checkForAwk(tx) {
 
 void loopMember(td::shared_ptr<Transaction> const tx, int const currLeader) { //TODO(M->I): I want to use const like final in Java. Is this good practice and/or correct?
     if (tx::isChain()) {
-        ::validateTx(tx);
-        ::addSignature();
-        ::broadcastToNextValidator(tx);
+        context->txValidator::isValid(tx);
+        tx::addSignature();
+        peerConnection::broadcastNext(tx);  // Broadcast to the next validator in the chain
         setAwkTimer(5000);
 
     } else if (tx::isAwk()) {
@@ -124,13 +125,13 @@ void loopMember(td::shared_ptr<Transaction> const tx, int const currLeader) { //
 
 void loopProxyTail(td::shared_ptr<std::string> const tx, int const currLeader) {
     if (tx::isChain()) {
-        ::validateTx(tx);
-        ::addSignature();
-        ::broadcastFinalized(tx);
+        context->txValidator::isValid(tx);
+        tx::addSignature();
+        peerConnection::broadcastFinalizedAll(tx);
 
     } else if (tx::isPanic()) {
         if (panicMessages.length >= context->maxFaulty) {
-            ::broadcastPanic();
+            peerConnection::broadcastPanicAll();
         }
     }
 }
@@ -157,7 +158,7 @@ void loop() {
         if (context->panicCache::hasPanic()) {
             std::shared_ptr<Panic> const panic = context->repository->popPanic();
 
-            ::broadcastToPreviousPeers(panic);
+            peerConnection::broadcastUpchain(panic);
         }
     }
 }
