@@ -9,11 +9,11 @@
 #include <msgpack.hpp>
 
 enum TransactionType { 
-    transfer, signatory, signatoryAdd, signatoryDelete, domainDefinition, assetDefinition, 
-    message, chaincodeInit, chaincodeInvoke, chaincodeUpdate, chaincodeDestroy
+    transfer, signatory, signatoryAdd, signatoryDelete, domainDefinition, domainRenewal, aliasDefinition, aliasRenewal,
+    assetDefinition, message, chaincodeInit, chaincodeInvoke, chaincodeUpdate, chaincodeDestroy
 };
 
-class Transaction {
+class AbstractTransaction {
  public:
     std::string hash;
     std::string prevTxHash;  // Assume chains of transactions
@@ -25,13 +25,13 @@ class Transaction {
 
     MSGPACK_DEFINE(hash, type, senderPublicKey, receiverPublicKey); //TODO: http://stackoverflow.com/questions/39425975/defining-optional-parameters-using-msgpack-define-in-c14
 
-    Transaction():
+    AbstractTransaction():
       hash(""),
       senderPublicKey((unsigned char*)""),
       privateKey((unsigned char*)"")
     {}
 
-    Transaction(
+    AbstractTransaction(
       std::string hash,
       unsigned char* aPublicKey,
       unsigned char* aPrivateKey):
