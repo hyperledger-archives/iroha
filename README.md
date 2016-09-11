@@ -37,6 +37,9 @@ make
 sudo make install
 
 # Required
+```
+cmake(3.5.2)
+```
 
 # Usage
 ```
