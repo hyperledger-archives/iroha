@@ -9,6 +9,10 @@
 cmake(3.5.2)
 ```
 
+# Prepare
+```
+export JAVA_HOME=$(/usr/libexec/java_home)
+```
 # Usage
 ```
 git submodule init 
