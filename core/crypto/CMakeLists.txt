@@ -35,10 +35,10 @@ ADD_LIBRARY(hash STATIC
 include_directories(${ED25519_PATH}/src)
 
 ADD_LIBRARY(signature STATIC
-  signature.cpp
+  Signature.cpp
 )
 target_link_libraries(signature
   ed25519
 )
-ADD_LIBRARY(base64 STATIC base64.cpp)
+ADD_LIBRARY(base64 STATIC Base64.cpp)
 

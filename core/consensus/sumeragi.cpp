@@ -1,11 +1,11 @@
-#include "sumeragi.hpp"
+#include "Sumeragi.hpp"
 
-#include "../util/logger.hpp"
-#include "../domain/entityRepository.hpp"
-#include "../domain/transaction.hpp"
-#include "../peer/connection.hpp" // TODO: rather than this low-level interface, abstract out events and broadcasts
-#include "../crypto/hash.hpp"
-#include "../validation/transactionValidator.hpp"
+#include "../util/Logger.hpp"
+#include "../domain/EntityRepository.hpp"
+#include "../domain/Transaction.hpp"
+#include "../peer/Connection.hpp" // TODO: rather than this low-level interface, abstract out events and broadcasts
+#include "../crypto/Hash.hpp"
+#include "../validation/TransactionValidator.hpp"
 
 /**
 * |ーーー|　|ーーー|　|ーーー|　|ーーー|
@@ -18,7 +18,7 @@
 * high throughput and embedded reconfiguration. In International Conference on Principles of 
 * Distributed Systems (pp. 91-106). Springer.
 */
-namespace sumeragi {
+namespace Sumeragi {
 
 struct Context {
     int numberOfPeers;  // peerの数 // TODO: get this from membership service

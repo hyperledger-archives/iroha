@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace exception{
+namespace Exception {
 
   class FileOpenException : public std::invalid_argument {
     public: FileOpenException(const std::string&);

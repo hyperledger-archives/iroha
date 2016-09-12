@@ -5,7 +5,7 @@
 
 #include <cassert>
 
-namespace util {
+namespace Util {
   static int successful = 0;
   static std::function<void()> before_function = [](){};
   static std::function<void()> after_function = [](){};
@@ -40,4 +40,4 @@ namespace util {
     }(test_name);
   }
 
-}  // namespace util
+}  // namespace Util

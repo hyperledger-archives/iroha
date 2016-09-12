@@ -7,7 +7,7 @@
 #include <functional>
 #include <iostream>
 
-namespace util{
+namespace Util {
 
   int  finish();
   void test(const std::string test_name, std::function<bool()> f);

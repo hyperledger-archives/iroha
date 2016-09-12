@@ -1,9 +1,9 @@
 #include <string>
 #include <string.h>
 
-#include "base64.hpp"
+#include "Base64.hpp"
 
-namespace base64 {
+namespace Base64 {
 
 namespace vendor {
 /*

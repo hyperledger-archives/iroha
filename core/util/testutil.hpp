@@ -7,7 +7,7 @@
 #include <functional>
 #include <iostream>
 
-namespace util {
+namespace Util {
 
   int  finish();
   void test(const std::string test_name, std::function<bool()> f);
@@ -38,6 +38,6 @@ namespace util {
     }
     return true;
   }
-}  // namespace util
+}  // namespace Util
 
 #endif  // CORE_UTIL_TESTUTIL_HPP_

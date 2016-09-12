@@ -36,7 +36,7 @@ namespace Connection{
 
   };
 
-  struct Config{
+  struct Config {
 
     std::string  address;
     std::string     port;

@@ -1,5 +1,3 @@
-
-
 #include <iostream>
 #include <fstream>
 #include <memory>
@@ -7,13 +5,13 @@
 #include <cstring>
 #include <algorithm>
 
-#include "../domain/entity.hpp"
-#include "signature.hpp"
+#include "../domain/Entity.hpp"
+#include "Signature.hpp"
 
-#include "base64.hpp"
-#include "hash.hpp"
+#include "Base64.hpp"
+#include "Hash.hpp"
 
-namespace signature{
+namespace Signature {
 
   // === File Operation ===
   std::string loadKeyFile(std::string keyName) {
@@ -25,6 +23,7 @@ namespace signature{
       (std::istreambuf_iterator<char>(ifs) ),
       std::istreambuf_iterator<char>() );
   }
+
   bool generateKeyPair(std::string filenamePrefix, std::string keyPath) {
     std::ofstream publicOfs(keyPath +"/"+ filenamePrefix + "_public.pem");
     std::ofstream privateOfs(keyPath +"/"+ filenamePrefix + "_private.pem");
@@ -39,6 +38,7 @@ namespace signature{
 
     return true;
   }
+
   std::string sign(
     std::string message,
     std::string privateKeyName,
@@ -69,4 +69,4 @@ namespace signature{
   }
   // ===
 
-};  // namespace signature
+};  // namespace Signature

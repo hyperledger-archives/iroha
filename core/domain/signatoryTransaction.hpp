@@ -1,3 +1,3 @@
-namespace transferTransaction{
+namespace SignatoryTransaction {
   //TODO:
 };

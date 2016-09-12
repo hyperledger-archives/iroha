@@ -5,6 +5,6 @@ SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -DDEBUG -O0 -std=c++14")
 
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
-ADD_LIBRARY(testutil STATIC testutil.cpp)
+ADD_LIBRARY(testutil STATIC TestUtil.cpp)
 
 

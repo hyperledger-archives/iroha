@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "entity.hpp"
+#include "Entity.hpp"
 
 namespace EntityRepository{
   bool add(std::string uuid, Entity e);

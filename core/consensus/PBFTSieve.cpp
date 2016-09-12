@@ -1,12 +1,12 @@
-#include "../util/logger.hpp"
+#include "../util/Logger.hpp"
 #include "../db/ConsensusRepository.hpp"
-#include "../peer/connection.hpp"
+#include "../peer/Connection.hpp"
 
-#include "../crypto/hash.hpp"
+#include "../crypto/Hash.hpp"
 
-namespace pbft_sieve{
+namespace PBFTSieve {
 
-  struct Context{
+  struct Context {
     int numberOfPeer; //peerの数 // TODO: get this from membership service
     std::string name; //name Options
     bool isLeader;

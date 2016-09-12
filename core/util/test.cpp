@@ -5,14 +5,14 @@
 
 #include <cassert>
 
-namespace util{
+namespace Util {
   static int successful = 0;
 
-  int finish(){
+  int finish() {
     return successful;
   }
 
-  void test(const std::string test_name, std::function<bool()> f){
+  void test(const std::string test_name, std::function<bool()> f) {
     static int count = 0;
     [f](std::string name) mutable{
       count++;

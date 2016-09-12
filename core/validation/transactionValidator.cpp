@@ -1,8 +1,8 @@
 #include "transactionValidator.hpp"
 
-#include "../crypto/signature.hpp"
+#include "../crypto/Signature.hpp"
 
-namespace transactionValidator {
+namespace TransactionValidator {
 
 struct Context {
     //TODO:
@@ -24,4 +24,4 @@ bool signaturesAreValid(Transaction const tx) {
     return true; // TODO: change this!
 }
 
-};  // namespace transactionValidator
+};  // namespace TransactionValidator

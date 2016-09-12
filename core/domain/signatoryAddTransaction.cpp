@@ -1,9 +1,9 @@
-#include "transferTransaction.hpp"
+#include "SignatoryAddTransaction.hpp"
 
-namespace TransferTransaction {
+namespace SignatoryAddTransaction {
 
-class TransferTransaction : public AbstractTransaction {
+class SignatoryAddTransaction : public AbstractTransaction {
     //TODO:
  };
     
-};  // namespace TransferTransaction
+};  // namespace SignatoryAddTransaction

@@ -1,9 +1,9 @@
 #include <stdexcept>
 #include <string>
 
-#include "exception.hpp"
+#include "Exception.hpp"
 
-namespace exception{
+namespace Exception {
 
   FileOpenException::FileOpenException(const std::string& filename):
     std::invalid_argument("file " + filename +" is not found!")

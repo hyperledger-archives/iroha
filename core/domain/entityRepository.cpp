@@ -9,8 +9,8 @@
 
 #include <msgpack.hpp>
 
-#include "entityRepository.hpp"
-#include "entity.hpp"
+#include "EntityRepository.hpp"
+#include "Entity.hpp"
 
 namespace EntityRepository {
 

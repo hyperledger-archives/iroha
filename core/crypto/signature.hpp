@@ -7,9 +7,9 @@
 
 #include <ed25519.h>
 
-#include "../domain/entity.hpp"
+#include "../domain/Entity.hpp"
 
-namespace signature{
+namespace Signature {
 
   //=== Deprecated use for debug. ===
   bool verify(
@@ -67,6 +67,6 @@ namespace signature{
     ed25519_create_keypair(publicKey, privateKey, seed);
     return std::make_tuple( publicKey, privateKey);
   }
-};  // namespace signature
+};  // namespace Signature
 
 #endif  // CORE_CRYPTO_SIGNATURE_HPP_

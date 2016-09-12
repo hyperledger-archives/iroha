@@ -1,8 +1,7 @@
-
-#include "base64.hpp"
-#include "hash.hpp"
-#include "signature.hpp"
-#include "../util/test.hpp"
+#include "Base64.hpp"
+#include "Hash.hpp"
+#include "Signature.hpp"
+#include "../util/Test.hpp"
 
 #include <cstdlib>
 #include <fstream>

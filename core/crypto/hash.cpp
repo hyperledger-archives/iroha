@@ -1,9 +1,9 @@
 #include <SimpleFIPS202.h>
 #include <string>
 
-#include "hash.hpp"
+#include "Hash.hpp"
 
-namespace hash {
+namespace Hash {
 
   std::string sha3_256_hex(std::string message) {
     char code[] =

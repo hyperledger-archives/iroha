@@ -1,9 +1,9 @@
-#include "transferTransaction.hpp"
+#include "DomainRenewalTransaction.hpp"
 
-namespace TransferTransaction {
+namespace DomainRenewalTransaction {
 
-class TransferTransaction : public AbstractTransaction {
+class DomainRenewalTransaction : public AbstractTransaction {
     //TODO:
  };
     
-};  // namespace TransferTransaction
+};  // namespace DomainRenewalTransaction

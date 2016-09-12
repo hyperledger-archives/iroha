@@ -1,9 +1,9 @@
-#include "transferTransaction.hpp"
+#include "DomainDefinitionTransaction.hpp"
 
-namespace TransferTransaction {
+namespace DomainDefinitionTransaction {
 
-class TransferTransaction : public AbstractTransaction {
+class DomainDefinitionTransaction : public AbstractTransaction {
     //TODO:
  };
     
-};  // namespace TransferTransaction
+};  // namespace DomainDefinitionTransaction
