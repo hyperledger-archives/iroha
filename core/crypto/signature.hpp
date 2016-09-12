@@ -11,31 +11,18 @@
 
 namespace signature{
   
-  class KeyPair{  
+  class KeyPair{
    public:
     unsigned char* publicKey;
     unsigned char* privateKey;
-    KeyPair(unsigned char* pub,unsigned char* pri):
+    KeyPair(
+      unsigned char* pub,
+      unsigned char* pri
+    ):
       publicKey(pub),
       privateKey(pri)
     {}
   };
-
-  //=== Deprecated use for debug. ===
-  bool verify(
-    std::string encdSignature,
-    std::string message,
-    std::string publicKeyName);
-
-  std::string sign(
-    std::string encdMessage,
-    std::string privateKeyName,
-    std::string publicKeyName);
-
-  bool generateKeyPairAndSave(
-    std::string filenamePrefix,
-    std::string keyPath);
-  //===
 
   template<typename T>
   bool verify(
@@ -47,10 +34,6 @@ namespace signature{
   }
   template<typename T>
   std::string sign(std::string message, T dummy) {
-    // ToDo throw illegal type exception
-  }
-  template<typename T>
-  std::string generateKeyPair(T dummy) {
     // ToDo throw illegal type exception
   }
 

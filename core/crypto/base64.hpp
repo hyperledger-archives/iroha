@@ -2,6 +2,7 @@
 #define CORE_CRYPTO_BASE64_HPP_
 
 #include <string>
+#include <memory>
 
 namespace base64{
   std::string encode(const unsigned char*);
