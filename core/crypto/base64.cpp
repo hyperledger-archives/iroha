@@ -5,7 +5,7 @@
 
 namespace Base64 {
 
-namespace vendor {
+namespace Vendor {
 /*
        namespace vendor
 
@@ -137,7 +137,7 @@ namespace vendor {
 
       return ret;
     }
-}  // namespace vendor
+}  // namespace Vendor
 
   std::string encode(const unsigned char* message) {
     return vendor::base64_encode(
