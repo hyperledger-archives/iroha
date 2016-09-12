@@ -54,44 +54,43 @@ void initializeSumeragi(int const myNumber, int const numberOfPeers, int const l
 }
 
 void processTransaction(td::shared_ptr<std::string> const tx) {
-    txValidator::isValid(tx);
-
-    seq++;
-
-    context->processingOrder = ::determineProcessingOrder();
-    ::prepareTransaction();
+    txValidator::isValid(tx);//TODO
     
-    tx::addSignature();
-    peerConnection::broadcastToNextValidator(tx);
+    tx::addSignature();//TODO
+    peerConnection::broadcastToNextValidator(tx);//TODO
+    if (isProxyTail) {
+        loopProxyTail();
+    }
+
     setAwkTimer(5000, [&]{ reconfigure(); };);
 }
 
-/**
-* Move the suspected validator to the end of the chain and the suspector to the 2f+1'th position.
-* 
-* For example, given:
-* |---|  |---|  |---|  |---|  |---|  |---|
-* | H |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
-* |---|  |---|  |---|  |---|  |---|  |---|,
-*
-* if [2] suspects [3] and f := 2, then the validation chain order will become:
-* |---|  |---|  |---|  |---|  |---|  |---|
-* | H |--| 1 |--| 4 |--| 5 |--| 2 |--| 3 |
-* |---|  |---|  |---|  |---|  |---|  |---|.
-*
-* Only the head (H) can reconfigure the chain order. If the head has a problem, other nodes should 
-* request a view change.
-*/
-void reconfigureSuspects(int const suspected, int const suspector) {
-//TODO:
-}
+// /**
+// * Move the suspected validator to the end of the chain and the suspector to the 2f+1'th position.
+// * 
+// * For example, given:
+// * |---|  |---|  |---|  |---|  |---|  |---|
+// * | H |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
+// * |---|  |---|  |---|  |---|  |---|  |---|,
+// *
+// * if [2] suspects [3] and f := 2, then the validation chain order will become:
+// * |---|  |---|  |---|  |---|  |---|  |---|
+// * | H |--| 1 |--| 4 |--| 5 |--| 2 |--| 3 |
+// * |---|  |---|  |---|  |---|  |---|  |---|.
+// *
+// * Only the head (H) can reconfigure the chain order. If the head has a problem, other nodes should 
+// * request a view change.
+// */
+// void reconfigureSuspects(int const suspected, int const suspector) {
+// //TODO:
+// }
 
 void reconfigure() {
     // Any suspects?
     getSuspects();
     reconfigureSuspects();
 
-    // If no suspects, kick the second node to the end of the chain
+    // If no suspects, kick the 2f+1 node to the end of the chain
 }
 
 void setAwkTimer(int const sleepMillisecs, std::function<void(void)> action, actionArgs ...) {
@@ -101,39 +100,15 @@ void setAwkTimer(int const sleepMillisecs, std::function<void(void)> action, act
     }).detach();
 }
 
-// void checkForAwk(tx) {
-//     if (!context->repository->txHashFinalized(tx)) {
-//         // Panic
-//     }
-// }
-
-// void loopMember(td::shared_ptr<Transaction> const tx, int const currLeader) { //TODO(M->I): I want to use const like final in Java. Is this good practice and/or correct?
-//     if (tx::isChain()) {
-//         context->txValidator::isValid(tx);
-//         tx::addSignature();
-//         peerConnection::broadcastNext(tx);  // Broadcast to the next validator in the chain
-//         setAwkTimer(5000);
-
-//     } else if (tx::isAwk()) {
-
-
-//     } else if (tx::isSuspect()) {
-
-
-//     } else if (tx::isViewChange()) {
-
-//     }
-// }
-
 void loopProxyTail(td::shared_ptr<std::string> const tx, int const currLeader) {
-    if (tx::isChain()) {
-        context->txValidator::isValid(tx);
-        tx::addSignature();
-        peerConnection::broadcastFinalizedAll(tx);
+    if (tx::isChain()) {//TODO
+        context->txValidator::isValid(tx);//TODO
+        tx::addSignature();//TODO
+        peerConnection::broadcastFinalizedAll(tx);//TODO
 
     } else if (tx::isPanic()) {
-        if (panicMessages.length >= context->maxFaulty) {
-            peerConnection::broadcastPanicAll();
+        if (panicMessages.length >= context->maxFaulty) {//TODO
+            peerConnection::broadcastPanicAll();//TODO
         }
     }
 }
@@ -143,31 +118,40 @@ void loop() {
     // int count = 0;
     while (true) {  // TODO(M->M): replace with callback linking aeron
         if (context->eventCache::hasConsensusEvent()) { // TODO: make event cache (std::map in memory is fine)
-            std::shared_ptr<ConsensusEvent> const event = context->eventCache::popConsensusEvent();
+            std::shared_ptr<ConsensusEvent> const event = context->eventCache::popConsensusEvent();//TODO
 
             if (ConsensusEvent.types.transaction == event->type) {
                 // Validate transaction
-                if (txValidator::isValid()) {
+                if (txValidator::isValid()) {//TODO
                     // Determine node order
-                    std::vector nodeOrder = determineConsensusOrder();
+                    std::vector<Node> nodeOrder = determineConsensusOrder();//TODO
 
                     // Process transaction
-                    processTransaction(nodeOrder);
+                    bool const transactionResult = processTransaction(nodeOrder);//TODO
+                    if (transactionResult) {
+                        peerConnection::broadcastProxyTail(awk);//TODO
+                    }
                 }
 
             } else if (ConsensusEvent.types.awk == event->type) {
-                // Save the event to cache. If 2f, then commit, because with yourself it is 2f+1
-                awkCache.put(event);
+                // Save the event to cache. If 2f signatures, then commit, because with yourself it is 2f+1
+                awkCache.put(event);//TODO
+
+                if (awkCache.size() > context->maxFaulty*2 + 1) {
+                    // Commit locally
+                    transactionRepository->commitTransaction(); //TODO
+                }
 
             } else if (ConsensusEvent.types.suspicion == event->type) {
                 // Request view change
+                
 
             } else if (ConsensusEvent.types.viewChange == event->type) {
-                // Save the event to cache. If 2f +1  then commit view change.
-                viewChangeCache.put(event);
-                peerConnection::broadcastUpchain(panic);
+                // Save the event to cache. If 2f + 1 then commit the view change.
+                viewChangeCache.put(event);//TODO
+                peerConnection::broadcastAll(viewChange);//TODO
             }
     }
 }
 
-};  // namespace sumeragi
+};  // namespace Sumeragi
