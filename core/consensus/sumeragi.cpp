@@ -33,6 +33,8 @@ struct Context {
     std::unique_ptr<TransactionRepository> repository;
     std::unique_ptr<TransactionCache> txCache;
     std::unique_ptr<TransactionValidator> txValidator;
+    std::map viewChangeCache;
+    std::map awkCache;
 };
 
 void initializeSumeragi(int const myNumber, int const numberOfPeers, int const leaderNumber, int const batchSize) {
@@ -146,11 +148,14 @@ void loop() {
             if (ConsensusEvent.types.transaction == event->type) {
 
             } else if (ConsensusEvent.types.awk == event->type) {
+                // Save the event to cache. If 2f, then commit, because with yourself it is 2f+1
+                awkCache.put(event);
 
             } else if (ConsensusEvent.types.suspicion == event->type) {
+                // Request view change
 
             } else if (ConsensusEvent.types.viewChange == event->type) {
-
+                // Save the event to cache. If 2f +1  then commit view change.
             }
 
         //     if (txValidator::isValid()) { //TODO: write validation code (check signatures and account balances, if applicable)

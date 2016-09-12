@@ -18,7 +18,7 @@ bool loadYamlIsLeader(){
 }
 
 int main(){
-  std::cout<<"Process ID is " << getpid() << std::endl;
+  std::cout<<"Process ID is "<< getpid() << std::endl;
   Connection::initialize_peer();
   int forkHttp = fork();
   if(forkHttp == 0) {
