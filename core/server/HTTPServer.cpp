@@ -3,7 +3,7 @@
 
 #include "HTTPServer.hpp"
 
-namespace http {
+namespace HTTP {
   void server() {
     crow::SimpleApp app;
 

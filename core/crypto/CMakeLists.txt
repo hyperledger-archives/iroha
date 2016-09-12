@@ -41,4 +41,6 @@ target_link_libraries(signature
   ed25519
 )
 ADD_LIBRARY(base64 STATIC Base64.cpp)
-
+target_link_libraries(base64
+  ssl
+  crypto)
