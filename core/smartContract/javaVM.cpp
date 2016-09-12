@@ -1,26 +1,4 @@
-#include <jni.h>
-#include <iostream>
-#include <tuple>
-#include <memory>
-
-
-struct JavaContext{
-  JNIEnv* env;
-  JavaVM* jvm;
-  std::string name;
-  JavaVMInitArgs vmArgs;
-  JavaContext(
-    JNIEnv* aEnv,
-    JavaVM* aJvm,
-    JavaVMInitArgs aArgs,
-    std::string aName
-  ):
-    env(std::move(aEnv)),
-    jvm(std::move(aJvm)),
-    vmArgs(aArgs),
-    name(std::move(aName))
-  {}
-};
+#include "javaVM.hpp"
 
 void Java_SmartContract_save(JNIEnv *env,jobject thiz,jstring key,jstring value){
     const char *keyChar   = env->GetStringUTFChars(   key,0);
@@ -59,7 +37,7 @@ std::unique_ptr<JavaContext> createVM(std::string contractName){
   return ptr;
 }
 
-void execVM(const std::unique_ptr<JavaContext> context){
+void execVM(const std::unique_ptr<JavaContext>& context){
 
   jclass cls = context->env->FindClass("SmartContract");
   if(cls){

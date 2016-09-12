@@ -18,5 +18,5 @@ ENDIF()
 
 link_directories($ENV{JAVA_HOME}/jre/lib/server)
 
-ADD_LIBRARY(libsmartcontract STATIC javaVM.cpp)
+ADD_LIBRARY(smartContract STATIC javaVM.cpp)
 
