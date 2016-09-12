@@ -22,11 +22,11 @@ namespace Util {
     }
   }
 
-  bool equals(const unsigned char* a,const unsigned char*  b){
+  bool equals(const unsigned char* a, const unsigned char*  b){
     if(strlen((char*)a) != strlen((char*)b)){
       return false;
     }
-    for(int i=0;i<strlen((char*)a);i++){
+    for(int i = 0;i < strlen((char*)a); ++i){
       if( a[i] != b[i]){
         std::cout << a[i] <<" != "<< b[i] << std::endl;
         return false;

@@ -2,7 +2,7 @@
 
 #include "../util/Logger.hpp"
 #include "../domain/EntityRepository.hpp"
-#include "../domain/Transaction.hpp"
+#include "../domain/AbstractTransaction.hpp"
 #include "../peer/Connection.hpp" // TODO: rather than this low-level interface, abstract out events and broadcasts
 #include "../crypto/Hash.hpp"
 #include "../validation/TransactionValidator.hpp"
@@ -120,7 +120,7 @@ void loop() {
         if (context->eventCache::hasConsensusEvent()) { // TODO: make event cache (std::map in memory is fine)
             std::shared_ptr<ConsensusEvent> const event = context->eventCache::popConsensusEvent();//TODO
 
-            if (ConsensusEvent.types.transaction == event->type) {
+            if (ConsensusEvent.types.transaction == event->type) {// TODO
                 // Validate transaction
                 if (txValidator::isValid()) {//TODO
                     // Determine node order
