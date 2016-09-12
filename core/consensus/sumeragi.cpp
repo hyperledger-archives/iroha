@@ -53,7 +53,7 @@ void initializeSumeragi(int const myNumber, int const numberOfPeers, int const l
     buffer = "";
 }
 
-void loopLeader(td::shared_ptr<std::string> const tx) {
+void processTransaction(td::shared_ptr<std::string> const tx) {
     txValidator::isValid(tx);
 
     seq++;
@@ -101,29 +101,29 @@ void setAwkTimer(int const sleepMillisecs, std::function<void(void)> action, act
     }).detach();
 }
 
-void checkForAwk(tx) {
-    if (!context->repository->txHashFinalized(tx)) {
-        // Panic
-    }
-}
+// void checkForAwk(tx) {
+//     if (!context->repository->txHashFinalized(tx)) {
+//         // Panic
+//     }
+// }
 
-void loopMember(td::shared_ptr<Transaction> const tx, int const currLeader) { //TODO(M->I): I want to use const like final in Java. Is this good practice and/or correct?
-    if (tx::isChain()) {
-        context->txValidator::isValid(tx);
-        tx::addSignature();
-        peerConnection::broadcastNext(tx);  // Broadcast to the next validator in the chain
-        setAwkTimer(5000);
+// void loopMember(td::shared_ptr<Transaction> const tx, int const currLeader) { //TODO(M->I): I want to use const like final in Java. Is this good practice and/or correct?
+//     if (tx::isChain()) {
+//         context->txValidator::isValid(tx);
+//         tx::addSignature();
+//         peerConnection::broadcastNext(tx);  // Broadcast to the next validator in the chain
+//         setAwkTimer(5000);
 
-    } else if (tx::isAwk()) {
-
-
-    } else if (tx::isSuspect()) {
+//     } else if (tx::isAwk()) {
 
 
-    } else if (tx::isViewChange()) {
+//     } else if (tx::isSuspect()) {
 
-    }
-}
+
+//     } else if (tx::isViewChange()) {
+
+//     }
+// }
 
 void loopProxyTail(td::shared_ptr<std::string> const tx, int const currLeader) {
     if (tx::isChain()) {
@@ -146,6 +146,14 @@ void loop() {
             std::shared_ptr<ConsensusEvent> const event = context->eventCache::popConsensusEvent();
 
             if (ConsensusEvent.types.transaction == event->type) {
+                // Validate transaction
+                if (txValidator::isValid()) {
+                    // Determine node order
+                    std::vector nodeOrder = determineConsensusOrder();
+
+                    // Process transaction
+                    processTransaction(nodeOrder);
+                }
 
             } else if (ConsensusEvent.types.awk == event->type) {
                 // Save the event to cache. If 2f, then commit, because with yourself it is 2f+1
@@ -156,31 +164,9 @@ void loop() {
 
             } else if (ConsensusEvent.types.viewChange == event->type) {
                 // Save the event to cache. If 2f +1  then commit view change.
+                viewChangeCache.put(event);
+                peerConnection::broadcastUpchain(panic);
             }
-
-        //     if (txValidator::isValid()) { //TODO: write validation code (check signatures and account balances, if applicable)
-        //         // context->timeCounter++;
-
-        //         int const currLeader = context->numberOfPeers;
-        //         if (tx->hash % context->numberOfPeers == context->myPeerNumber) {
-        //             loopLeader(tx);
-        //         } else {
-        //             loopMember(tx, txContext);
-        //         }
-        //     }
-        // }
-
-        // if (context->panicCache::hasAwk()) {
-        //     std::shared_ptr<Panic> const panic = context->repository->popPanic();
-
-        //     peerConnection::broadcastUpchain(panic);
-        // }
-
-        // if (context->panicCache::hasPanic()) {
-        //     std::shared_ptr<Panic> const panic = context->repository->popPanic();
-
-        //     peerConnection::broadcastUpchain(panic);
-        // }
     }
 }
 
