@@ -30,7 +30,7 @@ namespace Util {
        strlen(reinterpret_cast<const char*>(b))) {
       return false;
     }
-    for (size_t i=0; i<strlen(reinterpret_cast<const char*>(a)); i++) {
+    for (size_t i=0; i<strlen(reinterpret_cast<const char*>(a)); ++i) {
       if (a[i] != b[i]) {
         std::cout << a[i] <<" != "<< b[i] << std::endl;
         return false;
