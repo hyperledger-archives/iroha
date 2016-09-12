@@ -5,12 +5,23 @@
  いろは(iroha) is ...
 
 # Required
+```
+cmake(3.5.2)
+```
 
+# Prepare
+```
+export JAVA_HOME=$(/usr/libexec/java_home)
+```
 # Usage
 ```
+git submodule init 
+git submodule update
+cd core/vendor/ed25519; make
+cd core/vendor/msgpack-c; cmake -DMSGPACK_CXX11=ON .; sudo make install
 mkdir build
 cd build
 cmake ..
-make
-ctest
+make 
+../test.ch
 ```
