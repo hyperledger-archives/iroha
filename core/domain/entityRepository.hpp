@@ -1,14 +1,16 @@
-#ifndef __ENTITY_REPOSITORY__
-#define __ENTITY_REPOSITORY__
+#ifndef CORE_DOMAIN_ENTITYREPOSITORY_HPP_
+#define CORE_DOMAIN_ENTITYREPOSITORY_HPP_
 
 #include <string>
 
+#include "entity.hpp"
+
 namespace EntityRepository{
-  bool add(std::string uuid,Entity e);
-  bool update(std::string uuid,Entity e);
+  bool add(std::string uuid, Entity e);
+  bool update(std::string uuid, Entity e);
   bool remove(std::string uuid);
 
   Entity find(std::string uuid);
 };
 
-#endif
+#endif  // CORE_DOMAIN_ENTITYREPOSITORY_HPP_

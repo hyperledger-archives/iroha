@@ -1,4 +1,5 @@
 
+
 #include <iostream>
 #include <fstream>
 #include <memory>
@@ -6,9 +7,8 @@
 #include <cstring>
 #include <algorithm>
 
-#include <ed25519.h>
-
 #include "../domain/entity.hpp"
+#include "signature.hpp"
 
 #include "base64.hpp"
 #include "hash.hpp"
@@ -16,14 +16,16 @@
 namespace signature{
 
   // === File Operation ===
-  std::string loadKeyFile(std::string keyName){
+  std::string loadKeyFile(std::string keyName) {
     std::ifstream ifs(keyName);
-    if (ifs.fail()){
+    if (ifs.fail()) {
       // ToDo Exception
     }
-    return std::string((std::istreambuf_iterator<char>(ifs)),  std::istreambuf_iterator<char>());
+    return std::string(
+      (std::istreambuf_iterator<char>(ifs) ),
+      std::istreambuf_iterator<char>() );
   }
-  bool generateKeyPair(std::string filenamePrefix,std::string keyPath){
+  bool generateKeyPair(std::string filenamePrefix, std::string keyPath) {
     std::ofstream publicOfs(keyPath +"/"+ filenamePrefix + "_public.pem");
     std::ofstream privateOfs(keyPath +"/"+ filenamePrefix + "_private.pem");
 
@@ -37,7 +39,10 @@ namespace signature{
 
     return true;
   }
-  std::string sign(std::string message, std::string privateKeyName,std::string publicKeyName){
+  std::string sign(
+    std::string message,
+    std::string privateKeyName,
+    std::string publicKeyName) {
     auto privateKey = loadKeyFile(privateKeyName);
     auto publicKey  = loadKeyFile(publicKeyName);
     unsigned char signature[64];
@@ -47,19 +52,21 @@ namespace signature{
       reinterpret_cast<const unsigned char*>(message.c_str()),
       message.size(),
       reinterpret_cast<const unsigned char*>(base64::decode(publicKey)),
-      reinterpret_cast<const unsigned char*>(base64::decode(privateKey))
-    );
+      reinterpret_cast<const unsigned char*>(base64::decode(privateKey)));
     return base64::encode(signature);
   }
-  bool verify(std::string signature,std::string message, std::string publicKeyName){
+
+  bool verify(
+    std::string signature,
+    std::string message,
+    std::string publicKeyName) {
       auto publicKey  = loadKeyFile(publicKeyName);
       return ed25519_verify(
         reinterpret_cast<const unsigned char*>(base64::decode(signature)),
         reinterpret_cast<const unsigned char*>(message.c_str()),
         message.size(),
-        reinterpret_cast<const unsigned char*>(base64::decode(publicKey))
-      );
+        reinterpret_cast<const unsigned char*>(base64::decode(publicKey)));
   }
   // ===
 
-};
+};  // namespace signature

@@ -1,11 +1,11 @@
-#ifndef __BASE64__
-#define __BASE64__
+#ifndef CORE_CRYPTO_BASE64_HPP_
+#define CORE_CRYPTO_BASE64_HPP_
 
 #include <string>
 
 namespace base64{
   std::string encode(const unsigned char*);
-  unsigned char* decode(std::string);
+  const unsigned char* decode(std::string);
 };
 
-#endif
+#endif  // CORE_CRYPTO_BASE64_HPP_
