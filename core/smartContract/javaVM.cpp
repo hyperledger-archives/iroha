@@ -22,7 +22,7 @@ struct JavaContext{
   {}
 };
 
-void void Java_SmartContract_save(JNIEnv *env,jobject thiz,jstring key,jstring value){
+void Java_SmartContract_save(JNIEnv *env,jobject thiz,jstring key,jstring value){
     const char *keyChar   = env->GetStringUTFChars(   key,0);
     const char *valueChar = env->GetStringUTFChars( value,0);
 
@@ -37,7 +37,7 @@ std::unique_ptr<JavaContext> createVM(std::string contractName){
   JavaVM* jvm;
 
   JavaVMOption options[1];
-  options[0].optionString = (char*)"-Djava.security.manager -Djava.security.policy=policy.txt -Djava.class.path=.";
+  options[0].optionString = (char*)"-Djava.security.manager -Djava.security.policy=policy.txt -Djava.class.path=../../smartContract";
 
   JavaVMInitArgs vm_args;
   vm_args.version = JNI_VERSION_1_6;
@@ -50,20 +50,16 @@ std::unique_ptr<JavaContext> createVM(std::string contractName){
     std::cout << "cannot run JavaVM : "<< res << std::endl;
     return nullptr;
   }
-  return std::make_unique<JavaContext>(
+  std::unique_ptr<JavaContext> ptr(new JavaContext(
     env,
     jvm,
     vm_args,
     std::move(contractName)
-  );
+  ));
+  return ptr;
 }
 
 void execVM(const std::unique_ptr<JavaContext> context){
-  int res = JNI_CreateJavaVM(&context->jvm, (void**)&context->env, &context->vmArgs);
-  if(res){
-    std::cout << "cannot run JavaVM : " << res << std::endl;
-    return;
-  }
 
   jclass cls = context->env->FindClass("SmartContract");
   if(cls){
@@ -85,7 +81,11 @@ void execVM(const std::unique_ptr<JavaContext> context){
 
   context->env->CallVoidMethod(obj, mid);
 
+  if((context->env)->ExceptionOccurred()) {
+    return;
+  }
+
   if(context->jvm->DestroyJavaVM()){
-    std::cout << "could not destroy JavaVM : " << res << std::endl;
+    std::cout << "could not destroy JavaVM"<< std::endl;
   }
 }
