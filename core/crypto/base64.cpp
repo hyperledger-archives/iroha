@@ -133,13 +133,13 @@ namespace Vendor {
 }  // namespace Vendor
 
   std::string encode(const unsigned char* message) {
-    return vendor::base64_encode(
+    return Vendor::base64_encode(
       message,
       strlen(reinterpret_cast<const char*>(message)));
   }
   const unsigned char* decode(std::string enc) {
     return reinterpret_cast<const unsigned char*>(
-      vendor::base64_decode(enc).c_str());
+      Vendor::base64_decode(enc).c_str());
   }
 
 }  // namespace base64

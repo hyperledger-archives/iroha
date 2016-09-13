@@ -32,8 +32,9 @@ namespace Signature {
     ed25519_create_seed(seed);
     ed25519_create_keypair(publicKey, privateKey, seed);
 
-    publicOfs << base64::encode(publicKey);
-    privateOfs << base64::encode(privateKey);
+    publicOfs << Base64::encode(publicKey);
+    std::cout << privateKey;//TODO:remove!
+    privateOfs << Base64::encode(privateKey);
 
     return true;
   }
@@ -50,9 +51,9 @@ namespace Signature {
       signature,
       reinterpret_cast<const unsigned char*>(message.c_str()),
       message.size(),
-      reinterpret_cast<const unsigned char*>(base64::decode(publicKey)),
-      reinterpret_cast<const unsigned char*>(base64::decode(privateKey)));
-    return base64::encode(signature);
+      reinterpret_cast<const unsigned char*>(Base64::decode(publicKey)),
+      reinterpret_cast<const unsigned char*>(Base64::decode(privateKey)));
+    return Base64::encode(signature);
   }
 
   bool verify (
@@ -61,10 +62,10 @@ namespace Signature {
     std::string publicKeyName) {
       auto publicKey  = loadKeyFile(publicKeyName);
       return ed25519_verify(
-        reinterpret_cast<const unsigned char*>(base64::decode(signature)),
+        reinterpret_cast<const unsigned char*>(Base64::decode(signature)),
         reinterpret_cast<const unsigned char*>(message.c_str()),
         message.size(),
-        reinterpret_cast<const unsigned char*>(base64::decode(publicKey)));
+        reinterpret_cast<const unsigned char*>(Base64::decode(publicKey)));
   }
   // ===
 

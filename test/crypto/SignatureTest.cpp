@@ -1,5 +1,3 @@
-
-
 #include "../../core/crypto/Signature.hpp"
 #include "../../core/crypto/Base64.hpp"
 
@@ -17,5 +15,3 @@ TEST(Signature, E){
   std::cout << base64::encode(keyPair.publicKey) << std::endl;
   std::cout << base64::encode(keyPair.privateKey) << std::endl;
 }
-
-
