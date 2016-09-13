@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 TEST(SmartContract, createVM){
-  std::unique_ptr<JavaContext> javaContext = createVM("test");
+  std::unique_ptr<JavaContext> javaContext = createVM("SampleCurrency");
   execVM(javaContext);
 }
 

@@ -14,13 +14,16 @@ std::unique_ptr<JavaContext> createVM(std::string contractName){
   JNIEnv* env;
   JavaVM* jvm;
 
-  JavaVMOption options[1];
-  options[0].optionString = (char*)"-Djava.security.manager -Djava.security.policy=policy.txt -Djava.class.path=../../smartContract";
+  JavaVMOption options[3];
+  //options[0].optionString = (char*)"-Djava.security.manager -Djava.security.policy=policy.txt -Djava.class.path=./contract/";
+  options[0].optionString = (char*)"-Djava.security.manager";
+  options[1].optionString = (char*)"-Djava.security.policy=policy.txt";
+  options[2].optionString = (char*)"-Djava.class.path=/Users/mizuki/sandbox/smart_contract/contract/";
 
   JavaVMInitArgs vm_args;
   vm_args.version = JNI_VERSION_1_6;
   vm_args.options = options;
-  vm_args.nOptions = 1;
+  vm_args.nOptions = 3;
   //vm_args.ignoreUnrecognized = true;
 
   int res = JNI_CreateJavaVM(&jvm, (void**)&env, &vm_args);
@@ -38,18 +41,20 @@ std::unique_ptr<JavaContext> createVM(std::string contractName){
 }
 
 void execVM(const std::unique_ptr<JavaContext>& context){
+  int res;
 
   jclass cls = context->env->FindClass("SmartContract");
-  if(cls){
-    std::cout << "could not found class : SmartContract" << std::endl;
+  if(cls == 0){
+    std::cout << "could not found class : Test" << std::endl;
     return;
   }
 
-  jmethodID init = context->env->GetMethodID(cls, "<init>", "()V");
-  if(init){
+  jmethodID cns = context->env->GetMethodID(cls, "<init>", "()V");
+  if(cns == NULL){
+    std::cout << "could not get <init> method." << std::endl;
     return;
   }
-  jobject obj = context->env->NewObject(cls, init);
+  jobject obj = context->env->NewObject(cls, cns);
 
   jmethodID mid = context->env->GetStaticMethodID(cls, "remit", "(Ljava/util/Map;)V");
   if(mid == NULL){
@@ -59,11 +64,9 @@ void execVM(const std::unique_ptr<JavaContext>& context){
 
   context->env->CallVoidMethod(obj, mid);
 
-  if((context->env)->ExceptionOccurred()) {
-    return;
-  }
-
-  if(context->jvm->DestroyJavaVM()){
-    std::cout << "could not destroy JavaVM"<< std::endl;
+  res = context->jvm->DestroyJavaVM();
+  if(res){
+    std::cout << "could not destroy JavaVM : " << res << std::endl;
   }
 }
+
