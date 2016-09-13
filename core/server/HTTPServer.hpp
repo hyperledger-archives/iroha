@@ -6,4 +6,3 @@ namespace HTTP {
 }
 
 #endif  // CORE_SERVER_HTTP_SERVER_HPP_
-

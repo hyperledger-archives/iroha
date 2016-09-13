@@ -4,7 +4,7 @@
 
 #include <yaml-cpp/yaml.h>
 #include "Connection.hpp"
-#include "../consensus/PBFTSieve.hpp"
+#include "../consensus/Sumeragi.hpp"
 
 bool loadYamlIsLeader(){
   try{
@@ -32,8 +32,8 @@ int main(){
   }
 
   std::cout << "(Second) Process ID is " << getpid() << std::endl;
-  pbft_sieve::initialize_pbft_sieve(11, 2, 2);
-  pbft_sieve::loop();
+  Sumeragi::initializeSumeragi(11, 2, 2);
+  Sumeragi::loop();
 
   int status;
   int child_pid;
@@ -44,7 +44,7 @@ int main(){
     if(child_pid > 0){
       isFinish = true;
       std::cout << "PID "<< child_pid <<" done" << std::endl;
-    }else{
+    } else {
       std::cout << "No child exited" << std::endl;
     }
     sleep(1);

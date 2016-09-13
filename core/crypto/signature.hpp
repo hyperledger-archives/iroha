@@ -11,6 +11,19 @@
 
 namespace Signature {
 
+  class KeyPair{
+   public:
+    unsigned char* publicKey;
+    unsigned char* privateKey;
+    KeyPair(
+      unsigned char* pub,
+      unsigned char* pri
+    ):
+      publicKey(pub),
+      privateKey(pri)
+    {}
+  };
+
   //=== Deprecated use for debug. ===
   bool verify(
     std::string signature,

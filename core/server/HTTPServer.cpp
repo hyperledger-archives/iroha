@@ -1,4 +1,3 @@
-
 #include <crow.h>
 
 #include "HTTPServer.hpp"
@@ -11,6 +10,6 @@ namespace HTTP {
         return "Root";
     });
 
-    app.port(8080).multithreaded().run();
+    app.port(1337).multithreaded().run();
   }
 }  // namespace http

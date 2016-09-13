@@ -116,7 +116,7 @@ void loop() {
                 continue;
             }
 
-            if (ConsensusEvent.types.transaction == event->type) { // TODO
+            if (ConsensusEvent::event::transaction == event->type) {
                 // Determine node order
                 std::vector<Node> nodeOrder = determineConsensusOrder(); //TODO
 

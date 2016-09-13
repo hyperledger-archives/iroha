@@ -8,10 +8,10 @@
 #include <cstring>
 
 TEST(Signature, E){
-  signature::KeyPair keyPair = signature::generateKeyPair();
+  Signature::KeyPair keyPair = Signature::generateKeyPair();
   
   std::cout << strlen((char*)keyPair.publicKey) << std::endl;
   std::cout << strlen((char*)keyPair.privateKey) << std::endl;
-  std::cout << base64::encode(keyPair.publicKey) << std::endl;
-  std::cout << base64::encode(keyPair.privateKey) << std::endl;
+  std::cout << Base64::encode(keyPair.publicKey) << std::endl;
+  std::cout << Base64::encode(keyPair.privateKey) << std::endl;
 }
