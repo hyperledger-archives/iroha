@@ -7,9 +7,8 @@
 namespace ConsensusEvent {
 enum types { 
     awk, suspicion, transaction, viewChange
-};//TODO: should this be here?
+}; //TODO: should this be here?
 
-
-};
+};  // namespace ConsensusEvent
 
 #endif  // CORE_INFRA_CONSENSUSEVENT_HPP_

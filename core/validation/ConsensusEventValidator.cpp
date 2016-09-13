@@ -1,8 +1,9 @@
-#include "TransactionValidator.hpp"
+#include "ConsensusEventValidator.hpp"
 
+#include "../infra/ConsensusEvent.hpp"
 #include "../crypto/Signature.hpp"
 
-namespace TransactionValidator {
+namespace ConsensusEventValidator {
 
 struct Context {
     //TODO:
@@ -13,7 +14,7 @@ void transactionValidator(/*TODO:*/) {
     //TODO:
 }
 
-bool isValid(Transaction const tx) {
+bool isValid(ConsensusEvent const tx) {
     return signaturesAreValid; // TODO: add more
 }
 
@@ -24,4 +25,4 @@ bool signaturesAreValid(Transaction const tx) {
     return true; // TODO: change this!
 }
 
-};  // namespace TransactionValidator
+};  // namespace ConsensusEventValidator
