@@ -1,7 +1,7 @@
 machine:
   environment:
     PATH: $PATH:/opt/cmake-3.5.2-Linux-x86_64/bin
-    JAVA_HOME: $(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+    JAVA_HOME: /usr/lib/jvm/java-7-openjdk-amd64
 dependencies:
   override:
     - mkdir build; cd build; cmake ..; make
