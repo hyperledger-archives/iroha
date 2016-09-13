@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 
-namespace Base64{
+namespace Base64 {
   std::string encode(const unsigned char*);
   const unsigned char* decode(std::string);
 };
