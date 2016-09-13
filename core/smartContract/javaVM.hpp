@@ -6,6 +6,7 @@
 #include <tuple>
 #include <memory>
 
+#include <cstdlib>
 
 struct JavaContext{
   JNIEnv* env;
