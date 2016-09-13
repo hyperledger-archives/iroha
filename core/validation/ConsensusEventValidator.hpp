@@ -2,8 +2,8 @@
 #define CORE_VALIDATION_CONSENSUSEVENTVALIDATOR_HPP_
 
 namespace ConsensusEventValidator {
-  bool isValid(Transaction const tx);
-  bool signaturesAreValid(Transaction const tx);
+  bool isValid(ConsensusEvent const event);
+  bool signaturesAreValid(ConsensusEvent const event);
 };
 
 #endif  // CORE_VALIDATION_CONSENSUSEVENTVALIDATOR_HPP_

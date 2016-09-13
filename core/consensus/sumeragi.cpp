@@ -46,8 +46,10 @@ void initializeSumeragi(int const myNumber, int const numberOfPeers, int const l
 }
 
 void processTransaction(td::shared_ptr<std::string> const tx) {
-    txValidator::isValid(tx);//TODO
-    
+    if (!txValidator::isValid(tx)) {
+        return;
+    }
+
     tx::addSignature(); //TODO
     peerConnection::broadcastToNextValidator(tx); //TODO
     if (isProxyTail) {
@@ -110,21 +112,22 @@ void loop() {
     while (true) {  // TODO(M->M): replace with callback linking aeron
         if (context->eventCache::hasConsensusEvent()) { //TODO: mutex here?
             std::shared_ptr<ConsensusEvent> const event = context->eventCache::pop();
+            if (!context->consensusEventValidator.isValid(event)) {
+                continue;
+            }
 
             if (ConsensusEvent.types.transaction == event->type) {// TODO
-                // Validate transaction
-                if (txValidator::isValid(event)) { //TODO
-                    // Determine node order
-                    std::vector<Node> nodeOrder = determineConsensusOrder(); //TODO
+                // Determine node order
+                std::vector<Node> nodeOrder = determineConsensusOrder(); //TODO
 
-                    // Process transaction
-                    bool const transactionResult = processTransaction(nodeOrder); //TODO
-                    if (transactionResult) {
-                        peerConnection::broadcastProxyTail(awk); //TODO
-                    }
+                // Process transaction
+                bool const transactionResult = processTransaction(nodeOrder); //TODO
+                if (transactionResult) {
+                    peerConnection::broadcastProxyTail(awk); //TODO
                 }
 
-            } else if (ConsensusEvent.types.awk == event->type) {
+
+            } else if (ConsensusEvent::types::awk == event->type) {
                 // Validate awk event
                 //TODO:
                 // Save the event to cache. If 2f signatures, then commit, because with yourself it is 2f+1
@@ -135,12 +138,12 @@ void loop() {
                     transactionRepository->commitTransaction(); //TODO
                 }
 
-            } else if (ConsensusEvent.types.suspicion == event->type) {
+            } else if (ConsensusEvent::types::suspicion == event->type) {
                 //TODO: validate suspicion
                 // Request view change
                 
 
-            } else if (ConsensusEvent.types.viewChange == event->type) {
+            } else if (ConsensusEvent::types::viewChange == event->type) {
                 // Validate view change event
                 //TODO:
 

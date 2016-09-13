@@ -5,24 +5,17 @@
 
 namespace ConsensusEventValidator {
 
-struct Context {
-    //TODO:
-};
-
-void transactionValidator(/*TODO:*/) {
-    logger("initialize_transactionValidator");
-    //TODO:
+bool isValid(ConsensusEvent const event) {
+    return signaturesAreValid; // TODO: add more tests
 }
 
-bool isValid(ConsensusEvent const tx) {
-    return signaturesAreValid; // TODO: add more
-}
-
-bool signaturesAreValid(Transaction const tx) {
+bool signaturesAreValid(ConsensusEvent event) {
     tx->signatures::foreach { // TODO: learn c++ syntax for this!
-
+        if (!signature::isValid()) { // TODO: fix this syntax
+            return false;
+        }
     }
-    return true; // TODO: change this!
+    return true;
 }
 
 };  // namespace ConsensusEventValidator
