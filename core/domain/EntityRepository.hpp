@@ -5,7 +5,7 @@
 
 #include "Entity.hpp"
 
-namespace EntityRepository{
+namespace EntityRepository {
   bool add(std::string uuid, Entity e);
   bool update(std::string uuid, Entity e);
   bool remove(std::string uuid);
