@@ -33,21 +33,14 @@ struct Context {
     std::unique_ptr<TransactionRepository> repository;
     std::unique_ptr<TransactionCache> txCache;
     std::unique_ptr<TransactionValidator> txValidator;
+    std::queue<ConsensusEvent> eventCache;
     std::map viewChangeCache;
     std::map awkCache;
 };
 
 void initializeSumeragi(int const myNumber, int const numberOfPeers, int const leaderNumber, int const batchSize) {
     logger("initialize_sumeragi, my number:"+std::to_string(myNumber)+" leader:"+std::to_string(myNumber == leaderNumber)+"");
-    // context->batchSize = batchSize;
-    // context->myPeerNumber = myNumber;
-    // context->numberOfPeers = numberOfPeers; // TODO(M→I): C++として、このsyntaxは大丈夫？
     // context->maxFaulty = numberOfPeers/3;  // Default to approx. 1/3 of the network. TODO(M→M): make this configurable 
-    // context->validatingPeers;
-    // context->isLeader = myNumber == leaderNumber;
-    // context->leaderNumber = std::to_string(leaderNumber);
-    // context->timeCounter = 0;
-    // context->peerCounter = 0;
     context->txRepository = std::make_unique<TransactionRepository>();
 
     buffer = "";
@@ -115,10 +108,9 @@ void loopProxyTail(td::shared_ptr<std::string> const tx, int const currLeader) {
 
 void loop() {
     logger("start loop");
-    // int count = 0;
     while (true) {  // TODO(M->M): replace with callback linking aeron
-        if (context->eventCache::hasConsensusEvent()) { // TODO: make event cache (std::map in memory is fine)
-            std::shared_ptr<ConsensusEvent> const event = context->eventCache::popConsensusEvent();//TODO
+        if (context->eventCache::hasConsensusEvent()) {
+            std::shared_ptr<ConsensusEvent> const event = context->eventCache::pop();
 
             if (ConsensusEvent.types.transaction == event->type) {// TODO
                 // Validate transaction
