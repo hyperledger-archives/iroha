@@ -25,17 +25,17 @@ namespace Signature {
   };
 
   //=== Deprecated use for debug. ===
-  bool verify(
+  bool verify (
     std::string signature,
     std::string message,
     std::string publicKeyName);
 
-  std::string sign(
+  std::string sign (
     std::string message,
     std::string privateKeyName,
     std::string publicKeyName);
 
-  bool generateKeyPairAndSave(
+  KeyPair generateKeyPairAndSave (
     std::string filenamePrefix,
     std::string keyPath);
   //===
