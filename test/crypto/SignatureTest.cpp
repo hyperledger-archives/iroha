@@ -1,7 +1,7 @@
 
 
-#include "../../core/crypto/signature.hpp"
-#include "../../core/crypto/base64.hpp"
+#include "../../core/crypto/Signature.hpp"
+#include "../../core/crypto/Base64.hpp"
 
 #include <tuple>
 #include <iostream>

@@ -22,7 +22,7 @@ link_directories(
   ${PROJECT_BINARY_DIR}/lib
 )
 
-add_executable(base64-test base64_test.cpp)
+add_executable(base64-test Base64Test.cpp)
 target_link_libraries(base64-test base64
   ssl
   crypto
@@ -32,7 +32,7 @@ add_test(
   COMMAND $<TARGET_FILE:base64-test>
 )
 
-add_executable(signature-test signature_test.cpp)
+add_executable(signature-test SignatureTest.cpp)
 target_link_libraries(signature-test signature
   base64
   ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread)

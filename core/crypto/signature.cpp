@@ -8,8 +8,8 @@
 #include "../domain/Entity.hpp"
 #include "Signature.hpp"
 
-#include "base64.hpp"
-#include "hash.hpp"
+#include "Base64.hpp"
+#include "Hash.hpp"
 
 namespace Signature {
   // === File Operation ===
