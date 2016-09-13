@@ -6,7 +6,7 @@
 #include "Connection.hpp"
 #include "../consensus/Sumeragi.hpp"
 
-bool loadYamlIsLeader(){
+bool loadYamlIsLeader() {
   try{
     YAML::Node config = YAML::LoadFile("config.yml");
     return config["peer"]["leader"].as<bool>();
@@ -17,7 +17,7 @@ bool loadYamlIsLeader(){
   return false;
 }
 
-int main(){
+int main() {
   std::cout<<"Process ID is "<< getpid() << std::endl;
   Connection::initialize_peer();
   int forkHttp = fork();
