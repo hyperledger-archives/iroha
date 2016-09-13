@@ -1,12 +1,9 @@
 #include "TransactionValidator.hpp"
 
+#include "../domain/Signature.hpp"//TODO:!
 #include "../crypto/Signature.hpp"
 
 namespace TransactionValidator {
-
-struct Context {
-    //TODO:
-};
 
 void transactionValidator(/*TODO:*/) {
     logger("initialize_transactionValidator");
@@ -18,7 +15,7 @@ bool isValid(Transaction const tx) {
 }
 
 bool signaturesAreValid(Transaction const tx) {
-    tx->signatures::foreach { // TODO: learn c++ syntax for this!
+    for (Signature const signature in tx->signatures) { 
 
     }
     return true; // TODO: change this!

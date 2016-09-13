@@ -116,7 +116,7 @@ void loop() {
                 continue;
             }
 
-            if (ConsensusEvent.types.transaction == event->type) {// TODO
+            if (ConsensusEvent.types.transaction == event->type) { // TODO
                 // Determine node order
                 std::vector<Node> nodeOrder = determineConsensusOrder(); //TODO
 
@@ -127,7 +127,7 @@ void loop() {
                 }
 
 
-            } else if (ConsensusEvent::types::awk == event->type) {
+            } else if (ConsensusEvent::event::awk == event->type) {
                 // Validate awk event
                 //TODO:
                 // Save the event to cache. If 2f signatures, then commit, because with yourself it is 2f+1
@@ -138,12 +138,12 @@ void loop() {
                     transactionRepository->commitTransaction(); //TODO
                 }
 
-            } else if (ConsensusEvent::types::suspicion == event->type) {
+            } else if (ConsensusEvent::event::suspicion == event->type) {
                 //TODO: validate suspicion
                 // Request view change
                 
 
-            } else if (ConsensusEvent::types::viewChange == event->type) {
+            } else if (ConsensusEvent::event::viewChange == event->type) {
                 // Validate view change event
                 //TODO:
 

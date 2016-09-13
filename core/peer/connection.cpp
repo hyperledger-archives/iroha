@@ -21,7 +21,7 @@ using namespace std::chrono;
 using namespace aeron::util;
 using namespace aeron;
 
-namespace Connection{
+namespace Connection {
 
   std::atomic<bool> running (true);
 

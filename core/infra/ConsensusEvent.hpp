@@ -5,7 +5,7 @@
 #include <functional>
 
 namespace ConsensusEvent {
-enum types { 
+enum class event { 
     awk, suspicion, transaction, viewChange
 }; //TODO: should this be here?
 

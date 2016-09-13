@@ -9,9 +9,9 @@ bool isValid(ConsensusEvent const event) {
     return signaturesAreValid; // TODO: add more tests
 }
 
-bool signaturesAreValid(ConsensusEvent event) {
-    tx->signatures::foreach { // TODO: learn c++ syntax for this!
-        if (!signature::isValid()) { // TODO: fix this syntax
+bool signaturesAreValid(ConsensusEvent const event) {
+    for (std::<shared_ptr>Signature const signature : event->signatures) {
+        if (!signature::isValid()) {
             return false;
         }
     }
