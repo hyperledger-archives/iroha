@@ -7,7 +7,9 @@ SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 SET(YAML_PATH "${PROJECT_SOURCE_DIR}/vendor/yaml-cpp")
 
+include_directories(${YAML_PATH}/include)
 link_directories(${YAML_PATH}/build)
+
 ADD_LIBRARY(yaml-loader STATIC yaml.cpp)
 target_link_libraries(yaml-loader
   yaml-cpp
