@@ -27,8 +27,7 @@ struct Context {
     bool isLeader;
     int myPeerNumber;
     std::string leaderNumber;
-    int timeCounter;
-    int peerCounter;
+    int panicCount;
     std::unique_ptr<TransactionRepository> repository;
     std::unique_ptr<TransactionCache> txCache;
     std::unique_ptr<TransactionValidator> txValidator;
@@ -45,46 +44,33 @@ void initializeSumeragi(int const myNumber, int const numberOfPeers, int const l
     buffer = "";
 }
 
-void processTransaction(td::shared_ptr<std::string> const tx) {
-    if (!txValidator::isValid(tx)) {
-        return;
+void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<Node> const nodeOrder) {
+    if (!txValidator::isValid(event)) {
+        return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
     }
 
-    tx::addSignature(); //TODO
-    peerConnection::broadcastToNextValidator(tx); //TODO
-    if (isProxyTail) {
-        loopProxyTail();
-    }
+    event::addSignature(sign(hash)); //TODO
+    peerConnection::broadcastToProxyTail(awk); //TODO
 
-    setAwkTimer(5000, [&]{ reconfigure(); };);
+    setAwkTimer(5000, [&]{ if (unconfirmed(event)) {panic();} };);
 }
 
-// /**
-// * Move the suspected validator to the end of the chain and the suspector to the 2f+1'th position.
-// * 
-// * For example, given:
-// * |---|  |---|  |---|  |---|  |---|  |---|
-// * | H |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
-// * |---|  |---|  |---|  |---|  |---|  |---|,
-// *
-// * if [2] suspects [3] and f := 2, then the validation chain order will become:
-// * |---|  |---|  |---|  |---|  |---|  |---|
-// * | H |--| 1 |--| 4 |--| 5 |--| 2 |--| 3 |
-// * |---|  |---|  |---|  |---|  |---|  |---|.
-// *
-// * Only the head (H) can reconfigure the chain order. If the head has a problem, other nodes should 
-// * request a view change.
-// */
-// void reconfigureSuspects(int const suspected, int const suspector) {
-// //TODO:
-// }
-
-void reconfigure() {
-    // Any suspects?
-    getSuspects();
-    reconfigureSuspects();
-
-    // If no suspects, kick the 2f+1 node to the end of the chain
+/**
+* Move the suspected validator to the end of the chain and the suspector to the 2f+1'th position.
+* 
+* For example, given:
+* |---|  |---|  |---|  |---|  |---|  |---|
+* | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
+* |---|  |---|  |---|  |---|  |---|  |---|,
+*
+* if [2] suspects [3] and f := 2, then the validation chain order will become:
+* |---|  |---|  |---|  |---|  |---|  |---|
+* | 0 |--| 1 |--| 4 |--| 5 |--| 2 |--| 3 |
+* |---|  |---|  |---|  |---|  |---|  |---|.
+*/
+void panic(std::shared_ptr<ConsensusEvent> const event) {
+    context->panicCount++;
+    peerConnection::broadcastToPeerRange(event, 2f+1+1*context->panicCount, 2f+1+1*context->panicCount + 1); //TODO
 }
 
 void setAwkTimer(int const sleepMillisecs, std::function<void(void)> action, actionArgs ...) {
@@ -107,9 +93,9 @@ void loopProxyTail(td::shared_ptr<std::string> const tx, int const currLeader) {
     }
 }
 
-std::vector determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event, std::vector<unsigned char*> const suspiciousNodes) {
+std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event, std::vector<unsigned char*> const suspiciousNodes) {
     unsigned char* const publicKey = event->publicKey;
-    std::vector distances;
+    std::vector distances = std::make_shared();
     int i = 0;
     for (auto nodeKey : context->membership::nodes) {
         if (nodeKey not in suspiciousNodes) {
@@ -141,10 +127,7 @@ void loop() {
                 std::vector<Node> nodeOrder = determineConsensusOrder();
 
                 // Process transaction
-                bool const transactionResult = processTransaction(nodeOrder); //TODO
-                if (transactionResult) {
-                    peerConnection::broadcastProxyTail(awk); //TODO
-                }
+                processTransaction(event, nodeOrder);
 
             } else if (ConsensusEvent::event::awk == event->type) {
                 // Validate awk event
