@@ -5,9 +5,6 @@
 #include <functional>
 
 namespace ConsensusEvent {
-enum class event { 
-    transaction, panic
-};
 
 };  // namespace ConsensusEvent
 

@@ -110,20 +110,17 @@ void loop() {
             if (!context->consensusEventValidator.isValid(event)) {
                 continue;
             }
+            // Determine node order
+            std::vector<Node> nodeOrder = determineConsensusOrder();
 
-            if (ConsensusEvent::event::transaction == event->type) {
-                // Determine node order
-                std::vector<Node> nodeOrder = determineConsensusOrder();
+            // Process transaction
+            processTransaction(event, nodeOrder);
 
-                // Process transaction
-                processTransaction(event, nodeOrder);
+            awkCache.put(event); //TODO
 
-                awkCache.put(event); //TODO
-
-                if (awkCache.size() > context->maxFaulty*2 + 1) {
-                    // Commit locally
-                    transactionRepository->commitTransaction(); //TODO
-                }
+            if (awkCache.size() > context->maxFaulty*2 + 1) {
+                // Commit locally
+                transactionRepository->commitTransaction(); //TODO
             }
         }
     }
