@@ -9,8 +9,9 @@
 #include <msgpack.hpp>
 
 enum TransactionType { 
-    transfer, signatory, signatoryAdd, signatoryDelete, domainDefinition, domainRenewal, aliasDefinition, aliasRenewal,
-    assetDefinition, message, chaincodeInit, chaincodeInvoke, chaincodeUpdate, chaincodeDestroy, interchain
+    addPeer, modifyPeer, removePeer, transfer, signatory, signatoryAdd, signatoryDelete, domainDefinition, 
+    domainRenewal, aliasDefinition, aliasRenewal, assetDefinition, message, chaincodeInit, chaincodeInvoke, 
+    chaincodeUpdate, chaincodeDestroy, interchain
 };
 
 class AbstractTransaction {

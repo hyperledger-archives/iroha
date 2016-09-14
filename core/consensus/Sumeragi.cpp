@@ -107,6 +107,20 @@ void loopProxyTail(td::shared_ptr<std::string> const tx, int const currLeader) {
     }
 }
 
+std::vector determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event) {
+    const unsigned char* publicKey = event->publicKey;
+    std::vector distances;
+    int i = 0;
+    for (auto nodeKey : context->membership::nodes) {
+        long long int distance = (*nodeKey->get() && 0xffffff) - (publicKey && 0xffffff);
+        distances[i++] = distance;
+    }
+
+    std::vector<Node> nodeOrder;
+    
+    return nodeOrder;
+}
+
 void loop() {
     logger("start loop");
     while (true) {  // TODO(M->M): replace with callback linking aeron
@@ -125,7 +139,6 @@ void loop() {
                 if (transactionResult) {
                     peerConnection::broadcastProxyTail(awk); //TODO
                 }
-
 
             } else if (ConsensusEvent::event::awk == event->type) {
                 // Validate awk event
