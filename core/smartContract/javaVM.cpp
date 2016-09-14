@@ -14,11 +14,17 @@ std::unique_ptr<JavaContext> createVM(std::string contractName){
   JNIEnv* env;
   JavaVM* jvm;
 
+  if(getenv("IROHA_HOME") == nullptr){
+    std::cout << "You must set IROHA_HOME!" << std::endl;
+    return nullptr;
+  }
+  std::cout << "java -Djava.class.path="+(std::string)getenv("IROHA_HOME")+"/smartContract/"+contractName+"/  " << contractName << std::endl;
+
   JavaVMOption options[3];
   //options[0].optionString = (char*)"-Djava.security.manager -Djava.security.policy=policy.txt -Djava.class.path=./contract/";
-  options[0].optionString = (char*)"-Djava.security.manager";
-  options[1].optionString = (char*)"-Djava.security.policy=policy.txt";
-  options[2].optionString = (char*)"-Djava.class.path=/Users/mizuki/sandbox/smart_contract/contract/";
+  options[1].optionString =  (char*)"-Djava.security.manager";
+  options[2].optionString =  (char*)"-Djava.security.policy=policy.txt";
+  options[0].optionString = (char*)("-Djava.class.path="+(std::string)getenv("IROHA_HOME")+"/smartContract/"+contractName+"/").c_str();
 
   JavaVMInitArgs vm_args;
   vm_args.version = JNI_VERSION_1_6;
@@ -43,9 +49,9 @@ std::unique_ptr<JavaContext> createVM(std::string contractName){
 void execVM(const std::unique_ptr<JavaContext>& context){
   int res;
 
-  jclass cls = context->env->FindClass("SmartContract");
+  jclass cls = context->env->FindClass(context->name.c_str());
   if(cls == 0){
-    std::cout << "could not found class : Test" << std::endl;
+    std::cout << "could not found class : "<< context->name.c_str() << std::endl;
     return;
   }
 
