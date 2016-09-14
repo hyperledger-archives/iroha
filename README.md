@@ -4,6 +4,9 @@
 
  いろは(iroha) is ...
 
+ ![alt tag](https://raw.githubusercontent.com/soramitsu/iroha/feature/sumeragi/LGTM.gif)
+
+
 準備：
 
 add-apt-repository ppa:webupd8team/java
