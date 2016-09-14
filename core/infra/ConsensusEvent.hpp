@@ -6,8 +6,8 @@
 
 namespace ConsensusEvent {
 enum class event { 
-    awk, suspicion, transaction, viewChange
-}; //TODO: should this be here?
+    transaction, panic
+};
 
 };  // namespace ConsensusEvent
 

@@ -118,17 +118,12 @@ void loop() {
                 // Process transaction
                 processTransaction(event, nodeOrder);
 
-            } else if (ConsensusEvent::event::awk == event->type) {
-                // Validate awk event
-                //TODO:
-                // Save the event to cache. If 2f signatures, then commit, because with yourself it is 2f+1
                 awkCache.put(event); //TODO
 
                 if (awkCache.size() > context->maxFaulty*2 + 1) {
                     // Commit locally
                     transactionRepository->commitTransaction(); //TODO
                 }
-
             }
         }
     }
