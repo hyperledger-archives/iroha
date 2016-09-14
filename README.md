@@ -6,24 +6,6 @@
 
  ![alt tag](https://github.com/soramitsu/iroha/raw/feature/sumeragi/LGTM.gif)
 
-AERON:
-./gradlew
-./gradlew
-./cppbuild/cppbuild
-
-mkdir -p cppbuild/Debug
-cd cppbuild/Debug
-cmake ../..
-cmake --build . --clean-first
-ctest
-
-yaml-cpp:
-mkdir build
-cd build
-cmake ..
-make
-sudo make install
-
 # Required
 ```
 cmake(3.5.2)
