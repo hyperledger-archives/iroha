@@ -138,13 +138,6 @@ void loop() {
                     transactionRepository->commitTransaction(); //TODO
                 }
 
-            } else if (ConsensusEvent::event::viewChange == event->type) {
-                // Validate view change event
-                //TODO:
-
-                // Save the event to cache. If 2f + 1 then commit the view change.
-                viewChangeCache.put(event); //TODO
-                peerConnection::broadcastAll(viewChange); //TODO
             }
         }
     }
