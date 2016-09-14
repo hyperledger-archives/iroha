@@ -13,5 +13,5 @@ SET(LEVELDB_PATH "../vendor/leveldb")
 
 include_directories(${LEVELDB_PATH}/include)
 
-ADD_LIBRARY(entityrepo STATIC entityRepository.cpp)
+ADD_LIBRARY(entityrepo STATIC EntityRepository.cpp)
 

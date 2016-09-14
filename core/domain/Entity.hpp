@@ -33,13 +33,10 @@ class Entity { // TODO: キーペアがあるので、entityよりaccountでい�
       publicKey(aPublicKey),
       privateKey(aPrivateKey) {
       for (size_t i = 0; i < strlen(reinterpret_cast<char*>(publicKey) ); ++i) {
-        publicKeyVec.push_back(publicKey[i]); //TODO: なぜaPublicKeyではない？
+        publicKeyVec.push_back(publicKey[i]);
       }
-      for (
-        size_t i = 0;
-        i < strlen(reinterpret_cast<char*>(privateKey));
-         ++i) {
-        privateKeyVec.push_back(privateKey[i]);//TODO: なぜaPrivateKeyではない？
+      for (size_t i = 0; i < strlen(reinterpret_cast<char*>(privateKey)); ++i) {
+        privateKeyVec.push_back(privateKey[i]);
       }
     }
 };
