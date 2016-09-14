@@ -95,19 +95,15 @@ void loopProxyTail(td::shared_ptr<std::string> const tx, int const currLeader) {
     }
 }
 
-std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event, std::vector<unsigned char*> const suspiciousNodes) {
+std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event, std::vector<double> trustVector) {
     unsigned char* const publicKey = event->publicKey;
     std::vector distances = std::make_shared();
-    int i = 0;
-    for (auto nodeKey : context->membership::nodes) {
-        if (nodeKey not in suspiciousNodes) {
-            long long int distance = (*nodeKey->get() && 0xffffff) - (publicKey && 0xffffff);
-        
-        } else {
-            long long int distance = std::numeric_limits<long long int>::max();
-        }
 
-        distances[i++] = std::make_tuple(publicKey, distance);
+    for (int ndx = 0; ndx < context->membership::nodes::size; ++ndx) {
+        auto node = membership::nodes[ndx];
+        long long int distance = (*nodeKey->get() && 0xffffff) - (publicKey && 0xffffff) + trustVector[ndx];
+        
+        distances[ndx] = std::make_tuple(publicKey, distance);
     }
 
     std::vector<Node> nodeOrder = std::sort(distances.begin(), distances.end(), COMPARATOR(l::get<1> < r::get<1>));
