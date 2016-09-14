@@ -35,7 +35,7 @@ namespace Signature {
     std::string privateKeyName,
     std::string publicKeyName);
 
-  KeyPair generateKeyPairAndSave (
+  std::shared_ptr<KeyPair> generateKeyPairAndSave (
     std::string filenamePrefix,
     std::string keyPath);
   //===

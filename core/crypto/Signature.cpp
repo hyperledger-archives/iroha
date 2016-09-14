@@ -23,7 +23,7 @@ namespace Signature {
       std::istreambuf_iterator<char>() );
   }
 
-  KeyPair generateKeyPair(std::string filenamePrefix, std::string keyPath) {
+  std::shared_ptr<KeyPair> generateKeyPair(std::string filenamePrefix, std::string keyPath) {
     std::ofstream publicOfs(keyPath +"/"+ filenamePrefix + "_public.pem");
     std::ofstream privateOfs(keyPath +"/"+ filenamePrefix + "_private.pem");
 
@@ -36,7 +36,7 @@ namespace Signature {
     privateOfs << Base64::encode(privateKey);
     std::cout << privateKey; //TODO:remove!
 
-    std::shared_ptr<KeyPair> const keyPair = make_shared(KeyPair(publicKey, privateKey));
+    std::shared_ptr<KeyPair> const keyPair = std::make_shared<KeyPair>(KeyPair(publicKey, privateKey));
 
     return keyPair;
   }
