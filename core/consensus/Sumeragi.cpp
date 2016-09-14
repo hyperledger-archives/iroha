@@ -107,16 +107,22 @@ void loopProxyTail(td::shared_ptr<std::string> const tx, int const currLeader) {
     }
 }
 
-std::vector determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event) {
-    const unsigned char* publicKey = event->publicKey;
+std::vector determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event, std::vector<unsigned char*> const suspiciousNodes) {
+    unsigned char* const publicKey = event->publicKey;
     std::vector distances;
     int i = 0;
     for (auto nodeKey : context->membership::nodes) {
-        long long int distance = (*nodeKey->get() && 0xffffff) - (publicKey && 0xffffff);
-        distances[i++] = distance;
+        if (nodeKey not in suspiciousNodes) {
+            long long int distance = (*nodeKey->get() && 0xffffff) - (publicKey && 0xffffff);
+        
+        } else {
+            long long int distance = std::numeric_limits<long long int>::max();
+        }
+
+        distances[i++] = std::make_tuple(publicKey, distance);
     }
 
-    std::vector<Node> nodeOrder;
+    std::vector<Node> nodeOrder = std::sort(v.begin(), v.end(), COMPARATOR(l::get<1> < r::get<1>));
     
     return nodeOrder;
 }
@@ -132,7 +138,7 @@ void loop() {
 
             if (ConsensusEvent::event::transaction == event->type) {
                 // Determine node order
-                std::vector<Node> nodeOrder = determineConsensusOrder(); //TODO
+                std::vector<Node> nodeOrder = determineConsensusOrder();
 
                 // Process transaction
                 bool const transactionResult = processTransaction(nodeOrder); //TODO
