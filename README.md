@@ -4,7 +4,7 @@
 
  いろは(iroha) is ...
 
- ![alt tag](https://raw.githubusercontent.com/soramitsu/iroha/feature/sumeragi/LGTM.gif)
+ ![alt tag](https://github.com/soramitsu/iroha/raw/feature/sumeragi/LGTM.gif)
 
 
 準備：
