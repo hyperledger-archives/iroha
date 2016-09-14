@@ -11,7 +11,7 @@
 
 namespace Signature {
 
-  class KeyPair{
+  class KeyPair {
    public:
     unsigned char* publicKey;
     unsigned char* privateKey;
