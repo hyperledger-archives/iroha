@@ -4,7 +4,7 @@
 #include <msgpack.hpp>
 
 namespace SignatoryTransaction {
-  //TODO:
+    MSGPACK_DEFINE(hash, type, senderPublicKey, receiverPublicKey, domain, asset, makotos, precision);
 };
 
 #endif  // CORE_DOMAIN_SIGNATORYTRANSACTION_HPP_

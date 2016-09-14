@@ -34,7 +34,6 @@ class AbstractTransaction {
       std::string hash,
       unsigned char* aPublicKey,
       unsigned char* aPrivateKey):
-      uuid(aUuid),
       publicKey(aPublicKey),
       privateKey(aPrivateKey) {
 
