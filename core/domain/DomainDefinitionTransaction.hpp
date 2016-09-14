@@ -1,3 +1,10 @@
+#ifndef CORE_DOMAIN_DOMAINDEFINITIONTRANSACTION_HPP_
+#define CORE_DOMAIN_DOMAINDEFINITIONTRANSACTION_HPP_
+
+#include <msgpack.hpp>
+
 namespace DomainDefinitionTransaction {
   //TODO:
 };
+
+#endif  // CORE_DOMAIN_DOMAINDEFINITIONTRANSACTION_HPP_

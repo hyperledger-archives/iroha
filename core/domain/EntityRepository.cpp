@@ -1,10 +1,8 @@
-
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
 
 #include <string>
 #include <memory>
-// WIP
 #include <iostream>
 
 #include <msgpack.hpp>
@@ -13,7 +11,6 @@
 #include "Entity.hpp"
 
 namespace EntityRepository {
-
   std::shared_ptr<leveldb::DB> db;
 
   bool printStatus(leveldb::Status status) {

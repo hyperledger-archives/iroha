@@ -2,7 +2,7 @@
 #define CORE_DOMAIN_ENTITYREPOSITORY_HPP_
 
 #include <string>
-
+#include <msgpack.hpp>
 #include "Entity.hpp"
 
 namespace EntityRepository {

@@ -1,6 +1,8 @@
 #include "AbstractTransaction.hpp"
 
-namespace AbstractTransaction {
+#include "../crypto/Base64.hpp"
 
+namespace AbstractTransaction {
+std::vector<Base64> signatures;
     
 };  // namespace AbstractTransaction

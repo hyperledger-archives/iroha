@@ -1,3 +1,10 @@
+#ifndef CORE_DOMAIN_SIGNATORYADDTRANSACTION_HPP_
+#define CORE_DOMAIN_SIGNATORYADDTRANSACTION_HPP_
+
+#include <msgpack.hpp>
+
 namespace SignatoryAddTransaction {
   //TODO:
 };
+
+#endif  // CORE_DOMAIN_SIGNATORYADDTRANSACTION_HPP_
