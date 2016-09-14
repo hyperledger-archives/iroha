@@ -122,7 +122,7 @@ std::vector determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event,
         distances[i++] = std::make_tuple(publicKey, distance);
     }
 
-    std::vector<Node> nodeOrder = std::sort(v.begin(), v.end(), COMPARATOR(l::get<1> < r::get<1>));
+    std::vector<Node> nodeOrder = std::sort(distances.begin(), distances.end(), COMPARATOR(l::get<1> < r::get<1>));
     
     return nodeOrder;
 }
