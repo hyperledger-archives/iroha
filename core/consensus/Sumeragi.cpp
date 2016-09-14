@@ -50,7 +50,11 @@ void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<
     }
 
     event::addSignature(sign(hash)); //TODO
-    peerConnection::broadcastToProxyTail(awk); //TODO
+    if (!context->isProxyTail) {}
+        peerConnection::broadcastToProxyTail(awk); //TODO
+    } else {
+        peerConnection::broadcastFinalizedAll(event); //TODO
+    }
 
     setAwkTimer(5000, [&]{ if (unconfirmed(event)) {panic();} };);
 }
@@ -80,19 +84,6 @@ void setAwkTimer(int const sleepMillisecs, std::function<void(void)> action, act
         std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
         action();
     }).detach();
-}
-
-void loopProxyTail(td::shared_ptr<std::string> const tx, int const currLeader) {
-    if (tx::isChain()) { //TODO
-        context->txValidator::isValid(tx); //TODO
-        tx::addSignature(); //TODO
-        peerConnection::broadcastFinalizedAll(tx); //TODO
-
-    } else if (tx::isPanic()) {
-        if (panicMessages.length >= context->maxFaulty) { //TODO
-            peerConnection::broadcastPanicAll(); //TODO
-        }
-    }
 }
 
 std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event, std::vector<double> trustVector) {
