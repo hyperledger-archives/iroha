@@ -25,7 +25,7 @@ struct Context {
     int maxFaulty;  // f
     std::string name;  // name Options
     bool isLeader;
-    int myPeerNumber;
+    const unsigned char* myPublicKey;
     std::string leaderNumber;
     int panicCount;
     std::unique_ptr<TransactionRepository> repository;
@@ -70,7 +70,9 @@ void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<
 */
 void panic(std::shared_ptr<ConsensusEvent> const event) {
     context->panicCount++;
-    peerConnection::broadcastToPeerRange(event, 2f+1+1*context->panicCount, 2f+1+1*context->panicCount + 1); //TODO
+    int broadcastStart = 2*context->maxFaulty + 1 + context->maxFaulty*context->panicCount;
+    int broadcastEnd = broadcastStart + context->maxFaulty;
+    peerConnection::broadcastToPeerRange(event, broadcastStart, broadcastEnd); //TODO
 }
 
 void setAwkTimer(int const sleepMillisecs, std::function<void(void)> action, actionArgs ...) {
@@ -140,11 +142,6 @@ void loop() {
                     transactionRepository->commitTransaction(); //TODO
                 }
 
-            } else if (ConsensusEvent::event::suspicion == event->type) {
-                //TODO: validate suspicion
-                // Request view change
-                
-
             } else if (ConsensusEvent::event::viewChange == event->type) {
                 // Validate view change event
                 //TODO:
@@ -153,6 +150,7 @@ void loop() {
                 viewChangeCache.put(event); //TODO
                 peerConnection::broadcastAll(viewChange); //TODO
             }
+        }
     }
 }
 
