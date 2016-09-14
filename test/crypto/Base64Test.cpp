@@ -8,7 +8,7 @@ TEST(Base64, EncodeAndDecodeNormalText){
     ASSERT_STREQ( (char*)text, (char*)base64::decode(base64::encode(text)));
 }
 
-TEST(Base64, EncodeAndDecodeJapaneseTextWithNL){
+TEST(Base64, EncodeAndDecodeJapaneseTextWithNewLine){
     unsigned char* text = (unsigned char*)("ソラミツ株式会社\
                                             以呂波耳本へ止\
                                             千利奴流乎和加\
