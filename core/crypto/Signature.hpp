@@ -71,14 +71,11 @@ namespace Signature {
     // ToDo
   }
 
-  std::tuple<
-    unsigned char*,
-    unsigned char*
-  > generateKeyPair() {
+  std::shared_ptr<KeyPair> generateKeyPair() {
     unsigned char publicKey[32], privateKey[64], seed[32];
     ed25519_create_seed(seed);
     ed25519_create_keypair(publicKey, privateKey, seed);
-    return std::make_tuple( publicKey, privateKey);
+    return std::make_shared<KeyPair>(KeyPair(publicKey, privateKey));
   }
 };  // namespace Signature
 
