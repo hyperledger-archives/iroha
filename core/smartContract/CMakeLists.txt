@@ -21,6 +21,14 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   include_directories($ENV{JAVA_HOME}/include/darwin)
 ENDIF()
 
+
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  link_directories($ENV{JAVA_HOME}/jre/lib/server)
+ELSE()
+  link_directories($ENV{JAVA_HOME}/jre/lib/amd64/server)
+ENDIF()
+
 link_directories($ENV{JAVA_HOME}/jre/lib/server)
 
 ADD_LIBRARY(smartContract STATIC javaVM.cpp)

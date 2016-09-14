@@ -1,7 +1,13 @@
 set(CMAKE_BUILD_TYPE Debug)
 
-SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++14")
-SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -DDEBUG -O0 -std=c++11 -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/server")
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++11 -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/server")
+  SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -DDEBUG -O0 -std=c++11 -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/server")
+ELSE()
+  SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++11 -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/amd64")
+  SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -DDEBUG -O0 -std=c++11 -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/amd64")
+ENDIF()
+
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
 
@@ -20,10 +26,18 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   include_directories($ENV{JAVA_HOME}/include/darwin)
 ENDIF()
 
-link_directories(
-  ${PROJECT_BINARY_DIR}/lib
-  $ENV{JAVA_HOME}/jre/lib/server
-)
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  link_directories(
+    ${PROJECT_BINARY_DIR}/lib
+    $ENV{JAVA_HOME}/jre/lib/server
+  )
+ELSE()
+  link_directories(
+    ${PROJECT_BINARY_DIR}/lib
+    $ENV{JAVA_HOME}/jre/lib/amd64/server
+  )
+ENDIF()
 
 add_executable(javaVM-test javaVM_test.cpp)
 target_link_libraries(javaVM-test smartContract jvm
