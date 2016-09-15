@@ -11,7 +11,7 @@
 #include "../util/Logger.hpp"
 #include "../crypto/Merkle.hpp"
 
-namespace MerkleRepository {
+namespace TransactionRepository {
   std::shared_ptr<leveldb::DB> db;
 
   bool printStatus(leveldb::Status const status) {
