@@ -1,7 +1,5 @@
-#include "../../core/crypto/Signature.hpp"
-#include "../../core/crypto/Base64.hpp"
+#include "../../core/crypto/Merkle.hpp"
 
-// #include <tuple>
 #include <iostream>
 #include <gtest/gtest.h>
 

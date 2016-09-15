@@ -81,7 +81,7 @@ void setAwkTimer(int const sleepMillisecs, std::function<void(void)> action, act
 
 std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event, std::vector<double> trustVector) {
     unsigned char* const publicKey = event->publicKey;
-    std::vector distances = std::make_shared();
+    std::vector<std::tuple> distances = std::make_shared();
 
     for (int ndx = 0; ndx < context->membership::nodes::size; ++ndx) {
         auto node = membership::nodes[ndx];
