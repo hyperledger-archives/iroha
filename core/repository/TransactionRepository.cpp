@@ -23,17 +23,17 @@ namespace TransactionRepository {
     return true;
   }
 
-  AbstractTransaction convertEntity(std::string buffer) {
-    Entity entity;
+  AbstractTransaction convertTransaction(std::string buffer) {
+    AbstractTransaction tx;
     msgpack::object_handle oh = msgpack::unpack(buffer.data(), buffer.size());
     msgpack::object obj = oh.get();
-    obj.convert(entity);
-    return entity;
+    obj.convert(tx);
+    return tx;
   }
 
-  std::string convertBuffer(AbstractTransaction const abstractTransaction) {
+  std::string convertBuffer(AbstractTransaction const tx) {
     msgpack::sbuffer buf;
-    msgpack::pack(buf, entity);
+    msgpack::pack(buf, tx);
     return buf.data();
   }
 
@@ -46,19 +46,22 @@ namespace TransactionRepository {
   }
 
   bool add(std::string hash, AbstractTransaction tx) {
-    if (db == nullptr) loadDb();
-    return printStatus(
-      db->Put(leveldb::WriteOptions(), hash, convertBuffer(entity)));
+    if (nullptr == db) {
+      loadDb();
+    }
+    return printStatus(db->Put(leveldb::WriteOptions(), hash, convertBuffer(tx)));
   }
 
   bool remove(std::string hash) {
-    if (db == nullptr) loadDb();
+    if (nullptr == db) {
+      loadDb();
+    }
     return printStatus(db->Delete(leveldb::WriteOptions(), hash));
   }
 
 bool update(std::string hash, AbstractTransaction tx) {
-    if (db == nullptr){
-    loadDb();
+    if (nullptr == db) {
+      loadDb();
     }
     std::string tmpValue;
     if (printStatus(db->Get(leveldb::ReadOptions(), hash, &tmpValue))) {
@@ -72,13 +75,13 @@ bool update(std::string hash, AbstractTransaction tx) {
   }
 
   AbstractTransaction find(std::string hash) {
-    if (db == nullptr) {
+    if (nullptr == db) {
       loadDb();
     }
     AbstractTransaction value;
     std::string readData;
     printStatus(db->Get(leveldb::ReadOptions(), hash, &readData));
-    return convertEntity(readData);
+    return convertTransaction(readData);
   }
 
 }  // namespace TransactionRepository
