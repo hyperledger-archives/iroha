@@ -1,4 +1,4 @@
-#include "MerkleRepository.hpp"
+#include "TransactionRepository.hpp"
 
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
@@ -12,6 +12,7 @@
 #include "../crypto/Merkle.hpp"
 
 namespace TransactionRepository {
+
   std::shared_ptr<leveldb::DB> db;
 
   bool printStatus(leveldb::Status const status) {
@@ -22,7 +23,7 @@ namespace TransactionRepository {
     return true;
   }
 
-  Entity convertEntity(std::string buffer) {
+  AbstractTransaction convertEntity(std::string buffer) {
     Entity entity;
     msgpack::object_handle oh = msgpack::unpack(buffer.data(), buffer.size());
     msgpack::object obj = oh.get();
@@ -30,7 +31,7 @@ namespace TransactionRepository {
     return entity;
   }
 
-  std::string convertBuffer(Entity entity) {
+  std::string convertBuffer(AbstractTransaction const abstractTransaction) {
     msgpack::sbuffer buf;
     msgpack::pack(buf, entity);
     return buf.data();
@@ -40,37 +41,44 @@ namespace TransactionRepository {
     leveldb::DB* tmpDb;
     leveldb::Options options;
     options.create_if_missing = true;
-    printStatus(leveldb::DB::Open(options, "/tmp/irohadb", &tmpDb));
+    printStatus(leveldb::DB::Open(options, "/tmp/irohaTransactionDB", &tmpDb));
     db.reset(tmpDb);
   }
 
-  bool add(std::string uuid, Entity entity) {
+  bool add(std::string hash, AbstractTransaction tx) {
     if (db == nullptr) loadDb();
     return printStatus(
-      db->Put(leveldb::WriteOptions(), uuid, convertBuffer(entity)));
+      db->Put(leveldb::WriteOptions(), hash, convertBuffer(entity)));
   }
 
-  bool remove(std::string uuid) {
+  bool remove(std::string hash) {
     if (db == nullptr) loadDb();
-    return printStatus(db->Delete(leveldb::WriteOptions(), uuid));
+    return printStatus(db->Delete(leveldb::WriteOptions(), hash));
   }
 
-  bool update(std::string uuid, Entity entity) {
-    if (db == nullptr) loadDb();
+bool update(std::string hash, AbstractTransaction tx) {
+    if (db == nullptr){
+    loadDb();
+    }
     std::string tmpValue;
-    if (printStatus(db->Get(leveldb::ReadOptions(), uuid, &tmpValue))) {
+    if (printStatus(db->Get(leveldb::ReadOptions(), hash, &tmpValue))) {
       leveldb::WriteBatch batch;
-      batch.Delete(uuid);
-      batch.Put(uuid, convertBuffer(entity));
+      batch.Delete(hash);
+      batch.Put(hash, convertBuffer(entity));
+
       return printStatus(db->Write(leveldb::WriteOptions(), &batch));
     }
     return false;
   }
-  Entity find(std::string uuid) {
-    if (db == nullptr) loadDb();
-    Entity value;
+
+  AbstractTransaction find(std::string hash) {
+    if (db == nullptr) {
+      loadDb();
+    }
+    AbstractTransaction value;
     std::string readData;
-    printStatus(db->Get(leveldb::ReadOptions(), uuid, &readData));
+    printStatus(db->Get(leveldb::ReadOptions(), hash, &readData));
     return convertEntity(readData);
   }
-}  // namespace MerkleRepository
+
+}  // namespace TransactionRepository
