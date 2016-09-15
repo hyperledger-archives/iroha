@@ -12,3 +12,6 @@ SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 SET(LEVELDB_PATH "../vendor/leveldb")
 
 include_directories(${LEVELDB_PATH}/include)
+
+ADD_LIBRARY(txRepo STATIC TransactionRepository.cpp)
+

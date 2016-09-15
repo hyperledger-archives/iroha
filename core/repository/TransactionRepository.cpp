@@ -23,10 +23,10 @@ namespace TransactionRepository {
     return true;
   }
 
-  AbstractTransaction convertTransaction(std::string buffer) {
+  AbstractTransaction convertTransaction(std::string const buffer) {
     AbstractTransaction tx;
-    msgpack::object_handle oh = msgpack::unpack(buffer.data(), buffer.size());
-    msgpack::object obj = oh.get();
+    msgpack::object_handle unpacked = msgpack::unpack(buffer.data(), buffer.size());
+    msgpack::object obj = unpacked.get();
     obj.convert(tx);
     return tx;
   }
@@ -45,7 +45,7 @@ namespace TransactionRepository {
     db.reset(tmpDb);
   }
 
-  bool add(std::string hash, AbstractTransaction tx) {
+  bool add(std::string hash, AbstractTransaction const tx) {
     if (nullptr == db) {
       loadDb();
     }
@@ -59,7 +59,7 @@ namespace TransactionRepository {
     return printStatus(db->Delete(leveldb::WriteOptions(), hash));
   }
 
-bool update(std::string hash, AbstractTransaction tx) {
+bool update(std::string hash, AbstractTransaction const tx) {
     if (nullptr == db) {
       loadDb();
     }
