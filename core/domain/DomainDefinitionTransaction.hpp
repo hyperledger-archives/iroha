@@ -4,7 +4,7 @@
 #include <msgpack.hpp>
 
 namespace DomainDefinitionTransaction {
-  //TODO:
+  MSGPACK_DEFINE(hash, type, domainToDefine, accountPublicKey);
 };
 
 #endif  // CORE_DOMAIN_DOMAINDEFINITIONTRANSACTION_HPP_

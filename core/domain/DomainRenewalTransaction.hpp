@@ -4,7 +4,7 @@
 #include <msgpack.hpp>
 
 namespace DomainRenewalTransaction {
-  //TODO:
+  MSGPACK_DEFINE(hash, type, domainToRenew, accountPublicKey);
 };
 
 #endif  // CORE_DOMAIN_DOMAINRENEWALTRANSACTION_HPP_

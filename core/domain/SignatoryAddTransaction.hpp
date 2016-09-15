@@ -4,7 +4,7 @@
 #include <msgpack.hpp>
 
 namespace SignatoryAddTransaction {
-  //TODO:
+    MSGPACK_DEFINE(hash, type, accountPublicKey, signerToAddPublicKey);
 };
 
 #endif  // CORE_DOMAIN_SIGNATORYADDTRANSACTION_HPP_

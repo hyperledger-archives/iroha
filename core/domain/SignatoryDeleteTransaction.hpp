@@ -4,7 +4,7 @@
 #include <msgpack.hpp>
 
 namespace SignatoryDeleteTransaction {
-  //TODO:
+    MSGPACK_DEFINE(hash, type, accountPublicKey, signerToDeletePublicKey);
 };
 
 #endif  // CORE_DOMAIN_SIGNATORYDELETETRANSACTION_HPP_
