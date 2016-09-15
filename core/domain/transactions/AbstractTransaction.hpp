@@ -6,8 +6,6 @@
 #include <string>
 #include <vector>
 
-#include <msgpack.hpp>
-
 enum TransactionType { 
     addPeer, modifyPeer, removePeer, transfer, signatory, signatoryAdd, signatoryDelete, domainDefinition, 
     domainRenewal, aliasDefinition, aliasRenewal, assetDefinition, message, chaincodeInit, chaincodeInvoke, 
@@ -21,8 +19,7 @@ class AbstractTransaction {
     
     TransactionType type;
     
-    std::vector<unsigned char> senderPublicKey;
-    std::vector<unsigned char> receiverPublicKey;
+    std::vector<unsigned char> singature;
 
     AbstractTransaction():
       hash(""),

@@ -1,5 +1,5 @@
-#ifndef CORE_DOMAIN_ENTITYREPOSITORY_HPP_
-#define CORE_DOMAIN_ENTITYREPOSITORY_HPP_
+#ifndef CORE_REPOSITORY_ENTITYREPOSITORY_HPP_
+#define CORE_REPOSITORY_ENTITYREPOSITORY_HPP_
 
 #include <string>
 #include <msgpack.hpp>
@@ -13,4 +13,4 @@ namespace EntityRepository {
   Entity find(std::string uuid);
 };
 
-#endif  // CORE_DOMAIN_ENTITYREPOSITORY_HPP_
+#endif  // CORE_REPOSITORY_ENTITYREPOSITORY_HPP_
