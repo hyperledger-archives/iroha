@@ -10,7 +10,7 @@ void Java_SmartContract_save(JNIEnv *env,jobject thiz,jstring key,jstring value)
     env->ReleaseStringUTFChars(value, valueChar);
 }
 
-std::unique_ptr<JavaContext> createVM(std::string contractName){
+std::unique_ptr<JavaContext> initializeVM(std::string contractName){
   JNIEnv* env;
   JavaVM* jvm;
 
@@ -27,7 +27,7 @@ std::unique_ptr<JavaContext> createVM(std::string contractName){
   options[0].optionString = (char*)("-Djava.class.path="+(std::string)getenv("IROHA_HOME")+"/smartContract/"+contractName+"/").c_str();
 
   JavaVMInitArgs vm_args;
-  vm_args.version = JNI_VERSION_1_6;
+  vm_args.version = JNI_VERSION_1_8;
   vm_args.options = options;
   vm_args.nOptions = 3;
   //vm_args.ignoreUnrecognized = true;
@@ -37,42 +37,46 @@ std::unique_ptr<JavaContext> createVM(std::string contractName){
     std::cout << "cannot run JavaVM : "<< res << std::endl;
     return nullptr;
   }
-  std::unique_ptr<JavaContext> ptr(new JavaContext(
-    env,
-    jvm,
-    vm_args,
-    std::move(contractName)
-  ));
-  return ptr;
-}
-
-void execVM(const std::unique_ptr<JavaContext>& context){
-  int res;
 
   jclass cls = context->env->FindClass(context->name.c_str());
   if(cls == 0){
     std::cout << "could not found class : "<< context->name.c_str() << std::endl;
-    return;
+    return nullptr;
   }
 
-  jmethodID cns = context->env->GetMethodID(cls, "<init>", "()V");
+  jmethodID cns = context->cls->GetMethodID(cls, "<init>", "()V");
   if(cns == NULL){
     std::cout << "could not get <init> method." << std::endl;
-    return;
+    return nullptr;
   }
   jobject obj = context->env->NewObject(cls, cns);
 
-  jmethodID mid = context->env->GetStaticMethodID(cls, "remit", "(Ljava/util/Map;)V");
+  std::unique_ptr<JavaContext> ptr(new JavaContext(
+    env,
+    jvm,
+    vm_args,
+    std::move(contractName),
+    cls,
+    obj
+  ));
+  return ptr;
+}
+
+void execFunction(const std::unique_ptr<JavaContext>& context,
+  std::string functionName,
+  std::unordered_map params){
+
+  jmethodID mid = context->env->GetStaticMethodID(cls, functionName.c_str(), "(Ljava/util/Map;)V");
   if(mid == NULL){
-    std::cout << "could not get method : " << "remit" << std::endl;
+    std::cout << "could not get method : " << functionName << std::endl;
     return;
   }
-
   context->env->CallVoidMethod(obj, mid);
 
-  res = context->jvm->DestroyJavaVM();
+ res = context->jvm->DestroyJavaVM();
   if(res){
     std::cout << "could not destroy JavaVM : " << res << std::endl;
   }
 }
+
 
