@@ -14,7 +14,7 @@ namespace Merkle {
 
     void recomputeFromRepository(TransactionRepository txRepo) {
         for (std::shared_ptr<AbstractTransaction> tx : txRepo::getAllTransaction() {
-            
+            std:::string = Hash::sha3_256_hex(tx::getRawData());
         }
     }
 }  // namespace Merkle

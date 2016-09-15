@@ -19,7 +19,9 @@ class AbstractTransaction {
     
     TransactionType type;
     
-    std::vector<unsigned char> singature;
+    std::vector<unsigned char> signature;
+
+    std::string rawData;
 
     AbstractTransaction():
       hash(""),
