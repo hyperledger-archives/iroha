@@ -1,3 +1,5 @@
+#include "MerkleRepository.hpp"
+
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
 
@@ -6,17 +8,15 @@
 #include <iostream>
 
 #include <msgpack.hpp>
-
-#include "MerkleRepository.hpp"
-#include "Entity.hpp"
+#include "../util/Logger.hpp"
+#include "../crypto/Merkle.hpp"
 
 namespace MerkleRepository {
   std::shared_ptr<leveldb::DB> db;
 
-  bool printStatus(leveldb::Status status) {
+  bool printStatus(leveldb::Status const status) {
     if (!status.ok()) {
-      // ToDo Logger
-      std::cerr << status.ToString() << std::endl;
+      logger(status.ToString());
       return false;
     }
     return true;
@@ -73,4 +73,4 @@ namespace MerkleRepository {
     printStatus(db->Get(leveldb::ReadOptions(), uuid, &readData));
     return convertEntity(readData);
   }
-}  // namespace EntityRepository
+}  // namespace MerkleRepository
