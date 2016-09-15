@@ -17,11 +17,10 @@ namespace AbstractTransaction {
 
   class AbstractTransaction {
   public:
+      unsigned long long id;
       std::string hash;
       std::string prevTxHash;  // Assume chains of transactions
-      
       TransactionType type;
-      
       std::vector<unsigned char> signature;
 
       AbstractTransaction():
