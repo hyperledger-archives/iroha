@@ -22,6 +22,7 @@ namespace AbstractTransaction {
       std::string prevTxHash;  // Assume chains of transactions
       TransactionType type;
       std::vector<unsigned char> signature;
+      // Base64 signature;
 
       AbstractTransaction():
         hash(""),
@@ -29,17 +30,15 @@ namespace AbstractTransaction {
         privateKey((unsigned char*)"")
       {}
 
-      AbstractTransaction(
-        std::string hash,
-        unsigned char* aPublicKey,
-        unsigned char* aPrivateKey):
-        publicKey(aPublicKey),
-        privateKey(aPrivateKey) {
+      // AbstractTransaction(
+      //   std::string hash,
+      //   publicKey(aPublicKey),
+      //   privateKey(aPrivateKey) {
 
-        for (size_t i = 0; i < strlen(reinterpret_cast<char*>(publicKey)); ++i) {
-          publicKeyVec.push_back(publicKey[i]);
-        }
-      }
+      //   for (size_t i = 0; i < strlen(reinterpret_cast<char*>(publicKey)); ++i) {
+      //     publicKeyVec.push_back(publicKey[i]);
+      //   }
+      // }
   };
 }  // namespace AbstractTransaction
 
