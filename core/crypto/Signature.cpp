@@ -69,6 +69,5 @@ namespace Signature {
         message.size(),
         reinterpret_cast<const unsigned char*>(Base64::decode(publicKey)));
   }
-  // ===
 
 };  // namespace signature
