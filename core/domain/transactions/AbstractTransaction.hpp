@@ -10,8 +10,8 @@ namespace AbstractTransaction {
   std::string getRawData();
 
   enum TransactionType { 
-      addPeer, modifyPeer, removePeer, transfer, signatory, signatoryAdd, signatoryDelete, domainDefinition, 
-      domainRenewal, aliasDefinition, aliasRenewal, assetDefinition, message, chaincodeInit, chaincodeInvoke, 
+      addPeer, modifyPeer, removePeer, transfer, signatory, signatoryAdd, signatoryDelete, domainDefinition,
+      domainRenewal, aliasDefinition, aliasRenewal, assetDefinition, message, chaincodeInit, chaincodeInvoke,
       chaincodeUpdate, chaincodeDestroy, interchain
   };
 
@@ -24,21 +24,12 @@ namespace AbstractTransaction {
       std::vector<unsigned char> signature;
       // Base64 signature;
 
-      AbstractTransaction():
-        hash(""),
-        senderPublicKey((unsigned char*)""),
-        privateKey((unsigned char*)"")
-      {}
+      AbstractTransaction(
+        std::string hash,
+        std::vector<unsigned char> signature,
+        privateKey(aPrivateKey) {
 
-      // AbstractTransaction(
-      //   std::string hash,
-      //   publicKey(aPublicKey),
-      //   privateKey(aPrivateKey) {
-
-      //   for (size_t i = 0; i < strlen(reinterpret_cast<char*>(publicKey)); ++i) {
-      //     publicKeyVec.push_back(publicKey[i]);
-      //   }
-      // }
+      }
   };
 }  // namespace AbstractTransaction
 

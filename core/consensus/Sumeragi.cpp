@@ -109,9 +109,7 @@ void loop() {
             // Process transaction
             processTransaction(event, nodeOrder);
 
-            awkCache.put(event); //TODO
-
-            if (awkCache.size() > context->maxFaulty*2 + 1) {
+            if (awkCache->signatures::size() > context->maxFaulty*2 + 1) { // TODO check syntax
                 // Commit locally
                 transactionRepository->commitTransaction(); //TODO
             }
