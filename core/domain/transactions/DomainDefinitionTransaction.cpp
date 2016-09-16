@@ -2,8 +2,8 @@
 
 namespace DomainDefinitionTransaction {
 
-class DomainDefinitionTransaction : public AbstractTransaction {
-    //TODO:
- };
+    class DomainDefinitionTransaction : public AbstractTransaction {
+        //TODO:
+    };
     
 };  // namespace DomainDefinitionTransaction

@@ -2,8 +2,8 @@
 
 namespace DomainRenewalTransaction {
 
-class DomainRenewalTransaction : public AbstractTransaction {
-    //TODO:
- };
-    
+    class DomainRenewalTransaction : public AbstractTransaction {
+        //TODO:
+    };
+
 };  // namespace DomainRenewalTransaction
