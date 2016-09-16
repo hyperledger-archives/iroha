@@ -53,14 +53,19 @@ void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<
 }
 
 /**
-* Move the suspected validator to the end of the chain and the suspector to the 2f+1'th position.
 * 
 * For example, given:
+* if f := 1, then
+*  _________________    _________________
+* /        A        \  /        B        \
 * |---|  |---|  |---|  |---|  |---|  |---|
 * | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
 * |---|  |---|  |---|  |---|  |---|  |---|,
 *
-* if [2] suspects [3] and f := 2, then the validation chain order will become:
+* if 2f+1 signature are not received within the timer's limit, then
+* the set of considered validators, A, is expanded by f:
+*  ________________________    __________
+* /           A            \  /    B     \ 
 * |---|  |---|  |---|  |---|  |---|  |---|
 * | 0 |--| 1 |--| 4 |--| 5 |--| 2 |--| 3 |
 * |---|  |---|  |---|  |---|  |---|  |---|.
@@ -111,7 +116,7 @@ void loop() {
 
             if (awkCache->signatures::size() > context->maxFaulty*2 + 1) { // TODO check syntax
                 // Commit locally
-                transactionRepository->commitTransaction(); //TODO
+                transactionRepository->commitTransaction(event); //TODO
             }
         }
     }
