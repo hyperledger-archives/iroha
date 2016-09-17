@@ -3,7 +3,7 @@
 #include "../util/Logger.hpp"
 #include "../repository/TransactionRepository.hpp"
 #include "../domain/AbstractTransaction.hpp"
-#include "../peer/Connection.hpp" // TODO: rather than this low-level interface, abstract out events and broadcasts
+#include "../peer/Connection.hpp"
 #include "../crypto/Hash.hpp"
 #include "../validation/TransactionValidator.hpp"
 
@@ -22,13 +22,12 @@ namespace Sumeragi {
 
 struct Context {
     int maxFaulty;  // f
-    std::string name;  // name Options
     const unsigned char* myPublicKey;
     int panicCount;
     std::unique_ptr<TransactionRepository> repository;
     std::unique_ptr<TransactionCache> txCache;
     std::unique_ptr<TransactionValidator> txValidator;
-    std::queue<ConsensusEvent> eventCache;//TODO: explore deque
+    std::queue<ConsensusEvent> eventCache;
 };
 
 void initializeSumeragi(int const myNumber, int const numberOfPeers, int const leaderNumber, int const batchSize) {
@@ -116,7 +115,7 @@ void loop() {
 
             if (awkCache->signatures::size() > context->maxFaulty*2 + 1) { // TODO check syntax
                 // Commit locally
-                transactionRepository->commitTransaction(event); //TODO
+                transactionRepository->commitTransaction(event); //TODO: add error handling in case not saved
             }
         }
     }

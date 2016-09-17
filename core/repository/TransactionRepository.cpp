@@ -13,6 +13,7 @@
 
 namespace TransactionRepository {
 std::shared_ptr<leveldb::DB> db;
+std::unique_ptr<Merkle> merkle;
 
 bool printStatus(leveldb::Status const status) {
   if (!status.ok()) {
@@ -51,8 +52,9 @@ bool commit(ConsensusEvent const event) {
   AbstractTransaction event->tx;
   std::vector<std::string> signatures = event->signatures;
   // Update Merkle tree
-  //todo:
-  return printStatus(db->Put(leveldb::WriteOptions(), hash, convertBuffer(tx)));
+  std::string const rawData = convertBuffer(tx);
+  merkle::addLeaf(db, rawData);
+  return printStatus(db->Put(leveldb::WriteOptions(), hash, rawData));
 }
 
 AbstractTransaction find(std::string const hash) {

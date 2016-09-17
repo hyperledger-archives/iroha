@@ -17,12 +17,15 @@ namespace AbstractTransaction {
 
   class AbstractTransaction {
   public:
-      unsigned long long id;
+      // unsigned long long id;
+      unsigned long long timestamp;
       std::string hash;
       std::string prevTxHash;  // Assume chains of transactions
       TransactionType type;
       std::vector<unsigned char> signature;
       // Base64 signature;
+
+      std::string getRawData();
 
       AbstractTransaction(
         std::string hash,
