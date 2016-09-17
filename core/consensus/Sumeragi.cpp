@@ -86,20 +86,20 @@ void panic(std::shared_ptr<ConsensusEvent> const event) {
     peerConnection::broadcastToPeerRange(event, broadcastStart, broadcastEnd); //TODO
 }
 
-void setAwkTimer(int const sleepMillisecs, std::function<void(void)> action, actionArgs ...) {
+void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const action, actionArgs ...) {
     std::thread([sleepMillisecs, tx]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
         action();
     }).detach();
 }
 
-std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event, std::vector<double> trustVector) {
+std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event/*, std::vector<double> trustVector*/) {
     unsigned char* const publicKey = event->publicKey;
     std::vector<std::tuple> distances = std::make_shared();
 
     for (int ndx = 0; ndx < context->peerService::numValidatingPeers(); ++ndx) {
-        auto node = context->peerService::nodes[ndx];
-        long long int distance = (*nodeKey->get() && 0xffffff) - (publicKey && 0xffffff) + trustVector[ndx];
+        auto const node = context->peerService::nodes[ndx];
+        long long int distance = (node->publicKey && 0xffffff) - (publicKey && 0xffffff)/* + trustVector[ndx]*/;
         
         distances[ndx] = std::make_tuple(publicKey, distance);
     }
@@ -118,7 +118,7 @@ void loop() {
                 continue;
             }
             // Determine node order
-            std::vector<Node> nodeOrder = determineConsensusOrder();
+            std::vector<Node> const nodeOrder = determineConsensusOrder(event);
 
             // Process transaction
             processTransaction(event, nodeOrder);
