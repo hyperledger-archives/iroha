@@ -28,6 +28,7 @@ struct Context {
     std::unique_ptr<TransactionCache> txCache;
     std::unique_ptr<TransactionValidator> txValidator;
     std::queue<ConsensusEvent> eventCache;
+    peerService;
 };
 
 void initializeSumeragi(int const myNumber, int const numberOfPeers, int const leaderNumber, int const batchSize) {
@@ -73,6 +74,15 @@ void panic(std::shared_ptr<ConsensusEvent> const event) {
     context->panicCount++;
     int broadcastStart = 2*context->maxFaulty + 1 + context->maxFaulty*context->panicCount;
     int broadcastEnd = broadcastStart + context->maxFaulty;
+
+    // Do some bounds checking
+    if (broadcastStart > context->peerService::numPeers()-1) {
+        broadcastStart = context->peerService::numPeers()-1;
+    }
+    if (broadcastEnd > context->peerService::numPeers()-1) {
+        broadcastEnd = context->peerService::numPeers()-1;
+    }
+
     peerConnection::broadcastToPeerRange(event, broadcastStart, broadcastEnd); //TODO
 }
 
