@@ -4,13 +4,12 @@
 #include <string>
 #include <msgpack.hpp>
 #include "../domain/transactions/AbstractTransaction.hpp"
+#include "../domain/consensus/ConsensusEvent.hpp"
 
 namespace TransactionRepository {
-  bool add(std::string hash, AbstractTrannsaction tx);
-  bool update(std::string hash, AbstractTrannsaction tx);
-  bool remove(std::string hash);
+  bool commit(std::string const hash, ConsensusEvent const tx);
 
-  AbstractTrannsaction find(std::string hash);
+  AbstractTransaction find(std::string const hash);
 };
 
 #endif  // CORE_REPOSITORY_TRANSACTIONREPOSITORY_HPP_

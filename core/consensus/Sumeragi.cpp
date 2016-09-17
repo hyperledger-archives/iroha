@@ -63,7 +63,7 @@ void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<
 * |---|  |---|  |---|  |---|  |---|  |---|,
 *
 * if 2f+1 signature are not received within the timer's limit, then
-* the set of considered validators, A, is expanded by f:
+* the set of considered validators, A, is expanded by f (e.g., by 1 in the example below):
 *  ________________________    __________
 * /           A            \  /    B     \ 
 * |---|  |---|  |---|  |---|  |---|  |---|
