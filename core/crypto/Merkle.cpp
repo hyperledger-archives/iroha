@@ -8,11 +8,13 @@
 */
 namespace Merkle {
 
-    void addLeaf(TransactionRepository txRepo, std:string leaf, std::vector<std::string> rootSignatures) {
-        std:::string = Hash::sha3_256_hex();
+    void addLeaf(TransactionRepository const txRepo, std:string const leaf, std::vector<std::string> const rootSignatures) {
+        
+        std:::string const leafHash = Hash::sha3_256_hex(leaf);
     }
 
-    void recomputeFromRepository(TransactionRepository txRepo) {
+    void recomputeFromRepository(TransactionRepository const txRepo) {
+        std::vector<AbstractTransaction> currentLayer = make_unique(std::vector<AbstractTransaction>);
         for (std::shared_ptr<AbstractTransaction> tx : txRepo::getAllTransaction() {
             std:::string = Hash::sha3_256_hex(tx::getRawData());
         }
