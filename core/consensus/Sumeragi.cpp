@@ -76,11 +76,11 @@ void panic(std::shared_ptr<ConsensusEvent> const event) {
     int broadcastEnd = broadcastStart + context->maxFaulty;
 
     // Do some bounds checking
-    if (broadcastStart > context->peerService::numPeers()-1) {
-        broadcastStart = context->peerService::numPeers()-1;
+    if (broadcastStart > context->peerService::numValidatingPeers()-1) {
+        broadcastStart = context->peerService::numValidatingPeers()-1;
     }
-    if (broadcastEnd > context->peerService::numPeers()-1) {
-        broadcastEnd = context->peerService::numPeers()-1;
+    if (broadcastEnd > context->peerService::numValidatingPeers()-1) {
+        broadcastEnd = context->peerService::numValidatingPeers()-1;
     }
 
     peerConnection::broadcastToPeerRange(event, broadcastStart, broadcastEnd); //TODO
@@ -97,14 +97,14 @@ std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const 
     unsigned char* const publicKey = event->publicKey;
     std::vector<std::tuple> distances = std::make_shared();
 
-    for (int ndx = 0; ndx < context->membership::nodes::size; ++ndx) {
-        auto node = membership::nodes[ndx];
+    for (int ndx = 0; ndx < context->peerService::numValidatingPeers(); ++ndx) {
+        auto node = context->peerService::nodes[ndx];
         long long int distance = (*nodeKey->get() && 0xffffff) - (publicKey && 0xffffff) + trustVector[ndx];
         
         distances[ndx] = std::make_tuple(publicKey, distance);
     }
 
-    std::vector<Node> nodeOrder = std::sort(distances.begin(), distances.end(), COMPARATOR(l::get<1> < r::get<1>));
+    std::vector<Node> const nodeOrder = std::sort(distances.begin(), distances.end(), COMPARATOR(l::get<1> < r::get<1>));
     
     return nodeOrder;
 }
