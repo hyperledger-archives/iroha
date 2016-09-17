@@ -7,9 +7,8 @@
 #include "../domain/consensus/ConsensusEvent.hpp"
 
 namespace TransactionRepository {
-  bool commit(std::string const hash, ConsensusEvent const tx);
-
-  AbstractTransaction find(std::string const hash);
+bool commit(std::string const hash, ConsensusEvent const tx);
+AbstractTransaction find(std::string const hash);
 };
 
 #endif  // CORE_REPOSITORY_TRANSACTIONREPOSITORY_HPP_
