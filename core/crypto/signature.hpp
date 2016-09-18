@@ -3,24 +3,24 @@
 
 #include <string>
 #include <memory>
-#include <tuple>
+#include <vector>
 
 #include <ed25519.h>
 
 #include "../domain/entity.hpp"
 
 namespace signature{
-  
+
   class KeyPair{
    public:
-    unsigned char* publicKey;
-    unsigned char* privateKey;
+    std::vector<unsigned char> publicKey;
+    std::vector<unsigned char> privateKey;
     KeyPair(
-      unsigned char* pub,
-      unsigned char* pri
+      std::vector<unsigned char>&& pub,
+      std::vector<unsigned char>&& pri
     ):
-      publicKey(pub),
-      privateKey(pri)
+      publicKey(std::move(pub)),
+      privateKey(std::move(pri))
     {}
   };
 
@@ -32,14 +32,14 @@ namespace signature{
 
   std::string sign(
     std::string message,
-    std::string publicKey,
-    std::string privateKey
+    std::string publicKey_b64,
+    std::string privateKey_b64
   );
 
   bool verify(
-    const std::string signature,
+    const std::string signature_b64,
     const std::string message,
-    const std::string publicKey);
+    const std::string publicKey_b64);
 
   KeyPair generateKeyPair();
 
