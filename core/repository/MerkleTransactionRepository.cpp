@@ -11,7 +11,7 @@
 #include "../util/Logger.hpp"
 #include "../crypto/Merkle.hpp"
 
-namespace TransactionRepository {
+namespace MerkleTransactionRepository {
 std::shared_ptr<leveldb::DB> db;
 std::unique_ptr<Merkle> merkle;
 
@@ -66,4 +66,4 @@ AbstractTransaction find(std::string const hash) {
   printStatus(db->Get(leveldb::ReadOptions(), hash, &readData));
   return convertTransaction(readData);
 }
-}  // namespace TransactionRepository
+}  // namespace MerkleTransactionRepository
