@@ -19,7 +19,7 @@ namespace AbstractTransaction {
   public:
       // unsigned long long id;
       unsigned long long timestamp;
-      std::string hash;
+      std::string hash;// TODO: add merkle node here?
       std::string prevTxHash;  // Assume chains of transactions
       TransactionType type;
       std::vector<unsigned char> signature;

@@ -9,7 +9,7 @@
 
 #include <msgpack.hpp>
 #include "../util/Logger.hpp"
-#include "../crypto/Merkle.hpp"
+#include "../crypto/MerkleNode.hpp"
 
 namespace UnconfirmedTransactionRepository {
 
@@ -45,7 +45,7 @@ namespace UnconfirmedTransactionRepository {
     db.reset(tmpDb);
   }
 
-  bool add(std::string hash, AbstractTransaction const tx) {
+  bool add(std::string const hash, AbstractTransaction const tx) {
     if (nullptr == db) {
       loadDb();
     }
@@ -74,7 +74,7 @@ bool update(std::string hash, AbstractTransaction const tx) {
     return false;
   }
 
-  AbstractTransaction find(std::string hash) {
+  AbstractTransaction find(std::string const hash) {
     if (nullptr == db) {
       loadDb();
     }
