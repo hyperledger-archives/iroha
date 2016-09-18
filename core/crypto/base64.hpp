@@ -5,8 +5,8 @@
 #include <memory>
 
 namespace base64{
-  std::string encode(const unsigned char*);
-  const unsigned char* decode(std::string);
+  const std::string encode(const unsigned char*);
+  std::unique_ptr<unsigned char> decode(std::string);
 };
 
 #endif  // CORE_CRYPTO_BASE64_HPP_

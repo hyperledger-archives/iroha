@@ -24,39 +24,25 @@ namespace signature{
     {}
   };
 
-  template<typename T>
-  bool verify(
-    std::string signature,
-    std::string message,
-    T dummy
-  ) {
-    // ToDo throw illegal type exception
-  }
-  template<typename T>
-  std::string sign(std::string message, T dummy) {
-    // ToDo throw illegal type exception
-  }
 
-  template<>
-  bool verify<std::shared_ptr<Entity>>(
+  std::string sign(
+    std::string message,
+    KeyPair  keyPair
+  );
+
+  std::string sign(
+    std::string message,
+    std::string publicKey,
+    std::string privateKey
+  );
+
+  bool verify(
     const std::string signature,
     const std::string message,
-    const std::shared_ptr<Entity> entity) {
-    // ToDo
-  }
-  template<>
-  std::string sign<std::shared_ptr<Entity>>(
-    const std::string message,
-    const std::shared_ptr<Entity> entity) {
-    // ToDo
-  }
+    const std::string publicKey);
 
-  KeyPair generateKeyPair() {
-    unsigned char publicKey[32], privateKey[64], seed[32];
-    ed25519_create_seed(seed);
-    ed25519_create_keypair(publicKey, privateKey, seed);
-    return KeyPair( publicKey, privateKey);
-  }
+  KeyPair generateKeyPair();
+
 };  // namespace signature
 
 #endif  // CORE_CRYPTO_SIGNATURE_HPP_
