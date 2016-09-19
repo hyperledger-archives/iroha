@@ -27,5 +27,3 @@ namespace hash {
   }
 
 }  // namespace hash
-Contact GitHub API Training Shop Blog About
-
