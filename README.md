@@ -19,5 +19,5 @@ mkdir build
 cd build
 cmake ..
 make 
-../test.ch
+../test.sh
 ```
