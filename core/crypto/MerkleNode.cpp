@@ -9,4 +9,6 @@
 namespace MerkleNode {
 std::string hash;
 std::string pairedNode;
+std::string parent;
+std::vector<std::string> children;
 }  // namespace MerkleNode

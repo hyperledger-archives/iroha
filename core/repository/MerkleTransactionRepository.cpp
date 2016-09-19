@@ -31,7 +31,7 @@ AbstractTransaction convertTransaction(std::string const buffer) {
   return tx;
 }
 
-std::string convertBuffer(AbstractTransaction const tx) {
+std::string convertBuffer(MerkleNode const tx) {
   msgpack::sbuffer buf;
   msgpack::pack(buf, tx);
   return buf.data();
@@ -49,15 +49,16 @@ bool commit(ConsensusEvent const event) {
   if (nullptr == db) {
     loadDb();
   }
-  AbstractTransaction event->tx;
-  std::vector<std::string> signatures = event->signatures;
+  AbstractTransaction const tx =  event->tx;
+  std::vector<std::string> const signatures = event->signatures;
+  
   // Update Merkle tree
   std::string const rawData = convertBuffer(tx);
   merkle::addLeaf(rawData);
   return printStatus(db->Put(leveldb::WriteOptions(), hash, rawData));
 }
 
-AbstractTransaction find(std::string const hash) {
+AbstractTransaction findLeaf(std::string const hash) {
   if (nullptr == db) {
     loadDb();
   }

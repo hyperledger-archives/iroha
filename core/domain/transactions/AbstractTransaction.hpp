@@ -7,33 +7,25 @@
 #include <vector>
 
 namespace AbstractTransaction {
-  std::string getRawData();
 
-  enum TransactionType { 
-      addPeer, modifyPeer, removePeer, transfer, signatory, signatoryAdd, signatoryDelete, domainDefinition,
-      domainRenewal, aliasDefinition, aliasRenewal, assetDefinition, message, chaincodeInit, chaincodeInvoke,
-      chaincodeUpdate, chaincodeDestroy, interchain
-  };
+enum TransactionType { 
+    addPeer, modifyPeer, removePeer, transfer, signatory, signatoryAdd, signatoryDelete, domainDefinition,
+    domainRenewal, aliasDefinition, aliasRenewal, assetDefinition, message, chaincodeInit, chaincodeInvoke,
+    chaincodeUpdate, chaincodeDestroy, interchain
+};
 
-  class AbstractTransaction {
-  public:
-      // unsigned long long id;
-      unsigned long long timestamp;
-      std::string hash;// TODO: add merkle node here?
-      std::string prevTxHash;  // Assume chains of transactions
-      TransactionType type;
-      std::vector<unsigned char> signature;
-      // Base64 signature;
+class AbstractTransaction {
+public:
+  virtual ~AbstractTransaction() = default; // make dtor virtual
+    AbstractTransaction(AbstractTransaction&&) = default;  // support moving
+    AbstractTransaction& operator = (AbstractTransaction&&) = default;
+    AbstractTransaction(const AbstractTransaction&) = default; // support copying
+    AbstractTransaction& operator = (const AbstractTransaction&) = default;
 
-      std::string getRawData();
-
-      AbstractTransaction(
-        std::string hash,
-        std::vector<unsigned char> signature,
-        privateKey(aPrivateKey) {
-
-      }
-  };
+    virtual std::string getRawData() = 0;
+    virtual unsigned long long  getTimestamp() = 0;
+    virtual TransactionType getType() = 0;
+};
 }  // namespace AbstractTransaction
 
 #endif  // CORE_DOMAIN_TRANSACTIONS_ABSTRACTTRANSACTION_HPP_

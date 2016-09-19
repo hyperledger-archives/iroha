@@ -10,7 +10,7 @@ namespace TransferTransaction {
     unsigned char* receiverPublicKey;
     std::string domain;
     std::string asset;
-    long long makotos;  // TODO: JS range from -9007199254740992 to +9007199254740992 対応
+    long long makotos;  // TODO: JS NUMBER range from -9007199254740992 to +9007199254740992 対応
     short int precision;
 
     MSGPACK_DEFINE(prevTxHash, hash, type, senderPublicKey, receiverPublicKey, domain, asset, makotos, precision);

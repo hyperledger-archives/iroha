@@ -8,7 +8,7 @@
 
 namespace MerkleTransactionRepository {
 bool commit(std::string const hash, ConsensusEvent const tx);
-AbstractTransaction find(std::string const hash);
+MerkleNode find(std::string const hash);
 };
 
 #endif  // CORE_REPOSITORY_MERKLETRANSACTIONREPOSITORY_HPP_
