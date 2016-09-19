@@ -1,4 +1,4 @@
-#include "JavaVM.hpp"
+#include "javaVM.hpp"
 
 void Java_SmartContract_save(JNIEnv *env,jobject thiz,jstring key,jstring value){
     const char *keyChar   = env->GetStringUTFChars(   key,0);
@@ -27,7 +27,7 @@ std::unique_ptr<JavaContext> initializeVM(std::string contractName){
   options[0].optionString = (char*)("-Djava.class.path="+(std::string)getenv("IROHA_HOME")+"/smartContract/"+contractName+"/").c_str();
 
   JavaVMInitArgs vm_args;
-  vm_args.version = JNI_VERSION_1_8;
+  vm_args.version = JNI_VERSION_1_6;
   vm_args.options = options;
   vm_args.nOptions = 3;
   //vm_args.ignoreUnrecognized = true;
