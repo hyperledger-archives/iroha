@@ -1,7 +1,7 @@
 
 #include "base64.hpp"
 
-namespace Base64 {
+namespace base64 {
 
 namespace vendor {
   /*

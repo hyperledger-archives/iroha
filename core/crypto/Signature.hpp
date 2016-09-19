@@ -7,11 +7,11 @@
 
 #include <ed25519.h>
 
-#include "../domain/Entity.hpp"
+#include "../domain/entity.hpp"
 
-namespace Signature {
+namespace signature{
 
-  class KeyPair {
+  class KeyPair{
    public:
     std::vector<unsigned char> publicKey;
     std::vector<unsigned char> privateKey;
@@ -23,6 +23,7 @@ namespace Signature {
       privateKey(std::move(pri))
     {}
   };
+
 
   std::string sign(
     std::string message,
