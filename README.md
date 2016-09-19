@@ -13,7 +13,18 @@ cmake(3.5.2)
 
 # Prepare
 ```
+sudo apt -y install default-jdk
+sudo apt -y install default-jre 
+sudo apt -y install libssl-dev
+```
+
+# Env
+```
+# if OSX
 export JAVA_HOME=$(/usr/libexec/java_home)
+# if ubuntu
+export JAVA_HOME=$(readlink -f $(which java) | sed -e "s:/jre/bin/java::")
+
 export IROHA_HOME=$(pwd)/iroha
 ```
 
