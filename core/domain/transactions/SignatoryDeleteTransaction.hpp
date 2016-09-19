@@ -1,6 +1,7 @@
 #ifndef CORE_DOMAIN_TRANSACTIONS_SIGNATORYDELETETRANSACTION_HPP_
 #define CORE_DOMAIN_TRANSACTIONS_SIGNATORYDELETETRANSACTION_HPP_
 
+#include "AbstractTransaction.hpp"
 #include <msgpack.hpp>
 
 namespace SignatoryDeleteTransaction {
