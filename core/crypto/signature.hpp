@@ -7,8 +7,6 @@
 
 #include <ed25519.h>
 
-#include "../domain/entity.hpp"
-
 namespace signature{
 
   //=== Deprecated use for debug. ===
