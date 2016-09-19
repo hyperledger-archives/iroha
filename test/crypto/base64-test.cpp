@@ -1,5 +1,5 @@
 
-#include "../../core/crypto/Base64.hpp"
+#include "../../core/crypto/base64.hpp"
 
 #include <iostream>
 #include <gtest/gtest.h>
