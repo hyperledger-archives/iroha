@@ -26,7 +26,7 @@ include_directories(${KECCAK_PATH}/SnP/KeccakP-1600/Optimized64/)
 link_directories(${ED25519_PATH})
 
 ADD_LIBRARY(hash STATIC
-  hash.cpp
+  Hash.cpp
   ${KECCAK_PATH}/SnP/KeccakP-1600/Optimized64/KeccakP-1600-opt64.c
   ${KECCAK_PATH}/Constructions/KeccakSponge.c
   ${KECCAK_PATH}/Modes/SimpleFIPS202.c
@@ -41,4 +41,6 @@ target_link_libraries(signature
   ed25519
 )
 ADD_LIBRARY(base64 STATIC base64.cpp)
-
+target_link_libraries(base64
+  ssl
+  crypto)

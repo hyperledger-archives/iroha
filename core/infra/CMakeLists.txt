@@ -14,7 +14,7 @@ include_directories(${AERON_PATH}/aeron-client/src/main/cpp)
 link_directories(${AERON_PATH}/cppbuild/Debug/lib/)
 
 ADD_LIBRARY(connection STATIC
-  connection.cpp
+  Connection.cpp
 )
 target_link_libraries(connection
   aeron_client

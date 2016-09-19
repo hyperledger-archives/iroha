@@ -1,6 +1,7 @@
 machine:
   environment:
     PATH: $PATH:/opt/cmake-3.5.2-Linux-x86_64/bin
+    JAVA_HOME: /usr/lib/jvm/java-7-openjdk-amd64
 dependencies:
   override:
     - mkdir build; cd build; cmake ..; make
@@ -10,7 +11,6 @@ checkout:
     - sudo apt-get -y purge cmake
     - curl -sSL https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz | sudo tar -xzC /opt
     - git submodule init 
-    - git submodule sync
     - git submodule update
     - cd core/vendor/Aeron; ./gradlew; mkdir -p cppbuild/Debug; cd cppbuild/Debug; cmake ../..; cmake --build . --clean-first; ctest
     - cd core/vendor/ed25519; make
@@ -19,3 +19,5 @@ test:
   override:
     - ./test.sh
 
+  post:
+    - bash <(curl -s https://codecov.io/bash) -t 9fdda6b5-8c45-4b41-8038-8a6e17508b32
