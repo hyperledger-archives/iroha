@@ -1,66 +1,104 @@
 
 #include "../../core/crypto/Base64.hpp"
 
+#include <iostream>
 #include <gtest/gtest.h>
 
-TEST(Base64, EncodeAndDecodeNormalText){
-    unsigned char* text = (unsigned char*)"Hey, I'm mizuki";
-    ASSERT_STREQ( (char*)text, (char*)Base64::decode(Base64::encode(text)));
+
+template<typename T>
+  std::unique_ptr<T> vector2UnsignedCharPointer(
+  std::vector<T> vec
+){
+  std::unique_ptr<T> res(new T[sizeof(T)*vec.size()+1]);
+  size_t pos = 0;
+  for(auto c : vec){
+    res.get()[pos] = c;
+    pos++;
+  }
+  res.get()[pos] = '\0';
+  return res;
 }
 
-TEST(Base64, EncodeAndDecodeJapaneseTextWithNewLine){
-    unsigned char* text = (unsigned char*)("ソラミツ株式会社\
-                                            以呂波耳本へ止\
-                                            千利奴流乎和加\
-                                            餘多連曽津祢那\
-                                            良牟有為能於久\
-                                            耶万計不己衣天\
-                                            阿佐伎喩女美之\
-                                            恵比毛勢須");
-    ASSERT_STREQ( (char*)text, (char*)Base64::decode(Base64::encode(text)));
+template<typename T>
+std::vector<T> pointer2Vector(
+  T* array,
+  size_t length
+){
+    std::vector<T> res(length);
+    res.assign(array,array+length);
+    return res;
+}
+
+void test_text_equals_original_text(unsigned char* text, int text_length){
+  ASSERT_STREQ(
+    (char*)text,
+    (char*)(
+      vector2UnsignedCharPointer(
+        base64::decode(
+          base64::encode(
+            pointer2Vector(text, text_length)
+          )
+        )
+      ).get()
+    )
+  );
+}
+
+TEST(Base64, EncodeAndDecodeNormalText){
+    unsigned char* original = (unsigned char*)"Hey, I'm mizuki";
+    int original_text_length = strlen((char*)original);
+    test_text_equals_original_text(original, original_text_length);
+}
+
+TEST(Base64, EncodeAndDecodeJapaneseTextWithNL){
+    unsigned char* original = (unsigned char*)"ソラミツ株式会社";
+    int original_text_length = strlen((char*)original);
+    test_text_equals_original_text(original, original_text_length);
 }
 
 TEST(Base64, EncodeAndDecodeLineText){
-    unsigned char* text = (unsigned char*)"\n \
- \n \
- \n \ 
-";
-    ASSERT_STREQ( (char*)text, (char*)Base64::decode(Base64::encode(text)));
+  unsigned char* original = (unsigned char*)"\n \
+  \n \
+  \n \
+  ";
+  int original_text_length = strlen((char*)original);
+  test_text_equals_original_text(original, original_text_length);
 }
 
 TEST(Base64, EncodeAndDecodeJapaneseText){
-    unsigned char* text = (unsigned char*)"ソラミツ株式会社以呂波耳本へ止千利奴流乎和加餘多連曽津祢那良牟有為能於久耶万計不己衣天阿佐伎喩女美之恵比毛勢須";
-    ASSERT_STREQ( (char*)text, (char*)Base64::decode(Base64::encode(text)));
+    unsigned char* original = (unsigned char*)"ソラミツ株式会社以呂波耳本へ止千利奴流乎和加餘多連曽津祢那良牟有為能於久耶万計不己衣天阿佐伎喩女美之恵比毛勢須";
+    int original_text_length = strlen((char*)original);
+    test_text_equals_original_text(original, original_text_length);
 }
 
 TEST(Base64, EncodeAndDecodeEmptyText){
-    unsigned char* text = (unsigned char*)"";
-    ASSERT_STREQ( (char*)text, (char*)Base64::decode(Base64::encode(text)));
+  unsigned char* original = (unsigned char*)"";
+  int original_text_length = strlen((char*)original);
+  test_text_equals_original_text(original, original_text_length);
 }
 
 TEST(Base64, EncodeAndDecodeSpace){
-    unsigned char* text = (unsigned char*)"                        ";
-    ASSERT_STREQ( (char*)text, (char*)Base64::decode(Base64::encode(text)));
+  unsigned char* original = (unsigned char*)"                  ";
+  int original_text_length = strlen((char*)original);
+  test_text_equals_original_text(original, original_text_length);
 }
 
 
 TEST(Base64, EncodeAndDecodeBin){
-    unsigned char* text = (unsigned char*)"\xFF\x00\xFF\xFF\xFF";
-    ASSERT_STREQ( (char*)text, (char*)Base64::decode(Base64::encode(text)));
-}
-
-TEST(Base64, EncodeAndDecodeLongBin){
-    unsigned char* text = (unsigned char*)"\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF\xAF\xFF\x00\xFF\xFF\xFF";
-    ASSERT_STREQ( (char*)text, (char*)Base64::decode(Base64::encode(text)));
+    unsigned char* original = (unsigned char*)"\xFF\x00\xFF\xFF\xFF";
+    int original_text_length = 6;
+    test_text_equals_original_text(original, original_text_length);
 }
 
 TEST(Base64, EncodeAndDecodeJapanese){
-    unsigned char* text = (unsigned char*)"水樹素子";
-    ASSERT_STREQ( (char*)text, (char*)Base64::decode(Base64::encode(text)));
+    unsigned char* original = (unsigned char*)"水樹素子";
+    int original_text_length = strlen((char*)original);
+    test_text_equals_original_text(original, original_text_length);
 }
 
+
 TEST(Base64, EncodeAndDecodeLongText){
-    unsigned char* text = (unsigned char*)("AAAAAAAAAAAAAAAAAAAAAAAA\
+    unsigned char* original = (unsigned char*)"AAAAAAAAAAAAAAAAAAAAAAAA\
     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
@@ -109,6 +147,14 @@ TEST(Base64, EncodeAndDecodeLongText){
     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
-    AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    ASSERT_STREQ( (char*)text, (char*)Base64::decode(Base64::encode(text)));
+    AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    int original_text_length = strlen((char*)original);
+    test_text_equals_original_text(original, original_text_length);
+}
+
+
+TEST( Base64, HennaMozi){
+  unsigned char* original = (unsigned char*)"à6 L¥õDZÛƒË¸%È] ¬ç”Ã,Ñ ¹š+˜g'Z¡È Ò  ";
+  int original_text_length = strlen((char*)original);
+  test_text_equals_original_text(original, original_text_length);
 }
