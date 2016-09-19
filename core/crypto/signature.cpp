@@ -30,7 +30,7 @@ namespace signature{
   }
 
   template<typename T>
-  std::vector<T> pointer2Vecotr(
+  std::vector<T> pointer2Vector(
     std::unique_ptr<T>&& array,
     size_t length
   ){
@@ -62,7 +62,7 @@ namespace signature{
       vector2UnsignedCharPointer(keyPair.publicKey).get(),
       vector2UnsignedCharPointer(keyPair.privateKey).get()
     );
-    return base64::encode(pointer2Vecotr(std::move(signature), 64));
+    return base64::encode(pointer2Vector(std::move(signature), 64));
   }
 
   std::string sign(
@@ -83,7 +83,7 @@ namespace signature{
       ).get()
     );
     return base64::encode(
-      pointer2Vecotr(std::move(signatureRaw), 64)
+      pointer2Vector(std::move(signatureRaw), 64)
     );
   }
 
@@ -100,8 +100,8 @@ namespace signature{
     );
 
     return KeyPair(
-       pointer2Vecotr(std::move(publicKeyRaw), 32),
-       pointer2Vecotr(std::move(privateKeyRaw), 64)
+       pointer2Vector(std::move(publicKeyRaw), 32),
+       pointer2Vector(std::move(privateKeyRaw), 64)
      );
   }
 };  // namespace signature
