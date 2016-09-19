@@ -40,7 +40,8 @@ ELSE()
 ENDIF()
 
 add_executable(javaVM-test javaVM_test.cpp)
-target_link_libraries(javaVM-test smartContract jvm
+target_link_libraries(javaVM-test
+  smartContract jvm
   ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread)
 add_test(
   NAME javaVM-test

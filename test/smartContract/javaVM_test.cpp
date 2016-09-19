@@ -4,15 +4,13 @@
 #include <gtest/gtest.h>
 
 TEST(SmartContract, createVM){
-  std::unique_ptr<JavaContext> javaContext = createVM("SampleCurrency");
+  std::unique_ptr<JavaContext> javaContext = initializeVM("SampleCurrency");
   if(javaContext != nullptr){ 
-    execVM(javaContext);
   }
 }
 
 TEST(SmartContract, CppToJava){
-  std::unique_ptr<JavaContext> javaContext = createVM("SampleCurrency");
+  std::unique_ptr<JavaContext> javaContext = initializeVM("SampleCurrency");
   if(javaContext != nullptr){ 
-    execVM(javaContext);
   }
 }
