@@ -2,3 +2,4 @@ build/*
 *cmake
 *.DS_Store
 *.swp
+*.vscode
