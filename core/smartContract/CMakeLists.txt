@@ -19,6 +19,8 @@ include_directories($ENV{JAVA_HOME}/include)
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   include_directories($ENV{JAVA_HOME}/include/darwin)
+ELSE()
+  include_directories($ENV{JAVA_HOME}/include/linux)
 ENDIF()
 
 

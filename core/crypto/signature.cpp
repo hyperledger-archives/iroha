@@ -7,7 +7,6 @@
 #include <cstring>
 #include <algorithm>
 
-#include "../domain/entity.hpp"
 #include "signature.hpp"
 
 #include "base64.hpp"
