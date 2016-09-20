@@ -6,9 +6,11 @@
 #include <tuple>
 #include <memory>
 
+#include <unordered_map>
+
 #include <cstdlib>
 
-struct JavaContext{
+struct JavaContext {
   JNIEnv* env;
   JavaVM* jvm;
   jclass  jClass;
@@ -25,15 +27,18 @@ struct JavaContext{
   ):
     env(std::move(aEnv)),
     jvm(std::move(aJvm)),
-    vmArgs(aArgs),
+    jClass(std::move(cls)),
+    jObject(std::move(obj)),
     name(std::move(aName)),
-    jClass(cls),
-    jObject(obj)
+    vmArgs(std::move(aArgs))
   {}
 };
 
-std::unique_ptr<JavaContext> createVM(std::string contractName);
+std::unique_ptr<JavaContext> initializeVM(std::string contractName);
 
-void execVM(const std::unique_ptr<JavaContext>& context); 
+void execFunction(const std::unique_ptr<JavaContext>& context,
+  std::string functionName,
+  std::unordered_map<std::string, std::string> params);
+
 
 #endif

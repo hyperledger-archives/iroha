@@ -7,7 +7,7 @@
 #include <functional>
 #include <iostream>
 
-namespace util {
+namespace Util {
 
   int  finish();
   void test(const std::string test_name, std::function<bool()> f);
@@ -30,7 +30,7 @@ namespace util {
        strlen(reinterpret_cast<const char*>(b))) {
       return false;
     }
-    for (size_t i=0; i<strlen(reinterpret_cast<const char*>(a)); i++) {
+    for (size_t i=0; i<strlen(reinterpret_cast<const char*>(a)); ++i) {
       if (a[i] != b[i]) {
         std::cout << a[i] <<" != "<< b[i] << std::endl;
         return false;
@@ -38,6 +38,6 @@ namespace util {
     }
     return true;
   }
-}  // namespace util
+}  // namespace Util
 
 #endif  // CORE_UTIL_TESTUTIL_HPP_

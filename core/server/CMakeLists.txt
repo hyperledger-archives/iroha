@@ -9,8 +9,7 @@ SET(YAML_PATH "${PROJECT_SOURCE_DIR}/core/vendor/yaml-cpp")
 
 include_directories(${YAML_PATH}/include)
 link_directories(${YAML_PATH}/build)
-
-ADD_LIBRARY(yaml-loader STATIC yaml.cpp)
+ADD_LIBRARY(yaml-loader STATIC Yaml.cpp)
 target_link_libraries(yaml-loader
   yaml-cpp
 )

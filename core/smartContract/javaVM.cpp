@@ -27,7 +27,7 @@ std::unique_ptr<JavaContext> initializeVM(std::string contractName){
   options[0].optionString = (char*)("-Djava.class.path="+(std::string)getenv("IROHA_HOME")+"/smartContract/"+contractName+"/").c_str();
 
   JavaVMInitArgs vm_args;
-  vm_args.version = JNI_VERSION_1_8;
+  vm_args.version = JNI_VERSION_1_6;
   vm_args.options = options;
   vm_args.nOptions = 3;
   //vm_args.ignoreUnrecognized = true;
@@ -38,18 +38,18 @@ std::unique_ptr<JavaContext> initializeVM(std::string contractName){
     return nullptr;
   }
 
-  jclass cls = context->env->FindClass(context->name.c_str());
+  jclass cls = env->FindClass(contractName.c_str());
   if(cls == 0){
-    std::cout << "could not found class : "<< context->name.c_str() << std::endl;
+    std::cout << "could not found class : "<< contractName<< std::endl;
     return nullptr;
   }
 
-  jmethodID cns = context->cls->GetMethodID(cls, "<init>", "()V");
+  jmethodID cns = env->GetMethodID(cls, "<init>", "()V");
   if(cns == NULL){
     std::cout << "could not get <init> method." << std::endl;
     return nullptr;
   }
-  jobject obj = context->env->NewObject(cls, cns);
+  jobject obj = env->NewObject(cls, cns);
 
   std::unique_ptr<JavaContext> ptr(new JavaContext(
     env,
@@ -64,16 +64,16 @@ std::unique_ptr<JavaContext> initializeVM(std::string contractName){
 
 void execFunction(const std::unique_ptr<JavaContext>& context,
   std::string functionName,
-  std::unordered_map params){
+  std::unordered_map<std::string, std::string> params){
 
-  jmethodID mid = context->env->GetStaticMethodID(cls, functionName.c_str(), "(Ljava/util/Map;)V");
+  jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/util/Map;)V");
   if(mid == NULL){
     std::cout << "could not get method : " << functionName << std::endl;
     return;
   }
-  context->env->CallVoidMethod(obj, mid);
+  context->env->CallVoidMethod(context->jObject, mid);
 
- res = context->jvm->DestroyJavaVM();
+  auto res = context->jvm->DestroyJavaVM();
   if(res){
     std::cout << "could not destroy JavaVM : " << res << std::endl;
   }

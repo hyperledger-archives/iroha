@@ -94,7 +94,7 @@ TEST(Base64, EncodeAndDecodeJapanese){
     unsigned char* original = (unsigned char*)"水樹素子";
     int original_text_length = strlen((char*)original);
     test_text_equals_original_text(original, original_text_length);
-  }
+}
 
 
 TEST(Base64, EncodeAndDecodeLongText){
