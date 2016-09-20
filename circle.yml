@@ -6,11 +6,11 @@ machine:
 dependencies:
   pre:
     - sudo apt-get -y install build-essential libtcmalloc-minimal4 && sudo ln -s /usr/lib/libtcmalloc_minimal.so.4 /usr/lib/libtcmalloc_minimal.so
-    - sudo apt-get -y install libboost-all-dev
   override:
     - mkdir build; cd build; cmake ..; make
 checkout:
   post:
+    - sudo apt-get -y install libboost-all-dev
     - cd /tmp
     - sudo apt-get -y purge cmake
     - curl -sSL https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz | sudo tar -xzC /opt
