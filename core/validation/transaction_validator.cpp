@@ -4,8 +4,8 @@
 #include "../crypto/signature.hpp"
 
 namespace transaction_validator {
-bool isValid(Transaction const tx) {
-    return signaturesAreValid(tx) && validForType; // TODO: add more tests
+bool isValid(AbstractTransaction const tx) {
+    return signaturesAreValid(tx) && validForType(tx);
 }
 
 bool signaturesAreValid(AbstractTransaction const tx) {
@@ -20,41 +20,42 @@ bool signaturesAreValid(AbstractTransaction const tx) {
 
 bool validForType(AbstractTransaction const tx) {
     if (abstract_transaction::TransactionType::transfer == tx::getType) {
-
+        TransferTransaction transferTx = static_cast<TransferTransaction>(tx);
+        getBalance();
     } else if (abstract_transaction::TransactionType::addPeer == tx::getType) {
-
+        return true;  //TODO-future-work
     } else if (abstract_transaction::TransactionType::modifyPeer == tx::getType) {
-
+        return true;  //TODO-future-work
     } else if (abstract_transaction::TransactionType::removePeer == tx::getType) {
-
+        return true;  //TODO-future-work
     } else if (abstract_transaction::TransactionType::signatory == tx::getType) {
-
+        return true;  //TODO-future-work
     } else if (abstract_transaction::TransactionType::signatoryAdd == tx::getType) {
-
+        return true;  //TODO-future-work
     } else if (abstract_transaction::TransactionType::signatoryDelete == tx::getType) {
-
+        return true;  //TODO-future-work
     } else if (abstract_transaction::TransactionType::domainDefinition == tx::getType) {
 
     } else if (abstract_transaction::TransactionType::domainRenewal == tx::getType) {
 
     } else if (abstract_transaction::TransactionType::aliasDefinition == tx::getType) {
-
+        return true;  //TODO-future-work
     } else if (abstract_transaction::TransactionType::aliasRenewal == tx::getType) {
-
+        return true;  //TODO-future-work
     } else if (abstract_transaction::TransactionType::assetDefinition == tx::getType) {
 
     } else if (abstract_transaction::TransactionType::message == tx::getType) {
 
     } else if (abstract_transaction::TransactionType::chaincodeInit == tx::getType) {
-
+        return true;  //TODO-future-work
     } else if (abstract_transaction::TransactionType::chaincodeInvoke == tx::getType) {
-
+        return true;  //TODO-future-work
     } else if (abstract_transaction::TransactionType::chaincodeUpdate == tx::getType) {
-
+        return true;  //TODO-future-work
     } else if (abstract_transaction::TransactionType::chaincodeDestory == tx::getType) {
-
+        return true;  //TODO-future-work
     } else if (abstract_transaction::TransactionType::interchain == tx::getType) {
-
+        return true;  //TODO-future-work
     }
 }
 

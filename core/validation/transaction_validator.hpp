@@ -2,8 +2,9 @@
 #define CORE_VALIDATION_TRANSACTIONVALIDATOR_HPP_
 
 namespace transaction_validator {
-  bool isValid(Transaction const tx);
-  bool signaturesAreValid(Transaction const tx);
+  bool isValid(AbstractTransaction const tx);
+  bool signaturesAreValid(AbstractTransaction const tx);
+  bool validForType(AbstractTransaction const tx);
 };  // namespace transaction_validator
 
 #endif  // CORE_VALIDATION_TRANSACTIONVALIDATOR_HPP_
