@@ -1,4 +1,4 @@
-#include "TransactionRepository.hpp"
+#include "transaction_repository.hpp"
 
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
@@ -8,10 +8,10 @@
 #include <iostream>
 
 #include <msgpack.hpp>
-#include "../util/Logger.hpp"
-#include "../crypto/MerkleNode.hpp"
+#include "../util/logger.hpp"
+#include "../crypto/merkle_node.hpp"
 
-namespace UnconfirmedTransactionRepository {
+namespace unconfirmed_transaction_repository {
 
   std::shared_ptr<leveldb::DB> db;
 
@@ -84,4 +84,4 @@ bool update(std::string hash, AbstractTransaction const tx) {
     return convertTransaction(readData);
   }
 
-}  // namespace UnconfirmedTransactionRepository
+};  // namespace unconfirmed_transaction_repository

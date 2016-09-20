@@ -1,10 +1,10 @@
 #ifndef CORE_DOMAIN_TRANSACTIONS_DOMAINDEFINITIONTRANSACTION_HPP_
 #define CORE_DOMAIN_TRANSACTIONS_DOMAINDEFINITIONTRANSACTION_HPP_
 
-#include "AbstractTransaction.hpp"
+#include "abstract_transaction.hpp"
 #include <msgpack.hpp>
 
-namespace DomainDefinitionTransaction {
+namespace domain_definition_transaction {
   MSGPACK_DEFINE(hash, type, domainToDefine, accountPublicKey);
 };
 

@@ -1,8 +1,8 @@
 #include <crow.h>
 
-#include "HTTPServer.hpp"
+#include "http_server.hpp"
 
-namespace HTTP {
+namespace http {
   void server() {
     crow::SimpleApp app;
 
@@ -12,4 +12,4 @@ namespace HTTP {
 
     app.port(1337).multithreaded().run();
   }
-}  // namespace http
+};  // namespace http

@@ -1,8 +1,8 @@
-#include "SignatoryAddTransaction.hpp"
+#include "signatory_add_transaction.hpp"
 
-namespace SignatoryAddTransaction {
+namespace signatory_add_transaction {
 class SignatoryAddTransaction : public AbstractTransaction {
     //TODO:
 };
 
-};  // namespace SignatoryAddTransaction
+};  // namespace signatory_add_transaction

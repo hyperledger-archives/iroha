@@ -1,11 +1,10 @@
-
 #include <string>
 #include <functional>
 #include <iostream>
 
 #include <cassert>
 
-namespace Util {
+namespace util {
   static int successful = 0;
   static std::function<void()> before_function = [](){};
   static std::function<void()> after_function = [](){};
@@ -40,4 +39,4 @@ namespace Util {
     }(test_name);
   }
 
-}  // namespace Util
+};  // namespace util

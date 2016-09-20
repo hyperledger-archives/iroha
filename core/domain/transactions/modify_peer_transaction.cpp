@@ -1,3 +1,3 @@
-namespace ModifyPeerTransaction {
+namespace modify_peer_transaction {
 
-};  // namespace ModifyPeerTransaction
+};  // namespace modify_peer_transaction

@@ -1,11 +1,11 @@
 #ifndef CORE_DOMAIN_TRANSACTIONS_SIGNATORYADDTRANSACTION_HPP_
 #define CORE_DOMAIN_TRANSACTIONS_SIGNATORYADDTRANSACTION_HPP_
 
-#include "AbstractTransaction.hpp"
+#include "abstract_transaction.hpp"
 #include <msgpack.hpp>
 
-namespace SignatoryAddTransaction {
+namespace signatory_add_transaction {
     MSGPACK_DEFINE(hash, type, accountPublicKey, signerToAddPublicKey);
-};
+};  // namespace signatory_add_transaction
 
 #endif  // CORE_DOMAIN_TRANSACTIONS_SIGNATORYADDTRANSACTION_HPP_

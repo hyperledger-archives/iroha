@@ -1,7 +1,7 @@
-#include "SignatoryDeleteTransaction.hpp"
+#include "signatory_delete_transaction.hpp"
 
-namespace SignatoryDeleteTransaction {
+namespace signatory_delete_transaction {
 class SignatoryDeleteTransaction : public AbstractTransaction {
     //TODO:
 };
-};  // namespace SignatoryDeleteTransaction
+};  // namespace signatory_delete_transaction

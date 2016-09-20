@@ -1,4 +1,4 @@
-#include "javaVM.hpp"
+#include "java_vm.hpp"
 
 void Java_SmartContract_save(JNIEnv *env,jobject thiz,jstring key,jstring value){
     const char *keyChar   = env->GetStringUTFChars(   key,0);

@@ -1,6 +1,6 @@
-#include "DomainDefinitionTransaction.hpp"
+#include "domain_definition_transaction.hpp"
 
-namespace DomainDefinitionTransaction {
+namespace domain_definition_transaction {
 
 class DomainDefinitionTransaction : public AbstractTransaction {
     std::string getRawData() {
@@ -15,4 +15,4 @@ class DomainDefinitionTransaction : public AbstractTransaction {
 
     }
 };    
-};  // namespace DomainDefinitionTransaction
+};  // namespace domain_definition_transaction

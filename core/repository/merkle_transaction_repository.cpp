@@ -1,4 +1,4 @@
-#include "TransactionRepository.hpp"
+#include "transaction_repository.hpp"
 
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
@@ -8,10 +8,10 @@
 #include <iostream>
 
 #include <msgpack.hpp>
-#include "../util/Logger.hpp"
-#include "../crypto/Merkle.hpp"
+#include "../util/logger.hpp"
+#include "../crypto/merkle.hpp"
 
-namespace MerkleTransactionRepository {
+namespace merkle_transaction_repository {
 std::shared_ptr<leveldb::DB> db;
 std::unique_ptr<Merkle> merkle;
 
@@ -67,4 +67,4 @@ AbstractTransaction findLeaf(std::string const hash) {
   printStatus(db->Get(leveldb::ReadOptions(), hash, &readData));
   return convertTransaction(readData);
 }
-}  // namespace MerkleTransactionRepository
+};  // namespace merkle_transaction_repository

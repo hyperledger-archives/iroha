@@ -4,7 +4,7 @@
 #include <string>
 #include <functional>
 
-namespace Connection {
+namespace connection {
   void initialize_peer();
   bool sendAll(std::string message);
   bool send(std::string to,std::string message);

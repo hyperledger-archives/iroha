@@ -10,7 +10,7 @@
 #include "base64.hpp"
 #include "hash.hpp"
 
-namespace signature{
+namespace signature {
 
   template<typename T>
     std::unique_ptr<T> vector2UnsignedCharPointer(

@@ -1,10 +1,10 @@
 #ifndef CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
 #define CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
 
-#include "AbstractTransaction.hpp"
+#include "abstract_transaction.hpp"
 #include <msgpack.hpp>
 
-namespace TransferTransaction {
+namespace transfer_transaction {
     AbstractTransaction::TransactionType type;
     unsigned char* senderPublicKey;
     unsigned char* receiverPublicKey;
@@ -14,6 +14,6 @@ namespace TransferTransaction {
     short int precision;
 
     MSGPACK_DEFINE(prevTxHash, hash, type, senderPublicKey, receiverPublicKey, domain, asset, makotos, precision);
-};  // namespace TransferTransaction
+};  // namespace transfer_transaction
 
 #endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_

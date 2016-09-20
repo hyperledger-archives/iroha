@@ -1,12 +1,12 @@
 #include "Merkle.hpp"
 
-#include "Hash.hpp"
-#include "../repository/MerkleRepository.hpp"
+#include "hash.hpp"
+#include "../repository/merkle_repository.hpp"
 
 /**
 * Implementation of a binary Merkle tree （ハッシュ木）.
 */
-namespace Merkle {
+namespace merkle {
     void addLeaf(MerkleRepository const merkleTree, std:string const leaf, std::vector<std::string> const rootSignatures) {
         
         std:::string const leafHash = Hash::sha3_256_hex(leaf);
@@ -26,4 +26,4 @@ namespace Merkle {
     //         }
     //     }
     // }
-}  // namespace Merkle
+}  // namespace merkle

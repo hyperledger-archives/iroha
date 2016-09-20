@@ -1,11 +1,11 @@
-#include "TransferTransaction.hpp"
-#include "AbstractTransferTransaction.hpp"
+#include "transfer_transaction.hpp"
+#include "abstract_transfer_transaction.hpp"
 #include <string>
 
-namespace TransferTransaction {
+namespace transfer_transaction {
 class TransferTransaction : public AbstractTransaction {
     std::string hash;
     AbstractTransaction::TransactionType type;
 };
 
-};  // namespace TransferTransaction
+};  // namespace transfer_transaction

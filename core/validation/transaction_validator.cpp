@@ -1,9 +1,9 @@
-#include "TransactionValidator.hpp"
+#include "transaction_validator.hpp"
 
-#include "../domain/Signature.hpp"//TODO:!
-#include "../crypto/Signature.hpp"
+#include "../domain/signature.hpp"//TODO:!
+#include "../crypto/signature.hpp"
 
-namespace TransactionValidator {
+namespace transaction_validator {
 
 void transactionValidator(/*TODO:*/) {
     logger("initialize_transactionValidator");
@@ -21,4 +21,4 @@ bool signaturesAreValid(Transaction const tx) {
     return true; // TODO: change this!
 }
 
-};  // namespace TransactionValidator
+};  // namespace transaction_validator

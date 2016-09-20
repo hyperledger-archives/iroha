@@ -1,9 +1,9 @@
-#include "ConsensusEventValidator.hpp"
+#include "consensus_event_validator.hpp"
 
-#include "../infra/ConsensusEvent.hpp"
-#include "../crypto/Signature.hpp"
+#include "../infra/consensus_event.hpp"
+#include "../crypto/signature.hpp"
 
-namespace ConsensusEventValidator {
+namespace consensus_event_validator {
 
 bool isValid(ConsensusEvent const event) {
     return signaturesAreValid; // TODO: add more tests
@@ -18,4 +18,4 @@ bool signaturesAreValid(ConsensusEvent const event) {
     return true;
 }
 
-};  // namespace ConsensusEventValidator
+};  // namespace consensus_event_validator

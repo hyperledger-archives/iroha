@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace AbstractTransaction {
+namespace abstract_transaction {
 
 enum TransactionType { 
     addPeer, modifyPeer, removePeer, transfer, signatory, signatoryAdd, signatoryDelete, domainDefinition,
@@ -26,6 +26,6 @@ public:
     virtual unsigned long long  getTimestamp() = 0;
     virtual TransactionType getType() = 0;
 };
-}  // namespace AbstractTransaction
+}  // namespace abstract_transaction
 
 #endif  // CORE_DOMAIN_TRANSACTIONS_ABSTRACTTRANSACTION_HPP_

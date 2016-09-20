@@ -1,7 +1,7 @@
-#include "Base64.hpp"
-#include "Hash.hpp"
-#include "Signature.hpp"
-#include "../util/Test.hpp"
+#include "base64.hpp"
+#include "hash.hpp"
+#include "signature.hpp"
+#include "../util/test.hpp"
 
 #include <cstdlib>
 #include <fstream>
@@ -11,50 +11,50 @@
 #include <functional>
 
 
-int main(){
-  util::test("hash None",[]{
+int main() {
+  util::test("hash None",[] {
     return util::equals(
       hash::sha3_256_hex(""),
       std::string("a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a")
     );
   });
 
-  util::test("hash MizukiSonoko",[]{
+  util::test("hash MizukiSonoko",[] {
     return util::equals(
       hash::sha3_256_hex("MizukiSonoko"),
       std::string("e8ab66edec5769ad8b3af3d9cebc8a62ee042fbb88f8a77c84f547530da12f94")
     );
   });
 
-  util::test("base64 encode \"MizukiSonoko\\n\"",[]{
+  util::test("base64 encode \"MizukiSonoko\\n\"",[] {
     return util::equals(
       base64::encode(reinterpret_cast<const unsigned char*>("MizukiSonoko\n")),
       std::string("TWl6dWtpU29ub2tvCg==")
     );
   });
 
-  util::test("base64 encode \"AioIoriIsCute\"",[]{
+  util::test("base64 encode \"AioIoriIsCute\"",[] {
     return util::equals(
       base64::encode(reinterpret_cast<const unsigned char*>("AioIoriIsCute")),
       std::string("QWlvSW9yaUlzQ3V0ZQ==")
     );
   });
 
-  util::test("base64 encode \"\"",[]{
+  util::test("base64 encode \"\"",[] {
     return util::equals(
       std::string(base64::encode(reinterpret_cast<const unsigned char*>(""))),
       std::string("")
     );
   });
 
-  util::test("base64 decode \"\"",[]{
+  util::test("base64 decode \"\"",[] {
     return util::equals(
       std::string(reinterpret_cast<const char*>(base64::decode(""))),
       std::string("")
     );
   });
 
-  util::test("base64 decode unsigned char",[]{
+  util::test("base64 decode unsigned char",[] {
     const unsigned char* message = reinterpret_cast<const unsigned char*>("I'mUnsignedCharMan");
     return util::equals(
         reinterpret_cast<const unsigned char*>(
@@ -64,7 +64,7 @@ int main(){
     );
   });
 
-  util::test("base64 decode \"QWlvSW9yaUlzQ3V0ZQ==\"",[]{
+  util::test("base64 decode \"QWlvSW9yaUlzQ3V0ZQ==\"",[] {
     return util::equals(
       std::string(
         reinterpret_cast<const char*>(
@@ -77,7 +77,7 @@ int main(){
     );
   });
 
-  util::test("base64 decode \"Chiya detail\"", []{
+  util::test("base64 decode \"Chiya detail\"", [] {
       return true;
       // ignore
 
@@ -97,13 +97,13 @@ int main(){
   });
 
   // This code has many MemoryLeak....... (T^T)
-  util::test("generate Key pair",[]{
+  util::test("generate Key pair",[] {
     auto result = signature::createKeyPair("test", "../key");
     system("rm ../key/test_private.pem ../key/test_public.pem");
     return result;
   });
 
-  util::test("Sign & verify",[]{
+  util::test("Sign & verify",[] {
     system("rm ../key/mizuki_private.pem ../key/mizuki_public.pem");
     auto result = signature::createKeyPair("mizuki", "../key");
     std::string message = "{\"from\":\"IORI\",\"to\":\"MIZUKI\",\"value\":11234}";
@@ -112,7 +112,7 @@ int main(){
     return signature::verify(signature, message, "../key/mizuki_public.pem");
   });
 
-  util::test("test",[]{
+  util::test("test",[] {
     return signature::test();
   });
 

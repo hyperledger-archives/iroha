@@ -1,14 +1,14 @@
-#include "MerkleNode.hpp"
+#include "merkle_node.hpp"
 
-#include "Hash.hpp"
-#include "../repository/TransactionRepository.hpp"
+#include "hash.hpp"
+#include "../repository/transaction_repository.hpp"
 
 /**
 * Implementation of a binary Merkle tree node;
 */
-namespace MerkleNode {
+namespace merkle_node {
 std::string hash;
 std::string pairedNode;
 std::string parent;
 std::vector<std::string> children;
-}  // namespace MerkleNode
+}  // namespace merkle_node
