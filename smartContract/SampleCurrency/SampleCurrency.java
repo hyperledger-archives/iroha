@@ -1,3 +1,5 @@
+package samplecurrency;
+
 import java.util.Map;
 
 // no package declaration
