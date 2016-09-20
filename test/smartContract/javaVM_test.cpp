@@ -1,5 +1,5 @@
 
-#include "../../core/smartContract/javaVM.hpp"
+#include "../../core/smartContract/java_vM.hpp"
 
 #include <gtest/gtest.h>
 

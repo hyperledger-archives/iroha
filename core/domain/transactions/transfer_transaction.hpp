@@ -13,7 +13,7 @@ namespace transfer_transaction {
     long long makotos;  // TODO: JS NUMBER range from -9007199254740992 to +9007199254740992 対応
     short int precision;
 
-    MSGPACK_DEFINE(prevTxHash, hash, type, senderPublicKey, receiverPublicKey, domain, asset, makotos, precision);
+    MSGPACK_DEFINE(prevTxHash, hash, type, senderPublicKey, receiverPublicKey, domain, asset, makotos, precision, signature, timestamp);
 };  // namespace transfer_transaction
 
 #endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_

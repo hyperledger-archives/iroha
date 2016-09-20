@@ -157,8 +157,4 @@ TEST( Base64, HennaMozi){
   unsigned char* original = (unsigned char*)"à6 L¥õDZÛƒË¸%È] ¬ç”Ã,Ñ ¹š+˜g'Z¡È Ò  ";
   int original_text_length = strlen((char*)original);
   test_text_equals_original_text(original, original_text_length);
-<<<<<<< HEAD:test/crypto/Base64Test.cpp
 }
-=======
-}
->>>>>>> develop:test/crypto/base64-test.cpp

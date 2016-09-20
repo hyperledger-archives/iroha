@@ -30,7 +30,7 @@ namespace signature {
   std::vector<T> pointer2Vector(
     std::unique_ptr<T>&& array,
     size_t length
-  ){
+  ) {
       std::vector<T> res(length);
       res.assign(array.get(),array.get()+length);
       return res;
@@ -39,7 +39,7 @@ namespace signature {
   bool verify(
     const std::string signature,
     const std::string message,
-    const std::string publicKey){
+    const std::string publicKey) {
     return ed25519_verify(
       vector2UnsignedCharPointer(base64::decode(signature)).get(),
       reinterpret_cast<const unsigned char*>(message.c_str()),
