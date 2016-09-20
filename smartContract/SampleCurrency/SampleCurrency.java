@@ -1,3 +1,5 @@
+package samplecurrency;
+
 import java.util.Map;
 
 public class SampleCurrency {
