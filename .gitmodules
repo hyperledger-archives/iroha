@@ -1,21 +1,21 @@
 [submodule "core/vendor/KeccakCodePackage"]
-	path = core/vendor/KeccakCodePackage
-	url = https://github.com/gvanas/KeccakCodePackage.git
+  path = core/vendor/KeccakCodePackage
+  url = https://github.com/gvanas/KeccakCodePackage.git
+[submodule "core/vendor/leveldb"]
+  path = core/vendor/leveldb
+  url = https://github.com/google/leveldb.git
+[submodule "core/vendor/crow"]
+  path = core/vendor/crow
+  url = https://github.com/ipkn/crow.git
+[submodule "core/vendor/Aeron"]
+  path = core/vendor/Aeron
+  url = https://github.com/real-logic/Aeron.git
+[submodule "core/vendor/yaml-cpp"]
+  path = core/vendor/yaml-cpp
+  url = https://github.com/jbeder/yaml-cpp.git
 [submodule "core/vendor/ed25519"]
 	path = core/vendor/ed25519
-	url = https://github.com/orlp/ed25519.git
-[submodule "core/vendor/yaml-cpp"]
-	path = core/vendor/yaml-cpp
-	url = https://github.com/jbeder/yaml-cpp.git
-[submodule "core/vendor/Agrona"]
-	path = core/vendor/Agrona
-	url = https://github.com/real-logic/Agrona.git
-[submodule "core/vendor/Aeron"]
-	path = core/vendor/Aeron
-	url = https://github.com/real-logic/Aeron.git
-[submodule "core/vendor/leveldb"]
-	path = core/vendor/leveldb
-	url = https://github.com/google/leveldb.git
-[submodule "core/vendor/crow"]
-	path = core/vendor/crow
-	url = https://github.com/ipkn/crow.git
+	url = https://github.com/luca3104/ed25519.git
+[submodule "core/vendor/msgpack-c"]
+	path = core/vendor/msgpack-c
+	url = https://github.com/msgpack/msgpack-c.git

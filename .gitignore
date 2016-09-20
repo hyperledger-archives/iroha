@@ -1,2 +1,6 @@
 build/*
+*cmake
 *.DS_Store
+*.vscode/
+*.swp
+*.class

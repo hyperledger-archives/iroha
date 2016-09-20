@@ -41,6 +41,6 @@ cd core/vendor/msgpack-c; cmake -DMSGPACK_CXX11=ON .; sudo make install
 mkdir build
 cd build
 cmake ..
-make
+make 
 ../test.sh
 ```
