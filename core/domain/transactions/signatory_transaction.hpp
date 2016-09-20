@@ -5,7 +5,8 @@
 #include <msgpack.hpp>
 
 namespace signatory_transaction {
-    MSGPACK_DEFINE(prevTxHash, hash, type, transactionToSign, accountPublicKey, signerPublicKey);
+    MSGPACK_DEFINE(prevTxHash, hash, type, transactionToSign, 
+        accountPublicKey, signerPublicKey, signature, timestamp);
 };  // namespace signatory_transaction
 
 #endif  // CORE_DOMAIN_TRANSACTIONS_SIGNATORYTRANSACTION_HPP_
