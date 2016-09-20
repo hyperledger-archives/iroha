@@ -5,5 +5,4 @@ for file in  build/test_bin/*; do
   ./${file}
   total=`expr $total + $?` 
 done
-
 exit $total
