@@ -1,26 +1,19 @@
-machine:
-  environment:
-    IROHA_HOME: $(pwd)/iroha
-    PATH: $PATH:/opt/cmake-3.5.2-Linux-x86_64/bin
-    JAVA_HOME: /usr/lib/jvm/java-7-openjdk-amd64
-dependencies:
-  override:
-    - mkdir build; cd build; cmake ..; make
-checkout:
-  post:
-    - cd /tmp
-    - sudo apt-get -y purge cmake
-    - curl -sSL https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz | sudo tar -xzC /opt
-    - cd $IROHA_HOME
-    - git submodule init 
-    - git submodule update
-    - cd $IROHA_HOME/core/vendor/Aeron; ./gradlew; mkdir -p cppbuild/Debug; cd cppbuild/Debug; cmake ../..; cmake --build . --clean-first; ctest
-    - cd $IROHA_HOME/core/vendor/leveldb; make
-    - cd $IROHA_HOME/core/vendor/ed25519; make
-    - cd $IROHA_HOME/core/vendor/msgpack-c; cmake -DMSGPACK_CXX11=ON .; sudo make install
-test:
-  override:
-    - ./test.sh
+cmake_minimum_required(VERSION 2.8)
+PROJECT(iroha CXX)
 
-  post:
-    - bash <(curl -s https://codecov.io/bash) -t 9fdda6b5-8c45-4b41-8038-8a6e17508b32
+ENABLE_LANGUAGE(C)
+find_package(Threads)
+
+SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++1y")
+SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -O0 -std=c++1y")
+SET(CMAKE_SHARED_LINKER_FLAGS "-lpthread -lssl")
+
+add_subdirectory(core)
+add_subdirectory(peer)
+
+
+if(NOT without-test)
+  enable_testing()
+  include(test/gtest.cmake)
+  add_subdirectory(test)
+endif()
