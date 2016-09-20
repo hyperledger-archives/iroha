@@ -22,7 +22,9 @@ public:
     AbstractTransaction(const AbstractTransaction&) = default; // support copying
     AbstractTransaction& operator = (const AbstractTransaction&) = default;
 
+    virtual std::string getHash() = 0;
     virtual std::string getRawData() = 0;
+    virtual std::string getAsText() = 0;
     virtual unsigned long long  getTimestamp() = 0;
     virtual TransactionType getType() = 0;
 };
