@@ -20,7 +20,8 @@ checkout:
     - cd $IROHA_HOME/core/vendor/Aeron; ./gradlew; mkdir -p cppbuild/Debug; cd cppbuild/Debug; cmake ../..; cmake --build . --clean-first; ctest
     - cd $IROHA_HOME/core/vendor/leveldb; make
     - cd $IROHA_HOME/core/vendor/ed25519; make
-    - cd $IROHA_HOME/core/vendor/crow; mkdir build; mkdir build; cmake ..; make
+    - cd $IROHA_HOME/core/vendor/yaml-cpp; mkdir build; cd build; cmake ..; make
+    - cd $IROHA_HOME/core/vendor/crow; mkdir build; cd build; cmake ..; make
     - cd $IROHA_HOME/core/vendor/msgpack-c; cmake -DMSGPACK_CXX11=ON .; sudo make install
 test:
   override:
