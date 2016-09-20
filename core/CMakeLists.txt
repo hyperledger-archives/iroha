@@ -1,5 +1,11 @@
 set(CMAKE_BUILD_TYPE Debug)
 
 add_subdirectory(crypto)
-add_subdirectory(domain)
 add_subdirectory(server)
+add_subdirectory(domain)
+add_subdirectory(consensus)
+add_subdirectory(peer)
+add_subdirectory(util)
+add_subdirectory(vendor)
+add_subdirectory(smartContract)
+add_subdirectory(infra)

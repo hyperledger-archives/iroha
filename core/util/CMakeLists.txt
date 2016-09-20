@@ -1,0 +1,10 @@
+set(CMAKE_BUILD_TYPE Debug)
+
+SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++14")
+SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -DDEBUG -O0 -std=c++11")
+
+SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+
+ADD_LIBRARY(testutil STATIC TestUtil.cpp)
+
+

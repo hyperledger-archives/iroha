@@ -1,59 +1,46 @@
-#ifndef __SIGNATURE_H__
-#define __SIGNATURE_H__
+#ifndef CORE_CRYPTO_SIGNATURE_HPP_
+#define CORE_CRYPTO_SIGNATURE_HPP_
 
 #include <string>
 #include <memory>
-#include <tuple>
+#include <vector>
 
-#include "../domain/entity.hpp"
+#include <ed25519.h>
 
 namespace signature{
 
-  //=== Deprecated use for debug. ===
-  bool verify(std::string signature,std::string message, std::string publicKeyName);
-  std::string sign(std::string message,std::string privateKeyName,std::string publicKeyName);
-  bool generateKeyPairAndSave(std::string filenamePrefix,std::string keyPath);
-  //===
+  class KeyPair{
+   public:
+    std::vector<unsigned char> publicKey;
+    std::vector<unsigned char> privateKey;
+    KeyPair(
+      std::vector<unsigned char>&& pub,
+      std::vector<unsigned char>&& pri
+    ):
+      publicKey(std::move(pub)),
+      privateKey(std::move(pri))
+    {}
+  };
 
-  template<typename T>
-  bool verify(std::string signature,std::string message,T dummy){
-    //ToDo throw illegal type exception
-  }
-  template<typename T>
-  std::string sign(std::string message,T dummy){
-    //ToDo throw illegal type exception
-  }
-  template<typename T>
-  std::string generateKeyPair(T dummy){
-    //ToDo throw illegal type exception
-  }
 
-  template<>
-  bool verify<std::shared_ptr<Entity>>(
-    const std::string signature,
+  std::string sign(
+    std::string message,
+    KeyPair  keyPair
+  );
+
+  std::string sign(
+    std::string message,
+    std::string publicKey_b64,
+    std::string privateKey_b64
+  );
+
+  bool verify(
+    const std::string signature_b64,
     const std::string message,
-    const std::shared_ptr<Entity> entity){
-    //ToDo
-  }
-  template<>
-  std::string sign<std::shared_ptr<Entity>>(
-    const std::string message,
-    const std::shared_ptr<Entity> entity){
-    //ToDo
-  }
+    const std::string publicKey_b64);
 
-  std::tuple<
-    unsigned char*,
-    unsigned char*
-  > generateKeyPair(){
+  KeyPair generateKeyPair();
 
-    unsigned char publicKey[32], privateKey[64], seed[32];
-    ed25519_create_seed(seed);
-    ed25519_create_keypair(publicKey, privateKey, seed);
+};  // namespace signature
 
-    return std::make_tuple( publicKey, privateKey);
-  }
-
-};
-
-#endif
+#endif  // CORE_CRYPTO_SIGNATURE_HPP_

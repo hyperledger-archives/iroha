@@ -7,13 +7,10 @@
 #include <functional>
 #include <iostream>
 
-namespace util{
-
+namespace Util {
 
   int  finish();
   void test(const std::string test_name, std::function<bool()> f);
-  void before(std::function<()> f);
-  void after(std::function<()> f);
 
   template<typename T>
   bool equals(T a, T b){
@@ -25,11 +22,11 @@ namespace util{
     }
   }
 
-  bool equals(const unsigned char* a,const unsigned char*  b){
+  bool equals(const unsigned char* a, const unsigned char*  b){
     if(strlen((char*)a) != strlen((char*)b)){
       return false;
     }
-    for(int i=0;i<strlen((char*)a);i++){
+    for(int i = 0;i < strlen((char*)a); ++i){
       if( a[i] != b[i]){
         std::cout << a[i] <<" != "<< b[i] << std::endl;
         return false;
