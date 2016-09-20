@@ -1,11 +1,11 @@
-#include "Sumeragi.hpp"
+#include "sumeragi.hpp"
 
-#include "../util/Logger.hpp"
-#include "../repository/TransactionRepository.hpp"
-#include "../domain/AbstractTransaction.hpp"
-#include "../peer/Connection.hpp"
-#include "../crypto/Hash.hpp"
-#include "../validation/TransactionValidator.hpp"
+#include "../util/logger.hpp"
+#include "../repository/transaction_repository.hpp"
+#include "../domain/abstract_transaction.hpp"
+#include "../peer/connection.hpp"
+#include "../crypto/hash.hpp"
+#include "../validation/transaction_validator.hpp"
 
 /**
 * |ーーー|　|ーーー|　|ーーー|　|ーーー|
@@ -18,7 +18,7 @@
 * high throughput and embedded reconfiguration. In International Conference on Principles of 
 * Distributed Systems (pp. 91-106). Springer.
 */
-namespace Sumeragi {
+namespace sumeragi {
 
 struct Context {
     int maxFaulty;  // f
@@ -131,4 +131,4 @@ void loop() {
     }
 }
 
-};  // namespace Sumeragi
+};  // namespace sumeragi
