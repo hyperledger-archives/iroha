@@ -1,9 +1,8 @@
-#ifndef __HTTP_SERVER_H
-#define __HTTP_SERVER_H
+#ifndef CORE_SERVER_HTTP_SERVER_HPP_
+#define CORE_SERVER_HTTP_SERVER_HPP_
 
-#include <crow.h>
-namespace http{
+namespace http {
   void server();
-}
+};  // namespace http
 
-#endif
+#endif  // CORE_SERVER_HTTP_SERVER_HPP_

@@ -1,7 +1,7 @@
 #ifndef CORE_CRYPTO_MERKLE_HPP_
 #define CORE_CRYPTO_MERKLE_HPP_
 
-namespace Merkle {
+namespace merkle {
     class MerkleRoot {
         public:
             std::string rootNodeHash;
@@ -14,7 +14,6 @@ namespace Merkle {
     };
 
     void addLeaf(std:string leaf, std::vector<std::string> rootSignatures);
-    void recomputeFromRepository();
-}  // namespace Merkle
+}  // namespace merkle
 
 #endif  // CORE_CRYPTO_MERKLE_HPP_

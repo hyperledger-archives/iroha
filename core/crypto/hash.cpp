@@ -4,7 +4,6 @@
 #include "hash.hpp"
 
 namespace hash {
-
   std::string sha3_256_hex(std::string message) {
     char code[] =
       {'0', '1', '2', '3', '4', '5', '6', '7', '8',
