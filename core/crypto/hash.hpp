@@ -3,8 +3,8 @@
 
 #include <string>
 
-namespace Hash {
-std::string sha3_256_hex(std::string message);
+namespace hash{
+  std::string sha3_256_hex(std::string message);
 };
 
 #endif  // CORE_CRYPTO_HASH_HPP_

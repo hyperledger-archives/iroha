@@ -24,6 +24,8 @@ include_directories(
 )
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   include_directories($ENV{JAVA_HOME}/include/darwin)
+ELSE()
+  include_directories($ENV{JAVA_HOME}/include/linux)
 ENDIF()
 
 
@@ -40,7 +42,8 @@ ELSE()
 ENDIF()
 
 add_executable(javaVM-test javaVM_test.cpp)
-target_link_libraries(javaVM-test smartContract jvm
+target_link_libraries(javaVM-test
+  smartContract jvm
   ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread)
 add_test(
   NAME javaVM-test
