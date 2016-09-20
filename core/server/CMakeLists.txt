@@ -1,15 +1,19 @@
 
-SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++11")
-SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -O0 -std=c++11")
-
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/peer)
-SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
-
 SET(YAML_PATH "${PROJECT_SOURCE_DIR}/core/vendor/yaml-cpp")
+
+set(CROW_PATH "${PROJECT_SOURCE_DIR}/core/vendor/crow")
 
 include_directories(${YAML_PATH}/include)
 link_directories(${YAML_PATH}/build)
-ADD_LIBRARY(yaml-loader STATIC Yaml.cpp)
-target_link_libraries(yaml-loader
+ADD_LIBRARY(yaml_loader STATIC Yaml.cpp)
+target_link_libraries(yaml_loader
+  yaml_cpp
+)
+
+include_directories(${CROW_PATH}/include)
+link_directories(${_PATH}/build)
+ADD_LIBRARY(http_server STATIC http_server.cpp)
+target_link_libraries(http_server
   yaml-cpp
 )
+
