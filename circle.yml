@@ -25,6 +25,3 @@ checkout:
 test:
   override:
     - ./test.sh
-
-  post:
-    - bash <(curl -s https://codecov.io/bash) -t 9fdda6b5-8c45-4b41-8038-8a6e17508b32
