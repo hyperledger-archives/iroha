@@ -14,7 +14,7 @@ cmake(3.5.2)
 # Prepare
 ```
 sudo apt -y install default-jdk
-sudo apt -y install default-jre 
+sudo apt -y install default-jre
 sudo apt -y install libssl-dev
 ```
 
@@ -31,7 +31,7 @@ export IROHA_HOME=$(pwd)/iroha
 # Usage
 ```
 cd $IROHA_HOME
-git submodule init 
+git submodule init
 git submodule update
 cd core/vendor/ed25519; make
 cd $IROHA_HOME
