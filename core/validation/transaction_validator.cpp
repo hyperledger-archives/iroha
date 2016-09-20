@@ -1,24 +1,26 @@
 #include "transaction_validator.hpp"
 
-#include "../domain/signature.hpp"//TODO:!
 #include "../crypto/signature.hpp"
 
 namespace transaction_validator {
 
-void transactionValidator(/*TODO:*/) {
+void transactionValidator(AbstractTransaction const tx) {
     logger("initialize_transactionValidator");
     //TODO:
 }
 
 bool isValid(Transaction const tx) {
-    return signaturesAreValid; // TODO: add more
+    return signaturesAreValid(tx); // TODO: add more
 }
 
 bool signaturesAreValid(Transaction const tx) {
-    for (Signature const signature in tx->signatures) { 
-
+    bool areAllValid = true;
+    for (Signature const sig in tx->signatures) { 
+        if (!signature::verify(sig, tx::getRawData(), tx::getPublicKey) {
+            areAllValid = false;
+        }
     }
-    return true; // TODO: change this!
+    return areAllValid; // TODO: change this!
 }
 
 };  // namespace transaction_validator
