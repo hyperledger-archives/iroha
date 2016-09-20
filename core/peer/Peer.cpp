@@ -3,14 +3,14 @@
 #include <unistd.h>
 
 #include <yaml-cpp/yaml.h>
-#include "Connection.hpp"
-#include "../consensus/Sumeragi.hpp"
+#include "connection.hpp"
+#include "../consensus/sumeragi.hpp"
 
 bool loadYamlIsLeader() {
-  try{
+  try {
     YAML::Node config = YAML::LoadFile("config.yml");
     return config["peer"]["leader"].as<bool>();
-  }catch(YAML::Exception& e) {
+  } catch(YAML::Exception& e) {
       std::cerr << e.what() << std::endl;
       exit(1);
   }
@@ -39,7 +39,7 @@ int main() {
   int child_pid;
   bool isFinish = false;
   printf("parent process\n");
-  while(isFinish){
+  while(isFinish) {
     child_pid = waitpid(-1,&status,WNOHANG);
     if(child_pid > 0){
       isFinish = true;

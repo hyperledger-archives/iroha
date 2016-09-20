@@ -5,7 +5,7 @@
 
 #include <cassert>
 
-namespace Util {
+namespace util {
   static int successful = 0;
 
   int finish() {
@@ -29,4 +29,4 @@ namespace Util {
     }(test_name);
   }
 
-}
+};  // namespace util

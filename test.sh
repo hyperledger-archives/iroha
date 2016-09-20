@@ -3,6 +3,6 @@
 total=0
 for file in  build/test_bin/*; do
   ./${file}
-  total=`expr $total + $?` 
+  total=$((total + $?)) 
 done
 exit $total
