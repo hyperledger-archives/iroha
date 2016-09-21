@@ -21,11 +21,11 @@ using namespace std::chrono;
 using namespace aeron::util;
 using namespace aeron;
 
-namespace Connection {
+namespace connection {
 
   std::atomic<bool> running (true);
 
-  struct PeerContext{
+  struct PeerContext {
     bool isAvaiableSubscription;
     bool isAvaiablePublicarion;
 
@@ -33,11 +33,9 @@ namespace Connection {
 
     std::shared_ptr<Subscription> peerSubscription;
     std::shared_ptr<Publication>  peerPublication;
-
   };
 
   struct Config {
-
     std::string  address;
     std::string     port;
     std::string     name;
@@ -52,15 +50,15 @@ namespace Connection {
   std::unique_ptr<PeerContext> context;
   aeron::Context aeronContext;
 
-  void sigIntHandler(int param){
+  void sigIntHandler(int param) {
     std::cout << "Halt peer\n";
     std::cout << param << "\n";
     running = false;
   }
 
-  Config loadYaml(){
+  Config loadYaml() {
     Config c;
-    try{
+    try {
       YAML::Node config = YAML::LoadFile("config.yml");
       c.address = config["mediaDriver"]["address"].as<std::string>();
       c.port = config["mediaDriver"]["port"].as<std::string>();
@@ -69,15 +67,15 @@ namespace Connection {
       c.subscribeStreamId = config["mediaDriver"]["subscribeStreamId"].as<int>();
 
       c.name = config["mediaDriver"]["name"].as<std::string>();
-    }catch(YAML::Exception& e) {
+    } catch(YAML::Exception& e) {
         std::cerr << e.what() << std::endl;
         exit(1);
     }
     return c;
   }
 
-  void initialize_peer(){
-    signal (SIGINT, sigIntHandler);
+  void initialize_peer() {
+    signal(SIGINT, sigIntHandler);
 
     Config config = loadYaml();
     std::cout<< "Loaded config \n";
@@ -109,7 +107,7 @@ namespace Connection {
       subscriptionId = aeron.addSubscription("aeron:udp?endpoint="+config.address+":"+config.port, config.subscribeStreamId);
       pongSubscription = aeron.findSubscription(subscriptionId);
 
-      while (!pongSubscription){
+      while (!pongSubscription) {
           std::this_thread::yield();
           pongSubscription = aeron.findSubscription(subscriptionId);
       }
@@ -117,24 +115,24 @@ namespace Connection {
       publicationId = aeron.addPublication("aeron:udp?endpoint="+config.address+":"+config.port, config.publishStreamId);
 
       pingPublication = aeron.findPublication(publicationId);
-      while (!pingPublication){
+      while (!pingPublication) {
           std::this_thread::yield();
           pingPublication = aeron.findPublication(publicationId);
       }
 
-    }catch (CommandOptionException& e){
+    } catch (CommandOptionException& e) {
         std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
         return;
-    }catch (SourcedException& e){
+    } catch (SourcedException& e) {
         std::cerr << "FAILED: " << e.what() << " : " << e.where() << std::endl;
         return;
-    }catch (std::exception& e){
+    } catch (std::exception& e) {
         std::cerr << "FAILED: " << e.what() << " : " << std::endl;
         return;
     }
   }
 
-  bool sendAll(std::string message){
+  bool sendAll(std::string message) {
     if(context->peerPublication != nullptr){
       AERON_DECL_ALIGNED(std::uint8_t buffer[256], 16);
       AtomicBuffer srcBuffer(&buffer[0], 256);
@@ -146,31 +144,30 @@ namespace Connection {
     return false;
   }
 
-  bool send(std::string to,std::string message){
-    if(context->peerPublication != nullptr){
+  bool send(std::string to,std::string message) {
+    if (context->peerPublication != nullptr){
       AERON_DECL_ALIGNED(std::uint8_t buffer[256], 16);
       AtomicBuffer srcBuffer(&buffer[0], 256);
-      do{
+      do {
         srcBuffer.putBytes(0, reinterpret_cast<const std::uint8_t *>(message.c_str()), message.size());
-      }while (context->peerPublication->offer(srcBuffer, 0, message.size()) < 0L);
+      } while (context->peerPublication->offer(srcBuffer, 0, message.size()) < 0L);
       return true;
     }
     return false;
   }
 
-  bool receive(std::function<void(std::string from,std::string message)> callback){
+  bool receive(std::function<void(std::string from,std::string message)> callback) {
     fragment_handler_t handler = [&](AtomicBuffer& buffer, util::index_t offset, util::index_t length, Header& header){
       // ToDo validate string from, message
         callback(std::string((char *)buffer.buffer() + offset, (unsigned long)length),std::string((char *)buffer.buffer() + offset, (unsigned long)length));
     };
-    if(context->peerSubscription){
+    if (context->peerSubscription) {
       SleepingIdleStrategy idleStrategy(IDLE_SLEEP_MS);
-      while (context->peerSubscription->poll(handler, 10) <= 0){
+      while (context->peerSubscription->poll(handler, 10) <= 0) {
         idleStrategy.idle(0);
       }
       return true;
     }
     return false;
   }
-
-};
+};  // namespace connection

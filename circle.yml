@@ -4,10 +4,13 @@ machine:
     PATH: $PATH:/opt/cmake-3.5.2-Linux-x86_64/bin
     JAVA_HOME: /usr/lib/jvm/java-7-openjdk-amd64
 dependencies:
+  pre:
+    - sudo apt-get -y install build-essential libtcmalloc-minimal4 && sudo ln -s /usr/lib/libtcmalloc_minimal.so.4 /usr/lib/libtcmalloc_minimal.so
   override:
     - mkdir build; cd build; cmake ..; make
 checkout:
   post:
+    - sudo apt-get -y install libboost-all-dev
     - cd /tmp
     - sudo apt-get -y purge cmake
     - curl -sSL https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz | sudo tar -xzC /opt
@@ -17,10 +20,9 @@ checkout:
     - cd $IROHA_HOME/core/vendor/Aeron; ./gradlew; mkdir -p cppbuild/Debug; cd cppbuild/Debug; cmake ../..; cmake --build . --clean-first; ctest
     - cd $IROHA_HOME/core/vendor/leveldb; make
     - cd $IROHA_HOME/core/vendor/ed25519; make
+    - cd $IROHA_HOME/core/vendor/yaml-cpp; mkdir build; cd build; cmake ..; make
+    - cd $IROHA_HOME/core/vendor/crow; mkdir build; cd build; cmake ..; make
     - cd $IROHA_HOME/core/vendor/msgpack-c; cmake -DMSGPACK_CXX11=ON .; sudo make install
 test:
   override:
     - ./test.sh
-
-  post:
-    - bash <(curl -s https://codecov.io/bash) -t 9fdda6b5-8c45-4b41-8038-8a6e17508b32

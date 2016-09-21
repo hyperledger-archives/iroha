@@ -7,9 +7,9 @@
 
 #include <ed25519.h>
 
-namespace signature{
+namespace signature {
 
-  class KeyPair{
+  class KeyPair {
    public:
     std::vector<unsigned char> publicKey;
     std::vector<unsigned char> privateKey;
