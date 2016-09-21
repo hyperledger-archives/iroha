@@ -13,7 +13,15 @@ namespace http {
       res["message"] = message;
       return res;
     }
+
+    crow::json::wvalue mock(std::string message){
+      crow::json::wvalue res;
+      res["status"] = 200;
+      res["message"] = message;
+      return res;
+    }
   };
+
   void server() {
     crow::SimpleApp app;
 
@@ -27,6 +35,7 @@ namespace http {
       ([](const crow::request& req) {
         auto data = crow::json::load(req.body);
         // WIP
+        return response::mock("OK");
     });
 
     // Info
@@ -34,6 +43,7 @@ namespace http {
       .methods(crow::HTTPMethod::GET)
       ([](const crow::request& req) {
         if(req.url_params.get("uuid") != nullptr) {
+          return response::mock("OK");
          // WIP 
         }else{
           return response::error("You must set 'uuid' in url params");
@@ -50,18 +60,20 @@ namespace http {
       ([](const crow::request& req) {
         auto data = crow::json::load(req.body);
         // WIP
-        return "Root";
+        return response::mock("OK");
     });
 
     // Transaction history
     CROW_ROUTE(app, "/transaction/hostory")
-      .methods(crow::HTTPMethod::GET)
       ([](const crow::request& req) {
         if(req.url_params.get("uuid") != nullptr &&
           req.url_params.get("asset-uuid") != nullptr){
           // WIP
+          return response::mock("OK");
         }else{
-          return response::error("You must set 'uuid' and 'asset-uuid' in url params");
+          return response::error("You must set 'uuid' and 'asset-uuid' in url params"
+);
+        }
     });
 
 
@@ -72,8 +84,8 @@ namespace http {
     CROW_ROUTE(app, "/gift/issue")
       .methods(crow::HTTPMethod::POST)
       ([](const crow::request& req) {
-      // WIP
-      return "Root";
+      // WP
+      return response::mock("OK");
     });
 
     // Nonce receiver
@@ -82,7 +94,7 @@ namespace http {
       ([](const crow::request& req) {
         auto data = crow::json::load(req.body);
         // WIP
-        return "Root";
+        return response::mock("OK");
     });
 
     app.port(1337).multithreaded().run();
