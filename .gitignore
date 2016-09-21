@@ -1,7 +1,8 @@
+config/*
+__pycache__/*
 build/*
 *cmake
 *.DS_Store
 *.vscode/
 *.swp
 *.class
-fabfile.py

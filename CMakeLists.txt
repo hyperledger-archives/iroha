@@ -4,7 +4,12 @@ PROJECT(iroha CXX)
 ENABLE_LANGUAGE(C)
 find_package(Threads)
 
+SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++1y")
+SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -O0 -std=c++1y")
+SET(CMAKE_SHARED_LINKER_FLAGS "-lpthread -lssl")
+
 add_subdirectory(core)
+add_subdirectory(peer)
 
 
 if(NOT without-test)
@@ -12,5 +17,3 @@ if(NOT without-test)
   include(test/gtest.cmake)
   add_subdirectory(test)
 endif()
-
-
