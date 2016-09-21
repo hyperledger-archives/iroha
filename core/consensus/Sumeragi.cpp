@@ -1,10 +1,10 @@
 #include "Sumeragi.hpp"
 
-#include "../util/Logger.hpp"
+#include "../util/logger.hpp"
 #include "../repository/TransactionRepository.hpp"
 #include "../domain/AbstractTransaction.hpp"
 #include "../peer/Connection.hpp" // TODO: rather than this low-level interface, abstract out events and broadcasts
-#include "../crypto/Hash.hpp"
+#include "../crypto/hash.hpp"
 #include "../validation/TransactionValidator.hpp"
 
 /**
