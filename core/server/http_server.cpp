@@ -14,12 +14,22 @@ namespace http {
       return res;
     }
 
-    crow::json::wvalue mock(std::string message){
+    crow::json::wvalue simple_mock(std::string message){
       crow::json::wvalue res;
       res["status"] = 200;
       res["message"] = message;
       return res;
     }
+
+    namespace mock{
+      crow::json::wvalue account_register(){
+        crow::json::wvalue res;
+        res["status"] = 200;
+        res["message"] = "successful";
+        res["uuid"] = "maybe_sha3";
+        return res;
+      }
+    } 
   };
 
   void server() {
@@ -35,7 +45,7 @@ namespace http {
       ([](const crow::request& req) {
         auto data = crow::json::load(req.body);
         // WIP
-        return response::mock("OK");
+        return response::simple_mock("OK");
     });
 
     // Info
@@ -43,7 +53,7 @@ namespace http {
       .methods(crow::HTTPMethod::GET)
       ([](const crow::request& req) {
         if(req.url_params.get("uuid") != nullptr) {
-          return response::mock("OK");
+          return response::simple_mock("OK");
          // WIP 
         }else{
           return response::error("You must set 'uuid' in url params");
@@ -60,7 +70,7 @@ namespace http {
       ([](const crow::request& req) {
         auto data = crow::json::load(req.body);
         // WIP
-        return response::mock("OK");
+        return response::simple_mock("OK");
     });
 
     // Transaction history
@@ -69,7 +79,7 @@ namespace http {
         if(req.url_params.get("uuid") != nullptr &&
           req.url_params.get("asset-uuid") != nullptr){
           // WIP
-          return response::mock("OK");
+          return response::simple_mock("OK");
         }else{
           return response::error("You must set 'uuid' and 'asset-uuid' in url params"
 );
@@ -85,7 +95,7 @@ namespace http {
       .methods(crow::HTTPMethod::POST)
       ([](const crow::request& req) {
       // WP
-      return response::mock("OK");
+      return response::simple_mock("OK");
     });
 
     // Nonce receiver
@@ -94,7 +104,7 @@ namespace http {
       ([](const crow::request& req) {
         auto data = crow::json::load(req.body);
         // WIP
-        return response::mock("OK");
+        return response::simple_mock("OK");
     });
 
     app.port(1337).multithreaded().run();
