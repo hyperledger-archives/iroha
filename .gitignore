@@ -6,4 +6,3 @@ build/*
 *.vscode/
 *.swp
 *.class
-fabfile.py
