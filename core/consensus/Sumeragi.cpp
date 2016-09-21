@@ -18,7 +18,7 @@
 * high throughput and embedded reconfiguration. In International Conference on Principles of 
 * Distributed Systems (pp. 91-106). Springer.
 */
-namespace Sumeragi {
+namespace sumeragi {
 
 struct Context {
     int maxFaulty;  // f
@@ -119,4 +119,4 @@ void loop() {
     }
 }
 
-};  // namespace Sumeragi
+};  // namespace sumeragi
