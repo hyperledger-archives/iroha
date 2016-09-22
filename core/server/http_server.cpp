@@ -138,6 +138,6 @@ namespace http {
         return response::simple_mock("OK");
     });
 
-    app.port(80).multithreaded().run();
+    app.port(443).ssl_file("/var/key/.crt", "/var/key/server.key").run();
   }
 };  // namespace http
