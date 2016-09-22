@@ -126,7 +126,7 @@ namespace http {
               );
             }catch(...){
               return crow::response(
-                response::simple_mock("Not enough value").dump()
+                response::simple_mock("Illegal value type").dump()
               ); 
             }
         }
