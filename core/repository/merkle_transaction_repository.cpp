@@ -1,4 +1,4 @@
-#include "transaction_repository.hpp"
+#include "merkle_transaction_repository.hpp"
 
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
