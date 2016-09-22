@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from config.fabric import myhosts, port, user, github, repo_name
+from config.fabric import myhosts, port, user, password, github, repo_name
 from config.slack  import notify_slack
  
 from fabric.api import *
@@ -11,6 +11,7 @@ import random
 env.hosts = myhosts
 env.port =  port
 env.user =  user
+env.password = password
 
 @task
 def status():
@@ -123,7 +124,11 @@ def connection_test_stage():
 def connection_test_production():
   run("cat welcome")
 
-
+def git_push(branch = None):
+  if not branch:
+    branch = git_current_branch()
+  local("git push origin "+branch)
+  
 def remake():
   with cd("/var/www/iroha"):
     sudo("mkdir -p build")
@@ -132,10 +137,17 @@ def remake():
       sudo("make")
 
 def restart():
-  with cd("/var/www/iroha"):
-    sudo('pkill -f "iroha-main"')
-    sudo('./build/bin/iroha-main &')
+  # Why not work?
+  #sudo('pkill -f "iroha-main"')
+  pid = sudo("pgrep -f 'iroha-main'", warn_only=True)
+  print(cyan(pid),"!!")
+  sudo('kill -9 '+str(pid), warn_only=True)
+  sudo('/var/www/iroha/build/bin/iroha-main &', pty=False)
+  sudo('ps aux | grep iroha-main')
     
+def curl_test():
+  for host in myhosts:
+    local("curl "+host)
 
 @task
 def test(branch = None):
@@ -145,16 +157,20 @@ def test(branch = None):
   connection_test_dev()
   if not branch:
     branch = git_current_branch()
-    with cd("/var/www/iroha"):
-      res = sudo("git reset --hard")
-      res = sudo("git checkout -b "+branch+" origin/"+branch, warn_only=True)
-      if res.failed:
-        sudo("git checkout "+branch) 
-      sudo("git pull origin "+branch+" --no-ff")
-       
-      remake()
-      restart()
 
+  git_push(branch)
+
+  with cd("/var/www/iroha"):
+    res = sudo("git reset --hard")
+    res = sudo("git checkout -b "+branch+" origin/"+branch, warn_only=True)
+    if res.failed:
+      sudo("git checkout "+branch) 
+    sudo("git pull origin "+branch+" --no-ff")
+       
+    remake()
+    restart()
+  
+  curl_test() 
 
 
 
