@@ -22,13 +22,32 @@ namespace http {
     }
 
     namespace mock{
-      crow::json::wvalue account_register(){
+      crow::json::wvalue account_register(std::string name){
         crow::json::wvalue res;
-        res["status"] = 200;
-        res["message"] = "successful";
-        res["uuid"] = "maybe_sha3";
+        if(name == "mizuki"){
+          res["status"] = 400;
+          res["message"] = "duplicate user!";
+        }else{
+          res["status"] = 200;
+          res["message"] = "successful";
+          res["uuid"] = "bd56fbc1c356368b0d9e9311c5b787e1db0cabd697dad274dcc1b0da94ccb96c04a73ef13be6e7606e48d43d518ad302bf8509818d907c6cbf00b61b984e36b9";
+        }
         return res;
       }
+    
+      crow::json::wvalue account(std::string uuid){
+        crow::json::wvalue res;
+        if(uuid == "bd56fbc1c356368b0d9e9311c5b787e1db0cabd697dad274dcc1b0da94ccb96c04a73ef13be6e7606e48d43d518ad302bf8509818d907c6cbf00b61b984e36b9"){
+          res["status"] = 200;
+          res["screen_name"] = "mizuki";
+          res["message"] = "successful";
+        }else{
+          res["status"] = 400;
+          res["message"] = "User not found!";
+        }
+        return res;
+      };
+      
     } 
   };
 
@@ -44,8 +63,20 @@ namespace http {
       .methods(crow::HTTPMethod::POST)
       ([](const crow::request& req) {
         auto data = crow::json::load(req.body);
+        if(!data){
+          return response::error("No json");
+        }
+        if(data.has("publicKey") &&
+            data.has("screen_name") &&
+              data.has("timestamp")){
+            
+            std::string pubKey = data["publicKey"].s();
+            std::string name = data["publicKey"].s();
+            unsigned int timestamp = data["publicKey"].u();
+            return response::mock::account_register(name);
+        }
         // WIP
-        return response::simple_mock("OK");
+        return response::simple_mock("Not enough value");
     });
 
     // Info
@@ -53,7 +84,7 @@ namespace http {
       .methods(crow::HTTPMethod::GET)
       ([](const crow::request& req) {
         if(req.url_params.get("uuid") != nullptr) {
-          return response::simple_mock("OK");
+          return response::mock::account(req.url_params.get("uuid"));
          // WIP 
         }else{
           return response::error("You must set 'uuid' in url params");
@@ -107,6 +138,6 @@ namespace http {
         return response::simple_mock("OK");
     });
 
-    app.port(1337).multithreaded().run();
+    app.port(80).multithreaded().run();
   }
 };  // namespace http
