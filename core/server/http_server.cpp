@@ -159,11 +159,11 @@ namespace http {
     CROW_ROUTE(app, "/transaction")
       .methods(crow::HTTPMethod::POST)
       ([](const crow::request& req) {
-        auto data = crow::json::load(req.body);
+        auto data = json::parse(req.body);
         // WIP
         if(!data["asset"].is_null()){
           auto asset = data["asset"];
-          if(!asse["asset-uuid"].is_null() &&
+          if(!asset["asset-uuid"].is_null() &&
               !asset["params"].is_null()){
             // WIP  
             auto param = asset["params"];
