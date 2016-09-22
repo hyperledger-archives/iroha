@@ -6,3 +6,4 @@ build/*
 *.vscode/
 *.swp
 *.class
+ *.gch
