@@ -1,4 +1,7 @@
 
+
+#define CROW_ENABLE_SSL
+
 #include <crow.h>
 #include <string>
 
