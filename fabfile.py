@@ -131,6 +131,12 @@ def remake():
       sudo("cmake ..")
       sudo("make")
 
+def restart():
+  with cd("/var/www/iroha"):
+    sudo('pkill -f "iroha-main"')
+    sudo('./build/bin/iroha-main &')
+    
+
 @task
 def test(branch = None):
   print(blue("#################"))
@@ -145,8 +151,9 @@ def test(branch = None):
       if res.failed:
         sudo("git checkout "+branch) 
       sudo("git pull origin "+branch+" --no-ff")
-      
+       
       remake()
+      restart()
 
 
 
