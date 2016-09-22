@@ -6,51 +6,91 @@
 #include <string>
 
 #include "http_server.hpp"
+#include <json.hpp>
 
+  
 namespace http {
   
+  using nlohmann::json;
+
   namespace response{
-    crow::json::wvalue error(std::string message){
-      crow::json::wvalue res;
-      res["status"] = 400;
-      res["message"] = message;
-      return res;
+    nlohmann::json error(std::string message){
+      return {
+        {"status", 400},
+        {"message", message}
+      };
     }
 
-    crow::json::wvalue simple_mock(std::string message){
-      crow::json::wvalue res;
-      res["status"] = 200;
-      res["message"] = message;
-      return res;
+    nlohmann::json simple_mock(std::string message){
+      return {
+        {"status", 200},
+        {"message", message}
+      };
     }
 
     namespace mock{
-      crow::json::wvalue account_register(std::string name){
-        crow::json::wvalue res;
+      json account_register(std::string name){
         if(name == "mizuki"){
-          res["status"] = 400;
-          res["message"] = "duplicate user!";
+          return {
+            {"status", 400},
+            {"message", "duplicate user!"}
+          };
         }else{
-          res["status"] = 200;
-          res["message"] = "successful";
-          res["uuid"] = "bd56fbc1c356368b0d9e9311c5b787e1db0cabd697dad274dcc1b0da94ccb96c04a73ef13be6e7606e48d43d518ad302bf8509818d907c6cbf00b61b984e36b9";
+          return {
+            {"status", 200},
+            {"message", "successful"},
+            {"uuid", "bd56fbc1c356368b0d9e9311c5b787e1db0cabd697dad274dcc1b0da94ccb96c04a73ef13be6e7606e48d43d518ad302bf8509818d907c6cbf00b61b984e36b9"}
+          };
         }
-        return res;
       }
     
-      crow::json::wvalue account(std::string uuid){
-        crow::json::wvalue res;
+      json account(std::string uuid){
         if(uuid == "bd56fbc1c356368b0d9e9311c5b787e1db0cabd697dad274dcc1b0da94ccb96c04a73ef13be6e7606e48d43d518ad302bf8509818d907c6cbf00b61b984e36b9"){
-          res["status"] = 200;
-          res["screen_name"] = "mizuki";
-          res["message"] = "successful";
+          return {
+            {"status", 200},
+            {"screen_name", "mizuki"},
+            {"message", "successful"}
+          };
         }else{
-          res["status"] = 400;
-          res["message"] = "User not found!";
+          return {
+            {"status", 400},
+            {"message", "User not found!"}
+          };
         }
-        return res;
       };
       
+      json transaction(){
+        return {
+          {"status", 200},
+          {"message", "transaction success"}
+        };
+      }
+      
+      json transaction_history(){
+        return {
+          {"uuid", "bd56fbc1c356368b0d9e9311c5b787e1db0cabd697dad274dcc1b0da94ccb96c04a73ef13be6e7606e48d43d518ad302bf8509818d907c6cbf00b61b984e36b9"},
+          {"timestamp", 1474522744},
+          {"history", 
+            {
+              {"asset-uuid", "bd56fbc1c356368b0d9e9311c5b787e1db0cabd697dad274dcc1b0da94ccb96c04a73ef13be6e7606e48d43d518ad302bf8509818d907c6cbf00b61b984e36b9"},
+              {"params", 
+                {
+                  {"src", "bd56fbc1c356368b0d9e9311c5b787e1db0cabd697dad274dcc1b0da94ccb96c04a73ef13be6e7606e48d43d518ad302bf8509818d907c6cbf00b61b984e36b9"},
+                  {"dst", "bd56fbc1c356368b0d9e9311c5b787e1db0cabd697dad274dcc1b0da94ccb96c04a73ef13be6e7606e48d43d518ad302bf8509818d907c6cbf00b61b984e36b9"},
+                  {"value", "123"}
+                }
+              }
+            }
+          }
+        };
+      } 
+
+      json gift_issue(){
+        return {
+          {"nonce", "697f2d856172cb8309d6b8b97dac4de344b549d4dee61edfb4962d8698b7fa803f4f93ff24393586e28b5b957ac3d1d369420ce53332712f997bd336d09ab02a"},
+          {"timestamp", 1474523494}
+        };
+      }
     } 
   };
 
@@ -67,7 +107,9 @@ namespace http {
       ([](const crow::request& req) {
         auto data = crow::json::load(req.body);
         if(!data){
-          return response::error("No json");
+          return crow::response(
+            response::error("No json").dump()
+          );
         }
         if(data.has("publicKey") &&
             data.has("screen_name") &&
@@ -76,10 +118,14 @@ namespace http {
             std::string pubKey = data["publicKey"].s();
             std::string name = data["publicKey"].s();
             unsigned int timestamp = data["publicKey"].u();
-            return response::mock::account_register(name);
+            return crow::response(
+              response::mock::account_register(name).dump()
+            );
         }
         // WIP
-        return response::simple_mock("Not enough value");
+        return crow::response(
+          response::simple_mock("Not enough value").dump()
+        );
     });
 
     // Info
@@ -87,10 +133,14 @@ namespace http {
       .methods(crow::HTTPMethod::GET)
       ([](const crow::request& req) {
         if(req.url_params.get("uuid") != nullptr) {
-          return response::mock::account(req.url_params.get("uuid"));
-         // WIP 
+          // WIP
+          return crow::response(
+            response::mock::account(req.url_params.get("uuid")).dump()
+          );
         }else{
-          return response::error("You must set 'uuid' in url params");
+          return crow::response(
+            response::error("You must set 'uuid' in url params").dump()
+          );
         }
     });
 
@@ -104,7 +154,20 @@ namespace http {
       ([](const crow::request& req) {
         auto data = crow::json::load(req.body);
         // WIP
-        return response::simple_mock("OK");
+        if(data.has("asset")){
+          auto asset = data["asset"];
+          if(asset.has("asset-uuid") &&
+              asset.has("params")){
+            // WIP  
+            auto param = asset["params"];
+            return crow::response(
+              response::mock::transaction().dump()
+            );
+          }
+        }
+        return crow::response(
+          response::error("You must set 'uuid' in url params").dump()
+        );
     });
 
     // Transaction history
@@ -113,10 +176,13 @@ namespace http {
         if(req.url_params.get("uuid") != nullptr &&
           req.url_params.get("asset-uuid") != nullptr){
           // WIP
-          return response::simple_mock("OK");
+          return crow::response(
+            response::mock::transaction_history().dump()
+          );
         }else{
-          return response::error("You must set 'uuid' and 'asset-uuid' in url params"
-);
+          return crow::response(
+            response::error("You must set 'uuid' and 'asset-uuid' in url params").dump()
+          );
         }
     });
 
@@ -129,7 +195,9 @@ namespace http {
       .methods(crow::HTTPMethod::POST)
       ([](const crow::request& req) {
       // WP
-      return response::simple_mock("OK");
+      return crow::response(
+        response::mock::gift_issue().dump()
+      );
     });
 
     // Nonce receiver
@@ -138,7 +206,9 @@ namespace http {
       ([](const crow::request& req) {
         auto data = crow::json::load(req.body);
         // WIP
-        return response::simple_mock("OK");
+        return crow::response(
+          response::simple_mock("OK").dump()
+        );
     });
 
     app.port(443).ssl_file("/var/key/server.crt", "/var/key/server.key").run();
