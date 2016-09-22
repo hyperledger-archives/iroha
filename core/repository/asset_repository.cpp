@@ -21,20 +21,6 @@ bool printStatus(leveldb::Status const status) {
   return true;
 }
 
-AbstractTransaction convertTransaction(std::string const buffer) {
-  AbstractTransaction tx;
-  msgpack::object_handle unpacked = msgpack::unpack(buffer.data(), buffer.size());
-  msgpack::object obj = unpacked.get();
-  obj.convert(tx);
-  return tx;
-}
-
-std::string convertBuffer(MerkleNode const tx) {
-  msgpack::sbuffer buf;
-  msgpack::pack(buf, tx);
-  return buf.data();
-}
-
 void loadDb() {
   leveldb::DB* tmpDb;
   leveldb::Options options;
@@ -69,7 +55,7 @@ long long getBalance(std::string const account, std::string const assetName) {
     loadDb();
   }
 
-  std::string readData;
+  long long readData;
   printStatus(db->Get(leveldb::ReadOptions(), account + "_" + assetName, &readData));
   return readData; // TODO: cast to long long, or can we get that directly from leveldb?
 }
