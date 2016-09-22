@@ -1,8 +1,9 @@
+#include "connection.hpp"
+
 #include <string>
 #include <functional>
 #include <cstdint>
 #include <cstdio>
-#include <signal.h>
 
 #include <util/CommandOptionParser.h>
 #include <thread>
@@ -13,7 +14,6 @@
 #include <unordered_map>
 #include <string>
 #include <iostream>
-#include <yaml-cpp/yaml.h>
 
 static const std::chrono::duration<long, std::milli> IDLE_SLEEP_MS(1);
 
@@ -35,57 +35,20 @@ namespace connection {
     std::shared_ptr<Publication>  peerPublication;
   };
 
-  struct Config {
-    std::string  address;
-    std::string     port;
-    std::string     name;
-
-    int publishChannel;
-    int publishStreamId;
-    int subscribeChannel;
-    int subscribeStreamId;
-
-  };
-
   std::unique_ptr<PeerContext> context;
   aeron::Context aeronContext;
 
-  void sigIntHandler(int param) {
-    std::cout << "Halt peer\n";
-    std::cout << param << "\n";
-    running = false;
-  }
 
-  Config loadYaml() {
-    Config c;
-    try {
-      YAML::Node config = YAML::LoadFile("config.yml");
-      c.address = config["mediaDriver"]["address"].as<std::string>();
-      c.port = config["mediaDriver"]["port"].as<std::string>();
+  void initialize_peer(std::unique_ptr<Config> config) {
 
-      c.publishStreamId = config["mediaDriver"]["publishStreamId"].as<int>();
-      c.subscribeStreamId = config["mediaDriver"]["subscribeStreamId"].as<int>();
-
-      c.name = config["mediaDriver"]["name"].as<std::string>();
-    } catch(YAML::Exception& e) {
-        std::cerr << e.what() << std::endl;
-        exit(1);
-    }
-    return c;
-  }
-
-  void initialize_peer() {
-    signal(SIGINT, sigIntHandler);
-
-    Config config = loadYaml();
     std::cout<< "Loaded config \n";
-    std::cout<< "URL:"<<"aeron:udp?endpoint="+config.address+":"+config.port << "\n";
+    std::cout<< "URL:"<<"aeron:udp?endpoint="+config->address+":"+config->port << "\n";
     try{
       aeron::Context aeronContext;
       std::int64_t subscriptionId;
       std::int64_t publicationId;
 
-      std::cout << "Subscribing at " << config.subscribeChannel << " on Stream ID " << config.subscribeStreamId << std::endl;
+      std::cout << "Subscribing at " << config->subscribeChannel << " on Stream ID " << config.subscribeStreamId << std::endl;
       aeronContext.newSubscriptionHandler(
         [](const std::string& channel, std::int32_t streamId, std::int64_t correlationId)
         {

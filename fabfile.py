@@ -158,6 +158,16 @@ def test(branch = None):
   if not branch:
     branch = git_current_branch()
 
+    branch = branch.strip()
+    with cd("/var/www/iroha"):
+      res = sudo("git reset --hard")
+      res = sudo("git checkout -b "+branch+" origin/"+branch, warn_only=True)
+      if res.failed:
+        sudo("git checkout "+branch) 
+      sudo("git pull origin "+branch+" --no-ff")
+       
+      remake()
+
   git_push(branch)
 
   with cd("/var/www/iroha"):
