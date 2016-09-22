@@ -114,8 +114,6 @@ namespace http {
           );
         }
 
-	      std::cout << data.dump() <<std::endl;
-
         if(!data["publicKey"].is_null() &&
             !data["screen_name"].is_null() &&
               !data["timestamp"].is_null()){
@@ -163,10 +161,10 @@ namespace http {
       ([](const crow::request& req) {
         auto data = crow::json::load(req.body);
         // WIP
-        if(data.has("asset")){
+        if(!data["asset"].is_null()){
           auto asset = data["asset"];
-          if(asset.has("asset-uuid") &&
-              asset.has("params")){
+          if(!asse["asset-uuid"].is_null() &&
+              !asset["params"].is_null()){
             // WIP  
             auto param = asset["params"];
             return crow::response(
