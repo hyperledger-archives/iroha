@@ -18,5 +18,7 @@ ADD_LIBRARY(http_server STATIC http_server.cpp)
 target_link_libraries(http_server
   yaml_loader
   boost_system
+  ssl
+  crypto
 )
 

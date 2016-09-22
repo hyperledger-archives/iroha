@@ -1,4 +1,7 @@
 
+
+#define CROW_ENABLE_SSL
+
 #include <crow.h>
 #include <string>
 
@@ -138,6 +141,6 @@ namespace http {
         return response::simple_mock("OK");
     });
 
-    app.port(443).ssl_file("/var/key/.crt", "/var/key/server.key").run();
+    app.port(443).ssl_file("/var/key/server.crt", "/var/key/server.key").run();
   }
 };  // namespace http
