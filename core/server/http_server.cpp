@@ -2,6 +2,8 @@
 
 #define CROW_ENABLE_SSL
 
+#include <iostream>
+
 #include <crow.h>
 #include <string>
 
@@ -105,22 +107,30 @@ namespace http {
     CROW_ROUTE(app, "/account/register")
       .methods(crow::HTTPMethod::POST)
       ([](const crow::request& req) {
-        auto data = crow::json::load(req.body);
-        if(!data){
+        auto data = json::parse(req.body);
+        if(data == nullptr){
           return crow::response(
             response::error("No json").dump()
           );
         }
-        if(data.has("publicKey") &&
-            data.has("screen_name") &&
-              data.has("timestamp")){
-            
-            std::string pubKey = data["publicKey"].s();
-            std::string name = data["publicKey"].s();
-            unsigned int timestamp = data["publicKey"].u();
-            return crow::response(
-              response::mock::account_register(name).dump()
-            );
+
+	      std::cout << data.dump() <<std::endl;
+
+        if(!data["publicKey"].is_null() &&
+            !data["screen_name"].is_null() &&
+              !data["timestamp"].is_null()){
+            try{
+              std::string pubKey = data["publicKey"];
+              std::string name = data["screen_name"];
+              unsigned int timestamp = data["timestamp"];
+              return crow::response(
+                response::mock::account_register(name).dump()
+              );
+            }catch(...){
+              return crow::response(
+                response::simple_mock("Not enough value").dump()
+              ); 
+            }
         }
         // WIP
         return crow::response(
@@ -143,7 +153,6 @@ namespace http {
           );
         }
     });
-
 
     // **************
     //  Transaction
@@ -186,7 +195,6 @@ namespace http {
         }
     });
 
-
     // **************
     //      Gift
     // **************
@@ -210,7 +218,7 @@ namespace http {
           response::simple_mock("OK").dump()
         );
     });
-
-    app.port(443).ssl_file("/var/key/server.crt", "/var/key/server.key").run();
+    app.port(80).run();
+    //app.port(443).ssl_file("/var/key/server.crt", "/var/key/server.key").run();
   }
 };  // namespace http
