@@ -19,9 +19,10 @@ namespace connection {
   };
 
   void initialize_peer(std::unique_ptr<Config> config);
+
   bool sendAll(std::string message);
   bool send(std::string to,std::string message);
-  void receive(std::function<void(std::string from,std::string message)> callback);
+  bool receive(std::function<void(std::string from,std::string message)> callback);
 
 };
 

@@ -1,5 +1,7 @@
 #include "connection.hpp"
 
+#include "../util/logger.hpp"
+
 #include <string>
 #include <functional>
 #include <cstdint>
@@ -38,7 +40,6 @@ namespace connection {
   std::unique_ptr<PeerContext> context;
   aeron::Context aeronContext;
 
-
   void initialize_peer(std::unique_ptr<Config> config) {
 
     std::cout<< "Loaded config \n";
@@ -48,14 +49,14 @@ namespace connection {
       std::int64_t subscriptionId;
       std::int64_t publicationId;
 
-      std::cout << "Subscribing at " << config->subscribeChannel << " on Stream ID " << config.subscribeStreamId << std::endl;
+      std::cout << "Subscribing at " << config->subscribeChannel << " on Stream ID " << config->subscribeStreamId << std::endl;
       aeronContext.newSubscriptionHandler(
         [](const std::string& channel, std::int32_t streamId, std::int64_t correlationId)
         {
             std::cout << "Subscription: " << channel << " " << correlationId << ":" << streamId << std::endl;
         });
 
-      std::cout << "Publishing at " << config.publishChannel << " on Stream ID " << config.publishStreamId << std::endl;
+      std::cout << "Publishing at " << config->publishChannel << " on Stream ID " << config->publishStreamId << std::endl;
       aeronContext.newPublicationHandler(
         [](const std::string& channel, std::int32_t streamId, std::int32_t sessionId, std::int64_t correlationId)
         {
@@ -67,7 +68,7 @@ namespace connection {
       std::shared_ptr<Subscription> pongSubscription;
       std::shared_ptr<Publication> pingPublication;
 
-      subscriptionId = aeron.addSubscription("aeron:udp?endpoint="+config.address+":"+config.port, config.subscribeStreamId);
+      subscriptionId = aeron.addSubscription("aeron:udp?endpoint="+config->address+":"+config->port, config->subscribeStreamId);
       pongSubscription = aeron.findSubscription(subscriptionId);
 
       while (!pongSubscription) {
@@ -75,7 +76,7 @@ namespace connection {
           pongSubscription = aeron.findSubscription(subscriptionId);
       }
 
-      publicationId = aeron.addPublication("aeron:udp?endpoint="+config.address+":"+config.port, config.publishStreamId);
+      publicationId = aeron.addPublication("aeron:udp?endpoint="+config->address+":"+config->port, config->publishStreamId);
 
       pingPublication = aeron.findPublication(publicationId);
       while (!pingPublication) {
