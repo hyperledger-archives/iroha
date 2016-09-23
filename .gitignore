@@ -1,4 +1,5 @@
-config/*
+config/*.py
+config/__pycahe__
 __pycache__/*
 build/*
 *cmake
