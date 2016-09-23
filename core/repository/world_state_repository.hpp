@@ -32,6 +32,6 @@ namespace repository{
       virtual bool isExist(std::string key) = 0;
   };
 
-};
+}; // namespace repository
 
-#endif
+#endif // __WORLD_STATE_REPOSITORY_HPP_

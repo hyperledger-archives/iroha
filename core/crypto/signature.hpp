@@ -5,8 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include <ed25519.h>
-
 namespace signature {
 
   class KeyPair {
@@ -21,7 +19,6 @@ namespace signature {
       privateKey(std::move(pri))
     {}
   };
-
 
   std::string sign(
     std::string message,
