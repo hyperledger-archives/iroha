@@ -6,3 +6,6 @@ build/*
 *.vscode/
 *.swp
 *.class
+*.gch
+.gradle/*
+.vscode/*
