@@ -1,18 +1,13 @@
 #ifndef __TIME_HPP_
 #define __TIME_HPP_
 
-namespace time{
+#include <string>
 
-  #include <string>
+namespace datetime{
 
-  #include <time.h>
-  
-  std::string time_str(){
-    time_t timer;
-    struct tm *t_st;
-    time(&timer);
-    return ctime(time);
-  }
+  std::string unixtime_str();
+  std::string date_str();
+
 };
 
 #endif
