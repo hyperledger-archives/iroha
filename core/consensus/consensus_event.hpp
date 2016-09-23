@@ -5,7 +5,11 @@
 #include <functional>
 
 namespace ConsensusEvent {
-class ConsensusEvent {
+struct ConsensusEvent {
+    std::unique_ptr<abstract_transaction::AbstractTransaction> tx;
+    std::vector<std::string> txSignatures;
+    std::string merkleRoot;
+    std::vector<std::string> merkleRootSignatures;
     void addSignature(std::string const signature);
 };
 };  // namespace ConsensusEvent

@@ -26,3 +26,6 @@
 	path = core/vendor/msgpack-c
 	url = https://github.com/msgpack/msgpack-c.git
   ignore = dirty
+[submodule "core/vendor/json"]
+	path = core/vendor/json
+	url = https://github.com/nlohmann/json.git

@@ -1,0 +1,9 @@
+mediaDriver:
+  address: 127.0.0.1
+  port: 40123
+  publishStreamId: 12
+  subscribeStreamId: 12
+  name: mizuki
+
+peer:
+  leader: true
