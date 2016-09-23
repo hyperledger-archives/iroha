@@ -4,7 +4,6 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
-
 template<typename T>
   std::unique_ptr<T> vector2UnsignedCharPointer(
   std::vector<T> vec
@@ -52,6 +51,12 @@ TEST(Base64, EncodeAndDecodeNormalText){
 
 TEST(Base64, EncodeAndDecodeJapaneseTextWithNL){
     unsigned char* original = (unsigned char*)"ソラミツ株式会社";
+    int original_text_length = strlen((char*)original);
+    test_text_equals_original_text(original, original_text_length);
+}
+
+TEST(Base64, EncodeAndDecodeJapaneseTextWithNL){
+    unsigned char* original = (unsigned char*)"ご注文は分散台帳ですか？";
     int original_text_length = strlen((char*)original);
     test_text_equals_original_text(original, original_text_length);
 }
@@ -151,7 +156,6 @@ TEST(Base64, EncodeAndDecodeLongText){
     int original_text_length = strlen((char*)original);
     test_text_equals_original_text(original, original_text_length);
 }
-
 
 TEST( Base64, HennaMozi){
   unsigned char* original = (unsigned char*)"à6 L¥õDZÛƒË¸%È] ¬ç”Ã,Ñ ¹š+˜g'Z¡È Ò  ";
