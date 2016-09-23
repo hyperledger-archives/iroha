@@ -6,6 +6,7 @@
 
 #include "../core/server/http_server.hpp"
 #include "../core/peer/connection.hpp"
+#include "../core/consensus/sumeragi.hpp"
 
 #include "../core/util/yaml_loader.hpp"
 #include "../core/util/logger.hpp"
@@ -45,8 +46,8 @@ int main() {
   std::thread http_th( server );
 
  // std::cout << "(Second) Process ID is " << getpid() << std::endl;
- // Sumeragi::initializeSumeragi(11, 2, 2);
- //Sumeragi::loop();
+ sumeragi::initializeSumeragi(11, 2, 2);
+ sumeragi::loop();
 
   while(running){}
 

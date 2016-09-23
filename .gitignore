@@ -1,5 +1,6 @@
 config/*.py
 config/__pycahe__
+**/__pycache__/*
 __pycache__/*
 build/*
 *cmake
@@ -7,4 +8,5 @@ build/*
 *.vscode/
 *.swp
 *.class
- *.gch
+*.gch
+
