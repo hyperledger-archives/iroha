@@ -3,8 +3,6 @@
 
 #include <string>
 #include <iostream>
-    
-#include "time.hpp"
 
 namespace logger{
 

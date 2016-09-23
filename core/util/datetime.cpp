@@ -1,6 +1,3 @@
-#ifndef __TIME_HPP_
-#define __TIME_HPP_
-
 #include "datetime.hpp"
 
 #include <ctime>
@@ -21,9 +18,8 @@ namespace datetime{
     return std::asctime(std::localtime(&result));
   }
 
-  std::string unixtime2date(long int unixtime){
-    return std::asctime(std::localtime(&static_cast<time_t>(unixtime)));
+  std::string unixtime2date(time_t unixtime){
+    return std::asctime(std::localtime(&unixtime));
   }
 };
 
-#endif
