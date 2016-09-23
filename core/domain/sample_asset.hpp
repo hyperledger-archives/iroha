@@ -4,7 +4,6 @@
 #include <json.hpp>
 #include "asset.hpp"
 
-
 namespace asset {
 
 class SampleAsset : public Asset {

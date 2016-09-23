@@ -1,40 +1,27 @@
-#ifndef __CORE_DOMAIN_ASSET_HPP_
-#define __CORE_DOMAIN_ASSET_HPP_
-
-#include <json.hpp>
 
 #include "sample_asset.hpp"
-#include "asset.hpp"
 #include "../repository/world_state_repository.hpp"
 
 namespace asset{
 
-class SampleAsset : public Asset {
+int SampleAsset::getBalance(std::string accountName){
+  // ToDo
+}
 
- public:
-  
-  int getBalance(std::string accountName){
-    // ToDo
-  }
+std::vector<std::string> SampleAsset::getDomainName(){
+  // ToDo
+}
 
-  std::vector<std::string> getDomainName(){
-    // ToDo
-  }
+std::vector<std::string> SampleAsset::getAssetNameList(){
+  // ToDo
+}
 
-  std::vector<std::string> getAssetNameList(){
-    // ToDo
-  }
+nlohmann::json SampleAsset::getAssetInfo(){
+  // ToDo  
+}
 
-  nlohmann::json getAssetInfo(){
-    // ToDo  
-  }
-
-  nlohmann::json getDomainInfo(){
-    // ToDo
-  }
-
-};
+nlohmann::json SampleAsset::getDomainInfo(){
+  // ToDo
+}
 
 }  // namespace asset
-
-#endif
