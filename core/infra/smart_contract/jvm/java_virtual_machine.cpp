@@ -1,4 +1,35 @@
-#include "java_vm.hpp"
+#include <jni.h>
+#include <memory>
+#include <string>
+
+#include <iostream>
+#include <unordered_map>
+
+
+struct JavaContext {
+  JNIEnv* env;
+  JavaVM* jvm;
+  jclass  jClass;
+  jobject jObject;
+  std::string name;
+  JavaVMInitArgs vmArgs;
+  JavaContext(
+    JNIEnv* aEnv,
+    JavaVM* aJvm,
+    JavaVMInitArgs aArgs,
+    std::string aName,
+    jclass cls,
+    jobject obj
+  ):
+    env(std::move(aEnv)),
+    jvm(std::move(aJvm)),
+    jClass(std::move(cls)),
+    jObject(std::move(obj)),
+    name(std::move(aName)),
+    vmArgs(std::move(aArgs))
+  {}
+};
+
 
 void Java_SmartContract_save(JNIEnv *env,jobject thiz,jstring key,jstring value){
     const char *keyChar   = env->GetStringUTFChars(   key,0);
