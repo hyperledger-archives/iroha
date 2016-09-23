@@ -1,5 +1,0 @@
-add_subdirectory(smart_contract)
-add_subdirectory(crypto)
-add_subdirectory(repository)
-add_subdirectory(server)
-add_subdirectory(connection)

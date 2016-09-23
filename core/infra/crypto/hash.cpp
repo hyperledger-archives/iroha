@@ -1,7 +1,7 @@
 #include <SimpleFIPS202.h>
 #include <string>
 
-#include "hash.hpp"
+#include "../../crypto/hash.hpp"
 
 namespace hash {
   std::string sha3_256_hex(std::string message) {
@@ -15,7 +15,7 @@ namespace hash {
       message.size());
 
     std::string res = "";
-    char front, back;
+    unsigned char front, back;
     for (int i = 0; i < 32; i++) {
       front = (output[i] & 240) >> 4;
       back =  output[i] &  15;
@@ -36,7 +36,7 @@ namespace hash {
       message.size());
 
     std::string res = "";
-    char front, back;
+    unsigned char front, back;
     for (int i = 0; i < 64; i++) {
       front = (output[i] & 240) >> 4;
       back =  output[i] &  15;

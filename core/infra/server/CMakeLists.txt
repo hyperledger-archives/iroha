@@ -8,7 +8,6 @@ include_directories(
   ${JSON_PATH}/src
 )
 
-include_directories(${CROW_PATH}/include)
 ADD_LIBRARY(http_server_with_crow STATIC http_server_with_crow.cpp)
 target_link_libraries(http_server_with_crow
   boost_system

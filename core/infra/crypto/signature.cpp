@@ -7,10 +7,10 @@
 
 #include <ed25519.h>
 
-#include "signature.hpp"
+#include "../../crypto/signature.hpp"
 
-#include "base64.hpp"
-#include "hash.hpp"
+#include "../../crypto/base64.hpp"
+#include "../../crypto/hash.hpp"
 
 namespace signature {
 
