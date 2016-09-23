@@ -21,10 +21,10 @@ link_directories(
   ${AERON_PATH}/cppbuild/Debug/lib
 )
 
-add_executable(main
+add_executable(iroha-main
   main.cpp
 )
-target_link_libraries(main
+target_link_libraries(iroha-main
   http_server
   connection
   pthread

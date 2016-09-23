@@ -9,9 +9,14 @@ SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 add_subdirectory(crypto)
 add_subdirectory(domain)
+<<<<<<< HEAD
 add_subdirectory(consensus)
 add_subdirectory(peer)
 add_subdirectory(util)
+=======
+#add_subdirectory(consensus)
+#add_subdirectory(peer)
+>>>>>>> feature/accountRepository
 add_subdirectory(vendor)
 add_subdirectory(smartContract)
 add_subdirectory(repository)
