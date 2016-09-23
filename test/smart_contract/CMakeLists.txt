@@ -10,44 +10,35 @@ ENDIF()
 
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
-
-SET(VM_PATH  "${PROJECT_SOURCE_DIR}/core/smartContract")
-
 set(GTEST_INCLUDE_DIR ${PROJECT_BINARY_DIR}/gtest/src/googletest/googletest/include)
 
-SET(CMAKE_SHARED_LINKER_FLAGS "-ljvm")
-
 include_directories(
-  ${VM_PATH}
   ${GTEST_INCLUDE_DIR}
   $ENV{JAVA_HOME}/include
 )
+
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   include_directories($ENV{JAVA_HOME}/include/darwin)
-ELSE()
-  include_directories($ENV{JAVA_HOME}/include/linux)
-ENDIF()
-
-
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   link_directories(
     ${PROJECT_BINARY_DIR}/lib
     $ENV{JAVA_HOME}/jre/lib/server
   )
 ELSE()
+  include_directories($ENV{JAVA_HOME}/include/linux)
   link_directories(
     ${PROJECT_BINARY_DIR}/lib
     $ENV{JAVA_HOME}/jre/lib/amd64/server
   )
 ENDIF()
 
-add_executable(javaVM-test javaVM_test.cpp)
-target_link_libraries(javaVM-test
-  smartContract jvm
+add_executable(java_vm_test java_vm_test.cpp)
+target_link_libraries(java_vm_test
+  smart_contract
+  jvm
   ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread)
 add_test(
-  NAME javaVM-test
-  COMMAND $<TARGET_FILE:javaVM-test>
+  NAME java_vm_test
+  COMMAND $<TARGET_FILE:java_vm_test>
 )
 
 

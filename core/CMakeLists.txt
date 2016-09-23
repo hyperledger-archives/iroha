@@ -1,4 +1,3 @@
-add_subdirectory(connection)
 add_subdirectory(consensus)
 add_subdirectory(domain)
 add_subdirectory(repository)

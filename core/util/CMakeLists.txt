@@ -1,13 +1,13 @@
 
-// Datetime
+# Datetime
 ADD_LIBRARY(datetime  STATIC datetime.cpp)
 
-// Logger
+# Logger
 ADD_LIBRARY(logger  STATIC logger.cpp)
 target_link_libraries(logger
   datetime
 )
 
-// Datetime
+# Datetime
 ADD_LIBRARY(exception  STATIC exception.cpp)
 

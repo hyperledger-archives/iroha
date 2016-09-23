@@ -1,5 +1,4 @@
 
-SET(YAML_PATH "${PROJECT_SOURCE_DIR}/core/vendor/yaml-cpp")
 SET(AERON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/Aeron")
 
 include_directories(
@@ -9,8 +8,8 @@ link_directories(
   ${AERON_PATH}/cppbuild/Debug/lib
 )
 
-ADD_LIBRARY(connection STATIC connection.cpp)
-target_link_libraries(connection
+ADD_LIBRARY(connection_with_aeron STATIC connection_with_aeron.cpp)
+target_link_libraries(connection_with_aeron
   aeron_client
   logger
 )

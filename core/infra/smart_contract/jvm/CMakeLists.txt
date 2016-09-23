@@ -1,4 +1,3 @@
-set(CMAKE_BUILD_TYPE Debug)
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++11 -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/server")
@@ -8,30 +7,18 @@ ELSE()
   SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -DDEBUG -O0 -std=c++11 -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/amd64/server")
 ENDIF()
 
-SET(CMAKE_SHARED_LINKER_FLAGS "-ljvm")
-
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/peer)
-SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
-
-SET(KECCAK_PATH "../vendor/KeccakCodePackage")
-
 include_directories($ENV{JAVA_HOME}/include)
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   include_directories($ENV{JAVA_HOME}/include/darwin)
-ELSE()
-  include_directories($ENV{JAVA_HOME}/include/linux)
-ENDIF()
-
-
-
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   link_directories($ENV{JAVA_HOME}/jre/lib/server)
 ELSE()
+  include_directories($ENV{JAVA_HOME}/include/linux)
   link_directories($ENV{JAVA_HOME}/jre/lib/amd64/server)
 ENDIF()
 
-link_directories($ENV{JAVA_HOME}/jre/lib/server)
-
-ADD_LIBRARY(smartContract STATIC java_vm.cpp)
+ADD_LIBRARY(smart_contract STATIC java_virtual_machine.cpp)
+target_link_libraries(smart_contract
+  jvm
+)  
 
