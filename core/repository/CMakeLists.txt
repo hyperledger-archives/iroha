@@ -1,12 +1,21 @@
 
-SET(CMAKE_SHARED_LINKER_FLAGS "-L../vendor/leveldb/out-static -lmsgpack -lsnappy -lleveldb")
+SET(MESSAGE_PACK_PATH ${PROJECT_SOURCE_DIR}/core/vendor/msgpack-c)
+SET(LEVELDB_PATH ${PROJECT_SOURCE_DIR}/core/vendor/leveldb)
 
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/peer)
-SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+include_directories(
+  ${LEVELDB_PATH}/include
+  ${MESSAGE_PACK_PATH}/include
+)
 
-SET(LEVELDB_PATH "../vendor/leveldb")
+message(status ${LEVELDB_PATH})
+link_directories(
+  ${MESSAGE_PACK_PATH}
+  ${LEVELDB_PATH}/out-static
+)
 
-include_directories(${LEVELDB_PATH}/include)
-
-ADD_LIBRARY(txRepo STATIC TransactionRepository.cpp)
-
+ADD_LIBRARY(txRepo STATIC merkle_transaction_repository.cpp)
+target_link_libraries(txRepo
+  msgpackc
+  snappy
+  leveldb
+)  

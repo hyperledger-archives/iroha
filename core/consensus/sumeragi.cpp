@@ -1,8 +1,8 @@
 #include "sumeragi.hpp"
 
 #include "../util/logger.hpp"
-#include "../repository/transaction_repository.hpp"
-#include "../domain/abstract_transaction.hpp"
+#include "../repository/merkle_transaction_repository.hpp"
+#include "../domain/transactions/abstract_transaction.hpp"
 #include "../peer/connection.hpp"
 #include "../crypto/hash.hpp"
 #include "../validation/transaction_validator.hpp"

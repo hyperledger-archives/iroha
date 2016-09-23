@@ -8,15 +8,15 @@
 
 namespace abstract_transaction {
 
-enum TransactionType { 
+enum class TransactionType { 
     addPeer, modifyPeer, removePeer, transfer, signatory, signatoryAdd, signatoryDelete, domainDefinition,
     domainRenewal, aliasDefinition, aliasRenewal, assetDefinition, message, chaincodeInit, chaincodeInvoke,
     chaincodeUpdate, chaincodeDestroy, interchain
 };
 
 class AbstractTransaction {
-public:
-  virtual ~AbstractTransaction() = default; // make dtor virtual
+  public:
+    virtual ~AbstractTransaction() = default; // make dtor virtual
     AbstractTransaction(AbstractTransaction&&) = default;  // support moving
     AbstractTransaction& operator = (AbstractTransaction&&) = default;
     AbstractTransaction(const AbstractTransaction&) = default; // support copying
