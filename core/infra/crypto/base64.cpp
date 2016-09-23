@@ -33,11 +33,12 @@ namespace vendor {
   static inline int is_base64(unsigned char c) {
     return (isalnum(c) || (c == '+') || (c == '/'));
   }
-
+  // Update argument is std::vector<unsigned char>
   std::string base64_encode(const std::vector<unsigned char> bytes_to_encode, unsigned int in_len){
+    // Update ret is std::vector<char>
     std::vector<char> ret((int)(in_len * 2.8));
-    int pointer = 0;
-    int pointer_of_bytes_to_encode = 0;
+    int pointer = 0; // Update Add new value.
+    int pointer_of_bytes_to_encode = 0; // Update Add new value.
     int i = 0;
     int j = 0;
     unsigned char char_array_3[3];
@@ -54,8 +55,8 @@ namespace vendor {
         char_array_4[3] = char_array_3[2] & 0x3f;
 
         for(i = 0; (i <4) ; i++){
-          ret[pointer] = base64_chars[char_array_4[i]];
-          pointer++;
+          ret[pointer] = base64_chars[char_array_4[i]]; // Update use index
+          pointer++; // Update increments pointer
         }
         i = 0;
       }
@@ -72,13 +73,13 @@ namespace vendor {
       char_array_4[3] = char_array_3[2] & 0x3f;
 
       for (j = 0; (j < i + 1); j++){
-        ret[pointer] = base64_chars[char_array_4[j]]; // use index
-        pointer++; // increments pointer
+        ret[pointer] = base64_chars[char_array_4[j]]; // Update use index
+        pointer++; // Update increments pointer
       }
 
       while((i++ < 3)){
-        ret[pointer] = '=';// use index
-        pointer++; // increments pointer
+        ret[pointer] = '=';// Update use index
+        pointer++; // Update increments pointer
       }
     }
     std::string res_str;
@@ -149,7 +150,7 @@ namespace vendor {
       message.size()
     );
   }
-  
+
   std::vector<unsigned char> decode(const std::string enc) {
     return vendor::base64_decode(enc);
   }

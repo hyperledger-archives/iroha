@@ -2,23 +2,18 @@
 #define __CONNECTION__
 
 #include <string>
+#include <unordered_map>
 #include <memory>
 #include <functional>
 
 namespace connection {
 
-  struct Config {
-    std::string  address;
-    std::string     port;
-    std::string     name;
-
-    int publishChannel;
-    int publishStreamId;
-    int subscribeChannel;
-    int subscribeStreamId;
-  };
-
-  void initialize_peer(std::unique_ptr<Config> config);
+  void initialize_peer(
+    std::unique_ptr<
+      std::unordered_map<
+        std::string, std::string
+      >
+    > config);
 
   bool sendAll(std::string message);
   bool send(std::string to,std::string message);

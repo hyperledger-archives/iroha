@@ -4,6 +4,7 @@
 namespace http {
   // Start server and keep on runing.
   void server();
-};  // namespace http
+
+};
 
 #endif  // CORE_SERVER_HTTP_SERVER_HPP_
