@@ -2,13 +2,14 @@
 
 #define CROW_ENABLE_SSL
 
-#include <iostream>
 
 #include <crow.h>
+#include <json.hpp>
+
+#include <iostream>
 #include <string>
 
-#include "http_server.hpp"
-#include <json.hpp>
+#include "../../server/http_server.hpp"
 
   
 namespace http {
@@ -193,30 +194,6 @@ namespace http {
         }
     });
 
-    // **************
-    //      Gift
-    // **************
-    // Nonce generator
-    CROW_ROUTE(app, "/gift/issue")
-      .methods(crow::HTTPMethod::POST)
-      ([](const crow::request& req) {
-      // WP
-      return crow::response(
-        response::mock::gift_issue().dump()
-      );
-    });
-
-    // Nonce receiver
-    CROW_ROUTE(app, "/gift/receive")
-      .methods(crow::HTTPMethod::POST)
-      ([](const crow::request& req) {
-        auto data = crow::json::load(req.body);
-        // WIP
-        return crow::response(
-          response::simple_mock("OK").dump()
-        );
-    });
-    app.port(80).run();
-    //app.port(443).ssl_file("/var/key/server.crt", "/var/key/server.key").run();
+    app.port(80).run(); // config 
   }
 };  // namespace http

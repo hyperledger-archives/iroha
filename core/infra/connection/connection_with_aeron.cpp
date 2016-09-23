@@ -1,21 +1,21 @@
-#include "connection.hpp"
+#include "../../connection/connection.hpp"
 
-#include "../util/logger.hpp"
+#include "../../util/logger.hpp"
 
 #include <string>
 #include <functional>
+#include <thread>
 #include <cstdint>
 #include <cstdio>
 
+
 #include <util/CommandOptionParser.h>
-#include <thread>
 #include <Aeron.h>
 #include <array>
 #include <concurrent/BusySpinIdleStrategy.h>
 
 #include <unordered_map>
 #include <string>
-#include <iostream>
 
 static const std::chrono::duration<long, std::milli> IDLE_SLEEP_MS(1);
 
@@ -40,35 +40,49 @@ namespace connection {
   std::unique_ptr<PeerContext> context;
   aeron::Context aeronContext;
 
-  void initialize_peer(std::unique_ptr<Config> config) {
+  void initialize_peer(const
+      std::unordered_map<
+        std::string, std::string
+      > &config) {
 
-    std::cout<< "Loaded config \n";
-    std::cout<< "URL:"<<"aeron:udp?endpoint="+config->address+":"+config->port << "\n";
+    logger::info("connection", "URL:aeron:udp?endpoint="+config.at("address")+":"+config.at("port"));
     try{
       aeron::Context aeronContext;
       std::int64_t subscriptionId;
       std::int64_t publicationId;
 
-      std::cout << "Subscribing at " << config->subscribeChannel << " on Stream ID " << config->subscribeStreamId << std::endl;
+      logger::info("connection", "Subscribing at "+
+        config.at("subscribeChannel") +" on Stream ID "+ config.at("subscribeStreamId"));
       aeronContext.newSubscriptionHandler(
         [](const std::string& channel, std::int32_t streamId, std::int64_t correlationId)
         {
-            std::cout << "Subscription: " << channel << " " << correlationId << ":" << streamId << std::endl;
+            logger::info(
+              "connection",
+              "Subscription: "+ channel +" "+ std::to_string(correlationId)+
+                ":"+ std::to_string(streamId)
+            );
         });
 
-      std::cout << "Publishing at " << config->publishChannel << " on Stream ID " << config->publishStreamId << std::endl;
+      logger::info("connection", "Publishing at "+config.at("publishChannel")+" on Stream ID "+config.at("publishStreamId"));
       aeronContext.newPublicationHandler(
         [](const std::string& channel, std::int32_t streamId, std::int32_t sessionId, std::int64_t correlationId)
         {
-            std::cout << "Publication: " << channel << " " << correlationId << ":" << streamId << ":" << sessionId << std::endl;
+            logger::info(
+              "connection",
+              "Publication: "+ channel +" "+ std::to_string(correlationId)+
+                ":"+ std::to_string(streamId) +":"+ std::to_string(sessionId)
+            );
         });
 
       Aeron aeron(aeronContext);
-      std::cout<< "Initialized aeron \n";
+      logger::info("connection", "Initialized aeron");
       std::shared_ptr<Subscription> pongSubscription;
-      std::shared_ptr<Publication> pingPublication;
+      std::shared_ptr<Publication>  pingPublication;
 
-      subscriptionId = aeron.addSubscription("aeron:udp?endpoint="+config->address+":"+config->port, config->subscribeStreamId);
+      subscriptionId = aeron.addSubscription(
+        "aeron:udp?endpoint="+config.at("address")+":"+config.at("port"),
+        std::atoi(config.at("subscribeStreamId").c_str())
+      );
       pongSubscription = aeron.findSubscription(subscriptionId);
 
       while (!pongSubscription) {
@@ -76,7 +90,10 @@ namespace connection {
           pongSubscription = aeron.findSubscription(subscriptionId);
       }
 
-      publicationId = aeron.addPublication("aeron:udp?endpoint="+config->address+":"+config->port, config->publishStreamId);
+      publicationId = aeron.addPublication(
+        "aeron:udp?endpoint="+config.at("address")+":"+config.at("port"),
+        std::atoi(config.at("publishStreamId").c_str())
+      );
 
       pingPublication = aeron.findPublication(publicationId);
       while (!pingPublication) {
@@ -85,14 +102,14 @@ namespace connection {
       }
 
     } catch (CommandOptionException& e) {
-        std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
-        return;
+      logger::error("connection","ERROR: "+std::string(e.what()));
+      return;
     } catch (SourcedException& e) {
-        std::cerr << "FAILED: " << e.what() << " : " << e.where() << std::endl;
-        return;
+      logger::error("connection","FAILED: "+std::string(e.what()));
+      return;
     } catch (std::exception& e) {
-        std::cerr << "FAILED: " << e.what() << " : " << std::endl;
-        return;
+      logger::error("connection","FAILED: "+std::string(e.what()));
+      return;
     }
   }
 

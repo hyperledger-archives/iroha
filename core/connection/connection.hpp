@@ -9,11 +9,8 @@
 namespace connection {
 
   void initialize_peer(
-    std::unique_ptr<
-      std::unordered_map<
-        std::string, std::string
-      >
-    > config);
+    std::unordered_map<std::string, std::string>
+      config);
 
   bool sendAll(std::string message);
   bool send(std::string to,std::string message);
