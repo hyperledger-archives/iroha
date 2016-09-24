@@ -1,44 +1,55 @@
-#ifndef CORE_DOMAIN_ENTITY_HPP_
-#define CORE_DOMAIN_ENTITY_HPP_
-
-#include <stdio.h>
+#ifndef CORE_DOMAIN_ACCOUNT_HPP_
+#define CORE_DOMAIN_ACCOUNT_HPP_
 
 #include <string>
 #include <vector>
 
 #include <msgpack.hpp>
 
-class Account {
- public:
-    std::string uuid;
-    std::vector<unsigned char> publicKeyVec;
-    std::vector<unsigned char> privateKeyVec;
+#include "asset.hpp"
+#include "../util/random.hpp"
 
-    unsigned char* publicKey;
-    unsigned char* privateKey;
+#include <vector>
 
-    MSGPACK_DEFINE(uuid, publicKeyVec, privateKeyVec);
+namespace domain{
 
-    Account():
-      uuid(""), //TODO(M->I): SHA-3のハッシュの方がいいかな？
-      publicKey((unsigned char*)""),
-      privateKey((unsigned char*)"")
-    {}
+  // This is domain.
+  class AccountUser {
+      std::string name;
+      std::string publicKeyb64Encoded;
+      std::string uid;
+    public:
 
-    Account(
-      std::string aUuid,
-      unsigned char* aPublicKey,
-      unsigned char* aPrivateKey):
-      uuid(aUuid),
-      publicKey(aPublicKey),
-      privateKey(aPrivateKey) {
-      for (size_t i = 0; i < strlen(reinterpret_cast<char*>(publicKey) ); ++i) {
-        publicKeyVec.push_back(publicKey[i]);
-      }
-      for (size_t i = 0; i < strlen(reinterpret_cast<char*>(privateKey)); ++i) {
-        privateKeyVec.push_back(privateKey[i]);
-      }
-    }
-};
+      // Use only factory.
+      AccountUser(
+        std::string aName,
+        std::string aPublicKeyb64Encoded
+      ):
+        name(aName),
+        uid(random_service::makeRandomHash()),
+        publicKeyb64Encoded(aPublicKeyb64Encoded)
+      {}
 
-#endif  // CORE_DOMAIN_ENTITY_HPP_
+      // Support move and copy.
+      AccountUser(AccountUser const&) = default;
+      AccountUser(AccountUser&&) = default;
+      AccountUser& operator =(AccountUser const&) = default;
+      AccountUser& operator =(AccountUser&&) = default;
+
+      // Account user can create a domain and has some a domain;
+      bool createDomain(std::string);
+      bool isOwnerOfDomin(std::string domainName);
+
+      // Account User has some an asset.
+      bool hasAssetInfo(std::string assetUrl);
+      // Account user can add an asset to the domain if account user has this domain;
+      bool joinAssetTo(Asset asset, std::string domain);
+
+      // Account user can pay other user in any asset;
+      // assetUrl := domain::domain::asset.
+      // Of cause, account balance must not minus.
+      bool pay(std::string to, int quantity, std::string assetUrl);
+      
+  };
+}
+#endif  // CORE_DOMAIN_ACCOUNT_HPP_
