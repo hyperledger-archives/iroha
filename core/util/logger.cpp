@@ -4,7 +4,7 @@
 #include <string>
 #include <iostream>
     
-#include "time.hpp"
+#include "datetime.hpp"
 #include "logger.hpp"
 
 namespace logger{
@@ -14,7 +14,7 @@ namespace logger{
     const std::string &message,
     std::ostream &out = std::cout) {
     out << datetime::unixtime_str() << \
-      " DEBUG (^v^) ["<< name << "] "<< message << std::endl;
+      " DEBUG ["<< name << "] "<< message << std::endl;
   }
 
   void info(
@@ -22,7 +22,7 @@ namespace logger{
     const std::string &message,
     std::ostream &out = std::cout) {
     out << datetime::unixtime_str() << \
-      " INFO (*v*) ["<< name << "] "<< message << std::endl;
+      " INFO ["<< name << "] "<< message << std::endl;
   }
 
   void warning(
@@ -30,7 +30,7 @@ namespace logger{
     const std::string &message,
     std::ostream &out = std::cout) {
     out << datetime::unixtime_str() << \
-      " WARNING (,o,) ["<< name << "] "<< message << std::endl;
+      " WARNING ["<< name << "] "<< message << std::endl;
   }
 
   void error(

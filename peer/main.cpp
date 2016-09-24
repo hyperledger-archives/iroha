@@ -1,4 +1,4 @@
-
+/*
 #include <thread>
 #include <signal.h>
 #include <unistd.h>
@@ -22,8 +22,9 @@ void sigIntHandler(int param){
   running = false;
   logger::info("main", "will halt");
 }
-
+*/
 int main() {
+  /*
   signal(SIGINT, sigIntHandler);
 
   if(getenv("IROHA_HOME") == nullptr){
@@ -52,6 +53,7 @@ int main() {
   while(running){}
 
   http_th.detach();
+  */
   return 0;
 }
 

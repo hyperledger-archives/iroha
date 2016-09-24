@@ -9,5 +9,7 @@ build/*
 *.swp
 *.class
 *.gch
+*.a
+*.o
 .gradle/*
 .vscode/*

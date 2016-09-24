@@ -1,5 +1,3 @@
-#ifndef __CORE_DOMAIN_ASSET_HPP_
-#define __CORE_DOMAIN_ASSET_HPP_
 
 #include <string>
 
@@ -21,6 +19,7 @@ class Asset {
     {}
 
     // Write asset's logic
+
 };
 
-#endif
+}; // namespace asset
