@@ -1,5 +1,9 @@
+#ifndef CORE_DOMAIN_ASSET_HPP_
+#define CORE_DOMAIN_ASSET_HPP_
 
 #include <string>
+
+#include "../util/random.hpp"
 
 namespace domain {
     namespace asset {
@@ -8,6 +12,7 @@ namespace domain {
         protected:
           std::string name;
           std::string parentDomainName;
+          std::string uid;
         public:
 
           // Constructor is only used by factory.
@@ -16,6 +21,7 @@ namespace domain {
             std::string aParentDomainName
           ):
             name(aName),
+            uid(random_service::makeRandomHash()),
             parentDomainName(aParentDomainName)
           {}
   
@@ -31,3 +37,5 @@ namespace domain {
 
     };  // namespace asset
 };  // namespace domain
+
+#endif
