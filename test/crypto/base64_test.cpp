@@ -49,14 +49,14 @@ TEST(Base64, EncodeAndDecodeNormalText){
     test_text_equals_original_text(original, original_text_length);
 }
 
-TEST(Base64, EncodeAndDecodeJapaneseTextWithNL){
+TEST(Base64, EncodeAndDecodeJapaneseTextWithNoNL){
     unsigned char* original = (unsigned char*)"ソラミツ株式会社";
     int original_text_length = strlen((char*)original);
     test_text_equals_original_text(original, original_text_length);
 }
 
 TEST(Base64, EncodeAndDecodeJapaneseTextWithNL){
-    unsigned char* original = (unsigned char*)"ご注文は分散台帳ですか？";
+    unsigned char* original = (unsigned char*)"ご注文は\n分散台帳ですか？";
     int original_text_length = strlen((char*)original);
     test_text_equals_original_text(original, original_text_length);
 }
