@@ -1,25 +1,33 @@
 
 #include <string>
 
-class Asset {
-    std::string name;
-    std::string parentDomainName;
-    int maxQuantity;
- public:
+namespace domain {
+    namespace asset {
 
-    // Constructor is only used by factory.
-    Asset(
-      std::string aName,
-      std::string aParentDomainName,
-      int aMaxQuantity
-    ):
-      name(aName),
-      parentDomainName(aParentDomainName),
-      maxQuantity(aMaxQuantity)
-    {}
+      class Asset {
+        protected:
+          std::string name;
+          std::string parentDomainName;
+        public:
 
-    // Write asset's logic
+          // Constructor is only used by factory.
+          Asset(
+            std::string aName,
+            std::string aParentDomainName
+          ):
+            name(aName),
+            parentDomainName(aParentDomainName)
+          {}
+  
+          virtual ~Asset() = default;
 
-};
+          // Support move and copy.
+          Asset(Asset const&) = default;
+          Asset(Asset&&) = default;
+          Asset& operator =(Asset const&) = default;
+          Asset& operator =(Asset&&) = default;
 
-}; // namespace asset
+      };
+
+    };  // namespace asset
+};  // namespace domain
