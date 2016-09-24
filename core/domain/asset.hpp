@@ -1,19 +1,26 @@
 #ifndef __CORE_DOMAIN_ASSET_HPP_
 #define __CORE_DOMAIN_ASSET_HPP_
 
-#include <json.hpp>
+#include <string>
 
 class Asset {
+    std::string name;
+    std::string parentDomainName;
+    int maxQuantity;
  public:
-  
-  int getBalance(std::string accountName);
 
-  std::vector<std::string> getDomainName();
-  std::vector<std::string> getAssetNameList();
+    // Constructor is only used by factory.
+    Asset(
+      std::string aName,
+      std::string aParentDomainName,
+      int aMaxQuantity
+    ):
+      name(aName),
+      parentDomainName(aParentDomainName),
+      maxQuantity(aMaxQuantity)
+    {}
 
-  nlohmann::json getAssetInfo();
-  nlohmann::json getDomainInfo();
-
+    // Write asset's logic
 };
 
 #endif
