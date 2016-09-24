@@ -11,6 +11,8 @@ machine:
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 20
     - g++ -v
 dependencies:
+  cache_directories:
+    - ~/iroha/core/vendor/
   pre:
     - sudo apt-get -y install build-essential libtcmalloc-minimal4 && sudo ln -s /usr/lib/libtcmalloc_minimal.so.4 /usr/lib/libtcmalloc_minimal.so
   override:
@@ -30,6 +32,7 @@ checkout:
     - cd $IROHA_HOME/core/vendor/yaml-cpp; mkdir build; cd build; cmake ..; make
     - cd $IROHA_HOME/core/vendor/crow; mkdir build; cd build; cmake ..; make
     - cd $IROHA_HOME/core/vendor/msgpack-c; cmake -DMSGPACK_CXX11=ON .; sudo make install
+    - cd $IROHA_HOME/core/infra/crypto/; make
 test:
   override:
     - ./test.sh
