@@ -1,9 +1,9 @@
 #include "sumeragi.hpp"
 
 #include "../util/logger.hpp"
-#include "../repository/transaction_repository.hpp"
-#include "../domain/abstract_transaction.hpp"
-#include "../peer/connection.hpp"
+#include "../repository/merkle_transaction_repository.hpp"
+#include "../domain/transactions/abstract_transaction.hpp"
+#include "../connection/connection.hpp"
 #include "../crypto/hash.hpp"
 #include "../validation/transaction_validator.hpp"
 
@@ -51,7 +51,7 @@ void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<
         peerConnection::broadcastFinalizedAll(event); //TODO
     }
 
-    setAwkTimer(5000, [&]{ if (unconfirmed(event)) {panic();} };);
+    setAwkTimer(5000, [&]{ if (unconfirmed(event)) {panic();} });
 }
 
 /**
@@ -88,7 +88,7 @@ void panic(std::shared_ptr<ConsensusEvent> const event) {
     peerConnection::broadcastToPeerRange(event, broadcastStart, broadcastEnd); //TODO
 }
 
-void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const action, actionArgs ...) {
+void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const action) {
     std::thread([sleepMillisecs, tx]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
         action();

@@ -12,26 +12,29 @@
 #include "../crypto/merkle.hpp"
 
 namespace merkle_transaction_repository {
+
+using abs_tx = abstract_transaction::AbstractTransaction;
+
 std::shared_ptr<leveldb::DB> db;
-std::unique_ptr<Merkle> merkle;
+std::unique_ptr<merkle::MerkleRoot> merkle;
 
 bool printStatus(leveldb::Status const status) {
   if (!status.ok()) {
-    logger(status.ToString());
+    logger::info("merkle_transaction",status.ToString());
       return false;
   }
   return true;
 }
 
-AbstractTransaction convertTransaction(std::string const buffer) {
-  AbstractTransaction tx;
+std::unique_ptr<abs_tx> convertTransaction(std::string const buffer) {
+  std::unique_ptr<abs_tx> tx;
   msgpack::object_handle unpacked = msgpack::unpack(buffer.data(), buffer.size());
   msgpack::object obj = unpacked.get();
   obj.convert(tx);
   return tx;
 }
-
-std::string convertBuffer(MerkleNode const tx) {
+                                                       
+std::string convertBuffer(std::unique_ptr<abs_tx> tx) {
   msgpack::sbuffer buf;
   msgpack::pack(buf, tx);
   return buf.data();
@@ -45,24 +48,22 @@ void loadDb() {
   db.reset(tmpDb);
 }
 
-bool commit(ConsensusEvent const event) {
+bool commit(std::unique_ptr<ConsensusEvent::ConsensusEvent> event) {
   if (nullptr == db) {
     loadDb();
   }
-  AbstractTransaction const tx =  event->tx;
-  std::vector<std::string> const signatures = event->signatures;
+  std::vector<std::string> const signatures = std::move(event->txSignatures);
   
   // Update Merkle tree
-  std::string const rawData = convertBuffer(tx);
+  std::string const rawData = convertBuffer(std::move(event->tx));
   merkle::addLeaf(rawData);
   return printStatus(db->Put(leveldb::WriteOptions(), hash, rawData));
 }
 
-AbstractTransaction findLeaf(std::string const hash) {
+std::unique_ptr<abs_tx> findLeaf(std::string const hash) {
   if (nullptr == db) {
     loadDb();
   }
-  AbstractTransaction value;
   std::string readData;
   printStatus(db->Get(leveldb::ReadOptions(), hash, &readData));
   return convertTransaction(readData);
