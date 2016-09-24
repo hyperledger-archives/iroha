@@ -22,7 +22,7 @@ namespace signature {
 
   std::string sign(
     std::string message,
-    KeyPair  keyPair
+    KeyPair keyPair
   );
 
   std::string sign(
