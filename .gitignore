@@ -1,6 +1,15 @@
+config/*.py
+config/__pycahe__
+**/__pycache__/*
+__pycache__/*
 build/*
 *cmake
 *.DS_Store
 *.vscode/
 *.swp
 *.class
+*.gch
+*.a
+*.o
+.gradle/*
+.vscode/*

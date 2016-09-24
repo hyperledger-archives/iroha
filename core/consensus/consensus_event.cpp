@@ -1,16 +1,12 @@
 #include "ConsensusEvent.hpp"
 
-#include "../domain/transactions/AbstractTransaction.hpp"
+#include "../domain/transactions/abstract_transaction.hpp"
 
 namespace ConsensusEvent {
-class ConsensusEvent {
-    AbstractTransaction tx;
-    std::vector<std::string> txSignatures;
-    std::string merkleRoot;
-    std::vector<std::string> merkleRootSignatures;
+struct ConsensusEvent {
 
-    void addSignature(std::string const signature) {
-        this.txSignatures::add(signature); // TODO: learn syntax for this
-    }
+    void addSignature(std::string const signature):
+        txSignatures(signature)
+    {}
 };
 }  // namespace ConsensusEvent

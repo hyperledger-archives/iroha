@@ -5,8 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include <ed25519.h>
-
 namespace signature {
 
   class KeyPair {
@@ -22,10 +20,9 @@ namespace signature {
     {}
   };
 
-
   std::string sign(
     std::string message,
-    KeyPair  keyPair
+    KeyPair keyPair
   );
 
   std::string sign(

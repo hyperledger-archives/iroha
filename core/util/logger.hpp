@@ -1,14 +1,12 @@
 #ifndef __LOGGER_HPP_
 #define __LOGGER_HPP_
 
+#include <string>
+#include <iostream>
+
 namespace logger{
 
-  #include <string>
-  #include <iostream> // WIP
-    
-  #include "time.hpp"
-
-  enum LogLevel{
+  enum class LogLevel{
     DEBUG,
     INFO,
     WARNING,
@@ -16,11 +14,32 @@ namespace logger{
     FITAL
   };
 
-  const LogLevel LOG_LEVEL = LggLevel::DEBUG;
+  const LogLevel LOG_LEVEL = LogLevel::DEBUG;
 
-  void logger(std::string name, std::string message){
-    std::cout << time::time_str() << " ["<< name << "] "<< message << std::endl;
-  }
+  void debug(
+    const std::string &name,
+    const std::string &message,
+    std::ostream &out = std::cout);
+
+  void info(
+    const std::string &name,
+    const std::string &message,
+    std::ostream &out = std::cout);
+
+  void warning(
+    const std::string &name,
+    const std::string &message,
+    std::ostream &out = std::cout);
+
+  void error(
+    const std::string &name,
+    const std::string &message,
+    std::ostream &out = std::cout);
+
+  void fital(
+    const std::string &name,
+    const std::string &message,
+    std::ostream& out = std::cout);
 
 };
 #endif
