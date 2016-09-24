@@ -1,18 +1,22 @@
-#include <SimpleFIPS202.h>
-#include <string>
 
 #include "../../crypto/hash.hpp"
 
+#include <SimpleFIPS202.h>
+#include <string>
+
 namespace hash {
+
   std::string sha3_256_hex(std::string message) {
     char code[] =
       {'0', '1', '2', '3', '4', '5', '6', '7', '8',
         '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     unsigned char output[64];
+
     SHA3_256(
       output,
-      (const unsigned char *)message.c_str(),
-      message.size());
+      reinterpret_cast<const unsigned char *>(message.c_str()),
+      (size_t)message.size()
+    );
 
     std::string res = "";
     unsigned char front, back;
