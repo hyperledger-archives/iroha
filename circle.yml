@@ -4,8 +4,12 @@ machine:
     PATH: $PATH:/opt/cmake-3.5.2-Linux-x86_64/bin
     JAVA_HOME: /usr/lib/jvm/java-7-openjdk-amd64
   pre:
-    - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 20
-    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 20
+    - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+    - sudo apt-get update
+    - sudo apt-get install g++-5
+    - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 20
+    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 20
+    - g++ -v
 dependencies:
   pre:
     - sudo apt-get -y install build-essential libtcmalloc-minimal4 && sudo ln -s /usr/lib/libtcmalloc_minimal.so.4 /usr/lib/libtcmalloc_minimal.so
