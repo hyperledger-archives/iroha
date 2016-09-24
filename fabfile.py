@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
-from config.fabric import myhosts, port, user, password, github, repo_name
-from config.slack  import notify_slack
- 
+from config.fabric import myhosts, port, user, password, github, repo_name, deploy_hosts
 from fabric.api import *
 from fabric.colors import *
-
-import slackweb
-import random
 
 env.hosts = myhosts
 env.port =  port
@@ -29,7 +24,6 @@ def status():
     run("javac -version")
     run("gradle -v")
 
-
 @task
 def initalize_server():
   print(magenta("##########################"))
@@ -45,7 +39,7 @@ def initalize_server():
   sudo("apt -y install cmake")
   print(cyan("#  Java"))
   sudo("apt -y install default-jdk")
-  sudo("apt -y install default-jre") 
+  sudo("apt -y install default-jre")
   print(cyan("# other libs"))
   sudo("apt -y install libssl-dev")
   sudo("apt -y install unzip")
@@ -89,7 +83,7 @@ def initialize_repository():
 
       with cd("core/vendor/leveldb"):
         sudo("make")
-      
+
       with cd("core/vendor/ed25519"):
         sudo("make")
 
@@ -97,19 +91,19 @@ def initialize_repository():
         sudo("cmake -DMSGPACK_CXX11=ON .")
         sudo("cmake -DMSGPACK_CXX11=ON .")
         sudo("make install")
-        
+
       with cd("core/vendor/yaml-cpp"):
         sudo("mkdir -p build")
         with cd("build"):
           sudo("cmake ..")
           sudo("make")
-        
+
       with cd("core/vendor/crow"):
         sudo("mkdir -p build")
         with cd("build"):
           sudo("cmake ..")
           sudo("make")
-           
+
 
 @task
 def connection_test_dev():
@@ -128,7 +122,7 @@ def git_push(branch = None):
   if not branch:
     branch = git_current_branch()
   local("git push origin "+branch)
-  
+
 def remake():
   with cd("/var/www/iroha"):
     sudo("mkdir -p build")
@@ -144,7 +138,7 @@ def restart():
   sudo('kill -9 '+str(pid), warn_only=True)
   sudo('/var/www/iroha/build/bin/iroha-main &', pty=False)
   sudo('ps aux | grep iroha-main')
-    
+
 def curl_test():
   for host in myhosts:
     local("curl "+host)
@@ -163,9 +157,9 @@ def test(branch = None):
       res = sudo("git reset --hard")
       res = sudo("git checkout -b "+branch+" origin/"+branch, warn_only=True)
       if res.failed:
-        sudo("git checkout "+branch) 
+        sudo("git checkout "+branch)
       sudo("git pull origin "+branch+" --no-ff")
-       
+
       remake()
 
   git_push(branch)
@@ -174,36 +168,20 @@ def test(branch = None):
     res = sudo("git reset --hard")
     res = sudo("git checkout -b "+branch+" origin/"+branch, warn_only=True)
     if res.failed:
-      sudo("git checkout "+branch) 
+      sudo("git checkout "+branch)
     sudo("git pull origin "+branch+" --no-ff")
-       
+
     remake()
     restart()
-  
-  curl_test() 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
-# 
+  curl_test()
 
 @task
 def deploy_stage_with_circle_ci():
   print(yellow("#################"))
   print(yellow("# Staging !!!!  #"))
   print(yellow("#################"))
-  env.hosts = ['45.32.49.154']
+  env.hosts = [deploy_hosts]
   env.port = '1225'
   env.user = 'deploy'
   connection_test_stage()
@@ -213,7 +191,7 @@ def deploy_with_circle_ci():
   print(red("#################"))
   print(red("# Production !! #"))
   print(red("#################"))
-  env.hosts = ['45.32.49.154']
+  env.hosts = [deploy_hosts]
   env.port = '1225'
   env.user = 'deploy'
   connection_test_production()
