@@ -1,31 +1,29 @@
 #ifndef __CORE_DOMAIN_ASSET_HPP_
 #define __CORE_DOMAIN_ASSET_HPP_
 
-#include <json.hpp>
 #include "asset.hpp"
 
-namespace asset {
+namespace domain {
 
-class SampleAsset : public Asset {
- public:
-  
-  int getBalance(std::string accountName);
+    namespace asset {
 
-  std::vector<std::string> getDomainName();
-  std::vector<std::string> getAssetNameList();
+        class SampleAsset : public Asset {
+          public:
+            int maxQuantity;
 
-  nlohmann::json getAssetInfo();
-  nlohmann::json getDomainInfo();
+            SampleAsset(
+              std::string aName,
+              std::string aParentDomainName,
+              int aMaxQuantity
+            ):
+              Asset(aName, aParentDomainName),
+              maxQuantity(aMaxQuantity)
+            {}
 
-  bool updateAccountState(
-    std::string sendingAccount,
-    std::string receivingAccount,
-    std::string assetName,
-    long long int quantity
-  );
+        };
 
-};
-
-}  // namespace asset
+    }  // namespace asset
+    
+}  // namespace domain
 
 #endif
