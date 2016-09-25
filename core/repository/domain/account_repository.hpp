@@ -17,5 +17,10 @@ namespace account_repository {
 
     std::unique_ptr<domain::AccountUser> findByUid(std::string);
     
+    add_my_domain(
+        const std::string& accountUid,
+        const std::string& domainName
+    );
+    
 };
 #endif  // CORE_REPOSITORY_MERKLETRANSACTIONREPOSITORY_HPP_

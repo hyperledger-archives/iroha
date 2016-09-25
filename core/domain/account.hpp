@@ -19,6 +19,7 @@ namespace domain {
       std::string publicKeyb64Encoded;
       std::string uid;
 
+    public:
       // Account user can have some domain. 
       std::vector<std::string> hasDomainNames;
 
@@ -31,8 +32,9 @@ namespace domain {
       // This user created asset. 
       std::vector<std::string> myAssetNames;
 
-    public:
-    
+      // Umm... This is infra range knowledge       
+      MSGPACK_DEFINE( name, publicKeyb64Encoded, uid);
+
       // Use only factory.
       AccountUser(
         std::string aName,
