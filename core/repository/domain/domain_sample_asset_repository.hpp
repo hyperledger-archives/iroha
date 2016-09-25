@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "../../domain/sample_asset.hpp"
+#include "../../model/sample_asset.hpp"
 
 // I know only 'domain' and 'asset'.
 namespace domain_sample_asset_repository {
