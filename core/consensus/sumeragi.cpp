@@ -55,13 +55,13 @@ void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<
     }
 
     event::addSignature(sign(hash));
-    if (!context->isProxyTail) {}
-        context->conn::send(nodeOrder::get(proxyTail)::getIP(), awk); //TODO
+    if (!context->isProxyTail) {
+        context->conn::send(nodeOrder::get(proxyTail)::getIP(), event);
     } else {
         context->conn::sendAll(event);
     }
 
-    setAwkTimer(5000, [&]{ if (unconfirmed(event)) {panic();} });
+    setAwkTimer(5000, [&]{ if (unconfirmed(event)) { panic(); } });
 }
 
 /**
