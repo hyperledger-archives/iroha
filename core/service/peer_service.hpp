@@ -10,7 +10,17 @@ namespace service {
 
     namespace peer {
 
-        class 
+        class Node {
+        public:
+            virtual ~Node() = default; // make dtor virtual
+            Node(Node&&) = default;  // support moving
+            Node& operator = (Node&&) = default;
+            Node(const Node&) = default; // support copying
+            Node& operator = (const Node&) = default;
+
+            virtual std::string getIP() = 0;
+            virtual std::string getPublicKey() = 0;
+        };
 
         std::vector<Node> getPeerList() {
             std::unique_ptr<yaml::YamlLoader> yamlLoader(new yaml::YamlLoader(std::string(getenv("IROHA_HOME")) + "/config/config.yml"));

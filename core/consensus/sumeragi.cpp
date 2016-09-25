@@ -45,7 +45,7 @@ void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<
         return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
     }
 
-    event::addSignature(sign(hash)); //TODO
+    event::addSignature(sign(hash));
     if (!context->isProxyTail) {}
         peerConnection::broadcastToProxyTail(awk); //TODO
     } else {
