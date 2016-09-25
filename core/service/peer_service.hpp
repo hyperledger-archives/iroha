@@ -6,15 +6,17 @@
 
 #include "../util/yaml_loader.hpp"
 
-namespace service{
+namespace service {
 
-    namespace peer{
-        std::vector<std::string> getPeerList(){
-            std::unique_ptr<yaml::YamlLoader> yamlLoader(new yaml::YamlLoader(std::string(getenv("IROHA_HOME"))+"/config/config.yml"));
+    namespace peer {
+
+        class 
+
+        std::vector<Node> getPeerList() {
+            std::unique_ptr<yaml::YamlLoader> yamlLoader(new yaml::YamlLoader(std::string(getenv("IROHA_HOME")) + "/config/config.yml"));
             return std::move(yamlLoader->get<std::vector<std::string> >("peer", "ip"));
         }
     }
-
 }
 
 #endif

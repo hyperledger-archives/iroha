@@ -5,8 +5,12 @@
 namespace ConsensusEvent {
 struct ConsensusEvent {
 
-    void addSignature(std::string const signature):
-        txSignatures(signature)
-    {}
+    void addSignature(std::string const signature) {
+        txSignatures::push_back(signature);
+    }
+
+    void addSignature(std::string const signature) {
+        txSignatures::push_back(signature);
+    }
 };
 }  // namespace ConsensusEvent

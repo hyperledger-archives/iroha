@@ -24,7 +24,7 @@ struct Context {
     int maxFaulty;  // f
     const unsigned char* myPublicKey;
     int panicCount;
-    std::unique_ptr<TransactionRepository> repository;
+    std::unique_ptr<merkle_transaction_repository> repository;
     std::unique_ptr<TransactionCache> txCache;
     std::unique_ptr<TransactionValidator> txValidator;
     std::queue<ConsensusEvent> eventCache;
@@ -33,10 +33,11 @@ struct Context {
 
 std::unique_ptr<Context> context;
 
-void initializeSumeragi(int const myNumber, int const numberOfPeers, int const leaderNumber, int const batchSize) {
-    logger::info( __FILE__, "initialize_sumeragi, my number:"+std::to_string(myNumber)+" leader:"+std::to_string(myNumber == leaderNumber)+"");
-    context->maxFaulty = numberOfPeers/3;  // Default to approx. 1/3 of the network. TODO(M→M): make this configurable 
-    context->txRepository = std::make_unique<TransactionRepository>();
+void initializeSumeragi(std::vector<Node> validatingPeers) {
+    logger::info( __FILE__, "initialize_sumeragi");
+    int numberOfPeers = validatingPeers::size();
+    context->maxFaulty = numberOfPeers / 3;  // Default to approx. 1/3 of the network. TODO(M→M): make this configurable 
+    context->txRepository = std::make_unique<merkle_transaction_repository>();
 }
 
 void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<Node> const nodeOrder) {
@@ -78,11 +79,12 @@ void panic(std::shared_ptr<ConsensusEvent> const event) {
     int broadcastEnd = broadcastStart + context->maxFaulty;
 
     // Do some bounds checking
-    if (broadcastStart > context->peerService::numValidatingPeers()-1) {
-        broadcastStart = context->peerService::numValidatingPeers()-1;
+    if (broadcastStart > context->peerService::numValidatingPeers() - 1) {
+        broadcastStart = context->peerService::numValidatingPeers() - 1;
     }
-    if (broadcastEnd > context->peerService::numValidatingPeers()-1) {
-        broadcastEnd = context->peerService::numValidatingPeers()-1;
+
+    if (broadcastEnd > context->peerService::numValidatingPeers() - 1) {
+        broadcastEnd = context->peerService::numValidatingPeers() - 1;
     }
 
     peerConnection::broadcastToPeerRange(event, broadcastStart, broadcastEnd); //TODO
