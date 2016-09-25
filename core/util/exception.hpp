@@ -9,6 +9,13 @@ namespace exception {
   class FileOpenException : public std::invalid_argument {
     public: FileOpenException(const std::string&);
   };
+
+  class NotImplementedException : public std::invalid_argument {
+    public: NotImplementedException(
+      const std::string&,
+      const std::string& filename
+    );
+  };
   
   namespace crypto{
     class InvalidKeyException : public std::invalid_argument{
