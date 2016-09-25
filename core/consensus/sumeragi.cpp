@@ -96,7 +96,7 @@ void panic(std::shared_ptr<ConsensusEvent> const event) {
         broadcastEnd = context->numValidatingPeers - 1;
     }
 
-    context->conn.sendAll(event); //TODO: change this to only broad to peer range between broadcastStart and broadcastEnd  
+    context->conn.sendAll(event); //TODO: change this to only broadcast to peer range between broadcastStart and broadcastEnd  
 }
 
 void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const action) {
@@ -136,7 +136,7 @@ void loop() {
             // Process transaction
             processTransaction(event, nodeOrder);
 
-            if (awkCache->signatures::size() > context->maxFaulty*2 + 1) { // TODO check syntax
+            if (event::getSignatures::size() > context->maxFaulty*2 + 1) {
                 //check merkle roots to see if match for new state
                 // Commit locally
                 transactionRepository->commitTransaction(event); //TODO: add error handling in case not saved
