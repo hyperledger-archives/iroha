@@ -32,7 +32,7 @@ struct Context {
     std::unique_ptr<merkle_transaction_repository> txRepository;
     std::unique_ptr<TransactionCache> txCache;
     std::unique_ptr<TransactionValidator> txValidator;
-    std::queue<ConsensusEvent> eventCache;
+    std::queue<ConsensusEvent> eventCache; //TODO: hook this up
     connection conn;
 };
 
@@ -137,7 +137,7 @@ void loop() {
             processTransaction(event, nodeOrder);
 
             if (event::getSignatures::size() > context->maxFaulty*2 + 1) {
-                //check merkle roots to see if match for new state
+                // check Merkle roots to see if match for new state
                 // Commit locally
                 transactionRepository->commitTransaction(event); //TODO: add error handling in case not saved
             }
