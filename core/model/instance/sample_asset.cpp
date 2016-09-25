@@ -1,11 +1,9 @@
-
 #include "../sample_asset.hpp"
 
 namespace domain {
 
     namespace asset {
-        // SampleAsset don't has logic.
+        // SampleAsset does't have logic.
 
     }  // namespace asset
-    
 }  // namespace domain

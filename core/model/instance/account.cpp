@@ -17,10 +17,10 @@
 
 #include <vector>
 
-namespace domain{
+namespace domain {
 
-    // Umm, this should return whether resister failed or already exists?
-    // Personally, this should only return whether resister failed or not.
+    // Umm, this should return whether registration failed or already exists?
+    // Personally, this should only return whether registration failed or not.
     // この関数は登録失敗か既に存在しているかの状態を伝えたほうが良い？
     // 個人的には登録したかどうかを返すのがこの関数の責務だと思うが。
     bool AccountUser::registerDomain(const std::string &domainName) {
@@ -36,43 +36,43 @@ namespace domain{
 
     bool AccountUser::isOwnerOfDomain(const std::string& domainName) {
         // not exist == domain nobody has
-        if(domain_sample_asset_repository::alreadyExists(domainName)){
-            for(auto& domain : this->hasDomainNames){
-                if(domain == domainName){
+        if (domain_sample_asset_repository::alreadyExists(domainName)) {
+            for (auto& domain : this->hasDomainNames) {
+                if (domain == domainName) {
                      return true;
                 }
             }   
             return false;
-        }else{
+        } else {
             return false;
         }
     }
 
-    // Umm, this should return whether resister failed or already exists?
-    // Personally, this should only return whether resister failed or not.
+    // Umm, this should return whether registration failed or already exists?
+    // Personally, this should only return whether registration failed or not.
     // 上と同じく。
     bool AccountUser::joinSampleAssetTo(const asset::SampleAsset &sampleAsset, const std::string &domain) {
-        if(!domain_sample_asset_repository::thisAssetIsInDomain(sampleAsset.name, domain)) {
-            return domain_sample_asset_repository::join( sampleAsset, domain);
-        }else{
+        if (!domain_sample_asset_repository::thisAssetIsInDomain(sampleAsset.name, domain)) {
+            return domain_sample_asset_repository::join(sampleAsset, domain);
+        } else {
             return false;
         }
     }
 
-    bool AccountUser::pay(const std::string &to,const int quantity,const std::string &assetUrl) {
+    bool AccountUser::pay(const std::string &to, const int quantity, const std::string &assetUrl) {
         std::unique_ptr<AccountUser> receiverAccount = account_repository::findByUid(to);
-        if(receiverAccount != nullptr){
+        if (receiverAccount != nullptr) {
            
             // Oh no...,This is bad. not only asset name, require domain information.
-            // ToDo use domain informaion
+            // Todo use domain informaion
             std::pair<
                 std::vector<std::string>,
                 std::string
             > assetName = service::url_service::getAssetNameFromUrl(assetUrl);
             int myBalance = this->sampleAssetQuantitiesWhatIHaveAccount.at(assetName.second);
             int receiverBalance = receiverAccount->sampleAssetQuantitiesWhatIHaveAccount.at(assetName.second);
-            if(myBalance > quantity){
 
+            if (myBalance > quantity) {
                 account_repository::update_quantity( 
                     receiverAccount->uid,
                     receiverBalance + quantity,
@@ -86,12 +86,11 @@ namespace domain{
                 );      
 
                 return true;
-            }else{
+            } else {
                 return false;
             }
-        }else{
+        } else {
             return false;
         }
-    }
-      
+    }    
 }
