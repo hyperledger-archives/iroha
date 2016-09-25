@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "../../domain/account.hpp"
+#include "../../model/account.hpp"
 
 namespace account_repository {
 

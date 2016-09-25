@@ -1,5 +1,5 @@
 #add_subdirectory(consensus)
-add_subdirectory(domain)
+add_subdirectory(model)
 #add_subdirectory(repository)
 add_subdirectory(infra)
 add_subdirectory(util)
