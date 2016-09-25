@@ -24,6 +24,7 @@ namespace sumeragi {
 
 struct Context {
     int maxFaulty;  // f
+    int proxyTailNdx;
     const unsigned char* myPublicKey;
     int panicCount;
     int numValidatingPeers;
@@ -41,7 +42,8 @@ void initializeSumeragi(std::vector<Node> peers) {
     logger::info( __FILE__, "initializeSumeragi");
     context->validatingPeers = peers;
     context->numValidatingPeers = validatingPeers::size();
-    context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO(M→M): make this configurable 
+    context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO(M→M): make this configurable
+    context->proxyTailNdx = context->maxFault*2 + 1;  
     context->txRepository = std::make_unique<merkle_transaction_repository>();
     context->panicCount = 0;
     context->conn = std::make_unique<connection>();
@@ -54,7 +56,7 @@ void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<
 
     event::addSignature(sign(hash));
     if (!context->isProxyTail) {}
-        context->conn::send(peerId, awk); //TODO
+        context->conn::send(nodeOrder::get(proxyTail)::getIP(), awk); //TODO
     } else {
         context->conn::sendAll(event);
     }
