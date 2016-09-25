@@ -7,7 +7,7 @@
 #include "../domain/transactions/abstract_transaction.hpp"
 
 namespace consensus_event {
-    
+
 struct ConsensusEvent {
     std::unique_ptr<abstract_transaction::AbstractTransaction> tx;
     std::vector<std::string> txSignatures;
@@ -15,6 +15,7 @@ struct ConsensusEvent {
     std::vector<std::string> merkleRootSignatures;
 
     void addSignature(std::string const signature);
+    std::string getHash();
 };
 };  // namespace ConsensusEvent
 

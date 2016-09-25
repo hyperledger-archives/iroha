@@ -42,11 +42,11 @@ void initializeSumeragi(std::vector<Node> peers) {
     logger::info( __FILE__, "initializeSumeragi");
     context->validatingPeers = peers;
     context->numValidatingPeers = validatingPeers::size();
-    context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO(M→M): make this configurable
+    context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO: make this configurable
     context->proxyTailNdx = context->maxFault*2 + 1;  
     context->txRepository = std::make_unique<merkle_transaction_repository>();
     context->panicCount = 0;
-    context->conn = std::make_unique<connection>();
+    context->conn = std::make_unique<connection>(); //TODO: is this syntax correct?
 }
 
 void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<Node> const nodeOrder) {
@@ -107,14 +107,14 @@ void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const actio
 }
 
 std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event/*, std::vector<double> trustVector*/) {
-    unsigned char* const publicKey = event->publicKey;
+    unsigned char* const txHash = event::getHash();
     std::vector<std::tuple> distances = std::make_shared();
 
     for (int ndx = 0; ndx < context->numValidatingPeers; ++ndx) {
         auto const node = context->validatingPeers::get(ndx);
-        long long int distance = (node->publicKey && 0xffffff) - (publicKey && 0xffffff)/* + trustVector[ndx]*/;
+        long long int distance = (node->publicKey && 0xffffff) - (txHash && 0xffffff)/* + trustVector[ndx]*/;
         
-        distances[ndx] = std::make_tuple(publicKey, distance);
+        distances[ndx] = std::make_tuple(node->publicKey, distance);
     }
 
     std::vector<Node> const nodeOrder = std::sort(distances.begin(), distances.end(), COMPARATOR(l::get<1> < r::get<1>));
