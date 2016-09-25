@@ -10,9 +10,9 @@
 // I know only 'domain' and 'asset'.
 namespace domain_sample_asset_repository {
     
-    bool aleadyExists(std::string domainName);
+    bool alreadyExists(std::string domainName);
     
-    bool register(
+    bool registerDomain(
         std::string accountUid,
         std::string domainName
     );
@@ -23,7 +23,7 @@ namespace domain_sample_asset_repository {
     );
 
     bool join(
-        domain::asset::SampleAsset asset,
+        const domain::asset::SampleAsset& asset,
         std::string domainName
     );
 };
