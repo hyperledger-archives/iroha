@@ -1,4 +1,4 @@
-#include "../../connection/connection.hpp"
+#include "../../consensus/connection/connection.hpp"
 
 #include "../../util/logger.hpp"
 
