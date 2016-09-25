@@ -1,3 +1,6 @@
 
-# Sample Asset
-ADD_LIBRARY(sample_asset  STATIC sample_asset.cpp)
+# All domain instance is in libdomain.a
+ADD_LIBRARY(domain  STATIC
+  account.cpp
+  sample_asset.cpp
+)
