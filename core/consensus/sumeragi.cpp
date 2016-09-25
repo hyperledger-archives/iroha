@@ -6,6 +6,8 @@
 #include "../connection/connection.hpp"
 #include "../crypto/hash.hpp"
 #include "../validation/transaction_validator.hpp"
+#include "../service/peer_service.hpp"
+#include "./connection/connection.hpp"
 
 /**
 * |ーーー|　|ーーー|　|ーーー|　|ーーー|
@@ -24,20 +26,25 @@ struct Context {
     int maxFaulty;  // f
     const unsigned char* myPublicKey;
     int panicCount;
-    std::unique_ptr<merkle_transaction_repository> repository;
+    int numValidatingPeers;
+    std::vector<Node> validatingPeers;
+    std::unique_ptr<merkle_transaction_repository> txRepository;
     std::unique_ptr<TransactionCache> txCache;
     std::unique_ptr<TransactionValidator> txValidator;
     std::queue<ConsensusEvent> eventCache;
-    peerService;
+    connection conn;
 };
 
 std::unique_ptr<Context> context;
 
-void initializeSumeragi(std::vector<Node> validatingPeers) {
-    logger::info( __FILE__, "initialize_sumeragi");
-    int numberOfPeers = validatingPeers::size();
-    context->maxFaulty = numberOfPeers / 3;  // Default to approx. 1/3 of the network. TODO(M→M): make this configurable 
+void initializeSumeragi(std::vector<Node> peers) {
+    logger::info( __FILE__, "initializeSumeragi");
+    context->validatingPeers = peers;
+    context->numValidatingPeers = validatingPeers::size();
+    context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO(M→M): make this configurable 
     context->txRepository = std::make_unique<merkle_transaction_repository>();
+    context->panicCount = 0;
+    context->conn = std::make_unique<connection>();
 }
 
 void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<Node> const nodeOrder) {
@@ -47,9 +54,9 @@ void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<
 
     event::addSignature(sign(hash));
     if (!context->isProxyTail) {}
-        peerConnection::broadcastToProxyTail(awk); //TODO
+        context->conn::send(peerId, awk); //TODO
     } else {
-        peerConnection::broadcastFinalizedAll(event); //TODO
+        context->conn::sendAll(event);
     }
 
     setAwkTimer(5000, [&]{ if (unconfirmed(event)) {panic();} });
@@ -74,20 +81,20 @@ void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<
 * |---|  |---|  |---|  |---|  |---|  |---|.
 */
 void panic(std::shared_ptr<ConsensusEvent> const event) {
-    context->panicCount++;
+    context->panicCount++; // TODO: reset this later
     int broadcastStart = 2*context->maxFaulty + 1 + context->maxFaulty*context->panicCount;
     int broadcastEnd = broadcastStart + context->maxFaulty;
 
     // Do some bounds checking
-    if (broadcastStart > context->peerService::numValidatingPeers() - 1) {
-        broadcastStart = context->peerService::numValidatingPeers() - 1;
+    if (broadcastStart > context->numValidatingPeers - 1) {
+        broadcastStart = context->numValidatingPeers - 1;
     }
 
-    if (broadcastEnd > context->peerService::numValidatingPeers() - 1) {
-        broadcastEnd = context->peerService::numValidatingPeers() - 1;
+    if (broadcastEnd > context->numValidatingPeers - 1) {
+        broadcastEnd = context->numValidatingPeers - 1;
     }
 
-    peerConnection::broadcastToPeerRange(event, broadcastStart, broadcastEnd); //TODO
+    context->conn.sendAll(event); //TODO: change this to only broad to peer range between broadcastStart and broadcastEnd  
 }
 
 void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const action) {
@@ -101,8 +108,8 @@ std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const 
     unsigned char* const publicKey = event->publicKey;
     std::vector<std::tuple> distances = std::make_shared();
 
-    for (int ndx = 0; ndx < context->peerService::numValidatingPeers(); ++ndx) {
-        auto const node = context->peerService::nodes[ndx];
+    for (int ndx = 0; ndx < context->numValidatingPeers; ++ndx) {
+        auto const node = context->validatingPeers::get(ndx);
         long long int distance = (node->publicKey && 0xffffff) - (publicKey && 0xffffff)/* + trustVector[ndx]*/;
         
         distances[ndx] = std::make_tuple(publicKey, distance);
@@ -128,6 +135,7 @@ void loop() {
             processTransaction(event, nodeOrder);
 
             if (awkCache->signatures::size() > context->maxFaulty*2 + 1) { // TODO check syntax
+                //check merkle roots to see if match for new state
                 // Commit locally
                 transactionRepository->commitTransaction(event); //TODO: add error handling in case not saved
             }
