@@ -9,11 +9,10 @@ namespace domain {
     namespace asset {
 
       class Asset {
-        protected:
+        public:
           std::string name;
           std::string parentDomainName;
           std::string uid;
-        public:
 
           // Constructor is only used by factory.
           Asset(
@@ -21,8 +20,8 @@ namespace domain {
             std::string aParentDomainName
           ):
             name(aName),
-            uid(random_service::makeRandomHash()),
-            parentDomainName(aParentDomainName)
+            parentDomainName(aParentDomainName),
+            uid(random_service::makeRandomHash())
           {}
   
           virtual ~Asset() = default;

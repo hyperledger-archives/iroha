@@ -41,8 +41,8 @@ namespace domain {
         std::string aPublicKeyb64Encoded
       ):
         name(aName),
-        uid(random_service::makeRandomHash()),
-        publicKeyb64Encoded(aPublicKeyb64Encoded)
+        publicKeyb64Encoded(aPublicKeyb64Encoded),
+        uid(random_service::makeRandomHash())
       {}
 
       // Support move and copy.
@@ -52,16 +52,21 @@ namespace domain {
       AccountUser& operator =(AccountUser&&) = default;
 
       // Account user can register a domain and has some a domain;
-      bool registerDomain(std::string);
-      bool isOwnerOfDomin(std::string domainName);
+      bool registerDomain(const std::string &domainName);
+      bool isOwnerOfDomain(const std::string& domainName);
 
       // Account user can add an asset to the domain if account user has this domain;
-      bool joinSampleAssetTo(asset::SampleAsset sampleAsset, std::string domain);
+      bool joinSampleAssetTo(
+        const asset::SampleAsset &sampleAsset,
+        const std::string &domain);
 
       // Account user can pay other user in any asset;
       // assetUrl := domain::domain::asset.
       // Of cause, account balance must not minus.
-      bool pay(std::string to, int quantity, std::string assetUrl);
+      bool pay(
+        const std::string &to,
+        int quantity,
+        const std::string &assetUrl);
       
   };
 }
