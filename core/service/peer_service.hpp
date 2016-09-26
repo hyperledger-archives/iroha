@@ -9,6 +9,9 @@
 namespace service{
 
     namespace peer{
+
+        class No
+
         std::vector<std::string> getPeerList(){
             std::unique_ptr<yaml::YamlLoader> yamlLoader(new yaml::YamlLoader(std::string(getenv("IROHA_HOME"))+"/config/config.yml"));
             return std::move(yamlLoader->get<std::vector<std::string> >("peer", "ip"));

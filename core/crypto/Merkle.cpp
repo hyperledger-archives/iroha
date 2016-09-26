@@ -8,9 +8,7 @@
 */
 namespace merkle {
     void addLeaf(MerkleRepository const merkleTree, std:string const leaf, std::vector<std::string> const rootSignatures) {
-        
         std:::string const leafHash = Hash::sha3_256_hex(leaf);
-
     }
 
     // void recomputeAllFromRepository(TransactionRepository const txRepo) {
