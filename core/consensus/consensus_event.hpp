@@ -4,6 +4,8 @@
 #include <string>
 #include <functional>
 
+#include "../domain/transactions/abstract_transaction.hpp"
+
 namespace ConsensusEvent {
 struct ConsensusEvent {
     std::unique_ptr<abstract_transaction::AbstractTransaction> tx;
