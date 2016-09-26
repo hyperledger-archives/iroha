@@ -7,3 +7,8 @@ mediaDriver:
 
 peer:
   leader: true
+  node:
+    - name:  Hanako
+      email: flower@mail.com
+    - b
+    - c
