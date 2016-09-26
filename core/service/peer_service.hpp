@@ -8,15 +8,21 @@
 
 
 namespace peer{
+
     class Node {
+        public:
             std::string ip;
             std::string publicKey;
-        public:
+
+            Node(){}
 
             Node(
                 std::string aip,
                 std::string apubkey
-            );
+            ):
+                ip(aip),
+                publicKey(apubkey)
+            {}
             
             /*
             virtual ~Node() = default; // make dtor virtual

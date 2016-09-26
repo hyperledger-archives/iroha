@@ -40,8 +40,10 @@ struct Context {
     int panicCount;
     int numValidatingPeers;
     std::vector<peer::Node> validatingPeers;
+
     //std::unique_ptr<TransactionCache> txCache;
     //std::unique_ptr<TransactionValidator> txValidator;
+    
     std::queue<ConsensusEvent> eventCache;
 
     std::map<std::string, std::shared_ptr<ConsensusEvent> > processedCache;    
@@ -50,14 +52,15 @@ struct Context {
 std::unique_ptr<Context> context;
 
 void initializeSumeragi(std::string myPublicKey, std::vector<peer::Node> peers) {
-    logger::info( __FILE__, "initializeSumeragi");
-    context->validatingPeers = peers;
+    logger::info( "initialize sumeragi", "initialize.....");
+    context->validatingPeers = std::move(peers);
     context->numValidatingPeers = peers.size();
     context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO: make this configurable
     context->proxyTailNdx = context->maxFaulty*2 + 1;      
     context->panicCount = 0;
 
     context->myPublicKey = myPublicKey;
+    logger::info( "initialize sumeragi", "complate!");
 }
 
 void processTransaction(std::shared_ptr<ConsensusEvent> const event, std::vector<peer::Node> const nodeOrder) {

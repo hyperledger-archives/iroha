@@ -15,7 +15,6 @@ namespace peer{
         return publicKey;
     }
 
-
     std::string getMyPublicKey() {
         return "Base64";// WIP
     }
@@ -24,9 +23,13 @@ namespace peer{
         return "Base64";// WIP
     }
 
-    std::vector<Node> getPeerList() {
-        std::unique_ptr<yaml::YamlLoader> yamlLoader(new yaml::YamlLoader(std::string(getenv("IROHA_HOME")) + "/config/config.yml"));
-        return std::vector<Node>();
-        //return std::move(yamlLoader->get<std::vector<std::string> >("peer", "ip"));
+    std::vector<Node> getPeerList() {  
+        std::vector<Node> res;
+        std::unique_ptr<yaml::YamlLoader> yaml(new yaml::YamlLoader(std::string(getenv("IROHA_HOME")) + "/config/config.yml"));
+        auto nodes = yaml->get<std::vector<peer::Node> >("peer", "node");
+        for (std::size_t i=0;i < nodes.size();i++) {
+            res.push_back( nodes[i] );
+        }
+        return res;
     }
 };

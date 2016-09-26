@@ -6,6 +6,7 @@ mediaDriver:
   name: mizuki
 
 peer:
+  publicKey: "AAA"
   leader: true
   node:
     - name:  Hanako

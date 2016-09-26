@@ -43,7 +43,15 @@ namespace yaml{
     template <> 
     std::vector<peer::Node> YamlLoader::get<
         std::vector<peer::Node>
-    >(const std::string& root, const std::string& key);
+    >(const std::string& root, const std::string& key){
+        YAML::Node config = YAML::LoadFile(std::move(fileName));
+        try{
+            return config[root][key].as<std::vector<peer::Node>>();
+        }catch(YAML::Exception& e){
+            logger::fital("YamlLoader.get()", e.what());
+            terminate::finish();
+        }        
+    }
 
     template <>
     std::vector<std::string> YamlLoader::get<
@@ -51,3 +59,24 @@ namespace yaml{
     >(const std::string& root, const std::string& key);
 
 };
+
+namespace YAML {
+template<>
+struct convert<peer::Node> {
+  static Node encode(const peer::Node& rhs) {
+    Node node;
+    node.push_back(rhs.getIP());
+    node.push_back(rhs.getPublicKey());
+    return node;
+  }
+
+  static bool decode(const Node& node, peer::Node& rhs) {
+    if(!node.IsMap()) {
+      return false;
+    }
+    rhs.ip = node["ip"].as<std::string>();
+    rhs.publicKey = node["publicKey"].as<std::string>();
+    return true;
+  }
+};
+}
