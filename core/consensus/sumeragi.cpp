@@ -32,7 +32,8 @@ struct Context {
     std::unique_ptr<merkle_transaction_repository> txRepository;
     std::unique_ptr<TransactionCache> txCache;
     std::unique_ptr<TransactionValidator> txValidator;
-    std::queue<ConsensusEvent> eventCache; //TODO: hook this up
+    std::queue<ConsensusEvent> eventCache;
+    std::queue<ConsensusEvent> processedCache;
     connection conn;
 };
 
@@ -47,6 +48,9 @@ void initializeSumeragi(std::vector<Node> peers) {
     context->txRepository = std::make_unique<merkle_transaction_repository>();
     context->panicCount = 0;
     context->conn = std::make_unique<connection>(); //TODO: is this syntax correct?
+
+    context->eventCache = std::make_uniquestd::queue<ConsensusEvent>>();
+    context->processedCache = std::make_unique<std::queue<ConsensusEvent>>();
 }
 
 void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<Node> const nodeOrder) {
@@ -108,7 +112,7 @@ void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const actio
 
 std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event/*, std::vector<double> trustVector*/) {
     unsigned char* const txHash = event::getHash();
-    std::vector<std::tuple> distances = std::make_shared();
+    std::vector<std::tuple> distances = std::make_shared<std::vector<std::tuple>>();
 
     for (int ndx = 0; ndx < context->numValidatingPeers; ++ndx) {
         auto const node = context->validatingPeers::get(ndx);
@@ -135,7 +139,10 @@ void loop() {
 
             // Process transaction
             processTransaction(event, nodeOrder);
+        }
 
+        if (context->processedCache::hasConsensusEvent()) { //TODO: mutex here?
+            std::shared_ptr<ConsensusEvent> const event = context->processedCache::pop();
             if (event::getSignatures::size() > context->maxFaulty*2 + 1) {
                 // check Merkle roots to see if match for new state
                 // Commit locally
