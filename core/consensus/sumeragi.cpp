@@ -1,13 +1,16 @@
 #include "sumeragi.hpp"
+#include <queue>
+#include <map>
 
 #include "../util/logger.hpp"
-#include "../repository/merkle_transaction_repository.hpp"
-#include "../domain/transactions/abstract_transaction.hpp"
-#include "../connection/connection.hpp"
+#include "../repository/consensus/merkle_transaction_repository.hpp"
+#include "../model/transactions/abstract_transaction.hpp"
 #include "../crypto/hash.hpp"
 #include "../validation/transaction_validator.hpp"
 #include "../service/peer_service.hpp"
 #include "./connection/connection.hpp"
+
+#include "../service/peer_service.hpp"
 
 /**
 * |ーーー|　|ーーー|　|ーーー|　|ーーー|
@@ -22,33 +25,31 @@
 */
 namespace sumeragi {
 
+    using ConsensusEvent = consensus_event::ConsensusEvent;
+
 struct Context {
     int maxFaulty;  // f
     int proxyTailNdx;
     const unsigned char* myPublicKey;
     int panicCount;
     int numValidatingPeers;
-    std::vector<Node> validatingPeers;
-    std::unique_ptr<merkle_transaction_repository> txRepository;
+    std::vector<peer::Node> validatingPeers;
     std::unique_ptr<TransactionCache> txCache;
     std::unique_ptr<TransactionValidator> txValidator;
     std::queue<ConsensusEvent> eventCache;
 
-    std::map<ConsensusEvent> processedCache;
-    connection conn;
+    std::map<ConsensusEvent> processedCache;    
 };
 
 std::unique_ptr<Context> context;
 
-void initializeSumeragi(std::string myPublicKey, std::vector<Node> peers) {
+void initializeSumeragi(std::string myPublicKey, std::vector<peer::Node> peers) {
     logger::info( __FILE__, "initializeSumeragi");
     context->validatingPeers = peers;
     context->numValidatingPeers = validatingPeers::size();
     context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO: make this configurable
-    context->proxyTailNdx = context->maxFault*2 + 1;  
-    context->txRepository = std::make_unique<merkle_transaction_repository>();
+    context->proxyTailNdx = context->maxFaulty*2 + 1;      
     context->panicCount = 0;
-    context->conn = std::make_unique<connection>(); //TODO: is this syntax correct (connection is a namespace...)?
 
     context->eventCache = std::make_uniquestd::queue<ConsensusEvent>>();
     context->processedCache = std::make_unique<std::map<ConsensusEvent>>();
@@ -56,14 +57,14 @@ void initializeSumeragi(std::string myPublicKey, std::vector<Node> peers) {
     context->myPublicKey = myPublicKey;
 }
 
-void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<Node> const nodeOrder) {
+void processTransaction(std::shared_ptr<ConsensusEvent> const event, std::vector<peer::Node> const nodeOrder) {
     if (!txValidator::isValid(event)) {
         return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
     }
 
     event::addSignature(sign(hash));
     if (nodeOrder::get(context->proxyTailNdx)->publicKey == context->myPublicKey) {
-        context->conn::send(nodeOrder::get(proxyTail)::getIP(), event);
+        connection::send(nodeOrder::get(proxyTail)::getIP(), event);
     } else {
         context->conn::sendAll(event);
     }
@@ -115,7 +116,7 @@ void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const actio
     }).detach();
 }
 
-std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event/*, std::vector<double> trustVector*/) {
+std::vector<peer::Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event/*, std::vector<double> trustVector*/) {
     unsigned char* const txHash = event::getHash();
     std::vector<std::tuple> distances = std::make_shared<std::vector<std::tuple>>();
 
@@ -126,7 +127,7 @@ std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const 
         distances[ndx] = std::make_tuple(node->publicKey, distance);
     }
 
-    std::vector<Node> const nodeOrder = std::sort(distances.begin(), distances.end(), COMPARATOR(l::get<1> < r::get<1>));
+    std::vector<peer::Node> const nodeOrder = std::sort(distances.begin(), distances.end(), COMPARATOR(l::get<1> < r::get<1>));
     
     return nodeOrder;
 }
@@ -140,7 +141,7 @@ void loop() {
                 continue;
             }
             // Determine node order
-            std::vector<Node> const nodeOrder = determineConsensusOrder(event);
+            std::vector<peer::Node> const nodeOrder = determineConsensusOrder(event);
 
             // Process transaction
             processTransaction(event, nodeOrder);

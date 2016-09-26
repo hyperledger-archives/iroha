@@ -1,3 +1,4 @@
+SET(YAML_PATH "${PROJECT_SOURCE_DIR}/core/vendor/yaml-cpp")
 
 # Datetime
 ADD_LIBRARY(datetime  STATIC datetime.cpp)
@@ -11,3 +12,8 @@ target_link_libraries(logger
 # Datetime
 ADD_LIBRARY(exception  STATIC exception.cpp)
 
+# Yaml_loader
+include_directories(
+  ${YAML_PATH}/include
+)
+ADD_LIBRARY(yaml_loader STATIC yaml_loader.cpp)

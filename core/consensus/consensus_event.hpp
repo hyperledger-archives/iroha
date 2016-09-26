@@ -4,7 +4,7 @@
 #include <string>
 #include <functional>
 
-#include "../domain/transactions/abstract_transaction.hpp"
+#include "../model/transactions/abstract_transaction.hpp"
 
 namespace consensus_event {
 

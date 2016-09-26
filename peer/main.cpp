@@ -1,16 +1,16 @@
-/*
 #include <thread>
 #include <signal.h>
 #include <unistd.h>
 #include <atomic>
 
 #include "../core/server/http_server.hpp"
-#include "../core/peer/connection.hpp"
+#include "../core/consensus/connection/connection.hpp"
 #include "../core/consensus/sumeragi.hpp"
 
 #include "../core/util/yaml_loader.hpp"
 #include "../core/util/logger.hpp"
-#include "../core/peer/connection.hpp"
+
+#include "../core/service/peer_service.hpp"
 
 std::atomic_bool running(true); 
 
@@ -22,9 +22,9 @@ void sigIntHandler(int param){
   running = false;
   logger::info("main", "will halt");
 }
-*/
+
 int main() {
-  /*
+
   signal(SIGINT, sigIntHandler);
 
   if(getenv("IROHA_HOME") == nullptr){
@@ -33,6 +33,7 @@ int main() {
   }
 
   //std::cout<<"Process ID is "<< getpid() << std::endl;
+  /*
   std::unique_ptr<connection::Config> config;
   std::unique_ptr<yaml::YamlLoader>   yamlLoader(new yaml::YamlLoader(std::string(getenv("IROHA_HOME"))+"/config/config.yml"));
 
@@ -43,17 +44,21 @@ int main() {
   config->subscribeStreamId  = yamlLoader->get<int>("mediaDriver", "subscribeStreamId");
   
   connection::initialize_peer(std::move(config));
-
+  */
   std::thread http_th( server );
 
  // std::cout << "(Second) Process ID is " << getpid() << std::endl;
- sumeragi::initializeSumeragi(11, 2, 2);
+  std::unique_ptr<yaml::YamlLoader>   yamlLoader(new yaml::YamlLoader(std::string(getenv("IROHA_HOME"))+"/config/config.yml"));
+ std::string myPublicKey = yamlLoader->get<std::string>("peer", "publicKey"); 
+ std::vector<peer::Node> peer = peer::getPeerList();
+ sumeragi::initializeSumeragi(myPublicKey, peer);
+
  sumeragi::loop();
 
   while(running){}
 
   http_th.detach();
-  */
+  
   return 0;
 }
 

@@ -1,4 +1,4 @@
-#add_subdirectory(consensus)
+add_subdirectory(consensus)
 add_subdirectory(model)
 #add_subdirectory(repository)
 add_subdirectory(infra)

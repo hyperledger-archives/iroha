@@ -1,14 +1,14 @@
 #include "transaction_validator.hpp"
 
-#include "../domain/abstract_transaction.hpp"
+#include "../model/abstract_transaction.hpp"
 #include "../crypto/signature.hpp"
 
 namespace transaction_validator {
-bool isValid(AbstractTransaction const tx) {
+bool isValid(abstract_transaction::AbstractTransaction& tx) {
     return signaturesAreValid(tx) && validForType(tx);
 }
 
-bool signaturesAreValid(AbstractTransaction const tx) {
+bool signaturesAreValid(abstract_transaction::AbstractTransaction& tx) {
     bool areAllValid = true;
     for (Signature const sig in tx->signatures) { 
         if (!signature::verify(sig, tx::getRawData(), tx::getPublicKey) {
@@ -18,7 +18,7 @@ bool signaturesAreValid(AbstractTransaction const tx) {
     return areAllValid; // TODO: change this!
 }
 
-bool validForType(AbstractTransaction const tx) {
+bool validForType(abstract_transaction::AbstractTransaction& tx) {
     if (abstract_transaction::TransactionType::transfer == tx::getType) {
         TransferTransaction transferTx = static_cast<TransferTransaction>(tx);
         getBalance();
