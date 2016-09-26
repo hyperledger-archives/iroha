@@ -132,7 +132,7 @@ std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const 
 void loop() {
     logger("start loop");
     while (true) {  // TODO(M->M): replace with callback linking aeron
-        if (context->eventCache::size() > 0) { //TODO: mutex here?
+        if (context->eventCache::empty()) { //TODO: mutex here?
             std::shared_ptr<ConsensusEvent> const event = context->eventCache::pop();
             if (!context->consensusEventValidator.isValid(event)) {
                 continue;
@@ -143,11 +143,17 @@ void loop() {
             // Process transaction
             processTransaction(event, nodeOrder);
         }
+            
+        for (auto const &key : context->processedCache) {
+            auto event = context->processedCache[&key];
 
-        if (context->processedCache::size() > 0) { //TODO: mutex here?
-            std::shared_ptr<ConsensusEvent> const event = context->processedCache::pop();
+            // Check if we have at least 2f+1 signatures
             if (event::getSignatures::size() > context->maxFaulty*2 + 1) {
-                // check Merkle roots to see if match for new state
+                // Check Merkle roots to see if match for new state
+                //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
+                //TODO: try applying transaction locally and compute the merkle root
+                //TODO: see if the merkle root matches or not
+
                 // Commit locally
                 transactionRepository->commitTransaction(event); //TODO: add error handling in case not saved
             }
