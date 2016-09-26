@@ -40,7 +40,7 @@ struct Context {
 
 std::unique_ptr<Context> context;
 
-void initializeSumeragi(std::vector<Node> peers) {
+void initializeSumeragi(std::string myPublicKey, std::vector<Node> peers) {
     logger::info( __FILE__, "initializeSumeragi");
     context->validatingPeers = peers;
     context->numValidatingPeers = validatingPeers::size();
@@ -52,6 +52,8 @@ void initializeSumeragi(std::vector<Node> peers) {
 
     context->eventCache = std::make_uniquestd::queue<ConsensusEvent>>();
     context->processedCache = std::make_unique<std::map<ConsensusEvent>>();
+
+    context->myPublicKey = myPublicKey;
 }
 
 void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<Node> const nodeOrder) {
@@ -60,7 +62,7 @@ void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<
     }
 
     event::addSignature(sign(hash));
-    if (!context->isProxyTail) {
+    if (nodeOrder::get(context->proxyTailNdx)->publicKey == context->myPublicKey) {
         context->conn::send(nodeOrder::get(proxyTail)::getIP(), event);
     } else {
         context->conn::sendAll(event);
