@@ -33,7 +33,8 @@ struct Context {
     std::unique_ptr<TransactionCache> txCache;
     std::unique_ptr<TransactionValidator> txValidator;
     std::queue<ConsensusEvent> eventCache;
-    std::queue<ConsensusEvent> processedCache;
+
+    std::map<ConsensusEvent> processedCache;
     connection conn;
 };
 
@@ -47,10 +48,10 @@ void initializeSumeragi(std::vector<Node> peers) {
     context->proxyTailNdx = context->maxFault*2 + 1;  
     context->txRepository = std::make_unique<merkle_transaction_repository>();
     context->panicCount = 0;
-    context->conn = std::make_unique<connection>(); //TODO: is this syntax correct?
+    context->conn = std::make_unique<connection>(); //TODO: is this syntax correct (connection is a namespace...)?
 
     context->eventCache = std::make_uniquestd::queue<ConsensusEvent>>();
-    context->processedCache = std::make_unique<std::queue<ConsensusEvent>>();
+    context->processedCache = std::make_unique<std::map<ConsensusEvent>>();
 }
 
 void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<Node> const nodeOrder) {
@@ -65,7 +66,9 @@ void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<
         context->conn::sendAll(event);
     }
 
-    setAwkTimer(5000, [&]{ if (unconfirmed(event)) { panic(); } });
+    setAwkTimer(5000, [&]{ if (context->processedCache::count(event::getHash()) > 0) { panic(); } });
+
+    context->processedCache[event::getHash()] = event;
 }
 
 /**
