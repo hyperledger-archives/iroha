@@ -9,7 +9,7 @@
 
 #include <msgpack.hpp>
 #include "../util/logger.hpp"
-#include "../crypto/merkle.hpp"
+#include "../crypto/merkle_node.hpp"
 
 namespace merkle_transaction_repository {
 
@@ -52,8 +52,9 @@ bool commit(std::unique_ptr<ConsensusEvent::ConsensusEvent> event) {
   if (nullptr == db) {
     loadDb();
   }
-  std::vector<std::string> const signatures = std::move(event->txSignatures);
-  
+  std::vector<std::string> const merkleRootSignatures = std::move(event->merkleRootSignatures);
+  //TODO: store the 2f+1 nodes' signatures for the merkle root
+
   // Update Merkle tree
   std::string const rawData = convertBuffer(std::move(event->tx));
   merkle::addLeaf(rawData);
