@@ -32,15 +32,23 @@ namespace peer{
             virtual std::string getPublicKey() = 0;
             */
 
-            std::string getIP() {
+            std::string getIP() const{
                 return ip;
             }
 
-            std::string getPublicKey() {
+            std::string getPublicKey() const{
                 return publicKey;
             }
     };
 
+
+    std::string getMyPublicKey() {
+        return "Base64";// WIP
+    }
+
+    std::string getPrivateKey() {
+        return "Base64";// WIP
+    }
 
     std::vector<Node> getPeerList() {
         std::unique_ptr<yaml::YamlLoader> yamlLoader(new yaml::YamlLoader(std::string(getenv("IROHA_HOME")) + "/config/config.yml"));
