@@ -1,6 +1,9 @@
 #ifndef CORE_CRYPTO_MERKLE_HPP_
 #define CORE_CRYPTO_MERKLE_HPP_
 
+#include <string>
+#include <vector>
+
 namespace merkle {
 
   struct MerkleNode{
@@ -21,6 +24,7 @@ namespace merkle {
   };
 
     void addLeaf(std::string leaf, std::vector<std::string> rootSignatures);
+
 }  // namespace merkle
 
 #endif  // CORE_CRYPTO_MERKLE_HPP_

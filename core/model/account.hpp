@@ -44,6 +44,8 @@ namespace domain {
         publicKeyb64Encoded(aPublicKeyb64Encoded),
         uid(random_service::makeRandomHash())
       {}
+      // Use only message pack
+      AccountUser();
 
       // Support move and copy.
       AccountUser(AccountUser const&) = default;

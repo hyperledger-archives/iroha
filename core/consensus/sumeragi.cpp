@@ -129,8 +129,8 @@ long long int getDistance(std::string publicKey, std::string txHash){
     return 0;
 }
 
-std::vector<peer::Node> determineConsensusOrder(ConsensusEvent const event/*, std::vector<double> trustVector*/) {
-    std::string txHash = event.getHash();
+std::vector<peer::Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> event/*, std::vector<double> trustVector*/) {
+    std::string txHash = event->getHash();
     std::vector<std::tuple<
         peer::Node, long long int
     > > distances;

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <functional>
+#include <memory>
 
 #include "../model/transactions/abstract_transaction.hpp"
 

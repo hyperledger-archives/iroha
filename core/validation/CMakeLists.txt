@@ -1,6 +1,19 @@
-set(CMAKE_BUILD_TYPE Debug)
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
-SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++14")
-SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -O0 -std=c++14")
+SET(KECCAK_PATH  "${PROJECT_SOURCE_DIR}/core/vendor/KeccakCodePackage")
+SET(ED25519_PATH "${PROJECT_SOURCE_DIR}/core/vendor/ed25519")
 
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/validation)
+include_directories(${ED25519_PATH}/src)
+link_directories(
+  ${ED25519_PATH}
+  ${KECCAK_PATH}/bin/generic64
+  ${PROJECT_SOURCE_DIR}/core/infra/crypto
+)
+
+ADD_LIBRARY(validator  STATIC
+  consensus_event_validator.cpp
+  transaction_validator.cpp  
+)
+target_link_libraries(validator 
+  signature
+)

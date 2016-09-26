@@ -1,16 +1,18 @@
 
-#include "../../../domain/account.hpp"
+#include "../../../model/account.hpp"
 #include "../account_repository.hpp"
+#include "../../world_state_repository.hpp"
 
 #include <msgpack.hpp>
 
+namespace repository{
 namespace account_repository {
 
     // Umm..., message pack is in infra....
     // wrong knowledge range? 
     // I think message pack is some as std::string. Do you think?
     std::unique_ptr<domain::AccountUser> convertAccountUser(const std::string &buffer) {
-        std::unique_ptr<domain::AccountUser> au;
+        std::unique_ptr<domain::AccountUser>au;
         msgpack::object_handle unpacked = msgpack::unpack(buffer.data(), buffer.size());
         msgpack::object obj = unpacked.get();
         obj.convert(au);
@@ -41,7 +43,7 @@ namespace account_repository {
         }
     }
 
-    std::unique_ptr<domain::AccountUser> findByUid(std::string) {
+    std::unique_ptr<domain::AccountUser> findByUid(std::string accountUid) {
         return convertAccountUser(
             world_state_repository::find(accountUid)
         );
@@ -58,4 +60,5 @@ namespace account_repository {
         return world_state_repository::update(accountUid, convertBuffer(std::move(accountUser)));
     }
 
+};
 };

@@ -1,8 +1,9 @@
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "../util/yaml_loader.hpp"
-#include "../peer_service.hpp"
+#include "peer_service.hpp"
 
 namespace peer{
 

@@ -1,17 +1,22 @@
 #include "consensus_event_validator.hpp"
+#include "../consensus/consensus_event.hpp"
 
-#include "../infra/consensus_event.hpp"
 #include "../crypto/signature.hpp"
 
 namespace consensus_event_validator {
 
-bool isValid(ConsensusEvent const event) {
+bool isValid(const consensus_event::ConsensusEvent event) {
+    return true;//signaturesAreValid; // TODO: add more tests
+}
+
+bool isValid(std::string sig) {
     return signaturesAreValid; // TODO: add more tests
 }
 
-bool signaturesAreValid(ConsensusEvent const event) {
-    for (std::<shared_ptr>Signature const signature : event->signatures) {
-        if (!signature::isValid()) {
+
+bool signaturesAreValid(const consensus_event::ConsensusEvent event) {
+    for (auto sig : event.txSignatures) {
+        if (!consensus_event_validator::isValid(sig)) {
             return false;
         }
     }

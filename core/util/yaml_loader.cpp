@@ -16,7 +16,6 @@ namespace yaml{
       fileName(fileName)
     {}
     
-
     template<typename T>
     T YamlLoader::get(const std::string &root,const std::string &key) {
         YAML::Node config = YAML::LoadFile(std::move(fileName));
@@ -27,18 +26,28 @@ namespace yaml{
             terminate::finish();
         }
     }
-/*
+
     template <>
     std::string YamlLoader::get<
         std::string
-    >(std::string root, std::string key);
+    >(const std::string& root, const std::string& key){
+        YAML::Node config = YAML::LoadFile(std::move(fileName));
+        try{
+            return config[root][key].as<std::string>();
+        }catch(YAML::Exception& e){
+            logger::fital("YamlLoader.get()", e.what());
+            terminate::finish();
+        }
+    }
 
-    template std::vector<peer::Node> YamlLoader::get<
+    template <> 
+    std::vector<peer::Node> YamlLoader::get<
         std::vector<peer::Node>
-    >(std::string root, std::string key);
+    >(const std::string& root, const std::string& key);
 
-    template std::vector<std::string> YamlLoader::get<
+    template <>
+    std::vector<std::string> YamlLoader::get<
         std::vector<std::string>
-    >(std::string root, std::string key);    
-*/    
+    >(const std::string& root, const std::string& key);
+
 };

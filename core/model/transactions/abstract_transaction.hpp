@@ -16,6 +16,10 @@ enum class TransactionType {
 
 class AbstractTransaction {
   public:
+
+    std::string publicKey;
+    std::string signature;
+
     virtual ~AbstractTransaction() = default; // make dtor virtual
     AbstractTransaction(AbstractTransaction&&) = default;  // support moving
     AbstractTransaction& operator = (AbstractTransaction&&) = default;

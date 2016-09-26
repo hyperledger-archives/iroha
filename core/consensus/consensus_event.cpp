@@ -3,18 +3,12 @@
 #include "../model/transactions/abstract_transaction.hpp"
 
 namespace consensus_event {
-struct ConsensusEvent {
 
-    void addSignature(std::string const signature) {
-        txSignatures::push_back(signature);
+    void ConsensusEvent::addSignature(std::string const signature) {
+        txSignatures.push_back(signature);
     }
 
-    void addSignature(std::string const signature) {
-        txSignatures::push_back(signature);
+    std::string ConsensusEvent::getHash() const{
+        return tx->getHash();
     }
-
-    std::string getHash() const{
-        return self->tx::getHash();
-    }
-};
 }  // namespace consensus_event

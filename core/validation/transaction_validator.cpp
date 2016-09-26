@@ -1,6 +1,6 @@
 #include "transaction_validator.hpp"
 
-#include "../model/abstract_transaction.hpp"
+#include "../model/transactions/abstract_transaction.hpp"
 #include "../crypto/signature.hpp"
 
 namespace transaction_validator {
@@ -9,19 +9,17 @@ bool isValid(abstract_transaction::AbstractTransaction& tx) {
 }
 
 bool signaturesAreValid(abstract_transaction::AbstractTransaction& tx) {
-    bool areAllValid = true;
-    for (Signature const sig in tx->signatures) { 
-        if (!signature::verify(sig, tx::getRawData(), tx::getPublicKey) {
-            areAllValid = false;
-        }
+    bool areAllValid = true; 
+    if (!signature::verify(tx.signature, tx.signature, tx.publicKey)) {
+        areAllValid = false;
     }
     return areAllValid; // TODO: change this!
 }
 
 bool validForType(abstract_transaction::AbstractTransaction& tx) {
+    /*
     if (abstract_transaction::TransactionType::transfer == tx::getType) {
         TransferTransaction transferTx = static_cast<TransferTransaction>(tx);
-        getBalance();
     } else if (abstract_transaction::TransactionType::addPeer == tx::getType) {
         return true;  //TODO-future-work
     } else if (abstract_transaction::TransactionType::modifyPeer == tx::getType) {
@@ -57,6 +55,8 @@ bool validForType(abstract_transaction::AbstractTransaction& tx) {
     } else if (abstract_transaction::TransactionType::interchain == tx::getType) {
         return true;  //TODO-future-work
     }
+    */
+    return false;
 }
 
 };  // namespace transaction_validator

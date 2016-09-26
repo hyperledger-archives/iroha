@@ -48,8 +48,8 @@ int main() {
   std::thread http_th( server );
 
  // std::cout << "(Second) Process ID is " << getpid() << std::endl;
-  std::unique_ptr<yaml::YamlLoader>   yamlLoader(new yaml::YamlLoader(std::string(getenv("IROHA_HOME"))+"/config/config.yml"));
- std::string myPublicKey = yamlLoader->get<std::string>("peer", "publicKey"); 
+ std::unique_ptr<yaml::YamlLoader>   yaml(new yaml::YamlLoader(std::string(getenv("IROHA_HOME"))+"/config/config.yml"));
+ std::string myPublicKey = yaml->get<std::string>("peer", "publicKey"); 
  std::vector<peer::Node> peer = peer::getPeerList();
  sumeragi::initializeSumeragi(myPublicKey, peer);
 
