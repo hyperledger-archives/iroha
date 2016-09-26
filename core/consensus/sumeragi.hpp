@@ -9,7 +9,7 @@
 #include "consensus_event.hpp"
 
 namespace sumeragi {
-    void initializeSumeragi(int myNumber, int aNumberOfPeer, int leaderNumber, int batchSize = 1);
+    void initializeSumeragi(std::vector<Node> peers);
     void loop();
     void processTransaction(const std::shared_ptr<ConsensusEvent::ConsensusEvent> event, const std::vector<Node> nodeOrder);
     void panic(const std::shared_ptr<ConsensusEvent::ConsensusEvent> event);
