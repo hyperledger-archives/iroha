@@ -21,6 +21,9 @@ add_executable(iroha-main
   main.cpp
 )
 target_link_libraries(iroha-main
+  sumeragi
+  logger
+  yaml_loader
   http_server_with_crow
   connection_with_aeron
   pthread

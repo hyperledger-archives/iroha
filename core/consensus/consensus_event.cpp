@@ -13,7 +13,7 @@ struct ConsensusEvent {
         txSignatures::push_back(signature);
     }
 
-    std::string getHash() {
+    std::string getHash() const{
         return self->tx::getHash();
     }
 };

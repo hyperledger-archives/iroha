@@ -16,10 +16,7 @@ namespace peer{
             Node(
                 std::string aip,
                 std::string apubkey
-            ):
-                ip(aip),
-                publicKey(apubkey)
-            {}
+            );
             
             /*
             virtual ~Node() = default; // make dtor virtual
@@ -32,29 +29,16 @@ namespace peer{
             virtual std::string getPublicKey() = 0;
             */
 
-            std::string getIP() const{
-                return ip;
-            }
-
-            std::string getPublicKey() const{
-                return publicKey;
-            }
+            std::string getIP() const;
+            std::string getPublicKey() const;
     };
 
 
-    std::string getMyPublicKey() {
-        return "Base64";// WIP
-    }
+    std::string getMyPublicKey();
 
-    std::string getPrivateKey() {
-        return "Base64";// WIP
-    }
+    std::string getPrivateKey();
 
-    std::vector<Node> getPeerList() {
-        std::unique_ptr<yaml::YamlLoader> yamlLoader(new yaml::YamlLoader(std::string(getenv("IROHA_HOME")) + "/config/config.yml"));
-        return std::vector<Node>();
-        //return std::move(yamlLoader->get<std::vector<std::string> >("peer", "ip"));
-    }
+    std::vector<Node> getPeerList();
 };
 
 #endif

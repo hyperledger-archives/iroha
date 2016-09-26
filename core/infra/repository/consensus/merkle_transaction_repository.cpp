@@ -1,4 +1,4 @@
-#include "merkle_transaction_repository.hpp"
+#include "../../../repository/consensus/merkle_transaction_repository.hpp"
 
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
@@ -8,8 +8,8 @@
 #include <iostream>
 
 #include <msgpack.hpp>
-#include "../util/logger.hpp"
-#include "../crypto/merkle_node.hpp"
+#include "../../../util/logger.hpp"
+#include "../../../crypto/merkle_node.hpp"
 
 namespace merkle_transaction_repository {
 
@@ -48,7 +48,7 @@ void loadDb() {
   db.reset(tmpDb);
 }
 
-bool commit(std::unique_ptr<ConsensusEvent::ConsensusEvent> event) {
+bool commit(std::shared_ptr<ConsensusEvent::ConsensusEvent> event) {
   if (nullptr == db) {
     loadDb();
   }

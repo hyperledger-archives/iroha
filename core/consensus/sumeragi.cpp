@@ -76,7 +76,7 @@ void processTransaction(std::shared_ptr<ConsensusEvent> const event, std::vector
         if (
             context->processedCache.find(event->getHash()) !=
             context->processedCache.end()
-        ) { panic(event->getHash()); } });
+        ) { panic(event); } });
 
     context->processedCache[event->getHash()] = event;
 }
@@ -117,7 +117,7 @@ void panic(std::shared_ptr<ConsensusEvent> const event) {
 }
 
 void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const action) {
-    std::thread([action, sleepMillisecs, tx]() {
+    std::thread([action, sleepMillisecs]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
         action();
     }).detach();
@@ -129,10 +129,10 @@ long long int getDistance(std::string publicKey, std::string txHash){
     return 0;
 }
 
-std::vector<peer::Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event/*, std::vector<double> trustVector*/) {
-    std::string txHash = event->getHash();
+std::vector<peer::Node> determineConsensusOrder(ConsensusEvent const event/*, std::vector<double> trustVector*/) {
+    std::string txHash = event.getHash();
     std::vector<std::tuple<
-        std::string, long long int
+        peer::Node, long long int
     > > distances;
 
     for (int ndx = 0; ndx < context->numValidatingPeers; ++ndx) {
@@ -141,31 +141,34 @@ std::vector<peer::Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> 
         long long int distance = getDistance(node.getPublicKey(), txHash);/* + trustVector[ndx]*/;
         
         distances.push_back(std::tuple<
-            std::string, long long int
-        >(node.getPublicKey(), distance));
+            peer::Node, long long int
+        >(node, distance));
     }
 
     std::sort(distances.begin(), distances.end(), 
         [](
             std::tuple<
-                std::string, long long int
+                peer::Node, long long int
             > const &lhs,
             std::tuple<
-                std::string, long long int
+                peer::Node, long long int
             > const &rhs) {
             return std::get<1>(lhs) < std::get<1>(lhs);
         }
     );
-    
-    return distances;
+    std::vector<peer::Node> res;
+    for(const auto t : distances){
+        res.push_back(std::get<0>(t));
+    }
+    return res;
 }
 
 void loop() {
     logger::info("sumeragi","start loop");
     while (true) {  // TODO(M->M): replace with callback linking aeron
         if (context->eventCache.empty()) { //TODO: mutex here?
-            ConsensusEvent const event = context->eventCache.front();
-            if (!transaction_validator::isValid(*event.tx)) {
+            const std::shared_ptr<ConsensusEvent> event = std::shared_ptr<ConsensusEvent>(&context->eventCache.front());
+            if (!transaction_validator::isValid(*event->tx)) {
                 continue;
             }
             // Determine node order
@@ -175,18 +178,18 @@ void loop() {
             processTransaction(event, nodeOrder);
         }
             
-        for (auto const &key : context->processedCache) {
-            auto event = context->processedCache[&key];
+        for (auto const &kv : context->processedCache) {
+            auto event = kv.second;
 
             // Check if we have at least 2f+1 signatures
-            if (event->signatures.size() > context->maxFaulty*2 + 1) {
+            if (event->txSignatures.size() > context->maxFaulty*2 + 1) {
                 // Check Merkle roots to see if match for new state
                 //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
                 //TODO: try applying transaction locally and compute the merkle root
                 //TODO: see if the merkle root matches or not
 
                 // Commit locally
-                merkle_transaction_repository::commit(event->gethash(), event); //TODO: add error handling in case not saved
+                merkle_transaction_repository::commit(event->getHash(), event); //TODO: add error handling in case not saved
             }
         }
     }

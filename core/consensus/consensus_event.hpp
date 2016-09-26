@@ -15,7 +15,7 @@ struct ConsensusEvent {
     std::vector<std::string> merkleRootSignatures;
 
     void addSignature(std::string const signature);
-    std::string getHash();
+    std::string getHash() const;
 };
 };  // namespace ConsensusEvent
 

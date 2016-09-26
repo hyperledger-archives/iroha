@@ -5,6 +5,7 @@ ADD_LIBRARY(sumeragi STATIC
 )
 target_link_libraries(sumeragi
   crypto
-  txRepo
   yaml_loader
+  unconfirmed_transaction_repository
+  merkle_transaction_repository
 )

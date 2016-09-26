@@ -12,6 +12,9 @@ target_link_libraries(logger
 # Datetime
 ADD_LIBRARY(exception  STATIC exception.cpp)
 
+# Datetime
+ADD_LIBRARY(terminate  STATIC terminate.cpp)
+
 # Yaml_loader
 include_directories(
   ${YAML_PATH}/include
