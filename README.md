@@ -25,7 +25,9 @@ fabric3 (python library, not hyperledger/fabric)
 
 ## Installation
 ```
-$ ./script/install.sh
+$ mkdir build
+$ cmake ..
+$ make
 ```
 (in server)
 or  
