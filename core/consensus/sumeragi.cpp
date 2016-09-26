@@ -132,7 +132,7 @@ std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const 
 void loop() {
     logger("start loop");
     while (true) {  // TODO(M->M): replace with callback linking aeron
-        if (context->eventCache::hasConsensusEvent()) { //TODO: mutex here?
+        if (context->eventCache::size() > 0) { //TODO: mutex here?
             std::shared_ptr<ConsensusEvent> const event = context->eventCache::pop();
             if (!context->consensusEventValidator.isValid(event)) {
                 continue;
@@ -144,7 +144,7 @@ void loop() {
             processTransaction(event, nodeOrder);
         }
 
-        if (context->processedCache::hasConsensusEvent()) { //TODO: mutex here?
+        if (context->processedCache::size() > 0) { //TODO: mutex here?
             std::shared_ptr<ConsensusEvent> const event = context->processedCache::pop();
             if (event::getSignatures::size() > context->maxFaulty*2 + 1) {
                 // check Merkle roots to see if match for new state
