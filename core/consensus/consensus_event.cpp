@@ -4,7 +4,7 @@
 
 namespace consensus_event {
 
-    void ConsensusEvent::addSignature(std::string const signature) {
+    void ConsensusEvent::addSignature(const std::string& signature){
         txSignatures.push_back(signature);
     }
 

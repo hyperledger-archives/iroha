@@ -36,43 +36,50 @@ namespace sumeragi {
 struct Context {
     int maxFaulty;  // f
     int proxyTailNdx;
-    std::string myPublicKey;
     int panicCount;
     int numValidatingPeers;
-    std::vector<peer::Node> validatingPeers;
+    std::vector<
+        std::unique_ptr<peer::Node>
+    > validatingPeers;
 
     //std::unique_ptr<TransactionCache> txCache;
     //std::unique_ptr<TransactionValidator> txValidator;
     
-    std::queue<ConsensusEvent> eventCache;
+    std::queue<
+        std::unique_ptr<ConsensusEvent>
+    > eventCache;
 
     std::map<std::string, std::shared_ptr<ConsensusEvent> > processedCache;    
 };
 
 std::unique_ptr<Context> context;
 
-void initializeSumeragi(std::string myPublicKey, std::vector<peer::Node> peers) {
-    logger::info( "initialize sumeragi", "initialize.....");
+void initializeSumeragi(
+    const std::string& myPublicKey,
+    std::vector<std::unique_ptr<peer::Node> > peers
+) {
+    logger::info( "sumeragi", "initialize.....");
     context->validatingPeers = std::move(peers);
     context->numValidatingPeers = peers.size();
     context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO: make this configurable
     context->proxyTailNdx = context->maxFaulty*2 + 1;      
     context->panicCount = 0;
-
-    context->myPublicKey = myPublicKey;
-    logger::info( "initialize sumeragi", "complate!");
+    logger::info( "sumeragi", "initialize.....  complate!");
 }
 
-void processTransaction(std::shared_ptr<ConsensusEvent> const event, std::vector<peer::Node> const nodeOrder) {
+void processTransaction(
+    std::shared_ptr<ConsensusEvent> const event,
+    std::vector<std::unique_ptr<peer::Node>> const nodeOrder
+) {
     if (!transaction_validator::isValid(*event->tx)) {
         return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
     }
 
     event->addSignature(signature::sign( event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
-    if (nodeOrder[context->proxyTailNdx].getPublicKey() == context->myPublicKey) {
-        connection::send(nodeOrder[context->proxyTailNdx].getIP(), event->getHash()); //TIP
+    if (nodeOrder[context->proxyTailNdx]->getPublicKey() == peer::getMyPublicKey()) {
+        connection::send(nodeOrder[context->proxyTailNdx]->getIP(), event->getHash()); // Think In Process
     } else {
-        connection::sendAll(event->getHash());// TIP
+        connection::sendAll(event->getHash());// Think In Process
     }
 
     setAwkTimer(5000, [&](){ 
@@ -104,7 +111,7 @@ void processTransaction(std::shared_ptr<ConsensusEvent> const event, std::vector
 */
 void panic(std::shared_ptr<ConsensusEvent> const event) {
     context->panicCount++; // TODO: reset this later
-    int broadcastStart = 2*context->maxFaulty + 1 + context->maxFaulty*context->panicCount;
+    int broadcastStart = 2 * context->maxFaulty + 1 + context->maxFaulty*context->panicCount;
     int broadcastEnd = broadcastStart + context->maxFaulty;
 
     // Do some bounds checking
@@ -132,53 +139,53 @@ long long int getDistance(std::string publicKey, std::string txHash){
     return 0;
 }
 
-std::vector<peer::Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> event/*, std::vector<double> trustVector*/) {
+std::vector<std::unique_ptr<peer::Node> > determineConsensusOrder(std::shared_ptr<ConsensusEvent> event/*, std::vector<double> trustVector*/) {
     std::string txHash = event->getHash();
     std::vector<std::tuple<
-        peer::Node, long long int
-    > > distances;
+        std::unique_ptr<peer::Node>, long long int
+    >> distances;
 
     for (int ndx = 0; ndx < context->numValidatingPeers; ++ndx) {
-        auto const node = context->validatingPeers[ndx];
+        auto const node = std::move(context->validatingPeers[ndx]);
         // WIP
-        long long int distance = getDistance(node.getPublicKey(), txHash);/* + trustVector[ndx]*/;
+        long long int distance = getDistance(node->getPublicKey(), txHash);/* + trustVector[ndx]*/;
         
         distances.push_back(std::tuple<
-            peer::Node, long long int
-        >(node, distance));
+            std::unique_ptr<peer::Node>, long long int
+        >(std::move(node), distance));
     }
 
     std::sort(distances.begin(), distances.end(), 
         [](
             std::tuple<
-                peer::Node, long long int
+                std::unique_ptr<peer::Node>, long long int
             > const &lhs,
             std::tuple<
-                peer::Node, long long int
+                std::unique_ptr<peer::Node>, long long int
             > const &rhs) {
             return std::get<1>(lhs) < std::get<1>(lhs);
         }
     );
-    std::vector<peer::Node> res;
-    for(const auto t : distances){
-        res.push_back(std::get<0>(t));
+    std::vector<std::unique_ptr<peer::Node> > res;
+    for(const auto& t : distances){
+        res.push_back(std::move(std::get<0>(t)));
     }
-    return res;
+    return std::move(res);
 }
 
 void loop() {
     logger::info("sumeragi","start loop");
     while (true) {  // TODO(M->M): replace with callback linking aeron
         if (context->eventCache.empty()) { //TODO: mutex here?
-            const std::shared_ptr<ConsensusEvent> event = std::shared_ptr<ConsensusEvent>(&context->eventCache.front());
+            auto event = std::move(&context->eventCache.front());
             if (!transaction_validator::isValid(*event->tx)) {
                 continue;
             }
             // Determine node order
-            std::vector<peer::Node> const nodeOrder = determineConsensusOrder(event);
+            std::vector<std::unique_ptr<peer::Node>> nodeOrder = determineConsensusOrder(event);
 
             // Process transaction
-            processTransaction(event, nodeOrder);
+            processTransaction(event, std::move(nodeOrder));
         }
             
         for (auto const &kv : context->processedCache) {
