@@ -5,8 +5,8 @@
 
 namespace transaction_validator {
   bool isValid(abstract_transaction::AbstractTransaction& tx);
-  bool signaturesAreValid(abstract_transaction::AbstractTransaction& tx);
-  bool validForType(abstract_transaction::AbstractTransaction& tx);
+  bool signaturesAreValid(const abstract_transaction::AbstractTransaction& tx);
+  bool validForType(const abstract_transaction::AbstractTransaction& tx);
 };  // namespace transaction_validator
 
 #endif  // CORE_VALIDATION_TRANSACTIONVALIDATOR_HPP_

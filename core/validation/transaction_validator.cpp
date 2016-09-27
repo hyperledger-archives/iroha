@@ -9,7 +9,7 @@ bool isValid(abstract_transaction::AbstractTransaction& tx) {
     return signaturesAreValid(tx) && validForType(tx);
 }
 
-bool signaturesAreValid(abstract_transaction::AbstractTransaction& tx) {
+bool signaturesAreValid(const abstract_transaction::AbstractTransaction& tx) {
     if (!signature::verify(tx.signature, tx.signature, tx.publicKey)) {
         return true;
     }else{
@@ -17,7 +17,7 @@ bool signaturesAreValid(abstract_transaction::AbstractTransaction& tx) {
     }
 }
 
-bool validForType(abstract_transaction::AbstractTransaction& tx) {
+bool validForType(const abstract_transaction::AbstractTransaction& tx) {
     if (abstract_transaction::TransactionType::transfer == tx.getType()) {
        // transaction::TransferTransaction transferTx = static_cast<transaction::TransferTransaction>(tx);
     } else if (abstract_transaction::TransactionType::addPeer == tx.getType()) {
