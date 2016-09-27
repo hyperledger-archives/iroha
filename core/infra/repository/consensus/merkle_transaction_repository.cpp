@@ -19,22 +19,14 @@ std::shared_ptr<leveldb::DB> db;
 // WIP
 //std::unique_ptr<merkle::MerkleRoot> merkle_root;
 
-bool printStatus(leveldb::Status const status) {
-}
-
-std::unique_ptr<abs_tx> convertTransaction(std::string const buffer) {
-}
-                                                       
-std::string convertBuffer(std::unique_ptr<abs_tx> tx) {
-}
 
 void loadDb() {
 }
 
-bool commit(std::shared_ptr<consensus_event::ConsensusEvent> event) {
+bool commit(std::unique_ptr<consensus_event::ConsensusEvent> event) {
 }
 
-bool commit(std::string, std::shared_ptr<consensus_event::ConsensusEvent> event) {
+bool commit(std::string, std::unique_ptr<consensus_event::ConsensusEvent> event) {
 }
 
 std::unique_ptr<abs_tx> findLeaf(std::string const hash) {
