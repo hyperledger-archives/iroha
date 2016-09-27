@@ -12,15 +12,17 @@
 
 
 namespace sumeragi {
-    void initializeSumeragi(std::string myPublicKey, std::vector<peer::Node> peers);
+    void initializeSumeragi(
+        const std::string& myPublicKey,
+        std::vector<std::unique_ptr<peer::Node> > peers
+    );
     void loop();
     void processTransaction(
-        std::shared_ptr<consensus_event::ConsensusEvent> const event,
-        std::vector<std::unique_ptr<peer::Node>> const nodeOrder
+        std::unique_ptr<consensus_event::ConsensusEvent> const event
     );
-    void panic(const std::shared_ptr<consensus_event::ConsensusEvent> event);
+    void panic(const std::unique_ptr<consensus_event::ConsensusEvent>& event);
     void setAwkTimer(const int sleepMillisecs, const std::function<void(void)> action);
-    std::vector<std::unique_ptr<peer::Node>> determineConsensusOrder(std::shared_ptr<consensus_event::ConsensusEvent> event);
+    void determineConsensusOrder(const std::unique_ptr<consensus_event::ConsensusEvent>& event/*, std::vector<double> trustVector*/);
 };  // namespace sumeragi
 
 #endif  // CORE_CONSENSUS_SUMERAGI_HPP_
