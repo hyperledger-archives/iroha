@@ -26,11 +26,11 @@ class AbstractTransaction {
     AbstractTransaction(const AbstractTransaction&) = default; // support copying
     AbstractTransaction& operator = (const AbstractTransaction&) = default;
 
-    virtual std::string getHash() = 0;
-    virtual std::string getRawData() = 0;
-    virtual std::string getAsText() = 0;
-    virtual unsigned long long  getTimestamp() = 0;
-    virtual TransactionType getType() = 0;
+    virtual std::string getHash() const = 0;
+    virtual std::string getRawData() const = 0;
+    virtual std::string getAsText() const = 0;
+    virtual unsigned long long  getTimestamp() const = 0;
+    virtual TransactionType getType() const  = 0;
 };
 }  // namespace abstract_transaction
 

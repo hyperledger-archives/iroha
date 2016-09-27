@@ -1,31 +1,27 @@
 #include "transfer_transaction.hpp"
-#include "abstract_transfer_transaction.hpp"
 #include <string>
 
-namespace transfer_transaction {
-class TransferTransaction : public AbstractTransaction {
-    std::string hash;
-    AbstractTransaction::TransactionType type;
+namespace transaction {
 
-    std::string getHash() {
+    std::string TransferTransaction::getHash() {
         return hash;
     }
 
-    std::string getRawData() {
+    std::string TransferTransaction::getRawData() {
         //TODO
     }
-    
-    std::string getAsText() {
+
+    std::string TransferTransaction::getAsText() {
         //TODO
     }
-    
-    unsigned long long  getTimestamp() {
+
+    unsigned long long  TransferTransaction::getTimestamp() {
         return timestamp;
     }
-    
-    TransactionType getType() {
+
+    abstract_transaction::TransactionType TransferTransaction::getType() {
         return type;
     }
-};
 
-};  // namespace transfer_transaction
+
+};  // namespace transaction
