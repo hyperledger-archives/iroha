@@ -4,6 +4,9 @@
 いろは(iroha) is ...  
 ![alt tag](https://github.com/soramitsu/iroha/raw/feature/sumeragi/LGTM.gif)
   
+# Pull Requests
+Please include a developer certificate with pull requests: http://developercertificate.org/
+
 # Architecture (Draft)
 
 ### Directory tree
@@ -53,7 +56,8 @@ Currently use java virtual machine.
 
 #### test/
 
-There's few test for iroha. :bow:
+There's few tests for iroha. :bow:
+We accept pull requests.
 
 #### core/
 
@@ -79,7 +83,7 @@ It contains main.
 └── validation
 ```
 
-I adopt a thought of **Domain Driven Development structure** as much as possible.
+We adopt a **Domain-Driven Development structure** as much as possible.
 
 ```
 +--------------+
@@ -120,7 +124,7 @@ I adopt a thought of **Domain Driven Development structure** as much as possible
 
 
 #### core/connection (consensus layer)
-It contains messaging function interface.
+It contains the P2P messaging function interface.
 ```C
   void initialize_peer( std::unordered_map<std::string, std::string> config);
 
@@ -139,7 +143,7 @@ It contains electronic signature, base64, hash function interface...
 It contains asset model, transaction logic. independent of infra knowledge.
 
 #### core/infra (infra layer)
-It contains some source depend on vendor libraries.
+It contains some source depend on vendor (third party) libraries.
 If any source depends on vendor libraries, it should be in infra. 
   
 ##### filename
@@ -152,13 +156,13 @@ repository
 ```
 
 #### core/server (UI layer)
-It contains server interface. currently
+It contains the server interface, currently.
 ```
 void server();
 ```
 
 #### core/smart_contract (service)
-It contains management virtual machine interface.
+It contains the Java virtual machine interface.
 ```
 void initializeVM(std::string contractName);
 void finishVM();    
@@ -172,7 +176,7 @@ It contains logger, random, datetime, exception...
 
 ### Environment
 ```
-JAVA_HOME  := java's jome
+JAVA_HOME  := java's home
 IROHA_HOME := iroha's root
 ```
   
@@ -181,7 +185,7 @@ IROHA_HOME := iroha's root
 cmake(3.5.2)
 ```
   
-## Recommend
+## Recommended
 ```
 fabric3 (python library, not hyperledger/fabric)
 ```
@@ -199,7 +203,7 @@ $ fab deploy
 ```
 (in local)  
   
-## Author
+## Authors
 
 [MakotoTakemiya](https://github.com/takemiyamakoto)  
 [MizukiSonoko](https://github.com/MizukiSonoko)
