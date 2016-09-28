@@ -24,16 +24,13 @@ namespace peer{
                 publicKey(apubkey)
             {}
             
-            /*
-            virtual ~Node() = default; // make dtor virtual
+            
+            ~Node() = default; // make dtor virtual
             Node(Node&&) = default;  // support moving
             Node& operator = (Node&&) = default;
             Node(const Node&) = default; // support copying
             Node& operator = (const Node&) = default;
-            
-            virtual std::string getIP() = 0;
-            virtual std::string getPublicKey() = 0;
-            */
+           
 
             std::string getIP() const;
             std::string getPublicKey() const;

@@ -19,6 +19,11 @@
 
 #include "../service/peer_service.hpp"
 
+template<class T>
+std::unique_ptr<T> make_unique(){
+  return std::unique_ptr<T>(new T());
+}
+
 /**
 * |ーーー|　|ーーー|　|ーーー|　|ーーー|
 * |　ス　|ー|　メ　|ー|　ラ　|ー|　ギ　|
@@ -43,6 +48,11 @@ struct Context {
         std::unique_ptr<peer::Node>
     > validatingPeers;
 
+    Context(std::vector<
+        std::unique_ptr<peer::Node>
+    > peers):
+        validatingPeers(std::move(peers))
+    {}
     //std::unique_ptr<TransactionCache> txCache;
     //std::unique_ptr<TransactionValidator> txValidator;
     
@@ -53,15 +63,19 @@ struct Context {
     std::map<std::string, std::unique_ptr<ConsensusEvent> > processedCache;    
 };
 
-std::unique_ptr<Context> context;
+std::unique_ptr<Context> context = nullptr;
 
 void initializeSumeragi(
     const std::string& myPublicKey,
-    std::vector<std::unique_ptr<peer::Node> > peers
-) {
-    logger::info( "sumeragi", "initialize.....");
-    context->validatingPeers = std::move(peers);
-    context->numValidatingPeers = peers.size();
+    std::vector<std::unique_ptr<peer::Node>> peers
+){
+    logger::info( "sumeragi", "initialize");
+
+    logger::info( "sumeragi", "inp");
+    context = std::make_unique<Context>(std::move(peers));
+    peers.clear();
+
+    context->numValidatingPeers = context->validatingPeers.size();
     context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO: make this configurable
     context->proxyTailNdx = context->maxFaulty*2 + 1;      
     context->panicCount = 0;
@@ -86,7 +100,8 @@ void processTransaction(
         if (
             context->processedCache.find(event->getHash()) !=
             context->processedCache.end()
-        ) { panic(event); } });
+        ) { panic(event); }
+    });
 
     context->processedCache[event->getHash()] = std::move(event);
 }
@@ -130,7 +145,7 @@ void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const actio
     std::thread([action, sleepMillisecs]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
         action();
-    }).detach();
+    }).join();
 }
 
 // WIP
@@ -156,9 +171,9 @@ void determineConsensusOrder(const std::unique_ptr<ConsensusEvent>& event/*, std
 }
 
 void loop() {
-    logger::info("sumeragi","start loop");
+    logger::info("sumeragi","start main loop");
     while (true) {  // TODO(M->M): replace with callback linking aeron
-        if (context->eventCache.empty()) { //TODO: mutex here?
+        if (!context->eventCache.empty()) { //TODO: mutex here?
             std::unique_ptr<ConsensusEvent> event = std::move(context->eventCache.front());
             if (!transaction_validator::isValid(*event->tx)) {
                 continue;
