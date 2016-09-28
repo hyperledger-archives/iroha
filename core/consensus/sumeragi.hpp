@@ -8,13 +8,21 @@
 
 #include "consensus_event.hpp"
 
+#include "../service/peer_service.hpp"
+
+
 namespace sumeragi {
-    void initializeSumeragi(int myNumber, int aNumberOfPeer, int leaderNumber, int batchSize = 1);
+    void initializeSumeragi(
+        const std::string& myPublicKey,
+        std::vector<std::unique_ptr<peer::Node> > peers
+    );
     void loop();
-    void processTransaction(const std::shared_ptr<ConsensusEvent::ConsensusEvent> event, const std::vector<Node> nodeOrder);
-    void panic(const std::shared_ptr<ConsensusEvent::ConsensusEvent> event);
+    void processTransaction(
+        std::unique_ptr<consensus_event::ConsensusEvent> const event
+    );
+    void panic(const std::unique_ptr<consensus_event::ConsensusEvent>& event);
     void setAwkTimer(const int sleepMillisecs, const std::function<void(void)> action);
-    std::vector<Node> determineConsensusOrder(const std::shared_ptr<ConsensusEvent::ConsensusEvent> event);
+    void determineConsensusOrder(const std::unique_ptr<consensus_event::ConsensusEvent>& event/*, std::vector<double> trustVector*/);
 };  // namespace sumeragi
 
 #endif  // CORE_CONSENSUS_SUMERAGI_HPP_

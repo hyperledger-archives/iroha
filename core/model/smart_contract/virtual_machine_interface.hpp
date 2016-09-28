@@ -14,7 +14,7 @@ namespace smart_contract {
     void invokeFunction(
         std::string functionName,
           std::unordered_map<std::string, std::string> params);
-    
+            
   };
 };
 

@@ -6,4 +6,10 @@ mediaDriver:
   name: mizuki
 
 peer:
+  publicKey: "AAA"
   leader: true
+  node:
+    - name:  Hanako
+      email: flower@mail.com
+    - b
+    - c

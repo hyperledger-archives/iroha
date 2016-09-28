@@ -1,11 +1,28 @@
 #include "sumeragi.hpp"
+#include <queue>
+#include <map>
+#include <tuple>
+#include <thread>
+#include <algorithm>
+#include <cmath>
 
 #include "../util/logger.hpp"
-#include "../repository/merkle_transaction_repository.hpp"
-#include "../domain/transactions/abstract_transaction.hpp"
-#include "../connection/connection.hpp"
+#include "../repository/consensus/merkle_transaction_repository.hpp"
+#include "../model/transactions/abstract_transaction.hpp"
 #include "../crypto/hash.hpp"
+#include "../crypto/signature.hpp"
+
 #include "../validation/transaction_validator.hpp"
+#include "../service/peer_service.hpp"
+#include "./connection/connection.hpp"
+
+
+#include "../service/peer_service.hpp"
+
+template<class T>
+std::unique_ptr<T> make_unique(){
+  return std::unique_ptr<T>(new T());
+}
 
 /**
 * |ーーー|　|ーーー|　|ーーー|　|ーーー|
@@ -20,38 +37,73 @@
 */
 namespace sumeragi {
 
+    using ConsensusEvent = consensus_event::ConsensusEvent;
+
 struct Context {
-    int maxFaulty;  // f
-    const unsigned char* myPublicKey;
+    unsigned int maxFaulty;  // f
+    int proxyTailNdx;
     int panicCount;
-    std::unique_ptr<TransactionRepository> repository;
-    std::unique_ptr<TransactionCache> txCache;
-    std::unique_ptr<TransactionValidator> txValidator;
-    std::queue<ConsensusEvent> eventCache;
-    peerService;
+    unsigned int numValidatingPeers;
+    std::vector<
+        std::unique_ptr<peer::Node>
+    > validatingPeers;
+
+    Context(std::vector<
+        std::unique_ptr<peer::Node>
+    > peers):
+        validatingPeers(std::move(peers))
+    {}
+    //std::unique_ptr<TransactionCache> txCache;
+    //std::unique_ptr<TransactionValidator> txValidator;
+    
+    std::queue<
+        std::unique_ptr<ConsensusEvent>
+    > eventCache;
+
+    std::map<std::string, std::unique_ptr<ConsensusEvent> > processedCache;    
 };
 
-std::unique_ptr<Context> context;
+std::unique_ptr<Context> context = nullptr;
 
-void initializeSumeragi(int const myNumber, int const numberOfPeers, int const leaderNumber, int const batchSize) {
-    logger("initialize_sumeragi, my number:"+std::to_string(myNumber)+" leader:"+std::to_string(myNumber == leaderNumber)+"");
-    context->maxFaulty = numberOfPeers/3;  // Default to approx. 1/3 of the network. TODO(M→M): make this configurable 
-    context->txRepository = std::make_unique<TransactionRepository>();
+void initializeSumeragi(
+    const std::string& myPublicKey,
+    std::vector<std::unique_ptr<peer::Node>> peers
+){
+    logger::info( "sumeragi", "initialize");
+
+    logger::info( "sumeragi", "inp");
+    context = std::make_unique<Context>(std::move(peers));
+    peers.clear();
+
+    context->numValidatingPeers = context->validatingPeers.size();
+    context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO: make this configurable
+    context->proxyTailNdx = context->maxFaulty*2 + 1;      
+    context->panicCount = 0;
+    logger::info( "sumeragi", "initialize.....  complate!");
 }
 
-void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<Node> const nodeOrder) {
-    if (!txValidator::isValid(event)) {
+void processTransaction(
+    std::unique_ptr<ConsensusEvent> event
+) {
+    if (!transaction_validator::isValid(*event->tx)) {
         return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
     }
 
-    event::addSignature(sign(hash)); //TODO
-    if (!context->isProxyTail) {}
-        peerConnection::broadcastToProxyTail(awk); //TODO
+    event->addSignature(signature::sign( event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
+    if (context->validatingPeers[context->proxyTailNdx]->getPublicKey() == peer::getMyPublicKey()) {
+        connection::send(context->validatingPeers[context->proxyTailNdx]->getIP(), event->getHash()); // Think In Process
     } else {
-        peerConnection::broadcastFinalizedAll(event); //TODO
+        connection::sendAll(event->getHash());// Think In Process
     }
 
-    setAwkTimer(5000, [&]{ if (unconfirmed(event)) {panic();} });
+    setAwkTimer(5000, [&](){ 
+        if (
+            context->processedCache.find(event->getHash()) !=
+            context->processedCache.end()
+        ) { panic(event); }
+    });
+
+    context->processedCache[event->getHash()] = std::move(event);
 }
 
 /**
@@ -72,62 +124,79 @@ void processTransaction(td::shared_ptr<ConsensusEvent> const event, std::vector<
 * | 0 |--| 1 |--| 4 |--| 5 |--| 2 |--| 3 |
 * |---|  |---|  |---|  |---|  |---|  |---|.
 */
-void panic(std::shared_ptr<ConsensusEvent> const event) {
-    context->panicCount++;
-    int broadcastStart = 2*context->maxFaulty + 1 + context->maxFaulty*context->panicCount;
-    int broadcastEnd = broadcastStart + context->maxFaulty;
+void panic(const std::unique_ptr<ConsensusEvent>& event) {
+    context->panicCount++; // TODO: reset this later
+    unsigned int broadcastStart = 2 * context->maxFaulty + 1 + context->maxFaulty*context->panicCount;
+    unsigned int broadcastEnd = broadcastStart + context->maxFaulty;
 
     // Do some bounds checking
-    if (broadcastStart > context->peerService::numValidatingPeers()-1) {
-        broadcastStart = context->peerService::numValidatingPeers()-1;
-    }
-    if (broadcastEnd > context->peerService::numValidatingPeers()-1) {
-        broadcastEnd = context->peerService::numValidatingPeers()-1;
+    if (broadcastStart > context->numValidatingPeers - 1) {
+        broadcastStart = context->numValidatingPeers - 1;
     }
 
-    peerConnection::broadcastToPeerRange(event, broadcastStart, broadcastEnd); //TODO
+    if (broadcastEnd > context->numValidatingPeers - 1) {
+        broadcastEnd = context->numValidatingPeers - 1;
+    }
+
+    connection::sendAll(event->getHash()); //TODO: change this to only broadcast to peer range between broadcastStart and broadcastEnd  
 }
 
 void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const action) {
-    std::thread([sleepMillisecs, tx]() {
+    std::thread([action, sleepMillisecs]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
         action();
-    }).detach();
+    }).join();
 }
 
-std::vector<Node> determineConsensusOrder(std::shared_ptr<ConsensusEvent> const event/*, std::vector<double> trustVector*/) {
-    unsigned char* const publicKey = event->publicKey;
-    std::vector<std::tuple> distances = std::make_shared();
+// WIP
+long long int getDistance(const std::string& publicKey, const std::string& txHash){
+    // I want (node->publicKey && 0xffffff) - (txHash && 0xffffff)
+    return 0;
+}
 
-    for (int ndx = 0; ndx < context->peerService::numValidatingPeers(); ++ndx) {
-        auto const node = context->peerService::nodes[ndx];
-        long long int distance = (node->publicKey && 0xffffff) - (publicKey && 0xffffff)/* + trustVector[ndx]*/;
-        
-        distances[ndx] = std::make_tuple(publicKey, distance);
-    }
-
-    std::vector<Node> const nodeOrder = std::sort(distances.begin(), distances.end(), COMPARATOR(l::get<1> < r::get<1>));
-    
-    return nodeOrder;
+void determineConsensusOrder(const std::unique_ptr<ConsensusEvent>& event/*, std::vector<double> trustVector*/) {
+    std::string txHash = event->getHash();
+    std::sort(context->validatingPeers.begin(), context->validatingPeers.end(), 
+        [txHash](const std::unique_ptr<peer::Node> &lhs,
+           const std::unique_ptr<peer::Node> &rhs) {
+            return getDistance(
+                lhs->getPublicKey(),
+                txHash
+            ) < getDistance(
+                lhs->getPublicKey(),
+                txHash
+            );
+        }
+    );
 }
 
 void loop() {
-    logger("start loop");
+    logger::info("sumeragi","start main loop");
     while (true) {  // TODO(M->M): replace with callback linking aeron
-        if (context->eventCache::hasConsensusEvent()) { //TODO: mutex here?
-            std::shared_ptr<ConsensusEvent> const event = context->eventCache::pop();
-            if (!context->consensusEventValidator.isValid(event)) {
+        if (!context->eventCache.empty()) { //TODO: mutex here?
+            std::unique_ptr<ConsensusEvent> event = std::move(context->eventCache.front());
+            if (!transaction_validator::isValid(*event->tx)) {
                 continue;
-            }
+            } 
             // Determine node order
-            std::vector<Node> const nodeOrder = determineConsensusOrder(event);
+            determineConsensusOrder(event);
 
             // Process transaction
-            processTransaction(event, nodeOrder);
+            processTransaction(std::move(event));
+        }
+            
+        for (auto&& kv : context->processedCache) {
+            auto event = std::move(kv.second);
 
-            if (awkCache->signatures::size() > context->maxFaulty*2 + 1) { // TODO check syntax
+            // Check if we have at least 2f+1 signatures
+            if (event->txSignatures.size() > context->maxFaulty*2 + 1) {
+                // Check Merkle roots to see if match for new state
+                //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
+                //TODO: try applying transaction locally and compute the merkle root
+                //TODO: see if the merkle root matches or not
+
                 // Commit locally
-                transactionRepository->commitTransaction(event); //TODO: add error handling in case not saved
+                merkle_transaction_repository::commit(event->getHash(), std::move(event)); //TODO: add error handling in case not saved
             }
         }
     }

@@ -21,4 +21,5 @@ namespace exception {
       std::invalid_argument("keyfile is invalid cause:"+ message)
     {}
   };  // namespace crypto
+
 };  // namespace exception
