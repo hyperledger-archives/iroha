@@ -1,12 +1,14 @@
-#include "ConsensusEvent.hpp"
+#include "consensus_event.hpp"
 
-#include "../domain/transactions/abstract_transaction.hpp"
+#include "../model/transactions/abstract_transaction.hpp"
 
-namespace ConsensusEvent {
-struct ConsensusEvent {
+namespace consensus_event {
 
-    void addSignature(std::string const signature):
-        txSignatures(signature)
-    {}
-};
-}  // namespace ConsensusEvent
+    void ConsensusEvent::addSignature(const std::string& signature){
+        txSignatures.push_back(signature);
+    }
+
+    std::string ConsensusEvent::getHash() const{
+        return tx->getHash();
+    }
+}  // namespace consensus_event

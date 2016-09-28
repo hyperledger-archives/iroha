@@ -38,3 +38,9 @@ TEST(Signature, keyPair){
     base64::encode(keyPair.publicKey))
   );
 }
+
+TEST(Signature, PrintkeyPair){
+  signature::KeyPair keyPair = signature::generateKeyPair();
+  std::cout << base64::encode(keyPair.publicKey) << std::endl;
+  std::cout << base64::encode(keyPair.privateKey) << std::endl;
+}

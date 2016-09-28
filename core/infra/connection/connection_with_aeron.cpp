@@ -1,4 +1,4 @@
-#include "../../connection/connection.hpp"
+#include "../../consensus/connection/connection.hpp"
 
 #include "../../util/logger.hpp"
 
@@ -24,7 +24,6 @@ using namespace aeron::util;
 using namespace aeron;
 
 namespace connection {
-
   std::atomic<bool> running (true);
 
   struct PeerContext {
@@ -46,7 +45,7 @@ namespace connection {
       > &config) {
 
     logger::info("connection", "URL:aeron:udp?endpoint="+config.at("address")+":"+config.at("port"));
-    try{
+    try {
       aeron::Context aeronContext;
       std::int64_t subscriptionId;
       std::int64_t publicationId;
@@ -114,19 +113,19 @@ namespace connection {
   }
 
   bool sendAll(std::string message) {
-    if(context->peerPublication != nullptr){
+    if (context->peerPublication != nullptr) {
       AERON_DECL_ALIGNED(std::uint8_t buffer[256], 16);
       AtomicBuffer srcBuffer(&buffer[0], 256);
-      do{
+      do {
         srcBuffer.putBytes(0, reinterpret_cast<const std::uint8_t *>(message.c_str()), message.size());
-      }while (context->peerPublication->offer(srcBuffer, 0, message.size()) < 0L);
+      } while (context->peerPublication->offer(srcBuffer, 0, message.size()) < 0L);
       return true;
     }
     return false;
   }
 
   bool send(std::string to,std::string message) {
-    if (context->peerPublication != nullptr){
+    if (context->peerPublication != nullptr) {
       AERON_DECL_ALIGNED(std::uint8_t buffer[256], 16);
       AtomicBuffer srcBuffer(&buffer[0], 256);
       do {

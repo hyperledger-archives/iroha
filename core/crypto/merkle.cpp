@@ -1,17 +1,16 @@
-#include "Merkle.hpp"
+#include "merkle.hpp"
 
 #include "hash.hpp"
-#include "../repository/merkle_repository.hpp"
+#include "../repository/consensus/merkle_transaction_repository.hpp"
 
 /**
 * Implementation of a binary Merkle tree （ハッシュ木）.
 */
 namespace merkle {
-    void addLeaf(MerkleRepository const merkleTree, std:string const leaf, std::vector<std::string> const rootSignatures) {
-        
-        std:::string const leafHash = Hash::sha3_256_hex(leaf);
-
-    }
+    
+    //void addLeaf(MerkleRepository const merkleTree, std:string const leaf, std::vector<std::string> const rootSignatures) {
+    //    std:::string const leafHash = Hash::sha3_256_hex(leaf);
+    //}
 
     // void recomputeAllFromRepository(TransactionRepository const txRepo) {
     //     std::vector<AbstractTransaction> currentLayer = make_unique(std::vector<AbstractTransaction>);

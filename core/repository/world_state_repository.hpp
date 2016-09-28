@@ -7,7 +7,8 @@
 
 namespace repository{
 
-  // I don't know model
+  // I don't know model.
+
   namespace world_state_repository {
 
       bool add(std::string key, std::string value);
