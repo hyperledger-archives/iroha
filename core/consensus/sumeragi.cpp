@@ -8,6 +8,7 @@
 
 #include "../util/logger.hpp"
 #include "../repository/consensus/merkle_transaction_repository.hpp"
+#include "../repository/consensus/event_repository.hpp"
 #include "../model/transactions/abstract_transaction.hpp"
 #include "../crypto/hash.hpp"
 #include "../crypto/signature.hpp"
@@ -173,8 +174,20 @@ void determineConsensusOrder(const std::unique_ptr<ConsensusEvent>& event/*, std
 void loop() {
     logger::info("sumeragi","start main loop");
     while (true) {  // TODO(M->M): replace with callback linking aeron
+
+        if(!repository::event::empty()){
+            std::vector<
+                std::unique_ptr<abstract_transaction::AbstractTransaction>
+            > txs = repository::event::findAll();
+            for(auto& tx : txs){
+                // How to convert AbstractTransaction to Consensus Event?
+                // context->eventCache.push( consensus_event );
+            }
+        }
+        
         if (!context->eventCache.empty()) { //TODO: mutex here?
             std::unique_ptr<ConsensusEvent> event = std::move(context->eventCache.front());
+            context->eventCache.pop();
             if (!transaction_validator::isValid(*event->tx)) {
                 continue;
             } 

@@ -7,16 +7,18 @@
 #include "../../model/transactions/abstract_transaction.hpp"
 
 namespace repository{
-namespace event_repository {
+namespace event {
 
 
   bool add(const std::string& hash, std::unique_ptr<abstract_transaction::AbstractTransaction> tx){
-    world_state_repository::add(
-        hash,
-        convert::to_string<
-            std::unique_ptr<abstract_transaction::AbstractTransaction>
-        >(std::move(tx))
-    );
+    if(tx->getType() == abstract_transaction::TransactionType::message){
+        world_state_repository::add(
+            hash,
+            convert::to_string<
+                std::unique_ptr<abstract_transaction::AbstractTransaction>
+            >(std::move(tx))
+        );
+    }
   }
 
   bool update(const std::string& hash, const abstract_transaction::AbstractTransaction& tx){

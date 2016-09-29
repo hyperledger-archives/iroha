@@ -2,11 +2,10 @@
 #define CORE_REPOSITORY_UNCONFIRMEDTRANSACTIONREPOSITORY_HPP_
 
 #include <string>
-#include <msgpack.hpp>
 #include "../../model/transactions/abstract_transaction.hpp"
 
 namespace repository{
-namespace unconfirmed_transaction_repository {
+namespace event {
   bool add(std::string hash, const abstract_transaction::AbstractTransaction& tx);
   bool update(std::string hash, const abstract_transaction::AbstractTransaction& tx);
   bool remove(std::string hash);
