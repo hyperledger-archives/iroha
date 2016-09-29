@@ -1,7 +1,5 @@
 #include "../../../repository/consensus/merkle_transaction_repository.hpp"
-
-#include <leveldb/db.h>
-#include <leveldb/write_batch.h>
+#include "../../../repository/world_state_repository.hpp"
 
 #include <string>
 #include <memory>
@@ -15,7 +13,6 @@ namespace merkle_transaction_repository {
 
 using abs_tx = abstract_transaction::AbstractTransaction;
 
-std::shared_ptr<leveldb::DB> db;
 // WIP
 //std::unique_ptr<merkle::MerkleRoot> merkle_root;
 
