@@ -2,7 +2,6 @@
 #include "event_repository.hpp"
 #include "../world_state_repository.hpp"
 #include <string>
-#include <msgpack.hpp>
 #include "../../util/convert_string.hpp"
 #include "../../model/transactions/abstract_transaction.hpp"
 

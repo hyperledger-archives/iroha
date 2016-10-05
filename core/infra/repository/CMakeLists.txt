@@ -1,6 +1,3 @@
-add_subdirectory(domain)
-add_subdirectory(consensus)
-
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 SET(MESSAGE_PACK_PATH ${PROJECT_SOURCE_DIR}/core/vendor/msgpack-c)

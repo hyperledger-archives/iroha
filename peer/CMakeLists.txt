@@ -17,7 +17,6 @@ include_directories(
   ${AERON_PATH}/aeron-client/src/main/cpp
   ${MESSAGE_PACK_PATH}/include
   ${ED25519_PATH}/src
-
 )
 
 link_directories(

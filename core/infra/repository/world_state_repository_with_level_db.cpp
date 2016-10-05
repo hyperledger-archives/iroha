@@ -26,6 +26,7 @@ namespace repository{
       void loadDb() {
           leveldb::DB* tmpDb;
           leveldb::Options options;
+          options.error_if_exists = false;        
           options.create_if_missing = true;
           loggerStatus(leveldb::DB::Open(options, "/tmp/irohaDB", &tmpDb)); //TODO: This path should be configurable
           db.reset(tmpDb);
