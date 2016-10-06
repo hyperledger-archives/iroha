@@ -1,4 +1,4 @@
-#Iroha v1.0#
+#Iroha v1.0 (draft)#
 
 The following is a specification for Iroha 1.0. Many parts are still in development and have not yet been implemented.
 
