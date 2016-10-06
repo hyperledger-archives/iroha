@@ -10,11 +10,22 @@ Iroha is a simple and modularized distributed ledger platform.
 
 ### 1.1. Relationship to Fabric and Sawtooth Lake
 
-It is our vision that in the future Hyperledger will consist less of disjointed projects and more of coherent libraries of components that can be selected and installed in order to run a Hyperledger network.
+It is our vision that in the future Hyperledger will consist less of disjointed projects and more of coherent libraries of components that can be selected and installed in order to run a Hyperledger network. Towards this end, it is the goal of Iroha to eventually provide the following encapsulated C++ components that other projects (particularly in Hyperledger) can use:
+
+* Sumeragi consensus library
+* Ed25519 digital signature library
+* SHA-3 hashing library
+* Iroha transaction serialization library
+* P2P broadcast library
+* API server library
+
+### 1.2. Mobile and web libraries
 
 ## 2. System architecture
 
 ### 2.1. P2P Network
+
+Generally, 3*f*+1 nodes are needed to tolerate *f* Byzantine nodes in the network (albeit some consensus algorithms have higher node requirements).
 
 The following node types are considered:
 
@@ -22,17 +33,17 @@ The following node types are considered:
 * Validating peers
 * Normal peer
 
-### 2.1. Cryptography
+### 2.2. Cryptography
 
 Iroha aims to provide modular cryptographic functionality. At the present state, the default cryptographic library provides Ed25519 digital signatures and verification, using SHA-3.
 
-### 2.2. Chaincode
+### 2.3. Chaincode
 
-### 2.3. Domains and assets
+### 2.4. Domains and assets
 
 
 
-### 2.4. Transactions
+### 2.5. Transactions
 
 Iroha supports the chaincode lifecycle transactions:
 
@@ -57,18 +68,24 @@ Additionally, the following two transaction types take as input (i.e., "wrap") o
 * Interledger (i.e., cross-chain)
 
 
-### 2.5. Consensus
+### 2.6. Consensus
 
 Iroha introduces a Byzantine Fault Tolerant consensus algorithm called Sumeragi. It is heavily inspired by the B-Chain algorithm:
 
 Duan, S., Meling, H., Peisert, S., & Zhang, H. (2014). Bchain: Byzantine replication with high throughput and embedded reconfiguration. In International Conference on Principles of Distributed Systems (pp. 91-106). Springer.
 
-Consensus in Sumeragi is performed on individual transactions and on the global state resulting from the application of the transaction. When a validating peer receives a transaction over the network, 
+Consensus in Sumeragi is performed on individual transactions and on the global state resulting from the application of the transaction. When a validating peer receives a transaction over the network, it performs the following steps in order:
+
+* validate the signature (or signatures, in the case of multisignature transactions) of the transaction
+* validate the contents of the transaction, where applicable (e.g., for transfer transactions, is the balance non-negative)
+* temporarily apply the transaction to the ledger; this involves updating the Merkle root of the global state
+* sign the updated Merkle root and the hash of the transaction contents
+* broadcast the tuple `(signed Merkle root, tx hash)`
 
 
-### 2.6. Data synchronization and retrieval
+### 2.7. Data synchronization and retrieval
 
-The state with the Merkle root that has 2f+1 signatures of validating servers is the most advanced state.
+The state with the Merkle root that has 2*f*+1 signatures of validating servers is the most advanced state.
 
 ## Appendix
 
