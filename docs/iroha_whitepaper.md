@@ -33,17 +33,23 @@ The following node types are considered:
 * Validating peers
 * Normal peer
 
-### 2.2. Cryptography
+### 2.2. Membership service
+
+Membership is provided in a decentralized way, on ledger. By default 2*f*+1 signatures are needed to confirm adding or removing nodes to the network.
+
+### 2.3. Cryptography
 
 Iroha aims to provide modular cryptographic functionality. At the present state, the default cryptographic library provides Ed25519 digital signatures and verification, using SHA-3.
 
-### 2.3. Chaincode
+### 2.4. Chaincode
 
-### 2.4. Domains and assets
+Iroha supports chaincode written as Java programs that are invoked via JNI. Deployed chaincode is run in a sandboxed Java virtual machine.
+
+### 2.5. Domains and assets
 
 
 
-### 2.5. Transactions
+### 2.6. Transactions
 
 Iroha supports the chaincode lifecycle transactions:
 
@@ -62,13 +68,18 @@ Arbitrary data can be stored using the following:
 
 * Message blob
 
+For the decentralized membership service, the following transaction types are applicable:
+
+* Add validating peer
+* Remove validating peer
+
 Additionally, the following two transaction types take as input (i.e., "wrap") one of the above transaction types:
 
 * Multisignature
 * Interledger (i.e., cross-chain)
 
 
-### 2.6. Consensus
+### 2.7. Consensus
 
 Iroha introduces a Byzantine Fault Tolerant consensus algorithm called Sumeragi. It is heavily inspired by the B-Chain algorithm:
 
@@ -83,7 +94,7 @@ Consensus in Sumeragi is performed on individual transactions and on the global 
 * broadcast the tuple `(signed Merkle root, tx hash)`
 
 
-### 2.7. Data synchronization and retrieval
+### 2.8. Data synchronization and retrieval
 
 The state with the Merkle root that has 2*f*+1 signatures of validating servers is the most advanced state.
 
