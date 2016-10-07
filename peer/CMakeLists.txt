@@ -20,9 +20,10 @@ include_directories(
 )
 
 link_directories(
+  ${PROJECT_BINARY_DIR}/lib
   ${ED25519_PATH}
   ${KECCAK_PATH}/bin/generic64
-  ${PROJECT_SOURCE_DIR}/core/infra/crypto
+  ${PROJECT_SOURCE_DIR}/core/infra/crypto 
   ${YAML_PATH}/build
   ${AERON_PATH}/cppbuild/Debug/lib
   ${MESSAGE_PACK_PATH}/
@@ -33,6 +34,10 @@ add_executable(iroha-main
   main.cpp
 )
 target_link_libraries(iroha-main
+  event_repository
+  merkle_transaction_repository
+  world_state_repo_with_level_db
+  unconfirmed_transaction_repository
   sumeragi
   snappy
   logger

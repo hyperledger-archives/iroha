@@ -7,12 +7,11 @@ include_directories(
 )
 link_directories(
   ${MESSAGE_PACK_PATH}
+  ${PROJECT_BINARY_DIR}/lib
 )
 
-ADD_LIBRARY(domain_repository STATIC account_repository.cpp)
-target_link_libraries(domain_repository
-  msgpackc
-  exception
-  # connect infra
+ADD_LIBRARY(event_repository STATIC event_repository.cpp)
+target_link_libraries(event_repository
+  convert_string_with_message_pack
   world_state_repo_with_level_db
 )  

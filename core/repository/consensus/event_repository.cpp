@@ -11,12 +11,14 @@ namespace event {
 
   bool add(const std::string& hash, std::unique_ptr<abstract_transaction::AbstractTransaction> tx){
     if(tx->getType() == abstract_transaction::TransactionType::message){
+       /*
         world_state_repository::add(
             hash,
             convert::to_string<
-                std::unique_ptr<abstract_transaction::AbstractTransaction>
+              abstract_transaction::AbstractTransaction
             >(std::move(tx))
         );
+        */
     }
   }
 

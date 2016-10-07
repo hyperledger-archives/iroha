@@ -7,7 +7,7 @@
 #include <functional>
 
 namespace connection {
-void initialize_peer(std::unordered_map<std::string, std::string> config);
+void initialize_peer(const std::unordered_map<std::string, std::string>& config);
 
 bool sendAll(std::string message);
 bool send(std::string to, std::string message);
