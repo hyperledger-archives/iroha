@@ -107,7 +107,7 @@ We adopt a **Domain-Driven Development structure** as much as possible.
 |   consensus  |--------+         +----------------+
 |              |
 |+------------+|
-|| messeging  ||
+|| messaging  ||
 |+------------+|
 +--------------+
 
@@ -115,7 +115,7 @@ We adopt a **Domain-Driven Development structure** as much as possible.
 |infrastructure                                                              |
 |                                                                            |
 |+------------++--------------++-------------++----------------++---------+  |
-|| messaging  || web resr api || repository  || smart contract || crypto  |  |
+|| messaging  || web rest api || repository  || smart contract || crypto  |  |
 ||(use aeron )||  (use crow)  ||(use leveldb)|| (use java vm)  || ed25519 |  |
 |+------------++--------------++-------------++----------------++---------+  |
 +----------------------------------------------------------------------------+
