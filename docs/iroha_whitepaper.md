@@ -6,7 +6,7 @@ The following is a specification for Iroha 1.0. Many parts are still in developm
 
 ## 1. Overview
 
-Iroha is a simple and modularized distributed ledger platform.
+Iroha aims to be a simple and modularized distributed ledger platform.
 
 ### 1.1. Relationship to Fabric and Sawtooth Lake
 
@@ -18,8 +18,13 @@ It is our vision that in the future Hyperledger will consist less of disjointed 
 * Iroha transaction serialization library
 * P2P broadcast library
 * API server library
+* iOS library
+* Android library
+* JavaScript library
 
 ### 1.2. Mobile and web libraries
+
+Having a solid distributed ledger system is not useful if there are no applications that can easily utilize it. To ease use, 
 
 ## 2. System architecture
 
@@ -81,15 +86,21 @@ Additionally, the following two transaction types take as input (i.e., "wrap") o
 
 ### 2.7. Consensus
 
+Byzantine fault tolerant systems are engineered to tolerate *f* numbers of Byzantine faulty nodes in a network.
+
 Iroha introduces a Byzantine Fault Tolerant consensus algorithm called Sumeragi. It is heavily inspired by the B-Chain algorithm:
 
 Duan, S., Meling, H., Peisert, S., & Zhang, H. (2014). Bchain: Byzantine replication with high throughput and embedded reconfiguration. In International Conference on Principles of Distributed Systems (pp. 91-106). Springer.
 
-The non-failure transaction flow is shown below:
+As in B-Chain, we consider the concept of a global order over validating peers and sets **A** and **B** of peers, where **A** consists of the first 2*f*+1 peers and **B** consists of the remainder. As 2*f*+1 signatures are needed to confirm a transaction, under the normal case only 2*f*+1 peers are involved in transaction validation; the remaining peers only join the validation when faults are exhibited inpeers in set **A**.
+
+For normal (non-failure) cases, the transaction flow is shown as follows:
 
 ![alt tag](sumeragi_tx_flow.png)
 
-The order of processing nodes is determined based on the server reputation system, *ヒジリ(hijiri)*. Hijiri calculates the reliability of servers based on: 1) uptime, and 2) number of successful transactions processed.
+The client (this will likely typically be be an API server interfacing with an end-user client) first submits a transaction to the lead validating peer. This leader then verifies the transaction, orders it into the queue, and signs the transaction. It then broadcasts this transaction to the remaining 2*f*+1 validating peers.
+
+The order of processing nodes is determined based on the server reputation system, *ヒジリ(hijiri)*. Hijiri calculates the reliability of servers based on: 1) time registered with membership service, and 2) number of successful transactions processed.
 
 Consensus in Sumeragi is performed on individual transactions and on the global state resulting from the application of the transaction. When a validating peer receives a transaction over the network, it performs the following steps in order:
 
