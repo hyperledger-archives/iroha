@@ -21,16 +21,17 @@ It is our vision that in the future Hyperledger will consist less of disjointed 
 * iOS library
 * Android library
 * JavaScript library
+* Blockchain explorer/data visualization suite
 
 ### 1.2. Mobile and web libraries
 
-Having a solid distributed ledger system is not useful if there are no applications that can easily utilize it. To ease use, 
+Having a solid distributed ledger system is not useful if there are no applications that can easily utilize it. To ease use, we created and opened sourced software libraries for iOS, Android, and JavaScript. Using these libraries, cryptographic public/private key pairs that are compatible with iroha can be created and common API functions can be conveniently called.
 
 ## 2. System architecture
 
 ### 2.1. P2P Network
 
-Generally, 3*f*+1 nodes are needed to tolerate *f* Byzantine nodes in the network (albeit some consensus algorithms have higher node requirements).
+Generally, 3*f*+1 nodes are needed to tolerate *f* Byzantine nodes in the network (albeit some consensus algorithms have higher node requirements). The number of *f* that a system should be made to tolerate should be determined by the system maintainer, based on the requirements for expected use cases.
 
 The following node types are considered:
 
@@ -41,6 +42,8 @@ The following node types are considered:
 ### 2.2. Membership service
 
 Membership is provided in a decentralized way, on ledger. By default 2*f*+1 signatures are needed to confirm adding or removing nodes to the network.
+
+In future work, it is planned to add finer granularity permissions, similar to unix style permissions an membership groups.
 
 ### 2.3. Cryptography
 
