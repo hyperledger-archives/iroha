@@ -122,7 +122,6 @@ We adopt a **Domain-Driven Development structure** as much as possible.
 
 ```
 
-
 #### core/connection (consensus layer)
 It contains the P2P messaging function interface.
 ```C
@@ -134,18 +133,18 @@ It contains the P2P messaging function interface.
 ```
 
 #### core/consensus (consensus layer)
-It contains consensus algorithm.
+It contains the consensus algorithm(s).
   
 #### core/crypto (service)
-It contains electronic signature, base64, hash function interface...
-  
+It contains digital signature algorithms, base64, hash function interfaces, etc.
+
 #### core/model (domain)
 It contains asset model, transaction logic. independent of infra knowledge.
 
 #### core/infra (infra layer)
 It contains some source depend on vendor (third party) libraries.
 If any source depends on vendor libraries, it should be in infra. 
-  
+
 ##### filename
 basically, filename is `"function"_with_"lib name".cpp`
 ```
