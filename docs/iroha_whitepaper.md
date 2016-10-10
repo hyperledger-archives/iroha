@@ -66,11 +66,13 @@ Iroha supports the chaincode lifecycle transactions:
 * Chaincode update
 * Chaincode deprecate
 
-Transaction types are as follows:
+In addition to chaincode transactions, iroha supports the following basic transaction types to support common asset management use cases:
 
 * Domain registration
-* Asset registration
+* Asset creation
 * Transfer
+
+It should be noted that transfer transactions support both transfer of assets and domains, and that when transfer domains, all the associated assets and chaincode are also transferred.
 
 Arbitrary data can be stored using the following:
 
