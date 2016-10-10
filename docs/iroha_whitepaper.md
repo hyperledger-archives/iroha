@@ -51,11 +51,11 @@ Iroha aims to provide modular cryptographic functionality. At the present state,
 
 ### 2.4. Chaincode
 
-Iroha supports chaincode written as Java programs that are invoked via JNI. Deployed chaincode is run in a sandboxed Java virtual machine.
+Iroha supports chaincode written as Java programs that are invoked via JNI. Deployed chaincode is run in a sandboxed Java virtual machine. The full chaincode lifecycle is supported.
 
 ### 2.5. Domains and assets
 
-
+Iroha employs the concept of domain names that are registered on the blockchain and are associated with a public key (i.e., an account). 
 
 ### 2.6. Transactions
 
