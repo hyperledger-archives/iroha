@@ -1,6 +1,6 @@
 #Iroha v1.0 (draft)#
 
-The following is a specification for Iroha 1.0. Many parts are still in development and have not yet been implemented.
+The following is a specification for Iroha 1.0. Many parts are still in development and have not yet been implemented, but for the sake of design, this document is generally written in the present tense. Future revisions will mark the development status of the various sections.
 
 ---
 
