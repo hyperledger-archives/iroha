@@ -7,7 +7,7 @@
 #include <thread>
 #include <cstdint>
 #include <cstdio>
-
+#include <memory>
 
 #include <util/CommandOptionParser.h>
 #include <Aeron.h>
@@ -23,131 +23,136 @@ using namespace std::chrono;
 using namespace aeron::util;
 using namespace aeron;
 
+std::atomic<int> counter (0);
+
+static const std::chrono::duration<long, std::milli> IDLE_SLEEP_MS(1);
+static const int FRAGMENTS_LIMIT = 10;
+
 namespace connection {
-  std::atomic<bool> running (true);
 
-  struct PeerContext {
-    bool isAvaiableSubscription;
-    bool isAvaiablePublicarion;
+struct Settings{
+    std::string dirPrefix = "";
+    std::string channel = "aeron:udp?endpoint=45.32.158.71:40123";
+    std::int32_t streamId = 10;
+    int numberOfMessages = 5000;
+    int lingerTimeoutMs = 10;
+} settings;
 
-    std::unordered_map<std::string,std::string> peers;
-
-    std::shared_ptr<Subscription> peerSubscription;
-    std::shared_ptr<Publication>  peerPublication;
-  };
-
-  std::unique_ptr<PeerContext> context;
-  aeron::Context aeronContext;
-
-  void initialize_peer(const
-      std::unordered_map<
-        std::string, std::string
-      > &config) {
-
-    logger::info("connection", "URL:aeron:udp?endpoint="+config.at("address")+":"+config.at("port"));
-    try {
-      aeron::Context aeronContext;
-      std::int64_t subscriptionId;
-      std::int64_t publicationId;
-
-      logger::info("connection", "Subscribing at "+
-        config.at("subscribeChannel") +" on Stream ID "+ config.at("subscribeStreamId"));
-      aeronContext.newSubscriptionHandler(
-        [](const std::string& channel, std::int32_t streamId, std::int64_t correlationId)
-        {
-            logger::info(
-              "connection",
-              "Subscription: "+ channel +" "+ std::to_string(correlationId)+
-                ":"+ std::to_string(streamId)
-            );
-        });
-
-      logger::info("connection", "Publishing at "+config.at("publishChannel")+" on Stream ID "+config.at("publishStreamId"));
-      aeronContext.newPublicationHandler(
-        [](const std::string& channel, std::int32_t streamId, std::int32_t sessionId, std::int64_t correlationId)
-        {
-            logger::info(
-              "connection",
-              "Publication: "+ channel +" "+ std::to_string(correlationId)+
-                ":"+ std::to_string(streamId) +":"+ std::to_string(sessionId)
-            );
-        });
-
-      Aeron aeron(aeronContext);
-      logger::info("connection", "Initialized aeron");
-      std::shared_ptr<Subscription> pongSubscription;
-      std::shared_ptr<Publication>  pingPublication;
-
-      subscriptionId = aeron.addSubscription(
-        "aeron:udp?endpoint="+config.at("address")+":"+config.at("port"),
-        std::atoi(config.at("subscribeStreamId").c_str())
-      );
-      pongSubscription = aeron.findSubscription(subscriptionId);
-
-      while (!pongSubscription) {
-          std::this_thread::yield();
-          pongSubscription = aeron.findSubscription(subscriptionId);
-      }
-
-      publicationId = aeron.addPublication(
-        "aeron:udp?endpoint="+config.at("address")+":"+config.at("port"),
-        std::atoi(config.at("publishStreamId").c_str())
-      );
-
-      pingPublication = aeron.findPublication(publicationId);
-      while (!pingPublication) {
-          std::this_thread::yield();
-          pingPublication = aeron.findPublication(publicationId);
-      }
-
-    } catch (CommandOptionException& e) {
-      logger::error("connection","ERROR: "+std::string(e.what()));
-      return;
-    } catch (SourcedException& e) {
-      logger::error("connection","FAILED: "+std::string(e.what()));
-      return;
-    } catch (std::exception& e) {
-      logger::error("connection","FAILED: "+std::string(e.what()));
-      return;
-    }
-  }
-
-  bool sendAll(std::string message) {
-    if (context->peerPublication != nullptr) {
-      AERON_DECL_ALIGNED(std::uint8_t buffer[256], 16);
-      AtomicBuffer srcBuffer(&buffer[0], 256);
-      do {
-        srcBuffer.putBytes(0, reinterpret_cast<const std::uint8_t *>(message.c_str()), message.size());
-      } while (context->peerPublication->offer(srcBuffer, 0, message.size()) < 0L);
-      return true;
-    }
-    return false;
-  }
-
-  bool send(std::string to,std::string message) {
-    if (context->peerPublication != nullptr) {
-      AERON_DECL_ALIGNED(std::uint8_t buffer[256], 16);
-      AtomicBuffer srcBuffer(&buffer[0], 256);
-      do {
-        srcBuffer.putBytes(0, reinterpret_cast<const std::uint8_t *>(message.c_str()), message.size());
-      } while (context->peerPublication->offer(srcBuffer, 0, message.size()) < 0L);
-      return true;
-    }
-    return false;
-  }
-
-  bool receive(std::function<void(std::string from,std::string message)> callback) {
-    fragment_handler_t handler = [&](AtomicBuffer& buffer, util::index_t offset, util::index_t length, Header& header){
-      // ToDo validate string from, message
-        callback(std::string((char *)buffer.buffer() + offset, (unsigned long)length),std::string((char *)buffer.buffer() + offset, (unsigned long)length));
+fragment_handler_t receiveMessage()
+{
+    return [&](AtomicBuffer& buffer, util::index_t offset, util::index_t length, Header& header)
+    {
+        std::string raw_data = std::string((char *)buffer.buffer() + offset, (unsigned long)length);
+        counter  = std::atoi(raw_data.c_str()) + 1;
     };
-    if (context->peerSubscription) {
-      SleepingIdleStrategy idleStrategy(IDLE_SLEEP_MS);
-      while (context->peerSubscription->poll(handler, 10) <= 0) {
-        idleStrategy.idle(0);
-      }
-      return true;
+}
+
+
+std::map<std::string, std::shared_ptr<Publication>> publications;
+std::shared_ptr<Aeron> aeron;
+typedef std::array<std::uint8_t, 1024> buffer_t;
+
+
+
+int exe(int argc, char** argv){
+
+    std::string ip   = "127.0.0.1"; 
+    char res_opt;
+    while((res_opt = getopt(argc,argv,"i:")) != -1){
+        switch(res_opt){
+        case 'i':
+            ip = std::string(optarg);
+            break;
+        }
     }
-    return false;
-  }
-};  // namespace connection
+
+    try{
+        std::cout << "Channel aeron:udp?endpoint="+ip+":40123  on Stream ID " << settings.streamId << std::endl;
+        aeron::Context context;
+
+        context.newPublicationHandler(
+            [](const std::string& channel, std::int32_t streamId, std::int32_t sessionId, std::int64_t correlationId){
+            std::cout << "Publication: " << channel << " " << correlationId << ":" << streamId << ":" << sessionId << std::endl;
+        });
+        context.newSubscriptionHandler(
+            [](const std::string& channel, std::int32_t streamId, std::int64_t correlationId){
+                std::cout << "Subscription: " << channel << " " << correlationId << ":" << streamId << std::endl;
+        });
+
+        aeron = Aeron::connect(context);
+
+        std::int64_t sid = aeron->addSubscription("aeron:udp?endpoint="+ip+":40123", settings.streamId);
+        std::shared_ptr<Subscription> subscription = aeron->findSubscription(sid);
+        while (!subscription) {
+            std::this_thread::yield();
+            subscription = aeron->findSubscription(sid);
+        }
+
+        fragment_handler_t handler = receiveMessage();
+        SleepingIdleStrategy idleStrategy(IDLE_SLEEP_MS);
+        while (1){
+            const int fragmentsRead = subscription->poll(handler, FRAGMENTS_LIMIT);
+            idleStrategy.idle(fragmentsRead);
+        }
+
+    }catch (SourcedException& e) {
+        std::cerr << "FAILED: " << e.what() << " : " << e.where() << std::endl;
+        return -1;
+    }catch (std::exception& e) {
+        std::cerr << "FAILED: " << e.what() << " : " << std::endl;
+        return -1;
+    }
+}
+
+void addPublication(std::string ipaddr){
+    std::int64_t pid = aeron->addPublication( "aeron:udp?endpoint="+ipaddr+":40123", settings.streamId);
+    auto publication =  aeron->findPublication(pid);
+    while (!publication) {
+        std::this_thread::yield();
+        publication = aeron->findPublication(pid);
+    }
+    publications.insert(std::pair<std::string, std::shared_ptr<Publication>>{ ipaddr, publication});
+}
+
+bool send(std::string to,std::string message) {
+    if(publications.find(to) == message.end()){
+        std::cout <<"Plz ip address\n";
+        return false;
+    }
+    try{
+        char* message = const_cast<char*>(message.c_str());
+        AERON_DECL_ALIGNED(std::uint8_t buffer[512], 16);
+        AtomicBuffer srcBuffer(&buffer[0], 512);
+        srcBuffer.putBytes(0, reinterpret_cast<std::uint8_t *>(message), strlen(message));
+        const std::int64_t result = publications[to]->offer(srcBuffer, 0, strlen(message));
+        if (result < 0){
+            if (NOT_CONNECTED == result){
+                std::cout << " not connected yet." << std::endl;
+            }else if (BACK_PRESSURED == result){
+                std::cout << " back pressured." << std::endl;
+            }else{
+                std::cout << " ah?! unknown " << result << std::endl;
+            }
+        }else{
+            std::cout <<"OK"<<std::endl;
+        }
+        if (!publication->isConnected()){
+            std::cout << "No active subscribers detected" << std::endl;
+        }
+        return true;
+    }catch (CommandOptionException& e) {
+        std::cerr << "ERROR: " << e.what() << std::endl;
+        return false;
+    }catch (SourcedException& e) {
+        std::cerr << "FAILED: " << e.what() << " : " << e.where() << std::endl;
+        return false;
+    }catch (std::exception& e) {
+        std::cerr << "FAILED: " << e.what() << " : " << std::endl;
+        return false;
+    }
+}
+
+bool receive(std::function<void(std::string from,std::string message)> callback) {
+    return true;
+}
+};
