@@ -23,7 +23,7 @@ target_link_libraries(merkle_transaction_repository
   world_state_repo_with_level_db
 )  
 
-ADD_LIBRARY(unconfirmed_transaction_repository STATIC unconfirmed_transaction_repositoryy.cpp)
+ADD_LIBRARY(unconfirmed_transaction_repository STATIC unconfirmed_transaction_repository.cpp)
 target_link_libraries(unconfirmed_transaction_repository
   convert_string_with_message_pack
   world_state_repo_with_level_db
