@@ -97,7 +97,7 @@ Iroha introduces a Byzantine Fault Tolerant consensus algorithm called Sumeragi.
 
 Duan, S., Meling, H., Peisert, S., & Zhang, H. (2014). Bchain: Byzantine replication with high throughput and embedded reconfiguration. In International Conference on Principles of Distributed Systems (pp. 91-106). Springer.
 
-As in B-Chain, we consider the concept of a global order over validating peers and sets **A** and **B** of peers, where **A** consists of the first 2*f*+1 peers and **B** consists of the remainder. As 2*f*+1 signatures are needed to confirm a transaction, under the normal case only 2*f*+1 peers are involved in transaction validation; the remaining peers only join the validation when faults are exhibited inpeers in set **A**.
+As in B-Chain, we consider the concept of a global order over validating peers and sets **A** and **B** of peers, where **A** consists of the first 2*f*+1 peers and **B** consists of the remainder. As 2*f*+1 signatures are needed to confirm a transaction, under the normal case only 2*f*+1 peers are involved in transaction validation; the remaining peers only join the validation when faults are exhibited in peers in set **A**. The 2*f*+1th peer is called the *proxy tail*.
 
 For normal (non-failure) cases, the transaction flow is shown as follows:
 
@@ -105,7 +105,15 @@ For normal (non-failure) cases, the transaction flow is shown as follows:
 
 The client (this will likely typically be be an API server interfacing with an end-user client) first submits a transaction to the lead validating peer. This leader then verifies the transaction, orders it into the queue, and signs the transaction. It then broadcasts this transaction to the remaining 2*f*+1 validating peers.
 
-The order of processing nodes is determined based on the server reputation system, *ヒジリ(hijiri)*. Hijiri calculates the reliability of servers based on: 1) time registered with membership service, and 2) number of successful transactions processed.
+The order of processing nodes is determined based on the server reputation system, *ヒジリ(hijiri)*. Hijiri calculates the reliability of servers based on: 1) time registered with membership service, and 2) number of successful transactions processed. If failures are detected in servers, that information is also used as part of the server reputation system.
+
+To detect failures, each server sets a timer when it signs and broadcasts a transaction to the proxy tail. If there is a failure in an intermediate server and a reply is not received before the timer goes off, the server then rebroadcasts the transaction and their signature to the next server in the chain after the proxy tail (or the previously sent server, in the case of multiple failures).
+
+![alt tag](sumeragi_tx_flow_mid_failure.png)
+
+The case of a failure in the proxy tail is shown the following figure:
+
+![alt tag](sumeragi_tx_flow_tail_failure.png)
 
 Consensus in Sumeragi is performed on individual transactions and on the global state resulting from the application of the transaction. When a validating peer receives a transaction over the network, it performs the following steps in order:
 
