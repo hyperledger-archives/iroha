@@ -109,6 +109,8 @@ The order of processing nodes is determined based on the server reputation syste
 
 ![alt tag](sumeragi_tx_flow_mid_failure.png)
 
+![alt tag](sumeragi_tx_flow_tail_failure.png)
+
 Consensus in Sumeragi is performed on individual transactions and on the global state resulting from the application of the transaction. When a validating peer receives a transaction over the network, it performs the following steps in order:
 
 * validate the signature (or signatures, in the case of multisignature transactions) of the transaction
