@@ -2,7 +2,7 @@
 ![build status](https://circleci.com/gh/soramitsu/iroha.svg?style=shield&circle-token=80f2601e3bfb42d001e87728326659a0c96e0398)
 
 いろは(iroha) is ...  
-![alt tag](https://github.com/soramitsu/iroha/raw/feature/sumeragi/LGTM.gif)
+![alt tag](https://raw.githubusercontent.com/soramitsu/iroha/master/LGTM.gif)
   
 # Pull Requests
 Please include a developer certificate with pull requests: http://developercertificate.org/
