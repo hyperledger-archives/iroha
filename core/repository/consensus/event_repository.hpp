@@ -5,7 +5,7 @@
 #include <memory>
 #include "../../model/transactions/abstract_transaction.hpp"
 
-namespace repository{
+namespace repository {
 namespace event {
   bool add(const std::string& hash, std::unique_ptr<abstract_transaction::AbstractTransaction> tx);
   bool update(std::string hash, const abstract_transaction::AbstractTransaction& tx);

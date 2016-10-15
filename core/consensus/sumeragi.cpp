@@ -94,7 +94,7 @@ void processTransaction(
     if (context->validatingPeers[context->proxyTailNdx]->getPublicKey() == peer::getMyPublicKey()) {
         connection::send(context->validatingPeers[context->proxyTailNdx]->getIP(), event->getHash()); // Think In Process
     } else {
-        connection::sendAll(event->getHash());// Think In Process
+        connection::sendAll(event->getHash()); // Think In Process
     }
 
     setAwkTimer(5000, [&](){ 
@@ -149,30 +149,19 @@ void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const actio
     }).join();
 }
 
-// WIP
-long long int getDistance(const std::string& publicKey, const std::string& txHash){
-    // I want (node->publicKey && 0xffffff) - (txHash && 0xffffff)
-    return 0;
-}
-
-void determineConsensusOrder(const std::unique_ptr<ConsensusEvent>& event/*, std::vector<double> trustVector*/) {
-    std::string txHash = event->getHash();
+void determineConsensusOrder() {
     std::sort(context->validatingPeers.begin(), context->validatingPeers.end(), 
-        [txHash](const std::unique_ptr<peer::Node> &lhs,
-           const std::unique_ptr<peer::Node> &rhs) {
-            return getDistance(
-                lhs->getPublicKey(),
-                txHash
-            ) < getDistance(
-                lhs->getPublicKey(),
-                txHash
-            );
+        [](const std::unique_ptr<peer::Node> &lhs,
+        const std::unique_ptr<peer::Node> &rhs) {
+            return lhs->getTrustScore() < rhs->getTrustScore() 
+                || (lhs->getTrustScore() == rhs->getTrustScore() 
+                    && lhs->getPublicKey() < rhs->getPublicKey());
         }
     );
 }
 
 void loop() {
-    logger::info("sumeragi","start main loop");
+    logger::info("sumeragi", "start main loop");
     while (true) {  // TODO(M->M): replace with callback linking aeron
 
         if(!repository::event::empty()){
