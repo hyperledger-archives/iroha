@@ -40,15 +40,20 @@ def initalize_server():
   print(cyan("#  Java"))
   sudo("apt -y install default-jdk")
   sudo("apt -y install default-jre")
-  print(cyan("# other libs"))
+  print(syan("# snappy"))
+  sudo("apt -y install snappy")
+  sudo("apt -y install libhdf5-serial-dev libleveldb-dev libsnappy-dev liblmdb-dev")
+  print(cyan("# other libs"))  
+  sudo("apt -y install xsltproc")
   sudo("apt -y install libssl-dev")
-  sudo("apt -y install unzip")
+  sudo("apt -y install unzip")  
   run("curl -s https://get.sdkman.io | bash")
   run('source "/home/'+env.user+'/.sdkman/bin/sdkman-init.sh" && sdk install gradle 3.0')
   status()
   run('git config --global user.email ' + github.email)
   run('git config --global user.name  ' + github.name)
   sudo("mkdir -p /var/www")
+  sudo("chown -R {}:{} /var/www".format(env.user,env.user))
 
 
 def git_current_branch():
@@ -63,6 +68,7 @@ def check_key_github():
       print(red("Githubにサーバーの公開鍵が登録されていないよ!!"))
       print(red("gitHubでssh接続する手順~公開鍵・秘密鍵の生成から~"))
       print("Ref:http://qiita.com/shizuma/items/2b2f873a0034839e47ce")
+      run("ssh-keygen -f ${file_name} -t rsa -N \"\"")
       quit()
 
 @task
@@ -70,40 +76,42 @@ def initialize_repository():
   check_key_github()
   with cd("/var/www"):
     sudo("rm -rf *")
-    sudo("git clone --recursive "+repo_name)
+    run("git clone --recursive "+repo_name)
   with cd("/var/www/iroha"):
     with shell_env(JAVA_HOME='/usr/lib/jvm/java-8-openjdk-amd64'):
       with cd("core/vendor/Aeron"):
-        sudo("./gradlew")
-        sudo("mkdir -p cppbuild/Debug")
+        run("./gradlew")
+        run("mkdir -p cppbuild/Debug")
         with cd("cppbuild/Debug"):
-          sudo("cmake ../..")
-          sudo("cmake --build . --clean-first")
-          sudo("ctest")
+          run("cmake ../..")
+          run("cmake --build . --clean-first")
+          run("ctest")
 
       with cd("core/vendor/leveldb"):
-        sudo("make")
+        run("make")
 
       with cd("core/vendor/ed25519"):
-        sudo("make")
+        run("make")
 
       with cd("core/vendor/msgpack-c"):
-        sudo("cmake -DMSGPACK_CXX11=ON .")
-        sudo("cmake -DMSGPACK_CXX11=ON .")
+        run("cmake -DMSGPACK_CXX11=ON .")
+        run("cmake -DMSGPACK_CXX11=ON .")
         sudo("make install")
 
       with cd("core/vendor/yaml-cpp"):
-        sudo("mkdir -p build")
+        run("mkdir -p build")
         with cd("build"):
-          sudo("cmake ..")
-          sudo("make")
+          run("cmake ..")
+          run("make")
 
       with cd("core/vendor/crow"):
-        sudo("mkdir -p build")
+        run("mkdir -p build")
         with cd("build"):
-          sudo("cmake ..")
-          sudo("make")
+          run("cmake ..")
+          run("make")
 
+      with cd("core/vendor/KeccakCodePackage"):
+        run(" make generic64/libkeccak.a")
 
 @task
 def connection_test_dev():
@@ -125,19 +133,19 @@ def git_push(branch = None):
 
 def remake():
   with cd("/var/www/iroha"):
-    sudo("mkdir -p build")
+    run("mkdir -p build")
     with cd("build"):
-      sudo("cmake ..")
-      sudo("make")
+      run("cmake ..")
+      run("make")
 
 def restart():
   # Why not work?
   #sudo('pkill -f "iroha-main"')
   pid = sudo("pgrep -f 'iroha-main'", warn_only=True)
   print(cyan(pid),"!!")
-  sudo('kill -9 '+str(pid), warn_only=True)
-  sudo('/var/www/iroha/build/bin/iroha-main &', pty=False)
-  sudo('ps aux | grep iroha-main')
+  run('kill -9 '+str(pid), warn_only=True)
+  run('/var/www/iroha/build/bin/iroha-main &', pty=False)
+  run('ps aux | grep iroha-main')
 
 def curl_test():
   for host in myhosts:
@@ -154,22 +162,22 @@ def test(branch = None):
 
     branch = branch.strip()
     with cd("/var/www/iroha"):
-      res = sudo("git reset --hard")
-      res = sudo("git checkout -b "+branch+" origin/"+branch, warn_only=True)
+      res = run("git reset --hard")
+      res = run("git checkout -b "+branch+" origin/"+branch, warn_only=True)
       if res.failed:
-        sudo("git checkout "+branch)
-      sudo("git pull origin "+branch+" --no-ff")
+        run("git checkout "+branch)
+      run("git pull origin "+branch+" --no-ff")
 
       remake()
 
   git_push(branch)
 
   with cd("/var/www/iroha"):
-    res = sudo("git reset --hard")
-    res = sudo("git checkout -b "+branch+" origin/"+branch, warn_only=True)
+    res = run("git reset --hard")
+    res = run("git checkout -b "+branch+" origin/"+branch, warn_only=True)
     if res.failed:
-      sudo("git checkout "+branch)
-    sudo("git pull origin "+branch+" --no-ff")
+      run("git checkout "+branch)
+    run("git pull origin "+branch+" --no-ff")
 
     remake()
     restart()

@@ -15,6 +15,10 @@ struct ConsensusEvent {
     std::string merkleRoot;
     std::vector<std::string> merkleRootSignatures;
 
+    ConsensusEvent(std::unique_ptr<abstract_transaction::AbstractTransaction> tx){
+        
+    }
+
     void addSignature(const std::string& signature);
     std::string getHash() const;
 };
