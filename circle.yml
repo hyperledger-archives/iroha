@@ -2,7 +2,7 @@ machine:
   environment:
     IROHA_HOME: $(pwd)/iroha
     PATH: $PATH:/opt/cmake-3.5.2-Linux-x86_64/bin
-    JAVA_HOME: /usr/lib/jvm/java-8-oracle
+    JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-amd64/
   java:
       version: 'oraclejdk8'
   pre:
@@ -31,7 +31,7 @@ checkout:
     - git submodule init 
     - git submodule update
     - cd $IROHA_HOME/core/vendor/Agrona; ./gradlew
-    - cd $IROHA_HOME/core/vendor/Aeron; ./gradlew; ./cppbuild/cppbuild
+    - cd $IROHA_HOME/core/vendor/Aeron;  ./gradlew; mkdir -p cppbuild/Debug; cd cppbuild/Debug; cmake ../..; cmake --build . --clean-first
     - cd $IROHA_HOME/core/vendor/leveldb; make
     - cd $IROHA_HOME/core/vendor/ed25519; make
     - cd $IROHA_HOME/core/vendor/KeccakCodePackage; make; make generic64/libkeccak.a
