@@ -19,7 +19,7 @@ Please include a developer certificate with pull requests: http://developercerti
 │   ├── connection
 │   ├── consensus
 │   ├── crypto
-│   ├── domain
+│   ├── model
 │   │   └── transactions
 │   ├── infra
 │   │   ├── connection

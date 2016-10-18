@@ -5,6 +5,7 @@ ADD_LIBRARY(sumeragi STATIC
   consensus_event.cpp
 )
 target_link_libraries(sumeragi
+  event_repository
   crypto
   yaml_loader
   validator
