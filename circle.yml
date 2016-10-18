@@ -2,7 +2,9 @@ machine:
   environment:
     IROHA_HOME: $(pwd)/iroha
     PATH: $PATH:/opt/cmake-3.5.2-Linux-x86_64/bin
-    JAVA_HOME: /usr/lib/jvm/java-7-openjdk-amd64
+    JAVA_HOME: /usr/lib/jvm/java-8-oracle
+  java:
+      version: 'oraclejdk8'
   pre:
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo apt-get update
