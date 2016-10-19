@@ -173,7 +173,7 @@ void loop() {
                 // context->eventCache.push( consensus_event );
             }
         }
-        
+
         if (!context->eventCache.empty()) { //TODO: mutex here?
             std::unique_ptr<ConsensusEvent> event = std::move(context->eventCache.front());
             context->eventCache.pop();
@@ -181,7 +181,7 @@ void loop() {
                 continue;
             } 
             // Determine node order
-            determineConsensusOrder(event);
+            determineConsensusOrder();
 
             // Process transaction
             processTransaction(std::move(event));
