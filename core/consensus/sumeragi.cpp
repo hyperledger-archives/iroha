@@ -167,9 +167,9 @@ void loop() {
         if(!repository::event::empty()){
             std::vector<
                 std::unique_ptr<ConsensusEvent>
-            > txs = repository::event::findAll();
-            for(auto& tx : txs){
-                // How to convert AbstractTransaction to Consensus Event?
+            > consensusEvents = repository::event::findAll();
+            for(auto& consensusEvent : consensusEvents) {
+                //TODO: 
                 // context->eventCache.push( consensus_event );
             }
         }
@@ -187,11 +187,11 @@ void loop() {
             processTransaction(std::move(event));
         }
             
-        for (auto&& kv : context->processedCache) {
-            auto event = std::move(kv.second);
+        for (auto&& tuple : context->processedCache) {
+            auto event = std::move(tuple.second);
 
             // Check if we have at least 2f+1 signatures
-            if (event->txSignatures.size() > context->maxFaulty*2 + 1) {
+            if (event->txSignatures.size() >= context->maxFaulty*2 + 1) {
                 // Check Merkle roots to see if match for new state
                 //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
                 //TODO: try applying transaction locally and compute the merkle root
