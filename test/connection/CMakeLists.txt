@@ -14,7 +14,7 @@ link_directories(
 add_executable(connection_test
   connection_with_aeron_test.cpp
 )
-target_link_libraries(connection_test
+target_link_libraries(connecti on_test
   connection_with_aeron
   aeron_client
   pthread

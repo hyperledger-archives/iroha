@@ -123,7 +123,6 @@ Consensus in Sumeragi is performed on individual transactions and on the global 
 
 When syncing nodes with each other, valid parts of the Merkel tree are shared until the roots match.
 
-
 ### 2.8. Data synchronization and retrieval
 
 The state with the Merkle root that has the most transactions in the Merkle tree and has 2*f*+1 signatures of validating servers is the most advanced state. 
