@@ -166,7 +166,7 @@ void loop() {
 
         if(!repository::event::empty()){
             std::vector<
-                std::unique_ptr<abstract_transaction::AbstractTransaction>
+                std::unique_ptr<ConsensusEvent>
             > txs = repository::event::findAll();
             for(auto& tx : txs){
                 // How to convert AbstractTransaction to Consensus Event?
