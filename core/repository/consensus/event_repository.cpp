@@ -40,6 +40,12 @@ namespace event {
 
   }
 
+    std::vector<
+    std::unique_ptr<consensus_event::ConsensusEvent>
+  > findNext(){
+
+  }
+
   std::unique_ptr<consensus_event::ConsensusEvent>& find(std::string hash){
 
   }

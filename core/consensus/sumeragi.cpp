@@ -56,10 +56,6 @@ struct Context {
     {}
     //std::unique_ptr<TransactionCache> txCache;
     //std::unique_ptr<TransactionValidator> txValidator;
-    
-    std::queue<
-        std::unique_ptr<ConsensusEvent>
-    > eventCache;
 
     std::map<std::string, std::unique_ptr<ConsensusEvent> > processedCache;    
 };
@@ -122,7 +118,7 @@ void processTransaction(
 *  ________________________    __________
 * /           A            \  /    B     \ 
 * |---|  |---|  |---|  |---|  |---|  |---|
-* | 0 |--| 1 |--| 4 |--| 5 |--| 2 |--| 3 |
+* | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
 * |---|  |---|  |---|  |---|  |---|  |---|.
 */
 void panic(const std::unique_ptr<ConsensusEvent>& event) {
@@ -162,33 +158,25 @@ void determineConsensusOrder() {
 
 void loop() {
     logger::info("sumeragi", "start main loop");
-    while (true) {  // TODO(M->M): replace with callback linking aeron
+    while (true) {  // TODO(M->M): replace with callback linking the event repository
 
         if(!repository::event::empty()){
-            std::vector<
-                std::unique_ptr<ConsensusEvent>
-            > consensusEvents = repository::event::findAll();
-            for(auto& consensusEvent : consensusEvents) {
-                //TODO: 
-                // context->eventCache.push( consensus_event );
+            std::vector<std::unique_ptr<ConsensusEvent>> events = repository::event::findAll();
+
+            for (auto&& event : events) {
+                if (!transaction_validator::isValid(*event->tx)) {
+                continue;
+                }
+                // Determine node order
+                determineConsensusOrder();
+
+                // Process transaction
+                processTransaction(std::move(event));
             }
         }
 
-        if (!context->eventCache.empty()) { //TODO: mutex here?
-            std::unique_ptr<ConsensusEvent> event = std::move(context->eventCache.front());
-            context->eventCache.pop();
-            if (!transaction_validator::isValid(*event->tx)) {
-                continue;
-            } 
-            // Determine node order
-            determineConsensusOrder();
-
-            // Process transaction
-            processTransaction(std::move(event));
-        }
-            
-        for (auto&& tuple : context->processedCache) {
-            auto event = std::move(tuple.second);
+        for (const auto&& tuple : context->processedCache) {
+            const auto event = std::move(tuple.second);
 
             // Check if we have at least 2f+1 signatures
             if (event->txSignatures.size() >= context->maxFaulty*2 + 1) {
