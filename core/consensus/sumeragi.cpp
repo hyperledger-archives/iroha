@@ -163,8 +163,7 @@ void loop() {
 
         if(!repository::event::empty()) {
             std::vector<std::unique_ptr<ConsensusEvent>> events = repository::event::findAll();
-            //TODO sort the events based on id
-
+            // Sort the events to determine priority to process
             std::sort(events.begin(), events.end(), 
                 [](const std::unique_ptr<ConsensusEvent> &lhs,
                 const std::unique_ptr<ConsensusEvent> &rhs) {
