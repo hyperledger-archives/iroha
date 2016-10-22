@@ -39,9 +39,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3a5c089a-8f36-478e-be30-4c0f752bb8db" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/consensus/consensus_event.cpp" afterPath="$PROJECT_DIR$/core/consensus/consensus_event.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/consensus/consensus_event.hpp" afterPath="$PROJECT_DIR$/core/consensus/consensus_event.hpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/consensus/sumeragi.cpp" afterPath="$PROJECT_DIR$/core/consensus/sumeragi.cpp" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="iroha.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -61,7 +60,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="sumeragi.cpp" pinned="false" current-in-tab="true">
+      <file leaf-file-name="sumeragi.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/consensus/sumeragi.cpp">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="293">
@@ -69,6 +68,16 @@
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="270">
+              <caret line="15" column="7" selection-start-line="15" selection-start-column="7" selection-end-line="15" selection-end-column="7" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -126,6 +135,7 @@
         <option value="$PROJECT_DIR$/core/consensus/consensus_event.cpp" />
         <option value="$PROJECT_DIR$/core/consensus/consensus_event.hpp" />
         <option value="$PROJECT_DIR$/core/consensus/sumeragi.cpp" />
+        <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
   </component>
@@ -570,12 +580,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1477128827701</updated>
-      <workItem from="1477128831980" duration="4059000" />
+      <workItem from="1477128831980" duration="4100000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="4059000" />
+    <option name="totallyTimeSpent" value="4100000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
@@ -676,6 +686,14 @@
           <folding>
             <element signature="e#0#23#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="15" column="7" selection-start-line="15" selection-start-column="7" selection-end-line="15" selection-end-column="7" />
+          <folding />
         </state>
       </provider>
     </entry>
