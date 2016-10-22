@@ -189,7 +189,7 @@ void loop() {
             const auto event = std::move(tuple.second);
 
             // Check if we have at least 2f+1 signatures
-            if (event->txSignatures.size() >= context->maxFaulty*2 + 1) {
+            if (event->signatures.size() >= context->maxFaulty*2 + 1) {
                 // Check Merkle roots to see if match for new state
                 //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
                 //TODO: try applying transaction locally and compute the merkle root
