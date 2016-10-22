@@ -39,8 +39,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3a5c089a-8f36-478e-be30-4c0f752bb8db" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/dictionaries/makoto.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/iroha.iml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="iroha.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -580,12 +585,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1477128827701</updated>
-      <workItem from="1477128831980" duration="4100000" />
+      <workItem from="1477128831980" duration="4138000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="4100000" />
+    <option name="totallyTimeSpent" value="4138000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
