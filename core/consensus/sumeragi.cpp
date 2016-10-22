@@ -150,7 +150,7 @@ void determineConsensusOrder() {
     std::sort(context->validatingPeers.begin(), context->validatingPeers.end(), 
         [](const std::unique_ptr<peer::Node> &lhs,
         const std::unique_ptr<peer::Node> &rhs) {
-            return lhs->getTrustScore() < rhs->getTrustScore() 
+            return lhs->getTrustScore() > rhs->getTrustScore()
                 || (lhs->getTrustScore() == rhs->getTrustScore() 
                     && lhs->getPublicKey() < rhs->getPublicKey());
         }
@@ -167,7 +167,7 @@ void loop() {
             std::sort(events.begin(), events.end(), 
                 [](const std::unique_ptr<ConsensusEvent> &lhs,
                 const std::unique_ptr<ConsensusEvent> &rhs) {
-                    return lhs->signatures.size() < rhs->signatures.size()
+                    return lhs->signatures.size() > rhs->signatures.size()
                            || (context->isSumeragi && lhs->order == nullptr)
                            || lhs->order < rhs->order;
                 }
