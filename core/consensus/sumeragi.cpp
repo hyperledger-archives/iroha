@@ -41,10 +41,11 @@ namespace sumeragi {
     using ConsensusEvent = consensus_event::ConsensusEvent;
 
 struct Context {
-    unsigned int maxFaulty;  // f
-    int proxyTailNdx;
+    bool isSumeragi; // am I the leader or not?
+    unsigned long maxFaulty;  // f
+    unsigned long proxyTailNdx;
     int panicCount;
-    unsigned int numValidatingPeers;
+    unsigned long numValidatingPeers;
     std::vector<
         std::unique_ptr<peer::Node>
     > validatingPeers;
@@ -165,11 +166,11 @@ void loop() {
             //TODO sort the events based on id
 
             std::sort(events.begin(), events.end(), 
-                [](const std::unique_ptr<peer::Node> &lhs,
-                const std::unique_ptr<peer::Node> &rhs) {
-                    return lhs->getOrder() < rhs->getOrder() 
-                        || (lhs->getTrustScore() == rhs->getTrustScore() 
-                            && lhs->getPublicKey() < rhs->getPublicKey());
+                [](const std::unique_ptr<ConsensusEvent> &lhs,
+                const std::unique_ptr<ConsensusEvent> &rhs) {
+                    return lhs->signatures.size() < rhs.signatures.size()
+                           || (context->isSumeragi && lhs->order == nullptr)
+                           || lhs->order < rhs->order;
                 }
             );
 
