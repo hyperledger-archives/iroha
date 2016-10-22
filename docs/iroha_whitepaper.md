@@ -88,6 +88,16 @@ Additionally, the following two transaction types take as input (i.e., "wrap") o
 * Multisignature
 * Interledger (i.e., cross-chain)
 
+#### 2.6.1 Consensus events and processing order
+
+When broadcast, transactions are wrapped as consensus events. 
+
+Consensus events, when received from the event queue, are processed in the following priority order:
+
+ 1. Commit events having 2*f*+1 signatures
+ 2. Events ordered by the leader
+ 3. New events that need ordering, to be processed by the current leader
+
 
 ### 2.7. Consensus
 

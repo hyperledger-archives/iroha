@@ -158,14 +158,24 @@ void determineConsensusOrder() {
 
 void loop() {
     logger::info("sumeragi", "start main loop");
-    while (true) {  // TODO(M->M): replace with callback linking the event repository
+    while (true) {  // TODO: replace with callback linking the event repository?
 
-        if(!repository::event::empty()){
+        if(!repository::event::empty()) {
             std::vector<std::unique_ptr<ConsensusEvent>> events = repository::event::findAll();
+            //TODO sort the events based on id
+
+            std::sort(events.begin(), events.end(), 
+                [](const std::unique_ptr<peer::Node> &lhs,
+                const std::unique_ptr<peer::Node> &rhs) {
+                    return lhs->getOrder() < rhs->getOrder() 
+                        || (lhs->getTrustScore() == rhs->getTrustScore() 
+                            && lhs->getPublicKey() < rhs->getPublicKey());
+                }
+            );
 
             for (auto&& event : events) {
                 if (!transaction_validator::isValid(*event->tx)) {
-                continue;
+                    continue;
                 }
                 // Determine node order
                 determineConsensusOrder();
