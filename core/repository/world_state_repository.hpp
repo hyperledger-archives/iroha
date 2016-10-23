@@ -13,15 +13,18 @@ namespace repository{
 
       bool add(const std::string &key, const std::string &value);
 
-      bool update(std::string key, std::string value);
+      bool update(const std::string &key, const std::string &value);
 
-      bool remove(std::string key);
+      bool remove(const std::string &key);
 
       std::string find(const std::string &key);
 
-      std::string findOrElse(std::string key, std::string defaultVale);
+      std::string findOrElse(
+          const std::string &key,
+          const std::string &defaultValue
+      );
 
-      bool isExist(std::string key);
+      bool isExist(const std::string &key);
 
   };
 
