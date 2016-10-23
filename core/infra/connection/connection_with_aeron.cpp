@@ -104,7 +104,7 @@ namespace connection {
         publications.insert(std::pair<std::string, std::shared_ptr<Publication>>{ ip, publication});
     }
 
-    bool send(std::string to,std::string msg) {
+    bool send(const std::string& to,const std::string& msg) {
         logger::info("connection", "Start send()");
         if(publications.find(to) == publications.end()){
             logger::error("connection", to + " is not registerd");
@@ -140,7 +140,7 @@ namespace connection {
         }
     }
 
-    bool sendAll(std::string msg) {
+    bool sendAll(const std::string& msg) {
         for(auto& p : publications){
             send( p.first, msg);
         }
