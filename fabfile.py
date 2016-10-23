@@ -73,7 +73,7 @@ def check_key_github():
 
 @task
 def initialize_repository():
-  check_key_github()
+  # check_key_github()
   with cd("/var/www"):
     sudo("rm -rf *")
     run("git clone --recursive "+repo_name)

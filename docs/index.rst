@@ -20,6 +20,7 @@ Table of Contents
     :numbered:
 
     consensus_events.rst
+    fabric.rst
 
 
 
