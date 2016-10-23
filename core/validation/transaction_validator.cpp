@@ -10,11 +10,12 @@ bool isValid(const abstract_transaction::AbstractTransaction& tx) {
 }
 
 bool signaturesAreValid(const abstract_transaction::AbstractTransaction& tx) {
-    if (!signature::verify(tx.signature, tx.signature, tx.publicKey)) {
-        return true;
-    } else {
-        return false;
-    }
+//    if (!signature::verify(tx.signature, tx.signature, tx.publicKey)) {
+//        return true;
+//    } else {
+//        return false;
+//    }
+    return false;
 }
 
 bool validForType(const abstract_transaction::AbstractTransaction& tx) {
