@@ -86,13 +86,10 @@ def initialize_repository():
           run("cmake ../..")
           run("cmake --build . --clean-first")
           run("ctest")
-
       with cd("core/vendor/leveldb"):
         run("make")
-
       with cd("core/vendor/ed25519"):
         run("make")
-
       with cd("core/vendor/crow"):
         run("mkdir -p build")
         with cd("build"):
