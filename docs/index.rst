@@ -10,12 +10,12 @@ Developer's guide
 --------
 
 For new users, and/or for an overview of Iroha's basic functionality, please
-see the :doc:`tutorial`. The rest of the documentation will assume you're
+see the :doc:`_devGuide`. The rest of the documentation will assume you're
 at least passingly familiar with the material contained within.
 
 .. toctree::
-    :hidden:
 
+    developer's guide
     tutorial
 
 
