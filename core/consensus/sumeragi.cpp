@@ -151,7 +151,7 @@ void determineConsensusOrder() {
         [](const std::unique_ptr<peer::Node> &lhs,
         const std::unique_ptr<peer::Node> &rhs) {
             return lhs->getTrustScore() > rhs->getTrustScore()
-                || (lhs->getTrustScore() == rhs->getTrustScore() 
+                || (lhs->getTrustScore() == rhs->getTrustScore()
                     && lhs->getPublicKey() < rhs->getPublicKey());
         }
     );
