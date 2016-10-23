@@ -16,10 +16,14 @@ Transactions
 Though binary support is planned in the future, all transactions in Iroha are currently serialized as JSON.
 
 .. code-block:: json
-    :linenos:
-    {
-        "signature" : "[base64 sigature]"
-    }
+   :linenos:
+
+   {
+       "data" : "[]",
+       "publicKey" : "[base64 public key]"
+       "signature" : "[base64 signature]"
+   }
+
 
 
 
@@ -36,4 +40,4 @@ Line numbers are useful for long blocks such as this one:
 
    {
            "signature" : "[base64 sigature]"
-       }
+   }
