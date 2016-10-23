@@ -15,17 +15,18 @@ Transactions
 
 Though binary support is planned in the future, all transactions in Iroha are currently serialized as JSON.
 
+Message transactions
+**********************
+
 .. code-block:: json
-   :linenos:
 
    {
-       "data" : "[]",
-       "publicKey" : "[base64 public key]"
-       "signature" : "[base64 signature]"
+       "command" : "message",
+       "message" : "[arbitrary string]",
+       "publicKey" : "[base64 public key]",
+       "signature" : "[base64 signature]",
+       "version" : "[optional]"
    }
-
-
-
 
 Membership
 --------
@@ -33,11 +34,4 @@ Membership
 Trust system (Hijiri)
 --------
 
-Line numbers are useful for long blocks such as this one:
 
-.. code-block:: json
-   :linenos:
-
-   {
-           "signature" : "[base64 sigature]"
-   }
