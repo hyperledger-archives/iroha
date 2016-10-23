@@ -20,7 +20,7 @@ bool commit(std::unique_ptr<consensus_event::ConsensusEvent> const event) {
     return false;
 }
 
-bool commit(std::string hash, std::unique_ptr<consensus_event::ConsensusEvent> const event) {
+bool commit(std::string hash, const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
     return false;
 }
 

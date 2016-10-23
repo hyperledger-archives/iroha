@@ -190,7 +190,7 @@ void loop() {
         }
 
         for (auto&& tuple : context->processedCache) {
-            const auto event = std::move(tuple.second);
+            auto event = std::move(tuple.second);
 
             // Check if we have at least 2f+1 signatures
             if (event->signatures.size() >= context->maxFaulty*2 + 1) {
