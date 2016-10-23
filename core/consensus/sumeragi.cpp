@@ -80,14 +80,12 @@ void initializeSumeragi(
     logger::info( "sumeragi", "initialize.....  complete!");
 }
 
-void processTransaction(
-    std::unique_ptr<ConsensusEvent> event
-) {
+void processTransaction(std::unique_ptr<ConsensusEvent> event) {
     if (!transaction_validator::isValid(*event->tx)) {
         return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
     }
 
-    event->addSignature(signature::sign( event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
+    event->addSignature(signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
     if (context->validatingPeers[context->proxyTailNdx]->getPublicKey() == peer::getMyPublicKey()) {
         connection::send(context->validatingPeers[context->proxyTailNdx]->getIP(), event->getHash()); // Think In Process
     } else {
@@ -95,10 +93,9 @@ void processTransaction(
     }
 
     setAwkTimer(5000, [&](){ 
-        if (
-            context->processedCache.find(event->getHash()) !=
-            context->processedCache.end()
-        ) { panic(event); }
+        if (context->processedCache.find(event->getHash()) != context->processedCache.end()) {
+            panic(event);
+        }
     });
 
     context->processedCache[event->getHash()] = std::move(event);
