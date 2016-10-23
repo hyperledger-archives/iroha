@@ -13,10 +13,13 @@ For new users, and/or for an overview of Iroha's basic functionality, please
 see the :doc:`_devGuide`. The rest of the documentation will assume you're
 at least passingly familiar with the material contained within.
 
+Table of Contents
+=================
+
 .. toctree::
 
-    developer's guide
-    tutorial
+   consensus_events.rst
+
 
 
 .. _usage-docs:
