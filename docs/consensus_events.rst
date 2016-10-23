@@ -20,6 +20,7 @@ Though binary support is planned in the future, all transactions in Iroha are cu
     }
 
 
+
 Membership
 --------
 
