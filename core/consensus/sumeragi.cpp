@@ -77,7 +77,7 @@ void initializeSumeragi(
     context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO: make this configurable
     context->proxyTailNdx = context->maxFaulty*2 + 1;      
     context->panicCount = 0;
-    logger::info( "sumeragi", "initialize.....  complate!");
+    logger::info( "sumeragi", "initialize.....  complete!");
 }
 
 void processTransaction(
