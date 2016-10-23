@@ -8,8 +8,9 @@
 #include "../../consensus/consensus_event.hpp"
 
 namespace repository{
+namespace event {
 
-  bool add(const std::string& hash, std::unique_ptr<consensus_event::ConsensusEvent> tx){
+    bool add(const std::string &hash, std::unique_ptr<consensus_event::ConsensusEvent> tx) {
 //    if(tx->getType() == consensus_event::ConsensusEvent->tx::message){
 //       /*
 //        world_state_repository::add(
@@ -20,34 +21,35 @@ namespace repository{
 //        );
 //        */
 //    }
-    return false;
-  }
+        return false;
+    }
 
-  bool update(const std::string& hash, const consensus_event::ConsensusEvent& consensusEvent){
-    return false;
-  }
+    bool update(const std::string &hash, const consensus_event::ConsensusEvent &consensusEvent) {
+        return false;
+    }
 
-  bool remove(const std::string& hash){
-    return false;
-  }
+    bool remove(const std::string &hash) {
+        return false;
+    }
 
-  bool empty(){
-    return false;
-  }
+    bool empty() {
+        return false;
+    }
 
-  std::vector<
-    std::unique_ptr<consensus_event::ConsensusEvent>
-  > findAll(){
+    std::vector<
+            std::unique_ptr<consensus_event::ConsensusEvent>
+    > findAll() {
 
-  }
+    }
 
-  std::vector<
-    std::unique_ptr<consensus_event::ConsensusEvent>
-  > findNext(){
+    std::vector<
+            std::unique_ptr<consensus_event::ConsensusEvent>
+    > findNext() {
 
-  }
+    }
 
-  std::unique_ptr<consensus_event::ConsensusEvent>& find(std::string hash){
+    std::unique_ptr<consensus_event::ConsensusEvent> &find(std::string hash) {
 
-  }
+    }
+};
 };

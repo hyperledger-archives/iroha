@@ -80,8 +80,8 @@ void initializeSumeragi(
     logger::info( "sumeragi", "initialize.....  complete!");
 }
 
-void processTransaction(const std::unique_ptr<ConsensusEvent> event) {
-    if (!transaction_validator::isValid(event->tx)) {
+void processTransaction(std::unique_ptr<ConsensusEvent> event) {
+    if (!transaction_validator::isValid<abstract_transaction::AbstractTransaction>(*event->tx)) {
         return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
     }
 
@@ -121,8 +121,8 @@ void processTransaction(const std::unique_ptr<ConsensusEvent> event) {
 */
 void panic(const std::unique_ptr<ConsensusEvent>& event) {
     context->panicCount++; // TODO: reset this later
-    unsigned int broadcastStart = 2 * context->maxFaulty + 1 + context->maxFaulty*context->panicCount;
-    unsigned int broadcastEnd = broadcastStart + context->maxFaulty;
+    unsigned int broadcastStart = (unsigned int) (2 * context->maxFaulty + 1 + context->maxFaulty * context->panicCount);
+    unsigned int broadcastEnd = (unsigned int) (broadcastStart + context->maxFaulty);
 
     // Do some bounds checking
     if (broadcastStart > context->numValidatingPeers - 1) {
