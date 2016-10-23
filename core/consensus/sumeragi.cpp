@@ -146,10 +146,14 @@ void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const actio
     }).join();
 }
 
+/**
+ * The consensus order is based primarily on the trust scores. If two trust scores
+ * are the same, then the order (ascending) of the public keys for the servers are used.
+ */
 void determineConsensusOrder() {
     std::sort(context->validatingPeers.begin(), context->validatingPeers.end(), 
         [](const std::unique_ptr<peer::Node> &lhs,
-        const std::unique_ptr<peer::Node> &rhs) {
+           const std::unique_ptr<peer::Node> &rhs) {
             return lhs->getTrustScore() > rhs->getTrustScore()
                 || (lhs->getTrustScore() == rhs->getTrustScore()
                     && lhs->getPublicKey() < rhs->getPublicKey());
@@ -166,7 +170,7 @@ void loop() {
             // Sort the events to determine priority to process
             std::sort(events.begin(), events.end(), 
                 [](const std::unique_ptr<ConsensusEvent> &lhs,
-                const std::unique_ptr<ConsensusEvent> &rhs) {
+                   const std::unique_ptr<ConsensusEvent> &rhs) {
                     return lhs->signatures.size() > rhs->signatures.size()
                            || (context->isSumeragi && lhs->order == nullptr)
                            || lhs->order < rhs->order;
