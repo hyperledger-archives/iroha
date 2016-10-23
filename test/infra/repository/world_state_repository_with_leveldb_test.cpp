@@ -26,8 +26,7 @@ TEST(World_sate_repository_with_leveldb, AddAndfind){
 
 
 TEST(World_sate_repository_with_leveldb, NotFind){
-    std::string res;
-    res = repository::world_state_repository::find(key+"++");
+    repository::world_state_repository::find(key+"++");
 }
 
 
