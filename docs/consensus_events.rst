@@ -12,13 +12,15 @@ Transactions
 --------
 
 ```json
-
+{
+    "signature" : "[base64 sigature]"
+}
 ```
 
 Membership
 --------
 
-Trust system (Hijiri
+Trust system (Hijiri)
 --------
 
 
