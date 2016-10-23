@@ -11,16 +11,6 @@ namespace repository{
 namespace event {
 
     bool add(const std::string &hash, std::unique_ptr<consensus_event::ConsensusEvent> tx) {
-//    if(tx->getType() == consensus_event::ConsensusEvent->tx::message){
-//       /*
-//        world_state_repository::add(
-//            hash,
-//            convert::to_string<
-//              consensus_event::ConsensusEvent
-//            >(std::move(tx))
-//        );
-//        */
-//    }
         return false;
     }
 
