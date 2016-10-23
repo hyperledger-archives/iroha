@@ -172,7 +172,7 @@ void loop() {
                 [](const std::unique_ptr<ConsensusEvent> &lhs,
                    const std::unique_ptr<ConsensusEvent> &rhs) {
                     return lhs->signatures.size() > rhs->signatures.size()
-                           || (context->isSumeragi && lhs->order == nullptr)
+                           || (context->isSumeragi && lhs->order == 0)
                            || lhs->order < rhs->order;
                 }
             );

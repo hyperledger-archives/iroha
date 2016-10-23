@@ -156,7 +156,7 @@ def test(branch = None):
   print(blue("#################"))
   print(blue("# test    (^o^) #"))
   print(blue("#################"))
-  connection_test_dev()
+  # connection_test_dev()
   if not branch:
     branch = git_current_branch()
 
