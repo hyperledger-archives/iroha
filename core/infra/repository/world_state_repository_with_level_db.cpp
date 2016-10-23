@@ -40,7 +40,7 @@ namespace repository{
                   leveldb::Options options;
                   options.error_if_exists = false;
                   options.create_if_missing = true;
-                  loggerStatus(leveldb::DB::Open(options, "irohaDB", &tmpDb)); //TODO: This path should be configurable
+                  loggerStatus(leveldb::DB::Open(options, "/tmp/irohaDB", &tmpDb)); //TODO: This path should be configurable
                   db.reset(tmpDb);
               }
           }

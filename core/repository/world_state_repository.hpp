@@ -17,7 +17,7 @@ namespace repository{
 
       bool remove(std::string key);
 
-      std::string find(std::string key);
+      std::string find(const std::string &key);
 
       std::string findOrElse(std::string key, std::string defaultVale);
 
