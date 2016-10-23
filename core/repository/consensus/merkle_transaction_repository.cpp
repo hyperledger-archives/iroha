@@ -16,9 +16,9 @@ using abs_tx = abstract_transaction::AbstractTransaction;
 // WIP
 //std::unique_ptr<merkle::MerkleRoot> merkle_root;
 
-bool commit(std::unique_ptr<consensus_event::ConsensusEvent> const event) {
-    return false;
-}
+//bool commit(std::unique_ptr<consensus_event::ConsensusEvent> const event) {
+//    return false;
+//}
 
 bool commit(std::string hash, const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
     return false;
