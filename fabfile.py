@@ -33,7 +33,7 @@ def initalize_server():
   sudo("apt -y install gcc g++ make git")
   print(cyan("#  use for crow"))
   sudo("apt -y install build-essential libtcmalloc-minimal4 && sudo ln -s /usr/lib/libtcmalloc_minimal.so.4 /usr/lib/libtcmalloc_minimal.so", warn_only=True)
-  print(cyan("#  booost"))
+  print(cyan("#  boost"))
   sudo("apt -y install libboost-all-dev")
   print(cyan("#  cmake"))
   sudo("apt -y install cmake")
@@ -73,7 +73,7 @@ def check_key_github():
 
 @task
 def initialize_repository():
-  check_key_github()
+  # check_key_github()
   with cd("/var/www"):
     sudo("rm -rf *")
     run("git clone --recursive "+repo_name)
@@ -142,7 +142,7 @@ def test(branch = None):
   print(blue("#################"))
   print(blue("# test    (^o^) #"))
   print(blue("#################"))
-  connection_test_dev()
+  # connection_test_dev()
   if not branch:
     branch = git_current_branch()
 
