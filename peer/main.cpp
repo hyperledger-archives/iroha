@@ -48,9 +48,9 @@ int main() {
  // std::unique_ptr<yaml::YamlLoader>   yaml(new yaml::YamlLoader(std::string(getenv("IROHA_HOME"))+"/config/config.yml"));
   std::string myPublicKey = "AA"; //yaml->get<std::string>("peer", "publicKey"); 
   std::vector<std::unique_ptr<peer::Node>> peer;
-  peer.push_back(std::make_unique<peer::Node>("1.2.5.6","AAA"));
-  peer.push_back(std::make_unique<peer::Node>("1.2.5.6","BBB"));
-  peer.push_back(std::make_unique<peer::Node>("1.2.5.6","CCC"));
+  peer.push_back(std::make_unique<peer::Node>("1.2.5.6","AAA", 100));
+  peer.push_back(std::make_unique<peer::Node>("1.2.5.6","BBB", 100));
+  peer.push_back(std::make_unique<peer::Node>("1.2.5.6","CCC", 100));
 
  //peer::getPeerList();
   sumeragi::initializeSumeragi(myPublicKey, std::move(peer));
