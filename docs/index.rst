@@ -17,8 +17,9 @@ Table of Contents
 =================
 
 .. toctree::
+    :numbered:
 
-   consensus_events.rst
+    consensus_events.rst
 
 
 

@@ -11,11 +11,11 @@ Iroha is, please see `the main project website <http://iroha.tech>`_.
 Transactions
 --------
 
-```json
-{
-    "signature" : "[base64 sigature]"
-}
-```
+.. code-block:: json
+    {
+        "signature" : "[base64 sigature]"
+    }
+
 
 Membership
 --------
