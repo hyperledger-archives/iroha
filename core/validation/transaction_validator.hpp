@@ -4,7 +4,7 @@
 #include "../model/transactions/abstract_transaction.hpp"
 
 namespace transaction_validator {
-  bool isValid(abstract_transaction::AbstractTransaction& tx);
+  bool isValid(const std::unique_ptr<abstract_transaction::AbstractTransaction> tx);
   bool signaturesAreValid(const abstract_transaction::AbstractTransaction& tx);
   bool validForType(const abstract_transaction::AbstractTransaction& tx);
 };  // namespace transaction_validator

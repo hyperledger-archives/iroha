@@ -80,8 +80,8 @@ void initializeSumeragi(
     logger::info( "sumeragi", "initialize.....  complete!");
 }
 
-void processTransaction(std::unique_ptr<ConsensusEvent> event) {
-    if (!transaction_validator::isValid(*event->tx)) {
+void processTransaction(const std::unique_ptr<ConsensusEvent> event) {
+    if (!transaction_validator::isValid(event->tx)) {
         return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
     }
 

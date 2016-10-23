@@ -34,4 +34,5 @@ Membership
 Trust system (Hijiri)
 --------
 
+「聖の字をヒジリと読むのは、非を知るという意味。」山本常朝
 
