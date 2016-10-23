@@ -1,6 +1,6 @@
 #Iroha v1.0 (draft)#
 
-The following is a specification for Iroha 1.0. Many parts are still in development and have not yet been implemented, but for the sake of design, this document is generally written in the present tense. Future revisions will mark the development status of the various sections.
+The following is a specification for Iroha 1.0. Many parts are still in development and have not yet been implemented, but for the sake of design, this document is generally written in the present tense. Future revisions will annotate the development status of the various sections.
 
 ---
 
@@ -88,14 +88,22 @@ Additionally, the following two transaction types take as input (i.e., "wrap") o
 * Multisignature
 * Interledger (i.e., cross-chain)
 
+#### 2.6.1 Consensus events and processing order
+
+When broadcast, transactions are wrapped as consensus events. 
+
+Consensus events, when received from the event queue, are processed in the following priority order:
+
+ 1. Commit events having 2*f*+1 signatures
+ 2. Events ordered by the leader
+ 3. New events that need ordering, to be processed by the current leader
+
 
 ### 2.7. Consensus
 
-Byzantine fault tolerant systems are engineered to tolerate *f* numbers of Byzantine faulty nodes in a network.
+Byzantine fault tolerant systems are engineered to tolerate *f* numbers of Byzantine faulty nodes in a network. Iroha introduces a Byzantine Fault Tolerant consensus algorithm called Sumeragi. It is heavily inspired by the B-Chain algorithm:
 
-Iroha introduces a Byzantine Fault Tolerant consensus algorithm called Sumeragi. It is heavily inspired by the B-Chain algorithm:
-
-Duan, S., Meling, H., Peisert, S., & Zhang, H. (2014). Bchain: Byzantine replication with high throughput and embedded reconfiguration. In International Conference on Principles of Distributed Systems (pp. 91-106). Springer.
+Duan, S., Meling, H., Peisert, S., & Zhang, H. (2014). *Bchain: Byzantine replication with high throughput and embedded reconfiguration*. In International Conference on Principles of Distributed Systems (pp. 91-106). Springer.
 
 As in B-Chain, we consider the concept of a global order over validating peers and sets **A** and **B** of peers, where **A** consists of the first 2*f*+1 peers and **B** consists of the remainder. As 2*f*+1 signatures are needed to confirm a transaction, under the normal case only 2*f*+1 peers are involved in transaction validation; the remaining peers only join the validation when faults are exhibited in peers in set **A**. The 2*f*+1th peer is called the *proxy tail*.
 
@@ -123,10 +131,13 @@ Consensus in Sumeragi is performed on individual transactions and on the global 
 * sign the updated Merkle root and the hash of the transaction contents
 * broadcast the tuple `(signed Merkle root, tx hash)`
 
+When syncing nodes with each other, valid parts of the Merkel tree are shared until the roots match.
 
 ### 2.8. Data synchronization and retrieval
 
 The state with the Merkle root that has the most transactions in the Merkle tree and has 2*f*+1 signatures of validating servers is the most advanced state. 
+
+### Data permissions
 
 ## Appendix
 

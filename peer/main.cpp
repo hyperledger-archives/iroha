@@ -43,9 +43,9 @@ int main() {
 
 
   std::vector<std::unique_ptr<peer::Node>> peer;
-  peer.push_back(std::unique_ptr<peer::Node>(new peer::Node("1.2.5.6","AAA")));
-  peer.push_back(std::unique_ptr<peer::Node>(new peer::Node("1.2.5.6","AAA")));
-  peer.push_back(std::unique_ptr<peer::Node>(new peer::Node("1.2.5.6","AAA")));
+  peer.push_back(std::make_unique<peer::Node>("1.2.5.6","AAA", 100));
+  peer.push_back(std::make_unique<peer::Node>("1.2.5.6","BBB", 100));
+  peer.push_back(std::make_unique<peer::Node>("1.2.5.6","CCC", 100));
 
   sumeragi::initializeSumeragi(myPublicKey, std::move(peer));
 
