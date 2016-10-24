@@ -13,7 +13,7 @@
 namespace sumeragi {
     void initializeSumeragi(
         const std::string& myPublicKey,
-        std::vector<std::unique_ptr<peer::Node> > peers
+        std::vector<std::unique_ptr<peer::Node>> peers
     );
     void loop();
     void processTransaction(

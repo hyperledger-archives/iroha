@@ -22,6 +22,8 @@ namespace connection {
 
     int exec_subscription(std::string ip);
     void addPublication(std::string ip);
+
+    void finish();
 };  // end connection
 
 #endif
