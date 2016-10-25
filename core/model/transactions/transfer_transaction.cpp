@@ -3,26 +3,6 @@
 
 namespace transaction {
 
-    std::string TransferTransaction::getHash() {
-        return hash;
-    }
-
-    std::string TransferTransaction::getRawData() {
-        //TODO
-    }
-
-    std::string TransferTransaction::getAsText() {
-        //TODO
-    }
-
-    unsigned long long  TransferTransaction::getTimestamp() {
-        return timestamp;
-    }
-
-    abstract_transaction::TransactionType TransferTransaction::getType() {
-        return type;
-    }
-
     TransferTransaction::TransferTransaction(
          const std::string &senderPublicKey, const std::string &receiverPublicKey,
          const std::string &domain, const std::string &asset
@@ -34,5 +14,24 @@ namespace transaction {
         asset(asset)
     {}
 
+    std::string TransferTransaction::getHash() const {
+        return "";
+    }
+
+    std::string TransferTransaction::getRawData() const {
+        return "";
+    }
+
+    std::string TransferTransaction::getAsText() const {
+        return "";
+    }
+
+    unsigned long long int TransferTransaction::getTimestamp() const {
+        return 0;
+    }
+
+    abstract_transaction::TransactionType TransferTransaction::getType() const {
+        return abstract_transaction::TransactionType::transfer;
+    }
 
 };  // namespace transaction

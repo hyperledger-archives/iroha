@@ -5,6 +5,7 @@ ADD_LIBRARY(sumeragi STATIC
         )
 target_link_libraries(sumeragi
   signature
+  event_repository
   merkle_transaction_repository
   unconfirmed_transaction_repository
 )

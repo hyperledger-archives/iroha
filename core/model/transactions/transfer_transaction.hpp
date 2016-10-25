@@ -26,7 +26,16 @@ public:
         const std::string &domain,
         const std::string &asset);
 
-private:
+    virtual std::string getHash() const override;
+
+    virtual std::string getRawData() const override;
+
+    virtual std::string getAsText() const override;
+
+    virtual unsigned long long int getTimestamp() const override;
+
+    virtual abstract_transaction::TransactionType getType() const override;
+
     std::string getHash();
     std::string getRawData();
     std::string getAsText();
