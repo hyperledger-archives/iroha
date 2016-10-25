@@ -160,8 +160,9 @@ void determineConsensusOrder() {
 void loop() {
     logger::info("sumeragi", "start main loop");
     while (true) {  // TODO: replace with callback linking the event repository?
-
         if(!repository::event::empty()) {
+
+            logger::info("sumeragi", "not empty");
             std::vector<std::unique_ptr<ConsensusEvent>> events = repository::event::findAll();
             // Sort the events to determine priority to process
             std::sort(events.begin(), events.end(), 

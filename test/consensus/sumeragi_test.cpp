@@ -33,6 +33,7 @@ int main(){
     });
 
     while(1){
+        std::cout << "in >> ";
         std::cin>> cmd;
         if(cmd == "quit") break;
         repository::event::add("hash", std::make_unique<consensus_event::ConsensusEvent>(
