@@ -13,6 +13,7 @@ link_directories(
 )
 
 ADD_LIBRARY(validator  STATIC
+  consensus_event_validator.cpp
 )
 target_link_libraries(validator
   signature
