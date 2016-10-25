@@ -58,7 +58,7 @@ struct Context {
     //std::unique_ptr<TransactionCache> txCache;
     //std::unique_ptr<TransactionValidator> txValidator;
 
-    std::map<std::string, std::unique_ptr<ConsensusEvent> > processedCache;    
+    std::vector<std::unique_ptr<ConsensusEvent>> processedCache;
 };
 
 std::unique_ptr<Context> context = nullptr;
@@ -96,13 +96,13 @@ void processTransaction(std::unique_ptr<ConsensusEvent> event) {
         connection::sendAll(event->getHash()); // Think In Process
     }
 
-    setAwkTimer(5000, [&](){ 
-        if (context->processedCache.find(event->getHash()) != context->processedCache.end()) {
+    setAwkTimer(3000, [&](){
+        if (merkle_transaction_repository::findLeaf(event->getHash()) == nullptr) {
             panic(event);
         }
     });
 
-    context->processedCache[event->getHash()] = std::move(event);
+    context->processedCache.push_back(std::move(event));
 }
 
 /**
@@ -193,8 +193,7 @@ void loop() {
         }
 
         // warning: processedCache should be ordered by order (ascending)
-        for (auto&& tuple : context->processedCache) {
-            auto event = std::move(tuple.second);
+        for (auto&& event : context->processedCache) {
 
             // Check if we have at least 2f+1 signatures
             if (event->signatures.size() >= context->maxFaulty*2 + 1) {
