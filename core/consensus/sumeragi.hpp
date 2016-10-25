@@ -23,7 +23,7 @@ namespace sumeragi {
     );
     void panic(const std::unique_ptr<consensus_event::ConsensusEvent>& event);
     void setAwkTimer(const int sleepMillisecs, const std::function<void(void)> action);
-    void determineConsensusOrder(const std::unique_ptr<consensus_event::ConsensusEvent>& event/*, std::vector<double> trustVector*/);
+    void determineConsensusOrder(/std::vector<double> trustVector*/);
 };  // namespace sumeragi
 
 #endif  // CORE_CONSENSUS_SUMERAGI_HPP_

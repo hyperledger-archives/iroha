@@ -77,7 +77,7 @@ void initializeSumeragi(
     context->proxyTailNdx = context->maxFaulty*2 + 1;      
     context->panicCount = 0;
 
-    //TODO:
+    //TODO: move the peer service and ordering code to another place
     determineConsensusOrder(); // side effect is to modify validatingPeers
 
     context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() == myPublicKey;
