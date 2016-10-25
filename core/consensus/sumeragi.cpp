@@ -65,9 +65,9 @@ std::unique_ptr<Context> context = nullptr;
 
 void initializeSumeragi(
     const std::string& myPublicKey,
-    std::vector<std::unique_ptr<peer::Node>> peers
-) {
-    logger::info( "sumeragi", "initialize");
+    std::vector<std::unique_ptr<peer::Node>> peers) {
+
+    logger::info("sumeragi", "initialize");
 
     context = std::make_unique<Context>(std::move(peers));
     peers.clear();
@@ -76,7 +76,7 @@ void initializeSumeragi(
     context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO: make this configurable
     context->proxyTailNdx = context->maxFaulty*2 + 1;      
     context->panicCount = 0;
-    logger::info( "sumeragi", "initialize.....  complete!");
+    logger::info("sumeragi", "initialize.....  complete!");
 }
 
 void processTransaction(std::unique_ptr<ConsensusEvent> event) {
@@ -159,7 +159,7 @@ void determineConsensusOrder() {
 
 void loop() {
     logger::info("sumeragi", "start main loop");
-    while (true) {  // TODO: replace with callback linking the event repository?
+    while (true) { // TODO: replace with callback linking the event repository?
 
         if(!repository::event::empty()) {
             std::vector<std::unique_ptr<ConsensusEvent>> events = repository::event::findAll();
