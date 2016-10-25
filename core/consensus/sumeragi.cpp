@@ -206,7 +206,7 @@ void loop() {
                 //TODO: see if the merkle root matches or not
 
                 // Commit locally
-                merkle_transaction_repository::commit(event->getHash(), std::move(event)); //TODO: add error handling in case not saved
+                merkle_transaction_repository::commit(event->getHash(), std::move(event->tx)); //TODO: add error handling in case not saved
             }
         }
     }
