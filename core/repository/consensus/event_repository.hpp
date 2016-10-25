@@ -6,6 +6,7 @@
 #include "../../model/transactions/abstract_transaction.hpp"
 #include "../../consensus/consensus_event.hpp"
 
+#include <algorithm>
 
 namespace repository{
     namespace event {
@@ -14,21 +15,30 @@ namespace repository{
                 std::unique_ptr<consensus_event::ConsensusEvent>
         > consensusEvents;
 
-
-        bool add(const std::string &hash, std::unique_ptr<consensus_event::ConsensusEvent> tx) {
+        bool add(const std::string &hash, std::unique_ptr<consensus_event::ConsensusEvent> event) {
+            consensusEvents.push_back(std::move(event));
             return false;
         }
 
         bool update(const std::string &hash, const consensus_event::ConsensusEvent &consensusEvent) {
-            return false;
+
         }
 
         bool remove(const std::string &hash) {
-            return false;
+            consensusEvents.erase(
+                std::remove_if(
+                    consensusEvents.begin(),
+                    consensusEvents.end(),
+                    [hash](auto&& event) -> bool {
+                        return event->merkleRoot == hash;
+                    }
+                ),
+                consensusEvents.end()
+            );
         }
 
         bool empty() {
-            return false;
+            return consensusEvents.empty();
         }
 
         std::vector<std::unique_ptr<consensus_event::ConsensusEvent>>&& findAll(){
