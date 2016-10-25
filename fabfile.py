@@ -33,10 +33,6 @@ def initalize_server():
   sudo("apt update")
   sudo("apt -y upgrade")
   sudo("apt -y install gcc g++ make git")
-  print(cyan("#  use for crow"))
-  sudo("apt -y install build-essential libtcmalloc-minimal4 && sudo ln -s /usr/lib/libtcmalloc_minimal.so.4 /usr/lib/libtcmalloc_minimal.so", warn_only=True)
-  print(cyan("#  boost"))
-  sudo("apt -y install libboost-all-dev")
   print(cyan("#  cmake"))
   sudo("apt -y install cmake")
   print(cyan("#  Java"))
@@ -98,12 +94,6 @@ def initialize_repository():
 
       with cd("core/vendor/ed25519"):
         run("make")
-
-      with cd("core/vendor/crow"):
-        run("mkdir -p build")
-        with cd("build"):
-          run("cmake ..")
-          run("make")
 
       with cd("core/vendor/KeccakCodePackage"):
         run(" make generic64/libkeccak.a")
