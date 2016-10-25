@@ -66,10 +66,9 @@ std::unique_ptr<Context> context = nullptr;
 void initializeSumeragi(
     const std::string& myPublicKey,
     std::vector<std::unique_ptr<peer::Node>> peers
-){
+) {
     logger::info( "sumeragi", "initialize");
 
-    logger::info( "sumeragi", "inp");
     context = std::make_unique<Context>(std::move(peers));
     peers.clear();
 
