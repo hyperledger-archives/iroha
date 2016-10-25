@@ -18,16 +18,12 @@ std::vector<std::unique_ptr<abs_tx>> transactions;
 // WIP
 //std::unique_ptr<merkle::MerkleRoot> merkle_root;
 
-bool commit(std::string hash, const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
-    return false;
+bool commit(std::string hash, const std::unique_ptr<abs_tx> &tx) {
+    return repository::world_state_repository::add(tx->getHash(), tx->getAsText());
 }
 
 bool leafExists(std::string const hash) {
     return !repository::world_state_repository::find(hash).empty();
-}
-
-std::unique_ptr<abs_tx> findLeaf(std::string const hash) {
-    return repository::world_state_repository::find(hash);
 }
 
 };  // namespace merkle_transaction_repository
