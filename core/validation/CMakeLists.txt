@@ -18,3 +18,4 @@ target_link_libraries(validator
   signature
   transfer_transaction
 )
+

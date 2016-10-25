@@ -57,5 +57,3 @@ namespace repository{
         }
     };
 };
-
-#endif  // CORE_REPOSITORY_UNCONFIRMEDTRANSACTIONREPOSITORY_HPP_
