@@ -76,6 +76,11 @@ void initializeSumeragi(
     context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO: make this configurable
     context->proxyTailNdx = context->maxFaulty*2 + 1;      
     context->panicCount = 0;
+
+    //TODO:
+    determineConsensusOrder(); // side effect is to modify validatingPeers
+
+    context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() == myPublicKey;
     logger::info("sumeragi", "initialize.....  complete!");
 }
 
