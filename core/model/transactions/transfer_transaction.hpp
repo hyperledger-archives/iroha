@@ -20,6 +20,12 @@ class TransferTransaction : public abstract_transaction::AbstractTransaction {
 public:
     TransferTransaction(abstract_transaction::AbstractTransaction &&, const std::string &prevTxHash);
 
+    TransferTransaction(
+        const std::string &senderPublicKey,
+        const std::string &receiverPublicKey,
+        const std::string &domain,
+        const std::string &asset);
+
 private:
     std::string getHash();
     std::string getRawData();
@@ -31,3 +37,4 @@ private:
 };  // namespace transaction
 
 #endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
+

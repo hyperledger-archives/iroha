@@ -23,5 +23,16 @@ namespace transaction {
         return type;
     }
 
+    TransferTransaction::TransferTransaction(
+         const std::string &senderPublicKey, const std::string &receiverPublicKey,
+         const std::string &domain, const std::string &asset
+    ):
+        AbstractTransaction(),
+        senderPublicKey(senderPublicKey),
+        receiverPublicKey(receiverPublicKey),
+        domain(domain),
+        asset(asset)
+    {}
+
 
 };  // namespace transaction
