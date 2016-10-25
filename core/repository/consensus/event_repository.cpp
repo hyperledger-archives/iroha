@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-namespace repository{
+namespace repository {
     namespace event {
 
         std::vector<
@@ -13,7 +13,7 @@ namespace repository{
 
         bool add(const std::string &hash, std::unique_ptr<consensus_event::ConsensusEvent> event) {
             consensusEvents.push_back(std::move(event));
-            return false;
+            return true;
         }
 
         bool update(const std::string &hash, const consensus_event::ConsensusEvent &consensusEvent) {
@@ -50,8 +50,10 @@ namespace repository{
         }
 
         std::unique_ptr<consensus_event::ConsensusEvent> find(std::string hash) {
-            for(auto&& event : consensusEvents){
-                if( event->merkleRoot == hash) return std::move(event);
+            for (auto&& event : consensusEvents){
+                if ( event->merkleRoot == hash) {
+                    return std::move(event);
+                }
             }
             return std::unique_ptr<consensus_event::ConsensusEvent>(nullptr);
         }

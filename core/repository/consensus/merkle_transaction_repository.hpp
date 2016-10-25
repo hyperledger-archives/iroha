@@ -9,12 +9,9 @@
 
 namespace merkle_transaction_repository {
 
-bool commit(std::string, const std::unique_ptr<consensus_event::ConsensusEvent> &event){
-    return false;
-}
-std::unique_ptr<abstract_transaction::AbstractTransaction> findLeaf(std::string const hash){
-    return nullptr;
-}
+bool commit(std::string, const std::unique_ptr<consensus_event::ConsensusEvent> &event);
+
+std::unique_ptr<abstract_transaction::AbstractTransaction> findLeaf(std::string const hash);
 };  // namespace merkle_transaction_repository
 
 #endif  // CORE_REPOSITORY_MERKLETRANSACTIONREPOSITORY_HPP_
