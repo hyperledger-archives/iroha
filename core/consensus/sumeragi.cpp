@@ -186,6 +186,7 @@ void loop() {
             }
         }
 
+        // warning: processedCache should be ordered by order (ascending)
         for (auto&& tuple : context->processedCache) {
             auto event = std::move(tuple.second);
 
