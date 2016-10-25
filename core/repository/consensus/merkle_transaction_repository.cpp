@@ -22,13 +22,12 @@ bool commit(std::string hash, const std::unique_ptr<consensus_event::ConsensusEv
     return false;
 }
 
+bool leafExists(std::string const hash) {
+    return !repository::world_state_repository::find(hash).empty();
+}
+
 std::unique_ptr<abs_tx> findLeaf(std::string const hash) {
-    for (auto&& tx : transactions){
-        if (hash == tx->getHash()) {
-            return std::move(tx);
-        }
-    }
-    return std::unique_ptr<abs_tx>(nullptr);
+    return repository::world_state_repository::find(hash);
 }
 
 };  // namespace merkle_transaction_repository

@@ -97,7 +97,7 @@ void processTransaction(std::unique_ptr<ConsensusEvent> event) {
     }
 
     setAwkTimer(3000, [&](){
-        if (merkle_transaction_repository::findLeaf(event->getHash()) == nullptr) {
+        if (merkle_transaction_repository::leafExists(event->getHash()) == nullptr) {
             panic(event);
         }
     });
