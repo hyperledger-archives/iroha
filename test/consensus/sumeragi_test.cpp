@@ -36,11 +36,11 @@ int main(){
         std::cout << "in >> ";
         std::cin>> cmd;
         if(cmd == "quit") break;
-        repository::event::add("hash", std::make_unique<consensus_event::ConsensusEvent>(
+        repository::event::add("80084bf2fba02475726feb2cab2d8215eab14bc6bdd8bfb2c8151257032ecd8b", std::make_unique<consensus_event::ConsensusEvent>(
             std::make_unique<transaction::TransferTransaction>(
                 "fccpkrZyLlxJUQm8RpJXedWVZfbg2Dde0iPphwD+jQ0=",
                 pubKey,
-                "test",
+                "domain",
                 cmd
             )
         ));

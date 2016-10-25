@@ -74,7 +74,7 @@ void initializeSumeragi(
 
     context->numValidatingPeers = context->validatingPeers.size();
     context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO: make this configurable
-    context->proxyTailNdx = context->maxFaulty*2 + 1;      
+    context->proxyTailNdx = context->numValidatingPeers - 1;  //context->maxFaulty*2 + 1;
     context->panicCount = 0;
     logger::info( "sumeragi", "initialize.....  complete!");
 }
@@ -84,14 +84,14 @@ void processTransaction(std::unique_ptr<ConsensusEvent> event) {
         return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
     }
 
-    event->addSignature(signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
+    event->addSignature(signature::sign( event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
     if (context->validatingPeers[context->proxyTailNdx]->getPublicKey() == peer::getMyPublicKey()) {
         connection::send(context->validatingPeers[context->proxyTailNdx]->getIP(), event->getHash()); // Think In Process
     } else {
         connection::sendAll(event->getHash()); // Think In Process
     }
 
-    setAwkTimer(5000, [&](){ 
+    setAwkTimer(5000, [&](){
         if (context->processedCache.find(event->getHash()) != context->processedCache.end()) {
             panic(event);
         }
