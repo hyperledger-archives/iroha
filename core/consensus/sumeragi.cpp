@@ -34,9 +34,6 @@ limitations under the License.
 #include "../service/peer_service.hpp"
 #include "./connection/connection.hpp"
 
-
-#include "../service/peer_service.hpp"
-
 template<class T>
 std::unique_ptr<T> make_unique(){
   return std::unique_ptr<T>(new T());
@@ -104,9 +101,18 @@ void initializeSumeragi(const std::string& myPublicKey,
     logger::info("sumeragi", "initialize.....  complete!");
 }
 
+unsigned long long getNextOrder() {
+    return merkle_transaction_repository::getLeafCount() + 1;
+}
+
 void processTransaction(std::unique_ptr<ConsensusEvent> event) {
     if (!transaction_validator::isValid<abstract_transaction::AbstractTransaction>(*event->tx)) {
         return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
+    }
+
+    if (event->signatures.empty() && context->isSumeragi) {
+        // Determine the order for processing this event
+        event->order = getNextOrder();
     }
 
     event->addSignature(signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
@@ -124,6 +130,8 @@ void processTransaction(std::unique_ptr<ConsensusEvent> event) {
 
     context->processedCache.push_back(std::move(event));
 }
+
+
 
 /**
 * 
@@ -145,8 +153,8 @@ void processTransaction(std::unique_ptr<ConsensusEvent> event) {
 */
 void panic(const std::unique_ptr<ConsensusEvent>& event) {
     context->panicCount++; // TODO: reset this later
-    unsigned int broadcastStart = (unsigned int) (2 * context->maxFaulty + 1 + context->maxFaulty * context->panicCount);
-    unsigned int broadcastEnd = (unsigned int) (broadcastStart + context->maxFaulty);
+    unsigned long broadcastStart = 2 * context->maxFaulty + 1 + context->maxFaulty * context->panicCount;
+    unsigned long broadcastEnd = broadcastStart + context->maxFaulty;
 
     // Do some bounds checking
     if (broadcastStart > context->numValidatingPeers - 1) {
@@ -190,6 +198,9 @@ void loop() {
     while (true) {  // TODO: replace with callback linking the event repository?
         if(!repository::event::empty()) {
 
+            // Determine node order
+            determineConsensusOrder();
+
             logger::info("sumeragi", "event queue not empty");
             std::vector<std::unique_ptr<ConsensusEvent>> events = repository::event::findAll();
             // Sort the events to determine priority to process
@@ -206,8 +217,6 @@ void loop() {
                 if (!transaction_validator::isValid(*event->tx)) {
                     continue;
                 }
-                // Determine node order
-                determineConsensusOrder();
 
                 // Process transaction
                 processTransaction(std::move(event));

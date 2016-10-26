@@ -26,6 +26,10 @@ namespace merkle_transaction_repository {
 bool commit(std::string, const std::unique_ptr<abstract_transaction::AbstractTransaction> &event);
 
 bool leafExists(std::string const hash);
+
+std::string getLeaf(std::string const hash);
+
+unsigned long long getLeafCount();
 };  // namespace merkle_transaction_repository
 
 #endif  // CORE_REPOSITORY_MERKLETRANSACTIONREPOSITORY_HPP_

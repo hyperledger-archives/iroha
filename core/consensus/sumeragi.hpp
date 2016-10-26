@@ -1,5 +1,6 @@
 /*
 Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+http://soramitsu.co.jp
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,6 +34,10 @@ namespace sumeragi {
         std::vector<std::unique_ptr<peer::Node>> peers
     );
     void loop();
+
+    void getNextOrder(
+            std::unique_ptr<consensus_event::ConsensusEvent> const event
+    );
 
     void processTransaction(
         std::unique_ptr<consensus_event::ConsensusEvent> const event
