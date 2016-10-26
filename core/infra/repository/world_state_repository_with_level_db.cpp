@@ -21,6 +21,7 @@ limitations under the License.
 
 #include <leveldb/write_batch.h>
 #include <leveldb/db.h>
+#include <tuple>
 
 // +------------------------------------------------+
 // | Repository should save string to any database. |
@@ -30,7 +31,7 @@ limitations under the License.
 // |  - leveldb                                     |
 // |                                                |
 // | I don't know                                   |
-// |  - json library                                |
+// |  - json formats or data model                  |
 // |                                                |
 // +------------------------------------------------+
 namespace repository {
@@ -66,6 +67,20 @@ namespace repository {
           }
 
           return detail::loggerStatus(detail::db->Put(leveldb::WriteOptions(), key, value));
+      }
+
+      bool addBatch(const std::vector<std::tuple> &tuples) {
+          if (detail::db == nullptr) {
+              detail::loadDb();
+          }
+
+          leveldb::WriteBatch batch;
+
+          for (const tuple : tuples) {
+              batch.Put(std::get<0>(tuple), std::get<1>(tuple));
+          }
+
+          return detail::loggerStatus(detail::db->Write(leveldb::WriteOptions(), &batch));
       }
 
       bool update(const std::string &key, const std::string &value) {
@@ -121,10 +136,16 @@ namespace repository {
           }
       }
 
-      bool isExist(const std::string &key) {
+      bool exists(const std::string &key) {
           std::string result = "";
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &result));
           return result == "";
+      }
+
+      unsigned long long recordCount() {
+          std::string result = "";
+          detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), "lastOrder", &result));
+          return result != "" ? std::strtoull(result) : 0;
       }
   };
 };

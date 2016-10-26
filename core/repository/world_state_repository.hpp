@@ -23,11 +23,14 @@ limitations under the License.
 
 namespace repository {
 
-  // I don't know model.
+  // This namespace is agnostic about the model and only provides
+  // a simple repository access wrapper.
 
   namespace world_state_repository {
 
       bool add(const std::string &key, const std::string &value);
+
+      bool addBatch(const std::vector<std::tuple> &tuples);
 
       bool update(const std::string &key, const std::string &value);
 
@@ -40,8 +43,9 @@ namespace repository {
           const std::string &defaultValue
       );
 
-      bool isExist(const std::string &key);
+      bool exists(const std::string &key);
 
+      unsigned long long numRecords();
   };
 
 }; // namespace repository

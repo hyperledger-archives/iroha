@@ -42,4 +42,11 @@ bool leafExists(std::string const hash) {
     return !repository::world_state_repository::find(hash).empty();
 }
 
+std::string getLeaf(std::string const hash) {
+    return repository::world_state_repository::find(hash);
+}
+
+unsigned long long getLeafCount() {
+    return repository:::world_state_repository::
+}
 };  // namespace merkle_transaction_repository
