@@ -1,5 +1,6 @@
 /*
 Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+http://soramitsu.co.jp
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -62,6 +63,8 @@ struct Context {
     unsigned long proxyTailNdx;
     int panicCount;
     unsigned long numValidatingPeers;
+    std::string myPublicKey;
+
     std::vector<
         std::unique_ptr<peer::Node>
     > validatingPeers;
@@ -71,17 +74,14 @@ struct Context {
     > peers):
         validatingPeers(std::move(peers))
     {}
-    //std::unique_ptr<TransactionCache> txCache;
-    //std::unique_ptr<TransactionValidator> txValidator;
 
     std::vector<std::unique_ptr<ConsensusEvent>> processedCache;
 };
 
 std::unique_ptr<Context> context = nullptr;
 
-void initializeSumeragi(
-    const std::string& myPublicKey,
-    std::vector<std::unique_ptr<peer::Node>> peers) {
+void initializeSumeragi(const std::string& myPublicKey,
+                        std::vector<std::unique_ptr<peer::Node>> peers) {
 
     logger::info("sumeragi", "initialize");
 
@@ -97,11 +97,10 @@ void initializeSumeragi(
     }
 
     context->panicCount = 0;
+    context->myPublicKey = myPublicKey;
 
     //TODO: move the peer service and ordering code to another place
     determineConsensusOrder(); // side effect is to modify validatingPeers
-
-    context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() == myPublicKey;
     logger::info("sumeragi", "initialize.....  complete!");
 }
 
@@ -181,6 +180,8 @@ void determineConsensusOrder() {
                     && lhs->getPublicKey() < rhs->getPublicKey());
         }
     );
+
+    context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() == context->myPublicKey;
 }
 
 void loop() {
@@ -189,7 +190,7 @@ void loop() {
     while (true) {  // TODO: replace with callback linking the event repository?
         if(!repository::event::empty()) {
 
-            logger::info("sumeragi", "not empty");
+            logger::info("sumeragi", "event queue not empty");
             std::vector<std::unique_ptr<ConsensusEvent>> events = repository::event::findAll();
             // Sort the events to determine priority to process
             std::sort(events.begin(), events.end(), 
