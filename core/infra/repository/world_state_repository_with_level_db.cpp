@@ -69,7 +69,7 @@ namespace repository {
           return detail::loggerStatus(detail::db->Put(leveldb::WriteOptions(), key, value));
       }
 
-      bool addBatch(const std::vector<std::tuple> &tuples) {
+      bool addBatch(const std::vector<std::tuple<T>> &tuples) {
           if (detail::db == nullptr) {
               detail::loadDb();
           }
