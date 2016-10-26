@@ -18,9 +18,7 @@ limitations under the License.
 #include "sumeragi.hpp"
 #include <queue>
 #include <map>
-#include <tuple>
 #include <thread>
-#include <algorithm>
 #include <cmath>
 
 #include "../util/logger.hpp"
@@ -71,8 +69,6 @@ struct Context {
     > peers):
         validatingPeers(std::move(peers))
     {}
-
-    std::vector<std::unique_ptr<ConsensusEvent>> processedCache;
 };
 
 std::unique_ptr<Context> context = nullptr;
@@ -102,7 +98,7 @@ void initializeSumeragi(const std::string& myPublicKey,
 }
 
 unsigned long long getNextOrder() {
-    return merkle_transaction_repository::getLeafCount() + 1;
+    return merkle_transaction_repository::getLastLeafOrder() + 1;
 }
 
 void processTransaction(std::unique_ptr<ConsensusEvent> event) {
@@ -113,22 +109,32 @@ void processTransaction(std::unique_ptr<ConsensusEvent> event) {
     if (event->signatures.empty() && context->isSumeragi) {
         // Determine the order for processing this event
         event->order = getNextOrder();
-    }
+    } else if (!event->signatures.empty()) {
+        // Check if we have at least 2f+1 signatures needed for Byzantine fault tolerance
+        if (event->signatures.size() >= context->maxFaulty*2 + 1) {
+            // Check Merkle roots to see if match for new state
+            //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
+            //TODO: try applying transaction locally and compute the merkle root
+            //TODO: see if the merkle root matches or not
 
-    event->addSignature(signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
-    if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() == peer::getMyPublicKey()) {
-        connection::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), event->getHash()); // Think In Process
-    } else {
-        connection::sendAll(event->getHash()); // Think In Process
-    }
+            // Commit locally
+            merkle_transaction_repository::commit(event->getHash(), std::move(event->tx)); //TODO: add error handling in case not saved
+        } else {
+            // This is a new event, so we should verify, sign, and broadcast it
+            event->addSignature(signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
+            if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() == peer::getMyPublicKey()) {
+                connection::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), event->getHash()); // Think In Process
+            } else {
+                connection::sendAll(event->getHash()); // Think In Process
+            }
 
-    setAwkTimer(3000, [&](){
-        if (!merkle_transaction_repository::leafExists(event->getHash())) {
-            panic(event);
+            setAwkTimer(3000, [&](){
+                if (!merkle_transaction_repository::leafExists(event->getHash())) {
+                    panic(event);
+                }
+            });
         }
-    });
-
-    context->processedCache.push_back(std::move(event));
+    }
 }
 
 
@@ -224,19 +230,19 @@ void loop() {
         }
 
         // warning: processedCache should be ordered by order (ascending)
-        for (auto&& event : context->processedCache) {
-
-            // Check if we have at least 2f+1 signatures
-            if (event->signatures.size() >= context->maxFaulty*2 + 1) {
-                // Check Merkle roots to see if match for new state
-                //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
-                //TODO: try applying transaction locally and compute the merkle root
-                //TODO: see if the merkle root matches or not
-
-                // Commit locally
-                merkle_transaction_repository::commit(event->getHash(), std::move(event->tx)); //TODO: add error handling in case not saved
-            }
-        }
+//        for (auto&& event : context->processedCache) {
+//
+//            // Check if we have at least 2f+1 signatures
+//            if (event->signatures.size() >= context->maxFaulty*2 + 1) {
+//                // Check Merkle roots to see if match for new state
+//                //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
+//                //TODO: try applying transaction locally and compute the merkle root
+//                //TODO: see if the merkle root matches or not
+//
+//                // Commit locally
+//                merkle_transaction_repository::commit(event->getHash(), std::move(event->tx)); //TODO: add error handling in case not saved
+//            }
+//        }
     }
 }
 
