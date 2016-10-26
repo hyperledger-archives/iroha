@@ -22,6 +22,8 @@ add_executable(sumeragi_test
 )
 target_link_libraries(sumeragi_test
     event_repository
+    base64
+    signature
     transfer_transaction
     sumeragi
     connection_with_aeron

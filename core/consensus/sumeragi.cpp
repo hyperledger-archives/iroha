@@ -90,10 +90,12 @@ void initializeSumeragi(
 
     context->numValidatingPeers = context->validatingPeers.size();
     context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO: make this configurable
+
     context->proxyTailNdx = context->maxFaulty*2 + 1;
     if (context->proxyTailNdx >= context->validatingPeers.size()) {
         context->proxyTailNdx = context->validatingPeers.size()-1;
     }
+
     context->panicCount = 0;
 
     //TODO: move the peer service and ordering code to another place

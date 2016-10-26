@@ -35,11 +35,11 @@ namespace peer{
     }
 
     std::string getMyPublicKey() {
-        return "Base64";// TODO: WIP
+        return "j0B8v4M/K853QpyHfgZo1towzNvNt4pQOyqDt0ewGy8=";// TODO: WIP
     }
 
     std::string getPrivateKey() {
-        return "Base64";// TODO: WIP
+        return "IDeSLBBYxhY9s2J4MgnKobLH9hGvaxR97B3g3yJ6NXrO5EYtyvlSw7s2VYFQLOzT31FK+0QtsKcKe1UWFxtXYA==";// TODO: WIP
     }
 
     std::vector<Node> getPeerList() {  
