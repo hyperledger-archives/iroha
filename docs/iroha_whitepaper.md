@@ -148,7 +148,7 @@ The trust system is based on rounds. At each round, validating peers that are re
 * computational test
 * data consistency test
 
-Which peers validate each other are based on the pairwise distance between hashes. The hashes are computed based on the public keys of the peers that are concatenated with the round number and then SHA-3 hashed.
+Which peers validate each other are based on the pairwise distance between hashes. The hashes are computed based on the public keys of the peers that are concatenated with the round number and then SHA-3 hashed. Rounds occur whenever the Merkle root is less than TODO:XXX. Results are shared in a separate Merkle tree, maintained independently of the transactions (so the systems can run in parallel).
 
 ## Appendix
 
