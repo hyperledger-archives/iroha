@@ -29,7 +29,7 @@ bool leafExists(std::string const hash);
 
 std::string getLeaf(std::string const hash);
 
-unsigned long long getLeafCount();
+unsigned long long getLastLeafOrder();
 };  // namespace merkle_transaction_repository
 
 #endif  // CORE_REPOSITORY_MERKLETRANSACTIONREPOSITORY_HPP_

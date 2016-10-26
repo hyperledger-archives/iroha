@@ -46,7 +46,9 @@ std::string getLeaf(std::string const hash) {
     return repository::world_state_repository::find(hash);
 }
 
-unsigned long long getLeafCount() {
-    return repository:::world_state_repository::
+unsigned long long getLastLeafOrder() {
+    std::string lastAdded = repository:::world_state_repository::lastAdded();
+    //TODO: convert string->abstract transaction
+    return ->order;//TODO:
 }
 };  // namespace merkle_transaction_repository

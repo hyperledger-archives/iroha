@@ -45,7 +45,7 @@ namespace repository {
 
       bool exists(const std::string &key);
 
-      unsigned long long numRecords();
+      std::string lastAdded();
   };
 
 }; // namespace repository
