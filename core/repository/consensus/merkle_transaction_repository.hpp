@@ -47,10 +47,7 @@ std::string getLeaf(std::string const hash);
 
 unsigned long long getLastLeafOrder();
 
-std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
-    std::unique_ptr<MerkleNode> merkleRoot = std::make_unique<MerkleNode>();
-    return merkleRoot;
-}
+std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
 
 };  // namespace merkle_transaction_repository
 

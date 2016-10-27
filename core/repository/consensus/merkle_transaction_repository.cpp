@@ -35,7 +35,7 @@ bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
 
     std::vector<std::tuple<std::string, std::string>> batchCommit
       = {
-            std::tuple<std::string, std::string>("lastOrder", tx->getAsText()),
+//            std::tuple<std::string, std::string>("lastOrder", tx->getAsText()),TODO: decide this
             std::tuple<std::string, std::string>(tx->getHash(), tx->getAsText())
     };
 
@@ -56,5 +56,24 @@ unsigned long long getLastLeafOrder() {
     std::string lastAdded = repository::world_state_repository::lastAdded();
     //TODO: convert string->abstract transaction
     // return ->order; //TODO:
+}
+
+std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
+    std::unique_ptr<MerkleNode> newMerkleLeaf = std::make_unique<MerkleNode>();
+    std::unique_ptr<MerkleNode> newMerkleRoot = std::make_unique<MerkleNode>();
+
+    newMerkleLeaf->hash = event->getHash();
+    newMerkleLeaf->isLeaf()
+
+    std::string currRoot = repository::world_state_repository::find("merkle_root");
+    if (currRoot.empty()) {
+        return newMerkleLeaf;
+    }
+    //TODO: convert currRoot to MerkleNode
+    std::unique_ptr<MerkleNode> currMerkleRoot = convert(currRoot);
+
+    while (c
+
+    return newMerkleRoot;
 }
 };  // namespace merkle_transaction_repository
