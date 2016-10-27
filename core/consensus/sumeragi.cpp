@@ -118,7 +118,7 @@ void processTransaction(std::unique_ptr<ConsensusEvent> event) {
             merkle_transaction_repository::MerkleNode newRoot = merkle_transaction_repository::calculateNewRoot(event);
 
             // See if the merkle root matches or not
-            if (event->merkleRootHash != newRoot.hash) {
+            if (newRoot.hash != event->merkleRootHash) {
                 panic(event);
                 return;
             }
