@@ -36,7 +36,8 @@ std::vector<std::unique_ptr<abs_tx>> transactions;
 
 bool commit(std::string hash, const std::unique_ptr<abs_tx> &tx) {
     std::vector<std::tuple<std::string, std::string>> batchCommit
-      = {std::tuple<std::string, std::string>(tx->getHash(), tx->getAsText())};
+      = {std::tuple<std::string, std::string>("lastAdded", tx->getAsText()),
+         std::tuple<std::string, std::string>(tx->getHash(), tx->getAsText())};
 
     return repository::world_state_repository::addBatch(batchCommit);
 }

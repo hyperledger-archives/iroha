@@ -146,14 +146,15 @@ namespace repository {
           return result == "";
       }
 
-      unsigned long long recordCount() {
+      std::string lastAdded() {
           if (nullptr == detail::db) {
               detail::loadDb();
           }
-          
+
           std::string result = "";
-          detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), "lastOrder", &result));
-          return result != "" ? std::strtoull(result) : 0;
+          // TODO: make this better
+          detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), "lastAdded", &result));
+          return result;
       }
   };
 };
