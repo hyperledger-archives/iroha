@@ -114,8 +114,14 @@ void processTransaction(std::unique_ptr<ConsensusEvent> event) {
         if (event->signatures.size() >= context->maxFaulty*2 + 1) {
             // Check Merkle roots to see if match for new state
             //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
-            //TODO: try applying transaction locally and compute the merkle root
-            //TODO: see if the merkle root matches or not
+            //Try applying transaction locally and compute the merkle root
+            merkle_transaction_repository::MerkleNode newRoot = merkle_transaction_repository::calculateNewRoot(event);
+
+            // See if the merkle root matches or not
+            if (event->merkleRootHash != newRoot.hash) {
+                panic(event);
+                return;
+            }
 
             // Commit locally
             merkle_transaction_repository::commit(event); //TODO: add error handling in case not saved
@@ -125,7 +131,7 @@ void processTransaction(std::unique_ptr<ConsensusEvent> event) {
             if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() == peer::getMyPublicKey()) {
                 connection::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), event->getHash()); // Think In Process
             } else {
-                connection::sendAll(event->getHash()); // Think In Process
+                connection::sendAll(event->getHash()); // TODO: Think In Process
             }
 
             setAwkTimer(3000, [&](){
