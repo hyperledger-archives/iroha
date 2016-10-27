@@ -17,13 +17,14 @@ limitations under the License.
 #include "merkle_transaction_repository.hpp"
 #include "../world_state_repository.hpp"
 
-#include <string>
 #include <memory>
 #include <iostream>
 
 #include "../../util/logger.hpp"
 #include "../../crypto/merkle_node.hpp"
 #include "../../crypto/merkle.hpp"
+
+#include <string>
 
 
 namespace merkle_transaction_repository {
@@ -36,20 +37,24 @@ struct MerkleNode {
     std::tuple<std::string, std::string> children;
 
     bool isRoot() {
-        return nullptr == parent;
+        return parent.empty();
     }
 
     bool isLeaf() {
-        return nullptr == children;
+        return std::get<0>(children).empty();
     }
 };
 
 bool commit(std::string hash, const std::unique_ptr<abs_tx> &tx) {
     std::vector<std::tuple<std::string, std::string>> batchCommit
-      = {std::tuple<std::string, std::string>("lastOrder", tx->or),
-         std::tuple<std::string, std::string>(tx->getHash(), tx->getAsText())};
+      = {
+            std::tuple<std::string, std::string>("lastOrder", tx->getAsText()),
+            std::tuple<std::string, std::string>(tx->getHash(), tx->getAsText())
+    };
 
-    return repository::world_state_repository::addBatch(batchCommit);
+    return repository::world_state_repository::addBatch<
+            std::string
+        >(batchCommit);
 }
 
 bool leafExists(std::string const hash) {
@@ -63,6 +68,6 @@ std::string getLeaf(std::string const hash) {
 unsigned long long getLastLeafOrder() {
     std::string lastAdded = repository::world_state_repository::lastAdded();
     //TODO: convert string->abstract transaction
-    return ->order; //TODO:
+    // return ->order; //TODO:
 }
 };  // namespace merkle_transaction_repository

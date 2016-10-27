@@ -69,6 +69,23 @@ namespace repository {
           return detail::loggerStatus(detail::db->Put(leveldb::WriteOptions(), key, value));
       }
 
+      template <>
+      bool addBatch<std::string>(const std::vector<std::tuple<std::string, std::string>> &tuples){
+          if (nullptr == detail::db) {
+              detail::loadDb();
+          }
+
+          leveldb::WriteBatch batch;
+
+          for (auto&& tuple : tuples) {
+              batch.Put(std::get<0>(tuple), std::get<1>(tuple));
+          }
+
+          return detail::loggerStatus(detail::db->Write(leveldb::WriteOptions(), &batch));
+      }
+
+
+      template <typename T>
       bool addBatch(const std::vector<std::tuple<T, T>> &tuples) {
           if (nullptr == detail::db) {
               detail::loadDb();
@@ -76,7 +93,7 @@ namespace repository {
 
           leveldb::WriteBatch batch;
 
-          for (const tuple : tuples) {
+          for (auto&& tuple : tuples) {
               batch.Put(std::get<0>(tuple), std::get<1>(tuple));
           }
 
