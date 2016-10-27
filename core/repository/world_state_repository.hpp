@@ -30,7 +30,7 @@ namespace repository {
 
       bool add(const std::string &key, const std::string &value);
 
-      bool addBatch(const std::vector<std::tuple<T>> &tuples);
+      bool addBatch(const std::vector<std::tuple<T, T>> &tuples);
 
       bool update(const std::string &key, const std::string &value);
 

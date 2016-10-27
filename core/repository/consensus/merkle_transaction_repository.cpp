@@ -35,8 +35,10 @@ std::vector<std::unique_ptr<abs_tx>> transactions;
 //std::unique_ptr<merkle::MerkleRoot> merkle_root;
 
 bool commit(std::string hash, const std::unique_ptr<abs_tx> &tx) {
-    std::vector<std::tuple<std::string, std::string>> batchCommit; //TODO: finish this
-    return repository::world_state_repository::addBatch(tx->getHash(), tx->getAsText());
+    std::vector<std::tuple<std::string, std::string>> batchCommit
+      = {std::tuple<std::string, std::string>(tx->getHash(), tx->getAsText())};
+
+    return repository::world_state_repository::addBatch(batchCommit);
 }
 
 bool leafExists(std::string const hash) {
@@ -48,7 +50,7 @@ std::string getLeaf(std::string const hash) {
 }
 
 unsigned long long getLastLeafOrder() {
-    std::string lastAdded = repository:::world_state_repository::lastAdded();
+    std::string lastAdded = repository::world_state_repository::lastAdded();
     //TODO: convert string->abstract transaction
     return ->order;//TODO:
 }

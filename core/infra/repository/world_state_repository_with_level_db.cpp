@@ -62,15 +62,15 @@ namespace repository {
           }
 
       bool add(const std::string &key, const std::string &value) {
-          if (detail::db == nullptr) {
+          if (nullptr == detail::db) {
               detail::loadDb();
           }
 
           return detail::loggerStatus(detail::db->Put(leveldb::WriteOptions(), key, value));
       }
 
-      bool addBatch(const std::vector<std::tuple<T>> &tuples) {
-          if (detail::db == nullptr) {
+      bool addBatch(const std::vector<std::tuple<T, T>> &tuples) {
+          if (nullptr == detail::db) {
               detail::loadDb();
           }
 
@@ -84,7 +84,7 @@ namespace repository {
       }
 
       bool update(const std::string &key, const std::string &value) {
-          if (detail::db == nullptr) {
+          if (nullptr == detail::db) {
               detail::loadDb();
           }
 
@@ -99,14 +99,14 @@ namespace repository {
       }
 
       bool remove(const std::string &key) {
-          if (detail::db == nullptr) {
+          if (nullptr == detail::db) {
               detail::loadDb();
           }
           return detail::loggerStatus(detail::db->Delete(leveldb::WriteOptions(), key));
       }
 
       std::string find(const std::string &key) {
-          if (detail::db == nullptr) {
+          if (nullptr == detail::db) {
               detail::loadDb();
           }
 
@@ -123,7 +123,7 @@ namespace repository {
               const std::string &key,
               const std::string &defaultValue
       ) {
-          if (detail::db == nullptr) {
+          if (nullptr == detail::db) {
               detail::loadDb();
           }
 
@@ -137,12 +137,20 @@ namespace repository {
       }
 
       bool exists(const std::string &key) {
+          if (nullptr == detail::db) {
+              detail::loadDb();
+          }
+
           std::string result = "";
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &result));
           return result == "";
       }
 
       unsigned long long recordCount() {
+          if (nullptr == detail::db) {
+              detail::loadDb();
+          }
+          
           std::string result = "";
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), "lastOrder", &result));
           return result != "" ? std::strtoull(result) : 0;
