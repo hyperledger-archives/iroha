@@ -25,29 +25,13 @@ limitations under the License.
 #include "../../crypto/merkle_node.hpp"
 #include "../../crypto/merkle.hpp"
 
-
 #include <string>
+
 namespace merkle_transaction_repository {
 
 using abs_tx = abstract_transaction::AbstractTransaction;
 
-struct MerkleNode {
-    std::string hash;
-    std::string parent;
-    std::tuple<std::string, std::string> children;
-
-    bool isRoot() {
-        return parent.empty();
-    }
-
-    bool isLeaf() {
-        return std::get<0>(children).empty();
-    }
-};
-
 bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
-    
-
 
     std::vector<std::tuple<std::string, std::string>> batchCommit
       = {

@@ -53,7 +53,7 @@ namespace sumeragi {
     using ConsensusEvent = consensus_event::ConsensusEvent;
 
 struct Context {
-    bool isSumeragi; // am I the leader or not?
+    bool isSumeragi; // am I the leader or am I not?
     unsigned long maxFaulty;  // f
     unsigned long proxyTailNdx;
     int panicCount;
@@ -118,7 +118,7 @@ void processTransaction(std::unique_ptr<ConsensusEvent> event) {
             //TODO: see if the merkle root matches or not
 
             // Commit locally
-            merkle_transaction_repository::commit(event->getHash(), std::move(event->tx)); //TODO: add error handling in case not saved
+            merkle_transaction_repository::commit(event); //TODO: add error handling in case not saved
         } else {
             // This is a new event, so we should verify, sign, and broadcast it
             event->addSignature(signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
@@ -228,21 +228,6 @@ void loop() {
                 processTransaction(std::move(event));
             }
         }
-
-        // warning: processedCache should be ordered by order (ascending)
-//        for (auto&& event : context->processedCache) {
-//
-//            // Check if we have at least 2f+1 signatures
-//            if (event->signatures.size() >= context->maxFaulty*2 + 1) {
-//                // Check Merkle roots to see if match for new state
-//                //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
-//                //TODO: try applying transaction locally and compute the merkle root
-//                //TODO: see if the merkle root matches or not
-//
-//                // Commit locally
-//                merkle_transaction_repository::commit(event->getHash(), std::move(event->tx)); //TODO: add error handling in case not saved
-//            }
-//        }
     }
 }
 

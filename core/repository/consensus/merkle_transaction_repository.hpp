@@ -1,7 +1,7 @@
 /*
 Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
 http://soramitsu.co.jp
- 
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -25,6 +25,20 @@ limitations under the License.
 
 namespace merkle_transaction_repository {
 
+struct MerkleNode {
+    std::string hash;
+    std::string parent;
+    std::tuple<std::string, std::string> children;
+
+    bool isRoot() {
+        return parent.empty();
+    }
+
+    bool isLeaf() {
+        return std::get<0>(children).empty();
+    }
+};
+
 bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
 
 bool leafExists(std::string const hash);
@@ -32,6 +46,12 @@ bool leafExists(std::string const hash);
 std::string getLeaf(std::string const hash);
 
 unsigned long long getLastLeafOrder();
+
+MerkleNode calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
+    std::unique_ptr<MerkleNode> merkleRoot = std::make_unique<MerkleNode>();
+    return merkleRoot;
+}
+
 };  // namespace merkle_transaction_repository
 
 #endif  // CORE_REPOSITORY_MERKLETRANSACTIONREPOSITORY_HPP_
