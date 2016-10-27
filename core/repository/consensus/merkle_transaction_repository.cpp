@@ -25,18 +25,28 @@ limitations under the License.
 #include "../../crypto/merkle_node.hpp"
 #include "../../crypto/merkle.hpp"
 
+
 namespace merkle_transaction_repository {
 
 using abs_tx = abstract_transaction::AbstractTransaction;
 
-std::vector<std::unique_ptr<abs_tx>> transactions;
+struct MerkleNode {
+    std::string hash;
+    std::string parent;
+    std::tuple<std::string, std::string> children;
 
-// WIP
-//std::unique_ptr<merkle::MerkleRoot> merkle_root;
+    bool isRoot() {
+        return nullptr == parent;
+    }
+
+    bool isLeaf() {
+        return nullptr == children;
+    }
+};
 
 bool commit(std::string hash, const std::unique_ptr<abs_tx> &tx) {
     std::vector<std::tuple<std::string, std::string>> batchCommit
-      = {std::tuple<std::string, std::string>("lastAdded", tx->getAsText()),
+      = {std::tuple<std::string, std::string>("lastOrder", tx->or),
          std::tuple<std::string, std::string>(tx->getHash(), tx->getAsText())};
 
     return repository::world_state_repository::addBatch(batchCommit);
@@ -53,6 +63,6 @@ std::string getLeaf(std::string const hash) {
 unsigned long long getLastLeafOrder() {
     std::string lastAdded = repository::world_state_repository::lastAdded();
     //TODO: convert string->abstract transaction
-    return ->order;//TODO:
+    return ->order; //TODO:
 }
 };  // namespace merkle_transaction_repository
