@@ -24,6 +24,7 @@ limitations under the License.
 #include "../../util/logger.hpp"
 #include "../../crypto/merkle_node.hpp"
 #include "../../crypto/merkle.hpp"
+#include "../../crypto/hash.hpp"
 
 #include <string>
 
@@ -80,11 +81,15 @@ std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_eve
         lastInsertionNode->parent->children = std::tuple<std::string, std::string>(left, event->tx->getAsText());
 
         // Propagate up the tree to the root
-        lastInsertionNode->parent->hash = hash(left, event->tx->getHash());
+        std::unique_ptr<MerkleNode> currNode = lastInsertionNode->parent;
+        while (!currNode->isRoot()) {
+            // find insertion point for new node
+        }
+        lastInsertionNode->parent->hash = hash::sha3_256_hex(left + event->tx->getHash());
 
-        repository::world_state_repository::add(lastInsertionNode->parent->hash, lastInsertionNode->getAsText());// TODO: create getAsText
     } else {
         // create a new node and put it on the left
+
     }
 
     std::string currRoot = repository::world_state_repository::find("merkle_root");
@@ -93,14 +98,6 @@ std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_eve
     }
     //TODO: convert currRoot string to MerkleNode
     std::unique_ptr<MerkleNode> currMerkleRoot = convert(currRoot);
-
-    std::unique_ptr<MerkleNode> currNode;
-    while (!currNode->isLeaf()) {
-        // find insertion point for new node
-
-    }
-
-//            newMerkleLeaf->parent =
 
     return newMerkleRoot;
 }
