@@ -28,48 +28,48 @@ limitations under the License.
 #include <string>
 namespace merkle_transaction_repository {
 
-using abs_tx = abstract_transaction::AbstractTransaction;
+    using abs_tx = abstract_transaction::AbstractTransaction;
 
-struct MerkleNode {
-    std::string hash;
-    std::string parent;
-    std::tuple<std::string, std::string> children;
+    struct MerkleNode {
+        std::string hash;
+        std::string parent;
+        std::tuple<std::string, std::string> children;
 
-    bool isRoot() {
-        return parent.empty();
-    }
+        bool isRoot() {
+            return parent.empty();
+        }
 
-    bool isLeaf() {
-        return std::get<0>(children).empty();
-    }
-};
-
-bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
-    
-
-
-    std::vector<std::tuple<std::string, std::string>> batchCommit
-      = {
-            std::tuple<std::string, std::string>("lastOrder", tx->getAsText()),
-            std::tuple<std::string, std::string>(tx->getHash(), tx->getAsText())
+        bool isLeaf() {
+            return std::get<0>(children).empty();
+        }
     };
 
-    return repository::world_state_repository::addBatch<
-            std::string
+    bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
+
+
+
+        std::vector<std::tuple<std::string, std::string>> batchCommit
+                = {
+                        std::tuple<std::string, std::string>("lastOrder", event->tx->getAsText()),
+                        std::tuple<std::string, std::string>(event->tx->getHash(), event->tx->getAsText())
+                };
+
+        return repository::world_state_repository::addBatch<
+                std::string
         >(batchCommit);
-}
+    }
 
-bool leafExists(std::string const hash) {
-    return !repository::world_state_repository::find(hash).empty();
-}
+    bool leafExists(std::string const hash) {
+        return !repository::world_state_repository::find(hash).empty();
+    }
 
-std::string getLeaf(std::string const hash) {
-    return repository::world_state_repository::find(hash);
-}
+    std::string getLeaf(std::string const hash) {
+        return repository::world_state_repository::find(hash);
+    }
 
-unsigned long long getLastLeafOrder() {
-    std::string lastAdded = repository::world_state_repository::lastAdded();
-    //TODO: convert string->abstract transaction
-    // return ->order; //TODO:
-}
+    unsigned long long getLastLeafOrder() {
+        std::string lastAdded = repository::world_state_repository::lastAdded();
+        //TODO: convert string->abstract transaction
+        // return ->order; //TODO:
+    }
 };  // namespace merkle_transaction_repository
