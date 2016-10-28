@@ -31,7 +31,7 @@ struct ConsensusEvent {
 
     std::unique_ptr<abstract_transaction::AbstractTransaction> tx;
     std::vector<std::string> signatures;
-    std::string merkleRoot;
+    std::string merkleRootHash;
 
     unsigned long long order = 0;
     std::vector<std::string> merkleRootSignatures;

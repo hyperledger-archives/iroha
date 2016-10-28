@@ -1,5 +1,6 @@
 /*
 Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+http://soramitsu.co.jp
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,6 +25,35 @@ limitations under the License.
 
 namespace merkle_transaction_repository {
 
+struct MerkleNode {
+    std::string hash;
+    std::string parent;
+    std::tuple<std::string, std::string> children;
+
+    bool isRoot() {
+        return parent.empty();
+    }
+
+    bool isLeaf() {
+        return std::get<0>(children).empty();
+    }
+
+    static std::string serialize(const MerkleNode node) {
+        std::map<std::string, std::string> translateJSON; // key: ハッシュ, value: 変数の中身
+        translateJSON.insert(std::make_pair("hash", node.hash));
+        translateJSON.insert(std::make_pair("parent", node.parent));
+        translateJSON.insert(std::make_pair("left_child", std::get<0>(node.children)));
+        translateJSON.insert(std::make_pair("right_child", std::get<1>(node.children)));
+
+        //TODO: create convertToJSON function
+
+    }
+
+    static  MerkleNode deserialize(std::string jsonStr) {
+        //TODO:
+    }
+};
+
 bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
 
 bool leafExists(std::string const hash);
@@ -31,6 +61,9 @@ bool leafExists(std::string const hash);
 std::string getLeaf(std::string const hash);
 
 unsigned long long getLastLeafOrder();
+
+std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
+
 };  // namespace merkle_transaction_repository
 
 #endif  // CORE_REPOSITORY_MERKLETRANSACTIONREPOSITORY_HPP_
