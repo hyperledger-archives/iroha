@@ -3,9 +3,10 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/fa0f4ce83e584fc4a32b646536dd40eb)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=soramitsu/iroha&amp;utm_campaign=Badge_Grade)
 [![Documentation Status](https://readthedocs.org/projects/iroha/badge/?version=latest)](http://iroha.readthedocs.io/en/latest/?badge=latest)
 
-いろは(iroha) is ...  
-![alt tag](https://raw.githubusercontent.com/soramitsu/iroha/master/LGTM.gif)
-  
+いろは (Iroha) is a simple, distributed ledger.
+
+![alt tag](Iroha_2.png)
+
 # Pull Requests
 Please include a developer certificate with pull requests: http://developercertificate.org/
 
