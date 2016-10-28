@@ -37,7 +37,7 @@ bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
     std::vector<std::tuple<std::string, std::string>> batchCommit
       = {
 //            std::tuple<std::string, std::string>("lastOrder", tx->getAsText()),TODO: decide this
-            std::tuple<std::string, std::string>(tx->getHash(), tx->getAsText())
+            std::tuple<std::string, std::string>(event->tx->getHash(), event->tx->getAsText())
     };
 
     return repository::world_state_repository::addBatch<
@@ -70,7 +70,7 @@ std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_eve
         return newMerkleLeaf;
     }
 
-    std::unique_ptr<MerkleNode> lastInsertionNode = convert(lastInsertion); //TODO: create convert function
+    MerkleNode lastInsertionNode = MerkleNode.serialize(lastInsertion); //TODO: create convert function
 
     std::tuple<std::string, std::string> children = lastInsertionNode->parent->children;
     std::string right = std::get<1>(children);
@@ -97,7 +97,7 @@ std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_eve
         return newMerkleLeaf;
     }
     //TODO: convert currRoot string to MerkleNode
-    std::unique_ptr<MerkleNode> currMerkleRoot = convert(currRoot);
+    MerkleNode currMerkleRoot = MerkleNode.serialize(currRoot);  //TODO:
 
     return newMerkleRoot;
 }
