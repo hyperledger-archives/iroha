@@ -78,8 +78,13 @@ std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_eve
         // insert the event's transaction as the right child
         std::string left = std::get<0>(children);
         lastInsertionNode->parent->children = std::tuple<std::string, std::string>(left, event->tx->getAsText());
-    } else {
 
+        // Propagate up the tree to the root
+        lastInsertionNode->parent->hash = hash(left, event->tx->getHash());
+
+        repository::world_state_repository::add(lastInsertionNode->parent->hash, lastInsertionNode->getAsText());// TODO: create getAsText
+    } else {
+        // create a new node and put it on the left
     }
 
     std::string currRoot = repository::world_state_repository::find("merkle_root");
