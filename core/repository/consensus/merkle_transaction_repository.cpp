@@ -63,16 +63,39 @@ std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_eve
     std::unique_ptr<MerkleNode> newMerkleRoot = std::make_unique<MerkleNode>();
 
     newMerkleLeaf->hash = event->getHash();
-    newMerkleLeaf->isLeaf()
+
+    std::string lastInsertion = repository::world_state_repository::find("last_insertion");
+    if (lastInsertion.empty()) {
+        return newMerkleLeaf;
+    }
+
+    std::unique_ptr<MerkleNode> lastInsertionNode = convert(lastInsertion); //TODO: create convert function
+
+    std::tuple<std::string, std::string> children = lastInsertionNode->parent->children;
+    std::string right = std::get<1>(children);
+
+    if (right.empty()) {
+        // insert the event's transaction as the right child
+        std::string left = std::get<0>(children);
+        lastInsertionNode->parent->children = std::tuple<std::string, std::string>(left, event->tx->getAsText());
+    } else {
+
+    }
 
     std::string currRoot = repository::world_state_repository::find("merkle_root");
     if (currRoot.empty()) {
         return newMerkleLeaf;
     }
-    //TODO: convert currRoot to MerkleNode
+    //TODO: convert currRoot string to MerkleNode
     std::unique_ptr<MerkleNode> currMerkleRoot = convert(currRoot);
 
-    while (c
+    std::unique_ptr<MerkleNode> currNode;
+    while (!currNode->isLeaf()) {
+        // find insertion point for new node
+
+    }
+
+//            newMerkleLeaf->parent =
 
     return newMerkleRoot;
 }
