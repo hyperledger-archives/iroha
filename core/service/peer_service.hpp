@@ -48,9 +48,15 @@ namespace peer{
             Node& operator = (const Node&) = default;
            
 
-            std::string getIP() const;
-            std::string getPublicKey() const;
-            double getTrustScore() const;
+            std::string getIP() const{
+                return ip;
+            }
+            std::string getPublicKey() const{
+                return publicKey;
+            }
+            double getTrustScore() const{
+                return trustScore;
+            }
     };
 
 

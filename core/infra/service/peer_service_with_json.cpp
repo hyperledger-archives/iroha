@@ -1,9 +1,17 @@
 
 #include "../../service/peer_service.hpp"
 
+#include <iostream>  // for debug writing
+#include <string>    // useful for reading and writing
+
+#include <fstream>   // ifstream, ofstream
+#include <sstream>   // istringstream
 #include <json.hpp>
+#include <vector>
 
 namespace peer {
+
+    using json = nlohmann::json;
 
     std::string openConfig(){
         std::ifstream ifs("../../../config/sumeragi.json");
@@ -36,13 +44,14 @@ namespace peer {
     }
 
     std::vector<Node> getPeerList(){
-        vector<Node> nodes;
+        std::vector<Node> nodes;
         try{
             auto data = json::parse(openConfig());
-            for(const auto& peer : data["group"]){
+            for(const auto& peer : data["group"].get<std::vector<json>>()){
                 nodes.push_back(Node(
                     peer["ip"].get<std::string>(),
-                    peer["privateKey"].get<std::string>()
+                    peer["privateKey"].get<std::string>(),
+                    1
                 ));
             }
             return nodes;

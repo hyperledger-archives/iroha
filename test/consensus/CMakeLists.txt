@@ -27,7 +27,7 @@ target_link_libraries(sumeragi_test
     transfer_transaction
     sumeragi
     connection_with_aeron
-    peer_service
+    peer_service_with_json
     ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread)
 add_test(
     NAME sumeragi_test

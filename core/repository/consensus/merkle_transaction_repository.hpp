@@ -20,6 +20,7 @@ limitations under the License.
 
 #include <string>
 #include <memory>
+#include <unordered_map>
 #include "../../model/transactions/abstract_transaction.hpp"
 #include "../../consensus/consensus_event.hpp"
 
@@ -30,7 +31,15 @@ struct MerkleNode {
     std::string parent;
     std::tuple<std::string, std::string> children;
 
+    MerkleNode(std::unordered_map<std::string, std::string> translateJSON) {
+
+    }
+    MerkleNode() {
+
+    }
+
     bool isRoot() {
+
         return parent.empty();
     }
 
@@ -38,20 +47,18 @@ struct MerkleNode {
         return std::get<0>(children).empty();
     }
 
-    static std::string serialize(const MerkleNode node) {
-        std::map<std::string, std::string> translateJSON; // key: ハッシュ, value: 変数の中身
-        translateJSON.insert(std::make_pair("hash", node.hash));
-        translateJSON.insert(std::make_pair("parent", node.parent));
-        translateJSON.insert(std::make_pair("left_child", std::get<0>(node.children)));
-        translateJSON.insert(std::make_pair("right_child", std::get<1>(node.children)));
+    std::string serialize() {
+        std::unordered_map<std::string, std::string> translateJSON; // key: ハッシュ, value: 変数の中身
+        translateJSON.insert(std::make_pair("hash", hash));
+        translateJSON.insert(std::make_pair("parent", parent));
+        translateJSON.insert(std::make_pair("left_child", std::get<0>(children)));
+        translateJSON.insert(std::make_pair("right_child", std::get<1>(children)));
 
         //TODO: create convertToJSON function
 
     }
 
-    static  MerkleNode deserialize(std::string jsonStr) {
-        //TODO:
-    }
+
 };
 
 bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event);

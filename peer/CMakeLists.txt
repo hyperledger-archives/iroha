@@ -38,7 +38,7 @@ target_link_libraries(iroha-main
   logger
   http_server_with_cappuccino
   connection_with_aeron
-  peer_service
+  peer_service_with_json
   pthread
 )
 

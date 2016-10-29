@@ -32,54 +32,13 @@ namespace merkle_transaction_repository {
 
     using abs_tx = abstract_transaction::AbstractTransaction;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
-
-    std::vector<std::tuple<std::string, std::string>> batchCommit
-      = {
-//            std::tuple<std::string, std::string>("lastOrder", tx->getAsText()),TODO: decide this
-            std::tuple<std::string, std::string>(tx->getHash(), tx->getAsText())
-    };
-=======
-=======
->>>>>>> feature-sumeragi
-    struct MerkleNode {
-        std::string hash;
-        std::string parent;
-        std::tuple<std::string, std::string> children;
-
-        bool isRoot() {
-            return parent.empty();
-        }
-
-        bool isLeaf() {
-            return std::get<0>(children).empty();
-        }
-    };
-
     bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
 
-
-<<<<<<< HEAD
->>>>>>> feature-sumeragi
-=======
-=======
-bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
-
-    std::vector<std::tuple<std::string, std::string>> batchCommit
-      = {
-//            std::tuple<std::string, std::string>("lastOrder", tx->getAsText()),TODO: decide this
-            std::tuple<std::string, std::string>(event->tx->getHash(), event->tx->getAsText())
-    };
->>>>>>> 5970d84c1d02b85e5a217cb2cde7fa8bffefd7e9
->>>>>>> feature-sumeragi
-
         std::vector<std::tuple<std::string, std::string>> batchCommit
-                = {
-                        std::tuple<std::string, std::string>("lastOrder", event->tx->getAsText()),
-                        std::tuple<std::string, std::string>(event->tx->getHash(), event->tx->getAsText())
-                };
+          = {
+    //            std::tuple<std::string, std::string>("lastOrder", tx->getAsText()),TODO: decide this
+                std::tuple<std::string, std::string>(event->tx->getHash(), event->tx->getAsText())
+        };
 
         return repository::world_state_repository::addBatch<
                 std::string
@@ -94,73 +53,57 @@ bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
         return repository::world_state_repository::find(hash);
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
     unsigned long long getLastLeafOrder() {
         std::string lastAdded = repository::world_state_repository::lastAdded();
         //TODO: convert string->abstract transaction
         // return ->order; //TODO:
-    }
-=======
->>>>>>> feature-sumeragi
-unsigned long long getLastLeafOrder() {
-    std::string lastAdded = repository::world_state_repository::lastAdded();
-    //TODO: convert string->abstract transaction
-    // return ->order; //TODO:
-}
-
-std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
-    std::unique_ptr<MerkleNode> newMerkleLeaf = std::make_unique<MerkleNode>();
-    std::unique_ptr<MerkleNode> newMerkleRoot = std::make_unique<MerkleNode>();
-
-    newMerkleLeaf->hash = event->getHash();
-
-    std::string lastInsertion = repository::world_state_repository::find("last_insertion");
-    if (lastInsertion.empty()) {
-        return newMerkleLeaf;
+        return 0l;
     }
 
-    MerkleNode lastInsertionNode = MerkleNode.serialize(lastInsertion); //TODO: create convert function
 
-    std::tuple<std::string, std::string> children = lastInsertionNode->parent->children;
-    std::string right = std::get<1>(children);
+    std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
+        std::unique_ptr<MerkleNode> newMerkleLeaf = std::make_unique<MerkleNode>();
+        std::unique_ptr<MerkleNode> newMerkleRoot = std::make_unique<MerkleNode>();
 
-    if (right.empty()) {
-        // insert the event's transaction as the right child
-        std::string left = std::get<0>(children);
-        lastInsertionNode->parent->children = std::tuple<std::string, std::string>(left, event->tx->getAsText());
+        newMerkleLeaf->hash = event->getHash();
 
-        // Propagate up the tree to the root
-        std::unique_ptr<MerkleNode> currNode = lastInsertionNode->parent;
-        while (!currNode->isRoot()) {
-            // find insertion point for new node
+        std::string lastInsertion = repository::world_state_repository::find("last_insertion");
+        if (lastInsertion.empty()) {
+            return newMerkleLeaf;
         }
-        lastInsertionNode->parent->hash = hash::sha3_256_hex(left + event->tx->getHash());
 
-    } else {
-        // create a new node and put it on the left
+        // TODO: to Map
+        std::unordered_map<std::string, std::string> dumpLastInsertion;
+        MerkleNode lastInsertionNode = MerkleNode(dumpLastInsertion); //TODO: create convert function
 
+        std::tuple<std::string, std::string> children = lastInsertionNode.children;
+        std::string right = std::get<1>(children);
+
+        if (right.empty()) {
+            // insert the event's transaction as the right child
+            std::string left = std::get<0>(children);
+            lastInsertionNode.children = std::tuple<std::string, std::string>(left, event->tx->getAsText());
+
+            // Propagate up the tree to the root
+            // std::unique_ptr<MerkleNode> currNode = lastInsertionNode.parent;
+            // while (!currNode->isRoot()) {
+                // find insertion point for new node
+            // }
+            // lastInsertionNode.parent = hash::sha3_256_hex(left + event->tx->getHash());
+
+        } else {
+            // create a new node and put it on the left
+
+        }
+
+        std::string currRoot = repository::world_state_repository::find("merkle_root");
+        if (currRoot.empty()) {
+            return newMerkleLeaf;
+        }
+        //TODO: convert currRoot string to MerkleNode
+        std::unordered_map<std::string, std::string> dumpCurrRoot;
+        MerkleNode currMerkleRoot = MerkleNode(dumpCurrRoot);  //TODO:
+
+        return newMerkleRoot;
     }
-
-    std::string currRoot = repository::world_state_repository::find("merkle_root");
-    if (currRoot.empty()) {
-        return newMerkleLeaf;
-    }
-    //TODO: convert currRoot string to MerkleNode
-    MerkleNode currMerkleRoot = MerkleNode.serialize(currRoot);  //TODO:
-
-    return newMerkleRoot;
-}
-<<<<<<< HEAD
-=======
-    unsigned long long getLastLeafOrder() {
-        std::string lastAdded = repository::world_state_repository::lastAdded();
-        //TODO: convert string->abstract transaction
-        // return ->order; //TODO:
-    }
->>>>>>> feature-sumeragi
-=======
->>>>>>> 5970d84c1d02b85e5a217cb2cde7fa8bffefd7e9
->>>>>>> feature-sumeragi
 };  // namespace merkle_transaction_repository

@@ -1,13 +1,10 @@
 /*
 Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
 http://soramitsu.co.jp
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
          http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -101,34 +98,10 @@ namespace sumeragi {
         return merkle_transaction_repository::getLastLeafOrder() + 1;
     }
 
-
-    if (event->signatures.empty() && context->isSumeragi) {
-        // Determine the order for processing this event
-        event->order = getNextOrder();
-    } else if (!event->signatures.empty()) {
-        // Check if we have at least 2f+1 signatures needed for Byzantine fault tolerance
-        if (event->signatures.size() >= context->maxFaulty*2 + 1) {
-            // Check Merkle roots to see if match for new state
-            //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
-            //Try applying transaction locally and compute the merkle root
-            merkle_transaction_repository::MerkleNode newRoot = merkle_transaction_repository::calculateNewRoot(event);
-
-            // See if the merkle root matches or not
-            if (newRoot.hash != event->merkleRootHash) {
-                panic(event);
-                return;
-            }
-
-            // Commit locally
-            merkle_transaction_repository::commit(event); //TODO: add error handling in case not saved
-        } else {
-            // This is a new event, so we should verify, sign, and broadcast it
-            event->addSignature(signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
-            if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() == peer::getMyPublicKey()) {
-                connection::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), event->getHash()); // Think In Process
-            } else {
-                connection::sendAll(event->getHash()); // TODO: Think In Process
-            }
+    void processTransaction(std::unique_ptr<ConsensusEvent> event) {
+        if (!transaction_validator::isValid<abstract_transaction::AbstractTransaction>(*event->tx)) {
+            return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
+        }
 
         if (event->signatures.empty() && context->isSumeragi) {
             // Determine the order for processing this event
@@ -138,18 +111,24 @@ namespace sumeragi {
             if (event->signatures.size() >= context->maxFaulty*2 + 1) {
                 // Check Merkle roots to see if match for new state
                 //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
-                //TODO: try applying transaction locally and compute the merkle root
-                //TODO: see if the merkle root matches or not
+                //Try applying transaction locally and compute the merkle root
+                std::unique_ptr<merkle_transaction_repository::MerkleNode> newRoot = merkle_transaction_repository::calculateNewRoot(event);
+
+                // See if the merkle root matches or not
+                if (newRoot->hash != event->merkleRootHash) {
+                    panic(event);
+                    return;
+                }
 
                 // Commit locally
-                //merkle_transaction_repository::commit(event->getHash(), std::move(event->tx)); //TODO: add error handling in case not saved
+                merkle_transaction_repository::commit(event); //TODO: add error handling in case not saved
             } else {
                 // This is a new event, so we should verify, sign, and broadcast it
                 event->addSignature(signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
                 if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() == peer::getMyPublicKey()) {
                     connection::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), event->getHash()); // Think In Process
                 } else {
-                    connection::sendAll(event->getHash()); // Think In Process
+                    connection::sendAll(event->getHash()); // TODO: Think In Process
                 }
 
                 setAwkTimer(3000, [&](){
@@ -211,12 +190,12 @@ namespace sumeragi {
  */
     void determineConsensusOrder() {
         std::sort(context->validatingPeers.begin(), context->validatingPeers.end(),
-                  [](const std::unique_ptr<peer::Node> &lhs,
-                     const std::unique_ptr<peer::Node> &rhs) {
-                      return lhs->getTrustScore() > rhs->getTrustScore()
-                             || (lhs->getTrustScore() == rhs->getTrustScore()
-                                 && lhs->getPublicKey() < rhs->getPublicKey());
-                  }
+              [](const std::unique_ptr<peer::Node> &lhs,
+                 const std::unique_ptr<peer::Node> &rhs) {
+                  return lhs->getTrustScore() > rhs->getTrustScore()
+                         || (lhs->getTrustScore() == rhs->getTrustScore()
+                             && lhs->getPublicKey() < rhs->getPublicKey());
+              }
         );
 
         context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() == context->myPublicKey;
