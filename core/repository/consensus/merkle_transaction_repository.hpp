@@ -23,8 +23,11 @@ limitations under the License.
 #include <unordered_map>
 #include "../../model/transactions/abstract_transaction.hpp"
 #include "../../consensus/consensus_event.hpp"
+#include <json.hpp>
 
 namespace merkle_transaction_repository {
+
+using nlohmann::json;
 
 struct MerkleNode {
     std::string hash;
@@ -32,6 +35,10 @@ struct MerkleNode {
     std::tuple<std::string, std::string> children;
 
     explicit MerkleNode(std::unordered_map<std::string, std::string> translateJSON) {
+
+    }
+
+    explicit MerkleNode(std::string jsonStr) {
 
     }
 
@@ -47,15 +54,15 @@ struct MerkleNode {
         return std::get<0>(children).empty();
     }
 
+    std::string serializeToJSON() {
+        json jsonObj = {
+                {"hash", hash},
+                {"parent", parent},
+                {"left_child", std::get<0>(children)},
+                {"right_child", std::get<1>(children)}
+        };
 
-    std::string serialize() {
-        std::unordered_map<std::string, std::string> translateJSON; // key: ハッシュ, value: 変数の中身
-        translateJSON.insert(std::make_pair("hash", hash));
-        translateJSON.insert(std::make_pair("parent", parent));
-        translateJSON.insert(std::make_pair("left_child", std::get<0>(children)));
-        translateJSON.insert(std::make_pair("right_child", std::get<1>(children)));
-
-        //TODO: create convertToJSON function
+        return jsonObj.dump();
     }
 };
 
