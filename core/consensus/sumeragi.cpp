@@ -74,6 +74,7 @@ namespace sumeragi {
                             std::vector<std::unique_ptr<peer::Node>> peers) {
 
         logger::info("sumeragi", "initialize");
+        merkle_transaction_repository::initLeaf();
 
         context = std::make_unique<Context>(std::move(peers));
         peers.clear();
@@ -89,8 +90,16 @@ namespace sumeragi {
         context->panicCount = 0;
         context->myPublicKey = myPublicKey;
 
+        logger::info("sumeragi", "initialize numValidatingPeers :" + context->numValidatingPeers);
+        logger::info("sumeragi", "initialize maxFaulty :" + context->maxFaulty);
+        logger::info("sumeragi", "initialize proxyTailNdx :" + context->proxyTailNdx);
+
+        logger::info("sumeragi", "initialize panicCount :" + context->panicCount);
+        logger::info("sumeragi", "initialize myPublicKey :" + context->myPublicKey);
+
         //TODO: move the peer service and ordering code to another place
         determineConsensusOrder(); // side effect is to modify validatingPeers
+        logger::info("sumeragi", "initialize is sumeragi :" + std::to_string(context->isSumeragi));
         logger::info("sumeragi", "initialize.....  complete!");
     }
 
@@ -132,7 +141,7 @@ namespace sumeragi {
                 merkle_transaction_repository::commit(event); //TODO: add error handling in case not saved
             } else {
                 // This is a new event, so we should verify, sign, and broadcast it
-                event->addSignature(signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
+                event->addSignature( peer::getMyPublicKey(), signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
                 if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() == peer::getMyPublicKey()) {
                     connection::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), event->getHash()); // Think In Process
                 } else {
@@ -204,10 +213,17 @@ namespace sumeragi {
               }
         );
 
+        logger::info("sumeragi", "determineConsensusOrder sorted!");
+        logger::info("sumeragi", "determineConsensusOrder myPubkey:"+context->myPublicKey);
+        for(const auto& peer : context->validatingPeers){
+            logger::info("sumeragi", "determineConsensusOrder PublicKey:"+peer->getPublicKey());
+            logger::info("sumeragi", "determineConsensusOrder ip:"+peer->getIP());
+        }
         context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() == context->myPublicKey;
     }
 
     void loop() {
+        logger::info("sumeragi", "=##################=");
         logger::info("sumeragi", "start main loop");
 
         while (true) {  // TODO: replace with callback linking the event repository?
@@ -232,7 +248,6 @@ namespace sumeragi {
                 for (auto&& event : events) {
 
                     logger::info("sumeragi", "evens order:" + std::to_string(event->order));
-
                     if (!transaction_validator::isValid(*event->tx)) {
                         continue;
                     }

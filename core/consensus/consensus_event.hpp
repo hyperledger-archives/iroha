@@ -22,6 +22,8 @@ limitations under the License.
 #include <functional>
 #include <memory>
 #include <type_traits>
+#include <unordered_map>
+#include <algorithm>
 
 #include "../crypto/signature.hpp"
 
@@ -32,10 +34,10 @@ namespace consensus_event {
 struct ConsensusEvent {
 
     std::unique_ptr<abstract_transaction::AbstractTransaction> tx;
-    std::map<std::string, std::string> txSignatures; // map of public keys→signatures
+    std::unordered_map<std::string, std::string> txSignatures; // map of public keys→signatures
 
     std::string merkleRootHash;
-    std::map<std::string, std::string> merkleRootSignatures;
+    std::unordered_map<std::string, std::string> merkleRootSignatures;
 
     unsigned long long order = 0;
 
@@ -47,16 +49,20 @@ struct ConsensusEvent {
             tx(nullptr)
     {}
 
-    void addSignature(const std::string& signature){
-        signatures.push_back(signature);
+    void addSignature(const std::string& publicKey, const std::string& signature){
+        txSignatures[publicKey] = signature;
     }
 
     std::string getHash() const {
         return tx->getHash();
     }
 
-    std::string getNumValidSignatures() const {
-        return std::count_if(signatures.begin(), signatures.end(), [](pair<const std::string, const std::string> record){return signature::verify(record->first, tx->getHash(), record->second);});
+    int getNumValidSignatures() const {
+        return std::count_if(
+            txSignatures.begin(), txSignatures.end(),
+            [hash = tx->getHash()](std::pair<const std::string, const std::string> record){
+                return signature::verify(record.second, hash, record.first);
+        });
     }
 
     operator std::string() const{

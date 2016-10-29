@@ -19,6 +19,7 @@ limitations under the License.
 
 #include <vector>
 #include <string>
+#include <memory>
 
 namespace peer{
 
@@ -64,7 +65,7 @@ namespace peer{
 
     std::string getPrivateKey();
 
-    std::vector<Node> getPeerList();
+    std::vector<std::unique_ptr<peer::Node>> getPeerList();
 };
 
 #endif
