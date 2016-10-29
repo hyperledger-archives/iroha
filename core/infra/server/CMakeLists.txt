@@ -1,4 +1,3 @@
-
 set(JSON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/json")
 
 include_directories(

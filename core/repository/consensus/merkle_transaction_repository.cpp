@@ -60,7 +60,7 @@ namespace merkle_transaction_repository {
         // return ->order; //TODO:
         return 0l;
     }
-    
+
     void initLeaf(){
         repository::world_state_repository::add("last_insertion", random_service::makeRandomHash());
     }
@@ -76,9 +76,8 @@ namespace merkle_transaction_repository {
             return newMerkleLeaf;
         }
 
-        // TODO: to Map
-        std::unordered_map<std::string, std::string> dumpLastInsertion;
-        MerkleNode lastInsertionNode = MerkleNode(dumpLastInsertion); //TODO: create convert function
+        std::string lastInsertionJSON = repository::world_state_repository::find(lastInsertionHash);
+        MerkleNode lastInsertionNode = MerkleNode(lastInsertionJSON); //TODO: create convert function
 
         std::tuple<std::string, std::string> children = lastInsertionNode.children;
         std::string right = std::get<1>(children);
@@ -100,13 +99,12 @@ namespace merkle_transaction_repository {
 
         }
 
-        std::string currRoot = repository::world_state_repository::find("merkle_root");
-        if (currRoot.empty()) {
+        const std::string currRootJSON = repository::world_state_repository::find("merkle_root");
+        if (currRootJSON.empty()) {
             return newMerkleLeaf;
         }
-        //TODO: convert currRoot string to MerkleNode
-        std::unordered_map<std::string, std::string> dumpCurrRoot;
-        MerkleNode currMerkleRoot = MerkleNode(dumpCurrRoot);  //TODO:
+
+        MerkleNode currMerkleRoot = MerkleNode(currRootJSON);
 
         return newMerkleRoot;
     }
