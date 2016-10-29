@@ -11,14 +11,15 @@ link_directories(
     ${ED25519_PATH}
     ${KECCAK_PATH}/bin/generic64
     ${PROJECT_SOURCE_DIR}/core/infra/crypto
-    ${AERON_PATH}/cpbuild/Debug/lib
+    ${AERON_PATH}/cppbuild/Debug/lib
 )
 
-add_executable(sumeragi_test_no_gtest
+add_executable(sumeragi_test
     sumeragi_test.cpp
 )
-target_link_libraries(sumeragi_test_no_gtest
+target_link_libraries(sumeragi_test
     snappy
+    aeron_client
     event_repository
     base64
     signature

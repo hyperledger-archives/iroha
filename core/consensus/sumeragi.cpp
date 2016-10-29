@@ -132,7 +132,7 @@ namespace sumeragi {
                 merkle_transaction_repository::commit(event); //TODO: add error handling in case not saved
             } else {
                 // This is a new event, so we should verify, sign, and broadcast it
-                event->addSignature(signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
+                event->addSignature( peer::getMyPublicKey(), signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()));
                 if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() == peer::getMyPublicKey()) {
                     connection::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), event->getHash()); // Think In Process
                 } else {
