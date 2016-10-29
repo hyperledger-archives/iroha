@@ -99,14 +99,23 @@ namespace sumeragi {
     }
 
     void processTransaction(std::unique_ptr<ConsensusEvent> event) {
+
+        logger::info("sumeragi", "processTransaction()");
         if (!transaction_validator::isValid<abstract_transaction::AbstractTransaction>(*event->tx)) {
             return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
         }
+        logger::info("sumeragi", "valied");
+
+        logger::info("sumeragi", "event->signatures.empty() :" + std::to_string(event->signatures.empty()));
+        logger::info("sumeragi", "context->isSumeragi :" + std::to_string(context->isSumeragi));
 
         if (event->signatures.empty() && context->isSumeragi) {
+            logger::info("sumeragi", "signatures.empty() isSumragi");
             // Determine the order for processing this event
             event->order = getNextOrder();
         } else if (!event->signatures.empty()) {
+            logger::info("sumeragi", "signatures.exist()");
+
             // Check if we have at least 2f+1 signatures needed for Byzantine fault tolerance
             if (event->signatures.size() >= context->maxFaulty*2 + 1) {
                 // Check Merkle roots to see if match for new state
@@ -222,7 +231,11 @@ namespace sumeragi {
                           }
                 );
 
+                logger::info("sumeragi", "sorted " + std::to_string(events.size()));
                 for (auto&& event : events) {
+
+                    logger::info("sumeragi", "evens order:" + std::to_string(event->order));
+
                     if (!transaction_validator::isValid(*event->tx)) {
                         continue;
                     }
