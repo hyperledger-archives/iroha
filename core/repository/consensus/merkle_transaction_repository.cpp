@@ -17,6 +17,7 @@ limitations under the License.
 
 #include "merkle_transaction_repository.hpp"
 #include "../world_state_repository.hpp"
+#include "../../util/random.hpp"
 
 #include <memory>
 #include <iostream>
@@ -45,11 +46,11 @@ namespace merkle_transaction_repository {
         >(batchCommit);
     }
 
-    bool leafExists(std::string const hash) {
+    bool leafExists(const std::string& hash) {
         return !repository::world_state_repository::find(hash).empty();
     }
 
-    std::string getLeaf(std::string const hash) {
+    std::string getLeaf(const std::string& hash) {
         return repository::world_state_repository::find(hash);
     }
 
@@ -60,6 +61,9 @@ namespace merkle_transaction_repository {
         return 0l;
     }
 
+    void initLeaf(){
+        repository::world_state_repository::add("last_insertion", random_service::makeRandomHash());
+    }
 
     std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
         std::unique_ptr<MerkleNode> newMerkleLeaf = std::make_unique<MerkleNode>();

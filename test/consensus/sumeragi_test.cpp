@@ -36,7 +36,8 @@ int main(){
         std::cout<< n->getIP() << std::endl;
     }
 
-    std::string pubKey = "UKsNazVWDZ1oqNBoFpckirYDvwI/LyL9BqNYXVWCqmw=";
+
+    std::string pubKey = peer::getMyPublicKey();
     sumeragi::initializeSumeragi( pubKey, std::move(nodes));
     std::thread http_th( []() {
         sumeragi::loop();

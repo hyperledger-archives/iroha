@@ -31,7 +31,7 @@ struct MerkleNode {
     std::string parent;
     std::tuple<std::string, std::string> children;
 
-    MerkleNode(std::unordered_map<std::string, std::string> translateJSON) {
+    explicit MerkleNode(std::unordered_map<std::string, std::string> translateJSON) {
 
     }
 
@@ -47,6 +47,7 @@ struct MerkleNode {
         return std::get<0>(children).empty();
     }
 
+
     std::string serialize() {
         std::unordered_map<std::string, std::string> translateJSON; // key: ハッシュ, value: 変数の中身
         translateJSON.insert(std::make_pair("hash", hash));
@@ -58,11 +59,13 @@ struct MerkleNode {
     }
 };
 
+void initLeaf();
+
 bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
 
-bool leafExists(std::string const hash);
+bool leafExists(const std::string& hash);
 
-std::string getLeaf(std::string const hash);
+std::string getLeaf(const std::string& hash);
 
 unsigned long long getLastLeafOrder();
 
