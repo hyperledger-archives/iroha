@@ -2,23 +2,24 @@
   "me":{
     "ip":"",
     "name":"mizuki",
-    "public_key":""
+    "publicKey":"",
+    "privateKey":""
   },
   "group":[
     {
       "ip":"",
       "name":"iori",
-      "public_key":""
+      "publicKey":""
     },
     {
       "ip":"",
       "name":"mizuki",
-      "public_key":""
+      "publicKey":""
     },
     {
       "ip":"",
       "name":"natori",
-      "public_key":""
+      "publicKey":""
     }
   ]
 }
