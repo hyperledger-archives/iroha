@@ -24,28 +24,18 @@ limitations under the License.
 #include <memory>
 #include <thread>
 
-/*
- Sample Public key
- UKsNazVWDZ1oqNBoFpckirYDvwI/LyL9BqNYXVWCqmw=
- */
+#include "../../core/service/peer_service.hpp"
 
-/*
- Sample Friend Key
- public: fccpkrZyLlxJUQm8RpJXedWVZfbg2Dde0iPphwD+jQ0=
-*/
 int main(){
     std::string cmd;
-    std::vector<std::unique_ptr<peer::Node>> nodes;
-    nodes.push_back(std::make_unique<peer::Node>(
-            "45.32.158.70",
-            "UKsNazVWDZ1oqNBoFpckirYDvwI/LyL9BqNYXVWCqmw=",
-            1.0
-    ));
-    nodes.push_back(std::make_unique<peer::Node>(
-        "45.32.158.71",
-        "fccpkrZyLlxJUQm8RpJXedWVZfbg2Dde0iPphwD+jQ0=",
-        1.0
-    ));
+    std::vector<std::unique_ptr<peer::Node>> nodes = peer::getPeerList();
+
+    for(const auto& n : nodes){
+        std::cout<< "=========" << std::endl;
+        std::cout<< n->getPublicKey() << std::endl;
+        std::cout<< n->getIP() << std::endl;
+    }
+
     std::string pubKey = "UKsNazVWDZ1oqNBoFpckirYDvwI/LyL9BqNYXVWCqmw=";
     sumeragi::initializeSumeragi( pubKey, std::move(nodes));
     std::thread http_th( []() {
