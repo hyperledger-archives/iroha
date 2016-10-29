@@ -36,7 +36,7 @@ namespace merkle_transaction_repository {
 
         std::vector<std::tuple<std::string, std::string>> batchCommit
           = {
-    //            std::tuple<std::string, std::string>("lastOrder", tx->getAsText()),TODO: decide this
+                std::tuple<std::string, std::string>("last_insertion", event->tx->getHash()),
                 std::tuple<std::string, std::string>(event->tx->getHash(), event->tx->getAsText())
         };
 
@@ -54,7 +54,7 @@ namespace merkle_transaction_repository {
     }
 
     unsigned long long getLastLeafOrder() {
-        std::string lastAdded = repository::world_state_repository::lastAdded();
+        std::string lastAdded = repository::world_state_repository::find("last_insertion");
         //TODO: convert string->abstract transaction
         // return ->order; //TODO:
         return 0l;
