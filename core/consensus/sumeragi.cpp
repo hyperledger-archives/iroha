@@ -103,12 +103,12 @@ namespace sumeragi {
             return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
         }
 
-        if (event->signatures.empty() && context->isSumeragi) {
+        if (event->txSignatures.empty() && context->isSumeragi) {
             // Determine the order for processing this event
             event->order = getNextOrder();
-        } else if (!event->signatures.empty()) {
+        } else if (!event->txSignatures.empty()) {
             // Check if we have at least 2f+1 signatures needed for Byzantine fault tolerance
-            if (event->signatures.size() >= context->maxFaulty*2 + 1) {
+            if (event->getNumValidSignatures() >= context->maxFaulty*2 + 1) {
                 // Check Merkle roots to see if match for new state
                 //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
                 //Try applying transaction locally and compute the merkle root
@@ -140,26 +140,24 @@ namespace sumeragi {
         }
     }
 
-
-
-/**
-*
-* For example, given:
-* if f := 1, then
-*  _________________    _________________
-* /        A        \  /        B        \
-* |---|  |---|  |---|  |---|  |---|  |---|
-* | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
-* |---|  |---|  |---|  |---|  |---|  |---|,
-*
-* if 2f+1 signature are not received within the timer's limit, then
-* the set of considered validators, A, is expanded by f (e.g., by 1 in the example below):
-*  ________________________    __________
-* /           A            \  /    B     \
-* |---|  |---|  |---|  |---|  |---|  |---|
-* | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
-* |---|  |---|  |---|  |---|  |---|  |---|.
-*/
+    /**
+    *
+    * For example, given:
+    * if f := 1, then
+    *  _________________    _________________
+    * /        A        \  /        B        \
+    * |---|  |---|  |---|  |---|  |---|  |---|
+    * | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
+    * |---|  |---|  |---|  |---|  |---|  |---|,
+    *
+    * if 2f+1 signature are not received within the timer's limit, then
+    * the set of considered validators, A, is expanded by f (e.g., by 1 in the example below):
+    *  ________________________    __________
+    * /           A            \  /    B     \
+    * |---|  |---|  |---|  |---|  |---|  |---|
+    * | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
+    * |---|  |---|  |---|  |---|  |---|  |---|.
+    */
     void panic(const std::unique_ptr<ConsensusEvent>& event) {
         context->panicCount++; // TODO: reset this later
         unsigned long broadcastStart = 2 * context->maxFaulty + 1 + context->maxFaulty * context->panicCount;
@@ -184,10 +182,10 @@ namespace sumeragi {
         }).join();
     }
 
-/**
- * The consensus order is based primarily on the trust scores. If two trust scores
- * are the same, then the order (ascending) of the public keys for the servers are used.
- */
+    /**
+     * The consensus order is based primarily on the trust scores. If two trust scores
+     * are the same, then the order (ascending) of the public keys for the servers are used.
+     */
     void determineConsensusOrder() {
         std::sort(context->validatingPeers.begin(), context->validatingPeers.end(),
               [](const std::unique_ptr<peer::Node> &lhs,
@@ -216,7 +214,7 @@ namespace sumeragi {
                 std::sort(events.begin(), events.end(),
                           [](const std::unique_ptr<ConsensusEvent> &lhs,
                              const std::unique_ptr<ConsensusEvent> &rhs) {
-                              return lhs->signatures.size() > rhs->signatures.size()
+                              return lhs->getNumValidSignatures() > rhs->getNumValidSignatures()
                                      || (context->isSumeragi && lhs->order == 0)
                                      || lhs->order < rhs->order;
                           }
