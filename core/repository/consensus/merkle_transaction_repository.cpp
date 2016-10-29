@@ -60,15 +60,14 @@ namespace merkle_transaction_repository {
         return 0l;
     }
 
-
     std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
         std::unique_ptr<MerkleNode> newMerkleLeaf = std::make_unique<MerkleNode>();
         std::unique_ptr<MerkleNode> newMerkleRoot = std::make_unique<MerkleNode>();
 
         newMerkleLeaf->hash = event->getHash();
 
-        std::string lastInsertion = repository::world_state_repository::find("last_insertion");
-        if (lastInsertion.empty()) {
+        std::string lastInsertionHash = repository::world_state_repository::find("last_insertion");
+        if (lastInsertionHash.empty()) {
             return newMerkleLeaf;
         }
 
