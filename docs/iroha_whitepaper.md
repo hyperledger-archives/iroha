@@ -139,6 +139,18 @@ The state with the Merkle root that has the most transactions in the Merkle tree
 
 ### Data permissions
 
+## Hijiri: Trust system
+
+The trust system is based on rounds. At each round, validating peers that are registered with the membership service perform the following tasks to establish trust (reliability) ratings for the peers:
+
+* ping test
+* version test
+* computational test
+* data consistency test
+
+Which peers validate each other are based on the pairwise distance between hashes (e.g., ```sort(abs(hash && 0x0000ffff - publicKey && 0x0000ffff))```). The hashes are computed based on the public keys of the peers that are concatenated with the round number and then SHA-3 hashed. Rounds occur whenever the Merkle root is less than TODO:XXX. Results are shared in a separate Merkle tree, maintained independently of the transactions (so the systems can run in parallel).
+
+
 ## Appendix
 
 ### A.1. Developing for Iroha

@@ -7,7 +7,7 @@ Iroha is, please see `the main project website <http://iroha.tech>`_.
 
 
 Developer's guide
---------
+-----------------
 
 For new users, and/or for an overview of Iroha's basic functionality, please
 see the :doc:`_devGuide`. The rest of the documentation will assume you're
@@ -20,7 +20,7 @@ Table of Contents
     :numbered:
 
     consensus_events.rst
-    fabric.rst
+    dev_environment.rst
 
 
 
