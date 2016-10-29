@@ -16,6 +16,7 @@ add_executable(world_state_repository_with_leveldb_test
     world_state_repository_with_leveldb_test.cpp
 )
 target_link_libraries(world_state_repository_with_leveldb_test
+    snappy
     leveldb
     snappy
     world_state_repo_with_level_db
