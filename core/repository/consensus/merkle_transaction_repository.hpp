@@ -34,15 +34,11 @@ struct MerkleNode {
     std::string parent;
     std::tuple<std::string, std::string> children;
 
-//    explicit MerkleNode(std::unordered_map<std::string, std::string> translateJSON) {
-//
-//    }
-
     explicit MerkleNode(std::string jsonStr) {
         json jsonObj = json::parse(jsonStr);
-        hash = jsonObj["hash"];
-        parent = jsonObj["parent"];
-        children = std::tuple<std::string, std::string>(jsonObj["left_child"], jsonObj["right_child"]);
+        hash = jsonObj.at(0);
+        parent = jsonObj.at(1);
+        children = std::tuple<std::string, std::string>(jsonObj.at(2), jsonObj.at(3));
     }
 
     MerkleNode() {
@@ -58,12 +54,11 @@ struct MerkleNode {
     }
 
     std::string serializeToJSON() {
-        json jsonObj = {
-                {"hash", hash},
-                {"parent", parent},
-                {"left_child", std::get<0>(children)},
-                {"right_child", std::get<1>(children)}
-        };
+        json jsonObj;
+        jsonObj.push_back(hash);
+        jsonObj.push_back(parent);
+        jsonObj.push_back(std::get<0>(children));
+        jsonObj.push_back(std::get<1>(children));
 
         return jsonObj.dump();
     }

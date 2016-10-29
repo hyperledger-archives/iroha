@@ -55,10 +55,19 @@ namespace merkle_transaction_repository {
     }
 
     unsigned long long getLastLeafOrder() {
-        std::string lastAdded = repository::world_state_repository::find("last_insertion");
-        //TODO: convert string->abstract transaction
-        // return ->order; //TODO:
-        return 0l;
+        std::string lastAddedHash = repository::world_state_repository::find("last_insertion");
+        if (lastAddedHash.empty()) {
+            return 0l;
+        }
+
+        std::string lastAddedJSON = repository::world_state_repository::find(lastAddedHash);
+        if (lastAddedJSON.empty()) {
+            return 0l;
+        }
+
+        auto lastAddedLeaf = json::parse(lastAddedJSON);
+
+        return lastAddedLeaf['order'];
     }
 
     void initLeaf(){
