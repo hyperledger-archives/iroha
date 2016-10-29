@@ -122,6 +122,8 @@ namespace sumeragi {
             logger::info("sumeragi", "signatures.empty() isSumragi");
             // Determine the order for processing this event
             event->order = getNextOrder();
+
+            logger::info("sumeragi", "new  order:" + std::to_string(event->order));
         } else if (!event->txSignatures.empty()) {
             logger::info("sumeragi", "signatures.exist()");
             // Check if we have at least 2f+1 signatures needed for Byzantine fault tolerance
