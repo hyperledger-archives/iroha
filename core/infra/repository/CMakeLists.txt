@@ -14,7 +14,6 @@ ADD_LIBRARY(world_state_repo_with_level_db STATIC world_state_repository_with_le
 target_link_libraries(world_state_repo_with_level_db
   snappy
   leveldb
-  snappy
   logger
   exception
 )
