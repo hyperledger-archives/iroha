@@ -21,6 +21,7 @@ add_executable(sumeragi_test
     sumeragi_test.cpp
 )
 target_link_libraries(sumeragi_test
+    snappy
     event_repository
     base64
     signature
