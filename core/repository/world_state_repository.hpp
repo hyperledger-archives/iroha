@@ -48,8 +48,6 @@ namespace repository {
       );
 
       bool exists(const std::string &key);
-
-      std::string lastAdded();
   };
 
 }; // namespace repository

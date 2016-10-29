@@ -34,12 +34,12 @@ struct MerkleNode {
     MerkleNode(std::unordered_map<std::string, std::string> translateJSON) {
 
     }
+
     MerkleNode() {
 
     }
 
     bool isRoot() {
-
         return parent.empty();
     }
 
@@ -55,10 +55,7 @@ struct MerkleNode {
         translateJSON.insert(std::make_pair("right_child", std::get<1>(children)));
 
         //TODO: create convertToJSON function
-
     }
-
-
 };
 
 bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event);

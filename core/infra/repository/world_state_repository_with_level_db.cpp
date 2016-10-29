@@ -84,7 +84,6 @@ namespace repository {
           return detail::loggerStatus(detail::db->Write(leveldb::WriteOptions(), &batch));
       }
 
-
       template <typename T>
       bool addBatch(const std::vector<std::tuple<T, T>> &tuples) {
           if (nullptr == detail::db) {
@@ -161,17 +160,6 @@ namespace repository {
           std::string result = "";
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &result));
           return result == "";
-      }
-
-      std::string lastAdded() {
-          if (nullptr == detail::db) {
-              detail::loadDb();
-          }
-
-          std::string result = "";
-          // TODO: make this better
-          detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), "lastAdded", &result));
-          return result;
       }
   };
 };
