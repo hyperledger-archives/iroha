@@ -1,4 +1,4 @@
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 SET(CMAKE_CXX_FLAGS_DEBUG "-g")
 
@@ -6,21 +6,18 @@ SET(KECCAK_PATH  "${PROJECT_SOURCE_DIR}/core/vendor/KeccakCodePackage")
 SET(ED25519_PATH "${PROJECT_SOURCE_DIR}/core/vendor/ed25519")
 SET(AERON_PATH  "${PROJECT_SOURCE_DIR}/core/vendor/Aeron")
 
-include_directories(
-    ${GTEST_INCLUDE_DIR}
-)
 link_directories(
     ${PROJECT_BINARY_DIR}/lib
     ${ED25519_PATH}
     ${KECCAK_PATH}/bin/generic64
     ${PROJECT_SOURCE_DIR}/core/infra/crypto
-    ${AERON_PATH}/cppbuild/Debug/lib
+    ${AERON_PATH}/cpbuild/Debug/lib
 )
 
-add_executable(sumeragi_test
+add_executable(sumeragi_test_no_gtest
     sumeragi_test.cpp
 )
-target_link_libraries(sumeragi_test
+target_link_libraries(sumeragi_test_no_gtest
     snappy
     event_repository
     base64
@@ -29,4 +26,5 @@ target_link_libraries(sumeragi_test
     sumeragi
     connection_with_aeron
     peer_service_with_json
-    ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread)
+    pthread
+)

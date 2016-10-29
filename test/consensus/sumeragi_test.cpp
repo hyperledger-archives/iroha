@@ -18,7 +18,6 @@ limitations under the License.
 #include "../../core/repository/consensus/event_repository.hpp"
 #include "../../core/model/transactions/transfer_transaction.hpp"
 
-#include <gtest/gtest.h>
 #include <iostream>
 #include <string>
 #include <vector>
