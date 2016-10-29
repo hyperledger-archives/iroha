@@ -30,8 +30,8 @@ add_executable(iroha-main
   main.cpp
 )
 target_link_libraries(iroha-main
-  snappy
   leveldb
+  snappy
   event_repository
   merkle_transaction_repository
   world_state_repo_with_level_db
