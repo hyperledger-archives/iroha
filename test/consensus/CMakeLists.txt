@@ -30,7 +30,3 @@ target_link_libraries(sumeragi_test
     connection_with_aeron
     peer_service_with_json
     ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread)
-add_test(
-    NAME sumeragi_test
-    COMMAND $<TARGET_FILE:sumeragi_test>
-)
