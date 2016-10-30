@@ -30,12 +30,12 @@ namespace transaction_validator {
 
     template<typename T, std::enable_if_t<std::is_base_of<abstract_transaction::AbstractTransaction, T>::value, std::nullptr_t> = nullptr>
     bool signaturesAreValid(const T& tx){
-        return false;
+        return true;
     }
 
     template<typename T, std::enable_if_t<std::is_base_of<abstract_transaction::AbstractTransaction, T>::value, std::nullptr_t> = nullptr>
     bool validForType(const T& tx){
-        return false;
+        return true;
     }
 
 };  // namespace transaction_validator

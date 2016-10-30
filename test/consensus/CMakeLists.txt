@@ -21,6 +21,7 @@ target_link_libraries(sumeragi_test
     snappy
     aeron_client
     event_repository
+    hash
     base64
     signature
     transfer_transaction

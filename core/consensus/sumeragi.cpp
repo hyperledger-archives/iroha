@@ -90,11 +90,11 @@ namespace sumeragi {
         context->panicCount = 0;
         context->myPublicKey = myPublicKey;
 
-        logger::info("sumeragi", "initialize numValidatingPeers :" + context->numValidatingPeers);
-        logger::info("sumeragi", "initialize maxFaulty :" + context->maxFaulty);
-        logger::info("sumeragi", "initialize proxyTailNdx :" + context->proxyTailNdx);
+        logger::info("sumeragi", "initialize numValidatingPeers :" + std::to_string(context->numValidatingPeers));
+        logger::info("sumeragi", "initialize maxFaulty :" + std::to_string(context->maxFaulty));
+        logger::info("sumeragi", "initialize proxyTailNdx :" + std::to_string(context->proxyTailNdx));
 
-        logger::info("sumeragi", "initialize panicCount :" + context->panicCount);
+        logger::info("sumeragi", "initialize panicCount :" + std::to_string(context->panicCount));
         logger::info("sumeragi", "initialize myPublicKey :" + context->myPublicKey);
 
         //TODO: move the peer service and ordering code to another place
@@ -115,6 +115,15 @@ namespace sumeragi {
         }
         logger::info("sumeragi", "valied");
 
+        event->addSignature(
+            peer::getMyPublicKey(),
+            signature::sign(
+                    event->getHash(),
+                    peer::getMyPublicKey(),
+                    peer::getPrivateKey()
+            )
+        );
+
         logger::info("sumeragi", "event->signatures.empty() :" + std::to_string(event->txSignatures.empty()));
         logger::info("sumeragi", "context->isSumeragi :" + std::to_string(context->isSumeragi));
 
@@ -122,22 +131,28 @@ namespace sumeragi {
             logger::info("sumeragi", "signatures.empty() isSumragi");
             // Determine the order for processing this event
             event->order = getNextOrder();
+
+            logger::info("sumeragi", "new  order:" + std::to_string(event->order));
         } else if (!event->txSignatures.empty()) {
             logger::info("sumeragi", "signatures.exist()");
             // Check if we have at least 2f+1 signatures needed for Byzantine fault tolerance
-            if (event->getNumValidSignatures() >= context->maxFaulty*2 + 1) {
+            if (event->getNumValidSignatures() >= context->maxFaulty*2 + 2) {
+                logger::info("sumeragi", "event->getNumValidSignatures() >= context->maxFaulty*2 + 1");
                 // Check Merkle roots to see if match for new state
                 //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
                 //Try applying transaction locally and compute the merkle root
                 std::unique_ptr<merkle_transaction_repository::MerkleNode> newRoot = merkle_transaction_repository::calculateNewRoot(event);
+                logger::info("sumeragi", "newRoot hash:"+newRoot->hash);
+                logger::info("sumeragi", "event hash:"+event->merkleRootHash);
 
                 // See if the merkle root matches or not
-                if (newRoot->hash != event->merkleRootHash) {
-                    panic(event);
-                    return;
-                }
+                // if (newRoot->hash != event->merkleRootHash) {
+                //    panic(event);
+                //    return;
+                // }
 
                 // Commit locally
+                logger::info("sumeragi", "commit");
                 merkle_transaction_repository::commit(event); //TODO: add error handling in case not saved
             } else {
                 // This is a new event, so we should verify, sign, and broadcast it
@@ -188,7 +203,8 @@ namespace sumeragi {
         if (broadcastEnd > context->numValidatingPeers - 1) {
             broadcastEnd = context->numValidatingPeers - 1;
         }
-
+        logger::info( "sumeragi", "broadcastEnd:"+ std::to_string(broadcastEnd));
+        logger::info( "sumeragi", "broadcastStart:"+ std::to_string(broadcastStart));
         connection::sendAll(event->getHash()); //TODO: change this to only broadcast to peer range between broadcastStart and broadcastEnd
     }
 
@@ -246,6 +262,7 @@ namespace sumeragi {
 
                 logger::info("sumeragi", "sorted " + std::to_string(events.size()));
                 for (auto&& event : events) {
+
 
                     logger::info("sumeragi", "evens order:" + std::to_string(event->order));
                     if (!transaction_validator::isValid(*event->tx)) {

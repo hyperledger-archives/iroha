@@ -156,10 +156,12 @@ namespace connection {
     }
 
     bool sendAll(const std::string& msg) {
+        logger::info("connection", "send mesage"+ msg);
+        logger::info("connection", "send mesage publlications "+ std::to_string(publications.size()));
         for(auto& p : publications){
             send( p.first, msg);
         }
-        return false;
+        return true;
     }
 
     bool receive(const std::function<void(std::string from, std::string message)>& callback){
