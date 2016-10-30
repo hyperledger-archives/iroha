@@ -26,7 +26,7 @@ limitations under the License.
 #include <algorithm>
 
 #include "../crypto/signature.hpp"
-
+#include "../util/logger.hpp"
 #include "../model/transactions/abstract_transaction.hpp"
 
 namespace consensus_event {

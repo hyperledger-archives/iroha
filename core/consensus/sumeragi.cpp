@@ -136,7 +136,7 @@ namespace sumeragi {
         } else if (!event->txSignatures.empty()) {
             logger::info("sumeragi", "signatures.exist()");
             // Check if we have at least 2f+1 signatures needed for Byzantine fault tolerance
-            if (event->getNumValidSignatures() >= context->maxFaulty*2 + 1) {
+            if (event->getNumValidSignatures() >= context->maxFaulty*2 + 2) {
                 logger::info("sumeragi", "event->getNumValidSignatures() >= context->maxFaulty*2 + 1");
                 // Check Merkle roots to see if match for new state
                 //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
