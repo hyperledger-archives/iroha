@@ -25,9 +25,24 @@ limitations under the License.
 namespace abstract_transaction {
 
 enum class TransactionType { 
-    addPeer, modifyPeer, removePeer, transfer, signatory, signatoryAdd, signatoryDelete, domainDefinition,
-    domainRenewal, aliasDefinition, aliasRenewal, assetDefinition, message, chaincodeInit, chaincodeInvoke,
-    chaincodeUpdate, chaincodeDestroy, interchain
+    addPeer = 0,
+    modifyPeer = 1,
+    removePeer = 2,
+    transfer = 3,
+    signatory = 4,
+    signatoryAdd = 5,
+    signatoryDelete = 6,
+    domainDefinition = 7,
+    domainRenewal = 8,
+    aliasDefinition = 9,
+    aliasRenewal = 10,
+    assetDefinition = 11,
+    message = 12,
+    chaincodeInit = 13,
+    chaincodeInvoke = 14,
+    chaincodeUpdate  = 15,
+    chaincodeDestroy = 16,
+    interchain = 17
 };
 
 class AbstractTransaction {
