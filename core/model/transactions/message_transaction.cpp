@@ -17,8 +17,11 @@ limitations under the License.
 #include "transfer_transaction.hpp"
 #include <string>
 #include "../../crypto/hash.hpp"
+#include <json.hpp>
 
 namespace message_transaction {
+
+    using nlohmann::json;
 
     MessageTransaction::MessageTransaction(
          const std::string &senderPublicKey, const std::string &receiverPublicKey,
@@ -35,11 +38,20 @@ namespace message_transaction {
     }
 
     std::string MessageTransaction::getRawData() const {
-        return senderPublicKey+receiverPublicKey+domain+asset;
+        return senderPublicKey + receiverPublicKey + data;
     }
 
     std::string MessageTransaction::getAsText() const {
-        return senderPublicKey+receiverPublicKey+domain+asset;
+        return senderPublicKey + receiverPublicKey + data;
+    }
+
+    std::string MessageTransaction::getAsJSON() const {
+        json jsonObj;
+        jsonObj.push_back(hash);
+        jsonObj.push_back(data);
+        jsonObj.push_back(getType());
+
+        return jsonObj.dump();
     }
 
     unsigned long long int MessageTransaction::getTimestamp() const {
