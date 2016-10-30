@@ -25,25 +25,37 @@ limitations under the License.
 #include <unordered_map>
 #include <algorithm>
 
+#include <json.hpp>
+
 #include "../crypto/signature.hpp"
 
 #include "../model/transactions/abstract_transaction.hpp"
 
 namespace consensus_event {
 
+using nlohmann::json;
+
 struct ConsensusEvent {
 
     std::unique_ptr<abstract_transaction::AbstractTransaction> tx;
     std::unordered_map<std::string, std::string> txSignatures; // map of public keys→signatures
 
-    std::string merkleRootHash;
-    std::unordered_map<std::string, std::string> merkleRootSignatures;
+//    std::string merkleRootHash;
+//    std::unordered_map<std::string, std::string> merkleRootSignatures;
 
     unsigned long long order = 0;
 
     ConsensusEvent(std::unique_ptr<abstract_transaction::AbstractTransaction> atx):
         tx(std::move(atx))
     {}
+
+    explicit ConsensusEvent(std::string jsonStr) {
+        json jsonObj = json::parse(jsonStr);
+
+        tx = jsonObj.at(0);
+        tsSignatures = jsonObj.at(1);
+
+    }
 
     ConsensusEvent():
             tx(nullptr)
@@ -65,8 +77,16 @@ struct ConsensusEvent {
         });
     }
 
-    operator std::string() const{
-        return "WIP";
+//    operator std::string() const{
+//        return "WIP";
+//    }
+
+    std::string serializeToJSON() {
+        json jsonObj;
+        jsonObj.push_back(tx.serializeToJSON());
+        jsonObj.push_back(txSignatures);
+
+        return jsonObj.dump();
     }
 };
 };  // namespace ConsensusEvent

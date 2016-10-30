@@ -23,8 +23,8 @@ limitations under the License.
 #include <iostream>
 
 #include "../../util/logger.hpp"
-#include "../../crypto/merkle_node.hpp"
-#include "../../crypto/merkle.hpp"
+//#include "../../crypto/merkle_node.hpp"
+//#include "../../crypto/merkle.hpp"
 #include "../../crypto/hash.hpp"
 
 #include <string>
