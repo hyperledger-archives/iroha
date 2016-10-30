@@ -146,10 +146,10 @@ namespace sumeragi {
 //                logger::info("sumeragi", "event hash:"+event->merkleRootHash);
 
                 // See if the merkle root matches or not
-//                if (newRoot->hash != event->merkleRootHash) {
-//                    panic(event);
-//                    return;
-//                }
+                // if (newRoot->hash != event->merkleRootHash) {
+                //    panic(event);
+                //    return;
+                // }
 
                 // Commit locally
                 logger::info("sumeragi", "commit");
