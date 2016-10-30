@@ -31,7 +31,7 @@ class MessageTransaction : public abstract_transaction::AbstractTransaction {
     unsigned long long timestamp;
 
 public:
-    MessageTransaction(abstract_transaction::AbstractTransaction &&, const std::string &prevTxHash);
+//    MessageTransaction(abstract_transaction::AbstractTransaction &&, const std::string &prevTxHash);
 
     MessageTransaction(const std::string &data);
 
