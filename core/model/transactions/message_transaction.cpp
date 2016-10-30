@@ -34,7 +34,7 @@ namespace message_transaction {
     {}
 
     std::string MessageTransaction::getHash() const {
-        return hash::sha3_256_hex(senderPublicKey+receiverPublicKey+domain+asset);
+        return hash::sha3_256_hex(senderPublicKey + receiverPublicKey + domain + asset);
     }
 
     std::string MessageTransaction::getRawData() const {

@@ -56,15 +56,16 @@ struct ConsensusEvent {
         //TODO: make this less ugly!
         std::string txStr = jsonObj.at(0);
         json txObj = json::parse(txStr);
-        
+
         const int txType = txObj.at(0);
         if (abstract_transaction::TransactionType::message == static_cast<abstract_transaction::TransactionType>(txType)) {
             const std::string txJSONDef = txObj.at(1);
-            tx = std::unique_ptr<message_transaction::MessageTransaction>(txJSONDef);
+            tx = std::unique_ptr<message_transaction::MessageTransaction(txJSONDef)>;
         }
 
         std::string txSignaturesStr = jsonObj.at(1);
-        txSignatures = std::unordered_map<std::string, std::string>(txSignaturesStr);
+        //TODO: fix this!
+//        txSignatures = std::unordered_map<std::string, std::string>(txSignaturesStr);
     }
 
     ConsensusEvent():
