@@ -51,6 +51,7 @@ public:
     std::string getHash();
     std::string getRawData();
     std::string getAsText();
+    std::string getAsJSON();
     unsigned long long  getTimestamp();
     abstract_transaction::TransactionType getType();
 };

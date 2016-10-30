@@ -46,6 +46,7 @@ class AbstractTransaction {
     virtual std::string getHash() const = 0;
     virtual std::string getRawData() const = 0;
     virtual std::string getAsText() const = 0;
+    virtual std::string getAsJSON() const  = 0;
     virtual unsigned long long  getTimestamp() const = 0;
     virtual TransactionType getType() const  = 0;
 };
