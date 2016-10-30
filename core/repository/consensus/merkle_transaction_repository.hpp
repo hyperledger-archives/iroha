@@ -39,7 +39,8 @@ struct MerkleNode {
         hash = jsonObj.at(0);
         parent = jsonObj.at(1);
         std::string leftChild = jsonObj.at(2);
-        children = std::tuple<std::string, std::string>(std::string(jsonObj.at(2)), std::string(jsonObj.at(3)));
+        std::string rightChild = jsonObj.at(3);
+        children = std::tuple<std::string, std::string>(leftChild, rightChild);
     }
 
     MerkleNode() {
