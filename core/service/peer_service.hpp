@@ -61,6 +61,9 @@ namespace peer{
     };
 
 
+
+    std::string getMyIp();
+
     std::string getMyPublicKey();
 
     std::string getPrivateKey();
