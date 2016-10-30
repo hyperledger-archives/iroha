@@ -60,7 +60,8 @@ struct ConsensusEvent {
             tx = std::unique_ptr<message_transaction::MessageTransaction>(txObj.at(1));
         }
 
-        txSignatures = jsonObj.at(1);
+        std::string txSignaturesStr = jsonObj.at(1);
+        txSignatures = std::unordered_map<std::string, std::string>(txSignaturesStr);
     }
 
     ConsensusEvent():
