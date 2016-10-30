@@ -56,7 +56,8 @@ struct ConsensusEvent {
         //TODO: make this less ugly!
         std::string txStr = jsonObj.at(0);
         json txObj = json::parse(txStr);
-        if (abstract_transaction::TransactionType::message == txObj.at(0)) {
+        std::string txType = txObj.at(0);
+        if (abstract_transaction::TransactionType::message == txType) {
             const std::string txJSONDef = txObj.at(1);
             tx = std::unique_ptr<message_transaction::MessageTransaction>(txJSONDef);
         }
