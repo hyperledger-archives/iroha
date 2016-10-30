@@ -1,3 +1,19 @@
+/*
+Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 #include "../../consensus/connection/connection.hpp"
 
 #include "../../util/logger.hpp"
@@ -42,17 +58,17 @@ namespace connection {
     bool subscription_running(true);
 
     fragment_handler_t receiveMessage() {
-        return [&](AtomicBuffer& buffer, util::index_t offset, util::index_t length, Header& header)
-        {
+        return [&](AtomicBuffer& buffer, util::index_t offset, util::index_t length, Header& header) {
             std::string raw_data = std::string((char *)buffer.buffer() + offset, (unsigned long)length);
             // WIP parse json.
+            logger::info("receive", raw_data);
             for(auto& f : receivers) {
                 f("From", raw_data);
             }
         };
     }
 
-    int initialize_peer(std::unordered_map<std::string,std::string> data){
+    void initialize_peer(std::unique_ptr<connection::Config> config) {
         aeron::Context context;
 
         context.newSubscriptionHandler(
@@ -61,10 +77,9 @@ namespace connection {
             [](const std::string& channel, std::int32_t streamId, std::int32_t sessionId, std::int64_t correlationId){});
 
         aeron = Aeron::connect(context);
-        return 0;
     }
 
-    int exec_subscription(std::string ip){
+    int exec_subscription(std::string ip) {
         try{
             logger::info("connection", "subscript ["+ ip +"]");
 
@@ -141,13 +156,15 @@ namespace connection {
     }
 
     bool sendAll(const std::string& msg) {
+        logger::info("connection", "send mesage"+ msg);
+        logger::info("connection", "send mesage publlications "+ std::to_string(publications.size()));
         for(auto& p : publications){
             send( p.first, msg);
         }
-        return false;
+        return true;
     }
 
-    bool receive(std::function<void(std::string from,std::string message)> callback) {
+    bool receive(const std::function<void(std::string from, std::string message)>& callback){
         receivers.push_back(callback);
         return true;
     }

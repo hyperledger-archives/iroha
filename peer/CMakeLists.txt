@@ -30,16 +30,16 @@ add_executable(iroha-main
   main.cpp
 )
 target_link_libraries(iroha-main
+  leveldb
+  snappy
   event_repository
   merkle_transaction_repository
   world_state_repo_with_level_db
-  unconfirmed_transaction_repository
   sumeragi
-  snappy
   logger
   http_server_with_cappuccino
   connection_with_aeron
-  peer_service
+  peer_service_with_json
   pthread
 )
 

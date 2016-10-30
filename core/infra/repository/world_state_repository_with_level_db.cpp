@@ -1,3 +1,18 @@
+/*
+Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
 #include "../../../repository/world_state_repository.hpp"
 #include "../../../util/exception.hpp"
@@ -6,6 +21,7 @@
 
 #include <leveldb/write_batch.h>
 #include <leveldb/db.h>
+#include <tuple>
 
 // +------------------------------------------------+
 // | Repository should save string to any database. |
@@ -15,10 +31,10 @@
 // |  - leveldb                                     |
 // |                                                |
 // | I don't know                                   |
-// |  - json library                                |
+// |  - json formats or data model                  |
 // |                                                |
 // +------------------------------------------------+
-namespace repository{
+namespace repository {
 
   // Level DB is known only to me.
   namespace world_state_repository {
@@ -46,13 +62,47 @@ namespace repository{
           }
 
       bool add(const std::string &key, const std::string &value) {
-          if (detail::db == nullptr) detail::loadDb();
+          if (nullptr == detail::db) {
+              detail::loadDb();
+          }
 
           return detail::loggerStatus(detail::db->Put(leveldb::WriteOptions(), key, value));
       }
 
+      template <>
+      bool addBatch<std::string>(const std::vector<std::tuple<std::string, std::string>> &tuples){
+          if (nullptr == detail::db) {
+              detail::loadDb();
+          }
+
+          leveldb::WriteBatch batch;
+
+          for (auto&& tuple : tuples) {
+              batch.Put(std::get<0>(tuple), std::get<1>(tuple));
+          }
+
+          return detail::loggerStatus(detail::db->Write(leveldb::WriteOptions(), &batch));
+      }
+
+      template <typename T>
+      bool addBatch(const std::vector<std::tuple<T, T>> &tuples) {
+          if (nullptr == detail::db) {
+              detail::loadDb();
+          }
+
+          leveldb::WriteBatch batch;
+
+          for (auto&& tuple : tuples) {
+              batch.Put(std::get<0>(tuple), std::get<1>(tuple));
+          }
+
+          return detail::loggerStatus(detail::db->Write(leveldb::WriteOptions(), &batch));
+      }
+
       bool update(const std::string &key, const std::string &value) {
-          if (detail::db == nullptr) detail::loadDb();
+          if (nullptr == detail::db) {
+              detail::loadDb();
+          }
 
           std::string dummy;
           if (detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &dummy))) {
@@ -65,12 +115,16 @@ namespace repository{
       }
 
       bool remove(const std::string &key) {
-          if (detail::db == nullptr) detail::loadDb();
+          if (nullptr == detail::db) {
+              detail::loadDb();
+          }
           return detail::loggerStatus(detail::db->Delete(leveldb::WriteOptions(), key));
       }
 
       std::string find(const std::string &key) {
-          if (detail::db == nullptr) detail::loadDb();
+          if (nullptr == detail::db) {
+              detail::loadDb();
+          }
 
           std::string readData;
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &readData));
@@ -85,7 +139,9 @@ namespace repository{
               const std::string &key,
               const std::string &defaultValue
       ) {
-          if (detail::db == nullptr) detail::loadDb();
+          if (nullptr == detail::db) {
+              detail::loadDb();
+          }
 
           std::string result = "";
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &result));
@@ -96,7 +152,11 @@ namespace repository{
           }
       }
 
-      bool isExist(const std::string &key) {
+      bool exists(const std::string &key) {
+          if (nullptr == detail::db) {
+              detail::loadDb();
+          }
+
           std::string result = "";
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &result));
           return result == "";
