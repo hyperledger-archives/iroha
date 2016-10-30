@@ -143,13 +143,13 @@ namespace sumeragi {
                 //Try applying transaction locally and compute the merkle root
                 std::unique_ptr<merkle_transaction_repository::MerkleNode> newRoot = merkle_transaction_repository::calculateNewRoot(event);
                 logger::info("sumeragi", "newRoot hash:"+newRoot->hash);
-                logger::info("sumeragi", "event hash:"+event->merkleRootHash);
+//                logger::info("sumeragi", "event hash:"+event->merkleRootHash);
 
                 // See if the merkle root matches or not
-                if (newRoot->hash != event->merkleRootHash) {
-                    panic(event);
-                    return;
-                }
+//                if (newRoot->hash != event->merkleRootHash) {
+//                    panic(event);
+//                    return;
+//                }
 
                 // Commit locally
                 logger::info("sumeragi", "commit");
