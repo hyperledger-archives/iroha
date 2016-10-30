@@ -30,6 +30,7 @@ limitations under the License.
 #include "../crypto/signature.hpp"
 
 #include "../model/transactions/abstract_transaction.hpp"
+#include "../model/transactions/message_transaction.hpp"
 
 namespace consensus_event {
 
@@ -52,9 +53,14 @@ struct ConsensusEvent {
     explicit ConsensusEvent(std::string jsonStr) {
         json jsonObj = json::parse(jsonStr);
 
-        tx = jsonObj.at(0);
-        tsSignatures = jsonObj.at(1);
+        //TODO: make this less ugly!
+        std::string txStr = jsonObj.at(0);
+        json txObj = json::parse(txStr);
+        if (abstract_transaction::TransactionType.message == txObj.at(0)) {
+            tx = std::unique_ptr<message_transaction::MessageTransaction>(txObj.at(1));
+        }
 
+        tsSignatures = jsonObj.at(1);
     }
 
     ConsensusEvent():
@@ -83,7 +89,7 @@ struct ConsensusEvent {
 
     std::string serializeToJSON() {
         json jsonObj;
-        jsonObj.push_back(tx.serializeToJSON());
+        jsonObj.push_back(tx.getAsJSON());
         jsonObj.push_back(txSignatures);
 
         return jsonObj.dump();

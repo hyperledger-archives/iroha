@@ -47,9 +47,9 @@ namespace message_transaction {
 
     std::string MessageTransaction::getAsJSON() const {
         json jsonObj;
-        jsonObj.push_back(hash);
-        jsonObj.push_back(data);
+        //TODO: only serialize the type and data for now
         jsonObj.push_back(getType());
+        jsonObj.push_back(data);
 
         return jsonObj.dump();
     }

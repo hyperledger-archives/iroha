@@ -33,10 +33,7 @@ class MessageTransaction : public abstract_transaction::AbstractTransaction {
 public:
     MessageTransaction(abstract_transaction::AbstractTransaction &&, const std::string &prevTxHash);
 
-    MessageTransaction(
-        const std::string &senderPublicKey,
-        const std::string &receiverPublicKey,
-        const std::string &data);
+    MessageTransaction(const std::string &data);
 
     virtual std::string getHash() const override;
 
