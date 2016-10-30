@@ -45,6 +45,15 @@ namespace peer {
         }
     }
 
+    std::string getMyIp() {
+        try{
+            auto data = json::parse(openConfig());
+            return data["me"]["ip"].get<std::string>();
+        }catch(...){
+            return "";
+        }
+    }
+
     std::vector<std::unique_ptr<peer::Node>> getPeerList(){
         std::vector<std::unique_ptr<peer::Node>> nodes;
         try{

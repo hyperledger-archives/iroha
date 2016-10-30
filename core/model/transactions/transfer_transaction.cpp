@@ -16,6 +16,7 @@ limitations under the License.
 
 #include "transfer_transaction.hpp"
 #include <string>
+#include "../../crypto/hash.hpp"
 
 namespace transaction {
 
@@ -31,19 +32,19 @@ namespace transaction {
     {}
 
     std::string TransferTransaction::getHash() const {
-        return "";
+        return hash::sha3_256_hex(senderPublicKey+receiverPublicKey+domain+asset);
     }
 
     std::string TransferTransaction::getRawData() const {
-        return "";
+        return senderPublicKey+receiverPublicKey+domain+asset;
     }
 
     std::string TransferTransaction::getAsText() const {
-        return "";
+        return senderPublicKey+receiverPublicKey+domain+asset;
     }
 
     unsigned long long int TransferTransaction::getTimestamp() const {
-        return 0;
+        return 0l;
     }
 
     abstract_transaction::TransactionType TransferTransaction::getType() const {

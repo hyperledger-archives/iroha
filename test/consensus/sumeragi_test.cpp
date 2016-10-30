@@ -17,7 +17,7 @@ limitations under the License.
 #include "../../core/consensus/sumeragi.hpp"
 #include "../../core/repository/consensus/event_repository.hpp"
 #include "../../core/model/transactions/transfer_transaction.hpp"
-
+#include "../../core/consensus/connection/connection.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -25,17 +25,21 @@ limitations under the License.
 #include <thread>
 
 #include "../../core/service/peer_service.hpp"
+#include "../../core/crypto/hash.hpp"
 
 int main(){
     std::string cmd;
     std::vector<std::unique_ptr<peer::Node>> nodes = peer::getPeerList();
 
+
+    connection::initialize_peer(nullptr);
+
     for(const auto& n : nodes){
         std::cout<< "=========" << std::endl;
         std::cout<< n->getPublicKey() << std::endl;
         std::cout<< n->getIP() << std::endl;
+        connection::addPublication(n->getIP());
     }
-
 
     std::string pubKey = peer::getMyPublicKey();
     sumeragi::initializeSumeragi( pubKey, std::move(nodes));
@@ -43,19 +47,34 @@ int main(){
         sumeragi::loop();
     });
 
+    connection::exec_subscription(peer::getMyIp());
+    connection::receive([](std::string from, std::string message){
+        std::cout <<" receive :" << message <<" from:"<< from << "\n";
+    });
+
     while(1){
         std::cout << "in >> ";
         std::cin>> cmd;
         if(cmd == "quit") break;
-        repository::event::add("80084bf2fba02475726feb2cab2d8215eab14bc6bdd8bfb2c8151257032ecd8b",
-            std::make_unique<consensus_event::ConsensusEvent>(
+        auto event = std::make_unique<consensus_event::ConsensusEvent>(
                 std::make_unique<transaction::TransferTransaction>(
-                    "fccpkrZyLlxJUQm8RpJXedWVZfbg2Dde0iPphwD+jQ0=",
-                    pubKey,
-                    "domain",
-                    cmd
+                        "fccpkrZyLlxJUQm8RpJXedWVZfbg2Dde0iPphwD+jQ0=",
+                        pubKey,
+                        "domain",
+                        cmd
                 )
-            )
+        );
+
+        auto su = peer::getPeerList();
+
+        for(const auto& n : nodes){
+            std::cout<< "=========" << std::endl;
+            std::cout<< n->getPublicKey() << std::endl;
+            std::cout<< n->getIP() << std::endl;
+        }
+
+        repository::event::add("80084bf2fba02475726feb2cab2d8215eab14bc6bdd8bfb2c8151257032ecd8b",
+           std::move(event)
         );
 
     }
