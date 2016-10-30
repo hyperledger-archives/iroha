@@ -67,7 +67,7 @@ namespace merkle_transaction_repository {
 
         auto lastAddedLeaf = json::parse(lastAddedJSON);
 
-        return lastAddedLeaf['order'];
+        return lastAddedLeaf["order"];
     }
 
     void initLeaf(){
