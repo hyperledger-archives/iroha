@@ -28,7 +28,7 @@ limitations under the License.
 #include <json.hpp>
 
 #include "../crypto/signature.hpp"
-
+#include "../util/logger.hpp"
 #include "../model/transactions/abstract_transaction.hpp"
 #include "../model/transactions/message_transaction.hpp"
 
