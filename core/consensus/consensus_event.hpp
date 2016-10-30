@@ -60,7 +60,7 @@ struct ConsensusEvent {
             tx = std::unique_ptr<message_transaction::MessageTransaction>(txObj.at(1));
         }
 
-        tsSignatures = jsonObj.at(1);
+        txSignatures = jsonObj.at(1);
     }
 
     ConsensusEvent():
@@ -89,7 +89,7 @@ struct ConsensusEvent {
 
     std::string serializeToJSON() {
         json jsonObj;
-        jsonObj.push_back(tx.getAsJSON());
+        jsonObj.push_back(tx->getAsJSON());
         jsonObj.push_back(txSignatures);
 
         return jsonObj.dump();
