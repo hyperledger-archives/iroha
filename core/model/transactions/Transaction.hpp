@@ -12,9 +12,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-template <class T>
+template <class T, typename ...commands>
 class Transaction {
-    T command;
+    T object;
 private:
     std::hash;
 
@@ -22,11 +22,17 @@ public:
 
     Transaction () {}
 
-    Transaction (int errorCode, int osErrCode, const std::string& msg) {
+    Transaction (TODO:) {
 
     }
 
     std::string getHash() {
         return T.getHash();
+    }
+
+    template <typename F>
+    void executeCommand(F command)
+    {
+        command(object);
     }
 };
