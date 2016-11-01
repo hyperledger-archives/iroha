@@ -15,25 +15,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CORE_DOMAIN_TRANSACTIONS_MESSAGETRANSACTION_HPP_
-#define CORE_DOMAIN_TRANSACTIONS_MESSAGETRANSACTION_HPP_
+#ifndef CORE_DOMAIN_OBJECTS_MESSAGE_HPP_
+#define CORE_DOMAIN_OBJECTS_MESSAGE_HPP_
 
-#include "transaction.hpp"
+namespace message {
 
-namespace message_transaction {
-
-class MessageTransaction {
+class Message {
     std::string hash;
-    abstract_transaction::TransactionType type;
-    std::string senderPublicKey;
-    std::string receiverPublicKey;
     std::string data;
-    unsigned long long timestamp;
 
 public:
-//    MessageTransaction(abstract_transaction::AbstractTransaction &&, const std::string &prevTxHash);
-
-    MessageTransaction(const std::string &data);
+    Message(const std::string &data);
 
     virtual std::string getHash() const override;
 
@@ -49,11 +41,10 @@ public:
     std::string getRawData();
     std::string getAsText();
     std::string getAsJSON();
-    unsigned long long  getTimestamp();
     abstract_transaction::TransactionType getType();
 };
 
-};  // namespace transaction
+};  // namespace message
 
-#endif  // CORE_DOMAIN_TRANSACTIONS_MESSAGETRANSACTION_HPP_
+#endif  // CORE_DOMAIN_OBJECTS_MESSAGE_HPP_
 

@@ -15,25 +15,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
-#define CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
+#ifndef CORE_DOMAIN_OBJECTS_ASSET_HPP_
+#define CORE_DOMAIN_OBJECTS_ASSET_HPP_
 
-#include "../transaction.hpp"
-
-namespace domain {
+namespace asset {
 
 template<typename T>
-class Domain {
-    std::string hash;
-    transaction::TransactionType type;
+class Asset {
     std::string ownerPublicKey;
     std::string name;
-    long long makotos;  // TODO: JS NUMBER range from -9007199254740992 to +9007199254740992 対応
-    short int precision;
-    unsigned long long timestamp;
+    unsigned long long value;
+    unsigned int precision;
 
 public:
-    Domain(transaction::Transaction &&, const std::string &prevTxHash);
+    Asset();
 
     TransferTransaction(
         const std::string &senderPublicKey,
@@ -58,7 +53,7 @@ public:
     transaction::TransactionType getType();
 };
 
-};  // namespace domain
+};  // namespace asset
 
-#endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
+#endif  // CORE_DOMAIN_OBJECTS_ASSET_HPP_
 

@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 #include <string>
-#include "../../crypto/hash.hpp"
 
 namespace domain {
 
