@@ -16,6 +16,8 @@ limitations under the License.
 
 #include "commands/command.hpp"
 
+#include <algorithm>
+
 namespace transaction {
 
 enum class TransactionType {
@@ -41,19 +43,24 @@ enum class TransactionType {
 
 template<typename T,
     std::enable_if_t<
-    std::is_base_of<Commands, T>::value,std::nullptr_t
+    std::is_base_of<command::Commands, T>::value,std::nullptr_t
     > = nullptr
 >
 class Transaction {
 
-    struct SignaturePair{
+    struct txSignature{
         std::string publicKey;
         std::string signature;
+
+        txSignature(pubKey,sig):
+            publicKey(pubKey),
+            signature(sig)
+        {}
     };
 
     T command;
     std::hash;
-    std::vector<std::tuple<SignaturePair>> signatures;
+    std::vector<txSignature> txSignatures;
 
 public:
 
@@ -69,8 +76,21 @@ public:
         return command.getAsJson();
     }
 
-    std::vector<std::tuple<SignaturePair>> getSignaturePair(){
-        return signatures;
+    std::vector<txSignature> getTxSignatures(){
+        return txSignatures;
+    }
+
+    void addTxSignature(std::string pubKey,std::string signature){
+        txSignatures.push_back(txSignature(pubKey, signature));
+    }
+
+    bool isValidSignatures(){
+        return std::count_if(
+            txSignatures.begin(), txSignatures.end(),
+            [hash = tx->getHash()](txSignature sig){
+                return signature::verify(sig.signature, hash, sig.publicKey);
+            }
+        ) == txSignatures.size();
     }
 
 };
