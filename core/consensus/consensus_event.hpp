@@ -32,9 +32,9 @@ limitations under the License.
 namespace consensus_event {
 
 template<
-        typename T,
+        typename T, typename U,
         std::enable_if_t<
-                std::is_base_of<transaction::Transaction, T>::value,std::nullptr_t
+                std::is_base_of<transaction::Transaction<U>, T>::value,std::nullptr_t
         > = nullptr
 >
 class ConsensusEvent {
@@ -44,7 +44,10 @@ class ConsensusEvent {
         std::string publicKey;
         std::string signature;
 
-        eventSignature(pubKey,sig):
+        eventSignature(
+            std::string pubKey,
+            std::string sig
+        ):
                 publicKey(pubKey),
                 signature(sig)
         {}
@@ -70,14 +73,14 @@ private:
     int getNumValidSignatures() const {
         logger::debug("getNumValidSignatures", "eventSignatures:"+ std::to_string(eventSignatures.size()));
         return std::count_if(
-            txSignatures.begin(), txSignatures.end(),
-            [hash = tx->getHash()](eventSignature sig){
+            eventSignatures.begin(), eventSignatures.end(),
+            [hash = getHash()](eventSignature sig){
                 return signature::verify(sig.signature, hash, sig.publicKey);
         });
     }
 
     std::string serializeToJSON() {
-
+        return "WIP";
     }
 };
 };  // namespace ConsensusEvent

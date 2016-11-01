@@ -19,7 +19,6 @@ limitations under the License.
 
 #include <string>
 #include <memory>
-#include "../../model/transactions/abstract_transaction.hpp"
 #include "../../consensus/consensus_event.hpp"
 
 #include <algorithm>

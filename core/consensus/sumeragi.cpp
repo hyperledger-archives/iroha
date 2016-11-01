@@ -21,14 +21,12 @@ limitations under the License.
 #include "../util/logger.hpp"
 #include "../repository/consensus/merkle_transaction_repository.hpp"
 #include "../repository/consensus/event_repository.hpp"
-#include "../model/transactions/transaction.hpp"
 #include "../crypto/hash.hpp"
 #include "../crypto/signature.hpp"
 
 #include "../validation/transaction_validator.hpp"
 #include "../service/peer_service.hpp"
 #include "./connection/connection.hpp"
-#include "../model/transactions/transfer_transaction.hpp"
 
 template<class T>
 std::unique_ptr<T> make_unique(){

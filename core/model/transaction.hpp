@@ -43,7 +43,7 @@ enum class TransactionType {
 
 template<typename T,
     std::enable_if_t<
-    std::is_base_of<command::Commands, T>::value,std::nullptr_t
+    std::is_base_of<command::Command, T>::value,std::nullptr_t
     > = nullptr
 >
 class Transaction {
@@ -52,14 +52,17 @@ class Transaction {
         std::string publicKey;
         std::string signature;
 
-        txSignature(pubKey,sig):
+        txSignature(
+                std::string pubKey,
+                std::string sig
+        ):
             publicKey(pubKey),
             signature(sig)
         {}
     };
 
     T command;
-    std::hash;
+    std::string hash;
     std::vector<txSignature> txSignatures;
 
 public:
@@ -87,7 +90,7 @@ public:
     bool isValidSignatures(){
         return std::count_if(
             txSignatures.begin(), txSignatures.end(),
-            [hash = tx->getHash()](txSignature sig){
+            [hash = getHash()](txSignature sig){
                 return signature::verify(sig.signature, hash, sig.publicKey);
             }
         ) == txSignatures.size();
@@ -97,4 +100,4 @@ public:
 
 }  // namespace transaction
 
-//#endif  // CORE_DOMAIN_TRANSACTIONS_TRANSACTION_HPP_
+#endif  // CORE_DOMAIN_TRANSACTIONS_TRANSACTION_HPP_

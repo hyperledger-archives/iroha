@@ -31,9 +31,8 @@ limitations under the License.
 
 namespace merkle_transaction_repository {
 
-    using abs_tx = abstract_transaction::AbstractTransaction;
 
-    bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
+    bool commit(ConsensusEvent<T> &event) {
 
         std::vector<std::tuple<std::string, std::string>> batchCommit
           = {

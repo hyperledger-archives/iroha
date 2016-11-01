@@ -17,7 +17,7 @@ limitations under the License.
 #ifndef CORE_VALIDATION_TRANSACTIONVALIDATOR_HPP_
 #define CORE_VALIDATION_TRANSACTIONVALIDATOR_HPP_
 
-#include "../model/transactions/transaction.hpp"
+#include "../model/transaction.hpp"
 #include <memory>
 #include <type_traits>
 
