@@ -77,9 +77,15 @@ struct ConsensusEvent {
     }
 
     int getNumValidSignatures() const {
+        logger::debug("getNumValidSignatures", "getNumValidSignatures");
+        logger::debug("getNumValidSignatures", "txSignatures:"+ std::to_string(txSignatures.size()));
         return std::count_if(
             txSignatures.begin(), txSignatures.end(),
-            [hash = tx->getHash()](std::pair<const std::string, const std::string> record) {
+
+            [hash = tx->getHash()](std::pair<const std::string, const std::string> record){
+                logger::debug("getNumValidSignatures.lambda",
+                    "txSignatures:"+ std::to_string(signature::verify(record.second, hash, record.first)));
+
                 return signature::verify(record.second, hash, record.first);
         });
     }

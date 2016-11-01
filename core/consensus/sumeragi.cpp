@@ -28,6 +28,7 @@ limitations under the License.
 #include "../validation/transaction_validator.hpp"
 #include "../service/peer_service.hpp"
 #include "./connection/connection.hpp"
+#include "../model/transactions/transfer_transaction.hpp"
 
 template<class T>
 std::unique_ptr<T> make_unique(){
@@ -136,7 +137,7 @@ namespace sumeragi {
         } else if (!event->txSignatures.empty()) {
             logger::info("sumeragi", "signatures.exist()");
             // Check if we have at least 2f+1 signatures needed for Byzantine fault tolerance
-            if (event->getNumValidSignatures() >= context->maxFaulty*2 + 2) {
+            if (event->getNumValidSignatures() >= context->maxFaulty*2 + 1) {
                 logger::info("sumeragi", "event->getNumValidSignatures() >= context->maxFaulty*2 + 1");
                 // Check Merkle roots to see if match for new state
                 //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
@@ -241,6 +242,17 @@ namespace sumeragi {
     void loop() {
         logger::info("sumeragi", "=##################=");
         logger::info("sumeragi", "start main loop");
+        connection::receive([](std::string from,std::string message){
+            auto event = std::make_unique<consensus_event::ConsensusEvent>(
+                    std::make_unique<transaction::TransferTransaction>(
+                            "fccpkrZyLlxJUQm8RpJXedWVZfbg2Dde0iPphwD+jQ0=",
+                            pubKey,
+                            "domain",
+                            cm
+                    )
+            );
+            repository::event::add();
+        });
 
         while (true) {  // TODO: replace with callback linking the event repository?
             if(!repository::event::empty()) {
