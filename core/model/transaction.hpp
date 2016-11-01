@@ -37,32 +37,27 @@ enum class TransactionType {
     interchain = 17
 };
 
-template <class T, typename ...commands>
+template <typename T>
 class Transaction {
-    T object;
+    T command;
 private:
     std::hash;
 
 public:
+    virtual ~Transaction() = default;
 
-    Transaction () {}
-
-    Transaction (TODO:) {
-
-    }
+    // Support move and copy.
+    Transaction(Asset const&) = default;
+    Transaction(Asset&&) = default;
+    Transaction& operator =(Transaction const&) = default;
+    Transaction& operator =(Transaction&&) = default;
 
     std::string getHash() {
-        return T.getHash();
+        return object.getHash();
     }
 
     std::string getAsJSON() {
         return T.getAsJSON();
-    }
-
-    template <typename F>
-    void executeCommand(F command)
-    {
-        command(object);
     }
 };
 

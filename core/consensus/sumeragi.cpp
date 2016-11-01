@@ -263,7 +263,6 @@ namespace sumeragi {
                 logger::info("sumeragi", "sorted " + std::to_string(events.size()));
                 for (auto&& event : events) {
 
-
                     logger::info("sumeragi", "evens order:" + std::to_string(event->order));
                     if (!transaction_validator::isValid(*event->tx)) {
                         continue;

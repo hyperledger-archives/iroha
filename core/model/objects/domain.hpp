@@ -18,24 +18,22 @@ limitations under the License.
 #ifndef CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
 #define CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
 
-#include "abstract_transaction.hpp"
+#include "../transaction.hpp"
 
-namespace transaction {
+namespace domain {
 
-class TransferTransaction : public abstract_transaction::AbstractTransaction {
-    std::string prevTxHash;
+template<typename T>
+class Domain {
     std::string hash;
-    abstract_transaction::TransactionType type;
-    std::string senderPublicKey;
-    std::string receiverPublicKey;
-    std::string domain;
-    std::string asset;
+    transaction::TransactionType type;
+    std::string ownerPublicKey;
+    std::string name;
     long long makotos;  // TODO: JS NUMBER range from -9007199254740992 to +9007199254740992 対応
     short int precision;
     unsigned long long timestamp;
 
 public:
-    TransferTransaction(abstract_transaction::AbstractTransaction &&, const std::string &prevTxHash);
+    Domain(transaction::Transaction &&, const std::string &prevTxHash);
 
     TransferTransaction(
         const std::string &senderPublicKey,
@@ -51,16 +49,16 @@ public:
 
     virtual unsigned long long int getTimestamp() const override;
 
-    virtual abstract_transaction::TransactionType getType() const override;
+    virtual transaction::TransactionType getType() const override;
 
     std::string getHash();
     std::string getRawData();
     std::string getAsText();
     unsigned long long  getTimestamp();
-    abstract_transaction::TransactionType getType();
+    transaction::TransactionType getType();
 };
 
-};  // namespace transaction
+};  // namespace domain
 
 #endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
 

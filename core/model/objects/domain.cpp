@@ -14,17 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "transfer_transaction.hpp"
 #include <string>
 #include "../../crypto/hash.hpp"
 
-namespace transaction {
+namespace domain {
 
-    TransferTransaction::TransferTransaction(
+    Domain::Domain(
          const std::string &senderPublicKey, const std::string &receiverPublicKey,
          const std::string &domain, const std::string &asset
     ):
-        AbstractTransaction(),
         senderPublicKey(senderPublicKey),
         receiverPublicKey(receiverPublicKey),
         domain(domain),
@@ -47,8 +45,8 @@ namespace transaction {
         return 0l;
     }
 
-    abstract_transaction::TransactionType TransferTransaction::getType() const {
-        return abstract_transaction::TransactionType::transfer;
+    transaction::TransactionType TransferTransaction::getType() const {
+        return transaction::TransactionType::transfer;
     }
 
-};  // namespace transaction
+};  // namespace domain
