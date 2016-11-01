@@ -15,50 +15,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
-#define CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
+#ifndef CORE_DOMAIN_OBJECTS_ASSET_HPP_
+#define CORE_DOMAIN_OBJECTS_ASSET_HPP_
 
-#include "../transaction.hpp"
+namespace asset {
 
-namespace domain {
-
-template<typename T>
-class Domain {
-    std::string hash;
-    transaction::TransactionType type;
-    std::string ownerPublicKey;
+class Asset {
+    std::string domain;
     std::string name;
-    long long makotos;  // TODO: JS NUMBER range from -9007199254740992 to +9007199254740992 対応
-    short int precision;
-    unsigned long long timestamp;
+    unsigned long long value;
+    unsigned int precision;
 
 public:
-    Domain(transaction::Transaction &&, const std::string &prevTxHash);
+    Asset(
+        const std::string domain,
+        const std::string name,
+        const unsigned long long value,
+        const unsigned int precision);
 
-    TransferTransaction(
-        const std::string &senderPublicKey,
-        const std::string &receiverPublicKey,
-        const std::string &domain,
-        const std::string &asset);
-
-    virtual std::string getHash() const override;
-
-    virtual std::string getRawData() const override;
-
-    virtual std::string getAsText() const override;
-
-    virtual unsigned long long int getTimestamp() const override;
-
-    virtual transaction::TransactionType getType() const override;
-
-    std::string getHash();
-    std::string getRawData();
-    std::string getAsText();
-    unsigned long long  getTimestamp();
-    transaction::TransactionType getType();
+    std::string getAsJSON();
 };
 
-};  // namespace domain
+};  // namespace asset
 
-#endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
+#endif  // CORE_DOMAIN_OBJECTS_ASSET_HPP_
 

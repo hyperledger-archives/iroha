@@ -15,38 +15,32 @@ limitations under the License.
 */
 
 #include <string>
-#include "../../crypto/hash.hpp"
+#include "../Transaction.hpp"
 
-namespace domain {
+namespace asset {
 
-    Domain::Domain(
-         const std::string &senderPublicKey, const std::string &receiverPublicKey,
-         const std::string &domain, const std::string &asset
+    Asset::Asset(
+            const std::string &domain,
+            const std::string &name,
+            unsigned long long value;
+            unsigned int precision;
     ):
-        senderPublicKey(senderPublicKey),
-        receiverPublicKey(receiverPublicKey),
         domain(domain),
-        asset(asset)
+        asset(asset),
+        value(value),
+        precision(precision)
     {}
 
-    std::string TransferTransaction::getHash() const {
-        return hash::sha3_256_hex(senderPublicKey+receiverPublicKey+domain+asset);
+    std::string Transaction::getAsJSON() const {
+        return "{\"name\":\""
+               + name +
+                "\",\"domain\":\""
+               + domain +
+                "\",\"value\":\""
+                + value +
+                "\",\"precision\":\""
+                + precision +
+                "\"}";
     }
 
-    std::string TransferTransaction::getRawData() const {
-        return senderPublicKey+receiverPublicKey+domain+asset;
-    }
-
-    std::string TransferTransaction::getAsText() const {
-        return senderPublicKey+receiverPublicKey+domain+asset;
-    }
-
-    unsigned long long int TransferTransaction::getTimestamp() const {
-        return 0l;
-    }
-
-    transaction::TransactionType TransferTransaction::getType() const {
-        return transaction::TransactionType::transfer;
-    }
-
-};  // namespace domain
+};  // namespace asset
