@@ -14,6 +14,8 @@ limitations under the License.
 #ifndef CORE_DOMAIN_TRANSACTIONS_TRANSACTION_HPP_
 #define CORE_DOMAIN_TRANSACTIONS_TRANSACTION_HPP_
 
+#include "commands/command.hpp"
+
 namespace transaction {
 
 enum class TransactionType {
@@ -37,27 +39,28 @@ enum class TransactionType {
     interchain = 17
 };
 
-template <typename T>
+template<typename T,
+    std::enable_if_t<
+    std::is_base_of<Commands, T>::value,std::nullptr_t
+    > = nullptr
+>
 class Transaction {
     T command;
 private:
     std::hash;
 
 public:
-    virtual ~Transaction() = default;
 
-    // Support move and copy.
-    Transaction(Transaction const&) = default;
-    Transaction(Transaction&&) = default;
-    Transaction& operator =(Transaction const&) = default;
-    Transaction& operator =(Transaction&&) = default;
+    Transaction(T command):
+        command(command)
+    {}
 
     std::string getHash() {
-        return object.getHash();
+        return hash;
     }
 
     std::string getAsJSON() {
-        return T.getAsJSON();
+        return command.getAsJson();
     }
 };
 

@@ -4,11 +4,10 @@
 #ifndef IROHA_COMMAND_H
 #define IROHA_COMMAND_H
 
-namespace transfer_transaction {
+namespace command {
 
 // Abstract
-class Command {
-};
+class Command {};
 
 };
 #endif //IROHA_COMMAND_H
