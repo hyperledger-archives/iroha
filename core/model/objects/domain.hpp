@@ -25,11 +25,9 @@ class Domain {
     std::string name;
 
 public:
-    Domain();
-
-    TransferTransaction(
-        const std::string &ownerPublicKey,
-        const std::string &name);
+    Domain(
+        const std::string ownerPublicKey,
+        const std::string name);
 
     std::string getAsJSON();
 };
