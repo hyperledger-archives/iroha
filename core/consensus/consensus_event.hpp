@@ -31,7 +31,7 @@ limitations under the License.
 #include "../model/transactions/message_transaction.hpp"
 
 namespace consensus_event {
-1
+
 struct ConsensusEvent {
 
     std::unique_ptr<abstract_transaction::AbstractTransaction> tx;
