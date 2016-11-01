@@ -45,9 +45,15 @@ template<typename T,
     > = nullptr
 >
 class Transaction {
+
+    struct SignaturePair{
+        std::string publicKey;
+        std::string signature;
+    };
+
     T command;
-private:
     std::hash;
+    std::vector<std::tuple<SignaturePair>> signatures;
 
 public:
 
@@ -55,13 +61,18 @@ public:
         command(command)
     {}
 
-    std::string getHash() {
+    std::string getHash() const{
         return hash;
     }
 
-    std::string getAsJSON() {
+    std::string getAsJSON() const{
         return command.getAsJson();
     }
+
+    std::vector<std::tuple<SignaturePair>> getSignaturePair(){
+        return signatures;
+    }
+
 };
 
 }  // namespace transaction
