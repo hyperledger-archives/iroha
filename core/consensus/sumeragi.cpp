@@ -21,7 +21,7 @@ limitations under the License.
 #include "../util/logger.hpp"
 #include "../repository/consensus/merkle_transaction_repository.hpp"
 #include "../repository/consensus/event_repository.hpp"
-#include "../model/transactions/abstract_transaction.hpp"
+#include "../model/transactions/transaction.hpp"
 #include "../crypto/hash.hpp"
 #include "../crypto/signature.hpp"
 
@@ -110,7 +110,7 @@ namespace sumeragi {
     void processTransaction(std::unique_ptr<ConsensusEvent> event) {
 
         logger::info("sumeragi", "processTransaction()");
-        if (!transaction_validator::isValid<abstract_transaction::AbstractTransaction>(*event->tx)) {
+        if (!transaction_validator::isValid<transaction::Transaction>(*event->tx)) {
             return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
         }
         logger::info("sumeragi", "valied");

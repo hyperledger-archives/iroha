@@ -27,14 +27,14 @@ limitations under the License.
 
 #include "../crypto/signature.hpp"
 #include "../util/logger.hpp"
-#include "../model/transactions/abstract_transaction.hpp"
+#include "../model/transactions/transaction.hpp"
 #include "../model/transactions/message_transaction.hpp"
 
 namespace consensus_event {
 
 struct ConsensusEvent {
 
-    std::unique_ptr<abstract_transaction::AbstractTransaction> tx;
+    std::unique_ptr<transaction::Transaction> tx;
     std::unordered_map<std::string, std::string> txSignatures; // map of public keys→signatures
 
 //    std::string merkleRootHash;
@@ -42,7 +42,7 @@ struct ConsensusEvent {
 
     unsigned long long order = 0;
 
-    ConsensusEvent(std::unique_ptr<abstract_transaction::AbstractTransaction> atx):
+    ConsensusEvent(std::unique_ptr<transaction::Transaction> atx):
         tx(std::move(atx))
     {}
 
@@ -79,7 +79,7 @@ struct ConsensusEvent {
     int getNumValidSignatures() const {
         return std::count_if(
             txSignatures.begin(), txSignatures.end(),
-            [hash = tx->getHash()](std::pair<const std::string, const std::string> record){
+            [hash = tx->getHash()](std::pair<const std::string, const std::string> record) {
                 return signature::verify(record.second, hash, record.first);
         });
     }
