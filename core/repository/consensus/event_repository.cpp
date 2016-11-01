@@ -67,7 +67,7 @@ namespace repository {
 
         std::unique_ptr<consensus_event::ConsensusEvent> find(std::string hash) {
             for (auto&& event : consensusEvents){
-                if ( event->merkleRootHash == hash) {
+                if ( event->getHash() == hash) {
                     return std::move(event);
                 }
             }
