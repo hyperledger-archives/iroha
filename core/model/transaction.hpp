@@ -47,8 +47,8 @@ public:
     virtual ~Transaction() = default;
 
     // Support move and copy.
-    Transaction(Asset const&) = default;
-    Transaction(Asset&&) = default;
+    Transaction(Transaction const&) = default;
+    Transaction(Transaction&&) = default;
     Transaction& operator =(Transaction const&) = default;
     Transaction& operator =(Transaction&&) = default;
 

@@ -1,9 +1,11 @@
-
 set(CMAKE_BUILD_TYPE Debug)
 
-ADD_LIBRARY(transfer_transaction STATIC
-  transfer_transaction.cpp
+# All domain instance is in libdomain.a
+ADD_LIBRARY(commands STATIC
+    add.cpp
+    transfer.cpp
 )
-target_link_libraries(transfer_transaction
+
+target_link_libraries(commands
     hash
 )
