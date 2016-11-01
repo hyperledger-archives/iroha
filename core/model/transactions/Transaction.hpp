@@ -30,6 +30,10 @@ public:
         return T.getHash();
     }
 
+    std::string getAsJSON() {
+        return T.getAsJSON();
+    }
+
     template <typename F>
     void executeCommand(F command)
     {
