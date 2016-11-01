@@ -17,32 +17,25 @@ limitations under the License.
 
 #include "merkle_transaction_repository.hpp"
 #include "../world_state_repository.hpp"
-#include "../../util/random.hpp"
 
 #include <memory>
 #include <iostream>
 
 #include "../../util/logger.hpp"
-//#include "../../crypto/merkle_node.hpp"
-//#include "../../crypto/merkle.hpp"
 #include "../../crypto/hash.hpp"
 
 #include <string>
 
 namespace merkle_transaction_repository {
 
-
     bool commit(ConsensusEvent<T> &event) {
-
         std::vector<std::tuple<std::string, std::string>> batchCommit
           = {
                 std::tuple<std::string, std::string>("last_insertion", event->tx->getHash()),
                 std::tuple<std::string, std::string>(event->tx->getHash(), event->tx->getAsText())
         };
 
-        return repository::world_state_repository::addBatch<
-                std::string
-        >(batchCommit);
+        return repository::world_state_repository::addBatch<std::string>(batchCommit);
     }
 
     bool leafExists(const std::string& hash) {
@@ -51,26 +44,6 @@ namespace merkle_transaction_repository {
 
     std::string getLeaf(const std::string& hash) {
         return repository::world_state_repository::find(hash);
-    }
-
-    unsigned long long getLastLeafOrder() {
-        std::string lastAddedHash = repository::world_state_repository::find("last_insertion");
-        if (lastAddedHash.empty()) {
-            return 0l;
-        }
-
-        std::string lastAddedJSON = repository::world_state_repository::find(lastAddedHash);
-        if (lastAddedJSON.empty()) {
-            return 0l;
-        }
-
-        /*auto lastAddedLeaf = json::parse(lastAddedJSON);
-
-        return lastAddedLeaf["order"]*/;
-    }
-
-    void initLeaf(){
-        repository::world_state_repository::add("last_insertion", random_service::makeRandomHash());
     }
 
     std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
@@ -85,7 +58,7 @@ namespace merkle_transaction_repository {
         }
 
         std::string lastInsertionJSON = repository::world_state_repository::find(lastInsertionHash);
-        MerkleNode lastInsertionNode = MerkleNode(lastInsertionJSON); //TODO: create convert function
+        MerkleNode lastInsertionNode = MerkleNode(lastInsertionJSON); //TODO: assume JSONParser wrapper
 
         std::tuple<std::string, std::string> children = lastInsertionNode.children;
         std::string right = std::get<1>(children);

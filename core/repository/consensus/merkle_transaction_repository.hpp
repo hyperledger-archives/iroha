@@ -30,16 +30,11 @@ struct MerkleNode {
     std::string parent;
     std::tuple<std::string, std::string> children;
 
-    explicit MerkleNode(std::string jsonStr) {
-        /*json jsonObj = json::parse(jsonStr);
-        hash = jsonObj.at(0);
-        parent = jsonObj.at(1);
-        std::string leftChild = jsonObj.at(2);
-        std::string rightChild = jsonObj.at(3);
-        children = std::tuple<std::string, std::string>(leftChild, rightChild);*/
+    MerkleNode() {
+
     }
 
-    MerkleNode() {
+    MerkleNode(std::string jsonStr) {
 
     }
 
@@ -50,17 +45,6 @@ struct MerkleNode {
     bool isLeaf() {
         return std::get<0>(children).empty();
     }
-
-    std::string serializeToJSON() {
-        /*json jsonObj;
-        jsonObj.push_back(hash);
-        jsonObj.push_back(parent);
-        jsonObj.push_back(std::get<0>(children));
-        jsonObj.push_back(std::get<1>(children));
-
-        return jsonObj.dump();*/
-        return ""; //TODO:
-    }
 };
 
 void initLeaf();
@@ -70,8 +54,6 @@ bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
 bool leafExists(const std::string& hash);
 
 std::string getLeaf(const std::string& hash);
-
-unsigned long long getLastLeafOrder();
 
 std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
 
