@@ -6,6 +6,6 @@ ADD_LIBRARY(commands STATIC
     transfer.cpp
 )
 
-target_link_libraries(transfer_transaction
+target_link_libraries(commands
     hash
 )
