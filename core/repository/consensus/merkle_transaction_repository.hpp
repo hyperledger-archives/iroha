@@ -23,11 +23,8 @@ limitations under the License.
 #include <unordered_map>
 #include "../../model/transactions/abstract_transaction.hpp"
 #include "../../consensus/consensus_event.hpp"
-#include <json.hpp>
 
 namespace merkle_transaction_repository {
-
-using nlohmann::json;
 
 struct MerkleNode {
     std::string hash;
@@ -35,12 +32,12 @@ struct MerkleNode {
     std::tuple<std::string, std::string> children;
 
     explicit MerkleNode(std::string jsonStr) {
-        json jsonObj = json::parse(jsonStr);
+        /*json jsonObj = json::parse(jsonStr);
         hash = jsonObj.at(0);
         parent = jsonObj.at(1);
         std::string leftChild = jsonObj.at(2);
         std::string rightChild = jsonObj.at(3);
-        children = std::tuple<std::string, std::string>(leftChild, rightChild);
+        children = std::tuple<std::string, std::string>(leftChild, rightChild);*/
     }
 
     MerkleNode() {
@@ -56,13 +53,14 @@ struct MerkleNode {
     }
 
     std::string serializeToJSON() {
-        json jsonObj;
+        /*json jsonObj;
         jsonObj.push_back(hash);
         jsonObj.push_back(parent);
         jsonObj.push_back(std::get<0>(children));
         jsonObj.push_back(std::get<1>(children));
 
-        return jsonObj.dump();
+        return jsonObj.dump();*/
+        return ""; //TODO:
     }
 };
 

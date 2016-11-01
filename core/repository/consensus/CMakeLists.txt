@@ -1,9 +1,3 @@
-set(JSON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/json")
-
-include_directories(
-        ${JSON_PATH}/src
-)
-
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 add_library(event_repository STATIC
