@@ -18,30 +18,19 @@ limitations under the License.
 #ifndef CORE_DOMAIN_OBJECTS_MESSAGE_HPP_
 #define CORE_DOMAIN_OBJECTS_MESSAGE_HPP_
 
+#include "object.hpp"
+
+#include <string>
+
 namespace message {
 
 class Message {
-    std::string hash;
-    std::string data;
+    std::string text;
 
 public:
-    Message(const std::string &data);
+    Message(std::string text);
 
-    virtual std::string getHash() const override;
-
-    virtual std::string getRawData() const override;
-
-    virtual std::string getAsText() const override;
-
-    virtual unsigned long long int getTimestamp() const override;
-
-    virtual abstract_transaction::TransactionType getType() const override;
-
-    std::string getHash();
-    std::string getRawData();
-    std::string getAsText();
     std::string getAsJSON();
-    abstract_transaction::TransactionType getType();
 };
 
 };  // namespace message

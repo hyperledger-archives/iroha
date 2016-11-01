@@ -14,23 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <string>
+#include "domain.hpp"
 
 namespace domain {
 
     Domain::Domain(
-         const std::string &domain, const std::string &owner
+            std::string ownerPublicKey,
+            std::string name
     ):
-        domain(domain),
-        domain(owner)
+        ownerPublicKey(ownerPublicKey),
+        name(name)
     {}
 
-    std::string TransferTransaction::getAsJSON() const {
-        return "{\"name\":\""
-               + name +
-               "\",\"domain\":\""
-               + domain +
-               "\"}";
+    std::string Domain::getAsJSON(){
+        return
+            "{\"name\":\""
+            + this->name +
+            "\",\"ownerPublicKey\":\""
+            + this->ownerPublicKey +
+            "\"}";
     }
 
 };  // namespace domain

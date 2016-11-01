@@ -6,6 +6,6 @@
 #define IROHA_OBJECTS_H
 
 // Abstract
-class Objects {};
+class Object {};
 
 #endif //IROHA_OBJECTS_H

@@ -14,33 +14,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <string>
-#include "../Transaction.hpp"
+#include "asset.hpp"
 
 namespace asset {
 
     Asset::Asset(
-            const std::string &domain,
-            const std::string &name,
-            unsigned long long value;
-            unsigned int precision;
+            const std::string domain,
+            const std::string name,
+            unsigned long long value,
+            unsigned int precision
     ):
         domain(domain),
-        asset(asset),
+        name(name),
         value(value),
         precision(precision)
     {}
 
-    std::string Transaction::getAsJSON() const {
-        return "{\"name\":\""
-               + name +
-                "\",\"domain\":\""
-               + domain +
-                "\",\"value\":\""
-                + value +
-                "\",\"precision\":\""
-                + precision +
-                "\"}";
+    // WIP validation ["]
+    std::string Asset::getAsJSON() {
+        return
+            "{\"name\":\""
+            + this->name +
+            "\",\"domain\":\""
+            + this->domain +
+            "\",\"value\":\""
+            + this->value +
+            "\",\"precision\":\""
+            + this->precision +
+            "\"}";
     }
 
 };  // namespace asset

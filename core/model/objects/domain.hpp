@@ -18,16 +18,20 @@ limitations under the License.
 #ifndef CORE_DOMAIN_OBJECTS_DOMAIN_HPP_
 #define CORE_DOMAIN_OBJECTS_DOMAIN_HPP_
 
+#include <string>
+#include "object.hpp"
+
 namespace domain {
 
-class Domain {
+class Domain : public Object{
     std::string ownerPublicKey;
     std::string name;
 
 public:
     Domain(
-        const std::string ownerPublicKey,
-        const std::string name);
+        std::string ownerPublicKey,
+        std::string name
+    );
 
     std::string getAsJSON();
 };

@@ -18,9 +18,13 @@ limitations under the License.
 #ifndef CORE_DOMAIN_OBJECTS_ASSET_HPP_
 #define CORE_DOMAIN_OBJECTS_ASSET_HPP_
 
+#include <string>
+#include "object.hpp"
+
 namespace asset {
 
-class Asset {
+class Asset : public Object{
+
     std::string domain;
     std::string name;
     unsigned long long value;
