@@ -94,7 +94,9 @@ struct ConsensusEvent {
         jsonObj.push_back(txSignatures);
 
         return jsonObj.dump();*/
-        return "";//TODO:
+//        return "";//TODO:
+
+        return "signatures" + []; //TODO:
     }
 };
 };  // namespace ConsensusEvent
