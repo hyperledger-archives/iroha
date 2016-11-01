@@ -20,9 +20,8 @@ limitations under the License.
 
 namespace asset {
 
-template<typename T>
 class Asset {
-    std::string ownerPublicKey;
+    std::string domain;
     std::string name;
     unsigned long long value;
     unsigned int precision;

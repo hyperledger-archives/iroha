@@ -20,7 +20,6 @@ limitations under the License.
 
 namespace domain {
 
-template<typename T>
 class Domain {
     std::string ownerPublicKey;
     std::string name;
@@ -29,26 +28,10 @@ public:
     Domain();
 
     TransferTransaction(
-        const std::string &senderPublicKey,
-        const std::string &receiverPublicKey,
-        const std::string &domain,
-        const std::string &asset);
+        const std::string &ownerPublicKey,
+        const std::string &name);
 
-    virtual std::string getHash() const override;
-
-    virtual std::string getRawData() const override;
-
-    virtual std::string getAsText() const override;
-
-    virtual unsigned long long int getTimestamp() const override;
-
-    virtual transaction::TransactionType getType() const override;
-
-    std::string getHash();
-    std::string getRawData();
-    std::string getAsText();
-    unsigned long long  getTimestamp();
-    transaction::TransactionType getType();
+    std::string getAsJSON();
 };
 
 };  // namespace domain

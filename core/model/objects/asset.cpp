@@ -19,9 +19,16 @@ limitations under the License.
 
 namespace asset {
 
-    Asset::Asset(const std::string &domain, const std::string &name):
+    Asset::Asset(
+            const std::string &domain,
+            const std::string &name,
+            unsigned long long value;
+            unsigned int precision;
+    ):
         domain(domain),
-        asset(asset)
+        asset(asset),
+        value(value),
+        precision(precision)
     {}
 
     std::string Transaction::getAsJSON() const {
@@ -29,6 +36,10 @@ namespace asset {
                + name +
                 "\",\"domain\":\""
                + domain +
+                "\",\"value\":\""
+                + value +
+                "\",\"precision\":\""
+                + precision +
                 "\"}";
     }
 
