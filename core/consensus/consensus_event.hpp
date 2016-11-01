@@ -25,17 +25,13 @@ limitations under the License.
 #include <unordered_map>
 #include <algorithm>
 
-#include <json.hpp>
-
 #include "../crypto/signature.hpp"
 #include "../util/logger.hpp"
 #include "../model/transactions/abstract_transaction.hpp"
 #include "../model/transactions/message_transaction.hpp"
 
 namespace consensus_event {
-
-using nlohmann::json;
-
+1
 struct ConsensusEvent {
 
     std::unique_ptr<abstract_transaction::AbstractTransaction> tx;
@@ -51,7 +47,7 @@ struct ConsensusEvent {
     {}
 
     explicit ConsensusEvent(std::string jsonStr) {
-        json jsonObj = json::parse(jsonStr);
+        /*json jsonObj = json::parse(jsonStr);
 
         //TODO: make this less ugly!
         std::string txStr = jsonObj.at(0);
@@ -65,7 +61,7 @@ struct ConsensusEvent {
 
         std::string txSignaturesStr = jsonObj.at(1);
         //TODO: fix this!
-//        txSignatures = std::unordered_map<std::string, std::string>(txSignaturesStr);
+//        txSignatures = std::unordered_map<std::string, std::string>(txSignaturesStr);*/
     }
 
     ConsensusEvent():
@@ -93,11 +89,12 @@ struct ConsensusEvent {
 //    }
 
     std::string serializeToJSON() {
-        json jsonObj;
+        /*json jsonObj;
         jsonObj.push_back(tx->getAsJSON());
         jsonObj.push_back(txSignatures);
 
-        return jsonObj.dump();
+        return jsonObj.dump();*/
+        return "";//TODO:
     }
 };
 };  // namespace ConsensusEvent
