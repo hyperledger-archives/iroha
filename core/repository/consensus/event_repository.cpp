@@ -42,7 +42,7 @@ namespace repository {
                             consensusEvents.begin(),
                             consensusEvents.end(),
                             [hash](auto&& event) -> bool {
-                                return event->merkleRootHash == hash;
+                                return event->getHash() == hash;
                             }
                     ),
                     consensusEvents.end()
