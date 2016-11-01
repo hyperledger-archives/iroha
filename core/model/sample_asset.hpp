@@ -1,5 +1,6 @@
 /*
 Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+www.soramitsu.co.jp
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +21,6 @@ limitations under the License.
 #include "asset.hpp"
 
 namespace domain {
-
     namespace asset {
 
         class SampleAsset : public Asset {
@@ -39,7 +39,6 @@ namespace domain {
         };
 
     }  // namespace asset
-    
 }  // namespace domain
 
 #endif

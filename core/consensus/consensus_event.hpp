@@ -27,23 +27,42 @@ limitations under the License.
 
 #include "../crypto/signature.hpp"
 #include "../util/logger.hpp"
-#include "../model/transactions/abstract_transaction.hpp"
+#include "../model/transactions/transaction.hpp"
+#include "../model/transactions/message_transaction.hpp"
 
 namespace consensus_event {
 
 struct ConsensusEvent {
 
-    std::unique_ptr<abstract_transaction::AbstractTransaction> tx;
+    std::unique_ptr<transaction::Transaction> tx;
     std::unordered_map<std::string, std::string> txSignatures; // map of public keys→signatures
 
-    std::string merkleRootHash;
-    std::unordered_map<std::string, std::string> merkleRootSignatures;
+//    std::string merkleRootHash;
+//    std::unordered_map<std::string, std::string> merkleRootSignatures;
 
     unsigned long long order = 0;
 
-    ConsensusEvent(std::unique_ptr<abstract_transaction::AbstractTransaction> atx):
+    ConsensusEvent(std::unique_ptr<transaction::Transaction> atx):
         tx(std::move(atx))
     {}
+
+    explicit ConsensusEvent(std::string jsonStr) {
+        /*json jsonObj = json::parse(jsonStr);
+
+        //TODO: make this less ugly!
+        std::string txStr = jsonObj.at(0);
+        json txObj = json::parse(txStr);
+
+        const int txType = txObj.at(0);
+        if (abstract_transaction::TransactionType::message == static_cast<abstract_transaction::TransactionType>(txType)) {
+            const std::string txJSONDef = txObj.at(1);
+//            tx = std::unique_ptr<message_transaction::MessageTransaction(txJSONDef)>;
+        }
+
+        std::string txSignaturesStr = jsonObj.at(1);
+        //TODO: fix this!
+//        txSignatures = std::unordered_map<std::string, std::string>(txSignaturesStr);*/
+    }
 
     ConsensusEvent():
             tx(nullptr)
@@ -69,8 +88,19 @@ struct ConsensusEvent {
         });
     }
 
-    operator std::string() const{
-        return "WIP";
+//    operator std::string() const{
+//        return "WIP";
+//    }
+
+    std::string serializeToJSON() {
+        /*json jsonObj;
+        jsonObj.push_back(tx->getAsJSON());
+        jsonObj.push_back(txSignatures);
+
+        return jsonObj.dump();*/
+//        return "";//TODO:
+
+        return "signatures" + []; //TODO:
     }
 };
 };  // namespace ConsensusEvent

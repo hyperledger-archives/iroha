@@ -31,8 +31,13 @@ struct MerkleNode {
     std::string parent;
     std::tuple<std::string, std::string> children;
 
-    explicit MerkleNode(std::unordered_map<std::string, std::string> translateJSON) {
-
+    explicit MerkleNode(std::string jsonStr) {
+        /*json jsonObj = json::parse(jsonStr);
+        hash = jsonObj.at(0);
+        parent = jsonObj.at(1);
+        std::string leftChild = jsonObj.at(2);
+        std::string rightChild = jsonObj.at(3);
+        children = std::tuple<std::string, std::string>(leftChild, rightChild);*/
     }
 
     MerkleNode() {
@@ -47,15 +52,15 @@ struct MerkleNode {
         return std::get<0>(children).empty();
     }
 
+    std::string serializeToJSON() {
+        /*json jsonObj;
+        jsonObj.push_back(hash);
+        jsonObj.push_back(parent);
+        jsonObj.push_back(std::get<0>(children));
+        jsonObj.push_back(std::get<1>(children));
 
-    std::string serialize() {
-        std::unordered_map<std::string, std::string> translateJSON; // key: ハッシュ, value: 変数の中身
-        translateJSON.insert(std::make_pair("hash", hash));
-        translateJSON.insert(std::make_pair("parent", parent));
-        translateJSON.insert(std::make_pair("left_child", std::get<0>(children)));
-        translateJSON.insert(std::make_pair("right_child", std::get<1>(children)));
-
-        //TODO: create convertToJSON function
+        return jsonObj.dump();*/
+        return ""; //TODO:
     }
 };
 

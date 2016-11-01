@@ -21,7 +21,7 @@ limitations under the License.
 #include "../util/logger.hpp"
 #include "../repository/consensus/merkle_transaction_repository.hpp"
 #include "../repository/consensus/event_repository.hpp"
-#include "../model/transactions/abstract_transaction.hpp"
+#include "../model/transactions/transaction.hpp"
 #include "../crypto/hash.hpp"
 #include "../crypto/signature.hpp"
 
@@ -111,7 +111,7 @@ namespace sumeragi {
     void processTransaction(std::unique_ptr<ConsensusEvent> event) {
 
         logger::info("sumeragi", "processTransaction()");
-        if (!transaction_validator::isValid<abstract_transaction::AbstractTransaction>(*event->tx)) {
+        if (!transaction_validator::isValid<transaction::Transaction>(*event->tx)) {
             return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
         }
         logger::info("sumeragi", "valied");
@@ -144,7 +144,7 @@ namespace sumeragi {
                 //Try applying transaction locally and compute the merkle root
                 std::unique_ptr<merkle_transaction_repository::MerkleNode> newRoot = merkle_transaction_repository::calculateNewRoot(event);
                 logger::info("sumeragi", "newRoot hash:"+newRoot->hash);
-                logger::info("sumeragi", "event hash:"+event->merkleRootHash);
+//                logger::info("sumeragi", "event hash:"+event->merkleRootHash);
 
                 // See if the merkle root matches or not
                 // if (newRoot->hash != event->merkleRootHash) {

@@ -23,8 +23,8 @@ limitations under the License.
 #include <iostream>
 
 #include "../../util/logger.hpp"
-#include "../../crypto/merkle_node.hpp"
-#include "../../crypto/merkle.hpp"
+//#include "../../crypto/merkle_node.hpp"
+//#include "../../crypto/merkle.hpp"
 #include "../../crypto/hash.hpp"
 
 #include <string>
@@ -55,10 +55,19 @@ namespace merkle_transaction_repository {
     }
 
     unsigned long long getLastLeafOrder() {
-        std::string lastAdded = repository::world_state_repository::find("last_insertion");
-        //TODO: convert string->abstract transaction
-        // return ->order; //TODO:
-        return 0l;
+        std::string lastAddedHash = repository::world_state_repository::find("last_insertion");
+        if (lastAddedHash.empty()) {
+            return 0l;
+        }
+
+        std::string lastAddedJSON = repository::world_state_repository::find(lastAddedHash);
+        if (lastAddedJSON.empty()) {
+            return 0l;
+        }
+
+        /*auto lastAddedLeaf = json::parse(lastAddedJSON);
+
+        return lastAddedLeaf["order"]*/;
     }
 
     void initLeaf(){
@@ -71,14 +80,13 @@ namespace merkle_transaction_repository {
 
         newMerkleLeaf->hash = event->getHash();
 
-        std::string lastInsertion = repository::world_state_repository::find("last_insertion");
-        if (lastInsertion.empty()) {
+        std::string lastInsertionHash = repository::world_state_repository::find("last_insertion");
+        if (lastInsertionHash.empty()) {
             return newMerkleLeaf;
         }
 
-        // TODO: to Map
-        std::unordered_map<std::string, std::string> dumpLastInsertion;
-        MerkleNode lastInsertionNode = MerkleNode(dumpLastInsertion); //TODO: create convert function
+        std::string lastInsertionJSON = repository::world_state_repository::find(lastInsertionHash);
+        MerkleNode lastInsertionNode = MerkleNode(lastInsertionJSON); //TODO: create convert function
 
         std::tuple<std::string, std::string> children = lastInsertionNode.children;
         std::string right = std::get<1>(children);
@@ -100,13 +108,12 @@ namespace merkle_transaction_repository {
 
         }
 
-        std::string currRoot = repository::world_state_repository::find("merkle_root");
-        if (currRoot.empty()) {
+        const std::string currRootJSON = repository::world_state_repository::find("merkle_root");
+        if (currRootJSON.empty()) {
             return newMerkleLeaf;
         }
-        //TODO: convert currRoot string to MerkleNode
-        std::unordered_map<std::string, std::string> dumpCurrRoot;
-        MerkleNode currMerkleRoot = MerkleNode(dumpCurrRoot);  //TODO:
+
+        MerkleNode currMerkleRoot = MerkleNode(currRootJSON);
 
         return newMerkleRoot;
     }
