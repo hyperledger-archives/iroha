@@ -20,7 +20,6 @@ add_executable(sumeragi_test
 target_link_libraries(sumeragi_test
     snappy
     aeron_client
-    event_repository
     hash
     base64
     signature

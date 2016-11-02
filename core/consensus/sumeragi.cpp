@@ -245,8 +245,8 @@ namespace sumeragi {
         logger::info("sumeragi", "start main loop");
 
         while (true) {  // TODO: replace with callback linking the event repository?
-            if(!repository::event::empty()) {
-
+            //if(!repository::event::empty()) { //WIP
+            if(1){
                 // Determine node order
                 determineConsensusOrder();
 
