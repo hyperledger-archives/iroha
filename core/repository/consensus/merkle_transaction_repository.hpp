@@ -22,32 +22,61 @@ limitations under the License.
 #include <memory>
 #include <unordered_map>
 #include "../../consensus/consensus_event.hpp"
+#include "../../model/objects/object.hpp"
 
 namespace merkle_transaction_repository {
 
 struct MerkleNode {
     std::string hash;
     std::string parent;
-    std::tuple<std::string, std::string> children;
+    std::string leftChild;
+    std::string rightChild;
 
     MerkleNode() {
 
     }
 
-    MerkleNode(std::string jsonStr) {
-    //TODO: deserialize from string
-    }
+    MerkleNode(
+        const std::string hash,
+        const std::string parent,
+        const std::string leftChild,
+        const std::string rightChild
+    ):
+            hash(hash),
+            parent(parent),
+            left(leftChild),
+            right(rightChild)
+    {}
 
     bool isRoot() {
         return parent.empty();
     }
 
     bool isLeaf() {
-        return std::get<0>(children).empty();
+        return leftChild.empty() && rightChild.empty();
+    }
+
+    using Object = json_parse::Object;
+    using Rule = json_parse::Rule;
+    using Type = json_parse::Type;
+    Object dump() {
+        Object obj = Object(Type::DICT);
+        obj.dictSub["hash"] =  Object(Type::STR, hash);
+        obj.dictSub["parent"] =  Object(Type::STR, parent);
+        obj.dictSub["leftChild"] =  Object(Type::STR, leftChild);
+        obj.dictSub["rightChild"] =  Object(Type::STR, rightChild);
+        return obj;
+    }
+
+    static Rule getJsonParseRule() {
+        Rule obj = Rule(Type::DICT);
+        obj.dictSub["hash"] =  Rule(Type::STR);
+        obj.dictSub["parent"] =  Rule(Type::STR);
+        obj.dictSub["leftChild"] = Rule(Type::STR);
+        obj.dictSub["rightChild"] = Rule(Type::STR);
+        return obj;
     }
 };
-
-void initLeaf();
 
 bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
 
