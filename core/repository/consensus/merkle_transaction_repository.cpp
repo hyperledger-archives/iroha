@@ -24,10 +24,9 @@ limitations under the License.
 #include "../../util/logger.hpp"
 #include "../../crypto/hash.hpp"
 
-//#include <string>
-
 namespace merkle_transaction_repository {
 
+    //TODO: change bool to throw an exception instead
     bool commit(ConsensusEvent<T> &event) {
         std::vector<std::tuple<std::string, std::string>> batchCommit
           = {
@@ -35,7 +34,7 @@ namespace merkle_transaction_repository {
                 std::tuple<std::string, std::string>(event->tx->getHash(), event->tx->getAsText())
         };
 
-        //TODO: add in new leaf into the merkle tree
+        calculateNewRootHash(event, true);
 
         return repository::world_state_repository::addBatch<std::string>(batchCommit);
     }
@@ -48,19 +47,15 @@ namespace merkle_transaction_repository {
         return repository::world_state_repository::find(hash);
     }
 
-    std::string calculateNewRootHash(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
-        std::unique_ptr<MerkleNode> newMerkleLeaf = std::make_unique<MerkleNode>();
-        newMerkleLeaf->hash = event->tx->getHash();
-
+    std::string calculateNewRootHash(const std::unique_ptr<consensus_event::ConsensusEvent> &event, bool updateDB) {
         std::string lastInsertionHash = repository::world_state_repository::find("last_insertion");
+
         if (lastInsertionHash.empty()) {
+            // Note: there is no need to update the DB here, because there is only one transaction!
             return event->tx->getHash();
         }
 
-        std::string lastInsertionJSON = repository::world_state_repository::find(lastInsertionHash);
-        MerkleNode lastInsertionNode = MerkleNode(lastInsertionJSON); //TODO: assume JSONParser wrapper
-
-        std::unique_ptr<std::string> currNode = lastInsertionNode.parent;
+        std::unique_ptr<std::string> currNode = repository::world_state_repository::find(lastInsertionHash + "_parent");
         std::unique_ptr<std::string> currHash;
 
         std::string right = lastInsertionNode.rightChild;

@@ -26,58 +26,60 @@ limitations under the License.
 
 namespace merkle_transaction_repository {
 
-struct MerkleNode {
-    std::string hash;
-    std::string parent;
-    std::string leftChild;
-    std::string rightChild;
+    // Think in progress ^^;
+//struct MerkleNode {
+//    std::string hash;
+//    std::string parent;
+//    std::string leftChild;
+//    std::string rightChild;
+//
+//    MerkleNode() {
+//
+//    }
+//
+//    MerkleNode(
+//        const std::string hash,
+//        const std::string parent,
+//        const std::string leftChild,
+//        const std::string rightChild
+//    ):
+//            hash(hash),
+//            parent(parent),
+//            left(leftChild),
+//            right(rightChild)
+//    {}
+//
+//    bool isRoot() {
+//        return parent.empty();
+//    }
+//
+//    bool isLeaf() {
+//        return leftChild.empty() && rightChild.empty();
+//    }
+//
+//    using Object = json_parse::Object;
+//    using Rule = json_parse::Rule;
+//    using Type = json_parse::Type;
+//    Object dump() {
+//        Object obj = Object(Type::DICT);
+//        obj.dictSub["hash"] =  Object(Type::STR, hash);
+//        obj.dictSub["parent"] =  Object(Type::STR, parent);
+//        obj.dictSub["leftChild"] =  Object(Type::STR, leftChild);
+//        obj.dictSub["rightChild"] =  Object(Type::STR, rightChild);
+//        return obj;
+//    }
+//
+//    static Rule getJsonParseRule() {
+//        Rule obj = Rule(Type::DICT);
+//        obj.dictSub["hash"] =  Rule(Type::STR);
+//        obj.dictSub["parent"] =  Rule(Type::STR);
+//        obj.dictSub["leftChild"] = Rule(Type::STR);
+//        obj.dictSub["rightChild"] = Rule(Type::STR);
+//        return obj;
+//    }
+//};
 
-    MerkleNode() {
-
-    }
-
-    MerkleNode(
-        const std::string hash,
-        const std::string parent,
-        const std::string leftChild,
-        const std::string rightChild
-    ):
-            hash(hash),
-            parent(parent),
-            left(leftChild),
-            right(rightChild)
-    {}
-
-    bool isRoot() {
-        return parent.empty();
-    }
-
-    bool isLeaf() {
-        return leftChild.empty() && rightChild.empty();
-    }
-
-    using Object = json_parse::Object;
-    using Rule = json_parse::Rule;
-    using Type = json_parse::Type;
-    Object dump() {
-        Object obj = Object(Type::DICT);
-        obj.dictSub["hash"] =  Object(Type::STR, hash);
-        obj.dictSub["parent"] =  Object(Type::STR, parent);
-        obj.dictSub["leftChild"] =  Object(Type::STR, leftChild);
-        obj.dictSub["rightChild"] =  Object(Type::STR, rightChild);
-        return obj;
-    }
-
-    static Rule getJsonParseRule() {
-        Rule obj = Rule(Type::DICT);
-        obj.dictSub["hash"] =  Rule(Type::STR);
-        obj.dictSub["parent"] =  Rule(Type::STR);
-        obj.dictSub["leftChild"] = Rule(Type::STR);
-        obj.dictSub["rightChild"] = Rule(Type::STR);
-        return obj;
-    }
-};
-
+//TODO: change bool to throw an exception instead
 bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
 
 bool leafExists(const std::string& hash);
