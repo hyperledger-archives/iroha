@@ -23,17 +23,19 @@ limitations under the License.
 
 namespace transaction_validator {
 
-    template<typename T, std::enable_if_t<std::is_base_of<transaction::Transaction, T>::value, std::nullptr_t> = nullptr>
+    template<
+        typename T,
+            std::enable_if_t<std::is_base_of<transaction::Transaction<command::Command>, T>::value, std::nullptr_t> = nullptr>
     bool isValid(const T& tx){
         return true;
     }
 
-    template<typename T, std::enable_if_t<std::is_base_of<transaction::Transaction, T>::value, std::nullptr_t> = nullptr>
+    template<typename T, std::enable_if_t<std::is_base_of<transaction::Transaction<command::Command>, T>::value, std::nullptr_t> = nullptr>
     bool signaturesAreValid(const T& tx){
         return true;
     }
 
-    template<typename T, std::enable_if_t<std::is_base_of<transaction::Transaction, T>::value, std::nullptr_t> = nullptr>
+    template<typename T, std::enable_if_t<std::is_base_of<transaction::Transaction<command::Command>, T>::value, std::nullptr_t> = nullptr>
     bool validForType(const T& tx){
         return true;
     }

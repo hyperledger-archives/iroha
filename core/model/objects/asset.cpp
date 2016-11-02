@@ -43,7 +43,6 @@ namespace asset {
             + this->precision +
             "\"}";
     }
-
     using Object = json_parse::Object;
     using Rule = json_parse::Rule;
     using Type = json_parse::Type;
