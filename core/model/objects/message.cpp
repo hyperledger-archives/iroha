@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 #include "message.hpp"
-#include "../../service/json_parse.hpp"
 
 namespace message {
 
@@ -30,10 +29,9 @@ namespace message {
             "{\"text\",\""+text+"\"}";
     }
 
-    using Object = json_parse::Object;
-    Object getJsonParseRule() {
-        Object obj = Object(Object::Type::DICT);
-        obj.dictSub["text"] =  Object(Object::Type::STR, text);
+    json_parse::Object Message::getJsonParseRule() {
+        json_parse::Object obj = json_parse::Object(json_parse::Type::DICT);
+        //obj.dictSub["text"] =  Object(json_parse::Type::STR, text);
         return obj;
     }
 

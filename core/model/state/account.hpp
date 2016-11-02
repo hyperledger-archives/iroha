@@ -21,7 +21,7 @@ limitations under the License.
 #include <vector>
 
 #include "sample_asset.hpp"
-#include "../util/random.hpp"
+#include "../../util/random.hpp"
 
 #include <vector>
 #include <string>

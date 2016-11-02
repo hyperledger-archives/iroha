@@ -73,7 +73,7 @@ namespace sumeragi {
                             std::vector<std::unique_ptr<peer::Node>> peers) {
 
         logger::info("sumeragi", "initialize");
-        merkle_transaction_repository::initLeaf();
+        //merkle_transaction_repository::initLeaf();
 
         context = std::make_unique<Context>(std::move(peers));
         peers.clear();
@@ -103,7 +103,8 @@ namespace sumeragi {
     }
 
     unsigned long long getNextOrder() {
-        return merkle_transaction_repository::getLastLeafOrder() + 1;
+        return 0l;
+        //return merkle_transaction_repository::getLastLeafOrder() + 1;
     }
 
     template <typename T,typename U>
@@ -141,9 +142,9 @@ namespace sumeragi {
                 // Check Merkle roots to see if match for new state
                 //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
                 //Try applying transaction locally and compute the merkle root
-                std::unique_ptr<merkle_transaction_repository::MerkleNode> newRoot = merkle_transaction_repository::calculateNewRoot(event);
-                logger::info("sumeragi", "newRoot hash:"+newRoot->hash);
-//                logger::info("sumeragi", "event hash:"+event->merkleRootHash);
+                //std::unique_ptr<merkle_transaction_repository::MerkleNode> newRoot = merkle_transaction_repository::calculateNewRoot(event);
+                //logger::info("sumeragi", "newRoot hash:"+newRoot->hash);
+                //logger::info("sumeragi", "event hash:"+event->merkleRootHash);
 
                 // See if the merkle root matches or not
                 // if (newRoot->hash != event->merkleRootHash) {

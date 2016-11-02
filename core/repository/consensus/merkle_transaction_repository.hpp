@@ -22,7 +22,6 @@ limitations under the License.
 #include <memory>
 #include <unordered_map>
 #include "../../consensus/consensus_event.hpp"
-#include "../../model/objects/object.hpp"
 #include "../../service/json_parse.hpp"
 
 namespace merkle_transaction_repository {
@@ -30,12 +29,10 @@ namespace merkle_transaction_repository {
 struct MerkleNode {
     std::string hash;
     std::string parent;
-    std::string leftChild;
-    std::string rightChild;
+    std::string left;
+    std::string right;
 
-    MerkleNode() {
-
-    }
+    MerkleNode() {}
 
     MerkleNode(
         const std::string hash,
@@ -54,38 +51,49 @@ struct MerkleNode {
     }
 
     bool isLeaf() {
-        return leftChild.empty() && rightChild.empty();
+        return left.empty() && right.empty();
     }
 
     using Object = json_parse::Object;
     using Rule = json_parse::Rule;
     using Type = json_parse::Type;
+
     Object dump() {
         Object obj = Object(Type::DICT);
-        obj.dictSub["hash"] =  Object(Type::STR, hash);
-        obj.dictSub["parent"] =  Object(Type::STR, parent);
-        obj.dictSub["leftChild"] =  Object(Type::STR, leftChild);
-        obj.dictSub["rightChild"] =  Object(Type::STR, rightChild);
+// obj.dictSub["hash"]     =  Object(Type::STR, hash);
+// obj.dictSub["parent"]   =  Object(Type::STR, parent);
+// obj.dictSub["left"]     =  Object(Type::STR, left);
+// obj.dictSub["right"]    =  Object(Type::STR, right);
         return obj;
     }
 
     static Rule getJsonParseRule() {
         Rule obj = Rule(Type::DICT);
-        obj.dictSub["hash"] =  Rule(Type::STR);
-        obj.dictSub["parent"] =  Rule(Type::STR);
-        obj.dictSub["leftChild"] = Rule(Type::STR);
-        obj.dictSub["rightChild"] = Rule(Type::STR);
+        //obj.dictSub["hash"]     = Rule(Type::STR);
+        //obj.dictSub["parent"]   = Rule(Type::STR);
+        //obj.dictSub["left"]     = Rule(Type::STR);
+        //obj.dictSub["right"]    = Rule(Type::STR);
         return obj;
     }
 };
 
-bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
 
-bool leafExists(const std::string& hash);
+template <typename T,typename U>
+bool commit(const std::unique_ptr<consensus_event::ConsensusEvent<T,U>> &event){
 
-std::string getLeaf(const std::string& hash);
+};
 
-std::string calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
+bool leafExists(const std::string& hash){
+
+}
+
+std::string getLeaf(const std::string& hash){
+
+}
+
+
+template <typename T,typename U>
+std::string calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent<T,U>> &event);
 
 };  // namespace merkle_transaction_repository
 

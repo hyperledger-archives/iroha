@@ -19,18 +19,19 @@ limitations under the License.
 #define CORE_DOMAIN_OBJECTS_MESSAGE_HPP_
 
 #include "object.hpp"
-
+#include "../../service/json_parse.hpp"
 #include <string>
 
 namespace message {
 
-class Message {
+class Message : public Object{
     std::string text;
 
 public:
     Message(std::string text);
 
     std::string getAsJSON();
+    static json_parse::Object getJsonParseRule();
 };
 
 };  // namespace message

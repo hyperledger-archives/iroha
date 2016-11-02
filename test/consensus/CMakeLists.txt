@@ -24,7 +24,6 @@ target_link_libraries(sumeragi_test
     hash
     base64
     signature
-    transfer_transaction
     sumeragi
     connection_with_aeron
     peer_service_with_json
