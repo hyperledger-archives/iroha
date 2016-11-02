@@ -22,7 +22,6 @@ limitations under the License.
 #include <memory>
 #include <unordered_map>
 #include "../../consensus/consensus_event.hpp"
-#include "../../model/objects/object.hpp"
 #include "../../service/json_parse.hpp"
 
 namespace merkle_transaction_repository {

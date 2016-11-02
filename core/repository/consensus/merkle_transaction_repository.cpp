@@ -65,14 +65,12 @@ namespace merkle_transaction_repository {
         std::unique_ptr<MerkleNode> currNode = lastInsertionNode.parent;
         std::unique_ptr<std::string> currHash;
 
-        std::tuple<std::string, std::string> children = lastInsertionNode.children;
-        std::string right = std::get<1>(children);
+        std::string right =lastInsertionNode.rightChild;
 
         if (right.empty()) {
             // insert the event's transaction as the right child
-            std::string left = std::get<0>(children);
-            lastInsertionNode.children = std::tuple<std::string, std::string>(left, event->tx->getAsText());
-            currNode.hash = hash::sha3_256_hex(left + event->tx->getHash());
+            lastInsertionNode.rightChild = event->tx->getHash();
+            currNode.hash = hash::sha3_256_hex(lastInsertionNode.leftChild + lastInsertionNode.rightChild);
 
         } else {
             // create a new node and put it on the left
@@ -86,8 +84,7 @@ namespace merkle_transaction_repository {
             // find insertion point for new node
             currHash = currNode.hash;
             currNode = std::make_unique<MerkleNode>(currNode.parent);
-            std::string currLeft = std::get<0>(currNode.children);
-            currNode.hash = hash::sha3_256_hex(currLeft.hash + currHash);
+            currNode.hash = hash::sha3_256_hex(currNode.leftChild + currHash);
         }
 
         return currNode.hash;
