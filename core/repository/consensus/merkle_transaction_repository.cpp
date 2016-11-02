@@ -34,7 +34,7 @@ namespace merkle_transaction_repository {
                 std::tuple<std::string, std::string>(event->tx->getHash(), event->tx->getAsText())
         };
 
-        calculateNewRootHash(event, true);
+        calculateNewRootHash(event, batchCommit);
 
         return repository::world_state_repository::addBatch<std::string>(batchCommit);
     }
@@ -47,41 +47,56 @@ namespace merkle_transaction_repository {
         return repository::world_state_repository::find(hash);
     }
 
-    std::string calculateNewRootHash(const std::unique_ptr<consensus_event::ConsensusEvent> &event, bool updateDB) {
-        std::string lastInsertionHash = repository::world_state_repository::find("last_insertion");
+    std::string calculateNewRootHash(const std::unique_ptr<consensus_event::ConsensusEvent> &event, std::vector<std::tuple<std::string, std::string>> batchCommit) {
+        std::unique_ptr<std::string> currHash = repository::world_state_repository::find("last_insertion");
 
         if (lastInsertionHash.empty()) {
             // Note: there is no need to update the DB here, because there is only one transaction!
             return event->tx->getHash();
         }
 
-        std::unique_ptr<std::string> currNode = repository::world_state_repository::find(lastInsertionHash + "_parent");
-        std::unique_ptr<std::string> currHash;
+        std::unique_ptr<std::string> parent = repository::world_state_repository::find(currHash + "_parent");
+        std::unique_ptr<std::string> leftChild = repository::world_state_repository::find(currHash + "_leftChild");
+        std::unique_ptr<std::string> rightChild = repository::world_state_repository::find(currHash + "_rightChild");
 
-        std::string right = lastInsertionNode.rightChild;
+        if (leftChild.empty()) {
+            // insert the event's transaction as the left child
+            leftChild = event->tx->getHash();
+            currNode.hash = hash::sha3_256_hex(leftChild);
 
-        if (right.empty()) {
+            if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
+                batchCommit.push_back(std::tuple<std::string, std::string>(currHash + "_leftChild", leftChild));
+            }
+
+        } else if (rightChild.empty()) {
             // insert the event's transaction as the right child
-            lastInsertionNode.rightChild = event->tx->getHash();
-            currNode.hash = hash::sha3_256_hex(lastInsertionNode.leftChild + lastInsertionNode.rightChild);
+            rightChild = event->tx->getHash();
+            currNode.hash = hash::sha3_256_hex(rightChild);
 
+            if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
+                batchCommit.push_back(std::tuple<std::string, std::string>(currHash + "_rightChild", rightChild));
+            }
         } else {
             // create a new node and put it on the left
             currHash = currNode.hash;
-            currNode = std::make_unique<MerkleNode>(hash::sha3_256_hex(currHash + event->tx->getHash()),
-                                                    currNode.parent,
-                                                    event->tx>getHash(),
-                                                    "");
+            currNode = hash::sha3_256_hex(currHash + event->tx->getHash());
+
+            newparent = hash::sha3_256_hex(parent + event->tx->getHash());
+
+            if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
+                batchCommit.push_back(std::tuple<std::string, std::string>(event->tx->getHash() + "_parent", event->tx->getHash()));
+                batchCommit.push_back(std::tuple<std::string, std::string>(event->tx->getHash() + "_leftChild", event->tx->getHash()));
+            }
         }
 
         // Propagate up the tree to the root
-        while (!currNode->isRoot()) {
+        while (!parent.empty()) {
             // find insertion point for new node
             currHash = currNode.hash;
             currNode = std::make_unique<MerkleNode>(currNode.parent);
-            currNode.hash = hash::sha3_256_hex(currNode.leftChild + currHash);
+//            currNode.hash = hash::sha3_256_hex(currNode.leftChild + currHash);
         }
 
-        return currNode.hash;
+        return currHash;
     }
 };  // namespace merkle_transaction_repository
