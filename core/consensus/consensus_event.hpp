@@ -74,6 +74,9 @@ public:
     std::string getHash() const {
         return tx->getHash();
     }
+    T getTx() const{
+        return tx;
+    }
 
     int getNumValidSignatures() const {
         logger::debug("getNumValidSignatures", "eventSignatures:"+ std::to_string(eventSignatures.size()));
@@ -83,6 +86,12 @@ public:
                 return signature::verify(sig.signature, hash, sig.publicKey);
         });
     }
+
+    bool eventSignatureIsEmpty(){
+        return eventSignatures.empty();
+    }
+
+
 
     using Object = json_parse::Object;
     using Type = json_parse::Type;
