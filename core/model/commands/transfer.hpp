@@ -55,15 +55,15 @@ namespace command {
 
         Object dump() {
             Object obj = Object(Type::DICT);
-            obj.dictSub["command"] = Object(Type::STR, getCommandName());
-            obj.dictSub["object"] = object.getJsonParseRule();
+            obj.dictSub.insert( std::make_pair( "command", Object(Type::STR, getCommandName())));
+            obj.dictSub.insert( std::make_pair( "object", object.dump()));
             return obj;
         }
 
         static Rule getJsonParseRule() {
             Rule obj = Rule(Type::DICT);
-            obj.dictSub["command"] = Rule(Type::STR);
-            obj.dictSub["object"] = T::getJsonParseRule();
+            obj.dictSub.insert( std::make_pair( "command", Rule(Type::STR)));
+            obj.dictSub.insert( std::make_pair( "object", T::getJsonParseRule()));
             return obj;
         }
     };

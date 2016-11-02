@@ -27,6 +27,8 @@ limitations under the License.
 #include <memory>
 #include <thread>
 
+#include "../../core/service/json_parse_with_json_nlohmann.hpp"
+
 #include "../../core/service/peer_service.hpp"
 #include "../../core/crypto/hash.hpp"
 
@@ -78,6 +80,15 @@ int main(){
                 )
              )
         );
+        auto parser = json_parse_with_json_nlohman::JsonParse<
+           consensus_event::ConsensusEvent<
+              transaction::Transaction<command::Transfer<domain::Domain>>,
+              command::Transfer<domain::Domain>
+           >,
+           transaction::Transaction<command::Transfer<domain::Domain>>,
+           command::Transfer<domain::Domain>
+        >();
+        connection::send( peer::getMyIp(),  parser.dump(event.dump()));
 
     }
 
