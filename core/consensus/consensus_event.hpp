@@ -29,6 +29,8 @@ limitations under the License.
 #include "../util/logger.hpp"
 #include "../model/transaction.hpp"
 
+#include "../service/json_parse.hpp"
+
 namespace consensus_event {
 
 template<
@@ -55,12 +57,15 @@ class ConsensusEvent {
     T tx;
     std::vector<eventSignature> eventSignatures;
 
-private:
+public:
     unsigned long long order = 0;
 
     ConsensusEvent(T atx):
         tx(atx)
     {}
+
+    // WIP
+    ConsensusEvent(json_parse::Object obj) {}
 
     void addSignature(const std::string& publicKey, const std::string& signature){
         eventSignatures.push_back(eventSignature(publicKey, signature));
@@ -79,9 +84,38 @@ private:
         });
     }
 
-    std::string serializeToJSON() {
-        return "WIP";
+    using Object = json_parse::Object;
+    using Type = json_parse::Type;
+    using Rule = json_parse::Rule;
+
+    Object dump() {
+        json_parse::Object obj = Object(Type::DICT);
+        obj.dictSub["order"] = Object(Type::INT, order);
+        auto eventSigs   = Object(Type::LIST);
+        for(auto&& eSig : eventSignatures) {
+            auto eventSig = Object(Type::DICT);
+            eventSig.dictSub["publicKey"] = Object(Type::STR, eSig.push_back(eSig.publicKey));
+            eventSig.dictSub["signature"] = Object(Type::STR, eSig.push_back(eSig.signature));
+            eventSigs.listSub.push_back(eventSig);
+        }
+        obj.dictSub["eventSignatures"] = eventSigs;
+        obj.dictSub["transaction"] = tx.dump();
+        return obj;
     }
+
+    static Rule getJsonParseRule() {
+        Rule obj = Rule(Type::DICT);
+        obj.dictSub["order"] = Rule(Type::INT);
+        auto eventSigs   = Rule(Type::LIST);
+        auto eventSig   = Rule(Type::DICT);
+        eventSig.dictSub["publicKey"] = Rule(Type::STR);
+        eventSig.dictSub["signature"] = Rule(Type::STR);
+        eventSigs.listSub = eventSig;
+        obj.dictSub["eventSignatures"] = eventSigs;
+        obj.dictSub["transaction"] = T::getJsonParseRule();
+        return obj;
+    }
+
 };
 };  // namespace ConsensusEvent
 

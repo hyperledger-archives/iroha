@@ -44,4 +44,25 @@ namespace asset {
             "\"}";
     }
 
+    using Object = json_parse::Object;
+    using Rule = json_parse::Rule;
+    using Type = json_parse::Type;
+    Object dump() {
+        Object obj = Object(Type::DICT);
+        obj.dictSub["name"] =  Object(Type::STR, name);
+        obj.dictSub["domain"] =  Object(Type::STR, domain);
+        obj.dictSub["value"] =  Object(Type::STR, value);
+        obj.dictSub["precision"] =  Object(Type::STR, precision);
+        return obj;
+    }
+
+    static Rule getJsonParseRule() {
+        Rule obj = Rule(Type::DICT);
+        obj.dictSub["name"] =  Rule(Type::STR);
+        obj.dictSub["domain"] =  Rule(Type::STR);
+        obj.dictSub["value"] = Rule(Type::STR);
+        obj.dictSub["precision"] = Rule(Type::STR);
+        return obj;
+    }
+
 };  // namespace asset

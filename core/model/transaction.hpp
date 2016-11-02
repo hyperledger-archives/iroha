@@ -16,6 +16,8 @@ limitations under the License.
 
 #include "commands/command.hpp"
 
+#include "../service/json_parse.hpp"
+
 #include <algorithm>
 
 namespace transaction {
@@ -94,6 +96,38 @@ public:
                 return signature::verify(sig.signature, hash, sig.publicKey);
             }
         ) == txSignatures.size();
+    }
+
+
+    using Object = json_parse::Object;
+    using Rule = json_parse::Rule;
+    using Type = json_parse::Type ;
+    Object dump() {
+        Object obj = Object(Type::DICT);
+        auto txSigs   = Object(Type::LIST);
+        for(auto&& tSig : txSignatures) {
+            auto txSig = Object(Type::DICT);
+            txSig.dictSub["publicKey"] = Object(Type::STR, tSig.push_back(tSig.publicKey));
+            txSig.dictSub["signature"] = Object(Type::STR, tSig.push_back(tSig.signature));
+            txSigs.listSub.push_back(txSig);
+        }
+        obj.dictSub["txSignatures"] = txSigs;
+        obj.dictSub["hash"] =  Object(Type::STR, hash);
+        obj.dictSub["command"] = command.getJsonParseRule();
+        return obj;
+    }
+
+    static Rule getJsonParseRule() {
+        Rule obj = Rule(Type::DICT);
+        auto txSigs   = Rule(Type::LIST);
+        auto txSig = Rule(Type::DICT);
+        txSig.dictSub["publicKey"] = Rule(Type::STR);
+        txSig.dictSub["signature"] = Rule(Type::STR);
+        txSigs.listSub = txSig;
+        obj.dictSub["txSignatures"] = txSigs;
+        obj.dictSub["hash"] =  Rule(Type::STR);
+        obj.dictSub["command"] = T::getJsonParseRule();
+        return obj;
     }
 
 };
