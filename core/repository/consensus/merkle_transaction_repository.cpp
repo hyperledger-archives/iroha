@@ -24,7 +24,7 @@ limitations under the License.
 #include "../../util/logger.hpp"
 #include "../../crypto/hash.hpp"
 
-#include <string>
+//#include <string>
 
 namespace merkle_transaction_repository {
 
@@ -50,22 +50,20 @@ namespace merkle_transaction_repository {
 
     std::string calculateNewRootHash(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
         std::unique_ptr<MerkleNode> newMerkleLeaf = std::make_unique<MerkleNode>();
-        std::unique_ptr<MerkleNode> newMerkleRoot = std::make_unique<MerkleNode>();
-
-        newMerkleLeaf->hash = event->getHash();
+        newMerkleLeaf->hash = event->tx->getHash();
 
         std::string lastInsertionHash = repository::world_state_repository::find("last_insertion");
         if (lastInsertionHash.empty()) {
-            return newMerkleLeaf;
+            return event->tx->getHash();
         }
 
         std::string lastInsertionJSON = repository::world_state_repository::find(lastInsertionHash);
         MerkleNode lastInsertionNode = MerkleNode(lastInsertionJSON); //TODO: assume JSONParser wrapper
 
-        std::unique_ptr<MerkleNode> currNode = lastInsertionNode.parent;
+        std::unique_ptr<std::string> currNode = lastInsertionNode.parent;
         std::unique_ptr<std::string> currHash;
 
-        std::string right =lastInsertionNode.rightChild;
+        std::string right = lastInsertionNode.rightChild;
 
         if (right.empty()) {
             // insert the event's transaction as the right child
@@ -75,8 +73,10 @@ namespace merkle_transaction_repository {
         } else {
             // create a new node and put it on the left
             currHash = currNode.hash;
-            currNode = std::make_unique<MerkleNode>(currNode.parent);
-            currNode.hash = hash::sha3_256_hex(currHash + event->tx->getHash());
+            currNode = std::make_unique<MerkleNode>(hash::sha3_256_hex(currHash + event->tx->getHash()),
+                                                    currNode.parent,
+                                                    event->tx>getHash(),
+                                                    "");
         }
 
         // Propagate up the tree to the root
