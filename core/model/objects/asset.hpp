@@ -21,6 +21,7 @@ limitations under the License.
 #include <string>
 #include "object.hpp"
 
+
 namespace asset {
 
 class Asset : public Object{

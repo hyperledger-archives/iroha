@@ -22,48 +22,62 @@ limitations under the License.
 #include <memory>
 #include <unordered_map>
 #include "../../consensus/consensus_event.hpp"
+#include "../../model/objects/object.hpp"
+#include "../../service/json_parse.hpp"
 
 namespace merkle_transaction_repository {
 
 struct MerkleNode {
     std::string hash;
     std::string parent;
-    std::tuple<std::string, std::string> children;
-
-    explicit MerkleNode(std::string jsonStr) {
-        /*json jsonObj = json::parse(jsonStr);
-        hash = jsonObj.at(0);
-        parent = jsonObj.at(1);
-        std::string leftChild = jsonObj.at(2);
-        std::string rightChild = jsonObj.at(3);
-        children = std::tuple<std::string, std::string>(leftChild, rightChild);*/
-    }
+    std::string leftChild;
+    std::string rightChild;
 
     MerkleNode() {
 
     }
+
+    MerkleNode(
+        const std::string hash,
+        const std::string parent,
+        const std::string leftChild,
+        const std::string rightChild
+    ):
+            hash(hash),
+            parent(parent),
+            left(leftChild),
+            right(rightChild)
+    {}
 
     bool isRoot() {
         return parent.empty();
     }
 
     bool isLeaf() {
-        return std::get<0>(children).empty();
+        return leftChild.empty() && rightChild.empty();
     }
 
-    std::string serializeToJSON() {
-        /*json jsonObj;
-        jsonObj.push_back(hash);
-        jsonObj.push_back(parent);
-        jsonObj.push_back(std::get<0>(children));
-        jsonObj.push_back(std::get<1>(children));
+    using Object = json_parse::Object;
+    using Rule = json_parse::Rule;
+    using Type = json_parse::Type;
+    Object dump() {
+        Object obj = Object(Type::DICT);
+        obj.dictSub["hash"] =  Object(Type::STR, hash);
+        obj.dictSub["parent"] =  Object(Type::STR, parent);
+        obj.dictSub["leftChild"] =  Object(Type::STR, leftChild);
+        obj.dictSub["rightChild"] =  Object(Type::STR, rightChild);
+        return obj;
+    }
 
-        return jsonObj.dump();*/
-        return ""; //TODO:
+    static Rule getJsonParseRule() {
+        Rule obj = Rule(Type::DICT);
+        obj.dictSub["hash"] =  Rule(Type::STR);
+        obj.dictSub["parent"] =  Rule(Type::STR);
+        obj.dictSub["leftChild"] = Rule(Type::STR);
+        obj.dictSub["rightChild"] = Rule(Type::STR);
+        return obj;
     }
 };
-
-void initLeaf();
 
 bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
 
@@ -71,9 +85,7 @@ bool leafExists(const std::string& hash);
 
 std::string getLeaf(const std::string& hash);
 
-unsigned long long getLastLeafOrder();
-
-std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
+std::string calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
 
 };  // namespace merkle_transaction_repository
 
