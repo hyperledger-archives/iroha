@@ -92,13 +92,26 @@ namespace merkle_transaction_repository {
             return rightChild;
 
         } else {
-            std::string currHash= event->tx->getHash();
+            std::string currHash = event->tx->getHash();
+            std::string newParentHash = hash::sha3_256_hex(currHash);
 
-            // create a new node and put it on the left
-            currHash = currNode.hash;
-            currNode = hash::sha3_256_hex(currHash + event->tx->getHash());
+            // Propagate up the tree to the root
+            while (!parent.empty()) {
+                // find insertion point for new node
+                currHash = currNode.hash;
+                currNode = std::make_unique<MerkleNode>(currNode.parent);
 
-            newparent = hash::sha3_256_hex(parent + event->tx->getHash());
+                if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
+                    batchCommit.push_back(std::tuple<std::string, std::string>(event->tx->getHash() + "_parent",
+                                                                               leftChild));
+                    batchCommit.push_back(std::tuple<std::string, std::string>(event->tx->getHash() + "_leftChild",
+                                                                               leftChild));
+                }
+
+                // increment the right child and the parent, to move up the tree
+                leftChild = newParentHash;
+                parent = repository::world_state_repository::find(parent + "_parent");
+            }
 
             if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
                 batchCommit.push_back(std::tuple<std::string, std::string>(event->tx->getHash() + "_parent",
@@ -107,12 +120,7 @@ namespace merkle_transaction_repository {
                                                                            leftChild));
             }
 
-            // Propagate up the tree to the root
-            while (!parent.empty()) {
-                // find insertion point for new node
-                currHash = currNode.hash;
-                currNode = std::make_unique<MerkleNode>(currNode.parent);
-            }
+            return ;
         }
     }
 };  // namespace merkle_transaction_repository
