@@ -62,6 +62,9 @@ namespace merkle_transaction_repository {
         std::string lastInsertionJSON = repository::world_state_repository::find(lastInsertionHash);
         MerkleNode lastInsertionNode = MerkleNode(lastInsertionJSON); //TODO: assume JSONParser wrapper
 
+        std::unique_ptr<MerkleNode> currNode = lastInsertionNode.parent;
+        std::unique_ptr<std::string> currHash;
+
         std::tuple<std::string, std::string> children = lastInsertionNode.children;
         std::string right = std::get<1>(children);
 
@@ -69,17 +72,16 @@ namespace merkle_transaction_repository {
             // insert the event's transaction as the right child
             std::string left = std::get<0>(children);
             lastInsertionNode.children = std::tuple<std::string, std::string>(left, event->tx->getAsText());
-
-//             lastInsertionNode.parent = hash::sha3_256_hex(left + event->tx->getHash());
+            currNode.hash = hash::sha3_256_hex(left + event->tx->getHash());
 
         } else {
             // create a new node and put it on the left
-
+            currHash = currNode.hash;
+            currNode = std::make_unique<MerkleNode>(currNode.parent);
+            currNode.hash = hash::sha3_256_hex(currHash + event->tx->getHash());
         }
 
         // Propagate up the tree to the root
-        std::unique_ptr<MerkleNode> currNode = lastInsertionNode.parent;
-        std::unique_ptr<std::string> currHash;
         while (!currNode->isRoot()) {
             // find insertion point for new node
             currHash = currNode.hash;
