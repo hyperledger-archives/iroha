@@ -92,35 +92,40 @@ namespace merkle_transaction_repository {
             return rightChild;
 
         } else {
-            std::string currHash = event->tx->getHash();
+            std::string newLeftChild = event->tx->getHash();
             std::string newParentHash = hash::sha3_256_hex(currHash);
+
+            std::string oldParent = parent;
 
             // Propagate up the tree to the root
             while (!parent.empty()) {
-                // find insertion point for new node
-                currHash = currNode.hash;
-                currNode = std::make_unique<MerkleNode>(currNode.parent);
 
                 if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
                     batchCommit.push_back(std::tuple<std::string, std::string>(event->tx->getHash() + "_parent",
-                                                                               leftChild));
+                                                                               newParentHash));
                     batchCommit.push_back(std::tuple<std::string, std::string>(event->tx->getHash() + "_leftChild",
-                                                                               leftChild));
+                                                                               newLeftChild));
+                    // TODO: delete old, unused nodes
                 }
 
                 // increment the right child and the parent, to move up the tree
-                leftChild = newParentHash;
+                newLeftChild = newParentHash;
+                newParentHash = hash::sha3_256_hex(newLeftChild);
+
+                oldParent = parent;
                 parent = repository::world_state_repository::find(parent + "_parent");
             }
 
+            newParentHash = hash::sha3_256_hex(oldParent + newLeftChild);
+
+            // save new root
             if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
-                batchCommit.push_back(std::tuple<std::string, std::string>(event->tx->getHash() + "_parent",
-                                                                           leftChild));
-                batchCommit.push_back(std::tuple<std::string, std::string>(event->tx->getHash() + "_leftChild",
-                                                                           leftChild));
+                batchCommit.push_back(std::tuple<std::string, std::string>(event->tx->getHash() + "merkle_root",
+                                                                           newParentHash));
+                // TODO: delete old, unused nodes
             }
 
-            return ;
+            return newParentHash;
         }
     }
 };  // namespace merkle_transaction_repository
