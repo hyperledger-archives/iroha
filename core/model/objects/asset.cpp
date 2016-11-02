@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 #include "asset.hpp"
+#include "../../service/json_parse.hpp"
 
 namespace asset {
 
@@ -51,8 +52,8 @@ namespace asset {
         Object obj = Object(Type::DICT);
         obj.dictSub["name"] =  Object(Type::STR, name);
         obj.dictSub["domain"] =  Object(Type::STR, domain);
-        obj.dictSub["value"] =  Object(Type::STR, value);
-        obj.dictSub["precision"] =  Object(Type::STR, precision);
+        obj.dictSub["value"] =  Object(Type::INT, value);
+        obj.dictSub["precision"] =  Object(Type::INT, precision);
         return obj;
     }
 
@@ -60,8 +61,8 @@ namespace asset {
         Rule obj = Rule(Type::DICT);
         obj.dictSub["name"] =  Rule(Type::STR);
         obj.dictSub["domain"] =  Rule(Type::STR);
-        obj.dictSub["value"] = Rule(Type::STR);
-        obj.dictSub["precision"] = Rule(Type::STR);
+        obj.dictSub["value"] = Rule(Type::INT);
+        obj.dictSub["precision"] = Rule(Type::INT);
         return obj;
     }
 
