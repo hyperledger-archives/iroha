@@ -80,13 +80,21 @@ namespace merkle_transaction_repository {
 //};
 
 //TODO: change bool to throw an exception instead
-bool commit(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
+template <typename T,typename U>
+bool commit(const std::unique_ptr<consensus_event::ConsensusEvent<T,U>> &event){
 
-bool leafExists(const std::string& hash);
+};
 
-std::string getLeaf(const std::string& hash);
+bool leafExists(const std::string& hash){
 
-std::string calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
+}
+
+std::string getLeaf(const std::string& hash){
+
+}
+
+template <typename T,typename U>
+std::string calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent<T,U>> &event, std::vector<std::tuple<std::string, std::string>> &batchCommit);
 
 };  // namespace merkle_transaction_repository
 

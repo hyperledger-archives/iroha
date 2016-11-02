@@ -47,7 +47,7 @@ namespace merkle_transaction_repository {
         return repository::world_state_repository::find(hash);
     }
 
-    std::string calculateNewRootHash(const std::unique_ptr<consensus_event::ConsensusEvent> &event, std::vector<std::tuple<std::string, std::string>> batchCommit) {
+    std::string calculateNewRootHash(const std::unique_ptr<consensus_event::ConsensusEvent> &event, std::vector<std::tuple<std::string, std::string>> &batchCommit) {
         std::unique_ptr<std::string> currHash = repository::world_state_repository::find("last_insertion");
 
         if (lastInsertionHash.empty()) {

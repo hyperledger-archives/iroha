@@ -15,15 +15,14 @@ limitations under the License.
 */
 
 #include "asset.hpp"
-#include "../../service/json_parse.hpp"
 
 namespace asset {
 
     Asset::Asset(
             const std::string domain,
             const std::string name,
-            unsigned long long value,
-            unsigned int precision
+            const unsigned long long value,
+            const unsigned int precision
     ):
         domain(domain),
         name(name),
@@ -31,37 +30,23 @@ namespace asset {
         precision(precision)
     {}
 
-    // WIP validation ["]
-    std::string Asset::getAsJSON() {
-        return
-            "{\"name\":\""
-            + this->name +
-            "\",\"domain\":\""
-            + this->domain +
-            "\",\"value\":\""
-            + this->value +
-            "\",\"precision\":\""
-            + this->precision +
-            "\"}";
-    }
-    using Object = json_parse::Object;
     using Rule = json_parse::Rule;
     using Type = json_parse::Type;
-    Object dump() {
-        Object obj = Object(Type::DICT);
-        obj.dictSub["name"] =  Object(Type::STR, name);
-        obj.dictSub["domain"] =  Object(Type::STR, domain);
-        obj.dictSub["value"] =  Object(Type::INT, value);
-        obj.dictSub["precision"] =  Object(Type::INT, precision);
+    json_parse::Object Asset::dump() {
+        json_parse::Object obj = json_parse::Object(Type::DICT);
+//        obj.dictSub["name"] = json_parse::Object(Type::STR, name);
+//        obj.dictSub["domain"] =  json_parse::Object(Type::STR, domain);
+//        obj.dictSub["value"] =  json_parse::Object(Type::INT, (int)value);
+//        obj.dictSub["precision"] =  json_parse::Object(Type::INT, (int)precision);
         return obj;
     }
 
-    static Rule getJsonParseRule() {
+    Rule Asset::getJsonParseRule() {
         Rule obj = Rule(Type::DICT);
-        obj.dictSub["name"] =  Rule(Type::STR);
-        obj.dictSub["domain"] =  Rule(Type::STR);
-        obj.dictSub["value"] = Rule(Type::INT);
-        obj.dictSub["precision"] = Rule(Type::INT);
+//        obj.dictSub["name"] = Rule(Type::STR);
+//        obj.dictSub["domain"] =  Rule(Type::STR);
+//        obj.dictSub["value"] = Rule(Type::INT);
+//        obj.dictSub["precision"] = Rule(Type::INT);
         return obj;
     }
 

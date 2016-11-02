@@ -18,7 +18,7 @@ limitations under the License.
 #define CORE_DOMAIN_ASSET_HPP_
 
 #include <string>
-#include "../util/random.hpp"
+#include "../../util/random.hpp"
 
 namespace domain {
     namespace asset {

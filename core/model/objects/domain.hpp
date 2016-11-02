@@ -20,6 +20,7 @@ limitations under the License.
 
 #include <string>
 #include "object.hpp"
+#include "../../service/json_parse.hpp"
 
 namespace domain {
 
@@ -33,7 +34,8 @@ public:
         std::string name
     );
 
-    std::string getAsJSON();
+    json_parse::Object dump();
+    static json_parse::Rule getJsonParseRule();
 };
 
 };  // namespace domain

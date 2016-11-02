@@ -72,7 +72,7 @@ public:
     }
 
     std::string getHash() const {
-        return tx->getHash();
+        return tx.getHash();
     }
     T getTx() const{
         return tx;

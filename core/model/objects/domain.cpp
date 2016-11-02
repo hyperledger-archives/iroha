@@ -26,28 +26,19 @@ namespace domain {
         name(name)
     {}
 
-    std::string Domain::getAsJSON(){
-        return
-            "{\"name\":\""
-            + this->name +
-            "\",\"ownerPublicKey\":\""
-            + this->ownerPublicKey +
-            "\"}";
-    }
-    using Object = json_parse::Object;
     using Rule = json_parse::Rule;
     using Type = json_parse::Type;
-    Object dump() {
-        Object obj = Object(Type::DICT);
-        obj.dictSub["ownerPublicKey"] =  Object(Type::STR, ownerPublicKey);
-        obj.dictSub["name"] =  Object(Type::STR, name);
+    json_parse::Object Domain::dump() {
+        json_parse::Object obj = json_parse::Object(Type::DICT);
+ //       obj.dictSub["ownerPublicKey"] =  json_parse::Object(Type::STR, ownerPublicKey);
+ //       obj.dictSub["name"] = json_parse::Object(Type::STR, name);
         return obj;
     }
 
-    static Rule getJsonParseRule() {
-        Rule obj = Rule(ype::DICT);
-        obj.dictSub["ownerPublicKey"] =  Rule(Type::STR);
-        obj.dictSub["name"] = Rule(Type::STR);
+    Rule Domain::getJsonParseRule() {
+        Rule obj = Rule(Type::DICT);
+//        obj.dictSub["ownerPublicKey"] =  Rule(Type::STR);
+//        obj.dictSub["name"] = Rule(Type::STR);
         return obj;
     }
 

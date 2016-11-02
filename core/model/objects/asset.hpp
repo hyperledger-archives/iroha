@@ -20,7 +20,7 @@ limitations under the License.
 
 #include <string>
 #include "object.hpp"
-
+#include "../../service/json_parse.hpp"
 
 namespace asset {
 
@@ -32,13 +32,17 @@ class Asset : public Object{
     unsigned int precision;
 
 public:
+
     Asset(
         const std::string domain,
         const std::string name,
         const unsigned long long value,
-        const unsigned int precision);
+        const unsigned int precision
+    );
 
-    std::string getAsJSON();
+    json_parse::Object dump();
+    static json_parse::Rule getJsonParseRule();
+
 };
 
 };  // namespace asset
