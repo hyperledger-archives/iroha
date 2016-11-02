@@ -15,8 +15,7 @@ limitations under the License.
 */
 
 #include "../../core/consensus/sumeragi.hpp"
-#include "../../core/repository/consensus/event_repository.hpp"
-#include "../../core/model/transaction.hpp"
+
 #include "../../core/consensus/connection/connection.hpp"
 #include "../../core/model/commands/transfer.hpp"
 #include "../../core/model/objects/domain.hpp"
