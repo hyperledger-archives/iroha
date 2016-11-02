@@ -30,15 +30,15 @@ namespace domain {
     using Type = json_parse::Type;
     json_parse::Object Domain::dump() {
         json_parse::Object obj = json_parse::Object(Type::DICT);
- //       obj.dictSub["ownerPublicKey"] =  json_parse::Object(Type::STR, ownerPublicKey);
- //       obj.dictSub["name"] = json_parse::Object(Type::STR, name);
+        obj.dictSub.insert( std::make_pair("ownerPublicKey",  json_parse::Object(Type::STR, ownerPublicKey)));
+        obj.dictSub.insert( std::make_pair("name", json_parse::Object(Type::STR, name)));
         return obj;
     }
 
     Rule Domain::getJsonParseRule() {
         Rule obj = Rule(Type::DICT);
-//        obj.dictSub["ownerPublicKey"] =  Rule(Type::STR);
-//        obj.dictSub["name"] = Rule(Type::STR);
+        obj.dictSub.insert( std::make_pair("ownerPublicKey",  Rule(Type::STR)));
+        obj.dictSub.insert( std::make_pair("name", Rule(Type::STR)));
         return obj;
     }
 

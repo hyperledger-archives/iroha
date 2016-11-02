@@ -69,23 +69,25 @@ int main(){
             std::cout<< n->getIP() << std::endl;
         }
 
-        auto event = consensus_event::ConsensusEvent<
-                transaction::Transaction<command::Transfer<domain::Domain>>,
-                command::Transfer<domain::Domain>
-        >(
-             transaction::Transaction<command::Transfer<domain::Domain>>(
-                command::Transfer<domain::Domain>(
-                   domain::Domain( peer::getMyPublicKey(), "cmd")
-                )
-             )
+        auto tx = transaction::Transaction<command::Transfer<domain::Domain>>(
+            command::Transfer<domain::Domain>(
+                    domain::Domain( peer::getMyPublicKey(), "cmd")
+            )
         );
+
+        tx.addTxSignature(
+            peer::getMyPublicKey(),
+            signature::sign(tx.getHash(), peer::getMyPublicKey(), peer::getPrivateKey())
+        );
+        auto event = consensus_event::ConsensusEvent<
+            transaction::Transaction<command::Transfer<domain::Domain>>,
+            command::Transfer<domain::Domain>
+        >(tx);
         auto parser = json_parse_with_json_nlohman::JsonParse<
            consensus_event::ConsensusEvent<
               transaction::Transaction<command::Transfer<domain::Domain>>,
               command::Transfer<domain::Domain>
-           >,
-           transaction::Transaction<command::Transfer<domain::Domain>>,
-           command::Transfer<domain::Domain>
+           >
         >();
         connection::send( peer::getMyIp(),  parser.dump(event.dump()));
 

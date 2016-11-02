@@ -16,8 +16,8 @@ limitations under the License.
 
 #include "commands/command.hpp"
 
-#include "../service/json_parse.hpp"
-
+#include "../service/json_parse_with_json_nlohmann.hpp"
+#include "../crypto/hash.hpp"
 #include <algorithm>
 
 namespace transaction {
@@ -73,8 +73,9 @@ public:
         command(command)
     {}
 
-    std::string getHash() const{
-        return hash;
+    std::string getHash() {
+        auto parser = json_parse_with_json_nlohman::JsonParse<T>();
+        return  hash::sha3_256_hex(parser.dump(command.dump()));
     }
 
     std::string getAsJSON() const{

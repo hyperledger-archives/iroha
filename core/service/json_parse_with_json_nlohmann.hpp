@@ -22,19 +22,55 @@
 
 namespace json_parse_with_json_nlohman {
 
+    /*
+    struct Rules {
+        struct violation {};
+        struct false_type { static const bool	value = false; };
+        struct true_type  { static const bool	value = true; };
+
+        template<typename T,json_parse::Object (T::*)()>
+        struct has_dump_helper_t { typedef violation	type; };
+        template<typename T,typename U = violation>
+        struct has_dump : public false_type {};
+        template<typename T>
+        struct has_dump<T,typename has_dump_helper_t<T,&T::dump>::type> : public true_type {};
+
+        template<typename T,json_parse::Rule (T::*)()>
+        struct has_getJsonParseRule_helper_t { typedef violation	type; };
+        template<typename T,typename U = violation>
+        struct has_getJsonParseRule : public false_type {};
+        template<typename T>
+        struct has_getJsonParseRule<T,typename has_getJsonParseRule_helper_t<T,&T::getJsonParseRule>::type> : public true_type {};
+    };
+
+    template<typename... rule_set>
+    struct Requires {
+        template<int, typename rule, typename... rule_set_>
+        struct next {
+            static const bool value = rule::value && next<sizeof...(rule_set_),rule_set_...>::value;
+        };
+        template<typename rule>
+        struct next< 1,rule> {
+            static const bool	value = rule::value;
+        };
+        static const bool	value = next<sizeof...(rule_set),rule_set...>::value;
+    };
+
+    template<typename T> struct validator_json : public Requires<
+        Rules::has_getJsonParseRule<T>,
+        Rules::has_dump<T>
+    > {};
+
+    */
+
     using json = nlohmann::json;
     using Object = json_parse::Object;
     using Rule = json_parse::Rule;
     using Type = json_parse::Type;
 
     template<
-            typename T,
-            typename U,
-            typename V,
-            std::enable_if_t<
-                    std::is_base_of<consensus_event::ConsensusEvent<U,V>, T>::value,
-                    std::nullptr_t
-            > = nullptr
+        typename T//,
+        //class = typename std::enable_if<validator_json<T>::value>::type
     >
     class JsonParse {
 

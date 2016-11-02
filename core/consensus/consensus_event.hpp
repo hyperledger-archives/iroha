@@ -37,7 +37,7 @@ template<
     std::enable_if_t<
         std::is_base_of<transaction::Transaction<U>, T>::value,std::nullptr_t
     > = nullptr
->
+ >
 class ConsensusEvent {
 
 
@@ -70,14 +70,14 @@ public:
         eventSignatures.push_back(eventSignature(publicKey, signature));
     }
 
-    std::string getHash() const {
+    std::string getHash() {
         return tx.getHash();
     }
     T getTx() const{
         return tx;
     }
 
-    int getNumValidSignatures() const {
+    int getNumValidSignatures() {
         logger::debug("getNumValidSignatures", "eventSignatures:"+ std::to_string(eventSignatures.size()));
         return std::count_if(
             eventSignatures.begin(), eventSignatures.end(),
