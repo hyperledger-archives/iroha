@@ -5,7 +5,7 @@
 
 いろは (Iroha) is a simple, distributed ledger.
 
-![alt tag](Iroha_2.png)
+![alt tag](Iroha_3_sm.png)
 
 # Pull Requests
 Please include a developer certificate with pull requests: http://developercertificate.org/
