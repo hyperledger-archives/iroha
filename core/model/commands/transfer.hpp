@@ -25,6 +25,8 @@ limitations under the License.
 #include <string>
 #include <type_traits>
 
+#include "../../service/json_parse.hpp"
+
 namespace command {
 
     template<typename T,
@@ -45,6 +47,24 @@ namespace command {
 
         std::string getCommandName() const{
             return "Transfer";
+        }
+
+        using Object = json_parse::Object;
+        using Rule = json_parse::Rule;
+        using Type = json_parse::Type;
+
+        Object dump() {
+            Object obj = Object(Object::Type::DICT);
+            obj.dictSub["command"] = Object(Object::Type::STR, getCommandName());
+            obj.dictSub["object"] = object.getJsonParseRule();
+            return obj;
+        }
+
+        static Rule getJsonParseRule() {
+            Rule obj = Rule(Type::DICT);
+            obj.dictSub["command"] = Rule(Type::STR);
+            obj.dictSub["object"] = T::getJsonParseRule();
+            return obj;
         }
     };
 

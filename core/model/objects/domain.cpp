@@ -34,5 +34,21 @@ namespace domain {
             + this->ownerPublicKey +
             "\"}";
     }
+    using Object = json_parse::Object;
+    using Rule = json_parse::Rule;
+    using Type = json_parse::Type;
+    Object dump() {
+        Object obj = Object(Type::DICT);
+        obj.dictSub["ownerPublicKey"] =  Object(Type::STR, ownerPublicKey);
+        obj.dictSub["name"] =  Object(Type::STR, name);
+        return obj;
+    }
+
+    static Rule getJsonParseRule() {
+        Rule obj = Rule(ype::DICT);
+        obj.dictSub["ownerPublicKey"] =  Rule(Type::STR);
+        obj.dictSub["name"] = Rule(Type::STR);
+        return obj;
+    }
 
 };  // namespace domain

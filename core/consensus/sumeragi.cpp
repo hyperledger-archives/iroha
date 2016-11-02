@@ -241,15 +241,7 @@ namespace sumeragi {
         logger::info("sumeragi", "=##################=");
         logger::info("sumeragi", "start main loop");
         connection::receive([](std::string from,std::string message){
-            auto event = std::make_unique<consensus_event::ConsensusEvent>(
-                    std::make_unique<transaction::TransferTransaction>(
-                            "fccpkrZyLlxJUQm8RpJXedWVZfbg2Dde0iPphwD+jQ0=",
-                            pubKey,
-                            "domain",
-                            cm
-                    )
-            );
-            repository::event::add();
+            auto consensusEvent = ConsensusEvent(message);
         });
 
         while (true) {  // TODO: replace with callback linking the event repository?
@@ -259,7 +251,8 @@ namespace sumeragi {
                 determineConsensusOrder();
 
                 logger::info("sumeragi", "event queue not empty");
-                std::vector<std::unique_ptr<ConsensusEvent>> events = repository::event::findAll();
+                template <typename T>
+                std::vector<std::unique_ptr<ConsensusEvent<T>>> events;
                 // Sort the events to determine priority to process
                 std::sort(events.begin(), events.end(),
                           [](const std::unique_ptr<ConsensusEvent> &lhs,
