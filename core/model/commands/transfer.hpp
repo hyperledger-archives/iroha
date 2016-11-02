@@ -18,9 +18,9 @@ limitations under the License.
 #ifndef CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
 #define CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
 
-#include "transaction.hpp"
+#include "../transaction.hpp"
 #include "command.hpp"
-#include "objects.hpp"
+#include "../objects/object.hpp"
 
 #include <string>
 #include <type_traits>
@@ -31,7 +31,7 @@ namespace command {
 
     template<typename T,
         std::enable_if_t<
-            std::is_base_of<Objects, T>::value,std::nullptr_t
+            std::is_base_of<AbsObject, T>::value,std::nullptr_t
         > = nullptr
     >
     class Transfer : public Command{
@@ -54,8 +54,8 @@ namespace command {
         using Type = json_parse::Type;
 
         Object dump() {
-            Object obj = Object(Object::Type::DICT);
-            obj.dictSub["command"] = Object(Object::Type::STR, getCommandName());
+            Object obj = Object(Type::DICT);
+            obj.dictSub["command"] = Object(Type::STR, getCommandName());
             obj.dictSub["object"] = object.getJsonParseRule();
             return obj;
         }

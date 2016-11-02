@@ -28,16 +28,15 @@ limitations under the License.
 #include "../crypto/signature.hpp"
 #include "../util/logger.hpp"
 #include "../model/transaction.hpp"
-
 #include "../service/json_parse.hpp"
 
 namespace consensus_event {
 
 template<
-        typename T, typename U,
-        std::enable_if_t<
-                std::is_base_of<transaction::Transaction<U>, T>::value,std::nullptr_t
-        > = nullptr
+    typename T, typename U,
+    std::enable_if_t<
+        std::is_base_of<transaction::Transaction<U>, T>::value,std::nullptr_t
+    > = nullptr
 >
 class ConsensusEvent {
 
@@ -91,13 +90,11 @@ public:
         return eventSignatures.empty();
     }
 
-
-
     using Object = json_parse::Object;
     using Type = json_parse::Type;
     using Rule = json_parse::Rule;
 
-    Object dump() {
+    json_parse::Object dump() {
         json_parse::Object obj = Object(Type::DICT);
         obj.dictSub["order"] = Object(Type::INT, order);
         auto eventSigs   = Object(Type::LIST);

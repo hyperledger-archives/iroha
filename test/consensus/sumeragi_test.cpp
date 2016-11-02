@@ -18,6 +18,9 @@ limitations under the License.
 #include "../../core/repository/consensus/event_repository.hpp"
 #include "../../core/model/transaction.hpp"
 #include "../../core/consensus/connection/connection.hpp"
+#include "../../core/model/commands/transfer.hpp"
+#include "../../core/model/objects/domain.hpp"
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -42,7 +45,9 @@ int main(){
     }
 
     std::string pubKey = peer::getMyPublicKey();
+
     sumeragi::initializeSumeragi( pubKey, std::move(nodes));
+
     std::thread http_th( []() {
         sumeragi::loop();
     });
@@ -53,17 +58,26 @@ int main(){
     });
 
     while(1){
-        std::cout << "in >> ";
+        std::cout << "name  in >> ";
         std::cin>> cmd;
         if(cmd == "quit") break;
-
-        auto su = peer::getPeerList();
 
         for(const auto& n : nodes){
             std::cout<< "=========" << std::endl;
             std::cout<< n->getPublicKey() << std::endl;
             std::cout<< n->getIP() << std::endl;
         }
+
+        auto event = consensus_event::ConsensusEvent<
+                transaction::Transaction<command::Transfer<domain::Domain>>,
+                command::Transfer<domain::Domain>
+        >(
+             transaction::Transaction<command::Transfer<domain::Domain>>(
+                command::Transfer<domain::Domain>(
+                   domain::Domain( peer::getMyPublicKey(), "cmd")
+                )
+             )
+        );
 
     }
 

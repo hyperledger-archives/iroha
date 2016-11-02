@@ -22,56 +22,44 @@ limitations under the License.
 
 namespace repository {
     namespace event {
-
         std::vector<
-        std::unique_ptr<consensus_event::ConsensusEvent>
+        std::unique_ptr<
+                consensus_event::ConsensusEvent<
+                        transaction::Transaction<
+                                command::Command
+                        >,
+                        command::Command
+                >
+        >
         > consensusEvents;
 
-        bool add(const std::string &hash, std::unique_ptr<consensus_event::ConsensusEvent> event) {
+        template <typename T,typename U>
+        bool add(const std::string &hash, std::unique_ptr<consensus_event::ConsensusEvent<T,U>> event){
             consensusEvents.push_back(std::move(event));
-            return true;
-        }
+        };
 
-        bool update(const std::string &hash, const consensus_event::ConsensusEvent &consensusEvent) {
+        template <typename T,typename U>
+        bool update(const std::string &hash, const consensus_event::ConsensusEvent<T,U> &consensusEvent);
 
-        }
+        bool remove(const std::string &hash);
 
-        bool remove(const std::string &hash) {
-            consensusEvents.erase(
-                    std::remove_if(
-                            consensusEvents.begin(),
-                            consensusEvents.end(),
-                            [hash](auto&& event) -> bool {
-                                return event->getHash() == hash;
-                            }
-                    ),
-                    consensusEvents.end()
-            );
-        }
-
-        bool empty() {
+        bool empty(){
             return consensusEvents.empty();
         }
 
-        std::vector<std::unique_ptr<consensus_event::ConsensusEvent>>&& findAll(){
+        template <typename T,typename U>
+        std::vector<std::unique_ptr<consensus_event::ConsensusEvent<T,U>>>&& findAll(){
             return std::move(consensusEvents);
-        }
+        };
 
+        template <typename T,typename U>
         std::unique_ptr<
-        consensus_event::ConsensusEvent
-        >&& findNext() {
-            auto res = std::move(consensusEvents.front());
-            consensusEvents.pop_back();
-            return std::move(res);
+        consensus_event::ConsensusEvent<T,U>
+        >&& findNext(){
+
         }
 
-        std::unique_ptr<consensus_event::ConsensusEvent> find(std::string hash) {
-            for (auto&& event : consensusEvents){
-                if ( event->getHash() == hash) {
-                    return std::move(event);
-                }
-            }
-            return std::unique_ptr<consensus_event::ConsensusEvent>(nullptr);
-        }
+        template <typename T,typename U>
+        std::unique_ptr<consensus_event::ConsensusEvent<T,U>> find(std::string hash);
     };
 };

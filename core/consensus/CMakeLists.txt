@@ -6,4 +6,5 @@ ADD_LIBRARY(sumeragi STATIC
 target_link_libraries(sumeragi
   peer_service_with_json
   signature
+  event_repository
 )
