@@ -35,6 +35,8 @@ namespace merkle_transaction_repository {
                 std::tuple<std::string, std::string>(event->tx->getHash(), event->tx->getAsText())
         };
 
+        //TODO: add in new leaf into the merkle tree
+
         return repository::world_state_repository::addBatch<std::string>(batchCommit);
     }
 
@@ -46,7 +48,7 @@ namespace merkle_transaction_repository {
         return repository::world_state_repository::find(hash);
     }
 
-    std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
+    std::string calculateNewRootHash(const std::unique_ptr<consensus_event::ConsensusEvent> &event) {
         std::unique_ptr<MerkleNode> newMerkleLeaf = std::make_unique<MerkleNode>();
         std::unique_ptr<MerkleNode> newMerkleRoot = std::make_unique<MerkleNode>();
 
@@ -68,25 +70,24 @@ namespace merkle_transaction_repository {
             std::string left = std::get<0>(children);
             lastInsertionNode.children = std::tuple<std::string, std::string>(left, event->tx->getAsText());
 
-            // Propagate up the tree to the root
-            // std::unique_ptr<MerkleNode> currNode = lastInsertionNode.parent;
-            // while (!currNode->isRoot()) {
-                // find insertion point for new node
-            // }
-            // lastInsertionNode.parent = hash::sha3_256_hex(left + event->tx->getHash());
+//             lastInsertionNode.parent = hash::sha3_256_hex(left + event->tx->getHash());
 
         } else {
             // create a new node and put it on the left
 
         }
 
-        const std::string currRootJSON = repository::world_state_repository::find("merkle_root");
-        if (currRootJSON.empty()) {
-            return newMerkleLeaf;
+        // Propagate up the tree to the root
+        std::unique_ptr<MerkleNode> currNode = lastInsertionNode.parent;
+        std::unique_ptr<std::string> currHash;
+        while (!currNode->isRoot()) {
+            // find insertion point for new node
+            currHash = currNode.hash;
+            currNode = std::make_unique<MerkleNode>(currNode.parent);
+            std::string currLeft = std::get<0>(currNode.children);
+            currNode.hash = hash::sha3_256_hex(currLeft.hash + currHash);
         }
 
-        MerkleNode currMerkleRoot = MerkleNode(currRootJSON);
-
-        return newMerkleRoot;
+        return currNode.hash;
     }
 };  // namespace merkle_transaction_repository

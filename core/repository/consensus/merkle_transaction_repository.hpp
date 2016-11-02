@@ -35,7 +35,7 @@ struct MerkleNode {
     }
 
     MerkleNode(std::string jsonStr) {
-
+    //TODO: deserialize from string
     }
 
     bool isRoot() {
@@ -55,7 +55,7 @@ bool leafExists(const std::string& hash);
 
 std::string getLeaf(const std::string& hash);
 
-std::unique_ptr<MerkleNode> calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
+std::string calculateNewRoot(const std::unique_ptr<consensus_event::ConsensusEvent> &event);
 
 };  // namespace merkle_transaction_repository
 
