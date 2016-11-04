@@ -22,4 +22,4 @@
 	url = https://github.com/real-logic/Agrona.git
 [submodule "core/vendor/Cappuccino/lib/json"]
 	path = core/vendor/Cappuccino/lib/json
-	url = https://github.com/nlohmann/json.git
+	url = https://github.com/MizukiSonoko/Cappuccino.git
