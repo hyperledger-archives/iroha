@@ -28,6 +28,7 @@ limitations under the License.
 #include "../service/peer_service.hpp"
 #include "./connection/connection.hpp"
 #include "../model/objects/asset.hpp"
+#include "../model/commands/transfer.hpp"
 
 template<class T>
 std::unique_ptr<T> make_unique(){
@@ -111,9 +112,9 @@ namespace sumeragi {
     void processTransaction(std::unique_ptr<consensus_event::ConsensusEvent<T,U>> event) {
 
         logger::info("sumeragi", "processTransaction()");
-        if (!transaction_validator::isValid(event->getTx())) {
-            return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
-        }
+        //if (!transaction_validator::isValid(event->getTx())) {
+        //    return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
+        //}
         logger::info("sumeragi", "valied");
 
         event->addSignature(
@@ -245,15 +246,14 @@ namespace sumeragi {
         logger::info("sumeragi", "start main loop");
 
         while (true) {  // TODO: replace with callback linking the event repository?
-            //if(!repository::event::empty()) { //WIP
-            if(1){
+            if(!repository::event::empty()) {
                 // Determine node order
                 determineConsensusOrder();
 
                 logger::info("sumeragi", "event queue not empty");
                 std::vector<
                     std::unique_ptr<
-                        consensus_event::ConsensusEvent<transaction::Transaction<command::Command>, command::Command>
+                        consensus_event::ConsensusEvent<transaction::Transaction<command::Transfer<asset::Asset>>, command::Transfer<asset::Asset>>
                     >
                 > events;
 
@@ -271,9 +271,9 @@ namespace sumeragi {
                 for (auto&& event : events) {
 
                     logger::info("sumeragi", "evens order:" + std::to_string(event->order));
-                    if (!transaction_validator::isValid(event->getTx())) {
-                        continue;
-                    }
+                    //if (!transaction_validator::isValid(event->getTx())) {
+                    //    continue;
+                    //}
 
                     // Process transaction
                     processTransaction(std::move(event));

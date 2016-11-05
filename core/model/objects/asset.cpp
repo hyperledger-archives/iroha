@@ -34,19 +34,19 @@ namespace asset {
     using Type = json_parse::Type;
     json_parse::Object Asset::dump() {
         json_parse::Object obj = json_parse::Object(Type::DICT);
-//        obj.dictSub["name"] = json_parse::Object(Type::STR, name);
-//        obj.dictSub["domain"] =  json_parse::Object(Type::STR, domain);
-//        obj.dictSub["value"] =  json_parse::Object(Type::INT, (int)value);
-//        obj.dictSub["precision"] =  json_parse::Object(Type::INT, (int)precision);
+        obj.dictSub.insert( std::make_pair( "name", json_parse::Object(Type::STR, name)));
+        obj.dictSub.insert( std::make_pair( "domain",  json_parse::Object(Type::STR, domain)));
+        obj.dictSub.insert( std::make_pair( "value",  json_parse::Object(Type::INT, (int)value)));
+        obj.dictSub.insert( std::make_pair( "precision", json_parse::Object(Type::INT, (int)precision)));
         return obj;
     }
 
     Rule Asset::getJsonParseRule() {
         Rule obj = Rule(Type::DICT);
-//        obj.dictSub["name"] = Rule(Type::STR);
-//        obj.dictSub["domain"] =  Rule(Type::STR);
-//        obj.dictSub["value"] = Rule(Type::INT);
-//        obj.dictSub["precision"] = Rule(Type::INT);
+        obj.dictSub.insert( std::make_pair( "name", Rule(Type::STR)));
+        obj.dictSub.insert( std::make_pair( "domain", Rule(Type::STR)));
+        obj.dictSub.insert( std::make_pair( "value", Rule(Type::INT)));
+        obj.dictSub.insert( std::make_pair( "precision", Rule(Type::INT)));
         return obj;
     }
 

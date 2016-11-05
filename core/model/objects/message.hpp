@@ -24,7 +24,7 @@ limitations under the License.
 
 namespace message {
 
-class Message : public Object{
+class Message : public AbsObject{
     std::string text;
 
 public:

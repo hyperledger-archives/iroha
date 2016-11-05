@@ -24,7 +24,7 @@ limitations under the License.
 
 namespace asset {
 
-class Asset : public Object{
+class Asset : public AbsObject{
 
     std::string domain;
     std::string name;

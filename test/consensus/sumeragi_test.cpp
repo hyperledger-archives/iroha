@@ -15,14 +15,18 @@ limitations under the License.
 */
 
 #include "../../core/consensus/sumeragi.hpp"
-#include "../../core/repository/consensus/event_repository.hpp"
-#include "../../core/model/transaction.hpp"
+
 #include "../../core/consensus/connection/connection.hpp"
+#include "../../core/model/commands/transfer.hpp"
+#include "../../core/model/objects/domain.hpp"
+
 #include <iostream>
 #include <string>
 #include <vector>
 #include <memory>
 #include <thread>
+
+#include "../../core/service/json_parse_with_json_nlohmann.hpp"
 
 #include "../../core/service/peer_service.hpp"
 #include "../../core/crypto/hash.hpp"
@@ -42,7 +46,9 @@ int main(){
     }
 
     std::string pubKey = peer::getMyPublicKey();
+
     sumeragi::initializeSumeragi( pubKey, std::move(nodes));
+
     std::thread http_th( []() {
         sumeragi::loop();
     });
@@ -53,17 +59,37 @@ int main(){
     });
 
     while(1){
-        std::cout << "in >> ";
+        std::cout << "name  in >> ";
         std::cin>> cmd;
         if(cmd == "quit") break;
-
-        auto su = peer::getPeerList();
 
         for(const auto& n : nodes){
             std::cout<< "=========" << std::endl;
             std::cout<< n->getPublicKey() << std::endl;
             std::cout<< n->getIP() << std::endl;
         }
+
+        auto tx = transaction::Transaction<command::Transfer<domain::Domain>>(
+            command::Transfer<domain::Domain>(
+                    domain::Domain( peer::getMyPublicKey(), "cmd")
+            )
+        );
+
+        tx.addTxSignature(
+            peer::getMyPublicKey(),
+            signature::sign(tx.getHash(), peer::getMyPublicKey(), peer::getPrivateKey())
+        );
+        auto event = consensus_event::ConsensusEvent<
+            transaction::Transaction<command::Transfer<domain::Domain>>,
+            command::Transfer<domain::Domain>
+        >(tx);
+        auto parser = json_parse_with_json_nlohman::JsonParse<
+           consensus_event::ConsensusEvent<
+              transaction::Transaction<command::Transfer<domain::Domain>>,
+              command::Transfer<domain::Domain>
+           >
+        >();
+        connection::send( peer::getMyIp(),  parser.dump(event.dump()));
 
     }
 
