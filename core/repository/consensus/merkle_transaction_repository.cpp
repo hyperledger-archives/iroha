@@ -27,6 +27,7 @@ limitations under the License.
 namespace merkle_transaction_repository {
 
     //TODO: change bool to throw an exception instead
+    template<typename T>
     bool commit(ConsensusEvent<T> &event) {
         std::vector<std::tuple<std::string, std::string>> batchCommit
           = {

@@ -29,7 +29,7 @@ limitations under the License.
 
 namespace command {
 
-template<typename T, std::enable_if_t<std::is_base_of<Objects, T>::value,std::nullptr_t> = nullptr>
+template<typename T, std::enable_if_t<std::is_base_of<AbsObject, T>::value,std::nullptr_t> = nullptr>
 class Add : public Command{
     T object;
   public:

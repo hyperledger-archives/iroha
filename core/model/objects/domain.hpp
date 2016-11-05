@@ -24,7 +24,7 @@ limitations under the License.
 
 namespace domain {
 
-class Domain : public Object{
+class Domain : public AbsObject{
     std::string ownerPublicKey;
     std::string name;
 
