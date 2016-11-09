@@ -124,8 +124,8 @@ public:
         auto txSig = Rule(Type::DICT);
         txSig.dictSub.insert( std::make_pair( "publicKey", Rule(Type::STR)));
         txSig.dictSub.insert( std::make_pair( "signature", Rule(Type::STR)));
-        txSigs.listSub = txSig;
-        obj.dictSub.insert( std::make_pair( "txSignatures", txSigs));
+        txSigs.listSub.reset(&txSig);
+        obj.dictSub.insert( std::make_pair( "txSignatures", std::move(txSigs)));
         obj.dictSub.insert( std::make_pair( "hash",  Rule(Type::STR)));
         obj.dictSub.insert( std::make_pair( "command", T::getJsonParseRule()));
         return obj;
