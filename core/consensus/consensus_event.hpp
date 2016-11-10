@@ -117,7 +117,7 @@ public:
         eventSig->dictSub.insert( std::make_pair( "publicKey", Rule(Type::STR)));
         eventSig->dictSub.insert( std::make_pair( "signature", Rule(Type::STR)));
         eventSigs.listSub = std::move(eventSig);
-        obj.dictSub.insert( std::make_pair( "eventSignatures", eventSigs));
+        obj.dictSub.insert( std::make_pair( "eventSignatures", std::move(eventSigs)));
         obj.dictSub.insert( std::make_pair( "transaction", T::getJsonParseRule()));
         return obj;
     }

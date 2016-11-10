@@ -101,14 +101,14 @@ namespace json_parse_with_json_nlohman {
 
        Object load_impl(json j,Rule r){
             if(r.getType() == Type::DICT) {
-                auto  dict = r.dictSub;
+                std::map<std::string, Rule> dict = r.dictSub;
                 Object res = Object(Type::DICT);
                 for(const auto& kv : dict){
                     res.dictSub[kv.first] = load_impl( j[kv.first], dict[kv.first]);
                 }
                 return res;
             }else if(r.getType() == Type::LIST){
-                auto  list = r.listSub;
+                std::unique_ptr<Rule> list = std::move(r.listSub);
                 Object res = Object(Type::LIST);
                 for(const auto& v : j.get<std::vector<json>>()){
                     res.listSub.push_back(load_impl( j.at(0), list));
