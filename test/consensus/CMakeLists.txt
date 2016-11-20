@@ -11,7 +11,7 @@ link_directories(
     ${ED25519_PATH}
     ${KECCAK_PATH}/bin/generic64
     ${PROJECT_SOURCE_DIR}/core/infra/crypto
-    ${AERON_PATH}/cppbuild/Debug/lib
+    ${AERON_PATH}/cppbuild/Release/lib
 )
 
 add_executable(sumeragi_test
@@ -28,6 +28,9 @@ target_link_libraries(sumeragi_test
     connection_with_aeron
     peer_service_with_json
     pthread
+    consensus_event
+    json_parse_with_nlohman
+    transaction
 )
 
 add_executable(transaction_test
@@ -44,4 +47,7 @@ target_link_libraries(transaction_test
         connection_with_aeron
         peer_service_with_json
         pthread
+        consensus_event
+        json_parse_with_nlohman
+        transaction
 )
