@@ -81,7 +81,6 @@ public:
     using Object = json_parse::Object;
 
 
-
     explicit ConsensusEvent(Object obj);
 
     void addSignature(const std::string& publicKey, const std::string& signature){
