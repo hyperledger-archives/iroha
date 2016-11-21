@@ -92,35 +92,10 @@ int main(int argc, char *argv[]){
                 connection::send(peer::getMyIp(), text);
             });
         }
-<<<<<<< HEAD
     }else{
         std::cout<<"I'm only node\n";
         while(1);
-=======
 
-        auto tx = std::make_unique<transaction::Transaction<command::Transfer<domain::Domain>>>(
-            std::make_unique<command::Transfer<domain::Domain>>(
-                std::make_unique<domain::Domain>( peer::getMyPublicKey(), "cmd")
-            )
-        );
-
-        tx->addTxSignature(
-            peer::getMyPublicKey(),
-            signature::sign(tx->getHash(), peer::getMyPublicKey(), peer::getPrivateKey())
-        );
-        auto event = consensus_event::ConsensusEvent<
-            transaction::Transaction<command::Transfer<domain::Domain>>,
-            command::Transfer<domain::Domain>
-        >(std::move(tx));
-        auto parser = json_parse_with_json_nlohman::JsonParse<
-           consensus_event::ConsensusEvent<
-              transaction::Transaction<command::Transfer<domain::Domain>>,
-              command::Transfer<domain::Domain>
-           >
-        >();
-        std::cout<<  parser.dump(event.dump()) << std::endl;
-
->>>>>>> master
     }
 
     http_th.detach();

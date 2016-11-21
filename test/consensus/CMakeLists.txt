@@ -28,12 +28,9 @@ target_link_libraries(sumeragi_test
     connection_with_aeron
     peer_service_with_json
     pthread
-<<<<<<< HEAD
     consensus_event
     json_parse_with_nlohman
     transaction
-=======
->>>>>>> master
 )
 
 add_executable(transaction_test
@@ -50,11 +47,7 @@ target_link_libraries(transaction_test
         connection_with_aeron
         peer_service_with_json
         pthread
-<<<<<<< HEAD
         consensus_event
         json_parse_with_nlohman
         transaction
 )
-=======
-)
->>>>>>> master

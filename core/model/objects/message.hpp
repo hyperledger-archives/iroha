@@ -34,11 +34,6 @@ public:
     json_parse::Object dump();
     static json_parse::Rule getJsonParseRule();
 
-<<<<<<< HEAD
-=======
-    virtual json_parse::Object dump() override;
-    virtual json_parse::Rule getJsonParseRule() override;
->>>>>>> master
 };
 
 };  // namespace message
