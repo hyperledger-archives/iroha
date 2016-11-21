@@ -95,7 +95,6 @@ int main(int argc, char *argv[]){
     }else{
         std::cout<<"I'm only node\n";
         while(1);
-
     }
 
     http_th.detach();
