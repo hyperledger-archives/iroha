@@ -28,6 +28,7 @@ limitations under the License.
 
 namespace command {
 
+<<<<<<< HEAD
 template <typename T>
 class Transfer: public T {
 
@@ -70,6 +71,44 @@ class Transfer: public T {
             rule.dictSub.insert( std::make_pair( "sender", Rule(Type::STR)));
             rule.dictSub.insert( std::make_pair("receiver", Rule(Type::STR)));
             return rule;
+=======
+    template<typename T,
+        std::enable_if_t<
+            std::is_base_of<AbsObject, T>::value,std::nullptr_t
+        > = nullptr
+    >
+    class Transfer : public Command{
+        std::unique_ptr<T> object;
+    public:
+        Transfer(std::unique_ptr<T> object):
+            object(std::move(object))
+        {}
+
+        std::string getCommandName() const{
+            return "Transfer";
+        }
+
+        ~Transfer() {
+
+        };
+
+        using Object = json_parse::Object;
+        using Rule = json_parse::Rule;
+        using Type = json_parse::Type;
+
+        Object dump() {
+            Object obj = Object(Type::DICT);
+            obj.dictSub.insert( std::make_pair( "command", Object(Type::STR, getCommandName())));
+            obj.dictSub.insert( std::make_pair( "object", object->dump()));
+            return obj;
+        }
+
+        Rule getJsonParseRule() {
+            Rule obj = Rule(Type::DICT);
+            obj.dictSub.insert( std::make_pair( "command", Rule(Type::STR)));
+            obj.dictSub.insert( std::make_pair( "object", object->getJsonParseRule()));
+            return obj;
+>>>>>>> master
         }
     };
 

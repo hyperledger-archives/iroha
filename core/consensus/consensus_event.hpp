@@ -48,13 +48,18 @@ class ConsensusEvent: public T, public Event {
                 signature(sig)
         {}
     };
+<<<<<<< HEAD
 
 
+=======
+    std::unique_ptr<T> tx;
+>>>>>>> master
     std::vector<eventSignature> eventSignatures;
 
 public:
     unsigned long long order = 0;
 
+<<<<<<< HEAD
     ConsensusEvent(
         const std::string& senderPubkey,
         const std::string& receiverPubkey,
@@ -80,6 +85,11 @@ public:
     using Object = json_parse::Object;
 
 
+=======
+    ConsensusEvent(std::unique_ptr<T> atx):
+        tx(std::move(atx))
+    {}
+>>>>>>> master
 
     // WIP
     ConsensusEvent(Object obj);
@@ -89,7 +99,14 @@ public:
     }
 
     std::string getHash() {
+<<<<<<< HEAD
         return T::getHash();
+=======
+        return tx->getHash();
+    }
+    T& getTx() const{
+        return &tx;
+>>>>>>> master
     }
 
     int getNumValidSignatures() {
@@ -115,6 +132,7 @@ public:
             eventSigs.listSub.push_back(eventSig);
         }
         obj.dictSub.insert( std::make_pair( "eventSignatures", eventSigs));
+<<<<<<< HEAD
         obj.dictSub.insert( std::make_pair( "transaction", T::dump()));
         return obj;
     }
@@ -130,6 +148,23 @@ public:
         rule.dictSub.insert( std::make_pair( "eventSignatures", eventSigs));
         rule.dictSub.insert( std::make_pair( "transaction", T::getJsonParseRule()));
         return rule;
+=======
+        obj.dictSub.insert( std::make_pair( "transaction", tx->dump()));
+        return obj;
+    }
+
+    Rule getJsonParseRule() {
+        Rule obj = Rule(Type::DICT);
+        obj.dictSub.insert( std::make_pair( "order", Rule(Type::INT)));
+        auto eventSigs  = Rule(Type::LIST);
+        auto eventSig   = std::make_unique<Rule>(Type::DICT);
+        eventSig->dictSub.insert( std::make_pair( "publicKey", Rule(Type::STR)));
+        eventSig->dictSub.insert( std::make_pair( "signature", Rule(Type::STR)));
+        eventSigs.listSub = std::move(eventSig);
+        obj.dictSub.insert( std::make_pair( "eventSignatures", std::move(eventSigs)));
+        obj.dictSub.insert( std::make_pair( "transaction", tx->getJsonParseRule()));
+        return obj;
+>>>>>>> master
     }
 
 };

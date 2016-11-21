@@ -40,6 +40,7 @@ public:
         const unsigned int& precision
     );
 
+<<<<<<< HEAD
     Asset(
         const std::string& name,
         const unsigned long long& value
@@ -56,6 +57,10 @@ public:
     Object dump();
     static Rule getJsonParseRule();
 
+=======
+    virtual json_parse::Object dump() override;
+    virtual json_parse::Rule getJsonParseRule() override;
+>>>>>>> master
 };
 
 };  // namespace asset
