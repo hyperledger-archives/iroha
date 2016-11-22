@@ -60,6 +60,7 @@ public:
         const std::string& name,
         const int& value
     );
+
     explicit ConsensusEvent(
         const std::string& senderPubkey,
         const std::string& domain,
@@ -67,6 +68,7 @@ public:
         const unsigned long long& value,
         const unsigned int& precision
     );
+
     explicit ConsensusEvent(
         const std::string& senderPubkey,
         const std::string& ownerPublicKey,
@@ -77,6 +79,7 @@ public:
     using Rule = json_parse::Rule;
     using Type = json_parse::Type;
     using Object = json_parse::Object;
+
 
     explicit ConsensusEvent(Object obj);
 
