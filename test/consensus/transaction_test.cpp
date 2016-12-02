@@ -28,7 +28,6 @@ limitations under the License.
 
 #include "../../core/service/json_parse_with_json_nlohman.hpp"
 
-
 #include "../../core/service/peer_service.hpp"
 #include "../../core/crypto/hash.hpp"
 
@@ -50,17 +49,17 @@ void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const &acti
 
 int main(){
     std::string senderPublicKey;
-    std::string receiverPublicKey;
 
     std::string pubKey = peer::getMyPublicKey();
 
     while(1){
         setAwkTimer(3000, [&](){
-            auto event = std::make_unique<ConsensusEvent<Transaction<Transfer<object::Asset>>>>(
+            auto event = std::make_unique<ConsensusEvent<Transaction<Add<object::Asset>>>>(
                 senderPublicKey,
-                receiverPublicKey,
+                "domain",
                 "Dummy transaction",
-                100
+                100,
+                0
             );
             std::cout <<" created event\n";
             event->addTxSignature(

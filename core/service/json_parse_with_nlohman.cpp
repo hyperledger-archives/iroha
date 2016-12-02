@@ -60,10 +60,10 @@ namespace json_parse_with_json_nlohman {
                     }
                     return res;
                 }else if(r.getType() == Type::LIST){
-                    auto list = std::move(r.listSub.at(0));
+                    const auto& list = r.listSub.at(0);
                     Object res = Object(Type::LIST);
-                    for(auto& v : j.get<std::vector<json>>()){
-                        res.listSub.push_back(load_impl( v, list));
+                    for(auto& v : j.get<std::vector<json>>()) {
+                        res.listSub.push_back(load_impl(v, list));
                     }
                     return res;
                 }else{
@@ -140,6 +140,30 @@ namespace json_parse_with_json_nlohman {
                     >
                 >
             >(detail::load_impl(data, rule));
+        }
+
+        Object load(json j) {
+            if(j.is_boolean()){
+                return Object( Type::BOOL, j.get<bool>());
+            }else if(j.is_number_integer()){
+                return Object( Type::INT, j.get<int>());
+            }else if(j.is_string()){
+                return Object( Type::STR, j.get<std::string>());
+            }else if(j.is_object()){
+                auto dict = Object(Type::DICT);
+                for (json::iterator it = j.begin(); it != j.end(); ++it) {
+                    dict.dictSub.insert(std::make_pair(it.key(),load(it.value())));
+                }
+                return dict;
+            }else if(j.is_array()){
+                Object list = Object(Type::LIST);
+                for(const auto& e: j){
+                    list.listSub.push_back(load(e));
+                }
+                return list;
+            }
+            // ToDo apply other type
+            return Object(Type::INVELIED);
         }
 
         template<>
