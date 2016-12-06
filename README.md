@@ -194,6 +194,8 @@ fabric3 (python library, not hyperledger/fabric)
 
 ## Installation
 ```
+$ git submodules init
+$ git submodules update
 $ mkdir build
 $ cmake ..
 $ make
