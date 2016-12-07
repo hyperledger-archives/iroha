@@ -25,6 +25,7 @@ dependencies:
   pre:
     - cd /tmp; curl -O -Ls https://github.com/google/protobuf/releases/download/v3.0.0/protoc-3.0.0-linux-x86_64.zip;sudo unzip -d /var/protoc-3.0.0 protoc-3.0.0-linux-x86_64.zip
     - sudo ln /var/protoc-3.0.0/bin/protoc /usr/local/bin
+    - which protoc
     - protoc --version
     - cd /tmp; git clone -b $(curl -L http://grpc.io/release) https://github.com/grpc/grpc
     - cd /tmp/grpc; git submodule update --init; make; sudo make install
