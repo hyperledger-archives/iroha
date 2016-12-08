@@ -4,29 +4,40 @@
 
 #ifndef IROHA_ASSET_REPOSITORY_HPP_H
 #define IROHA_ASSET_REPOSITORY_HPP_H
+
+#include <string>
+#include <vector>
+
+#include "../../world_state_repository.hpp"
+
 namespace repository{
     namespace Asset {
-        template<typename T>
-        bool add(std::string key, T value);
 
-        template<typename T>
-        bool update(std::string key, T newValue);
+        bool add(std::string publicKey,std::string assetName,std::string value){
+            return world_state_repository::add(assetName+"@"+publicKey, value);
+        }
 
-        // This is OK...??
-        template<typename T>
-        bool remove(std::string key);
+        bool update(std::string publicKey,std::string assetName,std::string newValue){
+            return world_state_repository::update(assetName+"@"+publicKey, newValue);
+        }
 
-        template<typename T>
-        std::vector <std::unique_ptr<T>> findAll(std::string key);
+        bool remove(std::string publicKey,std::string assetName){
+            return world_state_repository::remove(assetName+"@"+publicKey);
+        }
 
-        template<typename T>
-        std::unique_ptr <T> findOne(std::string key);
+        std::vector <std::string> findAll(std::string key) {
 
-        template<typename T>
-        std::unique_ptr <T> findOrElse(std::string key, T defaultVale);
+        }
 
-        template<typename T>
-        bool isExist(std::string key);
+        std::string findOne(std::string key){
+
+        }
+
+        std::string findOrElse(std::string key,std::string defaultVale);
+
+        bool isExist(std::string key) {
+
+        }
     }
 }
 #endif //IROHA_ASSET_REPOSITORY_HPP_H
