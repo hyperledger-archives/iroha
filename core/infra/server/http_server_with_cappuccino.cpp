@@ -21,18 +21,6 @@ limitations under the License.
 #include "../../util/logger.hpp"
 
 #include "../../consensus/connection/connection.hpp"
-#include "../../consensus/consensus_event.hpp"
-#include "../../model/commands/transfer.hpp"
-#include "../../model/objects/domain.hpp"
-#include "../../model/transaction.hpp"
-#include "../../service/json_parse_with_json_nlohman.hpp"
-#include "../../service/peer_service.hpp"
-
-#include <iostream>
-#include <string>
-#include <vector>
-#include <memory>
-#include <thread>
 
   
 namespace http {
@@ -72,7 +60,7 @@ namespace http {
     Cappuccino::Cappuccino( 0, nullptr);
 
     for(const auto api: apis){
-        Cappuccino::route( api.first,[api](std::shared_ptr<Request> request) -> Response{
+        Cappuccino::route<Cappuccino::Method::GET>( api.first,[api](std::shared_ptr<Request> request) -> Response{
             auto data = request->json();
             auto res = Response(request);
             if(data.empty()) {
