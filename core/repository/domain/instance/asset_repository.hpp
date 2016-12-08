@@ -1,0 +1,8 @@
+//
+// Created by 五十嵐太清 on 2016/12/08.
+//
+
+#ifndef IROHA_ASSET_REPOSITORY_H
+#define IROHA_ASSET_REPOSITORY_H
+
+#endif //IROHA_ASSET_REPOSITORY_H
