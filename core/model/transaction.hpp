@@ -16,6 +16,7 @@ limitations under the License.
 
 #include "commands/add.hpp"
 #include "commands/transfer.hpp"
+#include "commands/update.hpp"
 
 #include "../service/json_parse.hpp"
 #include "../service/json_parse_with_json_nlohman.hpp"
@@ -26,7 +27,7 @@ namespace transaction {
 
 template <typename T>
 class Transaction: public T {
-
+protected:
     struct txSignature{
         std::string publicKey;
         std::string signature;
@@ -71,7 +72,14 @@ public:
         const std::string& ownerPublicKey,
         const std::string& name
     );
+    Transaction(
+        const std::string& ownerPublicKey,
+        const std::string& name,
+        const unsigned long long& value
+    );
 
+
+    void execution();
 
     auto getHash() {
         return hash::sha3_256_hex(json_parse_with_json_nlohman::parser::dump(T::dump()));

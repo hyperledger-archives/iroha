@@ -29,8 +29,8 @@ limitations under the License.
 namespace command {
 
 template <typename T>
-class Transfer: public T {
-
+class Transfer: protected T {
+  protected:
    std::string senderPublicKey;
    std::string receiverPublicKey;
   public:

@@ -25,9 +25,11 @@ limitations under the License.
 namespace object {
 
 class Domain{
+protected:
     std::string ownerPublicKey;
     std::string name;
 public:
+
     explicit Domain(
         const std::string& ownerPublicKey,
         const std::string& name

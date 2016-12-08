@@ -5,6 +5,7 @@
 namespace transaction{
     using command::Transfer;
     using command::Add;
+    using command::Update;
 
     template <>
     Transaction<Transfer<object::Asset>>::Transaction(
@@ -54,6 +55,22 @@ namespace transaction{
             txSignatures.push_back(txSignature(sig.dictSub["publicKey"].str,sig.dictSub["signature"].str));
         }
     }
+    template <>
+    Transaction<Update<object::Asset>>::Transaction(
+        Object obj
+    ):
+        Update(
+            obj.dictSub["command"]
+        )
+    {
+        senderPubkey = obj.dictSub["senderPublicKey"].str;
+        hash = obj.dictSub["hash"].str;
+        std::vector<Object> txSigs = obj.dictSub["txSignatures"].listSub;
+        for(auto&& sig : txSigs){
+            txSignatures.push_back(txSignature(sig.dictSub["publicKey"].str,sig.dictSub["signature"].str));
+        }
+    }
+
 
     template <>
     Transaction<Transfer<object::Asset>>::Transaction(
@@ -100,5 +117,38 @@ namespace transaction{
             name
         )    
     {}
+
+    template <>
+    Transaction<Update<object::Asset>>::Transaction(
+        const std::string& ownerPublicKey,
+        const std::string& name,
+        const unsigned long long& value
+    ):
+        senderPubkey(ownerPublicKey),
+        Update(
+                ownerPublicKey,
+                name,
+                value
+        )
+    {}
+
+
+    template <>
+    void Transaction<Update<object::Asset>>::execution(){
+        logger::info("execution","update! Asset "+ ownerPublicKey);
+    }
+    template <>
+    void Transaction<Add<object::Asset>>::execution(){
+        logger::info("execution","add! Asset");
+    }
+    template <>
+    void Transaction<Add<object::Domain>>::execution(){
+        logger::info("execution","add! Domain");
+    }
+    template <>
+    void Transaction<Transfer<object::Asset>>::execution(){
+        logger::info("execution","Transfer! Asset");
+    }
+
 
 }

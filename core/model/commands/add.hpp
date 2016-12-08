@@ -29,7 +29,7 @@ limitations under the License.
 namespace command {
 
 template <typename T>
-class Add: public T {
+class Add: protected T {
   public:
 
     using Object = json_parse::Object;

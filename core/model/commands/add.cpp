@@ -34,8 +34,8 @@ Add<object::Asset>::Add(
 
 template <>
 Add<object::Domain>::Add(
-        const std::string& ownerPublicKey,
-        const std::string& name
+    const std::string& ownerPublicKey,
+    const std::string& name
 ):
     object::Domain(
         ownerPublicKey,

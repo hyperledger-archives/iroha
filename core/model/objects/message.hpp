@@ -26,7 +26,7 @@ limitations under the License.
 namespace object {
 
 class Message{
-
+protected:
     std::string text;
 public:
     explicit Message(const std::string& text);
