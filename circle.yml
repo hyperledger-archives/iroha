@@ -30,7 +30,8 @@ machine:
 
 dependencies:
   cache_directories:
-    - ~/iroha/core/vendor/
+    - /tmp/protobuf
+    - /tmp/grpc
   override:
     - mkdir build; cd build; cmake ..; make
 checkout:
