@@ -17,10 +17,11 @@ machine:
     - sudo apt-get -y install xsltproc
     - sudo apt-get -y install libhdf5-serial-dev libleveldb-dev libsnappy-dev liblmdb-dev
     - sudo apt-get -y install autoconf automake libtool unzip
-    - cd /tmp; curl -O -Ls https://github.com/google/protobuf/releases/download/v3.0.0/protoc-3.0.0-linux-x86_64.zip;sudo unzip -d /var/protoc-3.0.0 protoc-3.0.0-linux-x86_64.zip
-    - sudo rm /usr/bin/protoc
-    - sudo ln /var/protoc-3.0.0/bin/protoc /usr/bin
-    - sudo chmod  +x /usr/bin/protoc
+
+    - cd /tmp; git clone -b v3.0.0 https://github.com/google/protobuf.git
+    - cd /tmp/protobuf;(git cherry-pick 1760feb621a913189b90fe8595fffb74bce84598; echo Force continue)
+    - cd /tmp/protobuf; ./autogen.sh; ./configure --prefix=/usr; make -j 16; sudo make install
+
     - which protoc
     - protoc --version
     - cd /tmp; git clone -b $(curl -L http://grpc.io/release) https://github.com/grpc/grpc
