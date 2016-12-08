@@ -158,6 +158,19 @@ libkeccak
 
     # cd $IROHA_HOME/core/vendor/KeccakCodePackage; make; make generic64/libkeccak.a
 
+libhash
+~~~~~~~~~
+
+何故かCMakeが正しく動かないので自分でBuildします
+
+I should make libhash, because cmake doesn't running correctly.
+
+::
+
+    # cd $IROHA_HOME/core/infra/crypto/; make
+
+
+
 Iroha本体のbuild / build iroha
 ==============================
 
