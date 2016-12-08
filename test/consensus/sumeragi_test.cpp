@@ -40,6 +40,8 @@ template<typename T>
 using Add = command::Add<T>;
 template<typename T>
 using Transfer = command::Transfer<T>;
+template<typename T>
+using Update = command::Update<T>;
 
 void setAwkTimer(int const sleepMillisecs, const std::function<void(void)>& action) {
     std::thread([action, sleepMillisecs]() {
@@ -57,7 +59,7 @@ int main(int argc, char *argv[]){
 
     connection::initialize_peer();
 
-    logger::setLogLevel(logger::LogLevel::EXPLORE);
+    logger::setLogLevel(logger::LogLevel::DEBUG);
 
     for(const auto& n : nodes){
         std::cout<< "=========" << std::endl;
@@ -81,12 +83,10 @@ int main(int argc, char *argv[]){
     if( argc >= 2 && std::string(argv[1]) == "public"){
         while(1){
             setAwkTimer(1, [&](){
-                auto event = std::make_unique<ConsensusEvent<Transaction<Add<object::Asset>>>>(
+                auto event = std::make_unique<ConsensusEvent<Transaction<Update<object::Asset>>>>(
                         peer::getMyPublicKey(),
-                        "domain",
-                        "Dummy transaction",
-                        100,
-                        0
+                        "AssetName",
+                        100
                 );
                 event->addTxSignature(
                         peer::getMyPublicKey(),
