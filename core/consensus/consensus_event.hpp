@@ -73,11 +73,15 @@ public:
         const std::string& name
     );
 
+    explicit ConsensusEvent(
+        const std::string& ownerPublicKey,
+        const std::string& name,
+        const unsigned long long& value
+    );
 
     using Rule = json_parse::Rule;
     using Type = json_parse::Type;
     using Object = json_parse::Object;
-
 
     explicit ConsensusEvent(Object obj);
 
@@ -135,6 +139,10 @@ public:
         rule.dictSub.insert( std::make_pair( "eventSignatures", eventSigs));
         rule.dictSub.insert( std::make_pair( "transaction", T::getJsonParseRule()));
         return rule;
+    }
+
+    void execution(){
+        T::execution();
     }
 
 };

@@ -93,6 +93,8 @@ namespace json_parse_with_json_nlohman {
         using Transfer = command::Transfer<T>;
         template<typename T>
         using Add = command::Add<T>;
+        template<typename T>
+        using Update = command::Update<T>;
         using object::Asset;
         using object::Domain;
 
@@ -186,6 +188,29 @@ namespace json_parse_with_json_nlohman {
                         Add<Domain>
                     >
                 >
+            >(detail::load_impl(data, rule));
+        }
+
+        template<>
+        std::unique_ptr<
+                ConsensusEvent<
+                        Transaction<
+                                Update<Asset>
+                        >
+                >
+        > load(std::string s) {
+            json data;
+            try{
+                data = json::parse(s);
+            }catch (...){}
+
+            auto rule = ConsensusEvent<Transaction<Update<Asset>>>::getJsonParseRule();
+            return std::make_unique<
+                    ConsensusEvent<
+                            Transaction<
+                                    Update<Asset>
+                            >
+                    >
             >(detail::load_impl(data, rule));
         }
 

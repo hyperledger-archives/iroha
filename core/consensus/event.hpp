@@ -34,6 +34,7 @@ public:
   virtual std::vector<std::tuple<std::string,std::string>> eventSignatures() = 0;
   virtual std::string getHash() = 0;
   virtual json_parse::Object dump() = 0;
+  virtual void execution() = 0;
 };
 
 }

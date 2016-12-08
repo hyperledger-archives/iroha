@@ -31,25 +31,25 @@ namespace json_parse {
         Object(const Type& t,const int& i) :
             type(std::move(t)), integer(std::move(i))
         {
-            if(t != Type::INT) throw "TypeError"; //WIP
+            if(t != Type::INT) throw "TypeError";
         }
 
         Object(const Type& t,const std::string& s) :
             type(t), str(s)
         {
-            if(t != Type::STR) throw "TypeError"; //WIP
+            if(t != Type::STR) throw "TypeError";
         }
 
         Object(const Type& t,const bool& s) :
             type(t), boolean(s)
         {
-            if(t != Type::BOOL) throw "TypeError"; //WIP
+            if(t != Type::BOOL) throw "TypeError";
         }
 
         Object(const Type& t,const float& f) :
                 type(t), floating(f)
         {
-            if(t != Type::FLOAT) throw "TypeError"; //WIP
+            if(t != Type::FLOAT) throw "TypeError";
         }
 
         Object():type(Type::INVELIED){};

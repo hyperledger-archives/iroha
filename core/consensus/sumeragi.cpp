@@ -250,7 +250,7 @@ namespace sumeragi {
 
                 detail::printAgree();
                 // Check Merkle roots to see if match for new state
-                //TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
+                // TODO: std::vector<std::string>>const merkleSignatures = event.merkleRootSignatures;
                 //Try applying transaction locally and compute the merkle root
                 //std::unique_ptr<merkle_transaction_repository::MerkleNode> newRoot = merkle_transaction_repository::calculateNewRoot(event);
                 //logger::info("sumeragi", "newRoot hash:"+newRoot->hash);
@@ -267,8 +267,7 @@ namespace sumeragi {
                 merkle_transaction_repository::commit(event); //TODO: add error handling in case not saved
 
                 // Write exec code smart contract
-
-
+                event->execution();
             } else {
                 // This is a new event, so we should verify, sign, and broadcast it
                 event->addSignature( peer::getMyPublicKey(), signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str());

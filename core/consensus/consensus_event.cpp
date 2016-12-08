@@ -10,6 +10,8 @@ namespace event{
     using Transfer = command::Transfer<T>;
     template<typename T>
     using Add = command::Add<T>;
+    template<typename T>
+    using Update = command::Update<T>;
 
     using Type = json_parse::Type;
     using Object = json_parse::Object;
@@ -61,6 +63,20 @@ namespace event{
     }
 
     template <>
+    ConsensusEvent<Transaction<Update<object::Asset>>>::ConsensusEvent(
+            Object obj
+    ):
+            Transaction(obj)
+    {
+        order = obj.dictSub["order"].floating;
+        std::vector<Object> eventSigs = obj.dictSub["eventSignatures"].listSub;
+        for(auto&& sig : eventSigs){
+            _eventSignatures.push_back(eventSignature(sig.dictSub["publicKey"].str,sig.dictSub["signature"].str));
+        }
+    }
+
+
+    template <>
     ConsensusEvent<Transaction<Transfer<object::Asset>>>::ConsensusEvent(
         const std::string& senderPubkey,
         const std::string& receiverPubkey,
@@ -103,6 +119,19 @@ namespace event{
             ownerPublicKey,
             name
         )    
+    {}
+
+    template <>
+    ConsensusEvent<Transaction<Update<object::Asset>>>::ConsensusEvent(
+            const std::string& ownerPublicKey,
+            const std::string& name,
+            const unsigned long long& value
+    ):
+        Transaction(
+            ownerPublicKey,
+            name,
+            value
+        )
     {}
 
 };
