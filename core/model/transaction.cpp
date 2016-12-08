@@ -136,6 +136,7 @@ namespace transaction{
     template <>
     void Transaction<Update<object::Asset>>::execution(){
         logger::info("execution","update! Asset "+ ownerPublicKey);
+        repository::asset::update(ownerPublicKey, "sample", std::to_string(value));
     }
     template <>
     void Transaction<Add<object::Asset>>::execution(){

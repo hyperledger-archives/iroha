@@ -18,6 +18,7 @@ limitations under the License.
 #include "commands/transfer.hpp"
 #include "commands/update.hpp"
 
+#include "../repository/domain/instance/asset_repository.hpp"
 #include "../service/json_parse.hpp"
 #include "../service/json_parse_with_json_nlohman.hpp"
 #include "../crypto/hash.hpp"
