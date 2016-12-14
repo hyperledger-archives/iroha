@@ -83,15 +83,15 @@ struct MerkleNode {
 
 //TODO: change bool to throw an exception instead
 bool commit(const std::unique_ptr<event::Event>& event){
-
+    return false; // TODO: fill this function
 };
 
 bool leafExists(const std::string& hash){
-
+    return false; // TODO: fill this function
 }
 
 std::string getLeaf(const std::string& hash){
-
+    return ""; // TODO: fill this function
 }
 
 template <typename T>

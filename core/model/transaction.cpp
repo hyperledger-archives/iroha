@@ -13,8 +13,8 @@ namespace transaction{
         Transfer(
             obj.dictSub["command"]
         ),
-        senderPubkey(obj.dictSub["senderPublicKey"].str),
-        hash(obj.dictSub["hash"].str)
+        hash(obj.dictSub["hash"].str),
+        senderPubkey(obj.dictSub["senderPublicKey"].str)
     {
         
         std::vector<Object> txSigs = obj.dictSub["txSignatures"].listSub;
@@ -62,13 +62,13 @@ namespace transaction{
         const std::string& name,
         const int& value
     ):
-        senderPubkey(senderPubkey),
         Transfer(
             senderPubkey,
             receiverPubkey,
             name,
             value
-        )
+        ),
+        senderPubkey(senderPubkey)
     {}
 
     template <>
@@ -79,13 +79,13 @@ namespace transaction{
         const unsigned long long& value,
         const unsigned int& precision
     ):
-        senderPubkey(senderPubkey),
         Add(
             domain,
             name,
             value,
             precision
-        )    
+        ),
+        senderPubkey(senderPubkey)
     {}
 
     template <>
@@ -94,11 +94,11 @@ namespace transaction{
         const std::string& ownerPublicKey,
         const std::string& name
     ):
-        senderPubkey(senderPubkey),
         Add(
             ownerPublicKey,
             name
-        )    
+        ),
+        senderPubkey(senderPubkey)
     {}
 
 }
