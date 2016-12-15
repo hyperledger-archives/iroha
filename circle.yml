@@ -23,6 +23,7 @@ checkout:
     - cd $IROHA_HOME
     - cd $IROHA_HOME/core/vendor/leveldb; make -j 14
     - cd $IROHA_HOME/core/vendor/ed25519; make -j 14
+    - cd $IROHA_HOME/core/vendor/Cappuccino; git pull
     - cd $IROHA_HOME/core/vendor/KeccakCodePackage; make; make generic64/libkeccak.a
     - cd $IROHA_HOME/core/infra/crypto/; make
 
@@ -33,12 +34,12 @@ dependencies:
   pre:
     - if [[ ! -e /tmp/protobuf ]]; then git clone -b v3.0.0 https://github.com/google/protobuf.git /tmp/protobuf;\
       cd /tmp/protobuf; (git cherry-pick 1760feb621a913189b90fe8595fffb74bce84598; echo Force continue);\
-       ./autogen.sh; ./configure --prefix=/usr; make -j 16;
+       ./autogen.sh; ./configure --prefix=/usr; make -j 16; fi;
     -  cd /tmp/protobuf; sudo make install
     - protoc --version
 
     - if [[ ! -e /tmp/grpc ]]; then git clone -b $(curl -L http://grpc.io/release) https://github.com/grpc/grpc /tmp/grpc\
-        git submodule update --init; make -j 14;
+        git submodule update --init; make -j 14; fi;
     - sudo make install
     - which grpc_cpp_plugin
 
