@@ -22,7 +22,7 @@ limitations under the License.
 namespace command {
 
 template <typename T>
-class Add: protected T {
+class Add: public T {
   public:
 
     template<typename... Args>

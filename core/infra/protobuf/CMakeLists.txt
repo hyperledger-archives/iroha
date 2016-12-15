@@ -17,3 +17,9 @@ target_link_libraries(event_with_grpc
     pthread
     dl
 )
+
+ADD_LIBRARY(convertor STATIC
+    convertor.cpp
+    ../protobuf/event.grpc.pb.cc
+    ../protobuf/event.pb.cc
+)

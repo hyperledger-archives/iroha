@@ -45,17 +45,21 @@ protected:
     long long int timestamp;
     std::string hash;
     std::vector<txSignature> txSignatures;
-    std::string senderPubkey;
 public:
+    std::string senderPubkey;
 
     template<typename... Args>
     Transaction(
         std::string&& senderPublickey,
         Args&&... args
     ):
+        T(std::forward<Args>(args)...),
         timestamp(datetime::unixtime()),
-        senderPubkey(senderPublickey),
-        T(std::forward<Args>(args)...)
+        senderPubkey(senderPublickey)
+    {}
+
+    Transaction():
+        timestamp(datetime::unixtime())
     {}
 
     void execution(){

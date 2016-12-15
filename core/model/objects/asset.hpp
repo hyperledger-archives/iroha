@@ -24,13 +24,21 @@ limitations under the License.
 namespace object {
 
 class Asset {
-protected:
+
+public:
     std::string domain;
     std::string name;
     unsigned long long value;
     unsigned int precision;
 
-public:
+
+    explicit Asset():
+        domain(""),
+        name(""),
+        value(-1),
+        precision(-1)
+    {}
+
 
     explicit Asset(
         std::string&& domain,

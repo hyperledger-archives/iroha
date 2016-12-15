@@ -56,7 +56,13 @@ namespace sumeragi {
     namespace detail{
 
         unsigned int getNumValidSignatures(const std::unique_ptr<Event::ConsensusEvent>& event){
-            return 1;
+            int sum = 0;
+            for(auto&& esig: event->eventsignatures()){
+                if(signature::verify( esig.signature(), event->transaction().hash(), esig.publickey())){
+                    sum++;
+                }
+            }
+            return sum;
         }
 
         void addSignature(
@@ -64,11 +70,14 @@ namespace sumeragi {
             const std::string& publicKey,
             const std::string& signature
         ){
-
+            Event::EventSignature sig;
+            sig.set_signature(signature);
+            sig.set_publickey(publicKey);
+            event->add_eventsignatures()->CopyFrom(sig);
         }
 
         bool eventSignatureIsEmpty( const std::unique_ptr<Event::ConsensusEvent>& event) {
-            return true;
+            return event->eventsignatures_size() == 0;
         }
 
         void printIsSumeragi(bool isSumeragi){

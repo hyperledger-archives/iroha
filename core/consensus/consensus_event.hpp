@@ -49,6 +49,7 @@ class ConsensusEvent: public T {
     std::vector<eventSignature> _eventSignatures;
 
 public:
+    int order;
 
     template<typename... Args>
     ConsensusEvent(
@@ -61,24 +62,7 @@ public:
         _eventSignatures.push_back(eventSignature(publicKey, signature));
     }
 
-    std::string getHash() {
-        return T::getHash();
-    }
-
-    unsigned int getNumValidSignatures() {
-        return std::count_if(
-                _eventSignatures.begin(), _eventSignatures.end(),
-            [hash = getHash()](eventSignature sig){
-                return signature::verify(sig.signature, hash, sig.publicKey);
-        });
-    }
-
-    bool eventSignatureIsEmpty(){
-        return _eventSignatures.empty();
-    }
-
-
-    std::vector<std::tuple<std::string,std::string>> eventSignatures(){
+    std::vector<std::tuple<std::string,std::string>> eventSignatures() const{
         std::vector<std::tuple<std::string,std::string>> res;
         for(const auto& sig: _eventSignatures){
             res.push_back(std::make_tuple(sig.publicKey,sig.signature));

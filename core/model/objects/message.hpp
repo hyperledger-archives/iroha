@@ -25,9 +25,9 @@ namespace object {
 
 class Message{
 
-protected:
-    std::string text;
 public:
+    std::string text;
+
     explicit Message(std::string&& text);
 };
 

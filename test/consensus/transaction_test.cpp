@@ -28,6 +28,7 @@ limitations under the License.
 
 #include "../../core/service/peer_service.hpp"
 #include "../../core/crypto/hash.hpp"
+#include "../../core/infra/protobuf/convertor.hpp"
 
 template<typename T>
 using Transaction = transaction::Transaction<T>;
@@ -64,7 +65,6 @@ int main(){
                     peer::getMyPublicKey(),
                     signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
             );
-
         });
     }
 

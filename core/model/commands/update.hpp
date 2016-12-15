@@ -27,18 +27,18 @@ limitations under the License.
 namespace command {
 
     template <typename T>
-    class Update: protected T {
-    protected:
-        std::string ownerPublicKey;
+    class Update: public T {
+
     public:
+        std::string ownerPublicKey;
 
         template<typename... Args>
         constexpr explicit Update(
             std::string&& ownerPublicKey,
             Args&&... args
         ):
-            ownerPublicKey(std::move(ownerPublicKey)),
-            T(std::forward<Args>(args)...)
+            T(std::forward<Args>(args)...),
+            ownerPublicKey(std::move(ownerPublicKey))
         {}
 
         auto getCommandName() const{
