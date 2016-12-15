@@ -50,5 +50,6 @@ target_link_libraries(iroha-main
   peer_service_with_json
   pthread
   keccak
+  hash
 )
 
