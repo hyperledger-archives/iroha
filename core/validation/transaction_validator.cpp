@@ -43,4 +43,5 @@ namespace transaction_validator {
         return true;
     }
 
-};  
+
+};

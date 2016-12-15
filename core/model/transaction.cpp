@@ -14,8 +14,8 @@ namespace transaction{
         Transfer(
             obj.dictSub["command"]
         ),
-        senderPubkey(obj.dictSub["senderPublicKey"].str),
-        hash(obj.dictSub["hash"].str)
+        hash(obj.dictSub["hash"].str),
+        senderPubkey(obj.dictSub["senderPublicKey"].str)
     {
         timestamp = obj.dictSub["timestamp"].integer;
 
@@ -82,14 +82,18 @@ namespace transaction{
         const std::string& name,
         const int& value
     ):
+<<<<<<< HEAD
         timestamp(datetime::unixtime()),
         senderPubkey(senderPubkey),
+=======
+>>>>>>> 42d65b8ec010103ecea0a72aa5d111e03ed76dfb
         Transfer(
             senderPubkey,
             receiverPubkey,
             name,
             value
-        )
+        ),
+        senderPubkey(senderPubkey)
     {}
 
     template <>
@@ -100,14 +104,18 @@ namespace transaction{
         const unsigned long long& value,
         const unsigned int& precision
     ):
+<<<<<<< HEAD
         timestamp(datetime::unixtime()),
         senderPubkey(senderPubkey),
+=======
+>>>>>>> 42d65b8ec010103ecea0a72aa5d111e03ed76dfb
         Add(
             domain,
             name,
             value,
             precision
-        )    
+        ),
+        senderPubkey(senderPubkey)
     {}
 
     template <>
@@ -116,12 +124,16 @@ namespace transaction{
         const std::string& ownerPublicKey,
         const std::string& name
     ):
+<<<<<<< HEAD
         timestamp(datetime::unixtime()),
         senderPubkey(senderPubkey),
+=======
+>>>>>>> 42d65b8ec010103ecea0a72aa5d111e03ed76dfb
         Add(
             ownerPublicKey,
             name
-        )    
+        ),
+        senderPubkey(senderPubkey)
     {}
 
     template <>

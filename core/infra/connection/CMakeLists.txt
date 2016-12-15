@@ -2,6 +2,7 @@
 SET(CMAKE_CXX_FLAGS "-std=c++14 -L/usr/local/lib `pkg-config --libs grpc++ grpc` -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed -lprotobuf -lpthread -ldl")
 SET(CRYPTO_PATH  "${PROJECT_SOURCE_DIR}/core/crypto")
 
+
 #
 #SET(AERON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/Aeron")
 #SET(CRYPTO_PATH  "${PROJECT_SOURCE_DIR}/core/crypto")
@@ -22,6 +23,7 @@ SET(CRYPTO_PATH  "${PROJECT_SOURCE_DIR}/core/crypto")
 #)
 #]]
 #
+
 
 link_directories(
     ${CRYPTO_PATH}
