@@ -89,7 +89,7 @@ public:
         return T::getHash();
     }
 
-    int getNumValidSignatures() {
+    unsigned int getNumValidSignatures() {
         return std::count_if(
                 _eventSignatures.begin(), _eventSignatures.end(),
             [hash = getHash()](eventSignature sig){
