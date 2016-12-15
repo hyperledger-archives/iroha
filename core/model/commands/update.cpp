@@ -14,51 +14,35 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#include "update.hpp"
 
-#ifndef CORE_DOMAIN_OBJECTS_ASSET_HPP_
-#define CORE_DOMAIN_OBJECTS_ASSET_HPP_
+namespace command {
 
-#include <string>
-#include <memory>
-#include "../../service/json_parse.hpp"
+    using object::Asset;
 
-namespace object {
-
-class Asset {
-protected:
-    std::string domain;
-    std::string name;
-    unsigned long long value;
-    unsigned int precision;
-
-public:
-
-    Asset(
-        const std::string& domain,
-        const std::string& name,
-        const unsigned long long& value,
-        const unsigned int& precision
-    );
-
-    Asset(
+    template <>
+    Update<Asset>::Update(
+        const std::string& ownerPublicKey,
         const std::string& name,
         const unsigned long long& value
-    );
+    ):
+        Asset(name,value),
+        ownerPublicKey(ownerPublicKey)
+    {}
 
-    using Rule = json_parse::Rule;
-    using Type = json_parse::Type;
     using Object = json_parse::Object;
 
-    Asset(
+    template <>
+    Update<Asset>::Update(
         Object obj
-    );
+    ):
+        Asset(obj),
+        ownerPublicKey(obj.dictSub["owner"].str)
+    {}
 
-    Object dump();
-    static Rule getJsonParseRule();
-
-};
-
-};  // namespace asset
-
-#endif  // CORE_DOMAIN_OBJECTS_ASSET_HPP_
-
+    template <>
+    void Update<Asset>::execution() {
+        logger::info("execution","update! Asset "+ ownerPublicKey);
+        repository::asset::update(ownerPublicKey, "sample", std::to_string(value));
+    }
+}

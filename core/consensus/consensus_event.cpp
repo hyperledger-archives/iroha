@@ -11,25 +11,28 @@ namespace event{
     template<typename T>
     using Add = command::Add<T>;
 
+    template<typename T>
+    using Update = command::Update<T>;
+
     using Type = json_parse::Type;
     using Object = json_parse::Object;
-    
+
     template <>
     ConsensusEvent<Transaction<Transfer<object::Asset>>>::ConsensusEvent(
         Object obj
     ):
-        Transaction(obj)
+        Transaction(obj.dictSub["transaction"])
     {
-        order = obj.dictSub["order"].floating;
+        order = obj.dictSub["order"].integer;
         std::vector<Object> eventSigs = obj.dictSub["eventSignatures"].listSub;
-        std::cout << eventSigs.size() << std::endl; 
+        std::cout << eventSigs.size() << std::endl;
         for(auto&& sig : eventSigs){
             std::cout <<"Oh "<< sig.dictSub["publicKey"].str << " " << sig.dictSub["signature"].str << std::endl;
             if(
                 sig.dictSub["publicKey"].str != "" &&
                 sig.dictSub["signature"].str != ""
             ){
-                eventSignatures.push_back(eventSignature(sig.dictSub["publicKey"].str,sig.dictSub["signature"].str));
+                _eventSignatures.push_back(eventSignature(sig.dictSub["publicKey"].str,sig.dictSub["signature"].str));
             }
         }
     }
@@ -38,17 +41,12 @@ namespace event{
     ConsensusEvent<Transaction<Add<object::Asset>>>::ConsensusEvent(
         Object obj
     ):
-        Transaction(obj)
+        Transaction(obj.dictSub["transaction"])
     {
-        order = obj.dictSub["order"].floating;
+        order = obj.dictSub["order"].integer;
         std::vector<Object> eventSigs = obj.dictSub["eventSignatures"].listSub;
         for(auto&& sig : eventSigs){
-            if(
-                sig.dictSub["publicKey"].str != "" &&
-                sig.dictSub["signature"].str != ""
-            ){
-                eventSignatures.push_back(eventSignature(sig.dictSub["publicKey"].str,sig.dictSub["signature"].str));
-            }
+            _eventSignatures.push_back(eventSignature(sig.dictSub["publicKey"].str, sig.dictSub["signature"].str));
         }
     }
 
@@ -61,7 +59,7 @@ namespace event{
         order = obj.dictSub["order"].floating;
         std::vector<Object> eventSigs = obj.dictSub["eventSignatures"].listSub;
         for(auto&& sig : eventSigs){
-            eventSignatures.push_back(eventSignature(sig.dictSub["publicKey"].str,sig.dictSub["signature"].str));
+            _eventSignatures.push_back(eventSignature(sig.dictSub["publicKey"].str,sig.dictSub["signature"].str));
         }
     }
 
@@ -110,5 +108,31 @@ namespace event{
             name
         )    
     {}
+
+    template <>
+    ConsensusEvent<Transaction<Update<object::Asset>>>::ConsensusEvent(
+            const std::string& ownerPublicKey,
+            const std::string& name,
+            const unsigned long long& value
+    ):
+        Transaction(
+            ownerPublicKey,
+            name,
+            value
+        )
+    {}
+
+    template <>
+    void ConsensusEvent<Transaction<Update<object::Asset>>>::execution(){
+        logger::info("execution","update! Asset");
+    }
+    template <>
+    void ConsensusEvent<Transaction<Add<object::Asset>>>::execution(){
+        logger::info("execution","add! Asset");
+    }
+    template <>
+    void ConsensusEvent<Transaction<Add<object::Domain>>>::execution(){
+        logger::info("execution","add! Asset");
+    }
 
 };

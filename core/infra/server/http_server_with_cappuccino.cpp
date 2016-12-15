@@ -16,11 +16,12 @@ limitations under the License.
 
 #include <json.hpp>
 
-#include <iostream>
-#include <string>
-
 #include "../../server/http_server.hpp"
 #include "../../vendor/Cappuccino/cappuccino.hpp"
+#include "../../util/logger.hpp"
+
+#include "../../consensus/connection/connection.hpp"
+
   
 namespace http {
   
@@ -28,16 +29,51 @@ namespace http {
   using Request = Cappuccino::Request;
   using Response = Cappuccino::Response;
 
-  void server() {
+  
+  template<typename T>
+  using Transaction = transaction::Transaction<T>;
+  template<typename T>
+  using ConsensusEvent = event::ConsensusEvent<T>;
+  template<typename T>
+  using Add = command::Add<T>;
+  template<typename T>
+  using Transfer = command::Transfer<T>;
 
+  using Object = json_parse::Object;
+
+  json responseError(std::string message){
+    return json({
+      {"message", message},
+      {"status", 400}
+    });
+  }
+
+  enum class RequestType{
+      Int,
+      Str,
+      Bool,
+      Float
+  };
+
+  void server(std::map<std::string,std::function<Object(Object)>> apis) {
+    logger::info("server", "initialize server!");
     Cappuccino::Cappuccino( 0, nullptr);
 
-    Cappuccino::route("/",[](std::shared_ptr<Request> request) -> Response{
-        auto res =  Response(request);
-        res.file("index.html");
-        return res;
-    });
+    for(const auto api: apis){
+        Cappuccino::route<Cappuccino::Method::GET>( api.first,[api](std::shared_ptr<Request> request) -> Response{
+            auto data = request->json();
+            auto res = Response(request);
+            if(data.empty()) {
+              res.json(responseError("Invalied JSON"));
+              return res;
+            }
+            res.json(json(json_parse_with_json_nlohman::parser::dump(api.second(json_parse_with_json_nlohman::parser::load(data)))));
 
+            return res;
+        });
+    };
+
+    logger::info("server", "start server!");
     // runnning
     Cappuccino::run();
 

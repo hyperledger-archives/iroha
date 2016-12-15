@@ -28,10 +28,53 @@ limitations under the License.
 
 #include "../core/service/peer_service.hpp"
 
-std::atomic_bool running(true); 
+std::atomic_bool running(true);
+
+template<typename T>
+using Transaction = transaction::Transaction<T>;
+template<typename T>
+using ConsensusEvent = event::ConsensusEvent<T>;
+template<typename T>
+using Add = command::Add<T>;
+template<typename T>
+using Transfer = command::Transfer<T>;
 
 void server(){
-  http::server();
+
+    // Start server and keep on runing.
+    using Object = json_parse::Object;
+
+
+  std::map<std::string,std::function<Object(Object)>> apis;
+
+  apis.insert(std::make_pair("/asset/operation", [](Object obj) -> Object{
+
+      if(obj.dictSub.find("command") != obj.dictSub.end() && obj.dictSub.at("command").str == "add") {
+
+          if(obj.dictSub.find("domain") != obj.dictSub.end() &&
+              obj.dictSub.find("name") != obj.dictSub.end()
+          ) {
+              auto event = std::make_unique<ConsensusEvent<Transaction<Add<object::Asset>>>>(
+                      peer::getMyPublicKey(),
+                      "domain",
+                      "Dummy transaction",
+                      100,
+                      0
+              );
+              event->addTxSignature(
+                      peer::getMyPublicKey(),
+                      signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
+              );
+              connection::send(peer::getMyIp(), std::move(event));
+              return Object(json_parse::Type::STR, "Transaction accept");
+          }else{
+              return Object(json_parse::Type::STR, "Require some argv");
+          }
+      }
+      return Object(json_parse::Type::STR, "Require command");
+  }));
+
+  http::server(apis);
 }
 
 void sigIntHandler(int param){
@@ -43,27 +86,30 @@ int main() {
   signal(SIGINT, sigIntHandler);
 
   if(getenv("IROHA_HOME") == nullptr){
-    std::cout << "You must set IROHA_HOME!" << std::endl;
+    logger::error("main", "You must set IROHA_HOME!");
     return 1;
   }
 
-  std::cout<<"Process ID is "<< getpid() << std::endl;
+  logger::info("main","process is :"+std::to_string(getpid()));
+  logger::setLogLevel(logger::LogLevel::EXPLORE);
 
-  std::unique_ptr<connection::Config> config;
-
-  config->ip_addr = peer::getMyIp();
-  std::string myPublicKey = peer::getMyPublicKey();
-
-  sumeragi::initializeSumeragi(myPublicKey, peer::getPeerList());
-
-  std::thread http_th(server);
-  std::thread sumeragi_th(sumeragi::loop);
-
-  while(running){}
-
-  http_th.detach();
-  sumeragi_th.detach();
+  std::vector<std::unique_ptr<peer::Node>> nodes = peer::getPeerList();
+  connection::initialize_peer();
+  for(const auto& n : nodes){
+      connection::addSubscriber(n->getIP());
+  }
   
+  sumeragi::initializeSumeragi( peer::getMyPublicKey(), peer::getPeerList());
+
+  std::thread sumeragi_thread(sumeragi::loop);
+  std::thread http_thread(server);
+
+  connection::run();
+
+  while(running);
+  
+  sumeragi_thread.detach();
+  http_thread.detach();
+
   return 0;
 }
-
