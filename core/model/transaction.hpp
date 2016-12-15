@@ -57,28 +57,15 @@ public:
         Object obj
     );
 
+    template<typename... Args>
     Transaction(
-            const std::string& senderPubkey,
-            const std::string& receiverPubkey,
-            const std::string& name,
-            const int& value
-    );
-    Transaction(
-            const std::string& senderPubkey,
-            const std::string& domain,
-            const std::string& name,
-            const unsigned long long& value,
-            const unsigned int& precision
-    );
-    Transaction(
-            const std::string& senderPubkey,
-            const std::string& ownerPublicKey,
-            const std::string& name
-    );
-    Transaction(
-            const std::string&,
-            const std::string&,
-            const long long unsigned int&);
+        std::string&& senderPublickey,
+        Args&&... args
+    ):
+        timestamp(datetime::unixtime()),
+        senderPubkey(senderPublickey),
+        T(std::forward<Args>(args)...)
+    {}
 
     void execution(){
         T::execution();

@@ -33,32 +33,6 @@ Add<object::Asset>::Add(
 ):Asset(obj.dictSub["object"]){}
 
 template <>
-Add<object::Domain>::Add(
-    const std::string& ownerPublicKey,
-    const std::string& name
-):
-    object::Domain(
-        ownerPublicKey,
-        name
-    )
-{}
-
-template <>
-Add<object::Asset>::Add(
-    const std::string& domain,
-    const std::string& name,
-    const unsigned long long& value,
-    const unsigned int& precision
-):
-    object::Asset(
-        domain,
-        name,
-        value,
-        precision
-    )
-{}
-
-template <>
 void Add<object::Domain>::execution() {
 
 }

@@ -55,7 +55,7 @@ int main(){
     while(1){
         setAwkTimer(3000, [&](){
             auto event = std::make_unique<ConsensusEvent<Transaction<Add<object::Asset>>>>(
-                senderPublicKey,
+                senderPublicKey.c_str(),
                 "domain",
                 "Dummy transaction",
                 100,

@@ -35,17 +35,15 @@ namespace command {
         std::string ownerPublicKey;
     public:
 
-        Update(
-            const std::string& ownerPublicKey,
-            const std::string& name,
-            const unsigned long long& value
-        );
 
+        template<typename... Args>
         Update(
-            const std::string& ownerPublicKey,
-            const std::string& name,
-            const std::string& value
-        );
+            std::string&& ownerPublicKey,
+            Args&&... args
+        ):
+            ownerPublicKey(ownerPublicKey),
+            T(std::forward<Args>(args)...)
+        {}
 
         std::string getCommandName() const{
             return "Update";

@@ -20,18 +20,6 @@ namespace command {
     
 using object::Asset;
 
-// We cann't transfer domain.
-template <>
-Transfer<Asset>::Transfer(
-      std::string senderPubkey,
-      std::string receiverPubkey,
-      std::string name,
-      int value):
-   Asset(name,value),
-   senderPublicKey(senderPubkey),
-   receiverPublicKey(receiverPubkey)
-{}
-
 using Object = json_parse::Object;
 
 template <>

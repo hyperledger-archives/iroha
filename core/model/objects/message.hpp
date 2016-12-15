@@ -30,7 +30,7 @@ class Message{
 protected:
     std::string text;
 public:
-    explicit Message(const std::string& text);
+    explicit Message(std::string&& text);
 
     json_parse::Object dump();
     static json_parse::Rule getJsonParseRule();

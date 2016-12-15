@@ -20,16 +20,6 @@ namespace command {
 
     using object::Asset;
 
-    template <>
-    Update<Asset>::Update(
-        const std::string& ownerPublicKey,
-        const std::string& name,
-        const unsigned long long& value
-    ):
-        Asset(name,value),
-        ownerPublicKey(ownerPublicKey)
-    {}
-
     using Object = json_parse::Object;
 
     template <>

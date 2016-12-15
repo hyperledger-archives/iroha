@@ -34,15 +34,15 @@ protected:
 public:
 
     Asset(
-        const std::string& domain,
-        const std::string& name,
-        const unsigned long long& value,
-        const unsigned int& precision
+        std::string&& domain,
+        std::string&&  name,
+        unsigned long long&& value,
+        unsigned int&& precision
     );
 
     Asset(
-        const std::string& name,
-        const unsigned long long& value
+        std::string&&  name,
+        unsigned long long&& value
     );
 
     using Rule = json_parse::Rule;

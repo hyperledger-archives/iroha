@@ -35,12 +35,16 @@ class Transfer: protected T {
    std::string receiverPublicKey;
   public:
 
+    template<typename... Args>
     Transfer(
-        std::string senderPubkey,
-        std::string receiverPubkey,
-        std::string name,
-        int value
-    );
+        std::string&& sender,
+        std::string&& receiver,
+        Args&&... args
+    ):
+        senderPublicKey(sender),
+        receiverPublicKey(receiver),
+        T(std::forward<Args>(args)...)
+    {}
 
     std::string getCommandName() const{
         return "Transfer";

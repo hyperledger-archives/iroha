@@ -32,10 +32,10 @@ Asset::Asset(
 {}
 
 Asset::Asset(
-    const std::string& domain,
-    const std::string& name,
-    const unsigned long long& value,
-    const unsigned int& precision
+    std::string&& domain,
+    std::string&&  name,
+    unsigned long long&& value,
+    unsigned int&& precision
 ):
     domain(domain),
     name(name),
@@ -44,8 +44,8 @@ Asset::Asset(
 {}
 
 Asset::Asset(
-    const std::string& name,
-    const unsigned long long& value
+    std::string&& name,
+    unsigned long long&& value
 ):
     domain(""),
     name(name),

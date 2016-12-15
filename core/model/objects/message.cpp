@@ -19,9 +19,9 @@ limitations under the License.
 namespace object {
 
 Message::Message(
-        const std::string& text
+   std::string&& text
 ):
-        text(text)
+   text(text)
 {}
 
 using Rule = json_parse::Rule;

@@ -171,9 +171,9 @@ namespace connection {
                     Add<Asset>
             >
         >>(
-            tx.senderpubkey(),
-            asset.domain(),
-            asset.name(),
+            tx.senderpubkey().c_str(),
+            asset.domain().c_str(),
+            asset.name().c_str(),
             asset.value(),
             asset.precision()
         );
@@ -203,8 +203,9 @@ namespace connection {
                         Update<Asset>
                 >
         >>(
-            tx.senderpubkey(),
-            asset.name(),
+            tx.senderpubkey().c_str(),
+            tx.senderpubkey().c_str(),
+            asset.name().c_str(),
             asset.value()
         );
         for(const auto& esig: event.eventsignatures()){

@@ -85,6 +85,7 @@ int main(int argc, char *argv[]){
             setAwkTimer(1, [&](){
                 auto event = std::make_unique<ConsensusEvent<Transaction<Update<object::Asset>>>>(
                         peer::getMyPublicKey(),
+                        peer::getMyPublicKey(),
                         "AssetName",
                         100
                 );

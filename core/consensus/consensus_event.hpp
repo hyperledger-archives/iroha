@@ -52,32 +52,14 @@ class ConsensusEvent: public T, public Event {
     std::vector<eventSignature> _eventSignatures;
 
 public:
-    explicit ConsensusEvent(
-        const std::string& senderPubkey,
-        const std::string& receiverPubkey,
-        const std::string& name,
-        const int& value
-    );
 
-    explicit ConsensusEvent(
-        const std::string& senderPubkey,
-        const std::string& domain,
-        const std::string& name,
-        const unsigned long long& value,
-        const unsigned int& precision
-    );
+    template<typename... Args>
+    ConsensusEvent(
+        Args&&... args
+    ):
+        T(std::forward<Args>(args)...)
+    {}
 
-    explicit ConsensusEvent(
-        const std::string& senderPubkey,
-        const std::string& ownerPublicKey,
-        const std::string& name
-    );
-
-    explicit ConsensusEvent(
-        const std::string& ownerPublicKey,
-        const std::string& name,
-        const unsigned long long& value
-    );
 
     using Rule = json_parse::Rule;
     using Type = json_parse::Type;

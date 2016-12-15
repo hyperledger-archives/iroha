@@ -63,65 +63,6 @@ namespace event{
         }
     }
 
-
-    template <>
-    ConsensusEvent<Transaction<Transfer<object::Asset>>>::ConsensusEvent(
-        const std::string& senderPubkey,
-        const std::string& receiverPubkey,
-        const std::string& name,
-        const int& value
-    ):
-        Transaction(
-            senderPubkey,
-            receiverPubkey,
-            name,
-            value
-        )
-    {}
-
-    template <>
-    ConsensusEvent<Transaction<Add<object::Asset>>>::ConsensusEvent(
-        const std::string& senderPubkey,
-        const std::string& domain,
-        const std::string& name,
-        const unsigned long long& value,
-        const unsigned int& precision
-    ):
-        Transaction(
-            senderPubkey,
-            domain,
-            name,
-            value,
-            precision
-        )    
-    {}
-
-    template <>
-    ConsensusEvent<Transaction<Add<object::Domain>>>::ConsensusEvent(
-        const std::string& senderPubkey,
-        const std::string& ownerPublicKey,
-        const std::string& name
-    ):
-        Transaction(
-            senderPubkey,
-            ownerPublicKey,
-            name
-        )    
-    {}
-
-    template <>
-    ConsensusEvent<Transaction<Update<object::Asset>>>::ConsensusEvent(
-            const std::string& ownerPublicKey,
-            const std::string& name,
-            const unsigned long long& value
-    ):
-        Transaction(
-            ownerPublicKey,
-            name,
-            value
-        )
-    {}
-
     template <>
     void ConsensusEvent<Transaction<Update<object::Asset>>>::execution(){
         logger::info("execution","update! Asset");

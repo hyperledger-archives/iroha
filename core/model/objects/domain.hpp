@@ -31,8 +31,8 @@ protected:
 public:
 
     explicit Domain(
-        const std::string& ownerPublicKey,
-        const std::string& name
+        std::string&& ownerPublicKey,
+        std::string&& name
     );
 
     explicit Domain(

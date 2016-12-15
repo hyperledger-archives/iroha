@@ -36,14 +36,12 @@ class Add: protected T {
     using Rule = json_parse::Rule;
     using Type = json_parse::Type;
 
-    explicit Add(
-        const std::string& domain,
-        const std::string& name,
-        const unsigned long long& value,
-        const unsigned int& precision
-    );
-
-    explicit Add(const std::string& ownerPublicKey,const std::string& name);
+    template<typename... Args>
+    Add(
+        Args&&... args
+    ):
+        T(std::forward<Args>(args)...)
+    {}
 
     explicit Add(Object obj);
 

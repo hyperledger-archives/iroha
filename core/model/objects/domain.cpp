@@ -30,8 +30,8 @@ Domain::Domain(
 }
 
 Domain::Domain(
-    const std::string& ownerPublicKey,
-    const std::string& name
+    std::string&& ownerPublicKey,
+    std::string&& name
 ):
     ownerPublicKey(ownerPublicKey),
     name(name)
