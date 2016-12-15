@@ -29,6 +29,7 @@ checkout:
 
 dependencies:
   cache_directories:
+    - ~/iroha/core/vendor/
     - /tmp/protobuf
     - /tmp/grpc
   pre:
