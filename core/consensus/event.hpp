@@ -29,7 +29,7 @@ class Event {
 public:
   int order = 0;
   virtual void addSignature(const std::string& publicKey, const std::string& signature) = 0;
-  virtual int getNumValidSignatures() = 0;
+  virtual unsigned int getNumValidSignatures() = 0;
   virtual bool eventSignatureIsEmpty() = 0;
   virtual std::vector<std::tuple<std::string,std::string>> eventSignatures() = 0;
   virtual std::string getHash() = 0;
