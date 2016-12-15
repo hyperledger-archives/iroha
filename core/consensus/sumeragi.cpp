@@ -55,10 +55,10 @@ namespace sumeragi {
 
     namespace detail{
 
-        unsigned int getNumValidSignatures(const std::unique_ptr<Event::ConsensusEvent>& event){
+        unsigned int getNumValidSignatures(const Event::ConsensusEvent& event){
             int sum = 0;
-            for(auto&& esig: event->eventsignatures()){
-                if(signature::verify( esig.signature(), event->transaction().hash(), esig.publickey())){
+            for(auto&& esig: event.eventsignatures()){
+                if(signature::verify( esig.signature(), event.transaction().hash(), esig.publickey())){
                     sum++;
                 }
             }
@@ -66,18 +66,18 @@ namespace sumeragi {
         }
 
         void addSignature(
-            const std::unique_ptr<Event::ConsensusEvent>& event,
+            Event::ConsensusEvent& event,
             const std::string& publicKey,
             const std::string& signature
         ){
             Event::EventSignature sig;
             sig.set_signature(signature);
             sig.set_publickey(publicKey);
-            event->add_eventsignatures()->CopyFrom(sig);
+            event.add_eventsignatures()->CopyFrom(sig);
         }
 
-        bool eventSignatureIsEmpty( const std::unique_ptr<Event::ConsensusEvent>& event) {
-            return event->eventsignatures_size() == 0;
+        bool eventSignatureIsEmpty( const Event::ConsensusEvent& event) {
+            return event.eventsignatures_size() == 0;
         }
 
         void printIsSumeragi(bool isSumeragi){
@@ -208,15 +208,14 @@ namespace sumeragi {
 
         connection::receive([&](
             const std::string& from,
-            std::unique_ptr<
-                Event::ConsensusEvent
-            >&& event
+            Event::ConsensusEvent& event
         ){
             logger::info("sumeragi", "receive!");
-            auto hash = event->transaction().hash();
-            //logger::info("sumeragi", "received message! sig:[" + std::to_string(event->getNumValidSignatures()) +"]");
+            auto hash = event.transaction().hash();
+
+            logger::info("sumeragi", "received message! sig:[" + std::to_string(event.eventsignatures_size()) +"]");
             // WIP currently, unuse hash in event repository,
-            repository::event::add( hash, std::move(event));
+            repository::event::add( hash, event);
         });
 
         logger::info("sumeragi", "initialize numValidatingPeers :" + std::to_string(context->numValidatingPeers));
@@ -238,7 +237,7 @@ namespace sumeragi {
     }
     
 
-    void processTransaction(const std::unique_ptr<Event::ConsensusEvent>& event) {
+    void processTransaction(Event::ConsensusEvent& event) {
 
         logger::info("sumeragi", "processTransaction");
         //if (!transaction_validator::isValid(event->getTx())) {
@@ -247,20 +246,20 @@ namespace sumeragi {
         logger::info("sumeragi", "valied");
         logger::info("sumeragi", "Add my signature...");
 
-        logger::info("sumeragi", "hash:" + event->transaction().hash());
+        logger::info("sumeragi", "hash:" + event.transaction().hash());
         logger::info("sumeragi", "pub:" + peer::getMyPublicKey());
         logger::info("sumeragi", "pro:"+ peer::getPrivateKey());
-        logger::info("sumeragi", "sog:"+  std::string(signature::sign(event->transaction().hash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()));
+        logger::info("sumeragi", "sog:"+  std::string(signature::sign(event.transaction().hash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()));
         
         //detail::printIsSumeragi(context->isSumeragi);
         // Really need? blow "if statement" will be false anytime.
-        detail::addSignature(event, peer::getMyPublicKey(), signature::sign(event->transaction().hash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str());
+        detail::addSignature(event, peer::getMyPublicKey(), signature::sign(event.transaction().hash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str());
 
         if (detail::eventSignatureIsEmpty(event) && context->isSumeragi) {
             logger::info("sumeragi", "signatures.empty() isSumragi");
             // Determine the order for processing this event
-            event->set_order( getNextOrder());
-            logger::info("sumeragi", "new  order:" + std::to_string(event->order()));
+            event.set_order( getNextOrder());
+            logger::info("sumeragi", "new  order:" + std::to_string(event.order()));
 
         } else if (!detail::eventSignatureIsEmpty(event)) {
             // Check if we have at least 2f+1 signatures needed for Byzantine fault tolerance
@@ -272,7 +271,7 @@ namespace sumeragi {
                 logger::explore("sumeragi", "|Would you agree with this?|");
                 logger::explore("sumeragi", "+~~~~~~~~~~~~~~~~~~~~~~~~~~+");
                 logger::explore("sumeragi", "\033[93m0================================================================0\033[0m");
-                logger::explore("sumeragi", "\033[93m0\033[1m"+ event->transaction().hash() +"0\033[0m");
+                logger::explore("sumeragi", "\033[93m0\033[1m"+ event.transaction().hash() +"0\033[0m");
                 logger::explore("sumeragi", "\033[93m0================================================================0\033[0m");
 
                 detail::printJudge( detail::getNumValidSignatures(event), context->numValidatingPeers, context->maxFaulty*2 + 1);
@@ -299,7 +298,7 @@ namespace sumeragi {
                 // event->execution();
             } else {
                 // This is a new event, so we should verify, sign, and broadcast it
-                detail::addSignature( event, peer::getMyPublicKey(), signature::sign( event->transaction().hash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str());
+                detail::addSignature( event, peer::getMyPublicKey(), signature::sign( event.transaction().hash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str());
 
                 logger::info("sumeragi", "tail pubkey is "+context->validatingPeers.at(context->proxyTailNdx)->getPublicKey());
                 logger::info("sumeragi", "tail is "+std::to_string(context->proxyTailNdx));
@@ -308,14 +307,14 @@ namespace sumeragi {
                 if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() == peer::getMyPublicKey()) {
                     logger::info("sumeragi", "I will send event to "+context->validatingPeers.at(context->proxyTailNdx)->getIP());
                     connection::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), std::move(event)); // Think In Process
-                } else {           
+                } else {
                     logger::info("sumeragi", "Send All! sig:[" + std::to_string( detail::getNumValidSignatures(event)) +"]");
                     connection::sendAll(std::move(event)); // TODO: Think In Process
                 }
 
                 setAwkTimer(3, [&](){
                 //setAwkTimer(3000, [&](){
-                    if (!merkle_transaction_repository::leafExists( event->transaction().hash())) {
+                    if (!merkle_transaction_repository::leafExists( event.transaction().hash())) {
                         panic(event);
                     }
                 });
@@ -341,7 +340,7 @@ namespace sumeragi {
     * | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
     * |---|  |---|  |---|  |---|  |---|  |---|.
     */
-    void panic(const std::unique_ptr<Event::ConsensusEvent>& event) {
+    void panic(const Event::ConsensusEvent& event) {
         context->panicCount++; // TODO: reset this later
         unsigned long broadcastStart = 2 * context->maxFaulty + 1 + context->maxFaulty * context->panicCount;
         unsigned long broadcastEnd = broadcastStart + context->maxFaulty;
@@ -431,14 +430,14 @@ namespace sumeragi {
                 logger::info("sumeragi", "sorted " + std::to_string(events.size()));
                 for (auto& event : events) {
 
-                    logger::info("sumeragi", "evens order:" + std::to_string(event->order()));
+                    logger::info("sumeragi", "evens order:" + std::to_string(event.order()));
                     /*
                     if (!transaction_validator::isValid(event)) {
                         continue;
                     }
                     */
                     // Process transaction
-                    std::thread([&event]{ processTransaction(std::move(event)); }).join();
+                    std::thread([&event]{ processTransaction(event); }).join();
                 }
             }
         }

@@ -29,7 +29,7 @@ limitations under the License.
 namespace merkle_transaction_repository {
 
     //TODO: change bool to throw an exception instead
-    bool commit(const std::unique_ptr<Event::ConsensusEvent>& event) {
+    bool commit(const Event::ConsensusEvent& event) {
         std::vector<std::tuple<std::string, std::string>> batchCommit
           = {
                 std::tuple<std::string, std::string>("last_insertion", pevent->transaction().hash()),
@@ -50,7 +50,7 @@ namespace merkle_transaction_repository {
     }
 
 
-    std::string calculateNewRootHash(const std::unique_ptr<Event::ConsensusEvent>& event,
+    std::string calculateNewRootHash(const Event::ConsensusEvent& event,
                                      std::vector<std::tuple<std::string, std::string>> &batchCommit) {
 
         std::unique_ptr<std::string> lastInsertion = repository::world_state_repository::find("last_insertion");

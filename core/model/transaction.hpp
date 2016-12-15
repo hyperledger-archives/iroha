@@ -67,8 +67,7 @@ public:
     }
 
     auto getHash() {
-        throw "No implements";
-        return "";//hash::sha3_256_hex();
+        return hash::sha3_256_hex( T::getCommandName() + std::to_string(timestamp) + senderPubkey);
     }
 
     std::vector<txSignature> getTxSignatures(){

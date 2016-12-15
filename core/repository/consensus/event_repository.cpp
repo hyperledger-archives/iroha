@@ -27,12 +27,12 @@ namespace repository {
     namespace event {
 
         static std::vector<
-            std::tuple<std::string,std::unique_ptr<Event::ConsensusEvent>>
+            std::tuple<std::string,Event::ConsensusEvent>
         > events;
 
         bool add(
             const std::string &hash,
-            std::unique_ptr<Event::ConsensusEvent> event
+            const Event::ConsensusEvent& event
         ){
             logger::debug("repo::event", "event::add");
             std::lock_guard<std::mutex> lock(m);
@@ -43,7 +43,7 @@ namespace repository {
         
         bool update(
             const std::string &hash,
-            std::unique_ptr<Event::ConsensusEvent> event
+            const Event::ConsensusEvent& event
         );
         
         bool addSignature(
@@ -71,12 +71,10 @@ namespace repository {
         }
 
         std::vector<
-            std::unique_ptr<Event::ConsensusEvent>
+            Event::ConsensusEvent
         > findAll(){
             std::lock_guard<std::mutex> lock(m);
-            std::vector<
-                std::unique_ptr<Event::ConsensusEvent>
-            > res;
+            std::vector<Event::ConsensusEvent> res;
             for(auto&& e : events){
                 res.push_back(std::move(std::get<1>(e)));
             }
@@ -85,9 +83,9 @@ namespace repository {
             return res;
         };
 
-        std::unique_ptr<Event::ConsensusEvent>& findNext();
+        Event::ConsensusEvent findNext();
 
-        std::unique_ptr<Event::ConsensusEvent>& find(std::string hash);
+        Event::ConsensusEvent find(std::string hash);
 
     };
 };

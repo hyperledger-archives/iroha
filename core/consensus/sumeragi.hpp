@@ -37,12 +37,12 @@ namespace sumeragi {
     void loop();
 
     void getNextOrder(
-        const std::unique_ptr<Event::ConsensusEvent> event
+        const Event::ConsensusEvent& event
     );
 
-    void processTransaction(const std::unique_ptr<Event::ConsensusEvent>& event);
+    void processTransaction(Event::ConsensusEvent& event);
 
-    void panic(const std::unique_ptr<Event::ConsensusEvent>& event);
+    void panic(const Event::ConsensusEvent& event);
     void setAwkTimer(const int sleepMillisecs, const std::function<void(void)> action);
     void determineConsensusOrder(/*std::vector<double> trustVector*/);
     

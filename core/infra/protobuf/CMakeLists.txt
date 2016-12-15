@@ -16,6 +16,7 @@ target_link_libraries(event_with_grpc
     protobuf
     pthread
     dl
+    hash
 )
 
 ADD_LIBRARY(convertor STATIC

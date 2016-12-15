@@ -9,4 +9,5 @@ target_link_libraries(transaction
   commands
   objects
   datetime
+  hash
 )

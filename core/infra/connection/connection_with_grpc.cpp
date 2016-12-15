@@ -55,108 +55,20 @@ namespace connection {
     std::vector<
         std::function<void(
            const std::string& from,
-           std::unique_ptr<Event::ConsensusEvent> message)
+           Event::ConsensusEvent& message)
         >
     > receivers;
-
-    /*
-    template<typename T>
-    Event::ConsensusEvent encodeConsensusEvent(std::unique_ptr<T>&& event){
-        logger::error("connection","No implements error :"+ std::string(typeid(T).name()));
-        throw "No implements";
-    }
-
-    template<>
-    Event::ConsensusEvent encodeConsensusEvent(
-        std::unique_ptr<
-            ConsensusEvent<
-                Transaction<
-                    Add<Asset>
-                >
-            >
-        >&& event
-    ) {
-        /*
-        Event::Asset asset;
-        auto txObj = event->dump().dictSub["transaction"];
-        auto assetObj = txObj.dictSub["command"].dictSub["object"];
-
-        asset.set_domain(assetObj.dictSub["domain"].str);
-        asset.set_name(assetObj.dictSub["name"].str);
-        asset.set_value(static_cast<google::protobuf::uint64>(assetObj.dictSub["value"].integer));
-        asset.set_precision(static_cast<google::protobuf::uint64>(assetObj.dictSub["precision"].integer));
-
-        Event::Transaction tx;
-        tx.set_type(event->getCommandName());
-        tx.set_senderpubkey(event->dump().dictSub["transaction"].dictSub["senderPublicKey"].str);
-        tx.mutable_asset()->CopyFrom(asset);
-
-        Event::ConsensusEvent consensusEvent;
-        consensusEvent.mutable_transaction()->CopyFrom(tx);
-
-        if(!event->eventSignatures().empty()) {
-            for (auto &esig: event->eventSignatures()) {
-                Event::EventSignature eventSig;
-                eventSig.set_publickey(std::get<0>(esig));
-                eventSig.set_signature(std::get<1>(esig));
-                consensusEvent.add_eventsignatures()->CopyFrom(eventSig);
-            }
-        }
-        Event::ConsensusEvent consensusEvent;
-        return consensusEvent;
-    }
-
-    template<typename T>
-    T decodeConsensusEvent(const Event::ConsensusEvent& event){
-        logger::error("connection","No implements error :"+ std::string(typeid(T).name()));
-        throw "No implements";
-    }
-    template<>
-    std::unique_ptr<
-        ConsensusEvent<
-            Transaction<
-                Add<Asset>
-            >
-        >
-    > decodeConsensusEvent(
-        const Event::ConsensusEvent& event
-    ) {
-        auto tx = event.transaction();
-        auto asset = tx.asset();
-
-        auto consensusEvent =  std::make_unique<ConsensusEvent<
-            Transaction<
-                    Add<Asset>
-            >
-        >>(
-            tx.senderpubkey().c_str(),
-            asset.domain().c_str(),
-            asset.name().c_str(),
-            asset.value(),
-            asset.precision()
-        );
-        for(const auto& esig: event.eventsignatures()){
-            consensusEvent->addSignature(esig.publickey(), esig.signature());
-        }
-        for(const auto& txsig: event.transaction().txsignatures()){
-            consensusEvent->addTxSignature(txsig.publickey(), txsig.signature());
-        }
-        return consensusEvent;
-    }
-
-    */
 
     class IrohaConnectionClient {
         public:
         explicit IrohaConnectionClient(std::shared_ptr<Channel> channel)
             : stub_(IrohaConnection::NewStub(channel)) {}
 
-        std::string Operation(const std::unique_ptr<Event::ConsensusEvent>& event) {
+        std::string Operation(const Event::ConsensusEvent& consensusEvent) {
             Event::StatusResponse response;
             logger::info("connection","Operation");
-
-            // ToDo refactoring it's only add asset. separate funciton event -> some transaction ... = _ =
-            Event::ConsensusEvent consensusEvent;// = event->de
+            logger::info("connection","size: " + std::to_string(consensusEvent.eventsignatures_size()));
+            logger::info("connection","name: " + consensusEvent.transaction().asset().name());
 
             ClientContext context;
 
@@ -181,11 +93,14 @@ namespace connection {
             const Event::ConsensusEvent* pevent,
             Event::StatusResponse* response
         ) override {
-            std::unique_ptr<Event::ConsensusEvent> event;
-            event->CopyFrom(pevent->default_instance());
+            Event::ConsensusEvent event;
+            event.CopyFrom(pevent->default_instance());
+            event.mutable_eventsignatures()->CopyFrom(pevent->eventsignatures());
+            event.mutable_transaction()->CopyFrom(pevent->transaction());
+            logger::info("connection","size: " + std::to_string(event.eventsignatures_size()));
             auto dummy = "";
             for(auto& f: receivers){
-                f( dummy, std::move(event));
+                f( dummy, event);
             }
             response->set_value("OK");
             return Status::OK;
@@ -201,15 +116,18 @@ namespace connection {
         builder.RegisterService(&service);
     }
 
-    bool send(const std::string& ip,
-        const std::unique_ptr<Event::ConsensusEvent>& event
+    bool send(
+        const std::string& ip,
+        const Event::ConsensusEvent& event
     ) {
+        logger::info("connection", "start send");
         if(find( receiver_ips.begin(), receiver_ips.end() , ip) != receiver_ips.end()){
             logger::info("connection", "create client");
             IrohaConnectionClient client(grpc::CreateChannel(
                 ip + ":50051", grpc::InsecureChannelCredentials())
             );
             logger::info("connection", "invoke client Operation");
+            logger::info("connection", "size " + std::to_string(event.eventsignatures_size()));
             std::string reply = client.Operation(event);
             return true;
         }else{
@@ -219,9 +137,7 @@ namespace connection {
     }
 
     bool sendAll(
-        const std::unique_ptr<
-            Event::ConsensusEvent
-        >& event
+        const Event::ConsensusEvent& event
     ) {
         // WIP
         for(auto& ip : receiver_ips){
@@ -234,7 +150,7 @@ namespace connection {
 
     bool receive(const std::function<void(
         const std::string&,
-        std::unique_ptr<Event::ConsensusEvent>)>& callback) {
+        Event::ConsensusEvent&)>& callback) {
         receivers.push_back(callback);
         return true;
     }

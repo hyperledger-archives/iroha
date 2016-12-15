@@ -37,25 +37,17 @@ namespace connection {
 
     bool send(
         const std::string& ip,
-        const std::unique_ptr<
-            Event::ConsensusEvent
-        >& msg);
+        const Event::ConsensusEvent& msg)
+    ;
 
     bool sendAll(
-        const std::unique_ptr<
-            Event::ConsensusEvent
-        >& msg);
-
-    bool send(
-        const std::string& to,
-        const std::unique_ptr<
-            Event::ConsensusEvent
-        >& message);
+        const Event::ConsensusEvent& msg
+    );
 
     bool receive(const std::function<void(
         const std::string&,
-        std::unique_ptr<Event::ConsensusEvent>)>& callback
-    );
+        Event::ConsensusEvent&)
+    >& callback);
 
 
     void addSubscriber(std::string ip);

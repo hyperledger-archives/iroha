@@ -29,9 +29,9 @@ namespace repository{
 
     namespace event {
 
-        bool add(const std::string &hash,std::unique_ptr<Event::ConsensusEvent> event);
+        bool add(const std::string &hash,const Event::ConsensusEvent& event);
  
-        bool update(const std::string &hash, const std::unique_ptr<Event::ConsensusEvent> &consensusEvent);
+        bool update(const std::string &hash, const Event::ConsensusEvent& consensusEvent);
 
         bool remove(const std::string &hash);
 
@@ -44,12 +44,12 @@ namespace repository{
         bool empty();
 
         std::vector<
-            std::unique_ptr<Event::ConsensusEvent>
+            Event::ConsensusEvent
         > findAll();
 
-        std::unique_ptr<Event::ConsensusEvent>& findNext();
+        Event::ConsensusEvent findNext();
 
-        std::unique_ptr<Event::ConsensusEvent>& find(std::string hash);
+        Event::ConsensusEvent find(std::string hash);
     };
 };
 #endif  // CORE_REPOSITORY_UNCONFIRMEDTRANSACTIONREPOSITORY_HPP_

@@ -29,6 +29,7 @@ namespace convertor{
             auto asset = encodeObject(static_cast<T>(aTx));
             tx.set_type("Add");
             tx.set_senderpubkey(aTx.senderPubkey);
+            tx.set_hash(aTx.getHash());
             tx.mutable_asset()->CopyFrom(encodeObject(static_cast<T>(aTx)));
 
             return tx;
@@ -40,6 +41,7 @@ namespace convertor{
             tx.set_type("Transfer");
             tx.set_senderpubkey(aTx.senderPublicKey);
             tx.set_receivepubkey(aTx.receiverPublicKey);
+            tx.set_hash(aTx.getHash());
             tx.mutable_asset()->CopyFrom(encodeObject(static_cast<T>(aTx)));
             return tx;
         }
@@ -49,6 +51,7 @@ namespace convertor{
             Event::Transaction tx;
             tx.set_type("Update");
             tx.set_senderpubkey(aTx.ownerPublicKey);
+            tx.set_hash(aTx.getHash());
             tx.mutable_asset()->CopyFrom(encodeObject(static_cast<T>(aTx)));
             return tx;
         }
