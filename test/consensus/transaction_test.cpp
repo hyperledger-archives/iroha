@@ -26,8 +26,6 @@ limitations under the License.
 #include <memory>
 #include <thread>
 
-#include "../../core/service/json_parse_with_json_nlohman.hpp"
-
 #include "../../core/service/peer_service.hpp"
 #include "../../core/crypto/hash.hpp"
 
@@ -66,10 +64,6 @@ int main(){
                     peer::getMyPublicKey(),
                     signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
             );
-            auto text = json_parse_with_json_nlohman::parser::dump(event->dump());
-            std::cout << text << std::endl;
-            auto ex = json_parse_with_json_nlohman::parser::load<ConsensusEvent<Transaction<Transfer<object::Asset>>>>(text);
-            std::cout << json_parse_with_json_nlohman::parser::dump(ex->dump()) << std::endl;
 
         });
     }

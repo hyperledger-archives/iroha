@@ -28,8 +28,6 @@ namespace repository{
 
     namespace event {
 
-        using Object = json_parse::Object;
-
         bool add(const std::string &hash,std::unique_ptr<::event::Event> event);
  
         bool update(const std::string &hash, const std::unique_ptr<::event::Event> &consensusEvent);

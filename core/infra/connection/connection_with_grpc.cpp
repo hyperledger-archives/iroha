@@ -15,13 +15,8 @@ limitations under the License.
 */
 
 #include "../../consensus/connection/connection.hpp"
-
 #include "../../util/logger.hpp"
 #include "../../service/peer_service.hpp"
-
-#include "../../service/json_parse_with_json_nlohman.hpp"
-#include "../../service/json_parse.hpp"
-#include "../../service/json_parse.hpp"
 
 #include <grpc++/grpc++.h>
 
@@ -80,6 +75,7 @@ namespace connection {
             >
         >&& event
     ) {
+        /*
         connection_object::Asset asset;
         auto txObj = event->dump().dictSub["transaction"];
         auto assetObj = txObj.dictSub["command"].dictSub["object"];
@@ -105,48 +101,10 @@ namespace connection {
                 consensusEvent.add_eventsignatures()->CopyFrom(eventSig);
             }
         }
-
-        return consensusEvent;
-    }
-    template<>
-    connection_object::ConsensusEvent encodeConsensusEvent(
-            std::unique_ptr<
-                    ConsensusEvent<
-                            Transaction<
-                                    Update<Asset>
-                            >
-                    >
-            >&& event
-    ) {
-        connection_object::Asset asset;
-        auto txObj = event->dump().dictSub["transaction"];
-        auto assetObj = txObj.dictSub["command"].dictSub["object"];
-
-        asset.set_name(assetObj.dictSub["name"].str);
-        asset.set_value(static_cast<google::protobuf::uint64>(assetObj.dictSub["value"].integer));
-
-        connection_object::Transaction tx;
-        tx.set_type(event->getCommandName());
-        tx.set_senderpubkey(event->dump().dictSub["transaction"].dictSub["owner"].str);
-        tx.mutable_asset()->CopyFrom(asset);
-
+        */
         connection_object::ConsensusEvent consensusEvent;
-        consensusEvent.mutable_transaction()->CopyFrom(tx);
-
-        if(!event->eventSignatures().empty()) {
-            for (auto &esig: event->eventSignatures()) {
-                connection_object::EventSignature eventSig;
-                eventSig.set_publickey(std::get<0>(esig));
-                eventSig.set_signature(std::get<1>(esig));
-                consensusEvent.add_eventsignatures()->CopyFrom(eventSig);
-            }
-        }
-
         return consensusEvent;
     }
-
-
-
 
     template<typename T>
     T decodeConsensusEvent(const connection_object::ConsensusEvent& event){
@@ -185,41 +143,6 @@ namespace connection {
         }
         return consensusEvent;
     }
-    template<>
-    std::unique_ptr<
-            ConsensusEvent<
-                    Transaction<
-                            Update<Asset>
-                    >
-            >
-    > decodeConsensusEvent(
-            const connection_object::ConsensusEvent& event
-    ) {
-        auto tx = event.transaction();
-        auto asset = tx.asset();
-
-        auto consensusEvent =  std::make_unique<ConsensusEvent<
-                Transaction<
-                        Update<Asset>
-                >
-        >>(
-            tx.senderpubkey().c_str(),
-            tx.senderpubkey().c_str(),
-            asset.name().c_str(),
-            asset.value()
-        );
-        for(const auto& esig: event.eventsignatures()){
-            consensusEvent->addSignature(esig.publickey(), esig.signature());
-        }
-        for(const auto& txsig: event.transaction().txsignatures()){
-            consensusEvent->addTxSignature(txsig.publickey(), txsig.signature());
-        }
-        return consensusEvent;
-    }
-
-
-
-
 
     class IrohaConnectionClient {
         public:
@@ -229,16 +152,9 @@ namespace connection {
         std::string Operation(const std::unique_ptr<event::Event>& event) {
             connection_object::StatusResponse response;
             logger::info("connection","Operation");
-            logger::info("connection",json_parse_with_json_nlohman::parser::dump(event->dump()));
+
             // ToDo refactoring it's only add asset. separate funciton event -> some transaction ... = _ =
-            connection_object::ConsensusEvent consensusEvent = encodeConsensusEvent(
-                json_parse_with_json_nlohman::parser::load<
-                    ConsensusEvent<
-                        Transaction<
-                           Update <object::Asset>
-                        >
-                    >
-             >(json_parse_with_json_nlohman::parser::dump(event->dump())));
+            connection_object::ConsensusEvent consensusEvent; // = encodeConsensusEvent();
 
             ClientContext context;
 

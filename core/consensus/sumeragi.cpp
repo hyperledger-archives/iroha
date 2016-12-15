@@ -32,8 +32,6 @@ limitations under the License.
 #include "../model/objects/asset.hpp"
 #include "../model/objects/domain.hpp"
 #include "../model/commands/transfer.hpp"
-#include "../service/json_parse_with_json_nlohman.hpp"
-#include "../service/json_parse.hpp"
 
 #include "../repository/domain/account_repository.hpp"
 
@@ -50,7 +48,6 @@ limitations under the License.
 */
 namespace sumeragi {
 
-    using Object = json_parse::Object;
     using event::ConsensusEvent;
     using transaction::Transaction;
     using command::Transfer;
@@ -409,11 +406,11 @@ namespace sumeragi {
                 for (auto& event : events) {
 
                     logger::info("sumeragi", "evens order:" + std::to_string(event->order));
-
+                    /*
                     if (!transaction_validator::isValid(event)) {
                         continue;
                     }
-
+                    */
                     // Process transaction
                     std::thread([&event]{ processTransaction(std::move(event)); }).join();
                 }

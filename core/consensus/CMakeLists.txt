@@ -4,7 +4,6 @@ ADD_LIBRARY(sumeragi STATIC
   sumeragi.cpp
 )
 target_link_libraries(sumeragi
-  json_parse_with_nlohman
   peer_service_with_json
   connection_with_grpc
   signature

@@ -44,5 +44,4 @@ target_link_libraries(connection_with_grpc
   pthread
   dl
   logger
-  json_parse_with_nlohman
 )

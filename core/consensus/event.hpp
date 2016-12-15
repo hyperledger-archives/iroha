@@ -21,8 +21,6 @@ limitations under the License.
 #include <tuple>
 #include <vector>
 
-#include "../service/json_parse.hpp"
-
 namespace event{
 
 class Event {
@@ -33,7 +31,6 @@ public:
   virtual bool eventSignatureIsEmpty() = 0;
   virtual std::vector<std::tuple<std::string,std::string>> eventSignatures() = 0;
   virtual std::string getHash() = 0;
-  virtual json_parse::Object dump() = 0;
   virtual void execution() = 0;
 };
 

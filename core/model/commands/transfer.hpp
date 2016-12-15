@@ -49,7 +49,9 @@ namespace command {
             return "Transfer";
         }
 
-        void execution();
+        void execution(){
+
+        }
 
     };  // namespace command
 };

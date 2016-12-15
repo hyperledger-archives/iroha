@@ -45,7 +45,6 @@ target_link_libraries(iroha-main
   sumeragi
   logger
   http_server_with_cappuccino
-  #connection_with_aeron
   connection_with_grpc
   peer_service_with_json
   pthread

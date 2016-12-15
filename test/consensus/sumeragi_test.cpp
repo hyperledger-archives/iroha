@@ -26,8 +26,6 @@ limitations under the License.
 #include <memory>
 #include <thread>
 
-#include "../../core/service/json_parse_with_json_nlohman.hpp"
-
 #include "../../core/service/peer_service.hpp"
 #include "../../core/util/logger.hpp"
 #include "../../core/crypto/hash.hpp"

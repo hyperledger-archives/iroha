@@ -17,6 +17,8 @@ limitations under the License.
 #ifndef CORE_VALIDATION_TRANSACTIONVALIDATOR_HPP_
 #define CORE_VALIDATION_TRANSACTIONVALIDATOR_HPP_
 
+#include "../consensus/consensus_event.hpp"
+
 #include "../model/transaction.hpp"
 #include "../model/commands/add.hpp"
 #include "../model/commands/transfer.hpp"
