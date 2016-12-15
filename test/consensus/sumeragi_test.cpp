@@ -91,7 +91,7 @@ int main(int argc, char *argv[]){
                         peer::getMyPublicKey(),
                         signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
                 );
-                connection::send(peer::getMyIp(), std::move(event));
+                //connection::send(peer::getMyIp(), std::move(event));
             });
         }
     }else{

@@ -20,7 +20,7 @@ limitations under the License.
 
 #include <grpc++/grpc++.h>
 
-#include "connection.grpc.pb.h"
+#include "../protobuf/event.grpc.pb.h"
 
 #include <string>
 #include <vector>
@@ -34,7 +34,7 @@ using grpc::ServerContext;
 using grpc::ClientContext;
 using grpc::Status;
 
-using connection_object::IrohaConnection;
+using Event::IrohaConnection;
 
 template<typename T>
 using ConsensusEvent = event::ConsensusEvent<T>;
@@ -54,19 +54,20 @@ namespace connection {
     std::vector<std::string> receiver_ips;
     std::vector<
         std::function<void(
-            std::string from,
-            std::unique_ptr<::event::Event> message)
+           const std::string& from,
+           std::unique_ptr<Event::ConsensusEvent> message)
         >
     > receivers;
 
+    /*
     template<typename T>
-    connection_object::ConsensusEvent encodeConsensusEvent(std::unique_ptr<T>&& event){
+    Event::ConsensusEvent encodeConsensusEvent(std::unique_ptr<T>&& event){
         logger::error("connection","No implements error :"+ std::string(typeid(T).name()));
         throw "No implements";
     }
 
     template<>
-    connection_object::ConsensusEvent encodeConsensusEvent(
+    Event::ConsensusEvent encodeConsensusEvent(
         std::unique_ptr<
             ConsensusEvent<
                 Transaction<
@@ -76,7 +77,7 @@ namespace connection {
         >&& event
     ) {
         /*
-        connection_object::Asset asset;
+        Event::Asset asset;
         auto txObj = event->dump().dictSub["transaction"];
         auto assetObj = txObj.dictSub["command"].dictSub["object"];
 
@@ -85,29 +86,28 @@ namespace connection {
         asset.set_value(static_cast<google::protobuf::uint64>(assetObj.dictSub["value"].integer));
         asset.set_precision(static_cast<google::protobuf::uint64>(assetObj.dictSub["precision"].integer));
 
-        connection_object::Transaction tx;
+        Event::Transaction tx;
         tx.set_type(event->getCommandName());
         tx.set_senderpubkey(event->dump().dictSub["transaction"].dictSub["senderPublicKey"].str);
         tx.mutable_asset()->CopyFrom(asset);
 
-        connection_object::ConsensusEvent consensusEvent;
+        Event::ConsensusEvent consensusEvent;
         consensusEvent.mutable_transaction()->CopyFrom(tx);
 
         if(!event->eventSignatures().empty()) {
             for (auto &esig: event->eventSignatures()) {
-                connection_object::EventSignature eventSig;
+                Event::EventSignature eventSig;
                 eventSig.set_publickey(std::get<0>(esig));
                 eventSig.set_signature(std::get<1>(esig));
                 consensusEvent.add_eventsignatures()->CopyFrom(eventSig);
             }
         }
-        */
-        connection_object::ConsensusEvent consensusEvent;
+        Event::ConsensusEvent consensusEvent;
         return consensusEvent;
     }
 
     template<typename T>
-    T decodeConsensusEvent(const connection_object::ConsensusEvent& event){
+    T decodeConsensusEvent(const Event::ConsensusEvent& event){
         logger::error("connection","No implements error :"+ std::string(typeid(T).name()));
         throw "No implements";
     }
@@ -119,7 +119,7 @@ namespace connection {
             >
         >
     > decodeConsensusEvent(
-        const connection_object::ConsensusEvent& event
+        const Event::ConsensusEvent& event
     ) {
         auto tx = event.transaction();
         auto asset = tx.asset();
@@ -144,17 +144,19 @@ namespace connection {
         return consensusEvent;
     }
 
+    */
+
     class IrohaConnectionClient {
         public:
         explicit IrohaConnectionClient(std::shared_ptr<Channel> channel)
             : stub_(IrohaConnection::NewStub(channel)) {}
 
-        std::string Operation(const std::unique_ptr<event::Event>& event) {
-            connection_object::StatusResponse response;
+        std::string Operation(const std::unique_ptr<Event::ConsensusEvent>& event) {
+            Event::StatusResponse response;
             logger::info("connection","Operation");
 
             // ToDo refactoring it's only add asset. separate funciton event -> some transaction ... = _ =
-            connection_object::ConsensusEvent consensusEvent; // = encodeConsensusEvent();
+            Event::ConsensusEvent consensusEvent;// = event->de
 
             ClientContext context;
 
@@ -176,17 +178,14 @@ namespace connection {
     class IrohaConnectionServiceImpl final : public IrohaConnection::Service {
         public:
         Status Operation(ServerContext* context,
-            const connection_object::ConsensusEvent* event,
-            connection_object::StatusResponse* response
+            const Event::ConsensusEvent* pevent,
+            Event::StatusResponse* response
         ) override {
+            std::unique_ptr<Event::ConsensusEvent> event;
+            event->CopyFrom(pevent->default_instance());
+            auto dummy = "";
             for(auto& f: receivers){
-                f("from",
-                  std::move(decodeConsensusEvent<std::unique_ptr<ConsensusEvent<
-                    Transaction<
-                        Update <Asset>
-                    >
-                  >>>(*event))
-                );
+                f( dummy, std::move(event));
             }
             response->set_value("OK");
             return Status::OK;
@@ -203,7 +202,7 @@ namespace connection {
     }
 
     bool send(const std::string& ip,
-        const std::unique_ptr<event::Event>& event
+        const std::unique_ptr<Event::ConsensusEvent>& event
     ) {
         if(find( receiver_ips.begin(), receiver_ips.end() , ip) != receiver_ips.end()){
             logger::info("connection", "create client");
@@ -221,11 +220,10 @@ namespace connection {
 
     bool sendAll(
         const std::unique_ptr<
-            event::Event
+            Event::ConsensusEvent
         >& event
     ) {
         // WIP
-        logger::info("connection", "send mesage:"+ event->getHash());
         for(auto& ip : receiver_ips){
             if( ip != peer::getMyIp()){
                 send( ip, event);
@@ -236,9 +234,7 @@ namespace connection {
 
     bool receive(const std::function<void(
         const std::string&,
-        std::unique_ptr<
-            event::Event
-        >&&)>& callback) {
+        std::unique_ptr<Event::ConsensusEvent>)>& callback) {
         receivers.push_back(callback);
         return true;
     }

@@ -4,6 +4,7 @@ add_library(event_repository STATIC
     event_repository.cpp
 )
 target_link_libraries(event_repository
+    event_with_grpc
     logger
 )
 #add_library(merkle_transaction_repository STATIC

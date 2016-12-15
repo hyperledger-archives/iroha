@@ -22,7 +22,6 @@ limitations under the License.
 #include <memory>
 #include <unordered_map>
 #include "../../consensus/consensus_event.hpp"
-#include "../../consensus/event.hpp"
 
 namespace merkle_transaction_repository {
 
@@ -60,7 +59,7 @@ struct MerkleNode {
 };
 
 //TODO: change bool to throw an exception instead
-bool commit(const std::unique_ptr<event::Event>& event){
+bool commit(const std::unique_ptr<Event::ConsensusEvent>& event){
     return false; // TODO: fill this function
 };
 
@@ -74,7 +73,7 @@ std::string getLeaf(const std::string& hash){
 
 template <typename T>
 std::string calculateNewRoot(
-    const std::unique_ptr<event::Event>& event,
+    const std::unique_ptr<Event::ConsensusEvent>& event,
     std::vector<std::tuple<std::string,std::string>> &batchCommit
 );
 

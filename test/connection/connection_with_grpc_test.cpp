@@ -26,6 +26,8 @@ limitations under the License.
 #include "../../core/model/transaction.hpp"
 #include "../../core/service/peer_service.hpp"
 
+#include "../../core/infra/protobuf/event.grpc.pb.h"
+
 template<typename T>
 using Transaction = transaction::Transaction<T>;
 template<typename T>
@@ -56,12 +58,11 @@ int main(int argc, char* argv[]){
                     peer::getMyPublicKey(),
                     signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
             );
-            connection::sendAll(std::move(event));
+            //connection::sendAll(std::move(event));
         }
     }else if(std::string(argv[1]) == "public"){
-
-        connection::receive([](std::string from,std::unique_ptr<event::Event> event){
-            std::cout <<" receive : !" << event->getHash() <<" "<< event->getNumValidSignatures()  << "\n";
+        connection::receive([](const std::string& from,std::unique_ptr<Event::ConsensusEvent> event){
+            //std::cout <<" receive : !" << event->g <<" "<< event->getNumValidSignatures()  << "\n";
         });
         connection::run();
     }

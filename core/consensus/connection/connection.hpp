@@ -22,17 +22,8 @@ limitations under the License.
 #include <memory>
 #include <functional>
 
-#include "../../model/commands/add.hpp"
-#include "../../model/commands/transfer.hpp"
-
-#include "../../model/objects/asset.hpp"
-#include "../../model/objects/domain.hpp"
-#include "../../model/objects/message.hpp"
-
-#include "../../model/transaction.hpp"
-
+#include "../../infra/protobuf/event.grpc.pb.h"
 #include "../consensus_event.hpp"
-#include "../event.hpp"
 
 namespace connection {
 
@@ -47,24 +38,25 @@ namespace connection {
     bool send(
         const std::string& ip,
         const std::unique_ptr<
-            ::event::Event
+            Event::ConsensusEvent
         >& msg);
 
     bool sendAll(
         const std::unique_ptr<
-            ::event::Event
+            Event::ConsensusEvent
         >& msg);
 
     bool send(
         const std::string& to,
         const std::unique_ptr<
-            ::event::Event
+            Event::ConsensusEvent
         >& message);
 
     bool receive(const std::function<void(
-            const std::string& from,
-            std::unique_ptr<::event::Event>&& message)
-        >& callback);
+        const std::string&,
+        std::unique_ptr<Event::ConsensusEvent>)>& callback
+    );
+
 
     void addSubscriber(std::string ip);
 

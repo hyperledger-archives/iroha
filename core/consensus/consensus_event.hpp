@@ -24,8 +24,6 @@ limitations under the License.
 #include <unordered_map>
 #include <algorithm>
 
-#include "event.hpp"
-
 #include "../crypto/signature.hpp"
 #include "../util/logger.hpp"
 #include "../model/transaction.hpp"
@@ -33,7 +31,7 @@ limitations under the License.
 namespace event {
 
 template <typename T>
-class ConsensusEvent: public T, public Event {
+class ConsensusEvent: public T {
 
     struct eventSignature{
         std::string publicKey;

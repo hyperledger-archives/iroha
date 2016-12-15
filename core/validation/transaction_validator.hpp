@@ -18,14 +18,7 @@ limitations under the License.
 #define CORE_VALIDATION_TRANSACTIONVALIDATOR_HPP_
 
 #include "../consensus/consensus_event.hpp"
-
-#include "../model/transaction.hpp"
-#include "../model/commands/add.hpp"
-#include "../model/commands/transfer.hpp"
-
-#include "../model/objects/domain.hpp"
-#include "../model/objects/asset.hpp"
-#include "../model/objects/message.hpp"
+#include "../infra/protobuf/event.grpc.pb.h"
 
 #include <memory>
 #include <type_traits>

@@ -24,9 +24,9 @@ limitations under the License.
 #include <memory>
 
 #include "consensus_event.hpp"
-#include "event.hpp"
 
 #include "../service/peer_service.hpp"
+#include "../infra/protobuf/event.grpc.pb.h"
 
 namespace sumeragi {
 
@@ -37,12 +37,12 @@ namespace sumeragi {
     void loop();
 
     void getNextOrder(
-        const std::unique_ptr<event::Event> event
+        const std::unique_ptr<Event::ConsensusEvent> event
     );
 
-    void processTransaction(const std::unique_ptr<event::Event>& event);
+    void processTransaction(const std::unique_ptr<Event::ConsensusEvent>& event);
 
-    void panic(const std::unique_ptr<event::Event>& event);
+    void panic(const std::unique_ptr<Event::ConsensusEvent>& event);
     void setAwkTimer(const int sleepMillisecs, const std::function<void(void)> action);
     void determineConsensusOrder(/*std::vector<double> trustVector*/);
     

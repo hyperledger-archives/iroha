@@ -20,7 +20,8 @@ limitations under the License.
 #include <string>
 #include <memory>
 #include "../../consensus/consensus_event.hpp"
-#include "../../consensus/event.hpp"
+
+#include "../../infra/protobuf/event.grpc.pb.h"
 
 #include <algorithm>
 
@@ -28,9 +29,9 @@ namespace repository{
 
     namespace event {
 
-        bool add(const std::string &hash,std::unique_ptr<::event::Event> event);
+        bool add(const std::string &hash,std::unique_ptr<Event::ConsensusEvent> event);
  
-        bool update(const std::string &hash, const std::unique_ptr<::event::Event> &consensusEvent);
+        bool update(const std::string &hash, const std::unique_ptr<Event::ConsensusEvent> &consensusEvent);
 
         bool remove(const std::string &hash);
 
@@ -43,12 +44,12 @@ namespace repository{
         bool empty();
 
         std::vector<
-            std::unique_ptr<::event::Event>
+            std::unique_ptr<Event::ConsensusEvent>
         > findAll();
 
-        std::unique_ptr<::event::Event>& findNext();
+        std::unique_ptr<Event::ConsensusEvent>& findNext();
 
-        std::unique_ptr<::event::Event>& find(std::string hash);
+        std::unique_ptr<Event::ConsensusEvent>& find(std::string hash);
     };
 };
 #endif  // CORE_REPOSITORY_UNCONFIRMEDTRANSACTIONREPOSITORY_HPP_
