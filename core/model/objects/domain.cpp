@@ -18,17 +18,6 @@ limitations under the License.
 
 namespace object {
 
-using Rule = json_parse::Rule;
-using Type = json_parse::Type;
-using Object = json_parse::Object;
-
-Domain::Domain(
-    Object obj
-){
-    ownerPublicKey = obj.dictSub["ownerPublicKey"].str;
-    name = obj.dictSub["name"].str;
-}
-
 Domain::Domain(
     std::string&& ownerPublicKey,
     std::string&& name
@@ -36,19 +25,5 @@ Domain::Domain(
     ownerPublicKey(ownerPublicKey),
     name(name)
 {}
-
-json_parse::Object Domain::dump() {
-    json_parse::Object obj = json_parse::Object(Type::DICT);
-    obj.dictSub.insert( std::make_pair("ownerPublicKey",  json_parse::Object(Type::STR, ownerPublicKey)));
-    obj.dictSub.insert( std::make_pair("name", json_parse::Object(Type::STR, name)));
-    return obj;
-}
-
-Rule Domain::getJsonParseRule() {
-    auto rule = Rule(Type::DICT);
-    rule.dictSub.insert( std::make_pair("ownerPublicKey",  Rule(Type::STR)));
-    rule.dictSub.insert( std::make_pair("name", Rule(Type::STR)));
-    return rule;
-}
 
 };  // namespace domain

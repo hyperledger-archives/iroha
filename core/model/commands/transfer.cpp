@@ -17,23 +17,5 @@ limitations under the License.
 #include "transfer.hpp"
 
 namespace command {
-    
-using object::Asset;
-
-using Object = json_parse::Object;
-
-template <>
-Transfer<Asset>::Transfer(
-      Object obj
-):
-   Asset(obj),
-   senderPublicKey(obj.dictSub["sender"].str),
-   receiverPublicKey(obj.dictSub["receiver"].str)
-{}
-
-template <>
-void Transfer<Asset>::execution() {
-
-}
 
 }

@@ -18,9 +18,8 @@ limitations under the License.
 #include "commands/transfer.hpp"
 #include "commands/update.hpp"
 
+#include "../crypto/signature.hpp"
 #include "../util/datetime.hpp"
-#include "../service/json_parse.hpp"
-#include "../service/json_parse_with_json_nlohman.hpp"
 #include "../crypto/hash.hpp"
 #include <algorithm>
 
@@ -49,14 +48,6 @@ protected:
     std::string senderPubkey;
 public:
 
-    using Object = json_parse::Object;
-    using Rule = json_parse::Rule;
-    using Type = json_parse::Type;
-
-    Transaction(
-        Object obj
-    );
-
     template<typename... Args>
     Transaction(
         std::string&& senderPublickey,
@@ -72,7 +63,8 @@ public:
     }
 
     auto getHash() {
-        return hash::sha3_256_hex(json_parse_with_json_nlohman::parser::dump(T::dump()));
+        throw "No implements";
+        return "";//hash::sha3_256_hex();
     }
 
     std::vector<txSignature> getTxSignatures(){
@@ -90,38 +82,6 @@ public:
                 return signature::verify(sig.signature, hash, sig.publicKey);
             }
         ) == txSignatures.size();
-    }
-
-    Object dump() {
-        Object obj = Object(Type::DICT);
-        auto txSigs   = Object(Type::LIST);
-        for(auto&& tSig : txSignatures) {
-            auto txSig = Object(Type::DICT);
-            txSig.dictSub.insert( std::make_pair( "publicKey", Object(Type::STR, tSig.publicKey)));
-            txSig.dictSub.insert( std::make_pair( "signature", Object(Type::STR, tSig.signature)));
-            txSigs.listSub.push_back(txSig);
-        }
-        obj.dictSub.insert( std::make_pair( "timestamp", Object(Type::INT,(int)timestamp)));
-        obj.dictSub.insert( std::make_pair( "txSignatures", txSigs));
-        obj.dictSub.insert( std::make_pair( "senderPublicKey", Object(Type::STR,senderPubkey)));
-        obj.dictSub.insert( std::make_pair( "hash",  Object(Type::STR, getHash())));
-        obj.dictSub.insert( std::make_pair( "command", T::dump()));
-        return obj;
-    }
-
-    static Rule getJsonParseRule() {
-        auto rule   = Rule(Type::DICT);
-        auto txSigs = Rule(Type::LIST);
-        auto txSig  = Rule(Type::DICT);
-        txSig.dictSub.insert( std::make_pair( "publicKey", Rule(Type::STR)));
-        txSig.dictSub.insert( std::make_pair( "signature", Rule(Type::STR)));
-        txSigs.listSub.push_back(txSig);
-        rule.dictSub.insert( std::make_pair( "txSignatures", txSigs));
-        rule.dictSub.insert( std::make_pair( "timestamp", Rule(Type::INT)));
-        rule.dictSub.insert( std::make_pair( "senderPublicKey", Rule(Type::STR)));
-        rule.dictSub.insert( std::make_pair( "hash",  Rule(Type::STR)));
-        rule.dictSub.insert( std::make_pair( "command", T::getJsonParseRule()));
-        return rule;
     }
 
 };

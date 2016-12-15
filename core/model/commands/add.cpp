@@ -18,28 +18,4 @@ limitations under the License.
 
 namespace command {
 
-using Object = json_parse::Object;
-using Rule = json_parse::Rule;
-using Type = json_parse::Type;
-
-template <>
-Add<object::Domain>::Add(
-    Object obj
-):Domain(obj.dictSub["object"]){}
-
-template <>
-Add<object::Asset>::Add(
-    Object obj
-):Asset(obj.dictSub["object"]){}
-
-template <>
-void Add<object::Domain>::execution() {
-
-}
-
-template <>
-void Add<object::Asset>::execution() {
-
-}
-
 }

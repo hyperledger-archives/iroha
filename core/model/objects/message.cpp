@@ -24,19 +24,4 @@ Message::Message(
    text(text)
 {}
 
-using Rule = json_parse::Rule;
-using Type = json_parse::Type;
-using Object = json_parse::Object;
-
-json_parse::Object Message::dump(){
-    json_parse::Object obj = json_parse::Object(Type::DICT);
-    obj.dictSub.insert( std::make_pair( "text", json_parse::Object(Type::STR, text)));
-    return obj;
-}
-
-Rule Message::getJsonParseRule() {
-    auto rule = Rule(Type::DICT);
-    rule.dictSub.insert( std::make_pair( "text", Rule(Type::STR)));
-    return rule;
-}
 }

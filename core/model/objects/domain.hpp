@@ -19,8 +19,6 @@ limitations under the License.
 #define CORE_DOMAIN_OBJECTS_DOMAIN_HPP_
 
 #include <string>
-#include <memory>
-#include "../../service/json_parse.hpp"
 
 namespace object {
 
@@ -35,12 +33,6 @@ public:
         std::string&& name
     );
 
-    explicit Domain(
-        json_parse::Object obj
-    );
-
-    json_parse::Object dump();
-    static json_parse::Rule getJsonParseRule();
 };
 
 };  // namespace domain

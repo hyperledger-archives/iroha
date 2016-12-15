@@ -21,11 +21,8 @@ limitations under the License.
 #include "../objects/asset.hpp"
 #include "../objects/message.hpp"
 
-#include <string>
 #include <iostream>
 #include "../../util/logger.hpp"
-#include "../../repository/domain/instance/asset_repository.hpp"
-#include "../../service/json_parse.hpp"
 
 namespace command {
 
@@ -35,45 +32,23 @@ namespace command {
         std::string ownerPublicKey;
     public:
 
-
         template<typename... Args>
-        Update(
+        constexpr explicit Update(
             std::string&& ownerPublicKey,
             Args&&... args
         ):
-            ownerPublicKey(ownerPublicKey),
+            ownerPublicKey(std::move(ownerPublicKey)),
             T(std::forward<Args>(args)...)
         {}
 
-        std::string getCommandName() const{
+        auto getCommandName() const{
             return "Update";
         }
 
-        using Rule = json_parse::Rule;
-        using Type = json_parse::Type;
-        using Object = json_parse::Object;
+        void execution(){
 
-        Update(
-            Object obj
-        );
-
-        void execution();
-
-        Object dump() {
-            auto obj = Object(Type::DICT);
-            obj.dictSub.insert( std::make_pair( "name",   Object(Type::STR, getCommandName())));
-            obj.dictSub.insert( std::make_pair( "object", T::dump()));
-            obj.dictSub.insert( std::make_pair( "owner",  Object(Type::STR, ownerPublicKey)));
-            return obj;
         }
 
-        static Rule getJsonParseRule() {
-            auto rule = Rule(Type::DICT);
-            rule.dictSub.insert( std::make_pair( "name",   Rule(Type::STR)));
-            rule.dictSub.insert( std::make_pair( "object", T::getJsonParseRule()));
-            rule.dictSub.insert( std::make_pair( "owner",  Rule(Type::STR)));
-            return rule;
-        }
     };
 
 };  // namespace command
