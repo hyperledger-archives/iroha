@@ -18,22 +18,6 @@ machine:
     - sudo apt-get -y install libhdf5-serial-dev libleveldb-dev libsnappy-dev liblmdb-dev
     - sudo apt-get -y install autoconf automake libtool unzip
 
-    - cd /tmp; git clone -b v3.0.0 https://github.com/google/protobuf.git
-    - cd /tmp/protobuf;(git cherry-pick 1760feb621a913189b90fe8595fffb74bce84598; echo Force continue)
-    - cd /tmp/protobuf; ./autogen.sh; ./configure --prefix=/usr; make -j 16; sudo make install
-
-    - which protoc
-    - protoc --version
-    - cd /tmp; git clone -b $(curl -L http://grpc.io/release) https://github.com/grpc/grpc
-    - cd /tmp/grpc; git submodule update --init; make -j 14; sudo make install
-    - which grpc_cpp_plugin
-
-dependencies:
-  cache_directories:
-    - /tmp/protobuf
-    - /tmp/grpc
-  override:
-    - mkdir build; cd build; cmake ..; make
 checkout:
   post:
     - cd $IROHA_HOME
@@ -41,6 +25,25 @@ checkout:
     - cd $IROHA_HOME/core/vendor/ed25519; make -j 14
     - cd $IROHA_HOME/core/vendor/KeccakCodePackage; make; make generic64/libkeccak.a
     - cd $IROHA_HOME/core/infra/crypto/; make
+
+dependencies:
+  cache_directories:
+    - /tmp/protobuf
+    - /tmp/grpc
+  pre:
+    - if [[ ! -e /tmp/protobuf ]]; then git clone -b v3.0.0 https://github.com/google/protobuf.git /tmp/protobuf;\
+      cd /tmp/protobuf; (git cherry-pick 1760feb621a913189b90fe8595fffb74bce84598; echo Force continue);\
+       ./autogen.sh; ./configure --prefix=/usr; make -j 16;
+    -  cd /tmp/protobuf; sudo make install
+    - protoc --version
+
+    - if [[ ! -e /tmp/grpc ]]; then git clone -b $(curl -L http://grpc.io/release) https://github.com/grpc/grpc /tmp/grpc\
+        git submodule update --init; make -j 14;
+    - sudo make install
+    - which grpc_cpp_plugin
+
 test:
+  pre:
+    - mkdir build; cd build; cmake ..; make
   override:
     - ./test.sh
