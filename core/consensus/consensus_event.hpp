@@ -83,7 +83,18 @@ public:
     using Type = json_parse::Type;
     using Object = json_parse::Object;
 
-    explicit ConsensusEvent(Object obj);
+    explicit ConsensusEvent(
+            Object obj
+    ):
+        T(obj.dictSub["transaction"])
+    {
+        order = obj.dictSub["order"].integer;
+        std::vector<Object> eventSigs = obj.dictSub["eventSignatures"].listSub;
+        for(auto&& sig : eventSigs){
+            _eventSignatures.push_back(eventSignature(sig.dictSub["publicKey"].str, sig.dictSub["signature"].str));
+        }
+    }
+
 
     void addSignature(const std::string& publicKey, const std::string& signature){
         _eventSignatures.push_back(eventSignature(publicKey, signature));

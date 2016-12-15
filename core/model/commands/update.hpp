@@ -23,6 +23,8 @@ limitations under the License.
 
 #include <string>
 #include <iostream>
+#include "../../util/logger.hpp"
+#include "../../repository/domain/instance/asset_repository.hpp"
 #include "../../service/json_parse.hpp"
 
 namespace command {
@@ -56,6 +58,8 @@ namespace command {
         Update(
             Object obj
         );
+
+        void execution();
 
         Object dump() {
             auto obj = Object(Type::DICT);

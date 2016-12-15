@@ -16,6 +16,7 @@ limitations under the License.
 #include <queue>
 #include <map>
 #include <thread>
+#include <atomic>
 #include <deque>
 #include <cmath>
 
@@ -222,6 +223,11 @@ namespace sumeragi {
         //}
         logger::info("sumeragi", "valied");
         logger::info("sumeragi", "Add my signature...");
+
+        logger::info("sumeragi", "hash:" + event->getHash());
+        logger::info("sumeragi", "pub:" + peer::getMyPublicKey());
+        logger::info("sumeragi", "pro:"+ peer::getPrivateKey());
+        logger::info("sumeragi", "sog:"+  std::string(signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()));
         
         //detail::printIsSumeragi(context->isSumeragi);
         // Really need? blow "if statement" will be false anytime.
@@ -388,7 +394,7 @@ namespace sumeragi {
 
                 auto events = repository::event::findAll();
                 logger::info("sumeragi", "event's size " + std::to_string(events.size()));
-                
+
                 // Sort the events to determine priority to process
                 std::sort(events.begin(), events.end(),
                     [&](const auto &lhs,const auto &rhs) {

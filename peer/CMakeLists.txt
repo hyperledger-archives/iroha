@@ -49,5 +49,6 @@ target_link_libraries(iroha-main
   connection_with_grpc
   peer_service_with_json
   pthread
+  keccak
 )
 

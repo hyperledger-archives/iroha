@@ -17,6 +17,7 @@ namespace transaction{
         senderPubkey(obj.dictSub["senderPublicKey"].str),
         hash(obj.dictSub["hash"].str)
     {
+        timestamp = obj.dictSub["timestamp"].integer;
         
         std::vector<Object> txSigs = obj.dictSub["txSignatures"].listSub;
         for(auto&& sig : txSigs){
@@ -34,6 +35,7 @@ namespace transaction{
     {
         senderPubkey = obj.dictSub["senderPublicKey"].str;
         hash = obj.dictSub["hash"].str;
+        timestamp = obj.dictSub["timestamp"].integer;
         std::vector<Object> txSigs = obj.dictSub["txSignatures"].listSub;
         for(auto&& sig : txSigs){
             txSignatures.push_back(txSignature(sig.dictSub["publicKey"].str,sig.dictSub["signature"].str));
@@ -50,6 +52,7 @@ namespace transaction{
     {
         senderPubkey = obj.dictSub["senderPublicKey"].str;
         hash = obj.dictSub["hash"].str;
+        timestamp = obj.dictSub["timestamp"].integer;
         std::vector<Object> txSigs = obj.dictSub["txSignatures"].listSub;
         for(auto&& sig : txSigs){
             txSignatures.push_back(txSignature(sig.dictSub["publicKey"].str,sig.dictSub["signature"].str));
@@ -65,6 +68,7 @@ namespace transaction{
     {
         senderPubkey = obj.dictSub["senderPublicKey"].str;
         hash = obj.dictSub["hash"].str;
+        timestamp = obj.dictSub["timestamp"].integer;
         std::vector<Object> txSigs = obj.dictSub["txSignatures"].listSub;
         for(auto&& sig : txSigs){
             txSignatures.push_back(txSignature(sig.dictSub["publicKey"].str,sig.dictSub["signature"].str));
@@ -79,6 +83,7 @@ namespace transaction{
         const std::string& name,
         const int& value
     ):
+        timestamp(datetime::unixtime()),
         senderPubkey(senderPubkey),
         Transfer(
             senderPubkey,
@@ -96,6 +101,7 @@ namespace transaction{
         const unsigned long long& value,
         const unsigned int& precision
     ):
+        timestamp(datetime::unixtime()),
         senderPubkey(senderPubkey),
         Add(
             domain,
@@ -111,6 +117,7 @@ namespace transaction{
         const std::string& ownerPublicKey,
         const std::string& name
     ):
+        timestamp(datetime::unixtime()),
         senderPubkey(senderPubkey),
         Add(
             ownerPublicKey,
@@ -124,6 +131,7 @@ namespace transaction{
         const std::string& name,
         const unsigned long long& value
     ):
+        timestamp(datetime::unixtime()),
         senderPubkey(ownerPublicKey),
         Update(
                 ownerPublicKey,
@@ -131,25 +139,5 @@ namespace transaction{
                 value
         )
     {}
-
-
-    template <>
-    void Transaction<Update<object::Asset>>::execution(){
-        logger::info("execution","update! Asset "+ ownerPublicKey);
-        repository::asset::update(ownerPublicKey, "sample", std::to_string(value));
-    }
-    template <>
-    void Transaction<Add<object::Asset>>::execution(){
-        logger::info("execution","add! Asset");
-    }
-    template <>
-    void Transaction<Add<object::Domain>>::execution(){
-        logger::info("execution","add! Domain");
-    }
-    template <>
-    void Transaction<Transfer<object::Asset>>::execution(){
-        logger::info("execution","Transfer! Asset");
-    }
-
 
 }

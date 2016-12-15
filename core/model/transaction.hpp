@@ -18,7 +18,7 @@ limitations under the License.
 #include "commands/transfer.hpp"
 #include "commands/update.hpp"
 
-#include "../repository/domain/instance/asset_repository.hpp"
+#include "../util/datetime.hpp"
 #include "../service/json_parse.hpp"
 #include "../service/json_parse_with_json_nlohman.hpp"
 #include "../crypto/hash.hpp"
@@ -42,6 +42,7 @@ protected:
         {}
     };
 
+    long long int timestamp;
     std::string hash;
     std::vector<txSignature> txSignatures;
     std::string senderPubkey;
@@ -55,32 +56,33 @@ public:
         Object obj
     );
 
-    Transaction(
-        const std::string& senderPubkey,
-        const std::string& receiverPubkey,
-        const std::string& name,
-        const int& value
-    );
-    Transaction(
-        const std::string& senderPubkey,
-        const std::string& domain,
-        const std::string& name,
-        const unsigned long long& value,
-        const unsigned int& precision
-    );
-    Transaction(
-        const std::string& senderPubkey,
-        const std::string& ownerPublicKey,
-        const std::string& name
-    );
-    Transaction(
-        const std::string& ownerPublicKey,
-        const std::string& name,
-        const unsigned long long& value
-    );
 
+    Transaction(
+            const std::string& senderPubkey,
+            const std::string& receiverPubkey,
+            const std::string& name,
+            const int& value
+    );
+    Transaction(
+            const std::string& senderPubkey,
+            const std::string& domain,
+            const std::string& name,
+            const unsigned long long& value,
+            const unsigned int& precision
+    );
+    Transaction(
+            const std::string& senderPubkey,
+            const std::string& ownerPublicKey,
+            const std::string& name
+    );
+    Transaction(
+            const std::string&,
+            const std::string&,
+            const long long unsigned int&);
 
-    void execution();
+    void execution(){
+        T::execution();
+    }
 
     auto getHash() {
         return hash::sha3_256_hex(json_parse_with_json_nlohman::parser::dump(T::dump()));
@@ -112,6 +114,7 @@ public:
             txSig.dictSub.insert( std::make_pair( "signature", Object(Type::STR, tSig.signature)));
             txSigs.listSub.push_back(txSig);
         }
+        obj.dictSub.insert( std::make_pair( "timestamp", Object(Type::INT,(int)timestamp)));
         obj.dictSub.insert( std::make_pair( "txSignatures", txSigs));
         obj.dictSub.insert( std::make_pair( "senderPublicKey", Object(Type::STR,senderPubkey)));
         obj.dictSub.insert( std::make_pair( "hash",  Object(Type::STR, getHash())));
@@ -127,6 +130,7 @@ public:
         txSig.dictSub.insert( std::make_pair( "signature", Rule(Type::STR)));
         txSigs.listSub.push_back(txSig);
         rule.dictSub.insert( std::make_pair( "txSignatures", txSigs));
+        rule.dictSub.insert( std::make_pair( "timestamp", Rule(Type::INT)));
         rule.dictSub.insert( std::make_pair( "senderPublicKey", Rule(Type::STR)));
         rule.dictSub.insert( std::make_pair( "hash",  Rule(Type::STR)));
         rule.dictSub.insert( std::make_pair( "command", T::getJsonParseRule()));

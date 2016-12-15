@@ -6,7 +6,7 @@ ADD_LIBRARY(transaction STATIC
 )
 
 target_link_libraries(transaction
-  domain_repository
   commands
   objects
+  datetime
 )

@@ -58,4 +58,15 @@ Add<object::Asset>::Add(
     )
 {}
 
+template <>
+void Add<object::Domain>::execution() {
+
+}
+
+template <>
+void Add<object::Asset>::execution() {
+
+}
+
+
 }

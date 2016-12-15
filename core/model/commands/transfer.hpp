@@ -54,6 +54,8 @@ class Transfer: protected T {
         Object obj
     );
 
+    void execution();
+
     Object dump() {
         Object obj = Object(Type::DICT);
         obj.dictSub.insert( std::make_pair(    "name", Object(Type::STR, getCommandName())));

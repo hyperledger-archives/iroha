@@ -40,4 +40,9 @@ namespace command {
         ownerPublicKey(obj.dictSub["owner"].str)
     {}
 
+    template <>
+    void Update<Asset>::execution() {
+        logger::info("execution","update! Asset "+ ownerPublicKey);
+        repository::asset::update(ownerPublicKey, "sample", std::to_string(value));
+    }
 }

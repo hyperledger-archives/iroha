@@ -55,7 +55,7 @@ namespace http {
       Float
   };
 
-  void server(std::map<std::string,std::function<int(Object)>> apis) {
+  void server(std::map<std::string,std::function<Object(Object)>> apis) {
     logger::info("server", "initialize server!");
     Cappuccino::Cappuccino( 0, nullptr);
 
@@ -67,12 +67,8 @@ namespace http {
               res.json(responseError("Invalied JSON"));
               return res;
             }
-            api.second(json_parse_with_json_nlohman::parser::load(data));
+            res.json(json(json_parse_with_json_nlohman::parser::dump(api.second(json_parse_with_json_nlohman::parser::load(data)))));
 
-            res.json({
-                {"message", "OK"},
-                {"status", 200}
-            });
             return res;
         });
     };
