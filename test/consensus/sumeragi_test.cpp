@@ -59,11 +59,7 @@ int main(int argc, char *argv[]){
 
     connection::initialize_peer();
 
-<<<<<<< HEAD
-    logger::setLogLevel(logger::LogLevel::DEBUG);
-=======
     logger::setLogLevel(logger::LogLevel::EXPLORE);
->>>>>>> 42d65b8ec010103ecea0a72aa5d111e03ed76dfb
 
     for(const auto& n : nodes){
         std::cout<< "=========" << std::endl;
@@ -80,10 +76,6 @@ int main(int argc, char *argv[]){
         sumeragi::loop();
     });
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 42d65b8ec010103ecea0a72aa5d111e03ed76dfb
     std::thread connection_th( []() {
         connection::run();
     });

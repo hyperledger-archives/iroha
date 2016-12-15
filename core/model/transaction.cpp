@@ -82,11 +82,7 @@ namespace transaction{
         const std::string& name,
         const int& value
     ):
-<<<<<<< HEAD
         timestamp(datetime::unixtime()),
-        senderPubkey(senderPubkey),
-=======
->>>>>>> 42d65b8ec010103ecea0a72aa5d111e03ed76dfb
         Transfer(
             senderPubkey,
             receiverPubkey,
@@ -104,11 +100,7 @@ namespace transaction{
         const unsigned long long& value,
         const unsigned int& precision
     ):
-<<<<<<< HEAD
         timestamp(datetime::unixtime()),
-        senderPubkey(senderPubkey),
-=======
->>>>>>> 42d65b8ec010103ecea0a72aa5d111e03ed76dfb
         Add(
             domain,
             name,
@@ -124,11 +116,7 @@ namespace transaction{
         const std::string& ownerPublicKey,
         const std::string& name
     ):
-<<<<<<< HEAD
         timestamp(datetime::unixtime()),
-        senderPubkey(senderPubkey),
-=======
->>>>>>> 42d65b8ec010103ecea0a72aa5d111e03ed76dfb
         Add(
             ownerPublicKey,
             name

@@ -73,20 +73,16 @@ public:
         const std::string& name
     );
 
-<<<<<<< HEAD
     explicit ConsensusEvent(
         const std::string& ownerPublicKey,
         const std::string& name,
         const unsigned long long& value
     );
-=======
->>>>>>> 42d65b8ec010103ecea0a72aa5d111e03ed76dfb
 
     using Rule = json_parse::Rule;
     using Type = json_parse::Type;
     using Object = json_parse::Object;
 
-<<<<<<< HEAD
     explicit ConsensusEvent(
             Object obj
     ):
@@ -99,10 +95,6 @@ public:
         }
     }
 
-=======
-
-    explicit ConsensusEvent(Object obj);
->>>>>>> 42d65b8ec010103ecea0a72aa5d111e03ed76dfb
 
     void addSignature(const std::string& publicKey, const std::string& signature){
         _eventSignatures.push_back(eventSignature(publicKey, signature));
