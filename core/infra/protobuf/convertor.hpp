@@ -23,7 +23,6 @@
 
 namespace convertor{
 
-
     using namespace transaction;
     using namespace command;
     using namespace event;
@@ -75,6 +74,9 @@ namespace convertor{
         // ====== decode ======
 
         object::Asset decodeObject(Event::Asset aAsset);
+
+        object::Account decodeObject(Event::Account aAccount);
+
 
         template <typename T>
         ConsensusEvent<Transaction<T>> decodeTransaction2ConsensusEvent(Event::Transaction tx){

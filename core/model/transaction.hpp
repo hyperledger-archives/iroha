@@ -38,10 +38,10 @@ protected:
         {}
     };
 
-    long long int timestamp;
     std::string hash;
     std::vector<txSignature> txSignatures;
 public:
+    long long int timestamp;
     std::string senderPubkey;
 
     template<typename... Args>

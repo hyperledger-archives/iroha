@@ -23,6 +23,7 @@ target_link_libraries(convertor_test
    objects
 
    hash
+   base64
 
     grpc++
     grpc++_reflection

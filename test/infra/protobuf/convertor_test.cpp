@@ -19,6 +19,8 @@ limitations under the License.
 #include <vector>
 #include <tuple>
 
+#include "../../../core/crypto/base64.hpp"
+
 #include "../../../core/crypto/signature.hpp"
 #include "../../../core/infra/protobuf/convertor.hpp"
 #include "../../../core/consensus/consensus_event.hpp"
@@ -34,16 +36,16 @@ auto publicKey2 = "FZ7KQcL88eBkhMk41jNmQeKBBT0+jvpCMFXKowtDf8o=";
 auto privateKey2 = "0PpZ8x/hT5uUQ6y2e/Mq3Pk+j90+q1Zch3yDzBY42ny9bO6aQNKkn90JuwzigUTpRtjpyRWYpq3ZNDtwTdSSPQ==";
 
 auto HASH = "7c4f8b3fceae31610ff1b683eb7412be65053477b56c79a37eb632177a9370e9";
-auto domain = "test_domain";
-auto asset = "DummyAsset";
-auto name = "MizukiSonoko";
+auto IROHA_DOMAIN = "test_domain";
+auto ASSET = "DummyAsset";
+auto NAME = "MizukiSonoko";
 
 TEST(convertor, convertAddTransaction) {
 
     auto event = ConsensusEvent<Transaction<Add<Asset>>>(
         publicKey1,
-        domain,
-        asset,
+        IROHA_DOMAIN,
+        ASSET,
         100,
         0
     );
@@ -69,8 +71,8 @@ TEST(convertor, convertAddTransactionMultiEventSig) {
 
     auto event = ConsensusEvent<Transaction<Add<Asset>>>(
             publicKey1,
-            domain,
-            asset,
+            IROHA_DOMAIN,
+            ASSET,
             100,
             0
     );
@@ -100,8 +102,8 @@ TEST(convertor, convertAddTransactionMultiEventSig) {
     ASSERT_TRUE(std::get<1>(reDecEvent.eventSignatures()[2]) == signature::sign( HASH, publicKey1, privateKey1).c_str());
 
     ASSERT_STREQ(reDecEvent.getCommandName(), "Add");
-    ASSERT_STREQ(reDecEvent.domain.c_str(), domain);
-    ASSERT_STREQ(reDecEvent.name.c_str(), asset);
+    ASSERT_STREQ(reDecEvent.domain.c_str(), IROHA_DOMAIN);
+    ASSERT_STREQ(reDecEvent.name.c_str(), ASSET);
     ASSERT_TRUE(reDecEvent.value == 100);
     ASSERT_TRUE(reDecEvent.precision == 0);
 }
@@ -112,7 +114,7 @@ TEST(convertor, convertTransferTransaction) {
         publicKey1,
         publicKey1,
         publicKey2,
-        asset,
+        ASSET,
         723
     );
 
@@ -129,7 +131,7 @@ TEST(convertor, convertTransferTransaction) {
     ASSERT_TRUE(std::get<1>(reDecEvent.eventSignatures()[0]) == signature::sign( HASH, publicKey1, privateKey1).c_str());
 
     ASSERT_STREQ(reDecEvent.getCommandName(), "Transfer");
-    ASSERT_STREQ(reDecEvent.name.c_str(), asset);
+    ASSERT_STREQ(reDecEvent.name.c_str(), ASSET);
     ASSERT_TRUE(reDecEvent.value == 723);
 }
 
@@ -138,7 +140,7 @@ TEST(convertor, convertUpdateTransaction) {
     auto event = ConsensusEvent<Transaction<Update<Asset>>>(
             publicKey1,
             publicKey1,
-            asset,
+            ASSET,
             1204
     );
 
@@ -155,7 +157,7 @@ TEST(convertor, convertUpdateTransaction) {
     ASSERT_TRUE(std::get<1>(reDecEvent.eventSignatures()[0]) == signature::sign( HASH, publicKey1, privateKey1).c_str());
 
     ASSERT_STREQ(reDecEvent.getCommandName(), "Update");
-    ASSERT_STREQ(reDecEvent.name.c_str(), asset);
+    ASSERT_STREQ(reDecEvent.name.c_str(), ASSET);
     ASSERT_TRUE(reDecEvent.value == 1204);
 }
 
@@ -169,7 +171,7 @@ TEST(convertor, convertAddAccountTransaction) {
     auto event = ConsensusEvent<Transaction<Add<Account>>>(
         publicKey1,
         publicKey2,
-        name,
+        NAME,
         std::move(assets)
     );
 
@@ -186,8 +188,94 @@ TEST(convertor, convertAddAccountTransaction) {
     ASSERT_TRUE(std::get<1>(reDecEvent.eventSignatures()[0]) == signature::sign( HASH, publicKey1, privateKey1).c_str());
 
     ASSERT_STREQ(reDecEvent.getCommandName(), "Add");
-    ASSERT_STREQ(reDecEvent.name.c_str(), name);
+    ASSERT_STREQ(reDecEvent.name.c_str(), NAME);
     ASSERT_TRUE(reDecEvent.assets.size() == 3);
     ASSERT_STREQ(std::get<0>(reDecEvent.assets[1]).c_str(), "Sample2");
     ASSERT_TRUE(std::get<1>(reDecEvent.assets[1]) == 1204);
+
+}
+
+
+TEST(convertor, convertSerialize) {
+
+    std::vector<std::tuple<std::string, long>> assets;
+    assets.push_back(std::make_pair("Sample1",  311));
+    assets.push_back(std::make_pair("Sample2", 1204));
+    assets.push_back(std::make_pair("Sample3",  324));
+    auto event = ConsensusEvent<Transaction<Add<Account>>>(
+            publicKey1,
+            publicKey2,
+            NAME,
+            std::move(assets)
+    );
+
+    event.addSignature(
+            publicKey1,
+            signature::sign( HASH, publicKey1, privateKey1).c_str()
+    );
+
+    Event::ConsensusEvent encodedEvent = convertor::encode(event);
+
+
+    std::string strEvent;
+
+    encodedEvent.SerializeToString(&strEvent);
+
+    Event::ConsensusEvent encodedEvent2;
+    encodedEvent2.ParseFromString(strEvent);
+    ConsensusEvent<Transaction<Add<Account>>> reDecEvent = convertor::decode<Add<Account>>(encodedEvent2);
+
+    ASSERT_TRUE(reDecEvent.eventSignatures().size() == 1);
+    ASSERT_TRUE(std::get<0>(reDecEvent.eventSignatures()[0]) == publicKey1);
+    ASSERT_TRUE(std::get<1>(reDecEvent.eventSignatures()[0]) == signature::sign( HASH, publicKey1, privateKey1).c_str());
+
+    ASSERT_STREQ(reDecEvent.getCommandName(), "Add");
+    ASSERT_STREQ(reDecEvent.name.c_str(), NAME);
+    ASSERT_TRUE(reDecEvent.assets.size() == 3);
+    ASSERT_STREQ(std::get<0>(reDecEvent.assets[1]).c_str(), "Sample2");
+    ASSERT_TRUE(std::get<1>(reDecEvent.assets[1]) == 1204);
+
+}
+
+
+
+
+TEST(convertor, convertSerializeWithBase64) {
+
+    std::vector<std::tuple<std::string, long>> assets;
+    assets.push_back(std::make_pair("Sample1",  311));
+    assets.push_back(std::make_pair("Sample2", 1204));
+    assets.push_back(std::make_pair("Sample3",  324));
+    auto event = ConsensusEvent<Transaction<Add<Account>>>(
+            publicKey1,
+            publicKey2,
+            NAME,
+            std::move(assets)
+    );
+
+    event.addSignature(
+            publicKey1,
+            signature::sign( HASH, publicKey1, privateKey1).c_str()
+    );
+
+    Event::ConsensusEvent encodedEvent = convertor::encode(event);
+
+    std::string strEvent;
+    encodedEvent.SerializeToString(&strEvent);
+
+
+Event::ConsensusEvent encodedEvent2;
+encodedEvent2.ParseFromString(strEvent);
+ConsensusEvent<Transaction<Add<Account>>> reDecEvent = convertor::decode<Add<Account>>(encodedEvent2);
+
+ASSERT_TRUE(reDecEvent.eventSignatures().size() == 1);
+ASSERT_TRUE(std::get<0>(reDecEvent.eventSignatures()[0]) == publicKey1);
+ASSERT_TRUE(std::get<1>(reDecEvent.eventSignatures()[0]) == signature::sign( HASH, publicKey1, privateKey1).c_str());
+
+ASSERT_STREQ(reDecEvent.getCommandName(), "Add");
+ASSERT_STREQ(reDecEvent.name.c_str(), NAME);
+ASSERT_TRUE(reDecEvent.assets.size() == 3);
+ASSERT_STREQ(std::get<0>(reDecEvent.assets[1]).c_str(), "Sample2");
+ASSERT_TRUE(std::get<1>(reDecEvent.assets[1]) == 1204);
+
 }

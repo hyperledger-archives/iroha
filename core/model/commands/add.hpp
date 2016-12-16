@@ -18,6 +18,7 @@ limitations under the License.
 #define CORE_DOMAIN_COMMANDS_ADD_HPP_
 
 #include <utility>
+#include "../../repository/domain/account_repository.hpp"
 
 namespace command {
 
@@ -36,11 +37,10 @@ class Add: public T {
         return "Add";
     }
 
-    void execution(){
-
-    }
+    void execution();
 
 };
+
 };  // namespace command
 
 #endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_

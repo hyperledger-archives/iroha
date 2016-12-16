@@ -8,6 +8,7 @@ target_link_libraries(sumeragi
   connection_with_grpc
   signature
   event_repository
+  commands
   objects
 )
 

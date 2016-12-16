@@ -57,7 +57,7 @@ int main() {
   }
 
   logger::info("main","process is :"+std::to_string(getpid()));
-  logger::setLogLevel(logger::LogLevel::EXPLORE);
+  logger::setLogLevel(logger::LogLevel::DEBUG);
 
   std::vector<std::unique_ptr<peer::Node>> nodes = peer::getPeerList();
   connection::initialize_peer();

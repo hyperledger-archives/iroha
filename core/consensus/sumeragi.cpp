@@ -26,6 +26,8 @@ limitations under the License.
 #include "../crypto/hash.hpp"
 #include "../crypto/signature.hpp"
 
+#include "../infra/protobuf/convertor.hpp"
+
 #include "../validation/transaction_validator.hpp"
 #include "../service/peer_service.hpp"
 #include "./connection/connection.hpp"
@@ -33,6 +35,7 @@ limitations under the License.
 #include "../model/objects/domain.hpp"
 #include "../model/commands/transfer.hpp"
 
+#include "../repository/consensus/transaction_repository.hpp"
 #include "../repository/domain/account_repository.hpp"
 
 /**
@@ -50,8 +53,8 @@ namespace sumeragi {
 
     using event::ConsensusEvent;
     using transaction::Transaction;
-    using command::Transfer;
-    using command::Add;
+    using namespace command;
+    using namespace object;
 
     namespace detail{
 
@@ -300,6 +303,27 @@ namespace sumeragi {
 
                 merkle_transaction_repository::commit(event); //TODO: add error handling in case not saved
 
+                std::string strTx;
+                event.SerializeToString(&strTx);
+                std::string key = "transaction_" + event.transaction().asset().name() + "_" + datetime::unixtime_str();
+                repository::transaction::add( key, strTx);
+
+                logger::debug("sumeragi", "tx:" + event.transaction().type());
+                // I want to separate it function from sumeragi.
+                if(event.transaction().type() == "Add"){
+                    if(event.transaction().asset().ByteSize() != 0) {
+                        logger::debug("sumeragi", "exec <Add<Asset>>");
+                        convertor::decode<Add<Asset>>(event).execution();
+                    }else if(event.transaction().account().ByteSize() != 0){
+                        logger::debug("sumeragi", "exec <Add<Account>>");
+                        convertor::decode<Add<Account>>(event).execution();
+                    }
+                }else if(event.transaction().type() == "Transfer"){
+                    if(event.transaction().asset().ByteSize() != 0) {
+                        logger::debug("sumeragi", "exec <Transfer<Asset>>");
+                        convertor::decode<Transfer<Asset>>(event).execution();
+                    }
+                }
                 // Write exec code smart contract
                 // event->execution();
             } else {
