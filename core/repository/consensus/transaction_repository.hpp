@@ -24,11 +24,13 @@ See the License for the specific language governing permissions and
 namespace repository{
     namespace transaction {
 
-        void add(std::string& key,std::string value);
+        void add(const std::string &key,const Event::ConsensusEvent& strTx);
 
-        std::vector<std::string> findAll();
+        std::vector<Event::Transaction> findAll();
 
-        std::vector<std::string> findByAssetName(std::string name);
+        Event::Transaction find(std::string key);
+
+        std::vector<Event::Transaction> findByAssetName(std::string name);
 
     }
 }

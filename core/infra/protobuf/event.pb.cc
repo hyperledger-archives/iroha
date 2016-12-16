@@ -140,11 +140,12 @@ void protobuf_AssignDesc_event_2eproto() {
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EventSignature, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EventSignature, _is_default_instance_));
   Transaction_descriptor_ = file->message_type(5);
-  static const int Transaction_offsets_[8] = {
+  static const int Transaction_offsets_[9] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, txsignatures_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, senderpubkey_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, hash_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, timestamp_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, asset_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, domain_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, account_),
@@ -261,18 +262,19 @@ void protobuf_AddDesc_event_2eproto() {
     "\0132\014.Event.Asset\"4\n\014TxSignatures\022\021\n\tpubli"
     "cKey\030\001 \001(\t\022\021\n\tsignature\030\002 \001(\t\"6\n\016EventSi"
     "gnature\022\021\n\tpublicKey\030\001 \001(\t\022\021\n\tsignature\030"
-    "\002 \001(\t\"\336\001\n\013Transaction\022)\n\014txSignatures\030\001 "
+    "\002 \001(\t\"\361\001\n\013Transaction\022)\n\014txSignatures\030\001 "
     "\003(\0132\023.Event.TxSignatures\022\014\n\004type\030\002 \001(\t\022\024"
-    "\n\014senderPubkey\030\004 \001(\t\022\014\n\004hash\030\005 \001(\t\022\033\n\005as"
-    "set\030\006 \001(\0132\014.Event.Asset\022\035\n\006domain\030\007 \001(\0132"
-    "\r.Event.Domain\022\037\n\007account\030\010 \001(\0132\016.Event."
-    "Account\022\025\n\rreceivePubkey\030\t \001(\t\"x\n\016Consen"
-    "susEvent\022.\n\017eventSignatures\030\001 \003(\0132\025.Even"
-    "t.EventSignature\022\'\n\013transaction\030\002 \001(\0132\022."
-    "Event.Transaction\022\r\n\005order\030\003 \001(\004\"\037\n\016Stat"
-    "usResponse\022\r\n\005value\030\001 \001(\t2N\n\017IrohaConnec"
-    "tion\022;\n\tOperation\022\025.Event.ConsensusEvent"
-    "\032\025.Event.StatusResponse\"\000B\003\200\001\000b\006proto3", 798);
+    "\n\014senderPubkey\030\003 \001(\t\022\014\n\004hash\030\004 \001(\t\022\021\n\tti"
+    "mestamp\030\005 \001(\004\022\033\n\005asset\030\006 \001(\0132\014.Event.Ass"
+    "et\022\035\n\006domain\030\007 \001(\0132\r.Event.Domain\022\037\n\007acc"
+    "ount\030\010 \001(\0132\016.Event.Account\022\025\n\rreceivePub"
+    "key\030\t \001(\t\"x\n\016ConsensusEvent\022.\n\017eventSign"
+    "atures\030\001 \003(\0132\025.Event.EventSignature\022\'\n\013t"
+    "ransaction\030\002 \001(\0132\022.Event.Transaction\022\r\n\005"
+    "order\030\003 \001(\004\"\037\n\016StatusResponse\022\r\n\005value\030\001"
+    " \001(\t2N\n\017IrohaConnection\022;\n\tOperation\022\025.E"
+    "vent.ConsensusEvent\032\025.Event.StatusRespon"
+    "se\"\000B\003\200\001\000b\006proto3", 817);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "event.proto", &protobuf_RegisterTypes);
   Asset::default_instance_ = new Asset();
@@ -2415,6 +2417,7 @@ const int Transaction::kTxSignaturesFieldNumber;
 const int Transaction::kTypeFieldNumber;
 const int Transaction::kSenderPubkeyFieldNumber;
 const int Transaction::kHashFieldNumber;
+const int Transaction::kTimestampFieldNumber;
 const int Transaction::kAssetFieldNumber;
 const int Transaction::kDomainFieldNumber;
 const int Transaction::kAccountFieldNumber;
@@ -2449,6 +2452,7 @@ void Transaction::SharedCtor() {
   type_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   senderpubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  timestamp_ = GOOGLE_ULONGLONG(0);
   asset_ = NULL;
   domain_ = NULL;
   account_ = NULL;
@@ -2502,6 +2506,7 @@ void Transaction::Clear() {
   type_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   senderpubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  timestamp_ = GOOGLE_ULONGLONG(0);
   if (GetArenaNoVirtual() == NULL && asset_ != NULL) delete asset_;
   asset_ = NULL;
   if (GetArenaNoVirtual() == NULL && domain_ != NULL) delete domain_;
@@ -2551,13 +2556,13 @@ bool Transaction::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(34)) goto parse_senderPubkey;
+        if (input->ExpectTag(26)) goto parse_senderPubkey;
         break;
       }
 
-      // optional string senderPubkey = 4;
-      case 4: {
-        if (tag == 34) {
+      // optional string senderPubkey = 3;
+      case 3: {
+        if (tag == 26) {
          parse_senderPubkey:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_senderpubkey()));
@@ -2568,13 +2573,13 @@ bool Transaction::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(42)) goto parse_hash;
+        if (input->ExpectTag(34)) goto parse_hash;
         break;
       }
 
-      // optional string hash = 5;
-      case 5: {
-        if (tag == 42) {
+      // optional string hash = 4;
+      case 4: {
+        if (tag == 34) {
          parse_hash:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_hash()));
@@ -2582,6 +2587,21 @@ bool Transaction::MergePartialFromCodedStream(
             this->hash().data(), this->hash().length(),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "Event.Transaction.hash"));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(40)) goto parse_timestamp;
+        break;
+      }
+
+      // optional uint64 timestamp = 5;
+      case 5: {
+        if (tag == 40) {
+         parse_timestamp:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &timestamp_)));
+
         } else {
           goto handle_unusual;
         }
@@ -2685,24 +2705,29 @@ void Transaction::SerializeWithCachedSizes(
       2, this->type(), output);
   }
 
-  // optional string senderPubkey = 4;
+  // optional string senderPubkey = 3;
   if (this->senderpubkey().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->senderpubkey().data(), this->senderpubkey().length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "Event.Transaction.senderPubkey");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      4, this->senderpubkey(), output);
+      3, this->senderpubkey(), output);
   }
 
-  // optional string hash = 5;
+  // optional string hash = 4;
   if (this->hash().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->hash().data(), this->hash().length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "Event.Transaction.hash");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      5, this->hash(), output);
+      4, this->hash(), output);
+  }
+
+  // optional uint64 timestamp = 5;
+  if (this->timestamp() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(5, this->timestamp(), output);
   }
 
   // optional .Event.Asset asset = 6;
@@ -2757,7 +2782,7 @@ void Transaction::SerializeWithCachedSizes(
         2, this->type(), target);
   }
 
-  // optional string senderPubkey = 4;
+  // optional string senderPubkey = 3;
   if (this->senderpubkey().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->senderpubkey().data(), this->senderpubkey().length(),
@@ -2765,10 +2790,10 @@ void Transaction::SerializeWithCachedSizes(
       "Event.Transaction.senderPubkey");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        4, this->senderpubkey(), target);
+        3, this->senderpubkey(), target);
   }
 
-  // optional string hash = 5;
+  // optional string hash = 4;
   if (this->hash().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->hash().data(), this->hash().length(),
@@ -2776,7 +2801,12 @@ void Transaction::SerializeWithCachedSizes(
       "Event.Transaction.hash");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        5, this->hash(), target);
+        4, this->hash(), target);
+  }
+
+  // optional uint64 timestamp = 5;
+  if (this->timestamp() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(5, this->timestamp(), target);
   }
 
   // optional .Event.Asset asset = 6;
@@ -2826,18 +2856,25 @@ int Transaction::ByteSize() const {
         this->type());
   }
 
-  // optional string senderPubkey = 4;
+  // optional string senderPubkey = 3;
   if (this->senderpubkey().size() > 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
         this->senderpubkey());
   }
 
-  // optional string hash = 5;
+  // optional string hash = 4;
   if (this->hash().size() > 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
         this->hash());
+  }
+
+  // optional uint64 timestamp = 5;
+  if (this->timestamp() != 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->timestamp());
   }
 
   // optional .Event.Asset asset = 6;
@@ -2917,6 +2954,9 @@ void Transaction::MergeFrom(const Transaction& from) {
 
     hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.hash_);
   }
+  if (from.timestamp() != 0) {
+    set_timestamp(from.timestamp());
+  }
   if (from.has_asset()) {
     mutable_asset()->::Event::Asset::MergeFrom(from.asset());
   }
@@ -2960,6 +3000,7 @@ void Transaction::InternalSwap(Transaction* other) {
   type_.Swap(&other->type_);
   senderpubkey_.Swap(&other->senderpubkey_);
   hash_.Swap(&other->hash_);
+  std::swap(timestamp_, other->timestamp_);
   std::swap(asset_, other->asset_);
   std::swap(domain_, other->domain_);
   std::swap(account_, other->account_);
@@ -3053,7 +3094,7 @@ void Transaction::clear_type() {
   // @@protoc_insertion_point(field_set_allocated:Event.Transaction.type)
 }
 
-// optional string senderPubkey = 4;
+// optional string senderPubkey = 3;
 void Transaction::clear_senderpubkey() {
   senderpubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -3097,7 +3138,7 @@ void Transaction::clear_senderpubkey() {
   // @@protoc_insertion_point(field_set_allocated:Event.Transaction.senderPubkey)
 }
 
-// optional string hash = 5;
+// optional string hash = 4;
 void Transaction::clear_hash() {
   hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -3139,6 +3180,20 @@ void Transaction::clear_hash() {
   }
   hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), hash);
   // @@protoc_insertion_point(field_set_allocated:Event.Transaction.hash)
+}
+
+// optional uint64 timestamp = 5;
+void Transaction::clear_timestamp() {
+  timestamp_ = GOOGLE_ULONGLONG(0);
+}
+ ::google::protobuf::uint64 Transaction::timestamp() const {
+  // @@protoc_insertion_point(field_get:Event.Transaction.timestamp)
+  return timestamp_;
+}
+ void Transaction::set_timestamp(::google::protobuf::uint64 value) {
+  
+  timestamp_ = value;
+  // @@protoc_insertion_point(field_set:Event.Transaction.timestamp)
 }
 
 // optional .Event.Asset asset = 6;

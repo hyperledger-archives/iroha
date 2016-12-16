@@ -29,8 +29,8 @@ namespace repository{
 
         // SampleAsset has only quantity no logic, so this value is int.
         bool update_quantity(
-            std::string& uuid,
-            std::string& assetName,
+            const std::string& uuid,
+            const std::string& assetName,
             long newValue
         );
 

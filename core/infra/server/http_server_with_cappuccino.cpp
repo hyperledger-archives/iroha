@@ -213,15 +213,13 @@ namespace http {
         Cappuccino::route<Cappuccino::Method::GET>( "/history/transaction",[](std::shared_ptr<Request> request) -> Response{
             std::string uuid = request->params("uuid");
             auto res = Response(request);
-            auto transaction_data = repository::transaction::findAll();
-            logger::debug("Cappuccino", "tx_size:"+std::to_string(transaction_data.size()));
+
             auto tx_json = json::array();
-            for(auto tx: transaction_data){
-                Event::Transaction protoTx;
-                if(!protoTx.ParseFromString(tx)){logger::error("Cappuccino", "! parse error");}
+            for(Event::Transaction protoTx: repository::transaction::findAll()){
                 json transaction_json = json::object();
 
                 auto data = split(protoTx.type(),",");
+
                 logger::debug("Cappuccino", "! tx:[" + protoTx.type() +"]");
                 logger::debug("Cappuccino", "! tx:asset name[" + protoTx.account().name() +"]");
                 logger::debug("Cappuccino", "! tx:asset public[" + protoTx.account().publickey() +"]");

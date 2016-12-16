@@ -24,6 +24,8 @@ limitations under the License.
 #include "../../../core/crypto/signature.hpp"
 #include "../../../core/infra/protobuf/convertor.hpp"
 #include "../../../core/consensus/consensus_event.hpp"
+#include "../../../core/repository/consensus/transaction_repository.hpp"
+#include "../../../core/repository/world_state_repository.hpp"
 
 using namespace command;
 using namespace transaction;
@@ -218,10 +220,10 @@ TEST(convertor, convertSerialize) {
 
 
     std::string strEvent;
-
     encodedEvent.SerializeToString(&strEvent);
 
     Event::ConsensusEvent encodedEvent2;
+
     encodedEvent2.ParseFromString(strEvent);
     ConsensusEvent<Transaction<Add<Account>>> reDecEvent = convertor::decode<Add<Account>>(encodedEvent2);
 
@@ -234,48 +236,4 @@ TEST(convertor, convertSerialize) {
     ASSERT_TRUE(reDecEvent.assets.size() == 3);
     ASSERT_STREQ(std::get<0>(reDecEvent.assets[1]).c_str(), "Sample2");
     ASSERT_TRUE(std::get<1>(reDecEvent.assets[1]) == 1204);
-
-}
-
-
-
-
-TEST(convertor, convertSerializeWithBase64) {
-
-    std::vector<std::tuple<std::string, long>> assets;
-    assets.push_back(std::make_pair("Sample1",  311));
-    assets.push_back(std::make_pair("Sample2", 1204));
-    assets.push_back(std::make_pair("Sample3",  324));
-    auto event = ConsensusEvent<Transaction<Add<Account>>>(
-            publicKey1,
-            publicKey2,
-            NAME,
-            std::move(assets)
-    );
-
-    event.addSignature(
-            publicKey1,
-            signature::sign( HASH, publicKey1, privateKey1).c_str()
-    );
-
-    Event::ConsensusEvent encodedEvent = convertor::encode(event);
-
-    std::string strEvent;
-    encodedEvent.SerializeToString(&strEvent);
-
-
-Event::ConsensusEvent encodedEvent2;
-encodedEvent2.ParseFromString(strEvent);
-ConsensusEvent<Transaction<Add<Account>>> reDecEvent = convertor::decode<Add<Account>>(encodedEvent2);
-
-ASSERT_TRUE(reDecEvent.eventSignatures().size() == 1);
-ASSERT_TRUE(std::get<0>(reDecEvent.eventSignatures()[0]) == publicKey1);
-ASSERT_TRUE(std::get<1>(reDecEvent.eventSignatures()[0]) == signature::sign( HASH, publicKey1, privateKey1).c_str());
-
-ASSERT_STREQ(reDecEvent.getCommandName(), "Add");
-ASSERT_STREQ(reDecEvent.name.c_str(), NAME);
-ASSERT_TRUE(reDecEvent.assets.size() == 3);
-ASSERT_STREQ(std::get<0>(reDecEvent.assets[1]).c_str(), "Sample2");
-ASSERT_TRUE(std::get<1>(reDecEvent.assets[1]) == 1204);
-
 }

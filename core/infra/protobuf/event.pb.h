@@ -652,9 +652,9 @@ class Transaction : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* release_type();
   void set_allocated_type(::std::string* type);
 
-  // optional string senderPubkey = 4;
+  // optional string senderPubkey = 3;
   void clear_senderpubkey();
-  static const int kSenderPubkeyFieldNumber = 4;
+  static const int kSenderPubkeyFieldNumber = 3;
   const ::std::string& senderpubkey() const;
   void set_senderpubkey(const ::std::string& value);
   void set_senderpubkey(const char* value);
@@ -663,9 +663,9 @@ class Transaction : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* release_senderpubkey();
   void set_allocated_senderpubkey(::std::string* senderpubkey);
 
-  // optional string hash = 5;
+  // optional string hash = 4;
   void clear_hash();
-  static const int kHashFieldNumber = 5;
+  static const int kHashFieldNumber = 4;
   const ::std::string& hash() const;
   void set_hash(const ::std::string& value);
   void set_hash(const char* value);
@@ -673,6 +673,12 @@ class Transaction : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* mutable_hash();
   ::std::string* release_hash();
   void set_allocated_hash(::std::string* hash);
+
+  // optional uint64 timestamp = 5;
+  void clear_timestamp();
+  static const int kTimestampFieldNumber = 5;
+  ::google::protobuf::uint64 timestamp() const;
+  void set_timestamp(::google::protobuf::uint64 value);
 
   // optional .Event.Asset asset = 6;
   bool has_asset() const;
@@ -721,6 +727,7 @@ class Transaction : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::internal::ArenaStringPtr type_;
   ::google::protobuf::internal::ArenaStringPtr senderpubkey_;
   ::google::protobuf::internal::ArenaStringPtr hash_;
+  ::google::protobuf::uint64 timestamp_;
   ::Event::Asset* asset_;
   ::Event::Domain* domain_;
   ::Event::Account* account_;
@@ -1525,7 +1532,7 @@ inline void Transaction::set_allocated_type(::std::string* type) {
   // @@protoc_insertion_point(field_set_allocated:Event.Transaction.type)
 }
 
-// optional string senderPubkey = 4;
+// optional string senderPubkey = 3;
 inline void Transaction::clear_senderpubkey() {
   senderpubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1569,7 +1576,7 @@ inline void Transaction::set_allocated_senderpubkey(::std::string* senderpubkey)
   // @@protoc_insertion_point(field_set_allocated:Event.Transaction.senderPubkey)
 }
 
-// optional string hash = 5;
+// optional string hash = 4;
 inline void Transaction::clear_hash() {
   hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1611,6 +1618,20 @@ inline void Transaction::set_allocated_hash(::std::string* hash) {
   }
   hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), hash);
   // @@protoc_insertion_point(field_set_allocated:Event.Transaction.hash)
+}
+
+// optional uint64 timestamp = 5;
+inline void Transaction::clear_timestamp() {
+  timestamp_ = GOOGLE_ULONGLONG(0);
+}
+inline ::google::protobuf::uint64 Transaction::timestamp() const {
+  // @@protoc_insertion_point(field_get:Event.Transaction.timestamp)
+  return timestamp_;
+}
+inline void Transaction::set_timestamp(::google::protobuf::uint64 value) {
+  
+  timestamp_ = value;
+  // @@protoc_insertion_point(field_set:Event.Transaction.timestamp)
 }
 
 // optional .Event.Asset asset = 6;

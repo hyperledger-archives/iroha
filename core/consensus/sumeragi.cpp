@@ -302,11 +302,17 @@ namespace sumeragi {
                 logger::explore("sumeragi", "commit count:"+std::to_string(context->commitedCount));
 
                 merkle_transaction_repository::commit(event); //TODO: add error handling in case not saved
+//
+//   I want to use SerializeToString, But It has a bug??
+//
+//                std::string strTx;
+//                event.SerializeToString(&strTx);
 
-                std::string strTx;
-                event.SerializeToString(&strTx);
-                std::string key = "transaction_" + event.transaction().asset().name() + "_" + datetime::unixtime_str();
-                repository::transaction::add( key, strTx);
+                std::string key =  event.transaction().asset().name() + "_" + datetime::unixtime_str();
+                repository::transaction::add( key, event);
+                logger::debug("sumeragi", "key[" + key +"]");
+
+                std::cout << "\033[91m+-ーーーーーーーーーーーー-+\033[0m" << std::endl;
 
                 logger::debug("sumeragi", "tx:" + event.transaction().type());
                 // I want to separate it function from sumeragi.

@@ -37,8 +37,10 @@ message EventSignature {
 message Transaction {
   repeated TxSignatures txSignatures = 1;
   string type = 2;
-  string senderPubkey = 4;
-  string hash = 5;
+  string senderPubkey = 3;
+  string hash = 4;
+
+  uint64 timestamp = 5;
 
   Asset asset = 6;
   Domain domain = 7;

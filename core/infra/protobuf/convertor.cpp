@@ -75,8 +75,7 @@ namespace convertor{
             auto sender = tx.senderpubkey();
             auto issuer = tx.senderpubkey();
             auto receiver = tx.receivepubkey();
-            return
-                ConsensusEvent<
+            auto res = ConsensusEvent<
                     Transaction<
                         Transfer<object::Asset>
                     >
@@ -87,6 +86,8 @@ namespace convertor{
                     std::move(name),
                     tx.asset().value()
                 );
+            res.timestamp = tx.timestamp();
+            return res;
         }
 
         template <>
@@ -94,8 +95,7 @@ namespace convertor{
             auto name = tx.asset().name();
             auto domain = tx.asset().domain();
             auto issuer = tx.senderpubkey();
-            return
-                ConsensusEvent<
+            auto res = ConsensusEvent<
                     Transaction<
                         Add<object::Asset>
                     >
@@ -106,6 +106,8 @@ namespace convertor{
                     tx.asset().value(),
                     tx.asset().precision()
                 );
+            res.timestamp = tx.timestamp();
+            return res;
         }
 
         template <>
@@ -117,8 +119,7 @@ namespace convertor{
                 assets.push_back(std::make_pair( as.name(), as.value()));
             }
             auto issuer = tx.senderpubkey();
-            return
-                ConsensusEvent<
+            auto res = ConsensusEvent<
                     Transaction<
                             Add<object::Account>
                     >
@@ -128,6 +129,8 @@ namespace convertor{
                     std::move(name),
                     std::move(assets)
                 );
+            res.timestamp = tx.timestamp();
+            return res;
         }
 
 
@@ -137,8 +140,7 @@ namespace convertor{
             auto name = tx.asset().name();
             auto issuer = tx.senderpubkey();
             auto owner = tx.senderpubkey();
-            return
-                ConsensusEvent<
+            auto res = ConsensusEvent<
                     Transaction<
                             Update<object::Asset>
                     >
@@ -148,6 +150,8 @@ namespace convertor{
                     std::move(name),
                     tx.asset().value()
                 );
+            res.timestamp = tx.timestamp();
+            return res;
         }
 
     }
