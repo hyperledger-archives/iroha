@@ -1,0 +1,1 @@
+cmd='/Applications/CLion.app/Contents/bin/cmake/bin/cmake;-GCodeBlocks - Unix Makefiles;/Users/makoto/soramitsudev/iroha/cmake-build-debug/gtest/src/googletest'
