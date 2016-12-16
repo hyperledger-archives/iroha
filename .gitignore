@@ -16,4 +16,4 @@ build/*
 .idea/*
 *xcworkspace*
 .vscode/*
-.cmake-build-debug/*
+*cmake-build-debug*
