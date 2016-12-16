@@ -194,6 +194,9 @@ LevelDB
 fabric3 (python library, not hyperledger/fabric)
 ```
 
+## Using docker and docker-compose for development
+Refer to [this guide](./docs/using_docker.md).
+
 ## Installation
 ```
 $ git submodule init
