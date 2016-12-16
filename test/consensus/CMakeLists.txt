@@ -21,6 +21,7 @@ target_link_libraries(sumeragi_test
     objects
     base64
     signature
+    convertor
     sumeragi
     connection_with_grpc
     peer_service_with_json

@@ -26,6 +26,7 @@ limitations under the License.
 #include "../../core/model/transaction.hpp"
 #include "../../core/service/peer_service.hpp"
 
+#include "../../core/infra/protobuf/convertor.hpp"
 #include "../../core/infra/protobuf/event.grpc.pb.h"
 
 template<typename T>
@@ -41,28 +42,47 @@ int main(int argc, char* argv[]){
     if(argc != 3){
         return 1;
     }
+    logger::setLogLevel(logger::LogLevel::DEBUG);
 
     connection::initialize_peer();
 
     if(std::string(argv[1]) == "sender"){
+        logger::debug("main", "I'm sender.");
         connection::addSubscriber(argv[2]);
+        logger::debug("main", "Add subscribed");
         while(1){
-            auto event = std::make_unique<ConsensusEvent<Transaction<Add<object::Asset>>>>(
+            auto event = ConsensusEvent<Transaction<Add<object::Asset>>>(
                     "sender",
                     "domain",
                     "Dummy transaction",
                     100,
                     0
             );
-            event->addTxSignature(
+
+            logger::debug("main", "issued event");
+            event.addSignature(
                     peer::getMyPublicKey(),
-                    signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
+                    signature::sign(event.getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
             );
-            //connection::sendAll(std::move(event));
+
+            event.addSignature(
+                    peer::getMyPublicKey(),
+                    signature::sign(event.getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
+            );
+
+
+            logger::debug("main", "Add signatured");
+            logger::debug("main", "start send");
+            std::cout <<" sig:" << event.eventSignatures().size() << "\n";
+            connection::sendAll(convertor::encode(event));
         }
-    }else if(std::string(argv[1]) == "public"){
-        connection::receive([](const std::string& from,std::unique_ptr<Event::ConsensusEvent> event){
-            //std::cout <<" receive : !" << event->g <<" "<< event->getNumValidSignatures()  << "\n";
+    }else if(std::string(argv[1]) == "receive"){
+        connection::receive([](const std::string& from,Event::ConsensusEvent& event){
+            std::cout <<" receive : order:" << event.order() << "\n";
+            std::cout <<" receive : sig size:" << event.eventsignatures_size() << "\n";
+            std::cout <<" receive : value:" << event.transaction().asset().value() << "\n";
+            std::cout <<" receive : name:" << event.transaction().asset().name() <<"\n";
+            std::cout <<" type:"<<  event.transaction().type()  << "\n";
         });
         connection::run();
     }
