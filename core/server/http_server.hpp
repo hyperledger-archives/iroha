@@ -26,7 +26,7 @@ namespace http {
   using Object = json_parse::Object;
 
   // Start server and keep on runing.
-  void server(std::map<std::string,std::function<int(Object)>> apis);
+  void server(std::map<std::string,std::function<Object(Object)>> apis);
 };
 
 #endif  // CORE_SERVER_HTTP_SERVER_HPP_

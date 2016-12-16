@@ -43,4 +43,9 @@ Transfer<Asset>::Transfer(
    receiverPublicKey(obj.dictSub["receiver"].str)
 {}
 
+template <>
+void Transfer<Asset>::execution() {
+
+}
+
 }

@@ -45,9 +45,9 @@ void server(){
     using Object = json_parse::Object;
 
 
-  std::map<std::string,std::function<int(Object)>> apis;
+  std::map<std::string,std::function<Object(Object)>> apis;
 
-  apis.insert(std::make_pair("/asset/operation", [](Object obj) -> int{
+  apis.insert(std::make_pair("/asset/operation", [](Object obj) -> Object{
 
       if(obj.dictSub.find("command") != obj.dictSub.end() && obj.dictSub.at("command").str == "add") {
 
@@ -66,10 +66,12 @@ void server(){
                       signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
               );
               connection::send(peer::getMyIp(), std::move(event));
+              return Object(json_parse::Type::STR, "Transaction accept");
+          }else{
+              return Object(json_parse::Type::STR, "Require some argv");
           }
-
       }
-      return 0;
+      return Object(json_parse::Type::STR, "Require command");
   }));
 
   http::server(apis);
@@ -89,6 +91,7 @@ int main() {
   }
 
   logger::info("main","process is :"+std::to_string(getpid()));
+  logger::setLogLevel(logger::LogLevel::EXPLORE);
 
   std::vector<std::unique_ptr<peer::Node>> nodes = peer::getPeerList();
   connection::initialize_peer();

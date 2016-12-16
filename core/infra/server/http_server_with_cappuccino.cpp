@@ -21,18 +21,6 @@ limitations under the License.
 #include "../../util/logger.hpp"
 
 #include "../../consensus/connection/connection.hpp"
-#include "../../consensus/consensus_event.hpp"
-#include "../../model/commands/transfer.hpp"
-#include "../../model/objects/domain.hpp"
-#include "../../model/transaction.hpp"
-#include "../../service/json_parse_with_json_nlohman.hpp"
-#include "../../service/peer_service.hpp"
-
-#include <iostream>
-#include <string>
-#include <vector>
-#include <memory>
-#include <thread>
 
   
 namespace http {
@@ -67,24 +55,20 @@ namespace http {
       Float
   };
 
-  void server(std::map<std::string,std::function<int(Object)>> apis) {
+  void server(std::map<std::string,std::function<Object(Object)>> apis) {
     logger::info("server", "initialize server!");
     Cappuccino::Cappuccino( 0, nullptr);
 
     for(const auto api: apis){
-        Cappuccino::route( api.first,[api](std::shared_ptr<Request> request) -> Response{
+        Cappuccino::route<Cappuccino::Method::GET>( api.first,[api](std::shared_ptr<Request> request) -> Response{
             auto data = request->json();
             auto res = Response(request);
             if(data.empty()) {
               res.json(responseError("Invalied JSON"));
               return res;
             }
-            api.second(json_parse_with_json_nlohman::parser::load(data));
+            res.json(json(json_parse_with_json_nlohman::parser::dump(api.second(json_parse_with_json_nlohman::parser::load(data)))));
 
-            res.json({
-                {"message", "OK"},
-                {"status", 200}
-            });
             return res;
         });
     };

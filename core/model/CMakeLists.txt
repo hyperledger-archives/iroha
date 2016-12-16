@@ -5,7 +5,8 @@ ADD_LIBRARY(transaction STATIC
   transaction.cpp
 )
 
-target_link_libraries(transaction 
+target_link_libraries(transaction
   commands
   objects
+  datetime
 )

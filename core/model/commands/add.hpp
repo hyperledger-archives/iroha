@@ -29,7 +29,7 @@ limitations under the License.
 namespace command {
 
 template <typename T>
-class Add: public T {
+class Add: protected T {
   public:
 
     using Object = json_parse::Object;
@@ -50,6 +50,8 @@ class Add: public T {
     std::string getCommandName() const{
         return "Add";
     }
+
+    void execution();
 
     Object dump() {
         Object obj = Object(Type::DICT);

@@ -29,8 +29,8 @@ limitations under the License.
 namespace command {
 
 template <typename T>
-class Transfer: public T {
-
+class Transfer: protected T {
+  protected:
    std::string senderPublicKey;
    std::string receiverPublicKey;
   public:
@@ -53,6 +53,8 @@ class Transfer: public T {
     Transfer(
         Object obj
     );
+
+    void execution();
 
     Object dump() {
         Object obj = Object(Type::DICT);

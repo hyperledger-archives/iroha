@@ -45,7 +45,7 @@ namespace repository {
 
               bool loggerStatus(leveldb::Status const status) {
                   if (!status.ok()) {
-                      logger::info(__FILE__, status.ToString());
+                      logger::info("WorldStateRepositoryWithLeveldb", status.ToString());
                       return false;
                   }
                   return true;
@@ -56,7 +56,7 @@ namespace repository {
                   leveldb::Options options;
                   options.error_if_exists = false;
                   options.create_if_missing = true;
-                  loggerStatus(leveldb::DB::Open(options, "/tmp/irohaDB", &tmpDb)); //TODO: This path should be configurable
+                  loggerStatus(leveldb::DB::Open(options, "/tmp/iroha_ledger", &tmpDb)); //TODO: This path should be configurable
                   db.reset(tmpDb);
               }
           }

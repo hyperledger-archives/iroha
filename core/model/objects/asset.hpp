@@ -25,7 +25,7 @@ limitations under the License.
 namespace object {
 
 class Asset {
-
+protected:
     std::string domain;
     std::string name;
     unsigned long long value;
