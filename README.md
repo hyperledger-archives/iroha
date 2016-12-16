@@ -9,6 +9,7 @@
 
 # Pull Requests
 Please include a developer certificate with pull requests: http://developercertificate.org/
+Please sign: https://www.clahub.com/agreements/hyperledger/iroha
 
 # Architecture (Draft)
 
