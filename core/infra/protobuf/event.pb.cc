@@ -27,6 +27,9 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* Domain_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   Domain_reflection_ = NULL;
+const ::google::protobuf::Descriptor* Account_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  Account_reflection_ = NULL;
 const ::google::protobuf::Descriptor* TxSignatures_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   TxSignatures_reflection_ = NULL;
@@ -87,7 +90,24 @@ void protobuf_AssignDesc_event_2eproto() {
       sizeof(Domain),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Domain, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Domain, _is_default_instance_));
-  TxSignatures_descriptor_ = file->message_type(2);
+  Account_descriptor_ = file->message_type(2);
+  static const int Account_offsets_[3] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Account, publickey_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Account, name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Account, assets_),
+  };
+  Account_reflection_ =
+    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
+      Account_descriptor_,
+      Account::default_instance_,
+      Account_offsets_,
+      -1,
+      -1,
+      -1,
+      sizeof(Account),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Account, _internal_metadata_),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Account, _is_default_instance_));
+  TxSignatures_descriptor_ = file->message_type(3);
   static const int TxSignatures_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TxSignatures, publickey_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TxSignatures, signature_),
@@ -103,7 +123,7 @@ void protobuf_AssignDesc_event_2eproto() {
       sizeof(TxSignatures),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TxSignatures, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TxSignatures, _is_default_instance_));
-  EventSignature_descriptor_ = file->message_type(3);
+  EventSignature_descriptor_ = file->message_type(4);
   static const int EventSignature_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EventSignature, publickey_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EventSignature, signature_),
@@ -119,14 +139,15 @@ void protobuf_AssignDesc_event_2eproto() {
       sizeof(EventSignature),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EventSignature, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EventSignature, _is_default_instance_));
-  Transaction_descriptor_ = file->message_type(4);
-  static const int Transaction_offsets_[7] = {
+  Transaction_descriptor_ = file->message_type(5);
+  static const int Transaction_offsets_[8] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, txsignatures_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, senderpubkey_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, hash_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, asset_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, domain_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, account_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, receivepubkey_),
   };
   Transaction_reflection_ =
@@ -140,7 +161,7 @@ void protobuf_AssignDesc_event_2eproto() {
       sizeof(Transaction),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, _is_default_instance_));
-  ConsensusEvent_descriptor_ = file->message_type(5);
+  ConsensusEvent_descriptor_ = file->message_type(6);
   static const int ConsensusEvent_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConsensusEvent, eventsignatures_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConsensusEvent, transaction_),
@@ -157,7 +178,7 @@ void protobuf_AssignDesc_event_2eproto() {
       sizeof(ConsensusEvent),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConsensusEvent, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConsensusEvent, _is_default_instance_));
-  StatusResponse_descriptor_ = file->message_type(6);
+  StatusResponse_descriptor_ = file->message_type(7);
   static const int StatusResponse_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StatusResponse, value_),
   };
@@ -190,6 +211,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       Domain_descriptor_, &Domain::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+      Account_descriptor_, &Account::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       TxSignatures_descriptor_, &TxSignatures::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       EventSignature_descriptor_, &EventSignature::default_instance());
@@ -208,6 +231,8 @@ void protobuf_ShutdownFile_event_2eproto() {
   delete Asset_reflection_;
   delete Domain::default_instance_;
   delete Domain_reflection_;
+  delete Account::default_instance_;
+  delete Account_reflection_;
   delete TxSignatures::default_instance_;
   delete TxSignatures_reflection_;
   delete EventSignature::default_instance_;
@@ -231,25 +256,28 @@ void protobuf_AddDesc_event_2eproto() {
     "\n\013event.proto\022\005Event\"G\n\005Asset\022\016\n\006domain\030"
     "\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\r\n\005value\030\003 \001(\004\022\021\n\tpr"
     "ecision\030\004 \001(\004\".\n\006Domain\022\026\n\016ownerPublicKe"
-    "y\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\"4\n\014TxSignatures\022\021\n"
-    "\tpublicKey\030\001 \001(\t\022\021\n\tsignature\030\002 \001(\t\"6\n\016E"
-    "ventSignature\022\021\n\tpublicKey\030\001 \001(\t\022\021\n\tsign"
-    "ature\030\002 \001(\t\"\275\001\n\013Transaction\022)\n\014txSignatu"
-    "res\030\001 \003(\0132\023.Event.TxSignatures\022\014\n\004type\030\002"
-    " \001(\t\022\024\n\014senderPubkey\030\004 \001(\t\022\014\n\004hash\030\005 \001(\t"
-    "\022\033\n\005asset\030\006 \001(\0132\014.Event.Asset\022\035\n\006domain\030"
-    "\007 \001(\0132\r.Event.Domain\022\025\n\rreceivePubkey\030\010 "
-    "\001(\t\"x\n\016ConsensusEvent\022.\n\017eventSignatures"
-    "\030\001 \003(\0132\025.Event.EventSignature\022\'\n\013transac"
-    "tion\030\002 \001(\0132\022.Event.Transaction\022\r\n\005order\030"
-    "\003 \001(\004\"\037\n\016StatusResponse\022\r\n\005value\030\001 \001(\t2N"
-    "\n\017IrohaConnection\022;\n\tOperation\022\025.Event.C"
-    "onsensusEvent\032\025.Event.StatusResponse\"\000B\003"
-    "\200\001\000b\006proto3", 691);
+    "y\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\"H\n\007Account\022\021\n\tpubl"
+    "icKey\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\034\n\006assets\030\003 \003("
+    "\0132\014.Event.Asset\"4\n\014TxSignatures\022\021\n\tpubli"
+    "cKey\030\001 \001(\t\022\021\n\tsignature\030\002 \001(\t\"6\n\016EventSi"
+    "gnature\022\021\n\tpublicKey\030\001 \001(\t\022\021\n\tsignature\030"
+    "\002 \001(\t\"\336\001\n\013Transaction\022)\n\014txSignatures\030\001 "
+    "\003(\0132\023.Event.TxSignatures\022\014\n\004type\030\002 \001(\t\022\024"
+    "\n\014senderPubkey\030\004 \001(\t\022\014\n\004hash\030\005 \001(\t\022\033\n\005as"
+    "set\030\006 \001(\0132\014.Event.Asset\022\035\n\006domain\030\007 \001(\0132"
+    "\r.Event.Domain\022\037\n\007account\030\010 \001(\0132\016.Event."
+    "Account\022\025\n\rreceivePubkey\030\t \001(\t\"x\n\016Consen"
+    "susEvent\022.\n\017eventSignatures\030\001 \003(\0132\025.Even"
+    "t.EventSignature\022\'\n\013transaction\030\002 \001(\0132\022."
+    "Event.Transaction\022\r\n\005order\030\003 \001(\004\"\037\n\016Stat"
+    "usResponse\022\r\n\005value\030\001 \001(\t2N\n\017IrohaConnec"
+    "tion\022;\n\tOperation\022\025.Event.ConsensusEvent"
+    "\032\025.Event.StatusResponse\"\000B\003\200\001\000b\006proto3", 798);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "event.proto", &protobuf_RegisterTypes);
   Asset::default_instance_ = new Asset();
   Domain::default_instance_ = new Domain();
+  Account::default_instance_ = new Account();
   TxSignatures::default_instance_ = new TxSignatures();
   EventSignature::default_instance_ = new EventSignature();
   Transaction::default_instance_ = new Transaction();
@@ -257,6 +285,7 @@ void protobuf_AddDesc_event_2eproto() {
   StatusResponse::default_instance_ = new StatusResponse();
   Asset::default_instance_->InitAsDefaultInstance();
   Domain::default_instance_->InitAsDefaultInstance();
+  Account::default_instance_->InitAsDefaultInstance();
   TxSignatures::default_instance_->InitAsDefaultInstance();
   EventSignature::default_instance_->InitAsDefaultInstance();
   Transaction::default_instance_->InitAsDefaultInstance();
@@ -1164,6 +1193,460 @@ void Domain::clear_name() {
 // ===================================================================
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int Account::kPublicKeyFieldNumber;
+const int Account::kNameFieldNumber;
+const int Account::kAssetsFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+Account::Account()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:Event.Account)
+}
+
+void Account::InitAsDefaultInstance() {
+  _is_default_instance_ = true;
+}
+
+Account::Account(const Account& from)
+  : ::google::protobuf::Message(),
+    _internal_metadata_(NULL) {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:Event.Account)
+}
+
+void Account::SharedCtor() {
+    _is_default_instance_ = false;
+  ::google::protobuf::internal::GetEmptyString();
+  _cached_size_ = 0;
+  publickey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+
+Account::~Account() {
+  // @@protoc_insertion_point(destructor:Event.Account)
+  SharedDtor();
+}
+
+void Account::SharedDtor() {
+  publickey_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (this != default_instance_) {
+  }
+}
+
+void Account::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* Account::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return Account_descriptor_;
+}
+
+const Account& Account::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_event_2eproto();
+  return *default_instance_;
+}
+
+Account* Account::default_instance_ = NULL;
+
+Account* Account::New(::google::protobuf::Arena* arena) const {
+  Account* n = new Account;
+  if (arena != NULL) {
+    arena->Own(n);
+  }
+  return n;
+}
+
+void Account::Clear() {
+// @@protoc_insertion_point(message_clear_start:Event.Account)
+  publickey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  assets_.Clear();
+}
+
+bool Account::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:Event.Account)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string publicKey = 1;
+      case 1: {
+        if (tag == 10) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_publickey()));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            this->publickey().data(), this->publickey().length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "Event.Account.publicKey"));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(18)) goto parse_name;
+        break;
+      }
+
+      // optional string name = 2;
+      case 2: {
+        if (tag == 18) {
+         parse_name:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "Event.Account.name"));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_assets;
+        break;
+      }
+
+      // repeated .Event.Asset assets = 3;
+      case 3: {
+        if (tag == 26) {
+         parse_assets:
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_assets:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+                input, add_assets()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_loop_assets;
+        input->UnsafeDecrementRecursionDepth();
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:Event.Account)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:Event.Account)
+  return false;
+#undef DO_
+}
+
+void Account::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:Event.Account)
+  // optional string publicKey = 1;
+  if (this->publickey().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->publickey().data(), this->publickey().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "Event.Account.publicKey");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      1, this->publickey(), output);
+  }
+
+  // optional string name = 2;
+  if (this->name().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "Event.Account.name");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      2, this->name(), output);
+  }
+
+  // repeated .Event.Asset assets = 3;
+  for (unsigned int i = 0, n = this->assets_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      3, this->assets(i), output);
+  }
+
+  // @@protoc_insertion_point(serialize_end:Event.Account)
+}
+
+::google::protobuf::uint8* Account::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:Event.Account)
+  // optional string publicKey = 1;
+  if (this->publickey().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->publickey().data(), this->publickey().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "Event.Account.publicKey");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->publickey(), target);
+  }
+
+  // optional string name = 2;
+  if (this->name().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "Event.Account.name");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        2, this->name(), target);
+  }
+
+  // repeated .Event.Asset assets = 3;
+  for (unsigned int i = 0, n = this->assets_size(); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        3, this->assets(i), false, target);
+  }
+
+  // @@protoc_insertion_point(serialize_to_array_end:Event.Account)
+  return target;
+}
+
+int Account::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:Event.Account)
+  int total_size = 0;
+
+  // optional string publicKey = 1;
+  if (this->publickey().size() > 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->publickey());
+  }
+
+  // optional string name = 2;
+  if (this->name().size() > 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->name());
+  }
+
+  // repeated .Event.Asset assets = 3;
+  total_size += 1 * this->assets_size();
+  for (int i = 0; i < this->assets_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        this->assets(i));
+  }
+
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void Account::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:Event.Account)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  const Account* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Account>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:Event.Account)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:Event.Account)
+    MergeFrom(*source);
+  }
+}
+
+void Account::MergeFrom(const Account& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:Event.Account)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  assets_.MergeFrom(from.assets_);
+  if (from.publickey().size() > 0) {
+
+    publickey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.publickey_);
+  }
+  if (from.name().size() > 0) {
+
+    name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
+  }
+}
+
+void Account::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:Event.Account)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Account::CopyFrom(const Account& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:Event.Account)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Account::IsInitialized() const {
+
+  return true;
+}
+
+void Account::Swap(Account* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void Account::InternalSwap(Account* other) {
+  publickey_.Swap(&other->publickey_);
+  name_.Swap(&other->name_);
+  assets_.UnsafeArenaSwap(&other->assets_);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  std::swap(_cached_size_, other->_cached_size_);
+}
+
+::google::protobuf::Metadata Account::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = Account_descriptor_;
+  metadata.reflection = Account_reflection_;
+  return metadata;
+}
+
+#if PROTOBUF_INLINE_NOT_IN_HEADERS
+// Account
+
+// optional string publicKey = 1;
+void Account::clear_publickey() {
+  publickey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ const ::std::string& Account::publickey() const {
+  // @@protoc_insertion_point(field_get:Event.Account.publicKey)
+  return publickey_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void Account::set_publickey(const ::std::string& value) {
+  
+  publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Event.Account.publicKey)
+}
+ void Account::set_publickey(const char* value) {
+  
+  publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Event.Account.publicKey)
+}
+ void Account::set_publickey(const char* value, size_t size) {
+  
+  publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Event.Account.publicKey)
+}
+ ::std::string* Account::mutable_publickey() {
+  
+  // @@protoc_insertion_point(field_mutable:Event.Account.publicKey)
+  return publickey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* Account::release_publickey() {
+  // @@protoc_insertion_point(field_release:Event.Account.publicKey)
+  
+  return publickey_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void Account::set_allocated_publickey(::std::string* publickey) {
+  if (publickey != NULL) {
+    
+  } else {
+    
+  }
+  publickey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), publickey);
+  // @@protoc_insertion_point(field_set_allocated:Event.Account.publicKey)
+}
+
+// optional string name = 2;
+void Account::clear_name() {
+  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ const ::std::string& Account::name() const {
+  // @@protoc_insertion_point(field_get:Event.Account.name)
+  return name_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void Account::set_name(const ::std::string& value) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Event.Account.name)
+}
+ void Account::set_name(const char* value) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Event.Account.name)
+}
+ void Account::set_name(const char* value, size_t size) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Event.Account.name)
+}
+ ::std::string* Account::mutable_name() {
+  
+  // @@protoc_insertion_point(field_mutable:Event.Account.name)
+  return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* Account::release_name() {
+  // @@protoc_insertion_point(field_release:Event.Account.name)
+  
+  return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void Account::set_allocated_name(::std::string* name) {
+  if (name != NULL) {
+    
+  } else {
+    
+  }
+  name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
+  // @@protoc_insertion_point(field_set_allocated:Event.Account.name)
+}
+
+// repeated .Event.Asset assets = 3;
+int Account::assets_size() const {
+  return assets_.size();
+}
+void Account::clear_assets() {
+  assets_.Clear();
+}
+const ::Event::Asset& Account::assets(int index) const {
+  // @@protoc_insertion_point(field_get:Event.Account.assets)
+  return assets_.Get(index);
+}
+::Event::Asset* Account::mutable_assets(int index) {
+  // @@protoc_insertion_point(field_mutable:Event.Account.assets)
+  return assets_.Mutable(index);
+}
+::Event::Asset* Account::add_assets() {
+  // @@protoc_insertion_point(field_add:Event.Account.assets)
+  return assets_.Add();
+}
+::google::protobuf::RepeatedPtrField< ::Event::Asset >*
+Account::mutable_assets() {
+  // @@protoc_insertion_point(field_mutable_list:Event.Account.assets)
+  return &assets_;
+}
+const ::google::protobuf::RepeatedPtrField< ::Event::Asset >&
+Account::assets() const {
+  // @@protoc_insertion_point(field_list:Event.Account.assets)
+  return assets_;
+}
+
+#endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
+
+// ===================================================================
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int TxSignatures::kPublicKeyFieldNumber;
 const int TxSignatures::kSignatureFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -1934,6 +2417,7 @@ const int Transaction::kSenderPubkeyFieldNumber;
 const int Transaction::kHashFieldNumber;
 const int Transaction::kAssetFieldNumber;
 const int Transaction::kDomainFieldNumber;
+const int Transaction::kAccountFieldNumber;
 const int Transaction::kReceivePubkeyFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
@@ -1947,6 +2431,7 @@ void Transaction::InitAsDefaultInstance() {
   _is_default_instance_ = true;
   asset_ = const_cast< ::Event::Asset*>(&::Event::Asset::default_instance());
   domain_ = const_cast< ::Event::Domain*>(&::Event::Domain::default_instance());
+  account_ = const_cast< ::Event::Account*>(&::Event::Account::default_instance());
 }
 
 Transaction::Transaction(const Transaction& from)
@@ -1966,6 +2451,7 @@ void Transaction::SharedCtor() {
   hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   asset_ = NULL;
   domain_ = NULL;
+  account_ = NULL;
   receivepubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
@@ -1982,6 +2468,7 @@ void Transaction::SharedDtor() {
   if (this != default_instance_) {
     delete asset_;
     delete domain_;
+    delete account_;
   }
 }
 
@@ -2019,6 +2506,8 @@ void Transaction::Clear() {
   asset_ = NULL;
   if (GetArenaNoVirtual() == NULL && domain_ != NULL) delete domain_;
   domain_ = NULL;
+  if (GetArenaNoVirtual() == NULL && account_ != NULL) delete account_;
+  account_ = NULL;
   receivepubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   txsignatures_.Clear();
 }
@@ -2122,13 +2611,26 @@ bool Transaction::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(66)) goto parse_receivePubkey;
+        if (input->ExpectTag(66)) goto parse_account;
         break;
       }
 
-      // optional string receivePubkey = 8;
+      // optional .Event.Account account = 8;
       case 8: {
         if (tag == 66) {
+         parse_account:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_account()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(74)) goto parse_receivePubkey;
+        break;
+      }
+
+      // optional string receivePubkey = 9;
+      case 9: {
+        if (tag == 74) {
          parse_receivePubkey:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_receivepubkey()));
@@ -2215,14 +2717,20 @@ void Transaction::SerializeWithCachedSizes(
       7, *this->domain_, output);
   }
 
-  // optional string receivePubkey = 8;
+  // optional .Event.Account account = 8;
+  if (this->has_account()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      8, *this->account_, output);
+  }
+
+  // optional string receivePubkey = 9;
   if (this->receivepubkey().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->receivepubkey().data(), this->receivepubkey().length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "Event.Transaction.receivePubkey");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      8, this->receivepubkey(), output);
+      9, this->receivepubkey(), output);
   }
 
   // @@protoc_insertion_point(serialize_end:Event.Transaction)
@@ -2285,7 +2793,14 @@ void Transaction::SerializeWithCachedSizes(
         7, *this->domain_, false, target);
   }
 
-  // optional string receivePubkey = 8;
+  // optional .Event.Account account = 8;
+  if (this->has_account()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        8, *this->account_, false, target);
+  }
+
+  // optional string receivePubkey = 9;
   if (this->receivepubkey().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->receivepubkey().data(), this->receivepubkey().length(),
@@ -2293,7 +2808,7 @@ void Transaction::SerializeWithCachedSizes(
       "Event.Transaction.receivePubkey");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        8, this->receivepubkey(), target);
+        9, this->receivepubkey(), target);
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:Event.Transaction)
@@ -2339,7 +2854,14 @@ int Transaction::ByteSize() const {
         *this->domain_);
   }
 
-  // optional string receivePubkey = 8;
+  // optional .Event.Account account = 8;
+  if (this->has_account()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        *this->account_);
+  }
+
+  // optional string receivePubkey = 9;
   if (this->receivepubkey().size() > 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -2401,6 +2923,9 @@ void Transaction::MergeFrom(const Transaction& from) {
   if (from.has_domain()) {
     mutable_domain()->::Event::Domain::MergeFrom(from.domain());
   }
+  if (from.has_account()) {
+    mutable_account()->::Event::Account::MergeFrom(from.account());
+  }
   if (from.receivepubkey().size() > 0) {
 
     receivepubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.receivepubkey_);
@@ -2437,6 +2962,7 @@ void Transaction::InternalSwap(Transaction* other) {
   hash_.Swap(&other->hash_);
   std::swap(asset_, other->asset_);
   std::swap(domain_, other->domain_);
+  std::swap(account_, other->account_);
   receivepubkey_.Swap(&other->receivepubkey_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
@@ -2691,7 +3217,45 @@ void Transaction::set_allocated_domain(::Event::Domain* domain) {
   // @@protoc_insertion_point(field_set_allocated:Event.Transaction.domain)
 }
 
-// optional string receivePubkey = 8;
+// optional .Event.Account account = 8;
+bool Transaction::has_account() const {
+  return !_is_default_instance_ && account_ != NULL;
+}
+void Transaction::clear_account() {
+  if (GetArenaNoVirtual() == NULL && account_ != NULL) delete account_;
+  account_ = NULL;
+}
+const ::Event::Account& Transaction::account() const {
+  // @@protoc_insertion_point(field_get:Event.Transaction.account)
+  return account_ != NULL ? *account_ : *default_instance_->account_;
+}
+::Event::Account* Transaction::mutable_account() {
+  
+  if (account_ == NULL) {
+    account_ = new ::Event::Account;
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Transaction.account)
+  return account_;
+}
+::Event::Account* Transaction::release_account() {
+  // @@protoc_insertion_point(field_release:Event.Transaction.account)
+  
+  ::Event::Account* temp = account_;
+  account_ = NULL;
+  return temp;
+}
+void Transaction::set_allocated_account(::Event::Account* account) {
+  delete account_;
+  account_ = account;
+  if (account) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Transaction.account)
+}
+
+// optional string receivePubkey = 9;
 void Transaction::clear_receivepubkey() {
   receivepubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }

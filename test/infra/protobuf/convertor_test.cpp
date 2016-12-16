@@ -16,6 +16,8 @@ limitations under the License.
 #include <gtest/gtest.h>
 
 #include <iostream>
+#include <vector>
+#include <tuple>
 
 #include "../../../core/crypto/signature.hpp"
 #include "../../../core/infra/protobuf/convertor.hpp"
@@ -34,6 +36,7 @@ auto privateKey2 = "0PpZ8x/hT5uUQ6y2e/Mq3Pk+j90+q1Zch3yDzBY42ny9bO6aQNKkn90Juwzi
 auto HASH = "7c4f8b3fceae31610ff1b683eb7412be65053477b56c79a37eb632177a9370e9";
 auto domain = "test_domain";
 auto asset = "DummyAsset";
+auto name = "MizukiSonoko";
 
 TEST(convertor, convertAddTransaction) {
 
@@ -154,4 +157,37 @@ TEST(convertor, convertUpdateTransaction) {
     ASSERT_STREQ(reDecEvent.getCommandName(), "Update");
     ASSERT_STREQ(reDecEvent.name.c_str(), asset);
     ASSERT_TRUE(reDecEvent.value == 1204);
+}
+
+
+TEST(convertor, convertAddAccountTransaction) {
+
+    std::vector<std::tuple<std::string, long>> assets;
+    assets.push_back(std::make_pair("Sample1",  311));
+    assets.push_back(std::make_pair("Sample2", 1204));
+    assets.push_back(std::make_pair("Sample3",  324));
+    auto event = ConsensusEvent<Transaction<Add<Account>>>(
+        publicKey1,
+        publicKey2,
+        name,
+        std::move(assets)
+    );
+
+    event.addSignature(
+        publicKey1,
+        signature::sign( HASH, publicKey1, privateKey1).c_str()
+    );
+
+    Event::ConsensusEvent encodedEvent = convertor::encode(event);
+    ConsensusEvent<Transaction<Add<Account>>> reDecEvent = convertor::decode<Add<Account>>(encodedEvent);
+
+    ASSERT_TRUE(reDecEvent.eventSignatures().size() == 1);
+    ASSERT_TRUE(std::get<0>(reDecEvent.eventSignatures()[0]) == publicKey1);
+    ASSERT_TRUE(std::get<1>(reDecEvent.eventSignatures()[0]) == signature::sign( HASH, publicKey1, privateKey1).c_str());
+
+    ASSERT_STREQ(reDecEvent.getCommandName(), "Add");
+    ASSERT_STREQ(reDecEvent.name.c_str(), name);
+    ASSERT_TRUE(reDecEvent.assets.size() == 3);
+    ASSERT_STREQ(std::get<0>(reDecEvent.assets[1]).c_str(), "Sample2");
+    ASSERT_TRUE(std::get<1>(reDecEvent.assets[1]) == 1204);
 }

@@ -10,6 +10,7 @@ include_directories(
 link_directories(
     ${ED25519_PATH}/lib
     ${PROJECT_BINARY_DIR}/lib
+    ${PROJECT_SOURCE_DIR}/core/infra/crypto
 )
 
 add_executable(convertor_test
@@ -20,6 +21,8 @@ target_link_libraries(convertor_test
    signature
    datetime
    objects
+
+   hash
 
     grpc++
     grpc++_reflection

@@ -36,6 +36,7 @@ void protobuf_AddDesc_event_2eproto();
 void protobuf_AssignDesc_event_2eproto();
 void protobuf_ShutdownFile_event_2eproto();
 
+class Account;
 class Asset;
 class ConsensusEvent;
 class Domain;
@@ -255,6 +256,118 @@ class Domain : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
 
   void InitAsDefaultInstance();
   static Domain* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class Account : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:Event.Account) */ {
+ public:
+  Account();
+  virtual ~Account();
+
+  Account(const Account& from);
+
+  inline Account& operator=(const Account& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const Account& default_instance();
+
+  void Swap(Account* other);
+
+  // implements Message ----------------------------------------------
+
+  inline Account* New() const { return New(NULL); }
+
+  Account* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const Account& from);
+  void MergeFrom(const Account& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(Account* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string publicKey = 1;
+  void clear_publickey();
+  static const int kPublicKeyFieldNumber = 1;
+  const ::std::string& publickey() const;
+  void set_publickey(const ::std::string& value);
+  void set_publickey(const char* value);
+  void set_publickey(const char* value, size_t size);
+  ::std::string* mutable_publickey();
+  ::std::string* release_publickey();
+  void set_allocated_publickey(::std::string* publickey);
+
+  // optional string name = 2;
+  void clear_name();
+  static const int kNameFieldNumber = 2;
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
+
+  // repeated .Event.Asset assets = 3;
+  int assets_size() const;
+  void clear_assets();
+  static const int kAssetsFieldNumber = 3;
+  const ::Event::Asset& assets(int index) const;
+  ::Event::Asset* mutable_assets(int index);
+  ::Event::Asset* add_assets();
+  ::google::protobuf::RepeatedPtrField< ::Event::Asset >*
+      mutable_assets();
+  const ::google::protobuf::RepeatedPtrField< ::Event::Asset >&
+      assets() const;
+
+  // @@protoc_insertion_point(class_scope:Event.Account)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::internal::ArenaStringPtr publickey_;
+  ::google::protobuf::internal::ArenaStringPtr name_;
+  ::google::protobuf::RepeatedPtrField< ::Event::Asset > assets_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_event_2eproto();
+  friend void protobuf_AssignDesc_event_2eproto();
+  friend void protobuf_ShutdownFile_event_2eproto();
+
+  void InitAsDefaultInstance();
+  static Account* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -579,9 +692,18 @@ class Transaction : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::Event::Domain* release_domain();
   void set_allocated_domain(::Event::Domain* domain);
 
-  // optional string receivePubkey = 8;
+  // optional .Event.Account account = 8;
+  bool has_account() const;
+  void clear_account();
+  static const int kAccountFieldNumber = 8;
+  const ::Event::Account& account() const;
+  ::Event::Account* mutable_account();
+  ::Event::Account* release_account();
+  void set_allocated_account(::Event::Account* account);
+
+  // optional string receivePubkey = 9;
   void clear_receivepubkey();
-  static const int kReceivePubkeyFieldNumber = 8;
+  static const int kReceivePubkeyFieldNumber = 9;
   const ::std::string& receivepubkey() const;
   void set_receivepubkey(const ::std::string& value);
   void set_receivepubkey(const char* value);
@@ -601,6 +723,7 @@ class Transaction : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::internal::ArenaStringPtr hash_;
   ::Event::Asset* asset_;
   ::Event::Domain* domain_;
+  ::Event::Account* account_;
   ::google::protobuf::internal::ArenaStringPtr receivepubkey_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_event_2eproto();
@@ -1016,6 +1139,128 @@ inline void Domain::set_allocated_name(::std::string* name) {
   }
   name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
   // @@protoc_insertion_point(field_set_allocated:Event.Domain.name)
+}
+
+// -------------------------------------------------------------------
+
+// Account
+
+// optional string publicKey = 1;
+inline void Account::clear_publickey() {
+  publickey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& Account::publickey() const {
+  // @@protoc_insertion_point(field_get:Event.Account.publicKey)
+  return publickey_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Account::set_publickey(const ::std::string& value) {
+  
+  publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Event.Account.publicKey)
+}
+inline void Account::set_publickey(const char* value) {
+  
+  publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Event.Account.publicKey)
+}
+inline void Account::set_publickey(const char* value, size_t size) {
+  
+  publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Event.Account.publicKey)
+}
+inline ::std::string* Account::mutable_publickey() {
+  
+  // @@protoc_insertion_point(field_mutable:Event.Account.publicKey)
+  return publickey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* Account::release_publickey() {
+  // @@protoc_insertion_point(field_release:Event.Account.publicKey)
+  
+  return publickey_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Account::set_allocated_publickey(::std::string* publickey) {
+  if (publickey != NULL) {
+    
+  } else {
+    
+  }
+  publickey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), publickey);
+  // @@protoc_insertion_point(field_set_allocated:Event.Account.publicKey)
+}
+
+// optional string name = 2;
+inline void Account::clear_name() {
+  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& Account::name() const {
+  // @@protoc_insertion_point(field_get:Event.Account.name)
+  return name_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Account::set_name(const ::std::string& value) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Event.Account.name)
+}
+inline void Account::set_name(const char* value) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Event.Account.name)
+}
+inline void Account::set_name(const char* value, size_t size) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Event.Account.name)
+}
+inline ::std::string* Account::mutable_name() {
+  
+  // @@protoc_insertion_point(field_mutable:Event.Account.name)
+  return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* Account::release_name() {
+  // @@protoc_insertion_point(field_release:Event.Account.name)
+  
+  return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Account::set_allocated_name(::std::string* name) {
+  if (name != NULL) {
+    
+  } else {
+    
+  }
+  name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
+  // @@protoc_insertion_point(field_set_allocated:Event.Account.name)
+}
+
+// repeated .Event.Asset assets = 3;
+inline int Account::assets_size() const {
+  return assets_.size();
+}
+inline void Account::clear_assets() {
+  assets_.Clear();
+}
+inline const ::Event::Asset& Account::assets(int index) const {
+  // @@protoc_insertion_point(field_get:Event.Account.assets)
+  return assets_.Get(index);
+}
+inline ::Event::Asset* Account::mutable_assets(int index) {
+  // @@protoc_insertion_point(field_mutable:Event.Account.assets)
+  return assets_.Mutable(index);
+}
+inline ::Event::Asset* Account::add_assets() {
+  // @@protoc_insertion_point(field_add:Event.Account.assets)
+  return assets_.Add();
+}
+inline ::google::protobuf::RepeatedPtrField< ::Event::Asset >*
+Account::mutable_assets() {
+  // @@protoc_insertion_point(field_mutable_list:Event.Account.assets)
+  return &assets_;
+}
+inline const ::google::protobuf::RepeatedPtrField< ::Event::Asset >&
+Account::assets() const {
+  // @@protoc_insertion_point(field_list:Event.Account.assets)
+  return assets_;
 }
 
 // -------------------------------------------------------------------
@@ -1444,7 +1689,45 @@ inline void Transaction::set_allocated_domain(::Event::Domain* domain) {
   // @@protoc_insertion_point(field_set_allocated:Event.Transaction.domain)
 }
 
-// optional string receivePubkey = 8;
+// optional .Event.Account account = 8;
+inline bool Transaction::has_account() const {
+  return !_is_default_instance_ && account_ != NULL;
+}
+inline void Transaction::clear_account() {
+  if (GetArenaNoVirtual() == NULL && account_ != NULL) delete account_;
+  account_ = NULL;
+}
+inline const ::Event::Account& Transaction::account() const {
+  // @@protoc_insertion_point(field_get:Event.Transaction.account)
+  return account_ != NULL ? *account_ : *default_instance_->account_;
+}
+inline ::Event::Account* Transaction::mutable_account() {
+  
+  if (account_ == NULL) {
+    account_ = new ::Event::Account;
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Transaction.account)
+  return account_;
+}
+inline ::Event::Account* Transaction::release_account() {
+  // @@protoc_insertion_point(field_release:Event.Transaction.account)
+  
+  ::Event::Account* temp = account_;
+  account_ = NULL;
+  return temp;
+}
+inline void Transaction::set_allocated_account(::Event::Account* account) {
+  delete account_;
+  account_ = account;
+  if (account) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Transaction.account)
+}
+
+// optional string receivePubkey = 9;
 inline void Transaction::clear_receivepubkey() {
   receivepubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1623,6 +1906,8 @@ inline void StatusResponse::set_allocated_value(::std::string* value) {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

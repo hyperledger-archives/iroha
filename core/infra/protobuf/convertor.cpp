@@ -2,6 +2,9 @@
 
 #include "convertor.hpp"
 
+#include <vector>
+#include <tuple>
+
 namespace convertor{
 
     using namespace transaction;
@@ -24,6 +27,19 @@ namespace convertor{
             domain.set_name(aDomain.name);
             domain.set_ownerpublickey(aDomain.ownerPublicKey);
             return domain;
+        }
+
+        Event::Account encodeObject(object::Account aAccount){
+            Event::Account account;
+            account.set_name(aAccount.name);
+            account.set_publickey(aAccount.publicKey);
+            for(auto&& as: aAccount.assets){
+                Event::Asset asset;
+                asset.set_name(std::get<0>(as));
+                asset.set_value(std::get<1>(as));
+                account.add_assets()->CopyFrom(asset);
+            }
+            return account;
         }
         // ====== decode ======
 
@@ -76,6 +92,30 @@ namespace convertor{
                     tx.asset().precision()
                 );
         }
+
+        template <>
+        ConsensusEvent<Transaction<Add<object::Account>>> decodeTransaction2ConsensusEvent(Event::Transaction tx){
+            auto name = tx.account().name();
+            auto publicKey = tx.account().publickey();
+            std::vector<std::tuple<std::string,long>> assets;
+            for(auto&& as: tx.account().assets()){
+                assets.push_back(std::make_pair( as.name(), as.value()));
+            }
+            auto issuer = tx.senderpubkey();
+            return
+                ConsensusEvent<
+                    Transaction<
+                            Add<object::Account>
+                    >
+                >(
+                        std::move(issuer),
+                        std::move(publicKey),
+                        std::move(name),
+                        std::move(assets)
+                );
+        }
+
+
 
         template <>
         ConsensusEvent<Transaction<Update<object::Asset>>> decodeTransaction2ConsensusEvent(Event::Transaction tx){

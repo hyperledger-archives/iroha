@@ -18,6 +18,13 @@ message Domain {
   string ownerPublicKey = 1;
   string name = 2;
 }
+message Account {
+  string publicKey = 1;
+  string name = 2;
+  repeated Asset assets = 3;
+}
+
+
 message TxSignatures {
   string publicKey = 1;
   string signature = 2;
@@ -35,7 +42,8 @@ message Transaction {
 
   Asset asset = 6;
   Domain domain = 7;
-  string receivePubkey = 8;
+  Account account = 8;
+  string receivePubkey = 9;
 }
 
 message ConsensusEvent {

@@ -7,9 +7,19 @@
 
 #include "../../consensus/consensus_event.hpp"
 #include "../../model/transaction.hpp"
+
+#include "../../model/commands/add.hpp"
+#include "../../model/commands/transfer.hpp"
+#include "../../model/commands/update.hpp"
+
+#include "../../model/objects/account.hpp"
+#include "../../model/objects/asset.hpp"
+#include "../../model/objects/domain.hpp"
+
 #include "event.grpc.pb.h"
 
 #include <iostream>
+#include <type_traits>
 
 namespace convertor{
 
@@ -22,16 +32,22 @@ namespace convertor{
 
         Event::Asset encodeObject(object::Asset aAsset);
         Event::Domain encodeObject(object::Domain aDomain);
+        Event::Account encodeObject(object::Account aAccount);
 
         template <typename T>
         Event::Transaction encodeTransaction(Transaction<Add<T>> aTx){
             Event::Transaction tx;
-            auto asset = encodeObject(static_cast<T>(aTx));
+            auto obj = encodeObject(static_cast<T>(aTx));
             tx.set_type("Add");
             tx.set_senderpubkey(aTx.senderPubkey);
             tx.set_hash(aTx.getHash());
-            tx.mutable_asset()->CopyFrom(encodeObject(static_cast<T>(aTx)));
-
+            if(std::is_same<T,object::Asset>::value){
+                tx.mutable_asset()->CopyFrom(obj);
+            }else if(std::is_same<T,object::Account>::value){
+                tx.mutable_account()->CopyFrom(obj);
+            }else if(std::is_same<T,object::Domain>::value) {
+                tx.mutable_domain()->CopyFrom(obj);
+            }
             return tx;
         }
 
@@ -70,6 +86,9 @@ namespace convertor{
 
         template <>
         ConsensusEvent<Transaction<Add<object::Asset>>> decodeTransaction2ConsensusEvent(Event::Transaction tx);
+
+        template <>
+        ConsensusEvent<Transaction<Add<object::Account>>> decodeTransaction2ConsensusEvent(Event::Transaction tx);
 
         template <>
         ConsensusEvent<Transaction<Update<object::Asset>>> decodeTransaction2ConsensusEvent(Event::Transaction tx);
