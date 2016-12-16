@@ -8,8 +8,7 @@
 ![alt tag](Iroha_3_sm.png)
 
 # Pull Requests
-Please include a developer certificate with pull requests: http://developercertificate.org/
-Please sign: https://www.clahub.com/agreements/hyperledger/iroha
+Please include a developer certificate with pull requests: https://www.clahub.com/agreements/hyperledger/iroha
 
 # Architecture (Draft)
 
