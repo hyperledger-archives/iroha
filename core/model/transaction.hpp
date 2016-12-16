@@ -14,10 +14,6 @@ limitations under the License.
 #ifndef CORE_DOMAIN_TRANSACTIONS_TRANSACTION_HPP_
 #define CORE_DOMAIN_TRANSACTIONS_TRANSACTION_HPP_
 
-#include "commands/add.hpp"
-#include "commands/transfer.hpp"
-#include "commands/update.hpp"
-
 #include "../crypto/signature.hpp"
 #include "../util/datetime.hpp"
 #include "../crypto/hash.hpp"

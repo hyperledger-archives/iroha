@@ -151,6 +151,9 @@ namespace sumeragi {
         unsigned long maxFaulty;  // f
         unsigned long proxyTailNdx;
         int panicCount;
+
+        long long int commitedCount = 0;
+
         unsigned long numValidatingPeers;
         std::string myPublicKey;
 
@@ -292,6 +295,9 @@ namespace sumeragi {
 
                 // Commit locally
                 logger::explore("sumeragi", "commit");
+                context->commitedCount++;
+                logger::explore("sumeragi", "commit count:"+std::to_string(context->commitedCount));
+
                 merkle_transaction_repository::commit(event); //TODO: add error handling in case not saved
 
                 // Write exec code smart contract

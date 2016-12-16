@@ -22,6 +22,14 @@ limitations under the License.
 
 #include "../protobuf/event.grpc.pb.h"
 
+#include "../../model/commands/add.hpp"
+#include "../../model/commands/transfer.hpp"
+#include "../../model/commands/update.hpp"
+
+#include "../../model/objects/asset.hpp"
+#include "../../model/objects/domain.hpp"
+#include "../../model/objects/account.hpp"
+
 #include <string>
 #include <vector>
 #include <memory>

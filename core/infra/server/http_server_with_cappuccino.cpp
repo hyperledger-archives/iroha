@@ -19,25 +19,25 @@ limitations under the License.
 #include "../../server/http_server.hpp"
 #include "../../vendor/Cappuccino/cappuccino.hpp"
 #include "../../util/logger.hpp"
+#include "../../service/peer_service.hpp"
+#include "../../infra/protobuf/convertor.hpp"
 
 #include "../../consensus/connection/connection.hpp"
 
 
 namespace http {
 
+    const auto assetName = "PointDemo";
+
     using nlohmann::json;
     using Request = Cappuccino::Request;
     using Response = Cappuccino::Response;
 
 
-    template<typename T>
-    using Transaction = transaction::Transaction<T>;
-    template<typename T>
-    using ConsensusEvent = event::ConsensusEvent<T>;
-    template<typename T>
-    using Add = command::Add<T>;
-    template<typename T>
-    using Transfer = command::Transfer<T>;
+    using namespace transaction;
+    using namespace command;
+    using namespace event;
+    using namespace object;
 
     json responseError(std::string message){
         return json({
@@ -57,30 +57,38 @@ namespace http {
         logger::info("server", "initialize server!");
         Cappuccino::Cappuccino( 0, nullptr);
 
-
         Cappuccino::route<Cappuccino::Method::POST>( "/account/register",[](std::shared_ptr<Request> request) -> Response{
             auto res = Response(request);
             auto data = request->json();
-            /*
             if(!data.empty()){
                 try{
                     auto publicKey = data["publicKey"].get<std::string>();
                     auto alias     = data["alias"].get<std::string>();
                     auto timestamp = data["timestamp"].get<int>();
 
-                    // ToDo make transaction
+                    auto event = ConsensusEvent<Transaction<Add<object::Account>>>(
+                        publicKey.c_str(),
+                        publicKey.c_str(),
+                        alias.c_str()
+                    );
+                    event.addTxSignature(
+                        peer::getMyPublicKey(),
+                        signature::sign(event.getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
+                    );
+                    connection::send(peer::getMyIp(), convertor::encode(event));
+
                 }catch(...) {
                     res.json(json({
-                                          {"status",  400},
-                                          {"message", "Invalied json type or value"}
-                                  }));
+                      {"status",  400},
+                      {"message", "Invalied json type or value"}
+                    }));
                     return res;
                 }
             }else{
                 res.json(json({
-                                      {"status",  400},
-                                      {"message", "Invalied json"}
-                              }));
+                  {"status",  400},
+                  {"message", "Invalied json"}
+                }));
                 return res;
             }
             res.json(json({
@@ -88,22 +96,23 @@ namespace http {
               {"message", "successful"},
               {"uuid",    ""}
             }));
-            */
+
             return res;
         });
 
         Cappuccino::route<Cappuccino::Method::GET>( "/account",[](std::shared_ptr<Request> request) -> Response{
             std::string uuid = request->params("uuid");
             auto res = Response(request);
-            /*
-            auto data = // ToDo repository user data.
+
+            auto rdata = "";//repository::account::find("uuid");
+            auto data = json::parse(rdata);
 
             res.json(json({
                   {"status",  200},
                   {"alias", data["alias"]},
                   {"assets", data["assets"]}
             }));
-            */
+
             return res;
         });
 
@@ -111,7 +120,6 @@ namespace http {
         Cappuccino::route<Cappuccino::Method::POST>( "/asset/operation",[](std::shared_ptr<Request> request) -> Response{
             auto res = Response(request);
             auto data = request->json();
-            /*
             if(!data.empty()){
                 try{
                     auto assetUuid = data["asset-uuid"].get<std::string>();
@@ -122,48 +130,57 @@ namespace http {
                     auto sender    = data["params"]["sender"].get<std::string>();
                     auto receiver  = data["params"]["receiver"].get<std::string>();
 
-                    // ToDo make transaction
+                    auto event = ConsensusEvent<Transaction<Transfer<Asset>>>(
+                            sender.c_str(),
+                            sender.c_str(),
+                            receiver.c_str(),
+                            assetName,
+                            std::atoi(value.c_str())
+                    );
+                    event.addTxSignature(
+                            peer::getMyPublicKey(),
+                            signature::sign(event.getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
+                    );
+                    connection::send(peer::getMyIp(), convertor::encode(event));
 
 
                 }catch(...) {
                     res.json(json({
-                                          {"status",  400},
-                                          {"message", "Invalied json type or value"}
-                                  }));
+                      {"status",  400},
+                      {"message", "Invalied json type or value"}
+                    }));
                     return res;
                 }
             }else{
                 res.json(json({
-                                      {"status",  400},
-                                      {"message", "Invalied json"}
-                              }));
+                  {"status",  400},
+                  {"message", "Invalied json"}
+                }));
                 return res;
             }
 
             res.json(json({
-                                  {"status",  200},
-                                  {"alias", data["alias"]},
-                                  {"assets": data["assets"]}
-                          }));
-            */
+              {"status",  200},
+              {"message", "Ok"}
+            }));
             return res;
         });
 
         Cappuccino::route<Cappuccino::Method::GET>( "/history/transaction",[](std::shared_ptr<Request> request) -> Response{
             std::string uuid = request->params("uuid");
             auto res = Response(request);
-            /*
-            auto transaction_data = // ToDo repository user data.
+
+            auto transaction_data = "";//repository::transaction::findAll();
+
             auto tx_json = json::array();
-            for(auto tx: transaction_data){
+            for(auto tx: json::parse(transaction_data)){
                 tx_json.push_back(tx);
             }
 
             res.json(json({
-                                  {"status",  200},
-                                  {"history", tx_json}
-                          }));
-            */
+              {"status",  200},
+              {"history", tx_json}
+            }));
             return res;
         });
 
