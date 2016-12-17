@@ -21,12 +21,12 @@ target_link_libraries(sumeragi_test
     objects
     base64
     signature
+    convertor
     sumeragi
     connection_with_grpc
     peer_service_with_json
     pthread
     consensus_event
-    json_parse_with_nlohman
     transaction
 )
 
@@ -39,11 +39,11 @@ target_link_libraries(transaction_test
     base64
     signature
     sumeragi
+    commands
     connection_with_grpc
     peer_service_with_json
     pthread
     consensus_event
-    json_parse_with_nlohman
     transaction
     objects
 )

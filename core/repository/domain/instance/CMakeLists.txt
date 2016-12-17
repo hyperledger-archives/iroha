@@ -7,4 +7,11 @@ target_link_libraries(domain_repository
   exception
   # connect infra
   world_state_repo_with_level_db
+
+    event_with_grpc
+    grpc++
+    grpc++_reflection
+    protobuf
+    pthread
+    dl
 )  

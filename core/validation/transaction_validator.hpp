@@ -17,13 +17,17 @@ limitations under the License.
 #ifndef CORE_VALIDATION_TRANSACTIONVALIDATOR_HPP_
 #define CORE_VALIDATION_TRANSACTIONVALIDATOR_HPP_
 
-#include "../model/transaction.hpp"
+#include "../consensus/consensus_event.hpp"
+#include "../infra/protobuf/event.grpc.pb.h"
+
 #include "../model/commands/add.hpp"
 #include "../model/commands/transfer.hpp"
+#include "../model/commands/update.hpp"
 
-#include "../model/objects/domain.hpp"
+#include "../model/objects/account.hpp"
 #include "../model/objects/asset.hpp"
-#include "../model/objects/message.hpp"
+#include "../model/objects/domain.hpp"
+
 
 #include <memory>
 #include <type_traits>

@@ -17,16 +17,13 @@ limitations under the License.
 #ifndef CORE_SERVER_HTTP_SERVER_HPP_
 #define CORE_SERVER_HTTP_SERVER_HPP_
 
-#include "../service/json_parse.hpp"
 #include <map>
 #include <string>
 
 namespace http {
 
-  using Object = json_parse::Object;
-
   // Start server and keep on runing.
-  void server(std::map<std::string,std::function<Object(Object)>> apis);
+  void server();
 };
 
 #endif  // CORE_SERVER_HTTP_SERVER_HPP_

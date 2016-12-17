@@ -14,59 +14,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 #ifndef CORE_DOMAIN_COMMANDS_ADD_HPP_
 #define CORE_DOMAIN_COMMANDS_ADD_HPP_
 
-#include "../../service/json_parse.hpp"
-
-#include "../objects/domain.hpp"
-#include "../objects/asset.hpp"
-#include "../objects/message.hpp"
-
-#include <string>
+#include <utility>
+#include "../../repository/domain/account_repository.hpp"
 
 namespace command {
 
 template <typename T>
-class Add: protected T {
+class Add: public T {
   public:
 
-    using Object = json_parse::Object;
-    using Rule = json_parse::Rule;
-    using Type = json_parse::Type;
+    template<typename... Args>
+    constexpr Add(
+        Args&&... args
+    ):
+        T(std::forward<Args>(args)...)
+    {}
 
-    explicit Add(
-        const std::string& domain,
-        const std::string& name,
-        const unsigned long long& value,
-        const unsigned int& precision
-    );
-
-    explicit Add(const std::string& ownerPublicKey,const std::string& name);
-
-    explicit Add(Object obj);
-
-    std::string getCommandName() const{
+    constexpr auto getCommandName() const{
         return "Add";
     }
 
     void execution();
 
-    Object dump() {
-        Object obj = Object(Type::DICT);
-        obj.dictSub.insert( std::make_pair( "name", Object(Type::STR, getCommandName())));
-        obj.dictSub.insert( std::make_pair( "object", T::dump()));
-        return obj;
-    }
-
-    static Rule getJsonParseRule() {
-        auto rule = Rule(Type::DICT);
-        rule.dictSub.insert(std::make_pair("name", Rule(Type::STR)));
-        rule.dictSub.insert(std::make_pair("object", T::getJsonParseRule()));
-        return rule;
-    }
 };
+
 };  // namespace command
 
 #endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
