@@ -65,7 +65,6 @@ namespace repository {
           if (nullptr == detail::db) {
               detail::loadDb();
           }
-
           return detail::loggerStatus(detail::db->Put(leveldb::WriteOptions(), key, value));
       }
 
@@ -74,7 +73,6 @@ namespace repository {
           if (nullptr == detail::db) {
               detail::loadDb();
           }
-
           leveldb::WriteBatch batch;
 
           for (auto&& tuple : tuples) {
@@ -82,6 +80,35 @@ namespace repository {
           }
 
           return detail::loggerStatus(detail::db->Write(leveldb::WriteOptions(), &batch));
+      }
+
+      std::vector<std::string> findAll(){
+          if (nullptr == detail::db) {
+              detail::loadDb();
+          }
+          std::vector<std::string> res;
+          leveldb::Iterator* it = detail::db->NewIterator(leveldb::ReadOptions());
+          for (it->SeekToFirst(); it->Valid(); it->Next()) {
+              res.push_back( it->value().ToString() );
+          }
+          delete it;
+          return res;
+      }
+
+      std::vector<std::string> findByPrefix(const std::string& prefix){
+          if (nullptr == detail::db) {
+              detail::loadDb();
+          }
+          std::vector<std::string> res;
+          leveldb::Iterator* it = detail::db->NewIterator(leveldb::ReadOptions());
+          for(it->Seek(prefix);
+               it->Valid() && it->key().ToString() < prefix + "~";
+               it->Next()
+          ){
+              res.push_back( it->value().ToString() );
+          }
+          delete it;
+          return res;
       }
 
       template <typename T>

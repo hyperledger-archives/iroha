@@ -21,61 +21,34 @@ limitations under the License.
 #include "../objects/asset.hpp"
 #include "../objects/message.hpp"
 
-#include <string>
 #include <iostream>
 #include "../../util/logger.hpp"
-#include "../../repository/domain/instance/asset_repository.hpp"
-#include "../../service/json_parse.hpp"
 
 namespace command {
 
     template <typename T>
-    class Update: protected T {
-    protected:
-        std::string ownerPublicKey;
+    class Update: public T {
+
     public:
+        std::string ownerPublicKey;
 
-        Update(
-            const std::string& ownerPublicKey,
-            const std::string& name,
-            const unsigned long long& value
-        );
+        template<typename... Args>
+        constexpr explicit Update(
+            std::string&& ownerPublicKey,
+            Args&&... args
+        ):
+            T(std::forward<Args>(args)...),
+            ownerPublicKey(std::move(ownerPublicKey))
+        {}
 
-        Update(
-            const std::string& ownerPublicKey,
-            const std::string& name,
-            const std::string& value
-        );
-
-        std::string getCommandName() const{
+        auto getCommandName() const{
             return "Update";
         }
 
-        using Rule = json_parse::Rule;
-        using Type = json_parse::Type;
-        using Object = json_parse::Object;
+        void execution(){
 
-        Update(
-            Object obj
-        );
-
-        void execution();
-
-        Object dump() {
-            auto obj = Object(Type::DICT);
-            obj.dictSub.insert( std::make_pair( "name",   Object(Type::STR, getCommandName())));
-            obj.dictSub.insert( std::make_pair( "object", T::dump()));
-            obj.dictSub.insert( std::make_pair( "owner",  Object(Type::STR, ownerPublicKey)));
-            return obj;
         }
 
-        static Rule getJsonParseRule() {
-            auto rule = Rule(Type::DICT);
-            rule.dictSub.insert( std::make_pair( "name",   Rule(Type::STR)));
-            rule.dictSub.insert( std::make_pair( "object", T::getJsonParseRule()));
-            rule.dictSub.insert( std::make_pair( "owner",  Rule(Type::STR)));
-            return rule;
-        }
     };
 
 };  // namespace command

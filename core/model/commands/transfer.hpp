@@ -24,58 +24,35 @@ limitations under the License.
 
 #include <string>
 #include <iostream>
-#include "../../service/json_parse.hpp"
 
 namespace command {
 
-template <typename T>
-class Transfer: protected T {
-  protected:
-   std::string senderPublicKey;
-   std::string receiverPublicKey;
-  public:
+    template<typename T>
+    class Transfer : public T {
 
-    Transfer(
-        std::string senderPubkey,
-        std::string receiverPubkey,
-        std::string name,
-        int value
-    );
+    public:
 
-    std::string getCommandName() const{
-        return "Transfer";
-    }
+        std::string senderPublicKey;
+        std::string receiverPublicKey;
 
-    using Rule = json_parse::Rule;
-    using Type = json_parse::Type;
-    using Object = json_parse::Object;
+        template<typename... Args>
+        constexpr explicit Transfer(
+                std::string&& sender,
+                std::string&& receiver,
+                Args&&... args
+        ):
+                senderPublicKey(std::move(sender)),
+                receiverPublicKey(std::move(receiver)),
+                T(std::forward<Args>(args)...)
+        {}
 
-    Transfer(
-        Object obj
-    );
-
-    void execution();
-
-    Object dump() {
-        Object obj = Object(Type::DICT);
-        obj.dictSub.insert( std::make_pair(    "name", Object(Type::STR, getCommandName())));
-        obj.dictSub.insert( std::make_pair(  "object", T::dump()));
-        obj.dictSub.insert( std::make_pair(  "sender", Object(Type::STR, senderPublicKey)));
-        obj.dictSub.insert( std::make_pair("receiver", Object(Type::STR, receiverPublicKey)));
-        return obj;
-    }
-
-    static Rule getJsonParseRule() {
-            auto rule = Rule(Type::DICT);
-            rule.dictSub.insert( std::make_pair( "name", Rule(Type::STR)));
-            rule.dictSub.insert( std::make_pair( "object", T::getJsonParseRule()));
-            rule.dictSub.insert( std::make_pair( "sender", Rule(Type::STR)));
-            rule.dictSub.insert( std::make_pair("receiver", Rule(Type::STR)));
-            return rule;
+        auto getCommandName() const {
+            return "Transfer";
         }
-    };
 
-};  // namespace command
+        void execution();
 
+    };  // namespace command
+};
 #endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
 

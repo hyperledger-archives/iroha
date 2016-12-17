@@ -26,11 +26,10 @@ limitations under the License.
 #include <memory>
 #include <thread>
 
-#include "../../core/service/json_parse_with_json_nlohman.hpp"
-
 #include "../../core/service/peer_service.hpp"
 #include "../../core/util/logger.hpp"
 #include "../../core/crypto/hash.hpp"
+#include "../../core/infra/protobuf/convertor.hpp"
 
 template<typename T>
 using Transaction = transaction::Transaction<T>;
@@ -51,55 +50,62 @@ void setAwkTimer(int const sleepMillisecs, const std::function<void(void)>& acti
 }
 
 int main(int argc, char *argv[]){
-    std::string value;
-    std::string senderPublicKey;
-    std::string receiverPublicKey;
-    std::string cmd;
-    std::vector<std::unique_ptr<peer::Node>> nodes = peer::getPeerList();
 
-    connection::initialize_peer();
+    try {
+        std::string value;
+        std::string senderPublicKey;
+        std::string receiverPublicKey;
+        std::string cmd;
+        std::vector <std::unique_ptr<peer::Node>> nodes = peer::getPeerList();
 
-    logger::setLogLevel(logger::LogLevel::EXPLORE);
+        connection::initialize_peer();
 
-    for(const auto& n : nodes){
-        std::cout<< "=========" << std::endl;
-        std::cout<< n->getPublicKey() << std::endl;
-        std::cout<< n->getIP() << std::endl;
-        connection::addSubscriber(n->getIP());
-    }
+        logger::setLogLevel(logger::LogLevel::DEBUG);
 
-    std::string pubKey = peer::getMyPublicKey();
-
-    sumeragi::initializeSumeragi( pubKey, std::move(nodes));
-
-    std::thread http_th( []() {
-        sumeragi::loop();
-    });
-
-    std::thread connection_th( []() {
-        connection::run();
-    });
-
-    if( argc >= 2 && std::string(argv[1]) == "public"){
-        while(1){
-            setAwkTimer(1, [&](){
-                auto event = std::make_unique<ConsensusEvent<Transaction<Update<object::Asset>>>>(
-                        peer::getMyPublicKey(),
-                        "AssetName",
-                        100
-                );
-                event->addTxSignature(
-                        peer::getMyPublicKey(),
-                        signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
-                );
-                connection::send(peer::getMyIp(), std::move(event));
-            });
+        for (const auto &n : nodes) {
+            std::cout << "=========" << std::endl;
+            std::cout << n->getPublicKey() << std::endl;
+            std::cout << n->getIP() << std::endl;
+            connection::addSubscriber(n->getIP());
         }
-    }else{
-        std::cout<<"I'm only node\n";
-        while(1);
+
+        std::string pubKey = peer::getMyPublicKey();
+
+        sumeragi::initializeSumeragi(pubKey, std::move(nodes));
+
+        std::thread connection_th([]() {
+            connection::run();
+        });
+
+        std::thread http_th([]() {
+            sumeragi::loop();
+        });
+
+        if (argc >= 2 && std::string(argv[1]) == "public") {
+            while (1) {
+                setAwkTimer(10, [&]() {
+                    auto event = std::make_unique<ConsensusEvent<Transaction<Update<object::Asset>>>>(
+                            peer::getMyPublicKey(),
+                            peer::getMyPublicKey(),
+                            "AssetName",
+                            100
+                    );
+                    event->addTxSignature(
+                            peer::getMyPublicKey(),
+                            signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
+                    );
+                    connection::send(peer::getMyIp(), convertor::encode(*event));
+                });
+            }
+        } else {
+            std::cout << "I'm only node\n";
+            while (1);
+        }
+        http_th.detach();
+        connection_th.detach();
+    }catch(char const *e){
+        std::cout << e << std::endl;
     }
-    connection_th.detach();
-    http_th.detach();
+
     return 0;
 }
