@@ -164,7 +164,6 @@ namespace http {
             auto data = request->json();
             if(!data.empty()){
                 try{
-
                     auto assetUuid = data["asset-uuid"].get<std::string>();
                     auto timestamp = data["timestamp"].get<int>();
                     auto signature = data["signature"].get<std::string>();
@@ -220,11 +219,8 @@ namespace http {
 
                 auto data = split(protoTx.type(),",");
 
-                logger::debug("Cappuccino", "! tx:[" + protoTx.type() +"]");
-                logger::debug("Cappuccino", "! tx:asset name[" + protoTx.account().name() +"]");
-                logger::debug("Cappuccino", "! tx:asset public[" + protoTx.account().publickey() +"]");
                 if(protoTx.type() == "Add"){
-                    if(protoTx.asset().ByteSize() != 0) {
+                    if(protoTx.has_asset()) {
                         auto event_tx =  convertor::detail::decodeTransaction2ConsensusEvent<Add<Asset>>(protoTx);
                         transaction_json["params"] = json::object();
                         transaction_json["params"]["command"] = "Add";
@@ -233,7 +229,7 @@ namespace http {
                         transaction_json["params"]["sender"]  = event_tx.senderPubkey;
                         transaction_json["params"]["value"]   = event_tx.value;
                         transaction_json["params"]["timestamp"] = event_tx.timestamp;
-                    }else if(protoTx.account().ByteSize() != 0){
+                    }else if(protoTx.has_account()){
                         auto event_tx = convertor::detail::decodeTransaction2ConsensusEvent<Add<Account>>(protoTx);
                         transaction_json["params"] = json::object();
                         transaction_json["params"]["command"] = "Add";
@@ -244,7 +240,7 @@ namespace http {
                         transaction_json["params"]["timestamp"] = event_tx.timestamp;
                     }
                 }else if(protoTx.type() == "Transfer"){
-                    if(protoTx.asset().ByteSize() != 0) {
+                    if(protoTx.has_domain()) {
                         auto event_tx = convertor::detail::decodeTransaction2ConsensusEvent<Transfer<Asset>>(protoTx);
                         transaction_json["params"] = json::object();
                         transaction_json["params"]["command"]   = "Add";
