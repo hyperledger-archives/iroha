@@ -386,7 +386,7 @@ namespace sumeragi {
         logger::info("sumeragi", "=+=");
         logger::info("sumeragi", "start main loop");
 
-        while (true) {  // TODO: replace with callback linking the event repository?
+        while (true) {  // 千五百秋　TODO: replace with callback linking the event repository?
             if(!repository::event::empty()) {
                 // Determine node order
                 determineConsensusOrder();
