@@ -30,6 +30,11 @@ namespace repository {
             std::tuple<std::string,Event::ConsensusEvent>
         > events;
 
+        // list of callbacks, that will be invoked after `notifyAll()`
+        static std::vector<
+            std::function<void()> 
+        > subscribers;
+
         bool add(
             const std::string &hash,
             const Event::ConsensusEvent& event
@@ -37,6 +42,7 @@ namespace repository {
             logger::debug("repo::event", "event::add");
             std::lock_guard<std::mutex> lock(m);
             events.push_back(std::make_tuple( hash, std::move(event)));
+            notifyAll(); // event added to repository, invoke callbacks
             logger::debug("repo::event", "events size = "+std::to_string(events.size()));
             return true;
         };
@@ -64,7 +70,20 @@ namespace repository {
             return false;
         }
 
-        bool remove(const std::string &hash);
+        bool remove(const std::string &hash){
+            /*
+            // find 
+            auto iter = std::find_if(events.begin(), 
+                                     events.end(), 
+                                     [&hash](std::tuple<std::string,Event::ConsensusEvent> e)
+            {
+                return std::get<0>(e) == hash;
+            });
+
+            //TODO: remove 
+            */
+            return true;
+        }
 
         bool empty(){
             return events.empty();
@@ -86,6 +105,16 @@ namespace repository {
         Event::ConsensusEvent findNext();
 
         Event::ConsensusEvent find(std::string hash);
+
+        void subscribe(std::function<void()> callback){
+            subscribers.push_back(callback);
+        }
+
+        void notifyAll(){
+            std::for_each(subscribers.begin(), subscribers.end(), [](std::function<void()> callback){
+                callback();
+            });
+        }
 
     };
 };

@@ -19,11 +19,11 @@ limitations under the License.
 
 #include <string>
 #include <memory>
-#include "../../consensus/consensus_event.hpp"
-
-#include "../../infra/protobuf/event.grpc.pb.h"
-
+#include <queue>
 #include <algorithm>
+
+#include "../../consensus/consensus_event.hpp"
+#include "../../infra/protobuf/event.grpc.pb.h"
 
 namespace repository{
 
@@ -42,6 +42,15 @@ namespace repository{
         );
 
         bool empty();
+
+        // add callback to `subscribers`
+        void subscribe(std::function<void()> callback);
+
+        // TODO
+        void unsubscribe(/*???*/);
+
+        // invoke all functions in `subscribers`
+        void notifyAll();
 
         std::vector<
             Event::ConsensusEvent
