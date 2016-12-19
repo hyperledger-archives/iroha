@@ -308,12 +308,14 @@ namespace sumeragi {
 //                std::string strTx;
 //                event.SerializeToString(&strTx);
 
-                std::string key =  event.transaction().asset().name() + "_" + datetime::unixtime_str();
+                std::string key = event.transaction().asset().name() + "_" + datetime::unixtime_str();
+                logger::info("sumeragi", "value:" + std::to_string(event.transaction().asset().value()));
                 repository::transaction::add( key, event);
                 logger::debug("sumeragi", "key[" + key +"]");
 
                 std::cout << "\033[91m+-ーーーーーーーーーーーー-+\033[0m" << std::endl;
 
+                logger::info("sumeragi", "my pubkey is "+peer::getMyPublicKey());
                 logger::debug("sumeragi", "tx:" + event.transaction().type());
                 // I want to separate it function from sumeragi.
                 if(event.transaction().type() == "Add"){

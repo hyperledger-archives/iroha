@@ -46,10 +46,27 @@ namespace repository{
             world_state_repository::update(uuid, strAccount);
         }
 
+        bool attach(const std::string& uuid,const std::string& assetName, long assetDefault){
+            auto serializedAccount = world_state_repository::find(uuid);
+            if(serializedAccount != "") {
+                Event::Account protoAccount;
+                protoAccount.ParseFromString(serializedAccount);
+                auto account = convertor::detail::decodeObject(protoAccount);
+                account.assets.push_back(std::make_pair(assetName,assetDefault));
+                auto protoAccountNew = convertor::detail::encodeObject(account);
+
+                std::string strAccount;
+                protoAccountNew.SerializeToString(&strAccount);
+                world_state_repository::update(uuid, strAccount);
+                return true;
+            }else{
+                return false;
+            }
+        }
+
         object::Account findByUuid(const std::string& uuid){
             auto serializedAccount = world_state_repository::find(uuid);
             auto account = world_state_repository::find(uuid);
-            logger::debug("AccountRepository", " data:"+ account);
             if(account != "") {
                 Event::Account protoAccount;
                 protoAccount.ParseFromString(account);
@@ -59,7 +76,7 @@ namespace repository{
             }
         }
 
-        bool add(
+        std::string add(
             std::string &publicKey,
             std::string &alias
         ){
@@ -70,6 +87,7 @@ namespace repository{
             protoAccount.SerializeToString(&strAccount);
             logger::debug("AccountRepository", "Save key:" + hash::sha3_256_hex(publicKey) + " alias:"+ alias);
             world_state_repository::add(hash::sha3_256_hex(publicKey), strAccount);
+            return hash::sha3_256_hex(publicKey);
         }
 
     };

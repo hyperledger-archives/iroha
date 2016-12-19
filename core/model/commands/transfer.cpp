@@ -24,28 +24,27 @@ namespace command {
 
     template <>
     void Transfer<object::Asset>::execution() {
-        logger::debug("Transfer<Asset>", "| from publicKey :" + senderPublicKey + " |  -"+std::to_string(object::Asset::value)+"-> | to publicKey : " + receiverPublicKey +"| ");
-        object::Account sender = repository::account::findByUuid(hash::sha3_256_hex(senderPublicKey));
-        object::Account receiver = repository::account::findByUuid(hash::sha3_256_hex(receiverPublicKey));
-
         auto senderUuid = hash::sha3_256_hex(senderPublicKey);
         auto receiverUuid = hash::sha3_256_hex(receiverPublicKey);
+        object::Account sender = repository::account::findByUuid(senderUuid);
+        object::Account receiver = repository::account::findByUuid(receiverUuid);
+
         for(auto& as1: sender.assets){
-            if(object::Asset::name == std::get<0>(as1)){
-                for(auto& as2: sender.assets){
-                    if(object::Asset::name == std::get<0>(as2)){
-                        repository::account::update_quantity(
-                                senderUuid,object::Asset::name,std::get<1>(as1) - object::Asset::value
-                        );
-                        repository::account::update_quantity(
-                                receiverUuid,object::Asset::name,std::get<1>(as2) + object::Asset::value
-                        );
+            if(name == std::get<0>(as1)){
+                for(auto& as2: receiver.assets){
+                    if(name == std::get<0>(as2)){
+                        if(std::get<1>(as1) >= value) {
+                            repository::account::update_quantity(
+                                    senderUuid, name, std::get<1>(as1) - value
+                            );
+                            repository::account::update_quantity(
+                                    receiverUuid, name, std::get<1>(as2) + value
+                            );
+                        }
                     }
                 }
             }
         }
-
-
     }
 
 }

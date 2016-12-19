@@ -96,13 +96,16 @@ namespace http {
                         connection::send(peer::getMyIp(), convertor::encode(event));
 
                     }else{
-                        return responseError("duplicate user");
+                        res.json(responseError("duplicate user"));
+                        return res;
                     }
                 }catch(...) {
-                    return responseError("Invalied json type or value");
+                    res.json(responseError("Invalied json type or value"));
+                    return res;
                 }
             }else{
-                return responseError("Invalied json");
+                res.json(responseError("Invalied json"));
+                return res;
             }
             res.json(json({
               {"status",  200},
@@ -136,7 +139,8 @@ namespace http {
                 }));
                 return res;
             }else{
-                return responseError("User not found!");
+                res.json(responseError("User not found!"));
+                return res;
             }
         });
 
@@ -149,40 +153,74 @@ namespace http {
                     auto timestamp = data["timestamp"].get<int>();
                     auto signature = data["signature"].get<std::string>();
                     auto command   = data["params"]["command"].get<std::string>();
-                    auto value     = data["params"]["value"].get<std::string>();
                     auto sender    = data["params"]["sender"].get<std::string>();
-                    auto receiver  = data["params"]["receiver"].get<std::string>();
 
-                    if(signature::verify(
-                        signature,
-                        "timestamp:"+std::to_string(timestamp) +\
-                        ",params.value:" + value +\
-                        ",params.sender:" + sender + \
-                        ",params.receiver:" + receiver + \
-                        ",params.command:" + command + \
-                        ",asset-uuid:" + assetUuid,
-                        sender)
-                    ){
-                        auto event = ConsensusEvent<Transaction<Transfer<object::Asset>>>(
-                            sender.c_str(),
-                            sender.c_str(),
-                            receiver.c_str(),
-                            assetName,
-                            std::atoi(value.c_str())
-                        );
-                        event.addTxSignature(
-                            peer::getMyPublicKey(),
-                            signature::sign(event.getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
-                        );
-                        connection::send(peer::getMyIp(), convertor::encode(event));
-                    }else{
-                        return responseError("Validation failed!");
+                    if(command == "transfer") {
+                        auto value     = data["params"]["value"].get<std::string>();
+                        auto receiver  = data["params"]["receiver"].get<std::string>();
+
+                        if(signature::verify(
+                            signature,
+                            "timestamp:"+std::to_string(timestamp) +\
+                            ",params.value:" + value +\
+                            ",params.sender:" + sender + \
+                            ",params.receiver:" + receiver + \
+                            ",params.command:" + command + \
+                            ",asset-uuid:" + assetUuid,
+                            sender)
+                        ) {
+                            auto event = ConsensusEvent < Transaction < Transfer < object::Asset >> > (
+                                sender.c_str(),
+                                sender.c_str(),
+                                receiver.c_str(),
+                                assetName,
+                                std::atoi(value.c_str())
+                            );
+                            event.addTxSignature(
+                                peer::getMyPublicKey(),
+                                signature::sign(event.getHash(), peer::getMyPublicKey(),
+                                peer::getPrivateKey()).c_str()
+                            );
+                            connection::send(peer::getMyIp(), convertor::encode(event));
+                        }else{
+                            res.json(responseError("Validation failed!"));
+                            return res;
+                        }
+                    }else if(command == "add"){
+
+                        auto value     = data["params"]["value"].get<std::string>();
+                        if(signature::verify(
+                            signature,
+                            "timestamp:"+std::to_string(timestamp) +\
+                            ",params.value:" + value +\
+                            ",params.sender:" + sender + \
+                            ",params.command:" + command + \
+                            ",asset-uuid:" + assetUuid,
+                            sender)) {
+
+                            auto event = ConsensusEvent < Transaction < Add < object::Asset >> > (
+                                sender.c_str(),
+                                sender.c_str(),
+                                assetName,
+                                std::atoi(value.c_str()),
+                                1
+                            );
+                            event.addTxSignature(
+                                peer::getMyPublicKey(),
+                                signature::sign(event.getHash(), peer::getMyPublicKey(),
+                                peer::getPrivateKey()).c_str()
+                            );
+                            connection::send(peer::getMyIp(), convertor::encode(event));
+
+                        }
                     }
                 }catch(...) {
-                    return responseError("Invalied json type or value");
+                    res.json(responseError("Invalied json type or value"));
+                    return res;
                 }
             }else{
-                return responseError("Invalied json");
+                res.json(responseError("Invalied json"));
+                return res;
             }
 
             res.json(json({
@@ -202,7 +240,7 @@ namespace http {
                 transaction_json["params"] = json::object();
 
                 auto data = split(protoTx.type(),",");
-
+                /* if you want to see all transaction, you should erase this comment out.                     *
                 if(protoTx.type() == "Add"){
                     transaction_json["params"]["command"] = "Add";
                     transaction_json["params"]["sender"] = protoTx.senderpubkey();
@@ -216,20 +254,29 @@ namespace http {
                         transaction_json["params"]["name"]   = protoTx.account().name();
                     }
                     tx_json.push_back(transaction_json);
-                }else if(protoTx.type() == "Transfer"){
+
+                }else */
+                if(protoTx.type() == "Transfer"){
+                    logger::info("Cappuccino","receiver:"+protoTx.receivepubkey());
+
                     transaction_json["params"]["command"] = "Transfer";
                     transaction_json["params"]["sender"] = protoTx.senderpubkey();
                     transaction_json["params"]["receiver"] = protoTx.receivepubkey();
                     transaction_json["params"]["timestamp"] = protoTx.timestamp();
-                    if(protoTx.has_asset()) {
-                        auto event_tx = convertor::detail::decodeTransaction2ConsensusEvent<Transfer<Asset>>(protoTx);
-                        transaction_json["params"] = json::object();
-                        transaction_json["params"]["command"]   = "Transfer";
-                        transaction_json["params"]["object"]    = "Asset";
-                        transaction_json["params"]["name"]    = protoTx.asset().name();
-                        transaction_json["params"]["value"]   = protoTx.asset().value();
+                    if (hash::sha3_256_hex(protoTx.receivepubkey()) == uuid ||
+                        hash::sha3_256_hex(protoTx.senderpubkey()) == uuid) {
+                        if (protoTx.has_asset()) {
+                            auto event_tx = convertor::detail::decodeTransaction2ConsensusEvent<Transfer < Asset>>(protoTx);
+
+                            logger::info("Cappuccino", "Valiue:" + std::to_string(protoTx.asset().value()));
+
+                            transaction_json["params"]["command"] = "Transfer";
+                            transaction_json["params"]["object"] = "Asset";
+                            transaction_json["params"]["name"] = protoTx.asset().name();
+                            transaction_json["params"]["value"] = protoTx.asset().value();
+                        }
+                        tx_json.push_back(transaction_json);
                     }
-                    tx_json.push_back(transaction_json);
                 }
             }
 
