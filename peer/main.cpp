@@ -40,39 +40,7 @@ template<typename T>
 using Transfer = command::Transfer<T>;
 
 void server(){
-
-    // Start server and keep on runing.
-    using Object = json_parse::Object;
-
-
-  std::map<std::string,std::function<int(Object)>> apis;
-
-  apis.insert(std::make_pair("/asset/operation", [](Object obj) -> int{
-
-      if(obj.dictSub.find("command") != obj.dictSub.end() && obj.dictSub.at("command").str == "add") {
-
-          if(obj.dictSub.find("domain") != obj.dictSub.end() &&
-              obj.dictSub.find("name") != obj.dictSub.end()
-          ) {
-              auto event = std::make_unique<ConsensusEvent<Transaction<Add<object::Asset>>>>(
-                      peer::getMyPublicKey(),
-                      "domain",
-                      "Dummy transaction",
-                      100,
-                      0
-              );
-              event->addTxSignature(
-                      peer::getMyPublicKey(),
-                      signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
-              );
-              connection::send(peer::getMyIp(), std::move(event));
-          }
-
-      }
-      return 0;
-  }));
-
-  http::server(apis);
+    http::server();
 }
 
 void sigIntHandler(int param){
@@ -89,6 +57,7 @@ int main() {
   }
 
   logger::info("main","process is :"+std::to_string(getpid()));
+  logger::setLogLevel(logger::LogLevel::DEBUG);
 
   std::vector<std::unique_ptr<peer::Node>> nodes = peer::getPeerList();
   connection::initialize_peer();

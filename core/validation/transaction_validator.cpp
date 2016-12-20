@@ -27,21 +27,13 @@ namespace transaction_validator {
     using Transfer = command::Transfer<T>;
 
     template<>
-    bool isValid<ConsensusEvent<Transaction<Add<object::Asset>>>>(
-        const std::unique_ptr<ConsensusEvent<Transaction<Add<object::Asset>>>>& tx
+    bool isValid<Event::ConsensusEvent>(
+        const std::unique_ptr<Event::ConsensusEvent>& tx
     ){
         // Write domain logic
         return true;
     }
 
 
-    template<>
-    bool isValid<event::Event>(
-        const std::unique_ptr<event::Event>& tx
-    ){
-        // Write domain logic
-        return true;
-    }
 
-
-};  
+};
