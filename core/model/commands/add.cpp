@@ -32,6 +32,8 @@ namespace command {
 
     template <>
     void Add<object::Asset>::execution() {
+        auto pubkey = "aa";
         repository::asset::add( "creator", name, std::to_string(value));
     }
+
 }

@@ -29,7 +29,7 @@ limitations under the License.
 
 namespace http {
 
-    const auto assetName = "PointDemo";
+    const auto assetName = "iroha";
 
     using nlohmann::json;
     using Request = Cappuccino::Request;
@@ -158,6 +158,7 @@ namespace http {
                     if(command == "transfer") {
                         auto value     = data["params"]["value"].get<std::string>();
                         auto receiver  = data["params"]["receiver"].get<std::string>();
+                        /* WIP comment out for curl test
 
                         if(signature::verify(
                             signature,
@@ -169,6 +170,8 @@ namespace http {
                             ",asset-uuid:" + assetUuid,
                             sender)
                         ) {
+
+                        */
                             auto event = ConsensusEvent < Transaction < Transfer < object::Asset >> > (
                                 sender.c_str(),
                                 sender.c_str(),
@@ -176,19 +179,23 @@ namespace http {
                                 assetName,
                                 std::atoi(value.c_str())
                             );
+
                             event.addTxSignature(
                                 peer::getMyPublicKey(),
                                 signature::sign(event.getHash(), peer::getMyPublicKey(),
                                 peer::getPrivateKey()).c_str()
                             );
                             connection::send(peer::getMyIp(), convertor::encode(event));
+                        /*
                         }else{
                             res.json(responseError("Validation failed!"));
                             return res;
                         }
+                        */
                     }else if(command == "add"){
-
                         auto value     = data["params"]["value"].get<std::string>();
+
+                        /* WIP comment out for curl test
                         if(signature::verify(
                             signature,
                             "timestamp:"+std::to_string(timestamp) +\
@@ -197,7 +204,7 @@ namespace http {
                             ",params.command:" + command + \
                             ",asset-uuid:" + assetUuid,
                             sender)) {
-
+                        */
                             auto event = ConsensusEvent < Transaction < Add < object::Asset >> > (
                                 sender.c_str(),
                                 sender.c_str(),
@@ -211,11 +218,10 @@ namespace http {
                                 peer::getPrivateKey()).c_str()
                             );
                             connection::send(peer::getMyIp(), convertor::encode(event));
-
-                        }
+                        // }
                     }
                 }catch(...) {
-                    res.json(responseError("Invalied json type or value"));
+                    res.json(responseError("Invalied json type or value!"));
                     return res;
                 }
             }else{
@@ -240,29 +246,30 @@ namespace http {
                 transaction_json["params"] = json::object();
 
                 auto data = split(protoTx.type(),",");
-                /* if you want to see all transaction, you should erase this comment out.                     *
+                // if you want to see all transaction, you should erase this comment out.                     *
                 if(protoTx.type() == "Add"){
-                    transaction_json["params"]["command"] = "Add";
-                    transaction_json["params"]["sender"] = protoTx.senderpubkey();
-                    transaction_json["params"]["timestamp"] = protoTx.timestamp();
-                    if(protoTx.has_asset()) {
-                        transaction_json["params"]["object"] = "Asset";
-                        transaction_json["params"]["value"]  = protoTx.asset().value();
-                        transaction_json["params"]["name"]  = protoTx.asset().name();
-                    }else if(protoTx.has_account()){
-                        transaction_json["params"]["object"] = "Account";
-                        transaction_json["params"]["name"]   = protoTx.account().name();
+                    if(hash::sha3_256_hex(protoTx.senderpubkey()) == uuid) {
+                        transaction_json["params"]["command"] = "Add";
+                        transaction_json["params"]["sender"] = protoTx.senderpubkey();
+                        transaction_json["params"]["timestamp"] = protoTx.timestamp();
+                        if (protoTx.has_asset()) {
+                            transaction_json["params"]["object"] = "Asset";
+                            transaction_json["params"]["value"] = protoTx.asset().value();
+                            transaction_json["params"]["name"] = protoTx.asset().name();
+                        } else if (protoTx.has_account()) {
+                            transaction_json["params"]["object"] = "Account";
+                            transaction_json["params"]["name"] = protoTx.account().name();
+                        }
+                        tx_json.push_back(transaction_json);
                     }
-                    tx_json.push_back(transaction_json);
-
-                }else */
-                if(protoTx.type() == "Transfer"){
+                }else if(protoTx.type() == "Transfer"){
                     logger::info("Cappuccino","receiver:"+protoTx.receivepubkey());
 
                     transaction_json["params"]["command"] = "Transfer";
                     transaction_json["params"]["sender"] = protoTx.senderpubkey();
                     transaction_json["params"]["receiver"] = protoTx.receivepubkey();
                     transaction_json["params"]["timestamp"] = protoTx.timestamp();
+
                     if (hash::sha3_256_hex(protoTx.receivepubkey()) == uuid ||
                         hash::sha3_256_hex(protoTx.senderpubkey()) == uuid) {
                         if (protoTx.has_asset()) {

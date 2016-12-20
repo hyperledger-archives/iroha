@@ -319,15 +319,15 @@ namespace sumeragi {
                 logger::debug("sumeragi", "tx:" + event.transaction().type());
                 // I want to separate it function from sumeragi.
                 if(event.transaction().type() == "Add"){
-                    if(event.transaction().asset().ByteSize() != 0) {
+                    if(event.transaction().has_asset()) {
                         logger::debug("sumeragi", "exec <Add<Asset>>");
                         convertor::decode<Add<Asset>>(event).execution();
-                    }else if(event.transaction().account().ByteSize() != 0){
+                    }else if(event.transaction().has_account()){
                         logger::debug("sumeragi", "exec <Add<Account>>");
                         convertor::decode<Add<Account>>(event).execution();
                     }
                 }else if(event.transaction().type() == "Transfer"){
-                    if(event.transaction().asset().ByteSize() != 0) {
+                    if(event.transaction().has_asset()) {
                         logger::debug("sumeragi", "exec <Transfer<Asset>>");
                         convertor::decode<Transfer<Asset>>(event).execution();
                     }
