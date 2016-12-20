@@ -5,6 +5,7 @@
 ==================
 
 今回は"sudo"を書きたくないのでrootで行いましたが普通のユーザーの方がいいと思います。よしなにお願いします
+
 I could not write "sudo" in this time and I executed as root, but I
 think normal user is better, Do as you think best.
 
@@ -23,7 +24,9 @@ OS
 Compiler & Maketool
 -------------------
 
-基本的にC++14がコンパイルできる物が必要 I need C++14 compilable compiler
+基本的にC++14がコンパイルできる物が必要
+
+I need C++14 compilable compiler
 
 ::
 
@@ -41,7 +44,9 @@ Compiler & Maketool
 xsltprocのインストール / Install xsltproc
 -----------------------------------------
 
-KeccakCodePackageのbuildで使用 used by building KeccakCodePackage
+KeccakCodePackageのbuildで使用
+
+used by building KeccakCodePackage
 
 ::
 
@@ -50,7 +55,9 @@ KeccakCodePackageのbuildで使用 used by building KeccakCodePackage
 libsnappy-dev等のインストール / Install libsnappy-dev and so on
 ---------------------------------------------------------------
 
-LevelDBのbuildで使用 used by building LevelDB
+LevelDBのbuildで使用
+
+used by building LevelDB
 
 ::
 
@@ -59,7 +66,9 @@ LevelDBのbuildで使用 used by building LevelDB
 基本的なもののインストール / Install basic library 　
 -----------------------------------------------------
 
-基本的な物、Dockerとかだとたまに無い Basically library
+基本的な物、Dockerとかだとたまに無い
+
+Basically library
 
 ::
 
@@ -69,6 +78,7 @@ protobuf のインストール / Install protobuf
 ------------------------------------------
 
 buildは時間かかる あと\ **バージョンは3.0.0でなければいけない**
+
 **Version should be 3.0.0!!**
 
 ::
@@ -103,8 +113,9 @@ buildに時間かかるのでBinaryがほしい
 Iroha本体のclone / Clone iroha
 ==============================
 
-いろはを構築したい場所をよしなに決めてください Could you decide place
-you will install iroha as you think best.
+いろはを構築したい場所をよしなに決めてください
+
+Could you decide place you will install iroha as you think best.
 
 ::
 
@@ -146,6 +157,19 @@ libkeccak
 ::
 
     # cd $IROHA_HOME/core/vendor/KeccakCodePackage; make; make generic64/libkeccak.a
+
+libhash
+~~~~~~~~~
+
+何故かCMakeが正しく動かないので自分でBuildします
+
+I should make libhash, because cmake doesn't running correctly.
+
+::
+
+    # cd $IROHA_HOME/core/infra/crypto/; make
+
+
 
 Iroha本体のbuild / build iroha
 ==============================
