@@ -223,7 +223,7 @@ protoc  --cpp_out=core/infra/connection core/infra/connection/connection.proto
 protoc  --grpc_out=core/infra/connection  --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` core/infra/connection/connection.proto
 ```
   
-## Authors
+## Authors 
 
 [MakotoTakemiya](https://github.com/takemiyamakoto)  
 [MizukiSonoko](https://github.com/MizukiSonoko)
