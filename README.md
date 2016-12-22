@@ -10,6 +10,10 @@
 # Pull Requests
 Please include a developer certificate with pull requests: https://www.clahub.com/agreements/hyperledger/iroha
 
+# How to build
+[how_to_build](https://github.com/hyperledger/iroha/blob/master/docs/how_to_build.rst)
+
+
 # Architecture (Draft)
 
 ### Directory tree
