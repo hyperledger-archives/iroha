@@ -222,14 +222,14 @@ TEST(ThreadPool, ProcessJobWithException) {
 }
 
 //-----------------------------------------------------------------------------
-TEST(ThreadPool, ProcessHeavyJobWithStdFunction) {
-  ThreadPool pool;
+TEST(ThreadPool, Parallel_HeavyJob) {
+  ThreadPool pool;  // by default uses N_threads = 'hardware_concurrency'
 
   // in this test we add jobs faster than process them
-  const int repetitions = (int)50;
+  const int repetitions = (int)100;
 
   // 128 = queue size, must be power of 2
-  MPMCBoundedQueue<std::future<int> > queue(128);
+  MPMCBoundedQueue<std::future<int>> queue(128);
 
   // producer thread
   std::thread([&]() {
@@ -240,59 +240,6 @@ TEST(ThreadPool, ProcessHeavyJobWithStdFunction) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         return i;
       });
-
-      queue.push(std::move(f));
-
-      // new job arrives every 50 ms
-      std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    }
-  }).detach();
-
-  // consumer thread (this)
-  // lets agregate return values and calculate sum([1..repetitions])
-  int sum_actual = 0;
-  for (int handled = 1; handled <= repetitions; handled++) {
-    std::future<int> result;
-    while (!queue.pop(result)) {
-      // empty queue, wait 10 ms
-      // TODO: there should be better algorithm than waiting
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-
-    // stateful processing
-    sum_actual += result.get();
-  }
-
-  auto sum = [](int n) -> int { return n * (n + 1) / 2; };
-
-  // NOTE!!!
-  // total time = repetitions * "processing time" / N_cores + <overhead>
-  // if and only if "processing time" is greater than "job arrival time"
-  ASSERT_EQ(sum_actual, sum(repetitions));
-}
-
-/* TODO: doesn't compile
-//-----------------------------------------------------------------------------
-TEST(ThreadPool, ProcessHeavyJobWithFixedFunction) {
-  ThreadPool pool;
-
-  // in this test we add jobs faster than process them
-  const int repetitions = (int)50;
-
-  // 128 = queue size, must be power of 2
-  MPMCBoundedQueue<std::future<int> > queue(128);
-
-  // producer thread
-  std::thread([&]() {
-    // we calculate sum([1..repetitions])
-    for (int i = 1; i <= repetitions; i++) {
-      FixedFunction<int()> func([i]() {
-        // stateless processing: process one request 100 ms
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        return i;
-      });
-
-      auto f = pool.process(func); // <-- error is here
 
       queue.push(std::move(f));
 
@@ -320,8 +267,66 @@ TEST(ThreadPool, ProcessHeavyJobWithFixedFunction) {
 
   // NOTE!!!
   // total time = repetitions * "processing time" / N_cores + <overhead>
-  // if and only if "processing time" is greater than "job arrival time"
+  // if and only if "processing time" > "job arrival time"
   ASSERT_EQ(sum_actual, sum(repetitions));
 }
-*/
+
+//-----------------------------------------------------------------------------
+TEST(ThreadPool, Sequential_WithStdQueue) {
+  // add N jobs to the queue, and wait until all will be completed
+
+  ThreadPool pool;
+
+  std::queue<std::future<int>> queue;
+
+  const int repetitions = 100;
+
+  for (int i = 1; i <= repetitions; i++) {
+    queue.push(pool.process([i]() {
+      // some processing, 50 ms
+      std::this_thread::sleep_for(std::chrono::milliseconds(50));
+      return i;
+    }));
+  }
+
+  int sum_actual = 0;
+  while (!queue.empty()) {
+    sum_actual += queue.front().get();
+    queue.pop();
+  }
+
+  auto sum = [](int n) -> int { return n * (n + 1) / 2; };
+
+  ASSERT_EQ(sum_actual, sum(repetitions));
+}
+
+//-----------------------------------------------------------------------------
+TEST(ThreadPool, Sequential_WithMPSCBoundedQueue) {
+  // add N jobs to the queue, and wait until all will be completed
+  // this test should be faster than Sequential_WithStdQueue
+  ThreadPool pool;
+
+  MPMCBoundedQueue<std::future<int>> queue(128);
+
+  const int repetitions = 100;
+
+  for (int i = 1; i <= repetitions; i++) {
+    queue.push(pool.process([i]() {
+      // some processing, 50 ms
+      std::this_thread::sleep_for(std::chrono::milliseconds(50));
+      return i;
+    }));
+  }
+
+  int sum_actual = 0;
+  std::future<int> item;
+  while (queue.pop(item)) {
+    sum_actual += item.get();
+  }
+
+  auto sum = [](int n) -> int { return n * (n + 1) / 2; };
+
+  ASSERT_EQ(sum_actual, sum(repetitions));
+}
+
 //-----------------------------------------------------------------------------

@@ -43,6 +43,7 @@ namespace sumeragi {
         std::vector<std::unique_ptr<peer::Node>> peers
     );
     void loop();
+    void receiveEvent(const std::string& from, Event::ConsensusEvent& event);
 
     void getNextOrder(
         const Event::ConsensusEvent& event
