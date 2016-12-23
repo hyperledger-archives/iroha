@@ -20,6 +20,8 @@ limitations under the License.
 #include <deque>
 #include <cmath>
 
+#include <thread_pool.hpp>
+
 #include "../util/logger.hpp"
 #include "../repository/consensus/merkle_transaction_repository.hpp"
 #include "../crypto/hash.hpp"
@@ -36,8 +38,6 @@ limitations under the License.
 
 #include "../repository/consensus/transaction_repository.hpp"
 #include "../repository/domain/account_repository.hpp"
-
-#include "thread_pool.hpp"
 
 /**
 * |ーーー|　|ーーー|　|ーーー|　|ーーー|
@@ -56,6 +56,21 @@ namespace sumeragi {
     using transaction::Transaction;
     using namespace command;
     using namespace object;
+
+
+    static size_t concurrency = 
+        std::thread::hardware_concurrency() <= 0
+        ? 1
+        : std::thread::hardware_concurrency();
+
+    //thread pool and a storage of events 
+    ThreadPool pool(
+        ThreadPoolOptions{
+            .threads_count = concurrency,
+            .worker_queue_size = 1024
+        }
+    );
+
 
     namespace detail{
 
@@ -232,10 +247,11 @@ namespace sumeragi {
         logger::info("sumeragi", "receive!");
         logger::info("sumeragi", "received message! sig:[" + std::to_string(event.eventsignatures_size()) +"]");
     
-        // send processTransaction(event) as a task to processing pool
-        // it is stateless processing, totally asynchronous
-        // returns std::future<void>, doesn't lock at this line
-        pool.process(std::bind(processTransaction, event));
+        // this returns std::future<void> object. 
+        // ().get() method locks processing until result of processTransaction will be available
+        pool.process([&event](){
+            std::bind(processTransaction, event);
+        });
     }
 
     unsigned long long getNextOrder() {
@@ -440,24 +456,16 @@ namespace sumeragi {
         context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() == context->myPublicKey;
     }
 
-    size_t concurrency = 
-        std::thread::hardware_concurrency() <= 0
-        ? 1
-        : std::thread::hardware_concurrency();
 
-    // thread pool and a storage of events
-    ThreadPool pool(
-        ThreadPoolOptions{
-            .threads_count = concurrency,
-            .worker_queue_size = 1024
-        }
-    );
+
+
+
 
     void loop() {
         logger::info("sumeragi", "=+=");
         logger::info("sumeragi", "start main loop");
 
-        // but this method is empty!
+
 
 
 //        while (true) {  // 千五百秋　TODO: replace with callback linking the event repository?
