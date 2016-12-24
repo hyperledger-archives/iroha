@@ -64,7 +64,7 @@ namespace sumeragi {
         : std::thread::hardware_concurrency();
 
     //thread pool and a storage of events 
-    ThreadPool pool(
+    static ThreadPool pool(
         ThreadPoolOptions{
             .threads_count = concurrency,
             .worker_queue_size = 1024
@@ -163,7 +163,7 @@ namespace sumeragi {
                 logger::explore("sumeragi", "\033[91m|+-ーー-+|\033[0m");
                 logger::explore("sumeragi", "\033[91m+==ーー==+\033[0m");
         }
-    }
+    } // namespace detail
 
     struct Context {
         bool isSumeragi; // am I the leader or am I not?
@@ -228,7 +228,17 @@ namespace sumeragi {
 
         context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() == context->myPublicKey;
 
-        connection::receive(receiveEvent);
+        connection::receive([](const std::string& from, Event::ConsensusEvent& event){
+            logger::info("sumeragi", "receive!");
+            logger::info("sumeragi", "received message! sig:[" + std::to_string(event.eventsignatures_size()) +"]");
+        
+            // send processTransaction(event) as a task to processing pool
+            // this returns std::future<void> object
+            // (std::future).get() method locks processing until result of processTransaction will be available
+            // but processTransaction returns void, so we don't have to call it and wait
+            std::function<void()> &&task = std::bind(processTransaction, std::ref(event)); 
+            pool.process(std::move(task)); 
+        });
 
         logger::info("sumeragi", "initialize numValidatingPeers :" + std::to_string(context->numValidatingPeers));
         logger::info("sumeragi", "initialize maxFaulty :" + std::to_string(context->maxFaulty));
@@ -243,16 +253,6 @@ namespace sumeragi {
         logger::info("sumeragi", "initialize.....  complete!");
     }
 
-    void receiveEvent(const std::string& from, Event::ConsensusEvent& event){
-        logger::info("sumeragi", "receive!");
-        logger::info("sumeragi", "received message! sig:[" + std::to_string(event.eventsignatures_size()) +"]");
-    
-        // this returns std::future<void> object. 
-        // ().get() method locks processing until result of processTransaction will be available
-        pool.process([&event](){
-            std::bind(processTransaction, event);
-        });
-    }
 
     unsigned long long getNextOrder() {
         return 0l;
@@ -457,16 +457,9 @@ namespace sumeragi {
     }
 
 
-
-
-
-
     void loop() {
         logger::info("sumeragi", "=+=");
         logger::info("sumeragi", "start main loop");
-
-
-
 
 //        while (true) {  // 千五百秋　TODO: replace with callback linking the event repository?
 //            if(!repository::event::empty()) {
