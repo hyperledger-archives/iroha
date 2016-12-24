@@ -98,6 +98,9 @@ Consensus events, when received from the event queue, are processed in the follo
  2. Events ordered by the leader
  3. New events that need ordering, to be processed by the current leader
 
+### 2.7. Data storage
+
+![alt tag](iroha_merkle_tree.png)
 
 ### 2.7. Consensus
 
