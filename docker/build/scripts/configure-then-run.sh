@@ -1,3 +1,3 @@
 #!/bin/bash
-./configure.sh
-./run.sh
+/configure.sh
+/run.sh

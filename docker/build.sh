@@ -8,7 +8,7 @@ if [ -z ${IROHA_HOME} ]; then
 fi
 
 # pull image from docker-hub, or (in case of fail), build new
-#docker pull warchantua/iroha-dev || \
+docker pull warchantua/iroha-dev || \
     docker build -t warchantua/iroha-dev ${IROHA_HOME}/docker/dev 
 
 # run dev container to build iroha
@@ -27,4 +27,4 @@ docker run -i --rm \
 COMMANDS
 
 # build warchantua/iroha container
-docker build -t warchantua/iroha build
+docker build -t warchantua/iroha ${IROHA_HOME}/docker/build

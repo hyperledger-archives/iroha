@@ -13,7 +13,7 @@ version: '2'
 services:
   configdiscovery:
     image: warchantua/configdiscovery
-    command: 4 # number of nodes (actually, 4 by default. But it is good to explicitly show)
+    command: "4" # number of nodes (actually, 4 by default. But it is good to explicitly show)
     expose:
       - 8000
 

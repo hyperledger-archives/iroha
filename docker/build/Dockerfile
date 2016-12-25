@@ -34,5 +34,4 @@ RUN groupadd -g 168 iroha && \
     echo ${IROHA_HOME}/lib >>/etc/ld.so.conf && \
     ldconfig
 
-# try to get config from configdiscovery service, then run
-CMD ["/configure-then-run.sh"]
+CMD ["/run.sh"]
