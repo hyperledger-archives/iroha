@@ -3,11 +3,8 @@
 # TODO: change warchantua to hyperledger.
 
 if [ -z ${IROHA_HOME} ]; then
-    echo "[WARNING] Empty variable IROHA_HOME"
-    echo "You had it to set it IROHA_HOME="`cd ..; pwd`
-    echo "Setting automatically..."
-    export IROHA_HOME=`cd ..; pwd`
-    sleep 3
+    echo "[FATAL] Empty variable IROHA_HOME"
+    exit 1
 fi
 
 # pull image from docker-hub, or (in case of fail), build new
