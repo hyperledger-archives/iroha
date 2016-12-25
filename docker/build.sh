@@ -12,7 +12,7 @@ docker pull warchantua/iroha-dev || docker build -t warchantua/iroha-dev dev
 
 # run dev container to build iroha
 docker run -i --rm \
-    -v ${PWD}/build:/build \
+    -v ${IROHA_HOME}/docker/build:/build \
     -v ${IROHA_HOME}:/opt/iroha \
     warchantua/iroha-dev \
     sh << COMMANDS
@@ -27,5 +27,3 @@ COMMANDS
 
 # build warchantua/iroha container
 docker build -t warchantua/iroha build
-
-echo "[+] SUCCESS! Now you can use warchantua/iroha docker image"

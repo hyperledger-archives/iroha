@@ -25,4 +25,4 @@ fi
 (mkdir -p $IROHA_BUILD || echo "[+] build directory already exists, rebuilding") && \
 cd $IROHA_BUILD                                                                  && \
 cmake $IROHA_HOME                                                                && \
-make ) || error "Can't build iroha"
+make || error "Can't build iroha"
