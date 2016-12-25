@@ -22,8 +22,8 @@ fi
 (cd $IROHA_HOME/core/infra/crypto && make -j4)      || error "Can't build crypto submodule"
 
 # build iroha (important: build using single thread!)
-(cd $IROHA_HOME                                                                          && \
-    (mkdir $IROHA_HOME/build || echo "[+] build directory already exists, rebuilding")   && \
-    cd $IROHA_HOME/build                                                                 && \
-    cmake ..                                                                             && \
-    make )                      || error "Can't build iroha"
+(cd $IROHA_HOME                                                                      && \
+    (mkdir -p $IROHA_BUILD || echo "[+] build directory already exists, rebuilding") && \
+    cd $IROHA_BUILD                                                                  && \
+    cmake ..                                                                         && \
+    make ) || error "Can't build iroha"

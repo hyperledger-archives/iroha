@@ -199,7 +199,16 @@ fabric3 (python library, not hyperledger/fabric)
 ```
 
 ## Using docker and docker-compose for development
-Refer to [this guide](./docs/using_docker.md).
+To build latest container with iroha, refer to [this guide](./docker/README.md).
+
+After this, run network of 4 nodes:
+```
+docker-compose up
+# open another terminal
+docker-compose scale iroha=4
+```
+
+To set different number of nodes, change `command: 4` in `docker-compose.yml` and `iroha=4` in previous command.
 
 ## Installation
 ```
