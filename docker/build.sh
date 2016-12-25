@@ -2,17 +2,23 @@
 
 # TODO: change warchantua to hyperledger.
 
+if [ -z ${IROHA_HOME} ]; then
+    echo "[WARNING] Empty variable IROHA_HOME"
+    echo "You had it to set it IROHA_HOME="`cd ..; pwd`
+    echo "Setting automatically..."
+    export IROHA_HOME=`cd ..; pwd`
+    sleep 3
+fi
+
 # pull image from docker-hub, or (in case of fail), build new
-#docker pull warchantua/iroha-dev || \
- docker build -t warchantua/iroha-dev dev 
+docker pull warchantua/iroha-dev || docker build -t warchantua/iroha-dev dev 
 
 # run dev container to build iroha
-docker run -i \
-    # mount ./build to /build
+docker run -i --rm \
     -v ${PWD}/build:/build \
-    # mount ${IROHA_HOME} to /opt/iroha (IROHA_HOME=/opt/iroha inside iroha-dev)
     -v ${IROHA_HOME}:/opt/iroha \
     warchantua/iroha-dev \
+    sh << COMMANDS
     # everything between COMMANDS will be executed inside a container
     cd ${IROHA_HOME}
     /build-iroha.sh || (echo "[-] Can't build iroha" && exit 1)
@@ -20,7 +26,9 @@ docker run -i \
     # at this step we have /tmp/iroha.tar 
     (cp /tmp/iroha.tar /build/iroha.tar || \
         (echo "[-] FAILED! Mount /build folder from your host or use iroha/docker/build.sh script!" && exit 1))
-COMMANDS # do not put spaces/tabs before COMMANDS on this line
+COMMANDS
 
 # build warchantua/iroha container
 docker build -t warchantua/iroha build
+
+echo "[+] SUCCESS! Now you can use warchantua/iroha docker image"
