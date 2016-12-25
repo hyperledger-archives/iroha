@@ -67,14 +67,16 @@ int main() {
   
   sumeragi::initializeSumeragi( peer::getMyPublicKey(), peer::getPeerList());
 
-  std::thread sumeragi_thread(sumeragi::loop);
+  // since we have thread pool, it sets all necessary callbacks in 
+  // sumeragi::initializeSumeragi.
+  // std::thread sumeragi_thread(sumeragi::loop);
   std::thread http_thread(server);
 
   connection::run();
 
   while(running);
   
-  sumeragi_thread.detach();
+  // sumeragi_thread.detach();
   http_thread.detach();
 
   return 0;
