@@ -75,7 +75,7 @@ namespace sumeragi {
     namespace detail{
 
         unsigned int getNumValidSignatures(const Event::ConsensusEvent& event){
-            int sum = 0;
+            unsigned int sum = 0;
             for(auto&& esig: event.eventsignatures()){
                 if(signature::verify( esig.signature(), event.transaction().hash(), esig.publickey())){
                     sum++;

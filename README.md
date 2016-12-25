@@ -10,6 +10,10 @@
 # Pull Requests
 Please include a developer certificate with pull requests: https://www.clahub.com/agreements/hyperledger/iroha
 
+# How to build
+[how_to_build](https://github.com/hyperledger/iroha/blob/master/docs/how_to_build.rst)
+
+
 # Architecture (Draft)
 
 ### Directory tree
@@ -89,39 +93,30 @@ It contains main.
 We adopt a **Domain-Driven Development structure** as much as possible.
 
 ```
-+--------------+
-| web rest api |
-+--------------+
-      | 
-+--------------+
-|  controller  |--------+-----------------------------------------+
-+--------------+        |                                         |
-      |          +-------------+  +----------------+   +----------------------+
-      |          | repository  |  | domain model   |   | service              |
-      |          | (interface) |--|                |   |+---------++---------+|
-      |          +-------------+  |+--------------+|   || crypto  ||validate ||
-      |                 |         || transaction  ||   || base64  |+---------+|
-      |                 |         |+--------------+|   || hash    |           |
-      |                 |         || asset        ||   |+---------+           |
-      |                 |         |+--------------+|   +----------------------+
-      |                 |         |+--------------+|             
-      |                 |         ||smart contract||              
-+--------------+        |         |+--------------+|
-|   consensus  |--------+         +----------------+
-|              |
-|+------------+|
-|| messaging  ||
-|+------------+|
-+--------------+
-
-+----------------------------------------------------------------------------+
-|infrastructure                                                              |
-|                                                                            |
-|+------------++--------------++-------------++----------------++---------+  |
-|| messaging  || web rest api || repository  || smart contract || crypto  |  |
-||(use aeron )||  (use crow)  ||(use leveldb)|| (use java vm)  || ed25519 |  |
-|+------------++--------------++-------------++----------------++---------+  |
-+----------------------------------------------------------------------------+
+front API
+   |(1)
+┌-------------┐
++ Cappuccino  +------------------------
+└--+----------┘
+   |                
+   |                                   
+┌--┼----------┐         ┌---------------┐
+|  V sumeragi |(3)      |  Command exec |
+|             ----------+>              |
+└--|-------A--┘         └----+----------┘
+   |(2)    | valdation       |
+   |       └-----------------┼------┐
+   |                         |      |
+   |consensus building       |(4)   |
+┌------------┐             ┌-V------+------┐     ┌-------┐
+| connection |             |   repository  |------ model |
+└------------┘             └---------------┘     └-------┘
+      |                             |
+Infra=|=============================|===========
+      |implement                    |implement
+   ┌------┐                       ┌-----┐
+   | grpc |                       | D B |
+   └------┘                       └-----┘
 
 ```
 
@@ -223,7 +218,7 @@ protoc  --cpp_out=core/infra/connection core/infra/connection/connection.proto
 protoc  --grpc_out=core/infra/connection  --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` core/infra/connection/connection.proto
 ```
   
-## Authors
+## Authors 
 
 [MakotoTakemiya](https://github.com/takemiyamakoto)  
 [MizukiSonoko](https://github.com/MizukiSonoko)
