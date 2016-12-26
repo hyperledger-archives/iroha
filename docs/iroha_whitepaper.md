@@ -150,7 +150,7 @@ The state with the Merkle root that has the most transactions in the Merkle tree
 
 The hijiri reputation system is based on rounds. At each round, validating peers that are registered with the membership service perform the following tasks to establish trust (reliability) ratings for the peers:
 
-* ping test
+* data throughput test
 * version test
 * computational test
 * data consistency test
