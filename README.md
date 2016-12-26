@@ -174,8 +174,8 @@ It contains asset model, transaction logic. independent of infra knowledge.
 It contains some source depend on vendor (third party) libraries.
 If any source depends on vendor libraries, it should be in infra. 
 
-##### filename
-basically, filename is `"function"_with_"lib name".cpp`
+##### filenames
+Filenames follow the convention: `"function"_with_"lib name".cpp`
 ```
 connection
  └── connection_with_aeron.cpp
