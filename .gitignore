@@ -18,4 +18,3 @@ build/*
 *cmake-build-debug*
 cmake-build-debug/*
 docker/build/iroha.tar
-

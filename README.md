@@ -21,31 +21,62 @@ Please include a developer certificate with pull requests: https://www.clahub.co
 .
 ├── build (for cmake)
 ├── config
-├── peer
 ├── core
-│   ├── connection
 │   ├── consensus
+│   │   └── connection
 │   ├── crypto
-│   ├── model
-│   │   └── transactions
 │   ├── infra
 │   │   ├── connection
 │   │   ├── crypto
+│   │   ├── protobuf
 │   │   ├── repository
 │   │   ├── server
+│   │   ├── service
 │   │   └── smart_contract
+│   │       └── jvm
+│   ├── model
+│   │   ├── commands
+│   │   ├── objects
+│   │   ├── smart_contract
+│   │   ├── state
+│   │   ├── publisher
+│   │   ├── repository
+│   │   └── state
+│   ├── publisher
 │   ├── repository
+│   │   ├── consensus
+│   │   └── domain
 │   ├── server
-│   ├── smart_contract
+│   ├── service
 │   ├── util
 │   ├── validation
 │   └── vendor
-├── doc
+│       ├── Cappucino
+│       ├── ed25519
+│       ├── json
+│       ├── KeccakCodePackage
+│       ├── leveldb
+│       └── thread_pool_cpp
+├── docker
+│   ├── build
+│   │   └── scripts
+│   ├── config-discovery
+│   └── dev
+│       └── scripts
+├── docs
+├── peer
 ├── smart_contract
-│   └── SampleCurrency_java
-└── test
-    ├── crypto
-    └── smart_contract
+│   └── SampleCurrency
+├── test
+│   ├── connection
+│   ├── consensus
+│   ├── crypto
+│   ├── infra
+│   │   ├── protobuf
+│   │   └── repository
+│   ├── smart_contract
+│   └── vendor
+├── tools
 ```
 
 #### config/
@@ -143,8 +174,8 @@ It contains asset model, transaction logic. independent of infra knowledge.
 It contains some source depend on vendor (third party) libraries.
 If any source depends on vendor libraries, it should be in infra. 
 
-##### filename
-basically, filename is `"function"_with_"lib name".cpp`
+##### filenames
+Filenames follow the convention: `"function"_with_"lib name".cpp`
 ```
 connection
  └── connection_with_aeron.cpp
