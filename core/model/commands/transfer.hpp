@@ -36,7 +36,7 @@ namespace command {
         std::string receiverPublicKey;
 
         template<typename... Args>
-        constexpr explicit Transfer(
+        explicit Transfer(
                 std::string&& sender,
                 std::string&& receiver,
                 Args&&... args
