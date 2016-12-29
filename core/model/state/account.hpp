@@ -19,13 +19,12 @@ limitations under the License.
 
 #include <string>
 #include <vector>
+#include <memory>
+#include <unordered_map>
 
 #include "sample_asset.hpp"
 #include "../../util/random.hpp"
 
-#include <vector>
-#include <string>
-#include <unordered_map>
 
 namespace domain {
 
@@ -54,20 +53,20 @@ namespace domain {
         std::string aName,
         std::string aPublicKeyb64Encoded
       ):
-        name(aName),
-        publicKeyb64Encoded(aPublicKeyb64Encoded),
-        uid(random_service::makeRandomHash())
+        name(std::move(aName)),
+        publicKeyb64Encoded(std::move(aPublicKeyb64Encoded)),
+        uid(std::move(random_service::makeRandomHash()))
       {}
 
       // Use converter
       AccountUser(
-              std::string aName,
-              std::string aPublicKeyb64Encoded,
-              std::string aUid
+        std::string aName,
+        std::string aPublicKeyb64Encoded,
+        std::string aUid
       ):
-              name(aName),
-              publicKeyb64Encoded(aPublicKeyb64Encoded),
-              uid(aUid)
+        name(std::move(aName)),
+        publicKeyb64Encoded(std::move(aPublicKeyb64Encoded)),
+        uid(std::move(aUid))
       {}
 
       // Support move and copy.
@@ -78,7 +77,7 @@ namespace domain {
 
       // Account user can register a domain and has some a domain;
       bool registerDomain(const std::string &domainName);
-      bool isOwnerOfDomain(const std::string& domainName);
+      bool isOwnerOfDomain(const std::string &domainName);
 
       // Account user can add an asset to the domain if account user has this domain;
       bool joinSampleAssetTo(

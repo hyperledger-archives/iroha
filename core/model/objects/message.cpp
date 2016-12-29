@@ -19,9 +19,9 @@ limitations under the License.
 namespace object {
 
 Message::Message(
-   std::string&& text
+   std::string text
 ):
-   text(text)
+    text(std::move(text))
 {}
 
 }

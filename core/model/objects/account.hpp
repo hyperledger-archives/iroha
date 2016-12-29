@@ -21,7 +21,7 @@ limitations under the License.
 #include <string>
 
 namespace object {
-
+    
     class Account {
 
     public:
@@ -29,7 +29,7 @@ namespace object {
         std::string name;
 
         std::vector<
-            std::tuple<std::string,long >
+            std::tuple<std::string, long>
         > assets;
 
         explicit Account():
@@ -38,35 +38,35 @@ namespace object {
         {}
 
         explicit Account(
-            std::string&& publicKey,
-            std::string&&  name,
-                std::vector<
-                std::tuple<std::string,long>
-            >&& assets
+            std::string publicKey,
+            std::string name,
+            std::vector<
+                std::tuple<std::string, long>
+            > assets
         ):
-            publicKey(publicKey),
-            name(name),
-            assets(assets)
+            publicKey(std::move(publicKey)),
+            name(std::move(name)),
+            assets(std::move(assets))
         {}
 
         explicit Account(
-            std::string&& publicKey,
-            std::string&&  name,
-            std::tuple<std::string,long>&& asset
+            std::string publicKey,
+            std::string name,
+            std::tuple<std::string, long> asset
         ):
-            publicKey(publicKey),
-            name(name)
+            publicKey(std::move(publicKey)),
+            name(std::move(name))
         {
-            assets.push_back(asset);
+            assets.push_back(std::move(asset));
         }
 
 
         explicit Account(
-            std::string&& publicKey,
-            std::string&&  name
+            std::string publicKey,
+            std::string name
         ):
-            publicKey(publicKey),
-            name(name)
+            publicKey(std::move(publicKey)),
+            name(std::move(name))
         {}
 
 

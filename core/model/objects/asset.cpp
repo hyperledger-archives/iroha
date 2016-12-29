@@ -19,23 +19,23 @@ limitations under the License.
 namespace object {
 
 Asset::Asset(
-    std::string&& domain,
-    std::string&&  name,
-    unsigned long long&& value,
-    unsigned int&& precision
+    std::string domain,
+    std::string name,
+    unsigned long long value,
+    unsigned int precision
 ):
-    domain(domain),
-    name(name),
+    domain(std::move(domain)),
+    name(std::move(name)),
     value(value),
     precision(precision)
 {}
 
 Asset::Asset(
-    std::string&& name,
-    unsigned long long&& value
+    std::string name,
+    unsigned long long value
 ):
     domain(""),
-    name(name),
+    name(std::move(name)),
     value(value),
     precision(-1)
 {}
