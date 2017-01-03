@@ -22,13 +22,12 @@ limitations under the License.
 // What's a publisher? 
 // A publisher is like factory in Domain-Driven Development.
 namespace publisher{
-
+  
     template<typename T, typename... Args>
-    T&& publish(Args... args){
-        T t(args...);
-        return std::move(t);
+    T publish(Args&& ... args){
+        return T(std::forward<Args>(args)...);
     }
-
+  
 };
 
 #endif // __CORE_PUBLISHER_HPP__
