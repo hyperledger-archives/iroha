@@ -3,8 +3,8 @@
 namespace random_service{
 
     std::string makeRandomHash() {
-        std::random_device rd;
-        return hash::sha3_256_hex(std::to_string(rd()));
+        static std::mt19937 mt(std::random_device{}());
+        return hash::sha3_256_hex(std::to_string(mt()));
     }
 
 };  // namespace random_service

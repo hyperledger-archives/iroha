@@ -59,7 +59,7 @@ namespace convertor{
             auto name = aAccount.name();
             std::vector<std::tuple<std::string,long>> assets;
             for(const Event::Asset& as: aAccount.assets()){
-                assets.push_back(std::make_pair(as.name(),(long)as.value()));
+                assets.emplace_back(as.name(), static_cast<long>(as.value()));
             }
             return object::Account(
                     std::move(publicKey),
@@ -116,7 +116,7 @@ namespace convertor{
             auto publicKey = tx.account().publickey();
             std::vector<std::tuple<std::string,long>> assets;
             for(auto&& as: tx.account().assets()){
-                assets.push_back(std::make_pair( as.name(), as.value()));
+                assets.emplace_back(as.name(), as.value());
             }
             auto issuer = tx.senderpubkey();
             auto res = ConsensusEvent<

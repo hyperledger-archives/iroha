@@ -39,33 +39,18 @@ namespace smart_contract {
 
         std::cout << "-Djava.class.path=" + std::string(getenv("IROHA_HOME")) +
                      "/smart_contract/" + contractName <<"/ "<< contractName.c_str() << std::endl;
-
-        //options[0].optionString = (char*)"-Djava.security.manager -Djava.security.policy=policy.txt -Djava.class.path=./contract/";
 		
-		std::vector<std::string> optionStrings = {
-		  "-Djava.class.path=" + std::string(getenv("IROHA_HOME"))
-                               + "/smart_contract",
-          "-Djava.security.manager",
-          "-Djava.security.policy=policy.txt"
-		};
-		
-		std::vector<std::vector<char>> optionCharStrings;
-		for(const auto& s: optionStrings) {
-            optionCharStrings.emplace_back(s.begin(), s.end());
-            optionCharStrings.back().push_back('\0');
-		}
-		
-		auto options = std::make_unique<JavaVMOption[]>(optionStrings.size());
-		for(unsigned i=0; i<optionCharStrings.size(); i++) {
-            options[i].optionString = optionCharStrings[i].data();
-		}
+		JavaVMOption options[3];
+		options[0].optionString = const_cast<char*>(("-Djava.class.path=" + std::string(getenv("IROHA_HOME")) + "/smart_contract").c_str());
+		options[1].optionString = const_cast<char*>("-Djava.security.manager");
+		options[2].optionString = const_cast<char*>("-Djava.security.policy=policy.txt");
 		
         JavaVMInitArgs vm_args;
-        vm_args.version = JNI_VERSION_1_6;
-        vm_args.options = options.get();
-        vm_args.nOptions = optionStrings.size();
+        vm_args.version  = JNI_VERSION_1_6;
+        vm_args.options  = options;
+        vm_args.nOptions = 3;
         //vm_args.ignoreUnrecognized = true;
-
+		
         JNIEnv *env;
         JavaVM *jvm;
 		
@@ -80,7 +65,7 @@ namespace smart_contract {
             std::cout << "could not found class : " << contractName << std::endl;
             return nullptr;
         }
-
+		
         jmethodID cns = env->GetMethodID(cls, "<init>", "()V");
         if (cns == nullptr) {
             std::cout << "could not get <init> method." << std::endl;
@@ -88,7 +73,7 @@ namespace smart_contract {
         }
 		
         jobject obj = env->NewObject(cls, cns);
-
+		
         return std::make_unique<JavaContext>(
             env,
             jvm,
