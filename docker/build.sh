@@ -1,21 +1,18 @@
 #!/bin/bash
 
-# TODO: change warchantua to hyperledger.
-
 if [ -z ${IROHA_HOME} ]; then
     echo "[FATAL] Empty variable IROHA_HOME"
     exit 1
 fi
 
-# pull image from docker-hub, or (in case of fail), build new
-docker pull warchantua/iroha-dev || \
-    docker build -t warchantua/iroha-dev ${IROHA_HOME}/docker/dev 
+# build iroha-dev image
+docker build -t hyperledger/iroha-dev ${IROHA_HOME}/docker/dev 
 
 # run dev container to build iroha
 docker run -i --rm \
     -v ${IROHA_HOME}/docker/build:/build \
     -v ${IROHA_HOME}:/opt/iroha \
-    warchantua/iroha-dev \
+    hyperledger/iroha-dev \
     sh << COMMANDS
     # everything between COMMANDS will be executed inside a container
     cd /opt/iroha
@@ -26,5 +23,5 @@ docker run -i --rm \
         (echo "[-] FAILED! Mount /build folder from your host or use iroha/docker/build.sh script!" && exit 1))
 COMMANDS
 
-# build warchantua/iroha container
-docker build -t warchantua/iroha ${IROHA_HOME}/docker/build
+# build hyperledger/iroha container
+docker build -t hyperledger/iroha ${IROHA_HOME}/docker/build

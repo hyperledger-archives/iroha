@@ -10,13 +10,10 @@ fi
 ```
 
 #### 2
-To build `iroha` you need a lot of dependencies. To make build process easier, you need `iroha-dev` image, which is ubuntu:16.04 with all dependencies.
+To build `iroha` you need a lot of dependencies. To make build process easier, you need `iroha-dev` image, which is ubuntu:16.04 with all dependencies on board.
 
 ```bash
-# pull image from docker-hub
-docker pull warchantua/iroha-dev
-# or build new 
-docker build -t warchantua/iroha-dev ${IROHA_HOME}/docker/dev 
+docker build -t hyperledger/iroha-dev ${IROHA_HOME}/docker/dev 
 ```
 
 Ok, you have `iroha-dev` image. It is time to use it, to build your source code:
@@ -27,7 +24,7 @@ docker run -i --rm \
     # next two lines mount 2 folders from host machine to container
     -v ${IROHA_HOME}/docker/build:/build \
     -v ${IROHA_HOME}:/opt/iroha \
-    warchantua/iroha-dev \
+    hyperledger/iroha-dev \
     sh << COMMANDS
     # everything between COMMANDS will be executed inside a container
     cd /opt/iroha
@@ -42,11 +39,11 @@ COMMANDS
 As a result, you will have a tarball with compiled iroha binaries and libs: `${IROHA_HOME0/docker/build/iroha.tar}`.
 
 #### 3
-Then you have to build production image. It has minimal size and ready for production.
+Then you have to build production image. It has minimal size and ready for production. The only thing you need is to upload your `sumeragi.json` inside.
 
 ```bash
-# build warchantua/iroha container
-docker build -t warchantua/iroha ${IROHA_HOME}/docker/build
+# build hyperledger/iroha container
+docker build -t hyperledger/iroha ${IROHA_HOME}/docker/build
 ```
 
 #### Or, if you are lazy
@@ -67,7 +64,7 @@ iroha container has several scripts:
  You can use them instead default `CMD`:
  
 ```bash
-docker run -d --name iroha warchantua/iroha /configure-then-run.sh
+docker run -d --name iroha hyperledger/iroha /configure-then-run.sh
 ```
 
 #### Good luck!

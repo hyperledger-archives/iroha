@@ -2,7 +2,5 @@
 
 Navigate to this folder and run:
 ```
-docker build -t warchantua/iroha-dev .
+docker build -t hyperledger/iroha-dev .
 ```
-
-***TODO***: `warchantua` will be changed to `hyperledger`.
