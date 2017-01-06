@@ -235,9 +235,9 @@ TEST(ThreadPool, Parallel_HeavyJob) {
   std::thread([&]() {
     // we calculate sum([1..repetitions])
     for (int i = 1; i <= repetitions; i++) {
-      auto f = pool.process([i]() {
-        // stateless processing: process one request 100 ms
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      auto &&f = pool.process([i]() {
+        // stateless processing: process one request 20 ms
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
         return i;
       });
 
@@ -282,11 +282,10 @@ TEST(ThreadPool, Sequential_WithStdQueue) {
   const int repetitions = 100;
 
   for (int i = 1; i <= repetitions; i++) {
-    queue.push(pool.process([i]() {
-      // some processing, 50 ms
-      std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    queue.push(std::move(pool.process([i]() {
+      std::this_thread::sleep_for(std::chrono::milliseconds(20));
       return i;
-    }));
+    })));
   }
 
   int sum_actual = 0;
@@ -311,11 +310,10 @@ TEST(ThreadPool, Sequential_WithMPSCBoundedQueue) {
   const int repetitions = 100;
 
   for (int i = 1; i <= repetitions; i++) {
-    queue.push(pool.process([i]() {
-      // some processing, 50 ms
-      std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    queue.push(std::move(pool.process([i]() {
+      std::this_thread::sleep_for(std::chrono::milliseconds(20));
       return i;
-    }));
+    })));
   }
 
   int sum_actual = 0;

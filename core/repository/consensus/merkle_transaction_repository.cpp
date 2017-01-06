@@ -60,9 +60,9 @@ namespace merkle_transaction_repository {
             return pevent->transaction().hash();
         }
 
-	std::string parent     = repository::world_state_repository::find(lastInsertion + "_parent");
-	std::string leftChild  = repository::world_state_repository::find(parent + "_leftChild");
-	std::string rightChild = repository::world_state_repository::find(parent + "_rightChild");
+        std::string parent     = repository::world_state_repository::find(lastInsertion + "_parent");
+        std::string leftChild  = repository::world_state_repository::find(parent + "_leftChild");
+        std::string rightChild = repository::world_state_repository::find(parent + "_rightChild");
 
         if (rightChild.empty()) {
             // insert the event's transaction as the right child

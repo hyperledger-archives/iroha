@@ -3,6 +3,7 @@
 #include "../../util/logger.hpp"
 
 #include <iostream>  // for debug writing
+#include <cstdlib>
 
 #include <fstream>   // ifstream, ofstream
 #include <sstream>   // istringstream
@@ -17,10 +18,17 @@ namespace peer {
     json openConfig(){
         if(configData.empty()) {
             try{
-                if (std::string(getenv("IROHA_HOME")) == "") {
+                const auto IROHA_HOME = [](){
+                    const auto p = getenv("IROHA_HOME");
+                    return p == nullptr ? std::string() : std::string(p);
+                }();
+
+                if (IROHA_HOME.empty()) {
                     std::cerr << "IROHA_HOMEをセットして" << std::endl;
+                    return json();
                 }
-                std::ifstream ifs(std::string(getenv("IROHA_HOME")) + "/config/sumeragi.json");
+				
+                std::ifstream ifs(IROHA_HOME + "/config/sumeragi.json");
                 if (ifs.fail()) {
                     std::cerr << "Fileが見つかりません" << std::endl;
                     return json();

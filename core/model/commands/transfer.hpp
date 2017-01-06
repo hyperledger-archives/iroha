@@ -41,9 +41,9 @@ namespace command {
                 std::string&& receiver,
                 Args&&... args
         ):
+                T(std::forward<Args>(args)...),
                 senderPublicKey(std::move(sender)),
-                receiverPublicKey(std::move(receiver)),
-                T(std::forward<Args>(args)...)
+                receiverPublicKey(std::move(receiver))
         {}
 
         auto getCommandName() const {
