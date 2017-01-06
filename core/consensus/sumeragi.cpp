@@ -236,7 +236,7 @@ namespace sumeragi {
             // this returns std::future<void> object
             // (std::future).get() method locks processing until result of processTransaction will be available
             // but processTransaction returns void, so we don't have to call it and wait
-            std::function<void()> &&task = std::bind(processTransaction, std::ref(event)); 
+            std::function<void()> &&task = std::bind(processTransaction, event); 
             pool.process(std::move(task)); 
         });
 
