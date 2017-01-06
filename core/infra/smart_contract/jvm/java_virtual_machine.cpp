@@ -37,11 +37,12 @@ namespace smart_contract {
             return nullptr;
         }
 
-        std::cout << "-Djava.class.path=" + std::string(getenv("IROHA_HOME")) +
-                     "/smart_contract/" + contractName <<"/ "<< contractName.c_str() << std::endl;
+        std::string java_command = "-Djava.class.path=" + std::string(getenv("IROHA_HOME")) + "/smart_contract/" + contractName + "/";
+
+        std::cout << java_command.c_str() << " " << contractName.c_str() << std::endl;
 		
 		JavaVMOption options[3];
-		options[0].optionString = const_cast<char*>(("-Djava.class.path=" + std::string(getenv("IROHA_HOME")) + "/smart_contract").c_str());
+		options[0].optionString = const_cast<char*>( java_command.c_str() );
 		options[1].optionString = const_cast<char*>("-Djava.security.manager");
 		options[2].optionString = const_cast<char*>("-Djava.security.policy=policy.txt");
 		
@@ -60,7 +61,7 @@ namespace smart_contract {
             return nullptr;
         }
 		
-        jclass cls = env->FindClass("SampleCurrency/SampleCurrency");// (contractName+"/"+contractName).c_str());
+        jclass cls = env->FindClass( (contractName).c_str() );// (contractName+"/"+contractName).c_str());
         if (cls == nullptr) {
             std::cout << "could not found class : " << contractName << std::endl;
             return nullptr;
