@@ -85,23 +85,47 @@ namespace smart_contract {
 		);
     }
 
+
+
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
         std::string functionName,
         std::unordered_map<std::string, std::string> params
     ) {
+        jobject jmap = JavaMakeMap( context->env, params );
 
-        jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/util/Map;)V");
+        jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/util/HashMap;)V");
         if (mid == nullptr) {
             std::cout << "could not get method : " << functionName << std::endl;
             return;
         }
-        context->env->CallVoidMethod(context->jObject, mid);
+
+        context->env->CallVoidMethod(context->jObject, mid, jmap );
 
         auto res = context->jvm->DestroyJavaVM();
         if (res) {
             std::cout << "could not destroy JavaVM : " << res << std::endl;
         }
+    }
+
+
+    JNIEXPORT jobject JNICALL JavaMakeMap(JNIEnv *env, std::unordered_map<std::string,std::string> mMap) {
+        env->PushLocalFrame(256); // fix for local references
+        jclass hashMapClass= env->FindClass( "java/util/HashMap" );
+        jmethodID hashMapInit = env->GetMethodID( hashMapClass, "<init>", "(I)V");
+        jobject hashMapObj = env->NewObject( hashMapClass, hashMapInit, mMap.size());
+        jmethodID hashMapOut = env->GetMethodID( hashMapClass, "put",
+                    "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+
+        for (auto it : mMap)
+        {
+            env->CallObjectMethod( hashMapObj, hashMapOut,
+                 env->NewStringUTF(it.first.c_str()),
+                 env->NewStringUTF(it.second.c_str()));
+        }
+
+        env->PopLocalFrame(hashMapObj);
+        return hashMapObj;
     }
 
 };
