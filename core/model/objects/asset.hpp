@@ -41,15 +41,15 @@ public:
 
 
     explicit Asset(
-        std::string&& domain,
-        std::string&&  name,
-        unsigned long long&& value,
-        unsigned int&& precision
+        std::string domain,
+        std::string name,
+        unsigned long long value,
+        unsigned int precision
     );
 
     explicit Asset(
-        std::string&&  name,
-        unsigned long long&& value
+        std::string name,
+        unsigned long long value
     );
 
 };

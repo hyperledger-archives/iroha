@@ -36,14 +36,14 @@ namespace command {
         std::string receiverPublicKey;
 
         template<typename... Args>
-        constexpr explicit Transfer(
+        explicit Transfer(
                 std::string&& sender,
                 std::string&& receiver,
                 Args&&... args
         ):
+                T(std::forward<Args>(args)...),
                 senderPublicKey(std::move(sender)),
-                receiverPublicKey(std::move(receiver)),
-                T(std::forward<Args>(args)...)
+                receiverPublicKey(std::move(receiver))
         {}
 
         auto getCommandName() const {

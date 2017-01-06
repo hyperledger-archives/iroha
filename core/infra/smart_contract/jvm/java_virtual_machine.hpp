@@ -45,8 +45,7 @@ namespace smart_contract {
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
         std::string functionName,
-        std::unordered_map<std::string,
-        std::string> params
+        std::unordered_map<std::string, std::string> params
     );
 
 }

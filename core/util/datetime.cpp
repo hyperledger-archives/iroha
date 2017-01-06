@@ -17,6 +17,7 @@ limitations under the License.
 #include "datetime.hpp"
 
 #include <ctime>
+#include <cstdint>
 
 namespace datetime{
 
@@ -25,8 +26,8 @@ namespace datetime{
     return std::to_string(result);
   }
 
-  long int unixtime(){
-    return static_cast<long int>(std::time(nullptr));
+  std::int64_t unixtime(){
+    return static_cast<std::int64_t>(std::time(nullptr));
   }
 
   std::string date_str(){

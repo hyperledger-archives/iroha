@@ -18,6 +18,7 @@ limitations under the License.
 #include "../util/datetime.hpp"
 #include "../crypto/hash.hpp"
 #include <algorithm>
+#include <cstdint>
 
 namespace transaction {
 
@@ -41,7 +42,7 @@ protected:
     std::string hash;
     std::vector<txSignature> txSignatures;
 public:
-    long long int timestamp;
+    std::int64_t timestamp;
     std::string senderPubkey;
 
     template<typename... Args>
