@@ -74,8 +74,8 @@ namespace sumeragi {
 
     namespace detail{
 
-        unsigned int getNumValidSignatures(const Event::ConsensusEvent& event){
-            unsigned int sum = 0;
+        std::uint32_t getNumValidSignatures(const Event::ConsensusEvent& event){
+            std::uint32_t sum = 0;
             for(auto&& esig: event.eventsignatures()){
                 if(signature::verify( esig.signature(), event.transaction().hash(), esig.publickey())){
                     sum++;
@@ -117,7 +117,8 @@ namespace sumeragi {
                 logger::explore("sumeragi", "   AA         AA");
             }
         }
-        void printJudge(int numValidSignatures,int numValidationPeer,int faulty){
+
+        void printJudge(int numValidSignatures, int numValidationPeer, int faulty){
             std::array<std::string, 5> lines;
             for(int i=0;i< numValidationPeer;i++){
                 if(i < numValidSignatures){
@@ -138,7 +139,7 @@ namespace sumeragi {
             for(int i=0;i<5;i++){
                 logger::explore("sumeragi", lines[i]);
             }
-            std::string line = "";
+            std::string line;
             for(int i=0;i<numValidationPeer;i++) line += "==＝==";
             logger::explore("sumeragi", line);
 
@@ -149,45 +150,37 @@ namespace sumeragi {
         }
 
         void printAgree(){
-                logger::explore("sumeragi", "\033[1m\033[92m+==ーー==+\033[0m");
-                logger::explore("sumeragi", "\033[1m\033[92m|+-ーー-+|\033[0m");
-                logger::explore("sumeragi", "\033[1m\033[92m|| 承認 ||\033[0m");
-                logger::explore("sumeragi", "\033[1m\033[92m|+-ーー-+|\033[0m");
-                logger::explore("sumeragi", "\033[1m\033[92m+==ーー==+\033[0m");
+            logger::explore("sumeragi", "\033[1m\033[92m+==ーー==+\033[0m");
+            logger::explore("sumeragi", "\033[1m\033[92m|+-ーー-+|\033[0m");
+            logger::explore("sumeragi", "\033[1m\033[92m|| 承認 ||\033[0m");
+            logger::explore("sumeragi", "\033[1m\033[92m|+-ーー-+|\033[0m");
+            logger::explore("sumeragi", "\033[1m\033[92m+==ーー==+\033[0m");
         }
 
         void printReject(){
-                logger::explore("sumeragi", "\033[91m+==ーー==+\033[0m");
-                logger::explore("sumeragi", "\033[91m|+-ーー-+|\033[0m");
-                logger::explore("sumeragi", "\033[91m|| 否認 ||\033[0m");
-                logger::explore("sumeragi", "\033[91m|+-ーー-+|\033[0m");
-                logger::explore("sumeragi", "\033[91m+==ーー==+\033[0m");
+            logger::explore("sumeragi", "\033[91m+==ーー==+\033[0m");
+            logger::explore("sumeragi", "\033[91m|+-ーー-+|\033[0m");
+            logger::explore("sumeragi", "\033[91m|| 否認 ||\033[0m");
+            logger::explore("sumeragi", "\033[91m|+-ーー-+|\033[0m");
+            logger::explore("sumeragi", "\033[91m+==ーー==+\033[0m");
         }
     } // namespace detail
 
     struct Context {
-        bool isSumeragi; // am I the leader or am I not?
-        unsigned long maxFaulty;  // f
-        unsigned long proxyTailNdx;
-        int panicCount;
+        bool            isSumeragi; // am I the leader or am I not?
+        std::uint64_t   maxFaulty;  // f
+        std::uint64_t   proxyTailNdx;
+        std::int32_t    panicCount;
+        std::int64_t    commitedCount = 0;
+        std::uint64_t   numValidatingPeers;
+        std::string     myPublicKey;
+        std::deque<std::unique_ptr<peer::Node>> validatingPeers;
 
-        long long int commitedCount = 0;
-
-        unsigned long numValidatingPeers;
-        std::string myPublicKey;
-
-        std::deque<
-                std::unique_ptr<peer::Node>
-        > validatingPeers;
-
-        Context(std::vector<
-                std::unique_ptr<peer::Node>
-        > peers)
+        Context(std::vector<std::unique_ptr<peer::Node>>&& peers)
         {
             for(auto&& p : peers){
                 validatingPeers.push_back(std::move(p));
             }
-
         }
     };
 
@@ -211,22 +204,27 @@ namespace sumeragi {
         peers.clear();
 
         logger::info("sumeragi", "My key is " + peer::getMyIp());
-                
         logger::info("sumeragi", "Sumeragi setted");
-
         logger::info("sumeragi", "set number of validatingPeer");
+
         context->numValidatingPeers = context->validatingPeers.size();
         context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO: make this configurable
 
-        context->proxyTailNdx = context->maxFaulty*2 + 1;
+        context->proxyTailNdx = context->maxFaulty * 2 + 1;
+
+        if (context->validatingPeers.empty()) {
+            logger::error("sumeragi", "could not find any validating peers.");
+            exit(EXIT_FAILURE);
+        }
+
         if (context->proxyTailNdx >= context->validatingPeers.size()) {
-            context->proxyTailNdx = context->validatingPeers.size()-1;
+            context->proxyTailNdx = context->validatingPeers.size() - 1;
         }
 
         context->panicCount = 0;
         context->myPublicKey = myPublicKey;
 
-        context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() == context->myPublicKey;
+        context->isSumeragi = context->validatingPeers.front()->getPublicKey() == context->myPublicKey;
 
         connection::receive([](const std::string& from, Event::ConsensusEvent& event){
             logger::info("sumeragi", "receive!");
@@ -240,21 +238,21 @@ namespace sumeragi {
             pool.process(std::move(task)); 
         });
 
-        logger::info("sumeragi", "initialize numValidatingPeers :" + std::to_string(context->numValidatingPeers));
-        logger::info("sumeragi", "initialize maxFaulty :" + std::to_string(context->maxFaulty));
-        logger::info("sumeragi", "initialize proxyTailNdx :" + std::to_string(context->proxyTailNdx));
+        logger::info("sumeragi", "initialize numValidatingPeers :"  + std::to_string(context->numValidatingPeers));
+        logger::info("sumeragi", "initialize maxFaulty :"           + std::to_string(context->maxFaulty));
+        logger::info("sumeragi", "initialize proxyTailNdx :"        + std::to_string(context->proxyTailNdx));
 
-        logger::info("sumeragi", "initialize panicCount :" + std::to_string(context->panicCount));
-        logger::info("sumeragi", "initialize myPublicKey :" + context->myPublicKey);
+        logger::info("sumeragi", "initialize panicCount :"          + std::to_string(context->panicCount));
+        logger::info("sumeragi", "initialize myPublicKey :"         + context->myPublicKey);
 
         //TODO: move the peer service and ordering code to another place
         //determineConsensusOrder(); // side effect is to modify validatingPeers
-        logger::info("sumeragi", "initialize is sumeragi :" + std::to_string(context->isSumeragi));
+        logger::info("sumeragi", "initialize is sumeragi :"         + std::to_string(static_cast<int>(context->isSumeragi)));
         logger::info("sumeragi", "initialize.....  complete!");
     }
 
 
-    unsigned long long getNextOrder() {
+    std::uint64_t getNextOrder() {
         return 0l;
         //return merkle_transaction_repository::getLastLeafOrder() + 1;
     }
@@ -266,27 +264,31 @@ namespace sumeragi {
         //if (!transaction_validator::isValid(event->getTx())) {
         //    return; //TODO-futurework: give bad trust rating to nodes that sent an invalid event
         //}
-        logger::info("sumeragi", "valied");
+        logger::info("sumeragi", "valid");
         logger::info("sumeragi", "Add my signature...");
 
-        logger::info("sumeragi", "hash:" + event.transaction().hash());
-        logger::info("sumeragi", "pub:" + peer::getMyPublicKey());
-        logger::info("sumeragi", "pro:"+ peer::getPrivateKey());
-        logger::info("sumeragi", "sog:"+  std::string(signature::sign(event.transaction().hash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()));
+        logger::info("sumeragi", "hash:"    + event.transaction().hash());
+        logger::info("sumeragi", "pub:"     + peer::getMyPublicKey());
+        logger::info("sumeragi", "pro:"     + peer::getPrivateKey());
+        logger::info("sumeragi", "sog:"     + 
+            signature::sign(event.transaction().hash(), peer::getMyPublicKey(), peer::getPrivateKey())
+        );
         
         //detail::printIsSumeragi(context->isSumeragi);
         // Really need? blow "if statement" will be false anytime.
-        detail::addSignature(event, peer::getMyPublicKey(), signature::sign(event.transaction().hash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str());
+        detail::addSignature(event,
+            peer::getMyPublicKey(),
+            signature::sign(event.transaction().hash(), peer::getMyPublicKey(), peer::getPrivateKey())
+        );
 
         if (detail::eventSignatureIsEmpty(event) && context->isSumeragi) {
             logger::info("sumeragi", "signatures.empty() isSumragi");
             // Determine the order for processing this event
-            event.set_order( getNextOrder());
+            event.set_order(getNextOrder());
             logger::info("sumeragi", "new  order:" + std::to_string(event.order()));
-
         } else if (!detail::eventSignatureIsEmpty(event)) {
             // Check if we have at least 2f+1 signatures needed for Byzantine fault tolerance
-            if ( detail::getNumValidSignatures(event) >= context->maxFaulty*2 + 1) {
+            if (detail::getNumValidSignatures(event) >= context->maxFaulty*2 + 1) {
 
                 logger::info("sumeragi", "Signature exists");
                 logger::explore("sumeragi", "0--------------------------0");
@@ -297,7 +299,7 @@ namespace sumeragi {
                 logger::explore("sumeragi", "\033[93m0\033[1m"+ event.transaction().hash() +"0\033[0m");
                 logger::explore("sumeragi", "\033[93m0================================================================0\033[0m");
 
-                detail::printJudge( detail::getNumValidSignatures(event), context->numValidatingPeers, context->maxFaulty*2 + 1);
+                detail::printJudge(detail::getNumValidSignatures(event), context->numValidatingPeers, context->maxFaulty*2 + 1);
 
                 detail::printAgree();
                 // Check Merkle roots to see if match for new state
@@ -316,7 +318,7 @@ namespace sumeragi {
                 // Commit locally
                 logger::explore("sumeragi", "commit");
                 context->commitedCount++;
-                logger::explore("sumeragi", "commit count:"+std::to_string(context->commitedCount));
+                logger::explore("sumeragi", "commit count:" + std::to_string(context->commitedCount));
 
                 merkle_transaction_repository::commit(event); //TODO: add error handling in case not saved
 //
@@ -351,11 +353,11 @@ namespace sumeragi {
                 // event->execution();
             } else {
                 // This is a new event, so we should verify, sign, and broadcast it
-                detail::addSignature( event, peer::getMyPublicKey(), signature::sign( event.transaction().hash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str());
+                detail::addSignature(event, peer::getMyPublicKey(), signature::sign(event.transaction().hash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str());
 
-                logger::info("sumeragi", "tail pubkey is "+context->validatingPeers.at(context->proxyTailNdx)->getPublicKey());
-                logger::info("sumeragi", "tail is "+std::to_string(context->proxyTailNdx));
-                logger::info("sumeragi", "my pubkey is "+peer::getMyPublicKey());
+                logger::info("sumeragi", "tail public key is " + context->validatingPeers.at(context->proxyTailNdx)->getPublicKey());
+                logger::info("sumeragi", "tail is " + std::to_string(context->proxyTailNdx));
+                logger::info("sumeragi", "my public key is " + peer::getMyPublicKey());
                 
                 if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() == peer::getMyPublicKey()) {
                     logger::info("sumeragi", "I will send event to "+context->validatingPeers.at(context->proxyTailNdx)->getIP());
@@ -395,8 +397,8 @@ namespace sumeragi {
     */
     void panic(const Event::ConsensusEvent& event) {
         context->panicCount++; // TODO: reset this later
-        unsigned long broadcastStart = 2 * context->maxFaulty + 1 + context->maxFaulty * context->panicCount;
-        unsigned long broadcastEnd = broadcastStart + context->maxFaulty;
+        auto broadcastStart = 2 * context->maxFaulty + 1 + context->maxFaulty * context->panicCount;
+        auto broadcastEnd = broadcastStart + context->maxFaulty;
 
         // Do some bounds checking
         if (broadcastStart > context->numValidatingPeers - 1) {
@@ -406,8 +408,8 @@ namespace sumeragi {
         if (broadcastEnd > context->numValidatingPeers - 1) {
             broadcastEnd = context->numValidatingPeers - 1;
         }
-        logger::info( "sumeragi", "broadcastEnd:"+ std::to_string(broadcastEnd));
-        logger::info( "sumeragi", "broadcastStart:"+ std::to_string(broadcastStart));
+        logger::info("sumeragi", "broadcastEnd:"+ std::to_string(broadcastEnd));
+        logger::info("sumeragi", "broadcastStart:"+ std::to_string(broadcastStart));
         // WIP issue hash event
         //connection::sendAll(event->transaction().hash()); //TODO: change this to only broadcast to peer range between broadcastStart and broadcastEnd
     }

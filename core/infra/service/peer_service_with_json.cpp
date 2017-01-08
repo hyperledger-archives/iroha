@@ -1,6 +1,7 @@
 
 #include "../../service/peer_service.hpp"
 #include "../../util/logger.hpp"
+#include "../../util/use_optional.hpp"
 
 #include <iostream>  // for debug writing
 #include <cstdlib>
@@ -13,78 +14,81 @@
 namespace peer {
 
     using json = nlohmann::json;
-    static json configData;
+    static optional<json> configData;
 
-    json openConfig(){
-        if(configData.empty()) {
-            try{
-                const auto IROHA_HOME = [](){
-                    const auto p = getenv("IROHA_HOME");
-                    return p == nullptr ? std::string() : std::string(p);
-                }();
+    optional<json> openConfig(){
 
-                if (IROHA_HOME.empty()) {
-                    std::cerr << "IROHA_HOMEをセットして" << std::endl;
-                    return json();
-                }
-				
-                std::ifstream ifs(IROHA_HOME + "/config/sumeragi.json");
-                if (ifs.fail()) {
-                    std::cerr << "Fileが見つかりません" << std::endl;
-                    return json();
-                }
-                std::istreambuf_iterator<char> it(ifs);
-                std::istreambuf_iterator<char> last;
-                std::string res(it, last);
-                logger::info("peer with json", "load json is "+ res);
-                configData = json::parse(res);
-                return configData;
-            }catch(...){
-                logger::error("peer with json", "Bad json!!");
-                return json();
-            }
-        }else{
+        if(configData) {   // already content loaded
             return configData;
         }
+
+        const auto PathToIROHA_HOME = [](){
+            const auto p = getenv("IROHA_HOME");
+            return p == nullptr ? "" : std::string(p);
+        }();
+
+        if (PathToIROHA_HOME.empty()) {
+            logger::error("peer with json", "You must set IROHA_HOME!");
+            exit(EXIT_FAILURE);
+//            return nullopt;
+        }
+
+        const auto PathToSumeragiJson = PathToIROHA_HOME + "/config/sumeragi.json";
+        std::ifstream ifs(PathToSumeragiJson);
+        if(ifs.fail()) {
+            logger::error("peer with json", "Not found: " + PathToSumeragiJson);
+            exit(EXIT_FAILURE);
+//            return nullopt;
+        }
+
+        std::istreambuf_iterator<char> it(ifs);
+        std::string jsonStr(it, std::istreambuf_iterator<char>());
+
+        logger::info("peer with json", "load json is " + jsonStr);
+
+        try {
+            configData = json::parse(jsonStr);
+            return configData;
+        } catch(...) {
+            logger::error("peer with json", "Bad json!!");
+            exit(EXIT_FAILURE);
+//            return nullopt;
+        }
+
     }
 
-    std::string getMyPublicKey(){
-        try{
-            return openConfig()["me"]["publicKey"].get<std::string>();
-        }catch(...){
-            return "";
+    std::string getMyPublicKey() {
+        if(auto config = openConfig()) {
+            return (*config)["me"]["publicKey"].get<std::string>();
         }
+        return "";
     }
 
-    std::string getPrivateKey(){
-        try{
-            return openConfig()["me"]["privateKey"].get<std::string>();
-        }catch(...){
-            return "";
+    std::string getPrivateKey() {
+        if(auto config = openConfig()) {
+            return (*config)["me"]["privateKey"].get<std::string>();
         }
+        return "";
     }
 
     std::string getMyIp() {
-        try{
-            return openConfig()["me"]["ip"].get<std::string>();
-        }catch(...){
-            return "";
+        if(auto config = openConfig()) {
+            return (*config)["me"]["ip"].get<std::string>();
         }
+        return "";
     }
 
-    std::vector<std::unique_ptr<peer::Node>> getPeerList(){
+    std::vector<std::unique_ptr<peer::Node>> getPeerList() {
         std::vector<std::unique_ptr<peer::Node>> nodes;
-        try{
-            for(const auto& peer : openConfig()["group"].get<std::vector<json>>()){
+        if(auto config = openConfig()) {
+            for(const auto& peer : (*config)["group"].get<std::vector<json>>()){
                 nodes.push_back(std::make_unique<peer::Node>(
                     peer["ip"].get<std::string>(),
                     peer["publicKey"].get<std::string>(),
                     1
                 ));
             }
-            return nodes;
-        }catch(...){
-            return nodes;
         }
+        return nodes;
     }
 };
