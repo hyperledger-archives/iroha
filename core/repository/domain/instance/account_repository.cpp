@@ -27,9 +27,9 @@ namespace repository{
 
         // SampleAsset has only quantity no logic, so this value is int.
         bool update_quantity(
-                const std::string& uuid,
-                const std::string& assetName,
-                long newValue
+                const std::string&  uuid,
+                const std::string&  assetName,
+                std::int64_t        newValue
         ){
             auto account = world_state_repository::find(uuid);
             Event::Account protoAccount;
