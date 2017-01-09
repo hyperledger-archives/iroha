@@ -46,10 +46,10 @@ int main(int argc, char* argv[]){
 
     connection::initialize_peer();
 
-    if(std::string(argv[1]) == "sender"){
-        logger::debug("main", "I'm sender.");
+    if (std::string(argv[1]) == "sender") {
+        logger::debug("main") << "I'm sender.";
         connection::addSubscriber(argv[2]);
-        logger::debug("main", "Add subscribed");
+        logger::debug("main") << "Add subscribed";
         while(1){
             auto event = ConsensusEvent<Transaction<Add<object::Asset>>>(
                     "sender",
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]){
                     0
             );
 
-            logger::debug("main", "issued event");
+            logger::debug("main") << "issued event";
             event.addSignature(
                     peer::getMyPublicKey(),
                     signature::sign(event.getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
@@ -71,13 +71,13 @@ int main(int argc, char* argv[]){
             );
 
 
-            logger::debug("main", "Add signatured");
-            logger::debug("main", "start send");
-            std::cout <<" sig:" << event.eventSignatures().size() << "\n";
+            logger::debug("main") << "Add signatured";
+            logger::debug("main") << "start send";
+            std::cout << " sig:" << event.eventSignatures().size() << "\n";
             connection::sendAll(convertor::encode(event));
         }
-    }else if(std::string(argv[1]) == "receive"){
-        connection::receive([](const std::string& from,Event::ConsensusEvent& event){
+    } else if (std::string(argv[1]) == "receive") {
+        connection::receive([](const std::string& from,Event::ConsensusEvent& event) {
             std::cout <<" receive : order:" << event.order() << "\n";
             std::cout <<" receive : sig size:" << event.eventsignatures_size() << "\n";
             std::cout <<" receive : value:" << event.transaction().asset().value() << "\n";

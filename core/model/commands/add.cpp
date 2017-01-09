@@ -24,7 +24,7 @@ namespace command {
 
     template <>
     void Add<object::Account>::execution() {
-        logger::debug("Add<Account>", "save publicKey:" + object::Account::publicKey + " name:" + object::Account::name);
+        logger::debug("Add<Account>") << "save publicKey:" << object::Account::publicKey << " name:" << object::Account::name;
         repository::account::add(object::Account::publicKey, object::Account::name);
     }
 
