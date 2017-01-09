@@ -47,9 +47,9 @@ int main(int argc, char* argv[]){
     connection::initialize_peer();
 
     if (std::string(argv[1]) == "sender") {
-        LOG_DEBUG("main") << "I'm sender.";
+        logger::debug("main") << "I'm sender.";
         connection::addSubscriber(argv[2]);
-        LOG_DEBUG("main") << "Add subscribed";
+        logger::debug("main") << "Add subscribed";
         while(1){
             auto event = ConsensusEvent<Transaction<Add<object::Asset>>>(
                     "sender",
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]){
                     0
             );
 
-            LOG_DEBUG("main") << "issued event";
+            logger::debug("main") << "issued event";
             event.addSignature(
                     peer::getMyPublicKey(),
                     signature::sign(event.getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
@@ -71,8 +71,8 @@ int main(int argc, char* argv[]){
             );
 
 
-            LOG_DEBUG("main") << "Add signatured";
-            LOG_DEBUG("main") << "start send";
+            logger::debug("main") << "Add signatured";
+            logger::debug("main") << "start send";
             std::cout << " sig:" << event.eventSignatures().size() << "\n";
             connection::sendAll(convertor::encode(event));
         }

@@ -62,7 +62,7 @@ namespace connection {
         return [](AtomicBuffer& buffer, util::index_t offset, util::index_t length, Header& header) {
             std::string raw_data = std::string((char *)buffer.buffer() + offset, (unsigned long)length);
             // WIP parse json.
-            // LOG_INFO("receive")  <<  raw_data;
+            // logger::info("receive")  <<  raw_data;
             for(auto& f : receivers) {
                 f(peer::getMyIp(), raw_data);
             }
@@ -82,7 +82,7 @@ namespace connection {
 
     int exec_subscription(std::string ip) {
         try {
-            LOG_INFO("connection") << "subscript [" << ip << "]";
+            logger::info("connection") << "subscript [" << ip << "]";
 
             auto sid            = aeron->addSubscription("aeron:udp?endpoint=" + ip + ":40123", streamId);
             auto subscription   = aeron->findSubscription(sid);
@@ -97,14 +97,14 @@ namespace connection {
                 while (subscription_running){
                     const int fragmentsRead = subscription->poll(handler, FRAGMENTS_LIMIT);
                 }
-                LOG_INFO("connection")  <<  "subscription halt";
+                logger::info("connection")  <<  "subscription halt";
             });
-            LOG_INFO("connection")  <<  "subscription begin run";
+            logger::info("connection")  <<  "subscription begin run";
         }catch (SourcedException& e) {
-            LOG_ERROR("connection") <<  "FAILED: " << e.what() << " : " << e.where();
+            logger::error("connection") <<  "FAILED: " << e.what() << " : " << e.where();
             return -1;
         }catch (std::exception& e) {
-            LOG_ERROR("connection") <<  "FAILED: " << e.what();
+            logger::error("connection") <<  "FAILED: " << e.what();
             return -1;
         }
     }
@@ -116,14 +116,14 @@ namespace connection {
             std::this_thread::yield();
             publication = aeron->findPublication(pid);
         }
-        LOG_INFO("connection")  <<  "publication [" << ip << "]";
+        logger::info("connection")  <<  "publication [" << ip << "]";
         publications.emplace(ip, publication);
     }
 
     bool send(const std::string& to, const std::string& msg) {
-        LOG_INFO("connection")  <<  "Start send";
+        logger::info("connection")  <<  "Start send";
         if(publications.find(to) == publications.end()){
-            LOG_ERROR("connection") << to << " is not registerd";
+            logger::error("connection") << to << " is not registerd";
             return false;
         }
         try{
@@ -134,31 +134,31 @@ namespace connection {
             const auto result = publications[to]->offer(srcBuffer, 0, strlen(message));
             if (result < 0) {
                 if (NOT_CONNECTED == result) {
-                    LOG_ERROR("connection") <<  " not connected yet.";
+                    logger::error("connection") <<  " not connected yet.";
                 } else if (BACK_PRESSURED == result) {
-                    LOG_ERROR("connection") <<  " back pressured.";
+                    logger::error("connection") <<  " back pressured.";
                 } else {
-                    LOG_ERROR("connection") <<  "unknown";
+                    logger::error("connection") <<  "unknown";
                 }
             } else {
-                LOG_DEBUG("connection") <<  "Ok";
+                logger::debug("connection") <<  "Ok";
             }
             if (!publications[to]->isConnected()) {
-                LOG_ERROR("connection") <<  "No active subscribers detected";
+                logger::error("connection") <<  "No active subscribers detected";
             }
             return true;
         } catch (SourcedException& e) {
-            LOG_ERROR("connection") << "FAILED: " << e.what() << " : " << e.where();
+            logger::error("connection") << "FAILED: " << e.what() << " : " << e.where();
             return false;
         } catch (std::exception& e) {
-            LOG_ERROR("connection") << "FAILED: " << e.what();
+            logger::error("connection") << "FAILED: " << e.what();
             return false;
         }
     }
 
     bool sendAll(const std::string& msg) {
-        LOG_INFO("connection")  << "send mesage" << msg;
-        LOG_INFO("connection")  << "send mesage publlications " << publications.size();
+        logger::info("connection")  << "send mesage" << msg;
+        logger::info("connection")  << "send mesage publlications " << publications.size();
         for(auto& p : publications){
             if(p.first != peer::getMyIp()){
                 send(p.first, msg);

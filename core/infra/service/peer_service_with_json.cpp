@@ -20,7 +20,7 @@ namespace peer {
         std::string openJSONText(const std::string& PathToJSONFile) {
             std::ifstream ifs(PathToJSONFile);
             if (ifs.fail()) {
-                LOG_ERROR("peer with json") << "Not found: " << PathToJSONFile;
+                logger::error("peer with json") << "Not found: " << PathToJSONFile;
                 exit(EXIT_FAILURE);
             }
 
@@ -32,7 +32,7 @@ namespace peer {
             try {
                 configData = json::parse(std::move(jsonStr));
             } catch(...) {
-                LOG_ERROR("peer with json") << "Bad json!!";
+                logger::error("peer with json") << "Bad json!!";
                 exit(EXIT_FAILURE);
             }
         }
@@ -50,13 +50,13 @@ namespace peer {
         }();
 
         if (PathToIROHA_HOME.empty()) {
-            LOG_ERROR("peer with json") << "You must set IROHA_HOME!";
+            logger::error("peer with json") << "You must set IROHA_HOME!";
             exit(EXIT_FAILURE);
         }
 
         auto jsonStr = detail::openJSONText(PathToIROHA_HOME + "/config/sumeragi.json");
         
-        LOG_INFO("peer with json") << "load json is " << jsonStr;
+        logger::info("peer with json") << "load json is " << jsonStr;
 
         detail::setConfigData(std::move(jsonStr));
 

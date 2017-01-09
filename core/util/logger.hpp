@@ -19,8 +19,21 @@ limitations under the License.
 
 #include <string>
 #include <iostream>
+#include <sstream>
 
 #include "datetime.hpp"
+
+#if __cplusplus <= 201402L
+#define NOEXCEPT
+#define TYPE_UNC_EXC    bool
+#define STD_UNC_EXC     std::uncaught_exception
+#define COND_UNC_EXC    ! STD_UNC_EXC()
+#else
+#define NOEXCEPT        noexcept
+#define TYPE_UNC_EXC    int
+#define STD_UNC_EXC     std::uncaught_exceptions
+#define COND_UNC_EXC    uncaught >= STD_UNC_EXC()
+#endif
 
 namespace logger {
 
@@ -29,7 +42,7 @@ namespace logger {
         INFO,
         WARNING,
         ERROR,
-        FITAL,
+        FATAL,
         EXPLORE
     };
 
@@ -37,31 +50,49 @@ namespace logger {
         static LogLevel LOG_LEVEL = LogLevel::DEBUG;
     }
 
-    inline void setLogLevel(LogLevel lv) {
+    inline void setLogLevel(LogLevel lv){
         detail::LOG_LEVEL = lv;
     }
 
-    struct __AttachMessage {
-        void operator = (std::ostream& ost) {
-            ost << std::endl;
-        }
-    };
+    // http://stackoverflow.com/questions/40273809/how-to-write-iostream-like-interface-to-logging-library
+    #define LOGGER_DEF(LoggerName, LogLevel, HasPrefix, LogType)                        \
+    struct LoggerName                                                                   \
+    {                                                                                   \
+        LoggerName(std::string&& caller) NOEXCEPT                                       \
+          : caller(std::move(caller)),                                                  \
+            uncaught(STD_UNC_EXC())                                                     \
+        {}                                                                              \
+        ~LoggerName() {                                                                 \
+            if  ( COND_UNC_EXC                                                          \
+                  &&                                                                    \
+                  static_cast<int>(detail::LOG_LEVEL) <= static_cast<int>(LogLevel)     \
+                ) {                                                                     \
+                std::cout << datetime::unixtime_str()                                   \
+                          << (HasPrefix ? std::string(" ") + LogType + " [" + caller + "] "  \
+                                        : "[" + caller + "] ")                  \
+                          << stream.str() << std::endl;                         \
+            }                                                                   \
+        }                                                                       \
+        const std::string   caller;                                             \
+        std::stringstream   stream;                                             \
+        TYPE_UNC_EXC        uncaught;                                           \
+    };                                                                          \
+    template <typename T>                                                       \
+    LoggerName& operator << (LoggerName& record, T&& t) {                       \
+        record.stream << std::forward<T>(t);                                    \
+        return record;                                                          \
+    }                                                                           \
+    template <typename T>                                                       \
+    LoggerName& operator << (LoggerName&& record, T&& t) {                      \
+        return record << std::forward<T>(t);                                    \
+    }
 
-}
+    LOGGER_DEF(debug,   LogLevel::DEBUG,    true,   "DEBUG")
+    LOGGER_DEF(info,    LogLevel::INFO,     true,   "INFO")
+    LOGGER_DEF(warning, LogLevel::WARNING,  true,   "WARNING")
+    LOGGER_DEF(error,   LogLevel::ERROR,    true,   "ERROR (-A-)")
+    LOGGER_DEF(fatal,   LogLevel::FATAL,    true,   "FATAL (`o')")
+    LOGGER_DEF(explore, LogLevel::EXPLORE,  false,  "(EXPLORE)")
 
-#define LOG_BASE_PREFIX(logLevel) \
-      if (static_cast<int>(logger::detail::LOG_LEVEL) <= logLevel)  \
-        logger::__AttachMessage() = std::cout << datetime::unixtime_str()
-
-#define LOG_BASE_MESSAGE(type, where, logLevel) \
-      LOG_BASE_PREFIX(logLevel) << " " << type << " [" << where << "] "
-
-#define LOG_DEBUG(where)    LOG_BASE_MESSAGE("DEBUG",       where, 0)
-#define LOG_INFO(where)     LOG_BASE_MESSAGE("INFO",        where, 1)
-#define LOG_WARNING(where)  LOG_BASE_MESSAGE("WARNING",     where, 2)
-#define LOG_ERROR(where)    LOG_BASE_MESSAGE("ERROR (-A-)", where, 3)
-#define LOG_FATAL(where)    LOG_BASE_MESSAGE("FATAL (`o')", where, 4)
-#define LOG_EXPLORE(where) \
-      LOG_BASE_PREFIX(5) << "[" << where << "] "
-
+} // namespace logger
 #endif

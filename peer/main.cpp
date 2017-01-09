@@ -45,18 +45,18 @@ void server(){
 
 void sigIntHandler(int param){
     running = false;
-    LOG_INFO("main") << "will halt";
+    logger::info("main") << "will halt";
 }
 
 int main() {
     signal(SIGINT, sigIntHandler);
 
     if (getenv("IROHA_HOME") == nullptr){
-      LOG_ERROR("main") << "You must set IROHA_HOME!";
+      logger::error("main") << "You must set IROHA_HOME!";
       return 1;
     }
 
-    LOG_INFO("main") << "process is :" << getpid();
+    logger::info("main") << "process is :" << getpid();
     logger::setLogLevel(logger::LogLevel::DEBUG);
 
     std::vector<std::unique_ptr<peer::Node>> nodes = peer::getPeerList();

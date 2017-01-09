@@ -24,7 +24,7 @@ namespace command {
 
     template <>
     void Transfer<object::Asset>::execution() {
-        LOG_DEBUG("Transfer<Asset>") << "| from publicKey :" << senderPublicKey << " |  -" << object::Asset::value << "-> | to publicKey : " << receiverPublicKey << "| ";
+        logger::debug("Transfer<Asset>") << "| from publicKey :" << senderPublicKey << " |  -" << object::Asset::value << "-> | to publicKey : " << receiverPublicKey << "| ";
         object::Account sender      = repository::account::findByUuid(hash::sha3_256_hex(senderPublicKey));
         object::Account receiver    = repository::account::findByUuid(hash::sha3_256_hex(receiverPublicKey));
 

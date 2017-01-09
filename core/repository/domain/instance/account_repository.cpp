@@ -49,7 +49,7 @@ namespace repository{
         object::Account findByUuid(const std::string& uuid) {
             auto serializedAccount = world_state_repository::find(uuid);
             auto account = world_state_repository::find(uuid);
-            LOG_DEBUG("AccountRepository") << " data:" << account;
+            logger::debug("AccountRepository") << " data:" << account;
             if (account != "") {
                 Event::Account protoAccount;
                 protoAccount.ParseFromString(account);
@@ -63,12 +63,12 @@ namespace repository{
             std::string& publicKey,
             std::string& alias
         ) {
-            LOG_DEBUG("AccountRepository") << "Add publicKey:" << publicKey << " alias:" << alias;
+            logger::debug("AccountRepository") << "Add publicKey:" << publicKey << " alias:" << alias;
             object::Account ac(publicKey.c_str(),alias.c_str());
             auto protoAccount = convertor::detail::encodeObject(ac);
             std::string strAccount;
             protoAccount.SerializeToString(&strAccount);
-            LOG_DEBUG("AccountRepository") << "Save key:" << hash::sha3_256_hex(publicKey) << " alias:" << alias;
+            logger::debug("AccountRepository") << "Save key:" << hash::sha3_256_hex(publicKey) << " alias:" << alias;
             world_state_repository::add(hash::sha3_256_hex(publicKey), strAccount);
         }
 

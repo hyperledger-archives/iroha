@@ -16,15 +16,15 @@ namespace event{
 
     template <>
     void ConsensusEvent<Transaction<Update<object::Asset>>>::execution(){
-        LOG_INFO("execution") << "update! Asset";
+        logger::info("execution") << "update! Asset";
     }
     template <>
     void ConsensusEvent<Transaction<Add<object::Asset>>>::execution(){
-        LOG_INFO("execution") << "add! Asset";
+        logger::info("execution") << "add! Asset";
     }
     template <>
     void ConsensusEvent<Transaction<Add<object::Domain>>>::execution(){
-        LOG_INFO("execution") << "add! Asset";
+        logger::info("execution") << "add! Asset";
     }
 
 };
