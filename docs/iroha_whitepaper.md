@@ -1,6 +1,6 @@
 #Iroha v1.0 (draft)#
 
-The following is a specification for Iroha 1.0. Many parts are still in development and have not yet been implemented, but for the sake of design, this document is generally written in the present tense. Future revisions will annotate the development status of the various sections.
+The following is a specification for Iroha 1.0. Many parts are still in development and have not yet been implemented, but for the sake of design, this document is generally written in the present tense.
 
 ---
 
@@ -38,6 +38,8 @@ The following node types are considered:
 * Client
 * Validating peers
 * Normal peer
+
+***Development status: currently all peers are validating peers***
 
 ### 2.2. Membership service
 
