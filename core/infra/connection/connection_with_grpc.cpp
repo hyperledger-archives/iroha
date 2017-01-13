@@ -74,19 +74,19 @@ namespace connection {
 
         std::string Operation(const Event::ConsensusEvent& consensusEvent) {
             Event::StatusResponse response;
-            logger::info("connection","Operation");
-            logger::info("connection","size: " + std::to_string(consensusEvent.eventsignatures_size()));
-            logger::info("connection","name: " + consensusEvent.transaction().asset().name());
+            logger::info("connection")  <<  "Operation";
+            logger::info("connection")  <<  "size: "    <<  consensusEvent.eventsignatures_size();
+            logger::info("connection")  <<  "name: "    <<  consensusEvent.transaction().asset().name();
 
             ClientContext context;
 
             Status status = stub_->Operation(&context, consensusEvent, &response);
             if (status.ok()) {
-                logger::info("connection", "response:" + response.value());
+                logger::info("connection")  << "response: " << response.value();
                 return response.value();
             } else {
-                std::cout << status.error_code() << ": "
-                    << status.error_message() << std::endl;
+                logger::error("connection") << status.error_code() << ": " << status.error_message();
+                //std::cout << status.error_code() << ": " << status.error_message();
                 return "RPC failed";
             }
         }
@@ -105,10 +105,10 @@ namespace connection {
             event.CopyFrom(pevent->default_instance());
             event.mutable_eventsignatures()->CopyFrom(pevent->eventsignatures());
             event.mutable_transaction()->CopyFrom(pevent->transaction());
-            logger::info("connection","size: " + std::to_string(event.eventsignatures_size()));
+            logger::info("connection") << "size: " << event.eventsignatures_size();
             auto dummy = "";
-            for(auto& f: receivers){
-                f( dummy, event);
+            for (auto& f: receivers){
+                f(dummy, event);
             }
             response->set_value("OK");
             return Status::OK;
@@ -128,18 +128,18 @@ namespace connection {
         const std::string& ip,
         const Event::ConsensusEvent& event
     ) {
-        logger::info("connection", "start send");
-        if(find( receiver_ips.begin(), receiver_ips.end() , ip) != receiver_ips.end()){
-            logger::info("connection", "create client");
+        logger::info("connection") << "start send";
+        if (find(receiver_ips.begin(), receiver_ips.end(), ip) != receiver_ips.end()){
+            logger::info("connection")  <<  "create client";
             IrohaConnectionClient client(grpc::CreateChannel(
                 ip + ":50051", grpc::InsecureChannelCredentials())
             );
-            logger::info("connection", "invoke client Operation");
-            logger::info("connection", "size " + std::to_string(event.eventsignatures_size()));
+            logger::info("connection")  <<  "invoke client Operation";
+            logger::info("connection")  <<  "size " <<  event.eventsignatures_size();
             std::string reply = client.Operation(event);
             return true;
         }else{
-            logger::error("connection", "not found");
+            logger::error("connection") <<  "not found";
             return false;
         }
     }
@@ -148,8 +148,8 @@ namespace connection {
         const Event::ConsensusEvent& event
     ) {
         // WIP
-        for(auto& ip : receiver_ips){
-            if( ip != peer::getMyIp()){
+        for (auto& ip : receiver_ips){
+            if (ip != peer::getMyIp()){
                 send( ip, event);
             }
         }

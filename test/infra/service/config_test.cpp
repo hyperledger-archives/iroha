@@ -30,9 +30,13 @@ void isIpValid(const std::string &ip) {
 
 TEST(config, isSystemConfigValid) {
 
-    std::string irohaHome = std::string(getenv("IROHA_HOME"));
-    ASSERT_FALSE(irohaHome == "") << "Warning: IROHA_HOME is not set.";
+    const auto irohaHome = []() -> std::string {
+        auto p = getenv("IROHA_HOME");
+        return p == nullptr ? "" : std::string(p);
+    }();
 
+    ASSERT_FALSE(irohaHome.empty()) << "Warning: IROHA_HOME is not set.";
+    
     std::string configFileName = irohaHome + "/config/sumeragi.json";
     std::ifstream ifs(configFileName);
     ASSERT_FALSE(ifs.fail()) << "Can't open " << configFileName << " file.";
