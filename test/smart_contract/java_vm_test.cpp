@@ -25,6 +25,8 @@ TEST(SmartContract, createVM){
     std::string contractName = "SampleCurrency";
     std::string functionName = "remit";
     std::unordered_map<std::string, std::string> params;
+    params["A"] = "Ant";
+    params["B"] = "Bright";
     SmartContract smartContract = SmartContract();
     smartContract.initializeVM(contractName);
     smartContract.invokeFunction(

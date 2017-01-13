@@ -14,13 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import java.util.Map;
+import java.util.HashMap;
 
 // no package declaration
 public class SampleCurrency {
 
-    public static void remit(Map<String,String> params){
+    public static void put( String param ) {
+        System.out.println("Hello in JAVA! in add");
+        System.out.println("vvvvvvvv　param vvvvvvvv");
+        System.out.println( param );
+    }
+
+    public static void remit(HashMap<String,String> params){
         System.out.println("Hello in JAVA! in contract");
+        System.out.println("vvvvvvvv　params vvvvvvvv");
+        for( String key : params.keySet() ) {
+            System.out.println( key + " : " + params.get( key ) );
+        }
     }
   
     public static void main(String[] argv){
