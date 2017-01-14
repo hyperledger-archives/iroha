@@ -17,6 +17,7 @@ docker run -i --rm \
     # everything between COMMANDS will be executed inside a container
     cd /opt/iroha
     /build-iroha.sh || (echo "[-] Can't build iroha" && exit 1)
+    ./test.sh || (echo "[-] tests failed" && exit 1)
     /mktar-iroha.sh || (echo "[-] Can't make tarball" && exit 1)
     # at this step we have /tmp/iroha.tar 
     (cp /tmp/iroha.tar /build/iroha.tar || \
@@ -24,4 +25,4 @@ docker run -i --rm \
 COMMANDS
 
 # build hyperledger/iroha container
-docker build -t hyperledger/iroha ${IROHA_HOME}/docker/build
+docker build -t hyperledger/iroha-docker ${IROHA_HOME}/docker/build

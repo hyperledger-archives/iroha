@@ -1,4 +1,6 @@
 machine:
+  services:
+    - docker
   environment:
     IROHA_HOME: $(pwd)/iroha
     PATH: $PATH:/opt/cmake-3.5.2-Linux-x86_64/bin
@@ -22,7 +24,6 @@ checkout:
   post:
     - git submodule init
     - git submodule update
-    - echo "TEST"
 
     - cd $IROHA_HOME
     - cd $IROHA_HOME/core/vendor/leveldb; make -j 4
@@ -32,6 +33,9 @@ checkout:
     - cd $IROHA_HOME/core/infra/crypto/; make
 
 dependencies:
+  override:
+    - ${IROHA_HOME}/docker/build.sh
+
   cache_directories:
     - ~/iroha/core/vendor/
     - /tmp/protobuf
@@ -49,4 +53,12 @@ test:
   pre:
     - mkdir build; cd build; cmake ..; make
   override:
-    - ./test.sh
+    - docker run hyperledger/iroha-docker /opt/iroha/
+
+deployment:
+  hub:
+    branch: master
+    commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - docker push hyperledger/iroha-docker
+
