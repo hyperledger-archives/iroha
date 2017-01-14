@@ -10,8 +10,8 @@ machine:
 
 checkout:
   post:
-    - git submodule init
-    - git submodule update
+    - git submodule sync
+    - git submodule update --init
 
 
 dependencies:
