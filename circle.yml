@@ -14,7 +14,9 @@ checkout:
     - git submodule update
 
 dependencies:
-  override:
+  cache_directories:
+    - ~/iroha/core/vendor/
+  post:
     - ${IROHA_HOME}/docker/build.sh
 
 deployment:
