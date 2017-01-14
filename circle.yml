@@ -8,10 +8,14 @@ machine:
   java:
       version: 'oraclejdk8'
 
+checkout:
+  post:
+    - git submodule init
+    - git submodule update
+
 dependencies:
   override:
     - ${IROHA_HOME}/docker/build.sh
-
 
 deployment:
   hub:
