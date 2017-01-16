@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------
 # iroha-rel - IROHA container for Release
 #
-# build : docker build -t hyperledger/iroha .
+# build : docker build -t hyperledger/iroha-docker .
 #
 # Copyright (c) 2016 Soramitsu,Co.,Ltd.
 # All Rights Reserved.
