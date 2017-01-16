@@ -9,7 +9,7 @@ fi
 docker build -t hyperledger/iroha-dev ${IROHA_HOME}/docker/dev 
 
 # run dev container to build iroha
-docker run -i --rm \
+docker run -i --rm=false \
     -v ${IROHA_HOME}/docker/build:/build \
     -v ${IROHA_HOME}:/opt/iroha \
     hyperledger/iroha-dev \
