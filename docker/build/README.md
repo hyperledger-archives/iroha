@@ -6,7 +6,7 @@ This directory will be mounted to `iroha-dev` container. After successful build,
 
 Then, to build iroha container, run:
 ```
-docker build -t hyperledger/iroha .
+docker build -t hyperledger/iroha-docker .
 ```
 
 

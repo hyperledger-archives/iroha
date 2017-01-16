@@ -11,8 +11,8 @@ FROM ubuntu
 
 MAINTAINER Takeshi Yonezu <yonezu@soramitsu.co.jp> / Bogdan Vaneev <bogdan@soramitsu.co.jp>
 
-LABEL BUILD="docker build -t hyperledger/iroha ."
-LABEL RUN="docker run -d --name iroha hyperledger/iroha"
+LABEL BUILD="docker build -t hyperledger/iroha-docker ."
+LABEL RUN="docker run -d --name iroha hyperledger/iroha-docker"
 
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 # IROHA_HOME here should be the same as IROHA_RELEASE in iroha-dev
@@ -34,7 +34,7 @@ RUN groupadd -g 168 iroha && \
 
     mkdir -p ${IROHA_HOME}/config && \
     cp /tmp/sumeragi.json ${IROHA_HOME}/config/sumeragi.json && \
-    
+
     ldconfig
 
 CMD ["/run.sh"]

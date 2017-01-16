@@ -23,8 +23,8 @@ dependencies:
 
 test:
   pre:
-    - docker run --rm -p 1204:1204 hyperledger/iroha-docker /test.sh
-    - docker run --rm -p 1204:1204 hyperledger/iroha-docker /run.sh; sleep 20
+    - docker run -p 1204:1204 hyperledger/iroha-docker /test.sh || true
+    - docker run -p 1204:1204 hyperledger/iroha-docker /run.sh  || true; sleep 20
     - curl -X POST http://127.0.0.1:1204/account/register -d '{"publicKey":"WdvM/DPabapmtA7ISbTYPywbHxk8gWu2221LzmcmAgw=","alias":"yonezu","timestamp":1482053586}'
 
 
