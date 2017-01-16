@@ -6,7 +6,7 @@ if [ -z ${IROHA_HOME} ]; then
 fi
 
 # build iroha-dev image
-docker build -t hyperledger/iroha-dev ${IROHA_HOME}/docker/dev 
+docker build --rm=false -t hyperledger/iroha-dev ${IROHA_HOME}/docker/dev 
 
 # run dev container to build iroha
 docker run -i --rm=false \
@@ -24,4 +24,4 @@ docker run -i --rm=false \
 COMMANDS
 
 # build hyperledger/iroha container
-docker build -t hyperledger/iroha-docker ${IROHA_HOME}/docker/build
+docker build --rm=false -t hyperledger/iroha-docker ${IROHA_HOME}/docker/build
