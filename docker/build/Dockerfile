@@ -21,17 +21,20 @@ ENV IROHA_HOME=/usr/local/iroha
 # this copies iroha and unpacks its binaries
 ADD ./iroha.tar /
 ADD ./scripts /
+ADD ./config/sumeragi.json /tmp/sumeragi.json
 
 RUN groupadd -g 168 iroha && \
     useradd -u 168 -c "IROHA Administrator" -s /bin/bash -m -d ${IROHA_HOME} -p $(perl -e "print(crypt('passw0rd', 'sa'));") -g iroha iroha && \
     usermod -G adm,sudo iroha && \
-    echo "export IROHA_HOME=${IROHA_HOME}" >> ${IROHA_HOME}/.bashrc && \
-    echo "export JAVA_HOME=${JAVA_HOME}" >> ${IROHA_HOME}/.bashrc; \
 
     apt update && apt -y upgrade && apt -y install default-jdk netcat libsnappy-dev; \
 
     echo /usr/local/lib >>/etc/ld.so.conf && \
     echo ${IROHA_HOME}/lib >>/etc/ld.so.conf && \
+
+    mkdir -p ${IROHA_HOME}/config && \
+    cp /tmp/sumeragi.json ${IROHA_HOME}/config/sumeragi.json && \
+    
     ldconfig
 
 CMD ["/run.sh"]
