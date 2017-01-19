@@ -29,6 +29,8 @@ RUN apt-get update && apt-get -y upgrade; \
         curl \
         git \
         make \
+        build-essential \
+        cmake \
         g++-5 \
         gcc-5 \
         default-jdk \
