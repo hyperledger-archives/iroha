@@ -256,7 +256,7 @@ namespace http {
                         transaction_json["params"]["timestamp"] = protoTx.timestamp();
                         if (protoTx.has_asset()) {
                             transaction_json["params"]["object"] = "Asset";
-                            transaction_json["params"]["value"] = protoTx.asset().value();
+//                            transaction_json["params"]["value"] = protoTx.asset().value();
                             transaction_json["params"]["name"] = protoTx.asset().name();
                         } else if (protoTx.has_account()) {
                             transaction_json["params"]["object"] = "Account";
@@ -277,12 +277,12 @@ namespace http {
                         if (protoTx.has_asset()) {
                             auto event_tx = convertor::detail::decodeTransaction2ConsensusEvent<Transfer < Asset>>(protoTx);
 
-                            logger::info("Cappuccino") << "Valiue:" << protoTx.asset().value();
+//                            logger::info("Cappuccino") << "Valiue:" << protoTx.asset().value();
 
                             transaction_json["params"]["command"] = "Transfer";
                             transaction_json["params"]["object"] = "Asset";
                             transaction_json["params"]["name"] = protoTx.asset().name();
-                            transaction_json["params"]["value"] = protoTx.asset().value();
+//                            transaction_json["params"]["value"] = protoTx.asset().value();
                         }
                         tx_json.push_back(transaction_json);
                     }

@@ -41,11 +41,244 @@ class Asset;
 class ConsensusEvent;
 class Domain;
 class EventSignature;
+class Object;
+class Peer;
+class SimpleAsset;
 class StatusResponse;
 class Transaction;
+class Trust;
 class TxSignatures;
 
 // ===================================================================
+
+class Object : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:Event.Object) */ {
+ public:
+  Object();
+  virtual ~Object();
+
+  Object(const Object& from);
+
+  inline Object& operator=(const Object& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const Object& default_instance();
+
+  void Swap(Object* other);
+
+  // implements Message ----------------------------------------------
+
+  inline Object* New() const { return New(NULL); }
+
+  Object* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const Object& from);
+  void MergeFrom(const Object& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(Object* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string valueStr = 1;
+  void clear_valuestr();
+  static const int kValueStrFieldNumber = 1;
+  const ::std::string& valuestr() const;
+  void set_valuestr(const ::std::string& value);
+  void set_valuestr(const char* value);
+  void set_valuestr(const char* value, size_t size);
+  ::std::string* mutable_valuestr();
+  ::std::string* release_valuestr();
+  void set_allocated_valuestr(::std::string* valuestr);
+
+  // optional int64 valueInt = 2;
+  void clear_valueint();
+  static const int kValueIntFieldNumber = 2;
+  ::google::protobuf::int64 valueint() const;
+  void set_valueint(::google::protobuf::int64 value);
+
+  // optional bool valueBool = 3;
+  void clear_valuebool();
+  static const int kValueBoolFieldNumber = 3;
+  bool valuebool() const;
+  void set_valuebool(bool value);
+
+  // optional double valueDouble = 4;
+  void clear_valuedouble();
+  static const int kValueDoubleFieldNumber = 4;
+  double valuedouble() const;
+  void set_valuedouble(double value);
+
+  // optional string name = 5;
+  void clear_name();
+  static const int kNameFieldNumber = 5;
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
+
+  // @@protoc_insertion_point(class_scope:Event.Object)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::internal::ArenaStringPtr valuestr_;
+  ::google::protobuf::int64 valueint_;
+  double valuedouble_;
+  ::google::protobuf::internal::ArenaStringPtr name_;
+  bool valuebool_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_event_2eproto();
+  friend void protobuf_AssignDesc_event_2eproto();
+  friend void protobuf_ShutdownFile_event_2eproto();
+
+  void InitAsDefaultInstance();
+  static Object* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class SimpleAsset : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:Event.SimpleAsset) */ {
+ public:
+  SimpleAsset();
+  virtual ~SimpleAsset();
+
+  SimpleAsset(const SimpleAsset& from);
+
+  inline SimpleAsset& operator=(const SimpleAsset& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const SimpleAsset& default_instance();
+
+  void Swap(SimpleAsset* other);
+
+  // implements Message ----------------------------------------------
+
+  inline SimpleAsset* New() const { return New(NULL); }
+
+  SimpleAsset* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const SimpleAsset& from);
+  void MergeFrom(const SimpleAsset& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(SimpleAsset* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string domain = 1;
+  void clear_domain();
+  static const int kDomainFieldNumber = 1;
+  const ::std::string& domain() const;
+  void set_domain(const ::std::string& value);
+  void set_domain(const char* value);
+  void set_domain(const char* value, size_t size);
+  ::std::string* mutable_domain();
+  ::std::string* release_domain();
+  void set_allocated_domain(::std::string* domain);
+
+  // optional string name = 2;
+  void clear_name();
+  static const int kNameFieldNumber = 2;
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
+
+  // optional .Event.Object value = 3;
+  bool has_value() const;
+  void clear_value();
+  static const int kValueFieldNumber = 3;
+  const ::Event::Object& value() const;
+  ::Event::Object* mutable_value();
+  ::Event::Object* release_value();
+  void set_allocated_value(::Event::Object* value);
+
+  // @@protoc_insertion_point(class_scope:Event.SimpleAsset)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::internal::ArenaStringPtr domain_;
+  ::google::protobuf::internal::ArenaStringPtr name_;
+  ::Event::Object* value_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_event_2eproto();
+  friend void protobuf_AssignDesc_event_2eproto();
+  friend void protobuf_ShutdownFile_event_2eproto();
+
+  void InitAsDefaultInstance();
+  static SimpleAsset* default_instance_;
+};
+// -------------------------------------------------------------------
 
 class Asset : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:Event.Asset) */ {
  public:
@@ -129,17 +362,17 @@ class Asset : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
 
-  // optional uint64 value = 3;
-  void clear_value();
-  static const int kValueFieldNumber = 3;
-  ::google::protobuf::uint64 value() const;
-  void set_value(::google::protobuf::uint64 value);
-
-  // optional uint64 precision = 4;
-  void clear_precision();
-  static const int kPrecisionFieldNumber = 4;
-  ::google::protobuf::uint64 precision() const;
-  void set_precision(::google::protobuf::uint64 value);
+  // repeated .Event.Object map = 3;
+  int map_size() const;
+  void clear_map();
+  static const int kMapFieldNumber = 3;
+  const ::Event::Object& map(int index) const;
+  ::Event::Object* mutable_map(int index);
+  ::Event::Object* add_map();
+  ::google::protobuf::RepeatedPtrField< ::Event::Object >*
+      mutable_map();
+  const ::google::protobuf::RepeatedPtrField< ::Event::Object >&
+      map() const;
 
   // @@protoc_insertion_point(class_scope:Event.Asset)
  private:
@@ -148,8 +381,7 @@ class Asset : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   bool _is_default_instance_;
   ::google::protobuf::internal::ArenaStringPtr domain_;
   ::google::protobuf::internal::ArenaStringPtr name_;
-  ::google::protobuf::uint64 value_;
-  ::google::protobuf::uint64 precision_;
+  ::google::protobuf::RepeatedPtrField< ::Event::Object > map_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_event_2eproto();
   friend void protobuf_AssignDesc_event_2eproto();
@@ -368,6 +600,204 @@ class Account : public ::google::protobuf::Message /* @@protoc_insertion_point(c
 
   void InitAsDefaultInstance();
   static Account* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class Trust : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:Event.Trust) */ {
+ public:
+  Trust();
+  virtual ~Trust();
+
+  Trust(const Trust& from);
+
+  inline Trust& operator=(const Trust& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const Trust& default_instance();
+
+  void Swap(Trust* other);
+
+  // implements Message ----------------------------------------------
+
+  inline Trust* New() const { return New(NULL); }
+
+  Trust* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const Trust& from);
+  void MergeFrom(const Trust& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(Trust* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional double value = 1;
+  void clear_value();
+  static const int kValueFieldNumber = 1;
+  double value() const;
+  void set_value(double value);
+
+  // optional bool isOk = 2;
+  void clear_isok();
+  static const int kIsOkFieldNumber = 2;
+  bool isok() const;
+  void set_isok(bool value);
+
+  // @@protoc_insertion_point(class_scope:Event.Trust)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  double value_;
+  bool isok_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_event_2eproto();
+  friend void protobuf_AssignDesc_event_2eproto();
+  friend void protobuf_ShutdownFile_event_2eproto();
+
+  void InitAsDefaultInstance();
+  static Trust* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class Peer : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:Event.Peer) */ {
+ public:
+  Peer();
+  virtual ~Peer();
+
+  Peer(const Peer& from);
+
+  inline Peer& operator=(const Peer& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const Peer& default_instance();
+
+  void Swap(Peer* other);
+
+  // implements Message ----------------------------------------------
+
+  inline Peer* New() const { return New(NULL); }
+
+  Peer* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const Peer& from);
+  void MergeFrom(const Peer& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(Peer* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string publicKey = 1;
+  void clear_publickey();
+  static const int kPublicKeyFieldNumber = 1;
+  const ::std::string& publickey() const;
+  void set_publickey(const ::std::string& value);
+  void set_publickey(const char* value);
+  void set_publickey(const char* value, size_t size);
+  ::std::string* mutable_publickey();
+  ::std::string* release_publickey();
+  void set_allocated_publickey(::std::string* publickey);
+
+  // optional string address = 2;
+  void clear_address();
+  static const int kAddressFieldNumber = 2;
+  const ::std::string& address() const;
+  void set_address(const ::std::string& value);
+  void set_address(const char* value);
+  void set_address(const char* value, size_t size);
+  ::std::string* mutable_address();
+  ::std::string* release_address();
+  void set_allocated_address(::std::string* address);
+
+  // optional .Event.Trust trust = 3;
+  bool has_trust() const;
+  void clear_trust();
+  static const int kTrustFieldNumber = 3;
+  const ::Event::Trust& trust() const;
+  ::Event::Trust* mutable_trust();
+  ::Event::Trust* release_trust();
+  void set_allocated_trust(::Event::Trust* trust);
+
+  // @@protoc_insertion_point(class_scope:Event.Peer)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::internal::ArenaStringPtr publickey_;
+  ::google::protobuf::internal::ArenaStringPtr address_;
+  ::Event::Trust* trust_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_event_2eproto();
+  friend void protobuf_AssignDesc_event_2eproto();
+  friend void protobuf_ShutdownFile_event_2eproto();
+
+  void InitAsDefaultInstance();
+  static Peer* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -689,27 +1119,45 @@ class Transaction : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::Event::Asset* release_asset();
   void set_allocated_asset(::Event::Asset* asset);
 
-  // optional .Event.Domain domain = 7;
+  // optional .Event.SimpleAsset simpleAsset = 7;
+  bool has_simpleasset() const;
+  void clear_simpleasset();
+  static const int kSimpleAssetFieldNumber = 7;
+  const ::Event::SimpleAsset& simpleasset() const;
+  ::Event::SimpleAsset* mutable_simpleasset();
+  ::Event::SimpleAsset* release_simpleasset();
+  void set_allocated_simpleasset(::Event::SimpleAsset* simpleasset);
+
+  // optional .Event.Domain domain = 8;
   bool has_domain() const;
   void clear_domain();
-  static const int kDomainFieldNumber = 7;
+  static const int kDomainFieldNumber = 8;
   const ::Event::Domain& domain() const;
   ::Event::Domain* mutable_domain();
   ::Event::Domain* release_domain();
   void set_allocated_domain(::Event::Domain* domain);
 
-  // optional .Event.Account account = 8;
+  // optional .Event.Account account = 9;
   bool has_account() const;
   void clear_account();
-  static const int kAccountFieldNumber = 8;
+  static const int kAccountFieldNumber = 9;
   const ::Event::Account& account() const;
   ::Event::Account* mutable_account();
   ::Event::Account* release_account();
   void set_allocated_account(::Event::Account* account);
 
-  // optional string receivePubkey = 9;
+  // optional .Event.Peer peer = 10;
+  bool has_peer() const;
+  void clear_peer();
+  static const int kPeerFieldNumber = 10;
+  const ::Event::Peer& peer() const;
+  ::Event::Peer* mutable_peer();
+  ::Event::Peer* release_peer();
+  void set_allocated_peer(::Event::Peer* peer);
+
+  // optional string receivePubkey = 11;
   void clear_receivepubkey();
-  static const int kReceivePubkeyFieldNumber = 9;
+  static const int kReceivePubkeyFieldNumber = 11;
   const ::std::string& receivepubkey() const;
   void set_receivepubkey(const ::std::string& value);
   void set_receivepubkey(const char* value);
@@ -729,8 +1177,10 @@ class Transaction : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::internal::ArenaStringPtr hash_;
   ::google::protobuf::uint64 timestamp_;
   ::Event::Asset* asset_;
+  ::Event::SimpleAsset* simpleasset_;
   ::Event::Domain* domain_;
   ::Event::Account* account_;
+  ::Event::Peer* peer_;
   ::google::protobuf::internal::ArenaStringPtr receivepubkey_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_event_2eproto();
@@ -938,6 +1388,270 @@ class StatusResponse : public ::google::protobuf::Message /* @@protoc_insertion_
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
+// Object
+
+// optional string valueStr = 1;
+inline void Object::clear_valuestr() {
+  valuestr_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& Object::valuestr() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valueStr)
+  return valuestr_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Object::set_valuestr(const ::std::string& value) {
+  
+  valuestr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Event.Object.valueStr)
+}
+inline void Object::set_valuestr(const char* value) {
+  
+  valuestr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Event.Object.valueStr)
+}
+inline void Object::set_valuestr(const char* value, size_t size) {
+  
+  valuestr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Event.Object.valueStr)
+}
+inline ::std::string* Object::mutable_valuestr() {
+  
+  // @@protoc_insertion_point(field_mutable:Event.Object.valueStr)
+  return valuestr_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* Object::release_valuestr() {
+  // @@protoc_insertion_point(field_release:Event.Object.valueStr)
+  
+  return valuestr_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Object::set_allocated_valuestr(::std::string* valuestr) {
+  if (valuestr != NULL) {
+    
+  } else {
+    
+  }
+  valuestr_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), valuestr);
+  // @@protoc_insertion_point(field_set_allocated:Event.Object.valueStr)
+}
+
+// optional int64 valueInt = 2;
+inline void Object::clear_valueint() {
+  valueint_ = GOOGLE_LONGLONG(0);
+}
+inline ::google::protobuf::int64 Object::valueint() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valueInt)
+  return valueint_;
+}
+inline void Object::set_valueint(::google::protobuf::int64 value) {
+  
+  valueint_ = value;
+  // @@protoc_insertion_point(field_set:Event.Object.valueInt)
+}
+
+// optional bool valueBool = 3;
+inline void Object::clear_valuebool() {
+  valuebool_ = false;
+}
+inline bool Object::valuebool() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valueBool)
+  return valuebool_;
+}
+inline void Object::set_valuebool(bool value) {
+  
+  valuebool_ = value;
+  // @@protoc_insertion_point(field_set:Event.Object.valueBool)
+}
+
+// optional double valueDouble = 4;
+inline void Object::clear_valuedouble() {
+  valuedouble_ = 0;
+}
+inline double Object::valuedouble() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valueDouble)
+  return valuedouble_;
+}
+inline void Object::set_valuedouble(double value) {
+  
+  valuedouble_ = value;
+  // @@protoc_insertion_point(field_set:Event.Object.valueDouble)
+}
+
+// optional string name = 5;
+inline void Object::clear_name() {
+  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& Object::name() const {
+  // @@protoc_insertion_point(field_get:Event.Object.name)
+  return name_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Object::set_name(const ::std::string& value) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Event.Object.name)
+}
+inline void Object::set_name(const char* value) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Event.Object.name)
+}
+inline void Object::set_name(const char* value, size_t size) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Event.Object.name)
+}
+inline ::std::string* Object::mutable_name() {
+  
+  // @@protoc_insertion_point(field_mutable:Event.Object.name)
+  return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* Object::release_name() {
+  // @@protoc_insertion_point(field_release:Event.Object.name)
+  
+  return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Object::set_allocated_name(::std::string* name) {
+  if (name != NULL) {
+    
+  } else {
+    
+  }
+  name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
+  // @@protoc_insertion_point(field_set_allocated:Event.Object.name)
+}
+
+// -------------------------------------------------------------------
+
+// SimpleAsset
+
+// optional string domain = 1;
+inline void SimpleAsset::clear_domain() {
+  domain_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& SimpleAsset::domain() const {
+  // @@protoc_insertion_point(field_get:Event.SimpleAsset.domain)
+  return domain_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void SimpleAsset::set_domain(const ::std::string& value) {
+  
+  domain_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Event.SimpleAsset.domain)
+}
+inline void SimpleAsset::set_domain(const char* value) {
+  
+  domain_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Event.SimpleAsset.domain)
+}
+inline void SimpleAsset::set_domain(const char* value, size_t size) {
+  
+  domain_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Event.SimpleAsset.domain)
+}
+inline ::std::string* SimpleAsset::mutable_domain() {
+  
+  // @@protoc_insertion_point(field_mutable:Event.SimpleAsset.domain)
+  return domain_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* SimpleAsset::release_domain() {
+  // @@protoc_insertion_point(field_release:Event.SimpleAsset.domain)
+  
+  return domain_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void SimpleAsset::set_allocated_domain(::std::string* domain) {
+  if (domain != NULL) {
+    
+  } else {
+    
+  }
+  domain_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), domain);
+  // @@protoc_insertion_point(field_set_allocated:Event.SimpleAsset.domain)
+}
+
+// optional string name = 2;
+inline void SimpleAsset::clear_name() {
+  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& SimpleAsset::name() const {
+  // @@protoc_insertion_point(field_get:Event.SimpleAsset.name)
+  return name_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void SimpleAsset::set_name(const ::std::string& value) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Event.SimpleAsset.name)
+}
+inline void SimpleAsset::set_name(const char* value) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Event.SimpleAsset.name)
+}
+inline void SimpleAsset::set_name(const char* value, size_t size) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Event.SimpleAsset.name)
+}
+inline ::std::string* SimpleAsset::mutable_name() {
+  
+  // @@protoc_insertion_point(field_mutable:Event.SimpleAsset.name)
+  return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* SimpleAsset::release_name() {
+  // @@protoc_insertion_point(field_release:Event.SimpleAsset.name)
+  
+  return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void SimpleAsset::set_allocated_name(::std::string* name) {
+  if (name != NULL) {
+    
+  } else {
+    
+  }
+  name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
+  // @@protoc_insertion_point(field_set_allocated:Event.SimpleAsset.name)
+}
+
+// optional .Event.Object value = 3;
+inline bool SimpleAsset::has_value() const {
+  return !_is_default_instance_ && value_ != NULL;
+}
+inline void SimpleAsset::clear_value() {
+  if (GetArenaNoVirtual() == NULL && value_ != NULL) delete value_;
+  value_ = NULL;
+}
+inline const ::Event::Object& SimpleAsset::value() const {
+  // @@protoc_insertion_point(field_get:Event.SimpleAsset.value)
+  return value_ != NULL ? *value_ : *default_instance_->value_;
+}
+inline ::Event::Object* SimpleAsset::mutable_value() {
+  
+  if (value_ == NULL) {
+    value_ = new ::Event::Object;
+  }
+  // @@protoc_insertion_point(field_mutable:Event.SimpleAsset.value)
+  return value_;
+}
+inline ::Event::Object* SimpleAsset::release_value() {
+  // @@protoc_insertion_point(field_release:Event.SimpleAsset.value)
+  
+  ::Event::Object* temp = value_;
+  value_ = NULL;
+  return temp;
+}
+inline void SimpleAsset::set_allocated_value(::Event::Object* value) {
+  delete value_;
+  value_ = value;
+  if (value) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.SimpleAsset.value)
+}
+
+// -------------------------------------------------------------------
+
 // Asset
 
 // optional string domain = 1;
@@ -1028,32 +1742,34 @@ inline void Asset::set_allocated_name(::std::string* name) {
   // @@protoc_insertion_point(field_set_allocated:Event.Asset.name)
 }
 
-// optional uint64 value = 3;
-inline void Asset::clear_value() {
-  value_ = GOOGLE_ULONGLONG(0);
+// repeated .Event.Object map = 3;
+inline int Asset::map_size() const {
+  return map_.size();
 }
-inline ::google::protobuf::uint64 Asset::value() const {
-  // @@protoc_insertion_point(field_get:Event.Asset.value)
-  return value_;
+inline void Asset::clear_map() {
+  map_.Clear();
 }
-inline void Asset::set_value(::google::protobuf::uint64 value) {
-  
-  value_ = value;
-  // @@protoc_insertion_point(field_set:Event.Asset.value)
+inline const ::Event::Object& Asset::map(int index) const {
+  // @@protoc_insertion_point(field_get:Event.Asset.map)
+  return map_.Get(index);
 }
-
-// optional uint64 precision = 4;
-inline void Asset::clear_precision() {
-  precision_ = GOOGLE_ULONGLONG(0);
+inline ::Event::Object* Asset::mutable_map(int index) {
+  // @@protoc_insertion_point(field_mutable:Event.Asset.map)
+  return map_.Mutable(index);
 }
-inline ::google::protobuf::uint64 Asset::precision() const {
-  // @@protoc_insertion_point(field_get:Event.Asset.precision)
-  return precision_;
+inline ::Event::Object* Asset::add_map() {
+  // @@protoc_insertion_point(field_add:Event.Asset.map)
+  return map_.Add();
 }
-inline void Asset::set_precision(::google::protobuf::uint64 value) {
-  
-  precision_ = value;
-  // @@protoc_insertion_point(field_set:Event.Asset.precision)
+inline ::google::protobuf::RepeatedPtrField< ::Event::Object >*
+Asset::mutable_map() {
+  // @@protoc_insertion_point(field_mutable_list:Event.Asset.map)
+  return &map_;
+}
+inline const ::google::protobuf::RepeatedPtrField< ::Event::Object >&
+Asset::map() const {
+  // @@protoc_insertion_point(field_list:Event.Asset.map)
+  return map_;
 }
 
 // -------------------------------------------------------------------
@@ -1268,6 +1984,168 @@ inline const ::google::protobuf::RepeatedPtrField< ::Event::Asset >&
 Account::assets() const {
   // @@protoc_insertion_point(field_list:Event.Account.assets)
   return assets_;
+}
+
+// -------------------------------------------------------------------
+
+// Trust
+
+// optional double value = 1;
+inline void Trust::clear_value() {
+  value_ = 0;
+}
+inline double Trust::value() const {
+  // @@protoc_insertion_point(field_get:Event.Trust.value)
+  return value_;
+}
+inline void Trust::set_value(double value) {
+  
+  value_ = value;
+  // @@protoc_insertion_point(field_set:Event.Trust.value)
+}
+
+// optional bool isOk = 2;
+inline void Trust::clear_isok() {
+  isok_ = false;
+}
+inline bool Trust::isok() const {
+  // @@protoc_insertion_point(field_get:Event.Trust.isOk)
+  return isok_;
+}
+inline void Trust::set_isok(bool value) {
+  
+  isok_ = value;
+  // @@protoc_insertion_point(field_set:Event.Trust.isOk)
+}
+
+// -------------------------------------------------------------------
+
+// Peer
+
+// optional string publicKey = 1;
+inline void Peer::clear_publickey() {
+  publickey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& Peer::publickey() const {
+  // @@protoc_insertion_point(field_get:Event.Peer.publicKey)
+  return publickey_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Peer::set_publickey(const ::std::string& value) {
+  
+  publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Event.Peer.publicKey)
+}
+inline void Peer::set_publickey(const char* value) {
+  
+  publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Event.Peer.publicKey)
+}
+inline void Peer::set_publickey(const char* value, size_t size) {
+  
+  publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Event.Peer.publicKey)
+}
+inline ::std::string* Peer::mutable_publickey() {
+  
+  // @@protoc_insertion_point(field_mutable:Event.Peer.publicKey)
+  return publickey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* Peer::release_publickey() {
+  // @@protoc_insertion_point(field_release:Event.Peer.publicKey)
+  
+  return publickey_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Peer::set_allocated_publickey(::std::string* publickey) {
+  if (publickey != NULL) {
+    
+  } else {
+    
+  }
+  publickey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), publickey);
+  // @@protoc_insertion_point(field_set_allocated:Event.Peer.publicKey)
+}
+
+// optional string address = 2;
+inline void Peer::clear_address() {
+  address_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& Peer::address() const {
+  // @@protoc_insertion_point(field_get:Event.Peer.address)
+  return address_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Peer::set_address(const ::std::string& value) {
+  
+  address_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Event.Peer.address)
+}
+inline void Peer::set_address(const char* value) {
+  
+  address_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Event.Peer.address)
+}
+inline void Peer::set_address(const char* value, size_t size) {
+  
+  address_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Event.Peer.address)
+}
+inline ::std::string* Peer::mutable_address() {
+  
+  // @@protoc_insertion_point(field_mutable:Event.Peer.address)
+  return address_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* Peer::release_address() {
+  // @@protoc_insertion_point(field_release:Event.Peer.address)
+  
+  return address_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Peer::set_allocated_address(::std::string* address) {
+  if (address != NULL) {
+    
+  } else {
+    
+  }
+  address_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), address);
+  // @@protoc_insertion_point(field_set_allocated:Event.Peer.address)
+}
+
+// optional .Event.Trust trust = 3;
+inline bool Peer::has_trust() const {
+  return !_is_default_instance_ && trust_ != NULL;
+}
+inline void Peer::clear_trust() {
+  if (GetArenaNoVirtual() == NULL && trust_ != NULL) delete trust_;
+  trust_ = NULL;
+}
+inline const ::Event::Trust& Peer::trust() const {
+  // @@protoc_insertion_point(field_get:Event.Peer.trust)
+  return trust_ != NULL ? *trust_ : *default_instance_->trust_;
+}
+inline ::Event::Trust* Peer::mutable_trust() {
+  
+  if (trust_ == NULL) {
+    trust_ = new ::Event::Trust;
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Peer.trust)
+  return trust_;
+}
+inline ::Event::Trust* Peer::release_trust() {
+  // @@protoc_insertion_point(field_release:Event.Peer.trust)
+  
+  ::Event::Trust* temp = trust_;
+  trust_ = NULL;
+  return temp;
+}
+inline void Peer::set_allocated_trust(::Event::Trust* trust) {
+  delete trust_;
+  trust_ = trust;
+  if (trust) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Peer.trust)
 }
 
 // -------------------------------------------------------------------
@@ -1672,7 +2550,45 @@ inline void Transaction::set_allocated_asset(::Event::Asset* asset) {
   // @@protoc_insertion_point(field_set_allocated:Event.Transaction.asset)
 }
 
-// optional .Event.Domain domain = 7;
+// optional .Event.SimpleAsset simpleAsset = 7;
+inline bool Transaction::has_simpleasset() const {
+  return !_is_default_instance_ && simpleasset_ != NULL;
+}
+inline void Transaction::clear_simpleasset() {
+  if (GetArenaNoVirtual() == NULL && simpleasset_ != NULL) delete simpleasset_;
+  simpleasset_ = NULL;
+}
+inline const ::Event::SimpleAsset& Transaction::simpleasset() const {
+  // @@protoc_insertion_point(field_get:Event.Transaction.simpleAsset)
+  return simpleasset_ != NULL ? *simpleasset_ : *default_instance_->simpleasset_;
+}
+inline ::Event::SimpleAsset* Transaction::mutable_simpleasset() {
+  
+  if (simpleasset_ == NULL) {
+    simpleasset_ = new ::Event::SimpleAsset;
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Transaction.simpleAsset)
+  return simpleasset_;
+}
+inline ::Event::SimpleAsset* Transaction::release_simpleasset() {
+  // @@protoc_insertion_point(field_release:Event.Transaction.simpleAsset)
+  
+  ::Event::SimpleAsset* temp = simpleasset_;
+  simpleasset_ = NULL;
+  return temp;
+}
+inline void Transaction::set_allocated_simpleasset(::Event::SimpleAsset* simpleasset) {
+  delete simpleasset_;
+  simpleasset_ = simpleasset;
+  if (simpleasset) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Transaction.simpleAsset)
+}
+
+// optional .Event.Domain domain = 8;
 inline bool Transaction::has_domain() const {
   return !_is_default_instance_ && domain_ != NULL;
 }
@@ -1710,7 +2626,7 @@ inline void Transaction::set_allocated_domain(::Event::Domain* domain) {
   // @@protoc_insertion_point(field_set_allocated:Event.Transaction.domain)
 }
 
-// optional .Event.Account account = 8;
+// optional .Event.Account account = 9;
 inline bool Transaction::has_account() const {
   return !_is_default_instance_ && account_ != NULL;
 }
@@ -1748,7 +2664,45 @@ inline void Transaction::set_allocated_account(::Event::Account* account) {
   // @@protoc_insertion_point(field_set_allocated:Event.Transaction.account)
 }
 
-// optional string receivePubkey = 9;
+// optional .Event.Peer peer = 10;
+inline bool Transaction::has_peer() const {
+  return !_is_default_instance_ && peer_ != NULL;
+}
+inline void Transaction::clear_peer() {
+  if (GetArenaNoVirtual() == NULL && peer_ != NULL) delete peer_;
+  peer_ = NULL;
+}
+inline const ::Event::Peer& Transaction::peer() const {
+  // @@protoc_insertion_point(field_get:Event.Transaction.peer)
+  return peer_ != NULL ? *peer_ : *default_instance_->peer_;
+}
+inline ::Event::Peer* Transaction::mutable_peer() {
+  
+  if (peer_ == NULL) {
+    peer_ = new ::Event::Peer;
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Transaction.peer)
+  return peer_;
+}
+inline ::Event::Peer* Transaction::release_peer() {
+  // @@protoc_insertion_point(field_release:Event.Transaction.peer)
+  
+  ::Event::Peer* temp = peer_;
+  peer_ = NULL;
+  return temp;
+}
+inline void Transaction::set_allocated_peer(::Event::Peer* peer) {
+  delete peer_;
+  peer_ = peer;
+  if (peer) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Transaction.peer)
+}
+
+// optional string receivePubkey = 11;
 inline void Transaction::clear_receivepubkey() {
   receivepubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1927,6 +2881,14 @@ inline void StatusResponse::set_allocated_value(::std::string* value) {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
