@@ -55,4 +55,3 @@ namespace command {
     };  // namespace command
 };
 #endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
-

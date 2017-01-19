@@ -1,6 +1,6 @@
 #Iroha v1.0 (draft)#
 
-The following is a specification for Iroha 1.0. Many parts are still in development and have not yet been implemented, but for the sake of design, this document is generally written in the present tense. Future revisions will annotate the development status of the various sections.
+The following is a specification for Iroha 1.0. Many parts are still in development and have not yet been implemented, but for the sake of design, this document is generally written in the present tense.
 
 ---
 
@@ -31,6 +31,8 @@ Having a solid distributed ledger system is not useful if there are no applicati
 
 ### 2.1. P2P Network
 
+***Development status: currently all peers are validating peers***
+
 Generally, 3*f*+1 nodes are needed to tolerate *f* Byzantine nodes in the network (albeit some consensus algorithms have higher node requirements). The number of *f* that a system should be made to tolerate should be determined by the system maintainer, based on the requirements for expected use cases.
 
 The following node types are considered:
@@ -40,6 +42,8 @@ The following node types are considered:
 * Normal peer
 
 ### 2.2. Membership service
+
+***Development status: add/remove peer functions are currently in development. ETA: before end of February***
 
 Membership is provided in a decentralized way, on ledger. By default 2*f*+1 signatures are needed to confirm adding or removing nodes to the network.
 
@@ -98,8 +102,15 @@ Consensus events, when received from the event queue, are processed in the follo
  2. Events ordered by the leader
  3. New events that need ordering, to be processed by the current leader
 
+### 2.7. Data storage
 
-### 2.7. Consensus
+#### Merkle tree structure
+
+Transactions are stored in a Merkle tree with each transaction being a leaf of the tree. After a pre-defined depth of the leafs to the Merkle root, the current Merkle root becomes a leaf in a new tree. This acts to group a set of transactions together into a block. This is shown in the following figure.
+
+![alt tag](iroha_merkle_tree.png)
+
+### 2.8. Consensus
 
 Byzantine fault tolerant systems are engineered to tolerate *f* numbers of Byzantine faulty nodes in a network. Iroha introduces a Byzantine Fault Tolerant consensus algorithm called Sumeragi. It is heavily inspired by the B-Chain algorithm:
 
@@ -133,17 +144,17 @@ Consensus in Sumeragi is performed on individual transactions and on the global 
 
 When syncing nodes with each other, valid parts of the Merkel tree are shared until the roots match.
 
-### 2.8. Data synchronization and retrieval
+### 2.9. Data synchronization and retrieval
 
 The state with the Merkle root that has the most transactions in the Merkle tree and has 2*f*+1 signatures of validating servers is the most advanced state. 
 
 ### Data permissions
 
-## Hijiri: Trust system
+### 2.10. Hijiri: Peer reputation system
 
-The trust system is based on rounds. At each round, validating peers that are registered with the membership service perform the following tasks to establish trust (reliability) ratings for the peers:
+The hijiri reputation system is based on rounds. At each round, validating peers that are registered with the membership service perform the following tasks to establish trust (reliability) ratings for the peers:
 
-* ping test
+* data throughput test
 * version test
 * computational test
 * data consistency test

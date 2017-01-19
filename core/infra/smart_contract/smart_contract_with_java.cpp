@@ -10,13 +10,13 @@ namespace smart_contract {
     std::map<std::string, std::unique_ptr<JavaContext>> vmSet;
 
     void SmartContract::initializeVM(const std::string& contractName){
-         vmSet.insert(std::make_pair( contractName, smart_contract::initializeVM(contractName)));
+        vmSet.emplace(contractName, smart_contract::initializeVM(contractName));
     }
 
     void SmartContract::finishVM(const std::string& contractName){
-         if(vmSet.find(contractName) != vmSet.end()){
-            vmSet.erase(contractName);
-         }
+        if(vmSet.find(contractName) != vmSet.end()){
+           vmSet.erase(contractName);
+        }
     }
 
     void SmartContract::invokeFunction(
@@ -26,7 +26,7 @@ namespace smart_contract {
     ) {
         if(vmSet.find(contractName) != vmSet.end()){
             const auto& context = vmSet.at(contractName);
-            smart_contract::execFunction( context, functionName, params);
+            smart_contract::execFunction(context, functionName, params);
         }
     }
 };

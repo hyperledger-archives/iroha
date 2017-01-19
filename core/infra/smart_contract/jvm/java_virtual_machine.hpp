@@ -45,10 +45,10 @@ namespace smart_contract {
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
         std::string functionName,
-        std::unordered_map<std::string,
-        std::string> params
+        std::unordered_map<std::string, std::string> params
     );
 
+    JNIEXPORT jobject JNICALL JavaMakeMap(JNIEnv *env, std::unordered_map<std::string,std::string> mMap);
 }
 
 #endif //IROHA_JAVA_VIRTUAL_MACHINE_HPP_HPP

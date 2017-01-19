@@ -33,7 +33,7 @@ namespace command {
         std::string ownerPublicKey;
 
         template<typename... Args>
-        constexpr explicit Update(
+        explicit Update(
             std::string&& ownerPublicKey,
             Args&&... args
         ):
@@ -41,7 +41,7 @@ namespace command {
             ownerPublicKey(std::move(ownerPublicKey))
         {}
 
-        auto getCommandName() const{
+        auto getCommandName() const {
             return "Update";
         }
 
