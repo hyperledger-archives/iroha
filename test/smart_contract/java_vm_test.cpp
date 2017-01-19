@@ -34,4 +34,5 @@ TEST(SmartContract, createVM){
         functionName,
         params
     );
+    
 }

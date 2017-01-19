@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 #ifndef CORE_DOMAIN_TRANSFER_HPP_
 #define CORE_DOMAIN_TRANSFER_HPP_
 
@@ -22,37 +21,33 @@ limitations under the License.
 #include "../objects/asset.hpp"
 #include "../objects/message.hpp"
 
+#include "command.hpp"
+
 #include <string>
 #include <iostream>
 
 namespace command {
 
     template<typename T>
-    class Transfer : public T {
-
-    public:
-
+    class Transfer : public T, public Command {
+      public:
         std::string senderPublicKey;
         std::string receiverPublicKey;
 
         template<typename... Args>
-        explicit Transfer(
-                std::string&& sender,
-                std::string&& receiver,
-                Args&&... args
+        constexpr explicit Transfer(
+            std::string&& sender,
+            std::string&& receiver,
+            Args&&... args
         ):
-                T(std::forward<Args>(args)...),
-                senderPublicKey(std::move(sender)),
-                receiverPublicKey(std::move(receiver))
+            senderPublicKey(std::move(sender)),
+            receiverPublicKey(std::move(receiver)),
+            T(std::forward<Args>(args)...)
         {}
 
-        auto getCommandName() const {
+        constexpr auto getCommandName() const {
             return "Transfer";
         }
-
-        void execution();
-
     };  // namespace command
 };
 #endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
-

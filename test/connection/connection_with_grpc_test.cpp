@@ -86,7 +86,7 @@ int main(int argc, char* argv[]){
         connection::receive([](const std::string& from,Event::ConsensusEvent& event) {
             std::cout <<" receive : order:" << event.order() << "\n";
             std::cout <<" receive : sig size:" << event.eventsignatures_size() << "\n";
-            std::cout <<" receive : value:" << event.transaction().asset().value() << "\n";
+            //std::cout <<" receive : value:" << event.transaction().asset().value() << "\n";
             std::cout <<" receive : name:" << event.transaction().asset().name() <<"\n";
             std::cout <<" type:"<<  event.transaction().type()  << "\n";
         });

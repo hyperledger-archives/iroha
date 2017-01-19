@@ -17,8 +17,6 @@ namespace convertor{
             Event::Asset asset;
             asset.set_domain(aAsset.domain);
             asset.set_name(aAsset.name);
-            asset.set_value(aAsset.value);
-            asset.set_precision(aAsset.precision);
             return asset;
         }
 
@@ -36,7 +34,7 @@ namespace convertor{
             for(auto&& as: aAccount.assets){
                 Event::Asset asset;
                 asset.set_name(std::get<0>(as));
-                asset.set_value(std::get<1>(as));
+                //asset.set_value(std::get<1>(as));
                 account.add_assets()->CopyFrom(asset);
             }
             return account;
@@ -49,8 +47,8 @@ namespace convertor{
             return object::Asset(
                     std::move(domain),
                     std::move(name),
-                    aAsset.value(),
-                    aAsset.precision()
+                    1,//aAsset.value(),
+                    1//aAsset.precision()
             );
         }
 
@@ -59,7 +57,7 @@ namespace convertor{
             auto name = aAccount.name();
             std::vector<std::tuple<std::string,long>> assets;
             for(const Event::Asset& as: aAccount.assets()){
-                assets.emplace_back(as.name(), static_cast<long>(as.value()));
+                assets.emplace_back(as.name(), static_cast<long>( 1));//as.value()));
             }
             return object::Account(
                     std::move(publicKey),
@@ -84,7 +82,7 @@ namespace convertor{
                     std::move(sender),
                     std::move(receiver),
                     std::move(name),
-                    tx.asset().value()
+                    1//tx.asset().value()
                 );
             res.timestamp = tx.timestamp();
             return res;
@@ -103,8 +101,8 @@ namespace convertor{
                     std::move(issuer),
                     std::move(domain),
                     std::move(name),
-                    tx.asset().value(),
-                    tx.asset().precision()
+                    1,//tx.asset().value(),
+                    2//tx.asset().precision()
                 );
             res.timestamp = tx.timestamp();
             return res;
@@ -116,7 +114,7 @@ namespace convertor{
             auto publicKey = tx.account().publickey();
             std::vector<std::tuple<std::string,long>> assets;
             for(auto&& as: tx.account().assets()){
-                assets.emplace_back(as.name(), as.value());
+                assets.emplace_back(as.name(), 1);//as.value());
             }
             auto issuer = tx.senderpubkey();
             auto res = ConsensusEvent<
@@ -148,7 +146,7 @@ namespace convertor{
                     std::move(issuer),
                     std::move(owner),
                     std::move(name),
-                    tx.asset().value()
+                    1//tx.asset().value()
                 );
             res.timestamp = tx.timestamp();
             return res;

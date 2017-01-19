@@ -14,22 +14,36 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "add.hpp"
 
-#include "../objects/account.hpp"
+#ifndef CORE_DOMAIN_REMOVE_HPP_
+#define CORE_DOMAIN_REMOVE_HPP_
+
+#include "../objects/domain.hpp"
 #include "../objects/asset.hpp"
-#include "../../util/logger.hpp"
+#include "../objects/message.hpp"
+
+#include "command.hpp"
+
+#include <string>
+#include <iostream>
 
 namespace command {
 
-    template <>
-    void Add<object::Account>::execution() {
-        logger::debug("Add<Account>") << "save publicKey:" << object::Account::publicKey << " name:" << object::Account::name;
-        repository::account::add(object::Account::publicKey, object::Account::name);
-    }
+    template <typename T>
+    class Remove: public T, public Command {
+      public:
 
-    template <>
-    void Add<object::Asset>::execution() {
+        template<typename... Args>
+        constexpr Remove(
+            Args&&... args
+        ):
+            T(std::forward<Args>(args)...)
+        {}
 
-    }
-}
+        constexpr auto getCommandName() const {
+            return "Remove";
+        }
+    };
+
+};
+#endif  // CORE_DOMAIN_REMOVE_HPP_

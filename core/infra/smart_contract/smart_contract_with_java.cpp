@@ -30,5 +30,3 @@ namespace smart_contract {
         }
     }
 };
-
-
