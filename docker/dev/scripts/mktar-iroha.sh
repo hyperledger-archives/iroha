@@ -5,7 +5,8 @@ if [ -z ${IROHA_RELEASE} ]; then
 	exit 1
 fi
 
-cd ${IROHA_RELEASE}
+cd ${IROHA_RELEASE} || (echo "[-] No folder ${IROHA_RELEASE}" && exit 1)
+
 rsync -av ${IROHA_BUILD}/bin $IROHA_RELEASE && \
 rsync -av ${IROHA_BUILD}/lib $IROHA_RELEASE && \
 rsync -av ${IROHA_BUILD}/my_test_bin $IROHA_RELEASE && \
