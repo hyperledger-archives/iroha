@@ -17,13 +17,17 @@ limitations under the License.
 #include "iroha_config_with_json.hpp"
 
 namespace config {
-    IrohaConfigManager::IrohaConfigManager() {
-
-    }
+    IrohaConfigManager::IrohaConfigManager() { }
 
     IrohaConfigManager& IrohaConfigManager::getInstance() {
         static IrohaConfigManager manager;
         return manager;
     }
 
+    std::string IrohaConfigManager::getDBPath() {
+        if (auto config = openConfig("config.json")) {
+            return (*config)["database_path"].get<std::string>();
+        }
+        return "/tmp";
+    }
 }

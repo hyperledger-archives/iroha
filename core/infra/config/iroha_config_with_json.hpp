@@ -20,7 +20,6 @@ limitations under the License.
 #include "iroha_config.hpp"
 
 namespace config {
-
     class IrohaConfigManager: IConfig {
     private:
         IrohaConfigManager();
@@ -29,6 +28,8 @@ namespace config {
 
     public:
         static IrohaConfigManager &getInstance();
+
+        std::string getDBPath();
     };
 }
 
