@@ -31,6 +31,8 @@ Having a solid distributed ledger system is not useful if there are no applicati
 
 ### 2.1. P2P Network
 
+***Development status: currently all peers are validating peers***
+
 Generally, 3*f*+1 nodes are needed to tolerate *f* Byzantine nodes in the network (albeit some consensus algorithms have higher node requirements). The number of *f* that a system should be made to tolerate should be determined by the system maintainer, based on the requirements for expected use cases.
 
 The following node types are considered:
@@ -39,9 +41,9 @@ The following node types are considered:
 * Validating peers
 * Normal peer
 
-***Development status: currently all peers are validating peers***
-
 ### 2.2. Membership service
+
+***Development status: add/remove peer functions are currently in development. ETA: before end of February***
 
 Membership is provided in a decentralized way, on ledger. By default 2*f*+1 signatures are needed to confirm adding or removing nodes to the network.
 
