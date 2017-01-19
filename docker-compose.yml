@@ -18,7 +18,7 @@ services:
       - 8000
 
   iroha1:
-    image: hyperledger/iroha
+    image: hyperledger/iroha-docker
     depends_on: 
       - configdiscovery
     expose:
@@ -38,7 +38,7 @@ services:
 
 
   iroha2:
-    image: hyperledger/iroha
+    image: hyperledger/iroha-docker
     depends_on: 
       - configdiscovery
     expose:
@@ -51,7 +51,7 @@ services:
 
 
   iroha3:
-    image: hyperledger/iroha
+    image: hyperledger/iroha-docker
     depends_on: 
       - configdiscovery
     expose:
@@ -64,7 +64,7 @@ services:
 
 
   iroha4:
-    image: hyperledger/iroha
+    image: hyperledger/iroha-docker
     depends_on: 
       - configdiscovery
     expose:

@@ -36,65 +36,70 @@ namespace peer {
                 exit(EXIT_FAILURE);
             }
         }
-    }
-
-    optional<json> openConfig() {
-
-        if (configData) {   // already content loaded
-            return configData;
-        }
-
-        const auto PathToIROHA_HOME = [](){
-            const auto p = getenv("IROHA_HOME");
-            return p == nullptr ? "" : std::string(p);
-        }();
-
-        if (PathToIROHA_HOME.empty()) {
-            logger::error("peer with json") << "You must set IROHA_HOME!";
-            exit(EXIT_FAILURE);
-        }
-
-        auto jsonStr = detail::openJSONText(PathToIROHA_HOME + "/config/sumeragi.json");
         
-        logger::info("peer with json") << "load json is " << jsonStr;
+        json openConfig() {
 
-        detail::setConfigData(std::move(jsonStr));
+            if (configData) {   // already content loaded
+                return *configData;
+            }
 
-        return configData;
+            const auto PathToIROHA_HOME = [](){
+                const auto p = getenv("IROHA_HOME");
+                return p == nullptr ? "" : std::string(p);
+            }();
+
+            if (PathToIROHA_HOME.empty()) {
+                logger::error("peer with json") << "You must set IROHA_HOME!";
+                exit(EXIT_FAILURE);
+            }
+
+            auto jsonStr = openJSONText(PathToIROHA_HOME + "/config/sumeragi.json");
+            
+            logger::info("peer with json") << "load json is " << jsonStr;
+
+            setConfigData(std::move(jsonStr));
+
+            return *configData;
+        }
     }
 
     std::string getMyPublicKey() {
-        if (auto config = openConfig()) {
-            return (*config)["me"]["publicKey"].get<std::string>();
+        try {
+            return detail::openConfig()["me"]["publicKey"].get<std::string>();
+        } catch(...) {
+            return "";
         }
-        return "";
     }
 
     std::string getPrivateKey() {
-        if (auto config = openConfig()) {
-            return (*config)["me"]["privateKey"].get<std::string>();
+        try {
+            return detail::openConfig()["me"]["privateKey"].get<std::string>();
+        } catch(...) {
+            return "";
         }
-        return "";
     }
 
     std::string getMyIp() {
-        if (auto config = openConfig()) {
-            return (*config)["me"]["ip"].get<std::string>();
+        try {
+            return detail::openConfig()["me"]["ip"].get<std::string>();
+        } catch(...) {
+            return "";
         }
-        return "";
     }
 
     std::vector<std::unique_ptr<peer::Node>> getPeerList() {
-        std::vector<std::unique_ptr<peer::Node>> nodes;
-        if (auto config = openConfig()) {
-            for (const auto& peer : (*config)["group"].get<std::vector<json>>()){
+        try {
+            std::vector<std::unique_ptr<peer::Node>> nodes;
+            for (const auto& peer : detail::openConfig()["group"].get<std::vector<json>>()){
                 nodes.push_back(std::make_unique<peer::Node>(
                     peer["ip"].get<std::string>(),
                     peer["publicKey"].get<std::string>(),
                     1
                 ));
             }
+            return nodes;
+        } catch(...) {
+            return {};
         }
-        return nodes;
     }
 };

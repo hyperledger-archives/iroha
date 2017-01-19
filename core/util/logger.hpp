@@ -24,12 +24,10 @@ limitations under the License.
 #include "datetime.hpp"
 
 #if __cplusplus <= 201402L
-#define NOEXCEPT
 #define TYPE_UNC_EXC    bool
 #define STD_UNC_EXC     std::uncaught_exception
 #define COND_UNC_EXC    ! STD_UNC_EXC()
 #else
-#define NOEXCEPT        noexcept
 #define TYPE_UNC_EXC    int
 #define STD_UNC_EXC     std::uncaught_exceptions
 #define COND_UNC_EXC    uncaught >= STD_UNC_EXC()
@@ -58,7 +56,7 @@ namespace logger {
     #define LOGGER_DEF(LoggerName, LogLevel, HasPrefix, LogType)                        \
     struct LoggerName                                                                   \
     {                                                                                   \
-        LoggerName(std::string&& caller) NOEXCEPT                                       \
+        LoggerName(std::string&& caller) noexcept                                       \
           : caller(std::move(caller)),                                                  \
             uncaught(STD_UNC_EXC())                                                     \
         {}                                                                              \
