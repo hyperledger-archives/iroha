@@ -337,7 +337,7 @@ namespace sumeragi {
                 std::cout << "\033[91m+-ーーーーーーーーーーーー-+\033[0m" << std::endl;
                 logger::debug("sumeragi")   <<  "tx:" << event.transaction().type();
 
-                logger::info("sumeragi")<< "my pubkey is " << peer::getMyPublicKey();
+                logger::info("sumeragi")<< "my pubkey is " << config::PeerServiceConfig::getInstance().getMyPublicKey();
                 logger::debug("sumeragi") << "tx:" << event.transaction().type();
                 // I want to separate it function from sumeragi.
                 if(event.transaction().type() == "Add"){
