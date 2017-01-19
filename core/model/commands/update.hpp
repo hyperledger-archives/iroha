@@ -22,15 +22,16 @@ limitations under the License.
 #include "../objects/asset.hpp"
 #include "../objects/message.hpp"
 
+#include "command.hpp"
+
 #include <string>
 #include <iostream>
 
 namespace command {
 
     template <typename T>
-    class Update: public T {
-    public:
-
+    class Update: public T, public Command{
+      public:
         template<typename... Args>
         constexpr Update(
             Args&&... args
@@ -41,11 +42,6 @@ namespace command {
         constexpr auto getCommandName() const {
             return "Update";
         }
-
-        void execution();
-
     };
-
 }
 #endif  // CORE_DOMAIN_UPDATE_HPP_
-

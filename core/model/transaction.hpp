@@ -61,7 +61,6 @@ public:
     {}
 
     void execution(){
-        T::execution();
     }
 
     auto getHash() {

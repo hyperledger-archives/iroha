@@ -22,14 +22,16 @@ limitations under the License.
 #include "../objects/asset.hpp"
 #include "../objects/message.hpp"
 
+#include "command.hpp"
+
 #include <string>
 #include <iostream>
 
 namespace command {
 
     template <typename T>
-    class Remove: public T {
-    public:
+    class Remove: public T, public Command {
+      public:
 
         template<typename... Args>
         constexpr Remove(
@@ -41,11 +43,7 @@ namespace command {
         constexpr auto getCommandName() const {
             return "Remove";
         }
-
-        void execution();
-
     };
 
 };
 #endif  // CORE_DOMAIN_REMOVE_HPP_
-

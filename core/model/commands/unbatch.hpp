@@ -22,37 +22,30 @@ limitations under the License.
 #include "../objects/asset.hpp"
 #include "../objects/message.hpp"
 
+#include "command.hpp"
+
 #include <string>
 #include <iostream>
 
 namespace command {
 
     template<typename T>
-    class Unbatch : public T {
-
-    public:
-
-        std::string senderPublicKey;
-        std::string receiverPublicKey;
+    class Unbatch : public T, public Command{
+      public:
+        std::string alias;
 
         template<typename... Args>
         explicit Unbatch(
-                std::string&& sender,
-                std::string&& receiver,
-                Args&&... args
+          std::string&& alias,
+          Args&&... args
         ):
-                T(std::forward<Args>(args)...),
-                senderPublicKey(std::move(sender)),
-                receiverPublicKey(std::move(receiver))
+          T(std::forward<Args>(args)...),
+          alias(std::move(alias))
         {}
-        
-        auto getCommandName() const {
-            return "Batch";
-        }
-        
-        void execution();
 
+        constexpr auto getCommandName() const {
+            return "Unbatch";
+        }
     };  // namespace command
 };
 #endif  // CORE_DOMAIN_UNBATCH_HPP_
-

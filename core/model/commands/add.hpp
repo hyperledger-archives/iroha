@@ -21,10 +21,12 @@ limitations under the License.
 #include "../../repository/domain/account_repository.hpp"
 #include "../../repository/domain/asset_repository.hpp"
 
+#include "command.hpp"
+
 namespace command {
 
 template <typename T>
-class Add: public T {
+class Add: public T, public Command {
   public:
 
     template<typename... Args>
@@ -37,12 +39,8 @@ class Add: public T {
     constexpr auto getCommandName() const{
         return "Add";
     }
-
-    void execution();
-
 };
 
 };  // namespace command
 
 #endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
-

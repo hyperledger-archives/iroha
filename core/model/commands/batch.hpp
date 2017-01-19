@@ -22,35 +22,29 @@ limitations under the License.
 #include "../objects/asset.hpp"
 #include "../objects/message.hpp"
 
+#include "command.hpp"
+
 #include <string>
 #include <iostream>
 
 namespace command {
 
     template<typename T>
-    class Batch : public T {
-
-    public:
-
-        std::string senderPublicKey;
-        std::string receiverPublicKey;
+    class Batch : public T, public Command {
+      public:
+        std::string alias;
 
         template<typename... Args>
         explicit Batch(
-                std::string&& sender,
-                std::string&& receiver,
-                Args&&... args
+          std::string&& alias,
+          Args&&... args
         ):
-                T(std::forward<Args>(args)...)
+          T(std::forward<Args>(args)...)
         {}
-        
-        auto getCommandName() const {
-            return "Batch";
-        }
-        
-        void execution();
 
+        constexpr auto getCommandName() const{
+          return "Batch";
+        }
     };  // namespace command
 };
 #endif  // CORE_DOMAIN_BATCH_HPP_
-
