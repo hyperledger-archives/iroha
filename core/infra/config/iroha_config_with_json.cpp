@@ -26,7 +26,7 @@ namespace config {
 
     std::string IrohaConfigManager::getDBPath() {
         if (auto config = openConfig("config.json")) {
-            return (*config)["database_path"].get<std::string>();
+            return (*config).value("database_path", "/tmp");
         }
         return "/tmp";
     }
