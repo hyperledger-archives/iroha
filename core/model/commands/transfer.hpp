@@ -45,7 +45,7 @@ namespace command {
             receiverPublicKey(std::move(receiver)),
             T(std::forward<Args>(args)...)
         {}
-
+        
         auto getCommandName() const {
             return "Transfer";
         }
