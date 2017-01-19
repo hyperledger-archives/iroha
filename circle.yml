@@ -13,6 +13,9 @@ checkout:
   post:
     - git submodule sync
     - git submodule update --init --recursive
+    
+    - rm core/vendor/Cappuccino
+    - git clone -b feature/asio https://github.com/MizukiSonoko/Cappuccino.git core/vendor/Cappuccino
 
 dependencies:
   cache_directories:
