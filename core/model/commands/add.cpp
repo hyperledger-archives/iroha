@@ -22,30 +22,19 @@ limitations under the License.
 
 namespace command {
 
-    /*
-      Add<Account> = Account registration.
-      Add<Asset>   = Create asset.
-      Add<Asset, To<Account>> =  Tie asset to account.
 
-      =========
-      Add< Object >
-      Add< Object, To> = Tie< Object, To>
-    */
+    auto default_currency = "iroha";
 
     template <>
     void Add<object::Account>::execution() {
-        logger::debug("Add<Account>") << "save publicKey:" << object::Account::publicKey << " name:" << object::Account::name;
-        repository::account::add(object::Account::publicKey, object::Account::name);
+        auto uuid = repository::account::add( publicKey, name);
+        repository::account::attach(uuid, default_currency, 100);
     }
 
     template <>
     void Add<object::Asset>::execution() {
-        
+        auto pubkey = "aa";
+        repository::asset::add( "creator", name, std::to_string(value));
     }
-    /*
-    template <>
-    void Add<object::Asset, To<object::Account>::execution() {
-        
-    }
-    */
+
 }
