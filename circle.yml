@@ -12,8 +12,9 @@ machine:
 checkout:
   post:
     - git submodule sync
-    - git submodule update --init --recursive
-    
+    - git submodule foreach git checkout master
+    #- git submodule update --init --recursive
+
     # Use feature/asio branch
     - rm -rf core/vendor/Cappuccino
     - git clone -b featue/asio https://github.com/MizukiSonoko/Cappuccino.git core/vendor/Cappuccino
@@ -33,9 +34,9 @@ dependencies:
 
 test:
   pre:
-    # TESTS: 
+    # TESTS:
     # first, run ctest inside a container
-    - docker run -p 1204:1204 hyperledger/iroha-docker /test.sh 
+    - docker run -p 1204:1204 hyperledger/iroha-docker /test.sh
     # then, run iroha with dummy config (1 node) and test curl request
     - docker run -d -p 1204:1204 hyperledger/iroha-docker /run.sh && sleep 5 && curl -X POST http://127.0.0.1:1204/account/register -d '{"publicKey":"WdvM/DPabapmtA7ISbTYPywbHxk8gWu2221LzmcmAgw=","alias":"yonezu","timestamp":1482053586}'
 
@@ -46,4 +47,3 @@ deployment:
     commands:
       - docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
       - docker push hyperledger/iroha-docker
-
