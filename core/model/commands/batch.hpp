@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CORE_DOMAIN_TRANSFER_HPP_
-#define CORE_DOMAIN_TRANSFER_HPP_
+#ifndef CORE_DOMAIN_BATCH_HPP_
+#define CORE_DOMAIN_BATCH_HPP_
 
 #include "../objects/domain.hpp"
 #include "../objects/asset.hpp"
@@ -28,7 +28,7 @@ limitations under the License.
 namespace command {
 
     template<typename T>
-    class Transfer : public T {
+    class Batch : public T {
 
     public:
 
@@ -36,23 +36,21 @@ namespace command {
         std::string receiverPublicKey;
 
         template<typename... Args>
-        explicit Transfer(
+        explicit Batch(
                 std::string&& sender,
                 std::string&& receiver,
                 Args&&... args
         ):
-                T(std::forward<Args>(args)...),
-                senderPublicKey(std::move(sender)),
-                receiverPublicKey(std::move(receiver))
+                T(std::forward<Args>(args)...)
         {}
         
         auto getCommandName() const {
-            return "Transfer";
+            return "Batch";
         }
-
+        
         void execution();
 
     };  // namespace command
 };
-#endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
+#endif  // CORE_DOMAIN_BATCH_HPP_
 

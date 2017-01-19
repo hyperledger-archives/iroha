@@ -22,6 +22,16 @@ limitations under the License.
 
 namespace command {
 
+    /*
+      Add<Account> = Account registration.
+      Add<Asset>   = Create asset.
+      Add<Asset, To<Account>> =  Tie asset to account.
+
+      =========
+      Add< Object >
+      Add< Object, To> = Tie< Object, To>
+    */
+
     template <>
     void Add<object::Account>::execution() {
         logger::debug("Add<Account>") << "save publicKey:" << object::Account::publicKey << " name:" << object::Account::name;
@@ -30,6 +40,12 @@ namespace command {
 
     template <>
     void Add<object::Asset>::execution() {
-
+        
     }
+    /*
+    template <>
+    void Add<object::Asset, To<object::Account>::execution() {
+        
+    }
+    */
 }

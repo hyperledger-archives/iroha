@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CORE_DOMAIN_TRANSFER_HPP_
-#define CORE_DOMAIN_TRANSFER_HPP_
+#ifndef CORE_DOMAIN_REMOVE_HPP_
+#define CORE_DOMAIN_REMOVE_HPP_
 
 #include "../objects/domain.hpp"
 #include "../objects/asset.hpp"
@@ -27,32 +27,25 @@ limitations under the License.
 
 namespace command {
 
-    template<typename T>
-    class Transfer : public T {
-
+    template <typename T>
+    class Remove: public T {
     public:
 
-        std::string senderPublicKey;
-        std::string receiverPublicKey;
-
         template<typename... Args>
-        explicit Transfer(
-                std::string&& sender,
-                std::string&& receiver,
-                Args&&... args
+        constexpr Remove(
+            Args&&... args
         ):
-                T(std::forward<Args>(args)...),
-                senderPublicKey(std::move(sender)),
-                receiverPublicKey(std::move(receiver))
+            T(std::forward<Args>(args)...)
         {}
-        
-        auto getCommandName() const {
-            return "Transfer";
+
+        constexpr auto getCommandName() const {
+            return "Remove";
         }
 
         void execution();
 
-    };  // namespace command
+    };
+
 };
-#endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
+#endif  // CORE_DOMAIN_REMOVE_HPP_
 

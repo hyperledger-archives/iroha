@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "transfer.hpp"
+#include "batch.hpp"
 #include "../../repository/domain/account_repository.hpp"
 #include "../../crypto/hash.hpp"
 
@@ -22,23 +22,10 @@ limitations under the License.
 
 namespace command {
 
-    /*
-        This does moving, migrating, and transferring.
-        EX)
-
-        Transfer<Asset>  = Transfer asset value.
-        Transfer<Account> =  Permissions migration
-    */
-
     template <>
-    void Transfer<object::Account>::execution() {
-        logger::debug("Transfer<Account>") << " publicKey:" << object::Account::publicKey << " name:" << object::Account::name;
-//        repository::account::add(object::Account::publicKey, object::Account::name);
-    }
-
-    template <>
-    void Transfer<object::Asset>::execution() {
-        logger::debug("Transfer<Asset>") << "| from publicKey :" << senderPublicKey << " |  -" << object::Asset::value << "-> | to publicKey : " << receiverPublicKey << "| ";
+    void Batch<object::Asset>::execution() {
+        logger::debug("Batch<...>") << "| from publicKey :" << senderPublicKey << " |  -" << object::Asset::value << "-> | to publicKey : " << receiverPublicKey << "| ";
+        /*
         object::Account sender      = repository::account::findByUuid(hash::sha3_256_hex(senderPublicKey));
         object::Account receiver    = repository::account::findByUuid(hash::sha3_256_hex(receiverPublicKey));
 
@@ -58,7 +45,7 @@ namespace command {
                 }
             }
         }
-        
+        */
     }
 
 }
