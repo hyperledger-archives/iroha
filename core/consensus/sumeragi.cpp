@@ -325,7 +325,7 @@ namespace sumeragi {
 //                event.SerializeToString(&strTx);
 
                 std::string key = event.transaction().asset().name() + "_" + datetime::unixtime_str();
-                logger::info("sumeragi") <<  "value: " << event.transaction().asset().value();
+                //logger::info("sumeragi") <<  "value: " << event.transaction().asset().value();
                 repository::transaction::add( key, event);
                 logger::debug("sumeragi") << "key[" <<  key << "]";
 

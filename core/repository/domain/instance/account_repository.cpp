@@ -37,7 +37,7 @@ namespace repository{
 
             for (int i = 0;i < protoAccount.assets_size(); i++) {
                 if (protoAccount.assets(i).name() == assetName) {
-                    protoAccount.mutable_assets(i)->set_value(newValue);
+                    //protoAccount.mutable_assets(i)->set_value(newValue);
                 }
             }
 

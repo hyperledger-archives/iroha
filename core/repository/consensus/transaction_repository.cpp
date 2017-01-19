@@ -65,13 +65,13 @@ namespace repository{
             if(tx.has_account()){
                 std::string assets = "";
                 for(const Event::Asset& as: tx.account().assets()){
-                    assets += as.name() + s4 + std::to_string(as.value()) + s3;
+//                    assets += as.name() + s4 + std::to_string(as.value()) + s3;
                 }
                 auto account = tx.account().publickey() + s2 + tx.account().name() + s2 + assets;
                 return transaction + "ACCOUNT" + s + account;
             }else if(tx.has_asset()){
-                auto asset = tx.asset().domain() + s2 + tx.asset().name() + s2 +\
-                 std::to_string(tx.asset().value()) + s2 + std::to_string(tx.asset().precision());
+                auto asset = tx.asset().domain() + s2 + tx.asset().name() + s2;// +\
+//                 std::to_string(tx.asset().value()) + s2 + std::to_string(tx.asset().precision());
                 return transaction + "ASSET"    + s + asset;
             }else if(tx.has_domain()){
                 auto domain = tx.domain().ownerpublickey() + s2 + tx.domain().name();
@@ -116,7 +116,7 @@ namespace repository{
                     }
                     Event::Asset easset;
                     easset.set_name(asset[0]);
-                    easset.set_value(std::atoi(asset[1].c_str()));
+//                    easset.set_value(std::atoi(asset[1].c_str()));
                     tx.mutable_account()->add_assets()->CopyFrom(easset);
                 }
             }else if(main[5] == "ASSET"){
@@ -124,8 +124,7 @@ namespace repository{
                 if(asset.size() != 4){ return tx; }
                 tx.mutable_asset()->set_domain(asset[0]);
                 tx.mutable_asset()->set_name(asset[1]);
-                tx.mutable_asset()->set_value(std::atoi(asset[2].c_str()));
-                tx.mutable_asset()->set_precision(std::atoi(asset[3].c_str()));
+//                tx.mutable_asset()->set_value(std::atoi(asset[2].c_str()));
             }else if(main[5] == "DOMAIN"){
                 auto domain = split(main[6], s2);
                 if(domain.size() != 2){ return tx; }
@@ -141,7 +140,6 @@ namespace repository{
 
 
         void add(const std::string &key,const Event::ConsensusEvent& tx){
-            logger::debug("sumeragi") << "addvalue:" << tx.transaction().asset().value();
             world_state_repository::add("transaction_" + key, t2s(tx.transaction()));
         }
 
@@ -151,7 +149,6 @@ namespace repository{
             for(auto& s: data){
                 auto tx = s2t(s);
                 res.push_back(s2t(s));
-                logger::info("tx repo") << "find All value:" << tx.asset().value();
             }
             return res;
         }
