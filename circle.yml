@@ -16,7 +16,7 @@ checkout:
     
     # Use feature/asio branch
     - rm -rf core/vendor/Cappuccino
-    - git clone -b feature/asio https://github.com/MizukiSonoko/Cappuccino.git core/vendor/Cappuccino
+    - git clone -b featue/asio https://github.com/MizukiSonoko/Cappuccino.git core/vendor/Cappuccino
 
 dependencies:
   cache_directories:
