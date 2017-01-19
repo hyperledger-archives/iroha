@@ -14,38 +14,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#include "remove.hpp"
+#include "../../repository/domain/account_repository.hpp"
+#include "../../crypto/hash.hpp"
 
-#ifndef CORE_DOMAIN_UPDATE_HPP_
-#define CORE_DOMAIN_UPDATE_HPP_
-
-#include "../objects/domain.hpp"
-#include "../objects/asset.hpp"
-#include "../objects/message.hpp"
-
-#include <string>
-#include <iostream>
+#include "../../util/logger.hpp"
 
 namespace command {
+    
+    template <>
+    void Remove<object::Account>::execution() {
+        logger::debug("Remove<Account>") << " publicKey:" << object::Account::publicKey << " name:" << object::Account::name;
+        repository::account::add(object::Account::publicKey, object::Account::name);
+    }
 
-    template <typename T>
-    class Update: public T {
-    public:
-
-        template<typename... Args>
-        constexpr Update(
-            Args&&... args
-        ):
-            T(std::forward<Args>(args)...)
-        {}
-
-        constexpr auto getCommandName() const {
-            return "Update";
-        }
-
-        void execution();
-
-    };
 
 }
-#endif  // CORE_DOMAIN_UPDATE_HPP_
-
