@@ -15,11 +15,11 @@ limitations under the License.
 */
 
 #include "../../core/model/smart_contract/virtual_machine_interface.hpp"
+#include "../../core/repository/world_state_repository.hpp"
 
 #include <gtest/gtest.h>
 
 using smart_contract::SmartContract;
-
 
 TEST(SmartContract, Invoke_JAVA_function){
     std::string contractName = "Test";
@@ -30,7 +30,6 @@ TEST(SmartContract, Invoke_JAVA_function){
         contractName,
         functionName
     );
-    smartContract.finishVM(contractName);
 }
 
 TEST(SmartContract, Invoke_JAVA_function_map_argv){
@@ -59,5 +58,26 @@ TEST(SmartContract, Invoke_JAVA_function_map_utf_8){
         functionName,
         params
     );
+}
+
+TEST(SmartContract, Invoke_CPP_function_FROM_JAVA_function){
+    std::string contractName = "Test";
+    std::string functionName = "test4";
+    std::unordered_map<std::string, std::string> params;
+    params["key"] = "PUBLICKEY";
+    std::string hashed_key = "3f31d574eb12fd73b1a0b6c9614ef3e22649c5ad80e6e736a5aa82e8606b8971";
+
+    SmartContract smartContract = SmartContract();
+    smartContract.invokeFunction(
+        contractName,
+        functionName,
+        params
+    );
     smartContract.finishVM(contractName);
+
+    std::string value = repository::world_state_repository::find(hashed_key);
+    ASSERT_STREQ(
+      value.c_str(),
+      "MizukiSonoko"
+    );
 }

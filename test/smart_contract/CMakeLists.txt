@@ -33,6 +33,7 @@ ENDIF()
 
 add_executable(java_vm_test java_vm_test.cpp)
 target_link_libraries(java_vm_test
+  world_state_repo_with_level_db
   smart_contract_with_java
   jvm
   ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread)
@@ -40,5 +41,3 @@ add_test(
   NAME java_vm_test
   COMMAND $<TARGET_FILE:java_vm_test>
 )
-
-
