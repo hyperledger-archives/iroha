@@ -58,7 +58,7 @@ JNIEXPORT void JNICALL Java_repository_AccountRepository_attach
     repository::account::attach(uuid, assetName, assetDefault);
 }
 
-JNIEXPORT jstring JNICALL Java_repository_AccountRepository_findByUuid
+JNIEXPORT jobject JNICALL Java_repository_AccountRepository_findByUuid
   (JNIEnv *env, jclass cls, jstring uuid_)
 {
     const char *uuidCString     = env->GetStringUTFChars(uuid_, 0);

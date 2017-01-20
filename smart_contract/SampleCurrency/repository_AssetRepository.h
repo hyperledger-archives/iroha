@@ -18,9 +18,9 @@ JNIEXPORT void JNICALL Java_repository_AssetRepository_add
 /*
  * Class:     repository_AssetRepository
  * Method:    findOne
- * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ * Signature: (Ljava/lang/String;)Ljava/util/HashMap;
  */
-JNIEXPORT jstring JNICALL Java_repository_AssetRepository_findOne
+JNIEXPORT jobject JNICALL Java_repository_AssetRepository_findOne
   (JNIEnv *, jclass, jstring);
 
 /*

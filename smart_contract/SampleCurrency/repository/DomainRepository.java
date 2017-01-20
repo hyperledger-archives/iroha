@@ -13,19 +13,20 @@ limitations under the License.
 
 package repository;
 
+import java.util.HashMap;
+
 public class DomainRepository {
 
     static {
         System.loadLibrary("DomainRepository");
     }
     
-//    public static native void save(String key,String value);
     public static native void     add(String key, String value);
-    public static native void     add(String key, int value);   // unsigned がない
-    public static native void     add(String key, long value);  // unsigned がない
+    public static native void     add(String key, int value);   // Notice: singed only
+    public static native void     add(String key, long value);  // Notice: singed only
     public static native void     add(String key, double value);
 
-    public static native String   findOne(String key); // pointerでなくStringに出力してから受け取る
+    public static native HashMap<String,String> findOne(String key);
     public static native void     update(String key, String newValue);
     public static native void     remove(String key);
     //std::vector<std::unique_ptr<T> > findAll(std::string key);

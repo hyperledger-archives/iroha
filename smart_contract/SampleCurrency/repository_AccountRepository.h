@@ -26,9 +26,9 @@ JNIEXPORT void JNICALL Java_repository_AccountRepository_attach
 /*
  * Class:     repository_AccountRepository
  * Method:    findByUuid
- * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ * Signature: (Ljava/lang/String;)Ljava/util/HashMap;
  */
-JNIEXPORT jstring JNICALL Java_repository_AccountRepository_findByUuid
+JNIEXPORT jobject JNICALL Java_repository_AccountRepository_findByUuid
   (JNIEnv *, jclass, jstring);
 
 /*

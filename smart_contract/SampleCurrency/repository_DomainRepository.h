@@ -42,9 +42,9 @@ JNIEXPORT void JNICALL Java_repository_DomainRepository_add__Ljava_lang_String_2
 /*
  * Class:     repository_DomainRepository
  * Method:    findOne
- * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ * Signature: (Ljava/lang/String;)Ljava/util/HashMap;
  */
-JNIEXPORT jstring JNICALL Java_repository_DomainRepository_findOne
+JNIEXPORT jobject JNICALL Java_repository_DomainRepository_findOne
   (JNIEnv *, jclass, jstring);
 
 /*

@@ -13,6 +13,8 @@ limitations under the License.
 
 package repository;
 
+import java.util.HashMap;
+
 public class AccountRepository {
 
     static {
@@ -21,7 +23,7 @@ public class AccountRepository {
     
     public static native void     updateQuantity(String uuid, String assetName, long newValue);
     public static native void     attach(String uuid, String assetName, long assetDefault);
-    public static native String   findByUuid(String uuid);
+    public static native HashMap<String,String> findByUuid(String uuid);
     public static native void     add(String publicKey, String alias);
 
 }

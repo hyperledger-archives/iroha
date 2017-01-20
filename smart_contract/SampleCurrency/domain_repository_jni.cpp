@@ -15,64 +15,11 @@ limitations under the License.
 */
 #include "repository_DomainRepository.h"
 #include "../../core/repository/domain/domain_repository.hpp"
-#include "../../core/util/serialized_type_switcher.hpp"
 #include "../../core/util/logger.hpp"
 #include <string>
 #include <memory>
 #include <vector>
 #include <assert.h>
-
-namespace detail {
-    inline std::string getTypeID(std::string const& s) {
-        assert(s.size() >= util::type_switcher::TypeIDSize);
-        return s.substr(0, util::type_switcher::TypeIDSize);
-    }
-    inline std::string getValueStr(std::string const& s) {
-        assert(s.size() >= util::type_switcher::TypeIDSize);
-        return s.substr(util::type_switcher::TypeIDSize);
-    }
-}
-/*
-// Ugly code
-
-JNIEXPORT void JNICALL Java_repository_DomainRepository_add(JNIEnv *env, jclass cls, jstring key_, jstring value_) {
-    const char *keyCString = env->GetStringUTFChars(key_, 0);
-    const char *valCString = env->GetStringUTFChars(value_, 0);
-    std::string key = std::string(keyCString);
-    std::string value = std::string(valCString);
-    env->ReleaseStringUTFChars(key_, keyCString);
-    env->ReleaseStringUTFChars(value_, valCString);
-
-    using Tp = util::type_switcher::SerializedTypes;
-    const auto val_type = util::type_switcher::getType(detail::getTypeID(value));
-    const auto val_cont = detail::getValueStr(value);
-
-    switch (val_type) {
-        case Tp::Int32:
-            repository::domain::add(key, std::stoi(val_cont));
-            break;
-        case Tp::Int64:
-            repository::domain::add(key, std::stoll(val_cont));
-            break;
-        case Tp::Uint32:
-            repository::domain::add(key, std::stoull(val_cont));
-            break;
-        case Tp::Uint64:
-            repository::domain::add(key, std::stoull(val_cont));
-            break;
-        case Tp::String:
-            repository::domain::add(key, val_cont);
-            break;
-        case Tp::Double:
-            repository::domain::add(key, std::stod(val_cont));
-            break;
-        default:
-            logger::fatal("domain_repository_jni") << "Type mismatch.";
-            assert("Type mismatch");
-    }
-    
-}
-*/
 
 JNIEXPORT void JNICALL Java_repository_DomainRepository_add__Ljava_lang_String_2Ljava_lang_String_2
   (JNIEnv *env, jclass cls, jstring key_, jstring value_)
@@ -85,6 +32,21 @@ JNIEXPORT void JNICALL Java_repository_DomainRepository_add__Ljava_lang_String_2
 
     env->ReleaseStringUTFChars(key_,    keyCString);
     env->ReleaseStringUTFChars(value_,  valueCString);
+
+    logger::debug("domain repo jni") << key << ", " << value;
+
+    repository::domain::add(key, value);
+}
+
+JNIEXPORT void JNICALL Java_repository_DomainRepository_add__Ljava_lang_String_2I
+  (JNIEnv *env, jclass cls, jstring key_, jint value_)
+{
+    const char *keyCString      = env->GetStringUTFChars(key_, 0);
+
+    const auto key              = std::string(keyCString);
+    const auto value            = static_cast<int32_t>(value_);
+
+    env->ReleaseStringUTFChars(key_,    keyCString);
 
     logger::debug("domain repo jni") << key << ", " << value;
 
@@ -121,7 +83,7 @@ JNIEXPORT void JNICALL Java_repository_DomainRepository_add__Ljava_lang_String_2
     repository::domain::add(key, value);
 }
 
-JNIEXPORT jstring JNICALL Java_repository_DomainRepository_findOne
+JNIEXPORT jobject JNICALL Java_repository_AssetRepository_findOne
   (JNIEnv *env, jclass cls, jstring key_)
 {
     const char *keyCString = env->GetStringUTFChars(key_, 0);
@@ -133,7 +95,7 @@ JNIEXPORT jstring JNICALL Java_repository_DomainRepository_findOne
 
     // TODO: Specify template type.
 //    auto p = repository::domain::findOne<  >(key);
-    
+
     // TODO: Serialize to string for Java to read domain data here.
 
 
@@ -177,7 +139,3 @@ JNIEXPORT void JNICALL Java_repository_DomainRepository_remove
     // TODO: Specify template type.
 //    repository::domain::remove(key);
 }
-
-//std::vector<std::unique_ptr<T> > findAll(std::string key);
-//std::unique_ptr<T> findOrElse(std::string key, T defaultVale);
-//bool isExist(std::string key);

@@ -22,17 +22,6 @@ limitations under the License.
 #include <vector>
 #include <assert.h>
 
-namespace detail {
-    inline std::string getTypeID(std::string const& s) {
-        assert(s.size() >= util::type_switcher::TypeIDSize);
-        return s.substr(0, util::type_switcher::TypeIDSize);
-    }
-    inline std::string getValueStr(std::string const& s) {
-        assert(s.size() >= util::type_switcher::TypeIDSize);
-        return s.substr(util::type_switcher::TypeIDSize);
-    }
-}
-
 JNIEXPORT void JNICALL Java_repository_AssetRepository_add
     (JNIEnv *env, jclass cls, jstring publicKey_, jstring assetName_, jstring value_) {
     const char *publicKeyCString    = env->GetStringUTFChars(publicKey_, 0);
@@ -41,20 +30,55 @@ JNIEXPORT void JNICALL Java_repository_AssetRepository_add
 
     const auto publicKey    = std::string(publicKeyCString);
     const auto assetName    = std::string(assetNameCString);
-    const auto value        = std::string(valueCString);  // WIP: valueは現状はシリアライズされた型で分析する必要がある
+    const auto value        = std::string(valueCString);
 
     env->ReleaseStringUTFChars(publicKey_, publicKeyCString);
     env->ReleaseStringUTFChars(assetName_, assetNameCString);
     env->ReleaseStringUTFChars(value_, valueCString);
 
     repository::asset::add(publicKey, assetName, value);
-
 }
 
-//JNIEXPORT std::string JNICALL Java_AssetRepository_findOne(std::string key) {}
-//JNIEXPORT void JNICALL Java_Repository_update(std::string key, std::string value) {}
-//JNIEXPORT void JNICALL Java_Repository_remove(std::string key) {}
+JNIEXPORT jobject JNICALL Java_repository_AssetRepository_findOne
+  (JNIEnv *env, jclass cls, jstring key_)
+{
+    const char *keyCString  = env->GetStringUTFChars(key_, 0);
+    const auto key          = std::string(keyCString);
 
-//std::vector<std::unique_ptr<T> > findAll(std::string key);
-//std::unique_ptr<T> findOrElse(std::string key, T defaultVale);
-//bool isExist(std::string key);
+    env->ReleaseStringUTFChars(key_, keyCString);
+
+    repository::asset::findOne(key);
+}
+
+JNIEXPORT void JNICALL Java_repository_AssetRepository_update
+  (JNIEnv *env, jclass cls, jstring publicKey_, jstring assetName_, jstring newValue_)
+{
+    const char *publicKeyCString    = env->GetStringUTFChars(publicKey_, 0);
+    const char *assetNameCString    = env->GetStringUTFChars(assetName_, 0);
+    const char *newValueCString     = env->GetStringUTFChars(newValue_,  0);
+
+    const auto publicKey    = std::string(publicKeyCString);
+    const auto assetName    = std::string(assetNameCString);
+    const auto newValue     = std::string(newValueCString);
+
+    env->ReleaseStringUTFChars(publicKey_, publicKeyCString);
+    env->ReleaseStringUTFChars(assetName_, assetNameCString);
+    env->ReleaseStringUTFChars(newValue_, newValueCString);
+
+    repository::asset::update(publicKey, assetName, newValue);
+}
+
+JNIEXPORT void JNICALL Java_repository_AssetRepository_remove
+  (JNIEnv *env, jclass, jstring publicKey_, jstring assetName_)
+{
+    const char *publicKeyCString    = env->GetStringUTFChars(publicKey_, 0);
+    const char *assetNameCString    = env->GetStringUTFChars(assetName_, 0);
+
+    const auto publicKey    = std::string(publicKeyCString);
+    const auto assetName    = std::string(assetNameCString);
+
+    env->ReleaseStringUTFChars(publicKey_, publicKeyCString);
+    env->ReleaseStringUTFChars(assetName_, assetNameCString);
+
+    repository::asset::remove(publicKey, assetName);
+}

@@ -13,19 +13,17 @@ limitations under the License.
 
 package repository;
 
+import java.util.HashMap;
+
 public class AssetRepository {
 
     static {
         System.loadLibrary("AssetRepository");
     }
     
-//    public static native void save(String key,String value);
     public static native void     add(String publicKey, String assetName, String value);
-    public static native String   findOne(String key); // pointerでなくStringに出力してから受け取る
+    public static native HashMap<String,String> findOne(String key);
     public static native void     update(String publicKey, String assetName, String newValue);
     public static native void     remove(String publicKey, String assetName);
-    //std::vector<std::unique_ptr<T> > findAll(std::string key);
-    //std::unique_ptr<T> findOrElse(std::string key, T defaultVale);
-    //bool isExist(std::string key);
-
+    
 }

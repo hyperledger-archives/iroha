@@ -40,15 +40,14 @@ public class SampleCurrency {
 
         System.out.println("DomainRepository");
         DomainRepository domain = new DomainRepository();
-        domain.add("domain", "Int32_12345");
+        domain.add("domain", 12345);
         // find, remove, ...
 
         System.out.println("AssetRepository");
         AssetRepository asset = new AssetRepository();
 //        asset.add("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=", "MyAsset", "some value");
         // find, remove, ...
-
-
+        
         /*
         System.out.println("AccountRepository");
         AccountRepository account = new AccountRepository();
