@@ -13,47 +13,38 @@ limitations under the License.
 */
 
 import java.util.HashMap;
-import repository.DomainRepository;
-import repository.AssetRepository;
+import repository.AccountRepository;
 
 // no package declaration
 public class SampleCurrency {
-    
-    public static void put( String param ) {
-        System.out.println("Hello in JAVA! in add");
-        System.out.println("vvvvvvvv　param vvvvvvvv");
-        System.out.println( param );
+
+  public static void put( String param ) {
+      System.out.println("Hello in JAVA! in add");
+      System.out.println( param );
+  }
+
+    public static void add(HashMap<String,String> params){
+      System.out.println("Hello in JAVA!");
+      for( String key : params.keySet() ) {
+          System.out.println( key + " : " + params.get( key ) );
+      }
     }
 
-    public static void put( String param ) {
-        System.out.println("Hello in JAVA! in add");
-        System.out.println("vvvvvvvv　param vvvvvvvv");
-        System.out.println( param );
+    public static void transfer(HashMap<String,String> params){
+
     }
 
-    public static void remit(HashMap<String,String> params){
-        System.out.println("Hello in JAVA! in contract");
-        System.out.println("vvvvvvvv　params vvvvvvvv");
-        for( String key : params.keySet() ) {
-            System.out.println( key + " : " + params.get( key ) );
-        }
-    }
 
     public static void main(String[] argv) {
         // This is DB access test.
 
         System.out.println("Hello in JAVA! check repositories");
 
-        System.out.println("DomainRepository");
-        DomainRepository domain = new DomainRepository();
-        domain.add("domain", 12345);
+        System.out.println("AssetRepository");
+        AccountRepository account = new AccountRepository();
+        account.add("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=", "MyAsset");
         // find, remove, ...
 
-        System.out.println("AssetRepository");
-        AssetRepository asset = new AssetRepository();
-//        asset.add("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=", "MyAsset", "some value");
-        // find, remove, ...
-        
         /*
         System.out.println("AccountRepository");
         AccountRepository account = new AccountRepository();

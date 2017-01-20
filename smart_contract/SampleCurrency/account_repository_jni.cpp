@@ -40,24 +40,6 @@ JNIEXPORT void JNICALL Java_repository_AccountRepository_updateQuantity
     repository::account::update_quantity(uuid, assetName, newValue);
 }
 
-JNIEXPORT void JNICALL Java_repository_AccountRepository_attach
-  (JNIEnv *env, jclass cls, jstring uuid_, jstring assetName_, jlong assetDefault_)
-{
-    const char *uuidCString     = env->GetStringUTFChars(uuid_, 0);
-    const char *assetNameCString = env->GetStringUTFChars(assetName_, 0);
-    const auto assetDefault     = static_cast<int64_t>(assetDefault_);
-
-    const auto uuid             = std::string(uuidCString);
-    const auto assetName        = std::string(assetNameCString);
-
-    env->ReleaseStringUTFChars(uuid_,       uuidCString);
-    env->ReleaseStringUTFChars(assetName_,  assetNameCString);
-
-    logger::debug("domain repo jni") << uuid << ", " << assetName << ", " << assetDefault;
-
-    repository::account::attach(uuid, assetName, assetDefault);
-}
-
 JNIEXPORT jobject JNICALL Java_repository_AccountRepository_findByUuid
   (JNIEnv *env, jclass cls, jstring uuid_)
 {
