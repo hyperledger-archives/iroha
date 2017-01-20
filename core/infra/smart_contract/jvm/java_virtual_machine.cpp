@@ -39,42 +39,40 @@ namespace smart_contract {
 
         std::string java_command = "-Djava.class.path=" + std::string(getenv("IROHA_HOME")) + "/smart_contract/" + contractName + "/";
 
-        std::cout << java_command.c_str() << " " << contractName.c_str() << std::endl;
-		
-		JavaVMOption options[3];
-		options[0].optionString = const_cast<char*>( java_command.c_str() );
-		options[1].optionString = const_cast<char*>("-Djava.security.manager");
-		options[2].optionString = const_cast<char*>("-Djava.security.policy=policy.txt");
-		
+    		JavaVMOption options[3];
+    		options[0].optionString = const_cast<char*>( java_command.c_str() );
+    		options[1].optionString = const_cast<char*>("-Djava.security.manager");
+    		options[2].optionString = const_cast<char*>("-Djava.security.policy=policy.txt");
+
         JavaVMInitArgs vm_args;
         vm_args.version  = JNI_VERSION_1_6;
         vm_args.options  = options;
         vm_args.nOptions = 3;
         //vm_args.ignoreUnrecognized = true;
-		
+
         JNIEnv *env;
         JavaVM *jvm;
-		
+
         int res = JNI_CreateJavaVM(&jvm, (void **) &env, &vm_args);
         if (res) {
             std::cout << "cannot run JavaVM : " << res << std::endl;
             return nullptr;
         }
-		
+
         jclass cls = env->FindClass( (contractName).c_str() );// (contractName+"/"+contractName).c_str());
         if (cls == nullptr) {
             std::cout << "could not found class : " << contractName << std::endl;
             return nullptr;
         }
-		
+
         jmethodID cns = env->GetMethodID(cls, "<init>", "()V");
         if (cns == nullptr) {
             std::cout << "could not get <init> method." << std::endl;
             return nullptr;
         }
-		
+
         jobject obj = env->NewObject(cls, cns);
-		
+
         return std::make_unique<JavaContext>(
             env,
             jvm,
@@ -108,6 +106,25 @@ namespace smart_contract {
         }
     }
 
+    void execFunction(
+        const std::unique_ptr<JavaContext> &context,
+        std::string functionName
+    ) {
+        jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "()V");
+        if (mid == nullptr) {
+            std::cout << "could not get method : " << functionName << std::endl;
+            return;
+        }
+
+        context->env->CallVoidMethod(context->jObject, mid);
+
+        auto res = context->jvm->DestroyJavaVM();
+        if (res) {
+            std::cout << "could not destroy JavaVM : " << res << std::endl;
+        }
+    }
+
+
 
     JNIEXPORT jobject JNICALL JavaMakeMap(JNIEnv *env, std::unordered_map<std::string,std::string> mMap) {
         env->PushLocalFrame(256); // fix for local references
@@ -115,7 +132,7 @@ namespace smart_contract {
         jmethodID hashMapInit = env->GetMethodID( hashMapClass, "<init>", "(I)V");
         jobject hashMapObj = env->NewObject( hashMapClass, hashMapInit, mMap.size());
         jmethodID hashMapOut = env->GetMethodID( hashMapClass, "put",
-                    "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+          "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 
         for (auto it : mMap)
         {

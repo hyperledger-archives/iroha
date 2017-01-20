@@ -17,7 +17,7 @@ limitations under the License.
 #include "../../repository/world_state_repository.hpp"
 #include "../../util/exception.hpp"
 
-#include "../../../util/logger.hpp"
+#include "../../util/logger.hpp"
 
 #include <leveldb/write_batch.h>
 #include <leveldb/db.h>
