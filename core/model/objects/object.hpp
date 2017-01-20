@@ -7,10 +7,14 @@
 
 #include "../../service/json_parse.hpp"
 
-// Abstract
-class AbsObject {
-    virtual json_parse::Object dump() = 0;
-    virtual json_parse::Rule getJsonParseRule() = 0;
-};
+namespace object{
+    // Abstract
+    class BaseObject {
+        int64_t integer;
+        double  decimal;
+        std::string text;
+        bool    boolean;        
+    };
+}
 
 #endif //IROHA_OBJECTS_H

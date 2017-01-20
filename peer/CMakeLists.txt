@@ -25,7 +25,7 @@ link_directories(
   ${PROJECT_BINARY_DIR}/lib
   ${ED25519_PATH}/lib
   ${KECCAK_PATH}/bin/generic64
-  ${PROJECT_SOURCE_DIR}/core/infra/crypto 
+  ${PROJECT_SOURCE_DIR}/core/infra/crypto
   ${AERON_PATH}/cppbuild/Release/lib
   ${LEVELDB_PATH}/out-static
 )
@@ -40,7 +40,6 @@ target_link_libraries(iroha-main
   pthread
   dl
 
-  commands
   leveldb
   snappy
   world_state_repo_with_level_db
@@ -53,4 +52,3 @@ target_link_libraries(iroha-main
   keccak
   hash
 )
-

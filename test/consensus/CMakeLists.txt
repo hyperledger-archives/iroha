@@ -39,7 +39,6 @@ target_link_libraries(transaction_test
     base64
     signature
     sumeragi
-    commands
     connection_with_grpc
     peer_service_with_json
     pthread
