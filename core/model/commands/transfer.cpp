@@ -22,6 +22,20 @@ limitations under the License.
 
 namespace command {
 
+    /*
+        This does moving, migrating, and transferring.
+        EX)
+
+        Transfer<Asset>  = Transfer asset value.
+        Transfer<Account> =  Permissions migration
+    */
+
+    template <>
+    void Transfer<object::Account>::execution() {
+        logger::debug("Transfer<Account>") << " publicKey:" << object::Account::publicKey << " name:" << object::Account::name;
+//        repository::account::add(object::Account::publicKey, object::Account::name);
+    }
+
     template <>
     void Transfer<object::Asset>::execution() {
         auto senderUuid = hash::sha3_256_hex(senderPublicKey);

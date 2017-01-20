@@ -32,8 +32,8 @@ namespace merkle_transaction_repository {
     bool commit(const Event::ConsensusEvent& event) {
         std::vector<std::tuple<std::string, std::string>> batchCommit
           = {
-                std::tuple<std::string, std::string>("last_insertion", pevent->transaction().hash()),
-                std::tuple<std::string, std::string>(pevent->transaction().hash(), event->tx->getAsText())
+                std::make_tuple("last_insertion", pevent->transaction().hash()),
+                std::make_tuple(pevent->transaction().hash(), event->tx->getAsText())
         };
 
         calculateNewRootHash(event, batchCommit);
@@ -53,16 +53,16 @@ namespace merkle_transaction_repository {
     std::string calculateNewRootHash(const Event::ConsensusEvent& event,
                                      std::vector<std::tuple<std::string, std::string>> &batchCommit) {
 
-        std::unique_ptr<std::string> lastInsertion = repository::world_state_repository::find("last_insertion");
+        std::string lastInsertion = repository::world_state_repository::find("last_insertion");
 
-        if (lastInsertionHash.empty()) {
+        if (lastInsertion.empty()) {
             // Note: there is no need to update the tree's DB here, because there is only one transaction--the current!
             return pevent->transaction().hash();
         }
 
-        std::unique_ptr<std::string> parent = repository::world_state_repository::find(lastInsertion + "_parent");
-        std::unique_ptr<std::string> leftChild = repository::world_state_repository::find(parent + "_leftChild");
-        std::unique_ptr<std::string> rightChild = repository::world_state_repository::find(parent + "_rightChild");
+        std::string parent     = repository::world_state_repository::find(lastInsertion + "_parent");
+        std::string leftChild  = repository::world_state_repository::find(parent + "_leftChild");
+        std::string rightChild = repository::world_state_repository::find(parent + "_rightChild");
 
         if (rightChild.empty()) {
             // insert the event's transaction as the right child
@@ -70,8 +70,8 @@ namespace merkle_transaction_repository {
             std::string newParentHash = hash::sha3_256_hex(leftChild + rightChild);
 
             if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
-                batchCommit.push_back(std::tuple<std::string, std::string>(lastInsertion + "_rightChild", rightChild));
-                batchCommit.push_back(std::tuple<std::string, std::string>(lastInsertion + "_parent", rightChild));
+                batchCommit.emplace_back(lastInsertion + "_rightChild", rightChild);
+                batchCommit.emplace_back(lastInsertion + "_parent", rightChild);
             }
 
             // Propagate up the tree to the root
@@ -79,7 +79,7 @@ namespace merkle_transaction_repository {
                 std::string newParentHash = hash::sha3_256_hex(leftChild + rightChild);
 
                 if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
-                    batchCommit.push_back(std::tuple<std::string, std::string>(newParentHash + "_parent", rightChild));
+                    batchCommit.emplace_back(newParentHash + "_parent", rightChild);
                     // TODO: delete old, unused nodes
                 }
 
@@ -89,13 +89,13 @@ namespace merkle_transaction_repository {
             }
 
             if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
-                batchCommit.push_back(std::tuple<std::string, std::string>("merkle_root", rightChild));
+                batchCommit.emplace_back("merkle_root", rightChild);
                 // TODO: delete old, unused nodes
             }
             return rightChild;
 
         } else {
-            std::string newLeftChild =  pevent->transaction().hash();
+            std::string newLeftChild  = pevent->transaction().hash();
             std::string newParentHash = hash::sha3_256_hex(currHash);
 
             std::string oldParent = parent;
@@ -104,10 +104,8 @@ namespace merkle_transaction_repository {
             while (!parent.empty()) {
 
                 if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
-                    batchCommit.push_back(std::tuple<std::string, std::string>(pevent->transaction().hash() + "_parent",
-                                                                               newParentHash));
-                    batchCommit.push_back(std::tuple<std::string, std::string>(pevent->transaction().hash() + "_leftChild",
-                                                                               newLeftChild));
+                    batchCommit.emplace_back(pevent->transaction().hash() + "_parent", newParentHash);
+                    batchCommit.emplace_back(pevent->transaction().hash() + "_leftChild", newLeftChild);
                     // TODO: delete old, unused nodes
                 }
 
@@ -123,8 +121,7 @@ namespace merkle_transaction_repository {
 
             // save new root
             if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
-                batchCommit.push_back(std::tuple<std::string, std::string>(event->tx->getHash() + "merkle_root",
-                                                                           newParentHash));
+                batchCommit.emplace_back(event->tx->getHash() + "merkle_root", newParentHash);
                 // TODO: delete old, unused nodes
             }
 

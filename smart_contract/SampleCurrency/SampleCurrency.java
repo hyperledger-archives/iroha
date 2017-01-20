@@ -25,6 +25,12 @@ public class SampleCurrency {
         System.out.println( param );
     }
 
+    public static void put( String param ) {
+        System.out.println("Hello in JAVA! in add");
+        System.out.println("vvvvvvvv　param vvvvvvvv");
+        System.out.println( param );
+    }
+
     public static void remit(HashMap<String,String> params){
         System.out.println("Hello in JAVA! in contract");
         System.out.println("vvvvvvvv　params vvvvvvvv");

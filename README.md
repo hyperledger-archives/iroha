@@ -10,6 +10,10 @@
 # Pull Requests
 Please include a developer certificate with pull requests: https://www.clahub.com/agreements/hyperledger/iroha
 
+# How to build
+[how_to_build](https://github.com/hyperledger/iroha/blob/master/docs/how_to_build.rst)
+
+
 # Architecture (Draft)
 
 ### Directory tree
@@ -17,31 +21,62 @@ Please include a developer certificate with pull requests: https://www.clahub.co
 .
 ├── build (for cmake)
 ├── config
-├── peer
 ├── core
-│   ├── connection
 │   ├── consensus
+│   │   └── connection
 │   ├── crypto
-│   ├── model
-│   │   └── transactions
 │   ├── infra
 │   │   ├── connection
 │   │   ├── crypto
+│   │   ├── protobuf
 │   │   ├── repository
 │   │   ├── server
+│   │   ├── service
 │   │   └── smart_contract
+│   │       └── jvm
+│   ├── model
+│   │   ├── commands
+│   │   ├── objects
+│   │   ├── smart_contract
+│   │   ├── state
+│   │   ├── publisher
+│   │   ├── repository
+│   │   └── state
+│   ├── publisher
 │   ├── repository
+│   │   ├── consensus
+│   │   └── domain
 │   ├── server
-│   ├── smart_contract
+│   ├── service
 │   ├── util
 │   ├── validation
 │   └── vendor
-├── doc
+│       ├── Cappucino
+│       ├── ed25519
+│       ├── json
+│       ├── KeccakCodePackage
+│       ├── leveldb
+│       └── thread_pool_cpp
+├── docker
+│   ├── build
+│   │   └── scripts
+│   ├── config-discovery
+│   └── dev
+│       └── scripts
+├── docs
+├── peer
 ├── smart_contract
-│   └── SampleCurrency_java
-└── test
-    ├── crypto
-    └── smart_contract
+│   └── SampleCurrency
+├── test
+│   ├── connection
+│   ├── consensus
+│   ├── crypto
+│   ├── infra
+│   │   ├── protobuf
+│   │   └── repository
+│   ├── smart_contract
+│   └── vendor
+├── tools
 ```
 
 #### config/
@@ -89,39 +124,30 @@ It contains main.
 We adopt a **Domain-Driven Development structure** as much as possible.
 
 ```
-+--------------+
-| web rest api |
-+--------------+
-      | 
-+--------------+
-|  controller  |--------+-----------------------------------------+
-+--------------+        |                                         |
-      |          +-------------+  +----------------+   +----------------------+
-      |          | repository  |  | domain model   |   | service              |
-      |          | (interface) |--|                |   |+---------++---------+|
-      |          +-------------+  |+--------------+|   || crypto  ||validate ||
-      |                 |         || transaction  ||   || base64  |+---------+|
-      |                 |         |+--------------+|   || hash    |           |
-      |                 |         || asset        ||   |+---------+           |
-      |                 |         |+--------------+|   +----------------------+
-      |                 |         |+--------------+|             
-      |                 |         ||smart contract||              
-+--------------+        |         |+--------------+|
-|   consensus  |--------+         +----------------+
-|              |
-|+------------+|
-|| messaging  ||
-|+------------+|
-+--------------+
-
-+----------------------------------------------------------------------------+
-|infrastructure                                                              |
-|                                                                            |
-|+------------++--------------++-------------++----------------++---------+  |
-|| messaging  || web rest api || repository  || smart contract || crypto  |  |
-||(use aeron )||  (use crow)  ||(use leveldb)|| (use java vm)  || ed25519 |  |
-|+------------++--------------++-------------++----------------++---------+  |
-+----------------------------------------------------------------------------+
+front API
+   |(1)
+┌-------------┐
++ Cappuccino  +------------------------
+└--+----------┘
+   |                
+   |                                   
+┌--┼----------┐         ┌---------------┐
+|  V sumeragi |(3)      |  Command exec |
+|             ----------+>              |
+└--|-------A--┘         └----+----------┘
+   |(2)    | valdation       |
+   |       └-----------------┼------┐
+   |                         |      |
+   |consensus building       |(4)   |
+┌------------┐             ┌-V------+------┐     ┌-------┐
+| connection |             |   repository  |------ model |
+└------------┘             └---------------┘     └-------┘
+      |                             |
+Infra=|=============================|===========
+      |implement                    |implement
+   ┌------┐                       ┌-----┐
+   | grpc |                       | D B |
+   └------┘                       └-----┘
 
 ```
 
@@ -148,8 +174,8 @@ It contains asset model, transaction logic. independent of infra knowledge.
 It contains some source depend on vendor (third party) libraries.
 If any source depends on vendor libraries, it should be in infra. 
 
-##### filename
-basically, filename is `"function"_with_"lib name".cpp`
+##### filenames
+Filenames follow the convention: `"function"_with_"lib name".cpp`
 ```
 connection
  └── connection_with_aeron.cpp
@@ -195,7 +221,16 @@ fabric3 (python library, not hyperledger/fabric)
 ```
 
 ## Using docker and docker-compose for development
-Refer to [this guide](./docs/using_docker.md).
+To build latest container with iroha, refer to [this guide](./docker/README.md).
+
+After this, run network of 4 nodes:
+```
+docker-compose up
+# open another terminal
+docker-compose scale iroha=4
+```
+
+To set different number of nodes, change `command: 4` in `docker-compose.yml` and `iroha=4` in previous command.
 
 ## Installation
 ```
@@ -223,7 +258,7 @@ protoc  --cpp_out=core/infra/connection core/infra/connection/connection.proto
 protoc  --grpc_out=core/infra/connection  --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` core/infra/connection/connection.proto
 ```
   
-## Authors
+## Authors 
 
 [MakotoTakemiya](https://github.com/takemiyamakoto)  
 [MizukiSonoko](https://github.com/MizukiSonoko)

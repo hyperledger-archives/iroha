@@ -3,7 +3,7 @@
 #include "consensus_event.hpp"
 
 namespace event{
-    
+
     template<typename T>
     using Transaction = transaction::Transaction<T>;
     template<typename T>

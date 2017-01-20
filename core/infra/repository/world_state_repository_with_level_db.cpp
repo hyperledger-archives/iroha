@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../../../repository/world_state_repository.hpp"
-#include "../../../util/exception.hpp"
+#include "../../repository/world_state_repository.hpp"
+#include "../../util/exception.hpp"
 
 #include "../../../util/logger.hpp"
 
@@ -45,7 +45,7 @@ namespace repository {
 
               bool loggerStatus(leveldb::Status const status) {
                   if (!status.ok()) {
-                      logger::info("WorldStateRepositoryWithLeveldb", status.ToString());
+                      logger::info("WorldStateRepositoryWithLeveldb") << status.ToString();
                       return false;
                   }
                   return true;

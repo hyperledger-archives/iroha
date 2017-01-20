@@ -37,15 +37,15 @@ struct MerkleNode {
     }
 
     MerkleNode(
-        const std::string hash,
-        const std::string parent,
-        const std::string leftChild,
-        const std::string rightChild
+        std::string hash,
+        std::string parent,
+        std::string leftChild,
+        std::string rightChild
     ):
-            hash(hash),
-            parent(parent),
-            left(leftChild),
-            right(rightChild)
+        hash(std::move(hash)),
+        parent(std::move(parent)),
+        left(std::move(leftChild)),
+        right(std::move(rightChild))
     {}
 
     bool isRoot() {

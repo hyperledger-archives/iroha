@@ -14,43 +14,38 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef IROHA_UPDATE_H
-#define IROHA_UPDATE_H
+
+#ifndef CORE_DOMAIN_UPDATE_HPP_
+#define CORE_DOMAIN_UPDATE_HPP_
 
 #include "../objects/domain.hpp"
 #include "../objects/asset.hpp"
 #include "../objects/message.hpp"
 
+#include <string>
 #include <iostream>
-#include "../../util/logger.hpp"
 
 namespace command {
 
     template <typename T>
     class Update: public T {
-
     public:
-        std::string ownerPublicKey;
 
         template<typename... Args>
-        constexpr explicit Update(
-            std::string&& ownerPublicKey,
+        constexpr Update(
             Args&&... args
         ):
-            T(std::forward<Args>(args)...),
-            ownerPublicKey(std::move(ownerPublicKey))
+            T(std::forward<Args>(args)...)
         {}
 
-        auto getCommandName() const{
+        constexpr auto getCommandName() const {
             return "Update";
         }
 
-        void execution(){
-
-        }
+        void execution();
 
     };
 
-};  // namespace command
+}
+#endif  // CORE_DOMAIN_UPDATE_HPP_
 
-#endif //IROHA_UPDATE_H

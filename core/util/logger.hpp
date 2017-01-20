@@ -19,65 +19,78 @@ limitations under the License.
 
 #include <string>
 #include <iostream>
+#include <sstream>
 
-namespace logger{
+#include "datetime.hpp"
 
-  enum class LogLevel{
-    DEBUG = 0,
-    INFO,
-    WARNING,
-    ERROR,
-    FITAL,
-    EXPLORE
-  };
+#if __cplusplus <= 201402L
+#define TYPE_UNC_EXC    bool
+#define STD_UNC_EXC     std::uncaught_exception
+#define COND_UNC_EXC    ! STD_UNC_EXC()
+#else
+#define TYPE_UNC_EXC    int
+#define STD_UNC_EXC     std::uncaught_exceptions
+#define COND_UNC_EXC    uncaught >= STD_UNC_EXC()
+#endif
 
-  void setLogLevel(LogLevel lv);
+namespace logger {
 
-  void debug(
-    const std::string &name,
-    const std::string &message,
-    std::ostream &out);
+    enum class LogLevel {
+        DEBUG = 0,
+        INFO,
+        WARNING,
+        ERROR,
+        FATAL,
+        EXPLORE
+    };
 
-  void debug(
-    const std::string &name,
-    const std::string &message);
+    namespace detail {
+        static LogLevel LOG_LEVEL = LogLevel::DEBUG;
+    }
 
-  void info(
-    const std::string &name,
-    const std::string &message,
-    std::ostream &out);
+    inline void setLogLevel(LogLevel lv){
+        detail::LOG_LEVEL = lv;
+    }
 
-  void info(
-    const std::string &name,
-    const std::string &message);
+    // http://stackoverflow.com/questions/40273809/how-to-write-iostream-like-interface-to-logging-library
+    #define LOGGER_DEF(LoggerName, LogLevel, HasPrefix, LogType)                        \
+    struct LoggerName                                                                   \
+    {                                                                                   \
+        LoggerName(std::string&& caller) noexcept                                       \
+          : caller(std::move(caller)),                                                  \
+            uncaught(STD_UNC_EXC())                                                     \
+        {}                                                                              \
+        ~LoggerName() {                                                                 \
+            if  ( COND_UNC_EXC                                                          \
+                  &&                                                                    \
+                  static_cast<int>(detail::LOG_LEVEL) <= static_cast<int>(LogLevel)     \
+                ) {                                                                     \
+                std::cout << datetime::unixtime_str()                                   \
+                          << (HasPrefix ? std::string(" ") + LogType + " [" + caller + "] "  \
+                                        : "[" + caller + "] ")                  \
+                          << stream.str() << std::endl;                         \
+            }                                                                   \
+        }                                                                       \
+        const std::string   caller;                                             \
+        std::stringstream   stream;                                             \
+        TYPE_UNC_EXC        uncaught;                                           \
+    };                                                                          \
+    template <typename T>                                                       \
+    LoggerName& operator << (LoggerName& record, T&& t) {                       \
+        record.stream << std::forward<T>(t);                                    \
+        return record;                                                          \
+    }                                                                           \
+    template <typename T>                                                       \
+    LoggerName& operator << (LoggerName&& record, T&& t) {                      \
+        return record << std::forward<T>(t);                                    \
+    }
 
-    void warning(
-    const std::string &name,
-    const std::string &message,
-    std::ostream &out);
+    LOGGER_DEF(debug,   LogLevel::DEBUG,    true,   "DEBUG")
+    LOGGER_DEF(info,    LogLevel::INFO,     true,   "INFO")
+    LOGGER_DEF(warning, LogLevel::WARNING,  true,   "WARNING")
+    LOGGER_DEF(error,   LogLevel::ERROR,    true,   "ERROR (-A-)")
+    LOGGER_DEF(fatal,   LogLevel::FATAL,    true,   "FATAL (`o')")
+    LOGGER_DEF(explore, LogLevel::EXPLORE,  false,  "(EXPLORE)")
 
-  void error(
-    const std::string &name,
-    const std::string &message,
-    std::ostream &out);
-
-  void error(
-    const std::string &name,
-    const std::string &message);
-
-  void fital(
-    const std::string &name,
-    const std::string &message,
-    std::ostream& out);
-
-  void explore(
-    const std::string &name,
-    const std::string &message,
-    std::ostream &out);
-
-  void explore(
-    const std::string &name,
-    const std::string &message);
-
-};
+} // namespace logger
 #endif

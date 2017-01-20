@@ -1,4 +1,3 @@
-config/*.py
 config/__pycahe__
 **/__pycache__/*
 __pycache__/*
@@ -17,4 +16,8 @@ build/*
 *xcworkspace*
 .vscode/*
 *cmake-build-debug*
+CMakeLists.txt.user
+config/sumeragi.json
 cmake-build-debu/*
+docker/build/iroha.tar
+cmake-build-debug/*

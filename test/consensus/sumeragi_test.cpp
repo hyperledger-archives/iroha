@@ -77,9 +77,11 @@ int main(int argc, char *argv[]){
             connection::run();
         });
 
-        std::thread http_th([]() {
-            sumeragi::loop();
-        });
+        // since we have thread pool, it sets all necessary callbacks in 
+        // sumeragi::initializeSumeragi.
+        // std::thread http_th([]() {
+        //     sumeragi::loop();
+        // });
 
         if (argc >= 2 && std::string(argv[1]) == "public") {
             while (1) {
@@ -101,7 +103,7 @@ int main(int argc, char *argv[]){
             std::cout << "I'm only node\n";
             while (1);
         }
-        http_th.detach();
+        // http_th.detach();
         connection_th.detach();
     }catch(char const *e){
         std::cout << e << std::endl;

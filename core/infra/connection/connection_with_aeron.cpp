@@ -59,12 +59,12 @@ namespace connection {
     bool subscription_running(true);
 
     fragment_handler_t receiveMessage() {
-        return [&](AtomicBuffer& buffer, util::index_t offset, util::index_t length, Header& header) {
+        return [](AtomicBuffer& buffer, util::index_t offset, util::index_t length, Header& header) {
             std::string raw_data = std::string((char *)buffer.buffer() + offset, (unsigned long)length);
             // WIP parse json.
-            // logger::info("receive", raw_data);
+            // logger::info("receive")  <<  raw_data;
             for(auto& f : receivers) {
-                f( peer::getMyIp(), raw_data);
+                f(peer::getMyIp(), raw_data);
             }
         };
     }
@@ -82,10 +82,10 @@ namespace connection {
 
     int exec_subscription(std::string ip) {
         try {
-            logger::info("connection", "subscript [" + ip + "]");
+            logger::info("connection") << "subscript [" << ip << "]";
 
-            std::int64_t sid = aeron->addSubscription("aeron:udp?endpoint=" + ip + ":40123", streamId);
-            auto subscription = aeron->findSubscription(sid);
+            auto sid            = aeron->addSubscription("aeron:udp?endpoint=" + ip + ":40123", streamId);
+            auto subscription   = aeron->findSubscription(sid);
             
             while (!subscription) {
                 std::this_thread::yield();
@@ -93,75 +93,75 @@ namespace connection {
             }
 
             fragment_handler_t handler = receiveMessage();
-            subscription_thread = std::thread([subscription,handler](){
+            subscription_thread = std::thread([subscription, handler](){
                 while (subscription_running){
                     const int fragmentsRead = subscription->poll(handler, FRAGMENTS_LIMIT);
                 }
-                logger::info("connection", "subscription halt");
+                logger::info("connection")  <<  "subscription halt";
             });
-            logger::info("connection", "subscription begin run");
+            logger::info("connection")  <<  "subscription begin run";
         }catch (SourcedException& e) {
-            logger::error("connection", "FAILED: "+ std::string(e.what()) +" : "+ std::string(e.where()));
+            logger::error("connection") <<  "FAILED: " << e.what() << " : " << e.where();
             return -1;
         }catch (std::exception& e) {
-            logger::error("connection", "FAILED: "+ std::string(e.what()));
+            logger::error("connection") <<  "FAILED: " << e.what();
             return -1;
         }
     }
-
+    
     void addPublication(std::string ip) {
-        std::int64_t pid = aeron->addPublication( "aeron:udp?endpoint="+ip+":40123", streamId);
-        auto publication =  aeron->findPublication(pid);
+        auto pid            = aeron->addPublication("aeron:udp?endpoint=" + ip + ":40123", streamId);
+        auto publication    = aeron->findPublication(pid);
         while (!publication) {
             std::this_thread::yield();
             publication = aeron->findPublication(pid);
         }
-        logger::info("connection", "publication ["+ ip +"]");
-        publications.insert(std::pair<std::string, std::shared_ptr<Publication>>{ ip, publication});
+        logger::info("connection")  <<  "publication [" << ip << "]";
+        publications.emplace(ip, publication);
     }
 
-    bool send(const std::string& to,const std::string& msg) {
-        logger::info("connection", "Start send");
+    bool send(const std::string& to, const std::string& msg) {
+        logger::info("connection")  <<  "Start send";
         if(publications.find(to) == publications.end()){
-            logger::error("connection", to + " is not registerd");
+            logger::error("connection") << to << " is not registerd";
             return false;
         }
         try{
-            char* message = const_cast<char*>(msg.c_str());
-            AERON_DECL_ALIGNED(std::uint8_t buffer[4096], 16);        
+            auto message = const_cast<char*>(msg.c_str());
+		    AERON_DECL_ALIGNED(std::uint8_t buffer[4096], 16);
             AtomicBuffer srcBuffer(&buffer[0], 4096);
             srcBuffer.putBytes(0, reinterpret_cast<std::uint8_t *>(message), strlen(message));
-            const std::int64_t result = publications[to]->offer(srcBuffer, 0, strlen(message));
-            if (result < 0){
-                if (NOT_CONNECTED == result){
-                    logger::error("connection", " not connected yet.");
-                }else if (BACK_PRESSURED == result){
-                    logger::error("connection", " back pressured.");
-                }else{
-                    logger::error("connection", "unknown");
+            const auto result = publications[to]->offer(srcBuffer, 0, strlen(message));
+            if (result < 0) {
+                if (NOT_CONNECTED == result) {
+                    logger::error("connection") <<  " not connected yet.";
+                } else if (BACK_PRESSURED == result) {
+                    logger::error("connection") <<  " back pressured.";
+                } else {
+                    logger::error("connection") <<  "unknown";
                 }
-            }else{
-                logger::debug("connection", "Ok");
+            } else {
+                logger::debug("connection") <<  "Ok";
             }
-            if (!publications[to]->isConnected()){
-                logger::error("connection", "No active subscribers detected");
+            if (!publications[to]->isConnected()) {
+                logger::error("connection") <<  "No active subscribers detected";
             }
             return true;
-        }catch (SourcedException& e) {
-            logger::error("connection", "FAILED: "+ std::string(e.what()) +" : "+ std::string(e.where()));
+        } catch (SourcedException& e) {
+            logger::error("connection") << "FAILED: " << e.what() << " : " << e.where();
             return false;
-        }catch (std::exception& e) {
-            logger::error("connection", "FAILED: "+ std::string(e.what()));
+        } catch (std::exception& e) {
+            logger::error("connection") << "FAILED: " << e.what();
             return false;
         }
     }
 
     bool sendAll(const std::string& msg) {
-        logger::info("connection", "send mesage"+ msg);
-        logger::info("connection", "send mesage publlications "+ std::to_string(publications.size()));
+        logger::info("connection")  << "send mesage" << msg;
+        logger::info("connection")  << "send mesage publlications " << publications.size();
         for(auto& p : publications){
             if(p.first != peer::getMyIp()){
-                send( p.first, msg);
+                send(p.first, msg);
             }
         }
         return true;

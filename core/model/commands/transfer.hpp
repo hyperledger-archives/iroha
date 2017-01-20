@@ -45,7 +45,7 @@ namespace command {
             receiverPublicKey(std::move(receiver)),
             T(std::forward<Args>(args)...)
         {}
-
+        
         auto getCommandName() const {
             return "Transfer";
         }
@@ -55,4 +55,3 @@ namespace command {
     };  // namespace command
 };
 #endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
-

@@ -43,8 +43,8 @@ namespace http {
 
     json responseError(std::string message){
         return json({
-            {"message", message},
-            {"status", 400}
+          {"message", std::move(message)},
+          {"status", 400}
         });
     }
 
@@ -65,22 +65,23 @@ namespace http {
     }
 
     void server() {
-        logger::info("server", "initialize server!");
+        logger::info("server") << "initialize server!";
         Cappuccino::Cappuccino( 0, nullptr);
-
 
         Cappuccino::route<Cappuccino::Method::POST>( "/account/register",[](std::shared_ptr<Request> request) -> Response{
             auto res = Response(request);
             auto data = request->json();
-            std::string uuid = "";
+            std::string uuid;
+
             if(!data.empty()){
                 try{
+
                     auto publicKey = data["publicKey"].get<std::string>();
                     auto alias     = data["alias"].get<std::string>();
                     auto timestamp = data["timestamp"].get<int>();
 
                     uuid = hash::sha3_256_hex(publicKey);
-                    if(repository::account::findByUuid(uuid).publicKey == "") {
+                    if(repository::account::findByUuid(uuid).publicKey.empty()) {
 
                         auto event = ConsensusEvent<Transaction<Add<object::Account>>>(
                             publicKey.c_str(),
@@ -121,7 +122,7 @@ namespace http {
             std::string uuid = request->params("uuid");
             auto res = Response(request);
 
-            logger::debug("Cappuccino", "param's uuid is " + uuid);
+            logger::debug("Cappuccino") << "param's uuid is " << uuid;
             object::Account account = repository::account::findByUuid(uuid);
             if(account.publicKey != "") {
                 json assets = json::array();
@@ -149,6 +150,7 @@ namespace http {
             auto data = request->json();
             if(!data.empty()){
                 try{
+
                     auto assetUuid = data["asset-uuid"].get<std::string>();
                     auto timestamp = data["timestamp"].get<int>();
                     auto signature = data["signature"].get<std::string>();
@@ -263,7 +265,7 @@ namespace http {
                         tx_json.push_back(transaction_json);
                     }
                 }else if(protoTx.type() == "Transfer"){
-                    logger::info("Cappuccino","receiver:"+protoTx.receivepubkey());
+                    logger::info("Cappuccino") << "receiver:" << protoTx.receivepubkey();
 
                     transaction_json["params"]["command"] = "Transfer";
                     transaction_json["params"]["sender"] = protoTx.senderpubkey();
@@ -275,7 +277,7 @@ namespace http {
                         if (protoTx.has_asset()) {
                             auto event_tx = convertor::detail::decodeTransaction2ConsensusEvent<Transfer < Asset>>(protoTx);
 
-                            logger::info("Cappuccino", "Valiue:" + std::to_string(protoTx.asset().value()));
+                            logger::info("Cappuccino") << "Valiue:" << protoTx.asset().value();
 
                             transaction_json["params"]["command"] = "Transfer";
                             transaction_json["params"]["object"] = "Asset";
@@ -294,7 +296,7 @@ namespace http {
             return res;
         });
 
-        logger::info("server", "start server!");
+        logger::info("server") << "start server!";
         // runnning
         Cappuccino::run();
 

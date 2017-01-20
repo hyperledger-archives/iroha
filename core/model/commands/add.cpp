@@ -22,6 +22,7 @@ limitations under the License.
 
 namespace command {
 
+
     auto default_currency = "iroha";
 
     template <>

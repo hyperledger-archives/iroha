@@ -1,48 +1,45 @@
 machine:
+  services:
+    - docker
   environment:
     IROHA_HOME: $(pwd)/iroha
     PATH: $PATH:/opt/cmake-3.5.2-Linux-x86_64/bin
     JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-amd64/
   java:
       version: 'oraclejdk8'
-  pre:
-    - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-    - sudo apt-get update
-    - sudo apt-get install g++-5
-    - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 20
-    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 20
-    - g++ -v
 
-    - sudo apt-get -y install build-essential libtcmalloc-minimal4 && sudo ln -s /usr/lib/libtcmalloc_minimal.so.4 /usr/lib/libtcmalloc_minimal.so
-    - sudo apt-get -y install xsltproc
-    - sudo apt-get -y install libhdf5-serial-dev libleveldb-dev libsnappy-dev liblmdb-dev
-    - sudo apt-get -y install autoconf automake libtool unzip
 
 checkout:
   post:
-    - cd $IROHA_HOME
-    - cd $IROHA_HOME/core/vendor/leveldb; make -j 4
-    - cd $IROHA_HOME/core/vendor/ed25519; make -j 4
-    - cd $IROHA_HOME/core/vendor/Cappuccino; git pull
-    - cd $IROHA_HOME/core/vendor/KeccakCodePackage; make; make generic64/libkeccak.a
-    - cd $IROHA_HOME/core/infra/crypto/; make
+    - git submodule sync
+    - git submodule update --init --recursive
 
 dependencies:
   cache_directories:
     - ~/iroha/core/vendor/
-    - /tmp/protobuf
-    - /tmp/grpc
-  pre:
-    - if [[ ! -e /tmp/protobuf ]]; then git clone -b v3.0.0 https://github.com/google/protobuf.git /tmp/protobuf; cd /tmp/protobuf; (git cherry-pick 1760feb621a913189b90fe8595fffb74bce84598; echo Force continue); cd /tmp/protobuf; ./autogen.sh; ./configure --prefix=/usr; make -j 4; fi;
-    -  cd /tmp/protobuf; sudo make install
-    - protoc --version
+    - ~/docker
+  override:
+    # one way to cache iroha-dev container is to save it to tar image. 2 mins vs 10 mins without caching.
+    - if [[ -e ~/docker/iroha-dev.tar ]]; then docker load -i ~/docker/iroha-dev.tar; fi
+    # build iroha-dev (if it is in cache, this step will be skipped) and iroha-docker (production) images
+    - ${IROHA_HOME}/docker/build.sh
+    # cache iroha-dev image. takes 30 sec to save into file
+    - mkdir -p ~/docker; docker save hyperledger/iroha-dev > ~/docker/iroha-dev.tar
 
-    - if [[ ! -e /tmp/grpc ]]; then git clone -b $(curl -L http://grpc.io/release) https://github.com/grpc/grpc /tmp/grpc; cd /tmp/grpc; git submodule update --init; make -j 4; fi;
-    - cd /tmp/grpc; sudo make install
-    - which grpc_cpp_plugin
 
 test:
   pre:
-    - mkdir build; cd build; cmake ..; make
-  override:
-    - ./test.sh
+    # TESTS: 
+    # first, run ctest inside a container
+    - docker run -p 1204:1204 hyperledger/iroha-docker /test.sh 
+    # then, run iroha with dummy config (1 node) and test curl request
+    - docker run -d -p 1204:1204 hyperledger/iroha-docker /run.sh && sleep 5 && curl -X POST http://127.0.0.1:1204/account/register -d '{"publicKey":"WdvM/DPabapmtA7ISbTYPywbHxk8gWu2221LzmcmAgw=","alias":"yonezu","timestamp":1482053586}'
+
+
+deployment:
+  hub:
+    branch: master
+    commands:
+      - docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+      - docker push hyperledger/iroha-docker
+

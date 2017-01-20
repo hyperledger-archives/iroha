@@ -21,6 +21,7 @@ See the License for the specific language governing permissions and
 #include "../../crypto/base64.hpp"
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 namespace repository{
 
@@ -75,11 +76,13 @@ namespace repository{
             }else if(tx.has_domain()){
                 auto domain = tx.domain().ownerpublickey() + s2 + tx.domain().name();
                 return transaction + "DOMAIN"   + s + domain;
+            }else {
+                throw std::logic_error("Not implemented other than account/asset/domain");
             }
         }
 
         Event::Transaction s2t(std::string message){
-            auto main = split( message, s);
+            auto main = split(message, s);
             Event::Transaction tx;
             if(main.size() < 7){ return tx; }
 
@@ -138,7 +141,7 @@ namespace repository{
 
 
         void add(const std::string &key,const Event::ConsensusEvent& tx){
-            logger::info("tx repo", "addvalue:" + std::to_string(tx.transaction().asset().value()));
+            logger::debug("sumeragi") << "addvalue:" << tx.transaction().asset().value();
             world_state_repository::add("transaction_" + key, t2s(tx.transaction()));
         }
 
@@ -148,19 +151,19 @@ namespace repository{
             for(auto& s: data){
                 auto tx = s2t(s);
                 res.push_back(s2t(s));
-                logger::info("tx repo", "find All value:" + std::to_string(tx.asset().value()));
+                logger::info("tx repo") << "find All value:" << tx.asset().value();
             }
             return res;
         }
 
         Event::Transaction find(std::string key){
-            std::string txKey = "transaction_"+key;
+            std::string txKey = "transaction_" + key;
             return s2t(world_state_repository::find(txKey));
         }
 
 
         std::vector<Event::Transaction> findByAssetName(std::string name){
-            std::string txKey = "transaction_"+name+"_";
+            std::string txKey = "transaction_" + name + "_";
             auto data = world_state_repository::findByPrefix(txKey);
             std::vector<Event::Transaction> res;
             for(auto& s: data){
