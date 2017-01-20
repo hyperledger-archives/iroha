@@ -37,17 +37,19 @@ namespace smart_contract {
             return nullptr;
         }
 
-        std::string java_command = "-Djava.class.path=" + std::string(getenv("IROHA_HOME")) + "/smart_contract/" + contractName + "/";
+        std::string java_command = "-Djava.class.path=" + std::string(getenv("IROHA_HOME")) + "/smart_contract/";
+        std::string java_lib_path = "-Djava.library.path=" + std::string(getenv("IROHA_HOME")) + "/smart_contract/";
 
-    		JavaVMOption options[3];
+    		JavaVMOption options[4];
     		options[0].optionString = const_cast<char*>( java_command.c_str() );
     		options[1].optionString = const_cast<char*>("-Djava.security.manager");
     		options[2].optionString = const_cast<char*>("-Djava.security.policy=policy.txt");
+        options[3].optionString = const_cast<char*>( java_lib_path.c_str() );
 
         JavaVMInitArgs vm_args;
         vm_args.version  = JNI_VERSION_1_6;
         vm_args.options  = options;
-        vm_args.nOptions = 3;
+        vm_args.nOptions = 4;
         //vm_args.ignoreUnrecognized = true;
 
         JNIEnv *env;
@@ -58,8 +60,9 @@ namespace smart_contract {
             std::cout << "cannot run JavaVM : " << res << std::endl;
             return nullptr;
         }
-
-        jclass cls = env->FindClass( (contractName).c_str() );// (contractName+"/"+contractName).c_str());
+        std::string package_name = contractName;
+        std::transform(package_name.begin(), package_name.end(), package_name.begin(), ::tolower);
+        jclass cls = env->FindClass( (package_name + "/" +contractName).c_str() );// (contractName+"/"+contractName).c_str());
         if (cls == nullptr) {
             std::cout << "could not found class : " << contractName << std::endl;
             return nullptr;
@@ -80,7 +83,7 @@ namespace smart_contract {
             std::move(contractName),
             cls,
             obj
-		);
+        );
     }
 
 
@@ -99,11 +102,6 @@ namespace smart_contract {
         }
 
         context->env->CallVoidMethod(context->jObject, mid, jmap );
-
-        auto res = context->jvm->DestroyJavaVM();
-        if (res) {
-            std::cout << "could not destroy JavaVM : " << res << std::endl;
-        }
     }
 
     void execFunction(
@@ -117,11 +115,6 @@ namespace smart_contract {
         }
 
         context->env->CallVoidMethod(context->jObject, mid);
-
-        auto res = context->jvm->DestroyJavaVM();
-        if (res) {
-            std::cout << "could not destroy JavaVM : " << res << std::endl;
-        }
     }
 
 

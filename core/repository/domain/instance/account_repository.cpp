@@ -80,6 +80,7 @@ namespace repository{
             std::string &publicKey,
             std::string &alias
         ){
+            std::cout <<"ADDDD \n";
             logger::explore("sumeragi") << "Add publicKey:" <<  publicKey << " alias:" <<  alias;
             object::Account ac(publicKey.c_str(),alias.c_str());
             auto protoAccount = convertor::detail::encodeObject(ac);

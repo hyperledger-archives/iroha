@@ -16,6 +16,9 @@ limitations under the License.
 #ifndef IROHA_ASSET_REPOSITORY_H
 #define IROHA_ASSET_REPOSITORY_H
 
+#include <string>
+#include <vector>
+
 namespace repository {
     namespace asset {
 
