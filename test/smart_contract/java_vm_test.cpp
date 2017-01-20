@@ -20,18 +20,44 @@ limitations under the License.
 
 using smart_contract::SmartContract;
 
-TEST(SmartContract, createVM){
 
-    std::string contractName = "SampleCurrency";
-    std::string functionName = "remit";
-    std::unordered_map<std::string, std::string> params;
-    params["A"] = "Ant";
-    params["B"] = "Bright";
+TEST(SmartContract, Invoke_JAVA_function){
+    std::string contractName = "Test";
+    std::string functionName = "test1";
     SmartContract smartContract = SmartContract();
     smartContract.initializeVM(contractName);
+    smartContract.invokeFunction(
+        contractName,
+        functionName
+    );
+    smartContract.finishVM(contractName);
+}
+
+TEST(SmartContract, Invoke_JAVA_function_map_argv){
+    std::string contractName = "Test";
+    std::string functionName = "test2";
+    std::unordered_map<std::string, std::string> params;
+    params["key1"] = "Mizuki";
+    params["key2"] = "Sonoko";
+    SmartContract smartContract = SmartContract();
     smartContract.invokeFunction(
         contractName,
         functionName,
         params
     );
+}
+
+TEST(SmartContract, Invoke_JAVA_function_map_utf_8){
+    std::string contractName = "Test";
+    std::string functionName = "test3";
+    std::unordered_map<std::string, std::string> params;
+    params["key1"] = "水樹";
+    params["key2"] = "素子";
+    SmartContract smartContract = SmartContract();
+    smartContract.invokeFunction(
+        contractName,
+        functionName,
+        params
+    );
+    smartContract.finishVM(contractName);
 }
