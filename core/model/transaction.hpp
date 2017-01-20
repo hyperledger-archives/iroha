@@ -42,9 +42,8 @@ protected:
     std::string hash;
     std::vector<txSignature> txSignatures;
 public:
-    std::int64_t    timestamp;
-    std::string     senderPubkey;
-    std::string     ownerPublicKey; // okay?
+    std::int64_t timestamp;
+    std::string senderPubkey;
 
     template<typename... Args>
     Transaction(
@@ -61,6 +60,7 @@ public:
     {}
 
     void execution(){
+        T::execution();
     }
 
     auto getHash() {
