@@ -19,6 +19,25 @@ limitations under the License.
 namespace config {
     IrohaConfigManager::IrohaConfigManager() { }
 
+    std::string IrohaConfigManager::openJSONText(const std::string& PathToJSONFile) {
+        std::ifstream ifs(PathToJSONFile);
+        if (ifs.fail()) {
+            logger::warning("json config") << "Not found: " << PathToJSONFile;
+            return "{}";
+        }
+
+        std::istreambuf_iterator<char> it(ifs);
+        return std::string(it, std::istreambuf_iterator<char>());
+    }
+
+    void IrohaConfigManager::setConfigData(std::string&& jsonStr) {
+        try {
+            _configData = json::parse(std::move(jsonStr));
+        } catch(...) {
+            logger::warning("json config") << "Bad json!!";
+        }
+    }
+
     IrohaConfigManager& IrohaConfigManager::getInstance() {
         static IrohaConfigManager manager;
         return manager;

@@ -21,6 +21,10 @@ limitations under the License.
 
 namespace config {
     class IrohaConfigManager: IConfig {
+    protected:
+        std::string openJSONText(const std::string& PathToJSONFile);
+        void setConfigData(std::string&& jsonStr);
+
     private:
         IrohaConfigManager();
         IrohaConfigManager(const IrohaConfigManager&);
