@@ -24,10 +24,17 @@ namespace config {
         return manager;
     }
 
-    std::string IrohaConfigManager::getDBPath() {
+    std::string IrohaConfigManager::getParam(const std::string &param) {
         if (auto config = openConfig("config.json")) {
-            return (*config).value("database_path", "/tmp");
+            return config->value(param, "");
         }
-        return "/tmp";
+        return "";
+    }
+
+    std::string IrohaConfigManager::getParam(const std::string &param, const std::string &defaultValue) {
+        if (auto config = openConfig("config.json")) {
+            return config->value(param, defaultValue);
+        }
+        return defaultValue;
     }
 }

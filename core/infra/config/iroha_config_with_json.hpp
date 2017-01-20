@@ -29,7 +29,8 @@ namespace config {
     public:
         static IrohaConfigManager &getInstance();
 
-        std::string getDBPath();
+        std::string getParam(const std::string &param);
+        std::string getParam(const std::string &param, const std::string &defaultValue);
     };
 }
 
