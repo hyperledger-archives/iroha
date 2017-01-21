@@ -60,6 +60,6 @@ namespace config {
     }
 
     std::string PeerServiceConfig::getConfigName() {
-        return "/config/sumeragi.json";
+        return "config/sumeragi.json";
     }
 };

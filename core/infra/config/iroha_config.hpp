@@ -43,7 +43,7 @@ namespace config {
                 exit(EXIT_FAILURE);
             }
 
-            auto jsonStr = openJSONText(PathToIROHA_HOME + configName);
+            auto jsonStr = openJSONText(PathToIROHA_HOME + "/" + configName);
 
             logger::info("peer with json") << "load json is " << jsonStr;
 

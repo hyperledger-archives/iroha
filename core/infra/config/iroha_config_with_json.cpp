@@ -45,6 +45,6 @@ namespace config {
     }
 
     std::string IrohaConfigManager::getConfigName() {
-        return "/docker/build/config/config.json";
+        return "docker/build/config/config.json";
     }
 }
