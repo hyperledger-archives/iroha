@@ -36,6 +36,8 @@ namespace config {
         std::string getPrivateKey();
         std::string getMyIp();
         std::vector<std::unique_ptr<peer::Node>> getPeerList();
+
+        virtual std::string getConfigName();
     };
 }
 

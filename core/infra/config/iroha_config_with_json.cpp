@@ -23,6 +23,7 @@ namespace config {
         std::ifstream ifs(PathToJSONFile);
         if (ifs.fail()) {
             logger::warning("json config") << "Not found: " << PathToJSONFile;
+            logger::warning("json config") << "All configurable parameters will be set to default";
             return "{}";
         }
 
@@ -34,12 +35,16 @@ namespace config {
         try {
             _configData = json::parse(std::move(jsonStr));
         } catch(...) {
-            logger::warning("json config") << "Bad json!!";
+            logger::warning("json config") << "Bad json!!" << jsonStr;
         }
     }
 
     IrohaConfigManager& IrohaConfigManager::getInstance() {
         static IrohaConfigManager manager;
         return manager;
+    }
+
+    std::string IrohaConfigManager::getConfigName() {
+        return "/docker/build/config/config.json";
     }
 }

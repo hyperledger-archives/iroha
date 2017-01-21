@@ -25,21 +25,21 @@ namespace config {
     }
 
     std::string PeerServiceConfig::getMyPublicKey() {
-        if (auto config = openConfig("sumeragi.json")) {
+        if (auto config = openConfig(getConfigName())) {
             return (*config)["me"]["publicKey"].get<std::string>();
         }
         return "";
     }
 
     std::string PeerServiceConfig::getPrivateKey() {
-        if (auto config = openConfig("sumeragi.json")) {
+        if (auto config = openConfig(getConfigName())) {
             return (*config)["me"]["privateKey"].get<std::string>();
         }
         return "";
     }
 
     std::string PeerServiceConfig::getMyIp() {
-        if (auto config = openConfig("sumeragi.json")) {
+        if (auto config = openConfig(getConfigName())) {
             return (*config)["me"]["ip"].get<std::string>();
         }
         return "";
@@ -47,7 +47,7 @@ namespace config {
 
     std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
         std::vector<std::unique_ptr<peer::Node>> nodes;
-        if (auto config = openConfig("sumeragi.json")) {
+        if (auto config = openConfig(getConfigName())) {
             for (const auto& peer : (*config)["group"].get<std::vector<json>>()){
                 nodes.push_back(std::make_unique<peer::Node>(
                     peer["ip"].get<std::string>(),
@@ -57,5 +57,9 @@ namespace config {
             }
         }
         return nodes;
+    }
+
+    std::string PeerServiceConfig::getConfigName() {
+        return "/config/sumeragi.json";
     }
 };

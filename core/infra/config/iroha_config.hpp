@@ -43,7 +43,7 @@ namespace config {
                 exit(EXIT_FAILURE);
             }
 
-            auto jsonStr = openJSONText(PathToIROHA_HOME + "/config/" + configName);
+            auto jsonStr = openJSONText(PathToIROHA_HOME + configName);
 
             logger::info("peer with json") << "load json is " << jsonStr;
 
@@ -71,6 +71,9 @@ namespace config {
                 exit(EXIT_FAILURE);
             }
         }
+
+    public:
+        virtual std::string getConfigName() = 0;
 
     protected:
         optional<json> _configData;

@@ -35,11 +35,13 @@ namespace config {
 
         template <typename T>
         T getParam(const std::string &param, const T &defaultValue) {
-            if (auto config = openConfig("config.json")) {
+            if (auto config = openConfig(getConfigName())) {
                 return config->value(param, defaultValue);
             }
             return defaultValue;
         }
+
+        virtual std::string getConfigName();
     };
 }
 

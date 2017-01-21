@@ -1,5 +1,0 @@
-{ 
-  "database_path":"/tmp",
-  "concurrency":0,
-  "numValidatingPeers":3
-}
