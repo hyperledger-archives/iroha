@@ -42,18 +42,4 @@ namespace config {
         static IrohaConfigManager manager;
         return manager;
     }
-
-    std::string IrohaConfigManager::getParam(const std::string &param) {
-        if (auto config = openConfig("config.json")) {
-            return config->value(param, "");
-        }
-        return "";
-    }
-
-    std::string IrohaConfigManager::getParam(const std::string &param, const std::string &defaultValue) {
-        if (auto config = openConfig("config.json")) {
-            return config->value(param, defaultValue);
-        }
-        return defaultValue;
-    }
 }

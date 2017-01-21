@@ -33,8 +33,13 @@ namespace config {
     public:
         static IrohaConfigManager &getInstance();
 
-        std::string getParam(const std::string &param);
-        std::string getParam(const std::string &param, const std::string &defaultValue);
+        template <typename T>
+        T getParam(const std::string &param, const T &defaultValue) {
+            if (auto config = openConfig("config.json")) {
+                return config->value(param, defaultValue);
+            }
+            return defaultValue;
+        }
     };
 }
 

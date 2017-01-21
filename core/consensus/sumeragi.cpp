@@ -39,6 +39,7 @@ limitations under the License.
 #include "../repository/consensus/transaction_repository.hpp"
 #include "../repository/domain/account_repository.hpp"
 #include "../infra/config/peer_service_with_json.hpp"
+#include "../infra/config/iroha_config_with_json.hpp"
 
 /**
 * |ーーー|　|ーーー|　|ーーー|　|ーーー|
@@ -59,10 +60,12 @@ namespace sumeragi {
     using namespace object;
 
 
-    static size_t concurrency = 
-        std::thread::hardware_concurrency() <= 0
+    static size_t concurrency =
+        config::IrohaConfigManager::getInstance().getParam("concurrency", 0) <= 0
         ? 1
         : std::thread::hardware_concurrency();
+
+
 
     //thread pool and a storage of events 
     static ThreadPool pool(
