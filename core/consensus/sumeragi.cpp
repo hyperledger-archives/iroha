@@ -204,7 +204,9 @@ namespace sumeragi {
         logger::info("sumeragi")    <<  "set number of validatingPeer";
 
         context->numValidatingPeers = context->validatingPeers.size();
-        context->maxFaulty = context->numValidatingPeers / 3;  // Default to approx. 1/3 of the network. TODO: make this configurable
+        context->maxFaulty = context->numValidatingPeers / (
+                config::IrohaConfigManager::getInstance().getParam("numValidatingPeers", 3)
+        );  // Default to approx. 1/3 of the network.
 
         context->proxyTailNdx = context->maxFaulty * 2 + 1;
 
