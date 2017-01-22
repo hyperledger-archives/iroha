@@ -34,13 +34,13 @@ test:
     # first, run ctest inside a container
     - docker run -p 1204:1204 hyperledger/iroha-docker /test.sh 
     # then, run iroha with dummy config (1 node) and test curl request
-    - docker run -d -p 1204:1204 hyperledger/iroha-docker /run.sh && sleep 5 && curl -X POST http://127.0.0.1:1204/account/register -d '{"publicKey":"WdvM/DPabapmtA7ISbTYPywbHxk8gWu2221LzmcmAgw=","alias":"yonezu","timestamp":1482053586}'
+    - docker run -d -p 1204:1204 hyperledger/iroha-docker /run.sh && sleep 5 
+    - curl -X POST http://127.0.0.1:1204/account/register -d '{"publicKey":"WdvM/DPabapmtA7ISbTYPywbHxk8gWu2221LzmcmAgw=","alias":"yonezu","timestamp":1482053586}'
 
 
 deployment:
   hub:
     branch: master
     commands:
-      - docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
-      - docker push hyperledger/iroha-docker
-
+      # makes docker login and docker push $1
+      - ${IROHA_HOME}/deploy.sh hyperledger/iroha-docker
