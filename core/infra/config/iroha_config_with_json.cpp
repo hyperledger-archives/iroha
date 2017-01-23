@@ -19,15 +19,32 @@ limitations under the License.
 namespace config {
     IrohaConfigManager::IrohaConfigManager() { }
 
+    std::string IrohaConfigManager::openJSONText(const std::string& PathToJSONFile) {
+        std::ifstream ifs(PathToJSONFile);
+        if (ifs.fail()) {
+            logger::warning("json config") << "Not found: " << PathToJSONFile;
+            logger::warning("json config") << "All configurable parameters will be set to default";
+            return "{}";
+        }
+
+        std::istreambuf_iterator<char> it(ifs);
+        return std::string(it, std::istreambuf_iterator<char>());
+    }
+
+    void IrohaConfigManager::setConfigData(std::string&& jsonStr) {
+        try {
+            _configData = json::parse(std::move(jsonStr));
+        } catch(...) {
+            logger::warning("json config") << "Bad json!!" << jsonStr;
+        }
+    }
+
     IrohaConfigManager& IrohaConfigManager::getInstance() {
         static IrohaConfigManager manager;
         return manager;
     }
 
-    std::string IrohaConfigManager::getDBPath() {
-        if (auto config = openConfig("config.json")) {
-            return (*config).value("database_path", "/tmp");
-        }
-        return "/tmp";
+    std::string IrohaConfigManager::getConfigName() {
+        return "docker/build/config/config.json";
     }
 }
