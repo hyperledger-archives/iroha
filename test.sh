@@ -1,8 +1,8 @@
 #!/bin/sh
 
 total=0
-for file in  build/test_bin/*; do
+for file in ${IROHA_HOME}/build/test_bin/*; do
   ./${file}
   total=$((total + $?)) 
 done
-exit 0
+exit $total
