@@ -28,7 +28,7 @@ namespace config {
 
     class IConfig {
     protected:
-        optional<json> openConfig(const std::string &configName) {
+        virtual optional<json> openConfig(const std::string &configName) {
             if (_configData) {   // already content loaded
                 return _configData;
             }
@@ -43,7 +43,7 @@ namespace config {
                 exit(EXIT_FAILURE);
             }
 
-            auto jsonStr = openJSONText(PathToIROHA_HOME + "/config/" + configName);
+            auto jsonStr = openJSONText(PathToIROHA_HOME + "/" + configName);
 
             logger::info("peer with json") << "load json is " << jsonStr;
 
@@ -52,7 +52,7 @@ namespace config {
             return _configData;
         }
 
-        std::string openJSONText(const std::string& PathToJSONFile) {
+        virtual std::string openJSONText(const std::string& PathToJSONFile) {
             std::ifstream ifs(PathToJSONFile);
             if (ifs.fail()) {
                 logger::error("peer with json") << "Not found: " << PathToJSONFile;
@@ -63,7 +63,7 @@ namespace config {
             return std::string(it, std::istreambuf_iterator<char>());
         }
 
-        void setConfigData(std::string&& jsonStr) {
+        virtual void setConfigData(std::string&& jsonStr) {
             try {
                 _configData = json::parse(std::move(jsonStr));
             } catch(...) {
@@ -71,6 +71,9 @@ namespace config {
                 exit(EXIT_FAILURE);
             }
         }
+
+    public:
+        virtual std::string getConfigName() = 0;
 
     protected:
         optional<json> _configData;

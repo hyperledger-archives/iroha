@@ -21,6 +21,10 @@ limitations under the License.
 
 namespace config {
     class IrohaConfigManager: IConfig {
+    protected:
+        std::string openJSONText(const std::string& PathToJSONFile);
+        void setConfigData(std::string&& jsonStr);
+
     private:
         IrohaConfigManager();
         IrohaConfigManager(const IrohaConfigManager&);
@@ -29,7 +33,15 @@ namespace config {
     public:
         static IrohaConfigManager &getInstance();
 
-        std::string getDBPath();
+        template <typename T>
+        T getParam(const std::string &param, const T &defaultValue) {
+            if (auto config = openConfig(getConfigName())) {
+                return config->value(param, defaultValue);
+            }
+            return defaultValue;
+        }
+
+        virtual std::string getConfigName();
     };
 }
 
