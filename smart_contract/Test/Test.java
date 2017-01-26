@@ -15,8 +15,6 @@ package test;
 import java.util.HashMap;
 import repository.AccountRepository;
 
-
-// no package declasration
 public class Test {
 
   // Test invoke function

@@ -27,6 +27,8 @@ target_link_libraries(AssetRepository
   convertor
 )
 
+add_subdirectory(Test)
+
 # compile .java files
 #add_custom_command(OUTPUT SampleCurrency.class
 #  POST_BUILD

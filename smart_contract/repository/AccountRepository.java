@@ -17,6 +17,9 @@ import java.util.HashMap;
 
 public class AccountRepository {
 
+    static {
+        System.loadLibrary("AccountRepository");
+    }
 
     public static native void     updateQuantity(String uuid, String assetName, long newValue);
     public static native void     attach(String uuid, String assetName, long assetDefault);
