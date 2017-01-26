@@ -1,0 +1,4 @@
+grant {
+  permission java.lang.RuntimePermission "loadLibrary.AccountRepository";
+  permission java.lang.RuntimePermission "loadLibrary.AssetRepository";
+};

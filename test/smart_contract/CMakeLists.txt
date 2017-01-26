@@ -1,11 +1,13 @@
 set(CMAKE_BUILD_TYPE Debug)
 
+SET(CMAKE_CXX_FLAGS "-g -m64 -std=c++1y -Wall -fPIC")
+
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++11 -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/server")
-  SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -DDEBUG -O0 -std=c++11 -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/server")
+  SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -m64 -std=c++1y -Wall -fPIC -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/server")
+  SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -DDEBUG -O0 -g -m64 -std=c++1y -Wall -fPIC -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/server")
 ELSE()
-  SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++11 -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/amd64")
-  SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -DDEBUG -O0 -std=c++11 -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/amd64")
+  SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -m64 -std=c++1y -Wall -fPIC -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/amd64")
+  SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -DDEBUG -O0 -g -m64 -std=c++1y -Wall -fPIC -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/amd64")
 ENDIF()
 
 
@@ -33,11 +35,27 @@ ENDIF()
 
 add_executable(java_vm_test java_vm_test.cpp)
 target_link_libraries(java_vm_test
-  world_state_repo_with_level_db
   smart_contract_with_java
+  AccountRepository
+  AssetRepository
+  consensus_event
   jvm
-  ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread)
+  ${GTEST_LIBS_DIR}/libgtest.a
+  ${GTEST_LIBS_DIR}/libgtest_main.a
+  pthread)
 add_test(
   NAME java_vm_test
   COMMAND $<TARGET_FILE:java_vm_test>
 )
+
+#add_executable(java_execute_test java_execute_test.cpp)
+#target_link_libraries(java_execute_test
+#  smart_contract_with_java
+#  jvm
+#  ${GTEST_LIBS_DIR}/libgtest.a
+#  ${GTEST_LIBS_DIR}/libgtest_main.a
+#  pthread)
+##add_test(
+#  NAME java_execute_test
+#  COMMAND $<TARGET_FILE:java_execute_test>
+#)

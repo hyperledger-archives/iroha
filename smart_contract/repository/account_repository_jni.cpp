@@ -16,11 +16,13 @@ limitations under the License.
 #include "../repository_AccountRepository.h"
 #include "../../core/repository/domain/account_repository.hpp"
 #include "../../core/repository/world_state_repository.hpp"
-
+#include "../../core/infra/smart_contract/jvm/java_virtual_machine.hpp"
+#include "../../core/util/logger.hpp"
 
 #include <iostream>
 
 #include <string>
+#include <unordered_map>
 #include <memory>
 #include <vector>
 #include <assert.h>
@@ -40,7 +42,7 @@ JNIEXPORT void JNICALL Java_repository_AccountRepository_updateQuantity
 
     repository::account::update_quantity(uuid, assetName, newValue);
 }
-/*
+
 JNIEXPORT void JNICALL Java_repository_AccountRepository_attach
   (JNIEnv *env, jclass cls, jstring uuid_, jstring assetName_, jlong assetDefault_)
 {
@@ -58,7 +60,7 @@ JNIEXPORT void JNICALL Java_repository_AccountRepository_attach
 
     repository::account::attach(uuid, assetName, assetDefault);
 }
-*/
+
 JNIEXPORT jobject JNICALL Java_repository_AccountRepository_findByUuid
   (JNIEnv *env, jclass cls, jstring uuid_)
 {
@@ -67,10 +69,15 @@ JNIEXPORT jobject JNICALL Java_repository_AccountRepository_findByUuid
 
     env->ReleaseStringUTFChars(uuid_,       uuidCString);
 
-    // TODO: ...
-    //auto p = repository::account::findByUuid(uuid);
-    const auto ret = std::string("serialized string");
-    return env->NewStringUTF(ret.c_str());
+    // repository::account::findByUuid(hash::sha3_256_hex(senderPublicKey));
+    object::Account account = repository::account::findByUuid(uuid);
+
+    std::unordered_map<std::string, std::string> params;
+    params["publicKey"] = account.publicKey;
+    params["name"]      = account.name;
+    // TODO: params["assets"]
+
+    return smart_contract::JavaMakeMap(env, params);
 }
 
 JNIEXPORT void JNICALL Java_repository_AccountRepository_add
@@ -85,7 +92,6 @@ JNIEXPORT void JNICALL Java_repository_AccountRepository_add
     env->ReleaseStringUTFChars(publicKey_,  publicKeyCString);
     env->ReleaseStringUTFChars(alias_,      aliasCString);
 
-    std::cout << "Key "<< publicKey <<" alias:" << alias << std::endl;
-    //repository::account::add(publicKey, alias);
-    repository::world_state_repository::add( publicKey, alias);
+    std::cout << "Key " << publicKey << " alias:" << alias << std::endl;
+    repository::account::add(publicKey, alias);
 }
