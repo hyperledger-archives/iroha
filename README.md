@@ -228,7 +228,7 @@ Merges to master are automatically deployed to dockerhub at
 0. Install docker (at least version 1.13)
 1. ```docker pull hyperledger/iroha-docker```
 2. on master node: ```docker swarm init --advertise-addr=(insert master node IP here)``
-3. on other nodes: ```docker swarm join —token=(insert token here, printed out from the previous step on the master node)```
+3. on other 3 nodes: ```docker swarm join —token=(insert token here, printed out from the previous step on the master node)```
 4. on master node: ```docker network create -d overlay iroha-network```
 5. on master node:
 
