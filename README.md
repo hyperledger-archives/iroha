@@ -163,7 +163,7 @@ It contains the P2P messaging function interface.
 
 #### core/consensus (consensus layer)
 It contains the consensus algorithm(s).
-  
+
 #### core/crypto (service)
 It contains digital signature algorithms, base64, hash function interfaces, etc.
 
@@ -172,7 +172,7 @@ It contains asset model, transaction logic. independent of infra knowledge.
 
 #### core/infra (infra layer)
 It contains some source depend on vendor (third party) libraries.
-If any source depends on vendor libraries, it should be in infra. 
+If any source depends on vendor libraries, it should be in infra.
 
 ##### filenames
 Filenames follow the convention: `"function"_with_"lib name".cpp`
@@ -207,17 +207,47 @@ It contains logger, random, datetime, exception...
 JAVA_HOME  := java's home
 IROHA_HOME := iroha's root
 ```
-  
+
 ## Requirement
 ```
 cmake(3.5.2)
 gRPC
 LevelDB
 ```
-  
+
 ## Recommended
 ```
 fabric3 (python library, not hyperledger/fabric)
+```
+
+## Using dockerhub for development
+
+Merges to master are automatically deployed to dockerhub at
+[https://hub.docker.com/r/hyperledger/iroha-docker/](https://hub.docker.com/r/hyperledger/iroha-docker/), so it is possible to pull from there to start up a network with 4 servers. Currently only 4 servers are supported. Using this method, it is possible set up a network within a few minutes.
+
+0. Install docker (at least version 1.13)
+1. ```docker pull hyperledger/iroha-docker```
+2. on master node: ```docker swarm init --advertise-addr=(insert IP here)``
+3. on other nodes: ```docker swarm join —token=(insert token here)```
+4. on master node: ```docker network create -d overlay iroha-network```
+5. on master node:
+
+ ```
+docker service create \
+ --network iroha-network \
+ --name configdiscovery \
+ warchantua/configdiscovery
+```
+
+6. on master node:
+
+ ```
+docker service create \
+ --name iroha \
+ --mode global \
+ --network iroha-network \
+ --publish 1204:1204 \
+ hyperledger/iroha-docker /configure-then-run.sh
 ```
 
 ## Using docker and docker-compose for development
@@ -257,8 +287,8 @@ This step should only be necessary if protobuf definitions changes, or version o
 protoc  --cpp_out=core/infra/connection core/infra/connection/connection.proto
 protoc  --grpc_out=core/infra/connection  --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` core/infra/connection/connection.proto
 ```
-  
-## Authors 
+
+## Authors
 
 [MakotoTakemiya](https://github.com/takemiyamakoto)  
 [MizukiSonoko](https://github.com/MizukiSonoko)
