@@ -1,3 +1,3 @@
-java -cp $IROHA_HOME/smart_contract \
+java -Djava.class.path=$IROHA_HOME/smart_contract/Test \
      -Djava.library.path=$IROHA_HOME/build/lib \
-     test.Test
+     Test

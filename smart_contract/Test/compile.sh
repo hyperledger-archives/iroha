@@ -1,1 +1,1 @@
-javac -encoding UTF-8 ../repository/*.java Test.java
+javac -encoding UTF-8 $IROHA_HOME/smart_contract/Test/repository/*.java $IROHA_HOME/smart_contract/Test/Test.java

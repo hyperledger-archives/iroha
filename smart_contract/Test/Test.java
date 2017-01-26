@@ -10,7 +10,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package test;
 
 import java.util.HashMap;
 import repository.AccountRepository;
@@ -45,9 +44,13 @@ public class Test {
 
   public static void main(String[] argv) {
     System.out.println("Hello in JAVA! check repositories");
-    System.out.println("AssetRepository");
+    System.out.println("AccountRepository");
     AccountRepository account = new AccountRepository();
     account.add("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=", "MyAsset");
+	System.out.println("Call test4()");
+	HashMap<String,String> params = new HashMap<String,String>();
+	params.put("key", "HOHOHOHOHOGEGEGEGEGEG");
+	test4(params);
   }
 
 }

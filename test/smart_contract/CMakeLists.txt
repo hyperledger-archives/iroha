@@ -36,8 +36,6 @@ ENDIF()
 add_executable(java_vm_test java_vm_test.cpp)
 target_link_libraries(java_vm_test
   smart_contract_with_java
-  AccountRepository
-  AssetRepository
   world_state_repo_with_level_db
   consensus_event
   jvm
