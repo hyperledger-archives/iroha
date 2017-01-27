@@ -21,6 +21,10 @@ limitations under the License.
 namespace repository{
     namespace asset {
 
+        //bool add(std::string publicKey,std::string assetName,std::string value){
+        //    return world_state_repository::add(assetName+"@"+publicKey, value);
+        //}
+
         bool add(std::string publicKey,std::string assetName,std::string value){
             return world_state_repository::add(assetName+"@"+publicKey, value);
         }

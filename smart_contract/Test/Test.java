@@ -13,8 +13,14 @@ limitations under the License.
 
 import java.util.HashMap;
 import repository.AccountRepository;
+import repository.AssetRepository;
 
 public class Test {
+
+  public static final String PublicKeyTag   = "publicKey";
+  public static final String AccountNameTag = "accountName";
+  public static final String AssetNameTag   = "assetName";
+  public static final String AssetValueTag  = "assetValue";
 
   // Test invoke function
   public static void test1() {
@@ -35,11 +41,18 @@ public class Test {
     assert params.get("key2").equals("素子");
   }
 
-  public static void test4(HashMap<String,String> params){
-    System.out.println("Hello in JAVA! test4() ");
+  public static void test_add_account(HashMap<String,String> params){
+    System.out.println("Hello in JAVA! test_add_account() ");
     AccountRepository accountRepo = new AccountRepository();
-    String ret = accountRepo.add(params.get("publicKey"), "MizukiSonoko");
-    System.out.println("Java::test4() AccountRepository ret: " + ret);
+    String ret = accountRepo.add(params.get(PublicKeyTag), params.get(AccountNameTag));
+    System.out.println("Java::test_add_account() AccountRepository ret: " + ret);
+  }
+
+  public static void test_add_asset(HashMap<String,String> params){
+    System.out.println("Hello in JAVA! test_add_asset() ");
+    AssetRepository assetRepo = new AssetRepository();
+    assetRepo.add(params.get(PublicKeyTag), params.get(AssetNameTag), params.get(AssetValueTag));
+    System.out.println("Java::test_add_asset() AssetRepository");
   }
 
   public static void main(String[] argv) {

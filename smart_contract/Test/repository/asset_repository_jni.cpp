@@ -33,6 +33,8 @@ JNIEXPORT void JNICALL Java_repository_AssetRepository_add
     env->ReleaseStringUTFChars(assetName_, assetNameCString);
     env->ReleaseStringUTFChars(value_, valueCString);
 
+    logger::debug("asset repo jni") << "publicKey: " << publicKey << ", assetName: " << assetName;
+    
     repository::asset::add(publicKey, assetName, value);
 }
 

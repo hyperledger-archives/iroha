@@ -21,7 +21,6 @@ limitations under the License.
 #include "../account_repository.hpp"
 #include "../../world_state_repository.hpp"
 
-
 namespace repository{
     namespace account {
 
