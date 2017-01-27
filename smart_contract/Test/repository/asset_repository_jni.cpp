@@ -13,13 +13,16 @@ limitations under the License.
 #include "../repository_AssetRepository.h"
 #include "../../../core/repository/domain/asset_repository.hpp"
 #include "../../../core/repository/world_state_repository.hpp"
+#include "../../../core/infra/smart_contract/jvm/java_virtual_machine.hpp"
 #include "../../../core/util/logger.hpp"
+
 #include <string>
 #include <memory>
 #include <vector>
 #include <assert.h>
+#include <unordered_map>
 
-JNIEXPORT void JNICALL Java_repository_AssetRepository_add
+JNIEXPORT jstring JNICALL Java_repository_AssetRepository_add
     (JNIEnv *env, jclass cls, jstring publicKey_, jstring assetName_, jstring value_) {
     const char *publicKeyCString    = env->GetStringUTFChars(publicKey_, 0);
     const char *assetNameCString    = env->GetStringUTFChars(assetName_, 0);
@@ -35,18 +38,38 @@ JNIEXPORT void JNICALL Java_repository_AssetRepository_add
 
     logger::debug("asset repo jni") << "publicKey: " << publicKey << ", assetName: " << assetName;
     
-    repository::asset::add(publicKey, assetName, value);
+    const auto ret = repository::asset::add(publicKey, assetName, value);
+    return env->NewStringUTF(ret.c_str());
 }
 
-JNIEXPORT jobject JNICALL Java_repository_AssetRepository_findOne
-  (JNIEnv *env, jclass cls, jstring key_)
+JNIEXPORT jobject JNICALL Java_repository_AssetRepository_findByUuid
+  (JNIEnv *env, jclass cls, jstring uuid_)
 {
-    const char *keyCString  = env->GetStringUTFChars(key_, 0);
-    const auto key          = std::string(keyCString);
+    const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+    const auto uuid         = std::string(uuidCString);
 
-    env->ReleaseStringUTFChars(key_, keyCString);
+    env->ReleaseStringUTFChars(uuid_, uuidCString);
 
-    repository::asset::findOne(key);
+    object::Asset asset = repository::asset::findByUuid(uuid);
+
+    // These constant tags should be placed somewhere else.
+    const auto DomainIdTag      = "domainId";
+    const auto AssetNameTag     = "assetName";
+    const auto ValueTag         = "value";
+
+    std::unordered_map<std::string, std::string> params;
+    {
+        params[DomainIdTag]     = asset.domain;
+        params[AssetNameTag]    = asset.name;
+        params[ValueTag]        = std::to_string(asset.value); // currently this is uint64_t. conversion from map to string?
+    }
+
+    logger::debug("asset repository jni")
+        << "params[DomainIdTag]: "  << params[DomainIdTag]  << ", "
+        << "params[AssetNameTag]: " << params[AssetNameTag] << ", "
+        << "params[ValueTag]: "     << params[ValueTag];
+
+    return smart_contract::JavaMakeMap(env, params);
 }
 
 JNIEXPORT void JNICALL Java_repository_AssetRepository_update
@@ -62,7 +85,7 @@ JNIEXPORT void JNICALL Java_repository_AssetRepository_update
 
     env->ReleaseStringUTFChars(publicKey_, publicKeyCString);
     env->ReleaseStringUTFChars(assetName_, assetNameCString);
-    env->ReleaseStringUTFChars(newValue_, newValueCString);
+    env->ReleaseStringUTFChars(newValue_,  newValueCString);
 
     repository::asset::update(publicKey, assetName, newValue);
 }

@@ -15,7 +15,6 @@ limitations under the License.
 */
 #include "../repository_AccountRepository.h"
 #include "../../../core/repository/domain/account_repository.hpp"
-#include "../../../core/repository/world_state_repository.hpp"
 #include "../../../core/infra/smart_contract/jvm/java_virtual_machine.hpp"
 #include "../../../core/util/logger.hpp"
 
@@ -70,13 +69,16 @@ JNIEXPORT jobject JNICALL Java_repository_AccountRepository_findByUuid
     env->ReleaseStringUTFChars(uuid_, uuidCString);
 
     object::Account account = repository::account::findByUuid(uuid);
-
+    
+    // These should be placed somewhere else.
     const auto PublicKeyTag     = "publicKey";
     const auto AccountNameTag   = "accountName";
 
     std::unordered_map<std::string, std::string> params;
-    params[PublicKeyTag]    = account.publicKey;
-    params[AccountNameTag]  = account.name;
+    {
+        params[PublicKeyTag]    = account.publicKey;
+        params[AccountNameTag]  = account.name;
+    }
 
     logger::debug("account repository jni")
         << "params[PublicKeyTag]: "     << params[PublicKeyTag] << ", "
@@ -92,8 +94,8 @@ JNIEXPORT jstring JNICALL Java_repository_AccountRepository_add
     const char *publicKeyCString    = env->GetStringUTFChars(publicKey_, 0);
     const char *aliasCString        = env->GetStringUTFChars(alias_, 0);
 
-    auto publicKey                  = std::string(publicKeyCString);
-    auto alias                      = std::string(aliasCString);
+    const auto publicKey            = std::string(publicKeyCString);
+    const auto alias                = std::string(aliasCString);
 
     env->ReleaseStringUTFChars(publicKey_,  publicKeyCString);
     env->ReleaseStringUTFChars(alias_,      aliasCString);

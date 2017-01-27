@@ -21,8 +21,8 @@ public class AssetRepository {
         System.loadLibrary("AssetRepository");
     }
     
-    public static native void     add(String publicKey, String assetName, String value);
-    public static native HashMap<String,String> findOne(String key);
+    public static native String   add(String publicKey, String assetName, String value);
+    public static native HashMap<String,String> findByUuid(String key);
     public static native void     update(String publicKey, String assetName, String newValue);
     public static native void     remove(String publicKey, String assetName);
     

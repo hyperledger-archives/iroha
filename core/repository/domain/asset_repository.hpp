@@ -19,17 +19,20 @@ limitations under the License.
 #include <string>
 #include <vector>
 
+#include "../../model/objects/asset.hpp"
+#include "../../model/state/asset.hpp"
+
 namespace repository {
     namespace asset {
-
-        bool add(std::string publicKey, std::string assetName, std::string value);
+        
+        std::string add(std::string publicKey, std::string assetName, std::string value);
         bool update(std::string publicKey, std::string assetName, std::string newValue);
         bool remove(std::string publicKey, std::string assetName);
         std::vector <std::string> findAll(std::string key);
 
-        std::string findOne(std::string key);
-
-        std::string findOrElse(std::string key, std::string defaultVale);
+        object::Asset findByUuid(std::string uuid);
+        
+        object::Asset findByUuidOrElse(std::string uuid, object::Asset defaultVale);
 
         bool isExist(std::string key);
     };

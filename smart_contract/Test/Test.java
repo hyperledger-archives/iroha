@@ -57,20 +57,18 @@ public class Test {
 
     System.out.println("Call accountRepo.add()");
 
-    String accountDBKeyHash = accountRepo.add(
+    String accountUuid = accountRepo.add(
       params.get(PublicKeyTag),
       params.get(AccountNameTag)
     );
 
     System.out.println("----------------------------------------------");
-    System.out.println("Received from C++: accountDBKeyHash: " + accountDBKeyHash);
+    System.out.println("Received from C++: accountUuid: " + accountUuid);
     System.out.println("----------------------------------------------");
 
     // 2. Find account data by uuid.
     System.out.println("Call accountRepo.findByUuid()");
-    HashMap<String, String> accountMap = accountRepo.findByUuid(
-      accountDBKeyHash
-    );
+    HashMap<String, String> accountMap = accountRepo.findByUuid(accountUuid);
 
     System.out.println("----------------------------------------------");
     System.out.println("Received from C++: found pubKey:      " + accountMap.get(PublicKeyTag));
@@ -81,7 +79,7 @@ public class Test {
     assert accountMap.get(PublicKeyTag).equals(params.get(PublicKeyTag));
     assert accountMap.get(AccountNameTag).equals(params.get(AccountNameTag));
 
-    System.out.println("Success assetions of integrity.");
+    System.out.println("Success assertions of integrity.");
     System.out.println("----------------------------------------------");
   }
 
@@ -101,21 +99,19 @@ public class Test {
     // 1. Add asset.
     System.out.println("Call assetRepo.add()");
 
-    String assetDBKeyHash = assetRepo.add(
+    String assetUuid = assetRepo.add(
       params.get(PublicKeyTag),
       params.get(AssetNameTag),
       params.get(AssetValueTag)
     );
     
     System.out.println("----------------------------------------------");
-    System.out.println("Received from C++: assetDBKeyHash: " + assetDBKeyHash);
+    System.out.println("Received from C++: assetUuid: " + assetUuid);
     System.out.println("----------------------------------------------");
 
     // 2. Find asset data by uuid.
     System.out.println("Call assetRepo.findByUuid()");
-    HashMap<String, String> assetMap = assetRepo.findByUuid(
-      assetDBKeyHash
-    );
+    HashMap<String, String> assetMap = assetRepo.findByUuid(assetUuid);
 
     System.out.println("----------------------------------------------");
     System.out.println("Received from C++: found pubKey:     " + assetMap.get(PublicKeyTag));
@@ -128,7 +124,7 @@ public class Test {
     assert assetMap.get(AssetNameTag).equals(params.get(AssetNameTag));
     assert assetMap.get(AssetValueTag).equals(params.get(AssetValueTag));
 
-    System.out.println("Success assetions of integrity.");
+    System.out.println("Success assertions of integrity.");
     System.out.println("----------------------------------------------");
   }
 

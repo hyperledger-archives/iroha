@@ -10,17 +10,17 @@ extern "C" {
 /*
  * Class:     repository_AssetRepository
  * Method:    add
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT void JNICALL Java_repository_AssetRepository_add
+JNIEXPORT jstring JNICALL Java_repository_AssetRepository_add
   (JNIEnv *, jclass, jstring, jstring, jstring);
 
 /*
  * Class:     repository_AssetRepository
- * Method:    findOne
+ * Method:    findByUuid
  * Signature: (Ljava/lang/String;)Ljava/util/HashMap;
  */
-JNIEXPORT jobject JNICALL Java_repository_AssetRepository_findOne
+JNIEXPORT jobject JNICALL Java_repository_AssetRepository_findByUuid
   (JNIEnv *, jclass, jstring);
 
 /*

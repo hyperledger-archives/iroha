@@ -26,7 +26,6 @@ namespace repository{
 
         namespace detail {
             // TODO: Separate string_wrapper to header for wrapper.
-            /*
             namespace string_wrapper {
                 class AccountName {
                 public:
@@ -38,29 +37,49 @@ namespace repository{
                     }
                     
                 private:
-                    std::string _assetName;
+                    std::string _accountName;
                 };
 
-                class AccountPublicKey {
+                class PublicKey {
                 public:
-                    explicit AccountPublicKey(const std::string& accountPublicKey)
-                        : _accountPublicKey(accountPublicKey) {}
+                    explicit PublicKey(const std::string& publicKey)
+                        : _publicKey(publicKey) {}
 
                     const std::string& operator()() const {
-                        return _accountPublicKey;
+                        return _publicKey;
                     }
                     
                 private:
-                    std::string _accountPublicKey;
+                    std::string _publicKey;
+                };
+
+                class Alias {
+                public:
+                    explicit Alias(const std::string& alias)
+                        : _alias(alias) {}
+
+                    const std::string& operator()() const {
+                        return _alias;
+                    }
+                    
+                private:
+                    std::string _alias;
                 };
             }
-            */
-
-            std::string createAccountDBKey(const object::Account& objectAccount) {
-                auto protoAccount = convertor::detail::encodeObject(objectAccount);
+            
+            using namespace string_wrapper;
+            
+            std::string serializeAccount(const PublicKey& publicKey, const Alias& alias) {
+                auto protoAccount = convertor::detail::encodeObject(
+                    object::Account(publicKey(), alias()) // object::Account(publicKey, alias)
+                );
                 std::string strAccount;
                 protoAccount.SerializeToString(&strAccount);
                 return strAccount;
+            }
+
+            std::string createAccountUuid(const PublicKey& publicKey) {
+                return hash::sha3_256_hex(publicKey());
             }
         }
 
@@ -85,7 +104,7 @@ namespace repository{
             world_state_repository::update(uuid, strAccount);
         }
 
-        bool attach(const std::string& uuid, const std::string& assetName, long assetDefault){
+        bool attach(const std::string& uuid, const std::string& assetName, long assetDefault) {
             auto serializedAccount = world_state_repository::find(uuid);
             if(serializedAccount != "") {
                 Event::Account protoAccount;
@@ -96,8 +115,7 @@ namespace repository{
 
                 std::string strAccount;
                 protoAccountNew.SerializeToString(&strAccount);
-                world_state_repository::update(uuid, strAccount);
-                return true;
+                return world_state_repository::update(uuid, strAccount);
             } else {
                 return false;
             }
@@ -120,24 +138,23 @@ namespace repository{
             return convertor::detail::decodeObject(protoAccount);
         }
 
-        // TODO: Wrap std::string
-        std::string add(
-            std::string &publicKey,
-            std::string &alias
-        ){
-            logger::explore("sumeragi")
-                << "Add publicKey:" << publicKey << " alias:" <<  alias;
+        std::string add(const std::string& publicKey, const std::string& alias) {
+            logger::explore("account repository")
+                << "Add publicKey:" << publicKey << " alias:" << alias;
 
-            const auto accountDBKey = detail::createAccountDBKey(
-                object::Account(publicKey.c_str(), alias.c_str()) // TODO: Expand wrapped std::string. More secure type check solution...?
+            const auto uuid = detail::createAccountUuid(detail::PublicKey(publicKey));
+
+            const auto serializedAccount = detail::serializeAccount(
+                detail::PublicKey(publicKey),
+                detail::Alias(alias)
             );
-            
-            logger::debug("account repository")
-                << "Save key:" << hash::sha3_256_hex(publicKey) << " alias:" << alias << ", "
-                << "serialized string: " << accountDBKey;
 
-            world_state_repository::add(hash::sha3_256_hex(publicKey), accountDBKey);
-            return hash::sha3_256_hex(publicKey);
+            logger::debug("account repository") << "Save key:" << uuid << " alias:" << alias;
+
+            if (not world_state_repository::add(uuid, serializedAccount)) {
+                return "";
+            }
+            return uuid;
         }
 
     };
