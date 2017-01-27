@@ -24,6 +24,46 @@ limitations under the License.
 namespace repository{
     namespace account {
 
+        namespace detail {
+            // TODO: Separate string_wrapper to header for wrapper.
+            /*
+            namespace string_wrapper {
+                class AccountName {
+                public:
+                    explicit AccountName(const std::string& accountName)
+                        : _accountName(accountName) {}
+
+                    const std::string& operator()() const {
+                        return _accountName;
+                    }
+                    
+                private:
+                    std::string _assetName;
+                };
+
+                class AccountPublicKey {
+                public:
+                    explicit AccountPublicKey(const std::string& accountPublicKey)
+                        : _accountPublicKey(accountPublicKey) {}
+
+                    const std::string& operator()() const {
+                        return _accountPublicKey;
+                    }
+                    
+                private:
+                    std::string _accountPublicKey;
+                };
+            }
+            */
+
+            std::string createAccountDBKey(const object::Account& objectAccount) {
+                auto protoAccount = convertor::detail::encodeObject(objectAccount);
+                std::string strAccount;
+                protoAccount.SerializeToString(&strAccount);
+                return strAccount;
+            }
+        }
+
         // SampleAsset has only quantity no logic, so this value is int.
         bool update_quantity(
             const std::string&  uuid,
@@ -45,7 +85,7 @@ namespace repository{
             world_state_repository::update(uuid, strAccount);
         }
 
-        bool attach(const std::string& uuid,const std::string& assetName, long assetDefault){
+        bool attach(const std::string& uuid, const std::string& assetName, long assetDefault){
             auto serializedAccount = world_state_repository::find(uuid);
             if(serializedAccount != "") {
                 Event::Account protoAccount;
@@ -58,35 +98,45 @@ namespace repository{
                 protoAccountNew.SerializeToString(&strAccount);
                 world_state_repository::update(uuid, strAccount);
                 return true;
-            }else{
+            } else {
                 return false;
             }
         }
 
-        object::Account findByUuid(const std::string& uuid){
-            auto serializedAccount = world_state_repository::find(uuid);
-            auto account = world_state_repository::find(uuid);
-            if(account != "") {
-                Event::Account protoAccount;
-                protoAccount.ParseFromString(account);
-                return convertor::detail::decodeObject(protoAccount);
-            } else {
+        object::Account findByUuid(const std::string& uuid) {
+
+            const auto serializedAccount = world_state_repository::find(uuid);
+
+            logger::debug("account repository :: findByUuid")
+                << serializedAccount;
+
+            if (serializedAccount.empty()) {
                 return object::Account();
             }
+
+            Event::Account protoAccount;
+            protoAccount.ParseFromString(serializedAccount);
+
+            return convertor::detail::decodeObject(protoAccount);
         }
 
+        // TODO: Wrap std::string
         std::string add(
             std::string &publicKey,
             std::string &alias
         ){
-            logger::explore("sumeragi") << "Add publicKey:" <<  publicKey << " alias:" <<  alias;
-            object::Account ac(publicKey.c_str(),alias.c_str());
-            auto protoAccount = convertor::detail::encodeObject(ac);
-            std::string strAccount;
-            protoAccount.SerializeToString(&strAccount);
-            logger::debug("AccountRepository") << "Save key:" << hash::sha3_256_hex(publicKey) << " alias:" << alias;
-            logger::debug("AccountRepository") << "SerializedString: " << strAccount;
-            world_state_repository::add(hash::sha3_256_hex(publicKey), strAccount);
+            logger::explore("sumeragi")
+                << "Add publicKey:" << publicKey << " alias:" <<  alias;
+
+            const auto accountDBKey = detail::createAccountDBKey(
+                object::Account(publicKey.c_str(), alias.c_str()) // TODO: Expand wrapped std::string. More secure type check solution...?
+            );
+            
+            logger::debug("account repository")
+                << "Save key:" << hash::sha3_256_hex(publicKey) << " alias:" << alias << ", "
+                << "serialized string: " << accountDBKey;
+
+            world_state_repository::add(hash::sha3_256_hex(publicKey), accountDBKey);
             return hash::sha3_256_hex(publicKey);
         }
 

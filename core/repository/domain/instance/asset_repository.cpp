@@ -21,22 +21,78 @@ limitations under the License.
 namespace repository{
     namespace asset {
 
-        //bool add(std::string publicKey,std::string assetName,std::string value){
-        //    return world_state_repository::add(assetName+"@"+publicKey, value);
-        //}
+        namespace detail {
+            namespace string_wrapper {
+                class AssetName {
+                public:
+                    explicit AssetName(const std::string& assetName)
+                        : _assetName(assetName) {}
 
-        bool add(std::string publicKey,std::string assetName,std::string value){
-            return world_state_repository::add(assetName+"@"+publicKey, value);
+                    const std::string& operator()() const {
+                        return _assetName;
+                    }
+                    
+                private:
+                    std::string _assetName;
+                };
+
+
+                class AssetPublicKey {
+                public:
+                    explicit AssetPublicKey(const std::string& assetPublicKey)
+                        : _assetPublicKey(assetPublicKey) {}
+
+                    const std::string& operator()() const {
+                        return _assetPublicKey;
+                    }
+                    
+                private:
+                    std::string _assetPublicKey;
+                };
+            }
+
+            using namespace string_wrapper;
+
+            inline std::string createAssetKey(
+                const AssetName&      assetName,
+                const AssetPublicKey& publicKey
+            ) {
+                return assetName() + "@" + publicKey();
+            }
         }
 
-        bool update(std::string publicKey,std::string assetName,std::string newValue){
-            return world_state_repository::update(assetName+"@"+publicKey, newValue);
+        // TODO: Wrap std::string with structs in arguments.
+        bool add(std::string publicKey, std::string assetName,std::string value) {
+            return world_state_repository::add(
+                detail::createAssetKey(
+                    detail::AssetName(assetName),
+                    detail::AssetPublicKey(publicKey)
+                ),
+                value
+            );
         }
 
-        bool remove(std::string publicKey,std::string assetName){
-            return world_state_repository::remove(assetName+"@"+publicKey);
+        // TODO: Wrap std::string with structs in arguments.
+        bool update(std::string publicKey,std::string assetName,std::string newValue) {
+            return world_state_repository::update(
+                detail::createAssetKey(
+                    detail::AssetName(assetName),
+                    detail::AssetPublicKey(publicKey)
+                ),
+                newValue
+            );
+//            return world_state_repository::update(assetName+"@"+publicKey, newValue);
         }
 
+        bool remove(std::string publicKey,std::string assetName) {
+            return world_state_repository::remove(
+                detail::createAssetKey(
+                    detail::AssetName(assetName),
+                    detail::AssetPublicKey(publicKey)
+                )
+            );
+        }
+        
         std::vector <std::string> findAll(std::string key) {
 
         }

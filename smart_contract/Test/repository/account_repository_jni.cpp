@@ -67,14 +67,20 @@ JNIEXPORT jobject JNICALL Java_repository_AccountRepository_findByUuid
     const char *uuidCString     = env->GetStringUTFChars(uuid_, 0);
     const auto uuid             = std::string(uuidCString);
 
-    env->ReleaseStringUTFChars(uuid_,       uuidCString);
+    env->ReleaseStringUTFChars(uuid_, uuidCString);
 
-    // repository::account::findByUuid(hash::sha3_256_hex(senderPublicKey));
     object::Account account = repository::account::findByUuid(uuid);
 
+    const auto PublicKeyTag     = "publicKey";
+    const auto AccountNameTag   = "accountName";
+
     std::unordered_map<std::string, std::string> params;
-    params["publicKey"] = account.publicKey;
-    params["name"]      = account.name;
+    params[PublicKeyTag]    = account.publicKey;
+    params[AccountNameTag]  = account.name;
+
+    logger::debug("account repository jni")
+        << "params[PublicKeyTag]: "     << params[PublicKeyTag] << ", "
+        << "params[AccountNameTag]: "   << params[AccountNameTag];
     // TODO: params["assets"]
 
     return smart_contract::JavaMakeMap(env, params);

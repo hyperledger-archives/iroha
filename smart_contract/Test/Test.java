@@ -17,6 +17,7 @@ import repository.AssetRepository;
 
 public class Test {
 
+  // Move some clear position.
   public static final String PublicKeyTag   = "publicKey";
   public static final String AccountNameTag = "accountName";
   public static final String AssetNameTag   = "assetName";
@@ -41,18 +42,94 @@ public class Test {
     assert params.get("key2").equals("素子");
   }
 
-  public static void test_add_account(HashMap<String,String> params){
-    System.out.println("Hello in JAVA! test_add_account() ");
+  /******************************************************************************
+   * Verify account
+   ******************************************************************************/
+  public static void test_add_account(HashMap<String, String> params) {
+    // Print received params
+    System.out.println("----------------------------------------------");
+    System.out.println("Params pubKey:      " + params.get(PublicKeyTag));
+    System.out.println("Params accountName: " + params.get(AccountNameTag));
+    System.out.println("----------------------------------------------");
+
+    // 1. Add account.
     AccountRepository accountRepo = new AccountRepository();
-    String ret = accountRepo.add(params.get(PublicKeyTag), params.get(AccountNameTag));
-    System.out.println("Java::test_add_account() AccountRepository ret: " + ret);
+
+    System.out.println("Call accountRepo.add()");
+
+    String accountDBKeyHash = accountRepo.add(
+      params.get(PublicKeyTag),
+      params.get(AccountNameTag)
+    );
+
+    System.out.println("----------------------------------------------");
+    System.out.println("Received from C++: accountDBKeyHash: " + accountDBKeyHash);
+    System.out.println("----------------------------------------------");
+
+    // 2. Find account data by uuid.
+    System.out.println("Call accountRepo.findByUuid()");
+    HashMap<String, String> accountMap = accountRepo.findByUuid(
+      accountDBKeyHash
+    );
+
+    System.out.println("----------------------------------------------");
+    System.out.println("Received from C++: found pubKey:      " + accountMap.get(PublicKeyTag));
+    System.out.println("Received from C++: found accountName: " + accountMap.get(AccountNameTag));
+    System.out.println("----------------------------------------------");
+
+    // 3. Then, verify integrity.
+    assert accountMap.get(PublicKeyTag).equals(params.get(PublicKeyTag));
+    assert accountMap.get(AccountNameTag).equals(params.get(AccountNameTag));
+
+    System.out.println("Success assetions of integrity.");
+    System.out.println("----------------------------------------------");
   }
 
-  public static void test_add_asset(HashMap<String,String> params){
-    System.out.println("Hello in JAVA! test_add_asset() ");
+  /******************************************************************************
+   * Verify asset
+   ******************************************************************************/
+  public static void test_add_asset(HashMap<String,String> params) {
+    // Print received params
+    System.out.println("----------------------------------------------");
+    System.out.println("Params pubKey:     " + params.get(PublicKeyTag));
+    System.out.println("Params assetName:  " + params.get(AssetNameTag));
+    System.out.println("Params assetValue: " + params.get(AssetValueTag));
+    System.out.println("----------------------------------------------");
+
     AssetRepository assetRepo = new AssetRepository();
-    assetRepo.add(params.get(PublicKeyTag), params.get(AssetNameTag), params.get(AssetValueTag));
-    System.out.println("Java::test_add_asset() AssetRepository");
+
+    // 1. Add asset.
+    System.out.println("Call assetRepo.add()");
+
+    String assetDBKeyHash = assetRepo.add(
+      params.get(PublicKeyTag),
+      params.get(AssetNameTag),
+      params.get(AssetValueTag)
+    );
+    
+    System.out.println("----------------------------------------------");
+    System.out.println("Received from C++: assetDBKeyHash: " + assetDBKeyHash);
+    System.out.println("----------------------------------------------");
+
+    // 2. Find asset data by uuid.
+    System.out.println("Call assetRepo.findByUuid()");
+    HashMap<String, String> assetMap = assetRepo.findByUuid(
+      assetDBKeyHash
+    );
+
+    System.out.println("----------------------------------------------");
+    System.out.println("Received from C++: found pubKey:     " + assetMap.get(PublicKeyTag));
+    System.out.println("Received from C++: found assetName:  " + assetMap.get(AssetNameTag));
+    System.out.println("Received from C++: found assetValue: " + assetMap.get(AssetValueTag));
+    System.out.println("----------------------------------------------");
+
+    // 3. Then, verify integrity.
+    assert assetMap.get(PublicKeyTag).equals(params.get(PublicKeyTag));
+    assert assetMap.get(AssetNameTag).equals(params.get(AssetNameTag));
+    assert assetMap.get(AssetValueTag).equals(params.get(AssetValueTag));
+
+    System.out.println("Success assetions of integrity.");
+    System.out.println("----------------------------------------------");
   }
 
   public static void main(String[] argv) {
