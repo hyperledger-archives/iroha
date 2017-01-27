@@ -38,19 +38,12 @@ public class Test {
   public static void test4(HashMap<String,String> params){
     System.out.println("Hello in JAVA! test4() ");
     AccountRepository accountRepo = new AccountRepository();
-    System.out.println("Java: AccountRepository add: " + params.get("key"));
-    accountRepo.add(params.get("key"), "MizukiSonoko");
+    String ret = accountRepo.add(params.get("publicKey"), "MizukiSonoko");
+    System.out.println("Java::test4() AccountRepository ret: " + ret);
   }
 
   public static void main(String[] argv) {
-    System.out.println("Hello in JAVA! check repositories");
-    System.out.println("AccountRepository");
-    AccountRepository account = new AccountRepository();
-    account.add("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=", "MyAsset");
-	System.out.println("Call test4()");
-	HashMap<String,String> params = new HashMap<String,String>();
-	params.put("key", "HOHOHOHOHOGEGEGEGEGEG");
-	test4(params);
+    System.out.println("Hello in JAVA!");
   }
 
 }

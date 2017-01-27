@@ -24,6 +24,6 @@ public class AccountRepository {
     public static native void     updateQuantity(String uuid, String assetName, long newValue);
     public static native void     attach(String uuid, String assetName, long assetDefault);
     public static native HashMap<String,String> findByUuid(String uuid);
-    public static native void     add(String publicKey, String alias);
+    public static native String   add(String publicKey, String alias);
 
 }

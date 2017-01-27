@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "../repository_AccountRepository.h"
-#include "../../core/repository/domain/account_repository.hpp"
-#include "../../core/repository/world_state_repository.hpp"
-#include "../../core/infra/smart_contract/jvm/java_virtual_machine.hpp"
-#include "../../core/util/logger.hpp"
+#include "../../../core/repository/domain/account_repository.hpp"
+#include "../../../core/repository/world_state_repository.hpp"
+#include "../../../core/infra/smart_contract/jvm/java_virtual_machine.hpp"
+#include "../../../core/util/logger.hpp"
 
 #include <iostream>
 
@@ -80,7 +80,7 @@ JNIEXPORT jobject JNICALL Java_repository_AccountRepository_findByUuid
     return smart_contract::JavaMakeMap(env, params);
 }
 
-JNIEXPORT void JNICALL Java_repository_AccountRepository_add
+JNIEXPORT jstring JNICALL Java_repository_AccountRepository_add
   (JNIEnv *env, jclass cls, jstring publicKey_, jstring alias_)
 {
     const char *publicKeyCString    = env->GetStringUTFChars(publicKey_, 0);
@@ -93,5 +93,7 @@ JNIEXPORT void JNICALL Java_repository_AccountRepository_add
     env->ReleaseStringUTFChars(alias_,      aliasCString);
 
     std::cout << "Key " << publicKey << " alias:" << alias << std::endl;
-    repository::account::add(publicKey, alias);
+    const auto ret = repository::account::add(publicKey, alias);
+
+	return env->NewStringUTF(ret.c_str());
 }

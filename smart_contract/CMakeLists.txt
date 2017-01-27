@@ -15,13 +15,13 @@ link_directories(
   /usr/lib/
 )
 
-ADD_LIBRARY(AccountRepository SHARED repository/account_repository_jni.cpp)
+ADD_LIBRARY(AccountRepository SHARED Test/repository/account_repository_jni.cpp)
 target_link_libraries(AccountRepository
   domain_repository
   convertor
 )
 
-ADD_LIBRARY(AssetRepository SHARED repository/asset_repository_jni.cpp)
+ADD_LIBRARY(AssetRepository SHARED Test/repository/asset_repository_jni.cpp)
 target_link_libraries(AssetRepository
   domain_repository
   convertor

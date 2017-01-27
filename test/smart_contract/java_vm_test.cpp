@@ -64,8 +64,11 @@ TEST(SmartContract, Invoke_CPP_function_FROM_JAVA_function){
     std::string contractName = "Test";
     std::string functionName = "test4";
     std::unordered_map<std::string, std::string> params;
-    params["key"] = "PUBLICKEY";
-    std::string hashed_key = "3f31d574eb12fd73b1a0b6c9614ef3e22649c5ad80e6e736a5aa82e8606b8971";
+    params["publicKey"] = "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
+    std::string hashed_key = "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
+    std::string serialized_string = "\n,MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=\x12\fMizukiSonoko";
+//    params["publicKey"] = "PUBLICKEY";
+//    std::string hashed_key = "3f31d574eb12fd73b1a0b6c9614ef3e22649c5ad80e6e736a5aa82e8606b8971";
 
     SmartContract smartContract = SmartContract();
     smartContract.invokeFunction(
@@ -78,6 +81,6 @@ TEST(SmartContract, Invoke_CPP_function_FROM_JAVA_function){
     std::string value = repository::world_state_repository::find(hashed_key);
     ASSERT_STREQ(
       value.c_str(),
-      "MizukiSonoko"
+      serialized_string.c_str()//"MizukiSonoko"
     );
 }
