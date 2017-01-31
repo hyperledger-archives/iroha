@@ -47,7 +47,7 @@ namespace convertor{
             return object::Asset(
                     std::move(domain),
                     std::move(name),
-                    1,//aAsset.value(),
+                    123456, //aAsset.value(), // TODO: Replace with map object value
                     1//aAsset.precision()
             );
         }

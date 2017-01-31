@@ -121,8 +121,8 @@ TEST(SmartContract, Invoke_CPP_asset_repo_function_FROM_JAVA_function) {
 
     std::unordered_map<std::string, std::string> params;
     {
-        params[DomainIdTag]     = "public key asset";
-        params[AssetNameTag]    = "asset name";
+        params[DomainIdTag]     = "A domain id";
+        params[AssetNameTag]    = "Currency";
         params[AssetValueTag]   = "123456";
     }
 
@@ -134,14 +134,11 @@ TEST(SmartContract, Invoke_CPP_asset_repo_function_FROM_JAVA_function) {
     );
 
     const std::string hashed_key =
-//        "3f31d574eb12fd73b1a0b6c9614ef3e22649c5ad80e6e736a5aa82e8606b8971";
         "3f8ba1e5df7f1587defc8fae4789207c8719c7b6d86ce299821b8a83fe08b5a9";
 
     // TODO: Getting uuid needs to be able to invoke non-void method.
     const std::string received_asset_value =
-        repository::world_state_repository::find(
-            hash::sha3_256_hex(params[AssetNameTag] + "@" + params[DomainIdTag])
-        );
+        repository::world_state_repository::find(hashed_key);
 
     ASSERT_STREQ(
         received_asset_value.c_str(),

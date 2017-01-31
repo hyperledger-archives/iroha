@@ -149,7 +149,7 @@ JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_assetFindByUuid
     // These constant tags should be placed somewhere else.
     const auto DomainIdTag      = "domainId";
     const auto AssetNameTag     = "assetName";
-    const auto ValueTag         = "value";
+    const auto ValueTag         = "assetValue";
 
     std::unordered_map<std::string, std::string> params;
     {

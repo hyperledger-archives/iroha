@@ -61,7 +61,9 @@ namespace repository{
                 AssetName(assetName)
             );
 
-            const auto serializedAsset = detail::serializeAsset(object::Asset(domainId, assetName, std::stoi(value)/*value*/));
+            const auto serializedAsset = detail::serializeAsset(
+                object::Asset(domainId, assetName, std::stoi(value)/*value*/)
+            );
 
             if (not world_state_repository::add(uuid, serializedAsset)) {
                 return "";
@@ -78,7 +80,7 @@ namespace repository{
                 AssetName(assetName)
             );
 
-            const auto serializedAsset = detail::serializeAsset(object::Asset(domainId, assetName, 54321/*value*/));
+            const auto serializedAsset = detail::serializeAsset(object::Asset(domainId, assetName, std::stoull(newValue)/*value*/));
 
             return world_state_repository::update(uuid, newValue);
         }
