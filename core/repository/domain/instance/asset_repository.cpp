@@ -20,66 +20,50 @@ limitations under the License.
 #include "../../world_state_repository.hpp"
 #include "../../../model/state/asset.hpp"
 #include "../asset_repository.hpp"
+#include "../../../model/string_wrapper/string_wrapper.hpp"
 
 namespace repository{
     namespace asset {
 
+        using string_wrapper::DomainId;
+        using string_wrapper::AssetName;
+
+        // TODO: replace map<string,Object>
+        using AssetValue = std::string;
+
         namespace detail {
-
-            // This should be placed elsewhere. (in model?)
-            namespace string_wrapper {
-
-                // duplicate (account)
-                class PublicKey {
-                public:
-                    explicit PublicKey(const std::string& uuid)
-                        : _publicKey(uuid) {}
-
-                    const std::string& operator()() const {
-                        return _publicKey;
-                    }
-
-                private:
-                    std::string _publicKey;
-                };
-
-                class AssetName {
-                public:
-                    explicit AssetName(const std::string& assetName)
-                        : _assetName(assetName) {}
-
-                    const std::string& operator()() const {
-                        return _assetName;
-                    }
-                    
-                private:
-                    std::string _assetName;
-                };
+            inline std::string serializeAsset(const object::Asset& obj) {
+                Event::Asset protoAsset = convertor::detail::encodeObject(obj);
+                std::string ret;
+                protoAsset.SerializeToString(&ret);
+                return ret;
             }
 
-            using namespace string_wrapper;
+            inline object::Asset deserializeAsset(const std::string& serializedAsset) {
+                Event::Asset protoAsset;
+                protoAsset.ParseFromString(serializedAsset);
+                return convertor::detail::decodeObject(protoAsset);
+            }
 
-            using AssetValue = std::string; // TODO: replace map<string,Object>
-
-//            inline std::string createAssetDBKey(const AssetName& assetName, const DomainId& parentDomainId) {
-            inline std::string createAssetUuid(const PublicKey& publicKey, const AssetName& assetName) {
-                // I think the following coding should be same as repository::account.
-//                auto protoAsset = convertor::detail::encodeObject(object::Asset(...)); // name, parentDomainId
-//                std::string strAsset;
-//                protoAsset.SerializeToString(&strAsset);
-//                return strAsset;
-                return publicKey() + "@" + assetName();
+            // TODO: replace with util::createUuid() ?
+            inline std::string createAssetUuid(const DomainId& domainId, const AssetName& assetName) {
+                return hash::sha3_256_hex(*domainId + "@" + *assetName);
             }
         }
 
-        std::string add(std::string publicKey, std::string assetName, std::string value) {
+        // TODO: use optional
+        std::string add(const std::string& domainId, const std::string& assetName, const std::string& value) {
+
+            logger::explore("asset repository") << "domainId: " << domainId << " assetName: " << assetName << " assetValue: " << value;
 
             const auto uuid = detail::createAssetUuid(
-                detail::PublicKey(publicKey),
-                detail::AssetName(assetName)
+                DomainId(domainId),
+                AssetName(assetName)
             );
 
-            if (not world_state_repository::add(uuid, value)) {
+            const auto serializedAsset = detail::serializeAsset(object::Asset(domainId, assetName, std::stoi(value)/*value*/));
+
+            if (not world_state_repository::add(uuid, serializedAsset)) {
                 return "";
             }
 
@@ -87,33 +71,36 @@ namespace repository{
         }
 
         // TODO: Wrap std::string with structs in arguments.
-        bool update(std::string publicKey, std::string assetName, std::string newValue) {
+        bool update(const std::string& domainId, const std::string& assetName, const std::string& newValue) {
 
             const auto uuid = detail::createAssetUuid(
-                detail::PublicKey(publicKey),
-                detail::AssetName(assetName)
+                DomainId(domainId),
+                AssetName(assetName)
             );
+
+            const auto serializedAsset = detail::serializeAsset(object::Asset(domainId, assetName, 54321/*value*/));
 
             return world_state_repository::update(uuid, newValue);
         }
 
-        bool remove(std::string publicKey, std::string assetName) {
+        bool remove(const std::string& domainId, const std::string& assetName) {
 
             const auto uuid = detail::createAssetUuid(
-                detail::PublicKey(publicKey),
-                detail::AssetName(assetName)
+                DomainId(domainId),
+                AssetName(assetName)
             );
 
             return world_state_repository::remove(uuid);
         }
         
-        std::vector <std::string> findAll(std::string key) {
+        std::vector <object::Asset> findAll(const std::string& uuid) {
             
         }
 
+        // TODO: use optional type
         object::Asset findByUuid(const std::string& uuid) {
 
-            const auto serializedAsset = world_state_repository::find(uuid);
+            const std::string serializedAsset = world_state_repository::find(uuid);
 
             logger::debug("asset repository :: findByUuid") << serializedAsset;
 
@@ -121,16 +108,15 @@ namespace repository{
                 return object::Asset();
             }
 
-            Event::Asset protoAsset;
-            protoAsset.ParseFromString(serializedAsset);
-
-            return convertor::detail::decodeObject(protoAsset);
+            return detail::deserializeAsset(serializedAsset);
         }
 
-        std::string findOrElse(std::string key, std::string defaultValue);
+        object::Asset findByUuidOrElse(const std::string& uuid, const object::Asset& defaultValue) {
+            throw "asset repo :: findByUuidOrElse() is not implemented yet.";
+        }
 
-        bool isExist(std::string key) {
-
+        bool isExist(const std::string& key) {
+            throw "asset repo :: isExist() is not implemented yet.";
         }
     }
 }

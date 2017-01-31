@@ -18,7 +18,7 @@ target_link_libraries(http_server_with_cappuccino
   convertor
   connection_with_grpc
   peer_service_with_json
-
+  
   domain_repository
   event_repository
 )

@@ -15,72 +15,54 @@ limitations under the License.
 */
 
 #include "../../../infra/protobuf/convertor.hpp"
-
 #include "../../../model/state/account.hpp"
-
+#include "../../../model/string_wrapper/string_wrapper.hpp"
 #include "../account_repository.hpp"
 #include "../../world_state_repository.hpp"
+
+#include <cstdint>
 
 namespace repository{
     namespace account {
 
+        using string_wrapper::PublicKey;
+        using string_wrapper::Alias;
+
         namespace detail {
-            // TODO: Separate string_wrapper to header for wrapper.
-            namespace string_wrapper {
-                class AccountName {
-                public:
-                    explicit AccountName(const std::string& accountName)
-                        : _accountName(accountName) {}
-
-                    const std::string& operator()() const {
-                        return _accountName;
-                    }
-                    
-                private:
-                    std::string _accountName;
-                };
-
-                class PublicKey {
-                public:
-                    explicit PublicKey(const std::string& publicKey)
-                        : _publicKey(publicKey) {}
-
-                    const std::string& operator()() const {
-                        return _publicKey;
-                    }
-                    
-                private:
-                    std::string _publicKey;
-                };
-
-                class Alias {
-                public:
-                    explicit Alias(const std::string& alias)
-                        : _alias(alias) {}
-
-                    const std::string& operator()() const {
-                        return _alias;
-                    }
-                    
-                private:
-                    std::string _alias;
-                };
-            }
-            
-            using namespace string_wrapper;
-            
-            std::string serializeAccount(const PublicKey& publicKey, const Alias& alias) {
-                auto protoAccount = convertor::detail::encodeObject(
-                    object::Account(publicKey(), alias()) // object::Account(publicKey, alias)
-                );
-                std::string strAccount;
-                protoAccount.SerializeToString(&strAccount);
-                return strAccount;
+            std::string serializeAccount(const object::Account& obj) {
+                Event::Account protoAccount = convertor::detail::encodeObject(obj);
+                std::string ret;
+                protoAccount.SerializeToString(&ret);
+                return ret;
             }
 
+            object::Account deserializeAccount(const std::string& str) {
+                Event::Account protoAccount;
+                protoAccount.ParseFromString(str);
+                return convertor::detail::decodeObject(protoAccount);
+            }
+
+            // TODO: replace with util::createUuid() ?
             std::string createAccountUuid(const PublicKey& publicKey) {
-                return hash::sha3_256_hex(publicKey());
+                return hash::sha3_256_hex(*publicKey);
             }
+        }
+
+        // TODO: use string_wrapper
+        std::string add(const std::string& publicKey, const std::string& alias) {
+
+            logger::explore("account repository") << "Add publicKey:" << publicKey << " alias:" << alias;
+
+            const auto uuid = detail::createAccountUuid(PublicKey(publicKey));
+            const auto serializedAccount = detail::serializeAccount(object::Account(publicKey, alias));
+
+            logger::debug("account repository") << "Save key:" << uuid << " alias:" << alias;
+
+            if (not world_state_repository::add(uuid, serializedAccount)) {
+                return "";
+            }
+
+            return uuid;
         }
 
         // SampleAsset has only quantity no logic, so this value is int.
@@ -88,74 +70,46 @@ namespace repository{
             const std::string&  uuid,
             const std::string&  assetName,
             std::int64_t        newValue
-        ){
-            auto account = world_state_repository::find(uuid);
-            Event::Account protoAccount;
-            protoAccount.ParseFromString(account);
+        ) {
 
-            for (int i = 0;i < protoAccount.assets_size(); i++) {
-                if (protoAccount.assets(i).name() == assetName) {
-                    //protoAccount.mutable_assets(i)->set_value(newValue);
+            const auto serializedAccount  = world_state_repository::find(uuid);
+            
+            object::Account account = detail::deserializeAccount(serializedAccount);
+            for (auto& asset: account.assets) {
+                if (std::get<0>(asset) == assetName) {  // asset.name == assetName (can adapt struct?)
+                    std::get<1>(asset) = newValue;      // asset.value = newValue
                 }
             }
 
-            std::string strAccount;
-            protoAccount.SerializeToString(&strAccount);
-            world_state_repository::update(uuid, strAccount);
+            return world_state_repository::update(uuid, detail::serializeAccount(account));
         }
 
-        bool attach(const std::string& uuid, const std::string& assetName, long assetDefault) {
-            auto serializedAccount = world_state_repository::find(uuid);
-            if(serializedAccount != "") {
-                Event::Account protoAccount;
-                protoAccount.ParseFromString(serializedAccount);
-                auto account = convertor::detail::decodeObject(protoAccount);
-                account.assets.push_back(std::make_pair(assetName,assetDefault));
-                auto protoAccountNew = convertor::detail::encodeObject(account);
+        bool attach(const std::string& uuid, const std::string& assetName, std::int64_t assetDefault) {
 
-                std::string strAccount;
-                protoAccountNew.SerializeToString(&strAccount);
-                return world_state_repository::update(uuid, strAccount);
-            } else {
+            const auto serializedAccount = world_state_repository::find(uuid);
+
+            if (serializedAccount.empty()) {
                 return false;
             }
+
+            object::Account account = detail::deserializeAccount(serializedAccount);
+            account.assets.emplace_back(assetName, assetDefault);
+
+            return world_state_repository::update(uuid, detail::serializeAccount(account));
         }
 
         object::Account findByUuid(const std::string& uuid) {
 
             const auto serializedAccount = world_state_repository::find(uuid);
 
-            logger::debug("account repository :: findByUuid")
-                << serializedAccount;
+            logger::debug("account repository :: findByUuid") << serializedAccount;
 
             if (serializedAccount.empty()) {
                 return object::Account();
             }
 
-            Event::Account protoAccount;
-            protoAccount.ParseFromString(serializedAccount);
-
-            return convertor::detail::decodeObject(protoAccount);
+            return detail::deserializeAccount(serializedAccount);
         }
 
-        std::string add(const std::string& publicKey, const std::string& alias) {
-            logger::explore("account repository")
-                << "Add publicKey:" << publicKey << " alias:" << alias;
-
-            const auto uuid = detail::createAccountUuid(detail::PublicKey(publicKey));
-
-            const auto serializedAccount = detail::serializeAccount(
-                detail::PublicKey(publicKey),
-                detail::Alias(alias)
-            );
-
-            logger::debug("account repository") << "Save key:" << uuid << " alias:" << alias;
-
-            if (not world_state_repository::add(uuid, serializedAccount)) {
-                return "";
-            }
-            return uuid;
-        }
-
-    };
-};
+    }
+}

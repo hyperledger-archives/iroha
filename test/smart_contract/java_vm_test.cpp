@@ -16,28 +16,35 @@ limitations under the License.
 
 #include "../../core/model/smart_contract/virtual_machine_interface.hpp"
 #include "../../core/repository/world_state_repository.hpp"
+#include "../../core/crypto/hash.hpp"
 
 #include <gtest/gtest.h>
 
 using smart_contract::SmartContract;
 
+const std::string PackageName       = "test";
 const std::string ContractName      = "Test";
 const std::string PublicKeyTag      = "publicKey";
+const std::string DomainIdTag       = "domainId";
 const std::string AccountNameTag    = "accountName";
 const std::string AssetNameTag      = "assetName";
 const std::string AssetValueTag     = "assetValue";
 
-TEST(SmartContract, InitializeVM){
-    SmartContract smartContract = SmartContract();
-    smartContract.initializeVM(ContractName);
+SmartContract smartContract = SmartContract();
+
+TEST(SmartContract, InitializeVM) {
+    smartContract.initializeVM(
+        PackageName,
+        ContractName
+    );    
 }
 
 TEST(SmartContract, Invoke_JAVA_function) {
 
     const std::string FunctionName = "test1";
 
-    SmartContract smartContract = SmartContract();
     smartContract.invokeFunction(
+        PackageName,
         ContractName,
         FunctionName
     );
@@ -53,8 +60,8 @@ TEST(SmartContract, Invoke_JAVA_function_map_argv) {
         params["key2"] = "Sonoko";
     }
 
-    SmartContract smartContract = SmartContract();
     smartContract.invokeFunction(
+        PackageName,
         ContractName,
         FunctionName,
         params
@@ -71,8 +78,8 @@ TEST(SmartContract, Invoke_JAVA_function_map_utf_8) {
         params["key2"] = "素子";
     }
 
-    SmartContract smartContract = SmartContract();
     smartContract.invokeFunction(
+        PackageName,
         ContractName,
         FunctionName,
         params
@@ -89,22 +96,22 @@ TEST(SmartContract, Invoke_CPP_account_repo_function_FROM_JAVA_function) {
         params[AccountNameTag]  = "MizukiSonoko";
     }
 
-    SmartContract smartContract = SmartContract();
     smartContract.invokeFunction(
+        PackageName,
         ContractName,
         FunctionName,
         params
     );
 
-    const std::string hashed_key =
+    const std::string hashed_key =  // replace with UUID?
         "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
 
     const std::string received_serialized_acc =
         repository::world_state_repository::find(hashed_key);
 
     ASSERT_STREQ(
-      received_serialized_acc.c_str(),
-      "\n,MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=\x12\fMizukiSonoko"//"MizukiSonoko"
+        received_serialized_acc.c_str(),
+        "\n,MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=\x12\fMizukiSonoko"//"MizukiSonoko"
     );
 }
 
@@ -114,33 +121,37 @@ TEST(SmartContract, Invoke_CPP_asset_repo_function_FROM_JAVA_function) {
 
     std::unordered_map<std::string, std::string> params;
     {
-        params[PublicKeyTag]    = "public key asset";
+        params[DomainIdTag]     = "public key asset";
         params[AssetNameTag]    = "asset name";
-        params[AssetValueTag]   = "asset value";
+        params[AssetValueTag]   = "123456";
     }
 
-    SmartContract smartContract = SmartContract();
     smartContract.invokeFunction(
+        PackageName,
         ContractName,
         FunctionName,
         params
     );
 
     const std::string hashed_key =
-        "3f31d574eb12fd73b1a0b6c9614ef3e22649c5ad80e6e736a5aa82e8606b8971";
+//        "3f31d574eb12fd73b1a0b6c9614ef3e22649c5ad80e6e736a5aa82e8606b8971";
+        "3f8ba1e5df7f1587defc8fae4789207c8719c7b6d86ce299821b8a83fe08b5a9";
 
+    // TODO: Getting uuid needs to be able to invoke non-void method.
     const std::string received_asset_value =
         repository::world_state_repository::find(
-            params[AssetNameTag] + "@" + params[PublicKeyTag] // TODO: Use serialization method
+            hash::sha3_256_hex(params[AssetNameTag] + "@" + params[DomainIdTag])
         );
 
     ASSERT_STREQ(
-      received_asset_value.c_str(),
-      params[AssetValueTag].c_str()
+        received_asset_value.c_str(),
+        params[AssetValueTag].c_str()
     );
 }
 
-TEST(SmartContract, FinishVM){
-    SmartContract smartContract = SmartContract();
-    smartContract.finishVM(ContractName);
+TEST(SmartContract, FinishVM) {
+    smartContract.finishVM(
+        PackageName,
+        ContractName
+    );    
 }
