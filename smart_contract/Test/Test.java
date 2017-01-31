@@ -119,7 +119,7 @@ public class Test {
     System.out.println("----------------------------------------------");
     System.out.println("Received from C++: found domainId:   " + assetMap.get(DomainIdTag));
     System.out.println("Received from C++: found assetName:  " + assetMap.get(AssetNameTag));
-    System.out.println("Received from C++: found assetValue: " + assetMap.get(AssetValueTag));
+    System.out.println("Received from C++: found assetValue(temporary value): " + assetMap.get(AssetValueTag));
     System.out.println("----------------------------------------------");
 
     // 3. Then, verify integrity.

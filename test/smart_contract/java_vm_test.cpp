@@ -144,6 +144,7 @@ TEST(SmartContract, Invoke_CPP_asset_repo_function_FROM_JAVA_function) {
         received_asset_value.c_str(),
         params[AssetValueTag].c_str()
     );
+
 }
 
 TEST(SmartContract, FinishVM) {

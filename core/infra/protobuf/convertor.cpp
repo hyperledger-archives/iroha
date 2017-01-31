@@ -17,6 +17,7 @@ namespace convertor{
             Event::Asset asset;
             asset.set_domain(aAsset.domain);
             asset.set_name(aAsset.name);
+            // TODO: asset.set_value(aAsset.value);
             return asset;
         }
 
