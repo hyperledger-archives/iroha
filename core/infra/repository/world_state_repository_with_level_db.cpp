@@ -170,7 +170,7 @@ namespace repository {
               detail::loadDb();
           }
 
-          std::string result = "";
+          std::string result;
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &result));
           if (result == "") {
               return defaultValue;
@@ -184,7 +184,7 @@ namespace repository {
               detail::loadDb();
           }
 
-          std::string result = "";
+          std::string result;
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &result));
           return result == "";
       }

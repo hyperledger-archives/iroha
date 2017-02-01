@@ -15,81 +15,101 @@ limitations under the License.
 */
 
 #include "../../../infra/protobuf/convertor.hpp"
-
 #include "../../../model/state/account.hpp"
-
+#include "../../../model/string_wrapper/string_wrapper.hpp"
 #include "../account_repository.hpp"
 #include "../../world_state_repository.hpp"
 
+#include <cstdint>
 
 namespace repository{
     namespace account {
+
+        using string_wrapper::PublicKey;
+        using string_wrapper::Alias;
+
+        namespace detail {
+            std::string serializeAccount(const object::Account& obj) {
+                Event::Account protoAccount = convertor::detail::encodeObject(obj);
+                std::string ret;
+                protoAccount.SerializeToString(&ret);
+                return ret;
+            }
+
+            object::Account deserializeAccount(const std::string& str) {
+                Event::Account protoAccount;
+                protoAccount.ParseFromString(str);
+                return convertor::detail::decodeObject(protoAccount);
+            }
+
+            // TODO: replace with util::createUuid() ?
+            std::string createAccountUuid(const PublicKey& publicKey) {
+                return hash::sha3_256_hex(*publicKey);
+            }
+        }
+
+        // TODO: use string_wrapper
+        std::string add(const std::string& publicKey, const std::string& alias) {
+
+            logger::explore("account repository") << "Add publicKey:" << publicKey << " alias:" << alias;
+
+            const auto uuid = detail::createAccountUuid(PublicKey(publicKey));
+            const auto serializedAccount = detail::serializeAccount(object::Account(publicKey, alias));
+
+            logger::debug("account repository") << "Save key:" << uuid << " alias:" << alias;
+
+            if (not world_state_repository::add(uuid, serializedAccount)) {
+                return "";
+            }
+
+            return uuid;
+        }
 
         // SampleAsset has only quantity no logic, so this value is int.
         bool update_quantity(
             const std::string&  uuid,
             const std::string&  assetName,
             std::int64_t        newValue
-        ){
-            auto account = world_state_repository::find(uuid);
-            Event::Account protoAccount;
-            protoAccount.ParseFromString(account);
+        ) {
 
-            for (int i = 0;i < protoAccount.assets_size(); i++) {
-                if (protoAccount.assets(i).name() == assetName) {
-                    //protoAccount.mutable_assets(i)->set_value(newValue);
+            const auto serializedAccount  = world_state_repository::find(uuid);
+            
+            object::Account account = detail::deserializeAccount(serializedAccount);
+            for (auto& asset: account.assets) {
+                if (std::get<0>(asset) == assetName) {  // asset.name == assetName (can adapt struct?)
+                    std::get<1>(asset) = newValue;      // asset.value = newValue
                 }
             }
 
-            std::string strAccount;
-            protoAccount.SerializeToString(&strAccount);
-            world_state_repository::update(uuid, strAccount);
+            return world_state_repository::update(uuid, detail::serializeAccount(account));
         }
 
-        bool attach(const std::string& uuid,const std::string& assetName, long assetDefault){
-            auto serializedAccount = world_state_repository::find(uuid);
-            if(serializedAccount != "") {
-                Event::Account protoAccount;
-                protoAccount.ParseFromString(serializedAccount);
-                auto account = convertor::detail::decodeObject(protoAccount);
-                account.assets.push_back(std::make_pair(assetName,assetDefault));
-                auto protoAccountNew = convertor::detail::encodeObject(account);
+        bool attach(const std::string& uuid, const std::string& assetName, std::int64_t assetDefault) {
 
-                std::string strAccount;
-                protoAccountNew.SerializeToString(&strAccount);
-                world_state_repository::update(uuid, strAccount);
-                return true;
-            }else{
+            const auto serializedAccount = world_state_repository::find(uuid);
+
+            if (serializedAccount.empty()) {
                 return false;
             }
+
+            object::Account account = detail::deserializeAccount(serializedAccount);
+            account.assets.emplace_back(assetName, assetDefault);
+
+            return world_state_repository::update(uuid, detail::serializeAccount(account));
         }
 
-        object::Account findByUuid(const std::string& uuid){
-            auto serializedAccount = world_state_repository::find(uuid);
-            auto account = world_state_repository::find(uuid);
-            if(account != "") {
-                Event::Account protoAccount;
-                protoAccount.ParseFromString(account);
-                return convertor::detail::decodeObject(protoAccount);
-            } else {
+        object::Account findByUuid(const std::string& uuid) {
+
+            const auto serializedAccount = world_state_repository::find(uuid);
+
+            logger::debug("account repository :: findByUuid") << serializedAccount;
+
+            if (serializedAccount.empty()) {
                 return object::Account();
             }
+
+            return detail::deserializeAccount(serializedAccount);
         }
 
-        std::string add(
-            std::string &publicKey,
-            std::string &alias
-        ){
-            std::cout <<"ADDDD \n";
-            logger::explore("sumeragi") << "Add publicKey:" <<  publicKey << " alias:" <<  alias;
-            object::Account ac(publicKey.c_str(),alias.c_str());
-            auto protoAccount = convertor::detail::encodeObject(ac);
-            std::string strAccount;
-            protoAccount.SerializeToString(&strAccount);
-            logger::debug("AccountRepository") << "Save key:" << hash::sha3_256_hex(publicKey) << " alias:" << alias;
-            world_state_repository::add(hash::sha3_256_hex(publicKey), strAccount);
-            return hash::sha3_256_hex(publicKey);
-        }
-
-    };
-};
+    }
+}

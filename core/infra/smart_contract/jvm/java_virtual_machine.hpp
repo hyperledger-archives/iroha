@@ -40,7 +40,7 @@ namespace smart_contract {
 
 
     void Java_SmartContract_save(JNIEnv *env, jobject thiz, jstring key, jstring value);
-    std::unique_ptr<JavaContext> initializeVM(std::string contractName);
+    std::unique_ptr<JavaContext> initializeVM(const std::string& packageName, const std::string& contractName);
 
     void execFunction(
         const std::unique_ptr<JavaContext> &context,

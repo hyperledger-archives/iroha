@@ -17,6 +17,7 @@ namespace convertor{
             Event::Asset asset;
             asset.set_domain(aAsset.domain);
             asset.set_name(aAsset.name);
+            // TODO: asset.set_value(aAsset.value);
             return asset;
         }
 
@@ -47,7 +48,7 @@ namespace convertor{
             return object::Asset(
                     std::move(domain),
                     std::move(name),
-                    1,//aAsset.value(),
+                    123456,//aAsset.value(), // TODO: Replace with map object value
                     1//aAsset.precision()
             );
         }
@@ -55,9 +56,9 @@ namespace convertor{
         object::Account decodeObject(Event::Account aAccount){
             auto publicKey = aAccount.publickey();
             auto name = aAccount.name();
-            std::vector<std::tuple<std::string,long>> assets;
+            std::vector<std::tuple<std::string, std::int64_t>> assets;
             for(const Event::Asset& as: aAccount.assets()){
-                assets.emplace_back(as.name(), static_cast<long>( 1));//as.value()));
+                assets.emplace_back(as.name(), static_cast<std::int64_t>(1)); //TODO: Replace with as.value()));
             }
             return object::Account(
                     std::move(publicKey),

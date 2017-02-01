@@ -2,7 +2,7 @@
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 
-SET(CMAKE_CXX_FLAGS "-g -Wall -std=c++1y")
+SET(CMAKE_CXX_FLAGS "-g -std=c++1y -Wall -fPIC")
 
 SET(AERON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/Aeron")
 SET(LEVELDB_PATH "${PROJECT_SOURCE_DIR}/core/vendor/leveldb")

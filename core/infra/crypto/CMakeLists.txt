@@ -9,7 +9,7 @@ SET(ED25519_PATH "${PROJECT_SOURCE_DIR}/core/vendor/ed25519")
 execute_process(COMMAND "cd ${PROJECT_SOURCE_DIR}/core/infra/crypto; make")
 
 #[[
-#SET(CMAKE_CXX_FLAGS "-g -Wall -std=c++1y -fomit-frame-pointer -march=native -mtune=native -m64")
+#SET(CMAKE_CXX_FLAGS "-g -Wall -std=c++1y -fomit-frame-pointer -march=native -mtune=native")
 #
 # Why not running??
 #

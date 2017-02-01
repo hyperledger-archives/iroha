@@ -1,4 +1,3 @@
-
 /*
 Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,17 +12,9 @@ limitations under the License.
 */
 
 import java.util.HashMap;
-import repository.DomainRepository;
-import repository.AssetRepository;
 
 // no package declaration
 public class SampleCurrency {
-    
-    public static void put( String param ) {
-        System.out.println("Hello in JAVA! in add");
-        System.out.println("vvvvvvvv　param vvvvvvvv");
-        System.out.println( param );
-    }
 
     public static void put( String param ) {
         System.out.println("Hello in JAVA! in add");
@@ -38,28 +29,8 @@ public class SampleCurrency {
             System.out.println( key + " : " + params.get( key ) );
         }
     }
-
-    public static void main(String[] argv) {
-        // This is DB access test.
-
-        System.out.println("Hello in JAVA! check repositories");
-
-        System.out.println("DomainRepository");
-        DomainRepository domain = new DomainRepository();
-        domain.add("domain", 12345);
-        // find, remove, ...
-
-        System.out.println("AssetRepository");
-        AssetRepository asset = new AssetRepository();
-//        asset.add("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=", "MyAsset", "some value");
-        // find, remove, ...
-        
-        /*
-        System.out.println("AccountRepository");
-        AccountRepository account = new AccountRepository();
-        account.add("account", 12345);
-        // find, remove, ...
-        */
+  
+    public static void main(String[] argv){
+        System.out.println("Hello in JAVA! in contract main");
     }
-
 }
