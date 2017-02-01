@@ -4,7 +4,7 @@ PROJECT(iroha CXX)
 ENABLE_LANGUAGE(C)
 find_package(Threads)
 
-SET(CMAKE_CXX_FLAGS "-g -m64 -std=c++1y -Wall -fPIC")
+SET(CMAKE_CXX_FLAGS "-g -std=c++1y -Wall -fPIC")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
 SET(CMAKE_CXX_FLAGS_DEBUG   "-Wextra -O0")
 SET(CMAKE_SHARED_LINKER_FLAGS "-lpthread -lssl")
