@@ -1,5 +1,6 @@
 {
   "me":{
+    "ip":"172.17.0.6",
     "name":"samari",
     "publicKey":"Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU=",
     "privateKey":"aGIuSZRhnGfFyeoKNm/NbTylnAvRfMu3KumOEfyT2HPf36jSF22m2JXWrdCmKiDoshVqjFtZPX3WXaNuo9L8WA=="
@@ -23,6 +24,7 @@
     {
       "ip":"172.17.0.6",
       "name":"samari",
+      "key123456":"98765",
       "publicKey":"Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU="
     }
   ]

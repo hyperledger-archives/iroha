@@ -94,7 +94,25 @@ TEST(ensure_sumeragi_json_format, missing_key) {
 
     for (const auto& fpath: filepaths) {
 
-        std::cout << fpath << std::endl;
+        std::cout << "\n" << fpath << std::endl;
+
+        std::ifstream ifs(fpath);
+        std::istreambuf_iterator<char> it(ifs);
+        const auto jsonString = std::string(it, std::istreambuf_iterator<char>());
+        ASSERT_FALSE(config::PeerServiceConfig::getInstance().ensureConfigFormat(jsonString));
+    }
+}
+
+TEST(ensure_sumeragi_json_format, useless_key) {
+
+    const auto filepaths = {
+        IrohaHome + "/test/infra/config/inputs/useless_me_key.json",
+        IrohaHome + "/test/infra/config/inputs/useless_group_key.json",
+    };
+
+    for (const auto& fpath: filepaths) {
+
+        std::cout << "\n" << fpath << std::endl;
 
         std::ifstream ifs(fpath);
         std::istreambuf_iterator<char> it(ifs);
