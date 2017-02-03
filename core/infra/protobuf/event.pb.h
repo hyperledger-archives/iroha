@@ -26,6 +26,8 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/extension_set.h>
+#include <google/protobuf/map.h>
+#include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 
@@ -65,6 +67,18 @@ class Object : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
 
   static const ::google::protobuf::Descriptor* descriptor();
   static const Object& default_instance();
+
+  enum ValueCase {
+    kValueString = 1,
+    kValueInt = 2,
+    kValueBoolean = 3,
+    kValueDouble = 4,
+    kValueSimpleAsset = 5,
+    kValueAsset = 6,
+    kValueDomain = 7,
+    kValuePeer = 8,
+    VALUE_NOT_SET = 0,
+  };
 
   void Swap(Object* other);
 
@@ -111,57 +125,115 @@ class Object : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
 
   // accessors -------------------------------------------------------
 
-  // optional string valueStr = 1;
-  void clear_valuestr();
-  static const int kValueStrFieldNumber = 1;
-  const ::std::string& valuestr() const;
-  void set_valuestr(const ::std::string& value);
-  void set_valuestr(const char* value);
-  void set_valuestr(const char* value, size_t size);
-  ::std::string* mutable_valuestr();
-  ::std::string* release_valuestr();
-  void set_allocated_valuestr(::std::string* valuestr);
+  // optional string valueString = 1;
+  private:
+  bool has_valuestring() const;
+  public:
+  void clear_valuestring();
+  static const int kValueStringFieldNumber = 1;
+  const ::std::string& valuestring() const;
+  void set_valuestring(const ::std::string& value);
+  void set_valuestring(const char* value);
+  void set_valuestring(const char* value, size_t size);
+  ::std::string* mutable_valuestring();
+  ::std::string* release_valuestring();
+  void set_allocated_valuestring(::std::string* valuestring);
 
   // optional int64 valueInt = 2;
+  private:
+  bool has_valueint() const;
+  public:
   void clear_valueint();
   static const int kValueIntFieldNumber = 2;
   ::google::protobuf::int64 valueint() const;
   void set_valueint(::google::protobuf::int64 value);
 
-  // optional bool valueBool = 3;
-  void clear_valuebool();
-  static const int kValueBoolFieldNumber = 3;
-  bool valuebool() const;
-  void set_valuebool(bool value);
+  // optional bool valueBoolean = 3;
+  private:
+  bool has_valueboolean() const;
+  public:
+  void clear_valueboolean();
+  static const int kValueBooleanFieldNumber = 3;
+  bool valueboolean() const;
+  void set_valueboolean(bool value);
 
   // optional double valueDouble = 4;
+  private:
+  bool has_valuedouble() const;
+  public:
   void clear_valuedouble();
   static const int kValueDoubleFieldNumber = 4;
   double valuedouble() const;
   void set_valuedouble(double value);
 
-  // optional string name = 5;
-  void clear_name();
-  static const int kNameFieldNumber = 5;
-  const ::std::string& name() const;
-  void set_name(const ::std::string& value);
-  void set_name(const char* value);
-  void set_name(const char* value, size_t size);
-  ::std::string* mutable_name();
-  ::std::string* release_name();
-  void set_allocated_name(::std::string* name);
+  // optional .Event.SimpleAsset valueSimpleAsset = 5;
+  bool has_valuesimpleasset() const;
+  void clear_valuesimpleasset();
+  static const int kValueSimpleAssetFieldNumber = 5;
+  const ::Event::SimpleAsset& valuesimpleasset() const;
+  ::Event::SimpleAsset* mutable_valuesimpleasset();
+  ::Event::SimpleAsset* release_valuesimpleasset();
+  void set_allocated_valuesimpleasset(::Event::SimpleAsset* valuesimpleasset);
 
+  // optional .Event.Asset valueAsset = 6;
+  bool has_valueasset() const;
+  void clear_valueasset();
+  static const int kValueAssetFieldNumber = 6;
+  const ::Event::Asset& valueasset() const;
+  ::Event::Asset* mutable_valueasset();
+  ::Event::Asset* release_valueasset();
+  void set_allocated_valueasset(::Event::Asset* valueasset);
+
+  // optional .Event.Domain valueDomain = 7;
+  bool has_valuedomain() const;
+  void clear_valuedomain();
+  static const int kValueDomainFieldNumber = 7;
+  const ::Event::Domain& valuedomain() const;
+  ::Event::Domain* mutable_valuedomain();
+  ::Event::Domain* release_valuedomain();
+  void set_allocated_valuedomain(::Event::Domain* valuedomain);
+
+  // optional .Event.Peer valuePeer = 8;
+  bool has_valuepeer() const;
+  void clear_valuepeer();
+  static const int kValuePeerFieldNumber = 8;
+  const ::Event::Peer& valuepeer() const;
+  ::Event::Peer* mutable_valuepeer();
+  ::Event::Peer* release_valuepeer();
+  void set_allocated_valuepeer(::Event::Peer* valuepeer);
+
+  ValueCase value_case() const;
   // @@protoc_insertion_point(class_scope:Event.Object)
  private:
+  inline void set_has_valuestring();
+  inline void set_has_valueint();
+  inline void set_has_valueboolean();
+  inline void set_has_valuedouble();
+  inline void set_has_valuesimpleasset();
+  inline void set_has_valueasset();
+  inline void set_has_valuedomain();
+  inline void set_has_valuepeer();
+
+  inline bool has_value() const;
+  void clear_value();
+  inline void clear_has_value();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   bool _is_default_instance_;
-  ::google::protobuf::internal::ArenaStringPtr valuestr_;
-  ::google::protobuf::int64 valueint_;
-  double valuedouble_;
-  ::google::protobuf::internal::ArenaStringPtr name_;
-  bool valuebool_;
+  union ValueUnion {
+    ValueUnion() {}
+    ::google::protobuf::internal::ArenaStringPtr valuestring_;
+    ::google::protobuf::int64 valueint_;
+    bool valueboolean_;
+    double valuedouble_;
+    ::Event::SimpleAsset* valuesimpleasset_;
+    ::Event::Asset* valueasset_;
+    ::Event::Domain* valuedomain_;
+    ::Event::Peer* valuepeer_;
+  } value_;
   mutable int _cached_size_;
+  ::google::protobuf::uint32 _oneof_case_[1];
+
   friend void  protobuf_AddDesc_event_2eproto();
   friend void protobuf_AssignDesc_event_2eproto();
   friend void protobuf_ShutdownFile_event_2eproto();
@@ -338,6 +410,7 @@ class Asset : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
 
   // nested types ----------------------------------------------------
 
+
   // accessors -------------------------------------------------------
 
   // optional string domain = 1;
@@ -362,17 +435,14 @@ class Asset : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
 
-  // repeated .Event.Object map = 3;
-  int map_size() const;
-  void clear_map();
-  static const int kMapFieldNumber = 3;
-  const ::Event::Object& map(int index) const;
-  ::Event::Object* mutable_map(int index);
-  ::Event::Object* add_map();
-  ::google::protobuf::RepeatedPtrField< ::Event::Object >*
-      mutable_map();
-  const ::google::protobuf::RepeatedPtrField< ::Event::Object >&
-      map() const;
+  // map<string, .Event.Object> value = 3;
+  int value_size() const;
+  void clear_value();
+  static const int kValueFieldNumber = 3;
+  const ::google::protobuf::Map< ::std::string, ::Event::Object >&
+      value() const;
+  ::google::protobuf::Map< ::std::string, ::Event::Object >*
+      mutable_value();
 
   // @@protoc_insertion_point(class_scope:Event.Asset)
  private:
@@ -381,7 +451,17 @@ class Asset : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   bool _is_default_instance_;
   ::google::protobuf::internal::ArenaStringPtr domain_;
   ::google::protobuf::internal::ArenaStringPtr name_;
-  ::google::protobuf::RepeatedPtrField< ::Event::Object > map_;
+  typedef ::google::protobuf::internal::MapEntryLite<
+      ::std::string, ::Event::Object,
+      ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+      ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE,
+      0 >
+      Asset_ValueEntry;
+  ::google::protobuf::internal::MapField<
+      ::std::string, ::Event::Object,
+      ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+      ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE,
+      0 > value_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_event_2eproto();
   friend void protobuf_AssignDesc_event_2eproto();
@@ -1390,136 +1470,375 @@ class StatusResponse : public ::google::protobuf::Message /* @@protoc_insertion_
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
 // Object
 
-// optional string valueStr = 1;
-inline void Object::clear_valuestr() {
-  valuestr_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+// optional string valueString = 1;
+inline bool Object::has_valuestring() const {
+  return value_case() == kValueString;
 }
-inline const ::std::string& Object::valuestr() const {
-  // @@protoc_insertion_point(field_get:Event.Object.valueStr)
-  return valuestr_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+inline void Object::set_has_valuestring() {
+  _oneof_case_[0] = kValueString;
 }
-inline void Object::set_valuestr(const ::std::string& value) {
-  
-  valuestr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:Event.Object.valueStr)
-}
-inline void Object::set_valuestr(const char* value) {
-  
-  valuestr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:Event.Object.valueStr)
-}
-inline void Object::set_valuestr(const char* value, size_t size) {
-  
-  valuestr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:Event.Object.valueStr)
-}
-inline ::std::string* Object::mutable_valuestr() {
-  
-  // @@protoc_insertion_point(field_mutable:Event.Object.valueStr)
-  return valuestr_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* Object::release_valuestr() {
-  // @@protoc_insertion_point(field_release:Event.Object.valueStr)
-  
-  return valuestr_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void Object::set_allocated_valuestr(::std::string* valuestr) {
-  if (valuestr != NULL) {
-    
-  } else {
-    
+inline void Object::clear_valuestring() {
+  if (has_valuestring()) {
+    value_.valuestring_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    clear_has_value();
   }
-  valuestr_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), valuestr);
-  // @@protoc_insertion_point(field_set_allocated:Event.Object.valueStr)
+}
+inline const ::std::string& Object::valuestring() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valueString)
+  if (has_valuestring()) {
+    return value_.valuestring_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  return *&::google::protobuf::internal::GetEmptyStringAlreadyInited();
+}
+inline void Object::set_valuestring(const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:Event.Object.valueString)
+  if (!has_valuestring()) {
+    clear_value();
+    set_has_valuestring();
+    value_.valuestring_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  value_.valuestring_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Event.Object.valueString)
+}
+inline void Object::set_valuestring(const char* value) {
+  if (!has_valuestring()) {
+    clear_value();
+    set_has_valuestring();
+    value_.valuestring_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  value_.valuestring_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Event.Object.valueString)
+}
+inline void Object::set_valuestring(const char* value, size_t size) {
+  if (!has_valuestring()) {
+    clear_value();
+    set_has_valuestring();
+    value_.valuestring_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  value_.valuestring_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Event.Object.valueString)
+}
+inline ::std::string* Object::mutable_valuestring() {
+  if (!has_valuestring()) {
+    clear_value();
+    set_has_valuestring();
+    value_.valuestring_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Object.valueString)
+  return value_.valuestring_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* Object::release_valuestring() {
+  // @@protoc_insertion_point(field_release:Event.Object.valueString)
+  if (has_valuestring()) {
+    clear_has_value();
+    return value_.valuestring_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  } else {
+    return NULL;
+  }
+}
+inline void Object::set_allocated_valuestring(::std::string* valuestring) {
+  if (!has_valuestring()) {
+    value_.valuestring_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  clear_value();
+  if (valuestring != NULL) {
+    set_has_valuestring();
+    value_.valuestring_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+        valuestring);
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Object.valueString)
 }
 
 // optional int64 valueInt = 2;
+inline bool Object::has_valueint() const {
+  return value_case() == kValueInt;
+}
+inline void Object::set_has_valueint() {
+  _oneof_case_[0] = kValueInt;
+}
 inline void Object::clear_valueint() {
-  valueint_ = GOOGLE_LONGLONG(0);
+  if (has_valueint()) {
+    value_.valueint_ = GOOGLE_LONGLONG(0);
+    clear_has_value();
+  }
 }
 inline ::google::protobuf::int64 Object::valueint() const {
   // @@protoc_insertion_point(field_get:Event.Object.valueInt)
-  return valueint_;
+  if (has_valueint()) {
+    return value_.valueint_;
+  }
+  return GOOGLE_LONGLONG(0);
 }
 inline void Object::set_valueint(::google::protobuf::int64 value) {
-  
-  valueint_ = value;
+  if (!has_valueint()) {
+    clear_value();
+    set_has_valueint();
+  }
+  value_.valueint_ = value;
   // @@protoc_insertion_point(field_set:Event.Object.valueInt)
 }
 
-// optional bool valueBool = 3;
-inline void Object::clear_valuebool() {
-  valuebool_ = false;
+// optional bool valueBoolean = 3;
+inline bool Object::has_valueboolean() const {
+  return value_case() == kValueBoolean;
 }
-inline bool Object::valuebool() const {
-  // @@protoc_insertion_point(field_get:Event.Object.valueBool)
-  return valuebool_;
+inline void Object::set_has_valueboolean() {
+  _oneof_case_[0] = kValueBoolean;
 }
-inline void Object::set_valuebool(bool value) {
-  
-  valuebool_ = value;
-  // @@protoc_insertion_point(field_set:Event.Object.valueBool)
+inline void Object::clear_valueboolean() {
+  if (has_valueboolean()) {
+    value_.valueboolean_ = false;
+    clear_has_value();
+  }
+}
+inline bool Object::valueboolean() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valueBoolean)
+  if (has_valueboolean()) {
+    return value_.valueboolean_;
+  }
+  return false;
+}
+inline void Object::set_valueboolean(bool value) {
+  if (!has_valueboolean()) {
+    clear_value();
+    set_has_valueboolean();
+  }
+  value_.valueboolean_ = value;
+  // @@protoc_insertion_point(field_set:Event.Object.valueBoolean)
 }
 
 // optional double valueDouble = 4;
+inline bool Object::has_valuedouble() const {
+  return value_case() == kValueDouble;
+}
+inline void Object::set_has_valuedouble() {
+  _oneof_case_[0] = kValueDouble;
+}
 inline void Object::clear_valuedouble() {
-  valuedouble_ = 0;
+  if (has_valuedouble()) {
+    value_.valuedouble_ = 0;
+    clear_has_value();
+  }
 }
 inline double Object::valuedouble() const {
   // @@protoc_insertion_point(field_get:Event.Object.valueDouble)
-  return valuedouble_;
+  if (has_valuedouble()) {
+    return value_.valuedouble_;
+  }
+  return 0;
 }
 inline void Object::set_valuedouble(double value) {
-  
-  valuedouble_ = value;
+  if (!has_valuedouble()) {
+    clear_value();
+    set_has_valuedouble();
+  }
+  value_.valuedouble_ = value;
   // @@protoc_insertion_point(field_set:Event.Object.valueDouble)
 }
 
-// optional string name = 5;
-inline void Object::clear_name() {
-  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+// optional .Event.SimpleAsset valueSimpleAsset = 5;
+inline bool Object::has_valuesimpleasset() const {
+  return value_case() == kValueSimpleAsset;
 }
-inline const ::std::string& Object::name() const {
-  // @@protoc_insertion_point(field_get:Event.Object.name)
-  return name_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+inline void Object::set_has_valuesimpleasset() {
+  _oneof_case_[0] = kValueSimpleAsset;
 }
-inline void Object::set_name(const ::std::string& value) {
-  
-  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:Event.Object.name)
-}
-inline void Object::set_name(const char* value) {
-  
-  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:Event.Object.name)
-}
-inline void Object::set_name(const char* value, size_t size) {
-  
-  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:Event.Object.name)
-}
-inline ::std::string* Object::mutable_name() {
-  
-  // @@protoc_insertion_point(field_mutable:Event.Object.name)
-  return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* Object::release_name() {
-  // @@protoc_insertion_point(field_release:Event.Object.name)
-  
-  return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void Object::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
-    
-  } else {
-    
+inline void Object::clear_valuesimpleasset() {
+  if (has_valuesimpleasset()) {
+    delete value_.valuesimpleasset_;
+    clear_has_value();
   }
-  name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
-  // @@protoc_insertion_point(field_set_allocated:Event.Object.name)
+}
+inline  const ::Event::SimpleAsset& Object::valuesimpleasset() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valueSimpleAsset)
+  return has_valuesimpleasset()
+      ? *value_.valuesimpleasset_
+      : ::Event::SimpleAsset::default_instance();
+}
+inline ::Event::SimpleAsset* Object::mutable_valuesimpleasset() {
+  if (!has_valuesimpleasset()) {
+    clear_value();
+    set_has_valuesimpleasset();
+    value_.valuesimpleasset_ = new ::Event::SimpleAsset;
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Object.valueSimpleAsset)
+  return value_.valuesimpleasset_;
+}
+inline ::Event::SimpleAsset* Object::release_valuesimpleasset() {
+  // @@protoc_insertion_point(field_release:Event.Object.valueSimpleAsset)
+  if (has_valuesimpleasset()) {
+    clear_has_value();
+    ::Event::SimpleAsset* temp = value_.valuesimpleasset_;
+    value_.valuesimpleasset_ = NULL;
+    return temp;
+  } else {
+    return NULL;
+  }
+}
+inline void Object::set_allocated_valuesimpleasset(::Event::SimpleAsset* valuesimpleasset) {
+  clear_value();
+  if (valuesimpleasset) {
+    set_has_valuesimpleasset();
+    value_.valuesimpleasset_ = valuesimpleasset;
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Object.valueSimpleAsset)
 }
 
+// optional .Event.Asset valueAsset = 6;
+inline bool Object::has_valueasset() const {
+  return value_case() == kValueAsset;
+}
+inline void Object::set_has_valueasset() {
+  _oneof_case_[0] = kValueAsset;
+}
+inline void Object::clear_valueasset() {
+  if (has_valueasset()) {
+    delete value_.valueasset_;
+    clear_has_value();
+  }
+}
+inline  const ::Event::Asset& Object::valueasset() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valueAsset)
+  return has_valueasset()
+      ? *value_.valueasset_
+      : ::Event::Asset::default_instance();
+}
+inline ::Event::Asset* Object::mutable_valueasset() {
+  if (!has_valueasset()) {
+    clear_value();
+    set_has_valueasset();
+    value_.valueasset_ = new ::Event::Asset;
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Object.valueAsset)
+  return value_.valueasset_;
+}
+inline ::Event::Asset* Object::release_valueasset() {
+  // @@protoc_insertion_point(field_release:Event.Object.valueAsset)
+  if (has_valueasset()) {
+    clear_has_value();
+    ::Event::Asset* temp = value_.valueasset_;
+    value_.valueasset_ = NULL;
+    return temp;
+  } else {
+    return NULL;
+  }
+}
+inline void Object::set_allocated_valueasset(::Event::Asset* valueasset) {
+  clear_value();
+  if (valueasset) {
+    set_has_valueasset();
+    value_.valueasset_ = valueasset;
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Object.valueAsset)
+}
+
+// optional .Event.Domain valueDomain = 7;
+inline bool Object::has_valuedomain() const {
+  return value_case() == kValueDomain;
+}
+inline void Object::set_has_valuedomain() {
+  _oneof_case_[0] = kValueDomain;
+}
+inline void Object::clear_valuedomain() {
+  if (has_valuedomain()) {
+    delete value_.valuedomain_;
+    clear_has_value();
+  }
+}
+inline  const ::Event::Domain& Object::valuedomain() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valueDomain)
+  return has_valuedomain()
+      ? *value_.valuedomain_
+      : ::Event::Domain::default_instance();
+}
+inline ::Event::Domain* Object::mutable_valuedomain() {
+  if (!has_valuedomain()) {
+    clear_value();
+    set_has_valuedomain();
+    value_.valuedomain_ = new ::Event::Domain;
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Object.valueDomain)
+  return value_.valuedomain_;
+}
+inline ::Event::Domain* Object::release_valuedomain() {
+  // @@protoc_insertion_point(field_release:Event.Object.valueDomain)
+  if (has_valuedomain()) {
+    clear_has_value();
+    ::Event::Domain* temp = value_.valuedomain_;
+    value_.valuedomain_ = NULL;
+    return temp;
+  } else {
+    return NULL;
+  }
+}
+inline void Object::set_allocated_valuedomain(::Event::Domain* valuedomain) {
+  clear_value();
+  if (valuedomain) {
+    set_has_valuedomain();
+    value_.valuedomain_ = valuedomain;
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Object.valueDomain)
+}
+
+// optional .Event.Peer valuePeer = 8;
+inline bool Object::has_valuepeer() const {
+  return value_case() == kValuePeer;
+}
+inline void Object::set_has_valuepeer() {
+  _oneof_case_[0] = kValuePeer;
+}
+inline void Object::clear_valuepeer() {
+  if (has_valuepeer()) {
+    delete value_.valuepeer_;
+    clear_has_value();
+  }
+}
+inline  const ::Event::Peer& Object::valuepeer() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valuePeer)
+  return has_valuepeer()
+      ? *value_.valuepeer_
+      : ::Event::Peer::default_instance();
+}
+inline ::Event::Peer* Object::mutable_valuepeer() {
+  if (!has_valuepeer()) {
+    clear_value();
+    set_has_valuepeer();
+    value_.valuepeer_ = new ::Event::Peer;
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Object.valuePeer)
+  return value_.valuepeer_;
+}
+inline ::Event::Peer* Object::release_valuepeer() {
+  // @@protoc_insertion_point(field_release:Event.Object.valuePeer)
+  if (has_valuepeer()) {
+    clear_has_value();
+    ::Event::Peer* temp = value_.valuepeer_;
+    value_.valuepeer_ = NULL;
+    return temp;
+  } else {
+    return NULL;
+  }
+}
+inline void Object::set_allocated_valuepeer(::Event::Peer* valuepeer) {
+  clear_value();
+  if (valuepeer) {
+    set_has_valuepeer();
+    value_.valuepeer_ = valuepeer;
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Object.valuePeer)
+}
+
+inline bool Object::has_value() const {
+  return value_case() != VALUE_NOT_SET;
+}
+inline void Object::clear_has_value() {
+  _oneof_case_[0] = VALUE_NOT_SET;
+}
+inline Object::ValueCase Object::value_case() const {
+  return Object::ValueCase(_oneof_case_[0]);
+}
 // -------------------------------------------------------------------
 
 // SimpleAsset
@@ -1742,34 +2061,22 @@ inline void Asset::set_allocated_name(::std::string* name) {
   // @@protoc_insertion_point(field_set_allocated:Event.Asset.name)
 }
 
-// repeated .Event.Object map = 3;
-inline int Asset::map_size() const {
-  return map_.size();
+// map<string, .Event.Object> value = 3;
+inline int Asset::value_size() const {
+  return value_.size();
 }
-inline void Asset::clear_map() {
-  map_.Clear();
+inline void Asset::clear_value() {
+  value_.Clear();
 }
-inline const ::Event::Object& Asset::map(int index) const {
-  // @@protoc_insertion_point(field_get:Event.Asset.map)
-  return map_.Get(index);
+inline const ::google::protobuf::Map< ::std::string, ::Event::Object >&
+Asset::value() const {
+  // @@protoc_insertion_point(field_map:Event.Asset.value)
+  return value_.GetMap();
 }
-inline ::Event::Object* Asset::mutable_map(int index) {
-  // @@protoc_insertion_point(field_mutable:Event.Asset.map)
-  return map_.Mutable(index);
-}
-inline ::Event::Object* Asset::add_map() {
-  // @@protoc_insertion_point(field_add:Event.Asset.map)
-  return map_.Add();
-}
-inline ::google::protobuf::RepeatedPtrField< ::Event::Object >*
-Asset::mutable_map() {
-  // @@protoc_insertion_point(field_mutable_list:Event.Asset.map)
-  return &map_;
-}
-inline const ::google::protobuf::RepeatedPtrField< ::Event::Object >&
-Asset::map() const {
-  // @@protoc_insertion_point(field_list:Event.Asset.map)
-  return map_;
+inline ::google::protobuf::Map< ::std::string, ::Event::Object >*
+Asset::mutable_value() {
+  // @@protoc_insertion_point(field_mutable_map:Event.Asset.value)
+  return value_.MutableMap();
 }
 
 // -------------------------------------------------------------------

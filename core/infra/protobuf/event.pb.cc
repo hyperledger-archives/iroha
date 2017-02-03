@@ -24,12 +24,23 @@ namespace {
 const ::google::protobuf::Descriptor* Object_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   Object_reflection_ = NULL;
+struct ObjectOneofInstance {
+  ::google::protobuf::internal::ArenaStringPtr valuestring_;
+  ::google::protobuf::int64 valueint_;
+  bool valueboolean_;
+  double valuedouble_;
+  const ::Event::SimpleAsset* valuesimpleasset_;
+  const ::Event::Asset* valueasset_;
+  const ::Event::Domain* valuedomain_;
+  const ::Event::Peer* valuepeer_;
+}* Object_default_oneof_instance_ = NULL;
 const ::google::protobuf::Descriptor* SimpleAsset_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   SimpleAsset_reflection_ = NULL;
 const ::google::protobuf::Descriptor* Asset_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   Asset_reflection_ = NULL;
+const ::google::protobuf::Descriptor* Asset_ValueEntry_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* Domain_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   Domain_reflection_ = NULL;
@@ -69,12 +80,16 @@ void protobuf_AssignDesc_event_2eproto() {
       "event.proto");
   GOOGLE_CHECK(file != NULL);
   Object_descriptor_ = file->message_type(0);
-  static const int Object_offsets_[5] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Object, valuestr_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Object, valueint_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Object, valuebool_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Object, valuedouble_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Object, name_),
+  static const int Object_offsets_[9] = {
+    PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(Object_default_oneof_instance_, valuestring_),
+    PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(Object_default_oneof_instance_, valueint_),
+    PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(Object_default_oneof_instance_, valueboolean_),
+    PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(Object_default_oneof_instance_, valuedouble_),
+    PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(Object_default_oneof_instance_, valuesimpleasset_),
+    PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(Object_default_oneof_instance_, valueasset_),
+    PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(Object_default_oneof_instance_, valuedomain_),
+    PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(Object_default_oneof_instance_, valuepeer_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Object, value_),
   };
   Object_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
@@ -84,6 +99,8 @@ void protobuf_AssignDesc_event_2eproto() {
       -1,
       -1,
       -1,
+      Object_default_oneof_instance_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Object, _oneof_case_[0]),
       sizeof(Object),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Object, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Object, _is_default_instance_));
@@ -108,7 +125,7 @@ void protobuf_AssignDesc_event_2eproto() {
   static const int Asset_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Asset, domain_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Asset, name_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Asset, map_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Asset, value_),
   };
   Asset_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
@@ -121,6 +138,7 @@ void protobuf_AssignDesc_event_2eproto() {
       sizeof(Asset),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Asset, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Asset, _is_default_instance_));
+  Asset_ValueEntry_descriptor_ = Asset_descriptor_->nested_type(0);
   Domain_descriptor_ = file->message_type(3);
   static const int Domain_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Domain, ownerpublickey_),
@@ -296,6 +314,15 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       Asset_descriptor_, &Asset::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+        Asset_ValueEntry_descriptor_,
+        ::google::protobuf::internal::MapEntry<
+            ::std::string,
+            ::Event::Object,
+            ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+            ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE,
+            0>::CreateDefaultInstance(
+                Asset_ValueEntry_descriptor_));
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       Domain_descriptor_, &Domain::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       Account_descriptor_, &Account::default_instance());
@@ -319,6 +346,7 @@ void protobuf_RegisterTypes(const ::std::string&) {
 
 void protobuf_ShutdownFile_event_2eproto() {
   delete Object::default_instance_;
+  delete Object_default_oneof_instance_;
   delete Object_reflection_;
   delete SimpleAsset::default_instance_;
   delete SimpleAsset_reflection_;
@@ -352,13 +380,19 @@ void protobuf_AddDesc_event_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\013event.proto\022\005Event\"b\n\006Object\022\020\n\010valueS"
-    "tr\030\001 \001(\t\022\020\n\010valueInt\030\002 \001(\003\022\021\n\tvalueBool\030"
-    "\003 \001(\010\022\023\n\013valueDouble\030\004 \001(\001\022\014\n\004name\030\005 \001(\t"
-    "\"I\n\013SimpleAsset\022\016\n\006domain\030\001 \001(\t\022\014\n\004name\030"
-    "\002 \001(\t\022\034\n\005value\030\003 \001(\0132\r.Event.Object\"A\n\005A"
-    "sset\022\016\n\006domain\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\032\n\003ma"
-    "p\030\003 \003(\0132\r.Event.Object\".\n\006Domain\022\026\n\016owne"
+    "\n\013event.proto\022\005Event\"\207\002\n\006Object\022\025\n\013value"
+    "String\030\001 \001(\tH\000\022\022\n\010valueInt\030\002 \001(\003H\000\022\026\n\014va"
+    "lueBoolean\030\003 \001(\010H\000\022\025\n\013valueDouble\030\004 \001(\001H"
+    "\000\022.\n\020valueSimpleAsset\030\005 \001(\0132\022.Event.Simp"
+    "leAssetH\000\022\"\n\nvalueAsset\030\006 \001(\0132\014.Event.As"
+    "setH\000\022$\n\013valueDomain\030\007 \001(\0132\r.Event.Domai"
+    "nH\000\022 \n\tvaluePeer\030\010 \001(\0132\013.Event.PeerH\000B\007\n"
+    "\005value\"I\n\013SimpleAsset\022\016\n\006domain\030\001 \001(\t\022\014\n"
+    "\004name\030\002 \001(\t\022\034\n\005value\030\003 \001(\0132\r.Event.Objec"
+    "t\"\212\001\n\005Asset\022\016\n\006domain\030\001 \001(\t\022\014\n\004name\030\002 \001("
+    "\t\022&\n\005value\030\003 \003(\0132\027.Event.Asset.ValueEntr"
+    "y\032;\n\nValueEntry\022\013\n\003key\030\001 \001(\t\022\034\n\005value\030\002 "
+    "\001(\0132\r.Event.Object:\0028\001\".\n\006Domain\022\026\n\016owne"
     "rPublicKey\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\"H\n\007Accoun"
     "t\022\021\n\tpublicKey\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\034\n\006as"
     "sets\030\003 \003(\0132\014.Event.Asset\"$\n\005Trust\022\r\n\005val"
@@ -381,10 +415,11 @@ void protobuf_AddDesc_event_2eproto() {
     "\037\n\016StatusResponse\022\r\n\005value\030\001 \001(\t2N\n\017Iroh"
     "aConnection\022;\n\tOperation\022\025.Event.Consens"
     "usEvent\032\025.Event.StatusResponse\"\000B\003\200\001\000b\006p"
-    "roto3", 1165);
+    "roto3", 1405);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "event.proto", &protobuf_RegisterTypes);
   Object::default_instance_ = new Object();
+  Object_default_oneof_instance_ = new ObjectOneofInstance();
   SimpleAsset::default_instance_ = new SimpleAsset();
   Asset::default_instance_ = new Asset();
   Domain::default_instance_ = new Domain();
@@ -421,11 +456,14 @@ struct StaticDescriptorInitializer_event_2eproto {
 // ===================================================================
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Object::kValueStrFieldNumber;
+const int Object::kValueStringFieldNumber;
 const int Object::kValueIntFieldNumber;
-const int Object::kValueBoolFieldNumber;
+const int Object::kValueBooleanFieldNumber;
 const int Object::kValueDoubleFieldNumber;
-const int Object::kNameFieldNumber;
+const int Object::kValueSimpleAssetFieldNumber;
+const int Object::kValueAssetFieldNumber;
+const int Object::kValueDomainFieldNumber;
+const int Object::kValuePeerFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Object::Object()
@@ -436,6 +474,14 @@ Object::Object()
 
 void Object::InitAsDefaultInstance() {
   _is_default_instance_ = true;
+  Object_default_oneof_instance_->valuestring_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  Object_default_oneof_instance_->valueint_ = GOOGLE_LONGLONG(0);
+  Object_default_oneof_instance_->valueboolean_ = false;
+  Object_default_oneof_instance_->valuedouble_ = 0;
+  Object_default_oneof_instance_->valuesimpleasset_ = const_cast< ::Event::SimpleAsset*>(&::Event::SimpleAsset::default_instance());
+  Object_default_oneof_instance_->valueasset_ = const_cast< ::Event::Asset*>(&::Event::Asset::default_instance());
+  Object_default_oneof_instance_->valuedomain_ = const_cast< ::Event::Domain*>(&::Event::Domain::default_instance());
+  Object_default_oneof_instance_->valuepeer_ = const_cast< ::Event::Peer*>(&::Event::Peer::default_instance());
 }
 
 Object::Object(const Object& from)
@@ -450,11 +496,7 @@ void Object::SharedCtor() {
     _is_default_instance_ = false;
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  valuestr_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  valueint_ = GOOGLE_LONGLONG(0);
-  valuebool_ = false;
-  valuedouble_ = 0;
-  name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_value();
 }
 
 Object::~Object() {
@@ -463,8 +505,9 @@ Object::~Object() {
 }
 
 void Object::SharedDtor() {
-  valuestr_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (has_value()) {
+    clear_value();
+  }
   if (this != default_instance_) {
   }
 }
@@ -494,32 +537,52 @@ Object* Object::New(::google::protobuf::Arena* arena) const {
   return n;
 }
 
+void Object::clear_value() {
+// @@protoc_insertion_point(one_of_clear_start:Event.Object)
+  switch(value_case()) {
+    case kValueString: {
+      value_.valuestring_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      break;
+    }
+    case kValueInt: {
+      // No need to clear
+      break;
+    }
+    case kValueBoolean: {
+      // No need to clear
+      break;
+    }
+    case kValueDouble: {
+      // No need to clear
+      break;
+    }
+    case kValueSimpleAsset: {
+      delete value_.valuesimpleasset_;
+      break;
+    }
+    case kValueAsset: {
+      delete value_.valueasset_;
+      break;
+    }
+    case kValueDomain: {
+      delete value_.valuedomain_;
+      break;
+    }
+    case kValuePeer: {
+      delete value_.valuepeer_;
+      break;
+    }
+    case VALUE_NOT_SET: {
+      break;
+    }
+  }
+  _oneof_case_[0] = VALUE_NOT_SET;
+}
+
+
 void Object::Clear() {
 // @@protoc_insertion_point(message_clear_start:Event.Object)
-#if defined(__clang__)
-#define ZR_HELPER_(f) \
-  _Pragma("clang diagnostic push") \
-  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
-  __builtin_offsetof(Object, f) \
-  _Pragma("clang diagnostic pop")
-#else
-#define ZR_HELPER_(f) reinterpret_cast<char*>(\
-  &reinterpret_cast<Object*>(16)->f)
-#endif
-
-#define ZR_(first, last) do {\
-  ::memset(&first, 0,\
-           ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
-} while (0)
-
-  ZR_(valueint_, valuedouble_);
-  valuestr_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  valuebool_ = false;
-  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-
-#undef ZR_HELPER_
-#undef ZR_
-
+  clear_value();
 }
 
 bool Object::MergePartialFromCodedStream(
@@ -532,15 +595,15 @@ bool Object::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string valueStr = 1;
+      // optional string valueString = 1;
       case 1: {
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_valuestr()));
+                input, this->mutable_valuestring()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->valuestr().data(), this->valuestr().length(),
+            this->valuestring().data(), this->valuestring().length(),
             ::google::protobuf::internal::WireFormatLite::PARSE,
-            "Event.Object.valueStr"));
+            "Event.Object.valueString"));
         } else {
           goto handle_unusual;
         }
@@ -552,25 +615,27 @@ bool Object::MergePartialFromCodedStream(
       case 2: {
         if (tag == 16) {
          parse_valueInt:
+          clear_value();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
-                 input, &valueint_)));
-
+                 input, &value_.valueint_)));
+          set_has_valueint();
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(24)) goto parse_valueBool;
+        if (input->ExpectTag(24)) goto parse_valueBoolean;
         break;
       }
 
-      // optional bool valueBool = 3;
+      // optional bool valueBoolean = 3;
       case 3: {
         if (tag == 24) {
-         parse_valueBool:
+         parse_valueBoolean:
+          clear_value();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, &valuebool_)));
-
+                 input, &value_.valueboolean_)));
+          set_has_valueboolean();
         } else {
           goto handle_unusual;
         }
@@ -582,27 +647,63 @@ bool Object::MergePartialFromCodedStream(
       case 4: {
         if (tag == 33) {
          parse_valueDouble:
+          clear_value();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 input, &valuedouble_)));
-
+                 input, &value_.valuedouble_)));
+          set_has_valuedouble();
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(42)) goto parse_name;
+        if (input->ExpectTag(42)) goto parse_valueSimpleAsset;
         break;
       }
 
-      // optional string name = 5;
+      // optional .Event.SimpleAsset valueSimpleAsset = 5;
       case 5: {
         if (tag == 42) {
-         parse_name:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_name()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->name().data(), this->name().length(),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "Event.Object.name"));
+         parse_valueSimpleAsset:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_valuesimpleasset()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(50)) goto parse_valueAsset;
+        break;
+      }
+
+      // optional .Event.Asset valueAsset = 6;
+      case 6: {
+        if (tag == 50) {
+         parse_valueAsset:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_valueasset()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(58)) goto parse_valueDomain;
+        break;
+      }
+
+      // optional .Event.Domain valueDomain = 7;
+      case 7: {
+        if (tag == 58) {
+         parse_valueDomain:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_valuedomain()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(66)) goto parse_valuePeer;
+        break;
+      }
+
+      // optional .Event.Peer valuePeer = 8;
+      case 8: {
+        if (tag == 66) {
+         parse_valuePeer:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_valuepeer()));
         } else {
           goto handle_unusual;
         }
@@ -634,39 +735,53 @@ failure:
 void Object::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:Event.Object)
-  // optional string valueStr = 1;
-  if (this->valuestr().size() > 0) {
+  // optional string valueString = 1;
+  if (has_valuestring()) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->valuestr().data(), this->valuestr().length(),
+      this->valuestring().data(), this->valuestring().length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "Event.Object.valueStr");
+      "Event.Object.valueString");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      1, this->valuestr(), output);
+      1, this->valuestring(), output);
   }
 
   // optional int64 valueInt = 2;
-  if (this->valueint() != 0) {
+  if (has_valueint()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt64(2, this->valueint(), output);
   }
 
-  // optional bool valueBool = 3;
-  if (this->valuebool() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(3, this->valuebool(), output);
+  // optional bool valueBoolean = 3;
+  if (has_valueboolean()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(3, this->valueboolean(), output);
   }
 
   // optional double valueDouble = 4;
-  if (this->valuedouble() != 0) {
+  if (has_valuedouble()) {
     ::google::protobuf::internal::WireFormatLite::WriteDouble(4, this->valuedouble(), output);
   }
 
-  // optional string name = 5;
-  if (this->name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->name().data(), this->name().length(),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "Event.Object.name");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      5, this->name(), output);
+  // optional .Event.SimpleAsset valueSimpleAsset = 5;
+  if (has_valuesimpleasset()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      5, *value_.valuesimpleasset_, output);
+  }
+
+  // optional .Event.Asset valueAsset = 6;
+  if (has_valueasset()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      6, *value_.valueasset_, output);
+  }
+
+  // optional .Event.Domain valueDomain = 7;
+  if (has_valuedomain()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      7, *value_.valuedomain_, output);
+  }
+
+  // optional .Event.Peer valuePeer = 8;
+  if (has_valuepeer()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      8, *value_.valuepeer_, output);
   }
 
   // @@protoc_insertion_point(serialize_end:Event.Object)
@@ -675,41 +790,58 @@ void Object::SerializeWithCachedSizes(
 ::google::protobuf::uint8* Object::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:Event.Object)
-  // optional string valueStr = 1;
-  if (this->valuestr().size() > 0) {
+  // optional string valueString = 1;
+  if (has_valuestring()) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->valuestr().data(), this->valuestr().length(),
+      this->valuestring().data(), this->valuestring().length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "Event.Object.valueStr");
+      "Event.Object.valueString");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->valuestr(), target);
+        1, this->valuestring(), target);
   }
 
   // optional int64 valueInt = 2;
-  if (this->valueint() != 0) {
+  if (has_valueint()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(2, this->valueint(), target);
   }
 
-  // optional bool valueBool = 3;
-  if (this->valuebool() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(3, this->valuebool(), target);
+  // optional bool valueBoolean = 3;
+  if (has_valueboolean()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(3, this->valueboolean(), target);
   }
 
   // optional double valueDouble = 4;
-  if (this->valuedouble() != 0) {
+  if (has_valuedouble()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(4, this->valuedouble(), target);
   }
 
-  // optional string name = 5;
-  if (this->name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->name().data(), this->name().length(),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "Event.Object.name");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        5, this->name(), target);
+  // optional .Event.SimpleAsset valueSimpleAsset = 5;
+  if (has_valuesimpleasset()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        5, *value_.valuesimpleasset_, false, target);
+  }
+
+  // optional .Event.Asset valueAsset = 6;
+  if (has_valueasset()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        6, *value_.valueasset_, false, target);
+  }
+
+  // optional .Event.Domain valueDomain = 7;
+  if (has_valuedomain()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        7, *value_.valuedomain_, false, target);
+  }
+
+  // optional .Event.Peer valuePeer = 8;
+  if (has_valuepeer()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        8, *value_.valuepeer_, false, target);
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:Event.Object)
@@ -720,37 +852,63 @@ int Object::ByteSize() const {
 // @@protoc_insertion_point(message_byte_size_start:Event.Object)
   int total_size = 0;
 
-  // optional string valueStr = 1;
-  if (this->valuestr().size() > 0) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->valuestr());
+  switch (value_case()) {
+    // optional string valueString = 1;
+    case kValueString: {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->valuestring());
+      break;
+    }
+    // optional int64 valueInt = 2;
+    case kValueInt: {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
+          this->valueint());
+      break;
+    }
+    // optional bool valueBoolean = 3;
+    case kValueBoolean: {
+      total_size += 1 + 1;
+      break;
+    }
+    // optional double valueDouble = 4;
+    case kValueDouble: {
+      total_size += 1 + 8;
+      break;
+    }
+    // optional .Event.SimpleAsset valueSimpleAsset = 5;
+    case kValueSimpleAsset: {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          *value_.valuesimpleasset_);
+      break;
+    }
+    // optional .Event.Asset valueAsset = 6;
+    case kValueAsset: {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          *value_.valueasset_);
+      break;
+    }
+    // optional .Event.Domain valueDomain = 7;
+    case kValueDomain: {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          *value_.valuedomain_);
+      break;
+    }
+    // optional .Event.Peer valuePeer = 8;
+    case kValuePeer: {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          *value_.valuepeer_);
+      break;
+    }
+    case VALUE_NOT_SET: {
+      break;
+    }
   }
-
-  // optional int64 valueInt = 2;
-  if (this->valueint() != 0) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::Int64Size(
-        this->valueint());
-  }
-
-  // optional bool valueBool = 3;
-  if (this->valuebool() != 0) {
-    total_size += 1 + 1;
-  }
-
-  // optional double valueDouble = 4;
-  if (this->valuedouble() != 0) {
-    total_size += 1 + 8;
-  }
-
-  // optional string name = 5;
-  if (this->name().size() > 0) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->name());
-  }
-
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
@@ -779,22 +937,42 @@ void Object::MergeFrom(const Object& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) {
     ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
   }
-  if (from.valuestr().size() > 0) {
-
-    valuestr_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.valuestr_);
-  }
-  if (from.valueint() != 0) {
-    set_valueint(from.valueint());
-  }
-  if (from.valuebool() != 0) {
-    set_valuebool(from.valuebool());
-  }
-  if (from.valuedouble() != 0) {
-    set_valuedouble(from.valuedouble());
-  }
-  if (from.name().size() > 0) {
-
-    name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
+  switch (from.value_case()) {
+    case kValueString: {
+      set_valuestring(from.valuestring());
+      break;
+    }
+    case kValueInt: {
+      set_valueint(from.valueint());
+      break;
+    }
+    case kValueBoolean: {
+      set_valueboolean(from.valueboolean());
+      break;
+    }
+    case kValueDouble: {
+      set_valuedouble(from.valuedouble());
+      break;
+    }
+    case kValueSimpleAsset: {
+      mutable_valuesimpleasset()->::Event::SimpleAsset::MergeFrom(from.valuesimpleasset());
+      break;
+    }
+    case kValueAsset: {
+      mutable_valueasset()->::Event::Asset::MergeFrom(from.valueasset());
+      break;
+    }
+    case kValueDomain: {
+      mutable_valuedomain()->::Event::Domain::MergeFrom(from.valuedomain());
+      break;
+    }
+    case kValuePeer: {
+      mutable_valuepeer()->::Event::Peer::MergeFrom(from.valuepeer());
+      break;
+    }
+    case VALUE_NOT_SET: {
+      break;
+    }
   }
 }
 
@@ -822,11 +1000,8 @@ void Object::Swap(Object* other) {
   InternalSwap(other);
 }
 void Object::InternalSwap(Object* other) {
-  valuestr_.Swap(&other->valuestr_);
-  std::swap(valueint_, other->valueint_);
-  std::swap(valuebool_, other->valuebool_);
-  std::swap(valuedouble_, other->valuedouble_);
-  name_.Swap(&other->name_);
+  std::swap(value_, other->value_);
+  std::swap(_oneof_case_[0], other->_oneof_case_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
@@ -842,136 +1017,375 @@ void Object::InternalSwap(Object* other) {
 #if PROTOBUF_INLINE_NOT_IN_HEADERS
 // Object
 
-// optional string valueStr = 1;
-void Object::clear_valuestr() {
-  valuestr_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+// optional string valueString = 1;
+bool Object::has_valuestring() const {
+  return value_case() == kValueString;
 }
- const ::std::string& Object::valuestr() const {
-  // @@protoc_insertion_point(field_get:Event.Object.valueStr)
-  return valuestr_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+void Object::set_has_valuestring() {
+  _oneof_case_[0] = kValueString;
 }
- void Object::set_valuestr(const ::std::string& value) {
-  
-  valuestr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:Event.Object.valueStr)
-}
- void Object::set_valuestr(const char* value) {
-  
-  valuestr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:Event.Object.valueStr)
-}
- void Object::set_valuestr(const char* value, size_t size) {
-  
-  valuestr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:Event.Object.valueStr)
-}
- ::std::string* Object::mutable_valuestr() {
-  
-  // @@protoc_insertion_point(field_mutable:Event.Object.valueStr)
-  return valuestr_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
- ::std::string* Object::release_valuestr() {
-  // @@protoc_insertion_point(field_release:Event.Object.valueStr)
-  
-  return valuestr_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
- void Object::set_allocated_valuestr(::std::string* valuestr) {
-  if (valuestr != NULL) {
-    
-  } else {
-    
+void Object::clear_valuestring() {
+  if (has_valuestring()) {
+    value_.valuestring_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    clear_has_value();
   }
-  valuestr_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), valuestr);
-  // @@protoc_insertion_point(field_set_allocated:Event.Object.valueStr)
+}
+ const ::std::string& Object::valuestring() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valueString)
+  if (has_valuestring()) {
+    return value_.valuestring_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  return *&::google::protobuf::internal::GetEmptyStringAlreadyInited();
+}
+ void Object::set_valuestring(const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:Event.Object.valueString)
+  if (!has_valuestring()) {
+    clear_value();
+    set_has_valuestring();
+    value_.valuestring_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  value_.valuestring_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Event.Object.valueString)
+}
+ void Object::set_valuestring(const char* value) {
+  if (!has_valuestring()) {
+    clear_value();
+    set_has_valuestring();
+    value_.valuestring_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  value_.valuestring_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Event.Object.valueString)
+}
+ void Object::set_valuestring(const char* value, size_t size) {
+  if (!has_valuestring()) {
+    clear_value();
+    set_has_valuestring();
+    value_.valuestring_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  value_.valuestring_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Event.Object.valueString)
+}
+ ::std::string* Object::mutable_valuestring() {
+  if (!has_valuestring()) {
+    clear_value();
+    set_has_valuestring();
+    value_.valuestring_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Object.valueString)
+  return value_.valuestring_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* Object::release_valuestring() {
+  // @@protoc_insertion_point(field_release:Event.Object.valueString)
+  if (has_valuestring()) {
+    clear_has_value();
+    return value_.valuestring_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  } else {
+    return NULL;
+  }
+}
+ void Object::set_allocated_valuestring(::std::string* valuestring) {
+  if (!has_valuestring()) {
+    value_.valuestring_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  clear_value();
+  if (valuestring != NULL) {
+    set_has_valuestring();
+    value_.valuestring_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+        valuestring);
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Object.valueString)
 }
 
 // optional int64 valueInt = 2;
+bool Object::has_valueint() const {
+  return value_case() == kValueInt;
+}
+void Object::set_has_valueint() {
+  _oneof_case_[0] = kValueInt;
+}
 void Object::clear_valueint() {
-  valueint_ = GOOGLE_LONGLONG(0);
+  if (has_valueint()) {
+    value_.valueint_ = GOOGLE_LONGLONG(0);
+    clear_has_value();
+  }
 }
  ::google::protobuf::int64 Object::valueint() const {
   // @@protoc_insertion_point(field_get:Event.Object.valueInt)
-  return valueint_;
+  if (has_valueint()) {
+    return value_.valueint_;
+  }
+  return GOOGLE_LONGLONG(0);
 }
  void Object::set_valueint(::google::protobuf::int64 value) {
-  
-  valueint_ = value;
+  if (!has_valueint()) {
+    clear_value();
+    set_has_valueint();
+  }
+  value_.valueint_ = value;
   // @@protoc_insertion_point(field_set:Event.Object.valueInt)
 }
 
-// optional bool valueBool = 3;
-void Object::clear_valuebool() {
-  valuebool_ = false;
+// optional bool valueBoolean = 3;
+bool Object::has_valueboolean() const {
+  return value_case() == kValueBoolean;
 }
- bool Object::valuebool() const {
-  // @@protoc_insertion_point(field_get:Event.Object.valueBool)
-  return valuebool_;
+void Object::set_has_valueboolean() {
+  _oneof_case_[0] = kValueBoolean;
 }
- void Object::set_valuebool(bool value) {
-  
-  valuebool_ = value;
-  // @@protoc_insertion_point(field_set:Event.Object.valueBool)
+void Object::clear_valueboolean() {
+  if (has_valueboolean()) {
+    value_.valueboolean_ = false;
+    clear_has_value();
+  }
+}
+ bool Object::valueboolean() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valueBoolean)
+  if (has_valueboolean()) {
+    return value_.valueboolean_;
+  }
+  return false;
+}
+ void Object::set_valueboolean(bool value) {
+  if (!has_valueboolean()) {
+    clear_value();
+    set_has_valueboolean();
+  }
+  value_.valueboolean_ = value;
+  // @@protoc_insertion_point(field_set:Event.Object.valueBoolean)
 }
 
 // optional double valueDouble = 4;
+bool Object::has_valuedouble() const {
+  return value_case() == kValueDouble;
+}
+void Object::set_has_valuedouble() {
+  _oneof_case_[0] = kValueDouble;
+}
 void Object::clear_valuedouble() {
-  valuedouble_ = 0;
+  if (has_valuedouble()) {
+    value_.valuedouble_ = 0;
+    clear_has_value();
+  }
 }
  double Object::valuedouble() const {
   // @@protoc_insertion_point(field_get:Event.Object.valueDouble)
-  return valuedouble_;
+  if (has_valuedouble()) {
+    return value_.valuedouble_;
+  }
+  return 0;
 }
  void Object::set_valuedouble(double value) {
-  
-  valuedouble_ = value;
+  if (!has_valuedouble()) {
+    clear_value();
+    set_has_valuedouble();
+  }
+  value_.valuedouble_ = value;
   // @@protoc_insertion_point(field_set:Event.Object.valueDouble)
 }
 
-// optional string name = 5;
-void Object::clear_name() {
-  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+// optional .Event.SimpleAsset valueSimpleAsset = 5;
+bool Object::has_valuesimpleasset() const {
+  return value_case() == kValueSimpleAsset;
 }
- const ::std::string& Object::name() const {
-  // @@protoc_insertion_point(field_get:Event.Object.name)
-  return name_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+void Object::set_has_valuesimpleasset() {
+  _oneof_case_[0] = kValueSimpleAsset;
 }
- void Object::set_name(const ::std::string& value) {
-  
-  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:Event.Object.name)
-}
- void Object::set_name(const char* value) {
-  
-  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:Event.Object.name)
-}
- void Object::set_name(const char* value, size_t size) {
-  
-  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:Event.Object.name)
-}
- ::std::string* Object::mutable_name() {
-  
-  // @@protoc_insertion_point(field_mutable:Event.Object.name)
-  return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
- ::std::string* Object::release_name() {
-  // @@protoc_insertion_point(field_release:Event.Object.name)
-  
-  return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
- void Object::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
-    
-  } else {
-    
+void Object::clear_valuesimpleasset() {
+  if (has_valuesimpleasset()) {
+    delete value_.valuesimpleasset_;
+    clear_has_value();
   }
-  name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
-  // @@protoc_insertion_point(field_set_allocated:Event.Object.name)
+}
+ const ::Event::SimpleAsset& Object::valuesimpleasset() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valueSimpleAsset)
+  return has_valuesimpleasset()
+      ? *value_.valuesimpleasset_
+      : ::Event::SimpleAsset::default_instance();
+}
+::Event::SimpleAsset* Object::mutable_valuesimpleasset() {
+  if (!has_valuesimpleasset()) {
+    clear_value();
+    set_has_valuesimpleasset();
+    value_.valuesimpleasset_ = new ::Event::SimpleAsset;
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Object.valueSimpleAsset)
+  return value_.valuesimpleasset_;
+}
+::Event::SimpleAsset* Object::release_valuesimpleasset() {
+  // @@protoc_insertion_point(field_release:Event.Object.valueSimpleAsset)
+  if (has_valuesimpleasset()) {
+    clear_has_value();
+    ::Event::SimpleAsset* temp = value_.valuesimpleasset_;
+    value_.valuesimpleasset_ = NULL;
+    return temp;
+  } else {
+    return NULL;
+  }
+}
+void Object::set_allocated_valuesimpleasset(::Event::SimpleAsset* valuesimpleasset) {
+  clear_value();
+  if (valuesimpleasset) {
+    set_has_valuesimpleasset();
+    value_.valuesimpleasset_ = valuesimpleasset;
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Object.valueSimpleAsset)
 }
 
+// optional .Event.Asset valueAsset = 6;
+bool Object::has_valueasset() const {
+  return value_case() == kValueAsset;
+}
+void Object::set_has_valueasset() {
+  _oneof_case_[0] = kValueAsset;
+}
+void Object::clear_valueasset() {
+  if (has_valueasset()) {
+    delete value_.valueasset_;
+    clear_has_value();
+  }
+}
+ const ::Event::Asset& Object::valueasset() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valueAsset)
+  return has_valueasset()
+      ? *value_.valueasset_
+      : ::Event::Asset::default_instance();
+}
+::Event::Asset* Object::mutable_valueasset() {
+  if (!has_valueasset()) {
+    clear_value();
+    set_has_valueasset();
+    value_.valueasset_ = new ::Event::Asset;
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Object.valueAsset)
+  return value_.valueasset_;
+}
+::Event::Asset* Object::release_valueasset() {
+  // @@protoc_insertion_point(field_release:Event.Object.valueAsset)
+  if (has_valueasset()) {
+    clear_has_value();
+    ::Event::Asset* temp = value_.valueasset_;
+    value_.valueasset_ = NULL;
+    return temp;
+  } else {
+    return NULL;
+  }
+}
+void Object::set_allocated_valueasset(::Event::Asset* valueasset) {
+  clear_value();
+  if (valueasset) {
+    set_has_valueasset();
+    value_.valueasset_ = valueasset;
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Object.valueAsset)
+}
+
+// optional .Event.Domain valueDomain = 7;
+bool Object::has_valuedomain() const {
+  return value_case() == kValueDomain;
+}
+void Object::set_has_valuedomain() {
+  _oneof_case_[0] = kValueDomain;
+}
+void Object::clear_valuedomain() {
+  if (has_valuedomain()) {
+    delete value_.valuedomain_;
+    clear_has_value();
+  }
+}
+ const ::Event::Domain& Object::valuedomain() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valueDomain)
+  return has_valuedomain()
+      ? *value_.valuedomain_
+      : ::Event::Domain::default_instance();
+}
+::Event::Domain* Object::mutable_valuedomain() {
+  if (!has_valuedomain()) {
+    clear_value();
+    set_has_valuedomain();
+    value_.valuedomain_ = new ::Event::Domain;
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Object.valueDomain)
+  return value_.valuedomain_;
+}
+::Event::Domain* Object::release_valuedomain() {
+  // @@protoc_insertion_point(field_release:Event.Object.valueDomain)
+  if (has_valuedomain()) {
+    clear_has_value();
+    ::Event::Domain* temp = value_.valuedomain_;
+    value_.valuedomain_ = NULL;
+    return temp;
+  } else {
+    return NULL;
+  }
+}
+void Object::set_allocated_valuedomain(::Event::Domain* valuedomain) {
+  clear_value();
+  if (valuedomain) {
+    set_has_valuedomain();
+    value_.valuedomain_ = valuedomain;
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Object.valueDomain)
+}
+
+// optional .Event.Peer valuePeer = 8;
+bool Object::has_valuepeer() const {
+  return value_case() == kValuePeer;
+}
+void Object::set_has_valuepeer() {
+  _oneof_case_[0] = kValuePeer;
+}
+void Object::clear_valuepeer() {
+  if (has_valuepeer()) {
+    delete value_.valuepeer_;
+    clear_has_value();
+  }
+}
+ const ::Event::Peer& Object::valuepeer() const {
+  // @@protoc_insertion_point(field_get:Event.Object.valuePeer)
+  return has_valuepeer()
+      ? *value_.valuepeer_
+      : ::Event::Peer::default_instance();
+}
+::Event::Peer* Object::mutable_valuepeer() {
+  if (!has_valuepeer()) {
+    clear_value();
+    set_has_valuepeer();
+    value_.valuepeer_ = new ::Event::Peer;
+  }
+  // @@protoc_insertion_point(field_mutable:Event.Object.valuePeer)
+  return value_.valuepeer_;
+}
+::Event::Peer* Object::release_valuepeer() {
+  // @@protoc_insertion_point(field_release:Event.Object.valuePeer)
+  if (has_valuepeer()) {
+    clear_has_value();
+    ::Event::Peer* temp = value_.valuepeer_;
+    value_.valuepeer_ = NULL;
+    return temp;
+  } else {
+    return NULL;
+  }
+}
+void Object::set_allocated_valuepeer(::Event::Peer* valuepeer) {
+  clear_value();
+  if (valuepeer) {
+    set_has_valuepeer();
+    value_.valuepeer_ = valuepeer;
+  }
+  // @@protoc_insertion_point(field_set_allocated:Event.Object.valuePeer)
+}
+
+bool Object::has_value() const {
+  return value_case() != VALUE_NOT_SET;
+}
+void Object::clear_has_value() {
+  _oneof_case_[0] = VALUE_NOT_SET;
+}
+Object::ValueCase Object::value_case() const {
+  return Object::ValueCase(_oneof_case_[0]);
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -1442,7 +1856,7 @@ void SimpleAsset::set_allocated_value(::Event::Object* value) {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int Asset::kDomainFieldNumber;
 const int Asset::kNameFieldNumber;
-const int Asset::kMapFieldNumber;
+const int Asset::kValueFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Asset::Asset()
@@ -1469,6 +1883,10 @@ void Asset::SharedCtor() {
   _cached_size_ = 0;
   domain_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  value_.SetAssignDescriptorCallback(
+      protobuf_AssignDescriptorsOnce);
+  value_.SetEntryDescriptor(
+      &::Event::Asset_ValueEntry_descriptor_);
 }
 
 Asset::~Asset() {
@@ -1512,7 +1930,7 @@ void Asset::Clear() {
 // @@protoc_insertion_point(message_clear_start:Event.Asset)
   domain_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  map_.Clear();
+  value_.Clear();
 }
 
 bool Asset::MergePartialFromCodedStream(
@@ -1554,22 +1972,32 @@ bool Asset::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(26)) goto parse_map;
+        if (input->ExpectTag(26)) goto parse_value;
         break;
       }
 
-      // repeated .Event.Object map = 3;
+      // map<string, .Event.Object> value = 3;
       case 3: {
         if (tag == 26) {
-         parse_map:
+         parse_value:
           DO_(input->IncrementRecursionDepth());
-         parse_loop_map:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
-                input, add_map()));
+         parse_loop_value:
+          Asset_ValueEntry::Parser< ::google::protobuf::internal::MapField<
+              ::std::string, ::Event::Object,
+              ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+              ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE,
+              0 >,
+            ::google::protobuf::Map< ::std::string, ::Event::Object > > parser(&value_);
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+              input, &parser));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            parser.key().data(), parser.key().length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "Event.Asset.ValueEntry.key"));
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(26)) goto parse_loop_map;
+        if (input->ExpectTag(26)) goto parse_loop_value;
         input->UnsafeDecrementRecursionDepth();
         if (input->ExpectAtEnd()) goto success;
         break;
@@ -1619,10 +2047,53 @@ void Asset::SerializeWithCachedSizes(
       2, this->name(), output);
   }
 
-  // repeated .Event.Object map = 3;
-  for (unsigned int i = 0, n = this->map_size(); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, this->map(i), output);
+  // map<string, .Event.Object> value = 3;
+  if (!this->value().empty()) {
+    typedef ::google::protobuf::Map< ::std::string, ::Event::Object >::const_pointer
+        ConstPtr;
+    typedef ConstPtr SortItem;
+    typedef ::google::protobuf::internal::CompareByDerefFirst<SortItem> Less;
+    struct Utf8Check {
+      static void Check(ConstPtr p) {
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+          p->first.data(), p->first.length(),
+          ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+          "Event.Asset.ValueEntry.key");
+      }
+    };
+
+    if (output->IsSerializationDeterminstic() &&
+        this->value().size() > 1) {
+      ::google::protobuf::scoped_array<SortItem> items(
+          new SortItem[this->value().size()]);
+      typedef ::google::protobuf::Map< ::std::string, ::Event::Object >::size_type size_type;
+      size_type n = 0;
+      for (::google::protobuf::Map< ::std::string, ::Event::Object >::const_iterator
+          it = this->value().begin();
+          it != this->value().end(); ++it, ++n) {
+        items[n] = SortItem(&*it);
+      }
+      ::std::sort(&items[0], &items[n], Less());
+      ::google::protobuf::scoped_ptr<Asset_ValueEntry> entry;
+      for (size_type i = 0; i < n; i++) {
+        entry.reset(value_.NewEntryWrapper(
+            items[i]->first, items[i]->second));
+        ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+            3, *entry, output);
+        Utf8Check::Check(items[i]);
+      }
+    } else {
+      ::google::protobuf::scoped_ptr<Asset_ValueEntry> entry;
+      for (::google::protobuf::Map< ::std::string, ::Event::Object >::const_iterator
+          it = this->value().begin();
+          it != this->value().end(); ++it) {
+        entry.reset(value_.NewEntryWrapper(
+            it->first, it->second));
+        ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+            3, *entry, output);
+        Utf8Check::Check(&*it);
+      }
+    }
   }
 
   // @@protoc_insertion_point(serialize_end:Event.Asset)
@@ -1653,11 +2124,57 @@ void Asset::SerializeWithCachedSizes(
         2, this->name(), target);
   }
 
-  // repeated .Event.Object map = 3;
-  for (unsigned int i = 0, n = this->map_size(); i < n; i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessageNoVirtualToArray(
-        3, this->map(i), false, target);
+  // map<string, .Event.Object> value = 3;
+  if (!this->value().empty()) {
+    typedef ::google::protobuf::Map< ::std::string, ::Event::Object >::const_pointer
+        ConstPtr;
+    typedef ConstPtr SortItem;
+    typedef ::google::protobuf::internal::CompareByDerefFirst<SortItem> Less;
+    struct Utf8Check {
+      static void Check(ConstPtr p) {
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+          p->first.data(), p->first.length(),
+          ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+          "Event.Asset.ValueEntry.key");
+      }
+    };
+
+    if (deterministic &&
+        this->value().size() > 1) {
+      ::google::protobuf::scoped_array<SortItem> items(
+          new SortItem[this->value().size()]);
+      typedef ::google::protobuf::Map< ::std::string, ::Event::Object >::size_type size_type;
+      size_type n = 0;
+      for (::google::protobuf::Map< ::std::string, ::Event::Object >::const_iterator
+          it = this->value().begin();
+          it != this->value().end(); ++it, ++n) {
+        items[n] = SortItem(&*it);
+      }
+      ::std::sort(&items[0], &items[n], Less());
+      ::google::protobuf::scoped_ptr<Asset_ValueEntry> entry;
+      for (size_type i = 0; i < n; i++) {
+        entry.reset(value_.NewEntryWrapper(
+            items[i]->first, items[i]->second));
+        target = ::google::protobuf::internal::WireFormatLite::
+                   InternalWriteMessageNoVirtualToArray(
+                       3, *entry, deterministic, target);
+;
+        Utf8Check::Check(items[i]);
+      }
+    } else {
+      ::google::protobuf::scoped_ptr<Asset_ValueEntry> entry;
+      for (::google::protobuf::Map< ::std::string, ::Event::Object >::const_iterator
+          it = this->value().begin();
+          it != this->value().end(); ++it) {
+        entry.reset(value_.NewEntryWrapper(
+            it->first, it->second));
+        target = ::google::protobuf::internal::WireFormatLite::
+                   InternalWriteMessageNoVirtualToArray(
+                       3, *entry, deterministic, target);
+;
+        Utf8Check::Check(&*it);
+      }
+    }
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:Event.Asset)
@@ -1682,12 +2199,17 @@ int Asset::ByteSize() const {
         this->name());
   }
 
-  // repeated .Event.Object map = 3;
-  total_size += 1 * this->map_size();
-  for (int i = 0; i < this->map_size(); i++) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-        this->map(i));
+  // map<string, .Event.Object> value = 3;
+  total_size += 1 * this->value_size();
+  {
+    ::google::protobuf::scoped_ptr<Asset_ValueEntry> entry;
+    for (::google::protobuf::Map< ::std::string, ::Event::Object >::const_iterator
+        it = this->value().begin();
+        it != this->value().end(); ++it) {
+      entry.reset(value_.NewEntryWrapper(it->first, it->second));
+      total_size += ::google::protobuf::internal::WireFormatLite::
+          MessageSizeNoVirtual(*entry);
+    }
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -1718,7 +2240,7 @@ void Asset::MergeFrom(const Asset& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) {
     ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
   }
-  map_.MergeFrom(from.map_);
+  value_.MergeFrom(from.value_);
   if (from.domain().size() > 0) {
 
     domain_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.domain_);
@@ -1755,7 +2277,7 @@ void Asset::Swap(Asset* other) {
 void Asset::InternalSwap(Asset* other) {
   domain_.Swap(&other->domain_);
   name_.Swap(&other->name_);
-  map_.UnsafeArenaSwap(&other->map_);
+  value_.Swap(&other->value_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
@@ -1859,34 +2381,22 @@ void Asset::clear_name() {
   // @@protoc_insertion_point(field_set_allocated:Event.Asset.name)
 }
 
-// repeated .Event.Object map = 3;
-int Asset::map_size() const {
-  return map_.size();
+// map<string, .Event.Object> value = 3;
+int Asset::value_size() const {
+  return value_.size();
 }
-void Asset::clear_map() {
-  map_.Clear();
+void Asset::clear_value() {
+  value_.Clear();
 }
-const ::Event::Object& Asset::map(int index) const {
-  // @@protoc_insertion_point(field_get:Event.Asset.map)
-  return map_.Get(index);
+ const ::google::protobuf::Map< ::std::string, ::Event::Object >&
+Asset::value() const {
+  // @@protoc_insertion_point(field_map:Event.Asset.value)
+  return value_.GetMap();
 }
-::Event::Object* Asset::mutable_map(int index) {
-  // @@protoc_insertion_point(field_mutable:Event.Asset.map)
-  return map_.Mutable(index);
-}
-::Event::Object* Asset::add_map() {
-  // @@protoc_insertion_point(field_add:Event.Asset.map)
-  return map_.Add();
-}
-::google::protobuf::RepeatedPtrField< ::Event::Object >*
-Asset::mutable_map() {
-  // @@protoc_insertion_point(field_mutable_list:Event.Asset.map)
-  return &map_;
-}
-const ::google::protobuf::RepeatedPtrField< ::Event::Object >&
-Asset::map() const {
-  // @@protoc_insertion_point(field_list:Event.Asset.map)
-  return map_;
+ ::google::protobuf::Map< ::std::string, ::Event::Object >*
+Asset::mutable_value() {
+  // @@protoc_insertion_point(field_mutable_map:Event.Asset.value)
+  return value_.MutableMap();
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS

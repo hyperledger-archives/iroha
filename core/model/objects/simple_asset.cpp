@@ -20,10 +20,10 @@ limitations under the License.
 
 namespace object {
 
-Asset::Asset(
-    std::string     domain,
-    std::string     name,
-    AssetValueT     value
+SimpleAsset::SimpleAsset(
+    std::string         domain,
+    std::string         name,
+    SimpleAssetValueT   value
 ):
     domain(std::move(domain)),
     name(std::move(name)),
@@ -31,9 +31,9 @@ Asset::Asset(
 {}
 
 
-Asset::Asset(
-    std::string     name,
-    AssetValueT     value
+SimpleAsset::SimpleAsset(
+    std::string         name,
+    SimpleAssetValueT   value
 ):
     domain(""),
     name(std::move(name)),
