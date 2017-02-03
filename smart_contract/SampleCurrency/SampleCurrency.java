@@ -1,4 +1,3 @@
-
 /*
 Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +12,6 @@ limitations under the License.
 */
 
 import java.util.HashMap;
-import repository.AccountRepository;
 
 // no package declaration
 public class SampleCurrency {
@@ -33,24 +31,8 @@ public class SampleCurrency {
     public static void transfer(HashMap<String,String> params){
 
     }
-
-
-    public static void main(String[] argv) {
-        // This is DB access test.
-
-        System.out.println("Hello in JAVA! check repositories");
-
-        System.out.println("AssetRepository");
-        AccountRepository account = new AccountRepository();
-        account.add("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=", "MyAsset");
-        // find, remove, ...
-
-        /*
-        System.out.println("AccountRepository");
-        AccountRepository account = new AccountRepository();
-        account.add("account", 12345);
-        // find, remove, ...
-        */
+  
+    public static void main(String[] argv){
+        System.out.println("Hello in JAVA! in contract main");
     }
-
 }

@@ -16,35 +16,109 @@ limitations under the License.
 #include <string>
 #include <vector>
 
+#include "../../../infra/protobuf/convertor.hpp"
 #include "../../world_state_repository.hpp"
+#include "../../../model/state/asset.hpp"
+#include "../asset_repository.hpp"
+#include "../../../model/string_wrapper/string_wrapper.hpp"
 
 namespace repository{
     namespace asset {
 
-        bool add(std::string publicKey,std::string assetName,std::string value){
-            return world_state_repository::add(assetName+"@"+publicKey, value);
+        using string_wrapper::DomainId;
+        using string_wrapper::AssetName;
+
+        // TODO: replace map<string,Object>
+        using AssetValue = std::string;
+
+        namespace detail {
+            inline std::string serializeAsset(const object::Asset& obj) {
+                Event::Asset protoAsset = convertor::detail::encodeObject(obj);
+                std::string ret;
+                protoAsset.SerializeToString(&ret);
+                return ret;
+            }
+
+            inline object::Asset deserializeAsset(const std::string& serializedAsset) {
+                Event::Asset protoAsset;
+                protoAsset.ParseFromString(serializedAsset);
+                return convertor::detail::decodeObject(protoAsset);
+            }
+
+            // TODO: replace with util::createUuid() ?
+            inline std::string createAssetUuid(const DomainId& domainId, const AssetName& assetName) {
+                return hash::sha3_256_hex(*domainId + "@" + *assetName);
+            }
         }
 
-        bool update(std::string publicKey,std::string assetName,std::string newValue){
-            return world_state_repository::update(assetName+"@"+publicKey, newValue);
+        // TODO: use optional
+        std::string add(const std::string& domainId, const std::string& assetName, const std::string& value) {
+
+            logger::explore("asset repository") << "domainId: " << domainId << " assetName: " << assetName << " assetValue: " << value;
+
+            const auto uuid = detail::createAssetUuid(
+                DomainId(domainId),
+                AssetName(assetName)
+            );
+
+            const auto serializedAsset = detail::serializeAsset(
+                object::Asset(domainId, assetName, std::stoi(value)/*value*/)
+            );
+
+            if (not world_state_repository::add(uuid, serializedAsset)) {
+                return "";
+            }
+
+            return uuid;
         }
 
-        bool remove(std::string publicKey,std::string assetName){
-            return world_state_repository::remove(assetName+"@"+publicKey);
+        // TODO: Wrap std::string with structs in arguments.
+        bool update(const std::string& domainId, const std::string& assetName, const std::string& newValue) {
+
+            const auto uuid = detail::createAssetUuid(
+                DomainId(domainId),
+                AssetName(assetName)
+            );
+
+            const auto serializedAsset = detail::serializeAsset(object::Asset(domainId, assetName, std::stoull(newValue)/*value*/));
+
+            return world_state_repository::update(uuid, newValue);
         }
 
-        std::vector <std::string> findAll(std::string key) {
+        bool remove(const std::string& domainId, const std::string& assetName) {
 
+            const auto uuid = detail::createAssetUuid(
+                DomainId(domainId),
+                AssetName(assetName)
+            );
+
+            return world_state_repository::remove(uuid);
+        }
+        
+        std::vector <object::Asset> findAll(const std::string& uuid) {
+            
         }
 
-        std::string findOne(std::string key){
+        // TODO: use optional type
+        object::Asset findByUuid(const std::string& uuid) {
 
+            const std::string serializedAsset = world_state_repository::find(uuid);
+
+            logger::debug("asset repository :: findByUuid") << serializedAsset;
+
+            if (serializedAsset.empty()) {
+                return object::Asset();
+            }
+
+            return detail::deserializeAsset(serializedAsset);
         }
 
-        std::string findOrElse(std::string key,std::string defaultVale);
+        object::Asset findByUuidOrElse(const std::string& uuid, const object::Asset& defaultValue) {
+            throw "asset repo :: findByUuidOrElse() is not implemented yet.";
+        }
 
-        bool isExist(std::string key) {
-
+        bool isExist(const std::string& key) {
+            throw "asset repo :: isExist() is not implemented yet.";
         }
     }
 }

@@ -1,5 +1,6 @@
 /*
 Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+http://soramitsu.co.jp
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,31 +14,42 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include <iostream>
-#include <cstdint>
+
+#ifndef CORE_DOMAIN_OBJECTS_ASSET_HPP_
+#define CORE_DOMAIN_OBJECTS_ASSET_HPP_
+
+#include <string>
+#include <memory>
 #include <unordered_map>
-#include "asset.hpp"
 
 namespace object {
 
-Asset::Asset(
-    std::string     domain,
-    std::string     name,
-    AssetValueT     value
-):
-    domain(std::move(domain)),
-    name(std::move(name)),
-    value(std::move(value))
-{}
+using SimpleAssetValueT = ObjectT;
 
+class SimpleAsset {
 
-Asset::Asset(
-    std::string     name,
-    AssetValueT     value
-):
-    domain(""),
-    name(std::move(name)),
-    value(std::move(value))
-{}
+public:
+
+    std::string         domain;
+    std::string         name;
+    SimpleAssetValueT   value;
+
+    SimpleAsset() = default;
+
+    explicit Asset(
+        std::string         domain,
+        std::string         name,
+        SimpleAssetValueT   value
+    );
+
+    explicit Asset(
+        std::string         name,
+        SimpleAssetValueT   value
+    );
+
+};
 
 };  // namespace asset
+
+#endif  // CORE_DOMAIN_OBJECTS_ASSET_HPP_
+

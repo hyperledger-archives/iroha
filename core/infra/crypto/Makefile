@@ -5,7 +5,7 @@ KECCAK_PATH = ../../vendor/KeccakCodePackage
 
 DEFINE  = -DKeccakP200_excluded -DKeccakP400_excluded -DKeccakP800_excluded
 
-CFLAGS := $(CFLAGS) -std=c++0x
+CFLAGS := $(CFLAGS) -g -std=c++1y -Wall -fPIC
 CFLAGS := $(CFLAGS) $(DEFINE)
 CFLAGS := $(CFLAGS) -I$(KECCAK_PATH)/bin/generic64/libkeccak.a.headers
 
