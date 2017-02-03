@@ -18,8 +18,16 @@ See the License for the specific language governing permissions and
 #ifndef IROHA_TRANSACTION_REPOSITORY_HPP
 #define IROHA_TRANSACTION_REPOSITORY_HPP
 
-#include "../../model/transaction.hpp"
-#include "../../infra/protobuf/convertor.hpp"
+#include <string>
+#include <vector>
+#include <stdexcept>
+
+#include <model/transaction.hpp>
+#include <infra/protobuf/convertor.hpp>
+#include <consensus/consensus_event.hpp>
+#include <crypto/base64.hpp>
+
+#include "../world_state_repository.hpp"
 
 namespace repository{
     namespace transaction {

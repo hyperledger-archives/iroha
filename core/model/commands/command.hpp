@@ -4,7 +4,7 @@
 #ifndef IROHA_COMMAND_H
 #define IROHA_COMMAND_H
 
-#include "../../service/json_parse.hpp"
+#include <service/json_parse.hpp>
 
 namespace command {
 

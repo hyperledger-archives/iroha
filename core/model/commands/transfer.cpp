@@ -15,10 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "transfer.hpp"
-#include "../../repository/domain/account_repository.hpp"
-#include "../../crypto/hash.hpp"
-
-#include "../../util/logger.hpp"
+#include <repository/domain/account_repository.hpp>
+#include <crypto/hash.hpp>
+#include <util/logger.hpp>
 
 namespace command {
 

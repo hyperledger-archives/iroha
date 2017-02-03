@@ -21,13 +21,13 @@ limitations under the License.
 
 #include <json.hpp>
 
-#include "../core/server/http_server.hpp"
-#include "../core/consensus/connection/connection.hpp"
-#include "../core/consensus/sumeragi.hpp"
-#include "../core/util/logger.hpp"
+#include <server/http_server.hpp>
+#include <consensus/connection/connection.hpp>
+#include <consensus/sumeragi.hpp>
+#include <util/logger.hpp>
 
-#include "../core/service/peer_service.hpp"
-#include "../core/infra/config/peer_service_with_json.hpp"
+#include <service/peer_service.hpp>
+#include <infra/config/peer_service_with_json.hpp>
 
 std::atomic_bool running(true);
 
@@ -70,9 +70,6 @@ int main() {
                 config::PeerServiceConfig::getInstance().getMyPublicKey(),
                 config::PeerServiceConfig::getInstance().getPeerList());
 
-    // since we have thread pool, it sets all necessary callbacks in 
-    // sumeragi::initializeSumeragi.
-    // std::thread sumeragi_thread(sumeragi::loop);
     std::thread http_thread(server);
 
     connection::run();

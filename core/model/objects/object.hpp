@@ -5,7 +5,7 @@
 #ifndef IROHA_OBJECTS_H
 #define IROHA_OBJECTS_H
 
-#include "../../service/json_parse.hpp"
+#include <service/json_parse.hpp>
 
 // Abstract
 class AbsObject {

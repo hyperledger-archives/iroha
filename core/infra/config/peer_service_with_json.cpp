@@ -16,50 +16,48 @@ limitations under the License.
 
 #include "peer_service_with_json.hpp"
 
-namespace config {
-    PeerServiceConfig::PeerServiceConfig() {}
+using PeerServiceConfig = config::PeerServiceConfig;
 
-    PeerServiceConfig& PeerServiceConfig::getInstance() {
-        static PeerServiceConfig serviceConfig;
-        return serviceConfig;
-    }
+PeerServiceConfig::PeerServiceConfig() {}
 
-    std::string PeerServiceConfig::getMyPublicKey() {
-        if (auto config = openConfig(getConfigName())) {
-            return (*config)["me"]["publicKey"].get<std::string>();
-        }
-        return "";
-    }
+PeerServiceConfig& PeerServiceConfig::getInstance() {
+  static PeerServiceConfig serviceConfig;
+  return serviceConfig;
+}
 
-    std::string PeerServiceConfig::getPrivateKey() {
-        if (auto config = openConfig(getConfigName())) {
-            return (*config)["me"]["privateKey"].get<std::string>();
-        }
-        return "";
-    }
+std::string PeerServiceConfig::getMyPublicKey() {
+  if (auto config = openConfig(getConfigName())) {
+    return (*config)["me"]["publicKey"].get<std::string>();
+  }
+  return "";
+}
 
-    std::string PeerServiceConfig::getMyIp() {
-        if (auto config = openConfig(getConfigName())) {
-            return (*config)["me"]["ip"].get<std::string>();
-        }
-        return "";
-    }
+std::string PeerServiceConfig::getMyPrivateKey() {
+  if (auto config = openConfig(getConfigName())) {
+    return (*config)["me"]["privateKey"].get<std::string>();
+  }
+  return "";
+}
 
-    std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
-        std::vector<std::unique_ptr<peer::Node>> nodes;
-        if (auto config = openConfig(getConfigName())) {
-            for (const auto& peer : (*config)["group"].get<std::vector<json>>()){
-                nodes.push_back(std::make_unique<peer::Node>(
-                    peer["ip"].get<std::string>(),
-                    peer["publicKey"].get<std::string>(),
-                    1
-                ));
-            }
-        }
-        return nodes;
-    }
+std::string PeerServiceConfig::getMyIp() {
+  if (auto config = openConfig(getConfigName())) {
+    return (*config)["me"]["ip"].get<std::string>();
+  }
+  return "";
+}
 
-    std::string PeerServiceConfig::getConfigName() {
-        return "config/sumeragi.json";
+std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
+  std::vector<std::unique_ptr<peer::Node>> nodes;
+  if (auto config = openConfig(getConfigName())) {
+    for (const auto& peer : (*config)["group"].get<std::vector<json>>()) {
+      nodes.push_back(std::make_unique<peer::Node>(
+          peer["ip"].get<std::string>(), peer["publicKey"].get<std::string>(),
+          1));
     }
-};
+  }
+  return nodes;
+}
+
+std::string PeerServiceConfig::getConfigName() {
+  return "config/sumeragi.json";
+}

@@ -12,6 +12,7 @@ SET(JSON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/json")
 SET(THREAD_POOL_PATH "${PROJECT_SOURCE_DIR}/core/vendor/thread_pool_cpp")
 
 include_directories(
+  ${PROJECT_SOURCE_DIR}/core
   ${PROJECT_SOURCE_DIR}/core/server
   ${PROJECT_SOURCE_DIR}/core/peer
   ${THREAD_POOL_PATH}/thread_pool
@@ -48,9 +49,8 @@ target_link_libraries(iroha-main
   logger
   http_server_with_cappuccino
   connection_with_grpc
-  peer_service_with_json
+  config_manager
   pthread
   keccak
   hash
 )
-

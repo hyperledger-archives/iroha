@@ -10,7 +10,6 @@ ENDIF()
 
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
-set(GTEST_INCLUDE_DIR ${PROJECT_BINARY_DIR}/gtest/src/googletest/googletest/include)
 
 include_directories(
   ${GTEST_INCLUDE_DIR}
@@ -31,7 +30,10 @@ ELSE()
   )
 ENDIF()
 
+
+# Executable java_vm_test
 add_executable(java_vm_test java_vm_test.cpp)
+add_dependencies(java_vm_test googletest)
 target_link_libraries(java_vm_test
   smart_contract_with_java
   jvm
