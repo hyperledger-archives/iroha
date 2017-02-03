@@ -4,6 +4,7 @@ SET(LEVELDB_PATH ${PROJECT_SOURCE_DIR}/core/vendor/leveldb)
 
 include_directories(
   ${LEVELDB_PATH}/include
+  ${PROJECT_SOURCE_DIR}/core
 )
 
 link_directories(
@@ -16,5 +17,4 @@ target_link_libraries(world_state_repo_with_level_db
   leveldb
   logger
   exception
-  iroha_config_with_json
 )

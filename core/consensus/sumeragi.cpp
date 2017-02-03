@@ -22,24 +22,24 @@ limitations under the License.
 
 #include <thread_pool.hpp>
 
-#include "../util/logger.hpp"
-#include "../repository/consensus/merkle_transaction_repository.hpp"
-#include "../crypto/hash.hpp"
-#include "../crypto/signature.hpp"
+#include <util/logger.hpp>
+#include <repository/consensus/merkle_transaction_repository.hpp>
+#include <crypto/hash.hpp>
+#include <crypto/signature.hpp>
 
-#include "../infra/protobuf/convertor.hpp"
+#include <infra/protobuf/convertor.hpp>
 
-#include "../validation/transaction_validator.hpp"
-#include "../service/peer_service.hpp"
-#include "./connection/connection.hpp"
-#include "../model/objects/asset.hpp"
-#include "../model/objects/domain.hpp"
-#include "../model/commands/transfer.hpp"
+#include <validation/transaction_validator.hpp>
+#include <service/peer_service.hpp>
+#include "connection/connection.hpp"
+#include <model/objects/asset.hpp>
+#include <model/objects/domain.hpp>
+#include <model/commands/transfer.hpp>
 
-#include "../repository/consensus/transaction_repository.hpp"
-#include "../repository/domain/account_repository.hpp"
-#include "../infra/config/peer_service_with_json.hpp"
-#include "../infra/config/iroha_config_with_json.hpp"
+#include <repository/consensus/transaction_repository.hpp>
+#include <repository/domain/account_repository.hpp>
+#include <infra/config/peer_service_with_json.hpp>
+#include <infra/config/iroha_config_with_json.hpp>
 
 /**
 * |ーーー|　|ーーー|　|ーーー|　|ーーー|
@@ -60,21 +60,15 @@ namespace sumeragi {
     using namespace object;
 
 
-    static size_t concurrency =
-        config::IrohaConfigManager::getInstance().getParam("concurrency", 0) <= 0
-        ? 1
-        : std::thread::hardware_concurrency();
-
-
-
     //thread pool and a storage of events 
     static ThreadPool pool(
         ThreadPoolOptions{
-            .threads_count = concurrency,
-            .worker_queue_size = 1024
+            .threads_count = config::IrohaConfigManager::getInstance()
+                    .getConcurrency(0),
+            .worker_queue_size = config::IrohaConfigManager::getInstance()
+                    .getPoolWorkerQueueSize(1024),
         }
     );
-
 
     namespace detail {
 
@@ -204,10 +198,9 @@ namespace sumeragi {
         logger::info("sumeragi")    <<  "set number of validatingPeer";
 
         context->numValidatingPeers = context->validatingPeers.size();
-        context->maxFaulty = context->numValidatingPeers / (
-                config::IrohaConfigManager::getInstance().getParam("numValidatingPeers", 3)
-        );  // Default to approx. 1/3 of the network.
-
+        // maxFaulty = Default to approx. 1/3 of the network.
+        context->maxFaulty = config::IrohaConfigManager::getInstance()
+                .getMaxFaultyPeers(context->numValidatingPeers / 3);
         context->proxyTailNdx = context->maxFaulty * 2 + 1;
 
         if (context->validatingPeers.empty()) {
@@ -266,12 +259,12 @@ namespace sumeragi {
         logger::info("sumeragi")    <<  "Add my signature...";
 
         logger::info("sumeragi")    <<  "hash:" <<  event.transaction().hash();
-        logger::info("sumeragi")    <<  "pub:"  <<  config::PeerServiceConfig::getInstance().getMyPublicKey();
-        logger::info("sumeragi")    <<  "pro:"  <<  config::PeerServiceConfig::getInstance().getPrivateKey();
-        logger::info("sumeragi")    <<  "sog:"  <<  signature::sign(
+        logger::info("sumeragi")    <<  "pub: "  <<  config::PeerServiceConfig::getInstance().getMyPublicKey();
+        logger::info("sumeragi")    <<  "priv:"  <<  config::PeerServiceConfig::getInstance().getMyPrivateKey();
+        logger::info("sumeragi")    <<  "sig: "  <<  signature::sign(
                                                     event.transaction().hash(),
                                                     config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                                                    config::PeerServiceConfig::getInstance().getPrivateKey()
+                                                    config::PeerServiceConfig::getInstance().getMyPrivateKey()
                                                 );
         
         //detail::printIsSumeragi(context->isSumeragi);
@@ -280,7 +273,7 @@ namespace sumeragi {
             config::PeerServiceConfig::getInstance().getMyPublicKey(),
             signature::sign(event.transaction().hash(),
                             config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                            config::PeerServiceConfig::getInstance().getPrivateKey())
+                            config::PeerServiceConfig::getInstance().getMyPrivateKey())
         );
 
         if (detail::eventSignatureIsEmpty(event) && context->isSumeragi) {
@@ -367,7 +360,7 @@ namespace sumeragi {
                                      config::PeerServiceConfig::getInstance().getMyPublicKey(),
                                      signature::sign(event.transaction().hash(),
                                                      config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                                                     config::PeerServiceConfig::getInstance().getPrivateKey()).c_str());
+                                                     config::PeerServiceConfig::getInstance().getMyPrivateKey()).c_str());
 
                 logger::info("sumeragi")        <<  "tail public key is "   <<  context->validatingPeers.at(context->proxyTailNdx)->getPublicKey();
                 logger::info("sumeragi")        <<  "tail is "              <<  context->proxyTailNdx;

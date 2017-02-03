@@ -18,8 +18,10 @@ limitations under the License.
 #define CORE_DOMAIN_COMMANDS_ADD_HPP_
 
 #include <utility>
-#include "../../repository/domain/account_repository.hpp"
-
+#include <repository/domain/account_repository.hpp>
+#include <model/objects/account.hpp>
+#include <model/objects/asset.hpp>
+#include <util/logger.hpp>
 namespace command {
 
 template <typename T>

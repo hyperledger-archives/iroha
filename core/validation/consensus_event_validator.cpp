@@ -15,9 +15,8 @@ limitations under the License.
 */
 
 #include "consensus_event_validator.hpp"
-#include "../consensus/consensus_event.hpp"
-
-#include "../crypto/signature.hpp"
+#include <consensus/consensus_event.hpp>
+#include <crypto/signature.hpp>
 
 namespace consensus_event_validator {
 

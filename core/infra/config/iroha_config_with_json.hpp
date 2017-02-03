@@ -17,32 +17,25 @@ limitations under the License.
 #ifndef IROHA_CONFIG_WITH_JSON_HPP
 #define IROHA_CONFIG_WITH_JSON_HPP
 
-#include "iroha_config.hpp"
+#include "abstract_config_manager.hpp"
 
 namespace config {
-    class IrohaConfigManager: IConfig {
-    protected:
-        std::string openJSONText(const std::string& PathToJSONFile);
-        void setConfigData(std::string&& jsonStr);
+class IrohaConfigManager : config::AbstractConfigManager {
+ private:
+  IrohaConfigManager();
 
-    private:
-        IrohaConfigManager();
-        IrohaConfigManager(const IrohaConfigManager&);
-        IrohaConfigManager& operator=(const IrohaConfigManager&);
+  template <typename T>
+  T getParam(const std::string& param, const T& defaultValue);
 
-    public:
-        static IrohaConfigManager &getInstance();
+ public:
+  static IrohaConfigManager& getInstance();
+  std::string getConfigName();
 
-        template <typename T>
-        T getParam(const std::string &param, const T &defaultValue) {
-            if (auto config = openConfig(getConfigName())) {
-                return config->value(param, defaultValue);
-            }
-            return defaultValue;
-        }
-
-        virtual std::string getConfigName();
-    };
+  std::string getDatabasePath(const std::string& defaultValue);
+  size_t getConcurrency(size_t defaultValue);
+  size_t getMaxFaultyPeers(size_t defaultValue);
+  size_t getPoolWorkerQueueSize(size_t defaultValue);
+};
 }
 
-#endif // IROHA_CONFIG_WITH_JSON_HPP
+#endif  // IROHA_CONFIG_WITH_JSON_HPP

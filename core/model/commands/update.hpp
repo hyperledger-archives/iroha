@@ -17,12 +17,12 @@ limitations under the License.
 #ifndef IROHA_UPDATE_H
 #define IROHA_UPDATE_H
 
-#include "../objects/domain.hpp"
-#include "../objects/asset.hpp"
-#include "../objects/message.hpp"
-
 #include <iostream>
-#include "../../util/logger.hpp"
+
+#include <model/objects/domain.hpp>
+#include <model/objects/asset.hpp>
+#include <model/objects/message.hpp>
+#include <util/logger.hpp>
 
 namespace command {
 
