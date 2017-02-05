@@ -20,6 +20,7 @@ limitations under the License.
 #include <crypto/base64.hpp>
 #include <util/logger.hpp>
 #include <util/use_optional.hpp>
+#include <util/exception.hpp>
 #include <json.hpp>
 
 using PeerServiceConfig = config::PeerServiceConfig;
@@ -71,18 +72,18 @@ std::string PeerServiceConfig::getConfigName() {
 
 namespace detail { namespace formatChecking {
 
-bool ensureFormat(json& config, json& basicConfig, const std::string& history) {
+bool ensureFormat(json& actualConfig, json& formatConfig, const std::string& history) {
 
-  if (config.type() != basicConfig.type()) {
+  if (actualConfig.type() != formatConfig.type()) {
     logger::warning("peer service with json")
-      << "Type mismatch: actual: " << config << "\nexpected: " << basicConfig;
+      << "type must be " << formatConfig.type() << ", but is " << actualConfig.type();
     return false;
   } else {
 
-    if (config.is_object()) {
+    if (actualConfig.is_object()) {
 
-      for (auto it = basicConfig.begin(); it != basicConfig.end(); it++) {
-        if (config.find(it.key()) == config.end()) {
+      for (auto it = formatConfig.begin(); it != formatConfig.end(); it++) {
+        if (actualConfig.find(it.key()) == actualConfig.end()) {
           logger::warning("peer service with json")
             << "Not found: \"" << it.key() << "\" in " << history;
           return false;
@@ -93,15 +94,15 @@ bool ensureFormat(json& config, json& basicConfig, const std::string& history) {
 
       bool res = true;
 
-      for (auto it = config.begin(); it != config.end(); it++) {
-        if (basicConfig.find(it.key()) == basicConfig.end()) {
+      for (auto it = actualConfig.begin(); it != actualConfig.end(); it++) {
+        if (formatConfig.find(it.key()) == formatConfig.end()) {
           logger::warning("peer service with json")
             << "Unused keys: \"" << it.key() << "\" in " << history;
           return false;
         } else {
           res = res && ensureFormat(
             it.value(),
-            basicConfig.find(it.key()).value(),
+            formatConfig.find(it.key()).value(),
             history + " : \"" + it.key() + "\""
             );
         }
@@ -109,10 +110,10 @@ bool ensureFormat(json& config, json& basicConfig, const std::string& history) {
 
       return res;
     }
-    else if (config.is_string()) {
+    else if (actualConfig.is_string()) {
 
-      const auto& format = basicConfig.get<std::string>();
-      const auto& value  = config.get<std::string>();
+      const auto& format = formatConfig.get<std::string>();
+      const auto& value  = actualConfig.get<std::string>();
 
       if (format == "ip") {
         // cannot use config file because nlohmann::json cannot parse string
@@ -138,21 +139,15 @@ bool ensureFormat(json& config, json& basicConfig, const std::string& history) {
         return true;
       }
       else {
-        logger::fatal("peer service with json")
-          << "Not implemented format (format JSON file error)\n"
-          << "Unknown format: \"" << format << "\"";
-        exit(EXIT_FAILURE);
+        throw exception::NotImplementedException("ensureFormat", "peer service with json");
       }
     }
-    else if (config.is_array()) {
-      auto formats = basicConfig.get<std::vector<json>>();
-      auto values  = config.get<std::vector<json>>();
+    else if (actualConfig.is_array()) {
+      auto formats = formatConfig.get<std::vector<json>>();
+      auto values  = actualConfig.get<std::vector<json>>();
 
       if (formats.size() != 1) {
-        logger::fatal("peer service with json")
-          << "array size should be 1 (given " << std::to_string(formats.size())
-          << "). (format JSON file error)";
-        exit(EXIT_FAILURE);
+        throw std::domain_error("array size should be 1 , but is " + std::to_string(formats.size()) + ")");
       }
 
       auto& format = formats.front();
@@ -164,35 +159,46 @@ bool ensureFormat(json& config, json& basicConfig, const std::string& history) {
       return res;
     }
     else {
-      logger::fatal("peer service with json")
-        << "Not implemented type (format JSON file error)";
-      exit(EXIT_FAILURE);
+      throw std::invalid_argument("not implemented error");
     }
-
-    // NO ARRIVAL.
-    assert(false);
   }
 }
 
 }}
 
-bool PeerServiceConfig::ensureConfigFormat(const std::string& jsonStr) {
+bool PeerServiceConfig::ensureConfigFormat(const std::string& configStr) {
+
   using detail::formatChecking::ensureFormat;
 
-  auto try_parse = [](const std::string& str) -> optional<json> {
-    try {
-      return make_optional<json>(json::parse(str));
-    } catch(...) {
-      logger::warning("peer service with json") << "Bad json.";
-      return nullopt;
-    }
-  };
+  json config, formatConfig;
 
-  if (auto config = try_parse(jsonStr)) {
-    const std::string formatJsonStr = "{\"me\":{\"ip\":\"ip\",\"name\":\"*\",\"publicKey\":\"publicKey\",\"privateKey\":\"privateKey\"},\"group\":[{\"ip\":\"ip\",\"name\":\"*\",\"publicKey\":\"publicKey\"}]}";
-    if (auto basicConfig = try_parse(formatJsonStr)) {
-      return ensureFormat(*config, *basicConfig, "(root)");
-    }
+  try {
+    config = json::parse(configStr);
+  } catch(std::exception& e) {
+    return false;
   }
-  return false;
+
+  try {
+    formatConfig = json::parse(R"(
+        {
+          "me":{
+            "ip":"ip",
+            "name":"*",
+            "publicKey":"publicKey",
+            "privateKey":"privateKey"
+          },
+          "group":[
+            {
+              "ip":"ip",
+              "name":"*",
+              "publicKey":"publicKey"
+            }
+          ]
+        }
+      )");
+  } catch(std::exception& e) {
+    throw std::domain_error("cannot parse config format. " + std::string(e.what()));
+  }
+
+  return ensureFormat(config, formatConfig, "(root)");
 }

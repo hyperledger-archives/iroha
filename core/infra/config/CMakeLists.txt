@@ -9,5 +9,6 @@ add_library(config_manager STATIC
 )
 
 target_link_libraries(config_manager
+	exception
 	logger
 )

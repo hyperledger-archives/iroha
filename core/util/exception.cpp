@@ -26,10 +26,20 @@ namespace exception {
 		std::invalid_argument("file " + filename + " is not found!") {
 	}
 
-	NotImplementedException::NotImplementedException(const std::string& functionName,
-													 const std::string& filename):
+	NotImplementedException::NotImplementedException(
+		const std::string& functionName,
+	 	const std::string& filename
+	):
 		std::invalid_argument("TODO: sorry [" + functionName + "] in " + filename + " is not yet implemented, would you like to contribute it?") {
 	};
+
+	InvalidCastException::InvalidCastException(
+			const std::string& from,
+			const std::string&   to,
+      const std::string& filename
+  ):
+		std::domain_error("InvalidCastException in "+ filename + ". I can not cast from " + from + " to " + to ) {
+  };
 
 	namespace crypto {
 		InvalidKeyException::InvalidKeyException(const std::string& message):

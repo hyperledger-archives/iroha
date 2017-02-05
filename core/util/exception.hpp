@@ -20,6 +20,8 @@ limitations under the License.
 #include <stdexcept>
 #include <string>
 
+#include <typeinfo>
+
 namespace exception {
 
   class FileOpenException : public std::invalid_argument {
@@ -28,11 +30,19 @@ namespace exception {
 
   class NotImplementedException : public std::invalid_argument {
     public: NotImplementedException(
-      const std::string&,
+      const std::string& message,
       const std::string& filename
     );
   };
-  
+
+  class InvalidCastException : public std::domain_error {
+    public: InvalidCastException(
+      const std::string& from,
+      const std::string&   to,
+      const std::string& filename
+    );
+  };
+
   namespace crypto {
     class InvalidKeyException : public std::invalid_argument{
       public: InvalidKeyException(const std::string&);
