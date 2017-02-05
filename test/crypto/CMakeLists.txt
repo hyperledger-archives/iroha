@@ -10,7 +10,9 @@ include_directories(
   ${GTEST_INCLUDE_DIR}  
   ${PROJECT_SOURCE_DIR}/core/vendor/ed25519/src
   ${KECCAK_PATH}/bin/generic64/libkeccak.a.headers  
+  ${PROJECT_SOURCE_DIR}/core
 )
+
 link_directories(
   ${ED25519_PATH}/lib
   ${PROJECT_BINARY_DIR}/lib
@@ -19,10 +21,13 @@ link_directories(
   ${PROJECT_SOURCE_DIR}/core/infra/crypto
 )
 
+
+
 # Hash Test
 add_executable(hash_test
   hash_test.cpp
 )
+add_dependencies(hash_test googletest)
 target_link_libraries(hash_test
   #keccak
   hash
@@ -35,8 +40,12 @@ add_test(
   COMMAND $<TARGET_FILE:hash_test>
 )
 
+
+
+
 # Base64 Test
 add_executable(base64_test base64_test.cpp)
+add_dependencies(base64_test googletest)
 target_link_libraries(base64_test base64
   ssl
   crypto
@@ -48,6 +57,7 @@ add_test(
 
 # Singature Test
 add_executable(signature_test signature_test.cpp)
+add_dependencies(signature_test googletest)
 target_link_libraries(signature_test signature
   base64
   hash

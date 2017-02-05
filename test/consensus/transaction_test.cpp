@@ -14,22 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../../core/consensus/sumeragi.hpp"
-
-#include "../../core/consensus/connection/connection.hpp"
-#include "../../core/model/commands/transfer.hpp"
-#include "../../core/model/commands/add.hpp"
-
 #include <iostream>
 #include <string>
 #include <vector>
 #include <memory>
 #include <thread>
 
-#include "../../core/service/peer_service.hpp"
-#include "../../core/crypto/hash.hpp"
-#include "../../core/infra/protobuf/convertor.hpp"
-#include "../../core/infra/config/peer_service_with_json.hpp"
+#include <consensus/sumeragi.hpp>
+#include <consensus/connection/connection.hpp>
+#include <model/commands/transfer.hpp>
+#include <model/commands/add.hpp>
+
+#include <service/peer_service.hpp>
+#include <crypto/hash.hpp>
+#include <infra/protobuf/convertor.hpp>
+#include <infra/config/peer_service_with_json.hpp>
 
 template<typename T>
 using Transaction = transaction::Transaction<T>;
@@ -66,7 +65,7 @@ int main(){
                     config::PeerServiceConfig::getInstance().getMyPublicKey(),
                     signature::sign(event->getHash(),
                                     config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                                    config::PeerServiceConfig::getInstance().getPrivateKey()).c_str()
+                                    config::PeerServiceConfig::getInstance().getMyPrivateKey()).c_str()
             );
         });
     }

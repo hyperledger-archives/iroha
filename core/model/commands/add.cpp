@@ -16,10 +16,6 @@ limitations under the License.
 */
 #include "add.hpp"
 
-#include "../objects/account.hpp"
-#include "../objects/asset.hpp"
-#include "../../util/logger.hpp"
-
 namespace command {
 
     template <>

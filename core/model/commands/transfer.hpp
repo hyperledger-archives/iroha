@@ -18,9 +18,9 @@ limitations under the License.
 #ifndef CORE_DOMAIN_TRANSFER_HPP_
 #define CORE_DOMAIN_TRANSFER_HPP_
 
-#include "../objects/domain.hpp"
-#include "../objects/asset.hpp"
-#include "../objects/message.hpp"
+#include <model/objects/domain.hpp>
+#include <model/objects/asset.hpp>
+#include <model/objects/message.hpp>
 
 #include <string>
 #include <iostream>

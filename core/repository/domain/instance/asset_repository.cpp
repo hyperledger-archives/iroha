@@ -13,10 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include <string>
-#include <vector>
 
-#include "../../world_state_repository.hpp"
+
+
+#include "asset_repository.hpp"
 
 namespace repository{
     namespace asset {
@@ -43,7 +43,7 @@ namespace repository{
 
         std::string findOrElse(std::string key,std::string defaultVale);
 
-        bool isExist(std::string key) {
+        bool exists(std::string key) {
 
         }
     }

@@ -6,6 +6,7 @@ SET(GTEST_INCLUDE_DIR ${PROJECT_BINARY_DIR}/gtest/src/googletest/googletest/incl
 
 include_directories(
     ${GTEST_INCLUDE_DIR}
+    ${PROJECT_SOURCE_DIR}/core
 )
 link_directories(
     ${PROJECT_BINARY_DIR}/lib
@@ -15,8 +16,7 @@ add_executable(ensure_sumeragi_json_format_test
     ensure_sumeragi_json_format.cpp
 )
 target_link_libraries(ensure_sumeragi_json_format_test
-    iroha_config_with_json
-    peer_service_with_json
+    config_manager
     ${GTEST_LIBS_DIR}/libgtest.a
     ${GTEST_LIBS_DIR}/libgtest_main.a
     pthread

@@ -26,16 +26,16 @@ limitations under the License.
 
 #include "consensus_event.hpp"
 
-#include "../service/peer_service.hpp"
-#include "../infra/protobuf/event.grpc.pb.h"
+#include <service/peer_service.hpp>
+#include <infra/protobuf/event.grpc.pb.h>
 
-#include "../model/commands/add.hpp"
-#include "../model/commands/transfer.hpp"
-#include "../model/commands/update.hpp"
+#include <model/commands/add.hpp>
+#include <model/commands/transfer.hpp>
+#include <model/commands/update.hpp>
 
-#include "../model/objects/account.hpp"
-#include "../model/objects/asset.hpp"
-#include "../model/objects/domain.hpp"
+#include <model/objects/account.hpp>
+#include <model/objects/asset.hpp>
+#include <model/objects/domain.hpp>
 
 namespace sumeragi {
 

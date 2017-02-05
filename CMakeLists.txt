@@ -11,12 +11,7 @@ SET(CMAKE_SHARED_LINKER_FLAGS "-lpthread -lssl")
 
 add_subdirectory(core)
 add_subdirectory(peer)
-
 add_subdirectory(tools)
-
-# at some point we want to include pool as following: #include <worker.hpp>
-# which resides in that folder
-include_directories("${PROJECT_SOURCE_DIR}/core/vendor/thread_pool_cpp/thread_pool")
 
 if(NOT without-test)
   enable_testing()

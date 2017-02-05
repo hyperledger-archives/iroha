@@ -17,32 +17,29 @@ limitations under the License.
 #ifndef PEER_SERVICE_WITH_JSON_HPP
 #define PEER_SERVICE_WITH_JSON_HPP
 
-#include "../../service/peer_service.hpp"
-#include "iroha_config.hpp"
 #include <vector>
+#include <service/peer_service.hpp>
+#include "abstract_config_manager.hpp"
 
 namespace config {
 
-    class PeerServiceConfig: IConfig {
-    private:
-        PeerServiceConfig();
-        PeerServiceConfig(const PeerServiceConfig&);
-        PeerServiceConfig& operator=(const PeerServiceConfig&);
+class PeerServiceConfig : config::AbstractConfigManager {
+ private:
+  PeerServiceConfig();
 
-    // Is config data type always std::string? Do we have to use template?
-    // TODO: Separate it from PeerServiceConfig
-    public: bool ensureConfigFormat(const std::string&);
+ public:
+  // TODO: Separate it from PeerServiceConfig
+  public: bool ensureConfigFormat(const std::string&);
+  static PeerServiceConfig &getInstance();
 
-    public:
-        static PeerServiceConfig &getInstance();
+  std::string getMyPublicKey();
+  std::string getMyPrivateKey();
+  std::string getMyIp();
 
-        std::string getMyPublicKey();
-        std::string getPrivateKey();
-        std::string getMyIp();
-        std::vector<std::unique_ptr<peer::Node>> getPeerList();
+  std::vector<std::unique_ptr<peer::Node>> getPeerList();
 
-        virtual std::string getConfigName();
-    };
+  virtual std::string getConfigName();
+};
 }
 
-#endif // PEER_SERVICE_WITH_JSON_HPP
+#endif  // PEER_SERVICE_WITH_JSON_HPP

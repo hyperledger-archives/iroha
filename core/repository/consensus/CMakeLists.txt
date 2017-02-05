@@ -1,5 +1,9 @@
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
+include_directories(
+    ${PROJECT_SOURCE_DIR}/core
+)
+
 add_library(event_repository STATIC
     transaction_repository.cpp
 )

@@ -6,11 +6,15 @@ SET(GTEST_DIR "${GTEST_LIBS_DIR}")
 include_directories(
   ${TP_DIR}
   ${GTEST_INCLUDE_DIR}
+  ${PROJECT_SOURCE_DIR}/core
+  ${PROJECT_SOURCE_DIR}/core/vendor/thread_pool_cpp/thread_pool
 )
 
 add_executable(thread_pool_test
   thread_pool_test.cpp
 )
+
+add_dependencies(thread_pool_test googletest)
 
 target_link_libraries(thread_pool_test
   pthread
@@ -27,6 +31,9 @@ add_test(
 add_executable(json_test
     json_test.cpp
 )
+
+add_dependencies(json_test googletest)
+
 target_link_libraries(json_test
    ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread
 )
