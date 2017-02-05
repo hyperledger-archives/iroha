@@ -12,3 +12,7 @@ target_link_libraries(config_manager
 	exception
 	logger
 )
+
+add_library(config_format STATIC
+	config_format.cpp
+)
