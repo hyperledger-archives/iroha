@@ -25,6 +25,8 @@ const std::string IrohaHome = getenv("IROHA_HOME");
 
 TEST(ensure_sumeragi_json_format, normal_sumeragi_json) {
     std::ifstream ifs(IrohaHome + "/test/infra/config/inputs/normal_sumeragi.json");
+    ASSERT_FALSE(ifs.fail());
+
     std::istreambuf_iterator<char> it(ifs);
     const auto jsonString = std::string(it, std::istreambuf_iterator<char>());
     ASSERT_TRUE(config::PeerServiceConfig::getInstance().ensureConfigFormat(jsonString));
@@ -32,25 +34,25 @@ TEST(ensure_sumeragi_json_format, normal_sumeragi_json) {
 
 TEST(ensure_sumeragi_json_format, bad_json) {
     std::ifstream ifs(IrohaHome + "/test/infra/config/inputs/bad_json.json");
+    ASSERT_FALSE(ifs.fail());
+
     std::istreambuf_iterator<char> it(ifs);
     const auto jsonString = std::string(it, std::istreambuf_iterator<char>());
-//    ASSERT_THROW(config::PeerServiceConfig::getInstance().ensureConfigFormat(jsonString), std::exception);
-    ASSERT_EXIT(
-        config::PeerServiceConfig::getInstance().ensureConfigFormat(jsonString),
-        ::testing::ExitedWithCode(EXIT_FAILURE),
-        ""//".*ERROR (-A-) [peer service with json] Bad json.*"
-    );
+    ASSERT_FALSE(config::PeerServiceConfig::getInstance().ensureConfigFormat(jsonString));
 }
 
 TEST(ensure_sumeragi_json_format, bad_ip) {
 
     std::vector<std::string> fnames = {
-      "bad_ip.json",
-      "bad_ip2.json",
+      IrohaHome + "/test/infra/config/inputs/bad_ip.json",
+      IrohaHome + "/test/infra/config/inputs/bad_ip2.json",
     };
 
-    for (const auto& fname: fnames) {
-        std::ifstream ifs(IrohaHome + "/test/infra/config/inputs/" + fname);
+    for (const auto& path: fnames) {
+        std::cout << "\n" << path << "\n";
+        std::ifstream ifs(path);
+        ASSERT_FALSE(ifs.fail());
+
         std::istreambuf_iterator<char> it(ifs);
         const auto jsonString = std::string(it, std::istreambuf_iterator<char>());
         ASSERT_FALSE(config::PeerServiceConfig::getInstance().ensureConfigFormat(jsonString));
@@ -92,11 +94,11 @@ TEST(ensure_sumeragi_json_format, missing_key) {
         IrohaHome + "/test/infra/config/inputs/no_me_publicKey.json",
     };
 
-    for (const auto& fpath: filepaths) {
+    for (const auto& path: filepaths) {
+        std::cout << "\n" << path << "\n";
+        std::ifstream ifs(path);
+        ASSERT_FALSE(ifs.fail()) << "path: " << path;
 
-        std::cout << "\n" << fpath << std::endl;
-
-        std::ifstream ifs(fpath);
         std::istreambuf_iterator<char> it(ifs);
         const auto jsonString = std::string(it, std::istreambuf_iterator<char>());
         ASSERT_FALSE(config::PeerServiceConfig::getInstance().ensureConfigFormat(jsonString));
@@ -110,11 +112,11 @@ TEST(ensure_sumeragi_json_format, useless_key) {
         IrohaHome + "/test/infra/config/inputs/useless_group_key.json",
     };
 
-    for (const auto& fpath: filepaths) {
+    for (const auto& path: filepaths) {
+        std::cout << "\n" << path << "\n";
+        std::ifstream ifs(path);
+        ASSERT_FALSE(ifs.fail()) << "path: " << path;
 
-        std::cout << "\n" << fpath << std::endl;
-
-        std::ifstream ifs(fpath);
         std::istreambuf_iterator<char> it(ifs);
         const auto jsonString = std::string(it, std::istreambuf_iterator<char>());
         ASSERT_FALSE(config::PeerServiceConfig::getInstance().ensureConfigFormat(jsonString));

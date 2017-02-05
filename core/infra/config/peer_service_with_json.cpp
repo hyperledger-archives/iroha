@@ -19,6 +19,7 @@ limitations under the License.
 #include "peer_service_with_json.hpp"
 #include "../../crypto/base64.hpp"
 #include "../../util/logger.hpp"
+#include "../../util/use_optional.hpp"
 #include "format_regex_config_with_json.hpp"
 #include "format_config_adapter.hpp"
 
@@ -178,16 +179,22 @@ namespace config {
     }}
 
     bool PeerServiceConfig::ensureConfigFormat(const std::string& jsonStr) {
-        try {
-            using formatChecking::FormatConfigAdapter;
-            using detail::formatChecking::ensureFormat;
-            auto config      = json::parse(jsonStr);
-            auto basicConfig = FormatConfigAdapter::getInstance().extractValue();
-            return ensureFormat(config, basicConfig);
+        using formatChecking::FormatConfigAdapter;
+        using detail::formatChecking::ensureFormat;
+
+        auto config = [&jsonStr]() -> optional<json> { try {
+            return make_optional<json>(json::parse(jsonStr));
         } catch(...) {
-            logger::error("peer service with json") << "Bad json.";
-            exit(EXIT_FAILURE);
+            logger::warning("peer service with json") << "Bad json.";
+            return nullopt;
+        }}();
+
+        if (not config) {
+            return false;
         }
+
+        auto basicConfig = FormatConfigAdapter::getInstance().extractValue();
+        return ensureFormat(*config, basicConfig);
     }
 
     std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
