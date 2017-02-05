@@ -20,19 +20,17 @@ limitations under the License.
 #include "../../crypto/base64.hpp"
 #include "../../util/logger.hpp"
 #include "../../util/use_optional.hpp"
-#include "format_regex_config_with_json.hpp"
-#include "format_config_adapter.hpp"
 
 //#define DEBUG printf("%s(%d):", __func__, __LINE__);
 
 namespace config {
-
-    using formatRegExConfig::publicKey;
-    using formatRegExConfig::privateKey;
-    using formatRegExConfig::ip;
-    using formatRegExConfig::name;
-    using formatRegExConfig::group;
-    using formatRegExConfig::me;
+    
+    const auto publicKey = "publicKey";
+    const auto privateKey = "privateKey";
+    const auto ip = "ip";
+    const auto name = "name";
+    const auto group = "group";
+    const auto me = "me";
 
     PeerServiceConfig::PeerServiceConfig() {}
 
@@ -169,22 +167,24 @@ namespace config {
     }}
 
     bool PeerServiceConfig::ensureConfigFormat(const std::string& jsonStr) {
-        using formatChecking::FormatConfigAdapter;
         using detail::formatChecking::ensureFormat;
 
-        auto config = [&jsonStr]() -> optional<json> { try {
-            return make_optional<json>(json::parse(jsonStr));
-        } catch(...) {
-            logger::warning("peer service with json") << "Bad json.";
-            return nullopt;
-        }}();
+        auto try_parse = [](const std::string& str) -> optional<json> {
+            try {
+                return make_optional<json>(json::parse(str));
+            } catch(...) {
+                logger::warning("peer service with json") << "Bad json.";
+                return nullopt;
+            }
+        };
 
-        if (not config) {
-            return false;
+        if (auto config = try_parse(jsonStr)) {
+            const std::string formatJsonStr = "{\"me\":{\"ip\":\"ip\",\"name\":\"*\",\"publicKey\":\"publicKey\",\"privateKey\":\"privateKey\"},\"group\":[{\"ip\":\"ip\",\"name\":\"*\",\"publicKey\":\"publicKey\"}]}";
+            if (auto basicConfig = try_parse(formatJsonStr)) {
+                return ensureFormat(*config, *basicConfig, "(root)");
+            }
         }
-
-        auto basicConfig = FormatConfigAdapter::getInstance().extractValue();
-        return ensureFormat(*config, basicConfig, "(root)");
+        return false;
     }
 
     std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
