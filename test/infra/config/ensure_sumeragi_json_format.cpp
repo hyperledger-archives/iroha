@@ -24,7 +24,7 @@ limitations under the License.
 const std::string IrohaHome = getenv("IROHA_HOME");
 
 TEST(ensure_sumeragi_json_format, normal_sumeragi_json) {
-    std::ifstream ifs(IrohaHome + "/test/infra/config/inputs/normal_sumeragi.json");
+    std::ifstream ifs(IrohaHome + "/build/test/infra/config/inputs/normal_sumeragi.json");
     ASSERT_FALSE(ifs.fail());
 
     std::istreambuf_iterator<char> it(ifs);
@@ -33,7 +33,7 @@ TEST(ensure_sumeragi_json_format, normal_sumeragi_json) {
 }
 
 TEST(ensure_sumeragi_json_format, bad_json) {
-    std::ifstream ifs(IrohaHome + "/test/infra/config/inputs/bad_json.json");
+    std::ifstream ifs(IrohaHome + "/build/test/infra/config/inputs/bad_json.json");
     ASSERT_FALSE(ifs.fail());
 
     std::istreambuf_iterator<char> it(ifs);
@@ -44,8 +44,8 @@ TEST(ensure_sumeragi_json_format, bad_json) {
 TEST(ensure_sumeragi_json_format, bad_ip) {
 
     std::vector<std::string> fnames = {
-      IrohaHome + "/test/infra/config/inputs/bad_ip.json",
-      IrohaHome + "/test/infra/config/inputs/bad_ip2.json",
+      IrohaHome + "/build/test/infra/config/inputs/bad_ip.json",
+      IrohaHome + "/build/test/infra/config/inputs/bad_ip2.json",
     };
 
     for (const auto& path: fnames) {
@@ -60,38 +60,15 @@ TEST(ensure_sumeragi_json_format, bad_ip) {
 }
 
 TEST(ensure_sumeragi_json_format, missing_key) {
-/*
-    const auto directoryPath = IrohaHome + "/test/infra/config/inputs/";
-    std::unique_ptr<DIR, decltype(&closedir)> dp(opendir(directoryPath.c_str()), closedir);
-    if (not dp) {
-        exit(EXIT_FAILURE);
-    }
-
-    std::vector<std::string> filepaths;
-//    std::unique_ptr<dirent> entry(nullptr);
-    struct dirent* entry;
-    do {
-        std::cout << "ok" << std::endl;
-        entry = readdir(dp.get());
-        if (entry) {
-            std::cout << entry->d_name << std::endl;
-
-            const auto fname = std::string(entry->d_name);
-            if (fname.size() >= 3 && fname.substr(0, 3) == "no_") {
-                filepaths.push_back(directoryPath + fname);
-            }
-        }
-    } while (not entry);
-*/
 
     const auto filepaths = {
-        IrohaHome + "/test/infra/config/inputs/no_group_ip.json",
-        IrohaHome + "/test/infra/config/inputs/no_group_name.json",
-        IrohaHome + "/test/infra/config/inputs/no_group_publicKey.json",
-        IrohaHome + "/test/infra/config/inputs/no_me_ip.json",
-        IrohaHome + "/test/infra/config/inputs/no_me_name.json",
-        IrohaHome + "/test/infra/config/inputs/no_me_privateKey.json",
-        IrohaHome + "/test/infra/config/inputs/no_me_publicKey.json",
+        IrohaHome + "/build/test/infra/config/inputs/no_group_ip.json",
+        IrohaHome + "/build/test/infra/config/inputs/no_group_name.json",
+        IrohaHome + "/build/test/infra/config/inputs/no_group_publicKey.json",
+        IrohaHome + "/build/test/infra/config/inputs/no_me_ip.json",
+        IrohaHome + "/build/test/infra/config/inputs/no_me_name.json",
+        IrohaHome + "/build/test/infra/config/inputs/no_me_privateKey.json",
+        IrohaHome + "/build/test/infra/config/inputs/no_me_publicKey.json",
     };
 
     for (const auto& path: filepaths) {
@@ -108,8 +85,8 @@ TEST(ensure_sumeragi_json_format, missing_key) {
 TEST(ensure_sumeragi_json_format, useless_key) {
 
     const auto filepaths = {
-        IrohaHome + "/test/infra/config/inputs/useless_me_key.json",
-        IrohaHome + "/test/infra/config/inputs/useless_group_key.json",
+        IrohaHome + "/build/test/infra/config/inputs/useless_me_key.json",
+        IrohaHome + "/build/test/infra/config/inputs/useless_group_key.json",
     };
 
     for (const auto& path: filepaths) {

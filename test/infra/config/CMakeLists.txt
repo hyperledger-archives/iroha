@@ -22,19 +22,19 @@ target_link_libraries(ensure_sumeragi_json_format_test
     pthread
 )
 
-configure_file(inputs/bad_ip.json ${PROJECT_BINARY_DIR}/test/infra/config/inputs/bad_ip.json)
-configure_file(inputs/no_group_publicKey.json ${PROJECT_BINARY_DIR}/test/infra/config/inputs/no_group_publicKey.json)
-configure_file(inputs/normal_sumeragi.json ${PROJECT_BINARY_DIR}/test/infra/config/inputs/normal_sumeragi.json)
-configure_file(inputs/bad_ip2.json ${PROJECT_BINARY_DIR}/test/infra/config/inputs/inputs/bad_ip2.json)
-configure_file(inputs/no_me_ip.json ${PROJECT_BINARY_DIR}/test/infra/config/inputs/no_me_ip.json)
-configure_file(inputs/useless_group_key.json ${PROJECT_BINARY_DIR}/test/infra/config/inputs/useless_group_key.json)
-configure_file(inputs/bad_json.json ${PROJECT_BINARY_DIR}/test/infra/config/inputs/bad_json.json)
-configure_file(inputs/no_me_name.json ${PROJECT_BINARY_DIR}/test/infra/config/inputs/no_me_name.json)
-configure_file(inputs/useless_me_key.json ${PROJECT_BINARY_DIR}/test/infra/config/inputs/useless_me_key.json)
-configure_file(inputs/no_group_ip.json ${PROJECT_BINARY_DIR}/test/infra/config/inputs/no_group_ip.json)
-configure_file(inputs/no_me_privateKey.json ${PROJECT_BINARY_DIR}/test/infra/config/inputs/no_me_privateKey.json)
-configure_file(inputs/no_group_name.json ${PROJECT_BINARY_DIR}/test/infra/config/inputs/no_group_name.json)
-configure_file(inputs/no_me_publicKey.json ${PROJECT_BINARY_DIR}/test/infra/config/inputs/no_me_publicKey.json)
+configure_file(inputs/normal_sumeragi.json      ${PROJECT_BINARY_DIR}/test/infra/config/inputs/normal_sumeragi.json)
+configure_file(inputs/bad_json.json             ${PROJECT_BINARY_DIR}/test/infra/config/inputs/bad_json.json)
+configure_file(inputs/bad_ip.json               ${PROJECT_BINARY_DIR}/test/infra/config/inputs/bad_ip.json)
+configure_file(inputs/bad_ip2.json              ${PROJECT_BINARY_DIR}/test/infra/config/inputs/bad_ip2.json)
+configure_file(inputs/no_group_ip.json          ${PROJECT_BINARY_DIR}/test/infra/config/inputs/no_group_ip.json)
+configure_file(inputs/no_group_name.json        ${PROJECT_BINARY_DIR}/test/infra/config/inputs/no_group_name.json)
+configure_file(inputs/no_group_publicKey.json   ${PROJECT_BINARY_DIR}/test/infra/config/inputs/no_group_publicKey.json)
+configure_file(inputs/no_me_ip.json             ${PROJECT_BINARY_DIR}/test/infra/config/inputs/no_me_ip.json)
+configure_file(inputs/no_me_name.json           ${PROJECT_BINARY_DIR}/test/infra/config/inputs/no_me_name.json)
+configure_file(inputs/no_me_privateKey.json     ${PROJECT_BINARY_DIR}/test/infra/config/inputs/no_me_privateKey.json)
+configure_file(inputs/no_me_publicKey.json      ${PROJECT_BINARY_DIR}/test/infra/config/inputs/no_me_publicKey.json)
+configure_file(inputs/useless_group_key.json    ${PROJECT_BINARY_DIR}/test/infra/config/inputs/useless_group_key.json)
+configure_file(inputs/useless_me_key.json       ${PROJECT_BINARY_DIR}/test/infra/config/inputs/useless_me_key.json)
 
 add_test(
     NAME ensure_sumeragi_json_format_test
