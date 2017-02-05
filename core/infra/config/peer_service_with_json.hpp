@@ -28,8 +28,6 @@ class PeerServiceConfig : config::AbstractConfigManager {
   PeerServiceConfig();
 
  public:
-  // TODO: Separate it from PeerServiceConfig
-  public: bool ensureConfigFormat(const std::string&);
   static PeerServiceConfig &getInstance();
 
   std::string getMyPublicKey();

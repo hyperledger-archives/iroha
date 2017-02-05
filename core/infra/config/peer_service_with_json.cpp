@@ -25,6 +25,7 @@ limitations under the License.
 using PeerServiceConfig = config::PeerServiceConfig;
 using nlohmann::json;
 
+
 PeerServiceConfig::PeerServiceConfig() {}
 
 PeerServiceConfig& PeerServiceConfig::getInstance() {
@@ -58,8 +59,8 @@ std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
   if (auto config = openConfig(getConfigName())) {
     for (const auto& peer : (*config)["group"].get<std::vector<json>>()) {
       nodes.push_back(std::make_unique<peer::Node>(
-        peer["ip"].get<std::string>(), peer["publicKey"].get<std::string>(),
-        1));
+          peer["ip"].get<std::string>(), peer["publicKey"].get<std::string>(),
+          1));
     }
   }
   return nodes;
