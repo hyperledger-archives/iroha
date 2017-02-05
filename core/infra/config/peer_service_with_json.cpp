@@ -63,11 +63,7 @@ namespace config {
     }
 
     namespace detail { namespace formatChecking {
-        bool ensureFormat(json& config, json& basicConfig) {
-
-//            std::cout << "config:      " << config << "\n";
-//            std::cout << "basicConfig: " << basicConfig << "\n";
-//            std::cout << config.type() << "\n" << basicConfig.type() << "\n";
+        bool ensureFormat(json& config, json& basicConfig, const std::string& history) {
 
             if (config.type() != basicConfig.type()) {
                 logger::warning("peer service with json")
@@ -80,7 +76,7 @@ namespace config {
                     for (auto it = basicConfig.begin(); it != basicConfig.end(); it++) {
                         if (config.find(it.key()) == config.end()) {
                             logger::warning("peer service with json")
-                                << "Not found: " << it.key();   // " in " ...
+                                << "Not found: \"" << it.key() << "\" in " << history;
                             return false;
                         }
                     }
@@ -92,11 +88,14 @@ namespace config {
                     for (auto it = config.begin(); it != config.end(); it++) {
                         if (basicConfig.find(it.key()) == basicConfig.end()) {
                             logger::warning("peer service with json")
-                                << "Unused keys: " << it.key();   // " in " ...
+                                << "Unused keys: \"" << it.key() << "\" in " << history;
                             return false;
                         } else {
-//                            std::cout << it.value() << "\n" << basicConfig.find(it.key()).value() << "\n";
-                            res = res && ensureFormat(it.value(), basicConfig.find(it.key()).value());
+                            res = res && ensureFormat(
+                                it.value(),
+                                basicConfig.find(it.key()).value(),
+                                history + " : \"" + it.key() + "\""
+                            );
                         }
                     }
 
@@ -106,8 +105,6 @@ namespace config {
 
                     const auto& format = basicConfig.get<std::string>();
                     const auto& value  = config.get<std::string>();
-
-//                    std::cout << "config.is_string()\n" << format << "\n" << value << "\n";
 
                     if (format == "ip") {
                         // cannot use config file because nlohmann::json cannot parse string
@@ -154,18 +151,11 @@ namespace config {
 
                     bool res = true;
                     for (auto& value: values) {
-                        res = res && ensureFormat(value, format);
+                        res = res && ensureFormat(value, format, history);
                     }
                     return res;
                 }
                 else {
-                    /*
-                    .is_null();
-                    .is_boolean();
-                    .is_number();
-                    .is_object();
-                    .is_string();
-                    */
                     logger::fatal("peer service with json")
                         << "Not implemented type (format JSON file error)";
                     exit(EXIT_FAILURE);
@@ -194,7 +184,7 @@ namespace config {
         }
 
         auto basicConfig = FormatConfigAdapter::getInstance().extractValue();
-        return ensureFormat(*config, basicConfig);
+        return ensureFormat(*config, basicConfig, "(root)");
     }
 
     std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
