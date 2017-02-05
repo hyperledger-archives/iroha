@@ -21,8 +21,6 @@ limitations under the License.
 #include <iostream>
 #include <sstream>
 
-#include "datetime.hpp"
-
 #if __cplusplus <= 201402L
 #define TYPE_UNC_EXC    bool
 #define STD_UNC_EXC     std::uncaught_exception
@@ -52,40 +50,22 @@ namespace logger {
         detail::LOG_LEVEL = lv;
     }
 
-    // I think this code is ugly.
-    #define LOGGER_DEF(LoggerName, UseLevel, HasPrefix, LogType)                        \
-    struct LoggerName                                                                   \
-    {                                                                                   \
-        LoggerName(std::string&& caller) noexcept                                       \
-          : caller(std::move(caller)),                                                  \
-            uncaught(STD_UNC_EXC())                                                     \
-        {}                                                                              \
-        ~LoggerName() {                                                                 \
-            if  ( COND_UNC_EXC                                                          \
-                  &&                                                                    \
-                  static_cast<int>(detail::LOG_LEVEL) <= static_cast<int>(UseLevel)     \
-                ) {                                                                     \
-                const auto useCErr = static_cast<int>(LogLevel::ERROR) <= static_cast<int>(UseLevel);   \
-                ( useCErr ? std::cerr : std::cout )                                     \
-                            << datetime::unixtime_str()                                 \
-                            << (HasPrefix ?                                             \
-                                std::string(" ") + LogType + " [" + caller + "] "       \
-                                :                            "["  + caller + "] "       \
-                               )                                                        \
-                            << stream.str() << std::endl;                       \
-            }                                                                   \
-        }                                                                       \
+    #define LOGGER_DEF(LoggerName, UseLevel, HasPrefix, LogType)                \
+    struct LoggerName                                                           \
+    {                                                                           \
+        LoggerName(std::string&& caller) noexcept;                              \
+        ~LoggerName();                                                          \
         const std::string   caller;                                             \
         std::stringstream   stream;                                             \
         TYPE_UNC_EXC        uncaught;                                           \
     };                                                                          \
     template <typename T>                                                       \
-    LoggerName& operator << (LoggerName& record, T&& t) {                       \
+    inline LoggerName& operator << (LoggerName& record, T&& t) {                \
         record.stream << std::forward<T>(t);                                    \
         return record;                                                          \
     }                                                                           \
     template <typename T>                                                       \
-    LoggerName& operator << (LoggerName&& record, T&& t) {                      \
+    inline LoggerName& operator << (LoggerName&& record, T&& t) {               \
         return record << std::forward<T>(t);                                    \
     }
 
