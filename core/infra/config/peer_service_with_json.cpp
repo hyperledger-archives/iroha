@@ -16,11 +16,13 @@ limitations under the License.
 
 #include <deque>
 #include <regex>
-#include "peer_service_with_json.hpp"
 #include <crypto/base64.hpp>
 #include <util/logger.hpp>
+#include <util/exception.hpp>
 #include <util/use_optional.hpp>
 #include <json.hpp>
+#include "peer_service_with_json.hpp"
+#include "config_format.hpp"
 
 using PeerServiceConfig = config::PeerServiceConfig;
 using nlohmann::json;
@@ -64,6 +66,51 @@ std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
     }
   }
   return nodes;
+}
+
+
+void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
+  try {
+    if (not ConfigFormat::getInstance().ensureFormatSumeragi(jsonStr)) {
+      throw exception::ParseFromStringException("sumeragi");
+    }
+    _configData = json::parse(std::move(jsonStr));
+  } catch (exception::ParseFromStringException& e) {    
+    logger::warning("peer service config") << e.what();
+    logger::warning("peer service config") << getConfigName() << " is set to be default.";
+
+    // default sumeragi.json
+    _configData = json::parse(R"({
+      "me":{
+        "ip":"172.17.0.6",
+        "name":"samari",
+        "publicKey":"Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU=",
+        "privateKey":"aGIuSZRhnGfFyeoKNm/NbTylnAvRfMu3KumOEfyT2HPf36jSF22m2JXWrdCmKiDoshVqjFtZPX3WXaNuo9L8WA=="
+      },
+      "group":[
+        {
+          "ip":"172.17.0.3",
+          "name":"mizuki",
+          "publicKey":"jDQTiJ1dnTSdGH+yuOaPPZIepUj1Xt3hYOvLQTME3V0="
+        },
+        {
+          "ip":"172.17.0.4",
+          "name":"natori",
+          "publicKey":"Q5PaQEBPQLALfzYmZyz9P4LmCNfgM5MdN1fOuesw3HY="
+        },
+        {
+          "ip":"172.17.0.5",
+          "name":"kabohara",
+          "publicKey":"f5MWZUZK9Ga8XywDia68pH1HLY/Ts0TWBHsxiFDR0ig="
+        },
+        {
+          "ip":"172.17.0.6",
+          "name":"samari",
+          "publicKey":"Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU="
+        }
+      ]
+    })");
+  }
 }
 
 std::string PeerServiceConfig::getConfigName() {

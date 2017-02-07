@@ -35,6 +35,12 @@ namespace exception {
     );
   };
 
+  class ParseFromStringException : public std::domain_error {
+    public: ParseFromStringException(
+      const std::string& filename
+    );
+  };
+
   class InvalidCastException : public std::domain_error {
     public: InvalidCastException(
       const std::string& from,

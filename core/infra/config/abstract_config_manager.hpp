@@ -44,7 +44,7 @@ class AbstractConfigManager {
 
     logger::debug("config") << "load json is " << jsonStr;
 
-    setConfigData(std::move(jsonStr));
+    parseConfigDataFromString(std::move(jsonStr));
 
     return _configData;
   }
@@ -60,7 +60,7 @@ class AbstractConfigManager {
     return std::string(it, std::istreambuf_iterator<char>());
   }
 
-  void setConfigData(std::string&& jsonStr) {
+  virtual void parseConfigDataFromString(std::string&& jsonStr) {
     try {
       _configData = json::parse(std::move(jsonStr));
     } catch (...) {

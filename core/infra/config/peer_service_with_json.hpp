@@ -27,6 +27,9 @@ class PeerServiceConfig : config::AbstractConfigManager {
  private:
   PeerServiceConfig();
 
+ protected:
+  void parseConfigDataFromString(std::string&& jsonStr) override;
+
  public:
   static PeerServiceConfig &getInstance();
 
