@@ -17,7 +17,7 @@ limitations under the License.
 namespace config {
   class ConfigFormat {
   public:
-		static ConfigFormat& getInstance();
+    static ConfigFormat& getInstance();
     bool ensureFormatSumeragi(const std::string& configStr);
 
   private:

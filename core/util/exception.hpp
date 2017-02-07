@@ -56,11 +56,10 @@ namespace exception {
   };
 
   namespace repository {
-      class WriteFailedException : public std::invalid_argument {
-      public:
-          WriteFailedException(const std::string &);
-      };
-  };
-};  // namespace exception
+    class WriteFailedException : public std::invalid_argument {
+      public: WriteFailedException(const std::string &);
+    };
+  }
+}  // namespace exception
 
 #endif
