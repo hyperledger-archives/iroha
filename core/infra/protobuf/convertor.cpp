@@ -57,9 +57,9 @@ namespace convertor{
         object::Account decodeObject(Event::Account aAccount){
             auto publicKey = aAccount.publickey();
             auto name = aAccount.name();
-            std::vector<std::tuple<std::string,long>> assets;
+            std::vector<std::tuple<std::string, std::int64_t>> assets;
             for(const Event::Asset& as: aAccount.assets()){
-                assets.emplace_back(as.name(), static_cast<long>(as.value()));
+                assets.emplace_back(as.name(), static_cast<std::int64_t>(as.value()));
             }
             return object::Account(
                     std::move(publicKey),
@@ -114,7 +114,7 @@ namespace convertor{
         ConsensusEvent<Transaction<Add<object::Account>>> decodeTransaction2ConsensusEvent(Event::Transaction tx){
             auto name = tx.account().name();
             auto publicKey = tx.account().publickey();
-            std::vector<std::tuple<std::string,long>> assets;
+            std::vector<std::tuple<std::string, std::int64_t>> assets;
             for(auto&& as: tx.account().assets()){
                 assets.emplace_back(as.name(), as.value());
             }
