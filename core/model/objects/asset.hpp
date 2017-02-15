@@ -19,38 +19,51 @@ limitations under the License.
 #define CORE_DOMAIN_OBJECTS_ASSET_HPP_
 
 #include <string>
-#include <memory>
+#include <vector>
+#include "base_object.hpp"
 
 namespace object {
 
 class Asset {
 
 public:
-    std::string     domain;
-    std::string     name;
-    std::uint64_t   value;
-    std::int32_t    precision;
+    std::string                  name;
+    std::string                domain;
+
+    std::vector<BaseObject>   objects;
+
+    std::string     smartContractName;
 
 
     explicit Asset():
         domain(""),
         name(""),
-        value(-1),
-        precision(-1)
+        objects(),
+        smartContractName("")
     {}
 
 
     explicit Asset(
-        std::string     domain,
-        std::string     name,
-        std::uint64_t   value,
-        std::uint32_t   precision
-    );
+        std::string               domain,
+        std::string                 name,
+        std::vector<BaseObject>  objects,
+        std::string    smartContractName
+    ):
+        domain(domain),
+        name(name),
+        objects(objects),
+        smartContractName(smartContractName)
+    {}
 
     explicit Asset(
-        std::string     name,
-        std::uint64_t   value
-    );
+        std::string               domain,
+        std::string                 name,
+        std::string    smartContractName
+    ):
+        domain(domain),
+        name(name),
+        smartContractName(smartContractName)
+    {}
 
 };
 
