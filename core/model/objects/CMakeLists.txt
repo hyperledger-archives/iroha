@@ -6,5 +6,6 @@ include_directories(
 
 # All domain instance is in libdomain.a
 ADD_LIBRARY(objects STATIC
+    object.cpp
     base_object.cpp
 )
