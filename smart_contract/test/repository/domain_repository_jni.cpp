@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "test_repository_DomainRepository.h"
 #include <repository/domain/account_repository.hpp>
 #include <repository/domain/asset_repository.hpp>
 #include <infra/smart_contract/jvm/java_virtual_machine.hpp>
@@ -25,6 +24,8 @@ limitations under the License.
 #include <memory>
 #include <vector>
 #include <assert.h>
+
+#include "test_repository_DomainRepository.h"
 
 ////////////////////////////////////////////////////////////////////////////////////
 // Account
