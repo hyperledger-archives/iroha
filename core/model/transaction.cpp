@@ -1,4 +1,3 @@
-
 /*
 Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
 http://soramitsu.co.jp

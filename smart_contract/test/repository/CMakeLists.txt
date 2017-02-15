@@ -5,6 +5,7 @@ include_directories(
   /usr/lib/jvm/java-1.8.0-openjdk-amd64/include/linux
   ${JAVA_HOME}/include
   ${JAVA_HOME}/include/linux
+  ${PROJECT_SOURCE_DIR}/core
 )
 
 link_directories(${PROJECT_BINARY_DIR}/lib)

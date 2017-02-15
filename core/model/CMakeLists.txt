@@ -1,6 +1,12 @@
+add_subdirectory(commands)
 add_subdirectory(objects)
 
-ADD_LIBRARY(transaction STATIC
+include_directories(
+  ${PROJECT_SOURCE_DIR}/core
+  "."
+)
+
+add_library(transaction STATIC
   transaction.cpp
 )
 

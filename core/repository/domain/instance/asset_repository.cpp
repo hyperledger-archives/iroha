@@ -13,14 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include <string>
-#include <vector>
 
-#include "../../../infra/protobuf/convertor.hpp"
-#include "../../world_state_repository.hpp"
-#include "../../../model/state/asset.hpp"
+#include <infra/protobuf/convertor.hpp>
+#include <repository/world_state_repository.hpp>
+#include <model/state/asset.hpp>
+#include <model/string_wrapper/string_wrapper.hpp>
 #include "../asset_repository.hpp"
-#include "../../../model/string_wrapper/string_wrapper.hpp"
 
 namespace repository{
     namespace asset {
@@ -28,7 +26,7 @@ namespace repository{
         using string_wrapper::DomainId;
         using string_wrapper::AssetName;
 
-        // TODO: replace map<string,Object>
+        // TODO: replace map<string, BaseObject>
         using AssetValue = std::string;
 
         namespace detail {
@@ -117,7 +115,7 @@ namespace repository{
             throw "asset repo :: findByUuidOrElse() is not implemented yet.";
         }
 
-        bool isExist(const std::string& key) {
+        bool exists(const std::string& key) {
             throw "asset repo :: isExist() is not implemented yet.";
         }
     }

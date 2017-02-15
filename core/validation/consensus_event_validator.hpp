@@ -17,7 +17,7 @@ limitations under the License.
 #ifndef CORE_VALIDATION_CONSENSUSEVENTVALIDATOR_HPP_
 #define CORE_VALIDATION_CONSENSUSEVENTVALIDATOR_HPP_
 
-#include "../consensus/consensus_event.hpp"
+#include <consensus/consensus_event.hpp>
 #include <type_traits>
 
 namespace consensus_event_validator {

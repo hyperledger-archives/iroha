@@ -14,9 +14,9 @@ limitations under the License.
 #ifndef CORE_DOMAIN_TRANSACTIONS_TRANSACTION_HPP_
 #define CORE_DOMAIN_TRANSACTIONS_TRANSACTION_HPP_
 
-#include "../crypto/signature.hpp"
-#include "../util/datetime.hpp"
-#include "../crypto/hash.hpp"
+#include <crypto/signature.hpp>
+#include <util/datetime.hpp>
+#include <crypto/hash.hpp>
 #include <algorithm>
 #include <cstdint>
 

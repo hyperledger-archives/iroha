@@ -1,0 +1,6 @@
+{ 
+  "database_path":"/tmp/iroha_ledger",
+  "concurrency": 0,
+  "max_faulty_peers" : 1,
+  "pool_worker_queue_size": 1024
+}

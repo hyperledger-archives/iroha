@@ -14,9 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../../core/model/smart_contract/virtual_machine_interface.hpp"
-#include "../../core/repository/world_state_repository.hpp"
-#include "../../core/crypto/hash.hpp"
+#include <model/smart_contract/virtual_machine_interface.hpp>
+#include <repository/domain/account_repository.hpp>
+#include <repository/domain/asset_repository.hpp>
+#include <repository/world_state_repository.hpp>
 
 #include <gtest/gtest.h>
 

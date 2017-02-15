@@ -5,6 +5,10 @@ SET(CMAKE_CXX_FLAGS_DEBUG "-g")
 SET(KECCAK_PATH  "${PROJECT_SOURCE_DIR}/core/vendor/KeccakCodePackage")
 SET(ED25519_PATH "${PROJECT_SOURCE_DIR}/core/vendor/ed25519")
 
+include_directories(
+    ${PROJECT_SOURCE_DIR}/core
+)
+
 link_directories(
     ${PROJECT_BINARY_DIR}/lib
     ${ED25519_PATH}/lib
@@ -16,6 +20,8 @@ link_directories(
 add_executable(sumeragi_test
     sumeragi_test.cpp
 )
+
+
 target_link_libraries(sumeragi_test
     snappy
     objects
@@ -24,10 +30,9 @@ target_link_libraries(sumeragi_test
     convertor
     sumeragi
     connection_with_grpc
-    peer_service_with_json
+    config_manager
     pthread
     consensus_event
-    transaction
 )
 
 add_executable(transaction_test
@@ -40,9 +45,8 @@ target_link_libraries(transaction_test
     signature
     sumeragi
     connection_with_grpc
-    peer_service_with_json
+    config_manager
     pthread
     consensus_event
-    transaction
     objects
 )

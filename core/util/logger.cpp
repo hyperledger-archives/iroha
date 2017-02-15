@@ -22,4 +22,32 @@ limitations under the License.
 
 namespace logger {
 
+
+    #define LOGGER_DEF_IMPL(LoggerName, UseLevel, HasPrefix, LogType)               \
+    LoggerName::LoggerName(std::string&& caller) noexcept                           \
+      : caller(std::move(caller)),                                                  \
+        uncaught(STD_UNC_EXC())                                                     \
+    {}                                                                              \
+    LoggerName::~LoggerName() {                                                     \
+        if  ( COND_UNC_EXC                                                          \
+              &&                                                                    \
+              static_cast<int>(detail::LOG_LEVEL) <= static_cast<int>(UseLevel)     \
+            ) {                                                                     \
+            const auto useCErr = static_cast<int>(LogLevel::ERROR) <= static_cast<int>(UseLevel);   \
+            ( useCErr ? std::cerr : std::cout )                                     \
+                        << datetime::unixtime_str()                                 \
+                        << (HasPrefix ?                                             \
+                            std::string(" ") + LogType + " [" + caller + "] "       \
+                            :                            "["  + caller + "] "       \
+                           )                                                        \
+                        << stream.str() << std::endl;                       	\
+        }                                                                   	\
+    }
+
+    LOGGER_DEF_IMPL(debug,   LogLevel::DEBUG,    true,   "DEBUG")
+    LOGGER_DEF_IMPL(info,    LogLevel::INFO,     true,   "INFO")
+    LOGGER_DEF_IMPL(warning, LogLevel::WARNING,  true,   "WARNING")
+    LOGGER_DEF_IMPL(error,   LogLevel::ERROR,    true,   "ERROR (-A-)")
+    LOGGER_DEF_IMPL(fatal,   LogLevel::FATAL,    true,   "FATAL (`o')")
+    LOGGER_DEF_IMPL(explore, LogLevel::EXPLORE,  false,  "(EXPLORE)")
 }

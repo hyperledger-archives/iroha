@@ -14,13 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "test_repository_DomainRepository.h"
-#include "../../../core/repository/domain/account_repository.hpp"
-#include "../../../core/repository/domain/asset_repository.hpp"
-#include "../../../core/infra/smart_contract/jvm/java_virtual_machine.hpp"
-#include "../../../core/util/logger.hpp"
+#include <repository/domain/account_repository.hpp>
+#include <repository/domain/asset_repository.hpp>
+#include <infra/smart_contract/jvm/java_virtual_machine.hpp>
+#include <util/logger.hpp>
 
 #include <iostream>
-
 #include <string>
 #include <unordered_map>
 #include <memory>

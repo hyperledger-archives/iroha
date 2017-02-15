@@ -18,9 +18,8 @@ limitations under the License.
 
 #include <string>
 #include <vector>
-
-#include "../../model/objects/asset.hpp"
-#include "../../model/state/asset.hpp"
+#include "/opt/iroha/core/model/objects/asset.hpp"
+#include "/opt/iroha/core/model/state/asset.hpp"
 
 namespace repository {
     namespace asset {
@@ -34,9 +33,9 @@ namespace repository {
         
         object::Asset findByUuidOrElse(const std::string& uuid, const object::Asset& defaultValue);
 
-        bool isExist(const std::string& key);
-    };
-};
+        bool exists(std::string key);
+    }
+}
 
 
 #endif //IROHA_ASSET_REPOSITORY_H

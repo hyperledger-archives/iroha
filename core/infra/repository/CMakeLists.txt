@@ -5,6 +5,7 @@ SET(CMAKE_CXX_FLAGS "-g -Wall -std=c++1y -fPIC")
 
 include_directories(
   ${LEVELDB_PATH}/include
+  ${PROJECT_SOURCE_DIR}/core
 )
 
 link_directories(

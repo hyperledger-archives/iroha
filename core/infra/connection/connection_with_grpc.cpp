@@ -14,21 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../../consensus/connection/connection.hpp"
-#include "../../util/logger.hpp"
-#include "../../service/peer_service.hpp"
-
 #include <grpc++/grpc++.h>
+
+#include <consensus/connection/connection.hpp>
+#include <util/logger.hpp>
+#include <service/peer_service.hpp>
 
 #include "../protobuf/event.grpc.pb.h"
 
-#include "../../model/commands/add.hpp"
-#include "../../model/commands/transfer.hpp"
-#include "../../model/commands/update.hpp"
+#include <model/commands/add.hpp>
+#include <model/commands/transfer.hpp>
+#include <model/commands/update.hpp>
 
-#include "../../model/objects/asset.hpp"
-#include "../../model/objects/domain.hpp"
-#include "../../model/objects/account.hpp"
+#include <model/objects/asset.hpp>
+#include <model/objects/domain.hpp>
+#include <model/objects/account.hpp>
+
+#include <infra/config/peer_service_with_json.hpp>
 
 #include <string>
 #include <vector>
@@ -149,7 +151,7 @@ namespace connection {
     ) {
         // WIP
         for (auto& ip : receiver_ips){
-            if (ip != peer::getMyIp()){
+            if (ip != config::PeerServiceConfig::getInstance().getMyIp()){
                 send( ip, event);
             }
         }

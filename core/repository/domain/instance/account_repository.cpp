@@ -14,13 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../../../infra/protobuf/convertor.hpp"
-#include "../../../model/state/account.hpp"
-#include "../../../model/string_wrapper/string_wrapper.hpp"
-#include "../account_repository.hpp"
-#include "../../world_state_repository.hpp"
-
 #include <cstdint>
+#include <infra/protobuf/convertor.hpp>
+#include <model/state/account.hpp>
+#include <model/string_wrapper/string_wrapper.hpp>
+#include <repository/world_state_repository.hpp>
+#include "../account_repository.hpp"
 
 namespace repository{
     namespace account {

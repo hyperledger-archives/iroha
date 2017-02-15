@@ -1,9 +1,10 @@
 
 
-#include "../../model/smart_contract/virtual_machine_interface.hpp"
-#include "jvm/java_virtual_machine.hpp"
-#include "../../util/logger.hpp"
+#include <model/smart_contract/virtual_machine_interface.hpp>
+#include <util/logger.hpp>
 #include <map>
+
+#include "jvm/java_virtual_machine.hpp"
 
 namespace smart_contract {
 
