@@ -30,7 +30,7 @@ namespace repository{
         const auto s3 = "5c9887c793b7595885e004c43e19df429f619fb5d878a3334636e07e72a7adc2";
         const auto s4 = "e0e0dfd050ccbc1676681808117e0f5980028889ce328bd1c6b29424565c0913";
 
-        std::vector<std::string> split(const std::string& str, const std::string& delim) noexcept{
+        std::vector<std::string> split(const std::string& str, const std::string& delim) {
             std::vector<std::string> result;
             if(str == ""){
                 return result;
