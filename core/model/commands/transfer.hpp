@@ -30,7 +30,7 @@ namespace command {
 
     template<typename T>
     class Transfer : public T, public Command {
-    public:
+      public:
         std::string senderPublicKey;
         std::string receiverPublicKey;
 
@@ -40,9 +40,9 @@ namespace command {
             std::string&& receiver,
             Args&&... args
         ):
-            T(std::forward<Args>(args)...),
             senderPublicKey(std::move(sender)),
-            receiverPublicKey(std::move(receiver))
+            receiverPublicKey(std::move(receiver)),
+            T(std::forward<Args>(args)...)
         {}
 
         constexpr auto getCommandName() const {

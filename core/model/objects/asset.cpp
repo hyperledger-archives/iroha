@@ -13,31 +13,43 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#include "asset.hpp"
 #include <iostream>
 #include <cstdint>
-#include <unordered_map>
-#include "asset.hpp"
 
 namespace object {
 
 Asset::Asset(
     std::string     domain,
     std::string     name,
-    AssetValueT     value
+    std::uint64_t   value,
+    std::uint32_t   precision
 ):
     domain(std::move(domain)),
     name(std::move(name)),
-    value(std::move(value))
+    value(value),
+    precision(precision)
+{}
+
+Asset::Asset(
+    std::string     domain,
+    std::string     name,
+    std::uint64_t   value
+):
+    domain(std::move(domain)),
+    name(std::move(name)),
+    value(value)
 {}
 
 
 Asset::Asset(
     std::string     name,
-    AssetValueT     value
+    std::uint64_t   value
 ):
     domain(""),
     name(std::move(name)),
-    value(std::move(value))
+    value(value),
+    precision(-1)
 {}
 
 };  // namespace asset

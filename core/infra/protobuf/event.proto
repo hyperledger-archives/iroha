@@ -8,20 +8,14 @@ service IrohaConnection {
   rpc Operation(ConsensusEvent) returns (StatusResponse) {}
 }
 
-// union type
-message Object {
-  oneof value {
-    string       valueString       = 1;
-    int64        valueInt          = 2;
-    bool         valueBoolean      = 3;
-    double       valueDouble       = 4;
-    SimpleAsset  valueSimpleAsset  = 5;
-    Asset        valueAsset        = 6;
-    Domain       valueDomain       = 7;
-    Peer         valuePeer         = 8;
-  }
+
+message Object{
+  string valueStr = 1;
+  int64  valueInt = 2;
+  bool   valueBool = 3;
+  double valueDouble = 4;
+  string name = 5;
 }
-// e.g. Currency
 message SimpleAsset {
   string domain = 1;
   string name = 2;
@@ -30,7 +24,7 @@ message SimpleAsset {
 message Asset {
   string domain = 1;
   string name = 2;
-  map<string, Object> value = 3;
+  repeated Object map = 3;
 }
 message Domain {
   string ownerPublicKey = 1;
@@ -50,6 +44,8 @@ message Peer {
   string address = 2;
   Trust trust = 3;
 }
+
+
 
 message TxSignatures {
   string publicKey = 1;

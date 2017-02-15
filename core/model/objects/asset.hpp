@@ -20,32 +20,42 @@ limitations under the License.
 
 #include <string>
 #include <memory>
-#include <unordered_map>
-#include "object.hpp"
 
 namespace object {
-
-using AssetValueT   = std::unordered_map<std::string, object::Object>;
 
 class Asset {
 
 public:
-
     std::string     domain;
     std::string     name;
-    AssetValueT     value;
+    std::uint64_t   value;
+    std::int32_t    precision;
 
-    Asset() = default;
+    explicit Asset():
+        domain(""),
+        name(""),
+        value(-1),
+        precision(-1)
+    {}
+
 
     explicit Asset(
         std::string     domain,
         std::string     name,
-        AssetValueT     value
+        std::uint64_t   value,
+        std::uint32_t   precision
+    );
+
+    // What should be updated?
+    explicit Asset(
+        std::string     domain,
+        std::string     name,
+        std::uint64_t   value
     );
 
     explicit Asset(
         std::string     name,
-        AssetValueT     value
+        std::uint64_t   value
     );
 
 };

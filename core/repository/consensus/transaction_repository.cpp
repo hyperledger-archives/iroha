@@ -70,8 +70,7 @@ namespace repository{
                 auto account = tx.account().publickey() + s2 + tx.account().name() + s2 + assets;
                 return transaction + "ACCOUNT" + s + account;
             }else if(tx.has_asset()){
-                auto asset = tx.asset().domain() + s2 + tx.asset().name() + s2;
-                // TODO: Serialize asset().value() to std::string
+                auto asset = tx.asset().domain() + s2 + tx.asset().name() + s2;// +\
 //                 std::to_string(tx.asset().value()) + s2 + std::to_string(tx.asset().precision());
                 return transaction + "ASSET"    + s + asset;
             }else if(tx.has_domain()){

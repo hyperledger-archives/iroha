@@ -23,7 +23,7 @@ limitations under the License.
 
 namespace object {
 
-class Message {
+class Message{
 
 public:
     std::string text;
