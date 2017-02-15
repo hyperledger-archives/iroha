@@ -18,40 +18,26 @@ limitations under the License.
 #ifndef CORE_DOMAIN_TRANSFER_HPP_
 #define CORE_DOMAIN_TRANSFER_HPP_
 
-#include <model/objects/domain.hpp>
-#include <model/objects/asset.hpp>
-#include <model/objects/message.hpp>
+
+#include <model/objects/object.hpp>
 
 #include <string>
 #include <iostream>
 
 namespace command {
 
-    template<typename T>
-    class Transfer : public T {
+    class Transfer{
 
-    public:
-
-        std::string senderPublicKey;
+        object::Object object;
         std::string receiverPublicKey;
 
-        template<typename... Args>
-        explicit Transfer(
-                std::string&& sender,
-                std::string&& receiver,
-                Args&&... args
+        Transfer(
+                object::Object o,
+                std::string receiver
         ):
-                T(std::forward<Args>(args)...),
-                senderPublicKey(std::move(sender)),
-                receiverPublicKey(std::move(receiver))
+                object(o),
+                receiverPublicKey(receiver)
         {}
-
-        auto getCommandName() const {
-            return "Transfer";
-        }
-
-        void execution();
-
     };  // namespace command
 };
 #endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_

@@ -19,35 +19,19 @@ limitations under the License.
 
 #include <iostream>
 
-#include <model/objects/domain.hpp>
-#include <model/objects/asset.hpp>
-#include <model/objects/message.hpp>
-#include <util/logger.hpp>
+#include <model/objects/object.hpp>
 
 namespace command {
 
-    template <typename T>
-    class Update: public T {
+    class Update {
 
-    public:
-        std::string ownerPublicKey;
+        object::Object object;
 
-        template<typename... Args>
-        explicit Update(
-            std::string&& ownerPublicKey,
-            Args&&... args
+        Update(
+            object::Object o
         ):
-            T(std::forward<Args>(args)...),
-            ownerPublicKey(std::move(ownerPublicKey))
+            object(o)
         {}
-
-        auto getCommandName() const {
-            return "Update";
-        }
-
-        void execution(){
-
-        }
 
     };
 

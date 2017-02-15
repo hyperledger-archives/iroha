@@ -18,28 +18,19 @@ limitations under the License.
 #define CORE_DOMAIN_COMMANDS_ADD_HPP_
 
 #include <utility>
-#include <repository/domain/account_repository.hpp>
-#include <model/objects/account.hpp>
-#include <model/objects/asset.hpp>
-#include <util/logger.hpp>
+#include <model/objects/object.hpp>
+
 namespace command {
 
-template <typename T>
-class Add: public T {
-  public:
+class Add {
 
-    template<typename... Args>
-    constexpr Add(
-        Args&&... args
+    object::Object object;
+
+    Add(
+        object::Object o
     ):
-        T(std::forward<Args>(args)...)
+        object(o)
     {}
-
-    constexpr auto getCommandName() const{
-        return "Add";
-    }
-
-    void execution();
 
 };
 

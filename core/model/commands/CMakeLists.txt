@@ -5,13 +5,10 @@ include_directories(
 )
 
 ADD_LIBRARY(commands STATIC
-  add.cpp
-  transfer.cpp
-  update.cpp
+  command.cpp
 )
 
 target_link_libraries(commands
   objects
-  domain_repository
   logger
 )
