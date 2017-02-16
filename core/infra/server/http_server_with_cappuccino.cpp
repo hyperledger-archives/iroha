@@ -16,16 +16,16 @@ limitations under the License.
 
 #include <json.hpp>
 
-#include "../../server/http_server.hpp"
-#include "../../vendor/Cappuccino/cappuccino.hpp"
-#include "../../util/logger.hpp"
-#include "../../service/peer_service.hpp"
-#include "../../infra/protobuf/convertor.hpp"
-#include "../../infra/config/peer_service_with_json.hpp"
+#include <server/http_server.hpp>
+#include <vendor/Cappuccino/cappuccino.hpp>
+#include <util/logger.hpp>
+#include <service/peer_service.hpp>
+#include <infra/protobuf/convertor.hpp>
+#include <infra/config/peer_service_with_json.hpp>
 
-#include "../../consensus/connection/connection.hpp"
+#include <consensus/connection/connection.hpp>
 
-#include "../../repository/consensus/transaction_repository.hpp"
+#include <repository/consensus/transaction_repository.hpp>
 
 
 namespace http {
@@ -101,7 +101,7 @@ namespace http {
                             config::PeerServiceConfig::getInstance().getMyPublicKey(),
                             signature::sign(event.getHash(),
                                             config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                                            config::PeerServiceConfig::getInstance().getPrivateKey()).c_str()
+                                            config::PeerServiceConfig::getInstance().getMyPrivateKey()).c_str()
                         );
 
                         connection::send(config::PeerServiceConfig::getInstance().getMyIp(), convertor::encode(event));
@@ -188,7 +188,7 @@ namespace http {
                         config::PeerServiceConfig::getInstance().getMyPublicKey(),
                         signature::sign(event.getHash(),
                                         config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                                        config::PeerServiceConfig::getInstance().getPrivateKey()).c_str()
+                                        config::PeerServiceConfig::getInstance().getMyPrivateKey()).c_str()
                     );
 
                     connection::send(config::PeerServiceConfig::getInstance().getMyIp(), convertor::encode(event));

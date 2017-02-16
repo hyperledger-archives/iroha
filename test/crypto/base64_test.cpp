@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../../core/crypto/base64.hpp"
+#include <crypto/base64.hpp>
 
 #include <iostream>
 #include <gtest/gtest.h>

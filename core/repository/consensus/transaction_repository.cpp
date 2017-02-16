@@ -15,13 +15,7 @@ See the License for the specific language governing permissions and
         limitations under the License.
 */
 
-#include "../world_state_repository.hpp"
 #include "transaction_repository.hpp"
-#include "../../consensus/consensus_event.hpp"
-#include "../../crypto/base64.hpp"
-#include <string>
-#include <vector>
-#include <stdexcept>
 
 namespace repository{
 

@@ -17,7 +17,7 @@ if [ -z ${IROHA_HOME} ]; then
 	exit 1
 fi
 
-
+mkdir -p $IROHA_RELEASE
 cd ${IROHA_RELEASE} || (echo "[-] No folder ${IROHA_RELEASE}" && exit 1)
 
 rsync -av ${IROHA_BUILD}/bin $IROHA_RELEASE && \
@@ -29,5 +29,3 @@ rsync -av ${IROHA_HOME}/core/vendor/ed25519/lib $IROHA_RELEASE
 tar cvf /tmp/iroha.tar \
 	/usr/lib/libproto* \
 	/usr/local
-
-exit 0

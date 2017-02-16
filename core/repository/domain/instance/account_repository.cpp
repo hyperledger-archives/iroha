@@ -14,9 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../../../infra/protobuf/convertor.hpp"
-
-#include "../../../model/state/account.hpp"
+#include <infra/protobuf/convertor.hpp>
+#include <model/state/account.hpp>
 
 #include "../account_repository.hpp"
 #include "../../world_state_repository.hpp"

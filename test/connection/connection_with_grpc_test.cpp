@@ -19,17 +19,15 @@ limitations under the License.
 
 #include <unordered_map>
 
-#include "../../core/consensus/connection/connection.hpp"
-#include "../../core/consensus/consensus_event.hpp"
-#include "../../core/model/commands/transfer.hpp"
-#include "../../core/model/objects/domain.hpp"
-#include "../../core/model/transaction.hpp"
-#include "../../core/service/peer_service.hpp"
-
-#include "../../core/infra/protobuf/convertor.hpp"
-#include "../../core/infra/protobuf/event.grpc.pb.h"
-
-#include "../../core/infra/config/peer_service_with_json.hpp"
+#include <consensus/connection/connection.hpp>
+#include <consensus/consensus_event.hpp>
+#include <model/commands/transfer.hpp>
+#include <model/objects/domain.hpp>
+#include <model/transaction.hpp>
+#include <service/peer_service.hpp>
+#include <infra/protobuf/convertor.hpp>
+#include <infra/protobuf/event.grpc.pb.h>
+#include <infra/config/peer_service_with_json.hpp>
 
 template<typename T>
 using Transaction = transaction::Transaction<T>;

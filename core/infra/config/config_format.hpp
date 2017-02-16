@@ -14,24 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <model/smart_contract/virtual_machine_interface.hpp>
+namespace config {
+  class ConfigFormat {
+  public:
+    static ConfigFormat& getInstance();
+    bool ensureFormatSumeragi(const std::string& configStr);
 
-#include <gtest/gtest.h>
-
-using smart_contract::SmartContract;
-
-TEST(SmartContract, createVM){
-
-    std::string contractName = "SampleCurrency";
-    std::string functionName = "remit";
-    std::unordered_map<std::string, std::string> params;
-    params["A"] = "Ant";
-    params["B"] = "Bright";
-    SmartContract smartContract = SmartContract();
-    smartContract.initializeVM(contractName);
-    smartContract.invokeFunction(
-        contractName,
-        functionName,
-        params
-    );
+  private:
+    ConfigFormat();
+    bool ensureFormat(const std::string& configStr, const std::string& formatConfigStr);
+    bool ensureFormat(nlohmann::json& actualConfig, nlohmann::json& formatConfig, const std::string& history);
+  };
 }

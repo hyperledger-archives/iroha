@@ -16,6 +16,10 @@ limitations under the License.
 #ifndef IROHA_ASSET_REPOSITORY_H
 #define IROHA_ASSET_REPOSITORY_H
 
+#include <string>
+#include <vector>
+#include "../../world_state_repository.hpp"
+
 namespace repository {
     namespace asset {
 
@@ -28,7 +32,7 @@ namespace repository {
 
         std::string findOrElse(std::string key, std::string defaultVale);
 
-        bool isExist(std::string key);
+        bool exists(std::string key);
     };
 };
 

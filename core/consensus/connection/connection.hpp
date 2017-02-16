@@ -22,7 +22,7 @@ limitations under the License.
 #include <memory>
 #include <functional>
 
-#include "../../infra/protobuf/event.grpc.pb.h"
+#include <infra/protobuf/event.grpc.pb.h>
 #include "../consensus_event.hpp"
 
 namespace connection {

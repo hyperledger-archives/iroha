@@ -17,28 +17,30 @@ limitations under the License.
 #ifndef PEER_SERVICE_WITH_JSON_HPP
 #define PEER_SERVICE_WITH_JSON_HPP
 
-#include "../../service/peer_service.hpp"
-#include "iroha_config.hpp"
 #include <vector>
+#include <service/peer_service.hpp>
+#include "abstract_config_manager.hpp"
 
 namespace config {
 
-    class PeerServiceConfig: IConfig {
-    private:
-        PeerServiceConfig();
-        PeerServiceConfig(const PeerServiceConfig&);
-        PeerServiceConfig& operator=(const PeerServiceConfig&);
+class PeerServiceConfig : config::AbstractConfigManager {
+ private:
+  PeerServiceConfig();
 
-    public:
-        static PeerServiceConfig &getInstance();
+ protected:
+  void parseConfigDataFromString(std::string&& jsonStr) override;
 
-        std::string getMyPublicKey();
-        std::string getPrivateKey();
-        std::string getMyIp();
-        std::vector<std::unique_ptr<peer::Node>> getPeerList();
+ public:
+  static PeerServiceConfig &getInstance();
 
-        virtual std::string getConfigName();
-    };
+  std::string getMyPublicKey();
+  std::string getMyPrivateKey();
+  std::string getMyIp();
+
+  std::vector<std::unique_ptr<peer::Node>> getPeerList();
+
+  virtual std::string getConfigName();
+};
 }
 
-#endif // PEER_SERVICE_WITH_JSON_HPP
+#endif  // PEER_SERVICE_WITH_JSON_HPP

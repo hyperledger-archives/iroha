@@ -24,17 +24,18 @@ limitations under the License.
 #include <unordered_map>
 #include <algorithm>
 
-#include "../crypto/signature.hpp"
-#include "../util/logger.hpp"
-#include "../model/transaction.hpp"
+#include <crypto/signature.hpp>
+#include <util/logger.hpp>
 
-#include "../model/commands/add.hpp"
-#include "../model/commands/transfer.hpp"
-#include "../model/commands/update.hpp"
+#include <model/transaction.hpp>
 
-#include "../model/objects/account.hpp"
-#include "../model/objects/asset.hpp"
-#include "../model/objects/domain.hpp"
+#include <model/commands/add.hpp>
+#include <model/commands/transfer.hpp>
+#include <model/commands/update.hpp>
+
+#include <model/objects/account.hpp>
+#include <model/objects/asset.hpp>
+#include <model/objects/domain.hpp>
 
 
 namespace event {

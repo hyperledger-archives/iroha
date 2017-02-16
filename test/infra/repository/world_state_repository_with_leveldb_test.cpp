@@ -19,7 +19,7 @@ limitations under the License.
 //
 
 
-#include "../../../core/repository/world_state_repository.hpp"
+#include <repository/world_state_repository.hpp>
 
 #include <leveldb/db.h>
 
