@@ -97,7 +97,6 @@ namespace repository{
             
         }
 
-        // TODO: use optional type
         object::Asset findByUuid(const std::string& uuid) {
 
             const std::string serializedAsset = world_state_repository::find(uuid);
