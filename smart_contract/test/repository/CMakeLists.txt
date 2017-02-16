@@ -1,4 +1,6 @@
-SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+cmake_minimum_required(VERSION 2.8)
+
+set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 include_directories(
   /usr/lib/jvm/java-1.8.0-openjdk-amd64/include
@@ -13,11 +15,17 @@ link_directories(
   ${PROJECT_SOURCE_DIR}/core/infra/crypto 
 )
 
-ADD_LIBRARY(DomainRepository SHARED
+add_library(DomainRepository SHARED
   domain_repository_jni.cpp
 )
+
 target_link_libraries(DomainRepository
   domain_repository
   java_virtual_machine
   event_with_grpc
+)
+
+add_custom_command(TARGET DomainRepository
+  POST_BUILD
+  COMMAND /bin/sh ${PROJECT_SOURCE_DIR}/smart_contract/compile.sh
 )
