@@ -23,14 +23,16 @@ limitations under the License.
 
 namespace command {
 
-    class Batch {
+    template<typename T>
+    struct Batch: public T {
 
         object::Object object;
 
-        Batch(
-                object::Object o
+        template<typename... Args>
+        constexpr Batch(
+                Args&&... args
         ):
-                object(o)
+            T(std::forward<Args>(args)...)
         {}
 
     };

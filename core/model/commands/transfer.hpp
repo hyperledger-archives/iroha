@@ -26,18 +26,20 @@ limitations under the License.
 
 namespace command {
 
-    class Transfer{
+    template<typename T>
+    struct Transfer : public T {
 
-        object::Object object;
         std::string receiverPublicKey;
 
-        Transfer(
-                object::Object o,
-                std::string receiver
+        template<typename... Args>
+        explicit Transfer(
+                std::string&& receiver,
+                Args&&... args
         ):
-                object(o),
-                receiverPublicKey(receiver)
+                T(std::forward<Args>(args)...),
+                receiverPublicKey(std::move(receiver))
         {}
+
     };  // namespace command
 };
 #endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_

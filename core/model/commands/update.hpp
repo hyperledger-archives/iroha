@@ -23,15 +23,16 @@ limitations under the License.
 
 namespace command {
 
-    class Update {
+    template <typename T>
+    struct Update {
 
-        object::Object object;
-
-        Update(
-            object::Object o
+        template<typename... Args>
+        explicit Update(
+            Args&&... args
         ):
-            object(o)
+            T(std::forward<Args>(args)...)
         {}
+
 
     };
 

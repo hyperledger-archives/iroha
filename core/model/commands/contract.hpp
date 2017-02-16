@@ -22,17 +22,20 @@ limitations under the License.
 
 namespace command {
 
-    class Contract {
+    template <typename T>
+    struct Contract: public T {
         std::string contractName;
         object::Object object;
 
-        Contract(
-            object::Object o,
-            std::string contractName
+        template<typename... Args>
+        explicit Contract(
+            std::string&& contractName,
+            Args&&... args
         ):
-            contractName(contractName),
-            object(o)
+            T(std::forward<Args>(args)...),
+            contractName(std::move(contractName))
         {}
+
 
     };
 

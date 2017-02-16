@@ -19,15 +19,16 @@ limitations under the License.
 
 namespace command {
 
-    class Remove {
+    template <typename T>
+    struct Remove: public T {
         object::Object object;
 
-        Remove(
-            object::Object o
+        template<typename... Args>
+        constexpr Remove(
+            Args&&... args
         ):
-            object(o)
+            T(std::forward<Args>(args)...)
         {}
-
     };
 
 };  // namespace command

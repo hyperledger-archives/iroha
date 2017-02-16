@@ -22,17 +22,17 @@ limitations under the License.
 
 namespace command {
 
-class Add {
+    template <typename T>
+    struct Add: public T {
+        object::Object object;
 
-    object::Object object;
-
-    Add(
-        object::Object o
-    ):
-        object(o)
-    {}
-
-};
+        template<typename... Args>
+        constexpr Add(
+            Args&&... args
+        ):
+            T(std::forward<Args>(args)...)
+        {}
+    };
 
 };  // namespace command
 

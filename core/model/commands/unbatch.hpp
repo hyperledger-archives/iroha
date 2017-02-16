@@ -19,7 +19,7 @@ limitations under the License.
 
 namespace command {
 
-    class Unbatch {
+    struct Unbatch {
         object::Object object;
 
         Unbatch(
