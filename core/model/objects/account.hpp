@@ -23,10 +23,8 @@ limitations under the License.
 #include "asset.hpp"
 
 namespace object {
-    
-    class Account {
 
-    public:
+    struct Account {
         std::string publicKey;
         std::string name;
 

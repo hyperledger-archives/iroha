@@ -23,9 +23,8 @@ limitations under the License.
 
 namespace object {
 
-class Message{
+struct Message{
 
-public:
     std::string text;
 
     explicit Message(const Message* a):

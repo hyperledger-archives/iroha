@@ -22,8 +22,8 @@ limitations under the License.
 
 namespace object {
 
-    class Peer{
-    public:
+    struct Peer{
+
         std::string publicKey;
         std::string address;
 

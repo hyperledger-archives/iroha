@@ -24,9 +24,8 @@ limitations under the License.
 
 namespace object {
 
-class Asset {
+    struct Asset {
 
-public:
     std::string                domain;
     std::string                  name;
     std::vector<BaseObject>   objects;

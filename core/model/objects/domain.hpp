@@ -22,8 +22,7 @@ limitations under the License.
 
 namespace object {
 
-class Domain{
-public:
+struct Domain{
     std::string ownerPublicKey;
     std::string name;
 

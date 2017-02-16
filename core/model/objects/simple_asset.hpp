@@ -24,9 +24,8 @@ limitations under the License.
 
 namespace object {
 
-    class SimpleAsset {
+    struct SimpleAsset {
 
-    public:
         std::string                  name;
         std::string                domain;
 
