@@ -73,7 +73,7 @@ bool ConfigFormat::ensureFormat(json& actualConfig, json& formatConfig, const st
 
   if (actualConfig.type() != formatConfig.type()) {
     logger::warning("peer service with json")
-      << "type must be " << formatConfig.type() << ", but is " << actualConfig.type();
+      << "type must be " << static_cast<int>(formatConfig.type()) << ", but is " << static_cast<int>(actualConfig.type());
     return false;
   } else {
 
