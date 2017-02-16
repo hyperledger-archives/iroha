@@ -22,9 +22,3 @@ target_link_libraries(event_with_grpc
     dl
     hash
 )
-
-ADD_LIBRARY(convertor STATIC
-    convertor.cpp
-    ../protobuf/event.grpc.pb.cc
-    ../protobuf/event.pb.cc
-)
