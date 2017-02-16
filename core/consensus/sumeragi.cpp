@@ -27,8 +27,6 @@ limitations under the License.
 #include <crypto/hash.hpp>
 #include <crypto/signature.hpp>
 
-#include <infra/protobuf/convertor.hpp>
-
 #include <validation/transaction_validator.hpp>
 #include <service/peer_service.hpp>
 #include "connection/connection.hpp"
@@ -37,7 +35,6 @@ limitations under the License.
 #include <model/commands/transfer.hpp>
 
 #include <repository/consensus/transaction_repository.hpp>
-#include <repository/domain/account_repository.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 
@@ -105,7 +102,7 @@ namespace sumeragi {
                 logger::explore("sumeragi") <<  "   A          A";
             } else {
                 logger::explore("sumeragi") <<  "   /\\         /\\";
-                logger::explore("sumeragi") <<  "   ||  I  am  ||";
+                logger::explore("sumcderagi") <<  "   ||  I  am  ||";
                 logger::explore("sumeragi") <<  "   ||   peer  ||";
                 logger::explore("sumeragi") <<  "   ||         ||";
                 logger::explore("sumeragi") <<  "   AA         AA";
@@ -333,25 +330,7 @@ namespace sumeragi {
                 std::cout << "\033[91m+-ーーーーーーーーーーーー-+\033[0m" << std::endl;
                 logger::debug("sumeragi")   <<  "tx:" << event.transaction().type();
 
-                // I want to separate it function from sumeragi.
-                if (event.transaction().type() == "Add") {
 
-                    if (event.transaction().asset().ByteSize() != 0) {
-                        logger::debug("sumeragi")   <<  "exec <Add<Asset>>";
-                        convertor::decode<Add<Asset>>(event).execution();
-                    } else if (event.transaction().account().ByteSize() != 0){
-                        logger::debug("sumeragi")   <<  "exec <Add<Account>>";
-                        convertor::decode<Add<Account>>(event).execution();
-                    }
-
-                } else if (event.transaction().type() == "Transfer"){
-
-                    if (event.transaction().asset().ByteSize() != 0) {
-                        logger::debug("sumeragi")   <<  "exec <Transfer<Asset>>";
-                        convertor::decode<Transfer<Asset>>(event).execution();
-                    }
-
-                }
                 // Write exec code smart contract
                 // event->execution();
             } else {

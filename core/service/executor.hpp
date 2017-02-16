@@ -19,6 +19,5 @@ struct Executor{
     template<typename T>
     void execute(T* add){}
 };
-#endif
 
 #endif //IROHA_EXECUTOR_HPP_HPP
