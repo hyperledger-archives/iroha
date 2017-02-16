@@ -18,8 +18,8 @@ limitations under the License.
 
 #include <string>
 #include <vector>
-#include "/opt/iroha/core/model/objects/asset.hpp"
-#include "/opt/iroha/core/model/state/asset.hpp"
+#include <model/objects/asset.hpp>
+#include <model/state/asset.hpp>
 
 namespace repository {
     namespace asset {
