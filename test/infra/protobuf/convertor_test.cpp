@@ -166,7 +166,7 @@ TEST(convertor, convertUpdateTransaction) {
 
 TEST(convertor, convertAddAccountTransaction) {
 
-    std::vector<std::tuple<std::string, long>> assets;
+    std::vector<std::tuple<std::string, std::int64_t>> assets;
     assets.push_back(std::make_pair("Sample1",  311));
     assets.push_back(std::make_pair("Sample2", 1204));
     assets.push_back(std::make_pair("Sample3",  324));
@@ -200,7 +200,7 @@ TEST(convertor, convertAddAccountTransaction) {
 
 TEST(convertor, convertSerialize) {
 
-    std::vector<std::tuple<std::string, long>> assets;
+    std::vector<std::tuple<std::string, std::int64_t>> assets;
     assets.push_back(std::make_pair("Sample1",  311));
     assets.push_back(std::make_pair("Sample2", 1204));
     assets.push_back(std::make_pair("Sample3",  324));

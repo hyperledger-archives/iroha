@@ -31,7 +31,7 @@ namespace repository{
         bool update_quantity(
             const std::string& uuid,
             const std::string& assetName,
-            long newValue
+            std::int64_t newValue
         );
 
         object::Account findByUuid(const std::string& uuid);
