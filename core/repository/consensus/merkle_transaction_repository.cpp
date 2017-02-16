@@ -15,16 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "merkle_transaction_repository.hpp"
-#include "../world_state_repository.hpp"
-
 #include <memory>
 #include <iostream>
+#include <util/logger.hpp>
+#include <crypto/hash.hpp>
+#include <infra/protobuf/event.grpc.pb.h>
 
-#include "../../util/logger.hpp"
-#include "../../crypto/hash.hpp"
-
-#include "../../infra/protobuf/event.grpc.pb.h"
+#include "merkle_transaction_repository.hpp"
+#include "../world_state_repository.hpp"
 
 namespace merkle_transaction_repository {
 
