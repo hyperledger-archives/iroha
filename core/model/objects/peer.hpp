@@ -27,6 +27,11 @@ namespace object {
         std::string publicKey;
         std::string address;
 
+        explicit Peer(const Peer* a):
+            publicKey(a->publicKey),
+            address(a->address)
+        {}
+
         explicit Peer(
             std::string publicKey,
             std::string address

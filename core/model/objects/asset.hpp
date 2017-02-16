@@ -27,13 +27,12 @@ namespace object {
 class Asset {
 
 public:
-    std::string                  name;
     std::string                domain;
-
+    std::string                  name;
     std::vector<BaseObject>   objects;
-
     std::string     smartContractName;
 
+    Asset(const Asset&) = default;
 
     explicit Asset():
         domain(""),
@@ -42,6 +41,14 @@ public:
         smartContractName("")
     {}
 
+    explicit Asset(
+        const Asset* a
+    ):
+        domain(a->domain),
+        name(a->name),
+        objects(a->objects),
+        smartContractName(a->smartContractName)
+    {}
 
     explicit Asset(
         std::string               domain,

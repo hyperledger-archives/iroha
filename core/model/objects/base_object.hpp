@@ -18,6 +18,7 @@ limitations under the License.
 #define IROHA_BASE_OBJECT_HPP
 
 #include "../../util/exception.hpp"
+#include <string>
 
 struct BaseObject {
 
@@ -25,39 +26,35 @@ struct BaseObject {
         INTEGER,
         TEXT,
         BOOLEAN,
-        DECIMAL
+        DECIMAL,
+        NONE
     };
 
-    int             integer;
-    char*              text;
-    bool            boolean;
-    float           decimal;
+
     Type type;
 
-    constexpr explicit BaseObject(int     i):type(Type::INTEGER){ integer = i;}
-    constexpr explicit BaseObject(char*   t):type(Type::TEXT   ){ text    = t;}
-    constexpr explicit BaseObject(bool    b):type(Type::BOOLEAN){ boolean = b;}
-    constexpr explicit BaseObject(float   d):type(Type::DECIMAL){ decimal = d;}
+    int             integer;
+    std::string        text;
+    bool            boolean;
+    float           decimal;
 
-    ~BaseObject(){
-        if(type == Type::TEXT){
-            delete text;
-        }
-    }
+    explicit BaseObject():type(Type::NONE),
+       integer(0),text(""),boolean(false),decimal(0.0f){}
+
+    explicit BaseObject(int           i):type(Type::INTEGER),
+       integer(i),text(""),  boolean(false),decimal(0.0f){}
+    explicit BaseObject(std::string   t):type(Type::TEXT   ),
+       integer(0),text(t),boolean(false),decimal(0.0f){}
+    explicit BaseObject(bool          b):type(Type::BOOLEAN),
+       integer(0),text(""),boolean(b),decimal(0.0f){}
+    explicit BaseObject(float         d):type(Type::DECIMAL),
+       integer(0),text(""),boolean(false),decimal(d){}
+
 
     using except = exception::InvalidCastException;
 
     template <typename T>
-    constexpr T get(){
-    }
-
-    constexpr get(){
-        if(type != Type::INTEGER){
-            throw except("This base object type is not integer.",__FILE__);
-        }
-        return integer;
-    }
-
+    const T get(){}
 
 };
 #endif //IROHA_BASE_OBJECT_HPP

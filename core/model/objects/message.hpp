@@ -28,6 +28,10 @@ class Message{
 public:
     std::string text;
 
+    explicit Message(const Message* a):
+        text(a->text)
+    {}
+
     explicit Message(std::string text):
         text(text)
     {}

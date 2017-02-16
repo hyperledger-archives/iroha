@@ -27,6 +27,11 @@ public:
     std::string ownerPublicKey;
     std::string name;
 
+    explicit Domain(const Domain* a):
+        ownerPublicKey(a->ownerPublicKey),
+        name(a->name)
+    {}
+
     explicit Domain(
         std::string ownerPublicKey,
         std::string name

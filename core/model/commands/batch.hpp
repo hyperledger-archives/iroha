@@ -27,7 +27,7 @@ namespace command {
 
         object::Object object;
 
-        Add(
+        Batch(
                 object::Object o
         ):
                 object(o)

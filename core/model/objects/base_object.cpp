@@ -17,7 +17,7 @@ limitations under the License.
 #include "base_object.hpp"
 
 template <>
-constexpr int get<int>(){
+const int BaseObject::get<int>(){
     if(type != Type::INTEGER){
         throw except("This base object type is not integer.",__FILE__);
     }
@@ -25,7 +25,7 @@ constexpr int get<int>(){
 }
 
 template <>
-constexpr char* get<char*>(){
+const std::string BaseObject::get<std::string>(){
     if(type != Type::TEXT){
         throw except("This base object type is not text.",__FILE__);
     }
@@ -33,7 +33,7 @@ constexpr char* get<char*>(){
 }
 
 template <>
-constexpr bool get<bool>(){
+const bool BaseObject::get<bool>(){
     if(type != Type::BOOLEAN){
         throw except("This base object type is not boolean.",__FILE__);
     }
@@ -41,7 +41,7 @@ constexpr bool get<bool>(){
 }
 
 template <>
-constexpr float get<float>(){
+const float BaseObject::get<float>(){
     if(type != Type::DECIMAL){
         throw except("This base object type is not decimal.",__FILE__);
     }

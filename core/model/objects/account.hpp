@@ -32,6 +32,12 @@ namespace object {
 
         std::vector<Asset> assets;
 
+        explicit Account(const Account* a):
+            publicKey(a->publicKey),
+            name(a->name),
+            assets(a->assets)
+        {}
+
         explicit Account():
             publicKey(""),
             name("")

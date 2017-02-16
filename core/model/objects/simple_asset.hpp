@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CORE_DOMAIN_OBJECTS_ASSET_HPP_
-#define CORE_DOMAIN_OBJECTS_ASSET_HPP_
+#ifndef IROHA_SIMPLE_ASSET_HPP
+#define IROHA_SIMPLE_ASSET_HPP
 
 #include <string>
 #include <vector>
@@ -32,14 +32,20 @@ namespace object {
 
         BaseObject                 object;
 
-        std::string     smartContractName;
+        std::string         contractName;
 
+        explicit SimpleAsset(const SimpleAsset* a):
+            name(a->name),
+            domain(a->domain),
+            object(a->object),
+            contractName(a->contractName)
+        {}
 
         explicit SimpleAsset():
-            domain(""),
             name(""),
-            objects(),
-            smartContractName("")
+            domain(""),
+            object(),
+            contractName("")
         {}
 
 
@@ -49,10 +55,10 @@ namespace object {
             BaseObject                object,
             std::string    smartContractName
         ):
-            domain(domain),
             name(name),
+            domain(domain),
             object(object),
-            smartContractName(smartContractName)
+            contractName(smartContractName)
         {}
 
         explicit SimpleAsset(
@@ -60,14 +66,15 @@ namespace object {
             std::string                 name,
             std::string    smartContractName
         ):
-            domain(domain),
             name(name),
-            smartContractName(smartContractName)
+            domain(domain),
+            object(),
+            contractName(smartContractName)
         {}
 
     };
 
 };  // namespace asset
 
-#endif  // CORE_DOMAIN_OBJECTS_ASSET_HPP_
+#endif  // IROHA_SIMPLE_ASSET_HPP
 

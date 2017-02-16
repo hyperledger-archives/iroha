@@ -20,6 +20,14 @@ limitations under the License.
 #include <service/executor.hpp>
 #include <util/exception.hpp>
 
+#include <model/commands/add.hpp>
+#include <model/commands/batch.hpp>
+#include <model/commands/contract.hpp>
+#include <model/commands/remove.hpp>
+#include <model/commands/transfer.hpp>
+#include <model/commands/unbatch.hpp>
+#include <model/commands/update.hpp>
+
 #include <iostream>
 namespace command {
 
