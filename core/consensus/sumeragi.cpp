@@ -34,6 +34,7 @@ limitations under the License.
 #include <model/objects/domain.hpp>
 #include <model/commands/transfer.hpp>
 
+#include <service/executor.hpp>
 #include <repository/consensus/transaction_repository.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
@@ -316,20 +317,9 @@ namespace sumeragi {
                 logger::explore("sumeragi") <<  "commit count:" <<  context->commitedCount;
 
                 merkle_transaction_repository::commit(event); //TODO: add error handling in case not saved
-//
-//   I want to use SerializeToString, But It has a bug??
-//
-//                std::string strTx;
-//                event.SerializeToString(&strTx);
 
-                const auto key = event.transaction().asset().name() + "_" + datetime::unixtime_str();
-                repository::transaction::add(key, event);
 
-                logger::debug("sumeragi")   <<  "key[" << key << "]";
-                //logger::debug("sumeragi")   <<  "\033[91m+-ーーーーーーーーーーーー-+\033[0m";
-                std::cout << "\033[91m+-ーーーーーーーーーーーー-+\033[0m" << std::endl;
-                logger::debug("sumeragi")   <<  "tx:" << event.transaction().type();
-
+                executor::execute(event.transaction());
 
                 // Write exec code smart contract
                 // event->execution();

@@ -15,9 +15,15 @@ limitations under the License.
 #ifndef IROHA_EXECUTOR_HPP_HPP
 #define IROHA_EXECUTOR_HPP_HPP
 
-struct Executor{
-    template<typename T>
-    void execute(T* add){}
+#include <infra/protobuf/event.pb.h>
+
+namespace executor{
+
+    void execute(const Event::Transaction& tx){
+        std::cout << "Executor\n";
+    }
+
+
 };
 
 #endif //IROHA_EXECUTOR_HPP_HPP
