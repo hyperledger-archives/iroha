@@ -8,7 +8,10 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/core
 )
 
-link_directories(${PROJECT_BINARY_DIR}/lib)
+link_directories(
+  ${PROJECT_BINARY_DIR}/lib
+  ${PROJECT_SOURCE_DIR}/core/infra/crypto 
+)
 
 ADD_LIBRARY(DomainRepository SHARED
   domain_repository_jni.cpp

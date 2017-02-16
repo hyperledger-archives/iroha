@@ -1,6 +1,7 @@
 set(CMAKE_BUILD_TYPE Debug)
 
 SET(CMAKE_CXX_FLAGS "-g -std=c++1y -Wall -fPIC")
+SET(ED25519_PATH "${PROJECT_SOURCE_DIR}/core/vendor/ed25519")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++1y -Wall -fPIC -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/server")
@@ -17,6 +18,12 @@ include_directories(
   ${GTEST_INCLUDE_DIR}
   ${PROJECT_SOURCE_DIR}/core
   $ENV{JAVA_HOME}/include
+  ${ED25519_PATH}/src
+)
+
+link_directories(
+  ${ED25519_PATH}/lib
+  ${PROJECT_SOURCE_DIR}/core/infra/crypto
 )
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
