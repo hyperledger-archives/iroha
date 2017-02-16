@@ -60,7 +60,7 @@ public:
     {}
 
     void execution(){
-        T::execution();
+        //T::execution();
     }
 
     auto getHash() {
