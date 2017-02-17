@@ -10,7 +10,7 @@ machine:
 
 checkout:
   post:
-    - rm ~/iroha/core/vendor/ed25519
+    - rm -rf ~/iroha/core/vendor/ed25519
     - git submodule sync
     - git submodule foreach 'git pull origin master'
     - git submodule update --recursive
