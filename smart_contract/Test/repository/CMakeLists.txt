@@ -8,11 +8,13 @@ include_directories(
   ${JAVA_HOME}/include
   ${JAVA_HOME}/include/linux
   ${PROJECT_SOURCE_DIR}/core
+  ${LEVELDB_PATH}/include
 )
 
 link_directories(
   ${PROJECT_BINARY_DIR}/lib
-  ${PROJECT_SOURCE_DIR}/core/infra/crypto 
+  ${PROJECT_SOURCE_DIR}/core/infra/crypto
+  ${LEVELDB_PATH}/out-shared
 )
 
 add_library(DomainRepository SHARED
@@ -20,6 +22,7 @@ add_library(DomainRepository SHARED
 )
 
 target_link_libraries(DomainRepository
+  leveldb
   domain_repository
   java_virtual_machine
   event_with_grpc

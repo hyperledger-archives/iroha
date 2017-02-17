@@ -18,7 +18,7 @@ import java.util.HashMap;
 public class DomainRepository {
 
     static {
-        System.loadLibrary("DomainRepository"); 
+        System.loadLibrary("DomainRepository");
     }
 
     // Account

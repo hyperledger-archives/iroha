@@ -2,10 +2,14 @@ SET(CMAKE_CXX_FLAGS "-g -Wall -std=c++1y -fPIC")
 
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
-link_directories(${PROJECT_BINARY_DIR}/lib)
+link_directories(
+  ${PROJECT_BINARY_DIR}/lib
+  ${LEVELDB_PATH}/out-shared
+)
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/core
+  ${LEVELDB_PATH}/include
 )
 
 ADD_LIBRARY(domain_repository STATIC
