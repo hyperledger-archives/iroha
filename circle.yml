@@ -9,6 +9,9 @@ machine:
       version: 'oraclejdk8'
 
 checkout:
+  pre:
+    - git -rf ~/iroha/core/vendor/ed25519
+
   post:
 
     - git submodule sync --recursive
