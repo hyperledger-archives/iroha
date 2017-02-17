@@ -71,5 +71,13 @@ RUN apt-get update && apt-get -y upgrade; \
     cd grpc; \
     make && make install
 
+    # install asio standalone
+    cd /tmp; \
+    git clone https://github.com/chriskohlhoff/asio.git; \
+    cd asio/asio; \
+    ./autogen.sh && \
+    ./configure   --without-boost && \
+    make && make install
+
 # build and mktar scripts
 ADD ./scripts /
