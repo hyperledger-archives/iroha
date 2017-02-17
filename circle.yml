@@ -17,8 +17,6 @@ checkout:
     - git submodule sync --recursive
     - git submodule update --init --recursive
 
-    - git clone https://github.com/MizukiSonoko/ed25519.git core/vendor/ed25519
-
 dependencies:
   cache_directories:
     #- ~/iroha/core/vendor/
