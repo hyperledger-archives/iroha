@@ -21,7 +21,5 @@ ADD_LIBRARY(validator  STATIC
 
 target_link_libraries(validator
   signature
-  commands
-  objects
 )
 

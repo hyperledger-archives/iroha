@@ -41,7 +41,6 @@ target_link_libraries(iroha-main
   pthread
   dl
 
-  commands
   leveldb
   snappy
   world_state_repo_with_level_db

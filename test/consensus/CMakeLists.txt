@@ -46,7 +46,6 @@ target_link_libraries(transaction_test
     base64
     signature
     sumeragi
-    commands
     connection_with_grpc
     config_manager
     pthread

@@ -23,7 +23,6 @@ namespace executor{
         std::cout << "Executor\n";
     }
 
-
 };
 
 #endif //IROHA_EXECUTOR_HPP_HPP
