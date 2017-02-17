@@ -12,6 +12,7 @@ checkout:
   post:
 
     - git submodule sync
+    - git submodule foreach 'git pull origin master'
     - git submodule update --recursive
 
 dependencies:
