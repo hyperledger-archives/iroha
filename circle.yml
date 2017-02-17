@@ -12,11 +12,7 @@ checkout:
   post:
 
     - git submodule sync
-
-    # Temporary...
-    - rm -rf ${IROHA_HOME}/core/vendor/ed25519
-
-    - git submodule update --init --recursive
+    - git submodule update --recursive
 
 dependencies:
   cache_directories:
