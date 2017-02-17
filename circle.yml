@@ -11,10 +11,11 @@ machine:
 checkout:
   post:
 
+    - git submodule sync
+
     # Temporary...
     - rm -rf ${IROHA_HOME}/core/vendor/ed25519
 
-    - git submodule sync
     - git submodule update --init --recursive
 
 dependencies:
