@@ -11,8 +11,7 @@ machine:
 checkout:
   post:
 
-    - rm -rf ~/iroha/.git/module
-    - git submodule sync
+    - git submodule sync --recursive
     - git submodule update --init --recursive
 
     - git clone https://github.com/MizukiSonoko/ed25519.git core/vendor/ed25519
