@@ -25,6 +25,7 @@ include_directories(
 
 link_directories(
   ${ED25519_PATH}/lib
+  ${LEVELDB_PATH}/out-shared
   ${LEVELDB_PATH}/out-static
   ${PROJECT_SOURCE_DIR}/core/infra/crypto
 )
