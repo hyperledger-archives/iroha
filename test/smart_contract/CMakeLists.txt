@@ -48,6 +48,7 @@ ENDIF()
 add_executable(java_vm_test java_vm_test.cpp)
 add_dependencies(java_vm_test googletest)
 target_link_libraries(java_vm_test
+  DomainRepository
   snappy
   leveldb
   smart_contract_with_java
