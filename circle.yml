@@ -11,6 +11,7 @@ machine:
 checkout:
   post:
 
+    - rm -rf ~/iroha/.git/module
     - git submodule sync
     - git submodule update --init --recursive
 
