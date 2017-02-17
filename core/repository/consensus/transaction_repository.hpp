@@ -22,8 +22,8 @@ See the License for the specific language governing permissions and
 #include <vector>
 #include <stdexcept>
 
+#include <infra/protobuf/event.pb.h>
 #include <model/transaction.hpp>
-#include <infra/protobuf/convertor.hpp>
 #include <consensus/consensus_event.hpp>
 #include <crypto/base64.hpp>
 

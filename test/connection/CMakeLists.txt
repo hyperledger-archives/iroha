@@ -21,7 +21,6 @@ add_executable(connection_grpc_test
 
 target_link_libraries(
   connection_grpc_test
-  convertor
   connection_with_grpc
   consensus_event
   signature

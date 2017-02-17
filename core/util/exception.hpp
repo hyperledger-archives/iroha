@@ -42,9 +42,14 @@ namespace exception {
   };
 
   class InvalidCastException : public std::domain_error {
-    public: InvalidCastException(
+    public:
+    InvalidCastException(
       const std::string& from,
       const std::string&   to,
+      const std::string& filename
+    );
+    InvalidCastException(
+      const std::string&   meg,
       const std::string& filename
     );
   };

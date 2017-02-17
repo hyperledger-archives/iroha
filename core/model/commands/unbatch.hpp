@@ -14,18 +14,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "add.hpp"
+#ifndef IROHA_UNBATCH_HPP
+#define IROHA_UNBATCH_HPP
 
 namespace command {
 
-    template <>
-    void Add<object::Account>::execution() {
-        logger::debug("Add<Account>") << "save publicKey:" << object::Account::publicKey << " name:" << object::Account::name;
-        repository::account::add(object::Account::publicKey, object::Account::name);
-    }
+    struct Unbatch {
+        object::Object object;
 
-    template <>
-    void Add<object::Asset>::execution() {
+        Unbatch(
+            object::Object o
+        ):
+            object(o)
+        {}
 
-    }
-}
+    };
+
+};  // namespace command
+
+
+
+#endif //IROHA_UNBATCH_HPP

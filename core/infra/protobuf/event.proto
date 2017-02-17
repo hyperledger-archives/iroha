@@ -8,27 +8,73 @@ service IrohaConnection {
   rpc Operation(ConsensusEvent) returns (StatusResponse) {}
 }
 
+service Repository {
+  rpc find(Query) returns (Response){}
+}
+
+service Sumeragi {
+  //  =+===+=
+  // ==+=T=+==
+  //   |   |
+  //   |   |   This is gate at the entrance of sumeragi...
+  rpc Torii(Request) returns (Response) {}
+
+  // sumeragi uses.
+  rpc Verify(ConsensusEvent) returns (Response) {}
+
+}
+
+
+message BaseObject {
+  oneof value {
+    string       valueString       = 1;
+    int64        valueInt          = 2;
+    bool         valueBoolean      = 3;
+    double       valueDouble       = 4;
+  }
+}
+
+message SimpleAsset {
+  string domain = 1;
+  string name = 2;
+  BaseObject value = 3;
+  string smartContractName = 4;
+}
+
 message Asset {
   string domain = 1;
   string name = 2;
-  uint64 value = 3;
-  uint64 precision = 4;
+  map<string, BaseObject> value = 3;
+  string smartContractName = 4;
 }
+
 message Domain {
   string ownerPublicKey = 1;
   string name = 2;
 }
+
 message Account {
   string publicKey = 1;
   string name = 2;
-  repeated Asset assets = 3;
+  repeated string assets = 3;
 }
 
+message Trust{
+  double value = 1;
+  bool isOk = 2;
+}
+
+message Peer {
+  string publicKey = 1;
+  string address = 2;
+  Trust trust = 3;
+}
 
 message TxSignatures {
   string publicKey = 1;
   string signature = 2;
 }
+
 message EventSignature {
   string publicKey = 1;
   string signature = 2;
@@ -43,9 +89,11 @@ message Transaction {
   uint64 timestamp = 5;
 
   Asset asset = 6;
-  Domain domain = 7;
-  Account account = 8;
-  string receivePubkey = 9;
+  SimpleAsset simpleAsset = 7;
+  Domain domain = 8;
+  Account account = 9;
+  Peer peer = 10;
+  string receivePubkey = 11;
 }
 
 message ConsensusEvent {

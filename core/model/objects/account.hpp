@@ -20,47 +20,26 @@ limitations under the License.
 
 #include <string>
 #include <cstdint>
+#include "asset.hpp"
 
 namespace object {
-    
-    class Account {
 
-    public:
+    struct Account {
         std::string publicKey;
         std::string name;
 
-        std::vector<
-            std::tuple<std::string, std::int64_t>
-        > assets;
+        std::vector<Asset> assets;
+
+        explicit Account(const Account* a):
+            publicKey(a->publicKey),
+            name(a->name),
+            assets(a->assets)
+        {}
 
         explicit Account():
             publicKey(""),
             name("")
         {}
-
-        explicit Account(
-            std::string publicKey,
-            std::string name,
-            std::vector<
-                std::tuple<std::string, std::int64_t>
-            > assets
-        ):
-            publicKey(std::move(publicKey)),
-            name(std::move(name)),
-            assets(std::move(assets))
-        {}
-
-        explicit Account(
-            std::string publicKey,
-            std::string name,
-            std::tuple<std::string, std::int64_t> asset
-        ):
-            publicKey(std::move(publicKey)),
-            name(std::move(name))
-        {
-            assets.push_back(std::move(asset));
-        }
-
 
         explicit Account(
             std::string publicKey,
@@ -70,8 +49,23 @@ namespace object {
             name(std::move(name))
         {}
 
+        explicit Account(
+            std::string publicKey
+        ):
+            publicKey(std::move(publicKey))
+        {}
 
 
+        explicit Account(
+            std::string publicKey,
+            std::string name,
+            std::vector<Asset> assets
+        ):
+            publicKey(std::move(publicKey)),
+            name(std::move(name)),
+            assets(assets)
+
+        {}
 
     };
 

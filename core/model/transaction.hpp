@@ -60,11 +60,11 @@ public:
     {}
 
     void execution(){
-        T::execution();
+        //T::execution();
     }
 
     auto getHash() {
-        return hash::sha3_256_hex( T::getCommandName() + std::to_string(timestamp) + senderPubkey);
+        return "";//hash::sha3_256_hex( T::getCommandName() + std::to_string(timestamp) + senderPubkey);
     }
 
     std::vector<txSignature> getTxSignatures(){
