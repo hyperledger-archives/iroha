@@ -10,7 +10,7 @@ machine:
 
 checkout:
   pre:
-    - git -rf ~/iroha/core/vendor/ed25519
+    - rm -rf ~/iroha/core/vendor/ed25519
 
   post:
 
