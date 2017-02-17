@@ -15,7 +15,7 @@ checkout:
 
 dependencies:
   cache_directories:
-    - ~/iroha/core/vendor/
+    #- ~/iroha/core/vendor/
     - ~/docker
   override:
     # one way to cache iroha-dev container is to save it to tar image. 2 mins vs 10 mins without caching.
@@ -38,7 +38,7 @@ test:
     # then, run iroha with dummy config (1 node) and print its output to stdout
     - docker logs $(docker run -it -d -p 1204:1204 hyperledger/iroha-docker /run.sh)
     # put new tests below
-    - curl -X POST http://127.0.0.1:1204/account/register -d '{"publicKey":"WdvM/DPabapmtA7ISbTYPywbHxk8gWu2221LzmcmAgw=","alias":"yonezu","timestamp":1482053586}'
+    #- curl -X POST http://127.0.0.1:1204/account/register -d '{"publicKey":"WdvM/DPabapmtA7ISbTYPywbHxk8gWu2221LzmcmAgw=","alias":"yonezu","timestamp":1482053586}'
 
 
 deployment:
