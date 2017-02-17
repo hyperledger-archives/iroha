@@ -10,10 +10,11 @@ machine:
 
 checkout:
   post:
-    - rm -rf ~/iroha/core/vendor/ed25519
+
     - git submodule sync
-    - git submodule foreach 'git pull origin master'
-    - git submodule update --recursive
+    - git submodule update --init --recursive
+
+    - git clone https://github.com/MizukiSonoko/ed25519.git core/vendor/ed25519
 
 dependencies:
   cache_directories:
