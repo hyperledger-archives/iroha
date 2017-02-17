@@ -1,7 +1,8 @@
-set(CMAKE_BUILD_TYPE Debug)
+SET(CMAKE_BUILD_TYPE Debug)
 
 SET(CMAKE_CXX_FLAGS "-g -std=c++1y -Wall -fPIC")
 SET(ED25519_PATH "${PROJECT_SOURCE_DIR}/core/vendor/ed25519")
+SET(LEVELDB_PATH ${PROJECT_SOURCE_DIR}/core/vendor/leveldb)
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++1y -Wall -fPIC -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/server")
@@ -18,11 +19,13 @@ include_directories(
   ${GTEST_INCLUDE_DIR}
   ${PROJECT_SOURCE_DIR}/core
   $ENV{JAVA_HOME}/include
+  ${LEVELDB_PATH}/include
   ${ED25519_PATH}/src
 )
 
 link_directories(
   ${ED25519_PATH}/lib
+  ${LEVELDB_PATH}/out-static
   ${PROJECT_SOURCE_DIR}/core/infra/crypto
 )
 
@@ -45,6 +48,7 @@ ENDIF()
 add_executable(java_vm_test java_vm_test.cpp)
 add_dependencies(java_vm_test googletest)
 target_link_libraries(java_vm_test
+  leveldb
   smart_contract_with_java
   world_state_repo_with_level_db
   consensus_event
