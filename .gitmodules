@@ -6,10 +6,10 @@
   path = core/vendor/leveldb
   url = https://github.com/google/leveldb.git
   ignore = dirty
-#[submodule "core/vendor/ed25519"]
-#	path = core/vendor/ed25519
-#	url = https://github.com/MizukiSonoko/ed25519.git
-#  ignore = dirty
+[submodule "core/vendor/ed25519"]
+	path = core/vendor/ed25519
+	url = https://github.com/MizukiSonoko/ed25519.git
+  ignore = dirty
 [submodule "core/vendor/json"]
 	path = core/vendor/json
 	url = https://github.com/nlohmann/json.git
