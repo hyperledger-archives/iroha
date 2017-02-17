@@ -64,12 +64,12 @@ RUN apt-get update && apt-get -y upgrade; \
     ./autogen.sh && \
     ./configure --prefix=/usr && \
     make -j4 && make install; \
-
-    # install grpc
+    # install grpc \
     cd /tmp; \
     git clone --recursive -b $(curl -L http://grpc.io/release) https://github.com/grpc/grpc; \
     cd grpc; \
-    make && make install
+    make && make install; \
+
 
     # install asio standalone
     cd /tmp; \
