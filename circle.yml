@@ -9,10 +9,10 @@ machine:
       version: 'oraclejdk8'
 
 checkout:
-  pre:
-    - rm -rf ~/iroha/core/vendor/ed25519
-
   post:
+
+    # Temporary....
+    - sed -i  -e 's/luca3104/MizukiSonoko/g' .git/modules/core/vendor/ed25519/config
 
     - git submodule sync --recursive
     - git submodule update --init --recursive
