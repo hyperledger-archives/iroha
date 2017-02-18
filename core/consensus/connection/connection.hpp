@@ -22,10 +22,12 @@ limitations under the License.
 #include <memory>
 #include <functional>
 
-#include <infra/protobuf/event.grpc.pb.h>
+#include <infra/protobuf/api.grpc.pb.h>
 #include "../consensus_event.hpp"
 
 namespace connection {
+
+    using Api::ConsensusEvent;
 
     struct Config{
         std::string name;
@@ -37,16 +39,16 @@ namespace connection {
 
     bool send(
         const std::string& ip,
-        const Event::ConsensusEvent& msg)
+        const ConsensusEvent& msg)
     ;
 
     bool sendAll(
-        const Event::ConsensusEvent& msg
+        const ConsensusEvent& msg
     );
 
     bool receive(const std::function<void(
         const std::string&,
-        Event::ConsensusEvent&)
+        ConsensusEvent&)
     >& callback);
 
 

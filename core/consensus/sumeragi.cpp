@@ -30,9 +30,6 @@ limitations under the License.
 #include <validation/transaction_validator.hpp>
 #include <service/peer_service.hpp>
 #include "connection/connection.hpp"
-#include <model/objects/asset.hpp>
-#include <model/objects/domain.hpp>
-#include <model/commands/transfer.hpp>
 
 #include <service/executor.hpp>
 #include <repository/consensus/transaction_repository.hpp>
@@ -52,10 +49,9 @@ limitations under the License.
 */
 namespace sumeragi {
 
-    using event::ConsensusEvent;
-    using transaction::Transaction;
-    using namespace command;
-    using namespace object;
+
+    using Api::ConsensusEvent;
+    using Api::EventSignature;
 
 
     //thread pool and a storage of events 
@@ -70,7 +66,7 @@ namespace sumeragi {
 
     namespace detail {
 
-        std::uint32_t getNumValidSignatures(const Event::ConsensusEvent& event) {
+        std::uint32_t getNumValidSignatures(const ConsensusEvent& event) {
             std::uint32_t sum = 0;
             for (auto&& esig: event.eventsignatures()) {
                 if (signature::verify(esig.signature(), event.transaction().hash(), esig.publickey())) {
@@ -80,14 +76,14 @@ namespace sumeragi {
             return sum;
         }
 
-        void addSignature(Event::ConsensusEvent& event, const std::string& publicKey, const std::string& signature) {
-            Event::EventSignature sig;
+        void addSignature(ConsensusEvent& event, const std::string& publicKey, const std::string& signature) {
+            EventSignature sig;
             sig.set_signature(signature);
             sig.set_publickey(publicKey);
             event.add_eventsignatures()->CopyFrom(sig);
         }
 
-        bool eventSignatureIsEmpty(const Event::ConsensusEvent& event) {
+        bool eventSignatureIsEmpty(const ConsensusEvent& event) {
             return event.eventsignatures_size() == 0;
         }
 
@@ -215,7 +211,7 @@ namespace sumeragi {
 
         context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() == context->myPublicKey;
 
-        connection::receive([](const std::string& from, Event::ConsensusEvent& event) {
+        connection::receive([](const std::string& from, ConsensusEvent& event) {
             logger::info("sumeragi") << "receive!";
             logger::info("sumeragi") << "received message! sig:[" << event.eventsignatures_size() << "]";
         
@@ -247,7 +243,7 @@ namespace sumeragi {
     }
     
 
-    void processTransaction(Event::ConsensusEvent& event) {
+    void processTransaction(ConsensusEvent& event) {
 
         logger::info("sumeragi")    <<  "processTransaction";
         //if (!transaction_validator::isValid(event->getTx())) {
@@ -371,7 +367,7 @@ namespace sumeragi {
     * | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
     * |---|  |---|  |---|  |---|  |---|  |---|.
     */
-    void panic(const Event::ConsensusEvent& event) {
+    void panic(const ConsensusEvent& event) {
         context->panicCount++; // TODO: reset this later
         auto broadcastStart = 2 * context->maxFaulty + 1 + context->maxFaulty * context->panicCount;
         auto broadcastEnd   = broadcastStart + context->maxFaulty;
