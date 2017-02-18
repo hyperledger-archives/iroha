@@ -31,15 +31,6 @@ limitations under the License.
 
 std::atomic_bool running(true);
 
-template<typename T>
-using Transaction = transaction::Transaction<T>;
-template<typename T>
-using ConsensusEvent = event::ConsensusEvent<T>;
-template<typename T>
-using Add = command::Add<T>;
-template<typename T>
-using Transfer = command::Transfer<T>;
-
 void server(){
     http::server();
 }
