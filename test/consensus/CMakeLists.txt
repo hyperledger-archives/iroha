@@ -27,7 +27,6 @@ add_executable(sumeragi_test
 target_link_libraries(sumeragi_test
     leveldb
     snappy
-    objects
     base64
     signature
     sumeragi
@@ -42,7 +41,6 @@ add_executable(transaction_test
 )
 target_link_libraries(transaction_test
     snappy
-    objects
     base64
     signature
     sumeragi
@@ -50,5 +48,4 @@ target_link_libraries(transaction_test
     config_manager
     pthread
     consensus_event
-    objects
 )

@@ -22,24 +22,12 @@ limitations under the License.
 
 #include <consensus/sumeragi.hpp>
 #include <consensus/connection/connection.hpp>
-#include <model/commands/transfer.hpp>
-#include <model/objects/domain.hpp>
 
 #include <service/peer_service.hpp>
 #include <util/logger.hpp>
 #include <crypto/hash.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 
-template<typename T>
-using Transaction = transaction::Transaction<T>;
-template<typename T>
-using ConsensusEvent = event::ConsensusEvent<T>;
-template<typename T>
-using Add = command::Add<T>;
-template<typename T>
-using Transfer = command::Transfer<T>;
-template<typename T>
-using Update = command::Update<T>;
 
 void setAwkTimer(int const sleepMillisecs, const std::function<void(void)>& action) {
     std::thread([action, sleepMillisecs]() {
