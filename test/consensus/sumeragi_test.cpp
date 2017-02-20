@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
             std::cout << "=========" << std::endl;
             std::cout << n->getPublicKey() << std::endl;
             std::cout << n->getIP() << std::endl;
-            connection::addSubscriber(n->getIP());
+            connection::iroha::Sumeragi::Verify::addSubscriber(n->getIP());
         }
 
         std::string pubKey = config::PeerServiceConfig::getInstance().getMyPublicKey();
