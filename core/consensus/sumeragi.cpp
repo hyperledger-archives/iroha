@@ -52,6 +52,7 @@ namespace sumeragi {
 
     using Api::ConsensusEvent;
     using Api::EventSignature;
+    using Api::Transaction;
 
 
     //thread pool and a storage of events 
@@ -211,7 +212,19 @@ namespace sumeragi {
 
         context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() == context->myPublicKey;
 
-        connection::receive([](const std::string& from, ConsensusEvent& event) {
+        connection::iroha::Sumeragi::Torii::receive([](const std::string& from, Transaction& transaction) {
+            logger::info("sumeragi") << "receive!";
+            ConsensusEvent event;
+            event.mutable_transaction()->CopyFrom(transaction);
+            // send processTransaction(event) as a task to processing pool
+            // this returns std::future<void> object
+            // (std::future).get() method locks processing until result of processTransaction will be available
+            // but processTransaction returns void, so we don't have to call it and wait
+            std::function<void()> &&task = std::bind(processTransaction, event);
+            pool.process(std::move(task));
+        });
+
+        connection::iroha::Sumeragi::Verify::receive([](const std::string& from, ConsensusEvent& event) {
             logger::info("sumeragi") << "receive!";
             logger::info("sumeragi") << "received message! sig:[" << event.eventsignatures_size() << "]";
         
@@ -333,10 +346,10 @@ namespace sumeragi {
                 
                 if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() == config::PeerServiceConfig::getInstance().getMyPublicKey()) {
                     logger::info("sumeragi")    <<  "I will send event to " <<  context->validatingPeers.at(context->proxyTailNdx)->getIP();
-                    connection::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), std::move(event)); // Think In Process
+                    connection::iroha::Sumeragi::Verify::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), std::move(event)); // Think In Process
                 } else {
                     logger::info("sumeragi")    <<  "Send All! sig:["       <<  detail::getNumValidSignatures(event) << "]";
-                    connection::sendAll(std::move(event)); // TODO: Think In Process
+                    connection::iroha::Sumeragi::Verify::sendAll(std::move(event)); // TODO: Think In Process
                 }
 
                 setAwkTimer(3, [&](){

@@ -54,7 +54,7 @@ int main() {
     std::vector<std::unique_ptr<peer::Node>> nodes = config::PeerServiceConfig::getInstance().getPeerList();
     connection::initialize_peer();
     for (const auto& n : nodes){
-        connection::addSubscriber(n->getIP());
+        connection::iroha::Sumeragi::Verify::addSubscriber(n->getIP());
     }
   
     sumeragi::initializeSumeragi(
