@@ -25,7 +25,6 @@ include_directories(
 
 link_directories(
   ${ED25519_PATH}/lib
-  ${LEVELDB_PATH}/out-shared
   ${LEVELDB_PATH}/out-static
   ${PROJECT_SOURCE_DIR}/core/infra/crypto
 )
@@ -50,8 +49,6 @@ add_executable(java_vm_test java_vm_test.cpp)
 add_dependencies(java_vm_test googletest)
 target_link_libraries(java_vm_test
   DomainRepository
-  snappy
-  leveldb
   smart_contract_with_java
   world_state_repo_with_level_db
   consensus_event
