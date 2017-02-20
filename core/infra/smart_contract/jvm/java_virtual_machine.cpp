@@ -65,7 +65,7 @@ namespace smart_contract {
         }
         
         JavaVMInitArgs vm_args;
-        vm_args.version  = JNI_VERSION_1_6;
+        vm_args.version  = JNI_VERSION_1_8;
         vm_args.options  = options;
         vm_args.nOptions = OptionSize;
         vm_args.ignoreUnrecognized = JNI_FALSE;
