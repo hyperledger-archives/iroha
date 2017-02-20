@@ -8,6 +8,7 @@ include_directories(
 )
 
 link_directories(
+  ${LEVELDB_PATH}/out-shared
   ${LEVELDB_PATH}/out-static
 )
 

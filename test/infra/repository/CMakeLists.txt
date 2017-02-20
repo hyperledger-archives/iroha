@@ -10,6 +10,7 @@ include_directories(
 )
 link_directories(
     ${PROJECT_BINARY_DIR}/lib
+    ${LEVELDB_PATH}/out-shared
     ${LEVELDB_PATH}/out-static
 )
 

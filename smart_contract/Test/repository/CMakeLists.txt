@@ -15,6 +15,7 @@ link_directories(
   ${PROJECT_BINARY_DIR}/lib
   ${PROJECT_SOURCE_DIR}/core/infra/crypto
   ${LEVELDB_PATH}/out-shared
+  ${LEVELDB_PATH}/out-static
 )
 
 add_library(DomainRepository SHARED
