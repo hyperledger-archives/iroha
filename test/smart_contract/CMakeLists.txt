@@ -49,6 +49,7 @@ add_executable(java_vm_test java_vm_test.cpp)
 add_dependencies(java_vm_test googletest)
 target_link_libraries(java_vm_test
   DomainRepository
+  snappy
   smart_contract_with_java
   world_state_repo_with_level_db
   consensus_event
