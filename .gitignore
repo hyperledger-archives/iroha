@@ -14,7 +14,6 @@ build/*
 .vscode/*
 .idea/*
 *xcworkspace*
-.vscode/*
 *cmake-build-debug*
 CMakeLists.txt.user
 config/sumeragi.json
