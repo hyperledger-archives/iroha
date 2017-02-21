@@ -65,4 +65,10 @@ namespace exception {
       std::invalid_argument("Data could note be saved:" + message) {
     }
   }  // namespace crypto
+  
+  namespace transaction {
+    UnsetBuildArgmentsException::UnsetBuildArgmentsException(const std::string& buildTarget, const std::string& unsetMembers):
+      std::domain_error("UnsetBuildArgmentsException: argments " + unsetMembers) {
+    }
+  }  // namespace transaction
 }  // namespace exception
