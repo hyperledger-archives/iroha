@@ -65,6 +65,13 @@ namespace exception {
       public: WriteFailedException(const std::string &);
     };
   }
+
+  namespace transaction {
+    class UnsetBuildArgmentsException : public std::domain_error {
+    public:
+      UnsetBuildArgmentsException(const std::string&, const std::string&);
+    };
+  }
 }  // namespace exception
 
 #endif
