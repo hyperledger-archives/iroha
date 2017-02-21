@@ -314,6 +314,7 @@ namespace connection {
 
     ServerBuilder builder;
 
+
     void initialize_peer() {
         std::string server_address("0.0.0.0:50051");
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
@@ -326,6 +327,9 @@ namespace connection {
         std::unique_ptr<Server> server(builder.BuildAndStart());
         server->Wait();
         return 0;
+    }
+    void finish(){
+        builder = ServerBuilder();
     }
 
 };

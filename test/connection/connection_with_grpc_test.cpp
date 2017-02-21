@@ -17,7 +17,7 @@ limitations under the License.
 #include <string>
 #include <iostream>
 #include <unordered_map>
-
+#include <thread>
 #include <gtest/gtest.h>
 
 #include <consensus/connection/connection.hpp>
@@ -26,25 +26,94 @@ limitations under the License.
 #include <infra/protobuf/api.grpc.pb.h>
 #include <infra/config/peer_service_with_json.hpp>
 
+#include <transaction_builder/transaction_builder.hpp>
+
 using Api::ConsensusEvent;
 
-TEST(ConnectionWithGrpc, sample){
+using transaction::TransactionBuilder;
+using type_signatures::Add;
+using type_signatures::Domain;
+using type_signatures::Account;
+using type_signatures::Asset;
+using type_signatures::SimpleAsset;
+using type_signatures::Peer;
+
+
+TEST(ConnectionWithGrpc, Transaction_Add_Domain){
     logger::setLogLevel(logger::LogLevel::DEBUG);
 
     connection::initialize_peer();
 
     auto server = []() {
         connection::iroha::Sumeragi::Verify::receive([](const std::string &from, ConsensusEvent &event) {
-            std::cout << " receive : sig size:" << event.eventsignatures_size() << "\n";
-            std::cout << " receive : name:" << event.transaction().asset().name() << "\n";
-            std::cout << " type:" << event.transaction().type() << "\n";
+            ASSERT_STREQ( event.transaction().senderpubkey().c_str(),              "karin");
+            ASSERT_STREQ( event.transaction().domain().name().c_str(),              "name");
+            ASSERT_STREQ( event.transaction().domain().ownerpublickey().c_str(), "pubkey1");
         });
         connection::run();
     };
+
+    std::thread server_thread(server);
 
     connection::iroha::Sumeragi::Verify::addSubscriber(
         config::PeerServiceConfig::getInstance().getMyIp()
     );
 
+    Api::Domain domain;
+    domain.set_ownerpublickey("pubkey1");
+    domain.set_name("name");
+    auto tx = TransactionBuilder<Add<Domain>>()
+            .setSenderPublicKey("karin")
+            .setDomain(domain)
+            .build();
+
+    Api::ConsensusEvent sampleEvent;
+    sampleEvent.mutable_transaction()->CopyFrom(tx);
+
+    connection::iroha::Sumeragi::Verify::send(
+        config::PeerServiceConfig::getInstance().getMyIp(),
+        sampleEvent
+    );
+
+    server_thread.detach();
     connection::finish();
+}
+
+TEST(ConnectionWithGrpc, Transaction_Add_Asset){
+    logger::setLogLevel(logger::LogLevel::DEBUG);
+
+    connection::initialize_peer();
+
+    auto server = []() {
+        connection::iroha::Sumeragi::Verify::receive([](const std::string &from, ConsensusEvent &event) {
+            ASSERT_STREQ( event.transaction().senderpubkey().c_str(),              "karin");
+            ASSERT_STREQ( event.transaction().asset().name().c_str(),              "nao");
+            ASSERT_STREQ( event.transaction().asset().smartcontractname().c_str(), "NaoTo8MaContract");
+        });
+        connection::run();
+    };
+
+    std::thread server_thread(server);
+
+    connection::iroha::Sumeragi::Verify::addSubscriber(
+        config::PeerServiceConfig::getInstance().getMyIp()
+    );
+
+    Api::Asset asset;
+    asset.set_smartcontractname("NaoTo8MaContract");
+    asset.set_name("nao");
+    auto tx = TransactionBuilder<Add<Asset>>()
+        .setSenderPublicKey("karin")
+        .setAsset(asset)
+        .build();
+
+    Api::ConsensusEvent sampleEvent;
+    sampleEvent.mutable_transaction()->CopyFrom(tx);
+
+    connection::iroha::Sumeragi::Verify::send(
+    config::PeerServiceConfig::getInstance().getMyIp(),
+            sampleEvent
+    );
+
+    server_thread.detach();
 }
