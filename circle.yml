@@ -10,7 +10,11 @@ machine:
 
 checkout:
   post:
-    - git submodule sync
+
+    # Temporary....
+    - sed -i  -e 's/luca3104/MizukiSonoko/g' .git/modules/core/vendor/ed25519/config
+
+    - git submodule sync --recursive
     - git submodule update --init --recursive
 
 dependencies:
@@ -36,7 +40,7 @@ test:
     # then, run iroha with dummy config (1 node) and print its output to stdout
     - docker logs $(docker run -it -d -p 1204:1204 hyperledger/iroha-docker /run.sh)
     # put new tests below
-    # - curl -X POST http://127.0.0.1:1204/account/register -d '{"publicKey":"WdvM/DPabapmtA7ISbTYPywbHxk8gWu2221LzmcmAgw=","alias":"yonezu","timestamp":1482053586}'
+    #- curl -X POST http://127.0.0.1:1204/account/register -d '{"publicKey":"WdvM/DPabapmtA7ISbTYPywbHxk8gWu2221LzmcmAgw=","alias":"yonezu","timestamp":1482053586}'
 
 
 deployment:
@@ -45,3 +49,8 @@ deployment:
     commands:
       # makes docker login and docker push $1
       - ${IROHA_HOME}/deploy.sh hyperledger/iroha-docker
+
+    branch: develop
+    commands:
+      # makes docker login and docker push $1
+      - ${IROHA_HOME}/deploy.sh hyperledger/iroha-docker-develop

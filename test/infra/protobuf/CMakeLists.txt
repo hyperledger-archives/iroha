@@ -20,7 +20,6 @@ target_link_libraries(convertor_test
    convertor
    signature
    datetime
-   objects
 
    hash
    base64

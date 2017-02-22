@@ -22,22 +22,10 @@ limitations under the License.
 
 #include <consensus/sumeragi.hpp>
 #include <consensus/connection/connection.hpp>
-#include <model/commands/transfer.hpp>
-#include <model/commands/add.hpp>
 
 #include <service/peer_service.hpp>
 #include <crypto/hash.hpp>
-#include <infra/protobuf/convertor.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-
-template<typename T>
-using Transaction = transaction::Transaction<T>;
-template<typename T>
-using ConsensusEvent = event::ConsensusEvent<T>;
-template<typename T>
-using Add = command::Add<T>;
-template<typename T>
-using Transfer = command::Transfer<T>;
 
 void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const &action) {
     std::thread([action, sleepMillisecs]() {
@@ -53,20 +41,6 @@ int main(){
 
     while(1){
         setAwkTimer(3000, [&](){
-            auto event = std::make_unique<ConsensusEvent<Transaction<Add<object::Asset>>>>(
-                senderPublicKey.c_str(),
-                "domain",
-                "Dummy transaction",
-                100,
-                0
-            );
-            std::cout <<" created event\n";
-            event->addTxSignature(
-                    config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                    signature::sign(event->getHash(),
-                                    config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                                    config::PeerServiceConfig::getInstance().getMyPrivateKey()).c_str()
-            );
         });
     }
 

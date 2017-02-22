@@ -30,7 +30,14 @@ namespace exception {
 
   class NotImplementedException : public std::invalid_argument {
     public: NotImplementedException(
-      const std::string& message,
+      const std::string& functionName,
+      const std::string& filename
+    );
+  };
+
+  class BaseMethodException : public std::domain_error {
+    public: BaseMethodException(
+      const std::string& functionName,
       const std::string& filename
     );
   };
@@ -42,9 +49,14 @@ namespace exception {
   };
 
   class InvalidCastException : public std::domain_error {
-    public: InvalidCastException(
+    public:
+    InvalidCastException(
       const std::string& from,
       const std::string&   to,
+      const std::string& filename
+    );
+    InvalidCastException(
+      const std::string&   meg,
       const std::string& filename
     );
   };
@@ -58,6 +70,17 @@ namespace exception {
   namespace repository {
     class WriteFailedException : public std::invalid_argument {
       public: WriteFailedException(const std::string &);
+    };
+  }
+
+  namespace txbuilder {
+    class DuplicateSetArgmentException : public std::domain_error {
+    public:
+      DuplicateSetArgmentException(const std::string&, const std::string&);
+    };
+    class UnsetBuildArgmentsException : public std::domain_error {
+    public:
+      UnsetBuildArgmentsException(const std::string&, const std::string&);
     };
   }
 }  // namespace exception

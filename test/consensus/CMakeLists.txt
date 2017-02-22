@@ -4,6 +4,7 @@ SET(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 SET(KECCAK_PATH  "${PROJECT_SOURCE_DIR}/core/vendor/KeccakCodePackage")
 SET(ED25519_PATH "${PROJECT_SOURCE_DIR}/core/vendor/ed25519")
+SET(LEVELDB_PATH "${PROJECT_SOURCE_DIR}/core/vendor/leveldb")
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/core
@@ -14,6 +15,7 @@ link_directories(
     ${ED25519_PATH}/lib
     ${KECCAK_PATH}/bin/generic64
     ${PROJECT_SOURCE_DIR}/core/infra/crypto
+    ${LEVELDB_PATH}/out-static
 )
 
 add_executable(sumeragi_test
@@ -22,11 +24,10 @@ add_executable(sumeragi_test
 
 
 target_link_libraries(sumeragi_test
+    leveldb
     snappy
-    objects
     base64
     signature
-    convertor
     sumeragi
     connection_with_grpc
     config_manager
@@ -39,7 +40,6 @@ add_executable(transaction_test
 )
 target_link_libraries(transaction_test
     snappy
-    objects
     base64
     signature
     sumeragi
@@ -47,5 +47,4 @@ target_link_libraries(transaction_test
     config_manager
     pthread
     consensus_event
-    objects
 )

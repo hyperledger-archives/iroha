@@ -14,10 +14,8 @@ target_link_libraries(http_server_with_cappuccino
   crypto
   logger
   datetime
-  objects
   base64
   signature
-  convertor
   connection_with_grpc
   config_manager
   domain_repository

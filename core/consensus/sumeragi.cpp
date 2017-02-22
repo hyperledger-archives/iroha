@@ -27,16 +27,12 @@ limitations under the License.
 #include <crypto/hash.hpp>
 #include <crypto/signature.hpp>
 
-#include <infra/protobuf/convertor.hpp>
-
 #include <validation/transaction_validator.hpp>
 #include <service/peer_service.hpp>
-#include <model/objects/asset.hpp>
-#include <model/objects/domain.hpp>
-#include <model/commands/transfer.hpp>
+#include "connection/connection.hpp"
 
+#include <service/executor.hpp>
 #include <repository/consensus/transaction_repository.hpp>
-#include <repository/domain/account_repository.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 
@@ -55,10 +51,10 @@ limitations under the License.
 */
 namespace sumeragi {
 
-    using event::ConsensusEvent;
-    using transaction::Transaction;
-    using namespace command;
-    using namespace object;
+
+    using Api::ConsensusEvent;
+    using Api::EventSignature;
+    using Api::Transaction;
 
 
     static ThreadPool pool(
@@ -72,7 +68,7 @@ namespace sumeragi {
 
     namespace detail {
 
-        std::uint32_t getNumValidSignatures(const Event::ConsensusEvent& event) {
+        std::uint32_t getNumValidSignatures(const ConsensusEvent& event) {
             std::uint32_t sum = 0;
             for (auto&& esig: event.eventsignatures()) {
                 if (signature::verify(esig.signature(), event.transaction().hash(), esig.publickey())) {
@@ -82,14 +78,14 @@ namespace sumeragi {
             return sum;
         }
 
-        void addSignature(Event::ConsensusEvent& event, const std::string& publicKey, const std::string& signature) {
-            Event::EventSignature sig;
+        void addSignature(ConsensusEvent& event, const std::string& publicKey, const std::string& signature) {
+            EventSignature sig;
             sig.set_signature(signature);
             sig.set_publickey(publicKey);
             event.add_eventsignatures()->CopyFrom(sig);
         }
 
-        bool eventSignatureIsEmpty(const Event::ConsensusEvent& event) {
+        bool eventSignatureIsEmpty(const ConsensusEvent& event) {
             return event.eventsignatures_size() == 0;
         }
 
@@ -105,7 +101,7 @@ namespace sumeragi {
                 logger::explore("sumeragi") <<  "   A          A";
             } else {
                 logger::explore("sumeragi") <<  "   /\\         /\\";
-                logger::explore("sumeragi") <<  "   ||  I  am  ||";
+                logger::explore("sumcderagi") <<  "   ||  I  am  ||";
                 logger::explore("sumeragi") <<  "   ||   peer  ||";
                 logger::explore("sumeragi") <<  "   ||         ||";
                 logger::explore("sumeragi") <<  "   AA         AA";
@@ -217,7 +213,19 @@ namespace sumeragi {
 
         context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() == context->myPublicKey;
 
-        connection::receive([](const std::string& from, Event::ConsensusEvent& event) {
+        connection::iroha::Sumeragi::Torii::receive([](const std::string& from, Transaction& transaction) {
+            logger::info("sumeragi") << "receive!";
+            ConsensusEvent event;
+            event.mutable_transaction()->CopyFrom(transaction);
+            // send processTransaction(event) as a task to processing pool
+            // this returns std::future<void> object
+            // (std::future).get() method locks processing until result of processTransaction will be available
+            // but processTransaction returns void, so we don't have to call it and wait
+            std::function<void()> &&task = std::bind(processTransaction, event);
+            pool.process(std::move(task));
+        });
+
+        connection::iroha::Sumeragi::Verify::receive([](const std::string& from, ConsensusEvent& event) {
             logger::info("sumeragi") << "receive!";
             logger::info("sumeragi") << "received message! sig:[" << event.eventsignatures_size() << "]";
 
@@ -249,7 +257,7 @@ namespace sumeragi {
     }
 
 
-    void processTransaction(Event::ConsensusEvent& event) {
+    void processTransaction(ConsensusEvent& event) {
 
         logger::info("sumeragi")    <<  "processTransaction";
         //if (!transaction_validator::isValid(event->getTx())) {
@@ -319,39 +327,10 @@ namespace sumeragi {
                 logger::explore("sumeragi") <<  "commit count:" <<  context->commitedCount;
 
                 merkle_transaction_repository::commit(event); //TODO: add error handling in case not saved
-//
-//   I want to use SerializeToString, But It has a bug??
-//
-//                std::string strTx;
-//                event.SerializeToString(&strTx);
 
-                const auto key = event.transaction().asset().name() + "_" + datetime::unixtime_str();
-                repository::transaction::add(key, event);
 
-                logger::debug("sumeragi")   <<  "key[" << key << "]";
-                //logger::debug("sumeragi")   <<  "\033[91m+-ーーーーーーーーーーーー-+\033[0m";
-                std::cout << "\033[91m+-ーーーーーーーーーーーー-+\033[0m" << std::endl;
-                logger::debug("sumeragi")   <<  "tx:" << event.transaction().type();
+                executor::execute(event.transaction());
 
-                // I want to separate it function from sumeragi.
-                if (event.transaction().type() == "Add") {
-
-                    if (event.transaction().asset().ByteSize() != 0) {
-                        logger::debug("sumeragi")   <<  "exec <Add<Asset>>";
-                        convertor::decode<Add<Asset>>(event).execution();
-                    } else if (event.transaction().account().ByteSize() != 0){
-                        logger::debug("sumeragi")   <<  "exec <Add<Account>>";
-                        convertor::decode<Add<Account>>(event).execution();
-                    }
-
-                } else if (event.transaction().type() == "Transfer"){
-
-                    if (event.transaction().asset().ByteSize() != 0) {
-                        logger::debug("sumeragi")   <<  "exec <Transfer<Asset>>";
-                        convertor::decode<Transfer<Asset>>(event).execution();
-                    }
-
-                }
                 // Write exec code smart contract
                 // event->execution();
             } else {
@@ -368,10 +347,10 @@ namespace sumeragi {
                 
                 if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() == config::PeerServiceConfig::getInstance().getMyPublicKey()) {
                     logger::info("sumeragi")    <<  "I will send event to " <<  context->validatingPeers.at(context->proxyTailNdx)->getIP();
-                    connection::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), std::move(event)); // Think In Process
+                    connection::iroha::Sumeragi::Verify::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), std::move(event)); // Think In Process
                 } else {
                     logger::info("sumeragi")    <<  "Send All! sig:["       <<  detail::getNumValidSignatures(event) << "]";
-                    connection::sendAll(std::move(event)); // TODO: Think In Process
+                    connection::iroha::Sumeragi::Verify::sendAll(std::move(event)); // TODO: Think In Process
                 }
 
                 setAwkTimer(3, [&](){
@@ -402,7 +381,7 @@ namespace sumeragi {
     * | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
     * |---|  |---|  |---|  |---|  |---|  |---|.
     */
-    void panic(const Event::ConsensusEvent& event) {
+    void panic(const ConsensusEvent& event) {
         context->panicCount++; // TODO: reset this later
         auto broadcastStart = 2 * context->maxFaulty + 1 + context->maxFaulty * context->panicCount;
         auto broadcastEnd   = broadcastStart + context->maxFaulty;
