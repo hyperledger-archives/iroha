@@ -73,7 +73,11 @@ namespace exception {
     };
   }
 
-  namespace transaction {
+  namespace txbuilder {
+    class DuplicateSetArgmentException : public std::domain_error {
+    public:
+      DuplicateSetArgmentException(const std::string&, const std::string&);
+    };
     class UnsetBuildArgmentsException : public std::domain_error {
     public:
       UnsetBuildArgmentsException(const std::string&, const std::string&);

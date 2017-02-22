@@ -17,7 +17,7 @@ limitations under the License.
 #ifndef CORE_MODEL_TRANSACTION_BUILDER_BASE_HPP
 #define CORE_MODEL_TRANSACTION_BUILDER_BASE_HPP
 
-namespace transaction {
+namespace txbuilder {
 
 /*
 template <template<class> class CommandT>

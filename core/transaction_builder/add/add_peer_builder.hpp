@@ -22,7 +22,7 @@ limitations under the License.
 #include "../type_signatures/commands/add.hpp"
 #include "../type_signatures/objects.hpp"
 
-namespace transaction {
+namespace txbuilder {
 
 template <>
 class TransactionBuilder<type_signatures::Add<type_signatures::Peer>> {
@@ -33,8 +33,8 @@ class TransactionBuilder<type_signatures::Add<type_signatures::Peer>> {
 
   TransactionBuilder& setSenderPublicKey(std::string senderPublicKey) {
     if (_isSetSenderPublicKey) {
-      throw std::domain_error(std::string("Duplicate sender in ") +
-                              "add/add_peer_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Add<Peer>", "senderPublicKey");
     }
     _isSetSenderPublicKey = true;
     _senderPublicKey = std::move(senderPublicKey);
@@ -43,8 +43,8 @@ class TransactionBuilder<type_signatures::Add<type_signatures::Peer>> {
 
   TransactionBuilder& setPeer(Api::Peer object) {
     if (_isSetPeer) {
-      throw std::domain_error(std::string("Duplicate ") + "Peer" + " in " +
-                              "add/add_peer_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException("Add<Peer>",
+                                                               "Peer");
     }
     _isSetPeer = true;
     _peer = std::move(object);
@@ -54,8 +54,8 @@ class TransactionBuilder<type_signatures::Add<type_signatures::Peer>> {
   Api::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::transaction::UnsetBuildArgmentsException("Add<Peer>",
-                                                                unsetMembers);
+      throw exception::txbuilder::UnsetBuildArgmentsException("Add<Peer>",
+                                                              unsetMembers);
     }
     Api::Transaction ret;
     ret.set_senderpubkey(_senderPublicKey);

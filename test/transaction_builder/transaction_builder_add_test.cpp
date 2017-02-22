@@ -19,8 +19,6 @@ limitations under the License.
 #include <transaction_builder/transaction_builder.hpp>
 #include <util/exception.hpp>
 
-namespace txbuilder = transaction;
-
 using txbuilder::TransactionBuilder;
 using type_signatures::Add;
 using type_signatures::Domain;

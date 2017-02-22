@@ -19,7 +19,7 @@ limitations under the License.
 #include <transaction_builder/transaction_builder.hpp>
 #include <util/exception.hpp>
 
-using transaction::TransactionBuilder;
+using txbuilder::TransactionBuilder;
 using type_signatures::Transfer;
 using type_signatures::Domain;
 using type_signatures::Account;
@@ -54,7 +54,7 @@ TEST(transaction_builder, create_unset_sender) {
     .setReceiverPublicKey("receiver pubkey")
     .setDomain(domain)
     .build();
-  }, exception::transaction::UnsetBuildArgmentsException);
+  }, exception::txbuilder::UnsetBuildArgmentsException);
 }
 
 TEST(transaction_builder, create_unset_receiver) {
@@ -67,7 +67,7 @@ TEST(transaction_builder, create_unset_receiver) {
     .setSenderPublicKey("karin")
     .setDomain(domain)
     .build();
-  }, exception::transaction::UnsetBuildArgmentsException);
+  }, exception::txbuilder::UnsetBuildArgmentsException);
 }
 
 TEST(transaction_builder, create_unset_object) {
@@ -80,7 +80,7 @@ TEST(transaction_builder, create_unset_object) {
     .setSenderPublicKey("karin")
     .setReceiverPublicKey("receiver pubkey")
     .build();
-  }, exception::transaction::UnsetBuildArgmentsException);
+  }, exception::txbuilder::UnsetBuildArgmentsException);
 }
 
 TEST(transaction_builder, create_unset_noset) {
@@ -91,7 +91,7 @@ TEST(transaction_builder, create_unset_noset) {
   ASSERT_THROW({
   auto txDomain = TransactionBuilder<Transfer<Domain>>()
     .build();
-  }, exception::transaction::UnsetBuildArgmentsException);
+  }, exception::txbuilder::UnsetBuildArgmentsException);
 }
 
 TEST(transaction_builder, create_unset_invalid_double_set) {
@@ -106,5 +106,5 @@ TEST(transaction_builder, create_unset_invalid_double_set) {
     .setSenderPublicKey("karin")
     .setReceiverPublicKey("receiver pubkey")
     .build();
-  }, std::domain_error);  // TODO: change this to exception::transaction::DoubleSetBuildArgmentsException.
+  }, exception::txbuilder::DuplicateSetArgmentException);
 }

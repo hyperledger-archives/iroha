@@ -53,7 +53,7 @@ class TransactionBuilder<type_signatures::Remove<object::Message>> {
   transaction::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::transaction::UnsetBuildArgmentsException(
+      throw exception::txbuilder::UnsetBuildArgmentsException(
           "Remove<object::Message>", unsetMembers);
     }
     return transaction::Transaction(_sender, command::Remove(_message));

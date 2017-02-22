@@ -73,9 +73,12 @@ namespace exception {
     }
   }  // namespace crypto
   
-  namespace transaction {
+  namespace txbuilder {
+    DuplicateSetArgmentException::DuplicateSetArgmentException(const std::string& buildTarget, const std::string& duplicateMember):
+      std::domain_error("DuplicateSetArgmentException in " + buildTarget + ", argment: " + duplicateMember) {
+    }
     UnsetBuildArgmentsException::UnsetBuildArgmentsException(const std::string& buildTarget, const std::string& unsetMembers):
-      std::domain_error("UnsetBuildArgmentsException: argments " + unsetMembers) {
+      std::domain_error("UnsetBuildArgmentsException in " + buildTarget + ", argments: " + unsetMembers) {
     }
   }  // namespace transaction
 }  // namespace exception

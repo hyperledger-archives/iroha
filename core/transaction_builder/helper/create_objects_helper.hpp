@@ -20,7 +20,7 @@ limitations under the License.
 #include <infra/protobuf/api.pb.h>
 #include <util/exception.hpp>
 
-namespace transaction {
+namespace txbuilder {
 
 /*
   Primitives
@@ -85,7 +85,7 @@ inline Api::Account createAccount(std::string publicKey, std::string name,
 }
 
 inline Api::Asset createAsset(std::string domain, std::string name,
-                              ::transaction::Map value,
+                              ::txbuilder::Map value,
                               std::string smartContractName) {
   Api::Asset ret;
   ret.set_domain(std::move(domain));

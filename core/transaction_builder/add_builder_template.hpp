@@ -18,7 +18,7 @@ limitations under the License.
 */
 #define REPLACE_STRING(str) #str
 
-#define BUILDER_NAMESPACE_BEGIN namespace transaction {
+#define BUILDER_NAMESPACE_BEGIN namespace txbuilder {
 #define BUILDER_BEGIN(Command, ObjectType) \
 template<>  \
 class TransactionBuilder<type_signatures::Command<type_signatures::ObjectType>> { \
@@ -28,20 +28,20 @@ public: \
   TransactionBuilder(const TransactionBuilder&) = default;  \
   TransactionBuilder(TransactionBuilder&&) = default;
 
-#define BUILDER_SET_SENDERPUBLICKEY \
+#define BUILDER_SET_SENDERPUBLICKEY(Command, ObjectType) \
   TransactionBuilder& setSenderPublicKey(std::string senderPublicKey) { \
     if (_isSetSenderPublicKey) { \
-      throw std::domain_error(std::string("Duplicate sender in ") + __FILE__); \
+      throw exception::txbuilder::DuplicateSetArgmentException(REPLACE_STRING(Command##<##ObjectType##>), "senderPublicKey"); \
     } \
     _isSetSenderPublicKey = true;  \
     _senderPublicKey = std::move(senderPublicKey);  \
     return *this; \
   }
 
-#define BUILDER_SET_OBJECT(ObjectType, objectType) \
+#define BUILDER_SET_OBJECT(Command, ObjectType, objectType) \
   TransactionBuilder& set ## ObjectType(Api::ObjectType object) {  \
     if (_isSet##ObjectType) { \
-      throw std::domain_error(std::string("Duplicate ") + #ObjectType + " in " + __FILE__); \
+      throw exception::txbuilder::DuplicateSetArgmentException(REPLACE_STRING(Command##<##ObjectType##>), #ObjectType); \
     } \
     _isSet##ObjectType = true;  \
     _##objectType = std::move(object); \
@@ -52,7 +52,7 @@ public: \
   Api::Transaction build() {  \
     const auto unsetMembers = enumerateUnsetMembers();  \
     if (not unsetMembers.empty()) { \
-      throw exception::transaction::UnsetBuildArgmentsException(REPLACE_STRING(Command##<##ObjectType##>), unsetMembers); \
+      throw exception::txbuilder::UnsetBuildArgmentsException(REPLACE_STRING(Command##<##ObjectType##>), unsetMembers); \
     } \
     \
     Api::Transaction ret; \
@@ -101,9 +101,9 @@ BUILDER_NAMESPACE_BEGIN
 
 BUILDER_BEGIN(__CommandType__,__ObjectType__)
 
-BUILDER_SET_SENDERPUBLICKEY
+BUILDER_SET_SENDERPUBLICKEY(__CommandType__,__ObjectType__)
 
-BUILDER_SET_OBJECT(__ObjectType__,__objectType__)
+BUILDER_SET_OBJECT(__CommandType__,__ObjectType__,__objectType__)
 
 BUILDER_BUILD(__CommandType__,__ObjectType__,__objectType__,__objtype__)
 
