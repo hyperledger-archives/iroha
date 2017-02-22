@@ -242,7 +242,7 @@ namespace connection {
                     if (find(receiver_ips.begin(), receiver_ips.end(), ip) != receiver_ips.end()) {
                         SumeragiConnectionClient client(
                             grpc::CreateChannel(
-                                ip + ":50051",
+                                ip + ":" + std::to_string(config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)),
                                 grpc::InsecureChannelCredentials()
                             )
                         );
@@ -317,7 +317,7 @@ namespace connection {
 
 
     void initialize_peer() {
-        std::string server_address("0.0.0.0:50051");
+        std::string server_address("0.0.0.0:" + std::to_string(config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)));
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
         builder.RegisterService(&iroha::Sumeragi::service);
         builder.RegisterService(&iroha::TransactionRepository::find::service);
