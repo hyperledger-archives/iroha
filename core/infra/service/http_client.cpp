@@ -13,10 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
+#include <ctime>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -35,11 +33,62 @@ limitations under the License.
 #include <util/logger.hpp>
 
 namespace http_client {
+
+    const std::string current() {
+        time_t t;
+        char timestr[256];
+        time(&t);
+        strftime(timestr, 255, "%a, %d %b %Y %H:%M:%S %Z", localtime(&t));
+        return std::string(timestr);
+    }
+
+    Request::Request(
+        std::string&& aMethod,
+        std::string&& aPath,
+        std::string&& abody
+    ):
+        method(move(aMethod)),
+        path(move(aPath)),
+        protocol("HTTP/1.1"),
+        body(move(abody))
+    {}
+
+    void Request::addHost(std::string host){
+        this->host = host;
+    }
+
+    void Request::addHeader(const std::string& key,std::string&& value){
+        headerset[key] = move(value);
+    }
+
+    void Request::addParams(const std::string& key,std::string&& value){
+        paramset[key] = move(value);
+    }
+
+    const std::string Request::dump(){
+        std::string res = method + " " + path + " " + protocol + "\n";
+        res += "Host: " + host + "\n";
+        for(const auto& it: headerset) {
+            res += it.first + ": " + it.second +"\n";
+        }
+        if(!body.empty()) {
+            res += "Content-Length: " + std::to_string(body.size()) + "\n";
+        }
+        res += "User-Agent: iroha\n";
+
+        res += "\n";
+        if(!body.empty()) {
+            res += body + "\n";
+        }
+        return res;
+    }
+
     using nlohmann::json;
 
     const int BUFFER_LENGTH = 2048;
 
-    int GET(std::string dest, int port, std::string path) {
+    int request(std::string dest, int port, Request req) {
+        req.addHost(dest);
 
         struct hostent *hostent;
         struct sockaddr_in server;
@@ -59,50 +108,12 @@ namespace http_client {
 
         if((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
             logger::error("HttpClient") <<  "Socker error";
+            close(fd);
             return 1;
         }
         if(connect(fd, (struct sockaddr *) &server, sizeof(server)) == -1) {
             logger::error("HttpClient") <<  "Connection failed";
-            return 1;
-        }
-
-        std::string message = "GET " + path + " HTTP/1.0\r\n";
-        write(fd, message.c_str(), message.size());
-
-        std::string response = "";
-        while(read(fd, buffer, BUFFER_LENGTH) > 0) {
-            response += buffer;
-        }
-
-        logger::debug("HttpClient") <<  "response [\n" << response << "\n]";
-
-        close(fd);
-        return 0;
-    }
-
-    int POST(std::string dest, int port, std::string path) {
-        struct hostent *hostent;
-        struct sockaddr_in server;
-
-        int fd;
-        char buffer[BUFFER_LENGTH];
-
-        hostent = gethostbyname(dest.c_str()); /* lookup IP */
-        if (hostent == nullptr) {
-            logger::error("HttpClient") <<  "Cannot resolve [" << dest << "]";
-            return 1;
-        }
-        bzero(&server, sizeof(server));
-        server.sin_family = AF_INET;
-        bcopy(hostent->h_addr, &server.sin_addr, hostent->h_length);
-        server.sin_port = htons(port);
-
-        if((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-            logger::error("HttpClient") <<  "Socker error";
-            return 1;
-        }
-        if(connect(fd, (struct sockaddr *) &server, sizeof(server)) == -1) {
-            logger::error("HttpClient") <<  "Connection failed";
+            close(fd);
             return 1;
         }
 
@@ -114,38 +125,33 @@ namespace http_client {
 
         if (SSL_set_fd(ssl, fd) == 0) {
             ERR_print_errors_fp(stderr);
+            SSL_shutdown(ssl);
+            SSL_free(ssl);
+            SSL_CTX_free(context);
+            ERR_free_strings();
+            close(fd);
             return 1;
         }
         if (SSL_connect(ssl) != 1) {
             ERR_print_errors_fp(stderr);
+            SSL_shutdown(ssl);
+            SSL_free(ssl);
+            SSL_CTX_free(context);
+            ERR_free_strings();
+            close(fd);
             return 1;
         }
 
-        // WIP
-        // ----------
-        std::string message = "POST " + path + " HTTP/1.1\n"
-          + "Host: " + dest + "\n"
-          + "User-Agent: iroha\n"
-          + "Accept: */*\n"
-          + "Content-Type: application/x-www-form-urlencoded\n"
-          + "\n";
-        logger::info("HttpClient") <<"dest! [\n" <<  dest <<":" << port << path << "\n ]";
-        logger::info("HttpClient") <<"send! [\n" <<  message <<  "]";
+        auto message = req.dump();
+        logger::info("HttpClient") <<"message \n" << message;
         SSL_write(ssl, message.c_str(), message.size());
 
-        logger::info("HttpClient") <<"Sended!";
-
-        std::string response = "";
-
         int read_len;
-        do {
-            read_len = SSL_read(ssl, buffer, BUFFER_LENGTH);
-            response += buffer;
-            logger::info("HttpClient") <<"recv " << buffer;
-            logger::info("HttpClient") <<"size " << read_len;
-        } while(read_len > 0);
 
-        logger::info("HttpClient") <<  "response [\n" << response << "\n]";
+        read_len = SSL_read(ssl, buffer, BUFFER_LENGTH);
+        logger::info("HttpClient") <<"recv " << buffer;
+        logger::info("HttpClient") <<"size " << read_len;
+
 
         // -- SSL --
         SSL_shutdown(ssl);
@@ -158,86 +164,4 @@ namespace http_client {
 
     }
 
-    int POST(std::string dest, int port, std::string path, json data) {
-
-        struct hostent *hostent;
-        struct sockaddr_in server;
-
-        int fd;
-        char buffer[BUFFER_LENGTH];
-
-        hostent = gethostbyname(dest.c_str()); /* lookup IP */
-        if (hostent == nullptr) {
-            logger::error("HttpClient") <<  "Cannot resolve [" << dest << "]";
-            return 1;
-        }
-        bzero(&server, sizeof(server));
-        server.sin_family = AF_INET;
-        bcopy(hostent->h_addr, &server.sin_addr, hostent->h_length);
-        server.sin_port = htons(port);
-
-        if((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-            logger::error("HttpClient") <<  "Socker error";
-            return 1;
-        }
-        if(connect(fd, (struct sockaddr *) &server, sizeof(server)) == -1) {
-            logger::error("HttpClient") <<  "Connection failed";
-            return 1;
-        }
-
-        // -- SSL --
-        SSL_load_error_strings();
-        SSL_library_init();
-        auto context = SSL_CTX_new(SSLv23_client_method());
-        auto ssl = SSL_new(context);
-
-        if (SSL_set_fd(ssl, fd) == 0) {
-            ERR_print_errors_fp(stderr);
-            return 1;
-        }
-        if (SSL_connect(ssl) != 1) {
-            ERR_print_errors_fp(stderr);
-            return 1;
-        }
-
-        // WIP
-        // ----------
-        std::string message = "POST " + path + " HTTP/1.1\n"
-        + "Host: " + dest + "\n"
-        + "User-Agent: iroha\n"
-        + "Accept: */*\n"
-        + "Content-Length: " + std::to_string(data.dump().size()) + "\n"
-        + "Content-Type: application/x-www-form-urlencoded\n"
-        + "\n";
-        logger::info("HttpClient") <<"dest! [\n" <<  dest <<":" << port << path << "\n ]";
-        logger::info("HttpClient") <<"send! [\n" <<  message <<  "]";
-        SSL_write(ssl, message.c_str(), message.size());
-
-        SSL_write(ssl, data.dump().c_str(), data.dump().size());
-
-        logger::info("HttpClient") <<"Sended!";
-
-        std::string response = "";
-
-        int read_len;
-        do {
-            read_len = SSL_read(ssl, buffer, BUFFER_LENGTH);
-            response += buffer;
-            logger::info("HttpClient") <<"recv " << buffer;
-            logger::info("HttpClient") <<"size " << read_len;
-        } while(read_len > 0);
-
-        logger::info("HttpClient") <<  "response [\n" << response << "\n]";
-
-        // -- SSL --
-        SSL_shutdown(ssl);
-        SSL_free(ssl);
-        SSL_CTX_free(context);
-        ERR_free_strings();
-        // ---------
-        close(fd);
-        return 0;
-
-
-    }
 }

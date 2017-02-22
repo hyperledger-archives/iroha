@@ -26,6 +26,9 @@ using nlohmann::json;
 
 TEST(config, isSystemConfigValid) {
 
-    http_client::POST( "example.com", 443, "/");
+    auto req = http_client::Request("GET","/", "");
+    req.addHeader("Accept", "*/*");
+
+    http_client::request( "example.com", 443, req);
 
 }

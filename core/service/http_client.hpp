@@ -18,16 +18,42 @@ limitations under the License.
 
 #include <json.hpp>
 
+#include <unordered_map>
+#include <string>
+
 namespace http_client {
+
+
+    class Request{
+
+        std::unordered_map<std::string, std::string> headerset;
+        std::unordered_map<std::string, std::string> paramset;
+
+        const std::string method;
+        const std::string path;
+        const std::string protocol;
+        const std::string body;
+
+        std::string host;
+
+    public:
+
+        Request(
+            std::string&& aMethod,
+            std::string&& aPath,
+            std::string&& abody
+        );
+
+        void addHost(std::string host);
+        void addHeader(const std::string& key,std::string&& value);
+        void addParams(const std::string& key,std::string&& value);
+        const std::string dump();
+    };
+
+
     using nlohmann::json;
 
-    // WIP
-    int GET(std::string dest, int port, std::string path);
-
-    // WIP
-    int POST(std::string dest, int port, std::string path);
-    int POST(std::string dest, int port, std::string path, json data);
-
+    int request(std::string dest, int port, Request req);
 }
 
 #endif //IROHA_HTTP_CLIENT_HPP_HPP
