@@ -10,8 +10,8 @@ link_directories(
 
 
 ADD_LIBRARY(event_with_grpc STATIC
-    ../protobuf/event.grpc.pb.cc
-    ../protobuf/event.pb.cc
+    api.grpc.pb.cc
+    api.pb.cc
 )
 
 target_link_libraries(event_with_grpc

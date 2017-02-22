@@ -15,7 +15,6 @@ target_link_libraries(
   connection_with_grpc
   signature
   event_repository
-  objects
 )
 
 ADD_LIBRARY(consensus_event STATIC
@@ -24,7 +23,6 @@ ADD_LIBRARY(consensus_event STATIC
 
 target_link_libraries(consensus_event
   config_manager
-  objects
   validator
   hash
 )

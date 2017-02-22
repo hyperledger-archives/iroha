@@ -37,11 +37,6 @@ namespace http {
     using Response = Cappuccino::Response;
 
 
-    using namespace transaction;
-    using namespace command;
-    using namespace event;
-    using namespace object;
-
     json responseError(std::string message){
         return json({
                             {"message", std::move(message)},

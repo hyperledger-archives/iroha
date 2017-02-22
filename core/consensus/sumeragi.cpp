@@ -30,9 +30,6 @@ limitations under the License.
 #include <validation/transaction_validator.hpp>
 #include <service/peer_service.hpp>
 #include "connection/connection.hpp"
-#include <model/objects/asset.hpp>
-#include <model/objects/domain.hpp>
-#include <model/commands/transfer.hpp>
 
 #include <service/executor.hpp>
 #include <repository/consensus/transaction_repository.hpp>
@@ -52,10 +49,10 @@ limitations under the License.
 */
 namespace sumeragi {
 
-    using event::ConsensusEvent;
-    using transaction::Transaction;
-    using namespace command;
-    using namespace object;
+
+    using Api::ConsensusEvent;
+    using Api::EventSignature;
+    using Api::Transaction;
 
 
     //thread pool and a storage of events 
@@ -70,7 +67,7 @@ namespace sumeragi {
 
     namespace detail {
 
-        std::uint32_t getNumValidSignatures(const Event::ConsensusEvent& event) {
+        std::uint32_t getNumValidSignatures(const ConsensusEvent& event) {
             std::uint32_t sum = 0;
             for (auto&& esig: event.eventsignatures()) {
                 if (signature::verify(esig.signature(), event.transaction().hash(), esig.publickey())) {
@@ -80,14 +77,14 @@ namespace sumeragi {
             return sum;
         }
 
-        void addSignature(Event::ConsensusEvent& event, const std::string& publicKey, const std::string& signature) {
-            Event::EventSignature sig;
+        void addSignature(ConsensusEvent& event, const std::string& publicKey, const std::string& signature) {
+            EventSignature sig;
             sig.set_signature(signature);
             sig.set_publickey(publicKey);
             event.add_eventsignatures()->CopyFrom(sig);
         }
 
-        bool eventSignatureIsEmpty(const Event::ConsensusEvent& event) {
+        bool eventSignatureIsEmpty(const ConsensusEvent& event) {
             return event.eventsignatures_size() == 0;
         }
 
@@ -215,7 +212,19 @@ namespace sumeragi {
 
         context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() == context->myPublicKey;
 
-        connection::receive([](const std::string& from, Event::ConsensusEvent& event) {
+        connection::iroha::Sumeragi::Torii::receive([](const std::string& from, Transaction& transaction) {
+            logger::info("sumeragi") << "receive!";
+            ConsensusEvent event;
+            event.mutable_transaction()->CopyFrom(transaction);
+            // send processTransaction(event) as a task to processing pool
+            // this returns std::future<void> object
+            // (std::future).get() method locks processing until result of processTransaction will be available
+            // but processTransaction returns void, so we don't have to call it and wait
+            std::function<void()> &&task = std::bind(processTransaction, event);
+            pool.process(std::move(task));
+        });
+
+        connection::iroha::Sumeragi::Verify::receive([](const std::string& from, ConsensusEvent& event) {
             logger::info("sumeragi") << "receive!";
             logger::info("sumeragi") << "received message! sig:[" << event.eventsignatures_size() << "]";
         
@@ -247,7 +256,7 @@ namespace sumeragi {
     }
     
 
-    void processTransaction(Event::ConsensusEvent& event) {
+    void processTransaction(ConsensusEvent& event) {
 
         logger::info("sumeragi")    <<  "processTransaction";
         //if (!transaction_validator::isValid(event->getTx())) {
@@ -337,10 +346,10 @@ namespace sumeragi {
                 
                 if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() == config::PeerServiceConfig::getInstance().getMyPublicKey()) {
                     logger::info("sumeragi")    <<  "I will send event to " <<  context->validatingPeers.at(context->proxyTailNdx)->getIP();
-                    connection::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), std::move(event)); // Think In Process
+                    connection::iroha::Sumeragi::Verify::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), std::move(event)); // Think In Process
                 } else {
                     logger::info("sumeragi")    <<  "Send All! sig:["       <<  detail::getNumValidSignatures(event) << "]";
-                    connection::sendAll(std::move(event)); // TODO: Think In Process
+                    connection::iroha::Sumeragi::Verify::sendAll(std::move(event)); // TODO: Think In Process
                 }
 
                 setAwkTimer(3, [&](){
@@ -371,7 +380,7 @@ namespace sumeragi {
     * | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
     * |---|  |---|  |---|  |---|  |---|  |---|.
     */
-    void panic(const Event::ConsensusEvent& event) {
+    void panic(const ConsensusEvent& event) {
         context->panicCount++; // TODO: reset this later
         auto broadcastStart = 2 * context->maxFaulty + 1 + context->maxFaulty * context->panicCount;
         auto broadcastEnd   = broadcastStart + context->maxFaulty;

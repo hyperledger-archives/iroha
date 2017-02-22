@@ -28,8 +28,11 @@ limitations under the License.
 
 namespace merkle_transaction_repository {
 
+    using Api::ConsensusEvent;
+
     //TODO: change bool to throw an exception instead
-    bool commit(const Event::ConsensusEvent& event) {
+    bool commit(const ConsensusEvent& event) {
+        /*
         std::vector<std::tuple<std::string, std::string>> batchCommit
           = {
                 std::make_tuple("last_insertion", pevent->transaction().hash()),
@@ -39,6 +42,8 @@ namespace merkle_transaction_repository {
         calculateNewRootHash(event, batchCommit);
 
         return repository::world_state_repository::addBatch<std::string>(batchCommit);
+        */
+        return false;
     }
 
     bool leafExists(const std::string& hash) {
@@ -50,9 +55,9 @@ namespace merkle_transaction_repository {
     }
 
 
-    std::string calculateNewRootHash(const Event::ConsensusEvent& event,
+    std::string calculateNewRootHash(const ConsensusEvent& event,
                                      std::vector<std::tuple<std::string, std::string>> &batchCommit) {
-
+        /*
         std::string lastInsertion = repository::world_state_repository::find("last_insertion");
 
         if (lastInsertion.empty()) {
@@ -126,6 +131,8 @@ namespace merkle_transaction_repository {
             }
 
             return newParentHash;
+            */
+            return "WIP";
         }
     }
 };  // namespace merkle_transaction_repository

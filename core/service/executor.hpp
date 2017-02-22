@@ -15,11 +15,13 @@ limitations under the License.
 #ifndef IROHA_EXECUTOR_HPP_HPP
 #define IROHA_EXECUTOR_HPP_HPP
 
-#include <infra/protobuf/event.pb.h>
+#include <infra/protobuf/api.pb.h>
 
 namespace executor{
 
-    void execute(const Event::Transaction& tx){
+    using Api::Transaction;
+
+    void execute(const Transaction& tx){
         std::cout << "Executor\n";
     }
 
