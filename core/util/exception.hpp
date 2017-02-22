@@ -30,7 +30,14 @@ namespace exception {
 
   class NotImplementedException : public std::invalid_argument {
     public: NotImplementedException(
-      const std::string& message,
+      const std::string& functionName,
+      const std::string& filename
+    );
+  };
+
+  class BaseMethodException : public std::domain_error {
+    public: BaseMethodException(
+      const std::string& functionName,
       const std::string& filename
     );
   };

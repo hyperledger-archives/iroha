@@ -19,7 +19,9 @@ limitations under the License.
 #include <transaction_builder/transaction_builder.hpp>
 #include <util/exception.hpp>
 
-using transaction::TransactionBuilder;
+namespace txbuilder = transaction;
+
+using txbuilder::TransactionBuilder;
 using type_signatures::Add;
 using type_signatures::Domain;
 using type_signatures::Account;
@@ -27,154 +29,132 @@ using type_signatures::Asset;
 using type_signatures::SimpleAsset;
 using type_signatures::Peer;
 
+constexpr auto commandType = "Add";
+constexpr auto senderPublicKey = "sender public key";
+
 /***************************************************************************
   Add
  ***************************************************************************/
 TEST(transaction_builder, create_add_domain) {
-  Api::Domain domain;
-  domain.set_ownerpublickey("pubkey1");
-  domain.set_name("name");
+
+  const auto ownerPublicKey = "owner public key";
+  const auto name = "name";
+
   auto txDomain = TransactionBuilder<Add<Domain>>()
-    .setSenderPublicKey("karin")
-    .setDomain(domain)
+    .setSenderPublicKey(senderPublicKey)
+    .setDomain(txbuilder::createDomain(ownerPublicKey, name))
     .build();
 
-  ASSERT_STREQ(txDomain.senderpubkey().c_str(), "karin");
-  ASSERT_STREQ(txDomain.type().c_str(), "Add");
+  ASSERT_STREQ(txDomain.senderpubkey().c_str(), senderPublicKey);
+  ASSERT_STREQ(txDomain.type().c_str(), commandType);
 
   auto obj = txDomain.domain();
-  ASSERT_STREQ(obj.ownerpublickey().c_str(), "pubkey1");
-  ASSERT_STREQ(obj.name().c_str(), "name");
+  ASSERT_STREQ(obj.ownerpublickey().c_str(), ownerPublicKey);
+  ASSERT_STREQ(obj.name().c_str(), name);
 }
 
 TEST(transaction_builder, create_add_account) {
 
-  Api::Account account;
-  {
-    account.set_publickey("pubkey1");
-    account.set_name("name");
-  }
-
-  std::vector<std::string> assets = {
+  const auto publicKey = "public key";
+  const auto name = "name";
+  const std::vector<std::string> assets = {
     "asset1",
     "asset2"
   };
-  for (auto&& e: assets) {
-    account.add_assets(e);
-  }
+
   auto txAccount = TransactionBuilder<Add<Account>>()
-    .setSenderPublicKey("karin")
-    .setAccount(account)
+    .setSenderPublicKey(senderPublicKey)
+    .setAccount(txbuilder::createAccount(publicKey, name, assets))
     .build();
 
-  ASSERT_STREQ(txAccount.senderpubkey().c_str(), "karin");
-  ASSERT_STREQ(txAccount.type().c_str(), "Add");
+  ASSERT_STREQ(txAccount.senderpubkey().c_str(), senderPublicKey);
+  ASSERT_STREQ(txAccount.type().c_str(), commandType);
 
   auto obj = txAccount.account();
-  ASSERT_STREQ(obj.publickey().c_str(), "pubkey1");
-  ASSERT_STREQ(obj.name().c_str(), "name");
+  ASSERT_STREQ(obj.publickey().c_str(), publicKey);
+  ASSERT_STREQ(obj.name().c_str(), name);
   for (int i = 0; i < obj.assets_size(); i++) {
     ASSERT_STREQ(obj.assets(i).c_str(), assets[i].c_str());
   }
 }
 
 TEST(transaction_builder, create_add_asset) {
-  std::unordered_map<std::string, Api::BaseObject> value;
-  { 
-    {
-      Api::BaseObject baseObject;
-      baseObject.set_valuestring("value1");
-      value.emplace("key1", baseObject);
-    }
-    {
-      Api::BaseObject baseObject;
-      baseObject.set_valueint(123456);
-      value.emplace("key2", baseObject);
-    }
+
+  const auto domainID = "domainID";
+  const auto name = "name";
+
+  txbuilder::Map value;
+  {
+    value.emplace("key1", txbuilder::createValueString("value1"));
+    value.emplace("key2", txbuilder::createValueInt(123456));
   }
 
-  // Needs create helper function?
-  Api::Asset asset;
-  {
-    asset.set_domain("domainID");
-    asset.set_name("name");
-    google::protobuf::Map<std::string, Api::BaseObject> protoValue(value.begin(), value.end());
-    *asset.mutable_value() = protoValue;
-    asset.set_smartcontractname("contract_func");
-  }
+  const auto scName = "contract_func";
+
+  auto asset =
+      txbuilder::createAsset(domainID, name, value, scName);
 
   auto txAsset = TransactionBuilder<Add<Asset>>()
-    .setSenderPublicKey("karin")
-    .setAsset(asset)
-    .build();
+                     .setSenderPublicKey(senderPublicKey)
+                     .setAsset(std::move(asset))
+                     .build();
 
   // Verify
-  ASSERT_STREQ(txAsset.senderpubkey().c_str(), "karin");
-  ASSERT_STREQ(txAsset.type().c_str(), "Add");
+  ASSERT_STREQ(txAsset.senderpubkey().c_str(), senderPublicKey);
+  ASSERT_STREQ(txAsset.type().c_str(), commandType);
 
   auto obj = txAsset.asset();
-  ASSERT_STREQ(obj.domain().c_str(), "domainID");
-  ASSERT_STREQ(obj.name().c_str(), "name");
+  ASSERT_STREQ(obj.domain().c_str(), domainID);
+  ASSERT_STREQ(obj.name().c_str(), name);
 
   ASSERT_TRUE(obj.value().find("key1")->second.value_case() == Api::BaseObject::ValueCase::kValueString);
   ASSERT_TRUE(obj.value().find("key2")->second.value_case() == Api::BaseObject::ValueCase::kValueInt);
   ASSERT_STREQ(obj.value().find("key1")->second.valuestring().c_str(), "value1");
   ASSERT_TRUE(obj.value().find("key2")->second.valueint() == 123456);
-  ASSERT_STREQ(obj.smartcontractname().c_str(), "contract_func");
+  ASSERT_STREQ(obj.smartcontractname().c_str(), scName);
 }
 
 TEST(transaction_builder, create_add_peer) {
 
-  Api::Trust trust;
-  {
-    trust.set_value(1.23);
-  }
-
-  Api::Peer peer;
-  {
-    peer.set_publickey("publickey");
-    peer.set_address("address");
-    *peer.mutable_trust() = trust;
-  }
+  auto peer = txbuilder::createPeer(
+    "publickey",
+    "address",
+    txbuilder::createTrust(1.23, true)
+  );
 
   auto txPeer = TransactionBuilder<Add<Peer>>()
-    .setSenderPublicKey("karin")
-    .setPeer(peer)
+    .setSenderPublicKey(senderPublicKey)
+    .setPeer(std::move(peer))
     .build();
 
   // Verify
-  ASSERT_STREQ(txPeer.senderpubkey().c_str(), "karin");
-  ASSERT_STREQ(txPeer.type().c_str(), "Add");
+  ASSERT_STREQ(txPeer.senderpubkey().c_str(), senderPublicKey);
+  ASSERT_STREQ(txPeer.type().c_str(), commandType);
 
   auto obj = txPeer.peer();
   ASSERT_STREQ(obj.publickey().c_str(), "publickey");
   ASSERT_STREQ(obj.address().c_str(), "address");
   ASSERT_TRUE(obj.trust().value() == 1.23);
+  ASSERT_TRUE(obj.trust().isok()  == true);
 }
 
 TEST(transaction_builder, create_add_simpleasset) {
 
-  Api::BaseObject baseObject;
-  {
-    baseObject.set_valueint(123456);
-  }
-
-  Api::SimpleAsset simpleAsset;
-  {
-    simpleAsset.set_domain("domainID");
-    simpleAsset.set_name("name");
-    *simpleAsset.mutable_value() = baseObject;
-    simpleAsset.set_smartcontractname("contract_func");
-  }
+  auto simpleAsset = txbuilder::createSimpleAsset(
+    "domainID",
+    "name",
+    txbuilder::createValueInt(123456),
+    "contract_func"
+  );
 
   auto txSimpleAsset = TransactionBuilder<Add<SimpleAsset>>()
-    .setSenderPublicKey("karin")
-    .setSimpleAsset(simpleAsset)
+    .setSenderPublicKey(senderPublicKey)
+    .setSimpleAsset(std::move(simpleAsset))
     .build();
 
   // Verify
-  ASSERT_STREQ(txSimpleAsset.senderpubkey().c_str(), "karin");
-  ASSERT_STREQ(txSimpleAsset.type().c_str(), "Add");
+  ASSERT_STREQ(txSimpleAsset.senderpubkey().c_str(), senderPublicKey);
+  ASSERT_STREQ(txSimpleAsset.type().c_str(), commandType);
 
   auto obj = txSimpleAsset.simpleasset();
   ASSERT_STREQ(obj.domain().c_str(), "domainID");

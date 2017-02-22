@@ -33,6 +33,13 @@ namespace exception {
     std::invalid_argument("TODO: sorry [" + functionName + "] in " + filename + " is not yet implemented, would you like to contribute it?") {
   }
 
+  BaseMethodException::BaseMethodException(
+    const std::string& functionName,
+    const std::string& filename
+  ):
+    std::domain_error("BaseMethodException [" + functionName + "] in " + filename) {
+  }
+
   ParseFromStringException::ParseFromStringException(
     const std::string& filename
   ):

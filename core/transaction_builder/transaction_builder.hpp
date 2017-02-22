@@ -17,6 +17,8 @@ limitations under the License.
 #ifndef CORE_MODEL_TRANSACTION_BUILDER_HPP
 #define CORE_MODEL_TRANSACTION_BUILDER_HPP
 
+#include "helper/create_objects_helper.hpp"
+
 #include "add/add_domain_builder.hpp"
 #include "add/add_account_builder.hpp"
 #include "add/add_asset_builder.hpp"
