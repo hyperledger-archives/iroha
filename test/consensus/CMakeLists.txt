@@ -30,7 +30,6 @@ target_link_libraries(sumeragi_test
     objects
     base64
     signature
-    convertor
     sumeragi
     connection_with_grpc
     config_manager
@@ -47,7 +46,6 @@ target_link_libraries(transaction_test
     base64
     signature
     sumeragi
-    commands
     connection_with_grpc
     config_manager
     pthread

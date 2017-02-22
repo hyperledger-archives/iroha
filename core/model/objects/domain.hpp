@@ -22,15 +22,22 @@ limitations under the License.
 
 namespace object {
 
-class Domain{
-public:
+struct Domain{
     std::string ownerPublicKey;
     std::string name;
 
+    explicit Domain(const Domain* a):
+        ownerPublicKey(a->ownerPublicKey),
+        name(a->name)
+    {}
+
     explicit Domain(
-        std::string&& ownerPublicKey,
-        std::string&& name
-    );
+        std::string ownerPublicKey,
+        std::string name
+    ):
+        ownerPublicKey(std::move(ownerPublicKey)),
+        name(std::move(name))
+    {}
 
     explicit Domain():
         ownerPublicKey(""),

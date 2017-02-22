@@ -15,32 +15,39 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CORE_DOMAIN_TRANSFER_HPP_
-#define CORE_DOMAIN_TRANSFER_HPP_
-
-
-#include <model/objects/object.hpp>
+#ifndef IROHA_PEER_HPP
+#define IROHA_PEER_HPP
 
 #include <string>
-#include <iostream>
 
-namespace command {
+namespace object {
 
-    template<typename T>
-    struct Transfer : public T {
+    struct Peer{
 
-        std::string receiverPublicKey;
+        std::string publicKey;
+        std::string address;
 
-        template<typename... Args>
-        explicit Transfer(
-                std::string&& receiver,
-                Args&&... args
-        ):
-                T(std::forward<Args>(args)...),
-                receiverPublicKey(std::move(receiver))
+        explicit Peer(const Peer* a):
+            publicKey(a->publicKey),
+            address(a->address)
         {}
 
-    };  // namespace command
-};
-#endif  // CORE_DOMAIN_TRANSACTIONS_TRANSFERTRANSACTION_HPP_
+        explicit Peer(
+            std::string publicKey,
+            std::string address
+        ):
+            publicKey(std::move(publicKey)),
+            address(std::move(address))
+        {}
 
+        explicit Peer(
+            std::string publicKey
+        ):
+            publicKey(std::move(publicKey))
+        {}
+
+    };
+
+};  // namespace object
+
+#endif //IROHA_PEER_HPP

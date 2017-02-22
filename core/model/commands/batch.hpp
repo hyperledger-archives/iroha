@@ -1,5 +1,6 @@
 /*
 Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+http://soramitsu.co.jp
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,32 +14,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "asset.hpp"
-#include <iostream>
-#include <cstdint>
+#ifndef IROHA_BATCH_HPP
+#define IROHA_BATCH_HPP
 
-namespace object {
 
-Asset::Asset(
-    std::string     domain,
-    std::string     name,
-    std::uint64_t   value,
-    std::uint32_t   precision
-):
-    domain(std::move(domain)),
-    name(std::move(name)),
-    value(value),
-    precision(precision)
-{}
+#include <utility>
+#include <model/objects/object.hpp>
 
-Asset::Asset(
-    std::string     name,
-    std::uint64_t   value
-):
-    domain(""),
-    name(std::move(name)),
-    value(value),
-    precision(-1)
-{}
+namespace command {
 
-};  // namespace asset
+    template<typename T>
+    struct Batch: public T {
+
+        object::Object object;
+
+        template<typename... Args>
+        constexpr Batch(
+                Args&&... args
+        ):
+            T(std::forward<Args>(args)...)
+        {}
+
+    };
+
+};  // namespace command
+
+
+#endif //IROHA_BATCH_HPP

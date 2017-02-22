@@ -14,8 +14,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "update.hpp"
+#ifndef IROHA_REMOVE_HPP
+#define IROHA_REMOVE_HPP
 
 namespace command {
 
-}
+    template <typename T>
+    struct Remove: public T {
+        object::Object object;
+
+        template<typename... Args>
+        constexpr Remove(
+            Args&&... args
+        ):
+            T(std::forward<Args>(args)...)
+        {}
+    };
+
+};  // namespace command
+
+#endif //IROHA_REMOVE_HPP

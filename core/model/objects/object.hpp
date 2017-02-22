@@ -1,16 +1,71 @@
-//
-// Created by SonokoMizuki on 2016/11/01.
-//
+/*
+Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+http://soramitsu.co.jp
 
-#ifndef IROHA_OBJECTS_H
-#define IROHA_OBJECTS_H
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-#include <service/json_parse.hpp>
+     http://www.apache.org/licenses/LICENSE-2.0
 
-// Abstract
-class AbsObject {
-    virtual json_parse::Object dump() = 0;
-    virtual json_parse::Rule getJsonParseRule() = 0;
-};
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
-#endif //IROHA_OBJECTS_H
+#ifndef IROHA_OBJECT_HPP
+#define IROHA_OBJECT_HPP
+
+#include "account.hpp"
+#include "asset.hpp"
+#include "domain.hpp"
+#include "message.hpp"
+#include "simple_asset.hpp"
+#include "peer.hpp"
+
+namespace object {
+
+    enum class ObjectValueT : std::uint8_t {
+        null,
+        simpleAsset,
+        asset,
+        domain,
+        account,
+        message,
+        peer,
+    };
+
+
+    struct Object {
+        SimpleAsset*    simpleAsset;
+        Asset*          asset;
+        Domain*         domain;
+        Account*        account;
+        Message*        message;
+        Peer*           peer;
+
+        ObjectValueT type;
+
+        Object();
+
+        Object(SimpleAsset&& rhs);
+        Object(const Asset& rhs);
+        Object(const Domain& rhs);
+        Object(const Account& rhs);
+        Object(const Message& rhs);
+        Object(const Peer& rhs);
+
+        SimpleAsset* AsSimpleAsset();
+        Asset*       AsAsset();
+        Domain*      AsDomain();
+        Account*     AsAccount();
+        Message*     AsMessage();
+        Peer*        AsPeer();
+    };
+}
+
+
+
+#endif //IROHA_OBJECT_HPP

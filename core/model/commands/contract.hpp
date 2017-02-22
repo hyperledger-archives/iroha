@@ -1,5 +1,6 @@
 /*
 Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+http://soramitsu.co.jp
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,15 +14,32 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#ifndef IROHA_CONTRACT_HPP
+#define IROHA_CONTRACT_HPP
 
-#include "message.hpp"
+#include <string>
+#include <model/objects/object.hpp>
 
-namespace object {
+namespace command {
 
-Message::Message(
-   std::string text
-):
-    text(std::move(text))
-{}
+    template <typename T>
+    struct Contract: public T {
+        std::string contractName;
+        object::Object object;
 
-}
+        template<typename... Args>
+        explicit Contract(
+            std::string&& contractName,
+            Args&&... args
+        ):
+            T(std::forward<Args>(args)...),
+            contractName(std::move(contractName))
+        {}
+
+
+    };
+
+};  // namespace command
+
+
+#endif //IROHA_CONTRACT_HPP

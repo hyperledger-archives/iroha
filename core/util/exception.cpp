@@ -47,7 +47,14 @@ namespace exception {
     std::domain_error("InvalidCastException in " + filename + ". Cannot cast from " + from + " to " + to ) {
   }
 
-  namespace crypto {
+  InvalidCastException::InvalidCastException(
+    const std::string &meg,
+    const std::string &filename
+  ):
+    std::domain_error("InvalidCastException in " + filename + ". " + meg )
+  {}
+
+    namespace crypto {
     InvalidKeyException::InvalidKeyException(const std::string& message):
       std::invalid_argument("keyfile is invalid cause:" + message) {
     }

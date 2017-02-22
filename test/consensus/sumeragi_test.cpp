@@ -28,7 +28,6 @@ limitations under the License.
 #include <service/peer_service.hpp>
 #include <util/logger.hpp>
 #include <crypto/hash.hpp>
-#include <infra/protobuf/convertor.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 
 template<typename T>
@@ -86,19 +85,7 @@ int main(int argc, char *argv[]){
         if (argc >= 2 && std::string(argv[1]) == "public") {
             while (1) {
                 setAwkTimer(10, [&]() {
-                    auto event = std::make_unique<ConsensusEvent<Transaction<Update<object::Asset>>>>(
-                            config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                            config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                            "AssetName",
-                            100
-                    );
-                    event->addTxSignature(
-                            config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                            signature::sign(event->getHash(),
-                                            config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                                            config::PeerServiceConfig::getInstance().getMyPrivateKey()).c_str()
-                    );
-                    connection::send(config::PeerServiceConfig::getInstance().getMyIp(), convertor::encode(*event));
+
                 });
             }
         } else {
