@@ -27,8 +27,20 @@ limitations under the License.
 using PeerServiceConfig = config::PeerServiceConfig;
 using nlohmann::json;
 
+std::set<peer::Node> PeerServiceConfig::peerList;
 
 PeerServiceConfig::PeerServiceConfig() {}
+
+void PeerServiceConfig::initialziePeerList_from_json(){
+  if (!peerList.empty()) return;
+  if (auto config = openConfig(getConfigName())) {
+    for (const auto& peer : (*config)["group"].get<std::vector<json>>()) {
+      peerList.emplace( peer["ip"].get<std::string>(),
+                        peer["publicKey"].get<std::string>(),
+                        1);
+    }
+  }
+}
 
 PeerServiceConfig& PeerServiceConfig::getInstance() {
   static PeerServiceConfig serviceConfig;
@@ -57,17 +69,32 @@ std::string PeerServiceConfig::getMyIp() {
 }
 
 std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
+  initialziePeerList_from_json();
+
   std::vector<std::unique_ptr<peer::Node>> nodes;
-  if (auto config = openConfig(getConfigName())) {
-    for (const auto& peer : (*config)["group"].get<std::vector<json>>()) {
-      nodes.push_back(std::make_unique<peer::Node>(
-          peer["ip"].get<std::string>(), peer["publicKey"].get<std::string>(),
-          1));
-    }
-  }
+  for( auto &&node : peerList )
+    nodes.push_back( std::make_unique<peer::Node>( node.getIP(), node.getPublicKey(), node.getTrustScore() ) );
   return nodes;
 }
 
+void PeerServiceConfig::addPeer( peer::Node peer ) {
+  peerList.insert( peer );
+}
+
+void PeerServiceConfig::removePeer( peer::Node peer ) {
+  for( auto it = peerList.begin(); it != peerList.end(); it++ )
+      if( it->getPublicKey() == peer.getPublicKey() &&
+          it->getIP() == peer.getIP() ) {
+          peerList.erase( it ); break;
+      }
+}
+
+bool PeerServiceConfig::isLeaderMyPeer() {
+  if( peerList.empty() ) return false;
+
+  return peerList.rbegin()->getPublicKey() == getMyPublicKey() &&
+         peerList.rbegin()->getIP() == getMyIp();
+}
 
 void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
   try {

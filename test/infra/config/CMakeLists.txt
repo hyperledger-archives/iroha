@@ -14,8 +14,7 @@ link_directories(
 )
 
 add_executable(ensure_sumeragi_json_format_test
-    ensure_sumeragi_json_format.cpp
-)
+    ensure_sumeragi_json_format.cpp)
 target_link_libraries(ensure_sumeragi_json_format_test
     config_manager
     config_format
@@ -27,4 +26,18 @@ target_link_libraries(ensure_sumeragi_json_format_test
 add_test(
     NAME ensure_sumeragi_json_format_test
     COMMAND $<TARGET_FILE:ensure_sumeragi_json_format_test>
+)
+
+add_executable(peer_service_with_json_test
+    peer_service_with_json_test.cpp)
+target_link_libraries(peer_service_with_json_test
+    config_manager
+    config_format
+    ${GTEST_LIBS_DIR}/libgtest.a
+    ${GTEST_LIBS_DIR}/libgtest_main.a
+    pthread
+)
+add_test(
+    NAME peer_service_with_json_test
+    COMMAND $<TARGET_FILE:peer_service_with_json_test>
 )

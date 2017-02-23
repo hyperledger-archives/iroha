@@ -18,6 +18,7 @@ limitations under the License.
 #define PEER_SERVICE_WITH_JSON_HPP
 
 #include <vector>
+#include <set>
 #include <service/peer_service.hpp>
 #include "abstract_config_manager.hpp"
 
@@ -25,7 +26,9 @@ namespace config {
 
 class PeerServiceConfig : config::AbstractConfigManager {
  private:
+  static std::set<peer::Node> peerList;
   PeerServiceConfig();
+  void initialziePeerList_from_json();
 
  protected:
   void parseConfigDataFromString(std::string&& jsonStr) override;
@@ -38,6 +41,10 @@ class PeerServiceConfig : config::AbstractConfigManager {
   std::string getMyIp();
 
   std::vector<std::unique_ptr<peer::Node>> getPeerList();
+
+  void addPeer( peer::Node );
+  void removePeer( peer::Node );
+  bool isLeaderMyPeer();
 
   virtual std::string getConfigName();
 };
