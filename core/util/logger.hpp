@@ -54,6 +54,7 @@ namespace logger {
     struct LoggerName                                                           \
     {                                                                           \
         LoggerName(std::string&& caller) noexcept;                              \
+        LoggerName(const std::string& caller) noexcept;                         \
         ~LoggerName();                                                          \
         const std::string   caller;                                             \
         std::stringstream   stream;                                             \
@@ -68,6 +69,13 @@ namespace logger {
     inline LoggerName& operator << (LoggerName&& record, T&& t) {               \
         return record << std::forward<T>(t);                                    \
     }
+    /*
+    for convenience reflection
+    template <typename T>
+    inline std::string pack(std::string ns, std::string funcname) {
+        return ...;
+    }
+    */
 
     LOGGER_DEF(debug,   LogLevel::DEBUG,    true,   "DEBUG")
     LOGGER_DEF(info,    LogLevel::INFO,     true,   "INFO")

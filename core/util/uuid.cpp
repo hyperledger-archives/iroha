@@ -14,14 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __CORE_REPOSITORY_CONVERT_STRING_HPP__
-#define __CORE_REPOSITORY_CONVERT_STRING_HPP__
+#include <crypto/hash.hpp>
+#include <util/datatime.hpp>
+#include <util/random.hpp>
+#include "uuid.hpp"
 
-#include <sstream>
-#include <string>
+namespace uuid_service {
+  std::string createUuidByUnixTime() {
+    return hash::sha3_256_hex(std::to_string(unixtime()));
+  }
 
-namespace convert_string {
-std::string to_string(const std::vector<std::string>&);
-}
+  std::string createUuidByMTRandom() {
+    return random_service::makeHashByMT19937();
+  }
+};
 
-#endif

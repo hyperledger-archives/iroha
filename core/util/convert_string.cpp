@@ -14,14 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __CORE_REPOSITORY_CONVERT_STRING_HPP__
-#define __CORE_REPOSITORY_CONVERT_STRING_HPP__
-
+#include "convert_string.hpp"
 #include <sstream>
 #include <string>
 
 namespace convert_string {
-std::string to_string(const std::vector<std::string>&);
+std::string to_string(const std::vector<std::string> &vs) {
+  std::string ret = "[";
+  for (std::size_t i = 0; i < vs.size(); i++) {
+    if (i)
+      ret += ", ";
+    ret += e;
+  }
+  ret += "]";
+  return ret;
+}
 }
 
 #endif

@@ -71,6 +71,9 @@ namespace exception {
     class WriteFailedException : public std::invalid_argument {
       public: WriteFailedException(const std::string &);
     };
+    class DuplicateAddException : public std::invalid_argument {
+      public: DuplicateAddException(const std::string &);
+    };
   }
 
   namespace txbuilder {

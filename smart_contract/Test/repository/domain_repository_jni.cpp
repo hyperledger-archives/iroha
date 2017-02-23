@@ -54,7 +54,15 @@ std::vector<std::string> convertStringArrayRelease(jobjectArray javaArray_) {
   return ret;
 }
 
-// ref: https://android.googlesource.com/platform/frameworks/base.git/+/a3804cf77f0edd93f6247a055cdafb856b117eec/media/jni/android_media_MediaMetadataRetriever.cpp
+/*
+ * txbuilder::Map<std::string, Api::BaseObject> <-> HashMap<String, BaseObjectHashMap>
+ *      where BaseObjectHashMap := HashMap<Key, Value>
+ *          where
+ *              (Key, Value) = ("type", ValueTypeID)
+ *                  where ValueTypeID := "string", "int", "boolean" or "double"
+ *              (Key, Value) = ("value", Value}
+ *                  where Value := (some stringified value)
+ */
 std::unordered_map<std::string, std::string>
 convertHashMap(JNIEnv *env, jobject hashMapObj_) {
   /*
@@ -64,6 +72,7 @@ convertHashMap(JNIEnv *env, jobject hashMapObj_) {
           System.out.println(entry.getKey() + "/" + entry.getValue());
       }
    */
+  // ref: https://android.googlesource.com/platform/frameworks/base.git/+/a3804cf77f0edd93f6247a055cdafb856b117eec/media/jni/android_media_MediaMetadataRetriever.cpp
   jclass mapClass = env->FindClass("java/util/Map");
   if (mapClass == nullptr) {
     return {};
@@ -264,7 +273,10 @@ JNIEXPORT jstring JNICALL Java_test_repository_DomainRepository_assetAdd(
   env->ReleaseStringUTFChars(smartContract_, smartContractCString);
 
   const auto valueMapSS = detail::convertHashMap(env, value_);
-// creata_  helper
+  ::txbuilder::Map value;
+  for (auto&& e: valueMapSS) {
+    value.emplace(e.first, ffffffffffffffffe.second);
+  }
 
 /*
 std::string add(const std::string &domain, const std::string &name,

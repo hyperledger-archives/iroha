@@ -29,15 +29,6 @@ public class DomainRepository {
     public static native HashMap<String, String> accountFindByUuid(String uuid);
 
     // Asset
-    /*
-     * txbuilder::Map<std::string, Api::BaseObject> <-> HashMap<String, BaseObjectHashMap>
-     *      where BaseObjectHashMap := HashMap<Key, Value>
-     *          where
-     *              (Key, Value) = ("type", ValueTypeID)
-     *                  where ValueTypeID := "string", "int", "boolean" or "double"
-     *              (Key, Value) = ("value", Value}
-     *                  where Value := (some stringified value)
-     */
     public static native String assetAdd(String domain, String name, HashMap<String, HashMap<String, String>> value,
                 String smartContractName);
     public static native Boolean assetUpdate(String uuid, HashMap<String, HashMap<String, String>> value);

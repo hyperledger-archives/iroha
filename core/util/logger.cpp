@@ -28,6 +28,10 @@ namespace logger {
       : caller(std::move(caller)),                                                  \
         uncaught(STD_UNC_EXC())                                                     \
     {}                                                                              \
+    LoggerName::LoggerName(const std::string& caller) noexcept                      \
+      : caller(caller),                                                             \
+        uncaught(STD_UNC_EXC())                                                     \
+    {}                                                                              \
     LoggerName::~LoggerName() {                                                     \
         if  ( COND_UNC_EXC                                                          \
               &&                                                                    \

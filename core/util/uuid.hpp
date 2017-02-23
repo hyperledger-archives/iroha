@@ -14,14 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __CORE_REPOSITORY_CONVERT_STRING_HPP__
-#define __CORE_REPOSITORY_CONVERT_STRING_HPP__
+#ifndef __UUID_HPP_
+#define __UUID_HPP_
 
-#include <sstream>
-#include <string>
-
-namespace convert_string {
-std::string to_string(const std::vector<std::string>&);
-}
+namespace uuid_service {
+  std::string createUuidByUnixTime();
+  std::string createUuidByMTRandom();
+};
 
 #endif
