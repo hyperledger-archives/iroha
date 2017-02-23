@@ -19,9 +19,12 @@ limitations under the License.
 
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace convert_string {
 std::string to_string(const std::vector<std::string>&);
+std::string stringifyVector(const std::vector<std::string> &vs);
+std::vector<std::string> parseVector(const std::string &s);
 }
 
 #endif
