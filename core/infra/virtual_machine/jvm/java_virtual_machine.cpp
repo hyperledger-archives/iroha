@@ -19,7 +19,8 @@ limitations under the License.
 #include <array>
 #include "../../../util/logger.hpp"
 
-namespace smart_contract {
+namespace virtual_machine {
+namespace jvm {
 
     void Java_SmartContract_save(JNIEnv *env, jobject thiz, jstring key, jstring value) {
         const char *keyChar = env->GetStringUTFChars(key, 0);
@@ -161,5 +162,5 @@ namespace smart_contract {
         env->PopLocalFrame(hashMapObj);
         return hashMapObj;
     }
-
-};
+}
+}

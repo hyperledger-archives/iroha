@@ -12,8 +12,8 @@
 #include <iostream>
 #include <unordered_map>
 
-namespace smart_contract {
-
+namespace virtual_machine {
+namespace jvm {
     struct JavaContext {
         JNIEnv *env;
         JavaVM *jvm;
@@ -55,6 +55,7 @@ namespace smart_contract {
 
 
     JNIEXPORT jobject JNICALL JavaMakeMap(JNIEnv *env, std::unordered_map<std::string,std::string> mMap);
+}
 }
 
 #endif //IROHA_JAVA_VIRTUAL_MACHINE_HPP_HPP
