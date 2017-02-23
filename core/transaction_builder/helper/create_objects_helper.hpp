@@ -63,6 +63,40 @@ inline Api::Trust createTrust(double value, bool isOk) {
 
 using Map = std::unordered_map<std::string, Api::BaseObject>;
 
+std::string stringify(Api::BaseObject obj) {
+  switch (obj.value_case()) {
+  case Api::BaseObject::ValueCase::kValueString:
+    return obj.valuestring();
+  case Api::BaseObject::ValueCase::kValueInt:
+    return std::to_string(obj.valueint());
+  case Api::BaseObject::ValueCase::kValueBoolean:
+    return obj.valueboolean() ? std::string("true") : "false";
+  case Api::BaseObject::ValueCase::kValueDouble:
+    return std::to_string(obj.valuedouble());
+  default:
+    throw "invalid type exception";
+  }
+}
+
+inline std::string stringify(::txbuilder::Map m) {
+  std::string ret = "{";
+  for (auto &&e : m) {
+    ret += "(" + e.first + ", " + txbuilder::stringify(e.second) + "), ";
+  }
+  ret += "}";
+  return ret;
+}
+
+/*
+  Vector
+*/
+template <typename T> using Vector = ::google::protobuf::RepeatedPtrField<T>;
+
+template <typename T>
+inline std::vector<T> createStandardVector(const ::txbuilder::Vector& protov) {
+  return std::vector<T>(protov.begin(), protov.end());
+}
+
 /*
   Assets
 */
@@ -116,4 +150,5 @@ inline Api::Peer createPeer(std::string publicKey, std::string address,
   return ret;
 }
 }
+
 #endif

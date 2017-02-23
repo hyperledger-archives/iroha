@@ -21,9 +21,7 @@ ADD_LIBRARY(domain_repository STATIC
 target_link_libraries(domain_repository
   exception
   # connect infra
-  objects
   world_state_repo_with_level_db
   event_with_grpc
   protobuf
-  convertor
 )

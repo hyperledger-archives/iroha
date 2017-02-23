@@ -22,15 +22,27 @@ public class DomainRepository {
     }
 
     // Account
-    public static native void     accountUpdateQuantity(String uuid, String assetName, long newValue);
-    public static native void     accountAttach(String uuid, String assetName, long assetDefault);
-    public static native HashMap<String,String> accountFindByUuid(String uuid);
-    public static native String   accountAdd(String publicKey, String alias);
+    public static native String accountAdd(String publicKey, String name, String[] assets);
+    public static native Boolean accountAttach(String uuid, String asset);
+    public static native Boolean accountUpdate(String uuid, String[] assets);
+    public static native Boolean accountRemove(String uuid);
+    public static native HashMap<String, String> accountFindByUuid(String uuid);
 
     // Asset
-    public static native String   assetAdd(String publicKey, String assetName, String value);
-    public static native HashMap<String,String> assetFindByUuid(String key);
-    public static native void     assetUpdate(String publicKey, String assetName, String newValue);
-    public static native void     assetRemove(String publicKey, String assetName);
-
+    /*
+     * txbuilder::Map<std::string, Api::BaseObject> <-> HashMap<String, BaseObjectHashMap>
+     *      where BaseObjectHashMap := HashMap<Key, Value>
+     *          where
+     *              (Key, Value) = ("type", ValueTypeID)
+     *                  where ValueTypeID := "string", "int", "boolean" or "double"
+     *              (Key, Value) = ("value", Value}
+     *                  where Value := (some stringified value)
+     */
+    public static native String assetAdd(String domain, String name, HashMap<String, HashMap<String, String>> value,
+                String smartContractName);
+    public static native Boolean assetUpdate(String uuid, HashMap<String, HashMap<String, String>> value);
+    public static native Boolean assetRemove(String uuid);
+//    public static native HashMap<String,String>[] findAll(String uuid);
+    public static native HashMap<String, String> assetFindByUuid(String uuid);
+//    public static native Boolean assetExists(String uuid);
 }

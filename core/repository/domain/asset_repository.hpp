@@ -13,29 +13,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 #ifndef IROHA_ASSET_REPOSITORY_H
 #define IROHA_ASSET_REPOSITORY_H
 
+#include <infra/protobuf/api.pb.h>
+#include <transaction_builder/transaction_builder.hpp>
 #include <string>
 #include <vector>
-#include <model/objects/asset.hpp>
-#include <model/state/asset.hpp>
 
 namespace repository {
-    namespace asset {
-        
-        std::string add(const std::string& domainId, const std::string& assetName, const std::string& value);
-        bool update(const std::string& domainId, const std::string& assetName, const std::string& newValue);
-        bool remove(const std::string& domainId, const std::string& assetName);
-        std::vector <object::Asset> findAll(const std::string& key);
-
-        object::Asset findByUuid(const std::string& uuid);
-        
-        object::Asset findByUuidOrElse(const std::string& uuid, const object::Asset& defaultValue);
-
-        bool exists(std::string key);
-    }
+namespace asset {
+std::string add(const std::string &domain, const std::string &name,
+                const txbuilder::Map &value,
+                const std::string &smartContractName);
+bool update(const std::string &uuid, const txbuilder::Map &value);
+bool remove(const std::string &uuid);
+std::vector<Api::Asset> findAll(const std::string &uuid);
+Api::Asset findByUuid(const std::string &uuid);
+Api::Asset findByUuidOrElse(const std::string &uuid,
+                            const Api::Asset &defaultValue);
+bool exists(const std::string &uuid);
+}
 }
 
-
-#endif //IROHA_ASSET_REPOSITORY_H
+#endif // IROHA_ASSET_REPOSITORY_H

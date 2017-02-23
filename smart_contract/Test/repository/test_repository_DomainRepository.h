@@ -9,19 +9,35 @@ extern "C" {
 #endif
 /*
  * Class:     test_repository_DomainRepository
- * Method:    accountUpdateQuantity
- * Signature: (Ljava/lang/String;Ljava/lang/String;J)V
+ * Method:    accountAdd
+ * Signature: (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT void JNICALL Java_test_repository_DomainRepository_accountUpdateQuantity
-  (JNIEnv *, jclass, jstring, jstring, jlong);
+JNIEXPORT jstring JNICALL Java_test_repository_DomainRepository_accountAdd
+  (JNIEnv *, jclass, jstring, jstring, jobjectArray);
 
 /*
  * Class:     test_repository_DomainRepository
  * Method:    accountAttach
- * Signature: (Ljava/lang/String;Ljava/lang/String;J)V
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Boolean;
  */
-JNIEXPORT void JNICALL Java_test_repository_DomainRepository_accountAttach
-  (JNIEnv *, jclass, jstring, jstring, jlong);
+JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_accountAttach
+  (JNIEnv *, jclass, jstring, jstring);
+
+/*
+ * Class:     test_repository_DomainRepository
+ * Method:    accountUpdate
+ * Signature: (Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_accountUpdate
+  (JNIEnv *, jclass, jstring, jobjectArray);
+
+/*
+ * Class:     test_repository_DomainRepository
+ * Method:    accountRemove
+ * Signature: (Ljava/lang/String;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_accountRemove
+  (JNIEnv *, jclass, jstring);
 
 /*
  * Class:     test_repository_DomainRepository
@@ -33,19 +49,27 @@ JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_accountFindByUui
 
 /*
  * Class:     test_repository_DomainRepository
- * Method:    accountAdd
- * Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+ * Method:    assetAdd
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/util/HashMap;Ljava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_test_repository_DomainRepository_accountAdd
-  (JNIEnv *, jclass, jstring, jstring);
+JNIEXPORT jstring JNICALL Java_test_repository_DomainRepository_assetAdd
+  (JNIEnv *, jclass, jstring, jstring, jobject, jstring);
 
 /*
  * Class:     test_repository_DomainRepository
- * Method:    assetAdd
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+ * Method:    assetUpdate
+ * Signature: (Ljava/lang/String;Ljava/util/HashMap;)Ljava/lang/Boolean;
  */
-JNIEXPORT jstring JNICALL Java_test_repository_DomainRepository_assetAdd
-  (JNIEnv *, jclass, jstring, jstring, jstring);
+JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_assetUpdate
+  (JNIEnv *, jclass, jstring, jobject);
+
+/*
+ * Class:     test_repository_DomainRepository
+ * Method:    assetRemove
+ * Signature: (Ljava/lang/String;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_assetRemove
+  (JNIEnv *, jclass, jstring);
 
 /*
  * Class:     test_repository_DomainRepository
@@ -54,22 +78,6 @@ JNIEXPORT jstring JNICALL Java_test_repository_DomainRepository_assetAdd
  */
 JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_assetFindByUuid
   (JNIEnv *, jclass, jstring);
-
-/*
- * Class:     test_repository_DomainRepository
- * Method:    assetUpdate
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
- */
-JNIEXPORT void JNICALL Java_test_repository_DomainRepository_assetUpdate
-  (JNIEnv *, jclass, jstring, jstring, jstring);
-
-/*
- * Class:     test_repository_DomainRepository
- * Method:    assetRemove
- * Signature: (Ljava/lang/String;Ljava/lang/String;)V
- */
-JNIEXPORT void JNICALL Java_test_repository_DomainRepository_assetRemove
-  (JNIEnv *, jclass, jstring, jstring);
 
 #ifdef __cplusplus
 }
