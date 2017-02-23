@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <vm_interface/virtual_machine_interface.hpp>
+#include <virtual_machine/virtual_machine.hpp>
 #include <util/logger.hpp>
 #include <map>
 #include <string>
@@ -36,7 +36,7 @@ namespace smart_contract {
 
     using detail::pack;
 
-    void SmartContract::initializeVM(
+    void initializeVM(
         const std::string& packageName,
         const std::string& contractName
     ) {
@@ -51,7 +51,7 @@ namespace smart_contract {
         vmSet.emplace(NameId, smart_contract::initializeVM(packageName, contractName));
     }
 
-    void SmartContract::finishVM(
+    void finishVM(
         const std::string& packageName,
         const std::string& contractName
     ) {
@@ -62,7 +62,7 @@ namespace smart_contract {
         }
     }
 
-    void SmartContract::invokeFunction(
+    void invokeFunction(
         const std::string& packageName,
         const std::string& contractName,
         const std::string& functionName,
@@ -75,7 +75,7 @@ namespace smart_contract {
         }
     }
 
-    void SmartContract::invokeFunction(
+    void invokeFunction(
         const std::string& packageName,
         const std::string& contractName,
         const std::string& functionName

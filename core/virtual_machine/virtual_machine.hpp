@@ -17,18 +17,21 @@ limitations under the License.
 #ifndef VIRTUAL_MACHINE_INTERFACE_HPP
 #define VIRTUAL_MACHINE_INTERFACE_HPP
 
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 
-namespace smart_contract {
-    struct SmartContract {
-        void initializeVM(const std::string& packageName, const std::string& contractName);
-        void finishVM(const std::string& packageName, const std::string& contractName);
-        void invokeFunction(const std::string& packageName, const std::string& contractName,
-            const std::string& functionName, const std::unordered_map<std::string, std::string>& params);
-        void invokeFunction(const std::string& packageName, const std::string& contractName,
-            const std::string& functionName);
-    };
+namespace virtual_machine {
+
+void initializeVM(const std::string &packageName,
+                  const std::string &contractName);
+void finishVM(const std::string &packageName, const std::string &contractName);
+void invokeFunction(const std::string &packageName,
+                    const std::string &contractName,
+                    const std::string &functionName,
+                    const std::unordered_map<std::string, std::string> &params);
+void invokeFunction(const std::string &packageName,
+                    const std::string &contractName,
+                    const std::string &functionName);
 }
 
 #endif
