@@ -44,10 +44,10 @@ ELSE()
 ENDIF()
 
 
-# Executable smart_contract_java_test
-add_executable(smart_contract_java_test smart_contract_java_test.cpp)
-add_dependencies(smart_contract_java_test googletest)
-target_link_libraries(smart_contract_java_test
+# Executable java_query_repo_test
+add_executable(java_query_repo_test java_query_repo_test.cpp)
+add_dependencies(java_query_repo_test googletest)
+target_link_libraries(java_query_repo_test
   DomainRepository
   snappy
   leveldb
@@ -59,6 +59,6 @@ target_link_libraries(smart_contract_java_test
   ${GTEST_LIBS_DIR}/libgtest_main.a
   pthread)
 add_test(
-  NAME smart_contract_java_test
-  COMMAND $<TARGET_FILE:smart_contract_java_test>
+  NAME java_query_repo_test
+  COMMAND $<TARGET_FILE:java_query_repo_test>
 )

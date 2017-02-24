@@ -32,16 +32,16 @@ const std::string AssetNameTag = "assetName";
 const std::string AssetValueTag = "assetValue";
 const std::string SmartContractNameTag = "smartContractName";
 
-TEST(SmartContract, InitializeVM) {
+TEST(JavaQueryRepo, InitializeVM) {
   virtual_machine::initializeVM(PackageName, ContractName);
 }
 
-TEST(SmartContract, Invoke_JAVA_function) {
+TEST(JavaQueryRepo, Invoke_JAVA_function) {
   const std::string FunctionName = "test1";
   virtual_machine::invokeFunction(PackageName, ContractName, FunctionName);
 }
 
-TEST(SmartContract, Invoke_JAVA_function_map_argv) {
+TEST(JavaQueryRepo, Invoke_JAVA_function_map_argv) {
 
   const std::string FunctionName = "test2";
 
@@ -55,7 +55,7 @@ TEST(SmartContract, Invoke_JAVA_function_map_argv) {
                                   params);
 }
 
-TEST(SmartContract, Invoke_JAVA_function_map_utf_8) {
+TEST(JavaQueryRepo, Invoke_JAVA_function_map_utf_8) {
 
   const std::string FunctionName = "test3";
 
@@ -69,7 +69,7 @@ TEST(SmartContract, Invoke_JAVA_function_map_utf_8) {
                                   params);
 }
 
-TEST(SmartContract, Invoke_CPP_account_repo_function_FROM_JAVA_function) {
+TEST(JavaQueryRepo, Invoke_CPP_account_repo_function_FROM_JAVA_function) {
 
   const std::string FunctionName = "testAddAccount";
 
@@ -108,7 +108,7 @@ TEST(SmartContract, Invoke_CPP_account_repo_function_FROM_JAVA_function) {
   // (maybe "/tmp/iroha_ledger") then run test again.
 }
 
-TEST(SmartContract, Invoke_CPP_asset_repo_function_FROM_JAVA_function) {
+TEST(JavaQueryRepo, Invoke_CPP_asset_repo_function_FROM_JAVA_function) {
 
   const std::string FunctionName = "testAddAsset";
 
@@ -207,6 +207,6 @@ TEST(SmartContract, Invoke_CPP_asset_repo_function_FROM_JAVA_function) {
   ASSERT_STREQ(assetInfo[SmartContractNameTag].c_str(), asset.smartcontractname().c_str());
 }
 
-TEST(SmartContract, FinishVM) {
+TEST(JavaQueryRepo, FinishVM) {
   virtual_machine::finishVM(PackageName, ContractName);
 }
