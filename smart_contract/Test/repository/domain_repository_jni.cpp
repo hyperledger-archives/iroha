@@ -187,7 +187,7 @@ txbuilder::Map convertAssetValueMap(JNIEnv *env, jobject value_) {
     } else if (valueType == ValueTypeBoolean) {
       auto boolStr = content;
       std::transform(boolStr.begin(), boolStr.end(), boolStr.begin(),
-                     ::islower);
+                     ::tolower);
       ret.emplace(key, txbuilder::createValueBool(boolStr == "true"));
     } else if (valueType == ValueTypeDouble) {
       try {

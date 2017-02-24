@@ -71,15 +71,10 @@ using Map = std::map<std::string, Api::BaseObject>;
   BaseObject
 */
 
-const std::string PrefixString = "String_";
-const std::string PrefixInteger = "Integer_";
-const std::string PrefixBoolean = "Boolean_";
-const std::string PrefixDouble = "Double_";
-
 static std::string stringify(Api::BaseObject obj) {
   switch (obj.value_case()) {
   case Api::BaseObject::ValueCase::kValueString:
-    return PrefixString + obj.valuestring();
+    return obj.valuestring();
   case Api::BaseObject::ValueCase::kValueInt:
     return std::to_string(obj.valueint());
   case Api::BaseObject::ValueCase::kValueBoolean:
@@ -88,39 +83,6 @@ static std::string stringify(Api::BaseObject obj) {
     return std::to_string(obj.valuedouble());
   default:
     throw "invalid type exception";
-  }
-}
-
-namespace detail {
-
-static std::tuple<std::string, std::string> splitPrefixValue(const std::string &s) {
-  std::size_t mid = s.find("_");
-  if (mid == std::string::npos)
-    throw "Not found split mid point.";
-  if (mid + 1 >= s.size())
-    throw "Not found value";
-  return std::make_tuple(s.substr(0, mid), s.substr(mid + 1));
-}
-}
-
-static Api::BaseObject parse(std::string str) {
-  Api::BaseObject ret;
-  std::string prefix, value;
-  std::tie(prefix, value) = detail::splitPrefixValue(str);
-  if (prefix == PrefixString) {
-    return createValueString(value);
-  } else if (prefix == PrefixInteger) {
-    for (auto c: value) {
-      if (not isdigit(c)) throw "Value type mismatch";
-    }
-    return createValueInt(std::stoi(value));
-  } else if (prefix == PrefixBoolean) {
-    std::transform(value.begin(), value.end(), value.begin(), ::tolower);
-    return createValueBool(value == "true");
-  } else if (prefix == PrefixDouble) {
-    return createValueDouble(std::stod(value));
-  } else {
-    throw "Cannot parse value type from string.";
   }
 }
 

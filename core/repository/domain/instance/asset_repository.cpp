@@ -21,7 +21,7 @@ limitations under the License.
 #include <util/exception.hpp>
 #include <util/logger.hpp>
 
-constexpr auto NameSpaceID = "asset repository";
+const std::string NameSpaceID = "asset repository";
 
 namespace repository {
 namespace asset {
@@ -61,9 +61,8 @@ std::string add(const std::string &domain, const std::string &name,
                                << " smartContractName: " << smartContractName;
 
   const auto uuid = detail::createAssetUuid(domain, name);
-  const auto rval = world_state_repository::find(uuid);
 
-  if (rval.empty()) {
+  if (not exists(uuid)) {
     const auto strAsset = detail::stringifyAsset(
         txbuilder::createAsset(domain, name, value, smartContractName));
     if (world_state_repository::add(uuid, strAsset)) {
@@ -78,8 +77,8 @@ std::string add(const std::string &domain, const std::string &name,
  * Update<Asset>
  ********************************************************************************************/
 bool update(const std::string &uuid, const txbuilder::Map &value) {
-  const auto rval = world_state_repository::find(uuid);
-  if (not rval.empty()) {
+  if (exists(uuid)) {
+    const auto rval = world_state_repository::find(uuid);
     logger::explore(NameSpaceID) << "Update<Asset> uuid: " << uuid
                                  << txbuilder::stringify(value);
     auto asset = detail::parseAsset(rval);
@@ -96,8 +95,11 @@ bool update(const std::string &uuid, const txbuilder::Map &value) {
  * Remove<Asset>
  ********************************************************************************************/
 bool remove(const std::string &uuid) {
-  logger::explore(NameSpaceID) << "Remove<Asset> uuid: " << uuid;
-  return world_state_repository::remove(uuid);
+  if (exists(uuid)) {
+    logger::explore(NameSpaceID) << "Remove<Asset> uuid: " << uuid;
+    return world_state_repository::remove(uuid);
+  }
+  return false;
 }
 
 /********************************************************************************************
@@ -110,8 +112,8 @@ std::vector<Api::Asset> findAll(const std::string &uuid) {
 
 Api::Asset findByUuid(const std::string &uuid) {
 
+  logger::explore(NameSpaceID + "::findByUuid") << "";
   auto strAsset = world_state_repository::find(uuid);
-  logger::debug(NameSpaceID) << "findByUuid(): " << strAsset;
   if (not strAsset.empty()) {
     return detail::parseAsset(strAsset);
   }
@@ -124,9 +126,10 @@ Api::Asset findByUuidOrElse(const std::string &uuid,
   throw "asset repo :: findByUuidOrElse() is not implemented yet.";
 }
 
-// What's this usecase? Is more needed exists(publicKey) ?
 bool exists(const std::string &uuid) {
+  logger::explore(NameSpaceID + "::exists") << "";
   const auto rval = world_state_repository::find(uuid);
+  logger::explore(NameSpaceID + "::exists") << (not rval.empty() ? "true" : "false");
   return not rval.empty();
 }
 }

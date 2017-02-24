@@ -30,6 +30,7 @@ bool attach(const std::string &uuid, const std::string &asset);
 bool update(const std::string &uuid, const std::vector<std::string> &assets);
 bool remove(const std::string &uuid);
 Api::Account findByUuid(const std::string &uuid);
+bool exists(const std::string &uuid);
 }
 }
 #endif // CORE_REPOSITORY_MERKLETRANSACTIONREPOSITORY_HPP_

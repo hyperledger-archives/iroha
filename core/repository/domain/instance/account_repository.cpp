@@ -21,7 +21,7 @@ limitations under the License.
 #include <util/logger.hpp>
 #include <util/convert_string.hpp>
 
-constexpr auto NameSpaceID = "account repository";
+const std::string NameSpaceID = "account repository";
 
 namespace repository {
 namespace account {
@@ -67,9 +67,8 @@ std::string add(const std::string &publicKey, const std::string &name,
                                << " name: " << name << " assets: " << allAssets;
 
   const auto uuid = detail::createAccountUuid(publicKey);
-  const auto rval = world_state_repository::find(uuid);
 
-  if (rval.empty()) {
+  if (not world_state_repository::exists(uuid)) {
     const auto account = txbuilder::createAccount(publicKey, name, assets);
     const auto strAccount = detail::stringifyAccount(account);
     logger::debug(NameSpaceID) << "Add key: " << uuid << " strAccount: \""
@@ -87,12 +86,11 @@ std::string add(const std::string &publicKey, const std::string &name,
  ********************************************************************************************/
 bool attach(const std::string &uuid, const std::string &asset) {
 
-  const auto strAccount = world_state_repository::find(uuid);
-
-  if (strAccount.empty()) {
+  if (not exists(uuid)) {
     return false;
   }
 
+  const auto strAccount = world_state_repository::find(uuid);
   Api::Account account = detail::parseAccount(strAccount);
   account.add_assets(asset);
 
@@ -110,20 +108,13 @@ bool attach(const std::string &uuid, const std::string &asset) {
  ********************************************************************************************/
 bool update(const std::string &uuid, const std::vector<std::string> &assets) {
 
-  // for logger::explore
-  // This should be on util. It's better to be able to write each element string
-  // format.
-  const auto allAssets = [&] {
-    std::string ret;
-    for (const auto &e : assets)
-      ret += e + ", ";
-    return ret;
-  }();
+  const auto allAssets = convert_string::stringifyVector(assets);
 
   logger::explore(NameSpaceID) << "Update<Account> uuid: " << uuid
                                << " assets: " << allAssets;
-  const auto rval = world_state_repository::find(uuid);
-  if (not rval.empty()) {
+
+  if (exists(uuid)) {
+    const auto rval = world_state_repository::find(uuid);
     const auto account = detail::parseAccount(rval);
     const auto strAccount = detail::stringifyAccount(account);
     if (world_state_repository::update(uuid, strAccount)) {
@@ -139,20 +130,30 @@ bool update(const std::string &uuid, const std::vector<std::string> &assets) {
  * Remove<Account>
  ********************************************************************************************/
 bool remove(const std::string &uuid) {
-  logger::explore(NameSpaceID) << "Remove<Account> uuid: " << uuid;
-  return world_state_repository::remove(uuid);
+  if (exists(uuid)) {
+    logger::explore(NameSpaceID) << "Remove<Account> uuid: " << uuid;
+    return world_state_repository::remove(uuid);
+  }
+  return false;
 }
 
 /********************************************************************************************
  * find
  ********************************************************************************************/
 Api::Account findByUuid(const std::string &uuid) {
-  const auto strAccount = world_state_repository::find(uuid);
-  logger::debug(NameSpaceID) << "findByUuid(): " << strAccount;
-  if (not strAccount.empty()) {
+  if (exists(uuid)) {
+    const auto strAccount = world_state_repository::find(uuid);
+    logger::explore(NameSpaceID + "findByUuid") << "";
     return detail::parseAccount(strAccount);
   }
   return Api::Account();
+}
+
+bool exists(const std::string &uuid) {
+  logger::explore(NameSpaceID + "::exists") << "";
+  const auto rval = world_state_repository::find(uuid);
+  logger::explore(NameSpaceID + "::exists") << (not rval.empty() ? "true" : "false");
+  return not rval.empty();
 }
 }
 }
