@@ -67,11 +67,10 @@ std::string add(const std::string &publicKey, const std::string &name,
                                << " name: " << name << " assets: " << allAssets;
 
   const auto uuid = detail::createAccountUuid(publicKey);
-
-  if (not world_state_repository::exists(uuid)) {
+  if (not exists(uuid)) {
     const auto account = txbuilder::createAccount(publicKey, name, assets);
     const auto strAccount = detail::stringifyAccount(account);
-    logger::debug(NameSpaceID) << "Add key: " << uuid << " strAccount: \""
+    logger::debug(NameSpaceID) << "Save key: " << uuid << " strAccount: \""
                                << strAccount << "\"";
     if (world_state_repository::add(uuid, strAccount)) {
       return uuid;
@@ -150,10 +149,10 @@ Api::Account findByUuid(const std::string &uuid) {
 }
 
 bool exists(const std::string &uuid) {
-  logger::explore(NameSpaceID + "::exists") << "";
-  const auto rval = world_state_repository::find(uuid);
-  logger::explore(NameSpaceID + "::exists") << (not rval.empty() ? "true" : "false");
-  return not rval.empty();
+  const auto result = world_state_repository::exists(uuid);
+  logger::explore(NameSpaceID + "::exists")
+      << (result ? "true" : "false");
+  return result;
 }
 }
 }

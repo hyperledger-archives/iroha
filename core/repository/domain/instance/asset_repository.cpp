@@ -127,10 +127,10 @@ Api::Asset findByUuidOrElse(const std::string &uuid,
 }
 
 bool exists(const std::string &uuid) {
-  logger::explore(NameSpaceID + "::exists") << "";
-  const auto rval = world_state_repository::find(uuid);
-  logger::explore(NameSpaceID + "::exists") << (not rval.empty() ? "true" : "false");
-  return not rval.empty();
+  const auto result = world_state_repository::exists(uuid);
+  logger::explore(NameSpaceID + "::exists")
+      << (result ? "true" : "false");
+  return result;
 }
 }
 }
