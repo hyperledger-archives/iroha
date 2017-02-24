@@ -20,6 +20,7 @@ ADD_LIBRARY(domain_repository STATIC
 
 target_link_libraries(domain_repository
   exception
+  convert_string
   # connect infra
   world_state_repo_with_level_db
   event_with_grpc

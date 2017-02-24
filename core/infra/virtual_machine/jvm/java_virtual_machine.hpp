@@ -22,7 +22,7 @@ limitations under the License.
 #include <string>
 
 #include <iostream>
-#include <unordered_map>
+#include <map>
 
 namespace virtual_machine {
 namespace jvm {
@@ -57,7 +57,7 @@ namespace jvm {
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
         std::string functionName,
-        std::unordered_map<std::string, std::string> params
+        std::map<std::string, std::string> params
     );
 
     void execFunction(

@@ -21,8 +21,6 @@ limitations under the License.
 
 #include <gtest/gtest.h>
 
-using smart_contract::SmartContract;
-
 const std::string PackageName       = "test";
 const std::string ContractName      = "Test";
 const std::string PublicKeyTag      = "publicKey";
@@ -31,10 +29,8 @@ const std::string AccountNameTag    = "accountName";
 const std::string AssetNameTag      = "assetName";
 const std::string AssetValueTag     = "assetValue";
 
-SmartContract smartContract = SmartContract();
-
 TEST(SmartContract, InitializeVM) {
-    smartContract.initializeVM(
+    virtual_machine::initializeVM(
         PackageName,
         ContractName
     );    
@@ -44,7 +40,7 @@ TEST(SmartContract, Invoke_JAVA_function) {
 
     const std::string FunctionName = "test1";
 
-    smartContract.invokeFunction(
+    virtual_machine::invokeFunction(
         PackageName,
         ContractName,
         FunctionName
@@ -55,13 +51,13 @@ TEST(SmartContract, Invoke_JAVA_function_map_argv) {
 
     const std::string FunctionName = "test2";
 
-    std::unordered_map<std::string, std::string> params;
+    std::map<std::string, std::string> params;
     {
         params["key1"] = "Mizuki";
         params["key2"] = "Sonoko";
     }
 
-    smartContract.invokeFunction(
+    virtual_machine::invokeFunction(
         PackageName,
         ContractName,
         FunctionName,
@@ -73,13 +69,13 @@ TEST(SmartContract, Invoke_JAVA_function_map_utf_8) {
 
     const std::string FunctionName = "test3";
 
-    std::unordered_map<std::string, std::string> params;
+    std::map<std::string, std::string> params;
     {
         params["key1"] = "水樹";
         params["key2"] = "素子";
     }
 
-    smartContract.invokeFunction(
+    virtual_machine::invokeFunction(
         PackageName,
         ContractName,
         FunctionName,
@@ -91,13 +87,13 @@ TEST(SmartContract, Invoke_CPP_account_repo_function_FROM_JAVA_function) {
 
     const std::string FunctionName = "test_add_account";
 
-    std::unordered_map<std::string, std::string> params;
+    std::map<std::string, std::string> params;
     {
         params[PublicKeyTag]    = "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
         params[AccountNameTag]  = "MizukiSonoko";
     }
 
-    smartContract.invokeFunction(
+    virtual_machine::invokeFunction(
         PackageName,
         ContractName,
         FunctionName,
@@ -120,14 +116,15 @@ TEST(SmartContract, Invoke_CPP_asset_repo_function_FROM_JAVA_function) {
 
     const std::string FunctionName = "test_add_asset";
 
-    std::unordered_map<std::string, std::string> params;
+    std::map<std::string, std::string> params;
     {
         params[DomainIdTag]     = "A domain id";
         params[AssetNameTag]    = "Currency";
         params[AssetValueTag]   = "123456";
     }
 
-    smartContract.invokeFunction(
+    // ここの引数を増やす
+    virtual_machine::invokeFunction(
         PackageName,
         ContractName,
         FunctionName,
@@ -152,7 +149,7 @@ TEST(SmartContract, Invoke_CPP_asset_repo_function_FROM_JAVA_function) {
 }
 
 TEST(SmartContract, FinishVM) {
-    smartContract.finishVM(
+    virtual_machine::finishVM(
         PackageName,
         ContractName
     );    

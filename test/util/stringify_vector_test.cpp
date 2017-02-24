@@ -42,10 +42,10 @@ TEST(stringify_vector_test, stringify_parse) {
       vs.push_back(buf);
     }
 
-    auto str1 = stringifyVector(vs);
-    auto vec1 = parseVector(str1);
-    auto str2 = stringifyVector(vec1);
-    auto vec2 = parseVector(str2);
+    auto str1 = convert_string::stringifyVector(vs);
+    auto vec1 = convert_string::parseVector(str1);
+    auto str2 = convert_string::stringifyVector(vec1);
+    auto vec2 = convert_string::parseVector(str2);
 
     ASSERT_STREQ(str1.c_str(), str2.c_str());
     ASSERT_TRUE(vec1 == vec2);

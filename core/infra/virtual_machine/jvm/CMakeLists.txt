@@ -26,7 +26,16 @@ ELSE()
   )
 ENDIF()
 
-ADD_LIBRARY(java_virtual_machine STATIC java_virtual_machine.cpp)
+ADD_LIBRARY(java_data_structure STATIC
+  java_data_structure.cpp
+)
+target_link_libraries(java_data_structure
+  $ENV{JAVA_HOME}/jre/lib/amd64/server/libjvm.so
+)  
+
+ADD_LIBRARY(java_virtual_machine STATIC
+  java_virtual_machine.cpp
+)
 target_link_libraries(java_virtual_machine
   $ENV{JAVA_HOME}/jre/lib/amd64/server/libjvm.so
 )  

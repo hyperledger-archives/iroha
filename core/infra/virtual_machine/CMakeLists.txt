@@ -21,6 +21,7 @@ ENDIF()
 
 ADD_LIBRARY(virtual_machine_with_java STATIC virtual_machine_with_java.cpp)
 target_link_libraries(virtual_machine_with_java
+    java_data_structure
     java_virtual_machine
     logger
 )

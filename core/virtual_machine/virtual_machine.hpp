@@ -18,7 +18,7 @@ limitations under the License.
 #define VIRTUAL_MACHINE_INTERFACE_HPP
 
 #include <string>
-#include <unordered_map>
+#include <map>
 
 namespace virtual_machine {
 
@@ -28,7 +28,7 @@ void finishVM(const std::string &packageName, const std::string &contractName);
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName,
-                    const std::unordered_map<std::string, std::string> &params);
+                    const std::map<std::string, std::string> &params);
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName);

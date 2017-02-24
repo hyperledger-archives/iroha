@@ -61,7 +61,7 @@ void finishVM(const std::string &packageName, const std::string &contractName) {
 void invokeFunction(
     const std::string &packageName, const std::string &contractName,
     const std::string &functionName,
-    const std::unordered_map<std::string, std::string> &params) {
+    const std::map<std::string, std::string> &params) {
   const auto NameId = pack(packageName, contractName);
   if (vmSet.find(NameId) != vmSet.end()) {
     const auto &context = vmSet.at(NameId);

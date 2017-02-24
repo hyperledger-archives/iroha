@@ -15,7 +15,10 @@ add_executable(stringify_vector_test
 )
 add_dependencies(stringify_vector_test googletest)
 target_link_libraries(stringify_vector_test
-   ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread
+   ${GTEST_LIBS_DIR}/libgtest.a
+   ${GTEST_LIBS_DIR}/libgtest_main.a
+   pthread
+   convert_string
 )
 add_test(
     NAME stringify_vector_test

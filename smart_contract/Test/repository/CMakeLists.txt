@@ -25,7 +25,7 @@ add_library(DomainRepository SHARED
 target_link_libraries(DomainRepository
   leveldb
   domain_repository
-  java_virtual_machine
+  virtual_machine_with_java
   event_with_grpc
 )
 

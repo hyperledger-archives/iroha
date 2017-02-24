@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include <gtest/gtest.h>
-#include <map>]
+#include <map>
 
 #include <infra/virtual_machine/jvm/java_data_structure.hpp>
 
-JNI_Env *env;
+JNIEnv *env;
 JavaVM *jvm;
 
 TEST(java_data_structure_test, initializeJavaVM) {
@@ -66,7 +66,7 @@ TEST(java_data_structure_test, JavaMakeMapInMap) {
 
   auto javaHashMapInHashMap =
       virtual_machine::jvm::JavaMakeMap(env, paramsInParams);
-  auto cppMapInMap = virtual_machine::jvm::convertJavaHashMapValueMap(
+  auto cppMapInMap = virtual_machine::jvm::convertJavaHashMapValueHashMap(
       env, javaHashMapInHashMap);
 
   for (auto &&e : cppMapInMap) {

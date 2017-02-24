@@ -52,7 +52,7 @@ target_link_libraries(java_vm_test
   DomainRepository
   snappy
   leveldb
-  smart_contract_with_java
+  virtual_machine_with_java
   world_state_repo_with_level_db
   consensus_event
   jvm
