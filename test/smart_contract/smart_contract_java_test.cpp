@@ -150,20 +150,60 @@ TEST(SmartContract, Invoke_CPP_asset_repo_function_FROM_JAVA_function) {
   using virtual_machine::jvm::convertBaseObjectToMapString;
 
   Api::Asset asset;
+  asset.ParseFromString(received_asset_value);
+
   ASSERT_STREQ(assetInfo[DomainIdTag].c_str(), asset.domain().c_str());
   ASSERT_STREQ(assetInfo[AssetNameTag].c_str(), asset.name().c_str());
   for (auto &&e: assetValue) {
     std::map<std::string, std::string> lhs = e.second;
     Api::BaseObject rhsObj = asset.value().find(e.first)->second;
     std::map<std::string, std::string> rhs = convertBaseObjectToMapString(rhsObj);
-    ASSERT_TRUE(lhs == rhs);
+
+    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+
+    std::cout << "(" << lhs["type"] << ", " << lhs["value"] << ") vs "
+              << "(" << rhs["type"] << ", " << rhs["value"] << ")\n";
+
+    if (lhs["type"] != rhs["type"]) {
+      throw "Mismatch type";
+    }
+
+    if (lhs["type"] == "double") {
+      const auto lhsValue = std::stod(lhs["value"]);
+      const auto rhsValue = std::stod(rhs["value"]);
+      ASSERT_TRUE(abs(lhsValue - rhsValue) < 1e-5);
+    } else {
+      ASSERT_TRUE(lhs["value"] == rhs["value"]);
+    }
+
+    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
   }
+
   for (auto &&e: asset.value()) {
     std::map<std::string, std::string> lhs = assetValue.find(e.first)->second;
     Api::BaseObject rhsObj = e.second;
     std::map<std::string, std::string> rhs = convertBaseObjectToMapString(rhsObj);
-    ASSERT_TRUE(lhs == rhs);
+    
+    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+
+    std::cout << "(" << lhs["type"] << ", " << lhs["value"] << ") vs "
+              << "(" << rhs["type"] << ", " << rhs["value"] << ")\n";
+
+    if (lhs["type"] != rhs["type"]) {
+      throw "Mismatch type";
+    }
+
+    if (lhs["type"] == "double") {
+      const auto lhsValue = std::stod(lhs["value"]);
+      const auto rhsValue = std::stod(rhs["value"]);
+      ASSERT_TRUE(abs(lhsValue - rhsValue) < 1e-5);
+    } else {
+      ASSERT_TRUE(lhs["value"] == rhs["value"]);
+    }
+
+    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
   }
+
   ASSERT_STREQ(assetInfo[SmartContractNameTag].c_str(), asset.smartcontractname().c_str());
 }
 

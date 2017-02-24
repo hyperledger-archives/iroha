@@ -26,38 +26,34 @@ namespace jvm {
  * C++ to Java data structure
  *********************************************************************************************/
 
-jobject JavaMakeBoolean(JNIEnv *env, jboolean value) {
+JNIEXPORT jobject JNICALL JavaMakeBoolean(JNIEnv *env, jboolean value) {
   jclass booleanClass = env->FindClass("java/lang/Boolean");
   jmethodID methodID = env->GetMethodID(booleanClass, "<init>", "(Z)V");
   return env->NewObject(booleanClass, methodID, value);
 }
 
 // HashMap<String, String>
-JNIEXPORT jobject JNICALL JavaMakeMap(JNIEnv *env,
-                                      std::map<std::string, std::string> mMap) {
-  env->PushLocalFrame(256); // fix for local references
-  jclass hashMapClass = env->FindClass("java/util/HashMap");
-  jmethodID hashMapInit = env->GetMethodID(hashMapClass, "<init>", "(I)V");
-  jobject hashMapObj = env->NewObject(hashMapClass, hashMapInit, mMap.size());
-  jmethodID hashMapOut = env->GetMethodID(
-      hashMapClass, "put",
-      "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+JNIEXPORT jobject JNICALL JavaMakeMap(JNIEnv *env, std::map<std::string,std::string> mMap) {
+    jclass hashMapClass= env->FindClass( "java/util/HashMap" );
+    jmethodID hashMapInit = env->GetMethodID( hashMapClass, "<init>", "(I)V");
+    jobject hashMapObj = env->NewObject( hashMapClass, hashMapInit, mMap.size());
+    jmethodID hashMapOut = env->GetMethodID( hashMapClass, "put",
+                "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 
-  for (auto it : mMap) {
-    env->CallObjectMethod(hashMapObj, hashMapOut,
-                          env->NewStringUTF(it.first.c_str()),
-                          env->NewStringUTF(it.second.c_str()));
-  }
+    for (auto it : mMap)
+    {
+        env->CallObjectMethod( hashMapObj, hashMapOut,
+             env->NewStringUTF(it.first.c_str()),
+             env->NewStringUTF(it.second.c_str()));
+    }
 
-  env->PopLocalFrame(hashMapObj);
-  return hashMapObj;
+    return hashMapObj;
 }
 
 // HashMap<String, HashMap<String, String>>
 JNIEXPORT jobject JNICALL
 JavaMakeMap(JNIEnv *env,
             std::map<std::string, std::map<std::string, std::string>> mMap) {
-  env->PushLocalFrame(256); // fix for local references
   jclass hashMapClass = env->FindClass("java/util/HashMap");
   jmethodID hashMapInit = env->GetMethodID(hashMapClass, "<init>", "(I)V");
   jobject hashMapObj = env->NewObject(hashMapClass, hashMapInit, mMap.size());
@@ -71,7 +67,6 @@ JavaMakeMap(JNIEnv *env,
                           JavaMakeMap(env, it.second));
   }
 
-  env->PopLocalFrame(hashMapObj);
   return hashMapObj;
 }
 
@@ -120,7 +115,7 @@ JNIEXPORT jobject JNICALL JavaMakeAssetValueMap(JNIEnv *env, const txbuilder::Ma
 std::map<std::string, std::string>
 convertJavaHashMapValueString(JNIEnv *env, jobject hashMapObj_) {
 
-  env->PushLocalFrame(256);
+//  env->PushLocalFrame(256);
 
   jclass mapClass = env->FindClass("java/util/Map");
   jmethodID entrySet =
@@ -164,7 +159,7 @@ convertJavaHashMapValueString(JNIEnv *env, jobject hashMapObj_) {
     env->ReleaseStringUTFChars(key, keyStr);
   }
 
-  env->PopLocalFrame(nullptr);
+//  env->PopLocalFrame(nullptr);
 
   return ret;
 }

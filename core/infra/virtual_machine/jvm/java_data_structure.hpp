@@ -27,7 +27,7 @@ limitations under the License.
 namespace virtual_machine {
 namespace jvm {
 
-jobject JavaMakeBoolean(JNIEnv *env, jboolean value);
+JNIEXPORT jobject JNICALL JavaMakeBoolean(JNIEnv *env, jboolean value);
 JNIEXPORT jobject JNICALL JavaMakeMap(JNIEnv *env, std::map<std::string,std::string> mMap);
 JNIEXPORT jobject JNICALL JavaMakeMap(JNIEnv *env, std::map<std::string,std::map<std::string,std::string>> mMap);
 JNIEXPORT jobject JNICALL JavaMakeAssetValueMap(JNIEnv *env, const txbuilder::Map& value);

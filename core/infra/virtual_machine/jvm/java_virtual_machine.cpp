@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <assert.h>
 #include <algorithm>
 #include <array>
 #include "../../../util/logger.hpp"
@@ -140,9 +141,26 @@ namespace jvm {
         std::map<std::string, std::map<std::string, std::string>> params2
     ) {
         jobject jmap = JavaMakeMap( context->env, params );
+
+        auto temp = convertJavaHashMapValueString(context->env, jmap);
+        for (auto e: temp) {
+            std::cout << e.first << " / " << e.second << std::endl;
+        }
+
+        assert(temp == params);
+
+
         jobject jmapInMap = JavaMakeMap( context->env, params2 );
 
-    fffffffffffff        auto temp = convertJavaHashMapValueString(env, jmap);
+        auto temp2 = convertJavaHashMapValueHashMap(context->env, jmapInMap);
+        for (auto e: temp2) {
+            std::cout << e.first << " / ";
+            for (auto u: e.second) {
+                std::cout << "  " << u.first << ", " << u.second << std::endl;
+            }
+        }
+
+        assert(temp2 == params2);
 
         jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/util/HashMap;Ljava/util/HashMap;)V");
         if (mid == nullptr) {
@@ -151,6 +169,9 @@ namespace jvm {
         }
 
         context->env->CallVoidMethod(context->jObject, mid, jmap, jmapInMap);
+
+        context->env->DeleteLocalRef(jmap);
+        context->env->DeleteLocalRef(jmapInMap);
     }
 
     void execFunction(
