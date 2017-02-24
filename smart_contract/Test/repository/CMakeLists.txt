@@ -27,6 +27,7 @@ target_link_libraries(DomainRepository
   domain_repository
   virtual_machine_with_java
   event_with_grpc
+  create_objects_helper
 )
 
 add_custom_command(TARGET DomainRepository

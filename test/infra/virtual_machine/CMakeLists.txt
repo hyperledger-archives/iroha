@@ -12,8 +12,12 @@ ENDIF()
 
 include_directories(
     ${GTEST_INCLUDE_DIR}
-    ${PROJECT_SOURCE_DIR}/core
     $ENV{JAVA_HOME}/include
+    ${PROJECT_SOURCE_DIR}/core
+)
+
+link_directories(
+    ${PROJECT_SOURCE_DIR}/core/infra/crypto
 )
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -30,16 +34,17 @@ ELSE()
   )
 ENDIF()
 
-
 add_executable(java_data_structure_test
     java_data_structure_test.cpp
 )
 add_dependencies(java_data_structure_test googletest)
 target_link_libraries(java_data_structure_test
-   ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread
-)
-target_link_libraries(java_data_structure_test
+  hash
+  create_objects_helper
   virtual_machine_with_java
+  ${GTEST_LIBS_DIR}/libgtest.a
+  ${GTEST_LIBS_DIR}/libgtest_main.a
+  pthread
 )
 add_test(
     NAME java_data_structure_test

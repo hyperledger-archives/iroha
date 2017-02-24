@@ -31,6 +31,7 @@ ADD_LIBRARY(java_data_structure STATIC
 )
 target_link_libraries(java_data_structure
   $ENV{JAVA_HOME}/jre/lib/amd64/server/libjvm.so
+  create_objects_helper
 )  
 
 ADD_LIBRARY(java_virtual_machine STATIC

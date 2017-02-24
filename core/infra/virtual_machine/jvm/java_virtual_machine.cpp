@@ -113,7 +113,9 @@ namespace jvm {
         );
     }
 
-
+    // Tempolary implementation.
+    // If variadic types of parameters are needed, consider to use JSON, I think.
+    // I think it is hard for Java program to use HashMap only.
 
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
@@ -128,7 +130,45 @@ namespace jvm {
             return;
         }
 
-        context->env->CallVoidMethod(context->jObject, mid, jmap );
+        context->env->CallVoidMethod(context->jObject, mid, jmap);
+    }
+
+    void execFunction(
+        const std::unique_ptr<JavaContext> &context,
+        std::string functionName,
+        std::map<std::string, std::string> params,
+        std::map<std::string, std::map<std::string, std::string>> params2
+    ) {
+        jobject jmap = JavaMakeMap( context->env, params );
+        jobject jmapInMap = JavaMakeMap( context->env, params2 );
+
+    fffffffffffff        auto temp = convertJavaHashMapValueString(env, jmap);
+
+        jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/util/HashMap;Ljava/util/HashMap;)V");
+        if (mid == nullptr) {
+            std::cout << "could not get method : " << functionName << std::endl;
+            return;
+        }
+
+        context->env->CallVoidMethod(context->jObject, mid, jmap, jmapInMap);
+    }
+
+    void execFunction(
+        const std::unique_ptr<JavaContext> &context,
+        std::string functionName,
+        std::map<std::string, std::string> params,
+        std::vector<std::string> params2
+    ) {
+        jobject jmap = JavaMakeMap( context->env, params );
+        jobject jarr = JavaMakeStringArray( context->env, params2 );
+
+        jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/util/HashMap;[Ljava/lang/String;)V");
+        if (mid == nullptr) {
+            std::cout << "could not get method : " << functionName << std::endl;
+            return;
+        }
+
+        context->env->CallVoidMethod(context->jObject, mid, jmap, jarr);
     }
 
     void execFunction(

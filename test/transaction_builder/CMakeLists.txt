@@ -23,6 +23,7 @@ add_executable(transaction_builder_test
 target_link_libraries(transaction_builder_test
     event_with_grpc
     exception
+    create_objects_helper
     ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread
 )
 

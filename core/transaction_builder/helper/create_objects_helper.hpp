@@ -17,8 +17,8 @@ limitations under the License.
 #ifndef CORE_TRANSACTION_BUILDER_CREATE_OBJECTS_HPP
 #define CORE_TRANSACTION_BUILDER_CREATE_OBJECTS_HPP
 
-#include <assert.h>
 #include <algorithm>
+#include <assert.h>
 #include <tuple>
 
 #include <infra/protobuf/api.pb.h>
@@ -30,70 +30,24 @@ namespace txbuilder {
   Primitives
 */
 
-static Api::BaseObject createValueString(std::string val) {
-  Api::BaseObject ret;
-  ret.set_valuestring(std::move(val));
-  return ret;
-}
-
-static Api::BaseObject createValueInt(int val) {
-  Api::BaseObject ret;
-  ret.set_valueint(static_cast<::google::protobuf::int64>(val));
-  return ret;
-}
-
-static Api::BaseObject createValueBool(bool val) {
-  Api::BaseObject ret;
-  ret.set_valueboolean(val);
-  return ret;
-}
-
-static Api::BaseObject createValueDouble(double val) {
-  Api::BaseObject ret;
-  ret.set_valuedouble(val);
-  return ret;
-}
-
-static Api::Trust createTrust(double value, bool isOk) {
-  Api::Trust ret;
-  ret.set_value(value);
-  ret.set_isok(isOk);
-  return ret;
-}
+Api::BaseObject createValueString(std::string val);
+Api::BaseObject createValueInt(int val);
+Api::BaseObject createValueBool(bool val);
+Api::BaseObject createValueDouble(double val);
+Api::Trust createTrust(double value, bool isOk);
 
 /*
   Map
 */
 
 using Map = std::map<std::string, Api::BaseObject>;
+std::string stringify(::txbuilder::Map m);
 
 /*
   BaseObject
 */
 
-static std::string stringify(Api::BaseObject obj) {
-  switch (obj.value_case()) {
-  case Api::BaseObject::ValueCase::kValueString:
-    return obj.valuestring();
-  case Api::BaseObject::ValueCase::kValueInt:
-    return std::to_string(obj.valueint());
-  case Api::BaseObject::ValueCase::kValueBoolean:
-    return obj.valueboolean() ? std::string("true") : "false";
-  case Api::BaseObject::ValueCase::kValueDouble:
-    return std::to_string(obj.valuedouble());
-  default:
-    throw "invalid type exception";
-  }
-}
-
-static std::string stringify(::txbuilder::Map m) {
-  std::string ret = "{";
-  for (auto &&e : m) {
-    ret += "(" + e.first + ", " + txbuilder::stringify(e.second) + "), ";
-  }
-  ret += "}";
-  return ret;
-}
+std::string stringify(Api::BaseObject obj);
 
 /*
   Vector
@@ -101,62 +55,20 @@ static std::string stringify(::txbuilder::Map m) {
 template <typename T> using Vector = ::google::protobuf::RepeatedPtrField<T>;
 
 template <typename T>
-inline std::vector<T>
-createStandardVector(const ::txbuilder::Vector<T> &protov) {
+inline std::vector<T> createStandardVector(const ::txbuilder::Vector<T> &protov) {
   return std::vector<T>(protov.begin(), protov.end());
 }
 
-/*
-  Assets
-*/
-static Api::Domain createDomain(std::string ownerPublicKey, std::string name) {
-  Api::Domain ret;
-  ret.set_ownerpublickey(std::move(ownerPublicKey));
-  ret.set_name(std::move(name));
-  return ret;
-}
-
-static Api::Account createAccount(std::string publicKey, std::string name,
-                                  std::vector<std::string> assets) {
-  Api::Account ret;
-  ret.set_publickey(std::move(publicKey));
-  ret.set_name(std::move(name));
-  *ret.mutable_assets() = ::google::protobuf::RepeatedPtrField<std::string>(
-      assets.begin(), assets.end());
-  return ret;
-}
-
-static Api::Asset createAsset(std::string domain, std::string name,
-                              ::txbuilder::Map value,
-                              std::string smartContractName) {
-  Api::Asset ret;
-  ret.set_domain(std::move(domain));
-  ret.set_name(std::move(name));
-  *ret.mutable_value() = ::google::protobuf::Map<std::string, Api::BaseObject>(
-      value.begin(), value.end());
-  ret.set_smartcontractname(std::move(smartContractName));
-  return ret;
-}
-
-static Api::SimpleAsset createSimpleAsset(std::string domain, std::string name,
-                                          Api::BaseObject value,
-                                          std::string smartContractName) {
-  Api::SimpleAsset ret;
-  ret.set_domain(std::move(domain));
-  ret.set_name(std::move(name));
-  *ret.mutable_value() = std::move(value);
-  ret.set_smartcontractname(std::move(smartContractName));
-  return ret;
-}
-
-static Api::Peer createPeer(std::string publicKey, std::string address,
-                            Api::Trust trust) {
-  Api::Peer ret;
-  ret.set_publickey(std::move(publicKey));
-  ret.set_address(std::move(address));
-  *ret.mutable_trust() = std::move(trust);
-  return ret;
-}
-}
+Api::Domain createDomain(std::string ownerPublicKey, std::string name);
+Api::Account createAccount(std::string publicKey, std::string name,
+                           std::vector<std::string> assets);
+Api::Asset createAsset(std::string domain, std::string name,
+                       ::txbuilder::Map value, std::string smartContractName);
+Api::SimpleAsset createSimpleAsset(std::string domain, std::string name,
+                                   Api::BaseObject value,
+                                   std::string smartContractName);
+Api::Peer createPeer(std::string publicKey, std::string address,
+                     Api::Trust trust);
+} // namespace txbuilder
 
 #endif

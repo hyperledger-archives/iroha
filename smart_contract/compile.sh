@@ -1,3 +1,5 @@
+rm $IROHA_HOME/smart_contract/Test/Test.class
+
 javac -encoding UTF-8 \
   $IROHA_HOME/smart_contract/Test/repository/DomainRepository.java \
   $IROHA_HOME/smart_contract/Test/Test.java

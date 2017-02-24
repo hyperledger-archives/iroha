@@ -14,11 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "java_data_structure.hpp"
+#include <transaction_builder/helper/create_objects_helper.hpp>
 #include <map>
+
+#include "java_data_structure.hpp"
 
 namespace virtual_machine {
 namespace jvm {
+
+/*********************************************************************************************
+ * C++ to Java data structure
+ *********************************************************************************************/
 
 jobject JavaMakeBoolean(JNIEnv *env, jboolean value) {
   jclass booleanClass = env->FindClass("java/lang/Boolean");
@@ -93,17 +99,29 @@ JavaMakeStringArray(JNIEnv *env, const std::vector<std::string> &vec) {
   return ret;
 }
 
+JNIEXPORT jobject JNICALL JavaMakeAssetValueMap(JNIEnv *env, const txbuilder::Map& value) {
+
+  // txbuilder::Map<string, Api::BaseObject> -> map<string, map<string, string>>
+  std::map<std::string, std::map<std::string, std::string>> cppMapInMap;
+  for (const auto &e : value) {
+    const auto &key = e.first;
+    cppMapInMap.emplace(key, convertBaseObjectToMapString(e.second));
+  }
+
+  // map<string, map<string, string>>
+  // -> HashMap<String, HashMap<String,String>>
+  return JavaMakeMap(env, cppMapInMap);
+}
+
+/*********************************************************************************************
+ * Java to C++ data structure
+ *********************************************************************************************/
+
 std::map<std::string, std::string>
 convertJavaHashMapValueString(JNIEnv *env, jobject hashMapObj_) {
-  /*
-    Map<String, String> map = ...
-    for (Map.Entry<String, String> entry : map.entrySet())
-    {
-        ...
-    }
-   */
-  // ref:
-  // https://android.googlesource.com/platform/frameworks/base.git/+/a3804cf77f0edd93f6247a055cdafb856b117eec/media/jni/android_media_MediaMetadataRetriever.cpp
+
+  env->PushLocalFrame(256);
+
   jclass mapClass = env->FindClass("java/util/Map");
   jmethodID entrySet =
       env->GetMethodID(mapClass, "entrySet", "()Ljava/util/Set;");
@@ -143,26 +161,19 @@ convertJavaHashMapValueString(JNIEnv *env, jobject hashMapObj_) {
     ret[std::string(keyStr)] = std::string(valueStr);
 
     env->ReleaseStringUTFChars(value, valueStr);
-    env->DeleteLocalRef(value);
-
-    env->DeleteLocalRef(entry);
     env->ReleaseStringUTFChars(key, keyStr);
-    env->DeleteLocalRef(key);
   }
+
+  env->PopLocalFrame(nullptr);
+
   return ret;
 }
 
 std::map<std::string, std::map<std::string, std::string>>
 convertJavaHashMapValueHashMap(JNIEnv *env, jobject hashMapObj_) {
-  /*
-    Map<String, String> map = ...
-    for (Map.Entry<String, String> entry : map.entrySet())
-    {
-        ...
-    }
-   */
-  // ref:
-  // https://android.googlesource.com/platform/frameworks/base.git/+/a3804cf77f0edd93f6247a055cdafb856b117eec/media/jni/android_media_MediaMetadataRetriever.cpp
+
+  env->PushLocalFrame(256);  
+
   jclass mapClass = env->FindClass("java/util/Map");
   jmethodID entrySet =
       env->GetMethodID(mapClass, "entrySet", "()Ljava/util/Set;");
@@ -195,11 +206,119 @@ convertJavaHashMapValueHashMap(JNIEnv *env, jobject hashMapObj_) {
     jobject value = (jobject)env->CallObjectMethod(entry, getValue);
     ret[std::string(keyStr)] = convertJavaHashMapValueString(env, value);
 
-    env->DeleteLocalRef(entry);
     env->ReleaseStringUTFChars(key, keyStr);
-    env->DeleteLocalRef(key);
   }
+
+  env->PopLocalFrame(nullptr);
+
   return ret;
 }
+
+/**********************************************************************
+ * txbuilder::Map<std::string, Api::BaseObject>
+ * <-> HashMap<String, HashMap<String, String>>
+ **********************************************************************/
+namespace valueType {
+
+const std::string String = "string";
+const std::string Int = "int";
+const std::string Boolean = "boolean";
+const std::string Double = "double";
+
+} // namespace valueTypes
+
+txbuilder::Map convertAssetValueMap(JNIEnv *env, jobject value_) {
+
+  txbuilder::Map ret;
+
+  std::map<std::string, std::map<std::string, std::string>> valueMapSM =
+      convertJavaHashMapValueHashMap(env, value_);
+
+  for (auto &e : valueMapSM) {
+    const auto &key = e.first;
+    auto &baseObjectMap = e.second;
+    const auto valueType = baseObjectMap["type"];
+    const auto content = baseObjectMap["value"];
+    if (valueType == valueType::String) {
+      ret.emplace(key, txbuilder::createValueString(content));
+    } else if (valueType == valueType::Int) {
+      try {
+        ret.emplace(key, txbuilder::createValueInt(std::stoi(content)));
+      } catch (std::invalid_argument) {
+        throw "Value type mismatch: expected int";
+      }
+    } else if (valueType == valueType::Boolean) {
+      auto boolStr = content;
+      std::transform(boolStr.begin(), boolStr.end(), boolStr.begin(),
+                     ::tolower);
+      ret.emplace(key, txbuilder::createValueBool(boolStr == "true"));
+    } else if (valueType == valueType::Double) {
+      try {
+        ret.emplace(key, txbuilder::createValueDouble(std::stod(content)));
+      } catch (std::invalid_argument) {
+        throw "Value type mismatch: expected double";
+      }
+    } else {
+      throw "Unknown value type";
+    }
+  }
+
+  return ret;
 }
+
+/*********************************************************************************************
+ * Api::BaseObject <-> C++ string map
+ *********************************************************************************************/
+
+std::map<std::string, std::string>
+convertBaseObjectToMapString(const Api::BaseObject &value) {
+
+  std::map<std::string, std::string> baseObjectMap;
+
+  switch (value.value_case()) {
+  case Api::BaseObject::kValueString:
+    baseObjectMap.emplace("type", valueType::String);
+    baseObjectMap.emplace("value", value.valuestring());
+    break;
+  case Api::BaseObject::kValueInt:
+    baseObjectMap.emplace("type", valueType::Int);
+    baseObjectMap.emplace("value", std::to_string(value.valueint()));
+    break;
+  case Api::BaseObject::kValueBoolean:
+    baseObjectMap.emplace("type", valueType::Boolean);
+    baseObjectMap.emplace("value", std::string(value.valueboolean() ? "true" : "false"));
+    break;
+  case Api::BaseObject::kValueDouble:
+    baseObjectMap.emplace("type", valueType::Double);
+    baseObjectMap.emplace("value", std::to_string(value.valuedouble()));
+    break;
+  default:
+    throw "Invalid type";
+  }
+
+  return baseObjectMap;
 }
+
+Api::BaseObject
+convertMapStringToBaseObject(const std::map<std::string, std::string> &value) {
+
+  Api::BaseObject baseObject;
+
+  const auto& type = value.find("type")->second;
+  const auto& val  = value.find("value")->second;
+
+  if (type == valueType::String) {
+    return txbuilder::createValueString(val);
+  } else if (type == valueType::Int) {
+    return txbuilder::createValueInt(std::stoi(val));
+  } else if (type == valueType::Boolean) {
+    return txbuilder::createValueBool(val == "true");
+  } else if (type == valueType::Double) {
+    return txbuilder::createValueDouble(std::stod(val));
+  }
+
+  throw "Invalid type";
+}
+
+} // namespace jvm
+} // namespace virtual_machine

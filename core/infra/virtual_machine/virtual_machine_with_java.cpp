@@ -39,15 +39,15 @@ void initializeVM(const std::string &packageName,
   const auto NameId = pack(packageName, contractName);
   if (vmSet.find(NameId) != vmSet.end()) {
     // http://bugs.java.com/bugdatabase/view_bug.do?bug_id=4479303
-    // fork() or exec() needed? ref: http://stackoverflow.com/questions/2259947/creating-a-jvm-from-within-a-jni-method
+    // fork() or exec() needed? ref:
+    // http://stackoverflow.com/questions/2259947/creating-a-jvm-from-within-a-jni-method
     logger::fatal("virtual machine with java")
         << "Currently, not supported for initializing VM twice.";
     exit(EXIT_FAILURE);
     //            vmSet.at(NameId)->jvm->DestroyJavaVM();
     //            vmSet.erase(NameId);
   }
-  vmSet.emplace(NameId,
-                jvm::initializeVM(packageName, contractName));
+  vmSet.emplace(NameId, jvm::initializeVM(packageName, contractName));
 }
 
 void finishVM(const std::string &packageName, const std::string &contractName) {
@@ -58,10 +58,25 @@ void finishVM(const std::string &packageName, const std::string &contractName) {
   }
 }
 
-void invokeFunction(
-    const std::string &packageName, const std::string &contractName,
-    const std::string &functionName,
-    const std::map<std::string, std::string> &params) {
+// Tempolary implementation.
+// If variadic types of parameters are needed, consider to use JSON, I think.
+// I think it is hard for Java program to use HashMap only.
+void invokeFunction(const std::string &packageName,
+                    const std::string &contractName,
+                    const std::string &functionName) {
+
+  const auto NameId = pack(packageName, contractName);
+  if (vmSet.find(NameId) != vmSet.end()) {
+    const auto &context = vmSet.at(NameId);
+    jvm::execFunction(context, functionName);
+  }
+}
+
+void invokeFunction(const std::string &packageName,
+                    const std::string &contractName,
+                    const std::string &functionName,
+                    std::map<std::string, std::string> params) {
+
   const auto NameId = pack(packageName, contractName);
   if (vmSet.find(NameId) != vmSet.end()) {
     const auto &context = vmSet.at(NameId);
@@ -71,12 +86,29 @@ void invokeFunction(
 
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
-                    const std::string &functionName) {
+                    const std::string &functionName,
+                    std::map<std::string, std::string> params,
+                    std::map<std::string, std::map<std::string, std::string>> params2) {
+
   const auto NameId = pack(packageName, contractName);
   if (vmSet.find(NameId) != vmSet.end()) {
     const auto &context = vmSet.at(NameId);
-    jvm::execFunction(context, functionName);
+    jvm::execFunction(context, functionName, params, params2);
   }
 }
+
+void invokeFunction(const std::string &packageName,
+                    const std::string &contractName,
+                    const std::string &functionName,
+                    std::map<std::string, std::string> params,
+                    std::vector<std::string> params2) {
+  
+  const auto NameId = pack(packageName, contractName);
+  if (vmSet.find(NameId) != vmSet.end()) {
+    const auto &context = vmSet.at(NameId);
+    jvm::execFunction(context, functionName, params, params2);
+  } 
+}
+
 
 }

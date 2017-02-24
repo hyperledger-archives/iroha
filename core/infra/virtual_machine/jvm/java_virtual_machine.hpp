@@ -54,10 +54,27 @@ namespace jvm {
     void Java_SmartContract_save(JNIEnv *env, jobject thiz, jstring key, jstring value);
     std::unique_ptr<JavaContext> initializeVM(const std::string& packageName, const std::string& contractName);
 
+    // Tempolary implementation.
+    // If variadic types of parameters are needed, consider to use JSON, I think.
+    // I think it is hard for Java program to use HashMap only.
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
         std::string functionName,
         std::map<std::string, std::string> params
+    );
+
+    void execFunction(
+        const std::unique_ptr<JavaContext> &context,
+        std::string functionName,
+        std::map<std::string, std::string> params,
+        std::map<std::string, std::map<std::string, std::string>> params2
+    );
+
+    void execFunction(
+        const std::unique_ptr<JavaContext> &context,
+        std::string functionName,
+        std::map<std::string, std::string> params,
+        std::vector<std::string> params2
     );
 
     void execFunction(

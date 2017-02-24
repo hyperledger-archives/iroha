@@ -27,9 +27,9 @@ TEST(stringify_vector_test, stringify_parse) {
   for (int loop = 0; loop < 100; loop++) {
     std::vector<std::string> vs;
 
-    for (int i=0; i<engine() % 100 + 1; i++) {
+    for (int i=0; i<static_cast<int>(engine()) % 100 + 1; i++) {
       std::string buf;
-      for (int k=0; k<engine() % 20; k++) {
+      for (int k=0; k<static_cast<int>(engine()) % 20; k++) {
         auto which = engine() % 3;
         if (which == 0) {
           buf += '0' + engine() % 10;
