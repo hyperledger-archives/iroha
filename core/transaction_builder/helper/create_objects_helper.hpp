@@ -17,6 +17,10 @@ limitations under the License.
 #ifndef CORE_TRANSACTION_BUILDER_CREATE_OBJECTS_HPP
 #define CORE_TRANSACTION_BUILDER_CREATE_OBJECTS_HPP
 
+#include <assert.h>
+#include <algorithm>
+#include <tuple>
+
 #include <infra/protobuf/api.pb.h>
 #include <util/exception.hpp>
 
@@ -26,31 +30,31 @@ namespace txbuilder {
   Primitives
 */
 
-inline Api::BaseObject createValueString(std::string val) {
+static Api::BaseObject createValueString(std::string val) {
   Api::BaseObject ret;
   ret.set_valuestring(std::move(val));
   return ret;
 }
 
-inline Api::BaseObject createValueInt(int val) {
+static Api::BaseObject createValueInt(int val) {
   Api::BaseObject ret;
   ret.set_valueint(static_cast<::google::protobuf::int64>(val));
   return ret;
 }
 
-inline Api::BaseObject createValueBool(bool val) {
+static Api::BaseObject createValueBool(bool val) {
   Api::BaseObject ret;
   ret.set_valueboolean(val);
   return ret;
 }
 
-inline Api::BaseObject createValueDouble(double val) {
+static Api::BaseObject createValueDouble(double val) {
   Api::BaseObject ret;
   ret.set_valuedouble(val);
   return ret;
 }
 
-inline Api::Trust createTrust(double value, bool isOk) {
+static Api::Trust createTrust(double value, bool isOk) {
   Api::Trust ret;
   ret.set_value(value);
   ret.set_isok(isOk);
@@ -61,12 +65,21 @@ inline Api::Trust createTrust(double value, bool isOk) {
   Map
 */
 
-using Map = std::unordered_map<std::string, Api::BaseObject>;
+using Map = std::map<std::string, Api::BaseObject>;
 
-std::string stringify(Api::BaseObject obj) {
+/*
+  BaseObject
+*/
+
+const std::string PrefixString = "String_";
+const std::string PrefixInteger = "Integer_";
+const std::string PrefixBoolean = "Boolean_";
+const std::string PrefixDouble = "Double_";
+
+static std::string stringify(Api::BaseObject obj) {
   switch (obj.value_case()) {
   case Api::BaseObject::ValueCase::kValueString:
-    return obj.valuestring();
+    return PrefixString + obj.valuestring();
   case Api::BaseObject::ValueCase::kValueInt:
     return std::to_string(obj.valueint());
   case Api::BaseObject::ValueCase::kValueBoolean:
@@ -78,7 +91,40 @@ std::string stringify(Api::BaseObject obj) {
   }
 }
 
-inline std::string stringify(::txbuilder::Map m) {
+namespace detail {
+
+static std::tuple<std::string, std::string> splitPrefixValue(const std::string &s) {
+  std::size_t mid = s.find("_");
+  if (mid == std::string::npos)
+    throw "Not found split mid point.";
+  if (mid + 1 >= s.size())
+    throw "Not found value";
+  return std::make_tuple(s.substr(0, mid), s.substr(mid + 1));
+}
+}
+
+static Api::BaseObject parse(std::string str) {
+  Api::BaseObject ret;
+  std::string prefix, value;
+  std::tie(prefix, value) = detail::splitPrefixValue(str);
+  if (prefix == PrefixString) {
+    return createValueString(value);
+  } else if (prefix == PrefixInteger) {
+    for (auto c: value) {
+      if (not isdigit(c)) throw "Value type mismatch";
+    }
+    return createValueInt(std::stoi(value));
+  } else if (prefix == PrefixBoolean) {
+    std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+    return createValueBool(value == "true");
+  } else if (prefix == PrefixDouble) {
+    return createValueDouble(std::stod(value));
+  } else {
+    throw "Cannot parse value type from string.";
+  }
+}
+
+static std::string stringify(::txbuilder::Map m) {
   std::string ret = "{";
   for (auto &&e : m) {
     ret += "(" + e.first + ", " + txbuilder::stringify(e.second) + "), ";
@@ -93,22 +139,22 @@ inline std::string stringify(::txbuilder::Map m) {
 template <typename T> using Vector = ::google::protobuf::RepeatedPtrField<T>;
 
 template <typename T>
-inline std::vector<T> createStandardVector(const ::txbuilder::Vector& protov) {
+inline std::vector<T>
+createStandardVector(const ::txbuilder::Vector<T> &protov) {
   return std::vector<T>(protov.begin(), protov.end());
 }
 
 /*
   Assets
 */
-
-inline Api::Domain createDomain(std::string ownerPublicKey, std::string name) {
+static Api::Domain createDomain(std::string ownerPublicKey, std::string name) {
   Api::Domain ret;
   ret.set_ownerpublickey(std::move(ownerPublicKey));
   ret.set_name(std::move(name));
   return ret;
 }
 
-inline Api::Account createAccount(std::string publicKey, std::string name,
+static Api::Account createAccount(std::string publicKey, std::string name,
                                   std::vector<std::string> assets) {
   Api::Account ret;
   ret.set_publickey(std::move(publicKey));
@@ -118,7 +164,7 @@ inline Api::Account createAccount(std::string publicKey, std::string name,
   return ret;
 }
 
-inline Api::Asset createAsset(std::string domain, std::string name,
+static Api::Asset createAsset(std::string domain, std::string name,
                               ::txbuilder::Map value,
                               std::string smartContractName) {
   Api::Asset ret;
@@ -130,7 +176,7 @@ inline Api::Asset createAsset(std::string domain, std::string name,
   return ret;
 }
 
-inline Api::SimpleAsset createSimpleAsset(std::string domain, std::string name,
+static Api::SimpleAsset createSimpleAsset(std::string domain, std::string name,
                                           Api::BaseObject value,
                                           std::string smartContractName) {
   Api::SimpleAsset ret;
@@ -141,7 +187,7 @@ inline Api::SimpleAsset createSimpleAsset(std::string domain, std::string name,
   return ret;
 }
 
-inline Api::Peer createPeer(std::string publicKey, std::string address,
+static Api::Peer createPeer(std::string publicKey, std::string address,
                             Api::Trust trust) {
   Api::Peer ret;
   ret.set_publickey(std::move(publicKey));

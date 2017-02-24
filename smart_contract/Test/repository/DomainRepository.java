@@ -26,14 +26,20 @@ public class DomainRepository {
     public static native Boolean accountAttach(String uuid, String asset);
     public static native Boolean accountUpdate(String uuid, String[] assets);
     public static native Boolean accountRemove(String uuid);
-    public static native HashMap<String, String> accountFindByUuid(String uuid);
+    public static native HashMap<String, String> accountInfoFindByUuid(String uuid);
+    public static native String[] accountValueFindByUuid(String uuid);
 
-    // Asset
-    public static native String assetAdd(String domain, String name, HashMap<String, HashMap<String, String>> value,
-                String smartContractName);
+    /*
+     * Asset
+     * TODO: Replace HashMap with JSON.
+     */
+    public static native String assetAdd(String domain, String name,
+                                         HashMap<String, HashMap<String, String>> value,
+                                         String smartContractName);
     public static native Boolean assetUpdate(String uuid, HashMap<String, HashMap<String, String>> value);
     public static native Boolean assetRemove(String uuid);
 //    public static native HashMap<String,String>[] findAll(String uuid);
-    public static native HashMap<String, String> assetFindByUuid(String uuid);
+    public static native HashMap<String, String> assetInfoFindByUuid(String uuid);
+    public static native HashMap<String, HashMap<String, String>> assetValueFindByUuid(String uuid);
 //    public static native Boolean assetExists(String uuid);
 }

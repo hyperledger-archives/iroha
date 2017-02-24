@@ -24,6 +24,7 @@ public class Test {
   public static final String DomainIdTag    = "domainId";
   public static final String AssetNameTag   = "assetName";
   public static final String AssetValueTag  = "assetValue";
+  public static final String SmartContractNameTag  = "smartContractName";
 
   static DomainRepository domainRepo = new DomainRepository();
 
@@ -58,9 +59,12 @@ public class Test {
 
     System.out.println("Call accountRepo.add()");
 
+    String[] assets = { "Hoge", "Foo", "Bar" };
+
     String accountUuid = domainRepo.accountAdd(
       params.get(PublicKeyTag),
-      params.get(AccountNameTag)
+      params.get(AccountNameTag),
+      assets
     );
 
     System.out.println("----------------------------------------------");
@@ -69,7 +73,7 @@ public class Test {
 
     // 2. Find account data by uuid.
     System.out.println("Call accountRepo.findByUuid()");
-    HashMap<String, String> accountMap = domainRepo.accountFindByUuid(accountUuid);
+    HashMap<String, String> accountMap = domainRepo.accountInfoFindByUuid(accountUuid);
 
     System.out.println("----------------------------------------------");
     System.out.println("Received from C++: found pubKey:      " + accountMap.get(PublicKeyTag));
@@ -91,12 +95,13 @@ public class Test {
   /******************************************************************************
    * Verify asset
    ******************************************************************************/
-  public static void test_add_asset(HashMap<String,String> params) {
+  public static void test_add_asset(HashMap<String,String> params, HashMap<String,HashMap<String,String>> assetValue) {
     // Print received params
     System.out.println("----------------------------------------------");
     System.out.println("Params domainId:   " + params.get(DomainIdTag));
     System.out.println("Params assetName:  " + params.get(AssetNameTag));
-    System.out.println("Params assetValue: " + params.get(AssetValueTag));
+    System.out.println("AssetValue:        " + assetValue);
+    System.out.println("Params SCName:     " + params.get(SmartContractNameTag));
     System.out.println("----------------------------------------------");
     
     // 1. Add asset.
@@ -105,7 +110,8 @@ public class Test {
     String assetUuid = domainRepo.assetAdd(
       params.get(DomainIdTag),
       params.get(AssetNameTag),
-      params.get(AssetValueTag)
+      assetValue,
+      params.get(SmartContractNameTag)
     );
     
     System.out.println("----------------------------------------------");
@@ -114,12 +120,14 @@ public class Test {
 
     // 2. Find asset data by uuid.
     System.out.println("Call assetRepo.findByUuid()");
-    HashMap<String, String> assetMap = domainRepo.assetFindByUuid(assetUuid);
+    HashMap<String, String> assetInfoMap = domainRepo.assetInfoFindByUuid(assetUuid);
+    HashMap<String, HashMap<String, String>> assetValueMap = domainRepo.assetValueFindByUuid(assetUuid);
 
     System.out.println("----------------------------------------------");
-    System.out.println("Received from C++: found domainId:   " + assetMap.get(DomainIdTag));
-    System.out.println("Received from C++: found assetName:  " + assetMap.get(AssetNameTag));
-    System.out.println("Received from C++: found assetValue(temporary value): " + assetMap.get(AssetValueTag));
+    System.out.println("Received from C++: found domainId:   " + assetInfoMap.get(DomainIdTag));
+    System.out.println("Received from C++: found assetName:  " + assetInfoMap.get(AssetNameTag));
+    System.out.println("Received from C++: found assetValue: " + assetValueMap);
+    System.out.println("Received from C++: found SCName:     " + assetInfoMap.get(SmartContractNameTag));
     System.out.println("----------------------------------------------");
 
     // 3. Then, verify integrity.
@@ -128,9 +136,10 @@ public class Test {
     assert params.get(AssetNameTag).equals(assetMap.get(AssetNameTag))   : "AssetName doesn't match.";
     assert params.get(AssetValueTag).equals(assetMap.get(AssetValueTag)) : "AssetValue doesn't match.";
     */
-    if (! params.get(DomainIdTag).equals(assetMap.get(DomainIdTag)))      return;
-    if (! params.get(AssetNameTag).equals(assetMap.get(AssetNameTag)))    return;
-    if (! params.get(AssetValueTag).equals(assetMap.get(AssetValueTag)))  return;
+    if (! params.get(DomainIdTag).equals(assetInfoMap.get(DomainIdTag)))      return;
+    if (! params.get(AssetNameTag).equals(assetInfoMap.get(AssetNameTag)))    return;
+    if (! assetValue.equals(assetValueMap))  return;
+    if (! params.get(SmartContractNameTag).equals(assetInfoMap.get(SmartContractNameTag)))  return;
 
     System.out.println("Success assertions of integrity.");
     System.out.println("----------------------------------------------");
@@ -146,8 +155,33 @@ public class Test {
     HashMap<String, String> params2 = new HashMap<String, String>();
     params2.put(DomainIdTag,   "A domain id");
     params2.put(AssetNameTag,  "Currency");
-    params2.put(AssetValueTag, "123456");
-    test_add_asset(params2);
+//    params2.put(AssetValueTag, "123456");
+
+    HashMap<String, HashMap<String, String>> assetValue = new HashMap<String, HashMap<String, String>>();
+
+    HashMap<String, String> value;
+
+    value = new HashMap<String, String>();
+    value.put("type",  "int");
+    value.put("value", "123456");
+    assetValue.put("someIntProperty", value);
+
+    value = new HashMap<String, String>();
+    value.put("type", "string");
+    value.put("value", "karin");
+    assetValue.put("yourFavorite", value);
+
+    value = new HashMap<String, String>();
+    value.put("type", "boolean");
+    value.put("isOn", "true");
+    assetValue.put("stringProperty", value);
+
+    value = new HashMap<String, String>();
+    value.put("type", "double");
+    value.put("value", "3.1415926535");
+    assetValue.put("pi", value);
+
+    test_add_asset(params2, assetValue);
   }
 
 }

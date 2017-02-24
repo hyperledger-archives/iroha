@@ -65,8 +65,6 @@ namespace jvm {
         std::string functionName
     );
 
-
-    JNIEXPORT jobject JNICALL JavaMakeMap(JNIEnv *env, std::unordered_map<std::string,std::string> mMap);
 }
 }
 

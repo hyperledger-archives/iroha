@@ -41,10 +41,18 @@ JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_accountRemove
 
 /*
  * Class:     test_repository_DomainRepository
- * Method:    accountFindByUuid
+ * Method:    accountInfoFindByUuid
  * Signature: (Ljava/lang/String;)Ljava/util/HashMap;
  */
-JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_accountFindByUuid
+JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_accountInfoFindByUuid
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     test_repository_DomainRepository
+ * Method:    accountValueFindByUuid
+ * Signature: (Ljava/lang/String;)[Ljava/lang/String;
+ */
+JNIEXPORT jobjectArray JNICALL Java_test_repository_DomainRepository_accountValueFindByUuid
   (JNIEnv *, jclass, jstring);
 
 /*
@@ -73,10 +81,18 @@ JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_assetRemove
 
 /*
  * Class:     test_repository_DomainRepository
- * Method:    assetFindByUuid
+ * Method:    assetInfoFindByUuid
  * Signature: (Ljava/lang/String;)Ljava/util/HashMap;
  */
-JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_assetFindByUuid
+JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_assetInfoFindByUuid
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     test_repository_DomainRepository
+ * Method:    assetValueFindByUuid
+ * Signature: (Ljava/lang/String;)Ljava/util/HashMap;
+ */
+JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_assetValueFindByUuid
   (JNIEnv *, jclass, jstring);
 
 #ifdef __cplusplus

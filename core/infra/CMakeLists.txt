@@ -1,4 +1,4 @@
-add_subdirectory(smart_contract)
+add_subdirectory(virtual_machine)
 add_subdirectory(crypto)
 add_subdirectory(repository)
 add_subdirectory(server)

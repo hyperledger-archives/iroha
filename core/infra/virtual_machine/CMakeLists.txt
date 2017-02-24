@@ -1,4 +1,3 @@
-
 add_subdirectory(jvm)
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -20,8 +19,8 @@ ELSE()
     )
 ENDIF()
 
-ADD_LIBRARY(smart_contract_with_java STATIC smart_contract_with_java.cpp)
-target_link_libraries(smart_contract_with_java
+ADD_LIBRARY(virtual_machine_with_java STATIC virtual_machine_with_java.cpp)
+target_link_libraries(virtual_machine_with_java
     java_virtual_machine
     logger
 )

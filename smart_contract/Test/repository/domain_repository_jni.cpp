@@ -15,15 +15,17 @@ limitations under the License.
 */
 #include <assert.h>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
-#include <infra/smart_contract/jvm/java_virtual_machine.hpp>
+#include <infra/protobuf/api.pb.h>
+#include <infra/virtual_machine/jvm/java_data_structure.hpp>
 #include <repository/domain/account_repository.hpp>
 #include <repository/domain/asset_repository.hpp>
-#include <transaction_builder/helper/create_objectrs_helper.hpp>
+#include <transaction_builder/helper/create_objects_helper.hpp>
+#include <util/convert_string.hpp>
 #include <util/logger.hpp>
 
 #include "jni_constants.hpp"
@@ -31,133 +33,12 @@ limitations under the License.
 
 const std::string NameSpaceID = "domain repo jni";
 
-/***************************************************************************************
- * util
- **************************************************************************************/
-namespace detail {
-jobject JavaMakeBoolean(JNIEnv *env, jboolean value) {
-  jclass booleanClass = env->FindClass("java/lang/Boolean");
-  jmethodID methodID = env->GetMethodID(booleanClass, "<init>", "(Z)V", false);
-  return env->NewObject(booleanClass, methodID, value);
-}
-
-std::vector<std::string> convertStringArrayRelease(jobjectArray javaArray_) {
-  std::vector<std::string> ret;
-  const int arraySize = env->GetArrayLength(javaArray_);
-  for (int i = 0; i < arraySize; i++) {
-    jstring elementString_ =
-        (jstring)(env->GetObjectArrayElement(javaArray_, i));
-    const char *elementCString = env->GetStringUTFChars(elementString, 0);
-    ret.push_back(std::string(elementCString));
-    env->ReleaseStringUTFChars(elementString_, elementCString);
-  }
-  return ret;
-}
-
-/*
- * txbuilder::Map<std::string, Api::BaseObject> <-> HashMap<String, BaseObjectHashMap>
- *      where BaseObjectHashMap := HashMap<Key, Value>
- *          where
- *              (Key, Value) = ("type", ValueTypeID)
- *                  where ValueTypeID := "string", "int", "boolean" or "double"
- *              (Key, Value) = ("value", Value}
- *                  where Value := (some stringified value)
- */
-std::unordered_map<std::string, std::string>
-convertHashMap(JNIEnv *env, jobject hashMapObj_) {
-  /*
-      Map<String, String> map = ...
-      for (Map.Entry<String, String> entry : map.entrySet())
-      {
-          System.out.println(entry.getKey() + "/" + entry.getValue());
-      }
-   */
-  // ref: https://android.googlesource.com/platform/frameworks/base.git/+/a3804cf77f0edd93f6247a055cdafb856b117eec/media/jni/android_media_MediaMetadataRetriever.cpp
-  jclass mapClass = env->FindClass("java/util/Map");
-  if (mapClass == nullptr) {
-    return {};
-  }
-  jmethodID entrySet =
-      env->GetMethodID(mapClass, "entrySet", "()Ljava/util/Set;");
-  if (entrySet == nullptr) {
-    return {};
-  }
-  jobject set = env->CallObjectMethod(hashMapObj_, entrySet);
-  if (set == nullptr) {
-    return {};
-  }
-  // Obtain an iterator over the Set
-  jclass setClass = env->FindClass("java/util/Set");
-  if (setClass == nullptr) {
-    return {};
-  }
-  jmethodID iterator =
-      env->GetMethodID(setClass, "iterator", "()Ljava/util/Iterator;");
-  if (iterator == nullptr) {
-    return {};
-  }
-  jobject iter = env->CallObjectMethod(set, iterator);
-  if (iter == nullptr) {
-    return {};
-  }
-  // Get the Iterator method IDs
-  jclass iteratorClass = env->FindClass("java/util/Iterator");
-  if (iteratorClass == nullptr) {
-    return {};
-  }
-  jmethodID hasNext = env->GetMethodID(iteratorClass, "hasNext", "()Z");
-  if (hasNext == nullptr) {
-    return {};
-  }
-  jmethodID next =
-      env->GetMethodID(iteratorClass, "next", "()Ljava/lang/Object;");
-  if (next == nullptr) {
-    return {};
-  }
-  // Get the Entry class method IDs
-  jclass entryClass = env->FindClass("java/util/Map$Entry");
-  if (entryClass == nullptr) {
-    return {};
-  }
-  jmethodID getKey =
-      env->GetMethodID(entryClass, "getKey", "()Ljava/lang/Object;");
-  if (getKey == nullptr) {
-    return {};
-  }
-  jmethodID getValue =
-      env->GetMethodID(entryClass, "getValue", "()Ljava/lang/Object;");
-  if (getValue == nullptr) {
-    return {};
-  }
-
-  std::unordered_map<std::string, std::string> ret;
-
-  // Iterate over the entry Set
-  while (env->CallBooleanMethod(iter, hasNext)) {
-    jobject entry = env->CallObjectMethod(iter, next);
-    jstring key = (jstring)env->CallObjectMethod(entry, getKey);
-    jstring value = (jstring)env->CallObjectMethod(entry, getValue);
-    const char *keyStr = env->GetStringUTFChars(key, nullptr);
-    if (!keyStr) { // Out of memory
-      return {};
-    }
-    const char *valueStr = env->GetStringUTFChars(value, nullptr);
-    if (!valueStr) { // Out of memory
-      env->ReleaseStringUTFChars(key, keyStr);
-      return {};
-    }
-
-    ret[std::string(keyStr)] = std::string(valueStr);
-
-    env->DeleteLocalRef(entry);
-    env->ReleaseStringUTFChars(key, keyStr);
-    env->DeleteLocalRef(key);
-    env->ReleaseStringUTFChars(value, valueStr);
-    env->DeleteLocalRef(value);
-  }
-  return ret;
-}
-}
+using virtual_machine::jvm::JavaMakeBoolean;
+using virtual_machine::jvm::JavaMakeMap;
+using virtual_machine::jvm::convertJavaStringArrayRelease;
+using virtual_machine::jvm::convertJavaHashMapValueString;
+using virtual_machine::jvm::convertJavaHashMapValueHashMap;
+using virtual_machine::jvm::JavaMakeStringArray;
 
 /***************************************************************************************
  * Account
@@ -169,11 +50,11 @@ JNIEXPORT jstring JNICALL Java_test_repository_DomainRepository_accountAdd(
   const char *nameCString = env->GetStringUTFChars(name_, 0);
 
   const auto publicKey = std::string(publicKeyCString);
-  const auto alias = std::string(aliasCString);
-  const auto assets = detail::convertStringArrayRelease(assets_);
+  const auto name = std::string(nameCString);
+  const auto assets = convertJavaStringArrayRelease(env, assets_);
 
   env->ReleaseStringUTFChars(publicKey_, publicKeyCString);
-  env->ReleaseStringUTFChars(alias_, aliasCString);
+  env->ReleaseStringUTFChars(name_, nameCString);
 
   logger::debug(NameSpaceID + "::accountAdd")
       << "key: " << publicKey << " name: " << name
@@ -192,12 +73,12 @@ JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_accountAttach(
   const auto asset = std::string(assetCString);
 
   env->ReleaseStringUTFChars(uuid_, uuidCString);
-  env->ReleaseStringUTFChars(assetName_, assetCString);
+  env->ReleaseStringUTFChars(asset_, assetCString);
 
   logger::debug(NameSpaceID + "::accountAttach") << "uuid: " << uuid
                                                  << ", asset: " << asset;
 
-  return detail::JavaMakeBoolean(env, repository::account::attach(uuid, asset));
+  return JavaMakeBoolean(env, repository::account::attach(uuid, asset));
 }
 
 JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_accountUpdate(
@@ -205,15 +86,14 @@ JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_accountUpdate(
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
 
   const auto uuid = std::string(uuidCString);
-  const auto assets = detail::convertStringArrayRelease(assets_);
+  const auto assets = convertJavaStringArrayRelease(env, assets_);
 
   env->ReleaseStringUTFChars(uuid_, uuidCString);
 
   logger::debug(NameSpaceID + "::accountUpdate")
       << " uuid: " << uuid << ", assets: " << convert_string::to_string(assets);
 
-  return detail::JavaMakeBoolean(env,
-                                 repository::account::update(uuid, assets));
+  return JavaMakeBoolean(env, repository::account::update(uuid, assets));
 }
 
 JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_accountRemove(
@@ -222,12 +102,12 @@ JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_accountRemove(
   const auto uuid = std::string(uuidCString);
   env->ReleaseStringUTFChars(uuid_, uuidCString);
   logger::debug(NameSpaceID + "::accountRemove") << " uuid: " << uuid;
-  return detail::JavaMakeBoolean(env, repository::account::remove(uuid));
+  return JavaMakeBoolean(env, repository::account::remove(uuid));
 }
 
 JNIEXPORT jobject JNICALL
-Java_test_repository_DomainRepository_accountFindByUuid(JNIEnv *env, jclass,
-                                                        jstring uuid_) {
+Java_test_repository_DomainRepository_accountInfoFindByUuid(JNIEnv *env, jclass,
+                                                            jstring uuid_) {
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
   const auto uuid = std::string(uuidCString);
 
@@ -237,122 +117,251 @@ Java_test_repository_DomainRepository_accountFindByUuid(JNIEnv *env, jclass,
 
   using jni_constants::PublicKeyTag;
   using jni_constants::AccountNameTag;
-  using jni_constants::AssetsTag;
 
-  std::unordered_map<std::string, std::string> params;
+  std::map<std::string, std::string> params;
   {
     params[PublicKeyTag] = account.publickey();
     params[AccountNameTag] = account.name();
-    params[AssetsTag] = ::txbuilder::createStandardVector(account.assets());
   }
 
-  logger::debug(NameSpaceID + "::accountFindByUuid")
+  logger::debug(NameSpaceID + "::accountInfoFindByUuid")
       << "params[PublicKeyTag]: " << params[PublicKeyTag] << ", "
-      << "params[AccountNameTag]: " << params[AccountNameTag] << ", "
-      << "params[AssetsTag]: " << params[AssetsTag];
+      << "params[AccountNameTag]: " << params[AccountNameTag];
 
-  return smart_contract::JavaMakeMap(env, params);
+  return JavaMakeMap(env, params);
 }
 
-/***************************************************************************************
- * Asset
- ***************************************************************************************/
-JNIEXPORT jstring JNICALL Java_test_repository_DomainRepository_assetAdd(
-    JNIEnv *env, jclass, jstring domain_, jstring name_, jobject value_,
-    jstring smartContract_) {
-  const char *domainCString = env->GetStringUTFChars(domain_, 0);
-  const char *nameCString = env->GetStringUTFChars(name_, 0);
-  const char *smartContractCString = env->GetStringUTFChars(smartContract_, 0);
-
-  const auto domain = std::string(domainCString);
-  const auto name = std::string(nameCString);
-  const auto smartContract = std::string(smartContractCString);
-
-  env->ReleaseStringUTFChars(domainId_, domainIdCString);
-  env->ReleaseStringUTFChars(assetName_, assetNameCString);
-  env->ReleaseStringUTFChars(smartContract_, smartContractCString);
-
-  const auto valueMapSS = detail::convertHashMap(env, value_);
-  ::txbuilder::Map value;
-  for (auto&& e: valueMapSS) {
-    value.emplace(e.first, ffffffffffffffffe.second);
-  }
-
-/*
-std::string add(const std::string &domain, const std::string &name,
-                const txbuilder::Map &value,
-                const std::string &smartContractName);
-*/
-  logger::debug(NameSpaceID + "::assetAdd") << "domainId: " << domainId
-                                            << ", assetName: " << assetName;
-
-  const auto ret = repository::asset::add(
-      domain, name, value, smartContractName);
-
-  return env->NewStringUTF(ret.c_str());
-}
-
-JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_assetUpdate(
-    JNIEnv *env, jclass, jstring uuid_, jobject) {
-  const char *domainIdCString = env->GetStringUTFChars(domainId_, 0);
-  const char *assetNameCString = env->GetStringUTFChars(assetName_, 0);
-  const char *newValueCString = env->GetStringUTFChars(newValue_, 0);
-
-  const auto domainId = std::string(domainIdCString);
-  const auto assetName = std::string(assetNameCString);
-  const auto newValue = std::string(newValueCString);
-
-  env->ReleaseStringUTFChars(domainId_, domainIdCString);
-  env->ReleaseStringUTFChars(assetName_, assetNameCString);
-  env->ReleaseStringUTFChars(newValue_, newValueCString);
-
-  return detail::JavaMakeBoolean(
-      repository::asset::update(domainId, assetName, newValue));
-}
-
-JNIEXPORT jobject JNICALL
-Java_test_repository_DomainRepository_assetRemove(JNIEnv *, jclass, jstring) {
-  const char *domainIdCString = env->GetStringUTFChars(domainId_, 0);
-  const char *assetNameCString = env->GetStringUTFChars(assetName_, 0);
-
-  const auto domainId = std::string(domainIdCString);
-  const auto assetName = std::string(assetNameCString);
-
-  env->ReleaseStringUTFChars(domainId_, domainIdCString);
-  env->ReleaseStringUTFChars(assetName_, assetNameCString);
-
-  repository::asset::remove(domainId, assetName);
-}
-
-JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_assetFindByUuid(
-    JNIEnv *, jclass, jstring) {
+JNIEXPORT jobjectArray JNICALL
+Java_test_repository_DomainRepository_accountValueFindByUuid(JNIEnv *env,
+                                                             jclass, jstring uuid_) {
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
   const auto uuid = std::string(uuidCString);
 
   env->ReleaseStringUTFChars(uuid_, uuidCString);
 
-  logger::debug("domain repo jni :: assetFindByUuid") << "uuid: " << uuid;
+  Api::Account account = repository::account::findByUuid(uuid);
 
-  object::Asset asset = repository::asset::findByUuid(uuid);
+  const auto assets = txbuilder::createStandardVector(account.assets());
 
-  // These constant tags should be placed somewhere else.
-  const auto DomainIdTag = "domainId";
-  const auto AssetNameTag = "assetName";
-  const auto ValueTag = "assetValue";
+  logger::debug(NameSpaceID + "::accountValueFindByUuid")
+        << "value: " << convert_string::to_string(assets);
 
-  std::unordered_map<std::string, std::string> params;
-  {
-    params[DomainIdTag] = asset.domain;
-    params[AssetNameTag] = asset.name;
-    params[ValueTag] = std::to_string(asset.value); // currently this is
-                                                    // uint64_t. conversion from
-                                                    // map to string?
+  return JavaMakeStringArray(env, assets);
+}
+
+/***************************************************************************************
+ * Asset
+ ***************************************************************************************/
+
+/**********************************************************************
+ * txbuilder::Map<std::string, Api::BaseObject>
+ * <-> HashMap<String, HashMap<String, String>>
+ **********************************************************************/
+namespace detail {
+
+const std::string ValueTypeString = "string";
+const std::string ValueTypeInt = "int";
+const std::string ValueTypeBoolean = "boolean";
+const std::string ValueTypeDouble = "double";
+
+txbuilder::Map convertAssetValueMap(JNIEnv *env, jobject value_) {
+
+  txbuilder::Map ret;
+
+  std::map<std::string, std::map<std::string, std::string>> valueMapSM =
+      convertJavaHashMapValueHashMap(env, value_);
+
+  for (auto &e : valueMapSM) {
+    const auto &key = e.first;
+    auto &baseObjectMap = e.second;
+    const auto valueType = baseObjectMap["type"];
+    const auto content = baseObjectMap["value"];
+    if (valueType == ValueTypeString) {
+      ret.emplace(key, txbuilder::createValueString(content));
+    } else if (valueType == ValueTypeInt) {
+      try {
+        ret.emplace(key, txbuilder::createValueInt(std::stoi(content)));
+      } catch (std::invalid_argument) {
+        throw "Value type mismatch: expected int";
+      }
+    } else if (valueType == ValueTypeBoolean) {
+      auto boolStr = content;
+      std::transform(boolStr.begin(), boolStr.end(), boolStr.begin(),
+                     ::islower);
+      ret.emplace(key, txbuilder::createValueBool(boolStr == "true"));
+    } else if (valueType == ValueTypeDouble) {
+      try {
+        ret.emplace(key, txbuilder::createValueDouble(std::stod(content)));
+      } catch (std::invalid_argument) {
+        throw "Value type mismatch: expected double";
+      }
+    } else {
+      throw "Unknown value type";
+    }
   }
 
-  logger::debug("domain repo :: asset jni")
-      << "params[DomainIdTag]: " << params[DomainIdTag] << ", "
-      << "params[AssetNameTag]: " << params[AssetNameTag] << ", "
-      << "params[ValueTag]: " << params[ValueTag];
+  return ret;
+}
 
-  return smart_contract::JavaMakeMap(env, params);
+std::map<std::string, std::string>
+convertBaseObjectToMapString(const Api::BaseObject &value) {
+
+  std::map<std::string, std::string> baseObjectMap;
+
+  switch (value.value_case()) {
+  case Api::BaseObject::kValueString:
+    baseObjectMap.emplace("type", ValueTypeString);
+    baseObjectMap.emplace("value", value.valuestring());
+    break;
+  case Api::BaseObject::kValueInt:
+    baseObjectMap.emplace("type", ValueTypeInt);
+    baseObjectMap.emplace("value", std::to_string(value.valueint()));
+    break;
+  case Api::BaseObject::kValueBoolean:
+    baseObjectMap.emplace("type", ValueTypeBoolean);
+    baseObjectMap.emplace("value", std::string(value.valueboolean() ? "true" : "false"));
+    break;
+  case Api::BaseObject::kValueDouble:
+    baseObjectMap.emplace("type", ValueTypeDouble);
+    baseObjectMap.emplace("value", std::to_string(value.valuedouble()));
+    break;
+  default:
+    throw "Invalid type";
+  }
+
+  return baseObjectMap;
+}
+
+jobject JavaMakeAssetValueMap(JNIEnv *env, const txbuilder::Map& value) {
+
+  // txbuilder::Map<string, Api::BaseObject> -> map<string, map<string, string>>
+  std::map<std::string, std::map<std::string, std::string>> cppMapInMap;
+  for (const auto &e : value) {
+    const auto &key = e.first;
+    cppMapInMap.emplace(key, convertBaseObjectToMapString(e.second));
+  }
+
+  // map<string, map<string, string>>
+  // -> HashMap<String, HashMap<String,String>>
+  return JavaMakeMap(env, cppMapInMap);
+}
+} // namespace detail
+
+JNIEXPORT jstring JNICALL Java_test_repository_DomainRepository_assetAdd(
+    JNIEnv *env, jclass, jstring domain_, jstring name_, jobject value_,
+    jstring smartContractName_) {
+
+  const char *domainCString = env->GetStringUTFChars(domain_, 0);
+  const char *nameCString = env->GetStringUTFChars(name_, 0);
+  const char *smartContractNameCString =
+      env->GetStringUTFChars(smartContractName_, 0);
+
+  const auto domain = std::string(domainCString);
+  const auto name = std::string(nameCString);
+  const auto smartContractName = std::string(smartContractNameCString);
+
+  env->ReleaseStringUTFChars(domain_, domainCString);
+  env->ReleaseStringUTFChars(name_, nameCString);
+  env->ReleaseStringUTFChars(smartContractName_, smartContractNameCString);
+
+  const auto value = detail::convertAssetValueMap(env, value_);
+
+  logger::debug(NameSpaceID + "::assetAdd")
+      << "domainId: " << domain << ", assetName: " << name
+      << ", smartContractName: " << smartContractName;
+
+  const auto ret =
+      repository::asset::add(domain, name, value, smartContractName);
+
+  return env->NewStringUTF(ret.c_str());
+}
+
+JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_assetUpdate(
+    JNIEnv *env, jclass, jstring uuid_, jobject value_) {
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const auto uuid = std::string(uuidCString);
+
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+
+  const auto value = detail::convertAssetValueMap(env, value_);
+
+  return JavaMakeBoolean(env, repository::asset::update(uuid, value));
+}
+
+JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_assetRemove(
+    JNIEnv *env, jclass, jstring uuid_) {
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const auto uuid = std::string(uuidCString);
+
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+
+  return JavaMakeBoolean(env, repository::asset::remove(uuid));
+}
+
+JNIEXPORT jobject JNICALL
+Java_test_repository_DomainRepository_assetInfoFindByUuid(JNIEnv *env, jclass,
+                                                          jstring uuid_) {
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const auto uuid = std::string(uuidCString);
+
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+
+  logger::debug(NameSpaceID + "::assetInfoFindByUuid") << "uuid: " << uuid;
+
+  auto asset = repository::asset::findByUuid(uuid);
+
+  using jni_constants::DomainIdTag;
+  using jni_constants::AssetNameTag;
+  using jni_constants::SmartContractNameTag;
+
+  std::map<std::string, std::string> params;
+  {
+    params[DomainIdTag] = asset.domain();
+    params[AssetNameTag] = asset.name();
+    params[SmartContractNameTag] = asset.smartcontractname();
+  }
+
+  logger::debug(NameSpaceID + "::assetInfoFindByUuid")
+      << "params[DomainIdTag]: \"value\":" << params[DomainIdTag]
+      << ", "
+      << "params[AssetNameTag]: \"value\":" << params[AssetNameTag]
+      << ", "
+      << "params[SmartContractNameTag]: \"value\":" << params[SmartContractNameTag];
+
+  return JavaMakeMap(env, params);
+}
+
+JNIEXPORT jobject JNICALL
+Java_test_repository_DomainRepository_assetValueFindByUuid(JNIEnv *env, jclass,
+                                                           jstring uuid_) {
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const auto uuid = std::string(uuidCString);
+
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+
+  logger::debug(NameSpaceID + "::assetValueFindByUuid") << "uuid: " << uuid;
+
+  auto asset = repository::asset::findByUuid(uuid);
+
+  ::txbuilder::Map value(asset.value().begin(), asset.value().end());
+  // std::map<std::string, Api::BaseObject>
+  // -> std::map<std::string, std::map<std::string, std::string>>
+  std::map<std::string, std::map<std::string, std::string>> params;
+  for (auto&& e: value) {
+    params.emplace(e.first, detail::convertBaseObjectToMapString(e.second));
+  }
+
+  std::string paramsStr = "{";
+  for (auto&& e: params) {
+    paramsStr += "{" + e.first + ",";
+    for (auto&& u: e.second) {
+      paramsStr += "{" + u.first + "," + u.second + "},";
+    }
+    paramsStr += "},";
+  }
+  paramsStr += "}";
+
+  logger::debug(NameSpaceID + "::assetValueFindByUuid") << "value: " << paramsStr;
+
+  return JavaMakeMap(env, params);
 }

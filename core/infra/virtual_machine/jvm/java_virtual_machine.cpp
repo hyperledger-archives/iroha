@@ -14,10 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "java_virtual_machine.hpp"
 #include <algorithm>
 #include <array>
 #include "../../../util/logger.hpp"
+
+#include "java_virtual_machine.hpp"
+#include "java_data_structure.hpp"
 
 namespace virtual_machine {
 namespace jvm {
@@ -47,7 +49,7 @@ namespace jvm {
         std::vector<std::string> java_args = {
             "-Djava.class.path="   + IrohaHome + "/smart_contract",
             "-Djava.library.path=" + IrohaHome + "/build/lib",
-            "-Djava.security.policy=" + IrohaHome + "/core/infra/smart_contract/jvm/java.policy.txt",
+            "-Djava.security.policy=" + IrohaHome + "/core/infra/virtual_machine/jvm/java.policy.txt",
             "-Djava.security.manager",
         };
 
@@ -116,7 +118,7 @@ namespace jvm {
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
         std::string functionName,
-        std::unordered_map<std::string, std::string> params
+        std::map<std::string, std::string> params
     ) {
         jobject jmap = JavaMakeMap( context->env, params );
 
@@ -140,27 +142,6 @@ namespace jvm {
         }
 
         context->env->CallVoidMethod(context->jObject, mid);
-    }
-
-
-
-    JNIEXPORT jobject JNICALL JavaMakeMap(JNIEnv *env, std::unordered_map<std::string,std::string> mMap) {
-        env->PushLocalFrame(256); // fix for local references
-        jclass hashMapClass= env->FindClass( "java/util/HashMap" );
-        jmethodID hashMapInit = env->GetMethodID( hashMapClass, "<init>", "(I)V");
-        jobject hashMapObj = env->NewObject( hashMapClass, hashMapInit, mMap.size());
-        jmethodID hashMapOut = env->GetMethodID( hashMapClass, "put",
-          "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
-
-        for (auto it : mMap)
-        {
-            env->CallObjectMethod( hashMapObj, hashMapOut,
-                 env->NewStringUTF(it.first.c_str()),
-                 env->NewStringUTF(it.second.c_str()));
-        }
-
-        env->PopLocalFrame(hashMapObj);
-        return hashMapObj;
     }
 }
 }
