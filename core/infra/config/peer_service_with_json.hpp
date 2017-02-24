@@ -19,6 +19,8 @@ limitations under the License.
 
 #include <vector>
 #include <set>
+#include <map>
+#include <queue>
 #include <service/peer_service.hpp>
 #include "abstract_config_manager.hpp"
 
@@ -26,7 +28,7 @@ namespace config {
 
 class PeerServiceConfig : config::AbstractConfigManager {
  private:
-  static std::set<peer::Node> peerList;
+  static std::vector<peer::Node> peerList;
   PeerServiceConfig();
   void initialziePeerList_from_json();
 
@@ -42,8 +44,9 @@ class PeerServiceConfig : config::AbstractConfigManager {
 
   std::vector<std::unique_ptr<peer::Node>> getPeerList();
 
-  void addPeer( peer::Node );
-  void removePeer( peer::Node );
+  void addPeer( peer::Node&& );
+  void removePeer( peer::Node&& );
+  void updatePeer( peer::Node&& );
   bool isLeaderMyPeer();
 
   virtual std::string getConfigName();

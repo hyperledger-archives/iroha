@@ -27,7 +27,7 @@ limitations under the License.
 using PeerServiceConfig = config::PeerServiceConfig;
 using nlohmann::json;
 
-std::set<peer::Node> PeerServiceConfig::peerList;
+std::vector<peer::Node> PeerServiceConfig::peerList;
 
 PeerServiceConfig::PeerServiceConfig() {}
 
@@ -35,9 +35,9 @@ void PeerServiceConfig::initialziePeerList_from_json(){
   if (!peerList.empty()) return;
   if (auto config = openConfig(getConfigName())) {
     for (const auto& peer : (*config)["group"].get<std::vector<json>>()) {
-      peerList.emplace( peer["ip"].get<std::string>(),
-                        peer["publicKey"].get<std::string>(),
-                        1);
+      peerList.emplace_back( peer["ip"].get<std::string>(),
+                             peer["publicKey"].get<std::string>(),
+                             1.0);
     }
   }
 }
@@ -74,14 +74,16 @@ std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
   std::vector<std::unique_ptr<peer::Node>> nodes;
   for( auto &&node : peerList )
     nodes.push_back( std::make_unique<peer::Node>( node.getIP(), node.getPublicKey(), node.getTrustScore() ) );
-  return nodes;
+  sort( nodes.begin(), nodes.end(),
+        []( const std::unique_ptr<peer::Node> &a, const std::unique_ptr<peer::Node> &b ) { return a->getTrustScore() > b->getTrustScore(); } );
+    return nodes;
 }
 
-void PeerServiceConfig::addPeer( peer::Node peer ) {
-  peerList.insert( peer );
+void PeerServiceConfig::addPeer( peer::Node &&peer ) {
+  peerList.emplace_back( std::move(peer) );
 }
 
-void PeerServiceConfig::removePeer( peer::Node peer ) {
+void PeerServiceConfig::removePeer( peer::Node &&peer ) {
   for( auto it = peerList.begin(); it != peerList.end(); it++ )
       if( it->getPublicKey() == peer.getPublicKey() &&
           it->getIP() == peer.getIP() ) {
@@ -89,11 +91,19 @@ void PeerServiceConfig::removePeer( peer::Node peer ) {
       }
 }
 
+void PeerServiceConfig::updatePeer( peer::Node &&peer ) {
+  for( auto it = peerList.begin(); it != peerList.end(); it++ )
+    if( it->getPublicKey() == peer.getPublicKey() &&
+      it->getIP() == peer.getIP() ) {
+      it->setTrustScore( peer.getTrustScore() );
+    }
+}
+
 bool PeerServiceConfig::isLeaderMyPeer() {
   if( peerList.empty() ) return false;
-
-  return peerList.rbegin()->getPublicKey() == getMyPublicKey() &&
-         peerList.rbegin()->getIP() == getMyIp();
+  auto sorted_peers = getPeerList();
+  return (*sorted_peers.begin())->getPublicKey() == getMyPublicKey() &&
+         (*sorted_peers.begin())->getIP() == getMyIp();
 }
 
 void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {

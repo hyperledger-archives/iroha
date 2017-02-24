@@ -51,10 +51,17 @@ namespace peer
 
 
         bool operator < (const Node& node) const {
-            if ( trustScore == node.getTrustScore() )
-                if (ip == node.getIP()) return publicKey < node.getPublicKey();
-                else return ip < node.getIP();
+            if (ip == node.getIP()) return publicKey < node.getPublicKey();
+            else return ip < node.getIP();
+        }
+        bool operator == (const Node& node) const {
+            return ip == node.getIP() && publicKey == node.getPublicKey();
+        }
+        bool isBetter( const Node& node ) const {
             return trustScore < node.getTrustScore();
+        }
+        bool isWorse( const Node& node ) const {
+            return trustScore > node.getTrustScore();
         }
 
         std::string getIP() const {
@@ -67,6 +74,16 @@ namespace peer
 
         double getTrustScore() const {
             return trustScore;
+        }
+
+        void setIP( std::string ip ) {
+            this->ip = ip;
+        }
+        void setPublicKey( std::string publickey ) {
+            this->publicKey = publickey;
+        }
+        void setTrustScore( double trustScore ) {
+            this->trustScore = trustScore;
         }
     };
 
