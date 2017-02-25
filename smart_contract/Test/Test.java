@@ -30,23 +30,54 @@ public class Test {
 
   static DomainRepository domainRepo = new DomainRepository();
 
+  public static void printSuccess() {
+    System.out.println("==============================================");
+    System.out.println("Success");
+    System.out.println("==============================================");    
+  }
+
+  public static void printFail(Exception e) {
+    System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+    System.err.println("Fail");
+    System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+    System.err.println(e.getMessage() + " in " + e.getClass().getName());
+  }
+
   // Test invoke function
   public static void test1() {
       System.out.println("Hello in JAVA! test1()");
   }
 
   // Test invoke function(HashMap<String,String>)
-  public static void test2(HashMap<String,String> params){
-    System.out.println("Hello in JAVA! test2()");
-    assert params.get("key1").equals("Mizuki");
-    assert params.get("key2").equals("Sonoko");
+  public static void test2(HashMap<String,String> params) throws Exception {
+    try {
+      System.out.println("Hello in JAVA! test2()");
+      if (! params.get("key1").equals("Mizuki"))
+        throw new Exception("Failed 'key1' value");
+
+      if (! params.get("key2").equals("Sonoko"))
+        throw new Exception("Failed 'key2' value");
+
+      printSuccess();
+    } catch(Exception e) {
+      printFail(e);
+    }
   }
 
   // Test invoke function(HashMap<String,String>) (UTF-8)
-  public static void test3(HashMap<String,String> params){
-    System.out.println("Hello in JAVA! test3()");
-    assert params.get("key1").equals("水樹");
-    assert params.get("key2").equals("素子");
+  public static void test3(HashMap<String,String> params) throws Exception {
+    try {
+      System.out.println("Hello in JAVA! test3()");
+      if (! params.get("key1").equals("水樹"))
+        throw new Exception("Failed 'key1' value");
+
+      if (! params.get("key2").equals("素子"))
+        throw new Exception("Failed 'key2' value");
+
+      printSuccess();
+    } catch(Exception e) {
+      printFail(e);
+    }
   }
 
   /******************************************************************************
@@ -63,6 +94,7 @@ public class Test {
       }
       System.out.println("----------------------------------------------");
 
+      // 1. Add account.
       System.out.println("Call accountRepo.add()");
 
       String accountUuid = domainRepo.accountAdd(
@@ -88,7 +120,7 @@ public class Test {
       }
       System.out.println("----------------------------------------------");
 
-      // 3. Then, verify integrity.
+      // 3. Ensure the integrity.
       /*
       assert accountMap.get(PublicKeyTag).equals(params.get(PublicKeyTag));
       assert accountMap.get(AccountNameTag).equals(params.get(AccountNameTag));
@@ -99,21 +131,49 @@ public class Test {
       if (! accountMap.get(AccountNameTag).equals(params.get(AccountNameTag)))
         throw new Exception("Mismatch account name");
 
-      System.out.println("==============================================");
-      System.out.println("Success");
-      System.out.println("==============================================");
-
+      printSuccess();
     } catch(Exception e) {
-      System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      System.err.println("Failed");
-      System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      System.err.println(e.getMessage() + " in " + e.getClass().getName());
+      printFail(e);
     }
   }
 
   /******************************************************************************
    * Verify asset
    ******************************************************************************/
+
+  private static void ensureIntegirityOfAsset(HashMap<String, String> params,
+                                              HashMap<String, HashMap<String, String>> assetValueParam,
+                                              HashMap<String, String> assetInfoMap,
+                                              HashMap<String, HashMap<String, String>> assetValueMap) throws Exception {
+    if (! params.get(DomainIdTag).equals(assetInfoMap.get(DomainIdTag)))
+      throw new Exception("Mismatch domain id");
+
+    if (! params.get(AssetNameTag).equals(assetInfoMap.get(AssetNameTag)))
+      throw new Exception("Mismatch asset name");
+
+    if (! params.get(SmartContractNameTag).equals(assetInfoMap.get(SmartContractNameTag)))
+      throw new Exception("Mismatch smartcontract name");
+
+    for(HashMap.Entry<String, HashMap<String, String>> e : assetValueParam.entrySet()) {
+      if (! e.getValue().get("value").equals(assetValueMap.get(e.getKey()).get("value"))) {
+        if (! e.getValue().get("type").equals("double")) {
+          System.out.println(e.getValue().get("type") + " vs " + assetValueMap.get(e.getKey()).get("type"));
+          System.out.println(e.getValue().get("value") + " vs " + assetValueMap.get(e.getKey()).get("value"));
+          throw new Exception("Mismatch asset value");
+        }
+        final Double Eps = 1e-5;
+        final Double Diff = Math.abs(
+            Double.parseDouble( e.getValue().get("value") )
+          - Double.parseDouble( assetValueMap.get(e.getKey()).get("value")) );
+        if (Diff >= Eps) {
+          throw new Exception("Double value difference is " + Diff + ", over EPS(" + Eps + ")");
+        } else {
+          System.out.println("Warning: double value difference: " + Diff);
+        }
+      }
+    }
+  }
+
   public static void testAddAsset(HashMap<String, String> params, HashMap<String, HashMap<String, String>> assetValueParam) throws Exception {
     try {
       // Print received params
@@ -151,51 +211,56 @@ public class Test {
       System.out.println("Received from C++: found SCName:     " + assetInfoMap.get(SmartContractNameTag));
       System.out.println("----------------------------------------------");
 
-      // 3. Then, verify integrity.
-      /*
-      assert params.get(DomainIdTag).equals(assetMap.get(DomainIdTag))     : "DomainId doesn't match.";
-      assert params.get(AssetNameTag).equals(assetMap.get(AssetNameTag))   : "AssetName doesn't match.";
-      assert params.get(AssetValueTag).equals(assetMap.get(AssetValueTag)) : "AssetValue doesn't match.";
-      */
-      if (! params.get(DomainIdTag).equals(assetInfoMap.get(DomainIdTag)))
-        throw new Exception("Mismatch domain id");
+      // 3. Ensure the integrity.
+      ensureIntegirityOfAsset(params, assetValueParam, assetInfoMap, assetValueMap);
 
-      if (! params.get(AssetNameTag).equals(assetInfoMap.get(AssetNameTag)))
-        throw new Exception("Mismatch asset name");
-
-      for(HashMap.Entry<String, HashMap<String, String>> e : assetValueParam.entrySet()) {
-        if (! e.getValue().get("value").equals(assetValueMap.get(e.getKey()).get("value"))) {
-          if (! e.getValue().get("type").equals("double")) {
-            System.out.println(e.getValue().get("type") + " vs " + assetValueMap.get(e.getKey()).get("type"));
-            System.out.println(e.getValue().get("value") + " vs " + assetValueMap.get(e.getKey()).get("value"));
-            throw new Exception("Mismatch asset value");
-          }
-          final Double Eps = 1e-5;
-          final Double Diff = Math.abs(
-              Double.parseDouble( e.getValue().get("value") )
-            - Double.parseDouble( assetValueMap.get(e.getKey()).get("value")) );
-          if (Diff >= Eps) {
-            throw new Exception("Double value difference is " + Diff + ", over EPS(" + Eps + ")");
-          } else {
-            System.out.println("Warning: double value difference: " + Diff);
-          }
-        }
-      }
-
-      if (! params.get(SmartContractNameTag).equals(assetInfoMap.get(SmartContractNameTag)))
-        throw new Exception("Mismatch smartcontract name");
-
-      System.out.println("==============================================");
-      System.out.println("Success");
-      System.out.println("==============================================");
-
+      printSuccess();
     } catch(Exception e) {
-      System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      System.err.println("Failed");
-      System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      System.err.println(e.getMessage() + " in " + e.getClass().getName());
+      printFail(e);
     }
   }
+
+  public static void testUpdateAsset(HashMap<String, String> params, HashMap<String, HashMap<String, String>> assetValueParam) throws Exception {
+    try {
+
+      // 1. Update Asset.
+      domainRepo.assetUpdate(params.get("uuid"), assetValueParam);
+
+      // 2. Find by the uuid.
+      HashMap<String, String> assetInfoMap = domainRepo.assetInfoFindByUuid(params.get("uuid"));
+      HashMap<String, HashMap<String, String>> assetValueMap = domainRepo.assetValueFindByUuid(params.get("uuid"));
+
+      // 3. Ensure the integrity.
+      ensureIntegirityOfAsset(params, assetValueParam, assetInfoMap, assetValueMap);
+
+      printSuccess();
+    } catch(Exception e) {
+      printFail(e);
+    }
+  }
+
+  public static void testRemoveAsset(HashMap<String, String> params) throws Exception {
+    try {
+
+      // 1. Remove Asset.
+      domainRepo.assetRemove(params.get("uuid"));
+
+      // 2. Find by the uuid.
+      HashMap<String, HashMap<String, String>> assetValueMap = domainRepo.assetValueFindByUuid(params.get("uuid"));
+
+      // 3. Ensure removed asset.
+      if (domainRepo.assetExists(params.get("uuid")))
+        throw new Exception("Failed to removing asset");
+
+      printSuccess();
+    } catch(Exception e) {
+      printFail(e);
+    }
+  }
+
+  /***************************************************************************************************
+   * From java main function
+   ***************************************************************************************************/
 
   public static void javaIntegrityCheckAccount() {
     try {
@@ -212,7 +277,7 @@ public class Test {
 
     } catch(Exception e) {
       System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      System.err.println("Failed (from Java main)");
+      System.err.println("Fail (from Java main)");
       System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
       System.err.println(e.getMessage() + " in " + e.getClass().getName());
     }
@@ -258,7 +323,7 @@ public class Test {
 
     } catch(Exception e) {
       System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      System.err.println("Failed (from Java main)");
+      System.err.println("Fail (from Java main)");
       System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
       System.err.println(e.getMessage() + " in " + e.getClass().getName());      
     }

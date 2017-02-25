@@ -152,6 +152,15 @@ Java_test_repository_DomainRepository_accountValueFindByUuid(JNIEnv *env,
   return JavaMakeStringArray(env, assets);
 }
 
+JNIEXPORT jobject JNICALL
+Java_test_repository_DomainRepository_accountExists(JNIEnv *env, jclass, jstring uuid_) {
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const auto uuid = std::string(uuidCString);
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+  logger::debug(NameSpaceID + "::accountExists") << " uuid: " << uuid;
+  return JavaMakeBoolean(env, repository::account::exists(uuid));
+}
+
 /***************************************************************************************
  * Asset
  ***************************************************************************************/
@@ -273,4 +282,13 @@ Java_test_repository_DomainRepository_assetValueFindByUuid(JNIEnv *env, jclass,
                                                         << paramsStr;
 
   return JavaMakeMap(env, params);
+}
+
+JNIEXPORT jobject JNICALL
+Java_test_repository_DomainRepository_assetExists(JNIEnv *env, jclass, jstring uuid_) {
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const auto uuid = std::string(uuidCString);
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+  logger::debug(NameSpaceID + "::assetExists") << " uuid: " << uuid;
+  return JavaMakeBoolean(env, repository::asset::exists(uuid));
 }

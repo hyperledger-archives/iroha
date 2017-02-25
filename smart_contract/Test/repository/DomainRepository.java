@@ -28,6 +28,7 @@ public class DomainRepository {
     public static native Boolean accountRemove(String uuid);
     public static native HashMap<String, String> accountInfoFindByUuid(String uuid);
     public static native String[] accountValueFindByUuid(String uuid);
+    public static native Boolean accountExists(String uuid);
 
     /*
      * Asset
@@ -41,5 +42,5 @@ public class DomainRepository {
 //    public static native HashMap<String,String>[] findAll(String uuid);
     public static native HashMap<String, String> assetInfoFindByUuid(String uuid);
     public static native HashMap<String, HashMap<String, String>> assetValueFindByUuid(String uuid);
-//    public static native Boolean assetExists(String uuid);
+    public static native Boolean assetExists(String uuid);
 }

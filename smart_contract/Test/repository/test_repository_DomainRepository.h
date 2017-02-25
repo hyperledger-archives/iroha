@@ -9,6 +9,14 @@ extern "C" {
 #endif
 /*
  * Class:     test_repository_DomainRepository
+ * Method:    exists
+ * Signature: (Ljava/lang/String;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_test_repository_DomainRepository_exists
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     test_repository_DomainRepository
  * Method:    accountAdd
  * Signature: (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;
  */

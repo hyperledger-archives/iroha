@@ -108,58 +108,27 @@ TEST(JavaQueryRepo, Invoke_CPP_account_repo_function_FROM_JAVA_function) {
   // (maybe "/tmp/iroha_ledger") then run test again.
 }
 
-TEST(JavaQueryRepo, Invoke_CPP_asset_repo_function_FROM_JAVA_function) {
+std::map<std::string, std::string> assetInfo;
+std::map<std::string, std::map<std::string, std::string>> assetValue;
 
-  const std::string FunctionName = "testAddAsset";
-
-  std::map<std::string, std::string> assetInfo;
-  {
-    assetInfo[DomainIdTag] = "A domain id";
-    assetInfo[AssetNameTag] = "Currency";
-    assetInfo[SmartContractNameTag] = "smartContractFunc";
-  }
-
-  std::map<std::string, std::map<std::string, std::string>> assetValue;
-  {
-    assetValue["ownerName"] = {
-        {"type", "string"},
-        {"value", "karin"}
-    };
-
-    assetValue["my_money"] = {
-        {"type", "int"},
-        {"value", "123456"}
-    };
-
-    assetValue["rate"] = {
-        {"type", "double"},
-        {"value", "0.12345678901234567890123456789"}
-    };
-  }
-
-  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
-                                  assetInfo, assetValue);
- 
-  const std::string uuid =
-      "3f8ba1e5df7f1587defc8fae4789207c8719c7b6d86ce299821b8a83fe08b5a9";
-
-  // TODO: Getting uuid needs to be able to invoke non-void method.
+void ensureIntegrityOfAsset(const std::string& uuid) {
   const std::string received_asset_value =
       repository::world_state_repository::find(uuid);
 
-  using virtual_machine::jvm::convertBaseObjectToMapString;
-
+  // Restore asset.
   Api::Asset asset;
   asset.ParseFromString(received_asset_value);
 
   ASSERT_STREQ(assetInfo[DomainIdTag].c_str(), asset.domain().c_str());
   ASSERT_STREQ(assetInfo[AssetNameTag].c_str(), asset.name().c_str());
+  ASSERT_STREQ(assetInfo[SmartContractNameTag].c_str(), asset.smartcontractname().c_str());
+
+  using virtual_machine::jvm::convertBaseObjectToMapString;
+
   for (auto &&e: assetValue) {
     std::map<std::string, std::string> lhs = e.second;
     Api::BaseObject rhsObj = asset.value().find(e.first)->second;
     std::map<std::string, std::string> rhs = convertBaseObjectToMapString(rhsObj);
-
-    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
 
     std::cout << "(" << lhs["type"] << ", " << lhs["value"] << ") vs "
               << "(" << rhs["type"] << ", " << rhs["value"] << ")\n";
@@ -175,8 +144,6 @@ TEST(JavaQueryRepo, Invoke_CPP_asset_repo_function_FROM_JAVA_function) {
     } else {
       ASSERT_TRUE(lhs["value"] == rhs["value"]);
     }
-
-    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
   }
 
   for (auto &&e: asset.value()) {
@@ -184,8 +151,6 @@ TEST(JavaQueryRepo, Invoke_CPP_asset_repo_function_FROM_JAVA_function) {
     Api::BaseObject rhsObj = e.second;
     std::map<std::string, std::string> rhs = convertBaseObjectToMapString(rhsObj);
     
-    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
-
     std::cout << "(" << lhs["type"] << ", " << lhs["value"] << ") vs "
               << "(" << rhs["type"] << ", " << rhs["value"] << ")\n";
 
@@ -200,11 +165,116 @@ TEST(JavaQueryRepo, Invoke_CPP_asset_repo_function_FROM_JAVA_function) {
     } else {
       ASSERT_TRUE(lhs["value"] == rhs["value"]);
     }
-
-    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
   }
+}
 
-  ASSERT_STREQ(assetInfo[SmartContractNameTag].c_str(), asset.smartcontractname().c_str());
+TEST(JavaQueryRepo, invokeAddAssetQuery) {
+
+  /***********************************************************************
+   * 1. Initial guess
+   ***********************************************************************/
+  assetInfo[DomainIdTag] = "A domain id";
+  assetInfo[AssetNameTag] = "Currency";
+  assetInfo[SmartContractNameTag] = "smartContractFunc";
+
+  assetValue["ownerName"] = {
+      {"type", "string"},
+      {"value", "karin"}
+  };
+
+  assetValue["my_money"] = {
+      {"type", "int"},
+      {"value", "123456"}
+  };
+
+  assetValue["rate"] = {
+      {"type", "double"},
+      {"value", "0.12345678901234567890123456789"}
+  };
+
+  /***********************************************************************
+   * 2. Invoke Java
+   ***********************************************************************/
+  virtual_machine::invokeFunction(PackageName, ContractName, "testAddAsset",
+                                  assetInfo, assetValue);
+
+  /***********************************************************************
+   * 3. Test
+   ***********************************************************************/
+  const std::string uuid =
+      "3f8ba1e5df7f1587defc8fae4789207c8719c7b6d86ce299821b8a83fe08b5a9";
+
+  assetInfo["uuid"] = uuid; // This should be done by getting return value of java function.
+
+  std::cout << "In c++:\n";
+  ensureIntegrityOfAsset(uuid);
+}
+
+TEST(JavaQueryRepo, invokeUpdateAssetQuery) {
+  /***********************************************************************
+   * 1. Initial guess
+   ***********************************************************************/
+  assetValue["ownerName"] = {
+      {"type", "string"},
+      {"value", "asuka"}
+  };
+
+  assetValue["my_money"] = {
+      {"type", "int"},
+      {"value", "98765"}
+  };
+
+  assetValue["updated_value"] = {
+      {"type", "string"},
+      {"value", "アセット更新のテスト"}
+  };
+
+  /***********************************************************************
+   * 2. Invocation Java.
+   ***********************************************************************/
+  virtual_machine::invokeFunction(PackageName, ContractName, "testUpdateAsset",
+                                  assetInfo, assetValue);
+
+  /***********************************************************************
+   * 3. Test
+   ***********************************************************************/
+  std::cout << "In c++:\n";
+  ensureIntegrityOfAsset(assetInfo["uuid"]);
+
+}
+
+TEST(JavaQueryRepo, invokeRemoveAssetQuery) {
+  /***********************************************************************
+   * 1. Invocation Java.
+   ***********************************************************************/
+  std::map<std::string, std::string> params = {{"uuid", assetInfo["uuid"]}};
+  virtual_machine::invokeFunction(PackageName, ContractName, "testRemoveAsset",
+                                  params);
+  /***********************************************************************
+   * 2. Test
+   ***********************************************************************/
+  ASSERT_FALSE(repository::asset::exists(params["uuid"]));
+
+}
+
+TEST(JavaQueryRepo, reinvokeAddAssetQuery) {
+  /***********************************************************************
+   * 1. Invocation Java.
+   ***********************************************************************/
+  const auto oldAssetUuid = assetInfo["uuid"];
+  assetInfo["uuid"] = "";
+  assetInfo[DomainIdTag] = "アナザーDOMAIN";
+  assetInfo[AssetNameTag] = "ポイント";
+  assetInfo[SmartContractNameTag] = "anotherSmartContractFunc";
+  virtual_machine::invokeFunction(PackageName, ContractName, "testAddAsset",
+                                  assetInfo, assetValue);
+  /***********************************************************************
+   * 2. Test
+   ***********************************************************************/
+  const auto newAssetUuid = "48578a1dd980bc7b739702889057f292f3cb29f7a67307fbce04f2e34489eb57";
+  ASSERT_FALSE(repository::asset::exists(oldAssetUuid));
+  ASSERT_TRUE(repository::asset::exists(newAssetUuid));
+
 }
 
 TEST(JavaQueryRepo, FinishVM) {
