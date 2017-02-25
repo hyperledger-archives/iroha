@@ -13,22 +13,16 @@ limitations under the License.
 
 package instances.test;
 
-import repository.DomainRepository;
+import repository.Repository;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import static repository.KeyConstants.*;
+
 public class Test {
 
-  // Move some clear position.
-  public static final String PublicKeyTag   = "publicKey";
-  public static final String AccountNameTag = "accountName";
-  public static final String DomainIdTag    = "domainId";
-  public static final String AssetNameTag   = "assetName";
-  public static final String AssetValueTag  = "assetValue";
-  public static final String SmartContractNameTag  = "smartContractName";
-
-  static DomainRepository domainRepo = new DomainRepository();
+  static Repository repository = new Repository();
 
   public static void printSuccess() {
     System.out.println("==============================================");
@@ -87,8 +81,8 @@ public class Test {
     try {
       // Print received params
       System.out.println("----------------------------------------------");
-      System.out.println("Params pubKey:      " + params.get(PublicKeyTag));
-      System.out.println("Params accountName: " + params.get(AccountNameTag));
+      System.out.println("Params pubKey:      " + params.get(PublicKey));
+      System.out.println("Params accountName: " + params.get(AccountName));
       for (int i = 0; i < assets.length; i++) {
         System.out.println("Params assets[" + i + "]: " + assets[i]);
       }
@@ -97,9 +91,9 @@ public class Test {
       // 1. Add account.
       System.out.println("Call accountRepo.add()");
 
-      String accountUuid = domainRepo.accountAdd(
-        params.get(PublicKeyTag),
-        params.get(AccountNameTag),
+      String accountUuid = repository.accountAdd(
+        params.get(PublicKey),
+        params.get(AccountName),
         assets
       );
 
@@ -109,12 +103,12 @@ public class Test {
 
       // 2. Find account data by uuid.
       System.out.println("Call accountRepo.findByUuid()");
-      HashMap<String, String> accountMap = domainRepo.accountInfoFindByUuid(accountUuid);
-      String[] assetsArray = domainRepo.accountValueFindByUuid(accountUuid);
+      HashMap<String, String> accountMap = repository.accountInfoFindByUuid(accountUuid);
+      String[] assetsArray = repository.accountValueFindByUuid(accountUuid);
 
       System.out.println("----------------------------------------------");
-      System.out.println("Received from C++: found pubKey:      " + accountMap.get(PublicKeyTag));
-      System.out.println("Received from C++: found accountName: " + accountMap.get(AccountNameTag));
+      System.out.println("Received from C++: found pubKey:      " + accountMap.get(PublicKey));
+      System.out.println("Received from C++: found accountName: " + accountMap.get(AccountName));
       for (int i = 0; i < assets.length; i++) {
         System.out.println("Received from C++: found assets[" + i + "]:   " + assetsArray[i]);
       }
@@ -122,13 +116,13 @@ public class Test {
 
       // 3. Ensure the integrity.
       /*
-      assert accountMap.get(PublicKeyTag).equals(params.get(PublicKeyTag));
-      assert accountMap.get(AccountNameTag).equals(params.get(AccountNameTag));
+      assert accountMap.get(PublicKey).equals(params.get(PublicKey));
+      assert accountMap.get(AccountName).equals(params.get(AccountName));
       */
-      if (! accountMap.get(PublicKeyTag).equals(params.get(PublicKeyTag)))
+      if (! accountMap.get(PublicKey).equals(params.get(PublicKey)))
         throw new Exception("Mismatch public key");
 
-      if (! accountMap.get(AccountNameTag).equals(params.get(AccountNameTag)))
+      if (! accountMap.get(AccountName).equals(params.get(AccountName)))
         throw new Exception("Mismatch account name");
 
       printSuccess();
@@ -141,20 +135,10 @@ public class Test {
    * Verify asset
    ******************************************************************************/
 
-  private static void ensureIntegirityOfAsset(HashMap<String, String> params,
-                                              HashMap<String, HashMap<String, String>> assetValueParam,
-                                              HashMap<String, String> assetInfoMap,
-                                              HashMap<String, HashMap<String, String>> assetValueMap) throws Exception {
-    if (! params.get(DomainIdTag).equals(assetInfoMap.get(DomainIdTag)))
-      throw new Exception("Mismatch domain id");
+  private static void ensureIntegirityOfAssetValue(HashMap<String, HashMap<String, String>> assetValueParam,
+                                                   HashMap<String, HashMap<String, String>> assetValueMap) throws Exception {
 
-    if (! params.get(AssetNameTag).equals(assetInfoMap.get(AssetNameTag)))
-      throw new Exception("Mismatch asset name");
-
-    if (! params.get(SmartContractNameTag).equals(assetInfoMap.get(SmartContractNameTag)))
-      throw new Exception("Mismatch smartcontract name");
-
-    for(HashMap.Entry<String, HashMap<String, String>> e : assetValueParam.entrySet()) {
+    for (HashMap.Entry<String, HashMap<String, String>> e : assetValueParam.entrySet()) {
       if (! e.getValue().get("value").equals(assetValueMap.get(e.getKey()).get("value"))) {
         if (! e.getValue().get("type").equals("double")) {
           System.out.println(e.getValue().get("type") + " vs " + assetValueMap.get(e.getKey()).get("type"));
@@ -174,25 +158,26 @@ public class Test {
     }
   }
 
-  public static void testAddAsset(HashMap<String, String> params, HashMap<String, HashMap<String, String>> assetValueParam) throws Exception {
+  public static void testAddAsset(HashMap<String, String> assetInfoParam,
+                                  HashMap<String, HashMap<String, String>> assetValueParam) throws Exception {
     try {
       // Print received params
       System.out.println("----------------------------------------------");
-      System.out.println("Params: " + params);
-      System.out.println("Params domainId:   " + params.get(DomainIdTag));
-      System.out.println("Params assetName:  " + params.get(AssetNameTag));
+      System.out.println("Params: " + assetInfoParam);
+      System.out.println("Params domainId:   " + assetInfoParam.get(DomainId));
+      System.out.println("Params assetName:  " + assetInfoParam.get(AssetName));
       System.out.println("Params AssetValue: " + assetValueParam);
-      System.out.println("Params SCName:     " + params.get(SmartContractNameTag));
+      System.out.println("Params SCName:     " + assetInfoParam.get(ContractName));
       System.out.println("----------------------------------------------");
       
       // 1. Add asset.
       System.out.println("Call assetRepo.add()");
 
-      String assetUuid = domainRepo.assetAdd(
-        params.get(DomainIdTag),
-        params.get(AssetNameTag),
+      String assetUuid = repository.assetAdd(
+        assetInfoParam.get(DomainId),
+        assetInfoParam.get(AssetName),
         assetValueParam,
-        params.get(SmartContractNameTag)
+        assetInfoParam.get(ContractName)
       );
       
       System.out.println("----------------------------------------------");
@@ -201,18 +186,27 @@ public class Test {
 
       // 2. Find asset data by uuid.
       System.out.println("Call assetRepo.findByUuid()");
-      HashMap<String, String> assetInfoMap = domainRepo.assetInfoFindByUuid(assetUuid);
-      HashMap<String, HashMap<String, String>> assetValueMap = domainRepo.assetValueFindByUuid(assetUuid);
+      HashMap<String, String> assetInfoMap = repository.assetInfoFindByUuid(assetUuid);
+      HashMap<String, HashMap<String, String>> assetValueMap = repository.assetValueFindByUuid(assetUuid);
 
       System.out.println("----------------------------------------------");
-      System.out.println("Received from C++: found domainId:   " + assetInfoMap.get(DomainIdTag));
-      System.out.println("Received from C++: found assetName:  " + assetInfoMap.get(AssetNameTag));
+      System.out.println("Received from C++: found domainId:   " + assetInfoMap.get(DomainId));
+      System.out.println("Received from C++: found assetName:  " + assetInfoMap.get(AssetName));
       System.out.println("Received from C++: found assetValue: " + assetValueMap);
-      System.out.println("Received from C++: found SCName:     " + assetInfoMap.get(SmartContractNameTag));
+      System.out.println("Received from C++: found SCName:     " + assetInfoMap.get(ContractName));
       System.out.println("----------------------------------------------");
 
       // 3. Ensure the integrity.
-      ensureIntegirityOfAsset(params, assetValueParam, assetInfoMap, assetValueMap);
+      if (! assetInfoParam.get(DomainId).equals(assetInfoMap.get(DomainId)))
+        throw new Exception("Mismatch domain id");
+
+      if (! assetInfoParam.get(AssetName).equals(assetInfoMap.get(AssetName)))
+        throw new Exception("Mismatch asset name");
+
+      if (! assetInfoParam.get(ContractName).equals(assetInfoMap.get(ContractName)))
+        throw new Exception("Mismatch smartcontract name");
+
+      ensureIntegirityOfAssetValue(assetValueParam, assetValueMap);
 
       printSuccess();
     } catch(Exception e) {
@@ -220,18 +214,18 @@ public class Test {
     }
   }
 
-  public static void testUpdateAsset(HashMap<String, String> params, HashMap<String, HashMap<String, String>> assetValueParam) throws Exception {
+  public static void testUpdateAsset(String uuid, HashMap<String, HashMap<String, String>> assetValueParam) throws Exception {
     try {
 
       // 1. Update Asset.
-      domainRepo.assetUpdate(params.get("uuid"), assetValueParam);
+      repository.assetUpdate(uuid, assetValueParam);
 
       // 2. Find by the uuid.
-      HashMap<String, String> assetInfoMap = domainRepo.assetInfoFindByUuid(params.get("uuid"));
-      HashMap<String, HashMap<String, String>> assetValueMap = domainRepo.assetValueFindByUuid(params.get("uuid"));
+      HashMap<String, String> assetInfoMap = repository.assetInfoFindByUuid(uuid);
+      HashMap<String, HashMap<String, String>> assetValueMap = repository.assetValueFindByUuid(uuid);
 
       // 3. Ensure the integrity.
-      ensureIntegirityOfAsset(params, assetValueParam, assetInfoMap, assetValueMap);
+      ensureIntegirityOfAssetValue(assetValueParam, assetValueMap);
 
       printSuccess();
     } catch(Exception e) {
@@ -239,17 +233,17 @@ public class Test {
     }
   }
 
-  public static void testRemoveAsset(HashMap<String, String> params) throws Exception {
+  public static void testRemoveAsset(String uuid) throws Exception {
     try {
 
       // 1. Remove Asset.
-      domainRepo.assetRemove(params.get("uuid"));
+      repository.assetRemove(uuid);
 
       // 2. Find by the uuid.
-      HashMap<String, HashMap<String, String>> assetValueMap = domainRepo.assetValueFindByUuid(params.get("uuid"));
+      HashMap<String, HashMap<String, String>> assetValueMap = repository.assetValueFindByUuid(uuid);
 
       // 3. Ensure removed asset.
-      if (domainRepo.assetExists(params.get("uuid")))
+      if (repository.assetExists(uuid))
         throw new Exception("Failed to removing asset");
 
       printSuccess();
@@ -263,14 +257,14 @@ public class Test {
    ***************************************************************************************************/
 
   // Test 'add' only. All command tests are invoked by gTest.
-  public static void javaIntegrityCheckAddAccount() {
+  private static void javaIntegrityCheckAddAccount() {
     try {
-      HashMap<String, String> params = new HashMap<String, String>();
-      params.put(PublicKeyTag, "This is Public key.");
-      params.put(AccountNameTag, "Mizuki Sonoko");
+      HashMap<String, String> accountParam = new HashMap<String, String>();
+      accountParam.put(PublicKey, "This is Public key.");
+      accountParam.put(AccountName, "Mizuki Sonoko");
       String[] assets = { "Hoge", "Foo", "Bar" };
 
-      testAddAccount(params, assets);
+      testAddAccount(accountParam, assets);
 
       System.out.println("==============================================");
       System.out.println("Success (from Java main)");
@@ -285,13 +279,12 @@ public class Test {
   }
 
   // Test 'add' only. All command tests are invoked by gTest.
-  public static void javaIntegrityCheckAddAsset() {
+  private static void javaIntegrityCheckAddAsset() {
     try {
-      HashMap<String, String> params = new HashMap<String, String>();
-      params.put(DomainIdTag,   "A domain id");
-      params.put(AssetNameTag,  "Currency");
-      params.put(SmartContractNameTag, "sample_sc_func");
-  //    params.put(AssetValueTag, "123456");
+      HashMap<String, String> assetInfo = new HashMap<String, String>();
+      assetInfo.put(DomainId,   "A domain id");
+      assetInfo.put(AssetName,  "Currency");
+      assetInfo.put(ContractName, "sample_sc_func");
 
       HashMap<String, HashMap<String, String>> assetValue = new HashMap<String, HashMap<String, String>>();
 
@@ -317,7 +310,7 @@ public class Test {
       value.put("value", String.valueOf(Double.parseDouble("3.1415926535897932384626433832795028841971")));
       assetValue.put("pi", value);
 
-      testAddAsset(params, assetValue);
+      testAddAsset(assetInfo, assetValue);
 
       System.out.println("==============================================");
       System.out.println("Success (from Java main)");

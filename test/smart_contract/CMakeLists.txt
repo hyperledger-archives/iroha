@@ -48,7 +48,7 @@ ENDIF()
 add_executable(java_query_repo_test java_query_repo_test.cpp)
 add_dependencies(java_query_repo_test googletest)
 target_link_libraries(java_query_repo_test
-  DomainRepository
+  Repository
   snappy
   leveldb
   virtual_machine_with_java

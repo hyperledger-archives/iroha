@@ -15,10 +15,10 @@ package repository;
 
 import java.util.HashMap;
 
-public class DomainRepository {
+public class Repository {
 
     static {
-        System.loadLibrary("DomainRepository");
+        System.loadLibrary("Repository");
     }
 
     // Account

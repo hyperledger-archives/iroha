@@ -18,11 +18,11 @@ link_directories(
   ${LEVELDB_PATH}/out-static
 )
 
-add_library(DomainRepository SHARED
-  domain_repository_jni.cpp
+add_library(Repository SHARED
+  repository_jni.cpp
 )
 
-target_link_libraries(DomainRepository
+target_link_libraries(Repository
   leveldb
   domain_repository
   virtual_machine_with_java
@@ -30,7 +30,7 @@ target_link_libraries(DomainRepository
   create_objects_helper
 )
 
-add_custom_command(TARGET DomainRepository
+add_custom_command(TARGET Repository
   POST_BUILD
   COMMAND /bin/sh ${PROJECT_SOURCE_DIR}/smart_contract/compile_test.sh
 )

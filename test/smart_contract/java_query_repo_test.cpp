@@ -245,7 +245,7 @@ TEST(JavaQueryRepo, invokeUpdateAssetQuery) {
    * 2. Invocation Java.
    ***********************************************************************/
   virtual_machine::invokeFunction(PackageName, ContractName, "testUpdateAsset",
-                                  assetInfo, assetValue);
+                                  assetInfo["uuid"], assetValue);
 
   /***********************************************************************
    * 3. Test
@@ -261,7 +261,7 @@ TEST(JavaQueryRepo, invokeRemoveAssetQuery) {
    ***********************************************************************/
   std::map<std::string, std::string> params = {{"uuid", assetInfo["uuid"]}};
   virtual_machine::invokeFunction(PackageName, ContractName, "testRemoveAsset",
-                                  params);
+                                  assetInfo["uuid"]);
   /***********************************************************************
    * 2. Test
    ***********************************************************************/
