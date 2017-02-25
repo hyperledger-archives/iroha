@@ -69,6 +69,21 @@ TEST(JavaQueryRepo, Invoke_JAVA_function_map_utf_8) {
                                   params);
 }
 
+TEST(JavaQueryRepo, removeDBChacheIfExists) {
+  const auto account = "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
+  if (repository::account::exists(account)) {
+    repository::account::remove(account);
+  }
+  const auto asset = "3f8ba1e5df7f1587defc8fae4789207c8719c7b6d86ce299821b8a83fe08b5a9";
+  if (repository::asset::exists(asset)) {
+    repository::asset::remove(asset);
+  }
+  const auto account2 = "48578a1dd980bc7b739702889057f292f3cb29f7a67307fbce04f2e34489eb57";
+  if (repository::asset::exists(account2)) {
+    repository::account::remove(account2);
+  }
+}
+
 TEST(JavaQueryRepo, Invoke_CPP_account_repo_function_FROM_JAVA_function) {
 
   const std::string FunctionName = "testAddAccount";
@@ -103,9 +118,6 @@ TEST(JavaQueryRepo, Invoke_CPP_account_repo_function_FROM_JAVA_function) {
   for (std::size_t i = 0; i < assets.size(); i++) {
     ASSERT_STREQ(assets[i].c_str(), account.assets(i).c_str());
   }
-
-  // If consle shows "Failed" but gTest passes, try remove cache of leveldb
-  // (maybe "/tmp/iroha_ledger") then run test again.
 }
 
 std::map<std::string, std::string> assetInfo;
