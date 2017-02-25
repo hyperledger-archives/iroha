@@ -32,5 +32,5 @@ target_link_libraries(DomainRepository
 
 add_custom_command(TARGET DomainRepository
   POST_BUILD
-  COMMAND /bin/sh ${PROJECT_SOURCE_DIR}/smart_contract/compile.sh
+  COMMAND /bin/sh ${PROJECT_SOURCE_DIR}/smart_contract/compile_test.sh
 )

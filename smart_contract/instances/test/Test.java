@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package test;
+package instances.test;
 
 import repository.DomainRepository;
 import java.util.Map;

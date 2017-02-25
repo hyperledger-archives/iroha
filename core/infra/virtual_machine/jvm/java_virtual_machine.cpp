@@ -35,16 +35,17 @@ namespace jvm {
         env->ReleaseStringUTFChars(value, valueChar);
     }
 
-    std::unique_ptr<JavaContext> initializeVM(const std::string& packageName, const std::string& contractName) {
+    std::unique_ptr<JavaContext> initializeVM(const std::string& packageNameUnderInstances, const std::string& contractName) {
 
         const auto IrohaHome = []() {
             const auto p = getenv("IROHA_HOME");
             if (p == nullptr) {
-                std::cout << "You must set IROHA_HOME!" << std::endl;
-                return std::string();
+                throw "[FATAL] Set environment $IROHA_HOME";
             }
             return std::string(p);
         }();
+
+        const auto packageName = "instances." + packageNameUnderInstances;
 
         // paths are hard coding here...
         std::vector<std::string> java_args = {
@@ -83,8 +84,6 @@ namespace jvm {
             return nullptr;
         }
 
-//        std::string package_name = contractName;
-//        std::transform(package_name.begin(), package_name.end(), package_name.begin(), ::tolower);
         auto slashPackageName = packageName;
         std::transform(slashPackageName.begin(), slashPackageName.end(), slashPackageName.begin(), [](const char a) {
             return a == '.' ? '/' : a;

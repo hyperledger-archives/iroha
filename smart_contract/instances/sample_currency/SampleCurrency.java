@@ -11,9 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+package instances.sample_currency;
+
 import java.util.HashMap;
 
-// no package declaration
 public class SampleCurrency {
 
     public static void put( String param ) {

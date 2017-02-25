@@ -52,7 +52,7 @@ namespace jvm {
 
 
     void Java_SmartContract_save(JNIEnv *env, jobject thiz, jstring key, jstring value);
-    std::unique_ptr<JavaContext> initializeVM(const std::string& packageName, const std::string& contractName);
+    std::unique_ptr<JavaContext> initializeVM(const std::string& packageNameUnderInstances, const std::string& contractName);
 
     // Tempolary implementation.
     // If variadic types of parameters are needed, consider to use JSON, I think.
