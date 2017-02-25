@@ -2,4 +2,4 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/core
 )
 
-add_subdirectory(Test)
+add_subdirectory(repository)
