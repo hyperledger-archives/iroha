@@ -13,7 +13,7 @@ limitations under the License.
 
 package test;
 
-import test.repository.DomainRepository;
+import repository.DomainRepository;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -262,7 +262,8 @@ public class Test {
    * From java main function
    ***************************************************************************************************/
 
-  public static void javaIntegrityCheckAccount() {
+  // Test 'add' only. All command tests are invoked by gTest.
+  public static void javaIntegrityCheckAddAccount() {
     try {
       HashMap<String, String> params = new HashMap<String, String>();
       params.put(PublicKeyTag, "This is Public key.");
@@ -283,7 +284,8 @@ public class Test {
     }
   }
 
-  public static void javaIntegrityCheckAsset() {
+  // Test 'add' only. All command tests are invoked by gTest.
+  public static void javaIntegrityCheckAddAsset() {
     try {
       HashMap<String, String> params = new HashMap<String, String>();
       params.put(DomainIdTag,   "A domain id");
@@ -298,17 +300,17 @@ public class Test {
       value = new HashMap<String, String>();
       value.put("type",  "int");
       value.put("value", "123456");
-      assetValue.put("someIntProperty", value);
+      assetValue.put("some_int_property", value);
 
       value = new HashMap<String, String>();
       value.put("type", "string");
       value.put("value", "karin");
-      assetValue.put("yourFavorite", value);
+      assetValue.put("your_favorite", value);
 
       value = new HashMap<String, String>();
       value.put("type", "boolean");
       value.put("value", "true");
-      assetValue.put("isOn", value);
+      assetValue.put("is_on", value);
 
       value = new HashMap<String, String>();
       value.put("type", "double");
@@ -331,8 +333,8 @@ public class Test {
 
   public static void main(String[] argv) {
     System.out.println("Hello in JAVA!");
-    javaIntegrityCheckAccount();
-    javaIntegrityCheckAsset();
+    javaIntegrityCheckAddAccount();
+    javaIntegrityCheckAddAsset();
     System.out.println("Call C++ gTest is also required.");
   }
 
