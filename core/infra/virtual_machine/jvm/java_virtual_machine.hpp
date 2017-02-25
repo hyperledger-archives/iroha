@@ -60,9 +60,22 @@ namespace jvm {
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
         std::string functionName,
+        std::string param
+    );
+    
+    void execFunction(
+        const std::unique_ptr<JavaContext> &context,
+        std::string functionName,
         std::map<std::string, std::string> params
     );
 
+    void execFunction(
+        const std::unique_ptr<JavaContext> &context,
+        std::string functionName,
+        std::string param,
+        std::map<std::string, std::map<std::string, std::string>> params
+    );
+    
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
         std::string functionName,

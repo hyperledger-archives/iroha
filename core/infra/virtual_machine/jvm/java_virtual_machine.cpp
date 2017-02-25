@@ -120,17 +120,58 @@ namespace jvm {
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
         std::string functionName,
+        std::string param
+    ) {
+        jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/lang/String;)V");
+        if (mid == nullptr) {
+            std::cout << "could not get method : " << functionName << std::endl;
+            return;
+        }
+
+        jstring jstr = context->env->NewStringUTF(param.c_str());
+
+        context->env->CallVoidMethod(context->jObject, mid, jstr);
+
+        context->env->DeleteLocalRef(jstr);
+    }
+
+    void execFunction(
+        const std::unique_ptr<JavaContext> &context,
+        std::string functionName,
         std::map<std::string, std::string> params
     ) {
-        jobject jmap = JavaMakeMap( context->env, params );
-
         jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/util/HashMap;)V");
         if (mid == nullptr) {
             std::cout << "could not get method : " << functionName << std::endl;
             return;
         }
 
+        jobject jmap = JavaMakeMap( context->env, params );
+
         context->env->CallVoidMethod(context->jObject, mid, jmap);
+
+        context->env->DeleteLocalRef(jmap);
+    }
+
+    void execFunction(
+        const std::unique_ptr<JavaContext> &context,
+        std::string functionName,
+        std::string param,
+        std::map<std::string, std::map<std::string, std::string>> params
+    ) {
+        jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/lang/String;Ljava/util/HashMap;)V");
+        if (mid == nullptr) {
+            std::cout << "could not get method : " << functionName << std::endl;
+            return;
+        }
+
+        jstring jstr = context->env->NewStringUTF(param.c_str());
+        jobject jmap = JavaMakeMap( context->env, params );
+
+        context->env->CallVoidMethod(context->jObject, mid, jstr, jmap);
+
+        context->env->DeleteLocalRef(jstr);
+        context->env->DeleteLocalRef(jmap);
     }
 
     void execFunction(
@@ -139,33 +180,14 @@ namespace jvm {
         std::map<std::string, std::string> params,
         std::map<std::string, std::map<std::string, std::string>> params2
     ) {
-        jobject jmap = JavaMakeMap( context->env, params );
-
-        auto temp = convertJavaHashMapValueString(context->env, jmap);
-        for (auto e: temp) {
-            std::cout << e.first << " / " << e.second << std::endl;
-        }
-
-        assert(temp == params);
-
-
-        jobject jmapInMap = JavaMakeMap( context->env, params2 );
-
-        auto temp2 = convertJavaHashMapValueHashMap(context->env, jmapInMap);
-        for (auto e: temp2) {
-            std::cout << e.first << " / ";
-            for (auto u: e.second) {
-                std::cout << "  " << u.first << ", " << u.second << std::endl;
-            }
-        }
-
-        assert(temp2 == params2);
-
         jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/util/HashMap;Ljava/util/HashMap;)V");
         if (mid == nullptr) {
             std::cout << "could not get method : " << functionName << std::endl;
             return;
         }
+
+        jobject jmap = JavaMakeMap( context->env, params );
+        jobject jmapInMap = JavaMakeMap( context->env, params2 );
 
         context->env->CallVoidMethod(context->jObject, mid, jmap, jmapInMap);
 
@@ -179,16 +201,19 @@ namespace jvm {
         std::map<std::string, std::string> params,
         std::vector<std::string> params2
     ) {
-        jobject jmap = JavaMakeMap( context->env, params );
-        jobject jarr = JavaMakeStringArray( context->env, params2 );
-
         jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/util/HashMap;[Ljava/lang/String;)V");
         if (mid == nullptr) {
             std::cout << "could not get method : " << functionName << std::endl;
             return;
         }
 
+        jobject jmap = JavaMakeMap( context->env, params );
+        jobject jarr = JavaMakeStringArray( context->env, params2 );
+
         context->env->CallVoidMethod(context->jObject, mid, jmap, jarr);
+
+        context->env->DeleteLocalRef(jmap);
+        context->env->DeleteLocalRef(jarr);
     }
 
     void execFunction(
