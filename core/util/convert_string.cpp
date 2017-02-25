@@ -43,16 +43,16 @@ std::string stringifyVector(const std::vector<std::string> &vs) {
 std::vector<std::string> parseVector(const std::string &s) {
   std::vector<std::string> ret;
   const char* cstr = s.c_str();
-  const int size = s.size();
+  const std::size_t size = s.size();
   for (std::size_t index = 0; index < size;) {
     if (s[index] == '[') {
       std::string buf;
       index++;
       char* e = nullptr;
-      auto num = std::strtol(&cstr[index], &e, 10);
+      int num = std::strtol(&cstr[index], &e, 10);
       index += e - &cstr[index];
       index++;
-      for (int k = index; k < index + num; k++) {
+      for (int k = index; k < static_cast<int>(index) + num; k++) {
         buf += cstr[k];
       }
       ret.push_back(buf);
