@@ -2,7 +2,6 @@ SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 include_directories(
   "${PROJECT_SOURCE_DIR}/core"
-  "${PROJECT_SOURCE_DIR}/core/vendor/thread_pool_cpp/thread_pool"
 )
 
 ADD_LIBRARY(sumeragi STATIC
@@ -17,4 +16,5 @@ target_link_libraries(
   event_repository
   commands
   objects
+  external_thread_pool
 )

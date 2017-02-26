@@ -1,5 +1,3 @@
-include_directories(".")
-
 add_subdirectory(consensus)
 add_subdirectory(repository)
 add_subdirectory(infra)

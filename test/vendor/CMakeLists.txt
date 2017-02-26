@@ -1,25 +1,16 @@
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
-SET(TP_DIR "${PROJECT_SOURCE_DIR}/core/vendor/thread_pool_cpp")
-SET(_DIR "${PROJECT_SOURCE_DIR}/core/vendor/json")
-SET(GTEST_DIR "${GTEST_LIBS_DIR}")
 
 include_directories(
   ${TP_DIR}
-  ${GTEST_INCLUDE_DIR}
   ${PROJECT_SOURCE_DIR}/core
-  ${PROJECT_SOURCE_DIR}/core/vendor/thread_pool_cpp/thread_pool
 )
 
 add_executable(thread_pool_test
   thread_pool_test.cpp
 )
 
-add_dependencies(thread_pool_test googletest)
-
 target_link_libraries(thread_pool_test
-  pthread
-  ${GTEST_LIBS_DIR}/libgtest.a 
-  ${GTEST_LIBS_DIR}/libgtest_main.a 
+  external_gtest
 )
 
 add_test(
@@ -32,10 +23,8 @@ add_executable(json_test
     json_test.cpp
 )
 
-add_dependencies(json_test googletest)
-
 target_link_libraries(json_test
-   ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread
+   external_gtest
 )
 add_test(
   NAME json_test

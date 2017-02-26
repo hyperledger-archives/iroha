@@ -5,7 +5,6 @@ SET(LEVELDB_PATH ${PROJECT_SOURCE_DIR}/core/vendor/leveldb)
 
 include_directories(
     ${LEVELDB_PATH}/include
-    ${GTEST_INCLUDE_DIR}
     ${PROJECT_SOURCE_DIR}/core
 )
 link_directories(
@@ -16,12 +15,11 @@ link_directories(
 add_executable(world_state_repository_with_leveldb_test
     world_state_repository_with_leveldb_test.cpp
 )
-add_dependencies(world_state_repository_with_leveldb_test gogoletest)
 target_link_libraries(world_state_repository_with_leveldb_test
     leveldb
     snappy
     world_state_repo_with_level_db
-    ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread)
+    external_gtest
 
 add_test(
     NAME world_state_repository_with_leveldb_test

@@ -20,3 +20,4 @@ config/sumeragi.json
 cmake-build-debu/*
 docker/build/iroha.tar
 cmake-build-debug/*
+external/

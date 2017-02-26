@@ -12,20 +12,17 @@ ENDIF()
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
 
 include_directories(
-  ${GTEST_INCLUDE_DIR}
   $ENV{JAVA_HOME}/include
 )
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   include_directories($ENV{JAVA_HOME}/include/darwin)
   link_directories(
-    ${PROJECT_BINARY_DIR}/lib
     $ENV{JAVA_HOME}/jre/lib/server
   )
 ELSE()
   include_directories($ENV{JAVA_HOME}/include/linux)
   link_directories(
-    ${PROJECT_BINARY_DIR}/lib
     $ENV{JAVA_HOME}/jre/lib/amd64/server
   )
 ENDIF()
@@ -33,11 +30,11 @@ ENDIF()
 
 # Executable java_vm_test
 add_executable(java_vm_test java_vm_test.cpp)
-add_dependencies(java_vm_test googletest)
 target_link_libraries(java_vm_test
   smart_contract_with_java
   jvm
-  ${GTEST_LIBS_DIR}/libgtest.a ${GTEST_LIBS_DIR}/libgtest_main.a pthread)
+  external_gtest
+)
 add_test(
   NAME java_vm_test
   COMMAND $<TARGET_FILE:java_vm_test>
