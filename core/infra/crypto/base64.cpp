@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../../crypto/base64.hpp"
+#include <crypto/base64.hpp>
 
 namespace base64 {
 

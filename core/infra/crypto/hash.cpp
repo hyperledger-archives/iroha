@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 #include <crypto/hash.hpp>
-
 #include <SimpleFIPS202.h>
 #include <string>
 

@@ -22,6 +22,7 @@ target_link_libraries(transaction_builder_test
     event_with_grpc
     exception
     external_gtest
+    pthread
 )
 
 add_test(

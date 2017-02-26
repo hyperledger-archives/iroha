@@ -11,11 +11,12 @@ add_executable(connection_grpc_test
 )
 target_link_libraries(connection_grpc_test
     connection_with_grpc
-    consensus_event
     signature
     config_manager
     external_ed25519
+    pthread
     external_gtest
+    external_gtest_main
 )
 add_test(
     NAME connection_grpc_test

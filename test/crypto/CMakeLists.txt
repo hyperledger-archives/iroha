@@ -1,4 +1,3 @@
-
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
 
 include_directories(
@@ -10,19 +9,15 @@ add_executable(hash_test
   hash_test.cpp
 )
 target_link_libraries(hash_test
-  #keccak
-  hash
   crypto
+  hash
   ssl
   external_gtest
-  external_keccak
 )
 add_test(
   NAME hash_test
   COMMAND $<TARGET_FILE:hash_test>
 )
-
-
 
 
 # Base64 Test
@@ -37,6 +32,7 @@ add_test(
   NAME base64_test
   COMMAND $<TARGET_FILE:base64_test>
 )
+
 
 # Singature Test
 add_executable(signature_test signature_test.cpp)

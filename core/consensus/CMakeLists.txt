@@ -8,13 +8,10 @@ ADD_LIBRARY(sumeragi STATIC
   sumeragi.cpp
 )
 
-target_link_libraries(
-  sumeragi
+target_link_libraries(sumeragi
   config_manager
   connection_with_grpc
   signature
   event_repository
-  commands
-  objects
   external_thread_pool
 )

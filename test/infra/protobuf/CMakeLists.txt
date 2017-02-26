@@ -7,7 +7,6 @@ add_executable(convertor_test
     convertor_test.cpp
 )
 target_link_libraries(convertor_test
-   convertor
    signature
    datetime
    hash
@@ -17,9 +16,10 @@ target_link_libraries(convertor_test
    grpc++
    grpc++_reflection
    protobuf
-   pthread
    dl
    external_gtest
+   
+   pthread
 )
 add_test(
     NAME convertor_test

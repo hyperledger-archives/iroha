@@ -14,7 +14,6 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/core/peer
   ${LEVELDB_PATH}/include
   ${AERON_PATH}/aeron-client/src/main/cpp
-  ${JSON_PATH}/src
 )
 
 link_directories(
@@ -30,7 +29,6 @@ target_link_libraries(iroha-main
   # used grpc
   grpc++_reflection
   protobuf
-  pthread
   dl
 
   leveldb
@@ -41,8 +39,9 @@ target_link_libraries(iroha-main
   http_server_with_cappuccino
   connection_with_grpc
   config_manager
+  hash
   pthread
   external_keccak
-  hash
   external_thread_pool
+  external_json
 )

@@ -21,14 +21,12 @@ add_executable(sumeragi_test
 target_link_libraries(sumeragi_test
     leveldb
     snappy
-    objects
     base64
     signature
     convertor
     sumeragi
     connection_with_grpc
     config_manager
-    pthread
 )
 
 add_executable(transaction_test
@@ -36,13 +34,9 @@ add_executable(transaction_test
 )
 target_link_libraries(transaction_test
     snappy
-    objects
     base64
     signature
     sumeragi
-    commands
     connection_with_grpc
     config_manager
-    pthread
-    objects
 )

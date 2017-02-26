@@ -1,15 +1,16 @@
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
 
 include_directories(
-  ${TP_DIR}
   ${PROJECT_SOURCE_DIR}/core
 )
 
+# thread_pool_test
 add_executable(thread_pool_test
   thread_pool_test.cpp
 )
 
 target_link_libraries(thread_pool_test
+  external_thread_pool
   external_gtest
 )
 
@@ -24,7 +25,8 @@ add_executable(json_test
 )
 
 target_link_libraries(json_test
-   external_gtest
+  external_json
+  external_gtest
 )
 add_test(
   NAME json_test
