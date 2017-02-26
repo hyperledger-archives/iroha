@@ -33,6 +33,13 @@ namespace exception {
     std::invalid_argument("TODO: sorry [" + functionName + "] in " + filename + " is not yet implemented, would you like to contribute it?") {
   }
 
+  BaseMethodException::BaseMethodException(
+    const std::string& functionName,
+    const std::string& filename
+  ):
+    std::domain_error("BaseMethodException [" + functionName + "] in " + filename) {
+  }
+
   ParseFromStringException::ParseFromStringException(
     const std::string& filename
   ):
@@ -47,7 +54,14 @@ namespace exception {
     std::domain_error("InvalidCastException in " + filename + ". Cannot cast from " + from + " to " + to ) {
   }
 
-  namespace crypto {
+  InvalidCastException::InvalidCastException(
+    const std::string &meg,
+    const std::string &filename
+  ):
+    std::domain_error("InvalidCastException in " + filename + ". " + meg )
+  {}
+
+    namespace crypto {
     InvalidKeyException::InvalidKeyException(const std::string& message):
       std::invalid_argument("keyfile is invalid cause:" + message) {
     }
@@ -58,4 +72,13 @@ namespace exception {
       std::invalid_argument("Data could note be saved:" + message) {
     }
   }  // namespace crypto
+  
+  namespace txbuilder {
+    DuplicateSetArgmentException::DuplicateSetArgmentException(const std::string& buildTarget, const std::string& duplicateMember):
+      std::domain_error("DuplicateSetArgmentException in " + buildTarget + ", argment: " + duplicateMember) {
+    }
+    UnsetBuildArgmentsException::UnsetBuildArgmentsException(const std::string& buildTarget, const std::string& unsetMembers):
+      std::domain_error("UnsetBuildArgmentsException in " + buildTarget + ", argments: " + unsetMembers) {
+    }
+  }  // namespace transaction
 }  // namespace exception

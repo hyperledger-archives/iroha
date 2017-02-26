@@ -27,17 +27,6 @@ limitations under the License.
 #include <crypto/signature.hpp>
 #include <util/logger.hpp>
 
-#include <model/transaction.hpp>
-
-#include <model/commands/add.hpp>
-#include <model/commands/transfer.hpp>
-#include <model/commands/update.hpp>
-
-#include <model/objects/account.hpp>
-#include <model/objects/asset.hpp>
-#include <model/objects/domain.hpp>
-
-
 namespace event {
 
 template <typename T>
