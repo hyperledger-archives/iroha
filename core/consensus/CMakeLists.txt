@@ -18,15 +18,3 @@ target_link_libraries(
   commands
   objects
 )
-
-ADD_LIBRARY(consensus_event STATIC
-  consensus_event.cpp
-)
-
-target_link_libraries(consensus_event
-  config_manager
-  commands
-  objects
-  validator
-  hash
-)

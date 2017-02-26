@@ -14,8 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../../crypto/hash.hpp"
-
+#include <crypto/hash.hpp>
 
 #include <SimpleFIPS202.h>
 #include <string>

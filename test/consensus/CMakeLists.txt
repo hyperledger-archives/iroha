@@ -35,7 +35,7 @@ target_link_libraries(sumeragi_test
     connection_with_grpc
     config_manager
     pthread
-    consensus_event
+    #consensus_event
 )
 
 add_executable(transaction_test
@@ -51,6 +51,6 @@ target_link_libraries(transaction_test
     connection_with_grpc
     config_manager
     pthread
-    consensus_event
+    #consensus_event
     objects
 )

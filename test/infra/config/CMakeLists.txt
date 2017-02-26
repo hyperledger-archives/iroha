@@ -16,6 +16,9 @@ link_directories(
 add_executable(ensure_sumeragi_json_format_test
     ensure_sumeragi_json_format.cpp
 )
+
+add_dependencies(ensure_sumeragi_json_format_test googletest)
+
 target_link_libraries(ensure_sumeragi_json_format_test
     config_manager
     config_format
