@@ -18,6 +18,6 @@ target_link_libraries(http_server_with_cappuccino
   signature
   connection_with_grpc
   config_manager
-  domain_repository
+  core_repository
   event_repository
 )

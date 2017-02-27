@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef IROHA_JAVA_VIRTUAL_MACHINE_HPP_HPP
-#define IROHA_JAVA_VIRTUAL_MACHINE_HPP_HPP
+#ifndef _CORE_INFRA_VIRTUAL_MACHINE_JVM_JAVA_VIRTUAL_MACHINE_HPP
+#define _CORE_INFRA_VIRTUAL_MACHINE_JVM_JAVA_VIRTUAL_MACHINE_HPP
 
 #include <jni.h>
 #include <memory>
@@ -75,6 +75,20 @@ namespace jvm {
         std::string param,
         std::map<std::string, std::map<std::string, std::string>> params
     );
+
+    void execFunction(
+        const std::unique_ptr<JavaContext> &context,
+        std::string functionName,
+        std::string param1,
+        std::map<std::string, std::string> param2
+    );
+    
+    void execFunction(
+        const std::unique_ptr<JavaContext> &context,
+        std::string functionName,
+        std::map<std::string, std::string> params,
+        std::map<std::string, std::string> params2
+    );
     
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
@@ -98,4 +112,4 @@ namespace jvm {
 }
 }
 
-#endif //IROHA_JAVA_VIRTUAL_MACHINE_HPP_HPP
+#endif //_CORE_INFRA_VIRTUAL_MACHINE_JVM_JAVA_VIRTUAL_MACHINE_HPP

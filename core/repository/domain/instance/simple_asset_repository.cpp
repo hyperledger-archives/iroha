@@ -14,57 +14,57 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../asset_repository.hpp"
+#include "../simple_asset_repository.hpp"
 #include <crypto/hash.hpp>
 #include <repository/world_state_repository.hpp>
 #include <transaction_builder/transaction_builder.hpp>
 #include <util/exception.hpp>
 #include <util/logger.hpp>
 
-const std::string NameSpaceID = "asset repository";
+const std::string NameSpaceID = "simple asset repository";
 
 namespace repository {
-namespace asset {
+namespace simple_asset {
 
 namespace detail {
 /********************************************************************************************
  * stringify / parse
  ********************************************************************************************/
-std::string stringifyAsset(const Api::Asset &obj) {
+std::string stringifySimpleAsset(const Api::SimpleAsset &obj) {
   std::string ret;
   obj.SerializeToString(&ret);
   return ret;
 }
 
-Api::Asset parseAsset(const std::string &str) {
-  Api::Asset ret;
+Api::SimpleAsset parseSimpleAsset(const std::string &str) {
+  Api::SimpleAsset ret;
   ret.ParseFromString(str);
   return ret;
 }
 
-std::string createAssetUuid(const std::string &domain,
-                            const std::string &name) {
-  return hash::sha3_256_hex(domain + "@" + name);
+std::string createSimpleAssetUuid(const std::string &domain,
+                                  const std::string &name) {
+  return hash::sha3_256_hex("simple_asset@" + domain + "@" + name);
 }
 }
 
 /********************************************************************************************
- * Add<Asset>
+ * Add<SimpleAsset>
  ********************************************************************************************/
 std::string add(const std::string &domain, const std::string &name,
-                const txbuilder::Map &value,
+                const Api::BaseObject &value,
                 const std::string &smartContractName) {
 
-  logger::explore(NameSpaceID) << "Add<Asset> domainId: " << domain
+  logger::explore(NameSpaceID) << "Add<SimpleAsset> domainId: " << domain
                                << " assetName: " << name
                                << " assetValue: " << txbuilder::stringify(value)
                                << " smartContractName: " << smartContractName;
 
-  const auto uuid = detail::createAssetUuid(domain, name);
+  const auto uuid = detail::createSimpleAssetUuid(domain, name);
 
   if (not exists(uuid)) {
-    const auto strAsset = detail::stringifyAsset(
-        txbuilder::createAsset(domain, name, value, smartContractName));
+    const auto strAsset = detail::stringifySimpleAsset(
+        txbuilder::createSimpleAsset(domain, name, value, smartContractName));
     if (world_state_repository::add(uuid, strAsset)) {
       return uuid;
     }
@@ -74,29 +74,27 @@ std::string add(const std::string &domain, const std::string &name,
 }
 
 /********************************************************************************************
- * Update<Asset>
+ * Update<SimpleAsset>
  ********************************************************************************************/
-bool update(const std::string &uuid, const txbuilder::Map &value) {
+bool update(const std::string &uuid, const Api::BaseObject &value) {
   if (exists(uuid)) {
     const auto rval = world_state_repository::find(uuid);
-    logger::explore(NameSpaceID) << "Update<Asset> uuid: " << uuid
-                                 << txbuilder::stringify(value);
-    auto asset = detail::parseAsset(rval);
-    *asset.mutable_value() =
-        ::google::protobuf::Map<std::string, Api::BaseObject>(value.begin(),
-                                                              value.end());
-    const auto strAsset = detail::stringifyAsset(asset);
-    return world_state_repository::update(uuid, strAsset);
+    logger::explore(NameSpaceID) << "Update<SimpleAsset> uuid: " << uuid << ", "
+                                 << "value: " << txbuilder::stringify(value);
+    auto simpleAsset = detail::parseSimpleAsset(rval);
+    *simpleAsset.mutable_value() = value;
+    const auto strSimpleAsset = detail::stringifySimpleAsset(simpleAsset);
+    return world_state_repository::update(uuid, strSimpleAsset);
   }
   return false;
 }
 
 /********************************************************************************************
- * Remove<Asset>
+ * Remove<SimpleAsset>
  ********************************************************************************************/
 bool remove(const std::string &uuid) {
   if (exists(uuid)) {
-    logger::explore(NameSpaceID) << "Remove<Asset> uuid: " << uuid;
+    logger::explore(NameSpaceID) << "Remove<SimpleAsset> uuid: " << uuid;
     return world_state_repository::remove(uuid);
   }
   return false;
@@ -105,30 +103,26 @@ bool remove(const std::string &uuid) {
 /********************************************************************************************
  * find
  ********************************************************************************************/
-std::vector<Api::Asset> findAll(const std::string &uuid) {
-  /* Use world_state_repository::findByPrefix()*/
-  throw exception::NotImplementedException(__func__, __FILE__);
-}
-
-Api::Asset findByUuid(const std::string &uuid) {
+Api::SimpleAsset findByUuid(const std::string &uuid) {
 
   logger::explore(NameSpaceID + "::findByUuid") << "";
-  auto strAsset = world_state_repository::find(uuid);
-  if (not strAsset.empty()) {
-    return detail::parseAsset(strAsset);
+  auto strSimpleAsset = world_state_repository::find(uuid);
+  if (not strSimpleAsset.empty()) {
+    return detail::parseSimpleAsset(strSimpleAsset);
   }
 
-  return Api::Asset();
+  return Api::SimpleAsset();
 }
 
-Api::Asset findByUuidOrElse(const std::string &uuid,
-                            const Api::Asset &defaultValue) {
-  throw "asset repo :: findByUuidOrElse() is not implemented yet.";
+Api::SimpleAsset findByUuidOrElse(const std::string &uuid,
+                                  const Api::SimpleAsset &defaultValue) {
+  throw "simple asset repo :: findByUuidOrElse() is not implemented yet.";
 }
 
 bool exists(const std::string &uuid) {
   const auto result = world_state_repository::exists(uuid);
-  logger::explore(NameSpaceID + "::exists") << (result ? "true" : "false");
+  logger::explore(NameSpaceID + "::exists")
+      << (result ? "true" : "false");
   return result;
 }
 }

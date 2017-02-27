@@ -222,7 +222,34 @@ const std::string Double = "double";
 
 } // namespace valueTypes
 
-txbuilder::Map convertAssetValueMap(JNIEnv *env, jobject value_) {
+Api::BaseObject convertBaseObjectFromMap(std::map<std::string, std::string>& baseObjectMap) {
+  const auto valueType = baseObjectMap["type"];
+  const auto content = baseObjectMap["value"];
+  if (valueType == valueType::String) {
+    return txbuilder::createValueString(content);
+  } else if (valueType == valueType::Int) {
+    try {
+      return txbuilder::createValueInt(std::stoi(content));
+    } catch (std::invalid_argument) {
+      throw "Value type mismatch: expected int";
+    }
+  } else if (valueType == valueType::Boolean) {
+    auto boolStr = content;
+    std::transform(boolStr.begin(), boolStr.end(), boolStr.begin(),
+                   ::tolower);
+    return txbuilder::createValueBool(boolStr == "true");
+  } else if (valueType == valueType::Double) {
+    try {
+      return txbuilder::createValueDouble(std::stod(content));
+    } catch (std::invalid_argument) {
+      throw "Value type mismatch: expected double";
+    }
+  } else {
+    throw "Unknown value type";
+  }
+}
+
+txbuilder::Map convertAssetValueHashMap(JNIEnv *env, jobject value_) {
 
   txbuilder::Map ret;
 
@@ -231,34 +258,18 @@ txbuilder::Map convertAssetValueMap(JNIEnv *env, jobject value_) {
 
   for (auto &e : valueMapSM) {
     const auto &key = e.first;
-    auto &baseObjectMap = e.second;
-    const auto valueType = baseObjectMap["type"];
-    const auto content = baseObjectMap["value"];
-    if (valueType == valueType::String) {
-      ret.emplace(key, txbuilder::createValueString(content));
-    } else if (valueType == valueType::Int) {
-      try {
-        ret.emplace(key, txbuilder::createValueInt(std::stoi(content)));
-      } catch (std::invalid_argument) {
-        throw "Value type mismatch: expected int";
-      }
-    } else if (valueType == valueType::Boolean) {
-      auto boolStr = content;
-      std::transform(boolStr.begin(), boolStr.end(), boolStr.begin(),
-                     ::tolower);
-      ret.emplace(key, txbuilder::createValueBool(boolStr == "true"));
-    } else if (valueType == valueType::Double) {
-      try {
-        ret.emplace(key, txbuilder::createValueDouble(std::stod(content)));
-      } catch (std::invalid_argument) {
-        throw "Value type mismatch: expected double";
-      }
-    } else {
-      throw "Unknown value type";
-    }
+    ret.emplace(key, convertBaseObjectFromMap(e.second));
   }
 
   return ret;
+}
+
+Api::BaseObject convertSimpleAssetValueHashMap(JNIEnv *env, jobject value_) {
+
+  std::map<std::string, std::string> baseObjectMap =
+    convertJavaHashMapValueString(env, value_);
+
+  return convertBaseObjectFromMap(baseObjectMap);
 }
 
 /*********************************************************************************************

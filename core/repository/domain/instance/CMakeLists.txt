@@ -13,12 +13,15 @@ include_directories(
   ${LEVELDB_PATH}/include
 )
 
-ADD_LIBRARY(domain_repository STATIC
+add_library(core_repository STATIC
+  domain_repository.cpp
   account_repository.cpp
   asset_repository.cpp
+  simple_asset_repository.cpp
+  peer_repository.cpp
 )
 
-target_link_libraries(domain_repository
+target_link_libraries(core_repository
   exception
   convert_string
   # connect infra

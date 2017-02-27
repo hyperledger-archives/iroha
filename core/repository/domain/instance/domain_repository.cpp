@@ -14,58 +14,53 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../asset_repository.hpp"
+#include "../domain_repository.hpp"
 #include <crypto/hash.hpp>
 #include <repository/world_state_repository.hpp>
 #include <transaction_builder/transaction_builder.hpp>
 #include <util/exception.hpp>
 #include <util/logger.hpp>
 
-const std::string NameSpaceID = "asset repository";
+const std::string NameSpaceID = "domain repository";
 
 namespace repository {
-namespace asset {
+namespace domain {
 
 namespace detail {
 /********************************************************************************************
  * stringify / parse
  ********************************************************************************************/
-std::string stringifyAsset(const Api::Asset &obj) {
+std::string stringifyDomain(const Api::Domain &obj) {
   std::string ret;
   obj.SerializeToString(&ret);
   return ret;
 }
 
-Api::Asset parseAsset(const std::string &str) {
-  Api::Asset ret;
+Api::Domain parseDomain(const std::string &str) {
+  Api::Domain ret;
   ret.ParseFromString(str);
   return ret;
 }
 
-std::string createAssetUuid(const std::string &domain,
-                            const std::string &name) {
-  return hash::sha3_256_hex(domain + "@" + name);
+std::string createDomainUuid(const std::string &ownerPublicKey) {
+  return hash::sha3_256_hex(ownerPublicKey);
 }
 }
 
 /********************************************************************************************
- * Add<Asset>
+ * Add<Domain>
  ********************************************************************************************/
-std::string add(const std::string &domain, const std::string &name,
-                const txbuilder::Map &value,
-                const std::string &smartContractName) {
+std::string add(const std::string &ownerPublicKey, const std::string &name) {
 
-  logger::explore(NameSpaceID) << "Add<Asset> domainId: " << domain
-                               << " assetName: " << name
-                               << " assetValue: " << txbuilder::stringify(value)
-                               << " smartContractName: " << smartContractName;
+  logger::explore(NameSpaceID) << "Add<Domain> ownerPublicKey: " << ownerPublicKey
+                               << " name: " << name;
 
-  const auto uuid = detail::createAssetUuid(domain, name);
+  const auto uuid = detail::createDomainUuid(ownerPublicKey);
 
   if (not exists(uuid)) {
-    const auto strAsset = detail::stringifyAsset(
-        txbuilder::createAsset(domain, name, value, smartContractName));
-    if (world_state_repository::add(uuid, strAsset)) {
+    const auto strDomain =
+        detail::stringifyDomain(txbuilder::createDomain(ownerPublicKey, name));
+    if (world_state_repository::add(uuid, strDomain)) {
       return uuid;
     }
   }
@@ -74,29 +69,31 @@ std::string add(const std::string &domain, const std::string &name,
 }
 
 /********************************************************************************************
- * Update<Asset>
+ * Update<Domain>
  ********************************************************************************************/
-bool update(const std::string &uuid, const txbuilder::Map &value) {
+/*
+What should be updated?
+
+bool update(const std::string &uuid, const Api::Trust &trust) {
   if (exists(uuid)) {
     const auto rval = world_state_repository::find(uuid);
-    logger::explore(NameSpaceID) << "Update<Asset> uuid: " << uuid
-                                 << txbuilder::stringify(value);
-    auto asset = detail::parseAsset(rval);
-    *asset.mutable_value() =
-        ::google::protobuf::Map<std::string, Api::BaseObject>(value.begin(),
-                                                              value.end());
-    const auto strAsset = detail::stringifyAsset(asset);
-    return world_state_repository::update(uuid, strAsset);
+    logger::explore(NameSpaceID) << "Update<Domain> uuid: " << uuid
+                                 << trust.value();
+    auto domain = detail::parseDomain(rval);
+    *domain.mutable_trust() = trust;
+    const auto strDomain = detail::stringifyDomain(domain);
+    return world_state_repository::update(uuid, strDomain);
   }
   return false;
 }
+*/
 
 /********************************************************************************************
- * Remove<Asset>
+ * Remove<Domain>
  ********************************************************************************************/
 bool remove(const std::string &uuid) {
   if (exists(uuid)) {
-    logger::explore(NameSpaceID) << "Remove<Asset> uuid: " << uuid;
+    logger::explore(NameSpaceID) << "Remove<Domain> uuid: " << uuid;
     return world_state_repository::remove(uuid);
   }
   return false;
@@ -105,25 +102,15 @@ bool remove(const std::string &uuid) {
 /********************************************************************************************
  * find
  ********************************************************************************************/
-std::vector<Api::Asset> findAll(const std::string &uuid) {
-  /* Use world_state_repository::findByPrefix()*/
-  throw exception::NotImplementedException(__func__, __FILE__);
-}
-
-Api::Asset findByUuid(const std::string &uuid) {
+Api::Domain findByUuid(const std::string &uuid) {
 
   logger::explore(NameSpaceID + "::findByUuid") << "";
-  auto strAsset = world_state_repository::find(uuid);
-  if (not strAsset.empty()) {
-    return detail::parseAsset(strAsset);
+  auto strDomain = world_state_repository::find(uuid);
+  if (not strDomain.empty()) {
+    return detail::parseDomain(strDomain);
   }
 
-  return Api::Asset();
-}
-
-Api::Asset findByUuidOrElse(const std::string &uuid,
-                            const Api::Asset &defaultValue) {
-  throw "asset repo :: findByUuidOrElse() is not implemented yet.";
+  return Api::Domain();
 }
 
 bool exists(const std::string &uuid) {

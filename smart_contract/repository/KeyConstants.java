@@ -24,6 +24,10 @@ public class KeyConstants {
     public static final String DomainId    = "domainId";
     public static final String AssetName   = "assetName";
     public static final String ContractName = "smartContractName";
+
+    public static final String SimpleAssetName = "simpleAssetName";
+    public static final String SimpleAssetNameg = "simpleAssetName";
+    public static final String SimpleAssetValue = "simpleAssetValue";
     
 //    public static final String AssetValue  = "assetValue";
 

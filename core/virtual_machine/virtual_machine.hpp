@@ -54,6 +54,18 @@ void invokeFunction(const std::string &packageName,
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName,
+                    std::string param,
+                    std::map<std::string, std::string> param2);
+
+void invokeFunction(const std::string &packageName,
+                    const std::string &contractName,
+                    const std::string &functionName,
+                    std::map<std::string, std::string> params,
+                    std::map<std::string, std::string> params2);
+
+void invokeFunction(const std::string &packageName,
+                    const std::string &contractName,
+                    const std::string &functionName,
                     std::map<std::string, std::string> params,
                     std::map<std::string, std::map<std::string, std::string>> params2);
 

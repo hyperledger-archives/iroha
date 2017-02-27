@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef IROHA_ASSET_REPOSITORY_H
-#define IROHA_ASSET_REPOSITORY_H
+#ifndef __CORE_REPOSITORY_DOMAIN_ASSET_REPOSITORY_HPP__
+#define __CORE_REPOSITORY_DOMAIN_ASSET_REPOSITORY_HPP__
 
 #include <infra/protobuf/api.pb.h>
 #include <transaction_builder/transaction_builder.hpp>
@@ -37,4 +37,4 @@ bool exists(const std::string &uuid);
 }
 }
 
-#endif // IROHA_ASSET_REPOSITORY_H
+#endif // __CORE_REPOSITORY_DOMAIN_ASSET_REPOSITORY_HPP__

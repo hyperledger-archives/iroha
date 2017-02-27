@@ -21,7 +21,9 @@ public class Repository {
         System.loadLibrary("Repository");
     }
 
-    // Account
+    /*
+     * Account
+     */
     public static native String accountAdd(String publicKey, String name, String[] assets);
     public static native Boolean accountAttach(String uuid, String asset);
     public static native Boolean accountUpdate(String uuid, String[] assets);
@@ -31,16 +33,46 @@ public class Repository {
     public static native Boolean accountExists(String uuid);
 
     /*
+     * Domain
+     */
+    public static native String domainAdd(String publicKey, String name, String[] assets);
+    public static native Boolean domainAttach(String uuid, String asset);
+    public static native Boolean domainUpdate(String uuid, String[] assets);
+    public static native Boolean domainRemove(String uuid);
+    public static native String[] domainFindByUuid(String uuid);
+    public static native Boolean domainExists(String uuid);
+
+    /*
      * Asset
-     * TODO: Replace HashMap with JSON.
      */
     public static native String assetAdd(String domain, String name,
                                          HashMap<String, HashMap<String, String>> value,
                                          String smartContractName);
     public static native Boolean assetUpdate(String uuid, HashMap<String, HashMap<String, String>> value);
     public static native Boolean assetRemove(String uuid);
-//    public static native HashMap<String,String>[] findAll(String uuid);
     public static native HashMap<String, String> assetInfoFindByUuid(String uuid);
     public static native HashMap<String, HashMap<String, String>> assetValueFindByUuid(String uuid);
     public static native Boolean assetExists(String uuid);
+
+    /*
+     * SimpleAsset
+     */
+    public static native String simpleAssetAdd(String domain, String name,
+                                               HashMap<String, String> value,
+                                               String smartContractName);
+    public static native Boolean simpleAssetUpdate(String uuid, HashMap<String, String> value);
+    public static native Boolean simpleAssetRemove(String uuid);
+    public static native HashMap<String, String> simpleAssetInfoFindByUuid(String uuid);
+    public static native HashMap<String, String> simpleAssetValueFindByUuid(String uuid);
+    public static native Boolean simpleAssetExists(String uuid);
+
+    /*
+     * Peer
+     */
+    public static native String peerAdd(String publicKey, String name, String[] assets);
+    public static native Boolean peerAttach(String uuid, String asset);
+    public static native Boolean peerUpdate(String uuid, String[] assets);
+    public static native Boolean peerRemove(String uuid);
+    public static native HashMap<String, String> peerFindByUuid(String uuid);
+    public static native Boolean peerExists(String uuid);
 }

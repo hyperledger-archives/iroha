@@ -14,58 +14,55 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../asset_repository.hpp"
+#include "../peer_repository.hpp"
 #include <crypto/hash.hpp>
 #include <repository/world_state_repository.hpp>
 #include <transaction_builder/transaction_builder.hpp>
 #include <util/exception.hpp>
 #include <util/logger.hpp>
 
-const std::string NameSpaceID = "asset repository";
+const std::string NameSpaceID = "simple asset repository";
 
 namespace repository {
-namespace asset {
+namespace peer {
 
 namespace detail {
 /********************************************************************************************
  * stringify / parse
  ********************************************************************************************/
-std::string stringifyAsset(const Api::Asset &obj) {
+std::string stringifyPeer(const Api::Peer &obj) {
   std::string ret;
   obj.SerializeToString(&ret);
   return ret;
 }
 
-Api::Asset parseAsset(const std::string &str) {
-  Api::Asset ret;
+Api::Peer parsePeer(const std::string &str) {
+  Api::Peer ret;
   ret.ParseFromString(str);
   return ret;
 }
 
-std::string createAssetUuid(const std::string &domain,
-                            const std::string &name) {
-  return hash::sha3_256_hex(domain + "@" + name);
+std::string createPeerUuid(const std::string &publicKey) {
+  return hash::sha3_256_hex(publicKey);
 }
 }
 
 /********************************************************************************************
- * Add<Asset>
+ * Add<Peer>
  ********************************************************************************************/
-std::string add(const std::string &domain, const std::string &name,
-                const txbuilder::Map &value,
-                const std::string &smartContractName) {
+std::string add(const std::string &publicKey, const std::string &address,
+                const Api::Trust &trust) {
 
-  logger::explore(NameSpaceID) << "Add<Asset> domainId: " << domain
-                               << " assetName: " << name
-                               << " assetValue: " << txbuilder::stringify(value)
-                               << " smartContractName: " << smartContractName;
+  logger::explore(NameSpaceID) << "Add<Peer> publicKey: " << publicKey
+                               << " address: " << address
+                               << " trust: " << trust.value();
 
-  const auto uuid = detail::createAssetUuid(domain, name);
+  const auto uuid = detail::createPeerUuid(publicKey);
 
   if (not exists(uuid)) {
-    const auto strAsset = detail::stringifyAsset(
-        txbuilder::createAsset(domain, name, value, smartContractName));
-    if (world_state_repository::add(uuid, strAsset)) {
+    const auto strPeer =
+        detail::stringifyPeer(txbuilder::createPeer(publicKey, address, trust));
+    if (world_state_repository::add(uuid, strPeer)) {
       return uuid;
     }
   }
@@ -74,29 +71,27 @@ std::string add(const std::string &domain, const std::string &name,
 }
 
 /********************************************************************************************
- * Update<Asset>
+ * Update<Peer>
  ********************************************************************************************/
-bool update(const std::string &uuid, const txbuilder::Map &value) {
+bool update(const std::string &uuid, const Api::Trust &trust) {
   if (exists(uuid)) {
     const auto rval = world_state_repository::find(uuid);
-    logger::explore(NameSpaceID) << "Update<Asset> uuid: " << uuid
-                                 << txbuilder::stringify(value);
-    auto asset = detail::parseAsset(rval);
-    *asset.mutable_value() =
-        ::google::protobuf::Map<std::string, Api::BaseObject>(value.begin(),
-                                                              value.end());
-    const auto strAsset = detail::stringifyAsset(asset);
-    return world_state_repository::update(uuid, strAsset);
+    logger::explore(NameSpaceID) << "Update<Peer> uuid: " << uuid
+                                 << trust.value();
+    auto peer = detail::parsePeer(rval);
+    *peer.mutable_trust() = trust;
+    const auto strPeer = detail::stringifyPeer(peer);
+    return world_state_repository::update(uuid, strPeer);
   }
   return false;
 }
 
 /********************************************************************************************
- * Remove<Asset>
+ * Remove<Peer>
  ********************************************************************************************/
 bool remove(const std::string &uuid) {
   if (exists(uuid)) {
-    logger::explore(NameSpaceID) << "Remove<Asset> uuid: " << uuid;
+    logger::explore(NameSpaceID) << "Remove<Peer> uuid: " << uuid;
     return world_state_repository::remove(uuid);
   }
   return false;
@@ -105,25 +100,15 @@ bool remove(const std::string &uuid) {
 /********************************************************************************************
  * find
  ********************************************************************************************/
-std::vector<Api::Asset> findAll(const std::string &uuid) {
-  /* Use world_state_repository::findByPrefix()*/
-  throw exception::NotImplementedException(__func__, __FILE__);
-}
-
-Api::Asset findByUuid(const std::string &uuid) {
+Api::Peer findByUuid(const std::string &uuid) {
 
   logger::explore(NameSpaceID + "::findByUuid") << "";
-  auto strAsset = world_state_repository::find(uuid);
-  if (not strAsset.empty()) {
-    return detail::parseAsset(strAsset);
+  auto strPeer = world_state_repository::find(uuid);
+  if (not strPeer.empty()) {
+    return detail::parsePeer(strPeer);
   }
 
-  return Api::Asset();
-}
-
-Api::Asset findByUuidOrElse(const std::string &uuid,
-                            const Api::Asset &defaultValue) {
-  throw "asset repo :: findByUuidOrElse() is not implemented yet.";
+  return Api::Peer();
 }
 
 bool exists(const std::string &uuid) {

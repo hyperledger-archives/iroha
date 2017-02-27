@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.3.0 FATAL_ERROR)
+
 PROJECT(iroha CXX)
 
 ENABLE_LANGUAGE(C)

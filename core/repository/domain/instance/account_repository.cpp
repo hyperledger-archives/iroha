@@ -18,8 +18,8 @@ limitations under the License.
 #include <crypto/hash.hpp>
 #include <repository/world_state_repository.hpp>
 #include <transaction_builder/transaction_builder.hpp>
-#include <util/logger.hpp>
 #include <util/convert_string.hpp>
+#include <util/logger.hpp>
 
 const std::string NameSpaceID = "account repository";
 
@@ -150,8 +150,7 @@ Api::Account findByUuid(const std::string &uuid) {
 
 bool exists(const std::string &uuid) {
   const auto result = world_state_repository::exists(uuid);
-  logger::explore(NameSpaceID + "::exists")
-      << (result ? "true" : "false");
+  logger::explore(NameSpaceID + "::exists") << (result ? "true" : "false");
   return result;
 }
 }

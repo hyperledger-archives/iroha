@@ -24,6 +24,7 @@ limitations under the License.
 #include <infra/virtual_machine/jvm/java_data_structure.hpp>
 #include <repository/domain/account_repository.hpp>
 #include <repository/domain/asset_repository.hpp>
+#include <repository/domain/simple_asset_repository.hpp>
 #include <transaction_builder/helper/create_objects_helper.hpp>
 #include <util/convert_string.hpp>
 #include <util/logger.hpp>
@@ -38,7 +39,8 @@ using virtual_machine::jvm::JavaMakeMap;
 using virtual_machine::jvm::convertJavaStringArrayRelease;
 using virtual_machine::jvm::convertJavaHashMapValueString;
 using virtual_machine::jvm::convertJavaHashMapValueHashMap;
-using virtual_machine::jvm::convertAssetValueMap;
+using virtual_machine::jvm::convertAssetValueHashMap;
+using virtual_machine::jvm::convertSimpleAssetValueHashMap;
 using virtual_machine::jvm::convertBaseObjectToMapString;
 using virtual_machine::jvm::JavaMakeStringArray;
 
@@ -181,7 +183,7 @@ JNIEXPORT jstring JNICALL Java_repository_Repository_assetAdd(
   env->ReleaseStringUTFChars(name_, nameCString);
   env->ReleaseStringUTFChars(smartContractName_, smartContractNameCString);
 
-  const auto value = convertAssetValueMap(env, value_);
+  const auto value = convertAssetValueHashMap(env, value_);
 
   logger::debug(NameSpaceID + "::assetAdd")
       << "domainId: " << domain << ", assetName: " << name
@@ -200,7 +202,7 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_assetUpdate(
 
   env->ReleaseStringUTFChars(uuid_, uuidCString);
 
-  const auto value = convertAssetValueMap(env, value_);
+  const auto value = convertAssetValueHashMap(env, value_);
 
   return JavaMakeBoolean(env, repository::asset::update(uuid, value));
 }
@@ -288,4 +290,114 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_assetExists(
   env->ReleaseStringUTFChars(uuid_, uuidCString);
   logger::debug(NameSpaceID + "::assetExists") << " uuid: " << uuid;
   return JavaMakeBoolean(env, repository::asset::exists(uuid));
+}
+
+/***************************************************************************************
+ * SimpleAsset
+ ***************************************************************************************/
+JNIEXPORT jstring JNICALL Java_repository_Repository_simpleAssetAdd
+  (JNIEnv *env, jclass, jstring domain_, jstring name_, jobject value_, jstring smartContractName_)
+{
+  const char *domainCString = env->GetStringUTFChars(domain_, 0);
+  const char *nameCString = env->GetStringUTFChars(name_, 0);
+  const char *smartContractNameCString =
+      env->GetStringUTFChars(smartContractName_, 0);
+
+  const auto domain = std::string(domainCString);
+  const auto name = std::string(nameCString);
+  const auto smartContractName = std::string(smartContractNameCString);
+
+  env->ReleaseStringUTFChars(domain_, domainCString);
+  env->ReleaseStringUTFChars(name_, nameCString);
+  env->ReleaseStringUTFChars(smartContractName_, smartContractNameCString);
+
+  const Api::BaseObject value = convertSimpleAssetValueHashMap(env, value_);
+
+  logger::debug(NameSpaceID + "::simpleAssetAdd")
+      << "domainId: " << domain << ", name: " << name
+      << ", smartContractName: " << smartContractName;
+
+  const auto ret =
+      repository::simple_asset::add(domain, name, value, smartContractName);
+
+  return env->NewStringUTF(ret.c_str());
+}
+
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetUpdate
+  (JNIEnv *env, jclass, jstring uuid_, jobject value_)
+{
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const auto uuid = std::string(uuidCString);
+
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+
+  const auto value = convertSimpleAssetValueHashMap(env, value_);
+
+  return JavaMakeBoolean(env, repository::simple_asset::update(uuid, value));
+}
+
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetRemove
+  (JNIEnv *env, jclass, jstring uuid_)
+{
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const auto uuid = std::string(uuidCString);
+
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+
+  return JavaMakeBoolean(env, repository::simple_asset::remove(uuid));
+}
+
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetInfoFindByUuid
+  (JNIEnv *env, jclass, jstring uuid_)
+{
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const auto uuid = std::string(uuidCString);
+
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+
+  logger::debug(NameSpaceID + "::simpleAssetInfoFindByUuid") << "uuid: " << uuid;
+
+  auto simpleAsset = repository::simple_asset::findByUuid(uuid);
+
+  using jni_constants::DomainIdTag;
+  using jni_constants::AssetNameTag;
+  using jni_constants::SmartContractNameTag;
+
+  std::map<std::string, std::string> params;
+  {
+    params[DomainIdTag] = simpleAsset.domain();
+    params[AssetNameTag] = simpleAsset.name();
+    params[SmartContractNameTag] = simpleAsset.smartcontractname();
+  }
+
+  logger::debug(NameSpaceID + "::simpleAssetInfoFindByUuid")
+      << "params[DomainIdTag]: \"value\":" << params[DomainIdTag] << ", "
+      << "params[AssetNameTag]: \"value\":" << params[AssetNameTag] << ", "
+      << "params[SmartContractNameTag]: \"value\":"
+      << params[SmartContractNameTag];
+
+  return JavaMakeMap(env, params);
+}
+
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetValueFindByUuid
+  (JNIEnv *env, jclass, jstring uuid_)
+{
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const auto uuid = std::string(uuidCString);
+
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+
+  logger::debug(NameSpaceID + "::simpleAssetValueFindByUuid") << "uuid: " << uuid;
+
+  auto simpleAsset = repository::simple_asset::findByUuid(uuid);
+  return JavaMakeMap(env, convertBaseObjectToMapString(simpleAsset.value()));
+}
+
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetExists
+    (JNIEnv *env, jclass, jstring uuid_) {
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const auto uuid = std::string(uuidCString);
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+  logger::debug(NameSpaceID + "::simpleAssetExists") << " uuid: " << uuid;
+  return JavaMakeBoolean(env, repository::simple_asset::exists(uuid));
 }

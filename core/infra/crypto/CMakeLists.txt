@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.3.0 FATAL_ERROR)
+
 SET(KECCAK_PATH  "${PROJECT_SOURCE_DIR}/core/vendor/KeccakCodePackage")
 SET(KECCAK_BIN_PATH  "${PROJECT_SOURCE_DIR}/core/vendor/KeccakCodePackage/bin/.build/generic64/")
 SET(ED25519_PATH "${PROJECT_SOURCE_DIR}/core/vendor/ed25519")

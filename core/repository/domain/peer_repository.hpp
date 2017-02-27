@@ -14,23 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __CORE_REPOSITORY_DOMAIN_ACCOUNT_REPOSITORY_HPP__
-#define __CORE_REPOSITORY_DOMAIN_ACCOUNT_REPOSITORY_HPP__
+#ifndef __CORE_REPOSITORY_DOMAIN_PEER_REPOSITORY_HPP__
+#define __CORE_REPOSITORY_DOMAIN_PEER_REPOSITORY_HPP__
 
 #include <infra/protobuf/api.pb.h>
-#include <memory>
+#include <transaction_builder/transaction_builder.hpp>
 #include <string>
 #include <vector>
 
 namespace repository {
-namespace account {
-std::string add(const std::string &publicKey, const std::string &name,
-                const std::vector<std::string> &assets);
-bool attach(const std::string &uuid, const std::string &asset);
-bool update(const std::string &uuid, const std::vector<std::string> &assets);
+namespace peer {
+std::string add(const std::string &publicKey, const std::string &address,
+                const Api::Trust &trust);
+bool update(const std::string &uuid, const Api::Trust &trust);
 bool remove(const std::string &uuid);
-Api::Account findByUuid(const std::string &uuid);
+//std::vector<Api::Peer> findAll(const std::string &uuid);
+Api::Peer findByUuid(const std::string &uuid);
 bool exists(const std::string &uuid);
 }
 }
-#endif // __CORE_REPOSITORY_DOMAIN_ACCOUNT_REPOSITORY_HPP__
+
+#endif // __CORE_REPOSITORY_DOMAIN_PEER_REPOSITORY_HPP__

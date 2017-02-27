@@ -65,6 +65,54 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_accountExists
 
 /*
  * Class:     repository_Repository
+ * Method:    domainAdd
+ * Signature: (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_repository_Repository_domainAdd
+  (JNIEnv *, jclass, jstring, jstring, jobjectArray);
+
+/*
+ * Class:     repository_Repository
+ * Method:    domainAttach
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_repository_Repository_domainAttach
+  (JNIEnv *, jclass, jstring, jstring);
+
+/*
+ * Class:     repository_Repository
+ * Method:    domainUpdate
+ * Signature: (Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_repository_Repository_domainUpdate
+  (JNIEnv *, jclass, jstring, jobjectArray);
+
+/*
+ * Class:     repository_Repository
+ * Method:    domainRemove
+ * Signature: (Ljava/lang/String;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_repository_Repository_domainRemove
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     repository_Repository
+ * Method:    domainFindByUuid
+ * Signature: (Ljava/lang/String;)[Ljava/lang/String;
+ */
+JNIEXPORT jobjectArray JNICALL Java_repository_Repository_domainFindByUuid
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     repository_Repository
+ * Method:    domainExists
+ * Signature: (Ljava/lang/String;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_repository_Repository_domainExists
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     repository_Repository
  * Method:    assetAdd
  * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/util/HashMap;Ljava/lang/String;)Ljava/lang/String;
  */
@@ -109,6 +157,102 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_assetValueFindByUuid
  * Signature: (Ljava/lang/String;)Ljava/lang/Boolean;
  */
 JNIEXPORT jobject JNICALL Java_repository_Repository_assetExists
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     repository_Repository
+ * Method:    simpleAssetAdd
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/util/HashMap;Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_repository_Repository_simpleAssetAdd
+  (JNIEnv *, jclass, jstring, jstring, jobject, jstring);
+
+/*
+ * Class:     repository_Repository
+ * Method:    simpleAssetUpdate
+ * Signature: (Ljava/lang/String;Ljava/util/HashMap;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetUpdate
+  (JNIEnv *, jclass, jstring, jobject);
+
+/*
+ * Class:     repository_Repository
+ * Method:    simpleAssetRemove
+ * Signature: (Ljava/lang/String;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetRemove
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     repository_Repository
+ * Method:    simpleAssetInfoFindByUuid
+ * Signature: (Ljava/lang/String;)Ljava/util/HashMap;
+ */
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetInfoFindByUuid
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     repository_Repository
+ * Method:    simpleAssetValueFindByUuid
+ * Signature: (Ljava/lang/String;)Ljava/util/HashMap;
+ */
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetValueFindByUuid
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     repository_Repository
+ * Method:    simpleAssetExists
+ * Signature: (Ljava/lang/String;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetExists
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     repository_Repository
+ * Method:    peerAdd
+ * Signature: (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_repository_Repository_peerAdd
+  (JNIEnv *, jclass, jstring, jstring, jobjectArray);
+
+/*
+ * Class:     repository_Repository
+ * Method:    peerAttach
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_repository_Repository_peerAttach
+  (JNIEnv *, jclass, jstring, jstring);
+
+/*
+ * Class:     repository_Repository
+ * Method:    peerUpdate
+ * Signature: (Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_repository_Repository_peerUpdate
+  (JNIEnv *, jclass, jstring, jobjectArray);
+
+/*
+ * Class:     repository_Repository
+ * Method:    peerRemove
+ * Signature: (Ljava/lang/String;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_repository_Repository_peerRemove
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     repository_Repository
+ * Method:    peerFindByUuid
+ * Signature: (Ljava/lang/String;)Ljava/util/HashMap;
+ */
+JNIEXPORT jobject JNICALL Java_repository_Repository_peerFindByUuid
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     repository_Repository
+ * Method:    peerExists
+ * Signature: (Ljava/lang/String;)Ljava/lang/Boolean;
+ */
+JNIEXPORT jobject JNICALL Java_repository_Repository_peerExists
   (JNIEnv *, jclass, jstring);
 
 #ifdef __cplusplus

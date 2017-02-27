@@ -8,7 +8,7 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/core
 )
 
-ADD_LIBRARY(create_objects_helper STATIC
+add_library(create_objects_helper STATIC
   create_objects_helper.cpp
 )
 

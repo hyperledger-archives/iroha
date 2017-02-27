@@ -17,7 +17,6 @@ limitations under the License.
 #include <gtest/gtest.h>
 
 #include <infra/protobuf/api.pb.h>
-#include <repository/domain/account_repository.hpp>
 #include <repository/domain/asset_repository.hpp>
 #include <repository/world_state_repository.hpp>
 #include <virtual_machine/virtual_machine.hpp>
@@ -25,107 +24,21 @@ limitations under the License.
 
 const std::string PackageName = "test";
 const std::string ContractName = "Test";
+
 const std::string PublicKeyTag = "publicKey";
 const std::string DomainIdTag = "domainId";
-const std::string AccountNameTag = "accountName";
 const std::string AssetNameTag = "assetName";
 const std::string AssetValueTag = "assetValue";
 const std::string SmartContractNameTag = "smartContractName";
 
-TEST(JavaQueryRepo, InitializeVM) {
-  virtual_machine::initializeVM(PackageName, ContractName);
-}
-
-TEST(JavaQueryRepo, Invoke_JAVA_function) {
-  const std::string FunctionName = "test1";
-  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName);
-}
-
-TEST(JavaQueryRepo, Invoke_JAVA_function_map_argv) {
-
-  const std::string FunctionName = "test2";
-
-  std::map<std::string, std::string> params;
-  {
-    params["key1"] = "Mizuki";
-    params["key2"] = "Sonoko";
-  }
-
-  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
-                                  params);
-}
-
-TEST(JavaQueryRepo, Invoke_JAVA_function_map_utf_8) {
-
-  const std::string FunctionName = "test3";
-
-  std::map<std::string, std::string> params;
-  {
-    params["key1"] = "水樹";
-    params["key2"] = "素子";
-  }
-
-  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
-                                  params);
-}
-
-TEST(JavaQueryRepo, removeDBChacheIfExists) {
-  const auto account = "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
-  if (repository::account::exists(account)) {
-    repository::account::remove(account);
-  }
-  const auto asset = "3f8ba1e5df7f1587defc8fae4789207c8719c7b6d86ce299821b8a83fe08b5a9";
-  if (repository::asset::exists(asset)) {
-    repository::asset::remove(asset);
-  }
-  const auto account2 = "48578a1dd980bc7b739702889057f292f3cb29f7a67307fbce04f2e34489eb57";
-  if (repository::asset::exists(account2)) {
-    repository::account::remove(account2);
-  }
-}
-
-TEST(JavaQueryRepo, Invoke_CPP_account_repo_function_FROM_JAVA_function) {
-
-  const std::string FunctionName = "testAddAccount";
-
-  std::map<std::string, std::string> params;
-  {
-    params[PublicKeyTag] = "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
-    params[AccountNameTag] = "MizukiSonoko";
-  }
-
-  std::vector<std::string> assets;
-  {
-    assets.push_back("asset1");
-    assets.push_back("asset2");
-    assets.push_back("asset3");
-  }
-
-  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
-                                  params, assets);
-
-  const std::string uuid =
-      "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
-
-  const std::string received_serialized_acc =
-      repository::world_state_repository::find(uuid);
-
-  Api::Account account;
-  account.ParseFromString(received_serialized_acc);
-
-  ASSERT_STREQ(params[PublicKeyTag].c_str(), account.publickey().c_str());
-  ASSERT_STREQ(params[AccountNameTag].c_str(), account.name().c_str());
-  for (std::size_t i = 0; i < assets.size(); i++) {
-    ASSERT_STREQ(assets[i].c_str(), account.assets(i).c_str());
-  }
-}
-
 std::map<std::string, std::string> assetInfo;
 std::map<std::string, std::map<std::string, std::string>> assetValue;
 
-void ensureIntegrityOfAsset(const std::string& uuid) {
+const auto assetUuid = "3f8ba1e5df7f1587defc8fae4789207c8719c7b6d86ce299821b8a83fe08b5a9";
+
+void ensureIntegrityOfAsset() {
   const std::string received_asset_value =
-      repository::world_state_repository::find(uuid);
+      repository::world_state_repository::find(assetUuid);
 
   // Restore asset.
   Api::Asset asset;
@@ -180,7 +93,20 @@ void ensureIntegrityOfAsset(const std::string& uuid) {
   }
 }
 
-TEST(JavaQueryRepo, invokeAddAssetQuery) {
+/*********************************************************************************************************
+ * Test Asset
+ *********************************************************************************************************/
+TEST(JavaQueryRepoAsset, InitializeVM) {
+  virtual_machine::initializeVM(PackageName, ContractName);
+}
+
+TEST(JavaQueryRepoAsset, removeDBChacheIfExists) {
+  if (repository::asset::exists(assetUuid)) {
+    repository::asset::remove(assetUuid);
+  }
+}
+
+TEST(JavaQueryRepoAsset, invokeAddAssetQuery) {
 
   /***********************************************************************
    * 1. Initial guess
@@ -213,16 +139,11 @@ TEST(JavaQueryRepo, invokeAddAssetQuery) {
   /***********************************************************************
    * 3. Test
    ***********************************************************************/
-  const std::string uuid =
-      "3f8ba1e5df7f1587defc8fae4789207c8719c7b6d86ce299821b8a83fe08b5a9";
-
-  assetInfo["uuid"] = uuid; // This should be done by getting return value of java function.
-
   std::cout << "In c++:\n";
-  ensureIntegrityOfAsset(uuid);
+  ensureIntegrityOfAsset();
 }
 
-TEST(JavaQueryRepo, invokeUpdateAssetQuery) {
+TEST(JavaQueryRepoAsset, invokeUpdateAssetQuery) {
   /***********************************************************************
    * 1. Initial guess
    ***********************************************************************/
@@ -245,36 +166,33 @@ TEST(JavaQueryRepo, invokeUpdateAssetQuery) {
    * 2. Invocation Java.
    ***********************************************************************/
   virtual_machine::invokeFunction(PackageName, ContractName, "testUpdateAsset",
-                                  assetInfo["uuid"], assetValue);
+                                  assetUuid, assetValue);
 
   /***********************************************************************
    * 3. Test
    ***********************************************************************/
   std::cout << "In c++:\n";
-  ensureIntegrityOfAsset(assetInfo["uuid"]);
+  ensureIntegrityOfAsset();
 
 }
 
-TEST(JavaQueryRepo, invokeRemoveAssetQuery) {
+TEST(JavaQueryRepoAsset, invokeRemoveAssetQuery) {
   /***********************************************************************
    * 1. Invocation Java.
    ***********************************************************************/
-  std::map<std::string, std::string> params = {{"uuid", assetInfo["uuid"]}};
   virtual_machine::invokeFunction(PackageName, ContractName, "testRemoveAsset",
-                                  assetInfo["uuid"]);
+                                  assetUuid);
   /***********************************************************************
    * 2. Test
    ***********************************************************************/
-  ASSERT_FALSE(repository::asset::exists(params["uuid"]));
+  ASSERT_FALSE(repository::asset::exists(assetUuid));
 
 }
 
-TEST(JavaQueryRepo, reinvokeAddAssetQuery) {
+TEST(JavaQueryRepoAsset, reinvokeAddAssetQuery) {
   /***********************************************************************
    * 1. Invocation Java.
    ***********************************************************************/
-  const auto oldAssetUuid = assetInfo["uuid"];
-  assetInfo["uuid"] = "";
   assetInfo[DomainIdTag] = "アナザーDOMAIN";
   assetInfo[AssetNameTag] = "ポイント";
   assetInfo[SmartContractNameTag] = "anotherSmartContractFunc";
@@ -284,11 +202,11 @@ TEST(JavaQueryRepo, reinvokeAddAssetQuery) {
    * 2. Test
    ***********************************************************************/
   const auto newAssetUuid = "48578a1dd980bc7b739702889057f292f3cb29f7a67307fbce04f2e34489eb57";
-  ASSERT_FALSE(repository::asset::exists(oldAssetUuid));
+  ASSERT_FALSE(repository::asset::exists(assetUuid));
   ASSERT_TRUE(repository::asset::exists(newAssetUuid));
 
 }
 
-TEST(JavaQueryRepo, FinishVM) {
+TEST(JavaQueryRepoAsset, FinishVM) {
   virtual_machine::finishVM(PackageName, ContractName);
 }

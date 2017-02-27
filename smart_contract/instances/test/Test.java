@@ -221,7 +221,7 @@ public class Test {
       repository.assetUpdate(uuid, assetValueParam);
 
       // 2. Find by the uuid.
-      HashMap<String, String> assetInfoMap = repository.assetInfoFindByUuid(uuid);
+      //HashMap<String, String> assetInfoMap = repository.assetInfoFindByUuid(uuid);
       HashMap<String, HashMap<String, String>> assetValueMap = repository.assetValueFindByUuid(uuid);
 
       // 3. Ensure the integrity.
