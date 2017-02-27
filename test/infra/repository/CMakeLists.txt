@@ -9,7 +9,6 @@ include_directories(
 )
 link_directories(
     ${PROJECT_BINARY_DIR}/lib
-    ${LEVELDB_PATH}/out-static
 )
 
 add_executable(world_state_repository_with_leveldb_test

@@ -201,3 +201,31 @@ if(BENCHMARKING)
     )
   add_dependencies(benchmark google_benchmark)
 endif(BENCHMARKING)
+
+
+
+############################
+#         leveldb          #
+############################
+ExternalProject_Add(google_leveldb
+  GIT_REPOSITORY    "https://github.com/google/leveldb.git"
+  BUILD_IN_SOURCE   1
+  BUILD_COMMAND     $(MAKE) -j1
+  CONFIGURE_COMMAND "" # remove configure step
+  INSTALL_COMMAND   "" # remove install step
+  TEST_COMMAND      "" # remove test step
+  UPDATE_COMMAND    "" # remove update step
+  )
+ExternalProject_Get_Property(google_leveldb source_dir)
+set(leveldb_SOURCE_DIR "${source_dir}")
+
+add_library(leveldb STATIC IMPORTED)
+file(MAKE_DIRECTORY ${leveldb_SOURCE_DIR}/include)
+file(MAKE_DIRECTORY ${leveldb_SOURCE_DIR}/out-shared)
+file(MAKE_DIRECTORY ${leveldb_SOURCE_DIR}/out-static)
+set_target_properties(leveldb PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${leveldb_SOURCE_DIR}/include
+  # IMPORTED_LINK_INTERFACE_LIBRARIES "${leveldb_SOURCE_DIR}/out-static/libmemenv.a"
+  IMPORTED_LOCATION ${leveldb_SOURCE_DIR}/out-static/libleveldb.a
+  )
+add_dependencies(leveldb google_leveldb)

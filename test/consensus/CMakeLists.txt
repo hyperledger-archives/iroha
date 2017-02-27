@@ -10,7 +10,6 @@ include_directories(
 
 link_directories(
     ${AERON_PATH}/cppbuild/Release/lib
-    ${LEVELDB_PATH}/out-static
 )
 
 add_executable(sumeragi_test

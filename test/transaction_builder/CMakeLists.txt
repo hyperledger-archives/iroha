@@ -6,10 +6,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/core
 )
 
-link_directories(
-    ${LEVELDB_PATH}/out-static
-)
-
 add_executable(transaction_builder_test
     transaction_builder_add_test.cpp
     transaction_builder_transfer_test.cpp
