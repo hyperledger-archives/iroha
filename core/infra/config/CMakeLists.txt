@@ -3,21 +3,12 @@ include_directories(
 )
 
 add_library(config_manager STATIC
-  abstract_config_manager.hpp
   peer_service_with_json.cpp
   iroha_config_with_json.cpp
+  config_format.cpp
 )
 target_link_libraries(config_manager
-	config_format
-	exception
-	logger
-  external_json
-)
-
-
-add_library(config_format STATIC
-	config_format.cpp
-)
-target_link_libraries(config_format
-  external_json
+  json
+  exception
+  logger
 )

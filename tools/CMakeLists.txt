@@ -5,5 +5,5 @@ add_executable(make_sumeragi make_sumeragi )
 target_link_libraries(make_sumeragi
     base64
     signature
-    external_json
+    json
 )

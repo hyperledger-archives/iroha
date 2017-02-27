@@ -23,7 +23,6 @@ target_link_libraries(sumeragi_test
     snappy
     base64
     signature
-    convertor
     sumeragi
     connection_with_grpc
     config_manager

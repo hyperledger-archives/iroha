@@ -13,14 +13,12 @@ target_link_libraries(connection_grpc_test
     connection_with_grpc
     signature
     config_manager
-    external_ed25519
-    pthread
-    external_gtest
-    external_gtest_main
+    ed25519
+    gtest
 )
 add_test(
     NAME connection_grpc_test
-    COMMAND $<TARGET_FILE:hash_test>
+    COMMAND $<TARGET_FILE:connection_grpc_test>
 )
 
 

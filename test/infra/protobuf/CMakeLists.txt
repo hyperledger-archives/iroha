@@ -17,7 +17,7 @@ target_link_libraries(convertor_test
    grpc++_reflection
    protobuf
    dl
-   external_gtest
+   gtest
    
    pthread
 )

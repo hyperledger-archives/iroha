@@ -11,10 +11,8 @@ add_executable(config_test
 )
 
 target_link_libraries(config_test
-   external_gtest
-   external_gtest_main
-   pthread
-   external_json   
+   gtest
+   json   
 )
 
 add_test(

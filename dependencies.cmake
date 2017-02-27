@@ -7,6 +7,8 @@ set_directory_properties(PROPERTIES
 # Project dependencies.
 find_package(Threads REQUIRED)
 
+
+
 ###########################
 #         keccak          #
 ###########################
@@ -15,10 +17,11 @@ if (NOT LIBXSLT_XSLTPROC_EXECUTABLE)
   message(FATAL_ERROR "xsltproc not found")
 endif ()
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DKeccakP200_excluded -DKeccakP400_excluded -DKeccakP800_excluded ")
 ExternalProject_Add(gvanas_keccak
   GIT_REPOSITORY    "https://github.com/gvanas/KeccakCodePackage.git"
   BUILD_IN_SOURCE   1
-  BUILD_COMMAND     $(MAKE) && $(MAKE) generic64/libkeccak.a
+  BUILD_COMMAND     $(MAKE) generic64/libkeccak.a VERBOSE=1
   CONFIGURE_COMMAND "" # remove configure step
   INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
@@ -27,13 +30,29 @@ ExternalProject_Add(gvanas_keccak
 ExternalProject_Get_Property(gvanas_keccak source_dir)
 set(keccak_SOURCE_DIR "${source_dir}")
 
-add_library(external_keccak STATIC IMPORTED)
+# CFLAGS="-DKeccakP200_excluded -DKeccakP400_excluded -DKeccakP800_excluded"; 
+
+# Hash internals for keccak
+add_library(keccak STATIC IMPORTED)
 file(MAKE_DIRECTORY ${keccak_SOURCE_DIR}/bin/generic64/libkeccak.a.headers)
-set_target_properties(external_keccak PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${keccak_SOURCE_DIR}/bin/generic64/libkeccak.a.headers
-  IMPORTED_LOCATION ${keccak_SOURCE_DIR}/bin/generic64/libkeccak.a
+set_target_properties(keccak PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${keccak_SOURCE_DIR}/bin/generic64/libkeccak.a.headers"
+  IMPORTED_LOCATION "${keccak_SOURCE_DIR}/bin/generic64/libkeccak.a"
   )
-add_dependencies(external_keccak gvanas_keccak)
+
+#add_library(keccak STATIC 
+#  ${keccak_SOURCE_DIR}/SnP/KeccakP-1600/Optimized64/KeccakP-1600-opt64.c
+#)
+#target_link_libraries(keccak 
+#  keccak_internal
+#)
+#set_target_properties(keccak 
+#  PROPERTIES 
+#  COMPILE_FLAGS "-DKeccakP200_excluded -DKeccakP400_excluded -DKeccakP800_excluded -std=c++0x"
+#)
+
+add_dependencies(keccak gvanas_keccak)
+
 
 
 ############################
@@ -51,13 +70,13 @@ ExternalProject_Add(mizukisonoko_ed25519
 ExternalProject_Get_Property(mizukisonoko_ed25519 source_dir)
 set(ed25519_SOURCE_DIR "${source_dir}")
 
-add_library(external_ed25519 STATIC IMPORTED)
+add_library(ed25519 STATIC IMPORTED)
 file(MAKE_DIRECTORY ${ed25519_SOURCE_DIR}/src)
-set_target_properties(external_ed25519 PROPERTIES
+set_target_properties(ed25519 PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${ed25519_SOURCE_DIR}/src
   IMPORTED_LOCATION ${ed25519_SOURCE_DIR}/lib/libed25519.a
   )
-add_dependencies(external_ed25519 mizukisonoko_ed25519)
+add_dependencies(ed25519 mizukisonoko_ed25519)
 
 
 
@@ -76,12 +95,12 @@ ExternalProject_Get_Property(warchant_thread_pool source_dir)
 set(thread_pool_SOURCE_DIR "${source_dir}")
 
 # since it is header only, we changed STATIC to INTERFACE below
-add_library(external_thread_pool INTERFACE IMPORTED)
+add_library(thread_pool INTERFACE IMPORTED)
 file(MAKE_DIRECTORY ${thread_pool_SOURCE_DIR}/thread_pool)
-set_target_properties(external_thread_pool PROPERTIES
+set_target_properties(thread_pool PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${thread_pool_SOURCE_DIR}/thread_pool
   )
-add_dependencies(external_thread_pool warchant_thread_pool)
+add_dependencies(thread_pool warchant_thread_pool)
 
 
 
@@ -100,13 +119,12 @@ ExternalProject_Get_Property(nlohmann_json source_dir)
 set(json_SOURCE_DIR "${source_dir}")
 
 # since it is header only, we changed STATIC to INTERFACE below
-add_library(external_json INTERFACE IMPORTED)
+add_library(json INTERFACE IMPORTED)
 file(MAKE_DIRECTORY ${json_SOURCE_DIR}/src)
-set_target_properties(external_json PROPERTIES
+set_target_properties(json PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${json_SOURCE_DIR}/src
   )
-add_dependencies(external_json nlohmann_json)
-
+add_dependencies(json nlohmann_json)
 
 
 
@@ -129,14 +147,13 @@ ExternalProject_Get_Property(google_test source_dir binary_dir)
 set(gtest_SOURCE_DIR ${source_dir})
 set(gtest_BINARY_DIR ${binary_dir})
 
-add_library(external_gtest STATIC IMPORTED)
+add_library(gtest STATIC IMPORTED)
 file(MAKE_DIRECTORY ${gtest_SOURCE_DIR}/googletest/include)
 
-#  ${gtest_BINARY_DIR}/googletest/libgtest_main.a ${gtest_BINARY_DIR}/googletest/libgtest.a
-set_target_properties(external_gtest
+set_target_properties(gtest
   PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${gtest_SOURCE_DIR}/googletest/include
-  IMPORTED_LINK_DEPENDENT_LIBRARIES "pthread;${gtest_BINARY_DIR}/googletest/libgtest_main.a"
+  IMPORTED_LINK_INTERFACE_LIBRARIES "pthread;${gtest_BINARY_DIR}/googletest/libgtest_main.a"
   IMPORTED_LOCATION ${gtest_BINARY_DIR}/googletest/libgtest.a
 )
-add_dependencies(external_gtest google_test)
+add_dependencies(gtest google_test)

@@ -13,5 +13,5 @@ target_link_libraries(sumeragi
   connection_with_grpc
   signature
   event_repository
-  external_thread_pool
+  thread_pool
 )

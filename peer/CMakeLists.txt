@@ -39,9 +39,8 @@ target_link_libraries(iroha-main
   http_server_with_cappuccino
   connection_with_grpc
   config_manager
-  hash
+  ed25519
   pthread
-  external_keccak
-  external_thread_pool
-  external_json
+  thread_pool
+  json
 )

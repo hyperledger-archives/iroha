@@ -12,7 +12,7 @@ target_link_libraries(hash_test
   crypto
   hash
   ssl
-  external_gtest
+  gtest
 )
 add_test(
   NAME hash_test
@@ -26,7 +26,7 @@ target_link_libraries(base64_test
   base64
   ssl
   crypto
-  external_gtest
+  gtest
 )
 add_test(
   NAME base64_test
@@ -40,8 +40,8 @@ target_link_libraries(signature_test
   signature
   base64
   hash
-  external_ed25519
-  external_gtest
+  ed25519
+  gtest
 )
 add_test(
   NAME signature_test

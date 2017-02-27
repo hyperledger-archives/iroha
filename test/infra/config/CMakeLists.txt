@@ -12,10 +12,8 @@ add_executable(ensure_sumeragi_json_format_test
 
 target_link_libraries(ensure_sumeragi_json_format_test
     config_manager
-    config_format
-    external_json
-    external_gtest
-    pthread
+    json
+    gtest
 )
 
 add_test(

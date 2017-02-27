@@ -33,8 +33,7 @@ add_executable(java_vm_test java_vm_test.cpp)
 target_link_libraries(java_vm_test
   smart_contract_with_java
   jvm
-  external_gtest
-  pthread
+  gtest
 )
 add_test(
   NAME java_vm_test

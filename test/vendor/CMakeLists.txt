@@ -10,8 +10,8 @@ add_executable(thread_pool_test
 )
 
 target_link_libraries(thread_pool_test
-  external_thread_pool
-  external_gtest
+  thread_pool
+  gtest
 )
 
 add_test(
@@ -25,8 +25,8 @@ add_executable(json_test
 )
 
 target_link_libraries(json_test
-  external_json
-  external_gtest
+  json
+  gtest
 )
 add_test(
   NAME json_test
