@@ -58,7 +58,7 @@ namespace repository {
                   options.create_if_missing = true;
 
                   loggerStatus(leveldb::DB::Open(options,
-                            config::IrohaConfigManager::getInstance().getAssetDatabasePath("/tmp/iroha_ledger"),
+                            config::IrohaConfigManager::getInstance().getDatabasePath("/tmp/iroha_ledger"),
                             &tmpDb));
                   db.reset(tmpDb);
               }

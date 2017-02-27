@@ -31,8 +31,7 @@ class IrohaConfigManager : config::AbstractConfigManager {
   static IrohaConfigManager& getInstance();
   std::string getConfigName();
 
-  std::string getAssetDatabasePath(const std::string& defaultValue);
-  std::string getTransactionDatabasePath(const std::string& defaultValue);
+  std::string getDatabasePath(const std::string& defaultValue);
   size_t getConcurrency(size_t defaultValue);
   size_t getMaxFaultyPeers(size_t defaultValue);
   size_t getPoolWorkerQueueSize(size_t defaultValue);

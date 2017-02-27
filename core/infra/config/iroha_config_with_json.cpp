@@ -36,13 +36,7 @@ T IrohaConfigManager::getParam(const std::string& param,
 
 std::string IrohaConfigManager::getConfigName() { return "config/config.json"; }
 
-std::string IrohaConfigManager::getTransactionDatabasePath(
-    const std::string& defaultValue
-) {
-  return this->getParam<std::string>("transaction_database_path", defaultValue);
-}
-
-std::string IrohaConfigManager::getAssetDatabasePath(
+std::string IrohaConfigManager::getDatabasePath(
         const std::string& defaultValue
 ) {
   return this->getParam<std::string>("database_path", defaultValue);
