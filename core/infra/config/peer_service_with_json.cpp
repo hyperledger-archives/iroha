@@ -16,6 +16,7 @@ limitations under the License.
 
 #include <deque>
 #include <regex>
+#include <algorithm>
 #include <crypto/base64.hpp>
 #include <util/logger.hpp>
 #include <util/exception.hpp>
@@ -23,6 +24,7 @@ limitations under the License.
 #include <json.hpp>
 #include "peer_service_with_json.hpp"
 #include "config_format.hpp"
+#include "../../util/exception.hpp"
 
 using PeerServiceConfig = config::PeerServiceConfig;
 using nlohmann::json;
@@ -68,6 +70,28 @@ std::string PeerServiceConfig::getMyIp() {
   return "";
 }
 
+bool PeerServiceConfig::isExistIP( const std::string &ip ) {
+  return findPeerIP( std::move(ip) ) != peerList.end();
+}
+bool PeerServiceConfig::isExistPublicKey( const std::string &publicKey ) {
+  return findPeerPublicKey( std::move(publicKey) ) != peerList.end();
+}
+
+std::vector<peer::Node>::iterator PeerServiceConfig::findPeer( peer::Node &peer ) {
+  return findPeerPublicKey( peer.getPublicKey() );
+}
+
+std::vector<peer::Node>::iterator PeerServiceConfig::findPeerIP( const std::string &ip ) {
+  return std::find_if( peerList.begin(), peerList.end(),
+                       [&ip]( const peer::Node& p ) { return p.getIP() == ip; } );
+}
+
+std::vector<peer::Node>::iterator PeerServiceConfig::findPeerPublicKey( const std::string &publicKey ) {
+  return std::find_if( peerList.begin(), peerList.end(),
+                       [&publicKey]( const peer::Node& p ) { return p.getPublicKey() == publicKey; } );
+}
+
+
 std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
   initialziePeerList_from_json();
 
@@ -79,24 +103,48 @@ std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
     return nodes;
 }
 
-void PeerServiceConfig::addPeer( peer::Node &&peer ) {
-  peerList.emplace_back( std::move(peer) );
+bool PeerServiceConfig::addPeer( peer::Node &peer ) {
+  try {
+    if( isExistIP( peer.getIP() ) )
+      throw exception::service::DuplicationIPAddPeerException(std::move(peer.getIP()), std::move(peer.getPublicKey()), std::move(peer.getTrustScore()));
+    if( isExistPublicKey( peer.getPublicKey() ) )
+      throw exception::service::DuplicationPublicKeyAddPeerException(std::move(peer.getIP()), std::move(peer.getPublicKey()), std::move(peer.getTrustScore()));
+    peerList.emplace_back( std::move(peer));
+  } catch( exception::service::DuplicationPublicKeyAddPeerException e ) {
+    logger::warning("addPeer") << e.what();
+    return false;
+  } catch( exception::service::DuplicationIPAddPeerException e ) {
+    logger::warning("addPeer") << e.what();
+    return false;
+  }
+  return true;
 }
 
-void PeerServiceConfig::removePeer( peer::Node &&peer ) {
-  for( auto it = peerList.begin(); it != peerList.end(); it++ )
-      if( it->getPublicKey() == peer.getPublicKey() &&
-          it->getIP() == peer.getIP() ) {
-          peerList.erase( it ); break;
-      }
+bool PeerServiceConfig::removePeer( peer::Node &peer ) {
+  try {
+    auto it = findPeerPublicKey(peer.getPublicKey());
+    if (it == peerList.end())
+      throw exception::service::UnExistFindPeerException(std::move(peer.getIP()), std::move(peer.getPublicKey()), std::move(peer.getTrustScore()));
+    peerList.erase(it);
+  } catch (exception::service::UnExistFindPeerException e) {
+    logger::warning("removePeer") << e.what();
+    return false;
+  }
+  return true;
 }
 
-void PeerServiceConfig::updatePeer( peer::Node &&peer ) {
-  for( auto it = peerList.begin(); it != peerList.end(); it++ )
-    if( it->getPublicKey() == peer.getPublicKey() &&
-      it->getIP() == peer.getIP() ) {
-      it->setTrustScore( peer.getTrustScore() );
-    }
+bool PeerServiceConfig::updatePeer( peer::Node &peer ) {
+  try {
+    auto it = findPeerPublicKey(peer.getPublicKey());
+    if (it == peerList.end())
+      throw exception::service::UnExistFindPeerException(std::move(peer.getIP()), std::move(peer.getPublicKey()), std::move(peer.getTrustScore()));
+    peerList.erase(it);
+    addPeer( peer );
+  } catch ( exception::service::UnExistFindPeerException e ) {
+    logger::warning("updatePeer") << e.what();
+    return false;
+  }
+  return true;
 }
 
 bool PeerServiceConfig::isLeaderMyPeer() {

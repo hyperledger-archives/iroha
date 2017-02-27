@@ -38,23 +38,26 @@ TEST( peer_service_with_json_test, add_peer_test ) {
     int n = config::PeerServiceConfig::getInstance().getPeerList().size();
     peer::Node peer1 = peer::Node( "ip_low", "publicKey", 0.5 );
     peer::Node peer2 = peer::Node( "ip_high", "publicKey", 1.5 );
-    config::PeerServiceConfig::getInstance().addPeer( std::move(peer1) );
-    config::PeerServiceConfig::getInstance().addPeer( std::move(peer2) );
+    ASSERT_TRUE( config::PeerServiceConfig::getInstance().addPeer( peer1 ) );
+    ASSERT_FALSE( config::PeerServiceConfig::getInstance().addPeer( peer2 ) );
     std::vector<std::unique_ptr<peer::Node>> peers = config::PeerServiceConfig::getInstance().getPeerList();
     for( auto&& peer : peers ) {
         std::cout << peer->getIP() << std::endl;
         std::cout << peer->getPublicKey() << std::endl;
         std::cout << peer->getTrustScore() << std::endl;
     }
-    ASSERT_TRUE( peers.size() == n+2 );
+    ASSERT_TRUE( peers.size() == n+1 );
 }
 
 TEST( peer_service_with_json_test, update_peer_test ) {
     int n = config::PeerServiceConfig::getInstance().getPeerList().size();
     const std::string upd_ip = "172.17.0.3";
     const std::string upd_key = "jDQTiJ1dnTSdGH+yuOaPPZIepUj1Xt3hYOvLQTME3V0=";
+    const std::string upd_ng_key = "dummy";
     peer::Node peer = peer::Node( upd_ip, upd_key, 0.1 );
-    config::PeerServiceConfig::getInstance().updatePeer( std::move(peer) );
+    peer::Node peer_ng = peer::Node( upd_ip, upd_ng_key, 0.1 );
+    ASSERT_TRUE( config::PeerServiceConfig::getInstance().updatePeer( peer ) );
+    ASSERT_FALSE( config::PeerServiceConfig::getInstance().updatePeer( peer_ng ) );
     std::vector<std::unique_ptr<peer::Node>> peers = config::PeerServiceConfig::getInstance().getPeerList();
     for( auto&& peer : peers ) {
         std::cout << peer->getIP() << std::endl;
@@ -69,7 +72,8 @@ TEST( peer_service_with_json_test, update_peer_test ) {
 TEST( peer_service_with_json_test, remove_peer_test ) {
     int n = config::PeerServiceConfig::getInstance().getPeerList().size();
     peer::Node peer = peer::Node( "172.17.0.3", "jDQTiJ1dnTSdGH+yuOaPPZIepUj1Xt3hYOvLQTME3V0=" );
-    config::PeerServiceConfig::getInstance().removePeer( std::move(peer) );
+    ASSERT_TRUE( config::PeerServiceConfig::getInstance().removePeer( peer ) );
+    ASSERT_FALSE( config::PeerServiceConfig::getInstance().removePeer( peer ) );
     std::vector<std::unique_ptr<peer::Node>> peers = config::PeerServiceConfig::getInstance().getPeerList();
     for( auto&& peer : peers ) {
         std::cout << peer->getIP() << std::endl;
@@ -85,7 +89,7 @@ TEST( peer_service_with_json_test, leder_peer_check_test ) {
     ASSERT_FALSE( config::PeerServiceConfig::getInstance().isLeaderMyPeer() );
     for( auto &&peer : peers ) {
         if( peer->getIP() != "172.17.0.6" ) {
-            config::PeerServiceConfig::getInstance().removePeer( std::move(*peer) );
+            ASSERT_TRUE( config::PeerServiceConfig::getInstance().removePeer( *peer ) );
         }
     }
     ASSERT_TRUE( config::PeerServiceConfig::getInstance().isLeaderMyPeer() );

@@ -32,6 +32,12 @@ class PeerServiceConfig : config::AbstractConfigManager {
   PeerServiceConfig();
   void initialziePeerList_from_json();
 
+  bool isExistIP( const std::string& );
+  bool isExistPublicKey( const std::string& );
+  std::vector<peer::Node>::iterator findPeerIP( const std::string& );
+  std::vector<peer::Node>::iterator findPeerPublicKey( const std::string& );
+  std::vector<peer::Node>::iterator findPeer( peer::Node& );
+
  protected:
   void parseConfigDataFromString(std::string&& jsonStr) override;
 
@@ -44,9 +50,9 @@ class PeerServiceConfig : config::AbstractConfigManager {
 
   std::vector<std::unique_ptr<peer::Node>> getPeerList();
 
-  void addPeer( peer::Node&& );
-  void removePeer( peer::Node&& );
-  void updatePeer( peer::Node&& );
+  bool addPeer( peer::Node& );
+  bool removePeer( peer::Node& );
+  bool updatePeer( peer::Node& );
   bool isLeaderMyPeer();
 
   virtual std::string getConfigName();

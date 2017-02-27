@@ -51,11 +51,10 @@ namespace peer
 
 
         bool operator < (const Node& node) const {
-            if (ip == node.getIP()) return publicKey < node.getPublicKey();
-            else return ip < node.getIP();
+            return publicKey < node.getPublicKey();
         }
         bool operator == (const Node& node) const {
-            return ip == node.getIP() && publicKey == node.getPublicKey();
+            return publicKey == node.getPublicKey();
         }
         bool isBetter( const Node& node ) const {
             return trustScore < node.getTrustScore();

@@ -61,6 +61,22 @@ namespace exception {
     );
   };
 
+
+  namespace service {
+      class DuplicationIPAddPeerException : public std::domain_error {
+      public:
+          DuplicationIPAddPeerException( const std::string&, const std::string&, const double& );
+      };
+      class DuplicationPublicKeyAddPeerException : public std::domain_error {
+      public:
+          DuplicationPublicKeyAddPeerException( const std::string&, const std::string&, const double& );
+      };
+      class UnExistFindPeerException : public std::domain_error {
+      public:
+          UnExistFindPeerException( const std::string&, const std::string&, const double& );
+      };
+  }
+
   namespace crypto {
     class InvalidKeyException : public std::invalid_argument{
       public: InvalidKeyException(const std::string&);
