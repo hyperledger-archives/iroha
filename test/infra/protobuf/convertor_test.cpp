@@ -24,7 +24,7 @@ limitations under the License.
 #include "../../../core/crypto/signature.hpp"
 #include "../../../core/infra/protobuf/convertor.hpp"
 #include "../../../core/consensus/consensus_event.hpp"
-#include "../../../core/repository/consensus/transaction_repository.hpp"
+#include "repository/transaction_repository.hpp"
 #include "../../../core/repository/world_state_repository.hpp"
 
 using namespace command;

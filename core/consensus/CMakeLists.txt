@@ -14,7 +14,9 @@ target_link_libraries(
   config_manager
   connection_with_grpc
   signature
-  event_repository
+  transaction_repository
+  executor
+  merkle_transaction_repository
 )
 
 ADD_LIBRARY(consensus_event STATIC
