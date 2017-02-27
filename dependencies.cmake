@@ -118,29 +118,86 @@ add_dependencies(json nlohmann_json)
 ##########################
 #         gtest          #
 ##########################
-ExternalProject_Add(google_test
-  GIT_REPOSITORY    "https://github.com/google/googletest.git"
-  CMAKE_ARGS        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                    -Dgtest_force_shared_crt=ON
-                    -Dgtest_disable_pthreads=OFF
-                    -DBUILD_GTEST=ON
-                    -DBUILD_GMOCK=OFF
-  INSTALL_COMMAND   "" # remove install step
-  UPDATE_COMMAND    "" # remove update step
-  TEST_COMMAND      "" # remove test step
+# testing is an option. Look at the main CMakeLists.txt for details.
+if(TESTING)
+  ExternalProject_Add(google_test
+    GIT_REPOSITORY    "https://github.com/google/googletest.git"
+    CMAKE_ARGS        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                      -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                      -Dgtest_force_shared_crt=ON
+                      -Dgtest_disable_pthreads=OFF
+                      -DBUILD_GTEST=ON
+                      -DBUILD_GMOCK=OFF
+    INSTALL_COMMAND   "" # remove install step
+    UPDATE_COMMAND    "" # remove update step
+    TEST_COMMAND      "" # remove test step
+    )
+  ExternalProject_Get_Property(google_test source_dir binary_dir)
+  set(gtest_SOURCE_DIR ${source_dir})
+  set(gtest_BINARY_DIR ${binary_dir})
+
+  add_library(gtest STATIC IMPORTED)
+  file(MAKE_DIRECTORY ${gtest_SOURCE_DIR}/googletest/include)
+
+  set_target_properties(gtest
+    PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${gtest_SOURCE_DIR}/googletest/include
+    IMPORTED_LINK_INTERFACE_LIBRARIES "pthread;${gtest_BINARY_DIR}/googletest/libgtest_main.a"
+    IMPORTED_LOCATION ${gtest_BINARY_DIR}/googletest/libgtest.a
   )
-ExternalProject_Get_Property(google_test source_dir binary_dir)
-set(gtest_SOURCE_DIR ${source_dir})
-set(gtest_BINARY_DIR ${binary_dir})
+  add_dependencies(gtest google_test)
+endif()
 
-add_library(gtest STATIC IMPORTED)
-file(MAKE_DIRECTORY ${gtest_SOURCE_DIR}/googletest/include)
 
-set_target_properties(gtest
-  PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${gtest_SOURCE_DIR}/googletest/include
-  IMPORTED_LINK_INTERFACE_LIBRARIES "pthread;${gtest_BINARY_DIR}/googletest/libgtest_main.a"
-  IMPORTED_LOCATION ${gtest_BINARY_DIR}/googletest/libgtest.a
-)
-add_dependencies(gtest google_test)
+###############################
+#         Cappuccino          #
+###############################
+ExternalProject_Add(mizukisonoko_cappuccino
+  GIT_REPOSITORY    "https://github.com/MizukiSonoko/Cappuccino.git"
+  BUILD_COMMAND     "" # remove build step, header only lib
+  CONFIGURE_COMMAND "" # remove configure step
+  INSTALL_COMMAND   "" # remove install step
+  TEST_COMMAND      "" # remove test step
+  UPDATE_COMMAND    "" # remove update step
+  )
+ExternalProject_Get_Property(mizukisonoko_cappuccino source_dir)
+set(cappuccino_SOURCE_DIR "${source_dir}")
+
+# since it is header only, we changed STATIC to INTERFACE below
+add_library(cappuccino INTERFACE IMPORTED)
+set_target_properties(cappuccino PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${cappuccino_SOURCE_DIR}
+  )
+
+add_dependencies(cappuccino mizukisonoko_cappuccino json)
+
+
+
+##############################
+#         benchmark          #
+##############################
+# benchmarking is an option. Look at main CMakeLists.txt file for details.
+if(BENCHMARKING)
+  ExternalProject_Add(google_benchmark
+    GIT_REPOSITORY    "https://github.com/google/benchmark.git"
+    CMAKE_ARGS        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                      -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                      -DBENCHMARK_ENABLE_TESTING=OFF
+                      -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    INSTALL_COMMAND   "" # remove install step
+    UPDATE_COMMAND    "" # remove update step
+    TEST_COMMAND      "" # remove test step
+    )
+  ExternalProject_Get_Property(google_benchmark source_dir binary_dir)
+  set(benchmark_SOURCE_DIR ${source_dir})
+  set(benchmark_BINARY_DIR ${binary_dir})
+
+  add_library(benchmark STATIC IMPORTED)
+  file(MAKE_DIRECTORY ${benchmark_SOURCE_DIR}/include)
+  set_target_properties(benchmark PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${benchmark_SOURCE_DIR}/include
+    IMPORTED_LINK_INTERFACE_LIBRARIES "pthread"
+    IMPORTED_LOCATION ${benchmark_BINARY_DIR}/src/libbenchmark.a
+    )
+  add_dependencies(benchmark google_benchmark)
+endif(BENCHMARKING)
