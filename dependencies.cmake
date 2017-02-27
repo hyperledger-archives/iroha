@@ -21,7 +21,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DKeccakP200_excluded -DKeccakP400_excluded 
 ExternalProject_Add(gvanas_keccak
   GIT_REPOSITORY    "https://github.com/gvanas/KeccakCodePackage.git"
   BUILD_IN_SOURCE   1
-  BUILD_COMMAND     $(MAKE) generic64/libkeccak.a VERBOSE=1
+  BUILD_COMMAND     CFLAGS="-fpermissive" $(MAKE) CC="${CMAKE_CXX_COMPILER}" generic64/libkeccak.a
   CONFIGURE_COMMAND "" # remove configure step
   INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
@@ -30,8 +30,6 @@ ExternalProject_Add(gvanas_keccak
 ExternalProject_Get_Property(gvanas_keccak source_dir)
 set(keccak_SOURCE_DIR "${source_dir}")
 
-# CFLAGS="-DKeccakP200_excluded -DKeccakP400_excluded -DKeccakP800_excluded"; 
-
 # Hash internals for keccak
 add_library(keccak STATIC IMPORTED)
 file(MAKE_DIRECTORY ${keccak_SOURCE_DIR}/bin/generic64/libkeccak.a.headers)
@@ -39,17 +37,6 @@ set_target_properties(keccak PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${keccak_SOURCE_DIR}/bin/generic64/libkeccak.a.headers"
   IMPORTED_LOCATION "${keccak_SOURCE_DIR}/bin/generic64/libkeccak.a"
   )
-
-#add_library(keccak STATIC 
-#  ${keccak_SOURCE_DIR}/SnP/KeccakP-1600/Optimized64/KeccakP-1600-opt64.c
-#)
-#target_link_libraries(keccak 
-#  keccak_internal
-#)
-#set_target_properties(keccak 
-#  PROPERTIES 
-#  COMPILE_FLAGS "-DKeccakP200_excluded -DKeccakP400_excluded -DKeccakP800_excluded -std=c++0x"
-#)
 
 add_dependencies(keccak gvanas_keccak)
 

@@ -40,6 +40,7 @@ target_link_libraries(iroha-main
   connection_with_grpc
   config_manager
   ed25519
+  hash
   pthread
   thread_pool
   json
