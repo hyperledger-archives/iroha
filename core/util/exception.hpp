@@ -30,7 +30,14 @@ namespace exception {
 
   class NotImplementedException : public std::invalid_argument {
     public: NotImplementedException(
-      const std::string& message,
+      const std::string& functionName,
+      const std::string& filename
+    );
+  };
+
+  class BaseMethodException : public std::domain_error {
+    public: BaseMethodException(
+      const std::string& functionName,
       const std::string& filename
     );
   };
@@ -66,7 +73,11 @@ namespace exception {
     };
   }
 
-  namespace transaction {
+  namespace txbuilder {
+    class DuplicateSetArgmentException : public std::domain_error {
+    public:
+      DuplicateSetArgmentException(const std::string&, const std::string&);
+    };
     class UnsetBuildArgmentsException : public std::domain_error {
     public:
       UnsetBuildArgmentsException(const std::string&, const std::string&);

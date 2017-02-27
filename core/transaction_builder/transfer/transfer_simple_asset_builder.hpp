@@ -22,7 +22,7 @@ limitations under the License.
 #include "../type_signatures/commands/transfer.hpp"
 #include "../type_signatures/objects.hpp"
 
-namespace transaction {
+namespace txbuilder {
 
 template <>
 class TransactionBuilder<
@@ -34,9 +34,8 @@ class TransactionBuilder<
 
   TransactionBuilder& setSenderPublicKey(std::string sender) {
     if (_isSetSenderPublicKey) {
-      throw std::domain_error(
-          std::string("Duplicate sender in ") +
-          "transfer/transfer_simple_asset_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Transfer<SimpleAsset>", "senderPublicKey");
     }
     _isSetSenderPublicKey = true;
     _senderPublicKey = std::move(sender);
@@ -45,9 +44,8 @@ class TransactionBuilder<
 
   TransactionBuilder& setReceiverPublicKey(std::string receiverPublicKey) {
     if (_isSetReceiverPublicKey) {
-      throw std::domain_error(
-          std::string("Duplicate receiverPublicKey in ") +
-          "transfer/transfer_simple_asset_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Transfer<SimpleAsset>", "receiverPublicKey");
     }
     _isSetReceiverPublicKey = true;
     _receiverPublicKey = std::move(receiverPublicKey);
@@ -56,9 +54,8 @@ class TransactionBuilder<
 
   TransactionBuilder& setSimpleAsset(Api::SimpleAsset object) {
     if (_isSetSimpleAsset) {
-      throw std::domain_error(
-          std::string("Duplicate ") + "SimpleAsset" + " in " +
-          "transfer/transfer_simple_asset_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Transfer<SimpleAsset>", "SimpleAsset");
     }
     _isSetSimpleAsset = true;
     _simple_asset = std::move(object);
@@ -68,7 +65,7 @@ class TransactionBuilder<
   Api::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::transaction::UnsetBuildArgmentsException(
+      throw exception::txbuilder::UnsetBuildArgmentsException(
           "Transfer<SimpleAsset>", unsetMembers);
     }
     Api::Transaction ret;

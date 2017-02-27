@@ -30,7 +30,7 @@ limitations under the License.
 
 using Api::ConsensusEvent;
 
-using transaction::TransactionBuilder;
+using txbuilder::TransactionBuilder;
 using type_signatures::Add;
 using type_signatures::Domain;
 using type_signatures::Account;

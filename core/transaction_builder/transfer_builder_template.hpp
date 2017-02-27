@@ -18,7 +18,7 @@ limitations under the License.
 */
 #define REPLACE_STRING(str) #str
 
-#define BUILDER_NAMESPACE_BEGIN namespace transaction {
+#define BUILDER_NAMESPACE_BEGIN namespace txbuilder {
 #define BUILDER_BEGIN(Command, ObjectType) \
 template<>  \
 class TransactionBuilder<type_signatures::Command<type_signatures::ObjectType>> { \
@@ -28,30 +28,30 @@ public: \
   TransactionBuilder(const TransactionBuilder&) = default;  \
   TransactionBuilder(TransactionBuilder&&) = default;
 
-#define BUILDER_SET_SENDERPUBLICKEY \
+#define BUILDER_SET_SENDERPUBLICKEY(Command, ObjectType) \
   TransactionBuilder& setSenderPublicKey(std::string sender) { \
     if (_isSetSenderPublicKey) { \
-      throw std::domain_error(std::string("Duplicate sender in ") + __FILE__); \
+      throw exception::txbuilder::DuplicateSetArgmentException(REPLACE_STRING(Command##<##ObjectType##>), "senderPublicKey"); \
     } \
     _isSetSenderPublicKey = true;  \
     _senderPublicKey = std::move(sender);  \
     return *this; \
   }
 
-#define BUILDER_RECEIVER_PUBKEY \
+#define BUILDER_RECEIVER_PUBKEY(Command, ObjectType) \
   TransactionBuilder& setReceiverPublicKey(std::string receiverPublicKey) { \
     if (_isSetReceiverPublicKey) { \
-      throw std::domain_error(std::string("Duplicate receiverPublicKey in ") + __FILE__); \
+      throw exception::txbuilder::DuplicateSetArgmentException(REPLACE_STRING(Command##<##ObjectType##>), "receiverPublicKey"); \
     } \
     _isSetReceiverPublicKey = true;  \
     _receiverPublicKey = std::move(receiverPublicKey);  \
     return *this; \
   }
 
-#define BUILDER_SET_OBJECT(ObjectType, objectType)  \
+#define BUILDER_SET_OBJECT(Command, ObjectType, objectType)  \
   TransactionBuilder& set ## ObjectType(Api::ObjectType object) {  \
     if (_isSet##ObjectType) { \
-      throw std::domain_error(std::string("Duplicate ") + #ObjectType + " in " + __FILE__); \
+      throw exception::txbuilder::DuplicateSetArgmentException(REPLACE_STRING(Command##<##ObjectType##>), #ObjectType); \
     } \
     _isSet##ObjectType = true;  \
     _##objectType = std::move(object);  \
@@ -59,20 +59,24 @@ public: \
   }
 
 #define BUILDER_BUILD(Command, ObjectType, objectType, objtype)  \
-  transaction::Transaction build() {  \
+  Api::Transaction build() {  \
     const auto unsetMembers = enumerateUnsetMembers();  \
     if (not unsetMembers.empty()) { \
-      throw exception::transaction::UnsetBuildArgmentsException(REPLACE_STRING(Command##<type_signatures::##ObjectType##>), unsetMembers); \
+      throw exception::txbuilder::UnsetBuildArgmentsException(REPLACE_STRING(Command##<type_signatures::##ObjectType##>), unsetMembers); \
     } \
     \
-    return transaction::Transaction(_sender, command::Command(_##objectType, _receiverPublicKey)); \
+    Api::Transaction ret; \
+    ret.set_senderpubkey(_senderPublicKey);  \
+    ret.set_type(#Command);  \
+    *ret.mutable_ ## objtype() = _ ## objectType;  \
+    return ret; \
   }
 
 #define BUILDER_BUILD(Command, ObjectType, objectType, objtype)  \
   Api::Transaction build() {  \
     const auto unsetMembers = enumerateUnsetMembers();  \
     if (not unsetMembers.empty()) { \
-      throw exception::transaction::UnsetBuildArgmentsException(REPLACE_STRING(Command##<##ObjectType##>), unsetMembers); \
+      throw exception::txbuilder::UnsetBuildArgmentsException(REPLACE_STRING(Command##<##ObjectType##>), unsetMembers); \
     } \
     \
     Api::Transaction ret; \
@@ -125,11 +129,11 @@ BUILDER_NAMESPACE_BEGIN
 
 BUILDER_BEGIN(__CommandType__,__ObjectType__)
 
-BUILDER_SET_SENDERPUBLICKEY
+BUILDER_SET_SENDERPUBLICKEY(__CommandType__,__ObjectType__)
 
-BUILDER_RECEIVER_PUBKEY
+BUILDER_RECEIVER_PUBKEY(__CommandType__,__ObjectType__)
 
-BUILDER_SET_OBJECT(__ObjectType__,__objectType__)
+BUILDER_SET_OBJECT(__CommandType__,__ObjectType__,__objectType__)
 
 BUILDER_BUILD(__CommandType__,__ObjectType__,__objectType__,__objtype__)
 

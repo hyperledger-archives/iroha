@@ -22,7 +22,7 @@ limitations under the License.
 #include "../type_signatures/commands/transfer.hpp"
 #include "../type_signatures/objects.hpp"
 
-namespace transaction {
+namespace txbuilder {
 
 template <>
 class TransactionBuilder<type_signatures::Transfer<type_signatures::Asset>> {
@@ -33,8 +33,8 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Asset>> {
 
   TransactionBuilder& setSenderPublicKey(std::string sender) {
     if (_isSetSenderPublicKey) {
-      throw std::domain_error(std::string("Duplicate sender in ") +
-                              "transfer/transfer_asset_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Transfer<Asset>", "senderPublicKey");
     }
     _isSetSenderPublicKey = true;
     _senderPublicKey = std::move(sender);
@@ -43,8 +43,8 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Asset>> {
 
   TransactionBuilder& setReceiverPublicKey(std::string receiverPublicKey) {
     if (_isSetReceiverPublicKey) {
-      throw std::domain_error(std::string("Duplicate receiverPublicKey in ") +
-                              "transfer/transfer_asset_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Transfer<Asset>", "receiverPublicKey");
     }
     _isSetReceiverPublicKey = true;
     _receiverPublicKey = std::move(receiverPublicKey);
@@ -53,8 +53,8 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Asset>> {
 
   TransactionBuilder& setAsset(Api::Asset object) {
     if (_isSetAsset) {
-      throw std::domain_error(std::string("Duplicate ") + "Asset" + " in " +
-                              "transfer/transfer_asset_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Transfer<Asset>", "Asset");
     }
     _isSetAsset = true;
     _asset = std::move(object);
@@ -64,8 +64,8 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Asset>> {
   Api::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::transaction::UnsetBuildArgmentsException(
-          "Transfer<Asset>", unsetMembers);
+      throw exception::txbuilder::UnsetBuildArgmentsException("Transfer<Asset>",
+                                                              unsetMembers);
     }
     Api::Transaction ret;
     ret.set_senderpubkey(_senderPublicKey);

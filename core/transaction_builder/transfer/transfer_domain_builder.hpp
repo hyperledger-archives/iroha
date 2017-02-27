@@ -22,7 +22,7 @@ limitations under the License.
 #include "../type_signatures/commands/transfer.hpp"
 #include "../type_signatures/objects.hpp"
 
-namespace transaction {
+namespace txbuilder {
 
 template <>
 class TransactionBuilder<type_signatures::Transfer<type_signatures::Domain>> {
@@ -33,8 +33,8 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Domain>> {
 
   TransactionBuilder& setSenderPublicKey(std::string sender) {
     if (_isSetSenderPublicKey) {
-      throw std::domain_error(std::string("Duplicate sender in ") +
-                              "transfer/transfer_domain_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Transfer<Domain>", "senderPublicKey");
     }
     _isSetSenderPublicKey = true;
     _senderPublicKey = std::move(sender);
@@ -43,8 +43,8 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Domain>> {
 
   TransactionBuilder& setReceiverPublicKey(std::string receiverPublicKey) {
     if (_isSetReceiverPublicKey) {
-      throw std::domain_error(std::string("Duplicate receiverPublicKey in ") +
-                              "transfer/transfer_domain_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Transfer<Domain>", "receiverPublicKey");
     }
     _isSetReceiverPublicKey = true;
     _receiverPublicKey = std::move(receiverPublicKey);
@@ -53,8 +53,8 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Domain>> {
 
   TransactionBuilder& setDomain(Api::Domain object) {
     if (_isSetDomain) {
-      throw std::domain_error(std::string("Duplicate ") + "Domain" + " in " +
-                              "transfer/transfer_domain_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Transfer<Domain>", "Domain");
     }
     _isSetDomain = true;
     _domain = std::move(object);
@@ -64,7 +64,7 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Domain>> {
   Api::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::transaction::UnsetBuildArgmentsException(
+      throw exception::txbuilder::UnsetBuildArgmentsException(
           "Transfer<Domain>", unsetMembers);
     }
     Api::Transaction ret;
