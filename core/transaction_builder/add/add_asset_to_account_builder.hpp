@@ -25,7 +25,7 @@ limitations under the License.
 
 using type_signatures::To;
 
-namespace transaction {
+namespace txbuilder {
 
 template <>
 class TransactionBuilder<type_signatures::Add<object::Asset, To<object::Account>>> {
@@ -67,7 +67,7 @@ class TransactionBuilder<type_signatures::Add<object::Asset, To<object::Account>
   transaction::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::transaction::UnsetBuildArgmentsException(
+      throw exception::txbuilder::UnsetBuildArgmentsException(
           "Add<object::Asset>", unsetMembers);
     }
 

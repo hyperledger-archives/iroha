@@ -22,7 +22,7 @@ limitations under the License.
 #include "../type_signatures/commands/remove.hpp"
 #include "../type_signatures/objects.hpp"
 
-namespace transaction {
+namespace txbuilder {
 
 template <>
 class TransactionBuilder<type_signatures::Remove<type_signatures::Account>> {
@@ -33,8 +33,8 @@ class TransactionBuilder<type_signatures::Remove<type_signatures::Account>> {
 
   TransactionBuilder& setSenderPublicKey(std::string sender) {
     if (_isSetSenderPublicKey) {
-      throw std::domain_error(std::string("Duplicate sender in ") +
-                              "remove/remove_account_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Remove<Account>", "senderPublicKey");
     }
     _isSetSenderPublicKey = true;
     _senderPublicKey = std::move(sender);
@@ -43,8 +43,8 @@ class TransactionBuilder<type_signatures::Remove<type_signatures::Account>> {
 
   TransactionBuilder& setAccount(Api::Account object) {
     if (_isSetAccount) {
-      throw std::domain_error(std::string("Duplicate ") + "Account" + " in " +
-                              "remove/remove_account_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Remove<Account>", "Account");
     }
     _isSetAccount = true;
     _account = std::move(object);
@@ -54,8 +54,8 @@ class TransactionBuilder<type_signatures::Remove<type_signatures::Account>> {
   Api::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::transaction::UnsetBuildArgmentsException(
-          "Remove<Account>", unsetMembers);
+      throw exception::txbuilder::UnsetBuildArgmentsException("Remove<Account>",
+                                                              unsetMembers);
     }
     Api::Transaction ret;
     ret.set_senderpubkey(_senderPublicKey);

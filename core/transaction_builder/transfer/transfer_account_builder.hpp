@@ -22,7 +22,7 @@ limitations under the License.
 #include "../type_signatures/commands/transfer.hpp"
 #include "../type_signatures/objects.hpp"
 
-namespace transaction {
+namespace txbuilder {
 
 template <>
 class TransactionBuilder<type_signatures::Transfer<type_signatures::Account>> {
@@ -33,8 +33,8 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Account>> {
 
   TransactionBuilder& setSenderPublicKey(std::string sender) {
     if (_isSetSenderPublicKey) {
-      throw std::domain_error(std::string("Duplicate sender in ") +
-                              "transfer/transfer_account_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Transfer<Account>", "senderPublicKey");
     }
     _isSetSenderPublicKey = true;
     _senderPublicKey = std::move(sender);
@@ -43,8 +43,8 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Account>> {
 
   TransactionBuilder& setReceiverPublicKey(std::string receiverPublicKey) {
     if (_isSetReceiverPublicKey) {
-      throw std::domain_error(std::string("Duplicate receiverPublicKey in ") +
-                              "transfer/transfer_account_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Transfer<Account>", "receiverPublicKey");
     }
     _isSetReceiverPublicKey = true;
     _receiverPublicKey = std::move(receiverPublicKey);
@@ -53,8 +53,8 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Account>> {
 
   TransactionBuilder& setAccount(Api::Account object) {
     if (_isSetAccount) {
-      throw std::domain_error(std::string("Duplicate ") + "Account" + " in " +
-                              "transfer/transfer_account_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Transfer<Account>", "Account");
     }
     _isSetAccount = true;
     _account = std::move(object);
@@ -64,7 +64,7 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Account>> {
   Api::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::transaction::UnsetBuildArgmentsException(
+      throw exception::txbuilder::UnsetBuildArgmentsException(
           "Transfer<Account>", unsetMembers);
     }
     Api::Transaction ret;

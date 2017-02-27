@@ -21,7 +21,7 @@ limitations under the License.
 #include <util/logger.hpp>
 #include <service/peer_service.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-#include <service/peer_service.hpp>
+#include <infra/config/iroha_config_with_json.hpp>
 
 #include <transaction_builder/transaction_builder.hpp>
 #include <consensus/connection/connection.hpp>
@@ -105,7 +105,13 @@ namespace http {
 
     void server() {
         logger::info("server") << "initialize server!";
-        Cappuccino::Cappuccino( 0, nullptr);
+
+        std::vector<std::string> params = {"", "-p", std::to_string(config::IrohaConfigManager::getInstance().getHttpPortNumber(1204))};
+        std::vector<char*> argv;
+        for (const auto& arg : params)
+            argv.push_back((char*)arg.data());
+        argv.push_back(nullptr);
+        Cappuccino::Cappuccino( argv.size() - 1, argv.data() );
 
         Cappuccino::route<Cappuccino::Method::POST>("/account/register", [](std::shared_ptr<Request> request) -> Response {
             auto res = Response(request);

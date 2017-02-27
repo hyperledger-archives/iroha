@@ -22,7 +22,7 @@ limitations under the License.
 #include "../type_signatures/commands/add.hpp"
 #include "../type_signatures/objects.hpp"
 
-namespace transaction {
+namespace txbuilder {
 
 template <>
 class TransactionBuilder<type_signatures::Add<type_signatures::Domain>> {
@@ -33,8 +33,8 @@ class TransactionBuilder<type_signatures::Add<type_signatures::Domain>> {
 
   TransactionBuilder& setSenderPublicKey(std::string senderPublicKey) {
     if (_isSetSenderPublicKey) {
-      throw std::domain_error(std::string("Duplicate sender in ") +
-                              "add/add_domain_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Add<Domain>", "senderPublicKey");
     }
     _isSetSenderPublicKey = true;
     _senderPublicKey = std::move(senderPublicKey);
@@ -43,8 +43,8 @@ class TransactionBuilder<type_signatures::Add<type_signatures::Domain>> {
 
   TransactionBuilder& setDomain(Api::Domain object) {
     if (_isSetDomain) {
-      throw std::domain_error(std::string("Duplicate ") + "Domain" + " in " +
-                              "add/add_domain_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException("Add<Domain>",
+                                                               "Domain");
     }
     _isSetDomain = true;
     _domain = std::move(object);
@@ -54,8 +54,8 @@ class TransactionBuilder<type_signatures::Add<type_signatures::Domain>> {
   Api::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::transaction::UnsetBuildArgmentsException("Add<Domain>",
-                                                                unsetMembers);
+      throw exception::txbuilder::UnsetBuildArgmentsException("Add<Domain>",
+                                                              unsetMembers);
     }
     Api::Transaction ret;
     ret.set_senderpubkey(_senderPublicKey);

@@ -22,7 +22,7 @@ limitations under the License.
 #include "../type_signatures/commands/remove.hpp"
 #include "../type_signatures/objects.hpp"
 
-namespace transaction {
+namespace txbuilder {
 
 template <>
 class TransactionBuilder<type_signatures::Remove<type_signatures::Peer>> {
@@ -33,8 +33,8 @@ class TransactionBuilder<type_signatures::Remove<type_signatures::Peer>> {
 
   TransactionBuilder& setSenderPublicKey(std::string sender) {
     if (_isSetSenderPublicKey) {
-      throw std::domain_error(std::string("Duplicate sender in ") +
-                              "remove/remove_peer_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException(
+          "Remove<Peer>", "senderPublicKey");
     }
     _isSetSenderPublicKey = true;
     _senderPublicKey = std::move(sender);
@@ -43,8 +43,8 @@ class TransactionBuilder<type_signatures::Remove<type_signatures::Peer>> {
 
   TransactionBuilder& setPeer(Api::Peer object) {
     if (_isSetPeer) {
-      throw std::domain_error(std::string("Duplicate ") + "Peer" + " in " +
-                              "remove/remove_peer_builder_template.hpp");
+      throw exception::txbuilder::DuplicateSetArgmentException("Remove<Peer>",
+                                                               "Peer");
     }
     _isSetPeer = true;
     _peer = std::move(object);
@@ -54,8 +54,8 @@ class TransactionBuilder<type_signatures::Remove<type_signatures::Peer>> {
   Api::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::transaction::UnsetBuildArgmentsException("Remove<Peer>",
-                                                                unsetMembers);
+      throw exception::txbuilder::UnsetBuildArgmentsException("Remove<Peer>",
+                                                              unsetMembers);
     }
     Api::Transaction ret;
     ret.set_senderpubkey(_senderPublicKey);
