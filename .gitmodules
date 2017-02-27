@@ -1,4 +1,0 @@
-[submodule "core/vendor/leveldb"]
-  path = core/vendor/leveldb
-  url = https://github.com/google/leveldb.git
-  ignore = dirty
