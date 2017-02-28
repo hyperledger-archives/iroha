@@ -44,8 +44,8 @@ public class TestAsset {
                                                    HashMap<String, HashMap<String, String>> assetValueMap) throws IllegalStateException {
 
     for (HashMap.Entry<String, HashMap<String, String>> e : assetValueParam.entrySet()) {
-      if (! e.getValue().get("value").equals(assetValueMap.get(e.getKey()).get("value"))) {
-        if (! e.getValue().get("type").equals("double")) {
+      if (!e.getValue().get("value").equals(assetValueMap.get(e.getKey()).get("value"))) {
+        if (!e.getValue().get("type").equals("double")) {
           System.out.println(e.getValue().get("type") + " vs " + assetValueMap.get(e.getKey()).get("type"));
           System.out.println(e.getValue().get("value") + " vs " + assetValueMap.get(e.getKey()).get("value"));
           throw new IllegalStateException("Mismatch asset value");
@@ -79,20 +79,20 @@ public class TestAsset {
       System.out.println("Call assetRepo.add()");
 
       String assetUuid = repository.assetAdd(
-        assetInfoParam.get(DomainId),
-        assetInfoParam.get(AssetName),
-        assetValueParam,
-        assetInfoParam.get(ContractName)
+        assetInfoParam,
+        assetValueParam
       );
-      
+
       System.out.println("----------------------------------------------");
       System.out.println("Received from C++: assetUuid: " + assetUuid);
       System.out.println("----------------------------------------------");
 
       // 2. Find asset data by uuid.
+      HashMap<String, String> uuidmap = new HashMap<String, String>();
+      uuidmap.put(Uuid, assetUuid);      
       System.out.println("Call assetRepo.findByUuid()");
-      HashMap<String, String> assetInfoMap = repository.assetInfoFindByUuid(assetUuid);
-      HashMap<String, HashMap<String, String>> assetValueMap = repository.assetValueFindByUuid(assetUuid);
+      HashMap<String, String> assetInfoMap = repository.assetInfoFindByUuid(uuidmap);
+      HashMap<String, HashMap<String, String>> assetValueMap = repository.assetValueFindByUuid(uuidmap);
 
       System.out.println("----------------------------------------------");
       System.out.println("Received from C++: found domainId:   " + assetInfoMap.get(DomainId));
@@ -119,15 +119,16 @@ public class TestAsset {
     }
   }
 
-  public static void testUpdateAsset(String uuid, HashMap<String, HashMap<String, String>> assetValueParam) throws IllegalStateException {
+  public static void testUpdateAsset(HashMap<String, String> params, HashMap<String, HashMap<String, String>> assetValueParam) throws IllegalStateException {
     try {
 
       // 1. Update Asset.
-      repository.assetUpdate(uuid, assetValueParam);
+      repository.assetUpdate(params, assetValueParam);
 
       // 2. Find by the uuid.
-      //HashMap<String, String> assetInfoMap = repository.assetInfoFindByUuid(uuid);
-      HashMap<String, HashMap<String, String>> assetValueMap = repository.assetValueFindByUuid(uuid);
+      HashMap<String, String> uuidmap = new HashMap<String, String>();
+      uuidmap.put(Uuid, params.get(Uuid));
+      HashMap<String, HashMap<String, String>> assetValueMap = repository.assetValueFindByUuid(uuidmap);
 
       // 3. Ensure the integrity.
       ensureIntegirityOfAssetValue(assetValueParam, assetValueMap);
@@ -138,17 +139,17 @@ public class TestAsset {
     }
   }
 
-  public static void testRemoveAsset(String uuid) throws IllegalStateException {
+  public static void testRemoveAsset(HashMap<String, String> params) throws IllegalStateException {
     try {
 
       // 1. Remove Asset.
-      repository.assetRemove(uuid);
+      repository.assetRemove(params);
 
       // 2. Find by the uuid.
-      HashMap<String, HashMap<String, String>> assetValueMap = repository.assetValueFindByUuid(uuid);
+      HashMap<String, HashMap<String, String>> assetValueMap = repository.assetValueFindByUuid(params);
 
       // 3. Ensure removed asset.
-      if (repository.assetExists(uuid))
+      if (repository.assetExists(params))
         throw new IllegalStateException("Failed to removing asset");
 
       printSuccess();

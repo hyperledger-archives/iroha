@@ -35,7 +35,7 @@ public class TestInvocation {
 
   // Test invoke function
   public static void test1() {
-      System.out.println("Hello in JAVA! test1()");
+    System.out.println("Hello in JAVA! test1()");
   }
 
   // Test invoke function(HashMap<String,String>)
@@ -55,7 +55,7 @@ public class TestInvocation {
   }
 
   // Test invoke function(HashMap<String,String>) (UTF-8)
-  public static void test3(HashMap<String,String> params) throws IllegalStateException {
+  public static void test3(HashMap<String, String> params) throws IllegalStateException {
     try {
       System.out.println("Hello in JAVA! test3()");
       if (! params.get("key1").equals("水樹"))

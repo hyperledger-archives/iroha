@@ -15,6 +15,7 @@ package repository;
 
 public class KeyConstants {
 
+    public static final String Uuid             = "uuid";
     public static final String PublicKey        = "publicKey";
     public static final String AccountName      = "accountName";
     public static final String DomainId         = "domainId";
@@ -25,6 +26,9 @@ public class KeyConstants {
     public static final String SimpleAssetNameg = "simpleAssetName";
     public static final String SimpleAssetValue = "simpleAssetValue";
     public static final String OwnerPublicKey   = "ownerPublicKey";
+    public static final String PeerAddress      = "peerAddress";
+    public static final String PeerTrustValue   = "peerTrustValue";
+    public static final String PeerTrustIsOk    = "peerTrustIsOk";
 
     private KeyConstants(){}
 

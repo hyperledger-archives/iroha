@@ -19,7 +19,7 @@ import java.util.Iterator;
 
 import static repository.KeyConstants.*;
 
-public class TestDomain {
+public class TestPeer {
 
   private static Repository repository = new Repository();
 
@@ -36,19 +36,20 @@ public class TestDomain {
     System.err.println(e.getMessage() + " in " + e.getClass().getName());
   }
 
-  public static void testAddDomain(HashMap<String, String> params) throws IllegalStateException {
+  public static void testAddPeer(HashMap<String, String> params, HashMap<String, String> trust) throws IllegalStateException {
     try {
       // Print received params
       System.out.println("----------------------------------------------");
-      System.out.println("Params ownerPubKey: " + params.get(OwnerPublicKey));
-      System.out.println("Params domainName: " + params.get(DomainName));
+      System.out.println("Params: " + params);
+      System.out.println("Params trust value: " + trust);
       System.out.println("----------------------------------------------");
 
-      // 1. Add domain.s
-      System.out.println("Call repository.domainAdd()");
+      // 1. Add account.
+      System.out.println("Call peerRepo.add()");
 
-      String uuid = repository.domainAdd(
-        params
+      String uuid = repository.peerAdd(
+        params,
+        trust
       );
 
       System.out.println("----------------------------------------------");
@@ -56,26 +57,28 @@ public class TestDomain {
       System.out.println("----------------------------------------------");
 
       // 2. Find account data by uuid.
-      System.out.println("Call repoisitory.domainFindByUuid()");
+      System.out.println("Call accountRepo.findByUuid()");
       HashMap<String, String> uuidmap = new HashMap<String, String>();
       uuidmap.put(Uuid, params.get(Uuid));
-      HashMap<String, String> domainMap = repository.domainFindByUuid(uuidmap);
+      HashMap<String, String> peerInfoMap  = repository.peerInfoFindByUuid(uuidmap);
+      HashMap<String, String> peerTrustMap = repository.peerTrustFindByUuid(uuidmap);
 
       System.out.println("----------------------------------------------");
-      System.out.println("Received from C++: found ownerPubKey: " + domainMap.get(OwnerPublicKey));
-      System.out.println("Received from C++: found domainName:  " + domainMap.get(DomainName));
+      System.out.println("Received from C++: " + params);
       System.out.println("----------------------------------------------");
 
       // 3. Ensure the integrity.
-      /*
-      assert accountMap.get(PublicKey).equals(params.get(PublicKey));
-      assert accountMap.get(AccountName).equals(params.get(AccountName));
-      */
-      if (!domainMap.get(OwnerPublicKey).equals(params.get(OwnerPublicKey)))
-        throw new IllegalStateException("Mismatch ownerPublicKey");
+      if (!peerInfoMap.get(PublicKey).equals(params.get(PublicKey)))
+        throw new IllegalStateException("Mismatch public key");
 
-      if (!domainMap.get(DomainName).equals(params.get(DomainName)))
-        throw new IllegalStateException("Mismatch domain name");
+      if (!peerInfoMap.get(PeerAddress).equals(params.get(PeerAddress)))
+        throw new IllegalStateException("Mismatch peer address");
+
+      if (!peerTrustMap.get(PeerTrustIsOk).equals(trust.get(PeerTrustIsOk)))
+        throw new IllegalStateException("Mismatch peer trust isOk");
+
+      if (!peerTrustMap.get(PeerTrustValue).equals(trust.get(PeerTrustValue)))
+        throw new IllegalStateException("Mismatch peer trust value");
 
       printSuccess();
     } catch(IllegalStateException e) {
@@ -83,35 +86,37 @@ public class TestDomain {
     }
   }
 
-  public static void testUpdateDomain(HashMap<String, String> params) throws IllegalStateException {
+  public static void testUpdatePeer(HashMap<String, String> params, HashMap<String, String> trust) throws IllegalStateException {
     try {
       // Print received params
       System.out.println("----------------------------------------------");
-      System.out.println("Params domainName: " + params.get(DomainName));
+      System.out.println("Params:       " + params);
+      System.out.println("Params trust: " + trust);
       System.out.println("----------------------------------------------");
 
-      // 1. Update.
-      System.out.println("Call repository.domainAdd()");
+      // 1. Add account.
+      System.out.println("Call accountRepo.add()");
 
-      if (!repository.domainUpdate(
-        params
-      )) throw new IllegalStateException("Cannot update domain");
+      if (!repository.peerUpdate(
+        params,
+        trust
+      )) throw new IllegalStateException("Cannot update peer");
 
-      // 2. Find data by uuid.
-      System.out.println("Call repository.domainFindByUuid()");
+      // 2. Find account data by uuid.
+      System.out.println("Call accountRepo.findByUuid()");
       HashMap<String, String> uuidmap = new HashMap<String, String>();
       uuidmap.put(Uuid, params.get(Uuid));
-      HashMap<String, String> domainMap = repository.domainFindByUuid(uuidmap);
+      HashMap<String, String> accountMap = repository.accountInfoFindByUuid(uuidmap);
+      String[] assetsArray = repository.accountValueFindByUuid(uuidmap);
 
       System.out.println("----------------------------------------------");
-      System.out.println("Received from C++: found ownerPubKey: " + domainMap.get(OwnerPublicKey));
-      System.out.println("Received from C++: found domainName:  " + domainMap.get(DomainName));
+      System.out.println("Received from C++: " + accountMap);
       System.out.println("----------------------------------------------");
 
       // 3. Ensure the integrity.
       
-      if (!domainMap.get(DomainName).equals(params.get(DomainName)))
-        throw new IllegalStateException("Mismatch domain name");
+      if (! accountMap.get(AccountName).equals(params.get(AccountName)))
+        throw new IllegalStateException("Mismatch account name");
 
       printSuccess();
     } catch(IllegalStateException e) {
@@ -119,17 +124,17 @@ public class TestDomain {
     }
   }
 
-  public static void testRemoveDomain(HashMap<String, String> params) throws IllegalStateException {
+  public static void testRemoveAccount(HashMap<String, String> params) throws IllegalStateException {
     try {
       // Print received params
       System.out.println("----------------------------------------------");
-      System.out.println("Params uuid: " + params.get(Uuid));
+      System.out.println("Params uuid: " + params);
       System.out.println("----------------------------------------------");
 
       HashMap<String, String> uuidmap = new HashMap<String, String>();
       uuidmap.put(Uuid, params.get(Uuid));
-      if (!repository.domainRemove(uuidmap))
-        throw new IllegalStateException("Cannot remove domain");
+      if (!repository.accountRemove(uuidmap))
+        throw new IllegalStateException("Cannot remove account");
       
       printSuccess();
     } catch(IllegalStateException e) {
@@ -141,13 +146,17 @@ public class TestDomain {
    ***************************************************************************************************/
 
   // Test 'add' only. All command tests are invoked by gTest.
-  private static void javaIntegrityCheckAddDomain() {
+  private static void javaIntegrityCheckAddAccount() {
     try {
-      HashMap<String, String> domainParam = new HashMap<String, String>();
-      domainParam.put(OwnerPublicKey, "This is owner public key.");
-      domainParam.put(DomainName, "this is domain name");
+      HashMap<String, String> params = new HashMap<String, String>();
+      params.put(PublicKey,   "This is Public key.");
+      params.put(PeerAddress, "this is Peer Addr");
+      
+      HashMap<String, String> trust = new HashMap<String, String>();
+      trust.put(PeerTrustValue, "1.234567890987654321");
+      trust.put(PeerTrustIsOk,  "true");
 
-      testAddDomain(domainParam);
+      testAddPeer(params, trust);
 
       System.out.println("==============================================");
       System.out.println("Success (from Java main)");
@@ -163,7 +172,7 @@ public class TestDomain {
 
   public static void main(String[] argv) {
     System.out.println("Hello in JAVA!");
-    javaIntegrityCheckAddDomain();
+    javaIntegrityCheckAddAccount();
     System.out.println("Call C++ gTest is also required.");
   }
 

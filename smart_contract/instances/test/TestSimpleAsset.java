@@ -62,22 +62,20 @@ public class TestSimpleAsset {
    * Verify simple asset
    ******************************************************************************/
 
-  public static void testAddSimpleAsset(HashMap<String, String> info, HashMap<String, String> value) throws IllegalStateException {
+  public static void testAddSimpleAsset(HashMap<String, String> params, HashMap<String, String> value) throws IllegalStateException {
     try {
 
       System.out.println("----------------------------------------------");
-      System.out.println("Params info: "  + info);
-      System.out.println("Params value: " + value);
+      System.out.println("Params params: " + params);
+      System.out.println("Params value:  " + value);
       System.out.println("----------------------------------------------");
       
       // 1. Add simpleAsset.
       System.out.println("Call simpleAssetAdd.add()");
 
       String uuid = repository.simpleAssetAdd(
-        info.get(DomainId),
-        info.get(SimpleAssetName),
-        value,
-        info.get(ContractName)
+        params,
+        value
       );
       
       System.out.println("----------------------------------------------");
@@ -85,23 +83,25 @@ public class TestSimpleAsset {
       System.out.println("----------------------------------------------");
 
       // 2. Find asset data by uuid.
+      HashMap<String, String> uuidmap = new HashMap<String, String>();
+      uuidmap.put(Uuid, params.get(Uuid));
       System.out.println("Call assetRepo.findByUuid()");
-      HashMap<String, String> infoMap  = repository.simpleAssetInfoFindByUuid(uuid);
-      HashMap<String, String> valueMap = repository.simpleAssetValueFindByUuid(uuid);
+      HashMap<String, String> paramsMap = repository.simpleAssetInfoFindByUuid(uuidmap);
+      HashMap<String, String> valueMap  = repository.simpleAssetValueFindByUuid(uuidmap);
 
       System.out.println("----------------------------------------------");
-      System.out.println("Received from C++: found info:  "  + info);
-      System.out.println("Received from C++: found value: "  + value);
+      System.out.println("Received from C++: found params: "  + params);
+      System.out.println("Received from C++: found value:  "  + value);
       System.out.println("----------------------------------------------");
 
       // 3. Ensure the integrity.
-      if (! info.get(DomainId).equals(infoMap.get(DomainId)))
+      if (!params.get(DomainId).equals(paramsMap.get(DomainId)))
         throw new IllegalStateException("Mismatch domain id");
 
-      if (! info.get(SimpleAssetName).equals(infoMap.get(AssetName)))
+      if (!params.get(SimpleAssetName).equals(paramsMap.get(AssetName)))
         throw new IllegalStateException("Mismatch asset name");
 
-      if (! info.get(ContractName).equals(infoMap.get(ContractName)))
+      if (!params.get(ContractName).equals(paramsMap.get(ContractName)))
         throw new IllegalStateException("Mismatch smartcontract name");
 
       // value check is responsible for C++.
@@ -113,14 +113,14 @@ public class TestSimpleAsset {
     }
   }
 
-  public static void testUpdateSimpleAsset(String uuid, HashMap<String, String> value) throws IllegalStateException {
+  public static void testUpdateSimpleAsset(HashMap<String, String> params, HashMap<String, String> value) throws IllegalStateException {
     try {
 
       // 1. Update Asset.
-      repository.simpleAssetUpdate(uuid, value);
+      repository.simpleAssetUpdate(params, value);
 
       // 2. Find by the uuid.
-      HashMap<String, String> valueMap = repository.simpleAssetValueFindByUuid(uuid);
+      HashMap<String, String> valueMap = repository.simpleAssetValueFindByUuid(params);
 
       // 3. Ensure the integrity.
       ensureIntegirityOfSimpleAssetValue(value, valueMap);
@@ -131,9 +131,9 @@ public class TestSimpleAsset {
     }
   }
 
-  public static void testRemoveSimpleAsset(String uuid) throws IllegalStateException {
+  public static void testRemoveSimpleAsset(HashMap<String, String> params) throws IllegalStateException {
     try {
-      repository.simpleAssetRemove(uuid);
+      repository.simpleAssetRemove(params);
       printSuccess();
     } catch(IllegalStateException e) {
       printFail(e);
