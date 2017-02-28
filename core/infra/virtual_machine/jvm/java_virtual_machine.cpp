@@ -17,7 +17,7 @@ limitations under the License.
 #include <assert.h>
 #include <algorithm>
 #include <array>
-#include "../../../util/logger.hpp"
+#include <util/logger.hpp>
 
 #include "java_virtual_machine.hpp"
 #include "java_data_structure.hpp"
@@ -119,7 +119,7 @@ namespace jvm {
 
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName,
+        const std::string& functionName,
         std::string param
     ) {
         jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/lang/String;)V");
@@ -137,7 +137,7 @@ namespace jvm {
 
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName,
+        const std::string& functionName,
         std::map<std::string, std::string> params
     ) {
         jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/util/HashMap;)V");
@@ -155,7 +155,7 @@ namespace jvm {
 
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName,
+        const std::string& functionName,
         std::string param,
         std::map<std::string, std::map<std::string, std::string>> params
     ) {
@@ -176,7 +176,7 @@ namespace jvm {
 
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName,
+        const std::string& functionName,
         std::string param1,
         std::map<std::string, std::string> param2
     ) {
@@ -197,28 +197,28 @@ namespace jvm {
 
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName,
-        std::map<std::string, std::string> params,
-        std::map<std::string, std::string> params2
+        const std::string& functionName,
+        std::map<std::string, std::string> param1,
+        std::map<std::string, std::string> param2
     ) {
-        jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/util/HashMap;Ljava/util/HashMap;)V");
+        jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/lang/String;Ljava/util/HashMap;)V");
         if (mid == nullptr) {
             std::cout << "could not get method : " << functionName << std::endl;
             return;
         }
 
-        jobject jmap = JavaMakeMap( context->env, params );
-        jobject jmapInMap = JavaMakeMap( context->env, params2 );
+        jobject jmap1 = JavaMakeMap( context->env, param2 );
+        jobject jmap2 = JavaMakeMap( context->env, param2 );
 
-        context->env->CallVoidMethod(context->jObject, mid, jmap, jmapInMap);
+        context->env->CallVoidMethod(context->jObject, mid, jmap1, jmap2);
 
-        context->env->DeleteLocalRef(jmap);
-        context->env->DeleteLocalRef(jmapInMap);
+        context->env->DeleteLocalRef(jmap1);
+        context->env->DeleteLocalRef(jmap2);
     }
 
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName,
+        const std::string& functionName,
         std::map<std::string, std::string> params,
         std::map<std::string, std::map<std::string, std::string>> params2
     ) {
@@ -239,7 +239,7 @@ namespace jvm {
 
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName,
+        const std::string& functionName,
         std::map<std::string, std::string> params,
         std::vector<std::string> params2
     ) {
@@ -260,7 +260,32 @@ namespace jvm {
 
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName
+        const std::string& functionName,
+        std::string param1,
+        std::map<std::string, std::string> param2,
+        std::vector<std::string> param3
+    ) {
+        jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/util/HashMap;[Ljava/lang/String;)V");
+        if (mid == nullptr) {
+            std::cout << "could not get method : " << functionName << std::endl;
+            return;
+        }
+
+
+        jstring jstr = context->env->NewStringUTF(param1.c_str());
+        jobject jmap = JavaMakeMap( context->env, param2 );
+        jobject jarr = JavaMakeStringArray( context->env, param3 );
+
+        context->env->CallVoidMethod(context->jObject, mid, jstr, jmap, jarr);
+
+        context->env->DeleteLocalRef(jstr);
+        context->env->DeleteLocalRef(jmap);
+        context->env->DeleteLocalRef(jarr);
+    }
+
+    void execFunction(
+        const std::unique_ptr<JavaContext> &context,
+        const std::string& functionName
     ) {
         jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "()V");
         if (mid == nullptr) {

@@ -25,7 +25,7 @@ limitations under the License.
 namespace repository {
 namespace domain {
 std::string add(const std::string &ownerPublicKey, const std::string &name);
-//bool update();
+bool update(const std::string &uuid, const std::string &name);
 bool remove(const std::string &uuid);
 Api::Domain findByUuid(const std::string &uuid);
 bool exists(const std::string &uuid);

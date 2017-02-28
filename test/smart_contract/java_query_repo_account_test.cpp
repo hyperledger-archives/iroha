@@ -23,7 +23,7 @@ limitations under the License.
 #include <infra/virtual_machine/jvm/java_data_structure.hpp>
 
 const std::string PackageName = "test";
-const std::string ContractName = "Test";
+const std::string ContractName = "TestAccount";
 const std::string PublicKeyTag = "publicKey";
 const std::string DomainIdTag = "domainId";
 const std::string AccountNameTag = "accountName";
@@ -79,6 +79,42 @@ TEST(JavaQueryRepoAccount, invokeAddAccount) {
   account.ParseFromString(received_serialized_acc);
 
   ASSERT_STREQ(params[PublicKeyTag].c_str(), account.publickey().c_str());
+  ASSERT_STREQ(params[AccountNameTag].c_str(), account.name().c_str());
+  for (std::size_t i = 0; i < assets.size(); i++) {
+    ASSERT_STREQ(assets[i].c_str(), account.assets(i).c_str());
+  }
+}
+
+TEST(JavaQueryRepoAccount, invokeUpdateAccount) {
+
+  const std::string FunctionName = "testUpdateAccount";
+
+  std::map<std::string, std::string> params;
+  {
+    params[AccountNameTag] = "Mi Nazuki Sonoko";
+  }
+
+  std::vector<std::string> assets;
+  {
+    assets.push_back("aaaaaa");
+    assets.push_back("bbbbbb");
+    assets.push_back("cccccc");
+    assets.push_back("dddddd");
+  }
+
+  const std::string uuid =
+      "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
+
+  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
+                                  uuid, params, assets);
+
+  const std::string strAccount =
+      repository::world_state_repository::find(uuid);
+
+  Api::Account account;
+  account.ParseFromString(strAccount);
+
+  ASSERT_STREQ("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=", account.publickey().c_str());
   ASSERT_STREQ(params[AccountNameTag].c_str(), account.name().c_str());
   for (std::size_t i = 0; i < assets.size(); i++) {
     ASSERT_STREQ(assets[i].c_str(), account.assets(i).c_str());

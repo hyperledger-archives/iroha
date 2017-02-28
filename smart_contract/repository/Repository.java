@@ -26,7 +26,7 @@ public class Repository {
      */
     public static native String accountAdd(String publicKey, String name, String[] assets);
     public static native Boolean accountAttach(String uuid, String asset);
-    public static native Boolean accountUpdate(String uuid, String[] assets);
+    public static native Boolean accountUpdate(String uuid, String name, String[] assets);
     public static native Boolean accountRemove(String uuid);
     public static native HashMap<String, String> accountInfoFindByUuid(String uuid);
     public static native String[] accountValueFindByUuid(String uuid);
@@ -35,11 +35,10 @@ public class Repository {
     /*
      * Domain
      */
-    public static native String domainAdd(String publicKey, String name, String[] assets);
-    public static native Boolean domainAttach(String uuid, String asset);
-    public static native Boolean domainUpdate(String uuid, String[] assets);
+    public static native String domainAdd(String ownerPublicKey, String name);
+    public static native Boolean domainUpdate(String uuid, String name);
     public static native Boolean domainRemove(String uuid);
-    public static native String[] domainFindByUuid(String uuid);
+    public static native HashMap<String, String> domainFindByUuid(String uuid);
     public static native Boolean domainExists(String uuid);
 
     /*

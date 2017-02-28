@@ -17,12 +17,16 @@ limitations under the License.
 #define _JNI_CONASTANTS_HPP
 
 namespace jni_constants {
+
 static const auto PublicKeyTag = "publicKey";
 static const auto AccountNameTag = "accountName";
 static const auto DomainIdTag = "domainId";
 static const auto AssetNameTag = "assetName";
 static const auto ValueTag = "assetValue";
 static const auto SmartContractNameTag = "smartContractName";
+
+static const auto OwnerPublicKeyTag = "ownerPublicKey";
+static const auto DomainNameTag = "domainName";
 }
 
 #endif

@@ -22,7 +22,7 @@ limitations under the License.
 #include <infra/virtual_machine/jvm/java_data_structure.hpp>
 
 const std::string PackageName = "test";
-const std::string ContractName = "Test";
+const std::string ContractName = "TestInvocation";
 
 /*********************************************************************************************************
  * Test Invocation

@@ -105,16 +105,19 @@ bool attach(const std::string &uuid, const std::string &asset) {
 /********************************************************************************************
  * Update<Account>
  ********************************************************************************************/
-bool update(const std::string &uuid, const std::vector<std::string> &assets) {
+bool update(const std::string &uuid, const std::string& name, const std::vector<std::string> &assets) {
 
   const auto allAssets = convert_string::stringifyVector(assets);
 
   logger::explore(NameSpaceID) << "Update<Account> uuid: " << uuid
+                               << " name: " << name
                                << " assets: " << allAssets;
 
   if (exists(uuid)) {
     const auto rval = world_state_repository::find(uuid);
-    const auto account = detail::parseAccount(rval);
+    auto account = detail::parseAccount(rval);
+    *account.mutable_name() = name;
+    *account.mutable_assets() = txbuilder::Vector<std::string>(assets.begin(), assets.end());
     const auto strAccount = detail::stringifyAccount(account);
     if (world_state_repository::update(uuid, strAccount)) {
       logger::debug(NameSpaceID) << "Update strAccount: \"" << strAccount
@@ -155,26 +158,3 @@ bool exists(const std::string &uuid) {
 }
 }
 }
-
-/*
-    // This is for SimpleAsset
-        // SampleAsset has only quantity no logic, so this value is int.
-        bool update_quantity(const std::string& uuid, const std::string&
-   assetName,
-            std::int64_t newValue) {
-
-            const auto strAccount  = world_state_repository::find(uuid);
-
-            Api::Account account = detail::parseAccount(serializedAccount);
-
-            for (auto& asset: account.assets) {
-                if (asset.name == assetName) {  // asset.name == assetName (can
-   adapt struct?)
-                    asset = newValue;      // asset.value = newValue
-                }
-            }
-
-            return world_state_repository::update(uuid,
-   detail::stringifyAccount(account));
-        }
-*/

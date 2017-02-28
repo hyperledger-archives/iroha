@@ -27,7 +27,7 @@ namespace account {
 std::string add(const std::string &publicKey, const std::string &name,
                 const std::vector<std::string> &assets);
 bool attach(const std::string &uuid, const std::string &asset);
-bool update(const std::string &uuid, const std::vector<std::string> &assets);
+bool update(const std::string &uuid, const std::string &name, const std::vector<std::string> &assets);
 bool remove(const std::string &uuid);
 Api::Account findByUuid(const std::string &uuid);
 bool exists(const std::string &uuid);

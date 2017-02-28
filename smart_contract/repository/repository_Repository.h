@@ -26,10 +26,10 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_accountAttach
 /*
  * Class:     repository_Repository
  * Method:    accountUpdate
- * Signature: (Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/Boolean;
+ * Signature: (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/Boolean;
  */
 JNIEXPORT jobject JNICALL Java_repository_Repository_accountUpdate
-  (JNIEnv *, jclass, jstring, jobjectArray);
+  (JNIEnv *, jclass, jstring, jstring, jobjectArray);
 
 /*
  * Class:     repository_Repository
@@ -66,26 +66,18 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_accountExists
 /*
  * Class:     repository_Repository
  * Method:    domainAdd
- * Signature: (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_repository_Repository_domainAdd
-  (JNIEnv *, jclass, jstring, jstring, jobjectArray);
-
-/*
- * Class:     repository_Repository
- * Method:    domainAttach
- * Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Boolean;
- */
-JNIEXPORT jobject JNICALL Java_repository_Repository_domainAttach
   (JNIEnv *, jclass, jstring, jstring);
 
 /*
  * Class:     repository_Repository
  * Method:    domainUpdate
- * Signature: (Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/Boolean;
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Boolean;
  */
 JNIEXPORT jobject JNICALL Java_repository_Repository_domainUpdate
-  (JNIEnv *, jclass, jstring, jobjectArray);
+  (JNIEnv *, jclass, jstring, jstring);
 
 /*
  * Class:     repository_Repository
@@ -98,9 +90,9 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_domainRemove
 /*
  * Class:     repository_Repository
  * Method:    domainFindByUuid
- * Signature: (Ljava/lang/String;)[Ljava/lang/String;
+ * Signature: (Ljava/lang/String;)Ljava/util/HashMap;
  */
-JNIEXPORT jobjectArray JNICALL Java_repository_Repository_domainFindByUuid
+JNIEXPORT jobject JNICALL Java_repository_Repository_domainFindByUuid
   (JNIEnv *, jclass, jstring);
 
 /*

@@ -61,7 +61,7 @@ message Peer {
 */
 public class WeightedRate {
 
-    static Repository repository = new Repository();
+    private static Repository repository = new Repository();
 
     /*
         Asset

@@ -34,16 +34,16 @@ limitations under the License.
 namespace logger {
 
     enum class LogLevel {
-        DEBUG = 0,
-        INFO,
-        WARNING,
-        ERROR,
-        FATAL,
-        EXPLORE
+        Debug = 0,
+        Info,
+        Warning,
+        Error,
+        Fatal,
+        Explore
     };
 
     namespace detail {
-        static LogLevel LOG_LEVEL = LogLevel::DEBUG;
+        static LogLevel LOG_LEVEL = LogLevel::Debug;
     }
 
     inline void setLogLevel(LogLevel lv){
@@ -69,20 +69,14 @@ namespace logger {
     inline LoggerName& operator << (LoggerName&& record, T&& t) {               \
         return record << std::forward<T>(t);                                    \
     }
-    /*
-    for convenience reflection
-    template <typename T>
-    inline std::string pack(std::string ns, std::string funcname) {
-        return ...;
-    }
-    */
 
-    LOGGER_DEF(debug,   LogLevel::DEBUG,    true,   "DEBUG")
-    LOGGER_DEF(info,    LogLevel::INFO,     true,   "INFO")
-    LOGGER_DEF(warning, LogLevel::WARNING,  true,   "WARNING")
-    LOGGER_DEF(error,   LogLevel::ERROR,    true,   "ERROR (-A-)")
-    LOGGER_DEF(fatal,   LogLevel::FATAL,    true,   "FATAL (`o')")
-    LOGGER_DEF(explore, LogLevel::EXPLORE,  false,  "(EXPLORE)")
+    LOGGER_DEF(debug,   LogLevel::Debug,    true,   "DEBUG")
+    LOGGER_DEF(info,    LogLevel::Info,     true,   "INFO")
+    LOGGER_DEF(warning, LogLevel::Warning,  true,   "WARNING")
+    LOGGER_DEF(error,   LogLevel::Error,    true,   "ERROR (-A-)")
+    LOGGER_DEF(fatal,   LogLevel::Fatal,    true,   "FATAL (`o')")
+    LOGGER_DEF(explore, LogLevel::Explore,  false,  "(EXPLORE)")
 
 } // namespace logger
+
 #endif

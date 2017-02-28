@@ -1,12 +1,9 @@
 /*
 Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
      http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,8 +39,8 @@ namespace jvm {
                 jclass cls,
                 jobject obj
         ) :
-                env(std::move(aEnv)),
-                jvm(std::move(aJvm)),
+                env(aEnv),
+                jvm(aJvm),
                 jClass(std::move(cls)),
                 jObject(std::move(obj)),
                 name(std::move(aName)),
@@ -59,54 +56,62 @@ namespace jvm {
     // I think it is hard for Java program to use HashMap only.
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName,
+        const std::string &functionName,
         std::string param
     );
     
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName,
+        const std::string &functionName,
         std::map<std::string, std::string> params
     );
 
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName,
+        const std::string &functionName,
         std::string param,
         std::map<std::string, std::map<std::string, std::string>> params
     );
 
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName,
+        const std::string &functionName,
         std::string param1,
         std::map<std::string, std::string> param2
     );
     
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName,
+        const std::string &functionName,
         std::map<std::string, std::string> params,
         std::map<std::string, std::string> params2
     );
     
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName,
+        const std::string &functionName,
         std::map<std::string, std::string> params,
         std::map<std::string, std::map<std::string, std::string>> params2
     );
 
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName,
+        const std::string &functionName,
         std::map<std::string, std::string> params,
         std::vector<std::string> params2
     );
 
     void execFunction(
         const std::unique_ptr<JavaContext> &context,
-        std::string functionName
+        const std::string& functionName,
+        std::string param1,
+        std::map<std::string, std::string> param2,
+        std::vector<std::string> param3
+    );
+
+    void execFunction(
+        const std::unique_ptr<JavaContext> &context,
+        const std::string &functionName
     );
 
 }

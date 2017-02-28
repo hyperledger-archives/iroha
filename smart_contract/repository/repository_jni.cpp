@@ -24,6 +24,7 @@ limitations under the License.
 #include <infra/virtual_machine/jvm/java_data_structure.hpp>
 #include <repository/domain/account_repository.hpp>
 #include <repository/domain/asset_repository.hpp>
+#include <repository/domain/domain_repository.hpp>
 #include <repository/domain/simple_asset_repository.hpp>
 #include <transaction_builder/helper/create_objects_helper.hpp>
 #include <util/convert_string.hpp>
@@ -47,9 +48,9 @@ using virtual_machine::jvm::JavaMakeStringArray;
 /***************************************************************************************
  * Account
  ***************************************************************************************/
-JNIEXPORT jstring JNICALL Java_repository_Repository_accountAdd(
-    JNIEnv *env, jclass, jstring publicKey_, jstring name_,
-    jobjectArray assets_) {
+JNIEXPORT jstring JNICALL
+Java_repository_Repository_accountAdd(JNIEnv *env, jclass, jstring publicKey_,
+                                      jstring name_, jobjectArray assets_) {
   const char *publicKeyCString = env->GetStringUTFChars(publicKey_, 0);
   const char *nameCString = env->GetStringUTFChars(name_, 0);
 
@@ -86,22 +87,26 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_accountAttach(
 }
 
 JNIEXPORT jobject JNICALL Java_repository_Repository_accountUpdate(
-    JNIEnv *env, jclass, jstring uuid_, jobjectArray assets_) {
+    JNIEnv *env, jclass, jstring uuid_, jstring name_, jobjectArray assets_) {
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const char *nameCString = env->GetStringUTFChars(name_, 0);
 
   const auto uuid = std::string(uuidCString);
+  const auto name = std::string(nameCString);
   const auto assets = convertJavaStringArrayRelease(env, assets_);
 
   env->ReleaseStringUTFChars(uuid_, uuidCString);
+  env->ReleaseStringUTFChars(name_, nameCString);
 
   logger::debug(NameSpaceID + "::accountUpdate")
-      << " uuid: " << uuid << ", assets: " << convert_string::to_string(assets);
+      << " uuid: " << uuid << ", name: " << name
+      << ", assets: " << convert_string::to_string(assets);
 
-  return JavaMakeBoolean(env, repository::account::update(uuid, assets));
+  return JavaMakeBoolean(env, repository::account::update(uuid, name, assets));
 }
 
-JNIEXPORT jobject JNICALL Java_repository_Repository_accountRemove(
-    JNIEnv *env, jclass, jstring uuid_) {
+JNIEXPORT jobject JNICALL
+Java_repository_Repository_accountRemove(JNIEnv *env, jclass, jstring uuid_) {
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
   const auto uuid = std::string(uuidCString);
   env->ReleaseStringUTFChars(uuid_, uuidCString);
@@ -109,9 +114,8 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_accountRemove(
   return JavaMakeBoolean(env, repository::account::remove(uuid));
 }
 
-JNIEXPORT jobject JNICALL
-Java_repository_Repository_accountInfoFindByUuid(JNIEnv *env, jclass,
-                                                       jstring uuid_) {
+JNIEXPORT jobject JNICALL Java_repository_Repository_accountInfoFindByUuid(
+    JNIEnv *env, jclass, jstring uuid_) {
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
   const auto uuid = std::string(uuidCString);
 
@@ -137,7 +141,7 @@ Java_repository_Repository_accountInfoFindByUuid(JNIEnv *env, jclass,
 
 JNIEXPORT jobjectArray JNICALL
 Java_repository_Repository_accountValueFindByUuid(JNIEnv *env, jclass,
-                                                        jstring uuid_) {
+                                                  jstring uuid_) {
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
   const auto uuid = std::string(uuidCString);
 
@@ -153,8 +157,8 @@ Java_repository_Repository_accountValueFindByUuid(JNIEnv *env, jclass,
   return JavaMakeStringArray(env, assets);
 }
 
-JNIEXPORT jobject JNICALL Java_repository_Repository_accountExists(
-    JNIEnv *env, jclass, jstring uuid_) {
+JNIEXPORT jobject JNICALL
+Java_repository_Repository_accountExists(JNIEnv *env, jclass, jstring uuid_) {
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
   const auto uuid = std::string(uuidCString);
   env->ReleaseStringUTFChars(uuid_, uuidCString);
@@ -207,8 +211,8 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_assetUpdate(
   return JavaMakeBoolean(env, repository::asset::update(uuid, value));
 }
 
-JNIEXPORT jobject JNICALL Java_repository_Repository_assetRemove(
-    JNIEnv *env, jclass, jstring uuid_) {
+JNIEXPORT jobject JNICALL
+Java_repository_Repository_assetRemove(JNIEnv *env, jclass, jstring uuid_) {
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
   const auto uuid = std::string(uuidCString);
 
@@ -283,8 +287,8 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_assetValueFindByUuid(
   return JavaMakeMap(env, params);
 }
 
-JNIEXPORT jobject JNICALL Java_repository_Repository_assetExists(
-    JNIEnv *env, jclass, jstring uuid_) {
+JNIEXPORT jobject JNICALL
+Java_repository_Repository_assetExists(JNIEnv *env, jclass, jstring uuid_) {
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
   const auto uuid = std::string(uuidCString);
   env->ReleaseStringUTFChars(uuid_, uuidCString);
@@ -295,9 +299,9 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_assetExists(
 /***************************************************************************************
  * SimpleAsset
  ***************************************************************************************/
-JNIEXPORT jstring JNICALL Java_repository_Repository_simpleAssetAdd
-  (JNIEnv *env, jclass, jstring domain_, jstring name_, jobject value_, jstring smartContractName_)
-{
+JNIEXPORT jstring JNICALL Java_repository_Repository_simpleAssetAdd(
+    JNIEnv *env, jclass, jstring domain_, jstring name_, jobject value_,
+    jstring smartContractName_) {
   const char *domainCString = env->GetStringUTFChars(domain_, 0);
   const char *nameCString = env->GetStringUTFChars(name_, 0);
   const char *smartContractNameCString =
@@ -323,9 +327,8 @@ JNIEXPORT jstring JNICALL Java_repository_Repository_simpleAssetAdd
   return env->NewStringUTF(ret.c_str());
 }
 
-JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetUpdate
-  (JNIEnv *env, jclass, jstring uuid_, jobject value_)
-{
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetUpdate(
+    JNIEnv *env, jclass, jstring uuid_, jobject value_) {
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
   const auto uuid = std::string(uuidCString);
 
@@ -336,9 +339,8 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetUpdate
   return JavaMakeBoolean(env, repository::simple_asset::update(uuid, value));
 }
 
-JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetRemove
-  (JNIEnv *env, jclass, jstring uuid_)
-{
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetRemove(
+    JNIEnv *env, jclass, jstring uuid_) {
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
   const auto uuid = std::string(uuidCString);
 
@@ -347,15 +349,15 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetRemove
   return JavaMakeBoolean(env, repository::simple_asset::remove(uuid));
 }
 
-JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetInfoFindByUuid
-  (JNIEnv *env, jclass, jstring uuid_)
-{
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetInfoFindByUuid(
+    JNIEnv *env, jclass, jstring uuid_) {
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
   const auto uuid = std::string(uuidCString);
 
   env->ReleaseStringUTFChars(uuid_, uuidCString);
 
-  logger::debug(NameSpaceID + "::simpleAssetInfoFindByUuid") << "uuid: " << uuid;
+  logger::debug(NameSpaceID + "::simpleAssetInfoFindByUuid") << "uuid: "
+                                                             << uuid;
 
   auto simpleAsset = repository::simple_asset::findByUuid(uuid);
 
@@ -379,25 +381,104 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetInfoFindByUuid
   return JavaMakeMap(env, params);
 }
 
-JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetValueFindByUuid
-  (JNIEnv *env, jclass, jstring uuid_)
-{
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetValueFindByUuid(
+    JNIEnv *env, jclass, jstring uuid_) {
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
   const auto uuid = std::string(uuidCString);
 
   env->ReleaseStringUTFChars(uuid_, uuidCString);
 
-  logger::debug(NameSpaceID + "::simpleAssetValueFindByUuid") << "uuid: " << uuid;
+  logger::debug(NameSpaceID + "::simpleAssetValueFindByUuid") << "uuid: "
+                                                              << uuid;
 
   auto simpleAsset = repository::simple_asset::findByUuid(uuid);
   return JavaMakeMap(env, convertBaseObjectToMapString(simpleAsset.value()));
 }
 
-JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetExists
-    (JNIEnv *env, jclass, jstring uuid_) {
+JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetExists(
+    JNIEnv *env, jclass, jstring uuid_) {
   const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
   const auto uuid = std::string(uuidCString);
   env->ReleaseStringUTFChars(uuid_, uuidCString);
   logger::debug(NameSpaceID + "::simpleAssetExists") << " uuid: " << uuid;
   return JavaMakeBoolean(env, repository::simple_asset::exists(uuid));
 }
+
+/***************************************************************************************
+ * Domain
+ ***************************************************************************************/
+JNIEXPORT jstring JNICALL Java_repository_Repository_domainAdd(
+    JNIEnv *env, jclass, jstring ownerPublicKey_, jstring name_) {
+
+  const char *ownerPublicKeyCString =
+      env->GetStringUTFChars(ownerPublicKey_, 0);
+  const char *nameCString = env->GetStringUTFChars(name_, 0);
+
+  const auto ownerPublicKey = std::string(ownerPublicKeyCString);
+  const auto name = std::string(nameCString);
+
+  env->ReleaseStringUTFChars(ownerPublicKey_, ownerPublicKeyCString);
+  env->ReleaseStringUTFChars(name_, nameCString);
+
+  logger::debug(NameSpaceID + "::domainAdd")
+      << "ownerPublicKey: " << ownerPublicKey_ << ", name: " << name_;
+
+  const auto ret = repository::domain::add(ownerPublicKey, name);
+
+  return env->NewStringUTF(ret.c_str());
+}
+
+JNIEXPORT jobject JNICALL Java_repository_Repository_domainUpdate(
+    JNIEnv *env, jclass, jstring uuid_, jstring name_) {
+
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const char *nameCString = env->GetStringUTFChars(name_, 0);
+
+  const auto uuid = std::string(uuidCString);
+  const auto name = std::string(nameCString);
+
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+  env->ReleaseStringUTFChars(name_, nameCString);
+
+  logger::debug(NameSpaceID + "::domainUpdate") << "uuid: " << uuid_
+                                                << ", name: " << name_;
+
+  return JavaMakeBoolean(env, repository::domain::update(uuid, name));
+}
+
+JNIEXPORT jobject JNICALL
+Java_repository_Repository_domainRemove(JNIEnv *env, jclass, jstring uuid_) {
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const auto uuid = std::string(uuidCString);
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+  logger::debug(NameSpaceID + "::domainRemove") << "uuid: " << uuid;
+  return JavaMakeBoolean(env, repository::domain::remove(uuid));
+}
+
+JNIEXPORT jobject JNICALL Java_repository_Repository_domainFindByUuid(
+    JNIEnv *env, jclass, jstring uuid_) {
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const auto uuid = std::string(uuidCString);
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+  logger::debug(NameSpaceID + "::domainFindByUuid") << "uuid: " << uuid;
+  auto domain = repository::domain::findByUuid(uuid);
+  std::map<std::string, std::string> domainMap;
+  {
+    domainMap[jni_constants::OwnerPublicKeyTag] = domain.ownerpublickey();
+    domainMap[jni_constants::DomainNameTag] = domain.name();
+  }
+  return JavaMakeMap(env, domainMap);
+}
+
+JNIEXPORT jobject JNICALL
+Java_repository_Repository_domainExists(JNIEnv *env, jclass, jstring uuid_) {
+  const char *uuidCString = env->GetStringUTFChars(uuid_, 0);
+  const auto uuid = std::string(uuidCString);
+  env->ReleaseStringUTFChars(uuid_, uuidCString);
+  logger::debug(NameSpaceID + "::domainExists") << " uuid: " << uuid;
+  return JavaMakeBoolean(env, repository::domain::exists(uuid));
+}
+
+/***************************************************************************************
+ * Peer
+ ***************************************************************************************/

@@ -52,8 +52,8 @@ std::string createDomainUuid(const std::string &ownerPublicKey) {
  ********************************************************************************************/
 std::string add(const std::string &ownerPublicKey, const std::string &name) {
 
-  logger::explore(NameSpaceID) << "Add<Domain> ownerPublicKey: " << ownerPublicKey
-                               << " name: " << name;
+  logger::explore(NameSpaceID)
+      << "Add<Domain> ownerPublicKey: " << ownerPublicKey << " name: " << name;
 
   const auto uuid = detail::createDomainUuid(ownerPublicKey);
 
@@ -71,22 +71,17 @@ std::string add(const std::string &ownerPublicKey, const std::string &name) {
 /********************************************************************************************
  * Update<Domain>
  ********************************************************************************************/
-/*
-What should be updated?
-
-bool update(const std::string &uuid, const Api::Trust &trust) {
+bool update(const std::string &uuid, const std::string &name) {
   if (exists(uuid)) {
     const auto rval = world_state_repository::find(uuid);
-    logger::explore(NameSpaceID) << "Update<Domain> uuid: " << uuid
-                                 << trust.value();
+    logger::explore(NameSpaceID) << "Update<Domain> uuid: " << uuid << ", name:" << name;
     auto domain = detail::parseDomain(rval);
-    *domain.mutable_trust() = trust;
+    *domain.mutable_name() = name;
     const auto strDomain = detail::stringifyDomain(domain);
     return world_state_repository::update(uuid, strDomain);
   }
   return false;
 }
-*/
 
 /********************************************************************************************
  * Remove<Domain>
