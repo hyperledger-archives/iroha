@@ -26,10 +26,6 @@ cd $IROHA_HOME/core/vendor/KeccakCodePackage
 make clean 2>/dev/null 1>&2
 (make -j4 && make -j4 generic64/libkeccak.a) || error "Can't build KeccakCodePackage submodule"
 
-cd $IROHA_HOME/core/infra/crypto 
-make clean 2>/dev/null 1>&2
-make -j4 || error "Can't build crypto submodule"
-
 # build iroha (important: build using single thread!)
 (mkdir -p $IROHA_BUILD && \
 cd $IROHA_BUILD && \
