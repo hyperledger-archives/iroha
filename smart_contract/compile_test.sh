@@ -17,4 +17,9 @@ javac -encoding UTF-8 \
 javac -encoding UTF-8 \
   $IROHA_HOME/smart_contract/repository/Repository.java \
   $IROHA_HOME/smart_contract/repository/KeyConstants.java \
-  $IROHA_HOME/smart_contract/instances/test/TestSimpleAsset.java
+  $IROHA_HOME/smart_contract/instances/test/TestSimpleAsset.java \
+&& \
+javac -encoding UTF-8 \
+  $IROHA_HOME/smart_contract/repository/Repository.java \
+  $IROHA_HOME/smart_contract/repository/KeyConstants.java \
+  $IROHA_HOME/smart_contract/instances/test/TestDomain.java
