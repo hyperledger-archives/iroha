@@ -8,15 +8,6 @@ machine:
   java:
       version: 'oraclejdk8'
 
-checkout:
-  post:
-
-    # Temporary....
-    - sed -i  -e 's/luca3104/MizukiSonoko/g' .git/modules/core/vendor/ed25519/config
-
-    - git submodule sync --recursive
-    - git submodule update --init --recursive
-
 dependencies:
   cache_directories:
     - ~/iroha/core/vendor/
