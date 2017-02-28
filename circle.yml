@@ -10,17 +10,16 @@ machine:
 
 checkout:
   post:
-
-    # Temporary....
+    # From Bogdan: is it necessary here? I removed submodules.
+    # Temporary....  
     - sed -i  -e 's/luca3104/MizukiSonoko/g' .git/modules/core/vendor/ed25519/config
-
-    - git submodule sync --recursive
-    - git submodule update --init --recursive
 
 dependencies:
   cache_directories:
-    - ~/iroha/core/vendor/
-    - ~/docker
+    # to cache dependencies
+    - ${IROHA_HOME}/external/src
+    # to cache docker images
+    - ~/docker 
   override:
     # one way to cache iroha-dev container is to save it to tar image. 2 mins vs 10 mins without caching.
     - if [[ -e ~/docker/iroha-dev.tar ]]; then docker load -i ~/docker/iroha-dev.tar; else docker build --rm=false -t hyperledger/iroha-dev ${IROHA_HOME}/docker/dev; fi
