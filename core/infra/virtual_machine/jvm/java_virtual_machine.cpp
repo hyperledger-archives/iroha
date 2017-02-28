@@ -207,7 +207,7 @@ namespace jvm {
             return;
         }
 
-        jobject jmap1 = JavaMakeMap( context->env, param2 );
+        jobject jmap1 = JavaMakeMap( context->env, param1 );
         jobject jmap2 = JavaMakeMap( context->env, param2 );
 
         context->env->CallVoidMethod(context->jObject, mid, jmap1, jmap2);

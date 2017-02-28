@@ -135,13 +135,13 @@ void invokeFunction(const std::string &packageName,
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName,
-                    std::map<std::string, std::string> params,
-                    std::map<std::string, std::string> params2) {
+                    std::map<std::string, std::string> param1,
+                    std::map<std::string, std::string> param2) {
 
   const auto NameId = pack(packageName, contractName);
   if (vmSet.find(NameId) != vmSet.end()) {
     const auto &context = vmSet.at(NameId);
-    jvm::execFunction(context, functionName, params, params2);
+    jvm::execFunction(context, functionName, param1, param2);
   }
 }
 
