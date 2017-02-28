@@ -40,7 +40,7 @@ using type_signatures::Peer;
 
 
 TEST(ConnectionWithGrpc, Transaction_Add_Domain){
-    logger::setLogLevel(logger::LogLevel::DEBUG);
+    logger::setLogLevel(logger::LogLevel::Debug);
 
     connection::initialize_peer();
 
@@ -80,7 +80,7 @@ TEST(ConnectionWithGrpc, Transaction_Add_Domain){
 }
 
 TEST(ConnectionWithGrpc, Transaction_Add_Asset){
-    logger::setLogLevel(logger::LogLevel::DEBUG);
+    logger::setLogLevel(logger::LogLevel::Debug);
 
     connection::initialize_peer();
 

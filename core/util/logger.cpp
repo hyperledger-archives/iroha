@@ -37,7 +37,7 @@ namespace logger {
               &&                                                                    \
               static_cast<int>(detail::LOG_LEVEL) <= static_cast<int>(UseLevel)     \
             ) {                                                                     \
-            const auto useCErr = static_cast<int>(LogLevel::ERROR) <= static_cast<int>(UseLevel);   \
+            const auto useCErr = static_cast<int>(LogLevel::Error) <= static_cast<int>(UseLevel);   \
             ( useCErr ? std::cerr : std::cout )                                     \
                         << datetime::unixtime_str()                                 \
                         << (HasPrefix ?                                             \
@@ -48,10 +48,10 @@ namespace logger {
         }                                                                   	\
     }
 
-    LOGGER_DEF_IMPL(debug,   LogLevel::DEBUG,    true,   "DEBUG")
-    LOGGER_DEF_IMPL(info,    LogLevel::INFO,     true,   "INFO")
-    LOGGER_DEF_IMPL(warning, LogLevel::WARNING,  true,   "WARNING")
-    LOGGER_DEF_IMPL(error,   LogLevel::ERROR,    true,   "ERROR (-A-)")
-    LOGGER_DEF_IMPL(fatal,   LogLevel::FATAL,    true,   "FATAL (`o')")
-    LOGGER_DEF_IMPL(explore, LogLevel::EXPLORE,  false,  "(EXPLORE)")
+    LOGGER_DEF_IMPL(debug,   LogLevel::Debug,    true,   "DEBUG")
+    LOGGER_DEF_IMPL(info,    LogLevel::Info,     true,   "INFO")
+    LOGGER_DEF_IMPL(warning, LogLevel::Warning,  true,   "WARNING")
+    LOGGER_DEF_IMPL(error,   LogLevel::Error,    true,   "ERROR (-A-)")
+    LOGGER_DEF_IMPL(fatal,   LogLevel::Fatal,    true,   "FATAL (`o')")
+    LOGGER_DEF_IMPL(explore, LogLevel::Explore,  false,  "(EXPLORE)")
 }
