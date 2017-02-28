@@ -117,10 +117,10 @@ bool PeerServiceConfig::addPeer( peer::Node &peer ) {
     if( isExistPublicKey( peer.getPublicKey() ) )
       throw exception::service::DuplicationPublicKeyAddPeerException(std::move(peer.getIP()), std::move(peer.getPublicKey()), std::move(peer.getTrustScore()));
     peerList.emplace_back( std::move(peer));
-  } catch( exception::service::DuplicationPublicKeyAddPeerException e ) {
+  } catch( exception::service::DuplicationPublicKeyAddPeerException& e ) {
     logger::warning("addPeer") << e.what();
     return false;
-  } catch( exception::service::DuplicationIPAddPeerException e ) {
+  } catch( exception::service::DuplicationIPAddPeerException& e ) {
     logger::warning("addPeer") << e.what();
     return false;
   }
@@ -133,7 +133,7 @@ bool PeerServiceConfig::removePeer( peer::Node &peer ) {
     if (it == peerList.end())
       throw exception::service::UnExistFindPeerException(std::move(peer.getIP()), std::move(peer.getPublicKey()), std::move(peer.getTrustScore()));
     peerList.erase(it);
-  } catch (exception::service::UnExistFindPeerException e) {
+  } catch (exception::service::UnExistFindPeerException& e) {
     logger::warning("removePeer") << e.what();
     return false;
   }
@@ -147,7 +147,7 @@ bool PeerServiceConfig::updatePeer( peer::Node &peer ) {
       throw exception::service::UnExistFindPeerException(std::move(peer.getIP()), std::move(peer.getPublicKey()), std::move(peer.getTrustScore()));
     peerList.erase(it);
     addPeer( peer );
-  } catch ( exception::service::UnExistFindPeerException e ) {
+  } catch ( exception::service::UnExistFindPeerException& e ) {
     logger::warning("updatePeer") << e.what();
     return false;
   }
@@ -167,7 +167,7 @@ void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
       throw exception::ParseFromStringException("sumeragi");
     }
     _configData = json::parse(std::move(jsonStr));
-  } catch (exception::ParseFromStringException& e) {    
+  } catch (exception::ParseFromStringException& e) {
     logger::warning("peer service config") << e.what();
     logger::warning("peer service config") << getConfigName() << " is set to be default.";
 
