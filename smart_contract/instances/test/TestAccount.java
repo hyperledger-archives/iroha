@@ -136,6 +136,22 @@ public class TestAccount {
       printFail(e);
     }
   }
+
+  public static void testRemoveAccount(String uuid) throws IllegalStateException {
+    try {
+      // Print received params
+      System.out.println("----------------------------------------------");
+      System.out.println("Params uuid: " + uuid);
+      System.out.println("----------------------------------------------");
+
+      if (!repository.accountRemove(uuid))
+        throw new IllegalStateException("Cannot remove account");
+      
+      printSuccess();
+    } catch(IllegalStateException e) {
+      printFail(e);
+    }
+  }
   /***************************************************************************************************
    * From java main function
    ***************************************************************************************************/

@@ -17,10 +17,10 @@ limitations under the License.
 #include <gtest/gtest.h>
 
 #include <infra/protobuf/api.pb.h>
+#include <infra/virtual_machine/jvm/java_data_structure.hpp>
 #include <repository/domain/account_repository.hpp>
 #include <repository/world_state_repository.hpp>
 #include <virtual_machine/virtual_machine.hpp>
-#include <infra/virtual_machine/jvm/java_data_structure.hpp>
 
 const std::string PackageName = "test";
 const std::string ContractName = "TestAccount";
@@ -34,23 +34,25 @@ const std::string SmartContractNameTag = "smartContractName";
 /*********************************************************************************************************
  * Test Account
  *********************************************************************************************************/
-TEST(JavaQueryRepoAccount, InitializeVM) {
+TEST(JavaQueryRepoAccount, initializeVM) {
   virtual_machine::initializeVM(PackageName, ContractName);
-}
-
-TEST(JavaQueryRepoAccount, removeDBChacheIfExists) {
-  const auto account = "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
-  if (repository::account::exists(account)) {
-    repository::account::remove(account);
-  }
-  const auto account2 = "48578a1dd980bc7b739702889057f292f3cb29f7a67307fbce04f2e34489eb57";
-  if (repository::account::exists(account2)) {
-    repository::account::remove(account2);
-  }
 }
 
 TEST(JavaQueryRepoAccount, invokeAddAccount) {
 
+  /*****************************************************************
+   * Remove chache
+   *****************************************************************/
+  const auto uuid =
+      "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
+
+  if (repository::account::exists(uuid)) {
+    repository::account::remove(uuid);
+  }
+
+  /*****************************************************************
+   * Invoke Java method
+   *****************************************************************/
   const std::string FunctionName = "testAddAccount";
 
   std::map<std::string, std::string> params;
@@ -69,9 +71,6 @@ TEST(JavaQueryRepoAccount, invokeAddAccount) {
   virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
                                   params, assets);
 
-  const std::string uuid =
-      "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
-
   const std::string received_serialized_acc =
       repository::world_state_repository::find(uuid);
 
@@ -83,16 +82,35 @@ TEST(JavaQueryRepoAccount, invokeAddAccount) {
   for (std::size_t i = 0; i < assets.size(); i++) {
     ASSERT_STREQ(assets[i].c_str(), account.assets(i).c_str());
   }
+
+  // Remove cache again
+  ASSERT_TRUE(repository::account::remove(uuid));
 }
 
 TEST(JavaQueryRepoAccount, invokeUpdateAccount) {
 
+  /*****************************************************************
+   * Remove cache & initialize
+   *****************************************************************/
+  const auto uuid =
+      "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
+
+  if (repository::account::exists(uuid)) {
+    repository::account::remove(uuid);
+  }
+
+  repository::account::add("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=",
+                           "MizukiSonoko", {"asset1", "asset2"});
+
+  ASSERT_TRUE(repository::account::exists(uuid));
+
+  /*****************************************************************
+   * Invoke Java method
+   *****************************************************************/
   const std::string FunctionName = "testUpdateAccount";
 
   std::map<std::string, std::string> params;
-  {
-    params[AccountNameTag] = "Mi Nazuki Sonoko";
-  }
+  { params[AccountNameTag] = "Mi Nazuki Sonoko"; }
 
   std::vector<std::string> assets;
   {
@@ -102,25 +120,53 @@ TEST(JavaQueryRepoAccount, invokeUpdateAccount) {
     assets.push_back("dddddd");
   }
 
-  const std::string uuid =
-      "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
+  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName, uuid,
+                                  params, assets);
 
-  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
-                                  uuid, params, assets);
-
-  const std::string strAccount =
-      repository::world_state_repository::find(uuid);
+  const std::string strAccount = repository::world_state_repository::find(uuid);
 
   Api::Account account;
   account.ParseFromString(strAccount);
 
-  ASSERT_STREQ("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=", account.publickey().c_str());
+  ASSERT_STREQ("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=",
+               account.publickey().c_str());
   ASSERT_STREQ(params[AccountNameTag].c_str(), account.name().c_str());
   for (std::size_t i = 0; i < assets.size(); i++) {
     ASSERT_STREQ(assets[i].c_str(), account.assets(i).c_str());
   }
+
+  // Remove chache again
+  repository::account::remove(uuid);
 }
 
-TEST(JavaQueryRepoAccount, FinishVM) {
+TEST(JavaQueryRepoAccount, invokeRemoveAccount) {
+
+  /*****************************************************************
+  * Remove cache & initialize
+  *****************************************************************/
+  const std::string uuid =
+      "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
+
+  if (repository::account::exists(uuid)) {
+    repository::account::remove(uuid);
+  }
+
+  repository::account::add("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=",
+                           "MizukiSonoko", {"asset1", "asset2"});
+
+  ASSERT_TRUE(repository::account::exists(uuid));
+
+  /*****************************************************************
+   * Invoke Java method
+   *****************************************************************/
+  const std::string FunctionName = "testRemoveAccount";
+
+  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
+                                  uuid);
+
+  ASSERT_TRUE(!repository::account::exists(uuid));
+}
+
+TEST(JavaQueryRepoAccount, finishVM) {
   virtual_machine::finishVM(PackageName, ContractName);
 }
