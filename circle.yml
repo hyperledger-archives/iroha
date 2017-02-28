@@ -10,6 +10,8 @@ machine:
 
 dependencies:
   cache_directories:
+    # to cache external dependencies
+    - ~/iroha/external
     # to cache docker images
     - ~/docker 
   override:
