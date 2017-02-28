@@ -1,20 +1,37 @@
 cmake_minimum_required(VERSION 2.8)
-PROJECT(iroha CXX)
-
-ENABLE_LANGUAGE(C)
-find_package(Threads)
+PROJECT(iroha C CXX)
 
 SET(CMAKE_CXX_FLAGS "-g -Wall -std=c++1y")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
 SET(CMAKE_CXX_FLAGS_DEBUG   "-Wextra -O0")
 SET(CMAKE_SHARED_LINKER_FLAGS "-lpthread -lssl")
 
+option(BENCHMARKING "Build benchmarks" OFF)
+option(TESTING "Build tests" ON)
+
+# set default CMAKE_BUILD_TYPE=Debug
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug)
+endif()
+message(STATUS "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+message(STATUS "-DTESTING=${TESTING}")
+message(STATUS "-DBENCHMARKING=${BENCHMARKING}")
+
+
+include("dependencies.cmake")
+
+
 add_subdirectory(core)
 add_subdirectory(peer)
 add_subdirectory(tools)
 
-if(NOT without-test)
+
+if(TESTING)
   enable_testing()
-  include(test/gtest.cmake)
   add_subdirectory(test)
+endif()
+
+
+if(BENCHMARKING)
+  add_subdirectory(benchmark)
 endif()

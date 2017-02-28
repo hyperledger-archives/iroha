@@ -14,10 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../../consensus/connection/connection.hpp"
-
-#include "../../util/logger.hpp"
-#include "../../service/peer_service.hpp"
+#include <consensus/connection/connection.hpp>
+#include <util/logger.hpp>
+#include <service/peer_service.hpp>
 
 #include <cstdint>
 #include <cstdio>

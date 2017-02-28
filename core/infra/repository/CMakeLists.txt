@@ -17,4 +17,5 @@ target_link_libraries(world_state_repo_with_level_db
   leveldb
   logger
   exception
+  json
 )

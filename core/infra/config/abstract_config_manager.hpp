@@ -20,7 +20,7 @@ limitations under the License.
 #include <fstream>  // ifstream, ofstream
 #include <util/logger.hpp>
 #include <util/use_optional.hpp>
-#include <vendor/json/src/json.hpp>
+#include <json.hpp>
 
 namespace config {
 

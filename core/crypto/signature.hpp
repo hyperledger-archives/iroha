@@ -48,9 +48,9 @@ namespace signature {
   );
 
   bool verify(
-    const std::string signature_b64,
-    const std::string message,
-    const std::string publicKey_b64);
+    const std::string &signature_b64,
+    const std::string &message,
+    const std::string &publicKey_b64);
 
   KeyPair generateKeyPair();
 

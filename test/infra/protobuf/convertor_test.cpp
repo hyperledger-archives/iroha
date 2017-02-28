@@ -19,6 +19,7 @@ limitations under the License.
 #include <vector>
 #include <tuple>
 
+<<<<<<< HEAD
 #include "../../../core/crypto/base64.hpp"
 
 #include "../../../core/crypto/signature.hpp"
@@ -26,6 +27,14 @@ limitations under the License.
 #include "../../../core/consensus/consensus_event.hpp"
 #include "repository/transaction_repository.hpp"
 #include "../../../core/repository/world_state_repository.hpp"
+=======
+#include <crypto/base64.hpp>
+#include <crypto/signature.hpp>
+#include <infra/protobuf/convertor.hpp>
+#include <consensus/consensus_event.hpp>
+#include <repository/consensus/transaction_repository.hpp>
+#include <repository/world_state_repository.hpp>
+>>>>>>> 6dbfb8c4e7fc3f41e47db4bd8dd0725258ac62cd
 
 using namespace command;
 using namespace transaction;
