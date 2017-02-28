@@ -8,16 +8,8 @@ machine:
   java:
       version: 'oraclejdk8'
 
-checkout:
-  post:
-    # From Bogdan: is it necessary here? I removed submodules.
-    # Temporary....  
-    #- sed -i  -e 's/luca3104/MizukiSonoko/g' .git/modules/core/vendor/ed25519/config
-
 dependencies:
   cache_directories:
-    # to cache dependencies
-    - ${IROHA_HOME}/external
     # to cache docker images
     - ~/docker 
   override:
