@@ -16,7 +16,6 @@ target_link_libraries(http_server_with_cappuccino
   base64
   signature
   connection_with_grpc
-  event_repository
   cappuccino
 )
 
