@@ -113,24 +113,24 @@ namespace sumeragi {
         }
 
         void printJudge(int numValidSignatures, int numValidationPeer, int faulty) {
-            std::string resLine[5] = {"","","","",""};
+            std::stringstream resLine[5];
             for (int i=0; i<numValidationPeer; i++) {
                 if (i < numValidSignatures){
-                    resLine[0] += "\033[1m\033[92m+-ー-+\033[0m";
-                    resLine[1] += "\033[1m\033[92m| 　 |\033[0m";
-                    resLine[2] += "\033[1m\033[92m|-承-|\033[0m";
-                    resLine[3] += "\033[1m\033[92m| 　 |\033[0m";
-                    resLine[4] += "\033[1m\033[92m+-＝-+\033[0m";
+                    resLine[0] << "\033[1m\033[92m+-ー-+\033[0m";
+                    resLine[1] << "\033[1m\033[92m| 　 |\033[0m";
+                    resLine[2] << "\033[1m\033[92m|-承-|\033[0m";
+                    resLine[3] << "\033[1m\033[92m| 　 |\033[0m";
+                    resLine[4] << "\033[1m\033[92m+-＝-+\033[0m";
                 } else {
-                    resLine[0] += "\033[91m+-ー-+\033[0m";
-                    resLine[1] += "\033[91m| 　 |\033[0m";
-                    resLine[2] += "\033[91m| 否 |\033[0m";
-                    resLine[3] += "\033[91m| 　 |\033[0m";
-                    resLine[4] += "\033[91m+-＝-+\033[0m";
+                    resLine[0] << "\033[91m+-ー-+\033[0m";
+                    resLine[1] << "\033[91m| 　 |\033[0m";
+                    resLine[2] << "\033[91m| 否 |\033[0m";
+                    resLine[3] << "\033[91m| 　 |\033[0m";
+                    resLine[4] << "\033[91m+-＝-+\033[0m";
                 }
             }
             for (int i=0; i<5; ++i)
-                logger::explore("sumeragi") << resLine[i];
+                logger::explore("sumeragi") << resLine[i].str();
 
             std::string line;
             for (int i=0; i<numValidationPeer; i++) line += "==＝==";
