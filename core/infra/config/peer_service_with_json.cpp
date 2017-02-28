@@ -21,6 +21,7 @@ limitations under the License.
 #include <util/logger.hpp>
 #include <util/exception.hpp>
 #include <util/use_optional.hpp>
+#include <consensus/connection/connection.hpp>
 #include <json.hpp>
 #include "peer_service_with_json.hpp"
 #include "config_format.hpp"
@@ -117,6 +118,7 @@ bool PeerServiceConfig::addPeer( peer::Node &peer ) {
     logger::warning("addPeer") << e.what();
     return false;
   }
+  connection::iroha::Sumeragi::Verify::addSubscriber( peer.getIP() );
   return true;
 }
 
@@ -144,6 +146,7 @@ bool PeerServiceConfig::updatePeer( peer::Node &peer ) {
     logger::warning("updatePeer") << e.what();
     return false;
   }
+  connection::iroha::Sumeragi::Verify::addSubscriber( peer.getIP() );
   return true;
 }
 

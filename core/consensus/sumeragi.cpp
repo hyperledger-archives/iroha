@@ -29,6 +29,7 @@ limitations under the License.
 
 #include <validation/transaction_validator.hpp>
 #include <service/peer_service.hpp>
+#include <infra/config/peer_service_with_json.hpp>
 #include "connection/connection.hpp"
 
 #include <service/executor.hpp>
@@ -161,18 +162,50 @@ namespace sumeragi {
         std::string     myPublicKey;
         std::deque<std::unique_ptr<peer::Node>> validatingPeers;
 
+        Context()
+        {
+            update();
+        }
+
         Context(std::vector<std::unique_ptr<peer::Node>>&& peers)
         {
             for (auto&& p : peers) {
                 validatingPeers.push_back(std::move(p));
             }
         }
+
+        void update()
+        {
+            auto peers = config::PeerServiceConfig::getInstance().getPeerList();
+            for (auto&& p : peers ) {
+                validatingPeers.push_back( std::move(p) );
+            }
+
+            this->numValidatingPeers = this->validatingPeers.size();
+            // maxFaulty = Default to approx. 1/3 of the network.
+            this->maxFaulty = config::IrohaConfigManager::getInstance()
+                    .getMaxFaultyPeers(this->numValidatingPeers / 3);
+            this->proxyTailNdx = this->maxFaulty * 2 + 1;
+
+            if (this->validatingPeers.empty()) {
+                logger::error("sumeragi") << "could not find any validating peers.";
+                exit(EXIT_FAILURE);
+            }
+
+            if (this->proxyTailNdx >= this->validatingPeers.size()) {
+                this->proxyTailNdx = this->validatingPeers.size() - 1;
+            }
+
+            this->panicCount = 0;
+            this->myPublicKey = config::PeerServiceConfig::getInstance().getMyPublicKey();
+
+            this->isSumeragi = this->validatingPeers.at(0)->getPublicKey() == this->myPublicKey;
+        }
     };
 
     std::unique_ptr<Context> context = nullptr;
 
-    void initializeSumeragi(const std::string& myPublicKey,
-                            std::vector<std::unique_ptr<peer::Node>> peers) {
+    void initializeSumeragi() {
         logger::explore("sumeragi") <<  "\033[95m+==ーーーーーーーーー==+\033[0m";
         logger::explore("sumeragi") <<  "\033[95m|+-ーーーーーーーーー-+|\033[0m";
         logger::explore("sumeragi") <<  "\033[95m|| 　　　　　　　　　 ||\033[0m";
@@ -185,32 +218,11 @@ namespace sumeragi {
         logger::explore("sumeragi") <<  "- 初期設定/initialize";
         //merkle_transaction_repository::initLeaf();
 
-        context = std::make_unique<Context>(std::move(peers));
-        peers.clear();
-
         logger::info("sumeragi")    <<  "My key is " << config::PeerServiceConfig::getInstance().getMyIp();
         logger::info("sumeragi")    <<  "Sumeragi setted";
         logger::info("sumeragi")    <<  "set number of validatingPeer";
 
-        context->numValidatingPeers = context->validatingPeers.size();
-        // maxFaulty = Default to approx. 1/3 of the network.
-        context->maxFaulty = config::IrohaConfigManager::getInstance()
-                .getMaxFaultyPeers(context->numValidatingPeers / 3);
-        context->proxyTailNdx = context->maxFaulty * 2 + 1;
-
-        if (context->validatingPeers.empty()) {
-            logger::error("sumeragi") << "could not find any validating peers.";
-            exit(EXIT_FAILURE);
-        }
-
-        if (context->proxyTailNdx >= context->validatingPeers.size()) {
-            context->proxyTailNdx = context->validatingPeers.size() - 1;
-        }
-
-        context->panicCount = 0;
-        context->myPublicKey = myPublicKey;
-
-        context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() == context->myPublicKey;
+        context = std::make_unique<Context>();
 
         connection::iroha::Sumeragi::Torii::receive([](const std::string& from, Transaction& transaction) {
             logger::info("sumeragi") << "receive!";
