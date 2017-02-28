@@ -129,7 +129,7 @@ namespace sumeragi {
                     resLine[4] += "\033[91m+-＝-+\033[0m";
                 }
             }
-            for (int i=0; i<5; i++)
+            for (int i=0; i<5; ++i)
                 logger::explore("sumeragi") << resLine[i];
 
             std::string line;
