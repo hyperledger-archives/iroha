@@ -14,15 +14,13 @@ limitations under the License.
 package instances.test;
 
 import repository.Repository;
-import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import static repository.KeyConstants.*;
 
 public class TestSimpleAsset {
 
-  static Repository repository = new Repository();
+  private static Repository repository = new Repository();
 
   public static void printSuccess() {
     System.out.println("==============================================");
@@ -30,7 +28,7 @@ public class TestSimpleAsset {
     System.out.println("==============================================");    
   }
 
-  public static void printFail(Exception e) {
+  public static void printFail(IllegalStateException e) {
     System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
     System.err.println("Fail");
     System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
@@ -38,13 +36,13 @@ public class TestSimpleAsset {
   }
 
   private static void ensureIntegirityOfSimpleAssetValue(HashMap<String, String> lhs,
-                                                         HashMap<String, String> rhs) throws Exception {
+                                                         HashMap<String, String> rhs) throws IllegalStateException {
 
       if (! lhs.equals(rhs)) {
         if (! lhs.get("type").equals("double")) {
           System.out.println(lhs.get("type")  + " vs " + rhs.get("type"));
           System.out.println(lhs.get("value") + " vs " + rhs.get("value"));
-          throw new Exception("Mismatch simple asset");
+          throw new IllegalStateException("Mismatch simple asset");
         }
 
         final Double Eps = 1e-5;
@@ -53,7 +51,7 @@ public class TestSimpleAsset {
           - Double.parseDouble( rhs.get("value") )
         );
         if (Diff >= Eps) {
-          throw new Exception("Double value difference is " + Diff + ", over EPS(" + Eps + ")");
+          throw new IllegalStateException("Double value difference is " + Diff + ", over EPS(" + Eps + ")");
         } else {
           System.out.println("Warning: double value difference: " + Diff);
         }
@@ -64,7 +62,7 @@ public class TestSimpleAsset {
    * Verify simple asset
    ******************************************************************************/
 
-  public static void testAddSimpleAsset(HashMap<String, String> info, HashMap<String, String> value) throws Exception {
+  public static void testAddSimpleAsset(HashMap<String, String> info, HashMap<String, String> value) throws IllegalStateException {
     try {
 
       System.out.println("----------------------------------------------");
@@ -98,47 +96,46 @@ public class TestSimpleAsset {
 
       // 3. Ensure the integrity.
       if (! info.get(DomainId).equals(infoMap.get(DomainId)))
-        throw new Exception("Mismatch domain id");
+        throw new IllegalStateException("Mismatch domain id");
 
       if (! info.get(SimpleAssetName).equals(infoMap.get(AssetName)))
-        throw new Exception("Mismatch asset name");
+        throw new IllegalStateException("Mismatch asset name");
 
       if (! info.get(ContractName).equals(infoMap.get(ContractName)))
-        throw new Exception("Mismatch smartcontract name");
+        throw new IllegalStateException("Mismatch smartcontract name");
 
       // value check is responsible for C++.
       ensureIntegirityOfSimpleAssetValue(value, valueMap);
 
       printSuccess();
-    } catch(Exception e) {
+    } catch(IllegalStateException e) {
       printFail(e);
     }
   }
 
-  public static void testUpdateSimpleAsset(String uuid, HashMap<String, String> value) throws Exception {
+  public static void testUpdateSimpleAsset(String uuid, HashMap<String, String> value) throws IllegalStateException {
     try {
 
       // 1. Update Asset.
       repository.simpleAssetUpdate(uuid, value);
 
       // 2. Find by the uuid.
-      HashMap<String, String> infoMap  = repository.simpleAssetInfoFindByUuid(uuid);
       HashMap<String, String> valueMap = repository.simpleAssetValueFindByUuid(uuid);
 
       // 3. Ensure the integrity.
       ensureIntegirityOfSimpleAssetValue(value, valueMap);
 
       printSuccess();
-    } catch(Exception e) {
+    } catch(IllegalStateException e) {
       printFail(e);
     }
   }
 
-  public static void testRemoveSimpleAsset(String uuid) throws Exception {
+  public static void testRemoveSimpleAsset(String uuid) throws IllegalStateException {
     try {
       repository.simpleAssetRemove(uuid);
       printSuccess();
-    } catch(Exception e) {
+    } catch(IllegalStateException e) {
       printFail(e);
     }
   }
@@ -164,7 +161,7 @@ public class TestSimpleAsset {
       System.out.println("Success (from Java main)");
       System.out.println("==============================================");
 
-    } catch(Exception e) {
+    } catch(IllegalStateException e) {
       System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
       System.err.println("Fail (from Java main)");
       System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
