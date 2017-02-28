@@ -94,7 +94,6 @@ public class TestAccount {
     try {
       // Print received params
       System.out.println("----------------------------------------------");
-      System.out.println("Params pubKey:      " + params.get(PublicKey));
       System.out.println("Params accountName: " + params.get(AccountName));
       for (int i = 0; i < assets.length; i++) {
         System.out.println("Params assets[" + i + "]: " + assets[i]);
@@ -128,13 +127,7 @@ public class TestAccount {
       System.out.println("----------------------------------------------");
 
       // 3. Ensure the integrity.
-      /*
-      assert accountMap.get(PublicKey).equals(params.get(PublicKey));
-      assert accountMap.get(AccountName).equals(params.get(AccountName));
-      */
-      if (! accountMap.get(PublicKey).equals(params.get(PublicKey)))
-        throw new IllegalStateException("Mismatch public key");
-
+      
       if (! accountMap.get(AccountName).equals(params.get(AccountName)))
         throw new IllegalStateException("Mismatch account name");
 

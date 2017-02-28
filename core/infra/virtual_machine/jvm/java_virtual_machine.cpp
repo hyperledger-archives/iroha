@@ -201,7 +201,7 @@ namespace jvm {
         std::map<std::string, std::string> param1,
         std::map<std::string, std::string> param2
     ) {
-        jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/lang/String;Ljava/util/HashMap;)V");
+        jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/util/HashMap;Ljava/util/HashMap;)V");
         if (mid == nullptr) {
             std::cout << "could not get method : " << functionName << std::endl;
             return;
@@ -265,7 +265,7 @@ namespace jvm {
         std::map<std::string, std::string> param2,
         std::vector<std::string> param3
     ) {
-        jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/util/HashMap;[Ljava/lang/String;)V");
+        jmethodID mid = context->env->GetStaticMethodID(context->jClass, functionName.c_str(), "(Ljava/lang/String;Ljava/util/HashMap;[Ljava/lang/String;)V");
         if (mid == nullptr) {
             std::cout << "could not get method : " << functionName << std::endl;
             return;
