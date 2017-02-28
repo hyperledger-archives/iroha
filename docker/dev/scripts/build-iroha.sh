@@ -17,6 +17,8 @@ fi
 
 if [ -z "$1" ] || [ "$1" != "Release" ] || [ "$1" != "Debug" ] ; then
 	build_type="Debug"
+else
+	build_type="$1"
 fi 
 
 
