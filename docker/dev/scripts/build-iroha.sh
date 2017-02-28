@@ -15,10 +15,14 @@ if [ -z ${IROHA_BUILD} ]; then
 	error "Empty variable IROHA_BUILD"
 fi
 
+if [ -z "$1" ] || [ "$1" != "Release" ] || [ "$1" != "Debug" ] ; then
+	build_type="Debug"
+fi 
+
 
 (mkdir -p $IROHA_BUILD && \
 cd $IROHA_BUILD && \
-cmake $IROHA_HOME && \
+cmake $IROHA_HOME -DCMAKE_BUILD_TYPE=$build_type && \
 make) || error "Can't build iroha"
 
 mkdir -p $IROHA_BUILD/config
