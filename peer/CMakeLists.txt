@@ -50,6 +50,5 @@ target_link_libraries(iroha-main
   connection_with_grpc
   config_manager
   pthread
-  keccak
   hash
 )

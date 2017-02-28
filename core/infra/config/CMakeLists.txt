@@ -12,6 +12,7 @@ target_link_libraries(config_manager
 	config_format
 	exception
 	logger
+	connection_with_grpc
 )
 
 add_library(config_format STATIC

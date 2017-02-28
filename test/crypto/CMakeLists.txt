@@ -29,7 +29,6 @@ add_executable(hash_test
 )
 add_dependencies(hash_test googletest)
 target_link_libraries(hash_test
-  #keccak
   hash
   crypto
   ssl
