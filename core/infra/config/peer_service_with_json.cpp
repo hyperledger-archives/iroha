@@ -103,6 +103,12 @@ std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
         []( const std::unique_ptr<peer::Node> &a, const std::unique_ptr<peer::Node> &b ) { return a->getTrustScore() > b->getTrustScore(); } );
     return nodes;
 }
+std::vector<std::string> PeerServiceConfig::getIpList() {
+  std::vector<std::string> ret_ips;
+  for( auto &&node : peerList )
+    ret_ips.push_back( node.getIP() );
+  return ret_ips;
+}
 
 bool PeerServiceConfig::addPeer( peer::Node &peer ) {
   try {
@@ -118,7 +124,6 @@ bool PeerServiceConfig::addPeer( peer::Node &peer ) {
     logger::warning("addPeer") << e.what();
     return false;
   }
-  connection::iroha::Sumeragi::Verify::addSubscriber( peer.getIP() );
   return true;
 }
 
@@ -146,7 +151,6 @@ bool PeerServiceConfig::updatePeer( peer::Node &peer ) {
     logger::warning("updatePeer") << e.what();
     return false;
   }
-  connection::iroha::Sumeragi::Verify::addSubscriber( peer.getIP() );
   return true;
 }
 

@@ -49,6 +49,7 @@ class PeerServiceConfig : config::AbstractConfigManager {
   std::string getMyIp();
 
   std::vector<std::unique_ptr<peer::Node>> getPeerList();
+  std::vector<std::string> getIpList();
 
   bool addPeer( peer::Node& );
   bool removePeer( peer::Node& );

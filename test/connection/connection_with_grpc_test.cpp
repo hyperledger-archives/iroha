@@ -55,10 +55,6 @@ TEST(ConnectionWithGrpc, Transaction_Add_Domain){
 
     std::thread server_thread(server);
 
-    connection::iroha::Sumeragi::Verify::addSubscriber(
-        config::PeerServiceConfig::getInstance().getMyIp()
-    );
-
     Api::Domain domain;
     domain.set_ownerpublickey("pubkey1");
     domain.set_name("name");
@@ -94,10 +90,6 @@ TEST(ConnectionWithGrpc, Transaction_Add_Asset){
     };
 
     std::thread server_thread(server);
-
-    connection::iroha::Sumeragi::Verify::addSubscriber(
-        config::PeerServiceConfig::getInstance().getMyIp()
-    );
 
     Api::Asset asset;
     asset.set_smartcontractname("NaoTo8MaContract");

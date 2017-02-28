@@ -57,8 +57,6 @@ namespace connection {
                     ConsensusEvent &)
                 > &callback);
 
-                void addSubscriber(std::string ip);
-
             };
 
             namespace Torii {
