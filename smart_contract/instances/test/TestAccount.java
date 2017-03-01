@@ -56,13 +56,15 @@ public class TestAccount {
       );
 
       System.out.println("----------------------------------------------");
-      System.out.println("Received from C++: uuid: " + params.get(Uuid));
+      System.out.println("Received from C++: uuid: " + uuid);
       System.out.println("----------------------------------------------");
 
       // 2. Find account data by uuid.
       System.out.println("Call repository.findByUuid()");
-      HashMap<String, String> accountMap = repository.accountInfoFindByUuid(params);
-      String[] assetsArray = repository.accountValueFindByUuid(params);
+      HashMap<String, String> uuidmap = new HashMap<String, String>();
+      uuidmap.put(Uuid, uuid);
+      HashMap<String, String> accountMap = repository.accountInfoFindByUuid(uuidmap);
+      String[] assetsArray = repository.accountValueFindByUuid(uuidmap);
 
       System.out.println("----------------------------------------------");
       System.out.println("Received from C++: found pubKey:      " + accountMap.get(PublicKey));
@@ -89,8 +91,50 @@ public class TestAccount {
     }
   }
 
-  public static void testAttachAssetToAccount(HashMap<String, String> params, String asset) {
-    
+  public static void testAttachAssetToAccount(HashMap<String, String> params) {
+    try {
+      // Print received params
+      System.out.println("----------------------------------------------");
+      System.out.println("Params uuid:              " + params.get(Uuid));
+      System.out.println("Params attachedAssetUuid: " + params.get(AttachedAssetUuid));
+      System.out.println("----------------------------------------------");
+
+      // 1. Add account.
+      System.out.println("Call accountRepo.add()");
+
+      if (!repository.accountAttach(
+        params
+      )) throw new IllegalStateException("Cannot attach asset to account");
+
+      System.out.println("----------------------------------------------");
+      System.out.println("Received from C++: uuid: " + params.get(Uuid));
+      System.out.println("----------------------------------------------");
+
+      // 2. Find account data by uuid.
+      System.out.println("Call repository.findByUuid()");
+      HashMap<String, String> uuidmap = new HashMap<String, String>();
+      uuidmap.put(Uuid, params.get(Uuid));
+      HashMap<String, String> accountMap = repository.accountInfoFindByUuid(uuidmap);
+      String[] assetsArray = repository.accountValueFindByUuid(uuidmap);
+
+      System.out.println("----------------------------------------------");
+      System.out.println("Received from C++: found pubKey:      " + accountMap.get(PublicKey));
+      System.out.println("Received from C++: found accountName: " + accountMap.get(AccountName));
+      for (int i = 0; i < assetsArray.length; i++) {
+        System.out.println("Received from C++: found assets[" + i + "]:   " + assetsArray[i]);
+      }
+      System.out.println("----------------------------------------------");
+
+      // 3. Ensure the integrity.
+      if (assetsArray.length == 0)
+        throw new IllegalStateException("assetsArray is empty.");
+      if (!assetsArray[assetsArray.length - 1].equals(params.get(AttachedAssetUuid)))
+        throw new IllegalStateException("Mismatch attachedAssetUuid");
+
+      printSuccess();
+    } catch(IllegalStateException e) {
+      printFail(e);
+    }
   }
 
   public static void testUpdateAccount(HashMap<String, String> params, String[] assets) throws IllegalStateException {
@@ -167,6 +211,12 @@ public class TestAccount {
       String[] assets = { "Hoge", "Foo", "Bar" };
 
       testAddAccount(accountParam, assets);
+
+      HashMap<String, String> params = new HashMap<String, String>();
+      params.put(Uuid, "7a1d252c8fbbd89ac2b35a4575fbee93c53cdc08b29296fae3fa8a0ec5b3dbcc");
+      params.put(AttachedAssetUuid, "New Asset UUID");
+
+      testAttachAssetToAccount(params);
 
       System.out.println("==============================================");
       System.out.println("Success (from Java main)");

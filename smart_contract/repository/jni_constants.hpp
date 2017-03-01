@@ -21,7 +21,7 @@ namespace jni_constants {
 static const auto Uuid = "uuid";
 static const auto PublicKey = "publicKey";
 static const auto AccountName = "accountName";
-static const auto AttachedAssetUuid = "attachedAssetUuidTag";
+static const auto AttachedAssetUuid = "attachedAssetUuid";
 static const auto DomainId = "domainId";
 static const auto AssetName = "assetName";
 static const auto SimpleAssetName = "simpleAssetName";

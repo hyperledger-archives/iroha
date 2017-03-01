@@ -54,7 +54,6 @@ TEST(JavaQueryRepoAccount, invokeAddAccount) {
 
   std::map<std::string, std::string> params;
   {
-    params[tag::Uuid]        = uuid;
     params[tag::PublicKey]   = "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
     params[tag::AccountName] = "MizukiSonoko";
   }
@@ -80,6 +79,59 @@ TEST(JavaQueryRepoAccount, invokeAddAccount) {
   for (std::size_t i = 0; i < assets.size(); i++) {
     ASSERT_STREQ(assets[i].c_str(), account.assets(i).c_str());
   }
+
+  // Remove cache again
+  ASSERT_TRUE(repository::account::remove(uuid));
+}
+
+TEST(JavaQueryRepoAccount, invokeAttachAssetToAccount) {
+
+  /*****************************************************************
+   * Remove chache
+   *****************************************************************/
+  const auto uuid =
+      "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
+
+  if (repository::account::exists(uuid)) {
+    repository::account::remove(uuid);
+  }
+
+  /*****************************************************************
+   * Invoke Java method
+   *****************************************************************/
+  const std::string FunctionName = "testAddAccount";
+
+  std::map<std::string, std::string> params;
+  {
+    params[tag::PublicKey]   = "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
+    params[tag::AccountName] = "MizukiSonoko";
+  }
+
+  std::vector<std::string> assets;
+  {
+    assets.push_back("asset1");
+    assets.push_back("asset2");
+    assets.push_back("asset3");
+  }
+
+  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
+                                  params, assets);
+
+  params = std::map<std::string, std::string>();
+  {
+    params[tag::Uuid] = uuid;
+    params[tag::AttachedAssetUuid] = "NEW ATTACHED UUID";
+  }
+  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
+                                  params);
+
+  const std::string received_serialized_acc =
+      repository::world_state_repository::find(uuid);
+
+  Api::Account account;
+  account.ParseFromString(received_serialized_acc);
+
+  ASSERT_STREQ(assets.back().c_str(), params[tag::AttachedAssetUuid].c_str());
 
   // Remove cache again
   ASSERT_TRUE(repository::account::remove(uuid));

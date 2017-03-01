@@ -84,8 +84,8 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_accountAttach
   IROHA_ASSERT_FALSE(mMap.find(tag::Uuid) == mMap.end());
   const auto uuid = mMap.find(tag::Uuid)->second;
 
-  IROHA_ASSERT_FALSE(mMap.find(tag::AssetName) == mMap.end());
-  const auto assetUuid = mMap.find(tag::AssetName)->second;
+  IROHA_ASSERT_FALSE(mMap.find(tag::AttachedAssetUuid) == mMap.end());
+  const auto assetUuid = mMap.find(tag::AttachedAssetUuid)->second;
 
   logger::debug(NameSpaceID + "::accountAttach") << "uuid: " << uuid << ", assetUuid: " << assetUuid;
 
