@@ -1,6 +1,5 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/core
-    ${PROJECT_SOURCE_DIR}/core/vendor/json/src
 )
 
 ADD_LIBRARY(executor STATIC
@@ -16,4 +15,5 @@ target_link_libraries(http_client
     ssl
     crypto
     logger
+    json
 )
