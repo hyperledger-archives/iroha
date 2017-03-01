@@ -129,7 +129,8 @@ namespace http {
 
             Torii(
                 Sumeragi::NewStub(grpc::CreateChannel(
-                    config::PeerServiceConfig::getInstance().getMyIp() + ":50051",
+                    config::PeerServiceConfig::getInstance().getMyIp() + ":" +
+                    std::to_string(config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)),
                     grpc::InsecureChannelCredentials()
                 )),
                 txDomain
