@@ -89,6 +89,10 @@ public class TestAccount {
     }
   }
 
+  public static void testAttachAssetToAccount(HashMap<String, String> params, String asset) {
+    
+  }
+
   public static void testUpdateAccount(HashMap<String, String> params, String[] assets) throws IllegalStateException {
     try {
       // Print received params

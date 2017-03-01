@@ -57,9 +57,9 @@ public class TestPeer {
       System.out.println("----------------------------------------------");
 
       // 2. Find account data by uuid.
-      System.out.println("Call accountRepo.findByUuid()");
+      System.out.println("Call repository.peerFindByUuid()");
       HashMap<String, String> uuidmap = new HashMap<String, String>();
-      uuidmap.put(Uuid, params.get(Uuid));
+      uuidmap.put(Uuid, uuid);
       HashMap<String, String> peerInfoMap  = repository.peerInfoFindByUuid(uuidmap);
       HashMap<String, String> peerTrustMap = repository.peerTrustFindByUuid(uuidmap);
 
@@ -95,7 +95,7 @@ public class TestPeer {
       System.out.println("----------------------------------------------");
 
       // 1. Add account.
-      System.out.println("Call accountRepo.add()");
+      System.out.println("Call repository.peerAdd()");
 
       if (!repository.peerUpdate(
         params,
@@ -106,17 +106,21 @@ public class TestPeer {
       System.out.println("Call accountRepo.findByUuid()");
       HashMap<String, String> uuidmap = new HashMap<String, String>();
       uuidmap.put(Uuid, params.get(Uuid));
-      HashMap<String, String> accountMap = repository.accountInfoFindByUuid(uuidmap);
-      String[] assetsArray = repository.accountValueFindByUuid(uuidmap);
+      HashMap<String, String> peerInfoMap = repository.peerInfoFindByUuid(uuidmap);
+      HashMap<String, String> peerValueMap = repository.peerTrustFindByUuid(uuidmap);
 
       System.out.println("----------------------------------------------");
-      System.out.println("Received from C++: " + accountMap);
+      System.out.println("Received from C++: " + peerInfoMap);
+      System.out.println("Received from C++: " + peerValueMap);
       System.out.println("----------------------------------------------");
 
       // 3. Ensure the integrity.
       
-      if (! accountMap.get(AccountName).equals(params.get(AccountName)))
-        throw new IllegalStateException("Mismatch account name");
+      if (! peerInfoMap.get(PeerAddress).equals(params.get(PeerAddress)))
+        throw new IllegalStateException("Mismatch peer address");
+
+      if (! peerValueMap.get(PeerTrustValue).equals(trust.get(PeerTrustValue)))
+        throw new IllegalStateException("Mismatch peer trust value");
 
       printSuccess();
     } catch(IllegalStateException e) {
@@ -124,7 +128,7 @@ public class TestPeer {
     }
   }
 
-  public static void testRemoveAccount(HashMap<String, String> params) throws IllegalStateException {
+  public static void testRemovePeer(HashMap<String, String> params) throws IllegalStateException {
     try {
       // Print received params
       System.out.println("----------------------------------------------");
@@ -133,7 +137,7 @@ public class TestPeer {
 
       HashMap<String, String> uuidmap = new HashMap<String, String>();
       uuidmap.put(Uuid, params.get(Uuid));
-      if (!repository.accountRemove(uuidmap))
+      if (!repository.peerRemove(uuidmap))
         throw new IllegalStateException("Cannot remove account");
       
       printSuccess();

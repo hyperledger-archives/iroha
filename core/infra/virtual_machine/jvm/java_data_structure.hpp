@@ -41,6 +41,10 @@ Api::BaseObject convertSimpleAssetValueHashMap(JNIEnv *env, jobject value_);
 
 std::map<std::string, std::string> convertBaseObjectToMapString(const Api::BaseObject &value);
 Api::BaseObject convertMapStringToBaseObject(const std::map<std::string, std::string> &value);
+
+std::map<std::string, std::string> convertTrustToMapString(const Api::Trust& trust);
+Api::Trust convertMapStringToTrust(const std::map<std::string, std::string>& trustMap);
+
 }
 }
 

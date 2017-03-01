@@ -16,6 +16,7 @@ limitations under the License.
 
 #include <gtest/gtest.h>
 
+#include <../smart_contract/repository/jni_constants.hpp>
 #include <infra/protobuf/api.pb.h>
 #include <repository/domain/asset_repository.hpp>
 #include <repository/world_state_repository.hpp>
@@ -25,11 +26,7 @@ limitations under the License.
 const std::string PackageName = "test";
 const std::string ContractName = "TestAsset";
 
-const std::string PublicKeyTag = "publicKey";
-const std::string DomainIdTag = "domainId";
-const std::string AssetNameTag = "assetName";
-const std::string AssetValueTag = "assetValue";
-const std::string SmartContractNameTag = "smartContractName";
+namespace tag = jni_constants;
 
 std::map<std::string, std::string> assetInfo;
 std::map<std::string, std::map<std::string, std::string>> assetValue;
@@ -44,9 +41,9 @@ void ensureIntegrityOfAsset() {
   Api::Asset asset;
   asset.ParseFromString(received_asset_value);
 
-  ASSERT_STREQ(assetInfo[DomainIdTag].c_str(), asset.domain().c_str());
-  ASSERT_STREQ(assetInfo[AssetNameTag].c_str(), asset.name().c_str());
-  ASSERT_STREQ(assetInfo[SmartContractNameTag].c_str(), asset.smartcontractname().c_str());
+  ASSERT_STREQ(assetInfo[tag::DomainId].c_str(), asset.domain().c_str());
+  ASSERT_STREQ(assetInfo[tag::AssetName].c_str(), asset.name().c_str());
+  ASSERT_STREQ(assetInfo[tag::SmartContractName].c_str(), asset.smartcontractname().c_str());
 
   using virtual_machine::jvm::convertBaseObjectToMapString;
 
@@ -111,9 +108,9 @@ TEST(JavaQueryRepoAsset, invokeAddAssetQuery) {
   /***********************************************************************
    * 1. Initial guess
    ***********************************************************************/
-  assetInfo[DomainIdTag] = "A domain id";
-  assetInfo[AssetNameTag] = "Currency";
-  assetInfo[SmartContractNameTag] = "smartContractFunc";
+  assetInfo[tag::DomainId] = "A domain id";
+  assetInfo[tag::AssetName] = "Currency";
+  assetInfo[tag::SmartContractName] = "smartContractFunc";
 
   assetValue["ownerName"] = {
       {"type", "string"},
@@ -139,7 +136,7 @@ TEST(JavaQueryRepoAsset, invokeAddAssetQuery) {
   /***********************************************************************
    * 3. Test
    ***********************************************************************/
-  std::cout << "In c++:\n";
+  std::cout << "In c++:" << std::endl;
   ensureIntegrityOfAsset();
 }
 
@@ -147,6 +144,11 @@ TEST(JavaQueryRepoAsset, invokeUpdateAssetQuery) {
   /***********************************************************************
    * 1. Initial guess
    ***********************************************************************/
+  std::map<std::string, std::string> params;
+  {
+    params[tag::Uuid] = assetUuid;
+  }
+
   assetValue["ownerName"] = {
       {"type", "string"},
       {"value", "asuka"}
@@ -166,12 +168,12 @@ TEST(JavaQueryRepoAsset, invokeUpdateAssetQuery) {
    * 2. Invocation Java.
    ***********************************************************************/
   virtual_machine::invokeFunction(PackageName, ContractName, "testUpdateAsset",
-                                  assetUuid, assetValue);
+                                  params, assetValue);
 
   /***********************************************************************
    * 3. Test
    ***********************************************************************/
-  std::cout << "In c++:\n";
+  std::cout << "In c++:" << std::endl;
   ensureIntegrityOfAsset();
 
 }
@@ -180,8 +182,13 @@ TEST(JavaQueryRepoAsset, invokeRemoveAssetQuery) {
   /***********************************************************************
    * 1. Invocation Java.
    ***********************************************************************/
+  std::map<std::string, std::string> params;
+  {
+    params[tag::Uuid] = assetUuid;
+  }
+
   virtual_machine::invokeFunction(PackageName, ContractName, "testRemoveAsset",
-                                  assetUuid);
+                                  params);
   /***********************************************************************
    * 2. Test
    ***********************************************************************/
@@ -193,11 +200,16 @@ TEST(JavaQueryRepoAsset, reinvokeAddAssetQuery) {
   /***********************************************************************
    * 1. Invocation Java.
    ***********************************************************************/
-  assetInfo[DomainIdTag] = "アナザーDOMAIN";
-  assetInfo[AssetNameTag] = "ポイント";
-  assetInfo[SmartContractNameTag] = "anotherSmartContractFunc";
+  std::map<std::string, std::string> params;
+  {
+    params[tag::Uuid] = assetUuid;
+    params[tag::DomainId] = "アナザーDOMAIN";
+    params[tag::AssetName] = "ポイント";
+    params[tag::SmartContractName] = "anotherSmartContractFunc";
+  }
+
   virtual_machine::invokeFunction(PackageName, ContractName, "testAddAsset",
-                                  assetInfo, assetValue);
+                                  params, assetValue);
   /***********************************************************************
    * 2. Test
    ***********************************************************************/

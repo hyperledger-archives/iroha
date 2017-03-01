@@ -58,7 +58,7 @@ public class TestDomain {
       // 2. Find account data by uuid.
       System.out.println("Call repoisitory.domainFindByUuid()");
       HashMap<String, String> uuidmap = new HashMap<String, String>();
-      uuidmap.put(Uuid, params.get(Uuid));
+      uuidmap.put(Uuid, uuid);
       HashMap<String, String> domainMap = repository.domainFindByUuid(uuidmap);
 
       System.out.println("----------------------------------------------");

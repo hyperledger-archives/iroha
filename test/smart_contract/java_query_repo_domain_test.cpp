@@ -16,6 +16,7 @@ limitations under the License.
 
 #include <gtest/gtest.h>
 
+#include <../smart_contract/repository/jni_constants.hpp>
 #include <infra/protobuf/api.pb.h>
 #include <infra/virtual_machine/jvm/java_data_structure.hpp>
 #include <repository/domain/domain_repository.hpp>
@@ -24,14 +25,8 @@ limitations under the License.
 
 const std::string PackageName = "test";
 const std::string ContractName = "TestDomain";
-const std::string PublicKeyTag = "publicKey";
-const std::string DomainIdTag = "domainId";
-const std::string DomainNameTag = "domainName";
-const std::string AccountNameTag = "accountName";
-const std::string AssetNameTag = "assetName";
-const std::string AssetValueTag = "assetValue";
-const std::string SmartContractNameTag = "smartContractName";
-const std::string OwnerPublicKeyTag = "ownerPublicKey";
+
+namespace tag = jni_constants;
 
 /*********************************************************************************************************
  * Test Account
@@ -59,8 +54,9 @@ TEST(JavaQueryRepoDomain, invokeAddDomain) {
 
   std::map<std::string, std::string> params;
   {
-    params[OwnerPublicKeyTag] = "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
-    params[DomainNameTag] = "domain name";
+    params[tag::OwnerPublicKey] =
+        "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
+    params[tag::DomainName] = "domain name";
   }
 
   virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
@@ -72,8 +68,9 @@ TEST(JavaQueryRepoDomain, invokeAddDomain) {
   Api::Domain domain;
   domain.ParseFromString(received_serialized_acc);
 
-  ASSERT_STREQ(params[OwnerPublicKeyTag].c_str(), domain.ownerpublickey().c_str());
-  ASSERT_STREQ(params[DomainNameTag].c_str(), domain.name().c_str());
+  ASSERT_STREQ(params[tag::OwnerPublicKey].c_str(),
+               domain.ownerpublickey().c_str());
+  ASSERT_STREQ(params[tag::DomainName].c_str(), domain.name().c_str());
 
   // Remove cache again
   ASSERT_TRUE(repository::domain::remove(uuid));
@@ -92,7 +89,7 @@ TEST(JavaQueryRepoDomain, invokeUpdateDomain) {
   }
 
   repository::domain::add("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=",
-                           "domain name");
+                          "domain name");
 
   ASSERT_TRUE(repository::domain::exists(uuid));
 
@@ -102,9 +99,12 @@ TEST(JavaQueryRepoDomain, invokeUpdateDomain) {
   const std::string FunctionName = "testUpdateDomain";
 
   std::map<std::string, std::string> params;
-  { params[DomainNameTag] = "Updated Domain Name"; }
+  {
+    params[tag::Uuid] = uuid;
+    params[tag::DomainName] = "Updated Domain Name";
+  }
 
-  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName, uuid,
+  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
                                   params);
 
   const std::string strDomain = repository::world_state_repository::find(uuid);
@@ -114,7 +114,7 @@ TEST(JavaQueryRepoDomain, invokeUpdateDomain) {
 
   ASSERT_STREQ("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=",
                domain.ownerpublickey().c_str());
-  ASSERT_STREQ(params[DomainNameTag].c_str(), domain.name().c_str());
+  ASSERT_STREQ(params[tag::DomainName].c_str(), domain.name().c_str());
 
   // Remove chache again
   repository::domain::remove(uuid);
@@ -142,10 +142,13 @@ TEST(JavaQueryRepoDomain, invokeRemoveDomain) {
    *****************************************************************/
   const std::string FunctionName = "testRemoveDomain";
 
-  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
-                                  uuid);
+  std::map<std::string, std::string> params;
+  { params[tag::Uuid] = uuid; }
 
-  ASSERT_TRUE(!repository::domain::exists(uuid));
+  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
+                                  params);
+
+  ASSERT_FALSE(repository::domain::exists(uuid));
 }
 
 TEST(JavaQueryRepoDomain, finishVM) {

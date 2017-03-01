@@ -17,38 +17,13 @@ limitations under the License.
 #ifndef __LOGGER_HPP_
 #define __LOGGER_HPP_
 
-#include <string>
 #include <iostream>
 #include <sstream>
-
-#if __cplusplus <= 201402L
-#define TYPE_UNC_EXC    bool
-#define STD_UNC_EXC     std::uncaught_exception
-#define COND_UNC_EXC    ! STD_UNC_EXC()
-#else
-#define TYPE_UNC_EXC    int
-#define STD_UNC_EXC     std::uncaught_exceptions
-#define COND_UNC_EXC    uncaught >= STD_UNC_EXC()
-#endif
+#include <string>
 
 namespace logger {
 
-    enum class LogLevel {
-        Debug = 0,
-        Info,
-        Warning,
-        Error,
-        Fatal,
-        Explore
-    };
-
-    namespace detail {
-        static LogLevel LOG_LEVEL = LogLevel::Debug;
-    }
-
-    inline void setLogLevel(LogLevel lv){
-        detail::LOG_LEVEL = lv;
-    }
+/*
 
     #define LOGGER_DEF(LoggerName, UseLevel, HasPrefix, LogType)                \
     struct LoggerName                                                           \
@@ -76,7 +51,106 @@ namespace logger {
     LOGGER_DEF(error,   LogLevel::Error,    true,   "ERROR (-A-)")
     LOGGER_DEF(fatal,   LogLevel::Fatal,    true,   "FATAL (`o')")
     LOGGER_DEF(explore, LogLevel::Explore,  false,  "(EXPLORE)")
+    
+*/
 
-} // namespace logger
+enum class LogLevel { Debug = 0, Info, Warning, Error, Fatal, Explore };
+
+namespace detail {
+static LogLevel LOG_LEVEL = LogLevel::Debug;
+}
+
+inline void setLogLevel(LogLevel lv) { detail::LOG_LEVEL = lv; }
+struct debug {
+  debug(std::string &&caller) noexcept;
+  debug(const std::string &caller) noexcept;
+  ~debug();
+  const std::string caller;
+  std::stringstream stream;
+  bool uncaught;
+};
+template <typename T> inline debug &operator<<(debug &record, T &&t) {
+  record.stream << std::forward<T>(t);
+  return record;
+}
+template <typename T> inline debug &operator<<(debug &&record, T &&t) {
+  return record << std::forward<T>(t);
+}
+struct info {
+  info(std::string &&caller) noexcept;
+  info(const std::string &caller) noexcept;
+  ~info();
+  const std::string caller;
+  std::stringstream stream;
+  bool uncaught;
+};
+template <typename T> inline info &operator<<(info &record, T &&t) {
+  record.stream << std::forward<T>(t);
+  return record;
+}
+template <typename T> inline info &operator<<(info &&record, T &&t) {
+  return record << std::forward<T>(t);
+}
+struct warning {
+  warning(std::string &&caller) noexcept;
+  warning(const std::string &caller) noexcept;
+  ~warning();
+  const std::string caller;
+  std::stringstream stream;
+  bool uncaught;
+};
+template <typename T> inline warning &operator<<(warning &record, T &&t) {
+  record.stream << std::forward<T>(t);
+  return record;
+}
+template <typename T> inline warning &operator<<(warning &&record, T &&t) {
+  return record << std::forward<T>(t);
+}
+struct error {
+  error(std::string &&caller) noexcept;
+  error(const std::string &caller) noexcept;
+  ~error();
+  const std::string caller;
+  std::stringstream stream;
+  bool uncaught;
+};
+template <typename T> inline error &operator<<(error &record, T &&t) {
+  record.stream << std::forward<T>(t);
+  return record;
+}
+template <typename T> inline error &operator<<(error &&record, T &&t) {
+  return record << std::forward<T>(t);
+}
+struct fatal {
+  fatal(std::string &&caller) noexcept;
+  fatal(const std::string &caller) noexcept;
+  ~fatal();
+  const std::string caller;
+  std::stringstream stream;
+  bool uncaught;
+};
+template <typename T> inline fatal &operator<<(fatal &record, T &&t) {
+  record.stream << std::forward<T>(t);
+  return record;
+}
+template <typename T> inline fatal &operator<<(fatal &&record, T &&t) {
+  return record << std::forward<T>(t);
+}
+struct explore {
+  explore(std::string &&caller) noexcept;
+  explore(const std::string &caller) noexcept;
+  ~explore();
+  const std::string caller;
+  std::stringstream stream;
+  bool uncaught;
+};
+template <typename T> inline explore &operator<<(explore &record, T &&t) {
+  record.stream << std::forward<T>(t);
+  return record;
+}
+template <typename T> inline explore &operator<<(explore &&record, T &&t) {
+  return record << std::forward<T>(t);
+}
+}
 
 #endif

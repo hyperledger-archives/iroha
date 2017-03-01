@@ -14,8 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <transaction_builder/helper/create_objects_helper.hpp>
+#include <../smart_contract/repository/jni_constants.hpp>
+#include <iostream>
 #include <map>
+#include <transaction_builder/helper/create_objects_helper.hpp>
+#include <util/exception.hpp>
 
 #include "java_data_structure.hpp"
 
@@ -138,6 +141,7 @@ convertJavaHashMapValueString(JNIEnv *env, jobject hashMapObj_) {
   std::map<std::string, std::string> ret;
 
   while (env->CallBooleanMethod(iter, hasNext)) {
+
     jobject entry = env->CallObjectMethod(iter, next);
     jstring key = (jstring)env->CallObjectMethod(entry, getKey);
 
@@ -324,6 +328,35 @@ convertMapStringToBaseObject(const std::map<std::string, std::string> &value) {
   }
 
   throw "Invalid type";
+}
+
+std::map<std::string, std::string>
+convertTrustToMapString(const Api::Trust &trust) {
+  std::map<std::string, std::string> ret;
+  ret[jni_constants::PeerTrustValue] = std::to_string(trust.value());
+  ret[jni_constants::PeerTrustIsOk] = trust.isok() ? "true" : "false";
+  return ret;
+}
+
+Api::Trust
+convertMapStringToTrust(const std::map<std::string, std::string> &trustMap) {
+  double trustValue = 0.0;
+  try {
+    trustValue = std::stod(trustMap.find(jni_constants::PeerTrustValue)->second);
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+    throw exception::InvalidCastException("Cannot convert peer trust value, string to double", __FILE__);
+  }
+
+  bool trustIsOk = false;
+  try {
+    trustIsOk = trustMap.find(jni_constants::PeerTrustIsOk)->second == "true";
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+    throw exception::InvalidCastException("Cannot convert peer trust isOk, string to bool", __FILE__);
+  }
+
+  return txbuilder::createTrust(trustValue, trustIsOk);
 }
 
 } // namespace jvm

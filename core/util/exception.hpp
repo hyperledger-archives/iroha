@@ -88,4 +88,10 @@ namespace exception {
   }
 }  // namespace exception
 
+#define IROHA_ASSERT_TRUE(Condition)  \
+  if ((Condition) == false) { std::cout << __func__ << " #" << __LINE__ << " in " << __FILE__ << std::endl; throw "Assertion failed." #Condition; }
+
+#define IROHA_ASSERT_FALSE(Condition) \
+  if ((Condition) == true) { std::cout << __func__ << " #" << __LINE__ << " in " << __FILE__ << std::endl; throw "Assertion failed." #Condition; }
+
 #endif

@@ -41,6 +41,7 @@ add_library(java_data_structure STATIC
 
 target_link_libraries(java_data_structure
   create_objects_helper
+  exception
 )
 
 ###################################################

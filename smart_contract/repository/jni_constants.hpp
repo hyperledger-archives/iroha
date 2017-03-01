@@ -18,15 +18,21 @@ limitations under the License.
 
 namespace jni_constants {
 
-static const auto PublicKeyTag = "publicKey";
-static const auto AccountNameTag = "accountName";
-static const auto DomainIdTag = "domainId";
-static const auto AssetNameTag = "assetName";
-static const auto ValueTag = "assetValue";
-static const auto SmartContractNameTag = "smartContractName";
+static const auto Uuid = "uuid";
+static const auto PublicKey = "publicKey";
+static const auto AccountName = "accountName";
+static const auto AttachedAssetUuid = "attachedAssetUuidTag";
+static const auto DomainId = "domainId";
+static const auto AssetName = "assetName";
+static const auto SimpleAssetName = "simpleAssetName";
+static const auto Value = "assetValue";
+static const auto SmartContractName = "smartContractName";
+static const auto OwnerPublicKey = "ownerPublicKey";
+static const auto DomainName = "domainName";
+static const auto PeerTrustValue = "peerTrustValue";
+static const auto PeerAddress = "peerAddress";
+static const auto PeerTrustIsOk = "peerTrustIsOk";
 
-static const auto OwnerPublicKeyTag = "ownerPublicKey";
-static const auto DomainNameTag = "domainName";
 }
 
 #endif

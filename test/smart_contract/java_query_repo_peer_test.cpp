@@ -19,23 +19,24 @@ limitations under the License.
 #include <../smart_contract/repository/jni_constants.hpp>
 #include <infra/protobuf/api.pb.h>
 #include <infra/virtual_machine/jvm/java_data_structure.hpp>
-#include <repository/domain/account_repository.hpp>
+#include <repository/domain/peer_repository.hpp>
 #include <repository/world_state_repository.hpp>
+#include <transaction_builder/transaction_builder.hpp>
 #include <virtual_machine/virtual_machine.hpp>
 
 const std::string PackageName = "test";
-const std::string ContractName = "TestAccount";
+const std::string ContractName = "TestPeer";
 
 namespace tag = jni_constants;
 
 /*********************************************************************************************************
  * Test Account
  *********************************************************************************************************/
-TEST(JavaQueryRepoAccount, initializeVM) {
+TEST(JavaQueryRepoPeer, initializeVM) {
   virtual_machine::initializeVM(PackageName, ContractName);
 }
 
-TEST(JavaQueryRepoAccount, invokeAddAccount) {
+TEST(JavaQueryRepoPeer, invokeAddPeer) {
 
   /*****************************************************************
    * Remove chache
@@ -43,49 +44,43 @@ TEST(JavaQueryRepoAccount, invokeAddAccount) {
   const auto uuid =
       "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
 
-  if (repository::account::exists(uuid)) {
-    repository::account::remove(uuid);
+  if (repository::peer::exists(uuid)) {
+    repository::peer::remove(uuid);
   }
 
   /*****************************************************************
    * Invoke Java method
    *****************************************************************/
-  const std::string FunctionName = "testAddAccount";
+  const std::string FunctionName = "testAddPeer";
 
   std::map<std::string, std::string> params;
   {
-    params[tag::Uuid]        = uuid;
-    params[tag::PublicKey]   = "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
-    params[tag::AccountName] = "MizukiSonoko";
+    params[tag::PublicKey] = "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
+    params[tag::PeerAddress] = "this is address";
   }
 
-  std::vector<std::string> assets;
-  {
-    assets.push_back("asset1");
-    assets.push_back("asset2");
-    assets.push_back("asset3");
-  }
+  auto trust = txbuilder::createTrust(1.234567890987654321, true);
 
   virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
-                                  params, assets);
+                                  params, virtual_machine::jvm::convertTrustToMapString(trust));
 
-  const std::string received_serialized_acc =
-      repository::world_state_repository::find(uuid);
+  const std::string strPeer = repository::world_state_repository::find(uuid);
 
-  Api::Account account;
-  account.ParseFromString(received_serialized_acc);
+  Api::Peer peer;
+  peer.ParseFromString(strPeer);
 
-  ASSERT_STREQ(params[tag::PublicKey].c_str(), account.publickey().c_str());
-  ASSERT_STREQ(params[tag::AccountName].c_str(), account.name().c_str());
-  for (std::size_t i = 0; i < assets.size(); i++) {
-    ASSERT_STREQ(assets[i].c_str(), account.assets(i).c_str());
-  }
+  ASSERT_STREQ(params[tag::PublicKey].c_str(), peer.publickey().c_str());
+  ASSERT_STREQ(params[tag::PeerAddress].c_str(), peer.address().c_str());
+
+  constexpr double Eps = 1e-5;
+  ASSERT_TRUE(std::abs(trust.value() - peer.trust().value()) < Eps);
+  ASSERT_TRUE(trust.isok() == true);
 
   // Remove cache again
-  ASSERT_TRUE(repository::account::remove(uuid));
+  ASSERT_TRUE(repository::peer::remove(uuid));
 }
 
-TEST(JavaQueryRepoAccount, invokeUpdateAccount) {
+TEST(JavaQueryRepoPeer, invokeUpdatePeer) {
 
   /*****************************************************************
    * Remove cache & initialize
@@ -93,86 +88,79 @@ TEST(JavaQueryRepoAccount, invokeUpdateAccount) {
   const auto uuid =
       "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
 
-  if (repository::account::exists(uuid)) {
-    repository::account::remove(uuid);
+  if (repository::peer::exists(uuid)) {
+    repository::peer::remove(uuid);
   }
 
-  repository::account::add("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=",
-                           "MizukiSonoko", {"asset1", "asset2"});
+  repository::peer::add("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=",
+                        "this is address",
+                        txbuilder::createTrust(1.234567890987654321, true));
 
-  ASSERT_TRUE(repository::account::exists(uuid));
+  ASSERT_TRUE(repository::peer::exists(uuid));
 
   /*****************************************************************
    * Invoke Java method
    *****************************************************************/
-  const std::string FunctionName = "testUpdateAccount";
+  const std::string FunctionName = "testUpdatePeer";
 
   std::map<std::string, std::string> params;
   {
     params[tag::Uuid] = uuid;
-    params[tag::AccountName] = "Mi Nazuki Sonoko";
+    params[tag::PeerAddress] = "Updated Peer Address";
   }
 
-  std::vector<std::string> assets;
-  {
-    assets.push_back("aaaaaa");
-    assets.push_back("bbbbbb");
-    assets.push_back("cccccc");
-    assets.push_back("dddddd");
-  }
+  auto trust = txbuilder::createTrust(98765.432123456789, false);
 
   virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
-                                  params, assets);
+                                  params, virtual_machine::jvm::convertTrustToMapString(trust));
 
-  const std::string strAccount = repository::world_state_repository::find(uuid);
+  const std::string strPeer = repository::world_state_repository::find(uuid);
 
-  Api::Account account;
-  account.ParseFromString(strAccount);
+  Api::Peer peer;
+  peer.ParseFromString(strPeer);
 
   ASSERT_STREQ("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=",
-               account.publickey().c_str());
-  ASSERT_STREQ(params[tag::AccountName].c_str(), account.name().c_str());
-  for (std::size_t i = 0; i < assets.size(); i++) {
-    ASSERT_STREQ(assets[i].c_str(), account.assets(i).c_str());
-  }
+               peer.publickey().c_str());
+  ASSERT_STREQ(params[tag::PeerAddress].c_str(), peer.address().c_str());
+  constexpr double Eps = 1e-5;
+  ASSERT_TRUE(std::abs(trust.value() - peer.trust().value()) < Eps);
 
   // Remove chache again
-  repository::account::remove(uuid);
+  repository::peer::remove(uuid);
 }
 
-TEST(JavaQueryRepoAccount, invokeRemoveAccount) {
+TEST(JavaQueryRepoPeer, invokeRemovePeer) {
 
   /*****************************************************************
   * Remove cache & initialize
   *****************************************************************/
-  const auto uuid =
+  const std::string uuid =
       "eeeada754cb39bff9f229bca75c4eb8e743f0a77649bfedcc47513452c9324f5";
 
-  std::map<std::string, std::string> params;
-  {
-    params[tag::Uuid] = uuid;
+  if (repository::peer::exists(uuid)) {
+    repository::peer::remove(uuid);
   }
 
-  if (repository::account::exists(uuid)) {
-    repository::account::remove(uuid);
-  }
+  repository::peer::add("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=",
+                        "this is peer address",
+                        txbuilder::createTrust(0, true));
 
-  repository::account::add("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=",
-                           "MizukiSonoko", {"asset1", "asset2"});
-
-  ASSERT_TRUE(repository::account::exists(uuid));
+  ASSERT_TRUE(repository::peer::exists(uuid));
 
   /*****************************************************************
    * Invoke Java method
    *****************************************************************/
-  const std::string FunctionName = "testRemoveAccount";
+  const std::string FunctionName = "testRemovePeer";
+
+  std::map<std::string, std::string> params;
+  { params[tag::Uuid] = uuid; }
 
   virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
                                   params);
 
-  ASSERT_TRUE(!repository::account::exists(uuid));
+  ASSERT_TRUE(!repository::peer::exists(uuid));
 }
 
-TEST(JavaQueryRepoAccount, finishVM) {
+TEST(JavaQueryRepoDomain, finishVM) {
   virtual_machine::finishVM(PackageName, ContractName);
 }

@@ -16,6 +16,7 @@ limitations under the License.
 
 #include <gtest/gtest.h>
 
+#include <../smart_contract/repository/jni_constants.hpp>
 #include <infra/protobuf/api.pb.h>
 #include <infra/virtual_machine/jvm/java_data_structure.hpp>
 #include <repository/domain/simple_asset_repository.hpp>
@@ -26,14 +27,11 @@ limitations under the License.
 const std::string PackageName = "test";
 const std::string ContractName = "TestSimpleAsset";
 
-const std::string DomainIdTag = "domainId";
-const std::string SimpleAssetNameTag = "simpleAssetName";
-const std::string SimpleAssetValueTag = "simpleAssetValue";
-const std::string SmartContractNameTag = "smartContractName";
+namespace tag = jni_constants;
 
 void ensureIntegrityOfSimpleAssetValue(
-    std::string uuid, std::map<std::string, std::string> inputInfo,
-    std::map<std::string, std::string> inputValue) {
+    std::string uuid, std::map<std::string, std::string> params,
+    std::map<std::string, std::string> value) {
 
   /*******************************************************************************
    * Restore SimpleAsset from DB
@@ -43,27 +41,27 @@ void ensureIntegrityOfSimpleAssetValue(
   Api::SimpleAsset simpleAsset;
   { simpleAsset.ParseFromString(strValue); }
 
-  ASSERT_STREQ(inputInfo[DomainIdTag].c_str(), simpleAsset.domain().c_str());
-  ASSERT_STREQ(inputInfo[SimpleAssetNameTag].c_str(),
+  ASSERT_STREQ(params[tag::DomainId].c_str(), simpleAsset.domain().c_str());
+  ASSERT_STREQ(params[tag::SimpleAssetName].c_str(),
                simpleAsset.name().c_str());
-  ASSERT_STREQ(inputInfo[SmartContractNameTag].c_str(),
+  ASSERT_STREQ(params[tag::SmartContractName].c_str(),
                simpleAsset.smartcontractname().c_str());
 
   using virtual_machine::jvm::convertBaseObjectToMapString;
 
   auto outputValue = convertBaseObjectToMapString(simpleAsset.value());
 
-  if (inputValue["type"] == "double") {
-    const auto lhsValue = std::stod(inputValue["value"]);
+  if (value["type"] == "double") {
+    const auto lhsValue = std::stod(value["value"]);
     const auto rhsValue = std::stod(outputValue["value"]);
     std::cout << lhsValue << " vs " << rhsValue << std::endl;
     std::cout << "Warning: Double error is " << abs(lhsValue - rhsValue)
               << std::endl;
     ASSERT_TRUE(abs(lhsValue - rhsValue) < 1e-5);
   } else {
-    std::cout << inputValue["value"] << " vs " << outputValue["value"]
+    std::cout << value["value"] << " vs " << outputValue["value"]
               << std::endl;
-    ASSERT_TRUE(inputValue["value"] == outputValue["value"]);
+    ASSERT_TRUE(value["value"] == outputValue["value"]);
   }
 }
 
@@ -86,29 +84,30 @@ TEST(JavaQueryRepoSimpleAsset, invokeAddSimpleAssetQuery) {
     ASSERT_TRUE(repository::simple_asset::remove(uuid));
   }
 
-  std::map<std::string, std::string> inputInfo;
+  std::map<std::string, std::string> params;
   {
-    inputInfo[DomainIdTag] = "domain id";
-    inputInfo[SimpleAssetNameTag] = "simple asset";
-    inputInfo[SmartContractNameTag] = "smartContractFunc";
+    params[tag::Uuid] = uuid;
+    params[tag::DomainId] = "domain id";
+    params[tag::SimpleAssetName] = "simple asset";
+    params[tag::SmartContractName] = "smartContractFunc";
   }
 
-  std::map<std::string, std::string> inputValue;
+  std::map<std::string, std::string> value;
   {
-    inputValue["type"] = "double";
-    inputValue["value"] = "98765.432101234567890987654321";
+    value["type"] = "double";
+    value["value"] = "98765.432101234567890987654321";
   }
 
   /***********************************************************************
    * 2. Invoke Java
    ***********************************************************************/
   virtual_machine::invokeFunction(PackageName, ContractName,
-                                  "testAddSimpleAsset", inputInfo, inputValue);
+                                  "testAddSimpleAsset", params, value);
 
   /***********************************************************************
    * 3. Test
    ***********************************************************************/
-  ensureIntegrityOfSimpleAssetValue(uuid, inputInfo, inputValue);
+  ensureIntegrityOfSimpleAssetValue(uuid, params, value);
 
   // Remove chache again.
   ASSERT_TRUE(repository::simple_asset::remove(uuid));
@@ -119,21 +118,27 @@ TEST(JavaQueryRepoSimpleAsset, invokeUpdateSimpleAssetQuery) {
   /***********************************************************************
    * 1. Initialize
    ***********************************************************************/
+
   std::map<std::string, std::string> inputInfo;
   {
-    inputInfo[DomainIdTag] = "this is domain id";
-    inputInfo[SimpleAssetNameTag] = "this is simple asset name";
-    inputInfo[SmartContractNameTag] = "this is smart contract tag";
+    inputInfo[tag::DomainId] = "this is domain id";
+    inputInfo[tag::SimpleAssetName] = "this is simple asset name";
+    inputInfo[tag::SmartContractName] = "this is smart contract tag";
   }
 
   const auto uuid = repository::simple_asset::add(
-      inputInfo[DomainIdTag], inputInfo[SimpleAssetNameTag],
-      txbuilder::createValueBool(true), inputInfo[SmartContractNameTag]);
+      inputInfo[tag::DomainId], inputInfo[tag::SimpleAssetName],
+      txbuilder::createValueBool(true), inputInfo[tag::SmartContractName]);
 
   ASSERT_FALSE(uuid.empty());
 
-  std::map<std::string, std::string> inputUpdatedValue;
+  std::map<std::string, std::string> params;
   {
+    params[tag::Uuid] = uuid;
+  }
+
+  std::map<std::string, std::string> inputUpdatedValue;
+  { 
     inputUpdatedValue["type"] = "string";
     inputUpdatedValue["value"] = "updated from double to string";
   }
@@ -142,7 +147,7 @@ TEST(JavaQueryRepoSimpleAsset, invokeUpdateSimpleAssetQuery) {
    * 2. Invocation Java.
    ***********************************************************************/
   virtual_machine::invokeFunction(PackageName, ContractName,
-                                  "testUpdateSimpleAsset", uuid,
+                                  "testUpdateSimpleAsset", params,
                                   inputUpdatedValue);
 
   /***********************************************************************
@@ -152,9 +157,9 @@ TEST(JavaQueryRepoSimpleAsset, invokeUpdateSimpleAssetQuery) {
 
   std::map<std::string, std::string> info;
   // info doesn't change.
-  info.emplace(DomainIdTag, simpleAsset.domain());
-  info.emplace(SimpleAssetNameTag, simpleAsset.name());
-  info.emplace(SmartContractNameTag, simpleAsset.smartcontractname());
+  info.emplace(tag::DomainId, simpleAsset.domain());
+  info.emplace(tag::SimpleAssetName, simpleAsset.name());
+  info.emplace(tag::SmartContractName, simpleAsset.smartcontractname());
 
   ensureIntegrityOfSimpleAssetValue(uuid, info, inputUpdatedValue);
 
@@ -164,15 +169,20 @@ TEST(JavaQueryRepoSimpleAsset, invokeUpdateSimpleAssetQuery) {
 
 TEST(JavaQueryRepoSimpleAsset, invokeRemoveSimpleAssetQuery) {
 
-  auto uuid = repository::simple_asset::add("domain id", "simple asset",
-                                            txbuilder::createValueString("smpl value"), "");
+  auto uuid = repository::simple_asset::add(
+      "domain id", "simple asset", txbuilder::createValueString("smpl value"),
+      "");
   ASSERT_TRUE(repository::simple_asset::exists(uuid));
 
   /***********************************************************************
    * 1. Invocation Java.
    ***********************************************************************/
+
+  std::map<std::string, std::string> params;
+  { params[tag::Uuid] = uuid; }
+
   virtual_machine::invokeFunction(PackageName, ContractName,
-                                  "testRemoveSimpleAsset", uuid);
+                                  "testRemoveSimpleAsset", params);
   /***********************************************************************
    * 2. Test
    ***********************************************************************/

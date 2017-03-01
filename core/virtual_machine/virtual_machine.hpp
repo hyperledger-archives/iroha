@@ -29,55 +29,28 @@ void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName);
 
-// Tempolary implementation.
-// If variadic types of parameters are needed, consider to use JSON, I think.
-// I think it is hard for Java program to use HashMap only.
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName,
-                    std::string param);
+                    const std::map<std::string, std::string>& params);
 
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName,
-                    std::map<std::string, std::string> params);
+                    const std::map<std::string, std::string>& params1,
+                    const std::map<std::string, std::map<std::string, std::string>>& params2);
 
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName,
-                    std::string param,
-                    std::map<std::string, std::map<std::string, std::string>> params);
+                    const std::map<std::string, std::string>& params1,
+                    const std::map<std::string, std::string>& params2);
 
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName,
-                    std::string param,
-                    std::map<std::string, std::string> param2);
-
-void invokeFunction(const std::string &packageName,
-                    const std::string &contractName,
-                    const std::string &functionName,
-                    std::map<std::string, std::string> params,
-                    std::map<std::string, std::string> params2);
-
-void invokeFunction(const std::string &packageName,
-                    const std::string &contractName,
-                    const std::string &functionName,
-                    std::map<std::string, std::string> params,
-                    std::map<std::string, std::map<std::string, std::string>> params2);
-
-void invokeFunction(const std::string &packageName,
-                    const std::string &contractName,
-                    const std::string &functionName,
-                    std::map<std::string, std::string> params,
-                    std::vector<std::string> params2);
-
-void invokeFunction(const std::string &packageName,
-                    const std::string &contractName,
-                    const std::string &functionName,
-                    std::string param1,
-                    std::map<std::string, std::string> param2,
-                    std::vector<std::string> params3);
+                    const std::map<std::string, std::string>& params1,
+                    const std::vector<std::string>& params2);
 }
 
 #endif

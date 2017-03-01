@@ -71,6 +71,5 @@ public class Repository {
     public static native Boolean peerRemove(HashMap<String, String> params);
     public static native HashMap<String, String> peerInfoFindByUuid(HashMap<String, String> params);
     public static native HashMap<String, String> peerTrustFindByUuid(HashMap<String, String> params);
-    public static native HashMap<String, String> peerFindByUuid(HashMap<String, String> params);
     public static native Boolean peerExists(HashMap<String, String> params);
 }

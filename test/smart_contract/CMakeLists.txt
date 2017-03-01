@@ -183,3 +183,32 @@ add_test(
   NAME java_query_repo_domain_test
   COMMAND $<TARGET_FILE:java_query_repo_domain_test>
 )
+
+########################################################################################
+# Executable java_query_repo_peer_test
+########################################################################################
+add_executable(java_query_repo_peer_test java_query_repo_peer_test.cpp)
+
+add_dependencies(java_query_repo_peer_test
+  googletest
+)
+
+target_link_libraries(java_query_repo_peer_test
+  Repository
+
+  # LevelDB depends on snappy
+  leveldb
+  snappy
+  
+  virtual_machine_with_java
+  world_state_repo_with_level_db
+  consensus_event
+  jvm
+  ${GTEST_LIBS_DIR}/libgtest.a
+  ${GTEST_LIBS_DIR}/libgtest_main.a
+  pthread
+)
+add_test(
+  NAME java_query_repo_peer_test
+  COMMAND $<TARGET_FILE:java_query_repo_peer_test>
+)

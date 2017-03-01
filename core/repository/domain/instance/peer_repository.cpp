@@ -21,7 +21,7 @@ limitations under the License.
 #include <util/exception.hpp>
 #include <util/logger.hpp>
 
-const std::string NameSpaceID = "simple asset repository";
+const std::string NameSpaceID = "peer repository";
 
 namespace repository {
 namespace peer {
@@ -59,7 +59,7 @@ std::string add(const std::string &publicKey, const std::string &address,
 
   const auto uuid = detail::createPeerUuid(publicKey);
 
-  if (not exists(uuid)) {
+  if (!exists(uuid)) {
     const auto strPeer =
         detail::stringifyPeer(txbuilder::createPeer(publicKey, address, trust));
     if (world_state_repository::add(uuid, strPeer)) {
@@ -73,12 +73,16 @@ std::string add(const std::string &publicKey, const std::string &address,
 /********************************************************************************************
  * Update<Peer>
  ********************************************************************************************/
-bool update(const std::string &uuid, const Api::Trust &trust) {
+bool update(const std::string &uuid, const std::string &address,
+            const Api::Trust &trust) {
   if (exists(uuid)) {
     const auto rval = world_state_repository::find(uuid);
     logger::explore(NameSpaceID) << "Update<Peer> uuid: " << uuid
-                                 << trust.value();
+                                 << ", address: " << address
+
+                                 << ", trust: " << trust.value();
     auto peer = detail::parsePeer(rval);
+    *peer.mutable_address() = address;
     *peer.mutable_trust() = trust;
     const auto strPeer = detail::stringifyPeer(peer);
     return world_state_repository::update(uuid, strPeer);
