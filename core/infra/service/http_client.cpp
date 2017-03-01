@@ -103,7 +103,7 @@ namespace http_client {
             logger::error("HttpClient") <<  "Cannot resolve [" << dest << "]";
             return 1;
         }
-        bzero(&server, sizeof(server));
+        memset(&server, 0, sizeof(server));
         server.sin_family = AF_INET;
         bcopy(hostent->h_addr, &server.sin_addr, hostent->h_length);
         server.sin_port = htons(port);
