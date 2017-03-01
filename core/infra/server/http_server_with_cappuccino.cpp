@@ -17,7 +17,7 @@ limitations under the License.
 #include <json.hpp>
 
 #include <server/http_server.hpp>
-#include <vendor/Cappuccino/cappuccino.hpp>
+#include <cappuccino.hpp>
 #include <util/logger.hpp>
 #include <service/peer_service.hpp>
 #include <infra/config/peer_service_with_json.hpp>

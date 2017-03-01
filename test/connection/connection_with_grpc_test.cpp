@@ -46,6 +46,7 @@ TEST(ConnectionWithGrpc, Transaction_Add_Domain){
 
     auto server = []() {
         connection::iroha::Sumeragi::Verify::receive([](const std::string &from, ConsensusEvent &event) {
+            std::cout << event.transaction().DebugString() << std::endl;
             ASSERT_STREQ( event.transaction().senderpubkey().c_str(),              "karin");
             ASSERT_STREQ( event.transaction().domain().name().c_str(),              "name");
             ASSERT_STREQ( event.transaction().domain().ownerpublickey().c_str(), "pubkey1");
@@ -77,43 +78,4 @@ TEST(ConnectionWithGrpc, Transaction_Add_Domain){
 
     server_thread.detach();
     connection::finish();
-}
-
-TEST(ConnectionWithGrpc, Transaction_Add_Asset){
-    logger::setLogLevel(logger::LogLevel::DEBUG);
-
-    connection::initialize_peer();
-
-    auto server = []() {
-        connection::iroha::Sumeragi::Verify::receive([](const std::string &from, ConsensusEvent &event) {
-            ASSERT_STREQ( event.transaction().senderpubkey().c_str(),              "karin");
-            ASSERT_STREQ( event.transaction().asset().name().c_str(),              "nao");
-            ASSERT_STREQ( event.transaction().asset().smartcontractname().c_str(), "NaoTo8MaContract");
-        });
-        connection::run();
-    };
-
-    std::thread server_thread(server);
-
-    connection::iroha::Sumeragi::Verify::addSubscriber(
-        config::PeerServiceConfig::getInstance().getMyIp()
-    );
-
-    Api::Asset asset;
-    asset.set_smartcontractname("NaoTo8MaContract");
-    asset.set_name("nao");
-    auto tx = TransactionBuilder<Add<Asset>>()
-        .setSenderPublicKey("karin")
-        .setAsset(asset)
-        .build();
-
-    Api::ConsensusEvent sampleEvent;
-    sampleEvent.mutable_transaction()->CopyFrom(tx);
-
-    connection::iroha::Sumeragi::Verify::send(
-    config::PeerServiceConfig::getInstance().getMyIp(),
-            sampleEvent
-    );
-
-    server_thread.detach();
 }

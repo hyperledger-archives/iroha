@@ -1,6 +1,5 @@
 
 SET(CMAKE_CXX_FLAGS "-std=c++14 -L/usr/local/lib `pkg-config --libs grpc++ grpc` -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed -lprotobuf -lpthread -ldl")
-SET(CRYPTO_PATH  "${PROJECT_SOURCE_DIR}/core/crypto")
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/core
@@ -18,4 +17,5 @@ ADD_LIBRARY(connection_with_grpc STATIC
 
 target_link_libraries(connection_with_grpc
   event_with_grpc
+  json
 )
