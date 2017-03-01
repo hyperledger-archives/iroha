@@ -16,8 +16,6 @@ limitations under the License.
 #ifndef IROHA_HTTP_CLIENT_HPP_HPP
 #define IROHA_HTTP_CLIENT_HPP_HPP
 
-#include <json.hpp>
-
 #include <unordered_map>
 #include <string>
 
@@ -49,9 +47,6 @@ namespace http_client {
         void addParams(const std::string& key,std::string&& value);
         const std::string dump();
     };
-
-
-    using nlohmann::json;
 
     int request(std::string dest, int port, Request req);
 }

@@ -1,10 +1,7 @@
-set(JSON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/json")
-
 include_directories(
-    ${JSON_PATH}/src
     ${PROJECT_SOURCE_DIR}/core
+    ${PROJECT_SOURCE_DIR}/core/vendor/json/src
 )
-
 
 ADD_LIBRARY(executor STATIC
     executor.cpp

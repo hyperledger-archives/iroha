@@ -28,6 +28,8 @@ limitations under the License.
 #include <openssl/err.h>
 #include <openssl/rand.h>
 
+#include <json.hpp>
+
 #include <service/http_client.hpp>
 
 #include <util/logger.hpp>
