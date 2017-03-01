@@ -19,6 +19,7 @@ target_link_libraries(world_state_repository_with_leveldb_test
     snappy
     world_state_repo_with_level_db
     gtest
+)
 
 add_test(
     NAME world_state_repository_with_leveldb_test

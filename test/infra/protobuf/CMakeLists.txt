@@ -12,6 +12,7 @@ target_link_libraries(convertor_test
    hash
    base64
    world_state_repo_with_level_db
+   event_repository
    grpc++
    grpc++_reflection
    protobuf
