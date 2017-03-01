@@ -30,8 +30,17 @@ namespace merkle_transaction_repository {
 
     using Api::ConsensusEvent;
 
-    std::string hash(const Api::Transaction& tx ){
+    template<typename T>
+    std::string hash(const T&);
+
+    template<>
+    std::string hash<Api::Transaction>(const Api::Transaction& tx){
         return hash::sha3_256_hex(tx.SerializeAsString());
+    }
+
+    template<>
+    std::string hash<std::string>(const std::string& s){
+        return hash::sha3_256_hex(s);
     }
 
     std::string calculateNewRootHash(const ConsensusEvent& event,
@@ -50,7 +59,7 @@ namespace merkle_transaction_repository {
         if (rightChild.empty()) {
             // insert the event's transaction as the right child
             rightChild = hash(event.transaction());
-            std::string newParentHash = hash::sha3_256_hex(leftChild + rightChild);
+            std::string newParentHash = hash(leftChild + rightChild);
 
             if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
                 batchCommit.emplace_back(lastInsertion + "_rightChild", rightChild);
@@ -59,7 +68,7 @@ namespace merkle_transaction_repository {
 
             // Propagate up the tree to the root
             while (!parent.empty()) {
-                std::string newParentHash = hash::sha3_256_hex(leftChild + rightChild);
+                std::string newParentHash = hash(leftChild + rightChild);
 
                 if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
                     batchCommit.emplace_back(newParentHash + "_parent", rightChild);
@@ -79,7 +88,7 @@ namespace merkle_transaction_repository {
 
         } else {
             std::string newLeftChild = hash(event.transaction());
-            std::string newParentHash = hash::sha3_256_hex(newLeftChild);
+            std::string newParentHash = hash(newLeftChild);
 
             std::string oldParent = parent;
 
@@ -96,13 +105,13 @@ namespace merkle_transaction_repository {
 
                 // increment the right child and the parent, to move up the tree
                 newLeftChild = newParentHash;
-                newParentHash = hash::sha3_256_hex(newLeftChild);
+                newParentHash = hash(newLeftChild);
 
                 oldParent = parent;
                 parent = repository::world_state_repository::find(parent + "_parent");
             }
 
-            newParentHash = hash::sha3_256_hex(oldParent + newLeftChild);
+            newParentHash = hash(oldParent + newLeftChild);
 
             // save new root
             if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
