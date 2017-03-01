@@ -23,6 +23,7 @@ namespace executor{
 
     void execute(const Transaction& tx){
         std::cout << "Executor\n";
+        std::cout << "DebugString:"<< tx.DebugString() <<"\n";
     }
 
 };
