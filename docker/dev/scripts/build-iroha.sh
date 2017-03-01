@@ -12,6 +12,7 @@ if [ -z ${IROHA_HOME} ]; then
 	error "Empty variable IROHA_HOME"
 fi
 
+
 # build iroha (important: build using single thread!)
 (mkdir -p $IROHA_BUILD && \
 cd $IROHA_BUILD && \
