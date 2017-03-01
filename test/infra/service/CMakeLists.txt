@@ -3,7 +3,6 @@ set(CMAKE_BUILD_TYPE Debug)
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
 set(JSON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/json")
 
-
 include_directories(
     ${JSON_PATH}/src
     ${PROJECT_SOURCE_DIR}/core

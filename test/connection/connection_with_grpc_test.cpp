@@ -46,6 +46,7 @@ TEST(ConnectionWithGrpc, Transaction_Add_Domain){
 
     auto server = []() {
         connection::iroha::Sumeragi::Verify::receive([](const std::string &from, ConsensusEvent &event) {
+            std::cout << event.transaction().DebugString() << std::endl;
             ASSERT_STREQ( event.transaction().senderpubkey().c_str(),              "karin");
             ASSERT_STREQ( event.transaction().domain().name().c_str(),              "name");
             ASSERT_STREQ( event.transaction().domain().ownerpublickey().c_str(), "pubkey1");
