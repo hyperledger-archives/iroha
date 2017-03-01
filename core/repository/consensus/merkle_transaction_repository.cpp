@@ -30,13 +30,17 @@ namespace merkle_transaction_repository {
 
     using Api::ConsensusEvent;
 
+    std::string hash(const Api::Transaction& tx ){
+        return hash::sha3_256_hex(tx.SerializeAsString());
+    }
+
     std::string calculateNewRootHash(const ConsensusEvent& event,
                                      std::vector<std::tuple<std::string, std::string>> &batchCommit) {
         std::string lastInsertion = repository::world_state_repository::find("last_insertion");
 
         if (lastInsertion.empty()) {
             // Note: there is no need to update the tree's DB here, because there is only one transaction--the current!
-            return hash::sha3_256_hex(event.transaction().SerializeAsString());
+            return hash(event.transaction());
         }
 
         std::string parent = repository::world_state_repository::find(lastInsertion + "_parent");
@@ -45,7 +49,7 @@ namespace merkle_transaction_repository {
 
         if (rightChild.empty()) {
             // insert the event's transaction as the right child
-            rightChild = hash::sha3_256_hex(event.transaction().SerializeAsString());
+            rightChild = hash(event.transaction());
             std::string newParentHash = hash::sha3_256_hex(leftChild + rightChild);
 
             if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
@@ -74,7 +78,7 @@ namespace merkle_transaction_repository {
             return rightChild;
 
         } else {
-            std::string newLeftChild = hash::sha3_256_hex(event.transaction().SerializeAsString());
+            std::string newLeftChild = hash(event.transaction());
             std::string newParentHash = hash::sha3_256_hex(newLeftChild);
 
             std::string oldParent = parent;
@@ -83,9 +87,9 @@ namespace merkle_transaction_repository {
             while (!parent.empty()) {
 
                 if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
-                    batchCommit.emplace_back(hash::sha3_256_hex(event.transaction().SerializeAsString()) + "_parent",
+                    batchCommit.emplace_back(hash(event.transaction()) + "_parent",
                                              newParentHash);
-                    batchCommit.emplace_back(hash::sha3_256_hex(event.transaction().SerializeAsString()) + "_leftChild",
+                    batchCommit.emplace_back(hash(event.transaction()) + "_leftChild",
                                              newLeftChild);
                     // TODO: delete old, unused nodes
                 }
@@ -102,7 +106,7 @@ namespace merkle_transaction_repository {
 
             // save new root
             if (!batchCommit.empty()) { // TODO: this may not be the best comparison to use
-                batchCommit.emplace_back(hash::sha3_256_hex(event.transaction().SerializeAsString()) + "merkle_root",
+                batchCommit.emplace_back(hash(event.transaction()) + "merkle_root",
                                          newParentHash);
                 // TODO: delete old, unused nodes
             }
@@ -113,7 +117,7 @@ namespace merkle_transaction_repository {
 
     //TODO: change bool to throw an exception instead
     bool commit(const ConsensusEvent& event) {
-        auto h = hash::sha3_256_hex(event.transaction().SerializeAsString());
+        auto h = hash(event.transaction());
         std::vector<std::tuple<std::string, std::string>> batchCommit
                 = {
                         std::make_tuple("last_insertion", h),
