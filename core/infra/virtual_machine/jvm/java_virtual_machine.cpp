@@ -18,6 +18,7 @@ limitations under the License.
 #include <algorithm>
 #include <array>
 #include <util/logger.hpp>
+#include <infra/config/iroha_config_with_json.hpp>
 
 #include "java_virtual_machine.hpp"
 #include "java_data_structure.hpp"
@@ -49,10 +50,11 @@ namespace jvm {
 
         // paths are hard coding here...
         std::vector<std::string> java_args = {
-            "-Djava.class.path="   + IrohaHome + "/smart_contract",
-            "-Djava.library.path=" + IrohaHome + "/build/lib",
-            "-Djava.security.policy=" + IrohaHome + "/core/infra/virtual_machine/jvm/java.policy.txt",
-            "-Djava.security.manager",
+            "-Djava.class.path="   + IrohaHome + "/" + config::IrohaConfigManager::getInstance().getJavaClassPath("smart_contract"),
+            "-Djava.library.path=" + IrohaHome + "/" + config::IrohaConfigManager::getInstance().getJavaLibraryPath("lib") + ":"
+                                   + IrohaHome + "/" + config::IrohaConfigManager::getInstance().getJavaLibraryPathLocal("build/lib"),
+            "-Djava.security.policy=" + IrohaHome + "/" + config::IrohaConfigManager::getInstance().getJavaPolicyPath("jvm/java.policy.txt"),
+            "-Djava.security.manager"
         };
 
         const int OptionSize = java_args.size();

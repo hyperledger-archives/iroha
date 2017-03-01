@@ -41,6 +41,22 @@ std::string IrohaConfigManager::getDatabasePath(
   return this->getParam<std::string>("database_path", defaultValue);
 }
 
+std::string IrohaConfigManager::getJavaClassPath(const std::string& defaultValue) {
+  return this->getParam<std::string>("java_class_path", defaultValue);
+}
+
+std::string IrohaConfigManager::getJavaLibraryPath(const std::string& defaultValue) {
+  return this->getParam<std::string>("java_library_path", defaultValue);
+}
+
+std::string IrohaConfigManager::getJavaLibraryPathLocal(const std::string& defaultValue) {
+  return this->getParam<std::string>("java_library_path_local", defaultValue);
+}
+
+std::string IrohaConfigManager::getJavaPolicyPath(const std::string& defaultValue) {
+  return this->getParam<std::string>("java_policy_path", defaultValue);
+}
+
 size_t IrohaConfigManager::getConcurrency(size_t defaultValue) {
   return this->getParam<size_t>("concurrency", defaultValue);
 }
