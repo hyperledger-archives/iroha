@@ -48,7 +48,7 @@ namespace http_client {
         const std::string dump();
     };
 
-    int request(std::string dest, int port, Request req);
+    std::tuple<int,std::string> request(std::string dest, int port, Request req);
 }
 
 #endif //IROHA_HTTP_CLIENT_HPP_HPP

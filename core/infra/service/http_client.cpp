@@ -44,6 +44,32 @@ namespace http_client {
         return std::string(timestr);
     }
 
+    std::vector<std::string> split(const std::string& str, char splitter = '\n', unsigned int time = 0) {
+        std::vector<std::string> res;
+        std::stringstream ss(str);
+        std::string tmp;
+        unsigned int count = 0;
+        while(getline(ss, tmp, splitter)) {
+            if(!tmp.empty()){
+                res.push_back(tmp);
+            }
+            if(time != 0 && count >= time){
+                res.push_back(ss.str());
+                break;
+            }
+            count++;
+        }
+        return res;
+    }
+
+    std::string trim(const std::string& str) {
+        std::string::size_type stIndex = str.find_first_not_of(" \t");
+        if( stIndex == std::string::npos ){
+            return "";
+        }
+        return str.substr( stIndex, str.find_last_not_of(" \t") + 1 - stIndex);
+    }
+
     Request::Request(
         std::string&& aMethod,
         std::string&& aPath,
@@ -87,9 +113,9 @@ namespace http_client {
 
     using nlohmann::json;
 
-    const int BUFFER_LENGTH = 2048;
+    int BUFFER_LENGTH = 2048;
 
-    int request(std::string dest, int port, Request req) {
+    std::tuple<int,std::string> request(std::string dest, int port, Request req) {
         req.addHost(dest);
 
         struct hostent *hostent;
@@ -101,7 +127,7 @@ namespace http_client {
         hostent = gethostbyname(dest.c_str()); /* lookup IP */
         if (hostent == nullptr) {
             logger::error("HttpClient") <<  "Cannot resolve [" << dest << "]";
-            return 1;
+            return std::make_tuple(1, "Cannot resolve [" + dest + "]");
         }
         memset(&server, 0, sizeof(server));
         server.sin_family = AF_INET;
@@ -111,12 +137,12 @@ namespace http_client {
         if((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
             logger::error("HttpClient") <<  "Socker error";
             close(fd);
-            return 1;
+            return std::make_tuple(1, "Socker error");
         }
         if(connect(fd, (struct sockaddr *) &server, sizeof(server)) == -1) {
             logger::error("HttpClient") <<  "Connection failed";
             close(fd);
-            return 1;
+            return std::make_tuple(1, "Connection failed");
         }
 
         // -- SSL --
@@ -132,7 +158,7 @@ namespace http_client {
             SSL_CTX_free(context);
             ERR_free_strings();
             close(fd);
-            return 1;
+            return std::make_tuple(1, "SSL set fd error");
         }
         if (SSL_connect(ssl) != 1) {
             ERR_print_errors_fp(stderr);
@@ -141,7 +167,7 @@ namespace http_client {
             SSL_CTX_free(context);
             ERR_free_strings();
             close(fd);
-            return 1;
+            return std::make_tuple(1, "SSL connect error");
         }
 
         auto message = req.dump();
@@ -149,11 +175,33 @@ namespace http_client {
         SSL_write(ssl, message.c_str(), message.size());
 
         int read_len;
+        int isHeader = true;
+        std::string res = "";
 
+        read_len = SSL_read(ssl, buffer, BUFFER_LENGTH );
+
+        res += buffer;
+
+        // ======= Header parse =======
+        auto lines = split(buffer);
+        if (lines.empty()) {
+            return std::make_tuple(1, "Response is empty");
+        }
+        // Remove response top [ HTTP/1.1 200 OK ]
+        lines.erase(lines.begin());
+        for (auto hp: lines) {
+            auto hkv = split(hp, ':', 1);
+
+            // WIP currently, I need body length.
+            if (hkv[0] == "Content-Length") {
+                BUFFER_LENGTH = std::stoi(trim(hkv[1]));
+            }
+        }
+        // ======= Header parse =======
+
+        // ======= Body  =======
         read_len = SSL_read(ssl, buffer, BUFFER_LENGTH);
-        logger::info("HttpClient") <<"recv " << buffer;
-        logger::info("HttpClient") <<"size " << read_len;
-
+        res += buffer;
 
         // -- SSL --
         SSL_shutdown(ssl);
@@ -162,7 +210,8 @@ namespace http_client {
         ERR_free_strings();
         // ---------
         close(fd);
-        return 0;
+
+        return std::make_tuple( 0, res);
 
     }
 
