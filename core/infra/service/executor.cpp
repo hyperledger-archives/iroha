@@ -11,8 +11,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef IROHA_EXECUTOR_HPP_HPP
-#define IROHA_EXECUTOR_HPP_HPP
 
 #include <infra/protobuf/api.pb.h>
 #include <iostream>
@@ -27,5 +25,3 @@ namespace executor{
     }
 
 };
-
-#endif //IROHA_EXECUTOR_HPP_HPP
