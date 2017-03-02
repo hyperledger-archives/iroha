@@ -1,6 +1,7 @@
 { 
   "database_path":"/tmp/iroha_ledger",
-  "java_class_path":"test_bin:build/test_bin",
+  "java_class_path":"test_bin",
+  "java_class_path_local":"build/test_bin",
   "java_library_path":"lib",
   "java_library_path_local":"build/lib",
   "java_policy_path":"jvm/java.policy.txt",

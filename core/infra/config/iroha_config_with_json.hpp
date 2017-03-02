@@ -33,6 +33,7 @@ class IrohaConfigManager : config::AbstractConfigManager {
 
   std::string getDatabasePath(const std::string& defaultValue);
   std::string getJavaClassPath(const std::string& defaultValue);
+  std::string getJavaClassPathLocal(const std::string& defaultValue);
   std::string getJavaLibraryPath(const std::string& defaultValue);
   std::string getJavaLibraryPathLocal(const std::string& defaultValue);
 

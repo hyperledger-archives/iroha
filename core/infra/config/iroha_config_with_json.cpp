@@ -46,6 +46,10 @@ std::string IrohaConfigManager::getJavaClassPath(const std::string& defaultValue
   return this->getParam<std::string>("java_class_path", defaultValue);
 }
 
+std::string IrohaConfigManager::getJavaClassPathLocal(const std::string& defaultValue) {
+  return this->getParam<std::string>("java_class_path_local", defaultValue);
+}
+
 std::string IrohaConfigManager::getJavaLibraryPath(const std::string& defaultValue) {
   return this->getParam<std::string>("java_library_path", defaultValue);
 }
