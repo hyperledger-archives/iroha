@@ -1,3 +1,0 @@
-repository='https://github.com/nlohmann/json.git'
-module=''
-tag=''

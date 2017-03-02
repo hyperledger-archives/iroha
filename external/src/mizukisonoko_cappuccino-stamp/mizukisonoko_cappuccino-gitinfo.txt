@@ -1,3 +1,0 @@
-repository='https://github.com/MizukiSonoko/Cappuccino.git'
-module=''
-tag=''

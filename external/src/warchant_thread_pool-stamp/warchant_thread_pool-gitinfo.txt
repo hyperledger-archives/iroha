@@ -1,3 +1,0 @@
-repository='https://github.com/Warchant/thread-pool-cpp.git'
-module=''
-tag=''

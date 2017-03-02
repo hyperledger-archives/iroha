@@ -1,1 +1,0 @@
-cmd='/usr/bin/cmake;-DCMAKE_C_COMPILER=/usr/bin/cc;-DCMAKE_CXX_COMPILER=/usr/bin/c++;-Dgtest_force_shared_crt=ON;-Dgtest_disable_pthreads=OFF;-DBUILD_GTEST=ON;-DBUILD_GMOCK=OFF;-GUnix Makefiles;/opt/iroha/external/src/google_test'
