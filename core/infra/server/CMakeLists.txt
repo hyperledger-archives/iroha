@@ -11,13 +11,10 @@ ADD_LIBRARY(http_server_with_cappuccino STATIC
 
 target_link_libraries(http_server_with_cappuccino
   ssl
-  crypto
   logger
   datetime
   base64
   signature
   connection_with_grpc
-  config_manager
-  core_repository
-  event_repository
+  cappuccino
 )

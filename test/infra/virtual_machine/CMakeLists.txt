@@ -15,7 +15,6 @@ include_directories(
     $ENV{JAVA_HOME}/include
     ${PROJECT_SOURCE_DIR}/core
 )
-
 link_directories(
     ${PROJECT_SOURCE_DIR}/core/infra/crypto
 )
@@ -37,7 +36,6 @@ ENDIF()
 add_executable(java_data_structure_test
     java_data_structure_test.cpp
 )
-add_dependencies(java_data_structure_test googletest)
 target_link_libraries(java_data_structure_test
   hash
   create_objects_helper

@@ -2,20 +2,10 @@ SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/my_test_bin)
 
 SET(CMAKE_CXX_FLAGS_DEBUG "-g")
 
-SET(KECCAK_PATH  "${PROJECT_SOURCE_DIR}/core/vendor/KeccakCodePackage")
-SET(ED25519_PATH "${PROJECT_SOURCE_DIR}/core/vendor/ed25519")
 SET(LEVELDB_PATH "${PROJECT_SOURCE_DIR}/core/vendor/leveldb")
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/core
-)
-
-link_directories(
-    ${PROJECT_BINARY_DIR}/lib
-    ${ED25519_PATH}/lib
-    ${KECCAK_PATH}/bin/generic64
-    ${PROJECT_SOURCE_DIR}/core/infra/crypto
-    ${LEVELDB_PATH}/out-static
 )
 
 add_executable(sumeragi_test
@@ -31,8 +21,6 @@ target_link_libraries(sumeragi_test
     sumeragi
     connection_with_grpc
     config_manager
-    pthread
-    consensus_event
 )
 
 add_executable(transaction_test
@@ -45,6 +33,4 @@ target_link_libraries(transaction_test
     sumeragi
     connection_with_grpc
     config_manager
-    pthread
-    consensus_event
 )

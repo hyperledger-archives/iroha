@@ -4,6 +4,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   include_directories(
     $ENV{JAVA_HOME}/include/darwin/
     $ENV{JAVA_HOME}/include/
+    ${PROJECT_SOURCE_DIR}/core
   )
   link_directories(
     $ENV{JAVA_HOME}/jre/lib/server
@@ -13,6 +14,7 @@ ELSE()
   include_directories(
     $ENV{JAVA_HOME}/include/linux
     $ENV{JAVA_HOME}/include
+    ${PROJECT_SOURCE_DIR}/core
   )
   link_directories(
     $ENV{JAVA_HOME}/jre/lib/amd64/server/
@@ -24,7 +26,6 @@ ENDIF()
 ########################################################
 
 # Libraries
-
 add_library(virtual_machine_with_java STATIC
   virtual_machine_with_java.cpp
 )
@@ -33,4 +34,5 @@ add_library(virtual_machine_with_java STATIC
 target_link_libraries(virtual_machine_with_java
   java_virtual_machine
   logger
+  json
 )

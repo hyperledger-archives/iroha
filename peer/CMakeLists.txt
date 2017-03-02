@@ -4,29 +4,15 @@ SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 SET(CMAKE_CXX_FLAGS "-g -std=c++1y -Wall -fPIC")
 
-SET(AERON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/Aeron")
-SET(LEVELDB_PATH "${PROJECT_SOURCE_DIR}/core/vendor/leveldb")
-SET(KECCAK_PATH  "${PROJECT_SOURCE_DIR}/core/vendor/KeccakCodePackage")
-SET(ED25519_PATH "${PROJECT_SOURCE_DIR}/core/vendor/ed25519")
-SET(JSON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/json")
-SET(THREAD_POOL_PATH "${PROJECT_SOURCE_DIR}/core/vendor/thread_pool_cpp")
-
 include_directories(
   ${PROJECT_SOURCE_DIR}/core
   ${PROJECT_SOURCE_DIR}/core/server
   ${PROJECT_SOURCE_DIR}/core/peer
-  ${THREAD_POOL_PATH}/thread_pool
   ${LEVELDB_PATH}/include
-  ${ED25519_PATH}/src
-  ${JSON_PATH}/src
 )
 
 link_directories(
   ${PROJECT_BINARY_DIR}/lib
-  ${ED25519_PATH}/lib
-  ${KECCAK_PATH}/bin/generic64
-  ${PROJECT_SOURCE_DIR}/core/infra/crypto
-  ${LEVELDB_PATH}/out-shared
   ${LEVELDB_PATH}/out-static
 )
 
@@ -37,7 +23,6 @@ target_link_libraries(iroha-main
   # used grpc
   grpc++_reflection
   protobuf
-  pthread
   dl
 
   leveldb
@@ -48,7 +33,9 @@ target_link_libraries(iroha-main
   http_server_with_cappuccino
   connection_with_grpc
   config_manager
-  pthread
-  keccak
+  ed25519
   hash
+  pthread
+  thread_pool
+  json
 )

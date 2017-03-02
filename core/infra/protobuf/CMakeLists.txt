@@ -21,5 +21,6 @@ target_link_libraries(event_with_grpc
     protobuf
     pthread
     dl
+    ed25519
     hash
 )
