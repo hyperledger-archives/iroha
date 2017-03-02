@@ -2,7 +2,7 @@
 mkdir $IROHA_HOME/smart_contract
 mkdir $IROHA_HOME/smart_contract/java_tests
 mkdir $IROHA_HOME/smart_contract/java_tests/instances
-mkdir $IROHA_HOME/smart_contract/java_tests/instances/test/
+mkdir $IROHA_HOME/smart_contract/java_tests/instances/test
 mkdir $IROHA_HOME/smart_contract/java_tests/repository
 
 javac -encoding UTF-8 \
