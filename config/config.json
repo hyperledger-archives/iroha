@@ -1,6 +1,6 @@
 { 
   "database_path":"/tmp/iroha_ledger",
-  "java_class_path":"smart_contract/java_tests",
+  "java_class_path":"java_tests",
   "java_class_path_local":"smart_contract/java_tests",
   "java_library_path":"lib",
   "java_library_path_local":"build/lib",
