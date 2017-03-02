@@ -18,12 +18,15 @@ fi
 
 mkdir -p $IROHA_RELEASE
 cd ${IROHA_RELEASE}
-rsync -av ${IROHA_BUILD}/bin $IROHA_RELEASE && \
+
+rsync -av {IROHA_BUILD}/bin$ $IROHA_RELEASE && \
 rsync -av ${IROHA_BUILD}/lib $IROHA_RELEASE && \
 rsync -av ${IROHA_BUILD}/my_test_bin $IROHA_RELEASE && \
 rsync -av ${IROHA_BUILD}/test_bin $IROHA_RELEASE && \
-rsync -av ${IROHA_HOME}/core/vendor/ed25519/lib $IROHA_RELEASE && \
-rsync -av ${IROHA_HOME}/smart_contract/java_tests $IROHA_RELEASE
+rsync -av ${IROHA_HOME}/smart_contract/java_tests $IROHA_RELEASE && \
+rsync -av ${IROHA_HOME}/external/src/google_leveldb/out-shared/ $IROHA_RELEASE/lib
+
+# rsync -av ${IROHA_HOME}/core/vendor/ed25519/lib $IROHA_RELEASE 
 
 tar cvf /tmp/iroha.tar \
 	/usr/lib/libproto* \
