@@ -50,8 +50,8 @@ namespace jvm {
 
         // paths are hard coding here...
         std::vector<std::string> java_args = {
-            "-Djava.class.path="   + IrohaHome + "/" + config::IrohaConfigManager::getInstance().getJavaClassPath("test_bin") + ":"
-                                   + IrohaHome + "/" + config::IrohaConfigManager::getInstance().getJavaClassPathLocal("build/test_bin"),
+            "-Djava.class.path="   + IrohaHome + "/" + config::IrohaConfigManager::getInstance().getJavaClassPath("java_tests") + ":"
+                                   + IrohaHome + "/" + config::IrohaConfigManager::getInstance().getJavaClassPathLocal("smart_contract/java_tests"),
             "-Djava.library.path=" + IrohaHome + "/" + config::IrohaConfigManager::getInstance().getJavaLibraryPath("lib") + ":"
                                    + IrohaHome + "/" + config::IrohaConfigManager::getInstance().getJavaLibraryPathLocal("build/lib"),
             "-Djava.security.policy=" + IrohaHome + "/" + config::IrohaConfigManager::getInstance().getJavaPolicyPath("jvm/java.policy.txt"),
