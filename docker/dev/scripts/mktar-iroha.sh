@@ -30,5 +30,3 @@ rsync -av ${IROHA_HOME}/external/src/google_leveldb/out-shared/ $IROHA_RELEASE/l
 tar cvf /tmp/iroha.tar \
   /usr/lib/libproto* \
   /usr/local
-
-exit 0
