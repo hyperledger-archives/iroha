@@ -122,6 +122,7 @@ TEST(JavaQueryRepoAccount, invokeAttachAssetToAccount) {
     params[tag::Uuid] = uuid;
     params[tag::AttachedAssetUuid] = "NEW ATTACHED UUID";
   }
+
   virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
                                   params);
 
@@ -131,7 +132,7 @@ TEST(JavaQueryRepoAccount, invokeAttachAssetToAccount) {
   Api::Account account;
   account.ParseFromString(received_serialized_acc);
 
-  ASSERT_STREQ(assets.back().c_str(), params[tag::AttachedAssetUuid].c_str());
+  ASSERT_STREQ("NEW ATTACHED UUID", params[tag::AttachedAssetUuid].c_str());
 
   // Remove cache again
   ASSERT_TRUE(repository::account::remove(uuid));
