@@ -45,6 +45,7 @@ target_link_libraries(peer_service_with_json_test
     consensus_event
     signature
     config_manager
+    event_with_grpc
 )
 add_test(
     NAME peer_service_with_json_test

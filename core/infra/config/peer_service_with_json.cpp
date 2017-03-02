@@ -23,6 +23,7 @@ limitations under the License.
 #include <util/use_optional.hpp>
 #include <consensus/connection/connection.hpp>
 #include <json.hpp>
+#include <infra/protobuf/api.pb.h>
 #include "peer_service_with_json.hpp"
 #include "config_format.hpp"
 #include "../../util/exception.hpp"
@@ -78,10 +79,6 @@ bool PeerServiceConfig::isExistPublicKey( const std::string &publicKey ) {
   return findPeerPublicKey( std::move(publicKey) ) != peerList.end();
 }
 
-std::vector<peer::Node>::iterator PeerServiceConfig::findPeer( peer::Node &peer ) {
-  return findPeerPublicKey( peer.getPublicKey() );
-}
-
 std::vector<peer::Node>::iterator PeerServiceConfig::findPeerIP( const std::string &ip ) {
   return std::find_if( peerList.begin(), peerList.end(),
                        [&ip]( const peer::Node& p ) { return p.getIP() == ip; } );
@@ -110,28 +107,28 @@ std::vector<std::string> PeerServiceConfig::getIpList() {
   return ret_ips;
 }
 
-bool PeerServiceConfig::addPeer( peer::Node &peer ) {
+bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
   try {
     if( isExistIP( peer.getIP() ) )
-      throw exception::service::DuplicationIPAddPeerException(std::move(peer.getIP()), std::move(peer.getPublicKey()), std::move(peer.getTrustScore()));
+      throw exception::service::DuplicationIPException(peer.getIP());
     if( isExistPublicKey( peer.getPublicKey() ) )
-      throw exception::service::DuplicationPublicKeyAddPeerException(std::move(peer.getIP()), std::move(peer.getPublicKey()), std::move(peer.getTrustScore()));
+      throw exception::service::DuplicationPublicKeyException(peer.getPublicKey());
     peerList.emplace_back( std::move(peer));
-  } catch( exception::service::DuplicationPublicKeyAddPeerException& e ) {
+  } catch( exception::service::DuplicationPublicKeyException& e ) {
     logger::warning("addPeer") << e.what();
     return false;
-  } catch( exception::service::DuplicationIPAddPeerException& e ) {
+  } catch( exception::service::DuplicationIPException& e ) {
     logger::warning("addPeer") << e.what();
     return false;
   }
   return true;
 }
 
-bool PeerServiceConfig::removePeer( peer::Node &peer ) {
+bool PeerServiceConfig::removePeer( const std::string& publicKey ) {
   try {
-    auto it = findPeerPublicKey(peer.getPublicKey());
-    if (it == peerList.end())
-      throw exception::service::UnExistFindPeerException(std::move(peer.getIP()), std::move(peer.getPublicKey()), std::move(peer.getTrustScore()));
+    auto it = findPeerPublicKey( publicKey );
+    if ( !isExistPublicKey( publicKey ) )
+      throw exception::service::UnExistFindPeerException(publicKey);
     peerList.erase(it);
   } catch (exception::service::UnExistFindPeerException& e) {
     logger::warning("removePeer") << e.what();
@@ -140,19 +137,98 @@ bool PeerServiceConfig::removePeer( peer::Node &peer ) {
   return true;
 }
 
-bool PeerServiceConfig::updatePeer( peer::Node &peer ) {
+bool PeerServiceConfig::updatePeer( const std::string& publicKey, const std::map<std::string,std::string>& upd ) {
   try {
-    auto it = findPeerPublicKey(peer.getPublicKey());
-    if (it == peerList.end())
-      throw exception::service::UnExistFindPeerException(std::move(peer.getIP()), std::move(peer.getPublicKey()), std::move(peer.getTrustScore()));
-    peerList.erase(it);
-    addPeer( peer );
+    auto it = findPeerPublicKey( publicKey );
+    if (it == peerList.end() )
+      throw exception::service::UnExistFindPeerException( publicKey );
+/*
+    if ( upd.count( Api::Peer::default_instance().publickey() ) ) { // update publicKey
+      const std::string& upd_key = upd.at( Api::Peer::default_instance().publickey() );
+      auto upd_it = findPeerPublicKey(upd_key);
+      if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationPublicKeyException(publicKey);
+      it->setPublicKey( upd_key );
+    }
+
+    if ( upd.count( Api::Peer::default_instance().address() ) ) { // update address
+        const std::string& upd_ip = upd.at( (std::string)Api::Peer::default_instance().address() );
+        auto upd_it = findPeerIP(upd_ip);
+        if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationIPException(publicKey);
+        it->setIP( upd_ip );
+    }
+
+    if ( upd.count( "trust" ) ) { // update trust
+        it->setTrustScore(upd.at( "trust" ));
+    }*/
+
   } catch ( exception::service::UnExistFindPeerException& e ) {
     logger::warning("updatePeer") << e.what();
+    return false;
+  } catch( exception::service::DuplicationPublicKeyException& e ) {
+      logger::warning("updatePeer") << e.what();
+  } catch ( exception::service::DuplicationIPException& e ) {
+    logger::warning("udpatePeer") << e.what();
     return false;
   }
   return true;
 }
+
+
+bool PeerServiceConfig::validate_addPeer( const peer::Node& peer ) {
+    try {
+        if( isExistIP( peer.getIP() ) )
+            throw exception::service::DuplicationIPException(std::move(peer.getIP()));
+        if( isExistPublicKey( peer.getPublicKey() ) )
+            throw exception::service::DuplicationPublicKeyException(std::move(peer.getPublicKey()));
+    } catch( exception::service::DuplicationPublicKeyException& e ) {
+        logger::warning("validate addPeer") << e.what();
+        return false;
+    } catch( exception::service::DuplicationIPException& e ) {
+        logger::warning("validate addPeer") << e.what();
+        return false;
+    }
+    return true;
+}
+bool PeerServiceConfig::validate_removePeer( const std::string &publicKey ) {
+    try {
+        if ( !isExistPublicKey( publicKey ) )
+            throw exception::service::UnExistFindPeerException(publicKey);
+    } catch (exception::service::UnExistFindPeerException& e) {
+        logger::warning("validate removePeer") << e.what();
+        return false;
+    }
+    return true;
+}
+bool PeerServiceConfig::validate_updatePeer( const std::string& publicKey, const std::map<std::string,std::string>& upd ) {
+    try {
+        auto it = findPeerPublicKey( publicKey );
+        if ( !isExistPublicKey( publicKey ) )
+            throw exception::service::UnExistFindPeerException(publicKey);
+
+
+        if ( upd.count( Api::Peer::default_instance().publickey() ) ) { // update publicKey
+            const std::string& upd_key = upd.at( Api::Peer::default_instance().publickey() );
+            auto upd_it = findPeerPublicKey(upd_key);
+            if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationPublicKeyException(publicKey);
+        }
+
+        if ( upd.count( Api::Peer::default_instance().address() ) ) { // update address
+            const std::string& upd_ip = upd.at( Api::Peer::default_instance().address() );
+            auto upd_it = findPeerIP(upd_ip);
+            if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationIPException(upd_ip);
+        }
+    } catch ( exception::service::UnExistFindPeerException& e ) {
+        logger::warning("updatePeer") << e.what();
+        return false;
+    } catch( exception::service::DuplicationPublicKeyException& e ) {
+        logger::warning("updatePeer") << e.what();
+    } catch( exception::service::DuplicationIPException& e ) {
+        logger::warning("udpatePeer") << e.what();
+        return false;
+    }
+    return true;
+}
+
 
 bool PeerServiceConfig::isLeaderMyPeer() {
   if( peerList.empty() ) return false;

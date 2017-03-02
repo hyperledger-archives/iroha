@@ -34,10 +34,8 @@ class PeerServiceConfig : config::AbstractConfigManager {
 
   bool isExistIP( const std::string& );
   bool isExistPublicKey( const std::string& );
-  std::vector<peer::Node>::iterator findPeerIP( const std::string& );
-  std::vector<peer::Node>::iterator findPeerPublicKey( const std::string& );
-  std::vector<peer::Node>::iterator findPeer( peer::Node& );
-
+  std::vector<peer::Node>::iterator findPeerIP( const std::string& ip );
+  std::vector<peer::Node>::iterator findPeerPublicKey( const std::string& publicKey );
  protected:
   void parseConfigDataFromString(std::string&& jsonStr) override;
 
@@ -51,9 +49,17 @@ class PeerServiceConfig : config::AbstractConfigManager {
   std::vector<std::unique_ptr<peer::Node>> getPeerList();
   std::vector<std::string> getIpList();
 
-  bool addPeer( peer::Node& );
-  bool removePeer( peer::Node& );
-  bool updatePeer( peer::Node& );
+  // invoke when execute transaction
+  bool addPeer( const peer::Node& );
+  bool removePeer( const std::string &publicKey );
+  bool updatePeer( const std::string& publicKey, const std::map<std::string,std::string>& );
+
+  // invoke when validator transaction
+  bool validate_addPeer( const peer::Node& );
+  bool validate_removePeer( const std::string &publicKey );
+  bool validate_updatePeer( const std::string& publicKey, const std::map<std::string,std::string>& );
+
+  // equatl to isSumeragi
   bool isLeaderMyPeer();
 
   virtual std::string getConfigName();

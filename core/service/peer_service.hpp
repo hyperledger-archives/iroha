@@ -69,6 +69,16 @@ namespace peer
             return trustScore;
         }
 
+        void setIP( const std::string& ip ) {
+            this->ip = ip;
+        }
+        void setPublicKey( const std::string& publickey ) {
+            this->publicKey = publickey;
+        }
+        void setTrustScore( const double& trustScore ) {
+            this->trustScore = trustScore;
+        }
+
     };
 
     std::string getMyIp();

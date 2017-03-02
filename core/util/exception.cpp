@@ -62,14 +62,14 @@ namespace exception {
   {}
 
   namespace service {
-      DuplicationIPAddPeerException::DuplicationIPAddPeerException(const std::string& ip, const std::string& publicKey, const double& trustScore) :
-        std::domain_error("DuplicationIPAddPeerException\nIP = " + ip + "\npublicKey = " + publicKey + "\ntrustScore = " + std::to_string(trustScore) ) {
+      DuplicationIPException::DuplicationIPException(const std::string& ip) :
+        std::domain_error("DuplicationIPException : IP = " + ip + "\n") {
       }
-      DuplicationPublicKeyAddPeerException::DuplicationPublicKeyAddPeerException(const std::string& ip, const std::string& publicKey, const double& trustScore) :
-        std::domain_error("DuplicationPublicKeyAddPeerException\nIP = " + ip + "\npublicKey = " + publicKey + "\ntrustScore = " + std::to_string(trustScore) ) {
+      DuplicationPublicKeyException::DuplicationPublicKeyException(const std::string& publicKey) :
+        std::domain_error("DuplicationPublicKeyException : publicKey = " + publicKey + "\n") {
       }
-      UnExistFindPeerException::UnExistFindPeerException(const std::string& ip, const std::string& publicKey, const double& trustScore) :
-        std::domain_error("DuplicationIPAddPeerException\nIP = " + ip + "\npublicKey = " + publicKey + "\ntrustScore = " + std::to_string(trustScore) ) {
+      UnExistFindPeerException::UnExistFindPeerException(const std::string& publicKey) :
+        std::domain_error("UnExistFindPeerException : publicKey = " + publicKey + "\n")  {
       }
   }
 

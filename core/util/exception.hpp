@@ -63,17 +63,17 @@ namespace exception {
 
 
   namespace service {
-      class DuplicationIPAddPeerException : public std::domain_error {
+      class DuplicationIPException : public std::domain_error {
       public:
-          DuplicationIPAddPeerException( const std::string&, const std::string&, const double& );
+          DuplicationIPException( const std::string& );
       };
-      class DuplicationPublicKeyAddPeerException : public std::domain_error {
+      class DuplicationPublicKeyException : public std::domain_error {
       public:
-          DuplicationPublicKeyAddPeerException( const std::string&, const std::string&, const double& );
+          DuplicationPublicKeyException( const std::string& );
       };
       class UnExistFindPeerException : public std::domain_error {
       public:
-          UnExistFindPeerException( const std::string&, const std::string&, const double& );
+          UnExistFindPeerException( const std::string& );
       };
   }
 
