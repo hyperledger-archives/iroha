@@ -1,4 +1,5 @@
 #!/bin/bash
+mkdir $IROHA_HOME/test_bin
 mkdir $IROHA_HOME/test_bin/java_tests
 mkdir $IROHA_HOME/test_bin/java_tests/instances
 mkdir $IROHA_HOME/test_bin/java_tests/instances/test/
