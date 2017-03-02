@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.3.0 FATAL_ERROR)
 
 SET(KECCAK_PATH  "${PROJECT_SOURCE_DIR}/core/vendor/KeccakCodePackage")
 SET(KECCAK_BIN_PATH  "${PROJECT_SOURCE_DIR}/core/vendor/KeccakCodePackage/bin/.build/generic64/")
@@ -6,7 +7,10 @@ SET(ED25519_PATH "${PROJECT_SOURCE_DIR}/core/vendor/ed25519")
 # Hash
 
 # Bad solution (T A T)
-execute_process(COMMAND "cd ${PROJECT_SOURCE_DIR}/core/infra/crypto; make")
+execute_process(
+  COMMAND make
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
 
 #[[
 #SET(CMAKE_CXX_FLAGS "-g -Wall -std=c++1y -fomit-frame-pointer -march=native -mtune=native")

@@ -12,11 +12,11 @@ SET(JSON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/json")
 SET(THREAD_POOL_PATH "${PROJECT_SOURCE_DIR}/core/vendor/thread_pool_cpp")
 
 include_directories(
+  ${PROJECT_SOURCE_DIR}/core
   ${PROJECT_SOURCE_DIR}/core/server
   ${PROJECT_SOURCE_DIR}/core/peer
   ${THREAD_POOL_PATH}/thread_pool
   ${LEVELDB_PATH}/include
-  ${AERON_PATH}/aeron-client/src/main/cpp
   ${ED25519_PATH}/src
   ${JSON_PATH}/src
 )
@@ -26,7 +26,7 @@ link_directories(
   ${ED25519_PATH}/lib
   ${KECCAK_PATH}/bin/generic64
   ${PROJECT_SOURCE_DIR}/core/infra/crypto
-  ${AERON_PATH}/cppbuild/Release/lib
+  ${LEVELDB_PATH}/out-shared
   ${LEVELDB_PATH}/out-static
 )
 
@@ -47,7 +47,7 @@ target_link_libraries(iroha-main
   logger
   http_server_with_cappuccino
   connection_with_grpc
-  peer_service_with_json
+  config_manager
   pthread
   keccak
   hash

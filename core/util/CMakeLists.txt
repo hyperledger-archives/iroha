@@ -1,14 +1,18 @@
-SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+set(JSON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/json")
 
-SET(JSON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/json")
+include_directories(
+  ${PROJECT_SOURCE_DIR}/core
+)
 
-ADD_LIBRARY(datetime  STATIC datetime.cpp)
+add_library(datetime STATIC datetime.cpp)
 
-ADD_LIBRARY(logger  STATIC logger.cpp)
-TARGET_LINK_LIBRARIES(logger
+add_library(logger STATIC logger.cpp)
+target_link_libraries(logger
   datetime
 )
 
-ADD_LIBRARY(random              STATIC random.cpp)
-ADD_LIBRARY(exception           STATIC exception.cpp)
-ADD_LIBRARY(terminate           STATIC terminate.cpp)
+add_library(convert_string  STATIC convert_string.cpp)
+add_library(random          STATIC random.cpp)
+add_library(exception       STATIC exception.cpp)
+add_library(terminate       STATIC terminate.cpp)

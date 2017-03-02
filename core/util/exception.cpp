@@ -22,24 +22,66 @@ limitations under the License.
 
 namespace exception {
 
-	FileOpenException::FileOpenException(const std::string& filename):
-		std::invalid_argument("file " + filename + " is not found!") {
-	}
+  FileOpenException::FileOpenException(const std::string& filename):
+    std::invalid_argument("file " + filename + " is not found!") {
+  }
 
-	NotImplementedException::NotImplementedException(const std::string& functionName,
-													 const std::string& filename):
-		std::invalid_argument("TODO: sorry [" + functionName + "] in " + filename + " is not yet implemented, would you like to contribute it?") {
-	};
+  NotImplementedException::NotImplementedException(
+    const std::string& functionName,
+    const std::string& filename
+  ):
+    std::invalid_argument("TODO: sorry [" + functionName + "] in " + filename + " is not yet implemented, would you like to contribute it?") {
+  }
 
-	namespace crypto {
-		InvalidKeyException::InvalidKeyException(const std::string& message):
-			std::invalid_argument("keyfile is invalid cause:" + message) {
-		}
-	};  // namespace crypto
+  BaseMethodException::BaseMethodException(
+    const std::string& functionName,
+    const std::string& filename
+  ):
+    std::domain_error("BaseMethodException [" + functionName + "] in " + filename) {
+  }
 
-    namespace repository {
-        WriteFailedException::WriteFailedException(const std::string& message):
-                std::invalid_argument("Data could note be saved:" + message) {
-		}
-    };  // namespace crypto
-};  // namespace exception
+  ParseFromStringException::ParseFromStringException(
+    const std::string& filename
+  ):
+    std::domain_error("ParseFromStringException in " + filename) {
+  }
+
+  InvalidCastException::InvalidCastException(
+    const std::string& from,
+    const std::string&   to,
+    const std::string& filename
+  ):
+    std::domain_error("InvalidCastException in " + filename + ". Cannot cast from " + from + " to " + to ) {
+  }
+
+  InvalidCastException::InvalidCastException(
+    const std::string &meg,
+    const std::string &filename
+  ):
+    std::domain_error("InvalidCastException in " + filename + ". " + meg )
+  {}
+
+    namespace crypto {
+    InvalidKeyException::InvalidKeyException(const std::string& message):
+      std::invalid_argument("keyfile is invalid cause:" + message) {
+    }
+  }  // namespace crypto
+
+  namespace repository {
+    WriteFailedException::WriteFailedException(const std::string& message):
+      std::invalid_argument("Data could note be saved:" + message) {
+    }
+    DuplicateAddException::DuplicateAddException(const std::string& object):
+      std::invalid_argument("DuplicateAddException: " + object) {
+    }
+  }  // namespace crypto
+  
+  namespace txbuilder {
+    DuplicateSetArgmentException::DuplicateSetArgmentException(const std::string& buildTarget, const std::string& duplicateMember):
+      std::domain_error("DuplicateSetArgmentException in " + buildTarget + ", argment: " + duplicateMember) {
+    }
+    UnsetBuildArgmentsException::UnsetBuildArgmentsException(const std::string& buildTarget, const std::string& unsetMembers):
+      std::domain_error("UnsetBuildArgmentsException in " + buildTarget + ", argments: " + unsetMembers) {
+    }
+  }  // namespace transaction
+}  // namespace exception

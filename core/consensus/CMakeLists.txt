@@ -1,19 +1,20 @@
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
+include_directories(
+  "${PROJECT_SOURCE_DIR}/core"
+  "${PROJECT_SOURCE_DIR}/core/vendor/thread_pool_cpp/thread_pool"
+)
+
 ADD_LIBRARY(sumeragi STATIC
   sumeragi.cpp
 )
 
-include_directories(
-  "${PROJECT_SOURCE_DIR}/core/vendor/thread_pool_cpp/thread_pool"
-)
-
-target_link_libraries(sumeragi
-  peer_service_with_json
+target_link_libraries(
+  sumeragi
+  config_manager
   connection_with_grpc
   signature
   event_repository
-  objects
 )
 
 ADD_LIBRARY(consensus_event STATIC
@@ -21,8 +22,7 @@ ADD_LIBRARY(consensus_event STATIC
 )
 
 target_link_libraries(consensus_event
-  objects
-  transaction
+  config_manager
   validator
   hash
 )

@@ -26,18 +26,12 @@ limitations under the License.
 
 #include "consensus_event.hpp"
 
-#include "../service/peer_service.hpp"
-#include "../infra/protobuf/event.grpc.pb.h"
-
-#include "../model/commands/add.hpp"
-#include "../model/commands/transfer.hpp"
-#include "../model/commands/update.hpp"
-
-#include "../model/objects/account.hpp"
-#include "../model/objects/asset.hpp"
-#include "../model/objects/domain.hpp"
+#include <service/peer_service.hpp>
+#include <infra/protobuf/api.grpc.pb.h>
 
 namespace sumeragi {
+
+    using Api::ConsensusEvent;
 
     void initializeSumeragi(
         const std::string& myPublicKey,
@@ -46,12 +40,12 @@ namespace sumeragi {
     void loop();
 
     void getNextOrder(
-        const Event::ConsensusEvent& event
+        const ConsensusEvent& event
     );
 
-    void processTransaction(Event::ConsensusEvent& event);
+    void processTransaction(ConsensusEvent& event);
 
-    void panic(const Event::ConsensusEvent& event);
+    void panic(const ConsensusEvent& event);
     void setAwkTimer(const int sleepMillisecs, const std::function<void(void)> action);
     void determineConsensusOrder(/*std::vector<double> trustVector*/);
 

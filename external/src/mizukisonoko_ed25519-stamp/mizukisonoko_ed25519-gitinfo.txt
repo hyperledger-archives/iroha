@@ -1,0 +1,3 @@
+repository='https://github.com/MizukiSonoko/ed25519.git'
+module=''
+tag=''

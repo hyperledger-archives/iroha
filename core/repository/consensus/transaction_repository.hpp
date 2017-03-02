@@ -18,19 +18,30 @@ See the License for the specific language governing permissions and
 #ifndef IROHA_TRANSACTION_REPOSITORY_HPP
 #define IROHA_TRANSACTION_REPOSITORY_HPP
 
-#include "../../model/transaction.hpp"
-#include "../../infra/protobuf/convertor.hpp"
+#include <string>
+#include <vector>
+#include <stdexcept>
+
+#include <infra/protobuf/api.pb.h>
+#include <consensus/consensus_event.hpp>
+#include <crypto/base64.hpp>
+
+#include "../world_state_repository.hpp"
 
 namespace repository{
+
+    using Api::ConsensusEvent;
+    using Api::Transaction;
+
     namespace transaction {
 
-        void add(const std::string &key,const Event::ConsensusEvent& strTx);
+        void add(const std::string &key,const ConsensusEvent& strTx);
 
-        std::vector<Event::Transaction> findAll();
+        std::vector<Transaction> findAll();
 
-        Event::Transaction find(std::string key);
+        Transaction find(std::string key);
 
-        std::vector<Event::Transaction> findByAssetName(std::string name);
+        std::vector<Transaction> findByAssetName(std::string name);
 
     }
 }

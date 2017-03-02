@@ -14,33 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../../core/consensus/sumeragi.hpp"
-
-#include "../../core/consensus/connection/connection.hpp"
-#include "../../core/model/commands/transfer.hpp"
-#include "../../core/model/objects/domain.hpp"
-
 #include <iostream>
 #include <string>
 #include <vector>
 #include <memory>
 #include <thread>
 
-#include "../../core/service/peer_service.hpp"
-#include "../../core/util/logger.hpp"
-#include "../../core/crypto/hash.hpp"
-#include "../../core/infra/protobuf/convertor.hpp"
+#include <consensus/sumeragi.hpp>
+#include <consensus/connection/connection.hpp>
 
-template<typename T>
-using Transaction = transaction::Transaction<T>;
-template<typename T>
-using ConsensusEvent = event::ConsensusEvent<T>;
-template<typename T>
-using Add = command::Add<T>;
-template<typename T>
-using Transfer = command::Transfer<T>;
-template<typename T>
-using Update = command::Update<T>;
+#include <service/peer_service.hpp>
+#include <util/logger.hpp>
+#include <crypto/hash.hpp>
+#include <infra/config/peer_service_with_json.hpp>
+
 
 void setAwkTimer(int const sleepMillisecs, const std::function<void(void)>& action) {
     std::thread([action, sleepMillisecs]() {
@@ -56,20 +43,20 @@ int main(int argc, char *argv[]){
         std::string senderPublicKey;
         std::string receiverPublicKey;
         std::string cmd;
-        std::vector <std::unique_ptr<peer::Node>> nodes = peer::getPeerList();
+        std::vector <std::unique_ptr<peer::Node>> nodes = config::PeerServiceConfig::getInstance().getPeerList();
 
         connection::initialize_peer();
 
-        logger::setLogLevel(logger::LogLevel::DEBUG);
+        logger::setLogLevel(logger::LogLevel::Debug);
 
         for (const auto &n : nodes) {
             std::cout << "=========" << std::endl;
             std::cout << n->getPublicKey() << std::endl;
             std::cout << n->getIP() << std::endl;
-            connection::addSubscriber(n->getIP());
+            connection::iroha::Sumeragi::Verify::addSubscriber(n->getIP());
         }
 
-        std::string pubKey = peer::getMyPublicKey();
+        std::string pubKey = config::PeerServiceConfig::getInstance().getMyPublicKey();
 
         sumeragi::initializeSumeragi(pubKey, std::move(nodes));
 
@@ -86,17 +73,7 @@ int main(int argc, char *argv[]){
         if (argc >= 2 && std::string(argv[1]) == "public") {
             while (1) {
                 setAwkTimer(10, [&]() {
-                    auto event = std::make_unique<ConsensusEvent<Transaction<Update<object::Asset>>>>(
-                            peer::getMyPublicKey(),
-                            peer::getMyPublicKey(),
-                            "AssetName",
-                            100
-                    );
-                    event->addTxSignature(
-                            peer::getMyPublicKey(),
-                            signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
-                    );
-                    connection::send(peer::getMyIp(), convertor::encode(*event));
+
                 });
             }
         } else {

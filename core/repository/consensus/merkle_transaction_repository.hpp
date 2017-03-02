@@ -21,10 +21,12 @@ limitations under the License.
 #include <string>
 #include <memory>
 #include <unordered_map>
-#include "../../consensus/consensus_event.hpp"
+
+#include <infra/protobuf/api.pb.h>
 
 namespace merkle_transaction_repository {
 
+using Api::ConsensusEvent;
 
 struct MerkleNode {
     std::string hash;
@@ -59,7 +61,7 @@ struct MerkleNode {
 };
 
 //TODO: change bool to throw an exception instead
-bool commit(const Event::ConsensusEvent& event){
+bool commit(const ConsensusEvent& event){
     return false; // TODO: fill this function
 };
 
@@ -73,7 +75,7 @@ std::string getLeaf(const std::string& hash){
 
 template <typename T>
 std::string calculateNewRoot(
-    const Event::ConsensusEvent& event,
+    const ConsensusEvent& event,
     std::vector<std::tuple<std::string,std::string>> &batchCommit
 );
 

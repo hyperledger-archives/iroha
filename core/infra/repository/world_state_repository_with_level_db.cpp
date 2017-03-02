@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../../repository/world_state_repository.hpp"
-#include "../../util/exception.hpp"
-
-#include "../../util/logger.hpp"
+#include <repository/world_state_repository.hpp>
+#include <infra/config/iroha_config_with_json.hpp>
+#include <util/exception.hpp>
+#include <util/logger.hpp>
 
 #include <leveldb/write_batch.h>
 #include <leveldb/db.h>
@@ -56,7 +56,10 @@ namespace repository {
                   leveldb::Options options;
                   options.error_if_exists = false;
                   options.create_if_missing = true;
-                  loggerStatus(leveldb::DB::Open(options, "/tmp/iroha_ledger", &tmpDb)); //TODO: This path should be configurable
+
+                  loggerStatus(leveldb::DB::Open(options,
+                            config::IrohaConfigManager::getInstance().getDatabasePath("/tmp/iroha_ledger"),
+                            &tmpDb));
                   db.reset(tmpDb);
               }
           }
@@ -155,7 +158,7 @@ namespace repository {
 
           std::string readData;
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &readData));
-          if (readData != "") {
+          if (!readData.empty()) {
               return readData;
           } else {
               return "";
@@ -172,10 +175,10 @@ namespace repository {
 
           std::string result;
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &result));
-          if (result == "") {
-              return defaultValue;
-          } else {
+          if (!result.empty()) {
               return result;
+          } else {
+              return defaultValue;
           }
       }
 
@@ -186,7 +189,7 @@ namespace repository {
 
           std::string result;
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &result));
-          return result == "";
+          return !result.empty();
       }
   };
 };

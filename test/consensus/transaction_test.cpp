@@ -14,30 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../../core/consensus/sumeragi.hpp"
-
-#include "../../core/consensus/connection/connection.hpp"
-#include "../../core/model/commands/transfer.hpp"
-#include "../../core/model/commands/add.hpp"
-
 #include <iostream>
 #include <string>
 #include <vector>
 #include <memory>
 #include <thread>
 
-#include "../../core/service/peer_service.hpp"
-#include "../../core/crypto/hash.hpp"
-#include "../../core/infra/protobuf/convertor.hpp"
+#include <consensus/sumeragi.hpp>
+#include <consensus/connection/connection.hpp>
 
-template<typename T>
-using Transaction = transaction::Transaction<T>;
-template<typename T>
-using ConsensusEvent = event::ConsensusEvent<T>;
-template<typename T>
-using Add = command::Add<T>;
-template<typename T>
-using Transfer = command::Transfer<T>;
+#include <service/peer_service.hpp>
+#include <crypto/hash.hpp>
+#include <infra/config/peer_service_with_json.hpp>
 
 void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const &action) {
     std::thread([action, sleepMillisecs]() {
@@ -49,22 +37,10 @@ void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const &acti
 int main(){
     std::string senderPublicKey;
 
-    std::string pubKey = peer::getMyPublicKey();
+    std::string pubKey = config::PeerServiceConfig::getInstance().getMyPublicKey();
 
     while(1){
         setAwkTimer(3000, [&](){
-            auto event = std::make_unique<ConsensusEvent<Transaction<Add<object::Asset>>>>(
-                senderPublicKey.c_str(),
-                "domain",
-                "Dummy transaction",
-                100,
-                0
-            );
-            std::cout <<" created event\n";
-            event->addTxSignature(
-                    peer::getMyPublicKey(),
-                    signature::sign(event->getHash(), peer::getMyPublicKey(), peer::getPrivateKey()).c_str()
-            );
         });
     }
 

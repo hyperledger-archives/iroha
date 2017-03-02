@@ -13,112 +13,123 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include <string>
-#include <vector>
 
-#include "../../../infra/protobuf/convertor.hpp"
-#include "../../world_state_repository.hpp"
-#include "../../../model/state/asset.hpp"
 #include "../asset_repository.hpp"
-#include "../../../model/string_wrapper/string_wrapper.hpp"
+#include <crypto/hash.hpp>
+#include <repository/world_state_repository.hpp>
+#include <transaction_builder/transaction_builder.hpp>
+#include <util/exception.hpp>
+#include <util/logger.hpp>
 
-namespace repository{
-    namespace asset {
+const std::string NameSpaceID = "asset repository";
 
-        using string_wrapper::DomainId;
-        using string_wrapper::AssetName;
+namespace repository {
+namespace asset {
 
-        // TODO: replace map<string,Object>
-        using AssetValue = std::string;
+namespace detail {
+/********************************************************************************************
+ * stringify / parse
+ ********************************************************************************************/
+std::string stringifyAsset(const Api::Asset &obj) {
+  std::string ret;
+  obj.SerializeToString(&ret);
+  return ret;
+}
 
-        namespace detail {
-            inline std::string serializeAsset(const object::Asset& obj) {
-                Event::Asset protoAsset = convertor::detail::encodeObject(obj);
-                std::string ret;
-                protoAsset.SerializeToString(&ret);
-                return ret;
-            }
+Api::Asset parseAsset(const std::string &str) {
+  Api::Asset ret;
+  ret.ParseFromString(str);
+  return ret;
+}
 
-            inline object::Asset deserializeAsset(const std::string& serializedAsset) {
-                Event::Asset protoAsset;
-                protoAsset.ParseFromString(serializedAsset);
-                return convertor::detail::decodeObject(protoAsset);
-            }
+std::string createAssetUuid(const std::string &domain,
+                            const std::string &name) {
+  return hash::sha3_256_hex(domain + "@" + name);
+}
+}
 
-            // TODO: replace with util::createUuid() ?
-            inline std::string createAssetUuid(const DomainId& domainId, const AssetName& assetName) {
-                return hash::sha3_256_hex(*domainId + "@" + *assetName);
-            }
-        }
+/********************************************************************************************
+ * Add<Asset>
+ ********************************************************************************************/
+std::string add(const std::string &domain, const std::string &name,
+                const txbuilder::Map &value,
+                const std::string &smartContractName) {
 
-        // TODO: use optional
-        std::string add(const std::string& domainId, const std::string& assetName, const std::string& value) {
+  logger::explore(NameSpaceID) << "Add<Asset> domainId: " << domain
+                               << " assetName: " << name
+                               << " assetValue: " << txbuilder::stringify(value)
+                               << " smartContractName: " << smartContractName;
 
-            logger::explore("asset repository") << "domainId: " << domainId << " assetName: " << assetName << " assetValue: " << value;
+  const auto uuid = detail::createAssetUuid(domain, name);
 
-            const auto uuid = detail::createAssetUuid(
-                DomainId(domainId),
-                AssetName(assetName)
-            );
-
-            const auto serializedAsset = detail::serializeAsset(
-                object::Asset(domainId, assetName, std::stoi(value)/*value*/)
-            );
-
-            if (not world_state_repository::add(uuid, serializedAsset)) {
-                return "";
-            }
-
-            return uuid;
-        }
-
-        // TODO: Wrap std::string with structs in arguments.
-        bool update(const std::string& domainId, const std::string& assetName, const std::string& newValue) {
-
-            const auto uuid = detail::createAssetUuid(
-                DomainId(domainId),
-                AssetName(assetName)
-            );
-
-            const auto serializedAsset = detail::serializeAsset(object::Asset(domainId, assetName, std::stoull(newValue)/*value*/));
-
-            return world_state_repository::update(uuid, newValue);
-        }
-
-        bool remove(const std::string& domainId, const std::string& assetName) {
-
-            const auto uuid = detail::createAssetUuid(
-                DomainId(domainId),
-                AssetName(assetName)
-            );
-
-            return world_state_repository::remove(uuid);
-        }
-        
-        std::vector <object::Asset> findAll(const std::string& uuid) {
-            
-        }
-
-        // TODO: use optional type
-        object::Asset findByUuid(const std::string& uuid) {
-
-            const std::string serializedAsset = world_state_repository::find(uuid);
-
-            logger::debug("asset repository :: findByUuid") << serializedAsset;
-
-            if (serializedAsset.empty()) {
-                return object::Asset();
-            }
-
-            return detail::deserializeAsset(serializedAsset);
-        }
-
-        object::Asset findByUuidOrElse(const std::string& uuid, const object::Asset& defaultValue) {
-            throw "asset repo :: findByUuidOrElse() is not implemented yet.";
-        }
-
-        bool isExist(const std::string& key) {
-            throw "asset repo :: isExist() is not implemented yet.";
-        }
+  if (not exists(uuid)) {
+    const auto strAsset = detail::stringifyAsset(
+        txbuilder::createAsset(domain, name, value, smartContractName));
+    if (world_state_repository::add(uuid, strAsset)) {
+      return uuid;
     }
+  }
+
+  return "";
+}
+
+/********************************************************************************************
+ * Update<Asset>
+ ********************************************************************************************/
+bool update(const std::string &uuid, const txbuilder::Map &value) {
+  if (exists(uuid)) {
+    const auto rval = world_state_repository::find(uuid);
+    logger::explore(NameSpaceID) << "Update<Asset> uuid: " << uuid
+                                 << txbuilder::stringify(value);
+    auto asset = detail::parseAsset(rval);
+    *asset.mutable_value() =
+        ::google::protobuf::Map<std::string, Api::BaseObject>(value.begin(),
+                                                              value.end());
+    const auto strAsset = detail::stringifyAsset(asset);
+    return world_state_repository::update(uuid, strAsset);
+  }
+  return false;
+}
+
+/********************************************************************************************
+ * Remove<Asset>
+ ********************************************************************************************/
+bool remove(const std::string &uuid) {
+  if (exists(uuid)) {
+    logger::explore(NameSpaceID) << "Remove<Asset> uuid: " << uuid;
+    return world_state_repository::remove(uuid);
+  }
+  return false;
+}
+
+/********************************************************************************************
+ * find
+ ********************************************************************************************/
+std::vector<Api::Asset> findAll(const std::string &uuid) {
+  /* Use world_state_repository::findByPrefix()*/
+  throw exception::NotImplementedException(__func__, __FILE__);
+}
+
+Api::Asset findByUuid(const std::string &uuid) {
+
+  logger::explore(NameSpaceID + "::findByUuid") << "";
+  auto strAsset = world_state_repository::find(uuid);
+  if (not strAsset.empty()) {
+    return detail::parseAsset(strAsset);
+  }
+
+  return Api::Asset();
+}
+
+Api::Asset findByUuidOrElse(const std::string &uuid,
+                            const Api::Asset &defaultValue) {
+  throw "asset repo :: findByUuidOrElse() is not implemented yet.";
+}
+
+bool exists(const std::string &uuid) {
+  const auto result = world_state_repository::exists(uuid);
+  logger::explore(NameSpaceID + "::exists") << (result ? "true" : "false");
+  return result;
+}
+}
 }
