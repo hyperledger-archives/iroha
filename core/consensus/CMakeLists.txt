@@ -12,6 +12,7 @@ target_link_libraries(sumeragi
   config_manager
   connection_with_grpc
   signature
-  event_repository
   thread_pool
+  executor
+  merkle_transaction_repository
 )

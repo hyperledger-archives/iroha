@@ -150,6 +150,7 @@ namespace connection {
             event.CopyFrom(pevent->default_instance());
             event.mutable_eventsignatures()->CopyFrom(pevent->eventsignatures());
             event.mutable_transaction()->CopyFrom(pevent->transaction());
+            event.set_status(pevent->status());
             logger::info("connection") << "size: " << event.eventsignatures_size();
             auto dummy = "";
             for (auto& f: iroha::Sumeragi::Verify::receivers){

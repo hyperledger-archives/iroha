@@ -26,9 +26,6 @@ service Sumeragi {
 
 
 
-
-
-
 message TransactionResponse{
   string message = 1;
   uint64    code = 2;
@@ -135,4 +132,5 @@ message ConsensusEvent {
   repeated EventSignature eventSignatures = 1;
   Transaction transaction = 2;
   uint64 order = 3;
+  string status = 4;
 }

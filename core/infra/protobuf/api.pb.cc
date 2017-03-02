@@ -340,10 +340,11 @@ void protobuf_AssignDesc_api_2eproto() {
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, _is_default_instance_));
   ConsensusEvent_descriptor_ = file->message_type(14);
-  static const int ConsensusEvent_offsets_[3] = {
+  static const int ConsensusEvent_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConsensusEvent, eventsignatures_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConsensusEvent, transaction_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConsensusEvent, order_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConsensusEvent, status_),
   };
   ConsensusEvent_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
@@ -501,16 +502,17 @@ void protobuf_AddDesc_api_2eproto() {
     "t\030\007 \001(\0132\020.Api.SimpleAsset\022\033\n\006domain\030\010 \001("
     "\0132\013.Api.Domain\022\035\n\007account\030\t \001(\0132\014.Api.Ac"
     "count\022\027\n\004peer\030\n \001(\0132\t.Api.Peer\022\025\n\rreceiv"
-    "ePubkey\030\013 \001(\t\"t\n\016ConsensusEvent\022,\n\017event"
-    "Signatures\030\001 \003(\0132\023.Api.EventSignature\022%\n"
-    "\013transaction\030\002 \001(\0132\020.Api.Transaction\022\r\n\005"
-    "order\030\003 \001(\0042G\n\025TransactionRepository\022.\n\004"
-    "find\022\n.Api.Query\032\030.Api.TransactionRespon"
-    "se\"\0002;\n\017AssetRepository\022(\n\004find\022\n.Api.Qu"
-    "ery\032\022.Api.AssetResponse\"\0002r\n\010Sumeragi\0220\n"
-    "\005Torii\022\020.Api.Transaction\032\023.Api.StatusRes"
-    "ponse\"\000\0224\n\006Verify\022\023.Api.ConsensusEvent\032\023"
-    ".Api.StatusResponse\"\000B\003\200\001\000b\006proto3", 1914);
+    "ePubkey\030\013 \001(\t\"\204\001\n\016ConsensusEvent\022,\n\017even"
+    "tSignatures\030\001 \003(\0132\023.Api.EventSignature\022%"
+    "\n\013transaction\030\002 \001(\0132\020.Api.Transaction\022\r\n"
+    "\005order\030\003 \001(\004\022\016\n\006status\030\004 \001(\t2G\n\025Transact"
+    "ionRepository\022.\n\004find\022\n.Api.Query\032\030.Api."
+    "TransactionResponse\"\0002;\n\017AssetRepository"
+    "\022(\n\004find\022\n.Api.Query\032\022.Api.AssetResponse"
+    "\"\0002r\n\010Sumeragi\0220\n\005Torii\022\020.Api.Transactio"
+    "n\032\023.Api.StatusResponse\"\000\0224\n\006Verify\022\023.Api"
+    ".ConsensusEvent\032\023.Api.StatusResponse\"\000B\003"
+    "\200\001\000b\006proto3", 1931);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "api.proto", &protobuf_RegisterTypes);
   TransactionResponse::default_instance_ = new TransactionResponse();
@@ -7960,6 +7962,7 @@ void Transaction::clear_receivepubkey() {
 const int ConsensusEvent::kEventSignaturesFieldNumber;
 const int ConsensusEvent::kTransactionFieldNumber;
 const int ConsensusEvent::kOrderFieldNumber;
+const int ConsensusEvent::kStatusFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ConsensusEvent::ConsensusEvent()
@@ -7983,9 +7986,11 @@ ConsensusEvent::ConsensusEvent(const ConsensusEvent& from)
 
 void ConsensusEvent::SharedCtor() {
     _is_default_instance_ = false;
+  ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
   transaction_ = NULL;
   order_ = GOOGLE_ULONGLONG(0);
+  status_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 ConsensusEvent::~ConsensusEvent() {
@@ -7994,6 +7999,7 @@ ConsensusEvent::~ConsensusEvent() {
 }
 
 void ConsensusEvent::SharedDtor() {
+  status_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != default_instance_) {
     delete transaction_;
   }
@@ -8029,6 +8035,7 @@ void ConsensusEvent::Clear() {
   if (GetArenaNoVirtual() == NULL && transaction_ != NULL) delete transaction_;
   transaction_ = NULL;
   order_ = GOOGLE_ULONGLONG(0);
+  status_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   eventsignatures_.Clear();
 }
 
@@ -8082,6 +8089,23 @@ bool ConsensusEvent::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(34)) goto parse_status;
+        break;
+      }
+
+      // optional string status = 4;
+      case 4: {
+        if (tag == 34) {
+         parse_status:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_status()));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            this->status().data(), this->status().length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "Api.ConsensusEvent.status"));
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -8127,6 +8151,16 @@ void ConsensusEvent::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->order(), output);
   }
 
+  // optional string status = 4;
+  if (this->status().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->status().data(), this->status().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "Api.ConsensusEvent.status");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      4, this->status(), output);
+  }
+
   // @@protoc_insertion_point(serialize_end:Api.ConsensusEvent)
 }
 
@@ -8152,6 +8186,17 @@ void ConsensusEvent::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(3, this->order(), target);
   }
 
+  // optional string status = 4;
+  if (this->status().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->status().data(), this->status().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "Api.ConsensusEvent.status");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        4, this->status(), target);
+  }
+
   // @@protoc_insertion_point(serialize_to_array_end:Api.ConsensusEvent)
   return target;
 }
@@ -8172,6 +8217,13 @@ int ConsensusEvent::ByteSize() const {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::UInt64Size(
         this->order());
+  }
+
+  // optional string status = 4;
+  if (this->status().size() > 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->status());
   }
 
   // repeated .Api.EventSignature eventSignatures = 1;
@@ -8217,6 +8269,10 @@ void ConsensusEvent::MergeFrom(const ConsensusEvent& from) {
   if (from.order() != 0) {
     set_order(from.order());
   }
+  if (from.status().size() > 0) {
+
+    status_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.status_);
+  }
 }
 
 void ConsensusEvent::CopyFrom(const ::google::protobuf::Message& from) {
@@ -8246,6 +8302,7 @@ void ConsensusEvent::InternalSwap(ConsensusEvent* other) {
   eventsignatures_.UnsafeArenaSwap(&other->eventsignatures_);
   std::swap(transaction_, other->transaction_);
   std::swap(order_, other->order_);
+  status_.Swap(&other->status_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
@@ -8341,6 +8398,50 @@ void ConsensusEvent::clear_order() {
   
   order_ = value;
   // @@protoc_insertion_point(field_set:Api.ConsensusEvent.order)
+}
+
+// optional string status = 4;
+void ConsensusEvent::clear_status() {
+  status_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ const ::std::string& ConsensusEvent::status() const {
+  // @@protoc_insertion_point(field_get:Api.ConsensusEvent.status)
+  return status_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void ConsensusEvent::set_status(const ::std::string& value) {
+  
+  status_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Api.ConsensusEvent.status)
+}
+ void ConsensusEvent::set_status(const char* value) {
+  
+  status_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Api.ConsensusEvent.status)
+}
+ void ConsensusEvent::set_status(const char* value, size_t size) {
+  
+  status_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Api.ConsensusEvent.status)
+}
+ ::std::string* ConsensusEvent::mutable_status() {
+  
+  // @@protoc_insertion_point(field_mutable:Api.ConsensusEvent.status)
+  return status_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* ConsensusEvent::release_status() {
+  // @@protoc_insertion_point(field_release:Api.ConsensusEvent.status)
+  
+  return status_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void ConsensusEvent::set_allocated_status(::std::string* status) {
+  if (status != NULL) {
+    
+  } else {
+    
+  }
+  status_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), status);
+  // @@protoc_insertion_point(field_set_allocated:Api.ConsensusEvent.status)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS

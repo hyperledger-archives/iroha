@@ -30,12 +30,13 @@ See the License for the specific language governing permissions and
 
 namespace repository{
 
-    using Api::ConsensusEvent;
     using Api::Transaction;
 
     namespace transaction {
 
-        void add(const std::string &key,const ConsensusEvent& strTx);
+        void add(const std::string &key,const Transaction& strTx);
+
+        void exist(const Transaction&);
 
         std::vector<Transaction> findAll();
 
