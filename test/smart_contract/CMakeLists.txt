@@ -29,7 +29,7 @@ ENDIF()
 ########################################################################################
 add_executable(java_query_repo_invocation_test java_query_repo_invocation_test.cpp)
 target_link_libraries(java_query_repo_invocation_test
-  #Repository
+  Repository
   
   # LevelDB depends on snappy
   leveldb
@@ -51,7 +51,7 @@ add_test(
 ########################################################################################
 add_executable(java_query_repo_account_test java_query_repo_account_test.cpp)
 target_link_libraries(java_query_repo_account_test
-#  Repository
+  Repository
   
   # LevelDB depends on snappy
   leveldb
@@ -72,7 +72,7 @@ add_test(
 ########################################################################################
 add_executable(java_query_repo_asset_test java_query_repo_asset_test.cpp)
 target_link_libraries(java_query_repo_asset_test
-#  Repository
+  Repository
 
   # LevelDB depends on snappy
   leveldb
@@ -81,9 +81,7 @@ target_link_libraries(java_query_repo_asset_test
   virtual_machine_with_java
   world_state_repo_with_level_db
   jvm
-  ${GTEST_LIBS_DIR}/libgtest.a
-  ${GTEST_LIBS_DIR}/libgtest_main.a
-  pthread
+  gtest
 )
 add_test(
   NAME java_query_repo_asset_test
@@ -96,7 +94,7 @@ add_test(
 add_executable(java_query_repo_simple_asset_test java_query_repo_simple_asset_test.cpp)
 
 target_link_libraries(java_query_repo_simple_asset_test
-#  Repository
+  Repository
 
   # LevelDB depends on snappy
   leveldb
@@ -118,7 +116,7 @@ add_test(
 add_executable(java_query_repo_domain_test java_query_repo_domain_test.cpp)
 
 target_link_libraries(java_query_repo_domain_test
-#  Repository
+  Repository
 
   # LevelDB depends on snappy
   leveldb
@@ -140,7 +138,7 @@ add_test(
 add_executable(java_query_repo_peer_test java_query_repo_peer_test.cpp)
 
 target_link_libraries(java_query_repo_peer_test
-#  Repository
+  Repository
 
   # LevelDB depends on snappy
   leveldb

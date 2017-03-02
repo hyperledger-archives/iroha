@@ -40,9 +40,7 @@ target_link_libraries(java_data_structure_test
   hash
   create_objects_helper
   virtual_machine_with_java
-  ${GTEST_LIBS_DIR}/libgtest.a
-  ${GTEST_LIBS_DIR}/libgtest_main.a
-  pthread
+  gtest
 )
 add_test(
     NAME java_data_structure_test
