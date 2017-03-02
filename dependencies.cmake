@@ -21,7 +21,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DKeccakP200_excluded -DKeccakP400_excluded 
 ExternalProject_Add(gvanas_keccak
   GIT_REPOSITORY    "https://github.com/gvanas/KeccakCodePackage.git"
   BUILD_IN_SOURCE   1
-  BUILD_COMMAND     CFLAGS="-fpermissive" $(MAKE) CC="${CMAKE_CXX_COMPILER}" generic64/libkeccak.a
+  BUILD_COMMAND     CFLAGS="-fPIC" CFLAGS="-fpermissive" $(MAKE) CC="${CMAKE_CXX_COMPILER}" generic64/libkeccak.a
   CONFIGURE_COMMAND "" # remove configure step
   INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
