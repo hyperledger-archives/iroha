@@ -99,8 +99,6 @@ TEST(JavaQueryRepoAccount, invokeAttachAssetToAccount) {
   /*****************************************************************
    * Invoke Java method
    *****************************************************************/
-  const std::string FunctionName = "testAddAccount";
-
   std::map<std::string, std::string> params;
   {
     params[tag::PublicKey]   = "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
@@ -114,7 +112,7 @@ TEST(JavaQueryRepoAccount, invokeAttachAssetToAccount) {
     assets.push_back("asset3");
   }
 
-  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
+  virtual_machine::invokeFunction(PackageName, ContractName, "testAddAccount",
                                   params, assets);
 
   params = std::map<std::string, std::string>();
@@ -123,7 +121,7 @@ TEST(JavaQueryRepoAccount, invokeAttachAssetToAccount) {
     params[tag::AttachedAssetUuid] = "NEW ATTACHED UUID";
   }
 
-  virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
+  virtual_machine::invokeFunction(PackageName, ContractName, "testAttachAssetToAccount",
                                   params);
 
   const std::string received_serialized_acc =

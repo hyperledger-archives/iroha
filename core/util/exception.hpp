@@ -72,7 +72,7 @@ namespace exception {
       public: WriteFailedException(const std::string &);
     };
     class DuplicateAddException : public std::invalid_argument {
-      public: DuplicateAddException(const std::string &);
+      public: explicit DuplicateAddException(const std::string &);
     };
   }
 

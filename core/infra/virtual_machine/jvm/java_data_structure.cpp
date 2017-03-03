@@ -308,7 +308,7 @@ convertBaseObjectToMapString(const Api::BaseObject &value) {
 
   return baseObjectMap;
 }
-
+/*
 Api::BaseObject
 convertMapStringToBaseObject(const std::map<std::string, std::string> &value) {
 
@@ -329,7 +329,7 @@ convertMapStringToBaseObject(const std::map<std::string, std::string> &value) {
 
   throw "Invalid type";
 }
-
+*/
 std::map<std::string, std::string>
 convertTrustToMapString(const Api::Trust &trust) {
   std::map<std::string, std::string> ret;

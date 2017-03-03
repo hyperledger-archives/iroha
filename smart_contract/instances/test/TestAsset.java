@@ -15,7 +15,6 @@ package instances.test;
 
 import repository.Repository;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import static repository.KeyConstants.*;
 
@@ -145,10 +144,7 @@ public class TestAsset {
       // 1. Remove Asset.
       repository.assetRemove(params);
 
-      // 2. Find by the uuid.
-      HashMap<String, HashMap<String, String>> assetValueMap = repository.assetValueFindByUuid(params);
-
-      // 3. Ensure removed asset.
+      // 2. Ensure removed asset.
       if (repository.assetExists(params))
         throw new IllegalStateException("Failed to removing asset");
 

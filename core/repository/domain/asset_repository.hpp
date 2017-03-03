@@ -31,8 +31,6 @@ bool update(const std::string &uuid, const txbuilder::Map &value);
 bool remove(const std::string &uuid);
 std::vector<Api::Asset> findAll(const std::string &uuid);
 Api::Asset findByUuid(const std::string &uuid);
-Api::Asset findByUuidOrElse(const std::string &uuid,
-                            const Api::Asset &defaultValue);
 bool exists(const std::string &uuid);
 }
 }

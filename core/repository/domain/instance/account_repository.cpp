@@ -89,6 +89,11 @@ bool attach(const std::string &uuid, const std::string &asset) {
     return false;
   }
 
+  std::cout << "____________________UTF_TEST_BEGIN_____________________\n";
+  std::cout << uuid << std::endl;
+  std::cout << asset << std::endl;
+  std::cout << "____________________UTF_TEST_END_______________________\n";
+
   const auto strAccount = world_state_repository::find(uuid);
   Api::Account account = detail::parseAccount(strAccount);
   account.add_assets(asset);

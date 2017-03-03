@@ -26,6 +26,7 @@ limitations under the License.
 namespace virtual_machine {
 namespace jvm {
 
+/*
     void Java_SmartContract_save(JNIEnv *env, jobject thiz, jstring key, jstring value) {
         const char *keyChar = env->GetStringUTFChars(key, 0);
         const char *valueChar = env->GetStringUTFChars(value, 0);
@@ -35,7 +36,7 @@ namespace jvm {
         env->ReleaseStringUTFChars(key, keyChar);
         env->ReleaseStringUTFChars(value, valueChar);
     }
-
+*/
     std::unique_ptr<JavaContext> initializeVM(const std::string& packageNameUnderInstances, const std::string& contractName) {
 
         const auto IrohaHome = []() {

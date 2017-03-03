@@ -15,7 +15,6 @@ package instances.test;
 
 import repository.Repository;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import static repository.KeyConstants.*;
 
@@ -207,7 +206,7 @@ public class TestAccount {
     try {
       HashMap<String, String> accountParam = new HashMap<String, String>();
       accountParam.put(PublicKey, "This is Public key.");
-      accountParam.put(AccountName, "Mizuki Sonoko");
+      accountParam.put(AccountName, "みずき そのこ");
       String[] assets = { "Hoge", "Foo", "Bar" };
 
       testAddAccount(accountParam, assets);

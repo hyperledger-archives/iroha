@@ -48,7 +48,7 @@ namespace jvm {
     };
 
 
-    void Java_SmartContract_save(JNIEnv *env, jobject thiz, jstring key, jstring value);
+//    void Java_SmartContract_save(JNIEnv *env, jobject thiz, jstring key, jstring value);
     std::unique_ptr<JavaContext> initializeVM(const std::string& packageNameUnderInstances, const std::string& contractName);
 
     void execFunction(

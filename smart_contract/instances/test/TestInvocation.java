@@ -18,8 +18,6 @@ import java.util.HashMap;
 
 public class TestInvocation {
 
-  private static Repository repository = new Repository();
-
   public static void printSuccess() {
     System.out.println("==============================================");
     System.out.println("Success");

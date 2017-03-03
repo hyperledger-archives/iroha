@@ -28,8 +28,8 @@ namespace logger {
     #define LOGGER_DEF(LoggerName, UseLevel, HasPrefix, LogType)                \
     struct LoggerName                                                           \
     {                                                                           \
-        LoggerName(std::string&& caller) noexcept;                              \
-        LoggerName(const std::string& caller) noexcept;                         \
+        explicit LoggerName(std::string&& caller) noexcept;                     \
+        explicit LoggerName(const std::string& caller) noexcept;                \
         ~LoggerName();                                                          \
         const std::string   caller;                                             \
         std::stringstream   stream;                                             \
@@ -62,12 +62,12 @@ static LogLevel LOG_LEVEL = LogLevel::Debug;
 
 inline void setLogLevel(LogLevel lv) { detail::LOG_LEVEL = lv; }
 struct debug {
-  debug(std::string &&caller) noexcept;
-  debug(const std::string &caller) noexcept;
+  explicit debug(std::string &&caller) noexcept;
+  explicit debug(const std::string &caller) noexcept;
   ~debug();
   const std::string caller;
   std::stringstream stream;
-  bool uncaught;
+  bool uncaught = true;
 };
 template <typename T> inline debug &operator<<(debug &record, T &&t) {
   record.stream << std::forward<T>(t);
@@ -77,12 +77,12 @@ template <typename T> inline debug &operator<<(debug &&record, T &&t) {
   return record << std::forward<T>(t);
 }
 struct info {
-  info(std::string &&caller) noexcept;
-  info(const std::string &caller) noexcept;
+  explicit info(std::string &&caller) noexcept;
+  explicit info(const std::string &caller) noexcept;
   ~info();
   const std::string caller;
   std::stringstream stream;
-  bool uncaught;
+  bool uncaught = true;
 };
 template <typename T> inline info &operator<<(info &record, T &&t) {
   record.stream << std::forward<T>(t);
@@ -92,12 +92,12 @@ template <typename T> inline info &operator<<(info &&record, T &&t) {
   return record << std::forward<T>(t);
 }
 struct warning {
-  warning(std::string &&caller) noexcept;
-  warning(const std::string &caller) noexcept;
+  explicit warning(std::string &&caller) noexcept;
+  explicit warning(const std::string &caller) noexcept;
   ~warning();
   const std::string caller;
   std::stringstream stream;
-  bool uncaught;
+  bool uncaught = true;
 };
 template <typename T> inline warning &operator<<(warning &record, T &&t) {
   record.stream << std::forward<T>(t);
@@ -107,12 +107,12 @@ template <typename T> inline warning &operator<<(warning &&record, T &&t) {
   return record << std::forward<T>(t);
 }
 struct error {
-  error(std::string &&caller) noexcept;
-  error(const std::string &caller) noexcept;
+  explicit error(std::string &&caller) noexcept;
+  explicit error(const std::string &caller) noexcept;
   ~error();
   const std::string caller;
   std::stringstream stream;
-  bool uncaught;
+  bool uncaught = true;
 };
 template <typename T> inline error &operator<<(error &record, T &&t) {
   record.stream << std::forward<T>(t);
@@ -122,12 +122,12 @@ template <typename T> inline error &operator<<(error &&record, T &&t) {
   return record << std::forward<T>(t);
 }
 struct fatal {
-  fatal(std::string &&caller) noexcept;
-  fatal(const std::string &caller) noexcept;
+  explicit fatal(std::string &&caller) noexcept;
+  explicit fatal(const std::string &caller) noexcept;
   ~fatal();
   const std::string caller;
   std::stringstream stream;
-  bool uncaught;
+  bool uncaught = true;
 };
 template <typename T> inline fatal &operator<<(fatal &record, T &&t) {
   record.stream << std::forward<T>(t);
@@ -137,12 +137,12 @@ template <typename T> inline fatal &operator<<(fatal &&record, T &&t) {
   return record << std::forward<T>(t);
 }
 struct explore {
-  explore(std::string &&caller) noexcept;
-  explore(const std::string &caller) noexcept;
+  explicit explore(std::string &&caller) noexcept;
+  explicit explore(const std::string &caller) noexcept;
   ~explore();
   const std::string caller;
   std::stringstream stream;
-  bool uncaught;
+  bool uncaught = true;
 };
 template <typename T> inline explore &operator<<(explore &record, T &&t) {
   record.stream << std::forward<T>(t);

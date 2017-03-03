@@ -121,11 +121,6 @@ Api::Asset findByUuid(const std::string &uuid) {
   return Api::Asset();
 }
 
-Api::Asset findByUuidOrElse(const std::string &uuid,
-                            const Api::Asset &defaultValue) {
-  throw "asset repo :: findByUuidOrElse() is not implemented yet.";
-}
-
 bool exists(const std::string &uuid) {
   const auto result = world_state_repository::exists(uuid);
   logger::explore(NameSpaceID + "::exists") << (result ? "true" : "false");
