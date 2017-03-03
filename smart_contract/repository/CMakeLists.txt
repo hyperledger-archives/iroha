@@ -1,34 +1,12 @@
 cmake_minimum_required(VERSION 3.3.0 FATAL_ERROR)
 
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
-set(CMAKE_CXX_FLAGS "-g -std=c++1y -Wall -fPIC")
-
-include_directories(
-  /usr/lib/jvm/java-1.8.0-openjdk-amd64/include
-  /usr/lib/jvm/java-1.8.0-openjdk-amd64/include/linux
-  ${JAVA_HOME}/include
-  ${JAVA_HOME}/include/linux
-  ${PROJECT_SOURCE_DIR}/core
-  ${LEVELDB_PATH}/include
-)
-
-link_directories(
-  ${PROJECT_BINARY_DIR}/lib
-  ${PROJECT_SOURCE_DIR}/core/infra/crypto
-  ${LEVELDB_PATH}/out-shared
-  ${LEVELDB_PATH}/out-static
-)
-
 add_library(Repository SHARED
   repository_jni.cpp
 )
 
 target_link_libraries(Repository
-  leveldb
   core_repository
-  virtual_machine_with_java
-  event_with_grpc
-  create_objects_helper
+  jvm
 )
 
 add_custom_command(TARGET Repository
