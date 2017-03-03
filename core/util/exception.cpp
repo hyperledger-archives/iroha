@@ -71,6 +71,9 @@ namespace exception {
     WriteFailedException::WriteFailedException(const std::string& message):
       std::invalid_argument("Data could note be saved:" + message) {
     }
+    DuplicateAddException::DuplicateAddException(const std::string& object):
+      std::invalid_argument("DuplicateAddException: " + object) {
+    }
   }  // namespace crypto
   
   namespace txbuilder {

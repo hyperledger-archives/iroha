@@ -36,6 +36,8 @@ limitations under the License.
 #include <infra/config/peer_service_with_json.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 
+#include "connection/connection.hpp"
+
 /**
 * |ーーー|　|ーーー|　|ーーー|　|ーーー|
 * |　ス　|ー|　メ　|ー|　ラ　|ー|　ギ　|
@@ -56,7 +58,6 @@ namespace sumeragi {
 
     std::map<std::string, std::string> txCache;
 
-    //thread pool and a storage of events 
     static ThreadPool pool(
         ThreadPoolOptions{
             .threads_count = config::IrohaConfigManager::getInstance()
@@ -135,7 +136,7 @@ namespace sumeragi {
             std::string line;
             for (int i=0; i<numValidationPeer; i++) line += "==＝==";
             logger::explore("sumeragi") <<  line;
-            
+
             logger::explore("sumeragi") <<  "numValidSignatures:"
                 <<  numValidSignatures
                 <<  " faulty:"
@@ -271,7 +272,7 @@ namespace sumeragi {
         return 0l;
         //return merkle_transaction_repository::getLastLeafOrder() + 1;
     }
-    
+
 
     void processTransaction(ConsensusEvent& event) {
 
@@ -399,7 +400,7 @@ namespace sumeragi {
         if (broadcastEnd > context->numValidatingPeers - 1) {
             broadcastEnd = context->numValidatingPeers - 1;
         }
-        
+
         logger::info("sumeragi")    <<  "broadcastEnd:"     <<  broadcastEnd;
         logger::info("sumeragi")    <<  "broadcastStart:"   <<  broadcastStart;
         // WIP issue hash event
@@ -429,8 +430,8 @@ namespace sumeragi {
         tmp_deq.push_back(std::move(context->validatingPeers[0]));
         context->validatingPeers.clear();
         context->validatingPeers = std::move(tmp_deq);
-        
-        
+
+
         std::sort(context->validatingPeers.begin(), context->validatingPeers.end(),
               [](const std::unique_ptr<peer::Node> &lhs,
                  const std::unique_ptr<peer::Node> &rhs) {

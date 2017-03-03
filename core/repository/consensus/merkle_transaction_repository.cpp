@@ -15,12 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "merkle_transaction_repository.hpp"
-#include "../world_state_repository.hpp"
-
 #include <memory>
 #include <iostream>
-
+#include "merkle_transaction_repository.hpp"
+#include "../world_state_repository.hpp"
 #include <util/logger.hpp>
 #include <crypto/hash.hpp>
 

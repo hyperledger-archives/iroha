@@ -18,4 +18,3 @@ target_link_libraries(http_server_with_cappuccino
   connection_with_grpc
   cappuccino
 )
-

@@ -49,7 +49,7 @@ int main() {
     }
 
     logger::info("main") << "process is :" << getpid();
-    logger::setLogLevel(logger::LogLevel::DEBUG);
+    logger::setLogLevel(logger::LogLevel::Debug);
 
     std::vector<std::unique_ptr<peer::Node>> nodes = config::PeerServiceConfig::getInstance().getPeerList();
     connection::initialize_peer();

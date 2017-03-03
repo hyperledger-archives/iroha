@@ -2,23 +2,17 @@
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 
-SET(CMAKE_CXX_FLAGS "-g -Wall -std=c++1y")
-
-SET(AERON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/Aeron")
-SET(LEVELDB_PATH "${PROJECT_SOURCE_DIR}/core/vendor/leveldb")
-SET(JSON_PATH "${PROJECT_SOURCE_DIR}/core/vendor/json")
+SET(CMAKE_CXX_FLAGS "-g -std=c++1y -Wall -fPIC")
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/core
   ${PROJECT_SOURCE_DIR}/core/server
   ${PROJECT_SOURCE_DIR}/core/peer
   ${LEVELDB_PATH}/include
-  ${AERON_PATH}/aeron-client/src/main/cpp
 )
 
 link_directories(
   ${PROJECT_BINARY_DIR}/lib
-  ${AERON_PATH}/cppbuild/Release/lib
   ${LEVELDB_PATH}/out-static
 )
 

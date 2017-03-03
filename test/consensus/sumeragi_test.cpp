@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
 
         connection::initialize_peer();
 
-        logger::setLogLevel(logger::LogLevel::DEBUG);
+        logger::setLogLevel(logger::LogLevel::Debug);
 
         for (const auto &n : nodes) {
             std::cout << "=========" << std::endl;

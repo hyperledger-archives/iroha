@@ -14,24 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <model/smart_contract/virtual_machine_interface.hpp>
+#ifndef __CORE_REPOSITORY_DOMAIN_REPOSITORY_HPP__
+#define __CORE_REPOSITORY_DOMAIN_REPOSITORY_HPP__
 
-#include <gtest/gtest.h>
+#include <infra/protobuf/api.pb.h>
+#include <transaction_builder/transaction_builder.hpp>
+#include <string>
+#include <vector>
 
-using smart_contract::SmartContract;
-
-TEST(SmartContract, createVM){
-
-    std::string contractName = "SampleCurrency";
-    std::string functionName = "remit";
-    std::unordered_map<std::string, std::string> params;
-    params["A"] = "Ant";
-    params["B"] = "Bright";
-    SmartContract smartContract = SmartContract();
-    smartContract.initializeVM(contractName);
-    smartContract.invokeFunction(
-        contractName,
-        functionName,
-        params
-    );
+namespace repository {
+namespace domain {
+std::string add(const std::string &ownerPublicKey, const std::string &name);
+bool update(const std::string &uuid, const std::string &name);
+bool remove(const std::string &uuid);
+Api::Domain findByUuid(const std::string &uuid);
+bool exists(const std::string &uuid);
 }
+}
+
+#endif // __CORE_REPOSITORY_DOMAIN_REPOSITORY_HPP__

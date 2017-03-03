@@ -8,10 +8,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/core
 )
 
-link_directories(
-    ${AERON_PATH}/cppbuild/Release/lib
-)
-
 add_executable(sumeragi_test
     sumeragi_test.cpp
 )
