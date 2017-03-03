@@ -45,19 +45,27 @@ class PeerServiceConfig : config::AbstractConfigManager {
   std::string getMyPublicKey();
   std::string getMyPrivateKey();
   std::string getMyIp();
+  double getMaxTrustScore();
 
   std::vector<std::unique_ptr<peer::Node>> getPeerList();
   std::vector<std::string> getIpList();
 
+
+  // invoke to issue transaction
+  void toIssue_addPeer( const peer::Node& );
+  void toIssue_distructPeer( const std::string &publicKey );
+  void toIssue_removePeer( const std::string &publicKey );
+  void toIssue_creditPeer( const std::string &publicKey );
+
   // invoke when execute transaction
   bool addPeer( const peer::Node& );
   bool removePeer( const std::string &publicKey );
-  bool updatePeer( const std::string& publicKey, const std::map<std::string,std::string>& );
+  bool updatePeer( const std::string& publicKey, const peer::Node& peer );
 
   // invoke when validator transaction
   bool validate_addPeer( const peer::Node& );
   bool validate_removePeer( const std::string &publicKey );
-  bool validate_updatePeer( const std::string& publicKey, const std::map<std::string,std::string>& );
+  bool validate_updatePeer( const std::string& publicKey, const peer::Node& peer );
 
   // equatl to isSumeragi
   bool isLeaderMyPeer();

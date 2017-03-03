@@ -30,11 +30,10 @@ namespace peer
         double trustScore;
 
     public:
-        Node(){}
 
         Node(
-            std::string myIP,
-            std::string myPubKey,
+            std::string myIP = "",
+            std::string myPubKey = "",
             double myTrustScore = 1.0
         ):
             ip(myIP),
@@ -77,6 +76,13 @@ namespace peer
         }
         void setTrustScore( const double& trustScore ) {
             this->trustScore = trustScore;
+        }
+
+        bool isDefaultIP() const {
+            return ip == "";
+        }
+        bool isDefaultPublicKey() const {
+            return publicKey == "";
         }
 
     };

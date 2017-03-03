@@ -56,7 +56,7 @@ TEST( peer_service_with_json_test, add_peer_test ) {
     ASSERT_TRUE( peers.size() == n+2 );
 }
 
-/*
+
 TEST( peer_service_with_json_test, update_peer_test ) {
     int n = config::PeerServiceConfig::getInstance().getPeerList().size();
     const std::string upd_ip = "updated_ip";
@@ -64,8 +64,10 @@ TEST( peer_service_with_json_test, update_peer_test ) {
     const std::string upd_ng_key = "dummy";
     peer::Node peer = peer::Node( upd_ip, upd_key, 0.1 );
     peer::Node peer_ng = peer::Node( upd_ip, upd_ng_key, 0.1 );
-    ASSERT_TRUE( config::PeerServiceConfig::getInstance().updatePeer( peer ) );
-    ASSERT_FALSE( config::PeerServiceConfig::getInstance().updatePeer( peer_ng ) );
+    ASSERT_TRUE( config::PeerServiceConfig::getInstance().validate_updatePeer( upd_key, peer ) );
+    ASSERT_TRUE( config::PeerServiceConfig::getInstance().updatePeer( upd_key, peer ) );
+    ASSERT_FALSE( config::PeerServiceConfig::getInstance().validate_updatePeer( upd_ng_key, peer ) );
+    ASSERT_FALSE( config::PeerServiceConfig::getInstance().updatePeer( upd_ng_key, peer_ng ) );
     std::vector<std::unique_ptr<peer::Node>> peers = config::PeerServiceConfig::getInstance().getPeerList();
     for( auto&& peer : peers ) {
         std::cout << peer->getIP() << std::endl;
@@ -78,7 +80,7 @@ TEST( peer_service_with_json_test, update_peer_test ) {
     }
     ASSERT_TRUE( peers.size() == n );
 }
- */
+
 
 TEST( peer_service_with_json_test, remove_peer_test ) {
     int n = config::PeerServiceConfig::getInstance().getPeerList().size();

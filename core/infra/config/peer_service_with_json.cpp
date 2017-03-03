@@ -24,11 +24,17 @@ limitations under the License.
 #include <consensus/connection/connection.hpp>
 #include <json.hpp>
 #include <infra/protobuf/api.pb.h>
+#include <transaction_builder/transaction_builder.hpp>
 #include "peer_service_with_json.hpp"
 #include "config_format.hpp"
 #include "../../util/exception.hpp"
 
 using PeerServiceConfig = config::PeerServiceConfig;
+using txbuilder::TransactionBuilder;
+using type_signatures::Update;
+using type_signatures::Add;
+using type_signatures::Remove;
+using type_signatures::Peer;
 using nlohmann::json;
 
 std::vector<peer::Node> PeerServiceConfig::peerList;
@@ -72,6 +78,10 @@ std::string PeerServiceConfig::getMyIp() {
   return "";
 }
 
+double PeerServiceConfig::getMaxTrustScore() {
+    return 1.0; // WIP　to support trustRate = 1.0
+}
+
 bool PeerServiceConfig::isExistIP( const std::string &ip ) {
   return findPeerIP( std::move(ip) ) != peerList.end();
 }
@@ -107,6 +117,44 @@ std::vector<std::string> PeerServiceConfig::getIpList() {
   return ret_ips;
 }
 
+// invoke to issue transaction
+void PeerServiceConfig::toIssue_addPeer( const peer::Node& peer ) {
+    if( isExistIP(peer.getIP()) || isExistPublicKey(peer.getPublicKey()) ) return;
+    auto txPeer = TransactionBuilder<Add<Peer>>()
+            .setSenderPublicKey(getMyPublicKey())
+            .setPeer( txbuilder::createPeer( peer.getPublicKey(), peer.getIP(), txbuilder::createTrust(peer.getTrustScore(),true) ) )
+            .build();
+    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+}
+void PeerServiceConfig::toIssue_distructPeer( const std::string &publicKey ) {
+    auto it = findPeerPublicKey( publicKey );
+    auto txPeer = TransactionBuilder<Update<Peer>>()
+            .setSenderPublicKey(getMyPublicKey())
+            .setPeer(txbuilder::createPeer(publicKey, "", txbuilder::createTrust(it->getTrustScore()-1.0, true)))
+            .build();
+    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+}
+void PeerServiceConfig::toIssue_removePeer( const std::string &publicKey ) {
+    auto it = findPeerPublicKey( publicKey );
+    auto txPeer = TransactionBuilder<Remove<Peer>>()
+            .setSenderPublicKey(getMyPublicKey())
+            .setPeer(txbuilder::createPeer(publicKey, "", txbuilder::createTrust(0.0, false)))
+            .build();
+    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+}
+void PeerServiceConfig::toIssue_creditPeer( const std::string &publicKey ) {
+    auto it = findPeerPublicKey( publicKey );
+    if( it->getTrustScore() == getMaxTrustScore() ) return;
+    auto txPeer = TransactionBuilder<Update<Peer>>()
+            .setSenderPublicKey(getMyPublicKey())
+            .setPeer(txbuilder::createPeer(publicKey, "",
+                                           txbuilder::createTrust(std::min( getMaxTrustScore(), it->getTrustScore()+1.0 ), true)))
+            .build();
+    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+}
+
+
+
 bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
   try {
     if( isExistIP( peer.getIP() ) )
@@ -137,29 +185,27 @@ bool PeerServiceConfig::removePeer( const std::string& publicKey ) {
   return true;
 }
 
-bool PeerServiceConfig::updatePeer( const std::string& publicKey, const std::map<std::string,std::string>& upd ) {
+bool PeerServiceConfig::updatePeer( const std::string& publicKey, const peer::Node& peer ) {
   try {
     auto it = findPeerPublicKey( publicKey );
     if (it == peerList.end() )
       throw exception::service::UnExistFindPeerException( publicKey );
-/*
-    if ( upd.count( Api::Peer::default_instance().publickey() ) ) { // update publicKey
-      const std::string& upd_key = upd.at( Api::Peer::default_instance().publickey() );
-      auto upd_it = findPeerPublicKey(upd_key);
-      if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationPublicKeyException(publicKey);
-      it->setPublicKey( upd_key );
+
+    if ( !peer.isDefaultPublicKey() ) {
+      auto upd_it = findPeerPublicKey(peer.getPublicKey());
+      if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationPublicKeyException(peer.getPublicKey());
+      it->setPublicKey( peer.getPublicKey() );
     }
 
-    if ( upd.count( Api::Peer::default_instance().address() ) ) { // update address
-        const std::string& upd_ip = upd.at( (std::string)Api::Peer::default_instance().address() );
-        auto upd_it = findPeerIP(upd_ip);
-        if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationIPException(publicKey);
-        it->setIP( upd_ip );
+    if ( !peer.isDefaultIP() ) {
+        auto upd_it = findPeerIP(peer.getIP());
+        if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationIPException(peer.getIP());
+        it->setIP( peer.getIP() );
     }
 
-    if ( upd.count( "trust" ) ) { // update trust
-        it->setTrustScore(upd.at( "trust" ));
-    }*/
+    if ( it->getTrustScore() != peer.getTrustScore() ) {
+        it->setTrustScore(peer.getTrustScore());
+    }
 
   } catch ( exception::service::UnExistFindPeerException& e ) {
     logger::warning("updatePeer") << e.what();
@@ -199,24 +245,22 @@ bool PeerServiceConfig::validate_removePeer( const std::string &publicKey ) {
     }
     return true;
 }
-bool PeerServiceConfig::validate_updatePeer( const std::string& publicKey, const std::map<std::string,std::string>& upd ) {
+bool PeerServiceConfig::validate_updatePeer( const std::string& publicKey, const peer::Node& peer ) {
     try {
         auto it = findPeerPublicKey( publicKey );
-        if ( !isExistPublicKey( publicKey ) )
-            throw exception::service::UnExistFindPeerException(publicKey);
+        if (it == peerList.end() )
+            throw exception::service::UnExistFindPeerException( publicKey );
 
-
-        if ( upd.count( Api::Peer::default_instance().publickey() ) ) { // update publicKey
-            const std::string& upd_key = upd.at( Api::Peer::default_instance().publickey() );
-            auto upd_it = findPeerPublicKey(upd_key);
-            if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationPublicKeyException(publicKey);
+        if ( !peer.isDefaultPublicKey() ) {
+            auto upd_it = findPeerPublicKey(peer.getPublicKey());
+            if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationPublicKeyException(peer.getPublicKey());
         }
 
-        if ( upd.count( Api::Peer::default_instance().address() ) ) { // update address
-            const std::string& upd_ip = upd.at( Api::Peer::default_instance().address() );
-            auto upd_it = findPeerIP(upd_ip);
-            if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationIPException(upd_ip);
+        if ( !peer.isDefaultIP() ) {
+            auto upd_it = findPeerIP(peer.getIP());
+            if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationIPException(peer.getIP());
         }
+
     } catch ( exception::service::UnExistFindPeerException& e ) {
         logger::warning("updatePeer") << e.what();
         return false;

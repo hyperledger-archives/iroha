@@ -298,7 +298,7 @@ namespace sumeragi {
         if (detail::eventSignatureIsEmpty(event) && context->isSumeragi) {
             logger::info("sumeragi") << "signatures.empty() isSumragi";
             // Determine the order for processing this event
-            event.set_order(getNextOrder());
+            event.set_order(getNextOrder());//TODO getNexOrder is always return 0l;
             logger::info("sumeragi") << "new  order:" << event.order();
         } else if (!detail::eventSignatureIsEmpty(event)) {
             // Check if we have at least 2f+1 signatures needed for Byzantine fault tolerance

@@ -69,6 +69,18 @@ namespace connection {
             };
         };
 
+        namespace PeerService {
+
+            namespace Torii {
+
+                bool send(
+                        const std::string &ip,
+                        const Transaction &transaction
+                );
+
+            }
+        }
+
         namespace TransactionRepository {
 
             namespace find {
