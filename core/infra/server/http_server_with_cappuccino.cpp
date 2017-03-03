@@ -26,6 +26,7 @@ limitations under the License.
 
 #include <transaction_builder/transaction_builder.hpp>
 #include <consensus/connection/connection.hpp>
+
 #include <infra/protobuf/api.pb.h>
 
 // -- WIP --
@@ -39,7 +40,6 @@ using grpc::Status;
 // -------
 
 namespace http {
-
     using namespace Api;
 
     using txbuilder::TransactionBuilder;
