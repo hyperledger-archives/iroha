@@ -70,9 +70,17 @@ std::string add(const std::string &publicKey, const std::string &name,
   if (not exists(uuid)) {
     const auto account = txbuilder::createAccount(publicKey, name, assets);
     const auto strAccount = detail::stringifyAccount(account);
+//std::cout << "_____________________UTF_8_TEST_BEGIN___________________________________\n";
+//Api::Account hoge = detail::parseAccount(strAccount);
+//std::cout<<hoge.name() << std::endl;
+//std::cout << "~~~~~~~~~~~~~~~~~~~~~UTF_8_TEST_END~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
     logger::debug(NameSpaceID) << "Save key: " << uuid << " strAccount: \""
                                << strAccount << "\"";
     if (world_state_repository::add(uuid, strAccount)) {
+//std::cout << "_____________________UTF_8_TEST_BEGIN_IN_ACCOUNT_ADDED__________________\n";
+//Api::Account hoge = detail::parseAccount(world_state_repository::find(uuid));
+//std::cout<<hoge.name() << std::endl;
+//std::cout << "~~~~~~~~~~~~~~~~~~~~~UTF_8_TEST_END~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
       return uuid;
     }
   }
@@ -89,16 +97,15 @@ bool attach(const std::string &uuid, const std::string &asset) {
     return false;
   }
 
-  std::cout << "____________________UTF_TEST_BEGIN_____________________\n";
-  std::cout << uuid << std::endl;
-  std::cout << asset << std::endl;
-  std::cout << "____________________UTF_TEST_END_______________________\n";
-
   const auto strAccount = world_state_repository::find(uuid);
+//  std::cout << "_____________________UTF_8_TEST_BEGIN___________________________________\n";
   Api::Account account = detail::parseAccount(strAccount);
+//  std::cout << "~~~~~~~~~~~~~~~~~~~~~UTF_8_TEST_END~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
   account.add_assets(asset);
 
-  if (world_state_repository::update(uuid, detail::stringifyAccount(account))) {
+  std::cout << "________________________________________________________\n";
+  auto str = detail::stringifyAccount(account);
+  if (world_state_repository::update(uuid, str)) {
     logger::explore(NameSpaceID) << "Add<Asset, To<Account>> uuid: " << uuid
                                  << "asset: " << asset;
     return true;
@@ -151,6 +158,9 @@ Api::Account findByUuid(const std::string &uuid) {
   if (exists(uuid)) {
     const auto strAccount = world_state_repository::find(uuid);
     logger::explore(NameSpaceID + "findByUuid") << "";
+//  std::cout << "_____________________UTF_8_TEST_BEGIN___________________________________\n";
+//  Api::Account hoge = detail::parseAccount(strAccount);
+//  std::cout << "~~~~~~~~~~~~~~~~~~~~~UTF_8_TEST_END~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
     return detail::parseAccount(strAccount);
   }
   return Api::Account();

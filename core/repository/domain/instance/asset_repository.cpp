@@ -65,6 +65,9 @@ std::string add(const std::string &domain, const std::string &name,
   if (not exists(uuid)) {
     const auto strAsset = detail::stringifyAsset(
         txbuilder::createAsset(domain, name, value, smartContractName));
+std::cout << "_____________________UTF_8_TEST_BEGIN___________________________________\n";
+Api::Asset hoge = detail::parseAsset(strAsset);
+std::cout << "~~~~~~~~~~~~~~~~~~~~~UTF_8_TEST_END~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
     if (world_state_repository::add(uuid, strAsset)) {
       return uuid;
     }
