@@ -13,6 +13,9 @@ limitations under the License.
 
 package instances.sample_rating;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.Math;
 import java.util.HashMap;
 import java.util.List;
@@ -275,16 +278,34 @@ public class WeightedRate {
 
         System.out.println("Initial value: " + showWeightedRateAsset(secondAssetUuid));
 
-        for (int i = 0; i < 5; ++i) {
-            hit(secondAssetUuid, 2.345);
-            linearIncrease(secondAssetUuid);
-            System.out.println("Current value: " + showWeightedRateAsset(secondAssetUuid));
-        }
+        try {
 
-        for (int i = 0; i < 5; ++i) {
-            miss(secondAssetUuid, 0.54321);
-            linearIncrease(secondAssetUuid);
-            System.out.println("Current value: " + showWeightedRateAsset(secondAssetUuid));
+            String path = new File(".").getAbsoluteFile().getParent();
+            File file = new File(path + "/" + "WeightedRate.output");
+            FileWriter filewriter = new FileWriter(file, true);
+
+            for (int i = 0; i < 5; ++i) {
+                hit(secondAssetUuid, 2.345);
+                linearIncrease(secondAssetUuid);
+                filewriter.write("Current value: " + showWeightedRateAsset(secondAssetUuid) + "\n");
+            }
+
+            for (int i = 0; i < 5; ++i) {
+                miss(secondAssetUuid, 0.54321);
+                linearIncrease(secondAssetUuid);
+                filewriter.write("Current value: " + showWeightedRateAsset(secondAssetUuid) + "\n");
+            }
+
+            if (file.exists()){
+                if (file.isFile() && file.canWrite()) {
+                    filewriter.close();
+                } else {
+                    System.out.println("ファイルに書き込めません");
+                }
+            }
+
+        } catch (IOException e) {
+            System.out.println(e);
         }
     }
 
