@@ -13,7 +13,6 @@ limitations under the License.
 
 package instances.test;
 
-import repository.Repository;
 import java.util.HashMap;
 
 public class TestInvocation {

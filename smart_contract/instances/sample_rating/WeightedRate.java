@@ -16,10 +16,11 @@ package instances.sample_rating;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.Math;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import static java.lang.Math.min;
+import static java.lang.Math.max;
 
 import repository.Repository;
 import repository.KeyConstants;
