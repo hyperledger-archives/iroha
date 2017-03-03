@@ -23,24 +23,23 @@ limitations under the License.
 
 #include <ed25519.h>
 
-#include "../../crypto/signature.hpp"
-
-#include "../../crypto/base64.hpp"
-#include "../../crypto/hash.hpp"
+#include <crypto/signature.hpp>
+#include <crypto/base64.hpp>
+#include <crypto/hash.hpp>
 
 namespace signature {
 
   template<typename T>
     std::unique_ptr<T[]> vector2UnsignedCharPointer(
-    std::vector<T> vec
+    const std::vector<T> &vec
   ){
     std::unique_ptr<T[]> res(new T[sizeof(T)*vec.size()+1]);
     size_t pos = 0;
+    auto* v = res.get();
     for(auto c : vec){
-      res.get()[pos] = c;
-      pos++;
+      v[pos++] = c;
     }
-    res.get()[pos] = '\0';
+    v[pos] = '\0';
     return res;
   }
 
@@ -55,9 +54,9 @@ namespace signature {
   }
 
   bool verify(
-    const std::string signature,
-    const std::string message,
-    const std::string publicKey) {
+    const std::string &signature,
+    const std::string &message,
+    const std::string &publicKey) {
     return ed25519_verify(
       vector2UnsignedCharPointer(base64::decode(signature)).get(),
       reinterpret_cast<const unsigned char*>(message.c_str()),
@@ -65,9 +64,11 @@ namespace signature {
       vector2UnsignedCharPointer(base64::decode(publicKey)).get());
   }
 
+  
+
   std::string sign(
     std::string message,
-    KeyPair  keyPair
+    KeyPair     keyPair
   ){
     std::unique_ptr<unsigned char[]> signature(new unsigned char[sizeof(unsigned char)*64]);
     ed25519_sign(

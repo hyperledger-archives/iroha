@@ -22,8 +22,8 @@ limitations under the License.
 #include <arpa/inet.h>
 
 #include <json.hpp>
-#include "../core/crypto/base64.hpp"
-#include "../core/crypto/signature.hpp"
+#include <crypto/base64.hpp>
+#include <crypto/signature.hpp>
 
 #include <string>
 #include <iostream>

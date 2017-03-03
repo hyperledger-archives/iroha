@@ -21,9 +21,7 @@ namespace executor{
 
     using Api::Transaction;
 
-    void execute(const Transaction& tx){
-        std::cout << "Executor\n";
-    }
+    void execute(const Transaction& tx);
 
 };
 

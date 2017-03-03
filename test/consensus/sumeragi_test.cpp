@@ -46,7 +46,7 @@ int main(int argc, char *argv[]){
 
         connection::initialize_peer();
 
-        logger::setLogLevel(logger::LogLevel::DEBUG);
+        logger::setLogLevel(logger::LogLevel::Debug);
 
         sumeragi::initializeSumeragi();
 

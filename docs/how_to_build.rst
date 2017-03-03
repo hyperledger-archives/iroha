@@ -38,41 +38,13 @@ I need C++14 compilable compiler
     root@mizuki # cmake  -version
     cmake version 2.8.0
 
-依存ライブラリのインストール / install dependics library
+依存ライブラリのインストール / install dependencies
 ========================================================
 
-xsltprocのインストール / Install xsltproc
------------------------------------------
-
-KeccakCodePackageのbuildで使用
-
-used by building KeccakCodePackage
-
 ::
 
-    # apt -y install xsltproc
+    # apt -y install xsltproc libhdf5-serial-dev libsnappy-dev liblmdb-dev autoconf automake libtool unzip
 
-libsnappy-dev等のインストール / Install libsnappy-dev and so on
----------------------------------------------------------------
-
-LevelDBのbuildで使用
-
-used by building LevelDB
-
-::
-
-    # apt -y install libhdf5-serial-dev libsnappy-dev liblmdb-dev
-
-基本的なもののインストール / Install basic library 　
------------------------------------------------------
-
-基本的な物、Dockerとかだとたまに無い
-
-Basically library
-
-::
-
-    # apt -y install autoconf automake libtool unzip
 
 protobuf のインストール / Install protobuf
 ------------------------------------------
@@ -133,42 +105,6 @@ IROHA\_HOMEの設定 / set IROHA\_HOME
     ~/iroha # export IROHA_HOME=$(pwd)
     ~/iroha # echo $IROHA_HOME
     /root/iroha
-
-依存ライブラリのBuild / Build dependics library
------------------------------------------------
-
-LevelDB
-~~~~~~~
-
-::
-
-    # cd $IROHA_HOME/core/vendor/leveldb; make -j 14
-
-ed25519
-~~~~~~~
-
-::
-
-    # cd $IROHA_HOME/core/vendor/ed25519; make -j 14
-
-libkeccak
-~~~~~~~~~
-
-::
-
-    # cd $IROHA_HOME/core/vendor/KeccakCodePackage; make; make generic64/libkeccak.a
-
-libhash
-~~~~~~~~~
-
-何故かCMakeが正しく動かないので自分でBuildします
-
-I should make libhash, because cmake doesn't running correctly.
-
-::
-
-    # cd $IROHA_HOME/core/infra/crypto/; make
-
 
 
 Iroha本体のbuild / build iroha

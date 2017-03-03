@@ -22,7 +22,7 @@ limitations under the License.
 
 namespace random_service{
 
-  std::string makeRandomHash();
+  std::string makeHashByMT19937();
 
 };  // namespace random_service
 

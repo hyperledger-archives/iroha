@@ -1814,6 +1814,17 @@ class ConsensusEvent : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint64 order() const;
   void set_order(::google::protobuf::uint64 value);
 
+  // optional string status = 4;
+  void clear_status();
+  static const int kStatusFieldNumber = 4;
+  const ::std::string& status() const;
+  void set_status(const ::std::string& value);
+  void set_status(const char* value);
+  void set_status(const char* value, size_t size);
+  ::std::string* mutable_status();
+  ::std::string* release_status();
+  void set_allocated_status(::std::string* status);
+
   // @@protoc_insertion_point(class_scope:Api.ConsensusEvent)
  private:
 
@@ -1822,6 +1833,7 @@ class ConsensusEvent : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::RepeatedPtrField< ::Api::EventSignature > eventsignatures_;
   ::Api::Transaction* transaction_;
   ::google::protobuf::uint64 order_;
+  ::google::protobuf::internal::ArenaStringPtr status_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_api_2eproto();
   friend void protobuf_AssignDesc_api_2eproto();
@@ -3956,6 +3968,50 @@ inline void ConsensusEvent::set_order(::google::protobuf::uint64 value) {
   
   order_ = value;
   // @@protoc_insertion_point(field_set:Api.ConsensusEvent.order)
+}
+
+// optional string status = 4;
+inline void ConsensusEvent::clear_status() {
+  status_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& ConsensusEvent::status() const {
+  // @@protoc_insertion_point(field_get:Api.ConsensusEvent.status)
+  return status_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ConsensusEvent::set_status(const ::std::string& value) {
+  
+  status_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Api.ConsensusEvent.status)
+}
+inline void ConsensusEvent::set_status(const char* value) {
+  
+  status_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Api.ConsensusEvent.status)
+}
+inline void ConsensusEvent::set_status(const char* value, size_t size) {
+  
+  status_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Api.ConsensusEvent.status)
+}
+inline ::std::string* ConsensusEvent::mutable_status() {
+  
+  // @@protoc_insertion_point(field_mutable:Api.ConsensusEvent.status)
+  return status_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ConsensusEvent::release_status() {
+  // @@protoc_insertion_point(field_release:Api.ConsensusEvent.status)
+  
+  return status_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ConsensusEvent::set_allocated_status(::std::string* status) {
+  if (status != NULL) {
+    
+  } else {
+    
+  }
+  status_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), status);
+  // @@protoc_insertion_point(field_set_allocated:Api.ConsensusEvent.status)
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS

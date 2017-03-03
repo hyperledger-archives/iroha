@@ -50,30 +50,18 @@ struct MerkleNode {
         right(std::move(rightChild))
     {}
 
-    bool isRoot() {
-       return parent.empty();
-    }
-
-    bool isLeaf() {
-       return left.empty() && right.empty();
-    }
+    bool isRoot();
+    bool isLeaf();
 
 };
 
 //TODO: change bool to throw an exception instead
-bool commit(const ConsensusEvent& event){
-    return false; // TODO: fill this function
-};
+bool commit(const ConsensusEvent& event);
 
-bool leafExists(const std::string& hash){
-    return false; // TODO: fill this function
-}
+bool leafExists(const std::string& hash);
 
-std::string getLeaf(const std::string& hash){
-    return ""; // TODO: fill this function
-}
+std::string getLeaf(const std::string& hash);
 
-template <typename T>
 std::string calculateNewRoot(
     const ConsensusEvent& event,
     std::vector<std::tuple<std::string,std::string>> &batchCommit

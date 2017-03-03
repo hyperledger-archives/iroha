@@ -1,13 +1,16 @@
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
-
 SET(LEVELDB_PATH ${PROJECT_SOURCE_DIR}/core/vendor/leveldb)
+
+SET(CMAKE_CXX_FLAGS "-g -Wall -std=c++1y -fPIC")
 
 include_directories(
   ${LEVELDB_PATH}/include
   ${PROJECT_SOURCE_DIR}/core
+  ${LEVELDB_PATH}/include
 )
 
 link_directories(
+  ${LEVELDB_PATH}/out-shared
   ${LEVELDB_PATH}/out-static
 )
 
@@ -16,5 +19,7 @@ target_link_libraries(world_state_repo_with_level_db
   snappy
   leveldb
   logger
+  config_manager
   exception
+  json
 )

@@ -43,6 +43,12 @@ class ConsensusEvent: public T {
                 publicKey(pubKey),
                 signature(sig)
         {}
+
+        // move constructor
+        eventSignature(const eventSignature&& other){
+            publicKey = std::move(other.publicKey);
+            signature = std::move(other.signature);
+        }
     };
 
     std::vector<eventSignature> _eventSignatures;
@@ -58,11 +64,11 @@ public:
     {}
 
     void addSignature(const std::string& publicKey, const std::string& signature){
-        _eventSignatures.push_back(eventSignature(publicKey, signature));
+        _eventSignatures.push_back(std::move(eventSignature(publicKey, signature)));
     }
 
     std::vector<std::tuple<std::string,std::string>> eventSignatures() const{
-        std::vector<std::tuple<std::string,std::string>> res;
+        std::vector<std::tuple<std::string,std::string>> res(_eventSignatures.size());
         for(const auto& sig: _eventSignatures){
             res.push_back(std::make_tuple(sig.publicKey,sig.signature));
         }

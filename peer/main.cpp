@@ -49,7 +49,7 @@ int main() {
     }
 
     logger::info("main") << "process is :" << getpid();
-    logger::setLogLevel(logger::LogLevel::DEBUG);
+    logger::setLogLevel(logger::LogLevel::Debug);
 
     connection::initialize_peer();
     sumeragi::initializeSumeragi();
