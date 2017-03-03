@@ -20,12 +20,12 @@ message(STATUS "-DBENCHMARKING=${BENCHMARKING}")
 
 include("dependencies.cmake")
 
+add_subdirectory(protos)
 
 add_subdirectory(core)
 add_subdirectory(peer)
 add_subdirectory(tools)
 add_subdirectory(smart_contract)
-
 
 if(TESTING)
   enable_testing()
