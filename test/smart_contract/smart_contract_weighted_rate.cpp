@@ -29,8 +29,8 @@ const std::string ContractName = "WeightedRate";
 namespace tag = jni_constants;
 
 /*
- * Error code from JVM should be detected. Currently, it can't be caught by C++.
- * So, it is not in CMakeLists.txt yet.
+ * This test is not in CMakeLists.txt because currently, error code
+ * from Java exec cannot be caught.
  */
 
 TEST(SmartContractSample, weightedRate) {
