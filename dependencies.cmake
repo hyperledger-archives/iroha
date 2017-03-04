@@ -264,20 +264,18 @@ endif()
 #########################
 ExternalProject_Add(chriskohlhoff_asio
   GIT_REPOSITORY    "https://github.com/chriskohlhoff/asio.git"
-  BUILD_IN_SOURCE   1
-  SOURCE_DIR        ${EP_PREFIX}/src/chriskohlhoff_asio/asio
-  CONFIGURE_COMMAND ./autogen.sh COMMAND ./configure --without-boost
-  BUILD_COMMAND     $(MAKE)
+  CONFIGURE_COMMAND "" # remove configure step
+  BUILD_COMMAND     "" # remove build step
   INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
   )
 ExternalProject_Get_Property(chriskohlhoff_asio source_dir)
 set(asio_SOURCE_DIR "${source_dir}")
+
 add_library(asio INTERFACE IMPORTED)
-file(MAKE_DIRECTORY ${asio_SOURCE_DIR}/include)
+file(MAKE_DIRECTORY ${asio_SOURCE_DIR}/asio/include)
 set_target_properties(asio PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${asio_SOURCE_DIR}/include
+  INTERFACE_INCLUDE_DIRECTORIES ${asio_SOURCE_DIR}/asio/include
 )
 add_dependencies(asio chriskohlhoff_asio)
-
