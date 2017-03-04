@@ -203,9 +203,9 @@ bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
     while( false ) { // all - transaction
         auto tx = Api::TransactionResponse();
         while( false ) { // block
-            tx.add_transaction()->CopyFrom(tx);
+//            tx.add_transaction()->CopyFrom();
         }
-        connection::iroha::PeerService::Sumeragi::send( peer.getIP(), tx );
+//        connection::iroha::PeerService::Sumeragi::send( peer.getIP(), tx );
     }
     return true;
 }
