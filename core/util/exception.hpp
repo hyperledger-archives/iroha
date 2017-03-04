@@ -19,7 +19,7 @@ limitations under the License.
 
 #include <stdexcept>
 #include <string>
-
+#include <iostream>
 #include <typeinfo>
 
 namespace exception {
