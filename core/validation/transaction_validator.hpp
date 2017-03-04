@@ -25,8 +25,6 @@ limitations under the License.
 
 namespace transaction_validator {
 
-    using Api::ConsensusEvent;
-
     template<typename T>
     bool isValid(const std::unique_ptr<T>& tx);
 
