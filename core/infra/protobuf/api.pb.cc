@@ -509,10 +509,11 @@ void protobuf_AddDesc_api_2eproto() {
     "ionRepository\022.\n\004find\022\n.Api.Query\032\030.Api."
     "TransactionResponse\"\0002;\n\017AssetRepository"
     "\022(\n\004find\022\n.Api.Query\032\022.Api.AssetResponse"
-    "\"\0002r\n\010Sumeragi\0220\n\005Torii\022\020.Api.Transactio"
-    "n\032\023.Api.StatusResponse\"\000\0224\n\006Verify\022\023.Api"
-    ".ConsensusEvent\032\023.Api.StatusResponse\"\000B\003"
-    "\200\001\000b\006proto3", 1931);
+    "\"\0002\237\001\n\010Sumeragi\0220\n\005Torii\022\020.Api.Transacti"
+    "on\032\023.Api.StatusResponse\"\000\0224\n\006Verify\022\023.Ap"
+    "i.ConsensusEvent\032\023.Api.StatusResponse\"\000\022"
+    "+\n\006Kagami\022\n.Api.Query\032\023.Api.StatusRespon"
+    "se\"\000B\003\200\001\000b\006proto3", 1977);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "api.proto", &protobuf_RegisterTypes);
   TransactionResponse::default_instance_ = new TransactionResponse();

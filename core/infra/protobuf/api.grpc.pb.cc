@@ -100,6 +100,7 @@ AssetRepository::Service::~Service() {
 static const char* Sumeragi_method_names[] = {
   "/Api.Sumeragi/Torii",
   "/Api.Sumeragi/Verify",
+  "/Api.Sumeragi/Kagami",
 };
 
 std::unique_ptr< Sumeragi::Stub> Sumeragi::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -110,6 +111,7 @@ std::unique_ptr< Sumeragi::Stub> Sumeragi::NewStub(const std::shared_ptr< ::grpc
 Sumeragi::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel)
   : channel_(channel), rpcmethod_Torii_(Sumeragi_method_names[0], ::grpc::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_Verify_(Sumeragi_method_names[1], ::grpc::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_Kagami_(Sumeragi_method_names[2], ::grpc::RpcMethod::NORMAL_RPC, channel)
   {}
 
 ::grpc::Status Sumeragi::Stub::Torii(::grpc::ClientContext* context, const ::Api::Transaction& request, ::Api::StatusResponse* response) {
@@ -128,6 +130,14 @@ Sumeragi::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel)
   return new ::grpc::ClientAsyncResponseReader< ::Api::StatusResponse>(channel_.get(), cq, rpcmethod_Verify_, context, request);
 }
 
+::grpc::Status Sumeragi::Stub::Kagami(::grpc::ClientContext* context, const ::Api::Query& request, ::Api::StatusResponse* response) {
+  return ::grpc::BlockingUnaryCall(channel_.get(), rpcmethod_Kagami_, context, request, response);
+}
+
+::grpc::ClientAsyncResponseReader< ::Api::StatusResponse>* Sumeragi::Stub::AsyncKagamiRaw(::grpc::ClientContext* context, const ::Api::Query& request, ::grpc::CompletionQueue* cq) {
+  return new ::grpc::ClientAsyncResponseReader< ::Api::StatusResponse>(channel_.get(), cq, rpcmethod_Kagami_, context, request);
+}
+
 Sumeragi::Service::Service() {
   (void)Sumeragi_method_names;
   AddMethod(new ::grpc::RpcServiceMethod(
@@ -140,6 +150,11 @@ Sumeragi::Service::Service() {
       ::grpc::RpcMethod::NORMAL_RPC,
       new ::grpc::RpcMethodHandler< Sumeragi::Service, ::Api::ConsensusEvent, ::Api::StatusResponse>(
           std::mem_fn(&Sumeragi::Service::Verify), this)));
+  AddMethod(new ::grpc::RpcServiceMethod(
+      Sumeragi_method_names[2],
+      ::grpc::RpcMethod::NORMAL_RPC,
+      new ::grpc::RpcMethodHandler< Sumeragi::Service, ::Api::Query, ::Api::StatusResponse>(
+          std::mem_fn(&Sumeragi::Service::Kagami), this)));
 }
 
 Sumeragi::Service::~Service() {
@@ -153,6 +168,13 @@ Sumeragi::Service::~Service() {
 }
 
 ::grpc::Status Sumeragi::Service::Verify(::grpc::ServerContext* context, const ::Api::ConsensusEvent* request, ::Api::StatusResponse* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status Sumeragi::Service::Kagami(::grpc::ServerContext* context, const ::Api::Query* request, ::Api::StatusResponse* response) {
   (void) context;
   (void) request;
   (void) response;
