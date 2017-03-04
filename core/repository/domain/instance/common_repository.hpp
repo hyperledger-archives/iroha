@@ -30,7 +30,7 @@ namespace common {
  ********************************************************************************************/
 
 struct Prefix {
-  Prefix(const char* rhs) : prefix_(rhs) {}
+  explicit Prefix(const char* rhs) : prefix_(rhs) {}
   const std::string& operator*() const { return prefix_; }
   std::string prefix_;
 };
