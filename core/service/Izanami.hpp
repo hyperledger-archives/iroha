@@ -29,13 +29,18 @@ namespace izanami {
     class InitializeEvent {
     private:
         uint64_t now_progress;
-        unordered_map <std::string, std::unique_ptr<TransactionResponse> > txResponses;
-        unordered_map <uint64_t, std::vector<std::string>> hashes;
+        std::unordered_map <std::string, std::unique_ptr<TransactionResponse> > txResponses;
+        std::unordered_map <uint64_t, std::vector<std::string>> hashes;
     public:
 
-        void add_transactionResponse( unique_ptr<TransactionResponse> );
+        void add_transactionResponse( std::unique_ptr<TransactionResponse> );
         const std::vector<std::string>& getHashes( uint64_t );
-        const std::unique_ptr<TransactioResponse> getTransactionResponse( const std::string& );
+        const std::unique_ptr<TransactionResponse> getTransactionResponse( const std::string& );
+        void next_progress();
+        uint64_t now() const;
+
+        void storeTxResponse( const std::string& );
+        void executeTxResponse( const std::string& );
 
     };
 

@@ -17,41 +17,48 @@ limitations under the License.
 #include <vector>
 #include <string>
 #include <memory>
+#include "izanami.hpp"
 #include <infra/protobuf/api.pb.h>
 #include <infra/config/peer_service_with_json.hpp>
 
 namespace izanami {
     using Api::TransactionResponse;
 
+    //uint64_t InitializeEvent::now_progress;
+    //std::unordered_map <std::string, std::unique_ptr<TransactionResponse> > InitializeEvent::txResponses;
+    //std::unordered_map <uint64_t, std::vector<std::string>> InitializeEvent::hashes;
 
-    class InitializeEvent {
-    private:
-        uint64_t now_progress;
-        unordered_map <std::string, std::unique_ptr<TransactionResponse> > txReponses;
-        unordered_map <uint64_t, std::vector<std::string>> hashes;
-    public:
+    void InitializeEvent::add_transactionResponse( std::unique_ptr<TransactionResponse> ) {
+        //if( now_progress > txResponse.getProgress() ) return; TODO getProgress() is hasn't  txResponse
+        //std::string hash = txResponse.getHash(); TODO getHash is hasn't txResponse
+        //txResponses[ hash ] = std::move( txResponse );
+    }
+    const std::vector<std::string>& InitializeEvent::getHashes( uint64_t progress ) {
+        return hashes[ progress ];
+    }
+    const std::unique_ptr<TransactionResponse> InitializeEvent::getTransactionResponse( const std::string& hash ) {
+        return std::move( txResponses[ hash ] );
+    }
+    void InitializeEvent::next_progress() {
+        for( auto&& hash : hashes[now_progress] ) {
+            txResponses.erase( hash );
+        }
+        hashes.erase( now_progress++ );
+    }
+    uint64_t InitializeEvent::now() const {
+        return now_progress;
+    }
 
-        void add_transactionResponse( unique_ptr<TransactionResponse> txResponse) {
-            //if( now_progress > txResponse.getProgress() ) return; TODO getProgress() is hasn't  txResponse
-            //std::string hash = txResponse.getHash(); TODO getHash is hasn't txResponse
-            txResponses[ hash ] = std::move( txResponse );
+    void InitializeEvent::storeTxResponse( const std::string& hash ) {
+        for( auto &&tx : txResponses[ hash ]->transaction() ) {
+            // TODO store txResponses[hash] to DB
         }
-        const std::vector<std::string>& getHashes( uint64_t progress ) {
-            return hashes[ progress ];
+    }
+    void InitializeEvent::executeTxResponse( const std::string& hash ) {
+        for( auto &&tx : txResponses[ hash ]->transaction() ) {
+            // TODO execute tx ( transaction )
         }
-        const std::unique_ptr<TransactioResponse> getTransactionResponse( const std::string& hash ) {
-            return std::move( txReponses[ hash ] );
-        }
-        void next_progress() {
-            for( const auto& hash : hashes[now_progress] ) {
-                txReponses.erase( hash );
-            }
-            hash.erase( now_progress++ );
-        }
-        uint64_t now() const {
-            return now_progress;
-        }
-    };
+    }
 
     namespace detail {
         bool isFinishedReceiveAll(InitializeEvent &event) {
@@ -59,26 +66,26 @@ namespace izanami {
         }
 
         bool isFinishedReceive(InitializeEvent &event) {
-            unordered_map<std::string, int> hash_counter;
-            for (auto hash : event.getHashes(event.now())) {
+            std::unordered_map<std::string, int> hash_counter;
+            for (std::string hash : event.getHashes(event.now())) {
                 hash_counter[hash]++;
             }
             int res = 0;
-            if (const auto &counter : hash_counter ){
-                res = max(res, counter.second);
+            for (auto counter : hash_counter ) {
+                res = std::max(res, counter.second);
             }
             //        if( res >= 2 * f + 1 ) return true; TODO f is don't decined.
             return false;
         }
 
         std::string getCorrectHash(InitializeEvent &event) {
-            unordered_map<std::string, int> hash_counter;
-            for (const std::string &hash : event.getHashes(event.now())) {
+            std::unordered_map<std::string, int> hash_counter;
+            for (std::string hash : event.getHashes(event.now())) {
                 hash_counter[hash]++;
             }
             int res = 0;
             std::string res_hash;
-            if (const auto &counter : hash_counter ){
+            for (auto counter : hash_counter ) {
                 if (res < counter.second) {
                     res = counter.second;
                     res_hash = counter.first;
@@ -89,19 +96,21 @@ namespace izanami {
         }
 
         void storeTransactionResponse(InitializeEvent &event) {
-            std::string hash = getCorrectHash();
-            auto txResponse = event.getTransactionResponse(hash);
+            std::string hash = getCorrectHash(event);
             // TODO store txResponse to DB
+//            event.storeTxResponse(hash);
+            // TODO execute txReponse
+//            event.executeTxResponse(hash);
         }
     }
 
     //invoke when receive TransactionResponse.
     void receiveTransactionResponse( std::unique_ptr<TransactionResponse> txResponse ) {
         static InitializeEvent event;
-        event.add_transactionResponse( txResponse );
+        event.add_transactionResponse( std::move(txResponse) );
         if( detail::isFinishedReceive( event ) ) {
             detail::storeTransactionResponse( event );
-            if( detail::isFinishedReveiveAll( event ) ) {
+            if( detail::isFinishedReceiveAll( event ) ) {
                 config::PeerServiceConfig::getInstance().finishedInitializePeer();
             }
         }
