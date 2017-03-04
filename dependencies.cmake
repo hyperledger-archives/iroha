@@ -149,10 +149,11 @@ endif()
 
 
 ###############################
-#         Cappuccino          #
+#         cappuccino          #
 ###############################
 ExternalProject_Add(mizukisonoko_cappuccino
   GIT_REPOSITORY    "https://github.com/MizukiSonoko/Cappuccino.git"
+  GIT_TAG           "featue/asio"
   BUILD_COMMAND     "" # remove build step, header only lib
   CONFIGURE_COMMAND "" # remove configure step
   INSTALL_COMMAND   "" # remove install step
@@ -167,8 +168,7 @@ add_library(cappuccino INTERFACE IMPORTED)
 set_target_properties(cappuccino PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${cappuccino_SOURCE_DIR}
   )
-
-add_dependencies(cappuccino mizukisonoko_cappuccino json)
+add_dependencies(cappuccino mizukisonoko_cappuccino json asio)
 
 
 
@@ -232,10 +232,9 @@ add_dependencies(leveldb google_leveldb)
 
 
 ########################################################
-# JNI
+# jni
 ########################################################
-
-add_library(jvm SHARED IMPORTED)
+add_library(jni SHARED IMPORTED)
 if (DEFINED ENV{JAVA_HOME})
   if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(_JVM_INCLUDE_PATH "$ENV{JAVA_HOME}/include/darwin")
@@ -243,7 +242,7 @@ if (DEFINED ENV{JAVA_HOME})
     set(_JVM_INCLUDE_PATH "$ENV{JAVA_HOME}/include/linux")
   endif()
 
-  set_target_properties(jvm PROPERTIES
+  set_target_properties(jni PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${_JVM_INCLUDE_PATH};$ENV{JAVA_HOME}/include"
     IMPORTED_LOCATION "$ENV{JAVA_HOME}/jre/lib/amd64/server/libjvm.so"
   )
@@ -252,8 +251,31 @@ else()
   if (!JNI_FOUND)
     message(FATAL_ERROR "JVM not found")
   endif()
-  set_target_properties(jvm PROPERTIES
+  set_target_properties(jni PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${JAVA_INCLUDE_PATH}"
     IMPORTED_LOCATION "${JAVA_JVM_LIBRARY}"
   )
 endif()
+
+
+
+#########################
+#         asio          #
+#########################
+ExternalProject_Add(chriskohlhoff_asio
+  GIT_REPOSITORY    "https://github.com/chriskohlhoff/asio.git"
+  CONFIGURE_COMMAND "" # remove configure step
+  BUILD_COMMAND     "" # remove build step
+  INSTALL_COMMAND   "" # remove install step
+  TEST_COMMAND      "" # remove test step
+  UPDATE_COMMAND    "" # remove update step
+  )
+ExternalProject_Get_Property(chriskohlhoff_asio source_dir)
+set(asio_SOURCE_DIR "${source_dir}")
+
+add_library(asio INTERFACE IMPORTED)
+file(MAKE_DIRECTORY ${asio_SOURCE_DIR}/asio/include)
+set_target_properties(asio PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${asio_SOURCE_DIR}/asio/include
+)
+add_dependencies(asio chriskohlhoff_asio)

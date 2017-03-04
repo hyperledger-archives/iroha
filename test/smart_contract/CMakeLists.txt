@@ -7,7 +7,7 @@ target_link_libraries(java_query_repo_invocation_test
   leveldb
   virtual_machine_with_java
   world_state_repo_with_level_db
-  jvm
+  jni
   gtest
   config_manager
 )
@@ -26,7 +26,7 @@ target_link_libraries(java_query_repo_account_test
   leveldb
   virtual_machine_with_java
   world_state_repo_with_level_db
-  jvm
+  jni
   gtest
 )
 add_test(
@@ -43,7 +43,7 @@ target_link_libraries(java_query_repo_asset_test
   leveldb
   virtual_machine_with_java
   world_state_repo_with_level_db
-  jvm
+  jni
   gtest
 )
 add_test(
@@ -61,7 +61,7 @@ target_link_libraries(java_query_repo_simple_asset_test
   leveldb
   virtual_machine_with_java
   world_state_repo_with_level_db
-  jvm
+  jni
   gtest
 )
 add_test(
@@ -79,7 +79,7 @@ target_link_libraries(java_query_repo_domain_test
   leveldb
   virtual_machine_with_java
   world_state_repo_with_level_db
-  jvm
+  jni
   gtest
 )
 add_test(
@@ -97,7 +97,7 @@ target_link_libraries(java_query_repo_peer_test
   leveldb
   virtual_machine_with_java
   world_state_repo_with_level_db
-  jvm
+  jni
   gtest
 )
 add_test(
