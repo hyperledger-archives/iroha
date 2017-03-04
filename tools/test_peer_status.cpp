@@ -27,7 +27,7 @@ limitations under the License.
 #include <fstream>
 
 
-#include "../core/crypto/hash.hpp"
+#include <crypto/hash.hpp>
 
 #include <exception>
 #include <future>

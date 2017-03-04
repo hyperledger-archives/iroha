@@ -13,22 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#include <infra/protobuf/api.pb.h>
 #include "transaction_validator.hpp"
 
 namespace transaction_validator {
 
-    template<typename T>
-    using Transaction = transaction::Transaction<T>;
-    template<typename T>
-    using ConsensusEvent = event::ConsensusEvent<T>;
-    template<typename T>
-    using Add = command::Add<T>;
-    template<typename T>
-    using Transfer = command::Transfer<T>;
+    using Api::ConsensusEvent;
 
     template<>
-    bool isValid<Event::ConsensusEvent>(
-        const std::unique_ptr<Event::ConsensusEvent>& tx
+    bool isValid<ConsensusEvent>(
+        const std::unique_ptr<ConsensusEvent>& tx
     ){
         // Write domain logic
         return true;

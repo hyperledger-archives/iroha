@@ -21,24 +21,15 @@ limitations under the License.
 
 #include <json.hpp>
 
-#include "../core/server/http_server.hpp"
-#include "../core/consensus/connection/connection.hpp"
-#include "../core/consensus/sumeragi.hpp"
-#include "../core/util/logger.hpp"
+#include <server/http_server.hpp>
+#include <consensus/connection/connection.hpp>
+#include <consensus/sumeragi.hpp>
+#include <util/logger.hpp>
 
-#include "../core/service/peer_service.hpp"
-#include "../core/infra/config/peer_service_with_json.hpp"
+#include <service/peer_service.hpp>
+#include <infra/config/peer_service_with_json.hpp>
 
 std::atomic_bool running(true);
-
-template<typename T>
-using Transaction = transaction::Transaction<T>;
-template<typename T>
-using ConsensusEvent = event::ConsensusEvent<T>;
-template<typename T>
-using Add = command::Add<T>;
-template<typename T>
-using Transfer = command::Transfer<T>;
 
 void server(){
     http::server();
@@ -58,21 +49,11 @@ int main() {
     }
 
     logger::info("main") << "process is :" << getpid();
-    logger::setLogLevel(logger::LogLevel::DEBUG);
+    logger::setLogLevel(logger::LogLevel::Debug);
 
-    std::vector<std::unique_ptr<peer::Node>> nodes = config::PeerServiceConfig::getInstance().getPeerList();
     connection::initialize_peer();
-    for (const auto& n : nodes){
-        connection::addSubscriber(n->getIP());
-    }
-  
-    sumeragi::initializeSumeragi(
-                config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                config::PeerServiceConfig::getInstance().getPeerList());
+    sumeragi::initializeSumeragi();
 
-    // since we have thread pool, it sets all necessary callbacks in 
-    // sumeragi::initializeSumeragi.
-    // std::thread sumeragi_thread(sumeragi::loop);
     std::thread http_thread(server);
 
     connection::run();

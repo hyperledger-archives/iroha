@@ -17,24 +17,15 @@ limitations under the License.
 #ifndef CORE_VALIDATION_TRANSACTIONVALIDATOR_HPP_
 #define CORE_VALIDATION_TRANSACTIONVALIDATOR_HPP_
 
-#include "../consensus/consensus_event.hpp"
-#include "../infra/protobuf/event.grpc.pb.h"
-
-#include "../model/commands/add.hpp"
-#include "../model/commands/transfer.hpp"
-#include "../model/commands/update.hpp"
-
-#include "../model/objects/account.hpp"
-#include "../model/objects/asset.hpp"
-#include "../model/objects/domain.hpp"
-
-
 #include <memory>
 #include <type_traits>
 
+#include <consensus/consensus_event.hpp>
+#include <infra/protobuf/api.grpc.pb.h>
+
 namespace transaction_validator {
 
-    using transaction::Transaction;
+    using Api::ConsensusEvent;
 
     template<typename T>
     bool isValid(const std::unique_ptr<T>& tx);

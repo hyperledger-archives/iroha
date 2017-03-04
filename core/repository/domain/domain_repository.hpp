@@ -14,38 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __CORE_REPOSITORY_DOMAIN_SAMPLE_ASSET_REPOSITORY_HPP__
-#define __CORE_REPOSITORY_DOMAIN_SAMPLE_ASSET_REPOSITORY_HPP__
+#ifndef __CORE_REPOSITORY_DOMAIN_REPOSITORY_HPP__
+#define __CORE_REPOSITORY_DOMAIN_REPOSITORY_HPP__
 
+#include <infra/protobuf/api.pb.h>
+#include <transaction_builder/transaction_builder.hpp>
 #include <string>
-#include <memory>
 #include <vector>
 
 namespace repository {
-    namespace domain {
+namespace domain {
+std::string add(const std::string &ownerPublicKey, const std::string &name);
+bool update(const std::string &uuid, const std::string &name);
+bool remove(const std::string &uuid);
+Api::Domain findByUuid(const std::string &uuid);
+bool exists(const std::string &uuid);
+}
+}
 
-        template<typename T>
-        bool add(std::string key, T value);
-
-        template<typename T>
-        bool update(std::string key, T newValue);
-
-        // This is OK...??
-        template<typename T>
-        bool remove(std::string key);
-
-        template<typename T>
-        std::vector<std::unique_ptr<T> > findAll(std::string key);
-
-        template<typename T>
-        std::unique_ptr<T> findOne(std::string key);
-
-        template<typename T>
-        std::unique_ptr<T> findOrElse(std::string key, T defaultVale);
-
-        template<typename T>
-        bool isExist(std::string key);
-    }
-
-};
-#endif  // CORE_REPOSITORY_MERKLETRANSACTIONREPOSITORY_HPP_
+#endif // __CORE_REPOSITORY_DOMAIN_REPOSITORY_HPP__

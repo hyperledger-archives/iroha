@@ -14,35 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __CORE_REPOSITORY_DOMAIN_ACCOUNT_ASSET_REPOSITORY_HPP__
-#define __CORE_REPOSITORY_DOMAIN_ACCOUNT_ASSET_REPOSITORY_HPP__
+#ifndef __CORE_REPOSITORY_DOMAIN_ACCOUNT_REPOSITORY_HPP__
+#define __CORE_REPOSITORY_DOMAIN_ACCOUNT_REPOSITORY_HPP__
 
-#include <string>
+#include <infra/protobuf/api.pb.h>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include "../../model/objects/account.hpp"
-#include "../../model/state/account.hpp"
-
-namespace repository{
-    namespace account {
-
-        // SampleAsset has only quantity no logic, so this value is int.
-        bool update_quantity(
-            const std::string& uuid,
-            const std::string& assetName,
-            long newValue
-        );
-
-        bool attach(const std::string& uuid,const std::string& assetName, long assetDefault);
-
-        object::Account findByUuid(const std::string& uuid);
-
-        std::string add(
-            std::string &publicKey,
-            std::string &alias
-        );
-
-    };
-};
-#endif  // CORE_REPOSITORY_MERKLETRANSACTIONREPOSITORY_HPP_
+namespace repository {
+namespace account {
+std::string add(const std::string &publicKey, const std::string &name,
+                const std::vector<std::string> &assets);
+bool attach(const std::string &uuid, const std::string &asset);
+bool update(const std::string &uuid, const std::string &name, const std::vector<std::string> &assets);
+bool remove(const std::string &uuid);
+Api::Account findByUuid(const std::string &uuid);
+bool exists(const std::string &uuid);
+}
+}
+#endif // __CORE_REPOSITORY_DOMAIN_ACCOUNT_REPOSITORY_HPP__

@@ -13,24 +13,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef IROHA_ASSET_REPOSITORY_H
-#define IROHA_ASSET_REPOSITORY_H
+
+#ifndef __CORE_REPOSITORY_DOMAIN_ASSET_REPOSITORY_HPP__
+#define __CORE_REPOSITORY_DOMAIN_ASSET_REPOSITORY_HPP__
+
+#include <infra/protobuf/api.pb.h>
+#include <transaction_builder/transaction_builder.hpp>
+#include <string>
+#include <vector>
 
 namespace repository {
-    namespace asset {
+namespace asset {
+std::string add(const std::string &domain, const std::string &name,
+                const txbuilder::Map &value,
+                const std::string &smartContractName);
+bool update(const std::string &uuid, const txbuilder::Map &value);
+bool remove(const std::string &uuid);
+std::vector<Api::Asset> findAll(const std::string &uuid);
+Api::Asset findByUuid(const std::string &uuid);
+bool exists(const std::string &uuid);
+}
+}
 
-        bool add(std::string publicKey, std::string assetName, std::string value);
-        bool update(std::string publicKey, std::string assetName, std::string newValue);
-        bool remove(std::string publicKey, std::string assetName);
-        std::vector <std::string> findAll(std::string key);
-
-        std::string findOne(std::string key);
-
-        std::string findOrElse(std::string key, std::string defaultVale);
-
-        bool isExist(std::string key);
-    };
-};
-
-
-#endif //IROHA_ASSET_REPOSITORY_H
+#endif // __CORE_REPOSITORY_DOMAIN_ASSET_REPOSITORY_HPP__

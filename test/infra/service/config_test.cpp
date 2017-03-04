@@ -19,7 +19,7 @@ limitations under the License.
 #include <fstream>
 #include <regex>
 
-#include "../../../core/vendor/json/src/json.hpp"
+#include <json.hpp>
 
 using json = nlohmann::json;
 

@@ -1,8 +1,8 @@
 #include "random.hpp"
 
-namespace random_service{
+namespace random_service {
 
-    std::string makeRandomHash() {
+    std::string makeHashByMT19937() {
         static std::mt19937 mt(std::random_device{}());
         return hash::sha3_256_hex(std::to_string(mt()));
     }

@@ -22,12 +22,17 @@ limitations under the License.
 #include <memory>
 #include <functional>
 
-#include "../../infra/protobuf/event.grpc.pb.h"
+#include <infra/protobuf/api.grpc.pb.h>
 #include "../consensus_event.hpp"
 
 namespace connection {
 
-    struct Config{
+    using Api::ConsensusEvent;
+    using Api::Transaction;
+    using Api::Query;
+
+
+    struct Config {
         std::string name;
         std::string ip_addr;
         std::string port;
@@ -35,22 +40,72 @@ namespace connection {
 
     void initialize_peer();
 
-    bool send(
-        const std::string& ip,
-        const Event::ConsensusEvent& msg)
-    ;
+    namespace iroha {
+        namespace Sumeragi {
 
-    bool sendAll(
-        const Event::ConsensusEvent& msg
-    );
+            namespace Verify {
 
-    bool receive(const std::function<void(
-        const std::string&,
-        Event::ConsensusEvent&)
-    >& callback);
+                bool send(
+                        const std::string &ip,
+                        const ConsensusEvent &msg
+                );
 
+                bool sendAll(const ConsensusEvent &msg);
 
-    void addSubscriber(std::string ip);
+                bool receive(const std::function<void(
+                    const std::string &,
+                    ConsensusEvent &)
+                > &callback);
+
+            };
+
+            namespace Torii {
+
+                bool receive(const std::function<void(
+                    const std::string &,
+                    Transaction&)
+                > &callback);
+
+            };
+        };
+
+        namespace PeerService {
+
+            namespace Torii {
+
+                bool send(
+                        const std::string &ip,
+                        const Transaction &transaction
+                );
+
+            }
+        }
+
+        namespace TransactionRepository {
+
+            namespace find {
+
+                bool receive(const std::function<void(
+                        const std::string &,
+                        const Query &)
+                > &callback);
+
+            };
+
+        }
+
+        namespace AssetRepository {
+
+            namespace find {
+
+                bool receive(const std::function<void(
+                        const std::string &,
+                        const Query &)
+                > &callback);
+
+            };
+        };
+    }
 
     int run();
 

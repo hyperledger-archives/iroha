@@ -16,84 +16,63 @@ limitations under the License.
 
 #include <string>
 #include <iostream>
-
 #include <unordered_map>
+#include <thread>
+#include <gtest/gtest.h>
 
-#include "../../core/consensus/connection/connection.hpp"
-#include "../../core/consensus/consensus_event.hpp"
-#include "../../core/model/commands/transfer.hpp"
-#include "../../core/model/objects/domain.hpp"
-#include "../../core/model/transaction.hpp"
-#include "../../core/service/peer_service.hpp"
+#include <consensus/connection/connection.hpp>
+#include <consensus/consensus_event.hpp>
+#include <service/peer_service.hpp>
+#include <infra/protobuf/api.grpc.pb.h>
+#include <infra/config/peer_service_with_json.hpp>
 
-#include "../../core/infra/protobuf/convertor.hpp"
-#include "../../core/infra/protobuf/event.grpc.pb.h"
+#include <transaction_builder/transaction_builder.hpp>
 
-#include "../../core/infra/config/peer_service_with_json.hpp"
+using Api::ConsensusEvent;
+using Api::Transaction;
 
-template<typename T>
-using Transaction = transaction::Transaction<T>;
-template<typename T>
-using ConsensusEvent = event::ConsensusEvent<T>;
-template<typename T>
-using Add = command::Add<T>;
-template<typename T>
-using Transfer = command::Transfer<T>;
+using txbuilder::TransactionBuilder;
+using type_signatures::Add;
+using type_signatures::Domain;
+using type_signatures::Account;
+using type_signatures::Asset;
+using type_signatures::SimpleAsset;
+using type_signatures::Peer;
 
-int main(int argc, char* argv[]){
-    if(argc != 3){
-        return 1;
-    }
-    logger::setLogLevel(logger::LogLevel::DEBUG);
+
+TEST(ConnectionWithGrpc, Transaction_Add_Domain){
+    logger::setLogLevel(logger::LogLevel::Debug);
 
     connection::initialize_peer();
 
-    if (std::string(argv[1]) == "sender") {
-        logger::debug("main") << "I'm sender.";
-        connection::addSubscriber(argv[2]);
-        logger::debug("main") << "Add subscribed";
-        while(1){
-            auto event = ConsensusEvent<Transaction<Add<object::Asset>>>(
-                    "sender",
-                    "domain",
-                    "Dummy transaction",
-                    100,
-                    0
-            );
-
-            logger::debug("main") << "issued event";
-            event.addSignature(
-                    config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                    signature::sign(event.getHash(),
-                                    config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                                    config::PeerServiceConfig::getInstance().getPrivateKey()).c_str()
-            );
-
-            event.addSignature(
-                    config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                    signature::sign(event.getHash(),
-                                    config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                                    config::PeerServiceConfig::getInstance().getPrivateKey()).c_str()
-            );
-
-
-            logger::debug("main") << "Add signatured";
-            logger::debug("main") << "start send";
-            std::cout << " sig:" << event.eventSignatures().size() << "\n";
-            connection::sendAll(convertor::encode(event));
-        }
-    } else if (std::string(argv[1]) == "receive") {
-        connection::receive([](const std::string& from,Event::ConsensusEvent& event) {
-            std::cout <<" receive : order:" << event.order() << "\n";
-            std::cout <<" receive : sig size:" << event.eventsignatures_size() << "\n";
-            //std::cout <<" receive : value:" << event.transaction().asset().value() << "\n";
-            std::cout <<" receive : name:" << event.transaction().asset().name() <<"\n";
-            std::cout <<" type:"<<  event.transaction().type()  << "\n";
+    auto server = []() {
+        connection::iroha::Sumeragi::Verify::receive([](const std::string &from, ConsensusEvent &event) {
+            std::cout << event.transaction().DebugString() << std::endl;
+            ASSERT_STREQ( event.transaction().senderpubkey().c_str(),              "karin");
+            ASSERT_STREQ( event.transaction().domain().name().c_str(),              "name");
+            ASSERT_STREQ( event.transaction().domain().ownerpublickey().c_str(), "pubkey1");
         });
         connection::run();
-    }
+    };
 
-    while(1){}
+    std::thread server_thread(server);
+
+    Api::Domain domain;
+    domain.set_ownerpublickey("pubkey1");
+    domain.set_name("name");
+    auto tx = TransactionBuilder<Add<Domain>>()
+            .setSenderPublicKey("karin")
+            .setDomain(domain)
+            .build();
+
+    Api::ConsensusEvent sampleEvent;
+    sampleEvent.mutable_transaction()->CopyFrom(tx);
+
+    connection::iroha::Sumeragi::Verify::send(
+        config::PeerServiceConfig::getInstance().getMyIp(),
+        sampleEvent
+    );
+
+    server_thread.detach();
     connection::finish();
-    return 0;
 }

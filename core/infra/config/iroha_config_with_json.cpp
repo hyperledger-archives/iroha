@@ -16,35 +16,68 @@ limitations under the License.
 
 #include "iroha_config_with_json.hpp"
 
-namespace config {
-    IrohaConfigManager::IrohaConfigManager() { }
+using IrohaConfigManager = config::IrohaConfigManager;
 
-    std::string IrohaConfigManager::openJSONText(const std::string& PathToJSONFile) {
-        std::ifstream ifs(PathToJSONFile);
-        if (ifs.fail()) {
-            logger::warning("json config") << "Not found: " << PathToJSONFile;
-            logger::warning("json config") << "All configurable parameters will be set to default";
-            return "{}";
-        }
+IrohaConfigManager::IrohaConfigManager() {}
 
-        std::istreambuf_iterator<char> it(ifs);
-        return std::string(it, std::istreambuf_iterator<char>());
-    }
+IrohaConfigManager& IrohaConfigManager::getInstance() {
+  static IrohaConfigManager instance;
+  return instance;
+}
 
-    void IrohaConfigManager::setConfigData(std::string&& jsonStr) {
-        try {
-            _configData = json::parse(std::move(jsonStr));
-        } catch(...) {
-            logger::warning("json config") << "Bad json!!" << jsonStr;
-        }
-    }
+template <typename T>
+T IrohaConfigManager::getParam(const std::string& param,
+                               const T& defaultValue) {
+  if (auto config = openConfig(getConfigName())) {
+    return config->value(param, defaultValue);
+  }
+  return defaultValue;
+}
 
-    IrohaConfigManager& IrohaConfigManager::getInstance() {
-        static IrohaConfigManager manager;
-        return manager;
-    }
+std::string IrohaConfigManager::getConfigName() { return "config/config.json"; }
 
-    std::string IrohaConfigManager::getConfigName() {
-        return "docker/build/config/config.json";
-    }
+std::string IrohaConfigManager::getDatabasePath(
+        const std::string& defaultValue
+) {
+  return this->getParam<std::string>("database_path", defaultValue);
+}
+
+std::string IrohaConfigManager::getJavaClassPath(const std::string& defaultValue) {
+  return this->getParam<std::string>("java_class_path", defaultValue);
+}
+
+std::string IrohaConfigManager::getJavaClassPathLocal(const std::string& defaultValue) {
+  return this->getParam<std::string>("java_class_path_local", defaultValue);
+}
+
+std::string IrohaConfigManager::getJavaLibraryPath(const std::string& defaultValue) {
+  return this->getParam<std::string>("java_library_path", defaultValue);
+}
+
+std::string IrohaConfigManager::getJavaLibraryPathLocal(const std::string& defaultValue) {
+  return this->getParam<std::string>("java_library_path_local", defaultValue);
+}
+
+std::string IrohaConfigManager::getJavaPolicyPath(const std::string& defaultValue) {
+  return this->getParam<std::string>("java_policy_path", defaultValue);
+}
+
+size_t IrohaConfigManager::getConcurrency(size_t defaultValue) {
+  return this->getParam<size_t>("concurrency", defaultValue);
+}
+
+size_t IrohaConfigManager::getMaxFaultyPeers(size_t defaultValue) {
+  return this->getParam<size_t>("max_faulty_peers", defaultValue);
+}
+
+size_t IrohaConfigManager::getPoolWorkerQueueSize(size_t defaultValue) {
+  return this->getParam<size_t>("pool_worker_queue_size", defaultValue);
+}
+
+uint16_t IrohaConfigManager::getGrpcPortNumber(uint16_t defaultValue) {
+    return this->getParam<uint16_t>("grpc_port", defaultValue);
+}
+
+uint16_t IrohaConfigManager::getHttpPortNumber(uint16_t defaultValue) {
+    return this->getParam<uint16_t>("http_port", defaultValue);
 }

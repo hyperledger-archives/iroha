@@ -69,14 +69,6 @@ RUN apt-get update && apt-get -y upgrade; \
     cd /tmp; \
     git clone --recursive -b $(curl -L http://grpc.io/release) https://github.com/grpc/grpc; \
     cd grpc; \
-    make && make install \
-
-    # install asio standalone
-    cd /tmp; \
-    git clone https://github.com/chriskohlhoff/asio.git; \
-    cd asio/asio; \
-    ./autogen.sh && \
-    ./configure   --without-boost && \
     make && make install
 
 # build and mktar scripts
