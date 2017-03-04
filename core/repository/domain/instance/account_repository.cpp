@@ -15,33 +15,22 @@ limitations under the License.
 */
 
 #include "../account_repository.hpp"
+#include "common_repository.hpp"
 #include <crypto/hash.hpp>
 #include <repository/world_state_repository.hpp>
 #include <transaction_builder/transaction_builder.hpp>
 #include <util/convert_string.hpp>
 #include <util/logger.hpp>
 
+namespace common = ::repository::common;
+
 const std::string NameSpaceID = "account repository";
+const auto ValuePrefix = common::Prefix("Account::");
 
 namespace repository {
 namespace account {
 
 namespace detail {
-/********************************************************************************************
- * stringify / parse
- ********************************************************************************************/
-std::string stringifyAccount(const Api::Account &obj) {
-  std::string ret;
-  obj.SerializeToString(&ret);
-  return ret;
-}
-
-Api::Account parseAccount(const std::string &str) {
-  Api::Account ret;
-  ret.ParseFromString(str);
-  return ret;
-}
-
 /********************************************************************************************
  * utils
  ********************************************************************************************/
@@ -67,20 +56,12 @@ std::string add(const std::string &publicKey, const std::string &name,
                                << " name: " << name << " assets: " << allAssets;
 
   const auto uuid = detail::createAccountUuid(publicKey);
-  if (not exists(uuid)) {
+  if (!exists(uuid)) {
     const auto account = txbuilder::createAccount(publicKey, name, assets);
-    const auto strAccount = detail::stringifyAccount(account);
-//std::cout << "_____________________UTF_8_TEST_BEGIN___________________________________\n";
-//Api::Account hoge = detail::parseAccount(strAccount);
-//std::cout<<hoge.name() << std::endl;
-//std::cout << "~~~~~~~~~~~~~~~~~~~~~UTF_8_TEST_END~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+    const auto strAccount = common::stringify<Api::Account>(account, ValuePrefix);
     logger::debug(NameSpaceID) << "Save key: " << uuid << " strAccount: \""
                                << strAccount << "\"";
     if (world_state_repository::add(uuid, strAccount)) {
-//std::cout << "_____________________UTF_8_TEST_BEGIN_IN_ACCOUNT_ADDED__________________\n";
-//Api::Account hoge = detail::parseAccount(world_state_repository::find(uuid));
-//std::cout<<hoge.name() << std::endl;
-//std::cout << "~~~~~~~~~~~~~~~~~~~~~UTF_8_TEST_END~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
       return uuid;
     }
   }
@@ -93,18 +74,21 @@ std::string add(const std::string &publicKey, const std::string &name,
  ********************************************************************************************/
 bool attach(const std::string &uuid, const std::string &asset) {
 
-  if (not exists(uuid)) {
+  if (!exists(uuid)) {
     return false;
   }
 
   const auto strAccount = world_state_repository::find(uuid);
-//  std::cout << "_____________________UTF_8_TEST_BEGIN___________________________________\n";
-  Api::Account account = detail::parseAccount(strAccount);
-//  std::cout << "~~~~~~~~~~~~~~~~~~~~~UTF_8_TEST_END~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+
+
+  for (int i=0; i<(int)asset.size(); i++) {
+    assert(! (!isdigit(asset[i]) && !isalpha(asset[i])));
+  }
+
+  Api::Account account = common::parse<Api::Account>(strAccount, ValuePrefix);
   account.add_assets(asset);
 
-  std::cout << "________________________________________________________\n";
-  auto str = detail::stringifyAccount(account);
+  auto str = common::stringify<Api::Account>(account, ValuePrefix);
   if (world_state_repository::update(uuid, str)) {
     logger::explore(NameSpaceID) << "Add<Asset, To<Account>> uuid: " << uuid
                                  << "asset: " << asset;
@@ -127,10 +111,10 @@ bool update(const std::string &uuid, const std::string& name, const std::vector<
 
   if (exists(uuid)) {
     const auto rval = world_state_repository::find(uuid);
-    auto account = detail::parseAccount(rval);
+    auto account = common::parse<Api::Account>(rval, ValuePrefix);
     *account.mutable_name() = name;
     *account.mutable_assets() = txbuilder::Vector<std::string>(assets.begin(), assets.end());
-    const auto strAccount = detail::stringifyAccount(account);
+    const auto strAccount = common::stringify<Api::Account>(account, ValuePrefix);
     if (world_state_repository::update(uuid, strAccount)) {
       logger::debug(NameSpaceID) << "Update strAccount: \"" << strAccount
                                  << "\"";
@@ -158,10 +142,7 @@ Api::Account findByUuid(const std::string &uuid) {
   if (exists(uuid)) {
     const auto strAccount = world_state_repository::find(uuid);
     logger::explore(NameSpaceID + "findByUuid") << "";
-//  std::cout << "_____________________UTF_8_TEST_BEGIN___________________________________\n";
-//  Api::Account hoge = detail::parseAccount(strAccount);
-//  std::cout << "~~~~~~~~~~~~~~~~~~~~~UTF_8_TEST_END~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
-    return detail::parseAccount(strAccount);
+    return common::parse<Api::Account>(strAccount, ValuePrefix);
   }
   return Api::Account();
 }

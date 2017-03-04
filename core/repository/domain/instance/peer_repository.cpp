@@ -15,13 +15,17 @@ limitations under the License.
 */
 
 #include "../peer_repository.hpp"
+#include "common_repository.hpp"
 #include <crypto/hash.hpp>
 #include <repository/world_state_repository.hpp>
 #include <transaction_builder/transaction_builder.hpp>
 #include <util/exception.hpp>
 #include <util/logger.hpp>
 
+namespace common = ::repository::common;
+
 const std::string NameSpaceID = "peer repository";
+const auto ValuePrefix = common::Prefix("Peer::");
 
 namespace repository {
 namespace peer {
@@ -61,7 +65,7 @@ std::string add(const std::string &publicKey, const std::string &address,
 
   if (!exists(uuid)) {
     const auto strPeer =
-        detail::stringifyPeer(txbuilder::createPeer(publicKey, address, trust));
+        common::stringify<Api::Peer>(txbuilder::createPeer(publicKey, address, trust), ValuePrefix);
     if (world_state_repository::add(uuid, strPeer)) {
       return uuid;
     }
@@ -81,10 +85,10 @@ bool update(const std::string &uuid, const std::string &address,
                                  << ", address: " << address
 
                                  << ", trust: " << trust.value();
-    auto peer = detail::parsePeer(rval);
+    auto peer = common::parse<Api::Peer>(rval, ValuePrefix);
     *peer.mutable_address() = address;
     *peer.mutable_trust() = trust;
-    const auto strPeer = detail::stringifyPeer(peer);
+    const auto strPeer = common::stringify<Api::Peer>(peer, ValuePrefix);
     return world_state_repository::update(uuid, strPeer);
   }
   return false;
@@ -109,7 +113,7 @@ Api::Peer findByUuid(const std::string &uuid) {
   logger::explore(NameSpaceID + "::findByUuid") << "";
   auto strPeer = world_state_repository::find(uuid);
   if (not strPeer.empty()) {
-    return detail::parsePeer(strPeer);
+    return common::parse<Api::Peer>(strPeer, ValuePrefix);
   }
 
   return Api::Peer();
