@@ -18,6 +18,7 @@ limitations under the License.
 
 #include <consensus/connection/connection.hpp>
 #include <util/logger.hpp>
+#include <util/datetime.hpp>
 #include <service/peer_service.hpp>
 
 #include <infra/config/peer_service_with_json.hpp>
@@ -40,6 +41,9 @@ namespace connection {
     using Api::Sumeragi;
     using Api::TransactionRepository;
     using Api::AssetRepository;
+
+    using Api::Query;
+    using Api::StatusResponse;
 
 
     using Api::Query;
@@ -171,6 +175,17 @@ namespace connection {
                 f(dummy, tx);
             }
             response->set_value("OK");
+            return Status::OK;
+        }
+
+        Status Kagami(
+                ServerContext*      context,
+                const Query*          query,
+                StatusResponse*     response
+        ) override {
+            response->set_message("OK, no problem!");
+            response->set_value("Alive");
+            response->set_timestamp(datetime::unixtime());
             return Status::OK;
         }
 

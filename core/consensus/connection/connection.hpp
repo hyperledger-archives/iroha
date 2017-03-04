@@ -67,6 +67,8 @@ namespace connection {
                 > &callback);
 
             };
+            // This only reply pong.
+            namespace Kagami{}
         };
 
         namespace PeerService {
