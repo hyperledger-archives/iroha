@@ -79,7 +79,7 @@ std::string PeerServiceConfig::getMyIp() {
 }
 
 double PeerServiceConfig::getMaxTrustScore() {
-    return 10.0; // WIP　to support trustRate = 1.0
+    return std::max( 10.0, (double)peerList.size() ); // temporary MaxTrustScore is max( 10, peerList.size() )
 }
 
 bool PeerServiceConfig::isExistIP( const std::string &ip ) {
@@ -108,7 +108,7 @@ std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
     nodes.push_back( std::make_unique<peer::Node>( node.getIP(), node.getPublicKey(), node.getTrustScore() ) );
   sort( nodes.begin(), nodes.end(),
         []( const std::unique_ptr<peer::Node> &a, const std::unique_ptr<peer::Node> &b ) { return a->getTrustScore() > b->getTrustScore(); } );
-    return nodes;
+  return nodes;
 }
 std::vector<std::string> PeerServiceConfig::getIpList() {
   std::vector<std::string> ret_ips;
@@ -136,7 +136,7 @@ void PeerServiceConfig::checkBrokenPeer( const std::string& ip ) {
 }
 
 void PeerServiceConfig::finishedInitializePeer() {
-    std::string leader_ip = getPeerList().begin()->get()->getIP();
+    std::string leader_ip = leaderPeer()->getIP();
     auto txPeer = TransactionBuilder<Update<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
             .setPeer(txbuilder::createPeer( getMyPublicKey(), getMyIp(), txbuilder::createTrust(0.0, true)))
@@ -154,7 +154,7 @@ void PeerServiceConfig::toIssue_addPeer( const peer::Node& peer ) {
     connection::iroha::PeerService::Torii::send( getMyIp(), txPeer );
 }
 void PeerServiceConfig::toIssue_distructPeer( const std::string &publicKey ) {
-    auto it = findPeerPublicKey( publicKey );
+    if( !isExistPublicKey(publicKey) ) return;
     auto txPeer = TransactionBuilder<Update<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
             .setPeer(txbuilder::createPeer(publicKey, peer::Node::defaultIP(), txbuilder::createTrust(-1.0, true)))
@@ -162,6 +162,7 @@ void PeerServiceConfig::toIssue_distructPeer( const std::string &publicKey ) {
     connection::iroha::PeerService::Torii::send( getMyIp(), txPeer );
 }
 void PeerServiceConfig::toIssue_removePeer( const std::string &publicKey ) {
+    if( !isExistPublicKey(publicKey) ) return;
     auto txPeer = TransactionBuilder<Remove<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
             .setPeer(txbuilder::createPeer(publicKey, peer::Node::defaultIP(), txbuilder::createTrust(-getMaxTrustScore(), false)))
@@ -169,12 +170,12 @@ void PeerServiceConfig::toIssue_removePeer( const std::string &publicKey ) {
     connection::iroha::PeerService::Torii::send( getMyIp(), txPeer );
 }
 void PeerServiceConfig::toIssue_creditPeer( const std::string &publicKey ) {
-    auto it = findPeerPublicKey( publicKey );
-    if( it->getTrustScore() == getMaxTrustScore() ) return;
+    if( !isExistPublicKey(publicKey) ) return;
+    if( findPeerPublicKey(publicKey)->getTrustScore() == getMaxTrustScore() ) return;
     auto txPeer = TransactionBuilder<Update<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
             .setPeer(txbuilder::createPeer(publicKey, peer::Node::defaultIP(),
-                                           txbuilder::createTrust( 1.0, true)))
+                                           txbuilder::createTrust( +1.0, true)))
             .build();
     connection::iroha::PeerService::Torii::send( getMyIp(), txPeer );
 }
@@ -311,10 +312,16 @@ bool PeerServiceConfig::validate_updatePeer( const std::string& publicKey, const
 
 
 bool PeerServiceConfig::isLeaderMyPeer() {
-  if( peerList.empty() ) return false;
   auto sorted_peers = getPeerList();
+  if( sorted_peers.empty() ) return false;
   return (*sorted_peers.begin())->getPublicKey() == getMyPublicKey() &&
          (*sorted_peers.begin())->getIP() == getMyIp();
+}
+
+std::unique_ptr<peer::Node> PeerServiceConfig::leaderPeer() {
+  auto soreted_peers = getPeerList();
+  if( soreted_peers.empty() ) return NULL;
+  return std::move( *soreted_peers.begin() );
 }
 
 void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {

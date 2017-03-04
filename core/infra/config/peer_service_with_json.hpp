@@ -75,6 +75,7 @@ class PeerServiceConfig : config::AbstractConfigManager {
 
   // equatl to isSumeragi
   bool isLeaderMyPeer();
+  std::unique_ptr<peer::Node> leaderPeer();
 
   virtual std::string getConfigName();
 };
