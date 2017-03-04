@@ -144,39 +144,4 @@ public class TestPeer {
       printFail(e);
     }
   }
-  /***************************************************************************************************
-   * From java main function
-   ***************************************************************************************************/
-
-  // Test 'add' only. All command tests are invoked by gTest.
-  private static void javaIntegrityCheckAddAccount() {
-    try {
-      HashMap<String, String> params = new HashMap<String, String>();
-      params.put(PublicKey,   "This is Public key.");
-      params.put(PeerAddress, "this is Peer Addr");
-      
-      HashMap<String, String> trust = new HashMap<String, String>();
-      trust.put(PeerTrustValue, "1.234567890987654321");
-      trust.put(PeerTrustIsOk,  "true");
-
-      testAddPeer(params, trust);
-
-      System.out.println("==============================================");
-      System.out.println("Success (from Java main)");
-      System.out.println("==============================================");
-
-    } catch(IllegalStateException e) {
-      System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      System.err.println("Fail (from Java main)");
-      System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      System.err.println(e.getMessage() + " in " + e.getClass().getName());
-    }
-  }
-
-  public static void main(String[] argv) {
-    System.out.println("Hello in JAVA!");
-    javaIntegrityCheckAddAccount();
-    System.out.println("Call C++ gTest is also required.");
-  }
-
 }

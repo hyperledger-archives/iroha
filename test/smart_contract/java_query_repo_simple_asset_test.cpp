@@ -18,10 +18,8 @@ limitations under the License.
 
 #include <cmath>
 #include <../smart_contract/repository/jni_constants.hpp>
-#include <infra/protobuf/api.pb.h>
 #include <infra/virtual_machine/jvm/java_data_structure.hpp>
 #include <repository/domain/simple_asset_repository.hpp>
-#include <repository/world_state_repository.hpp>
 #include <transaction_builder/helper/create_objects_helper.hpp>
 #include <virtual_machine/virtual_machine.hpp>
 
@@ -37,10 +35,7 @@ void ensureIntegrityOfSimpleAssetValue(
   /*******************************************************************************
    * Restore SimpleAsset from DB
    *******************************************************************************/
-  const std::string strValue = repository::world_state_repository::find(uuid);
-
-  Api::SimpleAsset simpleAsset;
-  { simpleAsset.ParseFromString(strValue); }
+  const auto simpleAsset = repository::simple_asset::findByUuid(uuid);
 
   ASSERT_STREQ(params[tag::DomainId].c_str(), simpleAsset.domain().c_str());
   ASSERT_STREQ(params[tag::SimpleAssetName].c_str(),

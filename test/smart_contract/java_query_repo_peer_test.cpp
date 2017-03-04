@@ -18,10 +18,8 @@ limitations under the License.
 
 #include <cmath>
 #include <../smart_contract/repository/jni_constants.hpp>
-#include <infra/protobuf/api.pb.h>
 #include <infra/virtual_machine/jvm/java_data_structure.hpp>
 #include <repository/domain/peer_repository.hpp>
-#include <repository/world_state_repository.hpp>
 #include <transaction_builder/transaction_builder.hpp>
 #include <virtual_machine/virtual_machine.hpp>
 
@@ -65,10 +63,7 @@ TEST(JavaQueryRepoPeer, invokeAddPeer) {
   virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
                                   params, virtual_machine::jvm::convertTrustToMapString(trust));
 
-  const std::string strPeer = repository::world_state_repository::find(uuid);
-
-  Api::Peer peer;
-  peer.ParseFromString(strPeer);
+  const auto peer = repository::peer::findByUuid(uuid);
 
   ASSERT_STREQ(params[tag::PublicKey].c_str(), peer.publickey().c_str());
   ASSERT_STREQ(params[tag::PeerAddress].c_str(), peer.address().c_str());
@@ -115,10 +110,7 @@ TEST(JavaQueryRepoPeer, invokeUpdatePeer) {
   virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
                                   params, virtual_machine::jvm::convertTrustToMapString(trust));
 
-  const std::string strPeer = repository::world_state_repository::find(uuid);
-
-  Api::Peer peer;
-  peer.ParseFromString(strPeer);
+  const auto peer = repository::peer::findByUuid(uuid);
 
   ASSERT_STREQ("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=",
                peer.publickey().c_str());

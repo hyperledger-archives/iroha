@@ -18,9 +18,7 @@ limitations under the License.
 
 #include <cmath>
 #include <../smart_contract/repository/jni_constants.hpp>
-#include <infra/protobuf/api.pb.h>
 #include <repository/domain/asset_repository.hpp>
-#include <repository/world_state_repository.hpp>
 #include <virtual_machine/virtual_machine.hpp>
 #include <infra/virtual_machine/jvm/java_data_structure.hpp>
 
@@ -33,12 +31,8 @@ std::map<std::string, std::string> assetInfo;
 std::map<std::string, std::map<std::string, std::string>> assetValue;
 
 void ensureIntegrityOfAsset(const std::string& assetUuid) {
-  const std::string received_asset_value =
-      repository::world_state_repository::find(assetUuid);
-
   // Restore asset.
-  Api::Asset asset;
-  asset.ParseFromString(received_asset_value);
+  const auto asset = repository::asset::findByUuid(assetUuid);
 
   ASSERT_STREQ(assetInfo[tag::DomainId].c_str(), asset.domain().c_str());
   ASSERT_STREQ(assetInfo[tag::AssetName].c_str(), asset.name().c_str());

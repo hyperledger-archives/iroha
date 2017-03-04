@@ -15,33 +15,22 @@ limitations under the License.
 */
 
 #include "../domain_repository.hpp"
+#include "common_repository.hpp"
 #include <crypto/hash.hpp>
 #include <repository/world_state_repository.hpp>
 #include <transaction_builder/transaction_builder.hpp>
 #include <util/exception.hpp>
 #include <util/logger.hpp>
 
+namespace common = ::repository::common;
+
 const std::string NameSpaceID = "domain repository";
+const auto ValuePrefix = common::Prefix("Domain::");
 
 namespace repository {
 namespace domain {
 
 namespace detail {
-/********************************************************************************************
- * stringify / parse
- ********************************************************************************************/
-std::string stringifyDomain(const Api::Domain &obj) {
-  std::string ret;
-  obj.SerializeToString(&ret);
-  return ret;
-}
-
-Api::Domain parseDomain(const std::string &str) {
-  Api::Domain ret;
-  ret.ParseFromString(str);
-  return ret;
-}
-
 std::string createDomainUuid(const std::string &ownerPublicKey) {
   return hash::sha3_256_hex(ownerPublicKey);
 }
@@ -59,7 +48,7 @@ std::string add(const std::string &ownerPublicKey, const std::string &name) {
 
   if (not exists(uuid)) {
     const auto strDomain =
-        detail::stringifyDomain(txbuilder::createDomain(ownerPublicKey, name));
+        common::stringify<Api::Domain>(txbuilder::createDomain(ownerPublicKey, name), ValuePrefix);
     if (world_state_repository::add(uuid, strDomain)) {
       return uuid;
     }
@@ -75,9 +64,9 @@ bool update(const std::string &uuid, const std::string &name) {
   if (exists(uuid)) {
     const auto rval = world_state_repository::find(uuid);
     logger::explore(NameSpaceID) << "Update<Domain> uuid: " << uuid << ", name:" << name;
-    auto domain = detail::parseDomain(rval);
+    auto domain = common::parse<Api::Domain>(rval, ValuePrefix);
     *domain.mutable_name() = name;
-    const auto strDomain = detail::stringifyDomain(domain);
+    const auto strDomain = common::stringify<Api::Domain>(domain, ValuePrefix);
     return world_state_repository::update(uuid, strDomain);
   }
   return false;
@@ -102,7 +91,7 @@ Api::Domain findByUuid(const std::string &uuid) {
   logger::explore(NameSpaceID + "::findByUuid") << "";
   auto strDomain = world_state_repository::find(uuid);
   if (not strDomain.empty()) {
-    return detail::parseDomain(strDomain);
+    return common::parse<Api::Domain>(strDomain, ValuePrefix);
   }
 
   return Api::Domain();
