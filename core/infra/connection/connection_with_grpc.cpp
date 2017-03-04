@@ -52,7 +52,6 @@ namespace connection {
     namespace iroha {
         namespace Sumeragi {
             namespace Verify {
-                std::vector<std::string> receiver_ips;
                 std::vector<
                         std::function<void(
                                 const std::string& from,
@@ -223,10 +222,6 @@ namespace connection {
 
             namespace Verify {
 
-                void addSubscriber(std::string ip) {
-                    receiver_ips.push_back(ip);
-                }
-
                 bool receive(
                     const std::function<void(
                         const std::string&,
@@ -240,6 +235,7 @@ namespace connection {
                     const std::string &ip,
                     const ConsensusEvent &event
                 ) {
+                    auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
                     if (find(receiver_ips.begin(), receiver_ips.end(), ip) != receiver_ips.end()) {
                         SumeragiConnectionClient client(
                             grpc::CreateChannel(
@@ -257,6 +253,7 @@ namespace connection {
                 bool sendAll(
                     const ConsensusEvent &event
                 ) {
+                    auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
                     for (auto &ip : receiver_ips) {
                         if (ip != config::PeerServiceConfig::getInstance().getMyIp()) {
                             send(ip, event);
@@ -267,7 +264,7 @@ namespace connection {
 
             }
 
-            namespace Torii{
+            namespace Torii {
 
                 bool receive(
                     const std::function<void(
@@ -280,6 +277,31 @@ namespace connection {
 
             }
 
+        }
+
+
+        namespace PeerService {
+            namespace Torii {
+                bool send(
+                        const std::string &ip,
+                        const Transaction &transaction
+                ) {
+                    auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
+                    if (find(receiver_ips.begin(), receiver_ips.end(), ip) != receiver_ips.end()) {
+                        SumeragiConnectionClient client(
+                                grpc::CreateChannel(
+                                        ip + ":" + std::to_string(
+                                                config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)),
+                                        grpc::InsecureChannelCredentials()
+                                )
+                        );
+                        std::string reply = client.Torii(transaction);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            }
         }
 
         namespace TransactionRepository {

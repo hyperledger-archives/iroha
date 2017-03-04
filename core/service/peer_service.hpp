@@ -30,12 +30,11 @@ namespace peer
         double trustScore;
 
     public:
-        Node(){}
 
         Node(
-            std::string myIP,
-            std::string myPubKey,
-            double myTrustScore
+            std::string myIP = "",
+            std::string myPubKey = "",
+            double myTrustScore = 1.0
         ):
             ip(myIP),
             publicKey(myPubKey),
@@ -48,7 +47,14 @@ namespace peer
         Node& operator = (Node&&) = default;
         Node(const Node&) = default; // support copying
         Node& operator = (const Node&) = default;
-       
+
+
+        bool operator < (const Node& node) const {
+            return publicKey < node.getPublicKey();
+        }
+        bool operator == (const Node& node) const {
+            return publicKey == node.getPublicKey();
+        }
 
         std::string getIP() const {
             return ip;
@@ -61,6 +67,24 @@ namespace peer
         double getTrustScore() const {
             return trustScore;
         }
+
+        void setIP( const std::string& ip ) {
+            this->ip = ip;
+        }
+        void setPublicKey( const std::string& publickey ) {
+            this->publicKey = publickey;
+        }
+        void setTrustScore( const double& trustScore ) {
+            this->trustScore = trustScore;
+        }
+
+        bool isDefaultIP() const {
+            return ip == "";
+        }
+        bool isDefaultPublicKey() const {
+            return publicKey == "";
+        }
+
     };
 
     std::string getMyIp();

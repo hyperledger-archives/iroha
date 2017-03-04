@@ -3,6 +3,7 @@ add_executable(hash_test
   hash_test.cpp
 )
 target_link_libraries(hash_test
+  hash
   crypto
   hash
   ssl

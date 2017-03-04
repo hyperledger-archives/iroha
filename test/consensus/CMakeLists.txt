@@ -12,6 +12,7 @@ target_link_libraries(sumeragi_test
     sumeragi
     connection_with_grpc
     config_manager
+    create_objects_helper
 )
 
 add_executable(transaction_test
@@ -23,5 +24,7 @@ target_link_libraries(transaction_test
     signature
     sumeragi
     connection_with_grpc
+    pthread
     config_manager
+    create_objects_helper
 )
