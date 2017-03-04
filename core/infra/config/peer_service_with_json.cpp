@@ -135,7 +135,6 @@ void PeerServiceConfig::toIssue_distructPeer( const std::string &publicKey ) {
     connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
 }
 void PeerServiceConfig::toIssue_removePeer( const std::string &publicKey ) {
-    auto it = findPeerPublicKey( publicKey );
     auto txPeer = TransactionBuilder<Remove<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
             .setPeer(txbuilder::createPeer(publicKey, "", txbuilder::createTrust(0.0, false)))

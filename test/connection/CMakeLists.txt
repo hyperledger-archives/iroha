@@ -8,6 +8,7 @@ target_link_libraries(connection_grpc_test
     config_manager
     ed25519
     gtest
+    create_objects_helper
 )
 add_test(
     NAME connection_grpc_test
