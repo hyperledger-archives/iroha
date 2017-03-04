@@ -32,7 +32,7 @@ namespace transaction_validator {
         return std::find_if(s.begin(), s.end(), 
             [&hash](const auto &sig) {
                 return !verify(sig.signature(), hash, sig.publickey());
-            }) != s.end();
+            }) == s.end();
     }
 
     template<>
