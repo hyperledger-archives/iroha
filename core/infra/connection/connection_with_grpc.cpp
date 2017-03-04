@@ -310,6 +310,7 @@ namespace connection {
 
 
         namespace PeerService {
+
             namespace Sumeragi {
                 bool send(
                         const std::string &ip,
@@ -345,6 +346,7 @@ namespace connection {
                         );
                         return client.Kagami();
                     } else {
+                        logger::error("Connection_with_grpc") << "Unexpected ip: " << ip;
                         return false;
                     }
                 }
