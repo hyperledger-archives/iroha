@@ -22,7 +22,7 @@ limitations under the License.
 
 namespace datetime {
 
-  std::int64_t  unixtime();
+  std::uint64_t  unixtime();
   std::string   unixtime_str();
   std::string   date_str();
   
