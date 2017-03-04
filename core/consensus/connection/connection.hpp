@@ -67,15 +67,21 @@ namespace connection {
                 > &callback);
 
             };
+            // This only reply pong.
+            namespace Kagami{}
         };
 
         namespace PeerService {
 
-            namespace Torii {
+            namespace Sumeragi {
 
                 bool send(
                         const std::string &ip,
                         const Transaction &transaction
+                );
+
+                bool ping(
+                        const std::string &ip
                 );
 
             }

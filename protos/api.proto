@@ -21,9 +21,10 @@ service Sumeragi {
 
   // sumeragi uses.
   rpc Verify(ConsensusEvent) returns (StatusResponse) {}
+
+  // WIP It used by Hijiri. Name is think in progress
+  rpc Kagami(Query) returns (StatusResponse) {}
 }
-
-
 
 
 message TransactionResponse{

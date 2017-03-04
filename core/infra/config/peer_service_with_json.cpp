@@ -122,9 +122,7 @@ std::vector<std::string> PeerServiceConfig::getIpList() {
 void PeerServiceConfig::checkBrokenPeer( const std::string& ip ) {
     if (!isExistIP(ip)) return;
     auto check_peer_it = findPeerIP( ip );
-    if ( true
-        // TODO !connection::iroha::PeerService::Ping::send( ip );
-            ) {
+    if ( !connection::iroha::PeerService::Sumeragi::ping( ip )) {
         if( check_peer_it->getTrustScore() < 0.0 ) {
             toIssue_removePeer( check_peer_it->getPublicKey() );
         } else {
@@ -141,7 +139,7 @@ void PeerServiceConfig::finishedInitializePeer() {
             .setSenderPublicKey(getMyPublicKey())
             .setPeer(txbuilder::createPeer( getMyPublicKey(), getMyIp(), txbuilder::createTrust(0.0, true)))
             .build();
-    connection::iroha::PeerService::Torii::send( leader_ip, txPeer );
+    connection::iroha::PeerService::Sumeragi::send( leader_ip, txPeer );
 }
 
 // invoke to issue transaction
@@ -151,7 +149,7 @@ void PeerServiceConfig::toIssue_addPeer( const peer::Node& peer ) {
             .setSenderPublicKey(getMyPublicKey())
             .setPeer( txbuilder::createPeer( peer.getPublicKey(), peer.getIP(), txbuilder::createTrust(getMaxTrustScore(),false ) ) )
             .build();
-    connection::iroha::PeerService::Torii::send( getMyIp(), txPeer );
+    connection::iroha::PeerService::Sumeragi::send( getMyPublicKey(), txPeer );
 }
 void PeerServiceConfig::toIssue_distructPeer( const std::string &publicKey ) {
     if( !isExistPublicKey(publicKey) ) return;
@@ -159,7 +157,7 @@ void PeerServiceConfig::toIssue_distructPeer( const std::string &publicKey ) {
             .setSenderPublicKey(getMyPublicKey())
             .setPeer(txbuilder::createPeer(publicKey, peer::Node::defaultIP(), txbuilder::createTrust(-1.0, true)))
             .build();
-    connection::iroha::PeerService::Torii::send( getMyIp(), txPeer );
+    connection::iroha::PeerService::Sumeragi::send( getMyPublicKey(), txPeer );
 }
 void PeerServiceConfig::toIssue_removePeer( const std::string &publicKey ) {
     if( !isExistPublicKey(publicKey) ) return;
@@ -167,7 +165,7 @@ void PeerServiceConfig::toIssue_removePeer( const std::string &publicKey ) {
             .setSenderPublicKey(getMyPublicKey())
             .setPeer(txbuilder::createPeer(publicKey, peer::Node::defaultIP(), txbuilder::createTrust(-getMaxTrustScore(), false)))
             .build();
-    connection::iroha::PeerService::Torii::send( getMyIp(), txPeer );
+    connection::iroha::PeerService::Sumeragi::send( getMyPublicKey(), txPeer );
 }
 void PeerServiceConfig::toIssue_creditPeer( const std::string &publicKey ) {
     if( !isExistPublicKey(publicKey) ) return;
@@ -177,7 +175,7 @@ void PeerServiceConfig::toIssue_creditPeer( const std::string &publicKey ) {
             .setPeer(txbuilder::createPeer(publicKey, peer::Node::defaultIP(),
                                            txbuilder::createTrust( +1.0, true)))
             .build();
-    connection::iroha::PeerService::Torii::send( getMyIp(), txPeer );
+    connection::iroha::PeerService::Sumeragi::send( getMyPublicKey(), txPeer );
 }
 
 

@@ -189,9 +189,15 @@ class Sumeragi GRPC_FINAL {
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Api::StatusResponse>> AsyncVerify(::grpc::ClientContext* context, const ::Api::ConsensusEvent& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Api::StatusResponse>>(AsyncVerifyRaw(context, request, cq));
     }
+    // WIP It used by Hijiri. Name is think in progress
+    virtual ::grpc::Status Kagami(::grpc::ClientContext* context, const ::Api::Query& request, ::Api::StatusResponse* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Api::StatusResponse>> AsyncKagami(::grpc::ClientContext* context, const ::Api::Query& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Api::StatusResponse>>(AsyncKagamiRaw(context, request, cq));
+    }
   private:
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::Api::StatusResponse>* AsyncToriiRaw(::grpc::ClientContext* context, const ::Api::Transaction& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::Api::StatusResponse>* AsyncVerifyRaw(::grpc::ClientContext* context, const ::Api::ConsensusEvent& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::Api::StatusResponse>* AsyncKagamiRaw(::grpc::ClientContext* context, const ::Api::Query& request, ::grpc::CompletionQueue* cq) = 0;
   };
   class Stub GRPC_FINAL : public StubInterface {
    public:
@@ -204,13 +210,19 @@ class Sumeragi GRPC_FINAL {
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Api::StatusResponse>> AsyncVerify(::grpc::ClientContext* context, const ::Api::ConsensusEvent& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Api::StatusResponse>>(AsyncVerifyRaw(context, request, cq));
     }
+    ::grpc::Status Kagami(::grpc::ClientContext* context, const ::Api::Query& request, ::Api::StatusResponse* response) GRPC_OVERRIDE;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Api::StatusResponse>> AsyncKagami(::grpc::ClientContext* context, const ::Api::Query& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Api::StatusResponse>>(AsyncKagamiRaw(context, request, cq));
+    }
 
    private:
     std::shared_ptr< ::grpc::ChannelInterface> channel_;
     ::grpc::ClientAsyncResponseReader< ::Api::StatusResponse>* AsyncToriiRaw(::grpc::ClientContext* context, const ::Api::Transaction& request, ::grpc::CompletionQueue* cq) GRPC_OVERRIDE;
     ::grpc::ClientAsyncResponseReader< ::Api::StatusResponse>* AsyncVerifyRaw(::grpc::ClientContext* context, const ::Api::ConsensusEvent& request, ::grpc::CompletionQueue* cq) GRPC_OVERRIDE;
+    ::grpc::ClientAsyncResponseReader< ::Api::StatusResponse>* AsyncKagamiRaw(::grpc::ClientContext* context, const ::Api::Query& request, ::grpc::CompletionQueue* cq) GRPC_OVERRIDE;
     const ::grpc::RpcMethod rpcmethod_Torii_;
     const ::grpc::RpcMethod rpcmethod_Verify_;
+    const ::grpc::RpcMethod rpcmethod_Kagami_;
   };
   static std::unique_ptr<Stub> NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
 
@@ -225,6 +237,8 @@ class Sumeragi GRPC_FINAL {
     virtual ::grpc::Status Torii(::grpc::ServerContext* context, const ::Api::Transaction* request, ::Api::StatusResponse* response);
     // sumeragi uses.
     virtual ::grpc::Status Verify(::grpc::ServerContext* context, const ::Api::ConsensusEvent* request, ::Api::StatusResponse* response);
+    // WIP It used by Hijiri. Name is think in progress
+    virtual ::grpc::Status Kagami(::grpc::ServerContext* context, const ::Api::Query* request, ::Api::StatusResponse* response);
   };
   template <class BaseClass>
   class WithAsyncMethod_Torii : public BaseClass {
@@ -266,7 +280,27 @@ class Sumeragi GRPC_FINAL {
       ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
-  typedef WithAsyncMethod_Torii<WithAsyncMethod_Verify<Service > > AsyncService;
+  template <class BaseClass>
+  class WithAsyncMethod_Kagami : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    WithAsyncMethod_Kagami() {
+      ::grpc::Service::MarkMethodAsync(2);
+    }
+    ~WithAsyncMethod_Kagami() GRPC_OVERRIDE {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status Kagami(::grpc::ServerContext* context, const ::Api::Query* request, ::Api::StatusResponse* response) GRPC_FINAL GRPC_OVERRIDE {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestKagami(::grpc::ServerContext* context, ::Api::Query* request, ::grpc::ServerAsyncResponseWriter< ::Api::StatusResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(2, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  typedef WithAsyncMethod_Torii<WithAsyncMethod_Verify<WithAsyncMethod_Kagami<Service > > > AsyncService;
   template <class BaseClass>
   class WithGenericMethod_Torii : public BaseClass {
    private:
@@ -297,6 +331,23 @@ class Sumeragi GRPC_FINAL {
     }
     // disable synchronous version of this method
     ::grpc::Status Verify(::grpc::ServerContext* context, const ::Api::ConsensusEvent* request, ::Api::StatusResponse* response) GRPC_FINAL GRPC_OVERRIDE {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
+  class WithGenericMethod_Kagami : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    WithGenericMethod_Kagami() {
+      ::grpc::Service::MarkMethodGeneric(2);
+    }
+    ~WithGenericMethod_Kagami() GRPC_OVERRIDE {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status Kagami(::grpc::ServerContext* context, const ::Api::Query* request, ::Api::StatusResponse* response) GRPC_FINAL GRPC_OVERRIDE {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
