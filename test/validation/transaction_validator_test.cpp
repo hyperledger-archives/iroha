@@ -32,32 +32,32 @@ std::string hash = "46ed8c250356759f68930a94996faaa8f8c98ecbe0dcc58c479c8fad71e3
 std::string signature_b64   = "gdMUgjyo++4QpF1xDJNdk1a5zmDAEPM67WD4cn6CVZqDxC8nShb/L1Tokgo53HSOPDB0qXAVzcBvfcJ1WLjrAQ==";
 
 TEST(transaction_validator, verify_transaction_event) {
-    auto tx = std::make_unique<Transaction>();
+    Transaction tx;
     TxSignatures sig;
     sig.set_publickey(public_key_b64);
     sig.set_signature(signature_b64);
-    tx->set_hash(hash);
-    tx->add_txsignatures()->CopyFrom(sig);
+    tx.set_hash(hash);
+    tx.add_txsignatures()->CopyFrom(sig);
     ASSERT_EQ(transaction_validator::signaturesAreValid(tx),
-        signature::verify(tx->txsignatures(0).signature(), tx->hash(), tx->txsignatures(0).publickey()));
+        signature::verify(tx.txsignatures(0).signature(), tx.hash(), tx.txsignatures(0).publickey()));
 
     // Wrong hashes shouldn't be validated
-    tx->set_hash("123");
+    tx.set_hash("123");
     ASSERT_NE(transaction_validator::signaturesAreValid(tx),
         signature::verify(signature_b64, hash, public_key_b64));
 }
 
 TEST(transaction_validator, verify_consensus_event) {
-    auto ev = std::make_unique<ConsensusEvent>();
+    ConsensusEvent ev;
     auto tx = new Transaction;
     EventSignature sig;
     tx->set_hash(hash);
     sig.set_publickey(public_key_b64);
     sig.set_signature(signature_b64);
-    ev->set_allocated_transaction(tx);
-    ev->add_eventsignatures()->CopyFrom(sig);
+    ev.set_allocated_transaction(tx);
+    ev.add_eventsignatures()->CopyFrom(sig);
     ASSERT_EQ(transaction_validator::signaturesAreValid(ev),
-        signature::verify(ev->eventsignatures(0).signature(), ev->transaction().hash(), ev->eventsignatures(0).publickey()));
+        signature::verify(ev.eventsignatures(0).signature(), ev.transaction().hash(), ev.eventsignatures(0).publickey()));
 
     // Wrong hashes shouldn't be validated
     tx->set_hash("123");

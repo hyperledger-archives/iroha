@@ -27,25 +27,49 @@ namespace transaction_validator {
     using Api::Transaction;
     using signature::verify;
 
+    template<typename Signature>
+    bool isValid(const Signature &sig, const std::string &hash) {
+        return !verify(sig.signature(), hash, sig.publickey());
+    }
+
     template<typename Signatures>
-    bool isValid(const Signatures &s, const std::string &hash) {
+    bool areValid(const Signatures &s, const std::string &hash) {
         return std::find_if(s.begin(), s.end(), 
             [&hash](const auto &sig) {
-                return !verify(sig.signature(), hash, sig.publickey());
+                return isValid(sig, hash);
             }) == s.end();
     }
 
-    template<>
-    bool signaturesAreValid<ConsensusEvent>(const std::unique_ptr<ConsensusEvent>& ev) {
-        auto s = ev->eventsignatures();
-        auto tx = ev->transaction();
-        return isValid(s, tx.hash());
+    template<typename Signatures>
+    std::uint32_t countValid(const Signatures &s, const std::string &hash) {
+        return std::count_if(s.begin(), s.end(),
+            [&hash](const auto &sig) {
+                return isValid(sig, hash);
+            });
     }
 
     template<>
-    bool signaturesAreValid<Transaction>(const std::unique_ptr<Transaction>& tx) {
-        auto s = tx->txsignatures();
-        return isValid(s, tx->hash());
+    bool signaturesAreValid<ConsensusEvent>(const ConsensusEvent& ev) {
+        auto s = ev.eventsignatures();
+        auto tx = ev.transaction();
+        return areValid(s, tx.hash());
     }
 
+    template<>
+    bool signaturesAreValid<Transaction>(const Transaction& tx) {
+        auto s = tx.txsignatures();
+        return areValid(s, tx.hash());
+    }
+
+    template<>
+    std::uint32_t countValidSignatures<ConsensusEvent>(const ConsensusEvent& ev) {
+        auto s = ev.eventsignatures();
+        auto tx = ev.transaction();
+        return countValid(s, tx.hash());
+    }
+
+    std::uint32_t countValidSignatures(const Transaction& tx) {
+        auto s = tx.txsignatures();
+        return countValid(s, tx.hash());
+    }
 };
