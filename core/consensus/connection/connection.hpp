@@ -73,7 +73,7 @@ namespace connection {
 
         namespace PeerService {
 
-            namespace Torii {
+            namespace Sumeragi {
 
                 bool send(
                         const std::string &ip,

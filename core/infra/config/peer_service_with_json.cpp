@@ -124,7 +124,7 @@ void PeerServiceConfig::toIssue_addPeer( const peer::Node& peer ) {
             .setSenderPublicKey(getMyPublicKey())
             .setPeer( txbuilder::createPeer( peer.getPublicKey(), peer.getIP(), txbuilder::createTrust(peer.getTrustScore(),true) ) )
             .build();
-    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+    connection::iroha::PeerService::Sumeragi::send( getMyPublicKey(), txPeer );
 }
 void PeerServiceConfig::toIssue_distructPeer( const std::string &publicKey ) {
     auto it = findPeerPublicKey( publicKey );
@@ -132,14 +132,14 @@ void PeerServiceConfig::toIssue_distructPeer( const std::string &publicKey ) {
             .setSenderPublicKey(getMyPublicKey())
             .setPeer(txbuilder::createPeer(publicKey, "", txbuilder::createTrust(it->getTrustScore()-1.0, true)))
             .build();
-    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+    connection::iroha::PeerService::Sumeragi::send( getMyPublicKey(), txPeer );
 }
 void PeerServiceConfig::toIssue_removePeer( const std::string &publicKey ) {
     auto txPeer = TransactionBuilder<Remove<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
             .setPeer(txbuilder::createPeer(publicKey, "", txbuilder::createTrust(0.0, false)))
             .build();
-    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+    connection::iroha::PeerService::Sumeragi::send( getMyPublicKey(), txPeer );
 }
 void PeerServiceConfig::toIssue_creditPeer( const std::string &publicKey ) {
     auto it = findPeerPublicKey( publicKey );
@@ -149,7 +149,7 @@ void PeerServiceConfig::toIssue_creditPeer( const std::string &publicKey ) {
             .setPeer(txbuilder::createPeer(publicKey, "",
                                            txbuilder::createTrust(std::min( getMaxTrustScore(), it->getTrustScore()+1.0 ), true)))
             .build();
-    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+    connection::iroha::PeerService::Sumeragi::send( getMyPublicKey(), txPeer );
 }
 
 

@@ -136,6 +136,20 @@ namespace connection {
             }
         }
 
+        std::string Kagami() {
+            StatusResponse response;
+            ClientContext context;
+            Query query;
+            Status status = stub_->Kagami(&context, query, &response);
+            if (status.ok()) {
+                logger::info("connection")  << "response: " << response.value();
+                return response.value();
+            } else {
+                logger::error("connection") << status.error_code() << ": " << status.error_message();
+                return "RPC failed";
+            }
+        }
+
     private:
         std::unique_ptr<Sumeragi::Stub> stub_;
     };
@@ -296,7 +310,7 @@ namespace connection {
 
 
         namespace PeerService {
-            namespace Torii {
+            namespace Sumeragi {
                 bool send(
                         const std::string &ip,
                         const Transaction &transaction
@@ -310,7 +324,7 @@ namespace connection {
                                         grpc::InsecureChannelCredentials()
                                 )
                         );
-                        std::string reply = client.Torii(transaction);
+                        std::string reply = client.Kagami();
                         return true;
                     } else {
                         return false;
