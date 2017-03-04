@@ -48,8 +48,8 @@ mv $IROHA_HOME/smart_contract/instances/test/TestPeer.class $IROHA_HOME/smart_co
 javac -encoding UTF-8 \
   $IROHA_HOME/smart_contract/repository/Repository.java \
   $IROHA_HOME/smart_contract/repository/KeyConstants.java \
-  $IROHA_HOME/smart_contract/instances/sample_rating/WeightedRateAttach.java \
+  $IROHA_HOME/smart_contract/instances/sample_rating/WeightedRate.java \
 && \
-mv $IROHA_HOME/smart_contract/instances/sample_rating/WeightedRateAttach.class $IROHA_HOME/smart_contract/java_tests/instances/sample_rating/ \
+mv $IROHA_HOME/smart_contract/instances/sample_rating/WeightedRate.class $IROHA_HOME/smart_contract/java_tests/instances/sample_rating/ \
 && \
 mv $IROHA_HOME/smart_contract/repository/Repository.class $IROHA_HOME/smart_contract/java_tests/repository
