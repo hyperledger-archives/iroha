@@ -80,11 +80,6 @@ bool attach(const std::string &uuid, const std::string &asset) {
 
   const auto strAccount = world_state_repository::find(uuid);
 
-
-  for (int i=0; i<(int)asset.size(); i++) {
-    assert(! (!isdigit(asset[i]) && !isalpha(asset[i])));
-  }
-
   Api::Account account = common::parse<Api::Account>(strAccount, ValuePrefix);
   account.add_assets(asset);
 
