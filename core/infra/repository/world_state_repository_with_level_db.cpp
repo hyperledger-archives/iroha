@@ -158,7 +158,7 @@ namespace repository {
 
           std::string readData;
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &readData));
-          if (readData != "") {
+          if (!readData.empty()) {
               return readData;
           } else {
               return "";
@@ -173,12 +173,12 @@ namespace repository {
               detail::loadDb();
           }
 
-          std::string result = "";
+          std::string result;
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &result));
-          if (result == "") {
-              return defaultValue;
-          } else {
+          if (!result.empty()) {
               return result;
+          } else {
+              return defaultValue;
           }
       }
 
@@ -187,9 +187,9 @@ namespace repository {
               detail::loadDb();
           }
 
-          std::string result = "";
+          std::string result;
           detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &result));
-          return result == "";
+          return !result.empty();
       }
   };
 };

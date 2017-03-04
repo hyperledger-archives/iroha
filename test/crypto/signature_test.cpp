@@ -89,5 +89,16 @@ ASSERT_TRUE(signature::verify(
 ));
 }
 
+TEST(Signature, generatedByGO){
 
+std::string public_key_b64  = "Oe8Xd5iDvVrVNc1apzLcdjRRq3ZZsTjkjebpDYdRcRw";
+std::string signature_b64   = "FtLGaJLDK4g/tRzufBexe6fTAhjENtl6MWAynRpR9c1CZdEWJbbDS9svpU96hXiyGy3BQcwRxUz6eovBJdf6DQ==";
+std::string message = "0f1a39c82593e8b48e69f000c765c8e8072269d3bd4010634fa51d4e685076e30db22a9fb75def7379be0e808392922cb8c43d5dd5d5039828ed7ade7e1c6c81";
+
+ASSERT_TRUE(signature::verify(
+        signature_b64,
+        message,
+        public_key_b64
+));
+}
 

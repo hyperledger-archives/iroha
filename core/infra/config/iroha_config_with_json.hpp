@@ -32,9 +32,17 @@ class IrohaConfigManager : config::AbstractConfigManager {
   std::string getConfigName();
 
   std::string getDatabasePath(const std::string& defaultValue);
+  std::string getJavaClassPath(const std::string& defaultValue);
+  std::string getJavaClassPathLocal(const std::string& defaultValue);
+  std::string getJavaLibraryPath(const std::string& defaultValue);
+  std::string getJavaLibraryPathLocal(const std::string& defaultValue);
+
+  std::string getJavaPolicyPath(const std::string& defaultValue);
   size_t getConcurrency(size_t defaultValue);
   size_t getMaxFaultyPeers(size_t defaultValue);
   size_t getPoolWorkerQueueSize(size_t defaultValue);
+  uint16_t getGrpcPortNumber(uint16_t defaultValue);
+  uint16_t getHttpPortNumber(uint16_t defaultValue);
 };
 }
 

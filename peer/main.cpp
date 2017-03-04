@@ -31,15 +31,6 @@ limitations under the License.
 
 std::atomic_bool running(true);
 
-template<typename T>
-using Transaction = transaction::Transaction<T>;
-template<typename T>
-using ConsensusEvent = event::ConsensusEvent<T>;
-template<typename T>
-using Add = command::Add<T>;
-template<typename T>
-using Transfer = command::Transfer<T>;
-
 void server(){
     http::server();
 }
@@ -58,12 +49,12 @@ int main() {
     }
 
     logger::info("main") << "process is :" << getpid();
-    logger::setLogLevel(logger::LogLevel::DEBUG);
+    logger::setLogLevel(logger::LogLevel::Debug);
 
     std::vector<std::unique_ptr<peer::Node>> nodes = config::PeerServiceConfig::getInstance().getPeerList();
     connection::initialize_peer();
     for (const auto& n : nodes){
-        connection::addSubscriber(n->getIP());
+        connection::iroha::Sumeragi::Verify::addSubscriber(n->getIP());
     }
   
     sumeragi::initializeSumeragi(

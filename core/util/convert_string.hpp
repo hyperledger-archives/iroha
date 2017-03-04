@@ -17,17 +17,14 @@ limitations under the License.
 #ifndef __CORE_REPOSITORY_CONVERT_STRING_HPP__
 #define __CORE_REPOSITORY_CONVERT_STRING_HPP__
 
-#include <string>
 #include <sstream>
+#include <string>
+#include <vector>
 
-namespace convert{
-    
-    template<typename T>
-    std::string to_string(std::unique_ptr<T> object);
-
-    template<typename T>
-    T to_object(std::string msg);
-
-};
+namespace convert_string {
+std::string to_string(const std::vector<std::string>&);
+std::string stringifyVector(const std::vector<std::string> &vs);
+std::vector<std::string> parseVector(const std::string &s);
+}
 
 #endif

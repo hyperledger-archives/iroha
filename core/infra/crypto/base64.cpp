@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../../crypto/base64.hpp"
+#include <crypto/base64.hpp>
 
 namespace base64 {
 
@@ -50,7 +50,7 @@ namespace vendor {
     return (isalnum(c) || (c == '+') || (c == '/'));
   }
   // Update argument is std::vector<unsigned char>
-  std::string base64_encode(const std::vector<unsigned char> bytes_to_encode, unsigned int in_len){
+  std::string base64_encode(const std::vector<unsigned char> &bytes_to_encode, unsigned int in_len){
     // Update ret is std::vector<char>
     std::vector<char> ret((int)(in_len * 2.8));
     int pointer = 0; // Update Add new value.
@@ -113,7 +113,7 @@ namespace vendor {
     return -1;
   }
 
-  std::vector<unsigned char> base64_decode(const std::string encoded_string){
+  std::vector<unsigned char> base64_decode(const std::string &encoded_string){
     int in_len = encoded_string.size();
     int i = 0;
     int j = 0;
@@ -160,14 +160,14 @@ namespace vendor {
   }
 }  // namespace vendor
 
-  const std::string encode(const std::vector<unsigned char> message) {
+  const std::string encode(const std::vector<unsigned char> &message) {
     return vendor::base64_encode(
       message,
       message.size()
     );
   }
 
-  std::vector<unsigned char> decode(const std::string enc) {
+  std::vector<unsigned char> decode(const std::string &enc) {
     return vendor::base64_decode(enc);
   }
 
