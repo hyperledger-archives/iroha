@@ -39,7 +39,9 @@ using nlohmann::json;
 
 std::vector<peer::Node> PeerServiceConfig::peerList;
 
-PeerServiceConfig::PeerServiceConfig() {}
+PeerServiceConfig::PeerServiceConfig() {
+    initialziePeerList_from_json();
+}
 
 void PeerServiceConfig::initialziePeerList_from_json(){
   if (!peerList.empty()) return;
@@ -198,8 +200,14 @@ bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
 
 //  TODO Send transaction data separated block to new peer.
 //  TODO connection::iroha::PeerService::TransactionRepository::send( peer.getIP() );
-
-  return true;
+    while( false ) { // all - transaction
+        auto tx = Api::TransactionResponse();
+        while( false ) { // block
+            tx.add_transaction()->CopyFrom(tx);
+        }
+        connection::iroha::PeerService::Sumeragi::send( peer.getIP(), tx );
+    }
+    return true;
 }
 
 bool PeerServiceConfig::removePeer( const std::string& publicKey ) {
