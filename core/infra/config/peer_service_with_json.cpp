@@ -212,7 +212,7 @@ bool PeerServiceConfig::updatePeer( const std::string& publicKey, const peer::No
   } catch( exception::service::DuplicationPublicKeyException& e ) {
       logger::warning("updatePeer") << e.what();
   } catch ( exception::service::DuplicationIPException& e ) {
-    logger::warning("udpatePeer") << e.what();
+    logger::warning("updatePeer") << e.what();
     return false;
   }
   return true;
@@ -266,7 +266,7 @@ bool PeerServiceConfig::validate_updatePeer( const std::string& publicKey, const
     } catch( exception::service::DuplicationPublicKeyException& e ) {
         logger::warning("updatePeer") << e.what();
     } catch( exception::service::DuplicationIPException& e ) {
-        logger::warning("udpatePeer") << e.what();
+        logger::warning("updatePeer") << e.what();
         return false;
     }
     return true;
