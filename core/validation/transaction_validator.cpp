@@ -15,6 +15,8 @@ limitations under the License.
 */
 
 #include <algorithm>
+#include <vector>
+#include <string>
 #include <infra/protobuf/api.pb.h>
 #include <crypto/signature.hpp>
 #include "transaction_validator.hpp"
@@ -23,21 +25,27 @@ namespace transaction_validator {
 
     using Api::ConsensusEvent;
     using Api::Transaction;
+    using signature::verify;
 
-    template<>
-    bool signaturesAreValid<ConsensusEvent>(const std::unique_ptr<ConsensusEvent>& tx){
-        return tx->eventsignatures().end() != std::find_if(tx->eventsignatures().begin(), tx->eventsignatures().end(), 
-            [&tx](const auto &sig) {
-                return !signature::verify(sig.signature(), tx->transaction().hash(), sig.publickey());
-            });
+    template<typename Signatures>
+    bool isValid(const Signatures &s, const std::string &hash) {
+        return std::find_if(s.begin(), s.end(), 
+            [&hash](const auto &sig) {
+                return !verify(sig.signature(), hash, sig.publickey());
+            }) != s.end();
     }
 
     template<>
-    bool signaturesAreValid<Transaction>(const std::unique_ptr<Transaction>& tx){
-        return tx->txsignatures().end() != std::find_if(tx->txsignatures().begin(), tx->txsignatures().end(), 
-            [&tx](const auto &sig) {
-                return !signature::verify(sig.signature(), tx->hash(), sig.publickey());
-            });
+    bool signaturesAreValid<ConsensusEvent>(const std::unique_ptr<ConsensusEvent>& ev) {
+        auto s = ev->eventsignatures();
+        auto tx = ev->transaction();
+        return isValid(s, tx.hash());
+    }
+
+    template<>
+    bool signaturesAreValid<Transaction>(const std::unique_ptr<Transaction>& tx) {
+        auto s = tx->txsignatures();
+        return isValid(s, tx->hash());
     }
 
 };

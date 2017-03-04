@@ -25,8 +25,8 @@ limitations under the License.
 
 namespace transaction_validator {
 
-    template<typename T>
-    bool isValid(const std::unique_ptr<T>& tx);
+    template<typename Signatures>
+    bool isValid(const Signatures &s, const std::string &hash);
 
     template<typename T>
     bool signaturesAreValid(const std::unique_ptr<T>& tx);
