@@ -64,8 +64,8 @@ TEST(peer_service_with_json_test, update_peer_test) {
   const std::string upd_ip = "updated_ip";
   const std::string upd_key = "publicKey1";
   const std::string upd_ng_key = "dummy";
-  peer::Node peer = peer::Node(upd_ip, upd_key, 0.1);
-  peer::Node peer_ng = peer::Node(upd_ip, upd_ng_key, 0.1);
+  peer::Node peer = peer::Node(upd_ip, upd_key, -1.0);
+  peer::Node peer_ng = peer::Node(upd_ip, upd_ng_key, -1.0);
   ASSERT_TRUE(PEER.validate_updatePeer(upd_key, peer));
   ASSERT_TRUE(PEER.updatePeer(upd_key, peer));
   ASSERT_FALSE(PEER.validate_updatePeer(upd_ng_key, peer));
@@ -76,7 +76,7 @@ TEST(peer_service_with_json_test, update_peer_test) {
     std::cout << peer->getPublicKey() << std::endl;
     std::cout << peer->getTrustScore() << std::endl;
     if (peer->getPublicKey() == upd_key) {
-      ASSERT_TRUE(peer->getTrustScore() == 0.1);
+      ASSERT_TRUE(peer->getTrustScore() == -0.5);
       ASSERT_TRUE(peer->getIP() == upd_ip);
     }
   }

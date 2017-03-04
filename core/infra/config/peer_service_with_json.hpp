@@ -51,6 +51,12 @@ class PeerServiceConfig : config::AbstractConfigManager {
   std::vector<std::string> getIpList();
 
 
+  // check are broken? peer
+  void checkBrokenPeer( const std::string& ip );
+
+  // Initialize
+  void finishedInitializePeer();
+
   // invoke to issue transaction
   void toIssue_addPeer( const peer::Node& );
   void toIssue_distructPeer( const std::string &publicKey );

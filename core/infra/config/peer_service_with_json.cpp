@@ -47,7 +47,7 @@ void PeerServiceConfig::initialziePeerList_from_json(){
     for (const auto& peer : (*config)["group"].get<std::vector<json>>()) {
       peerList.emplace_back( peer["ip"].get<std::string>(),
                              peer["publicKey"].get<std::string>(),
-                             1.0);
+                             getMaxTrustScore());
     }
   }
 }
@@ -61,7 +61,7 @@ std::string PeerServiceConfig::getMyPublicKey() {
   if (auto config = openConfig(getConfigName())) {
     return (*config)["me"]["publicKey"].get<std::string>();
   }
-  return "";
+  return peer::Node::defaultPublicKey();
 }
 
 std::string PeerServiceConfig::getMyPrivateKey() {
@@ -75,11 +75,11 @@ std::string PeerServiceConfig::getMyIp() {
   if (auto config = openConfig(getConfigName())) {
     return (*config)["me"]["ip"].get<std::string>();
   }
-  return "";
+  return peer::Node::defaultIP();
 }
 
 double PeerServiceConfig::getMaxTrustScore() {
-    return 1.0; // WIP　to support trustRate = 1.0
+    return 10.0; // WIP　to support trustRate = 1.0
 }
 
 bool PeerServiceConfig::isExistIP( const std::string &ip ) {
@@ -117,39 +117,66 @@ std::vector<std::string> PeerServiceConfig::getIpList() {
   return ret_ips;
 }
 
+
+// check are broken? peer
+void PeerServiceConfig::checkBrokenPeer( const std::string& ip ) {
+    if (!isExistIP(ip)) return;
+    auto check_peer_it = findPeerIP( ip );
+    if ( true
+        // TODO !connection::iroha::PeerService::Ping::send( ip );
+            ) {
+        if( check_peer_it->getTrustScore() < 0.0 ) {
+            toIssue_removePeer( check_peer_it->getPublicKey() );
+        } else {
+            toIssue_distructPeer( check_peer_it->getPublicKey() );
+        }
+    } else {
+        toIssue_creditPeer( check_peer_it->getPublicKey() );
+    }
+}
+
+void PeerServiceConfig::finishedInitializePeer() {
+    std::string leader_ip = getPeerList().begin()->get()->getIP();
+    auto txPeer = TransactionBuilder<Update<Peer>>()
+            .setSenderPublicKey(getMyPublicKey())
+            .setPeer(txbuilder::createPeer( getMyPublicKey(), getMyIp(), txbuilder::createTrust(0.0, true)))
+            .build();
+    connection::iroha::PeerService::Torii::send( leader_ip, txPeer );
+}
+
 // invoke to issue transaction
 void PeerServiceConfig::toIssue_addPeer( const peer::Node& peer ) {
     if( isExistIP(peer.getIP()) || isExistPublicKey(peer.getPublicKey()) ) return;
     auto txPeer = TransactionBuilder<Add<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
-            .setPeer( txbuilder::createPeer( peer.getPublicKey(), peer.getIP(), txbuilder::createTrust(peer.getTrustScore(),true) ) )
+            .setPeer( txbuilder::createPeer( peer.getPublicKey(), peer.getIP(), txbuilder::createTrust(getMaxTrustScore(),false ) ) )
             .build();
-    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+    connection::iroha::PeerService::Torii::send( getMyIp(), txPeer );
 }
 void PeerServiceConfig::toIssue_distructPeer( const std::string &publicKey ) {
     auto it = findPeerPublicKey( publicKey );
     auto txPeer = TransactionBuilder<Update<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
-            .setPeer(txbuilder::createPeer(publicKey, "", txbuilder::createTrust(it->getTrustScore()-1.0, true)))
+            .setPeer(txbuilder::createPeer(publicKey, peer::Node::defaultIP(), txbuilder::createTrust(-1.0, true)))
             .build();
-    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+    connection::iroha::PeerService::Torii::send( getMyIp(), txPeer );
 }
 void PeerServiceConfig::toIssue_removePeer( const std::string &publicKey ) {
     auto txPeer = TransactionBuilder<Remove<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
-            .setPeer(txbuilder::createPeer(publicKey, "", txbuilder::createTrust(0.0, false)))
+            .setPeer(txbuilder::createPeer(publicKey, peer::Node::defaultIP(), txbuilder::createTrust(-getMaxTrustScore(), false)))
             .build();
-    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+    connection::iroha::PeerService::Torii::send( getMyIp(), txPeer );
 }
 void PeerServiceConfig::toIssue_creditPeer( const std::string &publicKey ) {
     auto it = findPeerPublicKey( publicKey );
     if( it->getTrustScore() == getMaxTrustScore() ) return;
     auto txPeer = TransactionBuilder<Update<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
-            .setPeer(txbuilder::createPeer(publicKey, "",
-                                           txbuilder::createTrust(std::min( getMaxTrustScore(), it->getTrustScore()+1.0 ), true)))
+            .setPeer(txbuilder::createPeer(publicKey, peer::Node::defaultIP(),
+                                           txbuilder::createTrust( 1.0, true)))
             .build();
-    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+    connection::iroha::PeerService::Torii::send( getMyIp(), txPeer );
 }
 
 
@@ -168,6 +195,11 @@ bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
     logger::warning("addPeer") << e.what();
     return false;
   }
+
+
+//  TODO Send transaction data separated block to new peer.
+//  TODO connection::iroha::PeerService::TransactionRepository::send( peer.getIP() );
+
   return true;
 }
 
@@ -202,8 +234,12 @@ bool PeerServiceConfig::updatePeer( const std::string& publicKey, const peer::No
         it->setIP( peer.getIP() );
     }
 
-    if ( it->getTrustScore() != peer.getTrustScore() ) {
-        it->setTrustScore(peer.getTrustScore());
+    if ( it->getTrustScore() != 0.0 ) {
+        it->setTrustScore( std::min( getMaxTrustScore(), it->getTrustScore()+peer.getTrustScore()) );
+    }
+
+    if( it->isOK() != peer.isOK() ) {
+        it->setOK( peer.isOK() );
     }
 
   } catch ( exception::service::UnExistFindPeerException& e ) {
@@ -211,6 +247,7 @@ bool PeerServiceConfig::updatePeer( const std::string& publicKey, const peer::No
     return false;
   } catch( exception::service::DuplicationPublicKeyException& e ) {
       logger::warning("updatePeer") << e.what();
+    return false;
   } catch ( exception::service::DuplicationIPException& e ) {
     logger::warning("updatePeer") << e.what();
     return false;

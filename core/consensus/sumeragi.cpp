@@ -285,7 +285,6 @@ namespace sumeragi {
         //return merkle_transaction_repository::getLastLeafOrder() + 1;
     }
 
-
     void processTransaction(ConsensusEvent& event) {
 
         logger::info("sumeragi")    <<  "processTransaction";
