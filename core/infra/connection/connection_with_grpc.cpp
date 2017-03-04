@@ -136,17 +136,17 @@ namespace connection {
             }
         }
 
-        std::string Kagami() {
+        bool Kagami() {
             StatusResponse response;
             ClientContext context;
             Query query;
             Status status = stub_->Kagami(&context, query, &response);
             if (status.ok()) {
                 logger::info("connection")  << "response: " << response.value();
-                return response.value();
+                return true;
             } else {
                 logger::error("connection") << status.error_code() << ": " << status.error_message();
-                return "RPC failed";
+                return false;
             }
         }
 
@@ -343,8 +343,7 @@ namespace connection {
                                         grpc::InsecureChannelCredentials()
                                 )
                         );
-                        std::string reply = client.Kagami();
-                        return true;
+                        return client.Kagami();
                     } else {
                         return false;
                     }
