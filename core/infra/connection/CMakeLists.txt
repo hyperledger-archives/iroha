@@ -1,15 +1,7 @@
-
-SET(CMAKE_CXX_FLAGS "-std=c++14 -L/usr/local/lib `pkg-config --libs grpc++ grpc` -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed -lprotobuf -lpthread -ldl")
-
-include_directories(
-  ${PROJECT_SOURCE_DIR}/core
-)
-
 link_directories(
     ${CRYPTO_PATH}
     /usr/local/lib
 )
-
 
 ADD_LIBRARY(connection_with_grpc STATIC
   connection_with_grpc.cpp

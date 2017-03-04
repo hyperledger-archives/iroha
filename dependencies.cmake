@@ -15,12 +15,12 @@ find_package(LibXslt QUIET)
 if (NOT LIBXSLT_XSLTPROC_EXECUTABLE)
   message(FATAL_ERROR "xsltproc not found")
 endif ()
-set(MAKE_C_FLAGS "-fpermissive")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DKeccakP200_excluded -DKeccakP400_excluded -DKeccakP800_excluded ")
+
 ExternalProject_Add(gvanas_keccak
   GIT_REPOSITORY    "https://github.com/gvanas/KeccakCodePackage.git"
   BUILD_IN_SOURCE   1
-  BUILD_COMMAND     bash -c "CFLAGS='-fPIC -fpermissive' $(MAKE) CC='${CMAKE_CXX_COMPILER}' generic64/libkeccak.a"
+  BUILD_COMMAND     bash -c "CFLAGS='-fPIC -DKeccakP200_excluded -DKeccakP400_excluded -DKeccakP800_excluded'\
+    $(MAKE) CC='${CMAKE_C_COMPILER}' generic64/libkeccak.a"
   CONFIGURE_COMMAND "" # remove configure step
   INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
@@ -224,7 +224,36 @@ file(MAKE_DIRECTORY ${leveldb_SOURCE_DIR}/out-shared)
 file(MAKE_DIRECTORY ${leveldb_SOURCE_DIR}/out-static)
 set_target_properties(leveldb PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${leveldb_SOURCE_DIR}/include
-  # IMPORTED_LINK_INTERFACE_LIBRARIES "${leveldb_SOURCE_DIR}/out-static/libmemenv.a"
+  IMPORTED_LINK_INTERFACE_LIBRARIES "snappy"
   IMPORTED_LOCATION ${leveldb_SOURCE_DIR}/out-static/libleveldb.a
   )
 add_dependencies(leveldb google_leveldb)
+
+
+
+########################################################
+# JNI
+########################################################
+
+add_library(jvm SHARED IMPORTED)
+if (DEFINED ENV{JAVA_HOME})
+  if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(_JVM_INCLUDE_PATH "$ENV{JAVA_HOME}/include/darwin")
+  else()
+    set(_JVM_INCLUDE_PATH "$ENV{JAVA_HOME}/include/linux")
+  endif()
+
+  set_target_properties(jvm PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${_JVM_INCLUDE_PATH};$ENV{JAVA_HOME}/include"
+    IMPORTED_LOCATION "$ENV{JAVA_HOME}/jre/lib/amd64/server/libjvm.so"
+  )
+else()
+  find_package(JNI)
+  if (!JNI_FOUND)
+    message(FATAL_ERROR "JVM not found")
+  endif()
+  set_target_properties(jvm PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${JAVA_INCLUDE_PATH}"
+    IMPORTED_LOCATION "${JAVA_JVM_LIBRARY}"
+  )
+endif()

@@ -1,44 +1,15 @@
-SET(CMAKE_BUILD_TYPE Debug)
-SET(CMAKE_CXX_FLAGS "-g -std=c++1y -Wall -fPIC")
-
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++1y -Wall -fPIC -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/server")
-  SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -DDEBUG -O0 -g -std=c++1y -Wall -fPIC -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/server")
-
-  include_directories(
-    $ENV{JAVA_HOME}/include/darwin
-  )
-  link_directories(
-    $ENV{JAVA_HOME}/jre/lib/server
-  )
-ELSE()
-  SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -std=c++1y -Wall -fPIC -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/amd64")
-  SET(CMAKE_CXX_FLAGS_DEBUG   "-Wall -Wextra -DDEBUG -O0 -g -std=c++1y -Wall -fPIC -Wl,-rpath $ENV{JAVA_HOME}/jre/lib/amd64")
-
-  include_directories(
-    $ENV{JAVA_HOME}/include/linux
-    $ENV{JAVA_HOME}/include
-  )
-  link_directories(
-    $ENV{JAVA_HOME}/jre/lib/amd64/server
-  )
-ENDIF()
-
 ########################################################################################
 # Executable java_query_repo_invocation_test
 ########################################################################################
 add_executable(java_query_repo_invocation_test java_query_repo_invocation_test.cpp)
 target_link_libraries(java_query_repo_invocation_test
   Repository
-  
-  # LevelDB depends on snappy
   leveldb
-  snappy
-  
   virtual_machine_with_java
   world_state_repo_with_level_db
   jvm
   gtest
+  config_manager
 )
 add_test(
   NAME java_query_repo_invocation_test
@@ -52,11 +23,7 @@ add_test(
 add_executable(java_query_repo_account_test java_query_repo_account_test.cpp)
 target_link_libraries(java_query_repo_account_test
   Repository
-  
-  # LevelDB depends on snappy
   leveldb
-  snappy
-  
   virtual_machine_with_java
   world_state_repo_with_level_db
   jvm
@@ -73,11 +40,7 @@ add_test(
 add_executable(java_query_repo_asset_test java_query_repo_asset_test.cpp)
 target_link_libraries(java_query_repo_asset_test
   Repository
-
-  # LevelDB depends on snappy
   leveldb
-  snappy
-
   virtual_machine_with_java
   world_state_repo_with_level_db
   jvm
@@ -95,11 +58,7 @@ add_executable(java_query_repo_simple_asset_test java_query_repo_simple_asset_te
 
 target_link_libraries(java_query_repo_simple_asset_test
   Repository
-
-  # LevelDB depends on snappy
   leveldb
-  snappy
-  
   virtual_machine_with_java
   world_state_repo_with_level_db
   jvm
@@ -117,11 +76,7 @@ add_executable(java_query_repo_domain_test java_query_repo_domain_test.cpp)
 
 target_link_libraries(java_query_repo_domain_test
   Repository
-
-  # LevelDB depends on snappy
   leveldb
-  snappy
-  
   virtual_machine_with_java
   world_state_repo_with_level_db
   jvm
@@ -139,11 +94,7 @@ add_executable(java_query_repo_peer_test java_query_repo_peer_test.cpp)
 
 target_link_libraries(java_query_repo_peer_test
   Repository
-
-  # LevelDB depends on snappy
   leveldb
-  snappy
-  
   virtual_machine_with_java
   world_state_repo_with_level_db
   jvm

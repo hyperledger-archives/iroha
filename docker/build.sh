@@ -25,9 +25,9 @@ docker run -i \
     hyperledger/iroha-dev \
     sh << COMMANDS
     # everything between COMMANDS will be executed inside a container
-    cd /opt/iroha
-    /build-iroha.sh Release || (echo "[-] Can't build iroha" && exit 1)
-    /mktar-iroha.sh || (echo "[-] Can't make tarball" && exit 1)
+    cd /opt/iroha/docker/dev/scripts
+    ./build-iroha.sh Release || (echo "[-] Can't build iroha" && exit 1)
+    ./mktar-iroha.sh || (echo "[-] Can't make tarball" && exit 1)
     # at this step we have /tmp/iroha.tar 
     (cp /tmp/iroha.tar /build/iroha.tar || (echo "[-] FAILED!" && exit 1))
 COMMANDS

@@ -1,17 +1,7 @@
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
-
-set(CMAKE_BUILD_TYPE Debug)
-
-include_directories(
-    ${PROJECT_SOURCE_DIR}/core
-)
-link_directories(
-    ${PROJECT_BINARY_DIR}/lib
-)
-
 add_executable(world_state_repository_with_leveldb_test
     world_state_repository_with_leveldb_test.cpp
 )
+
 target_link_libraries(world_state_repository_with_leveldb_test
     leveldb
     snappy

@@ -1,20 +1,4 @@
-
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-
-
-SET(CMAKE_CXX_FLAGS "-g -std=c++1y -Wall -fPIC")
-
-include_directories(
-  ${PROJECT_SOURCE_DIR}/core
-  ${PROJECT_SOURCE_DIR}/core/server
-  ${PROJECT_SOURCE_DIR}/core/peer
-  ${LEVELDB_PATH}/include
-)
-
-link_directories(
-  ${PROJECT_BINARY_DIR}/lib
-  ${LEVELDB_PATH}/out-static
-)
 
 add_executable(iroha-main
   main.cpp

@@ -1,9 +1,3 @@
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
-
-include_directories(
-  ${PROJECT_SOURCE_DIR}/core
-)
-
 # Hash Test
 add_executable(hash_test
   hash_test.cpp
