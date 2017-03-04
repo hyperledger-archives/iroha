@@ -80,6 +80,10 @@ namespace connection {
                         const Transaction &transaction
                 );
 
+                bool ping(
+                        const std::string &ip
+                );
+
             }
         }
 

@@ -324,6 +324,25 @@ namespace connection {
                                         grpc::InsecureChannelCredentials()
                                 )
                         );
+                        std::string reply = client.Torii(transaction);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+
+                bool ping(
+                        const std::string &ip
+                ) {
+                    auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
+                    if (find(receiver_ips.begin(), receiver_ips.end(), ip) != receiver_ips.end()) {
+                        SumeragiConnectionClient client(
+                                grpc::CreateChannel(
+                                        ip + ":" + std::to_string(
+                                                config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)),
+                                        grpc::InsecureChannelCredentials()
+                                )
+                        );
                         std::string reply = client.Kagami();
                         return true;
                     } else {
