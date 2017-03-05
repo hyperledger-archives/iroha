@@ -18,8 +18,10 @@ limitations under the License.
 #include <string>
 #include <memory>
 #include "izanami.hpp"
+#include "executor.hpp"
 #include <infra/protobuf/api.pb.h>
 #include <infra/config/peer_service_with_json.hpp>
+
 
 namespace izanami {
     using Api::TransactionResponse;
@@ -56,7 +58,7 @@ namespace izanami {
     }
     void InitializeEvent::executeTxResponse( const std::string& hash ) {
         for( auto &&tx : txResponses[ hash ]->transaction() ) {
-            // TODO execute tx ( transaction )
+            executor::execute( std::move(tx) );
         }
     }
 
@@ -100,7 +102,8 @@ namespace izanami {
             // TODO store txResponse to DB
 //            event.storeTxResponse(hash);
             // TODO execute txReponse
-//            event.executeTxResponse(hash);
+            event.executeTxResponse(hash);
+            event.next_progress();
         }
     }
 
