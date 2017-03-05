@@ -49,11 +49,11 @@ namespace izanami {
     namespace detail {
         bool isFinishedReceiveAll(InitializeEvent &event);
 
-        bool isFinishedReceive(const uint64_t &, InitializeEvent &);
+        bool isFinishedReceive(InitializeEvent &);
 
-        std::string getCorrectHash(const uint64_t &, InitializeEvent &);
+        std::string getCorrectHash(InitializeEvent &);
 
-        void storeTransactionResponse(const uint64_t &);
+        void storeTransactionResponse(InitializeEvent &);
     }
 
     //invoke when receive TransactionResponse.

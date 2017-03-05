@@ -111,7 +111,7 @@ namespace izanami {
         void storeTransactionResponse(InitializeEvent &event) {
             std::string hash = getCorrectHash(event);
             // TODO store txResponse to DB
-//            event.storeTxResponse(hash);
+            event.storeTxResponse(hash);
             event.executeTxResponse(hash);
             event.next_progress();
         }
