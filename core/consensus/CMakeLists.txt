@@ -9,4 +9,5 @@ target_link_libraries(sumeragi
   thread_pool
   executor
   merkle_transaction_repository
+  transaction_repository
 )
