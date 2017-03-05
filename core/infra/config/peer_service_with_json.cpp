@@ -203,13 +203,17 @@ bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
 
 //  TODO Send transaction data separated block to new peer.
 //  TODO connection::iroha::PeerService::TransactionRepository::send( peer.getIP() );
-    while( false ) { // all - transaction
-        auto tx = Api::TransactionResponse();
-        while( false ) { // block
-//            tx.add_transaction()->CopyFrom();
+    /*
+    int block_size = 500;
+    for(int i=0; i < db.transaction_size(); i+=block_size) {
+        auto txResponse = Api::TransactionResponse();
+        for(int j=i; j < i+block_size;j++) {
+            auto tx <- db.getTransactionAt( i );
+             tx.add_transaction()->CopyFrom( tx );
         }
-//        connection::iroha::PeerService::Sumeragi::send( peer.getIP(), tx );
+        connection::iroha::PeerService::Sumeragi::send( peer.getIP(), tx );
     }
+    */
     return true;
 }
 

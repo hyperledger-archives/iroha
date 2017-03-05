@@ -33,6 +33,7 @@ namespace izanami {
         std::unordered_map <uint64_t, std::vector<std::string>> hashes;
     public:
 
+        InitializeEvent();
         void add_transactionResponse( std::unique_ptr<TransactionResponse> );
         const std::vector<std::string>& getHashes( uint64_t );
         const std::unique_ptr<TransactionResponse> getTransactionResponse( const std::string& );
@@ -42,6 +43,7 @@ namespace izanami {
         void storeTxResponse( const std::string& );
         void executeTxResponse( const std::string& );
 
+        void clear();
     };
 
     namespace detail {

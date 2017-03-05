@@ -10,8 +10,8 @@ ADD_LIBRARY(izanami STATIC
 )
 
 target_link_libraries(izanami
+    hash
     signature
     executor
     merkle_transaction_repository
-    hash
 )

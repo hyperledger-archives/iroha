@@ -21,18 +21,18 @@ limitations under the License.
 #include "executor.hpp"
 #include <infra/protobuf/api.pb.h>
 #include <infra/config/peer_service_with_json.hpp>
-#include <consensus/hash.hpp>
+#include <crypto/hash.hpp>
 
 
 namespace izanami {
     using Api::TransactionResponse;
 
-    //uint64_t InitializeEvent::now_progress;
-    //std::unordered_map <std::string, std::unique_ptr<TransactionResponse> > InitializeEvent::txResponses;
-    //std::unordered_map <uint64_t, std::vector<std::string>> InitializeEvent::hashes;
+    InitializeEvent::InitializeEvent() {
+        now_progress = 0;
+    }
 
     void InitializeEvent::add_transactionResponse( std::unique_ptr<TransactionResponse> txResponse ) {
-        //if( now_progress > txResponse.getProgress() ) return; TODO getProgress() is hasn't  txResponse
+        if( now_progress > txResponse->code() ) return; // management index of progress is TransactionResponse.code()
 
         // make TransactionResponse hash - temporary
         std::string hash = "";
@@ -66,6 +66,11 @@ namespace izanami {
         for( auto &&tx : txResponses[ hash ]->transaction() ) {
             executor::execute( std::move(tx) );
         }
+    }
+    void InitializeEvent::clear() {
+        now_progress = 0;
+        txResponses.clear();
+        hashes.clear();
     }
 
     namespace detail {
@@ -107,7 +112,6 @@ namespace izanami {
             std::string hash = getCorrectHash(event);
             // TODO store txResponse to DB
 //            event.storeTxResponse(hash);
-            // TODO execute txReponse
             event.executeTxResponse(hash);
             event.next_progress();
         }
@@ -121,6 +125,7 @@ namespace izanami {
             detail::storeTransactionResponse( event );
             if( detail::isFinishedReceiveAll( event ) ) {
                 config::PeerServiceConfig::getInstance().finishedInitializePeer();
+                event.clear();
             }
         }
     }
