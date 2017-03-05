@@ -54,7 +54,7 @@ namespace sumeragi {
 
 
     using Api::ConsensusEvent;
-    using Api::EventSignature;
+    using Api::Signature;
     using Api::Transaction;
 
     std::map<std::string, std::string> txCache;
@@ -75,7 +75,7 @@ namespace sumeragi {
         };
 
         void addSignature(ConsensusEvent& event, const std::string& publicKey, const std::string& signature) {
-            EventSignature sig;
+            Signature sig;
             sig.set_signature(signature);
             sig.set_publickey(publicKey);
             event.add_eventsignatures()->CopyFrom(sig);
