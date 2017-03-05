@@ -33,6 +33,11 @@ message TransactionResponse{
   repeated Transaction transaction = 3;
 }
 
+message RecieverConfirmation {
+  string hash           = 1;
+  Signature signature   = 2;
+}
+
 message AssetResponse{
   string message          = 1;
   uint64    code          = 2;
@@ -46,9 +51,10 @@ message AssetResponse{
 }
 
 message StatusResponse {
-  string value     = 1;
-  string message   = 2;
-  uint64 timestamp = 3;
+  string value                 = 1;
+  string message               = 2;
+  uint64 timestamp             = 3;
+  RecieverConfirmation confirm = 4;
 }
 
 

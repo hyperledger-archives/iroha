@@ -46,6 +46,7 @@ class ConsensusEvent;
 class Domain;
 class Peer;
 class Query;
+class RecieverConfirmation;
 class Signature;
 class SimpleAsset;
 class StatusResponse;
@@ -159,6 +160,103 @@ class TransactionResponse : public ::google::protobuf::Message /* @@protoc_inser
 
   void InitAsDefaultInstance();
   static TransactionResponse* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class RecieverConfirmation : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:Api.RecieverConfirmation) */ {
+ public:
+  RecieverConfirmation();
+  virtual ~RecieverConfirmation();
+
+  RecieverConfirmation(const RecieverConfirmation& from);
+
+  inline RecieverConfirmation& operator=(const RecieverConfirmation& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const RecieverConfirmation& default_instance();
+
+  void Swap(RecieverConfirmation* other);
+
+  // implements Message ----------------------------------------------
+
+  inline RecieverConfirmation* New() const { return New(NULL); }
+
+  RecieverConfirmation* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const RecieverConfirmation& from);
+  void MergeFrom(const RecieverConfirmation& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(RecieverConfirmation* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string hash = 1;
+  void clear_hash();
+  static const int kHashFieldNumber = 1;
+  const ::std::string& hash() const;
+  void set_hash(const ::std::string& value);
+  void set_hash(const char* value);
+  void set_hash(const char* value, size_t size);
+  ::std::string* mutable_hash();
+  ::std::string* release_hash();
+  void set_allocated_hash(::std::string* hash);
+
+  // optional .Api.Signature signature = 2;
+  bool has_signature() const;
+  void clear_signature();
+  static const int kSignatureFieldNumber = 2;
+  const ::Api::Signature& signature() const;
+  ::Api::Signature* mutable_signature();
+  ::Api::Signature* release_signature();
+  void set_allocated_signature(::Api::Signature* signature);
+
+  // @@protoc_insertion_point(class_scope:Api.RecieverConfirmation)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::internal::ArenaStringPtr hash_;
+  ::Api::Signature* signature_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_api_2eproto();
+  friend void protobuf_AssignDesc_api_2eproto();
+  friend void protobuf_ShutdownFile_api_2eproto();
+
+  void InitAsDefaultInstance();
+  static RecieverConfirmation* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -401,6 +499,15 @@ class StatusResponse : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint64 timestamp() const;
   void set_timestamp(::google::protobuf::uint64 value);
 
+  // optional .Api.RecieverConfirmation confirm = 4;
+  bool has_confirm() const;
+  void clear_confirm();
+  static const int kConfirmFieldNumber = 4;
+  const ::Api::RecieverConfirmation& confirm() const;
+  ::Api::RecieverConfirmation* mutable_confirm();
+  ::Api::RecieverConfirmation* release_confirm();
+  void set_allocated_confirm(::Api::RecieverConfirmation* confirm);
+
   // @@protoc_insertion_point(class_scope:Api.StatusResponse)
  private:
 
@@ -409,6 +516,7 @@ class StatusResponse : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::internal::ArenaStringPtr value_;
   ::google::protobuf::internal::ArenaStringPtr message_;
   ::google::protobuf::uint64 timestamp_;
+  ::Api::RecieverConfirmation* confirm_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_api_2eproto();
   friend void protobuf_AssignDesc_api_2eproto();
@@ -1840,6 +1948,92 @@ TransactionResponse::transaction() const {
 
 // -------------------------------------------------------------------
 
+// RecieverConfirmation
+
+// optional string hash = 1;
+inline void RecieverConfirmation::clear_hash() {
+  hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& RecieverConfirmation::hash() const {
+  // @@protoc_insertion_point(field_get:Api.RecieverConfirmation.hash)
+  return hash_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void RecieverConfirmation::set_hash(const ::std::string& value) {
+  
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Api.RecieverConfirmation.hash)
+}
+inline void RecieverConfirmation::set_hash(const char* value) {
+  
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Api.RecieverConfirmation.hash)
+}
+inline void RecieverConfirmation::set_hash(const char* value, size_t size) {
+  
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Api.RecieverConfirmation.hash)
+}
+inline ::std::string* RecieverConfirmation::mutable_hash() {
+  
+  // @@protoc_insertion_point(field_mutable:Api.RecieverConfirmation.hash)
+  return hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* RecieverConfirmation::release_hash() {
+  // @@protoc_insertion_point(field_release:Api.RecieverConfirmation.hash)
+  
+  return hash_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void RecieverConfirmation::set_allocated_hash(::std::string* hash) {
+  if (hash != NULL) {
+    
+  } else {
+    
+  }
+  hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), hash);
+  // @@protoc_insertion_point(field_set_allocated:Api.RecieverConfirmation.hash)
+}
+
+// optional .Api.Signature signature = 2;
+inline bool RecieverConfirmation::has_signature() const {
+  return !_is_default_instance_ && signature_ != NULL;
+}
+inline void RecieverConfirmation::clear_signature() {
+  if (GetArenaNoVirtual() == NULL && signature_ != NULL) delete signature_;
+  signature_ = NULL;
+}
+inline const ::Api::Signature& RecieverConfirmation::signature() const {
+  // @@protoc_insertion_point(field_get:Api.RecieverConfirmation.signature)
+  return signature_ != NULL ? *signature_ : *default_instance_->signature_;
+}
+inline ::Api::Signature* RecieverConfirmation::mutable_signature() {
+  
+  if (signature_ == NULL) {
+    signature_ = new ::Api::Signature;
+  }
+  // @@protoc_insertion_point(field_mutable:Api.RecieverConfirmation.signature)
+  return signature_;
+}
+inline ::Api::Signature* RecieverConfirmation::release_signature() {
+  // @@protoc_insertion_point(field_release:Api.RecieverConfirmation.signature)
+  
+  ::Api::Signature* temp = signature_;
+  signature_ = NULL;
+  return temp;
+}
+inline void RecieverConfirmation::set_allocated_signature(::Api::Signature* signature) {
+  delete signature_;
+  signature_ = signature;
+  if (signature) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:Api.RecieverConfirmation.signature)
+}
+
+// -------------------------------------------------------------------
+
 // AssetResponse
 
 // optional string message = 1;
@@ -2208,6 +2402,44 @@ inline void StatusResponse::set_timestamp(::google::protobuf::uint64 value) {
   
   timestamp_ = value;
   // @@protoc_insertion_point(field_set:Api.StatusResponse.timestamp)
+}
+
+// optional .Api.RecieverConfirmation confirm = 4;
+inline bool StatusResponse::has_confirm() const {
+  return !_is_default_instance_ && confirm_ != NULL;
+}
+inline void StatusResponse::clear_confirm() {
+  if (GetArenaNoVirtual() == NULL && confirm_ != NULL) delete confirm_;
+  confirm_ = NULL;
+}
+inline const ::Api::RecieverConfirmation& StatusResponse::confirm() const {
+  // @@protoc_insertion_point(field_get:Api.StatusResponse.confirm)
+  return confirm_ != NULL ? *confirm_ : *default_instance_->confirm_;
+}
+inline ::Api::RecieverConfirmation* StatusResponse::mutable_confirm() {
+  
+  if (confirm_ == NULL) {
+    confirm_ = new ::Api::RecieverConfirmation;
+  }
+  // @@protoc_insertion_point(field_mutable:Api.StatusResponse.confirm)
+  return confirm_;
+}
+inline ::Api::RecieverConfirmation* StatusResponse::release_confirm() {
+  // @@protoc_insertion_point(field_release:Api.StatusResponse.confirm)
+  
+  ::Api::RecieverConfirmation* temp = confirm_;
+  confirm_ = NULL;
+  return temp;
+}
+inline void StatusResponse::set_allocated_confirm(::Api::RecieverConfirmation* confirm) {
+  delete confirm_;
+  confirm_ = confirm;
+  if (confirm) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:Api.StatusResponse.confirm)
 }
 
 // -------------------------------------------------------------------
@@ -3823,6 +4055,8 @@ inline void ConsensusEvent::set_allocated_status(::std::string* status) {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

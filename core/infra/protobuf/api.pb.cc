@@ -24,6 +24,9 @@ namespace {
 const ::google::protobuf::Descriptor* TransactionResponse_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   TransactionResponse_reflection_ = NULL;
+const ::google::protobuf::Descriptor* RecieverConfirmation_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  RecieverConfirmation_reflection_ = NULL;
 const ::google::protobuf::Descriptor* AssetResponse_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   AssetResponse_reflection_ = NULL;
@@ -99,7 +102,23 @@ void protobuf_AssignDesc_api_2eproto() {
       sizeof(TransactionResponse),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransactionResponse, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransactionResponse, _is_default_instance_));
-  AssetResponse_descriptor_ = file->message_type(1);
+  RecieverConfirmation_descriptor_ = file->message_type(1);
+  static const int RecieverConfirmation_offsets_[2] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RecieverConfirmation, hash_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RecieverConfirmation, signature_),
+  };
+  RecieverConfirmation_reflection_ =
+    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
+      RecieverConfirmation_descriptor_,
+      RecieverConfirmation::default_instance_,
+      RecieverConfirmation_offsets_,
+      -1,
+      -1,
+      -1,
+      sizeof(RecieverConfirmation),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RecieverConfirmation, _internal_metadata_),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RecieverConfirmation, _is_default_instance_));
+  AssetResponse_descriptor_ = file->message_type(2);
   static const int AssetResponse_offsets_[8] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AssetResponse, message_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AssetResponse, code_),
@@ -121,11 +140,12 @@ void protobuf_AssignDesc_api_2eproto() {
       sizeof(AssetResponse),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AssetResponse, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AssetResponse, _is_default_instance_));
-  StatusResponse_descriptor_ = file->message_type(2);
-  static const int StatusResponse_offsets_[3] = {
+  StatusResponse_descriptor_ = file->message_type(3);
+  static const int StatusResponse_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StatusResponse, value_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StatusResponse, message_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StatusResponse, timestamp_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StatusResponse, confirm_),
   };
   StatusResponse_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
@@ -138,7 +158,7 @@ void protobuf_AssignDesc_api_2eproto() {
       sizeof(StatusResponse),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StatusResponse, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StatusResponse, _is_default_instance_));
-  Query_descriptor_ = file->message_type(3);
+  Query_descriptor_ = file->message_type(4);
   static const int Query_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Query, type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Query, value_),
@@ -155,7 +175,7 @@ void protobuf_AssignDesc_api_2eproto() {
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Query, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Query, _is_default_instance_));
   Query_ValueEntry_descriptor_ = Query_descriptor_->nested_type(0);
-  BaseObject_descriptor_ = file->message_type(4);
+  BaseObject_descriptor_ = file->message_type(5);
   static const int BaseObject_offsets_[5] = {
     PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(BaseObject_default_oneof_instance_, valuestring_),
     PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(BaseObject_default_oneof_instance_, valueint_),
@@ -176,7 +196,7 @@ void protobuf_AssignDesc_api_2eproto() {
       sizeof(BaseObject),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BaseObject, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BaseObject, _is_default_instance_));
-  SimpleAsset_descriptor_ = file->message_type(5);
+  SimpleAsset_descriptor_ = file->message_type(6);
   static const int SimpleAsset_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleAsset, domain_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleAsset, name_),
@@ -194,7 +214,7 @@ void protobuf_AssignDesc_api_2eproto() {
       sizeof(SimpleAsset),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleAsset, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleAsset, _is_default_instance_));
-  Asset_descriptor_ = file->message_type(6);
+  Asset_descriptor_ = file->message_type(7);
   static const int Asset_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Asset, domain_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Asset, name_),
@@ -213,7 +233,7 @@ void protobuf_AssignDesc_api_2eproto() {
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Asset, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Asset, _is_default_instance_));
   Asset_ValueEntry_descriptor_ = Asset_descriptor_->nested_type(0);
-  Domain_descriptor_ = file->message_type(7);
+  Domain_descriptor_ = file->message_type(8);
   static const int Domain_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Domain, ownerpublickey_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Domain, name_),
@@ -229,7 +249,7 @@ void protobuf_AssignDesc_api_2eproto() {
       sizeof(Domain),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Domain, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Domain, _is_default_instance_));
-  Account_descriptor_ = file->message_type(8);
+  Account_descriptor_ = file->message_type(9);
   static const int Account_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Account, publickey_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Account, name_),
@@ -246,7 +266,7 @@ void protobuf_AssignDesc_api_2eproto() {
       sizeof(Account),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Account, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Account, _is_default_instance_));
-  Trust_descriptor_ = file->message_type(9);
+  Trust_descriptor_ = file->message_type(10);
   static const int Trust_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Trust, value_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Trust, isok_),
@@ -262,7 +282,7 @@ void protobuf_AssignDesc_api_2eproto() {
       sizeof(Trust),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Trust, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Trust, _is_default_instance_));
-  Peer_descriptor_ = file->message_type(10);
+  Peer_descriptor_ = file->message_type(11);
   static const int Peer_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Peer, publickey_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Peer, address_),
@@ -279,7 +299,7 @@ void protobuf_AssignDesc_api_2eproto() {
       sizeof(Peer),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Peer, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Peer, _is_default_instance_));
-  Signature_descriptor_ = file->message_type(11);
+  Signature_descriptor_ = file->message_type(12);
   static const int Signature_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Signature, publickey_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Signature, signature_),
@@ -295,7 +315,7 @@ void protobuf_AssignDesc_api_2eproto() {
       sizeof(Signature),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Signature, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Signature, _is_default_instance_));
-  Transaction_descriptor_ = file->message_type(12);
+  Transaction_descriptor_ = file->message_type(13);
   static const int Transaction_offsets_[11] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, txsignatures_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, type_),
@@ -320,7 +340,7 @@ void protobuf_AssignDesc_api_2eproto() {
       sizeof(Transaction),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, _is_default_instance_));
-  ConsensusEvent_descriptor_ = file->message_type(13);
+  ConsensusEvent_descriptor_ = file->message_type(14);
   static const int ConsensusEvent_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConsensusEvent, eventsignatures_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConsensusEvent, transaction_),
@@ -353,6 +373,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       TransactionResponse_descriptor_, &TransactionResponse::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+      RecieverConfirmation_descriptor_, &RecieverConfirmation::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       AssetResponse_descriptor_, &AssetResponse::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
@@ -404,6 +426,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void protobuf_ShutdownFile_api_2eproto() {
   delete TransactionResponse::default_instance_;
   delete TransactionResponse_reflection_;
+  delete RecieverConfirmation::default_instance_;
+  delete RecieverConfirmation_reflection_;
   delete AssetResponse::default_instance_;
   delete AssetResponse_reflection_;
   delete StatusResponse::default_instance_;
@@ -443,54 +467,58 @@ void protobuf_AddDesc_api_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\tapi.proto\022\003Api\"[\n\023TransactionResponse\022"
     "\017\n\007message\030\001 \001(\t\022\014\n\004code\030\002 \001(\004\022%\n\013transa"
-    "ction\030\003 \003(\0132\020.Api.Transaction\"\330\001\n\rAssetR"
-    "esponse\022\017\n\007message\030\001 \001(\t\022\014\n\004code\030\002 \001(\004\022\021"
-    "\n\ttimestamp\030\003 \001(\004\022\031\n\005asset\030\004 \001(\0132\n.Api.A"
-    "sset\022%\n\013simpleAsset\030\005 \001(\0132\020.Api.SimpleAs"
-    "set\022\033\n\006domain\030\006 \001(\0132\013.Api.Domain\022\035\n\007acco"
-    "unt\030\007 \001(\0132\014.Api.Account\022\027\n\004peer\030\010 \001(\0132\t."
-    "Api.Peer\"C\n\016StatusResponse\022\r\n\005value\030\001 \001("
-    "\t\022\017\n\007message\030\002 \001(\t\022\021\n\ttimestamp\030\003 \001(\004\"z\n"
-    "\005Query\022\014\n\004type\030\001 \001(\t\022$\n\005value\030\002 \003(\0132\025.Ap"
-    "i.Query.ValueEntry\032=\n\nValueEntry\022\013\n\003key\030"
-    "\001 \001(\t\022\036\n\005value\030\002 \001(\0132\017.Api.BaseObject:\0028"
-    "\001\"o\n\nBaseObject\022\025\n\013valueString\030\001 \001(\tH\000\022\022"
-    "\n\010valueInt\030\002 \001(\003H\000\022\026\n\014valueBoolean\030\003 \001(\010"
-    "H\000\022\025\n\013valueDouble\030\004 \001(\001H\000B\007\n\005value\"f\n\013Si"
-    "mpleAsset\022\016\n\006domain\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022"
-    "\036\n\005value\030\003 \001(\0132\017.Api.BaseObject\022\031\n\021smart"
-    "ContractName\030\004 \001(\t\"\245\001\n\005Asset\022\016\n\006domain\030\001"
-    " \001(\t\022\014\n\004name\030\002 \001(\t\022$\n\005value\030\003 \003(\0132\025.Api."
-    "Asset.ValueEntry\022\031\n\021smartContractName\030\004 "
-    "\001(\t\032=\n\nValueEntry\022\013\n\003key\030\001 \001(\t\022\036\n\005value\030"
-    "\002 \001(\0132\017.Api.BaseObject:\0028\001\".\n\006Domain\022\026\n\016"
-    "ownerPublicKey\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\":\n\007Ac"
-    "count\022\021\n\tpublicKey\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\016"
-    "\n\006assets\030\003 \003(\t\"$\n\005Trust\022\r\n\005value\030\001 \001(\001\022\014"
-    "\n\004isOk\030\002 \001(\010\"E\n\004Peer\022\021\n\tpublicKey\030\001 \001(\t\022"
-    "\017\n\007address\030\002 \001(\t\022\031\n\005trust\030\003 \001(\0132\n.Api.Tr"
-    "ust\"1\n\tSignature\022\021\n\tpublicKey\030\001 \001(\t\022\021\n\ts"
-    "ignature\030\002 \001(\t\"\246\002\n\013Transaction\022$\n\014txSign"
-    "atures\030\001 \003(\0132\016.Api.Signature\022\014\n\004type\030\002 \001"
-    "(\t\022\024\n\014senderPubkey\030\003 \001(\t\022\014\n\004hash\030\004 \001(\t\022\021"
-    "\n\ttimestamp\030\005 \001(\004\022\031\n\005asset\030\006 \001(\0132\n.Api.A"
-    "sset\022%\n\013simpleAsset\030\007 \001(\0132\020.Api.SimpleAs"
-    "set\022\033\n\006domain\030\010 \001(\0132\013.Api.Domain\022\035\n\007acco"
-    "unt\030\t \001(\0132\014.Api.Account\022\027\n\004peer\030\n \001(\0132\t."
-    "Api.Peer\022\025\n\rreceivePubkey\030\013 \001(\t\"\177\n\016Conse"
-    "nsusEvent\022\'\n\017eventSignatures\030\001 \003(\0132\016.Api"
-    ".Signature\022%\n\013transaction\030\002 \001(\0132\020.Api.Tr"
-    "ansaction\022\r\n\005order\030\003 \001(\004\022\016\n\006status\030\004 \001(\t"
-    "2G\n\025TransactionRepository\022.\n\004find\022\n.Api."
-    "Query\032\030.Api.TransactionResponse\"\0002;\n\017Ass"
-    "etRepository\022(\n\004find\022\n.Api.Query\032\022.Api.A"
-    "ssetResponse\"\0002r\n\010Sumeragi\0220\n\005Torii\022\020.Ap"
-    "i.Transaction\032\023.Api.StatusResponse\"\000\0224\n\006"
-    "Verify\022\023.Api.ConsensusEvent\032\023.Api.Status"
-    "Response\"\000B\003\200\001\000b\006proto3", 1863);
+    "ction\030\003 \003(\0132\020.Api.Transaction\"G\n\024Recieve"
+    "rConfirmation\022\014\n\004hash\030\001 \001(\t\022!\n\tsignature"
+    "\030\002 \001(\0132\016.Api.Signature\"\330\001\n\rAssetResponse"
+    "\022\017\n\007message\030\001 \001(\t\022\014\n\004code\030\002 \001(\004\022\021\n\ttimes"
+    "tamp\030\003 \001(\004\022\031\n\005asset\030\004 \001(\0132\n.Api.Asset\022%\n"
+    "\013simpleAsset\030\005 \001(\0132\020.Api.SimpleAsset\022\033\n\006"
+    "domain\030\006 \001(\0132\013.Api.Domain\022\035\n\007account\030\007 \001"
+    "(\0132\014.Api.Account\022\027\n\004peer\030\010 \001(\0132\t.Api.Pee"
+    "r\"o\n\016StatusResponse\022\r\n\005value\030\001 \001(\t\022\017\n\007me"
+    "ssage\030\002 \001(\t\022\021\n\ttimestamp\030\003 \001(\004\022*\n\007confir"
+    "m\030\004 \001(\0132\031.Api.RecieverConfirmation\"z\n\005Qu"
+    "ery\022\014\n\004type\030\001 \001(\t\022$\n\005value\030\002 \003(\0132\025.Api.Q"
+    "uery.ValueEntry\032=\n\nValueEntry\022\013\n\003key\030\001 \001"
+    "(\t\022\036\n\005value\030\002 \001(\0132\017.Api.BaseObject:\0028\001\"o"
+    "\n\nBaseObject\022\025\n\013valueString\030\001 \001(\tH\000\022\022\n\010v"
+    "alueInt\030\002 \001(\003H\000\022\026\n\014valueBoolean\030\003 \001(\010H\000\022"
+    "\025\n\013valueDouble\030\004 \001(\001H\000B\007\n\005value\"f\n\013Simpl"
+    "eAsset\022\016\n\006domain\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\036\n\005"
+    "value\030\003 \001(\0132\017.Api.BaseObject\022\031\n\021smartCon"
+    "tractName\030\004 \001(\t\"\245\001\n\005Asset\022\016\n\006domain\030\001 \001("
+    "\t\022\014\n\004name\030\002 \001(\t\022$\n\005value\030\003 \003(\0132\025.Api.Ass"
+    "et.ValueEntry\022\031\n\021smartContractName\030\004 \001(\t"
+    "\032=\n\nValueEntry\022\013\n\003key\030\001 \001(\t\022\036\n\005value\030\002 \001"
+    "(\0132\017.Api.BaseObject:\0028\001\".\n\006Domain\022\026\n\016own"
+    "erPublicKey\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\":\n\007Accou"
+    "nt\022\021\n\tpublicKey\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\016\n\006a"
+    "ssets\030\003 \003(\t\"$\n\005Trust\022\r\n\005value\030\001 \001(\001\022\014\n\004i"
+    "sOk\030\002 \001(\010\"E\n\004Peer\022\021\n\tpublicKey\030\001 \001(\t\022\017\n\007"
+    "address\030\002 \001(\t\022\031\n\005trust\030\003 \001(\0132\n.Api.Trust"
+    "\"1\n\tSignature\022\021\n\tpublicKey\030\001 \001(\t\022\021\n\tsign"
+    "ature\030\002 \001(\t\"\246\002\n\013Transaction\022$\n\014txSignatu"
+    "res\030\001 \003(\0132\016.Api.Signature\022\014\n\004type\030\002 \001(\t\022"
+    "\024\n\014senderPubkey\030\003 \001(\t\022\014\n\004hash\030\004 \001(\t\022\021\n\tt"
+    "imestamp\030\005 \001(\004\022\031\n\005asset\030\006 \001(\0132\n.Api.Asse"
+    "t\022%\n\013simpleAsset\030\007 \001(\0132\020.Api.SimpleAsset"
+    "\022\033\n\006domain\030\010 \001(\0132\013.Api.Domain\022\035\n\007account"
+    "\030\t \001(\0132\014.Api.Account\022\027\n\004peer\030\n \001(\0132\t.Api"
+    ".Peer\022\025\n\rreceivePubkey\030\013 \001(\t\"\177\n\016Consensu"
+    "sEvent\022\'\n\017eventSignatures\030\001 \003(\0132\016.Api.Si"
+    "gnature\022%\n\013transaction\030\002 \001(\0132\020.Api.Trans"
+    "action\022\r\n\005order\030\003 \001(\004\022\016\n\006status\030\004 \001(\t2G\n"
+    "\025TransactionRepository\022.\n\004find\022\n.Api.Que"
+    "ry\032\030.Api.TransactionResponse\"\0002;\n\017AssetR"
+    "epository\022(\n\004find\022\n.Api.Query\032\022.Api.Asse"
+    "tResponse\"\0002r\n\010Sumeragi\0220\n\005Torii\022\020.Api.T"
+    "ransaction\032\023.Api.StatusResponse\"\000\0224\n\006Ver"
+    "ify\022\023.Api.ConsensusEvent\032\023.Api.StatusRes"
+    "ponse\"\000B\003\200\001\000b\006proto3", 1980);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "api.proto", &protobuf_RegisterTypes);
   TransactionResponse::default_instance_ = new TransactionResponse();
+  RecieverConfirmation::default_instance_ = new RecieverConfirmation();
   AssetResponse::default_instance_ = new AssetResponse();
   StatusResponse::default_instance_ = new StatusResponse();
   Query::default_instance_ = new Query();
@@ -506,6 +534,7 @@ void protobuf_AddDesc_api_2eproto() {
   Transaction::default_instance_ = new Transaction();
   ConsensusEvent::default_instance_ = new ConsensusEvent();
   TransactionResponse::default_instance_->InitAsDefaultInstance();
+  RecieverConfirmation::default_instance_->InitAsDefaultInstance();
   AssetResponse::default_instance_->InitAsDefaultInstance();
   StatusResponse::default_instance_->InitAsDefaultInstance();
   Query::default_instance_->InitAsDefaultInstance();
@@ -934,6 +963,371 @@ const ::google::protobuf::RepeatedPtrField< ::Api::Transaction >&
 TransactionResponse::transaction() const {
   // @@protoc_insertion_point(field_list:Api.TransactionResponse.transaction)
   return transaction_;
+}
+
+#endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
+
+// ===================================================================
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int RecieverConfirmation::kHashFieldNumber;
+const int RecieverConfirmation::kSignatureFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+RecieverConfirmation::RecieverConfirmation()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:Api.RecieverConfirmation)
+}
+
+void RecieverConfirmation::InitAsDefaultInstance() {
+  _is_default_instance_ = true;
+  signature_ = const_cast< ::Api::Signature*>(&::Api::Signature::default_instance());
+}
+
+RecieverConfirmation::RecieverConfirmation(const RecieverConfirmation& from)
+  : ::google::protobuf::Message(),
+    _internal_metadata_(NULL) {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:Api.RecieverConfirmation)
+}
+
+void RecieverConfirmation::SharedCtor() {
+    _is_default_instance_ = false;
+  ::google::protobuf::internal::GetEmptyString();
+  _cached_size_ = 0;
+  hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  signature_ = NULL;
+}
+
+RecieverConfirmation::~RecieverConfirmation() {
+  // @@protoc_insertion_point(destructor:Api.RecieverConfirmation)
+  SharedDtor();
+}
+
+void RecieverConfirmation::SharedDtor() {
+  hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (this != default_instance_) {
+    delete signature_;
+  }
+}
+
+void RecieverConfirmation::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* RecieverConfirmation::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return RecieverConfirmation_descriptor_;
+}
+
+const RecieverConfirmation& RecieverConfirmation::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_api_2eproto();
+  return *default_instance_;
+}
+
+RecieverConfirmation* RecieverConfirmation::default_instance_ = NULL;
+
+RecieverConfirmation* RecieverConfirmation::New(::google::protobuf::Arena* arena) const {
+  RecieverConfirmation* n = new RecieverConfirmation;
+  if (arena != NULL) {
+    arena->Own(n);
+  }
+  return n;
+}
+
+void RecieverConfirmation::Clear() {
+// @@protoc_insertion_point(message_clear_start:Api.RecieverConfirmation)
+  hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (GetArenaNoVirtual() == NULL && signature_ != NULL) delete signature_;
+  signature_ = NULL;
+}
+
+bool RecieverConfirmation::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:Api.RecieverConfirmation)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string hash = 1;
+      case 1: {
+        if (tag == 10) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_hash()));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            this->hash().data(), this->hash().length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "Api.RecieverConfirmation.hash"));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(18)) goto parse_signature;
+        break;
+      }
+
+      // optional .Api.Signature signature = 2;
+      case 2: {
+        if (tag == 18) {
+         parse_signature:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_signature()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:Api.RecieverConfirmation)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:Api.RecieverConfirmation)
+  return false;
+#undef DO_
+}
+
+void RecieverConfirmation::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:Api.RecieverConfirmation)
+  // optional string hash = 1;
+  if (this->hash().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->hash().data(), this->hash().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "Api.RecieverConfirmation.hash");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      1, this->hash(), output);
+  }
+
+  // optional .Api.Signature signature = 2;
+  if (this->has_signature()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      2, *this->signature_, output);
+  }
+
+  // @@protoc_insertion_point(serialize_end:Api.RecieverConfirmation)
+}
+
+::google::protobuf::uint8* RecieverConfirmation::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:Api.RecieverConfirmation)
+  // optional string hash = 1;
+  if (this->hash().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->hash().data(), this->hash().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "Api.RecieverConfirmation.hash");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->hash(), target);
+  }
+
+  // optional .Api.Signature signature = 2;
+  if (this->has_signature()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        2, *this->signature_, false, target);
+  }
+
+  // @@protoc_insertion_point(serialize_to_array_end:Api.RecieverConfirmation)
+  return target;
+}
+
+int RecieverConfirmation::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:Api.RecieverConfirmation)
+  int total_size = 0;
+
+  // optional string hash = 1;
+  if (this->hash().size() > 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->hash());
+  }
+
+  // optional .Api.Signature signature = 2;
+  if (this->has_signature()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        *this->signature_);
+  }
+
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void RecieverConfirmation::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:Api.RecieverConfirmation)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  const RecieverConfirmation* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const RecieverConfirmation>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:Api.RecieverConfirmation)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:Api.RecieverConfirmation)
+    MergeFrom(*source);
+  }
+}
+
+void RecieverConfirmation::MergeFrom(const RecieverConfirmation& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:Api.RecieverConfirmation)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  if (from.hash().size() > 0) {
+
+    hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.hash_);
+  }
+  if (from.has_signature()) {
+    mutable_signature()->::Api::Signature::MergeFrom(from.signature());
+  }
+}
+
+void RecieverConfirmation::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:Api.RecieverConfirmation)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void RecieverConfirmation::CopyFrom(const RecieverConfirmation& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:Api.RecieverConfirmation)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool RecieverConfirmation::IsInitialized() const {
+
+  return true;
+}
+
+void RecieverConfirmation::Swap(RecieverConfirmation* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void RecieverConfirmation::InternalSwap(RecieverConfirmation* other) {
+  hash_.Swap(&other->hash_);
+  std::swap(signature_, other->signature_);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  std::swap(_cached_size_, other->_cached_size_);
+}
+
+::google::protobuf::Metadata RecieverConfirmation::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = RecieverConfirmation_descriptor_;
+  metadata.reflection = RecieverConfirmation_reflection_;
+  return metadata;
+}
+
+#if PROTOBUF_INLINE_NOT_IN_HEADERS
+// RecieverConfirmation
+
+// optional string hash = 1;
+void RecieverConfirmation::clear_hash() {
+  hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ const ::std::string& RecieverConfirmation::hash() const {
+  // @@protoc_insertion_point(field_get:Api.RecieverConfirmation.hash)
+  return hash_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void RecieverConfirmation::set_hash(const ::std::string& value) {
+  
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:Api.RecieverConfirmation.hash)
+}
+ void RecieverConfirmation::set_hash(const char* value) {
+  
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:Api.RecieverConfirmation.hash)
+}
+ void RecieverConfirmation::set_hash(const char* value, size_t size) {
+  
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:Api.RecieverConfirmation.hash)
+}
+ ::std::string* RecieverConfirmation::mutable_hash() {
+  
+  // @@protoc_insertion_point(field_mutable:Api.RecieverConfirmation.hash)
+  return hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* RecieverConfirmation::release_hash() {
+  // @@protoc_insertion_point(field_release:Api.RecieverConfirmation.hash)
+  
+  return hash_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void RecieverConfirmation::set_allocated_hash(::std::string* hash) {
+  if (hash != NULL) {
+    
+  } else {
+    
+  }
+  hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), hash);
+  // @@protoc_insertion_point(field_set_allocated:Api.RecieverConfirmation.hash)
+}
+
+// optional .Api.Signature signature = 2;
+bool RecieverConfirmation::has_signature() const {
+  return !_is_default_instance_ && signature_ != NULL;
+}
+void RecieverConfirmation::clear_signature() {
+  if (GetArenaNoVirtual() == NULL && signature_ != NULL) delete signature_;
+  signature_ = NULL;
+}
+const ::Api::Signature& RecieverConfirmation::signature() const {
+  // @@protoc_insertion_point(field_get:Api.RecieverConfirmation.signature)
+  return signature_ != NULL ? *signature_ : *default_instance_->signature_;
+}
+::Api::Signature* RecieverConfirmation::mutable_signature() {
+  
+  if (signature_ == NULL) {
+    signature_ = new ::Api::Signature;
+  }
+  // @@protoc_insertion_point(field_mutable:Api.RecieverConfirmation.signature)
+  return signature_;
+}
+::Api::Signature* RecieverConfirmation::release_signature() {
+  // @@protoc_insertion_point(field_release:Api.RecieverConfirmation.signature)
+  
+  ::Api::Signature* temp = signature_;
+  signature_ = NULL;
+  return temp;
+}
+void RecieverConfirmation::set_allocated_signature(::Api::Signature* signature) {
+  delete signature_;
+  signature_ = signature;
+  if (signature) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:Api.RecieverConfirmation.signature)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
@@ -1758,6 +2152,7 @@ void AssetResponse::set_allocated_peer(::Api::Peer* peer) {
 const int StatusResponse::kValueFieldNumber;
 const int StatusResponse::kMessageFieldNumber;
 const int StatusResponse::kTimestampFieldNumber;
+const int StatusResponse::kConfirmFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 StatusResponse::StatusResponse()
@@ -1768,6 +2163,7 @@ StatusResponse::StatusResponse()
 
 void StatusResponse::InitAsDefaultInstance() {
   _is_default_instance_ = true;
+  confirm_ = const_cast< ::Api::RecieverConfirmation*>(&::Api::RecieverConfirmation::default_instance());
 }
 
 StatusResponse::StatusResponse(const StatusResponse& from)
@@ -1785,6 +2181,7 @@ void StatusResponse::SharedCtor() {
   value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   message_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   timestamp_ = GOOGLE_ULONGLONG(0);
+  confirm_ = NULL;
 }
 
 StatusResponse::~StatusResponse() {
@@ -1796,6 +2193,7 @@ void StatusResponse::SharedDtor() {
   value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   message_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != default_instance_) {
+    delete confirm_;
   }
 }
 
@@ -1829,6 +2227,8 @@ void StatusResponse::Clear() {
   value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   message_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   timestamp_ = GOOGLE_ULONGLONG(0);
+  if (GetArenaNoVirtual() == NULL && confirm_ != NULL) delete confirm_;
+  confirm_ = NULL;
 }
 
 bool StatusResponse::MergePartialFromCodedStream(
@@ -1885,6 +2285,19 @@ bool StatusResponse::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(34)) goto parse_confirm;
+        break;
+      }
+
+      // optional .Api.RecieverConfirmation confirm = 4;
+      case 4: {
+        if (tag == 34) {
+         parse_confirm:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_confirm()));
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -1938,6 +2351,12 @@ void StatusResponse::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->timestamp(), output);
   }
 
+  // optional .Api.RecieverConfirmation confirm = 4;
+  if (this->has_confirm()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      4, *this->confirm_, output);
+  }
+
   // @@protoc_insertion_point(serialize_end:Api.StatusResponse)
 }
 
@@ -1971,6 +2390,13 @@ void StatusResponse::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(3, this->timestamp(), target);
   }
 
+  // optional .Api.RecieverConfirmation confirm = 4;
+  if (this->has_confirm()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        4, *this->confirm_, false, target);
+  }
+
   // @@protoc_insertion_point(serialize_to_array_end:Api.StatusResponse)
   return target;
 }
@@ -1998,6 +2424,13 @@ int StatusResponse::ByteSize() const {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::UInt64Size(
         this->timestamp());
+  }
+
+  // optional .Api.RecieverConfirmation confirm = 4;
+  if (this->has_confirm()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        *this->confirm_);
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -2039,6 +2472,9 @@ void StatusResponse::MergeFrom(const StatusResponse& from) {
   if (from.timestamp() != 0) {
     set_timestamp(from.timestamp());
   }
+  if (from.has_confirm()) {
+    mutable_confirm()->::Api::RecieverConfirmation::MergeFrom(from.confirm());
+  }
 }
 
 void StatusResponse::CopyFrom(const ::google::protobuf::Message& from) {
@@ -2068,6 +2504,7 @@ void StatusResponse::InternalSwap(StatusResponse* other) {
   value_.Swap(&other->value_);
   message_.Swap(&other->message_);
   std::swap(timestamp_, other->timestamp_);
+  std::swap(confirm_, other->confirm_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
@@ -2183,6 +2620,44 @@ void StatusResponse::clear_timestamp() {
   
   timestamp_ = value;
   // @@protoc_insertion_point(field_set:Api.StatusResponse.timestamp)
+}
+
+// optional .Api.RecieverConfirmation confirm = 4;
+bool StatusResponse::has_confirm() const {
+  return !_is_default_instance_ && confirm_ != NULL;
+}
+void StatusResponse::clear_confirm() {
+  if (GetArenaNoVirtual() == NULL && confirm_ != NULL) delete confirm_;
+  confirm_ = NULL;
+}
+const ::Api::RecieverConfirmation& StatusResponse::confirm() const {
+  // @@protoc_insertion_point(field_get:Api.StatusResponse.confirm)
+  return confirm_ != NULL ? *confirm_ : *default_instance_->confirm_;
+}
+::Api::RecieverConfirmation* StatusResponse::mutable_confirm() {
+  
+  if (confirm_ == NULL) {
+    confirm_ = new ::Api::RecieverConfirmation;
+  }
+  // @@protoc_insertion_point(field_mutable:Api.StatusResponse.confirm)
+  return confirm_;
+}
+::Api::RecieverConfirmation* StatusResponse::release_confirm() {
+  // @@protoc_insertion_point(field_release:Api.StatusResponse.confirm)
+  
+  ::Api::RecieverConfirmation* temp = confirm_;
+  confirm_ = NULL;
+  return temp;
+}
+void StatusResponse::set_allocated_confirm(::Api::RecieverConfirmation* confirm) {
+  delete confirm_;
+  confirm_ = confirm;
+  if (confirm) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:Api.StatusResponse.confirm)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
