@@ -62,12 +62,9 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* Peer_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   Peer_reflection_ = NULL;
-const ::google::protobuf::Descriptor* TxSignatures_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* Signature_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
-  TxSignatures_reflection_ = NULL;
-const ::google::protobuf::Descriptor* EventSignature_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  EventSignature_reflection_ = NULL;
+  Signature_reflection_ = NULL;
 const ::google::protobuf::Descriptor* Transaction_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   Transaction_reflection_ = NULL;
@@ -282,39 +279,23 @@ void protobuf_AssignDesc_api_2eproto() {
       sizeof(Peer),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Peer, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Peer, _is_default_instance_));
-  TxSignatures_descriptor_ = file->message_type(11);
-  static const int TxSignatures_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TxSignatures, publickey_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TxSignatures, signature_),
+  Signature_descriptor_ = file->message_type(11);
+  static const int Signature_offsets_[2] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Signature, publickey_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Signature, signature_),
   };
-  TxSignatures_reflection_ =
+  Signature_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
-      TxSignatures_descriptor_,
-      TxSignatures::default_instance_,
-      TxSignatures_offsets_,
+      Signature_descriptor_,
+      Signature::default_instance_,
+      Signature_offsets_,
       -1,
       -1,
       -1,
-      sizeof(TxSignatures),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TxSignatures, _internal_metadata_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TxSignatures, _is_default_instance_));
-  EventSignature_descriptor_ = file->message_type(12);
-  static const int EventSignature_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EventSignature, publickey_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EventSignature, signature_),
-  };
-  EventSignature_reflection_ =
-    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
-      EventSignature_descriptor_,
-      EventSignature::default_instance_,
-      EventSignature_offsets_,
-      -1,
-      -1,
-      -1,
-      sizeof(EventSignature),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EventSignature, _internal_metadata_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EventSignature, _is_default_instance_));
-  Transaction_descriptor_ = file->message_type(13);
+      sizeof(Signature),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Signature, _internal_metadata_),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Signature, _is_default_instance_));
+  Transaction_descriptor_ = file->message_type(12);
   static const int Transaction_offsets_[11] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, txsignatures_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, type_),
@@ -339,7 +320,7 @@ void protobuf_AssignDesc_api_2eproto() {
       sizeof(Transaction),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transaction, _is_default_instance_));
-  ConsensusEvent_descriptor_ = file->message_type(14);
+  ConsensusEvent_descriptor_ = file->message_type(13);
   static const int ConsensusEvent_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConsensusEvent, eventsignatures_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConsensusEvent, transaction_),
@@ -411,9 +392,7 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       Peer_descriptor_, &Peer::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-      TxSignatures_descriptor_, &TxSignatures::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-      EventSignature_descriptor_, &EventSignature::default_instance());
+      Signature_descriptor_, &Signature::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       Transaction_descriptor_, &Transaction::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
@@ -446,10 +425,8 @@ void protobuf_ShutdownFile_api_2eproto() {
   delete Trust_reflection_;
   delete Peer::default_instance_;
   delete Peer_reflection_;
-  delete TxSignatures::default_instance_;
-  delete TxSignatures_reflection_;
-  delete EventSignature::default_instance_;
-  delete EventSignature_reflection_;
+  delete Signature::default_instance_;
+  delete Signature_reflection_;
   delete Transaction::default_instance_;
   delete Transaction_reflection_;
   delete ConsensusEvent::default_instance_;
@@ -492,27 +469,25 @@ void protobuf_AddDesc_api_2eproto() {
     "\n\006assets\030\003 \003(\t\"$\n\005Trust\022\r\n\005value\030\001 \001(\001\022\014"
     "\n\004isOk\030\002 \001(\010\"E\n\004Peer\022\021\n\tpublicKey\030\001 \001(\t\022"
     "\017\n\007address\030\002 \001(\t\022\031\n\005trust\030\003 \001(\0132\n.Api.Tr"
-    "ust\"4\n\014TxSignatures\022\021\n\tpublicKey\030\001 \001(\t\022\021"
-    "\n\tsignature\030\002 \001(\t\"6\n\016EventSignature\022\021\n\tp"
-    "ublicKey\030\001 \001(\t\022\021\n\tsignature\030\002 \001(\t\"\251\002\n\013Tr"
-    "ansaction\022\'\n\014txSignatures\030\001 \003(\0132\021.Api.Tx"
-    "Signatures\022\014\n\004type\030\002 \001(\t\022\024\n\014senderPubkey"
-    "\030\003 \001(\t\022\014\n\004hash\030\004 \001(\t\022\021\n\ttimestamp\030\005 \001(\004\022"
-    "\031\n\005asset\030\006 \001(\0132\n.Api.Asset\022%\n\013simpleAsse"
-    "t\030\007 \001(\0132\020.Api.SimpleAsset\022\033\n\006domain\030\010 \001("
-    "\0132\013.Api.Domain\022\035\n\007account\030\t \001(\0132\014.Api.Ac"
-    "count\022\027\n\004peer\030\n \001(\0132\t.Api.Peer\022\025\n\rreceiv"
-    "ePubkey\030\013 \001(\t\"\204\001\n\016ConsensusEvent\022,\n\017even"
-    "tSignatures\030\001 \003(\0132\023.Api.EventSignature\022%"
-    "\n\013transaction\030\002 \001(\0132\020.Api.Transaction\022\r\n"
-    "\005order\030\003 \001(\004\022\016\n\006status\030\004 \001(\t2G\n\025Transact"
-    "ionRepository\022.\n\004find\022\n.Api.Query\032\030.Api."
-    "TransactionResponse\"\0002;\n\017AssetRepository"
-    "\022(\n\004find\022\n.Api.Query\032\022.Api.AssetResponse"
-    "\"\0002r\n\010Sumeragi\0220\n\005Torii\022\020.Api.Transactio"
-    "n\032\023.Api.StatusResponse\"\000\0224\n\006Verify\022\023.Api"
-    ".ConsensusEvent\032\023.Api.StatusResponse\"\000B\003"
-    "\200\001\000b\006proto3", 1931);
+    "ust\"1\n\tSignature\022\021\n\tpublicKey\030\001 \001(\t\022\021\n\ts"
+    "ignature\030\002 \001(\t\"\246\002\n\013Transaction\022$\n\014txSign"
+    "atures\030\001 \003(\0132\016.Api.Signature\022\014\n\004type\030\002 \001"
+    "(\t\022\024\n\014senderPubkey\030\003 \001(\t\022\014\n\004hash\030\004 \001(\t\022\021"
+    "\n\ttimestamp\030\005 \001(\004\022\031\n\005asset\030\006 \001(\0132\n.Api.A"
+    "sset\022%\n\013simpleAsset\030\007 \001(\0132\020.Api.SimpleAs"
+    "set\022\033\n\006domain\030\010 \001(\0132\013.Api.Domain\022\035\n\007acco"
+    "unt\030\t \001(\0132\014.Api.Account\022\027\n\004peer\030\n \001(\0132\t."
+    "Api.Peer\022\025\n\rreceivePubkey\030\013 \001(\t\"\177\n\016Conse"
+    "nsusEvent\022\'\n\017eventSignatures\030\001 \003(\0132\016.Api"
+    ".Signature\022%\n\013transaction\030\002 \001(\0132\020.Api.Tr"
+    "ansaction\022\r\n\005order\030\003 \001(\004\022\016\n\006status\030\004 \001(\t"
+    "2G\n\025TransactionRepository\022.\n\004find\022\n.Api."
+    "Query\032\030.Api.TransactionResponse\"\0002;\n\017Ass"
+    "etRepository\022(\n\004find\022\n.Api.Query\032\022.Api.A"
+    "ssetResponse\"\0002r\n\010Sumeragi\0220\n\005Torii\022\020.Ap"
+    "i.Transaction\032\023.Api.StatusResponse\"\000\0224\n\006"
+    "Verify\022\023.Api.ConsensusEvent\032\023.Api.Status"
+    "Response\"\000B\003\200\001\000b\006proto3", 1863);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "api.proto", &protobuf_RegisterTypes);
   TransactionResponse::default_instance_ = new TransactionResponse();
@@ -527,8 +502,7 @@ void protobuf_AddDesc_api_2eproto() {
   Account::default_instance_ = new Account();
   Trust::default_instance_ = new Trust();
   Peer::default_instance_ = new Peer();
-  TxSignatures::default_instance_ = new TxSignatures();
-  EventSignature::default_instance_ = new EventSignature();
+  Signature::default_instance_ = new Signature();
   Transaction::default_instance_ = new Transaction();
   ConsensusEvent::default_instance_ = new ConsensusEvent();
   TransactionResponse::default_instance_->InitAsDefaultInstance();
@@ -542,8 +516,7 @@ void protobuf_AddDesc_api_2eproto() {
   Account::default_instance_->InitAsDefaultInstance();
   Trust::default_instance_->InitAsDefaultInstance();
   Peer::default_instance_->InitAsDefaultInstance();
-  TxSignatures::default_instance_->InitAsDefaultInstance();
-  EventSignature::default_instance_->InitAsDefaultInstance();
+  Signature::default_instance_->InitAsDefaultInstance();
   Transaction::default_instance_->InitAsDefaultInstance();
   ConsensusEvent::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_api_2eproto);
@@ -6087,29 +6060,29 @@ void Peer::set_allocated_trust(::Api::Trust* trust) {
 // ===================================================================
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int TxSignatures::kPublicKeyFieldNumber;
-const int TxSignatures::kSignatureFieldNumber;
+const int Signature::kPublicKeyFieldNumber;
+const int Signature::kSignatureFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
-TxSignatures::TxSignatures()
+Signature::Signature()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
-  // @@protoc_insertion_point(constructor:Api.TxSignatures)
+  // @@protoc_insertion_point(constructor:Api.Signature)
 }
 
-void TxSignatures::InitAsDefaultInstance() {
+void Signature::InitAsDefaultInstance() {
   _is_default_instance_ = true;
 }
 
-TxSignatures::TxSignatures(const TxSignatures& from)
+Signature::Signature(const Signature& from)
   : ::google::protobuf::Message(),
     _internal_metadata_(NULL) {
   SharedCtor();
   MergeFrom(from);
-  // @@protoc_insertion_point(copy_constructor:Api.TxSignatures)
+  // @@protoc_insertion_point(copy_constructor:Api.Signature)
 }
 
-void TxSignatures::SharedCtor() {
+void Signature::SharedCtor() {
     _is_default_instance_ = false;
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
@@ -6117,54 +6090,54 @@ void TxSignatures::SharedCtor() {
   signature_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
-TxSignatures::~TxSignatures() {
-  // @@protoc_insertion_point(destructor:Api.TxSignatures)
+Signature::~Signature() {
+  // @@protoc_insertion_point(destructor:Api.Signature)
   SharedDtor();
 }
 
-void TxSignatures::SharedDtor() {
+void Signature::SharedDtor() {
   publickey_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   signature_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != default_instance_) {
   }
 }
 
-void TxSignatures::SetCachedSize(int size) const {
+void Signature::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* TxSignatures::descriptor() {
+const ::google::protobuf::Descriptor* Signature::descriptor() {
   protobuf_AssignDescriptorsOnce();
-  return TxSignatures_descriptor_;
+  return Signature_descriptor_;
 }
 
-const TxSignatures& TxSignatures::default_instance() {
+const Signature& Signature::default_instance() {
   if (default_instance_ == NULL) protobuf_AddDesc_api_2eproto();
   return *default_instance_;
 }
 
-TxSignatures* TxSignatures::default_instance_ = NULL;
+Signature* Signature::default_instance_ = NULL;
 
-TxSignatures* TxSignatures::New(::google::protobuf::Arena* arena) const {
-  TxSignatures* n = new TxSignatures;
+Signature* Signature::New(::google::protobuf::Arena* arena) const {
+  Signature* n = new Signature;
   if (arena != NULL) {
     arena->Own(n);
   }
   return n;
 }
 
-void TxSignatures::Clear() {
-// @@protoc_insertion_point(message_clear_start:Api.TxSignatures)
+void Signature::Clear() {
+// @@protoc_insertion_point(message_clear_start:Api.Signature)
   publickey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   signature_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
-bool TxSignatures::MergePartialFromCodedStream(
+bool Signature::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:Api.TxSignatures)
+  // @@protoc_insertion_point(parse_start:Api.Signature)
   for (;;) {
     ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
     tag = p.first;
@@ -6178,7 +6151,7 @@ bool TxSignatures::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->publickey().data(), this->publickey().length(),
             ::google::protobuf::internal::WireFormatLite::PARSE,
-            "Api.TxSignatures.publicKey"));
+            "Api.Signature.publicKey"));
         } else {
           goto handle_unusual;
         }
@@ -6195,7 +6168,7 @@ bool TxSignatures::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->signature().data(), this->signature().length(),
             ::google::protobuf::internal::WireFormatLite::PARSE,
-            "Api.TxSignatures.signature"));
+            "Api.Signature.signature"));
         } else {
           goto handle_unusual;
         }
@@ -6216,23 +6189,23 @@ bool TxSignatures::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:Api.TxSignatures)
+  // @@protoc_insertion_point(parse_success:Api.Signature)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:Api.TxSignatures)
+  // @@protoc_insertion_point(parse_failure:Api.Signature)
   return false;
 #undef DO_
 }
 
-void TxSignatures::SerializeWithCachedSizes(
+void Signature::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:Api.TxSignatures)
+  // @@protoc_insertion_point(serialize_start:Api.Signature)
   // optional string publicKey = 1;
   if (this->publickey().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->publickey().data(), this->publickey().length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "Api.TxSignatures.publicKey");
+      "Api.Signature.publicKey");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       1, this->publickey(), output);
   }
@@ -6242,23 +6215,23 @@ void TxSignatures::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->signature().data(), this->signature().length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "Api.TxSignatures.signature");
+      "Api.Signature.signature");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       2, this->signature(), output);
   }
 
-  // @@protoc_insertion_point(serialize_end:Api.TxSignatures)
+  // @@protoc_insertion_point(serialize_end:Api.Signature)
 }
 
-::google::protobuf::uint8* TxSignatures::InternalSerializeWithCachedSizesToArray(
+::google::protobuf::uint8* Signature::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
-  // @@protoc_insertion_point(serialize_to_array_start:Api.TxSignatures)
+  // @@protoc_insertion_point(serialize_to_array_start:Api.Signature)
   // optional string publicKey = 1;
   if (this->publickey().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->publickey().data(), this->publickey().length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "Api.TxSignatures.publicKey");
+      "Api.Signature.publicKey");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
         1, this->publickey(), target);
@@ -6269,18 +6242,18 @@ void TxSignatures::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->signature().data(), this->signature().length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "Api.TxSignatures.signature");
+      "Api.Signature.signature");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
         2, this->signature(), target);
   }
 
-  // @@protoc_insertion_point(serialize_to_array_end:Api.TxSignatures)
+  // @@protoc_insertion_point(serialize_to_array_end:Api.Signature)
   return target;
 }
 
-int TxSignatures::ByteSize() const {
-// @@protoc_insertion_point(message_byte_size_start:Api.TxSignatures)
+int Signature::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:Api.Signature)
   int total_size = 0;
 
   // optional string publicKey = 1;
@@ -6303,25 +6276,25 @@ int TxSignatures::ByteSize() const {
   return total_size;
 }
 
-void TxSignatures::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:Api.TxSignatures)
+void Signature::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:Api.Signature)
   if (GOOGLE_PREDICT_FALSE(&from == this)) {
     ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
   }
-  const TxSignatures* source = 
-      ::google::protobuf::internal::DynamicCastToGenerated<const TxSignatures>(
+  const Signature* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Signature>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:Api.TxSignatures)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:Api.Signature)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:Api.TxSignatures)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:Api.Signature)
     MergeFrom(*source);
   }
 }
 
-void TxSignatures::MergeFrom(const TxSignatures& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:Api.TxSignatures)
+void Signature::MergeFrom(const Signature& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:Api.Signature)
   if (GOOGLE_PREDICT_FALSE(&from == this)) {
     ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
   }
@@ -6335,515 +6308,133 @@ void TxSignatures::MergeFrom(const TxSignatures& from) {
   }
 }
 
-void TxSignatures::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:Api.TxSignatures)
+void Signature::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:Api.Signature)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-void TxSignatures::CopyFrom(const TxSignatures& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:Api.TxSignatures)
+void Signature::CopyFrom(const Signature& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:Api.Signature)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool TxSignatures::IsInitialized() const {
+bool Signature::IsInitialized() const {
 
   return true;
 }
 
-void TxSignatures::Swap(TxSignatures* other) {
+void Signature::Swap(Signature* other) {
   if (other == this) return;
   InternalSwap(other);
 }
-void TxSignatures::InternalSwap(TxSignatures* other) {
+void Signature::InternalSwap(Signature* other) {
   publickey_.Swap(&other->publickey_);
   signature_.Swap(&other->signature_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
 
-::google::protobuf::Metadata TxSignatures::GetMetadata() const {
+::google::protobuf::Metadata Signature::GetMetadata() const {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::Metadata metadata;
-  metadata.descriptor = TxSignatures_descriptor_;
-  metadata.reflection = TxSignatures_reflection_;
+  metadata.descriptor = Signature_descriptor_;
+  metadata.reflection = Signature_reflection_;
   return metadata;
 }
 
 #if PROTOBUF_INLINE_NOT_IN_HEADERS
-// TxSignatures
+// Signature
 
 // optional string publicKey = 1;
-void TxSignatures::clear_publickey() {
+void Signature::clear_publickey() {
   publickey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- const ::std::string& TxSignatures::publickey() const {
-  // @@protoc_insertion_point(field_get:Api.TxSignatures.publicKey)
+ const ::std::string& Signature::publickey() const {
+  // @@protoc_insertion_point(field_get:Api.Signature.publicKey)
   return publickey_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void TxSignatures::set_publickey(const ::std::string& value) {
+ void Signature::set_publickey(const ::std::string& value) {
   
   publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:Api.TxSignatures.publicKey)
+  // @@protoc_insertion_point(field_set:Api.Signature.publicKey)
 }
- void TxSignatures::set_publickey(const char* value) {
+ void Signature::set_publickey(const char* value) {
   
   publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:Api.TxSignatures.publicKey)
+  // @@protoc_insertion_point(field_set_char:Api.Signature.publicKey)
 }
- void TxSignatures::set_publickey(const char* value, size_t size) {
+ void Signature::set_publickey(const char* value, size_t size) {
   
   publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:Api.TxSignatures.publicKey)
+  // @@protoc_insertion_point(field_set_pointer:Api.Signature.publicKey)
 }
- ::std::string* TxSignatures::mutable_publickey() {
+ ::std::string* Signature::mutable_publickey() {
   
-  // @@protoc_insertion_point(field_mutable:Api.TxSignatures.publicKey)
+  // @@protoc_insertion_point(field_mutable:Api.Signature.publicKey)
   return publickey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- ::std::string* TxSignatures::release_publickey() {
-  // @@protoc_insertion_point(field_release:Api.TxSignatures.publicKey)
+ ::std::string* Signature::release_publickey() {
+  // @@protoc_insertion_point(field_release:Api.Signature.publicKey)
   
   return publickey_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void TxSignatures::set_allocated_publickey(::std::string* publickey) {
+ void Signature::set_allocated_publickey(::std::string* publickey) {
   if (publickey != NULL) {
     
   } else {
     
   }
   publickey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), publickey);
-  // @@protoc_insertion_point(field_set_allocated:Api.TxSignatures.publicKey)
+  // @@protoc_insertion_point(field_set_allocated:Api.Signature.publicKey)
 }
 
 // optional string signature = 2;
-void TxSignatures::clear_signature() {
+void Signature::clear_signature() {
   signature_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- const ::std::string& TxSignatures::signature() const {
-  // @@protoc_insertion_point(field_get:Api.TxSignatures.signature)
+ const ::std::string& Signature::signature() const {
+  // @@protoc_insertion_point(field_get:Api.Signature.signature)
   return signature_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void TxSignatures::set_signature(const ::std::string& value) {
+ void Signature::set_signature(const ::std::string& value) {
   
   signature_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:Api.TxSignatures.signature)
+  // @@protoc_insertion_point(field_set:Api.Signature.signature)
 }
- void TxSignatures::set_signature(const char* value) {
+ void Signature::set_signature(const char* value) {
   
   signature_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:Api.TxSignatures.signature)
+  // @@protoc_insertion_point(field_set_char:Api.Signature.signature)
 }
- void TxSignatures::set_signature(const char* value, size_t size) {
+ void Signature::set_signature(const char* value, size_t size) {
   
   signature_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:Api.TxSignatures.signature)
+  // @@protoc_insertion_point(field_set_pointer:Api.Signature.signature)
 }
- ::std::string* TxSignatures::mutable_signature() {
+ ::std::string* Signature::mutable_signature() {
   
-  // @@protoc_insertion_point(field_mutable:Api.TxSignatures.signature)
+  // @@protoc_insertion_point(field_mutable:Api.Signature.signature)
   return signature_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- ::std::string* TxSignatures::release_signature() {
-  // @@protoc_insertion_point(field_release:Api.TxSignatures.signature)
+ ::std::string* Signature::release_signature() {
+  // @@protoc_insertion_point(field_release:Api.Signature.signature)
   
   return signature_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void TxSignatures::set_allocated_signature(::std::string* signature) {
+ void Signature::set_allocated_signature(::std::string* signature) {
   if (signature != NULL) {
     
   } else {
     
   }
   signature_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), signature);
-  // @@protoc_insertion_point(field_set_allocated:Api.TxSignatures.signature)
-}
-
-#endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
-
-// ===================================================================
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int EventSignature::kPublicKeyFieldNumber;
-const int EventSignature::kSignatureFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
-EventSignature::EventSignature()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
-  SharedCtor();
-  // @@protoc_insertion_point(constructor:Api.EventSignature)
-}
-
-void EventSignature::InitAsDefaultInstance() {
-  _is_default_instance_ = true;
-}
-
-EventSignature::EventSignature(const EventSignature& from)
-  : ::google::protobuf::Message(),
-    _internal_metadata_(NULL) {
-  SharedCtor();
-  MergeFrom(from);
-  // @@protoc_insertion_point(copy_constructor:Api.EventSignature)
-}
-
-void EventSignature::SharedCtor() {
-    _is_default_instance_ = false;
-  ::google::protobuf::internal::GetEmptyString();
-  _cached_size_ = 0;
-  publickey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  signature_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-
-EventSignature::~EventSignature() {
-  // @@protoc_insertion_point(destructor:Api.EventSignature)
-  SharedDtor();
-}
-
-void EventSignature::SharedDtor() {
-  publickey_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  signature_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != default_instance_) {
-  }
-}
-
-void EventSignature::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* EventSignature::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return EventSignature_descriptor_;
-}
-
-const EventSignature& EventSignature::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_api_2eproto();
-  return *default_instance_;
-}
-
-EventSignature* EventSignature::default_instance_ = NULL;
-
-EventSignature* EventSignature::New(::google::protobuf::Arena* arena) const {
-  EventSignature* n = new EventSignature;
-  if (arena != NULL) {
-    arena->Own(n);
-  }
-  return n;
-}
-
-void EventSignature::Clear() {
-// @@protoc_insertion_point(message_clear_start:Api.EventSignature)
-  publickey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  signature_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-
-bool EventSignature::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:Api.EventSignature)
-  for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string publicKey = 1;
-      case 1: {
-        if (tag == 10) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_publickey()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->publickey().data(), this->publickey().length(),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "Api.EventSignature.publicKey"));
-        } else {
-          goto handle_unusual;
-        }
-        if (input->ExpectTag(18)) goto parse_signature;
-        break;
-      }
-
-      // optional string signature = 2;
-      case 2: {
-        if (tag == 18) {
-         parse_signature:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_signature()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->signature().data(), this->signature().length(),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "Api.EventSignature.signature"));
-        } else {
-          goto handle_unusual;
-        }
-        if (input->ExpectAtEnd()) goto success;
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0 ||
-            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
-        break;
-      }
-    }
-  }
-success:
-  // @@protoc_insertion_point(parse_success:Api.EventSignature)
-  return true;
-failure:
-  // @@protoc_insertion_point(parse_failure:Api.EventSignature)
-  return false;
-#undef DO_
-}
-
-void EventSignature::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:Api.EventSignature)
-  // optional string publicKey = 1;
-  if (this->publickey().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->publickey().data(), this->publickey().length(),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "Api.EventSignature.publicKey");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      1, this->publickey(), output);
-  }
-
-  // optional string signature = 2;
-  if (this->signature().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->signature().data(), this->signature().length(),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "Api.EventSignature.signature");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      2, this->signature(), output);
-  }
-
-  // @@protoc_insertion_point(serialize_end:Api.EventSignature)
-}
-
-::google::protobuf::uint8* EventSignature::InternalSerializeWithCachedSizesToArray(
-    bool deterministic, ::google::protobuf::uint8* target) const {
-  // @@protoc_insertion_point(serialize_to_array_start:Api.EventSignature)
-  // optional string publicKey = 1;
-  if (this->publickey().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->publickey().data(), this->publickey().length(),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "Api.EventSignature.publicKey");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->publickey(), target);
-  }
-
-  // optional string signature = 2;
-  if (this->signature().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->signature().data(), this->signature().length(),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "Api.EventSignature.signature");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->signature(), target);
-  }
-
-  // @@protoc_insertion_point(serialize_to_array_end:Api.EventSignature)
-  return target;
-}
-
-int EventSignature::ByteSize() const {
-// @@protoc_insertion_point(message_byte_size_start:Api.EventSignature)
-  int total_size = 0;
-
-  // optional string publicKey = 1;
-  if (this->publickey().size() > 0) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->publickey());
-  }
-
-  // optional string signature = 2;
-  if (this->signature().size() > 0) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->signature());
-  }
-
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void EventSignature::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:Api.EventSignature)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) {
-    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
-  }
-  const EventSignature* source = 
-      ::google::protobuf::internal::DynamicCastToGenerated<const EventSignature>(
-          &from);
-  if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:Api.EventSignature)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:Api.EventSignature)
-    MergeFrom(*source);
-  }
-}
-
-void EventSignature::MergeFrom(const EventSignature& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:Api.EventSignature)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) {
-    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
-  }
-  if (from.publickey().size() > 0) {
-
-    publickey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.publickey_);
-  }
-  if (from.signature().size() > 0) {
-
-    signature_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.signature_);
-  }
-}
-
-void EventSignature::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:Api.EventSignature)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void EventSignature::CopyFrom(const EventSignature& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:Api.EventSignature)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool EventSignature::IsInitialized() const {
-
-  return true;
-}
-
-void EventSignature::Swap(EventSignature* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
-void EventSignature::InternalSwap(EventSignature* other) {
-  publickey_.Swap(&other->publickey_);
-  signature_.Swap(&other->signature_);
-  _internal_metadata_.Swap(&other->_internal_metadata_);
-  std::swap(_cached_size_, other->_cached_size_);
-}
-
-::google::protobuf::Metadata EventSignature::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = EventSignature_descriptor_;
-  metadata.reflection = EventSignature_reflection_;
-  return metadata;
-}
-
-#if PROTOBUF_INLINE_NOT_IN_HEADERS
-// EventSignature
-
-// optional string publicKey = 1;
-void EventSignature::clear_publickey() {
-  publickey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
- const ::std::string& EventSignature::publickey() const {
-  // @@protoc_insertion_point(field_get:Api.EventSignature.publicKey)
-  return publickey_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
- void EventSignature::set_publickey(const ::std::string& value) {
-  
-  publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:Api.EventSignature.publicKey)
-}
- void EventSignature::set_publickey(const char* value) {
-  
-  publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:Api.EventSignature.publicKey)
-}
- void EventSignature::set_publickey(const char* value, size_t size) {
-  
-  publickey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:Api.EventSignature.publicKey)
-}
- ::std::string* EventSignature::mutable_publickey() {
-  
-  // @@protoc_insertion_point(field_mutable:Api.EventSignature.publicKey)
-  return publickey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
- ::std::string* EventSignature::release_publickey() {
-  // @@protoc_insertion_point(field_release:Api.EventSignature.publicKey)
-  
-  return publickey_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
- void EventSignature::set_allocated_publickey(::std::string* publickey) {
-  if (publickey != NULL) {
-    
-  } else {
-    
-  }
-  publickey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), publickey);
-  // @@protoc_insertion_point(field_set_allocated:Api.EventSignature.publicKey)
-}
-
-// optional string signature = 2;
-void EventSignature::clear_signature() {
-  signature_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
- const ::std::string& EventSignature::signature() const {
-  // @@protoc_insertion_point(field_get:Api.EventSignature.signature)
-  return signature_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
- void EventSignature::set_signature(const ::std::string& value) {
-  
-  signature_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:Api.EventSignature.signature)
-}
- void EventSignature::set_signature(const char* value) {
-  
-  signature_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:Api.EventSignature.signature)
-}
- void EventSignature::set_signature(const char* value, size_t size) {
-  
-  signature_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:Api.EventSignature.signature)
-}
- ::std::string* EventSignature::mutable_signature() {
-  
-  // @@protoc_insertion_point(field_mutable:Api.EventSignature.signature)
-  return signature_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
- ::std::string* EventSignature::release_signature() {
-  // @@protoc_insertion_point(field_release:Api.EventSignature.signature)
-  
-  return signature_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
- void EventSignature::set_allocated_signature(::std::string* signature) {
-  if (signature != NULL) {
-    
-  } else {
-    
-  }
-  signature_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), signature);
-  // @@protoc_insertion_point(field_set_allocated:Api.EventSignature.signature)
+  // @@protoc_insertion_point(field_set_allocated:Api.Signature.signature)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
@@ -6977,7 +6568,7 @@ bool Transaction::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .Api.TxSignatures txSignatures = 1;
+      // repeated .Api.Signature txSignatures = 1;
       case 1: {
         if (tag == 10) {
           DO_(input->IncrementRecursionDepth());
@@ -7165,7 +6756,7 @@ failure:
 void Transaction::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:Api.Transaction)
-  // repeated .Api.TxSignatures txSignatures = 1;
+  // repeated .Api.Signature txSignatures = 1;
   for (unsigned int i = 0, n = this->txsignatures_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       1, this->txsignatures(i), output);
@@ -7252,7 +6843,7 @@ void Transaction::SerializeWithCachedSizes(
 ::google::protobuf::uint8* Transaction::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:Api.Transaction)
-  // repeated .Api.TxSignatures txSignatures = 1;
+  // repeated .Api.Signature txSignatures = 1;
   for (unsigned int i = 0, n = this->txsignatures_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
@@ -7421,7 +7012,7 @@ int Transaction::ByteSize() const {
         this->receivepubkey());
   }
 
-  // repeated .Api.TxSignatures txSignatures = 1;
+  // repeated .Api.Signature txSignatures = 1;
   total_size += 1 * this->txsignatures_size();
   for (int i = 0; i < this->txsignatures_size(); i++) {
     total_size +=
@@ -7544,31 +7135,31 @@ void Transaction::InternalSwap(Transaction* other) {
 #if PROTOBUF_INLINE_NOT_IN_HEADERS
 // Transaction
 
-// repeated .Api.TxSignatures txSignatures = 1;
+// repeated .Api.Signature txSignatures = 1;
 int Transaction::txsignatures_size() const {
   return txsignatures_.size();
 }
 void Transaction::clear_txsignatures() {
   txsignatures_.Clear();
 }
-const ::Api::TxSignatures& Transaction::txsignatures(int index) const {
+const ::Api::Signature& Transaction::txsignatures(int index) const {
   // @@protoc_insertion_point(field_get:Api.Transaction.txSignatures)
   return txsignatures_.Get(index);
 }
-::Api::TxSignatures* Transaction::mutable_txsignatures(int index) {
+::Api::Signature* Transaction::mutable_txsignatures(int index) {
   // @@protoc_insertion_point(field_mutable:Api.Transaction.txSignatures)
   return txsignatures_.Mutable(index);
 }
-::Api::TxSignatures* Transaction::add_txsignatures() {
+::Api::Signature* Transaction::add_txsignatures() {
   // @@protoc_insertion_point(field_add:Api.Transaction.txSignatures)
   return txsignatures_.Add();
 }
-::google::protobuf::RepeatedPtrField< ::Api::TxSignatures >*
+::google::protobuf::RepeatedPtrField< ::Api::Signature >*
 Transaction::mutable_txsignatures() {
   // @@protoc_insertion_point(field_mutable_list:Api.Transaction.txSignatures)
   return &txsignatures_;
 }
-const ::google::protobuf::RepeatedPtrField< ::Api::TxSignatures >&
+const ::google::protobuf::RepeatedPtrField< ::Api::Signature >&
 Transaction::txsignatures() const {
   // @@protoc_insertion_point(field_list:Api.Transaction.txSignatures)
   return txsignatures_;
@@ -8049,7 +7640,7 @@ bool ConsensusEvent::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .Api.EventSignature eventSignatures = 1;
+      // repeated .Api.Signature eventSignatures = 1;
       case 1: {
         if (tag == 10) {
           DO_(input->IncrementRecursionDepth());
@@ -8134,7 +7725,7 @@ failure:
 void ConsensusEvent::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:Api.ConsensusEvent)
-  // repeated .Api.EventSignature eventSignatures = 1;
+  // repeated .Api.Signature eventSignatures = 1;
   for (unsigned int i = 0, n = this->eventsignatures_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       1, this->eventsignatures(i), output);
@@ -8167,7 +7758,7 @@ void ConsensusEvent::SerializeWithCachedSizes(
 ::google::protobuf::uint8* ConsensusEvent::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:Api.ConsensusEvent)
-  // repeated .Api.EventSignature eventSignatures = 1;
+  // repeated .Api.Signature eventSignatures = 1;
   for (unsigned int i = 0, n = this->eventsignatures_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
@@ -8226,7 +7817,7 @@ int ConsensusEvent::ByteSize() const {
         this->status());
   }
 
-  // repeated .Api.EventSignature eventSignatures = 1;
+  // repeated .Api.Signature eventSignatures = 1;
   total_size += 1 * this->eventsignatures_size();
   for (int i = 0; i < this->eventsignatures_size(); i++) {
     total_size +=
@@ -8318,31 +7909,31 @@ void ConsensusEvent::InternalSwap(ConsensusEvent* other) {
 #if PROTOBUF_INLINE_NOT_IN_HEADERS
 // ConsensusEvent
 
-// repeated .Api.EventSignature eventSignatures = 1;
+// repeated .Api.Signature eventSignatures = 1;
 int ConsensusEvent::eventsignatures_size() const {
   return eventsignatures_.size();
 }
 void ConsensusEvent::clear_eventsignatures() {
   eventsignatures_.Clear();
 }
-const ::Api::EventSignature& ConsensusEvent::eventsignatures(int index) const {
+const ::Api::Signature& ConsensusEvent::eventsignatures(int index) const {
   // @@protoc_insertion_point(field_get:Api.ConsensusEvent.eventSignatures)
   return eventsignatures_.Get(index);
 }
-::Api::EventSignature* ConsensusEvent::mutable_eventsignatures(int index) {
+::Api::Signature* ConsensusEvent::mutable_eventsignatures(int index) {
   // @@protoc_insertion_point(field_mutable:Api.ConsensusEvent.eventSignatures)
   return eventsignatures_.Mutable(index);
 }
-::Api::EventSignature* ConsensusEvent::add_eventsignatures() {
+::Api::Signature* ConsensusEvent::add_eventsignatures() {
   // @@protoc_insertion_point(field_add:Api.ConsensusEvent.eventSignatures)
   return eventsignatures_.Add();
 }
-::google::protobuf::RepeatedPtrField< ::Api::EventSignature >*
+::google::protobuf::RepeatedPtrField< ::Api::Signature >*
 ConsensusEvent::mutable_eventsignatures() {
   // @@protoc_insertion_point(field_mutable_list:Api.ConsensusEvent.eventSignatures)
   return &eventsignatures_;
 }
-const ::google::protobuf::RepeatedPtrField< ::Api::EventSignature >&
+const ::google::protobuf::RepeatedPtrField< ::Api::Signature >&
 ConsensusEvent::eventsignatures() const {
   // @@protoc_insertion_point(field_list:Api.ConsensusEvent.eventSignatures)
   return eventsignatures_;

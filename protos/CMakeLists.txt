@@ -1,3 +1,20 @@
-execute_process(COMMAND bash "-c" "cd $IROHA_HOME/protos; rm -f $IROHA_HOME/core/infra/protobuf/*.cc $IROHA_HOME/core/infra/protobuf/*.h")
-execute_process(COMMAND bash "-c" "cd $IROHA_HOME/protos; protoc  --cpp_out=$IROHA_HOME/core/infra/protobuf *.proto")
-execute_process(COMMAND bash "-c" "cd $IROHA_HOME/protos; protoc -I./  --grpc_out=$IROHA_HOME/core/infra/protobuf --plugin=protoc-gen-grpc=/usr/local/bin/grpc_cpp_plugin *.proto")
+set(PROTOBUF_SRC_DIR "${PROJECT_SOURCE_DIR}/core/infra/protobuf")
+
+file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR})
+execute_process(COMMAND bash "-c" "cd $IROHA_HOME/protos; protoc  --cpp_out=${PROTOBUF_SRC_DIR}/ *.proto")
+execute_process(COMMAND bash "-c" "cd $IROHA_HOME/protos; protoc -I./  --grpc_out=${PROTOBUF_SRC_DIR}/ --plugin=protoc-gen-grpc=/usr/local/bin/grpc_cpp_plugin *.proto")
+
+add_library(event_with_grpc STATIC
+    ${PROTOBUF_SRC_DIR}/api.grpc.pb.cc
+    ${PROTOBUF_SRC_DIR}/api.pb.cc
+)
+
+target_link_libraries(event_with_grpc
+    grpc++
+    grpc++_reflection
+    protobuf
+    pthread
+    dl
+    ed25519
+    hash
+)
