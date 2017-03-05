@@ -11,7 +11,8 @@ ADD_LIBRARY(izanami STATIC
 
 target_link_libraries(izanami
     hash
-    signature
+    config_manager
     executor
+    event_with_grpc
     merkle_transaction_repository
 )
