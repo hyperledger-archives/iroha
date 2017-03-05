@@ -338,7 +338,6 @@ namespace connection {
 
     ServerBuilder builder;
 
-
     void initialize_peer() {
         std::string server_address("0.0.0.0:" + std::to_string(config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)));
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
@@ -353,7 +352,6 @@ namespace connection {
         return 0;
     }
     void finish(){
-        builder = ServerBuilder();
     }
 
 };
