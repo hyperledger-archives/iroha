@@ -25,16 +25,17 @@ limitations under the License.
 
 namespace transaction_validator {
 
-    using Api::ConsensusEvent;
+    template<typename Signature>
+    bool isValid(const Signature &s, const std::string &hash);
 
-    template<typename T>
-    bool isValid(const std::unique_ptr<T>& tx);
+    template<typename Signatures>
+    bool areValid(const Signatures &s, const std::string &hash);
 
-    template<typename T>
-    bool signaturesAreValid(const std::unique_ptr<T>& tx);
+    template<typename Event>
+    bool signaturesAreValid(const Event& tx);
 
-    template<typename T>
-    bool validForType(const std::unique_ptr<T>& tx);
+    template<typename Event>
+    std::uint32_t countValidSignatures(const Event& event);
 
 };  // namespace transaction_validator
 
