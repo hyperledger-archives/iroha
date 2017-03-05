@@ -101,7 +101,7 @@ TEST(ConnectionWithGrpcTorii, Transaction_Add_Peer){
             .setPeer( txbuilder::createPeer( "light", "test_ip", txbuilder::createTrust( 1.0, true ) ) )
             .build();
 
-    connection::iroha::PeerService::Torii::send(
+    connection::iroha::PeerService::Sumeragi::send(
     config::PeerServiceConfig::getInstance().getMyIp(),
             tx
     );
