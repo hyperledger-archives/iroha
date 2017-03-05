@@ -21,6 +21,7 @@ limitations under the License.
 #include "executor.hpp"
 #include <infra/protobuf/api.pb.h>
 #include <infra/config/peer_service_with_json.hpp>
+#include <consensus/hash.hpp>
 
 
 namespace izanami {
@@ -30,10 +31,15 @@ namespace izanami {
     //std::unordered_map <std::string, std::unique_ptr<TransactionResponse> > InitializeEvent::txResponses;
     //std::unordered_map <uint64_t, std::vector<std::string>> InitializeEvent::hashes;
 
-    void InitializeEvent::add_transactionResponse( std::unique_ptr<TransactionResponse> ) {
+    void InitializeEvent::add_transactionResponse( std::unique_ptr<TransactionResponse> txResponse ) {
         //if( now_progress > txResponse.getProgress() ) return; TODO getProgress() is hasn't  txResponse
-        //std::string hash = txResponse.getHash(); TODO getHash is hasn't txResponse
-        //txResponses[ hash ] = std::move( txResponse );
+
+        // make TransactionResponse hash - temporary
+        std::string hash = "";
+        for( auto&& tx : txResponse->transaction() ) {
+            hash = hash::sha3_256_hex(hash+tx.hash());
+        }
+        txResponses[ hash ] = std::move( txResponse );
     }
     const std::vector<std::string>& InitializeEvent::getHashes( uint64_t progress ) {
         return hashes[ progress ];
@@ -76,7 +82,7 @@ namespace izanami {
             for (auto counter : hash_counter ) {
                 res = std::max(res, counter.second);
             }
-            //        if( res >= 2 * f + 1 ) return true; TODO f is don't decined.
+            if( res >= 2 * config::PeerServiceConfig::getInstance().getMaxFaulty() + 1 ) return true;
             return false;
         }
 
@@ -93,7 +99,7 @@ namespace izanami {
                     res_hash = counter.first;
                 }
             }
-            //        if( res >= 2 * f + 1 ) return res_hash; TODO f is don't decined.
+            if( res >= 2 * config::PeerServiceConfig::getInstance().getMaxFaulty() + 1 ) return res_hash;
             return "";
         }
 

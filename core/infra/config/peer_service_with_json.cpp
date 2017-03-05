@@ -83,6 +83,9 @@ std::string PeerServiceConfig::getMyIp() {
 double PeerServiceConfig::getMaxTrustScore() {
     return std::max( 10.0, (double)peerList.size() ); // temporary MaxTrustScore is max( 10, peerList.size() )
 }
+size_t PeerServiceConfig::getMaxFaulty() {
+    return std::max( 0, ( (int)getPeerList().size() - 1 ) / 3 );
+}
 
 bool PeerServiceConfig::isExistIP( const std::string &ip ) {
   return findPeerIP( std::move(ip) ) != peerList.end();

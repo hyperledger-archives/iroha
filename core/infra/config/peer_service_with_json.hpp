@@ -46,6 +46,7 @@ class PeerServiceConfig : config::AbstractConfigManager {
   std::string getMyPrivateKey();
   std::string getMyIp();
   double getMaxTrustScore();
+  size_t getMaxFaulty();
 
   std::vector<std::unique_ptr<peer::Node>> getPeerList();
   std::vector<std::string> getIpList();
