@@ -201,6 +201,8 @@ bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
     return false;
   }
 
+  // when my node is not active, it don't send data.
+  if( !(findPeerPublicKey( getMyPublicKey() )->isOK()) ) return true;
 
 //  TODO Send transaction data separated block to new peer.
 //  TODO connection::iroha::PeerService::TransactionRepository::send( peer.getIP() );

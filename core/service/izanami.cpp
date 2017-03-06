@@ -64,7 +64,7 @@ namespace izanami {
     void InitializeEvent::storeTxResponse( const std::string& hash ) {
         for( auto &&tx : txResponses[ hash ]->transaction() ) {
             // TODO store txResponses[hash] to DB
-            //repository::transaction::add( hash, tx );
+            // repository::transaction::add( tx.hash(), tx );
 
         }
     }
@@ -123,7 +123,7 @@ namespace izanami {
     }
 
     //invoke when receive TransactionResponse.
-    void receiveTransactionResponse( std::unique_ptr<TransactionResponse> txResponse ) {
+    void receiveTransactionResponse( std::unique_ptr<TransactionResponse> &txResponse ) {
         static InitializeEvent event;
         event.add_transactionResponse( std::move(txResponse) );
         if( detail::isFinishedReceive( event ) ) {
@@ -151,7 +151,7 @@ namespace izanami {
         logger::explore("izanagi") <<  "\033[95m|+-ーーーーーーーーーー-+|\033[0m";
         logger::explore("izanagi") <<  "\033[95m||  　　　　　　　　　 ||\033[0m";
         logger::explore("izanagi") <<  "\033[95m||初回取引履歴構築機構 ||\033[0m";
-        logger::explore("izanagi") <<  "\033[95m||\033[1mいざなぎ\033[0m\033[95m　　 ||\033[0m";
+        logger::explore("izanagi") <<  "\033[95m||\033[1mイザナギ\033[0m\033[95m　　 ||\033[0m";
         logger::explore("izanagi") <<  "\033[95m|| 　　　　　　 　　　 ||\033[0m";
         logger::explore("izanagi") <<  "\033[95m|+-ーーーーーーーーーー-+|\033[0m";
         logger::explore("izanagi") <<  "\033[95m+==ーーーーーーーーーー==+\033[0m";
@@ -167,10 +167,10 @@ namespace izanami {
             // this returns std::future<void> object
             // (std::future).get() method locks processing until result of processTransaction will be available
             // but processTransaction returns void, so we don't have to call it and wait
-            std::function<void()> &&task = std::bind(receiveTransactionResponse( std::make_unique( txResponse ) );
+            std::function<void()> &&task = std::bind(receiveTransactionResponse, std::make_unique<TransactionResponse>(txResponse) );
             pool.process(std::move(task));
         });
-         */
+        */
     }
 
 }
