@@ -25,6 +25,7 @@ limitations under the License.
 #include <json.hpp>
 #include <infra/protobuf/api.pb.h>
 #include <transaction_builder/transaction_builder.hpp>
+//#include <repository/transaction_repository.hpp>
 #include "peer_service_with_json.hpp"
 #include "config_format.hpp"
 #include "../../util/exception.hpp"
@@ -203,18 +204,19 @@ bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
 
 //  TODO Send transaction data separated block to new peer.
 //  TODO connection::iroha::PeerService::TransactionRepository::send( peer.getIP() );
-    /*
-    int block_size = 500;
-    for(int i=0; i < db.transaction_size(); i+=block_size) {
-        auto txResponse = Api::TransactionResponse();
-        for(int j=i; j < i+block_size;j++) {
-            auto tx <- db.getTransactionAt( i );
-             tx.add_transaction()->CopyFrom( tx );
-        }
-        connection::iroha::PeerService::Sumeragi::send( peer.getIP(), tx );
+/*
+  auto transactions = repository::transaction::findAll();
+  int block_size = 500;
+  for(int i=0; i < transactions.size(); i++) {
+    auto txResponse = Api::TransactionResponse();
+    txResponse.set_code( i );
+    for(int j=i; j < i+block_size;j++) {
+        tx.add_transaction()->CopyFrom( transactions[j] );
     }
-    */
-    return true;
+    connection::iroha::PeerService::Sumeragi::send( peer.getIP(), txResponse );
+  }
+  return true;
+*/
 }
 
 bool PeerServiceConfig::removePeer( const std::string& publicKey ) {

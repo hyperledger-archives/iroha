@@ -22,6 +22,7 @@ limitations under the License.
 #include <infra/protobuf/api.pb.h>
 #include <infra/config/peer_service_with_json.hpp>
 #include <crypto/hash.hpp>
+//#include <repository/transaction_repository.hpp>
 
 
 namespace izanami {
@@ -60,6 +61,8 @@ namespace izanami {
     void InitializeEvent::storeTxResponse( const std::string& hash ) {
         for( auto &&tx : txResponses[ hash ]->transaction() ) {
             // TODO store txResponses[hash] to DB
+            //repository::transaction::add( hash, tx );
+
         }
     }
     void InitializeEvent::executeTxResponse( const std::string& hash ) {
@@ -110,7 +113,6 @@ namespace izanami {
 
         void storeTransactionResponse(InitializeEvent &event) {
             std::string hash = getCorrectHash(event);
-            // TODO store txResponse to DB
             event.storeTxResponse(hash);
             event.executeTxResponse(hash);
             event.next_progress();
