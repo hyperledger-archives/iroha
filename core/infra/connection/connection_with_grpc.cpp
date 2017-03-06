@@ -35,7 +35,7 @@ using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::ClientContext;
 using grpc::Status;
-using grpc::ServerReaderWriter;
+using grpc::ServerReader;
 
 namespace connection {
 
@@ -257,15 +257,17 @@ namespace connection {
         }
 
         Status fetchStream(
-            ServerContext*          context,
-            ServerReaderWriter<Transaction, Query>* stream
+            ServerContext* context,
+            ServerReader<Transaction>* reader,
+            StatusResponse* response
         ) override {
             Query q;
             std::vector<Transaction> txs;
-            stream->Read(&q);
-            for (const auto& tx: txs) {
-                stream->Write(tx);
+            Transaction tx;
+            while(reader->Read(&tx)){
+                txs.push_back(tx);
             }
+            response->set_message("OK");
             return Status::OK;
         }
     };
