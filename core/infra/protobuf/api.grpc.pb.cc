@@ -17,6 +17,8 @@ namespace Api {
 
 static const char* TransactionRepository_method_names[] = {
   "/Api.TransactionRepository/find",
+  "/Api.TransactionRepository/fetch",
+  "/Api.TransactionRepository/fetchStream",
 };
 
 std::unique_ptr< TransactionRepository::Stub> TransactionRepository::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -26,6 +28,8 @@ std::unique_ptr< TransactionRepository::Stub> TransactionRepository::NewStub(con
 
 TransactionRepository::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel)
   : channel_(channel), rpcmethod_find_(TransactionRepository_method_names[0], ::grpc::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_fetch_(TransactionRepository_method_names[1], ::grpc::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_fetchStream_(TransactionRepository_method_names[2], ::grpc::RpcMethod::BIDI_STREAMING, channel)
   {}
 
 ::grpc::Status TransactionRepository::Stub::find(::grpc::ClientContext* context, const ::Api::Query& request, ::Api::TransactionResponse* response) {
@@ -36,6 +40,22 @@ TransactionRepository::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterfac
   return new ::grpc::ClientAsyncResponseReader< ::Api::TransactionResponse>(channel_.get(), cq, rpcmethod_find_, context, request);
 }
 
+::grpc::Status TransactionRepository::Stub::fetch(::grpc::ClientContext* context, const ::Api::Query& request, ::Api::TransactionResponse* response) {
+  return ::grpc::BlockingUnaryCall(channel_.get(), rpcmethod_fetch_, context, request, response);
+}
+
+::grpc::ClientAsyncResponseReader< ::Api::TransactionResponse>* TransactionRepository::Stub::AsyncfetchRaw(::grpc::ClientContext* context, const ::Api::Query& request, ::grpc::CompletionQueue* cq) {
+  return new ::grpc::ClientAsyncResponseReader< ::Api::TransactionResponse>(channel_.get(), cq, rpcmethod_fetch_, context, request);
+}
+
+::grpc::ClientReaderWriter< ::Api::Query, ::Api::Transaction>* TransactionRepository::Stub::fetchStreamRaw(::grpc::ClientContext* context) {
+  return new ::grpc::ClientReaderWriter< ::Api::Query, ::Api::Transaction>(channel_.get(), rpcmethod_fetchStream_, context);
+}
+
+::grpc::ClientAsyncReaderWriter< ::Api::Query, ::Api::Transaction>* TransactionRepository::Stub::AsyncfetchStreamRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq, void* tag) {
+  return new ::grpc::ClientAsyncReaderWriter< ::Api::Query, ::Api::Transaction>(channel_.get(), cq, rpcmethod_fetchStream_, context, tag);
+}
+
 TransactionRepository::Service::Service() {
   (void)TransactionRepository_method_names;
   AddMethod(new ::grpc::RpcServiceMethod(
@@ -43,6 +63,16 @@ TransactionRepository::Service::Service() {
       ::grpc::RpcMethod::NORMAL_RPC,
       new ::grpc::RpcMethodHandler< TransactionRepository::Service, ::Api::Query, ::Api::TransactionResponse>(
           std::mem_fn(&TransactionRepository::Service::find), this)));
+  AddMethod(new ::grpc::RpcServiceMethod(
+      TransactionRepository_method_names[1],
+      ::grpc::RpcMethod::NORMAL_RPC,
+      new ::grpc::RpcMethodHandler< TransactionRepository::Service, ::Api::Query, ::Api::TransactionResponse>(
+          std::mem_fn(&TransactionRepository::Service::fetch), this)));
+  AddMethod(new ::grpc::RpcServiceMethod(
+      TransactionRepository_method_names[2],
+      ::grpc::RpcMethod::BIDI_STREAMING,
+      new ::grpc::BidiStreamingHandler< TransactionRepository::Service, ::Api::Query, ::Api::Transaction>(
+          std::mem_fn(&TransactionRepository::Service::fetchStream), this)));
 }
 
 TransactionRepository::Service::~Service() {
@@ -52,6 +82,19 @@ TransactionRepository::Service::~Service() {
   (void) context;
   (void) request;
   (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status TransactionRepository::Service::fetch(::grpc::ServerContext* context, const ::Api::Query* request, ::Api::TransactionResponse* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status TransactionRepository::Service::fetchStream(::grpc::ServerContext* context, ::grpc::ServerReaderWriter< ::Api::Transaction, ::Api::Query>* stream) {
+  (void) context;
+  (void) stream;
   return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
 }
 

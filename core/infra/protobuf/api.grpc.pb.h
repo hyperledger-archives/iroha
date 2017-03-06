@@ -34,8 +34,21 @@ class TransactionRepository GRPC_FINAL {
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Api::TransactionResponse>> Asyncfind(::grpc::ClientContext* context, const ::Api::Query& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Api::TransactionResponse>>(AsyncfindRaw(context, request, cq));
     }
+    virtual ::grpc::Status fetch(::grpc::ClientContext* context, const ::Api::Query& request, ::Api::TransactionResponse* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Api::TransactionResponse>> Asyncfetch(::grpc::ClientContext* context, const ::Api::Query& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Api::TransactionResponse>>(AsyncfetchRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientReaderWriterInterface< ::Api::Query, ::Api::Transaction>> fetchStream(::grpc::ClientContext* context) {
+      return std::unique_ptr< ::grpc::ClientReaderWriterInterface< ::Api::Query, ::Api::Transaction>>(fetchStreamRaw(context));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncReaderWriterInterface< ::Api::Query, ::Api::Transaction>> AsyncfetchStream(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq, void* tag) {
+      return std::unique_ptr< ::grpc::ClientAsyncReaderWriterInterface< ::Api::Query, ::Api::Transaction>>(AsyncfetchStreamRaw(context, cq, tag));
+    }
   private:
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::Api::TransactionResponse>* AsyncfindRaw(::grpc::ClientContext* context, const ::Api::Query& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::Api::TransactionResponse>* AsyncfetchRaw(::grpc::ClientContext* context, const ::Api::Query& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientReaderWriterInterface< ::Api::Query, ::Api::Transaction>* fetchStreamRaw(::grpc::ClientContext* context) = 0;
+    virtual ::grpc::ClientAsyncReaderWriterInterface< ::Api::Query, ::Api::Transaction>* AsyncfetchStreamRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq, void* tag) = 0;
   };
   class Stub GRPC_FINAL : public StubInterface {
    public:
@@ -44,11 +57,26 @@ class TransactionRepository GRPC_FINAL {
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Api::TransactionResponse>> Asyncfind(::grpc::ClientContext* context, const ::Api::Query& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Api::TransactionResponse>>(AsyncfindRaw(context, request, cq));
     }
+    ::grpc::Status fetch(::grpc::ClientContext* context, const ::Api::Query& request, ::Api::TransactionResponse* response) GRPC_OVERRIDE;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Api::TransactionResponse>> Asyncfetch(::grpc::ClientContext* context, const ::Api::Query& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Api::TransactionResponse>>(AsyncfetchRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientReaderWriter< ::Api::Query, ::Api::Transaction>> fetchStream(::grpc::ClientContext* context) {
+      return std::unique_ptr< ::grpc::ClientReaderWriter< ::Api::Query, ::Api::Transaction>>(fetchStreamRaw(context));
+    }
+    std::unique_ptr<  ::grpc::ClientAsyncReaderWriter< ::Api::Query, ::Api::Transaction>> AsyncfetchStream(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq, void* tag) {
+      return std::unique_ptr< ::grpc::ClientAsyncReaderWriter< ::Api::Query, ::Api::Transaction>>(AsyncfetchStreamRaw(context, cq, tag));
+    }
 
    private:
     std::shared_ptr< ::grpc::ChannelInterface> channel_;
     ::grpc::ClientAsyncResponseReader< ::Api::TransactionResponse>* AsyncfindRaw(::grpc::ClientContext* context, const ::Api::Query& request, ::grpc::CompletionQueue* cq) GRPC_OVERRIDE;
+    ::grpc::ClientAsyncResponseReader< ::Api::TransactionResponse>* AsyncfetchRaw(::grpc::ClientContext* context, const ::Api::Query& request, ::grpc::CompletionQueue* cq) GRPC_OVERRIDE;
+    ::grpc::ClientReaderWriter< ::Api::Query, ::Api::Transaction>* fetchStreamRaw(::grpc::ClientContext* context) GRPC_OVERRIDE;
+    ::grpc::ClientAsyncReaderWriter< ::Api::Query, ::Api::Transaction>* AsyncfetchStreamRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq, void* tag) GRPC_OVERRIDE;
     const ::grpc::RpcMethod rpcmethod_find_;
+    const ::grpc::RpcMethod rpcmethod_fetch_;
+    const ::grpc::RpcMethod rpcmethod_fetchStream_;
   };
   static std::unique_ptr<Stub> NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
 
@@ -57,6 +85,8 @@ class TransactionRepository GRPC_FINAL {
     Service();
     virtual ~Service();
     virtual ::grpc::Status find(::grpc::ServerContext* context, const ::Api::Query* request, ::Api::TransactionResponse* response);
+    virtual ::grpc::Status fetch(::grpc::ServerContext* context, const ::Api::Query* request, ::Api::TransactionResponse* response);
+    virtual ::grpc::Status fetchStream(::grpc::ServerContext* context, ::grpc::ServerReaderWriter< ::Api::Transaction, ::Api::Query>* stream);
   };
   template <class BaseClass>
   class WithAsyncMethod_find : public BaseClass {
@@ -78,7 +108,47 @@ class TransactionRepository GRPC_FINAL {
       ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
-  typedef WithAsyncMethod_find<Service > AsyncService;
+  template <class BaseClass>
+  class WithAsyncMethod_fetch : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    WithAsyncMethod_fetch() {
+      ::grpc::Service::MarkMethodAsync(1);
+    }
+    ~WithAsyncMethod_fetch() GRPC_OVERRIDE {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status fetch(::grpc::ServerContext* context, const ::Api::Query* request, ::Api::TransactionResponse* response) GRPC_FINAL GRPC_OVERRIDE {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void Requestfetch(::grpc::ServerContext* context, ::Api::Query* request, ::grpc::ServerAsyncResponseWriter< ::Api::TransactionResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithAsyncMethod_fetchStream : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    WithAsyncMethod_fetchStream() {
+      ::grpc::Service::MarkMethodAsync(2);
+    }
+    ~WithAsyncMethod_fetchStream() GRPC_OVERRIDE {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status fetchStream(::grpc::ServerContext* context, ::grpc::ServerReaderWriter< ::Api::Transaction, ::Api::Query>* stream) GRPC_FINAL GRPC_OVERRIDE {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestfetchStream(::grpc::ServerContext* context, ::grpc::ServerAsyncReaderWriter< ::Api::Transaction, ::Api::Query>* stream, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncBidiStreaming(2, context, stream, new_call_cq, notification_cq, tag);
+    }
+  };
+  typedef WithAsyncMethod_find<WithAsyncMethod_fetch<WithAsyncMethod_fetchStream<Service > > > AsyncService;
   template <class BaseClass>
   class WithGenericMethod_find : public BaseClass {
    private:
@@ -92,6 +162,40 @@ class TransactionRepository GRPC_FINAL {
     }
     // disable synchronous version of this method
     ::grpc::Status find(::grpc::ServerContext* context, const ::Api::Query* request, ::Api::TransactionResponse* response) GRPC_FINAL GRPC_OVERRIDE {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
+  class WithGenericMethod_fetch : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    WithGenericMethod_fetch() {
+      ::grpc::Service::MarkMethodGeneric(1);
+    }
+    ~WithGenericMethod_fetch() GRPC_OVERRIDE {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status fetch(::grpc::ServerContext* context, const ::Api::Query* request, ::Api::TransactionResponse* response) GRPC_FINAL GRPC_OVERRIDE {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
+  class WithGenericMethod_fetchStream : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service *service) {}
+   public:
+    WithGenericMethod_fetchStream() {
+      ::grpc::Service::MarkMethodGeneric(2);
+    }
+    ~WithGenericMethod_fetchStream() GRPC_OVERRIDE {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status fetchStream(::grpc::ServerContext* context, ::grpc::ServerReaderWriter< ::Api::Transaction, ::Api::Query>* stream) GRPC_FINAL GRPC_OVERRIDE {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }

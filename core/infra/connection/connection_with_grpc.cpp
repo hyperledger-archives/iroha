@@ -35,6 +35,7 @@ using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::ClientContext;
 using grpc::Status;
+using grpc::ServerReaderWriter;
 
 namespace connection {
 
@@ -74,6 +75,23 @@ namespace connection {
         };
         namespace TransactionRepository {
             namespace find {
+                std::vector<
+                        std::function<void(
+                                const std::string& from,
+                                Query& message
+                        )>
+                > receivers;
+            };
+            namespace fetch {
+                std::vector<
+                        std::function<void(
+                                const std::string& from,
+                                Query& message
+                        )>
+                > receivers;
+            };
+
+            namespace fetchStream {
                 std::vector<
                         std::function<void(
                                 const std::string& from,
@@ -178,9 +196,9 @@ namespace connection {
         }
 
         Status Torii(
-                ServerContext*      context,
-                const Transaction*  transacion,
-                StatusResponse*     response
+            ServerContext*      context,
+            const Transaction*  transacion,
+            StatusResponse*     response
         ) override {
             auto dummy = "";
             Transaction tx;
@@ -193,9 +211,9 @@ namespace connection {
         }
 
         Status Kagami(
-                ServerContext*      context,
-                const Query*          query,
-                StatusResponse*     response
+            ServerContext*      context,
+            const Query*          query,
+            StatusResponse*     response
         ) override {
             response->set_message("OK, no problem!");
             response->set_value("Alive");
@@ -222,11 +240,38 @@ namespace connection {
             response->set_message("OK");
             return Status::OK;
         }
+
+        Status fetch(
+            ServerContext*          context,
+            const Query*              query,
+            TransactionResponse*   response
+        ) override {
+            Query q;
+            q.CopyFrom(*query);
+            auto dummy = "";
+            for (auto& f: iroha::TransactionRepository::find::receivers){
+                f(dummy, q);
+            }
+            response->set_message("OK");
+            return Status::OK;
+        }
+
+        Status fetchStream(
+            ServerContext*          context,
+            ServerReaderWriter<Transaction, Query>* stream
+        ) override {
+            Query q;
+            std::vector<Transaction> txs;
+            stream->Read(&q);
+            for (const auto& tx: txs) {
+                stream->Write(tx);
+            }
+            return Status::OK;
+        }
     };
 
     class AssetRepositoryServiceImpl final : public AssetRepository::Service {
     public:
-
         Status find(
             ServerContext*          context,
             const Query*              query,
@@ -354,13 +399,35 @@ namespace connection {
         }
 
         namespace TransactionRepository {
-            namespace find {
-                TransactionRepositoryServiceImpl service;
+            TransactionRepositoryServiceImpl service;
 
+            namespace find {
                 bool receive(
-                        const std::function<void(
-                                const std::string &,
-                                Query &)> &callback
+                    const std::function<void(
+                        const std::string &,
+                        Query &)> &callback
+                ) {
+                    receivers.push_back(callback);
+                    return true;
+                }
+            };
+
+            namespace fetch {
+                bool receive(
+                    const std::function<void(
+                        const std::string &,
+                        Query &)> &callback
+                ) {
+                    receivers.push_back(callback);
+                    return true;
+                }
+            };
+
+            namespace fetchStream {
+                bool receive(
+                    const std::function<void(
+                        const std::string &,
+                        Query &)> &callback
                 ) {
                     receivers.push_back(callback);
                     return true;
@@ -387,12 +454,11 @@ namespace connection {
 
     ServerBuilder builder;
 
-
     void initialize_peer() {
         std::string server_address("0.0.0.0:" + std::to_string(config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)));
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
         builder.RegisterService(&iroha::Sumeragi::service);
-        builder.RegisterService(&iroha::TransactionRepository::find::service);
+        builder.RegisterService(&iroha::TransactionRepository::service);
         builder.RegisterService(&iroha::AssetRepository::find::service);
     }
 

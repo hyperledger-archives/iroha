@@ -505,15 +505,17 @@ void protobuf_AddDesc_api_2eproto() {
     "ePubkey\030\013 \001(\t\"\204\001\n\016ConsensusEvent\022,\n\017even"
     "tSignatures\030\001 \003(\0132\023.Api.EventSignature\022%"
     "\n\013transaction\030\002 \001(\0132\020.Api.Transaction\022\r\n"
-    "\005order\030\003 \001(\004\022\016\n\006status\030\004 \001(\t2G\n\025Transact"
-    "ionRepository\022.\n\004find\022\n.Api.Query\032\030.Api."
-    "TransactionResponse\"\0002;\n\017AssetRepository"
-    "\022(\n\004find\022\n.Api.Query\032\022.Api.AssetResponse"
-    "\"\0002\237\001\n\010Sumeragi\0220\n\005Torii\022\020.Api.Transacti"
-    "on\032\023.Api.StatusResponse\"\000\0224\n\006Verify\022\023.Ap"
-    "i.ConsensusEvent\032\023.Api.StatusResponse\"\000\022"
-    "+\n\006Kagami\022\n.Api.Query\032\023.Api.StatusRespon"
-    "se\"\000B\003\200\001\000b\006proto3", 1977);
+    "\005order\030\003 \001(\004\022\016\n\006status\030\004 \001(\t2\253\001\n\025Transac"
+    "tionRepository\022.\n\004find\022\n.Api.Query\032\030.Api"
+    ".TransactionResponse\"\000\022/\n\005fetch\022\n.Api.Qu"
+    "ery\032\030.Api.TransactionResponse\"\000\0221\n\013fetch"
+    "Stream\022\n.Api.Query\032\020.Api.Transaction\"\000(\001"
+    "0\0012;\n\017AssetRepository\022(\n\004find\022\n.Api.Quer"
+    "y\032\022.Api.AssetResponse\"\0002\237\001\n\010Sumeragi\0220\n\005"
+    "Torii\022\020.Api.Transaction\032\023.Api.StatusResp"
+    "onse\"\000\0224\n\006Verify\022\023.Api.ConsensusEvent\032\023."
+    "Api.StatusResponse\"\000\022+\n\006Kagami\022\n.Api.Que"
+    "ry\032\023.Api.StatusResponse\"\000B\003\200\001\000b\006proto3", 2078);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "api.proto", &protobuf_RegisterTypes);
   TransactionResponse::default_instance_ = new TransactionResponse();
