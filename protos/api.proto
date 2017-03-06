@@ -8,7 +8,7 @@ service TransactionRepository {
   rpc find(Query) returns (TransactionResponse){}
 
   rpc fetch(Query) returns (TransactionResponse){}
-  rpc fetchStream(stream Query) returns (stream Transaction) {}
+  rpc fetchStream(stream Transaction) returns (StatusResponse) {}
 }
 
 service AssetRepository {
