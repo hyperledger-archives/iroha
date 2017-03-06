@@ -23,8 +23,7 @@
 
 using Api::ConsensusEvent;
 using Api::Transaction;
-using Api::EventSignature;
-using Api::TxSignatures;
+using Api::Signature;
 
 
 std::string public_key_b64  = "slyr7oz2+EU6dh2dY9+jNeO/hVrXCkT3rGhcNZo5rrE=";
@@ -33,7 +32,7 @@ std::string signature_b64   = "gdMUgjyo++4QpF1xDJNdk1a5zmDAEPM67WD4cn6CVZqDxC8nS
 
 TEST(transaction_validator, verify_transaction_event) {
     Transaction tx;
-    TxSignatures sig;
+    Signature sig;
     sig.set_publickey(public_key_b64);
     sig.set_signature(signature_b64);
     tx.set_hash(hash);
@@ -50,7 +49,7 @@ TEST(transaction_validator, verify_transaction_event) {
 TEST(transaction_validator, verify_consensus_event) {
     ConsensusEvent ev;
     auto tx = new Transaction;
-    EventSignature sig;
+    Signature sig;
     tx->set_hash(hash);
     sig.set_publickey(public_key_b64);
     sig.set_signature(signature_b64);
