@@ -17,10 +17,13 @@ limitations under the License.
 #include <vector>
 #include <string>
 #include <memory>
+#include <thread_pool.hpp>
 #include "izanami.hpp"
 #include "executor.hpp"
 #include <infra/protobuf/api.pb.h>
+#include <consensus/connection/connection.hpp>
 #include <infra/config/peer_service_with_json.hpp>
+#include <infra/config/iroha_config_with_json.hpp>
 #include <crypto/hash.hpp>
 //#include <repository/transaction_repository.hpp>
 
@@ -130,6 +133,44 @@ namespace izanami {
                 event.clear();
             }
         }
+    }
+
+
+    static ThreadPool pool(
+            ThreadPoolOptions{
+                    .threads_count = config::IrohaConfigManager::getInstance()
+                            .getConcurrency(0),
+                    .worker_queue_size = config::IrohaConfigManager::getInstance()
+                            .getPoolWorkerQueueSize(1024),
+            }
+    );
+
+    //invoke when initialize Peer that to config Participation on the way
+    void startIzanagi() {
+        logger::explore("izanagi") <<  "\033[95m+==ーーーーーーーーーー==+\033[0m";
+        logger::explore("izanagi") <<  "\033[95m|+-ーーーーーーーーーー-+|\033[0m";
+        logger::explore("izanagi") <<  "\033[95m||  　　　　　　　　　 ||\033[0m";
+        logger::explore("izanagi") <<  "\033[95m||初回取引履歴構築機構 ||\033[0m";
+        logger::explore("izanagi") <<  "\033[95m||\033[1mいざなぎ\033[0m\033[95m　　 ||\033[0m";
+        logger::explore("izanagi") <<  "\033[95m|| 　　　　　　 　　　 ||\033[0m";
+        logger::explore("izanagi") <<  "\033[95m|+-ーーーーーーーーーー-+|\033[0m";
+        logger::explore("izanagi") <<  "\033[95m+==ーーーーーーーーーー==+\033[0m";
+        logger::explore("izanagi") <<  "- 起動/setup";
+
+        logger::info("izanagi")    <<  "My PublicKey is " << config::PeerServiceConfig::getInstance().getMyPublicKey();
+        logger::info("izanagi")    <<  "My key is " << config::PeerServiceConfig::getInstance().getMyIp();
+
+        /*
+        connection::iroha::Izanami::Transaction::receive([](const std::string& from, TransactionResponse& txResponse ) {
+            logger::info("izanagi") << "receive!";
+            // send processTransaction(event) as a task to processing pool
+            // this returns std::future<void> object
+            // (std::future).get() method locks processing until result of processTransaction will be available
+            // but processTransaction returns void, so we don't have to call it and wait
+            std::function<void()> &&task = std::bind(receiveTransactionResponse( std::make_unique( txResponse ) );
+            pool.process(std::move(task));
+        });
+         */
     }
 
 }

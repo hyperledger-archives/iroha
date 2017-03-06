@@ -25,7 +25,6 @@ limitations under the License.
 namespace izanami {
     using Api::TransactionResponse;
 
-
     class InitializeEvent {
     private:
         uint64_t now_progress;
@@ -58,6 +57,9 @@ namespace izanami {
 
     //invoke when receive TransactionResponse.
     void receiveTransactionResponse( std::unique_ptr<TransactionResponse> );
+
+    //invoke when initialize Peer that to config Participation on the way
+    void startIzanagi();
 
 }
 

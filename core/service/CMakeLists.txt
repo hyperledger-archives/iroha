@@ -11,6 +11,7 @@ ADD_LIBRARY(izanami STATIC
 
 target_link_libraries(izanami
     hash
+    thread_pool
     config_manager
     executor
     event_with_grpc
