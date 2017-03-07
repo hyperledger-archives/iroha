@@ -63,7 +63,7 @@ namespace connection {
 
     // TODO: very dirty solution, need to be out of here
     #include <crypto/signature.hpp>
-    std::function<RecieverConfirmation&&(const std::string&)> sign = [](const std::string &hash) {
+    std::function<RecieverConfirmation(const std::string&)> sign = [](const std::string &hash) {
         RecieverConfirmation confirm;
         Signature signature;
         signature.set_publickey(config::PeerServiceConfig::getInstance().getMyPublicKey());
