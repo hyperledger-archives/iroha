@@ -135,35 +135,4 @@ public class TestDomain {
       printFail(e);
     }
   }
-  /***************************************************************************************************
-   * From java main function
-   ***************************************************************************************************/
-
-  // Test 'add' only. All command tests are invoked by gTest.
-  private static void javaIntegrityCheckAddDomain() {
-    try {
-      HashMap<String, String> domainParam = new HashMap<String, String>();
-      domainParam.put(OwnerPublicKey, "This is owner public key.");
-      domainParam.put(DomainName, "this is domain name");
-
-      testAddDomain(domainParam);
-
-      System.out.println("==============================================");
-      System.out.println("Success (from Java main)");
-      System.out.println("==============================================");
-
-    } catch(IllegalStateException e) {
-      System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      System.err.println("Fail (from Java main)");
-      System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      System.err.println(e.getMessage() + " in " + e.getClass().getName());
-    }
-  }
-
-  public static void main(String[] argv) {
-    System.out.println("Hello in JAVA!");
-    javaIntegrityCheckAddDomain();
-    System.out.println("Call C++ gTest is also required.");
-  }
-
 }

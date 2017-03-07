@@ -34,6 +34,11 @@ message TransactionResponse{
   repeated Transaction transaction = 3;
 }
 
+message RecieverConfirmation {
+  string hash           = 1;
+  Signature signature   = 2;
+}
+
 message AssetResponse{
   string message          = 1;
   uint64    code          = 2;
@@ -47,9 +52,10 @@ message AssetResponse{
 }
 
 message StatusResponse {
-  string value     = 1;
-  string message   = 2;
-  uint64 timestamp = 3;
+  string value                 = 1;
+  string message               = 2;
+  uint64 timestamp             = 3;
+  RecieverConfirmation confirm = 4;
 }
 
 
@@ -103,18 +109,13 @@ message Peer {
   Trust trust = 3;
 }
 
-message TxSignatures {
-  string publicKey = 1;
-  string signature = 2;
-}
-
-message EventSignature {
+message Signature {
   string publicKey = 1;
   string signature = 2;
 }
 
 message Transaction {
-  repeated TxSignatures txSignatures = 1;
+  repeated Signature txSignatures = 1;
   string type = 2;
   string senderPubkey = 3;
   string hash = 4;
@@ -130,7 +131,7 @@ message Transaction {
 }
 
 message ConsensusEvent {
-  repeated EventSignature eventSignatures = 1;
+  repeated Signature eventSignatures = 1;
   Transaction transaction = 2;
   uint64 order = 3;
   string status = 4;

@@ -15,33 +15,22 @@ limitations under the License.
 */
 
 #include "../asset_repository.hpp"
+#include "common_repository.hpp"
 #include <crypto/hash.hpp>
 #include <repository/world_state_repository.hpp>
 #include <transaction_builder/transaction_builder.hpp>
 #include <util/exception.hpp>
 #include <util/logger.hpp>
 
+namespace common = ::repository::common;
+
 const std::string NameSpaceID = "asset repository";
+const auto ValuePrefix = common::Prefix("Asset::");
 
 namespace repository {
 namespace asset {
 
 namespace detail {
-/********************************************************************************************
- * stringify / parse
- ********************************************************************************************/
-std::string stringifyAsset(const Api::Asset &obj) {
-  std::string ret;
-  obj.SerializeToString(&ret);
-  return ret;
-}
-
-Api::Asset parseAsset(const std::string &str) {
-  Api::Asset ret;
-  ret.ParseFromString(str);
-  return ret;
-}
-
 std::string createAssetUuid(const std::string &domain,
                             const std::string &name) {
   return hash::sha3_256_hex(domain + "@" + name);
@@ -63,11 +52,9 @@ std::string add(const std::string &domain, const std::string &name,
   const auto uuid = detail::createAssetUuid(domain, name);
 
   if (not exists(uuid)) {
-    const auto strAsset = detail::stringifyAsset(
-        txbuilder::createAsset(domain, name, value, smartContractName));
-std::cout << "_____________________UTF_8_TEST_BEGIN___________________________________\n";
-Api::Asset hoge = detail::parseAsset(strAsset);
-std::cout << "~~~~~~~~~~~~~~~~~~~~~UTF_8_TEST_END~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+    const auto strAsset = common::stringify<Api::Asset>(
+        txbuilder::createAsset(domain, name, value, smartContractName),
+        ValuePrefix);
     if (world_state_repository::add(uuid, strAsset)) {
       return uuid;
     }
@@ -84,11 +71,11 @@ bool update(const std::string &uuid, const txbuilder::Map &value) {
     const auto rval = world_state_repository::find(uuid);
     logger::explore(NameSpaceID) << "Update<Asset> uuid: " << uuid
                                  << txbuilder::stringify(value);
-    auto asset = detail::parseAsset(rval);
+    auto asset = common::parse<Api::Asset>(rval, ValuePrefix);
     *asset.mutable_value() =
-        ::google::protobuf::Map<std::string, Api::BaseObject>(value.begin(),
-                                                              value.end());
-    const auto strAsset = detail::stringifyAsset(asset);
+        google::protobuf::Map<std::string, Api::BaseObject>(value.begin(),
+                                                            value.end());
+    const auto strAsset = common::stringify<Api::Asset>(asset, ValuePrefix);
     return world_state_repository::update(uuid, strAsset);
   }
   return false;
@@ -117,8 +104,8 @@ Api::Asset findByUuid(const std::string &uuid) {
 
   logger::explore(NameSpaceID + "::findByUuid") << "";
   auto strAsset = world_state_repository::find(uuid);
-  if (not strAsset.empty()) {
-    return detail::parseAsset(strAsset);
+  if (!strAsset.empty()) {
+    return common::parse<Api::Asset>(strAsset, ValuePrefix);
   }
 
   return Api::Asset();

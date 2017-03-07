@@ -19,8 +19,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import static java.lang.Math.min;
-import static java.lang.Math.max;
+import java.lang.Math;
 
 import repository.Repository;
 import repository.KeyConstants;
@@ -34,7 +33,7 @@ public class WeightedRate {
      *   This method is called by front App.
      *   repository.assetAdd() returns uuid. If adding asset fails, uuid will be empty.
      */
-    public static String registerAccount(String publicKey, String accountName, String assetUuids[]) {
+    public static String registerAccount(String publicKey, String accountName) {
         /*
          * Future work is that this implementation is replaced with TransactionBuilder,
          * which only issue transaction to sumeragi. Sumeragi will update database
@@ -52,14 +51,14 @@ public class WeightedRate {
         params.put(KeyConstants.PublicKey, publicKey);
         params.put(KeyConstants.AccountName, accountName);
 
-        String uuid = repository.accountAdd(
+        final String uuid = repository.accountAdd(
             params,
-            assetUuids
+            new String[0]
         );
         return uuid;
     }
 
-    public static Boolean attachAssetToAccount(String accountUuid, String assetUuid) {
+    public static Boolean attachAssetToAccount(String assetUuid, String accountUuid) {
         /*
          * Future work is that this implementation is replaced with TransactionBuilder,
          * which only issue transaction to sumeragi. Sumeragi will update database
@@ -75,29 +74,24 @@ public class WeightedRate {
         HashMap<String, String> params = new HashMap<String, String>();
         params.put(KeyConstants.Uuid, accountUuid);
         params.put(KeyConstants.AttachedAssetUuid, assetUuid);
-
-        System.out.println("--------------------------------------------------");
-        System.out.println(accountUuid);
-        System.out.println(assetUuid);
-        System.out.println("--------------------------------------------------");
-
+        
         return repository.accountAttach(params);
     }
 
     public static List<String> enumerateAssetNamesOfAccount(String accountUuid) {
-        HashMap<String, String> params = new HashMap<String, String>();
-        params.put(KeyConstants.Uuid, accountUuid);
-        String[] assetUuids = repository.accountValueFindByUuid(params);
+        HashMap<String, String> uuidparams = new HashMap<String, String>();
+        uuidparams.put(KeyConstants.Uuid, accountUuid);
+        final String[] assetUuids = repository.accountValueFindByUuid(uuidparams);
+
         List<String> ret = new ArrayList<String>();
-        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
         for (String uuid : assetUuids) {
-            HashMap<String, String> params2 = new HashMap<String, String>();
-            params2.put(KeyConstants.Uuid, uuid);
-            System.out.println("Asset UUID: " + uuid);
-            HashMap<String, String> asset = repository.assetInfoFindByUuid(params2);
+            HashMap<String, String> params = new HashMap<String, String>();
+            params.put(KeyConstants.Uuid, uuid);
+            HashMap<String, String> asset = repository.assetInfoFindByUuid(params);
             ret.add(asset.get(KeyConstants.DomainId) + "." + asset.get(KeyConstants.AssetName));
         }
-        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
         return ret;
     }
 
@@ -143,7 +137,7 @@ public class WeightedRate {
         params.put(KeyConstants.ContractName, "Test"); // Currently, KeyConstants.ContractName is not be used.
 
         // repository.assetAdd() returns uuid. If adding asset fails, uuid will be empty.
-        String uuid = repository.assetAdd(
+        final String uuid = repository.assetAdd(
             params,
             assetValue
         );
@@ -153,11 +147,11 @@ public class WeightedRate {
     public static String findAssetUuidByNameInAccount(String assetName, String accountUuid) {
         HashMap<String, String> params = new HashMap<String, String>();
         params.put(KeyConstants.Uuid, accountUuid);
-        String[] assetUuids = repository.accountValueFindByUuid(params);
+        final String[] assetUuids = repository.accountValueFindByUuid(params);
         for (String uuid : assetUuids) {
             HashMap<String, String> params2 = new HashMap<String, String>();
             params2.put(KeyConstants.Uuid, uuid);
-            HashMap<String, String> assetInfo = repository.assetInfoFindByUuid(params2);
+            final HashMap<String, String> assetInfo = repository.assetInfoFindByUuid(params2);
             if (assetInfo.get(KeyConstants.AssetName).equals(assetName)) {
                 return uuid;
             }
@@ -165,17 +159,17 @@ public class WeightedRate {
         return "";
     }
 
-    public static String showWeightedRateAsset(String uuid) {
+    public static String getWeightedRateAsset(String uuid) {
         HashMap<String, String> params = new HashMap<String, String>();
         params.put(KeyConstants.Uuid, uuid);
-        HashMap<String, HashMap<String, String>> assetValue = repository.assetValueFindByUuid(params);
+        final HashMap<String, HashMap<String, String>> assetValue = repository.assetValueFindByUuid(params);
 
         StringBuilder sb = new StringBuilder();
         sb.append("alpha: " + assetValue.get("alpha").get("value"));
         sb.append(", const: " + assetValue.get("constant").get("value"));
         sb.append(", rate:  " + assetValue.get("rate").get("value"));
 
-        return new String(sb);
+        return new String(sb); 
     }
 
     /*
@@ -184,7 +178,7 @@ public class WeightedRate {
             - hit(params)
                 - alpha <- min(100.0, alpha * params["hit_rate"]);
             - miss(params)
-                - alpha <- max(1.25, alpha * params["miss_rate"])
+                - alpha <- max(0.25, alpha * params["miss_rate"])
     */
 
     /*
@@ -200,17 +194,17 @@ public class WeightedRate {
         params.put(KeyConstants.Uuid, uuid);
         HashMap<String, HashMap<String, String>> value = repository.assetValueFindByUuid(params);
 
-        HashMap<String, String> rate = value.get("rate");
+        final HashMap<String, String> rate = value.get("rate");
         if (!rate.get("type").equals("double")) throw new IllegalStateException("[FATAL] Mismatch type");
         Double rateValue = Double.parseDouble(rate.get("value"));
 
         HashMap<String, String> alpha = value.get("alpha");
         if (!alpha.get("type").equals("double")) throw new IllegalStateException("[FATAL] Mismatch type");
-        Double alphaValue = Double.parseDouble(alpha.get("value"));
+        final Double alphaValue = Double.parseDouble(alpha.get("value"));
 
-        HashMap<String, String> constant = value.get("constant");
+        final HashMap<String, String> constant = value.get("constant");
         if (!constant.get("type").equals("double")) throw new IllegalStateException("[FATAL] Mismatch type");
-        Double constantValue = Double.parseDouble(constant.get("value"));
+        final Double constantValue = Double.parseDouble(constant.get("value"));
 
         rateValue = Math.max(1.0, Math.min(1000.0, alphaValue * rateValue + constantValue));
 
@@ -226,13 +220,11 @@ public class WeightedRate {
         params.put(KeyConstants.Uuid, uuid);
         HashMap<String, HashMap<String, String>> value = repository.assetValueFindByUuid(params);
 
-        HashMap<String, String> alpha = value.get("alpha");
+        final HashMap<String, String> alpha = value.get("alpha");
         if (!alpha.get("type").equals("double")) throw new IllegalStateException("[FATAL] Mismatch type");
         Double alphaValue = Double.parseDouble(alpha.get("value"));
 
-        System.out.println("ALPHA VALUE: " + alphaValue);
         alphaValue = Math.min(100.0, alphaValue * hitRate);
-        System.out.println("NEW ALPHA VALUE: " + alphaValue);
 
         alpha.put("value", String.valueOf(alphaValue));
         value.put("alpha", alpha);
@@ -249,7 +241,7 @@ public class WeightedRate {
         if (!alpha.get("type").equals("double")) throw new IllegalStateException("[FATAL] Mismatch type");
         Double alphaValue = Double.parseDouble(alpha.get("value"));
 
-        alphaValue = Math.min(1.25, alphaValue * missRate);
+        alphaValue = Math.max(0.25, alphaValue * 1.0/missRate);
 
         alpha.put("value", String.valueOf(alphaValue));
         value.put("alpha", alpha);
@@ -257,58 +249,59 @@ public class WeightedRate {
         repository.assetUpdate(params, value);
     }
 
-    public static void main(String[] args) {
-        // For Test
+    public static void testMain() {
+        String uuidUser1 = registerAccount("Public Key", "User1");
 
-        String[] assetUuids = new String[3];
-        assetUuids[0] = registerWeightedRateAsset("MyCompany", "fstAsset");
-        assetUuids[1] = registerWeightedRateAsset("MyCompany", "sndAsset");
-        assetUuids[2] = registerWeightedRateAsset("MyCompany", "trdAsset");
+        List<String> assetNames = new ArrayList<String>();
+        assetNames.add("1stAsset");
+        assetNames.add("2ndAsset");
+        assetNames.add("3rdAsset");
 
-        String uuidUser1 = registerAccount("Public Key", "User1", assetUuids);
+        for (final String name : assetNames) {
+            final String uuidAsset = registerWeightedRateAsset("Iroha", name);
+            if (!attachAssetToAccount(uuidAsset, uuidUser1))
+                throw new IllegalStateException("[FATAL] Cannot attach asset to account");
+        }
 
-        System.out.println("\n===========================================================================");
         List<String> enumeratedNames = enumerateAssetNamesOfAccount(uuidUser1);
-        System.out.println("\n===========================================================================");
 
+        System.out.println("----------------- ASSETS -----------------");
         for (String name : enumeratedNames) {
             System.out.println("Name: " + name);
         }
-        System.out.println("===========================================================================");
+        System.out.println("------------------------------------------");
 
-        String secondAssetUuid = findAssetUuidByNameInAccount("sndAsset", uuidUser1);
+        String uuid = findAssetUuidByNameInAccount("2ndAsset", uuidUser1);
 
-        System.out.println("Initial value: " + showWeightedRateAsset(secondAssetUuid));
+            System.out.println(
+                  "---------------------------------------------------------------------\n"
+                + "Initial value: "
+                + getWeightedRateAsset(uuid) + "\n"
+                + "---------------------------------------------------------------------\n"
+            );
 
-        try {
-
-            String path = new File(".").getAbsoluteFile().getParent();
-            File file = new File(path + "/WeightedRate.output");
-            FileWriter filewriter = new FileWriter(file, true);
-
-            for (int i = 0; i < 5; ++i) {
-                hit(secondAssetUuid, 2.345);
-                linearIncrease(secondAssetUuid);
-                filewriter.write("Current value: " + showWeightedRateAsset(secondAssetUuid) + "\n");
-            }
-
-            for (int i = 0; i < 5; ++i) {
-                miss(secondAssetUuid, 0.54321);
-                linearIncrease(secondAssetUuid);
-                filewriter.write("Current value: " + showWeightedRateAsset(secondAssetUuid) + "\n");
-            }
-
-            if (file.exists()){
-                if (file.isFile() && file.canWrite()) {
-                    filewriter.close();
-                } else {
-                    System.out.println("Cannot write file");
-                }
-            }
-
-        } catch (IOException e) {
-            System.out.println(e);
+        for (int i = 0; i < 5; ++i) {
+            hit(uuid, 1.345);
+            linearIncrease(uuid);
+            System.out.println(
+                  "---------------------------------------------------------------------\n"
+                + "Current value: "
+                + getWeightedRateAsset(uuid) + "\n"
+                + "---------------------------------------------------------------------\n"
+            );
         }
+
+        for (int i = 0; i < 5; ++i) {
+            miss(uuid, 6.54321);
+            linearIncrease(uuid);
+            System.out.println(
+                  "---------------------------------------------------------------------\n"
+                + "Current value: "
+                + getWeightedRateAsset(uuid) + "\n"
+                + "---------------------------------------------------------------------\n"
+            );
+        }
+
     }
 
 }
