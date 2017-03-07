@@ -216,8 +216,8 @@ bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
     }
     connection::iroha::PeerService::Sumeragi::send( peer.getIP(), txResponse );
   }
+  */
   return true;
-*/
 }
 
 bool PeerServiceConfig::removePeer( const std::string& publicKey ) {
