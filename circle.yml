@@ -36,11 +36,13 @@ test:
     # first, run ctest inside a container
     - docker run -p 1204:1204 hyperledger/iroha-docker /test.sh 
     # then, run iroha with dummy config (1 node) and print its output to stdout
-    - ID=`docker run -it -d -p 1204:1204 hyperledger/iroha-docker /run.sh`
+    - export ID=$(docker run -it -d -p 1204:1204 hyperledger/iroha-docker /run.sh)
     # put new tests below
     - curl -X POST http://127.0.0.1:1204/account/register -d '{"publicKey":"WdvM/DPabapmtA7ISbTYPywbHxk8gWu2221LzmcmAgw=","alias":"yonezu","timestamp":1482053586}'
   post:
+    # iroha-main logs
     - docker logs $ID
+    # if node is alive, then iroha-main still works, otherwise test is failed
     - (docker kill $ID && echo "Container worked and now killed. OK") || (echo "Container died. FAIL." && exit 1)
 
 deployment:
