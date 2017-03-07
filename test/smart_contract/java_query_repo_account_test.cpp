@@ -17,10 +17,8 @@ limitations under the License.
 #include <gtest/gtest.h>
 
 #include <../smart_contract/repository/jni_constants.hpp>
-#include <infra/protobuf/api.pb.h>
 #include <infra/virtual_machine/jvm/java_data_structure.hpp>
 #include <repository/domain/account_repository.hpp>
-#include <repository/world_state_repository.hpp>
 #include <virtual_machine/virtual_machine.hpp>
 
 const std::string PackageName = "test";
@@ -68,11 +66,7 @@ TEST(JavaQueryRepoAccount, invokeAddAccount) {
   virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
                                   params, assets);
 
-  const std::string received_serialized_acc =
-      repository::world_state_repository::find(uuid);
-
-  Api::Account account;
-  account.ParseFromString(received_serialized_acc);
+  const auto account = repository::account::findByUuid(uuid);
 
   ASSERT_STREQ(params[tag::PublicKey].c_str(), account.publickey().c_str());
   ASSERT_STREQ(params[tag::AccountName].c_str(), account.name().c_str());
@@ -124,11 +118,7 @@ TEST(JavaQueryRepoAccount, invokeAttachAssetToAccount) {
   virtual_machine::invokeFunction(PackageName, ContractName, "testAttachAssetToAccount",
                                   params);
 
-  const std::string received_serialized_acc =
-      repository::world_state_repository::find(uuid);
-
-  Api::Account account;
-  account.ParseFromString(received_serialized_acc);
+  const auto account = repository::account::findByUuid(uuid);
 
   ASSERT_STREQ("NEW ATTACHED UUID", params[tag::AttachedAssetUuid].c_str());
 
@@ -175,10 +165,7 @@ TEST(JavaQueryRepoAccount, invokeUpdateAccount) {
   virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
                                   params, assets);
 
-  const std::string strAccount = repository::world_state_repository::find(uuid);
-
-  Api::Account account;
-  account.ParseFromString(strAccount);
+  const auto account = repository::account::findByUuid(uuid);
 
   ASSERT_STREQ("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=",
                account.publickey().c_str());

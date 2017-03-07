@@ -10,4 +10,5 @@ target_link_libraries(sumeragi
   executor
   merkle_transaction_repository
   transaction_repository
+  validator
 )

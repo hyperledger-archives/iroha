@@ -197,42 +197,4 @@ public class TestAccount {
       printFail(e);
     }
   }
-  /***************************************************************************************************
-   * From java main function
-   ***************************************************************************************************/
-
-  // Test 'add' only. All command tests are invoked by gTest.
-  private static void javaIntegrityCheckAddAccount() {
-    try {
-      HashMap<String, String> accountParam = new HashMap<String, String>();
-      accountParam.put(PublicKey, "This is Public key.");
-      accountParam.put(AccountName, "みずき そのこ");
-      String[] assets = { "Hoge", "Foo", "Bar" };
-
-      testAddAccount(accountParam, assets);
-
-      HashMap<String, String> params = new HashMap<String, String>();
-      params.put(Uuid, "7a1d252c8fbbd89ac2b35a4575fbee93c53cdc08b29296fae3fa8a0ec5b3dbcc");
-      params.put(AttachedAssetUuid, "New Asset UUID");
-
-      testAttachAssetToAccount(params);
-
-      System.out.println("==============================================");
-      System.out.println("Success (from Java main)");
-      System.out.println("==============================================");
-
-    } catch(IllegalStateException e) {
-      System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      System.err.println("Fail (from Java main)");
-      System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      System.err.println(e.getMessage() + " in " + e.getClass().getName());
-    }
-  }
-
-  public static void main(String[] argv) {
-    System.out.println("Hello in JAVA!");
-    javaIntegrityCheckAddAccount();
-    System.out.println("Call C++ gTest is also required.");
-  }
-
 }

@@ -17,10 +17,8 @@ limitations under the License.
 #include <gtest/gtest.h>
 
 #include <../smart_contract/repository/jni_constants.hpp>
-#include <infra/protobuf/api.pb.h>
 #include <infra/virtual_machine/jvm/java_data_structure.hpp>
 #include <repository/domain/domain_repository.hpp>
-#include <repository/world_state_repository.hpp>
 #include <virtual_machine/virtual_machine.hpp>
 
 const std::string PackageName = "test";
@@ -62,11 +60,7 @@ TEST(JavaQueryRepoDomain, invokeAddDomain) {
   virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
                                   params);
 
-  const std::string received_serialized_acc =
-      repository::world_state_repository::find(uuid);
-
-  Api::Domain domain;
-  domain.ParseFromString(received_serialized_acc);
+  const auto domain = repository::domain::findByUuid(uuid);
 
   ASSERT_STREQ(params[tag::OwnerPublicKey].c_str(),
                domain.ownerpublickey().c_str());
@@ -107,10 +101,7 @@ TEST(JavaQueryRepoDomain, invokeUpdateDomain) {
   virtual_machine::invokeFunction(PackageName, ContractName, FunctionName,
                                   params);
 
-  const std::string strDomain = repository::world_state_repository::find(uuid);
-
-  Api::Domain domain;
-  domain.ParseFromString(strDomain);
+  const auto domain = repository::domain::findByUuid(uuid);
 
   ASSERT_STREQ("MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=",
                domain.ownerpublickey().c_str());

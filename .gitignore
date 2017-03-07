@@ -23,3 +23,4 @@ cmake-build-debu/*
 docker/build/iroha.tar
 cmake-build-debug/*
 external/*
+core/infra/protobuf
