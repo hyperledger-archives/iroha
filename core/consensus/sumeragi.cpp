@@ -192,8 +192,7 @@ namespace sumeragi {
 
             this->numValidatingPeers = this->validatingPeers.size();
             // maxFaulty = Default to approx. 1/3 of the network.
-            this->maxFaulty = config::IrohaConfigManager::getInstance()
-                    .getMaxFaultyPeers( std::max( uint64_t(0), this->numValidatingPeers / 3 ));
+            this->maxFaulty = config::PeerServiceConfig::getInstance().getMaxFaulty();
             this->proxyTailNdx = this->maxFaulty * 2 + 1;
 
             if (this->validatingPeers.empty()) {

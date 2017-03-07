@@ -75,6 +75,7 @@ TEST(ConnectionWithGrpc, Transaction_Add_Domain){
 
     server_thread.detach();
     connection::finish();
+
 }
 
 
@@ -108,4 +109,5 @@ TEST(ConnectionWithGrpcTorii, Transaction_Add_Peer){
 
     server_thread.detach();
     connection::finish();
+
 }

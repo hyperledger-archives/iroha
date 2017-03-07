@@ -28,7 +28,6 @@ limitations under the License.
 //#include <repository/transaction_repository.hpp>
 #include "peer_service_with_json.hpp"
 #include "config_format.hpp"
-#include "../../util/exception.hpp"
 
 using PeerServiceConfig = config::PeerServiceConfig;
 using txbuilder::TransactionBuilder;
@@ -336,9 +335,9 @@ bool PeerServiceConfig::isLeaderMyPeer() {
 }
 
 std::unique_ptr<peer::Node> PeerServiceConfig::leaderPeer() {
-  auto soreted_peers = getPeerList();
-  if( soreted_peers.empty() ) return NULL;
-  return std::move( *soreted_peers.begin() );
+  auto sorted_peers = getPeerList();
+  if( sorted_peers.empty() ) return NULL;
+  return std::move( *sorted_peers.begin() );
 }
 
 void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
