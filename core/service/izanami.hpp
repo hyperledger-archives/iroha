@@ -58,10 +58,10 @@ namespace izanami {
     }
 
     //invoke when receive TransactionResponse.
-    void receiveTransactionResponse( std::unique_ptr<TransactionResponse> );
+    void receiveTransactionResponse( TransactionResponse& );
 
     //invoke when initialize Peer that to config Participation on the way
-    void startIzanagi();
+    void startIzanami();
 
 }
 

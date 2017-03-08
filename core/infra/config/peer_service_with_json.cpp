@@ -25,7 +25,7 @@ limitations under the License.
 #include <json.hpp>
 #include <infra/protobuf/api.pb.h>
 #include <transaction_builder/transaction_builder.hpp>
-//#include <repository/transaction_repository.hpp>
+#include <repository/transaction_repository.hpp>
 #include "peer_service_with_json.hpp"
 #include "config_format.hpp"
 
@@ -203,20 +203,27 @@ bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
   // when my node is not active, it don't send data.
   if( !(findPeerPublicKey( getMyPublicKey() )->isOK()) ) return true;
 
-//  TODO Send transaction data separated block to new peer.
-//  TODO connection::iroha::PeerService::TransactionRepository::send( peer.getIP() );
-/*
+
+  // Send transaction data separated block to new peer.
   auto transactions = repository::transaction::findAll();
   int block_size = 500;
-  for(int i=0; i < transactions.size(); i++) {
+  uint64_t code = 0UL;
+  for(int i=0; i < transactions.size(); i+=block_size ) {
     auto txResponse = Api::TransactionResponse();
-    txResponse.set_code( i );
+    txResponse.set_message( "Midstream send Transactions" );
+    txResponse.set_code( code++ );
     for(int j=i; j < i+block_size;j++) {
-        tx.add_transaction()->CopyFrom( transactions[j] );
+        txResponse.add_transaction()->CopyFrom( transactions[j] );
     }
-    connection::iroha::PeerService::Sumeragi::send( peer.getIP(), txResponse );
+    connection::iroha::PeerService::Izanami::send( peer.getIP(), txResponse );
   }
-  */
+
+  // end-point
+  auto txResponse = Api::TransactionResponse();
+  txResponse.set_message( "Finished send Transactions" );
+  txResponse.set_code( code++ );
+  connection::iroha::PeerService::Izanami::send( peer.getIP(), txResponse );
+
   return true;
 }
 

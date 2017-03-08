@@ -25,7 +25,7 @@ limitations under the License.
 #include <infra/config/peer_service_with_json.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 #include <crypto/hash.hpp>
-//#include <repository/transaction_repository.hpp>
+#include <repository/transaction_repository.hpp>
 
 
 namespace izanami {
@@ -63,9 +63,7 @@ namespace izanami {
 
     void InitializeEvent::storeTxResponse( const std::string& hash ) {
         for( auto &&tx : txResponses[ hash ]->transaction() ) {
-            // TODO store txResponses[hash] to DB
-            // repository::transaction::add( tx.hash(), tx );
-
+            repository::transaction::add( tx.hash(), tx );
         }
     }
     void InitializeEvent::executeTxResponse( const std::string& hash ) {
@@ -132,9 +130,9 @@ namespace izanami {
     }
 
     //invoke when receive TransactionResponse.
-    void receiveTransactionResponse( std::unique_ptr<TransactionResponse> &txResponse ) {
+    void receiveTransactionResponse( TransactionResponse& txResponse ) {
         static InitializeEvent event;
-        event.add_transactionResponse( std::move(txResponse) );
+        event.add_transactionResponse( std::make_unique<TransactionResponse>( txResponse ) );
         if( detail::isFinishedReceive( event ) ) {
             if( detail::isFinishedReceiveAll( event )) {
                 config::PeerServiceConfig::getInstance().finishedInitializePeer();
@@ -156,7 +154,7 @@ namespace izanami {
     );
 
     //invoke when initialize Peer that to config Participation on the way
-    void startIzanagi() {
+    void startIzanami() {
         logger::explore("izanagi") <<  "\033[95m+==ーーーーーーーーーー==+\033[0m";
         logger::explore("izanagi") <<  "\033[95m|+-ーーーーーーーーーー-+|\033[0m";
         logger::explore("izanagi") <<  "\033[95m||  　　　　　　　　　 ||\033[0m";
@@ -170,17 +168,13 @@ namespace izanami {
         logger::info("izanagi")    <<  "My PublicKey is " << config::PeerServiceConfig::getInstance().getMyPublicKey();
         logger::info("izanagi")    <<  "My key is " << config::PeerServiceConfig::getInstance().getMyIp();
 
-        /* TODO
-        connection::iroha::Izanami::Transaction::receive([](const std::string& from, TransactionResponse& txResponse ) {
-            logger::info("izanagi") << "receive!";
-            // send processTransaction(event) as a task to processing pool
-            // this returns std::future<void> object
-            // (std::future).get() method locks processing until result of processTransaction will be available
-            // but processTransaction returns void, so we don't have to call it and wait
-            std::function<void()> &&task = std::bind(receiveTransactionResponse, std::make_unique<TransactionResponse>(txResponse) );
+
+        connection::iroha::Izanami::Izanagi::receive([](const std::string& from, TransactionResponse& txResponse ) {
+            logger::info("izanagi") << "receive! Transactions!!";
+            std::function<void()> &&task = std::bind( receiveTransactionResponse, txResponse );
             pool.process(std::move(task));
         });
-        */
+
     }
 
 }

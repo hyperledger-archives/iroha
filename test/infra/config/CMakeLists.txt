@@ -20,6 +20,7 @@ target_link_libraries(peer_service_with_json_test
     event_with_grpc
     gtest
     create_objects_helper
+    transaction_repository
 )
 add_test(
     NAME peer_service_with_json_test

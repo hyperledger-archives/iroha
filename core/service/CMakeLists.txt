@@ -15,5 +15,5 @@ target_link_libraries(izanami
     config_manager
     executor
     event_with_grpc
-    merkle_transaction_repository
+    transaction_repostiory
 )

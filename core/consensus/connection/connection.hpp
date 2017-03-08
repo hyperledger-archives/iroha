@@ -87,7 +87,7 @@ namespace connection {
 
             }
 
-            namespace Izanagi {
+            namespace Izanami {
                 bool send(
                         const std::string& ip,
                         const TransactionResponse &txResponse
