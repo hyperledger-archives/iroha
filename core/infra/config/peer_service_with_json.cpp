@@ -81,7 +81,7 @@ std::string PeerServiceConfig::getMyIp() {
 }
 
 double PeerServiceConfig::getMaxTrustScore() {
-    return std::max( 10.0, (double)peerList.size() ); // temporary MaxTrustScore is max( 10, peerList.size() )
+    return 10.0; // temporary MaxTrustScore is 10.0;
 }
 size_t PeerServiceConfig::getMaxFaulty() {
     return std::max( 0, ( (int)getPeerList().size() - 1 ) / 3 );
@@ -258,25 +258,43 @@ bool PeerServiceConfig::sendAllTransactionToNewPeer( const peer::Node& peer ) {
     // when my node is not active, it don't send data.
     if( !(findPeerPublicKey( getMyPublicKey() )->isOK()) ) return false;
 
-    // Send transaction data separated block to new peer.
-    auto transactions = repository::transaction::findAll();
-    int block_size = 500;
     uint64_t code = 0UL;
-    for(int i=0; i < transactions.size(); i+=block_size ) {
+    {   // Send PeerList data ( Reason: Can't do to construct peerList for only transaction infomation. )
+        auto sorted_peerList = getPeerList();
         auto txResponse = Api::TransactionResponse();
-        txResponse.set_message( "Midstream send Transactions" );
-        txResponse.set_code( code++ );
-        for(int j=i; j < i+block_size;j++) {
-            txResponse.add_transaction()->CopyFrom( transactions[j] );
+        for (auto &&peer : sorted_peerList) {
+            txResponse.set_message( "Initilize send now Active PeerList info" );
+            txResponse.set_code( code++ );
+            auto txPeer = TransactionBuilder<Add<Peer>>()
+                    .setSenderPublicKey(getMyPublicKey())
+                    .setPeer(txbuilder::createPeer(peer->getPublicKey(), peer->getIP(),
+                                                   txbuilder::createTrust(getMaxTrustScore(), true)))
+                    .build();
+            txResponse.add_transaction()->CopyFrom(txPeer);
         }
         if( !connection::iroha::PeerService::Izanami::send( peer.getIP(), txResponse ) ) return false;
     }
 
-    // end-point
-    auto txResponse = Api::TransactionResponse();
-    txResponse.set_message( "Finished send Transactions" );
-    txResponse.set_code( code++ );
-    if( !connection::iroha::PeerService::Izanami::send( peer.getIP(), txResponse ) ) return false;
+    {   // Send transaction data separated block to new peer.
+        auto transactions = repository::transaction::findAll();
+        int block_size = 500;
+        for (int i = 0; i < transactions.size(); i += block_size) {
+            auto txResponse = Api::TransactionResponse();
+            txResponse.set_message("Midstream send Transactions");
+            txResponse.set_code(code++);
+            for (int j = i; j < i + block_size; j++) {
+                txResponse.add_transaction()->CopyFrom(transactions[j]);
+            }
+            if (!connection::iroha::PeerService::Izanami::send(peer.getIP(), txResponse)) return false;
+        }
+    }
+
+    {   // end-point
+        auto txResponse = Api::TransactionResponse();
+        txResponse.set_message("Finished send Transactions");
+        txResponse.set_code(code++);
+        if (!connection::iroha::PeerService::Izanami::send(peer.getIP(), txResponse)) return false;
+    }
     return true;
 }
 
