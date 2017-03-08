@@ -199,32 +199,6 @@ bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
     logger::warning("addPeer") << e.what();
     return false;
   }
-
-  // when my node is not active, it don't send data.
-  if( !(findPeerPublicKey( getMyPublicKey() )->isOK()) ) return true;
-
-
-  // Send transaction data separated block to new peer.
-  auto transactions = repository::transaction::findAll();
-  int block_size = 500;
-  uint64_t code = 0UL;
-  for(int i=0; i < transactions.size(); i+=block_size ) {
-    auto txResponse = Api::TransactionResponse();
-    txResponse.set_message( "Midstream send Transactions" );
-    txResponse.set_code( code++ );
-    for(int j=i; j < i+block_size;j++) {
-        txResponse.add_transaction()->CopyFrom( transactions[j] );
-    }
-    connection::iroha::PeerService::Izanami::send( peer.getIP(), txResponse );
-  }
-
-  // end-point
-  auto txResponse = Api::TransactionResponse();
-  txResponse.set_message( "Finished send Transactions" );
-  txResponse.set_code( code++ );
-  connection::iroha::PeerService::Izanami::send( peer.getIP(), txResponse );
-
-  return true;
 }
 
 bool PeerServiceConfig::removePeer( const std::string& publicKey ) {
@@ -279,6 +253,32 @@ bool PeerServiceConfig::updatePeer( const std::string& publicKey, const peer::No
   return true;
 }
 
+//invoke next to addPeer
+bool PeerServiceConfig::sendAllTransactionToNewPeer( const peer::Node& peer ) {
+    // when my node is not active, it don't send data.
+    if( !(findPeerPublicKey( getMyPublicKey() )->isOK()) ) return false;
+
+    // Send transaction data separated block to new peer.
+    auto transactions = repository::transaction::findAll();
+    int block_size = 500;
+    uint64_t code = 0UL;
+    for(int i=0; i < transactions.size(); i+=block_size ) {
+        auto txResponse = Api::TransactionResponse();
+        txResponse.set_message( "Midstream send Transactions" );
+        txResponse.set_code( code++ );
+        for(int j=i; j < i+block_size;j++) {
+            txResponse.add_transaction()->CopyFrom( transactions[j] );
+        }
+        if( !connection::iroha::PeerService::Izanami::send( peer.getIP(), txResponse ) ) return false;
+    }
+
+    // end-point
+    auto txResponse = Api::TransactionResponse();
+    txResponse.set_message( "Finished send Transactions" );
+    txResponse.set_code( code++ );
+    if( !connection::iroha::PeerService::Izanami::send( peer.getIP(), txResponse ) ) return false;
+    return true;
+}
 
 bool PeerServiceConfig::validate_addPeer( const peer::Node& peer ) {
     try {

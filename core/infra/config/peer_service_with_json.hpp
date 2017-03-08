@@ -69,6 +69,9 @@ class PeerServiceConfig : config::AbstractConfigManager {
   bool removePeer( const std::string &publicKey );
   bool updatePeer( const std::string& publicKey, const peer::Node& peer );
 
+  //invoke next to addPeer
+  bool sendAllTransactionToNewPeer( const peer::Node& );
+
   // invoke when validator transaction
   bool validate_addPeer( const peer::Node& );
   bool validate_removePeer( const std::string &publicKey );
