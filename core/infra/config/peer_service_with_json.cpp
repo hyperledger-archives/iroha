@@ -51,7 +51,7 @@ PeerServiceConfig& PeerServiceConfig::getInstance() {
 
 std::string PeerServiceConfig::getMyPublicKeyWithDefault(const std::string& defaultValue) {
   auto config = this->getConfigData();
-  if (config.find("me") != config.end()) {
+  if (!config.is_null()) {
     return this->getConfigData()["me"].value("publicKey", defaultValue);
   }
   return defaultValue;
@@ -59,7 +59,7 @@ std::string PeerServiceConfig::getMyPublicKeyWithDefault(const std::string& defa
 
 std::string PeerServiceConfig::getMyPrivateKeyWithDefault(const std::string& defaultValue) {
   auto config = this->getConfigData();
-  if (config.find("me") != config.end()) {
+  if (!config.is_null()) {
     return this->getConfigData()["me"].value("privateKey", defaultValue);
   }
   return defaultValue;
@@ -67,7 +67,7 @@ std::string PeerServiceConfig::getMyPrivateKeyWithDefault(const std::string& def
 
 std::string PeerServiceConfig::getMyIpWithDefault(const std::string& defaultValue) {
   auto config = this->getConfigData();
-  if (config.find("me") != config.end()) {
+  if (!config.is_null()) {
     return this->getConfigData()["me"].value("ip", defaultValue);
   }
   return defaultValue;
@@ -117,8 +117,8 @@ double PeerServiceConfig::getMaxTrustScore() {
 // TODO: this is temporary solution
 std::vector<json> PeerServiceConfig::getGroup() {
   auto config = this->getConfigData();
-  if (config.find("group") != config.end()) {
-    return getConfigData()["group"].get<std::vector<json>>();
+  if (!config.is_null()) {
+     return getConfigData()["group"].get<std::vector<json>>();
   }
   return std::vector<json>({
       json({

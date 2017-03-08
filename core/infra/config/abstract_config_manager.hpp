@@ -83,7 +83,7 @@ class AbstractConfigManager {
 
  protected:
   bool _loaded = false;
-  json _configData = {{"object","default"}}; // If default value is missing, nlohmann::json considers that it's null, not object
+  json _configData;
 
 };
 }
