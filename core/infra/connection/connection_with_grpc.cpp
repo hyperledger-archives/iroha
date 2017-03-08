@@ -48,11 +48,42 @@ namespace connection {
     using Api::Transaction;
     using Api::TransactionResponse;
     using Api::AssetResponse;
+    using Api::RecieverConfirmation;
+    using Api::Signature;
+
+    enum ResponseType {
+        RESPONSE_OK,
+        // wrong signature
+        RESPONSE_INVALID_SIG,
+        // connection error
+        RESPONSE_ERRCONN,
+    };
+
+    using Response = std::pair<std::string, ResponseType>;
+
+    // TODO: very dirty solution, need to be out of here
+    #include <crypto/signature.hpp>
+    std::function<RecieverConfirmation(const std::string&)> sign = [](const std::string &hash) {
+        RecieverConfirmation confirm;
+        Signature signature;
+        signature.set_publickey(config::PeerServiceConfig::getInstance().getMyPublicKey());
+        signature.set_signature(signature::sign(
+            config::PeerServiceConfig::getInstance().getMyPublicKey(),
+            hash,
+            config::PeerServiceConfig::getInstance().getMyPrivateKey())
+        );
+        confirm.set_hash(hash);
+        confirm.mutable_signature()->Swap(&signature);
+        return confirm;
+    };
+
+    std::function<bool(const RecieverConfirmation&)> valid = [](const RecieverConfirmation &c) {
+        return signature::verify(c.signature().signature(), c.hash(), c.signature().publickey());
+    };
 
     namespace iroha {
         namespace Sumeragi {
             namespace Verify {
-                std::vector<std::string> receiver_ips;
                 std::vector<
                         std::function<void(
                                 const std::string& from,
@@ -96,7 +127,7 @@ namespace connection {
         explicit SumeragiConnectionClient(std::shared_ptr<Channel> channel)
                 : stub_(Sumeragi::NewStub(channel)) {}
 
-        std::string Verify(const ConsensusEvent& consensusEvent) {
+        Response Verify(const ConsensusEvent& consensusEvent) {
             StatusResponse response;
             logger::info("connection")  <<  "Operation";
             logger::info("connection")  <<  "size: "    <<  consensusEvent.eventsignatures_size();
@@ -108,15 +139,15 @@ namespace connection {
 
             if (status.ok()) {
                 logger::info("connection")  << "response: " << response.value();
-                return response.value();
+                return {response.value(), valid(response.confirm()) ? RESPONSE_OK : RESPONSE_INVALID_SIG};
             } else {
                 logger::error("connection") << status.error_code() << ": " << status.error_message();
                 //std::cout << status.error_code() << ": " << status.error_message();
-                return "RPC failed";
+                return {"RPC failed", RESPONSE_ERRCONN};
             }
         }
 
-        std::string Torii(const Transaction& transaction) {
+        Response Torii(const Transaction& transaction) {
             StatusResponse response;
 
             ClientContext context;
@@ -125,11 +156,11 @@ namespace connection {
 
             if (status.ok()) {
                 logger::info("connection")  << "response: " << response.value();
-                return response.value();
+                return {response.value(), RESPONSE_OK};
             } else {
                 logger::error("connection") << status.error_code() << ": " << status.error_message();
                 //std::cout << status.error_code() << ": " << status.error_message();
-                return "RPC failed";
+                return {"RPC failed", RESPONSE_ERRCONN};
             }
         }
 
@@ -146,6 +177,7 @@ namespace connection {
                 const ConsensusEvent*   pevent,
                 StatusResponse*         response
         ) override {
+            RecieverConfirmation confirm;
             ConsensusEvent event;
             event.CopyFrom(pevent->default_instance());
             event.mutable_eventsignatures()->CopyFrom(pevent->eventsignatures());
@@ -156,22 +188,27 @@ namespace connection {
             for (auto& f: iroha::Sumeragi::Verify::receivers){
                 f(dummy, event);
             }
+            confirm = sign(pevent->transaction().hash());
             response->set_value("OK");
+            response->mutable_confirm()->CopyFrom(confirm);
             return Status::OK;
         }
 
         Status Torii(
                 ServerContext*      context,
-                const Transaction*  transacion,
+                const Transaction*  transaction,
                 StatusResponse*     response
         ) override {
+            RecieverConfirmation confirm;
             auto dummy = "";
             Transaction tx;
-            tx.CopyFrom(*transacion);
+            tx.CopyFrom(*transaction);
             for (auto& f: iroha::Sumeragi::Torii::receivers){
                 f(dummy, tx);
             }
+            confirm = sign(transaction->hash());
             response->set_value("OK");
+            response->mutable_confirm()->CopyFrom(confirm);
             return Status::OK;
         }
 
@@ -223,10 +260,6 @@ namespace connection {
 
             namespace Verify {
 
-                void addSubscriber(std::string ip) {
-                    receiver_ips.push_back(ip);
-                }
-
                 bool receive(
                     const std::function<void(
                         const std::string&,
@@ -240,6 +273,7 @@ namespace connection {
                     const std::string &ip,
                     const ConsensusEvent &event
                 ) {
+                    auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
                     if (find(receiver_ips.begin(), receiver_ips.end(), ip) != receiver_ips.end()) {
                         SumeragiConnectionClient client(
                             grpc::CreateChannel(
@@ -247,7 +281,8 @@ namespace connection {
                                 grpc::InsecureChannelCredentials()
                             )
                         );
-                        std::string reply = client.Verify(event);
+                        // TODO return tx validity
+                        auto reply = client.Verify(event);
                         return true;
                     } else {
                         return false;
@@ -257,6 +292,7 @@ namespace connection {
                 bool sendAll(
                     const ConsensusEvent &event
                 ) {
+                    auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
                     for (auto &ip : receiver_ips) {
                         if (ip != config::PeerServiceConfig::getInstance().getMyIp()) {
                             send(ip, event);
@@ -267,7 +303,7 @@ namespace connection {
 
             }
 
-            namespace Torii{
+            namespace Torii {
 
                 bool receive(
                     const std::function<void(
@@ -280,6 +316,32 @@ namespace connection {
 
             }
 
+        }
+
+
+        namespace PeerService {
+            namespace Torii {
+                bool send(
+                        const std::string &ip,
+                        const Transaction &transaction
+                ) {
+                    auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
+                    if (find(receiver_ips.begin(), receiver_ips.end(), ip) != receiver_ips.end()) {
+                        SumeragiConnectionClient client(
+                                grpc::CreateChannel(
+                                        ip + ":" + std::to_string(
+                                                config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)),
+                                        grpc::InsecureChannelCredentials()
+                                )
+                        );
+                        // TODO return tx validity
+                        auto reply = client.Torii(transaction);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            }
         }
 
         namespace TransactionRepository {
@@ -316,7 +378,6 @@ namespace connection {
 
     ServerBuilder builder;
 
-
     void initialize_peer() {
         std::string server_address("0.0.0.0:" + std::to_string(config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)));
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
@@ -331,7 +392,6 @@ namespace connection {
         return 0;
     }
     void finish(){
-        builder = ServerBuilder();
     }
 
 };

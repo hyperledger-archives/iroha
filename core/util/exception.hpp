@@ -19,7 +19,7 @@ limitations under the License.
 
 #include <stdexcept>
 #include <string>
-
+#include <iostream>
 #include <typeinfo>
 
 namespace exception {
@@ -60,6 +60,22 @@ namespace exception {
       const std::string& filename
     );
   };
+
+
+  namespace service {
+      class DuplicationIPException : public std::domain_error {
+      public:
+          DuplicationIPException( const std::string& );
+      };
+      class DuplicationPublicKeyException : public std::domain_error {
+      public:
+          DuplicationPublicKeyException( const std::string& );
+      };
+      class UnExistFindPeerException : public std::domain_error {
+      public:
+          UnExistFindPeerException( const std::string& );
+      };
+  }
 
   namespace crypto {
     class InvalidKeyException : public std::invalid_argument{

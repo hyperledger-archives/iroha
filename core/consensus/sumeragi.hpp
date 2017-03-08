@@ -33,10 +33,7 @@ namespace sumeragi {
 
     using Api::ConsensusEvent;
 
-    void initializeSumeragi(
-        const std::string& myPublicKey,
-        std::vector<std::unique_ptr<peer::Node>> peers
-    );
+    void initializeSumeragi();
     void loop();
 
     void getNextOrder(

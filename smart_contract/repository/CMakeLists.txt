@@ -6,7 +6,7 @@ add_library(Repository SHARED
 
 target_link_libraries(Repository
   core_repository
-  jvm
+  jni
 )
 
 add_custom_command(TARGET Repository

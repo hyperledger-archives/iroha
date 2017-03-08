@@ -29,6 +29,7 @@ limitations under the License.
 #include <transaction_builder/transaction_builder.hpp>
 
 using Api::ConsensusEvent;
+using Api::Transaction;
 
 using txbuilder::TransactionBuilder;
 using type_signatures::Add;
@@ -55,10 +56,6 @@ TEST(ConnectionWithGrpc, Transaction_Add_Domain){
     };
 
     std::thread server_thread(server);
-
-    connection::iroha::Sumeragi::Verify::addSubscriber(
-        config::PeerServiceConfig::getInstance().getMyIp()
-    );
 
     Api::Domain domain;
     domain.set_ownerpublickey("pubkey1");

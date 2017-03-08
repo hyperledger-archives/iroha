@@ -139,41 +139,4 @@ public class TestSimpleAsset {
       printFail(e);
     }
   }
-
-  /*********************************************************************************************
-   * Check from Java
-   *********************************************************************************************/
-
-  private static void javaIntegrityCheckAddSimpleAsset() {
-    try {
-      HashMap<String, String> info = new HashMap<String, String>();
-      info.put(DomainId, "DOMAIN ID");
-      info.put(SimpleAssetName, "Mizuki Sonoko");
-      info.put(ContractName, "simpleAssetContractFunc");
-
-      HashMap<String, String> value = new HashMap<String, String>();
-      value.put("type", "string");
-      value.put("value", "FooValue");
-
-      testAddSimpleAsset(info, value);
-
-      System.out.println("==============================================");
-      System.out.println("Success (from Java main)");
-      System.out.println("==============================================");
-
-    } catch(IllegalStateException e) {
-      System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      System.err.println("Fail (from Java main)");
-      System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      System.err.println(e.getMessage() + " in " + e.getClass().getName());
-    }
-  }
-
-  public static void main(String[] argv) {
-    System.out.println("Hello in Java! Test SimpleAsset");
-    javaIntegrityCheckAddSimpleAsset();
-//    javaIntegrityCheckAddAsset();
-//    System.out.println("Call C++ gTest is also required.");
-  }
-
 }

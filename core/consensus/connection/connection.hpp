@@ -57,8 +57,6 @@ namespace connection {
                     ConsensusEvent &)
                 > &callback);
 
-                void addSubscriber(std::string ip);
-
             };
 
             namespace Torii {
@@ -70,6 +68,18 @@ namespace connection {
 
             };
         };
+
+        namespace PeerService {
+
+            namespace Torii {
+
+                bool send(
+                        const std::string &ip,
+                        const Transaction &transaction
+                );
+
+            }
+        }
 
         namespace TransactionRepository {
 

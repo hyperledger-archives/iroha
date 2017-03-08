@@ -61,7 +61,20 @@ namespace exception {
     std::domain_error("InvalidCastException in " + filename + ". " + meg )
   {}
 
-    namespace crypto {
+  namespace service {
+      DuplicationIPException::DuplicationIPException(const std::string& ip) :
+        std::domain_error("DuplicationIPException : IP = " + ip + "\n") {
+      }
+      DuplicationPublicKeyException::DuplicationPublicKeyException(const std::string& publicKey) :
+        std::domain_error("DuplicationPublicKeyException : publicKey = " + publicKey + "\n") {
+      }
+      UnExistFindPeerException::UnExistFindPeerException(const std::string& publicKey) :
+        std::domain_error("UnExistFindPeerException : publicKey = " + publicKey + "\n")  {
+      }
+  }
+
+
+  namespace crypto {
     InvalidKeyException::InvalidKeyException(const std::string& message):
       std::invalid_argument("keyfile is invalid cause:" + message) {
     }

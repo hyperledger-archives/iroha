@@ -43,22 +43,12 @@ int main(int argc, char *argv[]){
         std::string senderPublicKey;
         std::string receiverPublicKey;
         std::string cmd;
-        std::vector <std::unique_ptr<peer::Node>> nodes = config::PeerServiceConfig::getInstance().getPeerList();
 
         connection::initialize_peer();
 
         logger::setLogLevel(logger::LogLevel::Debug);
 
-        for (const auto &n : nodes) {
-            std::cout << "=========" << std::endl;
-            std::cout << n->getPublicKey() << std::endl;
-            std::cout << n->getIP() << std::endl;
-            connection::iroha::Sumeragi::Verify::addSubscriber(n->getIP());
-        }
-
-        std::string pubKey = config::PeerServiceConfig::getInstance().getMyPublicKey();
-
-        sumeragi::initializeSumeragi(pubKey, std::move(nodes));
+        sumeragi::initializeSumeragi();
 
         std::thread connection_th([]() {
             connection::run();
