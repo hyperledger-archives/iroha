@@ -61,6 +61,12 @@ namespace exception {
     );
   };
 
+  namespace config {
+    class ConfigException : public std::domain_error {
+    public:
+      ConfigException(const std::string& message);
+    };
+  }
 
   namespace service {
       class DuplicationIPException : public std::domain_error {
