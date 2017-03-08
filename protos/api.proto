@@ -6,6 +6,9 @@ package Api;
 
 service TransactionRepository {
   rpc find(Query) returns (TransactionResponse){}
+
+  rpc fetch(Query) returns (TransactionResponse){}
+  rpc fetchStream(stream Transaction) returns (StatusResponse) {}
 }
 
 service AssetRepository {

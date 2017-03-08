@@ -98,6 +98,24 @@ namespace connection {
 
             };
 
+            namespace fetch {
+
+                bool receive(const std::function<void(
+                        const std::string &,
+                        const Query &)
+                > &callback);
+
+            };
+
+            namespace fetchStream {
+
+                bool receive(const std::function<void(
+                        const std::string &,
+                        const Query &)
+                > &callback);
+
+            };
+
         }
 
         namespace AssetRepository {

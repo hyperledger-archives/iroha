@@ -26,7 +26,7 @@ See the License for the specific language governing permissions and
 #include <consensus/consensus_event.hpp>
 #include <crypto/base64.hpp>
 
-#include "../world_state_repository.hpp"
+#include <repository/world_state_repository.hpp>
 
 namespace repository{
 
@@ -44,6 +44,7 @@ namespace repository{
 
         std::vector<Transaction> findByAssetName(std::string name);
 
+        void remove(std::string key);
     }
 }
 
