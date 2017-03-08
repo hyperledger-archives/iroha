@@ -44,8 +44,6 @@ class PeerServiceConfig : config::AbstractConfigManager {
 
  public:
 
-  std::vector<std::unique_ptr<peer::Node>> getPeerList();
-
  /*
    TODO: For ease of moving peer service to another class or namespace,
        peer service config is tempolary separeted from below.
