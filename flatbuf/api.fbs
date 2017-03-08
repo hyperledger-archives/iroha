@@ -1,0 +1,149 @@
+
+
+namespace Api;
+
+attribute "priority";
+
+table BaseObject {
+  valueString:  string;
+  valueInt:     long;
+  valueBoolean: bool;
+  valueDouble:  double;
+}
+
+table SimpleAsset {
+  domain: string (required);
+  name:   string (required);
+  value:  BaseObject (required);
+  smartContractName: string (required);
+}
+
+table Asset {
+  name:     string (required);
+  domain:   string (required);
+  value:    [KeyValue];
+  smartContractName: string;
+}
+
+table Domain {
+  ownerPublicKey: string (required);
+  name: string (required);
+}
+
+table Account {
+  publicKey: string (required);
+  name: string (required);
+  assets: [string];
+}
+
+table Trust {
+  value: double;
+  isOk: bool;
+}
+
+table Peer {
+  publicKey: string (required);
+  address:   string (required);
+  trust:     Trust;
+}
+
+table Signature {
+  publicKey: string;
+  signature: string;
+}
+
+union Object { SimpleAsset, Asset, Domain, Account, Peer, Signature }
+
+rpc_service TransactionRepository {
+  find(Query):TransactionResponse (streaming: "none");
+}
+
+rpc_service AssetRepository {
+  find(Query):AssetResponse (streaming: "none");
+}
+
+rpc_service Sumeragi {
+  //  =+===+=
+  // ==+=T=+==
+  //   |   |
+  //   |   |   This is gate at the entrance of sumeragi...
+  Torii(Request): StatusResponse (streaming: "none");
+
+  // sumeragi uses.
+  Verify(ConsensusEvent): StatusResponse (streaming: "none");
+}
+
+table TransactionResponse {
+  message: string;
+  code: ulong;
+
+  transaction: [Transaction];
+}
+
+table RecieverConfirmation {
+  hash: string;
+  signature: Signature;
+}
+
+table AssetResponse {
+  message:   string;
+  code:      ulong;
+  timestamp: ulong;
+
+  object: Object;
+}
+
+table StatusResponse {
+  value:      string;
+  message:    string;
+  timestamp:  ulong;
+  confirm:    RecieverConfirmation;
+}
+
+table KeyValue {
+  key:    string (required, key);
+  value:  BaseObject;
+}
+
+enum QueryType : byte {
+  TransactionHistory, HashTree, ObjectInformation
+}
+
+table Query {
+  type:     QueryType;
+  value:    [KeyValue];
+}
+
+table TxSignature {
+  publicKey: string (required);
+  signature: string (required);
+}
+
+table Transaction {
+  txSignatures: [TxSignature] (required);
+  type:         string (required);
+  senderPubKey: string (required);
+  hash:         string (required);
+
+  timestamp:    ulong;
+
+  object:       Object;
+  receivePubkey: string;
+  contractName:  string (required);
+}
+
+table Request{
+  transaction: [Transaction] (required);
+}
+
+table ConsensusEvent {
+  eventSignatures: [Signature];
+  transaction:     Transaction;
+  order:           ulong;
+  status:          string;
+}
+
+root_type ConsensusEvent;
+
+file_identifier "IROH";
+file_extension "iroha";
