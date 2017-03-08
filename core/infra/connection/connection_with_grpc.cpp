@@ -40,6 +40,7 @@ using grpc::ServerReader;
 namespace connection {
 
     using Api::Sumeragi;
+    using Api::Izanami;
     using Api::TransactionRepository;
     using Api::AssetRepository;
 
@@ -105,6 +106,16 @@ namespace connection {
                 > receivers;
             }
         };
+        namespace Izanami {
+            namespace Izanagi {
+                std::vector<
+                        std::function<void(
+                                const std::string& from,
+                                TransactionResponse& txResponse
+                        )>
+                > receivers;
+            }
+        }
         namespace TransactionRepository {
             namespace find {
                 std::vector<
@@ -204,6 +215,32 @@ namespace connection {
         std::unique_ptr<Sumeragi::Stub> stub_;
     };
 
+    class IzanamiConnectionClient {
+    public:
+        explicit IzanamiConnectionClient(std::shared_ptr<Channel> channel)
+        : stub_(Izanami::NewStub(channel)) {}
+
+        bool Izanagi(const TransactionResponse& txResponse) {
+            StatusResponse response;
+            logger::info("connection")  <<  "Operation";
+            logger::info("connection")  <<  "size: "    <<  txResponse.transaction_size();
+            logger::info("connection")  <<  "message: "    <<  txResponse.message();
+
+            ClientContext context;
+            Status status = stub_->Izanagi(&context, txResponse, &response);
+
+            if (status.ok()) {
+                logger::info("connection")  << "response: " << response.value();
+                return true;
+            } else {
+                logger::error("connection") << status.error_code() << ": " << status.error_message();
+                return false;
+            }
+        }
+
+    private:
+        std::unique_ptr<Izanami::Stub> stub_;
+    };
 
     class SumeragiConnectionServiceImpl final : public Sumeragi::Service {
     public:
@@ -259,6 +296,31 @@ namespace connection {
             return Status::OK;
         }
 
+    };
+
+    class IzanamiConnectionServiceImpl final : public Izanami::Service {
+    public:
+
+        Status Izanagi(
+                ServerContext*          context,
+                const TransactionResponse*   txResponse,
+                StatusResponse*         response
+        ) override {
+            TransactionResponse txres;
+            txres.CopyFrom(txResponse->default_instance());
+            txres.set_message(txResponse->message());
+            txres.set_code(txResponse->code());
+            txres.mutable_transaction()->CopyFrom(txResponse->transaction());
+            logger::info("connection") << "size: " << txres.transaction_size();
+            auto dummy = "";
+            for (auto& f: iroha::Izanami::Izanagi::receivers){
+                f(dummy, txres);
+            }
+            response->set_message("OK, no problem!");
+            response->set_value("OK");
+            response->set_timestamp(datetime::unixtime());
+            return Status::OK;
+        }
     };
 
     class TransactionRepositoryServiceImpl final : public TransactionRepository::Service {
@@ -436,6 +498,34 @@ namespace connection {
                         logger::error("Connection_with_grpc") << "Unexpected ip: " << ip;
                         return false;
                     }
+                }
+            }
+
+            namespace Izanami {
+                bool send(
+                        const std::string& ip,
+                        const TransactionResponse &txResponse
+                ) {
+                    IzanamiConnectionClient client(
+                            grpc::CreateChannel(
+                                    ip + ":" + std::to_string(
+                                            config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)),
+                                    grpc::InsecureChannelCredentials()
+                            )
+                    );
+                    return client.Izanagi(txResponse);
+                }
+            }
+        }
+
+
+        namespace Izanami {
+            namespace Izanagi {
+                bool receive(const std::function<void(
+                        const std::string &,
+                        TransactionResponse&)
+                > &callback) {
+                    receivers.push_back(callback);
                 }
             }
         }

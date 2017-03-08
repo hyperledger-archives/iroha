@@ -30,6 +30,12 @@ service Sumeragi {
 }
 
 
+service Izanami {
+  // It used by Izanami. Existing peer send TransactionResponse to Initialize Peer.
+  rpc Izanagi(TransactionResponse) returns (StatusResponse) {}
+}
+
+
 message TransactionResponse{
   string message = 1;
   uint64    code = 2;

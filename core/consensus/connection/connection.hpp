@@ -30,6 +30,7 @@ namespace connection {
     using Api::ConsensusEvent;
     using Api::Transaction;
     using Api::Query;
+    using Api::TransactionResponse;
 
 
     struct Config {
@@ -84,6 +85,22 @@ namespace connection {
                         const std::string &ip
                 );
 
+            }
+
+            namespace Izanagi {
+                bool send(
+                        const std::string& ip,
+                        const TransactionResponse &txResponse
+                );
+            }
+        }
+
+        namespace Izanami {
+            namespace Izanagi {
+                bool receive(const std::function<void(
+                        const std::string &,
+                        TransactionResponse&)
+                > &callback);
             }
         }
 
