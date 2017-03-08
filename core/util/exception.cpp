@@ -40,6 +40,14 @@ namespace exception {
     std::domain_error("BaseMethodException [" + functionName + "] in " + filename) {
   }
 
+  namespace config {
+    ConfigException::ConfigException(
+      const std::string& message
+    ):
+      std::domain_error("ConfigException: " + message) {
+    }
+  }
+
   ParseFromStringException::ParseFromStringException(
     const std::string& filename
   ):
