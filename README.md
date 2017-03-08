@@ -5,6 +5,8 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/fa0f4ce83e584fc4a32b646536dd40eb)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=soramitsu/iroha&amp;utm_campaign=Badge_Grade)
 [![Documentation Status](https://readthedocs.org/projects/iroha/badge/?version=latest)](http://docs.iroha.tech)
 
+Please see the [**wiki**](https://github.com/hyperledger/iroha/wiki) for information about developing for Iroha and explanation of our algorithms.
+
 いろは (Iroha) is a simple, distributed ledger.
 
 ![alt tag](Iroha_3_sm.png)
