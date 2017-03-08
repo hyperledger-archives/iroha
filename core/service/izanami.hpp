@@ -42,6 +42,8 @@ namespace izanami {
         void storeTxResponse( const std::string& );
         void executeTxResponse( const std::string& );
 
+        bool isExistTransactionFromHash( const std::string& );
+
         void clear();
     };
 

@@ -73,6 +73,13 @@ namespace izanami {
             executor::execute( std::move(tx) );
         }
     }
+
+    bool InitializeEvent::isExistTransactionFromHash( const std::string& hash ) {
+        for( auto &&tx : txResponses[ hash ]->transaction() ) return true;
+        return false;
+    }
+
+
     void InitializeEvent::clear() {
         now_progress = 0;
         txResponses.clear();
@@ -81,7 +88,9 @@ namespace izanami {
 
     namespace detail {
         bool isFinishedReceiveAll(InitializeEvent &event) {
-            return true; // TODO Don't underestand all Receive Finished.
+            std::string hash = getCorrectHash(event);
+            if( event.isExistTransactionFromHash( hash ) ) return false;
+            return true;
         }
 
         bool isFinishedReceive(InitializeEvent &event) {
@@ -127,10 +136,11 @@ namespace izanami {
         static InitializeEvent event;
         event.add_transactionResponse( std::move(txResponse) );
         if( detail::isFinishedReceive( event ) ) {
-            detail::storeTransactionResponse( event );
-            if( detail::isFinishedReceiveAll( event ) ) {
+            if( detail::isFinishedReceiveAll( event )) {
                 config::PeerServiceConfig::getInstance().finishedInitializePeer();
                 event.clear();
+            } else {
+                detail::storeTransactionResponse(event);
             }
         }
     }
@@ -160,7 +170,7 @@ namespace izanami {
         logger::info("izanagi")    <<  "My PublicKey is " << config::PeerServiceConfig::getInstance().getMyPublicKey();
         logger::info("izanagi")    <<  "My key is " << config::PeerServiceConfig::getInstance().getMyIp();
 
-        /*
+        /* TODO
         connection::iroha::Izanami::Transaction::receive([](const std::string& from, TransactionResponse& txResponse ) {
             logger::info("izanagi") << "receive!";
             // send processTransaction(event) as a task to processing pool
