@@ -59,7 +59,7 @@ Iroha supports chaincode written as Java programs that are invoked via JNI. Depl
 
 ### 2.5. Domains and assets
 
-Iroha employs the concept of domain names that are registered on the blockchain and are associated with a public key (i.e., an account). 
+Iroha employs the concept of domain names that are registered on the blockchain and are associated with a public key (i.e., an account).
 
 ### 2.6. Transactions
 
@@ -94,7 +94,7 @@ Additionally, the following two transaction types take as input (i.e., "wrap") o
 
 #### 2.6.1 Consensus events and processing order
 
-When broadcast, transactions are wrapped as consensus events. 
+When broadcast, transactions are wrapped as consensus events.
 
 Consensus events, when received from the event queue, are processed in the following priority order:
 
@@ -146,9 +146,11 @@ When syncing nodes with each other, valid parts of the Merkel tree are shared un
 
 ### 2.9. Data synchronization and retrieval
 
-The state with the Merkle root that has the most transactions in the Merkle tree and has 2*f*+1 signatures of validating servers is the most advanced state. 
+The state with the Merkle root that has the most transactions in the Merkle tree and has 2*f*+1 signatures of validating servers is the most advanced state.
 
 ### Data permissions
+
+Data permissioning is crucial to many real use cases. For example, companies will not likely accept distributed ledger technology if it means that competing institutions will know the intricate details of transactions.
 
 ### 2.10. Hijiri: Peer reputation system
 

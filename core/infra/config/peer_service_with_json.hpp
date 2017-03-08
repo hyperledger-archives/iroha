@@ -28,20 +28,39 @@ namespace config {
 
 class PeerServiceConfig : config::AbstractConfigManager {
  private:
-  static std::vector<peer::Node> peerList;
   PeerServiceConfig();
-  void initialziePeerList_from_json();
 
-  bool isExistIP( const std::string& );
-  bool isExistPublicKey( const std::string& );
-  std::vector<peer::Node>::iterator findPeerIP( const std::string& ip );
-  std::vector<peer::Node>::iterator findPeerPublicKey( const std::string& publicKey );
+  std::string getMyPublicKeyWithDefault(const std::string& defaultValue);
+  std::string getMyPrivateKeyWithDefault(const std::string& defaultValue);
+  std::string getMyIpWithDefault(const std::string& defaultValue);
+  double getMaxTrustScoreWithDefault(double defaultValue);
+  size_t getMaxFaultyScoreWithDefault(size_t defaultValue);
+  std::vector<json> getGroup();
+
  protected:
   void parseConfigDataFromString(std::string&& jsonStr) override;
 
  public:
   static PeerServiceConfig &getInstance();
 
+ public:
+
+ /*
+   TODO: For ease of moving peer service to another class or namespace,
+       peer service config is tempolary separeted from below.
+  */
+
+ private:
+  static std::vector<peer::Node> peerList;
+
+  void initialziePeerList_from_json();
+
+  bool isExistIP( const std::string& );
+  bool isExistPublicKey( const std::string& );
+  std::vector<peer::Node>::iterator findPeerIP( const std::string& ip );
+  std::vector<peer::Node>::iterator findPeerPublicKey( const std::string& publicKey );
+
+ public:
   std::string getMyPublicKey();
   std::string getMyPrivateKey();
   std::string getMyIp();

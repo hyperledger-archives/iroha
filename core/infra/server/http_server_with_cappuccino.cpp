@@ -16,6 +16,7 @@ limitations under the License.
 
 #include <json.hpp>
 
+#include <crypto/hash.hpp>
 #include <server/http_server.hpp>
 #include <cappuccino.hpp>
 #include <util/logger.hpp>
@@ -117,7 +118,7 @@ namespace http {
         Cappuccino::route<Cappuccino::Method::POST>("/account/register", [](std::shared_ptr<Request> request) -> Response {
             auto res = Response(request);
             auto data = request->json();
-            std::string uuid;
+            std::string uuid = hash::sha3_256_hex(data["publicKey"].get<std::string>());
 
             Api::Domain domain;
             domain.set_ownerpublickey("pubkey1");
