@@ -15,5 +15,5 @@ target_link_libraries(issue_transaction
     logger
     event_with_grpc
     create_objects_helper
-    connecntion_with_grpc
+    connection_with_grpc
 )
