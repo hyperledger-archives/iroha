@@ -1,1 +1,3 @@
-                                txbuilder::createPeer( argv[0], argv[1], txbuilder::createTrust( stod(argv[2]), argv[3]=="true" ) )
+                            .setPeer(
+                                txbuilder::createPeer( argv.at(0), argv.at(1), txbuilder::createTrust( stod(argv.at(2)), argv.at(3)=="true" ) )
+                            )
