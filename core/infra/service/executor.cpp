@@ -22,6 +22,17 @@ namespace executor{
     void execute(const Transaction& tx){
         std::cout << "Executor\n";
         std::cout << "DebugString:"<< tx.DebugString() <<"\n";
+        if(tx.type() == "add"){
+
+        }else if(tx.type() == "transfer"){
+
+        }else if(tx.type() == "update"){
+
+        }else if(tx.type() == "remove"){
+
+        }else if(tx.type() == "transfer"){
+
+        }
     }
 
 };
