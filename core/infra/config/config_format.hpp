@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#ifndef CONFIG_FORMAT_HPP
+#define CONFIG_FORMAT_HPP
+
 #include <regex>
 #include <json.hpp>
 #include <util/exception.hpp>
@@ -31,3 +34,5 @@ namespace config {
     bool ensureFormat(nlohmann::json& actualConfig, nlohmann::json& formatConfig, const std::string& history);
   };
 }
+
+#endif
