@@ -55,8 +55,6 @@ class PeerServiceConfig : config::AbstractConfigManager {
 
   void initialziePeerList_from_json();
 
-  bool isExistIP( const std::string& );
-  bool isExistPublicKey( const std::string& );
   std::vector<peer::Node>::iterator findPeerIP( const std::string& ip );
   std::vector<peer::Node>::iterator findPeerPublicKey( const std::string& publicKey );
 
@@ -70,6 +68,9 @@ class PeerServiceConfig : config::AbstractConfigManager {
   std::vector<std::unique_ptr<peer::Node>> getPeerList();
   std::vector<std::string> getIpList();
 
+  // is exist which peer?
+  bool isExistIP( const std::string& );
+  bool isExistPublicKey( const std::string& );
 
   // check are broken? peer
   void checkBrokenPeer( const std::string& ip );
