@@ -30,6 +30,7 @@ namespace izanami {
         uint64_t now_progress;
         std::unordered_map <std::string, std::unique_ptr<TransactionResponse> > txResponses;
         std::unordered_map <uint64_t, std::vector<std::string>> hashes;
+        bool is_finished;
     public:
 
         InitializeEvent();
@@ -44,7 +45,9 @@ namespace izanami {
 
         bool isExistTransactionFromHash( const std::string& );
 
-        void clear();
+        void finished();
+        bool isFinished() const;
+
     };
 
     namespace detail {

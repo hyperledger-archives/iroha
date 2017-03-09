@@ -77,11 +77,15 @@ namespace izanami {
         return false;
     }
 
+    bool InitializeEvent::isFinished() const {
+        return is_finished;
+    }
 
-    void InitializeEvent::clear() {
+    void InitializeEvent::finished() {
         now_progress = 0;
         txResponses.clear();
         hashes.clear();
+        is_finished = true;
     }
 
     namespace detail {
@@ -132,11 +136,14 @@ namespace izanami {
     //invoke when receive TransactionResponse.
     void receiveTransactionResponse( TransactionResponse& txResponse ) {
         static InitializeEvent event;
+        if( event.isFinished() ) return;
         event.add_transactionResponse( std::make_unique<TransactionResponse>( txResponse ) );
         if( detail::isFinishedReceive( event ) ) {
             if( detail::isFinishedReceiveAll( event )) {
                 config::PeerServiceConfig::getInstance().finishedInitializePeer();
-                event.clear();
+                event.finished();
+                logger::explore("izanami") << "Finished Receive ALl Transaction";
+                logger::explore("izanami") << "Closed Izanami";
             } else {
                 detail::storeTransactionResponse(event);
             }
@@ -155,22 +162,29 @@ namespace izanami {
 
     //invoke when initialize Peer that to config Participation on the way
     void startIzanami() {
-        logger::explore("izanagi") <<  "\033[95m+==ーーーーーーーーーー==+\033[0m";
-        logger::explore("izanagi") <<  "\033[95m|+-ーーーーーーーーーー-+|\033[0m";
-        logger::explore("izanagi") <<  "\033[95m||  　　　　　　　　　 ||\033[0m";
-        logger::explore("izanagi") <<  "\033[95m||初回取引履歴構築機構 ||\033[0m";
-        logger::explore("izanagi") <<  "\033[95m||\033[1mイザナギ\033[0m\033[95m　　 ||\033[0m";
-        logger::explore("izanagi") <<  "\033[95m|| 　　　　　　 　　　 ||\033[0m";
-        logger::explore("izanagi") <<  "\033[95m|+-ーーーーーーーーーー-+|\033[0m";
-        logger::explore("izanagi") <<  "\033[95m+==ーーーーーーーーーー==+\033[0m";
-        logger::explore("izanagi") <<  "- 起動/setup";
 
-        logger::info("izanagi")    <<  "My PublicKey is " << config::PeerServiceConfig::getInstance().getMyPublicKey();
-        logger::info("izanagi")    <<  "My key is " << config::PeerServiceConfig::getInstance().getMyIp();
+        if( config::PeerServiceConfig::getInstance().isExistPublicKey( config::PeerServiceConfig::getInstance().getMyPublicKey() ) ) {
+            logger::explore("izanami") << "I am start up Iroha Peer.";
+            logger::explore("izanami") << "Closed Izanami";
+            return;
+        }
+
+        logger::explore("izanami") <<  "\033[95m+==ーーーーーーーーーー==+\033[0m";
+        logger::explore("izanami") <<  "\033[95m|+-ーーーーーーーーーー-+|\033[0m";
+        logger::explore("izanami") <<  "\033[95m||  　　　　　　　　　 ||\033[0m";
+        logger::explore("izanami") <<  "\033[95m||初回取引履歴構築機構 ||\033[0m";
+        logger::explore("izanami") <<  "\033[95m||　　　イザナミ　　　　||\033[0m";
+        logger::explore("izanami") <<  "\033[95m|| 　　　　　　 　　　 ||\033[0m";
+        logger::explore("izanami") <<  "\033[95m|+-ーーーーーーーーーー-+|\033[0m";
+        logger::explore("izanami") <<  "\033[95m+==ーーーーーーーーーー==+\033[0m";
+        logger::explore("izanami") <<  "- 起動/setup";
+
+        logger::info("izanami")    <<  "My PublicKey is " << config::PeerServiceConfig::getInstance().getMyPublicKey();
+        logger::info("izanami")    <<  "My key is " << config::PeerServiceConfig::getInstance().getMyIp();
 
 
         connection::iroha::Izanami::Izanagi::receive([](const std::string& from, TransactionResponse& txResponse ) {
-            logger::info("izanagi") << "receive! Transactions!!";
+            logger::info("izanami") << "receive! Transactions!!";
             std::function<void()> &&task = std::bind( receiveTransactionResponse, txResponse );
             pool.process(std::move(task));
         });
