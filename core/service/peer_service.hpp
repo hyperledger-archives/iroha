@@ -24,21 +24,32 @@ limitations under the License.
 namespace peer
 {
 
+
     class Node {
         std::string ip;
         std::string publicKey;
         double trustScore;
+        bool isok;
 
     public:
 
+        static std::string defaultIP() {
+            return "";
+        }
+        static std::string defaultPublicKey() {
+            return "";
+        }
+
         Node(
-            std::string myIP = "",
-            std::string myPubKey = "",
-            double myTrustScore = 1.0
+            std::string myIP = defaultIP(),
+            std::string myPubKey = defaultPublicKey(),
+            double myTrustScore = 1.0,
+            bool isok = true
         ):
             ip(myIP),
             publicKey(myPubKey),
-            trustScore(myTrustScore)
+            trustScore(myTrustScore),
+            isok( true )
         {}
         
         
@@ -68,6 +79,10 @@ namespace peer
             return trustScore;
         }
 
+        bool isOK() const {
+            return isok;
+        }
+
         void setIP( const std::string& ip ) {
             this->ip = ip;
         }
@@ -76,6 +91,9 @@ namespace peer
         }
         void setTrustScore( const double& trustScore ) {
             this->trustScore = trustScore;
+        }
+        void setOK( const bool ok ) {
+            this->isok = ok;
         }
 
         bool isDefaultIP() const {
@@ -86,11 +104,6 @@ namespace peer
         }
 
     };
-
-    std::string getMyIp();
-    std::string getMyPublicKey();
-    std::string getPrivateKey();
-    std::vector<std::unique_ptr<peer::Node>> getPeerList();
 }
 
 #endif

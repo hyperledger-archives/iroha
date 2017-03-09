@@ -14,6 +14,7 @@ limitations under the License.
 
 #include <infra/protobuf/api.pb.h>
 #include <iostream>
+#include <infra/config/peer_service_with_json.hpp>
 
 namespace executor{
 
@@ -22,6 +23,24 @@ namespace executor{
     void execute(const Transaction& tx){
         std::cout << "Executor\n";
         std::cout << "DebugString:"<< tx.DebugString() <<"\n";
+
+
+        // Temporary - to operate peer service
+        if( tx.has_peer() ) {
+            peer::Node query_peer(
+                    tx.peer().address(),
+                    tx.peer().publickey(),
+                    tx.peer().trust().value(),
+                    tx.peer().trust().isok()
+            );
+            if( tx.type() == "Add" ) {
+                config::PeerServiceConfig::getInstance().addPeer( query_peer );
+            } else if( tx.type() == "Remove" ) {
+                config::PeerServiceConfig::getInstance().removePeer( query_peer.getPublicKey() );
+            } else if( tx.type() == "Update" ) {
+                config::PeerServiceConfig::getInstance().updatePeer( query_peer.getPublicKey(), query_peer );
+            }
+        }
     }
 
 };

@@ -34,6 +34,7 @@ class PeerServiceConfig : config::AbstractConfigManager {
   std::string getMyPrivateKeyWithDefault(const std::string& defaultValue);
   std::string getMyIpWithDefault(const std::string& defaultValue);
   double getMaxTrustScoreWithDefault(double defaultValue);
+  size_t getMaxFaultyScoreWithDefault(size_t defaultValue);
   std::vector<json> getGroup();
 
  protected:
@@ -64,9 +65,17 @@ class PeerServiceConfig : config::AbstractConfigManager {
   std::string getMyPrivateKey();
   std::string getMyIp();
   double getMaxTrustScore();
+  size_t getMaxFaulty();
 
   std::vector<std::unique_ptr<peer::Node>> getPeerList();
   std::vector<std::string> getIpList();
+
+
+  // check are broken? peer
+  void checkBrokenPeer( const std::string& ip );
+
+  // Initialize
+  void finishedInitializePeer();
 
   // invoke to issue transaction
   void toIssue_addPeer( const peer::Node& );
@@ -79,6 +88,9 @@ class PeerServiceConfig : config::AbstractConfigManager {
   bool removePeer( const std::string &publicKey );
   bool updatePeer( const std::string& publicKey, const peer::Node& peer );
 
+  //invoke next to addPeer
+  bool sendAllTransactionToNewPeer( const peer::Node& );
+
   // invoke when validator transaction
   bool validate_addPeer( const peer::Node& );
   bool validate_removePeer( const std::string &publicKey );
@@ -86,6 +98,7 @@ class PeerServiceConfig : config::AbstractConfigManager {
 
   // equatl to isSumeragi
   bool isLeaderMyPeer();
+  std::unique_ptr<peer::Node> leaderPeer();
 
   virtual std::string getConfigName();
 };

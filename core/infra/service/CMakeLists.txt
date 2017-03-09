@@ -1,7 +1,3 @@
-ADD_LIBRARY(executor STATIC
-    executor.cpp
-)
-
 ADD_LIBRARY(http_client STATIC
     http_client.cpp
 )

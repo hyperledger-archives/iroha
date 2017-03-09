@@ -75,4 +75,39 @@ TEST(ConnectionWithGrpc, Transaction_Add_Domain){
 
     server_thread.detach();
     connection::finish();
+
+}
+
+
+
+TEST(ConnectionWithGrpcTorii, Transaction_Add_Peer){
+    logger::setLogLevel(logger::LogLevel::Debug);
+
+    connection::initialize_peer();
+
+    auto server = []() {
+        connection::iroha::Sumeragi::Torii::receive([](const std::string &from, Transaction &transaction) {
+            ASSERT_STREQ( transaction.senderpubkey().c_str(),              "sate");
+            ASSERT_STREQ( transaction.peer().publickey().c_str(),          "light");
+            ASSERT_STREQ( transaction.peer().address().c_str(),            "test_ip");
+            ASSERT_TRUE( transaction.peer().trust().value() == 1.0 );
+        });
+        connection::run();
+    };
+
+    std::thread server_thread(server);
+
+    auto tx = TransactionBuilder<Add<Peer>>()
+            .setSenderPublicKey("sate")
+            .setPeer( txbuilder::createPeer( "light", "test_ip", txbuilder::createTrust( 1.0, true ) ) )
+            .build();
+
+    connection::iroha::PeerService::Sumeragi::send(
+    config::PeerServiceConfig::getInstance().getMyIp(),
+            tx
+    );
+
+    server_thread.detach();
+    connection::finish();
+
 }
