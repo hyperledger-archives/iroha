@@ -133,8 +133,6 @@ namespace tools {
 }
 
 int main(int argc, char* argv[]){
-    std::string ip = config::PeerServiceConfig::getInstance().getMyIp();
-    std::string pubkey = config::PeerServiceConfig::getInstance().getMyPublicKey();
     if( argc < 3 ) {
         tools::issue_transaction::invalid_error();
     }
