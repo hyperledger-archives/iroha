@@ -162,7 +162,7 @@ namespace izanami {
 
     //invoke when initialize Peer that to config Participation on the way
     void startIzanami() {
-
+        logger::explore("izanami") << "startIzanami";
         if( config::PeerServiceConfig::getInstance().isExistPublicKey( config::PeerServiceConfig::getInstance().getMyPublicKey() ) ) {
             logger::explore("izanami") << "I am start up Iroha Peer.";
             logger::explore("izanami") << "Closed Izanami";

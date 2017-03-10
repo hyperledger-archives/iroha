@@ -25,6 +25,6 @@ fi
 (mkdir -p $IROHA_BUILD && \
 cd $IROHA_BUILD && \
 cmake $IROHA_HOME -DCMAKE_BUILD_TYPE=$build_type && \
-make) || error "Can't build iroha"
+make -j 14) || error "Can't build iroha"
 
 mkdir -p $IROHA_BUILD/config
