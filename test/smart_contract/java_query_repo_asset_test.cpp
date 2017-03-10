@@ -295,8 +295,10 @@ TEST(JavaQueryRepoAsset, reinvokeAddAssetQuery) {
    * 2. Test
    ***********************************************************************/
   const auto newAssetUuid = "7cdd09dff5f8f586a64a8948cac4937ccc1c7e3362de3125861966cfc7d177d7";
+  const auto publicKey =
+    "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
 
-  ASSERT_FALSE(repository::asset::exists(publicKey,"Currency"));
+ASSERT_FALSE(repository::asset::exists(publicKey,"Currency"));
   ASSERT_TRUE(repository::asset::exists(publicKey,"Currency"));
 
   // Remove chache

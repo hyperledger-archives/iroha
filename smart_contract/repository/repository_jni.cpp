@@ -145,7 +145,7 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_accountInfoFindByUuid
   (JNIEnv *env, jclass, jobject mMap_) {
   const auto mMap = convertJavaHashMapValueString(env, mMap_);
 
-  IROHA_ASSERT_FALSE(mMap.find(tag::Uuid) == mMap.end());
+  IROHA_ASSERT_FALSE(mMap.find(tag::PublicKey) == mMap.end());
   const auto publicKey = mMap.find(tag::PublicKey)->second;
 
   Api::Account account = repository::account::find(publicKey);
