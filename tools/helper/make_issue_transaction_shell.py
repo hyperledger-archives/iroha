@@ -16,7 +16,7 @@ for line in inf.readlines():
         .replace('COMMAND_NAME_C',cc)
 
     if line.find("##CODE") != -1:
-        for i in range(1,4):
+        for i in range(1,5):
             code_in = open("temp_"+str(i))
             outf.write(code_in.read())
     else:

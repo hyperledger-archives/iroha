@@ -1,5 +1,7 @@
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
+execute_process(COMMAND bash "-c" "cd $IROHA_HOME/tools/helper; ./allbuild.sh")
+
 # make config
 add_executable(make_sumeragi make_sumeragi )
 target_link_libraries(make_sumeragi

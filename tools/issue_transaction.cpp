@@ -65,11 +65,11 @@ namespace tools {
 
         void Add( std::string& data, std::vector<std::string>& argv ) {
             if( data == kASSET ) {
-
+                add::asset::issue_transaction( argv );
             } else if( data == kDOMAIN ) {
-
+                add::domain::issue_transaction( argv );
             } else if( data == kACCOUNT ) {
-
+                add::account::issue_transaction( argv );
             } else if( data == kPEER ) {
                 add::peer::issue_transaction( argv );
             } else {
@@ -78,52 +78,52 @@ namespace tools {
         }
         void Transfer( std::string& data, std::vector<std::string>& argv ) {
             if( data == kASSET ) {
-
+                add::asset::issue_transaction( argv );
             } else if( data == kDOMAIN ) {
-
+                add::domain::issue_transaction( argv );
             } else if( data == kACCOUNT ) {
-
+                add::account::issue_transaction( argv );
             } else if( data == kPEER ) {
-
+                add::peer::issue_transaction( argv );
             } else {
                 undefined_data_error( data );
             }
         }
         void Update( std::string& data, std::vector<std::string>& argv ) {
             if( data == kASSET ) {
-
+                add::asset::issue_transaction( argv );
             } else if( data == kDOMAIN ) {
-
+                add::domain::issue_transaction( argv );
             } else if( data == kACCOUNT ) {
-
+                add::account::issue_transaction( argv );
             } else if( data == kPEER ) {
-
+                add::peer::issue_transaction( argv );
             } else {
                 undefined_data_error( data );
             }
         }
         void Remove( std::string& data, std::vector<std::string>& argv ) {
             if( data == kASSET ) {
-
+                add::asset::issue_transaction( argv );
             } else if( data == kDOMAIN ) {
-
+                add::domain::issue_transaction( argv );
             } else if( data == kACCOUNT ) {
-
+                add::account::issue_transaction( argv );
             } else if( data == kPEER ) {
-
+                add::peer::issue_transaction( argv );
             } else {
                 undefined_data_error( data );
             }
         }
         void Contract( std::string& data, std::vector<std::string>& argv ) {
             if( data == kASSET ) {
-
+                add::asset::issue_transaction( argv );
             } else if( data == kDOMAIN ) {
-
+                add::domain::issue_transaction( argv );
             } else if( data == kACCOUNT ) {
-
+                add::account::issue_transaction( argv );
             } else if( data == kPEER ) {
-
+                add::peer::issue_transaction( argv );
             } else {
                 undefined_data_error( data );
             }
