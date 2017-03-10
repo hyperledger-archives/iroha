@@ -16,4 +16,5 @@ target_link_libraries(issue_transaction
     event_with_grpc
     create_objects_helper
     connection_with_grpc
+    transaction_repository
 )

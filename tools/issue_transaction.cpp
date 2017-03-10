@@ -23,7 +23,6 @@ limitations under the License.
 #include <infra/config/peer_service_with_json.hpp>
 #include <service/peer_service.hpp>
 #include <util/logger.hpp>
-#include <json.hpp>
 
 #include "helper/issue_transaction_add.hpp"
 //#include "helper/issue_transaction_contract.hpp"
@@ -34,20 +33,20 @@ limitations under the License.
 
 namespace tools {
     namespace issue_transaction {
-        const std::string ADD = "add";
-        const std::string TRANSFER = "transfer";
-        const std::string UPDATE = "update";
-        const std::string REMOVE = "remove";
-        const std::string CONTRACT = "contract";
+        const std::string kADD = "add";
+        const std::string kTRANSFER = "transfer";
+        const std::string kUPDATE = "update";
+        const std::string kREMOVE = "remove";
+        const std::string kCONTRACT = "contract";
 
-        const std::string ASSET = "asset";
-        const std::string DOMAIN = "domain";
-        const std::string ACCOUNT = "account";
-        const std::string PEER = "peer";
+        const std::string kASSET = "asset";
+        const std::string kDOMAIN = "domain";
+        const std::string kACCOUNT = "account";
+        const std::string kPEER = "peer";
 
         std::string tolower(std::string s) {
             for (char &c : s)
-                c = tolower(c);
+                c = std::tolower(c);
             return s;
         }
 
@@ -58,72 +57,72 @@ namespace tools {
         }
 
         void undefined_data_error( std::string& data ) {
-            logger::error("issue_transaction") << data + " is undefined data";
+            logger::error("issue_transaction") << data << " is undefined data";
             exit(1);
         }
 
 
 
         void Add( std::string& data, std::vector<std::string>& argv ) {
-            if( data == ASSET ) {
+            if( data == kASSET ) {
 
-            } else if( data == DOMAIN ) {
+            } else if( data == kDOMAIN ) {
 
-            } else if( data == ACCOUNT ) {
+            } else if( data == kACCOUNT ) {
 
-            } else if( data == PEER ) {
+            } else if( data == kPEER ) {
                 add::peer::issue_transaction( argv );
             } else {
                 undefined_data_error( data );
             }
         }
         void Transfer( std::string& data, std::vector<std::string>& argv ) {
-            if( data == ASSET ) {
+            if( data == kASSET ) {
 
-            } else if( data == DOMAIN ) {
+            } else if( data == kDOMAIN ) {
 
-            } else if( data == ACCOUNT ) {
+            } else if( data == kACCOUNT ) {
 
-            } else if( data == PEER ) {
+            } else if( data == kPEER ) {
 
             } else {
                 undefined_data_error( data );
             }
         }
         void Update( std::string& data, std::vector<std::string>& argv ) {
-            if( data == ASSET ) {
+            if( data == kASSET ) {
 
-            } else if( data == DOMAIN ) {
+            } else if( data == kDOMAIN ) {
 
-            } else if( data == ACCOUNT ) {
+            } else if( data == kACCOUNT ) {
 
-            } else if( data == PEER ) {
+            } else if( data == kPEER ) {
 
             } else {
                 undefined_data_error( data );
             }
         }
         void Remove( std::string& data, std::vector<std::string>& argv ) {
-            if( data == ASSET ) {
+            if( data == kASSET ) {
 
-            } else if( data == DOMAIN ) {
+            } else if( data == kDOMAIN ) {
 
-            } else if( data == ACCOUNT ) {
+            } else if( data == kACCOUNT ) {
 
-            } else if( data == PEER ) {
+            } else if( data == kPEER ) {
 
             } else {
                 undefined_data_error( data );
             }
         }
         void Contract( std::string& data, std::vector<std::string>& argv ) {
-            if( data == ASSET ) {
+            if( data == kASSET ) {
 
-            } else if( data == DOMAIN ) {
+            } else if( data == kDOMAIN ) {
 
-            } else if( data == ACCOUNT ) {
+            } else if( data == kACCOUNT ) {
 
-            } else if( data == PEER ) {
+            } else if( data == kPEER ) {
 
             } else {
                 undefined_data_error( data );
@@ -147,15 +146,15 @@ int main(int argc, char* argv[]){
     std::vector<std::string> argv_s;
     for(int i=3;i<argc;i++) argv_s.emplace_back( argv[i] );
 
-    if( command == tools::issue_transaction::ADD ) {
+    if( command == tools::issue_transaction::kADD ) {
         tools::issue_transaction::Add( datamodel, argv_s );
-    } else if( command == tools::issue_transaction::TRANSFER ) {
+    } else if( command == tools::issue_transaction::kTRANSFER ) {
         tools::issue_transaction::Transfer( datamodel, argv_s );
-    } else if( command == tools::issue_transaction::UPDATE ) {
+    } else if( command == tools::issue_transaction::kUPDATE ) {
         tools::issue_transaction::Update( datamodel, argv_s );
-    } else if( command == tools::issue_transaction::REMOVE ) {
+    } else if( command == tools::issue_transaction::kREMOVE ) {
         tools::issue_transaction::Remove( datamodel, argv_s );
-    } else if( command == tools::issue_transaction::CONTRACT ) {
+    } else if( command == tools::issue_transaction::kCONTRACT ) {
         tools::issue_transaction::Contract( datamodel, argv_s );
     } else {
         logger::error("issue_transaction") << command + " is undefined command.";
