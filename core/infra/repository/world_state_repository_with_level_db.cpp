@@ -41,7 +41,7 @@ namespace repository {
 
       namespace detail {
 
-              static std::unique_ptr<leveldb::DB> db = nullptr;
+              static leveldb::DB* db = nullptr;
 
               bool loggerStatus(leveldb::Status const status) {
                   if (!status.ok()) {
@@ -52,15 +52,14 @@ namespace repository {
               }
 
               void loadDb() {
-                  leveldb::DB *tmpDb;
                   leveldb::Options options;
                   options.error_if_exists = false;
                   options.create_if_missing = true;
 
+                  logger::info("WorldStateRepositoryWithLeveldb") << "LoadDB";
                   loggerStatus(leveldb::DB::Open(options,
-                            config::IrohaConfigManager::getInstance().getDatabasePath("/tmp/iroha_ledger"),
-                            &tmpDb));
-                  db.reset(tmpDb);
+                        config::IrohaConfigManager::getInstance().getDatabasePath("/tmp/iroha_ledger"),
+                        &db));
               }
           }
 
@@ -68,6 +67,7 @@ namespace repository {
           if (nullptr == detail::db) {
               detail::loadDb();
           }
+          logger::info("WorldStateRepositoryWithLeveldb") << "Add";
           return detail::loggerStatus(detail::db->Put(leveldb::WriteOptions(), key, value));
       }
 
@@ -86,6 +86,7 @@ namespace repository {
       }
 
       std::vector<std::string> findAll(){
+          logger::info("WorldStateRepositoryWithLeveldb") << "findAll";
           if (nullptr == detail::db) {
               detail::loadDb();
           }
