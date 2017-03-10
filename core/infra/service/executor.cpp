@@ -15,29 +15,53 @@ limitations under the License.
 #include <infra/protobuf/api.pb.h>
 #include <iostream>
 
+#include <repository/domain/asset_repository.hpp>
+#include <repository/domain/account_repository.hpp>
+#include <util/logger.hpp>
+
 namespace executor{
 
     using Api::Transaction;
-
-    void add(const Transaction& tx){
-        if(tx.has_asset()){
+    void add(const Transaction &tx) {
+        if (tx.has_asset()) {
             // Add<Asset>
-        }else if(tx.has_domain()){
+            const auto asset = tx.asset();
+            repository::asset::add(tx.senderpubkey(),asset.name(),asset);
+        } else if (tx.has_domain()) {
             // Add<Domain>
-        }else if(tx.has_account()){
+            const auto domain = tx.domain();
+        } else if (tx.has_account()) {
             // Add<Account>
-        }else if(tx.has_peer()){
+            const auto account = tx.account();
+            repository::account::add(account.publickey(), account);
+            logger::info("executor") << "add account";
+        } else if (tx.has_peer()) {
             // Add<Peer>
+            const auto peer = tx.peer();
         }
     }
 
     void transfer(const Transaction& tx){
         if(tx.has_asset()){
             // Transfer<Asset>
+            auto sender = tx.senderpubkey();
+            auto receiver = tx.receivepubkey();
+            const auto assetName = tx.asset().name();
+            auto senderAsset    = repository::asset::find(  sender,assetName);
+            auto receiverAsset  = repository::asset::find(receiver,assetName);
+            // **********************************************************************************
+            // * This is Transfer<Asset>'s logic.
+            // **********************************************************************************
+
+
+            // **********************************************************************************
+            repository::asset::update(sender,assetName,senderAsset);
+            repository::asset::update(receiver,assetName,receiverAsset);
         }else if(tx.has_domain()){
             // Transfer<Domain>
         }else if(tx.has_account()){
             // Transfer<Account>
+            // Add<Account>
         }else if(tx.has_peer()){
             // Transfer<Peer>
         }
@@ -50,6 +74,8 @@ namespace executor{
             // Update<Domain>
         }else if(tx.has_account()){
             // Update<Account>
+            const auto account = tx.account();
+            repository::account::update(account.publickey(), account);
         }else if(tx.has_peer()){
             // Update<Peer>
         }
@@ -58,10 +84,14 @@ namespace executor{
     void remove(const Transaction& tx){
         if(tx.has_asset()){
             // Remove<Asset>
+            const auto name = tx.account().name();
+            repository::asset::remove(tx.senderpubkey(),name);
         }else if(tx.has_domain()){
             // Remove<Domain>
         }else if(tx.has_account()){
             // Remove<Account>
+            const auto account = tx.account();
+            repository::account::remove(account.publickey());
         }else if(tx.has_peer()){
             // Remove<Peer>
         }
@@ -80,8 +110,8 @@ namespace executor{
     }
 
     void execute(const Transaction& tx){
-        std::cout << "Executor\n";
-        std::cout << "DebugString:"<< tx.DebugString() <<"\n";
+        logger::info("executor") << "Executor";
+        logger::info("executor")  << "DebugString:"<< tx.DebugString();
         if(tx.type() == "add"){
             add(tx);
         }else if(tx.type() == "transfer"){
