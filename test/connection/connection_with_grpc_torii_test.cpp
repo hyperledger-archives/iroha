@@ -22,57 +22,42 @@ limitations under the License.
 
 #include <consensus/connection/connection.hpp>
 #include <infra/config/peer_service_with_json.hpp>
+
 #include <transaction_builder/transaction_builder.hpp>
 
-using Api::ConsensusEvent;
 using Api::Transaction;
-
 using txbuilder::TransactionBuilder;
 using type_signatures::Add;
-using type_signatures::Domain;
-using type_signatures::Account;
-using type_signatures::Asset;
-using type_signatures::SimpleAsset;
 using type_signatures::Peer;
 
-
-TEST(ConnectionWithGrpc, Transaction_Add_Domain){
+TEST(ConnectionWithGrpcTorii, Transaction_Add_Peer){
     logger::setLogLevel(logger::LogLevel::Debug);
 
     connection::initialize_peer();
 
     auto server = []() {
-        connection::iroha::Sumeragi::Verify::receive([](const std::string &from, ConsensusEvent &event) {
-            std::cout << event.transaction().DebugString() << std::endl;
-            ASSERT_STREQ( event.transaction().senderpubkey().c_str(),              "karin");
-            ASSERT_STREQ( event.transaction().domain().name().c_str(),              "name");
-            ASSERT_STREQ( event.transaction().domain().ownerpublickey().c_str(), "pubkey1");
+        connection::iroha::Sumeragi::Torii::receive([](const std::string &from, Transaction &transaction) {
+            ASSERT_STREQ( transaction.senderpubkey().c_str(),              "sate");
+            ASSERT_STREQ( transaction.peer().publickey().c_str(),          "light");
+            ASSERT_STREQ( transaction.peer().address().c_str(),            "test_ip");
+            ASSERT_TRUE( transaction.peer().trust().value() == 1.0 );
         });
         connection::run();
     };
 
     std::thread server_thread(server);
 
-    Api::Domain domain;
-    domain.set_ownerpublickey("pubkey1");
-    domain.set_name("name");
-    auto tx = TransactionBuilder<Add<Domain>>()
-            .setSenderPublicKey("karin")
-            .setDomain(domain)
+    auto tx = TransactionBuilder<Add<Peer>>()
+            .setSenderPublicKey("sate")
+            .setPeer( txbuilder::createPeer( "light", "test_ip", txbuilder::createTrust( 1.0, true ) ) )
             .build();
 
-    Api::ConsensusEvent sampleEvent;
-    sampleEvent.mutable_transaction()->CopyFrom(tx);
-
-    connection::iroha::Sumeragi::Verify::send(
-        config::PeerServiceConfig::getInstance().getMyIp(),
-        sampleEvent
+    connection::iroha::PeerService::Sumeragi::send(
+            config::PeerServiceConfig::getInstance().getMyIp(),
+            tx
     );
 
     server_thread.detach();
     connection::finish();
 
 }
-
-
-
