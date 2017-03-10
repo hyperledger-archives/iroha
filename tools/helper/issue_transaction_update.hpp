@@ -102,6 +102,30 @@ namespace tools {
                     }
                 }
             }
+            namespace domain {
+                void issue_transaction(std::vector <std::string> &argv) {
+                    try {
+                        auto
+                        tx = txbuilder::TransactionBuilder < type_signatures::Update < type_signatures::Domain >> ()
+                                .setSenderPublicKey(config::PeerServiceConfig::getInstance().getMyPublicKey())
+                            .setDomain(
+                                txbuilder::createDomain( argv.at(0), argv.at(1) )
+                            )
+                                .build();
+                        connection::iroha::PeerService::Sumeragi::send(
+                                config::PeerServiceConfig::getInstance().getMyIp(),
+                                tx
+                        );
+                    } catch (const std::out_of_range &oor) {
+                        logger::error("issue_transaction") << "Not enough elements.";
+                        logger::error("issue_transaction") << oor.what();
+                        exit(1);
+                    } catch (...) {
+                        logger::error("issue_transaction") << "etc exception";
+                        exit(1);
+                    }
+                }
+            }
         }
     }
 }
