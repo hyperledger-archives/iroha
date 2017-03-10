@@ -14,6 +14,7 @@ limitations under the License.
 
 #include <infra/protobuf/api.pb.h>
 #include <iostream>
+#include <infra/config/peer_service_with_json.hpp>
 
 #include <repository/domain/asset_repository.hpp>
 #include <repository/domain/account_repository.hpp>
@@ -35,9 +36,21 @@ namespace executor{
             const auto account = tx.account();
             repository::account::add(account.publickey(), account);
             logger::info("executor") << "add account";
-        } else if (tx.has_peer()) {
-            // Add<Peer>
-            const auto peer = tx.peer();
+        } else if( tx.has_peer() ) {
+            // Temporary - to operate peer service
+            peer::Node query_peer(
+                    tx.peer().address(),
+                    tx.peer().publickey(),
+                    tx.peer().trust().value(),
+                    tx.peer().trust().isok()
+            );
+            if( tx.type() == "Add" ) {
+                config::PeerServiceConfig::getInstance().addPeer( query_peer );
+            } else if( tx.type() == "Remove" ) {
+                config::PeerServiceConfig::getInstance().removePeer( query_peer.getPublicKey() );
+            } else if( tx.type() == "Update" ) {
+                config::PeerServiceConfig::getInstance().updatePeer( query_peer.getPublicKey(), query_peer );
+            }
         }
     }
 

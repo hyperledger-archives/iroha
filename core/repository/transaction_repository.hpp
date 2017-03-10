@@ -26,7 +26,7 @@ See the License for the specific language governing permissions and
 #include <consensus/consensus_event.hpp>
 #include <crypto/base64.hpp>
 
-#include "world_state_repository.hpp"
+#include <repository/world_state_repository.hpp>
 
 namespace repository{
 
@@ -38,7 +38,7 @@ namespace repository{
 
         std::vector<Transaction> findAll();
 
-        Transaction find(std::string hash);
+        Transaction find(const std::string& key);
 
     }
 }

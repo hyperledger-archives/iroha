@@ -30,14 +30,13 @@ limitations under the License.
 
 #include <validation/transaction_validator.hpp>
 #include <service/peer_service.hpp>
+#include <repository/transaction_repository.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-#include "connection/connection.hpp"
+#include <consensus/connection/connection.hpp>
 
 #include <service/executor.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
-
-#include "connection/connection.hpp"
 
 /**
 * |ーーー|　|ーーー|　|ーーー|　|ーーー|
@@ -182,8 +181,7 @@ namespace sumeragi {
 
             this->numValidatingPeers = this->validatingPeers.size();
             // maxFaulty = Default to approx. 1/3 of the network.
-            this->maxFaulty = config::IrohaConfigManager::getInstance()
-                    .getMaxFaultyPeers(this->numValidatingPeers / 3);
+            this->maxFaulty = config::PeerServiceConfig::getInstance().getMaxFaulty();
             this->proxyTailNdx = this->maxFaulty * 2 + 1;
 
             if (this->validatingPeers.empty()) {
@@ -243,6 +241,7 @@ namespace sumeragi {
             if(event.status() == "commited") {
                 if(txCache.find(detail::hash(event.transaction())) == txCache.end()) {
                     txCache[detail::hash(event.transaction())] = "commited";
+                    repository::transaction::add(detail::hash(event.transaction()), event.transaction());
                     executor::execute(event.transaction());
                 }
             }else{
@@ -273,7 +272,6 @@ namespace sumeragi {
         return 0l;
         //return merkle_transaction_repository::getLastLeafOrder() + 1;
     }
-
 
     void processTransaction(ConsensusEvent& event) {
 

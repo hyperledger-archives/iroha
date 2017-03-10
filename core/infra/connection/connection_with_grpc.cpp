@@ -18,6 +18,7 @@ limitations under the License.
 
 #include <consensus/connection/connection.hpp>
 #include <util/logger.hpp>
+#include <util/datetime.hpp>
 #include <service/peer_service.hpp>
 
 #include <infra/config/peer_service_with_json.hpp>
@@ -36,12 +37,17 @@ using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::ClientContext;
 using grpc::Status;
+using grpc::ServerReader;
 
 namespace connection {
 
     using Api::Sumeragi;
+    using Api::Izanami;
     using Api::TransactionRepository;
     using Api::AssetRepository;
+
+    using Api::Query;
+    using Api::StatusResponse;
 
 
     using Api::Query;
@@ -102,8 +108,35 @@ namespace connection {
                 > receivers;
             }
         };
+        namespace Izanami {
+            namespace Izanagi {
+                std::vector<
+                        std::function<void(
+                                const std::string& from,
+                                TransactionResponse& txResponse
+                        )>
+                > receivers;
+            }
+        }
         namespace TransactionRepository {
             namespace find {
+                std::vector<
+                        std::function<void(
+                                const std::string& from,
+                                Query& message
+                        )>
+                > receivers;
+            };
+            namespace fetch {
+                std::vector<
+                        std::function<void(
+                                const std::string& from,
+                                Query& message
+                        )>
+                > receivers;
+            };
+
+            namespace fetchStream {
                 std::vector<
                         std::function<void(
                                 const std::string& from,
@@ -166,10 +199,50 @@ namespace connection {
             }
         }
 
+        bool Kagami() {
+            StatusResponse response;
+            ClientContext context;
+            Query query;
+            Status status = stub_->Kagami(&context, query, &response);
+            if (status.ok()) {
+                logger::info("connection")  << "response: " << response.value();
+                return true;
+            } else {
+                logger::error("connection") << status.error_code() << ": " << status.error_message();
+                return false;
+            }
+        }
+
     private:
         std::unique_ptr<Sumeragi::Stub> stub_;
     };
 
+    class IzanamiConnectionClient {
+    public:
+        explicit IzanamiConnectionClient(std::shared_ptr<Channel> channel)
+        : stub_(Izanami::NewStub(channel)) {}
+
+        bool Izanagi(const TransactionResponse& txResponse) {
+            StatusResponse response;
+            logger::info("connection")  <<  "Operation";
+            logger::info("connection")  <<  "size: "    <<  txResponse.transaction_size();
+            logger::info("connection")  <<  "message: "    <<  txResponse.message();
+
+            ClientContext context;
+            Status status = stub_->Izanagi(&context, txResponse, &response);
+
+            if (status.ok()) {
+                logger::info("connection")  << "response: " << response.value();
+                return true;
+            } else {
+                logger::error("connection") << status.error_code() << ": " << status.error_message();
+                return false;
+            }
+        }
+
+    private:
+        std::unique_ptr<Izanami::Stub> stub_;
+    };
 
     class SumeragiConnectionServiceImpl final : public Sumeragi::Service {
     public:
@@ -197,9 +270,9 @@ namespace connection {
         }
 
         Status Torii(
-                ServerContext*      context,
-                const Transaction*  transaction,
-                StatusResponse*     response
+            ServerContext*      context,
+            const Transaction*  transaction,
+            StatusResponse*     response
         ) override {
             RecieverConfirmation confirm;
             auto dummy = "";
@@ -214,6 +287,42 @@ namespace connection {
             return Status::OK;
         }
 
+        Status Kagami(
+            ServerContext*      context,
+            const Query*          query,
+            StatusResponse*     response
+        ) override {
+            response->set_message("OK, no problem!");
+            response->set_value("Alive");
+            response->set_timestamp(datetime::unixtime());
+            return Status::OK;
+        }
+
+    };
+
+    class IzanamiConnectionServiceImpl final : public Izanami::Service {
+    public:
+
+        Status Izanagi(
+                ServerContext*          context,
+                const TransactionResponse*   txResponse,
+                StatusResponse*         response
+        ) override {
+            TransactionResponse txres;
+            txres.CopyFrom(txResponse->default_instance());
+            txres.set_message(txResponse->message());
+            txres.set_code(txResponse->code());
+            txres.mutable_transaction()->CopyFrom(txResponse->transaction());
+            logger::info("connection") << "size: " << txres.transaction_size();
+            auto dummy = "";
+            for (auto& f: iroha::Izanami::Izanagi::receivers){
+                f(dummy, txres);
+            }
+            response->set_message("OK, no problem!");
+            response->set_value("OK");
+            response->set_timestamp(datetime::unixtime());
+            return Status::OK;
+        }
     };
 
     class TransactionRepositoryServiceImpl final : public TransactionRepository::Service {
@@ -234,11 +343,40 @@ namespace connection {
             response->set_message("OK");
             return Status::OK;
         }
+
+        Status fetch(
+            ServerContext*          context,
+            const Query*              query,
+            TransactionResponse*   response
+        ) override {
+            Query q;
+            q.CopyFrom(*query);
+            auto dummy = "";
+            for (auto& f: iroha::TransactionRepository::find::receivers){
+                f(dummy, q);
+            }
+            response->set_message("OK");
+            return Status::OK;
+        }
+
+        Status fetchStream(
+            ServerContext* context,
+            ServerReader<Transaction>* reader,
+            StatusResponse* response
+        ) override {
+            Query q;
+            std::vector<Transaction> txs;
+            Transaction tx;
+            while(reader->Read(&tx)){
+                txs.push_back(tx);
+            }
+            response->set_message("OK");
+            return Status::OK;
+        }
     };
 
     class AssetRepositoryServiceImpl final : public AssetRepository::Service {
     public:
-
         Status find(
             ServerContext*          context,
             const Query*              query,
@@ -323,7 +461,8 @@ namespace connection {
 
 
         namespace PeerService {
-            namespace Torii {
+
+            namespace Sumeragi {
                 bool send(
                         const std::string &ip,
                         const Transaction &transaction
@@ -344,17 +483,86 @@ namespace connection {
                         return false;
                     }
                 }
+
+                bool ping(
+                        const std::string &ip
+                ) {
+                    auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
+                    if (find(receiver_ips.begin(), receiver_ips.end(), ip) != receiver_ips.end()) {
+                        SumeragiConnectionClient client(
+                                grpc::CreateChannel(
+                                        ip + ":" + std::to_string(
+                                                config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)),
+                                        grpc::InsecureChannelCredentials()
+                                )
+                        );
+                        return client.Kagami();
+                    } else {
+                        logger::error("Connection_with_grpc") << "Unexpected ip: " << ip;
+                        return false;
+                    }
+                }
+            }
+
+            namespace Izanami {
+                bool send(
+                        const std::string& ip,
+                        const TransactionResponse &txResponse
+                ) {
+                    IzanamiConnectionClient client(
+                            grpc::CreateChannel(
+                                    ip + ":" + std::to_string(
+                                            config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)),
+                                    grpc::InsecureChannelCredentials()
+                            )
+                    );
+                    return client.Izanagi(txResponse);
+                }
+            }
+        }
+
+
+        namespace Izanami {
+            namespace Izanagi {
+                bool receive(const std::function<void(
+                        const std::string &,
+                        TransactionResponse&)
+                > &callback) {
+                    receivers.push_back(callback);
+                }
             }
         }
 
         namespace TransactionRepository {
-            namespace find {
-                TransactionRepositoryServiceImpl service;
+            TransactionRepositoryServiceImpl service;
 
+            namespace find {
                 bool receive(
-                        const std::function<void(
-                                const std::string &,
-                                Query &)> &callback
+                    const std::function<void(
+                        const std::string &,
+                        Query &)> &callback
+                ) {
+                    receivers.push_back(callback);
+                    return true;
+                }
+            };
+
+            namespace fetch {
+                bool receive(
+                    const std::function<void(
+                        const std::string &,
+                        Query &)> &callback
+                ) {
+                    receivers.push_back(callback);
+                    return true;
+                }
+            };
+
+            namespace fetchStream {
+                bool receive(
+                    const std::function<void(
+                        const std::string &,
+                        Query &)> &callback
                 ) {
                     receivers.push_back(callback);
                     return true;
@@ -385,7 +593,7 @@ namespace connection {
         std::string server_address("0.0.0.0:" + std::to_string(config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)));
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
         builder.RegisterService(&iroha::Sumeragi::service);
-        builder.RegisterService(&iroha::TransactionRepository::find::service);
+        builder.RegisterService(&iroha::TransactionRepository::service);
         builder.RegisterService(&iroha::AssetRepository::find::service);
     }
 
