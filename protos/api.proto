@@ -71,6 +71,7 @@ message StatusResponse {
 message Query{
   string type                   = 1;
   map<string, BaseObject> value = 2;
+  string senderPubkey = 3;
 }
 
 message BaseObject {
