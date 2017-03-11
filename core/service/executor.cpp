@@ -35,6 +35,16 @@ namespace executor{
             // Add<Account>
             const auto account = tx.account();
             repository::account::add(account.publickey(), account);
+
+            // Add default asset
+            auto asset =Api::Asset();
+            auto base  =Api::BaseObject();
+            base.set_valueint(100);
+            asset.set_name("iroha");
+            asset.set_domain("default");
+            (*asset.mutable_value())["value"] = base;
+            repository::asset::add(tx.senderpubkey(),asset.name(),asset);
+
             logger::info("executor") << "add account";
         } else if( tx.has_peer() ) {
             // Temporary - to operate peer service
@@ -60,16 +70,26 @@ namespace executor{
             auto sender = tx.senderpubkey();
             auto receiver = tx.receivepubkey();
             const auto assetName = tx.asset().name();
-            auto senderAsset    = repository::asset::find(  sender,assetName);
-            auto receiverAsset  = repository::asset::find(receiver,assetName);
-            // **********************************************************************************
-            // * This is Transfer<Asset>'s logic.
-            // **********************************************************************************
-
-
-            // **********************************************************************************
-            repository::asset::update(sender,assetName,senderAsset);
-            repository::asset::update(receiver,assetName,receiverAsset);
+            if(tx.asset().value().find("value") != tx.asset().value().end()) {
+                const auto value = tx.asset().value().at("value").valueint();
+                auto senderAsset = repository::asset::find(sender, assetName);
+                auto receiverAsset = repository::asset::find(receiver, assetName);
+                // **********************************************************************************
+                // * This is Transfer<Asset>'s logic.
+                // **********************************************************************************
+                if(senderAsset.value().find("value") != senderAsset.value().end() &&
+                    receiverAsset.value().find("value") != receiverAsset.value().end()){
+                    auto senderValue = senderAsset.value().at("value").valueint();
+                    auto receiverValue = receiverAsset.value().at("value").valueint();
+                    if(senderValue > value){
+                        (*senderAsset.mutable_value())["value"].set_valueint(senderValue - value);
+                        (*receiverAsset.mutable_value())["value"].set_valueint(receiverValue + value);
+                    }
+                }
+                // **********************************************************************************
+                repository::asset::update(sender, assetName, senderAsset);
+                repository::asset::update(receiver, assetName, receiverAsset);
+            }
         }else if(tx.has_domain()){
             // Transfer<Domain>
         }else if(tx.has_account()){
