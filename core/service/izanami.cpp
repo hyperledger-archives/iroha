@@ -22,6 +22,7 @@ limitations under the License.
 #include "executor.hpp"
 #include <infra/protobuf/api.pb.h>
 #include <consensus/connection/connection.hpp>
+#include <service/peer_service.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 #include <crypto/hash.hpp>
@@ -144,6 +145,9 @@ namespace izanami {
                 event.finished();
                 logger::explore("izanami") << "Finished Receive ALl Transaction";
                 logger::explore("izanami") << "Closed Izanami";
+                for( auto&& p : config::PeerServiceConfig::getInstance().getPeerList() ) {
+                    logger::explore("izanami_initialized_nodes") << p->getIP() + " : " + p->getPublicKey() + " : " + p->getPublicKey() + " : " + std::to_string( p->getTrustScore() );
+                }
             } else {
                 detail::storeTransactionResponse(event);
             }
@@ -163,8 +167,8 @@ namespace izanami {
     //invoke when initialize Peer that to config Participation on the way
     void startIzanami() {
         logger::explore("izanami") << "startIzanami";
-        if( config::PeerServiceConfig::getInstance().isExistPublicKey( config::PeerServiceConfig::getInstance().getMyPublicKey() ) ) {
-            logger::explore("izanami") << "I am start up Iroha Peer.";
+        if( config::IrohaConfigManager::getInstance().getActiveStart(false) ) {
+            logger::explore("izanami") << "I am Active Start Iroha Peer.";
             logger::explore("izanami") << "Closed Izanami";
             return;
         }
