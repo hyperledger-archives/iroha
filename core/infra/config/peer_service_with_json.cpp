@@ -217,6 +217,7 @@ void PeerServiceConfig::finishedInitializePeer() {
             .setPeer(txbuilder::createPeer( getMyPublicKey(), getMyIp(), txbuilder::createTrust(0.0, true)))
             .build();
     connection::iroha::PeerService::Sumeragi::send( leader_ip, txPeer );
+    updatePeer( getMyPublicKey(), peer::Node(getMyIp(),getMyPublicKey(),0.0, true) );
 }
 
 // invoke to issue transaction

@@ -44,13 +44,9 @@ namespace executor{
                     tx.peer().trust().value(),
                     tx.peer().trust().isok()
             );
-            if( tx.type() == "Add" ) {
-                config::PeerServiceConfig::getInstance().addPeer( query_peer );
-            } else if( tx.type() == "Remove" ) {
-                config::PeerServiceConfig::getInstance().removePeer( query_peer.getPublicKey() );
-            } else if( tx.type() == "Update" ) {
-                config::PeerServiceConfig::getInstance().updatePeer( query_peer.getPublicKey(), query_peer );
-            }
+            config::PeerServiceConfig::getInstance().addPeer( query_peer );
+            config::PeerServiceConfig::getInstance().removePeer( query_peer.getPublicKey() );
+            config::PeerServiceConfig::getInstance().updatePeer( query_peer.getPublicKey(), query_peer );
         }
     }
 
@@ -77,6 +73,7 @@ namespace executor{
             // Add<Account>
         }else if(tx.has_peer()){
             // Transfer<Peer>
+            // nothing this transaction
         }
     }
 
@@ -90,6 +87,14 @@ namespace executor{
             const auto account = tx.account();
             repository::account::update(account.publickey(), account);
         }else if(tx.has_peer()){
+            // Temporary - to operate peer service
+            peer::Node query_peer(
+                    tx.peer().address(),
+                    tx.peer().publickey(),
+                    tx.peer().trust().value(),
+                    tx.peer().trust().isok()
+            );
+            config::PeerServiceConfig::getInstance().updatePeer( query_peer.getPublicKey(), query_peer );
             // Update<Peer>
         }
     }
@@ -106,7 +111,14 @@ namespace executor{
             const auto account = tx.account();
             repository::account::remove(account.publickey());
         }else if(tx.has_peer()){
-            // Remove<Peer>
+            // Temporary - to operate peer service
+            peer::Node query_peer(
+                    tx.peer().address(),
+                    tx.peer().publickey(),
+                    tx.peer().trust().value(),
+                    tx.peer().trust().isok()
+            );
+            config::PeerServiceConfig::getInstance().removePeer( query_peer.getPublicKey() );
         }
     }
 
@@ -119,6 +131,7 @@ namespace executor{
             // Contract<Account>
         }else if(tx.has_peer()){
             // Contract<Peer>
+            // nothing this transaction
         }
     }
 
