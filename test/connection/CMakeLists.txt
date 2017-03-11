@@ -9,6 +9,7 @@ target_link_libraries(connection_grpc_test
     ed25519
     gtest
     create_objects_helper
+    transaction_repository
 )
 add_test(
     NAME connection_grpc_test

@@ -23,14 +23,31 @@ limitations under the License.
 #include <vector>
 
 namespace repository {
-namespace account {
-std::string add(const std::string &publicKey, const std::string &name,
-                const std::vector<std::string> &assets);
-bool attach(const std::string &uuid, const std::string &asset);
-bool update(const std::string &uuid, const std::string &name, const std::vector<std::string> &assets);
-bool remove(const std::string &uuid);
-Api::Account findByUuid(const std::string &uuid);
-bool exists(const std::string &uuid);
-}
+
+    namespace account {
+
+        bool add(
+            const std::string &publicKey,
+            const Api::Account &account
+        );
+
+        bool update(
+            const std::string &publicKey,
+            const Api::Account &account
+        );
+
+        bool remove(
+            const std::string &publicKey
+        );
+
+        Api::Account find(
+            const std::string &publicKey
+        );
+        bool exists(
+            const std::string &uuid
+        );
+
+    }
+
 }
 #endif // __CORE_REPOSITORY_DOMAIN_ACCOUNT_REPOSITORY_HPP__

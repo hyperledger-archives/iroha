@@ -75,4 +75,6 @@ TEST(ConnectionWithGrpc, Transaction_Add_Domain){
 
     server_thread.detach();
     connection::finish();
+
 }
+

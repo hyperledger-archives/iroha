@@ -28,17 +28,12 @@ IrohaConfigManager& IrohaConfigManager::getInstance() {
 template <typename T>
 T IrohaConfigManager::getParam(const std::string& param,
                                const T& defaultValue) {
-  if (auto config = openConfig(getConfigName())) {
-    return config->value(param, defaultValue);
-  }
-  return defaultValue;
+  return getConfigData().value(param, defaultValue);
 }
 
 std::string IrohaConfigManager::getConfigName() { return "config/config.json"; }
 
-std::string IrohaConfigManager::getDatabasePath(
-        const std::string& defaultValue
-) {
+std::string IrohaConfigManager::getDatabasePath(const std::string& defaultValue) {
   return this->getParam<std::string>("database_path", defaultValue);
 }
 

@@ -28,28 +28,54 @@ namespace config {
 
 class PeerServiceConfig : config::AbstractConfigManager {
  private:
-  static std::vector<peer::Node> peerList;
   PeerServiceConfig();
-  void initialziePeerList_from_json();
 
-  bool isExistIP( const std::string& );
-  bool isExistPublicKey( const std::string& );
-  std::vector<peer::Node>::iterator findPeerIP( const std::string& ip );
-  std::vector<peer::Node>::iterator findPeerPublicKey( const std::string& publicKey );
+  std::string getMyPublicKeyWithDefault(const std::string& defaultValue);
+  std::string getMyPrivateKeyWithDefault(const std::string& defaultValue);
+  std::string getMyIpWithDefault(const std::string& defaultValue);
+  double getMaxTrustScoreWithDefault(double defaultValue);
+  size_t getMaxFaultyScoreWithDefault(size_t defaultValue);
+  std::vector<json> getGroup();
+
  protected:
   void parseConfigDataFromString(std::string&& jsonStr) override;
 
  public:
   static PeerServiceConfig &getInstance();
 
+ public:
+
+ /*
+   TODO: For ease of moving peer service to another class or namespace,
+       peer service config is tempolary separeted from below.
+  */
+
+ private:
+  static std::vector<peer::Node> peerList;
+
+  void initialziePeerList_from_json();
+
+  bool isExistIP( const std::string& );
+  bool isExistPublicKey( const std::string& );
+  std::vector<peer::Node>::iterator findPeerIP( const std::string& ip );
+  std::vector<peer::Node>::iterator findPeerPublicKey( const std::string& publicKey );
+
+ public:
   std::string getMyPublicKey();
   std::string getMyPrivateKey();
   std::string getMyIp();
   double getMaxTrustScore();
+  size_t getMaxFaulty();
 
   std::vector<std::unique_ptr<peer::Node>> getPeerList();
   std::vector<std::string> getIpList();
 
+
+  // check are broken? peer
+  void checkBrokenPeer( const std::string& ip );
+
+  // Initialize
+  void finishedInitializePeer();
 
   // invoke to issue transaction
   void toIssue_addPeer( const peer::Node& );
@@ -62,6 +88,9 @@ class PeerServiceConfig : config::AbstractConfigManager {
   bool removePeer( const std::string &publicKey );
   bool updatePeer( const std::string& publicKey, const peer::Node& peer );
 
+  //invoke next to addPeer
+  bool sendAllTransactionToNewPeer( const peer::Node& );
+
   // invoke when validator transaction
   bool validate_addPeer( const peer::Node& );
   bool validate_removePeer( const std::string &publicKey );
@@ -69,6 +98,7 @@ class PeerServiceConfig : config::AbstractConfigManager {
 
   // equatl to isSumeragi
   bool isLeaderMyPeer();
+  std::unique_ptr<peer::Node> leaderPeer();
 
   virtual std::string getConfigName();
 };

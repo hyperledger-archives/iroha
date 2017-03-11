@@ -52,6 +52,8 @@ namespace repository {
       );
 
       bool exists(const std::string &key);
+
+      void finish();
   };
 
 }; // namespace repository

@@ -30,14 +30,13 @@ limitations under the License.
 
 #include <validation/transaction_validator.hpp>
 #include <service/peer_service.hpp>
+#include <repository/transaction_repository.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-#include "connection/connection.hpp"
+#include <consensus/connection/connection.hpp>
 
 #include <service/executor.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
-
-#include "connection/connection.hpp"
 
 /**
 * |ーーー|　|ーーー|　|ーーー|　|ーーー|
@@ -182,8 +181,7 @@ namespace sumeragi {
 
             this->numValidatingPeers = this->validatingPeers.size();
             // maxFaulty = Default to approx. 1/3 of the network.
-            this->maxFaulty = config::IrohaConfigManager::getInstance()
-                    .getMaxFaultyPeers(this->numValidatingPeers / 3);
+            this->maxFaulty = config::PeerServiceConfig::getInstance().getMaxFaulty();
             this->proxyTailNdx = this->maxFaulty * 2 + 1;
 
             if (this->validatingPeers.empty()) {
@@ -224,7 +222,7 @@ namespace sumeragi {
         context = std::make_unique<Context>();
 
         connection::iroha::Sumeragi::Torii::receive([](const std::string& from, Transaction& transaction) {
-            logger::info("sumeragi") << "receive!";
+            logger::info("sumeragi") << "receive! Torii";
             ConsensusEvent event;
             event.set_status("uncommit");
             event.mutable_transaction()->CopyFrom(transaction);
@@ -239,12 +237,12 @@ namespace sumeragi {
         connection::iroha::Sumeragi::Verify::receive([](const std::string& from, ConsensusEvent& event) {
             logger::info("sumeragi") << "receive!";
             logger::info("sumeragi") << "received message! sig:[" << event.eventsignatures_size() << "]";
-
             logger::info("sumeragi") << "received message! status:[" << event.status() << "]";
             if(event.status() == "commited") {
                 if(txCache.find(detail::hash(event.transaction())) == txCache.end()) {
-                    executor::execute(event.transaction());
                     txCache[detail::hash(event.transaction())] = "commited";
+                    repository::transaction::add(detail::hash(event.transaction()), event.transaction());
+                    executor::execute(event.transaction());
                 }
             }else{
                 // send processTransaction(event) as a task to processing pool
@@ -274,7 +272,6 @@ namespace sumeragi {
         return 0l;
         //return merkle_transaction_repository::getLastLeafOrder() + 1;
     }
-
 
     void processTransaction(ConsensusEvent& event) {
 

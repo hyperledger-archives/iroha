@@ -10,7 +10,8 @@ You may obtain a copy of the License at
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
+See the License for the specific language gover
+ning permissions and
 limitations under the License.
 */
 
@@ -20,14 +21,13 @@ limitations under the License.
 #include <crypto/base64.hpp>
 #include <util/logger.hpp>
 #include <util/exception.hpp>
-#include <util/use_optional.hpp>
 #include <consensus/connection/connection.hpp>
 #include <json.hpp>
 #include <infra/protobuf/api.pb.h>
 #include <transaction_builder/transaction_builder.hpp>
+#include <repository/transaction_repository.hpp>
 #include "peer_service_with_json.hpp"
 #include "config_format.hpp"
-#include "../../util/exception.hpp"
 
 using PeerServiceConfig = config::PeerServiceConfig;
 using txbuilder::TransactionBuilder;
@@ -39,17 +39,8 @@ using nlohmann::json;
 
 std::vector<peer::Node> PeerServiceConfig::peerList;
 
-PeerServiceConfig::PeerServiceConfig() {}
-
-void PeerServiceConfig::initialziePeerList_from_json(){
-  if (!peerList.empty()) return;
-  if (auto config = openConfig(getConfigName())) {
-    for (const auto& peer : (*config)["group"].get<std::vector<json>>()) {
-      peerList.emplace_back( peer["ip"].get<std::string>(),
-                             peer["publicKey"].get<std::string>(),
-                             1.0);
-    }
-  }
+PeerServiceConfig::PeerServiceConfig() {
+    initialziePeerList_from_json();
 }
 
 PeerServiceConfig& PeerServiceConfig::getInstance() {
@@ -57,29 +48,115 @@ PeerServiceConfig& PeerServiceConfig::getInstance() {
   return serviceConfig;
 }
 
-std::string PeerServiceConfig::getMyPublicKey() {
-  if (auto config = openConfig(getConfigName())) {
-    return (*config)["me"]["publicKey"].get<std::string>();
+// TODO: I could not use getParam method because of sumeragi.json is hierarchical.
+// TODO: Which config file these parameter should be set? It's not sumeragi but hijiri.
+
+std::string PeerServiceConfig::getMyPublicKeyWithDefault(const std::string& defaultValue) {
+  auto config = this->getConfigData();
+  if (!config.is_null()) {
+    return this->getConfigData()["me"].value("publicKey", defaultValue);
   }
-  return "";
+  return defaultValue;
+}
+
+std::string PeerServiceConfig::getMyPrivateKeyWithDefault(const std::string& defaultValue) {
+  auto config = this->getConfigData();
+  if (!config.is_null()) {
+    return this->getConfigData()["me"].value("privateKey", defaultValue);
+  }
+  return defaultValue;
+}
+
+std::string PeerServiceConfig::getMyIpWithDefault(const std::string& defaultValue) {
+  auto config = this->getConfigData();
+  if (!config.is_null()) {
+    return this->getConfigData()["me"].value("ip", defaultValue);
+  }
+  return defaultValue;
+}
+
+double PeerServiceConfig::getMaxTrustScoreWithDefault(double defaultValue) {
+  return this->getConfigData().value("max_trust_score", defaultValue);
+}
+
+void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
+  try {
+    if (!ConfigFormat::getInstance().ensureFormatSumeragi(jsonStr)) {
+      throw exception::ParseFromStringException(getConfigName());
+    }
+    _configData = json::parse(std::move(jsonStr));
+  } catch (exception::ParseFromStringException& e) {
+    logger::warning("peer service config") << e.what();
+    logger::warning("peer service config") << getConfigName() << " is set to be default.";
+  }
+}
+
+std::string PeerServiceConfig::getConfigName() {
+  return "config/sumeragi.json";
+}
+
+/*
+  TODO: For ease of moving peer service to another class or namespace,
+      peer service config is tempolary separeted from below.
+*/
+
+std::string PeerServiceConfig::getMyPublicKey() {
+  return this->getMyPublicKeyWithDefault("Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU=");
 }
 
 std::string PeerServiceConfig::getMyPrivateKey() {
-  if (auto config = openConfig(getConfigName())) {
-    return (*config)["me"]["privateKey"].get<std::string>();
-  }
-  return "";
+  return this->getMyPrivateKeyWithDefault("aGIuSZRhnGfFyeoKNm/NbTylnAvRfMu3KumOEfyT2HPf36jSF22m2JXWrdCmKiDoshVqjFtZPX3WXaNuo9L8WA==");
 }
 
 std::string PeerServiceConfig::getMyIp() {
-  if (auto config = openConfig(getConfigName())) {
-    return (*config)["me"]["ip"].get<std::string>();
-  }
-  return "";
+  return this->getMyIpWithDefault("172.17.0.6");
 }
 
 double PeerServiceConfig::getMaxTrustScore() {
-    return 1.0; // WIP　to support trustRate = 1.0
+  return this->getMaxTrustScoreWithDefault(1.0); // WIP to support trustRate = 1.0
+}
+
+size_t PeerServiceConfig::getMaxFaulty() {
+  return std::max( 0, ((int)this->getPeerList().size()-1) / 3 );
+}
+
+// TODO: this is temporary solution
+std::vector<json> PeerServiceConfig::getGroup() {
+  auto config = this->getConfigData();
+  if (!config.is_null()) {
+     return getConfigData()["group"].get<std::vector<json>>();
+  }
+  return std::vector<json>({
+      json({
+        {"ip","172.17.0.3"},
+        {"name","mizuki"},
+        {"publicKey","jDQTiJ1dnTSdGH+yuOaPPZIepUj1Xt3hYOvLQTME3V0="}
+      }),
+      json({
+        {"ip","172.17.0.4"},
+        {"name","natori"},
+        {"publicKey","Q5PaQEBPQLALfzYmZyz9P4LmCNfgM5MdN1fOuesw3HY="}
+      }),
+      json({
+        {"ip","172.17.0.5"},
+        {"name","kabohara"},
+        {"publicKey","f5MWZUZK9Ga8XywDia68pH1HLY/Ts0TWBHsxiFDR0ig="}
+      }),
+      json({
+        {"ip","172.17.0.6"},
+        {"name","samari"},
+        {"publicKey","Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU="}
+      })
+    });
+}
+
+void PeerServiceConfig::initialziePeerList_from_json(){
+  if (!peerList.empty()) return;
+  for (const auto& peer : getGroup()) {
+    peerList.emplace_back( peer["ip"].get<std::string>(),
+                           peer["publicKey"].get<std::string>(),
+                           1.0);
+  }
 }
 
 bool PeerServiceConfig::isExistIP( const std::string &ip ) {
@@ -108,7 +185,7 @@ std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
     nodes.push_back( std::make_unique<peer::Node>( node.getIP(), node.getPublicKey(), node.getTrustScore() ) );
   sort( nodes.begin(), nodes.end(),
         []( const std::unique_ptr<peer::Node> &a, const std::unique_ptr<peer::Node> &b ) { return a->getTrustScore() > b->getTrustScore(); } );
-    return nodes;
+  return nodes;
 }
 std::vector<std::string> PeerServiceConfig::getIpList() {
   std::vector<std::string> ret_ips;
@@ -117,39 +194,65 @@ std::vector<std::string> PeerServiceConfig::getIpList() {
   return ret_ips;
 }
 
+
+// check are broken? peer
+void PeerServiceConfig::checkBrokenPeer( const std::string& ip ) {
+    if (!isExistIP(ip)) return;
+    auto check_peer_it = findPeerIP( ip );
+    if ( !connection::iroha::PeerService::Sumeragi::ping( ip )) {
+        if( check_peer_it->getTrustScore() < 0.0 ) {
+            toIssue_removePeer( check_peer_it->getPublicKey() );
+        } else {
+            toIssue_distructPeer( check_peer_it->getPublicKey() );
+        }
+    } else {
+        toIssue_creditPeer( check_peer_it->getPublicKey() );
+    }
+}
+
+void PeerServiceConfig::finishedInitializePeer() {
+    std::string leader_ip = leaderPeer()->getIP();
+    auto txPeer = TransactionBuilder<Update<Peer>>()
+            .setSenderPublicKey(getMyPublicKey())
+            .setPeer(txbuilder::createPeer( getMyPublicKey(), getMyIp(), txbuilder::createTrust(0.0, true)))
+            .build();
+    connection::iroha::PeerService::Sumeragi::send( leader_ip, txPeer );
+}
+
 // invoke to issue transaction
 void PeerServiceConfig::toIssue_addPeer( const peer::Node& peer ) {
     if( isExistIP(peer.getIP()) || isExistPublicKey(peer.getPublicKey()) ) return;
     auto txPeer = TransactionBuilder<Add<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
-            .setPeer( txbuilder::createPeer( peer.getPublicKey(), peer.getIP(), txbuilder::createTrust(peer.getTrustScore(),true) ) )
+            .setPeer( txbuilder::createPeer( peer.getPublicKey(), peer.getIP(), txbuilder::createTrust(getMaxTrustScore(),false ) ) )
             .build();
-    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+    connection::iroha::PeerService::Sumeragi::send( getMyPublicKey(), txPeer );
 }
 void PeerServiceConfig::toIssue_distructPeer( const std::string &publicKey ) {
-    auto it = findPeerPublicKey( publicKey );
+    if( !isExistPublicKey(publicKey) ) return;
     auto txPeer = TransactionBuilder<Update<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
-            .setPeer(txbuilder::createPeer(publicKey, "", txbuilder::createTrust(it->getTrustScore()-1.0, true)))
+            .setPeer(txbuilder::createPeer(publicKey, peer::Node::defaultIP(), txbuilder::createTrust(-1.0, true)))
             .build();
-    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+    connection::iroha::PeerService::Sumeragi::send( getMyPublicKey(), txPeer );
 }
 void PeerServiceConfig::toIssue_removePeer( const std::string &publicKey ) {
+    if( !isExistPublicKey(publicKey) ) return;
     auto txPeer = TransactionBuilder<Remove<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
-            .setPeer(txbuilder::createPeer(publicKey, "", txbuilder::createTrust(0.0, false)))
+            .setPeer(txbuilder::createPeer(publicKey, peer::Node::defaultIP(), txbuilder::createTrust(-getMaxTrustScore(), false)))
             .build();
-    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+    connection::iroha::PeerService::Sumeragi::send( getMyPublicKey(), txPeer );
 }
 void PeerServiceConfig::toIssue_creditPeer( const std::string &publicKey ) {
-    auto it = findPeerPublicKey( publicKey );
-    if( it->getTrustScore() == getMaxTrustScore() ) return;
+    if( !isExistPublicKey(publicKey) ) return;
+    if( findPeerPublicKey(publicKey)->getTrustScore() == getMaxTrustScore() ) return;
     auto txPeer = TransactionBuilder<Update<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
-            .setPeer(txbuilder::createPeer(publicKey, "",
-                                           txbuilder::createTrust(std::min( getMaxTrustScore(), it->getTrustScore()+1.0 ), true)))
+            .setPeer(txbuilder::createPeer(publicKey, peer::Node::defaultIP(),
+                                           txbuilder::createTrust( +1.0, true)))
             .build();
-    connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
+    connection::iroha::PeerService::Sumeragi::send( getMyPublicKey(), txPeer );
 }
 
 
@@ -168,7 +271,6 @@ bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
     logger::warning("addPeer") << e.what();
     return false;
   }
-  return true;
 }
 
 bool PeerServiceConfig::removePeer( const std::string& publicKey ) {
@@ -202,8 +304,12 @@ bool PeerServiceConfig::updatePeer( const std::string& publicKey, const peer::No
         it->setIP( peer.getIP() );
     }
 
-    if ( it->getTrustScore() != peer.getTrustScore() ) {
-        it->setTrustScore(peer.getTrustScore());
+    if ( it->getTrustScore() != 0.0 ) {
+        it->setTrustScore( std::min( getMaxTrustScore(), it->getTrustScore()+peer.getTrustScore()) );
+    }
+
+    if( it->isOK() != peer.isOK() ) {
+        it->setOK( peer.isOK() );
     }
 
   } catch ( exception::service::UnExistFindPeerException& e ) {
@@ -211,13 +317,58 @@ bool PeerServiceConfig::updatePeer( const std::string& publicKey, const peer::No
     return false;
   } catch( exception::service::DuplicationPublicKeyException& e ) {
       logger::warning("updatePeer") << e.what();
+    return false;
   } catch ( exception::service::DuplicationIPException& e ) {
-    logger::warning("udpatePeer") << e.what();
+    logger::warning("updatePeer") << e.what();
     return false;
   }
   return true;
 }
 
+//invoke next to addPeer
+bool PeerServiceConfig::sendAllTransactionToNewPeer( const peer::Node& peer ) {
+    // when my node is not active, it don't send data.
+    if( !(findPeerPublicKey( getMyPublicKey() )->isOK()) ) return false;
+
+    uint64_t code = 0UL;
+    {   // Send PeerList data ( Reason: Can't do to construct peerList for only transaction infomation. )
+        auto sorted_peerList = getPeerList();
+        auto txResponse = Api::TransactionResponse();
+        for (auto &&peer : sorted_peerList) {
+            txResponse.set_message( "Initilize send now Active PeerList info" );
+            txResponse.set_code( code++ );
+            auto txPeer = TransactionBuilder<Add<Peer>>()
+                    .setSenderPublicKey(getMyPublicKey())
+                    .setPeer(txbuilder::createPeer(peer->getPublicKey(), peer->getIP(),
+                                                   txbuilder::createTrust(getMaxTrustScore(), true)))
+                    .build();
+            txResponse.add_transaction()->CopyFrom(txPeer);
+        }
+        if( !connection::iroha::PeerService::Izanami::send( peer.getIP(), txResponse ) ) return false;
+    }
+
+    {   // Send transaction data separated block to new peer.
+        auto transactions = repository::transaction::findAll();
+        int block_size = 500;
+        for (int i = 0; i < transactions.size(); i += block_size) {
+            auto txResponse = Api::TransactionResponse();
+            txResponse.set_message("Midstream send Transactions");
+            txResponse.set_code(code++);
+            for (int j = i; j < i + block_size; j++) {
+                txResponse.add_transaction()->CopyFrom(transactions[j]);
+            }
+            if (!connection::iroha::PeerService::Izanami::send(peer.getIP(), txResponse)) return false;
+        }
+    }
+
+    {   // end-point
+        auto txResponse = Api::TransactionResponse();
+        txResponse.set_message("Finished send Transactions");
+        txResponse.set_code(code++);
+        if (!connection::iroha::PeerService::Izanami::send(peer.getIP(), txResponse)) return false;
+    }
+    return true;
+}
 
 bool PeerServiceConfig::validate_addPeer( const peer::Node& peer ) {
     try {
@@ -266,7 +417,7 @@ bool PeerServiceConfig::validate_updatePeer( const std::string& publicKey, const
     } catch( exception::service::DuplicationPublicKeyException& e ) {
         logger::warning("updatePeer") << e.what();
     } catch( exception::service::DuplicationIPException& e ) {
-        logger::warning("udpatePeer") << e.what();
+        logger::warning("updatePeer") << e.what();
         return false;
     }
     return true;
@@ -274,56 +425,12 @@ bool PeerServiceConfig::validate_updatePeer( const std::string& publicKey, const
 
 
 bool PeerServiceConfig::isLeaderMyPeer() {
-  if( peerList.empty() ) return false;
   auto sorted_peers = getPeerList();
+  if( sorted_peers.empty() ) return false;
   return (*sorted_peers.begin())->getPublicKey() == getMyPublicKey() &&
          (*sorted_peers.begin())->getIP() == getMyIp();
 }
 
-void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
-  try {
-    if (not ConfigFormat::getInstance().ensureFormatSumeragi(jsonStr)) {
-      throw exception::ParseFromStringException("sumeragi");
-    }
-    _configData = json::parse(std::move(jsonStr));
-  } catch (exception::ParseFromStringException& e) {
-    logger::warning("peer service config") << e.what();
-    logger::warning("peer service config") << getConfigName() << " is set to be default.";
-
-    // default sumeragi.json
-    _configData = json::parse(R"({
-      "me":{
-        "ip":"172.17.0.6",
-        "name":"samari",
-        "publicKey":"Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU=",
-        "privateKey":"aGIuSZRhnGfFyeoKNm/NbTylnAvRfMu3KumOEfyT2HPf36jSF22m2JXWrdCmKiDoshVqjFtZPX3WXaNuo9L8WA=="
-      },
-      "group":[
-        {
-          "ip":"172.17.0.3",
-          "name":"mizuki",
-          "publicKey":"jDQTiJ1dnTSdGH+yuOaPPZIepUj1Xt3hYOvLQTME3V0="
-        },
-        {
-          "ip":"172.17.0.4",
-          "name":"natori",
-          "publicKey":"Q5PaQEBPQLALfzYmZyz9P4LmCNfgM5MdN1fOuesw3HY="
-        },
-        {
-          "ip":"172.17.0.5",
-          "name":"kabohara",
-          "publicKey":"f5MWZUZK9Ga8XywDia68pH1HLY/Ts0TWBHsxiFDR0ig="
-        },
-        {
-          "ip":"172.17.0.6",
-          "name":"samari",
-          "publicKey":"Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU="
-        }
-      ]
-    })");
-  }
-}
-
-std::string PeerServiceConfig::getConfigName() {
-  return "config/sumeragi.json";
+std::unique_ptr<peer::Node> PeerServiceConfig::leaderPeer() {
+  return std::move( *getPeerList().begin() );
 }

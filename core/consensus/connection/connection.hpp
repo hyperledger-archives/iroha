@@ -30,6 +30,7 @@ namespace connection {
     using Api::ConsensusEvent;
     using Api::Transaction;
     using Api::Query;
+    using Api::TransactionResponse;
 
 
     struct Config {
@@ -67,23 +68,63 @@ namespace connection {
                 > &callback);
 
             };
+            // This only reply pong.
+            namespace Kagami{}
         };
 
         namespace PeerService {
 
-            namespace Torii {
+            namespace Sumeragi {
 
                 bool send(
                         const std::string &ip,
                         const Transaction &transaction
                 );
 
+                bool ping(
+                        const std::string &ip
+                );
+
+            }
+
+            namespace Izanami {
+                bool send(
+                        const std::string& ip,
+                        const TransactionResponse &txResponse
+                );
+            }
+        }
+
+        namespace Izanami {
+            namespace Izanagi {
+                bool receive(const std::function<void(
+                        const std::string &,
+                        TransactionResponse&)
+                > &callback);
             }
         }
 
         namespace TransactionRepository {
 
             namespace find {
+
+                bool receive(const std::function<void(
+                        const std::string &,
+                        const Query &)
+                > &callback);
+
+            };
+
+            namespace fetch {
+
+                bool receive(const std::function<void(
+                        const std::string &,
+                        const Query &)
+                > &callback);
+
+            };
+
+            namespace fetchStream {
 
                 bool receive(const std::function<void(
                         const std::string &,
