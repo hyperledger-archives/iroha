@@ -41,7 +41,7 @@ namespace repository {
 
       namespace detail {
 
-              static std::unique_ptr<leveldb::DB> db = nullptr;
+              static leveldb::DB* db = nullptr;
 
               bool loggerStatus(leveldb::Status const status) {
                   if (!status.ok()) {
@@ -52,23 +52,36 @@ namespace repository {
               }
 
               void loadDb() {
-                  leveldb::DB *tmpDb;
                   leveldb::Options options;
                   options.error_if_exists = false;
                   options.create_if_missing = true;
 
+                  logger::info("WorldStateRepositoryWithLeveldb") << "LoadDB";
                   loggerStatus(leveldb::DB::Open(options,
-                            config::IrohaConfigManager::getInstance().getDatabasePath("/tmp/iroha_ledger"),
-                            &tmpDb));
-                  db.reset(tmpDb);
+                        config::IrohaConfigManager::getInstance().getDatabasePath("/tmp/iroha_ledger"),
+                        &db
+                  ));
               }
+      }
+
+      void finish(){
+          logger::info("WorldStateRepositoryWithLeveldb") << "finish";
+          if (nullptr != detail::db) {
+              logger::info("WorldStateRepositoryWithLeveldb") << "delete db pointer";
+              delete detail::db;
           }
+      }
 
       bool add(const std::string &key, const std::string &value) {
           if (nullptr == detail::db) {
               detail::loadDb();
           }
-          return detail::loggerStatus(detail::db->Put(leveldb::WriteOptions(), key, value));
+          if(nullptr != detail::db) {
+              logger::info("WorldStateRepositoryWithLeveldb") << "Add";
+              return detail::loggerStatus(detail::db->Put(leveldb::WriteOptions(), key, value));
+          }
+          logger::error("WorldStateRepositoryWithLeveldb") << "Error DB already held by process";
+          return false;
       }
 
       template <>
@@ -82,10 +95,15 @@ namespace repository {
               batch.Put(std::get<0>(tuple), std::get<1>(tuple));
           }
 
-          return detail::loggerStatus(detail::db->Write(leveldb::WriteOptions(), &batch));
+          if(nullptr != detail::db) {
+              return detail::loggerStatus(detail::db->Write(leveldb::WriteOptions(), &batch));
+          }
+          logger::error("WorldStateRepositoryWithLeveldb") << "Error DB already held by process";
+          return false;
       }
 
       std::vector<std::string> findAll(){
+          logger::info("WorldStateRepositoryWithLeveldb") << "findAll";
           if (nullptr == detail::db) {
               detail::loadDb();
           }
@@ -133,14 +151,17 @@ namespace repository {
           if (nullptr == detail::db) {
               detail::loadDb();
           }
-
-          std::string dummy;
-          if (detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &dummy))) {
-              leveldb::WriteBatch batch;
-              batch.Delete(key);
-              batch.Put(key, value);
-              return detail::loggerStatus(detail::db->Write(leveldb::WriteOptions(), &batch));
+          if(nullptr != detail::db) {
+              std::string dummy;
+              if (detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &dummy))) {
+                  leveldb::WriteBatch batch;
+                  batch.Delete(key);
+                  batch.Put(key, value);
+                  return detail::loggerStatus(detail::db->Write(leveldb::WriteOptions(), &batch));
+              }
+              return false;
           }
+          logger::error("WorldStateRepositoryWithLeveldb") << "Error DB already held by process";
           return false;
       }
 
@@ -148,21 +169,32 @@ namespace repository {
           if (nullptr == detail::db) {
               detail::loadDb();
           }
-          return detail::loggerStatus(detail::db->Delete(leveldb::WriteOptions(), key));
+          if(nullptr != detail::db) {
+              std::string dummy;
+              if (detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &dummy))) {
+                  return detail::loggerStatus(detail::db->Delete(leveldb::WriteOptions(), key));
+              }
+              return false;
+          }
+          logger::error("WorldStateRepositoryWithLeveldb") << "Error DB already held by process";
+          return false;
       }
 
       std::string find(const std::string &key) {
           if (nullptr == detail::db) {
               detail::loadDb();
           }
-
-          std::string readData;
-          detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &readData));
-          if (!readData.empty()) {
-              return readData;
-          } else {
-              return "";
+          if(nullptr != detail::db) {
+              std::string readData;
+              detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &readData));
+              if (!readData.empty()) {
+                  return readData;
+              } else {
+                  return "";
+              }
           }
+          logger::error("WorldStateRepositoryWithLeveldb") << "Error DB already held by process";
+          return "";
       }
 
       std::string findOrElse(
