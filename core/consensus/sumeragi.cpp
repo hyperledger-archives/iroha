@@ -222,7 +222,7 @@ namespace sumeragi {
         context = std::make_unique<Context>();
 
         connection::iroha::Sumeragi::Torii::receive([](const std::string& from, Transaction& transaction) {
-            logger::info("sumeragi") << "receive!";
+            logger::info("sumeragi") << "receive! Torii";
             ConsensusEvent event;
             event.set_status("uncommit");
             event.mutable_transaction()->CopyFrom(transaction);
@@ -237,13 +237,12 @@ namespace sumeragi {
         connection::iroha::Sumeragi::Verify::receive([](const std::string& from, ConsensusEvent& event) {
             logger::info("sumeragi") << "receive!";
             logger::info("sumeragi") << "received message! sig:[" << event.eventsignatures_size() << "]";
-
             logger::info("sumeragi") << "received message! status:[" << event.status() << "]";
             if(event.status() == "commited") {
                 if(txCache.find(detail::hash(event.transaction())) == txCache.end()) {
+                    txCache[detail::hash(event.transaction())] = "commited";
                     repository::transaction::add(detail::hash(event.transaction()), event.transaction());
                     executor::execute(event.transaction());
-                    txCache[detail::hash(event.transaction())] = "commited";
                 }
             }else{
                 // send processTransaction(event) as a task to processing pool

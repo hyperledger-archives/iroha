@@ -24,6 +24,10 @@ limitations under the License.
 #include <infra/config/peer_service_with_json.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 
+#include <repository/transaction_repository.hpp>
+#include <repository/domain/asset_repository.hpp>
+#include <repository/domain/account_repository.hpp>
+
 #include <string>
 #include <vector>
 #include <memory>
@@ -333,9 +337,10 @@ namespace connection {
         ) override {
             Query q;
             q.CopyFrom(*query);
-            auto dummy = "";
-            for (auto& f: iroha::TransactionRepository::find::receivers){
-                f(dummy, q);
+            // ToDo use query
+            auto transactions = repository::transaction::findAll();
+            for(auto tx: transactions){
+                response->add_transaction()->CopyFrom(tx);
             }
             response->set_message("OK");
             return Status::OK;
@@ -379,11 +384,23 @@ namespace connection {
             const Query*              query,
             AssetResponse*         response
         ) override {
-            auto dummy = "";
+            std::string name = "default";
             Query q;
             q.CopyFrom(*query);
-            for (auto& f: iroha::AssetRepository::find::receivers){
-                f(dummy, q);
+            logger::info("connection") << "AssetRepositoryService: " << q.DebugString();
+
+            if(q.value().find("name")!=q.value().end()){
+                name = q.value().at("name").valuestring();
+            }
+
+            auto sender = q.senderpubkey();
+            if(q.type() == "asset"){
+                response->mutable_asset()->CopyFrom(repository::asset::find(sender, name));
+                logger::info("connection") << "AssetRepositoryService: " << response->asset().DebugString();
+            }else if(q.type() == "account"){
+                auto account = repository::account::find(sender);
+
+                response->mutable_account()->CopyFrom(account);
             }
             response->set_message("OK");
             return Status::OK;

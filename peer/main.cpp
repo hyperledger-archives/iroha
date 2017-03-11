@@ -30,19 +30,24 @@ limitations under the License.
 #include <infra/config/peer_service_with_json.hpp>
 #include <service/izanami.hpp>
 
+#include <repository/world_state_repository.hpp>
+
 std::atomic_bool running(true);
 
 void server(){
     http::server();
 }
 
-void sigIntHandler(int param){
+void sigHandler(int param){
     running = false;
+    repository::world_state_repository::finish();
     logger::info("main") << "will halt";
 }
 
 int main() {
-    signal(SIGINT, sigIntHandler);
+    signal(SIGINT,  sigHandler);
+    signal(SIGHUP,  sigHandler);
+    signal(SIGTERM, sigHandler);
 
     if (getenv("IROHA_HOME") == nullptr){
       logger::error("main") << "You must set IROHA_HOME!";
