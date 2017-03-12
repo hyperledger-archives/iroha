@@ -174,6 +174,7 @@ namespace sumeragi {
 
         void update()
         {
+            logger::debug("sumeragi") << "Context update!";
             auto peers = config::PeerServiceConfig::getInstance().getPeerList();
             for (auto&& p : peers ) {
                 validatingPeers.push_back( std::move(p) );
@@ -226,6 +227,7 @@ namespace sumeragi {
             ConsensusEvent event;
             event.set_status("uncommit");
             event.mutable_transaction()->CopyFrom(transaction);
+            context->update();
             // send processTransaction(event) as a task to processing pool
             // this returns std::future<void> object
             // (std::future).get() method locks processing until result of processTransaction will be available
