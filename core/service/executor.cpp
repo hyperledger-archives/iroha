@@ -64,6 +64,10 @@ namespace executor{
         }
     }
 
+    void valueValidation(Api::Asset asset, std::vector<std::string> names){
+
+    }
+
     void transfer(const Transaction& tx){
         if(tx.has_asset()){
             // Transfer<Asset>
@@ -74,7 +78,25 @@ namespace executor{
             // **********************************************************************************
             // * This is Transfer<Asset>'s logic. multi message chat
             // **********************************************************************************
-            if(tx.asset().value().find("targetName") != tx.asset().value().end()){
+            if(tx.asset().value().find("targetName") != tx.asset().value().end()) {
+                const auto targetName = tx.asset().value().at("targetName").valuestring();
+                auto senderAsset = repository::asset::find(sender, assetName);
+                auto receiverAsset = repository::asset::find(receiver, assetName);
+
+                auto senderHasNum = (*senderAsset.mutable_value())[targetName].valueint();
+                auto receiverHasNum = (*receiverAsset.mutable_value())[targetName].valueint();
+
+                (*senderAsset.mutable_value())[targetName].set_valueint(senderHasNum - 1);
+                (*receiverAsset.mutable_value())[targetName].set_valueint(receiverHasNum + 1);
+
+                repository::asset::update(sender, assetName, senderAsset);
+                repository::asset::update(receiver, assetName, receiverAsset);
+
+
+                // **********************************************************************************
+                // * This is Transfer<Asset>'s logic. multi message chat
+                // **********************************************************************************
+            }else if(tx.asset().value().find("targetName") != tx.asset().value().end()){
                 const auto targetName = tx.asset().value().at("targetName").valuestring();
                 auto senderAsset = repository::asset::find(sender, assetName);
                 auto receiverAsset = repository::asset::find(receiver, assetName);

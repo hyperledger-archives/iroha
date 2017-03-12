@@ -86,15 +86,16 @@ message BaseObject {
 message SimpleAsset {
   string domain = 1;
   string name = 2;
-  BaseObject value = 3;
-  string smartContractName = 4;
+  string tag  = 3;
+  BaseObject value = 4;
+  string smartContractName = 5;
 }
 
 message Asset {
   string domain = 1;
   string name = 2;
-  map<string, BaseObject> value = 3;
-  string smartContractName = 4;
+  string tag  = 3;
+  map<string, BaseObject> value = 4;
 }
 
 message Domain {
