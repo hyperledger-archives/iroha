@@ -1,140 +1,157 @@
 namespace Api;
 
-attribute "priority";
+union Object { SimpleAsset, Asset, Domain, Account, Peer }
+union Command { Add, Transfer, Update, Remove, Batch, Unbatch, Contract }
 
-table BaseObject {
-  valueString:  string;
-  valueInt:     long;
+table Permission {
+    readable: bool(required); // queryable
+    writeable: bool(required); // commandable
+    isRoot: bool(required);
+    publicKey:string(required);
+}
+
+table Add {
+    object: Object(required);
+}
+
+table Transfer {
+    object: Object(required);
+    receiver: string(required);
+}
+
+table Update {
+    object: Object(required);
+}
+
+table Remove {
+    object: Object(required);
+}
+
+table TransactionResponse {
+  message:string;
+  code:ushort;
+  transaction:[Api.Transaction];
+}
+
+table RecieverConfirmation {
+  signature:Api.Signature; // hash can be computed separately
+  timestamp:ulong;
+}
+
+table AssetResponse {
+  message:string;
+  code:ushort;
+  timestamp:ulong;
+  asset:Api.Asset;
+  simpleAsset:Api.SimpleAsset;
+  domain:Api.Domain;
+  account:Api.Account;
+}
+
+table PeerResponse {
+  message:string;
+  code:ushort;
+  timestamp:ulong;
+  peer:Api.Peer;
+}
+
+table StatusResponse {
+  value:string;
+  message:string;
+  timestamp:ulong;
+  confirm:Api.RecieverConfirmation;
+}
+
+table Query {
+  type:string;
+  senderPubkey:string;
+}
+
+table KeyValueObject {
+  key: string;
+  value:Api.ValueObject;
+}
+
+table ValueObject {
+  valueString: string;
+  value: ulong;
+  precision: uint;
   valueBoolean: bool;
-  valueDouble:  double;
+  object: ValueObject;
 }
 
-table SimpleAsset {
-  domain: string (required);
-  name:   string (required);
-  value:  BaseObject (required);
-  smartContractName: string (required);
+table Currency {
+  domain: Domain(required);
+  name: string(required);
+  amount: ulong;
+  precision: uint;
+  description: string;
+  tag: string; // For example, XBT, IRH, YNZ
+  ledgerId: string;
 }
 
-table Asset {
-  name:      string (required);
-  domain:    string (required);
-  value:     [KeyValue];
-  precision: [KeyValue];
-  smartContractName: string;
+table Message {
+    text: string(required);
+}
+
+table KeyValueListAsset {
+  domain: Domain(required);
+  name: string;
+  description: string;
+  tag: string;
+  ledgerId: string;
+  keyValueList: [Api.KeyValueObject];
+  permissions: Api.Permission;
 }
 
 table Domain {
-  ownerPublicKey: string (required);
-  name: string (required);
+  name: string(required);
+  permissions: [Permission];
 }
 
 table Account {
-  publicKey: string (required);
-  name: string (required);
-  assets: [string];
+  publicKey: string;
+  alias: string;
+  domains: [Api.Domain];
 }
 
 table Trust {
-  value: double;
+  value: ulong;
   isOk: bool;
 }
 
 table Peer {
-  publicKey: string (required);
-  address:   string (required);
-  trust:     Trust;
+  publicKey: string;
+  address: string;
+  trust: Api.Trust;
 }
 
 table Signature {
-  publicKey: string;
-  signature: string;
-}
-
-union Object { SimpleAsset, Asset, Domain, Account, Peer, Signature }
-
-rpc_service TransactionRepository {
-  find(Query):TransactionResponse (streaming: "none");
-}
-
-rpc_service AssetRepository {
-  find(Query):AssetResponse (streaming: "none");
-}
-
-rpc_service Sumeragi {
-  //  =+===+=
-  // ==+=T=+==
-  //   |   |
-  //   |   |   This is gate at the entrance of sumeragi...
-  Torii(Request): StatusResponse (streaming: "none");
-
-  // sumeragi uses.
-  Verify(ConsensusEvent): StatusResponse (streaming: "none");
-}
-
-table TransactionResponse {
-  message: string;
-  code: ulong;
-
-  transaction: [Transaction];
-}
-
-table RecieverConfirmation {
-  hash: string;
-  signature: Signature;
-}
-
-table AssetResponse {
-  message:   string;
-  code:      ulong;
-  timestamp: ulong;
-
-  object: Object;
-}
-
-table StatusResponse {
-  value:      string;
-  message:    string;
-  timestamp:  ulong;
-  confirm:    RecieverConfirmation;
-}
-
-table KeyValue {
-  key:    string (required, key);
-  value:  BaseObject;
-}
-
-enum QueryType : byte {
-  TransactionHistory, HashTree, ObjectInformation
-}
-
-table Query {
-  type:     QueryType;
-  value:    [KeyValue];
+  publicKey:string;
+  signature:string;
 }
 
 table Transaction {
-  signatures:  [Signature] (required);
-  type:          string (required);
-  creatorPubKey: string (required);
-  hash:          string (required);
+  command: Command(required);
 
-  timestamp:    ulong;
-
-  object:       Object;
-  receivePubkey: string;
-  contractName:  string (required);
-}
-
-table Request {
-  transaction: [Transaction] (required);
+  signatures:[Api.Signature];
+  type:string;
+  creatorPubKey:string;
+  hash:string;
+  timestamp:ulong;
+  asset:Api.Asset;
+  simpleAsset:Api.SimpleAsset;
+  domain:Api.Domain;
+  account:Api.Account;
+  peer:Api.Peer;
+  receivePubkey:string;
 }
 
 table ConsensusEvent {
-  eventSignatures: [Signature];
-  transaction:     Transaction;
-  order:           ulong;
-  status:          string;
+  signatures: [Api.Signature];
+  transaction:Api.Transaction;
+  order:ulong;
+  status:string;
 }
 
 root_type ConsensusEvent;
