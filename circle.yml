@@ -44,14 +44,15 @@ test:
     # put new tests below
     - curl -X POST http://127.0.0.1:1204/account/register -d '{"publicKey":"WdvM/DPabapmtA7ISbTYPywbHxk8gWu2221LzmcmAgw=","alias":"yonezu","timestamp":1482053586}'
     # docker-compose TEST (add peer)
-    - docker-compose up
+    - docker-compose up &
+  post:
     - docker-compose scale iroha=2
     # WIP - docker exec -it iroha_iroha_2 sh -c "/usr/local/iroha/bin/make_sumeragi" > /tmp/me.json
     # WIP - docker exec -it iroha_iroha_1 sh -c "/usr/local/iroha/bin/issue_transaction add peer ${TARGET_IP} ${TARGET_KEY} 1.0 true"
     - docker exec -it iroha_iroha_1 sh -c "/usr/local/iroha/bin/issue_transaction add peer 172.18.0.5 X/Sk+plpcQ/+Wb9RQybm+OUS7FP3lbkuQmyHuK+uMvQ 1.0 true"
-  post:
     # iroha-main logs
     - docker logs $ID
+    - docker-compose down
     # if node is alive, then iroha-main still works, otherwise test is failed
     - (docker kill $ID && echo "Container worked and now killed. OK") || (echo "Container died. FAIL." && exit 1)
 
