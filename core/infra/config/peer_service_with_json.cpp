@@ -155,7 +155,7 @@ void PeerServiceConfig::initialziePeerList_from_json(){
   for (const auto& peer : getGroup()) {
     peerList.emplace_back( peer["ip"].get<std::string>(),
                            peer["publicKey"].get<std::string>(),
-                           1.0);
+                           getMaxTrustScore() );
   }
 }
 
@@ -185,6 +185,8 @@ std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
     nodes.push_back( std::make_unique<peer::Node>( node.getIP(), node.getPublicKey(), node.getTrustScore() ) );
   sort( nodes.begin(), nodes.end(),
         []( const std::unique_ptr<peer::Node> &a, const std::unique_ptr<peer::Node> &b ) { return a->getTrustScore() > b->getTrustScore(); } );
+  for( auto &&node : nodes )
+      logger::debug("getPeerList") << node->getIP() + " " <<node->getPublicKey();
   return nodes;
 }
 std::vector<std::string> PeerServiceConfig::getIpList() {
