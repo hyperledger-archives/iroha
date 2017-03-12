@@ -76,26 +76,32 @@ namespace executor{
             const auto assetName = tx.asset().name();
 
             // **********************************************************************************
-            // * This is Transfer<Asset>'s logic. multi message chat
+            // * This is Transfer<Asset>'s logic. Tax send logic
             // **********************************************************************************
-            if(tx.asset().value().find("targetName") != tx.asset().value().end()) {
-                const auto targetName = tx.asset().value().at("targetName").valuestring();
+            if(tx.asset().value().find("author") != tx.asset().value().end()) {
+                const auto author = tx.asset().value().at("author").valuestring();
+
+                const auto value = tx.asset().value().at("value").valueint();
                 auto senderAsset = repository::asset::find(sender, assetName);
+                auto authorAsset = repository::asset::find(author, assetName);
+
                 auto receiverAsset = repository::asset::find(receiver, assetName);
-
-                auto senderHasNum = (*senderAsset.mutable_value())[targetName].valueint();
-                auto receiverHasNum = (*receiverAsset.mutable_value())[targetName].valueint();
-
-                (*senderAsset.mutable_value())[targetName].set_valueint(senderHasNum - 1);
-                (*receiverAsset.mutable_value())[targetName].set_valueint(receiverHasNum + 1);
-
+                if(senderAsset.value().find("value") != senderAsset.value().end() &&
+                   receiverAsset.value().find("value") != receiverAsset.value().end()){
+                    auto senderValue = senderAsset.value().at("value").valueint();
+                    auto receiverValue = receiverAsset.value().at("value").valueint();
+                    if(senderValue > value){
+                        (*senderAsset.mutable_value())["value"].set_valueint(senderValue - value);
+                        (*receiverAsset.mutable_value())["value"].set_valueint(receiverValue + value);
+                        (*authorAsset.mutable_value())["value"].set_valueint(value * 0.8);
+                    }
+                }
                 repository::asset::update(sender, assetName, senderAsset);
                 repository::asset::update(receiver, assetName, receiverAsset);
 
-
-                // **********************************************************************************
-                // * This is Transfer<Asset>'s logic. multi message chat
-                // **********************************************************************************
+            // **********************************************************************************
+            // * This is Transfer<Asset>'s logic. multi message chat
+            // **********************************************************************************
             }else if(tx.asset().value().find("targetName") != tx.asset().value().end()){
                 const auto targetName = tx.asset().value().at("targetName").valuestring();
                 auto senderAsset = repository::asset::find(sender, assetName);
