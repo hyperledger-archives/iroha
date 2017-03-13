@@ -10,62 +10,7 @@ table Permission {
     publicKey:string(required);
 }
 
-table Add {
-    object: Object(required);
-}
-
-table Transfer {
-    object: Object(required);
-    receiver: string(required);
-}
-
-table Update {
-    object: Object(required);
-}
-
-table Remove {
-    object: Object(required);
-}
-
-table TransactionResponse {
-  message:string;
-  code:ushort;
-  transaction:[Api.Transaction];
-}
-
-table RecieverConfirmation {
-  signature:Api.Signature; // hash can be computed separately
-  timestamp:ulong;
-}
-
-table AssetResponse {
-  message:string;
-  code:ushort;
-  timestamp:ulong;
-  asset:Api.Asset;
-  simpleAsset:Api.SimpleAsset;
-  domain:Api.Domain;
-  account:Api.Account;
-}
-
-table PeerResponse {
-  message:string;
-  code:ushort;
-  timestamp:ulong;
-  peer:Api.Peer;
-}
-
-table StatusResponse {
-  value:string;
-  message:string;
-  timestamp:ulong;
-  confirm:Api.RecieverConfirmation;
-}
-
-table Query {
-  type:string;
-  senderPubkey:string;
-}
+// Objects
 
 table KeyValueObject {
   key: string;
@@ -131,6 +76,37 @@ table Signature {
   signature:string;
 }
 
+table Query {
+  type: string;
+  senderPubkey: string;
+}
+
+table ConsensusEvent {
+  signatures: [Api.Signature];
+  transaction:Api.Transaction;
+  order:ulong;
+  status:string;
+}
+
+// Commands
+
+table Add {
+    object: Object(required);
+}
+
+table Transfer {
+    object: Object(required);
+    receiver: string(required);
+}
+
+table Update {
+    object: Object(required);
+}
+
+table Remove {
+    object: Object(required);
+}
+
 table Transaction {
   command: Command(required);
 
@@ -147,11 +123,41 @@ table Transaction {
   receivePubkey:string;
 }
 
-table ConsensusEvent {
-  signatures: [Api.Signature];
-  transaction:Api.Transaction;
-  order:ulong;
-  status:string;
+// Communication
+
+table TransactionResponse {
+  message:string;
+  code:ushort;
+  transaction:[Api.Transaction];
+}
+
+table RecieverConfirmation {
+  signature:Api.Signature; // hash can be computed separately
+  timestamp:ulong;
+}
+
+table AssetResponse {
+  message:string;
+  code:ushort;
+  timestamp:ulong;
+  asset:Api.Asset;
+  simpleAsset:Api.SimpleAsset;
+  domain:Api.Domain;
+  account:Api.Account;
+}
+
+table PeerResponse {
+  message:string;
+  code:ushort;
+  timestamp:ulong;
+  peer:Api.Peer;
+}
+
+table StatusResponse {
+  value:string;
+  message:string;
+  timestamp:ulong;
+  confirm:Api.RecieverConfirmation;
 }
 
 root_type ConsensusEvent;
