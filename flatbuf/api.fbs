@@ -1,20 +1,25 @@
 namespace Api;
 
-union Object { SimpleAsset, Asset, Domain, Account, Peer }
+root_type ConsensusEvent;
+
+file_identifier "IRH";
+file_extension "iroha";
+
+union Object { SimpleAsset, Asset, Domain, Account, Peer, Message }
 union Command { Add, Transfer, Update, Remove, Batch, Unbatch, Contract }
 
 table Permission {
     readable: bool(required); // queryable
     writeable: bool(required); // commandable
     isRoot: bool(required);
-    publicKey:string(required);
+    publicKey: string(required);
 }
 
 // Objects
 
 table KeyValueObject {
   key: string;
-  value:Api.ValueObject;
+  value: Api.ValueObject;
 }
 
 table ValueObject {
@@ -33,6 +38,7 @@ table Currency {
   description: string;
   tag: string; // For example, XBT, IRH, YNZ
   ledgerId: string;
+  isEditable: bool;
 }
 
 table Message {
@@ -47,6 +53,7 @@ table KeyValueListAsset {
   ledgerId: string;
   keyValueList: [Api.KeyValueObject];
   permissions: Api.Permission;
+  isEditable: bool;
 }
 
 table Domain {
@@ -110,57 +117,45 @@ table Remove {
 table Transaction {
   command: Command(required);
 
-  signatures:[Api.Signature];
-  type:string;
-  creatorPubKey:string;
-  hash:string;
-  timestamp:ulong;
-  asset:Api.Asset;
-  simpleAsset:Api.SimpleAsset;
-  domain:Api.Domain;
-  account:Api.Account;
-  peer:Api.Peer;
-  receivePubkey:string;
+  signatures: [Api.Signature];
+  tag: string;
+  creatorPubKey: string;
+  hash: string;
+  timestamp: ulong;
+  message: string;
 }
 
 // Communication
 
 table TransactionResponse {
-  message:string;
-  code:ushort;
+  message: string;
+  code: ushort;
   transaction:[Api.Transaction];
 }
 
 table RecieverConfirmation {
-  signature:Api.Signature; // hash can be computed separately
-  timestamp:ulong;
+  signature: Api.Signature; // hash can be computed separately
+  timestamp: ulong;
 }
 
-table AssetResponse {
-  message:string;
-  code:ushort;
-  timestamp:ulong;
-  asset:Api.Asset;
-  simpleAsset:Api.SimpleAsset;
-  domain:Api.Domain;
-  account:Api.Account;
+table QueryResponse {
+  objects: [Object];
+  code: ushort;
+  timestamp: ulong;
+  signature: Api.Signature;
 }
 
 table PeerResponse {
-  message:string;
-  code:ushort;
-  timestamp:ulong;
-  peer:Api.Peer;
+  message: string;
+  code: ushort;
+  timestamp: ulong;
+  signature: Api.Signature;
 }
 
 table StatusResponse {
-  value:string;
-  message:string;
-  timestamp:ulong;
-  confirm:Api.RecieverConfirmation;
+  value: string;
+  message: string;
+  timestamp: ulong;
+  confirm: Api.RecieverConfirmation;
+  signature: Api.Signature;
 }
-
-root_type ConsensusEvent;
-
-file_identifier "IRH";
-file_extension "iroha";
