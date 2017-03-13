@@ -5,8 +5,8 @@ root_type ConsensusEvent;
 file_identifier "IRH";
 file_extension "iroha";
 
-union Object { SimpleAsset, Asset, Domain, Account, Peer, Message }
-union Command { Add, Transfer, Update, Remove, Batch, Unbatch, Contract }
+union Object { Currency, KeyValueListAsset, Domain, Account, Peer, Message }
+union Command { Add, Transfer, Update, Remove, Batch, Contract, ChaincodeBatch }
 
 table Permission {
     readable: bool(required); // queryable
