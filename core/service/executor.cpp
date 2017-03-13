@@ -36,15 +36,17 @@ namespace executor{
             const auto account = tx.account();
             repository::account::add(account.publickey(), account);
 
-            // Add default asset
-            auto asset =Api::Asset();
-            auto base  =Api::BaseObject();
-            base.set_valueint(100);
-            asset.set_name("iroha");
-            asset.set_domain("default");
-            (*asset.mutable_value())["value"] = base;
-            repository::asset::add(tx.senderpubkey(),asset.name(),asset);
-
+            for(auto asset_name: account.assets()){
+                // Add default asset
+                auto asset = Api::Asset();
+                auto base  = Api::BaseObject();
+                base.set_valueint(0);
+                asset.set_name(asset_name);
+                asset.set_domain("default");
+                (*asset.mutable_value())["value"] = base;
+                logger::info("executor") << "add asset: " << asset.DebugString();
+                repository::asset::add(tx.senderpubkey(),asset.name(),asset);
+            }
             logger::info("executor") << "add account";
         } else if( tx.has_peer() ) {
             // Temporary - to operate peer service
@@ -148,11 +150,23 @@ namespace executor{
 
     void update(const Transaction& tx){
         if(tx.has_asset()){
+
+            // **********************************************************************************
+            // * This is Transfer<Asset>'s logic. virtual currency
+            // **********************************************************************************
             // Update<Asset>
+            logger::info("executor") << "Update";
+            const auto asset = tx.asset();
+            const auto publicKey = tx.senderpubkey();
+            const auto assetName = asset.name();
+            if(asset.value().find("value") != asset.value().end()) {
+                repository::asset::update(publicKey, assetName, asset);
+            }
         }else if(tx.has_domain()){
             // Update<Domain>
         }else if(tx.has_account()){
             // Update<Account>
+            logger::info("executor") << "Update";
             const auto account = tx.account();
             repository::account::update(account.publickey(), account);
         }else if(tx.has_peer()){
@@ -189,8 +203,6 @@ namespace executor{
     }
 
     void execute(const Transaction& tx){
-        logger::info("executor") << "Executor";
-        logger::info("executor")  << "DebugString:"<< tx.DebugString();
         if(tx.type() == "add"){
             add(tx);
         }else if(tx.type() == "transfer"){
@@ -201,6 +213,8 @@ namespace executor{
             remove(tx);
         }else if(tx.type() == "contract"){
             contract(tx);
+        }else{
+            logger::info("executor") << "Uknowen command:" << tx.type();
         }
     }
 
