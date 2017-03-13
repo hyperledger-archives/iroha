@@ -70,7 +70,6 @@ message StatusResponse {
 
 message Query{
   string type                   = 1;
-  map<string, BaseObject> value = 2;
   string senderPubkey = 3;
 }
 
@@ -95,7 +94,6 @@ message Asset {
   string domain = 1;
   string name = 2;
   string tag  = 3;
-  map<string, BaseObject> value = 4;
 }
 
 message Domain {

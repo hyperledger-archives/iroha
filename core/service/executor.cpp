@@ -82,6 +82,7 @@ namespace executor{
                 const auto author = tx.asset().value().at("author").valuestring();
 
                 const auto value = tx.asset().value().at("value").valueint();
+
                 auto senderAsset = repository::asset::find(sender, assetName);
                 auto authorAsset = repository::asset::find(author, assetName);
 
