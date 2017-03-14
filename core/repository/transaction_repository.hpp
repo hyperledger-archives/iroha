@@ -34,17 +34,12 @@ namespace repository{
 
     namespace transaction {
 
-        void add(const std::string &key,const Transaction& strTx);
-
-        void exist(const Transaction&);
+        bool add(const std::string &hash,const Transaction& tx);
 
         std::vector<Transaction> findAll();
 
-        Transaction find(std::string key);
+        Transaction find(const std::string& key);
 
-        std::vector<Transaction> findByAssetName(std::string name);
-
-        void remove(std::string key);
     }
 }
 

@@ -119,5 +119,3 @@ protected:
                 tx
         );
     }
-
-

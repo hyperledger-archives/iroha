@@ -25,7 +25,7 @@ public class TestAccount {
   public static void printSuccess() {
     System.out.println("==============================================");
     System.out.println("Success");
-    System.out.println("==============================================");    
+    System.out.println("==============================================");
   }
 
   public static void printFail(IllegalStateException e) {
@@ -37,6 +37,10 @@ public class TestAccount {
 
   public static void testAddAccount(HashMap<String, String> params, String[] assets) throws IllegalStateException {
     try {
+      // *******************************************************
+      // Sorry... Interface is big chaned
+      // *******************************************************
+      /*
       // Print received params
       System.out.println("----------------------------------------------");
       System.out.println("Params pubKey:      " + params.get(PublicKey));
@@ -48,22 +52,17 @@ public class TestAccount {
 
       // 1. Add account.
       System.out.println("Call accountRepo.add()");
-
-      String uuid = repository.accountAdd(
+      repository.accountAdd(
         params,
         assets
       );
 
-      System.out.println("----------------------------------------------");
-      System.out.println("Received from C++: uuid: " + uuid);
-      System.out.println("----------------------------------------------");
-
-      // 2. Find account data by uuid.
+      // 2. Find account data by PublicKey.
       System.out.println("Call repository.findByUuid()");
-      HashMap<String, String> uuidmap = new HashMap<String, String>();
-      uuidmap.put(Uuid, uuid);
-      HashMap<String, String> accountMap = repository.accountInfoFindByUuid(uuidmap);
-      String[] assetsArray = repository.accountValueFindByUuid(uuidmap);
+      HashMap<String, String> publicKeymap = new HashMap<String, String>();
+      publicKeymap.put(PublicKey, params.get(PublicKey));
+      HashMap<String, String> accountMap = repository.accountInfoFindByUuid(publicKeymap);
+      String[] assetsArray = repository.accountValueFindByUuid(publicKeymap);
 
       System.out.println("----------------------------------------------");
       System.out.println("Received from C++: found pubKey:      " + accountMap.get(PublicKey));
@@ -77,7 +76,7 @@ public class TestAccount {
       /*
       assert accountMap.get(PublicKey).equals(params.get(PublicKey));
       assert accountMap.get(AccountName).equals(params.get(AccountName));
-      */
+      /
       if (!accountMap.get(PublicKey).equals(params.get(PublicKey)))
         throw new IllegalStateException("Mismatch public key");
 
@@ -85,6 +84,8 @@ public class TestAccount {
         throw new IllegalStateException("Mismatch account name");
 
       printSuccess();
+      */
+      throw new IllegalStateException("Sorry unsupported");
     } catch(IllegalStateException e) {
       printFail(e);
     }
@@ -172,7 +173,7 @@ public class TestAccount {
       System.out.println("----------------------------------------------");
 
       // 3. Ensure the integrity.
-      
+
       if (!accountMap.get(AccountName).equals(params.get(AccountName)))
         throw new IllegalStateException("Mismatch account name");
 
@@ -191,7 +192,7 @@ public class TestAccount {
 
       if (!repository.accountRemove(params))
         throw new IllegalStateException("Cannot remove account");
-      
+
       printSuccess();
     } catch(IllegalStateException e) {
       printFail(e);

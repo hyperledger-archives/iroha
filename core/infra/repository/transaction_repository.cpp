@@ -22,12 +22,8 @@ namespace repository{
 
     namespace transaction {
 
-        void add(const std::string &key,const Transaction& tx){
-            world_state_repository::add("transaction_" + key, tx.SerializeAsString());
-        }
-
-        void exist(const Transaction&){
-
+        bool add(const std::string &key,const Transaction& tx){
+            return world_state_repository::add("transaction_" + key, tx.SerializeAsString());
         }
 
         std::vector<Transaction> findAll(){
@@ -41,21 +37,13 @@ namespace repository{
             return res;
         }
 
-        Transaction find(std::string key){
+        Transaction find(const std::string& key){
             Transaction tx;
             auto st = world_state_repository::find("transaction_"+key);
             if(!st.empty()){
                 tx.ParseFromString(st);
             }
             return tx;
-        }
-
-        std::vector<Transaction> findByAssetName(std::string name){
-
-        }
-
-        void remove(std::string key){
-
         }
 
     }

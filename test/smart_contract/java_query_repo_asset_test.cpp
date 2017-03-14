@@ -30,9 +30,9 @@ namespace tag = jni_constants;
 std::map<std::string, std::string> assetInfo;
 std::map<std::string, std::map<std::string, std::string>> assetValue;
 
-void ensureIntegrityOfAsset(const std::string& assetUuid) {
+void ensureIntegrityOfAsset(const std::string& publicKey,const std::string& assetName) {
   // Restore asset.
-  const auto asset = repository::asset::findByUuid(assetUuid);
+  const auto asset = repository::asset::find(publicKey, assetName);
 
   ASSERT_STREQ(assetInfo[tag::DomainId].c_str(), asset.domain().c_str());
   ASSERT_STREQ(assetInfo[tag::AssetName].c_str(), asset.name().c_str());
@@ -95,7 +95,8 @@ TEST(JavaQueryRepoAsset, invokeAddAssetQuery) {
   /***********************************************************************
    * 1. Initial guess
    ***********************************************************************/
-  const auto assetUuid = "3f8ba1e5df7f1587defc8fae4789207c8719c7b6d86ce299821b8a83fe08b5a9";
+  const auto publicKey =
+      "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
 
   assetInfo[tag::DomainId] = "A domain id";
   assetInfo[tag::AssetName] = "Currency";
@@ -126,17 +127,18 @@ TEST(JavaQueryRepoAsset, invokeAddAssetQuery) {
    * 3. Test
    ***********************************************************************/
   std::cout << "In c++:" << std::endl;
-  ensureIntegrityOfAsset(assetUuid);
+  ensureIntegrityOfAsset(publicKey,"Currency");
 
   // Remove chache.
-  ASSERT_TRUE(repository::asset::remove(assetUuid));
+  ASSERT_TRUE(repository::asset::remove(publicKey,"Currency"));
 }
 
 TEST(JavaQueryRepoAsset, invokeUpdateAssetQuery) {
   /***********************************************************************
    * 1. Initial guess
    ***********************************************************************/
-  const auto assetUuid = "3f8ba1e5df7f1587defc8fae4789207c8719c7b6d86ce299821b8a83fe08b5a9";
+  const auto publicKey =
+          "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
 
   assetInfo[tag::DomainId] = "A domain id";
   assetInfo[tag::AssetName] = "Currency";
@@ -162,7 +164,7 @@ TEST(JavaQueryRepoAsset, invokeUpdateAssetQuery) {
 
   std::map<std::string, std::string> params;
   {
-    params[tag::Uuid] = assetUuid;
+    params[tag::Uuid] = "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
   }
 
   assetValue["ownerName"] = {
@@ -190,10 +192,10 @@ TEST(JavaQueryRepoAsset, invokeUpdateAssetQuery) {
    * 3. Test
    ***********************************************************************/
   std::cout << "In c++:" << std::endl;
-  ensureIntegrityOfAsset(assetUuid);
+  ensureIntegrityOfAsset(publicKey,"Currency");
 
   // Remove chache.
-  ASSERT_TRUE(repository::asset::remove(assetUuid));
+  ASSERT_TRUE(repository::asset::remove(publicKey,"Currency"));
 }
 
 TEST(JavaQueryRepoAsset, invokeRemoveAssetQuery) {
@@ -201,6 +203,9 @@ TEST(JavaQueryRepoAsset, invokeRemoveAssetQuery) {
    * 1. Invocation Java.
    ***********************************************************************/
   const auto assetUuid = "3f8ba1e5df7f1587defc8fae4789207c8719c7b6d86ce299821b8a83fe08b5a9";
+  const auto publicKey =
+    "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
+
 
   assetInfo[tag::DomainId] = "A domain id";
   assetInfo[tag::AssetName] = "Currency";
@@ -234,7 +239,7 @@ TEST(JavaQueryRepoAsset, invokeRemoveAssetQuery) {
   /***********************************************************************
    * 2. Test
    ***********************************************************************/
-  ASSERT_FALSE(repository::asset::exists(assetUuid)); // cache has removed.
+  ASSERT_FALSE(repository::asset::exists(publicKey,"Currency")); // cache has removed.
 }
 
 TEST(JavaQueryRepoAsset, reinvokeAddAssetQuery) {
@@ -242,6 +247,8 @@ TEST(JavaQueryRepoAsset, reinvokeAddAssetQuery) {
    * 1. Invocation Java.
    ***********************************************************************/
   const auto assetUuid = "3f8ba1e5df7f1587defc8fae4789207c8719c7b6d86ce299821b8a83fe08b5a9";
+  const auto publicKey =
+    "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
 
   assetInfo[tag::DomainId] = "A domain id";
   assetInfo[tag::AssetName] = "Currency";
@@ -265,7 +272,7 @@ TEST(JavaQueryRepoAsset, reinvokeAddAssetQuery) {
   virtual_machine::invokeFunction(PackageName, ContractName, "testAddAsset",
                                   assetInfo, assetValue);
 
-  ASSERT_TRUE(repository::asset::remove(assetUuid));
+  ASSERT_TRUE(repository::asset::remove( publicKey, "Currency"));
 
   assetInfo[tag::DomainId] = "組織";
   assetInfo[tag::AssetName] = "アセット";
@@ -288,11 +295,14 @@ TEST(JavaQueryRepoAsset, reinvokeAddAssetQuery) {
    * 2. Test
    ***********************************************************************/
   const auto newAssetUuid = "7cdd09dff5f8f586a64a8948cac4937ccc1c7e3362de3125861966cfc7d177d7";
-  ASSERT_FALSE(repository::asset::exists(assetUuid));
-  ASSERT_TRUE(repository::asset::exists(newAssetUuid));
+  const auto publicKey =
+    "MPTt3ULszCLGQqAqRgHj2gQHVnxn/DuNlRXR/iLMAn4=";
+
+ASSERT_FALSE(repository::asset::exists(publicKey,"Currency"));
+  ASSERT_TRUE(repository::asset::exists(publicKey,"Currency"));
 
   // Remove chache
-  ASSERT_TRUE(repository::asset::remove(newAssetUuid));
+  ASSERT_TRUE(repository::asset::remove(publicKey,"Currency"));
 }
 
 TEST(JavaQueryRepoAsset, FinishVM) {
