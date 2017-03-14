@@ -47,23 +47,25 @@ test:
     - docker network create --subnet=172.20.0.0/16 iroha-network
     - >
       docker run -dit \
-        --network=iroha-network \
+        --net=iroha-network \
         --ip=172.20.0.2 \
         --name iroha1 \
-        -v sumeragi1.json:/usr/local/iroha/config/sumeragi.json \
+        -v $IROHA_HOME/config/sumeragi1.json:/usr/local/iroha/config/sumeragi.json \
         hyperledger/iroha-docker
     - >
       docker run -dit \
-        --network=iroha-network \
+        --net=iroha-network \
         --ip=172.20.0.3 \
         --name iroha2 \
-        -v sumeragi2.json:/usr/local/iroha/config/sumeragi.json \
+        -v $IROHA_HOME/config/sumeragi2.json:/usr/local/iroha/config/sumeragi.json \
         hyperledger/iroha-docker
     - docker exec -it iroha1 sh -c "/usr/local/iroha/bin/issue_transaction add peer 172.18.0.3 yUAFTYNh6qkhBMiNgNdg45Wk/XHOGYanuIroY9skfPQ= 1.0 true"
 
   post:
     # iroha1 logs
     - docker logs iroha1
+    # iroha2 logs
+    - docker logs iroha2
     # iroha-main logs
     - docker logs $ID
     # if node is alive, then iroha-main still works, otherwise test is failed
