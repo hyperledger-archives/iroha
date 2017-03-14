@@ -449,9 +449,7 @@ namespace connection {
                 ) {
                     auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
                     for (auto &ip : receiver_ips) {
-                        if (ip != config::PeerServiceConfig::getInstance().getMyIp()) {
-                            send(ip, event);
-                        }
+                        send(ip, event);
                     }
                     return true;
                 }
