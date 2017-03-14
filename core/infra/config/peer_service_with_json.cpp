@@ -192,8 +192,8 @@ std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
 }
 std::vector<std::string> PeerServiceConfig::getIpList() {
   std::vector<std::string> ret_ips;
-  for( auto &&node : peerList )
-    ret_ips.push_back( node.getIP() );
+  for( auto &&node : getPeerList() )
+    ret_ips.push_back( node->getIP() );
   return ret_ips;
 }
 
@@ -331,11 +331,13 @@ bool PeerServiceConfig::updatePeer( const std::string& publicKey, const peer::No
 
 //invoke next to addPeer
 bool PeerServiceConfig::sendAllTransactionToNewPeer( const peer::Node& peer ) {
+    logger::debug("peer-service") << "in sendAllTransactionToNewPeer";
     // when my node is not active, it don't send data.
     if( !(findPeerPublicKey( getMyPublicKey() )->isOK()) ) return false;
 
     uint64_t code = 0UL;
     {   // Send PeerList data ( Reason: Can't do to construct peerList for only transaction infomation. )
+        logger::debug("peer-service") << "send all peer infomation";
         auto sorted_peerList = getPeerList();
         auto txResponse = Api::TransactionResponse();
         for (auto &&peer : sorted_peerList) {
@@ -352,6 +354,7 @@ bool PeerServiceConfig::sendAllTransactionToNewPeer( const peer::Node& peer ) {
     }
 
     {   // Send transaction data separated block to new peer.
+        logger::debug("peer-service") << "send all transaction infomation";
         auto transactions = repository::transaction::findAll();
         int block_size = 500;
         for (int i = 0; i < transactions.size(); i += block_size) {
@@ -366,6 +369,7 @@ bool PeerServiceConfig::sendAllTransactionToNewPeer( const peer::Node& peer ) {
     }
 
     {   // end-point
+        logger::debug("peer-service") << "send end-point";
         auto txResponse = Api::TransactionResponse();
         txResponse.set_message("Finished send Transactions");
         txResponse.set_code(code++);

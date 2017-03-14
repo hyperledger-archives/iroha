@@ -37,6 +37,7 @@ namespace executor{
             repository::account::add(account.publickey(), account);
             logger::info("executor") << "add account";
         } else if( tx.has_peer() ) {
+            logger::info("executor") << "add peer";
             // Temporary - to operate peer service
             peer::Node query_peer(
                     tx.peer().address(),
