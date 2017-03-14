@@ -35,24 +35,32 @@ using type_signatures::Asset;
 using type_signatures::SimpleAsset;
 using type_signatures::Peer;
 
+const std::string verifySenderPubKey = "karin";
+const std::string verifyDomainName = "name";
+const std::string verifyDomainOwnerPubKey = "pubkey1";
+
+const std::string toriiSenderPubKey = "sate";
+const std::string toriiPeerPubKey = "light";
+const std::string toriiPeerAddress = "test_ip";
+
 class connection_with_grpc_test : public testing::Test {
 protected:
 
     void serverVerifyReceive() {
         connection::iroha::Sumeragi::Verify::receive([](const std::string &from, ConsensusEvent &event) {
             std::cout << event.transaction().DebugString() << std::endl;
-            ASSERT_STREQ(event.transaction().senderpubkey().c_str(), "karin");
-            ASSERT_STREQ(event.transaction().domain().name().c_str(), "name");
-            ASSERT_STREQ(event.transaction().domain().ownerpublickey().c_str(), "pubkey1");
+            ASSERT_EQ(event.transaction().senderpubkey(), verifySenderPubKey);
+            ASSERT_EQ(event.transaction().domain().name(), verifyDomainName);
+            ASSERT_EQ(event.transaction().domain().ownerpublickey(), verifyDomainOwnerPubKey);
         });
         connection::run();
     }
 
     void serverToriiReceive() {
         connection::iroha::Sumeragi::Torii::receive([](const std::string &from, Transaction &transaction) {
-            ASSERT_STREQ(transaction.senderpubkey().c_str(), "sate");
-            ASSERT_STREQ(transaction.peer().publickey().c_str(), "light");
-            ASSERT_STREQ(transaction.peer().address().c_str(), "test_ip");
+            ASSERT_EQ(transaction.senderpubkey(), toriiSenderPubKey);
+            ASSERT_EQ(transaction.peer().publickey(), toriiPeerPubKey);
+            ASSERT_EQ(transaction.peer().address(), toriiPeerAddress);
             ASSERT_TRUE(transaction.peer().trust().value() == 1.0);
         });
         connection::run();
@@ -84,10 +92,10 @@ protected:
 
     TEST_F(connection_with_grpc_test, Transaction_Add_Domain) {
         Api::Domain domain;
-        domain.set_ownerpublickey("pubkey1");
-        domain.set_name("name");
+        domain.set_ownerpublickey(verifyDomainOwnerPubKey);
+        domain.set_name(verifyDomainName);
         auto tx = TransactionBuilder<Add<Domain>>()
-                .setSenderPublicKey("karin")
+                .setSenderPublicKey(verifySenderPubKey)
                 .setDomain(domain)
                 .build();
 
@@ -102,8 +110,8 @@ protected:
 
     TEST_F(connection_with_grpc_test, Transaction_Add_Peer) {
         auto tx = TransactionBuilder<Add<Peer>>()
-                .setSenderPublicKey("sate")
-                .setPeer(txbuilder::createPeer("light", "test_ip", txbuilder::createTrust(1.0, true)))
+                .setSenderPublicKey(toriiSenderPubKey)
+                .setPeer(txbuilder::createPeer(toriiPeerPubKey, toriiPeerAddress, txbuilder::createTrust(1.0, true)))
                 .build();
 
         connection::iroha::PeerService::Sumeragi::send(
