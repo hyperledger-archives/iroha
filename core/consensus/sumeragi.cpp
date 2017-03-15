@@ -165,17 +165,11 @@ namespace sumeragi {
             update();
         }
 
-        Context(std::vector<std::unique_ptr<peer::Node>>&& peers)
-        {
-            for (auto&& p : peers) {
-                validatingPeers.push_back(std::move(p));
-            }
-        }
-
         void update()
         {
             logger::debug("sumeragi") << "Context update!";
             auto peers = config::PeerServiceConfig::getInstance().getPeerList();
+            validatingPeers.clear();
             for (auto&& p : peers ) {
                 validatingPeers.push_back( std::move(p) );
             }

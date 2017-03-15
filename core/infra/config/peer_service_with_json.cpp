@@ -114,7 +114,7 @@ std::string PeerServiceConfig::getMyIp() {
 }
 
 double PeerServiceConfig::getMaxTrustScore() {
-  return this->getMaxTrustScoreWithDefault(1.0); // WIP to support trustRate = 1.0
+  return this->getMaxTrustScoreWithDefault(10.0); // WIP to support trustRate = 10.0
 }
 
 size_t PeerServiceConfig::getMaxFaulty() {
