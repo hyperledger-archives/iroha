@@ -22,7 +22,7 @@ limitations under the License.
 
 namespace executor{
 
-    std::string tolower(std::string s) {
+    std::string tolowerString(std::string s) {
         for (char &c : s)
             c = std::tolower(c);
         return s;
@@ -147,16 +147,17 @@ namespace executor{
         logger::info("executor") << "Executor";
         logger::info("executor")  << "DebugString:"<< tx.DebugString();
         logger::info("executor") << "tx type(): " << tx.type();
-        tx.set_type( tolower( tx.type() ).c_str() );
-        if(tx.type() == "add"){
+        const std::string type = executor::tolowerString( tx.type() );
+
+        if(type == "add"){
             add(tx);
-        }else if(tx.type() == "transfer"){
+        }else if(type == "transfer"){
             transfer(tx);
-        }else if(tx.type() == "update"){
+        }else if(type == "update"){
             update(tx);
-        }else if(tx.type() == "remove"){
+        }else if(type == "remove"){
             remove(tx);
-        }else if(tx.type() == "contract"){
+        }else if(type == "contract"){
             contract(tx);
         }
     }
