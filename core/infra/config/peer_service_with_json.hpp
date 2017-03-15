@@ -67,8 +67,8 @@ class PeerServiceConfig : config::AbstractConfigManager {
   size_t getMaxFaulty();
 
   bool isMyActive();
-  bool active();
-  bool stop();
+  void activate();
+  void stop();
 
 
   std::vector<std::unique_ptr<peer::Node>> getPeerList();
