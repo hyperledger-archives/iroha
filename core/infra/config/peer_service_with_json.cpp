@@ -126,12 +126,11 @@ bool PeerServiceConfig::isMyActive() {
 }
 
 bool PeerServiceConfig::active() {
-    return is_active == true;
+    is_active = true;
 }
 
 bool PeerServiceConfig::stop(){
     is_active = false;
-    return active();
 }
 
 
@@ -294,6 +293,7 @@ bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
     peerList.emplace_back( std::move(peer));
   } catch( exception::service::DuplicationPublicKeyException& e ) {
     logger::warning("addPeer") << e.what();
+    return false;
   } catch( exception::service::DuplicationIPException& e ) {
     logger::warning("addPeer") << e.what();
     return false;
