@@ -124,11 +124,14 @@ size_t PeerServiceConfig::getMaxFaulty() {
 bool PeerServiceConfig::isMyActive() {
     return is_active;
 }
+
 bool PeerServiceConfig::active() {
-    is_active == true;
+    return is_active == true;
 }
+
 bool PeerServiceConfig::stop(){
     is_active = false;
+    return active();
 }
 
 
@@ -193,20 +196,27 @@ std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
   initialziePeerList_from_json();
 
   std::vector<std::unique_ptr<peer::Node>> nodes;
-  for( auto &&node : peerList )
-      if( node.isOK() )
-          nodes.push_back( std::make_unique<peer::Node>( node.getIP(), node.getPublicKey(), node.getTrustScore() ) );
+  for(const auto &node : peerList) {
+    if(node.isOK()) {
+        nodes.push_back(std::make_unique<peer::Node>(node.getIP(),
+                                                     node.getPublicKey(),
+                                                     node.getTrustScore()));
+    }
+  }
 
-  sort( nodes.begin(), nodes.end(),
-        []( const std::unique_ptr<peer::Node> &a, const std::unique_ptr<peer::Node> &b ) { return a->getTrustScore() > b->getTrustScore(); } );
-  logger::debug("getPeerList") << std::to_string( nodes.size() );
-  for( auto &&node : nodes )
+  sort(nodes.begin(), nodes.end(), [](const auto &a, const auto &b) {
+    return a->getTrustScore() > b->getTrustScore();
+  } );
+  logger::debug("getPeerList") << std::to_string(nodes.size());
+  for(const auto &node : nodes ) {
       logger::debug("getPeerList") << node->getIP() + " " <<node->getPublicKey();
+  }
   return nodes;
 }
+
 std::vector<std::string> PeerServiceConfig::getIpList() {
   std::vector<std::string> ret_ips;
-  for( auto &&node : getPeerList() )
+  for(const auto &node : getPeerList() )
     ret_ips.push_back( node->getIP() );
   return ret_ips;
 }
@@ -284,11 +294,11 @@ bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
     peerList.emplace_back( std::move(peer));
   } catch( exception::service::DuplicationPublicKeyException& e ) {
     logger::warning("addPeer") << e.what();
-    return false;
   } catch( exception::service::DuplicationIPException& e ) {
     logger::warning("addPeer") << e.what();
     return false;
   }
+  return true;
 }
 
 bool PeerServiceConfig::removePeer( const std::string& publicKey ) {
