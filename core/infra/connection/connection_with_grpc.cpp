@@ -605,6 +605,7 @@ namespace connection {
         std::string server_address("0.0.0.0:" + std::to_string(config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)));
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
         builder.RegisterService(&iroha::Sumeragi::service);
+        builder.RegisterService(&iroha::Izanami::service);
         builder.RegisterService(&iroha::TransactionRepository::service);
         builder.RegisterService(&iroha::AssetRepository::find::service);
     }
