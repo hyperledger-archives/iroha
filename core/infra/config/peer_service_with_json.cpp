@@ -40,6 +40,7 @@ using nlohmann::json;
 std::vector<peer::Node> PeerServiceConfig::peerList;
 
 PeerServiceConfig::PeerServiceConfig() {
+    is_active = true;
     initialziePeerList_from_json();
 }
 
@@ -119,6 +120,17 @@ double PeerServiceConfig::getMaxTrustScore() {
 size_t PeerServiceConfig::getMaxFaulty() {
   return std::max( 0, ((int)this->getPeerList().size()-1) / 3 );
 }
+
+bool PeerServiceConfig::isMyActive() {
+    return is_active;
+}
+bool PeerServiceConfig::active() {
+    is_active == true;
+}
+bool PeerServiceConfig::stop(){
+    is_active = false;
+}
+
 
 // TODO: this is temporary solution
 std::vector<json> PeerServiceConfig::getGroup() {
@@ -222,7 +234,7 @@ void PeerServiceConfig::finishedInitializePeer() {
             .setPeer(txbuilder::createPeer( getMyPublicKey(), getMyIp(), txbuilder::createTrust(0.0, true)))
             .build();
     connection::iroha::PeerService::Sumeragi::send( leader_ip, txPeer );
-    updatePeer( getMyPublicKey(), peer::Node(getMyIp(),getMyPublicKey(),0.0, true) );
+    active();
 }
 
 // invoke to issue transaction

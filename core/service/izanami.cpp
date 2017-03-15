@@ -43,6 +43,7 @@ namespace izanami {
 
     InitializeEvent::InitializeEvent() {
         now_progress = 0;
+        config::PeerServiceConfig::getInstance().stop();
     }
 
     void InitializeEvent::add_transactionResponse( std::unique_ptr<TransactionResponse> txResponse ) {
