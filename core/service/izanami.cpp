@@ -69,8 +69,8 @@ namespace izanami {
             txResponses.erase( hash );
         }
         logger::debug("izanami") << "txResponses erase";
-        hashes.erase( now_progress++ );
-        logger::debug("izanami") << "nexted : " + std::to_string( now_progress );
+        hashes.erase( now_progress );
+        logger::debug("izanami") << "nexted : " + std::to_string( ++now_progress );
     }
     uint64_t InitializeEvent::now() const {
         return now_progress;
