@@ -66,6 +66,7 @@ namespace izanami {
     //invoke when initialize Peer that to config Participation on the way
     void startIzanami();
 
+    void setAwkTimer(int const sleepMillisecs, const std::function<void(void)>& action);
 }
 
 

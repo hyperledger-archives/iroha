@@ -184,7 +184,7 @@ std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
   for( auto &&node : peerList )
       if( node.isOK() )
           nodes.push_back( std::make_unique<peer::Node>( node.getIP(), node.getPublicKey(), node.getTrustScore() ) );
-    
+
   sort( nodes.begin(), nodes.end(),
         []( const std::unique_ptr<peer::Node> &a, const std::unique_ptr<peer::Node> &b ) { return a->getTrustScore() > b->getTrustScore(); } );
   logger::debug("getPeerList") << std::to_string( nodes.size() );
@@ -355,7 +355,7 @@ bool PeerServiceConfig::sendAllTransactionToNewPeer( const peer::Node& peer ) {
         if( !connection::iroha::PeerService::Izanami::send( peer.getIP(), txResponse ) ) return false;
     }
 
-    {   // Send transaction data separated block to new peer.
+    if(0){   // WIP(leveldb don't active) Send transaction data separated block to new peer.
         logger::debug("peer-service") << "send all transaction infomation";
         auto transactions = repository::transaction::findAll();
         int block_size = 500;
