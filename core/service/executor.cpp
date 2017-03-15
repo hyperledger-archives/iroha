@@ -53,7 +53,8 @@ namespace executor{
                     tx.peer().trust().isok()
             );
             config::PeerServiceConfig::getInstance().addPeer( query_peer );
-            if( config::PeerServiceConfig::getInstance().getMyIp() != query_peer.getIP() )
+            if( config::PeerServiceConfig::getInstance().getMyIp() != query_peer.getIP() &&
+                    config::PeerServiceConfig::getInstance().isMyActive() )
                 config::PeerServiceConfig::getInstance().sendAllTransactionToNewPeer( query_peer );
         }
     }

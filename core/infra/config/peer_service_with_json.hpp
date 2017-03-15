@@ -52,6 +52,7 @@ class PeerServiceConfig : config::AbstractConfigManager {
 
  private:
   static std::vector<peer::Node> peerList;
+  bool is_active;
 
   void initialziePeerList_from_json();
 
@@ -64,6 +65,11 @@ class PeerServiceConfig : config::AbstractConfigManager {
   std::string getMyIp();
   double getMaxTrustScore();
   size_t getMaxFaulty();
+
+  bool isMyActive();
+  bool active();
+  bool stop();
+
 
   std::vector<std::unique_ptr<peer::Node>> getPeerList();
   std::vector<std::string> getIpList();
