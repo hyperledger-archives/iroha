@@ -59,7 +59,7 @@ test:
         --name iroha2 \
         -v $IROHA_HOME/config/sumeragi2.json:/usr/local/iroha/config/sumeragi.json \
         hyperledger/iroha-docker
-    - sudo lxc-attach -n "$(docker inspect --format '{{.Id}}' ci)" -- /bin/sh -c '/usr/local/iroha/bin/issue_transaction add peer 172.18.0.3 yUAFTYNh6qkhBMiNgNdg45Wk/XHOGYanuIroY9skfPQ= 1.0 true'
+    - sudo lxc-attach -n "$(docker inspect --format '{{.Id}}' iroha1)" -- /bin/sh -c '/usr/local/iroha/bin/issue_transaction add peer 172.18.0.3 yUAFTYNh6qkhBMiNgNdg45Wk/XHOGYanuIroY9skfPQ= 1.0 true'
 
   post:
     # iroha1 logs
