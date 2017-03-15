@@ -20,3 +20,15 @@ target_link_libraries(issue_transaction
     connection_with_grpc
     transaction_repository
 )
+
+# make config
+add_executable(send_izanami_test send_izanami.cpp)
+target_link_libraries(send_izanami_test
+    json
+    config_manager
+    logger
+    event_with_grpc
+    create_objects_helper
+    connection_with_grpc
+    transaction_repository
+)

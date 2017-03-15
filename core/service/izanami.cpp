@@ -32,6 +32,15 @@ limitations under the License.
 namespace izanami {
     using Api::TransactionResponse;
 
+
+    void setAwkTimer(int const sleepMillisecs, const std::function<void(void)>& action) {
+        std::thread([action, sleepMillisecs]() {
+            std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+            action();
+        }).join();
+    }
+
+
     InitializeEvent::InitializeEvent() {
         now_progress = 0;
     }
@@ -44,6 +53,7 @@ namespace izanami {
         for( auto&& tx : txResponse->transaction() ) {
             hash = hash::sha3_256_hex(hash+tx.hash());
         }
+        hashes[ txResponse->code() ].emplace_back( hash );
         txResponses[ hash ] = std::move( txResponse );
     }
     const std::vector<std::string>& InitializeEvent::getHashes( uint64_t progress ) {
@@ -53,10 +63,13 @@ namespace izanami {
         return std::move( txResponses[ hash ] );
     }
     void InitializeEvent::next_progress() {
+        logger::debug("izanami") << "next_progress : " + std::to_string( now_progress );
         for( auto&& hash : hashes[now_progress] ) {
             txResponses.erase( hash );
         }
+        logger::debug("izanami") << "txResponses erase";
         hashes.erase( now_progress++ );
+        logger::debug("izanami") << "nexted : " + std::to_string( now_progress );
     }
     uint64_t InitializeEvent::now() const {
         return now_progress;
@@ -64,7 +77,7 @@ namespace izanami {
 
     void InitializeEvent::storeTxResponse( const std::string& hash ) {
         for( auto &&tx : txResponses[ hash ]->transaction() ) {
-            repository::transaction::add( tx.hash(), tx );
+            //WIP repository::transaction::add( tx.hash(), tx );
         }
     }
     void InitializeEvent::executeTxResponse( const std::string& hash ) {
@@ -137,10 +150,14 @@ namespace izanami {
     //invoke when receive TransactionResponse.
     void receiveTransactionResponse( TransactionResponse& txResponse ) {
         static InitializeEvent event;
+        logger::debug("izanami") << "in receiveTransactionResponse event = " + std::to_string(event.now()) ;
         if( event.isFinished() ) return;
+        logger::debug("izanami") << "evet is not finished";
         event.add_transactionResponse( std::make_unique<TransactionResponse>( txResponse ) );
         if( detail::isFinishedReceive( event ) ) {
+            logger::debug("izanami") << "is finished receive";
             if( detail::isFinishedReceiveAll( event )) {
+                logger::debug("izanami") << "is finished receive all";
                 config::PeerServiceConfig::getInstance().finishedInitializePeer();
                 event.finished();
                 logger::explore("izanami") << "Finished Receive ALl Transaction";
@@ -152,6 +169,13 @@ namespace izanami {
                 detail::storeTransactionResponse(event);
             }
         }
+        if( !event.isFinished() && txResponse.transaction().empty() )
+            setAwkTimer( 1000, [&txResponse]() {
+                connection::iroha::PeerService::Izanami::send(
+                        config::PeerServiceConfig::getInstance().getMyIp(),
+                        txResponse
+                );
+            });
     }
 
 
@@ -189,6 +213,7 @@ namespace izanami {
 
         connection::iroha::Izanami::Izanagi::receive([](const std::string& from, TransactionResponse& txResponse ) {
             logger::info("izanami") << "receive! Transactions!!";
+            logger::info("izanami") << txResponse.message();
             std::function<void()> &&task = std::bind( receiveTransactionResponse, txResponse );
             pool.process(std::move(task));
         });
