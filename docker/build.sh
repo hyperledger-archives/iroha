@@ -18,6 +18,12 @@ if ! docker images hyperledger/iroha-dev | grep -q hyperledger/iroha-dev; then
   fi
 fi
 
+# Overwrite docker image
+if [ "$1" = "-f" ]; then
+  echo "yes read -f option overlap new iroha.tar"
+  ./clear.sh
+fi
+
 # run dev container to build iroha
 docker run -i \
     -v ${IROHA_HOME}/docker/build:/build \

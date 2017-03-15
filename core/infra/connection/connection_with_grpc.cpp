@@ -449,9 +449,7 @@ namespace connection {
                 ) {
                     auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
                     for (auto &ip : receiver_ips) {
-                        if (ip != config::PeerServiceConfig::getInstance().getMyIp()) {
-                            send(ip, event);
-                        }
+                        send(ip, event);
                     }
                     return true;
                 }
@@ -537,6 +535,7 @@ namespace connection {
 
 
         namespace Izanami {
+            IzanamiConnectionServiceImpl service;
             namespace Izanagi {
                 bool receive(const std::function<void(
                         const std::string &,
@@ -607,6 +606,7 @@ namespace connection {
         std::string server_address("0.0.0.0:" + std::to_string(config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)));
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
         builder.RegisterService(&iroha::Sumeragi::service);
+        builder.RegisterService(&iroha::Izanami::service);
         builder.RegisterService(&iroha::TransactionRepository::service);
         builder.RegisterService(&iroha::AssetRepository::find::service);
     }
