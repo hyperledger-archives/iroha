@@ -43,30 +43,8 @@ test:
     - export ID=$(docker run -it -d -p 1204:1204 hyperledger/iroha-docker /run.sh); echo "ID=$ID" >> ~/.bashrc
     # put new tests below
     - curl -X POST http://127.0.0.1:1204/account/register -d '{"publicKey":"WdvM/DPabapmtA7ISbTYPywbHxk8gWu2221LzmcmAgw=","alias":"yonezu","timestamp":1482053586}'
-    # docker-peer-service TEST (add peer)
-    - docker network create --subnet=172.20.0.0/16 iroha-network
-    - >
-      docker run -dit \
-        --net=iroha-network \
-        --ip=172.20.0.2 \
-        --name iroha1 \
-        -v $IROHA_HOME/config/sumeragi1.json:/usr/local/iroha/config/sumeragi.json \
-        hyperledger/iroha-docker
-    - >
-      docker run -dit \
-        --net=iroha-network \
-        --ip=172.20.0.3 \
-        --name iroha2 \
-        -v $IROHA_HOME/config/sumeragi2.json:/usr/local/iroha/config/sumeragi.json \
-        hyperledger/iroha-docker
-    # docker exec -it iroha1 sh -c '/usr/local/iroha/bin/issue_transaction add peer yUAFTYNh6qkhBMiNgNdg45Wk/XHOGYanuIroY9skfPQ= 172.20.0.3 1.0 true'
-    - sudo lxc-attach -n "$(docker inspect --format '{{.Id}}' iroha1)" -- /bin/sh -c '/usr/local/iroha/bin/issue_transaction add peer yUAFTYNh6qkhBMiNgNdg45Wk/XHOGYanuIroY9skfPQ= 172.20.0.3 1.0 true'
 
   post:
-    # iroha1 logs
-    - docker logs iroha1
-    # iroha2 logs
-    - docker logs iroha2
     # iroha-main logs
     - docker logs $ID
     # if node is alive, then iroha-main still works, otherwise test is failed
