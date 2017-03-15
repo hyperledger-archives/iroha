@@ -342,9 +342,9 @@ bool PeerServiceConfig::sendAllTransactionToNewPeer( const peer::Node& peer ) {
         logger::debug("peer-service") << "send all peer infomation";
         auto sorted_peerList = getPeerList();
         auto txResponse = Api::TransactionResponse();
+        txResponse.set_message( "Initilize send now Active PeerList info" );
+        txResponse.set_code( code++ );
         for (auto &&peer : sorted_peerList) {
-            txResponse.set_message( "Initilize send now Active PeerList info" );
-            txResponse.set_code( code++ );
             auto txPeer = TransactionBuilder<Add<Peer>>()
                     .setSenderPublicKey(getMyPublicKey())
                     .setPeer(txbuilder::createPeer(peer->getPublicKey(), peer->getIP(),

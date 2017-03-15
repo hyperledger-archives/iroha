@@ -118,6 +118,7 @@ namespace izanami {
             for (auto counter : hash_counter ) {
                 res = std::max(res, counter.second);
             }
+            logger::debug("izanami") << "isFinishedReveive : res : " + std::to_string( res ) + " >= " + std::to_string(2 * config::PeerServiceConfig::getInstance().getMaxFaulty() + 1);
             if( res >= 2 * config::PeerServiceConfig::getInstance().getMaxFaulty() + 1 ) return true;
             return false;
         }
