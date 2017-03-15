@@ -125,11 +125,11 @@ bool PeerServiceConfig::isMyActive() {
     return is_active;
 }
 
-bool PeerServiceConfig::active() {
+void PeerServiceConfig::activate() {
     is_active = true;
 }
 
-bool PeerServiceConfig::stop(){
+void PeerServiceConfig::stop(){
     is_active = false;
 }
 
@@ -243,7 +243,7 @@ void PeerServiceConfig::finishedInitializePeer() {
             .setPeer(txbuilder::createPeer( getMyPublicKey(), getMyIp(), txbuilder::createTrust(0.0, true)))
             .build();
     connection::iroha::PeerService::Sumeragi::send( leader_ip, txPeer );
-    active();
+    activate();
 }
 
 // invoke to issue transaction
