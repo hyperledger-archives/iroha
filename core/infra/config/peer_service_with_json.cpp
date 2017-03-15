@@ -182,7 +182,9 @@ std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
 
   std::vector<std::unique_ptr<peer::Node>> nodes;
   for( auto &&node : peerList )
-    nodes.push_back( std::make_unique<peer::Node>( node.getIP(), node.getPublicKey(), node.getTrustScore() ) );
+      if( node.isOK() )
+          nodes.push_back( std::make_unique<peer::Node>( node.getIP(), node.getPublicKey(), node.getTrustScore() ) );
+    
   sort( nodes.begin(), nodes.end(),
         []( const std::unique_ptr<peer::Node> &a, const std::unique_ptr<peer::Node> &b ) { return a->getTrustScore() > b->getTrustScore(); } );
   logger::debug("getPeerList") << std::to_string( nodes.size() );
