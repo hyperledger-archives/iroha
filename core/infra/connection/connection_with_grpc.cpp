@@ -535,6 +535,7 @@ namespace connection {
 
 
         namespace Izanami {
+            IzanamiConnectionServiceImpl service;
             namespace Izanagi {
                 bool receive(const std::function<void(
                         const std::string &,
