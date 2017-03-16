@@ -7,6 +7,8 @@ target_link_libraries(peer_service
     exception
     logger
     config_manager
+    create_objects_helper
+    connection_with_grpc
 )
 
 ADD_LIBRARY(executor STATIC

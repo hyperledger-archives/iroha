@@ -186,11 +186,11 @@ namespace peer {
                     logger::debug("peer-service") << "send all transaction infomation";
                     auto transactions = repository::transaction::findAll();
                     int block_size = 500;
-                    for (int i = 0; i < transactions.size(); i += block_size) {
+                    for (std::size_t i = 0; i < transactions.size(); i += block_size) {
                         auto txResponse = Api::TransactionResponse();
                         txResponse.set_message("Midstream send Transactions");
                         txResponse.set_code(code++);
-                        for (int j = i; j < i + block_size; j++) {
+                        for (std::size_t j = i; j < i + block_size; j++) {
                             txResponse.add_transaction()->CopyFrom(transactions[j]);
                         }
                         if (!connection::iroha::PeerService::Izanami::send(peer.getIP(), txResponse)) return false;
