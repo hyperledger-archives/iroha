@@ -17,7 +17,7 @@ target_link_libraries(iroha-main
   http_server_with_cappuccino
   connection_with_grpc
   config_manager
-    peer_service
+  peer_service
   ed25519
   hash
   pthread

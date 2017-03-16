@@ -4,7 +4,7 @@ target_link_libraries(world_state_repo_with_level_db
   leveldb
   logger
   config_manager
-    peer_service
+  peer_service
   exception
   json
 )

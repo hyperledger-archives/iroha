@@ -13,7 +13,7 @@ target_link_libraries(java_data_structure
   exception
   jni
   config_manager
-    peer_service
+  peer_service
 )
 
 ###################################################
