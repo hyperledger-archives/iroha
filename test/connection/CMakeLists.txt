@@ -6,6 +6,7 @@ target_link_libraries(connection_grpc_test
     connection_with_grpc
     signature
     config_manager
+    peer_service
     ed25519
     gtest
     create_objects_helper

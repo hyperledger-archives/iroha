@@ -12,6 +12,7 @@ target_link_libraries(sumeragi_test
     sumeragi
     connection_with_grpc
     config_manager
+    peer_service
     create_objects_helper
 )
 
@@ -26,5 +27,6 @@ target_link_libraries(transaction_test
     connection_with_grpc
     pthread
     config_manager
+    peer_service
     create_objects_helper
 )

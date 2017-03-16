@@ -34,6 +34,8 @@ limitations under the License.
 #include <transaction_builder/transaction_builder.hpp>
 #include <repository/transaction_repository.hpp>
 #include <infra/config/peer_service_with_json.hpp>
+#include<service/peer_service.hpp>
+
 #include <infra/config/config_format.hpp>
 #include <infra/protobuf/api.pb.h>
 

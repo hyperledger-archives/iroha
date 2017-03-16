@@ -24,6 +24,8 @@ limitations under the License.
 #include <consensus/connection/connection.hpp>
 #include <service/peer_service.hpp>
 #include <infra/config/peer_service_with_json.hpp>
+#include<service/peer_service.hpp>
+
 #include <infra/config/iroha_config_with_json.hpp>
 #include <crypto/hash.hpp>
 #include <repository/transaction_repository.hpp>
@@ -219,7 +221,7 @@ namespace peer {
             logger::explore("izanami") << "\033[95m+==ーーーーーーーーーー==+\033[0m";
             logger::explore("izanami") << "- 起動/setup";
 
-            logger::info("izanami") << "My PublicKey is " << config::PeerServiceConfig::getInstance().getMyPublicKey();
+            logger::info("izanami") << "My PublicKey is " << peer::myself::getPublicKey();
             logger::info("izanami") << "My key is " << config::PeerServiceConfig::getInstance().getMyIp();
 
 

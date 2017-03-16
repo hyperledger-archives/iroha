@@ -21,6 +21,8 @@ limitations under the License.
 #include <iostream>
 #include <string>
 #include <infra/config/peer_service_with_json.hpp>
+#include<service/peer_service.hpp>
+
 #include <service/peer_service.hpp>
 #include <util/logger.hpp>
 

@@ -14,6 +14,7 @@ add_executable(issue_transaction issue_transaction.cpp )
 target_link_libraries(issue_transaction
     json
     config_manager
+    peer_service
     logger
     event_with_grpc
     create_objects_helper
@@ -26,6 +27,7 @@ add_executable(send_izanami_test send_izanami.cpp)
 target_link_libraries(send_izanami_test
     json
     config_manager
+    peer_service
     logger
     event_with_grpc
     create_objects_helper

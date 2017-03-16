@@ -22,6 +22,8 @@ limitations under the License.
 
 #include <consensus/connection/connection.hpp>
 #include <infra/config/peer_service_with_json.hpp>
+#include<service/peer_service.hpp>
+
 #include <transaction_builder/transaction_builder.hpp>
 
 using Api::ConsensusEvent;

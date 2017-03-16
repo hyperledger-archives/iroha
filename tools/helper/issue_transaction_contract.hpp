@@ -25,6 +25,8 @@ limitations under the License.
 #include <transaction_builder/transaction_builder.hpp>
 #include <consensus/connection/connection.hpp>
 #include <infra/config/peer_service_with_json.hpp>
+#include<service/peer_service.hpp>
+
 
 #ifndef TOOLS_ISSUE_TRANSACTION_CONTRACT_HPP
 #define TOOLS_ISSUE_TRANSACTION_CONTRACT_HPP

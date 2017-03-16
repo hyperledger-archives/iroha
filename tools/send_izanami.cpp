@@ -20,11 +20,13 @@ limitations under the License.
 #include <string>
 #include <service/peer_service.hpp>
 #include <infra/config/peer_service_with_json.hpp>
+#include <service/peer_service.hpp>
+
 
 int main(int argc, char* argv[]) {
     peer::Node peer (
             config::PeerServiceConfig::getInstance().getMyIp(),
-            config::PeerServiceConfig::getInstance().getMyPublicKey(),
+            peer::myself::getPublicKey(),
             1.0,
             false
     );

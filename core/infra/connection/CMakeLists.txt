@@ -12,4 +12,5 @@ target_link_libraries(connection_with_grpc
   event_with_grpc
   core_repository
   config_manager
+    peer_service
 )

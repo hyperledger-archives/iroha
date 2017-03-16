@@ -28,6 +28,8 @@ limitations under the License.
 #include <transaction_builder/transaction_builder.hpp>
 #include <consensus/connection/connection.hpp>
 #include <infra/config/peer_service_with_json.hpp>
+#include <service/peer_service.hpp>
+
 
 
 namespace tools {
@@ -39,7 +41,7 @@ namespace tools {
                     try {
                         auto
                         tx = txbuilder::TransactionBuilder < type_signatures::Remove < type_signatures::Account >> ()
-                                .setSenderPublicKey(config::PeerServiceConfig::getInstance().getMyPublicKey())
+                                .setSenderPublicKey(::peer::myself::getPublicKey())
 //TODO                                txbuilder::createAccount( argv[0], argv[1], txbuilder::createTrust( stod(argv[2]), argv[3]=="true" ) )
                                 .build();
                         connection::iroha::PeerService::Sumeragi::send(
@@ -61,7 +63,7 @@ namespace tools {
                     try {
                         auto
                         tx = txbuilder::TransactionBuilder < type_signatures::Remove < type_signatures::Asset >> ()
-                                .setSenderPublicKey(config::PeerServiceConfig::getInstance().getMyPublicKey())
+                                .setSenderPublicKey(::peer::myself::getPublicKey())
 //TODO                                txbuilder::createAsset( argv[0], argv[1], txbuilder::createTrust( stod(argv[2]), argv[3]=="true" ) )
                                 .build();
                         connection::iroha::PeerService::Sumeragi::send(
@@ -83,7 +85,7 @@ namespace tools {
                     try {
                         auto
                         tx = txbuilder::TransactionBuilder < type_signatures::Remove < type_signatures::Peer >> ()
-                                .setSenderPublicKey(config::PeerServiceConfig::getInstance().getMyPublicKey())
+                                .setSenderPublicKey(::peer::myself::getPublicKey())
                             .setPeer(
                                 txbuilder::createPeer( argv.at(0), argv.at(1), txbuilder::createTrust( stod(argv.at(2)), argv.at(3)=="true" ) )
                             )
@@ -107,7 +109,7 @@ namespace tools {
                     try {
                         auto
                         tx = txbuilder::TransactionBuilder < type_signatures::Remove < type_signatures::Domain >> ()
-                                .setSenderPublicKey(config::PeerServiceConfig::getInstance().getMyPublicKey())
+                                .setSenderPublicKey(::peer::myself::getPublicKey())
                             .setDomain(
                                 txbuilder::createDomain( argv.at(0), argv.at(1) )
                             )

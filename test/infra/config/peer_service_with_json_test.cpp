@@ -21,6 +21,8 @@ limitations under the License.
 #include <gtest/gtest.h>
 #include <infra/protobuf/api.pb.h>
 #include <infra/config/peer_service_with_json.hpp>
+#include<service/peer_service.hpp>
+
 #include <service/peer_service.hpp>
 #include <vector>
 

@@ -22,6 +22,8 @@ limitations under the License.
 #include <service/peer_service.hpp>
 
 #include <infra/config/peer_service_with_json.hpp>
+#include <service/peer_service.hpp>
+
 #include <infra/config/iroha_config_with_json.hpp>
 
 #include <repository/transaction_repository.hpp>
@@ -76,9 +78,9 @@ namespace connection {
     std::function<RecieverConfirmation(const std::string&)> sign = [](const std::string &hash) {
         RecieverConfirmation confirm;
         Signature signature;
-        signature.set_publickey(config::PeerServiceConfig::getInstance().getMyPublicKey());
+        signature.set_publickey(peer::myself::getPublicKey());
         signature.set_signature(signature::sign(
-            config::PeerServiceConfig::getInstance().getMyPublicKey(),
+            peer::myself::getPublicKey(),
             hash,
             config::PeerServiceConfig::getInstance().getMyPrivateKey())
         );

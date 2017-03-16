@@ -3,7 +3,7 @@
                     try {
                         auto
                         tx = txbuilder::TransactionBuilder < type_signatures::COMMAND_NAME_B < type_signatures::DATAMODEL_NAME_B >> ()
-                                .setSenderPublicKey(config::PeerServiceConfig::getInstance().getMyPublicKey())
+                                .setSenderPublicKey(::peer::myself::getPublicKey())
                         ##CODE
                                 .build();
                         connection::iroha::PeerService::Sumeragi::send(

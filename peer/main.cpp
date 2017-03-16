@@ -28,6 +28,8 @@ limitations under the License.
 
 #include <service/peer_service.hpp>
 #include <infra/config/peer_service_with_json.hpp>
+#include<service/peer_service.hpp>
+
 #include <service/izanami.hpp>
 
 #include <repository/world_state_repository.hpp>
