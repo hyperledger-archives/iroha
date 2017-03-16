@@ -22,3 +22,11 @@ target_link_libraries(core_repository
 add_library(transaction_repository STATIC
   transaction_repository.cpp
 )
+
+target_link_libraries(transaction_repository
+  base64
+  event_with_grpc # protobuf
+  world_state_repo_with_level_db
+  signature # consensus/consensus_event.hpp requires (should be fixed?)
+  logger
+)

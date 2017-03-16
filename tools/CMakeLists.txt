@@ -26,7 +26,6 @@ target_link_libraries(issue_transaction
     peer_service
     logger
     transaction_builder
-    connection_with_grpc
 )
 
 ###########################

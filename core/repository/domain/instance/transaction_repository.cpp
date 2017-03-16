@@ -14,7 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
         limitations under the License.
 */
+
 #include <repository/transaction_repository.hpp>
+
+#include <consensus/consensus_event.hpp>
+#include <crypto/base64.hpp>
+#include <infra/protobuf/api.pb.h>
+#include <repository/world_state_repository.hpp>
 
 namespace repository{
     namespace transaction {
