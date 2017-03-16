@@ -45,7 +45,7 @@ namespace peer {
 
         InitializeEvent::InitializeEvent() {
             now_progress = 0;
-            config::PeerServiceConfig::getInstance().stop();
+            ::peer::myself::stop();
         }
 
         void InitializeEvent::add_transactionResponse(std::unique_ptr<TransactionResponse> txResponse) {
@@ -128,8 +128,8 @@ namespace peer {
                 }
                 logger::debug("izanami") << "isFinishedReveive : res : " + std::to_string(res) + " >= " +
                                             std::to_string(
-                                                    2 * config::PeerServiceConfig::getInstance().getMaxFaulty() + 1);
-                if (res >= 2 * config::PeerServiceConfig::getInstance().getMaxFaulty() + 1) return true;
+                                                    2 * ::peer::service::getMaxFaulty() + 1);
+                if (res >= 2 * ::peer::service::getMaxFaulty() + 1) return true;
                 return false;
             }
 
@@ -146,7 +146,7 @@ namespace peer {
                         res_hash = counter.first;
                     }
                 }
-                if (res >= 2 * config::PeerServiceConfig::getInstance().getMaxFaulty() + 1) return res_hash;
+                if (res >= 2 * ::peer::service::getMaxFaulty() + 1) return res_hash;
                 return "";
             }
 
@@ -169,11 +169,11 @@ namespace peer {
                 logger::debug("izanami") << "is finished receive";
                 if (detail::isFinishedReceiveAll(event)) {
                     logger::debug("izanami") << "is finished receive all";
-                    config::PeerServiceConfig::getInstance().finishedInitializePeer();
+                    ::peer::transaction::izanami::finished();
                     event.finished();
                     logger::explore("izanami") << "Finished Receive ALl Transaction";
                     logger::explore("izanami") << "Closed Izanami";
-                    for (auto &&p : config::PeerServiceConfig::getInstance().getPeerList()) {
+                    for (auto &&p : ::peer::service::getPeerList()) {
                         logger::explore("izanami_initialized_nodes")
                                 << p->getIP() + " : " + p->getPublicKey() + " : " + p->getPublicKey() + " : " +
                                    std::to_string(p->getTrustScore());
@@ -185,7 +185,7 @@ namespace peer {
             if (!event.isFinished() && txResponse.transaction().empty())
                 setAwkTimer(1000, [&txResponse]() {
                     connection::iroha::PeerService::Izanami::send(
-                            config::PeerServiceConfig::getInstance().getMyIp(),
+                            ::peer::myself::getIp(),
                             txResponse
                     );
                 });
@@ -221,8 +221,8 @@ namespace peer {
             logger::explore("izanami") << "\033[95m+==ーーーーーーーーーー==+\033[0m";
             logger::explore("izanami") << "- 起動/setup";
 
-            logger::info("izanami") << "My PublicKey is " << peer::myself::getPublicKey();
-            logger::info("izanami") << "My key is " << config::PeerServiceConfig::getInstance().getMyIp();
+            logger::info("izanami") << "My PublicKey is " << ::peer::myself::getPublicKey();
+            logger::info("izanami") << "My key is " << ::peer::myself::getIp();
 
 
             connection::iroha::Izanami::Izanagi::receive([](const std::string &from, TransactionResponse &txResponse) {

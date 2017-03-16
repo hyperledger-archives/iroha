@@ -105,7 +105,7 @@ protected:
         sampleEvent.mutable_transaction()->CopyFrom(tx);
 
         connection::iroha::Sumeragi::Verify::send(
-                config::PeerServiceConfig::getInstance().getMyIp(),
+                ::peer::myself::getIp(),
                 sampleEvent
         );
     }
@@ -117,7 +117,7 @@ protected:
                 .build();
 
         connection::iroha::PeerService::Sumeragi::send(
-                config::PeerServiceConfig::getInstance().getMyIp(),
+                ::peer::myself::getIp(),
                 tx
         );
     }

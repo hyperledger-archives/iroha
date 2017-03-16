@@ -7,7 +7,7 @@
                         ##CODE
                                 .build();
                         connection::iroha::PeerService::Sumeragi::send(
-                                config::PeerServiceConfig::getInstance().getMyIp(),
+                                ::peer::myself::getIp(),
                                 tx
                         );
                     } catch (const std::out_of_range &oor) {

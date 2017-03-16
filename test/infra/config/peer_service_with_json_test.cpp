@@ -20,16 +20,12 @@ limitations under the License.
 
 #include <gtest/gtest.h>
 #include <infra/protobuf/api.pb.h>
-#include <infra/config/peer_service_with_json.hpp>
-#include<service/peer_service.hpp>
-
 #include <service/peer_service.hpp>
 #include <vector>
 
-auto& PEER = config::PeerServiceConfig::getInstance();
 
 TEST(peer_service_with_json_test, initialize_peer_test) {
-  std::vector<std::unique_ptr<peer::Node>> peers = PEER.getPeerList();
+  std::vector<std::unique_ptr<peer::Node>> peers = ::peer::service::getPeerList();
   for (auto&& peer : peers) {
     std::cout << peer->getIP() << std::endl;
     std::cout << peer->getPublicKey() << std::endl;
@@ -42,20 +38,20 @@ TEST(peer_service_with_json_test, initialize_peer_test) {
 }
 
 TEST(peer_service_with_json_test, add_peer_test) {
-  int n = PEER.getPeerList().size();
+  int n = ::peer::service::getPeerList().size();
   peer::Node peer1 = peer::Node("ip_low", "publicKey1", 0.5);
   peer::Node peer2 = peer::Node("ip_high", "publicKey2", 1.5);
   peer::Node peer3 = peer::Node("ip_high", "publicKey1", 1.5);
   peer::Node peer4 = peer::Node("ip_4", "0_publicKey4", 100.0);
-  ASSERT_TRUE(PEER.validate_addPeer(peer1));
-  ASSERT_TRUE(PEER.addPeer(peer1));
-  ASSERT_TRUE(PEER.validate_addPeer(peer2));
-  ASSERT_TRUE(PEER.addPeer(peer2));
-  ASSERT_FALSE(PEER.validate_addPeer(peer3));
-  ASSERT_FALSE(PEER.addPeer(peer3));
-  ASSERT_TRUE(PEER.validate_addPeer(peer4));
-  ASSERT_TRUE(PEER.addPeer(peer4));
-  std::vector<std::unique_ptr<peer::Node>> peers = PEER.getPeerList();
+  ASSERT_TRUE(::peer::transaction::validator::add(peer1));
+  ASSERT_TRUE(::peer::transaction::executor::add(peer1));
+  ASSERT_TRUE(::peer::transaction::validator::add(peer2));
+  ASSERT_TRUE(::peer::transaction::executor::add(peer2));
+  ASSERT_FALSE(::peer::transaction::validator::add(peer3));
+  ASSERT_FALSE(::peer::transaction::executor::add(peer3));
+  ASSERT_TRUE(::peer::transaction::validator::add(peer4));
+  ASSERT_TRUE(::peer::transaction::executor::add(peer4));
+  std::vector<std::unique_ptr<peer::Node>> peers = ::peer::service::getPeerList();
   for (auto&& peer : peers) {
     std::cout << peer->getIP() << std::endl;
     std::cout << peer->getPublicKey() << std::endl;
@@ -65,18 +61,18 @@ TEST(peer_service_with_json_test, add_peer_test) {
 }
 
 TEST(peer_service_with_json_test, update_peer_test) {
-  int n = PEER.getPeerList().size();
+  int n = ::peer::service::getPeerList().size();
   const std::string upd_ip = "updated_ip";
   const std::string upd_key = "publicKey1";
   const std::string upd_ng_key = "dummy";
   peer::Node peer = peer::Node(upd_ip, upd_key, -1.0);
   peer::Node peer4 = peer::Node("ip_4", "0_publicKey4", 100.0);
   peer::Node peer_ng = peer::Node(upd_ip, upd_ng_key, -1.0);
-  ASSERT_TRUE(PEER.validate_updatePeer(upd_key, peer));
-  ASSERT_TRUE(PEER.updatePeer(upd_key, peer));
-  ASSERT_FALSE(PEER.validate_updatePeer(upd_ng_key, peer));
-  ASSERT_FALSE(PEER.updatePeer(upd_ng_key, peer_ng));
-  std::vector<std::unique_ptr<peer::Node>> peers = PEER.getPeerList();
+  ASSERT_TRUE(::peer::transaction::validator::update(upd_key, peer));
+  ASSERT_TRUE(::peer::transaction::executor::update(upd_key, peer));
+  ASSERT_FALSE(::peer::transaction::validator::update(upd_ng_key, peer));
+  ASSERT_FALSE(::peer::transaction::executor::update(upd_ng_key, peer_ng));
+  std::vector<std::unique_ptr<peer::Node>> peers = ::peer::service::getPeerList();
   for (auto&& peer : peers) {
     std::cout << peer->getIP() << std::endl;
     std::cout << peer->getPublicKey() << std::endl;
@@ -90,13 +86,13 @@ TEST(peer_service_with_json_test, update_peer_test) {
 }
 
 TEST(peer_service_with_json_test, remove_peer_test) {
-  int n = PEER.getPeerList().size();
+  int n = ::peer::service::getPeerList().size();
   const std::string rm_key = "publicKey1";
-  ASSERT_TRUE(PEER.validate_removePeer(rm_key));
-  ASSERT_TRUE(PEER.removePeer(rm_key));
-  ASSERT_FALSE(PEER.validate_removePeer(rm_key));
-  ASSERT_FALSE(PEER.removePeer(rm_key));
-  std::vector<std::unique_ptr<peer::Node>> peers = PEER.getPeerList();
+  ASSERT_TRUE(::peer::transaction::validator::remove(rm_key));
+  ASSERT_TRUE(::peer::transaction::executor::remove(rm_key));
+  ASSERT_FALSE(::peer::transaction::validator::remove(rm_key));
+  ASSERT_FALSE(::peer::transaction::executor::remove(rm_key));
+  std::vector<std::unique_ptr<peer::Node>> peers = ::peer::service::getPeerList();
   for (auto&& peer : peers) {
     std::cout << peer->getIP() << std::endl;
     std::cout << peer->getPublicKey() << std::endl;
@@ -106,12 +102,12 @@ TEST(peer_service_with_json_test, remove_peer_test) {
 }
 
 TEST(peer_service_with_json_test, leader_peer_check_test) {
-  std::vector<std::unique_ptr<peer::Node>> peers = PEER.getPeerList();
-  ASSERT_FALSE(PEER.isLeaderMyPeer());
+  std::vector<std::unique_ptr<peer::Node>> peers = ::peer::service::getPeerList();
+  ASSERT_FALSE(::peer::myself::isLeader());
   for (auto&& peer : peers) {
-    if (peer->getPublicKey() != PEER.getMyPublicKey()) {
-      ASSERT_TRUE(PEER.removePeer(peer->getPublicKey()));
+    if (peer->getPublicKey() != ::peer::myself::getPublicKey()) {
+      ASSERT_TRUE(::peer::transaction::executor::remove(peer->getPublicKey()));
     }
   }
-  ASSERT_TRUE(PEER.isLeaderMyPeer());
+  ASSERT_TRUE(::peer::myself::isLeader());
 }

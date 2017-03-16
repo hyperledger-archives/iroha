@@ -39,7 +39,7 @@ void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const &acti
 int main(){
     std::string senderPublicKey;
 
-    std::string pubKey = peer::myself::getPublicKey();
+    std::string pubKey = ::peer::myself::getPublicKey();
 
     while(1){
         setAwkTimer(3000, [&](){

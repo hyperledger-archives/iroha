@@ -170,7 +170,7 @@ namespace sumeragi {
             logger::debug("sumeragi") << "Context update!";
             validatingPeers.clear();
             {
-                auto peers = config::PeerServiceConfig::getInstance().getPeerList();
+                auto peers = ::peer::service::getPeerList();
                 for (auto &&p : peers) {
                     validatingPeers.push_back(std::move(p));
                 }
@@ -178,7 +178,7 @@ namespace sumeragi {
 
             this->numValidatingPeers = this->validatingPeers.size();
             // maxFaulty = Default to approx. 1/3 of the network.
-            this->maxFaulty = config::PeerServiceConfig::getInstance().getMaxFaulty();
+            this->maxFaulty = ::peer::service::getMaxFaulty();
             this->proxyTailNdx = this->maxFaulty * 2 + 1;
 
             if (this->validatingPeers.empty()) {
@@ -191,7 +191,7 @@ namespace sumeragi {
             }
 
             this->panicCount = 0;
-            this->myPublicKey = peer::myself::getPublicKey();
+            this->myPublicKey = ::peer::myself::getPublicKey();
 
             this->isSumeragi = this->validatingPeers.at(0)->getPublicKey() == this->myPublicKey;
         }
@@ -212,7 +212,7 @@ namespace sumeragi {
         logger::explore("sumeragi") <<  "- 初期設定/initialize";
         //merkle_transaction_repository::initLeaf();
 
-        logger::info("sumeragi")    <<  "My key is " << config::PeerServiceConfig::getInstance().getMyIp();
+        logger::info("sumeragi")    <<  "My key is " << ::peer::myself::getIp();
         logger::info("sumeragi")    <<  "Sumeragi setted";
         logger::info("sumeragi")    <<  "set number of validatingPeer";
 
@@ -281,21 +281,21 @@ namespace sumeragi {
         logger::info("sumeragi")    <<  "Add my signature...";
 
         logger::info("sumeragi")    <<  "hash:" <<  detail::hash(event.transaction());
-        logger::info("sumeragi")    <<  "pub: "  <<  peer::myself::getPublicKey();
-        logger::info("sumeragi")    <<  "priv:"  <<  config::PeerServiceConfig::getInstance().getMyPrivateKey();
+        logger::info("sumeragi")    <<  "pub: "  <<  ::peer::myself::getPublicKey();
+        logger::info("sumeragi")    <<  "priv:"  <<  ::peer::myself::getPrivateKey();
         logger::info("sumeragi")    <<  "sig: "  <<  signature::sign(
             detail::hash(event.transaction()),
-            peer::myself::getPublicKey(),
-            config::PeerServiceConfig::getInstance().getMyPrivateKey()
+            ::peer::myself::getPublicKey(),
+            ::peer::myself::getPrivateKey()
         );
 
         //detail::printIsSumeragi(context->isSumeragi);
         // Really need? blow "if statement" will be false anytime.
         detail::addSignature(event,
-            peer::myself::getPublicKey(),
+            ::peer::myself::getPublicKey(),
             signature::sign(detail::hash(event.transaction()),
-                            peer::myself::getPublicKey(),
-                            config::PeerServiceConfig::getInstance().getMyPrivateKey())
+                            ::peer::myself::getPublicKey(),
+                            ::peer::myself::getPrivateKey())
         );
 
         if (detail::eventSignatureIsEmpty(event) && context->isSumeragi) {
@@ -339,17 +339,17 @@ namespace sumeragi {
                 // This is a new event, so we should verify, sign, and broadcast it
                 detail::addSignature(
                    event,
-                   peer::myself::getPublicKey(),
+                   ::peer::myself::getPublicKey(),
                    signature::sign(detail::hash(event.transaction()),
-                   peer::myself::getPublicKey(),
-                   config::PeerServiceConfig::getInstance().getMyPrivateKey()).c_str()
+                   ::peer::myself::getPublicKey(),
+                   ::peer::myself::getPrivateKey()).c_str()
                 );
 
                 logger::info("sumeragi")        <<  "tail public key is "   <<  context->validatingPeers.at(context->proxyTailNdx)->getPublicKey();
                 logger::info("sumeragi")        <<  "tail is "              <<  context->proxyTailNdx;
-                logger::info("sumeragi")        <<  "my public key is "     <<  peer::myself::getPublicKey();
+                logger::info("sumeragi")        <<  "my public key is "     <<  ::peer::myself::getPublicKey();
 
-                if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() == peer::myself::getPublicKey()) {
+                if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() == ::peer::myself::getPublicKey()) {
                     logger::info("sumeragi")    <<  "I will send event to " <<  context->validatingPeers.at(context->proxyTailNdx)->getIP();
                     connection::iroha::Sumeragi::Verify::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(), std::move(event)); // Think In Process
                 } else {

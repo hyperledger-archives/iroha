@@ -29,6 +29,7 @@ target_link_libraries(peer_service
     json
     exception
     logger
+    izanami
     config_manager
     peer_service
 )

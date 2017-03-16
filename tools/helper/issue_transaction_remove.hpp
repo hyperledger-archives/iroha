@@ -45,7 +45,7 @@ namespace tools {
 //TODO                                txbuilder::createAccount( argv[0], argv[1], txbuilder::createTrust( stod(argv[2]), argv[3]=="true" ) )
                                 .build();
                         connection::iroha::PeerService::Sumeragi::send(
-                                config::PeerServiceConfig::getInstance().getMyIp(),
+                                ::peer::myself::getIp(),
                                 tx
                         );
                     } catch (const std::out_of_range &oor) {
@@ -67,7 +67,7 @@ namespace tools {
 //TODO                                txbuilder::createAsset( argv[0], argv[1], txbuilder::createTrust( stod(argv[2]), argv[3]=="true" ) )
                                 .build();
                         connection::iroha::PeerService::Sumeragi::send(
-                                config::PeerServiceConfig::getInstance().getMyIp(),
+                                ::peer::myself::getIp(),
                                 tx
                         );
                     } catch (const std::out_of_range &oor) {
@@ -91,7 +91,7 @@ namespace tools {
                             )
                                 .build();
                         connection::iroha::PeerService::Sumeragi::send(
-                                config::PeerServiceConfig::getInstance().getMyIp(),
+                                ::peer::myself::getIp(),
                                 tx
                         );
                     } catch (const std::out_of_range &oor) {
@@ -115,7 +115,7 @@ namespace tools {
                             )
                                 .build();
                         connection::iroha::PeerService::Sumeragi::send(
-                                config::PeerServiceConfig::getInstance().getMyIp(),
+                                ::peer::myself::getIp(),
                                 tx
                         );
                     } catch (const std::out_of_range &oor) {

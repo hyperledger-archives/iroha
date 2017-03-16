@@ -19,18 +19,16 @@ limitations under the License.
 
 #include <string>
 #include <service/peer_service.hpp>
-#include <infra/config/peer_service_with_json.hpp>
-#include <service/peer_service.hpp>
 
 
 int main(int argc, char* argv[]) {
     peer::Node peer (
-            config::PeerServiceConfig::getInstance().getMyIp(),
-            peer::myself::getPublicKey(),
+            ::peer::myself::getIp(),
+            ::peer::myself::getPublicKey(),
             1.0,
             false
     );
-    config::PeerServiceConfig::getInstance().sendAllTransactionToNewPeer( peer );
+    ::peer::transaction::izanami::started( peer );
     return 0;
 }
 

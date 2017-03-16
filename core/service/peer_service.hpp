@@ -104,14 +104,14 @@ namespace peer
     };
 
     namespace myself {
-        std::string getPublicKey(); // getMyPublicKey();
-        std::string getPrivateKey(); // getMyPrivateKey();
-        std::string getIp(); // getMyIp();
-        bool isActive(); // old: isMyActive
+        std::string getPublicKey();
+        std::string getPrivateKey();
+        std::string getIp();
+        bool isActive();
         void activate();
         void stop();
         // equatl to isSumeragi
-        bool isLeader(); // old isLeaderMyPeer()
+        bool isLeader();
     }
 
     namespace service {

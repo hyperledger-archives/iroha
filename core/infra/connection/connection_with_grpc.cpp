@@ -78,11 +78,11 @@ namespace connection {
     std::function<RecieverConfirmation(const std::string&)> sign = [](const std::string &hash) {
         RecieverConfirmation confirm;
         Signature signature;
-        signature.set_publickey(peer::myself::getPublicKey());
+        signature.set_publickey(::peer::myself::getPublicKey());
         signature.set_signature(signature::sign(
-            peer::myself::getPublicKey(),
+            ::peer::myself::getPublicKey(),
             hash,
-            config::PeerServiceConfig::getInstance().getMyPrivateKey())
+            ::peer::myself::getPrivateKey())
         );
         confirm.set_hash(hash);
         confirm.mutable_signature()->Swap(&signature);
@@ -430,7 +430,7 @@ namespace connection {
                     const std::string &ip,
                     const ConsensusEvent &event
                 ) {
-                    auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
+                    auto receiver_ips = ::peer::service::getIpList();
                     if (find(receiver_ips.begin(), receiver_ips.end(), ip) != receiver_ips.end()) {
                         SumeragiConnectionClient client(
                             grpc::CreateChannel(
@@ -449,7 +449,7 @@ namespace connection {
                 bool sendAll(
                     const ConsensusEvent &event
                 ) {
-                    auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
+                    auto receiver_ips = ::peer::service::getIpList();
                     for (auto &ip : receiver_ips) {
                         send(ip, event);
                     }
@@ -481,7 +481,7 @@ namespace connection {
                         const std::string &ip,
                         const Transaction &transaction
                 ) {
-                    auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
+                    auto receiver_ips = ::peer::service::getIpList();
                     if (find(receiver_ips.begin(), receiver_ips.end(), ip) != receiver_ips.end()) {
                         SumeragiConnectionClient client(
                                 grpc::CreateChannel(
@@ -501,7 +501,7 @@ namespace connection {
                 bool ping(
                         const std::string &ip
                 ) {
-                    auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
+                    auto receiver_ips = ::peer::service::getIpList();
                     if (find(receiver_ips.begin(), receiver_ips.end(), ip) != receiver_ips.end()) {
                         SumeragiConnectionClient client(
                                 grpc::CreateChannel(
