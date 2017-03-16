@@ -143,7 +143,7 @@ namespace executor{
         logger::info("executor")  << "DebugString:"<< tx.DebugString();
         logger::info("executor") << "tx type(): " << tx.type();
         const std::string type = tx.type();
-        std::transform(cbegin(type), cend(type), begin(type), ::tolower);
+        std::transform(cbegin(type), cend(type), begin(type), std::tolower);
 
         if(type == "add"){
             add(tx);
