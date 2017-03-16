@@ -29,6 +29,10 @@ namespace config {
 class PeerServiceConfig : config::AbstractConfigManager {
  private:
   PeerServiceConfig();
+protected:
+    void parseConfigDataFromString(std::string&& jsonStr) override;
+
+ public:
 
   std::string getMyPublicKeyWithDefault(const std::string& defaultValue);
   std::string getMyPrivateKeyWithDefault(const std::string& defaultValue);
@@ -37,13 +41,9 @@ class PeerServiceConfig : config::AbstractConfigManager {
   size_t getMaxFaultyScoreWithDefault(size_t defaultValue);
   std::vector<json> getGroup();
 
- protected:
-  void parseConfigDataFromString(std::string&& jsonStr) override;
 
  public:
   static PeerServiceConfig &getInstance();
-
- public:
 
  /*
    TODO: For ease of moving peer service to another class or namespace,

@@ -23,8 +23,6 @@ limitations under the License.
 
 namespace peer
 {
-
-
     class Node {
         std::string ip;
         std::string publicKey;
@@ -105,19 +103,6 @@ namespace peer
 
     };
 
-    struct Context {
-        std::vector<peer::Node> peerList;
-        PeerEvent peer_event;
-        bool is_active;
-    };
-
-
-    namespace detail {
-        void initialziePeerList_from_json();
-        std::vector<peer::Node>::iterator findPeerIP(const std::string &ip);
-        std::vector<peer::Node>::iterator findPeerPublicKey(const std::string &publicKey);
-    }
-
     namespace myself {
         std::string getPublicKey(); // getMyPublicKey();
         std::string getPrivateKey(); // getMyPrivateKey();
@@ -130,12 +115,15 @@ namespace peer
     }
 
     namespace service {
+        void initialize();//void initialziePeerList_from_json();
         size_t getMaxFaulty();
         std::vector<std::unique_ptr<peer::Node>> getPeerList();
         std::vector<std::string> getIpList();
         // is exist which peer?
         bool isExistIP(const std::string &);
         bool isExistPublicKey(const std::string &);
+        std::vector<peer::Node>::iterator findPeerIP(const std::string &ip);
+        std::vector<peer::Node>::iterator findPeerPublicKey(const std::string &publicKey);
         std::unique_ptr<peer::Node> leaderPeer();
     }
 
@@ -143,9 +131,9 @@ namespace peer
 
         // Initialize
         namespace izanami {
-            void finidhed(); //void finishedInitializePeer();
+            void finished(); //void finishedInitializePeer();
             //invoke next to addPeer
-            bool started();//bool sendAllTransaction( const peer::Node& );
+            bool started(const Node& peer);//bool sendAllTransaction( const peer::Node& );
         }
 
 

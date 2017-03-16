@@ -18,3 +18,14 @@ target_link_libraries(izanami
     event_with_grpc
     transaction_repository
 )
+
+ADD_LIBRARY(peer_service STATIC
+    peer_service.cpp
+)
+
+target_link_libraries(peer_service
+    json
+    exception
+    logger
+    config_manager
+)
