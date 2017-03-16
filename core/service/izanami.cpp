@@ -24,7 +24,7 @@ limitations under the License.
 #include <consensus/connection/connection.hpp>
 #include <service/peer_service.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-#include<service/peer_service.hpp>
+#include <service/peer_service.hpp>
 
 #include <infra/config/iroha_config_with_json.hpp>
 #include <crypto/hash.hpp>

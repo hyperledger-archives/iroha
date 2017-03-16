@@ -14,7 +14,6 @@ add_library(core_repository STATIC
 
 target_link_libraries(core_repository
   exception
-  convert_string
   # connect infra
   world_state_repo_with_level_db
   event_with_grpc
