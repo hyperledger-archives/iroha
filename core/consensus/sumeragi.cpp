@@ -168,10 +168,12 @@ namespace sumeragi {
         void update()
         {
             logger::debug("sumeragi") << "Context update!";
-            auto peers = config::PeerServiceConfig::getInstance().getPeerList();
             validatingPeers.clear();
-            for (auto&& p : peers ) {
-                validatingPeers.push_back( std::move(p) );
+            {
+                auto peers = config::PeerServiceConfig::getInstance().getPeerList();
+                for (auto &&p : peers) {
+                    validatingPeers.push_back(std::move(p));
+                }
             }
 
             this->numValidatingPeers = this->validatingPeers.size();
