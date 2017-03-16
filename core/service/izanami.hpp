@@ -22,52 +22,60 @@ limitations under the License.
 #include <memory>
 #include <infra/protobuf/api.pb.h>
 
-namespace izanami {
-    using Api::TransactionResponse;
+namespace peer {
+    namespace izanami {
+        using Api::TransactionResponse;
 
-    class InitializeEvent {
-    private:
-        uint64_t now_progress;
-        std::unordered_map <std::string, std::unique_ptr<TransactionResponse> > txResponses;
-        std::unordered_map <uint64_t, std::vector<std::string>> hashes;
-        bool is_finished;
-    public:
+        class InitializeEvent {
+        private:
+            uint64_t now_progress;
+            std::unordered_map<std::string, std::unique_ptr<TransactionResponse> > txResponses;
+            std::unordered_map<uint64_t, std::vector<std::string>> hashes;
+            bool is_finished;
+        public:
 
-        InitializeEvent();
-        void add_transactionResponse( std::unique_ptr<TransactionResponse> );
-        const std::vector<std::string>& getHashes( uint64_t );
-        const std::unique_ptr<TransactionResponse> getTransactionResponse( const std::string& );
-        void next_progress();
-        uint64_t now() const;
+            InitializeEvent();
 
-        void storeTxResponse( const std::string& );
-        void executeTxResponse( const std::string& );
+            void add_transactionResponse(std::unique_ptr<TransactionResponse>);
 
-        bool isExistTransactionFromHash( const std::string& );
+            const std::vector<std::string> &getHashes(uint64_t);
 
-        void finished();
-        bool isFinished() const;
+            const std::unique_ptr<TransactionResponse> getTransactionResponse(const std::string &);
 
-    };
+            void next_progress();
 
-    namespace detail {
-        bool isFinishedReceiveAll(InitializeEvent &event);
+            uint64_t now() const;
 
-        bool isFinishedReceive(InitializeEvent &);
+            void storeTxResponse(const std::string &);
 
-        std::string getCorrectHash(InitializeEvent &);
+            void executeTxResponse(const std::string &);
 
-        void storeTransactionResponse(InitializeEvent &);
+            bool isExistTransactionFromHash(const std::string &);
+
+            void finished();
+
+            bool isFinished() const;
+
+        };
+
+        namespace detail {
+            bool isFinishedReceiveAll(InitializeEvent &event);
+
+            bool isFinishedReceive(InitializeEvent &);
+
+            std::string getCorrectHash(InitializeEvent &);
+
+            void storeTransactionResponse(InitializeEvent &);
+        }
+
+        //invoke when receive TransactionResponse.
+        void receiveTransactionResponse(TransactionResponse &);
+
+        //invoke when initialize Peer that to config Participation on the way
+        void startIzanami();
+
+        void setAwkTimer(int const sleepMillisecs, const std::function<void(void)> &action);
     }
-
-    //invoke when receive TransactionResponse.
-    void receiveTransactionResponse( TransactionResponse& );
-
-    //invoke when initialize Peer that to config Participation on the way
-    void startIzanami();
-
-    void setAwkTimer(int const sleepMillisecs, const std::function<void(void)>& action);
 }
-
 
 #endif
