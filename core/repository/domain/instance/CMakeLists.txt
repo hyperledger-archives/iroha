@@ -8,8 +8,6 @@ add_library(core_repository STATIC
   asset_repository.cpp
   simple_asset_repository.cpp
   peer_repository.cpp
-
-  transaction_repository.cpp
 )
 
 target_link_libraries(core_repository
@@ -19,4 +17,8 @@ target_link_libraries(core_repository
   event_with_grpc
   protobuf
   leveldb
+)
+
+add_library(transaction_repository STATIC
+  transaction_repository.cpp
 )

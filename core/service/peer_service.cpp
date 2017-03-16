@@ -19,26 +19,17 @@ limitations under the License.
 // Created by Takumi Yamashita on 2017/03/16.
 //
 
+#include <algorithm>
 #include <deque>
 #include <regex>
-#include <algorithm>
-#include <json.hpp>
 
-#include <service/peer_service.hpp>
-
-#include <crypto/base64.hpp>
-#include <util/logger.hpp>
-#include <util/exception.hpp>
 #include <consensus/connection/connection.hpp>
-
-#include <transaction_builder/transaction_builder.hpp>
-#include <repository/transaction_repository.hpp>
 #include <infra/config/peer_service_with_json.hpp>
+#include <repository/transaction_repository.hpp>
 #include <service/peer_service.hpp>
-
-#include <infra/config/config_format.hpp>
-#include <infra/protobuf/api.pb.h>
-
+#include <transaction_builder/transaction_builder.hpp>
+#include <util/exception.hpp>
+#include <util/logger.hpp>
 
 namespace peer {
     using PeerServiceConfig = config::PeerServiceConfig;
@@ -47,7 +38,6 @@ namespace peer {
     using type_signatures::Add;
     using type_signatures::Remove;
     using type_signatures::Peer;
-    using nlohmann::json;
 
     std::vector<peer::Node> peerList;
     bool is_active;
@@ -72,7 +62,7 @@ namespace peer {
         void stop(){
             is_active = false;
         }
-        // equatl to isSumeragi
+        // equal to isSumeragi
         bool isLeader(){
             auto sorted_peers = service::getPeerList();
             if( sorted_peers.empty() ) return false;
