@@ -22,12 +22,6 @@ limitations under the License.
 
 namespace executor{
 
-    std::string tolowerString(std::string s) {
-        for (char &c : s)
-            c = std::tolower(c);
-        return s;
-    }
-
     using Api::Transaction;
     void add(const Transaction &tx) {
         logger::info("executor") << "tx has peer?" << (tx.has_peer()?"yes":"no");
@@ -148,7 +142,8 @@ namespace executor{
         logger::info("executor") << "Executor";
         logger::info("executor")  << "DebugString:"<< tx.DebugString();
         logger::info("executor") << "tx type(): " << tx.type();
-        const std::string type = executor::tolowerString( tx.type() );
+        const std::string type = tx.type();
+        std::transform(cbegin(type), cend(type), begin(type), ::tolower);
 
         if(type == "add"){
             add(tx);
