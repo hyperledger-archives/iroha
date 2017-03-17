@@ -11,5 +11,5 @@ target_link_libraries(http_server_with_cappuccino
   peer_service
   config_manager
   transaction_builder
-  connection_with_grpc
+  event_with_grpc
 )

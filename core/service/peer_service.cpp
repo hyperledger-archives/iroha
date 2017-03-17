@@ -175,7 +175,7 @@ namespace peer {
                 if(0){   // WIP(leveldb don't active) Send transaction data separated block to new peer.
                     logger::debug("peer-service") << "send all transaction infomation";
                     auto transactions = repository::transaction::findAll();
-                    int block_size = 500;
+                    std::size_t block_size = 500;
                     for (std::size_t i = 0; i < transactions.size(); i += block_size) {
                         auto txResponse = Api::TransactionResponse();
                         txResponse.set_message("Midstream send Transactions");
