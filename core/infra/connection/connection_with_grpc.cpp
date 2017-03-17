@@ -17,22 +17,20 @@ limitations under the License.
 #include <grpc++/grpc++.h>
 
 #include <consensus/connection/connection.hpp>
-#include <util/logger.hpp>
-#include <util/datetime.hpp>
-
+#include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <service/peer_service.hpp>
+#include <util/datetime.hpp>
+#include <util/logger.hpp>
 
-#include <infra/config/iroha_config_with_json.hpp>
-
-#include <repository/transaction_repository.hpp>
-#include <repository/domain/asset_repository.hpp>
 #include <repository/domain/account_repository.hpp>
+#include <repository/domain/asset_repository.hpp>
+#include <repository/transaction_repository.hpp>
 
+#include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include <algorithm>
 
 using grpc::Channel;
 using grpc::Server;

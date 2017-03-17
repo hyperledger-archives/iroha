@@ -11,19 +11,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <vector>
-#include <string>
-#include <memory>
-#include <thread_pool.hpp>
 #include "izanami.hpp"
 #include "executor.hpp"
-#include <infra/protobuf/api.pb.h>
+
 #include <consensus/connection/connection.hpp>
-#include <service/peer_service.hpp>
-#include <infra/config/peer_service_with_json.hpp>
-#include <infra/config/iroha_config_with_json.hpp>
 #include <crypto/hash.hpp>
+#include <infra/config/iroha_config_with_json.hpp>
+#include <infra/config/peer_service_with_json.hpp>
+#include <infra/protobuf/api.pb.h>
+#include <memory>
 #include <repository/transaction_repository.hpp>
+#include <service/peer_service.hpp>
+#include <string>
+#include <thread_pool.hpp>
+#include <vector>
 
 namespace peer {
     namespace izanami {

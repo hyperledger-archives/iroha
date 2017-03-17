@@ -1,16 +1,3 @@
-ADD_LIBRARY(peer_service STATIC
-    peer_service.cpp
-)
-
-target_link_libraries(peer_service
-    exception
-    logger
-    config_manager
-    transaction_builder
-    connection_with_grpc
-    transaction_repository
-)
-
 ADD_LIBRARY(executor STATIC
     executor.cpp
 )
@@ -29,7 +16,7 @@ target_link_libraries(izanami
     config_manager
     peer_service
     executor
-    event_with_grpc
+    connection_with_grpc
     transaction_repository
 )
 
@@ -39,16 +26,13 @@ ADD_LIBRARY(peer_service STATIC
 )
 
 target_link_libraries(peer_service
-    json
     exception
     logger
-    izanami
     config_manager
+    transaction_builder
     connection_with_grpc
-    signature
-    thread_pool
-    executor
-    merkle_transaction_repository
     transaction_repository
-    validator
+
+    # I wonder why this linkage is needed. If it's removed, linker error occurs.
+    http_server_with_cappuccino
 )

@@ -21,7 +21,6 @@ limitations under the License.
 #include <set>
 #include <map>
 #include <queue>
-#include <service/peer_service.hpp>
 #include "abstract_config_manager.hpp"
 
 namespace config {
