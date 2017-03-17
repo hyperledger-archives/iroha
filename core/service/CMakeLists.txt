@@ -31,5 +31,11 @@ target_link_libraries(peer_service
     logger
     izanami
     config_manager
-    peer_service
+    connection_with_grpc
+    signature
+    thread_pool
+    executor
+    merkle_transaction_repository
+    transaction_repository
+    validator
 )
