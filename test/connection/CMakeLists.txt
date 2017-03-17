@@ -4,13 +4,10 @@ add_executable(connection_grpc_test
 )
 target_link_libraries(connection_grpc_test
     connection_with_grpc
-    signature
     config_manager
     peer_service
-    ed25519
+    transaction_builder
     gtest
-    create_objects_helper
-    transaction_repository
 )
 add_test(
     NAME connection_grpc_test

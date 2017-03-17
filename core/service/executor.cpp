@@ -15,7 +15,7 @@ limitations under the License.
 #include <infra/protobuf/api.pb.h>
 #include <iostream>
 #include <infra/config/peer_service_with_json.hpp>
-#include<service/peer_service.hpp>
+#include <service/peer_service.hpp>
 
 
 #include <repository/domain/asset_repository.hpp>
