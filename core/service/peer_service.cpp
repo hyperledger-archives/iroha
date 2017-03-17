@@ -101,10 +101,7 @@ namespace peer {
             sort(nodes.begin(), nodes.end(), [](const auto &a, const auto &b) {
                 return a->getTrustScore() > b->getTrustScore();
             } );
-            logger::debug("getPeerList") << std::to_string(nodes.size());
-            for(const auto &node : nodes ) {
-                logger::debug("getPeerList") << node->getIP() + " " <<node->getPublicKey();
-            }
+
             return nodes;
         }
         std::vector<std::string> getIpList(){
