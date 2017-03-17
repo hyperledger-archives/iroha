@@ -23,6 +23,7 @@ target_link_libraries(izanami
 
 ADD_LIBRARY(peer_service STATIC
     peer_service.cpp
+    hijiri.cpp
 )
 
 target_link_libraries(peer_service
