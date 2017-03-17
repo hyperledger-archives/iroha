@@ -31,6 +31,7 @@ namespace executor{
             repository::asset::add(tx.senderpubkey(),asset.name(),asset);
         } else if (tx.has_domain()) {
             // Add<Domain>
+            // Domain will be supported by v1.0
             const auto domain = tx.domain();
         } else if (tx.has_account()) {
             // Add<Account>
@@ -53,10 +54,10 @@ namespace executor{
             logger::info("executor") << "add peer";
             // Temporary - to operate peer service
             peer::Node query_peer(
-                    tx.peer().address(),
-                    tx.peer().publickey(),
-                    tx.peer().trust().value(),
-                    tx.peer().trust().isok()
+                tx.peer().address(),
+                tx.peer().publickey(),
+                tx.peer().trust().value(),
+                tx.peer().trust().isok()
             );
             config::PeerServiceConfig::getInstance().addPeer( query_peer );
             if( config::PeerServiceConfig::getInstance().getMyIp() != query_peer.getIP() &&
@@ -138,10 +139,8 @@ namespace executor{
                 repository::asset::update(receiver, assetName, receiverAsset);
             }
         }else if(tx.has_domain()){
+            // Domain will be supported by v1.0
             // Transfer<Domain>
-        }else if(tx.has_account()){
-            // Transfer<Account>
-            // Add<Account>
         }else if(tx.has_peer()){
             // Transfer<Peer>
             // nothing this transaction
@@ -163,7 +162,7 @@ namespace executor{
                 repository::asset::update(publicKey, assetName, asset);
             }
         }else if(tx.has_domain()){
-            // Update<Domain>
+            // Domain will be supported by v1.0
         }else if(tx.has_account()){
             // Update<Account>
             logger::info("executor") << "Update";
@@ -189,6 +188,7 @@ namespace executor{
             repository::asset::remove(tx.senderpubkey(),name);
         }else if(tx.has_domain()){
             // Remove<Domain>
+            // Domain will be supported by v1.0
         }else if(tx.has_account()){
             // Remove<Account>
             const auto account = tx.account();
@@ -224,7 +224,6 @@ namespace executor{
         logger::info("executor") << "tx type(): " << tx.type();
         std::string type = tx.type();
         std::transform(cbegin(type), cend(type), begin(type), ::tolower);
-
         if(type == "add"){
             add(tx);
         }else if(type == "transfer"){
