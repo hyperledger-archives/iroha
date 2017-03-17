@@ -14,25 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <thread>
-#include <signal.h>
-#include <unistd.h>
 #include <atomic>
+#include <signal.h>
+#include <thread>
+#include <unistd.h>
 
-#include <json.hpp>
-
-#include <server/http_server.hpp>
 #include <consensus/connection/connection.hpp>
 #include <consensus/sumeragi.hpp>
-#include <util/logger.hpp>
-
-#include <service/peer_service.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-#include<service/peer_service.hpp>
-
-#include <service/izanami.hpp>
-
 #include <repository/world_state_repository.hpp>
+#include <server/http_server.hpp>
+#include <service/izanami.hpp>
+#include <service/peer_service.hpp>
+#include <util/logger.hpp>
 
 std::atomic_bool running(true);
 

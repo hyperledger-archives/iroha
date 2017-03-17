@@ -1,8 +1,20 @@
+ADD_LIBRARY(peer_service STATIC
+    peer_service.cpp
+)
+
+target_link_libraries(peer_service
+    exception
+    logger
+    config_manager
+    transaction_builder
+    connection_with_grpc
+    transaction_repository
+)
+
 ADD_LIBRARY(executor STATIC
     executor.cpp
 )
 target_link_libraries(executor
-    config_manager
     peer_service
     core_repository
 )
@@ -19,23 +31,4 @@ target_link_libraries(izanami
     executor
     event_with_grpc
     transaction_repository
-)
-
-ADD_LIBRARY(peer_service STATIC
-    peer_service.cpp
-)
-
-target_link_libraries(peer_service
-    json
-    exception
-    logger
-    izanami
-    config_manager
-    connection_with_grpc
-    signature
-    thread_pool
-    executor
-    merkle_transaction_repository
-    transaction_repository
-    validator
 )
