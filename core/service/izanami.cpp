@@ -154,7 +154,7 @@ namespace izanami {
         static InitializeEvent event;
         logger::debug("izanami") << "in receiveTransactionResponse event = " << std::to_string(event.now()) ;
         if( event.isFinished() ) return;
-        logger::debug("izanami") << "evet is not finished";
+        logger::debug("izanami") << "event is not finished";
         event.add_transactionResponse( std::make_unique<TransactionResponse>( txResponse ) );
         if( detail::isFinishedReceive( event ) ) {
             logger::debug("izanami") << "is finished receive";

@@ -47,6 +47,7 @@ RUN apt-get update && apt-get -y upgrade; \
         autoconf \
         automake \
         libtool \
+        jq \
         pkg-config ; \
     add-apt-repository -y ppa:ubuntu-toolchain-r/test; \
     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 20; \
