@@ -123,7 +123,7 @@ namespace executor{
                     tx.peer().trust().value(),
                     tx.peer().trust().isok()
             );
-            config::PeerServiceConfig::getInstance().removePeer( query_peer.getPublicKey() );
+            ::peer::transaction::executor::remove( query_peer.getPublicKey() );
         }
     }
 
