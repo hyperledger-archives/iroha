@@ -1,12 +1,9 @@
 /*
 Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
      http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,8 +21,6 @@ limitations under the License.
 #include <consensus/connection/connection.hpp>
 #include <service/peer_service.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-#include<service/peer_service.hpp>
-
 #include <infra/config/iroha_config_with_json.hpp>
 #include <crypto/hash.hpp>
 #include <repository/transaction_repository.hpp>
@@ -49,7 +44,7 @@ namespace peer {
         }
 
         void InitializeEvent::add_transactionResponse(std::unique_ptr<TransactionResponse> txResponse) {
-            if (now_progress > txResponse->code()) return; // management index of progress is TransactionResponse.code()
+            if (now() > txResponse->code()) return; // management index of progress is TransactionResponse.code()
 
             // make TransactionResponse hash - temporary
             std::string hash = "";
@@ -69,13 +64,14 @@ namespace peer {
         }
 
         void InitializeEvent::next_progress() {
-            logger::debug("izanami") << "next_progress : " + std::to_string(now_progress);
-            for (auto &&hash : hashes[now_progress]) {
+            logger::debug("izanami") << "next_progress : " << std::to_string(now());
+            for (auto &&hash : hashes[now()]) {
                 txResponses.erase(hash);
             }
             logger::debug("izanami") << "txResponses erase";
-            hashes.erase(now_progress);
-            logger::debug("izanami") << "nexted : " + std::to_string(++now_progress);
+            hashes.erase(now());
+            now_progress++;
+            logger::debug("izanami") << "nexted : " << std::to_string(now());
         }
 
         uint64_t InitializeEvent::now() const {
@@ -103,7 +99,7 @@ namespace peer {
             return is_finished;
         }
 
-        void InitializeEvent::finished() {
+        void InitializeEvent::finish() {
             now_progress = 0;
             txResponses.clear();
             hashes.clear();
@@ -126,9 +122,6 @@ namespace peer {
                 for (auto counter : hash_counter) {
                     res = std::max(res, counter.second);
                 }
-                logger::debug("izanami") << "isFinishedReveive : res : " + std::to_string(res) + " >= " +
-                                            std::to_string(
-                                                    2 * ::peer::service::getMaxFaulty() + 1);
                 if (res >= 2 * ::peer::service::getMaxFaulty() + 1) return true;
                 return false;
             }
@@ -161,7 +154,7 @@ namespace peer {
         //invoke when receive TransactionResponse.
         void receiveTransactionResponse(TransactionResponse &txResponse) {
             static InitializeEvent event;
-            logger::debug("izanami") << "in receiveTransactionResponse event = " + std::to_string(event.now());
+            logger::debug("izanami") << "in receiveTransactionResponse event = " << std::to_string(event.now());
             if (event.isFinished()) return;
             logger::debug("izanami") << "evet is not finished";
             event.add_transactionResponse(std::make_unique<TransactionResponse>(txResponse));
@@ -170,13 +163,13 @@ namespace peer {
                 if (detail::isFinishedReceiveAll(event)) {
                     logger::debug("izanami") << "is finished receive all";
                     ::peer::transaction::izanami::finished();
-                    event.finished();
+                    event.finish();
                     logger::explore("izanami") << "Finished Receive ALl Transaction";
                     logger::explore("izanami") << "Closed Izanami";
-                    for (auto &&p : ::peer::service::getPeerList()) {
-                        logger::explore("izanami_initialized_nodes")
-                                << p->getIP() + " : " + p->getPublicKey() + " : " + p->getPublicKey() + " : " +
-                                   std::to_string(p->getTrustScore());
+                    for (const auto &p : ::peer::service::getPeerList() ) {
+                        logger::explore("izanami") << ("ip: " + p->getIP());
+                        logger::explore("izanami") << ("pubkey: " + p->getPublicKey());
+                        logger::explore("izanami") << ("trust: " + std::to_string(p->getTrustScore()));
                     }
                 } else {
                     detail::storeTransactionResponse(event);
@@ -235,5 +228,4 @@ namespace peer {
         }
 
     }
-
 }

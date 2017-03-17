@@ -80,8 +80,8 @@ namespace connection {
         Signature signature;
         signature.set_publickey(::peer::myself::getPublicKey());
         signature.set_signature(signature::sign(
-            ::peer::myself::getPublicKey(),
             hash,
+            ::peer::myself::getPublicKey(),
             ::peer::myself::getPrivateKey())
         );
         confirm.set_hash(hash);
@@ -544,6 +544,7 @@ namespace connection {
                         TransactionResponse&)
                 > &callback) {
                     receivers.push_back(callback);
+                    return true;
                 }
             }
         }

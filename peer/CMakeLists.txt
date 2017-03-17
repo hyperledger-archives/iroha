@@ -23,6 +23,5 @@ target_link_libraries(iroha-main
   pthread
   thread_pool
   json
-
   izanami
 )
