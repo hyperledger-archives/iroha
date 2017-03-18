@@ -23,8 +23,6 @@ limitations under the License.
 
 namespace peer
 {
-
-
     class Node {
         std::string ip;
         std::string publicKey;
@@ -104,6 +102,65 @@ namespace peer
         }
 
     };
+
+    namespace myself {
+        std::string getPublicKey();
+        std::string getPrivateKey();
+        std::string getIp();
+        bool isActive();
+        void activate();
+        void stop();
+        // equatl to isSumeragi
+        bool isLeader();
+    }
+
+    namespace service {
+        void initialize();//void initialziePeerList_from_json();
+        size_t getMaxFaulty();
+        std::vector<std::unique_ptr<peer::Node>> getPeerList();
+        std::vector<std::string> getIpList();
+        // is exist which peer?
+        bool isExistIP(const std::string &);
+        bool isExistPublicKey(const std::string &);
+        std::vector<peer::Node>::iterator findPeerIP(const std::string &ip);
+        std::vector<peer::Node>::iterator findPeerPublicKey(const std::string &publicKey);
+        std::unique_ptr<peer::Node> leaderPeer();
+    }
+
+    namespace transaction {
+
+        // Initialize
+        namespace izanami {
+            void finished(); //void finishedInitializePeer();
+            //invoke next to addPeer
+            bool started(const Node& peer);//bool sendAllTransaction( const peer::Node& );
+        }
+
+
+        namespace isssue {
+            // invoke to issue transaction
+            void add(const peer::Node &);//void toIssue_addPeer( const peer::Node& );
+            void distruct(const std::string &);//void toIssue_distructPeer( const std::string &publicKey );
+            void remove(const std::string &);//void toIssue_removePeer( const std::string &publicKey );
+            void credit(const std::string &);//void toIssue_creditPeer( const std::string &publicKey );
+        }
+        namespace executor {
+            // invoke when execute transaction
+            bool add(const peer::Node &);//bool addPeer( const peer::Node& );
+            bool remove(const std::string &);//bool removePeer( const std::string &publicKey );
+            bool update(const std::string &,
+                        const peer::Node &);//bool updatePeer( const std::string& publicKey, const peer::Node& peer );
+        }
+        namespace validator {
+            // invoke when validator transaction
+            bool add(const peer::Node &);//bool validate_addPeer( const peer::Node& );
+            bool remove(const std::string &);//bool validate_removePeer( const std::string &publicKey );
+            bool update(const std::string &,
+                        const peer::Node &);//bool validate_updatePeer( const std::string& publicKey, const peer::Node& peer );
+        }
+    }
+
+
 }
 
 #endif

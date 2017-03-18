@@ -13,22 +13,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-//
-// Created by Takumi Yamashita on 2017/03/15.
-//
 
-#include <string>
-#include <service/peer_service.hpp>
+#ifndef __CORE_HIJIRI_SERVICE_HPP__
+#define __CORE_HIJIRI_SERVICE_HPP__
 
 
-int main(int argc, char* argv[]) {
-    peer::Node peer (
-            ::peer::myself::getIp(),
-            ::peer::myself::getPublicKey(),
-            1.0,
-            false
-    );
-    ::peer::transaction::izanami::started( peer );
-    return 0;
+#include <vector>
+#include <set>
+#include <map>
+#include <queue>
+
+
+
+namespace peer {
+    namespace hijiri {
+        // This is reputation System.
+
+
+        // check are broken? peer
+        void check(const std::string &ip); // void checkBrokenPeer(const std::string &ip);
+        // [WIPn] does we need it? void checkAll();
+    }
 }
 
+
+#endif

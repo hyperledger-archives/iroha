@@ -15,6 +15,8 @@ limitations under the License.
 #include <infra/protobuf/api.pb.h>
 #include <iostream>
 #include <infra/config/peer_service_with_json.hpp>
+#include <service/peer_service.hpp>
+
 
 #include <repository/domain/asset_repository.hpp>
 #include <repository/domain/account_repository.hpp>
@@ -46,10 +48,10 @@ namespace executor{
                     tx.peer().trust().value(),
                     tx.peer().trust().isok()
             );
-            config::PeerServiceConfig::getInstance().addPeer( query_peer );
-            if( config::PeerServiceConfig::getInstance().getMyIp() != query_peer.getIP() &&
-                    config::PeerServiceConfig::getInstance().isMyActive() )
-                config::PeerServiceConfig::getInstance().sendAllTransactionToNewPeer( query_peer );
+            ::peer::transaction::executor::add( query_peer );
+            if( ::peer::myself::getIp() != query_peer.getIP() &&
+                    ::peer::myself::isActive() )
+                ::peer::transaction::izanami::started( query_peer );
         }
     }
 
@@ -97,7 +99,7 @@ namespace executor{
                     tx.peer().trust().value(),
                     tx.peer().trust().isok()
             );
-            config::PeerServiceConfig::getInstance().updatePeer( query_peer.getPublicKey(), query_peer );
+            ::peer::transaction::executor::update( query_peer.getPublicKey(), query_peer );
             // Update<Peer>
         }
     }
@@ -121,7 +123,7 @@ namespace executor{
                     tx.peer().trust().value(),
                     tx.peer().trust().isok()
             );
-            config::PeerServiceConfig::getInstance().removePeer( query_peer.getPublicKey() );
+            ::peer::transaction::executor::remove( query_peer.getPublicKey() );
         }
     }
 
