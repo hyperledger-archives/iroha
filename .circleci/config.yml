@@ -60,8 +60,10 @@ jobs:
       - run:
           name: build and push hyperledger/iroha-docker:$CIRCLE_BRANCH image
           command: |
-            # tag consists of branch
-            export TAG=$CIRCLE_BRANCH
+            # replace all invalid characters to dots
+            TAG=$(echo $CIRCLE_BRANCH | sed "s/[^a-zA-Z0-9_\-\.]/./g")
+            export TAG=$TAG 
+
             # directory, where iroha build files will reside
             export RELEASE=$IROHA_HOME/docker/tiny/iroha
             mkdir -p $RELEASE/lib
