@@ -21,7 +21,7 @@ limitations under the License.
 #include <repository/domain/asset_repository.hpp>
 #include <util/logger.hpp>
 
-namespace executor {
+namespace executor{
 
 using Api::Transaction;
 void add(const Transaction &tx) {
@@ -32,11 +32,24 @@ void add(const Transaction &tx) {
     repository::asset::add(tx.senderpubkey(), asset.name(), asset);
   } else if (tx.has_domain()) {
     // Add<Domain>
+    // Domain will be supported by v1.0
     const auto domain = tx.domain();
   } else if (tx.has_account()) {
     // Add<Account>
     const auto account = tx.account();
     repository::account::add(account.publickey(), account);
+
+    for (auto asset_name : account.assets()) {
+      // Add default asset
+      auto asset = Api::Asset();
+      auto base = Api::BaseObject();
+      base.set_valueint(0);
+      asset.set_name(asset_name);
+      asset.set_domain("default");
+      (*asset.mutable_value())["value"] = base;
+      logger::info("executor") << "add asset: " << asset.DebugString();
+      repository::asset::add(tx.senderpubkey(), asset.name(), asset);
+    }
     logger::info("executor") << "add account";
   } else if (tx.has_peer()) {
     logger::info("executor") << "add peer";
@@ -49,26 +62,86 @@ void add(const Transaction &tx) {
   }
 }
 
+void valueValidation(Api::Asset asset, std::vector<std::string> names) {}
+
 void transfer(const Transaction &tx) {
   if (tx.has_asset()) {
     // Transfer<Asset>
     auto sender = tx.senderpubkey();
     auto receiver = tx.receivepubkey();
     const auto assetName = tx.asset().name();
-    auto senderAsset = repository::asset::find(sender, assetName);
-    auto receiverAsset = repository::asset::find(receiver, assetName);
-    // **********************************************************************************
-    // * This is Transfer<Asset>'s logic.
-    // **********************************************************************************
 
     // **********************************************************************************
-    repository::asset::update(sender, assetName, senderAsset);
-    repository::asset::update(receiver, assetName, receiverAsset);
+    // * This is Transfer<Asset>'s logic. Tax send logic
+    // **********************************************************************************
+    if (tx.asset().value().find("author") != tx.asset().value().end()) {
+      const auto author = tx.asset().value().at("author").valuestring();
+
+      const auto value = tx.asset().value().at("value").valueint();
+
+      auto senderAsset = repository::asset::find(sender, assetName);
+      auto authorAsset = repository::asset::find(author, assetName);
+
+      auto receiverAsset = repository::asset::find(receiver, assetName);
+      if (senderAsset.value().find("value") != senderAsset.value().end() &&
+          receiverAsset.value().find("value") != receiverAsset.value().end()) {
+        auto senderValue = senderAsset.value().at("value").valueint();
+        auto receiverValue = receiverAsset.value().at("value").valueint();
+        if (senderValue > value) {
+          (*senderAsset.mutable_value())["value"].set_valueint(senderValue -
+                                                               value);
+          (*receiverAsset.mutable_value())["value"].set_valueint(receiverValue +
+                                                                 value);
+          (*authorAsset.mutable_value())["value"].set_valueint(value * 0.8);
+        }
+      }
+      repository::asset::update(sender, assetName, senderAsset);
+      repository::asset::update(receiver, assetName, receiverAsset);
+
+      // **********************************************************************************
+      // * This is Transfer<Asset>'s logic. multi message chat
+      // **********************************************************************************
+    } else if (tx.asset().value().find("targetName") !=
+               tx.asset().value().end()) {
+      const auto targetName = tx.asset().value().at("targetName").valuestring();
+      auto senderAsset = repository::asset::find(sender, assetName);
+      auto receiverAsset = repository::asset::find(receiver, assetName);
+
+      auto senderHasNum = (*senderAsset.mutable_value())[targetName].valueint();
+      auto receiverHasNum =
+          (*receiverAsset.mutable_value())[targetName].valueint();
+
+      (*senderAsset.mutable_value())[targetName].set_valueint(senderHasNum - 1);
+      (*receiverAsset.mutable_value())[targetName].set_valueint(receiverHasNum +
+                                                                1);
+
+      repository::asset::update(sender, assetName, senderAsset);
+      repository::asset::update(receiver, assetName, receiverAsset);
+
+      // **********************************************************************************
+      // * This is Transfer<Asset>'s logic. virtual currency
+      // **********************************************************************************
+    } else if (tx.asset().value().find("value") != tx.asset().value().end()) {
+      const auto value = tx.asset().value().at("value").valueint();
+      auto senderAsset = repository::asset::find(sender, assetName);
+      auto receiverAsset = repository::asset::find(receiver, assetName);
+      if (senderAsset.value().find("value") != senderAsset.value().end() &&
+          receiverAsset.value().find("value") != receiverAsset.value().end()) {
+        auto senderValue = senderAsset.value().at("value").valueint();
+        auto receiverValue = receiverAsset.value().at("value").valueint();
+        if (senderValue > value) {
+          (*senderAsset.mutable_value())["value"].set_valueint(senderValue -
+                                                               value);
+          (*receiverAsset.mutable_value())["value"].set_valueint(receiverValue +
+                                                                 value);
+        }
+      }
+      repository::asset::update(sender, assetName, senderAsset);
+      repository::asset::update(receiver, assetName, receiverAsset);
+    }
   } else if (tx.has_domain()) {
+    // Domain will be supported by v1.0
     // Transfer<Domain>
-  } else if (tx.has_account()) {
-    // Transfer<Account>
-    // Add<Account>
   } else if (tx.has_peer()) {
     // Transfer<Peer>
     // nothing this transaction
@@ -77,11 +150,23 @@ void transfer(const Transaction &tx) {
 
 void update(const Transaction &tx) {
   if (tx.has_asset()) {
+
+    // **********************************************************************************
+    // * This is Transfer<Asset>'s logic. virtual currency
+    // **********************************************************************************
     // Update<Asset>
+    logger::info("executor") << "Update";
+    const auto asset = tx.asset();
+    const auto publicKey = tx.senderpubkey();
+    const auto assetName = asset.name();
+    if (asset.value().find("value") != asset.value().end()) {
+      repository::asset::update(publicKey, assetName, asset);
+    }
   } else if (tx.has_domain()) {
-    // Update<Domain>
+    // Domain will be supported by v1.0
   } else if (tx.has_account()) {
     // Update<Account>
+    logger::info("executor") << "Update";
     const auto account = tx.account();
     repository::account::update(account.publickey(), account);
   } else if (tx.has_peer()) {
@@ -100,6 +185,7 @@ void remove(const Transaction &tx) {
     repository::asset::remove(tx.senderpubkey(), name);
   } else if (tx.has_domain()) {
     // Remove<Domain>
+    // Domain will be supported by v1.0
   } else if (tx.has_account()) {
     // Remove<Account>
     const auto account = tx.account();
@@ -132,8 +218,8 @@ void execute(const Transaction &tx) {
   std::string type = tx.type();
   std::transform(cbegin(type), cend(type), begin(type), ::tolower);
 
-  if (type == "add") {
-    add(tx);
+if (type == "add") {
+  add(tx);
   } else if (type == "transfer") {
     transfer(tx);
   } else if (type == "update") {
