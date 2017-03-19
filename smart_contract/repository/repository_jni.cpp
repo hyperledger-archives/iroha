@@ -28,7 +28,7 @@ limitations under the License.
 #include <repository/domain/simple_asset_repository.hpp>
 #include <repository/domain/peer_repository.hpp>
 #include <transaction_builder/helper/create_objects_helper.hpp>
-#include <util/convert_string.hpp>
+//#include <util/convert_string.hpp>
 #include <util/exception.hpp>
 #include <util/logger.hpp>
 #include <assert.h>
@@ -69,8 +69,8 @@ JNIEXPORT jstring JNICALL Java_repository_Repository_accountAdd
   const std::string name      = mMap.find(tag::AccountName)->second;
 
   logger::debug(NameSpaceID + "::accountAdd")
-      << "pubkey: " << publicKey << " name: " << name
-      << " assets: " << convert_string::to_string(assets);
+      << "pubkey: " << publicKey << " name: " << name;
+//      << " assets: " << convert_string::to_string(assets);
 
   Api::Account account;
 
@@ -116,8 +116,8 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_accountUpdate
   const auto name = mMap.find(tag::AccountName)->second;
 
   logger::debug(NameSpaceID + "::accountUpdate")
-      << " publicKey: " << publicKey << ", name: " << name
-      << ", assets: " << convert_string::to_string(assets);
+      << " publicKey: " << publicKey << ", name: " << name;
+//      << ", assets: " << convert_string::to_string(assets);
 
   Api::Account account;
 
@@ -174,8 +174,8 @@ JNIEXPORT jobjectArray JNICALL Java_repository_Repository_accountValueFindByUuid
 
   const auto assets = txbuilder::createStandardVector(account.assets());
 
-  logger::debug(NameSpaceID + "::accountValueFindByUuid")
-      << "value: " << convert_string::to_string(assets);
+  logger::debug(NameSpaceID + "::accountValueFindByUuid");
+//      << "value: " << convert_string::to_string(assets);
 
   return JavaMakeStringArray(env, assets);
 }
@@ -287,14 +287,11 @@ JNIEXPORT jstring JNICALL Java_repository_Repository_assetAdd
   IROHA_ASSERT_FALSE(params.find(tag::AssetName) == params.end());
   const auto name   = params.find(tag::AssetName)->second;
 
-  IROHA_ASSERT_FALSE(params.find(tag::SmartContractName) == params.end());
-  const auto smartContractName = params.find(tag::SmartContractName)->second;
 
   const auto value  = convertAssetValueHashMap(env, value_);
 
   logger::debug(NameSpaceID + "::assetAdd")
-      << "domainId: " << domain << ", assetName: " << name
-      << ", smartContractName: " << smartContractName;
+      << "domainId: " << domain << ", assetName: " << name;
 
   Api::Asset asset;
   asset.set_name(name);
@@ -361,7 +358,7 @@ const auto assetName = params.find(tag::AssetName)->second;
   {
     assetMap[tag::DomainId] = asset.domain();
     assetMap[tag::AssetName] = asset.name();
-    assetMap[tag::SmartContractName] = asset.smartcontractname();
+    assetMap[tag::SmartContractName] = "none";
   }
 
   logger::debug(NameSpaceID + "::assetInfoFindByUuid")
@@ -492,7 +489,7 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetInfoFindByUuid
   {
     simpleAssetInfo[tag::DomainId] = simpleAsset.domain();
     simpleAssetInfo[tag::AssetName] = simpleAsset.name();
-    simpleAssetInfo[tag::SmartContractName] = simpleAsset.smartcontractname();
+    simpleAssetInfo[tag::SmartContractName] = "";
   }
 
   logger::debug(NameSpaceID + "::simpleAssetInfoFindByUuid")

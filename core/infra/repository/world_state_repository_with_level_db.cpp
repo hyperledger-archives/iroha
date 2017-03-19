@@ -14,14 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <repository/world_state_repository.hpp>
+#include <tuple>
+
 #include <infra/config/iroha_config_with_json.hpp>
+#include <repository/world_state_repository.hpp>
 #include <util/exception.hpp>
 #include <util/logger.hpp>
 
-#include <leveldb/write_batch.h>
 #include <leveldb/db.h>
-#include <tuple>
+#include <leveldb/write_batch.h>
 
 // +------------------------------------------------+
 // | Repository should save string to any database. |
@@ -77,7 +78,8 @@ namespace repository {
               detail::loadDb();
           }
           if(nullptr != detail::db) {
-              logger::info("WorldStateRepositoryWithLeveldb") << "Add";
+
+              logger::info("WorldStateRepositoryWithLeveldb") << "Add:" << key;
               return detail::loggerStatus(detail::db->Put(leveldb::WriteOptions(), key, value));
           }
           logger::error("WorldStateRepositoryWithLeveldb") << "Error DB already held by process";
@@ -123,8 +125,8 @@ namespace repository {
           std::vector<std::string> res;
           leveldb::Iterator* it = detail::db->NewIterator(leveldb::ReadOptions());
           for(it->Seek(prefix);
-               it->Valid() && it->key().ToString() < prefix + "~";
-               it->Next()
+           it->Valid() && it->key().ToString() < prefix + "~";
+           it->Next()
           ){
               res.push_back( it->value().ToString() );
           }
@@ -185,6 +187,7 @@ namespace repository {
               detail::loadDb();
           }
           if(nullptr != detail::db) {
+              logger::info("WorldStateRepositoryWithLeveldb") << "Find:" << key;
               std::string readData;
               detail::loggerStatus(detail::db->Get(leveldb::ReadOptions(), key, &readData));
               if (!readData.empty()) {
