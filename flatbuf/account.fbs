@@ -1,0 +1,19 @@
+include "key.fbs";
+include "primitives.fbs";
+include "asset.fbs";
+
+namespace iroha.api;
+
+
+table Account {
+  pubKey: PublicKey (required);  // primary key for account
+  alias:  string;
+  assets: [Asset];
+  
+  // for m-n multisignature scheme
+  // signatories.size() = n, useKeys = m
+  signatories: [PublicKey];
+  useKeys:     ushort = 1;
+
+  permissions: [UserPermission]; 
+}

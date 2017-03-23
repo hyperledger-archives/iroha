@@ -1,0 +1,98 @@
+include "asset.fbs";
+include "account.fbs";
+include "key.fbs";
+include "primitives.fbs";
+
+namespace iroha.api;
+
+// we union only those objects.
+// they share the same commands
+union Object { Peer, Asset, Account, Chaincode }
+
+table Add {
+    object: Object (required);
+}
+
+table Remove {
+    object: Object (required);
+}
+
+// needed to implement correct permission model:
+// user may have permission to add asset, but not to create and vice versa.
+table Create {
+    asset: Asset (required);
+}
+
+table Store {
+    key: string (required, key);
+    msg: string (required);
+}
+
+table Transfer {
+    currency: Asset     (required); 
+    sender:   PublicKey (required);
+    receiver: PublicKey (required);
+}
+
+table Execute {
+    name: string;
+}
+
+// set new peer trust (with specific value)
+table SetPeerTrust {
+    peerPubKey: PublicKey (required);
+    trust:      double;
+}
+
+// change current trust to some delta
+// example: delta=-5, trust=10 -> newTrust = 10-5 = 5
+table ChangePeerTrust {
+    peerPubKey: PublicKey (required);
+    delta:      double;
+}
+
+table SetPeerPermission {
+    peerPubKey: PublicKey      (required);
+    permission: PeerPermission (required);
+}
+
+table SetPeerActive {
+    peerPubKey: PublicKey (required);
+    active:     bool;
+}
+
+// consider chaincode storage as key-value map
+table SetChaincode {
+    chaincode: Chaincode (required);
+}
+
+
+//////////////////////////////////////////
+/// Commands for Account
+table AddSignatory {
+    account:   PublicKey   (required);
+    signatory: [PublicKey] (required);
+}
+
+table SetAccountsUseKeys {
+    accounts: [PublicKey] (required);
+    useKeys:  ushort;
+}
+//////////////////////////////////////////
+
+
+union Command {
+    Add, 
+    Remove, 
+    Transfer, 
+    Execute, 
+    Create,
+    
+    SetPeerTrust,
+    ChangePeerTrust,
+
+    SetPeerPermission,
+
+    SetChaincode,
+    SetPeerActive
+}

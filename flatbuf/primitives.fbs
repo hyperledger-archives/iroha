@@ -1,0 +1,90 @@
+include "key.fbs";
+
+namespace iroha.api;
+
+/////////////////////////////////////
+table Message {
+  data: [ubyte] (required);
+}
+
+/////////////////////////////////////
+enum ProgrammingLanguage: ubyte {Java8, Python3}
+
+table Chaincode {
+  // (ledger:domain:chaincode) is a primary key
+  code_name:   string  (required, key);  // sorted
+  domain_name: string  (required);  
+  ledger_name: string  (required);
+
+  language:    ProgrammingLanguage;
+  code:        [ubyte];   // .class, .py, whatever
+  code_hash:   [ubyte];   // hash(code)
+}
+
+/////////////////////////////////////
+/// Key-Value object
+
+table KeyValueObject {
+  key:   string (key, required);  // primary key, sorted
+  value: [ubyte];                 // arbitrary data
+}
+
+/////////////////////////////////////
+/// Permissions 
+
+table UserPermissionRoot {
+  domain_add:           bool;  // ability to add new domain
+  domain_remove:        bool;  // ability to remove existing domain
+  peer_add:             bool;  // ability to add new peer
+  peer_remove:          bool;  // ability to remove existing peer
+  user_add:             bool;  // adility to create new user account
+  user_remove:          bool;  // ability to remove user account
+  user_give_permission: bool;  // ability to give permissions to user globally
+}
+
+table UserPermissionDomain {
+  // identify domain:
+  domain_name:  string (key, required);  // sorted
+  ledger_name:  string (required);
+
+  user_give_permission: bool;  // ability to give permissions to user in this domain
+  user_add:             bool;  // ability to add existing user to domain
+  user_remove:          bool;  // ability to remove existing user from domain
+}
+
+table UserPermissionAsset {
+  // identify asset by its primary key:
+  asset_name:  string (key, required); // sorted
+  domain_name: string (required);
+  ledger_name: string (required);
+
+  transfer: bool;  // ability to transfer an asset
+  add:      bool;  // ability to add some amount to account 
+  remove:   bool;  // ability to remove some amount from account
+  create:   bool;  // ability to create new asset
+}
+
+union UserPermission {UserPermissionRoot, UserPermissionDomain, UserPermissionAsset}
+
+/////////////////////////////////////
+/// Peer
+
+table Peer {
+  publicKey:   PublicKey (required);  // sorted; primary key. 
+  ip:          string;
+  trust:       double;
+  active:      bool;
+  permissions: PeerPermission;
+}
+
+struct PeerPermission{
+  join_network:    bool;
+  join_validation: bool;
+}
+
+/////////////////////////////////////
+table Signature {
+  publicKey:  PublicKey;
+  signature:  [ubyte];   // signature is sign(hash + timestamp)
+  timestamp:   ulong;
+}

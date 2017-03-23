@@ -1,0 +1,31 @@
+include "transaction.fbs"; 
+include "commands.fbs";
+
+namespace iroha.api;
+
+file_identifier "IROH";
+file_extension  "iroha";
+
+table ConsensusEvent {
+  peerSignatures: [Signature];
+  transactions:   [Transaction];
+}
+
+enum Code: ubyte {OK, FAIL} // TODO: maybe more?
+
+table TransactionResponse {
+  message:      string;
+  code:         Code;
+  transaction:  Transaction;
+}
+
+table RecieverConfirmation {
+  signature: Signature;
+  hash:      [ubyte];
+}
+
+table Response {
+  message:   [Object];  // because Message is also Object. And Message contains string.
+  code:      Code;
+  signature: Signature;
+}
