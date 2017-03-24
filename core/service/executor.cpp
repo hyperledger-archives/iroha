@@ -258,7 +258,7 @@ namespace executor{
             if (
                 !senderAsset.name().empty()
             ){
-                repository::asset::update(publicKey, assetName, senderAsset);
+                repository::asset::update(publicKey, assetName, asset);
             }
         }else if(tx.has_domain()){
             // Domain will be supported by v1.0
