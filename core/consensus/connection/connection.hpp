@@ -31,6 +31,8 @@ namespace connection {
     using Api::Transaction;
     using Api::Query;
     using Api::TransactionResponse;
+    using Api::DiscoverRequest;
+    using Api::Peer;
 
 
     struct Config {
@@ -146,6 +148,21 @@ namespace connection {
 
             };
         };
+
+        namespace HostDiscovery {
+
+            namespace getHostInfo {
+                bool receive(const std::function<void(
+                        const std::string &,
+                        DiscoverRequest &)> &callback
+                );
+
+                Peer send(
+                        const std::string &ip,
+                        const DiscoverRequest &message
+                );
+            }
+        }
     }
 
     int run();

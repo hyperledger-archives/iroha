@@ -44,6 +44,7 @@ class IrohaConfigManager : config::AbstractConfigManager {
   uint16_t getGrpcPortNumber(uint16_t defaultValue);
   uint16_t getHttpPortNumber(uint16_t defaultValue);
   bool getActiveStart(bool defaultValue);
+  std::vector<std::string> getTrustedHosts(const std::vector<std::string> &defaultValue);
 };
 }
 

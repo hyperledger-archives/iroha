@@ -46,6 +46,7 @@ namespace connection {
     using Api::Izanami;
     using Api::TransactionRepository;
     using Api::AssetRepository;
+    using Api::HostDiscover;
 
     using Api::Query;
     using Api::StatusResponse;
@@ -59,6 +60,8 @@ namespace connection {
     using Api::AssetResponse;
     using Api::RecieverConfirmation;
     using Api::Signature;
+    using Api::Peer;
+    using Api::DiscoverRequest;
 
     enum ResponseType {
         RESPONSE_OK,
@@ -155,6 +158,14 @@ namespace connection {
                         )>
                 > receivers;
             }
+        }
+        namespace HostDiscovery {
+            std::vector<
+                    std::function<void(
+                            const std::string &from,
+                            DiscoverRequest &message
+                    )>
+            > receivers;
         }
     };
 
@@ -405,6 +416,50 @@ namespace connection {
         }
     };
 
+    class HostDiscoverConnectionClient {
+    public:
+        explicit HostDiscoverConnectionClient(std::shared_ptr<Channel> channel)
+                : stub_(HostDiscover::NewStub(channel)) {}
+
+        Peer getHostInfo(const DiscoverRequest& request) {
+            Peer response;
+            logger::info("connection")  <<  "Host discover service";
+            logger::info("connection")  <<  "message: "    <<  request.message();
+
+            ClientContext context;
+            Status status = stub_->getHostInfo(&context, request, &response);
+
+            if (status.ok()) {
+                logger::info("connection")  << "response: " << response.publickey();
+            } else {
+                logger::error("connection") << status.error_code() << ": " << status.error_message();
+            }
+            return response;
+        }
+
+    private:
+        std::unique_ptr<HostDiscover::Stub> stub_;
+    };
+
+    class HostDiscoverServiceImpl final : public HostDiscover::Service {
+        Status getHostInfo(
+                ServerContext*             context,
+                const DiscoverRequest*     query,
+                Peer*                      response
+        ) override {
+            DiscoverRequest request;
+            request.CopyFrom(*query);
+            logger::info("connection") << "HostDiscoverService: " << request.DebugString();
+
+            if (request.message() == "discovery") {
+                response->set_publickey(config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault(""));
+                response->set_address(config::PeerServiceConfig::getInstance().getMyIpWithDefault(""));
+            }
+
+            return Status::OK;
+        }
+    };
+
     namespace iroha {
 
         namespace Sumeragi {
@@ -597,6 +652,35 @@ namespace connection {
             };
         }
 
+        namespace HostDiscovery {
+            namespace getHostInfo {
+                HostDiscoverServiceImpl service;
+
+                Peer send(
+                        const std::string &ip,
+                        const DiscoverRequest &message
+                ) {
+
+                    HostDiscoverConnectionClient client(
+                            grpc::CreateChannel(
+                                    ip + ":" + std::to_string(config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)),
+                                    grpc::InsecureChannelCredentials()
+                            )
+                    );
+                    return client.getHostInfo(message);
+                }
+
+                bool receive(
+                        const std::function<void(
+                                const std::string &,
+                                DiscoverRequest &)> &callback
+                ) {
+                    receivers.push_back(callback);
+                    return true;
+                }
+            }
+        }
+
     };
 
     ServerBuilder builder;
@@ -608,6 +692,7 @@ namespace connection {
         builder.RegisterService(&iroha::Izanami::service);
         builder.RegisterService(&iroha::TransactionRepository::service);
         builder.RegisterService(&iroha::AssetRepository::find::service);
+        builder.RegisterService(&iroha::HostDiscovery::getHostInfo::service);
     }
 
     int run() {

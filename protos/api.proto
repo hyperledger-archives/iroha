@@ -35,6 +35,10 @@ service Izanami {
   rpc Izanagi(TransactionResponse) returns (StatusResponse) {}
 }
 
+service HostDiscover {
+  rpc getHostInfo(DiscoverRequest) returns (Peer) {}
+}
+
 
 message TransactionResponse{
   string message = 1;
@@ -145,4 +149,8 @@ message ConsensusEvent {
   Transaction transaction = 2;
   uint64 order = 3;
   string status = 4;
+}
+
+message DiscoverRequest {
+  string message = 1;
 }

@@ -27,7 +27,7 @@ IrohaConfigManager& IrohaConfigManager::getInstance() {
 
 template <typename T>
 T IrohaConfigManager::getParam(const std::string& param,
-                               const T& defaultValue) {
+                               const T &defaultValue) {
   return getConfigData().value(param, defaultValue);
 }
 
@@ -79,4 +79,8 @@ uint16_t IrohaConfigManager::getHttpPortNumber(uint16_t defaultValue) {
 
 bool IrohaConfigManager::getActiveStart(bool defaultValue = false) {
     return this->getParam<bool>("active_start", defaultValue);
+}
+
+std::vector<std::string> IrohaConfigManager::getTrustedHosts(const std::vector<std::string> &defaultValue) {
+    return this->getParam<std::vector<std::string>>("trusted_hosts", defaultValue);
 }

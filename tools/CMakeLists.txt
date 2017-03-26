@@ -39,3 +39,16 @@ add_executable(send_izanami_test
 target_link_libraries(send_izanami_test
     peer_service
 )
+
+###########################
+#      make hostdiscover  #
+###########################
+
+add_executable(make_hostdiscover
+        make_hostdiscover.cpp
+)
+
+target_link_libraries(make_hostdiscover
+    peer_service
+    json
+)
