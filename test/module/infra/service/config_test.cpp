@@ -44,7 +44,7 @@ TEST(config, isSystemConfigValid) {
 
     json configData = json::parse(res);
     std::string myip = configData["me"]["ip"].dump();
-
+    myip = myip.substr(1, myip.size() - 2);
     ASSERT_TRUE(ip_tools::isIpValid(myip)) << "IP " << myip << " looks like not a valid ip.";
 
     ASSERT_FALSE(configData["me"]["name"].dump() == "\"\"") << "Your name is empty.";
@@ -64,8 +64,9 @@ TEST(config, isSystemConfigValid) {
             ASSERT_TRUE(peer["publicKey"] == configData["me"]["publicKey"])
                     << "My publicKey differs from a name of the node with same IP as me.";
         }
-
-        ASSERT_TRUE(ip_tools::isIpValid(peer["ip"].dump())) << "IP " << peer["ip"].dump() << " looks like not a valid ip.";
+        auto ip = peer["ip"].dump();
+        ip = myip.substr(1, ip.size() - 2);
+        ASSERT_TRUE(ip_tools::isIpValid(ip)) << "IP " << ip << " looks like not a valid ip.";
         ASSERT_FALSE(peer["name"].dump() == "\"\"")
                 << "Name of node " << peer["ip"].dump() << " is empty";
         ASSERT_FALSE(peer["publicKey"].dump() == "\"\"")

@@ -21,7 +21,7 @@ limitations under the License.
 namespace ip_tools {
     bool isIpValid(const std::string &ip) {
         std::regex ipRegex(
-                "\"((([0-1]?\\d\\d?)|((2[0-4]\\d)|(25[0-5]))).){3}(([0-1]?\\d\\d?)|((2[0-4]\\d)|(25[0-5])))\"");
+                "((([0-1]?\\d\\d?)|((2[0-4]\\d)|(25[0-5]))).){3}(([0-1]?\\d\\d?)|((2[0-4]\\d)|(25[0-5])))");
         return std::regex_match(ip, ipRegex);
     }
 }
