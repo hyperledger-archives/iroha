@@ -4,7 +4,8 @@ add_executable(config_test
 
 target_link_libraries(config_test
    gtest
-   json   
+   json
+   ip_tools
 )
 
 add_test(
