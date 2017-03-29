@@ -33,13 +33,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    std::ofstream hostsDiscovered("discovered.txt");
+
     DiscoverRequest request;
     request.set_message("discovery");
     for (auto host: trustedHosts) {
         if (ip_tools::isIpValid(host)) {
             Peer peer = connection::iroha::HostDiscovery::getHostInfo::send(host, request);
             if (peer.publickey() != "") {
-                std::cout << peer.address() << " " << peer.publickey() << std::endl;
+                hostsDiscovered << peer.address() << " " << peer.publickey() << std::endl;
+
             }
         } else {
             // may be we have a netmask?
@@ -48,7 +51,7 @@ int main(int argc, char* argv[]) {
                 Peer peer = connection::iroha::HostDiscovery::getHostInfo::send(
                         ip_tools::uintIpToString(range.first++), request);
                 if (peer.publickey() != "") {
-                    std::cout << peer.address() << " " << peer.publickey() << std::endl;
+                    hostsDiscovered << peer.address() << " " << peer.publickey() << std::endl;
                 }
             }
         }
