@@ -20,6 +20,7 @@ limitations under the License.
 #include <infra/config/iroha_config_with_json.hpp>
 #include <consensus/connection/connection.hpp>
 #include <thread>
+#include <util/ip_tools.hpp>
 
 using Api::DiscoverRequest;
 using Api::Peer;
@@ -35,9 +36,21 @@ int main(int argc, char* argv[]) {
     DiscoverRequest request;
     request.set_message("discovery");
     for (auto host: trustedHosts) {
-        Peer peer = connection::iroha::HostDiscovery::getHostInfo::send(host, request);
-        if (peer.publickey() != "") {
-            std::cout << peer.address() << " " << peer.publickey() << std::endl;
+        if (ip_tools::isIpValid(host)) {
+            Peer peer = connection::iroha::HostDiscovery::getHostInfo::send(host, request);
+            if (peer.publickey() != "") {
+                std::cout << peer.address() << " " << peer.publickey() << std::endl;
+            }
+        } else {
+            // may be we have a netmask?
+            auto range = ip_tools::getIpRangeByNetmask(host);
+            for (uint32_t i = 0; i < range.second; ++i) {
+                Peer peer = connection::iroha::HostDiscovery::getHostInfo::send(
+                        ip_tools::uintIpToString(range.first++), request);
+                if (peer.publickey() != "") {
+                    std::cout << peer.address() << " " << peer.publickey() << std::endl;
+                }
+            }
         }
     }
 

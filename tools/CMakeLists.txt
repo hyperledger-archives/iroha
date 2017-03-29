@@ -51,4 +51,5 @@ add_executable(make_hostdiscover
 target_link_libraries(make_hostdiscover
     peer_service
     json
+    ip_tools
 )
