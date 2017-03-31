@@ -26,14 +26,24 @@ using Api::DiscoverRequest;
 using Api::Peer;
 
 int main(int argc, char* argv[]) {
-    std::vector<std::string> defaultHosts {};
-    auto trustedHosts = config::IrohaConfigManager::getInstance().getTrustedHosts(defaultHosts);
-    if (trustedHosts.empty()) {
-        std::cout << "Config section for trusted hosts was not found or it is empty." << std::endl;
+
+    std::string discoveredFileName = "discovered.txt";
+    if (argc == 2) discoveredFileName.assign(argv[1]);
+    if (argc > 2) {
+        std::cout << "Usage: make_hostdiscover [filename]" << std::endl;
+        std::cout << "Discovered nodes will be saved into filename "
+                "in <ip> <public key> format" << std::endl;
         return 1;
     }
 
-    std::ofstream hostsDiscovered("discovered.txt");
+    std::vector<std::string> defaultHosts {};
+    auto trustedHosts = config::IrohaConfigManager::getInstance().getTrustedHosts(defaultHosts);
+    if (trustedHosts.empty()) {
+        std::cout << "Config section for trusted hosts was not found or empty." << std::endl;
+        return 1;
+    }
+
+    std::ofstream hostsDiscovered(discoveredFileName);
 
     DiscoverRequest request;
     request.set_message("discovery");
