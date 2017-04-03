@@ -15,18 +15,14 @@ limitations under the License.
 */
 #include <gtest/gtest.h>
 
-#include <string>
 #include <fstream>
 #include <regex>
 
 #include <json.hpp>
 
-using json = nlohmann::json;
+#include "util/ip_tools.hpp"
 
-void isIpValid(const std::string &ip) {
-    std::regex ipRegex("\"((([0-1]?\\d\\d?)|((2[0-4]\\d)|(25[0-5]))).){3}(([0-1]?\\d\\d?)|((2[0-4]\\d)|(25[0-5])))\"");
-    ASSERT_TRUE(std::regex_match(ip, ipRegex)) << "IP " << ip << " looks like not a valid ip.";
-}
+using json = nlohmann::json;
 
 TEST(config, isSystemConfigValid) {
 
@@ -48,7 +44,8 @@ TEST(config, isSystemConfigValid) {
 
     json configData = json::parse(res);
     std::string myip = configData["me"]["ip"].dump();
-    isIpValid(myip);
+    myip = myip.substr(1, myip.size() - 2);
+    ASSERT_TRUE(ip_tools::isIpValid(myip)) << "IP " << myip << " looks like not a valid ip.";
 
     ASSERT_FALSE(configData["me"]["name"].dump() == "\"\"") << "Your name is empty.";
     ASSERT_FALSE(configData["me"]["publicKey"].dump() == "\"\"") << "Your public key is empty.";
@@ -67,8 +64,9 @@ TEST(config, isSystemConfigValid) {
             ASSERT_TRUE(peer["publicKey"] == configData["me"]["publicKey"])
                     << "My publicKey differs from a name of the node with same IP as me.";
         }
-
-        isIpValid(peer["ip"].dump());
+        auto ip = peer["ip"].dump();
+        ip = myip.substr(1, ip.size() - 2);
+        ASSERT_TRUE(ip_tools::isIpValid(ip)) << "IP " << ip << " looks like not a valid ip.";
         ASSERT_FALSE(peer["name"].dump() == "\"\"")
                 << "Name of node " << peer["ip"].dump() << " is empty";
         ASSERT_FALSE(peer["publicKey"].dump() == "\"\"")
