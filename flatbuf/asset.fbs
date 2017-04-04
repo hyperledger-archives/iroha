@@ -1,0 +1,23 @@
+include "primitives.fbs";
+
+namespace iroha.api;
+
+table Asset {
+  // (ledger:domain:asset) = composite primary key for any asset 
+  asset_name:    string (key, required);  // sorted; name should be unique inside a domain
+  domain_name:   string (required);       // domain should be unique inside a ledger
+  ledger_name:   string (required);       // unique worldwide
+  
+  description:   string;
+
+  // amount and precision should be encoded in properties
+  prop:  [KeyValueObject]; // using this, you can create complex assets
+
+  logic: AssetLogic;
+}
+
+table AssetLogic {
+  add:      Chaincode;
+  remove:   Chaincode;
+  transfer: Chaincode;
+}

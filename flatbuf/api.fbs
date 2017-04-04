@@ -1,0 +1,161 @@
+namespace Api;
+
+root_type ConsensusEvent;
+
+file_identifier "IRH";
+file_extension "iroha";
+
+union Object { Currency, KeyValueListAsset, Domain, Account, Peer, Message }
+union Command { Add, Transfer, Update, Remove, Batch, Contract, ChaincodeBatch }
+
+table Permission {
+    readable: bool(required); // queryable
+    writeable: bool(required); // commandable
+    isRoot: bool(required);
+    publicKey: string(required);
+}
+
+// Objects
+
+table KeyValueObject {
+  key: string;
+  value: Api.ValueObject;
+}
+
+table ValueObject {
+  valueString: string;
+  value: ulong;
+  precision: uint;
+  valueBoolean: bool;
+  object: ValueObject;
+}
+
+table Currency {
+  domain: Domain(required);
+  name: string(required);
+  amount: ulong;
+  precision: uint;
+  description: string;
+  tag: string; // For example, XBT, IRH, YNZ
+  ledgerId: string;
+  isEditable: bool;
+}
+
+table Message {
+    text: string(required);
+}
+
+table KeyValueListAsset {
+  domain: Domain(required);
+  name: string;
+  description: string;
+  tag: string;
+  ledgerId: string;
+  keyValueList: [Api.KeyValueObject];
+  permissions: Api.Permission;
+  isEditable: bool;
+}
+
+table Domain {
+  name: string(required);
+  permissions: [Permission];
+}
+
+table Account {
+  publicKey: string;
+  alias: string;
+  domains: [Api.Domain];
+}
+
+table Trust {
+  value: ulong;
+  isOk: bool;
+}
+
+table Peer {
+  publicKey: string;
+  address: string;
+  trust: Api.Trust;
+}
+
+table Signature {
+  publicKey:string;
+  signature:string;
+}
+
+table Query {
+  type: string;
+  senderPubkey: string;
+}
+
+table ConsensusEvent {
+  signatures: [Api.Signature];
+  transaction:Api.Transaction;
+  order:ulong;
+  status:string;
+}
+
+// Commands
+
+table Add {
+    object: Object(required);
+}
+
+table Transfer {
+    object: Object(required);
+    receiver: string(required);
+}
+
+table Update {
+    object: Object(required);
+}
+
+table Remove {
+    object: Object(required);
+}
+
+table Transaction {
+  command: Command(required);
+
+  signatures: [Api.Signature];
+  tag: string;
+  creatorPubKey: string;
+  hash: string;
+  timestamp: ulong;
+  message: string;
+}
+
+// Communication
+
+table TransactionResponse {
+  message: string;
+  code: ushort;
+  transaction:[Api.Transaction];
+}
+
+table RecieverConfirmation {
+  signature: Api.Signature; // hash can be computed separately
+  timestamp: ulong;
+}
+
+table QueryResponse {
+  objects: [Object];
+  code: ushort;
+  timestamp: ulong;
+  signature: Api.Signature;
+}
+
+table PeerResponse {
+  message: string;
+  code: ushort;
+  timestamp: ulong;
+  signature: Api.Signature;
+}
+
+table StatusResponse {
+  value: string;
+  message: string;
+  timestamp: ulong;
+  confirm: Api.RecieverConfirmation;
+  signature: Api.Signature;
+}
