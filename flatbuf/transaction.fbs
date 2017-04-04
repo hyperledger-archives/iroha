@@ -2,12 +2,20 @@ include "key.fbs";
 include "commands.fbs";
 include "primitives.fbs";
 
-namespace iroha.api;
+namespace iroha;
 
 table Transaction {
   creatorPubKey:   PublicKey (required);
   command:         Command;
   signatures:      [Signature];
   hash:            [ubyte];
-  message:         string;
+  attachment:      Attachment;
 }
+
+
+table Attachment {
+  mime: string;
+  data: [ubyte];
+}
+
+root_type Transaction;
