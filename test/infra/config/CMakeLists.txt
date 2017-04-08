@@ -14,10 +14,9 @@ add_executable(peer_service_with_json_test peer_service_with_json_test.cpp)
 target_link_libraries(peer_service_with_json_test
     config_manager
     pthread
-    connection_with_grpc
+    connection_with_grpc_flatbuffer
     signature
     config_manager
-    event_with_grpc
     gtest
     create_objects_helper
 )

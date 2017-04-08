@@ -3,7 +3,7 @@ add_executable(connection_grpc_test
     connection_with_grpc_test.cpp
 )
 target_link_libraries(connection_grpc_test
-    connection_with_grpc
+    connection_with_grpc_flatbuffer
     signature
     config_manager
     ed25519

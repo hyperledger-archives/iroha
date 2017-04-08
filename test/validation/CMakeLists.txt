@@ -7,8 +7,7 @@ target_link_libraries(transaction_validator_test
     config_manager
     gtest
     validator
-    connection_with_grpc
-    event_with_grpc
+    connection_with_grpc_flatbuffer
 )
 add_test(
     NAME transaction_validator_test

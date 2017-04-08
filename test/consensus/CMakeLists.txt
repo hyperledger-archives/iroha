@@ -10,7 +10,7 @@ target_link_libraries(sumeragi_test
     base64
     signature
     sumeragi
-    connection_with_grpc
+    connection_with_grpc_flatbuffer
     config_manager
     create_objects_helper
 )
@@ -23,7 +23,7 @@ target_link_libraries(transaction_test
     base64
     signature
     sumeragi
-    connection_with_grpc
+    connection_with_grpc_flatbuffer
     pthread
     config_manager
     create_objects_helper

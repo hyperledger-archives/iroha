@@ -7,7 +7,6 @@ add_executable(transaction_builder_test
 )
 
 target_link_libraries(transaction_builder_test
-    event_with_grpc
     create_objects_helper
     exception
     gtest
