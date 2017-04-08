@@ -55,7 +55,7 @@ int main() {
 
     connection::initialize_peer();
     sumeragi::initializeSumeragi();
-    peer::izanami::startIzanami();
+    //peer::izanami::startIzanami();
 
     std::thread http_thread(server);
 
