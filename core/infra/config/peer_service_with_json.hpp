@@ -36,9 +36,11 @@ protected:
   std::string getMyPublicKeyWithDefault(const std::string& defaultValue);
   std::string getMyPrivateKeyWithDefault(const std::string& defaultValue);
   std::string getMyIpWithDefault(const std::string& defaultValue);
+  bool isExistIP( const std::string &ip );
   double getMaxTrustScoreWithDefault(double defaultValue);
   size_t getMaxFaultyScoreWithDefault(size_t defaultValue);
   std::vector<json> getGroup();
+
   static PeerServiceConfig &getInstance();
 
   double getMaxTrustScore();

@@ -24,7 +24,7 @@ limitations under the License.
 
 using PeerServiceConfig = config::PeerServiceConfig;
 using nlohmann::json;
-
+/*
 PeerServiceConfig::PeerServiceConfig() {
 }
 
@@ -32,113 +32,102 @@ PeerServiceConfig& PeerServiceConfig::getInstance() {
   static PeerServiceConfig serviceConfig;
   return serviceConfig;
 }
-
-std::string PeerServiceConfig::getMyPublicKey() {
-  if (auto config = openConfig(getConfigName())) {
+*/
+/*
+std::string PeerServiceConfig::getMyPublicKeyWithDefault(const std::string& defaultValue) {
+  // ToDo
+  if (auto config = parseConfigDataFromString(getConfigName())) {
     return (*config)["me"]["publicKey"].get<std::string>();
   }
-  return "";
+  return defaultValue;
 }
-
-std::string PeerServiceConfig::getMyPrivateKey() {
-  if (auto config = openConfig(getConfigName())) {
+*/
+/*
+std::string PeerServiceConfig::getMyPrivateKeyWithDefault(const std::string& defaultValue){
+  // ToDo
+  if (auto config = parseConfigDataFromString(getConfigName())) {
     return (*config)["me"]["privateKey"].get<std::string>();
   }
   return "";
 }
-
-std::string PeerServiceConfig::getMyIp() {
-  if (auto config = openConfig(getConfigName())) {
-    return (*config)["me"]["ip"].get<std::string>();
-  }
-  return "";
+*/
+/*
+std::string PeerServiceConfig::getMyIpWithDefault(const std::string& defaultValue){
+if (auto config = openConfig(getConfigName())) {
+  return (*config)["me"]["ip"].get<std::string>();
 }
-
+return defaultValue;
+}
+*/
+/*
 double PeerServiceConfig::getMaxTrustScore() {
     return 1.0; // WIP　to support trustRate = 1.0
 }
 
 bool PeerServiceConfig::isExistIP( const std::string &ip ) {
-  return findPeerIP( std::move(ip) ) != peerList.end();
+  // ToDo
+  return false;
+  //return findPeerIP( std::move(ip) ) != peerList.end();
 }
 bool PeerServiceConfig::isExistPublicKey( const std::string &publicKey ) {
-  return findPeerPublicKey( std::move(publicKey) ) != peerList.end();
+  // ToDo
+  return false;
+  //return findPeerPublicKey( std::move(publicKey) ) != peerList.end();
 }
-
-std::vector<peer::Node>::iterator PeerServiceConfig::findPeerIP( const std::string &ip ) {
-  return std::find_if( peerList.begin(), peerList.end(),
-                       [&ip]( const peer::Node& p ) { return p.getIP() == ip; } );
-}
-
-std::vector<peer::Node>::iterator PeerServiceConfig::findPeerPublicKey( const std::string &publicKey ) {
-  return std::find_if( peerList.begin(), peerList.end(),
-                       [&publicKey]( const peer::Node& p ) { return p.getPublicKey() == publicKey; } );
-}
-
-
-std::vector<std::unique_ptr<peer::Node>> PeerServiceConfig::getPeerList() {
-  initialziePeerList_from_json();
-
-  std::vector<std::unique_ptr<peer::Node>> nodes;
-  for( auto &&node : peerList )
-    nodes.push_back( std::make_unique<peer::Node>( node.getIP(), node.getPublicKey(), node.getTrustScore() ) );
-  sort( nodes.begin(), nodes.end(),
-        []( const std::unique_ptr<peer::Node> &a, const std::unique_ptr<peer::Node> &b ) { return a->getTrustScore() > b->getTrustScore(); } );
-    return nodes;
-}
+*/
+/*
 std::vector<std::string> PeerServiceConfig::getIpList() {
   std::vector<std::string> ret_ips;
   for( auto &&node : peerList )
     ret_ips.push_back( node.getIP() );
   return ret_ips;
 }
-
+*/
+/*
 // invoke to issue transaction
 void PeerServiceConfig::toIssue_addPeer( const peer::Node& peer ) {
-    if( isExistIP(peer.getIP()) || isExistPublicKey(peer.getPublicKey()) ) return;
     /*
+    if( isExistIP(peer.getIP()) || isExistPublicKey(peer.getPublicKey()) ) return;
     auto txPeer = TransactionBuilder<Add<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
             .setPeer( txbuilder::createPeer( peer.getPublicKey(), peer.getIP(), txbuilder::createTrust(peer.getTrustScore(),true) ) )
             .build();
-    */
     //connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
 }
+*/
+/*
 void PeerServiceConfig::toIssue_distructPeer( const std::string &publicKey ) {
     auto it = findPeerPublicKey( publicKey );
-    /*
     auto txPeer = TransactionBuilder<Update<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
             .setPeer(txbuilder::createPeer(publicKey, "", txbuilder::createTrust(it->getTrustScore()-1.0, true)))
             .build();
-    */
     //connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
 }
+*/
+/*
 void PeerServiceConfig::toIssue_removePeer( const std::string &publicKey ) {
-    /*
     auto txPeer = TransactionBuilder<Remove<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
             .setPeer(txbuilder::createPeer(publicKey, "", txbuilder::createTrust(0.0, false)))
             .build();
-    */
     //connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
 }
+*/
+/*
 void PeerServiceConfig::toIssue_creditPeer( const std::string &publicKey ) {
     auto it = findPeerPublicKey( publicKey );
     if( it->getTrustScore() == getMaxTrustScore() ) return;
-    /*
     auto txPeer = TransactionBuilder<Update<Peer>>()
             .setSenderPublicKey(getMyPublicKey())
             .setPeer(txbuilder::createPeer(publicKey, "",
                                            txbuilder::createTrust(std::min( getMaxTrustScore(), it->getTrustScore()+1.0 ), true)))
             .build();
-    */
     //connection::iroha::PeerService::Torii::send( getMyPublicKey(), txPeer );
 }
-
-
-
-bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
+*/
+/*
+bool PeerServiceConfig::addPeer( const Node &peer ) {
   try {
     if( isExistIP( peer.getIP() ) )
       throw exception::service::DuplicationIPException(peer.getIP());
@@ -154,7 +143,8 @@ bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
   }
   return defaultValue;
 }
-
+*/
+/*
 std::string PeerServiceConfig::getMyPrivateKeyWithDefault(const std::string& defaultValue) {
   auto config = getConfigData();
   if (!config.is_null()) {
@@ -162,7 +152,8 @@ std::string PeerServiceConfig::getMyPrivateKeyWithDefault(const std::string& def
   }
   return defaultValue;
 }
-
+*/
+/*
 std::string PeerServiceConfig::getMyIpWithDefault(const std::string& defaultValue) {
   auto config = getConfigData();
   if (!config.is_null()) {
@@ -225,3 +216,4 @@ std::vector<json> PeerServiceConfig::getGroup() {
       })
     });
 }
+*/

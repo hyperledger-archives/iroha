@@ -11,5 +11,6 @@ target_link_libraries(connection_with_grpc_flatbuffer
   flatbuffers
   endpoint_fbs
   config_manager
-  peer_service
+# WIP
+#  peer_service
 )

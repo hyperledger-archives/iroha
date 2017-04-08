@@ -27,16 +27,8 @@ limitations under the License.
 
 namespace connection {
 
-<<<<<<< HEAD
     using iroha::ConsensusEvent;
     using iroha::Transaction;
-=======
-    using Api::ConsensusEvent;
-    using Api::Transaction;
-    using Api::Query;
-    using Api::TransactionResponse;
-
->>>>>>> master
 
     struct Config {
         std::string name;
@@ -73,87 +65,8 @@ namespace connection {
                 > &callback);
 
             };
-            // This only reply pong.
-            namespace Kagami{}
         };
 
-        namespace PeerServiceImpl {
-
-            namespace Sumeragi {
-
-                bool send(
-                    const std::string &ip,
-                    const Transaction &&transaction
-                );
-
-                bool ping(
-                        const std::string &ip
-                );
-
-            }
-
-            namespace Izanami {
-                bool send(
-                        const std::string& ip,
-                        const TransactionResponse &txResponse
-                );
-            }
-        }
-
-        namespace Izanami {
-            namespace Izanagi {
-                bool receive(const std::function<void(
-                        const std::string &,
-                        TransactionResponse&)
-                > &callback);
-            }
-        }
-
-<<<<<<< HEAD
-=======
-        namespace TransactionRepository {
-
-            namespace find {
-
-                bool receive(const std::function<void(
-                        const std::string &,
-                        const Query &)
-                > &callback);
-
-            };
-
-            namespace fetch {
-
-                bool receive(const std::function<void(
-                        const std::string &,
-                        const Query &)
-                > &callback);
-
-            };
-
-            namespace fetchStream {
-
-                bool receive(const std::function<void(
-                        const std::string &,
-                        const Query &)
-                > &callback);
-
-            };
-
-        }
-
-        namespace AssetRepository {
-
-            namespace find {
-
-                bool receive(const std::function<void(
-                        const std::string &,
-                        const Query &)
-                > &callback);
-
-            };
-        };
->>>>>>> master
     }
 
     int run();

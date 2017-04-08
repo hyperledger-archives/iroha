@@ -192,23 +192,31 @@ namespace connection {
                     const std::string &ip,
                     const ConsensusEvent &&event
                 ) {
+                    // ToDo
+                    /*
                     auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
                     if (find(receiver_ips.begin(), receiver_ips.end(), ip) != receiver_ips.end()) {
                         return true;
                     } else {
                         return false;
                     }
+                    */
+                    return true;
                 }
 
                 bool sendAll(
                         const ConsensusEvent &&event
                 ) {
+                    // ToDo
+                    /*
                     auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
                     for (auto &ip : receiver_ips) {
+                        // ToDo
                         if (ip != config::PeerServiceConfig::getInstance().getMyIp()) {
                             send(ip, std::move(event));
                         }
                     }
+                    */
                     return true;
                 }
             }
