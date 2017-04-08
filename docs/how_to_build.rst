@@ -43,7 +43,7 @@ I need C++14 compilable compiler
 
 ::
 
-    # apt -y install xsltproc libhdf5-serial-dev libsnappy-dev liblmdb-dev autoconf automake libtool unzip
+    # apt -y install xsltproc libhdf5-serial-dev libsnappy-dev liblmdb-dev autoconf automake libtool unzip libssl-dev
 
 
 protobuf のインストール / Install protobuf
@@ -82,6 +82,14 @@ buildに時間かかるのでBinaryがほしい
     root@mizuki # which grpc_cpp_plugin
     /usr/local/bin/grpc_cpp_plugin
 
+java のインストール / Install java
+----------------------------------
+javaが必要
+::
+
+    (ubuntuの場合)
+    apt-get install default-jdk
+
 Iroha本体のclone / Clone iroha
 ==============================
 
@@ -115,6 +123,7 @@ Iroha本体のbuild / build iroha
     ~/iroha # mkdir build
     ~/iroha # cd build/
     ~/iroha/build # cmake ..
+    ~/iroha/build # make
     .
     .
     .

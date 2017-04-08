@@ -28,17 +28,12 @@ IrohaConfigManager& IrohaConfigManager::getInstance() {
 template <typename T>
 T IrohaConfigManager::getParam(const std::string& param,
                                const T& defaultValue) {
-  if (auto config = openConfig(getConfigName())) {
-    return config->value(param, defaultValue);
-  }
-  return defaultValue;
+  return getConfigData().value(param, defaultValue);
 }
 
 std::string IrohaConfigManager::getConfigName() { return "config/config.json"; }
 
-std::string IrohaConfigManager::getDatabasePath(
-        const std::string& defaultValue
-) {
+std::string IrohaConfigManager::getDatabasePath(const std::string& defaultValue) {
   return this->getParam<std::string>("database_path", defaultValue);
 }
 
@@ -80,4 +75,8 @@ uint16_t IrohaConfigManager::getGrpcPortNumber(uint16_t defaultValue) {
 
 uint16_t IrohaConfigManager::getHttpPortNumber(uint16_t defaultValue) {
     return this->getParam<uint16_t>("http_port", defaultValue);
+}
+
+bool IrohaConfigManager::getActiveStart(bool defaultValue = false) {
+    return this->getParam<bool>("active_start", defaultValue);
 }

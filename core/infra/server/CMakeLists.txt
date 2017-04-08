@@ -10,6 +10,5 @@ target_link_libraries(http_server_with_cappuccino
   signature
   connection_with_grpc_flatbuffer
   cappuccino
-  create_objects_helper
   asio
 )

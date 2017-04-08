@@ -21,56 +21,29 @@ limitations under the License.
 #include <set>
 #include <map>
 #include <queue>
-#include <service/peer_service.hpp>
 #include "abstract_config_manager.hpp"
 
 namespace config {
 
 class PeerServiceConfig : config::AbstractConfigManager {
  private:
-  static std::vector<peer::Node> peerList;
   PeerServiceConfig();
-  void initialziePeerList_from_json();
-
-  bool isExistIP( const std::string& );
-  bool isExistPublicKey( const std::string& );
-  std::vector<peer::Node>::iterator findPeerIP( const std::string& ip );
-  std::vector<peer::Node>::iterator findPeerPublicKey( const std::string& publicKey );
- protected:
+protected:
   void parseConfigDataFromString(std::string&& jsonStr) override;
 
  public:
+
+  std::string getMyPublicKeyWithDefault(const std::string& defaultValue);
+  std::string getMyPrivateKeyWithDefault(const std::string& defaultValue);
+  std::string getMyIpWithDefault(const std::string& defaultValue);
+  double getMaxTrustScoreWithDefault(double defaultValue);
+  size_t getMaxFaultyScoreWithDefault(size_t defaultValue);
+  std::vector<json> getGroup();
   static PeerServiceConfig &getInstance();
 
-  std::string getMyPublicKey();
-  std::string getMyPrivateKey();
-  std::string getMyIp();
   double getMaxTrustScore();
 
-  std::vector<std::unique_ptr<peer::Node>> getPeerList();
-  std::vector<std::string> getIpList();
-
-
-  // invoke to issue transaction
-  void toIssue_addPeer( const peer::Node& );
-  void toIssue_distructPeer( const std::string &publicKey );
-  void toIssue_removePeer( const std::string &publicKey );
-  void toIssue_creditPeer( const std::string &publicKey );
-
-  // invoke when execute transaction
-  bool addPeer( const peer::Node& );
-  bool removePeer( const std::string &publicKey );
-  bool updatePeer( const std::string& publicKey, const peer::Node& peer );
-
-  // invoke when validator transaction
-  bool validate_addPeer( const peer::Node& );
-  bool validate_removePeer( const std::string &publicKey );
-  bool validate_updatePeer( const std::string& publicKey, const peer::Node& peer );
-
-  // equatl to isSumeragi
-  bool isLeaderMyPeer();
-
-  virtual std::string getConfigName();
+  virtual std::string getConfigName() override;
 };
 }
 

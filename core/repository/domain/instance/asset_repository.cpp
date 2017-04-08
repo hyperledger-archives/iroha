@@ -30,91 +30,57 @@ const auto ValuePrefix = common::Prefix("Asset::");
 namespace repository {
 namespace asset {
 
-namespace detail {
-std::string createAssetUuid(const std::string &domain,
-                            const std::string &name) {
-  return hash::sha3_256_hex(domain + "@" + name);
-}
-}
-
-/********************************************************************************************
- * Add<Asset>
- ********************************************************************************************/
-std::string add(const std::string &domain, const std::string &name,
-                const txbuilder::Map &value,
-                const std::string &smartContractName) {
-
-  logger::explore(NameSpaceID) << "Add<Asset> domainId: " << domain
-                               << " assetName: " << name
-                               << " assetValue: " << txbuilder::stringify(value)
-                               << " smartContractName: " << smartContractName;
-
-  const auto uuid = detail::createAssetUuid(domain, name);
-
-  if (not exists(uuid)) {
-    const auto strAsset = common::stringify<Api::Asset>(
-        txbuilder::createAsset(domain, name, value, smartContractName),
-        ValuePrefix);
-    if (world_state_repository::add(uuid, strAsset)) {
-      return uuid;
+    bool add(
+        const std::string &publicKey,
+        const std::string &assetName,
+        const Api::Asset  &asset
+    ){
+      return world_state_repository::add("asset_" + publicKey + '_' + assetName, asset.SerializeAsString());
     }
-  }
 
-  return "";
-}
+    bool update(
+        const std::string &publicKey,
+        const std::string &assetName,
+        const Api::Asset &asset
+    ){
+      if(world_state_repository::exists("asset_" + publicKey + '_' + assetName)){
+        return world_state_repository::update("asset_" + publicKey + '_' + assetName, asset.SerializeAsString());
+      }
+      return false;
+    }
 
-/********************************************************************************************
- * Update<Asset>
- ********************************************************************************************/
-bool update(const std::string &uuid, const txbuilder::Map &value) {
-  if (exists(uuid)) {
-    const auto rval = world_state_repository::find(uuid);
-    logger::explore(NameSpaceID) << "Update<Asset> uuid: " << uuid
-                                 << txbuilder::stringify(value);
-    auto asset = common::parse<Api::Asset>(rval, ValuePrefix);
-    *asset.mutable_value() =
-        google::protobuf::Map<std::string, Api::BaseObject>(value.begin(),
-                                                            value.end());
-    const auto strAsset = common::stringify<Api::Asset>(asset, ValuePrefix);
-    return world_state_repository::update(uuid, strAsset);
-  }
-  return false;
-}
+    bool remove(
+        const std::string &publicKey,
+        const std::string &assetName
+    ){
+      if(world_state_repository::exists("asset_" + publicKey + '_' + assetName)){
+        return world_state_repository::remove("asset_" + publicKey + '_' + assetName);
+      }
+      return false;
+    }
 
-/********************************************************************************************
- * Remove<Asset>
- ********************************************************************************************/
-bool remove(const std::string &uuid) {
-  if (exists(uuid)) {
-    logger::explore(NameSpaceID) << "Remove<Asset> uuid: " << uuid;
-    return world_state_repository::remove(uuid);
-  }
-  return false;
-}
+    Api::Asset find(
+            const std::string &publicKey,
+            const std::string &assetName
+    ){
+        Api::Asset res;
+        logger::info("AssetRepository") << "Find:" << "asset_" + publicKey + '_' + assetName;
+        logger::info("AssetRepository") << "Find:" << "pub:" + publicKey;
+        logger::info("AssetRepository") << "Find:" << "name:" + assetName;
+        if(world_state_repository::exists("asset_" + publicKey + '_' + assetName)){
+            logger::info("AssetRepository") << "Ok exists";
 
-/********************************************************************************************
- * find
- ********************************************************************************************/
-std::vector<Api::Asset> findAll(const std::string &uuid) {
-  /* Use world_state_repository::findByPrefix()*/
-  throw exception::NotImplementedException(__func__, __FILE__);
-}
+            res.ParseFromString(world_state_repository::find("asset_" + publicKey + '_' + assetName));
+        }
+        return res;
+    }
 
-Api::Asset findByUuid(const std::string &uuid) {
+    bool exists(
+            const std::string &publicKey,
+            const std::string &assetName
+    ){
+        return world_state_repository::exists("asset_" + publicKey + '_' + assetName);
+    }
 
-  logger::explore(NameSpaceID + "::findByUuid") << "";
-  auto strAsset = world_state_repository::find(uuid);
-  if (!strAsset.empty()) {
-    return common::parse<Api::Asset>(strAsset, ValuePrefix);
-  }
-
-  return Api::Asset();
-}
-
-bool exists(const std::string &uuid) {
-  const auto result = world_state_repository::exists(uuid);
-  logger::explore(NameSpaceID + "::exists") << (result ? "true" : "false");
-  return result;
-}
-}
-}
+};
+};

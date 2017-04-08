@@ -14,20 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <thread>
-#include <signal.h>
-#include <unistd.h>
 #include <atomic>
+#include <signal.h>
+#include <thread>
+#include <unistd.h>
 
-#include <json.hpp>
-
-#include <server/http_server.hpp>
 #include <consensus/connection/connection.hpp>
 #include <consensus/sumeragi.hpp>
-#include <util/logger.hpp>
-
-#include <service/peer_service.hpp>
 #include <infra/config/peer_service_with_json.hpp>
+#include <repository/world_state_repository.hpp>
+#include <server/http_server.hpp>
+#include <service/izanami.hpp>
+#include <service/peer_service.hpp>
+#include <util/logger.hpp>
 
 std::atomic_bool running(true);
 
@@ -35,13 +34,16 @@ void server(){
     http::server();
 }
 
-void sigIntHandler(int param){
+void sigHandler(int param){
     running = false;
+    repository::world_state_repository::finish();
     logger::info("main") << "will halt";
 }
 
 int main() {
-    signal(SIGINT, sigIntHandler);
+    signal(SIGINT,  sigHandler);
+    signal(SIGHUP,  sigHandler);
+    signal(SIGTERM, sigHandler);
 
     if (getenv("IROHA_HOME") == nullptr){
       logger::error("main") << "You must set IROHA_HOME!";
@@ -53,6 +55,7 @@ int main() {
 
     connection::initialize_peer();
     sumeragi::initializeSumeragi();
+    peer::izanami::startIzanami();
 
     std::thread http_thread(server);
 

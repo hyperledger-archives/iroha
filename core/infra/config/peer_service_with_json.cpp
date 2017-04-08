@@ -10,46 +10,22 @@ You may obtain a copy of the License at
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
+See the License for the specific language gover
+ning permissions and
 limitations under the License.
 */
 
-#include <deque>
-#include <regex>
-#include <algorithm>
-#include <crypto/base64.hpp>
-#include <util/logger.hpp>
-#include <util/exception.hpp>
-#include <util/use_optional.hpp>
-#include <consensus/connection/connection.hpp>
 #include <json.hpp>
-#include <infra/protobuf/api.pb.h>
-#include <transaction_builder/transaction_builder.hpp>
+#include <util/exception.hpp>
+#include <util/logger.hpp>
+
 #include "peer_service_with_json.hpp"
 #include "config_format.hpp"
-#include "../../util/exception.hpp"
 
 using PeerServiceConfig = config::PeerServiceConfig;
-using txbuilder::TransactionBuilder;
-using type_signatures::Update;
-using type_signatures::Add;
-using type_signatures::Remove;
-using type_signatures::Peer;
 using nlohmann::json;
 
-std::vector<peer::Node> PeerServiceConfig::peerList;
-
-PeerServiceConfig::PeerServiceConfig() {}
-
-void PeerServiceConfig::initialziePeerList_from_json(){
-  if (!peerList.empty()) return;
-  if (auto config = openConfig(getConfigName())) {
-    for (const auto& peer : (*config)["group"].get<std::vector<json>>()) {
-      peerList.emplace_back( peer["ip"].get<std::string>(),
-                             peer["publicKey"].get<std::string>(),
-                             1.0);
-    }
-  }
+PeerServiceConfig::PeerServiceConfig() {
 }
 
 PeerServiceConfig& PeerServiceConfig::getInstance() {
@@ -176,162 +152,76 @@ bool PeerServiceConfig::addPeer( const peer::Node &peer ) {
     logger::warning("addPeer") << e.what();
     return false;
   }
-  return true;
+  return defaultValue;
 }
 
-bool PeerServiceConfig::removePeer( const std::string& publicKey ) {
-  try {
-    auto it = findPeerPublicKey( publicKey );
-    if ( !isExistPublicKey( publicKey ) )
-      throw exception::service::UnExistFindPeerException(publicKey);
-    peerList.erase(it);
-  } catch (exception::service::UnExistFindPeerException& e) {
-    logger::warning("removePeer") << e.what();
-    return false;
+std::string PeerServiceConfig::getMyPrivateKeyWithDefault(const std::string& defaultValue) {
+  auto config = getConfigData();
+  if (!config.is_null()) {
+    return getConfigData()["me"].value("privateKey", defaultValue);
   }
-  return true;
+  return defaultValue;
 }
 
-bool PeerServiceConfig::updatePeer( const std::string& publicKey, const peer::Node& peer ) {
-  try {
-    auto it = findPeerPublicKey( publicKey );
-    if (it == peerList.end() )
-      throw exception::service::UnExistFindPeerException( publicKey );
-
-    if ( !peer.isDefaultPublicKey() ) {
-      auto upd_it = findPeerPublicKey(peer.getPublicKey());
-      if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationPublicKeyException(peer.getPublicKey());
-      it->setPublicKey( peer.getPublicKey() );
-    }
-
-    if ( !peer.isDefaultIP() ) {
-        auto upd_it = findPeerIP(peer.getIP());
-        if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationIPException(peer.getIP());
-        it->setIP( peer.getIP() );
-    }
-
-    if ( it->getTrustScore() != peer.getTrustScore() ) {
-        it->setTrustScore(peer.getTrustScore());
-    }
-
-  } catch ( exception::service::UnExistFindPeerException& e ) {
-    logger::warning("updatePeer") << e.what();
-    return false;
-  } catch( exception::service::DuplicationPublicKeyException& e ) {
-      logger::warning("updatePeer") << e.what();
-  } catch ( exception::service::DuplicationIPException& e ) {
-    logger::warning("udpatePeer") << e.what();
-    return false;
+std::string PeerServiceConfig::getMyIpWithDefault(const std::string& defaultValue) {
+  auto config = getConfigData();
+  if (!config.is_null()) {
+    return getConfigData()["me"].value("ip", defaultValue);
   }
-  return true;
+  return defaultValue;
 }
 
-
-bool PeerServiceConfig::validate_addPeer( const peer::Node& peer ) {
-    try {
-        if( isExistIP( peer.getIP() ) )
-            throw exception::service::DuplicationIPException(std::move(peer.getIP()));
-        if( isExistPublicKey( peer.getPublicKey() ) )
-            throw exception::service::DuplicationPublicKeyException(std::move(peer.getPublicKey()));
-    } catch( exception::service::DuplicationPublicKeyException& e ) {
-        logger::warning("validate addPeer") << e.what();
-        return false;
-    } catch( exception::service::DuplicationIPException& e ) {
-        logger::warning("validate addPeer") << e.what();
-        return false;
-    }
-    return true;
-}
-bool PeerServiceConfig::validate_removePeer( const std::string &publicKey ) {
-    try {
-        if ( !isExistPublicKey( publicKey ) )
-            throw exception::service::UnExistFindPeerException(publicKey);
-    } catch (exception::service::UnExistFindPeerException& e) {
-        logger::warning("validate removePeer") << e.what();
-        return false;
-    }
-    return true;
-}
-bool PeerServiceConfig::validate_updatePeer( const std::string& publicKey, const peer::Node& peer ) {
-    try {
-        auto it = findPeerPublicKey( publicKey );
-        if (it == peerList.end() )
-            throw exception::service::UnExistFindPeerException( publicKey );
-
-        if ( !peer.isDefaultPublicKey() ) {
-            auto upd_it = findPeerPublicKey(peer.getPublicKey());
-            if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationPublicKeyException(peer.getPublicKey());
-        }
-
-        if ( !peer.isDefaultIP() ) {
-            auto upd_it = findPeerIP(peer.getIP());
-            if( upd_it != it && upd_it != peerList.end() ) throw exception::service::DuplicationIPException(peer.getIP());
-        }
-
-    } catch ( exception::service::UnExistFindPeerException& e ) {
-        logger::warning("updatePeer") << e.what();
-        return false;
-    } catch( exception::service::DuplicationPublicKeyException& e ) {
-        logger::warning("updatePeer") << e.what();
-    } catch( exception::service::DuplicationIPException& e ) {
-        logger::warning("udpatePeer") << e.what();
-        return false;
-    }
-    return true;
-}
-
-
-bool PeerServiceConfig::isLeaderMyPeer() {
-  if( peerList.empty() ) return false;
-  auto sorted_peers = getPeerList();
-  return (*sorted_peers.begin())->getPublicKey() == getMyPublicKey() &&
-         (*sorted_peers.begin())->getIP() == getMyIp();
+double PeerServiceConfig::getMaxTrustScoreWithDefault(double defaultValue) {
+  return getConfigData().value("max_trust_score", defaultValue);
 }
 
 void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
   try {
-    if (not ConfigFormat::getInstance().ensureFormatSumeragi(jsonStr)) {
-      throw exception::ParseFromStringException("sumeragi");
+    if (!ConfigFormat::getInstance().ensureFormatSumeragi(jsonStr)) {
+      throw exception::ParseFromStringException(getConfigName());
     }
     _configData = json::parse(std::move(jsonStr));
   } catch (exception::ParseFromStringException& e) {
     logger::warning("peer service config") << e.what();
     logger::warning("peer service config") << getConfigName() << " is set to be default.";
-
-    // default sumeragi.json
-    _configData = json::parse(R"({
-      "me":{
-        "ip":"172.17.0.6",
-        "name":"samari",
-        "publicKey":"Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU=",
-        "privateKey":"aGIuSZRhnGfFyeoKNm/NbTylnAvRfMu3KumOEfyT2HPf36jSF22m2JXWrdCmKiDoshVqjFtZPX3WXaNuo9L8WA=="
-      },
-      "group":[
-        {
-          "ip":"172.17.0.3",
-          "name":"mizuki",
-          "publicKey":"jDQTiJ1dnTSdGH+yuOaPPZIepUj1Xt3hYOvLQTME3V0="
-        },
-        {
-          "ip":"172.17.0.4",
-          "name":"natori",
-          "publicKey":"Q5PaQEBPQLALfzYmZyz9P4LmCNfgM5MdN1fOuesw3HY="
-        },
-        {
-          "ip":"172.17.0.5",
-          "name":"kabohara",
-          "publicKey":"f5MWZUZK9Ga8XywDia68pH1HLY/Ts0TWBHsxiFDR0ig="
-        },
-        {
-          "ip":"172.17.0.6",
-          "name":"samari",
-          "publicKey":"Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU="
-        }
-      ]
-    })");
   }
 }
 
 std::string PeerServiceConfig::getConfigName() {
   return "config/sumeragi.json";
+}
+
+double PeerServiceConfig::getMaxTrustScore() {
+  return this->getMaxTrustScoreWithDefault(10.0); // WIP to support trustRate = 10.0
+}
+
+std::vector<json> PeerServiceConfig::getGroup() {
+  auto config = getConfigData();
+  if (!config.is_null()) {
+     return getConfigData()["group"].get<std::vector<json>>();
+  }
+
+  // default value
+  return std::vector<json>({
+      json({
+        {"ip","172.17.0.3"},
+        {"name","mizuki"},
+        {"publicKey","jDQTiJ1dnTSdGH+yuOaPPZIepUj1Xt3hYOvLQTME3V0="}
+      }),
+      json({
+        {"ip","172.17.0.4"},
+        {"name","natori"},
+        {"publicKey","Q5PaQEBPQLALfzYmZyz9P4LmCNfgM5MdN1fOuesw3HY="}
+      }),
+      json({
+        {"ip","172.17.0.5"},
+        {"name","kabohara"},
+        {"publicKey","f5MWZUZK9Ga8XywDia68pH1HLY/Ts0TWBHsxiFDR0ig="}
+      }),
+      json({
+        {"ip","172.17.0.6"},
+        {"name","samari"},
+        {"publicKey","Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU="}
+      })
+    });
 }

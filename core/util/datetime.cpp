@@ -26,8 +26,8 @@ namespace datetime{
     return std::to_string(result);
   }
 
-  std::int64_t unixtime(){
-    return static_cast<std::int64_t>(std::time(nullptr));
+  std::uint64_t unixtime(){
+    return static_cast<std::uint64_t>(std::time(nullptr));
   }
 
   std::string date_str(){

@@ -18,31 +18,21 @@ See the License for the specific language governing permissions and
 #ifndef IROHA_TRANSACTION_REPOSITORY_HPP
 #define IROHA_TRANSACTION_REPOSITORY_HPP
 
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdexcept>
 
-#include <infra/protobuf/api.pb.h>
-#include <consensus/consensus_event.hpp>
-#include <crypto/base64.hpp>
-
-#include "../world_state_repository.hpp"
+namespace Api { class Transaction; }
 
 namespace repository{
 
-    using Api::Transaction;
+   namespace transaction {
 
-    namespace transaction {
+        bool add(const std::string &hash, const Api::Transaction& tx);
 
-        void add(const std::string &key,const Transaction& strTx);
+        std::vector<Api::Transaction> findAll();
 
-        void exist(const Transaction&);
-
-        std::vector<Transaction> findAll();
-
-        Transaction find(std::string key);
-
-        std::vector<Transaction> findByAssetName(std::string name);
+        Api::Transaction find(const std::string& key);
 
     }
 }

@@ -10,6 +10,8 @@ build/*
 *.gch
 *.a
 *.o
+*.pb.cc
+*.pb.h
 .gradle/*
 .vscode/*
 .idea/*
@@ -22,3 +24,4 @@ docker/build/iroha.tar
 cmake-build-debug/*
 external/*
 core/infra/protobuf
+docker/tiny/iroha/

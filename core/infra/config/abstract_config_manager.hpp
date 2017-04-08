@@ -19,7 +19,7 @@ limitations under the License.
 
 #include <fstream>  // ifstream, ofstream
 #include <util/logger.hpp>
-#include <util/use_optional.hpp>
+#include <util/exception.hpp>
 #include <json.hpp>
 
 namespace config {
@@ -27,11 +27,18 @@ namespace config {
 using json = nlohmann::json;
 
 class AbstractConfigManager {
- protected:
-  optional<json> openConfig(const std::string& configName) {
-    if (_configData) {  // content is already loaded
-      return _configData;
+ private:
+  std::string readConfigData(const std::string& pathToJSONFile, const std::string& defaultValue) {
+    std::ifstream ifs(pathToJSONFile);
+    if (ifs.fail()) {
+      return defaultValue;
     }
+
+    std::istreambuf_iterator<char> it(ifs);
+    return std::string(it, std::istreambuf_iterator<char>());
+  }
+
+  json openConfigData() {
 
     auto iroha_home = getenv("IROHA_HOME");
     if (iroha_home == nullptr) {
@@ -40,40 +47,44 @@ class AbstractConfigManager {
     }
 
     auto configFolderPath = std::string(iroha_home) + "/";
-    auto jsonStr = readConfigData(configFolderPath + configName);
+    auto jsonStr = readConfigData(configFolderPath + this->getConfigName(), "");
 
-    logger::debug("config") << "load json is " << jsonStr;
-
-    parseConfigDataFromString(std::move(jsonStr));
+    if (jsonStr.empty()) {
+      logger::warning("config") << "there is no config '" << getConfigName() << "', we will use default values.";
+    } else {
+      logger::debug("config") << "load json is " << jsonStr;
+      parseConfigDataFromString(std::move(jsonStr));
+    }
 
     return _configData;
   }
 
-  std::string readConfigData(const std::string& pathToJSONFile) {
-    std::ifstream ifs(pathToJSONFile);
-    if (ifs.fail()) {
-      logger::error("config") << "Not found: " << pathToJSONFile;
-      return nullptr;
-    }
-
-    std::istreambuf_iterator<char> it(ifs);
-    return std::string(it, std::istreambuf_iterator<char>());
-  }
-
+ protected:
   virtual void parseConfigDataFromString(std::string&& jsonStr) {
     try {
       _configData = json::parse(std::move(jsonStr));
     } catch (...) {
-      logger::error("config") << "Can't parse json: " << getConfigName();
+      throw exception::config::ConfigException("Can't parse json: " + getConfigName());
     }
   }
 
  public:
   virtual std::string getConfigName() = 0;
-  optional<json> getConfigData() { return this->_configData; }
+
+  json getConfigData() {
+    if (_loaded) {
+      // If defaultValue is used, _configData is empty, but _loaded = true. It's cofusing. Any good solution?
+      return this->_configData;
+    } else {
+      _loaded = true;
+      return openConfigData();
+    }
+  }
 
  protected:
-  optional<json> _configData;
+  bool _loaded = false;
+  json _configData;
+
 };
 }
 

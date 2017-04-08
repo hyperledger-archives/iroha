@@ -1,3 +1,3 @@
-add_library(create_objects_helper STATIC
+add_library(transaction_builder STATIC
   create_objects_helper.cpp
 )
