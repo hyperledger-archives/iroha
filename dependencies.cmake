@@ -279,3 +279,27 @@ set_target_properties(asio PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${asio_SOURCE_DIR}/asio/include
 )
 add_dependencies(asio chriskohlhoff_asio)
+
+
+###############################
+#         flatbuffers         #
+###############################
+ExternalProject_Add(google_flatbuffers
+  GIT_REPOSITORY "https://github.com/google/flatbuffers.git"
+  GIT_TAG "master"
+  BUILD_IN_SOURCE 1
+  UPDATE_COMMAND ""
+  CMAKE_GENERATOR "Unix Makefiles"
+  BUILD_COMMAND "make"
+  INSTALL_COMMAND ""
+)
+
+ExternalProject_Get_Property(google_flatbuffers source_dir)
+set(flatbuffers_SOURCE_DIR "${source_dir}")
+
+add_library(flatbuffers INTERFACE IMPORTED)
+file(MAKE_DIRECTORY ${flatbuffers_SOURCE_DIR}/include)
+set_target_properties(flatbuffers PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${flatbuffers_SOURCE_DIR}/include
+)
+add_dependencies(flatbuffers google_flatbuffers)
