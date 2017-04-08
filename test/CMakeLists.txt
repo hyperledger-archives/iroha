@@ -1,2 +1,2 @@
 add_subdirectory(module)
-add_subdirectory(scenario)
+#add_subdirectory(scenario)
