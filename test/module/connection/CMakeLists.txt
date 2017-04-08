@@ -6,7 +6,6 @@ target_link_libraries(connection_grpc_test
     connection_with_grpc_flatbuffer
     signature
     config_manager
-    peer_service
     transaction_builder
     gtest
 )

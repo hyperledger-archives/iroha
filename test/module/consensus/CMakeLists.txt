@@ -12,7 +12,6 @@ target_link_libraries(sumeragi_test
     sumeragi
     connection_with_grpc_flatbuffer
     config_manager
-    peer_service
     transaction_builder
 )
 
@@ -27,6 +26,5 @@ target_link_libraries(transaction_test
     connection_with_grpc_flatbuffer
     pthread
     config_manager
-    peer_service
     transaction_builder
 )

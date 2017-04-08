@@ -1,7 +1,8 @@
 add_executable(ensure_sumeragi_json_format_test ensure_sumeragi_json_format.cpp)
 target_link_libraries(ensure_sumeragi_json_format_test
     config_manager
-    peer_service
+    #WIP
+    #peer_service
     json
     gtest
 )
