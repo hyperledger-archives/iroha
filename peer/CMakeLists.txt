@@ -15,7 +15,7 @@ target_link_libraries(iroha-main
   sumeragi
   logger
   http_server_with_cappuccino
-  connection_with_grpc
+  connection_with_grpc_flatbuffer
   config_manager
   ed25519
   hash

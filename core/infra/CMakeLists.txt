@@ -1,4 +1,3 @@
-add_subdirectory(virtual_machine)
 add_subdirectory(crypto)
 add_subdirectory(repository)
 add_subdirectory(server)
