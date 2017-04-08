@@ -2,6 +2,9 @@ include "main.fbs";
 
 namespace iroha;
 
+// lol
+table DummyForGenerateEndpint_generated_h {}
+
 file_identifier "IROH";
 file_extension  "iroha";
 

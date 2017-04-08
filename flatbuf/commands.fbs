@@ -18,7 +18,6 @@ table CmdRemove {
 }
 
 
-
 // users are able to store custom data in their accounts
 table CmdStore {
     accPubKey: PublicKey        (required);

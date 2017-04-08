@@ -12,7 +12,6 @@ table Transaction {
   attachment:      Attachment;
 }
 
-
 table Attachment {
   mime: string;
   data: [ubyte];
