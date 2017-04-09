@@ -19,46 +19,36 @@ limitations under the License.
 #include <util/exception.hpp>
 #include <util/logger.hpp>
 
-#include "peer_service_with_json.hpp"
 #include "config_format.hpp"
+#include "peer_service_with_json.hpp"
 
 using PeerServiceConfig = config::PeerServiceConfig;
 using nlohmann::json;
 
-PeerServiceConfig::PeerServiceConfig() {
-}
+PeerServiceConfig::PeerServiceConfig() {}
 
 PeerServiceConfig& PeerServiceConfig::getInstance() {
   static PeerServiceConfig serviceConfig;
   return serviceConfig;
 }
 
-std::string PeerServiceConfig::getMyPublicKeyWithDefault(const std::string& defaultValue) {
-  auto config = getConfigData();
-  if (!config.is_null()) {
-    return getConfigData()["me"].value("publicKey", defaultValue);
-  }
-  return defaultValue;
+std::string PeerServiceConfig::getMyPublicKeyWithDefault(
+    const std::string& defaultValue) {
+  return getParam<std::string>({"me", "publicKey"}, defaultValue);
 }
 
-std::string PeerServiceConfig::getMyPrivateKeyWithDefault(const std::string& defaultValue) {
-  auto config = getConfigData();
-  if (!config.is_null()) {
-    return getConfigData()["me"].value("privateKey", defaultValue);
-  }
-  return defaultValue;
+std::string PeerServiceConfig::getMyPrivateKeyWithDefault(
+    const std::string& defaultValue) {
+  return getParam<std::string>({"me", "privateKey"}, defaultValue);
 }
 
-std::string PeerServiceConfig::getMyIpWithDefault(const std::string& defaultValue) {
-  auto config = getConfigData();
-  if (!config.is_null()) {
-    return getConfigData()["me"].value("ip", defaultValue);
-  }
-  return defaultValue;
+std::string PeerServiceConfig::getMyIpWithDefault(
+    const std::string& defaultValue) {
+  return getParam<std::string>({"me", "ip"}, defaultValue);
 }
 
 double PeerServiceConfig::getMaxTrustScoreWithDefault(double defaultValue) {
-  return getConfigData().value("max_trust_score", defaultValue);
+  return getParam<double>({"max_trust_score"}, defaultValue);
 }
 
 void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
@@ -69,7 +59,8 @@ void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
     _configData = json::parse(std::move(jsonStr));
   } catch (exception::ParseFromStringException& e) {
     logger::warning("peer service config") << e.what();
-    logger::warning("peer service config") << getConfigName() << " is set to be default.";
+    logger::warning("peer service config")
+        << getConfigName() << " is set to be default.";
   }
 }
 
@@ -78,36 +69,24 @@ std::string PeerServiceConfig::getConfigName() {
 }
 
 double PeerServiceConfig::getMaxTrustScore() {
-  return this->getMaxTrustScoreWithDefault(10.0); // WIP to support trustRate = 10.0
+  return this->getMaxTrustScoreWithDefault(
+      10.0);  // WIP to support trustRate = 10.0
 }
 
 std::vector<json> PeerServiceConfig::getGroup() {
-  auto config = getConfigData();
-  if (!config.is_null()) {
-     return getConfigData()["group"].get<std::vector<json>>();
-  }
+  std::vector<json> defaultValue(
+      {json({{"ip", "172.17.0.3"},
+             {"name", "mizuki"},
+             {"publicKey", "jDQTiJ1dnTSdGH+yuOaPPZIepUj1Xt3hYOvLQTME3V0="}}),
+       json({{"ip", "172.17.0.4"},
+             {"name", "natori"},
+             {"publicKey", "Q5PaQEBPQLALfzYmZyz9P4LmCNfgM5MdN1fOuesw3HY="}}),
+       json({{"ip", "172.17.0.5"},
+             {"name", "kabohara"},
+             {"publicKey", "f5MWZUZK9Ga8XywDia68pH1HLY/Ts0TWBHsxiFDR0ig="}}),
+       json({{"ip", "172.17.0.6"},
+             {"name", "samari"},
+             {"publicKey", "Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU="}})});
 
-  // default value
-  return std::vector<json>({
-      json({
-        {"ip","172.17.0.3"},
-        {"name","mizuki"},
-        {"publicKey","jDQTiJ1dnTSdGH+yuOaPPZIepUj1Xt3hYOvLQTME3V0="}
-      }),
-      json({
-        {"ip","172.17.0.4"},
-        {"name","natori"},
-        {"publicKey","Q5PaQEBPQLALfzYmZyz9P4LmCNfgM5MdN1fOuesw3HY="}
-      }),
-      json({
-        {"ip","172.17.0.5"},
-        {"name","kabohara"},
-        {"publicKey","f5MWZUZK9Ga8XywDia68pH1HLY/Ts0TWBHsxiFDR0ig="}
-      }),
-      json({
-        {"ip","172.17.0.6"},
-        {"name","samari"},
-        {"publicKey","Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU="}
-      })
-    });
+  return getParam<std::vector<json>>({"group"}, defaultValue);
 }
