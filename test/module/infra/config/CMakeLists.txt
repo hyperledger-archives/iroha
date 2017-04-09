@@ -21,8 +21,6 @@ target_link_libraries(peer_service_with_json_test
     signature
     config_manager
     gtest
-    transaction_builder
-    transaction_repository
 )
 add_test(
     NAME peer_service_with_json_test

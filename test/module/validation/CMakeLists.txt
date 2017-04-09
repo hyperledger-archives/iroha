@@ -6,7 +6,6 @@ target_link_libraries(transaction_validator_test
     signature
     config_manager
     gtest
-    validator
     connection_with_grpc_flatbuffer
 )
 add_test(
