@@ -18,7 +18,6 @@ limitations under the License.
 #include <crypto/hash.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-#include <infra/protobuf/api.pb.h>
 #include <memory>
 #include <repository/transaction_repository.hpp>
 #include <service/peer_service.hpp>
@@ -35,7 +34,8 @@ void setAwkTimer(int const sleepMillisecs,
   std::thread([action, sleepMillisecs]() {
     std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
     action();
-  }).join();
+  })
+      .join();
 }
 
 InitializeEvent::InitializeEvent() {
@@ -46,7 +46,7 @@ InitializeEvent::InitializeEvent() {
 void InitializeEvent::add_transactionResponse(
     std::unique_ptr<TransactionResponse> txResponse) {
   if (now() > txResponse->code())
-    return; // management index of progress is TransactionResponse.code()
+    return;  // management index of progress is TransactionResponse.code()
 
   // make TransactionResponse hash - temporary
   std::string hash = "";
@@ -92,8 +92,7 @@ void InitializeEvent::executeTxResponse(const std::string &hash) {
 }
 
 bool InitializeEvent::isExistTransactionFromHash(const std::string &hash) {
-  for (auto &&tx : txResponses[hash]->transaction())
-    return true;
+  for (auto &&tx : txResponses[hash]->transaction()) return true;
   return false;
 }
 
@@ -109,8 +108,7 @@ void InitializeEvent::finish() {
 namespace detail {
 bool isFinishedReceiveAll(InitializeEvent &event) {
   std::string hash = getCorrectHash(event);
-  if (event.isExistTransactionFromHash(hash))
-    return false;
+  if (event.isExistTransactionFromHash(hash)) return false;
   return true;
 }
 
@@ -123,8 +121,7 @@ bool isFinishedReceive(InitializeEvent &event) {
   for (auto counter : hash_counter) {
     res = std::max(res, counter.second);
   }
-  if (res >= 2 * ::peer::service::getMaxFaulty() + 1)
-    return true;
+  if (res >= 2 * ::peer::service::getMaxFaulty() + 1) return true;
   return false;
 }
 
@@ -141,8 +138,7 @@ std::string getCorrectHash(InitializeEvent &event) {
       res_hash = counter.first;
     }
   }
-  if (res >= 2 * ::peer::service::getMaxFaulty() + 1)
-    return res_hash;
+  if (res >= 2 * ::peer::service::getMaxFaulty() + 1) return res_hash;
   return "";
 }
 
@@ -152,15 +148,14 @@ void storeTransactionResponse(InitializeEvent &event) {
   event.executeTxResponse(hash);
   event.next_progress();
 }
-}
+}  // namespace detail
 
 // invoke when receive TransactionResponse.
 void receiveTransactionResponse(TransactionResponse &txResponse) {
   static InitializeEvent event;
   logger::debug("izanami") << "in receiveTransactionResponse event = "
                            << std::to_string(event.now());
-  if (event.isFinished())
-    return;
+  if (event.isFinished()) return;
   logger::debug("izanami") << "event is not finished";
   event.add_transactionResponse(
       std::make_unique<TransactionResponse>(txResponse));
@@ -229,7 +224,7 @@ void startIzanami() {
             std::bind(receiveTransactionResponse, txResponse);
         pool.process(std::move(task));
       });
-        }
-
-    }
 }
+
+}  // namespace izanami
+}  // namespace peer

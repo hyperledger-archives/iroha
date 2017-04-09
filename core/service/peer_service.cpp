@@ -66,14 +66,12 @@ void stop() { is_active = false; }
 
 bool isLeader() {
   auto sorted_peers = service::getPeerList();
-  if (sorted_peers.empty())
-    return false;
+  if (sorted_peers.empty()) return false;
   auto peer = *sorted_peers.begin();
-  return peer->publicKey == getPublicKey() &&
-         peer->ip == getIp();
+  return peer->publicKey == getPublicKey() && peer->ip == getIp();
 }
 
-} // namespace myself
+}  // namespace myself
 
 namespace service {
 
@@ -100,8 +98,8 @@ Nodes getPeerList() {
   Nodes nodes;
   for (const auto &node : peerList) {
     if (node->isok) {
-      nodes.push_back(std::make_unique<peer::Node>(
-          node->ip, node->publicKey, node->trustScore));
+      nodes.push_back(std::make_unique<peer::Node>(node->ip, node->publicKey,
+                                                   node->trustScore));
     }
   }
 
@@ -147,7 +145,7 @@ std::shared_ptr<peer::Node> leaderPeer() {
   return std::move(*getPeerList().begin());
 }
 
-} // namespace service
+}  // namespace service
 
 namespace transaction {
 
@@ -173,7 +171,7 @@ bool start(const Node &peer) {
   }
 
   uint64_t code = 0UL;
-  { // Send PeerList data ( Reason: Can't do to construct peerList for only
+  {  // Send PeerList data ( Reason: Can't do to construct peerList for only
     // transaction infomation. )
     logger::debug("peer-service") << "send all peer infomation";
     auto sorted_peerList = service::getPeerList();
@@ -192,13 +190,12 @@ bool start(const Node &peer) {
               .build();
       txResponse.add_transaction()->CopyFrom(txPeer);
     }
-    if (!connection::iroha::PeerService::Izanami::send(peer.ip,
-                                                       txResponse))
+    if (!connection::iroha::PeerService::Izanami::send(peer.ip, txResponse))
       return false;
   }
 
-  if (0) { // WIP(leveldb don't active) Send transaction data separated block to
-           // new peer.
+  if (0) {  // WIP(leveldb don't active) Send transaction data separated block
+            // to new peer.
     logger::debug("peer-service") << "send all transaction infomation";
     auto transactions = repository::transaction::findAll();
     std::size_t block_size = 500;
@@ -209,31 +206,28 @@ bool start(const Node &peer) {
       for (std::size_t j = i; j < i + block_size; j++) {
         txResponse.add_transaction()->CopyFrom(transactions[j]);
       }
-      if (!connection::iroha::PeerService::Izanami::send(peer.ip,
-                                                         txResponse))
+      if (!connection::iroha::PeerService::Izanami::send(peer.ip, txResponse))
         return false;
     }
   }
 
-  { // end-point
+  {  // end-point
     logger::debug("peer-service") << "send end-point";
     auto txResponse = Api::TransactionResponse();
     txResponse.set_message("Finished send Transactions");
     txResponse.set_code(code++);
-    if (!connection::iroha::PeerService::Izanami::send(peer.ip,
-                                                       txResponse))
+    if (!connection::iroha::PeerService::Izanami::send(peer.ip, txResponse))
       return false;
   }
   return true;
 }
 
-} // namespace izanami
+}  // namespace izanami
 
 namespace isssue {
 // invoke to issue transaction
 void add(const peer::Node &peer) {
-  if (service::isExistIP(peer.ip) ||
-      service::isExistPublicKey(peer.publicKey))
+  if (service::isExistIP(peer.ip) || service::isExistPublicKey(peer.publicKey))
     return;
   auto txPeer =
       TransactionBuilder<Add<Peer>>()
@@ -247,8 +241,7 @@ void add(const peer::Node &peer) {
                                                  txPeer);
 }
 void distruct(const std::string &publicKey) {
-  if (!service::isExistPublicKey(publicKey))
-    return;
+  if (!service::isExistPublicKey(publicKey)) return;
   auto txPeer =
       TransactionBuilder<Update<Peer>>()
           .setSenderPublicKey(myself::getPublicKey())
@@ -259,8 +252,7 @@ void distruct(const std::string &publicKey) {
                                                  txPeer);
 }
 void remove(const std::string &publicKey) {
-  if (!service::isExistPublicKey(publicKey))
-    return;
+  if (!service::isExistPublicKey(publicKey)) return;
   auto txPeer =
       TransactionBuilder<Remove<Peer>>()
           .setSenderPublicKey(myself::getPublicKey())
@@ -273,8 +265,7 @@ void remove(const std::string &publicKey) {
                                                  txPeer);
 }
 void credit(const std::string &publicKey) {
-  if (!service::isExistPublicKey(publicKey))
-    return;
+  if (!service::isExistPublicKey(publicKey)) return;
   if ((*service::findPeerPublicKey(publicKey))->trustScore ==
       PeerServiceConfig::getInstance().getMaxTrustScore()) {
     return;
@@ -288,7 +279,7 @@ void credit(const std::string &publicKey) {
   connection::iroha::PeerService::Sumeragi::send(myself::getPublicKey(),
                                                  txPeer);
 }
-} // namespace isssue
+}  // namespace isssue
 namespace executor {
 // invoke when execute transaction
 bool add(const peer::Node &peer) {
@@ -296,8 +287,7 @@ bool add(const peer::Node &peer) {
     if (service::isExistIP(peer.ip))
       throw exception::service::DuplicationIPException(peer.ip);
     if (service::isExistPublicKey(peer.publicKey))
-      throw exception::service::DuplicationPublicKeyException(
-          peer.publicKey);
+      throw exception::service::DuplicationPublicKeyException(peer.publicKey);
     peerList.emplace_back(std::make_shared<peer::Node>(peer));
   } catch (exception::service::DuplicationPublicKeyException &e) {
     logger::warning("addPeer") << e.what();
@@ -363,7 +353,7 @@ bool update(const std::string &publicKey, const peer::Node &peer) {
   }
   return true;
 }
-} // namespace executor
+}  // namespace executor
 
 namespace validator {
 // invoke when validator transaction
@@ -402,8 +392,7 @@ bool update(const std::string &publicKey, const peer::Node &peer) {
     if (!(*it)->isDefaultPubKey()) {
       auto upd_it = service::findPeerPublicKey(peer.publicKey);
       if (upd_it != it && upd_it != peerList.end())
-        throw exception::service::DuplicationPublicKeyException(
-            peer.publicKey);
+        throw exception::service::DuplicationPublicKeyException(peer.publicKey);
     }
 
     if (!peer.isDefaultIP()) {
@@ -424,6 +413,6 @@ bool update(const std::string &publicKey, const peer::Node &peer) {
   return true;
 }
 
-} // namespace validator
-} // namespace transaction
-} // namespace peer
+}  // namespace validator
+}  // namespace transaction
+}  // namespace peer

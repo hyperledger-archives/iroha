@@ -1,9 +1,6 @@
 ADD_LIBRARY(executor STATIC
     executor.cpp
 )
-target_link_libraries(executor
-    core_repository
-)
 
 #ADD_LIBRARY(izanami STATIC
 #    izanami.cpp

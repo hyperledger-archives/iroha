@@ -22,7 +22,6 @@ limitations under the License.
 namespace http_client {
 
 class Request {
-
   std::unordered_map<std::string, std::string> headerset;
   std::unordered_map<std::string, std::string> paramset;
 
@@ -33,7 +32,7 @@ class Request {
 
   std::string host;
 
-public:
+ public:
   Request(std::string &&aMethod, std::string &&aPath, std::string &&abody);
 
   void addHost(std::string host);
@@ -43,6 +42,6 @@ public:
 };
 
 std::tuple<int, std::string> request(std::string dest, int port, Request req);
-}
+}  // namespace http_client
 
-#endif // IROHA_HTTP_CLIENT_HPP_HPP
+#endif  // IROHA_HTTP_CLIENT_HPP_HPP

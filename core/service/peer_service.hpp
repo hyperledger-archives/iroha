@@ -55,7 +55,7 @@ void stop();
 // equatl to isSumeragi
 bool isLeader();
 
-} // namespace myself
+}  // namespace myself
 
 namespace service {
 
@@ -73,7 +73,7 @@ Nodes::iterator findPeerIP(const std::string &ip);
 Nodes::iterator findPeerPublicKey(const std::string &publicKey);
 std::shared_ptr<peer::Node> leader();
 
-} // namespace service
+}  // namespace service
 
 namespace transaction {
 namespace izanami {
@@ -82,40 +82,41 @@ void finished();
 // invoke next to addPeer
 bool start(const Node &peer);
 
-} // namespace izanami
+}  // namespace izanami
 
 namespace isssue {
 
 // invoke to issue transaction
-void add(const peer::Node &); // void toIssue_addPeer( const peer::Node& );
-void distruct(const std::string &); // void toIssue_distructPeer( const
-                                    // std::string &publicKey );
+void add(const peer::Node &);  // void toIssue_addPeer( const peer::Node& );
+void distruct(const std::string &);  // void toIssue_distructPeer( const
+                                     // std::string &publicKey );
 void remove(const std::string
-                &); // void toIssue_removePeer( const std::string &publicKey );
+                &);  // void toIssue_removePeer( const std::string &publicKey );
 void credit(const std::string
-                &); // void toIssue_creditPeer( const std::string &publicKey );
-} // namespace isssue
+                &);  // void toIssue_creditPeer( const std::string &publicKey );
+}  // namespace isssue
 
 namespace executor {
 // invoke when execute transaction
-bool add(const peer::Node &); // bool addPeer( const peer::Node& );
+bool add(const peer::Node &);  // bool addPeer( const peer::Node& );
 bool remove(
-    const std::string &); // bool removePeer( const std::string &publicKey );
+    const std::string &);  // bool removePeer( const std::string &publicKey );
 bool update(const std::string &,
-            const peer::Node &); // bool updatePeer( const std::string&
-                                 // publicKey, const peer::Node& peer );
-} // namespace executor
+            const peer::Node &);  // bool updatePeer( const std::string&
+                                  // publicKey, const peer::Node& peer );
+}  // namespace executor
 
 namespace validator {
 // invoke when validator transaction
-bool add(const peer::Node &); // bool validate_addPeer( const peer::Node& );
-bool remove(const std::string
-                &); // bool validate_removePeer( const std::string &publicKey );
-bool update(const std::string &,
-            const peer::Node &); // bool validate_updatePeer( const std::string&
-                                 // publicKey, const peer::Node& peer );
-} // namespace validator
-} // namespace transaction
-} // namespace peer
+bool add(const peer::Node &);  // bool validate_addPeer( const peer::Node& );
+bool remove(const std::string &);  // bool validate_removePeer( const
+                                   // std::string &publicKey );
+bool update(
+    const std::string &,
+    const peer::Node &);  // bool validate_updatePeer( const std::string&
+                          // publicKey, const peer::Node& peer );
+}  // namespace validator
+}  // namespace transaction
+}  // namespace peer
 
 #endif
