@@ -15,13 +15,14 @@ limitations under the License.
 #ifndef IROHA_EXECUTOR_HPP_HPP
 #define IROHA_EXECUTOR_HPP_HPP
 
-#include <infra/protobuf/api.pb.h>
+
+#include <infra/flatbuf/main_generated.h>
 
 namespace executor {
 
-using Api::Transaction;
-
+using iroha::Transaction;
 void execute(const Transaction &tx);
-};
 
-#endif // IROHA_EXECUTOR_HPP_HPP
+};  // namespace executor
+
+#endif  // IROHA_EXECUTOR_HPP_HPP
