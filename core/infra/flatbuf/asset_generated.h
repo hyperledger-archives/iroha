@@ -6,14 +6,13 @@
 
 #include "flatbuffers/flatbuffers.h"
 
-#include "key_generated.h"
 #include "primitives_generated.h"
 
 namespace iroha {
 
 struct ComplexAsset;
 
-struct AssetLogic;
+struct ComplexAssetLogic;
 
 struct Currency;
 
@@ -87,8 +86,8 @@ struct ComplexAsset FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *prop() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *>(VT_PROP);
   }
-  const AssetLogic *logic() const {
-    return GetPointer<const AssetLogic *>(VT_LOGIC);
+  const ComplexAssetLogic *logic() const {
+    return GetPointer<const ComplexAssetLogic *>(VT_LOGIC);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -127,7 +126,7 @@ struct ComplexAssetBuilder {
   void add_prop(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>>> prop) {
     fbb_.AddOffset(ComplexAsset::VT_PROP, prop);
   }
-  void add_logic(flatbuffers::Offset<AssetLogic> logic) {
+  void add_logic(flatbuffers::Offset<ComplexAssetLogic> logic) {
     fbb_.AddOffset(ComplexAsset::VT_LOGIC, logic);
   }
   ComplexAssetBuilder(flatbuffers::FlatBufferBuilder &_fbb)
@@ -152,7 +151,7 @@ inline flatbuffers::Offset<ComplexAsset> CreateComplexAsset(
     flatbuffers::Offset<flatbuffers::String> ledger_name = 0,
     flatbuffers::Offset<flatbuffers::String> description = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>>> prop = 0,
-    flatbuffers::Offset<AssetLogic> logic = 0) {
+    flatbuffers::Offset<ComplexAssetLogic> logic = 0) {
   ComplexAssetBuilder builder_(_fbb);
   builder_.add_logic(logic);
   builder_.add_prop(prop);
@@ -170,7 +169,7 @@ inline flatbuffers::Offset<ComplexAsset> CreateComplexAssetDirect(
     const char *ledger_name = nullptr,
     const char *description = nullptr,
     const std::vector<flatbuffers::Offset<iroha::KeyValueObject>> *prop = nullptr,
-    flatbuffers::Offset<AssetLogic> logic = 0) {
+    flatbuffers::Offset<ComplexAssetLogic> logic = 0) {
   return iroha::CreateComplexAsset(
       _fbb,
       asset_name ? _fbb.CreateString(asset_name) : 0,
@@ -181,7 +180,7 @@ inline flatbuffers::Offset<ComplexAsset> CreateComplexAssetDirect(
       logic);
 }
 
-struct AssetLogic FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct ComplexAssetLogic FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_ADD = 4,
     VT_REMOVE = 6,
@@ -208,36 +207,36 @@ struct AssetLogic FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
 };
 
-struct AssetLogicBuilder {
+struct ComplexAssetLogicBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
   void add_add(flatbuffers::Offset<iroha::Chaincode> add) {
-    fbb_.AddOffset(AssetLogic::VT_ADD, add);
+    fbb_.AddOffset(ComplexAssetLogic::VT_ADD, add);
   }
   void add_remove(flatbuffers::Offset<iroha::Chaincode> remove) {
-    fbb_.AddOffset(AssetLogic::VT_REMOVE, remove);
+    fbb_.AddOffset(ComplexAssetLogic::VT_REMOVE, remove);
   }
   void add_transfer(flatbuffers::Offset<iroha::Chaincode> transfer) {
-    fbb_.AddOffset(AssetLogic::VT_TRANSFER, transfer);
+    fbb_.AddOffset(ComplexAssetLogic::VT_TRANSFER, transfer);
   }
-  AssetLogicBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  ComplexAssetLogicBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  AssetLogicBuilder &operator=(const AssetLogicBuilder &);
-  flatbuffers::Offset<AssetLogic> Finish() {
+  ComplexAssetLogicBuilder &operator=(const ComplexAssetLogicBuilder &);
+  flatbuffers::Offset<ComplexAssetLogic> Finish() {
     const auto end = fbb_.EndTable(start_, 3);
-    auto o = flatbuffers::Offset<AssetLogic>(end);
+    auto o = flatbuffers::Offset<ComplexAssetLogic>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<AssetLogic> CreateAssetLogic(
+inline flatbuffers::Offset<ComplexAssetLogic> CreateComplexAssetLogic(
     flatbuffers::FlatBufferBuilder &_fbb,
     flatbuffers::Offset<iroha::Chaincode> add = 0,
     flatbuffers::Offset<iroha::Chaincode> remove = 0,
     flatbuffers::Offset<iroha::Chaincode> transfer = 0) {
-  AssetLogicBuilder builder_(_fbb);
+  ComplexAssetLogicBuilder builder_(_fbb);
   builder_.add_transfer(transfer);
   builder_.add_remove(remove);
   builder_.add_add(add);
@@ -274,8 +273,8 @@ struct Currency FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   uint64_t amount() const {
     return GetField<uint64_t>(VT_AMOUNT, 0);
   }
-  uint64_t precision() const {
-    return GetField<uint64_t>(VT_PRECISION, 0);
+  uint8_t precision() const {
+    return GetField<uint8_t>(VT_PRECISION, 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -288,7 +287,7 @@ struct Currency FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_DESCRIPTION) &&
            verifier.Verify(description()) &&
            VerifyField<uint64_t>(verifier, VT_AMOUNT) &&
-           VerifyField<uint64_t>(verifier, VT_PRECISION) &&
+           VerifyField<uint8_t>(verifier, VT_PRECISION) &&
            verifier.EndTable();
   }
 };
@@ -311,8 +310,8 @@ struct CurrencyBuilder {
   void add_amount(uint64_t amount) {
     fbb_.AddElement<uint64_t>(Currency::VT_AMOUNT, amount, 0);
   }
-  void add_precision(uint64_t precision) {
-    fbb_.AddElement<uint64_t>(Currency::VT_PRECISION, precision, 0);
+  void add_precision(uint8_t precision) {
+    fbb_.AddElement<uint8_t>(Currency::VT_PRECISION, precision, 0);
   }
   CurrencyBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -336,14 +335,14 @@ inline flatbuffers::Offset<Currency> CreateCurrency(
     flatbuffers::Offset<flatbuffers::String> ledger_name = 0,
     flatbuffers::Offset<flatbuffers::String> description = 0,
     uint64_t amount = 0,
-    uint64_t precision = 0) {
+    uint8_t precision = 0) {
   CurrencyBuilder builder_(_fbb);
-  builder_.add_precision(precision);
   builder_.add_amount(amount);
   builder_.add_description(description);
   builder_.add_ledger_name(ledger_name);
   builder_.add_domain_name(domain_name);
   builder_.add_currency_name(currency_name);
+  builder_.add_precision(precision);
   return builder_.Finish();
 }
 
@@ -354,7 +353,7 @@ inline flatbuffers::Offset<Currency> CreateCurrencyDirect(
     const char *ledger_name = nullptr,
     const char *description = nullptr,
     uint64_t amount = 0,
-    uint64_t precision = 0) {
+    uint8_t precision = 0) {
   return iroha::CreateCurrency(
       _fbb,
       currency_name ? _fbb.CreateString(currency_name) : 0,
@@ -457,21 +456,6 @@ inline bool VerifyAnyAssetVector(flatbuffers::Verifier &verifier, const flatbuff
     }
   }
   return true;
-}
-
-inline const iroha::Asset *GetAsset(const void *buf) {
-  return flatbuffers::GetRoot<iroha::Asset>(buf);
-}
-
-inline bool VerifyAssetBuffer(
-    flatbuffers::Verifier &verifier) {
-  return verifier.VerifyBuffer<iroha::Asset>(nullptr);
-}
-
-inline void FinishAssetBuffer(
-    flatbuffers::FlatBufferBuilder &fbb,
-    flatbuffers::Offset<iroha::Asset> root) {
-  fbb.Finish(root);
 }
 
 }  // namespace iroha

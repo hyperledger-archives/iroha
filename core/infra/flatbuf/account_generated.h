@@ -7,7 +7,6 @@
 #include "flatbuffers/flatbuffers.h"
 
 #include "asset_generated.h"
-#include "key_generated.h"
 #include "primitives_generated.h"
 
 namespace iroha {
@@ -23,14 +22,14 @@ struct Account FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_SIGNATORIES = 8,
     VT_USEKEYS = 10
   };
-  const iroha::PublicKey *pubKey() const {
-    return GetPointer<const iroha::PublicKey *>(VT_PUBKEY);
+  const flatbuffers::String *pubKey() const {
+    return GetPointer<const flatbuffers::String *>(VT_PUBKEY);
   }
   const flatbuffers::String *alias() const {
     return GetPointer<const flatbuffers::String *>(VT_ALIAS);
   }
-  const flatbuffers::Vector<flatbuffers::Offset<iroha::PublicKey>> *signatories() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<iroha::PublicKey>> *>(VT_SIGNATORIES);
+  const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *signatories() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_SIGNATORIES);
   }
   uint16_t useKeys() const {
     return GetField<uint16_t>(VT_USEKEYS, 1);
@@ -38,12 +37,12 @@ struct Account FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_PUBKEY) &&
-           verifier.VerifyTable(pubKey()) &&
+           verifier.Verify(pubKey()) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_ALIAS) &&
            verifier.Verify(alias()) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_SIGNATORIES) &&
            verifier.Verify(signatories()) &&
-           verifier.VerifyVectorOfTables(signatories()) &&
+           verifier.VerifyVectorOfStrings(signatories()) &&
            VerifyField<uint16_t>(verifier, VT_USEKEYS) &&
            verifier.EndTable();
   }
@@ -52,13 +51,13 @@ struct Account FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct AccountBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_pubKey(flatbuffers::Offset<iroha::PublicKey> pubKey) {
+  void add_pubKey(flatbuffers::Offset<flatbuffers::String> pubKey) {
     fbb_.AddOffset(Account::VT_PUBKEY, pubKey);
   }
   void add_alias(flatbuffers::Offset<flatbuffers::String> alias) {
     fbb_.AddOffset(Account::VT_ALIAS, alias);
   }
-  void add_signatories(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::PublicKey>>> signatories) {
+  void add_signatories(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> signatories) {
     fbb_.AddOffset(Account::VT_SIGNATORIES, signatories);
   }
   void add_useKeys(uint16_t useKeys) {
@@ -79,9 +78,9 @@ struct AccountBuilder {
 
 inline flatbuffers::Offset<Account> CreateAccount(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> pubKey = 0,
+    flatbuffers::Offset<flatbuffers::String> pubKey = 0,
     flatbuffers::Offset<flatbuffers::String> alias = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::PublicKey>>> signatories = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> signatories = 0,
     uint16_t useKeys = 1) {
   AccountBuilder builder_(_fbb);
   builder_.add_signatories(signatories);
@@ -93,15 +92,15 @@ inline flatbuffers::Offset<Account> CreateAccount(
 
 inline flatbuffers::Offset<Account> CreateAccountDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> pubKey = 0,
+    const char *pubKey = nullptr,
     const char *alias = nullptr,
-    const std::vector<flatbuffers::Offset<iroha::PublicKey>> *signatories = nullptr,
+    const std::vector<flatbuffers::Offset<flatbuffers::String>> *signatories = nullptr,
     uint16_t useKeys = 1) {
   return iroha::CreateAccount(
       _fbb,
-      pubKey,
+      pubKey ? _fbb.CreateString(pubKey) : 0,
       alias ? _fbb.CreateString(alias) : 0,
-      signatories ? _fbb.CreateVector<flatbuffers::Offset<iroha::PublicKey>>(*signatories) : 0,
+      signatories ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*signatories) : 0,
       useKeys);
 }
 
@@ -110,8 +109,8 @@ struct Message FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_ACCPUBKEY = 4,
     VT_DATA = 6
   };
-  const iroha::PublicKey *accPubKey() const {
-    return GetPointer<const iroha::PublicKey *>(VT_ACCPUBKEY);
+  const flatbuffers::String *accPubKey() const {
+    return GetPointer<const flatbuffers::String *>(VT_ACCPUBKEY);
   }
   const flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *data() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *>(VT_DATA);
@@ -119,7 +118,7 @@ struct Message FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ACCPUBKEY) &&
-           verifier.VerifyTable(accPubKey()) &&
+           verifier.Verify(accPubKey()) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_DATA) &&
            verifier.Verify(data()) &&
            verifier.VerifyVectorOfTables(data()) &&
@@ -130,7 +129,7 @@ struct Message FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct MessageBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_accPubKey(flatbuffers::Offset<iroha::PublicKey> accPubKey) {
+  void add_accPubKey(flatbuffers::Offset<flatbuffers::String> accPubKey) {
     fbb_.AddOffset(Message::VT_ACCPUBKEY, accPubKey);
   }
   void add_data(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>>> data) {
@@ -151,7 +150,7 @@ struct MessageBuilder {
 
 inline flatbuffers::Offset<Message> CreateMessage(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> accPubKey = 0,
+    flatbuffers::Offset<flatbuffers::String> accPubKey = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>>> data = 0) {
   MessageBuilder builder_(_fbb);
   builder_.add_data(data);
@@ -161,27 +160,12 @@ inline flatbuffers::Offset<Message> CreateMessage(
 
 inline flatbuffers::Offset<Message> CreateMessageDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> accPubKey = 0,
+    const char *accPubKey = nullptr,
     const std::vector<flatbuffers::Offset<iroha::KeyValueObject>> *data = nullptr) {
   return iroha::CreateMessage(
       _fbb,
-      accPubKey,
+      accPubKey ? _fbb.CreateString(accPubKey) : 0,
       data ? _fbb.CreateVector<flatbuffers::Offset<iroha::KeyValueObject>>(*data) : 0);
-}
-
-inline const iroha::Account *GetAccount(const void *buf) {
-  return flatbuffers::GetRoot<iroha::Account>(buf);
-}
-
-inline bool VerifyAccountBuffer(
-    flatbuffers::Verifier &verifier) {
-  return verifier.VerifyBuffer<iroha::Account>(nullptr);
-}
-
-inline void FinishAccountBuffer(
-    flatbuffers::FlatBufferBuilder &fbb,
-    flatbuffers::Offset<iroha::Account> root) {
-  fbb.Finish(root);
 }
 
 }  // namespace iroha

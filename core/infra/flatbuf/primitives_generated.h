@@ -6,8 +6,6 @@
 
 #include "flatbuffers/flatbuffers.h"
 
-#include "key_generated.h"
-
 namespace iroha {
 
 struct Chaincode;
@@ -717,8 +715,8 @@ struct Peer FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_JOIN_NETWORK = 12,
     VT_JOIN_VALIDATION = 14
   };
-  const iroha::PublicKey *publicKey() const {
-    return GetPointer<const iroha::PublicKey *>(VT_PUBLICKEY);
+  const flatbuffers::String *publicKey() const {
+    return GetPointer<const flatbuffers::String *>(VT_PUBLICKEY);
   }
   const flatbuffers::String *ip() const {
     return GetPointer<const flatbuffers::String *>(VT_IP);
@@ -738,7 +736,7 @@ struct Peer FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_PUBLICKEY) &&
-           verifier.VerifyTable(publicKey()) &&
+           verifier.Verify(publicKey()) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_IP) &&
            verifier.Verify(ip()) &&
            VerifyField<double>(verifier, VT_TRUST) &&
@@ -752,7 +750,7 @@ struct Peer FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct PeerBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_publicKey(flatbuffers::Offset<iroha::PublicKey> publicKey) {
+  void add_publicKey(flatbuffers::Offset<flatbuffers::String> publicKey) {
     fbb_.AddOffset(Peer::VT_PUBLICKEY, publicKey);
   }
   void add_ip(flatbuffers::Offset<flatbuffers::String> ip) {
@@ -785,7 +783,7 @@ struct PeerBuilder {
 
 inline flatbuffers::Offset<Peer> CreatePeer(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> publicKey = 0,
+    flatbuffers::Offset<flatbuffers::String> publicKey = 0,
     flatbuffers::Offset<flatbuffers::String> ip = 0,
     double trust = 0.0,
     bool active = false,
@@ -803,7 +801,7 @@ inline flatbuffers::Offset<Peer> CreatePeer(
 
 inline flatbuffers::Offset<Peer> CreatePeerDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> publicKey = 0,
+    const char *publicKey = nullptr,
     const char *ip = nullptr,
     double trust = 0.0,
     bool active = false,
@@ -811,7 +809,7 @@ inline flatbuffers::Offset<Peer> CreatePeerDirect(
     bool join_validation = false) {
   return iroha::CreatePeer(
       _fbb,
-      publicKey,
+      publicKey ? _fbb.CreateString(publicKey) : 0,
       ip ? _fbb.CreateString(ip) : 0,
       trust,
       active,
@@ -826,8 +824,8 @@ struct Signature FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_SIGNATURE = 6,
     VT_TIMESTAMP = 8
   };
-  const iroha::PublicKey *publicKey() const {
-    return GetPointer<const iroha::PublicKey *>(VT_PUBLICKEY);
+  const flatbuffers::String *publicKey() const {
+    return GetPointer<const flatbuffers::String *>(VT_PUBLICKEY);
   }
   const flatbuffers::Vector<uint8_t> *signature() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_SIGNATURE);
@@ -838,7 +836,7 @@ struct Signature FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_PUBLICKEY) &&
-           verifier.VerifyTable(publicKey()) &&
+           verifier.Verify(publicKey()) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_SIGNATURE) &&
            verifier.Verify(signature()) &&
            VerifyField<uint64_t>(verifier, VT_TIMESTAMP) &&
@@ -849,7 +847,7 @@ struct Signature FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct SignatureBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_publicKey(flatbuffers::Offset<iroha::PublicKey> publicKey) {
+  void add_publicKey(flatbuffers::Offset<flatbuffers::String> publicKey) {
     fbb_.AddOffset(Signature::VT_PUBLICKEY, publicKey);
   }
   void add_signature(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> signature) {
@@ -872,7 +870,7 @@ struct SignatureBuilder {
 
 inline flatbuffers::Offset<Signature> CreateSignature(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> publicKey = 0,
+    flatbuffers::Offset<flatbuffers::String> publicKey = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> signature = 0,
     uint64_t timestamp = 0) {
   SignatureBuilder builder_(_fbb);
@@ -884,12 +882,12 @@ inline flatbuffers::Offset<Signature> CreateSignature(
 
 inline flatbuffers::Offset<Signature> CreateSignatureDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> publicKey = 0,
+    const char *publicKey = nullptr,
     const std::vector<uint8_t> *signature = nullptr,
     uint64_t timestamp = 0) {
   return iroha::CreateSignature(
       _fbb,
-      publicKey,
+      publicKey ? _fbb.CreateString(publicKey) : 0,
       signature ? _fbb.CreateVector<uint8_t>(*signature) : 0,
       timestamp);
 }

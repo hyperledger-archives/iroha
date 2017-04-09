@@ -8,119 +8,90 @@
 
 #include "account_generated.h"
 #include "asset_generated.h"
-#include "key_generated.h"
 #include "primitives_generated.h"
 
 namespace iroha {
 
-struct CmdAdd;
+struct AccountAdd;
 
-struct CmdRemove;
+struct AccountRemove;
 
-struct CmdStore;
+struct AccountAddSignatory;
 
-struct CmdTransfer;
+struct AccountRemoveSignatory;
 
-struct CmdAddAsset;
+struct AccountSetUseKeys;
 
-struct CmdRemoveAsset;
+struct AccountStore;
 
-struct CmdCreateAsset;
+struct ChaincodeAdd;
 
-struct CmdExecute;
+struct ChaincodeRemove;
 
-struct CmdSetChaincode;
+struct ChaincodeExecute;
 
-struct CmdSetPeerTrust;
+struct AssetAdd;
 
-struct CmdChangePeerTrust;
+struct AssetRemove;
 
-struct CmdSetPeerActive;
+struct AssetCreate;
 
-struct CmdAddSignatory;
+struct AssetTransfer;
 
-struct CmdSetAccountsUseKeys;
+struct PeerAdd;
 
-enum Object {
-  Object_NONE = 0,
-  Object_Peer = 1,
-  Object_Account = 2,
-  Object_Chaincode = 3,
-  Object_MIN = Object_NONE,
-  Object_MAX = Object_Chaincode
-};
+struct PeerRemove;
 
-inline const char **EnumNamesObject() {
-  static const char *names[] = {
-    "NONE",
-    "Peer",
-    "Account",
-    "Chaincode",
-    nullptr
-  };
-  return names;
-}
+struct PeerSetTrust;
 
-inline const char *EnumNameObject(Object e) {
-  const size_t index = static_cast<int>(e);
-  return EnumNamesObject()[index];
-}
+struct PeerChangeTrust;
 
-template<typename T> struct ObjectTraits {
-  static const Object enum_value = Object_NONE;
-};
-
-template<> struct ObjectTraits<iroha::Peer> {
-  static const Object enum_value = Object_Peer;
-};
-
-template<> struct ObjectTraits<iroha::Account> {
-  static const Object enum_value = Object_Account;
-};
-
-template<> struct ObjectTraits<iroha::Chaincode> {
-  static const Object enum_value = Object_Chaincode;
-};
-
-bool VerifyObject(flatbuffers::Verifier &verifier, const void *obj, Object type);
-bool VerifyObjectVector(flatbuffers::Verifier &verifier, const flatbuffers::Vector<flatbuffers::Offset<void>> *values, const flatbuffers::Vector<uint8_t> *types);
+struct PeerSetActive;
 
 //////////////////////////////////////////
 enum Command {
   Command_NONE = 0,
-  Command_CmdAddAsset = 1,
-  Command_CmdRemoveAsset = 2,
-  Command_CmdCreateAsset = 3,
-  Command_CmdTransfer = 4,
-  Command_CmdAdd = 5,
-  Command_CmdRemove = 6,
-  Command_CmdExecute = 7,
-  Command_CmdStore = 8,
-  Command_CmdSetPeerTrust = 9,
-  Command_CmdChangePeerTrust = 10,
-  Command_CmdSetPeerActive = 11,
-  Command_CmdSetChaincode = 12,
-  Command_CmdSetAccountsUseKeys = 13,
+  Command_AssetCreate = 1,
+  Command_AssetAdd = 2,
+  Command_AssetRemove = 3,
+  Command_AssetTransfer = 4,
+  Command_PeerAdd = 5,
+  Command_PeerRemove = 6,
+  Command_PeerSetActive = 7,
+  Command_PeerSetTrust = 8,
+  Command_PeerChangeTrust = 9,
+  Command_AccountAdd = 10,
+  Command_AccountRemove = 11,
+  Command_AccountAddSignatory = 12,
+  Command_AccountRemoveSignatory = 13,
+  Command_AccountSetUseKeys = 14,
+  Command_ChaincodeAdd = 15,
+  Command_ChaincodeRemove = 16,
+  Command_ChaincodeExecute = 17,
   Command_MIN = Command_NONE,
-  Command_MAX = Command_CmdSetAccountsUseKeys
+  Command_MAX = Command_ChaincodeExecute
 };
 
 inline const char **EnumNamesCommand() {
   static const char *names[] = {
     "NONE",
-    "CmdAddAsset",
-    "CmdRemoveAsset",
-    "CmdCreateAsset",
-    "CmdTransfer",
-    "CmdAdd",
-    "CmdRemove",
-    "CmdExecute",
-    "CmdStore",
-    "CmdSetPeerTrust",
-    "CmdChangePeerTrust",
-    "CmdSetPeerActive",
-    "CmdSetChaincode",
-    "CmdSetAccountsUseKeys",
+    "AssetCreate",
+    "AssetAdd",
+    "AssetRemove",
+    "AssetTransfer",
+    "PeerAdd",
+    "PeerRemove",
+    "PeerSetActive",
+    "PeerSetTrust",
+    "PeerChangeTrust",
+    "AccountAdd",
+    "AccountRemove",
+    "AccountAddSignatory",
+    "AccountRemoveSignatory",
+    "AccountSetUseKeys",
+    "ChaincodeAdd",
+    "ChaincodeRemove",
+    "ChaincodeExecute",
     nullptr
   };
   return names;
@@ -135,216 +106,387 @@ template<typename T> struct CommandTraits {
   static const Command enum_value = Command_NONE;
 };
 
-template<> struct CommandTraits<CmdAddAsset> {
-  static const Command enum_value = Command_CmdAddAsset;
+template<> struct CommandTraits<AssetCreate> {
+  static const Command enum_value = Command_AssetCreate;
 };
 
-template<> struct CommandTraits<CmdRemoveAsset> {
-  static const Command enum_value = Command_CmdRemoveAsset;
+template<> struct CommandTraits<AssetAdd> {
+  static const Command enum_value = Command_AssetAdd;
 };
 
-template<> struct CommandTraits<CmdCreateAsset> {
-  static const Command enum_value = Command_CmdCreateAsset;
+template<> struct CommandTraits<AssetRemove> {
+  static const Command enum_value = Command_AssetRemove;
 };
 
-template<> struct CommandTraits<CmdTransfer> {
-  static const Command enum_value = Command_CmdTransfer;
+template<> struct CommandTraits<AssetTransfer> {
+  static const Command enum_value = Command_AssetTransfer;
 };
 
-template<> struct CommandTraits<CmdAdd> {
-  static const Command enum_value = Command_CmdAdd;
+template<> struct CommandTraits<PeerAdd> {
+  static const Command enum_value = Command_PeerAdd;
 };
 
-template<> struct CommandTraits<CmdRemove> {
-  static const Command enum_value = Command_CmdRemove;
+template<> struct CommandTraits<PeerRemove> {
+  static const Command enum_value = Command_PeerRemove;
 };
 
-template<> struct CommandTraits<CmdExecute> {
-  static const Command enum_value = Command_CmdExecute;
+template<> struct CommandTraits<PeerSetActive> {
+  static const Command enum_value = Command_PeerSetActive;
 };
 
-template<> struct CommandTraits<CmdStore> {
-  static const Command enum_value = Command_CmdStore;
+template<> struct CommandTraits<PeerSetTrust> {
+  static const Command enum_value = Command_PeerSetTrust;
 };
 
-template<> struct CommandTraits<CmdSetPeerTrust> {
-  static const Command enum_value = Command_CmdSetPeerTrust;
+template<> struct CommandTraits<PeerChangeTrust> {
+  static const Command enum_value = Command_PeerChangeTrust;
 };
 
-template<> struct CommandTraits<CmdChangePeerTrust> {
-  static const Command enum_value = Command_CmdChangePeerTrust;
+template<> struct CommandTraits<AccountAdd> {
+  static const Command enum_value = Command_AccountAdd;
 };
 
-template<> struct CommandTraits<CmdSetPeerActive> {
-  static const Command enum_value = Command_CmdSetPeerActive;
+template<> struct CommandTraits<AccountRemove> {
+  static const Command enum_value = Command_AccountRemove;
 };
 
-template<> struct CommandTraits<CmdSetChaincode> {
-  static const Command enum_value = Command_CmdSetChaincode;
+template<> struct CommandTraits<AccountAddSignatory> {
+  static const Command enum_value = Command_AccountAddSignatory;
 };
 
-template<> struct CommandTraits<CmdSetAccountsUseKeys> {
-  static const Command enum_value = Command_CmdSetAccountsUseKeys;
+template<> struct CommandTraits<AccountRemoveSignatory> {
+  static const Command enum_value = Command_AccountRemoveSignatory;
+};
+
+template<> struct CommandTraits<AccountSetUseKeys> {
+  static const Command enum_value = Command_AccountSetUseKeys;
+};
+
+template<> struct CommandTraits<ChaincodeAdd> {
+  static const Command enum_value = Command_ChaincodeAdd;
+};
+
+template<> struct CommandTraits<ChaincodeRemove> {
+  static const Command enum_value = Command_ChaincodeRemove;
+};
+
+template<> struct CommandTraits<ChaincodeExecute> {
+  static const Command enum_value = Command_ChaincodeExecute;
 };
 
 bool VerifyCommand(flatbuffers::Verifier &verifier, const void *obj, Command type);
 bool VerifyCommandVector(flatbuffers::Verifier &verifier, const flatbuffers::Vector<flatbuffers::Offset<void>> *values, const flatbuffers::Vector<uint8_t> *types);
 
-struct CmdAdd FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+//////////////////////////////////////////
+/// Commands for Account
+struct AccountAdd FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_OBJECT_TYPE = 4,
-    VT_OBJECT = 6
+    VT_ACCOUNT = 4
   };
-  Object object_type() const {
-    return static_cast<Object>(GetField<uint8_t>(VT_OBJECT_TYPE, 0));
+  const flatbuffers::Vector<uint8_t> *account() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ACCOUNT);
   }
-  const void *object() const {
-    return GetPointer<const void *>(VT_OBJECT);
-  }
-  template<typename T> const T *object_as() const;
-  const iroha::Peer *object_as_Peer() const {
-    return (object_type() == Object_Peer)? static_cast<const iroha::Peer *>(object()) : nullptr;
-  }
-  const iroha::Account *object_as_Account() const {
-    return (object_type() == Object_Account)? static_cast<const iroha::Account *>(object()) : nullptr;
-  }
-  const iroha::Chaincode *object_as_Chaincode() const {
-    return (object_type() == Object_Chaincode)? static_cast<const iroha::Chaincode *>(object()) : nullptr;
+  const iroha::Account *account_nested_root() const {
+    const uint8_t* data = account()->Data();
+    return flatbuffers::GetRoot<iroha::Account>(data);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_OBJECT_TYPE) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_OBJECT) &&
-           VerifyObject(verifier, object(), object_type()) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ACCOUNT) &&
+           verifier.Verify(account()) &&
            verifier.EndTable();
   }
 };
 
-template<> inline const iroha::Peer *CmdAdd::object_as<iroha::Peer>() const {
-  return object_as_Peer();
-}
-
-template<> inline const iroha::Account *CmdAdd::object_as<iroha::Account>() const {
-  return object_as_Account();
-}
-
-template<> inline const iroha::Chaincode *CmdAdd::object_as<iroha::Chaincode>() const {
-  return object_as_Chaincode();
-}
-
-struct CmdAddBuilder {
+struct AccountAddBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_object_type(Object object_type) {
-    fbb_.AddElement<uint8_t>(CmdAdd::VT_OBJECT_TYPE, static_cast<uint8_t>(object_type), 0);
+  void add_account(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> account) {
+    fbb_.AddOffset(AccountAdd::VT_ACCOUNT, account);
   }
-  void add_object(flatbuffers::Offset<void> object) {
-    fbb_.AddOffset(CmdAdd::VT_OBJECT, object);
-  }
-  CmdAddBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  AccountAddBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  CmdAddBuilder &operator=(const CmdAddBuilder &);
-  flatbuffers::Offset<CmdAdd> Finish() {
-    const auto end = fbb_.EndTable(start_, 2);
-    auto o = flatbuffers::Offset<CmdAdd>(end);
-    fbb_.Required(o, CmdAdd::VT_OBJECT);
+  AccountAddBuilder &operator=(const AccountAddBuilder &);
+  flatbuffers::Offset<AccountAdd> Finish() {
+    const auto end = fbb_.EndTable(start_, 1);
+    auto o = flatbuffers::Offset<AccountAdd>(end);
+    fbb_.Required(o, AccountAdd::VT_ACCOUNT);
     return o;
   }
 };
 
-inline flatbuffers::Offset<CmdAdd> CreateCmdAdd(
+inline flatbuffers::Offset<AccountAdd> CreateAccountAdd(
     flatbuffers::FlatBufferBuilder &_fbb,
-    Object object_type = Object_NONE,
-    flatbuffers::Offset<void> object = 0) {
-  CmdAddBuilder builder_(_fbb);
-  builder_.add_object(object);
-  builder_.add_object_type(object_type);
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> account = 0) {
+  AccountAddBuilder builder_(_fbb);
+  builder_.add_account(account);
   return builder_.Finish();
 }
 
-struct CmdRemove FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+inline flatbuffers::Offset<AccountAdd> CreateAccountAddDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<uint8_t> *account = nullptr) {
+  return iroha::CreateAccountAdd(
+      _fbb,
+      account ? _fbb.CreateVector<uint8_t>(*account) : 0);
+}
+
+struct AccountRemove FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_OBJECT_TYPE = 4,
-    VT_OBJECT = 6
+    VT_ACCOUNT = 4
   };
-  Object object_type() const {
-    return static_cast<Object>(GetField<uint8_t>(VT_OBJECT_TYPE, 0));
+  const flatbuffers::Vector<uint8_t> *account() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ACCOUNT);
   }
-  const void *object() const {
-    return GetPointer<const void *>(VT_OBJECT);
-  }
-  template<typename T> const T *object_as() const;
-  const iroha::Peer *object_as_Peer() const {
-    return (object_type() == Object_Peer)? static_cast<const iroha::Peer *>(object()) : nullptr;
-  }
-  const iroha::Account *object_as_Account() const {
-    return (object_type() == Object_Account)? static_cast<const iroha::Account *>(object()) : nullptr;
-  }
-  const iroha::Chaincode *object_as_Chaincode() const {
-    return (object_type() == Object_Chaincode)? static_cast<const iroha::Chaincode *>(object()) : nullptr;
+  const iroha::Account *account_nested_root() const {
+    const uint8_t* data = account()->Data();
+    return flatbuffers::GetRoot<iroha::Account>(data);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_OBJECT_TYPE) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_OBJECT) &&
-           VerifyObject(verifier, object(), object_type()) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ACCOUNT) &&
+           verifier.Verify(account()) &&
            verifier.EndTable();
   }
 };
 
-template<> inline const iroha::Peer *CmdRemove::object_as<iroha::Peer>() const {
-  return object_as_Peer();
-}
-
-template<> inline const iroha::Account *CmdRemove::object_as<iroha::Account>() const {
-  return object_as_Account();
-}
-
-template<> inline const iroha::Chaincode *CmdRemove::object_as<iroha::Chaincode>() const {
-  return object_as_Chaincode();
-}
-
-struct CmdRemoveBuilder {
+struct AccountRemoveBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_object_type(Object object_type) {
-    fbb_.AddElement<uint8_t>(CmdRemove::VT_OBJECT_TYPE, static_cast<uint8_t>(object_type), 0);
+  void add_account(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> account) {
+    fbb_.AddOffset(AccountRemove::VT_ACCOUNT, account);
   }
-  void add_object(flatbuffers::Offset<void> object) {
-    fbb_.AddOffset(CmdRemove::VT_OBJECT, object);
-  }
-  CmdRemoveBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  AccountRemoveBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  CmdRemoveBuilder &operator=(const CmdRemoveBuilder &);
-  flatbuffers::Offset<CmdRemove> Finish() {
-    const auto end = fbb_.EndTable(start_, 2);
-    auto o = flatbuffers::Offset<CmdRemove>(end);
-    fbb_.Required(o, CmdRemove::VT_OBJECT);
+  AccountRemoveBuilder &operator=(const AccountRemoveBuilder &);
+  flatbuffers::Offset<AccountRemove> Finish() {
+    const auto end = fbb_.EndTable(start_, 1);
+    auto o = flatbuffers::Offset<AccountRemove>(end);
+    fbb_.Required(o, AccountRemove::VT_ACCOUNT);
     return o;
   }
 };
 
-inline flatbuffers::Offset<CmdRemove> CreateCmdRemove(
+inline flatbuffers::Offset<AccountRemove> CreateAccountRemove(
     flatbuffers::FlatBufferBuilder &_fbb,
-    Object object_type = Object_NONE,
-    flatbuffers::Offset<void> object = 0) {
-  CmdRemoveBuilder builder_(_fbb);
-  builder_.add_object(object);
-  builder_.add_object_type(object_type);
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> account = 0) {
+  AccountRemoveBuilder builder_(_fbb);
+  builder_.add_account(account);
   return builder_.Finish();
 }
 
-struct CmdStore FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+inline flatbuffers::Offset<AccountRemove> CreateAccountRemoveDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<uint8_t> *account = nullptr) {
+  return iroha::CreateAccountRemove(
+      _fbb,
+      account ? _fbb.CreateVector<uint8_t>(*account) : 0);
+}
+
+struct AccountAddSignatory FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_ACCOUNT = 4,
+    VT_SIGNATORY = 6
+  };
+  const flatbuffers::String *account() const {
+    return GetPointer<const flatbuffers::String *>(VT_ACCOUNT);
+  }
+  const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *signatory() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_SIGNATORY);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ACCOUNT) &&
+           verifier.Verify(account()) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_SIGNATORY) &&
+           verifier.Verify(signatory()) &&
+           verifier.VerifyVectorOfStrings(signatory()) &&
+           verifier.EndTable();
+  }
+};
+
+struct AccountAddSignatoryBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_account(flatbuffers::Offset<flatbuffers::String> account) {
+    fbb_.AddOffset(AccountAddSignatory::VT_ACCOUNT, account);
+  }
+  void add_signatory(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> signatory) {
+    fbb_.AddOffset(AccountAddSignatory::VT_SIGNATORY, signatory);
+  }
+  AccountAddSignatoryBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  AccountAddSignatoryBuilder &operator=(const AccountAddSignatoryBuilder &);
+  flatbuffers::Offset<AccountAddSignatory> Finish() {
+    const auto end = fbb_.EndTable(start_, 2);
+    auto o = flatbuffers::Offset<AccountAddSignatory>(end);
+    fbb_.Required(o, AccountAddSignatory::VT_ACCOUNT);
+    fbb_.Required(o, AccountAddSignatory::VT_SIGNATORY);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<AccountAddSignatory> CreateAccountAddSignatory(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::String> account = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> signatory = 0) {
+  AccountAddSignatoryBuilder builder_(_fbb);
+  builder_.add_signatory(signatory);
+  builder_.add_account(account);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<AccountAddSignatory> CreateAccountAddSignatoryDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const char *account = nullptr,
+    const std::vector<flatbuffers::Offset<flatbuffers::String>> *signatory = nullptr) {
+  return iroha::CreateAccountAddSignatory(
+      _fbb,
+      account ? _fbb.CreateString(account) : 0,
+      signatory ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*signatory) : 0);
+}
+
+struct AccountRemoveSignatory FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_ACCOUNT = 4,
+    VT_SIGNATORY = 6
+  };
+  const flatbuffers::String *account() const {
+    return GetPointer<const flatbuffers::String *>(VT_ACCOUNT);
+  }
+  const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *signatory() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_SIGNATORY);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ACCOUNT) &&
+           verifier.Verify(account()) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_SIGNATORY) &&
+           verifier.Verify(signatory()) &&
+           verifier.VerifyVectorOfStrings(signatory()) &&
+           verifier.EndTable();
+  }
+};
+
+struct AccountRemoveSignatoryBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_account(flatbuffers::Offset<flatbuffers::String> account) {
+    fbb_.AddOffset(AccountRemoveSignatory::VT_ACCOUNT, account);
+  }
+  void add_signatory(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> signatory) {
+    fbb_.AddOffset(AccountRemoveSignatory::VT_SIGNATORY, signatory);
+  }
+  AccountRemoveSignatoryBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  AccountRemoveSignatoryBuilder &operator=(const AccountRemoveSignatoryBuilder &);
+  flatbuffers::Offset<AccountRemoveSignatory> Finish() {
+    const auto end = fbb_.EndTable(start_, 2);
+    auto o = flatbuffers::Offset<AccountRemoveSignatory>(end);
+    fbb_.Required(o, AccountRemoveSignatory::VT_ACCOUNT);
+    fbb_.Required(o, AccountRemoveSignatory::VT_SIGNATORY);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<AccountRemoveSignatory> CreateAccountRemoveSignatory(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::String> account = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> signatory = 0) {
+  AccountRemoveSignatoryBuilder builder_(_fbb);
+  builder_.add_signatory(signatory);
+  builder_.add_account(account);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<AccountRemoveSignatory> CreateAccountRemoveSignatoryDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const char *account = nullptr,
+    const std::vector<flatbuffers::Offset<flatbuffers::String>> *signatory = nullptr) {
+  return iroha::CreateAccountRemoveSignatory(
+      _fbb,
+      account ? _fbb.CreateString(account) : 0,
+      signatory ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*signatory) : 0);
+}
+
+struct AccountSetUseKeys FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_ACCOUNTS = 4,
+    VT_USEKEYS = 6
+  };
+  const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *accounts() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_ACCOUNTS);
+  }
+  uint16_t useKeys() const {
+    return GetField<uint16_t>(VT_USEKEYS, 0);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ACCOUNTS) &&
+           verifier.Verify(accounts()) &&
+           verifier.VerifyVectorOfStrings(accounts()) &&
+           VerifyField<uint16_t>(verifier, VT_USEKEYS) &&
+           verifier.EndTable();
+  }
+};
+
+struct AccountSetUseKeysBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_accounts(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> accounts) {
+    fbb_.AddOffset(AccountSetUseKeys::VT_ACCOUNTS, accounts);
+  }
+  void add_useKeys(uint16_t useKeys) {
+    fbb_.AddElement<uint16_t>(AccountSetUseKeys::VT_USEKEYS, useKeys, 0);
+  }
+  AccountSetUseKeysBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  AccountSetUseKeysBuilder &operator=(const AccountSetUseKeysBuilder &);
+  flatbuffers::Offset<AccountSetUseKeys> Finish() {
+    const auto end = fbb_.EndTable(start_, 2);
+    auto o = flatbuffers::Offset<AccountSetUseKeys>(end);
+    fbb_.Required(o, AccountSetUseKeys::VT_ACCOUNTS);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<AccountSetUseKeys> CreateAccountSetUseKeys(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> accounts = 0,
+    uint16_t useKeys = 0) {
+  AccountSetUseKeysBuilder builder_(_fbb);
+  builder_.add_accounts(accounts);
+  builder_.add_useKeys(useKeys);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<AccountSetUseKeys> CreateAccountSetUseKeysDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<flatbuffers::Offset<flatbuffers::String>> *accounts = nullptr,
+    uint16_t useKeys = 0) {
+  return iroha::CreateAccountSetUseKeys(
+      _fbb,
+      accounts ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*accounts) : 0,
+      useKeys);
+}
+
+struct AccountStore FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_ACCPUBKEY = 4,
     VT_DATA = 6
   };
-  const iroha::PublicKey *accPubKey() const {
-    return GetPointer<const iroha::PublicKey *>(VT_ACCPUBKEY);
+  const flatbuffers::String *accPubKey() const {
+    return GetPointer<const flatbuffers::String *>(VT_ACCPUBKEY);
   }
   const flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *data() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *>(VT_DATA);
@@ -352,7 +494,7 @@ struct CmdStore FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ACCPUBKEY) &&
-           verifier.VerifyTable(accPubKey()) &&
+           verifier.Verify(accPubKey()) &&
            VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_DATA) &&
            verifier.Verify(data()) &&
            verifier.VerifyVectorOfTables(data()) &&
@@ -360,368 +502,161 @@ struct CmdStore FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
 };
 
-struct CmdStoreBuilder {
+struct AccountStoreBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_accPubKey(flatbuffers::Offset<iroha::PublicKey> accPubKey) {
-    fbb_.AddOffset(CmdStore::VT_ACCPUBKEY, accPubKey);
+  void add_accPubKey(flatbuffers::Offset<flatbuffers::String> accPubKey) {
+    fbb_.AddOffset(AccountStore::VT_ACCPUBKEY, accPubKey);
   }
   void add_data(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>>> data) {
-    fbb_.AddOffset(CmdStore::VT_DATA, data);
+    fbb_.AddOffset(AccountStore::VT_DATA, data);
   }
-  CmdStoreBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  AccountStoreBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  CmdStoreBuilder &operator=(const CmdStoreBuilder &);
-  flatbuffers::Offset<CmdStore> Finish() {
+  AccountStoreBuilder &operator=(const AccountStoreBuilder &);
+  flatbuffers::Offset<AccountStore> Finish() {
     const auto end = fbb_.EndTable(start_, 2);
-    auto o = flatbuffers::Offset<CmdStore>(end);
-    fbb_.Required(o, CmdStore::VT_ACCPUBKEY);
-    fbb_.Required(o, CmdStore::VT_DATA);
+    auto o = flatbuffers::Offset<AccountStore>(end);
+    fbb_.Required(o, AccountStore::VT_ACCPUBKEY);
+    fbb_.Required(o, AccountStore::VT_DATA);
     return o;
   }
 };
 
-inline flatbuffers::Offset<CmdStore> CreateCmdStore(
+inline flatbuffers::Offset<AccountStore> CreateAccountStore(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> accPubKey = 0,
+    flatbuffers::Offset<flatbuffers::String> accPubKey = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>>> data = 0) {
-  CmdStoreBuilder builder_(_fbb);
+  AccountStoreBuilder builder_(_fbb);
   builder_.add_data(data);
   builder_.add_accPubKey(accPubKey);
   return builder_.Finish();
 }
 
-inline flatbuffers::Offset<CmdStore> CreateCmdStoreDirect(
+inline flatbuffers::Offset<AccountStore> CreateAccountStoreDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> accPubKey = 0,
+    const char *accPubKey = nullptr,
     const std::vector<flatbuffers::Offset<iroha::KeyValueObject>> *data = nullptr) {
-  return iroha::CreateCmdStore(
+  return iroha::CreateAccountStore(
       _fbb,
-      accPubKey,
+      accPubKey ? _fbb.CreateString(accPubKey) : 0,
       data ? _fbb.CreateVector<flatbuffers::Offset<iroha::KeyValueObject>>(*data) : 0);
-}
-
-struct CmdTransfer FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_CURRENCY = 4,
-    VT_SENDER = 6,
-    VT_RECEIVER = 8
-  };
-  const iroha::Asset *currency() const {
-    return GetPointer<const iroha::Asset *>(VT_CURRENCY);
-  }
-  const iroha::PublicKey *sender() const {
-    return GetPointer<const iroha::PublicKey *>(VT_SENDER);
-  }
-  const iroha::PublicKey *receiver() const {
-    return GetPointer<const iroha::PublicKey *>(VT_RECEIVER);
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_CURRENCY) &&
-           verifier.VerifyTable(currency()) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_SENDER) &&
-           verifier.VerifyTable(sender()) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_RECEIVER) &&
-           verifier.VerifyTable(receiver()) &&
-           verifier.EndTable();
-  }
-};
-
-struct CmdTransferBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_currency(flatbuffers::Offset<iroha::Asset> currency) {
-    fbb_.AddOffset(CmdTransfer::VT_CURRENCY, currency);
-  }
-  void add_sender(flatbuffers::Offset<iroha::PublicKey> sender) {
-    fbb_.AddOffset(CmdTransfer::VT_SENDER, sender);
-  }
-  void add_receiver(flatbuffers::Offset<iroha::PublicKey> receiver) {
-    fbb_.AddOffset(CmdTransfer::VT_RECEIVER, receiver);
-  }
-  CmdTransferBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  CmdTransferBuilder &operator=(const CmdTransferBuilder &);
-  flatbuffers::Offset<CmdTransfer> Finish() {
-    const auto end = fbb_.EndTable(start_, 3);
-    auto o = flatbuffers::Offset<CmdTransfer>(end);
-    fbb_.Required(o, CmdTransfer::VT_CURRENCY);
-    fbb_.Required(o, CmdTransfer::VT_SENDER);
-    fbb_.Required(o, CmdTransfer::VT_RECEIVER);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<CmdTransfer> CreateCmdTransfer(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::Asset> currency = 0,
-    flatbuffers::Offset<iroha::PublicKey> sender = 0,
-    flatbuffers::Offset<iroha::PublicKey> receiver = 0) {
-  CmdTransferBuilder builder_(_fbb);
-  builder_.add_receiver(receiver);
-  builder_.add_sender(sender);
-  builder_.add_currency(currency);
-  return builder_.Finish();
-}
-
-//////////////////////////////////////////
-/// Commands for Asset
-struct CmdAddAsset FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_ACCPUBKEY = 4,
-    VT_ASSET_TYPE = 6,
-    VT_ASSET = 8
-  };
-  const iroha::PublicKey *accPubKey() const {
-    return GetPointer<const iroha::PublicKey *>(VT_ACCPUBKEY);
-  }
-  const flatbuffers::Vector<uint8_t> *asset_type() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ASSET_TYPE);
-  }
-  const flatbuffers::Vector<flatbuffers::Offset<void>> *asset() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<void>> *>(VT_ASSET);
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ACCPUBKEY) &&
-           verifier.VerifyTable(accPubKey()) &&
-           VerifyField<flatbuffers::uoffset_t>(verifier, VT_ASSET_TYPE) &&
-           verifier.Verify(asset_type()) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ASSET) &&
-           verifier.Verify(asset()) &&
-           VerifyAnyAssetVector(verifier, asset(), asset_type()) &&
-           verifier.EndTable();
-  }
-};
-
-struct CmdAddAssetBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_accPubKey(flatbuffers::Offset<iroha::PublicKey> accPubKey) {
-    fbb_.AddOffset(CmdAddAsset::VT_ACCPUBKEY, accPubKey);
-  }
-  void add_asset_type(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> asset_type) {
-    fbb_.AddOffset(CmdAddAsset::VT_ASSET_TYPE, asset_type);
-  }
-  void add_asset(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<void>>> asset) {
-    fbb_.AddOffset(CmdAddAsset::VT_ASSET, asset);
-  }
-  CmdAddAssetBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  CmdAddAssetBuilder &operator=(const CmdAddAssetBuilder &);
-  flatbuffers::Offset<CmdAddAsset> Finish() {
-    const auto end = fbb_.EndTable(start_, 3);
-    auto o = flatbuffers::Offset<CmdAddAsset>(end);
-    fbb_.Required(o, CmdAddAsset::VT_ACCPUBKEY);
-    fbb_.Required(o, CmdAddAsset::VT_ASSET);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<CmdAddAsset> CreateCmdAddAsset(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> accPubKey = 0,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> asset_type = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<void>>> asset = 0) {
-  CmdAddAssetBuilder builder_(_fbb);
-  builder_.add_asset(asset);
-  builder_.add_asset_type(asset_type);
-  builder_.add_accPubKey(accPubKey);
-  return builder_.Finish();
-}
-
-inline flatbuffers::Offset<CmdAddAsset> CreateCmdAddAssetDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> accPubKey = 0,
-    const std::vector<uint8_t> *asset_type = nullptr,
-    const std::vector<flatbuffers::Offset<void>> *asset = nullptr) {
-  return iroha::CreateCmdAddAsset(
-      _fbb,
-      accPubKey,
-      asset_type ? _fbb.CreateVector<uint8_t>(*asset_type) : 0,
-      asset ? _fbb.CreateVector<flatbuffers::Offset<void>>(*asset) : 0);
-}
-
-struct CmdRemoveAsset FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_ACCPUBKEY = 4,
-    VT_ASSET_TYPE = 6,
-    VT_ASSET = 8
-  };
-  const iroha::PublicKey *accPubKey() const {
-    return GetPointer<const iroha::PublicKey *>(VT_ACCPUBKEY);
-  }
-  const flatbuffers::Vector<uint8_t> *asset_type() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ASSET_TYPE);
-  }
-  const flatbuffers::Vector<flatbuffers::Offset<void>> *asset() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<void>> *>(VT_ASSET);
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ACCPUBKEY) &&
-           verifier.VerifyTable(accPubKey()) &&
-           VerifyField<flatbuffers::uoffset_t>(verifier, VT_ASSET_TYPE) &&
-           verifier.Verify(asset_type()) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ASSET) &&
-           verifier.Verify(asset()) &&
-           VerifyAnyAssetVector(verifier, asset(), asset_type()) &&
-           verifier.EndTable();
-  }
-};
-
-struct CmdRemoveAssetBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_accPubKey(flatbuffers::Offset<iroha::PublicKey> accPubKey) {
-    fbb_.AddOffset(CmdRemoveAsset::VT_ACCPUBKEY, accPubKey);
-  }
-  void add_asset_type(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> asset_type) {
-    fbb_.AddOffset(CmdRemoveAsset::VT_ASSET_TYPE, asset_type);
-  }
-  void add_asset(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<void>>> asset) {
-    fbb_.AddOffset(CmdRemoveAsset::VT_ASSET, asset);
-  }
-  CmdRemoveAssetBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  CmdRemoveAssetBuilder &operator=(const CmdRemoveAssetBuilder &);
-  flatbuffers::Offset<CmdRemoveAsset> Finish() {
-    const auto end = fbb_.EndTable(start_, 3);
-    auto o = flatbuffers::Offset<CmdRemoveAsset>(end);
-    fbb_.Required(o, CmdRemoveAsset::VT_ACCPUBKEY);
-    fbb_.Required(o, CmdRemoveAsset::VT_ASSET);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<CmdRemoveAsset> CreateCmdRemoveAsset(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> accPubKey = 0,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> asset_type = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<void>>> asset = 0) {
-  CmdRemoveAssetBuilder builder_(_fbb);
-  builder_.add_asset(asset);
-  builder_.add_asset_type(asset_type);
-  builder_.add_accPubKey(accPubKey);
-  return builder_.Finish();
-}
-
-inline flatbuffers::Offset<CmdRemoveAsset> CreateCmdRemoveAssetDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> accPubKey = 0,
-    const std::vector<uint8_t> *asset_type = nullptr,
-    const std::vector<flatbuffers::Offset<void>> *asset = nullptr) {
-  return iroha::CreateCmdRemoveAsset(
-      _fbb,
-      accPubKey,
-      asset_type ? _fbb.CreateVector<uint8_t>(*asset_type) : 0,
-      asset ? _fbb.CreateVector<flatbuffers::Offset<void>>(*asset) : 0);
-}
-
-struct CmdCreateAsset FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_ASSET_NAME = 4,
-    VT_DOMAIN_NAME = 6,
-    VT_LEDGER_NAME = 8,
-    VT_DESCRIPTION = 10
-  };
-  const flatbuffers::String *asset_name() const {
-    return GetPointer<const flatbuffers::String *>(VT_ASSET_NAME);
-  }
-  const flatbuffers::String *domain_name() const {
-    return GetPointer<const flatbuffers::String *>(VT_DOMAIN_NAME);
-  }
-  const flatbuffers::String *ledger_name() const {
-    return GetPointer<const flatbuffers::String *>(VT_LEDGER_NAME);
-  }
-  const flatbuffers::String *description() const {
-    return GetPointer<const flatbuffers::String *>(VT_DESCRIPTION);
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ASSET_NAME) &&
-           verifier.Verify(asset_name()) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_DOMAIN_NAME) &&
-           verifier.Verify(domain_name()) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_LEDGER_NAME) &&
-           verifier.Verify(ledger_name()) &&
-           VerifyField<flatbuffers::uoffset_t>(verifier, VT_DESCRIPTION) &&
-           verifier.Verify(description()) &&
-           verifier.EndTable();
-  }
-};
-
-struct CmdCreateAssetBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_asset_name(flatbuffers::Offset<flatbuffers::String> asset_name) {
-    fbb_.AddOffset(CmdCreateAsset::VT_ASSET_NAME, asset_name);
-  }
-  void add_domain_name(flatbuffers::Offset<flatbuffers::String> domain_name) {
-    fbb_.AddOffset(CmdCreateAsset::VT_DOMAIN_NAME, domain_name);
-  }
-  void add_ledger_name(flatbuffers::Offset<flatbuffers::String> ledger_name) {
-    fbb_.AddOffset(CmdCreateAsset::VT_LEDGER_NAME, ledger_name);
-  }
-  void add_description(flatbuffers::Offset<flatbuffers::String> description) {
-    fbb_.AddOffset(CmdCreateAsset::VT_DESCRIPTION, description);
-  }
-  CmdCreateAssetBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  CmdCreateAssetBuilder &operator=(const CmdCreateAssetBuilder &);
-  flatbuffers::Offset<CmdCreateAsset> Finish() {
-    const auto end = fbb_.EndTable(start_, 4);
-    auto o = flatbuffers::Offset<CmdCreateAsset>(end);
-    fbb_.Required(o, CmdCreateAsset::VT_ASSET_NAME);
-    fbb_.Required(o, CmdCreateAsset::VT_DOMAIN_NAME);
-    fbb_.Required(o, CmdCreateAsset::VT_LEDGER_NAME);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<CmdCreateAsset> CreateCmdCreateAsset(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::String> asset_name = 0,
-    flatbuffers::Offset<flatbuffers::String> domain_name = 0,
-    flatbuffers::Offset<flatbuffers::String> ledger_name = 0,
-    flatbuffers::Offset<flatbuffers::String> description = 0) {
-  CmdCreateAssetBuilder builder_(_fbb);
-  builder_.add_description(description);
-  builder_.add_ledger_name(ledger_name);
-  builder_.add_domain_name(domain_name);
-  builder_.add_asset_name(asset_name);
-  return builder_.Finish();
-}
-
-inline flatbuffers::Offset<CmdCreateAsset> CreateCmdCreateAssetDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    const char *asset_name = nullptr,
-    const char *domain_name = nullptr,
-    const char *ledger_name = nullptr,
-    const char *description = nullptr) {
-  return iroha::CreateCmdCreateAsset(
-      _fbb,
-      asset_name ? _fbb.CreateString(asset_name) : 0,
-      domain_name ? _fbb.CreateString(domain_name) : 0,
-      ledger_name ? _fbb.CreateString(ledger_name) : 0,
-      description ? _fbb.CreateString(description) : 0);
 }
 
 //////////////////////////////////////////
 //////////////////////////////////////////
 /// Commands for Chaincode
-struct CmdExecute FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct ChaincodeAdd FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CODE = 4
+  };
+  const flatbuffers::Vector<uint8_t> *code() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_CODE);
+  }
+  const iroha::Chaincode *code_nested_root() const {
+    const uint8_t* data = code()->Data();
+    return flatbuffers::GetRoot<iroha::Chaincode>(data);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_CODE) &&
+           verifier.Verify(code()) &&
+           verifier.EndTable();
+  }
+};
+
+struct ChaincodeAddBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_code(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> code) {
+    fbb_.AddOffset(ChaincodeAdd::VT_CODE, code);
+  }
+  ChaincodeAddBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ChaincodeAddBuilder &operator=(const ChaincodeAddBuilder &);
+  flatbuffers::Offset<ChaincodeAdd> Finish() {
+    const auto end = fbb_.EndTable(start_, 1);
+    auto o = flatbuffers::Offset<ChaincodeAdd>(end);
+    fbb_.Required(o, ChaincodeAdd::VT_CODE);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<ChaincodeAdd> CreateChaincodeAdd(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> code = 0) {
+  ChaincodeAddBuilder builder_(_fbb);
+  builder_.add_code(code);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<ChaincodeAdd> CreateChaincodeAddDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<uint8_t> *code = nullptr) {
+  return iroha::CreateChaincodeAdd(
+      _fbb,
+      code ? _fbb.CreateVector<uint8_t>(*code) : 0);
+}
+
+struct ChaincodeRemove FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CODE = 4
+  };
+  const flatbuffers::Vector<uint8_t> *code() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_CODE);
+  }
+  const iroha::Chaincode *code_nested_root() const {
+    const uint8_t* data = code()->Data();
+    return flatbuffers::GetRoot<iroha::Chaincode>(data);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_CODE) &&
+           verifier.Verify(code()) &&
+           verifier.EndTable();
+  }
+};
+
+struct ChaincodeRemoveBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_code(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> code) {
+    fbb_.AddOffset(ChaincodeRemove::VT_CODE, code);
+  }
+  ChaincodeRemoveBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ChaincodeRemoveBuilder &operator=(const ChaincodeRemoveBuilder &);
+  flatbuffers::Offset<ChaincodeRemove> Finish() {
+    const auto end = fbb_.EndTable(start_, 1);
+    auto o = flatbuffers::Offset<ChaincodeRemove>(end);
+    fbb_.Required(o, ChaincodeRemove::VT_CODE);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<ChaincodeRemove> CreateChaincodeRemove(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> code = 0) {
+  ChaincodeRemoveBuilder builder_(_fbb);
+  builder_.add_code(code);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<ChaincodeRemove> CreateChaincodeRemoveDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<uint8_t> *code = nullptr) {
+  return iroha::CreateChaincodeRemove(
+      _fbb,
+      code ? _fbb.CreateVector<uint8_t>(*code) : 0);
+}
+
+struct ChaincodeExecute FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_CODE_NAME = 4,
     VT_DOMAIN_NAME = 6,
@@ -748,109 +683,488 @@ struct CmdExecute FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
 };
 
-struct CmdExecuteBuilder {
+struct ChaincodeExecuteBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
   void add_code_name(flatbuffers::Offset<flatbuffers::String> code_name) {
-    fbb_.AddOffset(CmdExecute::VT_CODE_NAME, code_name);
+    fbb_.AddOffset(ChaincodeExecute::VT_CODE_NAME, code_name);
   }
   void add_domain_name(flatbuffers::Offset<flatbuffers::String> domain_name) {
-    fbb_.AddOffset(CmdExecute::VT_DOMAIN_NAME, domain_name);
+    fbb_.AddOffset(ChaincodeExecute::VT_DOMAIN_NAME, domain_name);
   }
   void add_ledger_name(flatbuffers::Offset<flatbuffers::String> ledger_name) {
-    fbb_.AddOffset(CmdExecute::VT_LEDGER_NAME, ledger_name);
+    fbb_.AddOffset(ChaincodeExecute::VT_LEDGER_NAME, ledger_name);
   }
-  CmdExecuteBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  ChaincodeExecuteBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  CmdExecuteBuilder &operator=(const CmdExecuteBuilder &);
-  flatbuffers::Offset<CmdExecute> Finish() {
+  ChaincodeExecuteBuilder &operator=(const ChaincodeExecuteBuilder &);
+  flatbuffers::Offset<ChaincodeExecute> Finish() {
     const auto end = fbb_.EndTable(start_, 3);
-    auto o = flatbuffers::Offset<CmdExecute>(end);
-    fbb_.Required(o, CmdExecute::VT_CODE_NAME);
-    fbb_.Required(o, CmdExecute::VT_DOMAIN_NAME);
-    fbb_.Required(o, CmdExecute::VT_LEDGER_NAME);
+    auto o = flatbuffers::Offset<ChaincodeExecute>(end);
+    fbb_.Required(o, ChaincodeExecute::VT_CODE_NAME);
+    fbb_.Required(o, ChaincodeExecute::VT_DOMAIN_NAME);
+    fbb_.Required(o, ChaincodeExecute::VT_LEDGER_NAME);
     return o;
   }
 };
 
-inline flatbuffers::Offset<CmdExecute> CreateCmdExecute(
+inline flatbuffers::Offset<ChaincodeExecute> CreateChaincodeExecute(
     flatbuffers::FlatBufferBuilder &_fbb,
     flatbuffers::Offset<flatbuffers::String> code_name = 0,
     flatbuffers::Offset<flatbuffers::String> domain_name = 0,
     flatbuffers::Offset<flatbuffers::String> ledger_name = 0) {
-  CmdExecuteBuilder builder_(_fbb);
+  ChaincodeExecuteBuilder builder_(_fbb);
   builder_.add_ledger_name(ledger_name);
   builder_.add_domain_name(domain_name);
   builder_.add_code_name(code_name);
   return builder_.Finish();
 }
 
-inline flatbuffers::Offset<CmdExecute> CreateCmdExecuteDirect(
+inline flatbuffers::Offset<ChaincodeExecute> CreateChaincodeExecuteDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const char *code_name = nullptr,
     const char *domain_name = nullptr,
     const char *ledger_name = nullptr) {
-  return iroha::CreateCmdExecute(
+  return iroha::CreateChaincodeExecute(
       _fbb,
       code_name ? _fbb.CreateString(code_name) : 0,
       domain_name ? _fbb.CreateString(domain_name) : 0,
       ledger_name ? _fbb.CreateString(ledger_name) : 0);
 }
 
-struct CmdSetChaincode FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+//////////////////////////////////////////
+//////////////////////////////////////////
+/// Commands for Asset
+struct AssetAdd FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CHAINCODE = 4
+    VT_ACCPUBKEY = 4,
+    VT_ASSET = 6
   };
-  const iroha::Chaincode *chaincode() const {
-    return GetPointer<const iroha::Chaincode *>(VT_CHAINCODE);
+  const flatbuffers::String *accPubKey() const {
+    return GetPointer<const flatbuffers::String *>(VT_ACCPUBKEY);
+  }
+  const flatbuffers::Vector<uint8_t> *asset() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ASSET);
+  }
+  const iroha::Asset *asset_nested_root() const {
+    const uint8_t* data = asset()->Data();
+    return flatbuffers::GetRoot<iroha::Asset>(data);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_CHAINCODE) &&
-           verifier.VerifyTable(chaincode()) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ACCPUBKEY) &&
+           verifier.Verify(accPubKey()) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ASSET) &&
+           verifier.Verify(asset()) &&
            verifier.EndTable();
   }
 };
 
-struct CmdSetChaincodeBuilder {
+struct AssetAddBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_chaincode(flatbuffers::Offset<iroha::Chaincode> chaincode) {
-    fbb_.AddOffset(CmdSetChaincode::VT_CHAINCODE, chaincode);
+  void add_accPubKey(flatbuffers::Offset<flatbuffers::String> accPubKey) {
+    fbb_.AddOffset(AssetAdd::VT_ACCPUBKEY, accPubKey);
   }
-  CmdSetChaincodeBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  void add_asset(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> asset) {
+    fbb_.AddOffset(AssetAdd::VT_ASSET, asset);
+  }
+  AssetAddBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  CmdSetChaincodeBuilder &operator=(const CmdSetChaincodeBuilder &);
-  flatbuffers::Offset<CmdSetChaincode> Finish() {
-    const auto end = fbb_.EndTable(start_, 1);
-    auto o = flatbuffers::Offset<CmdSetChaincode>(end);
-    fbb_.Required(o, CmdSetChaincode::VT_CHAINCODE);
+  AssetAddBuilder &operator=(const AssetAddBuilder &);
+  flatbuffers::Offset<AssetAdd> Finish() {
+    const auto end = fbb_.EndTable(start_, 2);
+    auto o = flatbuffers::Offset<AssetAdd>(end);
+    fbb_.Required(o, AssetAdd::VT_ACCPUBKEY);
+    fbb_.Required(o, AssetAdd::VT_ASSET);
     return o;
   }
 };
 
-inline flatbuffers::Offset<CmdSetChaincode> CreateCmdSetChaincode(
+inline flatbuffers::Offset<AssetAdd> CreateAssetAdd(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::Chaincode> chaincode = 0) {
-  CmdSetChaincodeBuilder builder_(_fbb);
-  builder_.add_chaincode(chaincode);
+    flatbuffers::Offset<flatbuffers::String> accPubKey = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> asset = 0) {
+  AssetAddBuilder builder_(_fbb);
+  builder_.add_asset(asset);
+  builder_.add_accPubKey(accPubKey);
   return builder_.Finish();
+}
+
+inline flatbuffers::Offset<AssetAdd> CreateAssetAddDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const char *accPubKey = nullptr,
+    const std::vector<uint8_t> *asset = nullptr) {
+  return iroha::CreateAssetAdd(
+      _fbb,
+      accPubKey ? _fbb.CreateString(accPubKey) : 0,
+      asset ? _fbb.CreateVector<uint8_t>(*asset) : 0);
+}
+
+struct AssetRemove FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_ACCPUBKEY = 4,
+    VT_ASSET = 6
+  };
+  const flatbuffers::String *accPubKey() const {
+    return GetPointer<const flatbuffers::String *>(VT_ACCPUBKEY);
+  }
+  const flatbuffers::Vector<uint8_t> *asset() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ASSET);
+  }
+  const iroha::Asset *asset_nested_root() const {
+    const uint8_t* data = asset()->Data();
+    return flatbuffers::GetRoot<iroha::Asset>(data);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ACCPUBKEY) &&
+           verifier.Verify(accPubKey()) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ASSET) &&
+           verifier.Verify(asset()) &&
+           verifier.EndTable();
+  }
+};
+
+struct AssetRemoveBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_accPubKey(flatbuffers::Offset<flatbuffers::String> accPubKey) {
+    fbb_.AddOffset(AssetRemove::VT_ACCPUBKEY, accPubKey);
+  }
+  void add_asset(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> asset) {
+    fbb_.AddOffset(AssetRemove::VT_ASSET, asset);
+  }
+  AssetRemoveBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  AssetRemoveBuilder &operator=(const AssetRemoveBuilder &);
+  flatbuffers::Offset<AssetRemove> Finish() {
+    const auto end = fbb_.EndTable(start_, 2);
+    auto o = flatbuffers::Offset<AssetRemove>(end);
+    fbb_.Required(o, AssetRemove::VT_ACCPUBKEY);
+    fbb_.Required(o, AssetRemove::VT_ASSET);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<AssetRemove> CreateAssetRemove(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::String> accPubKey = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> asset = 0) {
+  AssetRemoveBuilder builder_(_fbb);
+  builder_.add_asset(asset);
+  builder_.add_accPubKey(accPubKey);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<AssetRemove> CreateAssetRemoveDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const char *accPubKey = nullptr,
+    const std::vector<uint8_t> *asset = nullptr) {
+  return iroha::CreateAssetRemove(
+      _fbb,
+      accPubKey ? _fbb.CreateString(accPubKey) : 0,
+      asset ? _fbb.CreateVector<uint8_t>(*asset) : 0);
+}
+
+struct AssetCreate FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_ASSET_NAME = 4,
+    VT_DOMAIN_NAME = 6,
+    VT_LEDGER_NAME = 8,
+    VT_CREATORPUBKEY = 10
+  };
+  const flatbuffers::String *asset_name() const {
+    return GetPointer<const flatbuffers::String *>(VT_ASSET_NAME);
+  }
+  const flatbuffers::String *domain_name() const {
+    return GetPointer<const flatbuffers::String *>(VT_DOMAIN_NAME);
+  }
+  const flatbuffers::String *ledger_name() const {
+    return GetPointer<const flatbuffers::String *>(VT_LEDGER_NAME);
+  }
+  const flatbuffers::String *creatorPubKey() const {
+    return GetPointer<const flatbuffers::String *>(VT_CREATORPUBKEY);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ASSET_NAME) &&
+           verifier.Verify(asset_name()) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_DOMAIN_NAME) &&
+           verifier.Verify(domain_name()) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_LEDGER_NAME) &&
+           verifier.Verify(ledger_name()) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_CREATORPUBKEY) &&
+           verifier.Verify(creatorPubKey()) &&
+           verifier.EndTable();
+  }
+};
+
+struct AssetCreateBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_asset_name(flatbuffers::Offset<flatbuffers::String> asset_name) {
+    fbb_.AddOffset(AssetCreate::VT_ASSET_NAME, asset_name);
+  }
+  void add_domain_name(flatbuffers::Offset<flatbuffers::String> domain_name) {
+    fbb_.AddOffset(AssetCreate::VT_DOMAIN_NAME, domain_name);
+  }
+  void add_ledger_name(flatbuffers::Offset<flatbuffers::String> ledger_name) {
+    fbb_.AddOffset(AssetCreate::VT_LEDGER_NAME, ledger_name);
+  }
+  void add_creatorPubKey(flatbuffers::Offset<flatbuffers::String> creatorPubKey) {
+    fbb_.AddOffset(AssetCreate::VT_CREATORPUBKEY, creatorPubKey);
+  }
+  AssetCreateBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  AssetCreateBuilder &operator=(const AssetCreateBuilder &);
+  flatbuffers::Offset<AssetCreate> Finish() {
+    const auto end = fbb_.EndTable(start_, 4);
+    auto o = flatbuffers::Offset<AssetCreate>(end);
+    fbb_.Required(o, AssetCreate::VT_ASSET_NAME);
+    fbb_.Required(o, AssetCreate::VT_DOMAIN_NAME);
+    fbb_.Required(o, AssetCreate::VT_LEDGER_NAME);
+    fbb_.Required(o, AssetCreate::VT_CREATORPUBKEY);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<AssetCreate> CreateAssetCreate(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::String> asset_name = 0,
+    flatbuffers::Offset<flatbuffers::String> domain_name = 0,
+    flatbuffers::Offset<flatbuffers::String> ledger_name = 0,
+    flatbuffers::Offset<flatbuffers::String> creatorPubKey = 0) {
+  AssetCreateBuilder builder_(_fbb);
+  builder_.add_creatorPubKey(creatorPubKey);
+  builder_.add_ledger_name(ledger_name);
+  builder_.add_domain_name(domain_name);
+  builder_.add_asset_name(asset_name);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<AssetCreate> CreateAssetCreateDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const char *asset_name = nullptr,
+    const char *domain_name = nullptr,
+    const char *ledger_name = nullptr,
+    const char *creatorPubKey = nullptr) {
+  return iroha::CreateAssetCreate(
+      _fbb,
+      asset_name ? _fbb.CreateString(asset_name) : 0,
+      domain_name ? _fbb.CreateString(domain_name) : 0,
+      ledger_name ? _fbb.CreateString(ledger_name) : 0,
+      creatorPubKey ? _fbb.CreateString(creatorPubKey) : 0);
+}
+
+struct AssetTransfer FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_ASSET = 4,
+    VT_SENDER = 6,
+    VT_RECEIVER = 8
+  };
+  const flatbuffers::Vector<uint8_t> *asset() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ASSET);
+  }
+  const iroha::Asset *asset_nested_root() const {
+    const uint8_t* data = asset()->Data();
+    return flatbuffers::GetRoot<iroha::Asset>(data);
+  }
+  const flatbuffers::String *sender() const {
+    return GetPointer<const flatbuffers::String *>(VT_SENDER);
+  }
+  const flatbuffers::String *receiver() const {
+    return GetPointer<const flatbuffers::String *>(VT_RECEIVER);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ASSET) &&
+           verifier.Verify(asset()) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_SENDER) &&
+           verifier.Verify(sender()) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_RECEIVER) &&
+           verifier.Verify(receiver()) &&
+           verifier.EndTable();
+  }
+};
+
+struct AssetTransferBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_asset(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> asset) {
+    fbb_.AddOffset(AssetTransfer::VT_ASSET, asset);
+  }
+  void add_sender(flatbuffers::Offset<flatbuffers::String> sender) {
+    fbb_.AddOffset(AssetTransfer::VT_SENDER, sender);
+  }
+  void add_receiver(flatbuffers::Offset<flatbuffers::String> receiver) {
+    fbb_.AddOffset(AssetTransfer::VT_RECEIVER, receiver);
+  }
+  AssetTransferBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  AssetTransferBuilder &operator=(const AssetTransferBuilder &);
+  flatbuffers::Offset<AssetTransfer> Finish() {
+    const auto end = fbb_.EndTable(start_, 3);
+    auto o = flatbuffers::Offset<AssetTransfer>(end);
+    fbb_.Required(o, AssetTransfer::VT_ASSET);
+    fbb_.Required(o, AssetTransfer::VT_SENDER);
+    fbb_.Required(o, AssetTransfer::VT_RECEIVER);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<AssetTransfer> CreateAssetTransfer(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> asset = 0,
+    flatbuffers::Offset<flatbuffers::String> sender = 0,
+    flatbuffers::Offset<flatbuffers::String> receiver = 0) {
+  AssetTransferBuilder builder_(_fbb);
+  builder_.add_receiver(receiver);
+  builder_.add_sender(sender);
+  builder_.add_asset(asset);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<AssetTransfer> CreateAssetTransferDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<uint8_t> *asset = nullptr,
+    const char *sender = nullptr,
+    const char *receiver = nullptr) {
+  return iroha::CreateAssetTransfer(
+      _fbb,
+      asset ? _fbb.CreateVector<uint8_t>(*asset) : 0,
+      sender ? _fbb.CreateString(sender) : 0,
+      receiver ? _fbb.CreateString(receiver) : 0);
 }
 
 //////////////////////////////////////////
 //////////////////////////////////////////
 /// Commands for Peer
-struct CmdSetPeerTrust FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct PeerAdd FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_PEER = 4
+  };
+  const flatbuffers::Vector<uint8_t> *peer() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_PEER);
+  }
+  const iroha::Peer *peer_nested_root() const {
+    const uint8_t* data = peer()->Data();
+    return flatbuffers::GetRoot<iroha::Peer>(data);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_PEER) &&
+           verifier.Verify(peer()) &&
+           verifier.EndTable();
+  }
+};
+
+struct PeerAddBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_peer(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> peer) {
+    fbb_.AddOffset(PeerAdd::VT_PEER, peer);
+  }
+  PeerAddBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  PeerAddBuilder &operator=(const PeerAddBuilder &);
+  flatbuffers::Offset<PeerAdd> Finish() {
+    const auto end = fbb_.EndTable(start_, 1);
+    auto o = flatbuffers::Offset<PeerAdd>(end);
+    fbb_.Required(o, PeerAdd::VT_PEER);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<PeerAdd> CreatePeerAdd(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> peer = 0) {
+  PeerAddBuilder builder_(_fbb);
+  builder_.add_peer(peer);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<PeerAdd> CreatePeerAddDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<uint8_t> *peer = nullptr) {
+  return iroha::CreatePeerAdd(
+      _fbb,
+      peer ? _fbb.CreateVector<uint8_t>(*peer) : 0);
+}
+
+struct PeerRemove FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_PEER = 4
+  };
+  const flatbuffers::Vector<uint8_t> *peer() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_PEER);
+  }
+  const iroha::Peer *peer_nested_root() const {
+    const uint8_t* data = peer()->Data();
+    return flatbuffers::GetRoot<iroha::Peer>(data);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_PEER) &&
+           verifier.Verify(peer()) &&
+           verifier.EndTable();
+  }
+};
+
+struct PeerRemoveBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_peer(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> peer) {
+    fbb_.AddOffset(PeerRemove::VT_PEER, peer);
+  }
+  PeerRemoveBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  PeerRemoveBuilder &operator=(const PeerRemoveBuilder &);
+  flatbuffers::Offset<PeerRemove> Finish() {
+    const auto end = fbb_.EndTable(start_, 1);
+    auto o = flatbuffers::Offset<PeerRemove>(end);
+    fbb_.Required(o, PeerRemove::VT_PEER);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<PeerRemove> CreatePeerRemove(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> peer = 0) {
+  PeerRemoveBuilder builder_(_fbb);
+  builder_.add_peer(peer);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<PeerRemove> CreatePeerRemoveDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<uint8_t> *peer = nullptr) {
+  return iroha::CreatePeerRemove(
+      _fbb,
+      peer ? _fbb.CreateVector<uint8_t>(*peer) : 0);
+}
+
+struct PeerSetTrust FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_PEERPUBKEY = 4,
     VT_TRUST = 6
   };
-  const iroha::PublicKey *peerPubKey() const {
-    return GetPointer<const iroha::PublicKey *>(VT_PEERPUBKEY);
+  const flatbuffers::String *peerPubKey() const {
+    return GetPointer<const flatbuffers::String *>(VT_PEERPUBKEY);
   }
   double trust() const {
     return GetField<double>(VT_TRUST, 0.0);
@@ -858,51 +1172,61 @@ struct CmdSetPeerTrust FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_PEERPUBKEY) &&
-           verifier.VerifyTable(peerPubKey()) &&
+           verifier.Verify(peerPubKey()) &&
            VerifyField<double>(verifier, VT_TRUST) &&
            verifier.EndTable();
   }
 };
 
-struct CmdSetPeerTrustBuilder {
+struct PeerSetTrustBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_peerPubKey(flatbuffers::Offset<iroha::PublicKey> peerPubKey) {
-    fbb_.AddOffset(CmdSetPeerTrust::VT_PEERPUBKEY, peerPubKey);
+  void add_peerPubKey(flatbuffers::Offset<flatbuffers::String> peerPubKey) {
+    fbb_.AddOffset(PeerSetTrust::VT_PEERPUBKEY, peerPubKey);
   }
   void add_trust(double trust) {
-    fbb_.AddElement<double>(CmdSetPeerTrust::VT_TRUST, trust, 0.0);
+    fbb_.AddElement<double>(PeerSetTrust::VT_TRUST, trust, 0.0);
   }
-  CmdSetPeerTrustBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  PeerSetTrustBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  CmdSetPeerTrustBuilder &operator=(const CmdSetPeerTrustBuilder &);
-  flatbuffers::Offset<CmdSetPeerTrust> Finish() {
+  PeerSetTrustBuilder &operator=(const PeerSetTrustBuilder &);
+  flatbuffers::Offset<PeerSetTrust> Finish() {
     const auto end = fbb_.EndTable(start_, 2);
-    auto o = flatbuffers::Offset<CmdSetPeerTrust>(end);
-    fbb_.Required(o, CmdSetPeerTrust::VT_PEERPUBKEY);
+    auto o = flatbuffers::Offset<PeerSetTrust>(end);
+    fbb_.Required(o, PeerSetTrust::VT_PEERPUBKEY);
     return o;
   }
 };
 
-inline flatbuffers::Offset<CmdSetPeerTrust> CreateCmdSetPeerTrust(
+inline flatbuffers::Offset<PeerSetTrust> CreatePeerSetTrust(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> peerPubKey = 0,
+    flatbuffers::Offset<flatbuffers::String> peerPubKey = 0,
     double trust = 0.0) {
-  CmdSetPeerTrustBuilder builder_(_fbb);
+  PeerSetTrustBuilder builder_(_fbb);
   builder_.add_trust(trust);
   builder_.add_peerPubKey(peerPubKey);
   return builder_.Finish();
 }
 
-struct CmdChangePeerTrust FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+inline flatbuffers::Offset<PeerSetTrust> CreatePeerSetTrustDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const char *peerPubKey = nullptr,
+    double trust = 0.0) {
+  return iroha::CreatePeerSetTrust(
+      _fbb,
+      peerPubKey ? _fbb.CreateString(peerPubKey) : 0,
+      trust);
+}
+
+struct PeerChangeTrust FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_PEERPUBKEY = 4,
     VT_DELTA = 6
   };
-  const iroha::PublicKey *peerPubKey() const {
-    return GetPointer<const iroha::PublicKey *>(VT_PEERPUBKEY);
+  const flatbuffers::String *peerPubKey() const {
+    return GetPointer<const flatbuffers::String *>(VT_PEERPUBKEY);
   }
   double delta() const {
     return GetField<double>(VT_DELTA, 0.0);
@@ -910,51 +1234,61 @@ struct CmdChangePeerTrust FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_PEERPUBKEY) &&
-           verifier.VerifyTable(peerPubKey()) &&
+           verifier.Verify(peerPubKey()) &&
            VerifyField<double>(verifier, VT_DELTA) &&
            verifier.EndTable();
   }
 };
 
-struct CmdChangePeerTrustBuilder {
+struct PeerChangeTrustBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_peerPubKey(flatbuffers::Offset<iroha::PublicKey> peerPubKey) {
-    fbb_.AddOffset(CmdChangePeerTrust::VT_PEERPUBKEY, peerPubKey);
+  void add_peerPubKey(flatbuffers::Offset<flatbuffers::String> peerPubKey) {
+    fbb_.AddOffset(PeerChangeTrust::VT_PEERPUBKEY, peerPubKey);
   }
   void add_delta(double delta) {
-    fbb_.AddElement<double>(CmdChangePeerTrust::VT_DELTA, delta, 0.0);
+    fbb_.AddElement<double>(PeerChangeTrust::VT_DELTA, delta, 0.0);
   }
-  CmdChangePeerTrustBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  PeerChangeTrustBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  CmdChangePeerTrustBuilder &operator=(const CmdChangePeerTrustBuilder &);
-  flatbuffers::Offset<CmdChangePeerTrust> Finish() {
+  PeerChangeTrustBuilder &operator=(const PeerChangeTrustBuilder &);
+  flatbuffers::Offset<PeerChangeTrust> Finish() {
     const auto end = fbb_.EndTable(start_, 2);
-    auto o = flatbuffers::Offset<CmdChangePeerTrust>(end);
-    fbb_.Required(o, CmdChangePeerTrust::VT_PEERPUBKEY);
+    auto o = flatbuffers::Offset<PeerChangeTrust>(end);
+    fbb_.Required(o, PeerChangeTrust::VT_PEERPUBKEY);
     return o;
   }
 };
 
-inline flatbuffers::Offset<CmdChangePeerTrust> CreateCmdChangePeerTrust(
+inline flatbuffers::Offset<PeerChangeTrust> CreatePeerChangeTrust(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> peerPubKey = 0,
+    flatbuffers::Offset<flatbuffers::String> peerPubKey = 0,
     double delta = 0.0) {
-  CmdChangePeerTrustBuilder builder_(_fbb);
+  PeerChangeTrustBuilder builder_(_fbb);
   builder_.add_delta(delta);
   builder_.add_peerPubKey(peerPubKey);
   return builder_.Finish();
 }
 
-struct CmdSetPeerActive FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+inline flatbuffers::Offset<PeerChangeTrust> CreatePeerChangeTrustDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const char *peerPubKey = nullptr,
+    double delta = 0.0) {
+  return iroha::CreatePeerChangeTrust(
+      _fbb,
+      peerPubKey ? _fbb.CreateString(peerPubKey) : 0,
+      delta);
+}
+
+struct PeerSetActive FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_PEERPUBKEY = 4,
     VT_ACTIVE = 6
   };
-  const iroha::PublicKey *peerPubKey() const {
-    return GetPointer<const iroha::PublicKey *>(VT_PEERPUBKEY);
+  const flatbuffers::String *peerPubKey() const {
+    return GetPointer<const flatbuffers::String *>(VT_PEERPUBKEY);
   }
   bool active() const {
     return GetField<uint8_t>(VT_ACTIVE, 0) != 0;
@@ -962,205 +1296,52 @@ struct CmdSetPeerActive FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_PEERPUBKEY) &&
-           verifier.VerifyTable(peerPubKey()) &&
+           verifier.Verify(peerPubKey()) &&
            VerifyField<uint8_t>(verifier, VT_ACTIVE) &&
            verifier.EndTable();
   }
 };
 
-struct CmdSetPeerActiveBuilder {
+struct PeerSetActiveBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_peerPubKey(flatbuffers::Offset<iroha::PublicKey> peerPubKey) {
-    fbb_.AddOffset(CmdSetPeerActive::VT_PEERPUBKEY, peerPubKey);
+  void add_peerPubKey(flatbuffers::Offset<flatbuffers::String> peerPubKey) {
+    fbb_.AddOffset(PeerSetActive::VT_PEERPUBKEY, peerPubKey);
   }
   void add_active(bool active) {
-    fbb_.AddElement<uint8_t>(CmdSetPeerActive::VT_ACTIVE, static_cast<uint8_t>(active), 0);
+    fbb_.AddElement<uint8_t>(PeerSetActive::VT_ACTIVE, static_cast<uint8_t>(active), 0);
   }
-  CmdSetPeerActiveBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  PeerSetActiveBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  CmdSetPeerActiveBuilder &operator=(const CmdSetPeerActiveBuilder &);
-  flatbuffers::Offset<CmdSetPeerActive> Finish() {
+  PeerSetActiveBuilder &operator=(const PeerSetActiveBuilder &);
+  flatbuffers::Offset<PeerSetActive> Finish() {
     const auto end = fbb_.EndTable(start_, 2);
-    auto o = flatbuffers::Offset<CmdSetPeerActive>(end);
-    fbb_.Required(o, CmdSetPeerActive::VT_PEERPUBKEY);
+    auto o = flatbuffers::Offset<PeerSetActive>(end);
+    fbb_.Required(o, PeerSetActive::VT_PEERPUBKEY);
     return o;
   }
 };
 
-inline flatbuffers::Offset<CmdSetPeerActive> CreateCmdSetPeerActive(
+inline flatbuffers::Offset<PeerSetActive> CreatePeerSetActive(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> peerPubKey = 0,
+    flatbuffers::Offset<flatbuffers::String> peerPubKey = 0,
     bool active = false) {
-  CmdSetPeerActiveBuilder builder_(_fbb);
+  PeerSetActiveBuilder builder_(_fbb);
   builder_.add_peerPubKey(peerPubKey);
   builder_.add_active(active);
   return builder_.Finish();
 }
 
-//////////////////////////////////////////
-//////////////////////////////////////////
-/// Commands for Account
-struct CmdAddSignatory FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_ACCOUNT = 4,
-    VT_SIGNATORY = 6
-  };
-  const iroha::PublicKey *account() const {
-    return GetPointer<const iroha::PublicKey *>(VT_ACCOUNT);
-  }
-  const flatbuffers::Vector<flatbuffers::Offset<iroha::PublicKey>> *signatory() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<iroha::PublicKey>> *>(VT_SIGNATORY);
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ACCOUNT) &&
-           verifier.VerifyTable(account()) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_SIGNATORY) &&
-           verifier.Verify(signatory()) &&
-           verifier.VerifyVectorOfTables(signatory()) &&
-           verifier.EndTable();
-  }
-};
-
-struct CmdAddSignatoryBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_account(flatbuffers::Offset<iroha::PublicKey> account) {
-    fbb_.AddOffset(CmdAddSignatory::VT_ACCOUNT, account);
-  }
-  void add_signatory(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::PublicKey>>> signatory) {
-    fbb_.AddOffset(CmdAddSignatory::VT_SIGNATORY, signatory);
-  }
-  CmdAddSignatoryBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  CmdAddSignatoryBuilder &operator=(const CmdAddSignatoryBuilder &);
-  flatbuffers::Offset<CmdAddSignatory> Finish() {
-    const auto end = fbb_.EndTable(start_, 2);
-    auto o = flatbuffers::Offset<CmdAddSignatory>(end);
-    fbb_.Required(o, CmdAddSignatory::VT_ACCOUNT);
-    fbb_.Required(o, CmdAddSignatory::VT_SIGNATORY);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<CmdAddSignatory> CreateCmdAddSignatory(
+inline flatbuffers::Offset<PeerSetActive> CreatePeerSetActiveDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> account = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::PublicKey>>> signatory = 0) {
-  CmdAddSignatoryBuilder builder_(_fbb);
-  builder_.add_signatory(signatory);
-  builder_.add_account(account);
-  return builder_.Finish();
-}
-
-inline flatbuffers::Offset<CmdAddSignatory> CreateCmdAddSignatoryDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<iroha::PublicKey> account = 0,
-    const std::vector<flatbuffers::Offset<iroha::PublicKey>> *signatory = nullptr) {
-  return iroha::CreateCmdAddSignatory(
+    const char *peerPubKey = nullptr,
+    bool active = false) {
+  return iroha::CreatePeerSetActive(
       _fbb,
-      account,
-      signatory ? _fbb.CreateVector<flatbuffers::Offset<iroha::PublicKey>>(*signatory) : 0);
-}
-
-struct CmdSetAccountsUseKeys FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_ACCOUNTS = 4,
-    VT_USEKEYS = 6
-  };
-  const flatbuffers::Vector<flatbuffers::Offset<iroha::PublicKey>> *accounts() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<iroha::PublicKey>> *>(VT_ACCOUNTS);
-  }
-  uint16_t useKeys() const {
-    return GetField<uint16_t>(VT_USEKEYS, 0);
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_ACCOUNTS) &&
-           verifier.Verify(accounts()) &&
-           verifier.VerifyVectorOfTables(accounts()) &&
-           VerifyField<uint16_t>(verifier, VT_USEKEYS) &&
-           verifier.EndTable();
-  }
-};
-
-struct CmdSetAccountsUseKeysBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_accounts(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::PublicKey>>> accounts) {
-    fbb_.AddOffset(CmdSetAccountsUseKeys::VT_ACCOUNTS, accounts);
-  }
-  void add_useKeys(uint16_t useKeys) {
-    fbb_.AddElement<uint16_t>(CmdSetAccountsUseKeys::VT_USEKEYS, useKeys, 0);
-  }
-  CmdSetAccountsUseKeysBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  CmdSetAccountsUseKeysBuilder &operator=(const CmdSetAccountsUseKeysBuilder &);
-  flatbuffers::Offset<CmdSetAccountsUseKeys> Finish() {
-    const auto end = fbb_.EndTable(start_, 2);
-    auto o = flatbuffers::Offset<CmdSetAccountsUseKeys>(end);
-    fbb_.Required(o, CmdSetAccountsUseKeys::VT_ACCOUNTS);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<CmdSetAccountsUseKeys> CreateCmdSetAccountsUseKeys(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::PublicKey>>> accounts = 0,
-    uint16_t useKeys = 0) {
-  CmdSetAccountsUseKeysBuilder builder_(_fbb);
-  builder_.add_accounts(accounts);
-  builder_.add_useKeys(useKeys);
-  return builder_.Finish();
-}
-
-inline flatbuffers::Offset<CmdSetAccountsUseKeys> CreateCmdSetAccountsUseKeysDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<flatbuffers::Offset<iroha::PublicKey>> *accounts = nullptr,
-    uint16_t useKeys = 0) {
-  return iroha::CreateCmdSetAccountsUseKeys(
-      _fbb,
-      accounts ? _fbb.CreateVector<flatbuffers::Offset<iroha::PublicKey>>(*accounts) : 0,
-      useKeys);
-}
-
-inline bool VerifyObject(flatbuffers::Verifier &verifier, const void *obj, Object type) {
-  switch (type) {
-    case Object_NONE: {
-      return true;
-    }
-    case Object_Peer: {
-      auto ptr = reinterpret_cast<const iroha::Peer *>(obj);
-      return verifier.VerifyTable(ptr);
-    }
-    case Object_Account: {
-      auto ptr = reinterpret_cast<const iroha::Account *>(obj);
-      return verifier.VerifyTable(ptr);
-    }
-    case Object_Chaincode: {
-      auto ptr = reinterpret_cast<const iroha::Chaincode *>(obj);
-      return verifier.VerifyTable(ptr);
-    }
-    default: return false;
-  }
-}
-
-inline bool VerifyObjectVector(flatbuffers::Verifier &verifier, const flatbuffers::Vector<flatbuffers::Offset<void>> *values, const flatbuffers::Vector<uint8_t> *types) {
-  if (values->size() != types->size()) return false;
-  for (flatbuffers::uoffset_t i = 0; i < values->size(); ++i) {
-    if (!VerifyObject(
-        verifier,  values->Get(i), types->GetEnum<Object>(i))) {
-      return false;
-    }
-  }
-  return true;
+      peerPubKey ? _fbb.CreateString(peerPubKey) : 0,
+      active);
 }
 
 inline bool VerifyCommand(flatbuffers::Verifier &verifier, const void *obj, Command type) {
@@ -1168,56 +1349,72 @@ inline bool VerifyCommand(flatbuffers::Verifier &verifier, const void *obj, Comm
     case Command_NONE: {
       return true;
     }
-    case Command_CmdAddAsset: {
-      auto ptr = reinterpret_cast<const CmdAddAsset *>(obj);
+    case Command_AssetCreate: {
+      auto ptr = reinterpret_cast<const AssetCreate *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Command_CmdRemoveAsset: {
-      auto ptr = reinterpret_cast<const CmdRemoveAsset *>(obj);
+    case Command_AssetAdd: {
+      auto ptr = reinterpret_cast<const AssetAdd *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Command_CmdCreateAsset: {
-      auto ptr = reinterpret_cast<const CmdCreateAsset *>(obj);
+    case Command_AssetRemove: {
+      auto ptr = reinterpret_cast<const AssetRemove *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Command_CmdTransfer: {
-      auto ptr = reinterpret_cast<const CmdTransfer *>(obj);
+    case Command_AssetTransfer: {
+      auto ptr = reinterpret_cast<const AssetTransfer *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Command_CmdAdd: {
-      auto ptr = reinterpret_cast<const CmdAdd *>(obj);
+    case Command_PeerAdd: {
+      auto ptr = reinterpret_cast<const PeerAdd *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Command_CmdRemove: {
-      auto ptr = reinterpret_cast<const CmdRemove *>(obj);
+    case Command_PeerRemove: {
+      auto ptr = reinterpret_cast<const PeerRemove *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Command_CmdExecute: {
-      auto ptr = reinterpret_cast<const CmdExecute *>(obj);
+    case Command_PeerSetActive: {
+      auto ptr = reinterpret_cast<const PeerSetActive *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Command_CmdStore: {
-      auto ptr = reinterpret_cast<const CmdStore *>(obj);
+    case Command_PeerSetTrust: {
+      auto ptr = reinterpret_cast<const PeerSetTrust *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Command_CmdSetPeerTrust: {
-      auto ptr = reinterpret_cast<const CmdSetPeerTrust *>(obj);
+    case Command_PeerChangeTrust: {
+      auto ptr = reinterpret_cast<const PeerChangeTrust *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Command_CmdChangePeerTrust: {
-      auto ptr = reinterpret_cast<const CmdChangePeerTrust *>(obj);
+    case Command_AccountAdd: {
+      auto ptr = reinterpret_cast<const AccountAdd *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Command_CmdSetPeerActive: {
-      auto ptr = reinterpret_cast<const CmdSetPeerActive *>(obj);
+    case Command_AccountRemove: {
+      auto ptr = reinterpret_cast<const AccountRemove *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Command_CmdSetChaincode: {
-      auto ptr = reinterpret_cast<const CmdSetChaincode *>(obj);
+    case Command_AccountAddSignatory: {
+      auto ptr = reinterpret_cast<const AccountAddSignatory *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Command_CmdSetAccountsUseKeys: {
-      auto ptr = reinterpret_cast<const CmdSetAccountsUseKeys *>(obj);
+    case Command_AccountRemoveSignatory: {
+      auto ptr = reinterpret_cast<const AccountRemoveSignatory *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Command_AccountSetUseKeys: {
+      auto ptr = reinterpret_cast<const AccountSetUseKeys *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Command_ChaincodeAdd: {
+      auto ptr = reinterpret_cast<const ChaincodeAdd *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Command_ChaincodeRemove: {
+      auto ptr = reinterpret_cast<const ChaincodeRemove *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Command_ChaincodeExecute: {
+      auto ptr = reinterpret_cast<const ChaincodeExecute *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return false;

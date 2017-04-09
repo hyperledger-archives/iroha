@@ -9,7 +9,6 @@
 #include "account_generated.h"
 #include "asset_generated.h"
 #include "commands_generated.h"
-#include "key_generated.h"
 #include "primitives_generated.h"
 #include "transaction_generated.h"
 
@@ -20,8 +19,6 @@ struct ConsensusEvent;
 struct TransactionResponse;
 
 struct ReceiverConfirmation;
-
-struct Response;
 
 enum Code {
   Code_COMMIT = 0,
@@ -242,122 +239,6 @@ inline flatbuffers::Offset<ReceiverConfirmation> CreateReceiverConfirmationDirec
       _fbb,
       signature,
       hash ? _fbb.CreateVector<uint8_t>(*hash) : 0);
-}
-
-struct Response FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_MESSAGE_TYPE = 4,
-    VT_MESSAGE = 6,
-    VT_CODE = 8,
-    VT_SIGNATURE = 10
-  };
-  const flatbuffers::Vector<uint8_t> *message_type() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_MESSAGE_TYPE);
-  }
-  const flatbuffers::Vector<flatbuffers::Offset<void>> *message() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<void>> *>(VT_MESSAGE);
-  }
-  Code code() const {
-    return static_cast<Code>(GetField<uint8_t>(VT_CODE, 0));
-  }
-  const iroha::Signature *signature() const {
-    return GetPointer<const iroha::Signature *>(VT_SIGNATURE);
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<flatbuffers::uoffset_t>(verifier, VT_MESSAGE_TYPE) &&
-           verifier.Verify(message_type()) &&
-           VerifyField<flatbuffers::uoffset_t>(verifier, VT_MESSAGE) &&
-           verifier.Verify(message()) &&
-           VerifyObjectVector(verifier, message(), message_type()) &&
-           VerifyField<uint8_t>(verifier, VT_CODE) &&
-           VerifyField<flatbuffers::uoffset_t>(verifier, VT_SIGNATURE) &&
-           verifier.VerifyTable(signature()) &&
-           verifier.EndTable();
-  }
-};
-
-struct ResponseBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_message_type(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> message_type) {
-    fbb_.AddOffset(Response::VT_MESSAGE_TYPE, message_type);
-  }
-  void add_message(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<void>>> message) {
-    fbb_.AddOffset(Response::VT_MESSAGE, message);
-  }
-  void add_code(Code code) {
-    fbb_.AddElement<uint8_t>(Response::VT_CODE, static_cast<uint8_t>(code), 0);
-  }
-  void add_signature(flatbuffers::Offset<iroha::Signature> signature) {
-    fbb_.AddOffset(Response::VT_SIGNATURE, signature);
-  }
-  ResponseBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ResponseBuilder &operator=(const ResponseBuilder &);
-  flatbuffers::Offset<Response> Finish() {
-    const auto end = fbb_.EndTable(start_, 4);
-    auto o = flatbuffers::Offset<Response>(end);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<Response> CreateResponse(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> message_type = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<void>>> message = 0,
-    Code code = Code_COMMIT,
-    flatbuffers::Offset<iroha::Signature> signature = 0) {
-  ResponseBuilder builder_(_fbb);
-  builder_.add_signature(signature);
-  builder_.add_message(message);
-  builder_.add_message_type(message_type);
-  builder_.add_code(code);
-  return builder_.Finish();
-}
-
-inline flatbuffers::Offset<Response> CreateResponseDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<uint8_t> *message_type = nullptr,
-    const std::vector<flatbuffers::Offset<void>> *message = nullptr,
-    Code code = Code_COMMIT,
-    flatbuffers::Offset<iroha::Signature> signature = 0) {
-  return iroha::CreateResponse(
-      _fbb,
-      message_type ? _fbb.CreateVector<uint8_t>(*message_type) : 0,
-      message ? _fbb.CreateVector<flatbuffers::Offset<void>>(*message) : 0,
-      code,
-      signature);
-}
-
-inline const iroha::ConsensusEvent *GetConsensusEvent(const void *buf) {
-  return flatbuffers::GetRoot<iroha::ConsensusEvent>(buf);
-}
-
-inline const char *ConsensusEventIdentifier() {
-  return "IROH";
-}
-
-inline bool ConsensusEventBufferHasIdentifier(const void *buf) {
-  return flatbuffers::BufferHasIdentifier(
-      buf, ConsensusEventIdentifier());
-}
-
-inline bool VerifyConsensusEventBuffer(
-    flatbuffers::Verifier &verifier) {
-  return verifier.VerifyBuffer<iroha::ConsensusEvent>(ConsensusEventIdentifier());
-}
-
-inline const char *ConsensusEventExtension() {
-  return "iroha";
-}
-
-inline void FinishConsensusEventBuffer(
-    flatbuffers::FlatBufferBuilder &fbb,
-    flatbuffers::Offset<iroha::ConsensusEvent> root) {
-  fbb.Finish(root, ConsensusEventIdentifier());
 }
 
 }  // namespace iroha
