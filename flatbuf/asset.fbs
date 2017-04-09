@@ -13,10 +13,10 @@ table ComplexAsset {
   // amount and precision should be encoded in properties
   prop:  [KeyValueObject]; // using this, you can create complex assets
 
-  logic: AssetLogic;
+  logic: ComplexAssetLogic;
 }
 
-table AssetLogic {
+table ComplexAssetLogic {
   add:      Chaincode;
   remove:   Chaincode;
   transfer: Chaincode;
@@ -31,14 +31,14 @@ table Currency {
 
   description: string;
 
+  // 100.39 => amount = 10039, precision = 2
   amount:    ulong;
-  precision: ulong;
+  precision: ubyte;
 }
 
-union AnyAsset { ComplexAsset, Currency }
+
+union AnyAsset {ComplexAsset, Currency}
 
 table Asset {
   asset: AnyAsset;
 }
-
-root_type Asset;

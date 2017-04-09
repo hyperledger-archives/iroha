@@ -1,5 +1,3 @@
-include "key.fbs";
-
 namespace iroha;
 
 
@@ -73,7 +71,7 @@ union UserPermission {UserPermissionRoot, UserPermissionLedger, UserPermissionDo
 /// Peer
 
 table Peer {
-  publicKey:       PublicKey (required);  // sorted; primary key.
+  publicKey:       string (required);  // sorted; primary key.
   ip:              string;
   trust:           double;
   active:          bool;
@@ -83,7 +81,7 @@ table Peer {
 /////////////////////////////////////
 
 table Signature {
-  publicKey:  PublicKey;
+  publicKey:  string;
   signature:  [ubyte];   // signature is sign(hash + timestamp)
   timestamp:   ulong;
 }

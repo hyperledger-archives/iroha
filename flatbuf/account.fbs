@@ -1,5 +1,3 @@
-
-include "key.fbs";
 include "primitives.fbs";
 include "asset.fbs";
 
@@ -7,12 +5,12 @@ namespace iroha;
 
 
 table Account {
-  pubKey: PublicKey (required);  // primary key for account
+  pubKey: string (required);  // primary key for account
   alias:  string;
 
   // for m-n multisignature scheme
   // signatories.size() = n, useKeys = m
-  signatories: [PublicKey];
+  signatories: [string];
   useKeys:     ushort = 1;
 }
 
@@ -27,10 +25,8 @@ table Account {
 //  }
 //}
 table Message {
-  accPubKey: PublicKey (required);
+  accPubKey: string (required);
 
   // values can be accessed by key for O(log(n)). Look at "Storing maps" section in flatbuffers docs
   data: [KeyValueObject];
 }
-
-root_type Account;
