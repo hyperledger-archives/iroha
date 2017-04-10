@@ -1,3 +1,8 @@
+
+
+# Use for remove "error: cast from 'const iroha::Signature*' to 'flatbuffers::uoffset_t {aka unsigned int}' loses precision"
+set(CMAKE_CXX_FLAGS "-g -std=c++1y -Wall -fPIC -fpermissive")
+
 ADD_LIBRARY(sumeragi STATIC
   sumeragi.cpp
 )
@@ -8,7 +13,5 @@ target_link_libraries(sumeragi
   signature
   thread_pool
   executor
-  merkle_transaction_repository
-  transaction_repository
-  validator
+  config_manager
 )
