@@ -1,7 +1,7 @@
-include "transaction.fbs"; 
+include "transaction.fbs";
 include "commands.fbs";
 
-namespace iroha.api;
+namespace iroha;
 
 file_identifier "IROH";
 file_extension  "iroha";
@@ -11,7 +11,7 @@ table ConsensusEvent {
   transactions:   [Transaction];
 }
 
-enum Code: ubyte {OK, FAIL} // TODO: maybe more?
+enum Code: ubyte {COMMIT, FAIL} // TODO: maybe more?
 
 table TransactionResponse {
   message:      string;
@@ -19,13 +19,7 @@ table TransactionResponse {
   transaction:  Transaction;
 }
 
-table RecieverConfirmation {
+table ReceiverConfirmation {
   signature: Signature;
   hash:      [ubyte];
-}
-
-table Response {
-  message:   [Object];  // because Message is also Object. And Message contains string.
-  code:      Code;
-  signature: Signature;
 }

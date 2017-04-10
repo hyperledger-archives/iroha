@@ -28,37 +28,38 @@ IrohaConfigManager& IrohaConfigManager::getInstance() {
 template <typename T>
 T IrohaConfigManager::getParam(const std::string& param,
                                const T& defaultValue) {
-  if (auto config = openConfig(getConfigName())) {
-    return config->value(param, defaultValue);
-  }
-  return defaultValue;
+  return getConfigData().value(param, defaultValue);
 }
 
 std::string IrohaConfigManager::getConfigName() { return "config/config.json"; }
 
 std::string IrohaConfigManager::getDatabasePath(
-        const std::string& defaultValue
-) {
+    const std::string& defaultValue) {
   return this->getParam<std::string>("database_path", defaultValue);
 }
 
-std::string IrohaConfigManager::getJavaClassPath(const std::string& defaultValue) {
+std::string IrohaConfigManager::getJavaClassPath(
+    const std::string& defaultValue) {
   return this->getParam<std::string>("java_class_path", defaultValue);
 }
 
-std::string IrohaConfigManager::getJavaClassPathLocal(const std::string& defaultValue) {
+std::string IrohaConfigManager::getJavaClassPathLocal(
+    const std::string& defaultValue) {
   return this->getParam<std::string>("java_class_path_local", defaultValue);
 }
 
-std::string IrohaConfigManager::getJavaLibraryPath(const std::string& defaultValue) {
+std::string IrohaConfigManager::getJavaLibraryPath(
+    const std::string& defaultValue) {
   return this->getParam<std::string>("java_library_path", defaultValue);
 }
 
-std::string IrohaConfigManager::getJavaLibraryPathLocal(const std::string& defaultValue) {
+std::string IrohaConfigManager::getJavaLibraryPathLocal(
+    const std::string& defaultValue) {
   return this->getParam<std::string>("java_library_path_local", defaultValue);
 }
 
-std::string IrohaConfigManager::getJavaPolicyPath(const std::string& defaultValue) {
+std::string IrohaConfigManager::getJavaPolicyPath(
+    const std::string& defaultValue) {
   return this->getParam<std::string>("java_policy_path", defaultValue);
 }
 
@@ -75,9 +76,13 @@ size_t IrohaConfigManager::getPoolWorkerQueueSize(size_t defaultValue) {
 }
 
 uint16_t IrohaConfigManager::getGrpcPortNumber(uint16_t defaultValue) {
-    return this->getParam<uint16_t>("grpc_port", defaultValue);
+  return this->getParam<uint16_t>("grpc_port", defaultValue);
 }
 
 uint16_t IrohaConfigManager::getHttpPortNumber(uint16_t defaultValue) {
-    return this->getParam<uint16_t>("http_port", defaultValue);
+  return this->getParam<uint16_t>("http_port", defaultValue);
+}
+
+bool IrohaConfigManager::getActiveStart(bool defaultValue = false) {
+  return this->getParam<bool>("active_start", defaultValue);
 }

@@ -1,19 +1,32 @@
-include "key.fbs";
 include "primitives.fbs";
 include "asset.fbs";
 
-namespace iroha.api;
+namespace iroha;
 
 
 table Account {
-  pubKey: PublicKey (required);  // primary key for account
+  pubKey: string (required);  // primary key for account
   alias:  string;
-  assets: [Asset];
-  
+
   // for m-n multisignature scheme
   // signatories.size() = n, useKeys = m
-  signatories: [PublicKey];
+  signatories: [string];
   useKeys:     ushort = 1;
+}
 
-  permissions: [UserPermission]; 
+
+// message represents custom user data, related to account. User is able to store blobs in his account and access it by key.
+// e.g.,
+//{
+//  accPubKey: "account1",
+//  data: {
+//    key: "email",
+//    value: "bogdan@soramitsu.co.jp"
+//  }
+//}
+table Message {
+  accPubKey: string (required);
+
+  // values can be accessed by key for O(log(n)). Look at "Storing maps" section in flatbuffers docs
+  data: [KeyValueObject];
 }

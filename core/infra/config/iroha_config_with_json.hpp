@@ -43,7 +43,8 @@ class IrohaConfigManager : config::AbstractConfigManager {
   size_t getPoolWorkerQueueSize(size_t defaultValue);
   uint16_t getGrpcPortNumber(uint16_t defaultValue);
   uint16_t getHttpPortNumber(uint16_t defaultValue);
+  bool getActiveStart(bool defaultValue);
 };
-}
+}  // namespace config
 
 #endif  // IROHA_CONFIG_WITH_JSON_HPP

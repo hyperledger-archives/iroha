@@ -28,7 +28,7 @@ limitations under the License.
 #include <repository/domain/simple_asset_repository.hpp>
 #include <repository/domain/peer_repository.hpp>
 #include <transaction_builder/helper/create_objects_helper.hpp>
-#include <util/convert_string.hpp>
+//#include <util/convert_string.hpp>
 #include <util/exception.hpp>
 #include <util/logger.hpp>
 #include <assert.h>
@@ -69,13 +69,22 @@ JNIEXPORT jstring JNICALL Java_repository_Repository_accountAdd
   const std::string name      = mMap.find(tag::AccountName)->second;
 
   logger::debug(NameSpaceID + "::accountAdd")
-      << "pubkey: " << publicKey << " name: " << name
-      << " assets: " << convert_string::to_string(assets);
+      << "pubkey: " << publicKey << " name: " << name;
+//      << " assets: " << convert_string::to_string(assets);
 
-  const auto ret = repository::account::add(publicKey, name, assets);
-  return env->NewStringUTF(ret.c_str());
+  Api::Account account;
+
+  for(auto asset: assets)
+    account.add_assets(asset);
+
+  account.set_name(name);
+  account.set_publickey(publicKey);
+
+  const auto ret = repository::account::add(publicKey, account);
+  return env->NewStringUTF("OK");
 }
 
+// accountAttach is deprecated
 JNIEXPORT jobject JNICALL Java_repository_Repository_accountAttach
   (JNIEnv *env, jclass, jobject mMap_) {
 
@@ -89,26 +98,36 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_accountAttach
 
   logger::debug(NameSpaceID + "::accountAttach") << "uuid: " << uuid << ", assetUuid: " << assetUuid;
 
-  return JavaMakeBoolean(env, repository::account::attach(uuid, assetUuid));
+  return JavaMakeBoolean(env, false);
 }
 
+
+// accountAttach is deprecated
 JNIEXPORT jobject JNICALL Java_repository_Repository_accountUpdate
   (JNIEnv *env, jclass, jobject mMap_, jobjectArray assets_) {
 
   const auto mMap = convertJavaHashMapValueString(env, mMap_);
   const auto assets = convertJavaStringArrayRelease(env, assets_);
 
-  IROHA_ASSERT_FALSE(mMap.find(tag::Uuid) == mMap.end());
-  const auto uuid = mMap.find(tag::Uuid)->second;
+  IROHA_ASSERT_FALSE(mMap.find(tag::PublicKey) == mMap.end());
+  const auto publicKey = mMap.find(tag::PublicKey)->second;
 
   IROHA_ASSERT_FALSE(mMap.find(tag::AccountName) == mMap.end());
   const auto name = mMap.find(tag::AccountName)->second;
 
   logger::debug(NameSpaceID + "::accountUpdate")
-      << " uuid: " << uuid << ", name: " << name
-      << ", assets: " << convert_string::to_string(assets);
+      << " publicKey: " << publicKey << ", name: " << name;
+//      << ", assets: " << convert_string::to_string(assets);
 
-  return JavaMakeBoolean(env, repository::account::update(uuid, name, assets));
+  Api::Account account;
+
+  for(auto asset: assets)
+    account.add_assets(asset);
+
+  account.set_name(name);
+  account.set_publickey(publicKey);
+
+  return JavaMakeBoolean(env, (jboolean)repository::account::update(publicKey, account));
 }
 
 JNIEXPORT jobject JNICALL Java_repository_Repository_accountRemove
@@ -116,20 +135,20 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_accountRemove
   const auto mMap = convertJavaHashMapValueString(env, mMap_);
 
   IROHA_ASSERT_FALSE(mMap.find(tag::Uuid) == mMap.end());
-  const auto uuid = mMap.find(tag::Uuid)->second;
+  const auto publicKey = mMap.find(tag::PublicKey)->second;
 
-  logger::debug(NameSpaceID + "::accountRemove") << " uuid: " << uuid;
-  return JavaMakeBoolean(env, repository::account::remove(uuid));
+  logger::debug(NameSpaceID + "::accountRemove") << " publicKey: " << publicKey;
+  return JavaMakeBoolean(env, repository::account::remove(publicKey));
 }
 
 JNIEXPORT jobject JNICALL Java_repository_Repository_accountInfoFindByUuid
   (JNIEnv *env, jclass, jobject mMap_) {
   const auto mMap = convertJavaHashMapValueString(env, mMap_);
 
-  IROHA_ASSERT_FALSE(mMap.find(tag::Uuid) == mMap.end());
-  const auto uuid = mMap.find(tag::Uuid)->second;
+  IROHA_ASSERT_FALSE(mMap.find(tag::PublicKey) == mMap.end());
+  const auto publicKey = mMap.find(tag::PublicKey)->second;
 
-  Api::Account account = repository::account::findByUuid(uuid);
+  Api::Account account = repository::account::find(publicKey);
 
   std::map<std::string, std::string> params;
   {
@@ -149,14 +168,14 @@ JNIEXPORT jobjectArray JNICALL Java_repository_Repository_accountValueFindByUuid
   const auto mMap = convertJavaHashMapValueString(env, mMap_);
 
   IROHA_ASSERT_FALSE(mMap.find(tag::Uuid) == mMap.end());
-  const auto uuid = mMap.find(tag::Uuid)->second;
+  const auto publicKey = mMap.find(tag::PublicKey)->second;
 
-  Api::Account account = repository::account::findByUuid(uuid);
+  Api::Account account = repository::account::find(publicKey);
 
   const auto assets = txbuilder::createStandardVector(account.assets());
 
-  logger::debug(NameSpaceID + "::accountValueFindByUuid")
-      << "value: " << convert_string::to_string(assets);
+  logger::debug(NameSpaceID + "::accountValueFindByUuid");
+//      << "value: " << convert_string::to_string(assets);
 
   return JavaMakeStringArray(env, assets);
 }
@@ -166,10 +185,10 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_accountExists
   const auto mMap = convertJavaHashMapValueString(env, mMap_);
 
   IROHA_ASSERT_FALSE(mMap.find(tag::Uuid) == mMap.end());
-  const auto uuid = mMap.find(tag::Uuid)->second;
+  const auto publicKey = mMap.find(tag::PublicKey)->second;
 
-  logger::debug(NameSpaceID + "::accountExists") << " uuid: " << uuid;
-  return JavaMakeBoolean(env, repository::account::exists(uuid));
+  logger::debug(NameSpaceID + "::accountExists") << " uuid: " << publicKey;
+  return JavaMakeBoolean(env, repository::account::exists(publicKey));
 }
 
 /***************************************************************************************
@@ -206,7 +225,7 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_domainUpdate
   logger::debug(NameSpaceID + "::domainUpdate") << "uuid: " << uuid
                                                 << ", name: " << name;
 
-  return JavaMakeBoolean(env, repository::domain::update(uuid, name));
+  return JavaMakeBoolean(env, (jboolean) repository::domain::update(uuid, name));
 }
 
 JNIEXPORT jobject JNICALL Java_repository_Repository_domainRemove
@@ -217,7 +236,7 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_domainRemove
   const auto uuid = params.find(tag::Uuid)->second;
 
   logger::debug(NameSpaceID + "::domainRemove") << "uuid: " << uuid;
-  return JavaMakeBoolean(env, repository::domain::remove(uuid));
+  return JavaMakeBoolean(env, (jboolean) repository::domain::remove(uuid));
 }
 
 JNIEXPORT jobject JNICALL Java_repository_Repository_domainFindByUuid
@@ -246,7 +265,7 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_domainExists
   const auto uuid = params.find(tag::Uuid)->second;
 
   logger::debug(NameSpaceID + "::domainExists") << " uuid: " << uuid;
-  return JavaMakeBoolean(env, repository::domain::exists(params.find(tag::Uuid)->second));
+  return JavaMakeBoolean(env, (jboolean) repository::domain::exists(params.find(tag::Uuid)->second));
 }
 
 /***************************************************************************************
@@ -258,25 +277,30 @@ JNIEXPORT jstring JNICALL Java_repository_Repository_assetAdd
 
   const auto params = convertJavaHashMapValueString(env, params_);
 
+
+  IROHA_ASSERT_FALSE(params.find(tag::PublicKey) == params.end());
+  const auto publicKey   = params.find(tag::PublicKey)->second;
+
   IROHA_ASSERT_FALSE(params.find(tag::DomainId) == params.end());
   const auto domain = params.find(tag::DomainId)->second;
 
   IROHA_ASSERT_FALSE(params.find(tag::AssetName) == params.end());
   const auto name   = params.find(tag::AssetName)->second;
 
-  IROHA_ASSERT_FALSE(params.find(tag::SmartContractName) == params.end());
-  const auto smartContractName = params.find(tag::SmartContractName)->second;
 
   const auto value  = convertAssetValueHashMap(env, value_);
 
   logger::debug(NameSpaceID + "::assetAdd")
-      << "domainId: " << domain << ", assetName: " << name
-      << ", smartContractName: " << smartContractName;
+      << "domainId: " << domain << ", assetName: " << name;
+
+  Api::Asset asset;
+  asset.set_name(name);
+  asset.set_domain(domain);
 
   const auto ret =
-      repository::asset::add(domain, name, value, smartContractName);
+      repository::asset::add(publicKey, name, asset);
 
-  return env->NewStringUTF(ret.c_str());
+  return env->NewStringUTF("OK");
 }
 
 JNIEXPORT jobject JNICALL Java_repository_Repository_assetUpdate
@@ -298,36 +322,43 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_assetUpdate
   const auto uuid = params.find(tag::Uuid)->second;
 
   const auto value  = convertAssetValueHashMap(env, value_);
-
-  return JavaMakeBoolean(env, repository::asset::update(uuid, value));  // Updates value only.
+  // WIP
+  return JavaMakeBoolean(env, (jboolean) false);  // Updates value only.
 }
 
 JNIEXPORT jobject JNICALL Java_repository_Repository_assetRemove
   (JNIEnv *env, jclass, jobject params_) {
   const auto params = convertJavaHashMapValueString(env, params_);
 
-  IROHA_ASSERT_FALSE(params.find(tag::Uuid) == params.end());
-  const auto uuid = params.find(tag::Uuid)->second;
+  IROHA_ASSERT_FALSE(params.find(tag::PublicKey) == params.end());
+  const auto publicKey = params.find(tag::PublicKey)->second;
 
-  return JavaMakeBoolean(env, repository::asset::remove(uuid));
+  IROHA_ASSERT_FALSE(params.find(tag::AssetName) == params.end());
+  const auto assetName = params.find(tag::AssetName)->second;
+
+  // WIP
+  return JavaMakeBoolean(env, (jboolean) repository::asset::remove(publicKey, assetName));
 }
 
 JNIEXPORT jobject JNICALL Java_repository_Repository_assetInfoFindByUuid
   (JNIEnv *env, jclass, jobject params_) {
   const auto params = convertJavaHashMapValueString(env, params_);
 
-  IROHA_ASSERT_FALSE(params.find(tag::Uuid) == params.end());
-  const auto uuid = params.find(tag::Uuid)->second;
+IROHA_ASSERT_FALSE(params.find(tag::PublicKey) == params.end());
+const auto publicKey = params.find(tag::PublicKey)->second;
 
-  logger::debug(NameSpaceID + "::assetInfoFindByUuid") << "uuid: " << uuid;
+IROHA_ASSERT_FALSE(params.find(tag::AssetName) == params.end());
+const auto assetName = params.find(tag::AssetName)->second;
 
-  auto asset = repository::asset::findByUuid(uuid);
+  logger::debug(NameSpaceID + "::assetInfoFindByUuid") << "publicKey: " << publicKey;
+
+  auto asset = repository::asset::find(publicKey, assetName);
 
   std::map<std::string, std::string> assetMap;
   {
     assetMap[tag::DomainId] = asset.domain();
     assetMap[tag::AssetName] = asset.name();
-    assetMap[tag::SmartContractName] = asset.smartcontractname();
+    assetMap[tag::SmartContractName] = "none";
   }
 
   logger::debug(NameSpaceID + "::assetInfoFindByUuid")
@@ -343,12 +374,15 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_assetValueFindByUuid
   (JNIEnv *env, jclass, jobject params_) {
   const auto params = convertJavaHashMapValueString(env, params_);
 
-  IROHA_ASSERT_FALSE(params.find(tag::Uuid) == params.end());
-  const auto uuid = params.find(tag::Uuid)->second;
+  IROHA_ASSERT_FALSE(params.find(tag::PublicKey) == params.end());
+  const auto publicKey = params.find(tag::PublicKey)->second;
 
-  logger::debug(NameSpaceID + "::assetValueFindByUuid") << "uuid: " << uuid;
+  IROHA_ASSERT_FALSE(params.find(tag::AssetName) == params.end());
+  const auto assetName = params.find(tag::AssetName)->second;
 
-  auto asset = repository::asset::findByUuid(uuid);
+  logger::debug(NameSpaceID + "::assetValueFindByUuid") << "publicKey: " << publicKey;
+
+  auto asset = repository::asset::find( publicKey, assetName);
 
   ::txbuilder::Map value(asset.value().begin(), asset.value().end());
   // std::map<std::string, Api::BaseObject>
@@ -378,11 +412,14 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_assetExists
   (JNIEnv *env, jclass, jobject params_) {
   const auto params = convertJavaHashMapValueString(env, params_);
 
-  IROHA_ASSERT_FALSE(params.find(tag::Uuid) == params.end());
-  const auto uuid = params.find(tag::Uuid)->second;
+  IROHA_ASSERT_FALSE(params.find(tag::AssetName) == params.end());
+  const auto assetName = params.find(tag::AssetName)->second;
 
-  logger::debug(NameSpaceID + "::assetExists") << " uuid: " << uuid;
-  return JavaMakeBoolean(env, repository::asset::exists(uuid));
+  IROHA_ASSERT_FALSE(params.find(tag::PublicKey) == params.end());
+  const auto publicKey = params.find(tag::PublicKey)->second;
+
+  logger::debug(NameSpaceID + "::assetExists") << " publicKey: " << publicKey;
+  return JavaMakeBoolean(env, (jboolean) repository::asset::exists(publicKey, assetName));
 }
 
 /***************************************************************************************
@@ -452,7 +489,7 @@ JNIEXPORT jobject JNICALL Java_repository_Repository_simpleAssetInfoFindByUuid
   {
     simpleAssetInfo[tag::DomainId] = simpleAsset.domain();
     simpleAssetInfo[tag::AssetName] = simpleAsset.name();
-    simpleAssetInfo[tag::SmartContractName] = simpleAsset.smartcontractname();
+    simpleAssetInfo[tag::SmartContractName] = "";
   }
 
   logger::debug(NameSpaceID + "::simpleAssetInfoFindByUuid")

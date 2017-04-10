@@ -2,6 +2,4 @@
 
 #include "consensus_event.hpp"
 
-namespace event{
-
-};
+namespace event {};

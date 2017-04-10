@@ -238,14 +238,18 @@ add_library(jni SHARED IMPORTED)
 if (DEFINED ENV{JAVA_HOME})
   if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(_JVM_INCLUDE_PATH "$ENV{JAVA_HOME}/include/darwin")
+    set_target_properties(jni PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${_JVM_INCLUDE_PATH};$ENV{JAVA_HOME}/include"
+            IMPORTED_LOCATION "$ENV{JAVA_HOME}/jre/lib/server/libjvm.dylib"
+            )
   else()
     set(_JVM_INCLUDE_PATH "$ENV{JAVA_HOME}/include/linux")
+    set_target_properties(jni PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${_JVM_INCLUDE_PATH};$ENV{JAVA_HOME}/include"
+            IMPORTED_LOCATION "$ENV{JAVA_HOME}/jre/lib/amd64/server/libjvm.so"
+            )
   endif()
 
-  set_target_properties(jni PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${_JVM_INCLUDE_PATH};$ENV{JAVA_HOME}/include"
-    IMPORTED_LOCATION "$ENV{JAVA_HOME}/jre/lib/amd64/server/libjvm.so"
-  )
 else()
   find_package(JNI)
   if (!JNI_FOUND)
@@ -279,3 +283,27 @@ set_target_properties(asio PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${asio_SOURCE_DIR}/asio/include
 )
 add_dependencies(asio chriskohlhoff_asio)
+
+
+###############################
+#         flatbuffers         #
+###############################
+ExternalProject_Add(google_flatbuffers
+  GIT_REPOSITORY "https://github.com/google/flatbuffers.git"
+  GIT_TAG "master"
+  BUILD_IN_SOURCE 1
+  UPDATE_COMMAND ""
+  CMAKE_GENERATOR "Unix Makefiles"
+  BUILD_COMMAND "make"
+  INSTALL_COMMAND ""
+)
+
+ExternalProject_Get_Property(google_flatbuffers source_dir)
+set(flatbuffers_SOURCE_DIR "${source_dir}")
+
+add_library(flatbuffers INTERFACE IMPORTED)
+file(MAKE_DIRECTORY ${flatbuffers_SOURCE_DIR}/include)
+set_target_properties(flatbuffers PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${flatbuffers_SOURCE_DIR}/include
+)
+add_dependencies(flatbuffers google_flatbuffers)

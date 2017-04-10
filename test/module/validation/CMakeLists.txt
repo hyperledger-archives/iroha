@@ -1,0 +1,14 @@
+# Grpc connection Test
+add_executable(transaction_validator_test
+        transaction_validator_test.cpp
+)
+target_link_libraries(transaction_validator_test
+    signature
+    config_manager
+    gtest
+    connection_with_grpc_flatbuffer
+)
+add_test(
+    NAME transaction_validator_test
+    COMMAND $<TARGET_FILE:transaction_validator_test>
+)
