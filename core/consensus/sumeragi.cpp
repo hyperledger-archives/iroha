@@ -31,11 +31,11 @@ limitations under the License.
 #include <infra/config/peer_service_with_json.hpp>
 #include <repository/transaction_repository.hpp>
 #include <service/peer_service.hpp>
-#include <service/peer_service.hpp>
 #include <validation/transaction_validator.hpp>
 
 #include <infra/config/iroha_config_with_json.hpp>
 #include <service/executor.hpp>
+#include "util/timer.hpp"
 
 /**
 * |ーーー|　|ーーー|　|ーーー|　|ーーー|
@@ -120,16 +120,14 @@ void printJudge(int numValidSignatures, int numValidationPeer, int faulty) {
       resLine[4] << "\033[91m+-＝-+\033[0m";
     }
   }
-  for (int i = 0; i < 5; ++i)
-    logger::explore("sumeragi") << resLine[i].str();
+  for (int i = 0; i < 5; ++i) logger::explore("sumeragi") << resLine[i].str();
 
   std::string line;
-  for (int i = 0; i < numValidationPeer; i++)
-    line += "==＝==";
+  for (int i = 0; i < numValidationPeer; i++) line += "==＝==";
   logger::explore("sumeragi") << line;
 
-  logger::explore("sumeragi") << "numValidSignatures:" << numValidSignatures
-                              << " faulty:" << faulty;
+  logger::explore("sumeragi")
+      << "numValidSignatures:" << numValidSignatures << " faulty:" << faulty;
 }
 
 void printAgree() {
@@ -147,11 +145,11 @@ void printReject() {
   logger::explore("sumeragi") << "\033[91m|+-ーー-+|\033[0m";
   logger::explore("sumeragi") << "\033[91m+==ーー==+\033[0m";
 }
-} // namespace detail
+}  // namespace detail
 
 struct Context {
-  bool isSumeragi;         // am I the leader or am I not?
-  std::uint64_t maxFaulty; // f
+  bool isSumeragi;          // am I the leader or am I not?
+  std::uint64_t maxFaulty;  // f
   std::uint64_t proxyTailNdx;
   std::int32_t panicCount;
   std::int64_t commitedCount = 0;
@@ -228,10 +226,10 @@ void initializeSumeragi() {
   connection::iroha::Sumeragi::Verify::receive([](const std::string &from,
                                                   ConsensusEvent &event) {
     logger::info("sumeragi") << "receive!";
-    logger::info("sumeragi") << "received message! sig:["
-                             << event.eventsignatures_size() << "]";
-    logger::info("sumeragi") << "received message! status:[" << event.status()
-                             << "]";
+    logger::info("sumeragi")
+        << "received message! sig:[" << event.eventsignatures_size() << "]";
+    logger::info("sumeragi")
+        << "received message! status:[" << event.status() << "]";
     if (event.status() == "commited") {
       if (txCache.find(detail::hash(event.transaction())) == txCache.end()) {
         txCache[detail::hash(event.transaction())] = "commited";
@@ -274,7 +272,6 @@ std::uint64_t getNextOrder() {
 }
 
 void processTransaction(ConsensusEvent &event) {
-
   logger::info("sumeragi") << "processTransaction";
   // if (!transaction_validator::isValid(event->getTx())) {
   //    return; //TODO-futurework: give bad trust rating to nodes that sent an
@@ -301,14 +298,13 @@ void processTransaction(ConsensusEvent &event) {
   if (detail::eventSignatureIsEmpty(event) && context->isSumeragi) {
     logger::info("sumeragi") << "signatures.empty() isSumragi";
     // Determine the order for processing this event
-    event.set_order(getNextOrder()); // TODO getNexOrder is always return 0l;
+    event.set_order(getNextOrder());  // TODO getNexOrder is always return 0l;
     logger::info("sumeragi") << "new  order:" << event.order();
   } else if (!detail::eventSignatureIsEmpty(event)) {
     // Check if we have at least 2f+1 signatures needed for Byzantine fault
     // tolerance
     if (transaction_validator::countValidSignatures(event) >=
         context->maxFaulty * 2 + 1) {
-
       logger::info("sumeragi") << "Signature exists";
 
       logger::explore("sumeragi") << "0--------------------------0";
@@ -317,9 +313,9 @@ void processTransaction(ConsensusEvent &event) {
       logger::explore("sumeragi") << "+~~~~~~~~~~~~~~~~~~~~~~~~~~+";
       logger::explore("sumeragi") << "\033[93m0================================"
                                      "================================0\033[0m";
-      logger::explore("sumeragi") << "\033[93m0\033[1m"
-                                  << detail::hash(event.transaction())
-                                  << "0\033[0m";
+      logger::explore("sumeragi")
+          << "\033[93m0\033[1m" << detail::hash(event.transaction())
+          << "0\033[0m";
       logger::explore("sumeragi") << "\033[93m0================================"
                                      "================================0\033[0m";
 
@@ -341,7 +337,7 @@ void processTransaction(ConsensusEvent &event) {
       logger::explore("sumeragi") << "commit count:" << context->commitedCount;
 
       merkle_transaction_repository::commit(
-          event); // TODO: add error handling in case not saved
+          event);  // TODO: add error handling in case not saved
       event.set_status("commited");
       connection::iroha::Sumeragi::Verify::sendAll(std::move(event));
 
@@ -357,8 +353,8 @@ void processTransaction(ConsensusEvent &event) {
           << "tail public key is "
           << context->validatingPeers.at(context->proxyTailNdx)->publicKey;
       logger::info("sumeragi") << "tail is " << context->proxyTailNdx;
-      logger::info("sumeragi") << "my public key is "
-                               << ::peer::myself::getPublicKey();
+      logger::info("sumeragi")
+          << "my public key is " << ::peer::myself::getPublicKey();
 
       if (context->validatingPeers.at(context->proxyTailNdx)->publicKey ==
           ::peer::myself::getPublicKey()) {
@@ -367,16 +363,16 @@ void processTransaction(ConsensusEvent &event) {
             << context->validatingPeers.at(context->proxyTailNdx)->ip;
         connection::iroha::Sumeragi::Verify::send(
             context->validatingPeers.at(context->proxyTailNdx)->ip,
-            std::move(event)); // Think In Process
+            std::move(event));  // Think In Process
       } else {
         logger::info("sumeragi")
             << "Send All! sig:["
             << transaction_validator::countValidSignatures(event) << "]";
         connection::iroha::Sumeragi::Verify::sendAll(
-            std::move(event)); // TODO: Think In Process
+            std::move(event));  // TODO: Think In Process
       }
 
-      setAwkTimer(3000, [&]() {
+      timer::setAwkTimerForCurrentThread(3000, [&]() {
         if (!merkle_transaction_repository::leafExists(
                 detail::hash(event.transaction()))) {
           panic(event);
@@ -406,7 +402,7 @@ void processTransaction(ConsensusEvent &event) {
 * |---|  |---|  |---|  |---|  |---|  |---|.
 */
 void panic(const ConsensusEvent &event) {
-  context->panicCount++; // TODO: reset this later
+  context->panicCount++;  // TODO: reset this later
   auto broadcastStart =
       2 * context->maxFaulty + 1 + context->maxFaulty * context->panicCount;
   auto broadcastEnd = broadcastStart + context->maxFaulty;
@@ -425,16 +421,6 @@ void panic(const ConsensusEvent &event) {
   // WIP issue hash event
   // connection::sendAll(event->transaction().hash()); //TODO: change this to
   // only broadcast to peer range between broadcastStart and broadcastEnd
-}
-
-void setAwkTimer(int const sleepMillisecs,
-                 std::function<void(void)> const action) {
-  //    std::thread([action, sleepMillisecs]() {
-  //        std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
-  //        action();
-  //    }).join();
-  std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
-  action();
 }
 
 /**
@@ -478,6 +464,6 @@ void determineConsensusOrder() {
   */
   context->isSumeragi =
       context->validatingPeers.at(0)->publicKey == context->myPublicKey;
-    }
+}
 
 };  // namespace sumeragi

@@ -30,7 +30,7 @@ limitations under the License.
 
 #include <json.hpp>
 
-#include <service/http_client.hpp>
+#include <infra/service/http_client.hpp>
 
 #include <util/logger.hpp>
 

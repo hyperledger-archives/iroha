@@ -24,22 +24,22 @@ namespace izanami {
 using Api::TransactionResponse;
 
 class InitializeEvent {
-private:
+ private:
   uint64_t now_progress;
   std::unordered_map<std::string, std::unique_ptr<TransactionResponse>>
       txResponses;
   std::unordered_map<uint64_t, std::vector<std::string>> hashes;
   bool is_finished;
 
-public:
+ public:
   InitializeEvent();
 
   void add_transactionResponse(std::unique_ptr<TransactionResponse>);
 
   const std::vector<std::string> &getHashes(uint64_t);
 
-  const std::unique_ptr<TransactionResponse>
-  getTransactionResponse(const std::string &);
+  const std::unique_ptr<TransactionResponse> getTransactionResponse(
+      const std::string &);
 
   void next_progress();
 

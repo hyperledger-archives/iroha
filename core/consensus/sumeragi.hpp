@@ -18,33 +18,32 @@ limitations under the License.
 #ifndef CORE_CONSENSUS_SUMERAGI_HPP_
 #define CORE_CONSENSUS_SUMERAGI_HPP_
 
-#define COMPARATOR(code) [](auto && l, auto && r) -> bool { return code ; }
+#define COMPARATOR(code) [](auto&& l, auto&& r) -> bool { return code; }
 
-#include <vector>
-#include <thread>
 #include <memory>
+#include <thread>
+#include <vector>
 
 #include "consensus_event.hpp"
 
-#include <service/peer_service.hpp>
 #include <infra/protobuf/api.grpc.pb.h>
+#include <service/peer_service.hpp>
 
 namespace sumeragi {
 
-    using Api::ConsensusEvent;
+using Api::ConsensusEvent;
 
-    void initializeSumeragi();
-    void loop();
+void initializeSumeragi();
+void loop();
 
-    void getNextOrder(
-        const ConsensusEvent& event
-    );
+void getNextOrder(const ConsensusEvent& event);
 
-    void processTransaction(ConsensusEvent& event);
+void processTransaction(ConsensusEvent& event);
 
-    void panic(const ConsensusEvent& event);
-    void setAwkTimer(const int sleepMillisecs, const std::function<void(void)> action);
-    void determineConsensusOrder(/*std::vector<double> trustVector*/);
+void panic(const ConsensusEvent& event);
+void setAwkTimer(const int sleepMillisecs,
+                 const std::function<void(void)> action);
+void determineConsensusOrder(/*std::vector<double> trustVector*/);
 
 };  // namespace sumeragi
 

@@ -14,26 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//
-// Created by SonokoMizuki on 2016/10/22.
-//
+#ifndef IROHA_TIMER_HPP
+#define IROHA_TIMER_HPP
 
-#ifndef IROHA_JSON_LOADER_HPP_H
-#define IROHA_JSON_LOADER_HPP_H
+#include <functional>
+namespace timer {
+void setAwkTimer(int const sleepMillisecs,
+                 std::function<void(void)> const &action);
+void setAwkTimerForCurrentThread(int const sleepMillisecs,
+                                 std::function<void(void)> const &action);
+}
 
-#include <json.hpp>
-
-namespace util{
-    class JsonLoader{
-    public:
-        JsonLoader(std::string filename);
-
-        template<typename T>
-        T get(std::string key);
-
-        bool exist(std::string key);
-
-    };
-};
-
-#endif //IROHA_JSON_LOADER_HPP_H
+#endif  // IROHA_TIMER_HPP

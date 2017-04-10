@@ -20,7 +20,7 @@ limitations under the License.
 #include <regex>
 #include <vector>
 #include <json.hpp>
-#include <service/http_client.hpp>
+#include <infra/service/http_client.hpp>
 
 using nlohmann::json;
 

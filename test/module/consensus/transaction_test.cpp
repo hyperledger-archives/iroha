@@ -16,35 +16,20 @@ limitations under the License.
 
 #include <iostream>
 #include <string>
-#include <vector>
-#include <memory>
 #include <thread>
+#include <vector>
 
-#include <consensus/sumeragi.hpp>
-#include <consensus/connection/connection.hpp>
+#include "util/timer.hpp"
 
-#include <service/peer_service.hpp>
-#include <crypto/hash.hpp>
-#include <infra/config/peer_service_with_json.hpp>
-#include<service/peer_service.hpp>
+int main() {
+  std::string senderPublicKey;
 
+  std::string pubKey = ::peer::myself::getPublicKey();
 
-void setAwkTimer(int const sleepMillisecs, std::function<void(void)> const &action) {
-    std::thread([action, sleepMillisecs]() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
-        action();
-    }).join();
-}
+  while (1) {
+    timer::setAwkTimer(3000, [&]() {
+    });
+  }
 
-int main(){
-    std::string senderPublicKey;
-
-    std::string pubKey = ::peer::myself::getPublicKey();
-
-    while(1){
-        setAwkTimer(3000, [&](){
-        });
-    }
-
-    return 0;
+  return 0;
 }

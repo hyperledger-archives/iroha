@@ -12,4 +12,5 @@ target_link_libraries(sumeragi
   merkle_transaction_repository
   transaction_repository
   validator
+  timer
 )

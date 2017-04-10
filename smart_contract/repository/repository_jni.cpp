@@ -28,7 +28,6 @@ limitations under the License.
 #include <repository/domain/simple_asset_repository.hpp>
 #include <repository/domain/peer_repository.hpp>
 #include <transaction_builder/helper/create_objects_helper.hpp>
-//#include <util/convert_string.hpp>
 #include <util/exception.hpp>
 #include <util/logger.hpp>
 #include <assert.h>

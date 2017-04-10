@@ -16,67 +16,56 @@ limitations under the License.
 
 #include <iostream>
 #include <string>
-#include <vector>
-#include <memory>
 #include <thread>
+#include <vector>
 
-#include <consensus/sumeragi.hpp>
 #include <consensus/connection/connection.hpp>
+#include <consensus/sumeragi.hpp>
 
-#include <service/peer_service.hpp>
-#include <util/logger.hpp>
 #include <crypto/hash.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-#include<service/peer_service.hpp>
+#include <service/peer_service.hpp>
+#include <util/logger.hpp>
+#include "util/timer.hpp"
 
 
+int main(int argc, char *argv[]) {
+  try {
+    std::string value;
+    std::string senderPublicKey;
+    std::string receiverPublicKey;
+    std::string cmd;
 
-void setAwkTimer(int const sleepMillisecs, const std::function<void(void)>& action) {
-    std::thread([action, sleepMillisecs]() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
-        action();
-    }).join();
-}
+    connection::initialize_peer();
 
-int main(int argc, char *argv[]){
+    logger::setLogLevel(logger::LogLevel::Debug);
 
-    try {
-        std::string value;
-        std::string senderPublicKey;
-        std::string receiverPublicKey;
-        std::string cmd;
+    sumeragi::initializeSumeragi();
 
-        connection::initialize_peer();
+    std::thread connection_th([]() { connection::run(); });
 
-        logger::setLogLevel(logger::LogLevel::Debug);
+    // since we have thread pool, it sets all necessary callbacks in
+    // sumeragi::initializeSumeragi.
+    // std::thread http_th([]() {
+    //     sumeragi::loop();
+    // });
 
-        sumeragi::initializeSumeragi();
+    if (argc >= 2 && std::string(argv[1]) == "public") {
+      while (1) {
+        timer::setAwkTimer(10, [&]() {
 
-        std::thread connection_th([]() {
-            connection::run();
         });
-
-        // since we have thread pool, it sets all necessary callbacks in 
-        // sumeragi::initializeSumeragi.
-        // std::thread http_th([]() {
-        //     sumeragi::loop();
-        // });
-
-        if (argc >= 2 && std::string(argv[1]) == "public") {
-            while (1) {
-                setAwkTimer(10, [&]() {
-
-                });
-            }
-        } else {
-            std::cout << "I'm only node\n";
-            while (1);
-        }
-        // http_th.detach();
-        connection_th.detach();
-    }catch(char const *e){
-        std::cout << e << std::endl;
+      }
+    } else {
+      std::cout << "I'm only node\n";
+      while (1)
+        ;
     }
+    // http_th.detach();
+    connection_th.detach();
+  } catch (char const *e) {
+    std::cout << e << std::endl;
+  }
 
-    return 0;
+  return 0;
 }

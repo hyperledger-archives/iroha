@@ -14,26 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __CORE_URL_SERVICE_HPP__
-#define __CORE_URL_SERVICE_HPP__
+#include "timer.hpp"
+#include <chrono>
+#include <thread>
 
-#include <string>
-#include <vector>
+namespace timer {
+void setAwkTimer(int const sleepMillisecs,
+                 std::function<void(void)> const &action) {
+  std::thread([action, sleepMillisecs]() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+    action();
+  }).join();
+}
 
-namespace service {
-
-    namespace url_service {
-
-        // Input assetUtil := <domain> ( <::> <domain> )* . <assetName>
-        // sample: rabbit_house::chino.cappucchino
-        // domain -> rabbit_house, chino
-        // asset  -> cappuccino
-        std::pair<
-            std::vector<std::string>,
-            std::string
-        > getAssetNameFromUrl(std::string assetUrl);
-
-    };
-};
-
-#endif
+void setAwkTimerForCurrentThread(int const sleepMillisecs,
+                                 std::function<void(void)> const &action) {
+  std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+  action();
+}
+}
