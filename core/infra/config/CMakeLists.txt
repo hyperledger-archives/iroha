@@ -9,4 +9,5 @@ target_link_libraries(config_manager
   exception
   logger
   connection_with_grpc
+  ip_tools
 )
