@@ -27,7 +27,7 @@ namespace config {
 
 class PeerServiceConfig : config::AbstractConfigManager {
  private:
-  PeerServiceConfig();
+  PeerServiceConfig() : AbstractConfigManager() {}
 
  protected:
   void parseConfigDataFromString(std::string&& jsonStr) override;
@@ -45,7 +45,7 @@ class PeerServiceConfig : config::AbstractConfigManager {
 
   double getMaxTrustScore();
 
-  virtual std::string getConfigName() override;
+  virtual std::string getConfigName() override { return "PeerServiceConfig"; }
 };
 }  // namespace config
 
