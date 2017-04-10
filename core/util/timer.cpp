@@ -14,26 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//
-// Created by SonokoMizuki on 2016/10/22.
-//
+#include "timer.hpp"
+#include <chrono>
+#include <thread>
 
-#ifndef IROHA_JSON_LOADER_HPP_H
-#define IROHA_JSON_LOADER_HPP_H
+namespace timer {
+void setAwkTimer(int const sleepMillisecs,
+                 std::function<void(void)> const &action) {
+  std::thread([action, sleepMillisecs]() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+    action();
+  }).join();
+}
 
-#include <json.hpp>
-
-namespace util{
-    class JsonLoader{
-    public:
-        JsonLoader(std::string filename);
-
-        template<typename T>
-        T get(std::string key);
-
-        bool exist(std::string key);
-
-    };
-};
-
-#endif //IROHA_JSON_LOADER_HPP_H
+void setAwkTimerForCurrentThread(int const sleepMillisecs,
+                                 std::function<void(void)> const &action) {
+  std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+  action();
+}
+}

@@ -18,6 +18,7 @@ target_link_libraries(izanami
     executor
     connection_with_grpc
     transaction_repository
+    timer
 )
 
 ADD_LIBRARY(peer_service STATIC

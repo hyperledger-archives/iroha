@@ -14,17 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __CORE_REPOSITORY_CONVERT_STRING_HPP__
-#define __CORE_REPOSITORY_CONVERT_STRING_HPP__
+#ifndef IROHA_TIMER_HPP
+#define IROHA_TIMER_HPP
 
-#include <sstream>
-#include <string>
-#include <vector>
-
-namespace convert_string {
-std::string to_string(const std::vector<std::string>&);
-std::string stringifyVector(const std::vector<std::string> &vs);
-std::vector<std::string> parseVector(const std::string &s);
+#include <functional>
+namespace timer {
+void setAwkTimer(int const sleepMillisecs,
+                 std::function<void(void)> const &action);
+void setAwkTimerForCurrentThread(int const sleepMillisecs,
+                                 std::function<void(void)> const &action);
 }
 
-#endif
+#endif  // IROHA_TIMER_HPP
