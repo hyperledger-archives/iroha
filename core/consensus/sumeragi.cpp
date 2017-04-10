@@ -223,10 +223,11 @@ void initializeSumeragi() {
   logger::explore("sumeragi") << "- 起動/setup";
   logger::explore("sumeragi") << "- 初期設定/initialize";
   // merkle_transaction_repository::initLeaf();
-
+  /*
   logger::info("sumeragi") << "My key is "
-                           << config::PeerServiceConfig::getInstance()
-                                  .getMyIpWithDefault("Invalid!!");
+    << config::PeerServiceConfig::getInstance()
+      .getMyIpWithDefault("Invalid!!");
+  */
   logger::info("sumeragi") << "Sumeragi setted";
   logger::info("sumeragi") << "set number of validatingPeer";
 
@@ -247,26 +248,27 @@ void initializeSumeragi() {
       });
 
   connection::iroha::SumeragiImpl::Verify::receive(
-      [](const std::string& from, ConsensusEvent&& event) {
+      [](const std::string& from, std::unique_ptr<ConsensusEvent> event) {
         logger::info("sumeragi") << "receive!";  // ToDo rewrite
         logger::info("sumeragi") << "received message! sig:["
-                                 << 1 /*event.eventsignatures_size()*/ << "]";
-
-        // mklogger::info("sumeragi") << "received message! status:[" <<
-        // event.status() << "]";  if(event.status() == "commited") {
-        // if(txCache.find(detail::hash(event.transaction())) == txCache.end())
-        // {  executor::execute(event.transaction());
-        // txCache[detail::hash(event.transaction())] = "commited";
-        //}
-        //}else{
-        // send processTransaction(event) as a task to processing pool
-        // this returns std::future<void> object
-        // (std::future).get() method locks processing until result of
-        // processTransaction will be available but processTransaction returns
-        // void, so we don't have to call it and wait
-        //    std::function<void()> &&task = std::bind(processTransaction,
-        //    event); pool.process(std::move(task));
-        //}
+                                 << event->peerSignatures()->size() << "]";
+        {
+          //        logger::info("sumeragi") << "received message! status:[" <<
+          //        event.status() << "]";  if(event.status() == "commited") {
+          //        if(txCache.find(detail::hash(event.transaction())) ==
+          //        txCache.end()) {
+          //            executor::execute(event.transaction());
+          //            txCache[detail::hash(event.transaction())] = "commited";
+          //        }else{
+          // send processTransaction(event) as a task to processing pool
+          // this returns std::future<void> object
+          // (std::future).get() method locks processing until result of
+          // processTransaction will be available but processTransaction returns
+          // void, so we don't have to call it and wait
+          std::function<void()>&& task =
+              std::bind(processTransaction, std::move(event));
+          pool.process(std::move(task));
+        }
       });
 
   logger::info("sumeragi") << "initialize numValidatingPeers :"

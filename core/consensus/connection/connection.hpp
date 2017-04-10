@@ -45,14 +45,14 @@ namespace connection {
 
                 bool send(
                     const std::string &ip,
-                    const ConsensusEvent &&msg
+                    std::unique_ptr<ConsensusEvent> msg
                 );
 
                 bool sendAll(const ConsensusEvent &msg);
 
                 bool receive(const std::function<void(
                     const std::string &,
-                    ConsensusEvent &&)
+                    std::unique_ptr<ConsensusEvent>)
                 > &callback);
 
             };
