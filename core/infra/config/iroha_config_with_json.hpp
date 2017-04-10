@@ -45,6 +45,6 @@ class IrohaConfigManager : config::AbstractConfigManager {
   uint16_t getHttpPortNumber(uint16_t defaultValue);
   bool getActiveStart(bool defaultValue);
 };
-}
+}  // namespace config
 
 #endif  // IROHA_CONFIG_WITH_JSON_HPP

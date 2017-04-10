@@ -17,10 +17,10 @@ limitations under the License.
 #ifndef PEER_SERVICE_WITH_JSON_HPP
 #define PEER_SERVICE_WITH_JSON_HPP
 
-#include <vector>
-#include <set>
 #include <map>
 #include <queue>
+#include <set>
+#include <vector>
 #include "abstract_config_manager.hpp"
 
 namespace config {
@@ -28,25 +28,25 @@ namespace config {
 class PeerServiceConfig : config::AbstractConfigManager {
  private:
   PeerServiceConfig();
-protected:
+
+ protected:
   void parseConfigDataFromString(std::string&& jsonStr) override;
 
  public:
-
   std::string getMyPublicKeyWithDefault(const std::string& defaultValue);
   std::string getMyPrivateKeyWithDefault(const std::string& defaultValue);
   std::string getMyIpWithDefault(const std::string& defaultValue);
-  bool isExistIP( const std::string &ip );
+  bool isExistIP(const std::string& ip);
   double getMaxTrustScoreWithDefault(double defaultValue);
   size_t getMaxFaultyScoreWithDefault(size_t defaultValue);
   std::vector<json> getGroup();
 
-  static PeerServiceConfig &getInstance();
+  static PeerServiceConfig& getInstance();
 
   double getMaxTrustScore();
 
   virtual std::string getConfigName() override;
 };
-}
+}  // namespace config
 
 #endif  // PEER_SERVICE_WITH_JSON_HPP

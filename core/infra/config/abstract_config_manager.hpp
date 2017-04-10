@@ -18,9 +18,9 @@ limitations under the License.
 #define IROHA_CONFIG_H
 
 #include <fstream>  // ifstream, ofstream
-#include <util/logger.hpp>
-#include <util/exception.hpp>
 #include <json.hpp>
+#include <util/exception.hpp>
+#include <util/logger.hpp>
 
 namespace config {
 
@@ -28,7 +28,8 @@ using json = nlohmann::json;
 
 class AbstractConfigManager {
  private:
-  std::string readConfigData(const std::string& pathToJSONFile, const std::string& defaultValue) {
+  std::string readConfigData(const std::string& pathToJSONFile,
+                             const std::string& defaultValue) {
     std::ifstream ifs(pathToJSONFile);
     if (ifs.fail()) {
       return defaultValue;
@@ -39,7 +40,6 @@ class AbstractConfigManager {
   }
 
   json openConfigData() {
-
     auto iroha_home = getenv("IROHA_HOME");
     if (iroha_home == nullptr) {
       logger::error("config") << "Set environment variable IROHA_HOME";
@@ -50,7 +50,8 @@ class AbstractConfigManager {
     auto jsonStr = readConfigData(configFolderPath + this->getConfigName(), "");
 
     if (jsonStr.empty()) {
-      logger::warning("config") << "there is no config '" << getConfigName() << "', we will use default values.";
+      logger::warning("config") << "there is no config '" << getConfigName()
+                                << "', we will use default values.";
     } else {
       logger::debug("config") << "load json is " << jsonStr;
       parseConfigDataFromString(std::move(jsonStr));
@@ -64,7 +65,8 @@ class AbstractConfigManager {
     try {
       _configData = json::parse(std::move(jsonStr));
     } catch (...) {
-      throw exception::config::ConfigException("Can't parse json: " + getConfigName());
+      throw exception::config::ConfigException("Can't parse json: " +
+                                               getConfigName());
     }
   }
 
@@ -73,7 +75,8 @@ class AbstractConfigManager {
 
   json getConfigData() {
     if (_loaded) {
-      // If defaultValue is used, _configData is empty, but _loaded = true. It's cofusing. Any good solution?
+      // If defaultValue is used, _configData is empty, but _loaded = true. It's
+      // cofusing. Any good solution?
       return this->_configData;
     } else {
       _loaded = true;
@@ -84,8 +87,7 @@ class AbstractConfigManager {
  protected:
   bool _loaded = false;
   json _configData;
-
 };
-}
+}  // namespace config
 
 #endif  // IROHA_CONFIG_H

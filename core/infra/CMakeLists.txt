@@ -1,5 +1,4 @@
 add_subdirectory(crypto)
-add_subdirectory(repository)
 add_subdirectory(server)
 add_subdirectory(connection)
 add_subdirectory(service)
