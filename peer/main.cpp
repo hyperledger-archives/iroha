@@ -53,7 +53,6 @@ int main() {
   // peer::izanami::startIzanami();
 
   std::thread http_thread(server);
-
   connection::run();
 
   while (running)

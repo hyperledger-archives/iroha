@@ -15,11 +15,19 @@ limitations under the License.
 */
 #include <server/http_server.hpp>
 #include <util/logger.hpp>
-
+#include <cappuccino.hpp>
 
 namespace http {
 
     void server() {
+        Cappuccino::Cappuccino(0, nullptr);
         logger::info("server") << "No! (T _ T)";
+        Cappuccino::route<Cappuccino::Method::GET>("/",[](auto req)-> Cappuccino::Response{
+            auto res = Cappuccino::Response(req);
+            res.message("Ok");
+            return res;
+        });
+        Cappuccino::run();
     }
+
 };  // namespace http

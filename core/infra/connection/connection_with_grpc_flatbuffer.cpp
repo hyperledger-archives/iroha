@@ -118,13 +118,11 @@ public:
       : stub_(Sumeragi::NewStub(channel)) {}
 
   Response Verify(const ConsensusEvent& consensusEvent) {
-    /*
     Response response;
     logger::info("connection")  <<  "Operation";
     logger::info("connection")  <<  "size: "    <<
     consensusEvent.eventsignatures_size(); logger::info("connection")  <<
     "name: "    <<  consensusEvent.transaction().asset().name();
-
     ClientContext context;
 
     Status status = stub_->Verify(&context, consensusEvent, &response);
@@ -137,15 +135,11 @@ public:
         //std::cout << status.error_code() << ": " << status.error_message();
         //return {"RPC failed", RESPONSE_ERRCONN};
     }
-     */
   }
 
   Response Torii(const Transaction& transaction) {
-    /*
     Response response;
-
     ClientContext context;
-
     Status status = stub_->Torii(&context, transaction, &response);
 
     if (status.ok()) {
@@ -157,7 +151,6 @@ public:
         //std::cout << status.error_code() << ": " << status.error_message();
         return {"RPC failed", RESPONSE_ERRCONN};
     }
-     */
   }
 
  private:
@@ -179,33 +172,54 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
   Status Torii(ServerContext* context,
                const flatbuffers::BufferRef<Transaction>* transaction,
                flatbuffers::BufferRef<Response>* response) override {
-    return Status::OK;
+    flatbuffers::FlatBufferBuilder fbb;
+    auto res_offset = ::iroha::CreateResponseDirect(fbb,"OK!!",::iroha::Code_COMMIT,0);
+    fbb.Finish(res_offset);
+    // Since we keep reusing the same FlatBufferBuilder, the memory it owns
+    // remains valid until the next call (this BufferRef doesn't own the
+    // memory it points to).
+    *response = flatbuffers::BufferRef<::iroha::Response>(
+       fbb.GetBufferPointer(),
+       fbb.GetSize());
+    receiver(event);
+    logger::info("AA") << "Yurushite";
+    return grpc::Status::OK;
   }
 };
 
 /************************************************************************************
  * Main connection
  ************************************************************************************/
-
+std::mutex wait_for_server;
 ServerBuilder builder;
 grpc::Server* server = nullptr;
 std::condition_variable server_cv;
 
 void initialize_peer() {
+
   // ToDo catch exception of to_string
-  auto address =
-      "0.0.0.0:" +
-      std::to_string(
-          config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051));
-  SumeragiConnectionServiceImpl service;
-  grpc::ServerBuilder builder;
-  builder.AddListeningPort(address, grpc::InsecureServerCredentials());
-  builder.RegisterService(&service);
+
+
+  logger::info("Connection GRPC")  <<" initialize_peer ";
 }
 
 int run() {
+  logger::info("Connection GRPC")  <<" RUN ";
+    auto address =
+        "0.0.0.0:" +
+        std::to_string(
+                config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)
+        );
+    SumeragiConnectionServiceImpl service;
+    grpc::ServerBuilder builder;
+    builder.AddListeningPort(address, grpc::InsecureServerCredentials());
+    builder.RegisterService(&service);
+
+  wait_for_server.lock();
   server = builder.BuildAndStart().release();
+  wait_for_server.unlock();
   server_cv.notify_one();
+
   server->Wait();
   return 0;
 }
