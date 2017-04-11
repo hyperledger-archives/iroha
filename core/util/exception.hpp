@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __EXCEPTIONS_
-#define __EXCEPTIONS_
+#ifndef __EXCEPTIONS_HPP_
+#define __EXCEPTIONS_HPP_
 
 #include <stdexcept>
 #include <string>
@@ -59,6 +59,11 @@ namespace exception {
       const std::string&   meg,
       const std::string& filename
     );
+  };
+
+  class DuplicateSetException : public std::domain_error {
+  public:
+    DuplicateSetException(const std::string& message, const std::string& file);
   };
 
   namespace config {
@@ -108,12 +113,7 @@ namespace exception {
       UnsetBuildArgmentsException(const std::string&, const std::string&);
     };
   }
+
 }  // namespace exception
-
-#define IROHA_ASSERT_TRUE(Condition)  \
-  if ((Condition) == false) { std::cout << __func__ << " #" << __LINE__ << " in " << __FILE__ << std::endl; throw "Assertion failed." #Condition; }
-
-#define IROHA_ASSERT_FALSE(Condition) \
-  if ((Condition) == true) { std::cout << __func__ << " #" << __LINE__ << " in " << __FILE__ << std::endl; throw "Assertion failed." #Condition; }
 
 #endif

@@ -21,6 +21,7 @@ limitations under the License.
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <service/peer_service.hpp>
+#include <util/exception.hpp>
 #include <util/logger.hpp>
 
 #include <algorithm>
@@ -54,31 +55,49 @@ enum ResponseType {
   RESPONSE_ERRCONN,     // connection error
 };
 
+/**
+ * Store callback function
+ */
+template<class CallBackFunc>
+class Receiver {
+public:
+  void set(CallBackFunc&& rhs) {
+    if (receiver_) {
+      throw exception::DuplicateSetException(
+          "Receiver<" + std::string(typeid(CallBackFunc).name()) + ">", __FILE__);
+    }
+    receiver_ = std::make_shared<CallBackFunc>(rhs);
+  }
+
+private:
+  std::shared_ptr<CallBackFunc> receiver_;
+};
+
 /************************************************************************************
  * Verify
  ************************************************************************************/
 namespace iroha { namespace SumeragiImpl { namespace Verify {
 
-std::vector<Verify::CallBackFunc> receivers;
+Receiver<Verify::CallBackFunc> receiver;
 
-bool receive(Verify::CallBackFunc&& callback) {
-  receivers.push_back(std::move(callback));
-  return true;
-
+/**
+ * Receive callback
+ */
+void receive(Verify::CallBackFunc&& callback) {
+  receiver.set(std::move(callback));
 }
 
-bool send(const std::string& ip, ConsensusEvent&& event) {
+bool send(const std::string& ip, const ConsensusEvent& event) {
   // ToDo
   /*
   auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
   if (find(receiver_ips.begin(), receiver_ips.end(), ip) != receiver_ips.end())
-  { return true; } else { return false;
-  }
+  { return true; } else { return false; }
   */
   return true;
 }
 
-bool sendAll(ConsensusEvent&& event) {
+bool sendAll(const ConsensusEvent& event) {
   // ToDo
   /*
   auto receiver_ips = config::PeerServiceConfig::getInstance().getIpList();
@@ -100,11 +119,10 @@ bool sendAll(ConsensusEvent&& event) {
  ************************************************************************************/
 namespace iroha { namespace SumeragiImpl { namespace Torii {
 
-std::vector<Torii::CallBackFunc> receivers;
+Receiver<Torii::CallBackFunc> receiver;
 
-bool receive(Torii::CallBackFunc&& callback) {
-  receivers.push_back(std::move(callback));
-  return true;
+void receive(Torii::CallBackFunc&& callback) {
+  receiver.set(std::move(callback));
 }
 
 }}} // namespace iroha::SumeragiImpl::Torii
