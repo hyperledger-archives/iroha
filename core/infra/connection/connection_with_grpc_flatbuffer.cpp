@@ -78,7 +78,7 @@ std::vector<std::function<void(const std::string& from,
 };
 namespace Torii {
 std::vector<
-    std::function<void(const std::string& from, Transaction&& message)> >
+    std::function<void(const std::string& from, std::unique_ptr<Transaction> message)> >
     receivers;
 }
 };  // namespace SumeragiImpl
@@ -204,7 +204,7 @@ bool sendAll(const ConsensusEvent&& event) {
 
 namespace Torii {
 bool receive(
-    const std::function<void(const std::string&, Transaction&&)>& callback) {
+    const std::function<void(const std::string&, std::unique_ptr<Transaction>)>& callback) {
   receivers.push_back(callback);
   return true;
 }

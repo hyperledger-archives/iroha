@@ -61,7 +61,7 @@ namespace connection {
 
                 bool receive(const std::function<void(
                     const std::string &,
-                    Transaction&&)
+                    std::unique_ptr<Transaction>)
                 > &callback);
 
             };

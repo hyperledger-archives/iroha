@@ -96,8 +96,11 @@ std::unique_ptr<ConsensusEvent> addSignature(
   for (auto&& c : encodedSignature) {
     encodedSignaturePtr->push_back(c);
   }
-  signatures->emplace_back(iroha::CreateSignatureDirect(fbb, publicKey.c_str(),
-                                                        encodedSignaturePtr));
+  signatures->emplace_back(
+      iroha::CreateSignatureDirect(
+          fbb, publicKey.c_str(), encodedSignaturePtr
+      )
+  );
 
   // Create
   auto event_buf = iroha::CreateConsensusEventDirect(fbb, signatures.get(),
@@ -234,10 +237,73 @@ void initializeSumeragi() {
   context = std::make_unique<Context>();
 
   connection::iroha::SumeragiImpl::Torii::receive(
-      [](const std::string& from, Transaction&& transaction) {
+      [](const std::string& from, std::unique_ptr<Transaction> transaction) {
         logger::info("sumeragi") << "receive!";
-        // ToDo add build signature function.
 
+          flatbuffers::FlatBufferBuilder fbb;
+          std::unique_ptr<std::vector<flatbuffers::Offset<Signature>>> signatures(
+                  new std::vector<flatbuffers::Offset<Signature>>()
+          );
+          std::unique_ptr<std::vector<flatbuffers::Offset<Transaction>>> transactions(
+                  new std::vector<flatbuffers::Offset<Transaction>>()
+          );
+
+          std::unique_ptr<std::vector<uint8_t>> _hash(new std::vector<uint8_t>());
+          for(auto d: *transaction->hash()){
+            _hash->emplace_back(d);
+          }
+
+          std::unique_ptr<std::vector<uint8_t>> data(new std::vector<uint8_t>());
+          for(auto d: *transaction->attachment()->data()){
+            data->emplace_back(d);
+          }
+          iroha::CreateAttachmentDirect(
+              fbb,
+              transaction->attachment()->mime()->c_str(),
+              data.get()
+          );
+
+          std::unique_ptr<std::vector<flatbuffers::Offset<Signature>>> tx_signatures(
+              new std::vector<flatbuffers::Offset<Signature>>()
+          );
+          for(auto&& txSig: *transaction->signatures()) {
+            std::unique_ptr<std::vector<uint8_t>> _data(new std::vector<uint8_t>());
+            for(auto d: *txSig->signature()){
+              _data->emplace_back(d);
+            }
+            tx_signatures->emplace_back(
+                iroha::CreateSignatureDirect(
+                    fbb, txSig->publicKey()->c_str(), _data.get()
+                )
+            );
+          }
+
+          transactions->emplace_back(
+              iroha::CreateTransactionDirect(fbb,
+               transaction->creatorPubKey()->c_str(),
+               transaction->command_type(),
+               reinterpret_cast<flatbuffers::Offset<void>*>(const_cast<void*>(transaction->command())),
+               tx_signatures.get(),
+               _hash.get(),
+               iroha::CreateAttachmentDirect(
+                   fbb,
+                   transaction->attachment()->mime()->c_str(),
+                   data.get()
+               )
+              )
+          );
+
+          // Create
+          auto event_buf = iroha::CreateConsensusEventDirect(
+              fbb,
+              signatures.get(),
+              transactions.get()
+          );
+          fbb.Finish(event_buf);
+
+          // ToDo I think std::unique_ptr<const T> is not popular. Is it?
+          //return std::unique_ptr<ConsensusEvent>(const_cast<ConsensusEvent*>(
+          //                                               flatbuffers::GetRoot<ConsensusEvent>(fbb.GetBufferPointer())));
         // send processTransaction(event) as a task to processing pool
         // this returns std::future<void> object
         // (std::future).get() method locks processing until result of
@@ -265,9 +331,9 @@ void initializeSumeragi() {
           // (std::future).get() method locks processing until result of
           // processTransaction will be available but processTransaction returns
           // void, so we don't have to call it and wait
-          std::function<void()>&& task =
-              std::bind(processTransaction, std::move(event));
-          pool.process(std::move(task));
+          // std::function<void()>&& task =
+          //    std::bind(processTransaction, std::move(event));
+          //pool.process(std::move(task));
         }
       });
 
