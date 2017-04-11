@@ -64,6 +64,7 @@ std::vector<Verify::CallBackFunc> receivers;
 bool receive(Verify::CallBackFunc&& callback) {
   receivers.push_back(std::move(callback));
   return true;
+
 }
 
 bool send(const std::string& ip, ConsensusEvent&& event) {
@@ -185,6 +186,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
 /************************************************************************************
  * Main connection
  ************************************************************************************/
+
 ServerBuilder builder;
 grpc::Server* server = nullptr;
 std::condition_variable server_cv;
