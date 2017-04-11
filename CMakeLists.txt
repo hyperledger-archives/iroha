@@ -25,7 +25,7 @@ add_subdirectory(flatbuf)
 
 add_subdirectory(core)
 add_subdirectory(peer)
-#add_subdirectory(tools)
+add_subdirectory(tools)
 
 if(TESTING)
   enable_testing()
