@@ -233,43 +233,50 @@ void initializeSumeragi() {
 
   context = std::make_unique<Context>();
 
-  connection::iroha::SumeragiImpl::Torii::receive(
-      [](const std::string& from, Transaction&& transaction) {
-        logger::info("sumeragi") << "receive!";
-        // ToDo add build signature function.
+  connection::iroha::SumeragiImpl::Torii::receive([](auto&& from, auto&& transaction) {
+    logger::info("sumeragi") << "receive!";
+    // ToDo add build signature function.
 
-        // send processTransaction(event) as a task to processing pool
-        // this returns std::future<void> object
-        // (std::future).get() method locks processing until result of
-        // processTransaction will be available but processTransaction returns
-        // void, so we don't have to call it and wait
-        // std::function<void()> &&task = std::bind(processTransaction, event);
-        // pool.process(std::move(task));
-      });
+    // send processTransaction(event) as a task to processing pool
+    // this returns std::future<void> object
+    // (std::future).get() method locks processing until result of
+    // processTransaction will be available but processTransaction returns
+    // void, so we don't have to call it and wait
 
-  connection::iroha::SumeragiImpl::Verify::receive(
-      [](const std::string& from, std::unique_ptr<ConsensusEvent> event) {
-        logger::info("sumeragi") << "receive!";  // ToDo rewrite
-        logger::info("sumeragi") << "received message! sig:["
-                                 << event->peerSignatures()->size() << "]";
-        {
-          //        logger::info("sumeragi") << "received message! status:[" <<
-          //        event.status() << "]";  if(event.status() == "commited") {
-          //        if(txCache.find(detail::hash(event.transaction())) ==
-          //        txCache.end()) {
-          //            executor::execute(event.transaction());
-          //            txCache[detail::hash(event.transaction())] = "commited";
-          //        }else{
-          // send processTransaction(event) as a task to processing pool
-          // this returns std::future<void> object
-          // (std::future).get() method locks processing until result of
-          // processTransaction will be available but processTransaction returns
-          // void, so we don't have to call it and wait
-          std::function<void()>&& task =
-              std::bind(processTransaction, std::move(event));
-          pool.process(std::move(task));
-        }
-      });
+// ConsensusEvent includes Transaction
+//    auto task = [event = std::move(event)]() mutable {
+//      processTransaction(std::move(event));
+//    };
+//    pool.process(std::move(task));
+
+    // std::function<void()> &&task = std::bind(processTransaction, event);
+    // pool.process(std::move(task));
+  });
+
+  connection::iroha::SumeragiImpl::Verify::receive([](auto&& from, auto&& event) {
+    logger::info("sumeragi") << "receive!";  // ToDo rewrite
+    logger::info("sumeragi") << "received message! sig:["
+                             << event->peerSignatures()->size() << "]";
+    {
+      //        logger::info("sumeragi") << "received message! status:[" <<
+      //        event.status() << "]";  if(event.status() == "commited") {
+      //        if(txCache.find(detail::hash(event.transaction())) ==
+      //        txCache.end()) {
+      //            executor::execute(event.transaction());
+      //            txCache[detail::hash(event.transaction())] = "commited";
+      //        }else{
+      // send processTransaction(event) as a task to processing pool
+      // this returns std::future<void> object
+      // (std::future).get() method locks processing until result of
+      // processTransaction will be available but processTransaction returns
+      // void, so we don't have to call it and wait
+
+      auto task = [event = std::move(event)]() mutable {
+        processTransaction(std::move(event));
+      };
+      pool.process(std::move(task));
+    }
+  });
 
   logger::info("sumeragi") << "initialize numValidatingPeers :"
                            << context->numValidatingPeers;
