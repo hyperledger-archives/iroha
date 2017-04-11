@@ -40,6 +40,13 @@ namespace exception {
     std::domain_error("BaseMethodException [" + functionName + "] in " + filename) {
   }
 
+  DuplicateSetException::DuplicateSetException(
+    const std::string& message,
+    const std::string& file
+  ):
+    std::domain_error("DuplicateSetException: " + message + " in " + file) {
+  }
+
   namespace config {
     ConfigException::ConfigException(
       const std::string& message

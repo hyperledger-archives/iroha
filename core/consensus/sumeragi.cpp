@@ -1,18 +1,27 @@
 /*
-Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
-http://soramitsu.co.jp
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-         http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+ * http://soramitsu.co.jp
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-#include "sumeragi.hpp"
+#include <crypto/base64.hpp>
+#include <crypto/hash.hpp>
+#include <crypto/signature.hpp>
+#include <infra/config/iroha_config_with_json.hpp>
+#include <infra/config/peer_service_with_json.hpp>
+#include <service/executor.hpp>
+#include <service/peer_service.hpp>
+#include <thread_pool.hpp>
+#include <util/logger.hpp>
+
 #include <atomic>
 #include <cmath>
 #include <deque>
@@ -21,22 +30,9 @@ limitations under the License.
 #include <string>
 #include <thread>
 
-#include <thread_pool.hpp>
-
-#include <crypto/hash.hpp>
-#include <crypto/signature.hpp>
-#include <util/logger.hpp>
-
-#include <infra/config/peer_service_with_json.hpp>
-#include <service/peer_service.hpp>
-
+#include "sumeragi.hpp"
 #include "connection/connection.hpp"
 
-#include <infra/config/iroha_config_with_json.hpp>
-#include <infra/config/peer_service_with_json.hpp>
-#include <service/executor.hpp>
-
-#include <crypto/base64.hpp>
 /**
  * |ーーー|　|ーーー|　|ーーー|　|ーーー|
  * |　ス　|ー|　メ　|ー|　ラ　|ー|　ギ　|
@@ -51,7 +47,6 @@ limitations under the License.
  * Springer.
  */
 namespace sumeragi {
-
 
 using iroha::ConsensusEvent;
 using iroha::Signature;
@@ -96,11 +91,8 @@ std::unique_ptr<ConsensusEvent> addSignature(
   for (auto&& c : encodedSignature) {
     encodedSignaturePtr->push_back(c);
   }
-  signatures->emplace_back(
-      iroha::CreateSignatureDirect(
-          fbb, publicKey.c_str(), encodedSignaturePtr
-      )
-  );
+  signatures->emplace_back(iroha::CreateSignatureDirect(fbb, publicKey.c_str(),
+                                                        encodedSignaturePtr));
 
   // Create
   auto event_buf = iroha::CreateConsensusEventDirect(fbb, signatures.get(),
@@ -236,90 +228,70 @@ void initializeSumeragi() {
 
   context = std::make_unique<Context>();
 
-  connection::iroha::SumeragiImpl::Torii::receive(
-      [](const std::string& from, std::unique_ptr<Transaction> transaction) {
-        logger::info("sumeragi") << "receive!";
+  connection::iroha::SumeragiImpl::Torii::receive([](
+      const std::string& from, std::unique_ptr<Transaction> transaction) {
+    logger::info("sumeragi") << "receive!";
 
-          flatbuffers::FlatBufferBuilder fbb;
-          std::unique_ptr<std::vector<flatbuffers::Offset<Signature>>> signatures(
-                  new std::vector<flatbuffers::Offset<Signature>>()
-          );
-          std::unique_ptr<std::vector<flatbuffers::Offset<Transaction>>> transactions(
-                  new std::vector<flatbuffers::Offset<Transaction>>()
-          );
+    flatbuffers::FlatBufferBuilder fbb;
+    std::unique_ptr<std::vector<flatbuffers::Offset<Signature>>> signatures(
+        new std::vector<flatbuffers::Offset<Signature>>());
+    std::unique_ptr<std::vector<flatbuffers::Offset<Transaction>>> transactions(
+        new std::vector<flatbuffers::Offset<Transaction>>());
 
-          std::unique_ptr<std::vector<uint8_t>> _hash(new std::vector<uint8_t>());
-          for(auto d: *transaction->hash()){
-            _hash->emplace_back(d);
-          }
+    std::unique_ptr<std::vector<uint8_t>> _hash(new std::vector<uint8_t>());
+    for (auto d : *transaction->hash()) {
+      _hash->emplace_back(d);
+    }
 
-          std::unique_ptr<std::vector<uint8_t>> data(new std::vector<uint8_t>());
-          for(auto d: *transaction->attachment()->data()){
-            data->emplace_back(d);
-          }
-          iroha::CreateAttachmentDirect(
-              fbb,
-              transaction->attachment()->mime()->c_str(),
-              data.get()
-          );
+    std::unique_ptr<std::vector<uint8_t>> data(new std::vector<uint8_t>());
+    for (auto d : *transaction->attachment()->data()) {
+      data->emplace_back(d);
+    }
+    iroha::CreateAttachmentDirect(
+        fbb, transaction->attachment()->mime()->c_str(), data.get());
 
-          std::unique_ptr<std::vector<flatbuffers::Offset<Signature>>> tx_signatures(
-              new std::vector<flatbuffers::Offset<Signature>>()
-          );
-          for(auto&& txSig: *transaction->signatures()) {
-            std::unique_ptr<std::vector<uint8_t>> _data(new std::vector<uint8_t>());
-            for(auto d: *txSig->signature()){
-              _data->emplace_back(d);
-            }
-            tx_signatures->emplace_back(
-                iroha::CreateSignatureDirect(
-                    fbb, txSig->publicKey()->c_str(), _data.get()
-                )
-            );
-          }
+    std::unique_ptr<std::vector<flatbuffers::Offset<Signature>>> tx_signatures(
+        new std::vector<flatbuffers::Offset<Signature>>());
+    for (auto&& txSig : *transaction->signatures()) {
+      std::unique_ptr<std::vector<uint8_t>> _data(new std::vector<uint8_t>());
+      for (auto d : *txSig->signature()) {
+        _data->emplace_back(d);
+      }
+      tx_signatures->emplace_back(iroha::CreateSignatureDirect(
+          fbb, txSig->publicKey()->c_str(), _data.get()));
+    }
 
-          transactions->emplace_back(
-              iroha::CreateTransactionDirect(fbb,
-               transaction->creatorPubKey()->c_str(),
-               transaction->command_type(),
-               reinterpret_cast<flatbuffers::Offset<void>*>(const_cast<void*>(transaction->command())),
-               tx_signatures.get(),
-               _hash.get(),
-               iroha::CreateAttachmentDirect(
-                   fbb,
-                   transaction->attachment()->mime()->c_str(),
-                   data.get()
-               )
-              )
-          );
+    transactions->emplace_back(iroha::CreateTransactionDirect(
+        fbb, transaction->creatorPubKey()->c_str(), transaction->command_type(),
+        reinterpret_cast<flatbuffers::Offset<void>*>(
+            const_cast<void*>(transaction->command())),
+        tx_signatures.get(), _hash.get(),
+        iroha::CreateAttachmentDirect(
+            fbb, transaction->attachment()->mime()->c_str(), data.get())));
 
-          // Create
-          auto event_buf = iroha::CreateConsensusEventDirect(
-              fbb,
-              signatures.get(),
-              transactions.get()
-          );
-          fbb.Finish(event_buf);
+    // Create
+    auto event_buf = iroha::CreateConsensusEventDirect(fbb, signatures.get(),
+                                                       transactions.get());
+    fbb.Finish(event_buf);
 
-          std::unique_ptr<ConsensusEvent> event(
-            reinterpret_cast<ConsensusEvent*>(fbb.GetBufferPointer())
-          );
-          auto task = [event = std::move(event)]() mutable {
-             processTransaction(std::move(event));
-          };
-          pool.process(std::move(task));
-        
-          // ToDo I think std::unique_ptr<const T> is not popular. Is it?
-          //return std::unique_ptr<ConsensusEvent>(const_cast<ConsensusEvent*>(
-          //                                               flatbuffers::GetRoot<ConsensusEvent>(fbb.GetBufferPointer())));
-        // send processTransaction(event) as a task to processing pool
-        // this returns std::future<void> object
-        // (std::future).get() method locks processing until result of
-        // processTransaction will be available but processTransaction returns
-        // void, so we don't have to call it and wait
-        // std::function<void()> &&task = std::bind(processTransaction, event);
-        // pool.process(std::move(task));
-      });
+    std::unique_ptr<ConsensusEvent> event(
+        reinterpret_cast<ConsensusEvent*>(fbb.GetBufferPointer()));
+    auto task = [event = std::move(event)]() mutable {
+      processTransaction(std::move(event));
+    };
+    pool.process(std::move(task));
+
+    // ToDo I think std::unique_ptr<const T> is not popular. Is it?
+    // return std::unique_ptr<ConsensusEvent>(const_cast<ConsensusEvent*>(
+    //                                               flatbuffers::GetRoot<ConsensusEvent>(fbb.GetBufferPointer())));
+    // send processTransaction(event) as a task to processing pool
+    // this returns std::future<void> object
+    // (std::future).get() method locks processing until result of
+    // processTransaction will be available but processTransaction returns
+    // void, so we don't have to call it and wait
+    // std::function<void()> &&task = std::bind(processTransaction, event);
+    // pool.process(std::move(task));
+  });
 
   connection::iroha::SumeragiImpl::Verify::receive(
       [](const std::string& from, std::unique_ptr<ConsensusEvent> event) {
@@ -341,9 +313,9 @@ void initializeSumeragi() {
           // void, so we don't have to call it and wait
           // std::function<void()>&& task =
           //    std::bind(processTransaction, std::move(event));
-          //pool.process(std::move(task));
+          // pool.process(std::move(task));
           auto task = [event = std::move(event)]() mutable {
-             processTransaction(std::move(event));
+            processTransaction(std::move(event));
           };
           pool.process(std::move(task));
         }
