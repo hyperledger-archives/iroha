@@ -301,6 +301,11 @@ void initializeSumeragi() {
           );
           fbb.Finish(event_buf);
 
+          auto task = [event = std::move(event)]() mutable {
+             processTransaction(std::move(event));
+          };
+          pool.process(std::move(task));
+        
           // ToDo I think std::unique_ptr<const T> is not popular. Is it?
           //return std::unique_ptr<ConsensusEvent>(const_cast<ConsensusEvent*>(
           //                                               flatbuffers::GetRoot<ConsensusEvent>(fbb.GetBufferPointer())));
@@ -334,6 +339,10 @@ void initializeSumeragi() {
           // std::function<void()>&& task =
           //    std::bind(processTransaction, std::move(event));
           //pool.process(std::move(task));
+          auto task = [event = std::move(event)]() mutable {
+             processTransaction(std::move(event));
+          };
+          pool.process(std::move(task));
         }
       });
 
