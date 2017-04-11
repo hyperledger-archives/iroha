@@ -301,6 +301,9 @@ void initializeSumeragi() {
           );
           fbb.Finish(event_buf);
 
+          std::unique_ptr<ConsensusEvent> event(
+            reinterpret_cast<ConsensusEvent*>(fbb.GetBufferPointer())
+          );
           auto task = [event = std::move(event)]() mutable {
              processTransaction(std::move(event));
           };
