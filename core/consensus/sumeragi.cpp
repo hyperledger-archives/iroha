@@ -231,7 +231,6 @@ void initializeSumeragi() {
   connection::iroha::SumeragiImpl::Torii::receive(
       [](const std::string& from, std::unique_ptr<Transaction> transaction) {
         logger::info("sumeragi") << "receive!";
-
         flatbuffers::FlatBufferBuilder fbb;
 
         std::vector<flatbuffers::Offset<Signature>> signatures;
