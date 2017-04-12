@@ -45,8 +45,8 @@ using CallBackFunc =
     std::function<void(const std::string & /* from */,
                        std::unique_ptr<ConsensusEvent> /* message */)>;
 
-bool send(const std::string &ip, ConsensusEvent &&msg);
-bool sendAll(ConsensusEvent &&msg);
+bool send(const std::string &ip, const std::unique_ptr<ConsensusEvent>& msg);
+bool sendAll(const std::unique_ptr<ConsensusEvent>& msg);
 void receive(Verify::CallBackFunc &&callback);
 
 }}}  // namespace iroha::SumeragiImpl::Verify
