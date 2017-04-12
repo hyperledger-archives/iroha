@@ -57,8 +57,9 @@ void receive(Verify::CallBackFunc &&callback);
 namespace iroha { namespace SumeragiImpl { namespace Torii {
 
 
-using CallBackFunc = std::function<void(const std::string & /* from */,
-                                        std::unique_ptr<Transaction> /* message */)>;
+using CallBackFunc = std::function<void(
+    const std::string & /* from */,
+    std::unique_ptr<Transaction> /* message */)>;
 
 void receive(Torii::CallBackFunc &&callback);
 
