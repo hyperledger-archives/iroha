@@ -27,12 +27,15 @@ namespace config {
 
 class PeerServiceConfig : config::AbstractConfigManager {
  private:
-  PeerServiceConfig() : AbstractConfigManager() {}
 
- protected:
-  void parseConfigDataFromString(std::string&& jsonStr) override;
+    PeerServiceConfig():config::AbstractConfigManager(){}
+    ~PeerServiceConfig(){}
+
+protected:
+  void parseConfigDataFromString(std::string&& jsonStr);
 
  public:
+
   std::string getMyPublicKeyWithDefault(const std::string& defaultValue);
   std::string getMyPrivateKeyWithDefault(const std::string& defaultValue);
   std::string getMyIpWithDefault(const std::string& defaultValue);
@@ -45,7 +48,7 @@ class PeerServiceConfig : config::AbstractConfigManager {
 
   double getMaxTrustScore();
 
-  virtual std::string getConfigName() override { return "PeerServiceConfig"; }
+  std::string getConfigName() override { return "PeerServiceConfig"; }
 };
 }  // namespace config
 

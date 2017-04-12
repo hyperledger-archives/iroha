@@ -61,7 +61,7 @@ class AbstractConfigManager {
   }
 
  protected:
-  virtual void parseConfigDataFromString(std::string&& jsonStr) {
+   void parseConfigDataFromString(std::string&& jsonStr) {
     try {
       _configData = json::parse(std::move(jsonStr));
     } catch (...) {
