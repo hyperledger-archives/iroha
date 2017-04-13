@@ -105,7 +105,11 @@ std::unique_ptr<ConsensusEvent> addSignature(
 }
 
 bool eventSignatureIsEmpty(const std::unique_ptr<ConsensusEvent>& event) {
-  return event->peerSignatures()->size() == 0;
+  if(event->peerSignatures() != nullptr){
+      return event->peerSignatures()->size() == 0;
+  }else{
+      return 0;
+  }
 }
 
 void printJudge(int numValidSignatures, int numValidationPeer, int faulty) {
@@ -235,34 +239,57 @@ void initializeSumeragi() {
 
         std::vector<flatbuffers::Offset<Signature>> signatures;
         std::vector<flatbuffers::Offset<Transaction>> transactions;
-        std::vector<uint8_t> _hash(*transaction->hash()->begin(),
-                                   *transaction->hash()->end());
-        std::vector<uint8_t> data(*transaction->attachment()->data()->begin(),
-                                  *transaction->attachment()->data()->end());
-
-        iroha::CreateAttachmentDirect(
-            fbb, transaction->attachment()->mime()->c_str(), &data);
+        std::vector<uint8_t> _hash;
+        std::vector<uint8_t> data;
+        flatbuffers::Offset<::iroha::Attachment> attachment = 0;
+        if(transaction->hash() != nullptr) {
+            _hash.assign(
+                    *transaction->hash()->begin(),
+                    *transaction->hash()->end()
+            );
+        }
+        if(transaction->attachment() != nullptr &&
+            transaction->attachment()->data() != nullptr) {
+            data.assign(
+                    *transaction->attachment()->data()->begin(),
+                    *transaction->attachment()->data()->end()
+            );
+            attachment = iroha::CreateAttachmentDirect(
+                    fbb, transaction->attachment()->mime()->c_str(), &data);
+        }
 
         std::vector<flatbuffers::Offset<Signature>> tx_signatures;
 
-        for (auto&& txSig : *transaction->signatures()) {
-          std::vector<uint8_t> _data;
-          for (auto d : *txSig->signature()) {
-            _data.emplace_back(d);
-          }
-          tx_signatures.emplace_back(iroha::CreateSignatureDirect(
-              fbb, txSig->publicKey()->c_str(), &_data));
+        if(transaction->signatures() != nullptr) {
+            for (auto &&txSig : *transaction->signatures()) {
+                std::vector<uint8_t> _data;
+                if(txSig->signature() != nullptr) {
+                    for (auto d : *txSig->signature()) {
+                        _data.emplace_back(d);
+                    }
+                    tx_signatures.emplace_back(iroha::CreateSignatureDirect(
+                            fbb, txSig->publicKey()->c_str(), &_data));
+                }
+            }
         }
+
+        std::vector<uint8_t> account;
+        std::unique_ptr<std::vector<uint8_t>> aa(
+                new std::vector<uint8_t>(
+                  transaction->command_as_AccountAdd()->account()->begin(),
+                  transaction->command_as_AccountAdd()->account()->end()
+                )
+        );
+
+        auto command = iroha::CreateAccountAddDirect(fbb, aa.get());
 
         transactions.emplace_back(iroha::CreateTransactionDirect(
             fbb, transaction->creatorPubKey()->c_str(),
             transaction
                 ->command_type(),  // confusing name, transactions / transaction
-            reinterpret_cast<flatbuffers::Offset<void>*>(
-                const_cast<void*>(transaction->command())),
+            command.Union(),
             &tx_signatures, &_hash,
-            iroha::CreateAttachmentDirect(
-                fbb, transaction->attachment()->mime()->c_str(), &data)));
+            attachment));
 
         // Create
         auto event_buf =
