@@ -1,3 +1,5 @@
+# Use for remove "error: cast from 'const iroha::Signature*' to 'flatbuffers::uoffset_t {aka unsigned int}' loses precision"
+set(CMAKE_CXX_FLAGS "-g -std=c++1y -Wall -fPIC -fpermissive")
 
 ADD_LIBRARY(http_client STATIC
     http_client.cpp
