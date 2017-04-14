@@ -412,9 +412,8 @@ void processTransaction(std::unique_ptr<ConsensusEvent> event) {
   } else if (!detail::eventSignatureIsEmpty(event)) {
     // Check if we have at least 2f+1 signatures needed for Byzantine fault
     // tolerance ToDo re write
-    // if (transaction_validator::countValidSignatures(event) >=
-    // context->maxFaulty * 2 + 1) {
-    if (true) {
+    if (event->peerSignatures() != nullptr && event->peerSignatures()->size() >=
+        context->maxFaulty * 2 + 1) {
       logger::info("sumeragi") << "Signature exists";
 
       logger::explore("sumeragi") << "0--------------------------0";
@@ -432,7 +431,7 @@ void processTransaction(std::unique_ptr<ConsensusEvent> event) {
       detail::printJudge(
           // ToDo Re write
           1  // transaction_validator::countValidSignatures(event)
-          ,
+        ,
           context->numValidatingPeers, context->maxFaulty * 2 + 1);
 
       detail::printAgree();
@@ -453,41 +452,34 @@ void processTransaction(std::unique_ptr<ConsensusEvent> event) {
 
     } else {
       // This is a new event, so we should verify, sign, and broadcast it
-      /*
-       * detail::addSignature(
-         event,
-         config::PeerServiceConfig::getInstance().getMyPublicKey(),
-         "",
-         // ToDo
-         config::PeerServiceConfig::getInstance().getMyPublicKey().
-         config::PeerServiceConfig::getInstance().getMyPrivateKey()).c_str()
-      );
+      event = std::move(detail::addSignature(
+         std::move(event),
+         config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault("Invalid"), // ??
+         ""
+      ));
 
       logger::info("sumeragi")        <<  "tail public key is "   <<
-      context->validatingPeers.at(context->proxyTailNdx)->getPublicKey();
+      context->validatingPeers.at(context->proxyTailNdx)->publicKey;
       logger::info("sumeragi")        <<  "tail is "              <<
-      context->proxyTailNdx; logger::info("sumeragi")        <<  "my public key
-      is "     <<  config::PeerServiceConfig::getInstance().getMyPublicKey();
+      context->proxyTailNdx; logger::info("sumeragi")        <<  "my public key is "     <<  config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault("Invalid");
 
-      if (context->validatingPeers.at(context->proxyTailNdx)->getPublicKey() ==
-      config::PeerServiceConfig::getInstance().getMyPublicKey()) {
-          // logger::info("sumeragi")    <<  "I will send event to " <<
-      context->validatingPeers.at(context->proxyTailNdx)->getIP();
-          connection::iroha::SumeragiImpl::Verify::send(context->validatingPeers.at(context->proxyTailNdx)->getIP(),
-      std::move(event)); // Think In Process } else {
-          //logger::info("sumeragi")    <<  "Send All! sig:["       <<
-      transaction_validator::countValidSignatures(event) << "]";
+      if (context->validatingPeers.at(context->proxyTailNdx)->publicKey ==
+          config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault("Invalid")
+      ) {
+          logger::info("sumeragi")    <<  "I will send event to " <<
+          context->validatingPeers.at(context->proxyTailNdx)->ip;
+          connection::iroha::SumeragiImpl::Verify::send(
+              context->validatingPeers.at(context->proxyTailNdx)->ip,
+              std::move(event)
+          ); // Think In Process
+      } else {
+          //logger::info("sumeragi")    <<  "Send All! sig:["       << event->peerSignatures()->size() << "]";
           connection::iroha::SumeragiImpl::Verify::sendAll(std::move(event)); //
-      TODO: Think In Process
       }
 
       setAwkTimer(3000, [&](){
-          // if
-      (!merkle_transaction_repository::leafExists(detail::hash(event.transaction())))
-      { panic(event);
-          // }
+
       });
-      */
     }
   }
 }
