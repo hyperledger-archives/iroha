@@ -19,6 +19,7 @@ limitations under the License.
 #include <regex>
 
 #include <json.hpp>
+#include <infra/config/config_utils.hpp>
 
 #include "util/ip_tools.hpp"
 
@@ -26,7 +27,7 @@ using json = nlohmann::json;
 
 TEST(config, isSystemConfigValid) {
   const auto irohaHome = []() -> std::string {
-    auto p = getenv("IROHA_HOME");
+    auto p = config::get_iroha_home();
     return p == nullptr ? "" : std::string(p);
   }();
 

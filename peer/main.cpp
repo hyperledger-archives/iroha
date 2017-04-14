@@ -41,7 +41,8 @@ int main() {
   signal(SIGHUP, sigHandler);
   signal(SIGTERM, sigHandler);
 
-  if (getenv("IROHA_HOME") == nullptr) {
+  auto iroha_home = config::get_iroha_home();
+  if (iroha_home == nullptr) {
     logger::error("main") << "You must set IROHA_HOME!";
     return 1;
   }
