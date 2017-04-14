@@ -87,10 +87,11 @@ std::unique_ptr<ConsensusEvent> addSignature(
           signatures->emplace_back(reinterpret_cast<flatbuffers::uoffset_t>(sig));
       }
   }
-  for (auto&& tx : *event->transactions()) {
-    transactions->emplace_back(tx);
+  if(event->transactions() != nullptr) {
+      for(auto &&tx : *event->transactions()) {
+          transactions->emplace_back(tx);
+      }
   }
-
   // Add signature
   std::vector<uint8_t>* encodedSignaturePtr = new std::vector<uint8_t>();
   auto encodedSignature = base64::decode(signature);
