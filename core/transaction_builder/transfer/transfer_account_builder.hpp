@@ -33,7 +33,7 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Account>> {
 
   TransactionBuilder& setSenderPublicKey(std::string sender) {
     if (_isSetSenderPublicKey) {
-      throw exception::txbuilder::DuplicateSetArgmentException(
+      throw exception::txbuilder::DuplicateSetArgumentException(
           "Transfer<Account>", "senderPublicKey");
     }
     _isSetSenderPublicKey = true;
@@ -43,7 +43,7 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Account>> {
 
   TransactionBuilder& setReceiverPublicKey(std::string receiverPublicKey) {
     if (_isSetReceiverPublicKey) {
-      throw exception::txbuilder::DuplicateSetArgmentException(
+      throw exception::txbuilder::DuplicateSetArgumentException(
           "Transfer<Account>", "receiverPublicKey");
     }
     _isSetReceiverPublicKey = true;
@@ -53,7 +53,7 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Account>> {
 
   TransactionBuilder& setAccount(Api::Account object) {
     if (_isSetAccount) {
-      throw exception::txbuilder::DuplicateSetArgmentException(
+      throw exception::txbuilder::DuplicateSetArgumentException(
           "Transfer<Account>", "Account");
     }
     _isSetAccount = true;
@@ -64,7 +64,7 @@ class TransactionBuilder<type_signatures::Transfer<type_signatures::Account>> {
   Api::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::txbuilder::UnsetBuildArgmentsException(
+      throw exception::txbuilder::UnsetBuildArgumentsException(
           "Transfer<Account>", unsetMembers);
     }
     Api::Transaction ret;

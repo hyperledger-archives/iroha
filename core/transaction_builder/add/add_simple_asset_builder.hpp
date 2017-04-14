@@ -33,7 +33,7 @@ class TransactionBuilder<type_signatures::Add<type_signatures::SimpleAsset>> {
 
   TransactionBuilder& setSenderPublicKey(std::string senderPublicKey) {
     if (_isSetSenderPublicKey) {
-      throw exception::txbuilder::DuplicateSetArgmentException(
+      throw exception::txbuilder::DuplicateSetArgumentException(
           "Add<SimpleAsset>", "senderPublicKey");
     }
     _isSetSenderPublicKey = true;
@@ -43,7 +43,7 @@ class TransactionBuilder<type_signatures::Add<type_signatures::SimpleAsset>> {
 
   TransactionBuilder& setSimpleAsset(Api::SimpleAsset object) {
     if (_isSetSimpleAsset) {
-      throw exception::txbuilder::DuplicateSetArgmentException(
+      throw exception::txbuilder::DuplicateSetArgumentException(
           "Add<SimpleAsset>", "SimpleAsset");
     }
     _isSetSimpleAsset = true;
@@ -54,7 +54,7 @@ class TransactionBuilder<type_signatures::Add<type_signatures::SimpleAsset>> {
   Api::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::txbuilder::UnsetBuildArgmentsException(
+      throw exception::txbuilder::UnsetBuildArgumentsException(
           "Add<SimpleAsset>", unsetMembers);
     }
     Api::Transaction ret;

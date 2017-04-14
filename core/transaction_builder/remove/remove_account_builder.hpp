@@ -33,7 +33,7 @@ class TransactionBuilder<type_signatures::Remove<type_signatures::Account>> {
 
   TransactionBuilder& setSenderPublicKey(std::string sender) {
     if (_isSetSenderPublicKey) {
-      throw exception::txbuilder::DuplicateSetArgmentException(
+      throw exception::txbuilder::DuplicateSetArgumentException(
           "Remove<Account>", "senderPublicKey");
     }
     _isSetSenderPublicKey = true;
@@ -43,7 +43,7 @@ class TransactionBuilder<type_signatures::Remove<type_signatures::Account>> {
 
   TransactionBuilder& setAccount(Api::Account object) {
     if (_isSetAccount) {
-      throw exception::txbuilder::DuplicateSetArgmentException(
+      throw exception::txbuilder::DuplicateSetArgumentException(
           "Remove<Account>", "Account");
     }
     _isSetAccount = true;
@@ -54,7 +54,7 @@ class TransactionBuilder<type_signatures::Remove<type_signatures::Account>> {
   Api::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::txbuilder::UnsetBuildArgmentsException("Remove<Account>",
+      throw exception::txbuilder::UnsetBuildArgumentsException("Remove<Account>",
                                                               unsetMembers);
     }
     Api::Transaction ret;

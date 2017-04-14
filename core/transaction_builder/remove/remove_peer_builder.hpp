@@ -33,7 +33,7 @@ class TransactionBuilder<type_signatures::Remove<type_signatures::Peer>> {
 
   TransactionBuilder& setSenderPublicKey(std::string sender) {
     if (_isSetSenderPublicKey) {
-      throw exception::txbuilder::DuplicateSetArgmentException(
+      throw exception::txbuilder::DuplicateSetArgumentException(
           "Remove<Peer>", "senderPublicKey");
     }
     _isSetSenderPublicKey = true;
@@ -43,7 +43,7 @@ class TransactionBuilder<type_signatures::Remove<type_signatures::Peer>> {
 
   TransactionBuilder& setPeer(Api::Peer object) {
     if (_isSetPeer) {
-      throw exception::txbuilder::DuplicateSetArgmentException("Remove<Peer>",
+      throw exception::txbuilder::DuplicateSetArgumentException("Remove<Peer>",
                                                                "Peer");
     }
     _isSetPeer = true;
@@ -54,7 +54,7 @@ class TransactionBuilder<type_signatures::Remove<type_signatures::Peer>> {
   Api::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::txbuilder::UnsetBuildArgmentsException("Remove<Peer>",
+      throw exception::txbuilder::UnsetBuildArgumentsException("Remove<Peer>",
                                                               unsetMembers);
     }
     Api::Transaction ret;

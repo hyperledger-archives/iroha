@@ -33,7 +33,7 @@ class TransactionBuilder<type_signatures::Add<type_signatures::Domain>> {
 
   TransactionBuilder& setSenderPublicKey(std::string senderPublicKey) {
     if (_isSetSenderPublicKey) {
-      throw exception::txbuilder::DuplicateSetArgmentException(
+      throw exception::txbuilder::DuplicateSetArgumentException(
           "Add<Domain>", "senderPublicKey");
     }
     _isSetSenderPublicKey = true;
@@ -43,7 +43,7 @@ class TransactionBuilder<type_signatures::Add<type_signatures::Domain>> {
 
   TransactionBuilder& setDomain(Api::Domain object) {
     if (_isSetDomain) {
-      throw exception::txbuilder::DuplicateSetArgmentException("Add<Domain>",
+      throw exception::txbuilder::DuplicateSetArgumentException("Add<Domain>",
                                                                "Domain");
     }
     _isSetDomain = true;
@@ -54,7 +54,7 @@ class TransactionBuilder<type_signatures::Add<type_signatures::Domain>> {
   Api::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::txbuilder::UnsetBuildArgmentsException("Add<Domain>",
+      throw exception::txbuilder::UnsetBuildArgumentsException("Add<Domain>",
                                                               unsetMembers);
     }
     Api::Transaction ret;
