@@ -69,6 +69,16 @@ public:
     receiver_ = std::make_shared<CallBackFunc>(rhs);
   }
 
+  // ToDo rewrite operator() overload.
+  void invoke(const std::string& from, std::unique_ptr<::iroha::Transaction> argv){
+      (*receiver_)(from, std::move(argv));
+  }
+
+  // ToDo rewrite operator() overload.
+  void invoke(const std::string& from, std::unique_ptr<::iroha::ConsensusEvent> argv){
+      (*receiver_)(from, std::move(argv));
+  }
+
 private:
   std::shared_ptr<CallBackFunc> receiver_;
 };
@@ -78,7 +88,7 @@ private:
  ************************************************************************************/
 namespace iroha { namespace SumeragiImpl { namespace Verify {
 
-Receiver<Verify::CallBackFunc> receiver;
+    Receiver<Verify::CallBackFunc> receiver;
 
 /**
  * Receive callback
@@ -90,7 +100,6 @@ void receive(Verify::CallBackFunc&& callback) {
 bool send(const std::string& ip,const std::unique_ptr<ConsensusEvent>& event) {
   // ToDo
   if(config::PeerServiceConfig::getInstance().isExistIP(ip)){
-
       return true;
   }
   return false;
@@ -271,6 +280,13 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
                 const flatbuffers::BufferRef<ConsensusEvent>* request,
                 flatbuffers::BufferRef<Response>* response) override {
     const ::iroha::ConsensusEvent* event = request->GetRoot();
+    const std::string from = "from";
+    iroha::SumeragiImpl::Verify::receiver.invoke(
+      from,
+      std::unique_ptr<::iroha::ConsensusEvent>(
+        const_cast<::iroha::ConsensusEvent*>(event)
+      )
+    );
     return Status::OK;
   }
 
@@ -283,6 +299,13 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
     // Since we keep reusing the same FlatBufferBuilder, the memory it owns
     // remains valid until the next call (this BufferRef doesn't own the
     // memory it points to).
+    iroha::SumeragiImpl::Torii::receiver.invoke(
+        "from",
+        std::unique_ptr<::iroha::Transaction>(
+            const_cast<::iroha::Transaction*>(transaction->GetRoot())
+        )
+    );
+
     *response = flatbuffers::BufferRef<::iroha::Response>(
        fbb.GetBufferPointer(),
        fbb.GetSize());

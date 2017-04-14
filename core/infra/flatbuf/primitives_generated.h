@@ -105,6 +105,9 @@ struct Chaincode FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *code_name() const {
     return GetPointer<const flatbuffers::String *>(VT_CODE_NAME);
   }
+  flatbuffers::String *mutable_code_name() {
+    return GetPointer<flatbuffers::String *>(VT_CODE_NAME);
+  }
   bool KeyCompareLessThan(const Chaincode *o) const {
     return *code_name() < *o->code_name();
   }
@@ -114,14 +117,26 @@ struct Chaincode FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *domain_name() const {
     return GetPointer<const flatbuffers::String *>(VT_DOMAIN_NAME);
   }
+  flatbuffers::String *mutable_domain_name() {
+    return GetPointer<flatbuffers::String *>(VT_DOMAIN_NAME);
+  }
   const flatbuffers::String *ledger_name() const {
     return GetPointer<const flatbuffers::String *>(VT_LEDGER_NAME);
+  }
+  flatbuffers::String *mutable_ledger_name() {
+    return GetPointer<flatbuffers::String *>(VT_LEDGER_NAME);
   }
   ProgrammingLanguage language() const {
     return static_cast<ProgrammingLanguage>(GetField<uint8_t>(VT_LANGUAGE, 0));
   }
+  bool mutate_language(ProgrammingLanguage _language) {
+    return SetField<uint8_t>(VT_LANGUAGE, static_cast<uint8_t>(_language), 0);
+  }
   const flatbuffers::Vector<uint8_t> *code() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_CODE);
+  }
+  flatbuffers::Vector<uint8_t> *mutable_code() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_CODE);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -213,6 +228,9 @@ struct KeyValueObject FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *key() const {
     return GetPointer<const flatbuffers::String *>(VT_KEY);
   }
+  flatbuffers::String *mutable_key() {
+    return GetPointer<flatbuffers::String *>(VT_KEY);
+  }
   bool KeyCompareLessThan(const KeyValueObject *o) const {
     return *key() < *o->key();
   }
@@ -221,6 +239,9 @@ struct KeyValueObject FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   const flatbuffers::Vector<uint8_t> *value() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_VALUE);
+  }
+  flatbuffers::Vector<uint8_t> *mutable_value() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_VALUE);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -284,8 +305,14 @@ struct UserPermissionRoot FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool ledger_add() const {
     return GetField<uint8_t>(VT_LEDGER_ADD, 0) != 0;
   }
+  bool mutate_ledger_add(bool _ledger_add) {
+    return SetField<uint8_t>(VT_LEDGER_ADD, static_cast<uint8_t>(_ledger_add), 0);
+  }
   bool ledger_remove() const {
     return GetField<uint8_t>(VT_LEDGER_REMOVE, 0) != 0;
+  }
+  bool mutate_ledger_remove(bool _ledger_remove) {
+    return SetField<uint8_t>(VT_LEDGER_REMOVE, static_cast<uint8_t>(_ledger_remove), 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -340,6 +367,9 @@ struct UserPermissionLedger FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table
   const flatbuffers::String *ledger_name() const {
     return GetPointer<const flatbuffers::String *>(VT_LEDGER_NAME);
   }
+  flatbuffers::String *mutable_ledger_name() {
+    return GetPointer<flatbuffers::String *>(VT_LEDGER_NAME);
+  }
   bool KeyCompareLessThan(const UserPermissionLedger *o) const {
     return *ledger_name() < *o->ledger_name();
   }
@@ -349,23 +379,44 @@ struct UserPermissionLedger FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table
   bool domain_add() const {
     return GetField<uint8_t>(VT_DOMAIN_ADD, 0) != 0;
   }
+  bool mutate_domain_add(bool _domain_add) {
+    return SetField<uint8_t>(VT_DOMAIN_ADD, static_cast<uint8_t>(_domain_add), 0);
+  }
   bool domain_remove() const {
     return GetField<uint8_t>(VT_DOMAIN_REMOVE, 0) != 0;
+  }
+  bool mutate_domain_remove(bool _domain_remove) {
+    return SetField<uint8_t>(VT_DOMAIN_REMOVE, static_cast<uint8_t>(_domain_remove), 0);
   }
   bool peer_add() const {
     return GetField<uint8_t>(VT_PEER_ADD, 0) != 0;
   }
+  bool mutate_peer_add(bool _peer_add) {
+    return SetField<uint8_t>(VT_PEER_ADD, static_cast<uint8_t>(_peer_add), 0);
+  }
   bool peer_remove() const {
     return GetField<uint8_t>(VT_PEER_REMOVE, 0) != 0;
+  }
+  bool mutate_peer_remove(bool _peer_remove) {
+    return SetField<uint8_t>(VT_PEER_REMOVE, static_cast<uint8_t>(_peer_remove), 0);
   }
   bool user_add() const {
     return GetField<uint8_t>(VT_USER_ADD, 0) != 0;
   }
+  bool mutate_user_add(bool _user_add) {
+    return SetField<uint8_t>(VT_USER_ADD, static_cast<uint8_t>(_user_add), 0);
+  }
   bool user_remove() const {
     return GetField<uint8_t>(VT_USER_REMOVE, 0) != 0;
   }
+  bool mutate_user_remove(bool _user_remove) {
+    return SetField<uint8_t>(VT_USER_REMOVE, static_cast<uint8_t>(_user_remove), 0);
+  }
   bool user_give_permission() const {
     return GetField<uint8_t>(VT_USER_GIVE_PERMISSION, 0) != 0;
+  }
+  bool mutate_user_give_permission(bool _user_give_permission) {
+    return SetField<uint8_t>(VT_USER_GIVE_PERMISSION, static_cast<uint8_t>(_user_give_permission), 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -477,6 +528,9 @@ struct UserPermissionDomain FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table
   const flatbuffers::String *domain_name() const {
     return GetPointer<const flatbuffers::String *>(VT_DOMAIN_NAME);
   }
+  flatbuffers::String *mutable_domain_name() {
+    return GetPointer<flatbuffers::String *>(VT_DOMAIN_NAME);
+  }
   bool KeyCompareLessThan(const UserPermissionDomain *o) const {
     return *domain_name() < *o->domain_name();
   }
@@ -486,14 +540,26 @@ struct UserPermissionDomain FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table
   const flatbuffers::String *ledger_name() const {
     return GetPointer<const flatbuffers::String *>(VT_LEDGER_NAME);
   }
+  flatbuffers::String *mutable_ledger_name() {
+    return GetPointer<flatbuffers::String *>(VT_LEDGER_NAME);
+  }
   bool user_give_permission() const {
     return GetField<uint8_t>(VT_USER_GIVE_PERMISSION, 0) != 0;
+  }
+  bool mutate_user_give_permission(bool _user_give_permission) {
+    return SetField<uint8_t>(VT_USER_GIVE_PERMISSION, static_cast<uint8_t>(_user_give_permission), 0);
   }
   bool user_add() const {
     return GetField<uint8_t>(VT_USER_ADD, 0) != 0;
   }
+  bool mutate_user_add(bool _user_add) {
+    return SetField<uint8_t>(VT_USER_ADD, static_cast<uint8_t>(_user_add), 0);
+  }
   bool user_remove() const {
     return GetField<uint8_t>(VT_USER_REMOVE, 0) != 0;
+  }
+  bool mutate_user_remove(bool _user_remove) {
+    return SetField<uint8_t>(VT_USER_REMOVE, static_cast<uint8_t>(_user_remove), 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -585,6 +651,9 @@ struct UserPermissionAsset FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table 
   const flatbuffers::String *asset_name() const {
     return GetPointer<const flatbuffers::String *>(VT_ASSET_NAME);
   }
+  flatbuffers::String *mutable_asset_name() {
+    return GetPointer<flatbuffers::String *>(VT_ASSET_NAME);
+  }
   bool KeyCompareLessThan(const UserPermissionAsset *o) const {
     return *asset_name() < *o->asset_name();
   }
@@ -594,20 +663,38 @@ struct UserPermissionAsset FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table 
   const flatbuffers::String *domain_name() const {
     return GetPointer<const flatbuffers::String *>(VT_DOMAIN_NAME);
   }
+  flatbuffers::String *mutable_domain_name() {
+    return GetPointer<flatbuffers::String *>(VT_DOMAIN_NAME);
+  }
   const flatbuffers::String *ledger_name() const {
     return GetPointer<const flatbuffers::String *>(VT_LEDGER_NAME);
+  }
+  flatbuffers::String *mutable_ledger_name() {
+    return GetPointer<flatbuffers::String *>(VT_LEDGER_NAME);
   }
   bool transfer() const {
     return GetField<uint8_t>(VT_TRANSFER, 0) != 0;
   }
+  bool mutate_transfer(bool _transfer) {
+    return SetField<uint8_t>(VT_TRANSFER, static_cast<uint8_t>(_transfer), 0);
+  }
   bool add() const {
     return GetField<uint8_t>(VT_ADD, 0) != 0;
+  }
+  bool mutate_add(bool _add) {
+    return SetField<uint8_t>(VT_ADD, static_cast<uint8_t>(_add), 0);
   }
   bool remove() const {
     return GetField<uint8_t>(VT_REMOVE, 0) != 0;
   }
+  bool mutate_remove(bool _remove) {
+    return SetField<uint8_t>(VT_REMOVE, static_cast<uint8_t>(_remove), 0);
+  }
   bool create() const {
     return GetField<uint8_t>(VT_CREATE, 0) != 0;
+  }
+  bool mutate_create(bool _create) {
+    return SetField<uint8_t>(VT_CREATE, static_cast<uint8_t>(_create), 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -718,20 +805,38 @@ struct Peer FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *publicKey() const {
     return GetPointer<const flatbuffers::String *>(VT_PUBLICKEY);
   }
+  flatbuffers::String *mutable_publicKey() {
+    return GetPointer<flatbuffers::String *>(VT_PUBLICKEY);
+  }
   const flatbuffers::String *ip() const {
     return GetPointer<const flatbuffers::String *>(VT_IP);
+  }
+  flatbuffers::String *mutable_ip() {
+    return GetPointer<flatbuffers::String *>(VT_IP);
   }
   double trust() const {
     return GetField<double>(VT_TRUST, 0.0);
   }
+  bool mutate_trust(double _trust) {
+    return SetField<double>(VT_TRUST, _trust, 0.0);
+  }
   bool active() const {
     return GetField<uint8_t>(VT_ACTIVE, 0) != 0;
+  }
+  bool mutate_active(bool _active) {
+    return SetField<uint8_t>(VT_ACTIVE, static_cast<uint8_t>(_active), 0);
   }
   bool join_network() const {
     return GetField<uint8_t>(VT_JOIN_NETWORK, 0) != 0;
   }
+  bool mutate_join_network(bool _join_network) {
+    return SetField<uint8_t>(VT_JOIN_NETWORK, static_cast<uint8_t>(_join_network), 0);
+  }
   bool join_validation() const {
     return GetField<uint8_t>(VT_JOIN_VALIDATION, 0) != 0;
+  }
+  bool mutate_join_validation(bool _join_validation) {
+    return SetField<uint8_t>(VT_JOIN_VALIDATION, static_cast<uint8_t>(_join_validation), 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -827,11 +932,20 @@ struct Signature FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *publicKey() const {
     return GetPointer<const flatbuffers::String *>(VT_PUBLICKEY);
   }
+  flatbuffers::String *mutable_publicKey() {
+    return GetPointer<flatbuffers::String *>(VT_PUBLICKEY);
+  }
   const flatbuffers::Vector<uint8_t> *signature() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_SIGNATURE);
   }
+  flatbuffers::Vector<uint8_t> *mutable_signature() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_SIGNATURE);
+  }
   uint64_t timestamp() const {
     return GetField<uint64_t>(VT_TIMESTAMP, 0);
+  }
+  bool mutate_timestamp(uint64_t _timestamp) {
+    return SetField<uint64_t>(VT_TIMESTAMP, _timestamp, 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&

@@ -25,14 +25,26 @@ struct Account FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *pubKey() const {
     return GetPointer<const flatbuffers::String *>(VT_PUBKEY);
   }
+  flatbuffers::String *mutable_pubKey() {
+    return GetPointer<flatbuffers::String *>(VT_PUBKEY);
+  }
   const flatbuffers::String *alias() const {
     return GetPointer<const flatbuffers::String *>(VT_ALIAS);
+  }
+  flatbuffers::String *mutable_alias() {
+    return GetPointer<flatbuffers::String *>(VT_ALIAS);
   }
   const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *signatories() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_SIGNATORIES);
   }
+  flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *mutable_signatories() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_SIGNATORIES);
+  }
   uint16_t useKeys() const {
     return GetField<uint16_t>(VT_USEKEYS, 1);
+  }
+  bool mutate_useKeys(uint16_t _useKeys) {
+    return SetField<uint16_t>(VT_USEKEYS, _useKeys, 1);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -112,8 +124,14 @@ struct Message FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *accPubKey() const {
     return GetPointer<const flatbuffers::String *>(VT_ACCPUBKEY);
   }
+  flatbuffers::String *mutable_accPubKey() {
+    return GetPointer<flatbuffers::String *>(VT_ACCPUBKEY);
+  }
   const flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *data() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *>(VT_DATA);
+  }
+  flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *mutable_data() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *>(VT_DATA);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&

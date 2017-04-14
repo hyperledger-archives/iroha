@@ -49,8 +49,14 @@ struct ConsensusEvent FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>> *peerSignatures() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>> *>(VT_PEERSIGNATURES);
   }
+  flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>> *mutable_peerSignatures() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>> *>(VT_PEERSIGNATURES);
+  }
   const flatbuffers::Vector<flatbuffers::Offset<iroha::Transaction>> *transactions() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<iroha::Transaction>> *>(VT_TRANSACTIONS);
+  }
+  flatbuffers::Vector<flatbuffers::Offset<iroha::Transaction>> *mutable_transactions() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<iroha::Transaction>> *>(VT_TRANSACTIONS);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -114,11 +120,20 @@ struct TransactionResponse FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table 
   const flatbuffers::String *message() const {
     return GetPointer<const flatbuffers::String *>(VT_MESSAGE);
   }
+  flatbuffers::String *mutable_message() {
+    return GetPointer<flatbuffers::String *>(VT_MESSAGE);
+  }
   Code code() const {
     return static_cast<Code>(GetField<uint8_t>(VT_CODE, 0));
   }
+  bool mutate_code(Code _code) {
+    return SetField<uint8_t>(VT_CODE, static_cast<uint8_t>(_code), 0);
+  }
   const iroha::Transaction *transaction() const {
     return GetPointer<const iroha::Transaction *>(VT_TRANSACTION);
+  }
+  iroha::Transaction *mutable_transaction() {
+    return GetPointer<iroha::Transaction *>(VT_TRANSACTION);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -187,8 +202,14 @@ struct ReceiverConfirmation FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table
   const iroha::Signature *signature() const {
     return GetPointer<const iroha::Signature *>(VT_SIGNATURE);
   }
+  iroha::Signature *mutable_signature() {
+    return GetPointer<iroha::Signature *>(VT_SIGNATURE);
+  }
   const flatbuffers::Vector<uint8_t> *hash() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_HASH);
+  }
+  flatbuffers::Vector<uint8_t> *mutable_hash() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_HASH);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&

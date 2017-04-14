@@ -186,6 +186,9 @@ struct AccountAdd FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::Vector<uint8_t> *account() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ACCOUNT);
   }
+  flatbuffers::Vector<uint8_t> *mutable_account() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_ACCOUNT);
+  }
   const iroha::Account *account_nested_root() const {
     const uint8_t* data = account()->Data();
     return flatbuffers::GetRoot<iroha::Account>(data);
@@ -239,6 +242,9 @@ struct AccountRemove FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   };
   const flatbuffers::Vector<uint8_t> *account() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ACCOUNT);
+  }
+  flatbuffers::Vector<uint8_t> *mutable_account() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_ACCOUNT);
   }
   const iroha::Account *account_nested_root() const {
     const uint8_t* data = account()->Data();
@@ -295,8 +301,14 @@ struct AccountAddSignatory FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table 
   const flatbuffers::String *account() const {
     return GetPointer<const flatbuffers::String *>(VT_ACCOUNT);
   }
+  flatbuffers::String *mutable_account() {
+    return GetPointer<flatbuffers::String *>(VT_ACCOUNT);
+  }
   const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *signatory() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_SIGNATORY);
+  }
+  flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *mutable_signatory() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_SIGNATORY);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -360,8 +372,14 @@ struct AccountRemoveSignatory FLATBUFFERS_FINAL_CLASS : private flatbuffers::Tab
   const flatbuffers::String *account() const {
     return GetPointer<const flatbuffers::String *>(VT_ACCOUNT);
   }
+  flatbuffers::String *mutable_account() {
+    return GetPointer<flatbuffers::String *>(VT_ACCOUNT);
+  }
   const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *signatory() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_SIGNATORY);
+  }
+  flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *mutable_signatory() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_SIGNATORY);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -425,8 +443,14 @@ struct AccountSetUseKeys FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *accounts() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_ACCOUNTS);
   }
+  flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *mutable_accounts() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_ACCOUNTS);
+  }
   uint16_t useKeys() const {
     return GetField<uint16_t>(VT_USEKEYS, 0);
+  }
+  bool mutate_useKeys(uint16_t _useKeys) {
+    return SetField<uint16_t>(VT_USEKEYS, _useKeys, 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -488,8 +512,14 @@ struct AccountStore FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *accPubKey() const {
     return GetPointer<const flatbuffers::String *>(VT_ACCPUBKEY);
   }
+  flatbuffers::String *mutable_accPubKey() {
+    return GetPointer<flatbuffers::String *>(VT_ACCPUBKEY);
+  }
   const flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *data() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *>(VT_DATA);
+  }
+  flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *mutable_data() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *>(VT_DATA);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -555,6 +585,9 @@ struct ChaincodeAdd FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::Vector<uint8_t> *code() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_CODE);
   }
+  flatbuffers::Vector<uint8_t> *mutable_code() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_CODE);
+  }
   const iroha::Chaincode *code_nested_root() const {
     const uint8_t* data = code()->Data();
     return flatbuffers::GetRoot<iroha::Chaincode>(data);
@@ -608,6 +641,9 @@ struct ChaincodeRemove FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   };
   const flatbuffers::Vector<uint8_t> *code() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_CODE);
+  }
+  flatbuffers::Vector<uint8_t> *mutable_code() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_CODE);
   }
   const iroha::Chaincode *code_nested_root() const {
     const uint8_t* data = code()->Data();
@@ -665,11 +701,20 @@ struct ChaincodeExecute FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *code_name() const {
     return GetPointer<const flatbuffers::String *>(VT_CODE_NAME);
   }
+  flatbuffers::String *mutable_code_name() {
+    return GetPointer<flatbuffers::String *>(VT_CODE_NAME);
+  }
   const flatbuffers::String *domain_name() const {
     return GetPointer<const flatbuffers::String *>(VT_DOMAIN_NAME);
   }
+  flatbuffers::String *mutable_domain_name() {
+    return GetPointer<flatbuffers::String *>(VT_DOMAIN_NAME);
+  }
   const flatbuffers::String *ledger_name() const {
     return GetPointer<const flatbuffers::String *>(VT_LEDGER_NAME);
+  }
+  flatbuffers::String *mutable_ledger_name() {
+    return GetPointer<flatbuffers::String *>(VT_LEDGER_NAME);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -745,8 +790,14 @@ struct AssetAdd FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *accPubKey() const {
     return GetPointer<const flatbuffers::String *>(VT_ACCPUBKEY);
   }
+  flatbuffers::String *mutable_accPubKey() {
+    return GetPointer<flatbuffers::String *>(VT_ACCPUBKEY);
+  }
   const flatbuffers::Vector<uint8_t> *asset() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ASSET);
+  }
+  flatbuffers::Vector<uint8_t> *mutable_asset() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_ASSET);
   }
   const iroha::Asset *asset_nested_root() const {
     const uint8_t* data = asset()->Data();
@@ -813,8 +864,14 @@ struct AssetRemove FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *accPubKey() const {
     return GetPointer<const flatbuffers::String *>(VT_ACCPUBKEY);
   }
+  flatbuffers::String *mutable_accPubKey() {
+    return GetPointer<flatbuffers::String *>(VT_ACCPUBKEY);
+  }
   const flatbuffers::Vector<uint8_t> *asset() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ASSET);
+  }
+  flatbuffers::Vector<uint8_t> *mutable_asset() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_ASSET);
   }
   const iroha::Asset *asset_nested_root() const {
     const uint8_t* data = asset()->Data();
@@ -883,14 +940,26 @@ struct AssetCreate FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *asset_name() const {
     return GetPointer<const flatbuffers::String *>(VT_ASSET_NAME);
   }
+  flatbuffers::String *mutable_asset_name() {
+    return GetPointer<flatbuffers::String *>(VT_ASSET_NAME);
+  }
   const flatbuffers::String *domain_name() const {
     return GetPointer<const flatbuffers::String *>(VT_DOMAIN_NAME);
+  }
+  flatbuffers::String *mutable_domain_name() {
+    return GetPointer<flatbuffers::String *>(VT_DOMAIN_NAME);
   }
   const flatbuffers::String *ledger_name() const {
     return GetPointer<const flatbuffers::String *>(VT_LEDGER_NAME);
   }
+  flatbuffers::String *mutable_ledger_name() {
+    return GetPointer<flatbuffers::String *>(VT_LEDGER_NAME);
+  }
   const flatbuffers::String *creatorPubKey() const {
     return GetPointer<const flatbuffers::String *>(VT_CREATORPUBKEY);
+  }
+  flatbuffers::String *mutable_creatorPubKey() {
+    return GetPointer<flatbuffers::String *>(VT_CREATORPUBKEY);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -974,6 +1043,9 @@ struct AssetTransfer FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::Vector<uint8_t> *asset() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ASSET);
   }
+  flatbuffers::Vector<uint8_t> *mutable_asset() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_ASSET);
+  }
   const iroha::Asset *asset_nested_root() const {
     const uint8_t* data = asset()->Data();
     return flatbuffers::GetRoot<iroha::Asset>(data);
@@ -981,8 +1053,14 @@ struct AssetTransfer FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *sender() const {
     return GetPointer<const flatbuffers::String *>(VT_SENDER);
   }
+  flatbuffers::String *mutable_sender() {
+    return GetPointer<flatbuffers::String *>(VT_SENDER);
+  }
   const flatbuffers::String *receiver() const {
     return GetPointer<const flatbuffers::String *>(VT_RECEIVER);
+  }
+  flatbuffers::String *mutable_receiver() {
+    return GetPointer<flatbuffers::String *>(VT_RECEIVER);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -1057,6 +1135,9 @@ struct PeerAdd FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::Vector<uint8_t> *peer() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_PEER);
   }
+  flatbuffers::Vector<uint8_t> *mutable_peer() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_PEER);
+  }
   const iroha::Peer *peer_nested_root() const {
     const uint8_t* data = peer()->Data();
     return flatbuffers::GetRoot<iroha::Peer>(data);
@@ -1110,6 +1191,9 @@ struct PeerRemove FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   };
   const flatbuffers::Vector<uint8_t> *peer() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_PEER);
+  }
+  flatbuffers::Vector<uint8_t> *mutable_peer() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_PEER);
   }
   const iroha::Peer *peer_nested_root() const {
     const uint8_t* data = peer()->Data();
@@ -1166,8 +1250,14 @@ struct PeerSetTrust FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *peerPubKey() const {
     return GetPointer<const flatbuffers::String *>(VT_PEERPUBKEY);
   }
+  flatbuffers::String *mutable_peerPubKey() {
+    return GetPointer<flatbuffers::String *>(VT_PEERPUBKEY);
+  }
   double trust() const {
     return GetField<double>(VT_TRUST, 0.0);
+  }
+  bool mutate_trust(double _trust) {
+    return SetField<double>(VT_TRUST, _trust, 0.0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -1228,8 +1318,14 @@ struct PeerChangeTrust FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *peerPubKey() const {
     return GetPointer<const flatbuffers::String *>(VT_PEERPUBKEY);
   }
+  flatbuffers::String *mutable_peerPubKey() {
+    return GetPointer<flatbuffers::String *>(VT_PEERPUBKEY);
+  }
   double delta() const {
     return GetField<double>(VT_DELTA, 0.0);
+  }
+  bool mutate_delta(double _delta) {
+    return SetField<double>(VT_DELTA, _delta, 0.0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -1290,8 +1386,14 @@ struct PeerSetActive FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *peerPubKey() const {
     return GetPointer<const flatbuffers::String *>(VT_PEERPUBKEY);
   }
+  flatbuffers::String *mutable_peerPubKey() {
+    return GetPointer<flatbuffers::String *>(VT_PEERPUBKEY);
+  }
   bool active() const {
     return GetField<uint8_t>(VT_ACTIVE, 0) != 0;
+  }
+  bool mutate_active(bool _active) {
+    return SetField<uint8_t>(VT_ACTIVE, static_cast<uint8_t>(_active), 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&

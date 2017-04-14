@@ -37,8 +37,14 @@ struct PublicKey FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   KeyAlgorithm algorithm() const {
     return static_cast<KeyAlgorithm>(GetField<int8_t>(VT_ALGORITHM, 0));
   }
+  bool mutate_algorithm(KeyAlgorithm _algorithm) {
+    return SetField<int8_t>(VT_ALGORITHM, static_cast<int8_t>(_algorithm), 0);
+  }
   const flatbuffers::Vector<uint8_t> *data() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_DATA);
+  }
+  flatbuffers::Vector<uint8_t> *mutable_data() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_DATA);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&

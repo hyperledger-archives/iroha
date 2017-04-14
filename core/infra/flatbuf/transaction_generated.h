@@ -29,8 +29,14 @@ struct Transaction FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *creatorPubKey() const {
     return GetPointer<const flatbuffers::String *>(VT_CREATORPUBKEY);
   }
+  flatbuffers::String *mutable_creatorPubKey() {
+    return GetPointer<flatbuffers::String *>(VT_CREATORPUBKEY);
+  }
   iroha::Command command_type() const {
     return static_cast<iroha::Command>(GetField<uint8_t>(VT_COMMAND_TYPE, 0));
+  }
+  bool mutate_command_type(iroha::Command _command_type) {
+    return SetField<uint8_t>(VT_COMMAND_TYPE, static_cast<uint8_t>(_command_type), 0);
   }
   const void *command() const {
     return GetPointer<const void *>(VT_COMMAND);
@@ -87,14 +93,26 @@ struct Transaction FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const iroha::ChaincodeExecute *command_as_ChaincodeExecute() const {
     return (command_type() == iroha::Command_ChaincodeExecute)? static_cast<const iroha::ChaincodeExecute *>(command()) : nullptr;
   }
+  void *mutable_command() {
+    return GetPointer<void *>(VT_COMMAND);
+  }
   const flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>> *signatures() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>> *>(VT_SIGNATURES);
+  }
+  flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>> *mutable_signatures() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>> *>(VT_SIGNATURES);
   }
   const flatbuffers::Vector<uint8_t> *hash() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_HASH);
   }
+  flatbuffers::Vector<uint8_t> *mutable_hash() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_HASH);
+  }
   const Attachment *attachment() const {
     return GetPointer<const Attachment *>(VT_ATTACHMENT);
+  }
+  Attachment *mutable_attachment() {
+    return GetPointer<Attachment *>(VT_ATTACHMENT);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -262,8 +280,14 @@ struct Attachment FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *mime() const {
     return GetPointer<const flatbuffers::String *>(VT_MIME);
   }
+  flatbuffers::String *mutable_mime() {
+    return GetPointer<flatbuffers::String *>(VT_MIME);
+  }
   const flatbuffers::Vector<uint8_t> *data() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_DATA);
+  }
+  flatbuffers::Vector<uint8_t> *mutable_data() {
+    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_DATA);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&

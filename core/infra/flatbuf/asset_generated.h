@@ -68,6 +68,9 @@ struct ComplexAsset FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *asset_name() const {
     return GetPointer<const flatbuffers::String *>(VT_ASSET_NAME);
   }
+  flatbuffers::String *mutable_asset_name() {
+    return GetPointer<flatbuffers::String *>(VT_ASSET_NAME);
+  }
   bool KeyCompareLessThan(const ComplexAsset *o) const {
     return *asset_name() < *o->asset_name();
   }
@@ -77,17 +80,32 @@ struct ComplexAsset FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *domain_name() const {
     return GetPointer<const flatbuffers::String *>(VT_DOMAIN_NAME);
   }
+  flatbuffers::String *mutable_domain_name() {
+    return GetPointer<flatbuffers::String *>(VT_DOMAIN_NAME);
+  }
   const flatbuffers::String *ledger_name() const {
     return GetPointer<const flatbuffers::String *>(VT_LEDGER_NAME);
+  }
+  flatbuffers::String *mutable_ledger_name() {
+    return GetPointer<flatbuffers::String *>(VT_LEDGER_NAME);
   }
   const flatbuffers::String *description() const {
     return GetPointer<const flatbuffers::String *>(VT_DESCRIPTION);
   }
+  flatbuffers::String *mutable_description() {
+    return GetPointer<flatbuffers::String *>(VT_DESCRIPTION);
+  }
   const flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *prop() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *>(VT_PROP);
   }
+  flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *mutable_prop() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<iroha::KeyValueObject>> *>(VT_PROP);
+  }
   const ComplexAssetLogic *logic() const {
     return GetPointer<const ComplexAssetLogic *>(VT_LOGIC);
+  }
+  ComplexAssetLogic *mutable_logic() {
+    return GetPointer<ComplexAssetLogic *>(VT_LOGIC);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -189,11 +207,20 @@ struct ComplexAssetLogic FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const iroha::Chaincode *add() const {
     return GetPointer<const iroha::Chaincode *>(VT_ADD);
   }
+  iroha::Chaincode *mutable_add() {
+    return GetPointer<iroha::Chaincode *>(VT_ADD);
+  }
   const iroha::Chaincode *remove() const {
     return GetPointer<const iroha::Chaincode *>(VT_REMOVE);
   }
+  iroha::Chaincode *mutable_remove() {
+    return GetPointer<iroha::Chaincode *>(VT_REMOVE);
+  }
   const iroha::Chaincode *transfer() const {
     return GetPointer<const iroha::Chaincode *>(VT_TRANSFER);
+  }
+  iroha::Chaincode *mutable_transfer() {
+    return GetPointer<iroha::Chaincode *>(VT_TRANSFER);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -255,6 +282,9 @@ struct Currency FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *currency_name() const {
     return GetPointer<const flatbuffers::String *>(VT_CURRENCY_NAME);
   }
+  flatbuffers::String *mutable_currency_name() {
+    return GetPointer<flatbuffers::String *>(VT_CURRENCY_NAME);
+  }
   bool KeyCompareLessThan(const Currency *o) const {
     return *currency_name() < *o->currency_name();
   }
@@ -264,17 +294,32 @@ struct Currency FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *domain_name() const {
     return GetPointer<const flatbuffers::String *>(VT_DOMAIN_NAME);
   }
+  flatbuffers::String *mutable_domain_name() {
+    return GetPointer<flatbuffers::String *>(VT_DOMAIN_NAME);
+  }
   const flatbuffers::String *ledger_name() const {
     return GetPointer<const flatbuffers::String *>(VT_LEDGER_NAME);
+  }
+  flatbuffers::String *mutable_ledger_name() {
+    return GetPointer<flatbuffers::String *>(VT_LEDGER_NAME);
   }
   const flatbuffers::String *description() const {
     return GetPointer<const flatbuffers::String *>(VT_DESCRIPTION);
   }
+  flatbuffers::String *mutable_description() {
+    return GetPointer<flatbuffers::String *>(VT_DESCRIPTION);
+  }
   uint64_t amount() const {
     return GetField<uint64_t>(VT_AMOUNT, 0);
   }
+  bool mutate_amount(uint64_t _amount) {
+    return SetField<uint64_t>(VT_AMOUNT, _amount, 0);
+  }
   uint8_t precision() const {
     return GetField<uint8_t>(VT_PRECISION, 0);
+  }
+  bool mutate_precision(uint8_t _precision) {
+    return SetField<uint8_t>(VT_PRECISION, _precision, 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -372,6 +417,9 @@ struct Asset FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   AnyAsset asset_type() const {
     return static_cast<AnyAsset>(GetField<uint8_t>(VT_ASSET_TYPE, 0));
   }
+  bool mutate_asset_type(AnyAsset _asset_type) {
+    return SetField<uint8_t>(VT_ASSET_TYPE, static_cast<uint8_t>(_asset_type), 0);
+  }
   const void *asset() const {
     return GetPointer<const void *>(VT_ASSET);
   }
@@ -381,6 +429,9 @@ struct Asset FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   const Currency *asset_as_Currency() const {
     return (asset_type() == AnyAsset_Currency)? static_cast<const Currency *>(asset()) : nullptr;
+  }
+  void *mutable_asset() {
+    return GetPointer<void *>(VT_ASSET);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
