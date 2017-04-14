@@ -100,6 +100,55 @@ void receive(Verify::CallBackFunc&& callback) {
 bool send(const std::string& ip,const std::unique_ptr<ConsensusEvent>& event) {
   // ToDo
   if(config::PeerServiceConfig::getInstance().isExistIP(ip)){
+      auto channel = grpc::CreateChannel( ip + ":50051",
+            grpc::InsecureChannelCredentials());
+      auto stub = ::iroha::Sumeragi::NewStub(channel);
+
+      grpc::ClientContext context;
+
+      auto publicKey = "SamplePublicKey";
+      // Build a request with the name set.
+      flatbuffers::FlatBufferBuilder fbb;
+      std::unique_ptr<std::vector<flatbuffers::Offset<flatbuffers::String>>> signatories(
+              new std::vector<flatbuffers::Offset<flatbuffers::String>>( {fbb.CreateString("publicKey1")})
+      );
+      auto account = ::iroha::CreateAccountDirect(fbb,publicKey,"alias",signatories.get(),1);
+      std::unique_ptr<std::vector<uint8_t>> account_vec(
+              new std::vector<uint8_t>()
+      );
+      auto command = ::iroha::CreateAccountAddDirect(fbb, account_vec.get());
+
+      std::unique_ptr<std::vector<flatbuffers::Offset<::iroha::Signature>>> signature_vec(
+              new std::vector<flatbuffers::Offset<::iroha::Signature>>()
+      );
+      signature_vec->emplace_back(::iroha::CreateSignatureDirect(fbb,publicKey, nullptr,1234567));
+
+      auto tx_offset = ::iroha::CreateTransactionDirect(
+              fbb,
+              publicKey,
+              ::iroha::Command::Command_AccountAdd,
+              command.Union(),
+              signature_vec.get(),
+              nullptr,
+              ::iroha::CreateAttachmentDirect(fbb, nullptr, nullptr)
+      );
+      fbb.Finish(tx_offset);
+      auto tx = flatbuffers::BufferRef<::iroha::Transaction>(
+              fbb.GetBufferPointer(),
+              fbb.GetSize()
+      );
+
+      flatbuffers::BufferRef<::iroha::Response> response;
+
+      // The actual RPC.
+      auto status = stub->Torii(&context, tx, &response);
+
+      if (status.ok()) {
+          auto msg = response.GetRoot()->message();
+          std::cout << "RPC response: " << msg->str() << std::endl;
+      } else {
+          std::cout << "RPC failed" << std::endl;
+      }
       return true;
   }
   return false;
@@ -109,6 +158,7 @@ bool sendAll(const std::unique_ptr<ConsensusEvent>& event) {
   auto receiver_ips = config::PeerServiceConfig::getInstance().getGroup();
   for (const auto &p : receiver_ips) {
       if (p["ip"].get<std::string>() != config::PeerServiceConfig::getInstance().getMyIpWithDefault("AA")) {
+          logger::info("connection") << "Send to " << p["ip"].get<std::string>() ;
           send(p["ip"].get<std::string>(), event);
       }
   }

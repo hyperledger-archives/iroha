@@ -57,7 +57,7 @@ std::string PeerServiceConfig::getMyIpWithDefault(
 }
 bool PeerServiceConfig::isExistIP(const std::string& ip) {
   // ToDo
-  return false;
+  return true;
   // return findPeerIP( std::move(ip) ) != peerList.end();
 }
 double PeerServiceConfig::getMaxTrustScoreWithDefault(double defaultValue) {
