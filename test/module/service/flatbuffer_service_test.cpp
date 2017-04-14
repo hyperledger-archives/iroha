@@ -53,13 +53,13 @@ TEST(FlatbufferServiceTest, toString) {
     );
 
     auto tx_offset = iroha::CreateTransactionDirect(
-            fbb,
-            publicKey,
-            iroha::Command::Command_AccountAdd,
-            command.Union(),
-            signature_vec.get(),
-            nullptr,
-            0
+        fbb,
+        publicKey,
+        iroha::Command::Command_AccountAdd,
+        command.Union(),
+        signature_vec.get(),
+        nullptr,
+        0
     );
     fbb.Finish(tx_offset);
     auto tx = flatbuffers::BufferRef<iroha::Transaction>(

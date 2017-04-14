@@ -49,6 +49,45 @@ namespace flatbuffer_service{
         }
 
         std::map<iroha::Command, std::function<std::string(const void *)>> command_to_strings;
+        std::map<iroha::AnyAsset, std::function<std::string(const void *)>> any_asset_to_strings;
+
+        any_asset_to_strings[iroha::AnyAsset_ComplexAsset] = [&](const void* asset) -> std::string{
+            const iroha::ComplexAsset* ast = static_cast<const iroha::ComplexAsset *>(asset);
+
+            std::string res = " ComplexAsset[\n";
+            res += "        asset_name:" + ast->asset_name()->str() + ",\n";
+            res += "        domain_name:" + ast->domain_name()->str() + ",\n";
+            res += "        ledger_name:" + ast->ledger_name()->str() + ",\n";
+            res += "        description:" + ast->description()->str()  + "\n";
+            res += "        asset:logic:WIP\n";
+            res += "    ]\n";
+            return res;
+        };
+        any_asset_to_strings[iroha::AnyAsset_Currency] = [&](const void* asset) -> std::string{
+            const iroha::Currency* ast = static_cast<const iroha::Currency *>(asset);
+
+            std::string res = " Currency[\n";
+            res += "        currency_name:" + ast->currency_name()->str() + ",\n";
+            res += "        domain_name:" + ast->domain_name()->str() + ",\n";
+            res += "        ledger_name:" + ast->ledger_name()->str() + ",\n";
+            res += "        description:" + ast->description()->str()  + "\n";
+            res += "        amount:" + std::to_string(ast->amount())  + "\n";
+            res += "        precision:" + std::to_string(ast->precision())  + "\n";
+            res += "    ]\n";
+            return res;
+        };
+
+        command_to_strings[iroha::Command_AssetCreate] = [&](const void* command) -> std::string{
+            const iroha::AssetCreate* cmd = static_cast<const iroha::AssetCreate *>(command);
+
+            std::string res = "AssetCreate[\n";
+            res += "    creatorPubKey:" + cmd->creatorPubKey()->str() + ",\n";
+            res += "    ledger_name:" + cmd->ledger_name()->str() + ",\n";
+            res += "    domain_name:" + cmd->domain_name()->str() + ",\n";
+            res += "    asset_name:" + cmd->asset_name()->str() + "\n";
+            res += "]\n";
+            return res;
+        };
 
         command_to_strings[iroha::Command_AssetCreate] = [&](const void* command) -> std::string{
             const iroha::AssetCreate* cmd = static_cast<const iroha::AssetCreate *>(command);
@@ -66,7 +105,7 @@ namespace flatbuffer_service{
 
             std::string res = "AssetAdd[\n";
             res += "    accPubKey:" + cmd->accPubKey()->str() + ",\n";
-            res += "    asset:WIP\n"; //+ cmd->asset_nested_root()->asset(); + ",\n";
+            res += "    asset:" + any_asset_to_strings[cmd->asset_nested_root()->asset_type()](cmd->asset_nested_root()->asset());
             res += "]\n";
             return res;
         };
@@ -75,7 +114,7 @@ namespace flatbuffer_service{
 
             std::string res = "AssetRemove[\n";
             res += "    accPubKey:" + cmd->accPubKey()->str() + ",\n";
-            res += "    asset:WIP\n"; //+ cmd->asset_nested_root()->asset(); + ",\n";
+            res += "    asset:" + any_asset_to_strings[cmd->asset_nested_root()->asset_type()](cmd->asset_nested_root()->asset());
             res += "]\n";
             return res;
         };
@@ -85,7 +124,7 @@ namespace flatbuffer_service{
             std::string res = "AssetTransfer[\n";
             res += "    sender:" + cmd->sender()->str() + ",\n";
             res += "    receiver:" + cmd->receiver()->str() + ",\n";
-            res += "    asset:WIP\n"; //+ cmd->asset_nested_root()->asset(); + ",\n";
+            res += "    asset:" + any_asset_to_strings[cmd->asset_nested_root()->asset_type()](cmd->asset_nested_root()->asset());
             res += "]\n";
             return res;
         };
