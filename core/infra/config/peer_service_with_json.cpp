@@ -33,21 +33,24 @@ PeerServiceConfig& PeerServiceConfig::getInstance() {
 // ToDo We can make more sort it. ===
 std::string PeerServiceConfig::getMyPublicKeyWithDefault(
     const std::string& defaultValue) {
-  if (auto config = getConfigData()) {
+    auto config = getConfigData();
+    if (!config.is_null()) {
     return config["me"]["publicKey"].get<std::string>();
   }
   return defaultValue;
 }
 std::string PeerServiceConfig::getMyPrivateKeyWithDefault(
     const std::string& defaultValue) {
-  if (auto config = getConfigData()) {
+    auto config = getConfigData();
+    if (!config.is_null()) {
     return config["me"]["privateKey"].get<std::string>();
   }
   return defaultValue;
 }
 std::string PeerServiceConfig::getMyIpWithDefault(
     const std::string& defaultValue) {
-  if (auto config = getConfigData()) {
+    auto config = getConfigData();
+    if (!config.is_null()) {
     return config["me"]["ip"].get<std::string>();
   }
   return defaultValue;

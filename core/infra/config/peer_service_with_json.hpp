@@ -48,7 +48,7 @@ protected:
 
   double getMaxTrustScore();
 
-  std::string getConfigName() override { return "PeerServiceConfig"; }
+  std::string getConfigName() override { return "config/sumeragi.json"; }
 };
 }  // namespace config
 

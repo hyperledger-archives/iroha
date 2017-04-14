@@ -42,14 +42,15 @@ class AbstractConfigManager {
   json openConfigData() {
     auto iroha_home = getenv("IROHA_HOME");
     if (iroha_home == nullptr) {
-      logger::error("config") << "Set environment variable IROHA_HOME";
-      exit(EXIT_FAILURE);
+        logger::error("config") << "Set environment variable IROHA_HOME";
+        exit(EXIT_FAILURE);
     }
-
-    auto configFolderPath = std::string(iroha_home) + "/";
+    // Todo remove last '/'
+    auto configFolderPath = std::string(iroha_home) + "";
     auto jsonStr = readConfigData(configFolderPath + this->getConfigName(), "");
 
     if (jsonStr.empty()) {
+      logger::warning("config") <<"Wrong path" << configFolderPath + this->getConfigName();
       logger::warning("config") << "there is no config '" << getConfigName()
                                 << "', we will use default values.";
     } else {
