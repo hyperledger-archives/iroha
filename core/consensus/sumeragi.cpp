@@ -70,16 +70,22 @@ std::string hash(const std::unique_ptr<Transaction>& tx) {
 
 std::unique_ptr<ConsensusEvent> addSignature(
     std::unique_ptr<ConsensusEvent> event, const std::string& publicKey,
-    const std::string& signature) {
+    const std::string& signature
+) {
+
   // Copy
   flatbuffers::FlatBufferBuilder fbb;
   std::unique_ptr<std::vector<flatbuffers::Offset<Signature>>> signatures(
-      new std::vector<flatbuffers::Offset<Signature>>());
+      new std::vector<flatbuffers::Offset<Signature>>()
+  );
   std::unique_ptr<std::vector<flatbuffers::Offset<Transaction>>> transactions(
-      new std::vector<flatbuffers::Offset<Transaction>>());
+      new std::vector<flatbuffers::Offset<Transaction>>()
+  );
 
-  for (auto&& sig : *event->peerSignatures()) {
-    signatures->emplace_back(reinterpret_cast<flatbuffers::uoffset_t>(sig));
+  if(event->peerSignatures() != nullptr) {
+      for (auto &&sig : *event->peerSignatures()) {
+          signatures->emplace_back(reinterpret_cast<flatbuffers::uoffset_t>(sig));
+      }
   }
   for (auto&& tx : *event->transactions()) {
     transactions->emplace_back(tx);
@@ -176,11 +182,15 @@ struct Context {
   }
 
   void update() {
-    /*
-    auto peers = config::PeerServiceConfig::getInstance().getPeerList();
-    for (auto&& p : peers ) {
-        validatingPeers.push_back( std::move(p) );
+    auto peers = config::PeerServiceConfig::getInstance().getGroup();
+    for (const auto& p : peers ) {
+        validatingPeers.push_back( std::make_unique<peer::Node>(
+            p["ip"].get<std::string>(),
+            p["publicKey"].get<std::string>()
+        ));
+        logger::info("sumeragi") << "Add " << p["ip"].get<std::string>() << " to peerList";
     }
+
 
     this->numValidatingPeers = this->validatingPeers.size();
     // maxFaulty = Default to approx. 1/3 of the network.
@@ -192,6 +202,7 @@ struct Context {
         logger::error("sumeragi") << "could not find any validating peers.";
         exit(EXIT_FAILURE);
     }
+    logger::info("sumeragi") << "peerList is not empty";
 
     if (this->proxyTailNdx >= this->validatingPeers.size()) {
         this->proxyTailNdx = this->validatingPeers.size() - 1;
@@ -199,11 +210,11 @@ struct Context {
 
     this->panicCount = 0;
     this->myPublicKey =
-    config::PeerServiceConfig::getInstance().getMyPublicKey();
+    config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault("Invalied");
 
-    this->isSumeragi = this->validatingPeers.at(0)->getPublicKey() ==
+    this->isSumeragi = this->validatingPeers.at(0)->publicKey ==
     this->myPublicKey;
-    */
+    logger::info("sumeragi") << "update finished";
   }
 };
 
@@ -251,11 +262,12 @@ void initializeSumeragi() {
         if(transaction->attachment() != nullptr &&
             transaction->attachment()->data() != nullptr) {
             data.assign(
-                    *transaction->attachment()->data()->begin(),
-                    *transaction->attachment()->data()->end()
+                *transaction->attachment()->data()->begin(),
+                *transaction->attachment()->data()->end()
             );
             attachment = iroha::CreateAttachmentDirect(
-                    fbb, transaction->attachment()->mime()->c_str(), &data);
+                fbb, transaction->attachment()->mime()->c_str(), &data
+            );
         }
 
         std::vector<flatbuffers::Offset<Signature>> tx_signatures;
@@ -297,7 +309,8 @@ void initializeSumeragi() {
         fbb.Finish(event_buf);
 
         std::unique_ptr<ConsensusEvent> event(
-            reinterpret_cast<ConsensusEvent*>(fbb.GetBufferPointer()));
+            reinterpret_cast<ConsensusEvent*>(fbb.GetBufferPointer())
+        );
         auto task = [event = std::move(event)]() mutable {
           processTransaction(std::move(event));
         };
@@ -368,7 +381,7 @@ std::uint64_t getNextOrder() {
 }
 
 
-void processTransaction(std::unique_ptr<ConsensusEvent> event) {
+void processTransaction(std::unique_ptr<ConsensusEvent>&& event) {
   logger::info("sumeragi") << "processTransaction";
   // if (!transaction_validator::isValid(event->getTx())) {
   //    return; //TODO-futurework: give bad trust rating to nodes that sent an
