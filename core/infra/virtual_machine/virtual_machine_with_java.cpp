@@ -12,7 +12,6 @@ limitations under the License.
 */
 
 #include <map>
-#include <string>
 #include <util/logger.hpp>
 #include <virtual_machine/virtual_machine.hpp>
 
@@ -20,9 +19,10 @@ limitations under the License.
 
 namespace virtual_machine {
 
-static std::map<std::string, std::unique_ptr<jvm::JavaContext>> vmSet;
+static [[deprecated]] std::map<std::string, std::unique_ptr<jvm::JavaContext>> vmSet;
 
 namespace detail {
+[[deprecated]]
 inline std::string pack(const std::string &packageName,
                         const std::string &contractName) {
   return packageName + "." + contractName;
@@ -31,6 +31,7 @@ inline std::string pack(const std::string &packageName,
 
 using detail::pack;
 
+[[deprecated]]
 void initializeVM(const std::string &packageName,
                   const std::string &contractName) {
   const auto NameId = pack(packageName, contractName);
@@ -47,6 +48,7 @@ void initializeVM(const std::string &packageName,
   vmSet.emplace(NameId, jvm::initializeVM(packageName, contractName));
 }
 
+[[deprecated]]
 void finishVM(const std::string &packageName, const std::string &contractName) {
   const auto NameId = pack(packageName, contractName);
   if (vmSet.find(NameId) != vmSet.end()) {
@@ -55,10 +57,10 @@ void finishVM(const std::string &packageName, const std::string &contractName) {
   }
 }
 
+[[deprecated]]
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName) {
-
   const auto NameId = pack(packageName, contractName);
   if (vmSet.find(NameId) != vmSet.end()) {
     const auto &context = vmSet.at(NameId);
@@ -66,11 +68,11 @@ void invokeFunction(const std::string &packageName,
   }
 }
 
+[[deprecated]]
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName,
-                    const std::map<std::string, std::string>& params) {
-
+                    const std::map<std::string, std::string> &params) {
   const auto NameId = pack(packageName, contractName);
   if (vmSet.find(NameId) != vmSet.end()) {
     const auto &context = vmSet.at(NameId);
@@ -78,12 +80,12 @@ void invokeFunction(const std::string &packageName,
   }
 }
 
-void invokeFunction(const std::string &packageName,
-                    const std::string &contractName,
-                    const std::string &functionName,
-                    const std::map<std::string, std::string>& params1,
-                    const std::map<std::string, std::map<std::string, std::string>>& params2) {
-
+[[deprecated]]
+void invokeFunction(
+    const std::string &packageName, const std::string &contractName,
+    const std::string &functionName,
+    const std::map<std::string, std::string> &params1,
+    const std::map<std::string, std::map<std::string, std::string>> &params2) {
   const auto NameId = pack(packageName, contractName);
   if (vmSet.find(NameId) != vmSet.end()) {
     const auto &context = vmSet.at(NameId);
@@ -91,12 +93,12 @@ void invokeFunction(const std::string &packageName,
   }
 }
 
+[[deprecated]]
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName,
-                    const std::map<std::string, std::string>& params1,
-                    const std::map<std::string, std::string>& params2) {
-
+                    const std::map<std::string, std::string> &params1,
+                    const std::map<std::string, std::string> &params2) {
   const auto NameId = pack(packageName, contractName);
   if (vmSet.find(NameId) != vmSet.end()) {
     const auto &context = vmSet.at(NameId);
@@ -104,17 +106,16 @@ void invokeFunction(const std::string &packageName,
   }
 }
 
+[[deprecated]]
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName,
-                    const std::map<std::string, std::string>& params1,
-                    const std::vector<std::string>& params2) {
-  
+                    const std::map<std::string, std::string> &params1,
+                    const std::vector<std::string> &params2) {
   const auto NameId = pack(packageName, contractName);
   if (vmSet.find(NameId) != vmSet.end()) {
     const auto &context = vmSet.at(NameId);
     jvm::execFunction(context, functionName, params1, params2);
-  } 
+  }
 }
-
 }

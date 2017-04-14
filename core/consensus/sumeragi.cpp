@@ -14,23 +14,16 @@ limitations under the License.
 
 #include "sumeragi.hpp"
 #include <atomic>
-#include <cmath>
-#include <iterator>
-#include <map>
-#include <string>
-#include <thread>
 
 #include <thread_pool.hpp>
 
 #include <crypto/hash.hpp>
-#include <crypto/signature.hpp>
 #include <repository/consensus/merkle_transaction_repository.hpp>
 #include <util/logger.hpp>
 
 #include <consensus/connection/connection.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <repository/transaction_repository.hpp>
-#include <service/peer_service.hpp>
 #include <validation/transaction_validator.hpp>
 
 #include <infra/config/iroha_config_with_json.hpp>
@@ -126,8 +119,8 @@ void printJudge(int numValidSignatures, int numValidationPeer, int faulty) {
   for (int i = 0; i < numValidationPeer; i++) line += "==＝==";
   logger::explore("sumeragi") << line;
 
-  logger::explore("sumeragi")
-      << "numValidSignatures:" << numValidSignatures << " faulty:" << faulty;
+  logger::explore("sumeragi") << "numValidSignatures:" << numValidSignatures
+                              << " faulty:" << faulty;
 }
 
 void printAgree() {
@@ -226,10 +219,10 @@ void initializeSumeragi() {
   connection::iroha::Sumeragi::Verify::receive([](const std::string &from,
                                                   ConsensusEvent &event) {
     logger::info("sumeragi") << "receive!";
-    logger::info("sumeragi")
-        << "received message! sig:[" << event.eventsignatures_size() << "]";
-    logger::info("sumeragi")
-        << "received message! status:[" << event.status() << "]";
+    logger::info("sumeragi") << "received message! sig:["
+                             << event.eventsignatures_size() << "]";
+    logger::info("sumeragi") << "received message! status:[" << event.status()
+                             << "]";
     if (event.status() == "commited") {
       if (txCache.find(detail::hash(event.transaction())) == txCache.end()) {
         txCache[detail::hash(event.transaction())] = "commited";
@@ -313,9 +306,9 @@ void processTransaction(ConsensusEvent &event) {
       logger::explore("sumeragi") << "+~~~~~~~~~~~~~~~~~~~~~~~~~~+";
       logger::explore("sumeragi") << "\033[93m0================================"
                                      "================================0\033[0m";
-      logger::explore("sumeragi")
-          << "\033[93m0\033[1m" << detail::hash(event.transaction())
-          << "0\033[0m";
+      logger::explore("sumeragi") << "\033[93m0\033[1m"
+                                  << detail::hash(event.transaction())
+                                  << "0\033[0m";
       logger::explore("sumeragi") << "\033[93m0================================"
                                      "================================0\033[0m";
 
@@ -353,8 +346,8 @@ void processTransaction(ConsensusEvent &event) {
           << "tail public key is "
           << context->validatingPeers.at(context->proxyTailNdx)->publicKey;
       logger::info("sumeragi") << "tail is " << context->proxyTailNdx;
-      logger::info("sumeragi")
-          << "my public key is " << ::peer::myself::getPublicKey();
+      logger::info("sumeragi") << "my public key is "
+                               << ::peer::myself::getPublicKey();
 
       if (context->validatingPeers.at(context->proxyTailNdx)->publicKey ==
           ::peer::myself::getPublicKey()) {

@@ -59,8 +59,8 @@ void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
     _configData = json::parse(std::move(jsonStr));
   } catch (exception::ParseFromStringException& e) {
     logger::warning("peer service config") << e.what();
-    logger::warning("peer service config")
-        << getConfigName() << " is set to be default.";
+    logger::warning("peer service config") << getConfigName()
+                                           << " is set to be default.";
   }
 }
 

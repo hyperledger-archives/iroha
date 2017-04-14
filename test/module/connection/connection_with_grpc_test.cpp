@@ -15,8 +15,6 @@ limitations under the License.
 */
 
 #include <gtest/gtest.h>
-#include <iostream>
-#include <string>
 #include <thread>
 #include <unordered_map>
 
@@ -46,7 +44,7 @@ const std::string toriiPeerPubKey = "light";
 const std::string toriiPeerAddress = "test_ip";
 
 class connection_with_grpc_test : public testing::Test {
-protected:
+ protected:
   void serverVerifyReceive() {
     connection::iroha::Sumeragi::Verify::receive(
         [](const std::string &from, ConsensusEvent &event) {

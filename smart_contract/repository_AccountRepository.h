@@ -12,6 +12,7 @@ extern "C" {
  * Method:    updateQuantity
  * Signature: (Ljava/lang/String;Ljava/lang/String;J)V
  */
+[[deprecated]]
 JNIEXPORT void JNICALL Java_repository_AccountRepository_updateQuantity
   (JNIEnv *, jclass, jstring, jstring, jlong);
 
@@ -20,6 +21,7 @@ JNIEXPORT void JNICALL Java_repository_AccountRepository_updateQuantity
  * Method:    attach
  * Signature: (Ljava/lang/String;Ljava/lang/String;J)V
  */
+[[deprecated]]
 JNIEXPORT void JNICALL Java_repository_AccountRepository_attach
   (JNIEnv *, jclass, jstring, jstring, jlong);
 
@@ -28,6 +30,7 @@ JNIEXPORT void JNICALL Java_repository_AccountRepository_attach
  * Method:    findByUuid
  * Signature: (Ljava/lang/String;)Ljava/util/HashMap;
  */
+[[deprecated]]
 JNIEXPORT jobject JNICALL Java_repository_AccountRepository_findByUuid
   (JNIEnv *, jclass, jstring);
 
@@ -36,6 +39,7 @@ JNIEXPORT jobject JNICALL Java_repository_AccountRepository_findByUuid
  * Method:    add
  * Signature: (Ljava/lang/String;Ljava/lang/String;)V
  */
+[[deprecated]]
 JNIEXPORT void JNICALL Java_repository_AccountRepository_add
   (JNIEnv *, jclass, jstring, jstring);
 

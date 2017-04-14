@@ -18,8 +18,8 @@ limitations under the License.
 #define __CORE_REPOSITORY_DOMAIN_SIMPLE_ASSET_REPOSITORY_HPP__
 
 #include <infra/protobuf/api.pb.h>
-#include <transaction_builder/transaction_builder.hpp>
 #include <string>
+#include <transaction_builder/transaction_builder.hpp>
 #include <vector>
 
 namespace repository {
@@ -37,4 +37,4 @@ bool exists(const std::string &uuid);
 }
 }
 
-#endif // __CORE_REPOSITORY_DOMAIN_SIMPLE_ASSET_REPOSITORY_HPP__
+#endif  // __CORE_REPOSITORY_DOMAIN_SIMPLE_ASSET_REPOSITORY_HPP__

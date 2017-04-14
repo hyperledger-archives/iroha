@@ -16,19 +16,20 @@ limitations under the License.
 #ifndef CORE_MODEL_TRANSACTION_BUILDER_ADD_ASSET_TO_ACCOUNT_HPP
 #define CORE_MODEL_TRANSACTION_BUILDER_ADD_ASSET_TO_ACCOUNT_HPP
 
-#include "../transaction_builder_base.hpp"
+#include "../../objects/account.hpp"
+#include "../../objects/asset.hpp"
 #include "../../transaction.hpp"
 #include "../../type_signatures/add.hpp"
 #include "../../type_signatures/tags.hpp"
-#include "../../objects/asset.hpp"
-#include "../../objects/account.hpp"
+#include "../transaction_builder_base.hpp"
 
 using type_signatures::To;
 
 namespace txbuilder {
 
 template <>
-class TransactionBuilder<type_signatures::Add<object::Asset, To<object::Account>>> {
+class TransactionBuilder<
+    type_signatures::Add<object::Asset, To<object::Account>>> {
  public:
   TransactionBuilder() = default;
   TransactionBuilder(const TransactionBuilder&) = default;
@@ -71,7 +72,7 @@ class TransactionBuilder<type_signatures::Add<object::Asset, To<object::Account>
           "Add<object::Asset>", unsetMembers);
     }
 
-//    _account
+    //    _account
 
     return transaction::Transaction(_sender, command::Add(_account));
   }

@@ -32,25 +32,25 @@ void invokeFunction(const std::string &packageName,
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName,
-                    const std::map<std::string, std::string>& params);
+                    const std::map<std::string, std::string> &params);
+
+void invokeFunction(
+    const std::string &packageName, const std::string &contractName,
+    const std::string &functionName,
+    const std::map<std::string, std::string> &params1,
+    const std::map<std::string, std::map<std::string, std::string>> &params2);
 
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName,
-                    const std::map<std::string, std::string>& params1,
-                    const std::map<std::string, std::map<std::string, std::string>>& params2);
+                    const std::map<std::string, std::string> &params1,
+                    const std::map<std::string, std::string> &params2);
 
 void invokeFunction(const std::string &packageName,
                     const std::string &contractName,
                     const std::string &functionName,
-                    const std::map<std::string, std::string>& params1,
-                    const std::map<std::string, std::string>& params2);
-
-void invokeFunction(const std::string &packageName,
-                    const std::string &contractName,
-                    const std::string &functionName,
-                    const std::map<std::string, std::string>& params1,
-                    const std::vector<std::string>& params2);
+                    const std::map<std::string, std::string> &params1,
+                    const std::vector<std::string> &params2);
 }
 
 #endif

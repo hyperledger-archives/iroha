@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 
             }
         } else {
-            // may be we have a netmask?
+            // maybe we have a netmask?
             auto range = ip_tools::getIpRangeByNetmask(host);
             for (uint32_t i = 0; i < range.second; ++i) {
                 Peer peer = connection::iroha::HostDiscovery::getHostInfo::send(

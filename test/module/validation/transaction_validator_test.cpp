@@ -19,7 +19,6 @@
 #include <memory>
 #include <crypto/signature.hpp>
 #include <validation/transaction_validator.hpp>
-#include <infra/protobuf/api.grpc.pb.h>
 
 using Api::ConsensusEvent;
 using Api::Transaction;

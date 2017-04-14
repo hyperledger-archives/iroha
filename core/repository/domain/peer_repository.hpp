@@ -18,8 +18,8 @@ limitations under the License.
 #define __CORE_REPOSITORY_DOMAIN_PEER_REPOSITORY_HPP__
 
 #include <infra/protobuf/api.pb.h>
-#include <transaction_builder/transaction_builder.hpp>
 #include <string>
+#include <transaction_builder/transaction_builder.hpp>
 #include <vector>
 
 namespace repository {
@@ -29,10 +29,10 @@ std::string add(const std::string &publicKey, const std::string &address,
 bool update(const std::string &uuid, const std::string &address,
             const Api::Trust &trust);
 bool remove(const std::string &uuid);
-//std::vector<Api::Peer> findAll(const std::string &uuid);
+// std::vector<Api::Peer> findAll(const std::string &uuid);
 Api::Peer findByUuid(const std::string &uuid);
 bool exists(const std::string &uuid);
 }
 }
 
-#endif // __CORE_REPOSITORY_DOMAIN_PEER_REPOSITORY_HPP__
+#endif  // __CORE_REPOSITORY_DOMAIN_PEER_REPOSITORY_HPP__

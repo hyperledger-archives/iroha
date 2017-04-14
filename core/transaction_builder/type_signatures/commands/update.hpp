@@ -7,11 +7,9 @@ namespace type_signatures {
 
 template <class... Ts>
 struct Update {
-  using type = typename detail::head< Ts... >::type;
+  using type = typename detail::head<Ts...>::type;
 };
-
 }
-
 
 
 #endif

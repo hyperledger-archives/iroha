@@ -15,12 +15,10 @@ limitations under the License.
 */
 
 #include "../peer_repository.hpp"
-#include "common_repository.hpp"
 #include <crypto/hash.hpp>
 #include <repository/world_state_repository.hpp>
-#include <transaction_builder/transaction_builder.hpp>
-#include <util/exception.hpp>
 #include <util/logger.hpp>
+#include "common_repository.hpp"
 
 namespace common = ::repository::common;
 
@@ -56,7 +54,6 @@ std::string createPeerUuid(const std::string &publicKey) {
  ********************************************************************************************/
 std::string add(const std::string &publicKey, const std::string &address,
                 const Api::Trust &trust) {
-
   logger::explore(NameSpaceID) << "Add<Peer> publicKey: " << publicKey
                                << " address: " << address
                                << " trust: " << trust.value();
@@ -64,8 +61,8 @@ std::string add(const std::string &publicKey, const std::string &address,
   const auto uuid = detail::createPeerUuid(publicKey);
 
   if (!exists(uuid)) {
-    const auto strPeer =
-        common::stringify<Api::Peer>(txbuilder::createPeer(publicKey, address, trust), ValuePrefix);
+    const auto strPeer = common::stringify<Api::Peer>(
+        txbuilder::createPeer(publicKey, address, trust), ValuePrefix);
     if (world_state_repository::add(uuid, strPeer)) {
       return uuid;
     }
@@ -109,7 +106,6 @@ bool remove(const std::string &uuid) {
  * find
  ********************************************************************************************/
 Api::Peer findByUuid(const std::string &uuid) {
-
   logger::explore(NameSpaceID + "::findByUuid") << "";
   auto strPeer = world_state_repository::find(uuid);
   if (not strPeer.empty()) {

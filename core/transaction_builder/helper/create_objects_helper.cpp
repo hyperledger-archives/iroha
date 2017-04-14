@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 #include <algorithm>
-#include <assert.h>
 #include <tuple>
 
 #include <infra/protobuf/api.pb.h>
@@ -81,23 +80,24 @@ std::string stringify(::txbuilder::Map m) {
 
 std::string stringify(Api::BaseObject obj) {
   switch (obj.value_case()) {
-  case Api::BaseObject::ValueCase::kValueString:
-    return obj.valuestring();
-  case Api::BaseObject::ValueCase::kValueInt:
-    return std::to_string(obj.valueint());
-  case Api::BaseObject::ValueCase::kValueBoolean:
-    return obj.valueboolean() ? std::string("true") : "false";
-  case Api::BaseObject::ValueCase::kValueDouble:
-    return std::to_string(obj.valuedouble());
-  default:
-    throw "invalid type exception";
+    case Api::BaseObject::ValueCase::kValueString:
+      return obj.valuestring();
+    case Api::BaseObject::ValueCase::kValueInt:
+      return std::to_string(obj.valueint());
+    case Api::BaseObject::ValueCase::kValueBoolean:
+      return obj.valueboolean() ? std::string("true") : "false";
+    case Api::BaseObject::ValueCase::kValueDouble:
+      return std::to_string(obj.valuedouble());
+    default:
+      throw "invalid type exception";
   }
 }
 
 /*
   Vector
 */
-template <typename T> using Vector = ::google::protobuf::RepeatedPtrField<T>;
+template <typename T>
+using Vector = ::google::protobuf::RepeatedPtrField<T>;
 
 /*
   Assets
@@ -119,10 +119,8 @@ Api::Account createAccount(std::string publicKey, std::string name,
   return ret;
 }
 
-Api::Asset createAsset(
-  std::string domain,
-  std::string name,
-  ::txbuilder::Map value, std::string smartContractName) {
+Api::Asset createAsset(std::string domain, std::string name,
+                       ::txbuilder::Map value, std::string smartContractName) {
   Api::Asset ret;
   ret.set_domain(std::move(domain));
   ret.set_name(std::move(name));

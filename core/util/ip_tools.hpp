@@ -20,10 +20,10 @@ limitations under the License.
 #include <string>
 
 namespace ip_tools {
-    bool isIpValid(const std::string &ip);
-    uint32_t stringIpToUint(const std::string &ip);
-    std::string uintIpToString(uint32_t ip);
-    std::pair<uint32_t, uint32_t> getIpRangeByNetmask(const std::string &netmask);
+bool isIpValid(const std::string &ip);
+uint32_t stringIpToUint(const std::string &ip);
+std::string uintIpToString(uint32_t ip);
+std::pair<uint32_t, uint32_t> getIpRangeByNetmask(const std::string &netmask);
 }
 
-#endif //IROHA_IP_TOOLS_HPP
+#endif  // IROHA_IP_TOOLS_HPP

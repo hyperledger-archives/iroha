@@ -25,24 +25,24 @@ namespace logger {
 
 /*
 
-    #define LOGGER_DEF(LoggerName, UseLevel, HasPrefix, LogType)                \
-    struct LoggerName                                                           \
-    {                                                                           \
-        explicit LoggerName(std::string&& caller) noexcept;                     \
-        explicit LoggerName(const std::string& caller) noexcept;                \
-        ~LoggerName();                                                          \
-        const std::string   caller;                                             \
-        std::stringstream   stream;                                             \
-        TYPE_UNC_EXC        uncaught;                                           \
-    };                                                                          \
-    template <typename T>                                                       \
-    inline LoggerName& operator << (LoggerName& record, T&& t) {                \
-        record.stream << std::forward<T>(t);                                    \
-        return record;                                                          \
-    }                                                                           \
-    template <typename T>                                                       \
-    inline LoggerName& operator << (LoggerName&& record, T&& t) {               \
-        return record << std::forward<T>(t);                                    \
+    #define LOGGER_DEF(LoggerName, UseLevel, HasPrefix, LogType) \
+    struct LoggerName \
+    { \
+        explicit LoggerName(std::string&& caller) noexcept; \
+        explicit LoggerName(const std::string& caller) noexcept; \
+        ~LoggerName(); \
+        const std::string   caller; \
+        std::stringstream   stream; \
+        TYPE_UNC_EXC        uncaught; \
+    }; \
+    template <typename T> \
+    inline LoggerName& operator << (LoggerName& record, T&& t) { \
+        record.stream << std::forward<T>(t); \
+        return record; \
+    } \
+    template <typename T> \
+    inline LoggerName& operator << (LoggerName&& record, T&& t) { \
+        return record << std::forward<T>(t); \
     }
 
     LOGGER_DEF(debug,   LogLevel::Debug,    true,   "DEBUG")
@@ -51,7 +51,7 @@ namespace logger {
     LOGGER_DEF(error,   LogLevel::Error,    true,   "ERROR (-A-)")
     LOGGER_DEF(fatal,   LogLevel::Fatal,    true,   "FATAL (`o')")
     LOGGER_DEF(explore, LogLevel::Explore,  false,  "(EXPLORE)")
-    
+
 */
 
 enum class LogLevel { Debug = 0, Info, Warning, Error, Fatal, Explore };
@@ -69,11 +69,13 @@ struct debug {
   std::stringstream stream;
   bool uncaught = true;
 };
-template <typename T> inline debug &operator<<(debug &record, T &&t) {
+template <typename T>
+inline debug &operator<<(debug &record, T &&t) {
   record.stream << std::forward<T>(t);
   return record;
 }
-template <typename T> inline debug &operator<<(debug &&record, T &&t) {
+template <typename T>
+inline debug &operator<<(debug &&record, T &&t) {
   return record << std::forward<T>(t);
 }
 struct info {
@@ -84,11 +86,13 @@ struct info {
   std::stringstream stream;
   bool uncaught = true;
 };
-template <typename T> inline info &operator<<(info &record, T &&t) {
+template <typename T>
+inline info &operator<<(info &record, T &&t) {
   record.stream << std::forward<T>(t);
   return record;
 }
-template <typename T> inline info &operator<<(info &&record, T &&t) {
+template <typename T>
+inline info &operator<<(info &&record, T &&t) {
   return record << std::forward<T>(t);
 }
 struct warning {
@@ -99,11 +103,13 @@ struct warning {
   std::stringstream stream;
   bool uncaught = true;
 };
-template <typename T> inline warning &operator<<(warning &record, T &&t) {
+template <typename T>
+inline warning &operator<<(warning &record, T &&t) {
   record.stream << std::forward<T>(t);
   return record;
 }
-template <typename T> inline warning &operator<<(warning &&record, T &&t) {
+template <typename T>
+inline warning &operator<<(warning &&record, T &&t) {
   return record << std::forward<T>(t);
 }
 struct error {
@@ -114,11 +120,13 @@ struct error {
   std::stringstream stream;
   bool uncaught = true;
 };
-template <typename T> inline error &operator<<(error &record, T &&t) {
+template <typename T>
+inline error &operator<<(error &record, T &&t) {
   record.stream << std::forward<T>(t);
   return record;
 }
-template <typename T> inline error &operator<<(error &&record, T &&t) {
+template <typename T>
+inline error &operator<<(error &&record, T &&t) {
   return record << std::forward<T>(t);
 }
 struct fatal {
@@ -129,11 +137,13 @@ struct fatal {
   std::stringstream stream;
   bool uncaught = true;
 };
-template <typename T> inline fatal &operator<<(fatal &record, T &&t) {
+template <typename T>
+inline fatal &operator<<(fatal &record, T &&t) {
   record.stream << std::forward<T>(t);
   return record;
 }
-template <typename T> inline fatal &operator<<(fatal &&record, T &&t) {
+template <typename T>
+inline fatal &operator<<(fatal &&record, T &&t) {
   return record << std::forward<T>(t);
 }
 struct explore {
@@ -144,11 +154,13 @@ struct explore {
   std::stringstream stream;
   bool uncaught = true;
 };
-template <typename T> inline explore &operator<<(explore &record, T &&t) {
+template <typename T>
+inline explore &operator<<(explore &record, T &&t) {
   record.stream << std::forward<T>(t);
   return record;
 }
-template <typename T> inline explore &operator<<(explore &&record, T &&t) {
+template <typename T>
+inline explore &operator<<(explore &&record, T &&t) {
   return record << std::forward<T>(t);
 }
 }

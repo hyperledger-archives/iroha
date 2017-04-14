@@ -10,8 +10,8 @@ struct head {
 };
 }
 
-template<class T> struct To {};
-
+template <class T>
+struct To {};
 }
 
 #endif

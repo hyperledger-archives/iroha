@@ -19,10 +19,9 @@ limitations under the License.
 
 #include <cstdlib>
 
-namespace terminate{
+namespace terminate {
 
-  void finish();
-  
+void finish();
 }
 
 #endif

@@ -17,7 +17,6 @@ limitations under the License.
 #include <gtest/gtest.h>
 #include <infra/protobuf/api.pb.h>
 #include <transaction_builder/transaction_builder.hpp>
-#include <util/exception.hpp>
 
 using txbuilder::TransactionBuilder;
 using type_signatures::Transfer;

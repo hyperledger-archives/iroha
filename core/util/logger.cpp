@@ -35,27 +35,29 @@ namespace logger {
     #define COND_UNC_EXC    uncaught >= STD_UNC_EXC()
     #endif
 
-    #define LOGGER_DEF_IMPL(LoggerName, UseLevel, HasPrefix, LogType)               \
-    LoggerName::LoggerName(std::string&& caller) noexcept                           \
-      : caller(std::move(caller)),                                                  \
-        uncaught(STD_UNC_EXC())                                                     \
-    {}                                                                              \
-    LoggerName::LoggerName(const std::string& caller) noexcept                      \
-      : caller(caller),                                                             \
-        uncaught(STD_UNC_EXC())                                                     \
-    {}                                                                              \
-    LoggerName::~LoggerName() {                                                     \
-        if  ( COND_UNC_EXC                                                          \
-              &&                                                                    \
-              static_cast<int>(detail::LOG_LEVEL) <= static_cast<int>(UseLevel)     \
-            ) {                                                                     \
-            const auto useCErr = static_cast<int>(LogLevel::Error) <= static_cast<int>(UseLevel);   \
-            ( useCErr ? std::cerr : std::cout )                                     \
-                        << datetime::unixtime_str()                                 \
-                        << (HasPrefix ?                                             \
-                            std::string(" ") + LogType + " [" + caller + "] "       \
-                            :                            "["  + caller + "] "       \
-                           )                                                        \
+    #define LOGGER_DEF_IMPL(LoggerName, UseLevel, HasPrefix, LogType) \
+    LoggerName::LoggerName(std::string&& caller) noexcept \
+      : caller(std::move(caller)), \
+        uncaught(STD_UNC_EXC()) \
+    {} \
+    LoggerName::LoggerName(const std::string& caller) noexcept \
+      : caller(caller), \
+        uncaught(STD_UNC_EXC()) \
+    {} \
+    LoggerName::~LoggerName() { \
+        if  ( COND_UNC_EXC \
+              && \
+              static_cast<int>(detail::LOG_LEVEL) <= static_cast<int>(UseLevel)
+\
+            ) { \
+            const auto useCErr = static_cast<int>(LogLevel::Error) <=
+static_cast<int>(UseLevel);   \
+            ( useCErr ? std::cerr : std::cout ) \
+                        << datetime::unixtime_str() \
+                        << (HasPrefix ? \
+                            std::string(" ") + LogType + " [" + caller + "] " \
+                            :                            "["  + caller + "] " \
+                           ) \
                         << stream.str() << std::endl;                         \
         }                                                                     \
     }
@@ -72,9 +74,11 @@ namespace logger {
 namespace logger {
 
 debug::debug(std::string &&caller) noexcept
-    : caller(std::move(caller)), uncaught(std::uncaught_exception()) {}
+    : caller(std::move(caller)),
+      uncaught(std::uncaught_exception()) {}
 debug::debug(const std::string &caller) noexcept
-    : caller(caller), uncaught(std::uncaught_exception()) {}
+    : caller(caller),
+      uncaught(std::uncaught_exception()) {}
 debug::~debug() {
   if (!std::uncaught_exception() &&
       static_cast<int>(detail::LOG_LEVEL) <=
@@ -89,9 +93,11 @@ debug::~debug() {
   }
 }
 info::info(std::string &&caller) noexcept
-    : caller(std::move(caller)), uncaught(std::uncaught_exception()) {}
+    : caller(std::move(caller)),
+      uncaught(std::uncaught_exception()) {}
 info::info(const std::string &caller) noexcept
-    : caller(caller), uncaught(std::uncaught_exception()) {}
+    : caller(caller),
+      uncaught(std::uncaught_exception()) {}
 info::~info() {
   if (!std::uncaught_exception() &&
       static_cast<int>(detail::LOG_LEVEL) <= static_cast<int>(LogLevel::Info)) {
@@ -105,9 +111,11 @@ info::~info() {
   }
 }
 warning::warning(std::string &&caller) noexcept
-    : caller(std::move(caller)), uncaught(std::uncaught_exception()) {}
+    : caller(std::move(caller)),
+      uncaught(std::uncaught_exception()) {}
 warning::warning(const std::string &caller) noexcept
-    : caller(caller), uncaught(std::uncaught_exception()) {}
+    : caller(caller),
+      uncaught(std::uncaught_exception()) {}
 warning::~warning() {
   if (!std::uncaught_exception() &&
       static_cast<int>(detail::LOG_LEVEL) <=
@@ -122,9 +130,11 @@ warning::~warning() {
   }
 }
 error::error(std::string &&caller) noexcept
-    : caller(std::move(caller)), uncaught(std::uncaught_exception()) {}
+    : caller(std::move(caller)),
+      uncaught(std::uncaught_exception()) {}
 error::error(const std::string &caller) noexcept
-    : caller(caller), uncaught(std::uncaught_exception()) {}
+    : caller(caller),
+      uncaught(std::uncaught_exception()) {}
 error::~error() {
   if (!std::uncaught_exception() &&
       static_cast<int>(detail::LOG_LEVEL) <=
@@ -139,9 +149,11 @@ error::~error() {
   }
 }
 fatal::fatal(std::string &&caller) noexcept
-    : caller(std::move(caller)), uncaught(std::uncaught_exception()) {}
+    : caller(std::move(caller)),
+      uncaught(std::uncaught_exception()) {}
 fatal::fatal(const std::string &caller) noexcept
-    : caller(caller), uncaught(std::uncaught_exception()) {}
+    : caller(caller),
+      uncaught(std::uncaught_exception()) {}
 fatal::~fatal() {
   if (!std::uncaught_exception() &&
       static_cast<int>(detail::LOG_LEVEL) <=
@@ -156,9 +168,11 @@ fatal::~fatal() {
   }
 }
 explore::explore(std::string &&caller) noexcept
-    : caller(std::move(caller)), uncaught(std::uncaught_exception()) {}
+    : caller(std::move(caller)),
+      uncaught(std::uncaught_exception()) {}
 explore::explore(const std::string &caller) noexcept
-    : caller(caller), uncaught(std::uncaught_exception()) {}
+    : caller(caller),
+      uncaught(std::uncaught_exception()) {}
 explore::~explore() {
   if (!std::uncaught_exception() &&
       static_cast<int>(detail::LOG_LEVEL) <=
@@ -172,5 +186,4 @@ explore::~explore() {
         << stream.str() << std::endl;
   }
 }
-
 }

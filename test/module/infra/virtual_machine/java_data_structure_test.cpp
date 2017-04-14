@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include <gtest/gtest.h>
-#include <map>
 
 #include <infra/virtual_machine/jvm/java_data_structure.hpp>
 
@@ -51,7 +50,6 @@ TEST(java_data_structure_test, JavaMakeMap) {
 }
 
 TEST(java_data_structure_test, JavaMakeMapInMap) {
-
   std::map<std::string, std::string> params1 = {
       {"key1", "value1"}, {"key2", "value2"}, {"key3", "value3"},
   };

@@ -24,4 +24,4 @@ using Api::Transaction;
 void execute(const Transaction &tx);
 };
 
-#endif // IROHA_EXECUTOR_HPP_HPP
+#endif  // IROHA_EXECUTOR_HPP_HPP
