@@ -69,7 +69,7 @@ std::string hash(const std::unique_ptr<Transaction>& tx) {
 };
 
 std::unique_ptr<ConsensusEvent> addSignature(
-    std::unique_ptr<ConsensusEvent> event, const std::string& publicKey,
+    std::unique_ptr<ConsensusEvent>&& event, const std::string& publicKey,
     const std::string& signature
 ) {
 
@@ -466,7 +466,7 @@ void processTransaction(std::unique_ptr<ConsensusEvent>&& event) {
 
     } else {
       // This is a new event, so we should verify, sign, and broadcast it
-      event = std::move(detail::addSignature(
+      auto new_event = std::move(detail::addSignature(
          std::move(event),
          config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault("Invalid"), // ??
          ""
@@ -484,16 +484,12 @@ void processTransaction(std::unique_ptr<ConsensusEvent>&& event) {
           context->validatingPeers.at(context->proxyTailNdx)->ip;
           connection::iroha::SumeragiImpl::Verify::send(
               context->validatingPeers.at(context->proxyTailNdx)->ip,
-              std::move(event)
+              std::move(new_event)
           ); // Think In Process
       } else {
-          //logger::info("sumeragi")    <<  "Send All! sig:["       << event->peerSignatures()->size() << "]";
-          connection::iroha::SumeragiImpl::Verify::sendAll(std::move(event)); //
+          logger::info("sumeragi")    <<  "Send All! sig:["       << new_event->peerSignatures()->size() << "]";
+          connection::iroha::SumeragiImpl::Verify::sendAll(std::move(new_event)); //
       }
-
-      setAwkTimer(3000, [&](){
-
-      });
     }
   }
 }
