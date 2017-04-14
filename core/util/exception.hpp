@@ -24,9 +24,9 @@ limitations under the License.
 
 namespace exception {
 
-class IrohaException: public std::exception {
+class IrohaException : public std::exception {
  public:
-  explicit IrohaException(const std::string&);
+  explicit IrohaException(const std::string &);
 
   virtual ~IrohaException();
   virtual const char *what() const throw();
@@ -89,7 +89,11 @@ class InvalidKeyException : public IrohaException {
  public:
   explicit InvalidKeyException(const std::string &);
 };
+class InvalidMessageLengthException : public IrohaException {
+ public:
+  explicit InvalidMessageLengthException(const std::string &);
 };
+}
 
 namespace repository {
 class WriteFailedException : public IrohaException {

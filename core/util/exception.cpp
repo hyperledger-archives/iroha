@@ -35,21 +35,18 @@ NotImplementedException::NotImplementedException(
     const std::string &filename
 ) :
     IrohaException("TODO: Sorry, function [" + functionName + "] in file " + filename
-                       + " is not yet implemented, would you like to contribute it?") {
-}
+                       + " is not yet implemented, would you like to contribute it?") {}
 
 BaseMethodException::BaseMethodException(
     const std::string &functionName,
     const std::string &filename
 ) :
-    IrohaException("BaseMethodException for function [" + functionName + "] in file " + filename) {
-}
+    IrohaException("BaseMethodException for function [" + functionName + "] in file " + filename) {}
 
 ParseFromStringException::ParseFromStringException(
     const std::string &filename
 ) :
-    IrohaException("ParseFromStringException in file " + filename) {
-}
+    IrohaException("ParseFromStringException in file " + filename) {}
 
 InvalidCastException::InvalidCastException(
     const std::string &from,
@@ -68,45 +65,42 @@ namespace config {
 ConfigException::ConfigException(
     const std::string &message
 ) :
-    IrohaException("ConfigException: " + message) {
-}
+    IrohaException("ConfigException: " + message) {}
 }
 
 namespace service {
 DuplicationIPException::DuplicationIPException(const std::string &ip) :
-    IrohaException("DuplicationIPException : IP = " + ip) {
-}
+    IrohaException("DuplicationIPException : IP = " + ip) {}
+
 DuplicationPublicKeyException::DuplicationPublicKeyException(const std::string &publicKey) :
-    IrohaException("DuplicationPublicKeyException : publicKey = " + publicKey) {
-}
+    IrohaException("DuplicationPublicKeyException : publicKey = " + publicKey) {}
+
 UnExistFindPeerException::UnExistFindPeerException(const std::string &publicKey) :
-    IrohaException("UnExistFindPeerException : publicKey = " + publicKey) {
-}
+    IrohaException("UnExistFindPeerException : publicKey = " + publicKey) {}
 }
 
 namespace crypto {
 InvalidKeyException::InvalidKeyException(const std::string &message) :
-    IrohaException("Keyfile is invalid, cause is: " + message) {
-}
+    IrohaException("Keyfile is invalid, cause is: " + message) {}
+InvalidMessageLengthException::InvalidMessageLengthException(const std::string &message) :
+    IrohaException("Message " + message + " has wrong length") {}
 }  // namespace crypto
 
 namespace repository {
 WriteFailedException::WriteFailedException(const std::string &message) :
-    IrohaException("Data could note be saved, cause is: " + message) {
-}
+    IrohaException("Data could note be saved, cause is: " + message) {}
+
 DuplicateAddException::DuplicateAddException(const std::string &object) :
-    IrohaException("DuplicateAddException: " + object) {
-}
+    IrohaException("DuplicateAddException: " + object) {}
 }  // namespace crypto
 
 namespace txbuilder {
 DuplicateSetArgumentException::DuplicateSetArgumentException(const std::string &buildTarget,
                                                              const std::string &duplicateMember) :
-    IrohaException("DuplicateSetArgumentException in " + buildTarget + ", argument: " + duplicateMember) {
-}
+    IrohaException("DuplicateSetArgumentException in " + buildTarget + ", argument: " + duplicateMember) {}
+
 UnsetBuildArgumentsException::UnsetBuildArgumentsException(const std::string &buildTarget,
                                                            const std::string &unsetMembers) :
-    IrohaException("UnsetBuildArgumentsException in " + buildTarget + ", arguments: " + unsetMembers) {
-}
+    IrohaException("UnsetBuildArgumentsException in " + buildTarget + ", arguments: " + unsetMembers) {}
 }  // namespace txbuilder
 }  // namespace exception
