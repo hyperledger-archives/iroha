@@ -14,3 +14,5 @@ add_subdirectory(crypto)
 #add_subdirectory(validation)
 #add_subdirectory(connection)
 #add_subdirectory(transaction_builder)
+
+add_subdirectory(service)
