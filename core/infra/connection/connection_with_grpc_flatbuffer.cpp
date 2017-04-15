@@ -259,8 +259,8 @@ class SumeragiConnectionClient {
 
   ::iroha::Response* Torii(
       const std::unique_ptr<Transaction>& transaction) const {
-
-    // Copy transaction to FlatBufferBuilder memory, then create BufferRef<Transaction>
+    // Copy transaction to FlatBufferBuilder memory, then create
+    // BufferRef<Transaction>
     // and share it to another sumeragi by using stub interface Torii.
 
     grpc::ClientContext context;
@@ -274,27 +274,26 @@ class SumeragiConnectionClient {
 
     // CreateSomething(), then .Union() -> Offset<void>
 
-    flatbuffers::Verifier verifier(fbbCommand, length);
-    ::iroha::VerifyCommand();
+    {
+      int length = 0;
+      auto commandBuf = extractCommandBuffer(transaction, length);
+      flatbuffers::Verifier verifier(commandBuf, length);
+      ::iroha::VerifyCommand(verifier, (const void*)commandBuf.data(), transaction.command_type());
+
+//      flatbuffers::GetRoot<>
+    }
 
     std::vector<uint8_t> attachmentData(
         *transaction->attachment()->data()->begin(),
         *transaction->attachment()->data()->end());
 
     auto tx = ::iroha::CreateTransactionDirect(
-      fbb,
-      transaction->creatorPubKey()->c_str(),
-      transaction->command_type(),
-//      reinterpret_cast<flatbuffers::Offset<void>*>(
-//          const_cast<void*>(transaction->command())),
-      &tx_signatures,
-      &_hash,
-      ::iroha::CreateAttachmentDirect(
-        fbb,
-        transaction->attachment()->mime()->c_str(),
-        &attachmentData
-      )
-    );
+        fbb, transaction->creatorPubKey()->c_str(), transaction->command_type(),
+        //      reinterpret_cast<flatbuffers::Offset<void>*>(
+        //          const_cast<void*>(transaction->command())),
+        &tx_signatures, &_hash,
+        ::iroha::CreateAttachmentDirect(
+            fbb, transaction->attachment()->mime()->c_str(), &attachmentData));
 
     fbb.Finish(tx);
     auto req_transaction = flatbuffers::BufferRef<::iroha::Transaction>(
@@ -316,6 +315,24 @@ class SumeragiConnectionClient {
       return response.GetRoot();
     }
   }
+
+ private:
+
+  std::vector<uint8_t> extractCommandBuffer(const Transaction& transaction, std::size_t& length) {
+    flatbuffers::FlatBufferBuilder fbbCommand;
+    auto type = transaction.command_type();
+    auto obj = transaction.command();
+    auto commandOffset =
+        flatbuffer_service::CreateCommandDirect(fbbCommand, obj, type);
+    fbbCommand.Finish(commandOffset);
+
+    auto buf = fbbCommand.GetBufferPointer();
+    length = fbbCommand.GetSize();
+    std::vector<uint8_t> ret;
+    ret.assign(buf, buf + length);
+    return ret;
+  }
+
 
  private:
   std::unique_ptr<Sumeragi::Stub> stub_;

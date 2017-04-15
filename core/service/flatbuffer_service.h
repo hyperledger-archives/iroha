@@ -15,8 +15,12 @@ limitations under the License.
 #ifndef IROHA_FLATBUFFER_SERVICE_H
 #define IROHA_FLATBUFFER_SERVICE_H
 
+namespace iroha {
+struct Transaction;
+struct ConsensusEvent;
+}
 
-namespace flatbuffer_service{
+namespace flatbuffer_service {
 
     std::string toString(const iroha::Transaction& tx);
 
