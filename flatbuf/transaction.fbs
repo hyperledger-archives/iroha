@@ -6,7 +6,7 @@ namespace iroha;
 table Transaction {
   creatorPubKey:   string      (required);
   command:         Command     (required);
-  signatures:      [Signature] (required);
+  signatures:      [ubyte]     (required, nested_flatbuffer: "Signatures");
   hash:            [ubyte];
   attachment:      Attachment;
 }

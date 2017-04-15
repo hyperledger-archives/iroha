@@ -85,3 +85,7 @@ table Signature {
   signature:  [ubyte];   // signature is sign(hash + timestamp)
   timestamp:   ulong;
 }
+
+table Signatures {
+  signatures: [Signature] (required);
+}

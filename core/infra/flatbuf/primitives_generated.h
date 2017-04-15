@@ -24,6 +24,8 @@ struct Peer;
 
 struct Signature;
 
+struct Signatures;
+
 /////////////////////////////////////
 enum ProgrammingLanguage {
   ProgrammingLanguage_Java8 = 0,
@@ -1004,6 +1006,60 @@ inline flatbuffers::Offset<Signature> CreateSignatureDirect(
       publicKey ? _fbb.CreateString(publicKey) : 0,
       signature ? _fbb.CreateVector<uint8_t>(*signature) : 0,
       timestamp);
+}
+
+struct Signatures FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_SIGNATURES = 4
+  };
+  const flatbuffers::Vector<flatbuffers::Offset<Signature>> *signatures() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<Signature>> *>(VT_SIGNATURES);
+  }
+  flatbuffers::Vector<flatbuffers::Offset<Signature>> *mutable_signatures() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<Signature>> *>(VT_SIGNATURES);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_SIGNATURES) &&
+           verifier.Verify(signatures()) &&
+           verifier.VerifyVectorOfTables(signatures()) &&
+           verifier.EndTable();
+  }
+};
+
+struct SignaturesBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_signatures(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Signature>>> signatures) {
+    fbb_.AddOffset(Signatures::VT_SIGNATURES, signatures);
+  }
+  SignaturesBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  SignaturesBuilder &operator=(const SignaturesBuilder &);
+  flatbuffers::Offset<Signatures> Finish() {
+    const auto end = fbb_.EndTable(start_, 1);
+    auto o = flatbuffers::Offset<Signatures>(end);
+    fbb_.Required(o, Signatures::VT_SIGNATURES);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Signatures> CreateSignatures(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Signature>>> signatures = 0) {
+  SignaturesBuilder builder_(_fbb);
+  builder_.add_signatures(signatures);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<Signatures> CreateSignaturesDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<flatbuffers::Offset<Signature>> *signatures = nullptr) {
+  return iroha::CreateSignatures(
+      _fbb,
+      signatures ? _fbb.CreateVector<flatbuffers::Offset<Signature>>(*signatures) : 0);
 }
 
 inline bool VerifyUserPermission(flatbuffers::Verifier &verifier, const void *obj, UserPermission type) {

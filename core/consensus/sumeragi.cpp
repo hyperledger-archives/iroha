@@ -273,10 +273,10 @@ void initializeSumeragi() {
 
         std::vector<flatbuffers::Offset<Signature>> tx_signatures;
 
-        if(transaction->signatures() != nullptr) {
+        if (transaction->signatures() != nullptr) {
             for (auto &&txSig : *transaction->signatures()) {
                 std::vector<uint8_t> _data;
-                if(txSig->signature() != nullptr) {
+                if (txSig->signature() != nullptr) {
                     for (auto d : *txSig->signature()) {
                         _data.emplace_back(d);
                     }
