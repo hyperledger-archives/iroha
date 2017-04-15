@@ -35,20 +35,9 @@ class IrohaException : public std::exception {
   std::string message_;
 };
 
-class FileOpenException : public IrohaException {
- public:
-  explicit FileOpenException(const std::string &);
-};
-
 class NotImplementedException : public IrohaException {
  public:
   explicit NotImplementedException(const std::string &functionName, const std::string &filename);
-};
-
-class BaseMethodException : public IrohaException {
- public:
-  BaseMethodException(const std::string &functionName,
-                      const std::string &filename);
 };
 
 class ParseFromStringException : public IrohaException {
@@ -92,17 +81,6 @@ class InvalidKeyException : public IrohaException {
 class InvalidMessageLengthException : public IrohaException {
  public:
   explicit InvalidMessageLengthException(const std::string &);
-};
-}
-
-namespace repository {
-class WriteFailedException : public IrohaException {
- public:
-  explicit WriteFailedException(const std::string &);
-};
-class DuplicateAddException : public IrohaException {
- public:
-  explicit DuplicateAddException(const std::string &);
 };
 }
 

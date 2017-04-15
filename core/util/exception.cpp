@@ -27,21 +27,12 @@ IrohaException::~IrohaException() {}
 
 const char *IrohaException::what() const throw() { return message_.c_str(); }
 
-FileOpenException::FileOpenException(const std::string &filename) : IrohaException(
-    "File " + filename + " is not found") {}
-
 NotImplementedException::NotImplementedException(
     const std::string &functionName,
     const std::string &filename
 ) :
     IrohaException("TODO: Sorry, function [" + functionName + "] in file " + filename
                        + " is not yet implemented, would you like to contribute it?") {}
-
-BaseMethodException::BaseMethodException(
-    const std::string &functionName,
-    const std::string &filename
-) :
-    IrohaException("BaseMethodException for function [" + functionName + "] in file " + filename) {}
 
 ParseFromStringException::ParseFromStringException(
     const std::string &filename
@@ -84,14 +75,6 @@ InvalidKeyException::InvalidKeyException(const std::string &message) :
     IrohaException("Keyfile is invalid, cause is: " + message) {}
 InvalidMessageLengthException::InvalidMessageLengthException(const std::string &message) :
     IrohaException("Message " + message + " has wrong length") {}
-}  // namespace crypto
-
-namespace repository {
-WriteFailedException::WriteFailedException(const std::string &message) :
-    IrohaException("Data could note be saved, cause is: " + message) {}
-
-DuplicateAddException::DuplicateAddException(const std::string &object) :
-    IrohaException("DuplicateAddException: " + object) {}
 }  // namespace crypto
 
 namespace txbuilder {
