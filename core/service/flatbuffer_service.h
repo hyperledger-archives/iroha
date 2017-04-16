@@ -15,19 +15,28 @@ limitations under the License.
 #ifndef IROHA_FLATBUFFER_SERVICE_H
 #define IROHA_FLATBUFFER_SERVICE_H
 
+namespace iroha {
+struct Transaction;
+struct ConsensusEvent;
+}
 
-namespace flatbuffer_service{
+namespace flatbuffer_service {
 
-    std::string toString(const iroha::Transaction& tx);
+// namespace autogen_extend {
+    flatbuffers::Offset<void> CreateCommandDirect(
+            flatbuffers::FlatBufferBuilder &_fbb, const void *obj,
+            int/* Command */ type); // TODO: Use scopoed enum ::iroha::Command
+//}
 
-    std::unique_ptr<iroha::ConsensusEvent> toConsensusEvent(const iroha::Transaction& tx);
+    std::string toString(const iroha::Transaction &tx);
 
     std::unique_ptr<iroha::ConsensusEvent> addSignature(
-        const std::unique_ptr<iroha::ConsensusEvent>& event,
-        const std::string& publicKey,
-        const std::string& signature
+            const std::unique_ptr<iroha::ConsensusEvent> &event,
+            const std::string &publicKey,
+            const std::string &signature
     );
 
-};
+    std::unique_ptr<::iroha::ConsensusEvent> toConsensusEvent(const iroha::Transaction &tx);
 
-#endif //IROHA_FLATBUFFER_SERVICE_H
+};
+#endif  // IROHA_FLATBUFFER_SERVICE_H

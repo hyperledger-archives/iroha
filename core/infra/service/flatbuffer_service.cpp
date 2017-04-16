@@ -16,10 +16,12 @@ limitations under the License.
 
 #include <infra/flatbuf/main_generated.h>
 
+#include <map>
+#include <unordered_map>
 #include <memory>
 #include <string>
-#include <map>
 #include <functional>
+
 namespace flatbuffer_service{
 
     std::string toString(const iroha::Transaction& tx){
@@ -48,8 +50,8 @@ namespace flatbuffer_service{
             res += "]\n";
         }
 
-        std::map<iroha::Command, std::function<std::string(const void *)>> command_to_strings;
-        std::map<iroha::AnyAsset, std::function<std::string(const void *)>> any_asset_to_strings;
+        std::unordered_map<iroha::Command, std::function<std::string(const void *)>> command_to_strings;
+        std::unordered_map<iroha::AnyAsset, std::function<std::string(const void *)>> any_asset_to_strings;
 
         any_asset_to_strings[iroha::AnyAsset_ComplexAsset] = [&](const void* asset) -> std::string{
             const iroha::ComplexAsset* ast = static_cast<const iroha::ComplexAsset *>(asset);
