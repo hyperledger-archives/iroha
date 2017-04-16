@@ -43,55 +43,55 @@ struct Transaction FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   template<typename T> const T *command_as() const;
   const iroha::AssetCreate *command_as_AssetCreate() const {
-    return (command_type() == iroha::Command_AssetCreate)? static_cast<const iroha::AssetCreate *>(command()) : nullptr;
+    return command_type() == iroha::Command_AssetCreate ? static_cast<const iroha::AssetCreate *>(command()) : nullptr;
   }
   const iroha::AssetAdd *command_as_AssetAdd() const {
-    return (command_type() == iroha::Command_AssetAdd)? static_cast<const iroha::AssetAdd *>(command()) : nullptr;
+    return command_type() == iroha::Command_AssetAdd ? static_cast<const iroha::AssetAdd *>(command()) : nullptr;
   }
   const iroha::AssetRemove *command_as_AssetRemove() const {
-    return (command_type() == iroha::Command_AssetRemove)? static_cast<const iroha::AssetRemove *>(command()) : nullptr;
+    return command_type() == iroha::Command_AssetRemove ? static_cast<const iroha::AssetRemove *>(command()) : nullptr;
   }
   const iroha::AssetTransfer *command_as_AssetTransfer() const {
-    return (command_type() == iroha::Command_AssetTransfer)? static_cast<const iroha::AssetTransfer *>(command()) : nullptr;
+    return command_type() == iroha::Command_AssetTransfer ? static_cast<const iroha::AssetTransfer *>(command()) : nullptr;
   }
   const iroha::PeerAdd *command_as_PeerAdd() const {
-    return (command_type() == iroha::Command_PeerAdd)? static_cast<const iroha::PeerAdd *>(command()) : nullptr;
+    return command_type() == iroha::Command_PeerAdd ? static_cast<const iroha::PeerAdd *>(command()) : nullptr;
   }
   const iroha::PeerRemove *command_as_PeerRemove() const {
-    return (command_type() == iroha::Command_PeerRemove)? static_cast<const iroha::PeerRemove *>(command()) : nullptr;
+    return command_type() == iroha::Command_PeerRemove ? static_cast<const iroha::PeerRemove *>(command()) : nullptr;
   }
   const iroha::PeerSetActive *command_as_PeerSetActive() const {
-    return (command_type() == iroha::Command_PeerSetActive)? static_cast<const iroha::PeerSetActive *>(command()) : nullptr;
+    return command_type() == iroha::Command_PeerSetActive ? static_cast<const iroha::PeerSetActive *>(command()) : nullptr;
   }
   const iroha::PeerSetTrust *command_as_PeerSetTrust() const {
-    return (command_type() == iroha::Command_PeerSetTrust)? static_cast<const iroha::PeerSetTrust *>(command()) : nullptr;
+    return command_type() == iroha::Command_PeerSetTrust ? static_cast<const iroha::PeerSetTrust *>(command()) : nullptr;
   }
   const iroha::PeerChangeTrust *command_as_PeerChangeTrust() const {
-    return (command_type() == iroha::Command_PeerChangeTrust)? static_cast<const iroha::PeerChangeTrust *>(command()) : nullptr;
+    return command_type() == iroha::Command_PeerChangeTrust ? static_cast<const iroha::PeerChangeTrust *>(command()) : nullptr;
   }
   const iroha::AccountAdd *command_as_AccountAdd() const {
-    return (command_type() == iroha::Command_AccountAdd)? static_cast<const iroha::AccountAdd *>(command()) : nullptr;
+    return command_type() == iroha::Command_AccountAdd ? static_cast<const iroha::AccountAdd *>(command()) : nullptr;
   }
   const iroha::AccountRemove *command_as_AccountRemove() const {
-    return (command_type() == iroha::Command_AccountRemove)? static_cast<const iroha::AccountRemove *>(command()) : nullptr;
+    return command_type() == iroha::Command_AccountRemove ? static_cast<const iroha::AccountRemove *>(command()) : nullptr;
   }
   const iroha::AccountAddSignatory *command_as_AccountAddSignatory() const {
-    return (command_type() == iroha::Command_AccountAddSignatory)? static_cast<const iroha::AccountAddSignatory *>(command()) : nullptr;
+    return command_type() == iroha::Command_AccountAddSignatory ? static_cast<const iroha::AccountAddSignatory *>(command()) : nullptr;
   }
   const iroha::AccountRemoveSignatory *command_as_AccountRemoveSignatory() const {
-    return (command_type() == iroha::Command_AccountRemoveSignatory)? static_cast<const iroha::AccountRemoveSignatory *>(command()) : nullptr;
+    return command_type() == iroha::Command_AccountRemoveSignatory ? static_cast<const iroha::AccountRemoveSignatory *>(command()) : nullptr;
   }
   const iroha::AccountSetUseKeys *command_as_AccountSetUseKeys() const {
-    return (command_type() == iroha::Command_AccountSetUseKeys)? static_cast<const iroha::AccountSetUseKeys *>(command()) : nullptr;
+    return command_type() == iroha::Command_AccountSetUseKeys ? static_cast<const iroha::AccountSetUseKeys *>(command()) : nullptr;
   }
   const iroha::ChaincodeAdd *command_as_ChaincodeAdd() const {
-    return (command_type() == iroha::Command_ChaincodeAdd)? static_cast<const iroha::ChaincodeAdd *>(command()) : nullptr;
+    return command_type() == iroha::Command_ChaincodeAdd ? static_cast<const iroha::ChaincodeAdd *>(command()) : nullptr;
   }
   const iroha::ChaincodeRemove *command_as_ChaincodeRemove() const {
-    return (command_type() == iroha::Command_ChaincodeRemove)? static_cast<const iroha::ChaincodeRemove *>(command()) : nullptr;
+    return command_type() == iroha::Command_ChaincodeRemove ? static_cast<const iroha::ChaincodeRemove *>(command()) : nullptr;
   }
   const iroha::ChaincodeExecute *command_as_ChaincodeExecute() const {
-    return (command_type() == iroha::Command_ChaincodeExecute)? static_cast<const iroha::ChaincodeExecute *>(command()) : nullptr;
+    return command_type() == iroha::Command_ChaincodeExecute ? static_cast<const iroha::ChaincodeExecute *>(command()) : nullptr;
   }
   void *mutable_command() {
     return GetPointer<void *>(VT_COMMAND);
