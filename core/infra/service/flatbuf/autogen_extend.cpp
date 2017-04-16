@@ -15,15 +15,13 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_FLATBUF_SERVICE_AUTOGEN_EXTEND_H_
-#define IROHA_FLATBUF_SERVICE_AUTOGEN_EXTEND_H_
-
 #include <infra/flatbuf/commands_generated.h>
 #include <infra/flatbuf/main_generated.h>
-#include <util/logger.hpp>
-
+#include <util/logger.hpp> 
 #include <memory>
 #include <string>
+
+#include "autogen_extend.h"
 
 namespace flatbuffer_service {
 // namespace autogen_extend {
@@ -269,5 +267,3 @@ const void *GetRootWithEnum(flatbuffers::FlatBuffersBuilder &_fbb,
 */
 //}  // namespace autogen_extend
 }  // namespace flatbuffer_service
-
-#endif

@@ -16,7 +16,7 @@
  */
 
 #include <infra/flatbuf/main_generated.h>
-#include "autogen_extend.hpp"
+#include "autogen_extend.h"
 
 #include <memory>
 #include <string>
@@ -256,74 +256,79 @@ std::string toString(const iroha::Transaction& tx){
 std::unique_ptr<::iroha::ConsensusEvent> toConsensusEvent(
     const iroha::Transaction& fromTx) {
 
-  flatbuffers::FlatBufferBuilder fbbConsensusEvent;
+  flatbuffers::FlatBufferBuilder fbb;
 
-  // At first, peerSignatures is empty. (Is this right?)
-  std::vector<flatbuffers::Offset<Signature>> peerSignatures;
+  std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
+  std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions;
 
-  std::vector<flatbuffers::Offset<iroha::Signature>> signatures;
+  std::vector<uint8_t> _hash;
+  std::vector<uint8_t> data;
+  flatbuffers::Offset<::iroha::Attachment> attachment = 0;
 
-  // Tempolary implementation: Currently, #(tx) is one.
-  const auto& aSignature = fromTx.signatures()->Get(0);
+  if (fromTx.signatures() != nullptr) {
+    for (const auto& s : *fromTx.signatures()) {
+      assert(s->publicKey() != nullptr);
+      assert(s->signature() != nullptr);
+    }
+  }
+  if (fromTx.attachment() != nullptr) {
+    assert(fromTx.attachment()->mime() != nullptr);
+    assert(fromTx.attachment()->data() != nullptr);
+  }
 
-  std::vector<uint8_t> signatureBlob(
-    aSignature->signature()->begin(),
-    aSignature->signature()->end()
-  );
+  if (fromTx.hash() != nullptr) {
+    _hash.assign(*fromTx.hash()->begin(), *fromTx.hash()->end());
+  }
+  if (fromTx.attachment() != nullptr &&
+      fromTx.attachment()->data() != nullptr) {
+    data.assign(*fromTx.attachment()->data()->begin(),
+                *fromTx.attachment()->data()->end());
+    attachment = iroha::CreateAttachmentDirect(
+        fbb, fromTx.attachment()->mime()->c_str(), &data);
+  }
 
-  signatures.push_back(
-    ::iroha::CreateSignatureDirect(
-      fbbConsensusEvent,
-      aSignature->publicKey()->c_str(),
-      &signatureBlob,
-      1234567
-    )
-  );
 
-  std::vector<uint8_t> hashes(
-    fromTx.hash()->begin(),
-    fromTx.hash()->end()
-  );
+  std::vector<flatbuffers::Offset<::iroha::Signature>> tx_signatures;
 
-  std::vector<uint8_t> data(
-    fromTx.attachment()->data()->begin(),
-    fromTx.attachment()->data()->end()
-  );
-
-  auto attachmentOffset = ::iroha::CreateAttachmentDirect(
-    fbbConsensusEvent,
-    fromTx.attachment()->mime()->c_str(),
-    &data
-  );
-
-  std::vector<flatbuffers::Offset<Transaction>> transactions;
+  if (fromTx.signatures() != nullptr) {
+    for (auto&& txSig : *fromTx.signatures()) {
+      std::vector<uint8_t> _data;
+      if (txSig->signature() != nullptr) {
+        for (auto d : *txSig->signature()) {
+          _data.emplace_back(d);
+        }
+        tx_signatures.emplace_back(iroha::CreateSignatureDirect(
+            fbb, txSig->publicKey()->c_str(), &_data));
+      }
+    }
+  }
 
   // TODO: Currently, #(transaction) is one.
   transactions.push_back(
     ::iroha::CreateTransactionDirect(
-      fbbConsensusEvent,
+      fbb,
       fromTx.creatorPubKey()->c_str(),
       fromTx.command_type(),
       flatbuffer_service::CreateCommandDirect(
-        fbbConsensusEvent,
+        fbb,
         fromTx.command(),
         fromTx.command_type()
       ),
-      &signatures,
-      &hashes,
-      attachmentOffset
+      &tx_signatures,
+      &_hash,
+      attachment
     )
   );
 
   auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
-    fbbConsensusEvent,
-    &peerSignatures,
+    fbb,
+    &signatures,
     &transactions
   );
 
-  fbbConsensusEvent.Finish(consensusEventOffset);
+  fbb.Finish(consensusEventOffset);
 
-  auto flatbuf = fbbConsensusEvent.ReleaseBufferPointer();
+  auto flatbuf = fbb.ReleaseBufferPointer();
 
   return std::unique_ptr<::iroha::ConsensusEvent>(
     flatbuffers::GetMutableRoot<::iroha::ConsensusEvent>(flatbuf.get())

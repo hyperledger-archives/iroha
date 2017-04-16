@@ -7,8 +7,8 @@ file_identifier "IROH";
 file_extension  "iroha";
 
 table ConsensusEvent {
-  peerSignatures: [Signature];
-  transactions:   [Transaction];
+  peerSignatures: [ubyte] (nested_flatbuffer: "Signatures");
+  transactions:   [ubyte] (nested_flatbuffer: "Transactions");
 }
 
 enum Code: ubyte {COMMIT, FAIL} // TODO: maybe more?

@@ -3,7 +3,6 @@ include "asset.fbs";
 
 namespace iroha;
 
-
 table Account {
   pubKey: string (required);  // primary key for account
   alias:  string;
@@ -13,7 +12,6 @@ table Account {
   signatories: [string];
   useKeys:     ushort = 1;
 }
-
 
 // message represents custom user data, related to account. User is able to store blobs in his account and access it by key.
 // e.g.,

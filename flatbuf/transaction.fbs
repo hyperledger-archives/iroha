@@ -15,3 +15,7 @@ table Attachment {
   mime: string;
   data: [ubyte];
 }
+
+table Transactions {
+  transactions: [Transactions];
+}
