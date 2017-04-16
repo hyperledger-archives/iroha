@@ -70,27 +70,23 @@ std::string hash(const std::unique_ptr<Transaction>& tx) {
 
 std::unique_ptr<ConsensusEvent> addSignature(
     std::unique_ptr<ConsensusEvent>&& event, const std::string& publicKey,
-    const std::string& signature
-) {
-
+    const std::string& signature) {
   // Copy
   flatbuffers::FlatBufferBuilder fbb;
   std::unique_ptr<std::vector<flatbuffers::Offset<Signature>>> signatures(
-      new std::vector<flatbuffers::Offset<Signature>>()
-  );
+      new std::vector<flatbuffers::Offset<Signature>>());
   std::unique_ptr<std::vector<flatbuffers::Offset<Transaction>>> transactions(
-      new std::vector<flatbuffers::Offset<Transaction>>()
-  );
+      new std::vector<flatbuffers::Offset<Transaction>>());
 
-  if(event->peerSignatures() != nullptr) {
-      for (auto &&sig : *event->peerSignatures()) {
-          signatures->emplace_back(reinterpret_cast<flatbuffers::uoffset_t>(sig));
-      }
+  if (event->peerSignatures() != nullptr) {
+    for (auto&& sig : *event->peerSignatures()) {
+      signatures->emplace_back(reinterpret_cast<flatbuffers::uoffset_t>(sig));
+    }
   }
-  if(event->transactions() != nullptr) {
-      for(auto &&tx : *event->transactions()) {
-          transactions->emplace_back(tx);
-      }
+  if (event->transactions() != nullptr) {
+    for (auto&& tx : *event->transactions()) {
+      transactions->emplace_back(tx);
+    }
   }
   // Add signature
   std::vector<uint8_t>* encodedSignaturePtr = new std::vector<uint8_t>();
@@ -112,10 +108,10 @@ std::unique_ptr<ConsensusEvent> addSignature(
 }
 
 bool eventSignatureIsEmpty(const std::unique_ptr<ConsensusEvent>& event) {
-  if(event->peerSignatures() != nullptr){
-      return event->peerSignatures()->size() == 0;
-  }else{
-      return 0;
+  if (event->peerSignatures() != nullptr) {
+    return event->peerSignatures()->size() == 0;
+  } else {
+    return 0;
   }
 }
 
@@ -184,37 +180,38 @@ struct Context {
 
   void update() {
     auto peers = config::PeerServiceConfig::getInstance().getGroup();
-    for (const auto& p : peers ) {
-        validatingPeers.push_back( std::make_unique<peer::Node>(
-            p["ip"].get<std::string>(),
-            p["publicKey"].get<std::string>()
-        ));
-        logger::info("sumeragi") << "Add " << p["ip"].get<std::string>() << " to peerList";
+    for (const auto& p : peers) {
+      validatingPeers.push_back(std::make_unique<peer::Node>(
+          p["ip"].get<std::string>(), p["publicKey"].get<std::string>()));
+      logger::info("sumeragi")
+          << "Add " << p["ip"].get<std::string>() << " to peerList";
     }
 
 
     this->numValidatingPeers = this->validatingPeers.size();
     // maxFaulty = Default to approx. 1/3 of the network.
-    this->maxFaulty = config::IrohaConfigManager::getInstance()
-            .getMaxFaultyPeers(this->numValidatingPeers / 3);
+    this->maxFaulty =
+        config::IrohaConfigManager::getInstance().getMaxFaultyPeers(
+            this->numValidatingPeers / 3);
     this->proxyTailNdx = this->maxFaulty * 2 + 1;
 
     if (this->validatingPeers.empty()) {
-        logger::error("sumeragi") << "could not find any validating peers.";
-        exit(EXIT_FAILURE);
+      logger::error("sumeragi") << "could not find any validating peers.";
+      exit(EXIT_FAILURE);
     }
     logger::info("sumeragi") << "peerList is not empty";
 
     if (this->proxyTailNdx >= this->validatingPeers.size()) {
-        this->proxyTailNdx = this->validatingPeers.size() - 1;
+      this->proxyTailNdx = this->validatingPeers.size() - 1;
     }
 
     this->panicCount = 0;
     this->myPublicKey =
-    config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault("Invalied");
+        config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault(
+            "Invalied");
 
-    this->isSumeragi = this->validatingPeers.at(0)->publicKey ==
-    this->myPublicKey;
+    this->isSumeragi =
+        this->validatingPeers.at(0)->publicKey == this->myPublicKey;
     logger::info("sumeragi") << "update finished";
   }
 };
@@ -244,90 +241,78 @@ void initializeSumeragi() {
 
   context = std::make_unique<Context>();
 
-  connection::iroha::SumeragiImpl::Torii::receive(
-      [](const std::string& from, std::unique_ptr<Transaction> transaction) {
-        logger::info("sumeragi") << "receive!";
-        flatbuffers::FlatBufferBuilder fbb;
+  connection::iroha::SumeragiImpl::Torii::receive([](
+      const std::string& from, std::unique_ptr<Transaction> transaction) {
+    logger::info("sumeragi") << "receive!";
+    flatbuffers::FlatBufferBuilder fbb;
 
-        std::vector<flatbuffers::Offset<Signature>> signatures;
-        std::vector<flatbuffers::Offset<Transaction>> transactions;
-        std::vector<uint8_t> _hash;
-        std::vector<uint8_t> data;
-        flatbuffers::Offset<::iroha::Attachment> attachment = 0;
-        if(transaction->hash() != nullptr) {
-            _hash.assign(
-                    *transaction->hash()->begin(),
-                    *transaction->hash()->end()
-            );
+    std::vector<flatbuffers::Offset<Signature>> signatures;
+    std::vector<flatbuffers::Offset<Transaction>> transactions;
+    std::vector<uint8_t> _hash;
+    std::vector<uint8_t> data;
+    flatbuffers::Offset<::iroha::Attachment> attachment = 0;
+    if (transaction->hash() != nullptr) {
+      _hash.assign(*transaction->hash()->begin(), *transaction->hash()->end());
+    }
+    if (transaction->attachment() != nullptr &&
+        transaction->attachment()->data() != nullptr) {
+      data.assign(*transaction->attachment()->data()->begin(),
+                  *transaction->attachment()->data()->end());
+      attachment = iroha::CreateAttachmentDirect(
+          fbb, transaction->attachment()->mime()->c_str(), &data);
+    }
+
+    std::vector<flatbuffers::Offset<Signature>> tx_signatures;
+
+    if (transaction->signatures() != nullptr) {
+      for (auto&& txSig : *transaction->signatures()) {
+        std::vector<uint8_t> _data;
+        if (txSig->signature() != nullptr) {
+          for (auto d : *txSig->signature()) {
+            _data.emplace_back(d);
+          }
+          tx_signatures.emplace_back(iroha::CreateSignatureDirect(
+              fbb, txSig->publicKey()->c_str(), &_data));
         }
-        if(transaction->attachment() != nullptr &&
-            transaction->attachment()->data() != nullptr) {
-            data.assign(
-                *transaction->attachment()->data()->begin(),
-                *transaction->attachment()->data()->end()
-            );
-            attachment = iroha::CreateAttachmentDirect(
-                fbb, transaction->attachment()->mime()->c_str(), &data
-            );
-        }
+      }
+    }
 
-        std::vector<flatbuffers::Offset<Signature>> tx_signatures;
+    std::vector<uint8_t> account;
+    std::unique_ptr<std::vector<uint8_t>> aa(new std::vector<uint8_t>(
+        transaction->command_as_AccountAdd()->account()->begin(),
+        transaction->command_as_AccountAdd()->account()->end()));
 
-        if (transaction->signatures() != nullptr) {
-            for (auto &&txSig : *transaction->signatures()) {
-                std::vector<uint8_t> _data;
-                if (txSig->signature() != nullptr) {
-                    for (auto d : *txSig->signature()) {
-                        _data.emplace_back(d);
-                    }
-                    tx_signatures.emplace_back(iroha::CreateSignatureDirect(
-                            fbb, txSig->publicKey()->c_str(), &_data));
-                }
-            }
-        }
+    auto command = iroha::CreateAccountAddDirect(fbb, aa.get());
 
-        std::vector<uint8_t> account;
-        std::unique_ptr<std::vector<uint8_t>> aa(
-                new std::vector<uint8_t>(
-                  transaction->command_as_AccountAdd()->account()->begin(),
-                  transaction->command_as_AccountAdd()->account()->end()
-                )
-        );
+    transactions.emplace_back(iroha::CreateTransactionDirect(
+        fbb, transaction->creatorPubKey()->c_str(),
+        transaction
+            ->command_type(),  // confusing name, transactions / transaction
+        command.Union(), &tx_signatures, &_hash, attachment));
 
-        auto command = iroha::CreateAccountAddDirect(fbb, aa.get());
+    // Create
+    auto event_buf =
+        iroha::CreateConsensusEventDirect(fbb, &signatures, &transactions);
+    fbb.Finish(event_buf);
 
-        transactions.emplace_back(iroha::CreateTransactionDirect(
-            fbb, transaction->creatorPubKey()->c_str(),
-            transaction
-                ->command_type(),  // confusing name, transactions / transaction
-            command.Union(),
-            &tx_signatures, &_hash,
-            attachment));
+    std::unique_ptr<ConsensusEvent> event(
+        reinterpret_cast<ConsensusEvent*>(fbb.GetBufferPointer()));
+    auto task = [event = std::move(event)]() mutable {
+      processTransaction(std::move(event));
+    };
+    pool.process(std::move(task));
 
-        // Create
-        auto event_buf =
-            iroha::CreateConsensusEventDirect(fbb, &signatures, &transactions);
-        fbb.Finish(event_buf);
-
-        std::unique_ptr<ConsensusEvent> event(
-            reinterpret_cast<ConsensusEvent*>(fbb.GetBufferPointer())
-        );
-        auto task = [event = std::move(event)]() mutable {
-          processTransaction(std::move(event));
-        };
-        pool.process(std::move(task));
-
-        // ToDo I think std::unique_ptr<const T> is not popular. Is it?
-        // return std::unique_ptr<ConsensusEvent>(const_cast<ConsensusEvent*>(
-        //                                               flatbuffers::GetRoot<ConsensusEvent>(fbb.GetBufferPointer())));
-        // send processTransaction(event) as a task to processing pool
-        // this returns std::future<void> object
-        // (std::future).get() method locks processing until result of
-        // processTransaction will be available but processTransaction returns
-        // void, so we don't have to call it and wait
-        // std::function<void()> &&task = std::bind(processTransaction, event);
-        // pool.process(std::move(task));
-      });
+    // ToDo I think std::unique_ptr<const T> is not popular. Is it?
+    // return std::unique_ptr<ConsensusEvent>(const_cast<ConsensusEvent*>(
+    //                                               flatbuffers::GetRoot<ConsensusEvent>(fbb.GetBufferPointer())));
+    // send processTransaction(event) as a task to processing pool
+    // this returns std::future<void> object
+    // (std::future).get() method locks processing until result of
+    // processTransaction will be available but processTransaction returns
+    // void, so we don't have to call it and wait
+    // std::function<void()> &&task = std::bind(processTransaction, event);
+    // pool.process(std::move(task));
+  });
 
   connection::iroha::SumeragiImpl::Verify::receive(
       [](const std::string& from, std::unique_ptr<ConsensusEvent> event) {
@@ -426,8 +411,8 @@ void processTransaction(std::unique_ptr<ConsensusEvent>&& event) {
   } else if (!detail::eventSignatureIsEmpty(event)) {
     // Check if we have at least 2f+1 signatures needed for Byzantine fault
     // tolerance ToDo re write
-    if (event->peerSignatures() != nullptr && event->peerSignatures()->size() >=
-        context->maxFaulty * 2 + 1) {
+    if (event->peerSignatures() != nullptr &&
+        event->peerSignatures()->size() >= context->maxFaulty * 2 + 1) {
       logger::info("sumeragi") << "Signature exists";
 
       logger::explore("sumeragi") << "0--------------------------0";
@@ -445,7 +430,7 @@ void processTransaction(std::unique_ptr<ConsensusEvent>&& event) {
       detail::printJudge(
           // ToDo Re write
           1  // transaction_validator::countValidSignatures(event)
-        ,
+          ,
           context->numValidatingPeers, context->maxFaulty * 2 + 1);
 
       detail::printAgree();
@@ -467,28 +452,34 @@ void processTransaction(std::unique_ptr<ConsensusEvent>&& event) {
     } else {
       // This is a new event, so we should verify, sign, and broadcast it
       auto new_event = std::move(detail::addSignature(
-         std::move(event),
-         config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault("Invalid"), // ??
-         ""
-      ));
+          std::move(event),
+          config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault(
+              "Invalid"),  // ??
+          ""));
 
-      logger::info("sumeragi")        <<  "tail public key is "   <<
-      context->validatingPeers.at(context->proxyTailNdx)->publicKey;
-      logger::info("sumeragi")        <<  "tail is "              <<
-      context->proxyTailNdx; logger::info("sumeragi")        <<  "my public key is "     <<  config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault("Invalid");
+      logger::info("sumeragi")
+          << "tail public key is "
+          << context->validatingPeers.at(context->proxyTailNdx)->publicKey;
+      logger::info("sumeragi") << "tail is " << context->proxyTailNdx;
+      logger::info("sumeragi")
+          << "my public key is "
+          << config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault(
+                 "Invalid");
 
       if (context->validatingPeers.at(context->proxyTailNdx)->publicKey ==
-          config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault("Invalid")
-      ) {
-          logger::info("sumeragi")    <<  "I will send event to " <<
-          context->validatingPeers.at(context->proxyTailNdx)->ip;
-          connection::iroha::SumeragiImpl::Verify::send(
-              context->validatingPeers.at(context->proxyTailNdx)->ip,
-              std::move(new_event)
-          ); // Think In Process
+          config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault(
+              "Invalid")) {
+        logger::info("sumeragi")
+            << "I will send event to "
+            << context->validatingPeers.at(context->proxyTailNdx)->ip;
+        connection::iroha::SumeragiImpl::Verify::send(
+            context->validatingPeers.at(context->proxyTailNdx)->ip,
+            std::move(new_event));  // Think In Process
       } else {
-          logger::info("sumeragi")    <<  "Send All! sig:["       << new_event->peerSignatures()->size() << "]";
-          connection::iroha::SumeragiImpl::Verify::sendAll(std::move(new_event)); //
+        logger::info("sumeragi")
+            << "Send All! sig:[" << new_event->peerSignatures()->size() << "]";
+        connection::iroha::SumeragiImpl::Verify::sendAll(
+            std::move(new_event));  //
       }
     }
   }

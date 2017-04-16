@@ -364,23 +364,60 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
     // Since we keep reusing the same FlatBufferBuilder, the memory it owns
     // remains valid until the next call (this BufferRef doesn't own the
     // memory it points to).
+    iroha::SumeragiImpl::Torii::receiver.invoke(
+        "from",
+        std::unique_ptr<::iroha::Transaction>(
+            // FIX: 呼び出し元のバッファを即座に破棄するのなら安全なはず
+            const_cast<::iroha::Transaction*>(transactionRef->GetRoot())
+        )
+    );
 
+    *responseRef = flatbuffers::BufferRef<::iroha::Response>(
+       fbbResponse.GetBufferPointer(),
+       fbbResponse.GetSize());
+    logger::info("AA") << "Yurushite";
+    return grpc::Status::OK;
+/*
     {
-      // GetRoot()がimmutableなのは、transactionのBufferRefが指し示す
-      // バッファの実体が(呼び出し元の)バッファ内部にあるため
-      const auto transactionRawPtr = transactionRef->GetRoot();
+      // BufferRefは基本immutableだが、呼び出し元は破棄するので取り出してmoveすべき？
+      const auto transaction = transactionRef->GetRoot();
 
-      std::unique_ptr<::iroha::Transaction> transactionPtr;
-      transactionPtr = std::move(*transactionRawPtr); // こんなことは出来ないので新たにコピーを生成する必要がある
+      flatbuffers::FlatBufferBuilder fbbTransaction;
+
+      std::vector<uint8_t> signatures(transaction->signatures()->begin(),
+                                      transaction->signatures()->end());
+
+      std::vector<uint8_t> hashes(transaction->hash()->begin(),
+                                  transaction->hash()->end());
+
+      std::vector<uint8_t> attachmentData(
+          transaction->attachment()->data()->begin(),
+          transaction->attachment()->data()->end());
+
+      fbbTransaction.Finish(::iroha::CreateTransactionDirect(
+          fbbTransaction, transaction->creatorPubKey()->c_str(),
+          transaction->command_type(),
+          flatbuffer_service::CreateCommandDirect(fbbTransaction,
+                                                  transaction->command(),
+                                                  transaction->command_type()),
+          &signatures, &hashes,
+          ::iroha::CreateAttachmentDirect(
+              fbbTransaction, transaction->attachment()->mime()->c_str(),
+              &attachmentData)));
+
+      // std::unique_ptr<>が扱いづらいので、そのうちflatbuffers::unique_ptrに変えるかも
+      auto txBuffer = fbbTransaction.ReleaseBufferPointer();
+      auto transactionPtr = std::move(*flatbuffers::GetMutableRoot<::iroha::Transaction>(txBuffer.get()));
       iroha::SumeragiImpl::Torii::receiver.invoke(
           "from",  // TODO: Specify 'from'
           transactionPtr);
     }
 
-    *response = flatbuffers::BufferRef<::iroha::Response>(
+    *responseRef = flatbuffers::BufferRef<::iroha::Response>(
         fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
 
     return grpc::Status::OK;
+    */
   }
 };
 
