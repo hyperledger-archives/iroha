@@ -29,10 +29,10 @@ flatbuffers::Offset<void> CreateCommandDirect(
 
 std::string toString(const iroha::Transaction& tx);
 
-flatbuffers::unique_ptr_t toConsensusEvent(
+std::unique_ptr<::iroha::ConsensusEvent> toConsensusEvent(
     const iroha::Transaction& tx);
 
-std::unique_ptr<iroha::ConsensusEvent> addSignature(
+std::unique_ptr<::iroha::ConsensusEvent> addSignature(
     const std::unique_ptr<iroha::ConsensusEvent>& event);
 };
 

@@ -22,14 +22,14 @@ limitations under the License.
 
 namespace flatbuffer_service {
 
-std::string toString(const iroha::Transaction& tx) {}
+std::string toString(const ::iroha::Transaction& tx) {}
 
 /**
  * toConsensusEvent
  * - Encapsulate a transaction in a consensus event. Argument fromTx will be
  *   deeply copied and create new consensus event that has the copied transaction.
  */
-flatbuffers::unique_ptr_t toConsensusEvent(
+std::unique_ptr<::iroha::ConsensusEvent> toConsensusEvent(
     const iroha::Transaction& fromTx) {
 
   flatbuffers::FlatBufferBuilder fbbConsensusEvent;
@@ -99,10 +99,14 @@ flatbuffers::unique_ptr_t toConsensusEvent(
 
   fbbConsensusEvent.Finish(consensusEventOffset);
 
-  return fbbConsensusEvent.ReleaseBufferPointer();
+  auto flatbuf = fbbConsensusEvent.ReleaseBufferPointer();
+
+  return std::unique_ptr<::iroha::ConsensusEvent>(
+    flatbuffers::GetMutableRoot<::iroha::ConsensusEvent>(flatbuf.get())
+  );
 }
 
-std::unique_ptr<iroha::ConsensusEvent> addSignature(
+std::unique_ptr<::iroha::ConsensusEvent> addSignature(
     const std::unique_ptr<iroha::ConsensusEvent>& event) {}
 
 } // namespace flatbuffer_service
