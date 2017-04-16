@@ -19,6 +19,7 @@
 #include <infra/config/peer_service_with_json.hpp>
 #include <service/executor.hpp>
 #include <service/peer_service.hpp>
+#include <service/flatbuffer_service.h>
 #include <thread_pool.hpp>
 #include <util/logger.hpp>
 
@@ -244,59 +245,8 @@ void initializeSumeragi() {
   connection::iroha::SumeragiImpl::Torii::receive([](
       const std::string& from, std::unique_ptr<Transaction> transaction) {
     logger::info("sumeragi") << "receive!";
-    flatbuffers::FlatBufferBuilder fbb;
 
-    std::vector<flatbuffers::Offset<Signature>> signatures;
-    std::vector<flatbuffers::Offset<Transaction>> transactions;
-    std::vector<uint8_t> _hash;
-    std::vector<uint8_t> data;
-    flatbuffers::Offset<::iroha::Attachment> attachment = 0;
-    if (transaction->hash() != nullptr) {
-      _hash.assign(*transaction->hash()->begin(), *transaction->hash()->end());
-    }
-    if (transaction->attachment() != nullptr &&
-        transaction->attachment()->data() != nullptr) {
-      data.assign(*transaction->attachment()->data()->begin(),
-                  *transaction->attachment()->data()->end());
-      attachment = iroha::CreateAttachmentDirect(
-          fbb, transaction->attachment()->mime()->c_str(), &data);
-    }
-
-    std::vector<flatbuffers::Offset<Signature>> tx_signatures;
-
-    if (transaction->signatures() != nullptr) {
-      for (auto&& txSig : *transaction->signatures()) {
-        std::vector<uint8_t> _data;
-        if (txSig->signature() != nullptr) {
-          for (auto d : *txSig->signature()) {
-            _data.emplace_back(d);
-          }
-          tx_signatures.emplace_back(iroha::CreateSignatureDirect(
-              fbb, txSig->publicKey()->c_str(), &_data));
-        }
-      }
-    }
-
-    std::vector<uint8_t> account;
-    std::unique_ptr<std::vector<uint8_t>> aa(new std::vector<uint8_t>(
-        transaction->command_as_AccountAdd()->account()->begin(),
-        transaction->command_as_AccountAdd()->account()->end()));
-
-    auto command = iroha::CreateAccountAddDirect(fbb, aa.get());
-
-    transactions.emplace_back(iroha::CreateTransactionDirect(
-        fbb, transaction->creatorPubKey()->c_str(),
-        transaction
-            ->command_type(),  // confusing name, transactions / transaction
-        command.Union(), &tx_signatures, &_hash, attachment));
-
-    // Create
-    auto event_buf =
-        iroha::CreateConsensusEventDirect(fbb, &signatures, &transactions);
-    fbb.Finish(event_buf);
-
-    std::unique_ptr<ConsensusEvent> event(
-        reinterpret_cast<ConsensusEvent*>(fbb.GetBufferPointer()));
+    auto event = flatbuffer_service::toConsensusEvent(*transaction.get());
     auto task = [event = std::move(event)]() mutable {
       processTransaction(std::move(event));
     };

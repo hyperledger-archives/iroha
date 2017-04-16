@@ -14,4 +14,5 @@ target_link_libraries(sumeragi
   thread_pool
   executor
   config_manager
+  flatbuffer_service
 )
