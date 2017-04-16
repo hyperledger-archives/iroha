@@ -184,7 +184,12 @@ namespace flatbuffer_service{
             const iroha::AccountAdd* cmd = static_cast<const iroha::AccountAdd *>(command);
 
             std::string res = "AccountAdd[\n";
-            res += "    account:WIP\n"; //+ cmd->account_nested_root(). + ",\n";
+            res += "    account:alias:" + cmd->account_nested_root()->alias()->str() + ",\n";
+            res += "    account:pubKey:" + cmd->account_nested_root()->pubKey()->str() + ",\n";
+            for(const auto& s: *cmd->account_nested_root()->signatories()){
+                res += "        signature[" + s->str() + "]\n";
+            }
+            res += "    account:useKeys:" + std::to_string(cmd->account_nested_root()->useKeys())+ "\n";
             res += "]\n";
             return res;
         };
@@ -192,7 +197,12 @@ namespace flatbuffer_service{
             const iroha::AccountRemove* cmd = static_cast<const iroha::AccountRemove *>(command);
 
             std::string res = "AccountRemove[\n";
-            res += "    account:WIP\n"; //+ cmd->account_nested_root(). + ",\n";
+            res += "    account:alias:" + cmd->account_nested_root()->alias()->str() + ",\n";
+            res += "    account:pubKey:" + cmd->account_nested_root()->pubKey()->str() + ",\n";
+            for(const auto& s: *cmd->account_nested_root()->signatories()){
+                res += "        signature[" + s->str() + "]\n";
+            }
+            res += "    account:useKeys:" + std::to_string(cmd->account_nested_root()->useKeys())+ "\n";
             res += "]\n";
             return res;
         };
@@ -200,7 +210,10 @@ namespace flatbuffer_service{
             const iroha::AccountAddSignatory* cmd = static_cast<const iroha::AccountAddSignatory *>(command);
 
             std::string res = "AccountAddSignatory[\n";
-            res += "    account:WIP\n"; //+ cmd->account_nested_root(). + ",\n";
+            res += "    account:" + cmd->account()->str() + ",\n";
+            for(const auto& s: *cmd->signatory()){
+                res += "        signature[" + s->str() + "]\n";
+            }
             res += "]\n";
             return res;
         };
@@ -208,7 +221,10 @@ namespace flatbuffer_service{
             const iroha::AccountRemoveSignatory* cmd = static_cast<const iroha::AccountRemoveSignatory *>(command);
 
             std::string res = "AccountRemoveSignatory[\n";
-            res += "    account:WIP\n"; //+ cmd->account_nested_root(). + ",\n";
+            res += "    account:" + cmd->account()->str() + ",\n";
+            for(const auto& s: *cmd->signatory()){
+                res += "        signature[" + s->str() + "]\n";
+            }
             res += "]\n";
             return res;
         };
@@ -216,7 +232,10 @@ namespace flatbuffer_service{
             const iroha::AccountSetUseKeys* cmd = static_cast<const iroha::AccountSetUseKeys *>(command);
 
             std::string res = "AccountSetUseKeys[\n";
-            res += "    account:WIP\n"; //+ cmd->account_nested_root(). + ",\n";
+            for(const auto& a: * cmd->accounts()){
+                res += "        account[" + a->str() + "]\n";
+            }
+            res += "    account:useKeys:" + std::to_string(cmd->useKeys())+ "\n";
             res += "]\n";
             return res;
         };
@@ -249,7 +268,11 @@ namespace flatbuffer_service{
         return nullptr;
     }
 
-    std::unique_ptr<iroha::ConsensusEvent> addSignature(const std::unique_ptr<iroha::ConsensusEvent>& event){
+    std::unique_ptr<iroha::ConsensusEvent> addSignature(
+            const std::unique_ptr<iroha::ConsensusEvent>& event,
+            const std::string& publicKey,
+            const std::string& signature
+    ){
         return nullptr;
     }
 

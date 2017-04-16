@@ -32,6 +32,7 @@
 
 #include "connection/connection.hpp"
 #include "sumeragi.hpp"
+#include <service/flatbuffer_service.h>
 
 /**
  * |ーーー|　|ーーー|　|ーーー|　|ーーー|
@@ -52,8 +53,6 @@ using iroha::ConsensusEvent;
 using iroha::Signature;
 using iroha::Transaction;
 
-std::map<std::string, std::string> txCache;
-
 static ThreadPool pool(ThreadPoolOptions{
     .threads_count =
         config::IrohaConfigManager::getInstance().getConcurrency(0),
@@ -63,105 +62,17 @@ static ThreadPool pool(ThreadPoolOptions{
 
 namespace detail {
 
-std::string hash(const std::unique_ptr<Transaction>& tx) {
-  // ToDo We should make tx.to_string()
-  return hash::sha3_256_hex("");
-};
+    std::string hash(const std::unique_ptr<Transaction>& tx) {
+      return hash::sha3_256_hex(flatbuffer_service::toString(*tx));
+    };
 
-std::unique_ptr<ConsensusEvent> addSignature(
-    std::unique_ptr<ConsensusEvent>&& event, const std::string& publicKey,
-    const std::string& signature
-) {
-
-  // Copy
-  flatbuffers::FlatBufferBuilder fbb;
-  std::unique_ptr<std::vector<flatbuffers::Offset<Signature>>> signatures(
-      new std::vector<flatbuffers::Offset<Signature>>()
-  );
-  std::unique_ptr<std::vector<flatbuffers::Offset<Transaction>>> transactions(
-      new std::vector<flatbuffers::Offset<Transaction>>()
-  );
-
-  if(event->peerSignatures() != nullptr) {
-      for (auto &&sig : *event->peerSignatures()) {
-          signatures->emplace_back(reinterpret_cast<flatbuffers::uoffset_t>(sig));
+    bool eventSignatureIsEmpty(const std::unique_ptr<ConsensusEvent>& event) {
+      if(event->peerSignatures() != nullptr){
+          return event->peerSignatures()->size() == 0;
+      }else{
+          return 0;
       }
-  }
-  if(event->transactions() != nullptr) {
-      for(auto &&tx : *event->transactions()) {
-          transactions->emplace_back(tx);
-      }
-  }
-  // Add signature
-  std::vector<uint8_t>* encodedSignaturePtr = new std::vector<uint8_t>();
-  auto encodedSignature = base64::decode(signature);
-  for (auto&& c : encodedSignature) {
-    encodedSignaturePtr->push_back(c);
-  }
-  signatures->emplace_back(iroha::CreateSignatureDirect(fbb, publicKey.c_str(),
-                                                        encodedSignaturePtr));
-
-  // Create
-  auto event_buf = iroha::CreateConsensusEventDirect(fbb, signatures.get(),
-                                                     transactions.get());
-  fbb.Finish(event_buf);
-
-  // ToDo I think std::unique_ptr<const T> is not popular. Is it?
-  return std::unique_ptr<ConsensusEvent>(const_cast<ConsensusEvent*>(
-      flatbuffers::GetRoot<ConsensusEvent>(fbb.GetBufferPointer())));
-}
-
-bool eventSignatureIsEmpty(const std::unique_ptr<ConsensusEvent>& event) {
-  if(event->peerSignatures() != nullptr){
-      return event->peerSignatures()->size() == 0;
-  }else{
-      return 0;
-  }
-}
-
-void printJudge(int numValidSignatures, int numValidationPeer, int faulty) {
-  std::stringstream resLine[5];
-  for (int i = 0; i < numValidationPeer; i++) {
-    if (i < numValidSignatures) {
-      resLine[0] << "\033[1m\033[92m+-ー-+\033[0m";
-      resLine[1] << "\033[1m\033[92m| 　 |\033[0m";
-      resLine[2] << "\033[1m\033[92m|-承-|\033[0m";
-      resLine[3] << "\033[1m\033[92m| 　 |\033[0m";
-      resLine[4] << "\033[1m\033[92m+-＝-+\033[0m";
-    } else {
-      resLine[0] << "\033[91m+-ー-+\033[0m";
-      resLine[1] << "\033[91m| 　 |\033[0m";
-      resLine[2] << "\033[91m| 否 |\033[0m";
-      resLine[3] << "\033[91m| 　 |\033[0m";
-      resLine[4] << "\033[91m+-＝-+\033[0m";
     }
-  }
-  for (int i = 0; i < 5; ++i) {
-    logger::explore("sumeragi") << resLine[i].str();
-  }
-  std::string line;
-  for (int i = 0; i < numValidationPeer; i++) line += "==＝==";
-  logger::explore("sumeragi") << line;
-
-  logger::explore("sumeragi")
-      << "numValidSignatures:" << numValidSignatures << " faulty:" << faulty;
-}
-
-void printAgree() {
-  logger::explore("sumeragi") << "\033[1m\033[92m+==ーー==+\033[0m";
-  logger::explore("sumeragi") << "\033[1m\033[92m|+-ーー-+|\033[0m";
-  logger::explore("sumeragi") << "\033[1m\033[92m|| 承認 ||\033[0m";
-  logger::explore("sumeragi") << "\033[1m\033[92m|+-ーー-+|\033[0m";
-  logger::explore("sumeragi") << "\033[1m\033[92m+==ーー==+\033[0m";
-}
-
-void printReject() {
-  logger::explore("sumeragi") << "\033[91m+==ーー==+\033[0m";
-  logger::explore("sumeragi") << "\033[91m|+-ーー-+|\033[0m";
-  logger::explore("sumeragi") << "\033[91m|| 否認 ||\033[0m";
-  logger::explore("sumeragi") << "\033[91m|+-ーー-+|\033[0m";
-  logger::explore("sumeragi") << "\033[91m+==ーー==+\033[0m";
-}
 }  // namespace detail
 
 struct Context {
@@ -405,7 +316,6 @@ void processTransaction(std::unique_ptr<ConsensusEvent>&& event) {
           config::PeerServiceConfig::getInstance().getMyPublicKey(),
           config::PeerServiceConfig::getInstance().getMyPrivateKey()
   );
-  //detail::printIsSumeragi(context->isSumeragi);
   // Really need? blow "if statement" will be false anytime.
   event = detail::addSignature(std::move(event),
                                config::PeerServiceConfig::getInstance().getMyPublicKey(),
@@ -442,13 +352,6 @@ void processTransaction(std::unique_ptr<ConsensusEvent>&& event) {
       logger::explore("sumeragi") << "\033[93m0================================"
                                      "================================0\033[0m";
 
-      detail::printJudge(
-          // ToDo Re write
-          1  // transaction_validator::countValidSignatures(event)
-        ,
-          context->numValidatingPeers, context->maxFaulty * 2 + 1);
-
-      detail::printAgree();
       // Check Merkle roots to see if match for new state
       // TODO: std::vector<std::string>>const merkleSignatures =
       // event.merkleRootSignatures;
@@ -466,11 +369,7 @@ void processTransaction(std::unique_ptr<ConsensusEvent>&& event) {
 
     } else {
       // This is a new event, so we should verify, sign, and broadcast it
-      auto new_event = std::move(detail::addSignature(
-         std::move(event),
-         config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault("Invalid"), // ??
-         ""
-      ));
+      auto new_event = std::move(flatbuffer_service::addSignature(event,"",""));
 
       logger::info("sumeragi")        <<  "tail public key is "   <<
       context->validatingPeers.at(context->proxyTailNdx)->publicKey;

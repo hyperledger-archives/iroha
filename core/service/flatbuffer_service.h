@@ -22,7 +22,11 @@ namespace flatbuffer_service{
 
     std::unique_ptr<iroha::ConsensusEvent> toConsensusEvent(const iroha::Transaction& tx);
 
-    std::unique_ptr<iroha::ConsensusEvent> addSignature(const std::unique_ptr<iroha::ConsensusEvent>& event);
+    std::unique_ptr<iroha::ConsensusEvent> addSignature(
+        const std::unique_ptr<iroha::ConsensusEvent>& event,
+        const std::string& publicKey,
+        const std::string& signature
+    );
 
 };
 

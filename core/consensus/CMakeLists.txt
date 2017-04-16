@@ -10,8 +10,8 @@ ADD_LIBRARY(sumeragi STATIC
 target_link_libraries(sumeragi
   config_manager
   connection_with_grpc_flatbuffer
+  flatbuffer_service
   signature
   thread_pool
   executor
-  config_manager
 )
