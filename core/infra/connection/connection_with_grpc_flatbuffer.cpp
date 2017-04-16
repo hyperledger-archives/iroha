@@ -113,59 +113,60 @@ bool send(const std::string& ip, const std::unique_ptr<ConsensusEvent>& event) {
     grpc::ClientContext context;
 
     auto publicKey = "SamplePublicKey";
+
     // Build a request with the name set.
-    flatbuffers::FlatBufferBuilder fbb;
-    std::unique_ptr<std::vector<flatbuffers::Offset<flatbuffers::String>>>
-        signatories(new std::vector<flatbuffers::Offset<flatbuffers::String>>(
-            {fbb.CreateString("publicKey1")}));
-    auto account = ::iroha::CreateAccountDirect(fbb, publicKey, "alias",
-                                                signatories.get(), 1);
-    std::unique_ptr<std::vector<uint8_t>> account_vec(
-        new std::vector<uint8_t>());
-    auto command = ::iroha::CreateAccountAddDirect(fbb, account_vec.get());
+    flatbuffers::FlatBufferBuilder fbbTransaction;
 
-    std::vector<uint8_t> signaturesBlob;
+    // TODO: valid command
+    // Tempolary implementation. Currently, use CreaeteAccount command.
+    auto accountBuf = [&] {
+      // Tempolary: Create Account
+      flatbuffers::FlatBufferBuilder fbbAccount;
 
-    {
-      flatbuffers::FlatBufferBuilder fbbSignatures;
+      // 一度FBBの内部バッファに書き込むものはstd::unique_ptrである必要がない
+      std::vector<flatbuffers::Offset<flatbuffers::String>> signatories;
+      signatories.push_back(fbbTransaction.CreateString("publicKey1"));
 
-      // TODO: Tempolary implementation. Use 'sign' function
-      std::vector<uint8_t> signature;
-      for (auto e : std::string("hash + timestamp + pubkey ?")) {
-        signature.push_back(e);
-      }
+      auto accountOffset = ::iroha::CreateAccountDirect(
+          fbbAccount, publicKey, "alias", &signatories, 1);
+      fbbAccount.Finish(accountOffset);
 
-      std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
+      auto buf = fbbAccount.GetBufferPointer();
+      std::vector<uint8_t> buffer;
+      buffer.assign(buf, buf + fbbAccount.GetSize());
+      return buffer;
+    }();
 
-      signatures.push_back(::iroha::CreateSignatureDirect(
-          fbbSignatures, publicKey, &signature,
-          1234567  // TODO: timestamp
-          ));
+    auto command =
+        ::iroha::CreateAccountAddDirect(fbbTransaction, &accountBuf);
 
-      auto signaturesOffset =
-          ::iroha::CreateSignaturesDirect(fbbSignatures, &signatures);
-
-      fbbSignatures.Finish(signaturesOffset);
-
-      auto buf =
-          reinterpret_cast<const char*>(fbbSignatures.GetBufferPointer());
-      signaturesBlob.assign(buf, buf + fbbSignatures.GetSize());
+    // TODO: Tempolary implementation. Use 'sign' function
+    std::vector<uint8_t> signature;
+    for (auto e : std::string("hash + timestamp + pubkey ?")) {
+      signature.push_back(e);
     }
 
-    auto tx_offset = ::iroha::CreateTransactionDirect(
-        fbb, publicKey, ::iroha::Command::Command_AccountAdd, command.Union(),
-        &signaturesBlob, nullptr,
-        ::iroha::CreateAttachmentDirect(fbb, nullptr, nullptr));
+    std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
 
-    fbb.Finish(tx_offset);
+    signatures.push_back(::iroha::CreateSignatureDirect(
+        fbbTransaction, publicKey, &signature,
+        1234567  // TODO: timestamp
+        ));
 
-    auto tx = flatbuffers::BufferRef<::iroha::Transaction>(
-        fbb.GetBufferPointer(), fbb.GetSize());
+    auto transactionOffset = ::iroha::CreateTransactionDirect(
+        fbbTransaction, publicKey, ::iroha::Command::Command_AccountAdd,
+        command.Union(), &signatures, nullptr,
+        ::iroha::CreateAttachmentDirect(fbbTransaction, nullptr, nullptr));
 
-    flatbuffers::BufferRef<::iroha::Response> response;
+    fbbTransaction.Finish(transactionOffset);
+
+    auto transactionRef = flatbuffers::BufferRef<::iroha::Transaction>(
+        fbbTransaction.GetBufferPointer(), fbbTransaction.GetSize());
+
+    flatbuffers::BufferRef<::iroha::Response> responseRef;
 
     // The actual RPC.
-    auto status = stub->Torii(&context, tx, &response);
+    auto status = stub->Torii(&context, transactionRef, &responseRef);
 
     if (status.ok()) {
       auto msg = response.GetRoot()->message();
@@ -368,56 +369,56 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
         "from",
         std::unique_ptr<::iroha::Transaction>(
             // FIX: 呼び出し元のバッファを即座に破棄するのなら安全なはず
-            const_cast<::iroha::Transaction*>(transactionRef->GetRoot())
-        )
-    );
-
-    *responseRef = flatbuffers::BufferRef<::iroha::Response>(
-       fbbResponse.GetBufferPointer(),
-       fbbResponse.GetSize());
-    logger::info("AA") << "Yurushite";
-    return grpc::Status::OK;
-/*
-    {
-      // BufferRefは基本immutableだが、呼び出し元は破棄するので取り出してmoveすべき？
-      const auto transaction = transactionRef->GetRoot();
-
-      flatbuffers::FlatBufferBuilder fbbTransaction;
-
-      std::vector<uint8_t> signatures(transaction->signatures()->begin(),
-                                      transaction->signatures()->end());
-
-      std::vector<uint8_t> hashes(transaction->hash()->begin(),
-                                  transaction->hash()->end());
-
-      std::vector<uint8_t> attachmentData(
-          transaction->attachment()->data()->begin(),
-          transaction->attachment()->data()->end());
-
-      fbbTransaction.Finish(::iroha::CreateTransactionDirect(
-          fbbTransaction, transaction->creatorPubKey()->c_str(),
-          transaction->command_type(),
-          flatbuffer_service::CreateCommandDirect(fbbTransaction,
-                                                  transaction->command(),
-                                                  transaction->command_type()),
-          &signatures, &hashes,
-          ::iroha::CreateAttachmentDirect(
-              fbbTransaction, transaction->attachment()->mime()->c_str(),
-              &attachmentData)));
-
-      // std::unique_ptr<>が扱いづらいので、そのうちflatbuffers::unique_ptrに変えるかも
-      auto txBuffer = fbbTransaction.ReleaseBufferPointer();
-      auto transactionPtr = std::move(*flatbuffers::GetMutableRoot<::iroha::Transaction>(txBuffer.get()));
-      iroha::SumeragiImpl::Torii::receiver.invoke(
-          "from",  // TODO: Specify 'from'
-          transactionPtr);
-    }
+            const_cast<::iroha::Transaction*>(transactionRef->GetRoot())));
 
     *responseRef = flatbuffers::BufferRef<::iroha::Response>(
         fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
-
+    logger::info("AA") << "Yurushite";
     return grpc::Status::OK;
-    */
+    /*
+        {
+          //
+       BufferRefは基本immutableだが、呼び出し元は破棄するので取り出してmoveすべき？
+          const auto transaction = transactionRef->GetRoot();
+
+          flatbuffers::FlatBufferBuilder fbbTransaction;
+
+          std::vector<uint8_t> signatures(transaction->signatures()->begin(),
+                                          transaction->signatures()->end());
+
+          std::vector<uint8_t> hashes(transaction->hash()->begin(),
+                                      transaction->hash()->end());
+
+          std::vector<uint8_t> attachmentData(
+              transaction->attachment()->data()->begin(),
+              transaction->attachment()->data()->end());
+
+          fbbTransaction.Finish(::iroha::CreateTransactionDirect(
+              fbbTransaction, transaction->creatorPubKey()->c_str(),
+              transaction->command_type(),
+              flatbuffer_service::CreateCommandDirect(fbbTransaction,
+                                                      transaction->command(),
+                                                      transaction->command_type()),
+              &signatures, &hashes,
+              ::iroha::CreateAttachmentDirect(
+                  fbbTransaction, transaction->attachment()->mime()->c_str(),
+                  &attachmentData)));
+
+          //
+       std::unique_ptr<>が扱いづらいので、そのうちflatbuffers::unique_ptrに変えるかも
+          auto txBuffer = fbbTransaction.ReleaseBufferPointer();
+          auto transactionPtr =
+       std::move(*flatbuffers::GetMutableRoot<::iroha::Transaction>(txBuffer.get()));
+          iroha::SumeragiImpl::Torii::receiver.invoke(
+              "from",  // TODO: Specify 'from'
+              transactionPtr);
+        }
+
+        *responseRef = flatbuffers::BufferRef<::iroha::Response>(
+            fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+
+        return grpc::Status::OK;
+        */
   }
 };
 

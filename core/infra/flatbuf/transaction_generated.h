@@ -96,15 +96,11 @@ struct Transaction FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   void *mutable_command() {
     return GetPointer<void *>(VT_COMMAND);
   }
-  const flatbuffers::Vector<uint8_t> *signatures() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_SIGNATURES);
+  const flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>> *signatures() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>> *>(VT_SIGNATURES);
   }
-  flatbuffers::Vector<uint8_t> *mutable_signatures() {
-    return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_SIGNATURES);
-  }
-  const iroha::Signatures *signatures_nested_root() const {
-    const uint8_t* data = signatures()->Data();
-    return flatbuffers::GetRoot<iroha::Signatures>(data);
+  flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>> *mutable_signatures() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>> *>(VT_SIGNATURES);
   }
   const flatbuffers::Vector<uint8_t> *hash() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_HASH);
@@ -127,6 +123,7 @@ struct Transaction FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            VerifyCommand(verifier, command(), command_type()) &&
            VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_SIGNATURES) &&
            verifier.Verify(signatures()) &&
+           verifier.VerifyVectorOfTables(signatures()) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_HASH) &&
            verifier.Verify(hash()) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_ATTACHMENT) &&
@@ -215,7 +212,7 @@ struct TransactionBuilder {
   void add_command(flatbuffers::Offset<void> command) {
     fbb_.AddOffset(Transaction::VT_COMMAND, command);
   }
-  void add_signatures(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> signatures) {
+  void add_signatures(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>>> signatures) {
     fbb_.AddOffset(Transaction::VT_SIGNATURES, signatures);
   }
   void add_hash(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> hash) {
@@ -244,7 +241,7 @@ inline flatbuffers::Offset<Transaction> CreateTransaction(
     flatbuffers::Offset<flatbuffers::String> creatorPubKey = 0,
     iroha::Command command_type = iroha::Command_NONE,
     flatbuffers::Offset<void> command = 0,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> signatures = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>>> signatures = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> hash = 0,
     flatbuffers::Offset<Attachment> attachment = 0) {
   TransactionBuilder builder_(_fbb);
@@ -262,7 +259,7 @@ inline flatbuffers::Offset<Transaction> CreateTransactionDirect(
     const char *creatorPubKey = nullptr,
     iroha::Command command_type = iroha::Command_NONE,
     flatbuffers::Offset<void> command = 0,
-    const std::vector<uint8_t> *signatures = nullptr,
+    const std::vector<flatbuffers::Offset<iroha::Signature>> *signatures = nullptr,
     const std::vector<uint8_t> *hash = nullptr,
     flatbuffers::Offset<Attachment> attachment = 0) {
   return iroha::CreateTransaction(
@@ -270,7 +267,7 @@ inline flatbuffers::Offset<Transaction> CreateTransactionDirect(
       creatorPubKey ? _fbb.CreateString(creatorPubKey) : 0,
       command_type,
       command,
-      signatures ? _fbb.CreateVector<uint8_t>(*signatures) : 0,
+      signatures ? _fbb.CreateVector<flatbuffers::Offset<iroha::Signature>>(*signatures) : 0,
       hash ? _fbb.CreateVector<uint8_t>(*hash) : 0,
       attachment);
 }
