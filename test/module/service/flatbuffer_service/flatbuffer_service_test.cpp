@@ -27,17 +27,20 @@ TEST(flatbufferService, toConsensusEvent) {
   {
     flatbuffers::FlatBufferBuilder fbbTransaction;
 
-    auto commandOffset = flatbuffer_service::CreateCommandDirect(
-      fbbTransaction,
-      commandObj,
-
-    );
+    {
+      flatbuffers::FlatBufferBuilder fbbAccount;
+//      fbbAccount.
+      return fbbAccount.ReleaseBufferPointer();
+    }();
 
     auto txOffset = ::iroha::CreateTransactionDirect(
       fbbTransaction,
       "Creator PubKey",
       iroha::Command_AssetAdd,
-      commandOffset,
+      ::iroha::CreateAccountAddDirect(
+        fbbTransaction,
+        const std::vector<uint8_t> *account = nullptr) {
+      ),
       &signatures,
       &hashes,
       attachmentOffset

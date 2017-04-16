@@ -15,6 +15,8 @@ limitations under the License.
 #ifndef IROHA_FLATBUFFER_SERVICE_H
 #define IROHA_FLATBUFFER_SERVICE_H
 
+#include "flatbuf/nested_flatbuffer_service.h"
+
 namespace iroha {
 struct Transaction;
 struct ConsensusEvent;

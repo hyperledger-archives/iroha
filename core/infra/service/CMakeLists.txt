@@ -15,4 +15,5 @@ target_link_libraries(http_client
 
 ADD_LIBRARY(flatbuffer_service STATIC
     flatbuf/flatbuffer_service.cpp
+    flatbuf/nested_flatbuffer_service.cpp
 )
