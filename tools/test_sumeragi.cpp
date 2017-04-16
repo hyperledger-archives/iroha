@@ -61,14 +61,19 @@ int main(int argc,char* argv[]){
     );
     signature_vec->emplace_back(iroha::CreateSignatureDirect(fbb,publicKey, nullptr,1234567));
 
+    std::vector<uint8_t> signatureBlob{'a','b','c','d'};
+    std::vector<uint8_t> hashBlob{'b','e','e','f'};
+    std::vector<uint8_t> dataBlob{'d','e','a','d'};
+
+    std::vector<flatbuffers::Offset<iroha::Signature>> signatures{iroha::CreateSignatureDirect(fbb,publicKey,&signatureBlob)};
     auto tx_offset = iroha::CreateTransactionDirect(
         fbb,
         publicKey,
         iroha::Command::Command_AccountAdd,
         command.Union(),
-        signature_vec.get(),
-        nullptr,
-        iroha::CreateAttachmentDirect(fbb, nullptr, nullptr)
+        &signatures,
+        &hashBlob,
+        iroha::CreateAttachmentDirect(fbb, "none", &dataBlob)
     );
     fbb.Finish(tx_offset);
     auto tx = flatbuffers::BufferRef<iroha::Transaction>(
