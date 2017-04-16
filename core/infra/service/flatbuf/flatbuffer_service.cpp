@@ -24,6 +24,11 @@
 
 namespace flatbuffer_service {
 
+/**
+ * toString
+ * - it returns string dump of arguments' tx like DebugString in protocol buffer.
+ * ToDo If transaction scheme is changed, We changes this code.
+ */
 std::string toString(const iroha::Transaction& tx){
     assert(tx.creatorPubKey() != nullptr);
     std::string res = "";
@@ -186,7 +191,12 @@ std::string toString(const iroha::Transaction& tx){
         const iroha::AccountAdd* cmd = static_cast<const iroha::AccountAdd *>(command);
 
         std::string res = "AccountAdd[\n";
-        res += "    account:WIP\n"; //+ cmd->account_nested_root(). + ",\n";
+        res += "    account:alias:" + cmd->account_nested_root()->alias()->str() + ",\n";
+        res += "    account:pubKey:" + cmd->account_nested_root()->pubKey()->str() + ",\n";
+        for(const auto& s: *cmd->account_nested_root()->signatories()){
+            res += "        signature[" + s->str() + "]\n";
+        }
+        res += "    account:useKeys:" + std::to_string(cmd->account_nested_root()->useKeys())+ "\n";
         res += "]\n";
         return res;
     };
@@ -194,7 +204,12 @@ std::string toString(const iroha::Transaction& tx){
         const iroha::AccountRemove* cmd = static_cast<const iroha::AccountRemove *>(command);
 
         std::string res = "AccountRemove[\n";
-        res += "    account:WIP\n"; //+ cmd->account_nested_root(). + ",\n";
+        res += "    account:alias:" + cmd->account_nested_root()->alias()->str() + ",\n";
+        res += "    account:pubKey:" + cmd->account_nested_root()->pubKey()->str() + ",\n";
+        for(const auto& s: *cmd->account_nested_root()->signatories()){
+            res += "        signature[" + s->str() + "]\n";
+        }
+        res += "    account:useKeys:" + std::to_string(cmd->account_nested_root()->useKeys())+ "\n";
         res += "]\n";
         return res;
     };
@@ -202,7 +217,10 @@ std::string toString(const iroha::Transaction& tx){
         const iroha::AccountAddSignatory* cmd = static_cast<const iroha::AccountAddSignatory *>(command);
 
         std::string res = "AccountAddSignatory[\n";
-        res += "    account:WIP\n"; //+ cmd->account_nested_root(). + ",\n";
+        res += "    account:" + cmd->account()->str() + ",\n";
+        for(const auto& s: *cmd->signatory()){
+            res += "        signature[" + s->str() + "]\n";
+        }
         res += "]\n";
         return res;
     };
@@ -210,7 +228,10 @@ std::string toString(const iroha::Transaction& tx){
         const iroha::AccountRemoveSignatory* cmd = static_cast<const iroha::AccountRemoveSignatory *>(command);
 
         std::string res = "AccountRemoveSignatory[\n";
-        res += "    account:WIP\n"; //+ cmd->account_nested_root(). + ",\n";
+        res += "    account:" + cmd->account()->str() + ",\n";
+        for(const auto& s: *cmd->signatory()){
+            res += "        signature[" + s->str() + "]\n";
+        }
         res += "]\n";
         return res;
     };
@@ -218,7 +239,10 @@ std::string toString(const iroha::Transaction& tx){
         const iroha::AccountSetUseKeys* cmd = static_cast<const iroha::AccountSetUseKeys *>(command);
 
         std::string res = "AccountSetUseKeys[\n";
-        res += "    account:WIP\n"; //+ cmd->account_nested_root(). + ",\n";
+        for(const auto& a: * cmd->accounts()){
+            res += "        account[" + a->str() + "]\n";
+        }
+        res += "    account:useKeys:" + std::to_string(cmd->useKeys())+ "\n";
         res += "]\n";
         return res;
     };
@@ -246,7 +270,6 @@ std::string toString(const iroha::Transaction& tx){
     res += command_to_strings[tx.command_type()](tx.command());
     return res;
 }
-
 
 /**
  * toConsensusEvent
@@ -334,11 +357,13 @@ std::unique_ptr<::iroha::ConsensusEvent> toConsensusEvent(
     flatbuffers::GetMutableRoot<::iroha::ConsensusEvent>(flatbuf.get())
   );
 }
-    std::unique_ptr<iroha::ConsensusEvent> addSignature(
-            const std::unique_ptr<iroha::ConsensusEvent> &event,
-            const std::string &publicKey,
-            const std::string &signature
-    ){
+
+
+std::unique_ptr<iroha::ConsensusEvent> addSignature(
+        const std::unique_ptr<iroha::ConsensusEvent> &event,
+        const std::string &publicKey,
+        const std::string &signature
+){
 
         flatbuffers::FlatBufferBuilder fbbConsensusEvent;
 
@@ -413,4 +438,7 @@ std::unique_ptr<::iroha::ConsensusEvent> toConsensusEvent(
              flatbuffers::GetMutableRoot<::iroha::ConsensusEvent>(flatbuf.get())
         );
     }
+
+
+
 } // namespace flatbuffer_service

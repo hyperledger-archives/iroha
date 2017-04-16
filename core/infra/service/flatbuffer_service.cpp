@@ -275,7 +275,83 @@ namespace flatbuffer_service{
             const std::string& publicKey,
             const std::string& signature
     ){
-        return nullptr;
+        flatbuffers::FlatBufferBuilder fbbConsensusEvent;
+
+        // At first, peerSignatures is empty. (Is this right?)
+        std::vector<flatbuffers::Offset<iroha::Signature>> peerSignatures(
+            event->peerSignatures()->begin(),
+            event->peerSignatures()->end()
+        );
+
+        {
+            // Tempolary implementation: Currently, #(tx) is one.
+            auto tx = event->transactions()->Get(0);
+            const auto& aSignature = tx->signatures()->Get(0);
+
+            std::vector<uint8_t> signatureBlob(
+                    aSignature->signature()->begin(),
+                    aSignature->signature()->end()
+            );
+
+            std::vector<flatbuffers::Offset<iroha::Signature>> signatures;
+            signatures.push_back(
+                ::iroha::CreateSignatureDirect(
+                    fbbConsensusEvent,
+                    aSignature->publicKey()->c_str(),
+                    &signatureBlob,
+                    1234567
+                )
+            );
+
+            std::vector<uint8_t> hashes(
+                tx->hash()->begin(),
+                tx->hash()->end()
+            );
+
+            std::vector<uint8_t> data(
+                tx->attachment()->data()->begin(),
+                tx->attachment()->data()->end()
+            );
+
+            auto attachmentOffset = ::iroha::CreateAttachmentDirect(
+                fbbConsensusEvent,
+                tx->attachment()->mime()->c_str(),
+                &data
+            );
+
+            std::vector<flatbuffers::Offset<iroha::Transaction>> transactions;
+
+            // TODO: Currently, #(transaction) is one.
+            transactions.push_back(
+                ::iroha::CreateTransactionDirect(
+                    fbbConsensusEvent,
+                    ttx->creatorPubKey()->c_str(),
+                    ttx->command_type(),
+                    flatbuffer_service::CreateCommandDirect(
+                        fbbConsensusEvent,
+                        ttx->command(),
+                        ttx->command_type()
+                    ),
+                    &signatures,
+                    &hashes,
+                    attachmentOffset
+                )
+            );
+        }
+
+        auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
+            fbbConsensusEvent,
+            &peerSignatures,
+            &transactions
+        );
+
+        fbbConsensusEvent.Finish(consensusEventOffset);
+
+        auto flatbuf = fbbConsensusEvent.ReleaseBufferPointer();
+
+        return std::unique_ptr<::iroha::ConsensusEvent>(
+                flatbuffers::GetMutableRoot<::iroha::ConsensusEvent>(flatbuf.get())
+        );
     }
 
 };
