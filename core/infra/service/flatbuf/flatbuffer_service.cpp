@@ -29,7 +29,7 @@ std::string toString(const iroha::Transaction& tx) {}
  * - Encapsulate a transaction in a consensus event. Argument fromTx will be
  *   deeply copied and create new consensus event that has the copied transaction.
  */
-std::unique_ptr<ConsensusEvent> toConsensusEvent(
+flatbuffers::unique_ptr_t toConsensusEvent(
     const iroha::Transaction& fromTx) {
 
   flatbuffers::FlatBufferBuilder fbbConsensusEvent;
@@ -37,39 +37,53 @@ std::unique_ptr<ConsensusEvent> toConsensusEvent(
   // At first, peerSignatures is empty. (Is this right?)
   std::vector<flatbuffers::Offset<Signature>> peerSignatures;
 
-  std::vector<uint8_t> signatures(
-    fromTx->signatures()->begin(),
-    fromTx->signatures()->end()
+  std::vector<flatbuffers::Offset<iroha::Signature>> signatures;
+
+  // Tempolary implementation: Currently, #(tx) is one.
+  const auto& aSignature = fromTx.signatures()->Get(0);
+
+  std::vector<uint8_t> signatureBlob(
+    aSignature->signature()->begin(),
+    aSignature->signature()->end()
+  );
+
+  signatures.push_back(
+    ::iroha::CreateSignatureDirect(
+      fbbConsensusEvent,
+      aSignature->publicKey()->c_str(),
+      &signatureBlob,
+      1234567
+    )
   );
 
   std::vector<uint8_t> hashes(
-    fromTx->hash()->begin(),
-    fromTx->hash()->end()
+    fromTx.hash()->begin(),
+    fromTx.hash()->end()
   );
 
-  std::vector<uint8_t>> data(
-    fromTx->attachment()->data()->begin(),
-    fromTx->attachment()->data()->end()
+  std::vector<uint8_t> data(
+    fromTx.attachment()->data()->begin(),
+    fromTx.attachment()->data()->end()
   );
 
   auto attachmentOffset = ::iroha::CreateAttachmentDirect(
-    fbb,
-    fromTx->attachment()->mime()->c_str(),
+    fbbConsensusEvent,
+    fromTx.attachment()->mime()->c_str(),
     &data
   );
 
   std::vector<flatbuffers::Offset<Transaction>> transactions;
 
-  // TODO: Currently, #transaction is one.
-  transactions->push_back(
+  // TODO: Currently, #(transaction) is one.
+  transactions.push_back(
     ::iroha::CreateTransactionDirect(
       fbbConsensusEvent,
-      fromTx->creatorPubKey(),
-      fromTx->command_type(),
+      fromTx.creatorPubKey()->c_str(),
+      fromTx.command_type(),
       flatbuffer_service::CreateCommandDirect(
         fbbConsensusEvent,
-        fromTx->command(), // FIX
-        fromTx->command_type()
+        fromTx.command(),
+        fromTx.command_type()
       ),
       &signatures,
       &hashes,
@@ -85,13 +99,7 @@ std::unique_ptr<ConsensusEvent> toConsensusEvent(
 
   fbbConsensusEvent.Finish(consensusEventOffset);
 
-  auto consensusEventFBPtr = fbbConsensusEvent.ReleaseBufferPointer();
-
-  // Is it safe? Converting flatbuffers::unique_ptr_t to std::unique_ptr might
-  // lose valid deallocator.
-  auto buf = consensusEventFBPtr.release();
-
-  return flatbuffers::GetRoot<ConsensusEvent>(buf);
+  return fbbConsensusEvent.ReleaseBufferPointer();
 }
 
 std::unique_ptr<iroha::ConsensusEvent> addSignature(

@@ -14,23 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef IROHA_FLATBUF_SERVICE_AUTOGEN_EXTEND_H
-#define IROHA_FLATBUF_SERVICE_AUTOGEN_EXTEND_H
+#ifndef IROHA_FLATBUF_SERVICE_AUTOGEN_EXTEND_H_
+#define IROHA_FLATBUF_SERVICE_AUTOGEN_EXTEND_H_
 
+#include <infra/flatbuf/commands_generated.h>
 #include <infra/flatbuf/main_generated.h>
+#include <util/logger.hpp>
 
 #include <memory>
 #include <string>
 
 namespace flatbuffer_service {
 // namespace autogen_extend {
+using namespace iroha;
 
 flatbuffers::Offset<void> CreateCommandDirect(
     flatbuffers::FlatBufferBuilder &_fbb, const void *obj,
     int /* Command */ type) {  // TODO: Use scopoed enum ::iroha::Command
   switch (type) {
+    /*
     case Command_NONE: {
-      return nullptr;
+      logger::error("flatbuffer service") << "Command_NONE";
+      exit(1);
     }
     case Command_AssetCreate: {
       auto ptr = reinterpret_cast<const AssetCreate *>(obj);
@@ -93,18 +98,21 @@ flatbuffers::Offset<void> CreateCommandDirect(
                  _fbb, ptr->peerPubKey()->c_str(), ptr->delta())
           .Union();
     }
+    */
     case Command_AccountAdd: {
       auto ptr = reinterpret_cast<const AccountAdd *>(obj);
-      auto asset =
+      auto account =
           std::vector<uint8_t>(ptr->account()->begin(), ptr->account()->end());
-      return ::iroha::CreateAccountAddDirect(_fbb, &asset, ).Union();
+      return ::iroha::CreateAccountAddDirect(_fbb, &account).Union();
     }
     case Command_AccountRemove: {
       auto ptr = reinterpret_cast<const AccountRemove *>(obj);
-      auto asset =
+      auto account =
           std::vector<uint8_t>(ptr->account()->begin(), ptr->account()->end());
-      return ::iroha::CreateAccountRemoveDirect(_fbb, &asset, ).Union();
+      return ::iroha::CreateAccountRemoveDirect(_fbb, &account).Union();
     }
+    /*
+    Signatoryはバラして復元する
     case Command_AccountAddSignatory: {
       auto ptr = reinterpret_cast<const AccountAddSignatory *>(obj);
       auto signatory = std::vector<flatbuffers::Offset<flatbuffers::String>>(
@@ -119,6 +127,8 @@ flatbuffers::Offset<void> CreateCommandDirect(
                  _fbb, ptr->account()->c_str(), ptr->signatory())
           .Union();
     }
+    */
+    /*
     case Command_AccountSetUseKeys: {
       // TODO
       assert("Currently, doesn't support");
@@ -135,8 +145,10 @@ flatbuffers::Offset<void> CreateCommandDirect(
       // TODO
       assert("Currently, doesn't support");
     }
+    */
     default:
-      return nullptr;
+      logger::error("flatbuffer service") << "No match Command typee";
+      exit(1);
   }
 }
 /*

@@ -137,8 +137,7 @@ bool send(const std::string& ip, const std::unique_ptr<ConsensusEvent>& event) {
       return buffer;
     }();
 
-    auto command =
-        ::iroha::CreateAccountAddDirect(fbbTransaction, &accountBuf);
+    auto command = ::iroha::CreateAccountAddDirect(fbbTransaction, &accountBuf);
 
     // TODO: Tempolary implementation. Use 'sign' function
     std::vector<uint8_t> signature;
@@ -169,7 +168,7 @@ bool send(const std::string& ip, const std::unique_ptr<ConsensusEvent>& event) {
     auto status = stub->Torii(&context, transactionRef, &responseRef);
 
     if (status.ok()) {
-      auto msg = response.GetRoot()->message();
+      auto msg = responseRef.GetRoot()->message();
       std::cout << "RPC response: " << msg->str() << std::endl;
     } else {
       std::cout << "RPC failed" << std::endl;
@@ -270,11 +269,16 @@ class SumeragiConnectionClient {
     std::vector<uint8_t> hashes(*transaction->hash()->begin(),
                                 *transaction->hash()->end());
 
-    std::vector<uint8_t> signatures(transaction->signatures()->begin(),
-                                    transaction->signatures()->end());
+    std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
+    for (auto&& txSig : *transaction->signatures()) {
+      std::vector<uint8_t> data(*txSig->signature()->begin(),
+                                *txSig->signature()->end());
+      signatures.emplace_back(::iroha::CreateSignatureDirect(
+          fbbTransaction, txSig->publicKey()->c_str(), &data));
+    }
 
-    // CreateSomething(), then .Union() -> Offset<void>
-
+    // FIXED: Creation of command offset. reinterpret_cast<> ->
+    // flatbuffer_service::Create...()
     auto commandOffset = [&] {
       std::size_t length = 0;
       auto commandBuf = extractCommandBuffer(*transaction.get(), length);
