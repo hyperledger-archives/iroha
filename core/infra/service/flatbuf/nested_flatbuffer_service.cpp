@@ -15,20 +15,30 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_FLATBUF_SERVICE_AUTOGEN_EXTEND_H_
-#define IROHA_FLATBUF_SERVICE_AUTOGEN_EXTEND_H_
-
 #include <infra/flatbuf/commands_generated.h>
+#include <infra/flatbuf/main_generated.h>
+#include <util/logger.hpp>
 
 #include <memory>
 #include <string>
 
 namespace flatbuffer_service {
-// namespace autogen_extend {
-flatbuffers::Offset<void> CreateCommandDirect(
-    flatbuffers::FlatBufferBuilder &_fbb, const void *obj,
-    int /* Command */ type);
-//}  // namespace autogen_extend
-}  // namespace flatbuffer_service
+// namespace nested_flatbuffer_service {
 
-#endif
+std::vector<uint8_t> CreateAccountBuffer(
+    const char* publicKey, const char* alias,
+    const std::vector<flatbuffers::Offset<flatbuffers::String>>& signatories,
+    uint16_t useKeys) {
+  flatbuffers::FlatBufferBuilder fbbAccount;
+  auto accountOffset = ::iroha::CreateAccountDirect(fbbAccount, publicKey,
+                                                    "alias", &signatories, 1);
+  fbbAccount.Finish(accountOffset);
+
+  auto buf = fbbAccount.GetBufferPointer();
+  std::vector<uint8_t> buffer;
+  buffer.assign(buf, buf + fbbAccount.GetSize());
+  return buffer;
+}
+
+// } // namespace nested_flatbuffer_service {
+}  // namespace flatbuffer_service

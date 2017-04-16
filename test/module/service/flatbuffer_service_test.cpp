@@ -70,3 +70,24 @@ TEST(FlatbufferServiceTest, toString) {
     std::cout << flatbuffer_service::toString(*tx.GetRoot()) << std::endl;
 }
 
+/*
+WIP
+TEST(FlatbufferServiceTest, toConsensusEvent) {
+  flatbuffers::FlatBufferBuilder fbbTransaction;
+
+  std::vector<flatbuffers::Offset<flatbuffers::String>> signatories;
+  signatories.push_back(fbbTransaction.CreateString("publicKey1"));
+
+  auto accountBuf = flatbuffer_service::CreateAccountBuffer(
+      "PublicKey", "Alias", signatories, 1);
+
+  auto txOffset = ::iroha::CreateTransactionDirect(
+      fbbTransaction, "Creator PubKey", iroha::Command_AssetAdd,
+      ::iroha::CreateAccountAddDirect(fbbTransaction, &accountBuf), &signatures,
+      &hashes, attachmentOffset);
+  auto consensusEvent = flatbuffer_service::toConsensusEvent(txOffset);
+
+  
+}
+*/
+

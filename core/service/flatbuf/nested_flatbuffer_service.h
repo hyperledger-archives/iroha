@@ -14,35 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <gtest/gtest.h>
-#include <memory>
-#include <unordered_map>
 
-#include <service/flatbuffer_service.hpp>
-#include <infra/flatbuf/main_generated.h>
+#ifndef IROHA_FLATBUF_SERVICE_NESTED_FLATBUFFER_SERVICE_H_
+#define IROHA_FLATBUF_SERVICE_NESTED_FLATBUFFER_SERVICE_H_
 
-// WIP
-TEST(flatbufferService, toConsensusEvent) {
+#include <vector>
 
-  {
-    flatbuffers::FlatBufferBuilder fbbTransaction;
+namespace flatbuffer_service {
+// namespace nested_flatbuffer_service {
 
-    auto commandOffset = flatbuffer_service::CreateCommandDirect(
-      fbbTransaction,
-      commandObj,
+std::vector<uint8_t> CreateAccountBuffer(
+    const char* publicKey, const char* alias,
+    const std::vector<flatbuffers::Offset<flatbuffers::String>>& signatories,
+    uint16_t useKeys);
 
-    );
+// } // namespace nested_flatbuffer_service {
+}  // namespace flatbuffer_service
 
-    auto txOffset = ::iroha::CreateTransactionDirect(
-      fbbTransaction,
-      "Creator PubKey",
-      iroha::Command_AssetAdd,
-      commandOffset,
-      &signatures,
-      &hashes,
-      attachmentOffset
-    );
-  }
-
-  auto consensusEvent = toConsensusEvent(txOffset);
-}
+#endif

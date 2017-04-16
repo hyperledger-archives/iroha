@@ -119,25 +119,19 @@ bool send(const std::string& ip, const std::unique_ptr<ConsensusEvent>& event) {
 
     // TODO: valid command
     // Tempolary implementation. Currently, use CreaeteAccount command.
-    auto accountBuf = [&] {
-      // Tempolary: Create Account
-      flatbuffers::FlatBufferBuilder fbbAccount;
-
-      // 一度FBBの内部バッファに書き込むものはstd::unique_ptrである必要がない
+    auto command = [&] {
       std::vector<flatbuffers::Offset<flatbuffers::String>> signatories;
       signatories.push_back(fbbTransaction.CreateString("publicKey1"));
 
-      auto accountOffset = ::iroha::CreateAccountDirect(
-          fbbAccount, publicKey, "alias", &signatories, 1);
-      fbbAccount.Finish(accountOffset);
+      auto accountBuf = flatbuffer_service::CreateAccountBuffer(
+        publicKey,
+        "alias",
+        signatories,
+        1
+      );
 
-      auto buf = fbbAccount.GetBufferPointer();
-      std::vector<uint8_t> buffer;
-      buffer.assign(buf, buf + fbbAccount.GetSize());
-      return buffer;
+      return ::iroha::CreateAccountAddDirect(fbbTransaction, &accountBuf);
     }();
-
-    auto command = ::iroha::CreateAccountAddDirect(fbbTransaction, &accountBuf);
 
     // TODO: Tempolary implementation. Use 'sign' function
     std::vector<uint8_t> signature;
