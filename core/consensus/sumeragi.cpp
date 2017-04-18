@@ -332,9 +332,10 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
     // event.set_order(getNextOrder());//TODO getNexOrder is always return 0l;
     // logger::info("sumeragi") << "new  order:" << event.order();
   } else if (!detail::eventSignatureIsEmpty(*eventPtr)) {
-    logger::info("sumeragi") << "Signature exists";
+    logger::info("sumeragi") << "Signature exists and peer size is " << eventPtr->peerSignatures()->size();
     // Check if we have at least 2f+1 signatures needed for Byzantine fault
     // tolerance ToDo re write
+
     if (eventPtr->peerSignatures() != nullptr &&
         eventPtr->peerSignatures()->size() >= context->maxFaulty * 2 + 1) {
       logger::info("sumeragi") << "Signature exists and sig > 2*f + 1";

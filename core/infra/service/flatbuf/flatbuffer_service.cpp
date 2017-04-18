@@ -381,7 +381,7 @@ flatbuffers::unique_ptr_t addSignature(
             peerSignatures.push_back(
                     ::iroha::CreateSignatureDirect(
                             fbbConsensusEvent,
-                            aSignature->publicKey()->c_str(),
+                            aPeerSig->publicKey()->c_str(),
                             &aPeerSigBlob,
                             1234567
                     )
@@ -416,21 +416,31 @@ flatbuffers::unique_ptr_t addSignature(
             )
         );
 
-        std::vector<uint8_t> hashes(
-            tx->hash()->begin(),
-            tx->hash()->end()
-        );
+        std::vector<uint8_t> hashes;
+        if(tx->hash() != nullptr){
+            hashes.assign(
+                tx->hash()->begin(),
+                tx->hash()->end()
+            );
+        }
 
-        std::vector<uint8_t> data(
-            tx->attachment()->data()->begin(),
-            tx->attachment()->data()->end()
-        );
+        flatbuffers::Offset<::iroha::Attachment> attachmentOffset;
+        std::vector<uint8_t> data;
+        if(tx->attachment() != nullptr &&
+           tx->attachment()->data() != nullptr &&
+           tx->attachment()->mime() != nullptr
+                ){
+            data.assign(
+                    tx->attachment()->data()->begin(),
+                    tx->attachment()->data()->end()
+            );
 
-        auto attachmentOffset = ::iroha::CreateAttachmentDirect(
-            fbbConsensusEvent,
-            tx->attachment()->mime()->c_str(),
-            &data
-        );
+            attachmentOffset = ::iroha::CreateAttachmentDirect(
+                    fbbConsensusEvent,
+                    tx->attachment()->mime()->c_str(),
+                    &data
+            );
+        }
 
         std::vector<flatbuffers::Offset<iroha::Transaction>> transactions;
 
