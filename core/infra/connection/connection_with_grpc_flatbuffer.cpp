@@ -171,7 +171,7 @@ bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
 
     flatbuffers::BufferRef<::iroha::Response> responseRef;
 
-    logger::info("Connection with grpc") << "isExistIP" << ip;
+    logger::info("Connection with grpc") << "isExistIP " << ip;
     // The actual RPC.
     auto status = stub->Verify(&context, eventRef, &responseRef);
 
