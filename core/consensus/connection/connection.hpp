@@ -43,10 +43,10 @@ namespace iroha { namespace SumeragiImpl { namespace Verify {
 
 using CallBackFunc =
     std::function<void(const std::string & /* from */,
-    ConsensusEvent* /* message */)>;
+       flatbuffers::unique_ptr_t&& /* message */)>;
 
-bool send(const std::string &ip, const std::unique_ptr<ConsensusEvent>& msg);
-bool sendAll(const std::unique_ptr<ConsensusEvent>& msg);
+bool send(const std::string &ip, const ::iroha::ConsensusEvent& msg);
+bool sendAll(const ::iroha::ConsensusEvent& msg);
 void receive(Verify::CallBackFunc &&callback);
 
 }}}  // namespace iroha::SumeragiImpl::Verify
@@ -59,8 +59,7 @@ namespace iroha { namespace SumeragiImpl { namespace Torii {
 
 using CallBackFunc = std::function<void(
     const std::string & /* from */,
-    const Transaction* /* message */)>;
-
+    flatbuffers::unique_ptr_t&& /* message */)>;
 void receive(Torii::CallBackFunc &&callback);
 
 }}}  // namespace iroha::SumeragiImpl::Verify

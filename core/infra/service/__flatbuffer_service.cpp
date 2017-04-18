@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+/*
 
 #include <infra/flatbuf/main_generated.h>
 
@@ -21,6 +22,7 @@ limitations under the License.
 #include <memory>
 #include <string>
 #include <functional>
+#include <assert.h>
 
 namespace flatbuffer_service{
 
@@ -267,7 +269,7 @@ namespace flatbuffer_service{
     }
 
     std::unique_ptr<iroha::ConsensusEvent> toConsensusEvent(const iroha::Transaction& tx){
-        return nullptr;
+        assert(false && "NotImplemented");
     }
 
     std::unique_ptr<iroha::ConsensusEvent> addSignature(
@@ -355,3 +357,5 @@ namespace flatbuffer_service{
     }
 
 };
+
+*/

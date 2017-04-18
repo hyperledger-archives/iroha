@@ -25,20 +25,17 @@ struct ConsensusEvent;
 namespace flatbuffer_service {
 
 // namespace autogen_extend {
-    flatbuffers::Offset<void> CreateCommandDirect(
-            flatbuffers::FlatBufferBuilder &_fbb, const void *obj,
-            int/* Command */ type); // TODO: Use scopoed enum ::iroha::Command
-//}
+flatbuffers::Offset<void> CreateCommandDirect(
+    flatbuffers::FlatBufferBuilder &_fbb, const void *obj,
+    int /* Command */ type);  // TODO: Use scopoed enum ::iroha::Command
+                              //}
 
-    std::string toString(const iroha::Transaction &tx);
+std::string toString(const iroha::Transaction &tx);
 
-    std::unique_ptr<iroha::ConsensusEvent> addSignature(
-            const std::unique_ptr<iroha::ConsensusEvent> &event,
-            const std::string &publicKey,
-            const std::string &signature
-    );
+flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent &event,
+                                       const std::string &publicKey,
+                                       const std::string &signature);
 
-    std::unique_ptr<::iroha::ConsensusEvent> toConsensusEvent(const iroha::Transaction &tx);
-
+flatbuffers::unique_ptr_t toConsensusEvent(const iroha::Transaction &tx);
 };
 #endif  // IROHA_FLATBUFFER_SERVICE_H

@@ -18,6 +18,7 @@
 #include <infra/flatbuf/main_generated.h>
 #include "autogen_extend.h"
 
+#include <iostream>
 #include <memory>
 #include <string>
 #include <map>
@@ -276,7 +277,7 @@ std::string toString(const iroha::Transaction& tx){
  * - Encapsulate a transaction in a consensus event. Argument fromTx will be
  *   deeply copied and create new consensus event that has the copied transaction.
  */
-std::unique_ptr<::iroha::ConsensusEvent> toConsensusEvent(
+flatbuffers::unique_ptr_t toConsensusEvent(
     const iroha::Transaction& fromTx) {
 
   flatbuffers::FlatBufferBuilder fbb;
@@ -351,16 +352,12 @@ std::unique_ptr<::iroha::ConsensusEvent> toConsensusEvent(
   );
 
   fbb.Finish(consensusEventOffset);
-  auto flatbuf = fbb.ReleaseBufferPointer();
-
-  return std::unique_ptr<::iroha::ConsensusEvent>(
-    flatbuffers::GetMutableRoot<::iroha::ConsensusEvent>(flatbuf.get())
-  );
+  return fbb.ReleaseBufferPointer();
 }
 
 
-std::unique_ptr<iroha::ConsensusEvent> addSignature(
-        const std::unique_ptr<iroha::ConsensusEvent> &event,
+flatbuffers::unique_ptr_t addSignature(
+        const iroha::ConsensusEvent &event,
         const std::string &publicKey,
         const std::string &signature
 ){
@@ -372,7 +369,7 @@ std::unique_ptr<iroha::ConsensusEvent> addSignature(
         std::vector<flatbuffers::Offset<iroha::Signature>> signatures;
 
         // Tempolary implementation: Currently, #(tx) is one.
-        auto tx = event->transactions()->Get(0);
+        auto tx = event.transactions()->Get(0);
         const auto& aSignature = tx->signatures()->Get(0);
 
         std::vector<uint8_t> signatureBlob(
@@ -432,11 +429,7 @@ std::unique_ptr<iroha::ConsensusEvent> addSignature(
 
         fbbConsensusEvent.Finish(consensusEventOffset);
 
-        auto flatbuf = fbbConsensusEvent.ReleaseBufferPointer();
-
-        return std::unique_ptr<::iroha::ConsensusEvent>(
-             flatbuffers::GetMutableRoot<::iroha::ConsensusEvent>(flatbuf.get())
-        );
+        return fbbConsensusEvent.ReleaseBufferPointer();
     }
 
 
