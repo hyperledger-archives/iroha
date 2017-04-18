@@ -14,8 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <signal.h>
-#include <unistd.h>
+#include <csignal>
 #include <atomic>
 #include <thread>
 
@@ -23,29 +22,26 @@ limitations under the License.
 #include <consensus/sumeragi.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <server/http_server.hpp>
-#include <service/peer_service.hpp>
-#include <util/logger.hpp>
 
 std::atomic_bool running(true);
 
 void server() { http::server(); }
 
-void sigHandler(int param) {
-  running = false;
-  logger::info("main") << "will halt";
+void signalHandler(int param) {;
+  logger::info("main") << "will halt (" << param << ")";
+  exit(0);
 }
 
 int main() {
-  signal(SIGINT, sigHandler);
-  signal(SIGHUP, sigHandler);
-  signal(SIGTERM, sigHandler);
+  if(std::signal(SIGINT, signalHandler) == SIG_ERR){
+    logger::error("main") << "'SIGINT' Signal setting error!";
+  }
 
   if (getenv("IROHA_HOME") == nullptr) {
     logger::error("main") << "You must set IROHA_HOME!";
     return 1;
   }
 
-  logger::info("main") << "process is :" << getpid();
   logger::setLogLevel(logger::LogLevel::Debug);
 
   connection::initialize_peer();
@@ -53,13 +49,23 @@ int main() {
   // peer::izanami::startIzanami();
 
   std::thread http_thread(server);
+  std::thread check_server([&](){
+      std::string cmd;
+      while (running){
+          std::cin >> cmd;logger::info("main") << "run ";
+          if(cmd == "quit"){
+              logger::info("main") << "will halt ";
+              connection::finish();
+              http_thread.join();
+              return;
+          }
+      }
+      logger::info("main") << "OWARI";
+  });
   connection::run();
-
-  while (running)
-    ;
-
-  // sumeragi_thread.detach();
-  http_thread.detach();
-
+  logger::info("main") << "check_server.detach()";
+  running = false;
+  check_server.join();
+  logger::info("main") << "Finish";
   return 0;
 }
