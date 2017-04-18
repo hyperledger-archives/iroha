@@ -72,14 +72,7 @@ class Receiver {
   }
 
   // ToDo rewrite operator() overload.
-  void invoke(const std::string& from,
-              std::unique_ptr<::iroha::Transaction> argv) {
-    (*receiver_)(from, std::move(argv));
-  }
-
-  // ToDo rewrite operator() overload.
-  void invoke(const std::string& from,
-              std::unique_ptr<::iroha::ConsensusEvent> argv) {
+  void invoke(const std::string& from, flatbuffers::unique_ptr_t&& argv) {
     (*receiver_)(from, std::move(argv));
   }
 
@@ -103,8 +96,9 @@ void receive(Verify::CallBackFunc&& callback) {
   receiver.set(std::move(callback));
 }
 
-bool send(const std::string& ip, const std::unique_ptr<ConsensusEvent>& event) {
-  // ToDo
+bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
+  // ToDo: Extract transaction from consensus event.
+
   if (config::PeerServiceConfig::getInstance().isExistIP(ip)) {
     auto channel =
         grpc::CreateChannel(ip + ":50051", grpc::InsecureChannelCredentials());
@@ -124,11 +118,7 @@ bool send(const std::string& ip, const std::unique_ptr<ConsensusEvent>& event) {
       signatories.push_back(fbbTransaction.CreateString("publicKey1"));
 
       auto accountBuf = flatbuffer_service::CreateAccountBuffer(
-        publicKey,
-        "alias",
-        signatories,
-        1
-      );
+          publicKey, "alias", signatories, 1);
 
       return ::iroha::CreateAccountAddDirect(fbbTransaction, &accountBuf);
     }();
@@ -172,7 +162,7 @@ bool send(const std::string& ip, const std::unique_ptr<ConsensusEvent>& event) {
   return false;
 }
 
-bool sendAll(const std::unique_ptr<ConsensusEvent>& event) {
+bool sendAll(const ::iroha::ConsensusEvent& event) {
   auto receiver_ips = config::PeerServiceConfig::getInstance().getGroup();
   for (const auto& p : receiver_ips) {
     if (p["ip"].get<std::string>() !=
@@ -213,20 +203,20 @@ class SumeragiConnectionClient {
       : stub_(Sumeragi::NewStub(channel)) {}
 
   ::iroha::Response* Verify(
-      const std::unique_ptr<ConsensusEvent>& consensusEvent) const {
+      const ::iroha::ConsensusEvent& consensusEvent) const {
     grpc::ClientContext context;
     flatbuffers::BufferRef<Response> responseRef;
     logger::info("connection") << "Operation";
     logger::info("connection")
-        << "size: " << consensusEvent->peerSignatures()->size();
+        << "size: " << consensusEvent.peerSignatures()->size();
     logger::info("connection")
         << "CommandType: "
-        << consensusEvent->transactions()->Get(0)->command_type();
+        << consensusEvent.transactions()->Get(0)->command_type();
 
     // For now, ConsensusEvent has one transaction.
-    auto transaction = consensusEvent->transactions()->Get(0);
+    const auto& transaction = *consensusEvent.transactions()->Get(0);
 
-    auto newConsensusEvent = flatbuffer_service::toConsensusEvent(*transaction);
+    auto newConsensusEvent = flatbuffer_service::toConsensusEvent(transaction);
 
     flatbuffers::FlatBufferBuilder fbb;
     // TODO
@@ -251,8 +241,7 @@ class SumeragiConnectionClient {
     }
   }
 
-  ::iroha::Response* Torii(
-      const std::unique_ptr<Transaction>& transaction) const {
+  ::iroha::Response* Torii(const ::iroha::Transaction& transaction) const {
     // Copy transaction to FlatBufferBuilder memory, then create
     // BufferRef<Transaction>
     // and share it to another sumeragi by using stub interface Torii.
@@ -260,11 +249,11 @@ class SumeragiConnectionClient {
     ::grpc::ClientContext clientContext;
     flatbuffers::FlatBufferBuilder fbbTransaction;
 
-    std::vector<uint8_t> hashes(*transaction->hash()->begin(),
-                                *transaction->hash()->end());
+    std::vector<uint8_t> hashBlob(transaction.hash()->begin(),
+                                  transaction.hash()->end());
 
     std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
-    for (auto&& txSig : *transaction->signatures()) {
+    for (auto&& txSig : *transaction.signatures()) {
       std::vector<uint8_t> data(*txSig->signature()->begin(),
                                 *txSig->signature()->end());
       signatures.emplace_back(::iroha::CreateSignatureDirect(
@@ -275,23 +264,23 @@ class SumeragiConnectionClient {
     // flatbuffer_service::Create...()
     auto commandOffset = [&] {
       std::size_t length = 0;
-      auto commandBuf = extractCommandBuffer(*transaction.get(), length);
+      auto commandBuf = extractCommandBuffer(transaction, length);
       flatbuffers::Verifier verifier(commandBuf.get(), length);
       ::iroha::VerifyCommand(verifier, commandBuf.get(),
-                             transaction->command_type());
+                             transaction.command_type());
       return flatbuffer_service::CreateCommandDirect(
-          fbbTransaction, commandBuf.get(), transaction->command_type());
+          fbbTransaction, commandBuf.get(), transaction.command_type());
     }();
 
     std::vector<uint8_t> attachmentData(
-        *transaction->attachment()->data()->begin(),
-        *transaction->attachment()->data()->end());
+        *transaction.attachment()->data()->begin(),
+        *transaction.attachment()->data()->end());
 
     auto transactionOffset = ::iroha::CreateTransactionDirect(
-        fbbTransaction, transaction->creatorPubKey()->c_str(),
-        transaction->command_type(), commandOffset, &signatures, &hashes,
+        fbbTransaction, transaction.creatorPubKey()->c_str(),
+        transaction.command_type(), commandOffset, &signatures, &hashBlob,
         ::iroha::CreateAttachmentDirect(
-            fbbTransaction, transaction->attachment()->mime()->c_str(),
+            fbbTransaction, transaction.attachment()->mime()->c_str(),
             &attachmentData));
 
     fbbTransaction.Finish(transactionOffset);
@@ -317,8 +306,8 @@ class SumeragiConnectionClient {
   }
 
  private:
-  flatbuffers::unique_ptr_t extractCommandBuffer(const Transaction& transaction,
-                                                 std::size_t& length) {
+  flatbuffers::unique_ptr_t extractCommandBuffer(
+      const ::iroha::Transaction& transaction, std::size_t& length) {
     flatbuffers::FlatBufferBuilder fbbCommand;
     auto type = transaction.command_type();
     auto obj = transaction.command();
@@ -342,82 +331,128 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
   Status Verify(ServerContext* context,
                 const flatbuffers::BufferRef<ConsensusEvent>* request,
                 flatbuffers::BufferRef<Response>* response) override {
-    const ::iroha::ConsensusEvent* event = request->GetRoot();
+    // バッファの一部分を参照している。これをreceiverにmoveした場合、バッファの実態の解放時にLeakする
+    //    const ::iroha::ConsensusEvent* event = request->GetRoot();
+
+    assert(request->GetRoot()->peerSignatures() != nullptr);
+
+    flatbuffers::FlatBufferBuilder fbbConsensusEvent;
+
+    // Offsetは呼び出し元のバッファ上のもの指している？再利用可能？
+    std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures(
+        request->GetRoot()->peerSignatures()->begin(),
+        request->GetRoot()->peerSignatures()->end());
+
+    std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions(
+      request->GetRoot()->transactions()->begin(),
+      request->GetRoot()->transactions()->end()
+    );
+
+    fbbConsensusEvent.Finish(::iroha::CreateConsensusEventDirect(
+        fbbConsensusEvent, &peerSignatures, &transactions));
+
     const std::string from = "from";
     iroha::SumeragiImpl::Verify::receiver.invoke(
-        from, std::unique_ptr<::iroha::ConsensusEvent>(
-                  const_cast<::iroha::ConsensusEvent*>(event)));
+        from, fbbConsensusEvent.ReleaseBufferPointer());
     return Status::OK;
   }
 
   Status Torii(ServerContext* context,
                const flatbuffers::BufferRef<Transaction>* transactionRef,
                flatbuffers::BufferRef<Response>* responseRef) override {
-    // TODO: Torii
+    fbbResponse.Clear();
 
-    flatbuffers::FlatBufferBuilder fbbResponse;
     auto responseOffset = ::iroha::CreateResponseDirect(
         fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);
     fbbResponse.Finish(responseOffset);
 
-    // Since we keep reusing the same FlatBufferBuilder, the memory it owns
-    // remains valid until the next call (this BufferRef doesn't own the
-    // memory it points to).
-    iroha::SumeragiImpl::Torii::receiver.invoke(
-        "from",
-        std::unique_ptr<::iroha::Transaction>(
-            // FIX: 呼び出し元のバッファを即座に破棄するのなら安全なはず
-            const_cast<::iroha::Transaction*>(transactionRef->GetRoot())));
+    logger::debug("SumeragiConnectionServiceImpl::Torii") << "RPC works";
 
-    *responseRef = flatbuffers::BufferRef<::iroha::Response>(
-        fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
-    logger::info("AA") << "Yurushite";
-    return grpc::Status::OK;
     /*
-        {
-          //
-       BufferRefは基本immutableだが、呼び出し元は破棄するので取り出してmoveすべき？
-          const auto transaction = transactionRef->GetRoot();
-
-          flatbuffers::FlatBufferBuilder fbbTransaction;
-
-          std::vector<uint8_t> signatures(transaction->signatures()->begin(),
-                                          transaction->signatures()->end());
-
-          std::vector<uint8_t> hashes(transaction->hash()->begin(),
-                                      transaction->hash()->end());
-
-          std::vector<uint8_t> attachmentData(
-              transaction->attachment()->data()->begin(),
-              transaction->attachment()->data()->end());
-
-          fbbTransaction.Finish(::iroha::CreateTransactionDirect(
-              fbbTransaction, transaction->creatorPubKey()->c_str(),
-              transaction->command_type(),
-              flatbuffer_service::CreateCommandDirect(fbbTransaction,
-                                                      transaction->command(),
-                                                      transaction->command_type()),
-              &signatures, &hashes,
-              ::iroha::CreateAttachmentDirect(
-                  fbbTransaction, transaction->attachment()->mime()->c_str(),
-                  &attachmentData)));
-
-          //
-       std::unique_ptr<>が扱いづらいので、そのうちflatbuffers::unique_ptrに変えるかも
-          auto txBuffer = fbbTransaction.ReleaseBufferPointer();
-          auto transactionPtr =
-       std::move(*flatbuffers::GetMutableRoot<::iroha::Transaction>(txBuffer.get()));
-          iroha::SumeragiImpl::Torii::receiver.invoke(
-              "from",  // TODO: Specify 'from'
-              transactionPtr);
-        }
-
+      // This code leaks.
+      // Maybe, buffer of caller deallocate Transaction and std::unique_ptr
+      movement occurs.
+      // So, double free happens.
+        iroha::SumeragiImpl::Torii::receiver.invoke(
+            "from",
+            std::unique_ptr<::iroha::Transaction>(
+                // FIX: 呼び出し元のバッファを即座に破棄するのなら安全なはず
+                const_cast<::iroha::Transaction*>(transactionRef->GetRoot())));
         *responseRef = flatbuffers::BufferRef<::iroha::Response>(
             fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+    */
 
-        return grpc::Status::OK;
-        */
+    {
+      const auto transaction = transactionRef->GetRoot();
+
+      flatbuffers::FlatBufferBuilder fbbTransaction;
+
+      std::vector<flatbuffers::Offset<::iroha::Signature>> tx_signatures;
+
+      if (transaction->signatures() != nullptr) {
+        for (auto&& txSig : *transaction->signatures()) {
+          std::vector<uint8_t> _data;
+          if (txSig->signature() != nullptr) {
+            for (auto d : *txSig->signature()) {
+              _data.emplace_back(d);
+            }
+            tx_signatures.emplace_back(::iroha::CreateSignatureDirect(
+                fbbTransaction, txSig->publicKey()->c_str(), &_data));
+          }
+        }
+      }
+
+      std::vector<uint8_t> _hash(transaction->hash()->begin(),
+                                 transaction->hash()->end());
+
+      std::vector<uint8_t> attachmentData(
+          transaction->attachment()->data()->begin(),
+          transaction->attachment()->data()->end());
+
+      fbbTransaction.Finish(::iroha::CreateTransactionDirect(
+          fbbTransaction, transaction->creatorPubKey()->c_str(),
+          transaction->command_type(),
+          flatbuffer_service::CreateCommandDirect(fbbTransaction,
+                                                  transaction->command(),
+                                                  transaction->command_type()),
+          &tx_signatures, &_hash,
+          ::iroha::CreateAttachmentDirect(
+              fbbTransaction, transaction->attachment()->mime()->c_str(),
+              &attachmentData)));
+
+      // Leak doesn't occur till here.
+
+      /*
+          // Leak occurs.
+            auto flatbuf = fbbTransaction.ReleaseBufferPointer();
+
+            iroha::SumeragiImpl::Torii::receiver.invoke(
+                "from",  // TODO: Specify 'from'
+                std::unique_ptr<::iroha::Transaction>(
+                    flatbuffers::GetMutableRoot<::iroha::Transaction>(
+                        flatbuf.get())));
+                        */
+      //      auto flatbuf = fbbTransaction.ReleaseBufferPointer(); // Leak
+      //      doesn't occur.
+      /*
+            std::unique_ptr<::iroha::Transaction> uptr(
+                flatbuffers::GetMutableRoot<::iroha::Transaction>(bufptr.get()));
+      */
+      iroha::SumeragiImpl::Torii::receiver.invoke(
+          "from",  // TODO: Specify 'from'
+          fbbTransaction.ReleaseBufferPointer());
+    }
+
+    // This reference remains until next calling
+    // SumeragiConnectionServiceImpl::Torii() method.
+    *responseRef = flatbuffers::BufferRef<::iroha::Response>(
+        fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+
+    return grpc::Status::OK;
   }
+
+ private:
+  flatbuffers::FlatBufferBuilder fbbResponse;
 };
 
 /************************************************************************************

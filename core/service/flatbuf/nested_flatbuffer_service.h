@@ -19,6 +19,8 @@
 #define IROHA_FLATBUF_SERVICE_NESTED_FLATBUFFER_SERVICE_H_
 
 #include <vector>
+#include <cstdint>
+#include <flatbuffers/flatbuffers.h>
 
 namespace flatbuffer_service {
 // namespace nested_flatbuffer_service {

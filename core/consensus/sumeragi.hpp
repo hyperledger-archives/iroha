@@ -38,7 +38,7 @@ void loop();
 
 void getNextOrder(std::unique_ptr<ConsensusEvent> event);
 
-void processTransaction(std::unique_ptr<ConsensusEvent>&& event);
+void processTransaction(flatbuffers::unique_ptr_t&& event);
 
 void panic(std::unique_ptr<ConsensusEvent> event);
 void setAwkTimer(const int sleepMillisecs,

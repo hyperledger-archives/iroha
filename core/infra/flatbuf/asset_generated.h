@@ -425,10 +425,10 @@ struct Asset FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   template<typename T> const T *asset_as() const;
   const ComplexAsset *asset_as_ComplexAsset() const {
-    return (asset_type() == AnyAsset_ComplexAsset)? static_cast<const ComplexAsset *>(asset()) : nullptr;
+    return asset_type() == AnyAsset_ComplexAsset ? static_cast<const ComplexAsset *>(asset()) : nullptr;
   }
   const Currency *asset_as_Currency() const {
-    return (asset_type() == AnyAsset_Currency)? static_cast<const Currency *>(asset()) : nullptr;
+    return asset_type() == AnyAsset_Currency ? static_cast<const Currency *>(asset()) : nullptr;
   }
   void *mutable_asset() {
     return GetPointer<void *>(VT_ASSET);
