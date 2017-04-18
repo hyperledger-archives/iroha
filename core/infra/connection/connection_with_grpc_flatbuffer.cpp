@@ -115,8 +115,9 @@ bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
     // TODO: valid command
     // Tempolary implementation. Currently, use CreaeteAccount command.
     auto command = [&] {
-      std::vector<flatbuffers::Offset<flatbuffers::String>> signatories;
-      signatories.push_back(fbbTransaction.CreateString("publicKey1"));
+      std::vector<std::string> signatories = {
+        "publicKey1"
+      };
 
       auto accountBuf = flatbuffer_service::CreateAccountBuffer(
           publicKey, "alias", signatories, 1);

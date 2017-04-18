@@ -18,6 +18,7 @@
 #ifndef IROHA_FLATBUF_SERVICE_NESTED_FLATBUFFER_SERVICE_H_
 #define IROHA_FLATBUF_SERVICE_NESTED_FLATBUFFER_SERVICE_H_
 
+#include <string>
 #include <vector>
 #include <cstdint>
 #include <flatbuffers/flatbuffers.h>
@@ -27,7 +28,7 @@ namespace flatbuffer_service {
 
 std::vector<uint8_t> CreateAccountBuffer(
     const char* publicKey, const char* alias,
-    const std::vector<flatbuffers::Offset<flatbuffers::String>>& signatories,
+    const std::vector<std::string>& signatories,
     uint16_t useKeys);
 
 // } // namespace nested_flatbuffer_service {

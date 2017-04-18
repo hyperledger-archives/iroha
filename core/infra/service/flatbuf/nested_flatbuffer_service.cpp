@@ -27,15 +27,24 @@ namespace flatbuffer_service {
 
 std::vector<uint8_t> CreateAccountBuffer(
     const char* publicKey, const char* alias,
-    const std::vector<flatbuffers::Offset<flatbuffers::String>>& signatories,
+    const std::vector<std::string>& signatories,
     uint16_t useKeys) {
+
   if(&signatories != nullptr) {
     flatbuffers::FlatBufferBuilder fbbAccount;
+
+    std::vector<flatbuffers::Offset<flatbuffers::String>> signatoryOffsets;
+    for (const auto& e: signatories) {
+      signatoryOffsets.push_back(
+        fbbAccount.CreateString(e)
+      );
+    }
+
     auto accountOffset = ::iroha::CreateAccountDirect(
             fbbAccount,
             publicKey,
             alias,
-            &signatories,
+            &signatoryOffsets,
             1
     );
       fbbAccount.Finish(accountOffset);
