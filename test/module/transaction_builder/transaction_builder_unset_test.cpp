@@ -53,7 +53,7 @@ TEST(transaction_builder, create_unset_sender) {
     .setReceiverPublicKey("receiver pubkey")
     .setDomain(domain)
     .build();
-  }, exception::txbuilder::UnsetBuildArgmentsException);
+  }, exception::txbuilder::UnsetBuildArgumentsException);
 }
 
 TEST(transaction_builder, create_unset_receiver) {
@@ -66,7 +66,7 @@ TEST(transaction_builder, create_unset_receiver) {
     .setSenderPublicKey("karin")
     .setDomain(domain)
     .build();
-  }, exception::txbuilder::UnsetBuildArgmentsException);
+  }, exception::txbuilder::UnsetBuildArgumentsException);
 }
 
 TEST(transaction_builder, create_unset_object) {
@@ -79,7 +79,7 @@ TEST(transaction_builder, create_unset_object) {
     .setSenderPublicKey("karin")
     .setReceiverPublicKey("receiver pubkey")
     .build();
-  }, exception::txbuilder::UnsetBuildArgmentsException);
+  }, exception::txbuilder::UnsetBuildArgumentsException);
 }
 
 TEST(transaction_builder, create_unset_noset) {
@@ -90,9 +90,8 @@ TEST(transaction_builder, create_unset_noset) {
   ASSERT_THROW({
   auto txDomain = TransactionBuilder<Transfer<Domain>>()
     .build();
-  }, exception::txbuilder::UnsetBuildArgmentsException);
+  }, exception::txbuilder::UnsetBuildArgumentsException);
 }
-
 TEST(transaction_builder, create_unset_invalid_double_set) {
   Api::Domain domain;
   domain.set_ownerpublickey("pubkey1");
@@ -105,5 +104,5 @@ TEST(transaction_builder, create_unset_invalid_double_set) {
     .setSenderPublicKey("karin")
     .setReceiverPublicKey("receiver pubkey")
     .build();
-  }, exception::txbuilder::DuplicateSetArgmentException);
+  }, exception::txbuilder::DuplicateSetArgumentException);
 }

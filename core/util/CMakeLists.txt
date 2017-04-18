@@ -3,6 +3,7 @@ add_library(logger STATIC logger.cpp)
 
 target_link_libraries(logger
   datetime
+  spdlog
 )
 
 add_library(random          STATIC random.cpp)

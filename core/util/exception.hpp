@@ -24,83 +24,74 @@ limitations under the License.
 
 namespace exception {
 
-class FileOpenException : public std::invalid_argument {
+class IrohaException : public std::exception {
  public:
-  FileOpenException(const std::string&);
+  explicit IrohaException(const std::string &);
+
+  virtual ~IrohaException();
+  virtual const char *what() const throw();
+
+ protected:
+  std::string message_;
 };
 
-class NotImplementedException : public std::invalid_argument {
+class NotImplementedException : public IrohaException {
  public:
-  NotImplementedException(const std::string& functionName,
-                          const std::string& filename);
+  explicit NotImplementedException(const std::string &functionName, const std::string &filename);
 };
 
-class BaseMethodException : public std::domain_error {
+class ParseFromStringException : public IrohaException {
  public:
-  BaseMethodException(const std::string& functionName,
-                      const std::string& filename);
+  explicit ParseFromStringException(const std::string &filename);
 };
 
-class ParseFromStringException : public std::domain_error {
+class InvalidCastException : public IrohaException {
  public:
-  ParseFromStringException(const std::string& filename);
-};
-
-class InvalidCastException : public std::domain_error {
- public:
-  InvalidCastException(const std::string& from, const std::string& to,
-                       const std::string& filename);
-  InvalidCastException(const std::string& meg, const std::string& filename);
+  InvalidCastException(const std::string &from, const std::string &to, const std::string &filename);
+  InvalidCastException(const std::string &meg, const std::string &filename);
 };
 
 namespace config {
-class ConfigException : public std::domain_error {
+class ConfigException : public IrohaException {
  public:
-  ConfigException(const std::string& message);
+  ConfigException(const std::string &message);
 };
 }
 
 namespace service {
-class DuplicationIPException : public std::domain_error {
+class DuplicationIPException : public IrohaException {
  public:
-  DuplicationIPException(const std::string&);
+  explicit DuplicationIPException(const std::string &);
 };
-class DuplicationPublicKeyException : public std::domain_error {
+class DuplicationPublicKeyException : public IrohaException {
  public:
-  DuplicationPublicKeyException(const std::string&);
+  explicit DuplicationPublicKeyException(const std::string &);
 };
-class UnExistFindPeerException : public std::domain_error {
+class UnExistFindPeerException : public IrohaException {
  public:
-  UnExistFindPeerException(const std::string&);
+  explicit UnExistFindPeerException(const std::string &);
 };
 }
 
 namespace crypto {
-class InvalidKeyException : public std::invalid_argument {
+class InvalidKeyException : public IrohaException {
  public:
-  InvalidKeyException(const std::string&);
+  explicit InvalidKeyException(const std::string &);
 };
-};
-
-namespace repository {
-class WriteFailedException : public std::invalid_argument {
+class InvalidMessageLengthException : public IrohaException {
  public:
-  WriteFailedException(const std::string&);
-};
-class DuplicateAddException : public std::invalid_argument {
- public:
-  explicit DuplicateAddException(const std::string&);
+  explicit InvalidMessageLengthException(const std::string &);
 };
 }
 
 namespace txbuilder {
-class DuplicateSetArgmentException : public std::domain_error {
+class DuplicateSetArgumentException : public IrohaException {
  public:
-  DuplicateSetArgmentException(const std::string&, const std::string&);
+  DuplicateSetArgumentException(const std::string &, const std::string &);
 };
-class UnsetBuildArgmentsException : public std::domain_error {
+class UnsetBuildArgumentsException : public IrohaException {
  public:
-  UnsetBuildArgmentsException(const std::string&, const std::string&);
+  UnsetBuildArgumentsException(const std::string &, const std::string &);
 };
 }
 }  // namespace exception
