@@ -138,21 +138,42 @@ bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
         1234567  // TODO: timestamp
         ));
 
-    auto transactionOffset = ::iroha::CreateTransactionDirect(
+      std::vector<flatbuffers::Offset<::iroha::Transaction>> transactionOffsetVec;
+      std::vector<flatbuffers::Offset<::iroha::Signature>>   peerSignatureOffsetVec;
+      transactionOffsetVec.emplace_back(::iroha::CreateTransactionDirect(
         fbbTransaction, publicKey, ::iroha::Command::Command_AccountAdd,
         command.Union(), &signatures, nullptr,
-        ::iroha::CreateAttachmentDirect(fbbTransaction, nullptr, nullptr));
+        ::iroha::CreateAttachmentDirect(fbbTransaction, nullptr, nullptr))
+      );
+      for(const auto& aPeerSig: *event.peerSignatures()) {
+          std::vector<uint8_t> aPeerSigBlob(
+                  aPeerSig->signature()->begin(),
+                  aPeerSig->signature()->end()
+          );
+          peerSignatureOffsetVec.push_back(
+              ::iroha::CreateSignatureDirect(
+                  fbbTransaction,
+                  aPeerSig->publicKey()->c_str(),
+                  &aPeerSigBlob,
+                  1234567
+              )
+          );
+      }
 
-    fbbTransaction.Finish(transactionOffset);
 
-    auto transactionRef = flatbuffers::BufferRef<::iroha::Transaction>(
+    auto consensusEventOffset = ::iroha::CreateConsensusEvent(
+        fbbTransaction, fbbTransaction.CreateVector(peerSignatureOffsetVec), fbbTransaction.CreateVector(transactionOffsetVec)
+    );
+    fbbTransaction.Finish(consensusEventOffset);
+
+    auto eventRef = flatbuffers::BufferRef<::iroha::ConsensusEvent>(
         fbbTransaction.GetBufferPointer(), fbbTransaction.GetSize());
 
     flatbuffers::BufferRef<::iroha::Response> responseRef;
 
     logger::info("Connection with grpc") << "isExistIP" << ip;
     // The actual RPC.
-    auto status = stub->Torii(&context, transactionRef, &responseRef);
+    auto status = stub->Verify(&context, eventRef, &responseRef);
 
     if (status.ok()) {
       auto msg = responseRef.GetRoot()->message();
@@ -342,23 +363,104 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
 
     flatbuffers::FlatBufferBuilder fbbConsensusEvent;
 
-    // Offsetは呼び出し元のバッファ上のもの指している？再利用可能？
-    std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures(
-        request->GetRoot()->peerSignatures()->begin(),
-        request->GetRoot()->peerSignatures()->end());
+    std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures;
+    for(const auto& aPeerSig: *request->GetRoot()->peerSignatures()) {
+      std::vector<uint8_t> aPeerSigBlob(
+          aPeerSig->signature()->begin(),
+          aPeerSig->signature()->end()
+      );
+      peerSignatures.push_back(
+          ::iroha::CreateSignatureDirect(
+              fbbConsensusEvent,
+              aPeerSig->publicKey()->c_str(),
+              &aPeerSigBlob,
+              1234567
+          )
+      );
+    }
 
-    std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions(
-      request->GetRoot()->transactions()->begin(),
-      request->GetRoot()->transactions()->end()
+
+    auto tx = request->GetRoot()->transactions()->Get(0);
+      std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
+
+    if(tx->signatures() != nullptr){
+      std::vector<uint8_t> signatureBlob(
+          tx->signatures()->Get(0)->signature()->begin(),
+          tx->signatures()->Get(0)->signature()->end()
+      );
+      signatures.push_back(
+          ::iroha::CreateSignatureDirect(
+              fbbConsensusEvent,
+              tx->signatures()->Get(0)->publicKey()->c_str(),
+              &signatureBlob,
+              1234567
+          )
+      );
+    }
+    std::vector<uint8_t> hashes;
+    if(tx->hash() != nullptr){
+      hashes.assign(
+         tx->hash()->begin(),
+         tx->hash()->end()
+      );
+    }
+
+    flatbuffers::Offset<::iroha::Attachment> attachmentOffset;
+    std::vector<uint8_t> data;
+    if(tx->attachment() != nullptr &&
+       tx->attachment()->data() != nullptr &&
+       tx->attachment()->mime() != nullptr
+    ){
+      data.assign(
+              tx->attachment()->data()->begin(),
+              tx->attachment()->data()->end()
+      );
+
+      attachmentOffset = ::iroha::CreateAttachmentDirect(
+              fbbConsensusEvent,
+              tx->attachment()->mime()->c_str(),
+              &data
+      );
+    }
+
+    std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions;
+
+    // TODO: Currently, #(transaction) is one.
+    transactions.push_back(
+        ::iroha::CreateTransactionDirect(
+            fbbConsensusEvent,
+            tx->creatorPubKey()->c_str(),
+            tx->command_type(),
+            flatbuffer_service::CreateCommandDirect(
+                    fbbConsensusEvent,
+                    tx->command(),
+                    tx->command_type()
+            ),
+            &signatures,
+            &hashes,
+            attachmentOffset
+        )
     );
 
     fbbConsensusEvent.Finish(::iroha::CreateConsensusEventDirect(
-        fbbConsensusEvent, &peerSignatures, &transactions));
+        fbbConsensusEvent, &peerSignatures, &transactions
+    ));
 
     const std::string from = "from";
     iroha::SumeragiImpl::Verify::receiver.invoke(
-        from, fbbConsensusEvent.ReleaseBufferPointer());
-    return Status::OK;
+        from, fbbConsensusEvent.ReleaseBufferPointer()
+    );
+
+      fbbResponse.Clear();
+
+      auto responseOffset = ::iroha::CreateResponseDirect(
+              fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);
+      fbbResponse.Finish(responseOffset);
+
+      *response = flatbuffers::BufferRef<::iroha::Response>(
+          fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+
+      return Status::OK;
   }
 
   Status Torii(ServerContext* context,
@@ -406,12 +508,23 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
         }
       }
 
-      std::vector<uint8_t> _hash(transaction->hash()->begin(),
-                                 transaction->hash()->end());
+      std::vector<uint8_t> _hash;
+      if(transaction->hash() != nullptr) {
+          _hash.assign(
+              transaction->hash()->begin(),
+              transaction->hash()->end()
+          );
+      }
 
-      std::vector<uint8_t> attachmentData(
+
+      std::vector<uint8_t> attachmentData;
+
+      if(transaction->attachment() != nullptr && transaction->attachment()->data() != nullptr){
+        attachmentData.assign(
           transaction->attachment()->data()->begin(),
-          transaction->attachment()->data()->end());
+          transaction->attachment()->data()->end()
+        );
+      }
 
       fbbTransaction.Finish(::iroha::CreateTransactionDirect(
           fbbTransaction, transaction->creatorPubKey()->c_str(),
