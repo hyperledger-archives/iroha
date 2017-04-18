@@ -68,7 +68,7 @@ namespace detail {
     };
 
     bool eventSignatureIsEmpty(const std::unique_ptr<ConsensusEvent>& event) {
-      if(event->peerSignatures() != nullptr){
+      if(event != nullptr && event->peerSignatures() != nullptr){
           return event->peerSignatures()->size() == 0;
       }else{
           return 0;
@@ -158,10 +158,10 @@ void initializeSumeragi() {
   context = std::make_unique<Context>();
 
   connection::iroha::SumeragiImpl::Torii::receive([](
-      const std::string& from, std::unique_ptr<Transaction> transaction) {
+      const std::string& from,const Transaction* transaction) {
     logger::info("sumeragi") << "receive!";
 
-    auto event = flatbuffer_service::toConsensusEvent(*transaction.get());
+    auto event = flatbuffer_service::toConsensusEvent(*transaction);
     auto task = [event = std::move(event)]() mutable {
       processTransaction(std::move(event));
     };
@@ -180,7 +180,7 @@ void initializeSumeragi() {
   });
 
   connection::iroha::SumeragiImpl::Verify::receive(
-      [](const std::string& from, std::unique_ptr<ConsensusEvent> event) {
+      [](const std::string& from, ConsensusEvent* event) {
         logger::info("sumeragi") << "receive!";  // ToDo rewrite
         logger::info("sumeragi") << "received message! sig:["
                                  << event->peerSignatures()->size() << "]";
@@ -193,14 +193,15 @@ void initializeSumeragi() {
           //            txCache[detail::hash(event.transaction())] = "commited";
           //        }else{
           // send processTransaction(event) as a task to processing pool
-          // this returns std::future<void> object
+          // this returns std::future<void> objectaaa
           // (std::future).get() method locks processing until result of
           // processTransaction will be available but processTransaction returns
           // void, so we don't have to call it and wait
           // std::function<void()>&& task =
           //    std::bind(processTransaction, std::move(event));
           // pool.process(std::move(task));
-          auto task = [event = std::move(event)]() mutable {
+
+            auto task = [event = std::unique_ptr<ConsensusEvent>(event)]() mutable {
             processTransaction(std::move(event));
           };
           pool.process(std::move(task));

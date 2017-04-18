@@ -73,13 +73,13 @@ class Receiver {
 
   // ToDo rewrite operator() overload.
   void invoke(const std::string& from,
-              std::unique_ptr<::iroha::Transaction> argv) {
-    (*receiver_)(from, std::move(argv));
+         const ::iroha::Transaction* argv) {
+    (*receiver_)(from, argv);
   }
 
   // ToDo rewrite operator() overload.
   void invoke(const std::string& from,
-              std::unique_ptr<::iroha::ConsensusEvent> argv) {
+          ::iroha::ConsensusEvent* argv) {
     (*receiver_)(from, std::move(argv));
   }
 
@@ -345,8 +345,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
     const ::iroha::ConsensusEvent* event = request->GetRoot();
     const std::string from = "from";
     iroha::SumeragiImpl::Verify::receiver.invoke(
-        from, std::unique_ptr<::iroha::ConsensusEvent>(
-                  const_cast<::iroha::ConsensusEvent*>(event)));
+        from, const_cast<::iroha::ConsensusEvent*>(event));
     return Status::OK;
   }
 
@@ -365,9 +364,9 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
     // memory it points to).
     iroha::SumeragiImpl::Torii::receiver.invoke(
         "from",
-        std::unique_ptr<::iroha::Transaction>(
             // FIX: 呼び出し元のバッファを即座に破棄するのなら安全なはず
-            const_cast<::iroha::Transaction*>(transactionRef->GetRoot())));
+        transactionRef->GetRoot()
+    );
 
     *responseRef = flatbuffers::BufferRef<::iroha::Response>(
         fbbResponse.GetBufferPointer(), fbbResponse.GetSize());

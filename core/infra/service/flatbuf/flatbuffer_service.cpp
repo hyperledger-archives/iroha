@@ -280,6 +280,7 @@ std::unique_ptr<::iroha::ConsensusEvent> toConsensusEvent(
     const iroha::Transaction& fromTx) {
 
   flatbuffers::FlatBufferBuilder fbb;
+  fbb.Clear();
 
   std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
   std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions;
@@ -350,7 +351,6 @@ std::unique_ptr<::iroha::ConsensusEvent> toConsensusEvent(
   );
 
   fbb.Finish(consensusEventOffset);
-
   auto flatbuf = fbb.ReleaseBufferPointer();
 
   return std::unique_ptr<::iroha::ConsensusEvent>(
