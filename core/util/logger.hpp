@@ -54,7 +54,7 @@ namespace logger {
     
 */
 
-enum class LogLevel { Debug = 0, Info, Warning, Error, Fatal, Explore };
+enum class LogLevel { Debug = 0, Explore, Info, Warning, Error, Fatal };
 
 namespace detail {
 static LogLevel LOG_LEVEL = LogLevel::Debug;
