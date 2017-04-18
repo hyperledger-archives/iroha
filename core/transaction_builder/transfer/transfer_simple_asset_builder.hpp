@@ -34,7 +34,7 @@ class TransactionBuilder<
 
   TransactionBuilder& setSenderPublicKey(std::string sender) {
     if (_isSetSenderPublicKey) {
-      throw exception::txbuilder::DuplicateSetArgmentException(
+      throw exception::txbuilder::DuplicateSetArgumentException(
           "Transfer<SimpleAsset>", "senderPublicKey");
     }
     _isSetSenderPublicKey = true;
@@ -44,7 +44,7 @@ class TransactionBuilder<
 
   TransactionBuilder& setReceiverPublicKey(std::string receiverPublicKey) {
     if (_isSetReceiverPublicKey) {
-      throw exception::txbuilder::DuplicateSetArgmentException(
+      throw exception::txbuilder::DuplicateSetArgumentException(
           "Transfer<SimpleAsset>", "receiverPublicKey");
     }
     _isSetReceiverPublicKey = true;
@@ -54,7 +54,7 @@ class TransactionBuilder<
 
   TransactionBuilder& setSimpleAsset(Api::SimpleAsset object) {
     if (_isSetSimpleAsset) {
-      throw exception::txbuilder::DuplicateSetArgmentException(
+      throw exception::txbuilder::DuplicateSetArgumentException(
           "Transfer<SimpleAsset>", "SimpleAsset");
     }
     _isSetSimpleAsset = true;
@@ -65,7 +65,7 @@ class TransactionBuilder<
   Api::Transaction build() {
     const auto unsetMembers = enumerateUnsetMembers();
     if (not unsetMembers.empty()) {
-      throw exception::txbuilder::UnsetBuildArgmentsException(
+      throw exception::txbuilder::UnsetBuildArgumentsException(
           "Transfer<SimpleAsset>", unsetMembers);
     }
     Api::Transaction ret;
