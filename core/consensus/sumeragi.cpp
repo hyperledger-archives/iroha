@@ -212,6 +212,7 @@ void initializeSumeragi() {
               transaction.get()
             )
         );
+
         auto task = [event = std::move(event)]() mutable {
           processTransaction(std::move(event));
         };
@@ -293,8 +294,14 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
   logger::info("sumeragi") << "valid";
   logger::info("sumeragi") << "Add my signature...";
 
+  logger::info("sumeragi") << "tx[0] hash raw";
+  for (auto e: *eventPtr->transactions()->Get(0)->hash()) {
+    std::cout << (char)e;
+  }
+  std::cout << std::endl;
+
   logger::info("sumeragi") << "hash:"
-                           <<  detail::hash(*eventPtr->transactions()->Get(0));
+                           << detail::hash(*eventPtr->transactions()->Get(0));
 
     logger::info("sumeragi")    <<  "pub: "  <<
   config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault("AA");

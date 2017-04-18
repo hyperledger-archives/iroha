@@ -302,7 +302,7 @@ flatbuffers::unique_ptr_t toConsensusEvent(
   }
 
   if (fromTx.hash() != nullptr) {
-    _hash.assign(*fromTx.hash()->begin(), *fromTx.hash()->end());
+    _hash.assign(fromTx.hash()->begin(), fromTx.hash()->end());
   }
   if (fromTx.attachment() != nullptr &&
       fromTx.attachment()->data() != nullptr) {
