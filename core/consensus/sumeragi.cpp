@@ -346,17 +346,16 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
       logger::explore("sumeragi") << "+~~~~~~~~~~~~~~~~~~~~~~~~~~+";
       logger::explore("sumeragi") << "\033[93m0================================"
                                      "================================0\033[0m";
-      // ToDo
-      // logger::explore("sumeragi") <<  "\033[93m0\033[1m"  <<
-      // detail::hash(event.transaction())  <<  "0\033[0m";
+      logger::explore("sumeragi") <<  "\033[93m0\033[1m"  <<
+        detail::hash(*eventPtr->transactions()->Get(0))  <<  "0\033[0m";
       logger::explore("sumeragi") << "\033[93m0================================"
                                      "================================0\033[0m";
 
       detail::printJudge(
           // ToDo Re write
-          1  // transaction_validator::countValidSignatures(event)
-          ,
-          context->numValidatingPeers, context->maxFaulty * 2 + 1);
+          eventPtr->peerSignatures()->size(),
+          context->numValidatingPeers, context->maxFaulty * 2 + 1
+      );
 
       detail::printAgree();
       // Check Merkle roots to see if match for new state
