@@ -98,8 +98,9 @@ void receive(Verify::CallBackFunc&& callback) {
 
 bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
   // ToDo: Extract transaction from consensus event.
-
+  logger::info("Connection with grpc") << "Send!";
   if (config::PeerServiceConfig::getInstance().isExistIP(ip)) {
+    logger::info("Connection with grpc") << "isExistIP " << ip;
     auto channel =
         grpc::CreateChannel(ip + ":50051", grpc::InsecureChannelCredentials());
     auto stub = ::iroha::Sumeragi::NewStub(channel);
@@ -148,6 +149,7 @@ bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
 
     flatbuffers::BufferRef<::iroha::Response> responseRef;
 
+    logger::info("Connection with grpc") << "isExistIP" << ip;
     // The actual RPC.
     auto status = stub->Torii(&context, transactionRef, &responseRef);
 
@@ -159,6 +161,7 @@ bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
     }
     return true;
   }
+  logger::info("Connection with grpc") << "is not ExistIP__" << ip;
   return false;
 }
 

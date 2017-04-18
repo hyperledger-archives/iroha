@@ -371,6 +371,36 @@ flatbuffers::unique_ptr_t addSignature(
         // Tempolary implementation: Currently, #(tx) is one.
         auto tx = event.transactions()->Get(0);
         const auto& aSignature = tx->signatures()->Get(0);
+        const auto& aPeerSignatures = event.peerSignatures();
+
+        for(const auto& aPeerSig: *event.peerSignatures()) {
+            std::vector<uint8_t> aPeerSigBlob(
+                    aPeerSig->signature()->begin(),
+                    aPeerSig->signature()->end()
+            );
+            peerSignatures.push_back(
+                    ::iroha::CreateSignatureDirect(
+                            fbbConsensusEvent,
+                            aSignature->publicKey()->c_str(),
+                            &aPeerSigBlob,
+                            1234567
+                    )
+            );
+        }
+
+        std::vector<uint8_t> aNewPeerSigBlob;
+        for(auto& c: signature){
+            aNewPeerSigBlob.push_back(c);
+        }
+        peerSignatures.push_back(
+            ::iroha::CreateSignatureDirect(
+                fbbConsensusEvent,
+                aSignature->publicKey()->c_str(),
+                &aNewPeerSigBlob,
+                1234567
+            )
+        );
+
 
         std::vector<uint8_t> signatureBlob(
             aSignature->signature()->begin(),
@@ -428,7 +458,6 @@ flatbuffers::unique_ptr_t addSignature(
         );
 
         fbbConsensusEvent.Finish(consensusEventOffset);
-
         return fbbConsensusEvent.ReleaseBufferPointer();
     }
 

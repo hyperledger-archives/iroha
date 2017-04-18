@@ -29,15 +29,37 @@ std::vector<uint8_t> CreateAccountBuffer(
     const char* publicKey, const char* alias,
     const std::vector<flatbuffers::Offset<flatbuffers::String>>& signatories,
     uint16_t useKeys) {
-  flatbuffers::FlatBufferBuilder fbbAccount;
-  auto accountOffset = ::iroha::CreateAccountDirect(fbbAccount, publicKey,
-                                                    "alias", &signatories, 1);
-  fbbAccount.Finish(accountOffset);
+  if(&signatories != nullptr) {
+    flatbuffers::FlatBufferBuilder fbbAccount;
+    auto accountOffset = ::iroha::CreateAccountDirect(
+            fbbAccount,
+            publicKey,
+            alias,
+            &signatories,
+            1
+    );
+      fbbAccount.Finish(accountOffset);
 
-  auto buf = fbbAccount.GetBufferPointer();
-  std::vector<uint8_t> buffer;
-  buffer.assign(buf, buf + fbbAccount.GetSize());
-  return buffer;
+      auto buf = fbbAccount.GetBufferPointer();
+      std::vector<uint8_t> buffer;
+      buffer.assign(buf, buf + fbbAccount.GetSize());
+      return buffer;
+  }else{
+    flatbuffers::FlatBufferBuilder fbbAccount;
+    auto accountOffset = ::iroha::CreateAccountDirect(
+            fbbAccount,
+            publicKey,
+            alias,
+            nullptr,
+            1
+    );
+    fbbAccount.Finish(accountOffset);
+
+    auto buf = fbbAccount.GetBufferPointer();
+    std::vector<uint8_t> buffer;
+    buffer.assign(buf, buf + fbbAccount.GetSize());
+    return buffer;
+  }
 }
 
 // } // namespace nested_flatbuffer_service {
