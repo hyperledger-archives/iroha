@@ -64,52 +64,14 @@ static ThreadPool pool(ThreadPoolOptions{
 
 namespace detail {
 
-std::string hash(const std::unique_ptr<Transaction>& tx) {
+std::string hash(const Transaction& tx) {
   // ToDo We should make tx.to_string()
-  return hash::sha3_256_hex("");
+  return hash::sha3_256_hex(flatbuffer_service::toString(tx));
 };
 
-flatbuffers::unique_ptr_t addSignature(flatbuffers::unique_ptr_t&& event_,
-                                       const std::string& publicKey,
-                                       const std::string& signature) {
-  auto event = flatbuffers::GetRoot<::iroha::ConsensusEvent>(event_.get());
-
-  // Copy
-  flatbuffers::FlatBufferBuilder fbb;
-  std::unique_ptr<std::vector<flatbuffers::Offset<Signature>>> signatures(
-      new std::vector<flatbuffers::Offset<Signature>>());
-  std::unique_ptr<std::vector<flatbuffers::Offset<Transaction>>> transactions(
-      new std::vector<flatbuffers::Offset<Transaction>>());
-
-  if (event->peerSignatures() != nullptr) {
-    for (auto&& sig : *event->peerSignatures()) {
-      signatures->emplace_back(reinterpret_cast<flatbuffers::uoffset_t>(sig));
-    }
-  }
-  if (event->transactions() != nullptr) {
-    for (auto&& tx : *event->transactions()) {
-      transactions->emplace_back(tx);
-    }
-  }
-  // Add signature
-  std::vector<uint8_t>* encodedSignaturePtr = new std::vector<uint8_t>();
-  auto encodedSignature = base64::decode(signature);
-  for (auto&& c : encodedSignature) {
-    encodedSignaturePtr->push_back(c);
-  }
-  signatures->emplace_back(iroha::CreateSignatureDirect(fbb, publicKey.c_str(),
-                                                        encodedSignaturePtr));
-
-  // Create
-  auto event_buf = iroha::CreateConsensusEventDirect(fbb, signatures.get(),
-                                                     transactions.get());
-  fbb.Finish(event_buf);
-
-  return fbb.ReleaseBufferPointer();
-}
-
 bool eventSignatureIsEmpty(const ::iroha::ConsensusEvent& event) {
-  if (event.peerSignatures() != nullptr) {
+  logger::info("sumeragi") << "if " << (event.peerSignatures() != nullptr);
+  if (&event != nullptr && event.peerSignatures() != nullptr) {
     return event.peerSignatures()->size() == 0;
   } else {
     return 0;
@@ -188,7 +150,6 @@ struct Context {
           << "Add " << p["ip"].get<std::string>() << " to peerList";
     }
 
-
     this->numValidatingPeers = this->validatingPeers.size();
     // maxFaulty = Default to approx. 1/3 of the network.
     this->maxFaulty =
@@ -248,7 +209,9 @@ void initializeSumeragi() {
 
         flatbuffers::unique_ptr_t event = flatbuffer_service::toConsensusEvent(
             *flatbuffers::GetRoot<::iroha::Transaction>(
-                transaction.get()));
+              transaction.get()
+            )
+        );
         auto task = [event = std::move(event)]() mutable {
           processTransaction(std::move(event));
         };
@@ -291,7 +254,6 @@ void initializeSumeragi() {
         // pool.process(std::move(task));
 
         // Copy ConsensusEvent
-
         auto task = [eventUniqPtr = std::move(eventUniqPtr)]() mutable {
           processTransaction(std::move(eventUniqPtr));
         };
@@ -328,51 +290,54 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
   auto eventPtr = flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventUniqPtr.get());
 
   logger::info("sumeragi") << "processTransaction";
-  // if (!transaction_validator::isValid(event->getTx())) {
-  //    return; //TODO-futurework: give bad trust rating to nodes that sent an
-  //    invalid event
-  //}
   logger::info("sumeragi") << "valid";
   logger::info("sumeragi") << "Add my signature...";
 
   logger::info("sumeragi") << "hash:"
-                           << "";  // detail::hash(event.transaction());
-  /*
-  logger::info("sumeragi")    <<  "pub: "  <<
-  config::PeerServiceConfig::getInstance().getMyPublicKey();
+                           <<  detail::hash(*eventPtr->transactions()->Get(0));
+
+    logger::info("sumeragi")    <<  "pub: "  <<
+  config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault("AA");
   logger::info("sumeragi")    <<  "priv:"  <<
-  config::PeerServiceConfig::getInstance().getMyPrivateKey();
+  config::PeerServiceConfig::getInstance().getMyPrivateKeyWithDefault("AA");
   logger::info("sumeragi")    <<  "sig: "  <<  signature::sign(
-          // ToDo We should add it.
-          //detail::hash(event.transaction()),
-          "",
-          config::PeerServiceConfig::getInstance().getMyPublicKey(),
-          config::PeerServiceConfig::getInstance().getMyPrivateKey()
+      // ToDo We should add it.
+      detail::hash(*eventPtr->transactions()->Get(0)),
+      config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault("AA"),
+      config::PeerServiceConfig::getInstance().getMyPrivateKeyWithDefault("AA")
   );
-  //detail::printIsSumeragi(context->isSumeragi);
-  // Really need? blow "if statement" will be false anytime.
-  event = detail::addSignature(std::move(event),
-                               config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                               signature::sign(
-                                       // ToDo We should add it.
-                                       // detail::hash(event.transaction()))
-                                       "",
-                                       config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                                       config::PeerServiceConfig::getInstance().getMyPrivateKey()
-                               )
-  );
-  */
+
+    {
+        logger::info("sumeragi") << "Add basically own signature";
+        if (eventPtr->peerSignatures() != nullptr) {
+            logger::info("sumeragi") << "Length: " << eventPtr->peerSignatures()->size();
+        }
+        // This is a new event, so we should verify, sign, and broadcast it
+        auto newEventUniqPtr = flatbuffer_service::addSignature(
+                *eventPtr,
+                config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault(
+                        "Invalid"),  // ??
+                ""
+        );
+        eventPtr = flatbuffers::GetRoot<::iroha::ConsensusEvent>(newEventUniqPtr.get());
+        if (eventPtr->peerSignatures() != nullptr) {
+            logger::info("sumeragi") << "New Length: " << eventPtr->peerSignatures()->size();
+        }
+    }
+
+    logger::info("sumeragi") << "if eventSignatureIsEmpty";
   if (detail::eventSignatureIsEmpty(*eventPtr) && context->isSumeragi) {
     logger::info("sumeragi") << "signatures.empty() isSumragi";
     // Determine the order for processing this event
     // event.set_order(getNextOrder());//TODO getNexOrder is always return 0l;
     // logger::info("sumeragi") << "new  order:" << event.order();
   } else if (!detail::eventSignatureIsEmpty(*eventPtr)) {
+    logger::info("sumeragi") << "Signature exists";
     // Check if we have at least 2f+1 signatures needed for Byzantine fault
     // tolerance ToDo re write
     if (eventPtr->peerSignatures() != nullptr &&
         eventPtr->peerSignatures()->size() >= context->maxFaulty * 2 + 1) {
-      logger::info("sumeragi") << "Signature exists";
+      logger::info("sumeragi") << "Signature exists and sig > 2*f + 1";
 
       logger::explore("sumeragi") << "0--------------------------0";
       logger::explore("sumeragi") << "+~~~~~~~~~~~~~~~~~~~~~~~~~~+";
@@ -406,18 +371,24 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
       logger::explore("sumeragi") << "commit count:" << context->commitedCount;
       // ToDo
       // event.set_status("commited");
-      // connection::iroha::Sumeragi::Verify::sendAll(std::move(event));
 
     } else {
+      logger::info("sumeragi") << "Signature exists and sig not enough";
+       if(eventPtr->peerSignatures() != nullptr) {
+           logger::info("sumeragi") <<"Length: "<< eventPtr->peerSignatures()->size();
+       }
       // This is a new event, so we should verify, sign, and broadcast it
-      auto newEventUniqPtr = detail::addSignature(
-          std::move(eventUniqPtr),
+      auto newEventUniqPtr = flatbuffer_service::addSignature(
+          *eventPtr,
           config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault(
               "Invalid"),  // ??
-          "");
-
-      auto eventPtr = flatbuffers::GetRoot<::iroha::ConsensusEvent>(newEventUniqPtr.get());
-      const auto& event = *eventPtr;
+          ""
+      );
+      auto newEventPtr = flatbuffers::GetRoot<::iroha::ConsensusEvent>(newEventUniqPtr.get());
+      if(newEventPtr->peerSignatures() != nullptr) {
+          logger::info("sumeragi") <<"New Length: "<< newEventPtr->peerSignatures()->size();
+      }
+      const auto& event = *newEventPtr;
 
       logger::info("sumeragi")
           << "tail public key is "
@@ -443,7 +414,9 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
             << "Send All! sig:[" << event.peerSignatures()->size() << "]";
 
         connection::iroha::SumeragiImpl::Verify::sendAll(
-            event);  //
+            event
+        );
+          //
       }
     }
   }
