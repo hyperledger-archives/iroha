@@ -4,7 +4,7 @@
 #ifndef FLATBUFFERS_GENERATED_ENDPOINT_IROHA_H_
 #define FLATBUFFERS_GENERATED_ENDPOINT_IROHA_H_
 
-#include "flatbuffers/flatbuffers.h"
+#include <flatbuffers/flatbuffers.h>
 
 #include "account_generated.h"
 #include "asset_generated.h"
