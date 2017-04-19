@@ -52,7 +52,7 @@ int main() {
   std::thread check_server([&](){
       std::string cmd;
       while (running){
-          std::cin >> cmd;logger::info("main") << "run ";
+          std::cin >> cmd;
           if(cmd == "quit"){
               logger::info("main") << "will halt ";
               connection::finish();
