@@ -101,73 +101,111 @@ bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
   logger::info("Connection with grpc") << "Send!";
   if (config::PeerServiceConfig::getInstance().isExistIP(ip)) {
     logger::info("Connection with grpc") << "isExistIP " << ip;
+
     auto channel =
         grpc::CreateChannel(ip + ":50051", grpc::InsecureChannelCredentials());
     auto stub = ::iroha::Sumeragi::NewStub(channel);
 
     grpc::ClientContext context;
+    flatbuffers::FlatBufferBuilder fbbConsensusEvent;
+    {
+        // At first, peerSignatures is empty. (Is this right?)
+        std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures;
+        std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions;
 
-    auto publicKey = "SamplePublicKey";
+        // Tempolary implementation: Currently, #(tx) is one.
+        auto tx = event.transactions()->Get(0);
+        const auto& aSignature = tx->signatures()->Get(0);
+        const auto& aPeerSignatures = event.peerSignatures();
 
-    // Build a request with the name set.
-    flatbuffers::FlatBufferBuilder fbbTransaction;
+        for(const auto& aPeerSig: *event.peerSignatures()) {
+            std::vector<uint8_t> aPeerSigBlob(
+                    aPeerSig->signature()->begin(),
+                    aPeerSig->signature()->end()
+            );
+            peerSignatures.push_back(
+                    ::iroha::CreateSignatureDirect(
+                            fbbConsensusEvent,
+                            aPeerSig->publicKey()->c_str(),
+                            &aPeerSigBlob,
+                            1234567
+                    )
+            );
+        }
 
-    // TODO: valid command
-    // Tempolary implementation. Currently, use CreaeteAccount command.
-    auto command = [&] {
-      std::vector<std::string> signatories = {
-        "publicKey1"
-      };
+        {
+            std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
 
-      auto accountBuf = flatbuffer_service::CreateAccountBuffer(
-          publicKey, "alias", signatories, 1);
+            std::vector<uint8_t> signatureBlob(
+                    aSignature->signature()->begin(),
+                    aSignature->signature()->end()
+            );
 
-      return ::iroha::CreateAccountAddDirect(fbbTransaction, &accountBuf);
-    }();
+            signatures.push_back(
+                    ::iroha::CreateSignatureDirect(
+                            fbbConsensusEvent,
+                            aSignature->publicKey()->c_str(),
+                            &signatureBlob,
+                            1234567
+                    )
+            );
 
-    // TODO: Tempolary implementation. Use 'sign' function
-    std::vector<uint8_t> signature;
-    for (auto e : std::string("hash + timestamp + pubkey ?")) {
-      signature.push_back(e);
+            std::vector<uint8_t> hashes;
+            if (tx->hash() != nullptr) {
+                hashes.assign(
+                        tx->hash()->begin(),
+                        tx->hash()->end()
+                );
+            }
+
+            flatbuffers::Offset<::iroha::Attachment> attachmentOffset;
+            std::vector<uint8_t> data;
+            if (tx->attachment() != nullptr &&
+                tx->attachment()->data() != nullptr &&
+                tx->attachment()->mime() != nullptr
+                    ) {
+                data.assign(
+                        tx->attachment()->data()->begin(),
+                        tx->attachment()->data()->end()
+                );
+
+                attachmentOffset = ::iroha::CreateAttachmentDirect(
+                        fbbConsensusEvent,
+                        tx->attachment()->mime()->c_str(),
+                        &data
+                );
+            }
+
+            // TODO: Currently, #(transaction) is one.
+            transactions.push_back(
+                ::iroha::CreateTransactionDirect(
+                    fbbConsensusEvent,
+                    tx->creatorPubKey()->c_str(),
+                    tx->command_type(),
+                    flatbuffer_service::CreateCommandDirect(
+                        fbbConsensusEvent,
+                        tx->command(),
+                        tx->command_type()
+                    ),
+                    &signatures,
+                    &hashes,
+                    attachmentOffset
+                )
+            );
+        }
+        auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
+                fbbConsensusEvent,
+                &peerSignatures,
+                &transactions,
+                event.code()
+        );
+
+        fbbConsensusEvent.Finish(consensusEventOffset);
     }
 
-    std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
-
-    signatures.push_back(::iroha::CreateSignatureDirect(
-        fbbTransaction, publicKey, &signature,
-        1234567  // TODO: timestamp
-        ));
-
-      std::vector<flatbuffers::Offset<::iroha::Transaction>> transactionOffsetVec;
-      std::vector<flatbuffers::Offset<::iroha::Signature>>   peerSignatureOffsetVec;
-      transactionOffsetVec.emplace_back(::iroha::CreateTransactionDirect(
-        fbbTransaction, publicKey, ::iroha::Command::Command_AccountAdd,
-        command.Union(), &signatures, nullptr,
-        ::iroha::CreateAttachmentDirect(fbbTransaction, nullptr, nullptr))
-      );
-      for(const auto& aPeerSig: *event.peerSignatures()) {
-          std::vector<uint8_t> aPeerSigBlob(
-                  aPeerSig->signature()->begin(),
-                  aPeerSig->signature()->end()
-          );
-          peerSignatureOffsetVec.push_back(
-              ::iroha::CreateSignatureDirect(
-                  fbbTransaction,
-                  aPeerSig->publicKey()->c_str(),
-                  &aPeerSigBlob,
-                  1234567
-              )
-          );
-      }
-
-
-    auto consensusEventOffset = ::iroha::CreateConsensusEvent(
-        fbbTransaction, fbbTransaction.CreateVector(peerSignatureOffsetVec), fbbTransaction.CreateVector(transactionOffsetVec)
-    );
-    fbbTransaction.Finish(consensusEventOffset);
-
     auto eventRef = flatbuffers::BufferRef<::iroha::ConsensusEvent>(
-        fbbTransaction.GetBufferPointer(), fbbTransaction.GetSize());
+         fbbConsensusEvent.GetBufferPointer(), fbbConsensusEvent.GetSize()
+    );
 
     flatbuffers::BufferRef<::iroha::Response> responseRef;
 
@@ -189,14 +227,14 @@ bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
 
 bool sendAll(const ::iroha::ConsensusEvent& event) {
   auto receiver_ips = config::PeerServiceConfig::getInstance().getGroup();
-  for (const auto& p : receiver_ips) {
-    if (p["ip"].get<std::string>() !=
-        config::PeerServiceConfig::getInstance().getMyIpWithDefault("AA")) {
-      logger::info("connection") << "Send to " << p["ip"].get<std::string>();
-      send(p["ip"].get<std::string>(), event);
-    }
-  }
-  return true;
+      for (const auto& p : receiver_ips) {
+        if (p["ip"].get<std::string>() !=
+            config::PeerServiceConfig::getInstance().getMyIpWithDefault("AA")) {
+          logger::info("connection") << "Send to " << p["ip"].get<std::string>();
+          send(p["ip"].get<std::string>(), event);
+        }
+      }
+      return true;
 }
 }
 }
@@ -358,30 +396,29 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
                 flatbuffers::BufferRef<Response>* response) override {
     // バッファの一部分を参照している。これをreceiverにmoveした場合、バッファの実態の解放時にLeakする
     //    const ::iroha::ConsensusEvent* event = request->GetRoot();
-
     assert(request->GetRoot()->peerSignatures() != nullptr);
 
     flatbuffers::FlatBufferBuilder fbbConsensusEvent;
+    fbbConsensusEvent.Clear();
 
     std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures;
     for(const auto& aPeerSig: *request->GetRoot()->peerSignatures()) {
-      std::vector<uint8_t> aPeerSigBlob(
-          aPeerSig->signature()->begin(),
-          aPeerSig->signature()->end()
-      );
-      peerSignatures.push_back(
-          ::iroha::CreateSignatureDirect(
-              fbbConsensusEvent,
-              aPeerSig->publicKey()->c_str(),
-              &aPeerSigBlob,
-              1234567
-          )
-      );
+        std::vector<uint8_t> aPeerSigBlob(
+                aPeerSig->signature()->begin(),
+                aPeerSig->signature()->end()
+        );
+        peerSignatures.push_back(
+                ::iroha::CreateSignatureDirect(
+                        fbbConsensusEvent,
+                        aPeerSig->publicKey()->c_str(),
+                        &aPeerSigBlob,
+                        1234567
+                )
+        );
     }
 
-
     auto tx = request->GetRoot()->transactions()->Get(0);
-      std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
+    std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
 
     if(tx->signatures() != nullptr){
       std::vector<uint8_t> signatureBlob(
@@ -432,9 +469,9 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
             tx->creatorPubKey()->c_str(),
             tx->command_type(),
             flatbuffer_service::CreateCommandDirect(
-                    fbbConsensusEvent,
-                    tx->command(),
-                    tx->command_type()
+                fbbConsensusEvent,
+                tx->command(),
+                tx->command_type()
             ),
             &signatures,
             &hashes,
@@ -443,24 +480,24 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
     );
 
     fbbConsensusEvent.Finish(::iroha::CreateConsensusEventDirect(
-        fbbConsensusEvent, &peerSignatures, &transactions
+        fbbConsensusEvent, &peerSignatures, &transactions, request->GetRoot()->code()
     ));
 
     const std::string from = "from";
     iroha::SumeragiImpl::Verify::receiver.invoke(
-        from, fbbConsensusEvent.ReleaseBufferPointer()
+        from, std::move(fbbConsensusEvent.ReleaseBufferPointer())
     );
 
-      fbbResponse.Clear();
+    fbbResponse.Clear();
+    auto responseOffset = ::iroha::CreateResponseDirect(
+       fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0
+    );
+    fbbResponse.Finish(responseOffset);
 
-      auto responseOffset = ::iroha::CreateResponseDirect(
-              fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);
-      fbbResponse.Finish(responseOffset);
-
-      *response = flatbuffers::BufferRef<::iroha::Response>(
-          fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
-
-      return Status::OK;
+    *response = flatbuffers::BufferRef<::iroha::Response>(
+          fbbResponse.GetBufferPointer(), fbbResponse.GetSize()
+    );
+    return Status::OK;
   }
 
   Status Torii(ServerContext* context,
