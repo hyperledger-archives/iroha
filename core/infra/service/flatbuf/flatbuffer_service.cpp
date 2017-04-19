@@ -31,6 +31,7 @@ namespace flatbuffer_service {
  * ToDo If transaction scheme is changed, We changes this code.
  */
 std::string toString(const iroha::Transaction& tx){
+
     assert(tx.creatorPubKey() != nullptr);
     std::string res = "";
     res += "creatorPubKey:" + tx.creatorPubKey()->str() + ",\n";
@@ -41,7 +42,7 @@ std::string toString(const iroha::Transaction& tx){
             assert(s->signature() != nullptr);
 
             res += "  [\n    publicKey:" + s->publicKey()->str() + ",\n";
-            res += "    signature:" + std::string(reinterpret_cast<const char*>(s->signature()->Data())) + ",\n";
+            res += "    signature:" + std::string(s->signature()->begin(), s->signature()->end()) + ",\n";
             res += "    timestamp:" + std::to_string(s->timestamp()) +  "\n  ]\n";
         }
         res += "]\n";
@@ -51,8 +52,8 @@ std::string toString(const iroha::Transaction& tx){
         assert(tx.attachment()->data() != nullptr);
 
         res += "attachment:[\n";
-        res += " mime:" + std::string(reinterpret_cast<const char*>(tx.attachment()->mime()->Data())) + ",\n";
-        res += " data:" + std::string(reinterpret_cast<const char*>(tx.attachment()->data()->Data())) + ",\n";
+        res += " mime:" + std::string(tx.attachment()->mime()->begin(), tx.attachment()->mime()->end()) + ",\n";
+        res += " data:" + std::string(tx.attachment()->data()->begin(), tx.attachment()->data()->end()) + ",\n";
         res += "]\n";
     }
 
@@ -267,7 +268,6 @@ std::string toString(const iroha::Transaction& tx){
         std::string res = "ChaincodeExecute[\n";
         res += "]\n";
     };
-
     res += command_to_strings[tx.command_type()](tx.command());
     return res;
 }
