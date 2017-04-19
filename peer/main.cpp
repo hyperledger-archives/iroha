@@ -56,7 +56,7 @@ int main() {
           if(cmd == "quit"){
               logger::info("main") << "will halt ";
               connection::finish();
-              http_thread.join();
+              http_thread.detach();
               return;
           }
       }
