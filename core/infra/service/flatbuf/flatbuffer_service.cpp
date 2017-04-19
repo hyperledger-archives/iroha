@@ -194,8 +194,10 @@ std::string toString(const iroha::Transaction& tx){
         std::string res = "AccountAdd[\n";
         res += "    account:alias:" + cmd->account_nested_root()->alias()->str() + ",\n";
         res += "    account:pubKey:" + cmd->account_nested_root()->pubKey()->str() + ",\n";
-        for(const auto& s: *cmd->account_nested_root()->signatories()){
-            res += "        signature[" + s->str() + "]\n";
+        if(cmd->account_nested_root()->signatories() != nullptr) {
+            for (const auto &s: *cmd->account_nested_root()->signatories()) {
+                res += "        signature[" + s->str() + "]\n";
+            }
         }
         res += "    account:useKeys:" + std::to_string(cmd->account_nested_root()->useKeys())+ "\n";
         res += "]\n";
@@ -207,8 +209,10 @@ std::string toString(const iroha::Transaction& tx){
         std::string res = "AccountRemove[\n";
         res += "    account:alias:" + cmd->account_nested_root()->alias()->str() + ",\n";
         res += "    account:pubKey:" + cmd->account_nested_root()->pubKey()->str() + ",\n";
-        for(const auto& s: *cmd->account_nested_root()->signatories()){
-            res += "        signature[" + s->str() + "]\n";
+        if(cmd->account_nested_root()->signatories() != nullptr) {
+            for (const auto &s: *cmd->account_nested_root()->signatories()) {
+                res += "        signature[" + s->str() + "]\n";
+            }
         }
         res += "    account:useKeys:" + std::to_string(cmd->account_nested_root()->useKeys())+ "\n";
         res += "]\n";
@@ -240,7 +244,7 @@ std::string toString(const iroha::Transaction& tx){
         const iroha::AccountSetUseKeys* cmd = static_cast<const iroha::AccountSetUseKeys *>(command);
 
         std::string res = "AccountSetUseKeys[\n";
-        for(const auto& a: * cmd->accounts()){
+        for(const auto& a: *cmd->accounts()){
             res += "        account[" + a->str() + "]\n";
         }
         res += "    account:useKeys:" + std::to_string(cmd->useKeys())+ "\n";
@@ -348,7 +352,8 @@ flatbuffers::unique_ptr_t toConsensusEvent(
   auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
     fbb,
     &signatures,
-    &transactions
+    &transactions,
+    ::iroha::Code_UNDECIDED
   );
 
   fbb.Finish(consensusEventOffset);
@@ -362,7 +367,7 @@ flatbuffers::unique_ptr_t addSignature(
         const std::string &signature
 ){
 
-        flatbuffers::FlatBufferBuilder fbbConsensusEvent;
+        flatbuffers::FlatBufferBuilder fbbConsensusEvent(16);
 
         // At first, peerSignatures is empty. (Is this right?)
         std::vector<flatbuffers::Offset<iroha::Signature>> peerSignatures;
@@ -464,7 +469,108 @@ flatbuffers::unique_ptr_t addSignature(
         auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
             fbbConsensusEvent,
             &peerSignatures,
-            &transactions
+            &transactions,
+            event.code()
+        );
+
+        fbbConsensusEvent.Finish(consensusEventOffset);
+        return fbbConsensusEvent.ReleaseBufferPointer();
+    }
+
+    flatbuffers::unique_ptr_t makeCommit(
+            const iroha::ConsensusEvent &event
+    ){
+
+        flatbuffers::FlatBufferBuilder fbbConsensusEvent(16);
+
+        // At first, peerSignatures is empty. (Is this right?)
+        std::vector<flatbuffers::Offset<iroha::Signature>> peerSignatures;
+        std::vector<flatbuffers::Offset<iroha::Signature>> signatures;
+
+        // Tempolary implementation: Currently, #(tx) is one.
+        auto tx = event.transactions()->Get(0);
+        const auto& aSignature = tx->signatures()->Get(0);
+        const auto& aPeerSignatures = event.peerSignatures();
+
+        for(const auto& aPeerSig: *event.peerSignatures()) {
+            std::vector<uint8_t> aPeerSigBlob(
+                    aPeerSig->signature()->begin(),
+                    aPeerSig->signature()->end()
+            );
+            peerSignatures.push_back(
+                    ::iroha::CreateSignatureDirect(
+                            fbbConsensusEvent,
+                            aPeerSig->publicKey()->c_str(),
+                            &aPeerSigBlob,
+                            1234567
+                    )
+            );
+        }
+
+        std::vector<uint8_t> signatureBlob(
+                aSignature->signature()->begin(),
+                aSignature->signature()->end()
+        );
+
+        signatures.push_back(
+                ::iroha::CreateSignatureDirect(
+                        fbbConsensusEvent,
+                        aSignature->publicKey()->c_str(),
+                        &signatureBlob,
+                        1234567
+                )
+        );
+
+        std::vector<uint8_t> hashes;
+        if(tx->hash() != nullptr){
+            hashes.assign(
+                    tx->hash()->begin(),
+                    tx->hash()->end()
+            );
+        }
+
+        flatbuffers::Offset<::iroha::Attachment> attachmentOffset;
+        std::vector<uint8_t> data;
+        if(tx->attachment() != nullptr &&
+           tx->attachment()->data() != nullptr &&
+           tx->attachment()->mime() != nullptr
+                ){
+            data.assign(
+                    tx->attachment()->data()->begin(),
+                    tx->attachment()->data()->end()
+            );
+
+            attachmentOffset = ::iroha::CreateAttachmentDirect(
+                    fbbConsensusEvent,
+                    tx->attachment()->mime()->c_str(),
+                    &data
+            );
+        }
+
+        std::vector<flatbuffers::Offset<iroha::Transaction>> transactions;
+
+        // TODO: Currently, #(transaction) is one.
+        transactions.push_back(
+            ::iroha::CreateTransactionDirect(
+                fbbConsensusEvent,
+                tx->creatorPubKey()->c_str(),
+                tx->command_type(),
+                flatbuffer_service::CreateCommandDirect(
+                    fbbConsensusEvent,
+                    tx->command(),
+                    tx->command_type()
+                ),
+                &signatures,
+                &hashes,
+                attachmentOffset
+            )
+        );
+
+        auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
+                fbbConsensusEvent,
+                &peerSignatures,
+                &transactions,
+                iroha::Code_COMMIT
         );
 
         fbbConsensusEvent.Finish(consensusEventOffset);

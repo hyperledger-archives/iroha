@@ -37,5 +37,8 @@ flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent &event,
                                        const std::string &signature);
 
 flatbuffers::unique_ptr_t toConsensusEvent(const iroha::Transaction &tx);
+
+flatbuffers::unique_ptr_t makeCommit(const iroha::ConsensusEvent &event);
+
 };
 #endif  // IROHA_FLATBUFFER_SERVICE_H
