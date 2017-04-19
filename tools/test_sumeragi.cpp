@@ -108,15 +108,12 @@ int main(int argc,char* argv[]){
     */
 
     // The actual RPC.
-
     auto status = stub->Torii(&context, tx, &response);
-
     if (status.ok()) {
         auto msg = response.GetRoot()->message();
         std::cout << "RPC response: " << msg->str() << std::endl;
     } else {
         std::cout << "RPC failed" << std::endl;
     }
-    
     return 0;
 }
