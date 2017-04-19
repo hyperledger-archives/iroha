@@ -4,6 +4,7 @@ ADD_LIBRARY(executor STATIC
 
 target_link_libraries(executor
     logger
+    flatbuffers
 )
 
 #ADD_LIBRARY(izanami STATIC
