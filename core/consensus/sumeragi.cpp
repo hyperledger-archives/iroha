@@ -208,10 +208,7 @@ void initializeSumeragi() {
         logger::info("sumeragi") << "receive!";
 
         flatbuffers::unique_ptr_t event = flatbuffer_service::toConsensusEvent(
-            *flatbuffers::GetRoot<::iroha::Transaction>(
-              transaction.get()
-            )
-        );
+            *flatbuffers::GetRoot<::iroha::Transaction>(transaction.get()));
 
         auto task = [event = std::move(event)]() mutable {
           processTransaction(std::move(event));
@@ -233,7 +230,8 @@ void initializeSumeragi() {
   connection::iroha::SumeragiImpl::Verify::receive(
       [](const std::string& from, flatbuffers::unique_ptr_t&& eventUniqPtr) {
 
-        auto eventPtr = flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventUniqPtr.get());
+        auto eventPtr =
+            flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventUniqPtr.get());
 
         logger::info("sumeragi") << "receive!";  // ToDo rewrite
         logger::info("sumeragi") << "received message! sig:["
@@ -292,15 +290,15 @@ std::uint64_t getNextOrder() {
 
 
 void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
-
-  auto eventPtr = flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventUniqPtr.get());
+  auto eventPtr =
+      flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventUniqPtr.get());
 
   logger::info("sumeragi") << "processTransaction";
   logger::info("sumeragi") << "valid";
   logger::info("sumeragi") << "Add my signature...";
 
   logger::info("sumeragi") << "tx[0] hash raw";
-  for (auto e: *eventPtr->transactions()->Get(0)->hash()) {
+  for (auto e : *eventPtr->transactions()->Get(0)->hash()) {
     std::cout << (char)e;
   }
   std::cout << std::endl;
@@ -345,7 +343,8 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
     // event.set_order(getNextOrder());//TODO getNexOrder is always return 0l;
     // logger::info("sumeragi") << "new  order:" << event.order();
   } else if (!detail::eventSignatureIsEmpty(*eventPtr)) {
-    logger::info("sumeragi") << "Signature exists and peer size is " << eventPtr->peerSignatures()->size();
+    logger::info("sumeragi") << "Signature exists and peer size is "
+                             << eventPtr->peerSignatures()->size();
     // Check if we have at least 2f+1 signatures needed for Byzantine fault
     // tolerance ToDo re write
     if (
@@ -408,11 +407,12 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
           *eventPtr,
           config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault(
               "Invalid"),  // ??
-          ""
-      );
-      auto newEventPtr = flatbuffers::GetRoot<::iroha::ConsensusEvent>(newEventUniqPtr.get());
-      if(newEventPtr->peerSignatures() != nullptr) {
-          logger::info("sumeragi") <<"New Length: "<< newEventPtr->peerSignatures()->size();
+          "");
+      auto newEventPtr =
+          flatbuffers::GetRoot<::iroha::ConsensusEvent>(newEventUniqPtr.get());
+      if (newEventPtr->peerSignatures() != nullptr) {
+        logger::info("sumeragi")
+            << "New Length: " << newEventPtr->peerSignatures()->size();
       }
       */
       const auto& event = *eventPtr;
@@ -440,10 +440,8 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
         logger::info("sumeragi")
             << "Send All! sig:[" << event.peerSignatures()->size() << "]";
 
-        connection::iroha::SumeragiImpl::Verify::sendAll(
-            event
-        );
-          //
+        connection::iroha::SumeragiImpl::Verify::sendAll(event);
+        //
       }
     }
   }
@@ -515,7 +513,6 @@ void determineConsensusOrder() {
   tmp_deq.push_back(std::move(context->validatingPeers[0]));
   context->validatingPeers.clear();
   context->validatingPeers = std::move(tmp_deq);
-
 
   std::sort(context->validatingPeers.begin(), context->validatingPeers.end(),
         [](const std::unique_ptr<peer::Node> &lhs,

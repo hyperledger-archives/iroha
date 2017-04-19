@@ -503,11 +503,6 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
   Status Torii(ServerContext* context,
                const flatbuffers::BufferRef<Transaction>* transactionRef,
                flatbuffers::BufferRef<Response>* responseRef) override {
-    fbbResponse.Clear();
-
-    auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);
-    fbbResponse.Finish(responseOffset);
 
     logger::debug("SumeragiConnectionServiceImpl::Torii") << "RPC works";
 
@@ -599,6 +594,12 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
 
     // This reference remains until next calling
     // SumeragiConnectionServiceImpl::Torii() method.
+    fbbResponse.Clear();
+
+    auto responseOffset = ::iroha::CreateResponseDirect(
+        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);
+    fbbResponse.Finish(responseOffset);
+
     *responseRef = flatbuffers::BufferRef<::iroha::Response>(
         fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
 
