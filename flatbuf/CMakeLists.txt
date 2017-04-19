@@ -13,4 +13,5 @@ target_link_libraries(endpoint_fbs
     grpc
     pthread
     dl
+    flatbuffers
 )
