@@ -306,8 +306,8 @@ flatbuffers::unique_ptr_t toConsensusEvent(
   }
   if (fromTx.attachment() != nullptr &&
       fromTx.attachment()->data() != nullptr) {
-    data.assign(*fromTx.attachment()->data()->begin(),
-                *fromTx.attachment()->data()->end());
+    data.assign(fromTx.attachment()->data()->begin(),
+                fromTx.attachment()->data()->end());
     attachment = iroha::CreateAttachmentDirect(
         fbb, fromTx.attachment()->mime()->c_str(), &data);
   }
