@@ -14,9 +14,14 @@ limitations under the License.
 
 #include "executor.hpp"
 
+#include <util/logger.hpp>
+#include <service/flatbuffer_service.h>
+
 namespace executor {
 
 using iroha::Transaction;
-void execute(const Transaction &tx) {}
+void execute(const Transaction &tx) {
+    logger::info("executor") <<"Execute "<<  flatbuffer_service::toString(tx);
+}
 
 };  // namespace executor

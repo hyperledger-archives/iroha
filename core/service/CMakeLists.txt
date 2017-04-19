@@ -2,6 +2,10 @@ ADD_LIBRARY(executor STATIC
     executor.cpp
 )
 
+target_link_libraries(executor
+    logger
+)
+
 #ADD_LIBRARY(izanami STATIC
 #    izanami.cpp
 #)
