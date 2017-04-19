@@ -19,27 +19,27 @@ limitations under the License.
 
 #include "helper/create_objects_helper.hpp"
 
-#include "add/add_domain_builder.hpp"
 #include "add/add_account_builder.hpp"
 #include "add/add_asset_builder.hpp"
+#include "add/add_domain_builder.hpp"
 #include "add/add_peer_builder.hpp"
 #include "add/add_simple_asset_builder.hpp"
 
-#include "transfer/transfer_domain_builder.hpp"
 #include "transfer/transfer_account_builder.hpp"
 #include "transfer/transfer_asset_builder.hpp"
+#include "transfer/transfer_domain_builder.hpp"
 #include "transfer/transfer_peer_builder.hpp"
 #include "transfer/transfer_simple_asset_builder.hpp"
 
-#include "update/update_domain_builder.hpp"
 #include "update/update_account_builder.hpp"
 #include "update/update_asset_builder.hpp"
+#include "update/update_domain_builder.hpp"
 #include "update/update_peer_builder.hpp"
 #include "update/update_simple_asset_builder.hpp"
 
-#include "remove/remove_domain_builder.hpp"
 #include "remove/remove_account_builder.hpp"
 #include "remove/remove_asset_builder.hpp"
+#include "remove/remove_domain_builder.hpp"
 #include "remove/remove_peer_builder.hpp"
 #include "remove/remove_simple_asset_builder.hpp"
 

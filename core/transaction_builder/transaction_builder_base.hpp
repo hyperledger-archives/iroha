@@ -26,7 +26,6 @@ class TransactionBuilder {};
 
 template <typename CommandT>
 class TransactionBuilder {};
-
 }
 
 #endif

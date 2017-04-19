@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <assert.h>
 #include <algorithm>
 #include <array>
 #include <util/logger.hpp>
@@ -40,7 +39,7 @@ namespace jvm {
     std::unique_ptr<JavaContext> initializeVM(const std::string& packageNameUnderInstances, const std::string& contractName) {
 
         const auto IrohaHome = []() {
-            const auto p = getenv("IROHA_HOME");
+            const auto p = config::get_iroha_home();
             if (p == nullptr) {
                 throw "[FATAL] Set environment $IROHA_HOME";
             }

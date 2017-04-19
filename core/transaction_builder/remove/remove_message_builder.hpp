@@ -16,10 +16,10 @@ limitations under the License.
 #ifndef CORE_MODEL_TRANSACTION_BUILDER_REMOVE_MESSAGE_HPP
 #define CORE_MODEL_TRANSACTION_BUILDER_REMOVE_MESSAGE_HPP
 
-#include "../transaction_builder_base.hpp"
+#include "../../objects/message.hpp"
 #include "../../transaction.hpp"
 #include "../../type_signatures/remove.hpp"
-#include "../../objects/message.hpp"
+#include "../transaction_builder_base.hpp"
 
 namespace transaction {
 

@@ -18,8 +18,8 @@ limitations under the License.
 #ifndef CORE_REPOSITORY_MERKLETRANSACTIONREPOSITORY_HPP_
 #define CORE_REPOSITORY_MERKLETRANSACTIONREPOSITORY_HPP_
 
-#include <string>
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 #include <infra/protobuf/api.pb.h>
@@ -29,33 +29,25 @@ namespace merkle_transaction_repository {
 using Api::ConsensusEvent;
 
 struct MerkleNode {
-    std::string hash;
-    std::string parent;
-    std::string left;
-    std::string right;
+  std::string hash;
+  std::string parent;
+  std::string left;
+  std::string right;
 
-    MerkleNode() {
+  MerkleNode() {}
 
-    }
-
-    MerkleNode(
-        std::string hash,
-        std::string parent,
-        std::string leftChild,
-        std::string rightChild
-    ):
-        hash(std::move(hash)),
+  MerkleNode(std::string hash, std::string parent, std::string leftChild,
+             std::string rightChild)
+      : hash(std::move(hash)),
         parent(std::move(parent)),
         left(std::move(leftChild)),
-        right(std::move(rightChild))
-    {}
+        right(std::move(rightChild)) {}
 
-    bool isRoot();
-    bool isLeaf();
-
+  bool isRoot();
+  bool isLeaf();
 };
 
-//TODO: change bool to throw an exception instead
+// TODO: change bool to throw an exception instead
 bool commit(const ConsensusEvent& event);
 
 bool leafExists(const std::string& hash);
@@ -64,8 +56,7 @@ std::string getLeaf(const std::string& hash);
 
 std::string calculateNewRoot(
     const ConsensusEvent& event,
-    std::vector<std::tuple<std::string,std::string>> &batchCommit
-);
+    std::vector<std::tuple<std::string, std::string>>& batchCommit);
 
 };  // namespace merkle_transaction_repository
 

@@ -27,8 +27,7 @@ int main() {
   std::string pubKey = ::peer::myself::getPublicKey();
 
   while (1) {
-    timer::setAwkTimer(3000, [&]() {
-    });
+    timer::setAwkTimer(3000, [&]() {});
   }
 
   return 0;

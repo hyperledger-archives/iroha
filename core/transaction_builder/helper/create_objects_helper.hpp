@@ -18,7 +18,6 @@ limitations under the License.
 #define CORE_TRANSACTION_BUILDER_CREATE_OBJECTS_HPP
 
 #include <algorithm>
-#include <assert.h>
 #include <tuple>
 
 #include <infra/protobuf/api.pb.h>
@@ -52,10 +51,12 @@ std::string stringify(Api::BaseObject obj);
 /*
   Vector
 */
-template <typename T> using Vector = ::google::protobuf::RepeatedPtrField<T>;
+template <typename T>
+using Vector = ::google::protobuf::RepeatedPtrField<T>;
 
 template <typename T>
-inline std::vector<T> createStandardVector(const ::txbuilder::Vector<T> &protov) {
+inline std::vector<T> createStandardVector(
+    const ::txbuilder::Vector<T> &protov) {
   return std::vector<T>(protov.begin(), protov.end());
 }
 
@@ -69,6 +70,6 @@ Api::SimpleAsset createSimpleAsset(std::string domain, std::string name,
                                    std::string smartContractName);
 Api::Peer createPeer(std::string publicKey, std::string address,
                      Api::Trust trust);
-} // namespace txbuilder
+}  // namespace txbuilder
 
 #endif

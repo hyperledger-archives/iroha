@@ -17,16 +17,16 @@ limitations under the License.
 #ifndef __TIME_HPP_
 #define __TIME_HPP_
 
-#include <string>
 #include <cstdint>
+#include <string>
 
 namespace datetime {
 
-  std::uint64_t  unixtime();
-  std::string   unixtime_str();
-  std::string   date_str();
-  
-  std::string unixtime2date(std::int64_t unixtime);
+std::uint64_t unixtime();
+std::string unixtime_str();
+std::string date_str();
+
+std::string unixtime2date(std::int64_t unixtime);
 };
 
 #endif

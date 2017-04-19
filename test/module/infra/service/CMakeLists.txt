@@ -3,6 +3,7 @@ add_executable(config_test
 )
 
 target_link_libraries(config_test
+   config_manager
    gtest
    json
    ip_tools

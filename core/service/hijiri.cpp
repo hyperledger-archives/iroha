@@ -17,17 +17,16 @@ limitations under the License.
 // Created by Takumi Yamashita on 2017/03/16.
 //
 
-#include <service/peer_service.hpp>
-#include <service/hijiri.hpp>
 #include <consensus/connection/connection.hpp>
+#include <service/hijiri.hpp>
+#include <service/peer_service.hpp>
 
 namespace peer {
 namespace hijiri {
 
 // check are broken? peer
 void check(const std::string &ip) {
-  if (!service::isExistIP(ip))
-    return;
+  if (!service::isExistIP(ip)) return;
   auto check_peer_it = *service::findPeerIP(ip);
   if (!connection::iroha::PeerService::Sumeragi::ping(ip)) {
     if (check_peer_it->trustScore < 0.0) {
@@ -40,6 +39,5 @@ void check(const std::string &ip) {
   }
 }
 
-} // namespace hijiri
-} // namespace peer
-
+}  // namespace hijiri
+}  // namespace peer

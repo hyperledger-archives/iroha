@@ -26,24 +26,24 @@ namespace logger {
 
 /*
 
-    #define LOGGER_DEF(LoggerName, UseLevel, HasPrefix, LogType)                \
-    struct LoggerName                                                           \
-    {                                                                           \
-        explicit LoggerName(std::string&& caller) noexcept;                     \
-        explicit LoggerName(const std::string& caller) noexcept;                \
-        ~LoggerName();                                                          \
-        const std::string   caller;                                             \
-        std::stringstream   stream;                                             \
-        TYPE_UNC_EXC        uncaught;                                           \
-    };                                                                          \
-    template <typename T>                                                       \
-    inline LoggerName& operator << (LoggerName& record, T&& t) {                \
-        record.stream << std::forward<T>(t);                                    \
-        return record;                                                          \
-    }                                                                           \
-    template <typename T>                                                       \
-    inline LoggerName& operator << (LoggerName&& record, T&& t) {               \
-        return record << std::forward<T>(t);                                    \
+    #define LOGGER_DEF(LoggerName, UseLevel, HasPrefix, LogType) \
+    struct LoggerName \
+    { \
+        explicit LoggerName(std::string&& caller) noexcept; \
+        explicit LoggerName(const std::string& caller) noexcept; \
+        ~LoggerName(); \
+        const std::string   caller; \
+        std::stringstream   stream; \
+        TYPE_UNC_EXC        uncaught; \
+    }; \
+    template <typename T> \
+    inline LoggerName& operator << (LoggerName& record, T&& t) { \
+        record.stream << std::forward<T>(t); \
+        return record; \
+    } \
+    template <typename T> \
+    inline LoggerName& operator << (LoggerName&& record, T&& t) { \
+        return record << std::forward<T>(t); \
     }
 
     LOGGER_DEF(debug,   LogLevel::Debug,    true,   "DEBUG")
@@ -52,69 +52,71 @@ namespace logger {
     LOGGER_DEF(error,   LogLevel::Error,    true,   "ERROR (-A-)")
     LOGGER_DEF(fatal,   LogLevel::Fatal,    true,   "FATAL (`o')")
     LOGGER_DEF(explore, LogLevel::Explore,  false,  "(EXPLORE)")
-    
+
 */
 
-    enum class LogLevel { Debug = 0, Info, Warning, Error, Fatal, Explore };
+enum class LogLevel { Debug = 0, Info, Warning, Error, Fatal, Explore };
 
-    namespace detail {
-        static LogLevel LOG_LEVEL = LogLevel::Debug;
-    }
+namespace detail {
+static LogLevel LOG_LEVEL = LogLevel::Debug;
+}
 
-    inline void setLogLevel(LogLevel lv) {
-      detail::LOG_LEVEL = lv;
-      spdlog::set_level((spdlog::level::level_enum) lv);
-    }
+inline void setLogLevel(LogLevel lv) {
+  detail::LOG_LEVEL = lv;
+  spdlog::set_level((spdlog::level::level_enum) lv);
+}
 
-    struct base {
-        explicit base(std::string &&caller, LogLevel level) noexcept;
-        explicit base(const std::string &caller, LogLevel level) noexcept;
-        virtual ~base() = 0;
-        const std::string caller;
-        std::stringstream stream;
-        bool uncaught = true;
-        std::shared_ptr<spdlog::logger> console;
-        spdlog::level::level_enum level;
-    };
+struct base {
+  explicit base(std::string &&caller, LogLevel level) noexcept;
+  explicit base(const std::string &caller, LogLevel level) noexcept;
+  virtual ~base() = 0;
+  const std::string caller;
+  std::stringstream stream;
+  bool uncaught = true;
+  std::shared_ptr<spdlog::logger> console;
+  spdlog::level::level_enum level;
+};
 
-    template <typename T> inline base &operator<<(base &record, T &&t) {
-      record.stream << std::forward<T>(t);
-      return record;
-    }
+template<typename T>
+inline base &operator<<(base &record, T &&t) {
+  record.stream << std::forward<T>(t);
+  return record;
+}
 
-    template <typename T> inline base &operator<<(base &&record, T &&t) {
-      return record << std::forward<T>(t);
-    }
+template<typename T>
+inline base &operator<<(base &&record, T &&t) {
+  return record << std::forward<T>(t);
+}
 
-    struct debug : public base{
-        explicit debug(std::string &&caller) noexcept;
-        explicit debug(const std::string &caller) noexcept;
-    };
+struct debug : public base {
+  explicit debug(std::string &&caller) noexcept;
+  explicit debug(const std::string &caller) noexcept;
+};
 
-    struct info : public base{
-        explicit info(std::string &&caller) noexcept;
-        explicit info(const std::string &caller) noexcept;
-    };
+struct info : public base {
+  explicit info(std::string &&caller) noexcept;
+  explicit info(const std::string &caller) noexcept;
+};
 
-    struct warning : public base{
-        explicit warning(std::string &&caller) noexcept;
-        explicit warning(const std::string &caller) noexcept;
-    };
+struct warning : public base {
+  explicit warning(std::string &&caller) noexcept;
+  explicit warning(const std::string &caller) noexcept;
+};
 
-    struct error : public base {
-        explicit error(std::string &&caller) noexcept;
-        explicit error(const std::string &caller) noexcept;
-    };
+struct error : public base {
+  explicit error(std::string &&caller) noexcept;
+  explicit error(const std::string &caller) noexcept;
+};
 
-    struct fatal : public base {
-        explicit fatal(std::string &&caller) noexcept;
-        explicit fatal(const std::string &caller) noexcept;
-    };
+struct fatal : public base {
+  explicit fatal(std::string &&caller) noexcept;
+  explicit fatal(const std::string &caller) noexcept;
+};
 
-    struct explore : public base {
-        explicit explore(std::string &&caller) noexcept;
-        explicit explore(const std::string &caller) noexcept;
-    };
+struct explore : public base {
+  explicit explore(std::string &&caller) noexcept;
+  explicit explore(const std::string &caller) noexcept;
+};
 }
 
 #endif

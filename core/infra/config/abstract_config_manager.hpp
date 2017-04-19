@@ -21,6 +21,7 @@ limitations under the License.
 #include <json.hpp>
 #include <util/exception.hpp>
 #include <util/logger.hpp>
+#include "config_utils.hpp"
 
 namespace config {
 
@@ -40,7 +41,7 @@ class AbstractConfigManager {
   }
 
   json openConfigData() {
-    auto iroha_home = getenv("IROHA_HOME");
+    auto iroha_home = config::get_iroha_home();
     if (iroha_home == nullptr) {
       logger::error("config") << "Set environment variable IROHA_HOME";
       exit(EXIT_FAILURE);

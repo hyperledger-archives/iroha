@@ -30,8 +30,8 @@ namespace common {
  ********************************************************************************************/
 
 struct Prefix {
-  explicit Prefix(const char* rhs) : prefix_(rhs) {}
-  const std::string& operator*() const { return prefix_; }
+  explicit Prefix(const char *rhs) : prefix_(rhs) {}
+  const std::string &operator*() const { return prefix_; }
   std::string prefix_;
 };
 
@@ -40,7 +40,8 @@ inline void assertPrefix(const std::string &str, const Prefix &prefix) {
   IROHA_ASSERT_TRUE(*prefix == str.substr(0, (*prefix).size()));
 }
 
-inline std::string eliminatePrefix(const std::string &str, const Prefix &prefix) {
+inline std::string eliminatePrefix(const std::string &str,
+                                   const Prefix &prefix) {
   assertPrefix(str, prefix);
   return str.substr((*prefix).size());
 }
@@ -61,4 +62,4 @@ ApiObjectT parse(const std::string &str_, const Prefix &prefix) {
 }
 }
 }
-#endif // __CORE_REPOSITORY_DOMAIN_COMMON_REPOSITORY_HPP__
+#endif  // __CORE_REPOSITORY_DOMAIN_COMMON_REPOSITORY_HPP__

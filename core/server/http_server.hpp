@@ -22,9 +22,8 @@ limitations under the License.
 
 namespace http {
 
-  // Start server and keep on runing.
-  void server();
+// Start server and keep on runing.
+void server();
 };
 
 #endif  // CORE_SERVER_HTTP_SERVER_HPP_
-

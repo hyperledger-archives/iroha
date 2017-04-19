@@ -16,10 +16,7 @@ limitations under the License.
 
 #include "terminate.hpp"
 
-namespace terminate{
+namespace terminate {
 
-  void finish(){
-     exit(1);
-  }
-
+void finish() { exit(1); }
 }

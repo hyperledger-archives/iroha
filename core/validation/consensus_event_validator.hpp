@@ -22,19 +22,19 @@ limitations under the License.
 
 namespace consensus_event_validator {
 
-  template<typename T>
-  bool isValid(const T& event) {
+template <typename T>
+bool isValid(const T& event){
 
-  };
+};
 
-  template<typename T>
-  bool signaturesAreValid(const T& event) {
-    for (auto sig : event.signatures) {
-        if (!consensus_event_validator::isValid(sig)) {
-            return false;
-        }
+template <typename T>
+bool signaturesAreValid(const T& event) {
+  for (auto sig : event.signatures) {
+    if (!consensus_event_validator::isValid(sig)) {
+      return false;
     }
   }
+}
 };  // namespace consensus_event_validator
 
 #endif  // CORE_VALIDATION_CONSENSUSEVENTVALIDATOR_HPP_

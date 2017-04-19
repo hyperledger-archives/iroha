@@ -23,67 +23,55 @@ limitations under the License.
 
 namespace virtual_machine {
 namespace jvm {
-    struct JavaContext {
-        JNIEnv *env;
-        JavaVM *jvm;
-        jclass jClass;
-        jobject jObject;
-        std::string name;
-        JavaVMInitArgs vmArgs;
+struct [[deprecated]] JavaContext {
+  JNIEnv* env;
+  JavaVM* jvm;
+  jclass jClass;
+  jobject jObject;
+  std::string name;
+  JavaVMInitArgs vmArgs;
 
-        JavaContext(
-                JNIEnv *aEnv,
-                JavaVM *aJvm,
-                JavaVMInitArgs aArgs,
-                std::string aName,
-                jclass cls,
-                jobject obj
-        ) :
-                env(aEnv),
-                jvm(aJvm),
-                jClass(std::move(cls)),
-                jObject(std::move(obj)),
-                name(std::move(aName)),
-                vmArgs(std::move(aArgs)) {}
-    };
+  JavaContext(JNIEnv* aEnv, JavaVM* aJvm, JavaVMInitArgs aArgs,
+              std::string aName, jclass cls, jobject obj)
+      : env(aEnv),
+        jvm(aJvm),
+        jClass(std::move(cls)),
+        jObject(std::move(obj)),
+        name(std::move(aName)),
+        vmArgs(std::move(aArgs)) {}
+};
 
 
-//    void Java_SmartContract_save(JNIEnv *env, jobject thiz, jstring key, jstring value);
-    std::unique_ptr<JavaContext> initializeVM(const std::string& packageNameUnderInstances, const std::string& contractName);
-
-    void execFunction(
-        const std::unique_ptr<JavaContext> &context,
-        const std::string& functionName,
-        const std::map<std::string, std::string>& params
-    );
-
-    void execFunction(
-        const std::unique_ptr<JavaContext> &context,
-        const std::string& functionName,
-        const std::map<std::string, std::string>& params,
-        const std::map<std::string, std::string>& value
-    );
-
-    void execFunction(
-        const std::unique_ptr<JavaContext> &context,
-        const std::string& functionName,
-        const std::map<std::string, std::string>& params,
-        const std::map<std::string, std::map<std::string, std::string>>& value
-    );
-
-    void execFunction(
-        const std::unique_ptr<JavaContext> &context,
-        const std::string& functionName,
-        const std::map<std::string, std::string>& params,
-        const std::vector<std::string>& value
-    );
-
-    void execFunction(
-        const std::unique_ptr<JavaContext> &context,
-        const std::string& functionName
-    );
-
+//    void Java_SmartContract_save(JNIEnv *env, jobject thiz, jstring key,
+//    jstring value);
+[[deprecated]]
+std::unique_ptr<JavaContext> initializeVM(
+    const std::string& packageNameUnderInstances,
+    const std::string& contractName);
+[[deprecated]]
+void execFunction(const std::unique_ptr<JavaContext>& context,
+                  const std::string& functionName,
+                  const std::map<std::string, std::string>& params);
+[[deprecated]]
+void execFunction(const std::unique_ptr<JavaContext>& context,
+                  const std::string& functionName,
+                  const std::map<std::string, std::string>& params,
+                  const std::map<std::string, std::string>& value);
+[[deprecated]]
+void execFunction(
+    const std::unique_ptr<JavaContext>& context,
+    const std::string& functionName,
+    const std::map<std::string, std::string>& params,
+    const std::map<std::string, std::map<std::string, std::string>>& value);
+[[deprecated]]
+void execFunction(const std::unique_ptr<JavaContext>& context,
+                  const std::string& functionName,
+                  const std::map<std::string, std::string>& params,
+                  const std::vector<std::string>& value);
+[[deprecated]]
+void execFunction(const std::unique_ptr<JavaContext>& context,
+                  const std::string& functionName);
 }
 }
 
-#endif //_CORE_INFRA_VIRTUAL_MACHINE_JVM_JAVA_VIRTUAL_MACHINE_HPP
+#endif  //_CORE_INFRA_VIRTUAL_MACHINE_JVM_JAVA_VIRTUAL_MACHINE_HPP

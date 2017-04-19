@@ -17,8 +17,6 @@ limitations under the License.
 #include "../simple_asset_repository.hpp"
 #include <crypto/hash.hpp>
 #include <repository/world_state_repository.hpp>
-#include <transaction_builder/transaction_builder.hpp>
-#include <util/exception.hpp>
 #include <util/logger.hpp>
 
 const std::string NameSpaceID = "simple asset repository";
@@ -54,7 +52,6 @@ std::string createSimpleAssetUuid(const std::string &domain,
 std::string add(const std::string &domain, const std::string &name,
                 const Api::BaseObject &value,
                 const std::string &smartContractName) {
-
   logger::explore(NameSpaceID) << "Add<SimpleAsset> domainId: " << domain
                                << " assetName: " << name
                                << " assetValue: " << txbuilder::stringify(value)
@@ -104,7 +101,6 @@ bool remove(const std::string &uuid) {
  * find
  ********************************************************************************************/
 Api::SimpleAsset findByUuid(const std::string &uuid) {
-
   logger::explore(NameSpaceID + "::findByUuid") << "";
   auto strSimpleAsset = world_state_repository::find(uuid);
   if (not strSimpleAsset.empty()) {
@@ -121,8 +117,7 @@ Api::SimpleAsset findByUuidOrElse(const std::string &uuid,
 
 bool exists(const std::string &uuid) {
   const auto result = world_state_repository::exists(uuid);
-  logger::explore(NameSpaceID + "::exists")
-      << (result ? "true" : "false");
+  logger::explore(NameSpaceID + "::exists") << (result ? "true" : "false");
   return result;
 }
 }

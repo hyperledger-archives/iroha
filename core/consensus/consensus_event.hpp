@@ -18,65 +18,54 @@ limitations under the License.
 #ifndef CORE_CONSENSUS_CONSENSUSEVENT_HPP_
 #define CORE_CONSENSUS_CONSENSUSEVENT_HPP_
 
-#include <string>
+#include <algorithm>
 #include <functional>
 #include <memory>
+#include <string>
 #include <unordered_map>
-#include <algorithm>
 
 #include <crypto/signature.hpp>
 namespace event {
 
 template <typename T>
-class ConsensusEvent: public T {
+class ConsensusEvent : public T {
+  struct eventSignature {
+    std::string publicKey;
+    std::string signature;
 
-    struct eventSignature{
-        std::string publicKey;
-        std::string signature;
+    eventSignature(std::string pubKey, std::string sig)
+        : publicKey(pubKey), signature(sig) {}
 
-        eventSignature(
-            std::string pubKey,
-            std::string sig
-        ):
-                publicKey(pubKey),
-                signature(sig)
-        {}
-
-        // move constructor
-        eventSignature(eventSignature&& other){
-            publicKey = std::move(other.publicKey);
-            signature = std::move(other.signature);
-        }
-    };
-
-    std::vector<eventSignature> _eventSignatures;
-
-public:
-    int order;
-
-    template<typename... Args>
-    ConsensusEvent(
-        Args&&... args
-    ):
-        T(std::forward<Args>(args)...)
-    {}
-
-    void addSignature(const std::string& publicKey, const std::string& signature){
-        _eventSignatures.push_back(std::move(eventSignature(publicKey, signature)));
+    // move constructor
+    eventSignature(eventSignature&& other) {
+      publicKey = std::move(other.publicKey);
+      signature = std::move(other.signature);
     }
+  };
 
-    std::vector<std::tuple<std::string,std::string>> eventSignatures() const{
-        std::vector<std::tuple<std::string,std::string>> res(_eventSignatures.size());
-        for(const auto& sig: _eventSignatures){
-            res.push_back(std::make_tuple(sig.publicKey,sig.signature));
-        }
-        return res;
-    };
+  std::vector<eventSignature> _eventSignatures;
 
-    void execution(){
-        T::execution();
+ public:
+  int order;
+
+  template <typename... Args>
+  ConsensusEvent(Args&&... args) : T(std::forward<Args>(args)...) {}
+
+  void addSignature(const std::string& publicKey,
+                    const std::string& signature) {
+    _eventSignatures.push_back(std::move(eventSignature(publicKey, signature)));
+  }
+
+  std::vector<std::tuple<std::string, std::string>> eventSignatures() const {
+    std::vector<std::tuple<std::string, std::string>> res(
+        _eventSignatures.size());
+    for (const auto& sig : _eventSignatures) {
+      res.push_back(std::make_tuple(sig.publicKey, sig.signature));
     }
+    return res;
+  };
 
+  void execution() { T::execution(); }
 };
 };  // namespace ConsensusEvent
 
