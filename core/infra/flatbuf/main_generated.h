@@ -22,7 +22,8 @@ struct ReceiverConfirmation;
 
 enum Code {
   Code_COMMIT = 0,
-  Code_FAIL = 1,
+  Code_UNDECIDED = 1,
+  Code_FAIL = 2,
   Code_MIN = Code_COMMIT,
   Code_MAX = Code_FAIL
 };
@@ -30,6 +31,7 @@ enum Code {
 inline const char **EnumNamesCode() {
   static const char *names[] = {
     "COMMIT",
+    "UNDECIDED",
     "FAIL",
     nullptr
   };
@@ -44,7 +46,8 @@ inline const char *EnumNameCode(Code e) {
 struct ConsensusEvent FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_PEERSIGNATURES = 4,
-    VT_TRANSACTIONS = 6
+    VT_TRANSACTIONS = 6,
+    VT_CODE = 8
   };
   const flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>> *peerSignatures() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>> *>(VT_PEERSIGNATURES);
@@ -58,6 +61,12 @@ struct ConsensusEvent FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   flatbuffers::Vector<flatbuffers::Offset<iroha::Transaction>> *mutable_transactions() {
     return GetPointer<flatbuffers::Vector<flatbuffers::Offset<iroha::Transaction>> *>(VT_TRANSACTIONS);
   }
+  Code code() const {
+    return static_cast<Code>(GetField<uint8_t>(VT_CODE, 0));
+  }
+  bool mutate_code(Code _code) {
+    return SetField<uint8_t>(VT_CODE, static_cast<uint8_t>(_code), 0);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_PEERSIGNATURES) &&
@@ -66,6 +75,7 @@ struct ConsensusEvent FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_TRANSACTIONS) &&
            verifier.Verify(transactions()) &&
            verifier.VerifyVectorOfTables(transactions()) &&
+           VerifyField<uint8_t>(verifier, VT_CODE) &&
            verifier.EndTable();
   }
 };
@@ -79,13 +89,16 @@ struct ConsensusEventBuilder {
   void add_transactions(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::Transaction>>> transactions) {
     fbb_.AddOffset(ConsensusEvent::VT_TRANSACTIONS, transactions);
   }
+  void add_code(Code code) {
+    fbb_.AddElement<uint8_t>(ConsensusEvent::VT_CODE, static_cast<uint8_t>(code), 0);
+  }
   ConsensusEventBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
   ConsensusEventBuilder &operator=(const ConsensusEventBuilder &);
   flatbuffers::Offset<ConsensusEvent> Finish() {
-    const auto end = fbb_.EndTable(start_, 2);
+    const auto end = fbb_.EndTable(start_, 3);
     auto o = flatbuffers::Offset<ConsensusEvent>(end);
     return o;
   }
@@ -94,21 +107,25 @@ struct ConsensusEventBuilder {
 inline flatbuffers::Offset<ConsensusEvent> CreateConsensusEvent(
     flatbuffers::FlatBufferBuilder &_fbb,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>>> peerSignatures = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::Transaction>>> transactions = 0) {
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::Transaction>>> transactions = 0,
+    Code code = Code_COMMIT) {
   ConsensusEventBuilder builder_(_fbb);
   builder_.add_transactions(transactions);
   builder_.add_peerSignatures(peerSignatures);
+  builder_.add_code(code);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<ConsensusEvent> CreateConsensusEventDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<flatbuffers::Offset<iroha::Signature>> *peerSignatures = nullptr,
-    const std::vector<flatbuffers::Offset<iroha::Transaction>> *transactions = nullptr) {
+    const std::vector<flatbuffers::Offset<iroha::Transaction>> *transactions = nullptr,
+    Code code = Code_COMMIT) {
   return iroha::CreateConsensusEvent(
       _fbb,
       peerSignatures ? _fbb.CreateVector<flatbuffers::Offset<iroha::Signature>>(*peerSignatures) : 0,
-      transactions ? _fbb.CreateVector<flatbuffers::Offset<iroha::Transaction>>(*transactions) : 0);
+      transactions ? _fbb.CreateVector<flatbuffers::Offset<iroha::Transaction>>(*transactions) : 0,
+      code);
 }
 
 struct TransactionResponse FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {

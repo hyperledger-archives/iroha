@@ -6,12 +6,13 @@ namespace iroha;
 file_identifier "IROH";
 file_extension  "iroha";
 
+enum Code: ubyte {COMMIT, UNDECIDED, FAIL}
+
 table ConsensusEvent {
   peerSignatures: [Signature];
   transactions:   [Transaction];
+  code:      Code;
 }
-
-enum Code: ubyte {COMMIT, FAIL} // TODO: maybe more?
 
 table TransactionResponse {
   message:      string;
