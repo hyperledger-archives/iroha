@@ -110,7 +110,7 @@ bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
     auto publicKey = "SamplePublicKey";
 
     // Build a request with the name set.
-    flatbuffers::FlatBufferBuilder fbbTransaction;
+    flatbuffers::FlatBufferBuilder fbbConsensusEvent;
 
     // TODO: valid command
     // Tempolary implementation. Currently, use CreaeteAccount command.
@@ -122,29 +122,23 @@ bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
       auto accountBuf = flatbuffer_service::CreateAccountBuffer(
           publicKey, "alias", signatories, 1);
 
-      return ::iroha::CreateAccountAddDirect(fbbTransaction, &accountBuf);
+      return ::iroha::CreateAccountAddDirect(fbbConsensusEvent, &accountBuf);
     }();
 
     // TODO: Tempolary implementation. Use 'sign' function
-    std::vector<uint8_t> signature;
-    for (auto e : std::string("hash + timestamp + pubkey ?")) {
-      signature.push_back(e);
-    }
+    std::vector<uint8_t> signature = {'h', '+', 't', '+', 'p'};
 
-    std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
+    std::vector<flatbuffers::Offset<::iroha::Signature>> signatureOffsetVec;
 
-    signatures.push_back(::iroha::CreateSignatureDirect(
-        fbbTransaction, publicKey, &signature,
+    signatureOffsetVec.push_back(::iroha::CreateSignatureDirect(
+        fbbConsensusEvent, publicKey, &signature,
         1234567  // TODO: timestamp
         ));
 
-      std::vector<flatbuffers::Offset<::iroha::Transaction>> transactionOffsetVec;
-      std::vector<flatbuffers::Offset<::iroha::Signature>>   peerSignatureOffsetVec;
-      transactionOffsetVec.emplace_back(::iroha::CreateTransactionDirect(
-        fbbTransaction, publicKey, ::iroha::Command::Command_AccountAdd,
-        command.Union(), &signatures, nullptr,
-        ::iroha::CreateAttachmentDirect(fbbTransaction, nullptr, nullptr))
-      );
+    std::vector<uint8_t> _hash = {'h', 'a', 's', 'h', '-', 's', 'e', 'n', 'd'};
+
+      std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatureOffsetVec;
+
       for(const auto& aPeerSig: *event.peerSignatures()) {
           std::vector<uint8_t> aPeerSigBlob(
                   aPeerSig->signature()->begin(),
@@ -152,7 +146,7 @@ bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
           );
           peerSignatureOffsetVec.push_back(
               ::iroha::CreateSignatureDirect(
-                  fbbTransaction,
+                  fbbConsensusEvent,
                   aPeerSig->publicKey()->c_str(),
                   &aPeerSigBlob,
                   1234567
@@ -160,14 +154,23 @@ bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
           );
       }
 
+      std::vector<flatbuffers::Offset<::iroha::Transaction>> transactionOffsetVec;
+      std::vector<uint8_t> _data = {'d', 'a', 't', 'a', '-', 's', 'e', 'n', 'd'};
+
+      transactionOffsetVec.emplace_back(::iroha::CreateTransactionDirect(
+        fbbConsensusEvent, publicKey, ::iroha::Command::Command_AccountAdd,
+        command.Union(), &signatureOffsetVec, &_hash,
+        ::iroha::CreateAttachmentDirect(fbbConsensusEvent, "MIME_SEND", &_data))
+      );
 
     auto consensusEventOffset = ::iroha::CreateConsensusEvent(
-        fbbTransaction, fbbTransaction.CreateVector(peerSignatureOffsetVec), fbbTransaction.CreateVector(transactionOffsetVec)
+        fbbConsensusEvent, fbbConsensusEvent.CreateVector(peerSignatureOffsetVec), fbbConsensusEvent.CreateVector(transactionOffsetVec)
     );
-    fbbTransaction.Finish(consensusEventOffset);
+
+    fbbConsensusEvent.Finish(consensusEventOffset);
 
     auto eventRef = flatbuffers::BufferRef<::iroha::ConsensusEvent>(
-        fbbTransaction.GetBufferPointer(), fbbTransaction.GetSize());
+        fbbConsensusEvent.GetBufferPointer(), fbbConsensusEvent.GetSize());
 
     flatbuffers::BufferRef<::iroha::Response> responseRef;
 
@@ -466,11 +469,6 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
   Status Torii(ServerContext* context,
                const flatbuffers::BufferRef<Transaction>* transactionRef,
                flatbuffers::BufferRef<Response>* responseRef) override {
-    fbbResponse.Clear();
-
-    auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);
-    fbbResponse.Finish(responseOffset);
 
     logger::debug("SumeragiConnectionServiceImpl::Torii") << "RPC works";
 
@@ -562,6 +560,12 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
 
     // This reference remains until next calling
     // SumeragiConnectionServiceImpl::Torii() method.
+    fbbResponse.Clear();
+
+    auto responseOffset = ::iroha::CreateResponseDirect(
+        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);
+    fbbResponse.Finish(responseOffset);
+
     *responseRef = flatbuffers::BufferRef<::iroha::Response>(
         fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
 
