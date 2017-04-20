@@ -210,7 +210,7 @@ void initializeSumeragi() {
         flatbuffers::unique_ptr_t event = flatbuffer_service::toConsensusEvent(
             *flatbuffers::GetRoot<::iroha::Transaction>(transaction.get()));
 
-        auto task = [event = std::move(event)]() mutable {
+        auto &&task = [&event]() {
           processTransaction(std::move(event));
         };
         pool.process(std::move(task));
@@ -257,7 +257,7 @@ void initializeSumeragi() {
           // pool.process(std::move(task));
 
           // Copy ConsensusEvent
-          auto task = [eventUniqPtr = std::move(eventUniqPtr)]() mutable {
+          auto &&task = [&eventUniqPtr]() {
               processTransaction(std::move(eventUniqPtr));
           };
           pool.process(std::move(task));
