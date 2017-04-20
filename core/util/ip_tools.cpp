@@ -102,4 +102,4 @@ std::pair<uint32_t, uint32_t> getIpRangeByNetmask(const std::string &netmask) {
 
   return result;
 };
-}
+}  // namespace ip_tools

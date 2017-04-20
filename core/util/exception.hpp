@@ -37,7 +37,8 @@ class IrohaException : public std::exception {
 
 class NotImplementedException : public IrohaException {
  public:
-  explicit NotImplementedException(const std::string &functionName, const std::string &filename);
+  explicit NotImplementedException(const std::string &functionName,
+                                   const std::string &filename);
 };
 
 class ParseFromStringException : public IrohaException {
@@ -47,7 +48,8 @@ class ParseFromStringException : public IrohaException {
 
 class InvalidCastException : public IrohaException {
  public:
-  InvalidCastException(const std::string &from, const std::string &to, const std::string &filename);
+  InvalidCastException(const std::string &from, const std::string &to,
+                       const std::string &filename);
   InvalidCastException(const std::string &meg, const std::string &filename);
 };
 
@@ -56,7 +58,7 @@ class ConfigException : public IrohaException {
  public:
   ConfigException(const std::string &message);
 };
-}
+}  // namespace config
 
 namespace service {
 class DuplicationIPException : public IrohaException {
@@ -71,7 +73,7 @@ class UnExistFindPeerException : public IrohaException {
  public:
   explicit UnExistFindPeerException(const std::string &);
 };
-}
+}  // namespace service
 
 namespace crypto {
 class InvalidKeyException : public IrohaException {
@@ -82,7 +84,7 @@ class InvalidMessageLengthException : public IrohaException {
  public:
   explicit InvalidMessageLengthException(const std::string &);
 };
-}
+}  // namespace crypto
 
 namespace ordinary {
 class DuplicateSetArgumentException : public IrohaException {
@@ -93,7 +95,7 @@ class UnsetBuildArgumentsException : public IrohaException {
  public:
   UnsetBuildArgumentsException(const std::string &, const std::string &);
 };
-}
+}  // namespace ordinary
 }  // namespace exception
 
 #endif

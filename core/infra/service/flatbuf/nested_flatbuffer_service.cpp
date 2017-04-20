@@ -27,41 +27,27 @@ namespace flatbuffer_service {
 
 std::vector<uint8_t> CreateAccountBuffer(
     const char* publicKey, const char* alias,
-    const std::vector<std::string>& signatories,
-    uint16_t useKeys) {
-
-  if(&signatories != nullptr) {
+    const std::vector<std::string>& signatories, uint16_t useKeys) {
+  if (&signatories != nullptr) {
     flatbuffers::FlatBufferBuilder fbbAccount;
 
     std::vector<flatbuffers::Offset<flatbuffers::String>> signatoryOffsets;
-    for (const auto& e: signatories) {
-      signatoryOffsets.push_back(
-        fbbAccount.CreateString(e)
-      );
+    for (const auto& e : signatories) {
+      signatoryOffsets.push_back(fbbAccount.CreateString(e));
     }
 
     auto accountOffset = ::iroha::CreateAccountDirect(
-            fbbAccount,
-            publicKey,
-            alias,
-            &signatoryOffsets,
-            1
-    );
-      fbbAccount.Finish(accountOffset);
+        fbbAccount, publicKey, alias, &signatoryOffsets, 1);
+    fbbAccount.Finish(accountOffset);
 
-      auto buf = fbbAccount.GetBufferPointer();
-      std::vector<uint8_t> buffer;
-      buffer.assign(buf, buf + fbbAccount.GetSize());
-      return buffer;
-  }else{
+    auto buf = fbbAccount.GetBufferPointer();
+    std::vector<uint8_t> buffer;
+    buffer.assign(buf, buf + fbbAccount.GetSize());
+    return buffer;
+  } else {
     flatbuffers::FlatBufferBuilder fbbAccount;
-    auto accountOffset = ::iroha::CreateAccountDirect(
-            fbbAccount,
-            publicKey,
-            alias,
-            nullptr,
-            1
-    );
+    auto accountOffset =
+        ::iroha::CreateAccountDirect(fbbAccount, publicKey, alias, nullptr, 1);
     fbbAccount.Finish(accountOffset);
 
     auto buf = fbbAccount.GetBufferPointer();

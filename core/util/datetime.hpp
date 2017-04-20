@@ -27,6 +27,6 @@ std::string unixtime_str();
 std::string date_str();
 
 std::string unixtime2date(std::int64_t unixtime);
-};
+};  // namespace datetime
 
 #endif
