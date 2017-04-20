@@ -12,7 +12,6 @@ target_link_libraries(http_client
     json
 )
 
-
 ADD_LIBRARY(flatbuffer_service STATIC
     flatbuf/autogen_extend.cpp
     flatbuf/flatbuffer_service.cpp
