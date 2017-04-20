@@ -195,10 +195,9 @@ std::string toString(const iroha::Transaction& tx){
 
     command_to_strings[iroha::Command_AccountAdd] = [&](const void* command) -> std::string{
         const iroha::AccountAdd* cmd = static_cast<const iroha::AccountAdd *>(command);
-
         std::string res = "AccountAdd[\n";
         if(cmd->account_nested_root() != nullptr) {
-            if (cmd->account_nested_root()->alias() != nullptr) {
+            if (cmd->account_nested_root()->alias() != 0) {
                 res += "    account:alias:" + cmd->account_nested_root()->alias()->str() + ",\n";
             }
             if (cmd->account_nested_root()->pubKey() != nullptr) {
@@ -209,7 +208,6 @@ std::string toString(const iroha::Transaction& tx){
                     res += "        signature[" + s->str() + "]\n";
                 }
             }
-            res += "    account:useKeys:" + std::to_string(cmd->account_nested_root()->useKeys()) + "\n";
         }
         res += "]\n";
         return res;

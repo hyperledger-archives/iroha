@@ -33,10 +33,29 @@ TEST(FlatbufferServiceTest, toString) {
     );
     signatories->emplace_back(fbb.CreateString(publicKey));
 
-    auto account = iroha::CreateAccountDirect(fbb,publicKey,"alias",signatories.get(),1);
-    std::unique_ptr<std::vector<uint8_t>> account_vec(
-            new std::vector<uint8_t>()
-    );
+    auto account_vec = [&] {
+        flatbuffers::FlatBufferBuilder fbbAccount;
+
+        std::unique_ptr<std::vector<flatbuffers::Offset<flatbuffers::String>>> signatories(
+                new std::vector<flatbuffers::Offset<flatbuffers::String>>( {fbbAccount.CreateString("publicKey1")})
+        );
+
+        auto account = iroha::CreateAccountDirect(fbbAccount, publicKey, "alias", signatories.get(), 1);
+        fbbAccount.Finish(account);
+
+        std::unique_ptr<std::vector<uint8_t>> account_vec(
+                new std::vector<uint8_t>()
+        );
+
+        auto buf = fbbAccount.GetBufferPointer();
+
+        account_vec->assign(
+                buf, buf + fbbAccount.GetSize()
+        );
+
+        return account_vec;
+    }();
+
     auto command = iroha::CreateAccountAddDirect(fbb, account_vec.get());
 
     std::unique_ptr<std::vector<flatbuffers::Offset<iroha::Signature>>> signature_vec(
