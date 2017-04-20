@@ -10,6 +10,7 @@ jobs:
           IROHA_BUILD: /tmp/build
       - image: ubuntu:16.04
     steps:
+      - run: apt-get -qq update; apt-get -y install golang # grpc build requires go.
       - checkout
       - run:
           name: ensure, required folders created
