@@ -308,12 +308,12 @@ set_target_properties(flatbuffers PROPERTIES
 )
 add_dependencies(flatbuffers google_flatbuffers)
 
-
 #########################
 #         GRPC          #
 #########################
 ExternalProject_Add(grpc_grpc
   GIT_REPOSITORY "https://github.com/grpc/grpc.git"
+  GIT_TAG           "v1.2.0"
   BUILD_IN_SOURCE 1
   UPDATE_COMMAND ""
   BUILD_COMMAND make
