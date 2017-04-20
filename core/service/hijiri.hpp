@@ -30,7 +30,8 @@ namespace hijiri {
 void check(
     const std::string &ip);  // void checkBrokenPeer(const std::string &ip);
                              // [WIPn] does we need it? void checkAll();
-}
-}
+}  // namespace hijiri
+}  // namespace peer
+
 
 #endif

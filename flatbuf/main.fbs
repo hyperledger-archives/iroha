@@ -1,0 +1,26 @@
+include "transaction.fbs";
+include "commands.fbs";
+
+namespace iroha;
+
+file_identifier "IROH";
+file_extension  "iroha";
+
+enum Code: ubyte {COMMIT, UNDECIDED, FAIL}
+
+table ConsensusEvent {
+  peerSignatures: [Signature];
+  transactions:   [Transaction];
+  code:      Code;
+}
+
+table TransactionResponse {
+  message:      string;
+  code:         Code;
+  transaction:  Transaction;
+}
+
+table ReceiverConfirmation {
+  signature: Signature;
+  hash:      [ubyte];
+}

@@ -1,0 +1,9 @@
+namespace iroha;
+
+// another ledgers can use another algorithms
+enum KeyAlgorithm: byte { ed25519 }
+
+table PublicKey{
+  algorithm: KeyAlgorithm = ed25519;
+  data:      [ubyte] (required);
+}

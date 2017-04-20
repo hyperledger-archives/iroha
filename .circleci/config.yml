@@ -10,7 +10,15 @@ jobs:
           IROHA_BUILD: /tmp/build
       - image: ubuntu:16.04
     steps:
+      - run:
+          name: build and install grpc (WIP) I want to move it to dependencies.cmake
+          command: |
+            apt-get -qq update; apt-get -y install golang
+            cd /tmp; rm -rf grpc; git clone -b $(curl -L http://grpc.io/release) https://github.com/grpc/grpc
+            cd grpc && git submodule update --init && make && make install
+            cd
       - checkout
+
       - run:
           name: ensure, required folders created
           command: |

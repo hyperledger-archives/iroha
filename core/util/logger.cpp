@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "datetime.hpp"
 #include "logger.hpp"
+#include "datetime.hpp"
 
 /*
 namespace logger {
@@ -70,10 +70,12 @@ static_cast<int>(UseLevel);   \
 
 namespace logger {
 
-static const std::string level_names[]{"DEBUG", "INFO", "WARNING", "ERROR (-A-)", "FATAL (`o')", "(EXPLORE)"};
+static const std::string level_names[]{
+    "DEBUG", "INFO", "WARNING", "ERROR (-A-)", "FATAL (`o')", "(EXPLORE)"};
 
 class console_sink : public spdlog::sinks::base_sink<std::mutex> {
   using MyType = console_sink;
+
  public:
   console_sink() {}
   static std::shared_ptr<MyType> instance() {
@@ -82,7 +84,8 @@ class console_sink : public spdlog::sinks::base_sink<std::mutex> {
   }
 
   void _sink_it(const spdlog::details::log_msg &msg) override {
-    auto output = static_cast<int>(LogLevel::Error) <= msg.level ? stderr : stdout;
+    auto output =
+        static_cast<int>(LogLevel::Error) <= msg.level ? stderr : stdout;
     fwrite(msg.formatted.data(), sizeof(char), msg.formatted.size(), output);
     fflush(output);
   }
@@ -95,6 +98,7 @@ class console_sink : public spdlog::sinks::base_sink<std::mutex> {
 
 class console_formatter : public spdlog::formatter {
   using MyType = console_formatter;
+
  public:
   console_formatter() {}
   static std::shared_ptr<MyType> instance() {
@@ -104,30 +108,38 @@ class console_formatter : public spdlog::formatter {
 
   void format(spdlog::details::log_msg &msg) override {
     msg.formatted << datetime::unixtime_str()
-                  << (msg.level != (spdlog::level::level_enum) LogLevel::Explore ? " " + level_names[msg.level] : "")
-                  << " [" << *msg.logger_name << "] "
-                  << msg.raw.str();
-    //write eol
-    msg.formatted.write(spdlog::details::os::eol, spdlog::details::os::eol_size);
+                  << (msg.level != (spdlog::level::level_enum)LogLevel::Explore
+                          ? " " + level_names[msg.level]
+                          : "")
+                  << " [" << *msg.logger_name << "] " << msg.raw.str();
+    // write eol
+    msg.formatted.write(spdlog::details::os::eol,
+                        spdlog::details::os::eol_size);
   }
 };
 
 base::base(std::string &&caller, LogLevel level) noexcept
-    : caller(caller), uncaught(std::uncaught_exception()), level((spdlog::level::level_enum) level) {
+    : caller(caller),
+      uncaught(std::uncaught_exception()),
+      level((spdlog::level::level_enum)level) {
   console = spdlog::get(caller);
   if (!console) {
-    console = std::make_shared<spdlog::logger>(caller, console_sink::instance());
-    console->set_level((spdlog::level::level_enum) detail::LOG_LEVEL);
+    console =
+        std::make_shared<spdlog::logger>(caller, console_sink::instance());
+    console->set_level((spdlog::level::level_enum)detail::LOG_LEVEL);
     console->set_formatter(console_formatter::instance());
   }
 }
 
 base::base(const std::string &caller, LogLevel level) noexcept
-    : caller(caller), uncaught(std::uncaught_exception()), level((spdlog::level::level_enum) level) {
+    : caller(caller),
+      uncaught(std::uncaught_exception()),
+      level((spdlog::level::level_enum)level) {
   console = spdlog::get(caller);
   if (!console) {
-    console = std::make_shared<spdlog::logger>(caller, console_sink::instance());
-    console->set_level((spdlog::level::level_enum) detail::LOG_LEVEL);
+    console =
+        std::make_shared<spdlog::logger>(caller, console_sink::instance());
+    console->set_level((spdlog::level::level_enum)detail::LOG_LEVEL);
     console->set_formatter(console_formatter::instance());
   }
 }
@@ -139,15 +151,22 @@ base::~base() {
 }
 
 debug::debug(std::string &&caller) noexcept : base(caller, LogLevel::Debug) {}
-debug::debug(const std::string &caller) noexcept : base(caller, LogLevel::Debug) {}
+debug::debug(const std::string &caller) noexcept
+    : base(caller, LogLevel::Debug) {}
 info::info(std::string &&caller) noexcept : base(caller, LogLevel::Info) {}
 info::info(const std::string &caller) noexcept : base(caller, LogLevel::Info) {}
-warning::warning(std::string &&caller) noexcept : base(caller, LogLevel::Warning) {}
-warning::warning(const std::string &caller) noexcept : base(caller, LogLevel::Warning) {}
+warning::warning(std::string &&caller) noexcept
+    : base(caller, LogLevel::Warning) {}
+warning::warning(const std::string &caller) noexcept
+    : base(caller, LogLevel::Warning) {}
 error::error(std::string &&caller) noexcept : base(caller, LogLevel::Error) {}
-error::error(const std::string &caller) noexcept : base(caller, LogLevel::Error) {}
+error::error(const std::string &caller) noexcept
+    : base(caller, LogLevel::Error) {}
 fatal::fatal(std::string &&caller) noexcept : base(caller, LogLevel::Fatal) {}
-fatal::fatal(const std::string &caller) noexcept : base(caller, LogLevel::Fatal) {}
-explore::explore(std::string &&caller) noexcept : base(caller, LogLevel::Explore) {}
-explore::explore(const std::string &caller) noexcept : base(caller, LogLevel::Explore) {}
-}
+fatal::fatal(const std::string &caller) noexcept
+    : base(caller, LogLevel::Fatal) {}
+explore::explore(std::string &&caller) noexcept
+    : base(caller, LogLevel::Explore) {}
+explore::explore(const std::string &caller) noexcept
+    : base(caller, LogLevel::Explore) {}
+}  // namespace logger

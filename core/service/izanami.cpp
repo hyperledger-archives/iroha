@@ -18,6 +18,7 @@ limitations under the License.
 #include <crypto/hash.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
+#include <memory>
 #include <repository/transaction_repository.hpp>
 #include <service/peer_service.hpp>
 #include <thread_pool.hpp>
@@ -27,6 +28,15 @@ limitations under the License.
 namespace peer {
 namespace izanami {
 using Api::TransactionResponse;
+
+void setAwkTimer(int const sleepMillisecs,
+                 const std::function<void(void)> &action) {
+  std::thread([action, sleepMillisecs]() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+    action();
+  })
+      .join();
+}
 
 InitializeEvent::InitializeEvent() {
   now_progress = 0;
@@ -138,7 +148,7 @@ void storeTransactionResponse(InitializeEvent &event) {
   event.executeTxResponse(hash);
   event.next_progress();
 }
-}
+}  // namespace detail
 
 // invoke when receive TransactionResponse.
 void receiveTransactionResponse(TransactionResponse &txResponse) {
@@ -215,5 +225,6 @@ void startIzanami() {
         pool.process(std::move(task));
       });
 }
-}
-}
+
+}  // namespace izanami
+}  // namespace peer

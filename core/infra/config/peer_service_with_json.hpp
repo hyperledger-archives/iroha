@@ -36,15 +36,17 @@ class PeerServiceConfig : AbstractConfigManager {
   std::string getMyPublicKeyWithDefault(const std::string& defaultValue);
   std::string getMyPrivateKeyWithDefault(const std::string& defaultValue);
   std::string getMyIpWithDefault(const std::string& defaultValue);
+  bool isExistIP(const std::string& ip);
   double getMaxTrustScoreWithDefault(double defaultValue);
   size_t getMaxFaultyScoreWithDefault(size_t defaultValue);
   std::vector<json> getGroup();
+
   static PeerServiceConfig& getInstance();
 
   double getMaxTrustScore();
 
-  virtual std::string getConfigName() override;
+  std::string getConfigName() override { return "config/sumeragi.json"; }
 };
-}
+}  // namespace config
 
 #endif  // PEER_SERVICE_WITH_JSON_HPP

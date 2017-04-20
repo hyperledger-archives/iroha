@@ -67,6 +67,6 @@ class ConsensusEvent : public T {
 
   void execution() { T::execution(); }
 };
-};  // namespace ConsensusEvent
+};  // namespace event
 
 #endif  // CORE_CONSENSUS_CONSENSUSEVENT_HPP_

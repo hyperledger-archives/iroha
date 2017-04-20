@@ -152,7 +152,6 @@ TEST(ScenarioTest, CurrencyTransfer) {
     ASSERT_TRUE(asset1.value().at("value").valueint() == 0);
   }
 
-
   {
     const auto type = "transfer";
     Api::Transaction tx;
@@ -214,6 +213,26 @@ TEST(ScenarioTest, CurrencyTransfer) {
     Api::Asset asset1 = repository::asset::find(publicKey2, assetName2);
     ASSERT_STREQ(asset1.name().c_str(), assetName2);
     ASSERT_TRUE(asset1.value().at("value").valueint() == 50);
+  }
+
+  {
+    const auto type = "update";
+    Api::Transaction tx;
+    Api::BaseObject bobj;
+    bobj.set_valueint(623);
+    std::unordered_map<std::string, Api::BaseObject> prop;
+    prop["value"] = bobj;
+
+    tx.Clear();
+    tx.set_senderpubkey(publicKey1);
+    tx.set_type(type);
+    tx.mutable_asset()->CopyFrom(makeAsset(assetName1, prop));
+    executor::execute(tx);
+  }
+  {
+    Api::Asset asset1 = repository::asset::find(publicKey1, assetName1);
+    ASSERT_STREQ(asset1.name().c_str(), assetName1);
+    ASSERT_TRUE(asset1.value().at("value").valueint() == 623);
   }
 
   removeData(publicKey1);

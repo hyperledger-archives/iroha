@@ -37,4 +37,4 @@ std::string date_str() {
 std::string unixtime2date(time_t unixtime) {
   return std::asctime(std::localtime(&unixtime));
 }
-};
+};  // namespace datetime

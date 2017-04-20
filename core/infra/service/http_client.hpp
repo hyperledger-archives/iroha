@@ -42,6 +42,6 @@ class Request {
 };
 
 std::tuple<int, std::string> request(std::string dest, int port, Request req);
-}
+}  // namespace http_client
 
 #endif  // IROHA_HTTP_CLIENT_HPP_HPP

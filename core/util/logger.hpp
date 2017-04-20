@@ -55,7 +55,7 @@ namespace logger {
 
 */
 
-enum class LogLevel { Debug = 0, Info, Warning, Error, Fatal, Explore };
+enum class LogLevel { Debug = 0, Explore, Info, Warning, Error, Fatal };
 
 namespace detail {
 static LogLevel LOG_LEVEL = LogLevel::Debug;
@@ -63,7 +63,7 @@ static LogLevel LOG_LEVEL = LogLevel::Debug;
 
 inline void setLogLevel(LogLevel lv) {
   detail::LOG_LEVEL = lv;
-  spdlog::set_level((spdlog::level::level_enum) lv);
+  spdlog::set_level((spdlog::level::level_enum)lv);
 }
 
 struct base {
@@ -77,13 +77,13 @@ struct base {
   spdlog::level::level_enum level;
 };
 
-template<typename T>
+template <typename T>
 inline base &operator<<(base &record, T &&t) {
   record.stream << std::forward<T>(t);
   return record;
 }
 
-template<typename T>
+template <typename T>
 inline base &operator<<(base &&record, T &&t) {
   return record << std::forward<T>(t);
 }
@@ -117,6 +117,6 @@ struct explore : public base {
   explicit explore(std::string &&caller) noexcept;
   explicit explore(const std::string &caller) noexcept;
 };
-}
+}  // namespace logger
 
 #endif

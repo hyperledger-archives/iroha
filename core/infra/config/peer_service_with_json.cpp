@@ -32,6 +32,7 @@ PeerServiceConfig& PeerServiceConfig::getInstance() {
   return serviceConfig;
 }
 
+
 std::string PeerServiceConfig::getMyPublicKeyWithDefault(
     const std::string& defaultValue) {
   return getParam<std::string>({"me", "publicKey"}, defaultValue);
@@ -46,7 +47,11 @@ std::string PeerServiceConfig::getMyIpWithDefault(
     const std::string& defaultValue) {
   return getParam<std::string>({"me", "ip"}, defaultValue);
 }
-
+bool PeerServiceConfig::isExistIP(const std::string& ip) {
+  // ToDo
+  return true;
+  // return findPeerIP( std::move(ip) ) != peerList.end();
+}
 double PeerServiceConfig::getMaxTrustScoreWithDefault(double defaultValue) {
   return getParam<double>({"max_trust_score"}, defaultValue);
 }
@@ -64,15 +69,6 @@ void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
   }
 }
 
-std::string PeerServiceConfig::getConfigName() {
-  return "config/sumeragi.json";
-}
-
-double PeerServiceConfig::getMaxTrustScore() {
-  return this->getMaxTrustScoreWithDefault(
-      10.0);  // WIP to support trustRate = 10.0
-}
-
 std::vector<json> PeerServiceConfig::getGroup() {
   std::vector<json> defaultValue(
       {json({{"ip", "172.17.0.3"},
@@ -87,6 +83,10 @@ std::vector<json> PeerServiceConfig::getGroup() {
        json({{"ip", "172.17.0.6"},
              {"name", "samari"},
              {"publicKey", "Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU="}})});
-
   return getParam<std::vector<json>>({"group"}, defaultValue);
+}
+
+double PeerServiceConfig::getMaxTrustScore() {
+  return this->getMaxTrustScoreWithDefault(
+      10.0);  // WIP to support trustRate = 10.0
 }

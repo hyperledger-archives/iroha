@@ -26,21 +26,22 @@ limitations under the License.
 
 #include "consensus_event.hpp"
 
-#include <infra/protobuf/api.grpc.pb.h>
+#include <infra/flatbuf/main_generated.h>
 #include <service/peer_service.hpp>
 
 namespace sumeragi {
 
-using Api::ConsensusEvent;
+using iroha::ConsensusEvent;
 
 void initializeSumeragi();
 void loop();
 
-void getNextOrder(const ConsensusEvent& event);
+void getNextOrder(std::unique_ptr<ConsensusEvent> event);
 
-void processTransaction(ConsensusEvent& event);
+void processTransaction(flatbuffers::unique_ptr_t&& event);
 
 void panic(const ConsensusEvent& event);
+
 void setAwkTimer(const int sleepMillisecs,
                  const std::function<void(void)> action);
 void determineConsensusOrder(/*std::vector<double> trustVector*/);

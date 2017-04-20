@@ -19,4 +19,4 @@ limitations under the License.
 namespace terminate {
 
 void finish() { exit(1); }
-}
+}  // namespace terminate

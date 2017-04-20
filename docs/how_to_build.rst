@@ -43,7 +43,7 @@ I need C++14 compilable compiler
 
 ::
 
-    # apt -y install xsltproc libhdf5-serial-dev libsnappy-dev liblmdb-dev autoconf automake libtool unzip　libssl-dev
+    # apt -y install xsltproc libhdf5-serial-dev libsnappy-dev liblmdb-dev autoconf automake libtool unzip libssl-dev
 
 
 protobuf のインストール / Install protobuf
@@ -84,8 +84,11 @@ buildに時間かかるのでBinaryがほしい
 
 java のインストール / Install java
 ----------------------------------
-
 javaが必要
+::
+
+    (ubuntuの場合)
+    apt-get install default-jdk
 
 Iroha本体のclone / Clone iroha
 ==============================

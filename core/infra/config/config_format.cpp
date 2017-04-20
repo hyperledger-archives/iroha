@@ -153,4 +153,4 @@ bool ConfigFormat::ensureFormat(json& actualConfig, json& formatConfig,
     }
   }
 }
-}
+}  // namespace config

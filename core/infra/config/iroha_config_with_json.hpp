@@ -44,6 +44,6 @@ class IrohaConfigManager : AbstractConfigManager {
   std::vector<std::string> getTrustedHosts(
       const std::vector<std::string>& defaultValue);
 };
-}
+}  // namespace config
 
 #endif  // IROHA_CONFIG_WITH_JSON_HPP

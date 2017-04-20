@@ -24,7 +24,8 @@ void setAwkTimer(int const sleepMillisecs,
   std::thread([action, sleepMillisecs]() {
     std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
     action();
-  }).join();
+  })
+      .join();
 }
 
 void setAwkTimerForCurrentThread(int const sleepMillisecs,
@@ -32,4 +33,4 @@ void setAwkTimerForCurrentThread(int const sleepMillisecs,
   std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
   action();
 }
-}
+}  // namespace timer

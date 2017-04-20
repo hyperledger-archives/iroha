@@ -1,10 +1,11 @@
+
 add_library(datetime STATIC datetime.cpp)
 add_library(logger STATIC logger.cpp)
 
 target_link_libraries(logger
-  datetime
-  spdlog
-)
+        datetime
+        spdlog
+        )
 
 add_library(random          STATIC random.cpp)
 add_library(exception       STATIC exception.cpp)

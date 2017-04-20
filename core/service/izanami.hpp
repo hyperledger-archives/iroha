@@ -14,7 +14,6 @@ limitations under the License.
 #ifndef __CORE_IZANAMI_SERVICE_HPP__
 #define __CORE_IZANAMI_SERVICE_HPP__
 
-#include <infra/protobuf/api.pb.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -64,7 +63,7 @@ bool isFinishedReceive(InitializeEvent &);
 std::string getCorrectHash(InitializeEvent &);
 
 void storeTransactionResponse(InitializeEvent &);
-}
+}  // namespace detail
 
 // invoke when receive TransactionResponse.
 void receiveTransactionResponse(TransactionResponse &);
@@ -74,7 +73,7 @@ void startIzanami();
 
 void setAwkTimer(int const sleepMillisecs,
                  const std::function<void(void)> &action);
-}
-}
+}  // namespace izanami
+}  // namespace peer
 
 #endif

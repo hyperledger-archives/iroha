@@ -193,8 +193,8 @@ bool start(const Node &peer) {
   }
 
   if (0) {  // WIP(leveldb don't active) Send transaction data separated block
-            // to
-            // new peer.
+    // to new peer.
+
     logger::debug("peer-service") << "send all transaction infomation";
     auto transactions = repository::transaction::findAll();
     std::size_t block_size = 500;

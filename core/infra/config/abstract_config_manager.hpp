@@ -43,11 +43,11 @@ class AbstractConfigManager {
   json openConfigData() {
     auto iroha_home = config::get_iroha_home();
     if (iroha_home == nullptr) {
-      logger::error("config") << "Set environment variable IROHA_HOME";
-      exit(EXIT_FAILURE);
+        logger::error("config") << "Set environment variable IROHA_HOME";
+        exit(EXIT_FAILURE);
     }
-
-    auto configFolderPath = std::string(iroha_home) + "/";
+    // Todo remove last '/'
+    auto configFolderPath = std::string(iroha_home) + "";
     auto jsonStr = readConfigData(configFolderPath + this->getConfigName(), "");
 
     if (jsonStr.empty()) {
@@ -62,6 +62,7 @@ class AbstractConfigManager {
   }
 
  protected:
+
   template <typename T>
   T getParam(std::initializer_list<const std::string> params,
              const T& defaultValue) {
@@ -96,7 +97,6 @@ class AbstractConfigManager {
   json getConfigData() {
     if (_loaded) {
       // If defaultValue is used, _configData is empty, but _loaded = true. It's
-      // confusing. Any good solution?
       return this->_configData;
     } else {
       _loaded = true;
@@ -108,6 +108,6 @@ class AbstractConfigManager {
   bool _loaded = false;
   json _configData;
 };
-}
+}  // namespace config
 
 #endif  // IROHA_CONFIG_H

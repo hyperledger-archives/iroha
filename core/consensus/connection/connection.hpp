@@ -6,7 +6,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-		 http://www.apache.org/licenses/LICENSE-2.0
+                 http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,138 +17,50 @@ limitations under the License.
 #ifndef __CONNECTION__
 #define __CONNECTION__
 
+#include <functional>
+#include <memory>
 #include <string>
 #include <unordered_map>
-#include <memory>
-#include <functional>
 
-#include <infra/protobuf/api.grpc.pb.h>
-#include "../consensus_event.hpp"
+#include <infra/flatbuf/endpoint.grpc.fb.h>
+#include <infra/flatbuf/main_generated.h>
 
 namespace connection {
 
-    using Api::ConsensusEvent;
-    using Api::Transaction;
-    using Api::Query;
-    using Api::TransactionResponse;
-    using Api::DiscoverRequest;
-    using Api::Peer;
+using iroha::ConsensusEvent;
+using iroha::Transaction;
 
+struct Config {
+  std::string name;
+  std::string ip_addr;
+  std::string port;
+};
 
-    struct Config {
-        std::string name;
-        std::string ip_addr;
-        std::string port;
-    };
+/************************************************************************************
+ * Verify
+ ************************************************************************************/
+namespace iroha { namespace SumeragiImpl { namespace Verify {
 
-    void initialize_peer();
+using CallBackFunc =
+    std::function<void(const std::string & /* from */,
+       flatbuffers::unique_ptr_t&& /* message */)>;
 
-    namespace iroha {
-        namespace Sumeragi {
+bool send(const std::string &ip, const ::iroha::ConsensusEvent& msg);
+bool sendAll(const ::iroha::ConsensusEvent& msg);
+void receive(Verify::CallBackFunc &&callback);
 
-            namespace Verify {
+}}}  // namespace iroha::SumeragiImpl::Verify
 
-                bool send(
-                        const std::string &ip,
-                        const ConsensusEvent &msg
-                );
+/************************************************************************************
+ * Torii
+ ************************************************************************************/
+namespace iroha { namespace SumeragiImpl { namespace Torii {
 
-                bool sendAll(const ConsensusEvent &msg);
-
-                bool receive(const std::function<void(
-                    const std::string &,
-                    ConsensusEvent &)
-                > &callback);
-
-            };
-
-            namespace Torii {
-
-                bool receive(const std::function<void(
-                    const std::string &,
-                    Transaction&)
-                > &callback);
-
-            };
-            // This only reply pong.
-            namespace Kagami{}
-        };
-
-        namespace PeerService {
-
-            namespace Sumeragi {
-
-                bool send(
-                        const std::string &ip,
-                        const Transaction &transaction
-                );
-
-                bool ping(
-                        const std::string &ip
-                );
-
-            }
-
-            namespace Izanami {
-                bool send(
-                        const std::string& ip,
-                        const TransactionResponse &txResponse
-                );
-            }
-        }
-
-        namespace Izanami {
-            namespace Izanagi {
-                bool receive(const std::function<void(
-                        const std::string &,
-                        TransactionResponse&)
-                > &callback);
-            }
-        }
-
-        namespace TransactionRepository {
-
-            namespace find {
-
-                bool receive(const std::function<void(
-                        const std::string &,
-                        const Query &)
-                > &callback);
-
-            };
-
-            namespace fetch {
-
-                bool receive(const std::function<void(
-                        const std::string &,
-                        const Query &)
-                > &callback);
-
-            };
-
-            namespace fetchStream {
-
-                bool receive(const std::function<void(
-                        const std::string &,
-                        const Query &)
-                > &callback);
-
-            };
-
-        }
-
-        namespace AssetRepository {
-
-            namespace find {
-
-                bool receive(const std::function<void(
-                        const std::string &,
-                        const Query &)
-                > &callback);
-
-            };
-        };
-
+using CallBackFunc = std::function<void(
+    const std::string & /* from */,
+    flatbuffers::unique_ptr_t&& /* message */)>;
+void receive(Torii::CallBackFunc &&callback);
+        /*
         namespace HostDiscovery {
 
             namespace getHostInfo {
@@ -163,13 +75,17 @@ namespace connection {
                 );
             }
         }
-    }
+    }*/
 
-    int run();
+}}}  // namespace iroha::SumeragiImpl::Verify
 
-    void finish();
+/************************************************************************************
+ * Main connection
+ ************************************************************************************/
+void initialize_peer();
+int run();
+void finish();
 
-};  // end connection
+}  // namespace connection
 
-// implements
 #endif
