@@ -311,21 +311,21 @@ add_dependencies(flatbuffers google_flatbuffers)
 #########################
 #         GRPC          #
 #########################
-ExternalProject_Add(grpc_grpc
-  GIT_REPOSITORY "https://github.com/grpc/grpc.git"
-  GIT_TAG           "master"
-  BUILD_IN_SOURCE 1
-  UPDATE_COMMAND ""
-  BUILD_COMMAND make
-  INSTALL_COMMAND bash "-c" "make install"
-)
+#ExternalProject_Add(grpc_grpc
+#  GIT_REPOSITORY "https://github.com/grpc/grpc.git"
+#  GIT_TAG           "master"
+#  BUILD_IN_SOURCE 1
+#  UPDATE_COMMAND ""
+#  BUILD_COMMAND make
+#  INSTALL_COMMAND bash "-c" "make install"
+#)
 
-ExternalProject_Get_Property(grpc_grpc source_dir)
-set(flatbuffers_SOURCE_DIR "${source_dir}")
+#ExternalProject_Get_Property(grpc_grpc source_dir)
+#set(flatbuffers_SOURCE_DIR "${source_dir}")
 
-add_library(grpc INTERFACE IMPORTED)
-file(MAKE_DIRECTORY ${grpc_SOURCE_DIR}/include)
-set_target_properties(grpc PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${grpc_SOURCE_DIR}/include
-)
-add_dependencies(grpc grpc_grpc)
+#add_library(grpc INTERFACE IMPORTED)
+#file(MAKE_DIRECTORY ${grpc_SOURCE_DIR}/include)
+#set_target_properties(grpc PROPERTIES
+#  INTERFACE_INCLUDE_DIRECTORIES ${grpc_SOURCE_DIR}/include
+#)
+#add_dependencies(grpc grpc_grpc)
