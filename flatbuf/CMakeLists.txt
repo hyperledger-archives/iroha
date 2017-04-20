@@ -11,6 +11,8 @@ target_link_libraries(endpoint_fbs
     grpc++
     grpc++_reflection
     grpc
+    grpc_unsecure
+    gpr
     pthread
     dl
     flatbuffers
