@@ -32,18 +32,22 @@ namespace flatbuffer_service {
  */
 std::string toString(const iroha::Transaction& tx){
 
-    assert(tx.creatorPubKey() != nullptr);
+
     std::string res = "";
-    res += "creatorPubKey:" + tx.creatorPubKey()->str() + ",\n";
+    if(tx.creatorPubKey() != nullptr){
+        res += "creatorPubKey:" + tx.creatorPubKey()->str() + ",\n";
+    }
     if(tx.signatures() != nullptr){
         res += "signatures:[\n";
         for(const auto& s: *tx.signatures()){
-            assert(s->publicKey() != nullptr);
-            assert(s->signature() != nullptr);
-
-            res += "  [\n    publicKey:" + s->publicKey()->str() + ",\n";
-            res += "    signature:" + std::string(s->signature()->begin(), s->signature()->end()) + ",\n";
-            res += "    timestamp:" + std::to_string(s->timestamp()) +  "\n  ]\n";
+            if(s->publicKey() != nullptr ||
+               s->signature() != nullptr) {
+                res += "  [\n    publicKey:" + s->publicKey()->str() + ",\n";
+                res += "    signature:" + std::string(s->signature()->begin(), s->signature()->end()) + ",\n";
+                res += "    timestamp:" + std::to_string(s->timestamp()) + "\n  ]\n";
+            }else{
+                res += "[brolen]\n";
+            }
         }
         res += "]\n";
     }
@@ -193,14 +197,20 @@ std::string toString(const iroha::Transaction& tx){
         const iroha::AccountAdd* cmd = static_cast<const iroha::AccountAdd *>(command);
 
         std::string res = "AccountAdd[\n";
-        res += "    account:alias:" + cmd->account_nested_root()->alias()->str() + ",\n";
-        res += "    account:pubKey:" + cmd->account_nested_root()->pubKey()->str() + ",\n";
-        if(cmd->account_nested_root()->signatories() != nullptr) {
-            for (const auto &s: *cmd->account_nested_root()->signatories()) {
-                res += "        signature[" + s->str() + "]\n";
+        if(cmd->account_nested_root() != nullptr) {
+            if (cmd->account_nested_root()->alias() != nullptr) {
+                res += "    account:alias:" + cmd->account_nested_root()->alias()->str() + ",\n";
             }
+            if (cmd->account_nested_root()->pubKey() != nullptr) {
+                res += "    account:pubKey:" + cmd->account_nested_root()->pubKey()->str() + ",\n";
+            }
+            if (cmd->account_nested_root()->signatories() != nullptr) {
+                for (const auto &s: *cmd->account_nested_root()->signatories()) {
+                    res += "        signature[" + s->str() + "]\n";
+                }
+            }
+            res += "    account:useKeys:" + std::to_string(cmd->account_nested_root()->useKeys()) + "\n";
         }
-        res += "    account:useKeys:" + std::to_string(cmd->account_nested_root()->useKeys())+ "\n";
         res += "]\n";
         return res;
     };
@@ -208,14 +218,20 @@ std::string toString(const iroha::Transaction& tx){
         const iroha::AccountRemove* cmd = static_cast<const iroha::AccountRemove *>(command);
 
         std::string res = "AccountRemove[\n";
-        res += "    account:alias:" + cmd->account_nested_root()->alias()->str() + ",\n";
-        res += "    account:pubKey:" + cmd->account_nested_root()->pubKey()->str() + ",\n";
-        if(cmd->account_nested_root()->signatories() != nullptr) {
-            for (const auto &s: *cmd->account_nested_root()->signatories()) {
-                res += "        signature[" + s->str() + "]\n";
+        if(cmd->account_nested_root() != nullptr) {
+            if (cmd->account_nested_root()->alias() != nullptr) {
+                res += "    account:alias:" + cmd->account_nested_root()->alias()->str() + ",\n";
             }
+            if (cmd->account_nested_root()->pubKey() != nullptr) {
+                res += "    account:pubKey:" + cmd->account_nested_root()->pubKey()->str() + ",\n";
+            }
+            if (cmd->account_nested_root()->signatories() != nullptr) {
+                for (const auto &s: *cmd->account_nested_root()->signatories()) {
+                    res += "        signature[" + s->str() + "]\n";
+                }
+            }
+            res += "    account:useKeys:" + std::to_string(cmd->account_nested_root()->useKeys()) + "\n";
         }
-        res += "    account:useKeys:" + std::to_string(cmd->account_nested_root()->useKeys())+ "\n";
         res += "]\n";
         return res;
     };
