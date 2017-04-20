@@ -21,6 +21,7 @@ limitations under the License.
 #include <json.hpp>
 #include <util/exception.hpp>
 #include <util/logger.hpp>
+#include "config_utils.hpp"
 
 namespace config {
 
@@ -40,7 +41,7 @@ class AbstractConfigManager {
   }
 
   json openConfigData() {
-    auto iroha_home = getenv("IROHA_HOME");
+    auto iroha_home = config::get_iroha_home();
     if (iroha_home == nullptr) {
         logger::error("config") << "Set environment variable IROHA_HOME";
         exit(EXIT_FAILURE);
@@ -50,7 +51,6 @@ class AbstractConfigManager {
     auto jsonStr = readConfigData(configFolderPath + this->getConfigName(), "");
 
     if (jsonStr.empty()) {
-      logger::warning("config") <<"Wrong path" << configFolderPath + this->getConfigName();
       logger::warning("config") << "there is no config '" << getConfigName()
                                 << "', we will use default values.";
     } else {
@@ -62,7 +62,27 @@ class AbstractConfigManager {
   }
 
  protected:
-   void parseConfigDataFromString(std::string&& jsonStr) {
+
+  template <typename T>
+  T getParam(std::initializer_list<const std::string> params,
+             const T& defaultValue) {
+    auto tempConfigData = getConfigData();
+    try {
+      size_t i = 0;
+      for (auto& param : params) {
+        ++i;
+        if (i == params.size()) {
+          return tempConfigData.value(param, defaultValue);
+        }
+        tempConfigData = tempConfigData[param];
+      }
+      return tempConfigData;
+    } catch (...) {
+      return defaultValue;
+    }
+  }
+
+  virtual void parseConfigDataFromString(std::string&& jsonStr) {
     try {
       _configData = json::parse(std::move(jsonStr));
     } catch (...) {
@@ -77,7 +97,6 @@ class AbstractConfigManager {
   json getConfigData() {
     if (_loaded) {
       // If defaultValue is used, _configData is empty, but _loaded = true. It's
-      // cofusing. Any good solution?
       return this->_configData;
     } else {
       _loaded = true;

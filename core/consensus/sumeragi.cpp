@@ -22,6 +22,7 @@
 #include <service/peer_service.hpp>
 #include <thread_pool.hpp>
 #include <util/logger.hpp>
+#include <util/timer.hpp>
 
 #include <atomic>
 #include <cmath>
@@ -95,9 +96,8 @@ void printJudge(int numValidSignatures, int numValidationPeer, int faulty) {
       resLine[4] << "\033[91m+-＝-+\033[0m";
     }
   }
-  for (int i = 0; i < 5; ++i) {
-    logger::explore("sumeragi") << resLine[i].str();
-  }
+  for (int i = 0; i < 5; ++i) logger::explore("sumeragi") << resLine[i].str();
+
   std::string line;
   for (int i = 0; i < numValidationPeer; i++) line += "==＝==";
   logger::explore("sumeragi") << line;
@@ -288,7 +288,6 @@ std::uint64_t getNextOrder() {
   // return merkle_transaction_repository::getLastLeafOrder() + 1;
 }
 
-
 void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
   auto eventPtr =
       flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventUniqPtr.get());
@@ -443,30 +442,34 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
         connection::iroha::SumeragiImpl::Verify::sendAll(event);
         //
       }
+
+      timer::setAwkTimerForCurrentThread(3000, [&]() {
+          panic(event);
+      });
     }
   }
 }
 
 /**
- *
- * For example, given:
- * if f := 1, then
- *  _________________    _________________
- * /        A        \  /        B        \
- * |---|  |---|  |---|  |---|  |---|  |---|
- * | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
- * |---|  |---|  |---|  |---|  |---|  |---|,
- *
- * if 2f+1 signature are not received within the timer's limit, then
- * the set of considered validators, A, is expanded by f (e.g., by 1 in the
- * example below):
- *  ________________________    __________
- * /           A            \  /    B     \
- * |---|  |---|  |---|  |---|  |---|  |---|
- * | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
- * |---|  |---|  |---|  |---|  |---|  |---|.
- */
-void panic(std::unique_ptr<ConsensusEvent> event) {
+*
+* For example, given:
+* if f := 1, then
+*  _________________    _________________
+* /        A        \  /        B        \
+* |---|  |---|  |---|  |---|  |---|  |---|
+* | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
+* |---|  |---|  |---|  |---|  |---|  |---|,
+*
+* if 2f+1 signature are not received within the timer's limit, then
+* the set of considered validators, A, is expanded by f (e.g., by 1 in the
+* example below):
+*  ________________________    __________
+* /           A            \  /    B     \
+* |---|  |---|  |---|  |---|  |---|  |---|
+* | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
+* |---|  |---|  |---|  |---|  |---|  |---|.
+*/
+void panic(const ConsensusEvent &event) {
   context->panicCount++;  // TODO: reset this later
   auto broadcastStart =
       2 * context->maxFaulty + 1 + context->maxFaulty * context->panicCount;
@@ -486,14 +489,6 @@ void panic(std::unique_ptr<ConsensusEvent> event) {
   // WIP issue hash event
   // connection::sendAll(event->transaction().hash()); //TODO: change this to
   // only broadcast to peer range between broadcastStart and broadcastEnd
-}
-
-void setAwkTimer(int const sleepMillisecs,
-                 std::function<void(void)> const action) {
-  std::thread([action, sleepMillisecs]() {
-    std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
-    action();
-  });
 }
 
 /**

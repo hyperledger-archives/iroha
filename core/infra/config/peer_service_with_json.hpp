@@ -25,17 +25,14 @@ limitations under the License.
 
 namespace config {
 
-class PeerServiceConfig : config::AbstractConfigManager {
+class PeerServiceConfig : AbstractConfigManager {
  private:
+  PeerServiceConfig();
 
-    PeerServiceConfig():config::AbstractConfigManager(){}
-    ~PeerServiceConfig(){}
-
-protected:
-  void parseConfigDataFromString(std::string&& jsonStr);
+ protected:
+  void parseConfigDataFromString(std::string&& jsonStr) override;
 
  public:
-
   std::string getMyPublicKeyWithDefault(const std::string& defaultValue);
   std::string getMyPrivateKeyWithDefault(const std::string& defaultValue);
   std::string getMyIpWithDefault(const std::string& defaultValue);

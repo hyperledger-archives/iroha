@@ -28,8 +28,6 @@ limitations under the License.
 #include <repository/transaction_repository.hpp>
 #include <service/peer_service.hpp>
 #include <transaction_builder/transaction_builder.hpp>
-#include <util/exception.hpp>
-#include <util/logger.hpp>
 
 namespace peer {
 
@@ -195,7 +193,8 @@ bool start(const Node &peer) {
   }
 
   if (0) {  // WIP(leveldb don't active) Send transaction data separated block
-            // to new peer.
+    // to new peer.
+
     logger::debug("peer-service") << "send all transaction infomation";
     auto transactions = repository::transaction::findAll();
     std::size_t block_size = 500;

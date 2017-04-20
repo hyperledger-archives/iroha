@@ -40,7 +40,8 @@ void getNextOrder(std::unique_ptr<ConsensusEvent> event);
 
 void processTransaction(flatbuffers::unique_ptr_t&& event);
 
-void panic(std::unique_ptr<ConsensusEvent> event);
+void panic(const ConsensusEvent &event);
+
 void setAwkTimer(const int sleepMillisecs,
                  const std::function<void(void)> action);
 void determineConsensusOrder(/*std::vector<double> trustVector*/);

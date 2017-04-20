@@ -25,35 +25,27 @@ limitations under the License.
 using PeerServiceConfig = config::PeerServiceConfig;
 using nlohmann::json;
 
+PeerServiceConfig::PeerServiceConfig() {}
 
 PeerServiceConfig& PeerServiceConfig::getInstance() {
   static PeerServiceConfig serviceConfig;
   return serviceConfig;
 }
-// ToDo We can make more sort it. ===
+
+
 std::string PeerServiceConfig::getMyPublicKeyWithDefault(
     const std::string& defaultValue) {
-    auto config = getConfigData();
-    if (!config.is_null()) {
-    return config["me"]["publicKey"].get<std::string>();
-  }
-  return defaultValue;
+  return getParam<std::string>({"me", "publicKey"}, defaultValue);
 }
+
 std::string PeerServiceConfig::getMyPrivateKeyWithDefault(
     const std::string& defaultValue) {
-    auto config = getConfigData();
-    if (!config.is_null()) {
-    return config["me"]["privateKey"].get<std::string>();
-  }
-  return defaultValue;
+  return getParam<std::string>({"me", "privateKey"}, defaultValue);
 }
+
 std::string PeerServiceConfig::getMyIpWithDefault(
     const std::string& defaultValue) {
-    auto config = getConfigData();
-    if (!config.is_null()) {
-    return config["me"]["ip"].get<std::string>();
-  }
-  return defaultValue;
+  return getParam<std::string>({"me", "ip"}, defaultValue);
 }
 bool PeerServiceConfig::isExistIP(const std::string& ip) {
   // ToDo
@@ -61,21 +53,24 @@ bool PeerServiceConfig::isExistIP(const std::string& ip) {
   // return findPeerIP( std::move(ip) ) != peerList.end();
 }
 double PeerServiceConfig::getMaxTrustScoreWithDefault(double defaultValue) {
-  return getConfigData().value("max_trust_score", defaultValue);
+  return getParam<double>({"max_trust_score"}, defaultValue);
 }
-size_t PeerServiceConfig::getMaxFaultyScoreWithDefault(size_t defaultValue) {
-  // ToDo
-  return 1;  // getConfigData().value("max_trust_score", defaultValue);
+
+void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
+  try {
+    if (!ConfigFormat::getInstance().ensureFormatSumeragi(jsonStr)) {
+      throw exception::ParseFromStringException(getConfigName());
+    }
+    _configData = json::parse(std::move(jsonStr));
+  } catch (exception::ParseFromStringException& e) {
+    logger::warning("peer service config") << e.what();
+    logger::warning("peer service config") << getConfigName()
+                                           << " is set to be default.";
+  }
 }
 
 std::vector<json> PeerServiceConfig::getGroup() {
-  auto config = getConfigData();
-  if (!config.is_null()) {
-    return getConfigData()["group"].get<std::vector<json>>();
-  }
-
-  // default value
-  return std::vector<json>(
+  std::vector<json> defaultValue(
       {json({{"ip", "172.17.0.3"},
              {"name", "mizuki"},
              {"publicKey", "jDQTiJ1dnTSdGH+yuOaPPZIepUj1Xt3hYOvLQTME3V0="}}),
@@ -88,7 +83,9 @@ std::vector<json> PeerServiceConfig::getGroup() {
        json({{"ip", "172.17.0.6"},
              {"name", "samari"},
              {"publicKey", "Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU="}})});
+  return getParam<std::vector<json>>({"group"}, defaultValue);
 }
+
 double PeerServiceConfig::getMaxTrustScore() {
   return this->getMaxTrustScoreWithDefault(
       10.0);  // WIP to support trustRate = 10.0

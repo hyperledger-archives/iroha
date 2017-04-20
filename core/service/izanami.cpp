@@ -21,9 +21,9 @@ limitations under the License.
 #include <memory>
 #include <repository/transaction_repository.hpp>
 #include <service/peer_service.hpp>
-#include <string>
 #include <thread_pool.hpp>
-#include <vector>
+
+#include "util/timer.hpp"
 
 namespace peer {
 namespace izanami {
@@ -178,7 +178,7 @@ void receiveTransactionResponse(TransactionResponse &txResponse) {
     }
   }
   if (!event.isFinished() && txResponse.transaction().empty())
-    setAwkTimer(1000, [&txResponse]() {
+    timer::setAwkTimer(1000, [&txResponse]() {
       connection::iroha::PeerService::Izanami::send(::peer::myself::getIp(),
                                                     txResponse);
     });

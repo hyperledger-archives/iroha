@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 #include "config_format.hpp"
+#include "util/ip_tools.hpp"
 
 namespace config {
 
@@ -112,7 +113,7 @@ bool ConfigFormat::ensureFormat(json& actualConfig, json& formatConfig,
         std::regex ipRegex(
             "^(([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]).){3}([1-9]?[0-9]|1["
             "0-9]{2}|2[0-4][0-9]|25[0-5])$");
-        if (not std::regex_match(value, ipRegex)) {
+        if (!ip_tools::isIpValid(value)) {
           logger::warning("peer service with json")
               << "IP " << value << " looks like not a valid ip.";
           return false;

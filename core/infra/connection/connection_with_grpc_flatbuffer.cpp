@@ -64,7 +64,7 @@ class Receiver {
  public:
   void set(CallBackFunc&& rhs) {
     if (receiver_) {
-      throw exception::DuplicateSetException(
+      throw exception::ordinary::DuplicateSetArgumentException(
           "Receiver<" + std::string(typeid(CallBackFunc).name()) + ">",
           __FILE__);
     }

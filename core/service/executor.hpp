@@ -20,8 +20,8 @@ limitations under the License.
 
 namespace executor {
 
-using iroha::Transaction;
-void execute(const Transaction &tx);
+    using iroha::Transaction;
+    void execute(const Transaction &tx);
 
 };  // namespace executor
 

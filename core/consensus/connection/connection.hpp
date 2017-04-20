@@ -56,11 +56,26 @@ void receive(Verify::CallBackFunc &&callback);
  ************************************************************************************/
 namespace iroha { namespace SumeragiImpl { namespace Torii {
 
-
 using CallBackFunc = std::function<void(
     const std::string & /* from */,
     flatbuffers::unique_ptr_t&& /* message */)>;
 void receive(Torii::CallBackFunc &&callback);
+        /*
+        namespace HostDiscovery {
+
+            namespace getHostInfo {
+                bool receive(const std::function<void(
+                        const std::string &,
+                        DiscoverRequest &)> &callback
+                );
+
+                Peer send(
+                        const std::string &ip,
+                        const DiscoverRequest &message
+                );
+            }
+        }
+    }*/
 
 }}}  // namespace iroha::SumeragiImpl::Verify
 

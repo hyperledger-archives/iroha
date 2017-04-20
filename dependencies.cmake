@@ -285,6 +285,7 @@ set_target_properties(asio PROPERTIES
 add_dependencies(asio chriskohlhoff_asio)
 
 
+
 ###############################
 #         flatbuffers         #
 ###############################
@@ -307,6 +308,35 @@ set_target_properties(flatbuffers PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${flatbuffers_SOURCE_DIR}/include
 )
 add_dependencies(flatbuffers google_flatbuffers)
+
+
+
+#############################
+#         speedlog          #
+#############################
+ExternalProject_Add(gabime_spdlog
+  GIT_REPOSITORY    "https://github.com/gabime/spdlog.git"
+  GIT_TAG           "v0.13.0"
+  CONFIGURE_COMMAND "" # remove configure step
+  BUILD_COMMAND     "" # remove build step
+  INSTALL_COMMAND   "" # remove install step
+  TEST_COMMAND      "" # remove test step
+  UPDATE_COMMAND    "" # remove update step
+  )
+ExternalProject_Get_Property(gabime_spdlog source_dir)
+set(spdlog_INCLUDE_DIRS ${source_dir}/include)
+file(MAKE_DIRECTORY ${spdlog_INCLUDE_DIRS})
+
+add_library(spdlog INTERFACE IMPORTED)
+set_target_properties(spdlog PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${spdlog_INCLUDE_DIRS}
+  )
+
+add_dependencies(spdlog gabime_spdlog)
+
+
+
+
 
 #########################
 #         GRPC          #

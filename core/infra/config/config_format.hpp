@@ -35,6 +35,6 @@ class ConfigFormat {
   bool ensureFormat(nlohmann::json& actualConfig, nlohmann::json& formatConfig,
                     const std::string& history);
 };
-}  // namespace config
+}
 
 #endif

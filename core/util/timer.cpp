@@ -13,20 +13,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include <util/logger.hpp>
-#include <cappuccino.hpp>
 
-namespace http {
+#include "timer.hpp"
+#include <chrono>
+#include <thread>
 
-    void server() {
-        Cappuccino::Cappuccino(0, nullptr);
-        logger::info("server") << "No implement! (T _ T)";
-        Cappuccino::route<Cappuccino::Method::GET>("/",[](auto req)-> Cappuccino::Response{
-            auto res = Cappuccino::Response(req);
-            res.message("Ok");
-            return res;
-        });
-        Cappuccino::run();
-    }
+namespace timer {
+void setAwkTimer(int const sleepMillisecs,
+                 std::function<void(void)> const &action) {
+  std::thread([action, sleepMillisecs]() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+    action();
+  }).join();
+}
 
-};  // namespace http
+void setAwkTimerForCurrentThread(int const sleepMillisecs,
+                                 std::function<void(void)> const &action) {
+  std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+  action();
+}
+}

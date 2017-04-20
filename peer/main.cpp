@@ -21,11 +21,9 @@ limitations under the License.
 #include <consensus/connection/connection.hpp>
 #include <consensus/sumeragi.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-#include <server/http_server.hpp>
 
 std::atomic_bool running(true);
 
-void server() { http::server(); }
 
 void signalHandler(int param) {;
   logger::info("main") << "will halt (" << param << ")";
@@ -48,7 +46,6 @@ int main() {
   sumeragi::initializeSumeragi();
   // peer::izanami::startIzanami();
 
-  std::thread http_thread(server);
   std::thread check_server([&](){
       std::string cmd;
       while (running){
@@ -56,7 +53,6 @@ int main() {
           if(cmd == "quit"){
               logger::info("main") << "will halt ";
               connection::finish();
-              http_thread.detach();
               return;
           }
       }
