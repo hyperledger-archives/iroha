@@ -16,7 +16,7 @@
  */
 
 #include <infra/flatbuf/main_generated.h>
-#include "autogen_extend.h"
+#include "infra/service/flatbuffers/autogen_extend.h"
 
 #include <iostream>
 #include <map>

@@ -17,7 +17,7 @@
 
 #include <infra/flatbuf/commands_generated.h>
 #include <infra/flatbuf/main_generated.h>
-#include <util/logger.hpp>
+#include <utils/logger.hpp>
 
 #include <memory>
 #include <string>

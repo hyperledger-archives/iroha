@@ -21,8 +21,8 @@
 #include <service/executor.hpp>
 #include <service/peer_service.hpp>
 #include <thread_pool.hpp>
-#include <util/logger.hpp>
-#include <util/timer.hpp>
+#include <utils/logger.hpp>
+#include <utils/timer.hpp>
 
 #include <atomic>
 #include <cmath>

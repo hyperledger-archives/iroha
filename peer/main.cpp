@@ -18,7 +18,7 @@ limitations under the License.
 #include <atomic>
 #include <thread>
 
-#include <consensus/connection/connection.hpp>
+#include <connection/connection.hpp>
 #include <consensus/sumeragi.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 
