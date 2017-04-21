@@ -19,18 +19,24 @@
 #include <utils/expected.hpp>
 
 TEST(UseExpected, expectedWithException) {
-    auto definitelyEven = [](int number) -> Expected<std::string> {
-        if (number % 2 == 0) {
-            return "OK";
+    auto whatsNumber = [](int number) -> Expected<std::string> {
+        if (number == 123) {
+            return std::string("YES");
         }
-        return makeUnexpected(exception::IrohaException("Number should be even."));
+        if (number == 321) {
+            return makeUnexpected(exception::crypto::InvalidKeyException("Hoge"));
+        }
+        return makeUnexpected(exception::IrohaException("Invalid Number"));
     };
 
-    auto res = definitelyEven(0);
+    auto res = whatsNumber(123);
     if (res) {
-        ASSERT_STREQ(*res, "OK");
-        ASSERT_STREQ(res.value(), "OK");
+        ASSERT_STREQ((*res).c_str(), "YES");
+        ASSERT_STREQ(res.value().c_str(), "YES");
+    } else if (res = whatsNumber(321)) {
+        std::string str = *res;
+        ASSERT_STREQ(str.c_str(), "Keyfile is invalid, cause is: Hoge");
     } else {
-        ASSERT_STREQ(res.message(), "Number should be even.");
+        ASSERT_STREQ(res.message(), "Invalid Number");
     }
 }

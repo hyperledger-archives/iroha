@@ -4,6 +4,7 @@
 add_executable(expected_test expected_test.cpp)
 target_link_libraries(expected_test
   gtest
+  expected
 )
 add_test(
   NAME expected_test

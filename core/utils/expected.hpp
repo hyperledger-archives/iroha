@@ -19,7 +19,7 @@
 
 class UnexpectedType {
  public:
-  explicit UnexpectedType(exception::IrohaException&& exc) : exc_(exc);
+  explicit UnexpectedType(exception::IrohaException&& exc) : exc_(exc) {}
   const exception::IrohaException& exception() const noexcept;
 
  private:
@@ -33,8 +33,9 @@ class Expected {
  public:
   Expected(
       T&& value,
-      typename std::enable_if<!std::is_same<T, UnexpectedType>::value>::type* =
-          0)
+      typename std::enable_if<
+        !std::is_same<T, UnexpectedType>::value
+      >::type* = 0)
       : value_(std::forward<T>(value)),
         exc_(exception::IrohaException("")),
         valid_(true) {}
@@ -42,8 +43,23 @@ class Expected {
   Expected(UnexpectedType&& exc)
       : value_(T()), exc_(exc.exception()), valid_(false) {}
 
-  constexpr exception::IrohaException& error() noexcept;
-  const char* message() const;
+  constexpr bool valid() noexcept { return valid_; }
+  constexpr explicit operator bool() noexcept { return valid(); }
+
+  inline T& value() {
+    if (!valid()) throw exc_;
+    return value_;
+  }
+
+  inline T& operator*() { return value(); }
+
+  constexpr exception::IrohaException& error() noexcept { return exc_; }
+  const char* message() const { return exc_.message(); }
+
+ private:
+  T value_;
+  exception::IrohaException exc_;
+  bool valid_;
 };
 
 #endif  // IROHA_UTILS_EXCEPTION_HPP_

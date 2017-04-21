@@ -14,16 +14,10 @@
 
 #include "expected.hpp"
 
-UnexpectedType::UnexpectedType(exception::IrohaException&& exc) : exc_(exc) {}
 const exception::IrohaException& UnexpectedType::exception() const noexcept {
   return exc_;
 }
 
-UnexpectedType UnexpectedType::makeUnexpected(exception::IrohaException&& exc) {
+UnexpectedType makeUnexpected(exception::IrohaException&& exc) {
   return UnexpectedType(std::move(exc));
 }
-
-constexpr exception::IrohaException& Expected::error() noexcept {
-  return exc_;
-}
-const char* Expected::message() const { return exc_.message(); }
