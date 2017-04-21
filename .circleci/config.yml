@@ -72,6 +72,10 @@ jobs:
             TAG=$(echo $CIRCLE_BRANCH | sed "s/[^a-zA-Z0-9_\-\.]/./g")
             export TAG=$TAG 
 
+            if [ "$TAG" == "master" ]; then
+              TAG="latest"
+            fi
+
             # directory, where iroha build files will reside
             export RELEASE=$IROHA_HOME/docker/tiny/iroha
             mkdir -p $RELEASE/lib
