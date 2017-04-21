@@ -21,12 +21,14 @@ limitations under the License.
 
 namespace exception {
 
+// Base Exception
 IrohaException::IrohaException(const std::string &message)
     : message_(message) {}
 
 IrohaException::~IrohaException() {}
 
 const char *IrohaException::what() const throw() { return message_.c_str(); }
+
 
 NotImplementedException::NotImplementedException(
     const std::string &functionName, const std::string &filename)
@@ -37,22 +39,37 @@ NotImplementedException::NotImplementedException(
 ParseFromStringException::ParseFromStringException(const std::string &filename)
     : IrohaException("ParseFromStringException in file " + filename) {}
 
+
 InvalidCastException::InvalidCastException(const std::string &from,
                                            const std::string &to,
                                            const std::string &filename)
     : IrohaException("InvalidCastException in file " + filename +
                      ". Cannot cast from " + from + " to " + to) {}
 
+
 InvalidCastException::InvalidCastException(const std::string &meg,
                                            const std::string &filename)
     : IrohaException("InvalidCastException in " + filename + ". " + meg) {}
 
+DuplicateSetArgumentException::DuplicateSetArgumentException(
+    const std::string &buildTarget, const std::string &duplicateMember)
+    : IrohaException("DuplicateSetArgumentException in " + buildTarget +
+                     ", argument: " + duplicateMember) {}
+
+UnsetBuildArgumentsException::UnsetBuildArgumentsException(
+    const std::string &buildTarget, const std::string &unsetMembers)
+    : IrohaException("UnsetBuildArgumentsException in " + buildTarget +
+                     ", arguments: " + unsetMembers) {}
+
 namespace config {
+
 ConfigException::ConfigException(const std::string &message)
     : IrohaException("ConfigException: " + message) {}
+
 }  // namespace config
 
 namespace service {
+
 DuplicationIPException::DuplicationIPException(const std::string &ip)
     : IrohaException("DuplicationIPException : IP = " + ip) {}
 
@@ -63,25 +80,18 @@ DuplicationPublicKeyException::DuplicationPublicKeyException(
 
 UnExistFindPeerException::UnExistFindPeerException(const std::string &publicKey)
     : IrohaException("UnExistFindPeerException : publicKey = " + publicKey) {}
+
 }  // namespace service
 
 namespace crypto {
+
 InvalidKeyException::InvalidKeyException(const std::string &message)
     : IrohaException("Keyfile is invalid, cause is: " + message) {}
+
 InvalidMessageLengthException::InvalidMessageLengthException(
     const std::string &message)
     : IrohaException("Message " + message + " has wrong length") {}
+
 }  // namespace crypto
 
-namespace ordinary {
-DuplicateSetArgumentException::DuplicateSetArgumentException(
-    const std::string &buildTarget, const std::string &duplicateMember)
-    : IrohaException("DuplicateSetArgumentException in " + buildTarget +
-                     ", argument: " + duplicateMember) {}
-
-UnsetBuildArgumentsException::UnsetBuildArgumentsException(
-    const std::string &buildTarget, const std::string &unsetMembers)
-    : IrohaException("UnsetBuildArgumentsException in " + buildTarget +
-                     ", arguments: " + unsetMembers) {}
-}  // namespace ordinary
 }  // namespace exception

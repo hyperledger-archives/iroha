@@ -14,9 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "terminate.hpp"
+#include "datetime.hpp"
+#include <ctime>
 
-namespace terminate {
+namespace datetime {
 
-void finish() { exit(1); }
-}  // namespace terminate
+std::string unixtime_str() {
+  std::time_t result = std::time(nullptr);
+  return std::to_string(result);
+}
+
+std::uint64_t unixtime() {
+  return static_cast<std::uint64_t>(std::time(nullptr));
+}
+
+std::string date_str() {
+  std::time_t result = std::time(nullptr);
+  return std::asctime(std::localtime(&result));
+}
+
+std::string unixtime2date(time_t unixtime) {
+  return std::asctime(std::localtime(&unixtime));
+}
+
+};  // namespace datetime

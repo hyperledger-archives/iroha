@@ -19,8 +19,8 @@ limitations under the License.
 
 #include <fstream>  // ifstream, ofstream
 #include <json.hpp>
-#include <util/exception.hpp>
-#include <util/logger.hpp>
+#include <utils/exception.hpp>
+#include <utils/logger.hpp>
 #include "config_utils.hpp"
 
 namespace config {

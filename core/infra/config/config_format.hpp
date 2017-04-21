@@ -19,8 +19,8 @@ limitations under the License.
 
 #include <json.hpp>
 #include <regex>
-#include <util/exception.hpp>
-#include <util/logger.hpp>
+#include <utils/exception.hpp>
+#include <utils/logger.hpp>
 
 namespace config {
 class ConfigFormat {

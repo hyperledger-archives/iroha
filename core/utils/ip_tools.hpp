@@ -13,20 +13,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include <util/logger.hpp>
-#include <cappuccino.hpp>
 
-namespace http {
+#ifndef IROHA_IP_TOOLS_HPP
+#define IROHA_IP_TOOLS_HPP
 
-    void server() {
-        Cappuccino::Cappuccino(0, nullptr);
-        logger::info("server") << "No implement! (T _ T)";
-        Cappuccino::route<Cappuccino::Method::GET>("/",[](auto req)-> Cappuccino::Response{
-            auto res = Cappuccino::Response(req);
-            res.message("Ok");
-            return res;
-        });
-        Cappuccino::run();
-    }
+#include <string>
 
-};  // namespace http
+namespace ip_tools {
+
+bool isIpValid(const std::string &ip);
+
+uint32_t stringIpToUint(const std::string &ip);
+
+std::string uintIpToString(uint32_t ip);
+
+std::pair<uint32_t, uint32_t> getIpRangeByNetmask(const std::string &netmask);
+
+}  // namespace ip_tools
+
+#endif  // IROHA_IP_TOOLS_HPP

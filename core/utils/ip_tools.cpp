@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "ip_tools.hpp"
+#include <utils/ip_tools.hpp>
+#include <utils/logger.hpp>
+
 #include <iostream>
 #include <regex>
-#include "logger.hpp"
-
 
 namespace ip_tools {
+
 bool isIpValid(const std::string &ip) {
   std::regex ipRegex(
       "((([0-1]?\\d\\d?)|((2[0-4]\\d)|(25[0-5]))).){3}(([0-1]?\\d\\d?)|((2[0-4]"
@@ -102,4 +103,5 @@ std::pair<uint32_t, uint32_t> getIpRangeByNetmask(const std::string &netmask) {
 
   return result;
 };
+
 }  // namespace ip_tools

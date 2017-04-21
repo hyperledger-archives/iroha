@@ -5,7 +5,6 @@ add_executable(iroha-main
 )
 target_link_libraries(iroha-main
   sumeragi
-  http_server_with_cappuccino
   connection_with_grpc_flatbuffer
   config_manager
   ed25519

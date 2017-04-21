@@ -14,27 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "datetime.hpp"
+#include "timer.hpp"
+#include <chrono>
+#include <thread>
 
-#include <ctime>
+namespace timer {
 
-namespace datetime {
-
-std::string unixtime_str() {
-  std::time_t result = std::time(nullptr);
-  return std::to_string(result);
+void setAwkTimer(int const sleepMillisecs,
+                 std::function<void(void)> const &action) {
+  std::thread([action, sleepMillisecs]() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+    action();
+  })
+      .join();
 }
 
-std::uint64_t unixtime() {
-  return static_cast<std::uint64_t>(std::time(nullptr));
+void setAwkTimerForCurrentThread(int const sleepMillisecs,
+                                 std::function<void(void)> const &action) {
+  std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+  action();
 }
 
-std::string date_str() {
-  std::time_t result = std::time(nullptr);
-  return std::asctime(std::localtime(&result));
-}
-
-std::string unixtime2date(time_t unixtime) {
-  return std::asctime(std::localtime(&unixtime));
-}
-};  // namespace datetime
+}  // namespace timer

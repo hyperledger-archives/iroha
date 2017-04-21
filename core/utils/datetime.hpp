@@ -14,15 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef IROHA_TIMER_HPP
-#define IROHA_TIMER_HPP
+#ifndef __TIME_HPP_
+#define __TIME_HPP_
 
-#include <functional>
-namespace timer {
-void setAwkTimer(int const sleepMillisecs,
-                 std::function<void(void)> const &action);
-void setAwkTimerForCurrentThread(int const sleepMillisecs,
-                                 std::function<void(void)> const &action);
-}  // namespace timer
+#include <cstdint>
+#include <string>
 
-#endif  // IROHA_TIMER_HPP
+namespace datetime {
+
+std::uint64_t unixtime();
+
+std::string unixtime_str();
+
+std::string date_str();
+
+std::string unixtime2date(std::int64_t unixtime);
+
+};  // namespace datetime
+
+#endif

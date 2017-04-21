@@ -14,23 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "timer.hpp"
-#include <chrono>
-#include <thread>
+#ifndef IROHA_TIMER_HPP
+#define IROHA_TIMER_HPP
+
+#include <functional>
 
 namespace timer {
+
 void setAwkTimer(int const sleepMillisecs,
-                 std::function<void(void)> const &action) {
-  std::thread([action, sleepMillisecs]() {
-    std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
-    action();
-  })
-      .join();
-}
+                 std::function<void(void)> const &action);
 
 void setAwkTimerForCurrentThread(int const sleepMillisecs,
-                                 std::function<void(void)> const &action) {
-  std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
-  action();
-}
+                 std::function<void(void)> const &action);
+
 }  // namespace timer
+
+#endif  // IROHA_TIMER_HPP

@@ -16,8 +16,8 @@ limitations under the License.
 */
 
 #include <json.hpp>
-#include <util/exception.hpp>
-#include <util/logger.hpp>
+#include <utils/exception.hpp>
+#include <utils/logger.hpp>
 
 #include "config_format.hpp"
 #include "peer_service_with_json.hpp"
