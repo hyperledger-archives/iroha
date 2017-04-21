@@ -53,8 +53,8 @@ class Expected {
 
   inline T& operator*() { return value(); }
 
-  constexpr exception::IrohaException& error() noexcept { return exc_; }
-  const char* message() const { return exc_.message(); }
+  constexpr exception::IrohaException& exception() noexcept { return exc_; }
+  const char* error() const { return exc_.message(); }
 
  private:
   T value_;

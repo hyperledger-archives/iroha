@@ -29,14 +29,28 @@ TEST(UseExpected, expectedWithException) {
         return makeUnexpected(exception::IrohaException("Invalid Number"));
     };
 
-    auto res = whatsNumber(123);
-    if (res) {
-        ASSERT_STREQ((*res).c_str(), "YES");
-        ASSERT_STREQ(res.value().c_str(), "YES");
-    } else if (res = whatsNumber(321)) {
-        std::string str = *res;
-        ASSERT_STREQ(str.c_str(), "Keyfile is invalid, cause is: Hoge");
-    } else {
-        ASSERT_STREQ(res.message(), "Invalid Number");
+    {
+        auto res = whatsNumber(123);
+        if (res) {
+            ASSERT_STREQ((*res).c_str(), "YES");
+            ASSERT_STREQ(res.value().c_str(), "YES");
+        } else {
+            FAIL();
+        }
+    }
+
+    {
+        auto res = whatsNumber(321);
+        if (res) {
+            FAIL();
+        } else {
+            ASSERT_STREQ(res.error(), "Keyfile is invalid, cause is: Hoge");
+        }
+    }
+
+    {
+        auto res = whatsNumber(999);
+        ASSERT_FALSE(res);
+        ASSERT_STREQ(res.error(), "Invalid Number");
     }
 }
