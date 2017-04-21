@@ -22,8 +22,8 @@ limitations under the License.
 #include <string>
 #include <unordered_map>
 
-#include <infra/flatbuf/endpoint.grpc.fb.h>
-#include <infra/flatbuf/main_generated.h>
+#include <generated/endpoint.grpc.fb.h>
+#include <generated/main_generated.h>
 
 namespace connection {
 

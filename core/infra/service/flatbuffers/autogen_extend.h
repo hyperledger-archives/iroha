@@ -18,7 +18,7 @@
 #ifndef IROHA_FLATBUF_SERVICE_AUTOGEN_EXTEND_H_
 #define IROHA_FLATBUF_SERVICE_AUTOGEN_EXTEND_H_
 
-#include <infra/flatbuf/commands_generated.h>
+#include <generated/commands_generated.h>
 
 #include <memory>
 #include <string>

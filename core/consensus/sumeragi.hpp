@@ -26,7 +26,7 @@ limitations under the License.
 
 #include "consensus_event.hpp"
 
-#include <infra/flatbuf/main_generated.h>
+#include <generated/main_generated.h>
 #include <service/peer_service.hpp>
 
 namespace sumeragi {

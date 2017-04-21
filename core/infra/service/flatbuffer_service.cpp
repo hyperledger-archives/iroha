@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#include <infra/flatbuf/main_generated.h>
-#include "infra/service/flatbuffers/autogen_extend.h"
+#include <generated/main_generated.h>
+#include <infra/service/flatbuffers/autogen_extend.h>
 
 #include <iostream>
 #include <map>

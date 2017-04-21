@@ -18,7 +18,7 @@
 #include <memory>
 #include <unordered_map>
 #include <iostream>
-#include <infra/flatbuf/main_generated.h>
+#include <generated/main_generated.h>
 #include <service/flatbuffer_service.h>
 
 

@@ -14,11 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <flatbuffers/flatbuffers.h>
-#include <grpc++/grpc++.h>
-#include <service/flatbuffer_service.h>
 
 #include <connection/connection.hpp>
+#include <service/flatbuffer_service.h>
 #include <crypto/signature.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
@@ -26,6 +24,9 @@ limitations under the License.
 #include <service/peer_service.hpp>
 #include <utils/exception.hpp>
 #include <utils/logger.hpp>
+
+#include <flatbuffers/flatbuffers.h>
+#include <grpc++/grpc++.h>
 
 #include <algorithm>
 #include <memory>
