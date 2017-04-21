@@ -26,7 +26,7 @@ limitations under the License.
 
 #include <infra/service/http_client.hpp>
 
-#include <util/logger.hpp>
+#include <utils/logger.hpp>
 
 namespace http_client {
 

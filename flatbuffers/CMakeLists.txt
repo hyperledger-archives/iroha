@@ -1,7 +1,7 @@
-set(FLATBUF_DEST_DIR "${PROJECT_SOURCE_DIR}/core/infra/flatbuf")
+set(FLATBUF_DEST_DIR "${PROJECT_SOURCE_DIR}/include/generated")
 
 file(MAKE_DIRECTORY ${FLATBUF_DEST_DIR})
-execute_process(COMMAND bash "-c" "cd $IROHA_HOME/flatbuf; flatc --gen-mutable --cpp --grpc -o ${FLATBUF_DEST_DIR} *.fbs")
+execute_process(COMMAND bash "-c" "cd $IROHA_HOME/flatbuffers; flatc --gen-mutable --cpp --grpc -o ${FLATBUF_DEST_DIR} *.fbs")
 
 add_library(endpoint_fbs STATIC
     ${FLATBUF_DEST_DIR}/endpoint.grpc.fb.cc

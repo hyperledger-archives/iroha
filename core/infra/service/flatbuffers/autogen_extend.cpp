@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-#include <infra/flatbuf/commands_generated.h>
-#include <infra/flatbuf/main_generated.h>
+#include <generated/commands_generated.h>
+#include <generated/main_generated.h>
 #include <memory>
 #include <string>
-#include <util/logger.hpp>
+#include <utils/logger.hpp>
 
 #include "autogen_extend.h"
 

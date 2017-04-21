@@ -21,6 +21,7 @@ limitations under the License.
 #include <queue>
 #include <set>
 #include <vector>
+
 #include "abstract_config_manager.hpp"
 
 namespace config {

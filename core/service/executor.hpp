@@ -16,7 +16,7 @@ limitations under the License.
 #define IROHA_EXECUTOR_HPP_HPP
 
 
-#include <infra/flatbuf/main_generated.h>
+#include <generated/main_generated.h>
 
 namespace executor {
 

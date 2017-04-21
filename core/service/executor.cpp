@@ -13,7 +13,7 @@ limitations under the License.
 */
 #include "executor.hpp"
 
-#include <util/logger.hpp>
+#include <utils/logger.hpp>
 #include <service/flatbuffer_service.h>
 
 namespace executor {

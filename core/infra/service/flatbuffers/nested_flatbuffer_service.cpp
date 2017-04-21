@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-#include <infra/flatbuf/commands_generated.h>
-#include <infra/flatbuf/main_generated.h>
-#include <util/logger.hpp>
+#include <generated/commands_generated.h>
+#include <generated/main_generated.h>
+#include <utils/logger.hpp>
 
 #include <memory>
 #include <string>

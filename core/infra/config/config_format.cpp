@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 #include "config_format.hpp"
-#include "util/ip_tools.hpp"
+#include "utils/ip_tools.hpp"
 
 namespace config {
 

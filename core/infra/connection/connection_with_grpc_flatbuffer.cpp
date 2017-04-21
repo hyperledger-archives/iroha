@@ -14,16 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <flatbuffers/flatbuffers.h>
-#include <grpc++/grpc++.h>
+
+#include <connection/connection.hpp>
 #include <service/flatbuffer_service.h>
-#include <consensus/connection/connection.hpp>
 #include <crypto/signature.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
+
 #include <service/peer_service.hpp>
-#include <util/exception.hpp>
-#include <util/logger.hpp>
+#include <utils/exception.hpp>
+#include <utils/logger.hpp>
+
+#include <flatbuffers/flatbuffers.h>
+#include <grpc++/grpc++.h>
 
 #include <algorithm>
 #include <memory>
@@ -64,7 +67,7 @@ class Receiver {
  public:
   void set(CallBackFunc&& rhs) {
     if (receiver_) {
-      throw exception::ordinary::DuplicateSetArgumentException(
+      throw exception::DuplicateSetArgumentException(
           "Receiver<" + std::string(typeid(CallBackFunc).name()) + ">",
           __FILE__);
     }

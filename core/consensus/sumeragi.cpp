@@ -21,8 +21,8 @@
 #include <service/executor.hpp>
 #include <service/peer_service.hpp>
 #include <thread_pool.hpp>
-#include <util/logger.hpp>
-#include <util/timer.hpp>
+#include <utils/logger.hpp>
+#include <utils/timer.hpp>
 
 #include <atomic>
 #include <cmath>
@@ -207,10 +207,13 @@ void initializeSumeragi() {
       [](const std::string& from, flatbuffers::unique_ptr_t&& transaction) {
         logger::info("sumeragi") << "receive!";
 
-        flatbuffers::unique_ptr_t event = flatbuffer_service::toConsensusEvent(
-            *flatbuffers::GetRoot<::iroha::Transaction>(transaction.get()));
+        flatbuffers::unique_ptr_t eventUniqPtr =
+            flatbuffer_service::toConsensusEvent(
+                *flatbuffers::GetRoot<::iroha::Transaction>(transaction.get()));
 
-        auto&& task = [&event]() { processTransaction(std::move(event)); };
+        auto&& task = [e = std::move(eventUniqPtr)]() mutable {
+          processTransaction(std::move(e));
+        };
         pool.process(std::move(task));
 
         // ToDo I think std::unique_ptr<const T> is not popular. Is it?
@@ -225,40 +228,39 @@ void initializeSumeragi() {
         // pool.process(std::move(task));
       });
 
-  connection::iroha::SumeragiImpl::Verify::receive(
-      [](const std::string& from, flatbuffers::unique_ptr_t&& eventUniqPtr) {
+  connection::iroha::SumeragiImpl::Verify::receive([](
+      const std::string& from, flatbuffers::unique_ptr_t&& eventUniqPtr) {
 
-        auto eventPtr =
-            flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventUniqPtr.get());
+    auto eventPtr =
+        flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventUniqPtr.get());
 
-        logger::info("sumeragi") << "receive!";  // ToDo rewrite
-        logger::info("sumeragi") << "received message! sig:["
-                                 << eventPtr->peerSignatures()->size() << "]";
-        //        logger::info("sumeragi") << "received message! status:[" <<
-        if (eventPtr->code() == iroha::Code_COMMIT) {
-          if (txCache.find(detail::hash(*eventPtr->transactions()->Get(0))) ==
-              txCache.end()) {
-            executor::execute(*eventPtr->transactions()->Get(0));
-            txCache[detail::hash(*eventPtr->transactions()->Get(0))] =
-                "commited";
-          }
-        } else {
-          // send processTransaction(event) as a task to processing pool
-          // this returns std::future<void> object
-          // (std::future).get() method locks processing until result of
-          // processTransaction will be available but processTransaction returns
-          // void, so we don't have to call it and wait
-          // std::function<void()>&& task =
-          //    std::bind(processTransaction, std::move(event));
-          // pool.process(std::move(task));
+    logger::info("sumeragi") << "receive!";  // ToDo rewrite
+    logger::info("sumeragi") << "received message! sig:["
+                             << eventPtr->peerSignatures()->size() << "]";
+    //        logger::info("sumeragi") << "received message! status:[" <<
+    if (eventPtr->code() == iroha::Code_COMMIT) {
+      if (txCache.find(detail::hash(*eventPtr->transactions()->Get(0))) ==
+          txCache.end()) {
+        executor::execute(*eventPtr->transactions()->Get(0));
+        txCache[detail::hash(*eventPtr->transactions()->Get(0))] = "commited";
+      }
+    } else {
+      // send processTransaction(event) as a task to processing pool
+      // this returns std::future<void> object
+      // (std::future).get() method locks processing until result of
+      // processTransaction will be available but processTransaction returns
+      // void, so we don't have to call it and wait
+      // std::function<void()>&& task =
+      //    std::bind(processTransaction, std::move(event));
+      // pool.process(std::move(task));
 
-          // Copy ConsensusEvent
-          auto&& task = [&eventUniqPtr]() {
-            processTransaction(std::move(eventUniqPtr));
-          };
-          pool.process(std::move(task));
-        }
-      });
+      // Copy ConsensusEvent
+      auto&& task = [e = std::move(eventUniqPtr)]() mutable {
+        processTransaction(std::move(e));
+      };
+      pool.process(std::move(task));
+    }
+  });
 
   logger::info("sumeragi") << "initialize numValidatingPeers :"
                            << context->numValidatingPeers;

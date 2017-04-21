@@ -15,8 +15,8 @@ limitations under the License.
 */
 #include <flatbuffers/flatbuffers.h>
 #include <grpc++/grpc++.h>
-#include <infra/flatbuf/main_generated.h>
-#include <infra/flatbuf/endpoint.grpc.fb.h>
+#include <generated/main_generated.h>
+#include <generated/endpoint.grpc.fb.h>
 #include <algorithm>
 #include <memory>
 #include <string>

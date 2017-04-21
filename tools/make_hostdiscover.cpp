@@ -20,7 +20,7 @@ limitations under the License.
 #include <infra/config/iroha_config_with_json.hpp>
 #include <consensus/connection/connection.hpp>
 #include <thread>
-#include <util/ip_tools.hpp>
+#include <utils/ip_tools.hpp>
 
 using Api::DiscoverRequest;
 using Api::Peer;
