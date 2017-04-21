@@ -21,7 +21,7 @@ message(STATUS "-DBENCHMARKING=${BENCHMARKING}")
 include_directories(${PROJECT_SOURCE_DIR}/core)
 include("dependencies.cmake")
 
-add_subdirectory(flatbuf)
+add_subdirectory(flatbuffers)
 
 add_subdirectory(core)
 add_subdirectory(peer)
