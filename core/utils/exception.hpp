@@ -34,7 +34,10 @@ class IrohaException : public std::exception {
   std::string message_;
 };
 
-class None : public IrohaException {};
+class None : public IrohaException {
+ public:
+  None();
+};
 
 class NotImplementedException : public IrohaException {
  public:

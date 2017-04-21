@@ -32,6 +32,8 @@ TEST(UseExpected, expectedWithException) {
     {
         auto res = whatsNumber(123);
         if (res) {
+            ASSERT_TRUE(res);
+            ASSERT_TRUE(res.valid());
             ASSERT_STREQ((*res).c_str(), "YES");
             ASSERT_STREQ(res.value().c_str(), "YES");
         } else {
@@ -53,4 +55,14 @@ TEST(UseExpected, expectedWithException) {
         ASSERT_FALSE(res);
         ASSERT_STREQ(res.error(), "Invalid Number");
     }
+}
+
+TEST(UserExpected, VoidHandler) {
+    auto voidTest = [](int number) -> VoidHandler {
+        if (number != 123) {
+            return makeUnexpected(exception::IrohaException("Invalid"));
+        }
+        return {};
+    };
+    auto res = voidTest(123);
 }

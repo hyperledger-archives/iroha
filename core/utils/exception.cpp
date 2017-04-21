@@ -27,6 +27,9 @@ IrohaException::~IrohaException() {}
 const char *IrohaException::what() const throw() { return message_.c_str(); }
 const char *IrohaException::message() const { return message_.c_str(); }
 
+None::None()
+    : IrohaException("") {}
+
 NotImplementedException::NotImplementedException(
     const std::string &functionName, const std::string &filename)
     : IrohaException(
