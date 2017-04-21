@@ -21,7 +21,7 @@ limitations under the License.
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 
-#include <service/peer_service.hpp>
+#include <membership_service/peer_service.hpp>
 #include <utils/exception.hpp>
 #include <utils/logger.hpp>
 

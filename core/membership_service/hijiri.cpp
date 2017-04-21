@@ -18,8 +18,8 @@ limitations under the License.
 //
 
 #include <consensus/connection/connection.hpp>
-#include <service/hijiri.hpp>
-#include <service/peer_service.hpp>
+#include <membership_service/hijiri.hpp>
+#include <membership_service/peer_service.hpp>
 
 namespace peer {
 namespace hijiri {

@@ -30,6 +30,16 @@ namespace hijiri {
 void check(
     const std::string &ip);  // void checkBrokenPeer(const std::string &ip);
                              // [WIPn] does we need it? void checkAll();
+
+
+
+namespace my{
+
+/*
+ * To issue Check my db's root hash.
+ */
+void checkRootHash();
+}
 }  // namespace hijiri
 }  // namespace peer
 

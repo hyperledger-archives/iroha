@@ -76,45 +76,34 @@ std::shared_ptr<peer::Node> leader();
 }  // namespace service
 
 namespace transaction {
-namespace izanami {
-
-void finished();
-// invoke next to addPeer
-bool start(const Node &peer);
-
-}  // namespace izanami
-
 namespace isssue {
 
 // invoke to issue transaction
-void add(const peer::Node &);  // void toIssue_addPeer( const peer::Node& );
-void distruct(const std::string &);  // void toIssue_distructPeer( const
-                                     // std::string &publicKey );
+void add(const peer::Node &);  // TODO
+void distruct(const std::string &);  // TODO
+                                     // TODO
 void remove(const std::string
-                &);  // void toIssue_removePeer( const std::string &publicKey );
+                &);  // TODO
 void credit(const std::string
-                &);  // void toIssue_creditPeer( const std::string &publicKey );
+                &);  // TODO
 }  // namespace isssue
 
 namespace executor {
 // invoke when execute transaction
-bool add(const peer::Node &);  // bool addPeer( const peer::Node& );
-bool remove(
-    const std::string &);  // bool removePeer( const std::string &publicKey );
-bool update(const std::string &,
-            const peer::Node &);  // bool updatePeer( const std::string&
-                                  // publicKey, const peer::Node& peer );
+bool add(const peer::Node &); // TODO
+bool remove(const peer::Node &); // TODO
+bool setTrust(const std::string &, const double &); // TODO
+bool changeTrust(const std::string &, const double &); // TODO
+bool setActive(const std::string &, const bool active); // TODO
 }  // namespace executor
 
 namespace validator {
 // invoke when validator transaction
-bool add(const peer::Node &);  // bool validate_addPeer( const peer::Node& );
-bool remove(const std::string &);  // bool validate_removePeer( const
-                                   // std::string &publicKey );
-bool update(
-    const std::string &,
-    const peer::Node &);  // bool validate_updatePeer( const std::string&
-                          // publicKey, const peer::Node& peer );
+bool add(const peer::Node &);  // TODO
+bool remove(const peer::Node &);  // TODO
+bool setTrust(const std::string &, const double &); // TODO
+bool changeTrust(const std::string &, const double &); // TODO
+bool setActive(const std::string &, const bool active); // TODO
 }  // namespace validator
 }  // namespace transaction
 }  // namespace peer
