@@ -53,40 +53,6 @@ class InvalidCastException : public IrohaException {
   InvalidCastException(const std::string &meg, const std::string &filename);
 };
 
-namespace config {
-class ConfigException : public IrohaException {
- public:
-  ConfigException(const std::string &message);
-};
-}  // namespace config
-
-namespace service {
-class DuplicationIPException : public IrohaException {
- public:
-  explicit DuplicationIPException(const std::string &);
-};
-class DuplicationPublicKeyException : public IrohaException {
- public:
-  explicit DuplicationPublicKeyException(const std::string &);
-};
-class UnExistFindPeerException : public IrohaException {
- public:
-  explicit UnExistFindPeerException(const std::string &);
-};
-}  // namespace service
-
-namespace crypto {
-class InvalidKeyException : public IrohaException {
- public:
-  explicit InvalidKeyException(const std::string &);
-};
-class InvalidMessageLengthException : public IrohaException {
- public:
-  explicit InvalidMessageLengthException(const std::string &);
-};
-}  // namespace crypto
-
-namespace ordinary {
 class DuplicateSetArgumentException : public IrohaException {
  public:
   DuplicateSetArgumentException(const std::string &, const std::string &);
@@ -95,7 +61,48 @@ class UnsetBuildArgumentsException : public IrohaException {
  public:
   UnsetBuildArgumentsException(const std::string &, const std::string &);
 };
-}  // namespace ordinary
+
+namespace config {
+
+class ConfigException : public IrohaException {
+ public:
+  ConfigException(const std::string &message);
+};
+
+}  // namespace config
+
+namespace service {
+
+class DuplicationIPException : public IrohaException {
+ public:
+  explicit DuplicationIPException(const std::string &);
+};
+
+class DuplicationPublicKeyException : public IrohaException {
+ public:
+  explicit DuplicationPublicKeyException(const std::string &);
+};
+
+class UnExistFindPeerException : public IrohaException {
+ public:
+  explicit UnExistFindPeerException(const std::string &);
+};
+
+}  // namespace service
+
+namespace crypto {
+
+class InvalidKeyException : public IrohaException {
+ public:
+  explicit InvalidKeyException(const std::string &);
+};
+
+class InvalidMessageLengthException : public IrohaException {
+ public:
+  explicit InvalidMessageLengthException(const std::string &);
+};
+
+}  // namespace crypto
 }  // namespace exception
 
 #endif

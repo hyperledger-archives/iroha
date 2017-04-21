@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 #include "datetime.hpp"
-
 #include <ctime>
 
 namespace datetime {
@@ -37,4 +36,5 @@ std::string date_str() {
 std::string unixtime2date(time_t unixtime) {
   return std::asctime(std::localtime(&unixtime));
 }
+
 };  // namespace datetime

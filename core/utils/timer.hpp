@@ -18,11 +18,15 @@ limitations under the License.
 #define IROHA_TIMER_HPP
 
 #include <functional>
+
 namespace timer {
+
 void setAwkTimer(int const sleepMillisecs,
                  std::function<void(void)> const &action);
+
 void setAwkTimerForCurrentThread(int const sleepMillisecs,
-                                 std::function<void(void)> const &action);
+                 std::function<void(void)> const &action);
+
 }  // namespace timer
 
 #endif  // IROHA_TIMER_HPP

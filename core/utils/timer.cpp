@@ -19,6 +19,7 @@ limitations under the License.
 #include <thread>
 
 namespace timer {
+
 void setAwkTimer(int const sleepMillisecs,
                  std::function<void(void)> const &action) {
   std::thread([action, sleepMillisecs]() {
@@ -33,4 +34,5 @@ void setAwkTimerForCurrentThread(int const sleepMillisecs,
   std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
   action();
 }
+
 }  // namespace timer
