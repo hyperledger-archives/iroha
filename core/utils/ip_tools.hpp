@@ -14,23 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "timer.hpp"
-#include <chrono>
-#include <thread>
+#ifndef IROHA_IP_TOOLS_HPP
+#define IROHA_IP_TOOLS_HPP
 
-namespace timer {
-void setAwkTimer(int const sleepMillisecs,
-                 std::function<void(void)> const &action) {
-  std::thread([action, sleepMillisecs]() {
-    std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
-    action();
-  })
-      .join();
-}
+#include <string>
 
-void setAwkTimerForCurrentThread(int const sleepMillisecs,
-                                 std::function<void(void)> const &action) {
-  std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
-  action();
-}
-}  // namespace timer
+namespace ip_tools {
+
+bool isIpValid(const std::string &ip);
+
+uint32_t stringIpToUint(const std::string &ip);
+
+std::string uintIpToString(uint32_t ip);
+
+std::pair<uint32_t, uint32_t> getIpRangeByNetmask(const std::string &netmask);
+
+}  // namespace ip_tools
+
+#endif  // IROHA_IP_TOOLS_HPP

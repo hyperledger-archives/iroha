@@ -14,27 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "datetime.hpp"
+#ifndef IROHA_TIMER_HPP
+#define IROHA_TIMER_HPP
 
-#include <ctime>
+#include <functional>
 
-namespace datetime {
+namespace timer {
 
-std::string unixtime_str() {
-  std::time_t result = std::time(nullptr);
-  return std::to_string(result);
-}
+void setAwkTimer(int const sleepMillisecs,
+                 std::function<void(void)> const &action);
 
-std::uint64_t unixtime() {
-  return static_cast<std::uint64_t>(std::time(nullptr));
-}
+void setAwkTimerForCurrentThread(int const sleepMillisecs,
+                 std::function<void(void)> const &action);
 
-std::string date_str() {
-  std::time_t result = std::time(nullptr);
-  return std::asctime(std::localtime(&result));
-}
+}  // namespace timer
 
-std::string unixtime2date(time_t unixtime) {
-  return std::asctime(std::localtime(&unixtime));
-}
-};  // namespace datetime
+#endif  // IROHA_TIMER_HPP

@@ -14,9 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "terminate.hpp"
+#include "timer.hpp"
+#include <chrono>
+#include <thread>
 
-namespace terminate {
+namespace timer {
 
-void finish() { exit(1); }
-}  // namespace terminate
+void setAwkTimer(int const sleepMillisecs,
+                 std::function<void(void)> const &action) {
+  std::thread([action, sleepMillisecs]() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+    action();
+  })
+      .join();
+}
+
+void setAwkTimerForCurrentThread(int const sleepMillisecs,
+                                 std::function<void(void)> const &action) {
+  std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+  action();
+}
+
+}  // namespace timer

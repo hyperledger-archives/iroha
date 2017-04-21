@@ -14,19 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __TIME_HPP_
-#define __TIME_HPP_
-
-#include <cstdint>
-#include <string>
+#include "datetime.hpp"
+#include <ctime>
 
 namespace datetime {
 
-std::uint64_t unixtime();
-std::string unixtime_str();
-std::string date_str();
+std::string unixtime_str() {
+  std::time_t result = std::time(nullptr);
+  return std::to_string(result);
+}
 
-std::string unixtime2date(std::int64_t unixtime);
+std::uint64_t unixtime() {
+  return static_cast<std::uint64_t>(std::time(nullptr));
+}
+
+std::string date_str() {
+  std::time_t result = std::time(nullptr);
+  return std::asctime(std::localtime(&result));
+}
+
+std::string unixtime2date(time_t unixtime) {
+  return std::asctime(std::localtime(&unixtime));
+}
+
 };  // namespace datetime
-
-#endif
