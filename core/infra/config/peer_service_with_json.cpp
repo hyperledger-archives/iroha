@@ -25,9 +25,9 @@ limitations under the License.
 using PeerServiceConfig = config::PeerServiceConfig;
 using nlohmann::json;
 
-PeerServiceConfig::PeerServiceConfig() {}
+PeerServiceConfig::PeerServiceConfig() noexcept {}
 
-PeerServiceConfig& PeerServiceConfig::getInstance() {
+PeerServiceConfig& PeerServiceConfig::getInstance() noexcept {
   static PeerServiceConfig serviceConfig;
   return serviceConfig;
 }

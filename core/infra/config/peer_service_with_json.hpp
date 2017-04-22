@@ -30,7 +30,7 @@ namespace config {
 
 class PeerServiceConfig : AbstractConfigManager {
  private:
-  PeerServiceConfig();
+  PeerServiceConfig() noexcept;
 
  protected:
   VoidHandler parseConfigDataFromString(std::string&& jsonStr) override;
