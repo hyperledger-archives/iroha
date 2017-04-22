@@ -41,14 +41,8 @@ class AbstractConfigManager {
   }
 
   json openConfigData() {
-    auto iroha_home = config::get_iroha_home();
-    if (iroha_home == nullptr) {
-      logger::error("config") << "Set environment variable IROHA_HOME";
-      exit(EXIT_FAILURE);
-    }
-    // Todo remove last '/'
-    auto configFolderPath = std::string(iroha_home) + "";
-    auto jsonStr = readConfigData(configFolderPath + this->getConfigName(), "");
+    auto configFolderPath = config::get_iroha_home() + this->getConfigName();
+    auto jsonStr = readConfigData(configFolderPath, "");
 
     if (jsonStr.empty()) {
       logger::warning("config") << "there is no config '" << getConfigName()
@@ -86,8 +80,7 @@ class AbstractConfigManager {
       _configData = json::parse(std::move(jsonStr));
       return {};
     } catch (...) {
-      return makeUnexpected(exception::config::ConfigException(
-          "Can't parse json: " + getConfigName()));
+      return makeUnexpected(exception::config::ParseException(getConfigName()));
     }
   }
 

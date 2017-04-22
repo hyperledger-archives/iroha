@@ -44,7 +44,7 @@ class PeerServiceConfig : AbstractConfigManager {
   size_t getMaxFaultyScoreWithDefault(size_t defaultValue);
   std::vector<json> getGroup();
 
-  static PeerServiceConfig& getInstance();
+  static PeerServiceConfig& getInstance() noexcept;
 
   double getMaxTrustScore();
 

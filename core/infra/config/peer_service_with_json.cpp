@@ -64,9 +64,8 @@ VoidHandler PeerServiceConfig::parseConfigDataFromString(
     _configData = json::parse(std::move(jsonStr));
     return {};
   } else {
-    return makeUnexpected(exception::ConfigException(
-        "PeerService",
-        "Failed parse config. " + getConfigName() + " is set to be default."));
+    return makeUnexpected(
+        exception::config::ParseException(getConfigName(), true));
   }
 }
 

@@ -7,7 +7,7 @@ add_library(config_manager STATIC
 
 target_link_libraries(config_manager
   json
-  exception
+  expected
   logger
   ip_tools
 )
