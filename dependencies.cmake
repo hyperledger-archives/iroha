@@ -289,25 +289,38 @@ add_dependencies(asio chriskohlhoff_asio)
 ###############################
 #         flatbuffers         #
 ###############################
+set(flatbuffers_CMAKE_ARGS
+  -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+  -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+  -DFLATBUFFERS_BUILD_TESTS=OFF
+  -DFLATBUFFERS_INSTALL=OFF
+  -DFLATBUFFERS_BUILD_FLATHASH=OFF
+  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+  -DFLATBUFFERS_BUILD_FLATC=ON
+  )
 ExternalProject_Add(google_flatbuffers
   GIT_REPOSITORY "https://github.com/google/flatbuffers.git"
   GIT_TAG "master"
-  BUILD_IN_SOURCE 1
+  CMAKE_ARGS     ${flatbuffers_CMAKE_ARGS}
   UPDATE_COMMAND ""
-  CMAKE_GENERATOR "Unix Makefiles"
-  BUILD_COMMAND "make"
+  TEST_COMMAND   ""
   INSTALL_COMMAND ""
 )
 
-ExternalProject_Get_Property(google_flatbuffers source_dir)
-set(flatbuffers_SOURCE_DIR "${source_dir}")
+ExternalProject_Get_Property(google_flatbuffers source_dir binary_dir)
+set(flatbuffers_INCLUDE_DIRS ${source_dir}/include)
+set(flatbuffers_LIBRARIES ${binary_dir}/libflatbuffers.a)
+set(flatc_EXECUTABLE ${binary_dir}/flatc)
+file(MAKE_DIRECTORY ${flatbuffers_INCLUDE_DIRS})
 
-add_library(flatbuffers INTERFACE IMPORTED)
-file(MAKE_DIRECTORY ${flatbuffers_SOURCE_DIR}/include)
+add_custom_target(flatc DEPENDS google_flatbuffers)
+
+add_library(flatbuffers STATIC IMPORTED)
 set_target_properties(flatbuffers PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${flatbuffers_SOURCE_DIR}/include
-)
-add_dependencies(flatbuffers google_flatbuffers)
+  INTERFACE_INCLUDE_DIRECTORIES ${flatbuffers_INCLUDE_DIRS}
+  IMPORTED_LOCATION ${flatbuffers_LIBRARIES}
+  )
+add_dependencies(flatbuffers google_flatbuffers flatc)
 
 
 
@@ -337,7 +350,7 @@ add_dependencies(spdlog gabime_spdlog)
 
 
 ###############################
-#         flatbuffers         #
+#         ametsuchi           #
 ###############################
 ExternalProject_Add(hyperledger_iroha_ametsuchi
   GIT_REPOSITORY "https://github.com/hyperledger/iroha-ametsuchi.git"
@@ -363,21 +376,65 @@ add_dependencies(iroha_ametsuchi hyperledger_iroha_ametsuchi)
 #########################
 #         GRPC          #
 #########################
-#ExternalProject_Add(grpc_grpc
-#  GIT_REPOSITORY "https://github.com/grpc/grpc.git"
-#  GIT_TAG           "master"
-#  BUILD_IN_SOURCE 1
-#  UPDATE_COMMAND ""
-#  BUILD_COMMAND make
-#  INSTALL_COMMAND bash "-c" "make install"
-#)
+# Include path for C core library.
+find_path(GRPC_INCLUDE_DIR grpc/grpc.h)
 
-#ExternalProject_Get_Property(grpc_grpc source_dir)
-#set(flatbuffers_SOURCE_DIR "${source_dir}")
+if (NOT GRPC_INCLUDE_DIR)
+  ExternalProject_Add(grpc_grpc
+    GIT_REPOSITORY "https://github.com/grpc/grpc.git"
+    GIT_TAG           "v1.2.0"
+    BUILD_IN_SOURCE 1
+    BUILD_COMMAND bash -c $(MAKE)
+    CONFIGURE_COMMAND "" # remove configure step
+    INSTALL_COMMAND   "" # remove install step
+    TEST_COMMAND      "" # remove test step
+    UPDATE_COMMAND    "" # remove update step
+    )
 
-#add_library(grpc INTERFACE IMPORTED)
-#file(MAKE_DIRECTORY ${grpc_SOURCE_DIR}/include)
-#set_target_properties(grpc PROPERTIES
-#  INTERFACE_INCLUDE_DIRECTORIES ${grpc_SOURCE_DIR}/include
-#)
-#add_dependencies(grpc grpc_grpc)
+  ExternalProject_Get_Property(grpc_grpc source_dir)
+  set(grpc_INCLUDE_DIRS ${source_dir}/include)
+  file(MAKE_DIRECTORY ${grpc_INCLUDE_DIRS})
+
+  add_library(grpc STATIC IMPORTED)
+  set_target_properties(grpc PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${grpc_INCLUDE_DIRS}
+    IMPORTED_LOCATION ${source_dir}/libs/opt/libgrpc.a
+    )
+  add_dependencies(grpc grpc_grpc)
+
+  add_library(grpc_unsecure STATIC IMPORTED)
+  set_target_properties(grpc_unsecure PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES ${grpc_INCLUDE_DIRS}
+      IMPORTED_LOCATION ${source_dir}/libs/opt/libgrpc_unsecure.a
+      )
+  add_dependencies(grpc_unsecure grpc_grpc)
+
+  add_library(grpc++ STATIC IMPORTED)
+  set_target_properties(grpc++ PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES ${grpc_INCLUDE_DIRS}
+      IMPORTED_LOCATION ${source_dir}/libs/opt/libgrpc++.a
+      )
+  add_dependencies(grpc++ grpc_grpc)
+
+  add_library(grpc++_unsecure STATIC IMPORTED)
+  set_target_properties(grpc++_unsecure PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES ${grpc_INCLUDE_DIRS}
+      IMPORTED_LOCATION ${source_dir}/libs/opt/libgrpc++_unsecure.a
+      )
+  add_dependencies(grpc++_unsecure grpc_grpc)
+
+  add_library(grpc++_reflection STATIC IMPORTED)
+  set_target_properties(grpc++_reflection PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES ${grpc_INCLUDE_DIRS}
+      IMPORTED_LOCATION ${source_dir}/libs/opt/libgrpc++_reflection.a
+      )
+  add_dependencies(grpc++_reflection grpc_grpc)
+
+  add_library(gpr STATIC IMPORTED)
+  set_target_properties(gpr PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES ${grpc_INCLUDE_DIRS}
+      IMPORTED_LOCATION ${source_dir}/libs/opt/libgpr.a
+      )
+  add_dependencies(gpr grpc_grpc)
+endif ()
+
