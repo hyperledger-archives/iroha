@@ -23,37 +23,28 @@ limitations under the License.
 #include <deque>
 #include <regex>
 
-#include <consensus/connection/connection.hpp>
+//#include <connection/connection.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <membership_service/peer_service.hpp>
 
 namespace peer {
 
 using PeerServiceConfig = config::PeerServiceConfig;
-using txbuilder::TransactionBuilder;
-using type_signatures::Update;
-using type_signatures::Add;
-using type_signatures::Remove;
-using type_signatures::Peer;
-
 Nodes peerList;
 bool is_active;
 
 namespace myself {
 
 std::string getPublicKey() {
-  return PeerServiceConfig::getInstance().getMyPublicKeyWithDefault(
-      "Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU=");
+  return PeerServiceConfig::getInstance().getMyPublicKey();
 }
 
 std::string getPrivateKey() {
-  return PeerServiceConfig::getInstance().getMyPrivateKeyWithDefault(
-      "aGIuSZRhnGfFyeoKNm/"
-      "NbTylnAvRfMu3KumOEfyT2HPf36jSF22m2JXWrdCmKiDoshVqjFtZPX3WXaNuo9L8WA==");
+  return PeerServiceConfig::getInstance().getMyPrivateKey();
 }
 
 std::string getIp() {
-  return PeerServiceConfig::getInstance().getMyIpWithDefault("172.17.0.6");
+  return PeerServiceConfig::getInstance().getMyIp();
 }
 
 bool isActive() { return is_active; }
@@ -80,7 +71,7 @@ void initialize() {
     peerList.push_back(std::make_shared<Node>(
         json_peer["ip"].get<std::string>(),
         json_peer["publicKey"].get<std::string>(),
-        PeerServiceConfig::getInstance().getMaxTrustScore()));
+        PeerServiceConfig::getInstance().getMaxTrustScore(100.0)));
   }
 }
 
@@ -191,7 +182,7 @@ void remove(const std::string &publicKey) {
 void credit(const std::string &publicKey) {
   if (!service::isExistPublicKey(publicKey)) return;
   if ((*service::findPeerPublicKey(publicKey))->trustScore ==
-      PeerServiceConfig::getInstance().getMaxTrustScore()) {
+      PeerServiceConfig::getInstance().getMaxTrustScore(100.0)) {
     return;
   }
 /*  auto txPeer =

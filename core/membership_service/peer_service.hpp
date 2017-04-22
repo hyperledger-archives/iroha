@@ -27,7 +27,7 @@ inline static const std::string defaultIP() { return ""; }
 
 inline static const std::string defaultPubKey() { return ""; }
 
-struct Node {
+struct Node {//TODO change
   std::string ip;
   std::string publicKey;
   double trustScore;

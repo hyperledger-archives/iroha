@@ -19,8 +19,8 @@ limitations under the License.
 #include <utils/exception.hpp>
 #include <utils/logger.hpp>
 
-#include "config_format.hpp"
-#include "peer_service_with_json.hpp"
+#include <infra/config/config_format.hpp>
+#include <infra/config/peer_service_with_json.hpp>
 
 using PeerServiceConfig = config::PeerServiceConfig;
 using nlohmann::json;
@@ -32,27 +32,20 @@ PeerServiceConfig& PeerServiceConfig::getInstance() {
   return serviceConfig;
 }
 
-
-std::string PeerServiceConfig::getMyPublicKeyWithDefault(
-    const std::string& defaultValue) {
-  return getParam<std::string>({"me", "publicKey"}, defaultValue);
+std::string PeerServiceConfig::getMyPublicKey() {
+  return getParamWithAssert<std::string>({"me", "publicKey"});
 }
 
-std::string PeerServiceConfig::getMyPrivateKeyWithDefault(
-    const std::string& defaultValue) {
-  return getParam<std::string>({"me", "privateKey"}, defaultValue);
+
+std::string PeerServiceConfig::getMyPrivateKey() {
+  return getParamWithAssert<std::string>({"me","privateKey"});
 }
 
-std::string PeerServiceConfig::getMyIpWithDefault(
-    const std::string& defaultValue) {
-  return getParam<std::string>({"me", "ip"}, defaultValue);
+std::string PeerServiceConfig::getMyIp() {
+  return getParamWithAssert<std::string>({"me","ip"});
 }
-bool PeerServiceConfig::isExistIP(const std::string& ip) {
-  // ToDo
-  return true;
-  // return findPeerIP( std::move(ip) ) != peerList.end();
-}
-double PeerServiceConfig::getMaxTrustScoreWithDefault(double defaultValue) {
+
+double PeerServiceConfig::getMaxTrustScore(double defaultValue) {
   return getParam<double>({"max_trust_score"}, defaultValue);
 }
 
@@ -70,23 +63,5 @@ void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
 }
 
 std::vector<json> PeerServiceConfig::getGroup() {
-  std::vector<json> defaultValue(
-      {json({{"ip", "172.17.0.3"},
-             {"name", "mizuki"},
-             {"publicKey", "jDQTiJ1dnTSdGH+yuOaPPZIepUj1Xt3hYOvLQTME3V0="}}),
-       json({{"ip", "172.17.0.4"},
-             {"name", "natori"},
-             {"publicKey", "Q5PaQEBPQLALfzYmZyz9P4LmCNfgM5MdN1fOuesw3HY="}}),
-       json({{"ip", "172.17.0.5"},
-             {"name", "kabohara"},
-             {"publicKey", "f5MWZUZK9Ga8XywDia68pH1HLY/Ts0TWBHsxiFDR0ig="}}),
-       json({{"ip", "172.17.0.6"},
-             {"name", "samari"},
-             {"publicKey", "Sht5opDIxbyK+oNuEnXUs5rLbrvVgb2GjSPfqIYGFdU="}})});
-  return getParam<std::vector<json>>({"group"}, defaultValue);
-}
-
-double PeerServiceConfig::getMaxTrustScore() {
-  return this->getMaxTrustScoreWithDefault(
-      10.0);  // WIP to support trustRate = 10.0
+  return getParamWithAssert<std::vector<json>>({"group"});
 }

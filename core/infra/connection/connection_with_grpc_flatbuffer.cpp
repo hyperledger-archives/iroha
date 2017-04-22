@@ -102,7 +102,7 @@ void receive(Verify::CallBackFunc&& callback) {
 bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
   // ToDo: Extract transaction from consensus event.
   logger::info("Connection with grpc") << "Send!";
-  if (config::PeerServiceConfig::getInstance().isExistIP(ip)) {
+  if (::peer::service::isExistIP(ip)) {
     logger::info("Connection with grpc") << "isExistIP " << ip;
 
     auto channel =
@@ -194,7 +194,7 @@ bool sendAll(const ::iroha::ConsensusEvent& event) {
   auto receiver_ips = config::PeerServiceConfig::getInstance().getGroup();
   for (const auto& p : receiver_ips) {
     if (p["ip"].get<std::string>() !=
-        config::PeerServiceConfig::getInstance().getMyIpWithDefault("AA")) {
+        config::PeerServiceConfig::getInstance().getMyIp()) {
       logger::info("connection") << "Send to " << p["ip"].get<std::string>();
       send(p["ip"].get<std::string>(), event);
     }
