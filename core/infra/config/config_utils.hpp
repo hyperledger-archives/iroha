@@ -19,7 +19,7 @@ limitations under the License.
 
 namespace config {
 
-char* get_iroha_home(char* default_path = nullptr);
+const char* get_iroha_home();
 }
 
 #endif

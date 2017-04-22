@@ -16,10 +16,30 @@ limitations under the License.
 
 #include "config_utils.hpp"
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <utils/logger.hpp>
 
 namespace config {
-char* get_iroha_home(char* default_path) {
+const char* get_iroha_home() {
   auto iroha_home = getenv("IROHA_HOME");
-  return iroha_home ? iroha_home : default_path;
+  if (!iroha_home) {
+    logger::fatal("config") << "Set environment variable IROHA_HOME";
+    exit(EXIT_FAILURE);
+  }
+
+  auto iroha_home_with_slash = std::string(iroha_home);
+  if (iroha_home_with_slash.back() != '/') {
+    iroha_home_with_slash += '/';
+  }
+
+  struct stat info;
+  if (stat(iroha_home_with_slash.c_str(), &info) != 0) {
+    logger::fatal("config")
+        << "Cannot access IROHA_HOME directory. Does it exist?";
+    exit(EXIT_FAILURE);
+  }
+
+  return iroha_home_with_slash.c_str();
 }
 }
