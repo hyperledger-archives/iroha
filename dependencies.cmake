@@ -336,6 +336,28 @@ add_dependencies(spdlog gabime_spdlog)
 
 
 
+###############################
+#         flatbuffers         #
+###############################
+ExternalProject_Add(hyperledger_iroha_ametsuchi
+  GIT_REPOSITORY "https://github.com/hyperledger/iroha-ametsuchi.git"
+  GIT_TAG "only_lmdb"
+  BUILD_IN_SOURCE 1
+  UPDATE_COMMAND ""
+  BUILD_COMMAND  bash "-c" "mkdir -p build && cd build; cmake ..; make"
+  INSTALL_COMMAND ""
+)
+
+ExternalProject_Get_Property(hyperledger_iroha_ametsuchi source_dir)
+set(iroha_ametsuchi_SOURCE_DIR "${source_dir}")
+
+add_library(iroha_ametsuchi INTERFACE IMPORTED)
+file(MAKE_DIRECTORY ${iroha_ametsuchi_SOURCE_DIR}/include)
+set_target_properties(iroha_ametsuchi PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${iroha_ametsuchi_SOURCE_DIR}/include
+)
+add_dependencies(iroha_ametsuchi hyperledger_iroha_ametsuchi)
+
 
 
 #########################
