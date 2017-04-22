@@ -13,15 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#include "runtime.hpp"
 
-#include "validator.hpp"
+namespace runtime{
 
-namespace validator{
-
-    bool account_exist_validator(){}
-
-    bool permission_validator(){}
-
-    bool logic_validator(){}
+    void processTransaction(){}
 
 };

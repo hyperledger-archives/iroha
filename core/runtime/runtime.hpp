@@ -14,14 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "validator.hpp"
+#ifndef IROHA_RUNTIME_HPP
+#define IROHA_RUNTIME_HPP
 
-namespace validator{
+namespace runtime{
 
-    bool account_exist_validator(){}
-
-    bool permission_validator(){}
-
-    bool logic_validator(){}
+    void processTransaction();
 
 };
+
+#endif //IROHA_RUNTIME_HPP

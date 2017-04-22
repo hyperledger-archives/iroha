@@ -18,8 +18,11 @@ limitations under the License.
 #define CORE_CRYPTO_HASH_HPP__
 
 namespace validator{
+
     bool account_exist_validator();
+
     bool permission_validator();
+
     bool logic_validator();
 };
 
