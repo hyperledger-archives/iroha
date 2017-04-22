@@ -18,26 +18,46 @@ limitations under the License.
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <utils/expected.hpp>
 #include <utils/logger.hpp>
 
 namespace config {
-const char* get_iroha_home() {
-  auto iroha_home = getenv("IROHA_HOME");
-  if (!iroha_home) {
-    logger::fatal("config") << "Set environment variable IROHA_HOME";
-    exit(EXIT_FAILURE);
-  }
 
-  auto iroha_home_with_slash = std::string(iroha_home);
-  if (iroha_home_with_slash.back() != '/') {
-    iroha_home_with_slash += '/';
+namespace detail {
+std::string appendSlashIfNeeded(const std::string& str) {
+  if (str.empty()) {
+    return std::string("/");
   }
+  if (str.back() != '/') {
+    return str + "/";
+  }
+  return str;
+}
 
+VoidHandler ensureDirectoryExists(const std::string& path) {
+  // TODO: Definitely ensure directory, not file.
   struct stat info;
-  if (stat(iroha_home_with_slash.c_str(), &info) != 0) {
-    logger::fatal("config")
-        << "Cannot access IROHA_HOME directory. Does it exist?";
-    exit(EXIT_FAILURE);
+  if (stat(path.c_str(), &info) != 0) {
+    return makeUnexpected(exception::NotFoundDirectoryException(path));
+  }
+  return {};
+}
+}  // namespace detail
+
+// This method's exceptions don't be caughted. (fatal error)
+const char* get_iroha_home() {
+  const auto iroha_home_ptr = getenv("IROHA_HOME");
+  if (iroha_home_ptr == nullptr) {
+    throw exception::config::UndefinedIrohaHomeException();
+  }
+
+  const auto iroha_home_with_slash =
+      detail::appendSlashIfNeeded(std::string(iroha_home_ptr));
+
+  const auto res = detail::ensureDirectoryExists(iroha_home_with_slash);
+  if (!res) {
+    logger::error("config") << "Invalid $IROHA_HOME";
+    std::rethrow_exception(res.excptr());
   }
 
   return iroha_home_with_slash.c_str();
