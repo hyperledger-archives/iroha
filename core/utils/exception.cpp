@@ -24,8 +24,7 @@ IrohaException::IrohaException(const std::string &message)
 
 IrohaException::~IrohaException() {}
 
-const char *IrohaException::what() const throw() { return message_.c_str(); }
-const char *IrohaException::message() const { return message_.c_str(); }
+const char *IrohaException::what() const noexcept { return message_.c_str(); }
 
 None::None()
     : IrohaException("") {}

@@ -27,8 +27,7 @@ class IrohaException : public std::exception {
   explicit IrohaException(const std::string &);
 
   virtual ~IrohaException();
-  virtual const char *what() const throw();
-  virtual const char* message() const;
+  virtual const char *what() const noexcept;
 
  protected:
   std::string message_;

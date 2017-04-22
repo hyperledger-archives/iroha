@@ -14,10 +14,23 @@
 
 #include "expected.hpp"
 
-const exception::IrohaException& UnexpectedType::exception() const noexcept {
-  return exc_;
+UnexpectedType::UnexpectedType(std::exception_ptr&& excptr) noexcept
+    : excptr_(excptr) {}
+
+const std::exception_ptr& UnexpectedType::excptr() const noexcept {
+  return excptr_;
 }
 
-UnexpectedType makeUnexpected(exception::IrohaException&& exc) {
-  return UnexpectedType(std::move(exc));
+VoidHandler::VoidHandler() noexcept
+    : excptr_(std::make_exception_ptr(exception::None())), valid_(true) {}
+
+VoidHandler::VoidHandler(const UnexpectedType& exc) noexcept
+    : excptr_(exc.excptr()), valid_(false) {}
+
+const char* VoidHandler::error() const noexcept {
+  try {
+    std::rethrow_exception(excptr_);
+  } catch (const exception::IrohaException& e) {
+    return e.what();
+  }
 }

@@ -18,51 +18,90 @@
 #include <gtest/gtest.h>
 #include <utils/expected.hpp>
 
-TEST(UseExpected, expectedWithException) {
-    auto whatsNumber = [](int number) -> Expected<std::string> {
-        if (number == 123) {
-            return std::string("YES");
-        }
-        if (number == 321) {
-            return makeUnexpected(exception::crypto::InvalidKeyException("Hoge"));
-        }
-        return makeUnexpected(exception::IrohaException("Invalid Number"));
-    };
 
-    {
-        auto res = whatsNumber(123);
-        if (res) {
-            ASSERT_TRUE(res);
-            ASSERT_TRUE(res.valid());
-            ASSERT_STREQ((*res).c_str(), "YES");
-            ASSERT_STREQ(res.value().c_str(), "YES");
-        } else {
-            FAIL();
-        }
+TEST(UseExpected, returnsValidData) {
+  auto whatsNumber = [](int number) -> Expected<std::string> {
+    if (number == 123) {
+      return std::string("YES");
     }
+    if (number == 321) {
+      return makeUnexpected(exception::crypto::InvalidKeyException("Hoge"));
+    }
+    return makeUnexpected(
+        exception::crypto::InvalidMessageLengthException("InvalidLength"));
+  };
 
-    {
-        auto res = whatsNumber(321);
-        if (res) {
-            FAIL();
-        } else {
-            ASSERT_STREQ(res.error(), "Keyfile is invalid, cause is: Hoge");
-        }
-    }
+  auto res = whatsNumber(123);
+  if (res) {
+    ASSERT_TRUE(res);
+    ASSERT_TRUE(res.valid());
+    ASSERT_STREQ((*res).c_str(), "YES");
+    ASSERT_STREQ(res.value().c_str(), "YES");
+  } else {
+    FAIL();
+  }
+}
 
-    {
-        auto res = whatsNumber(999);
-        ASSERT_FALSE(res);
-        ASSERT_STREQ(res.error(), "Invalid Number");
+TEST(UseExpected, returnsException1) {
+  auto whatsNumber = [](int number) -> Expected<std::string> {
+    if (number == 123) {
+      return std::string("YES");
     }
+    if (number == 321) {
+      return makeUnexpected(exception::crypto::InvalidKeyException("Hoge"));
+    }
+    return makeUnexpected(
+        exception::crypto::InvalidMessageLengthException("Foo"));
+  };
+  auto res = whatsNumber(321);
+  if (res) {
+    FAIL() << "Invalid valid()";
+  } else {
+    try {
+      std::rethrow_exception(res.excptr());
+    } catch (const exception::crypto::InvalidKeyException& e) {
+      ASSERT_STREQ(res.error(), "Keyfile is invalid, cause is: Hoge");
+    } catch (const exception::crypto::InvalidMessageLengthException& e) {
+      FAIL() << "exception::crypto::InvalidMessageLengthException";
+    } catch (const exception::IrohaException& e) {
+      FAIL() << "Unknown exception: " << typeid(decltype(e)).name();
+    }
+  }
+}
+
+TEST(UseExpected, returnsException2) {
+  auto whatsNumber = [](int number) -> Expected<std::string> {
+    if (number == 123) {
+      return std::string("YES");
+    }
+    if (number == 321) {
+      return makeUnexpected(exception::crypto::InvalidKeyException("Hoge"));
+    }
+    return makeUnexpected(
+        exception::crypto::InvalidMessageLengthException("Foo"));
+  };
+  auto res = whatsNumber(999);
+  if (res) {
+    FAIL() << "Invalid valid()";
+  } else {
+    try {
+      std::rethrow_exception(res.excptr());
+    } catch (const exception::crypto::InvalidKeyException& e) {
+      FAIL() << "exception::crypto::InvalidKeyException";
+    } catch (const exception::crypto::InvalidMessageLengthException& e) {
+      ASSERT_STREQ(res.error(), "Message Foo has wrong length");
+    } catch (const exception::IrohaException& e) {
+      FAIL() << "Unknown exception: " << typeid(decltype(e)).name();
+    }
+  }
 }
 
 TEST(UserExpected, VoidHandler) {
-    auto voidTest = [](int number) -> VoidHandler {
-        if (number != 123) {
-            return makeUnexpected(exception::IrohaException("Invalid"));
-        }
-        return {};
-    };
-    auto res = voidTest(123);
+  auto voidTest = [](int number) -> VoidHandler {
+    if (number != 123) {
+      return makeUnexpected(exception::IrohaException("Invalid"));
+    }
+    return {};
+  };
+  auto res = voidTest(123);
 }
