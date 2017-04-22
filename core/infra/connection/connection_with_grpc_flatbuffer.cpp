@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 
-#include <connection/connection.hpp>
 #include <service/flatbuffer_service.h>
+#include <connection/connection.hpp>
 #include <crypto/signature.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
@@ -71,14 +71,14 @@ class Receiver {
           "Receiver<" + std::string(typeid(CallBackFunc).name()) + ">",
           __FILE__));
     }
-    
+
     receiver_ = std::make_shared<CallBackFunc>(rhs);
     return {};
   }
 
   // ToDo rewrite operator() overload.
-  void invoke(const std::string& from, flatbuffers::unique_ptr_t&& argv) {
-    (*receiver_)(from, std::move(argv));
+  void invoke(const std::string& from, flatbuffers::unique_ptr_t&& arg) {
+    (*receiver_)(from, std::move(arg));
   }
 
  private:
@@ -102,8 +102,8 @@ void receive(Verify::CallBackFunc&& callback) {
 }
 
 bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
-  // ToDo: Extract transaction from consensus event.
   logger::info("Connection with grpc") << "Send!";
+
   if (config::PeerServiceConfig::getInstance().isExistIP(ip)) {
     logger::info("Connection with grpc") << "isExistIP " << ip;
 
@@ -232,7 +232,7 @@ class SumeragiConnectionClient {
   explicit SumeragiConnectionClient(std::shared_ptr<Channel> channel)
       : stub_(Sumeragi::NewStub(channel)) {}
 
-  ::iroha::Response* Verify(
+  const ::iroha::Response* Verify(
       const ::iroha::ConsensusEvent& consensusEvent) const {
     grpc::ClientContext context;
     flatbuffers::BufferRef<Response> responseRef;
@@ -271,7 +271,8 @@ class SumeragiConnectionClient {
     }
   }
 
-  ::iroha::Response* Torii(const ::iroha::Transaction& transaction) const {
+  const ::iroha::Response* Torii(
+      const ::iroha::Transaction& transaction) const {
     // Copy transaction to FlatBufferBuilder memory, then create
     // BufferRef<Transaction>
     // and share it to another sumeragi by using stub interface Torii.
@@ -361,12 +362,9 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
   Status Verify(ServerContext* context,
                 const flatbuffers::BufferRef<ConsensusEvent>* request,
                 flatbuffers::BufferRef<Response>* response) override {
-    // バッファの一部分を参照している。これをreceiverにmoveした場合、バッファの実態の解放時にLeakする
-    //    const ::iroha::ConsensusEvent* event = request->GetRoot();
     assert(request->GetRoot()->peerSignatures() != nullptr);
 
     flatbuffers::FlatBufferBuilder fbbConsensusEvent;
-    fbbConsensusEvent.Clear();
 
     std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures;
     for (const auto& aPeerSig : *request->GetRoot()->peerSignatures()) {
@@ -436,20 +434,6 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
                flatbuffers::BufferRef<Response>* responseRef) override {
     logger::debug("SumeragiConnectionServiceImpl::Torii") << "RPC works";
 
-    /*
-      // This code leaks.
-      // Maybe, buffer of caller deallocate Transaction and std::unique_ptr
-      movement occurs.
-      // So, double free happens.
-        iroha::SumeragiImpl::Torii::receiver.invoke(
-            "from",
-            std::unique_ptr<::iroha::Transaction>(
-                // FIX: 呼び出し元のバッファを即座に破棄するのなら安全なはず
-                const_cast<::iroha::Transaction*>(transactionRef->GetRoot())));
-        *responseRef = flatbuffers::BufferRef<::iroha::Response>(
-            fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
-    */
-
     {
       const auto transaction = transactionRef->GetRoot();
 
@@ -495,24 +479,6 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
               fbbTransaction, transaction->attachment()->mime()->c_str(),
               &attachmentData)));
 
-      // Leak doesn't occur till here.
-
-      /*
-          // Leak occurs.
-            auto flatbuf = fbbTransaction.ReleaseBufferPointer();
-
-            iroha::SumeragiImpl::Torii::receiver.invoke(
-                "from",  // TODO: Specify 'from'
-                std::unique_ptr<::iroha::Transaction>(
-                    flatbuffers::GetMutableRoot<::iroha::Transaction>(
-                        flatbuf.get())));
-                        */
-      //      auto flatbuf = fbbTransaction.ReleaseBufferPointer(); // Leak
-      //      doesn't occur.
-      /*
-            std::unique_ptr<::iroha::Transaction> uptr(
-                flatbuffers::GetMutableRoot<::iroha::Transaction>(bufptr.get()));
-      */
       iroha::SumeragiImpl::Torii::receiver.invoke(
           "from",  // TODO: Specify 'from'
           fbbTransaction.ReleaseBufferPointer());
