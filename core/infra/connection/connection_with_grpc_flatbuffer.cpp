@@ -65,13 +65,15 @@ enum ResponseType {
 template <class CallBackFunc>
 class Receiver {
  public:
-  void set(CallBackFunc&& rhs) {
+  VoidHandler set(CallBackFunc&& rhs) {
     if (receiver_) {
-      throw exception::DuplicateSetArgumentException(
+      return makeUnexpected(exception::DuplicateSetArgumentException(
           "Receiver<" + std::string(typeid(CallBackFunc).name()) + ">",
-          __FILE__);
+          __FILE__));
     }
+    
     receiver_ = std::make_shared<CallBackFunc>(rhs);
+    return {};
   }
 
   // ToDo rewrite operator() overload.
