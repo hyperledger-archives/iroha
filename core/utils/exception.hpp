@@ -60,16 +60,33 @@ class DuplicateSetArgumentException : public IrohaException {
  public:
   DuplicateSetArgumentException(const std::string &, const std::string &);
 };
+
 class UnsetBuildArgumentsException : public IrohaException {
  public:
   UnsetBuildArgumentsException(const std::string &, const std::string &);
 };
 
+class NotFoundDirectoryException : public IrohaException {
+ public:
+  NotFoundDirectoryException(const std::string &path);
+};
+
 namespace config {
 
+// deprecated, will remove
 class ConfigException : public IrohaException {
  public:
-  ConfigException(const std::string &message, const std::string& filename);
+  ConfigException(const std::string &message, const std::string &filename);
+};
+
+class ParseException : public IrohaException {
+ public:
+  ParseException(const std::string &target, bool setDefaultMessage = false);
+};
+
+class UndefinedIrohaHomeException : public IrohaException {
+ public:
+  UndefinedIrohaHomeException();
 };
 
 }  // namespace config

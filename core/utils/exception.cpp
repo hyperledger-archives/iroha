@@ -26,8 +26,7 @@ IrohaException::~IrohaException() {}
 
 const char *IrohaException::what() const noexcept { return message_.c_str(); }
 
-None::None()
-    : IrohaException("") {}
+None::None() : IrohaException("") {}
 
 NotImplementedException::NotImplementedException(
     const std::string &functionName, const std::string &filename)
@@ -56,10 +55,24 @@ UnsetBuildArgumentsException::UnsetBuildArgumentsException(
     : IrohaException("UnsetBuildArgumentsException in " + buildTarget +
                      ", arguments: " + unsetMembers) {}
 
+NotFoundDirectoryException::NotFoundDirectoryException(const std::string &path)
+    : IrohaException("Not found directory: '" + path + "'") {}
+
 namespace config {
 
-ConfigException::ConfigException(const std::string &message, const std::string &funcname)
+// deprecated, will remove.
+ConfigException::ConfigException(const std::string &message,
+                                 const std::string &funcname)
     : IrohaException("ConfigException: " + message + " in " + funcname) {}
+
+ParseException::ParseException(const std::string &target,
+                               bool setDefaultMessage)
+    : IrohaException("Cannot parse '" + target + "'" +
+                     (setDefaultMessage ? " It is set to be default." : "")) {}
+
+UndefinedIrohaHomeException::UndefinedIrohaHomeException()
+    : IrohaException(
+          "UndefinedIrohaHomeException: Set environment variable IROHA_HOME") {}
 
 }  // namespace config
 
