@@ -35,10 +35,6 @@ NotImplementedException::NotImplementedException(
           "TODO: Sorry, function [" + functionName + "] in file " + filename +
           " is not yet implemented, would you like to contribute it?") {}
 
-ParseFromStringException::ParseFromStringException(const std::string &filename)
-    : IrohaException("ParseFromStringException in file " + filename) {}
-
-
 InvalidCastException::InvalidCastException(const std::string &from,
                                            const std::string &to,
                                            const std::string &filename)
@@ -62,8 +58,8 @@ UnsetBuildArgumentsException::UnsetBuildArgumentsException(
 
 namespace config {
 
-ConfigException::ConfigException(const std::string &message)
-    : IrohaException("ConfigException: " + message) {}
+ConfigException::ConfigException(const std::string &message, const std::string &funcname)
+    : IrohaException("ConfigException: " + message + " in " + funcname) {}
 
 }  // namespace config
 

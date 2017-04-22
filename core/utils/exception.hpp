@@ -69,7 +69,7 @@ namespace config {
 
 class ConfigException : public IrohaException {
  public:
-  ConfigException(const std::string &message);
+  ConfigException(const std::string &message, const std::string& filename);
 };
 
 }  // namespace config

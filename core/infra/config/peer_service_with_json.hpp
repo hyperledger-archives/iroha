@@ -24,6 +24,8 @@ limitations under the License.
 
 #include "abstract_config_manager.hpp"
 
+class VoidHandler;
+
 namespace config {
 
 class PeerServiceConfig : AbstractConfigManager {
@@ -31,7 +33,7 @@ class PeerServiceConfig : AbstractConfigManager {
   PeerServiceConfig();
 
  protected:
-  void parseConfigDataFromString(std::string&& jsonStr) override;
+  VoidHandler parseConfigDataFromString(std::string&& jsonStr) override;
 
  public:
   std::string getMyPublicKeyWithDefault(const std::string& defaultValue);

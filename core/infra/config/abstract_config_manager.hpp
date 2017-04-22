@@ -19,7 +19,7 @@ limitations under the License.
 
 #include <fstream>  // ifstream, ofstream
 #include <json.hpp>
-#include <utils/exception.hpp>
+#include <utils/expected.hpp>
 #include <utils/logger.hpp>
 #include "config_utils.hpp"
 
@@ -43,8 +43,8 @@ class AbstractConfigManager {
   json openConfigData() {
     auto iroha_home = config::get_iroha_home();
     if (iroha_home == nullptr) {
-        logger::error("config") << "Set environment variable IROHA_HOME";
-        exit(EXIT_FAILURE);
+      logger::error("config") << "Set environment variable IROHA_HOME";
+      exit(EXIT_FAILURE);
     }
     // Todo remove last '/'
     auto configFolderPath = std::string(iroha_home) + "";
@@ -62,7 +62,6 @@ class AbstractConfigManager {
   }
 
  protected:
-
   template <typename T>
   T getParam(std::initializer_list<const std::string> params,
              const T& defaultValue) {
@@ -82,12 +81,13 @@ class AbstractConfigManager {
     }
   }
 
-  virtual void parseConfigDataFromString(std::string&& jsonStr) {
+  virtual VoidHandler parseConfigDataFromString(std::string&& jsonStr) {
     try {
       _configData = json::parse(std::move(jsonStr));
+      return {};
     } catch (...) {
-      throw exception::config::ConfigException("Can't parse json: " +
-                                               getConfigName());
+      return makeUnexpected(exception::config::ConfigException(
+          "Can't parse json: " + getConfigName()));
     }
   }
 

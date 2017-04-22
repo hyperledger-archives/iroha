@@ -16,7 +16,7 @@ limitations under the License.
 */
 
 #include <json.hpp>
-#include <utils/exception.hpp>
+#include <utils/expected.hpp>
 #include <utils/logger.hpp>
 
 #include "config_format.hpp"
@@ -56,16 +56,17 @@ double PeerServiceConfig::getMaxTrustScoreWithDefault(double defaultValue) {
   return getParam<double>({"max_trust_score"}, defaultValue);
 }
 
-void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
-  try {
-    if (!ConfigFormat::getInstance().ensureFormatSumeragi(jsonStr)) {
-      throw exception::ParseFromStringException(getConfigName());
-    }
+VoidHandler PeerServiceConfig::parseConfigDataFromString(
+    std::string&& jsonStr) {
+  auto res = ConfigFormat::getInstance().ensureFormatSumeragi(jsonStr);
+
+  if (res) {
     _configData = json::parse(std::move(jsonStr));
-  } catch (exception::ParseFromStringException& e) {
-    logger::warning("peer service config") << e.what();
-    logger::warning("peer service config") << getConfigName()
-                                           << " is set to be default.";
+    return {};
+  } else {
+    return makeUnexpected(exception::ConfigException(
+        "PeerService",
+        "Failed parse config. " + getConfigName() + " is set to be default."));
   }
 }
 
