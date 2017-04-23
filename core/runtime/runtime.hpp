@@ -17,9 +17,14 @@ limitations under the License.
 #ifndef IROHA_RUNTIME_HPP
 #define IROHA_RUNTIME_HPP
 
+#include <generated/main_generated.h>
+
+
+#include "command/add.hpp"
+
 namespace runtime{
 
-    void processTransaction();
+    void processTransaction(const iroha::Transaction& tx);
 
 };
 
