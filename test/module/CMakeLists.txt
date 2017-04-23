@@ -4,6 +4,7 @@ SET(EXECUTABLE_OUTPUT_P
 ATH ${PROJECT_BINARY_DIR}/test_bin)
 
 add_subdirectory(crypto)
+add_subdirectory(expected)
 #add_subdirectory(infra/repository)
 #add_subdirectory(infra/service)
 #add_subdirectory(infra/config)
