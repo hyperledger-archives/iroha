@@ -55,8 +55,8 @@ UnsetBuildArgumentsException::UnsetBuildArgumentsException(
     : IrohaException("UnsetBuildArgumentsException in " + buildTarget +
                      ", arguments: " + unsetMembers) {}
 
-NotFoundDirectoryException::NotFoundDirectoryException(const std::string &path)
-    : IrohaException("Not found directory: '" + path + "'") {}
+NotFoundPathException::NotFoundPathException(const std::string &path)
+    : IrohaException("Not found path: '" + path + "'") {}
 
 namespace config {
 

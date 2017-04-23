@@ -29,11 +29,10 @@ using json = nlohmann::json;
 
 class AbstractConfigManager {
  private:
-  std::string readConfigData(const std::string& pathToJSONFile,
-                             const std::string& defaultValue) {
+  Expected<std::string> readConfigData(const std::string& pathToJSONFile) {
     std::ifstream ifs(pathToJSONFile);
     if (ifs.fail()) {
-      return defaultValue;
+      return makeUnexpected(exception::NotFoundPathException(pathToJSONFile));
     }
 
     std::istreambuf_iterator<char> it(ifs);
@@ -41,15 +40,18 @@ class AbstractConfigManager {
   }
 
   json openConfigData() {
-    auto configFolderPath = config::get_iroha_home() + this->getConfigName();
-    auto jsonStr = readConfigData(configFolderPath, "");
-
-    if (jsonStr.empty()) {
-      logger::warning("config") << "there is no config '" << getConfigName()
-                                << "', we will use default values.";
+    auto res = readConfigData(getConfigPath());
+    if (res) {
+      logger::debug("config") << "load json is " << *res;
+      parseConfigDataFromString(*res);
     } else {
-      logger::debug("config") << "load json is " << jsonStr;
-      parseConfigDataFromString(std::move(jsonStr));
+      try {
+        std::rethrow_exception(res.excptr());
+      } catch (exception::NotFoundPathException& e) {
+        logger::warning("config") << res.error();
+        logger::warning("config") << "There is no config '" << getConfigPath()
+                                  << "', we will use default values.";
+      }
     }
 
     return _configData;
@@ -75,21 +77,21 @@ class AbstractConfigManager {
     }
   }
 
-  virtual VoidHandler parseConfigDataFromString(std::string&& jsonStr) {
+  virtual VoidHandler parseConfigDataFromString(const std::string& jsonStr) {
     try {
       _configData = json::parse(std::move(jsonStr));
       return {};
     } catch (...) {
-      return makeUnexpected(exception::config::ParseException(getConfigName()));
+      return makeUnexpected(exception::config::ParseException(getConfigPath()));
     }
   }
 
  public:
   virtual std::string getConfigName() = 0;
+  std::string getConfigPath() { return get_iroha_home() + getConfigName(); }
 
   json getConfigData() {
     if (_loaded) {
-      // If defaultValue is used, _configData is empty, but _loaded = true. It's
       return this->_configData;
     } else {
       _loaded = true;

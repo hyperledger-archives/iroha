@@ -32,7 +32,6 @@ PeerServiceConfig& PeerServiceConfig::getInstance() noexcept {
   return serviceConfig;
 }
 
-
 std::string PeerServiceConfig::getMyPublicKeyWithDefault(
     const std::string& defaultValue) {
   return getParam<std::string>({"me", "publicKey"}, defaultValue);
@@ -57,7 +56,7 @@ double PeerServiceConfig::getMaxTrustScoreWithDefault(double defaultValue) {
 }
 
 VoidHandler PeerServiceConfig::parseConfigDataFromString(
-    std::string&& jsonStr) {
+    const std::string& jsonStr) {
   auto res = ConfigFormat::getInstance().ensureFormatSumeragi(jsonStr);
 
   if (res) {
@@ -65,7 +64,7 @@ VoidHandler PeerServiceConfig::parseConfigDataFromString(
     return {};
   } else {
     return makeUnexpected(
-        exception::config::ParseException(getConfigName(), true));
+        exception::config::ParseException(getConfigPath(), true));
   }
 }
 

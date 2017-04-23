@@ -6,7 +6,6 @@ add_executable(iroha-main
 target_link_libraries(iroha-main
   sumeragi
   connection_with_grpc_flatbuffer
-  config_manager
   ed25519
   hash
   pthread

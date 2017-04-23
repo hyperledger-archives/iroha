@@ -66,9 +66,9 @@ class UnsetBuildArgumentsException : public IrohaException {
   UnsetBuildArgumentsException(const std::string &, const std::string &);
 };
 
-class NotFoundDirectoryException : public IrohaException {
+class NotFoundPathException : public IrohaException {
  public:
-  NotFoundDirectoryException(const std::string &path);
+  NotFoundPathException(const std::string &path);
 };
 
 namespace config {

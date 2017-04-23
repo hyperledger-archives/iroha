@@ -28,12 +28,13 @@ class VoidHandler;
 
 namespace config {
 
-class PeerServiceConfig : AbstractConfigManager {
+class PeerServiceConfig : public AbstractConfigManager {
  private:
   PeerServiceConfig() noexcept;
+  std::string getConfigName() { return "config/sumeragi.json"; }
 
  protected:
-  VoidHandler parseConfigDataFromString(std::string&& jsonStr) override;
+  VoidHandler parseConfigDataFromString(const std::string& jsonStr) override;
 
  public:
   std::string getMyPublicKeyWithDefault(const std::string& defaultValue);
@@ -47,8 +48,6 @@ class PeerServiceConfig : AbstractConfigManager {
   static PeerServiceConfig& getInstance() noexcept;
 
   double getMaxTrustScore();
-
-  std::string getConfigName() override { return "config/sumeragi.json"; }
 };
 }  // namespace config
 

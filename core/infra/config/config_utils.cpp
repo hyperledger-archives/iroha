@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "config_utils.hpp"
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <utils/expected.hpp>
 #include <utils/logger.hpp>
+
+#include "config_utils.hpp"
 
 namespace config {
 
@@ -38,14 +39,14 @@ VoidHandler ensureDirectoryExists(const std::string& path) {
   // TODO: Definitely ensure directory, not file.
   struct stat info;
   if (stat(path.c_str(), &info) != 0) {
-    return makeUnexpected(exception::NotFoundDirectoryException(path));
+    return makeUnexpected(exception::NotFoundPathException(path));
   }
   return {};
 }
 }  // namespace detail
 
 // This method's exceptions don't be caughted. (fatal error)
-const char* get_iroha_home() {
+std::string get_iroha_home() {
   const auto iroha_home_ptr = getenv("IROHA_HOME");
   if (iroha_home_ptr == nullptr) {
     throw exception::config::UndefinedIrohaHomeException();
@@ -60,6 +61,6 @@ const char* get_iroha_home() {
     std::rethrow_exception(res.excptr());
   }
 
-  return iroha_home_with_slash.c_str();
+  return iroha_home_with_slash;
 }
-}
+}  // namespace config

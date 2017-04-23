@@ -19,7 +19,11 @@ limitations under the License.
 
 namespace config {
 
-const char* get_iroha_home();
+namespace detail {  // for begin testable
+std::string appendSlashIfNeeded(const std::string&);
 }
+
+std::string get_iroha_home();
+}  // namespace config
 
 #endif

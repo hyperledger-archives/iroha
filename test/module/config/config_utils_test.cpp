@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 #include <gtest/gtest.h>
-#include <infra/config/config_utils.cpp>
+#include <infra/config/config_utils.hpp>
 
 TEST(ConfigUtils, appendSlashIfNeeded) {
   using config::detail::appendSlashIfNeeded;

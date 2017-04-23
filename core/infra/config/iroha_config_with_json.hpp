@@ -20,13 +20,13 @@ limitations under the License.
 #include "abstract_config_manager.hpp"
 
 namespace config {
-class IrohaConfigManager : AbstractConfigManager {
+class IrohaConfigManager : public AbstractConfigManager {
  private:
   IrohaConfigManager();
+  std::string getConfigName() { return "config/config.json"; }
 
  public:
   static IrohaConfigManager& getInstance();
-  std::string getConfigName();
 
   std::string getDatabasePath(const std::string& defaultValue);
   std::string getJavaClassPath(const std::string& defaultValue);

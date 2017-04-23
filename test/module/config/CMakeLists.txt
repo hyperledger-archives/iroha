@@ -4,6 +4,7 @@ add_executable(config_utils_test
 )
 target_link_libraries(config_utils_test
   gtest
+  config_utils
   expected
   logger
 )
