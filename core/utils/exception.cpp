@@ -58,6 +58,12 @@ UnsetBuildArgumentsException::UnsetBuildArgumentsException(
     : IrohaException("UnsetBuildArgumentsException in " + buildTarget +
                      ", arguments: " + unsetMembers) {}
 
+RequirePropertyMissingException::RequirePropertyMissingException(
+        const std::string &buildTarget, const std::string &message)
+    : IrohaException("RequirePropertyMissingException in " + buildTarget +
+     ", message: " + message
+) {}
+
 namespace config {
 
 ConfigException::ConfigException(const std::string &message)

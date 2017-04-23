@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 #include "validator.hpp"
-#include <ametsuchi/repository.hpp>
+//#include <ametsuchi/repository.hpp>
 #include <service/flatbuffer_service.h>
 #include <utils/logger.hpp>
 
@@ -33,6 +33,7 @@ namespace validator{
     }
 
     bool account_exist_validator(const iroha::Transaction& tx){
-        return ametsuchi::account::exists(tx.creatorPubKey()->c_str());
+        return true;
+        //return ametsuchi::account::exists(tx.creatorPubKey()->c_str());
     }
 };

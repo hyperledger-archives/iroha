@@ -14,36 +14,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef PEER_SERVICE_WITH_JSON_HPP
-#define PEER_SERVICE_WITH_JSON_HPP
+#ifndef __CORE_HIJIRI_SERVICE_HPP__
+#define __CORE_HIJIRI_SERVICE_HPP__
 
 #include <map>
 #include <queue>
 #include <set>
 #include <vector>
 
-#include <infra/config/abstract_config_manager.hpp>
+namespace peer {
+namespace hijiri {
+// This is reputation System.
 
-namespace config {
+// check are broken? peer
+void check(const std::string &ip);  // TODO
 
-class PeerServiceConfig : AbstractConfigManager {
- private:
-  PeerServiceConfig();
+namespace my{
 
- protected:
-  void parseConfigDataFromString(std::string&& jsonStr) override;
+/*
+ * To issue Check my db's root hash.
+ */
+void checkRootHash();
+}
+}  // namespace hijiri
+}  // namespace peer
 
- public:
-  std::string getMyPublicKey();
-  std::string getMyPrivateKey();
-  std::string getMyIp();
-  double getMaxTrustScore(double);
-  std::vector<json> getGroup();
 
-  static PeerServiceConfig& getInstance();
-
-  std::string getConfigName() override { return "config/sumeragi.json"; }
-};
-}  // namespace config
-
-#endif  // PEER_SERVICE_WITH_JSON_HPP
+#endif

@@ -22,4 +22,6 @@ target_link_libraries(flatbuffer_service
     logger
     flatbuffers
     grpc
+    expected
+    exception
 )
