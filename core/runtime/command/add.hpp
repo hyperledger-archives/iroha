@@ -16,4 +16,11 @@ limitations under the License.
 #ifndef IROHA_ADD_H
 #define IROHA_ADD_H
 
+namespace runtime{
+    namespace command{
+        void add(){
+
+        }
+    };
+};
 #endif //IROHA_ADD_H
