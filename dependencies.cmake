@@ -354,7 +354,7 @@ add_dependencies(spdlog gabime_spdlog)
 ###############################
 ExternalProject_Add(hyperledger_iroha_ametsuchi
   GIT_REPOSITORY "https://github.com/hyperledger/iroha-ametsuchi.git"
-  GIT_TAG "only_lmdb"
+  GIT_TAG ""
   BUILD_IN_SOURCE 1
   UPDATE_COMMAND ""
   BUILD_COMMAND  bash "-c" "mkdir -p build && cd build; cmake ..; make"
