@@ -6,11 +6,26 @@
 #define IROHA_EXPLORE_H
 
 #include <utils/logger.hpp>
+#include <iomanip>
 #include <string>
 namespace explore {
 
     namespace sumeragi{
-        void initialize(){
+
+        struct PrintProgress {
+            int MAX;
+            PrintProgress():MAX(100){};
+
+            void print(int progressNum, std::string &&msg) {
+                logger::explore("sumeragi") << "\033[95m+| " << std::setw(3) << progressNum / MAX << "|+\033[0m" << msg;
+            }
+        };
+
+        inline void printInfo(std::string&& msg){
+            logger::explore("sumeragi") << "\x1b[36m " << msg << " \033[0m";
+        }
+
+        inline void initialize(){
             logger::explore("sumeragi") << "\033[95m+==ーーーーーーーーー==+\033[0m";
             logger::explore("sumeragi") << "\033[95m|+-ーーーーーーーーー-+|\033[0m";
             logger::explore("sumeragi") << "\033[95m|| 　　　　　　　　　 ||\033[0m";
@@ -24,7 +39,7 @@ namespace explore {
             logger::explore("sumeragi") << "- 初期設定/initialize";
         }
 
-        void printJudge(int numValidSignatures, int numValidationPeer, int faulty) {
+        inline void printJudge(int numValidSignatures, int numValidationPeer, int faulty) {
             std::stringstream resLine[5];
             for (int i = 0; i < numValidationPeer; i++) {
                 if (i < numValidSignatures) {
@@ -51,7 +66,7 @@ namespace explore {
                     << "numValidSignatures:" << numValidSignatures << " faulty:" << faulty;
         }
 
-        void printAgree() {
+        inline void printAgree() {
             logger::explore("sumeragi") << "\033[1m\033[92m+==ーー==+\033[0m";
             logger::explore("sumeragi") << "\033[1m\033[92m|+-ーー-+|\033[0m";
             logger::explore("sumeragi") << "\033[1m\033[92m|| 承認 ||\033[0m";
@@ -59,7 +74,7 @@ namespace explore {
             logger::explore("sumeragi") << "\033[1m\033[92m+==ーー==+\033[0m";
         }
 
-        void printReject() {
+        inline void printReject() {
             logger::explore("sumeragi") << "\033[91m+==ーー==+\033[0m";
             logger::explore("sumeragi") << "\033[91m|+-ーー-+|\033[0m";
             logger::explore("sumeragi") << "\033[91m|| 否認 ||\033[0m";
