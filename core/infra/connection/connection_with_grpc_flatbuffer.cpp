@@ -21,7 +21,7 @@ limitations under the License.
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 
-#include <service/peer_service.hpp>
+#include <membership_service/peer_service.hpp>
 #include <utils/exception.hpp>
 #include <utils/logger.hpp>
 
@@ -102,7 +102,7 @@ void receive(Verify::CallBackFunc&& callback) {
 bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
   // ToDo: Extract transaction from consensus event.
   logger::info("Connection with grpc") << "Send!";
-  if (config::PeerServiceConfig::getInstance().isExistIP(ip)) {
+  if (::peer::service::isExistIP(ip)) {
     logger::info("Connection with grpc") << "isExistIP " << ip;
 
     auto channel =
@@ -194,7 +194,7 @@ bool sendAll(const ::iroha::ConsensusEvent& event) {
   auto receiver_ips = config::PeerServiceConfig::getInstance().getGroup();
   for (const auto& p : receiver_ips) {
     if (p["ip"].get<std::string>() !=
-        config::PeerServiceConfig::getInstance().getMyIpWithDefault("AA")) {
+        config::PeerServiceConfig::getInstance().getMyIp()) {
       logger::info("connection") << "Send to " << p["ip"].get<std::string>();
       send(p["ip"].get<std::string>(), event);
     }

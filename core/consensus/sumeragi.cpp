@@ -19,7 +19,7 @@
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <service/executor.hpp>
-#include <service/peer_service.hpp>
+#include <membership_service/peer_service.hpp>
 #include <thread_pool.hpp>
 #include <utils/logger.hpp>
 #include <utils/timer.hpp>
@@ -169,8 +169,7 @@ struct Context {
 
     this->panicCount = 0;
     this->myPublicKey =
-        config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault(
-            "Invalied");
+        config::PeerServiceConfig::getInstance().getMyPublicKey();
 
     this->isSumeragi =
         this->validatingPeers.at(0)->publicKey == this->myPublicKey;
@@ -305,19 +304,18 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
 
   logger::info("sumeragi") << "pub: "
                            << config::PeerServiceConfig::getInstance()
-                                  .getMyPublicKeyWithDefault("AA");
+                                  .getMyPublicKey();
   logger::info("sumeragi") << "priv:"
                            << config::PeerServiceConfig::getInstance()
-                                  .getMyPrivateKeyWithDefault("AA");
+                                  .getMyPrivateKey();
   logger::info("sumeragi")
       << "sig: "
       << signature::sign(
              // ToDo We should add it.
              detail::hash(*eventPtr->transactions()->Get(0)),
-             config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault(
-                 "AA"),
+             config::PeerServiceConfig::getInstance().getMyPublicKey(),
              config::PeerServiceConfig::getInstance()
-                 .getMyPrivateKeyWithDefault("AA"));
+                 .getMyPrivateKey());
 
   logger::info("sumeragi") << "Add basically own signature";
   if (eventPtr->peerSignatures() != nullptr) {
@@ -327,8 +325,7 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
   // This is a new event, so we should verify, sign, and broadcast it
   auto newEventUniqPtr = flatbuffer_service::addSignature(
       *eventPtr,
-      config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault(
-          "Invalid"),  // ??
+      config::PeerServiceConfig::getInstance().getMyPublicKey(),
       "");
 
   eventPtr =
@@ -424,12 +421,10 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
       logger::info("sumeragi") << "tail is " << context->proxyTailNdx;
       logger::info("sumeragi")
           << "my public key is "
-          << config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault(
-                 "Invalid");
+          << config::PeerServiceConfig::getInstance().getMyPublicKey();
 
       if (context->validatingPeers.at(context->proxyTailNdx)->publicKey ==
-          config::PeerServiceConfig::getInstance().getMyPublicKeyWithDefault(
-              "Invalid")) {
+          config::PeerServiceConfig::getInstance().getMyPublicKey()) {
         logger::info("sumeragi")
             << "I will send event to "
             << context->validatingPeers.at(context->proxyTailNdx)->ip;

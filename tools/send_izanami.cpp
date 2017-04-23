@@ -17,7 +17,7 @@ limitations under the License.
 // Created by Takumi Yamashita on 2017/03/15.
 //
 
-#include <service/peer_service.hpp>
+#include <membership_service/peer_service.hpp>
 #include <string>
 
 
