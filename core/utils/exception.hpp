@@ -31,6 +31,7 @@ class IrohaException : public std::exception {
   virtual const char* message() const;
 
  protected:
+
   std::string message_;
 };
 
@@ -61,6 +62,11 @@ class DuplicateSetArgumentException : public IrohaException {
 class UnsetBuildArgumentsException : public IrohaException {
  public:
   UnsetBuildArgumentsException(const std::string &, const std::string &);
+};
+
+class RequirePropertyMissingException : public IrohaException {
+public:
+    RequirePropertyMissingException(const std::string &, const std::string &);
 };
 
 namespace config {
