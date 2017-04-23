@@ -79,12 +79,12 @@ bool eventSignatureIsEmpty(const ::iroha::ConsensusEvent& event) {
 }  // namespace detail
 
 struct Context {
-  bool isSumeragi;          // am I the leader or am I not?
-  std::uint64_t maxFaulty;  // f
-  std::uint64_t proxyTailNdx;
-  std::int32_t panicCount;
+  bool isSumeragi = false;          // am I the leader or am I not?
+  std::uint64_t maxFaulty = 0;  // f
+  std::uint64_t proxyTailNdx = 0;
+  std::int32_t panicCount = 0;
   std::int64_t commitedCount = 0;
-  std::uint64_t numValidatingPeers;
+  std::uint64_t numValidatingPeers = 0;
   std::string myPublicKey;
   std::deque<std::unique_ptr<peer::Node>> validatingPeers;
 
@@ -136,18 +136,6 @@ struct Context {
 std::unique_ptr<Context> context = nullptr;
 
 void initializeSumeragi() {
-  logger::explore("sumeragi") << "\033[95m+==ーーーーーーーーー==+\033[0m";
-  logger::explore("sumeragi") << "\033[95m|+-ーーーーーーーーー-+|\033[0m";
-  logger::explore("sumeragi") << "\033[95m|| 　　　　　　　　　 ||\033[0m";
-  logger::explore("sumeragi") << "\033[95m|| いろは合意形成機構 ||\033[0m";
-  logger::explore("sumeragi")
-      << "\033[95m|| 　　　\033[1mすめらぎ\033[0m\033[95m　　 ||\033[0m";
-  logger::explore("sumeragi") << "\033[95m|| 　　　　　　　　　 ||\033[0m";
-  logger::explore("sumeragi") << "\033[95m|+-ーーーーーーーーー-+|\033[0m";
-  logger::explore("sumeragi") << "\033[95m+==ーーーーーーーーー==+\033[0m";
-  logger::explore("sumeragi") << "- 起動/setup";
-  logger::explore("sumeragi") << "- 初期設定/initialize";
-  // merkle_transaction_repository::initLeaf();
   /*
   logger::info("sumeragi") << "My key is "
     << config::PeerServiceConfig::getInstance()
