@@ -17,13 +17,15 @@ limitations under the License.
 #ifndef CORE_CRYPTO_HASH_HPP__
 #define CORE_CRYPTO_HASH_HPP__
 
+#include <generated/main_generated.h>
+
 namespace validator{
 
-    bool account_exist_validator();
+    bool account_exist_validator(const iroha::Transaction& tx);
 
-    bool permission_validator();
+    bool permission_validator(const iroha::Transaction& tx);
 
-    bool logic_validator();
+    bool logic_validator(const iroha::Transaction& tx);
 };
 
 #endif
