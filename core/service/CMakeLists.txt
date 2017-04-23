@@ -1,11 +1,3 @@
-ADD_LIBRARY(executor STATIC
-    executor.cpp
-)
-
-target_link_libraries(executor
-    logger
-    flatbuffers
-)
 
 #ADD_LIBRARY(izanami STATIC
 #    izanami.cpp
