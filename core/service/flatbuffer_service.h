@@ -27,8 +27,8 @@ namespace flatbuffer_service {
 // namespace autogen_extend {
 flatbuffers::Offset<void> CreateCommandDirect(
     flatbuffers::FlatBufferBuilder &_fbb, const void *obj,
-    int /* Command */ type);  // TODO: Use scopoed enum ::iroha::Command
-                              //}
+    int /* Command */ type);  // TODO: Use scoped enum ::iroha::Command
+// } // namespace autogen_extend
 
 std::string toString(const iroha::Transaction &tx);
 
@@ -39,6 +39,5 @@ flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent &event,
 flatbuffers::unique_ptr_t toConsensusEvent(const iroha::Transaction &tx);
 
 flatbuffers::unique_ptr_t makeCommit(const iroha::ConsensusEvent &event);
-
 };
 #endif  // IROHA_FLATBUFFER_SERVICE_H
