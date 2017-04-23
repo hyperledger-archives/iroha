@@ -46,8 +46,7 @@ class AbstractConfigManager {
         logger::error("config") << "Set environment variable IROHA_HOME";
         exit(EXIT_FAILURE);
     }
-    // Todo remove last '/'
-    auto configFolderPath = std::string(iroha_home) + "";
+    auto configFolderPath = std::string(iroha_home) + "/";
     auto jsonStr = readConfigData(configFolderPath + this->getConfigName(), "");
 
     if (jsonStr.empty()) {
