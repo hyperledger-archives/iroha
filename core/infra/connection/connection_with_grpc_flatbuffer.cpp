@@ -15,13 +15,12 @@ limitations under the License.
 */
 
 
-#include <connection/connection.hpp>
+#include <service/connection.hpp>
 #include <service/flatbuffer_service.h>
 #include <crypto/signature.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 
-#include <service/peer_service.hpp>
 #include <utils/exception.hpp>
 #include <utils/logger.hpp>
 

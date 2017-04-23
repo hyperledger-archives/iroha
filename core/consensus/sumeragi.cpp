@@ -17,11 +17,11 @@
 #include <crypto/signature.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-#include <service/peer_service.hpp>
 #include <thread_pool.hpp>
 #include <utils/logger.hpp>
 #include <utils/timer.hpp>
 #include <utils/explore.hpp>
+#include <service/validator.hpp>
 
 #include <atomic>
 #include <cmath>
@@ -31,7 +31,7 @@
 #include <string>
 #include <thread>
 
-#include "connection/connection.hpp"
+#include "service/connection.hpp"
 #include "sumeragi.hpp"
 
 /**
@@ -158,6 +158,10 @@ void initializeSumeragi() {
   connection::iroha::SumeragiImpl::Torii::receive(
       [](const std::string& from, flatbuffers::unique_ptr_t&& transaction) {
           context->printProgress.print( 1, "receive transaction!");
+          if(!validator::require_property_validator(*flatbuffers::GetRoot<::iroha::Transaction>(transaction.get()))){
+              explore::sumeragi::printInfo("This transaction is rejected!!!");
+              return;
+          }
 
           flatbuffers::unique_ptr_t eventUniqPtr =
             flatbuffer_service::toConsensusEvent(
