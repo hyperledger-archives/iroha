@@ -15,9 +15,24 @@ limitations under the License.
 */
 
 #include "validator.hpp"
+#include <ametsuchi/repository.hpp>
+#include <service/flatbuffer_service.h>
+#include <utils/logger.hpp>
 
 // This is state less validator.
 namespace validator{
-    bool require_property_validator(){}
-    bool account_exist_validator(){}
+    using iroha::Transaction;
+
+    bool require_property_validator(const iroha::Transaction& tx){
+        auto res = flatbuffer_service::hasRequreMember(tx);
+        if(!res.valid()){
+            logger::error("require_property_validator") << res.error();
+            return false;
+        }
+        return true;
+    }
+
+    bool account_exist_validator(const iroha::Transaction& tx){
+        return ametsuchi::account::exists(tx.creatorPubKey()->c_str());
+    }
 };

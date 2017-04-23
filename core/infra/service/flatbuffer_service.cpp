@@ -17,6 +17,7 @@
 
 #include <generated/main_generated.h>
 #include <infra/service/flatbuffers/autogen_extend.h>
+#include <utils/expected.hpp>
 
 #include <iostream>
 #include <map>
@@ -446,7 +447,7 @@ flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent& event,
   }
 
   std::vector<uint8_t> aNewPeerSigBlob;
-  for (auto& c : signature) {
+  for (auto&& c : signature) {
     aNewPeerSigBlob.push_back(c);
   }
   peerSignatures.push_back(::iroha::CreateSignatureDirect(
@@ -552,5 +553,388 @@ flatbuffers::unique_ptr_t makeCommit(const iroha::ConsensusEvent& event) {
   return fbbConsensusEvent.ReleaseBufferPointer();
 }
 
+
+Expected<int> RequirePropertyMissingException(const iroha::Transaction &tx){
+  if (tx.creatorPubKey() == nullptr) {
+    return makeUnexpected(exception::RequirePropertyMissingException("Transaction must need creatorPubKey", __FILE__));
+  }
+  if (tx.signatures() != nullptr) {
+    for (const auto& s : *tx.signatures()) {
+      if (s->publicKey() == nullptr || s->signature() == nullptr){
+        if(s->publicKey() == nullptr) {
+          return makeUnexpected(
+             exception::RequirePropertyMissingException("Tx signatures must need publicKey", __FILE__)
+          );
+        }else{
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("Tx signatures must need signature", __FILE__)
+          );
+        }
+      }
+    }
+  }
+  if (tx.attachment() != nullptr) {
+    if(tx.attachment()->mime() != nullptr){
+      return makeUnexpected(
+          exception::RequirePropertyMissingException("Tx attachment must need mime", __FILE__)
+      );
+    }
+    if(tx.attachment()->data() != nullptr){
+      return makeUnexpected(
+          exception::RequirePropertyMissingException("Tx attachment must need data", __FILE__)
+      );
+    }
+  }
+
+  std::map<iroha::Command, std::function<Expected<int>(const void*)>>
+          command_validators;
+  std::map<iroha::AnyAsset, std::function<Expected<int>(const void*)>>
+          any_asset_validators;
+
+  auto peer_validator = [](const iroha::Peer* peer) -> Expected<int> {
+    if(peer == nullptr){
+      return makeUnexpected(
+        exception::RequirePropertyMissingException("Peer must not nullptr", __FILE__)
+      );
+    }
+    if(peer->ip() == nullptr){
+      return makeUnexpected(
+              exception::RequirePropertyMissingException("Peer ip must not nullptr", __FILE__)
+      );
+    }
+    return 1;
+  };
+  auto account_validator = [](const iroha::Account* account) -> Expected<int> {
+      if(account == nullptr){
+        return makeUnexpected(
+                exception::RequirePropertyMissingException("Account must not nullptr", __FILE__)
+        );
+      }
+      if(account->alias() == nullptr){
+        return makeUnexpected(
+                exception::RequirePropertyMissingException("Account alias must not nullptr", __FILE__)
+        );
+      }
+      if(account->pubKey() == nullptr){
+        return makeUnexpected(
+                exception::RequirePropertyMissingException("Account pubKey must not nullptr", __FILE__)
+        );
+      }
+      return 1;
+  };
+  any_asset_validators[iroha::AnyAsset_ComplexAsset] =
+    [&](const void* asset) -> Expected<int> {
+        const iroha::ComplexAsset* ast =
+                static_cast<const iroha::ComplexAsset*>(asset);
+        if(ast == nullptr){
+          return makeUnexpected(
+              exception::RequirePropertyMissingException("ComplexAsset must not nullptr", __FILE__)
+          );
+        }
+        if(ast->asset_name() == nullptr){
+          return makeUnexpected(
+              exception::RequirePropertyMissingException("ComplexAsset asset_name must not nullptr", __FILE__)
+          );
+        }
+        if(ast->domain_name() == nullptr){
+          return makeUnexpected(
+              exception::RequirePropertyMissingException("ComplexAsset domain_name must not nullptr", __FILE__)
+          );
+        }
+        if(ast->ledger_name() == nullptr){
+          return makeUnexpected(
+              exception::RequirePropertyMissingException("ComplexAsset ledger_name must not nullptr", __FILE__)
+          );
+        }
+        if(ast->description() == nullptr){
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("ComplexAsset description must not nullptr", __FILE__)
+          );
+        }
+        return 1;
+    };
+
+  any_asset_validators[iroha::AnyAsset_Currency] =
+    [&](const void* asset) -> Expected<int> {
+        const iroha::Currency* ast = static_cast<const iroha::Currency*>(asset);
+
+        if(ast == nullptr){
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("Currency must not nullptr", __FILE__)
+          );
+        }
+        if(ast->currency_name() == nullptr){
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("Currency currency_name asset_name must not nullptr", __FILE__)
+          );
+        }
+        if(ast->domain_name() == nullptr){
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("Currency domain_name asset_name must not nullptr", __FILE__)
+          );
+        }
+        if(ast->ledger_name() == nullptr){
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("Currency ledger_name asset_name must not nullptr", __FILE__)
+          );
+        }
+        return 1;
+    };
+
+  command_validators[iroha::Command_AssetCreate] =
+    [&](const void* command) -> Expected<int> {
+        const iroha::AssetCreate* cmd =
+                static_cast<const iroha::AssetCreate*>(command);
+        if(cmd == nullptr){
+          return makeUnexpected(
+              exception::RequirePropertyMissingException("AssetCreate must not nullptr", __FILE__)
+          );
+        }
+        if(cmd->creatorPubKey() == nullptr){
+          return makeUnexpected(
+              exception::RequirePropertyMissingException("AssetCreate creatorPubKey asset_name must not nullptr", __FILE__)
+          );
+        }
+        if(cmd->ledger_name() == nullptr){
+          return makeUnexpected(
+              exception::RequirePropertyMissingException("AssetCreate ledger_name asset_name must not nullptr", __FILE__)
+          );
+        }
+        if(cmd->domain_name() == nullptr){
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("AssetCreate domain_name asset_name must not nullptr", __FILE__)
+          );
+        }
+        if(cmd->asset_name() == nullptr){
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("AssetCreate asset_name asset_name must not nullptr", __FILE__)
+          );
+        }
+        return 1;
+    };
+
+  command_validators[iroha::Command_AssetAdd] =
+    [&](const void* command) -> Expected<int> {
+        const iroha::AssetAdd* cmd = static_cast<const iroha::AssetAdd*>(command);
+        if(cmd == nullptr){
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("AssetAdd asset_name must not nullptr", __FILE__)
+          );
+        }
+        if(cmd->accPubKey() == nullptr){
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("AssetAdd accPubKey must not nullptr", __FILE__)
+          );
+        }
+        return any_asset_validators[cmd->asset_nested_root()->asset_type()]
+             (cmd->asset_nested_root()->asset());
+    };
+  command_validators[iroha::Command_AssetRemove] =
+    [&](const void* command) -> Expected<int> {
+        const iroha::AssetRemove* cmd =
+                static_cast<const iroha::AssetRemove*>(command);
+        if(cmd == nullptr){
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("AssetRemove must not nullptr", __FILE__)
+          );
+        }
+        if(cmd->accPubKey() == nullptr){
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("AssetRemove accPubKey must not nullptr", __FILE__)
+          );
+        }
+        return any_asset_validators[cmd->asset_nested_root()->asset_type()]
+          (cmd->asset_nested_root()->asset());
+    };
+  command_validators[iroha::Command_AssetTransfer] =
+    [&](const void* command) -> Expected<int> {
+        const iroha::AssetTransfer* cmd =
+                static_cast<const iroha::AssetTransfer*>(command);
+
+        if(cmd == nullptr){
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("AssetTransfer must not nullptr", __FILE__)
+          );
+        }
+        if(cmd->sender() == nullptr){
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("AssetTransfer sender must not nullptr", __FILE__)
+          );
+        }
+        if(cmd->receiver() == nullptr){
+          return makeUnexpected(
+                  exception::RequirePropertyMissingException("AssetTransfer receiver must not nullptr", __FILE__)
+          );
+        }
+        return any_asset_validators[cmd->asset_nested_root()->asset_type()]
+           (cmd->asset_nested_root()->asset());
+    };
+
+    command_validators[iroha::Command_PeerAdd] =
+      [&](const void* command) -> Expected<int> {
+          const iroha::PeerAdd* cmd = static_cast<const iroha::PeerAdd*>(command);
+          if(cmd == nullptr){
+            return makeUnexpected(
+                    exception::RequirePropertyMissingException("PeerAdd must not nullptr", __FILE__)
+            );
+          }
+          return peer_validator(cmd->peer_nested_root());
+      };
+
+  command_validators[iroha::Command_PeerRemove] =
+      [&](const void* command) -> Expected<int> {
+          const iroha::PeerRemove* cmd =
+                  static_cast<const iroha::PeerRemove*>(command);
+          if(cmd == nullptr){
+            return makeUnexpected(
+                    exception::RequirePropertyMissingException("PeerRemove must not nullptr", __FILE__)
+            );
+          }
+          return peer_validator(cmd->peer_nested_root());
+      };
+  command_validators[iroha::Command_PeerSetActive] =
+      [&](const void* command) -> Expected<int> {
+          const iroha::PeerSetActive* cmd =
+                  static_cast<const iroha::PeerSetActive*>(command);
+          if(cmd == nullptr){
+            return makeUnexpected(
+                    exception::RequirePropertyMissingException("PeerRemove must not nullptr", __FILE__)
+            );
+          }
+          if(cmd->peerPubKey() == nullptr){
+            return makeUnexpected(
+                    exception::RequirePropertyMissingException("PeerRemove peerPubKey must not nullptr", __FILE__)
+            );
+          }
+          return 1;
+      };
+
+  command_validators[iroha::Command_PeerSetTrust] =
+      [&](const void* command) -> Expected<int> {
+          const iroha::PeerSetTrust* cmd =
+                  static_cast<const iroha::PeerSetTrust*>(command);
+          if(cmd == nullptr){
+            return makeUnexpected(
+                    exception::RequirePropertyMissingException("PeerSetTrust must not nullptr", __FILE__)
+            );
+          }
+          if(cmd->peerPubKey() == nullptr){
+            return makeUnexpected(
+                    exception::RequirePropertyMissingException("PeerRemove peerPubKey must not nullptr", __FILE__)
+            );
+          }
+          return 1;
+      };
+  command_validators[iroha::Command_PeerChangeTrust] =
+      [&](const void* command) -> Expected<int> {
+          const iroha::PeerChangeTrust* cmd =
+                  static_cast<const iroha::PeerChangeTrust*>(command);
+          if(cmd == nullptr){
+            return makeUnexpected(
+                    exception::RequirePropertyMissingException("PeerChangeTrust must not nullptr", __FILE__)
+            );
+          }
+          if(cmd->peerPubKey() == nullptr){
+            return makeUnexpected(
+                    exception::RequirePropertyMissingException("PeerRemove peerPubKey must not nullptr", __FILE__)
+            );
+          }
+          return 1;
+      };
+
+  command_validators[iroha::Command_AccountAdd] =
+      [&](const void* command) -> Expected<int> {
+          const iroha::AccountAdd* cmd =
+                  static_cast<const iroha::AccountAdd*>(command);
+          if(cmd == nullptr){
+            return makeUnexpected(
+                    exception::RequirePropertyMissingException("AccountAdd must not nullptr", __FILE__)
+            );
+          }
+          return account_validator(cmd->account_nested_root());
+      };
+
+  command_validators[iroha::Command_AccountRemove] =
+      [&](const void* command) -> Expected<int> {
+          const iroha::AccountRemove* cmd =
+                  static_cast<const iroha::AccountRemove*>(command);
+          if(cmd == nullptr){
+            return makeUnexpected(
+                    exception::RequirePropertyMissingException("AccountRemove must not nullptr", __FILE__)
+            );
+          }
+          return account_validator(cmd->account_nested_root());
+      };
+  command_validators[iroha::Command_AccountAddSignatory] =
+      [&](const void* command) -> Expected<int> {
+          const iroha::AccountAddSignatory* cmd =
+                  static_cast<const iroha::AccountAddSignatory*>(command);
+          if(cmd == nullptr){
+            return makeUnexpected(
+                    exception::RequirePropertyMissingException("AccountAddSignatory must not nullptr", __FILE__)
+            );
+          }
+          if(cmd->account() == nullptr){
+            return makeUnexpected(
+                    exception::RequirePropertyMissingException("AccountAddSignatory account peerPubKey must not nullptr", __FILE__)
+            );
+          }
+          return 1;
+      };
+
+  command_validators[iroha::Command_AccountRemoveSignatory] =
+          [&](const void* command) -> Expected<int> {
+              const iroha::AccountRemoveSignatory* cmd =
+                      static_cast<const iroha::AccountRemoveSignatory*>(command);
+              if(cmd == nullptr){
+                return makeUnexpected(
+                        exception::RequirePropertyMissingException("AccountRemoveSignatory must not nullptr", __FILE__)
+                );
+              }
+              if(cmd->account() == nullptr){
+                return makeUnexpected(
+                        exception::RequirePropertyMissingException("AccountAddSignatory account peerPubKey must not nullptr", __FILE__)
+                );
+              }
+              return 1;
+          };
+  command_validators[iroha::Command_AccountSetUseKeys] =
+          [&](const void* command) -> Expected<int> {
+              const iroha::AccountSetUseKeys* cmd =
+                      static_cast<const iroha::AccountSetUseKeys*>(command);
+              if(cmd == nullptr){
+                return makeUnexpected(
+                        exception::RequirePropertyMissingException("AccountSetUseKeys must not nullptr", __FILE__)
+                );
+              }
+              return 1;
+          };
+
+  command_validators[iroha::Command_ChaincodeAdd] =
+          [&](const void* command) -> Expected<int> {
+              const iroha::ChaincodeAdd* cmd =
+                      static_cast<const iroha::ChaincodeAdd*>(command);
+              return makeUnexpected(
+                      exception::NotImplementedException("ChaincodeAdd", __FILE__)
+              );
+          };
+  command_validators[iroha::Command_ChaincodeRemove] =
+          [&](const void* command) -> Expected<int> {
+              const iroha::ChaincodeRemove* cmd =
+                      static_cast<const iroha::ChaincodeRemove*>(command);
+              return makeUnexpected(
+                      exception::NotImplementedException("ChaincodeAdd", __FILE__)
+              );
+          };
+  command_validators[iroha::Command_ChaincodeExecute] =
+          [&](const void* command) -> Expected<int> {
+              const iroha::ChaincodeExecute* cmd =
+                      static_cast<const iroha::ChaincodeExecute*>(command);
+              return makeUnexpected(
+                      exception::NotImplementedException("ChaincodeAdd", __FILE__)
+              );
+          };
+  return command_validators[tx.command_type()](tx.command());
+}
 
 }  // namespace flatbuffer_service

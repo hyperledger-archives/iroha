@@ -16,6 +16,7 @@ limitations under the License.
 #define IROHA_FLATBUFFER_SERVICE_H
 
 #include "flatbuf/nested_flatbuffer_service.h"
+#include <utils/expected.hpp>
 
 namespace iroha {
 struct Transaction;
@@ -24,11 +25,12 @@ struct ConsensusEvent;
 
 namespace flatbuffer_service {
 
-// namespace autogen_extend {
 flatbuffers::Offset<void> CreateCommandDirect(
     flatbuffers::FlatBufferBuilder &_fbb, const void *obj,
-    int /* Command */ type);  // TODO: Use scopoed enum ::iroha::Command
-                              //}
+    int /* Command */ type
+);  // TODO: Use scopoed enum ::iroha::Command
+
+Expected<int> hasRequreMember(const iroha::Transaction &tx);
 
 std::string toString(const iroha::Transaction &tx);
 
