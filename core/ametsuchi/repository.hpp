@@ -18,9 +18,20 @@ limitations under the License.
 #define IROHA_REPOSITORY_HPP_H
 
 #include <ametsuchi/ametsuchi.h>
+#include <string>
 
 namespace ametsuchi{
-    void sample();
+    namespace account{
+
+        using iroha::Account;
+
+        bool add(const Account& key);
+
+        Account findByPublicKey(const std::string& key);
+
+        bool exists(const std::string& key);
+
+    };
 };
 
 #endif //IROHA_REPOSITORY_HPP_H

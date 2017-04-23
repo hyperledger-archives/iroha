@@ -15,7 +15,26 @@ limitations under the License.
 */
 
 #include "repository.hpp"
+#include <generated/main_generated.h>
 
 namespace ametsuchi{
-    void sample();
+
+    namespace account{
+        using iroha::Account;
+
+        bool add(const Account& key){
+            // ToDo
+            return true;
+        }
+
+        Account findByPublicKey(const std::string& key){
+
+        }
+
+        bool exists(const std::string& key){
+            // ToDo
+            return true;
+        }
+
+    };
 };
