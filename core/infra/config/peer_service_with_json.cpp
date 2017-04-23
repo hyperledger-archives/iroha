@@ -63,5 +63,5 @@ void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
 }
 
 std::vector<json> PeerServiceConfig::getGroup() {
-  return getParamWithAssert<std::vector<json>>({"group"});
+  return getParamWithAssert<std::vector<json>>({"group"}); // WIP ASSERT FALSE;
 }
