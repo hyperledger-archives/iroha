@@ -14,9 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "runtime.hpp"
+#include "validator.hpp"
+
+#include "command/add.hpp"
 
 namespace runtime{
 
-    void processTransaction(){}
+    void processTransaction(const iroha::Transaction& tx){
+        if(!validator::account_exist_validator(tx)){
+            // Reject
+        }
+        if(!validator::permission_validator(tx)){
+            // Reject
+        }
+        if(!validator::logic_validator(tx)){
+            // Reject
+        }
+
+    }
 
 };
