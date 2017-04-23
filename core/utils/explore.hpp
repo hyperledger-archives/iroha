@@ -8,7 +8,22 @@
 #include <utils/logger.hpp>
 #include <string>
 namespace explore {
+
     namespace sumeragi{
+        void initialize(){
+            logger::explore("sumeragi") << "\033[95m+==ーーーーーーーーー==+\033[0m";
+            logger::explore("sumeragi") << "\033[95m|+-ーーーーーーーーー-+|\033[0m";
+            logger::explore("sumeragi") << "\033[95m|| 　　　　　　　　　 ||\033[0m";
+            logger::explore("sumeragi") << "\033[95m|| いろは合意形成機構 ||\033[0m";
+            logger::explore("sumeragi")
+                    << "\033[95m|| 　　　\033[1mすめらぎ\033[0m\033[95m　　 ||\033[0m";
+            logger::explore("sumeragi") << "\033[95m|| 　　　　　　　　　 ||\033[0m";
+            logger::explore("sumeragi") << "\033[95m|+-ーーーーーーーーー-+|\033[0m";
+            logger::explore("sumeragi") << "\033[95m+==ーーーーーーーーー==+\033[0m";
+            logger::explore("sumeragi") << "- 起動/setup";
+            logger::explore("sumeragi") << "- 初期設定/initialize";
+        }
+
         void printJudge(int numValidSignatures, int numValidationPeer, int faulty) {
             std::stringstream resLine[5];
             for (int i = 0; i < numValidationPeer; i++) {

@@ -154,21 +154,15 @@ void initializeSumeragi() {
             flatbuffer_service::toConsensusEvent(
                 *flatbuffers::GetRoot<::iroha::Transaction>(transaction.get()));
 
-        auto&& task = [e = std::move(eventUniqPtr)]() mutable {
+          // send processTransaction(event) as a task to processing pool
+          // this returns std::future<void> object
+          // (std::future).get() method locks processing until result of
+          // processTransaction will be available but processTransaction returns
+          // void, so we don't have to call it and wait
+          auto&& task = [e = std::move(eventUniqPtr)]() mutable {
           processTransaction(std::move(e));
         };
         pool.process(std::move(task));
-
-        // ToDo I think std::unique_ptr<const T> is not popular. Is it?
-        // return std::unique_ptr<ConsensusEvent>(const_cast<ConsensusEvent*>(
-        //                                               flatbuffers::GetRoot<ConsensusEvent>(fbb.GetBufferPointer())));
-        // send processTransaction(event) as a task to processing pool
-        // this returns std::future<void> object
-        // (std::future).get() method locks processing until result of
-        // processTransaction will be available but processTransaction returns
-        // void, so we don't have to call it and wait
-        // std::function<void()> &&task = std::bind(processTransaction, event);
-        // pool.process(std::move(task));
       });
 
   connection::iroha::SumeragiImpl::Verify::receive([](
