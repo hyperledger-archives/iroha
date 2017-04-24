@@ -27,8 +27,21 @@ class UnexpectedType {
 };
 
 template <typename ExceptionType>
-UnexpectedType makeUnexpected(ExceptionType&& exc) noexcept {
+UnexpectedType makeUnexpected(
+    ExceptionType&& exc,
+    typename std::enable_if<
+        std::is_base_of<std::exception, ExceptionType>::value>::type* =
+        nullptr) noexcept {
   return UnexpectedType(std::make_exception_ptr(exc));
+}
+
+template <typename ExceptionPtrType>
+UnexpectedType makeUnexpected(
+    ExceptionPtrType&& excptr,
+    typename std::enable_if<
+        std::is_same<std::exception_ptr, ExceptionPtrType>::value>::type* =
+        nullptr) noexcept {
+  return UnexpectedType(excptr);
 }
 
 template <typename T>

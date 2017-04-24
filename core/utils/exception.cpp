@@ -14,6 +14,7 @@
 
 #include <stdexcept>
 
+#include "exception_tag.hpp"
 #include "exception.hpp"
 
 namespace exception {
@@ -24,14 +25,16 @@ IrohaException::IrohaException(const std::string &message)
 
 IrohaException::~IrohaException() {}
 
-const char *IrohaException::what() const noexcept { return message_.c_str(); }
+const char *IrohaException::what() const noexcept {
+    return ("[" + tag() + "] " +  message_).c_str();
+}
 
 None::None() : IrohaException("") {}
 
 NotImplementedException::NotImplementedException(
     const std::string &functionName, const std::string &filename)
     : IrohaException(
-          "TODO: Sorry, function [" + functionName + "] in file " + filename +
+          "Sorry, function [" + functionName + "] in file " + filename +
           " is not yet implemented, would you like to contribute it?") {}
 
 InvalidCastException::InvalidCastException(const std::string &from,
@@ -75,6 +78,14 @@ UndefinedIrohaHomeException::UndefinedIrohaHomeException()
           "UndefinedIrohaHomeException: Set environment variable IROHA_HOME") {}
 
 }  // namespace config
+
+namespace connection {
+NullptrException::NullptrException(const std::string &target)
+    : IrohaException("NullptrException: '" + target + "' is nullptr") {}
+
+FailedToCreateConsensusEvent::FailedToCreateConsensusEvent()
+    : IrohaException("FailedToCreateConsensusEvent") {}
+}  // namespace connection
 
 namespace service {
 
