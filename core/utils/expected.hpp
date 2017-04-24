@@ -15,7 +15,6 @@
 #ifndef IROHA_UTILS_EXCEPTION_HPP_
 #define IROHA_UTILS_EXCEPTION_HPP_
 
-#include <flatbuffers/flatbuffers.h>
 #include "exception.hpp"
 
 class UnexpectedType {
@@ -69,6 +68,7 @@ class Expected {
   }
 
   const T& operator*() const { return value(); }
+  void move_value(T&& to) { to = std::move(value_); }
 
   // Using move semantics may be not suppported.
 
@@ -84,45 +84,6 @@ class Expected {
 
  private:
   T value_;
-  std::exception_ptr excptr_;
-  bool valid_;
-};
-
-template <>
-class Expected<flatbuffers::unique_ptr_t> {
- public:
-  Expected(flatbuffers::unique_ptr_t&& value,
-           typename std::enable_if<!std::is_same<
-               flatbuffers::unique_ptr_t, UnexpectedType>::value>::type* =
-               0) noexcept
-      : value_(std::move(value)),
-        excptr_(std::make_exception_ptr(exception::None())),
-        valid_(true) {}
-
-  Expected(const UnexpectedType& exc) noexcept
-      : excptr_(exc.excptr()),
-        valid_(false) {}
-
-  bool valid() const noexcept { return valid_; }
-
-  explicit operator bool() const noexcept { return valid(); }
-
-  void move_unique_ptr(flatbuffers::unique_ptr_t&& to) {
-    to = std::move(value_);
-  }
-
-  std::exception_ptr excptr() const noexcept { return excptr_; }
-
-  std::string error() const {
-    try {
-      std::rethrow_exception(excptr_);
-    } catch (const exception::IrohaException& e) {
-      return e.message();
-    }
-  }
-
- private:
-  flatbuffers::unique_ptr_t value_;
   std::exception_ptr excptr_;
   bool valid_;
 };
