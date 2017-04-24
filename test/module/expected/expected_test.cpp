@@ -110,7 +110,7 @@ TEST(UseExpected, VoidHandler) {
   auto res = voidTest(123);
 }
 
-TEST(UseExpect, flatBuffersPtrMove) {
+TEST(UseExpected, flatBuffersPtrMove) {
   auto f = [](const char* s, int x, double d) -> Expected<flatbuffers::unique_ptr_t> {
     flatbuffers::FlatBufferBuilder fbb;
     auto sampleOffset = CreateSampleDirect(fbb, s, x, d);
