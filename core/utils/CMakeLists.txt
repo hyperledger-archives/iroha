@@ -13,7 +13,10 @@ add_library(exception STATIC
     exception.cpp
 )
 
-add_library(expected STATIC expected.cpp)
+add_library(expected STATIC
+  expected.cpp
+  expected.hpp
+)
 target_link_libraries(expected
     exception
     flatbuffers
