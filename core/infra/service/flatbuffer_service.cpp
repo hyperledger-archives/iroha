@@ -553,8 +553,7 @@ flatbuffers::unique_ptr_t makeCommit(const iroha::ConsensusEvent& event) {
   return fbbConsensusEvent.ReleaseBufferPointer();
 }
 
-
-Expected<int> RequirePropertyMissingException(const iroha::Transaction &tx){
+Expected<int> hasRequreMember(const iroha::Transaction &tx){
   if (tx.creatorPubKey() == nullptr) {
     return makeUnexpected(exception::RequirePropertyMissingException("Transaction must need creatorPubKey", __FILE__));
   }
