@@ -23,11 +23,11 @@ limitations under the License.
 namespace runtime {
     namespace validator {
 
-        bool account_exist_validator(const iroha::Transaction &tx);
+        bool account_exist_validator(const std::string &publicKey);
 
-        bool permission_validator(const iroha::Transaction &tx);
+        bool permission_validator(const std::string &publicKey);
 
-        bool logic_validator(const iroha::Transaction &tx);
+        bool logic_validator(const std::string &publicKey);
     };
 };
 
