@@ -15,7 +15,6 @@ add_library(exception STATIC
 
 add_library(expected STATIC
   expected.cpp
-  expected.hpp
 )
 target_link_libraries(expected
     exception
