@@ -15,6 +15,7 @@ limitations under the License.
 #ifndef IROHA_FLATBUFFER_SERVICE_H
 #define IROHA_FLATBUFFER_SERVICE_H
 
+#include <utils/expected.hpp>
 #include "flatbuf/nested_flatbuffer_service.h"
 
 namespace iroha {
@@ -30,13 +31,25 @@ flatbuffers::Offset<void> CreateCommandDirect(
     int /* Command */ type);  // TODO: Use scoped enum ::iroha::Command
 // } // namespace autogen_extend
 
+Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
+    flatbuffers::FlatBufferBuilder &fbb, const ::iroha::ConsensusEvent &);
+
+template <typename T>
+VoidHandler ensureNotNull(T *value) {
+  if (value == nullptr) {
+    return makeUnexpected(
+        exception::connection::NullptrException(typeid(T).name()));
+  }
+  return {};
+}
+
 std::string toString(const iroha::Transaction &tx);
 
 flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent &event,
                                        const std::string &publicKey,
                                        const std::string &signature);
 
-flatbuffers::unique_ptr_t toConsensusEvent(const iroha::Transaction &tx);
+Expected<flatbuffers::unique_ptr_t> toConsensusEvent(const iroha::Transaction &tx);
 
 flatbuffers::unique_ptr_t makeCommit(const iroha::ConsensusEvent &event);
 };

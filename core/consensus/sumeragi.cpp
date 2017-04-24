@@ -207,15 +207,18 @@ void initializeSumeragi() {
       [](const std::string& from, flatbuffers::unique_ptr_t&& transaction) {
         logger::info("sumeragi") << "receive!";
 
-        flatbuffers::unique_ptr_t eventUniqPtr =
-            flatbuffer_service::toConsensusEvent(
-                *flatbuffers::GetRoot<::iroha::Transaction>(transaction.get()));
+        auto eventUniqPtr = flatbuffer_service::toConsensusEvent(
+            *flatbuffers::GetRoot<::iroha::Transaction>(transaction.get()));
 
-        auto&& task = [e = std::move(eventUniqPtr)]() mutable {
-          processTransaction(std::move(e));
-        };
-        pool.process(std::move(task));
-
+        if (eventUniqPtr) {
+          auto&& task = [e = std::move(eventUniqPtr.move_value())]() mutable {
+            auto 
+            processTransaction(std::move(e));
+          };
+          pool.process(std::move(task));
+        } else {
+          logger::error("sumeragi") << eventUniqPtr.error();
+        }
         // ToDo I think std::unique_ptr<const T> is not popular. Is it?
         // return std::unique_ptr<ConsensusEvent>(const_cast<ConsensusEvent*>(
         //                                               flatbuffers::GetRoot<ConsensusEvent>(fbb.GetBufferPointer())));

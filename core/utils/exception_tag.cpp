@@ -19,25 +19,25 @@
 namespace exception_tag {
 
 /**
- * ExceptionTag::tag()
+ * NoError::tag()
  * - This is for exception::None. This tag() assumes not to be called.
  */
-const std::string ExceptionTag::tag() const { return "NO_ERROR"; }
+std::string ExceptionTag::tag() const { return "NO_ERROR"; }
 
 /**
  * Critical
  * - This is bug. It would help if you report by GitHub issue.
  */
-const std::string Critical::tag() const { return "CRITICAL"; }
+std::string Critical::tag() const { return "CRITICAL"; }
 
-const std::string WontFix::tag() const { return "WONT_FIX"; }
+std::string WontFix::tag() const { return "WONT_FIX"; }
 
-const std::string HelpWanted::tag() const { return "HELP_WANTED"; }
+std::string HelpWanted::tag() const { return "HELP_WANTED"; }
 
 /**
  * ConfigError
  * - User defined configuration is wrong.
  */
-const std::string ConfigError::tag() const { return "CONFIG_ERROR" }
+std::string ConfigError::tag() const { return "CONFIG_ERROR"; }
 
 }  // namespace exception_tag

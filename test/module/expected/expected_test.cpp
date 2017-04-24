@@ -60,7 +60,7 @@ TEST(UseExpected, returnsException1) {
     try {
       std::rethrow_exception(res.excptr());
     } catch (const exception::crypto::InvalidKeyException& e) {
-      ASSERT_STREQ(res.error(), "Keyfile is invalid, cause is: Hoge");
+      ASSERT_STREQ(res.error().c_str(), "<<CONFIG_ERROR>> Keyfile is invalid, cause is: Hoge");
     } catch (const exception::crypto::InvalidMessageLengthException& e) {
       FAIL() << "exception::crypto::InvalidMessageLengthException";
     } catch (const exception::IrohaException& e) {
@@ -89,7 +89,9 @@ TEST(UseExpected, returnsException2) {
     } catch (const exception::crypto::InvalidKeyException& e) {
       FAIL() << "exception::crypto::InvalidKeyException";
     } catch (const exception::crypto::InvalidMessageLengthException& e) {
-      ASSERT_STREQ(res.error(), "Message Foo has wrong length");
+      std::cout << "thisistest\n";
+      std::cout << res.error() << std::endl;
+      ASSERT_STREQ(res.error().c_str(), "<<CRITICAL>> Message Foo has wrong length");
     } catch (const exception::IrohaException& e) {
       FAIL() << "Unknown exception: " << typeid(decltype(e)).name();
     }

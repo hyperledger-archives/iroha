@@ -41,7 +41,7 @@ UnexpectedType makeUnexpected(
     typename std::enable_if<
         std::is_same<std::exception_ptr, ExceptionPtrType>::value>::type* =
         nullptr) noexcept {
-  return UnexpectedType(excptr);
+  return UnexpectedType(std::forward<ExceptionPtrType>(excptr));
 }
 
 template <typename T>
@@ -62,20 +62,27 @@ class Expected {
 
   explicit operator bool() const noexcept { return valid(); }
 
-  const T& value() const {
+  const T& value() const& {
     if (!valid()) std::rethrow_exception(excptr());
     return value_;
+  }
+
+  // TODO: Is it safe???
+  T&& move_value() && {
+    T dummyVal; // default constructor is needed.
+    swap(dummyVal, value_);
+    return std::move(value_);
   }
 
   const T& operator*() const { return value(); }
 
   std::exception_ptr excptr() const noexcept { return excptr_; }
 
-  const char* error() const noexcept {
+  std::string error() const {
     try {
       std::rethrow_exception(excptr_);
     } catch (const exception::IrohaException& e) {
-      return e.what();
+      return e.message();
     }
   }
 
@@ -103,7 +110,7 @@ class VoidHandler {
 
   std::exception_ptr excptr() const noexcept { return excptr_; }
 
-  const char* error() const noexcept;
+  std::string error() const;
 
  private:
   std::exception_ptr excptr_;

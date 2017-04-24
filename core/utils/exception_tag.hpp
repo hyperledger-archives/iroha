@@ -24,27 +24,27 @@ namespace exception_tag {
 
 class ExceptionTag {
  public:
-  virtual const std::string tag() const;
+  virtual std::string tag() const;
 };
 
 class Critical : public ExceptionTag {
  public:
-  const std::string tag() const;
+  std::string tag() const override;
 };
 
 class WontFix : public ExceptionTag {
  public:
-  const std::string tag() const;
+  std::string tag() const override;
 };
 
 class HelpWanted : public ExceptionTag {
  public:
-  const std::string tag() const;
+  std::string tag() const override;
 };
 
 class ConfigError : public ExceptionTag {
  public:
-  const std::string tag() const;
+  std::string tag() const override;
 };
 
 }  // namespace exception_tag

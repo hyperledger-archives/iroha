@@ -20,9 +20,8 @@ limitations under the License.
 #include <crypto/signature.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-
 #include <service/peer_service.hpp>
-#include <utils/exception.hpp>
+#include <utils/expected.hpp>
 #include <utils/logger.hpp>
 
 #include <flatbuffers/flatbuffers.h>
@@ -101,104 +100,70 @@ void receive(Verify::CallBackFunc&& callback) {
   receiver.set(std::move(callback));
 }
 
-bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
+namespace detail {
+
+VoidHandler shareConsensusEventWithOthers(
+    const std::string& ip, const ::iroha::ConsensusEvent& event) {
+  auto channel =
+      grpc::CreateChannel(ip + ":50051", grpc::InsecureChannelCredentials());
+  auto stub = ::iroha::Sumeragi::NewStub(channel);
+
+  grpc::ClientContext context;
+
+  flatbuffers::FlatBufferBuilder fbb;
+
+  auto eventOffset = flatbuffer_service::copyConsensusEvent(fbb, event);
+  if (!eventOffset) {
+    return makeUnexpected(eventOffset.excptr());
+  }
+
+  fbb.Finish(*eventOffset);
+
+  auto eventRef = flatbuffers::BufferRef<::iroha::ConsensusEvent>(
+      fbb.GetBufferPointer(), fbb.GetSize());
+
+  flatbuffers::BufferRef<::iroha::Response> responseRef;
+
+  auto status = stub->Verify(&context, eventRef, &responseRef);
+
+  if (status.ok()) {
+    auto msg = responseRef.GetRoot()->message();
+    logger::info("Connection with grpc") << "RPC response: " << msg->str();
+  } else {
+    logger::info("Connection with grpc") << "RPC failed";
+  }
+
+  return {};
+}
+
+}  // namespace detail
+
+Expected<bool> send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
   logger::info("Connection with grpc") << "Send!";
 
   if (config::PeerServiceConfig::getInstance().isExistIP(ip)) {
-    logger::info("Connection with grpc") << "isExistIP " << ip;
-
-    auto channel =
-        grpc::CreateChannel(ip + ":50051", grpc::InsecureChannelCredentials());
-    auto stub = ::iroha::Sumeragi::NewStub(channel);
-
-    grpc::ClientContext context;
-    flatbuffers::FlatBufferBuilder fbbConsensusEvent;
-    {
-      // At first, peerSignatures is empty. (Is this right?)
-      std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures;
-      std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions;
-
-      // Tempolary implementation: Currently, #(tx) is one.
-      auto tx = event.transactions()->Get(0);
-      const auto& aSignature = tx->signatures()->Get(0);
-      const auto& aPeerSignatures = event.peerSignatures();
-
-      for (const auto& aPeerSig : *event.peerSignatures()) {
-        std::vector<uint8_t> aPeerSigBlob(aPeerSig->signature()->begin(),
-                                          aPeerSig->signature()->end());
-        peerSignatures.push_back(::iroha::CreateSignatureDirect(
-            fbbConsensusEvent, aPeerSig->publicKey()->c_str(), &aPeerSigBlob,
-            1234567));
-      }
-
-      {
-        std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
-
-        std::vector<uint8_t> signatureBlob(aSignature->signature()->begin(),
-                                           aSignature->signature()->end());
-
-        signatures.push_back(::iroha::CreateSignatureDirect(
-            fbbConsensusEvent, aSignature->publicKey()->c_str(), &signatureBlob,
-            1234567));
-
-        std::vector<uint8_t> hashes;
-        if (tx->hash() != nullptr) {
-          hashes.assign(tx->hash()->begin(), tx->hash()->end());
-        }
-
-        flatbuffers::Offset<::iroha::Attachment> attachmentOffset;
-        std::vector<uint8_t> data;
-        if (tx->attachment() != nullptr &&
-            tx->attachment()->data() != nullptr &&
-            tx->attachment()->mime() != nullptr) {
-          data.assign(tx->attachment()->data()->begin(),
-                      tx->attachment()->data()->end());
-
-          attachmentOffset = ::iroha::CreateAttachmentDirect(
-              fbbConsensusEvent, tx->attachment()->mime()->c_str(), &data);
-        }
-
-        // TODO: Currently, #(transaction) is one.
-        transactions.push_back(::iroha::CreateTransactionDirect(
-            fbbConsensusEvent, tx->creatorPubKey()->c_str(), tx->command_type(),
-            flatbuffer_service::CreateCommandDirect(
-                fbbConsensusEvent, tx->command(), tx->command_type()),
-            &signatures, &hashes, attachmentOffset));
-      }
-      auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
-          fbbConsensusEvent, &peerSignatures, &transactions, event.code());
-
-      fbbConsensusEvent.Finish(consensusEventOffset);
-    }
-
-    auto eventRef = flatbuffers::BufferRef<::iroha::ConsensusEvent>(
-        fbbConsensusEvent.GetBufferPointer(), fbbConsensusEvent.GetSize());
-
-    flatbuffers::BufferRef<::iroha::Response> responseRef;
-
-    logger::info("Connection with grpc") << "isExistIP " << ip;
-    // The actual RPC.
-    auto status = stub->Verify(&context, eventRef, &responseRef);
-
-    if (status.ok()) {
-      auto msg = responseRef.GetRoot()->message();
-      std::cout << "RPC response: " << msg->str() << std::endl;
-    } else {
-      std::cout << "RPC failed" << std::endl;
+    logger::info("Connection with grpc") << "IP exists: " << ip;
+    auto handler = detail::shareConsensusEventWithOthers(ip, event);
+    if (!handler) {
+      return makeUnexpected(handler.excptr());
     }
     return true;
   }
-  logger::info("Connection with grpc") << "is not ExistIP__" << ip;
+  logger::info("Connection with grpc") << "IP doesn't exist: " << ip;
   return false;
 }
 
-bool sendAll(const ::iroha::ConsensusEvent& event) {
+Expected<bool> sendAll(const ::iroha::ConsensusEvent& event) {
   auto receiver_ips = config::PeerServiceConfig::getInstance().getGroup();
   for (const auto& p : receiver_ips) {
     if (p["ip"].get<std::string>() !=
-        config::PeerServiceConfig::getInstance().getMyIpWithDefault("AA")) {
+        config::PeerServiceConfig::getInstance().getMyIpWithDefault(
+            "AA")) {  // TODO: Temporary default value
       logger::info("connection") << "Send to " << p["ip"].get<std::string>();
-      send(p["ip"].get<std::string>(), event);
+      auto handler = send(p["ip"].get<std::string>(), event);
+      if (!handler) {
+        return makeUnexpected(handler.excptr());
+      }
     }
   }
   return true;

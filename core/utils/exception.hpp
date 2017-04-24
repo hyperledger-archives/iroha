@@ -30,7 +30,9 @@ class IrohaException : public std::exception,
   explicit IrohaException(const std::string &);
 
   virtual ~IrohaException();
-  virtual const char *what() const noexcept;
+  virtual const char *what() const
+      throw();  // This is for throwing exception (auto appended '"');
+  virtual std::string message() const;  // This is for getting exception message
 
  protected:
   std::string message_;
@@ -98,8 +100,7 @@ class UndefinedIrohaHomeException : public IrohaException,
 }  // namespace config
 
 namespace connection {
-class NullptrException : public IrohaException,
-                         public exception_tag::Critical {
+class NullptrException : public IrohaException, public exception_tag::Critical {
  public:
   NullptrException(const std::string &target);
 };

@@ -14,8 +14,8 @@
 
 #include <stdexcept>
 
-#include "exception_tag.hpp"
 #include "exception.hpp"
+#include "exception_tag.hpp"
 
 namespace exception {
 
@@ -25,11 +25,16 @@ IrohaException::IrohaException(const std::string &message)
 
 IrohaException::~IrohaException() {}
 
-const char *IrohaException::what() const noexcept {
-    return ("[" + tag() + "] " +  message_).c_str();
+// This is for throwing exception.
+const char *IrohaException::what() const throw() {
+  return (std::string("<<") + tag() + ">> " + message_).c_str();
 }
 
-None::None() : IrohaException("") {}
+std::string IrohaException::message() const {
+  return (std::string("<<") + tag() + ">> " + message_).c_str();
+}
+
+None::None() : IrohaException("This exception should not be used in error") {}
 
 NotImplementedException::NotImplementedException(
     const std::string &functionName, const std::string &filename)

@@ -27,10 +27,10 @@ VoidHandler::VoidHandler() noexcept
 VoidHandler::VoidHandler(const UnexpectedType& exc) noexcept
     : excptr_(exc.excptr()), valid_(false) {}
 
-const char* VoidHandler::error() const noexcept {
+std::string VoidHandler::error() const {
   try {
     std::rethrow_exception(excptr_);
   } catch (const exception::IrohaException& e) {
-    return e.what();
+    return e.message();
   }
 }
