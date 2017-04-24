@@ -24,14 +24,17 @@ limitations under the License.
 
 #include <infra/config/abstract_config_manager.hpp>
 
+class VoidHandler;
+
 namespace config {
 
-class PeerServiceConfig : AbstractConfigManager {
+class PeerServiceConfig : public AbstractConfigManager {
  private:
-  PeerServiceConfig();
+  PeerServiceConfig() noexcept;
+  std::string getConfigName() override { return "config/sumeragi.json"; }
 
  protected:
-  void parseConfigDataFromString(std::string&& jsonStr) override;
+  VoidHandler parseConfigDataFromString(const std::string& jsonStr) override;
 
  public:
   std::string getMyPublicKey();
@@ -40,9 +43,8 @@ class PeerServiceConfig : AbstractConfigManager {
   double getMaxTrustScore(double);
   std::vector<json> getGroup();
 
-  static PeerServiceConfig& getInstance();
+  static PeerServiceConfig& getInstance() noexcept;
 
-  std::string getConfigName() override { return "config/sumeragi.json"; }
 };
 }  // namespace config
 

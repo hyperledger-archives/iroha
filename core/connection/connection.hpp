@@ -17,13 +17,15 @@ limitations under the License.
 #ifndef __CONNECTION__
 #define __CONNECTION__
 
+#include <utils/expected.hpp>
+
+#include <generated/endpoint.grpc.fb.h>
+#include <generated/main_generated.h>
+
 #include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
-
-#include <generated/endpoint.grpc.fb.h>
-#include <generated/main_generated.h>
 
 namespace connection {
 
@@ -45,8 +47,8 @@ using CallBackFunc =
     std::function<void(const std::string & /* from */,
        flatbuffers::unique_ptr_t&& /* message */)>;
 
-bool send(const std::string &ip, const ::iroha::ConsensusEvent& msg);
-bool sendAll(const ::iroha::ConsensusEvent& msg);
+Expected<bool> send(const std::string &ip, const ::iroha::ConsensusEvent& msg);
+Expected<bool> sendAll(const ::iroha::ConsensusEvent& msg);
 void receive(Verify::CallBackFunc &&callback);
 
 }}}  // namespace iroha::SumeragiImpl::Verify

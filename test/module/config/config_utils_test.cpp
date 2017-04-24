@@ -14,27 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CONFIG_FORMAT_HPP
-#define CONFIG_FORMAT_HPP
+#include <gtest/gtest.h>
+#include <infra/config/config_utils.hpp>
 
-#include <json.hpp>
-#include <regex>
-#include <utils/exception.hpp>
-#include <utils/logger.hpp>
-
-namespace config {
-class ConfigFormat {
- public:
-  static ConfigFormat& getInstance();
-  bool ensureFormatSumeragi(const std::string& configStr);
-
- private:
-  ConfigFormat();
-  bool ensureFormat(const std::string& configStr,
-                    const std::string& formatConfigStr);
-  bool ensureFormat(nlohmann::json& actualConfig, nlohmann::json& formatConfig,
-                    const std::string& history);
-};
+TEST(ConfigUtils, appendSlashIfNeeded) {
+  using config::detail::appendSlashIfNeeded;
+  ASSERT_STREQ(appendSlashIfNeeded("").c_str(), "/");
+  ASSERT_STREQ(appendSlashIfNeeded("////").c_str(), "////");
+  ASSERT_STREQ(appendSlashIfNeeded("/hoge").c_str(), "/hoge/");
+  ASSERT_STREQ(appendSlashIfNeeded("foo").c_str(), "foo/");
+  ASSERT_STREQ(appendSlashIfNeeded("/opt/iroha").c_str(), "/opt/iroha/");
+  ASSERT_STREQ(appendSlashIfNeeded("/opt/iroha/").c_str(), "/opt/iroha/");
 }
-
-#endif
