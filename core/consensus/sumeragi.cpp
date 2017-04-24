@@ -22,7 +22,6 @@
 #include <utils/logger.hpp>
 #include <utils/timer.hpp>
 #include <utils/explore.hpp>
-#include <service/validator.hpp>
 
 #include <atomic>
 #include <cmath>
@@ -156,10 +155,6 @@ void initializeSumeragi() {
   connection::iroha::SumeragiImpl::Torii::receive(
       [](const std::string& from, flatbuffers::unique_ptr_t&& transaction) {
           context->printProgress.print( 1, "receive transaction!");
-          if(!validator::require_property_validator(*flatbuffers::GetRoot<::iroha::Transaction>(transaction.get()))){
-              explore::sumeragi::printInfo("This transaction is rejected!!!");
-              return;
-          }
 
           flatbuffers::unique_ptr_t eventUniqPtr =
             flatbuffer_service::toConsensusEvent(

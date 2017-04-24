@@ -27,6 +27,7 @@ limitations under the License.
 
 #include <flatbuffers/flatbuffers.h>
 #include <grpc++/grpc++.h>
+#include <service/validator.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -434,22 +435,27 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
                flatbuffers::BufferRef<Response>* responseRef) override {
     logger::debug("SumeragiConnectionServiceImpl::Torii") << "RPC works";
 
-    /*
-      // This code leaks.
-      // Maybe, buffer of caller deallocate Transaction and std::unique_ptr
-      movement occurs.
-      // So, double free happens.
-        iroha::SumeragiImpl::Torii::receiver.invoke(
-            "from",
-            std::unique_ptr<::iroha::Transaction>(
-                // FIX: 呼び出し元のバッファを即座に破棄するのなら安全なはず
-                const_cast<::iroha::Transaction*>(transactionRef->GetRoot())));
+    const auto transaction = transactionRef->GetRoot();
+
+    auto validator_res = validator::require_property_validator(*flatbuffers::GetRoot<::iroha::Transaction>(transaction));
+    if(!validator_res.valid()){
+        auto msg = "Rejected validation failed " + std::string(validator_res.error());
+        auto responseOffset = ::iroha::CreateResponseDirect(
+                fbbResponse,
+                msg.c_str(),
+                ::iroha::Code_FAIL,
+                400
+        );
+        fbbResponse.Finish(responseOffset);
+
         *responseRef = flatbuffers::BufferRef<::iroha::Response>(
-            fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
-    */
+                fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+
+        return grpc::Status::CANCELLED;
+    }
 
     {
-      const auto transaction = transactionRef->GetRoot();
+
 
       flatbuffers::FlatBufferBuilder fbbTransaction;
 
