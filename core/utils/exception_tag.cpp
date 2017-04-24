@@ -16,13 +16,17 @@
 
 #include "exception_tag.hpp"
 
+#if 0
+
 namespace exception_tag {
+
+ExceptionTag::~ExceptionTag() {}
 
 /**
  * NoError::tag()
  * - This is for exception::None. This tag() assumes not to be called.
  */
-std::string ExceptionTag::tag() const { return "NO_ERROR"; }
+std::string NoError::tag() const { return "NO_ERROR"; }
 
 /**
  * Critical
@@ -41,3 +45,5 @@ std::string HelpWanted::tag() const { return "HELP_WANTED"; }
 std::string ConfigError::tag() const { return "CONFIG_ERROR"; }
 
 }  // namespace exception_tag
+
+#endif

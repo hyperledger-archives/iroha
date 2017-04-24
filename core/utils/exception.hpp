@@ -20,12 +20,9 @@
 #include <string>
 #include <typeinfo>
 
-#include "exception_tag.hpp"
-
 namespace exception {
 
-class IrohaException : public std::exception,
-                       public exception_tag::ExceptionTag {
+class IrohaException : public std::exception {
  public:
   explicit IrohaException(const std::string &);
 
@@ -38,40 +35,60 @@ class IrohaException : public std::exception,
   std::string message_;
 };
 
-class None : public IrohaException {
+class NoError : public IrohaException {
+ public:
+  explicit NoError(const std::string &);
+};
+
+class Critical : public IrohaException {
+ public:
+  explicit Critical(const std::string &);
+};
+
+class WontFix : public IrohaException {
+ public:
+  explicit WontFix(const std::string &);
+};
+
+class HelpWanted : public IrohaException {
+ public:
+  explicit HelpWanted(const std::string &);
+};
+
+class ConfigError : public IrohaException {
+ public:
+  explicit ConfigError(const std::string &);
+};
+
+class None : public NoError {
  public:
   None();
 };
 
-class NotImplementedException : public IrohaException,
-                                public exception_tag::HelpWanted {
+class NotImplementedException : public HelpWanted {
  public:
   explicit NotImplementedException(const std::string &functionName,
                                    const std::string &filename);
 };
 
-class InvalidCastException : public IrohaException,
-                             public exception_tag::Critical {
+class InvalidCastException : public Critical {
  public:
   InvalidCastException(const std::string &from, const std::string &to,
                        const std::string &filename);
   InvalidCastException(const std::string &meg, const std::string &filename);
 };
 
-class DuplicateSetArgumentException : public IrohaException,
-                                      public exception_tag::Critical {
+class DuplicateSetArgumentException : public Critical {
  public:
   DuplicateSetArgumentException(const std::string &, const std::string &);
 };
 
-class UnsetBuildArgumentsException : public IrohaException,
-                                     public exception_tag::Critical {
+class UnsetBuildArgumentsException : public Critical {
  public:
   UnsetBuildArgumentsException(const std::string &, const std::string &);
 };
 
-class NotFoundPathException : public IrohaException,
-                              public exception_tag::ConfigError {
+class NotFoundPathException : public ConfigError {
  public:
   NotFoundPathException(const std::string &path);
 };
@@ -79,20 +96,17 @@ class NotFoundPathException : public IrohaException,
 namespace config {
 
 // deprecated, will remove
-class ConfigException : public IrohaException,
-                        public exception_tag::ConfigError {
+class ConfigException : public ConfigError {
  public:
   ConfigException(const std::string &message, const std::string &filename);
 };
 
-class ParseException : public IrohaException,
-                       public exception_tag::ConfigError {
+class ParseException : public ConfigError {
  public:
   ParseException(const std::string &target, bool setDefaultMessage = false);
 };
 
-class UndefinedIrohaHomeException : public IrohaException,
-                                    public exception_tag::ConfigError {
+class UndefinedIrohaHomeException : ConfigError {
  public:
   UndefinedIrohaHomeException();
 };
@@ -100,13 +114,12 @@ class UndefinedIrohaHomeException : public IrohaException,
 }  // namespace config
 
 namespace connection {
-class NullptrException : public IrohaException, public exception_tag::Critical {
+class NullptrException : public Critical {
  public:
   NullptrException(const std::string &target);
 };
 
-class FailedToCreateConsensusEvent : public IrohaException,
-                                     public exception_tag::Critical {
+class FailedToCreateConsensusEvent : public Critical {
  public:
   FailedToCreateConsensusEvent();
 };
@@ -114,20 +127,17 @@ class FailedToCreateConsensusEvent : public IrohaException,
 
 namespace service {
 
-class DuplicationIPException : public IrohaException,
-                               public exception_tag::ConfigError {
+class DuplicationIPException : public ConfigError {
  public:
   explicit DuplicationIPException(const std::string &);
 };
 
-class DuplicationPublicKeyException : public IrohaException,
-                                      public exception_tag::ConfigError {
+class DuplicationPublicKeyException : public ConfigError {
  public:
   explicit DuplicationPublicKeyException(const std::string &);
 };
 
-class UnExistFindPeerException : public IrohaException,
-                                 public exception_tag::Critical {
+class UnExistFindPeerException : public ConfigError {
  public:
   explicit UnExistFindPeerException(const std::string &);
 };
@@ -136,14 +146,12 @@ class UnExistFindPeerException : public IrohaException,
 
 namespace crypto {
 
-class InvalidKeyException : public IrohaException,
-                            public exception_tag::ConfigError {
+class InvalidKeyException : public ConfigError {
  public:
   explicit InvalidKeyException(const std::string &);
 };
 
-class InvalidMessageLengthException : public IrohaException,
-                                      public exception_tag::Critical {
+class InvalidMessageLengthException : public Critical {
  public:
   explicit InvalidMessageLengthException(const std::string &);
 };

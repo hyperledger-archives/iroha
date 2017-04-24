@@ -20,33 +20,5 @@
 #include <string>
 #include <typeinfo>
 
-namespace exception_tag {
-
-class ExceptionTag {
- public:
-  virtual std::string tag() const;
-};
-
-class Critical : public ExceptionTag {
- public:
-  std::string tag() const override;
-};
-
-class WontFix : public ExceptionTag {
- public:
-  std::string tag() const override;
-};
-
-class HelpWanted : public ExceptionTag {
- public:
-  std::string tag() const override;
-};
-
-class ConfigError : public ExceptionTag {
- public:
-  std::string tag() const override;
-};
-
-}  // namespace exception_tag
 
 #endif  // IROHA_UTILS_EXCEPTION_TAG_HPP_
