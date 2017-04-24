@@ -16,7 +16,6 @@ limitations under the License.
 #ifndef IROHA_VALIDATOR_H
 #define IROHA_VALIDATOR_H
 
-#include "validator.hpp"
 //#include <ametsuchi/repository.hpp>
 #include <service/flatbuffer_service.h>
 #include <utils/logger.hpp>
@@ -25,13 +24,8 @@ limitations under the License.
 namespace validator{
     using iroha::Transaction;
 
-    bool require_property_validator(const iroha::Transaction& tx){
-        auto res = flatbuffer_service::hasRequreMember(tx);
-        if(!res.valid()){
-            logger::error("require_property_validator") << res.error();
-            return false;
-        }
-        return true;
+    Expected<int> require_property_validator(const iroha::Transaction& tx){
+        return flatbuffer_service::hasRequreMember(tx);
     }
 
     bool account_exist_validator(const iroha::Transaction& tx){

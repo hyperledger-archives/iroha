@@ -16,12 +16,15 @@ limitations under the License.
 
 #include "validator.hpp"
 
-namespace validator{
+namespace runtime {
+    namespace validator {
 
-    bool account_exist_validator(const iroha::Transaction& tx){}
+        bool account_exist_validator(const iroha::Transaction &tx) {}
 
-    bool permission_validator(const iroha::Transaction& tx){}
+        bool permission_validator(const iroha::Transaction &tx) {}
 
-    bool logic_validator(){const iroha::Transaction& tx}
+        bool logic_validator() { const iroha::Transaction &tx }
+
+    };
 
 };

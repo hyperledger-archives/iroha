@@ -14,18 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CORE_CRYPTO_HASH_HPP__
-#define CORE_CRYPTO_HASH_HPP__
+#ifndef __CORE_RUNTIME_VALIDATOR_HPP__
+#define __CORE_RUNTIME_VALIDATOR_HPP__
 
 #include <generated/main_generated.h>
 
-namespace validator{
 
-    bool account_exist_validator(const iroha::Transaction& tx);
+namespace runtime {
+    namespace validator {
 
-    bool permission_validator(const iroha::Transaction& tx);
+        bool account_exist_validator(const iroha::Transaction &tx);
 
-    bool logic_validator(const iroha::Transaction& tx);
+        bool permission_validator(const iroha::Transaction &tx);
+
+        bool logic_validator(const iroha::Transaction &tx);
+    };
 };
 
 #endif
