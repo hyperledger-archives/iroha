@@ -37,7 +37,7 @@ class PeerServiceConfig : AbstractConfigManager {
   std::string getMyPublicKey();
   std::string getMyPrivateKey();
   std::string getMyIp();
-  double getMaxTrustScore(double);
+  double getMaxTrustScore(double defaultValue=100.0);
   std::vector<json> getGroup();
 
   static PeerServiceConfig& getInstance();

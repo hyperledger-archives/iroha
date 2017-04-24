@@ -43,16 +43,14 @@ std::string getPrivateKey() {
   return PeerServiceConfig::getInstance().getMyPrivateKey();
 }
 
-std::string getIp() {
-  return PeerServiceConfig::getInstance().getMyIp();
-}
+std::string getIp() { return PeerServiceConfig::getInstance().getMyIp(); }
 
 bool isActive() { return is_active; }
 void activate() { is_active = true; }
 void stop() { is_active = false; }
 
 bool isLeader() {
-  auto sorted_peers = service::getPeerList();
+  auto sorted_peers = service::getActivePeerList();
   if (sorted_peers.empty()) return false;
   auto peer = *sorted_peers.begin();
   return peer->publicKey == getPublicKey() && peer->ip == getIp();
@@ -71,28 +69,33 @@ void initialize() {
     peerList.push_back(std::make_shared<Node>(
         json_peer["ip"].get<std::string>(),
         json_peer["publicKey"].get<std::string>(),
-        PeerServiceConfig::getInstance().getMaxTrustScore(100.0)));
+        PeerServiceConfig::getInstance().getMaxTrustScore()));
   }
+  is_active = false;
 }
 
 size_t getMaxFaulty() {
-  return std::max(0, ((int)getPeerList().size() - 1) / 3);
+  return std::max(0, ((int)getActivePeerList().size() - 1) / 3);
 }
 
-Nodes getPeerList() {
+Nodes getAllPeerList() {
+  initialize();
+  return peerList;
+}
+Nodes getActivePeerList() {
   initialize();
 
   Nodes nodes;
   for (const auto &node : peerList) {
-    if (node->isok) {
-      nodes.push_back(std::make_unique<peer::Node>(node->ip, node->publicKey,
-                                                   node->trustScore));
+    if (node->active) {
+      nodes.push_back(
+          std::make_unique<peer::Node>(node->ip, node->publicKey, node->trust));
     }
   }
 
   // TODO: maintain nodes already sorted
   sort(nodes.begin(), nodes.end(), [](const auto &a, const auto &b) {
-    return a->trustScore > b->trustScore;
+    return a->trust > b->trust;
   });
 
   return nodes;
@@ -100,7 +103,7 @@ Nodes getPeerList() {
 
 std::vector<std::string> getIpList() {
   std::vector<std::string> ret_ips;
-  for (const auto &node : getPeerList()) {
+  for (const auto &node : getActivePeerList()) {
     ret_ips.push_back(node->ip);
   }
   return ret_ips;
@@ -129,7 +132,7 @@ Nodes::iterator findPeerPublicKey(const std::string &publicKey) {
 }
 
 std::shared_ptr<peer::Node> leaderPeer() {
-  return std::move(*getPeerList().begin());
+  return std::move(*getActivePeerList().begin());
 }
 
 }  // namespace service
@@ -141,60 +144,40 @@ namespace isssue {
 void add(const peer::Node &peer) {
   if (service::isExistIP(peer.ip) || service::isExistPublicKey(peer.publicKey))
     return;
-/*  auto txPeer =
-      TransactionBuilder<Add<Peer>>()
-          .setSenderPublicKey(myself::getPublicKey())
-          .setPeer(txbuilder::createPeer(
-              peer.publicKey, peer.ip,
-              txbuilder::createTrust(
-                  PeerServiceConfig::getInstance().getMaxTrustScore(), false)))
-          .build();
-  connection::iroha::PeerService::Sumeragi::send(myself::getPublicKey(),
-                                                 txPeer);
-                                                 */
+  /*  auto txPeer =
+        TransactionBuilder<Add<Peer>>()
+            .setSenderPublicKey(myself::getPublicKey())
+            .setPeer(txbuilder::createPeer(
+                peer.publicKey, peer.ip,
+                txbuilder::createTrust(
+                    PeerServiceConfig::getInstance().getMaxTrustScore(),
+    false)))
+            .build();
+    connection::iroha::PeerService::Sumeragi::send(myself::getPublicKey(),
+                                                   txPeer);
+                                                   */
 }
-void distruct(const std::string &publicKey) {
-  if (!service::isExistPublicKey(publicKey)) return;
-/*  auto txPeer =
-      TransactionBuilder<Update<Peer>>()
-          .setSenderPublicKey(myself::getPublicKey())
-          .setPeer(txbuilder::createPeer(publicKey, peer::defaultIP(),
-                                         txbuilder::createTrust(-1.0, true)))
-          .build();
-  connection::iroha::PeerService::Sumeragi::send(myself::getPublicKey(),
-                                                 txPeer);
-                                                 */
-}
+
 void remove(const std::string &publicKey) {
   if (!service::isExistPublicKey(publicKey)) return;
-/*  auto txPeer =
-      TransactionBuilder<Remove<Peer>>()
-          .setSenderPublicKey(myself::getPublicKey())
-          .setPeer(txbuilder::createPeer(
-              publicKey, peer::defaultIP(),
-              txbuilder::createTrust(
-                  -PeerServiceConfig::getInstance().getMaxTrustScore(), false)))
-          .build();
-  connection::iroha::PeerService::Sumeragi::send(myself::getPublicKey(),
-                                                 txPeer);
-                                                 */
+  /*  auto txPeer =
+        TransactionBuilder<Remove<Peer>>()
+            .setSenderPublicKey(myself::getPublicKey())
+            .setPeer(txbuilder::createPeer(
+                publicKey, peer::defaultIP(),
+                txbuilder::createTrust(
+                    -PeerServiceConfig::getInstance().getMaxTrustScore(),
+    false)))
+            .build();
+    connection::iroha::PeerService::Sumeragi::send(myself::getPublicKey(),
+                                                   txPeer);
+                                                   */
 }
-void credit(const std::string &publicKey) {
-  if (!service::isExistPublicKey(publicKey)) return;
-  if ((*service::findPeerPublicKey(publicKey))->trustScore ==
-      PeerServiceConfig::getInstance().getMaxTrustScore(100.0)) {
-    return;
-  }
-/*  auto txPeer =
-      TransactionBuilder<Update<Peer>>()
-          .setSenderPublicKey(myself::getPublicKey())
-          .setPeer(txbuilder::createPeer(publicKey, peer::defaultIP(),
-                                         txbuilder::createTrust(+1.0, true)))
-          .build();
-  connection::iroha::PeerService::Sumeragi::send(myself::getPublicKey(),
-                                                 txPeer);
-                                                 */
-}
+
+void setTrust(const std::string &publicKey, const double &trust) {}
+void changeTrust(const std::string &publicKey, const double &trust) {}
+void setActive(const std::string &publicKey, const bool active) {}
+
 }  // namespace isssue
 namespace executor {
 // invoke when execute transaction
@@ -215,18 +198,58 @@ bool add(const peer::Node &peer) {
   return true;
 }
 bool remove(const peer::Node &peer) {
-/*  try {
-    auto it = service::findPeerPublicKey(publicKey);
-    if (!service::isExistPublicKey(publicKey))
-      throw exception::service::UnExistFindPeerException(publicKey);
+  try {
+    auto it = service::findPeerPublicKey(peer.publicKey);
+    if (!service::isExistPublicKey(peer.publicKey))
+      throw exception::service::UnExistFindPeerException(peer.publicKey);
     peerList.erase(it);
   } catch (exception::service::UnExistFindPeerException &e) {
     logger::warning("removePeer") << e.what();
     return false;
   }
   return true;
-  */
 }
+
+bool setTrust(const std::string &publicKey, const double &trust) {
+  try {
+    if (!service::isExistPublicKey(publicKey))
+      throw exception::service::UnExistFindPeerException(publicKey);
+    service::findPeerPublicKey(publicKey)->get()->trust =
+        std::min(PeerServiceConfig::getInstance().getMaxTrustScore(), trust);
+  } catch (exception::service::UnExistFindPeerException &e) {
+    logger::warning("validate setTrust") << e.what();
+    return false;
+  }
+  return true;
+}
+
+bool changeTrust(const std::string &publicKey, const double &trust) {
+  try {
+    if (!service::isExistPublicKey(publicKey))
+      throw exception::service::UnExistFindPeerException(publicKey);
+    auto it = service::findPeerPublicKey(publicKey)->get();
+    it->trust += trust;
+    it->trust = std::min(PeerServiceConfig::getInstance().getMaxTrustScore(),
+                         it->trust);
+  } catch (exception::service::UnExistFindPeerException &e) {
+    logger::warning("validate changeTrust") << e.what();
+    return false;
+  }
+  return true;
+}
+
+bool setActive(const std::string &publicKey, const bool active) {
+  try {
+    if (!service::isExistPublicKey(publicKey))
+      throw exception::service::UnExistFindPeerException(publicKey);
+    service::findPeerPublicKey(publicKey)->get()->active = active;
+  } catch (exception::service::UnExistFindPeerException &e) {
+    logger::warning("validate setActive") << e.what();
+    return false;
+  }
+  return true;
+}
+
 }  // namespace executor
 
 namespace validator {
@@ -248,16 +271,47 @@ bool add(const peer::Node &peer) {
   return true;
 }
 bool remove(const peer::Node &peer) {
-  /*
   try {
-    if (!service::isExistPublicKey(publicKey))
-      throw exception::service::UnExistFindPeerException(publicKey);
+    if (!service::isExistPublicKey(peer.publicKey))
+      throw exception::service::UnExistFindPeerException(peer.publicKey);
   } catch (exception::service::UnExistFindPeerException &e) {
     logger::warning("validate removePeer") << e.what();
     return false;
   }
   return true;
-   */
+}
+
+bool setTrust(const std::string &publicKey, const double &trust) {
+  try {
+    if (!service::isExistPublicKey(publicKey))
+      throw exception::service::UnExistFindPeerException(publicKey);
+  } catch (exception::service::UnExistFindPeerException &e) {
+    logger::warning("validate setTrust") << e.what();
+    return false;
+  }
+  return true;
+}
+
+bool changeTrust(const std::string &publicKey, const double &trust) {
+  try {
+    if (!service::isExistPublicKey(publicKey))
+      throw exception::service::UnExistFindPeerException(publicKey);
+  } catch (exception::service::UnExistFindPeerException &e) {
+    logger::warning("validate changeTrust") << e.what();
+    return false;
+  }
+  return true;
+}
+
+bool setActive(const std::string &publicKey, const bool active) {
+  try {
+    if (!service::isExistPublicKey(publicKey))
+      throw exception::service::UnExistFindPeerException(publicKey);
+  } catch (exception::service::UnExistFindPeerException &e) {
+    logger::warning("validate setActive") << e.what();
+    return false;
+  }
+  return true;
 }
 
 }  // namespace validator
