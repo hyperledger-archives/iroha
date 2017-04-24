@@ -14,5 +14,4 @@ target_link_libraries(sumeragi
   signature
   thread_pool
   timer
-　validator
 )

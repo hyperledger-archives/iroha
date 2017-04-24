@@ -21,19 +21,5 @@ limitations under the License.
 
 // This is state less validator.
 namespace validator{
-    using iroha::Transaction;
 
-    bool require_property_validator(const iroha::Transaction& tx){
-        auto res = flatbuffer_service::hasRequreMember(tx);
-        if(!res.valid()){
-            logger::error("require_property_validator") << res.error();
-            return false;
-        }
-        return true;
-    }
-
-    bool account_exist_validator(const iroha::Transaction& tx){
-        return true;
-        //return ametsuchi::account::exists(tx.creatorPubKey()->c_str());
-    }
 };

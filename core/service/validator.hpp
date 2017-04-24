@@ -16,12 +16,28 @@ limitations under the License.
 #ifndef IROHA_VALIDATOR_H
 #define IROHA_VALIDATOR_H
 
-#include <generated/main_generated.h>
+#include "validator.hpp"
+//#include <ametsuchi/repository.hpp>
+#include <service/flatbuffer_service.h>
+#include <utils/logger.hpp>
 
 // This is stateless validator.
 namespace validator{
     using iroha::Transaction;
-    bool require_property_validator(const iroha::Transaction& tx);
-    bool account_exist_validator(const iroha::Transaction& tx);
+
+    bool require_property_validator(const iroha::Transaction& tx){
+        auto res = flatbuffer_service::hasRequreMember(tx);
+        if(!res.valid()){
+            logger::error("require_property_validator") << res.error();
+            return false;
+        }
+        return true;
+    }
+
+    bool account_exist_validator(const iroha::Transaction& tx){
+        return true;
+        //return ametsuchi::account::exists(tx.creatorPubKey()->c_str());
+    }
 };
+
 #endif //IROHA_VALIDATOR_H
