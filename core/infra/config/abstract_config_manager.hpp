@@ -77,6 +77,29 @@ class AbstractConfigManager {
     }
   }
 
+  template <typename T>
+  T getParamWithAssert(std::initializer_list<std::string> params) {
+    auto tempConfigData = getConfigData();
+    auto defaultValue = T();
+    try {
+      size_t i = 0;
+      for (auto& param : params) {
+        ++i;
+        if (i == params.size()) {
+          return tempConfigData.value(param,defaultValue);
+        }
+        tempConfigData = tempConfigData[param];
+      }
+      return tempConfigData;
+    } catch (...) {
+      std::string list_name = "";
+      for( auto s : params ) list_name += "\"" + s + "\", ";
+      list_name.erase(list_name.end()-2,list_name.end());
+      logger::error("config") << "not Found { " << list_name << " } in " << getConfigName();
+      assert(false);
+    }
+  }
+
   virtual VoidHandler parseConfigDataFromString(const std::string& jsonStr) {
     try {
       _configData = json::parse(std::move(jsonStr));

@@ -22,7 +22,7 @@ limitations under the License.
 #include <set>
 #include <vector>
 
-#include "abstract_config_manager.hpp"
+#include <infra/config/abstract_config_manager.hpp>
 
 class VoidHandler;
 
@@ -31,23 +31,20 @@ namespace config {
 class PeerServiceConfig : public AbstractConfigManager {
  private:
   PeerServiceConfig() noexcept;
-  std::string getConfigName() { return "config/sumeragi.json"; }
+  std::string getConfigName() override { return "config/sumeragi.json"; }
 
  protected:
   VoidHandler parseConfigDataFromString(const std::string& jsonStr) override;
 
  public:
-  std::string getMyPublicKeyWithDefault(const std::string& defaultValue);
-  std::string getMyPrivateKeyWithDefault(const std::string& defaultValue);
-  std::string getMyIpWithDefault(const std::string& defaultValue);
-  bool isExistIP(const std::string& ip);
-  double getMaxTrustScoreWithDefault(double defaultValue);
-  size_t getMaxFaultyScoreWithDefault(size_t defaultValue);
+  std::string getMyPublicKey();
+  std::string getMyPrivateKey();
+  std::string getMyIp();
+  double getMaxTrustScore(double);
   std::vector<json> getGroup();
 
   static PeerServiceConfig& getInstance() noexcept;
 
-  double getMaxTrustScore();
 };
 }  // namespace config
 

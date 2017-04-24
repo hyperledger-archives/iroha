@@ -27,9 +27,15 @@ namespace hijiri {
 // This is reputation System.
 
 // check are broken? peer
-void check(
-    const std::string &ip);  // void checkBrokenPeer(const std::string &ip);
-                             // [WIPn] does we need it? void checkAll();
+void check(const std::string &ip);  // TODO
+
+namespace my{
+
+/*
+ * To issue Check my db's root hash.
+ */
+void checkRootHash();
+}
 }  // namespace hijiri
 }  // namespace peer
 

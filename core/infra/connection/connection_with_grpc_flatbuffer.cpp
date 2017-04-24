@@ -20,7 +20,7 @@ limitations under the License.
 #include <crypto/signature.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-#include <service/peer_service.hpp>
+#include <membership_service/peer_service.hpp>
 #include <utils/expected.hpp>
 #include <utils/logger.hpp>
 
@@ -138,10 +138,11 @@ VoidHandler shareConsensusEventWithOthers(
 
 }  // namespace detail
 
+// HELP WANTED: Is this return type bool or VoidHandler?
 Expected<bool> send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
   logger::info("Connection with grpc") << "Send!";
 
-  if (config::PeerServiceConfig::getInstance().isExistIP(ip)) {
+  if (::peer::service::isExistIP(ip)) {
     logger::info("Connection with grpc") << "IP exists: " << ip;
     auto handler = detail::shareConsensusEventWithOthers(ip, event);
     if (!handler) {
@@ -157,8 +158,7 @@ Expected<bool> sendAll(const ::iroha::ConsensusEvent& event) {
   auto receiver_ips = config::PeerServiceConfig::getInstance().getGroup();
   for (const auto& p : receiver_ips) {
     if (p["ip"].get<std::string>() !=
-        config::PeerServiceConfig::getInstance().getMyIpWithDefault(
-            "AA")) {  // TODO: Temporary default value
+        config::PeerServiceConfig::getInstance().getMyIp()) {
       logger::info("connection") << "Send to " << p["ip"].get<std::string>();
       auto handler = send(p["ip"].get<std::string>(), event);
       if (!handler) {
