@@ -11,12 +11,12 @@ add_library(random STATIC random.cpp)
 
 add_library(exception STATIC
     exception.cpp
-    exception_tag.cpp
 )
 
 add_library(expected STATIC expected.cpp)
 target_link_libraries(expected
     exception
+    flatbuffers
 )
 
 add_library(timer STATIC timer.cpp)
