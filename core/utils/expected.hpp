@@ -15,6 +15,7 @@
 #ifndef IROHA_UTILS_EXCEPTION_HPP_
 #define IROHA_UTILS_EXCEPTION_HPP_
 
+#include <flatbuffers/flatbuffers.h>
 #include "exception.hpp"
 
 class UnexpectedType {
@@ -62,19 +63,14 @@ class Expected {
 
   explicit operator bool() const noexcept { return valid(); }
 
-  const T& value() const& {
+  const T& value() const & {
     if (!valid()) std::rethrow_exception(excptr());
     return value_;
   }
 
-  // TODO: Is it safe???
-  T&& move_value() && {
-    T dummyVal; // default constructor is needed.
-    swap(dummyVal, value_);
-    return std::move(value_);
-  }
-
   const T& operator*() const { return value(); }
+
+  // Using move semantics may be not suppported.
 
   std::exception_ptr excptr() const noexcept { return excptr_; }
 
@@ -88,6 +84,45 @@ class Expected {
 
  private:
   T value_;
+  std::exception_ptr excptr_;
+  bool valid_;
+};
+
+template <>
+class Expected<flatbuffers::unique_ptr_t> {
+ public:
+  Expected(flatbuffers::unique_ptr_t&& value,
+           typename std::enable_if<!std::is_same<
+               flatbuffers::unique_ptr_t, UnexpectedType>::value>::type* =
+               0) noexcept
+      : value_(std::move(value)),
+        excptr_(std::make_exception_ptr(exception::None())),
+        valid_(true) {}
+
+  Expected(const UnexpectedType& exc) noexcept
+      : excptr_(exc.excptr()),
+        valid_(false) {}
+
+  bool valid() const noexcept { return valid_; }
+
+  explicit operator bool() const noexcept { return valid(); }
+
+  void move_unique_ptr(flatbuffers::unique_ptr_t&& to) {
+    to = std::move(value_);
+  }
+
+  std::exception_ptr excptr() const noexcept { return excptr_; }
+
+  std::string error() const {
+    try {
+      std::rethrow_exception(excptr_);
+    } catch (const exception::IrohaException& e) {
+      return e.message();
+    }
+  }
+
+ private:
+  flatbuffers::unique_ptr_t value_;
   std::exception_ptr excptr_;
   bool valid_;
 };

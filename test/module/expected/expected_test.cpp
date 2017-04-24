@@ -16,8 +16,10 @@
  */
 
 #include <gtest/gtest.h>
+#include <memory>
 #include <utils/expected.hpp>
 
+#include "sample_generated.h"
 
 TEST(UseExpected, returnsValidData) {
   auto whatsNumber = [](int number) -> Expected<std::string> {
@@ -60,7 +62,8 @@ TEST(UseExpected, returnsException1) {
     try {
       std::rethrow_exception(res.excptr());
     } catch (const exception::crypto::InvalidKeyException& e) {
-      ASSERT_STREQ(res.error().c_str(), "<<CONFIG_ERROR>> Keyfile is invalid, cause is: Hoge");
+      ASSERT_STREQ(res.error().c_str(),
+                   "<<CONFIG_ERROR>> Keyfile is invalid, cause is: Hoge");
     } catch (const exception::crypto::InvalidMessageLengthException& e) {
       FAIL() << "exception::crypto::InvalidMessageLengthException";
     } catch (const exception::IrohaException& e) {
@@ -89,16 +92,15 @@ TEST(UseExpected, returnsException2) {
     } catch (const exception::crypto::InvalidKeyException& e) {
       FAIL() << "exception::crypto::InvalidKeyException";
     } catch (const exception::crypto::InvalidMessageLengthException& e) {
-      std::cout << "thisistest\n";
-      std::cout << res.error() << std::endl;
-      ASSERT_STREQ(res.error().c_str(), "<<CRITICAL>> Message Foo has wrong length");
+      ASSERT_STREQ(res.error().c_str(),
+                   "<<CRITICAL>> Message Foo has wrong length");
     } catch (const exception::IrohaException& e) {
       FAIL() << "Unknown exception: " << typeid(decltype(e)).name();
     }
   }
 }
 
-TEST(UserExpected, VoidHandler) {
+TEST(UseExpected, VoidHandler) {
   auto voidTest = [](int number) -> VoidHandler {
     if (number != 123) {
       return makeUnexpected(exception::IrohaException("Invalid"));
@@ -106,4 +108,23 @@ TEST(UserExpected, VoidHandler) {
     return {};
   };
   auto res = voidTest(123);
+}
+
+TEST(UseExpect, flatBuffersPtrMove) {
+  auto f = [](const char* s, int x, double d) -> Expected<flatbuffers::unique_ptr_t> {
+    flatbuffers::FlatBufferBuilder fbb;
+    auto sampleOffset = CreateSampleDirect(fbb, s, x, d);
+    fbb.Finish(sampleOffset);
+    return fbb.ReleaseBufferPointer();
+  };
+
+  auto e = f("HOGEHOGE", 12345, 3.14);
+  ASSERT_TRUE(e);
+  flatbuffers::unique_ptr_t extracted;
+  e.move_unique_ptr(std::move(extracted));
+
+  auto root = flatbuffers::GetRoot<Sample>(extracted.get());
+  ASSERT_STREQ(root->strvalue()->c_str(), "HOGEHOGE");
+  ASSERT_EQ(root->intvalue(), 12345);
+  ASSERT_EQ(root->doublevalue(), 3.14);
 }

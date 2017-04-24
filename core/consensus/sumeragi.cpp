@@ -211,8 +211,9 @@ void initializeSumeragi() {
             *flatbuffers::GetRoot<::iroha::Transaction>(transaction.get()));
 
         if (eventUniqPtr) {
-          auto&& task = [e = std::move(eventUniqPtr.move_value())]() mutable {
-            auto 
+          flatbuffers::unique_ptr_t ptr;
+          eventUniqPtr.move_unique_ptr(std::move(ptr));
+          auto&& task = [e = std::move(ptr)]() mutable {
             processTransaction(std::move(e));
           };
           pool.process(std::move(task));
