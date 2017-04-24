@@ -197,11 +197,11 @@ bool add(const peer::Node &peer) {
   }
   return true;
 }
-bool remove(const peer::Node &peer) {
+bool remove(const std::string &publicKey) {
   try {
-    auto it = service::findPeerPublicKey(peer.publicKey);
-    if (!service::isExistPublicKey(peer.publicKey))
-      throw exception::service::UnExistFindPeerException(peer.publicKey);
+    auto it = service::findPeerPublicKey(publicKey);
+    if (!service::isExistPublicKey(publicKey))
+      throw exception::service::UnExistFindPeerException(publicKey);
     peerList.erase(it);
   } catch (exception::service::UnExistFindPeerException &e) {
     logger::warning("removePeer") << e.what();
@@ -270,10 +270,10 @@ bool add(const peer::Node &peer) {
   }
   return true;
 }
-bool remove(const peer::Node &peer) {
+bool remove(const std::string &publicKey) {
   try {
-    if (!service::isExistPublicKey(peer.publicKey))
-      throw exception::service::UnExistFindPeerException(peer.publicKey);
+    if (!service::isExistPublicKey(publicKey))
+      throw exception::service::UnExistFindPeerException(publicKey);
   } catch (exception::service::UnExistFindPeerException &e) {
     logger::warning("validate removePeer") << e.what();
     return false;

@@ -42,21 +42,21 @@ TEST(peer_service_test, initialize_peer_test) {
 TEST(peer_service_test, activate_peer_test) {
   auto peers = ::peer::service::getAllPeerList();
   auto n = peers.size();
-  ASSERT_TRUE( ::peer::service::getActivePeerList() == 0 );
+  ASSERT_TRUE( ::peer::service::getActivePeerList().size() == 0 );
   for(auto&& peer : peers) {
     ASSERT_TRUE(::peer::transaction::validator::setActive(peer->publicKey,true));
     ASSERT_TRUE(::peer::transaction::executor::setActive(peer->publicKey,true));
   }
   peers = ::peer::service::getActivePeerList();
-  ASSERT_TRUE( n == peer.size() );
+  ASSERT_TRUE( n == peers.size() );
 }
 
 TEST(peer_service_test, add_peer_test) {
   std::size_t n = ::peer::service::getActivePeerList().size();
-  peer::Node peer1 = peer::Node("ip_low", "publicKey1", 5.0);
-  peer::Node peer2 = peer::Node("ip_high", "publicKey2", 15.0);
-  peer::Node peer3 = peer::Node("ip_high", "publicKey1", 15.0);
-  peer::Node peer4 = peer::Node("ip_4", "0_publicKey4", 100.0);
+  peer::Node peer1 = peer::Node("ip_low", "publicKey1", 5.0, true);
+  peer::Node peer2 = peer::Node("ip_high", "publicKey2", 15.0, true);
+  peer::Node peer3 = peer::Node("ip_high", "publicKey1", 15.0, true);
+  peer::Node peer4 = peer::Node("ip_4", "0_publicKey4", 100.0, true);
   ASSERT_TRUE(::peer::transaction::validator::add(peer1));
   ASSERT_TRUE(::peer::transaction::executor::add(peer1));
   ASSERT_TRUE(::peer::transaction::validator::add(peer2));
@@ -79,20 +79,19 @@ TEST(peer_service_test, add_peer_test) {
 
 TEST(peer_service_test, set_and_change_peer_test) {
   std::size_t n = ::peer::service::getActivePeerList().size();
-  const std::string upd_ip = "ip_high";
+  const std::string upd_ip = "ip_low";
   const std::string upd_key = "publicKey1";
   const std::string upd_ng_key = "dummy";
   const double ch_trust = -1.0;
   const double set_trust = 100.0;
-  peer::Node peer = peer::Node(upd_ip, upd_key, -1.0);
-  peer::Node peer4 = peer::Node("ip_4", "0_publicKey4", 100.0);
-  peer::Node peer_ng = peer::Node(upd_ip, upd_ng_key, -1.0);
   ASSERT_TRUE(::peer::transaction::validator::setTrust(upd_key,set_trust));
   ASSERT_TRUE(::peer::transaction::executor::setTrust(upd_key,set_trust));
   ASSERT_FALSE(::peer::transaction::validator::setTrust(upd_ng_key,set_trust));
   ASSERT_FALSE(::peer::transaction::executor::setTrust(upd_ng_key,set_trust));
   ASSERT_TRUE(::peer::transaction::validator::changeTrust(upd_key,ch_trust));
   ASSERT_TRUE(::peer::transaction::executor::changeTrust(upd_key,ch_trust));
+  ASSERT_TRUE(::peer::transaction::validator::setTrust(::peer::myself::getPublicKey(),1.0));
+  ASSERT_TRUE(::peer::transaction::executor::setTrust(::peer::myself::getPublicKey(),1.0));
   peer::Nodes peers = ::peer::service::getActivePeerList();
   for (auto&& peer : peers) {
     std::cout << peer->ip << std::endl;

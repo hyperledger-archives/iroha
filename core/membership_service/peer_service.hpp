@@ -83,7 +83,7 @@ namespace isssue {
 
 // invoke to issue transaction
 void add(const peer::Node &);  // TODO
-void remove(const peer::Node &); // TODO
+void remove(const std::string &); // TODO
 void setTrust(const std::string &, const double &); // TODO
 void changeTrust(const std::string &, const double &); // TODO
 void setActive(const std::string &, const bool active); // TODO
@@ -93,7 +93,7 @@ void setActive(const std::string &, const bool active); // TODO
 namespace executor {
 // invoke when execute transaction
 bool add(const peer::Node &);
-bool remove(const peer::Node &);
+bool remove(const std::string &);
 bool setTrust(const std::string &, const double &);
 bool changeTrust(const std::string &, const double &);
 bool setActive(const std::string &, const bool active);
@@ -102,7 +102,7 @@ bool setActive(const std::string &, const bool active);
 namespace validator {
 // invoke when validator transaction
 bool add(const peer::Node &);
-bool remove(const peer::Node &);
+bool remove(const std::string &);
 bool setTrust(const std::string &, const double &);
 bool changeTrust(const std::string &, const double &);
 bool setActive(const std::string &, const bool active);
