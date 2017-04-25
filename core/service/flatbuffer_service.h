@@ -25,14 +25,16 @@ struct ConsensusEvent;
 
 namespace flatbuffer_service {
 
-// namespace autogen_extend {
 flatbuffers::Offset<void> CreateCommandDirect(
     flatbuffers::FlatBufferBuilder &_fbb, const void *obj,
     int /* Command */ type);  // TODO: Use scoped enum ::iroha::Command
-// } // namespace autogen_extend
 
 Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
     flatbuffers::FlatBufferBuilder &fbb, const ::iroha::ConsensusEvent &);
+
+std::vector<uint8_t> CreateAccountBuffer(
+  const char* publicKey, const char* alias,
+  const std::vector<std::string>& signatories, uint16_t useKeys);
 
 template <typename T>
 VoidHandler ensureNotNull(T *value) {
