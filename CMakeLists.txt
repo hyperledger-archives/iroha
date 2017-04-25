@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 PROJECT(iroha C CXX)
 
-SET(CMAKE_CXX_FLAGS "-g -std=c++1y -Wall -fPIC")
+SET(CMAKE_CXX_FLAGS "-std=c++1y -Wall -fPIC")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
-SET(CMAKE_CXX_FLAGS_DEBUG   "-Wextra -Wno-unused-parameter -O0")
-#SET(CMAKE_SHARED_LINKER_FLAGS "-lpthread -lssl")
+SET(CMAKE_CXX_FLAGS_DEBUG   "-g -Wextra -Wno-unused-parameter -O0")
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
 option(BENCHMARKING "Build benchmarks" OFF)
 option(TESTING "Build tests" ON)
@@ -20,13 +20,11 @@ message(STATUS "-DBENCHMARKING=${BENCHMARKING}")
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/core
-  ${PROJECT_SOURCE_DIR}/include
 )
 
-include("dependencies.cmake")
+include("cmake/dependencies.cmake")
 
-add_subdirectory(flatbuffers)
-
+add_subdirectory(flatbuffers) # TODO
 add_subdirectory(core)
 add_subdirectory(peer)
 add_subdirectory(tools)

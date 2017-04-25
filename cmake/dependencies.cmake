@@ -22,7 +22,7 @@ ExternalProject_Add(gvanas_keccak
   BUILD_COMMAND     bash -c "CFLAGS='-fPIC -DKeccakP200_excluded -DKeccakP400_excluded -DKeccakP800_excluded'\
     $(MAKE) CC='${CMAKE_C_COMPILER}' generic64/libkeccak.a"
   CONFIGURE_COMMAND "" # remove configure step
-  INSTALL_COMMAND   "" # remove install step
+  # INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
 )
@@ -49,7 +49,7 @@ ExternalProject_Add(mizukisonoko_ed25519
   BUILD_IN_SOURCE   1
   BUILD_COMMAND     $(MAKE)
   CONFIGURE_COMMAND "" # remove configure step
-  INSTALL_COMMAND   "" # remove install step
+  # INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
   )
@@ -73,7 +73,7 @@ ExternalProject_Add(warchant_thread_pool
   GIT_REPOSITORY    "https://github.com/Warchant/thread-pool-cpp.git"
   BUILD_COMMAND     "" # remove build step, header only lib
   CONFIGURE_COMMAND "" # remove configure step
-  INSTALL_COMMAND   "" # remove install step
+  # INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
   )
@@ -97,7 +97,7 @@ ExternalProject_Add(nlohmann_json
   GIT_REPOSITORY    "https://github.com/nlohmann/json.git"
   BUILD_COMMAND     "" # remove build step, header only lib
   CONFIGURE_COMMAND "" # remove configure step
-  INSTALL_COMMAND   "" # remove install step
+  # INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
   )
@@ -127,7 +127,7 @@ if(TESTING)
                       -Dgtest_disable_pthreads=OFF
                       -DBUILD_GTEST=ON
                       -DBUILD_GMOCK=OFF
-    INSTALL_COMMAND   "" # remove install step
+    # INSTALL_COMMAND   "" # remove install step
     UPDATE_COMMAND    "" # remove update step
     TEST_COMMAND      "" # remove test step
     )
@@ -156,7 +156,7 @@ ExternalProject_Add(mizukisonoko_cappuccino
   GIT_TAG           "featue/asio"
   BUILD_COMMAND     "" # remove build step, header only lib
   CONFIGURE_COMMAND "" # remove configure step
-  INSTALL_COMMAND   "" # remove install step
+  # INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
   )
@@ -183,7 +183,7 @@ if(BENCHMARKING)
                       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                       -DBENCHMARK_ENABLE_TESTING=OFF
                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-    INSTALL_COMMAND   "" # remove install step
+    # INSTALL_COMMAND   "" # remove install step
     UPDATE_COMMAND    "" # remove update step
     TEST_COMMAND      "" # remove test step
     )
@@ -206,28 +206,28 @@ endif(BENCHMARKING)
 ############################
 #         leveldb          #
 ############################
-ExternalProject_Add(google_leveldb
-  GIT_REPOSITORY    "https://github.com/google/leveldb.git"
-  BUILD_IN_SOURCE   1
-  BUILD_COMMAND     $(MAKE) -j1 OPT=-fPIC
-  CONFIGURE_COMMAND "" # remove configure step
-  INSTALL_COMMAND   "" # remove install step
-  TEST_COMMAND      "" # remove test step
-  UPDATE_COMMAND    "" # remove update step
-  )
-ExternalProject_Get_Property(google_leveldb source_dir)
-set(leveldb_SOURCE_DIR "${source_dir}")
-
-add_library(leveldb STATIC IMPORTED)
-file(MAKE_DIRECTORY ${leveldb_SOURCE_DIR}/include)
-file(MAKE_DIRECTORY ${leveldb_SOURCE_DIR}/out-shared)
-file(MAKE_DIRECTORY ${leveldb_SOURCE_DIR}/out-static)
-set_target_properties(leveldb PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${leveldb_SOURCE_DIR}/include
-  IMPORTED_LINK_INTERFACE_LIBRARIES "snappy"
-  IMPORTED_LOCATION ${leveldb_SOURCE_DIR}/out-static/libleveldb.a
-  )
-add_dependencies(leveldb google_leveldb)
+#ExternalProject_Add(google_leveldb
+#  GIT_REPOSITORY    "https://github.com/google/leveldb.git"
+#  BUILD_IN_SOURCE   1
+#  BUILD_COMMAND     $(MAKE) -j1 OPT=-fPIC
+#  CONFIGURE_COMMAND "" # remove configure step
+#  INSTALL_COMMAND   "" # remove install step
+#  TEST_COMMAND      "" # remove test step
+#  UPDATE_COMMAND    "" # remove update step
+#  )
+#ExternalProject_Get_Property(google_leveldb source_dir)
+#set(leveldb_SOURCE_DIR "${source_dir}")
+#
+#add_library(leveldb STATIC IMPORTED)
+#file(MAKE_DIRECTORY ${leveldb_SOURCE_DIR}/include)
+#file(MAKE_DIRECTORY ${leveldb_SOURCE_DIR}/out-shared)
+#file(MAKE_DIRECTORY ${leveldb_SOURCE_DIR}/out-static)
+#set_target_properties(leveldb PROPERTIES
+#  INTERFACE_INCLUDE_DIRECTORIES ${leveldb_SOURCE_DIR}/include
+#  IMPORTED_LINK_INTERFACE_LIBRARIES "snappy"
+#  IMPORTED_LOCATION ${leveldb_SOURCE_DIR}/out-static/libleveldb.a
+#  )
+#add_dependencies(leveldb google_leveldb)
 
 
 
@@ -270,7 +270,7 @@ ExternalProject_Add(chriskohlhoff_asio
   GIT_REPOSITORY    "https://github.com/chriskohlhoff/asio.git"
   CONFIGURE_COMMAND "" # remove configure step
   BUILD_COMMAND     "" # remove build step
-  INSTALL_COMMAND   "" # remove install step
+  # INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
   )
@@ -299,12 +299,12 @@ set(flatbuffers_CMAKE_ARGS
   -DFLATBUFFERS_BUILD_FLATC=ON
   )
 ExternalProject_Add(google_flatbuffers
-  GIT_REPOSITORY "https://github.com/google/flatbuffers.git"
-  GIT_TAG "master"
-  CMAKE_ARGS     ${flatbuffers_CMAKE_ARGS}
-  UPDATE_COMMAND ""
-  TEST_COMMAND   ""
-  INSTALL_COMMAND ""
+  GIT_REPOSITORY  "https://github.com/google/flatbuffers.git"
+  GIT_TAG         "master"
+  CMAKE_ARGS      ${flatbuffers_CMAKE_ARGS}
+  UPDATE_COMMAND  ""
+  TEST_COMMAND    ""
+  # INSTALL_COMMAND ""
 )
 
 ExternalProject_Get_Property(google_flatbuffers source_dir binary_dir)
@@ -332,7 +332,7 @@ ExternalProject_Add(gabime_spdlog
   GIT_TAG           "v0.13.0"
   CONFIGURE_COMMAND "" # remove configure step
   BUILD_COMMAND     "" # remove build step
-  INSTALL_COMMAND   "" # remove install step
+  # INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
   )
@@ -352,89 +352,76 @@ add_dependencies(spdlog gabime_spdlog)
 ###############################
 #         ametsuchi           #
 ###############################
-ExternalProject_Add(hyperledger_iroha_ametsuchi
+ExternalProject_Add(hyperledger_ametsuchi
   GIT_REPOSITORY "https://github.com/hyperledger/iroha-ametsuchi.git"
-  GIT_TAG "only_lmdb"
-  BUILD_IN_SOURCE 1
-  UPDATE_COMMAND ""
-  BUILD_COMMAND  bash "-c" "mkdir -p build && cd build; cmake ..; make"
-  INSTALL_COMMAND ""
+  UPDATE_COMMAND    "" # remove update step
 )
 
-ExternalProject_Get_Property(hyperledger_iroha_ametsuchi source_dir)
-set(iroha_ametsuchi_SOURCE_DIR "${source_dir}")
+ExternalProject_Get_Property(hyperledger_ametsuchi source_dir)
+set(ametsuchi_SOURCE_DIR "${source_dir}")
+set(ametsuchi_BUILD_DIR "${build_dir}")
 
-add_library(iroha_ametsuchi INTERFACE IMPORTED)
-file(MAKE_DIRECTORY ${iroha_ametsuchi_SOURCE_DIR}/include)
-set_target_properties(iroha_ametsuchi PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${iroha_ametsuchi_SOURCE_DIR}/include
+add_library(ametsuchi SHARED IMPORTED)
+file(MAKE_DIRECTORY ${ametsuchi_SOURCE_DIR}/include)
+set_target_properties(ametsuchi PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${ametsuchi_SOURCE_DIR}/include
+  IMPORTED_LOCATION ${ametsuchi_BUILD_DIR}/ametsuchi
 )
-add_dependencies(iroha_ametsuchi hyperledger_iroha_ametsuchi)
+add_dependencies(ametsuchi hyperledger_ametsuchi)
 
 
 
 #########################
-#         GRPC          #
+#         grpc          #
 #########################
-# Include path for C core library.
-find_path(GRPC_INCLUDE_DIR grpc/grpc.h)
+find_package(grpc)
 
-if (NOT GRPC_INCLUDE_DIR)
+if (NOT grpc_FOUND)
   ExternalProject_Add(grpc_grpc
     GIT_REPOSITORY "https://github.com/grpc/grpc.git"
     GIT_TAG           "v1.2.0"
-    BUILD_IN_SOURCE 1
-    BUILD_COMMAND bash -c $(MAKE)
+    BUILD_IN_SOURCE   1
+    BUILD_COMMAND     $(MAKE)
     CONFIGURE_COMMAND "" # remove configure step
-    INSTALL_COMMAND   "" # remove install step
+    # INSTALL_COMMAND   "" # remove install step
     TEST_COMMAND      "" # remove test step
     UPDATE_COMMAND    "" # remove update step
     )
-
   ExternalProject_Get_Property(grpc_grpc source_dir)
-  set(grpc_INCLUDE_DIRS ${source_dir}/include)
-  file(MAKE_DIRECTORY ${grpc_INCLUDE_DIRS})
-
-  add_library(grpc STATIC IMPORTED)
-  set_target_properties(grpc PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${grpc_INCLUDE_DIRS}
-    IMPORTED_LOCATION ${source_dir}/libs/opt/libgrpc.a
-    )
-  add_dependencies(grpc grpc_grpc)
-
-  add_library(grpc_unsecure STATIC IMPORTED)
-  set_target_properties(grpc_unsecure PROPERTIES
-      INTERFACE_INCLUDE_DIRECTORIES ${grpc_INCLUDE_DIRS}
-      IMPORTED_LOCATION ${source_dir}/libs/opt/libgrpc_unsecure.a
-      )
-  add_dependencies(grpc_unsecure grpc_grpc)
-
-  add_library(grpc++ STATIC IMPORTED)
-  set_target_properties(grpc++ PROPERTIES
-      INTERFACE_INCLUDE_DIRECTORIES ${grpc_INCLUDE_DIRS}
-      IMPORTED_LOCATION ${source_dir}/libs/opt/libgrpc++.a
-      )
-  add_dependencies(grpc++ grpc_grpc)
-
-  add_library(grpc++_unsecure STATIC IMPORTED)
-  set_target_properties(grpc++_unsecure PROPERTIES
-      INTERFACE_INCLUDE_DIRECTORIES ${grpc_INCLUDE_DIRS}
-      IMPORTED_LOCATION ${source_dir}/libs/opt/libgrpc++_unsecure.a
-      )
-  add_dependencies(grpc++_unsecure grpc_grpc)
-
-  add_library(grpc++_reflection STATIC IMPORTED)
-  set_target_properties(grpc++_reflection PROPERTIES
-      INTERFACE_INCLUDE_DIRECTORIES ${grpc_INCLUDE_DIRS}
-      IMPORTED_LOCATION ${source_dir}/libs/opt/libgrpc++_reflection.a
-      )
-  add_dependencies(grpc++_reflection grpc_grpc)
-
-  add_library(gpr STATIC IMPORTED)
-  set_target_properties(gpr PROPERTIES
-      INTERFACE_INCLUDE_DIRECTORIES ${grpc_INCLUDE_DIRS}
-      IMPORTED_LOCATION ${source_dir}/libs/opt/libgpr.a
-      )
-  add_dependencies(gpr grpc_grpc)
+  set(grpc_INCLUDE_DIR   ${source_dir}/include/grpc)
+  set(grpcpp_INCLUDE_DIR ${source_dir}/include/grpc++)
+  set(grpc_LIB           ${source_dir}/libs/opt/libgrpc.so)
+  set(grpcpp_LIB         ${source_dir}/libs/opt/libgrpc++.so)
+  set(gpr_LIB            ${source_dir}/libs/opt/gpr.so)
 endif ()
+
+# libgrpc
+add_library(grpc SHARED IMPORTED)
+set_target_properties(grpc PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${grpc_INCLUDE_DIR}
+  IMPORTED_LOCATION ${grpc_LIB}
+  IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+)
+
+# libgpr
+add_library(gpr SHARED IMPORTED)
+set_target_properties(gpr PROPERTIES
+  IMPORTED_LOCATION ${gpr_LIB}
+  IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+)
+
+# libgrpc++
+add_library(grpc++ SHARED IMPORTED)
+set_target_properties(grpc++ PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${grpcpp_INCLUDE_DIR}
+  IMPORTED_LOCATION ${grpcpp_LIB}
+  IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+)
+
+if(NOT grpc_FOUND)
+  add_dependencies(grpc grpc_grpc)
+endif()
+
+
+
 
