@@ -1,6 +1,6 @@
-set(FLATBUF_DEST_DIR "${PROJECT_SOURCE_DIR}/include/generated")
+set(IROHA_SCHEMA_DIR "${PROJECT_SOURCE_DIR}/schema")
 
-file(MAKE_DIRECTORY ${FLATBUF_DEST_DIR})
+file(MAKE_DIRECTORY ${IROHA_SCHEMA_DIR})
 
 function(compile_fbs_to_cpp FBS)
   string(REGEX REPLACE "\\.fbs$" "_generated.h" GEN_HEADER ${FBS})
@@ -8,12 +8,11 @@ function(compile_fbs_to_cpp FBS)
   string(REGEX REPLACE "\\.fbs$" ".grpc.fb.h" GEN_GRPC_HEADER ${FBS})
   string(REGEX REPLACE "\\.fbs$" "_h" GEN_TARGET ${FBS})
   add_custom_command(
-      OUTPUT ${FLATBUF_DEST_DIR}/${GEN_HEADER} ${FLATBUF_DEST_DIR}/${GEN_GRPC} ${FLATBUF_DEST_DIR}/${GEN_GRPC_HEADER}
+      OUTPUT ${IROHA_SCHEMA_DIR}/${GEN_HEADER} ${IROHA_SCHEMA_DIR}/${GEN_GRPC} ${IROHA_SCHEMA_DIR}/${GEN_GRPC_HEADER}
       COMMAND "${flatc_EXECUTABLE}" --gen-mutable --cpp --grpc --no-prefix --scoped-enums
-      -o "${FLATBUF_DEST_DIR}"
-      "${PROJECT_SOURCE_DIR}/flatbuffers/${FBS}"
+      -o "${IROHA_SCHEMA_DIR}" "${IROHA_SCHEMA_DIR}/${FBS}"
       DEPENDS flatc)
-  add_custom_target(${GEN_TARGET} DEPENDS "${FLATBUF_DEST_DIR}/${GEN_HEADER}")
+  add_custom_target(${GEN_TARGET} DEPENDS "${IROHA_SCHEMA_DIR}/${GEN_HEADER}")
   add_dependencies(flatbuffers ${GEN_TARGET})
 endfunction()
 
@@ -27,7 +26,7 @@ compile_fbs_to_cpp(primitives.fbs)
 compile_fbs_to_cpp(transaction.fbs)
 
 add_library(endpoint_fbs STATIC
-    ${FLATBUF_DEST_DIR}/endpoint.grpc.fb.cc
+    ${IROHA_SCHEMA_DIR}/endpoint.grpc.fb.cc
     )
 
 target_link_libraries(endpoint_fbs

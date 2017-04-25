@@ -10,7 +10,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 option(BENCHMARKING "Build benchmarks" OFF)
 option(TESTING "Build tests" ON)
 
-# set default CMAKE_BUILD_TYPE=Debug
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
@@ -20,14 +19,15 @@ message(STATUS "-DBENCHMARKING=${BENCHMARKING}")
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/core
+  ${PROJECT_SOURCE_DIR}/schema
 )
 
 include("cmake/dependencies.cmake")
-
-add_subdirectory(flatbuffers) # TODO
+add_subdirectory(tools)
 add_subdirectory(core)
 add_subdirectory(peer)
-add_subdirectory(tools)
+add_subdirectory(schema)
+
 
 if(TESTING)
   enable_testing()
