@@ -240,14 +240,14 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
   ::iroha::ConsensusEvent* storageRawPtrRef;
 
   // Helper to set unique_ptr_t
-  auto resetUniqPtr = [](flatbuffers::unique_ptr_t&& uptr) {
-    storage::uniqPtr = std::move(uptr);
-    storage::rawPtrRef =
-        flatbuffers::GetRoot<::iroha::ConsensusEvent>(storageUniqPtr.get());
+  auto resetUniqPtr = [&](flatbuffers::unique_ptr_t&& uptr) {
+    storageUniqPtr = std::move(uptr);
+    storageRawPtrRef = flatbuffers::GetMutableRoot<::iroha::ConsensusEvent>(
+        storageUniqPtr.get());
   };
 
   // Convenient accessor
-  auto getRoot = [] { return storageRawPtrRef; };
+  auto getRoot = [&] { return storageRawPtrRef; };
 
   context->printProgress.print(4, "start processTransaction");
 
