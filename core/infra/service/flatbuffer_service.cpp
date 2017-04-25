@@ -130,8 +130,10 @@ flatbuffers::Offset<void> CreateCommandDirect(
     }
     case ::iroha::Command_AccountSetUseKeys: {
       auto ptr = reinterpret_cast<const ::iroha::AccountSetUseKeys*>(obj);
-      return ::iroha::CreateAccountSetUseKeysDirect(
-                 _fbb, ptr->account()->c_str(), ptr->useKeys())
+      auto accounts = std::vector<flatbuffers::Offset<flatbuffers::String>>(
+          ptr->accounts()->begin(), ptr->accounts()->end());
+      return ::iroha::CreateAccountSetUseKeysDirect(_fbb, &accounts,
+                                                    ptr->useKeys())
           .Union();
     }
     case ::iroha::Command_ChaincodeAdd: {
@@ -163,8 +165,8 @@ flatbuffers::Offset<void> CreateCommandDirect(
 }
 
 std::vector<uint8_t> CreateAccountBuffer(
-  const char* publicKey, const char* alias,
-  const std::vector<std::string>& signatories, uint16_t useKeys) {
+    const char* publicKey, const char* alias,
+    const std::vector<std::string>& signatories, uint16_t useKeys) {
   if (&signatories != nullptr) {
     flatbuffers::FlatBufferBuilder fbbAccount;
 
@@ -174,7 +176,7 @@ std::vector<uint8_t> CreateAccountBuffer(
     }
 
     auto accountOffset = ::iroha::CreateAccountDirect(
-      fbbAccount, publicKey, alias, &signatoryOffsets, 1);
+        fbbAccount, publicKey, alias, &signatoryOffsets, 1);
     fbbAccount.Finish(accountOffset);
 
     auto buf = fbbAccount.GetBufferPointer();
@@ -184,7 +186,7 @@ std::vector<uint8_t> CreateAccountBuffer(
   } else {
     flatbuffers::FlatBufferBuilder fbbAccount;
     auto accountOffset =
-      ::iroha::CreateAccountDirect(fbbAccount, publicKey, alias, nullptr, 1);
+        ::iroha::CreateAccountDirect(fbbAccount, publicKey, alias, nullptr, 1);
     fbbAccount.Finish(accountOffset);
 
     auto buf = fbbAccount.GetBufferPointer();
