@@ -3,6 +3,7 @@ set(CMAKE_BUILD_TYPE Debug)
 SET(EXECUTABLE_OUTPUT_P
 ATH ${PROJECT_BINARY_DIR}/test_bin)
 
+add_subdirectory(config)
 add_subdirectory(crypto)
 add_subdirectory(expected)
 add_subdirectory(membership_service)
