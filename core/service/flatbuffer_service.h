@@ -17,6 +17,9 @@ limitations under the License.
 
 #include <utils/expected.hpp>
 #include "flatbuf/nested_flatbuffer_service.h"
+#include <generated/commands_generated.h>
+#include <generated/primitives_generated.h>
+#include <membership_service/peer_service.hpp>
 
 namespace iroha {
 struct Transaction;
@@ -24,6 +27,13 @@ struct ConsensusEvent;
 }
 
 namespace flatbuffer_service {
+
+using ::iroha::Peer;
+using ::iroha::PeerAdd;
+using ::iroha::PeerRemove;
+using ::iroha::PeerChangeTrust;
+using ::iroha::PeerSetTrust;
+using ::iroha::PeerSetActive;
 
 flatbuffers::Offset<void> CreateCommandDirect(
     flatbuffers::FlatBufferBuilder &_fbb, const void *obj,
@@ -54,5 +64,13 @@ flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent &event,
 Expected<flatbuffers::unique_ptr_t> toConsensusEvent(const iroha::Transaction &tx);
 
 flatbuffers::unique_ptr_t makeCommit(const iroha::ConsensusEvent &event);
+
+flatbuffers::Offset<flatbuffers::Vector<uint8_t>> CreatePeerService(peer::Node &peer);
+flatbuffers::Offset<PeerAdd> CreatePeerAddService(peer::Node &peer);
+flatbuffers::Offset<PeerRemove> CreatePeerRemoveService(std::string& pubKey);
+flatbuffers::Offset<PeerChangeTrust> CreatePeerChangeTrustService(std::string& pubKey,double& delta);
+flatbuffers::Offset<PeerSetTrust> CreatePeerSetTrustService(std::string& pubKey,double& trust);
+flatbuffers::Offset<PeerSetActive> CreatePeerSetActiveService(std::string& pubKey,bool active);
+
 };
 #endif  // IROHA_FLATBUFFER_SERVICE_H

@@ -350,16 +350,8 @@ std::string toString(const iroha::Transaction& tx) {
         static_cast<const iroha::PeerRemove*>(command);
 
     std::string res = "PeerRemove[\n";
-    res += "    peer:publicKey:" + cmd->peer_nested_root()->publicKey()->str() +
-           ",\n";
-    res += "    peer:ip:" + cmd->peer_nested_root()->ip()->str() + ",\n";
-    res += "    peer:active:" +
-           std::to_string(cmd->peer_nested_root()->active()) + ",\n";
-    res += "    peer:join_network:" +
-           std::to_string(cmd->peer_nested_root()->join_network()) + ",\n";
-    res += "    peer:join_validation:" +
-           std::to_string(cmd->peer_nested_root()->join_validation()) + "\n";
-    res += "]\n";
+    res += "    peer:publicKey:" + cmd->peerPubKey()->str();
+    res += "\n]\n";
     return res;
   };
   command_to_strings[iroha::Command_PeerSetActive] =
