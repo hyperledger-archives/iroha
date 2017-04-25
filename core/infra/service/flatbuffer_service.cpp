@@ -16,7 +16,6 @@
  */
 
 #include <generated/main_generated.h>
-#include <infra/service/flatbuffers/autogen_extend.h>
 #include <service/flatbuffer_service.h>
 #include <utils/datetime.hpp>
 #include <utils/expected.hpp>
@@ -28,6 +27,165 @@
 #include <string>
 
 namespace flatbuffer_service {
+
+/**
+ * CreateCommandDirect
+ */
+flatbuffers::Offset<void> CreateCommandDirect(
+  flatbuffers::FlatBufferBuilder &_fbb, const void *obj,
+  int /* Command */ type) {  // TODO: Use scopoed enum ::iroha::Command
+  switch (type) {
+    /*
+    case Command_NONE: {
+      logger::error("flatbuffer service") << "Command_NONE";
+      exit(1);
+    }
+    case Command_AssetCreate: {
+      auto ptr = reinterpret_cast<const AssetCreate *>(obj);
+      return ::iroha::CreateAssetCreateDirect(
+                 _fbb, ptr->asset_name()->c_str(), ptr->domain_name()->c_str(),
+                 ptr->ledger_name()->c_str(), ptr->creatorPubKey()->c_str())
+          .Union();
+    }
+    case Command_AssetAdd: {
+      auto ptr = reinterpret_cast<const AssetAdd *>(obj);
+      auto asset =
+          std::vector<uint8_t>(ptr->asset()->begin(), ptr->asset()->end());
+      return ::iroha::CreateAssetAddDirect(_fbb, ptr->accPubKey()->c_str(),
+                                           &asset)
+          .Union();
+    }
+    case Command_AssetRemove: {
+      auto ptr = reinterpret_cast<const AssetRemove *>(obj);
+      auto asset =
+          std::vector<uint8_t>(ptr->asset()->begin(), ptr->asset()->end());
+      return ::iroha::CreateAssetRemoveDirect(_fbb, ptr->accPubKey()->c_str(),
+                                              &asset)
+          .Union();
+    }
+    case Command_AssetTransfer: {
+      auto ptr = reinterpret_cast<const AssetTransfer *>(obj);
+      auto asset =
+          std::vector<uint8_t>(ptr->asset()->begin(), ptr->asset()->end());
+      return ::iroha::CreateAssetTransferDirect(
+                 _fbb, &asset, ptr->sender()->c_str(), ptr->receiver()->c_str())
+          .Union();
+    }
+    case Command_PeerAdd: {
+      auto ptr = reinterpret_cast<const PeerAdd *>(obj);
+      auto peer =
+          std::vector<uint8_t>(ptr->peer()->begin(), ptr->peer()->end());
+      return ::iroha::CreatePeerAddDirect(_fbb, &peer).Union();
+    }
+    case Command_PeerRemove: {
+      auto ptr = reinterpret_cast<const PeerRemove *>(obj);
+      auto peer =
+          std::vector<uint8_t>(ptr->peer()->begin(), ptr->peer()->end());
+      return ::iroha::CreatePeerRemoveDirect(_fbb, &peer).Union();
+    }
+    case Command_PeerSetActive: {
+      auto ptr = reinterpret_cast<const PeerSetActive *>(obj);
+      return ::iroha::CreatePeerSetActiveDirect(
+                 _fbb, ptr->peerPubKey()->c_str(), ptr->active())
+          .Union();
+    }
+    case Command_PeerSetTrust: {
+      auto ptr = reinterpret_cast<const PeerSetTrust *>(obj);
+      return ::iroha::CreatePeerSetTrustDirect(_fbb, ptr->peerPubKey()->c_str(),
+                                               ptr->trust())
+          .Union();
+    }
+    case Command_PeerChangeTrust: {
+      auto ptr = reinterpret_cast<const PeerChangeTrust *>(obj);
+      return ::iroha::CreatePeerChangeTrustDirect(
+                 _fbb, ptr->peerPubKey()->c_str(), ptr->delta())
+          .Union();
+    }
+    */
+    case ::iroha::Command_AccountAdd: {
+      auto ptr = reinterpret_cast<const ::iroha::AccountAdd *>(obj);
+      auto account =
+        std::vector<uint8_t>(ptr->account()->begin(), ptr->account()->end());
+      return ::iroha::CreateAccountAddDirect(_fbb, &account).Union();
+    }
+    case ::iroha::Command_AccountRemove: {
+      auto ptr = reinterpret_cast<const ::iroha::AccountRemove *>(obj);
+      auto account =
+        std::vector<uint8_t>(ptr->account()->begin(), ptr->account()->end());
+      return ::iroha::CreateAccountRemoveDirect(_fbb, &account).Union();
+    }
+      /*
+      Signatoryはバラして復元する
+      case Command_AccountAddSignatory: {
+        auto ptr = reinterpret_cast<const AccountAddSignatory *>(obj);
+        auto signatory = std::vector<flatbuffers::Offset<flatbuffers::String>>(
+            ptr->signatory()->begin(), ptr->signatory()->end());
+        return ::iroha::CreateAccountAddSignatoryDirect(
+                   _fbb, ptr->account()->c_str(), &signatory)
+            .Union();
+      }
+      case Command_AccountRemoveSignatory: {
+        auto ptr = reinterpret_cast<const AccountRemoveSignatory *>(obj);
+        return ::iroha::CreateAccountRemoveSignatoryDirect(
+                   _fbb, ptr->account()->c_str(), ptr->signatory())
+            .Union();
+      }
+      */
+      /*
+      case Command_AccountSetUseKeys: {
+        // TODO
+        assert("Currently, doesn't support");
+      }
+      case Command_ChaincodeAdd: {
+        // TODO
+        assert("Currently, doesn't support");
+      }
+      case Command_ChaincodeRemove: {
+        // TODO
+        assert("Currently, doesn't support");
+      }
+      case Command_ChaincodeExecute: {
+        // TODO
+        assert("Currently, doesn't support");
+      }
+      */
+    default:
+      logger::error("flatbuffer service") << "No match Command typee";
+      exit(1);
+  }
+}
+
+std::vector<uint8_t> CreateAccountBuffer(
+  const char* publicKey, const char* alias,
+  const std::vector<std::string>& signatories, uint16_t useKeys) {
+  if (&signatories != nullptr) {
+    flatbuffers::FlatBufferBuilder fbbAccount;
+
+    std::vector<flatbuffers::Offset<flatbuffers::String>> signatoryOffsets;
+    for (const auto& e : signatories) {
+      signatoryOffsets.push_back(fbbAccount.CreateString(e));
+    }
+
+    auto accountOffset = ::iroha::CreateAccountDirect(
+      fbbAccount, publicKey, alias, &signatoryOffsets, 1);
+    fbbAccount.Finish(accountOffset);
+
+    auto buf = fbbAccount.GetBufferPointer();
+    std::vector<uint8_t> buffer;
+    buffer.assign(buf, buf + fbbAccount.GetSize());
+    return buffer;
+  } else {
+    flatbuffers::FlatBufferBuilder fbbAccount;
+    auto accountOffset =
+      ::iroha::CreateAccountDirect(fbbAccount, publicKey, alias, nullptr, 1);
+    fbbAccount.Finish(accountOffset);
+
+    auto buf = fbbAccount.GetBufferPointer();
+    std::vector<uint8_t> buffer;
+    buffer.assign(buf, buf + fbbAccount.GetSize());
+    return buffer;
+  }
+}
 
 /**
  * toString
