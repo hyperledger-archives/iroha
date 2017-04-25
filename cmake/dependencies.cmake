@@ -22,7 +22,7 @@ ExternalProject_Add(gvanas_keccak
   BUILD_COMMAND     bash -c "CFLAGS='-fPIC -DKeccakP200_excluded -DKeccakP400_excluded -DKeccakP800_excluded'\
     $(MAKE) CC='${CMAKE_C_COMPILER}' generic64/libkeccak.a"
   CONFIGURE_COMMAND "" # remove configure step
-  # INSTALL_COMMAND   "" # remove install step
+  INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
 )
@@ -49,7 +49,7 @@ ExternalProject_Add(mizukisonoko_ed25519
   BUILD_IN_SOURCE   1
   BUILD_COMMAND     $(MAKE)
   CONFIGURE_COMMAND "" # remove configure step
-  # INSTALL_COMMAND   "" # remove install step
+  INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
   )
@@ -73,7 +73,7 @@ ExternalProject_Add(warchant_thread_pool
   GIT_REPOSITORY    "https://github.com/Warchant/thread-pool-cpp.git"
   BUILD_COMMAND     "" # remove build step, header only lib
   CONFIGURE_COMMAND "" # remove configure step
-  # INSTALL_COMMAND   "" # remove install step
+  INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
   )
@@ -97,7 +97,7 @@ ExternalProject_Add(nlohmann_json
   GIT_REPOSITORY    "https://github.com/nlohmann/json.git"
   BUILD_COMMAND     "" # remove build step, header only lib
   CONFIGURE_COMMAND "" # remove configure step
-  # INSTALL_COMMAND   "" # remove install step
+  INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
   )
@@ -127,7 +127,7 @@ if(TESTING)
                       -Dgtest_disable_pthreads=OFF
                       -DBUILD_GTEST=ON
                       -DBUILD_GMOCK=OFF
-    # INSTALL_COMMAND   "" # remove install step
+    INSTALL_COMMAND   "" # remove install step
     UPDATE_COMMAND    "" # remove update step
     TEST_COMMAND      "" # remove test step
     )
@@ -156,7 +156,7 @@ ExternalProject_Add(mizukisonoko_cappuccino
   GIT_TAG           "featue/asio"
   BUILD_COMMAND     "" # remove build step, header only lib
   CONFIGURE_COMMAND "" # remove configure step
-  # INSTALL_COMMAND   "" # remove install step
+  INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
   )
@@ -183,7 +183,7 @@ if(BENCHMARKING)
                       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                       -DBENCHMARK_ENABLE_TESTING=OFF
                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-    # INSTALL_COMMAND   "" # remove install step
+    INSTALL_COMMAND   "" # remove install step
     UPDATE_COMMAND    "" # remove update step
     TEST_COMMAND      "" # remove test step
     )
@@ -270,7 +270,7 @@ ExternalProject_Add(chriskohlhoff_asio
   GIT_REPOSITORY    "https://github.com/chriskohlhoff/asio.git"
   CONFIGURE_COMMAND "" # remove configure step
   BUILD_COMMAND     "" # remove build step
-  # INSTALL_COMMAND   "" # remove install step
+  INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
   )
@@ -304,7 +304,7 @@ ExternalProject_Add(google_flatbuffers
   CMAKE_ARGS      ${flatbuffers_CMAKE_ARGS}
   UPDATE_COMMAND  ""
   TEST_COMMAND    ""
-  # INSTALL_COMMAND ""
+  INSTALL_COMMAND ""
 )
 
 ExternalProject_Get_Property(google_flatbuffers source_dir binary_dir)
@@ -332,7 +332,7 @@ ExternalProject_Add(gabime_spdlog
   GIT_TAG           "v0.13.0"
   CONFIGURE_COMMAND "" # remove configure step
   BUILD_COMMAND     "" # remove build step
-  # INSTALL_COMMAND   "" # remove install step
+  INSTALL_COMMAND   "" # remove install step
   TEST_COMMAND      "" # remove test step
   UPDATE_COMMAND    "" # remove update step
   )
@@ -354,7 +354,9 @@ add_dependencies(spdlog gabime_spdlog)
 ###############################
 ExternalProject_Add(hyperledger_ametsuchi
   GIT_REPOSITORY "https://github.com/hyperledger/iroha-ametsuchi.git"
+  INSTALL_COMMAND   "" # remove install step
   UPDATE_COMMAND    "" # remove update step
+  #TEST_COMMAND      "" # remove test step
 )
 
 ExternalProject_Get_Property(hyperledger_ametsuchi source_dir)
@@ -365,7 +367,7 @@ add_library(ametsuchi SHARED IMPORTED)
 file(MAKE_DIRECTORY ${ametsuchi_SOURCE_DIR}/include)
 set_target_properties(ametsuchi PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${ametsuchi_SOURCE_DIR}/include
-  IMPORTED_LOCATION ${ametsuchi_BUILD_DIR}/ametsuchi
+  IMPORTED_LOCATION ${ametsuchi_BUILD_DIR}/lib/ametsuchi.so
 )
 add_dependencies(ametsuchi hyperledger_ametsuchi)
 
@@ -383,7 +385,7 @@ if (NOT grpc_FOUND)
     BUILD_IN_SOURCE   1
     BUILD_COMMAND     $(MAKE)
     CONFIGURE_COMMAND "" # remove configure step
-    # INSTALL_COMMAND   "" # remove install step
+    INSTALL_COMMAND   "" # remove install step
     TEST_COMMAND      "" # remove test step
     UPDATE_COMMAND    "" # remove update step
     )

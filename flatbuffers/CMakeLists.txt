@@ -9,7 +9,7 @@ function(compile_fbs_to_cpp FBS)
   string(REGEX REPLACE "\\.fbs$" "_h" GEN_TARGET ${FBS})
   add_custom_command(
       OUTPUT ${FLATBUF_DEST_DIR}/${GEN_HEADER} ${FLATBUF_DEST_DIR}/${GEN_GRPC} ${FLATBUF_DEST_DIR}/${GEN_GRPC_HEADER}
-      COMMAND "${flatc_EXECUTABLE}" --gen-mutable --cpp --grpc
+      COMMAND "${flatc_EXECUTABLE}" --gen-mutable --cpp --grpc --no-prefix --scoped-enums
       -o "${FLATBUF_DEST_DIR}"
       "${PROJECT_SOURCE_DIR}/flatbuffers/${FBS}"
       DEPENDS flatc)
@@ -32,9 +32,7 @@ add_library(endpoint_fbs STATIC
 
 target_link_libraries(endpoint_fbs
     grpc++
-    grpc++_reflection
     grpc
-    grpc_unsecure
     gpr
     pthread
     dl
