@@ -65,12 +65,12 @@ Expected<flatbuffers::unique_ptr_t> toConsensusEvent(const iroha::Transaction &t
 
 flatbuffers::unique_ptr_t makeCommit(const iroha::ConsensusEvent &event);
 
-flatbuffers::Offset<flatbuffers::Vector<uint8_t>> CreatePeerService(peer::Node &peer);
-flatbuffers::Offset<PeerAdd> CreatePeerAddService(peer::Node &peer);
-flatbuffers::Offset<PeerRemove> CreatePeerRemoveService(std::string& pubKey);
-flatbuffers::Offset<PeerChangeTrust> CreatePeerChangeTrustService(std::string& pubKey,double& delta);
-flatbuffers::Offset<PeerSetTrust> CreatePeerSetTrustService(std::string& pubKey,double& trust);
-flatbuffers::Offset<PeerSetActive> CreatePeerSetActiveService(std::string& pubKey,bool active);
+std::vector<uint8_t> CreatePeerService(const peer::Node &peer);
+flatbuffers::Offset<PeerAdd> CreatePeerAddService(const peer::Node &peer);
+flatbuffers::Offset<PeerRemove> CreatePeerRemoveService(const std::string& pubKey);
+flatbuffers::Offset<PeerChangeTrust> CreatePeerChangeTrustService(const std::string& pubKey,double& delta);
+flatbuffers::Offset<PeerSetTrust> CreatePeerSetTrustService(const std::string& pubKey,double& trust);
+flatbuffers::Offset<PeerSetActive> CreatePeerSetActiveService(const std::string& pubKey,bool active);
 
 };
 #endif  // IROHA_FLATBUFFER_SERVICE_H

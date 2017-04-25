@@ -89,6 +89,10 @@ TEST(FlatbufferServiceTest, toString) {
     std::cout << flatbuffer_service::toString(*tx.GetRoot()) << std::endl;
 }
 
+TEST(FlatbufferServicePeerTest, PeerService) {
+
+}
+
 /*
 WIP
 TEST(FlatbufferServiceTest, toConsensusEvent) {

@@ -828,4 +828,38 @@ flatbuffers::unique_ptr_t makeCommit(const iroha::ConsensusEvent& event) {
 }
 
 
+std::vector<uint8_t> CreatePeerService(const peer::Node &peer) {
+  flatbuffers::FlatBufferBuilder fbb;
+  auto peer_cp = iroha::CreatePeer( fbb, fbb.CreateString(peer.publicKey),
+                                  fbb.CreateString(peer.ip), peer.trust, peer.active, peer.join_network, peer.join_validation );
+  fbb.Finish( peer_cp );
+
+  uint8_t* ptr = fbb.GetBufferPointer();
+  return {ptr, ptr + fbb.GetSize()};
+}
+flatbuffers::Offset<PeerAdd> CreatePeerAddService(const peer::Node &peer){
+  flatbuffers::FlatBufferBuilder fbb;
+  return iroha::CreatePeerAdd( fbb, fbb.CreateVector( CreatePeerService(peer) ) );
+}
+flatbuffers::Offset<PeerRemove> CreatePeerRemoveService(const std::string& pubKey){
+  flatbuffers::FlatBufferBuilder fbb;
+  return iroha::CreatePeerRemove( fbb, fbb.CreateString(pubKey) );
+
+}
+flatbuffers::Offset<PeerChangeTrust> CreatePeerChangeTrustService(const std::string& pubKey,double& delta){
+  flatbuffers::FlatBufferBuilder fbb;
+  return iroha::CreatePeerChangeTrust( fbb, fbb.CreateString( pubKey ), delta );
+}
+flatbuffers::Offset<PeerSetTrust> CreatePeerSetTrustService(const std::string& pubKey,double& trust){
+  flatbuffers::FlatBufferBuilder fbb;
+  return iroha::CreatePeerSetTrust( fbb, fbb.CreateString(pubKey), trust );
+
+}
+flatbuffers::Offset<PeerSetActive> CreatePeerSetActiveService(const std::string& pubKey,bool active){
+  flatbuffers::FlatBufferBuilder fbb;
+  return iroha::CreatePeerSetActive( fbb, fbb.CreateString(pubKey), active);
+}
+
+
+
 }  // namespace flatbuffer_service
