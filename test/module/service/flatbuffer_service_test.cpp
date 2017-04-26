@@ -127,8 +127,7 @@ TEST(FlatbufferServiceTest, toConsensusEvent) {
   ASSERT_TRUE(consensusEvent);
 
   flatbuffers::unique_ptr_t uptr;
-  consensusEvent.move_value(
-      std::move(uptr));  // 表記上、違和感がある。consensusEvent.swap_ptr(uptr);
+  consensusEvent.move_value(uptr);
 
   const auto root = flatbuffers::GetRoot<::iroha::ConsensusEvent>(uptr.get());
 

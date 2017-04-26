@@ -211,7 +211,7 @@ void initializeSumeragi() {
 
         if (eventUniqPtr) {
           flatbuffers::unique_ptr_t ptr;
-          eventUniqPtr.move_value(std::move(ptr));
+          eventUniqPtr.move_value(ptr);
           auto&& task = [e = std::move(ptr)]() mutable {
             processTransaction(std::move(e));
           };
