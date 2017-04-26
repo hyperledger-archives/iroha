@@ -357,7 +357,7 @@ ExternalProject_Add(hyperledger_iroha_ametsuchi
   GIT_TAG ""
   BUILD_IN_SOURCE 1
   UPDATE_COMMAND ""
-  BUILD_COMMAND  bash "-c" "mkdir -p build && cd build; cmake ..; make"
+  BUILD_COMMAND  bash "-c" "mkdir -p build; cd build && cmake ..; make"
   INSTALL_COMMAND ""
 )
 
