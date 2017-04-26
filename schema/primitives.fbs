@@ -85,3 +85,4 @@ table Signature {
   signature:  [ubyte];   // signature is sign(hash + timestamp)
   timestamp:   ulong;
 }
+

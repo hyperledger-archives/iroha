@@ -17,17 +17,20 @@ message(STATUS "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 message(STATUS "-DTESTING=${TESTING}")
 message(STATUS "-DBENCHMARKING=${BENCHMARKING}")
 
+set(IROHA_SCHEMA_DIR "${PROJECT_SOURCE_DIR}/schema")
+
 include_directories(
   ${PROJECT_SOURCE_DIR}/core
-  ${PROJECT_SOURCE_DIR}/schema
+  ${IROHA_SCHEMA_DIR}
 )
 
 include("cmake/dependencies.cmake")
-add_subdirectory(tools)
+add_subdirectory(schema)
 add_subdirectory(core)
 add_subdirectory(peer)
-add_subdirectory(schema)
+add_subdirectory(tools)
 
+link_directories(${PROJECT_BINARY_DIR}/lib)
 
 if(TESTING)
   enable_testing()

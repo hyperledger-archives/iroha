@@ -11,7 +11,7 @@ table AccountAdd {
 }
 
 table AccountRemove {
-    account: [ubyte] (required, nested_flatbuffer: "Account");
+    pubkey: string;
 }
 
 table AccountAddSignatory {
@@ -74,8 +74,6 @@ table AssetCreate {
     asset_name:  string (required);
     domain_name: string (required);
     ledger_name: string (required);
-
-    creatorPubKey: string (required);
 }
 
 table AssetTransfer {

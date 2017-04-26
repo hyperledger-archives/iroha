@@ -203,33 +203,6 @@ endif(BENCHMARKING)
 
 
 
-############################
-#         leveldb          #
-############################
-#ExternalProject_Add(google_leveldb
-#  GIT_REPOSITORY    "https://github.com/google/leveldb.git"
-#  BUILD_IN_SOURCE   1
-#  BUILD_COMMAND     $(MAKE) -j1 OPT=-fPIC
-#  CONFIGURE_COMMAND "" # remove configure step
-#  INSTALL_COMMAND   "" # remove install step
-#  TEST_COMMAND      "" # remove test step
-#  UPDATE_COMMAND    "" # remove update step
-#  )
-#ExternalProject_Get_Property(google_leveldb source_dir)
-#set(leveldb_SOURCE_DIR "${source_dir}")
-#
-#add_library(leveldb STATIC IMPORTED)
-#file(MAKE_DIRECTORY ${leveldb_SOURCE_DIR}/include)
-#file(MAKE_DIRECTORY ${leveldb_SOURCE_DIR}/out-shared)
-#file(MAKE_DIRECTORY ${leveldb_SOURCE_DIR}/out-static)
-#set_target_properties(leveldb PROPERTIES
-#  INTERFACE_INCLUDE_DIRECTORIES ${leveldb_SOURCE_DIR}/include
-#  IMPORTED_LINK_INTERFACE_LIBRARIES "snappy"
-#  IMPORTED_LOCATION ${leveldb_SOURCE_DIR}/out-static/libleveldb.a
-#  )
-#add_dependencies(leveldb google_leveldb)
-
-
 
 ########################################################
 # jni
@@ -349,29 +322,6 @@ add_dependencies(spdlog gabime_spdlog)
 
 
 
-###############################
-#         ametsuchi           #
-###############################
-ExternalProject_Add(hyperledger_ametsuchi
-  GIT_REPOSITORY "https://github.com/hyperledger/iroha-ametsuchi.git"
-  INSTALL_COMMAND   "" # remove install step
-  UPDATE_COMMAND    "" # remove update step
-  #TEST_COMMAND      "" # remove test step
-)
-
-ExternalProject_Get_Property(hyperledger_ametsuchi source_dir)
-set(ametsuchi_SOURCE_DIR "${source_dir}")
-set(ametsuchi_BUILD_DIR "${build_dir}")
-
-add_library(ametsuchi SHARED IMPORTED)
-file(MAKE_DIRECTORY ${ametsuchi_SOURCE_DIR}/include)
-set_target_properties(ametsuchi PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${ametsuchi_SOURCE_DIR}/include
-  IMPORTED_LOCATION ${ametsuchi_BUILD_DIR}/lib/ametsuchi.so
-)
-add_dependencies(ametsuchi hyperledger_ametsuchi)
-
-
 
 #########################
 #         grpc          #
@@ -427,3 +377,35 @@ endif()
 
 
 
+###########################
+#         LMDB            #
+###########################
+#find_package(LMDB)
+
+if(NOT LMDB_FOUND)
+  ExternalProject_Add(lmdb_LMDB
+    GIT_REPOSITORY    "https://github.com/LMDB/lmdb.git"
+    GIT_TAG           "LMDB_0.9.19"
+    CONFIGURE_COMMAND ""
+    BUILD_IN_SOURCE   1
+    BUILD_COMMAND     cd libraries/liblmdb && $(MAKE) liblmdb.a  CC="${CMAKE_C_COMPILER}" "OPT=-fPIC -O3"
+    INSTALL_COMMAND   "" # remove install step
+    TEST_COMMAND      "" # remove test step
+    UPDATE_COMMAND    "" # remove update step
+    )
+  ExternalProject_Get_Property(lmdb_LMDB source_dir)
+  set(LMDB_INCLUDE_DIRS ${source_dir}/libraries/liblmdb)
+  set(LMDB_LIBRARIES ${source_dir}/libraries/liblmdb/liblmdb.a)
+  file(MAKE_DIRECTORY ${LMDB_INCLUDE_DIRS})
+endif()
+
+add_library(LMDB STATIC IMPORTED)
+set_target_properties(LMDB PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${LMDB_INCLUDE_DIRS}
+  IMPORTED_LOCATION ${LMDB_LIBRARIES}
+  IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+  )
+
+if(NOT LMDB_FOUND)
+  add_dependencies(LMDB lmdb_LMDB)
+endif()

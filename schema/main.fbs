@@ -6,13 +6,17 @@ namespace iroha;
 file_identifier "IROH";
 file_extension  "iroha";
 
-enum Code: ubyte {COMMIT, UNDECIDED, FAIL}
-
 table ConsensusEvent {
   peerSignatures: [Signature];
-  transactions:   [Transaction];
-  code:      Code;
+  transactions:   [TransactionWrapper];
 }
+
+// to make an array of nested flatbuffers, we should use this:
+table TransactionWrapper {
+  tx: [ubyte] (nested_flatbuffer: "Transaction");
+}
+
+enum Code: ubyte {COMMIT, FAIL} // TODO: maybe more?
 
 table TransactionResponse {
   message:      string;
@@ -24,3 +28,10 @@ table ReceiverConfirmation {
   signature: Signature;
   hash:      [ubyte];
 }
+
+// what is Response?
+//table Response {
+//  message:   [Object];
+//  code:      Code;
+//  signature: Signature;
+//}
