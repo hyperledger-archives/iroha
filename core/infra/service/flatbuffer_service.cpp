@@ -155,12 +155,9 @@ flatbuffers::Offset<void> CreateCommandDirect(
                  ptr->ledger_name()->c_str())
           .Union();
     }
-      /*
-      default: {
-        logger::error("flatbuffer service") << "No match Command type";
-        assert("false");
-      }
-      */
+    default: {
+      throw exception::NotImplementedException("No match Command type", __FILE__);
+    }
   }
 }
 

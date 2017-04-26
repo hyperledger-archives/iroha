@@ -58,6 +58,32 @@ enum ResponseType {
   RESPONSE_ERRCONN,      // connection error
 };
 
+// using Response = std::pair<std::string, ResponseType>;
+/*
+// TODO: very dirty solution, need to be out of here
+std::function<RecieverConfirmation(const std::string&)> sign = [](const
+std::string &hash) { RecieverConfirmation confirm; Signature signature;
+    signature.set_publickey(config::PeerServiceConfig::getInstance().getMyPublicKey());
+    signature.set_signature(signature::sign(
+            config::PeerServiceConfig::getInstance().getMyPublicKey(),
+            hash,
+            config::PeerServiceConfig::getInstance().getMyPrivateKey())
+    );
+    confirm.set_hash(hash);
+    confirm.mutable_signature()->Swap(&signature);
+    return confirm;
+};
+
+std::function<bool(const RecieverConfirmation&)> valid = [](const
+RecieverConfirmation &c) { return signature::verify(c.signature().signature(),
+c.hash(), c.signature().publickey());
+};
+*/
+flatbuffers::Offset<::iroha::Signature> sign = [](const std::vector<uint8_t>& hash) {
+  // FIXME: Not implemented
+  //return ::iroha::CreateSignatureDirect(fbb, ::peer::myself::getPublicKey().c_str(), )
+}
+
 /**
  * Receiver
  * - stores callback function
@@ -301,7 +327,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
 
     fbbResponse.Clear();
     auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);
+        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0); // FIXME: sign()
     fbbResponse.Finish(responseOffset);
 
     *response = flatbuffers::BufferRef<::iroha::Response>(
@@ -369,7 +395,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
     fbbResponse.Clear();
 
     auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);
+        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0); // FIXME: sign()
     fbbResponse.Finish(responseOffset);
 
     *responseRef = flatbuffers::BufferRef<::iroha::Response>(
@@ -475,28 +501,5 @@ void finish() {
   server->Shutdown();
   delete server;
 }
-
-
-// using Response = std::pair<std::string, ResponseType>;
-/*
-// TODO: very dirty solution, need to be out of here
-std::function<RecieverConfirmation(const std::string&)> sign = [](const
-std::string &hash) { RecieverConfirmation confirm; Signature signature;
-    signature.set_publickey(config::PeerServiceConfig::getInstance().getMyPublicKey());
-    signature.set_signature(signature::sign(
-            config::PeerServiceConfig::getInstance().getMyPublicKey(),
-            hash,
-            config::PeerServiceConfig::getInstance().getMyPrivateKey())
-    );
-    confirm.set_hash(hash);
-    confirm.mutable_signature()->Swap(&signature);
-    return confirm;
-};
-
-std::function<bool(const RecieverConfirmation&)> valid = [](const
-RecieverConfirmation &c) { return signature::verify(c.signature().signature(),
-c.hash(), c.signature().publickey());
-};
-*/
 
 }  // namespace connection
