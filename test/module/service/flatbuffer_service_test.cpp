@@ -20,6 +20,7 @@
 #include <iostream>
 #include <generated/main_generated.h>
 #include <service/flatbuffer_service.h>
+#include <membership_service/peer_service.hpp>
 
 
 TEST(FlatbufferServiceTest, toString) {
@@ -90,6 +91,9 @@ TEST(FlatbufferServiceTest, toString) {
 }
 
 TEST(FlatbufferServicePeerTest, PeerService) {
+  auto np = peer::Node("ip","pubKey");
+  flatbuffers::FlatBufferBuilder fbb;
+  auto addPeer = flatbuffer_service::peer::CreateAddService(np);
 
 }
 

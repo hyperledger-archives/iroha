@@ -21,4 +21,5 @@ target_link_libraries(flatbuffer_service
     expected
     flatbuffers
     grpc
+    membership_service
 )
