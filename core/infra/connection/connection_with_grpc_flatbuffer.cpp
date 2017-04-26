@@ -415,9 +415,8 @@ namespace iroha {
 namespace SumeragiImpl {
 namespace Verify {
 
-bool receive(Verify::CallBackFunc&& callback) {
+void receive(Verify::CallBackFunc&& callback) {
   receiver.set(std::move(callback));
-  return true;
 }
 
 bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
@@ -457,9 +456,8 @@ namespace iroha {
 namespace SumeragiImpl {
 namespace Torii {
 
-bool receive(Torii::CallBackFunc&& callback) {
+void receive(Torii::CallBackFunc&& callback) {
   receiver.set(std::move(callback));
-  return true;
 }
 }  // namespace Torii
 }  // namespace SumeragiImpl

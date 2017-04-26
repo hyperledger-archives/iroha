@@ -47,7 +47,7 @@ using CallBackFunc = std::function<void(
 
 bool send(const std::string& ip, const ::iroha::ConsensusEvent& msg);
 bool sendAll(const ::iroha::ConsensusEvent& msg);
-bool receive(Verify::CallBackFunc&& callback);
+void receive(Verify::CallBackFunc&& callback);
 
 }  // namespace Verify
 }  // namespace SumeragiImpl
@@ -58,29 +58,37 @@ namespace SumeragiImpl {
 namespace Torii {
 
 using CallBackFunc = std::function<void(
-    const std::string& /* from */, flatbuffers::unique_ptr_t&& /* message */)>;
-bool receive(Torii::CallBackFunc&& callback);
-/*
-namespace HostDiscovery {
+    const std::string & /* from */,
+    flatbuffers::unique_ptr_t&& /* message */)>;
+void receive(Torii::CallBackFunc &&callback);
+        /*
+        namespace HostDiscovery {
 
-    namespace getHostInfo {
-        bool receive(const std::function<void(
-                const std::string &,
-                DiscoverRequest &)> &callback
-        );
+            namespace getHostInfo {
+                bool receive(const std::function<void(
+                        const std::string &,
+                        DiscoverRequest &)> &callback
+                );
 
-        Peer send(
-                const std::string &ip,
-                const DiscoverRequest &message
-        );
-    }
-}
-}*/
+                Peer send(
+                        const std::string &ip,
+                        const DiscoverRequest &message
+                );
+            }
+        }
+    }*/
 
-}  // namespace Torii
-}  // namespace SumeragiImpl
-}  // namespace iroha
+}}}  // namespace iroha::SumeragiImpl::Verify
 
+/************************************************************************************
+* Kagami ( means Ping )
+************************************************************************************/
+namespace MemberShipService { namespace HijiriImpl { namespace Kagami {
+}}}
+
+/************************************************************************************
+ * Main connection
+ ************************************************************************************/
 void initialize_peer();
 int run();
 void finish();

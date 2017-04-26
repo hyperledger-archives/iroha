@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 #include <service/flatbuffer_service.h>
 #include <iostream>
+#include <membership_service/peer_service.hpp>
 #include <memory>
 #include <unordered_map>
 
@@ -74,6 +75,12 @@ TEST(FlatbufferServiceTest, toString) {
                                                        fbb.GetSize());
 
   std::cout << flatbuffer_service::toString(*tx.GetRoot()) << std::endl;
+}
+
+TEST(FlatbufferServicePeerTest, PeerService) {
+  auto np = ::peer::Node("ip", "pubKey");
+  flatbuffers::FlatBufferBuilder fbb;
+  auto addPeer = flatbuffer_service::peer::CreateAdd(np);
 }
 
 TEST(FlatbufferServiceTest, toConsensusEvent) {

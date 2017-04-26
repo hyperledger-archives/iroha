@@ -93,24 +93,24 @@ table PeerAdd {
 }
 
 table PeerRemove {
-    peer: [ubyte] (required, nested_flatbuffer: "Peer");
+    peerPubKey: string  (required);
 }
 
 // set new peer trust (with specific value)
 table PeerSetTrust {
-    peerPubKey: string   (required);
+    peerPubKey: string  (required);
     trust:      double;
 }
 
 // change current trust to some delta
 // example: delta=-5, trust=10 -> newTrust = 10-5 = 5
 table PeerChangeTrust {
-    peerPubKey: string   (required);
+    peerPubKey: string  (required);
     delta:      double;
 }
 
 table PeerSetActive {
-    peerPubKey: string   (required);
+    peerPubKey: string  (required);
     active:     bool;
 }
 //////////////////////////////////////////
