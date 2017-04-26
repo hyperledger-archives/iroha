@@ -11,6 +11,11 @@ table Response {
   signature: Signature;
 }
 
+table Ping {
+  message:  string;
+  sender:   string;
+}
+
 // Used by sending transaction
 rpc_service Sumeragi {
 
@@ -23,5 +28,5 @@ rpc_service Sumeragi {
 
 rpc_service Hijiri {
     // Kagami means ping
-    Kagami(string):Response    (streaming: "none");
+    Kagami(Ping):Response    (streaming: "none");
 }
