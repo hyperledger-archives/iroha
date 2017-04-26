@@ -17,7 +17,7 @@
 #include <crypto/signature.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-#include <service/peer_service.hpp>
+#include <membership_service/peer_service.hpp>
 #include <thread_pool.hpp>
 #include <utils/logger.hpp>
 #include <utils/timer.hpp>
@@ -130,14 +130,12 @@ struct Context {
     this->panicCount = 0;
 
     this->myPublicKey =
-      config::PeerServiceConfig::getInstance()
-            .getMyPublicKeyWithDefault("Invalied");
+    config::PeerServiceConfig::getInstance().getMyPublicKey();
+
     this->myIp =
-      config::PeerServiceConfig::getInstance()
-            .getMyIpWithDefault("AA");
+      config::PeerServiceConfig::getInstance().getMyIp();
     this->myPrivateKey =
-      config::PeerServiceConfig::getInstance()
-            .getMyPrivateKeyWithDefault("AA");
+      config::PeerServiceConfig::getInstance().getMyPrivateKey();
 
     this->isSumeragi =
         this->validatingPeers.at(0)->publicKey == this->myPublicKey;

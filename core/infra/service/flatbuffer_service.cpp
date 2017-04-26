@@ -16,7 +16,10 @@
  */
 
 #include <generated/main_generated.h>
-#include <infra/service/flatbuffers/autogen_extend.h>
+#include <service/flatbuffer_service.h>
+#include <utils/datetime.hpp>
+#include <utils/expected.hpp>
+#include <utils/logger.hpp>
 
 #include <iostream>
 #include <map>
@@ -24,6 +27,172 @@
 #include <string>
 
 namespace flatbuffer_service {
+
+/**
+ * CreateCommandDirect
+ */
+flatbuffers::Offset<void> CreateCommandDirect(
+    flatbuffers::FlatBufferBuilder& _fbb, const void* obj,
+    int /* Command */ type) {  // TODO: Use scopoed enum ::iroha::Command
+  switch (type) {
+    case ::iroha::Command_NONE: {
+      logger::error("flatbuffer service") << "Command_NONE";
+      exit(1);
+    }
+    case ::iroha::Command_AssetCreate: {
+      auto ptr = reinterpret_cast<const ::iroha::AssetCreate*>(obj);
+      return ::iroha::CreateAssetCreateDirect(
+                 _fbb, ptr->asset_name()->c_str(), ptr->domain_name()->c_str(),
+                 ptr->ledger_name()->c_str(), ptr->creatorPubKey()->c_str())
+          .Union();
+    }
+    case ::iroha::Command_AssetAdd: {
+      auto ptr = reinterpret_cast<const ::iroha::AssetAdd*>(obj);
+      auto asset =
+          std::vector<uint8_t>(ptr->asset()->begin(), ptr->asset()->end());
+      return ::iroha::CreateAssetAddDirect(_fbb, ptr->accPubKey()->c_str(),
+                                           &asset)
+          .Union();
+    }
+    case ::iroha::Command_AssetRemove: {
+      auto ptr = reinterpret_cast<const ::iroha::AssetRemove*>(obj);
+      auto asset =
+          std::vector<uint8_t>(ptr->asset()->begin(), ptr->asset()->end());
+      return ::iroha::CreateAssetRemoveDirect(_fbb, ptr->accPubKey()->c_str(),
+                                              &asset)
+          .Union();
+    }
+    case ::iroha::Command_AssetTransfer: {
+      auto ptr = reinterpret_cast<const ::iroha::AssetTransfer*>(obj);
+      auto asset =
+          std::vector<uint8_t>(ptr->asset()->begin(), ptr->asset()->end());
+      return ::iroha::CreateAssetTransferDirect(
+                 _fbb, &asset, ptr->sender()->c_str(), ptr->receiver()->c_str())
+          .Union();
+    }
+    case ::iroha::Command_PeerAdd: {
+      auto ptr = reinterpret_cast<const ::iroha::PeerAdd*>(obj);
+      auto peer =
+          std::vector<uint8_t>(ptr->peer()->begin(), ptr->peer()->end());
+      return ::iroha::CreatePeerAddDirect(_fbb, &peer).Union();
+    }
+    case ::iroha::Command_PeerRemove: {
+      auto ptr = reinterpret_cast<const ::iroha::PeerRemove*>(obj);
+      auto peer =
+          std::vector<uint8_t>(ptr->peer()->begin(), ptr->peer()->end());
+      return ::iroha::CreatePeerRemoveDirect(_fbb, &peer).Union();
+    }
+    case ::iroha::Command_PeerSetActive: {
+      auto ptr = reinterpret_cast<const ::iroha::PeerSetActive*>(obj);
+      return ::iroha::CreatePeerSetActiveDirect(
+                 _fbb, ptr->peerPubKey()->c_str(), ptr->active())
+          .Union();
+    }
+    case ::iroha::Command_PeerSetTrust: {
+      auto ptr = reinterpret_cast<const ::iroha::PeerSetTrust*>(obj);
+      return ::iroha::CreatePeerSetTrustDirect(_fbb, ptr->peerPubKey()->c_str(),
+                                               ptr->trust())
+          .Union();
+    }
+    case ::iroha::Command_PeerChangeTrust: {
+      auto ptr = reinterpret_cast<const ::iroha::PeerChangeTrust*>(obj);
+      return ::iroha::CreatePeerChangeTrustDirect(
+                 _fbb, ptr->peerPubKey()->c_str(), ptr->delta())
+          .Union();
+    }
+    case ::iroha::Command_AccountAdd: {
+      auto ptr = reinterpret_cast<const ::iroha::AccountAdd*>(obj);
+      auto account =
+          std::vector<uint8_t>(ptr->account()->begin(), ptr->account()->end());
+      return ::iroha::CreateAccountAddDirect(_fbb, &account).Union();
+    }
+    case ::iroha::Command_AccountRemove: {
+      auto ptr = reinterpret_cast<const ::iroha::AccountRemove*>(obj);
+      auto account =
+          std::vector<uint8_t>(ptr->account()->begin(), ptr->account()->end());
+      return ::iroha::CreateAccountRemoveDirect(_fbb, &account).Union();
+    }
+    case ::iroha::Command_AccountAddSignatory: {
+      auto ptr = reinterpret_cast<const ::iroha::AccountAddSignatory*>(obj);
+      auto signatory = std::vector<flatbuffers::Offset<flatbuffers::String>>(
+          ptr->signatory()->begin(), ptr->signatory()->end());
+      return ::iroha::CreateAccountAddSignatoryDirect(
+                 _fbb, ptr->account()->c_str(), &signatory)
+          .Union();
+    }
+    case ::iroha::Command_AccountRemoveSignatory: {
+      auto ptr = reinterpret_cast<const ::iroha::AccountRemoveSignatory*>(obj);
+      auto signatory = std::vector<flatbuffers::Offset<flatbuffers::String>>(
+          ptr->signatory()->begin(), ptr->signatory()->end());
+      return ::iroha::CreateAccountRemoveSignatoryDirect(
+                 _fbb, ptr->account()->c_str(), &signatory)
+          .Union();
+    }
+    case ::iroha::Command_AccountSetUseKeys: {
+      auto ptr = reinterpret_cast<const ::iroha::AccountSetUseKeys*>(obj);
+      auto accounts = std::vector<flatbuffers::Offset<flatbuffers::String>>(
+          ptr->accounts()->begin(), ptr->accounts()->end());
+      return ::iroha::CreateAccountSetUseKeysDirect(_fbb, &accounts,
+                                                    ptr->useKeys())
+          .Union();
+    }
+    case ::iroha::Command_ChaincodeAdd: {
+      auto ptr = reinterpret_cast<const ::iroha::ChaincodeAdd*>(obj);
+      auto code =
+          std::vector<uint8_t>(ptr->code()->begin(), ptr->code()->end());
+      return ::iroha::CreateChaincodeAddDirect(_fbb, &code).Union();
+    }
+    case ::iroha::Command_ChaincodeRemove: {
+      auto ptr = reinterpret_cast<const ::iroha::ChaincodeRemove*>(obj);
+      auto code =
+          std::vector<uint8_t>(ptr->code()->begin(), ptr->code()->end());
+      return ::iroha::CreateChaincodeRemoveDirect(_fbb, &code).Union();
+    }
+    case ::iroha::Command_ChaincodeExecute: {
+      auto ptr = reinterpret_cast<const ::iroha::ChaincodeExecute*>(obj);
+      return ::iroha::CreateChaincodeExecuteDirect(
+                 _fbb, ptr->code_name()->c_str(), ptr->domain_name()->c_str(),
+                 ptr->ledger_name()->c_str())
+          .Union();
+    }
+      /*
+      default: {
+        logger::error("flatbuffer service") << "No match Command type";
+        assert("false");
+      }
+      */
+  }
+}
+
+std::vector<uint8_t> CreateAccountBuffer(
+    const char* publicKey, const char* alias,
+    const std::vector<std::string>& signatories, uint16_t useKeys) {
+  if (&signatories != nullptr) {
+    flatbuffers::FlatBufferBuilder fbbAccount;
+
+    std::vector<flatbuffers::Offset<flatbuffers::String>> signatoryOffsets;
+    for (const auto& e : signatories) {
+      signatoryOffsets.push_back(fbbAccount.CreateString(e));
+    }
+
+    auto accountOffset = ::iroha::CreateAccountDirect(
+        fbbAccount, publicKey, alias, &signatoryOffsets, 1);
+    fbbAccount.Finish(accountOffset);
+
+    auto buf = fbbAccount.GetBufferPointer();
+    std::vector<uint8_t> buffer;
+    buffer.assign(buf, buf + fbbAccount.GetSize());
+    return buffer;
+  } else {
+    flatbuffers::FlatBufferBuilder fbbAccount;
+    auto accountOffset =
+        ::iroha::CreateAccountDirect(fbbAccount, publicKey, alias, nullptr, 1);
+    fbbAccount.Finish(accountOffset);
+
+    auto buf = fbbAccount.GetBufferPointer();
+    return std::vector<uint8_t>(buf, buf + fbbAccount.GetSize());
+  }
+}
 
 /**
  * toString
@@ -353,75 +522,199 @@ std::string toString(const iroha::Transaction& tx) {
   return res;
 }
 
+namespace detail {
+/**
+ * copyPeerSignatures
+ * - copies peer siognatures of consensus event and write data to given
+ *   FlatBufferBuilder
+ */
+Expected<std::vector<flatbuffers::Offset<::iroha::Signature>>>
+copyPeerSignaturesOf(flatbuffers::FlatBufferBuilder& fbb,
+                     const ::iroha::ConsensusEvent& event) {
+  // ToDo: ピアシグネチャは最初は空か？
+  std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures;
+
+  for (const auto& aPeerSig : *event.peerSignatures()) {
+    // TODO: Check signature is broken.
+    VoidHandler handler;
+    handler = ensureNotNull(aPeerSig);
+    if (!handler) {
+      logger::error("Connection with grpc") << "Peer signature is null";
+      return makeUnexpected(handler.excptr());
+    }
+
+    handler = ensureNotNull(aPeerSig->signature());
+    if (!handler) {
+      logger::error("Connection with grpc") << "Peer signature is null";
+      return makeUnexpected(handler.excptr());
+    }
+
+    std::vector<uint8_t> aPeerSigBlob(aPeerSig->signature()->begin(),
+                                      aPeerSig->signature()->end());
+    peerSignatures.push_back(
+        ::iroha::CreateSignatureDirect(fbb, aPeerSig->publicKey()->c_str(),
+                                       &aPeerSigBlob, aPeerSig->timestamp()));
+  }
+
+  return peerSignatures;
+}
+
+Expected<std::vector<flatbuffers::Offset<::iroha::Signature>>> copySignaturesOf(
+    flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
+  std::vector<flatbuffers::Offset<::iroha::Signature>> tx_signatures;
+
+  auto handler = ensureNotNull(fromTx.signatures());
+  if (!handler) {
+    logger::error("Connection with grpc") << "Transaction signature is null";
+    return makeUnexpected(handler.excptr());
+  }
+
+  for (auto&& txSig : *fromTx.signatures()) {
+    auto handler = ensureNotNull(txSig->signature());
+    if (!handler) {
+      logger::error("Connection with grpc") << "Transaction signature is null";
+      return makeUnexpected(handler.excptr());
+    }
+
+    std::vector<uint8_t> _data(txSig->signature()->begin(),
+                               txSig->signature()->end());
+
+    tx_signatures.emplace_back(
+        iroha::CreateSignatureDirect(fbb, txSig->publicKey()->c_str(), &_data));
+  }
+
+  return tx_signatures;
+}
+
+Expected<std::vector<uint8_t>> copyHashOf(const ::iroha::Transaction& fromTx) {
+  auto handler = ensureNotNull(fromTx.hash());
+  if (!handler) {
+    logger::error("Connection with grpc") << "Transaction hash is null";
+    return makeUnexpected(handler.excptr());
+  }
+  return std::vector<uint8_t>(fromTx.hash()->begin(), fromTx.hash()->end());
+}
+
+Expected<flatbuffers::Offset<::iroha::Attachment>> copyAttachmentOf(
+    flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
+  VoidHandler handler;
+  handler = ensureNotNull(fromTx.attachment());
+  if (!handler) {
+    logger::error("Connection with grpc") << "Transacetion attachment is null";
+    return makeUnexpected(handler.excptr());
+  }
+
+  handler = ensureNotNull(fromTx.attachment()->data());
+  if (!handler) {
+    logger::error("Connection with grpc")
+        << "Transacetion attachment's data is null";
+    return makeUnexpected(handler.excptr());
+  }
+
+  std::vector<uint8_t> data(fromTx.attachment()->data()->begin(),
+                            fromTx.attachment()->data()->end());
+  return iroha::CreateAttachmentDirect(
+      fbb, fromTx.attachment()->mime()->c_str(), &data);
+}
+
+/**
+ * copyTransaction
+ * - copies transaction and write data to given FlatBufferBuilder.
+ */
+Expected<flatbuffers::Offset<::iroha::Transaction>> copyTransaction(
+    flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
+  auto tx_signatures = copySignaturesOf(fbb, fromTx);
+  if (!tx_signatures) {
+    return makeUnexpected(tx_signatures.excptr());
+  }
+
+  auto hash = copyHashOf(fromTx);
+  if (!hash) {
+    return makeUnexpected(hash.excptr());
+  }
+
+  auto attachment = copyAttachmentOf(fbb, fromTx);
+  if (!attachment) {
+    return makeUnexpected(attachment.excptr());
+  }
+
+  // ToDo: Currently, #(transaction) is one.
+  const auto pubkey = fromTx.creatorPubKey()->c_str();
+  const auto cmdtype = fromTx.command_type();
+  const auto cmd = flatbuffer_service::CreateCommandDirect(
+      fbb, fromTx.command(), fromTx.command_type());
+
+  return ::iroha::CreateTransactionDirect(fbb, pubkey, cmdtype, cmd,
+                                          &tx_signatures.value(), &hash.value(),
+                                          attachment.value());
+}
+
+/**
+ * copyTransactionsOf(event)
+ * - copies transactions from event and write data to given FlatBufferBuilder.
+ */
+Expected<std::vector<flatbuffers::Offset<::iroha::Transaction>>>
+copyTransactionsOf(flatbuffers::FlatBufferBuilder& fbb,
+                   const ::iroha::ConsensusEvent& event) {
+  std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions;
+
+  for (auto&& tx : *event.transactions()) {
+    auto txOffset = copyTransaction(fbb, *tx);
+    if (!txOffset) {
+      return makeUnexpected(txOffset.excptr());
+    }
+    transactions.push_back(*txOffset);
+  }
+
+  return transactions;
+}
+}  // namespace detail
+
+Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
+    flatbuffers::FlatBufferBuilder& fbb, const iroha::ConsensusEvent& event) {
+  auto peerSignatures = detail::copyPeerSignaturesOf(fbb, event);
+  if (!peerSignatures) {
+    return makeUnexpected(peerSignatures.excptr());
+  }
+  auto transactions = detail::copyTransactionsOf(fbb, event);
+  if (!transactions) {
+    return makeUnexpected(transactions.excptr());
+  }
+  return ::iroha::CreateConsensusEventDirect(
+      fbb, &peerSignatures.value(), &transactions.value(), event.code());
+}
+
 /**
  * toConsensusEvent
  * - Encapsulate a transaction in a consensus event. Argument fromTx will be
  *   deeply copied and create new consensus event that has the copied
  * transaction.
+ * - Currently, fromTx is not vector. Only one transaction is accepted.
  */
-flatbuffers::unique_ptr_t toConsensusEvent(const iroha::Transaction& fromTx) {
+Expected<flatbuffers::unique_ptr_t> toConsensusEvent(
+    const iroha::Transaction& fromTx) {
   flatbuffers::FlatBufferBuilder fbb;
-  fbb.Clear();
 
-  std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
+  // HELP WANTED: Signature is from Transaction. Is it ok?
+  auto signaturesOffset = detail::copySignaturesOf(fbb, fromTx);
+  if (!signaturesOffset) {
+    return makeUnexpected(signaturesOffset.excptr());
+  }
+
+  // TODO: multiple transaction
+  auto txOffset = detail::copyTransaction(fbb, fromTx);
+  if (!txOffset) {
+    return makeUnexpected(txOffset.excptr());
+  }
+
   std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions;
-
-  std::vector<uint8_t> _hash;
-  std::vector<uint8_t> data;
-  flatbuffers::Offset<::iroha::Attachment> attachment = 0;
-
-  if (fromTx.signatures() != nullptr) {
-    for (const auto& s : *fromTx.signatures()) {
-      assert(s->publicKey() != nullptr);
-      assert(s->signature() != nullptr);
-    }
-  }
-  if (fromTx.attachment() != nullptr) {
-    assert(fromTx.attachment()->mime() != nullptr);
-    assert(fromTx.attachment()->data() != nullptr);
-  }
-
-  if (fromTx.hash() != nullptr) {
-    _hash.assign(fromTx.hash()->begin(), fromTx.hash()->end());
-  }
-  if (fromTx.attachment() != nullptr &&
-      fromTx.attachment()->data() != nullptr) {
-    data.assign(fromTx.attachment()->data()->begin(),
-                fromTx.attachment()->data()->end());
-    attachment = iroha::CreateAttachmentDirect(
-        fbb, fromTx.attachment()->mime()->c_str(), &data);
-  }
-
-
-  std::vector<flatbuffers::Offset<::iroha::Signature>> tx_signatures;
-
-  if (fromTx.signatures() != nullptr) {
-    for (auto&& txSig : *fromTx.signatures()) {
-      std::vector<uint8_t> _data;
-      if (txSig->signature() != nullptr) {
-        for (auto d : *txSig->signature()) {
-          _data.emplace_back(d);
-        }
-        tx_signatures.emplace_back(iroha::CreateSignatureDirect(
-            fbb, txSig->publicKey()->c_str(), &_data));
-      }
-    }
-  }
-
-  // TODO: Currently, #(transaction) is one.
-  transactions.push_back(::iroha::CreateTransactionDirect(
-      fbb, fromTx.creatorPubKey()->c_str(), fromTx.command_type(),
-      flatbuffer_service::CreateCommandDirect(fbb, fromTx.command(),
-                                              fromTx.command_type()),
-      &tx_signatures, &_hash, attachment));
+  transactions.push_back(*txOffset);
 
   auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
-      fbb, &signatures, &transactions, ::iroha::Code_UNDECIDED);
-
+      fbb, &signaturesOffset.value(), &transactions, ::iroha::Code_UNDECIDED);
   fbb.Finish(consensusEventOffset);
   return fbb.ReleaseBufferPointer();
 }
-
 
 flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent& event,
                                        const std::string& publicKey,

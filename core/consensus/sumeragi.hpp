@@ -24,7 +24,7 @@ limitations under the License.
 #include <thread>
 #include <vector>
 #include <generated/main_generated.h>
-#include <service/peer_service.hpp>
+#include <membership_service/peer_service.hpp>
 
 namespace sumeragi {
 
