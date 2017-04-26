@@ -19,7 +19,9 @@ rpc_service Sumeragi {
 
     // sumeragi uses.
     Verify(ConsensusEvent):Response (streaming: "none");
+}
 
+rpc_service Hijiri {
     // Kagami means ping
-    Kagami(Message):Response    (streaming: "none");
+    Kagami(string):Response    (streaming: "none");
 }

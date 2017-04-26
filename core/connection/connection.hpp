@@ -82,6 +82,12 @@ void receive(Torii::CallBackFunc &&callback);
 }}}  // namespace iroha::SumeragiImpl::Verify
 
 /************************************************************************************
+* Kagami ( means Ping )
+************************************************************************************/
+namespace MemberShipService { namespace HijiriImpl { namespace Kagami {
+}}}
+
+/************************************************************************************
  * Main connection
  ************************************************************************************/
 void initialize_peer();
