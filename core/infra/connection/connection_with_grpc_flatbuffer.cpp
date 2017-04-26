@@ -79,10 +79,13 @@ RecieverConfirmation &c) { return signature::verify(c.signature().signature(),
 c.hash(), c.signature().publickey());
 };
 */
+
+/*
 flatbuffers::Offset<::iroha::Signature> sign = [](const std::vector<uint8_t>& hash) {
   // FIXME: Not implemented
   //return ::iroha::CreateSignatureDirect(fbb, ::peer::myself::getPublicKey().c_str(), )
 }
+*/
 
 /**
  * Receiver
