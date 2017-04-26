@@ -525,13 +525,12 @@ std::string toString(const iroha::Transaction& tx) {
 namespace detail {
 /**
  * copyPeerSignatures
- * - copies peer siognatures of consensus event and write data to given
+ * - copies peer signatures of consensus event and write data to given
  *   FlatBufferBuilder
  */
 Expected<std::vector<flatbuffers::Offset<::iroha::Signature>>>
 copyPeerSignaturesOf(flatbuffers::FlatBufferBuilder& fbb,
                      const ::iroha::ConsensusEvent& event) {
-  // ToDo: ピアシグネチャは最初は空か？
   std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures;
 
   for (const auto& aPeerSig : *event.peerSignatures()) {
@@ -559,8 +558,9 @@ copyPeerSignaturesOf(flatbuffers::FlatBufferBuilder& fbb,
   return peerSignatures;
 }
 
-Expected<std::vector<flatbuffers::Offset<::iroha::Signature>>> copySignaturesOf(
-    flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
+Expected<std::vector<flatbuffers::Offset<::iroha::Signature>>>
+copySignaturesOfTx(flatbuffers::FlatBufferBuilder& fbb,
+                   const ::iroha::Transaction& fromTx) {
   std::vector<flatbuffers::Offset<::iroha::Signature>> tx_signatures;
 
   auto handler = ensureNotNull(fromTx.signatures());
@@ -586,7 +586,8 @@ Expected<std::vector<flatbuffers::Offset<::iroha::Signature>>> copySignaturesOf(
   return tx_signatures;
 }
 
-Expected<std::vector<uint8_t>> copyHashOf(const ::iroha::Transaction& fromTx) {
+Expected<std::vector<uint8_t>> copyHashOfTx(
+    const ::iroha::Transaction& fromTx) {
   auto handler = ensureNotNull(fromTx.hash());
   if (!handler) {
     logger::error("Connection with grpc") << "Transaction hash is null";
@@ -595,7 +596,7 @@ Expected<std::vector<uint8_t>> copyHashOf(const ::iroha::Transaction& fromTx) {
   return std::vector<uint8_t>(fromTx.hash()->begin(), fromTx.hash()->end());
 }
 
-Expected<flatbuffers::Offset<::iroha::Attachment>> copyAttachmentOf(
+Expected<flatbuffers::Offset<::iroha::Attachment>> copyAttachmentOfTx(
     flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
   VoidHandler handler;
   handler = ensureNotNull(fromTx.attachment());
@@ -618,22 +619,22 @@ Expected<flatbuffers::Offset<::iroha::Attachment>> copyAttachmentOf(
 }
 
 /**
- * copyTransaction
+ * copyTransaction(fromTx)
  * - copies transaction and write data to given FlatBufferBuilder.
  */
 Expected<flatbuffers::Offset<::iroha::Transaction>> copyTransaction(
     flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
-  auto tx_signatures = copySignaturesOf(fbb, fromTx);
+  auto tx_signatures = copySignaturesOfTx(fbb, fromTx);
   if (!tx_signatures) {
     return makeUnexpected(tx_signatures.excptr());
   }
 
-  auto hash = copyHashOf(fromTx);
+  auto hash = copyHashOfTx(fromTx);
   if (!hash) {
     return makeUnexpected(hash.excptr());
   }
 
-  auto attachment = copyAttachmentOf(fbb, fromTx);
+  auto attachment = copyAttachmentOfTx(fbb, fromTx);
   if (!attachment) {
     return makeUnexpected(attachment.excptr());
   }
@@ -654,8 +655,8 @@ Expected<flatbuffers::Offset<::iroha::Transaction>> copyTransaction(
  * - copies transactions from event and write data to given FlatBufferBuilder.
  */
 Expected<std::vector<flatbuffers::Offset<::iroha::Transaction>>>
-copyTransactionsOf(flatbuffers::FlatBufferBuilder& fbb,
-                   const ::iroha::ConsensusEvent& event) {
+copyTransactionsOfEvent(flatbuffers::FlatBufferBuilder& fbb,
+                        const ::iroha::ConsensusEvent& event) {
   std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions;
 
   for (auto&& tx : *event.transactions()) {
@@ -676,7 +677,7 @@ Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
   if (!peerSignatures) {
     return makeUnexpected(peerSignatures.excptr());
   }
-  auto transactions = detail::copyTransactionsOf(fbb, event);
+  auto transactions = detail::copyTransactionsOfEvent(fbb, event);
   if (!transactions) {
     return makeUnexpected(transactions.excptr());
   }
@@ -686,32 +687,29 @@ Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
 
 /**
  * toConsensusEvent
- * - Encapsulate a transaction in a consensus event. Argument fromTx will be
- *   deeply copied and create new consensus event that has the copied
- * transaction.
- * - Currently, fromTx is not vector. Only one transaction is accepted.
+ * - Encapsulate the transaction given from Torii(client) in a consensus event. Argument
+ *   fromTx will be deeply copied and create new consensus event that has the
+ *   copied transaction.
+ * - After creating new consensus event, addSignature() is called from sumeragi.
+ *   So, the new event has empty peerSignatures.
  */
 Expected<flatbuffers::unique_ptr_t> toConsensusEvent(
     const iroha::Transaction& fromTx) {
-  flatbuffers::FlatBufferBuilder fbb;
+  flatbuffers::FlatBufferBuilder fbb(16);
 
-  // HELP WANTED: Signature is from Transaction. Is it ok?
-  auto signaturesOffset = detail::copySignaturesOf(fbb, fromTx);
-  if (!signaturesOffset) {
-    return makeUnexpected(signaturesOffset.excptr());
-  }
+  std::vector<flatbuffers::Offset<::iroha::Signature>>
+      peerSignatureOffsets;  // Empty.
 
-  // TODO: multiple transaction
   auto txOffset = detail::copyTransaction(fbb, fromTx);
   if (!txOffset) {
     return makeUnexpected(txOffset.excptr());
   }
 
-  std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions;
-  transactions.push_back(*txOffset);
+  std::vector<flatbuffers::Offset<::iroha::Transaction>> txs;
+  txs.push_back(*txOffset);
 
   auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
-      fbb, &signaturesOffset.value(), &transactions, ::iroha::Code_UNDECIDED);
+      fbb, &peerSignatureOffsets, &txs, ::iroha::Code_UNDECIDED);
   fbb.Finish(consensusEventOffset);
   return fbb.ReleaseBufferPointer();
 }
@@ -721,7 +719,7 @@ flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent& event,
                                        const std::string& signature) {
   flatbuffers::FlatBufferBuilder fbbConsensusEvent(16);
 
-  // At first, peerSignatures is empty. (Is this right?)
+  // At first, peerSignatures is empty.
   std::vector<flatbuffers::Offset<iroha::Signature>> peerSignatures;
   std::vector<flatbuffers::Offset<iroha::Signature>> signatures;
 

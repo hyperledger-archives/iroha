@@ -38,52 +38,49 @@ struct Config {
   std::string port;
 };
 
-/************************************************************************************
- * Verify
- ************************************************************************************/
-namespace iroha { namespace SumeragiImpl { namespace Verify {
-
-using CallBackFunc =
-    std::function<void(const std::string & /* from */,
-       flatbuffers::unique_ptr_t&& /* message */)>;
-
-Expected<bool> send(const std::string &ip, const ::iroha::ConsensusEvent& msg);
-Expected<bool> sendAll(const ::iroha::ConsensusEvent& msg);
-void receive(Verify::CallBackFunc &&callback);
-
-}}}  // namespace iroha::SumeragiImpl::Verify
-
-/************************************************************************************
- * Torii
- ************************************************************************************/
-namespace iroha { namespace SumeragiImpl { namespace Torii {
+namespace iroha {
+namespace SumeragiImpl {
+namespace Verify {
 
 using CallBackFunc = std::function<void(
-    const std::string & /* from */,
-    flatbuffers::unique_ptr_t&& /* message */)>;
-void receive(Torii::CallBackFunc &&callback);
-        /*
-        namespace HostDiscovery {
+    const std::string& /* from */, flatbuffers::unique_ptr_t&& /* message */)>;
 
-            namespace getHostInfo {
-                bool receive(const std::function<void(
-                        const std::string &,
-                        DiscoverRequest &)> &callback
-                );
+bool send(const std::string& ip, const ::iroha::ConsensusEvent& msg);
+bool sendAll(const ::iroha::ConsensusEvent& msg);
+bool receive(Verify::CallBackFunc&& callback);
 
-                Peer send(
-                        const std::string &ip,
-                        const DiscoverRequest &message
-                );
-            }
-        }
-    }*/
+}  // namespace Verify
+}  // namespace SumeragiImpl
+}  // namespace iroha
 
-}}}  // namespace iroha::SumeragiImpl::Verify
+namespace iroha {
+namespace SumeragiImpl {
+namespace Torii {
 
-/************************************************************************************
- * Main connection
- ************************************************************************************/
+using CallBackFunc = std::function<void(
+    const std::string& /* from */, flatbuffers::unique_ptr_t&& /* message */)>;
+bool receive(Torii::CallBackFunc&& callback);
+/*
+namespace HostDiscovery {
+
+    namespace getHostInfo {
+        bool receive(const std::function<void(
+                const std::string &,
+                DiscoverRequest &)> &callback
+        );
+
+        Peer send(
+                const std::string &ip,
+                const DiscoverRequest &message
+        );
+    }
+}
+}*/
+
+}  // namespace Torii
+}  // namespace SumeragiImpl
+}  // namespace iroha
+
 void initialize_peer();
 int run();
 void finish();
