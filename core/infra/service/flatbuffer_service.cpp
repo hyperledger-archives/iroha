@@ -671,6 +671,12 @@ copyTransactionsOfEvent(flatbuffers::FlatBufferBuilder& fbb,
 }
 }  // namespace detail
 
+/**
+ * copyConsensusEvent(event)
+ * - copies consensus event and write data to given FlatBufferBuilder.
+ *
+ * Returns: Expected<Offset<ConsensusEvent>>
+ */
 Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
     flatbuffers::FlatBufferBuilder& fbb, const iroha::ConsensusEvent& event) {
   auto peerSignatures = detail::copyPeerSignaturesOf(fbb, event);
@@ -692,6 +698,8 @@ Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
  *   copied transaction.
  * - After creating new consensus event, addSignature() is called from sumeragi.
  *   So, the new event has empty peerSignatures.
+ *
+ * Returns: Expected<unique_ptr_t>
  */
 Expected<flatbuffers::unique_ptr_t> toConsensusEvent(
     const iroha::Transaction& fromTx) {
@@ -736,13 +744,13 @@ flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent& event,
         1234567));
   }
 
-  std::vector<uint8_t> aNewPeerSigBlob;
+  std::vector<uint8_t> aNewPeerSigBlob; // ToDo: Does it need to sign()?
   for (auto& c : signature) {
     aNewPeerSigBlob.push_back(c);
   }
   peerSignatures.push_back(::iroha::CreateSignatureDirect(
       fbbConsensusEvent, aSignature->publicKey()->c_str(), &aNewPeerSigBlob,
-      1234567));
+      1234567)); // ToDo: Is this datetime::unixtime()?
 
 
   std::vector<uint8_t> signatureBlob(aSignature->signature()->begin(),
@@ -750,7 +758,7 @@ flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent& event,
 
   signatures.push_back(::iroha::CreateSignatureDirect(
       fbbConsensusEvent, aSignature->publicKey()->c_str(), &signatureBlob,
-      1234567));
+      1234567)); // ToDo: Why not aSignature->timestamp()?
 
   std::vector<uint8_t> hashes;
   if (tx->hash() != nullptr) {

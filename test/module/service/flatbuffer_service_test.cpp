@@ -159,14 +159,16 @@ TEST(FlatbufferServiceTest, toConsensusEvent) {
   ASSERT_EQ(txptrFromEvent->signatures()->Get(0)->signature()->Get(0), 'a');
   ASSERT_EQ(txptrFromEvent->signatures()->Get(0)->signature()->Get(1), 'b');
   ASSERT_EQ(txptrFromEvent->signatures()->Get(0)->signature()->size(), 2);
-  // ASSERT_EQ(txptrFromEvent->signatures()->Get(0)->timestamp(), 100000);
+  // ASSERT_EQ(txptrFromEvent->signatures()->Get(0)->timestamp(), 100000); //
+  // Actual value always returns 0
 
   ASSERT_EQ(txptrFromEvent->signatures()->Get(1)->signature()->Get(0), '\0');
   ASSERT_EQ(txptrFromEvent->signatures()->Get(1)->signature()->Get(1), 'a');
   ASSERT_EQ(txptrFromEvent->signatures()->Get(1)->signature()->Get(2), '\0');
   ASSERT_EQ(txptrFromEvent->signatures()->Get(1)->signature()->Get(3), 'b');
   ASSERT_EQ(txptrFromEvent->signatures()->Get(1)->signature()->size(), 4);
-  // ASSERT_EQ(txptrFromEvent->signatures()->Get(1)->timestamp(), 100001);
+  // ASSERT_EQ(txptrFromEvent->signatures()->Get(1)->timestamp(), 100001); //
+  // Actual value always returns 0
 
   ASSERT_EQ(txptrFromEvent->hash()->Get(0), 'h');
   ASSERT_EQ(txptrFromEvent->hash()->Get(1), '\0');
