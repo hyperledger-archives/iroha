@@ -3,6 +3,7 @@ include "asset.fbs";
 
 namespace iroha;
 
+
 table Account {
   pubKey: string (required);  // primary key for account
   alias:  string;
@@ -12,6 +13,7 @@ table Account {
   signatories: [string];
   useKeys:     ushort = 1;
 }
+
 
 // message represents custom user data, related to account. User is able to store blobs in his account and access it by key.
 // e.g.,
@@ -28,3 +30,4 @@ table Message {
   // values can be accessed by key for O(log(n)). Look at "Storing maps" section in flatbuffers docs
   data: [KeyValueObject];
 }
+
