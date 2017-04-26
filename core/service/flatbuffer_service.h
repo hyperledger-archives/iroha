@@ -19,6 +19,7 @@ limitations under the License.
 #include "flatbuf/nested_flatbuffer_service.h"
 #include <generated/commands_generated.h>
 #include <generated/primitives_generated.h>
+#include <generated/transaction_generated.h>
 #include <membership_service/peer_service.hpp>
 
 namespace iroha {
@@ -69,15 +70,15 @@ flatbuffers::unique_ptr_t makeCommit(const iroha::ConsensusEvent &event);
 
 namespace peer { // namespace peer
 
-flatbuffers::Offset<PeerAdd> CreateAddService(const ::peer::Node &peer);
+flatbuffers::Offset<PeerAdd> CreateAdd(const ::peer::Node &peer);
 
-flatbuffers::Offset<PeerRemove> CreateRemoveService(const std::string &pubKey);
+flatbuffers::Offset<PeerRemove> CreateRemove(const std::string &pubKey);
 
-flatbuffers::Offset<PeerChangeTrust> CreateChangeTrustService(const std::string &pubKey, double &delta);
+flatbuffers::Offset<PeerChangeTrust> CreateChangeTrust(const std::string &pubKey, double &delta);
 
-flatbuffers::Offset<PeerSetTrust> CreateSetTrustService(const std::string &pubKey, double &trust);
+flatbuffers::Offset<PeerSetTrust> CreateSetTrust(const std::string &pubKey, double &trust);
 
-flatbuffers::Offset<PeerSetActive> CreateSetActiveService(const std::string &pubKey, bool active);
+flatbuffers::Offset<PeerSetActive> CreateSetActive(const std::string &pubKey, bool active);
 
 };
 

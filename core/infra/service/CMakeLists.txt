@@ -22,4 +22,7 @@ target_link_libraries(flatbuffer_service
     flatbuffers
     grpc
     membership_service
+    signature
+    base64
+    hash
 )

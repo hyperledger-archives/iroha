@@ -91,9 +91,9 @@ TEST(FlatbufferServiceTest, toString) {
 }
 
 TEST(FlatbufferServicePeerTest, PeerService) {
-  auto np = peer::Node("ip","pubKey");
+  auto np = ::peer::Node("ip","pubKey");
   flatbuffers::FlatBufferBuilder fbb;
-  auto addPeer = flatbuffer_service::peer::CreateAddService(np);
+  auto addPeer = flatbuffer_service::peer::CreateAdd(np);
 
 }
 
