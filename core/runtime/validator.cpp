@@ -19,12 +19,12 @@ limitations under the License.
 namespace runtime {
     namespace validator {
 
-        bool account_exist_validator(const std::string &publicKey);
+        bool account_exist_validator(const std::string &publicKey){}
 
-        bool permission_validator(const std::string &publicKey);
+        bool permission_validator(const std::string &publicKey){}
 
-        bool logic_validator(const std::string &publicKey);
-        
+        bool logic_validator(const std::string &publicKey){}
+
     };
 
 };
