@@ -17,4 +17,4 @@ add_subdirectory(expected)
 #add_subdirectory(connection)
 #add_subdirectory(transaction_builder)
 
-add_subdirectory(service)
+#add_subdirectory(service)
