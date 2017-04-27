@@ -714,9 +714,9 @@ Expected<flatbuffers::unique_ptr_t> toConsensusEvent(
   return fbb.ReleaseBufferPointer();
 }
 
-Expected<flatbuffers::unique_ptr_t> addSignature(const iroha::ConsensusEvent& event,
-                                                 const std::string& publicKey,
-                                                 const std::string& signature) {
+flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent& event,
+                                       const std::string& publicKey,
+                                       const std::string& signature) {
   flatbuffers::FlatBufferBuilder fbbConsensusEvent(16);
 
   std::vector<flatbuffers::Offset<iroha::Signature>> peerSignatures;
@@ -783,7 +783,7 @@ Expected<flatbuffers::unique_ptr_t> addSignature(const iroha::ConsensusEvent& ev
   return fbbConsensusEvent.ReleaseBufferPointer();
 }
 
-Expected<flatbuffers::unique_ptr_t> makeCommit(const iroha::ConsensusEvent& event) {
+flatbuffers::unique_ptr_t makeCommit(const iroha::ConsensusEvent& event) {
   flatbuffers::FlatBufferBuilder fbbConsensusEvent(16);
 
   // At first, peerSignatures is empty. (Is this right?)
