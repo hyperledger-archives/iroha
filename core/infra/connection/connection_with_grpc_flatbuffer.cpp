@@ -23,6 +23,7 @@ limitations under the License.
 #include <membership_service/peer_service.hpp>
 #include <utils/expected.hpp>
 #include <utils/logger.hpp>
+#include <endpoint.grpc.fb.h>
 
 #include <flatbuffers/flatbuffers.h>
 #include <grpc++/grpc++.h>
@@ -40,6 +41,7 @@ using Sumeragi = ::iroha::Sumeragi;
 using ConsensusEvent = ::iroha::ConsensusEvent;
 using Response = ::iroha::Response;
 using Transaction = ::iroha::Transaction;
+using TransactionWrapper = ::iroha::TransactionWrapper;
 using Signature = ::iroha::Signature;
 
 using grpc::Channel;
@@ -150,7 +152,7 @@ class SumeragiConnectionClient {
         << "size: " << consensusEvent.peerSignatures()->size();
     logger::info("connection")
         << "CommandType: "
-        << consensusEvent.transactions()->Get(0)->command_type();
+        << static_cast<int>(consensusEvent.transactions()->Get(0)->tx_nested_root()->command_type());
 
     flatbuffers::FlatBufferBuilder fbb;
     // ToDo: Copy consensus event twice in toConsensusEvent() and
@@ -178,7 +180,7 @@ class SumeragiConnectionClient {
       return responseRef.GetRoot();
     } else {
       logger::error("connection")
-          << status.error_code() << ": " << status.error_message();
+          << static_cast<int>(status.error_code()) << ": " << status.error_message();
       return responseRef.GetRoot();
       // std::cout << status.error_code() << ": " << status.error_message();
       // return {"RPC failed", RESPONSE_ERRCONN};
@@ -244,7 +246,7 @@ class SumeragiConnectionClient {
       return responseRef.GetRoot();
     } else {
       logger::error("connection")
-          << status.error_code() << ": " << status.error_message();
+          << static_cast<int>(status.error_code()) << ": " << status.error_message();
       // std::cout << status.error_code() << ": " << status.error_message();
       return responseRef.GetRoot();
     }
@@ -277,7 +279,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
 
     flatbuffers::FlatBufferBuilder fbbConsensusEvent;
 
-    std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures;
+    std::vector<flatbuffers::Offset<Signature>> peerSignatures;
     for (const auto& aPeerSig : *request->GetRoot()->peerSignatures()) {
       std::vector<uint8_t> aPeerSigBlob(aPeerSig->signature()->begin(),
                                         aPeerSig->signature()->end());
@@ -286,45 +288,27 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
           1234567));
     }
 
-    auto tx = request->GetRoot()->transactions()->Get(0);
-    std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
+    auto txwrapper = [&] {
+      auto in = request->GetRoot()->transactions()->Get(0);
+      auto tx = in->tx_nested_root();
+      return flatbuffer_service::toTransactionWrapper(*tx);
+    }();
+    if (!txwrapper) {
+      auto responseOffset = ::iroha::CreateResponseDirect(
+        fbbResponse, "NG", ::iroha::Code::FAIL, 0);  // FIXME: sign()
+      fbbResponse.Finish(responseOffset);
 
-    if (tx->signatures() != nullptr) {
-      std::vector<uint8_t> signatureBlob(
-          tx->signatures()->Get(0)->signature()->begin(),
-          tx->signatures()->Get(0)->signature()->end());
-      signatures.push_back(::iroha::CreateSignatureDirect(
-          fbbConsensusEvent, tx->signatures()->Get(0)->publicKey()->c_str(),
-          &signatureBlob, 1234567));
-    }
-    std::vector<uint8_t> hashes;
-    if (tx->hash() != nullptr) {
-      hashes.assign(tx->hash()->begin(), tx->hash()->end());
-    }
+      *response = flatbuffers::BufferRef<::iroha::Response>(
+        fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
 
-    flatbuffers::Offset<::iroha::Attachment> attachmentOffset;
-    std::vector<uint8_t> data;
-    if (tx->attachment() != nullptr && tx->attachment()->data() != nullptr &&
-        tx->attachment()->mime() != nullptr) {
-      data.assign(tx->attachment()->data()->begin(),
-                  tx->attachment()->data()->end());
-
-      attachmentOffset = ::iroha::CreateAttachmentDirect(
-          fbbConsensusEvent, tx->attachment()->mime()->c_str(), &data);
+      return Status::OK;
     }
 
-    std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions;
-
-    // TODO: Currently, #(transaction) is one.
-    transactions.push_back(::iroha::CreateTransactionDirect(
-        fbbConsensusEvent, tx->creatorPubKey()->c_str(), tx->command_type(),
-        flatbuffer_service::CreateCommandDirect(
-            fbbConsensusEvent, tx->command(), tx->command_type()),
-        &signatures, &hashes, attachmentOffset));
+    std::vector<flatbuffers::Offset<TransactionWrapper>> txwrapperOffsets;
+    txwrapperOffsets.push_back(txwrapper.value());
 
     fbbConsensusEvent.Finish(::iroha::CreateConsensusEventDirect(
-        fbbConsensusEvent, &peerSignatures, &transactions,
-        request->GetRoot()->code()));
+        fbbConsensusEvent, &peerSignatures, &txwrapperOffsets)); // ToDo: no more needed request->code() ?
 
     const std::string from = "from";
     iroha::SumeragiImpl::Verify::receiver.invoke(
@@ -332,7 +316,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
 
     fbbResponse.Clear();
     auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);  // FIXME: sign()
+        fbbResponse, "OK!!", ::iroha::Code::COMMIT, 0);  // FIXME: sign()
     fbbResponse.Finish(responseOffset);
 
     *response = flatbuffers::BufferRef<::iroha::Response>(
@@ -400,7 +384,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
     fbbResponse.Clear();
 
     auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);  // FIXME: sign()
+        fbbResponse, "OK!!", ::iroha::Code::COMMIT, 0);  // FIXME: sign()
     fbbResponse.Finish(responseOffset);
 
     *responseRef = flatbuffers::BufferRef<::iroha::Response>(
