@@ -291,7 +291,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
     auto txwrapper = [&] {
       auto in = request->GetRoot()->transactions()->Get(0);
       auto tx = in->tx_nested_root();
-      return flatbuffer_service::toTransactionWrapper(*tx);
+      return flatbuffer_service::toTransactionWrapper(fbbConsensusEvent, *tx);
     }();
     if (!txwrapper) {
       auto responseOffset = ::iroha::CreateResponseDirect(

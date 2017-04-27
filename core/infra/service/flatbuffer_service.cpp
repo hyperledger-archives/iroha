@@ -695,10 +695,12 @@ Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
 }
 
 /**
- * toTransactionWrapper(tx)
+ * toTransactionWrapper(fbb, tx)
  * - wrap transaction to TransactionWrapper
  */
-Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> toTransactionWrapper(const ::iroha::Transaction& tx) {
+Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> toTransactionWrapper(
+  flatbuffers::FlatBufferBuilder& fbb,
+  const ::iroha::Transaction& tx) {
   flatbuffers::FlatBufferBuilder xbb;
   auto txOffset = detail::copyTransaction(xbb, tx);
   if (!txOffset) {
@@ -708,8 +710,7 @@ Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> toTransactionWrapper(
   auto ptr = xbb.GetBufferPointer();
   std::vector<uint8_t> nested(ptr, ptr + xbb.GetSize());
 
-  flatbuffers::FlatBufferBuilder wbb;
-  return ::iroha::CreateTransactionWrapperDirect(wbb, &nested);
+  return ::iroha::CreateTransactionWrapperDirect(fbb, &nested);
 }
 
 /**
@@ -729,7 +730,7 @@ Expected<flatbuffers::unique_ptr_t> toConsensusEvent(
   std::vector<flatbuffers::Offset<::iroha::Signature>>
       peerSignatureOffsets;  // Empty.
 
-  auto txwOffset = toTransactionWrapper(fromTx);
+  auto txwOffset = toTransactionWrapper(fbb, fromTx);
 
   std::vector<flatbuffers::Offset<::iroha::TransactionWrapper>> txs;
   txs.push_back(*txwOffset);
@@ -774,7 +775,7 @@ Expected<flatbuffers::unique_ptr_t> addSignature(const iroha::ConsensusEvent& ev
   txwrappers.push_back(::iroha::CreateTransactionWrapperDirect(fbbConsensusEvent, &tx));
 
   auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
-      fbbConsensusEvent, &peerSignatures, &txwrappers); // ToDo: code() is removed from schema.
+      fbbConsensusEvent, &peerSignatures, &txwrappers, event.code());
 
   fbbConsensusEvent.Finish(consensusEventOffset);
   return fbbConsensusEvent.ReleaseBufferPointer();

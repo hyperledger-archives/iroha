@@ -83,7 +83,7 @@ Expected<flatbuffers::unique_ptr_t> addSignature(const iroha::ConsensusEvent &ev
                                                  const std::string &publicKey,
                                                  const std::string &signature);
 
-Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> toTransactionWrapper(const ::iroha::Transaction& tx);
+Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> toTransactionWrapper(flatbuffers::FlatBufferBuilder&, const ::iroha::Transaction&);
 Expected<flatbuffers::unique_ptr_t> toConsensusEvent(const iroha::Transaction &tx);
 Expected<flatbuffers::unique_ptr_t> makeCommit(const iroha::ConsensusEvent &event);
 
