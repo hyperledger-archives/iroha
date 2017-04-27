@@ -27,3 +27,5 @@ add_library(ip_tools STATIC ip_tools.cpp)
 target_link_libraries(ip_tools
     logger
 )
+
+add_library(cache_map STATIC cache_map.cpp)

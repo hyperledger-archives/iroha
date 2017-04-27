@@ -15,7 +15,7 @@
 ADD_LIBRARY(membership_service STATIC
     peer_service.cpp
     hijiri.cpp
-)
+        synchronizer.hpp)
 
 target_link_libraries(membership_service
     exception
