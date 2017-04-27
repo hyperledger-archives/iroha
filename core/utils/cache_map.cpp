@@ -18,12 +18,13 @@ limitations under the License.
 // Created by Takumi Yamashita on 2017/04/28.
 //
 
-#include <utils/cache_map.hpp>
+#include "cache_map.hpp"
 
 namespace structure {
 // set max_chache_size
-template <typename K, typename V>
-void CacheMap<K, V>::set_cache_size(size_t max_cache_size) {
+
+template <typename Key, typename Value>
+void CacheMap<Key, Value>::set_cache_size(size_t max_cache_size) {
   if (max_cache_size_ < max_cache_size) {
     max_cache_size_ = max_cache_size;
   } else {
@@ -34,18 +35,19 @@ void CacheMap<K, V>::set_cache_size(size_t max_cache_size) {
   }
 }
 
-template <typename K, typename V>
-size_t CacheMap<K, V>::erase_one() {
+template <typename Key, typename Value>
+size_t CacheMap<Key, Value>::erase_one() {
   if (data_.empty()) return;
-  K& k = cache_.front();
+  Key& k = cache_.front();
   cache_.pop_front();
   if (max_cache_.front() == k) max_cache_.pop_front();
   data_.erase(k);
   return data_.size();
 }
 
-template <typename K, typename V>
-size_t CacheMap<K, V>::set(const K& k, const V& v) {
+template <typename Key, typename Value>
+size_t CacheMap<Key, Value>::set(const Key& k, const Value& v) {
+  if( cache_.count(k) ) return data_.size();
   cache_.push_back(k);
   while (!max_cache_.empty() && max_cache_.back() < k) max_cache_.pop_back();
   max_cache_.push_back(k);
@@ -53,23 +55,16 @@ size_t CacheMap<K, V>::set(const K& k, const V& v) {
 }
 
 // default map alike function
-template <typename K, typename V>
-const V& CacheMap<K, V>::operator[](const K& k) {
-  if (data_.count(k) == 0) return V();
+template <typename Key, typename Value>
+const Value& CacheMap<Key, Value>::operator[](const Key& k) {
+  if (data_.count(k) == 0) return Value();
   return data_[k];
 }
 
-template <typename K, typename V>
-const V& CacheMap<K, V>::operator[](K&& k) {
-  if (data_.count(k) == 0) return V();
+template <typename Key, typename Value>
+const Value& CacheMap<Key, Value>::operator[](Key&& k) {
+  if (data_.count(k) == 0) return Value();
   return data_[k];
 }
 
-
-/*
-    size_t max_chache_size_;
-    unordered_map<K,V> data_;
-    dequeu<K> max_cache_;
-    dequeu<K> cache_;
-    */
 }  // namespace structure

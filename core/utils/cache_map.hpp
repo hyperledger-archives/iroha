@@ -26,19 +26,21 @@ limitations under the License.
 namespace structure {
 
 // CacheMap
-  /*
-   * CacheMap is unordered_map that to identify max size alike.
-   * CacheMap does not call erase method from external.
-   * CacheMap autoerases element that was last push, when over size.
-   * CacheMap operate below all function, amortized complexity O(1) (clear is not).
-   */
-template <typename K, typename V>
+/*
+ * CacheMap is unordered_map that to identify max size alike.
+ * CacheMap does not call erase method from external.
+ * CacheMap does not overwrite.
+ * CacheMap autoerases element that was last push, when over size.
+ * CacheMap operate below all function, amortized complexity O(1) (clear is
+ * not).
+ */
+template <typename Key, typename Value>
 class CacheMap {
-private:
+ private:
   size_t max_cache_size_;
-  std::unordered_map<K,V> data_;
-  std::deque<K> max_cache_;
-  std::deque<K> cache_;
+  std::unordered_map<Key, Value> data_;
+  std::deque<Key> max_cache_;
+  std::deque<Key> cache_;
 
   // erase last push node
   size_t erase_one();
@@ -51,26 +53,25 @@ private:
   void set_cache_size(size_t);
 
   // set key and value
-  size_t set(const K&, const V&);
+  size_t set(const Key&, const Value&);
 
   // [] oprator
-  const V& operator[](const K& k);
-  const V& operator[](K&& k);
+  const Value& operator[](const Key& k);
+  const Value& operator[](Key&& k);
 
   // get maximum key
-  const K& getMaxKey() const { return max_cache_.front(); }
+  const Key& getMaxKey() const { return max_cache_.front(); }
 
   size_t max_size() const noexcept { return max_cache_size_; }
   size_t size() const noexcept { return data_.size(); }
   bool empty() const noexcept { return data_.empty(); }
-  size_t count(const K& k) const { return data_.count(k); }
+  size_t count(const Key& k) const { return data_.count(k); }
   void clear() noexcept {
     data_.clear();
     max_cache_.clear();
     cache_.clear();
   }
-
 };
-}
+} // namespace structure
 
 #endif  // IROHA_CACHEMAP_HPP
