@@ -158,7 +158,8 @@ flatbuffers::Offset<void> CreateCommandDirect(
           .Union();
     }
     default: {
-      throw exception::NotImplementedException("No match Command type", __FILE__);
+      throw exception::NotImplementedException("No match Command type",
+                                               __FILE__);
     }
   }
 }
@@ -570,8 +571,8 @@ copySignaturesOfTx(flatbuffers::FlatBufferBuilder& fbb,
     std::vector<uint8_t> _data(txSig->signature()->begin(),
                                txSig->signature()->end());
 
-    tx_signatures.emplace_back(
-        iroha::CreateSignatureDirect(fbb, txSig->publicKey()->c_str(), &_data));
+    tx_signatures.emplace_back(iroha::CreateSignatureDirect(
+        fbb, txSig->publicKey()->c_str(), &_data, txSig->timestamp()));
   }
 
   return tx_signatures;
@@ -592,14 +593,14 @@ Expected<flatbuffers::Offset<::iroha::Attachment>> copyAttachmentOfTx(
   VoidHandler handler;
   handler = ensureNotNull(fromTx.attachment());
   if (!handler) {
-    logger::error("Connection with grpc") << "Transacetion attachment is null";
+    logger::error("Connection with grpc") << "Transaction attachment is null";
     return makeUnexpected(handler.excptr());
   }
 
   handler = ensureNotNull(fromTx.attachment()->data());
   if (!handler) {
     logger::error("Connection with grpc")
-        << "Transacetion attachment's data is null";
+        << "Transaction attachment's data is null";
     return makeUnexpected(handler.excptr());
   }
 
@@ -684,11 +685,11 @@ Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
 
 /**
  * toConsensusEvent
- * - Encapsulate the transaction given from Torii(client) in a consensus event. Argument
- *   fromTx will be deeply copied and create new consensus event that has the
- *   copied transaction.
- * - After creating new consensus event, addSignature() is called from sumeragi.
- *   So, the new event has empty peerSignatures.
+ * - Encapsulate the transaction given from Torii(client) in a consensus event.
+ * Argument fromTx will be deeply copied and create new consensus event that has
+ * the copied transaction. - After creating new consensus event,
+ * addSignature() is called from sumeragi. So, the new event has empty
+ * peerSignatures.
  *
  * Returns: Expected<unique_ptr_t>
  */
@@ -718,7 +719,6 @@ flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent& event,
                                        const std::string& signature) {
   flatbuffers::FlatBufferBuilder fbbConsensusEvent(16);
 
-  // At first, peerSignatures is empty.
   std::vector<flatbuffers::Offset<iroha::Signature>> peerSignatures;
   std::vector<flatbuffers::Offset<iroha::Signature>> signatures;
 
@@ -732,16 +732,16 @@ flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent& event,
                                       aPeerSig->signature()->end());
     peerSignatures.push_back(::iroha::CreateSignatureDirect(
         fbbConsensusEvent, aPeerSig->publicKey()->c_str(), &aPeerSigBlob,
-        1234567));
+        aPeerSig->timestamp()));
   }
 
-  std::vector<uint8_t> aNewPeerSigBlob; // ToDo: Does it need to sign()?
+  std::vector<uint8_t> aNewPeerSigBlob;  // ToDo: Does it need to sign()?
   for (auto& c : signature) {
     aNewPeerSigBlob.push_back(c);
   }
   peerSignatures.push_back(::iroha::CreateSignatureDirect(
       fbbConsensusEvent, aSignature->publicKey()->c_str(), &aNewPeerSigBlob,
-      1234567)); // ToDo: Is this datetime::unixtime()?
+      datetime::unixtime()));
 
 
   std::vector<uint8_t> signatureBlob(aSignature->signature()->begin(),
@@ -749,7 +749,7 @@ flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent& event,
 
   signatures.push_back(::iroha::CreateSignatureDirect(
       fbbConsensusEvent, aSignature->publicKey()->c_str(), &signatureBlob,
-      1234567)); // ToDo: Why not aSignature->timestamp()?
+      aSignature->timestamp()));
 
   std::vector<uint8_t> hashes;
   if (tx->hash() != nullptr) {

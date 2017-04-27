@@ -81,9 +81,11 @@ c.hash(), c.signature().publickey());
 */
 
 /*
-flatbuffers::Offset<::iroha::Signature> sign = [](const std::vector<uint8_t>& hash) {
+flatbuffers::Offset<::iroha::Signature> sign = [](const std::vector<uint8_t>&
+hash) {
   // FIXME: Not implemented
-  //return ::iroha::CreateSignatureDirect(fbb, ::peer::myself::getPublicKey().c_str(), )
+  //return ::iroha::CreateSignatureDirect(fbb,
+::peer::myself::getPublicKey().c_str(), )
 }
 */
 
@@ -330,7 +332,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
 
     fbbResponse.Clear();
     auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0); // FIXME: sign()
+        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);  // FIXME: sign()
     fbbResponse.Finish(responseOffset);
 
     *response = flatbuffers::BufferRef<::iroha::Response>(
@@ -398,7 +400,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
     fbbResponse.Clear();
 
     auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0); // FIXME: sign()
+        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);  // FIXME: sign()
     fbbResponse.Finish(responseOffset);
 
     *responseRef = flatbuffers::BufferRef<::iroha::Response>(
