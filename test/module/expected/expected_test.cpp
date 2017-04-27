@@ -111,7 +111,7 @@ TEST(UseExpected, VoidHandler) {
 }
 
 TEST(UseExpected, flatBuffersPtrMove) {
-  auto f = [](const char* s, int x, double d) -> Expected<flatbuffers::unique_ptr_t> {
+  auto f = [](const char *s, int x, double d) -> Expected<flatbuffers::unique_ptr_t> {
     flatbuffers::FlatBufferBuilder fbb;
     auto sampleOffset = CreateSampleDirect(fbb, s, x, d);
     fbb.Finish(sampleOffset);
@@ -121,7 +121,7 @@ TEST(UseExpected, flatBuffersPtrMove) {
   auto e = f("HOGEHOGE", 12345, 3.14);
   ASSERT_TRUE(e);
   flatbuffers::unique_ptr_t extracted;
-  e.move_value(std::move(extracted));
+  e.move_value(extracted);
 
   auto root = flatbuffers::GetRoot<Sample>(extracted.get());
   ASSERT_STREQ(root->strvalue()->c_str(), "HOGEHOGE");

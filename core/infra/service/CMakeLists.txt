@@ -14,8 +14,6 @@ target_link_libraries(http_client
 
 ADD_LIBRARY(flatbuffer_service STATIC
     flatbuffer_service.cpp
-    flatbuffers/autogen_extend.cpp
-    flatbuffers/nested_flatbuffer_service.cpp
 )
 
 target_link_libraries(flatbuffer_service
@@ -23,4 +21,8 @@ target_link_libraries(flatbuffer_service
     expected
     flatbuffers
     grpc
+    membership_service
+    signature
+    base64
+    hash
 )
