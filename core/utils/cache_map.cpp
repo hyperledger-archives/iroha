@@ -23,13 +23,48 @@ limitations under the License.
 namespace structure {
 // set max_chache_size
 template <typename K, typename V>
-void CacheMap<K, V>::set_cache_size(size_t) {}
-// default map alike function
-template <typename K, typename V>
-V& CacheMap<K, V>::operator[](const K& k) {}
+void CacheMap<K, V>::set_cache_size(size_t max_cache_size) {
+  if (max_cache_size_ < max_cache_size) {
+    max_cache_size_ = max_cache_size;
+  } else {
+    while (max_cache_size_ > max_cache_size) {
+      max_cache_size--;
+      erase_one();
+    }
+  }
+}
 
 template <typename K, typename V>
-V& CacheMap<K, V>::operator[](K&& k) {}
+size_t CacheMap<K, V>::erase_one() {
+  if (data_.empty()) return;
+  K& k = cache_.front();
+  cache_.pop_front();
+  if (max_cache_.front() == k) max_cache_.pop_front();
+  data_.erase(k);
+  return data_.size();
+}
+
+template <typename K, typename V>
+size_t CacheMap<K, V>::set(const K& k, const V& v) {
+  cache_.push_back(k);
+  while (!max_cache_.empty() && max_cache_.back() < k) max_cache_.pop_back();
+  max_cache_.push_back(k);
+  data_[k] = v;
+}
+
+// default map alike function
+template <typename K, typename V>
+const V& CacheMap<K, V>::operator[](const K& k) {
+  if (data_.count(k) == 0) return V();
+  return data_[k];
+}
+
+template <typename K, typename V>
+const V& CacheMap<K, V>::operator[](K&& k) {
+  if (data_.count(k) == 0) return V();
+  return data_[k];
+}
+
 
 /*
     size_t max_chache_size_;
@@ -37,4 +72,4 @@ V& CacheMap<K, V>::operator[](K&& k) {}
     dequeu<K> max_cache_;
     dequeu<K> cache_;
     */
-} // namespace structure
+}  // namespace structure

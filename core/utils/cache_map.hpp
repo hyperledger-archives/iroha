@@ -24,32 +24,43 @@ limitations under the License.
 #include <unordered_map>
 
 namespace structure {
+
+// CacheMap
+  /*
+   * CacheMap is unordered_map that to identify max size alike.
+   * CacheMap does not call erase method from external.
+   * CacheMap autoerases element that was last push, when over size.
+   * CacheMap operate below all function, amortized complexity O(1) (clear is not).
+   */
 template <typename K, typename V>
 class CacheMap {
 private:
-  size_t max_chache_size_;
+  size_t max_cache_size_;
   std::unordered_map<K,V> data_;
   std::deque<K> max_cache_;
   std::deque<K> cache_;
 
+  // erase last push node
+  size_t erase_one();
+
  public:
-  CacheMap(size_t max_chache_size = 1) : max_chache_size_(max_chache_size) {}
+  CacheMap(size_t max_cache_size = 1) : max_cache_size_(max_cache_size) {}
   ~CacheMap() { clear(); }
 
   // set max_chache_size
   void set_cache_size(size_t);
 
-  // [] oprator
-  V& operator[](const K& k);
-  V& operator[](K&& k);
+  // set key and value
+  size_t set(const K&, const V&);
 
-  // erase base-key
-  size_t erase(const K& k);
+  // [] oprator
+  const V& operator[](const K& k);
+  const V& operator[](K&& k);
 
   // get maximum key
   const K& getMaxKey() const { return max_cache_.front(); }
 
-  size_t max_size() const noexcept { return max_chache_size_; }
+  size_t max_size() const noexcept { return max_cache_size_; }
   size_t size() const noexcept { return data_.size(); }
   bool empty() const noexcept { return data_.empty(); }
   size_t count(const K& k) const { return data_.count(k); }
