@@ -24,6 +24,8 @@
 #include <utils/logger.hpp>
 #include <utils/timer.hpp>
 
+#include <main_generated.h>
+
 #include <atomic>
 #include <cmath>
 #include <deque>
@@ -184,13 +186,13 @@ void initializeSumeragi() {
         auto eventPtr =
             flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventUniqPtr.get());
 
-        if (eventPtr->code() == iroha::Code_COMMIT) {
+        if (eventPtr->code() == iroha::Code::COMMIT) {
           context->printProgress.print(19, "receive commited event");
-          if (txCache.find(detail::hash(*eventPtr->transactions()->Get(0))) ==
-              txCache.end()) {
+          // ToDo #(tx) = 1
+          const auto txptr = eventPtr->transactions()->Get(0)->tx_nested_root();
+          if (txCache.find(detail::hash(*txptr)) == txCache.end()) {
             // ToDo executor
-            txCache[detail::hash(*eventPtr->transactions()->Get(0))] =
-                "commited";
+            txCache[detail::hash(*txptr)] = "commited";
           }
         } else {
           // send processTransaction(event) as a task to processing pool
@@ -239,7 +241,7 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
   flatbuffers::unique_ptr_t storageUniqPtr;
   ::iroha::ConsensusEvent* storageRawPtrRef;
 
-  // Helper to set unique_ptr_t
+  // Helper to set unique_ptr_t // ToDo: use reference_closure() to solve overload ?
   auto resetUniqPtr = [&](flatbuffers::unique_ptr_t&& uptr) {
     storageUniqPtr = std::move(uptr);
     storageRawPtrRef = flatbuffers::GetMutableRoot<::iroha::ConsensusEvent>(
@@ -255,15 +257,25 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
   resetUniqPtr(std::move(eventUniqPtr));
 
   context->printProgress.print(6, "generate hash");
-  const auto hash = detail::hash(*getRoot()->transactions()->Get(0));
+  const auto hash = detail::hash(*getRoot()->transactions()->Get(0)->tx_nested_root()); // ToDo: #(tx) = 1
   context->printProgress.print(7, "sign hash using my key-pair");
   const auto signature =
       signature::sign(hash, context->myPublicKey, context->myPrivateKey);
   explore::sumeragi::printInfo("hash:" + hash + " signature:" + signature);
 
   context->printProgress.print(8, "Add own signature");
-  resetUniqPtr(flatbuffer_service::addSignature(
-      *getRoot(), context->myPublicKey, signature));
+
+  {
+    auto sigAddPtr = flatbuffer_service::addSignature(
+      *getRoot(), context->myPublicKey, signature);
+    if (!sigAddPtr) {
+      logger::error("sumeragi") << "Failed to process transaction.";
+      return;// ToDo: If processTx fails, is it ok to return immediately?
+    }
+    flatbuffers::unique_ptr_t uptr;
+    sigAddPtr.move_value(uptr);
+    resetUniqPtr(std::move(uptr));
+  }
 
   context->printProgress.print(9, "if statement");
   if (detail::eventSignatureIsEmpty(*getRoot()) && context->isSumeragi) {
@@ -297,7 +309,17 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
                                    std::to_string(context->commitedCount));
 
       context->printProgress.print(17, "update event commit");
-      resetUniqPtr(flatbuffer_service::makeCommit(*getRoot()));
+
+      {
+        auto mkCommitPtr = flatbuffer_service::makeCommit(*getRoot());
+        if (!mkCommitPtr) {
+          logger::error("sumeragi") << "Failed to process transaction.";
+          return;// ToDo: If processTx fails, is it ok to return immediately?
+        }
+        flatbuffers::unique_ptr_t uptr;
+        mkCommitPtr.move_value(uptr);
+        resetUniqPtr(std::move(uptr));
+      }
 
       context->printProgress.print(18, "SendAll");
       connection::iroha::SumeragiImpl::Verify::sendAll(*getRoot());
