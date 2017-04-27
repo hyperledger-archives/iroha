@@ -22,7 +22,7 @@ limitations under the License.
 #include <string>
 
 #include <infra/config/peer_service_with_json.hpp>
-#include <service/peer_service.hpp>
+#include <membership_service/peer_service.hpp>
 #include <utils/logger.hpp>
 
 #include "helper/issue_transaction_add.hpp"

@@ -24,70 +24,106 @@ IrohaException::IrohaException(const std::string &message)
 
 IrohaException::~IrohaException() {}
 
+// This is for throwing exception.
 const char *IrohaException::what() const throw() { return message_.c_str(); }
-const char *IrohaException::message() const { return message_.c_str(); }
+
+std::string IrohaException::message() const { return message_.c_str(); }
+
+NoError::NoError(const std::string &message)
+    : IrohaException("<<NO_ERROR>> " + message) {}
+
+Critical::Critical(const std::string &message)
+    : IrohaException("<<CRITICAL>> " + message) {}
+
+WontFix::WontFix(const std::string &message)
+    : IrohaException("<<WONT_FIX>> " + message) {}
+
+HelpWanted::HelpWanted(const std::string &message)
+    : IrohaException("<<HELP_WANTED>> " + message) {}
+
+ConfigError::ConfigError(const std::string &message)
+    : IrohaException("<<CONFIG_ERROR>> " + message) {}
+
+
+None::None() : NoError("This exception should not be used in error") {}
 
 NotImplementedException::NotImplementedException(
     const std::string &functionName, const std::string &filename)
-    : IrohaException(
-          "TODO: Sorry, function [" + functionName + "] in file " + filename +
-          " is not yet implemented, would you like to contribute it?") {}
-
-ParseFromStringException::ParseFromStringException(const std::string &filename)
-    : IrohaException("ParseFromStringException in file " + filename) {}
-
+    : HelpWanted("Sorry, function [" + functionName + "] in file " + filename +
+                 " is not yet implemented, would you like to contribute it?") {}
 
 InvalidCastException::InvalidCastException(const std::string &from,
                                            const std::string &to,
                                            const std::string &filename)
-    : IrohaException("InvalidCastException in file " + filename +
-                     ". Cannot cast from " + from + " to " + to) {}
+    : Critical("InvalidCastException in file " + filename +
+               ". Cannot cast from " + from + " to " + to) {}
 
 
 InvalidCastException::InvalidCastException(const std::string &meg,
                                            const std::string &filename)
-    : IrohaException("InvalidCastException in " + filename + ". " + meg) {}
+    : Critical("InvalidCastException in " + filename + ". " + meg) {}
 
 DuplicateSetArgumentException::DuplicateSetArgumentException(
     const std::string &buildTarget, const std::string &duplicateMember)
-    : IrohaException("DuplicateSetArgumentException in " + buildTarget +
-                     ", argument: " + duplicateMember) {}
+    : Critical("DuplicateSetArgumentException in " + buildTarget +
+               ", argument: " + duplicateMember) {}
 
 UnsetBuildArgumentsException::UnsetBuildArgumentsException(
     const std::string &buildTarget, const std::string &unsetMembers)
-    : IrohaException("UnsetBuildArgumentsException in " + buildTarget +
-                     ", arguments: " + unsetMembers) {}
+    : Critical("UnsetBuildArgumentsException in " + buildTarget +
+               ", arguments: " + unsetMembers) {}
+
+NotFoundPathException::NotFoundPathException(const std::string &path)
+    : ConfigError("Not found path: '" + path + "'") {}
 
 namespace config {
 
-ConfigException::ConfigException(const std::string &message)
-    : IrohaException("ConfigException: " + message) {}
+// deprecated, will remove.
+ConfigException::ConfigException(const std::string &message,
+                                 const std::string &funcname)
+    : ConfigError("ConfigException: " + message + " in " + funcname) {}
+
+ParseException::ParseException(const std::string &target,
+                               bool setDefaultMessage)
+    : ConfigError("Cannot parse '" + target + "'" +
+                  (setDefaultMessage ? " It is set to be default." : "")) {}
+
+UndefinedIrohaHomeException::UndefinedIrohaHomeException()
+    : ConfigError(
+          "UndefinedIrohaHomeException: Set environment variable IROHA_HOME") {}
 
 }  // namespace config
+
+namespace connection {
+NullptrException::NullptrException(const std::string &target)
+    : Critical("NullptrException: '" + target + "' is nullptr") {}
+
+FailedToCreateConsensusEvent::FailedToCreateConsensusEvent()
+    : Critical("FailedToCreateConsensusEvent") {}
+}  // namespace connection
 
 namespace service {
 
 DuplicationIPException::DuplicationIPException(const std::string &ip)
-    : IrohaException("DuplicationIPException : IP = " + ip) {}
+    : ConfigError("DuplicationIPException : IP = " + ip) {}
 
 DuplicationPublicKeyException::DuplicationPublicKeyException(
     const std::string &publicKey)
-    : IrohaException("DuplicationPublicKeyException : publicKey = " +
-                     publicKey) {}
+    : ConfigError("DuplicationPublicKeyException : publicKey = " + publicKey) {}
 
 UnExistFindPeerException::UnExistFindPeerException(const std::string &publicKey)
-    : IrohaException("UnExistFindPeerException : publicKey = " + publicKey) {}
+    : ConfigError("UnExistFindPeerException : publicKey = " + publicKey) {}
 
 }  // namespace service
 
 namespace crypto {
 
 InvalidKeyException::InvalidKeyException(const std::string &message)
-    : IrohaException("Keyfile is invalid, cause is: " + message) {}
+    : ConfigError("Keyfile is invalid, cause is: " + message) {}
 
 InvalidMessageLengthException::InvalidMessageLengthException(
     const std::string &message)
-    : IrohaException("Message " + message + " has wrong length") {}
+    : Critical("Message " + message + " has wrong length") {}
 
 }  // namespace crypto
 

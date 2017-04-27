@@ -20,6 +20,7 @@ ADD_LIBRARY(flatbuffer_service STATIC
 
 target_link_libraries(flatbuffer_service
     logger
+    expected
     flatbuffers
     grpc
 )
