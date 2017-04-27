@@ -16,6 +16,7 @@ limitations under the License.
 #define IROHA_FLATBUFFER_SERVICE_H
 
 #include <utils/expected.hpp>
+#include <commands_generated.h>
 #include "flatbuf/nested_flatbuffer_service.h"
 
 namespace iroha {
@@ -27,7 +28,7 @@ namespace flatbuffer_service {
 
 flatbuffers::Offset<void> CreateCommandDirect(
     flatbuffers::FlatBufferBuilder &_fbb, const void *obj,
-    int /* Command */ type);  // TODO: Use scoped enum ::iroha::Command
+    iroha::Command  /* Command */ type);
 
 Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
     flatbuffers::FlatBufferBuilder &fbb, const ::iroha::ConsensusEvent &);

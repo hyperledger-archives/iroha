@@ -157,9 +157,10 @@ void initializeSumeragi() {
       [](const std::string& from, flatbuffers::unique_ptr_t&& transaction) {
           context->printProgress.print( 1, "receive transaction!");
 
-          flatbuffers::unique_ptr_t eventUniqPtr =
+          flatbuffers::unique_ptr_t eventUniqPtr(
             flatbuffer_service::toConsensusEvent(
-                *flatbuffers::GetRoot<::iroha::Transaction>(transaction.get()));
+                *flatbuffers::GetRoot<::iroha::Transaction>(transaction.get())).value_move()
+            );
 
           context->printProgress.print( 2, "make tx consensusEvent");
 
@@ -181,12 +182,12 @@ void initializeSumeragi() {
       auto eventPtr =
           flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventUniqPtr.get());
 
-      if (eventPtr->code() == iroha::Code_COMMIT) {
+      if (eventPtr->code() == iroha::Code::COMMIT) {
         context->printProgress.print( 20, "receive commited event");
-        if (txCache.find(detail::hash(*eventPtr->transactions()->Get(0))) ==
+        if (txCache.find(detail::hash(*eventPtr->transactions()->Get(0)->tx_nested_root())) ==
             txCache.end()) {
           // ToDo executor
-          txCache[detail::hash(*eventPtr->transactions()->Get(0))] = "commited";
+          txCache[detail::hash(*eventPtr->transactions()->Get(0)->tx_nested_root())] = "commited";
         }
       } else {
         // send processTransaction(event) as a task to processing pool
@@ -238,7 +239,7 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
       flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventUniqPtr.get());
 
   context->printProgress.print( 6, "generate hash");
-  const auto hash = detail::hash(*eventPtr->transactions()->Get(0));
+  const auto hash = detail::hash(*eventPtr->transactions()->Get(0)->tx_nested_root());
 
   context->printProgress.print( 7, "sign hash using my key-pair");
   const auto signature = signature::sign(

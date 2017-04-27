@@ -27,6 +27,7 @@ limitations under the License.
 #include <flatbuffers/flatbuffers.h>
 #include <grpc++/grpc++.h>
 
+#include <main_generated.h>
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -204,12 +205,9 @@ class SumeragiConnectionClient {
     logger::info("connection") << "Operation";
     logger::info("connection")
         << "size: " << consensusEvent.peerSignatures()->size();
-    logger::info("connection")
-        << "CommandType: "
-        << consensusEvent.transactions()->Get(0)->command_type();
 
     // For now, ConsensusEvent has one transaction.
-    const auto& transaction = *consensusEvent.transactions()->Get(0);
+    const auto& transaction = *consensusEvent.transactions()->Get(0)->tx_nested_root();
 
     auto newConsensusEvent = flatbuffer_service::toConsensusEvent(transaction);
 
@@ -340,7 +338,12 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
           1234567));
     }
 
-    auto tx = request->GetRoot()->transactions()->Get(0);
+
+
+
+    flatbuffers::FlatBufferBuilder fbbTransaction;
+
+    auto tx = request->GetRoot()->transactions()->Get(0)->tx_nested_root();
     std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
 
     if (tx->signatures() != nullptr) {
@@ -348,7 +351,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
           tx->signatures()->Get(0)->signature()->begin(),
           tx->signatures()->Get(0)->signature()->end());
       signatures.push_back(::iroha::CreateSignatureDirect(
-          fbbConsensusEvent, tx->signatures()->Get(0)->publicKey()->c_str(),
+          fbbTransaction, tx->signatures()->Get(0)->publicKey()->c_str(),
           &signatureBlob, 1234567));
     }
     std::vector<uint8_t> hashes;
@@ -364,21 +367,32 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
                   tx->attachment()->data()->end());
 
       attachmentOffset = ::iroha::CreateAttachmentDirect(
-          fbbConsensusEvent, tx->attachment()->mime()->c_str(), &data);
+              fbbTransaction, tx->attachment()->mime()->c_str(), &data);
     }
 
-    std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions;
+    std::vector<flatbuffers::Offset<::iroha::TransactionWrapper>> transactions;
 
-    // TODO: Currently, #(transaction) is one.
-    transactions.push_back(::iroha::CreateTransactionDirect(
-        fbbConsensusEvent, tx->creatorPubKey()->c_str(), tx->command_type(),
+    auto newTx = ::iroha::CreateTransactionDirect(
+        fbbTransaction, tx->creatorPubKey()->c_str(), tx->command_type(),
         flatbuffer_service::CreateCommandDirect(
-            fbbConsensusEvent, tx->command(), tx->command_type()),
-        &signatures, &hashes, attachmentOffset));
+            fbbTransaction, tx->command(), tx->command_type()),
+        &signatures, &hashes, attachmentOffset
+    );
+
+    auto buf = fbbTransaction.GetBufferPointer();
+    std::vector<uint8_t> buffer;
+    buffer.assign(buf, buf + fbbTransaction.GetSize());
+
+      // TODO: Currently, #(transaction) is one.
+    transactions.push_back(::iroha::CreateTransactionWrapperDirect(
+        fbbConsensusEvent,&buffer
+    ));
+
 
     fbbConsensusEvent.Finish(::iroha::CreateConsensusEventDirect(
         fbbConsensusEvent, &peerSignatures, &transactions,
-        request->GetRoot()->code()));
+        request->GetRoot()->code())
+    );
 
     const std::string from = "from";
     iroha::SumeragiImpl::Verify::receiver.invoke(
@@ -386,7 +400,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
 
     fbbResponse.Clear();
     auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);
+        fbbResponse, "OK!!", ::iroha::Code::COMMIT, 0);
     fbbResponse.Finish(responseOffset);
 
     *response = flatbuffers::BufferRef<::iroha::Response>(
@@ -454,7 +468,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
     fbbResponse.Clear();
 
     auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);
+        fbbResponse, "OK!!", ::iroha::Code::COMMIT, 0);
     fbbResponse.Finish(responseOffset);
 
     *responseRef = flatbuffers::BufferRef<::iroha::Response>(

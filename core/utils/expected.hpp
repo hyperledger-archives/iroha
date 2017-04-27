@@ -67,6 +67,12 @@ class Expected {
     return value_;
   }
 
+  T&& value_move() {
+    if (!valid()) std::rethrow_exception(excptr());
+      return std::move(value_);
+  }
+
+
   const T& operator*() const { return value(); }
   void move_value(T&& to) { to = std::move(value_); }
 
