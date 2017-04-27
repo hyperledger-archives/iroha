@@ -29,6 +29,8 @@
 #include <memory>
 #include <string>
 #include <main_generated.h>
+#include <flatbuffers/flatbuffers.h>
+#include <membership_service/peer_service.hpp>
 
 namespace flatbuffer_service {
 
@@ -645,33 +647,13 @@ Expected<flatbuffers::Offset<::iroha::Transaction>> copyTransaction(
 }
 
 /**
- * copyTxWrapper(fromTx)
+ * copyTxWrapper(fromTxWrapper)
  * - copies transaction and write data to given FlatBufferBuilder.
  */
 Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> copyTxWrapper(
   flatbuffers::FlatBufferBuilder& fbb, const ::iroha::TransactionWrapper& txw) {
   std::vector<uint8_t> txs(txw.tx()->begin(), txw.tx()->end());
   return ::iroha::CreateTransactionWrapperDirect(fbb, &txs);
-}
-
-
-// ToDo: Remove this.
-/**
- * toTransactionWrapper(tx)
- * - wrap transaction to TransactionWrapper
- */
-Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> toTransactionWrapper(const ::iroha::Transaction& tx) {
-  flatbuffers::FlatBufferBuilder xbb;
-  auto txOffset = copyTransaction(xbb, tx);
-  if (!txOffset) {
-    return makeUnexpected(txOffset.excptr());
-  }
-  xbb.Finish(txOffset.value());
-  auto ptr = xbb.GetBufferPointer();
-  std::vector<uint8_t> nested(ptr, ptr + xbb.GetSize());
-
-  flatbuffers::FlatBufferBuilder wbb;
-  return ::iroha::CreateTransactionWrapperDirect(wbb, &nested);
 }
 
 /**
@@ -709,7 +691,25 @@ Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
     return makeUnexpected(txwrappers.excptr());
   }
   return ::iroha::CreateConsensusEventDirect(
-      fbb, &peerSignatures.value(), &txwrappers.value()); // ToDo: where should be code()?
+      fbb, &peerSignatures.value(), &txwrappers.value(), event.code());
+}
+
+/**
+ * toTransactionWrapper(tx)
+ * - wrap transaction to TransactionWrapper
+ */
+Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> toTransactionWrapper(const ::iroha::Transaction& tx) {
+  flatbuffers::FlatBufferBuilder xbb;
+  auto txOffset = detail::copyTransaction(xbb, tx);
+  if (!txOffset) {
+    return makeUnexpected(txOffset.excptr());
+  }
+  xbb.Finish(txOffset.value());
+  auto ptr = xbb.GetBufferPointer();
+  std::vector<uint8_t> nested(ptr, ptr + xbb.GetSize());
+
+  flatbuffers::FlatBufferBuilder wbb;
+  return ::iroha::CreateTransactionWrapperDirect(wbb, &nested);
 }
 
 /**
@@ -729,13 +729,10 @@ Expected<flatbuffers::unique_ptr_t> toConsensusEvent(
   std::vector<flatbuffers::Offset<::iroha::Signature>>
       peerSignatureOffsets;  // Empty.
 
-  auto txOffset = detail::copyTransaction(fbb, fromTx);
-  if (!txOffset) {
-    return makeUnexpected(txOffset.excptr());
-  }
+  auto txwOffset = toTransactionWrapper(fromTx);
 
-  std::vector<flatbuffers::Offset<::iroha::Transaction>> txs;
-  txs.push_back(*txOffset);
+  std::vector<flatbuffers::Offset<::iroha::TransactionWrapper>> txs;
+  txs.push_back(*txwOffset);
 
   auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
     fbb, &peerSignatureOffsets, &txs, ::iroha::Code::UNDECIDED);
@@ -743,17 +740,14 @@ Expected<flatbuffers::unique_ptr_t> toConsensusEvent(
   return fbb.ReleaseBufferPointer();
 }
 
-flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent& event,
-                                       const std::string& publicKey,
-                                       const std::string& signature) {
+Expected<flatbuffers::unique_ptr_t> addSignature(const iroha::ConsensusEvent& event,
+                                                 const std::string& publicKey,
+                                                 const std::string& signature) {
   flatbuffers::FlatBufferBuilder fbbConsensusEvent(16);
 
   std::vector<flatbuffers::Offset<iroha::Signature>> peerSignatures;
-  std::vector<flatbuffers::Offset<iroha::Signature>> signatures;
 
   // Tempolary implementation: Currently, #(tx) is one.
-  const auto& aPeerSignatures = event.peerSignatures();
-
   for (const auto& aPeerSig : *event.peerSignatures()) {
     std::vector<uint8_t> aPeerSigBlob(aPeerSig->signature()->begin(),
                                       aPeerSig->signature()->end());
@@ -762,12 +756,12 @@ flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent& event,
         aPeerSig->timestamp()));
   }
 
-  std::vector<uint8_t> aNewPeerSigBlob;  // ToDo: Does it need to sign()?
+  std::vector<uint8_t> aNewPeerSigBlob;
   for (auto& c : signature) {
     aNewPeerSigBlob.push_back(c);
   }
   peerSignatures.push_back(::iroha::CreateSignatureDirect(
-      fbbConsensusEvent, signatures->c_str(), &aNewPeerSigBlob,
+      fbbConsensusEvent, publicKey.c_str(), &aNewPeerSigBlob,
       datetime::unixtime()));
 
   // ToDo: #(tx) = 1
@@ -786,60 +780,28 @@ flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent& event,
   return fbbConsensusEvent.ReleaseBufferPointer();
 }
 
-flatbuffers::unique_ptr_t makeCommit(const iroha::ConsensusEvent& event) {
+Expected<flatbuffers::unique_ptr_t> makeCommit(const iroha::ConsensusEvent& event) {
   flatbuffers::FlatBufferBuilder fbbConsensusEvent(16);
 
   // At first, peerSignatures is empty. (Is this right?)
   std::vector<flatbuffers::Offset<iroha::Signature>> peerSignatures;
-  std::vector<flatbuffers::Offset<iroha::Signature>> signatures;
 
   // Tempolary implementation: Currently, #(tx) is one.
-  auto tx = event.transactions()->Get(0);
-  const auto& aSignature = tx->signatures()->Get(0);
-  const auto& aPeerSignatures = event.peerSignatures();
-
   for (const auto& aPeerSig : *event.peerSignatures()) {
     std::vector<uint8_t> aPeerSigBlob(aPeerSig->signature()->begin(),
                                       aPeerSig->signature()->end());
     peerSignatures.push_back(::iroha::CreateSignatureDirect(
         fbbConsensusEvent, aPeerSig->publicKey()->c_str(), &aPeerSigBlob,
-        1234567));
+        datetime::unixtime()));
   }
 
-  std::vector<uint8_t> signatureBlob(aSignature->signature()->begin(),
-                                     aSignature->signature()->end());
-
-  signatures.push_back(::iroha::CreateSignatureDirect(
-      fbbConsensusEvent, aSignature->publicKey()->c_str(), &signatureBlob,
-      1234567));
-
-  std::vector<uint8_t> hashes;
-  if (tx->hash() != nullptr) {
-    hashes.assign(tx->hash()->begin(), tx->hash()->end());
+  auto txwrappers = detail::copyTxWrappersOfEvent(fbbConsensusEvent, event);
+  if (!txwrappers) {
+    return makeUnexpected(txwrappers.excptr());
   }
-
-  flatbuffers::Offset<::iroha::Attachment> attachmentOffset;
-  std::vector<uint8_t> data;
-  if (tx->attachment() != nullptr && tx->attachment()->data() != nullptr &&
-      tx->attachment()->mime() != nullptr) {
-    data.assign(tx->attachment()->data()->begin(),
-                tx->attachment()->data()->end());
-
-    attachmentOffset = ::iroha::CreateAttachmentDirect(
-        fbbConsensusEvent, tx->attachment()->mime()->c_str(), &data);
-  }
-
-  std::vector<flatbuffers::Offset<iroha::Transaction>> transactions;
-
-  // TODO: Currently, #(transaction) is one.
-  transactions.push_back(::iroha::CreateTransactionDirect(
-      fbbConsensusEvent, tx->creatorPubKey()->c_str(), tx->command_type(),
-      flatbuffer_service::CreateCommandDirect(fbbConsensusEvent, tx->command(),
-                                              tx->command_type()),
-      &signatures, &hashes, attachmentOffset));
 
   auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
-      fbbConsensusEvent, &peerSignatures, &transactions, iroha::Code::COMMIT);
+      fbbConsensusEvent, &peerSignatures, &txwrappers.value(), iroha::Code::COMMIT);
 
   fbbConsensusEvent.Finish(consensusEventOffset);
   return fbbConsensusEvent.ReleaseBufferPointer();

@@ -42,7 +42,9 @@ struct Node;
 namespace flatbuffers {
 template<class T> class Offset;
 class FlatBufferBuilder;
-typedef std::unique_ptr<uint8_t, std::function<void(uint8_t * /* unused */)>> unique_ptr_t; // dirty solution
+
+// FIXME: this typedef is dirty and unstable solution. (might be able to be solved by setting dependency for this header)
+typedef std::unique_ptr<uint8_t, std::function<void(uint8_t * /* unused */)>> unique_ptr_t;
 }
 
 namespace flatbuffer_service {
@@ -77,13 +79,13 @@ VoidHandler ensureNotNull(T *value) {
 
 std::string toString(const iroha::Transaction &tx);
 
-flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent &event,
-                                       const std::string &publicKey,
-                                       const std::string &signature);
+Expected<flatbuffers::unique_ptr_t> addSignature(const iroha::ConsensusEvent &event,
+                                                 const std::string &publicKey,
+                                                 const std::string &signature);
 
 Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> toTransactionWrapper(const ::iroha::Transaction& tx);
 Expected<flatbuffers::unique_ptr_t> toConsensusEvent(const iroha::Transaction &tx);
-flatbuffers::unique_ptr_t makeCommit(const iroha::ConsensusEvent &event);
+Expected<flatbuffers::unique_ptr_t> makeCommit(const iroha::ConsensusEvent &event);
 
 namespace peer { // namespace peer
 
