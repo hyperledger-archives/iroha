@@ -5,4 +5,5 @@ ADD_LIBRARY(executor STATIC
 target_link_libraries(executor
     logger
     flatbuffers
+    membership_service
 )
