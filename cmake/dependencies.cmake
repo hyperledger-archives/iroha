@@ -322,7 +322,6 @@ add_dependencies(spdlog gabime_spdlog)
 
 
 
-
 #########################
 #         grpc          #
 #########################

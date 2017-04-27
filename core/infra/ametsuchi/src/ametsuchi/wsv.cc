@@ -412,7 +412,7 @@ void WSV::peer_remove(const iroha::PeerRemove *command) {
   auto cursor = trees_.at("wsv_ip_peer").second;
   MDB_val c_key, c_val;
   int res;
-
+/*
   auto peer = flatbuffers::GetRoot<iroha::Peer>(command->peer()->data());
   auto ip = peer->ip();
 
@@ -435,6 +435,7 @@ void WSV::peer_remove(const iroha::PeerRemove *command) {
     AMETSUCHI_CRITICAL(res, EACCES);
     AMETSUCHI_CRITICAL(res, EINVAL);
   }
+*/
 }
 
 AM_val WSV::accountGetAsset(const flatbuffers::String *pubKey,

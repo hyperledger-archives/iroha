@@ -74,9 +74,12 @@ class Expected {
 
 
   const T& operator*() const { return value(); }
-  void move_value(T&& to) { to = std::move(value_); }
 
-  // Using move semantics may be not suppported.
+  void move_value(T& to) {
+    T temp(std::move(value_));
+    value_ = std::move(to);
+    to = std::move(temp);
+  }
 
   std::exception_ptr excptr() const noexcept { return excptr_; }
 

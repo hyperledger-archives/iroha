@@ -38,25 +38,24 @@ struct Config {
   std::string port;
 };
 
-/************************************************************************************
- * Verify
- ************************************************************************************/
-namespace iroha { namespace SumeragiImpl { namespace Verify {
+namespace iroha {
+namespace SumeragiImpl {
+namespace Verify {
 
-using CallBackFunc =
-    std::function<void(const std::string & /* from */,
-       flatbuffers::unique_ptr_t&& /* message */)>;
+using CallBackFunc = std::function<void(
+    const std::string& /* from */, flatbuffers::unique_ptr_t&& /* message */)>;
 
-Expected<bool> send(const std::string &ip, const ::iroha::ConsensusEvent& msg);
-Expected<bool> sendAll(const ::iroha::ConsensusEvent& msg);
-void receive(Verify::CallBackFunc &&callback);
+bool send(const std::string& ip, const ::iroha::ConsensusEvent& msg);
+bool sendAll(const ::iroha::ConsensusEvent& msg);
+void receive(Verify::CallBackFunc&& callback);
 
-}}}  // namespace iroha::SumeragiImpl::Verify
+}  // namespace Verify
+}  // namespace SumeragiImpl
+}  // namespace iroha
 
-/************************************************************************************
- * Torii
- ************************************************************************************/
-namespace iroha { namespace SumeragiImpl { namespace Torii {
+namespace iroha {
+namespace SumeragiImpl {
+namespace Torii {
 
 using CallBackFunc = std::function<void(
     const std::string & /* from */,
@@ -80,6 +79,12 @@ void receive(Torii::CallBackFunc &&callback);
     }*/
 
 }}}  // namespace iroha::SumeragiImpl::Verify
+
+/************************************************************************************
+* Kagami ( means Ping )
+************************************************************************************/
+namespace MemberShipService { namespace HijiriImpl { namespace Kagami {
+}}}
 
 /************************************************************************************
  * Main connection
