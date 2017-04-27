@@ -1,15 +1,12 @@
 ########################################################################################
-# Expected
+# PeerService
 ########################################################################################
-
-add_executable(expected_test expected_test.cpp)
-target_link_libraries(expected_test
+add_executable(peer_service_test peer_service_test.cpp)
+target_link_libraries(peer_service_test
   gtest
-  expected
-  flatbuffers
+  membership_service
 )
-
 add_test(
-  NAME expected_test
-  COMMAND $<TARGET_FILE:expected_test>
+  NAME peer_service_test
+  COMMAND $<TARGET_FILE:peer_service_test>
 )

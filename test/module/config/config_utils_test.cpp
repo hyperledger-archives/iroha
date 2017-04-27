@@ -14,24 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __CORE_HIJIRI_SERVICE_HPP__
-#define __CORE_HIJIRI_SERVICE_HPP__
+#include <gtest/gtest.h>
+#include <infra/config/config_utils.hpp>
 
-#include <map>
-#include <queue>
-#include <set>
-#include <vector>
-
-namespace peer {
-namespace hijiri {
-// This is reputation System.
-
-// check are broken? peer
-void check(
-    const std::string &ip);  // void checkBrokenPeer(const std::string &ip);
-                             // [WIPn] does we need it? void checkAll();
-}  // namespace hijiri
-}  // namespace peer
-
-
-#endif
+TEST(ConfigUtils, appendSlashIfNeeded) {
+  using config::detail::appendSlashIfNeeded;
+  ASSERT_STREQ(appendSlashIfNeeded("").c_str(), "/");
+  ASSERT_STREQ(appendSlashIfNeeded("////").c_str(), "////");
+  ASSERT_STREQ(appendSlashIfNeeded("/hoge").c_str(), "/hoge/");
+  ASSERT_STREQ(appendSlashIfNeeded("foo").c_str(), "foo/");
+  ASSERT_STREQ(appendSlashIfNeeded("/opt/iroha").c_str(), "/opt/iroha/");
+  ASSERT_STREQ(appendSlashIfNeeded("/opt/iroha/").c_str(), "/opt/iroha/");
+}

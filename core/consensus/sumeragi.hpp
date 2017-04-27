@@ -23,11 +23,8 @@ limitations under the License.
 #include <memory>
 #include <thread>
 #include <vector>
-
-#include "consensus_event.hpp"
-
 #include <generated/main_generated.h>
-#include <service/peer_service.hpp>
+#include <membership_service/peer_service.hpp>
 
 namespace sumeragi {
 
