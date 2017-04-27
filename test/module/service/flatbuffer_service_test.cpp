@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <generated/main_generated.h>
+#include <main_generated.h>
 #include <gtest/gtest.h>
 #include <service/flatbuffer_service.h>
 #include <iostream>
@@ -68,7 +68,7 @@ TEST(FlatbufferServiceTest, toString) {
     fbb, publicKey, signed_message.get(), 1234567));
 
   auto tx_offset = iroha::CreateTransactionDirect(
-    fbb, publicKey, iroha::Command::Command_AccountAdd, command.Union(),
+    fbb, publicKey, iroha::Command::AccountAdd, command.Union(),
     signature_vec.get(), nullptr, 0);
   fbb.Finish(tx_offset);
   auto tx = flatbuffers::BufferRef<iroha::Transaction>(fbb.GetBufferPointer(),
@@ -83,7 +83,7 @@ TEST(FlatbufferServicePeerTest, PeerService) {
   auto addPeer = flatbuffer_service::peer::CreateAdd(np);
 }
 
-TEST(FlatbufferServiceTest, toConsensusEvent) {
+TEST(FlatbufferServiceTest, toConsensusEvent_AccountAdd) {
   flatbuffers::FlatBufferBuilder fbb;
 
   const auto accountBuf = [&] {
@@ -108,7 +108,7 @@ TEST(FlatbufferServiceTest, toConsensusEvent) {
   }();
 
   const auto txOffset = ::iroha::CreateTransactionDirect(
-    fbb, "Creator PubKey", iroha::Command_AccountAdd,
+    fbb, "Creator PubKey", iroha::Command::AccountAdd,
     ::iroha::CreateAccountAddDirect(fbb, &accountBuf).Union(),
     &signatureOffsets, &_hash, attachmentOffset);
 
@@ -127,13 +127,14 @@ TEST(FlatbufferServiceTest, toConsensusEvent) {
 
   // validate peerSignatures()
   ASSERT_TRUE(root->peerSignatures()->size() == 0);
+  ASSERT_EQ(root->code(), ::iroha::Code::UNDECIDED);
 
   // validate transactions()
   const auto txptrFromEvent =
-    root->transactions()->Get(0);  // toConsensusEvent() receives 1 tx.
+    root->transactions()->Get(0)->tx_nested_root();  // ToDo: toConsensusEvent() receives 1 tx.
 
   ASSERT_STREQ(txptrFromEvent->creatorPubKey()->c_str(), "Creator PubKey");
-  ASSERT_EQ(txptrFromEvent->command_type(), ::iroha::Command_AccountAdd);
+  ASSERT_EQ(txptrFromEvent->command_type(), ::iroha::Command::AccountAdd);
 
   // validate nested account
   const auto accroot =
@@ -201,7 +202,7 @@ TEST(FlatbufferServiceTest, addSignature) {
   }();
 
   const auto txOffset = ::iroha::CreateTransactionDirect(
-    fbb, "Creator PubKey", iroha::Command_AccountAdd,
+    fbb, "Creator PubKey", iroha::Command::AccountAdd,
     ::iroha::CreateAccountAddDirect(fbb, &accountBuf).Union(),
     &signatureOffsets, &_hash, attachmentOffset);
 
@@ -213,8 +214,6 @@ TEST(FlatbufferServiceTest, addSignature) {
   auto consensusEvent = flatbuffer_service::toConsensusEvent(*txptr);
   ASSERT_TRUE(consensusEvent);
 
-  /*
-   * WIP
   flatbuffers::unique_ptr_t uptr;
   consensusEvent.move_value(uptr);
 
@@ -223,27 +222,82 @@ TEST(FlatbufferServiceTest, addSignature) {
   auto eventAddedSig1 = flatbuffer_service::addSignature(*root, "NEW PEER PUBLICKEY 1",
                                                          "NEW PEER SIGNATURE 1");
   root = flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventAddedSig1.value().get());
+  ASSERT_EQ(root->code(), ::iroha::Code::UNDECIDED);
 
   auto eventAddedSig2 = flatbuffer_service::addSignature(*root, "`1234567890-=",
                                                          "NEW PEER SIGNATURE\'\n\t2");
   root = flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventAddedSig2.value().get());
+  ASSERT_EQ(root->code(), ::iroha::Code::UNDECIDED);
 
-  auto eventAddedSig3 = flatbuffer_service::addSignature(*root, "NEW\\ PEER PUBLICKEY\'\n\t3",
-                                                         "NEW PEER SIGNATURE 3");
-  root = flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventAddedSig3.get());
+  auto eventAddedSig3 = flatbuffer_service::addSignature(*root, "NEW\\ PEER PUBLICKEY\'\n\t3\u30e6\u30e6",
+                                                         "NEW PEER SIGNATURE 3\u30e6\u30e6");
+  root = flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventAddedSig3.value().get());
+  ASSERT_EQ(root->code(), ::iroha::Code::UNDECIDED);
 
   // validate peerSignatures()
   ASSERT_TRUE(root->peerSignatures()->size() == 3);
 
   ASSERT_STREQ(root->peerSignatures()->Get(0)->publicKey()->c_str(), "NEW PEER PUBLICKEY 1");
   ASSERT_STREQ(root->peerSignatures()->Get(1)->publicKey()->c_str(), "`1234567890-=");
-  ASSERT_STREQ(root->peerSignatures()->Get(2)->publicKey()->c_str(), "NEW\\ PEER PUBLICKEY\'\n\t3");
+  ASSERT_STREQ(root->peerSignatures()->Get(2)->publicKey()->c_str(), "NEW\\ PEER PUBLICKEY\'\n\t3\u30e6\u30e6");
 
-  //ASSERT_STREQ(root->peerSignatures()->Get(0)->()->c_str(), "NEW PEER PUBLICKEY 1");
-  //ASSERT_STREQ(root->peerSignatures()->Get(1)->publicKey()->c_str(), "NEW PEER PUBLICKEY 2");
-  //ASSERT_STREQ(root->peerSignatures()->Get(2)->publicKey()->c_str(), "NEW PEER PUBLICKEY 3");
+  // ToDo: GetAsString(uoffset_t) is better, but I don't know how to do.
+  auto sigs = root->peerSignatures();
+  std::string sig1(sigs->Get(0)->signature()->begin(), sigs->Get(0)->signature()->end());
+  std::string sig2(sigs->Get(1)->signature()->begin(), sigs->Get(1)->signature()->end());
+  std::string sig3(sigs->Get(2)->signature()->begin(), sigs->Get(2)->signature()->end());
+  ASSERT_STREQ(sig1.c_str(), "NEW PEER SIGNATURE 1");
+  ASSERT_STREQ(sig2.c_str(), "NEW PEER SIGNATURE\'\n\t2");
+  ASSERT_STREQ(sig3.c_str(), "NEW PEER SIGNATURE 3\u30e6\u30e6");
 
-  // validate peer signatures
-  //ASSERT_STREQ(root->peerSignatures()->signature());
-*/
+  // validate transactions()
+  const auto txptrFromEvent =
+    root->transactions()->Get(0)->tx_nested_root();  // ToDo: toConsensusEvent() receives 1 tx.
+
+  ASSERT_STREQ(txptrFromEvent->creatorPubKey()->c_str(), "Creator PubKey");
+  ASSERT_EQ(txptrFromEvent->command_type(), ::iroha::Command::AccountAdd);
+
+  // validate nested account
+  const auto accroot =
+    txptrFromEvent->command_as_AccountAdd()->account_nested_root();
+  ASSERT_STREQ(accroot->pubKey()->c_str(), "PublicKey");
+  ASSERT_STREQ(accroot->alias()->c_str(), "Alias\u30e6");
+  ASSERT_STREQ(accroot->signatories()->Get(0)->c_str(), "sig1");
+  ASSERT_STREQ(accroot->signatories()->Get(1)->c_str(), "sig2");
+  ASSERT_STREQ(accroot->signatories()->Get(2)->c_str(), "sig3");
+  ASSERT_EQ(accroot->useKeys(), 1);
+
+  // validate signatures
+  ASSERT_STREQ(txptrFromEvent->signatures()->Get(0)->publicKey()->c_str(),
+               "TxPubKey1");
+  ASSERT_EQ(txptrFromEvent->signatures()->Get(0)->signature()->Get(0), 'a');
+  ASSERT_EQ(txptrFromEvent->signatures()->Get(0)->signature()->Get(1), 'b');
+  ASSERT_EQ(txptrFromEvent->signatures()->Get(0)->signature()->size(), 2);
+  ASSERT_EQ(txptrFromEvent->signatures()->Get(0)->timestamp(), 100000);
+
+  ASSERT_EQ(txptrFromEvent->signatures()->Get(1)->signature()->Get(0), '\0');
+  ASSERT_EQ(txptrFromEvent->signatures()->Get(1)->signature()->Get(1), 'a');
+  ASSERT_EQ(txptrFromEvent->signatures()->Get(1)->signature()->Get(2), '\0');
+  ASSERT_EQ(txptrFromEvent->signatures()->Get(1)->signature()->Get(3), 'b');
+  ASSERT_EQ(txptrFromEvent->signatures()->Get(1)->signature()->size(), 4);
+  ASSERT_EQ(txptrFromEvent->signatures()->Get(1)->timestamp(), 100001);
+
+  ASSERT_EQ(txptrFromEvent->hash()->Get(0), 'h');
+  ASSERT_EQ(txptrFromEvent->hash()->Get(1), '\0');
+  ASSERT_EQ(txptrFromEvent->hash()->Get(2), '?');
+  ASSERT_EQ(txptrFromEvent->hash()->Get(3), '\0');
+  ASSERT_EQ(txptrFromEvent->hash()->size(), 4);
+
+  ASSERT_STREQ(txptrFromEvent->attachment()->mime()->c_str(),
+               "=?ISO-2022-JP?B?VG95YW1hX05hbw==?=");
+
+  // validate attachment
+  ASSERT_EQ(txptrFromEvent->attachment()->data()->Get(0), 'd');
+  ASSERT_EQ(txptrFromEvent->attachment()->data()->Get(1), '\0');
+  ASSERT_EQ(txptrFromEvent->attachment()->data()->Get(2), '!');
+  ASSERT_EQ(txptrFromEvent->attachment()->data()->size(), 3);
+}
+
+TEST(FlatbufferServiceTest, makeCommit) {
+  //ASSERT_EQ();
 }
