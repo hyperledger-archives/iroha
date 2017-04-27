@@ -793,7 +793,7 @@ Expected<flatbuffers::unique_ptr_t> makeCommit(const iroha::ConsensusEvent& even
                                       aPeerSig->signature()->end());
     peerSignatures.push_back(::iroha::CreateSignatureDirect(
         fbbConsensusEvent, aPeerSig->publicKey()->c_str(), &aPeerSigBlob,
-        datetime::unixtime()));
+        aPeerSig->timestamp()));
   }
 
   auto txwrappers = detail::copyTxWrappersOfEvent(fbbConsensusEvent, event);
