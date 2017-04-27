@@ -409,11 +409,13 @@ void WSV::peer_add(const iroha::PeerAdd *command) {
 
 
 void WSV::peer_remove(const iroha::PeerRemove *command) {
+  // Sorry, tempolary commentouted because schema has changed.
+  /*
   auto cursor = trees_.at("wsv_ip_peer").second;
   MDB_val c_key, c_val;
   int res;
 
-  auto peer = flatbuffers::GetRoot<iroha::Peer>(command->peer()->data());
+  auto peer = flatbuffers::GetRoot<iroha::Peer>(command->peer()->data()); // Schema has changed, sorry... Please replace with using publicKey
   auto ip = peer->ip();
 
   flatbuffers::GetRoot<iroha::Peer>(peer);
@@ -435,6 +437,7 @@ void WSV::peer_remove(const iroha::PeerRemove *command) {
     AMETSUCHI_CRITICAL(res, EACCES);
     AMETSUCHI_CRITICAL(res, EINVAL);
   }
+   */
 }
 
 AM_val WSV::accountGetAsset(const flatbuffers::String *pubKey,
