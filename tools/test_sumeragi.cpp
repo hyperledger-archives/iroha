@@ -86,7 +86,7 @@ int main(int argc,char* argv[]){
     auto tx_offset = iroha::CreateTransactionDirect(
         fbb,
         publicKey,
-        iroha::Command::Command_AccountAdd,
+        iroha::Command::AccountAdd,
         command.Union(),
         &signatureOffset_vec,
         &hashBlob,
