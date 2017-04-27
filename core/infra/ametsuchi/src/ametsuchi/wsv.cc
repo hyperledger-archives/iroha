@@ -409,7 +409,7 @@ void WSV::peer_add(const iroha::PeerAdd *command) {
 
 
 void WSV::peer_remove(const iroha::PeerRemove *command) {
-  // Sorry, tempolary commentouted because schema has changed.
+  // Sorry, temporarily commentout because schema has changed.
   /*
   auto cursor = trees_.at("wsv_ip_peer").second;
   MDB_val c_key, c_val;
