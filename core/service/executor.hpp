@@ -16,7 +16,9 @@ limitations under the License.
 #define IROHA_EXECUTOR_HPP_HPP
 
 
-#include <generated/main_generated.h>
+namespace iroha {
+class Transaction;
+}
 
 namespace executor {
 
