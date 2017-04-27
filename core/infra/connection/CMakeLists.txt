@@ -14,5 +14,6 @@ ADD_LIBRARY(connection_with_grpc_flatbuffer STATIC
 target_link_libraries(connection_with_grpc_flatbuffer
   endpoint_fbs
   config_manager
+  flatbuffer_service
   membership_service
 )
