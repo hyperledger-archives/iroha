@@ -16,15 +16,33 @@ limitations under the License.
 #define IROHA_FLATBUFFER_SERVICE_H
 
 #include <utils/expected.hpp>
-#include "flatbuf/nested_flatbuffer_service.h"
-#include <generated/commands_generated.h>
-#include <generated/primitives_generated.h>
-#include <generated/transaction_generated.h>
-#include <membership_service/peer_service.hpp>
+#include <vector>
+#include <functional>
+#include <memory>
 
 namespace iroha {
 struct Transaction;
+struct TransactionWrapper;
 struct ConsensusEvent;
+struct Peer;
+struct PeerAdd;
+struct PeerRemove;
+struct PeerChangeTrust;
+struct PeerSetTrust;
+struct PeerSetActive;
+struct Signature;
+struct Sumeragi;
+enum class Command : uint8_t;
+}
+
+namespace peer {
+struct Node;
+}
+
+namespace flatbuffers {
+template<class T> class Offset;
+class FlatBufferBuilder;
+typedef std::unique_ptr<uint8_t, std::function<void(uint8_t * /* unused */)>> unique_ptr_t; // dirty solution
 }
 
 namespace flatbuffer_service {
@@ -39,7 +57,7 @@ using ::iroha::Transaction;
 
 flatbuffers::Offset<void> CreateCommandDirect(
     flatbuffers::FlatBufferBuilder &_fbb, const void *obj,
-    int /* Command */ type);  // TODO: Use scoped enum ::iroha::Command
+    iroha::Command type);
 
 Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
     flatbuffers::FlatBufferBuilder &fbb, const ::iroha::ConsensusEvent &);
@@ -63,6 +81,7 @@ flatbuffers::unique_ptr_t addSignature(const iroha::ConsensusEvent &event,
                                        const std::string &publicKey,
                                        const std::string &signature);
 
+Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> toTransactionWrapper(const ::iroha::Transaction& tx);
 Expected<flatbuffers::unique_ptr_t> toConsensusEvent(const iroha::Transaction &tx);
 flatbuffers::unique_ptr_t makeCommit(const iroha::ConsensusEvent &event);
 
