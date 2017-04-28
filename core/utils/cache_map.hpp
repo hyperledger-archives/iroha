@@ -22,7 +22,6 @@ limitations under the License.
 
 #include <deque>
 #include <unordered_map>
-
 #include <stdexcept>
 #include <iostream>
 

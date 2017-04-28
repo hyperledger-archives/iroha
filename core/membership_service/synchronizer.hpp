@@ -21,10 +21,11 @@ limitations under the License.
 #ifndef IROHA_SYNCHRONIZER_H
 #define IROHA_SYNCHRONIZER_H
 
-#include "../../include/generated/transaction_generated.h"
+#include <generated/transaction_generated.h>
 
 namespace peer{
   namespace sync{
+
 
     void startSynchronizeLedger();
     void checkRootHashStep(); // step1
@@ -44,7 +45,7 @@ namespace peer{
       // if roothash is trust roothash, return true. othrewise return false.
       bool checkRootHashAll(/*merkle::hash_t*/);
 
-      bool append_temporary(size_t tx_id,iroha::Transaction);
+      bool append_temporary(size_t,iroha::Transaction*);
       SYNCHRO_RESULT append();
       void appending();
       void clearCache();

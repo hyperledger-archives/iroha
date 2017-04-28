@@ -35,4 +35,8 @@ void setAwkTimerForCurrentThread(int const sleepMillisecs,
   action();
 }
 
+void waitTimer(int const sleepMillisecs) {
+  std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+}
+
 }  // namespace timer

@@ -20,9 +20,9 @@
 //
 
 #include <gtest/gtest.h>
+#include <iostream>
 #include <string>
 #include <utils/cache_map.hpp>
-#include <iostream>
 
 TEST(CacheMapTest, CacheMapTest) {
   const int N = 10;
@@ -55,10 +55,10 @@ TEST(CacheMapTest, CacheMapTest) {
     bool except_flag = false;
     try {
       cmap[is[i]];
-    } catch ( std::out_of_range& e ) {
+    } catch (std::out_of_range& e) {
       except_flag = true;
     }
-    ASSERT_TRUE( except_flag );
+    ASSERT_TRUE(except_flag);
   }
   for (int i = 5; i < N; i++) {
     ASSERT_TRUE(cmap[is[i]] == vs[i]);
