@@ -635,7 +635,6 @@ Expected<flatbuffers::Offset<::iroha::Transaction>> copyTransaction(
     return makeUnexpected(attachment.excptr());
   }
 
-  // ToDo: Currently, #(transaction) is one.
   const auto pubkey = fromTx.creatorPubKey()->c_str();
   const auto cmdtype = fromTx.command_type();
   const auto cmd = flatbuffer_service::CreateCommandDirect(
@@ -644,16 +643,6 @@ Expected<flatbuffers::Offset<::iroha::Transaction>> copyTransaction(
   return ::iroha::CreateTransactionDirect(fbb, pubkey, cmdtype, cmd,
                                           &tx_signatures.value(), &hash.value(),
                                           attachment.value());
-}
-
-/**
- * copyTxWrapper(fromTxWrapper)
- * - copies transaction and write data to given FlatBufferBuilder.
- */
-Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> copyTxWrapper(
-  flatbuffers::FlatBufferBuilder& fbb, const ::iroha::TransactionWrapper& txw) {
-  std::vector<uint8_t> txs(txw.tx()->begin(), txw.tx()->end());
-  return ::iroha::CreateTransactionWrapperDirect(fbb, &txs);
 }
 
 /**
