@@ -22,6 +22,8 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <utils/cache_map.hpp>
+#include <iostream>
+
 TEST(CacheMapTest, CacheMapTest) {
   const int N = 10;
   structure::CacheMap<int, std::string> cmap(N);
@@ -43,7 +45,6 @@ TEST(CacheMapTest, CacheMapTest) {
   for (int i = 0; i < N; i++) {
     ASSERT_TRUE(cmap[is[i]] == vs[i]);
   }
-
   // change size Test
   ASSERT_TRUE(cmap.size() == N);
   cmap.set_cache_size(5);
@@ -51,7 +52,13 @@ TEST(CacheMapTest, CacheMapTest) {
 
   ASSERT_TRUE(cmap.getMaxKey() == 88);
   for (int i = 0; i < 5; i++) {
-    ASSERT_FALSE(cmap[is[i]] == vs[i]);
+    bool except_flag = false;
+    try {
+      cmap[is[i]];
+    } catch ( std::out_of_range& e ) {
+      except_flag = true;
+    }
+    ASSERT_TRUE( except_flag );
   }
   for (int i = 5; i < N; i++) {
     ASSERT_TRUE(cmap[is[i]] == vs[i]);

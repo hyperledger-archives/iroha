@@ -23,6 +23,9 @@ limitations under the License.
 #include <deque>
 #include <unordered_map>
 
+#include <stdexcept>
+#include <iostream>
+
 namespace structure {
 
 // CacheMap
@@ -56,14 +59,27 @@ class CacheMap {
   CacheMap(size_t max_cache_size = 1) : max_cache_size_(max_cache_size) {}
   ~CacheMap() { clear(); }
 
+  void debug_view(){
+    std::cout << "debug view" << std::endl;
+    for( auto it = cache_.begin(); it != cache_.end(); it++)
+      std::cout << *it << " ";
+    std::cout << std::endl;
+
+    for( auto it = max_cache_.begin(); it != max_cache_.end(); it++)
+      std::cout << *it << " ";
+    std::cout << std::endl;
+
+    for( auto it = data_.begin(); it != data_.end(); it++)
+      std::cout << it->first << ", " << it->second << "  ";
+    std::cout << std::endl;
+
+  }
+
   // set max_chache_size
   void set_cache_size(size_t max_cache_size) {
-    if (max_cache_size_ > max_cache_size) {
-      max_cache_size_ = max_cache_size;
-      while (data_.size() > max_cache_size) {
-        max_cache_size--;
-        erase_one();
-      }
+    max_cache_size_ = max_cache_size;
+    while (data_.size() > max_cache_size_) {
+      erase_one();
     }
   }
 
@@ -79,18 +95,22 @@ class CacheMap {
 
   // [] oprator
   const Value& operator[](const Key& k) {
-    if (data_.count(k) == 0) return Value();
+    Value v;
+    if (data_.count(k) == 0) throw std::out_of_range("cache_map");
     return data_[k];
   }
 
   const Value& operator[](Key&& k) {
-    if (data_.count(k) == 0) return Value();
+    if (data_.count(k) == 0) throw std::out_of_range("cache_map");
     return data_[k];
   }
 
 
   // get maximum key
-  const Key& getMaxKey() const { return max_cache_.front(); }
+  const Key& getMaxKey() const {
+    if( max_cache_.empty() ) throw std::out_of_range("cache_map");
+    return max_cache_.front();
+  }
 
   size_t max_size() const noexcept { return max_cache_size_; }
   size_t size() const noexcept { return data_.size(); }
