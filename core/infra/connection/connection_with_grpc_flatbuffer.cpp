@@ -14,21 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
-#include <service/connection.hpp>
 #include <service/flatbuffer_service.h>
+#include <service/connection.hpp>
 #include <crypto/signature.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
-
 #include <membership_service/peer_service.hpp>
-#include <utils/exception.hpp>
+#include <utils/expected.hpp>
 #include <utils/logger.hpp>
 
 #include <flatbuffers/flatbuffers.h>
 #include <grpc++/grpc++.h>
 #include <service/validator.hpp>
 
+#include <main_generated.h>
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -60,195 +59,114 @@ enum ResponseType {
   RESPONSE_ERRCONN,      // connection error
 };
 
+// using Response = std::pair<std::string, ResponseType>;
+/*
+// TODO: very dirty solution, need to be out of here
+std::function<RecieverConfirmation(const std::string&)> sign = [](const
+std::string &hash) { RecieverConfirmation confirm; Signature signature;
+    signature.set_publickey(config::PeerServiceConfig::getInstance().getMyPublicKey());
+    signature.set_signature(signature::sign(
+            config::PeerServiceConfig::getInstance().getMyPublicKey(),
+            hash,
+            config::PeerServiceConfig::getInstance().getMyPrivateKey())
+    );
+    confirm.set_hash(hash);
+    confirm.mutable_signature()->Swap(&signature);
+    return confirm;
+};
+
+std::function<bool(const RecieverConfirmation&)> valid = [](const
+RecieverConfirmation &c) { return signature::verify(c.signature().signature(),
+c.hash(), c.signature().publickey());
+};
+*/
+
+/*
+flatbuffers::Offset<::iroha::Signature> sign = [](const std::vector<uint8_t>&
+hash) {
+  // FIXME: Not implemented
+  //return ::iroha::CreateSignatureDirect(fbb,
+::peer::myself::getPublicKey().c_str(), )
+}
+*/
+
 /**
- * Store callback function
+ * Receiver
+ * - stores callback function
  */
 template <class CallBackFunc>
 class Receiver {
  public:
-  void set(CallBackFunc&& rhs) {
+  VoidHandler set(CallBackFunc&& rhs) {
     if (receiver_) {
-      throw exception::DuplicateSetArgumentException(
+      return makeUnexpected(exception::DuplicateSetArgumentException(
           "Receiver<" + std::string(typeid(CallBackFunc).name()) + ">",
-          __FILE__);
+          __FILE__));
     }
+
     receiver_ = std::make_shared<CallBackFunc>(rhs);
+    return {};
   }
 
   // ToDo rewrite operator() overload.
-  void invoke(const std::string& from, flatbuffers::unique_ptr_t&& argv) {
-    (*receiver_)(from, std::move(argv));
+  void invoke(const std::string& from, flatbuffers::unique_ptr_t&& arg) {
+    (*receiver_)(from, std::move(arg));
   }
 
  private:
   std::shared_ptr<CallBackFunc> receiver_;
 };
 
-/************************************************************************************
- * Verify
- ************************************************************************************/
 namespace iroha {
 namespace SumeragiImpl {
 namespace Verify {
 
 Receiver<Verify::CallBackFunc> receiver;
 
-/**
- * Receive callback
- */
-void receive(Verify::CallBackFunc&& callback) {
-  receiver.set(std::move(callback));
-}
-
-bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
-  // ToDo: Extract transaction from consensus event.
-  logger::info("Connection with grpc") << "Send!";
-  if (::peer::service::isExistIP(ip)) {
-    logger::info("Connection with grpc") << "isExistIP " << ip;
-
-    auto channel =
-        grpc::CreateChannel(ip + ":50051", grpc::InsecureChannelCredentials());
-    auto stub = ::iroha::Sumeragi::NewStub(channel);
-
-    grpc::ClientContext context;
-    flatbuffers::FlatBufferBuilder fbbConsensusEvent;
-    {
-      // At first, peerSignatures is empty. (Is this right?)
-      std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures;
-      std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions;
-
-      // Tempolary implementation: Currently, #(tx) is one.
-      auto tx = event.transactions()->Get(0);
-      const auto& aSignature = tx->signatures()->Get(0);
-      const auto& aPeerSignatures = event.peerSignatures();
-
-      for (const auto& aPeerSig : *event.peerSignatures()) {
-        std::vector<uint8_t> aPeerSigBlob(aPeerSig->signature()->begin(),
-                                          aPeerSig->signature()->end());
-        peerSignatures.push_back(::iroha::CreateSignatureDirect(
-            fbbConsensusEvent, aPeerSig->publicKey()->c_str(), &aPeerSigBlob,
-            1234567));
-      }
-
-      {
-        std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
-
-        std::vector<uint8_t> signatureBlob(aSignature->signature()->begin(),
-                                           aSignature->signature()->end());
-
-        signatures.push_back(::iroha::CreateSignatureDirect(
-            fbbConsensusEvent, aSignature->publicKey()->c_str(), &signatureBlob,
-            1234567));
-
-        std::vector<uint8_t> hashes;
-        if (tx->hash() != nullptr) {
-          hashes.assign(tx->hash()->begin(), tx->hash()->end());
-        }
-
-        flatbuffers::Offset<::iroha::Attachment> attachmentOffset;
-        std::vector<uint8_t> data;
-        if (tx->attachment() != nullptr &&
-            tx->attachment()->data() != nullptr &&
-            tx->attachment()->mime() != nullptr) {
-          data.assign(tx->attachment()->data()->begin(),
-                      tx->attachment()->data()->end());
-
-          attachmentOffset = ::iroha::CreateAttachmentDirect(
-              fbbConsensusEvent, tx->attachment()->mime()->c_str(), &data);
-        }
-
-        // TODO: Currently, #(transaction) is one.
-        transactions.push_back(::iroha::CreateTransactionDirect(
-            fbbConsensusEvent, tx->creatorPubKey()->c_str(), tx->command_type(),
-            flatbuffer_service::CreateCommandDirect(
-                fbbConsensusEvent, tx->command(), tx->command_type()),
-            &signatures, &hashes, attachmentOffset));
-      }
-      auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
-          fbbConsensusEvent, &peerSignatures, &transactions, event.code());
-
-      fbbConsensusEvent.Finish(consensusEventOffset);
-    }
-
-    auto eventRef = flatbuffers::BufferRef<::iroha::ConsensusEvent>(
-        fbbConsensusEvent.GetBufferPointer(), fbbConsensusEvent.GetSize());
-
-    flatbuffers::BufferRef<::iroha::Response> responseRef;
-
-    logger::info("Connection with grpc") << "isExistIP " << ip;
-    // The actual RPC.
-    auto status = stub->Verify(&context, eventRef, &responseRef);
-
-    if (status.ok()) {
-      auto msg = responseRef.GetRoot()->message();
-      std::cout << "RPC response: " << msg->str() << std::endl;
-    } else {
-      std::cout << "RPC failed" << std::endl;
-    }
-    return true;
-  }
-  logger::info("Connection with grpc") << "is not ExistIP__" << ip;
-  return false;
-}
-
-bool sendAll(const ::iroha::ConsensusEvent& event) {
-  auto receiver_ips = config::PeerServiceConfig::getInstance().getGroup();
-  for (const auto& p : receiver_ips) {
-    if (p["ip"].get<std::string>() !=
-        config::PeerServiceConfig::getInstance().getMyIp()) {
-      logger::info("connection") << "Send to " << p["ip"].get<std::string>();
-      send(p["ip"].get<std::string>(), event);
-    }
-  }
-  return true;
-}
 }  // namespace Verify
 }  // namespace SumeragiImpl
 }  // namespace iroha
 
-
-/************************************************************************************
- * Torii
- ************************************************************************************/
 namespace iroha {
 namespace SumeragiImpl {
 namespace Torii {
 
 Receiver<Torii::CallBackFunc> receiver;
 
-void receive(Torii::CallBackFunc&& callback) {
-  receiver.set(std::move(callback));
-}
 }  // namespace Torii
 }  // namespace SumeragiImpl
 }  // namespace iroha
 
-/************************************************************************************
- * Connection Client
- ************************************************************************************/
 class SumeragiConnectionClient {
  public:
   explicit SumeragiConnectionClient(std::shared_ptr<Channel> channel)
       : stub_(Sumeragi::NewStub(channel)) {}
 
-  ::iroha::Response* Verify(
+  const ::iroha::Response* Verify(
       const ::iroha::ConsensusEvent& consensusEvent) const {
-    grpc::ClientContext context;
+    ClientContext context;
     flatbuffers::BufferRef<Response> responseRef;
     logger::info("connection") << "Operation";
     logger::info("connection")
         << "size: " << consensusEvent.peerSignatures()->size();
-    logger::info("connection")
-        << "CommandType: "
-        << consensusEvent.transactions()->Get(0)->command_type();
 
     // For now, ConsensusEvent has one transaction.
-    const auto& transaction = *consensusEvent.transactions()->Get(0);
+    const auto& transaction = *consensusEvent.transactions()->Get(0)->tx_nested_root();
 
     auto newConsensusEvent = flatbuffer_service::toConsensusEvent(transaction);
 
     flatbuffers::FlatBufferBuilder fbb;
-    // TODO
+    // ToDo: Copy consensus event twice in toConsensusEvent() and
+    // copyConsensusEvent(). What's best solution?
+    auto eventOffset =
+        flatbuffer_service::copyConsensusEvent(fbb, consensusEvent);
+    if (!eventOffset) {
+      // FIXME:
+      // RPCのエラーではないが、Responseで返すべきか、makeUnexpectedで返すべきか
+      // ERROR;
+    }
+
+    fbb.Finish(*eventOffset);
 
     auto requestConsensusEventRef =
         flatbuffers::BufferRef<::iroha::ConsensusEvent>(fbb.GetBufferPointer(),
@@ -259,7 +177,7 @@ class SumeragiConnectionClient {
 
     if (status.ok()) {
       logger::info("connection")
-          << "response: " << responseRef.GetRoot()->message();
+          << "response: " << responseRef.GetRoot()->message()->c_str();
       return responseRef.GetRoot();
     } else {
       logger::error("connection")
@@ -270,7 +188,8 @@ class SumeragiConnectionClient {
     }
   }
 
-  ::iroha::Response* Torii(const ::iroha::Transaction& transaction) const {
+  const ::iroha::Response* Torii(
+      const ::iroha::Transaction& transaction) const {
     // Copy transaction to FlatBufferBuilder memory, then create
     // BufferRef<Transaction>
     // and share it to another sumeragi by using stub interface Torii.
@@ -289,8 +208,8 @@ class SumeragiConnectionClient {
           fbbTransaction, txSig->publicKey()->c_str(), &data));
     }
 
-    // FIXED: Creation of command offset. reinterpret_cast<> ->
-    // flatbuffer_service::Create...()
+    // FIXED: leak reinterpret_cast<>(...)
+    // -> extractCommandBuffer(calls flatbuffer_service::CreateCommandDirect())
     auto commandOffset = [&] {
       std::size_t length = 0;
       auto commandBuf = extractCommandBuffer(transaction, length);
@@ -319,7 +238,7 @@ class SumeragiConnectionClient {
 
     flatbuffers::BufferRef<Response> responseRef;
 
-    ::grpc::Status status =
+    Status status =
         stub_->Torii(&clientContext, reqTransactionRef, &responseRef);
 
     if (status.ok()) {
@@ -352,20 +271,14 @@ class SumeragiConnectionClient {
   std::unique_ptr<Sumeragi::Stub> stub_;
 };
 
-/************************************************************************************
- * Connection Service
- ************************************************************************************/
 class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
  public:
   Status Verify(ServerContext* context,
                 const flatbuffers::BufferRef<ConsensusEvent>* request,
                 flatbuffers::BufferRef<Response>* response) override {
-    // バッファの一部分を参照している。これをreceiverにmoveした場合、バッファの実態の解放時にLeakする
-    //    const ::iroha::ConsensusEvent* event = request->GetRoot();
     assert(request->GetRoot()->peerSignatures() != nullptr);
 
     flatbuffers::FlatBufferBuilder fbbConsensusEvent;
-    fbbConsensusEvent.Clear();
 
     std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures;
     for (const auto& aPeerSig : *request->GetRoot()->peerSignatures()) {
@@ -376,7 +289,12 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
           1234567));
     }
 
-    auto tx = request->GetRoot()->transactions()->Get(0);
+
+
+
+    flatbuffers::FlatBufferBuilder fbbTransaction;
+
+    auto tx = request->GetRoot()->transactions()->Get(0)->tx_nested_root();
     std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
 
     if (tx->signatures() != nullptr) {
@@ -384,7 +302,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
           tx->signatures()->Get(0)->signature()->begin(),
           tx->signatures()->Get(0)->signature()->end());
       signatures.push_back(::iroha::CreateSignatureDirect(
-          fbbConsensusEvent, tx->signatures()->Get(0)->publicKey()->c_str(),
+          fbbTransaction, tx->signatures()->Get(0)->publicKey()->c_str(),
           &signatureBlob, 1234567));
     }
     std::vector<uint8_t> hashes;
@@ -400,21 +318,32 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
                   tx->attachment()->data()->end());
 
       attachmentOffset = ::iroha::CreateAttachmentDirect(
-          fbbConsensusEvent, tx->attachment()->mime()->c_str(), &data);
+              fbbTransaction, tx->attachment()->mime()->c_str(), &data);
     }
 
-    std::vector<flatbuffers::Offset<::iroha::Transaction>> transactions;
+    std::vector<flatbuffers::Offset<::iroha::TransactionWrapper>> transactions;
 
-    // TODO: Currently, #(transaction) is one.
-    transactions.push_back(::iroha::CreateTransactionDirect(
-        fbbConsensusEvent, tx->creatorPubKey()->c_str(), tx->command_type(),
+    auto newTx = ::iroha::CreateTransactionDirect(
+        fbbTransaction, tx->creatorPubKey()->c_str(), tx->command_type(),
         flatbuffer_service::CreateCommandDirect(
-            fbbConsensusEvent, tx->command(), tx->command_type()),
-        &signatures, &hashes, attachmentOffset));
+            fbbTransaction, tx->command(), tx->command_type()),
+        &signatures, &hashes, attachmentOffset
+    );
+
+    auto buf = fbbTransaction.GetBufferPointer();
+    std::vector<uint8_t> buffer;
+    buffer.assign(buf, buf + fbbTransaction.GetSize());
+
+      // TODO: Currently, #(transaction) is one.
+    transactions.push_back(::iroha::CreateTransactionWrapperDirect(
+        fbbConsensusEvent,&buffer
+    ));
+
 
     fbbConsensusEvent.Finish(::iroha::CreateConsensusEventDirect(
         fbbConsensusEvent, &peerSignatures, &transactions,
-        request->GetRoot()->code()));
+        request->GetRoot()->code())
+    );
 
     const std::string from = "from";
     iroha::SumeragiImpl::Verify::receiver.invoke(
@@ -422,7 +351,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
 
     fbbResponse.Clear();
     auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);
+        fbbResponse, "OK!!", ::iroha::Code::COMMIT, 0);
     fbbResponse.Finish(responseOffset);
 
     *response = flatbuffers::BufferRef<::iroha::Response>(
@@ -434,25 +363,6 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
                const flatbuffers::BufferRef<Transaction>* transactionRef,
                flatbuffers::BufferRef<Response>* responseRef) override {
     logger::debug("SumeragiConnectionServiceImpl::Torii") << "RPC works";
-
-    const auto transaction = transactionRef->GetRoot();
-
-    auto validator_res = validator::require_property_validator(*flatbuffers::GetRoot<::iroha::Transaction>(transaction));
-    if(!validator_res.valid()){
-        auto msg = "Rejected validation failed " + std::string(validator_res.error());
-        auto responseOffset = ::iroha::CreateResponseDirect(
-                fbbResponse,
-                msg.c_str(),
-                ::iroha::Code_FAIL,
-                400
-        );
-        fbbResponse.Finish(responseOffset);
-
-        *responseRef = flatbuffers::BufferRef<::iroha::Response>(
-                fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
-
-        return grpc::Status::CANCELLED;
-    }
 
     {
 
@@ -499,24 +409,6 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
               fbbTransaction, transaction->attachment()->mime()->c_str(),
               &attachmentData)));
 
-      // Leak doesn't occur till here.
-
-      /*
-          // Leak occurs.
-            auto flatbuf = fbbTransaction.ReleaseBufferPointer();
-
-            iroha::SumeragiImpl::Torii::receiver.invoke(
-                "from",  // TODO: Specify 'from'
-                std::unique_ptr<::iroha::Transaction>(
-                    flatbuffers::GetMutableRoot<::iroha::Transaction>(
-                        flatbuf.get())));
-                        */
-      //      auto flatbuf = fbbTransaction.ReleaseBufferPointer(); // Leak
-      //      doesn't occur.
-      /*
-            std::unique_ptr<::iroha::Transaction> uptr(
-                flatbuffers::GetMutableRoot<::iroha::Transaction>(bufptr.get()));
-      */
       iroha::SumeragiImpl::Torii::receiver.invoke(
           "from",  // TODO: Specify 'from'
           fbbTransaction.ReleaseBufferPointer());
@@ -527,21 +419,73 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
     fbbResponse.Clear();
 
     auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code_COMMIT, 0);
+        fbbResponse, "OK!!", ::iroha::Code::COMMIT, 0);
     fbbResponse.Finish(responseOffset);
 
     *responseRef = flatbuffers::BufferRef<::iroha::Response>(
         fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
 
-    return grpc::Status::OK;
+    return Status::OK;
   }
 
  private:
   flatbuffers::FlatBufferBuilder fbbResponse;
 };
 
+namespace iroha {
+namespace SumeragiImpl {
+namespace Verify {
+
+void receive(Verify::CallBackFunc&& callback) {
+  receiver.set(std::move(callback));
+}
+
+bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
+  logger::info("Connection with grpc") << "Send!";
+  if (::peer::service::isExistIP(ip)) {
+    logger::info("Connection with grpc") << "IP exists: " << ip;
+    SumeragiConnectionClient client(grpc::CreateChannel(
+        ip + ":" +
+            std::to_string(config::IrohaConfigManager::getInstance()
+                               .getGrpcPortNumber(50051)),
+        grpc::InsecureChannelCredentials()));
+    // TODO return tx validity
+    auto reply = client.Verify(event);
+    return true;
+  } else {
+    logger::info("Connection with grpc") << "IP doesn't exist: " << ip;
+    return false;
+  }
+}
+
+bool sendAll(const ::iroha::ConsensusEvent& event) {
+  auto receiver_ips = config::PeerServiceConfig::getInstance().getGroup();
+  for (const auto& p : receiver_ips) {
+    if (p["ip"].get<std::string>() !=
+        config::PeerServiceConfig::getInstance().getMyIp()) {
+      logger::info("connection") << "Send to " << p["ip"].get<std::string>();
+      send(p["ip"].get<std::string>(), event);
+    }
+  }
+  return true;
+}
+}  // namespace Verify
+}  // namespace SumeragiImpl
+}  // namespace iroha
+
+namespace iroha {
+namespace SumeragiImpl {
+namespace Torii {
+
+void receive(Torii::CallBackFunc&& callback) {
+  receiver.set(std::move(callback));
+}
+}  // namespace Torii
+}  // namespace SumeragiImpl
+}  // namespace iroha
+
 /************************************************************************************
- * Main connection
+ * Run server
  ************************************************************************************/
 std::mutex wait_for_server;
 ServerBuilder builder;
@@ -579,28 +523,5 @@ void finish() {
   server->Shutdown();
   delete server;
 }
-
-
-// using Response = std::pair<std::string, ResponseType>;
-/*
-// TODO: very dirty solution, need to be out of here
-std::function<RecieverConfirmation(const std::string&)> sign = [](const
-std::string &hash) { RecieverConfirmation confirm; Signature signature;
-    signature.set_publickey(config::PeerServiceConfig::getInstance().getMyPublicKey());
-    signature.set_signature(signature::sign(
-            config::PeerServiceConfig::getInstance().getMyPublicKey(),
-            hash,
-            config::PeerServiceConfig::getInstance().getMyPrivateKey())
-    );
-    confirm.set_hash(hash);
-    confirm.mutable_signature()->Swap(&signature);
-    return confirm;
-};
-
-std::function<bool(const RecieverConfirmation&)> valid = [](const
-RecieverConfirmation &c) { return signature::verify(c.signature().signature(),
-c.hash(), c.signature().publickey());
-};
-*/
 
 }  // namespace connection

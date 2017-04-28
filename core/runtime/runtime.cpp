@@ -16,7 +16,7 @@ limitations under the License.
 #include "runtime.hpp"
 #include "validator.hpp"
 
-#include "command/add.hpp"
+#include <infra/ametsuchi/include/ametsuchi/ametsuchi.h>
 
 namespace runtime{
 
@@ -30,7 +30,8 @@ namespace runtime{
         if(!validator::logic_validator(tx)){
             // Reject
         }
-
+        auto am = ametsuchi::Ametsuchi("");
+        am.append(tx);
     }
 
 };

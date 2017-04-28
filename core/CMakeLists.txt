@@ -1,4 +1,3 @@
-add_subdirectory(ametsuchi)
 add_subdirectory(chaincode)
 add_subdirectory(config)
 add_subdirectory(consensus)

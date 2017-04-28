@@ -1,5 +1,4 @@
 
-
 ADD_LIBRARY(validator STATIC
     validator.cpp
 )

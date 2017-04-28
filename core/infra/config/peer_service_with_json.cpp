@@ -16,7 +16,7 @@ limitations under the License.
 */
 
 #include <json.hpp>
-#include <utils/exception.hpp>
+#include <utils/expected.hpp>
 #include <utils/logger.hpp>
 
 #include <infra/config/config_format.hpp>
@@ -25,9 +25,9 @@ limitations under the License.
 using PeerServiceConfig = config::PeerServiceConfig;
 using nlohmann::json;
 
-PeerServiceConfig::PeerServiceConfig() {}
+PeerServiceConfig::PeerServiceConfig() noexcept {}
 
-PeerServiceConfig& PeerServiceConfig::getInstance() {
+PeerServiceConfig& PeerServiceConfig::getInstance() noexcept {
   static PeerServiceConfig serviceConfig;
   return serviceConfig;
 }
@@ -49,16 +49,16 @@ double PeerServiceConfig::getMaxTrustScore(double defaultValue) {
   return getParam<double>({"max_trust_score"}, defaultValue);
 }
 
-void PeerServiceConfig::parseConfigDataFromString(std::string&& jsonStr) {
-  try {
-    if (!ConfigFormat::getInstance().ensureFormatSumeragi(jsonStr)) {
-      throw exception::ParseFromStringException(getConfigName());
-    }
+VoidHandler PeerServiceConfig::parseConfigDataFromString(
+    const std::string& jsonStr) {
+  auto res = ConfigFormat::getInstance().ensureFormatSumeragi(jsonStr);
+
+  if (res) {
     _configData = json::parse(std::move(jsonStr));
-  } catch (exception::ParseFromStringException& e) {
-    logger::warning("peer service config") << e.what();
-    logger::warning("peer service config") << getConfigName()
-                                           << " is set to be default.";
+    return {};
+  } else {
+    return makeUnexpected(
+        exception::config::ParseException(getConfigPath(), true));
   }
 }
 

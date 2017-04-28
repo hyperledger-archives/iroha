@@ -21,6 +21,7 @@ limitations under the License.
 #include <service/connection.hpp>
 #include <consensus/sumeragi.hpp>
 #include <infra/config/peer_service_with_json.hpp>
+#include <utils/logger.hpp>
 
 std::atomic_bool running(true);
 
