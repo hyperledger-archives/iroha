@@ -615,37 +615,6 @@ Expected<flatbuffers::Offset<::iroha::Attachment>> copyAttachmentOfTx(
 }
 
 /**
- * copyTransaction(fromTx)
- * - copies transaction and write data to given FlatBufferBuilder.
- */
-Expected<flatbuffers::Offset<::iroha::Transaction>> copyTransaction(
-    flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
-  auto tx_signatures = copySignaturesOfTx(fbb, fromTx);
-  if (!tx_signatures) {
-    return makeUnexpected(tx_signatures.excptr());
-  }
-
-  auto hash = copyHashOfTx(fromTx);
-  if (!hash) {
-    return makeUnexpected(hash.excptr());
-  }
-
-  auto attachment = copyAttachmentOfTx(fbb, fromTx);
-  if (!attachment) {
-    return makeUnexpected(attachment.excptr());
-  }
-
-  const auto pubkey = fromTx.creatorPubKey()->c_str();
-  const auto cmdtype = fromTx.command_type();
-  const auto cmd = flatbuffer_service::CreateCommandDirect(
-      fbb, fromTx.command(), fromTx.command_type());
-
-  return ::iroha::CreateTransactionDirect(fbb, pubkey, cmdtype, cmd,
-                                          &tx_signatures.value(), &hash.value(),
-                                          attachment.value());
-}
-
-/**
  * copyTransactionsOf(event)
  * - copies transactions from event and write data to given FlatBufferBuilder.
  */
@@ -662,6 +631,37 @@ copyTxWrappersOfEvent(flatbuffers::FlatBufferBuilder& fbb,
   return txwrappers;
 }
 }  // namespace detail
+
+/**
+ * copyTransaction(fromTx)
+ * - copies transaction and write data to given FlatBufferBuilder.
+ */
+Expected<flatbuffers::Offset<::iroha::Transaction>> copyTransaction(
+  flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
+  auto tx_signatures = detail::copySignaturesOfTx(fbb, fromTx);
+  if (!tx_signatures) {
+    return makeUnexpected(tx_signatures.excptr());
+  }
+
+  auto hash = detail::copyHashOfTx(fromTx);
+  if (!hash) {
+    return makeUnexpected(hash.excptr());
+  }
+
+  auto attachment = detail::copyAttachmentOfTx(fbb, fromTx);
+  if (!attachment) {
+    return makeUnexpected(attachment.excptr());
+  }
+
+  const auto pubkey = fromTx.creatorPubKey()->c_str();
+  const auto cmdtype = fromTx.command_type();
+  const auto cmd = flatbuffer_service::CreateCommandDirect(
+    fbb, fromTx.command(), fromTx.command_type());
+
+  return ::iroha::CreateTransactionDirect(fbb, pubkey, cmdtype, cmd,
+                                          &tx_signatures.value(), &hash.value(),
+                                          attachment.value());
+}
 
 /**
  * copyConsensusEvent(event)
@@ -691,7 +691,7 @@ Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> toTransactionWrapper(
   flatbuffers::FlatBufferBuilder& fbb,
   const ::iroha::Transaction& tx) {
   flatbuffers::FlatBufferBuilder xbb;
-  auto txOffset = detail::copyTransaction(xbb, tx);
+  auto txOffset = copyTransaction(xbb, tx);
   if (!txOffset) {
     return makeUnexpected(txOffset.excptr());
   }
