@@ -45,13 +45,27 @@ class connection_with_grpc_flatbuffer_test : public testing::Test {
           std::cout << flatbuffer_service::toString(
                            *eventptr->transactions()->Get(0)->tx_nested_root())
                     << std::endl;
-          /*
-          ASSERT_EQ(event.transaction().senderpubkey(), verifySenderPubKey);
-          ASSERT_EQ(event.transaction().domain().name(), verifyDomainName);
-          ASSERT_EQ(event.transaction().domain().ownerpublickey(),
-                    verifyDomainOwnerPubKey);
-                    */
-          exit(0);
+          auto tx = eventptr->transactions()->Get(0)->tx_nested_root();
+          ASSERT_STREQ(tx->creatorPubKey()->c_str(), verifyTxCreatorPubKey.c_str());
+          ASSERT_EQ(tx->hash()->Get(0), 'H');
+          ASSERT_EQ(tx->hash()->Get(1), 'S');
+          ASSERT_STREQ(tx->attachment()->mime()->c_str(), "MIME");
+          ASSERT_EQ(tx->attachment()->data()->Get(0), 'D');
+          ASSERT_EQ(tx->attachment()->data()->Get(1), 'T');
+          ASSERT_EQ(tx->command_type(), ::iroha::Command::AssetAdd);
+          ASSERT_STREQ(tx->signatures()->Get(0)->publicKey()->c_str(), "SIG'S PUBKEY");
+          ASSERT_EQ(tx->signatures()->Get(0)->signature()->Get(0), 'a');
+          ASSERT_EQ(tx->signatures()->Get(0)->signature()->Get(1), 'b');
+          ASSERT_EQ(tx->signatures()->Get(0)->signature()->Get(2), 'c');
+          ASSERT_EQ(tx->signatures()->Get(0)->signature()->Get(3), 'd');
+          ASSERT_EQ(tx->signatures()->Get(0)->timestamp(), 9999);
+
+          auto currency = tx->command_as_AssetAdd()->asset_nested_root()->asset_as_Currency();
+          ASSERT_STREQ(currency->currency_name()->c_str(), "IROHA");
+          ASSERT_STREQ(currency->domain_name()->c_str(), "Domain");
+          ASSERT_STREQ(currency->ledger_name()->c_str(), "Ledger");
+          ASSERT_STREQ(currency->description()->c_str(), "description");
+          ASSERT_EQ(currency->amount(), 100);
         });
     connection::run();
   }
@@ -96,7 +110,7 @@ TEST_F(connection_with_grpc_flatbuffer_test, Transaction_Add_Asset) {
 
   const auto assetBuf = []{
     flatbuffers::FlatBufferBuilder fbb;
-    auto currency = iroha::CreateCurrencyDirect(fbb, "IROHA", "Domain", "Ledger", "description", 100);
+    auto currency = iroha::CreateCurrencyDirect(fbb, "IROHA", "Domain", "Ledger", "description", 100, 3.141592653589);
     auto asset = iroha::CreateAsset(fbb, ::iroha::AnyAsset::Currency, currency.Union());
     fbb.Finish(asset);
     auto buf = fbb.GetBufferPointer();
@@ -119,23 +133,11 @@ TEST_F(connection_with_grpc_flatbuffer_test, Transaction_Add_Asset) {
 
   auto txflatbuf = xbb.ReleaseBufferPointer();
   auto txptr = flatbuffers::GetRoot<Transaction>(txflatbuf.get());
+
   auto event = flatbuffer_service::toConsensusEvent(*txptr);
   ASSERT_TRUE(event);
   flatbuffers::unique_ptr_t uptr;
   event.move_value(uptr);
   auto eventptr = flatbuffers::GetRoot<ConsensusEvent>(uptr.get());
   connection::iroha::SumeragiImpl::Verify::send(config::PeerServiceConfig::getInstance().getMyIp(), *eventptr);
-}
-
-TEST_F(connection_with_grpc_flatbuffer_test, Transaction_Add_Peer) {
-  /*
-  auto tx =
-      TransactionBuilder<Add<Peer>>()
-          .setSenderPublicKey(toriiSenderPubKey)
-          .setPeer(txbuilder::createPeer(toriiPeerPubKey, toriiPeerAddress,
-                                         txbuilder::createTrust(1.0, true)))
-          .build();
-
-  connection::iroha::PeerService::Sumeragi::send(::peer::myself::getIp(), tx);
-   */
 }
