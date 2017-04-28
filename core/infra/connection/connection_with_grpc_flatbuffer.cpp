@@ -151,8 +151,8 @@ class SumeragiConnectionClient {
     logger::info("connection")
         << "size: " << consensusEvent.peerSignatures()->size();
     logger::info("connection")
-        << "CommandType: "
-        << static_cast<int>(consensusEvent.transactions()->Get(0)->tx_nested_root()->command_type());
+        << "Transaction: "
+        << flatbuffer_service::toString(*consensusEvent.transactions()->Get(0)->tx_nested_root());
 
     flatbuffers::FlatBufferBuilder fbb;
     // ToDo: Copy consensus event twice in toConsensusEvent() and
@@ -163,6 +163,7 @@ class SumeragiConnectionClient {
       // FIXME:
       // RPCのエラーではないが、Responseで返すべきか、makeUnexpectedで返すべきか
       // ERROR;
+      assert(false); // ToDo: Do error-handling
     }
 
     fbb.Finish(*eventOffset);
@@ -275,48 +276,16 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
   Status Verify(ServerContext* context,
                 const flatbuffers::BufferRef<ConsensusEvent>* request,
                 flatbuffers::BufferRef<Response>* response) override {
-    assert(request->GetRoot()->peerSignatures() != nullptr);
+    flatbuffers::FlatBufferBuilder fbb;
+    flatbuffer_service::copyConsensusEvent(fbb, *request->GetRoot());
 
-    flatbuffers::FlatBufferBuilder fbbConsensusEvent;
-
-    std::vector<flatbuffers::Offset<Signature>> peerSignatures;
-    for (const auto& aPeerSig : *request->GetRoot()->peerSignatures()) {
-      std::vector<uint8_t> aPeerSigBlob(aPeerSig->signature()->begin(),
-                                        aPeerSig->signature()->end());
-      peerSignatures.push_back(::iroha::CreateSignatureDirect(
-          fbbConsensusEvent, aPeerSig->publicKey()->c_str(), &aPeerSigBlob,
-          1234567));
-    }
-
-    auto txwrapper = [&] {
-      auto in = request->GetRoot()->transactions()->Get(0);
-      auto tx = in->tx_nested_root();
-      return flatbuffer_service::toTransactionWrapper(fbbConsensusEvent, *tx);
-    }();
-    if (!txwrapper) {
-      auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "NG", ::iroha::Code::FAIL, 0);  // FIXME: sign()
-      fbbResponse.Finish(responseOffset);
-
-      *response = flatbuffers::BufferRef<::iroha::Response>(
-        fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
-
-      return Status::OK;
-    }
-
-    std::vector<flatbuffers::Offset<TransactionWrapper>> txwrapperOffsets;
-    txwrapperOffsets.push_back(txwrapper.value());
-
-    fbbConsensusEvent.Finish(::iroha::CreateConsensusEventDirect(
-        fbbConsensusEvent, &peerSignatures, &txwrapperOffsets)); // ToDo: no more needed request->code() ?
-
-    const std::string from = "from";
+    const std::string from = "from";  // ToDo: More meaningful value?
     iroha::SumeragiImpl::Verify::receiver.invoke(
-        from, std::move(fbbConsensusEvent.ReleaseBufferPointer()));
+        from, std::move(fbb.ReleaseBufferPointer()));
 
     fbbResponse.Clear();
     auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code::COMMIT, 0);  // FIXME: sign()
+        fbbResponse, "OK!!", ::iroha::Code::COMMIT, 0);  // FIXME: sign() // ToDo: it's Code::COMMIT, ok?
     fbbResponse.Finish(responseOffset);
 
     *response = flatbuffers::BufferRef<::iroha::Response>(
