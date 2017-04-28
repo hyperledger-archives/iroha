@@ -30,7 +30,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-#include "../../../../../include/generated/commands_generated.h"
+#include <commands_generated.h>
 
 extern "C" {
 #include <SimpleFIPS202.h>

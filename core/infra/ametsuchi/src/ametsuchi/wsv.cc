@@ -19,7 +19,7 @@
 #include <ametsuchi/currency.h>
 #include <ametsuchi/wsv.h>
 #include <iostream>
-#include "../../../../../include/generated/transaction_generated.h"
+#include <transaction_generated.h>
 
 namespace ametsuchi {
 

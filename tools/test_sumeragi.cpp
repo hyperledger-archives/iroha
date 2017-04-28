@@ -19,8 +19,8 @@ limitations under the License.
 #include <memory>
 #include <string>
 #include <vector>
-#include "../include/generated/endpoint.grpc.fb.h"
-#include "../include/generated/main_generated.h"
+#include <endpoint.grpc.fb.h>
+#include <main_generated.h>
 
 using grpc::Channel;
 using grpc::Server;
