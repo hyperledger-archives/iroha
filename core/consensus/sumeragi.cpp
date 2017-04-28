@@ -309,8 +309,6 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
 
       context->printProgress.print(16, "commit");
 
-      // FIXME: possibly differ between committedCount and output(printInfo ...
-      // to_string(...)) because context is shared with multiple threads
       context->commitedCount++;
 
       explore::sumeragi::printInfo("commit count:" +
