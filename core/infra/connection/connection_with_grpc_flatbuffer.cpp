@@ -276,14 +276,27 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
   Status Verify(ServerContext* context,
                 const flatbuffers::BufferRef<ConsensusEvent>* request,
                 flatbuffers::BufferRef<Response>* response) override {
+    fbbResponse.Clear();
+
     flatbuffers::FlatBufferBuilder fbb;
-    flatbuffer_service::copyConsensusEvent(fbb, *request->GetRoot());
+    auto event = flatbuffer_service::copyConsensusEvent(fbb, *request->GetRoot());
+    if (!event) {
+      fbb.Clear();
+      auto responseOffset = ::iroha::CreateResponseDirect(
+        fbbResponse, "CANCELLED", ::iroha::Code::FAIL, 0);  // FIXME: sign() // ToDo: it's Code::COMMIT, ok?
+      fbbResponse.Finish(responseOffset);
+
+      *response = flatbuffers::BufferRef<::iroha::Response>(
+        fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+      return Status::CANCELLED;
+    }
+
+    fbb.Finish(event.value());
 
     const std::string from = "from";  // ToDo: More meaningful value?
     iroha::SumeragiImpl::Verify::receiver.invoke(
         from, std::move(fbb.ReleaseBufferPointer()));
 
-    fbbResponse.Clear();
     auto responseOffset = ::iroha::CreateResponseDirect(
         fbbResponse, "OK!!", ::iroha::Code::COMMIT, 0);  // FIXME: sign() // ToDo: it's Code::COMMIT, ok?
     fbbResponse.Finish(responseOffset);
