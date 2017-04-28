@@ -25,7 +25,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include "../../../../../include/generated/commands_generated.h"
+#include <commands_generated.h>
 
 namespace ametsuchi {
 

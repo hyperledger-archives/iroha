@@ -25,7 +25,7 @@ limitations under the License.
 #include <utils/datetime.hpp>
 #include <utils/expected.hpp>
 #include <utils/logger.hpp>
-#include "../../../include/generated/endpoint.grpc.fb.h"
+#include <endpoint.grpc.fb.h>
 
 #include <flatbuffers/flatbuffers.h>
 #include <grpc++/grpc++.h>
@@ -34,7 +34,7 @@ limitations under the License.
 #include <memory>
 #include <string>
 #include <vector>
-#include "../../../include/generated/main_generated.h"
+#include <main_generated.h>
 
 namespace connection {
 /**

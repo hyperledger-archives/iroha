@@ -28,7 +28,7 @@
 #include <map>
 #include <memory>
 #include <string>
-#include "../../../include/generated/main_generated.h"
+#include <main_generated.h>
 #include <flatbuffers/flatbuffers.h>
 #include <membership_service/peer_service.hpp>
 
