@@ -259,8 +259,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
         fbb.Clear();
         auto responseOffset = ::iroha::CreateResponseDirect(
           fbbResponse, "CANCELLED", ::iroha::Code::FAIL,
-          0);  // ToDo: it's Code::COMMIT, ok? FIXME: Currently, if it fails, no
-        // signature.
+          0);  // ToDo: Currently, if it fails, no signature.
         fbbResponse.Finish(responseOffset);
 
         *response = flatbuffers::BufferRef<::iroha::Response>(
@@ -270,19 +269,19 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
 
       fbb.Finish(event.value());
 
-      const std::string from = "from";  // ToDo: More meaningful value?
+      const std::string from = "from";
       connection::iroha::SumeragiImpl::Verify::receiver.invoke(
         from, std::move(fbb.ReleaseBufferPointer()));
     }
 
     auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code::COMMIT,
+        fbbResponse, "OK!!", ::iroha::Code::UNDECIDED,
         sign(fbbResponse, hash::sha3_256_hex(flatbuffer_service::toString(
                       *request->GetRoot()
                            ->transactions()
                            ->Get(0)
                            ->tx_nested_root()))));  // ToDo: #(tx) = 1, ToDo:
-                                                    // it's Code::COMMIT, ok?
+
     fbbResponse.Finish(responseOffset);
 
     *response = flatbuffers::BufferRef<::iroha::Response>(
@@ -322,7 +321,7 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
     }
 
     auto responseOffset = ::iroha::CreateResponseDirect(
-        fbbResponse, "OK!!", ::iroha::Code::COMMIT,
+        fbbResponse, "OK!!", ::iroha::Code::UNDECIDED,
         sign(fbbResponse, hash::sha3_256_hex(flatbuffer_service::toString(*transactionRef->GetRoot()))));
     fbbResponse.Finish(responseOffset);
 
