@@ -21,7 +21,7 @@
 #include <ametsuchi/exception.h>
 #include <lmdb.h>
 #include <string>
-#include "../../../../../include/generated/asset_generated.h"
+#include <asset_generated.h>
 
 namespace ametsuchi {
 namespace comparator {
