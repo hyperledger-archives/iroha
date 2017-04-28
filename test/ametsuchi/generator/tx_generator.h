@@ -23,7 +23,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "../../../include/generated/transaction_generated.h"
+#include <transaction_generated.h>
 
 namespace generator {
 

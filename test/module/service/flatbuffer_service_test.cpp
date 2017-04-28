@@ -18,7 +18,7 @@
 #include <service/flatbuffer_service.h>
 #include <membership_service/peer_service.hpp>
 #include <utils/datetime.hpp>
-#include "../../../include/generated/main_generated.h"
+#include <main_generated.h>
 
 #include <iostream>
 #include <memory>

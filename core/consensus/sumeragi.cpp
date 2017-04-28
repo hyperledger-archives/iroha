@@ -23,7 +23,7 @@
 #include <utils/logger.hpp>
 #include <utils/timer.hpp>
 
-#include "../../include/generated/main_generated.h"
+#include <main_generated.h>
 
 #include <atomic>
 #include <cmath>

@@ -20,7 +20,7 @@
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
 #include <iostream>
-#include "../../../include/generated/transaction_generated.h"
+#include <transaction_generated.h>
 #include "../generator/tx_generator.h"
 
 class Ametsuchi_Test : public ::testing::Test {
