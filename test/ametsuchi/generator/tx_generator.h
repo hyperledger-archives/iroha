@@ -270,7 +270,9 @@ flatbuffers::Offset<iroha::PeerAdd> random_PeerAdd(
 flatbuffers::Offset<iroha::PeerRemove> random_PeerRemove(
     flatbuffers::FlatBufferBuilder& fbb,
     std::vector<uint8_t> peer = random_peer()) {
-  return iroha::CreatePeerRemove(fbb, fbb.CreateVector(peer));
+  // very sorry for this tempolary changes... please change peer to peerPubkey. (ref schema: iroha feature/cmake-fixes)
+  auto pubkey = flatbuffers::GetRoot<iroha::Peer>(peer.data())->publicKey();
+  return iroha::CreatePeerRemove(fbb, /*fbb.CreateVector(peer)*/fbb.CreateString(pubkey));
 }
 
 /**

@@ -20,7 +20,7 @@
 #include <flatbuffers/flatbuffers.h>
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
-#include "../generator/tx_generator.h"
+#include "infra/ametsuchi/ametsuchi/generator/tx_generator.h"
 
 class Ametsuchi_Test : public ::testing::Test {
  protected:
