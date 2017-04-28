@@ -43,21 +43,51 @@ class CacheMap {
   std::deque<Key> cache_;
 
   // erase last push node
-  size_t erase_one();
+  size_t erase_one() {
+    if (data_.empty()) return data_.size();
+    Key& k = cache_.front();
+    cache_.pop_front();
+    if (max_cache_.front() == k) max_cache_.pop_front();
+    data_.erase(k);
+    return data_.size();
+  }
 
  public:
   CacheMap(size_t max_cache_size = 1) : max_cache_size_(max_cache_size) {}
   ~CacheMap() { clear(); }
 
   // set max_chache_size
-  void set_cache_size(size_t);
+  void set_cache_size(size_t max_cache_size) {
+    if (max_cache_size_ > max_cache_size) {
+      max_cache_size_ = max_cache_size;
+      while (data_.size() > max_cache_size) {
+        max_cache_size--;
+        erase_one();
+      }
+    }
+  }
+
 
   // set key and value
-  size_t set(const Key&, const Value&);
+  size_t set(const Key& k, const Value& v) {
+    if( data_.count(k) ) return data_.size();
+    cache_.push_back(k);
+    while (!max_cache_.empty() && max_cache_.back() < k) max_cache_.pop_back();
+    max_cache_.push_back(k);
+    data_[k] = v;
+  }
 
   // [] oprator
-  const Value& operator[](const Key& k);
-  const Value& operator[](Key&& k);
+  const Value& operator[](const Key& k) {
+    if (data_.count(k) == 0) return Value();
+    return data_[k];
+  }
+
+  const Value& operator[](Key&& k) {
+    if (data_.count(k) == 0) return Value();
+    return data_[k];
+  }
+
 
   // get maximum key
   const Key& getMaxKey() const { return max_cache_.front(); }

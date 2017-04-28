@@ -1,4 +1,5 @@
-add_library(cache_map STATIC cache_map.cpp)
+add_library(cache_map STATIC
+  cache_map.cpp)
 add_library(datetime STATIC datetime.cpp)
 add_library(logger STATIC logger.cpp)
 
