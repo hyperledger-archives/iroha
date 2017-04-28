@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <main_generated.h>
+#include "../../../include/generated/main_generated.h"
 #include <gtest/gtest.h>
 #include <service/flatbuffer_service.h>
 #include <membership_service/peer_service.hpp>

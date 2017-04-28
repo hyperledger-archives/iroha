@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 
-#include <endpoint.grpc.fb.h>
 #include <service/flatbuffer_service.h>
 #include <connection/connection.hpp>
 #include <crypto/hash.hpp>
@@ -26,11 +25,12 @@ limitations under the License.
 #include <utils/datetime.hpp>
 #include <utils/expected.hpp>
 #include <utils/logger.hpp>
+#include "../../../include/generated/endpoint.grpc.fb.h"
 
 #include <flatbuffers/flatbuffers.h>
 #include <grpc++/grpc++.h>
 
-#include <main_generated.h>
+#include "../../../include/generated/main_generated.h"
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -41,7 +41,9 @@ namespace connection {
  * Using
  */
 using Sumeragi = ::iroha::Sumeragi;
+using Hijiri = ::iroha::Hijiri;
 using ConsensusEvent = ::iroha::ConsensusEvent;
+using Ping = ::iroha::Ping;
 using Response = ::iroha::Response;
 using Transaction = ::iroha::Transaction;
 using TransactionWrapper = ::iroha::TransactionWrapper;
@@ -120,8 +122,8 @@ class SumeragiConnectionClient {
     ClientContext context;
     flatbuffers::BufferRef<Response> responseRef;
     logger::info("connection") << "Operation";
-    logger::info("connection")
-        << "size: " << consensusEvent.peerSignatures()->size();
+    logger::info("connection") << "size: "
+                               << consensusEvent.peerSignatures()->size();
     logger::info("connection")
         << "Transaction: "
         << flatbuffer_service::toString(
@@ -149,8 +151,8 @@ class SumeragiConnectionClient {
         stub_->Verify(&context, requestConsensusEventRef, &responseRef);
 
     if (status.ok()) {
-      logger::info("connection")
-          << "response: " << responseRef.GetRoot()->message()->c_str();
+      logger::info("connection") << "response: "
+                                 << responseRef.GetRoot()->message()->c_str();
       return responseRef.GetRoot();
     } else {
       logger::error("connection") << static_cast<int>(status.error_code())
@@ -215,8 +217,8 @@ class SumeragiConnectionClient {
         stub_->Torii(&clientContext, reqTransactionRef, &responseRef);
 
     if (status.ok()) {
-      logger::info("connection")
-          << "response: " << responseRef.GetRoot()->message();
+      logger::info("connection") << "response: "
+                                 << responseRef.GetRoot()->message();
       return responseRef.GetRoot();
     } else {
       logger::error("connection") << static_cast<int>(status.error_code())
@@ -244,27 +246,40 @@ class SumeragiConnectionClient {
   std::unique_ptr<Sumeragi::Stub> stub_;
 };
 
+class HijiriConnectionClient {
+ public:
+  explicit HijiriConnectionClient(std::shared_ptr<Channel> channel)
+      : stub_(Hijiri::NewStub(channel)) {}
+
+  const ::iroha::Response* Kagami(const ::iroha::Ping& ping) const {
+    // TODO
+  }
+
+ private:
+  std::unique_ptr<Hijiri::Stub> stub_;
+};
+
+
 class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
  public:
   Status Verify(ServerContext* context,
                 const flatbuffers::BufferRef<ConsensusEvent>* request,
                 flatbuffers::BufferRef<Response>* response) override {
-
     fbbResponse.Clear();
 
     {
       flatbuffers::FlatBufferBuilder fbb;
       auto event =
-        flatbuffer_service::copyConsensusEvent(fbb, *request->GetRoot());
+          flatbuffer_service::copyConsensusEvent(fbb, *request->GetRoot());
       if (!event) {
         fbb.Clear();
         auto responseOffset = ::iroha::CreateResponseDirect(
-          fbbResponse, "CANCELLED", ::iroha::Code::FAIL,
-          0);  // ToDo: Currently, if it fails, no signature.
+            fbbResponse, "CANCELLED", ::iroha::Code::FAIL,
+            0);  // ToDo: Currently, if it fails, no signature.
         fbbResponse.Finish(responseOffset);
 
         *response = flatbuffers::BufferRef<::iroha::Response>(
-          fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+            fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
         return Status::CANCELLED;
       }
 
@@ -272,16 +287,17 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
 
       const std::string from = "from";
       connection::iroha::SumeragiImpl::Verify::receiver.invoke(
-        from, std::move(fbb.ReleaseBufferPointer()));
+          from, std::move(fbb.ReleaseBufferPointer()));
     }
 
     auto responseOffset = ::iroha::CreateResponseDirect(
         fbbResponse, "OK!!", ::iroha::Code::UNDECIDED,
-        sign(fbbResponse, hash::sha3_256_hex(flatbuffer_service::toString(
-                      *request->GetRoot()
-                           ->transactions()
-                           ->Get(0)
-                           ->tx_nested_root()))));  // ToDo: #(tx) = 1, ToDo:
+        sign(fbbResponse,
+             hash::sha3_256_hex(flatbuffer_service::toString(
+                 *request->GetRoot()
+                      ->transactions()
+                      ->Get(0)
+                      ->tx_nested_root()))));  // ToDo: #(tx) = 1, ToDo:
 
     fbbResponse.Finish(responseOffset);
 
@@ -306,24 +322,25 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
       auto txoffset = flatbuffer_service::copyTransaction(fbb, *tx);
       if (!txoffset) {
         auto responseOffset = ::iroha::CreateResponseDirect(
-          fbbResponse, "CANCELLED", ::iroha::Code::FAIL,
-          0);  // FIXME: Currently, if it fails, no signature.
+            fbbResponse, "CANCELLED", ::iroha::Code::FAIL,
+            0);  // FIXME: Currently, if it fails, no signature.
         fbbResponse.Finish(responseOffset);
 
         *responseRef = flatbuffers::BufferRef<Response>(
-          fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+            fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
         return Status::CANCELLED;
       }
 
       fbb.Finish(txoffset.value());
       connection::iroha::SumeragiImpl::Torii::receiver.invoke(
-        "from",  // TODO: Specify 'from'
-        fbb.ReleaseBufferPointer());
+          "from",  // TODO: Specify 'from'
+          fbb.ReleaseBufferPointer());
     }
 
     auto responseOffset = ::iroha::CreateResponseDirect(
         fbbResponse, "OK!!", ::iroha::Code::UNDECIDED,
-        sign(fbbResponse, hash::sha3_256_hex(flatbuffer_service::toString(*transactionRef->GetRoot()))));
+        sign(fbbResponse, hash::sha3_256_hex(flatbuffer_service::toString(
+                              *transactionRef->GetRoot()))));
     fbbResponse.Finish(responseOffset);
 
     *responseRef = flatbuffers::BufferRef<Response>(
@@ -351,6 +368,23 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
   flatbuffers::FlatBufferBuilder fbbResponse;
 };
 
+
+class HijiriConnectionServiceImpl final : public ::iroha::Hijiri::Service {
+ public:
+  Status Kagami(ServerContext* context,
+                const flatbuffers::BufferRef<Ping>* request,
+                flatbuffers::BufferRef<Response>* response) override {
+    fbbResponse.Clear();
+
+    {
+      // TODO
+    }
+  }
+
+ private:
+  flatbuffers::FlatBufferBuilder fbbResponse;
+};
+
 namespace iroha {
 namespace SumeragiImpl {
 namespace Verify {
@@ -364,9 +398,8 @@ bool send(const std::string& ip, const ::iroha::ConsensusEvent& event) {
   if (::peer::service::isExistIP(ip)) {
     logger::info("Connection with grpc") << "IP exists: " << ip;
     SumeragiConnectionClient client(grpc::CreateChannel(
-        ip + ":" +
-            std::to_string(config::IrohaConfigManager::getInstance()
-                               .getGrpcPortNumber(50051)),
+        ip + ":" + std::to_string(config::IrohaConfigManager::getInstance()
+                                      .getGrpcPortNumber(50051)),
         grpc::InsecureChannelCredentials()));
     // TODO return tx validity
     auto reply = client.Verify(event);
@@ -402,6 +435,24 @@ void receive(Torii::CallBackFunc&& callback) {
 }  // namespace Torii
 }  // namespace SumeragiImpl
 }  // namespace iroha
+
+namespace MemberShipService {
+namespace HijiriImpl {
+namespace Kagami {
+bool send(const std::string& ip, const ::iroha::Ping& ping) {  // TODO
+  logger::info("Connection with grpc") << "Send!";
+  logger::info("Connection with grpc") << "IP exists: " << ip;
+  HijiriConnectionClient client(grpc::CreateChannel(
+      ip + ":" + std::to_string(config::IrohaConfigManager::getInstance()
+                                    .getGrpcPortNumber(50051)),
+      grpc::InsecureChannelCredentials()));
+  auto reply = client.Kagami(ping);
+  return true;
+}
+}  // namespace Kagami
+}  // namespace HijiriImpl
+}  // namespace MemberShipService
+
 
 /************************************************************************************
  * Run server

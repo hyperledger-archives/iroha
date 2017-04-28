@@ -18,7 +18,7 @@
 #ifndef AMETSUCHI_TX_GENERATOR_H
 #define AMETSUCHI_TX_GENERATOR_H
 
-#include <transaction_generated.h>
+#include "../../../include/generated/transaction_generated.h"
 #include <algorithm>
 #include <functional>
 #include <iostream>

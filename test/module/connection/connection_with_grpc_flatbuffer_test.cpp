@@ -18,7 +18,7 @@
 #include <unordered_map>
 
 #include <crypto/signature.hpp>
-#include <main_generated.h>
+#include "../../../include/generated/main_generated.h"
 #include <service/flatbuffer_service.h>
 #include <infra/config/peer_service_with_json.hpp>
 #include <connection/connection.hpp>

@@ -27,11 +27,14 @@ limitations under the License.
 namespace iroha {
 struct Transaction;
 struct ConsensusEvent;
+struct Ping;
 }
 
 namespace flatbuffers {
-// FIXME: this typedef is dirty and unstable solution. (might be able to be solved by setting dependency for this header)
-typedef std::unique_ptr<uint8_t, std::function<void(uint8_t * /* unused */)>> unique_ptr_t;
+// FIXME: this typedef is dirty and unstable solution. (might be able to be
+// solved by setting dependency for this header)
+typedef std::unique_ptr<uint8_t, std::function<void(uint8_t* /* unused */)>>
+    unique_ptr_t;
 }
 
 namespace connection {
@@ -62,33 +65,39 @@ namespace SumeragiImpl {
 namespace Torii {
 
 using CallBackFunc = std::function<void(
-    const std::string & /* from */,
-    flatbuffers::unique_ptr_t&& /* message */)>;
-void receive(Torii::CallBackFunc &&callback);
-        /*
-        namespace HostDiscovery {
+    const std::string& /* from */, flatbuffers::unique_ptr_t&& /* message */)>;
+void receive(Torii::CallBackFunc&& callback);
+/*
+namespace HostDiscovery {
 
-            namespace getHostInfo {
-                bool receive(const std::function<void(
-                        const std::string &,
-                        DiscoverRequest &)> &callback
-                );
+    namespace getHostInfo {
+        bool receive(const std::function<void(
+                const std::string &,
+                DiscoverRequest &)> &callback
+        );
 
-                Peer send(
-                        const std::string &ip,
-                        const DiscoverRequest &message
-                );
-            }
-        }
-    }*/
-
-}}}  // namespace iroha::SumeragiImpl::Verify
+        Peer send(
+                const std::string &ip,
+                const DiscoverRequest &message
+        );
+    }
+}
+}*/
+}
+}
+}  // namespace iroha::SumeragiImpl::Verify
 
 /************************************************************************************
 * Kagami ( means Ping )
 ************************************************************************************/
-namespace MemberShipService { namespace HijiriImpl { namespace Kagami {
-}}}
+namespace MemberShipService {
+namespace HijiriImpl {
+namespace Kagami {
+
+bool send(const std::string& ip, const ::iroha::Ping& ping);
+} // namespace Kagami
+} // namespace HijiriImpl
+} // namespace MemberShipService
 
 /************************************************************************************
  * Main connection
