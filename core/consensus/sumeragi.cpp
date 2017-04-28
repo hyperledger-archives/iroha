@@ -241,7 +241,8 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
   flatbuffers::unique_ptr_t storageUniqPtr;
   ::iroha::ConsensusEvent* storageRawPtrRef;
 
-  // Helper to set unique_ptr_t // ToDo: use reference_closure() to solve overload ?
+  // Helper to set unique_ptr_t // ToDo: use reference_closure() to solve
+  // overload ?
   auto resetUniqPtr = [&](flatbuffers::unique_ptr_t&& uptr) {
     storageUniqPtr = std::move(uptr);
     storageRawPtrRef = flatbuffers::GetMutableRoot<::iroha::ConsensusEvent>(
@@ -257,7 +258,8 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
   resetUniqPtr(std::move(eventUniqPtr));
 
   context->printProgress.print(6, "generate hash");
-  const auto hash = detail::hash(*getRoot()->transactions()->Get(0)->tx_nested_root()); // ToDo: #(tx) = 1
+  const auto hash = detail::hash(
+      *getRoot()->transactions()->Get(0)->tx_nested_root());  // ToDo: #(tx) = 1
   context->printProgress.print(7, "sign hash using my key-pair");
   const auto signature =
       signature::sign(hash, context->myPublicKey, context->myPrivateKey);
@@ -267,10 +269,10 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
 
   {
     auto sigAddPtr = flatbuffer_service::addSignature(
-      *getRoot(), context->myPublicKey, signature);
+        *getRoot(), context->myPublicKey, signature);
     if (!sigAddPtr) {
       logger::error("sumeragi") << "Failed to process transaction.";
-      return;// ToDo: If processTx fails, is it ok to return immediately?
+      return;  // ToDo: If processTx fails, is it ok to return immediately?
     }
     flatbuffers::unique_ptr_t uptr;
     sigAddPtr.move_value(uptr);
@@ -294,15 +296,21 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
     context->printProgress.print(11, "if statement");
     // Check if we have at least 2f+1 signatures needed for Byzantine fault
     // tolerance ToDo re write
-    if (getRoot()->peerSignatures()->size() >= context->maxFaulty * 2 + 1) {
+    if (getRoot()->peerSignatures() != nullptr &&
+      getRoot()->peerSignatures()->size() >= context->maxFaulty * 2 + 1) {
       explore::sumeragi::printInfo("Signature exists and sig > 2*f + 1");
 
-      explore::sumeragi::printJudge(getRoot()->peerSignatures()->size(),
-                                    context->numValidatingPeers,
-                                    context->maxFaulty * 2 + 1);
+      if (getRoot()->peerSignatures() != nullptr) {
+        explore::sumeragi::printJudge(getRoot()->peerSignatures()->size(),
+                                      context->numValidatingPeers,
+                                      context->maxFaulty * 2 + 1);
+      }
       explore::sumeragi::printAgree();
 
       context->printProgress.print(16, "commit");
+
+      // FIXME: possibly differ between committedCount and output(printInfo ...
+      // to_string(...)) because context is shared with multiple threads
       context->commitedCount++;
 
       explore::sumeragi::printInfo("commit count:" +
@@ -311,13 +319,13 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
       context->printProgress.print(17, "update event commit");
 
       {
-        auto mkCommitPtr = flatbuffer_service::makeCommit(*getRoot());
-        if (!mkCommitPtr) {
+        auto committedEvent = flatbuffer_service::makeCommit(*getRoot());
+        if (!committedEvent) {
           logger::error("sumeragi") << "Failed to process transaction.";
-          return;// ToDo: If processTx fails, is it ok to return immediately?
+          return;  // ToDo: If processTx fails, is it ok to return immediately?
         }
         flatbuffers::unique_ptr_t uptr;
-        mkCommitPtr.move_value(uptr);
+        committedEvent.move_value(uptr);
         resetUniqPtr(std::move(uptr));
       }
 
@@ -326,7 +334,11 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
 
     } else {
       explore::sumeragi::printInfo("Signature exists and sig not enough");
-      context->printProgress.print(12, "make eventPtr event");
+      context->printProgress.print(12, "add peer signature to event");
+
+      // DEBUG
+      logger::info("sumeragi")
+        << "Length: " << getRoot()->peerSignatures()->size();
 
       explore::sumeragi::printInfo(
           "tail public key is " +
