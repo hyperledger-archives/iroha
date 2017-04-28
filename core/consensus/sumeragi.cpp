@@ -257,16 +257,18 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
   resetUniqPtr(std::move(eventUniqPtr));
 
   context->printProgress.print(6, "generate hash");
-  const auto hash = detail::hash(
-      *getRoot()->transactions()->Get(0)->tx_nested_root());  // ToDo: #(tx) = 1
-  context->printProgress.print(7, "sign hash using my key-pair");
-  const auto signature =
-      signature::sign(hash, context->myPublicKey, context->myPrivateKey);
-  explore::sumeragi::printInfo("hash:" + hash + " signature:" + signature);
-
-  context->printProgress.print(8, "Add own signature");
 
   {
+    const auto hash = detail::hash(
+      *getRoot()->transactions()->Get(0)->tx_nested_root());  // ToDo: #(tx) = 1
+    context->printProgress.print(7, "sign hash using my key-pair");
+
+    const auto signature =
+      signature::sign(hash, context->myPublicKey, context->myPrivateKey);
+    explore::sumeragi::printInfo("hash:" + hash + " signature:" + signature);
+
+    context->printProgress.print(8, "Add own signature");
+
     auto sigAddPtr = flatbuffer_service::addSignature(
         *getRoot(), context->myPublicKey, signature);
     if (!sigAddPtr) {
@@ -294,7 +296,8 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
 
     context->printProgress.print(11, "if statement");
     // Check if we have at least 2f+1 signatures needed for Byzantine fault
-    // tolerance ToDo re write
+    // tolerance
+    // ToDo re write transaction_validator
     if (getRoot()->peerSignatures()->size() >= context->maxFaulty * 2 + 1) {
       explore::sumeragi::printInfo("Signature exists and sig > 2*f + 1");
       explore::sumeragi::printJudge(getRoot()->peerSignatures()->size(),
@@ -326,6 +329,29 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
       connection::iroha::SumeragiImpl::Verify::sendAll(*getRoot());
 
     } else {
+
+      {
+        const auto hash = detail::hash(
+          *getRoot()->transactions()->Get(0)->tx_nested_root());  // ToDo: #(tx) = 1
+        context->printProgress.print(7, "sign hash using my key-pair");
+
+        const auto signature =
+          signature::sign(hash, context->myPublicKey, context->myPrivateKey);
+        explore::sumeragi::printInfo("hash:" + hash + " signature:" + signature);
+
+        context->printProgress.print(8, "Add own signature");
+
+        auto sigAddPtr = flatbuffer_service::addSignature(
+          *getRoot(), context->myPublicKey, signature);
+        if (!sigAddPtr) {
+          logger::error("sumeragi") << "Failed to process transaction.";
+          return;  // ToDo: If processTx fails, is it ok to return immediately?
+        }
+        flatbuffers::unique_ptr_t uptr;
+        sigAddPtr.move_value(uptr);
+        resetUniqPtr(std::move(uptr));
+      }
+
       explore::sumeragi::printInfo("Signature exists and sig not enough");
       context->printProgress.print(12, "add peer signature to event");
 
