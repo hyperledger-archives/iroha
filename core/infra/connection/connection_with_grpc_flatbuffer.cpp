@@ -30,11 +30,11 @@ limitations under the License.
 #include <flatbuffers/flatbuffers.h>
 #include <grpc++/grpc++.h>
 
-#include "../../../include/generated/main_generated.h"
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
+#include "../../../include/generated/main_generated.h"
 
 namespace connection {
 /**

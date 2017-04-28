@@ -95,9 +95,9 @@ namespace HijiriImpl {
 namespace Kagami {
 
 bool send(const std::string& ip, const ::iroha::Ping& ping);
-} // namespace Kagami
-} // namespace HijiriImpl
-} // namespace MemberShipService
+}  // namespace Kagami
+}  // namespace HijiriImpl
+}  // namespace MemberShipService
 
 /************************************************************************************
  * Main connection
