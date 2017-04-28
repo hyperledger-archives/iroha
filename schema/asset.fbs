@@ -42,3 +42,4 @@ union AnyAsset {ComplexAsset, Currency}
 table Asset {
   asset: AnyAsset;
 }
+

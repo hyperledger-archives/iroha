@@ -19,13 +19,13 @@ limitations under the License.
 
 #include <utils/expected.hpp>
 
-#include <generated/endpoint.grpc.fb.h>
-#include <generated/main_generated.h>
-
 #include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
+
+#include <endpoint.grpc.fb.h>
+#include <main_generated.h>
 
 namespace connection {
 

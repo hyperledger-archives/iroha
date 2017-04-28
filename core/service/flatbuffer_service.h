@@ -16,10 +16,11 @@ limitations under the License.
 #define IROHA_FLATBUFFER_SERVICE_H
 
 #include <utils/expected.hpp>
+#include <commands_generated.h>
 #include "flatbuf/nested_flatbuffer_service.h"
-#include <generated/commands_generated.h>
-#include <generated/primitives_generated.h>
-#include <generated/transaction_generated.h>
+#include <commands_generated.h>
+#include <primitives_generated.h>
+#include <transaction_generated.h>
 #include <membership_service/peer_service.hpp>
 
 namespace iroha {
@@ -39,7 +40,7 @@ using ::iroha::Transaction;
 
 flatbuffers::Offset<void> CreateCommandDirect(
     flatbuffers::FlatBufferBuilder &_fbb, const void *obj,
-    int /* Command */ type);  // TODO: Use scoped enum ::iroha::Command
+    iroha::Command  /* Command */ type);
 
 Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
     flatbuffers::FlatBufferBuilder &fbb, const ::iroha::ConsensusEvent &);

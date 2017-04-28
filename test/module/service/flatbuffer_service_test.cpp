@@ -21,6 +21,12 @@
 #include <membership_service/peer_service.hpp>
 #include <memory>
 #include <unordered_map>
+<<<<<<< HEAD
+#include <iostream>
+#include <main_generated.h>
+#include <service/flatbuffer_service.h>
+=======
+>>>>>>> develop
 
 
 TEST(FlatbufferServiceTest, toString) {
