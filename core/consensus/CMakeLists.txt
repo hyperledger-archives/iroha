@@ -13,6 +13,5 @@ target_link_libraries(sumeragi
   flatbuffer_service
   signature
   thread_pool
-  executor
   timer
 )

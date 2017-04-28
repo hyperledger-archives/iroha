@@ -18,7 +18,6 @@
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <membership_service/peer_service.hpp>
-#include <service/executor.hpp>
 #include <thread_pool.hpp>
 #include <utils/explore.hpp>
 #include <utils/logger.hpp>

@@ -379,7 +379,7 @@ endif()
 ###########################
 #         LMDB            #
 ###########################
-#find_package(LMDB)
+find_package(LMDB)
 
 if(NOT LMDB_FOUND)
   ExternalProject_Add(lmdb_LMDB

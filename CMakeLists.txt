@@ -21,6 +21,7 @@ set(IROHA_SCHEMA_DIR "${PROJECT_SOURCE_DIR}/schema")
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/core
+  ${PROJECT_SOURCE_DIR}/core/infra/ametsuchi/include
   ${IROHA_SCHEMA_DIR}
 )
 
