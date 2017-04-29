@@ -127,7 +127,6 @@ struct Context {
     }
 
     this->panicCount = 0;
-
     this->myPublicKey =
         config::PeerServiceConfig::getInstance().getMyPublicKey();
     this->myIp =
@@ -138,7 +137,6 @@ struct Context {
     this->isSumeragi =
         this->validatingPeers.at(0)->publicKey == this->myPublicKey;
     logger::info("sumeragi") << "update finished";
-
     this->printProgress.MAX = 100;
   }
 };
@@ -311,14 +309,15 @@ void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
       connection::iroha::SumeragiImpl::Verify::sendAll(*getRoot());
 
     } else {
+
       explore::sumeragi::printInfo("Signature exists and sig not enough");
       context->printProgress.print( 13, "make eventPtr event");
 
       explore::sumeragi::printInfo("tail public key is " + context->validatingPeers.at(context->proxyTailNdx)->publicKey);
-
       context->printProgress.print( 14, "If statements [ Am I tail or not?");
-      if (context->validatingPeers.at(context->proxyTailNdx)->publicKey == context->myPublicKey
-      ) {
+
+      if (context->validatingPeers.at(context->proxyTailNdx)->publicKey == context->myPublicKey) {
+
         explore::sumeragi::printInfo("currently signature number:" + std::to_string(getRoot()->peerSignatures()->size()));
         context->printProgress.print( 15, "send to " + context->validatingPeers.at(context->proxyTailNdx)->ip);
 

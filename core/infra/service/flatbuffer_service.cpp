@@ -202,21 +202,6 @@ namespace flatbuffer_service {
         if (tx.creatorPubKey() != nullptr) {
             res += "creatorPubKey:" + tx.creatorPubKey()->str() + ",\n";
         }
-        if (tx.signatures() != nullptr) {
-            res += "signatures:[\n";
-            for (const auto& s : *tx.signatures()) {
-                if (s->publicKey() != nullptr || s->signature() != nullptr) {
-                    res += "  [\n    publicKey:" + s->publicKey()->str() + ",\n";
-                    res += "    signature:" +
-                           std::string(s->signature()->begin(), s->signature()->end()) +
-                           ",\n";
-                    res += "    timestamp:" + std::to_string(s->timestamp()) + "\n  ]\n";
-                } else {
-                    res += "[brolen]\n";
-                }
-            }
-            res += "]\n";
-        }
         if (tx.attachment() != nullptr) {
             assert(tx.attachment()->mime() != nullptr);
             assert(tx.attachment()->data() != nullptr);
