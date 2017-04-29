@@ -60,6 +60,8 @@ class connection_with_grpc_flatbuffer_test : public testing::Test {
           ASSERT_EQ(tx->signatures()->Get(0)->signature()->Get(3), 'd');
           ASSERT_EQ(tx->signatures()->Get(0)->timestamp(), 9999);
 
+          ASSERT_STREQ(tx->command_as_AssetAdd()->accPubKey()->c_str(), verifySenderPubKey.c_str());
+
           auto currency = tx->command_as_AssetAdd()->asset_nested_root()->asset_as_Currency();
           ASSERT_STREQ(currency->currency_name()->c_str(), "IROHA");
           ASSERT_STREQ(currency->domain_name()->c_str(), "Domain");
@@ -73,7 +75,9 @@ class connection_with_grpc_flatbuffer_test : public testing::Test {
   void serverToriiReceive() {
     connection::iroha::SumeragiImpl::Torii::receive(
         [](const std::string &from, flatbuffers::unique_ptr_t&& transaction) {
+          auto txRoot = flatbuffers::GetRoot<::iroha::Transaction>(transaction.get());
           /*
+           *
           ASSERT_EQ(transaction.senderpubkey(), toriiSenderPubKey);
           ASSERT_EQ(transaction.peer().publickey(), toriiPeerPubKey);
           ASSERT_EQ(transaction.peer().address(), toriiPeerAddress);
@@ -141,3 +145,17 @@ TEST_F(connection_with_grpc_flatbuffer_test, Transaction_Add_Asset) {
   auto eventptr = flatbuffers::GetRoot<ConsensusEvent>(uptr.get());
   connection::iroha::SumeragiImpl::Verify::send(config::PeerServiceConfig::getInstance().getMyIp(), *eventptr);
 }
+
+/*
+TEST_F(connection_with_grpc_test, Transaction_Add_Peer) {
+
+  auto tx =
+    TransactionBuilder<Add<Peer>>()
+      .setSenderPublicKey(toriiSenderPubKey)
+      .setPeer(txbuilder::createPeer(toriiPeerPubKey, toriiPeerAddress,
+                                     txbuilder::createTrust(1.0, true)))
+      .build();
+
+  connection::iroha::PeerService::Sumeragi::send(::peer::myself::getIp(), tx);
+}
+*/
