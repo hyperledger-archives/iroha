@@ -29,6 +29,12 @@ table AccountSetUseKeys {
     useKeys:  ushort;
 }
 
+// used by root, It is needed private key lost. Register new key-pair
+table AccountMigrate{
+    account: [ubyte] (required, nested_flatbuffer: "Account");
+    prevPubKey;
+}
+
 // users are able to store custom data in their accounts
 table AccountStore {
     accPubKey: string           (required);
@@ -43,7 +49,7 @@ table ChaincodeAdd {
 }
 
 table ChaincodeRemove {
-    code: [ubyte] (required, nested_flatbuffer: "Chaincode");
+    code_name: string (required);
 }
 
 table ChaincodeExecute {
@@ -57,16 +63,25 @@ table ChaincodeExecute {
 //////////////////////////////////////////
 /// Commands for Asset
 // logically means asset summation
-table AssetAdd {
+table Add {
     accPubKey: string    (required);
     asset:     [ubyte]   (required, nested_flatbuffer: "Asset");
 }
 
-// logically means asset negation
-table AssetRemove {
+table Subtraction {
     accPubKey: string    (required);
     asset:     [ubyte]   (required, nested_flatbuffer: "Asset");
 }
+
+table Transfer {
+    asset: [ubyte]  (required, nested_flatbuffer: "Asset");
+    sender:   string   (required);
+    receiver: string   (required);
+}
+
+//////////////////////////////////////////
+/// Commands for meta Asset
+// logically means asset summation
 
 // needed to implement correct permission model:
 // user may have permission to add asset, but not to create and vice versa.
@@ -76,38 +91,9 @@ table AssetCreate {
     ledger_name: string (required);
 }
 
-table AssetTransfer {
-    asset: [ubyte]  (required, nested_flatbuffer: "Asset");
-    sender:   string   (required);
-    receiver: string   (required);
-}
-//////////////////////////////////////////
-
-
-
-//////////////////////////////////////////
-/// Commands for Permission
-
-table PermissionAdd {
-
-    // This account will be changed permission. If targetAccount is null, All account will be changed
-    targetAccount:   string;
-
-    mode:        Mode;
-    asset_name:  string;
-    domain_name: string (required);
-    ledger_name: string (required);
-}
-table PermissionRemove {
-
-    // This account will be changed permission. If targetAccount is null, All account will be changed
-    targetAccount:   string;
-
-    mode:        Mode;
-
-    asset_name:  string;
-    domain_name: string (required);
-    ledger_name: string (required);
+table AssetRemove {
+    accPubKey: string    (required);
+    asset:     [ubyte]   (required, nested_flatbuffer: "Asset");
 }
 //////////////////////////////////////////
 
@@ -144,23 +130,48 @@ table PeerSetActive {
 
 
 
-union Command {
-    AssetCreate,
-    AssetAdd,
-    AssetRemove,
-    AssetTransfer,
+//////////////////////////////////////////
+/// Commands for Permission
 
+table PermissionAdd {
+    // This account will be changed permission. If targetAccount is null, All account will be changed
+    targetAccount:   string;
+    permission:        UserPermission;
+}
+table PermissionRemove {
+
+    // This account will be changed permission. If targetAccount is null, All account will be changed
+    targetAccount:   string;
+    permission:      UserPermission;
+}
+//////////////////////////////////////////
+
+
+
+union Command {
+// Use for operate Asset.
+    Add,
+    Subscribe,
+    Transfer,
+
+// Use for meta operate in domain
+    AssetCreate,
+    AssetRemove,
+
+// Use for peer operate
     PeerAdd,
     PeerRemove,
     PeerSetActive,
     PeerSetTrust,
     PeerChangeTrust,
 
+// Use for account operate
     AccountAdd,
     AccountRemove,
     AccountAddSignatory,
     AccountRemoveSignatory,
     AccountSetUseKeys,
+    AccountMigrate,
 
     ChaincodeAdd,
     ChaincodeRemove,
