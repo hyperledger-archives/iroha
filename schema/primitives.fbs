@@ -54,9 +54,9 @@ table AccountPermissionDomain {
   account_add:             bool;  // ability to add existing account to domain
   account_remove:          bool;  // ability to remove existing account from domain
 
-  asset_create;         bool;
-  asset_remove;         bool;
-  asset_update;         bool;
+  asset_create:         bool;
+  asset_remove:         bool;
+  asset_update:         bool;
 }
 
 table AccountPermissionAsset {
@@ -70,6 +70,8 @@ table AccountPermissionAsset {
   remove:   bool;  // ability to remove some amount from account
   read:     bool;  // ability to access some amount from account
 }
+
+union AccountPermission { AccountPermissionRoot, AccountPermissionLedger, AccountPermissionDomain, AccountPermissionAsset}
 
 /////////////////////////////////////
 /// Peer

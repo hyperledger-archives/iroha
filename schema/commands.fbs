@@ -31,8 +31,8 @@ table AccountSetUseKeys {
 
 // used by root, It is needed private key lost. Register new key-pair
 table AccountMigrate{
-    account: [ubyte] (required, nested_flatbuffer: "Account");
-    prevPubKey;
+    account:    [ubyte] (required, nested_flatbuffer: "Account");
+    prevPubKey: string;
 }
 
 // users are able to store custom data in their accounts
@@ -68,7 +68,7 @@ table Add {
     asset:     [ubyte]   (required, nested_flatbuffer: "Asset");
 }
 
-table Subtraction {
+table Subtract {
     accPubKey: string    (required);
     asset:     [ubyte]   (required, nested_flatbuffer: "Asset");
 }
@@ -136,13 +136,13 @@ table PeerSetActive {
 table PermissionAdd {
     // This account will be changed permission. If targetAccount is null, All account will be changed
     targetAccount:   string;
-    permission:        UserPermission;
+    permission:      AccountPermission;
 }
 table PermissionRemove {
 
     // This account will be changed permission. If targetAccount is null, All account will be changed
     targetAccount:   string;
-    permission:      UserPermission;
+    permission:      AccountPermission;
 }
 //////////////////////////////////////////
 
@@ -151,7 +151,7 @@ table PermissionRemove {
 union Command {
 // Use for operate Asset.
     Add,
-    Subscribe,
+    Subtract,
     Transfer,
 
 // Use for meta operate in domain

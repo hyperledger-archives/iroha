@@ -24,13 +24,17 @@ limitations under the License.
 #include <string>
 #include <unordered_map>
 
-#include <endpoint.grpc.fb.h>
-#include <main_generated.h>
+namespace iroha {
+struct Transaction;
+struct ConsensusEvent;
+}
+
+namespace flatbuffers {
+// FIXME: this typedef is dirty and unstable solution. (might be able to be solved by setting dependency for this header)
+typedef std::unique_ptr<uint8_t, std::function<void(uint8_t * /* unused */)>> unique_ptr_t;
+}
 
 namespace connection {
-
-using iroha::ConsensusEvent;
-using iroha::Transaction;
 
 struct Config {
   std::string name;
