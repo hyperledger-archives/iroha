@@ -3,6 +3,21 @@ include "asset.fbs";
 
 namespace iroha;
 
+enum Mode: ubyte {
+    Readable, Writable
+}
+// If account has Readable; account can access asset.
+// If account has Writeable; update, transfer can access asset.
+
+
+table Permission {
+    mode:   Mode;
+
+    // (ledger:domain:asset) = composite primary key for any asset
+    asset_name:    string;
+    domain_name:   string (required);       // domain should be unique inside a ledger
+    ledger_name:   string (required);       // unique worldwide
+}
 
 table Account {
   pubKey: string (required);  // primary key for account
@@ -12,6 +27,8 @@ table Account {
   // signatories.size() = n, useKeys = m
   signatories: [string];
   useKeys:     ushort = 1;
+
+  permissions: [Permission];
 }
 
 
