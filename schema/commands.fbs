@@ -114,6 +114,70 @@ table PeerSetActive {
 //////////////////////////////////////////
 
 
+//////////////////////////////////////////
+/// Commands for Permission
+enum Mode{
+    Readable, Writable
+}
+// If account has Readable; account can access asset.
+// If account has Writeable; update, transfer can access asset.
+
+table PermissionAdd {
+
+    // This account will be changed permission. If targetAccount is null, All account will be changed
+    targetAccount:   string;
+
+    mode:        Mode (required);
+    asset_name:  string;
+    domain_name: string (required);
+    ledger_name: string (required);
+}
+table PermissionRemove {
+
+    // This account will be changed permission. If targetAccount is null, All account will be changed
+    targetAccount:   string;
+
+    mode:        Mode (required);
+
+    asset_name:  string;
+    domain_name: string (required);
+    ledger_name: string (required);
+}
+//////////////////////////////////////////
+
+
+
+//////////////////////////////////////////
+/// Commands for Peer
+table PeerAdd {
+    peer: [ubyte] (required, nested_flatbuffer: "Peer");
+}
+
+table PeerRemove {
+    peerPubKey: string  (required);
+}
+
+// set new peer trust (with specific value)
+table PeerSetTrust {
+    peerPubKey: string   (required);
+    trust:      double;
+}
+
+// change current trust to some delta
+// example: delta=-5, trust=10 -> newTrust = 10-5 = 5
+table PeerChangeTrust {
+    peerPubKey: string   (required);
+    delta:      double;
+}
+
+table PeerSetActive {
+    peerPubKey: string   (required);
+    active:     bool;
+}
+//////////////////////////////////////////
+
+
+
 union Command {
     AssetCreate,
     AssetAdd,
@@ -135,4 +199,7 @@ union Command {
     ChaincodeAdd,
     ChaincodeRemove,
     ChaincodeExecute,
+
+    PermissionRemove,
+    PermissionAdd
 }
