@@ -14,6 +14,7 @@ table AccountRemove {
     pubkey: string;
 }
 
+// Suggest account -> pubkey in below three commands.
 table AccountAddSignatory {
     account:   string   (required);
     signatory: [string] (required);
@@ -134,14 +135,14 @@ table PeerSetActive {
 /// Commands for Permission
 
 table PermissionAdd {
-    // This account will be changed permission. If targetAccount is null, All account will be changed
-    targetAccount:   string;
+    // This account will be changed permission. If targetPubkey is null, All account will be changed
+    targetPubkey:   string;
     permission:        UserPermission;
 }
 table PermissionRemove {
 
-    // This account will be changed permission. If targetAccount is null, All account will be changed
-    targetAccount:   string;
+    // This account will be changed permission. If targetPubkey is null, All account will be changed
+    targetPubkey:   string;
     permission:      UserPermission;
 }
 //////////////////////////////////////////
