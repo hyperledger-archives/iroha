@@ -1,0 +1,7 @@
+ADD_LIBRARY(repository STATIC
+    respository.cpp
+)
+
+target_link_libraries(repository
+    ametsuchi
+)
