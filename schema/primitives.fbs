@@ -37,7 +37,6 @@ table AccountPermissionLedger {
 
   domain_add:           bool;  // ability to add new domain
   domain_remove:        bool;  // ability to remove existing domain
-  peer_add:             bool;  // ability to add new peer
   peer_read:            bool;  // ability to read peer information
   peer_write:           bool;  // ability to write(operate) peer
   account_add:             bool;  // ability to create new account
@@ -65,6 +64,7 @@ table AccountPermissionAsset {
   domain_name: string (required);
   ledger_name: string (required);
 
+  account_give_permission: bool;  // ability to give permissions to account in this asset
   transfer: bool;  // ability to transfer an asset
   add:      bool;  // ability to add some amount to account
   remove:   bool;  // ability to remove some amount from account
@@ -83,7 +83,7 @@ table Peer {
   ip:              string;
   trust:           double;
   active:          bool;
-  join_ledger:     bool;
+  join_ledger:     bool; // Suggest It is always true.
 }
 /////////////////////////////////////
 

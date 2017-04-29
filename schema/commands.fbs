@@ -14,6 +14,7 @@ table AccountRemove {
     pubkey: string;
 }
 
+// Suggest account -> pubkey in below three commands.
 table AccountAddSignatory {
     account:   string   (required);
     signatory: [string] (required);
