@@ -15,23 +15,24 @@ limitations under the License.
 */
 #include "runtime.hpp"
 #include "validator.hpp"
+#include <ametsuchi/repository.hpp>
 
 #include <infra/ametsuchi/include/ametsuchi/ametsuchi.h>
 
 namespace runtime{
 
     void processTransaction(const iroha::Transaction& tx){
-        if(!validator::account_exist_validator(tx)){
+        if(!validator::account_exist_validator(*tx.creatorPubKey())){
             // Reject
+            return;
         }
-        if(!validator::permission_validator(tx)){
+        if(!validator::permission_validator(*tx.creatorPubKey())){
             // Reject
         }
         if(!validator::logic_validator(tx)){
             // Reject
         }
-        auto am = ametsuchi::Ametsuchi("");
-        am.append(tx);
+        repository::append(tx);
     }
 
 };
