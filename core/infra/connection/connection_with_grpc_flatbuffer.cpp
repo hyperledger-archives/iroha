@@ -249,22 +249,21 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
   Status Verify(ServerContext* context,
                 const flatbuffers::BufferRef<ConsensusEvent>* request,
                 flatbuffers::BufferRef<Response>* response) override {
-
     fbbResponse.Clear();
 
     {
       flatbuffers::FlatBufferBuilder fbb;
       auto event =
-        flatbuffer_service::copyConsensusEvent(fbb, *request->GetRoot());
+          flatbuffer_service::copyConsensusEvent(fbb, *request->GetRoot());
       if (!event) {
         fbb.Clear();
         auto responseOffset = ::iroha::CreateResponseDirect(
-          fbbResponse, "CANCELLED", ::iroha::Code::FAIL,
-          0);  // ToDo: Currently, if it fails, no signature.
+            fbbResponse, "CANCELLED", ::iroha::Code::FAIL,
+            0);  // ToDo: Currently, if it fails, no signature.
         fbbResponse.Finish(responseOffset);
 
         *response = flatbuffers::BufferRef<::iroha::Response>(
-          fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+            fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
         return Status::CANCELLED;
       }
 
@@ -272,16 +271,17 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
 
       const std::string from = "from";
       connection::iroha::SumeragiImpl::Verify::receiver.invoke(
-        from, std::move(fbb.ReleaseBufferPointer()));
+          from, std::move(fbb.ReleaseBufferPointer()));
     }
 
     auto responseOffset = ::iroha::CreateResponseDirect(
         fbbResponse, "OK!!", ::iroha::Code::UNDECIDED,
-        sign(fbbResponse, hash::sha3_256_hex(flatbuffer_service::toString(
-                      *request->GetRoot()
-                           ->transactions()
-                           ->Get(0)
-                           ->tx_nested_root()))));  // ToDo: #(tx) = 1, ToDo:
+        sign(fbbResponse,
+             flatbuffer_service::toString(
+                 *request->GetRoot()
+                      ->transactions()
+                      ->Get(0)
+                      ->tx_nested_root())));  // ToDo: #(tx) = 1, ToDo:
 
     fbbResponse.Finish(responseOffset);
 
@@ -306,24 +306,25 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
       auto txoffset = flatbuffer_service::copyTransaction(fbb, *tx);
       if (!txoffset) {
         auto responseOffset = ::iroha::CreateResponseDirect(
-          fbbResponse, "CANCELLED", ::iroha::Code::FAIL,
-          0);  // FIXME: Currently, if it fails, no signature.
+            fbbResponse, "CANCELLED", ::iroha::Code::FAIL,
+            0);  // FIXME: Currently, if it fails, no signature.
         fbbResponse.Finish(responseOffset);
 
         *responseRef = flatbuffers::BufferRef<Response>(
-          fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+            fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
         return Status::CANCELLED;
       }
 
       fbb.Finish(txoffset.value());
       connection::iroha::SumeragiImpl::Torii::receiver.invoke(
-        "from",  // TODO: Specify 'from'
-        fbb.ReleaseBufferPointer());
+          "from",  // TODO: Specify 'from'
+          fbb.ReleaseBufferPointer());
     }
 
     auto responseOffset = ::iroha::CreateResponseDirect(
         fbbResponse, "OK!!", ::iroha::Code::UNDECIDED,
-        sign(fbbResponse, hash::sha3_256_hex(flatbuffer_service::toString(*transactionRef->GetRoot()))));
+        sign(fbbResponse, hash::sha3_256_hex(flatbuffer_service::toString(
+                              *transactionRef->GetRoot()))));
     fbbResponse.Finish(responseOffset);
 
     *responseRef = flatbuffers::BufferRef<Response>(
@@ -334,10 +335,10 @@ class SumeragiConnectionServiceImpl final : public ::iroha::Sumeragi::Service {
 
  private:
   flatbuffers::Offset<::iroha::Signature> sign(
-      flatbuffers::FlatBufferBuilder& fbb, const std::string& hash) {
+      flatbuffers::FlatBufferBuilder& fbb, const std::string& txstring) {
     const auto stamp = datetime::unixtime();
     const auto hashWithTimestamp =
-        hash::sha3_256_hex(hash + std::to_string(stamp));
+        hash::sha3_256_hex(txstring + std::to_string(stamp));
     const auto signature = signature::sign(
         hashWithTimestamp,
         config::PeerServiceConfig::getInstance().getMyPublicKey(),
