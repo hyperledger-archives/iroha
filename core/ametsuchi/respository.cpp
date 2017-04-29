@@ -59,7 +59,8 @@ namespace repository{
 
     bool checkUserCanPermission(const flatbuffers::String& key){
         if(db == nullptr) init();
-        db->
+
+        return false;
     }
 
 };
