@@ -26,6 +26,7 @@ namespace repository{
 
     std::vector<iroha::Asset*> findAssetByPublicKey(const flatbuffers::String& key);
 
+    bool existAccountOf(const flatbuffers::String& key);
 };
 
 #endif //IROHA_REPOSITORY_H

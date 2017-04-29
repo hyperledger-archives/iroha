@@ -16,17 +16,21 @@ limitations under the License.
 
 #include "validator.hpp"
 #include <ametsuchi/ametsuchi.h>
+#include <ametsuchi/repository.hpp>
 
 namespace runtime {
     namespace validator {
 
         bool account_exist_validator(const flatbuffers::String &publicKey){
-
+            return repository::existAccountOf(publicKey);
         }
 
-        bool permission_validator(const flatbuffers::String &publicKey){}
+        bool permission_validator(const flatbuffers::String &publicKey){
+        }
 
-        bool logic_validator(const iroha::Transaction &tx){}
+        bool logic_validator(const iroha::Transaction &tx){
+
+        }
 
     };
 

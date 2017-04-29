@@ -51,4 +51,15 @@ namespace repository{
         }
     }
 
+    bool existAccountOf(const flatbuffers::String& key){
+        if(db == nullptr) init();
+        auto curs = db->getAccountAddByKey(&key);
+        return !curs.empty();
+    }
+
+    bool checkUserCanPermission(const flatbuffers::String& key){
+        if(db == nullptr) init();
+        db->
+    }
+
 };
