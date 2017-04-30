@@ -51,6 +51,8 @@ table ChaincodeAdd {
 
 table ChaincodeRemove {
     code_name: string (required);
+    domain_name: string  (required);
+    ledger_name: string  (required);
 }
 
 table ChaincodeExecute {
