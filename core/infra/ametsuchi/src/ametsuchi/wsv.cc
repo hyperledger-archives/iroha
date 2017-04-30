@@ -598,9 +598,129 @@ void WSV::permisson_add(const iroha::PermissionAdd *command) {
     AMETSUCHI_CRITICAL(res, EINVAL);
   }
 
-  auto apa = flatbuffers::GetRoot<iroha::Account>(
-      command->permission_as_AccountPermissionAsset());
-  auto pubkey = apa->pubKey();
+    flatbuffers::FlatBufferBuilder fbb;
+    auto account = const_cast<iroha::Account*>(flatbuffers::GetRoot<::iroha::Account>(c_val.mv_data));
+    switch(command->permission_type()){
+        case iroha::AccountPermission::AccountPermissionRoot: {
+
+        }
+        case iroha::AccountPermission::AccountPermissionLedger: {
+            auto apl = command->permission_as_AccountPermissionLedger();
+            std::vector<flatbuffers::Offset<iroha::AccountPermissionLedgerWrapper>> permissons;
+            for (const auto& pw : *account->ledgerPermissions()) {
+                auto pvec = std::vector<uint8_t>(
+                    pw->permission()->begin(),
+                    pw->permission()->end()
+                );
+                permissons.emplace_back(iroha::CreateAccountPermissionAssetWrapperDirect(fbb, &pvec));
+            }
+            fbb.Clear();
+            fbb.Finish(iroha::CreateAccountPermissionLedgerDirect(fbb,
+                apl->ledger_name()->c_str(),
+                apl->domain_add(),
+                apl->domain_remove(),
+                apl->peer_read(),
+                apl->peer_write(),
+                apl->account_add(),
+                apl->account_remove(),
+                apl->account_give_permission()
+            ));
+            auto ptr = fbb.GetBufferPointer();
+            std::vector<uint8_t> nested(ptr, ptr + fbb.GetSize());
+            permissons.emplace_back(iroha::CreateAccountPermissionLedgerWrapperDirect(fbb, &nested));
+            fbb.Clear();
+            fbb.CreateVector(permissons);
+            *account->mutable_ledgerPermissions() =
+                *const_cast<flatbuffers::Vector<
+                    flatbuffers::Offset<iroha::AccountPermissionLedgerWrapper>>*>(
+                    flatbuffers::GetRoot<flatbuffers::Vector<
+                        flatbuffers::Offset<iroha::AccountPermissionLedgerWrapper>
+                    >>(fbb.GetBufferPointer())
+                );
+            break;
+        }
+        case iroha::AccountPermission::AccountPermissionDomain: {
+            auto apd = command->permission_as_AccountPermissionDomain();
+            std::vector<flatbuffers::Offset<iroha::AccountPermissionDomainWrapper>> permissons;
+            for (const auto& pw : *account->domainPermissions()) {
+                auto pvec = std::vector<uint8_t>(
+                        pw->permission()->begin(),
+                        pw->permission()->end()
+                );
+                permissons.emplace_back(iroha::CreateAccountPermissionDomainWrapperDirect(fbb, &pvec));
+            }
+            fbb.Clear();
+            fbb.Finish(iroha::CreateAccountPermissionDomainDirect(fbb,
+                apd->domain_name()->c_str(),
+                apd->ledger_name()->c_str(),
+                apd->account_give_permission(),
+                apd->account_add(),
+                apd->account_remove(),
+                apd->asset_create(),
+                apd->asset_remove(),
+                apd->asset_update()
+            ));
+            auto ptr = fbb.GetBufferPointer();
+            std::vector<uint8_t> nested(ptr, ptr + fbb.GetSize());
+            permissons.emplace_back(iroha::CreateAccountPermissionDomainWrapperDirect(fbb, &nested));
+            fbb.Clear();
+            fbb.CreateVector(permissons);
+            *account->mutable_domainPermissions() =
+                *const_cast<flatbuffers::Vector<
+                    flatbuffers::Offset<iroha::AccountPermissionDomainWrapper>>*>(
+                    flatbuffers::GetRoot<flatbuffers::Vector<
+                        flatbuffers::Offset<iroha::AccountPermissionDomainWrapper>
+                    >>(fbb.GetBufferPointer())
+                );
+            break;
+        }
+        case iroha::AccountPermission::AccountPermissionAsset: {
+            auto apa = command->permission_as_AccountPermissionAsset();
+            std::vector<flatbuffers::Offset<iroha::AccountPermissionAssetWrapper>> permissons;
+            for (const auto& pw : *account->assetPermissions()) {
+                auto pvec = std::vector<uint8_t>(
+                        pw->permission()->begin(),
+                        pw->permission()->end()
+                );
+                permissons.emplace_back(iroha::CreateAccountPermissionAssetWrapperDirect(fbb, &pvec));
+            }
+            fbb.Clear();
+            fbb.Finish(iroha::CreateAccountPermissionAssetDirect(fbb,
+                apa->asset_name()->c_str(),
+                apa->domain_name()->c_str(),
+                apa->ledger_name()->c_str(),
+                apa->account_give_permission(),
+                apa->transfer(),
+                apa->remove(),
+                apa->read()
+            ));
+            auto ptr = fbb.GetBufferPointer();
+            std::vector<uint8_t> nested(ptr, ptr + fbb.GetSize());
+            permissons.emplace_back(iroha::CreateAccountPermissionAssetWrapperDirect(fbb, &nested));
+            fbb.Clear();
+            fbb.CreateVector(permissons);
+            *account->mutable_assetPermissions() =
+                *const_cast<flatbuffers::Vector<
+                    flatbuffers::Offset<iroha::AccountPermissionAssetWrapper>>*>(
+                    flatbuffers::GetRoot<flatbuffers::Vector<
+                            flatbuffers::Offset<iroha::AccountPermissionAssetWrapper>
+                    >>(fbb.GetBufferPointer())
+            );
+            break;
+        }
+    }
+
+    if ((res = mdb_cursor_put(trees_.at("wsv_pubkey_account").second, &c_key, &c_val, 0))) {
+        // account with this public key exists
+        if (res == MDB_KEYEXIST) {
+            throw exception::InvalidTransaction::ACCOUNT_EXISTS;
+        }
+        AMETSUCHI_CRITICAL(res, MDB_MAP_FULL);
+        AMETSUCHI_CRITICAL(res, MDB_TXN_FULL);
+        AMETSUCHI_CRITICAL(res, EACCES);
+        AMETSUCHI_CRITICAL(res, EINVAL);
+    }
+}
 
   c_key.mv_data = (void *)(pubkey->data());
   c_key.mv_size = pubkey->size();

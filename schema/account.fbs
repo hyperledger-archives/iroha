@@ -15,9 +15,9 @@ table Account {
   useKeys:     ushort = 1;
 
   root:                 AccountPermissionRoot;
-  ledgerPermissions:    [AccountPermissionLedger];
-  domainPermissions:    [AccountPermissionDomain];
-  assetPermissions:     [AccountPermissionAsset];
+  ledgerPermissions:    [AccountPermissionLedgerWrapper];
+  domainPermissions:    [AccountPermissionDomainWrapper];
+  assetPermissions:     [AccountPermissionAssetWrapper];
 }
 
 
