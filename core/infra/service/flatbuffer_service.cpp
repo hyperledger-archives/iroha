@@ -155,53 +155,6 @@ namespace flatbuffer_service {
     }
   }
 
-  // Note: This function is used mainly for debug because Sumeragi doesn't create Account.
-  std::vector<uint8_t> CreateAccountBuffer(
-      const std::string& publicKey, const std::string& alias,
-      const std::string& prevPubKey, const std::vector<std::string>& signatories,
-      uint16_t useKeys) {
-    flatbuffers::FlatBufferBuilder fbb;
-
-    std::vector<flatbuffers::Offset<flatbuffers::String>> signatoryOffsets;
-    for (const auto& e : signatories) {
-      signatoryOffsets.push_back(fbb.CreateString(e));
-    }
-
-    auto accountOffset =
-        ::iroha::CreateAccountDirect(fbb, publicKey.c_str(), prevPubKey.c_str(),
-                                     alias.c_str(), &signatoryOffsets, 1);
-    fbb.Finish(accountOffset);
-
-    auto buf = fbb.GetBufferPointer();
-    return std::vector<uint8_t>(buf, buf + fbb.GetSize());
-  }
-
-  // Note: This function is used mainly for debug because Sumeragi doesn't create Currency.
-  std::vector<uint8_t> CreateCurrencyBuffer(
-    const std::string& currencyName, const std::string& domainName,
-    const std::string& ledgerName, const std::string& description,
-    const std::string& amount, uint8_t precision
-  ) {
-    flatbuffers::FlatBufferBuilder fbb;
-    auto currency = iroha::CreateCurrencyDirect(fbb, currencyName.c_str(), domainName.c_str(),
-                                                ledgerName.c_str(), description.c_str(),
-                                                amount.c_str(), precision);
-    auto asset = iroha::CreateAsset(fbb, ::iroha::AnyAsset::Currency, currency.Union());
-    fbb.Finish(asset);
-    auto buf = fbb.GetBufferPointer();
-    return {buf, buf + fbb.GetSize()};
-  }
-
-  /**
-   * toString
-   * - it returns string dump of arguments' tx like DebugString in protocol
-   * buffer. ToDo: If transaction scheme is changed, We changes this code.
-   *
-   * ToDo: Format
-   * - "key,value:key,value:..." (sorted by keys' alphabetical order)
-   * - DELIM: ','
-   * - SEPARATOR: ':'
-   */
   std::string toString(const iroha::Transaction& tx) {
     std::string res = "";
     if (tx.creatorPubKey() != nullptr) {
@@ -783,28 +736,31 @@ namespace flatbuffer_service {
 
   namespace peer {  // namespace peer
 
-    flatbuffers::Offset<PeerAdd> CreateAdd(const ::peer::Node& peer) {
-      flatbuffers::FlatBufferBuilder fbb;
-      return iroha::CreatePeerAdd(fbb,
-                                  fbb.CreateVector(primitives::CreatePeer(peer)));
+    flatbuffers::Offset<PeerAdd> CreateAdd(flatbuffers::FlatBufferBuilder &fbb, const ::peer::Node &peer) {
+      return iroha::CreatePeerAdd(fbb, fbb.CreateVector(primitives::CreatePeer(peer)));
     }
-    flatbuffers::Offset<PeerRemove> CreateRemove(const std::string& pubKey) {
-      flatbuffers::FlatBufferBuilder fbb;
+
+    flatbuffers::Offset<PeerRemove> CreateRemove(flatbuffers::FlatBufferBuilder &fbb, const std::string &pubKey) {
       return iroha::CreatePeerRemove(fbb, fbb.CreateString(pubKey));
     }
+
     flatbuffers::Offset<PeerChangeTrust> CreateChangeTrust(
-        const std::string& pubKey, double& delta) {
-      flatbuffers::FlatBufferBuilder fbb;
-      return iroha::CreatePeerChangeTrust(fbb, fbb.CreateString(pubKey), delta);
+      flatbuffers::FlatBufferBuilder &fbb,
+      const std::string &pubKey, double &delta) {
+      return iroha::CreatePeerChangeTrust(fbb, delta);
     }
-    flatbuffers::Offset<PeerSetTrust> CreateSetTrust(const std::string& pubKey,
-                                                     double& trust) {
-      flatbuffers::FlatBufferBuilder fbb;
+
+    flatbuffers::Offset<PeerSetTrust> CreateSetTrust(
+      flatbuffers::FlatBufferBuilder &fbb,
+      const std::string &pubKey,
+      double &trust) {
       return iroha::CreatePeerSetTrust(fbb, fbb.CreateString(pubKey), trust);
     }
-    flatbuffers::Offset<PeerSetActive> CreateSetActive(const std::string& pubKey,
-                                                       bool active) {
-      flatbuffers::FlatBufferBuilder fbb;
+
+    flatbuffers::Offset<PeerSetActive> CreateSetActive(
+      flatbuffers::FlatBufferBuilder &fbb,
+      const std::string &pubKey,
+      bool active) {
       return iroha::CreatePeerSetActive(fbb, fbb.CreateString(pubKey), active);
     }
 
@@ -823,19 +779,79 @@ namespace flatbuffer_service {
       return {ptr, ptr + fbb.GetSize()};
     }
 
+    std::vector<uint8_t> CreateSignature(const std::string &publicKey,
+                                         std::vector<uint8_t> signature,
+                                         uint64_t timestamp) {
+      flatbuffers::FlatBufferBuilder fbb;
+      auto sig_cc = iroha::CreateSignature(fbb, fbb.CreateString(publicKey),
+                                           fbb.CreateVector(signature), timestamp);
+      fbb.Finish(sig_cc);
+
+      uint8_t* ptr = fbb.GetBufferPointer();
+      return {ptr, ptr + fbb.GetSize()};
+    }
+
   }  // namespace primitives
+
+  namespace account {
+
+    // Note: This function is used mainly for debug because Sumeragi doesn't create Account.
+    std::vector<uint8_t> CreateAccount(
+      const std::string& publicKey, const std::string& alias,
+      const std::string& prevPubKey, const std::vector<std::string>& signatories,
+      uint16_t useKeys) {
+      flatbuffers::FlatBufferBuilder fbb;
+
+      std::vector<flatbuffers::Offset<flatbuffers::String>> signatoryOffsets;
+      for (const auto& e : signatories) {
+        signatoryOffsets.push_back(fbb.CreateString(e));
+      }
+
+      auto accountOffset =
+        ::iroha::CreateAccountDirect(fbb, publicKey.c_str(), prevPubKey.c_str(),
+                                     alias.c_str(), &signatoryOffsets, 1);
+      fbb.Finish(accountOffset);
+
+      auto buf = fbb.GetBufferPointer();
+      return {buf, buf + fbb.GetSize()};
+    }
+
+  }  // namespace account
+
+  namespace asset {
+
+    // Note: This function is used mainly for debug because Sumeragi doesn't create Currency.
+    std::vector<uint8_t> CreateCurrency(
+      const std::string& currencyName, const std::string& domainName,
+      const std::string& ledgerName, const std::string& description,
+      const std::string& amount, uint8_t precision
+    ) {
+      flatbuffers::FlatBufferBuilder fbb;
+      auto currency = iroha::CreateCurrencyDirect(fbb, currencyName.c_str(), domainName.c_str(),
+                                                  ledgerName.c_str(), description.c_str(),
+                                                  amount.c_str(), precision);
+      auto asset = iroha::CreateAsset(fbb, ::iroha::AnyAsset::Currency, currency.Union());
+      fbb.Finish(asset);
+      auto buf = fbb.GetBufferPointer();
+      return {buf, buf + fbb.GetSize()};
+    }
+
+  }  // namespace asset
 
   namespace transaction {  // namespace transaction
 
     const Transaction& CreateTransaction(
-        flatbuffers::FlatBufferBuilder& fbb, iroha::Command cmd_type,
-        flatbuffers::Offset<void> command, std::string creator,
-        std::vector<flatbuffers::Offset<iroha::Signature>> sigs) {
+      flatbuffers::FlatBufferBuilder& fbb,
+      iroha::Command cmd_type, const flatbuffers::Offset<void>& command,
+      const std::string& creator,
+      const std::vector<flatbuffers::Offset<iroha::Signature>>& sigs) {
+
       flatbuffers::FlatBufferBuilder xbb;
       auto tx_mt =
-          iroha::CreateTransaction(xbb, xbb.CreateString(creator), cmd_type,
-                                   command, xbb.CreateVector(sigs));
+        iroha::CreateTransaction(xbb, xbb.CreateString(creator), cmd_type,
+                                 command, xbb.CreateVector(sigs));
       xbb.Finish(tx_mt);
+
       auto hash = hash::sha3_256_hex(
           toString(*flatbuffers::GetRoot<Transaction>(xbb.GetBufferPointer())));
 
@@ -844,6 +860,7 @@ namespace flatbuffer_service {
           fbb.CreateVector(
               static_cast<std::vector<uint8_t>>(base64::decode(hash))));
       fbb.Finish(tx);
+
       return *flatbuffers::GetRoot<Transaction>(fbb.GetBufferPointer());
     }
 
