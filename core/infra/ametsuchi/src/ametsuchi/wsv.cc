@@ -612,7 +612,7 @@ void WSV::permisson_add(const iroha::PermissionAdd *command) {
                     pw->permission()->begin(),
                     pw->permission()->end()
                 );
-                permissons.emplace_back(iroha::CreateAccountPermissionAssetWrapperDirect(fbb, &pvec));
+                permissons.emplace_back(iroha::CreateAccountPermissionLedgerWrapperDirect(fbb, &pvec));
             }
             fbb.Clear();
             fbb.Finish(iroha::CreateAccountPermissionLedgerDirect(fbb,
