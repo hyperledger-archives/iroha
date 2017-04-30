@@ -509,7 +509,7 @@ void WSV::peer_add(const iroha::PeerAdd *command) {
     AMETSUCHI_CRITICAL(res, EINVAL);
   }
 }
-    
+
 void WSV::peer_remove(const iroha::PeerRemove *command) {
   auto cursor = trees_.at("wsv_pubkey_peer").second;
   MDB_val c_key, c_val;
@@ -532,6 +532,49 @@ void WSV::peer_remove(const iroha::PeerRemove *command) {
     AMETSUCHI_CRITICAL(res, EACCES);
     AMETSUCHI_CRITICAL(res, EINVAL);
   }
+}
+
+void WSV::permisson_add(const iroha::PermissionAdd *command) {
+    MDB_val c_key, c_val;
+    int res;
+
+    auto pubkey = command->targetAccount();
+    c_key.mv_data = (void *)(pubkey->data());
+    c_key.mv_size = pubkey->size();
+
+    // move cursor to account in pubkey_account tree
+    auto cursor = trees_.at("wsv_pubkey_account").second;
+    if ((res = mdb_cursor_get(cursor, &c_key, &c_val, MDB_SET))) {
+        if (res == MDB_NOTFOUND)
+            throw exception::InvalidTransaction::ACCOUNT_NOT_FOUND;
+
+        AMETSUCHI_CRITICAL(res, EINVAL);
+    }
+
+    auto apa =
+            flatbuffers::GetRoot<iroha::Account>(command->permission_as_AccountPermissionAsset());
+    auto pubkey = apa->pubKey();
+
+    c_key.mv_data = (void *)(pubkey->data());
+    c_key.mv_size = pubkey->size();
+    c_val.mv_data = (void *)command->account()->data();
+    c_val.mv_size = command->account()->size();
+
+    if ((res = mdb_cursor_put(trees_.at("wsv_pubkey_account").second, &c_key,
+                              &c_val, 0))) {
+        // account with this public key exists
+        if (res == MDB_KEYEXIST) {
+            throw exception::InvalidTransaction::ACCOUNT_EXISTS;
+        }
+        AMETSUCHI_CRITICAL(res, MDB_MAP_FULL);
+        AMETSUCHI_CRITICAL(res, MDB_TXN_FULL);
+        AMETSUCHI_CRITICAL(res, EACCES);
+        AMETSUCHI_CRITICAL(res, EINVAL);
+    }
+}
+
+void WSV::permisson_remove(const iroha::PermissionRemove *command) {
+
 }
 
 AM_val WSV::accountGetAsset(const flatbuffers::String *pubKey,
