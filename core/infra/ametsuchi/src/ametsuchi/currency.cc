@@ -17,10 +17,12 @@
 
 #include <ametsuchi/ametsuchi.h>
 #include <ametsuchi/currency.h>
+#include <string>
 
 #define AMETSUCHI_MAX_PRECISION 18
 
 namespace ametsuchi {
+
 
 Currency::Currency(__int128_t amount, uint8_t precision)
     : amount_(amount), precision_(precision), div_(1) {
@@ -52,10 +54,20 @@ bool Currency::operator>(const Currency &a) {
 }
 
 std::string Currency::to_string() {
-  return std::to_string(this->integer()) + "." +
-         std::to_string(this->fractional());
+  return to_string(this->integer()) + "." +
+         to_string(this->fractional());
 }
-
+std::string Currency::to_string(__int128_t x){
+  std::string res = "";
+  bool mf = (x<0);
+  while( x ) {
+    res += (char)((x%10)+'0');
+    x %= 10;
+  }
+  if( mf ) res += "-";
+  reverse( res.begin(), res.end() );
+  return res;
+}
 __int128_t Currency::integer() const { return integer_; }
 
 __int128_t Currency::fractional() const { return fractional_; }

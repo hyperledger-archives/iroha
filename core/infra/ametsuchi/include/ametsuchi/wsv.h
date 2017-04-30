@@ -52,7 +52,7 @@ class WSV {
 
 
   // WSV queries:
-  const ::iroha::Asset *accountGetAsset(const flatbuffers::String *pubKey,
+  ::iroha::Asset *accountGetAsset(const flatbuffers::String *pubKey,
                                         const flatbuffers::String *ledger_name,
                                         const flatbuffers::String *domain_name,
                                         const flatbuffers::String *asset_name,
@@ -64,7 +64,7 @@ class WSV {
       MDB_env *env = nullptr);
 
   // asset_id is asset_name + domain_name + ledger_name
-  const ::iroha::Asset *assetidGetAsset(const flatbuffers::String *asset_id,
+  const ::iroha::Asset *assetidGetAsset(const std::string &&assetid,
                                         bool uncommitted = false,
                                         MDB_env *env = nullptr);
 
@@ -123,8 +123,8 @@ class WSV {
   // manipulate with account's assets using these functions
   void account_add_currency(const flatbuffers::String *acc_pub_key,
                             const flatbuffers::Vector<uint8_t> *asset_fb);
-  void account_remove_currency(const flatbuffers::String *acc_pub_key,
-                               const flatbuffers::Vector<uint8_t> *asset_fb);
+  void account_subtract_currency(const flatbuffers::String *acc_pub_key,
+                                 const flatbuffers::Vector<uint8_t> *asset_fb);
 };
 }
 

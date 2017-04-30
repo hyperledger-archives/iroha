@@ -166,23 +166,31 @@ void Ametsuchi::init_append_tx() {
 }
 
 
-std::vector<const ::iroha::Asset*> Ametsuchi::accountGetAllAssets(
+std::vector<const ::iroha::Asset *> Ametsuchi::accountGetAllAssets(
     const flatbuffers::String *pubKey, bool uncommitted) {
   return wsv.accountGetAllAssets(pubKey, uncommitted, env);
 }
 
 
-const ::iroha::Asset* Ametsuchi::accountGetAsset(const flatbuffers::String *pubKey,
-                                  const flatbuffers::String *ledger_name,
-                                  const flatbuffers::String *domain_name,
-                                  const flatbuffers::String *asset_name,
-                                  bool uncommitted) {
+const ::iroha::Asset *Ametsuchi::accountGetAsset(
+    const flatbuffers::String *pubKey, const flatbuffers::String *ledger_name,
+    const flatbuffers::String *domain_name,
+    const flatbuffers::String *asset_name, bool uncommitted) {
   return wsv.accountGetAsset(pubKey, ledger_name, domain_name, asset_name,
                              uncommitted, env);
 }
 
-const ::iroha::Peer* Ametsuchi::pubKeyGetPeer(const flatbuffers::String *pubKey,
-                                bool uncommitted) {
+
+const ::iroha::Asset *Ametsuchi::assetidGetAsset(const std::string &&ledger_name,
+                                                 const std::string &&domain_name,
+                                                 const std::string &&asset_name,
+                                                 bool uncommitted) {
+  return wsv.assetidGetAsset(asset_name + domain_name + ledger_name,
+                             uncommitted, env);
+}
+
+const ::iroha::Peer *Ametsuchi::pubKeyGetPeer(const flatbuffers::String *pubKey,
+                                              bool uncommitted) {
   return wsv.pubKeyGetPeer(pubKey, uncommitted, env);
 }
 
