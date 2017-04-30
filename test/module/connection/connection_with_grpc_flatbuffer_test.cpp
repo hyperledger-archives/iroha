@@ -17,6 +17,7 @@
 #include <flatbuffers/flatbuffers.h>
 #include <main_generated.h>
 #include <primitives_generated.h>
+#include <membership_service/peer_service.hpp>
 #include <service/flatbuffer_service.h>
 #include <crypto/signature.hpp>
 #include <infra/config/peer_service_with_json.hpp>
@@ -123,7 +124,7 @@ class connection_with_grpc_flatbuffer_test : public testing::Test {
 TEST_F(connection_with_grpc_flatbuffer_test, Transaction_Add_Asset) {
   flatbuffers::FlatBufferBuilder xbb;
 
-  const auto assetBuf = flatbuffer_service::CreateCurrencyBuffer( // This function is used for DEBUG.
+  const auto assetBuf = flatbuffer_service::asset::CreateCurrency( // This function is used for DEBUG.
       "IROHA", "Domain", "Ledger", "Desc", "31415", 4);
 
   const auto add = ::iroha::CreateAddDirect(xbb, "AccPubKey", &assetBuf);
@@ -168,3 +169,129 @@ TEST_F(connection_with_grpc_test, Transaction_Add_Peer) {
   connection::iroha::PeerService::Sumeragi::send(::peer::myself::getIp(), tx);
 }
 */
+
+TEST(FlatbufferServicePeerTest, PeerServiceCreateAdd) {
+  auto np = ::peer::Node("ip", "pubKey");
+  flatbuffers::FlatBufferBuilder fbb;
+  auto addPeer = flatbuffer_service::peer::CreateAdd(fbb, np);
+  fbb.Finish(addPeer);
+
+  auto addPeerPtr = flatbuffers::GetRoot<iroha::PeerAdd>(fbb.GetBufferPointer());
+
+  /*
+    ledger_name:     string (required);
+
+    publicKey:       string (required);  // sorted; primary key.
+    ip:              string;
+    trust:           double;
+    active:          bool;
+    join_ledger:     bool; // Suggest It is always true.
+  */
+
+  auto peerRoot = addPeerPtr->peer_nested_root();
+  ASSERT_STREQ(peerRoot->ip()->c_str(), "ip");
+  ASSERT_STREQ(peerRoot->publicKey()->c_str(), "pubKey");
+  ASSERT_STREQ(peerRoot->ip()->c_str(), np.ip.c_str());
+  ASSERT_STREQ(peerRoot->publicKey()->c_str(), np.publicKey.c_str());
+  ASSERT_EQ(peerRoot->trust(), np.trust);
+  ASSERT_EQ(peerRoot->active(), np.active);
+  ASSERT_EQ(peerRoot->join_ledger(), np.join_ledger);
+}
+
+TEST(FlatbufferServicePeerTest, PeerServiceCreateRemove) {
+  flatbuffers::FlatBufferBuilder fbb;
+  auto removePeer = flatbuffer_service::peer::CreateRemove(fbb, "pubKey");
+  fbb.Finish(removePeer);
+  auto removePeerPtr = flatbuffers::GetRoot<iroha::PeerRemove>(fbb.GetBufferPointer());
+  //ASSERT_EQ(removePeerPtr->command_type(), iroha::Command::PeerRemove);
+  ASSERT_STREQ(removePeerPtr->peerPubKey()->c_str(), "pubKey");
+}
+
+TEST(FlatbufferServicePeerTest, PeerServiceCreateSetTrust) {
+  flatbuffers::FlatBufferBuilder fbb;
+  auto trust = 3.14159265;
+  auto setTrust = flatbuffer_service::peer::CreateChangeTrust(fbb, "pubKey", trust);
+  fbb.Finish(setTrust);
+  auto setTrustPtr = flatbuffers::GetRoot<iroha::PeerChangeTrust>(fbb.GetBufferPointer());
+  //ASSERT_EQ(setTrustPtr->command_type(), ::iroha::Command::PeerChangeTrust);
+  ASSERT_STREQ(setTrustPtr->peerPubKey()->c_str(), "pubKey");
+  ASSERT_EQ(setTrustPtr->delta(), 3.14159265);
+}
+
+TEST(FlatbufferServicePeerTest, PeerServiceCreateChangeTrust) {
+  flatbuffers::FlatBufferBuilder fbb;
+  auto trust = 1.41421356;
+  auto changeTrust = flatbuffer_service::peer::CreateChangeTrust(fbb, "pubKey", trust);
+  fbb.Finish(changeTrust);
+  auto changeTrustPtr = flatbuffers::GetRoot<iroha::PeerChangeTrust>(fbb.GetBufferPointer());
+  //ASSERT_EQ(changeTrustPtr->command_type(), ::iroha::Command::PeerChangeTrust);
+  ASSERT_STREQ(changeTrustPtr->peerPubKey()->c_str(), "pubKey");
+  ASSERT_EQ(changeTrustPtr->delta(), 1.41421356);
+}
+
+TEST(FlatbufferServicePeerTest, PeerServiceCreateSetActive) {
+  flatbuffers::FlatBufferBuilder fbb;
+  auto setActive = flatbuffer_service::peer::CreateSetActive(fbb, "pubKey", true);
+  fbb.Finish(setActive);
+  auto setActivePtr = flatbuffers::GetRoot<iroha::PeerSetActive>(fbb.GetBufferPointer());
+  ASSERT_STREQ(setActivePtr->peerPubKey()->c_str(), "pubKey");
+  ASSERT_EQ(setActivePtr->active(), true);
+}
+
+TEST(FlatbufferServiceTest, PrimitivesCreatePeer) {
+  ::peer::Node np("ip", "pubKey");
+  auto peer = flatbuffer_service::primitives::CreatePeer(np);
+  auto peerRoot = flatbuffers::GetRoot<::iroha::Peer>(peer.data());
+  ASSERT_STREQ(peerRoot->ip()->c_str(), "ip");
+  ASSERT_STREQ(peerRoot->publicKey()->c_str(), "pubKey");
+  ASSERT_STREQ(peerRoot->ip()->c_str(), np.ip.c_str());
+  ASSERT_STREQ(peerRoot->publicKey()->c_str(), np.publicKey.c_str());
+  ASSERT_EQ(peerRoot->trust(), np.trust);
+  ASSERT_EQ(peerRoot->active(), np.active);
+  ASSERT_EQ(peerRoot->join_ledger(), np.join_ledger);
+}
+
+TEST(FlatbufferServiceTest, PrimitivesCreateSignature) {
+  // TODO: NO IMPLEMENTATION
+}
+
+TEST(FlatbufferServiceTest, PrimitivesCreateTransaction) {
+
+  flatbuffers::FlatBufferBuilder xbb;
+
+  ::peer::Node np("ip", "pubKey");
+  auto peer = flatbuffer_service::primitives::CreatePeer(np);
+  auto peerAdd = iroha::CreatePeerAdd(xbb, xbb.CreateVector(peer));
+
+  // TODO: Replace with primitives::CreateSignature()
+  std::vector<flatbuffers::Offset<iroha::Signature>> signatures;
+
+  std::vector<uint8_t> sig {'a','b','c','d'};
+  auto sigoffset = iroha::CreateSignatureDirect(xbb, "PUBKEY", &sig, 999999);
+  signatures.push_back(sigoffset);
+
+  const auto& tx = flatbuffer_service::transaction::CreateTransaction(
+    xbb,
+    iroha::Command::PeerAdd,
+    peerAdd.Union(),
+    "Creator",
+    signatures
+  );
+
+  ASSERT_STREQ(tx.creatorPubKey()->c_str(), "Creator");
+  ASSERT_EQ(tx.command_type(), iroha::Command::PeerAdd);
+  ASSERT_STREQ(tx.signatures()->Get(0)->publicKey()->c_str(), "PUBKEY");
+  ASSERT_EQ(tx.signatures()->Get(0)->signature()->Get(0), 'a');
+  ASSERT_EQ(tx.signatures()->Get(0)->signature()->Get(1), 'b');
+  ASSERT_EQ(tx.signatures()->Get(0)->signature()->Get(2), 'c');
+  ASSERT_EQ(tx.signatures()->Get(0)->signature()->Get(3), 'd');
+  ASSERT_EQ(tx.signatures()->Get(0)->timestamp(), 999999);
+//  ASSERT_STREQ() // ハッシュ未テスト
+
+  auto peerRoot = tx.command_as_PeerAdd()->peer_nested_root();
+  ASSERT_STREQ(peerRoot->ip()->c_str(), np.ip.c_str());
+  ASSERT_STREQ(peerRoot->publicKey()->c_str(), np.publicKey.c_str());
+  ASSERT_EQ(peerRoot->trust(), np.trust);
+  ASSERT_EQ(peerRoot->active(), np.active);
+  ASSERT_EQ(peerRoot->join_ledger(), np.join_ledger);
+}

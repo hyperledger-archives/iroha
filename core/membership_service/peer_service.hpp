@@ -32,6 +32,7 @@ struct Node {
   std::string publicKey;
   double trust;
   bool active;
+  bool join_ledger;
   bool join_network;
   bool join_validation;
 
