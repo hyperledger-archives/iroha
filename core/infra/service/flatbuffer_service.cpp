@@ -60,32 +60,6 @@ namespace flatbuffer_service {
                                         &asset)
           .Union();
       }
-      /*
-      case ::iroha::Command::AssetAdd: {
-        auto ptr = reinterpret_cast<const ::iroha::AssetAdd*>(obj);
-        auto asset =
-            std::vector<uint8_t>(ptr->asset()->begin(), ptr->asset()->end());
-        return ::iroha::CreateAssetAddDirect(_fbb, ptr->accPubKey()->c_str(),
-                                             &asset)
-            .Union();
-      }
-      case ::iroha::Command::AssetRemove: {
-        auto ptr = reinterpret_cast<const ::iroha::AssetRemove*>(obj);
-        auto asset =
-            std::vector<uint8_t>(ptr->asset()->begin(), ptr->asset()->end());
-        return ::iroha::CreateAssetRemoveDirect(_fbb, ptr->accPubKey()->c_str(),
-                                                &asset)
-            .Union();
-      }
-      case ::iroha::Command::AssetTransfer: {
-        auto ptr = reinterpret_cast<const ::iroha::AssetTransfer*>(obj);
-        auto asset =
-            std::vector<uint8_t>(ptr->asset()->begin(), ptr->asset()->end());
-        return ::iroha::CreateAssetTransferDirect(
-                   _fbb, &asset, ptr->sender()->c_str(), ptr->receiver()->c_str())
-            .Union();
-      }
-       */
       case ::iroha::Command::PeerAdd: {
         auto ptr = reinterpret_cast<const ::iroha::PeerAdd*>(obj);
         auto peer =
