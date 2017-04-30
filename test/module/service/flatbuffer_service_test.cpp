@@ -33,7 +33,7 @@ TEST(FlatbufferServiceTest, toString) {
       signatories(new std::vector<flatbuffers::Offset<flatbuffers::String>>());
   signatories->emplace_back(fbb.CreateString(publicKey));
 
-  auto account_vec = flatbuffer_service::CreateAccountBuffer(
+  auto account_vec = flatbuffer_service::account::CreateAccount(
       publicKey, "alias", "prevPubKey", {"sig1", "sig2"}, 1);
 
   auto command = iroha::CreateAccountAddDirect(fbb, &account_vec);
@@ -60,16 +60,10 @@ TEST(FlatbufferServiceTest, toString) {
   std::cout << flatbuffer_service::toString(*tx.GetRoot()) << std::endl;
 }
 
-TEST(FlatbufferServicePeerTest, PeerService) {
-  auto np = ::peer::Node("ip", "pubKey");
-  flatbuffers::FlatBufferBuilder fbb;
-  auto addPeer = flatbuffer_service::peer::CreateAdd(np);
-}
-
 TEST(FlatbufferServiceTest, toConsensusEvent_AccountAdd) {
   flatbuffers::FlatBufferBuilder fbb;
 
-  const auto accountBuf = flatbuffer_service::CreateAccountBuffer(
+  const auto accountBuf = flatbuffer_service::account::CreateAccount(
       "PublicKey", "Alias\u30e6", "PrevPubKey", {"sig1", "sig2", "sig3"}, 1);
 
   const auto signatureOffsets = [&] {
@@ -165,7 +159,7 @@ TEST(FlatbufferServiceTest, toConsensusEvent_AccountAdd) {
 TEST(FlatbufferServiceTest, addSignature_AccountAdd) {
   flatbuffers::FlatBufferBuilder fbb;
 
-  const auto accountBuf = flatbuffer_service::CreateAccountBuffer(
+  const auto accountBuf = flatbuffer_service::account::CreateAccount(
       "PublicKey", "Alias\u30e6", "PrevPubKey", {"sig1", "sig2", "sig3"}, 1);
 
   const auto signatureOffsets = [&] {
@@ -310,7 +304,7 @@ TEST(FlatbufferServiceTest, addSignature_AccountAdd) {
 TEST(FlatbufferServiceTest, makeCommit_AccountAdd) {
   flatbuffers::FlatBufferBuilder fbb;
 
-  const auto accountBuf = flatbuffer_service::CreateAccountBuffer(
+  const auto accountBuf = flatbuffer_service::account::CreateAccount(
       "PublicKey", "Alias\u30e6", "PrevPubKey", {"sig1", "sig2", "sig3"}, 1);
 
   const auto signatureOffsets = [&] {
@@ -425,7 +419,7 @@ TEST(FlatbufferServiceTest, copyConsensusEvent) {
       ::iroha::CreateSignatureDirect(xbb, "PUBKEY2", &signature, 200000));
 
   std::vector<std::string> signatories{"123", "-=[p"};
-  const auto account = flatbuffer_service::CreateAccountBuffer(
+  const auto account = flatbuffer_service::account::CreateAccount(
       "accpubkey", "alias", "PrevPubKey", signatories, 1);
   const auto command = ::iroha::CreateAccountAddDirect(xbb, &account);
   std::vector<flatbuffers::Offset<::iroha::Signature>> tx_signatures;
@@ -502,3 +496,5 @@ TEST(FlatbufferServiceTest, copyConsensusEvent) {
   ASSERT_STREQ(accnested->signatories()->Get(1)->c_str(), "-=[p");
   ASSERT_EQ(accnested->useKeys(), 1);
 }
+
+
