@@ -58,9 +58,9 @@ merkle::hash_t TxStore::append(const std::vector<uint8_t> *blob) {
   }
 
   // 3. insert record into index_transfer_sender and index_transfer_receiver
-  if (tx->command_type() == iroha::Command::AssetTransfer) {
+  if (tx->command_type() == iroha::Command::Transfer) {
     // update index_transfer_sender
-    auto cmd = tx->command_as_AssetTransfer();
+    auto cmd = tx->command_as_Transfer();
     c_key.mv_data = (void *)(cmd->sender()->data());
     c_key.mv_size = cmd->sender()->size();
 

@@ -199,7 +199,7 @@ std::vector<AM_val> Ametsuchi::getAssetTransferByReceiver(
 
 std::vector<AM_val> Ametsuchi::getCommandByKey(
     const flatbuffers::String *pubKey, iroha::Command command,
-    bool uncommitted = false) {
+    bool uncommitted) {
   return tx_store.getCommandByKey(pubKey, command, uncommitted);
 }
 

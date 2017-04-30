@@ -85,15 +85,15 @@ void WSV::update(const std::vector<uint8_t> *blob) {
     switch (tx->command_type()) {
       //  Use for operate Asset.
       case iroha::Command::Add: {
-        add(tx->command_as_add());
+        add(tx->command_as_Add());
         break;
       }
       case iroha::Command::Subtract: {
-        subtract(tx->command_as_subtract());
+        subtract(tx->command_as_Subtract());
         break;
       }
       case iroha::Command::Transfer: {
-        transfer(tx->command_as_transfer());
+        transfer(tx->command_as_Transfer());
         break;
       }
             // Use for meta operate in domain.
@@ -509,8 +509,7 @@ void WSV::peer_add(const iroha::PeerAdd *command) {
     AMETSUCHI_CRITICAL(res, EINVAL);
   }
 }
-
-
+    
 void WSV::peer_remove(const iroha::PeerRemove *command) {
   auto cursor = trees_.at("wsv_pubkey_peer").second;
   MDB_val c_key, c_val;
