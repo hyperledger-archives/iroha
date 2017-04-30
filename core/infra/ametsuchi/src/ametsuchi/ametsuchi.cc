@@ -166,13 +166,13 @@ void Ametsuchi::init_append_tx() {
 }
 
 
-std::vector<AM_val> Ametsuchi::accountGetAllAssets(
+std::vector<const ::iroha::Asset*> Ametsuchi::accountGetAllAssets(
     const flatbuffers::String *pubKey, bool uncommitted) {
   return wsv.accountGetAllAssets(pubKey, uncommitted, env);
 }
 
 
-AM_val Ametsuchi::accountGetAsset(const flatbuffers::String *pubKey,
+const ::iroha::Asset* Ametsuchi::accountGetAsset(const flatbuffers::String *pubKey,
                                   const flatbuffers::String *ledger_name,
                                   const flatbuffers::String *domain_name,
                                   const flatbuffers::String *asset_name,
@@ -181,7 +181,7 @@ AM_val Ametsuchi::accountGetAsset(const flatbuffers::String *pubKey,
                              uncommitted, env);
 }
 
-AM_val Ametsuchi::pubKeyGetPeer(const flatbuffers::String *pubKey,
+const ::iroha::Peer* Ametsuchi::pubKeyGetPeer(const flatbuffers::String *pubKey,
                                 bool uncommitted) {
   return wsv.pubKeyGetPeer(pubKey, uncommitted, env);
 }

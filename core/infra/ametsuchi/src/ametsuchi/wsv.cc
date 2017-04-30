@@ -18,8 +18,8 @@
 #include <ametsuchi/comparator.h>
 #include <ametsuchi/currency.h>
 #include <ametsuchi/wsv.h>
-#include <iostream>
 #include <transaction_generated.h>
+#include <iostream>
 
 namespace ametsuchi {
 
@@ -30,26 +30,27 @@ __int128 parse(const flatbuffers::String &str) {
       res = 10 * res + str.Get(i) - '0';
     }
   }
-  if(str.Get(0) == '-'){
+  if (str.Get(0) == '-') {
     res *= -1;
   }
   return res;
 }
 
-const flatbuffers::String* to_String(__int128_t value){
-    flatbuffers::FlatBufferBuilder fbb;
-    std::vector<char> buf;
-    __uint128_t tmp = value < 0 ? -value : value;
-    do {
-        buf.push_back((tmp % 10) + '0');
-        tmp /= 10;
-    }while (tmp != 0);
-    if(value < 0) {
-        buf.push_back('-');
-    }
-    std::reverse(buf.begin(), buf.end());
-    fbb.CreateString(std::string(std::begin(buf),std::end(buf)));
-    return flatbuffers::GetRoot<flatbuffers::String>(fbb.GetCurrentBufferPointer());
+const flatbuffers::String *to_String(__int128_t value) {
+  flatbuffers::FlatBufferBuilder fbb;
+  std::vector<char> buf;
+  __uint128_t tmp = value < 0 ? -value : value;
+  do {
+    buf.push_back((tmp % 10) + '0');
+    tmp /= 10;
+  } while (tmp != 0);
+  if (value < 0) {
+    buf.push_back('-');
+  }
+  std::reverse(buf.begin(), buf.end());
+  fbb.CreateString(std::string(std::begin(buf), std::end(buf)));
+  return flatbuffers::GetRoot<flatbuffers::String>(
+      fbb.GetCurrentBufferPointer());
 }
 
 void WSV::init(MDB_txn *append_tx) {
@@ -96,7 +97,7 @@ void WSV::update(const std::vector<uint8_t> *blob) {
         transfer(tx->command_as_Transfer());
         break;
       }
-            // Use for meta operate in domain.
+      // Use for meta operate in domain.
       case iroha::Command::AssetCreate: {
         asset_create(tx->command_as_AssetCreate());
         break;
@@ -105,7 +106,7 @@ void WSV::update(const std::vector<uint8_t> *blob) {
         asset_remove(tx->command_as_AssetRemove());
         break;
       }
-            // Use for peer operate
+      // Use for peer operate
       case iroha::Command::PeerAdd: {
         peer_add(tx->command_as_PeerAdd());
         break;
@@ -113,19 +114,19 @@ void WSV::update(const std::vector<uint8_t> *blob) {
       case iroha::Command::PeerRemove: {
         peer_remove(tx->command_as_PeerRemove());
         break;
-      }/*
-      case iroha::Command::PeerSetActive: {
-        peer_set_active(tx->command_as_PeerSetActive());
-        break;
-      }
-      case iroha::Command::PeerSetTrust: {
-        peer_set_trust(tx->command_as_PeerSetTrust());
-        break;
-      }
-      case iroha::Command::PeerChangeTrust: {
-        peer_change_trust(tx->command_as_PeerChangeTrust());
-        break;
-      }*/
+      } /*
+       case iroha::Command::PeerSetActive: {
+         peer_set_active(tx->command_as_PeerSetActive());
+         break;
+       }
+       case iroha::Command::PeerSetTrust: {
+         peer_set_trust(tx->command_as_PeerSetTrust());
+         break;
+       }
+       case iroha::Command::PeerChangeTrust: {
+         peer_change_trust(tx->command_as_PeerChangeTrust());
+         break;
+       }*/
       // Use for account operate
       case iroha::Command::AccountAdd: {
         account_add(tx->command_as_AccountAdd());
@@ -509,7 +510,7 @@ void WSV::peer_add(const iroha::PeerAdd *command) {
     AMETSUCHI_CRITICAL(res, EINVAL);
   }
 }
-    
+
 void WSV::peer_remove(const iroha::PeerRemove *command) {
   auto cursor = trees_.at("wsv_pubkey_peer").second;
   MDB_val c_key, c_val;
@@ -534,11 +535,11 @@ void WSV::peer_remove(const iroha::PeerRemove *command) {
   }
 }
 
-AM_val WSV::accountGetAsset(const flatbuffers::String *pubKey,
-                            const flatbuffers::String *ln,
-                            const flatbuffers::String *dn,
-                            const flatbuffers::String *an, bool uncommitted,
-                            MDB_env *env) {
+const ::iroha::Asset *WSV::accountGetAsset(const flatbuffers::String *pubKey,
+                                           const flatbuffers::String *ln,
+                                           const flatbuffers::String *dn,
+                                           const flatbuffers::String *an,
+                                           bool uncommitted, MDB_env *env) {
   MDB_val c_key, c_val;
   MDB_cursor *cursor;
   MDB_txn *tx;
@@ -607,11 +608,56 @@ AM_val WSV::accountGetAsset(const flatbuffers::String *pubKey,
     mdb_cursor_close(cursor);
     mdb_txn_abort(tx);
   }
-  return AM_val(c_val);
+  return flatbuffers::GetRoot<::iroha::Asset>(c_val.mv_data);
 }
 
-std::vector<AM_val> WSV::accountGetAllAssets(const flatbuffers::String *pubKey,
-                                             bool uncommitted, MDB_env *env) {
+// asset_id is asset_name + domain_name + ledger_name
+const ::iroha::Asset *WSV::assetidGetAsset(const flatbuffers::String *asset_id,
+                                           bool uncommitted, MDB_env *env) {
+  MDB_val c_key, c_val;
+  MDB_cursor *cursor;
+  MDB_txn *tx;
+  int res;
+  std::string tree_name = "wsv_assetid_asset";
+
+  // query peer by public key
+  c_key.mv_data = (void *)asset_id->data();
+  c_key.mv_size = asset_id->size();
+
+  if (uncommitted) {
+    cursor = trees_.at(tree_name).second;
+    tx = append_tx_;
+  } else {
+    // create read-only transaction, create new RO cursor
+    if ((res = mdb_txn_begin(env, NULL, MDB_RDONLY, &tx))) {
+      AMETSUCHI_CRITICAL(res, MDB_PANIC);
+      AMETSUCHI_CRITICAL(res, MDB_MAP_RESIZED);
+      AMETSUCHI_CRITICAL(res, MDB_READERS_FULL);
+      AMETSUCHI_CRITICAL(res, ENOMEM);
+    }
+
+    if ((res = mdb_cursor_open(tx, trees_.at(tree_name).first, &cursor))) {
+      AMETSUCHI_CRITICAL(res, EINVAL);
+    }
+  }
+
+  // if pubKey is not fount, throw exception
+  if ((res = mdb_cursor_get(cursor, &c_key, &c_val, MDB_SET))) {
+    if (res == MDB_NOTFOUND) {
+      throw exception::InvalidTransaction::ASSET_NOT_FOUND;
+    }
+    AMETSUCHI_CRITICAL(res, EINVAL);
+  }
+
+  if (!uncommitted) {
+    mdb_cursor_close(cursor);
+    mdb_txn_abort(tx);
+  }
+  return flatbuffers::GetRoot<::iroha::Asset>(c_val.mv_data);
+}
+
+std::vector<const ::iroha::Asset *> WSV::accountGetAllAssets(
+    const flatbuffers::String *pubKey, bool uncommitted, MDB_env *env) {
   MDB_val c_key, c_val;
   MDB_cursor *cursor;
   MDB_txn *tx;
@@ -641,17 +687,17 @@ std::vector<AM_val> WSV::accountGetAllAssets(const flatbuffers::String *pubKey,
 
   // if sender has no such asset, then it is incorrect transaction
   if ((res = mdb_cursor_get(cursor, &c_key, &c_val, MDB_SET))) {
-    if (res == MDB_NOTFOUND) return std::vector<AM_val>{};
+    if (res == MDB_NOTFOUND) return std::vector<const ::iroha::Asset *>{};
     AMETSUCHI_CRITICAL(res, EINVAL);
   }
 
-  std::vector<AM_val> ret;
+  std::vector<const ::iroha::Asset *> ret;
   // account has assets. try to find asset with the same `pk`
   // iterate over account's assets, O(N), where N is number of different
   // assets,
   do {
     // user's current amount
-    ret.push_back(AM_val(c_val));
+    ret.push_back(flatbuffers::GetRoot<::iroha::Asset>(c_val.mv_data));
 
     // move to next asset in user's account
     if ((res = mdb_cursor_get(cursor, &c_key, &c_val, MDB_NEXT_DUP))) {
@@ -667,8 +713,8 @@ std::vector<AM_val> WSV::accountGetAllAssets(const flatbuffers::String *pubKey,
   return ret;
 }
 
-AM_val WSV::pubKeyGetPeer(const flatbuffers::String *pubKey, bool uncommitted,
-                          MDB_env *env) {
+const ::iroha::Peer *WSV::pubKeyGetPeer(const flatbuffers::String *pubKey,
+                                        bool uncommitted, MDB_env *env) {
   MDB_val c_key, c_val;
   MDB_cursor *cursor;
   MDB_txn *tx;
@@ -708,7 +754,7 @@ AM_val WSV::pubKeyGetPeer(const flatbuffers::String *pubKey, bool uncommitted,
     mdb_cursor_close(cursor);
     mdb_txn_abort(tx);
   }
-  return AM_val(c_val);
+  return flatbuffers::GetRoot<::iroha::Peer>(c_val.mv_data);
 }
 
 void WSV::close_dbi(MDB_env *env) {
