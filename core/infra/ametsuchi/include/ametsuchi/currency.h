@@ -40,6 +40,7 @@ class Currency {
   uint8_t get_precision() const;
 
   std::string to_string();
+  std::string to_string(__int128_t x);
 
  private:
   __int128_t amount_;

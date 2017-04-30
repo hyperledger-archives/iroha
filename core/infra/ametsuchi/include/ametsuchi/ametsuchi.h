@@ -90,8 +90,8 @@ class Ametsuchi {
  * Otherwise create new read-only TX
  * @return 0 or * pairs <pointer, size>, which are mmaped into memory.
  */
-  std::vector<const ::iroha::Asset*> accountGetAllAssets(const flatbuffers::String *pubKey,
-                                          bool uncommitted = false);
+  std::vector<const ::iroha::Asset *> accountGetAllAssets(
+      const flatbuffers::String *pubKey, bool uncommitted = false);
 
   /**
    * Returns specific asset, which belong to user with \p pubKey.
@@ -103,14 +103,20 @@ class Ametsuchi {
  * Otherwise create new read-only TX
    * @return pair <pointer, size>, which are mmaped from disk
    */
-  const ::iroha::Asset* accountGetAsset(const flatbuffers::String *pubKey,
-                         const flatbuffers::String *ledger_name,
-                         const flatbuffers::String *domain_name,
-                         const flatbuffers::String *asset_name,
-                         bool uncommitted = false);
+  const ::iroha::Asset *accountGetAsset(const flatbuffers::String *pubKey,
+                                        const flatbuffers::String *ledger_name,
+                                        const flatbuffers::String *domain_name,
+                                        const flatbuffers::String *asset_name,
+                                        bool uncommitted = false);
 
-  const ::iroha::Peer* pubKeyGetPeer(const flatbuffers::String *pubKey,
-                       bool uncommitted = false);
+
+  const ::iroha::Asset *assetidGetAsset(const std::string &&ledger_name,
+                                        const std::string &&domain_name,
+                                        const std::string &&asset_name,
+                                        bool uncommitted = false);
+
+  const ::iroha::Peer *pubKeyGetPeer(const flatbuffers::String *pubKey,
+                                     bool uncommitted = false);
 
   std::vector<AM_val> getAssetTransferBySender(
       const flatbuffers::String *senderKey, bool uncommitted = false);
