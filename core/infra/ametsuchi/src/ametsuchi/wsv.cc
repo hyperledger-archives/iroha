@@ -722,23 +722,6 @@ void WSV::permisson_add(const iroha::PermissionAdd *command) {
     }
 }
 
-  c_key.mv_data = (void *)(pubkey->data());
-  c_key.mv_size = pubkey->size();
-  c_val.mv_data = (void *)command->account()->data();
-  c_val.mv_size = command->account()->size();
-
-  if ((res = mdb_cursor_put(trees_.at("wsv_pubkey_account").second, &c_key,
-                            &c_val, 0))) {
-    // account with this public key exists
-    if (res == MDB_KEYEXIST) {
-      throw exception::InvalidTransaction::ACCOUNT_EXISTS;
-    }
-    AMETSUCHI_CRITICAL(res, MDB_MAP_FULL);
-    AMETSUCHI_CRITICAL(res, MDB_TXN_FULL);
-    AMETSUCHI_CRITICAL(res, EACCES);
-    AMETSUCHI_CRITICAL(res, EINVAL);
-  }
-}
 
 void WSV::permisson_remove(const iroha::PermissionRemove *command) {}
 
