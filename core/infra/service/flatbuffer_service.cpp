@@ -196,11 +196,6 @@ namespace flatbuffer_service {
    * toString
    * - it returns string dump of arguments' tx like DebugString in protocol
    * buffer. ToDo: If transaction scheme is changed, We changes this code.
-   *
-   * ToDo: Format
-   * - "key,value:key,value:..." (sorted by keys' alphabetical order)
-   * - DELIM: ','
-   * - SEPARATOR: ':'
    */
   std::string toString(const iroha::Transaction& tx) {
     std::string res = "";
