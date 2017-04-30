@@ -19,6 +19,7 @@ table TransactionWrapper {
   tx: [ubyte] (nested_flatbuffer: "Transaction");
 }
 
+// TODO
 table TransactionResponse {
   message:      string;
   code:         Code;

@@ -1,7 +1,6 @@
-#add_subdirectory(ametsuchi)
+add_subdirectory(ametsuchi)
 add_subdirectory(chaincode)
 add_subdirectory(config)
-add_subdirectory(connection)
 add_subdirectory(consensus)
 add_subdirectory(crypto)
 add_subdirectory(infra)

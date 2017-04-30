@@ -22,7 +22,6 @@ table ComplexAssetLogic {
   transfer: Chaincode;
 }
 
-
 // currency is a simple asset, like USD.
 table Currency {
   currency_name: string  (required, key);
@@ -32,7 +31,7 @@ table Currency {
   description: string;
 
   // 100.39 => amount = 10039, precision = 2
-  amount:    ulong;
+  amount:    string;
   precision: ubyte;
 }
 

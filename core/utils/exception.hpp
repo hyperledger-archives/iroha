@@ -32,6 +32,7 @@ class IrohaException : public std::exception {
   virtual std::string message() const;  // This is for getting exception message
 
  protected:
+
   std::string message_;
 };
 
@@ -90,6 +91,11 @@ class DuplicateSetArgumentException : public Ordinary {
 class UnsetBuildArgumentsException : public Ordinary {
  public:
   UnsetBuildArgumentsException(const std::string &, const std::string &);
+};
+
+class RequirePropertyMissingException : public IrohaException {
+public:
+    RequirePropertyMissingException(const std::string &, const std::string &);
 };
 
 class NotFoundPathException : public Insecure {

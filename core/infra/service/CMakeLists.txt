@@ -21,6 +21,7 @@ target_link_libraries(flatbuffer_service
     expected
     flatbuffers
     grpc
+    exception
     membership_service
     signature
     base64

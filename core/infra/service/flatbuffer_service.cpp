@@ -175,24 +175,35 @@ std::vector<uint8_t> CreateAccountBuffer(
       signatoryOffsets.push_back(fbbAccount.CreateString(e));
     }
 
-    auto accountOffset = ::iroha::CreateAccountDirect(
-        fbbAccount, publicKey, alias, &signatoryOffsets, 1);
-    fbbAccount.Finish(accountOffset);
+    std::vector<uint8_t> CreateAccountBuffer(
+            const char* publicKey, const char* alias,
+            const std::vector<std::string>& signatories, uint16_t useKeys) {
+        if (&signatories != nullptr) {
+            flatbuffers::FlatBufferBuilder fbbAccount;
 
-    auto buf = fbbAccount.GetBufferPointer();
-    std::vector<uint8_t> buffer;
-    buffer.assign(buf, buf + fbbAccount.GetSize());
-    return buffer;
-  } else {
-    flatbuffers::FlatBufferBuilder fbbAccount;
-    auto accountOffset =
-        ::iroha::CreateAccountDirect(fbbAccount, publicKey, alias, nullptr, 1);
-    fbbAccount.Finish(accountOffset);
+            std::vector<flatbuffers::Offset<flatbuffers::String>> signatoryOffsets;
+            for (const auto& e : signatories) {
+                signatoryOffsets.push_back(fbbAccount.CreateString(e));
+            }
 
-    auto buf = fbbAccount.GetBufferPointer();
-    return std::vector<uint8_t>(buf, buf + fbbAccount.GetSize());
-  }
-}
+            auto accountOffset = ::iroha::CreateAccountDirect(
+                    fbbAccount, publicKey, alias, &signatoryOffsets, 1);
+            fbbAccount.Finish(accountOffset);
+
+            auto buf = fbbAccount.GetBufferPointer();
+            std::vector<uint8_t> buffer;
+            buffer.assign(buf, buf + fbbAccount.GetSize());
+            return buffer;
+        } else {
+            flatbuffers::FlatBufferBuilder fbbAccount;
+            auto accountOffset =
+                    ::iroha::CreateAccountDirect(fbbAccount, publicKey, alias, nullptr, 1);
+            fbbAccount.Finish(accountOffset);
+
+            auto buf = fbbAccount.GetBufferPointer();
+            return std::vector<uint8_t>(buf, buf + fbbAccount.GetSize());
+        }
+    }
 
 /**
  * toString
@@ -472,147 +483,151 @@ std::string toString(const iroha::Transaction& tx) {
     for (const auto& s : *cmd->signatory()) {
       res += "        signature[" + s->str() + "]\n";
     }
-    res += "]\n";
-    return res;
-  };
-  command_to_strings[iroha::Command::AccountSetUseKeys] =
-      [&](const void* command) -> std::string {
-    const iroha::AccountSetUseKeys* cmd =
-        static_cast<const iroha::AccountSetUseKeys*>(command);
 
-    std::string res = "AccountSetUseKeys[\n";
-    for (const auto& a : *cmd->accounts()) {
-      res += "        account[" + a->str() + "]\n";
+    std::vector<uint8_t > GetTxPointer(const iroha::Transaction& tx){
+        const auto& aSignature = tx.signatures()->Get(0);
+
+        flatbuffers::FlatBufferBuilder fbb;
+        std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
+        std::vector<uint8_t> signatureBlob(
+            aSignature->signature()->begin(),
+            aSignature->signature()->end()
+        );
+
+        signatures.push_back(::iroha::CreateSignatureDirect(
+                fbb, aSignature->publicKey()->c_str(), &signatureBlob,
+                1234567));
+
+        std::vector<uint8_t> hashes;
+        if (tx.hash() != nullptr) {
+            hashes.assign(tx.hash()->begin(), tx.hash()->end());
+        }
+
+        flatbuffers::Offset<::iroha::Attachment> attachmentOffset;
+        std::vector<uint8_t> data;
+        if (tx.attachment() != nullptr && tx.attachment()->data() != nullptr &&
+            tx.attachment()->mime() != nullptr) {
+            data.assign(tx.attachment()->data()->begin(),
+                        tx.attachment()->data()->end());
+
+            attachmentOffset = ::iroha::CreateAttachmentDirect(
+               fbb, tx.attachment()->mime()->c_str(), &data
+            );
+        }
+
+        std::vector<flatbuffers::Offset<::iroha::TransactionWrapper>> transactions;
+
+        flatbuffers::FlatBufferBuilder fbbTx;
+        auto txOffset = ::iroha::CreateTransactionDirect(
+            fbbTx, tx.creatorPubKey()->c_str(), tx.command_type(),
+            flatbuffer_service::CreateCommandDirect(
+                fbb, tx.command(),
+                tx.command_type()
+            ),
+            &signatures, &hashes, attachmentOffset
+        );
+
+        auto buf = fbbTx.GetBufferPointer();
+        std::vector<uint8_t> buffer;
+        buffer.assign(buf, buf + fbbTx.GetSize());
+        return buffer;
     }
-    res += "    account:useKeys:" + std::to_string(cmd->useKeys()) + "\n";
-    res += "]\n";
-    return res;
-  };
 
-  command_to_strings[iroha::Command::ChaincodeAdd] =
-      [&](const void* command) -> std::string {
-    const iroha::ChaincodeAdd* cmd =
-        static_cast<const iroha::ChaincodeAdd*>(command);
-
-    std::string res = "ChaincodeAdd[\n";
-    res += "]\n";
-    return res;
-  };
-  command_to_strings[iroha::Command::ChaincodeRemove] =
-      [&](const void* command) -> std::string {
-    const iroha::ChaincodeRemove* cmd =
-        static_cast<const iroha::ChaincodeRemove*>(command);
-
-    std::string res = "ChaincodeRemove[\n";
-    res += "]\n";
-  };
-  command_to_strings[iroha::Command::ChaincodeExecute] =
-      [&](const void* command) -> std::string {
-    const iroha::ChaincodeExecute* cmd =
-        static_cast<const iroha::ChaincodeExecute*>(command);
-
-    std::string res = "ChaincodeExecute[\n";
-    res += "]\n";
-  };
-  res += command_to_strings[tx.command_type()](tx.command());
-  return res;
-}
-
-namespace detail {
+    namespace detail {
 /**
  * copyPeerSignatures
  * - copies peer signatures of consensus event and write data to given
  *   FlatBufferBuilder
  */
-Expected<std::vector<flatbuffers::Offset<::iroha::Signature>>>
-copyPeerSignaturesOf(flatbuffers::FlatBufferBuilder& fbb,
-                     const ::iroha::ConsensusEvent& event) {
-  std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures;
+        Expected<std::vector<flatbuffers::Offset<::iroha::Signature>>>
+        copyPeerSignaturesOf(flatbuffers::FlatBufferBuilder& fbb,
+                             const ::iroha::ConsensusEvent& event) {
+            std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures;
 
-  for (const auto& aPeerSig : *event.peerSignatures()) {
-    // TODO: Check signature is broken.
-    VoidHandler handler;
-    handler = ensureNotNull(aPeerSig);
-    if (!handler) {
-      logger::error("Connection with grpc") << "Peer signature is null";
-      return makeUnexpected(handler.excptr());
-    }
+            for (const auto& aPeerSig : *event.peerSignatures()) {
+                // TODO: Check signature is broken.
+                VoidHandler handler;
+                handler = ensureNotNull(aPeerSig);
+                if (!handler) {
+                    logger::error("Connection with grpc") << "Peer signature is null";
+                    return makeUnexpected(handler.excptr());
+                }
 
-    handler = ensureNotNull(aPeerSig->signature());
-    if (!handler) {
-      logger::error("Connection with grpc") << "Peer signature is null";
-      return makeUnexpected(handler.excptr());
-    }
+                handler = ensureNotNull(aPeerSig->signature());
+                if (!handler) {
+                    logger::error("Connection with grpc") << "Peer signature is null";
+                    return makeUnexpected(handler.excptr());
+                }
 
-    std::vector<uint8_t> aPeerSigBlob(aPeerSig->signature()->begin(),
-                                      aPeerSig->signature()->end());
-    peerSignatures.push_back(
-        ::iroha::CreateSignatureDirect(fbb, aPeerSig->publicKey()->c_str(),
-                                       &aPeerSigBlob, aPeerSig->timestamp()));
-  }
+                std::vector<uint8_t> aPeerSigBlob(aPeerSig->signature()->begin(),
+                                                  aPeerSig->signature()->end());
+                peerSignatures.push_back(
+                        ::iroha::CreateSignatureDirect(fbb, aPeerSig->publicKey()->c_str(),
+                                                       &aPeerSigBlob, aPeerSig->timestamp()));
+            }
 
-  return peerSignatures;
-}
+            return peerSignatures;
+        }
 
-Expected<std::vector<flatbuffers::Offset<::iroha::Signature>>>
-copySignaturesOfTx(flatbuffers::FlatBufferBuilder& fbb,
-                   const ::iroha::Transaction& fromTx) {
-  std::vector<flatbuffers::Offset<::iroha::Signature>> tx_signatures;
+        Expected<std::vector<flatbuffers::Offset<::iroha::Signature>>>
+        copySignaturesOfTx(flatbuffers::FlatBufferBuilder& fbb,
+                           const ::iroha::Transaction& fromTx) {
+            std::vector<flatbuffers::Offset<::iroha::Signature>> tx_signatures;
 
-  auto handler = ensureNotNull(fromTx.signatures());
-  if (!handler) {
-    logger::error("Connection with grpc") << "Transaction signature is null";
-    return makeUnexpected(handler.excptr());
-  }
+            auto handler = ensureNotNull(fromTx.signatures());
+            if (!handler) {
+                logger::error("Connection with grpc") << "Transaction signature is null";
+                return makeUnexpected(handler.excptr());
+            }
 
-  for (auto&& txSig : *fromTx.signatures()) {
-    auto handler = ensureNotNull(txSig->signature());
-    if (!handler) {
-      logger::error("Connection with grpc") << "Transaction signature is null";
-      return makeUnexpected(handler.excptr());
-    }
+            for (auto&& txSig : *fromTx.signatures()) {
+                auto handler = ensureNotNull(txSig->signature());
+                if (!handler) {
+                    logger::error("Connection with grpc") << "Transaction signature is null";
+                    return makeUnexpected(handler.excptr());
+                }
 
-    std::vector<uint8_t> _data(txSig->signature()->begin(),
-                               txSig->signature()->end());
+                std::vector<uint8_t> _data(txSig->signature()->begin(),
+                                           txSig->signature()->end());
 
-    tx_signatures.emplace_back(iroha::CreateSignatureDirect(
-        fbb, txSig->publicKey()->c_str(), &_data, txSig->timestamp()));
-  }
+                tx_signatures.emplace_back(iroha::CreateSignatureDirect(
+                        fbb, txSig->publicKey()->c_str(), &_data, txSig->timestamp()));
+            }
 
-  return tx_signatures;
-}
+            return tx_signatures;
+        }
 
-Expected<std::vector<uint8_t>> copyHashOfTx(
-    const ::iroha::Transaction& fromTx) {
-  auto handler = ensureNotNull(fromTx.hash());
-  if (!handler) {
-    logger::error("Connection with grpc") << "Transaction hash is null";
-    return makeUnexpected(handler.excptr());
-  }
-  return std::vector<uint8_t>(fromTx.hash()->begin(), fromTx.hash()->end());
-}
+        Expected<std::vector<uint8_t>> copyHashOfTx(
+                const ::iroha::Transaction& fromTx) {
+            auto handler = ensureNotNull(fromTx.hash());
+            if (!handler) {
+                logger::error("Connection with grpc") << "Transaction hash is null";
+                return makeUnexpected(handler.excptr());
+            }
+            return std::vector<uint8_t>(fromTx.hash()->begin(), fromTx.hash()->end());
+        }
 
-Expected<flatbuffers::Offset<::iroha::Attachment>> copyAttachmentOfTx(
-    flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
-  VoidHandler handler;
-  handler = ensureNotNull(fromTx.attachment());
-  if (!handler) {
-    logger::error("Connection with grpc") << "Transaction attachment is null";
-    return makeUnexpected(handler.excptr());
-  }
+        Expected<flatbuffers::Offset<::iroha::Attachment>> copyAttachmentOfTx(
+                flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
+            VoidHandler handler;
+            handler = ensureNotNull(fromTx.attachment());
+            if (!handler) {
+                logger::error("Connection with grpc") << "Transaction attachment is null";
+                return makeUnexpected(handler.excptr());
+            }
 
-  handler = ensureNotNull(fromTx.attachment()->data());
-  if (!handler) {
-    logger::error("Connection with grpc")
-        << "Transaction attachment's data is null";
-    return makeUnexpected(handler.excptr());
-  }
+            handler = ensureNotNull(fromTx.attachment()->data());
+            if (!handler) {
+                logger::error("Connection with grpc")
+                        << "Transaction attachment's data is null";
+                return makeUnexpected(handler.excptr());
+            }
 
-  std::vector<uint8_t> data(fromTx.attachment()->data()->begin(),
-                            fromTx.attachment()->data()->end());
-  return iroha::CreateAttachmentDirect(
-      fbb, fromTx.attachment()->mime()->c_str(), &data);
-}
+            std::vector<uint8_t> data(fromTx.attachment()->data()->begin(),
+                                      fromTx.attachment()->data()->end());
+            return iroha::CreateAttachmentDirect(
+                    fbb, fromTx.attachment()->mime()->c_str(), &data);
+        }
 
 /**
  * copyTransactionsOf(event)
@@ -636,6 +651,63 @@ copyTxWrappersOfEvent(flatbuffers::FlatBufferBuilder& fbb,
  * copyTransaction(fromTx)
  * - copies transaction and write data to given FlatBufferBuilder.
  */
+        Expected<flatbuffers::Offset<::iroha::Transaction>> copyTransaction(
+                flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
+            auto tx_signatures = copySignaturesOfTx(fbb, fromTx);
+            if (!tx_signatures) {
+                return makeUnexpected(tx_signatures.excptr());
+            }
+
+            auto hash = copyHashOfTx(fromTx);
+            if (!hash) {
+                return makeUnexpected(hash.excptr());
+            }
+
+            auto attachment = copyAttachmentOfTx(fbb, fromTx);
+            if (!attachment) {
+                return makeUnexpected(attachment.excptr());
+            }
+
+            // ToDo: Currently, #(transaction) is one.
+            const auto pubkey = fromTx.creatorPubKey()->c_str();
+            const auto cmdtype = fromTx.command_type();
+            const auto cmd = flatbuffer_service::CreateCommandDirect(
+                    fbb, fromTx.command(), fromTx.command_type());
+
+            return ::iroha::CreateTransactionDirect(fbb, pubkey, cmdtype, cmd,
+                                                    &tx_signatures.value(), &hash.value(),
+                                                    attachment.value());
+        }
+
+/**
+ * copyTransactionsOf(event)
+ * - copies transactions from event and write data to given FlatBufferBuilder.
+ */
+        Expected<std::vector<flatbuffers::Offset<::iroha::TransactionWrapper>>>
+        copyTransactionsWrapperOf(flatbuffers::FlatBufferBuilder& fbb,
+                                  const ::iroha::ConsensusEvent& event) {
+            std::vector<flatbuffers::Offset<::iroha::TransactionWrapper>> transactions;
+            for (auto&& tx : *event.transactions()) {
+                flatbuffers::FlatBufferBuilder fbbTx;
+                auto txOffset = copyTransaction( fbbTx, *tx->tx_nested_root());
+                if (!txOffset) {
+                    return makeUnexpected(txOffset.excptr());
+                }
+                auto buf = fbbTx.GetBufferPointer();
+                std::vector<uint8_t> buffer;
+                buffer.assign(buf, buf + fbbTx.GetSize());
+
+                transactions.push_back(::iroha::CreateTransactionWrapper(
+                        fbb,
+                        &buffer
+                ));
+            }
+
+            return transactions;
+        }
+    }  // namespace detail
+
+/**
 Expected<flatbuffers::Offset<::iroha::Transaction>> copyTransaction(
   flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
   auto tx_signatures = detail::copySignaturesOfTx(fbb, fromTx);
@@ -858,7 +930,6 @@ const Transaction& CreateTransaction(flatbuffers::FlatBufferBuilder& fbb, iroha:
 }
 
 };
-
 
 
 }  // namespace flatbuffer_service

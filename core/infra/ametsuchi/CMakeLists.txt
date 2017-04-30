@@ -47,7 +47,8 @@ target_link_libraries(${LIBAMETSUCHI_NAME}
   LMDB
   flatbuffers
   keccak
-  )
+)
+
 StrictMode(${LIBAMETSUCHI_NAME})
 
 

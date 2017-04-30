@@ -77,6 +77,12 @@ UnsetBuildArgumentsException::UnsetBuildArgumentsException(
 NotFoundPathException::NotFoundPathException(const std::string &path)
     : Insecure("Not found path: '" + path + "'") {}
 
+RequirePropertyMissingException::RequirePropertyMissingException(
+        const std::string &buildTarget, const std::string &message)
+    : IrohaException("RequirePropertyMissingException in " + buildTarget +
+     ", message: " + message
+) {}
+
 namespace config {
 
 // deprecated, will remove.
