@@ -80,17 +80,42 @@ class WSV {
   void read_created_assets();
 
   // WSV commands:
+  // Use for operate Asset.
+  void add(const iroha::Add *command);
+  void subtract(const iroha::Subtract *command);
+  void transfer(const iroha::Transfer *command);
+
+  // Use for meta operate in domain
   void asset_create(const iroha::AssetCreate *command);
-  void asset_add(const iroha::AssetAdd *command);
   void asset_remove(const iroha::AssetRemove *command);
-  void asset_transfer(const iroha::AssetTransfer *command);
-  void account_add(const iroha::AccountAdd *command);
-  void account_remove(const iroha::AccountRemove *command);
+
+  // Use for peer operate
   void peer_add(const iroha::PeerAdd *command);
   void peer_remove(const iroha::PeerRemove *command);
+  void peer_set_active(const iroha::PeerSetActive *command);
+  void peer_set_trust(const iroha::PeerSetTrust *command);
+  void peer_change_trust(const iroha::PeerChangeTrust *command);
+
+  // Use for account operate
+  void account_add(const iroha::AccountAdd *command);
+  void account_remove(const iroha::AccountRemove *command);
+  void account_add_signatory(const iroha::AccountAddSignatory *command);
+  void account_remove_signatory(const iroha::AccountRemoveSignatory *command);
+  void account_set_use_keys(const iroha::AccountSetUseKeys *command);
+  void account_migrate(const iroha::AccountMigrate *command);
+
+  void chaincode_add(const iroha::ChaincodeAdd *command);
+  void chaincode_remove(const iroha::ChaincodeRemove *command);
+  void chaincode_execute(const iroha::ChaincodeExecute *command);
+
+  void permisson_execute(const iroha::PermissionRemove *command);
+  void permisson_add(const iroha::PermissionAdd *command);
+
   // manipulate with account's assets using these functions
-  void account_add_currency(const flatbuffers::String *acc_pub_key,
-                            const flatbuffers::Vector<uint8_t> *asset_fb);
+  void account_add_currency(
+      const flatbuffers::String *acc_pub_key,
+      const flatbuffers::Vector<uint8_t> *asset_fb
+  );
   void account_remove_currency(const flatbuffers::String *acc_pub_key,
                                const flatbuffers::Vector<uint8_t> *asset_fb);
 };
