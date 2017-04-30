@@ -33,6 +33,7 @@ namespace sumeragi {
 using iroha::ConsensusEvent;
 
 void initializeSumeragi();
+
 void loop();
 
 void getNextOrder(std::unique_ptr<ConsensusEvent> event);

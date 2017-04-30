@@ -15,9 +15,11 @@ limitations under the License.
 */
 
 #include "validator.hpp"
+//#include <ametsuchi/repository.hpp>
+#include <service/flatbuffer_service.h>
+#include <utils/logger.hpp>
 
 // This is state less validator.
 namespace validator{
-    bool require_property_validator(){}
-    bool account_exist_validator(){}
+
 };

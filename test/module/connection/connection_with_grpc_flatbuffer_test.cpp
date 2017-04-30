@@ -67,7 +67,8 @@ class connection_with_grpc_flatbuffer_test : public testing::Test {
           ASSERT_STREQ(currency->domain_name()->c_str(), "Domain");
           ASSERT_STREQ(currency->ledger_name()->c_str(), "Ledger");
           ASSERT_STREQ(currency->description()->c_str(), "description");
-          ASSERT_EQ(currency->amount(), 100);
+          ASSERT_EQ(currency->amount(), 31415);
+          ASSERT_EQ(currency->precision(), 4);
         });
     connection::run();
   }
@@ -114,7 +115,7 @@ TEST_F(connection_with_grpc_flatbuffer_test, Transaction_Add_Asset) {
 
   const auto assetBuf = []{
     flatbuffers::FlatBufferBuilder fbb;
-    auto currency = iroha::CreateCurrencyDirect(fbb, "IROHA", "Domain", "Ledger", "description", 100, 3.141592653589);
+    auto currency = iroha::CreateCurrencyDirect(fbb, "IROHA", "Domain", "Ledger", "description", 31415, 4);
     auto asset = iroha::CreateAsset(fbb, ::iroha::AnyAsset::Currency, currency.Union());
     fbb.Finish(asset);
     auto buf = fbb.GetBufferPointer();

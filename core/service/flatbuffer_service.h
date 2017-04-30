@@ -57,6 +57,8 @@ using ::iroha::PeerSetTrust;
 using ::iroha::PeerSetActive;
 using ::iroha::Transaction;
 
+Expected<int> hasRequreMember(const iroha::Transaction &tx);
+
 flatbuffers::Offset<void> CreateCommandDirect(
     flatbuffers::FlatBufferBuilder &_fbb, const void *obj,
     iroha::Command type);
@@ -70,6 +72,9 @@ Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
 std::vector<uint8_t> CreateAccountBuffer(
   const char* publicKey, const char* alias,
   const std::vector<std::string>& signatories, uint16_t useKeys);
+
+std::vector<uint8_t > GetTxPointer(const iroha::Transaction& tx);
+
 
 template <typename T>
 VoidHandler ensureNotNull(T *value) {
