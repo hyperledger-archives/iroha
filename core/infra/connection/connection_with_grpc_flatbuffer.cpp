@@ -17,7 +17,7 @@ limitations under the License.
 
 #include <endpoint.grpc.fb.h>
 #include <service/flatbuffer_service.h>
-#include <connection/connection.hpp>
+#include <service/connection.hpp>
 #include <crypto/hash.hpp>
 #include <crypto/signature.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
