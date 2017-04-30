@@ -90,7 +90,7 @@ class Ametsuchi {
  * Otherwise create new read-only TX
  * @return 0 or * pairs <pointer, size>, which are mmaped into memory.
  */
-  std::vector<AM_val> accountGetAllAssets(const flatbuffers::String *pubKey,
+  std::vector<const ::iroha::Asset*> accountGetAllAssets(const flatbuffers::String *pubKey,
                                           bool uncommitted = false);
 
   /**
@@ -103,13 +103,13 @@ class Ametsuchi {
  * Otherwise create new read-only TX
    * @return pair <pointer, size>, which are mmaped from disk
    */
-  AM_val accountGetAsset(const flatbuffers::String *pubKey,
+  const ::iroha::Asset* accountGetAsset(const flatbuffers::String *pubKey,
                          const flatbuffers::String *ledger_name,
                          const flatbuffers::String *domain_name,
                          const flatbuffers::String *asset_name,
                          bool uncommitted = false);
 
-  AM_val pubKeyGetPeer(const flatbuffers::String *pubKey,
+  const ::iroha::Peer* pubKeyGetPeer(const flatbuffers::String *pubKey,
                        bool uncommitted = false);
 
   std::vector<AM_val> getAssetTransferBySender(

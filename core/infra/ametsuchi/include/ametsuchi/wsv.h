@@ -18,14 +18,16 @@
 #define AMETSUCHI_WSV_H
 
 
+#include <account_generated.h>
 #include <ametsuchi/common.h>
+#include <asset_generated.h>
+#include <commands_generated.h>
 #include <flatbuffers/flatbuffers.h>
 #include <lmdb.h>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <commands_generated.h>
 
 namespace ametsuchi {
 
@@ -50,18 +52,25 @@ class WSV {
 
 
   // WSV queries:
-  AM_val accountGetAsset(const flatbuffers::String *pubKey,
-                         const flatbuffers::String *ledger_name,
-                         const flatbuffers::String *domain_name,
-                         const flatbuffers::String *asset_name,
-                         bool uncommitted = false, MDB_env *env = nullptr);
+  const ::iroha::Asset *accountGetAsset(const flatbuffers::String *pubKey,
+                                        const flatbuffers::String *ledger_name,
+                                        const flatbuffers::String *domain_name,
+                                        const flatbuffers::String *asset_name,
+                                        bool uncommitted = false,
+                                        MDB_env *env = nullptr);
 
-  std::vector<AM_val> accountGetAllAssets(const flatbuffers::String *pubKey,
-                                          bool uncommitted = true,
-                                          MDB_env *env = nullptr);
+  std::vector<const ::iroha::Asset *> accountGetAllAssets(
+      const flatbuffers::String *pubKey, bool uncommitted = true,
+      MDB_env *env = nullptr);
 
-  AM_val pubKeyGetPeer(const flatbuffers::String *pubKey,
-                       bool uncommitted = false, MDB_env *env = nullptr);
+  // asset_id is asset_name + domain_name + ledger_name
+  const ::iroha::Asset *assetidGetAsset(const flatbuffers::String *asset_id,
+                                        bool uncommitted = false,
+                                        MDB_env *env = nullptr);
+
+  const ::iroha::Peer *pubKeyGetPeer(const flatbuffers::String *pubKey,
+                                     bool uncommitted = false,
+                                     MDB_env *env = nullptr);
 
   /*
    * Get total number of trees
@@ -112,10 +121,8 @@ class WSV {
   void permisson_remove(const iroha::PermissionRemove *command);
 
   // manipulate with account's assets using these functions
-  void account_add_currency(
-      const flatbuffers::String *acc_pub_key,
-      const flatbuffers::Vector<uint8_t> *asset_fb
-  );
+  void account_add_currency(const flatbuffers::String *acc_pub_key,
+                            const flatbuffers::Vector<uint8_t> *asset_fb);
   void account_remove_currency(const flatbuffers::String *acc_pub_key,
                                const flatbuffers::Vector<uint8_t> *asset_fb);
 };
