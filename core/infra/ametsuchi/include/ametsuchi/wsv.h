@@ -108,8 +108,8 @@ class WSV {
   void chaincode_remove(const iroha::ChaincodeRemove *command);
   void chaincode_execute(const iroha::ChaincodeExecute *command);
 
-  void permisson_execute(const iroha::PermissionRemove *command);
   void permisson_add(const iroha::PermissionAdd *command);
+  void permisson_remove(const iroha::PermissionRemove *command);
 
   // manipulate with account's assets using these functions
   void account_add_currency(

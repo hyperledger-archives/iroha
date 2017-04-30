@@ -54,22 +54,50 @@ void WSV::update(const std::vector<uint8_t> *blob) {
   // 4. update WSV
   {
     switch (tx->command_type()) {
+      //  Use for operate Asset.
+      case iroha::Command::Add: {
+        add(tx->command_as_add());
+        break;
+      }
+      case iroha::Command::Subtract: {
+        subtract(tx->command_as_subtract());
+        break;
+      }
+      case iroha::Command::Transfer: {
+        transfer(tx->command_as_transfer());
+        break;
+      }
+            // Use for meta operate in domain.
       case iroha::Command::AssetCreate: {
         asset_create(tx->command_as_AssetCreate());
         break;
       }
-      case iroha::Command::AssetAdd: {
-        asset_add(tx->command_as_AssetAdd());
-        break;
-      }
       case iroha::Command::AssetRemove: {
-        asset_remove(tx->command_as_AssetRemove());
+        asset_create(tx->command_as_AssetRemove());
         break;
       }
-      case iroha::Command::AssetTransfer: {
-        asset_transfer(tx->command_as_AssetTransfer());
+            // Use for peer operate
+      case iroha::Command::PeerAdd: {
+        peer_add(tx->command_as_PeerAdd());
         break;
       }
+      case iroha::Command::PeerRemove: {
+        peer_remove(tx->command_as_PeerRemove());
+        break;
+      }
+      case iroha::Command::PeerSetActive: {
+        peer_set_active(tx->command_as_PeerSetActive());
+        break;
+      }
+      case iroha::Command::PeerSetTrust: {
+        peer_set_trust(tx->command_as_PeerSetTrust());
+        break;
+      }
+      case iroha::Command::PeerChangeTrust: {
+        peer_change_trust(tx->command_as_PeerChangeTrust());
+        break;
+      }
+            // Use for account operate
       case iroha::Command::AccountAdd: {
         account_add(tx->command_as_AccountAdd());
         break;
@@ -78,12 +106,40 @@ void WSV::update(const std::vector<uint8_t> *blob) {
         account_remove(tx->command_as_AccountRemove());
         break;
       }
-      case iroha::Command::PeerAdd: {
-        peer_add(tx->command_as_PeerAdd());
+      case iroha::Command::AccountAddSignatory: {
+        account_add_signatory(tx->command_as_AccountAddSignatory());
         break;
       }
-      case iroha::Command::PeerRemove: {
-        peer_remove(tx->command_as_PeerRemove());
+      case iroha::Command::AccountRemoveSignatory: {
+        account_remove_signatory(tx->command_as_AccountRemoveSignatory());
+        break;
+      }
+      case iroha::Command::AccountSetUseKeys: {
+        account_set_use_keys(tx->command_as_AccountSetUseKeys());
+        break;
+      }
+      case iroha::Command::AccountMigrate: {
+        account_migrate(tx->command_as_AccountMigrate());
+        break;
+      }
+      case iroha::Command::ChaincodeAdd: {
+        chaincode_add(tx->command_as_ChaincodeAdd());
+        break;
+      }
+      case iroha::Command::ChaincodeRemove: {
+        chaincode_remove(tx->command_as_ChaincodeRemove());
+        break;
+      }
+      case iroha::Command::ChaincodeExecute: {
+        chaincode_execute(tx->command_as_ChaincodeExecute());
+        break;
+      }
+      case iroha::Command::PermissionAdd: {
+        permisson_add(tx->command_as_PermissionAdd());
+        break;
+      }
+      case iroha::Command::PermissionRemove: {
+        permisson_remove(tx->command_as_PermissionRemove());
         break;
       }
       default: {
