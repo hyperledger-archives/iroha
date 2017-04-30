@@ -52,6 +52,14 @@ namespace flatbuffer_service {
                                                 ptr->ledger_name()->c_str())
             .Union();
       }
+      case ::iroha::Command::Add: {
+        auto ptr = reinterpret_cast<const ::iroha::Add*>(obj);
+        auto asset =
+          std::vector<uint8_t>(ptr->asset()->begin(), ptr->asset()->end());
+        return ::iroha::CreateAddDirect(_fbb, ptr->accPubKey()->c_str(),
+                                        &asset)
+          .Union();
+      }
       /*
       case ::iroha::Command::AssetAdd: {
         auto ptr = reinterpret_cast<const ::iroha::AssetAdd*>(obj);
@@ -165,18 +173,19 @@ namespace flatbuffer_service {
             .Union();
       }
       default: {
+        // This function should be always tested.
+        // If some command has not implemented throw exception.
         throw exception::NotImplementedException("No match Command type",
                                                  __FILE__);
       }
     }
   }
 
-  // ToDo: Check what is optional value? Optional value is set default value argument.
-  //       It makes funcs needn't check whether value is nullptr or not.
+  // Note: This function is used mainly for debug because Sumeragi doesn't create Account.
   std::vector<uint8_t> CreateAccountBuffer(
       const std::string& publicKey, const std::string& alias,
       const std::string& prevPubKey, const std::vector<std::string>& signatories,
-      uint16_t useKeys = 1) {
+      uint16_t useKeys) {
     flatbuffers::FlatBufferBuilder fbb;
 
     std::vector<flatbuffers::Offset<flatbuffers::String>> signatoryOffsets;
@@ -191,6 +200,22 @@ namespace flatbuffer_service {
 
     auto buf = fbb.GetBufferPointer();
     return std::vector<uint8_t>(buf, buf + fbb.GetSize());
+  }
+
+  // Note: This function is used mainly for debug because Sumeragi doesn't create Currency.
+  std::vector<uint8_t> CreateCurrencyBuffer(
+    const std::string& currencyName, const std::string& domainName,
+    const std::string& ledgerName, const std::string& description,
+    const std::string& amount, uint8_t precision
+  ) {
+    flatbuffers::FlatBufferBuilder fbb;
+    auto currency = iroha::CreateCurrencyDirect(fbb, currencyName.c_str(), domainName.c_str(),
+                                                ledgerName.c_str(), description.c_str(),
+                                                amount.c_str(), precision);
+    auto asset = iroha::CreateAsset(fbb, ::iroha::AnyAsset::Currency, currency.Union());
+    fbb.Finish(asset);
+    auto buf = fbb.GetBufferPointer();
+    return {buf, buf + fbb.GetSize()};
   }
 
   /**

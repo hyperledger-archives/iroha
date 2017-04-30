@@ -70,10 +70,16 @@ Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
     flatbuffers::FlatBufferBuilder &fbb, const ::iroha::ConsensusEvent &);
 
 std::vector<uint8_t> CreateAccountBuffer(
-  const char* publicKey, const char* alias,
+  const std::string& publicKey, const std::string& alias,
+  const std::string& prevPubKey,
   const std::vector<std::string>& signatories, uint16_t useKeys);
 
-std::vector<uint8_t > GetTxPointer(const iroha::Transaction& tx);
+std::vector<uint8_t> CreateCurrencyBuffer(
+  const std::string& currencyName, const std::string& domainName,
+  const std::string& ledgerName, const std::string& description,
+  const std::string& amount, uint8_t precision);
+
+std::vector<uint8_t> GetTxPointer(const iroha::Transaction& tx);
 
 
 template <typename T>
