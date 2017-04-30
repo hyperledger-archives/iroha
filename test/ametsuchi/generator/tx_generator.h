@@ -132,7 +132,7 @@ std::vector<uint8_t> random_account(std::string pubkey = random_public_key(),
 }
 
 
-std::vector<uint8_t> random_peer(std::string ledger_name,
+std::vector<uint8_t> random_peer(std::string ledger_name = random_string(10),
                                  std::string pubkey = random_public_key(),
                                  std::string ip = random_ip(),
                                  double trust = random_number(0, 10)) {
@@ -212,7 +212,7 @@ flatbuffers::Offset<iroha::Signature> random_signature(
 }
 
 
-flatbuffers::Offset<iroha::AccountAdd> random_AccountAdd(
+flatbuffers::Offset<iroha::AccountAdd> random_Add(
     flatbuffers::FlatBufferBuilder& fbb,
     const std::vector<uint8_t> account = random_account()) {
   return iroha::CreateAccountAdd(fbb, fbb.CreateVector(account));
@@ -226,7 +226,7 @@ flatbuffers::Offset<iroha::AccountRemove> random_AccountRemove(
 }
 
 
-flatbuffers::Offset<iroha::AssetAdd> random_AssetAdd(
+flatbuffers::Offset<iroha::AssetAdd> random_Add(
     flatbuffers::FlatBufferBuilder& fbb,
     std::string accPubKey = random_public_key(),
     std::vector<uint8_t> asset = random_asset_wrapper_currency()) {
@@ -235,7 +235,7 @@ flatbuffers::Offset<iroha::AssetAdd> random_AssetAdd(
 }
 
 
-flatbuffers::Offset<iroha::AssetRemove> random_AssetSubtract(
+flatbuffers::Offset<iroha::AssetRemove> random_Subtract(
     flatbuffers::FlatBufferBuilder& fbb,
     std::string accPubKey = random_public_key(),
     std::vector<uint8_t> asset = random_asset_wrapper_currency()) {
@@ -254,7 +254,7 @@ flatbuffers::Offset<iroha::AssetCreate> random_AssetCreate(
 }
 
 
-flatbuffers::Offset<iroha::AssetTransfer> random_AssetTransfer(
+flatbuffers::Offset<iroha::AssetTransfer> random_Transfer(
     flatbuffers::FlatBufferBuilder& fbb,
     std::vector<uint8_t> asset = random_asset_wrapper_currency(),
     std::string sender = random_public_key(),
