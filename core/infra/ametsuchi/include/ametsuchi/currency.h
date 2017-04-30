@@ -18,6 +18,7 @@
 #ifndef AMETSUCHI_CURRENCY_H
 #define AMETSUCHI_CURRENCY_H
 
+#include <bits/stdc++.h>
 #include <stdint.h>
 #include <string>
 
@@ -25,7 +26,7 @@ namespace ametsuchi {
 
 class Currency {
  public:
-  explicit Currency(uint64_t amount, uint8_t precision = 2);
+  explicit Currency(__int128_t amount, uint8_t precision = 2);
 
   Currency operator+(const Currency &a);
   Currency operator-(const Currency &a);
@@ -33,19 +34,19 @@ class Currency {
   bool operator<(const Currency &a);
   bool operator>(const Currency &a);
 
-  uint64_t integer() const;
-  uint64_t fractional() const;
-  uint64_t get_amount() const;
+  __int128_t integer() const;
+  __int128_t fractional() const;
+  __int128_t get_amount() const;
   uint8_t get_precision() const;
 
   std::string to_string();
 
  private:
-  uint64_t amount_;
+  __int128_t amount_;
   uint8_t precision_;
-  uint64_t div_;
-  uint64_t integer_;
-  uint64_t fractional_;
+  __int128_t div_;
+  __int128_t integer_;
+  __int128_t fractional_;
 };
 }  // namespace ametsuchi
 

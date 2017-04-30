@@ -22,7 +22,7 @@
 
 namespace ametsuchi {
 
-Currency::Currency(uint64_t amount, uint8_t precision)
+Currency::Currency(__int128_t amount, uint8_t precision)
     : amount_(amount), precision_(precision), div_(1) {
   // 2^64 = 1.8 * 10^19
   if (precision > AMETSUCHI_MAX_PRECISION) throw std::bad_alloc();
@@ -56,11 +56,11 @@ std::string Currency::to_string() {
          std::to_string(this->fractional());
 }
 
-uint64_t Currency::integer() const { return integer_; }
+__int128_t Currency::integer() const { return integer_; }
 
-uint64_t Currency::fractional() const { return fractional_; }
+__int128_t Currency::fractional() const { return fractional_; }
 
-uint64_t Currency::get_amount() const { return amount_; }
+__int128_t Currency::get_amount() const { return amount_; }
 
 uint8_t Currency::get_precision() const { return precision_; }
 
