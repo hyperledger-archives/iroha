@@ -22,48 +22,48 @@ limitations under the License.
 #include <unordered_map>
 
 namespace iroha {
-    struct Transaction;
-    struct ConsensusEvent;
-    struct Ping;
+struct Transaction;
+struct ConsensusEvent;
+struct Ping;
 }
 
 namespace flatbuffers {
 // FIXME: this typedef is dirty and unstable solution. (might be able to be
 // solved by setting dependency for this header)
-    typedef std::unique_ptr<uint8_t, std::function<void(uint8_t* /* unused */)>>
-            unique_ptr_t;
+typedef std::unique_ptr<uint8_t, std::function<void(uint8_t* /* unused */)>>
+    unique_ptr_t;
 }
 
 namespace connection {
 
-    struct Config {
-        std::string name;
-        std::string ip_addr;
-        std::string port;
-    };
+struct Config {
+  std::string name;
+  std::string ip_addr;
+  std::string port;
+};
 
-    namespace iroha {
-        namespace SumeragiImpl {
-            namespace Verify {
+namespace iroha {
+namespace SumeragiImpl {
+namespace Verify {
 
-                using CallBackFunc = std::function<void(
-                        const std::string& /* from */, flatbuffers::unique_ptr_t&& /* message */)>;
+using CallBackFunc = std::function<void(
+    const std::string& /* from */, flatbuffers::unique_ptr_t&& /* message */)>;
 
-                bool send(const std::string& ip, const ::iroha::ConsensusEvent& msg);
-                bool sendAll(const ::iroha::ConsensusEvent& msg);
-                void receive(Verify::CallBackFunc&& callback);
+bool send(const std::string& ip, const ::iroha::ConsensusEvent& msg);
+bool sendAll(const ::iroha::ConsensusEvent& msg);
+void receive(Verify::CallBackFunc&& callback);
 
-            }  // namespace Verify
-        }  // namespace SumeragiImpl
-    }  // namespace iroha
+}  // namespace Verify
+}  // namespace SumeragiImpl
+}  // namespace iroha
 
-    namespace iroha {
-        namespace SumeragiImpl {
-            namespace Torii {
+namespace iroha {
+namespace SumeragiImpl {
+namespace Torii {
 
-                using CallBackFunc = std::function<void(
-                        const std::string& /* from */, flatbuffers::unique_ptr_t&& /* message */)>;
-                void receive(Torii::CallBackFunc&& callback);
+using CallBackFunc = std::function<void(
+    const std::string& /* from */, flatbuffers::unique_ptr_t&& /* message */)>;
+void receive(Torii::CallBackFunc&& callback);
 /*
 namespace HostDiscovery {
     namespace getHostInfo {
@@ -78,28 +78,32 @@ namespace HostDiscovery {
     }
 }
 }*/
-            }
-        }
-    }  // namespace iroha::SumeragiImpl::Verify
+}
+}
+}  // namespace iroha::SumeragiImpl::Verify
 
 /************************************************************************************
 * Kagami ( means Ping )
 ************************************************************************************/
-    namespace MemberShipService {
-        namespace HijiriImpl {
-            namespace Kagami {
-
-                bool send(const std::string& ip, const ::iroha::Ping& ping);
-            }  // namespace Kagami
-        }  // namespace HijiriImpl
-    }  // namespace MemberShipService
+namespace memberShipService {
+namespace HijiriImpl {
+namespace Kagami {
+bool send(const std::string& ip, const ::iroha::Ping& ping);
+}  // namespace Kagami
+}  // namespace HijiriImpl
+namespace SumeragiImpl {
+namespace Torii {
+bool send(const std::string& ip, const ::iroha::Transaction& tx);
+}  // namespace Torii
+}  // namespace SumeragiImpl
+}  // namespace memberShipService
 
 /************************************************************************************
  * Main connection
  ************************************************************************************/
-    void initialize_peer();
-    int run();
-    void finish();
+void initialize_peer();
+int run();
+void finish();
 
 }  // namespace connection
 

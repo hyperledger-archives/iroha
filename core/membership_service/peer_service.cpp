@@ -23,9 +23,13 @@ limitations under the License.
 #include <deque>
 #include <regex>
 
-//#include <connection/connection.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <membership_service/peer_service.hpp>
+#include <service/connection.hpp>
+#include <service/flatbuffer_service.h>
+#include <flatbuffers/flatbuffers.h>
+#include <transaction_generated.h>
+#include <commands_generated.h>
 
 namespace peer {
 
@@ -141,37 +145,37 @@ namespace transaction {
 
 namespace isssue {
 // invoke to issue transaction
-void add(const peer::Node &peer) {
+void add(const std::string &ip, const peer::Node &peer) {
   if (service::isExistIP(peer.ip) || service::isExistPublicKey(peer.publicKey))
     return;
-  /*  auto txPeer =
-        TransactionBuilder<Add<Peer>>()
-            .setSenderPublicKey(myself::getPublicKey())
-            .setPeer(txbuilder::createPeer(
-                peer.publicKey, peer.ip,
-                txbuilder::createTrust(
-                    PeerServiceConfig::getInstance().getMaxTrustScore(),
-    false)))
-            .build();
-    connection::iroha::PeerService::Sumeragi::send(myself::getPublicKey(),
-                                                   txPeer);
-                                                   */
+
+  flatbuffers::FlatBufferBuilder fbb;
+  auto sigs = std::vector<flatbuffers::Offset<iroha::Signature>>();
+  auto addPeerTx = iroha::CreateTransaction(fbb, fbb.CreateString(myself::getPublicKey()),
+                                            iroha::Command::PeerAdd,
+                                            flatbuffer_service::peer::CreateAdd(fbb,peer).Union());
+  fbb.Finish(addPeerTx);
+  auto bufptr = fbb.GetBufferPointer();
+  auto size = fbb.GetSize();
+  std::vector<uint8_t> buf(bufptr, bufptr + size);
+  auto addPeerTxPtr = *flatbuffers::GetRoot<iroha::Transaction>(buf.data());
+  connection::memberShipService::SumeragiImpl::Torii::send( ip, addPeerTxPtr );
 }
 
-void remove(const std::string &publicKey) {
+void remove(const std::string &ip, const std::string &publicKey) {
   if (!service::isExistPublicKey(publicKey)) return;
-  /*  auto txPeer =
-        TransactionBuilder<Remove<Peer>>()
-            .setSenderPublicKey(myself::getPublicKey())
-            .setPeer(txbuilder::createPeer(
-                publicKey, peer::defaultIP(),
-                txbuilder::createTrust(
-                    -PeerServiceConfig::getInstance().getMaxTrustScore(),
-    false)))
-            .build();
-    connection::iroha::PeerService::Sumeragi::send(myself::getPublicKey(),
-                                                   txPeer);
-                                                   */
+
+  flatbuffers::FlatBufferBuilder fbb;
+  auto sigs = std::vector<flatbuffers::Offset<iroha::Signature>>();
+  auto RemovePeerTx = iroha::CreateTransaction(fbb, fbb.CreateString(myself::getPublicKey()),
+                                            iroha::Command::PeerAdd,
+                                            flatbuffer_service::peer::CreateRemove(fbb,publicKey).Union());
+  fbb.Finish(RemovePeerTx);
+  auto bufptr = fbb.GetBufferPointer();
+  auto size = fbb.GetSize();
+  std::vector<uint8_t> buf(bufptr, bufptr + size);
+  auto addPeerTxPtr = *flatbuffers::GetRoot<iroha::Transaction>(buf.data());
+  connection::memberShipService::SumeragiImpl::Torii::send( ip, addPeerTxPtr );
 }
 
 void setTrust(const std::string &publicKey, const double &trust) {}

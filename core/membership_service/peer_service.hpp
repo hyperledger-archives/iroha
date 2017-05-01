@@ -93,11 +93,11 @@ namespace transaction {
 namespace isssue {
 
 // invoke to issue transaction
-void add(const peer::Node &);                            // TODO
-void remove(const std::string &);                        // TODO
-void setTrust(const std::string &, const double &);      // TODO
-void changeTrust(const std::string &, const double &);   // TODO
-void setActive(const std::string &, const bool active);  // TODO
+void add(const std::string &ip, const peer::Node &);
+void remove(const std::string &ip, const std::string &);
+void setTrust(const std::string &ip, const std::string &, const double &);      // TODO
+void changeTrust(const std::string &ip, const std::string &, const double &);   // TODO
+void setActive(const std::string &ip, const std::string &, const bool active);  // TODO
 
 }  // namespace isssue
 

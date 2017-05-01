@@ -501,12 +501,12 @@ namespace connection {
     flatbuffers::FlatBufferBuilder fbbResponse;
   };
 
-  namespace MemberShipService {
+  namespace memberShipService {
     namespace HijiriImpl {
       namespace Kagami {
         bool send(const std::string &ip, const ::iroha::Ping &ping) {  // TODO
           logger::info("Connection with grpc") << "Send!";
-          logger::info("Connection with grpc") << "IP exists: " << ip;
+          logger::info("Connection with grpc") << "IP is: " << ip;
           HijiriConnectionClient client(grpc::CreateChannel(
             ip + ":" +
             std::to_string(config::IrohaConfigManager::getInstance()
@@ -517,6 +517,23 @@ namespace connection {
         }
       }  // namespace Kagami
     }  // namespace HijiriImpl
+    namespace SumeragiImpl {
+      namespace Torii {
+        bool send(const std::string &ip, const ::iroha::Transaction &tx) {
+          logger::info("Connection with grpc") << "Send!";
+          if (::peer::service::isExistIP(ip)) {
+            logger::info("Connection with grpc") << "IP Exist: " << ip;
+            SumeragiConnectionClient client(grpc::CreateChannel(
+                ip + ":" +
+                std::to_string(config::IrohaConfigManager::getInstance()
+                                   .getGrpcPortNumber(50051)),
+                grpc::InsecureChannelCredentials()));
+            auto reply = client.Torii(tx);
+            return true;
+          }
+        }
+      } // namespace Torii
+    } // namespace Sumeragi Impl
   }  // namespace MemberShipService
 
   /************************************************************************************
