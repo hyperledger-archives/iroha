@@ -497,4 +497,203 @@ TEST(FlatbufferServiceTest, copyConsensusEvent) {
   ASSERT_EQ(accnested->useKeys(), 1);
 }
 
+TEST(FlatbufferServiceTest_CreateCommandDirect, AssetCreate) {
+  flatbuffers::FlatBufferBuilder fbb;
+  auto cmdexp = ::iroha::CreateAssetCreateDirect(fbb, "asset", "domain", "ledger");
+  fbb.Finish(cmdexp);
+  auto bufptr = fbb.GetBufferPointer();
+  std::vector<uint8_t> buf(bufptr, bufptr + fbb.GetSize());
+  auto rootexp = flatbuffers::GetRoot<::iroha::AssetCreate>(buf.data());
+  ASSERT_STREQ(rootexp->asset_name()->c_str(), "asset");
+  ASSERT_STREQ(rootexp->domain_name()->c_str(), "domain");
+  ASSERT_STREQ(rootexp->ledger_name()->c_str(), "ledger");
 
+  //fbb.Clear();
+  flatbuffers::FlatBufferBuilder cbb;
+  auto cmdact = flatbuffer_service::CreateCommandDirect(cbb, buf.data(), ::iroha::Command::AssetCreate);
+  cbb.Finish(cmdact);
+  auto rootact = flatbuffers::GetRoot<::iroha::AssetCreate>(cbb.GetBufferPointer());
+  ASSERT_STREQ(rootact->asset_name()->c_str(), "asset");
+  ASSERT_STREQ(rootact->domain_name()->c_str(), "domain");
+  ASSERT_STREQ(rootact->ledger_name()->c_str(), "ledger");
+}
+
+TEST(FlatbufferServiceTest_CreateCommandDirect, Add) {
+  flatbuffers::FlatBufferBuilder fbb;
+  auto currency = flatbuffer_service::asset::CreateCurrency(
+    "IROHA", "Domain", "Ledger", "Desc", "31415", 4);
+  auto cmdexp = ::iroha::CreateAddDirect(fbb, "account pubkey", &currency);
+  fbb.Finish(cmdexp);
+  auto bufptr = fbb.GetBufferPointer();
+  std::vector<uint8_t> buf(bufptr, bufptr + fbb.GetSize());
+  auto rootexp = flatbuffers::GetRoot<::iroha::Add>(buf.data());
+  ASSERT_STREQ(rootexp->accPubKey()->c_str(), "account pubkey");
+  auto currencyexp = rootexp->asset_nested_root()->asset_as_Currency();
+  ASSERT_STREQ(currencyexp->currency_name()->c_str(), "IROHA");
+  ASSERT_STREQ(currencyexp->domain_name()->c_str(), "Domain");
+  ASSERT_STREQ(currencyexp->ledger_name()->c_str(), "Ledger");
+  ASSERT_STREQ(currencyexp->description()->c_str(), "Desc");
+  ASSERT_STREQ(currencyexp->amount()->c_str(), "31415");
+  ASSERT_EQ(currencyexp->precision(), 4);
+
+  fbb.Clear();
+  auto cmdact = flatbuffer_service::CreateCommandDirect(
+    fbb, buf.data(), ::iroha::Command::AssetCreate);
+  fbb.Finish(cmdact);
+  auto rootact = flatbuffers::GetRoot<::iroha::Add>(fbb.GetBufferPointer());
+  ASSERT_STREQ(rootact->accPubKey()->c_str(), "account pubkey");
+  auto currencyact = rootact->asset_nested_root()->asset_as_Currency();
+  ASSERT_STREQ(currencyact->currency_name()->c_str(), "IROHA");
+  ASSERT_STREQ(currencyact->domain_name()->c_str(), "Domain");
+  ASSERT_STREQ(currencyact->ledger_name()->c_str(), "Ledger");
+  ASSERT_STREQ(currencyact->description()->c_str(), "Desc");
+  ASSERT_STREQ(currencyact->amount()->c_str(), "31415");
+  ASSERT_EQ(currencyact->precision(), 4);
+}
+
+TEST(FlatbufferServiceTest_CreateCommandDirect, PeerAdd) {
+  flatbuffers::FlatBufferBuilder fbb;
+  ::peer::Node np("IP", "PUBKEY", "LEDGER", 123.4, true, false);
+  auto cmdexp = flatbuffer_service::peer::CreateAdd(fbb, np);
+  fbb.Finish(cmdexp);
+  auto bufptr = fbb.GetBufferPointer();
+  std::vector<uint8_t> buf(bufptr, bufptr + fbb.GetSize());
+  auto rootexp = flatbuffers::GetRoot<::iroha::PeerAdd>(buf.data());
+  auto peerexp = rootexp->peer_nested_root();
+  ASSERT_STREQ(peerexp->ip()->c_str(), "IP");
+  ASSERT_STREQ(peerexp->publicKey()->c_str(), "PUBKEY");
+  ASSERT_STREQ(peerexp->ledger_name()->c_str(), "LEDGER");
+  ASSERT_EQ(peerexp->trust(), 123.4);
+  ASSERT_EQ(peerexp->active(), true);
+  ASSERT_EQ(peerexp->join_ledger(), false);
+
+  fbb.Clear();
+  auto cmdact = flatbuffer_service::CreateCommandDirect(
+    fbb, buf.data(), ::iroha::Command::PeerAdd);
+  fbb.Finish(cmdact);
+  auto rootact = flatbuffers::GetRoot<::iroha::PeerAdd>(fbb.GetBufferPointer());
+  auto peeract = rootexp->peer_nested_root();
+  ASSERT_STREQ(peeract->ip()->c_str(), "IP");
+  ASSERT_STREQ(peeract->publicKey()->c_str(), "PUBKEY");
+  ASSERT_STREQ(peeract->ledger_name()->c_str(), "LEDGER");
+  ASSERT_EQ(peeract->trust(), 123.4);
+  ASSERT_EQ(peeract->active(), true);
+  ASSERT_EQ(peeract->join_ledger(), false);
+}
+
+TEST(FlatbufferServiceTest_CreateCommandDirect, PeerRemove) {
+  flatbuffers::FlatBufferBuilder fbb;
+  auto cmdexp = flatbuffer_service::peer::CreateRemove(fbb, "PUBKEY");
+  fbb.Finish(cmdexp);
+  auto bufptr = fbb.GetBufferPointer();
+  std::vector<uint8_t> buf(bufptr, bufptr + fbb.GetSize());
+  auto rootexp = flatbuffers::GetRoot<::iroha::PeerAdd>(buf.data());
+  auto peerexp = rootexp->peer_nested_root();
+  ASSERT_STREQ(peerexp->publicKey()->c_str(), "PUBKEY");
+
+  fbb.Clear();
+  auto cmdact = flatbuffer_service::CreateCommandDirect(
+    fbb, buf.data(), ::iroha::Command::PeerAdd);
+  fbb.Finish(cmdact);
+  auto rootact = flatbuffers::GetRoot<::iroha::PeerAdd>(fbb.GetBufferPointer());
+  auto peeract = rootexp->peer_nested_root();
+  ASSERT_STREQ(peeract->ip()->c_str(), "IP");
+  ASSERT_STREQ(peeract->publicKey()->c_str(), "PUBKEY");
+  ASSERT_STREQ(peeract->ledger_name()->c_str(), "LEDGER");
+  ASSERT_EQ(peeract->trust(), 123.4);
+  ASSERT_EQ(peeract->active(), true);
+  ASSERT_EQ(peeract->join_ledger(), false);
+}
+
+/*
+{
+    }
+    case ::iroha::Command::PeerRemove: {
+      auto ptr = reinterpret_cast<const ::iroha::PeerRemove*>(obj);
+      return ::iroha::CreatePeerRemoveDirect(_fbb, ptr->peerPubKey()->c_str())
+        .Union();
+    }
+    case ::iroha::Command::PeerSetActive: {
+      auto ptr = reinterpret_cast<const ::iroha::PeerSetActive*>(obj);
+      return ::iroha::CreatePeerSetActiveDirect(
+        _fbb, ptr->peerPubKey()->c_str(), ptr->active())
+        .Union();
+    }
+    case ::iroha::Command::PeerSetTrust: {
+      auto ptr = reinterpret_cast<const ::iroha::PeerSetTrust*>(obj);
+      return ::iroha::CreatePeerSetTrustDirect(_fbb, ptr->peerPubKey()->c_str(),
+                                               ptr->trust())
+        .Union();
+    }
+    case ::iroha::Command::PeerChangeTrust: {
+      auto ptr = reinterpret_cast<const ::iroha::PeerChangeTrust*>(obj);
+      return ::iroha::CreatePeerChangeTrustDirect(
+        _fbb, ptr->peerPubKey()->c_str(), ptr->delta())
+        .Union();
+    }
+    case ::iroha::Command::AccountAdd: {
+      auto ptr = reinterpret_cast<const ::iroha::AccountAdd*>(obj);
+      auto account =
+        std::vector<uint8_t>(ptr->account()->begin(), ptr->account()->end());
+      return ::iroha::CreateAccountAddDirect(_fbb, &account).Union();
+    }
+    case ::iroha::Command::AccountRemove: {
+      auto ptr = reinterpret_cast<const ::iroha::AccountRemove*>(obj);
+      return ::iroha::CreateAccountRemoveDirect(_fbb, ptr->pubkey()->c_str())
+        .Union();
+    }
+    case ::iroha::Command::AccountAddSignatory: {
+      auto ptr = reinterpret_cast<const ::iroha::AccountAddSignatory*>(obj);
+      auto signatory = std::vector<flatbuffers::Offset<flatbuffers::String>>(
+        ptr->signatory()->begin(), ptr->signatory()->end());
+      return ::iroha::CreateAccountAddSignatoryDirect(
+        _fbb, ptr->account()->c_str(), &signatory)
+        .Union();
+    }
+    case ::iroha::Command::AccountRemoveSignatory: {
+      auto ptr = reinterpret_cast<const ::iroha::AccountRemoveSignatory*>(obj);
+      auto signatory = std::vector<flatbuffers::Offset<flatbuffers::String>>(
+        ptr->signatory()->begin(), ptr->signatory()->end());
+      return ::iroha::CreateAccountRemoveSignatoryDirect(
+        _fbb, ptr->account()->c_str(), &signatory)
+        .Union();
+    }
+    case ::iroha::Command::AccountSetUseKeys: {
+      auto ptr = reinterpret_cast<const ::iroha::AccountSetUseKeys*>(obj);
+      auto accounts = std::vector<flatbuffers::Offset<flatbuffers::String>>(
+        ptr->accounts()->begin(), ptr->accounts()->end());
+      return ::iroha::CreateAccountSetUseKeysDirect(_fbb, &accounts,
+                                                    ptr->useKeys())
+        .Union();
+    }
+    case ::iroha::Command::ChaincodeAdd: {
+      auto ptr = reinterpret_cast<const ::iroha::ChaincodeAdd*>(obj);
+      auto code =
+        std::vector<uint8_t>(ptr->code()->begin(), ptr->code()->end());
+      return ::iroha::CreateChaincodeAddDirect(_fbb, &code).Union();
+    }
+    case ::iroha::Command::ChaincodeRemove: {
+      throw exception::NotImplementedException("ChaincodeRemove", __FILE__);
+
+      auto ptr = reinterpret_cast<const ::iroha::ChaincodeRemove*>(obj);
+      auto code =
+          std::vector<uint8_t>(ptr->code()->begin(), ptr->code()->end());
+      return ::iroha::CreateChaincodeRemoveDirect(_fbb, &code).Union();
+
+    }
+    case ::iroha::Command::ChaincodeExecute: {
+      auto ptr = reinterpret_cast<const ::iroha::ChaincodeExecute*>(obj);
+      return ::iroha::CreateChaincodeExecuteDirect(
+        _fbb, ptr->code_name()->c_str(), ptr->domain_name()->c_str(),
+        ptr->ledger_name()->c_str())
+        .Union();
+    }
+    default: {
+      // This function should be always tested.
+      // If some command has not implemented throw exception.
+      throw exception::NotImplementedException("No match Command type",
+                                               __FILE__);
+    }
+  }
+}
+*/
