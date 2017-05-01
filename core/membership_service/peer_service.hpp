@@ -23,6 +23,8 @@ limitations under the License.
 
 namespace peer {
 
+inline static const std::string defaultLedgerName() { return ""; }
+
 inline static const std::string defaultIP() { return ""; }
 
 inline static const std::string defaultPubKey() { return ""; }
@@ -35,9 +37,16 @@ struct Node {
   bool active;
   bool join_ledger;
 
-  Node(std::string ledger_name, std::string myIP = defaultIP(), std::string myPubKey = defaultPubKey(),
-       double myTrustScore = 100.0, bool active = false, bool join_ledger)
-      : ledger_name(ledger_name), publicKey(myPubKey), ip(myIP), trust(myTrustScore), active(active),
+  Node(std::string myIP = defaultIP(),
+       std::string myPubKey = defaultPubKey(),
+       double myTrustScore = 100.0,
+       std::string ledger_name = defaultLedgerName(),
+       bool active = false, bool join_ledger = false)
+      : ledger_name(ledger_name),
+        publicKey(myPubKey),
+        ip(myIP),
+        trust(myTrustScore),
+        active(active),
         join_ledger(join_ledger) {}
 
   bool isDefaultIP() const { return ip == defaultIP(); }
@@ -84,11 +93,11 @@ namespace transaction {
 namespace isssue {
 
 // invoke to issue transaction
-void add(const peer::Node &);  // TODO
-void remove(const std::string &); // TODO
-void setTrust(const std::string &, const double &); // TODO
-void changeTrust(const std::string &, const double &); // TODO
-void setActive(const std::string &, const bool active); // TODO
+void add(const peer::Node &);                            // TODO
+void remove(const std::string &);                        // TODO
+void setTrust(const std::string &, const double &);      // TODO
+void changeTrust(const std::string &, const double &);   // TODO
+void setActive(const std::string &, const bool active);  // TODO
 
 }  // namespace isssue
 
