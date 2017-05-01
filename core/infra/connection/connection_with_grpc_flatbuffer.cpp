@@ -423,7 +423,34 @@ namespace connection {
       : stub_(Hijiri::NewStub(channel)) {}
 
     const ::iroha::Response *Kagami(const ::iroha::Ping &ping) const {
-      // TODO
+        ::grpc::ClientContext clientContext;
+        flatbuffers::FlatBufferBuilder fbbPing;
+
+        auto pingOffset = ::iroha::CreatePingDirect(
+            fbbPing, ping.message()->c_str(), ping.sender()->c_str()
+        );
+        fbbPing.Finish(pingOffset);
+
+        flatbuffers::BufferRef<::iroha::Ping> reqPingRef(
+            fbbPing.GetBufferPointer(), fbbPing.GetSize()
+        );
+
+        flatbuffers::BufferRef<Response> responseRef;
+
+
+        auto res = stub_->Kagami(&clientContext, reqPingRef, &responseRef);;
+        logger::info("Connection with grpc") << "Send!";
+
+        if (res.ok()) {
+            logger::info("connection")
+                    << "response: " << responseRef.GetRoot()->message();
+            return responseRef.GetRoot();
+        } else {
+            logger::error("connection") << static_cast<int>(res.error_code())
+                << ": " << res.error_message();
+            // std::cout << status.error_code() << ": " << status.error_message();
+            return responseRef.GetRoot();
+        }
     }
 
   private:
@@ -434,13 +461,41 @@ namespace connection {
   public:
     Status Kagami(ServerContext *context,
                   const flatbuffers::BufferRef<Ping> *request,
-                  flatbuffers::BufferRef<Response> *response) override {
+                  flatbuffers::BufferRef<Response> *responseRef
+    ) override {
       fbbResponse.Clear();
-
       {
-        // TODO
+          auto responseOffset = ::iroha::CreateResponseDirect(
+              fbbResponse, "OK!!", ::iroha::Code::UNDECIDED,
+              sign(fbbResponse, hash::sha3_256_hex(
+                  request->GetRoot()->message()->str() +
+                  request->GetRoot()->message()->str())
+              )
+          );
+          fbbResponse.Finish(responseOffset);
+
+          *responseRef = flatbuffers::BufferRef<Response>(
+                  fbbResponse.GetBufferPointer(), fbbResponse.GetSize()
+          );
+
+          return Status::OK;
       }
     }
+
+    flatbuffers::Offset<::iroha::Signature> sign(
+              flatbuffers::FlatBufferBuilder &fbb, const std::string &tx) {
+          const auto stamp = datetime::unixtime();
+          const auto hashWithTimestamp =
+                  hash::sha3_256_hex(tx + std::to_string(stamp));
+          const auto signature = signature::sign(
+                  hashWithTimestamp,
+                  config::PeerServiceConfig::getInstance().getMyPublicKey(),
+                  config::PeerServiceConfig::getInstance().getMyPrivateKey());
+          const std::vector<uint8_t> sigblob(signature.begin(), signature.end());
+          return ::iroha::CreateSignatureDirect(
+                  fbb, config::PeerServiceConfig::getInstance().getMyPublicKey().c_str(),
+                  &sigblob, stamp);
+    };
 
   private:
     flatbuffers::FlatBufferBuilder fbbResponse;
