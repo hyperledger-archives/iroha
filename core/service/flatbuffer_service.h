@@ -89,7 +89,7 @@ namespace flatbuffer_service {
     const iroha::ConsensusEvent &event, const std::string &publicKey,
     const std::string &signature);
 
-  Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> toTransactionWrapper(
+  Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> toTxWrapper(
     flatbuffers::FlatBufferBuilder &, const ::iroha::Transaction &);
 
   Expected<flatbuffers::unique_ptr_t> toConsensusEvent(
@@ -106,12 +106,12 @@ namespace flatbuffer_service {
 
     flatbuffers::Offset<PeerChangeTrust> CreateChangeTrust(
       flatbuffers::FlatBufferBuilder &fbb,
-      const std::string &pubKey, double &delta);
+      const std::string &pubKey, double delta);
 
     flatbuffers::Offset<PeerSetTrust> CreateSetTrust(
       flatbuffers::FlatBufferBuilder &fbb,
       const std::string &pubKey,
-      double &trust);
+      double trust);
 
     flatbuffers::Offset<PeerSetActive> CreateSetActive(
       flatbuffers::FlatBufferBuilder &fbb,

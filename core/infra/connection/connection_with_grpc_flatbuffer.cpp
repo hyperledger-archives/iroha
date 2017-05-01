@@ -202,8 +202,6 @@ namespace connection {
           fbbTransaction, txSig->publicKey()->c_str(), &data));
       }
 
-      // FIXED: leak reinterpret_cast<>(...)
-      // -> extractCommandBuffer(calls flatbuffer_service::CreateCommandDirect())
       auto commandOffset = [&] {
         std::size_t length = 0;
         auto commandBuf = extractCommandBuffer(transaction, length);
@@ -360,10 +358,10 @@ namespace connection {
 
   private:
     flatbuffers::Offset<::iroha::Signature> sign(
-      flatbuffers::FlatBufferBuilder &fbb, const std::string &hash) {
+      flatbuffers::FlatBufferBuilder &fbb, const std::string &tx) {
       const auto stamp = datetime::unixtime();
       const auto hashWithTimestamp =
-        hash::sha3_256_hex(hash + std::to_string(stamp));
+        hash::sha3_256_hex(tx + std::to_string(stamp));
       const auto signature = signature::sign(
         hashWithTimestamp,
         config::PeerServiceConfig::getInstance().getMyPublicKey(),

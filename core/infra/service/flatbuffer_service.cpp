@@ -251,62 +251,31 @@ namespace flatbuffer_service {
       res += "]\n";
       return res;
     };
-    /*
-    command_to_strings[iroha::Command::AssetAdd] =
-        [&](const void* command) -> std::string {
-      const iroha::AssetAdd* cmd = static_cast<const iroha::AssetAdd*>(command);
+    command_to_strings[iroha::Command::Add] =
+      [&](const void* command) -> std::string {
+        const iroha::Add* cmd = static_cast<const iroha::Add*>(command);
 
-      std::string res = "AssetAdd[\n";
-      res += "    accPubKey:" + cmd->accPubKey()->str() + ",\n";
-      res += "    asset:" +
-             any_asset_to_strings[cmd->asset_nested_root()->asset_type()](
+        std::string res = "Add[\n";
+        res += "    accPubkey:" + cmd->accPubKey()->str() + ",\n";
+        res += "    asset:" +
+               any_asset_to_strings[cmd->asset_nested_root()->asset_type()](
                  cmd->asset_nested_root()->asset());
-      res += "]\n";
-      return res;
-    };
-    command_to_strings[iroha::Command::AssetRemove] =
-        [&](const void* command) -> std::string {
-      const iroha::AssetRemove* cmd =
-          static_cast<const iroha::AssetRemove*>(command);
-
-      std::string res = "AssetRemove[\n";
-      res += "    accPubKey:" + cmd->accPubKey()->str() + ",\n";
-      res += "    asset:" +
-             any_asset_to_strings[cmd->asset_nested_root()->asset_type()](
-                 cmd->asset_nested_root()->asset());
-      res += "]\n";
-      return res;
-    };
-    command_to_strings[iroha::Command::AssetTransfer] =
-        [&](const void* command) -> std::string {
-      const iroha::AssetTransfer* cmd =
-          static_cast<const iroha::AssetTransfer*>(command);
-
-      std::string res = "AssetTransfer[\n";
-      res += "    sender:" + cmd->sender()->str() + ",\n";
-      res += "    receiver:" + cmd->receiver()->str() + ",\n";
-      res += "    asset:" +
-             any_asset_to_strings[cmd->asset_nested_root()->asset_type()](
-                 cmd->asset_nested_root()->asset());
-      res += "]\n";
-      return res;
-    };
-  */
+        res += "]\n";
+        return res;
+      };
     command_to_strings[iroha::Command::PeerAdd] =
         [&](const void* command) -> std::string {
       const iroha::PeerAdd* cmd = static_cast<const iroha::PeerAdd*>(command);
 
       std::string res = "PeerAdd[\n";
-      /*
-  res += "    peer:publicKey:" + cmd->peer_nested_root()->publicKey()->str() +
-         ",\n";
-  res += "    peer:ip:" + cmd->peer_nested_root()->ip()->str() + ",\n";
-  res += "    peer:active:" +
-         std::to_string(cmd->peer_nested_root()->active()) + ",\n";
-  res += "    peer:join_ledger:" +
-         std::to_string(cmd->peer_nested_root()->join_ledger()) + "\n";
-  res += "]\n";
-       */
+      res += "    peer:publicKey:" + cmd->peer_nested_root()->publicKey()->str() +
+             ",\n";
+      res += "    peer:ip:" + cmd->peer_nested_root()->ip()->str() + ",\n";
+      res += "    peer:active:" +
+             std::to_string(cmd->peer_nested_root()->active()) + ",\n";
+      res += "    peer:join_ledger:" +
+             std::to_string(cmd->peer_nested_root()->join_ledger()) + "\n";
+      res += "]\n";
       return res;
     };
     command_to_strings[iroha::Command::PeerRemove] =
