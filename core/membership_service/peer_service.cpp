@@ -23,13 +23,13 @@ limitations under the License.
 #include <deque>
 #include <regex>
 
+#include <commands_generated.h>
+#include <flatbuffers/flatbuffers.h>
+#include <service/flatbuffer_service.h>
+#include <transaction_generated.h>
 #include <infra/config/peer_service_with_json.hpp>
 #include <membership_service/peer_service.hpp>
 #include <service/connection.hpp>
-#include <service/flatbuffer_service.h>
-#include <flatbuffers/flatbuffers.h>
-#include <transaction_generated.h>
-#include <commands_generated.h>
 
 namespace peer {
 
@@ -71,9 +71,9 @@ void initialize() {
   }
   for (const auto &json_peer : PeerServiceConfig::getInstance().getGroup()) {
     peerList.push_back(std::make_shared<Node>(
-      json_peer["ip"].get<std::string>(),
-      json_peer["publicKey"].get<std::string>(),
-       PeerServiceConfig::getInstance().getMaxTrustScore()));
+        json_peer["ip"].get<std::string>(),
+        json_peer["publicKey"].get<std::string>(),
+        PeerServiceConfig::getInstance().getMaxTrustScore()));
   }
   is_active = false;
 }
@@ -98,9 +98,8 @@ Nodes getActivePeerList() {
   }
 
   // TODO: maintain nodes already sorted
-  sort(nodes.begin(), nodes.end(), [](const auto &a, const auto &b) {
-    return a->trust > b->trust;
-  });
+  sort(nodes.begin(), nodes.end(),
+       [](const auto &a, const auto &b) { return a->trust > b->trust; });
 
   return nodes;
 }
@@ -150,37 +149,75 @@ void add(const std::string &ip, const peer::Node &peer) {
     return;
 
   flatbuffers::FlatBufferBuilder fbb;
-  auto sigs = std::vector<flatbuffers::Offset<iroha::Signature>>();
-  auto addPeerTx = iroha::CreateTransaction(fbb, fbb.CreateString(myself::getPublicKey()),
-                                            iroha::Command::PeerAdd,
-                                            flatbuffer_service::peer::CreateAdd(fbb,peer).Union());
+  auto addPeerTx = iroha::CreateTransaction(
+      fbb, fbb.CreateString(myself::getPublicKey()), iroha::Command::PeerAdd,
+      flatbuffer_service::peer::CreateAdd(fbb, peer).Union());
   fbb.Finish(addPeerTx);
-  auto bufptr = fbb.GetBufferPointer();
-  auto size = fbb.GetSize();
-  std::vector<uint8_t> buf(bufptr, bufptr + size);
-  auto addPeerTxPtr = *flatbuffers::GetRoot<iroha::Transaction>(buf.data());
-  connection::memberShipService::SumeragiImpl::Torii::send( ip, addPeerTxPtr );
+  auto &addPeerTxEnt =
+      *flatbuffers::GetRoot<iroha::Transaction>(fbb.GetBufferPointer());
+  connection::memberShipService::SumeragiImpl::Torii::send(ip, addPeerTxEnt);
 }
 
 void remove(const std::string &ip, const std::string &publicKey) {
   if (!service::isExistPublicKey(publicKey)) return;
 
   flatbuffers::FlatBufferBuilder fbb;
-  auto sigs = std::vector<flatbuffers::Offset<iroha::Signature>>();
-  auto RemovePeerTx = iroha::CreateTransaction(fbb, fbb.CreateString(myself::getPublicKey()),
-                                            iroha::Command::PeerAdd,
-                                            flatbuffer_service::peer::CreateRemove(fbb,publicKey).Union());
-  fbb.Finish(RemovePeerTx);
-  auto bufptr = fbb.GetBufferPointer();
-  auto size = fbb.GetSize();
-  std::vector<uint8_t> buf(bufptr, bufptr + size);
-  auto addPeerTxPtr = *flatbuffers::GetRoot<iroha::Transaction>(buf.data());
-  connection::memberShipService::SumeragiImpl::Torii::send( ip, addPeerTxPtr );
+  auto removePeerTx = iroha::CreateTransaction(
+      fbb, fbb.CreateString(myself::getPublicKey()), iroha::Command::PeerAdd,
+      flatbuffer_service::peer::CreateRemove(fbb, publicKey).Union());
+  fbb.Finish(removePeerTx);
+  auto &removePeerTxEnt =
+      *flatbuffers::GetRoot<iroha::Transaction>(fbb.GetBufferPointer());
+  connection::memberShipService::SumeragiImpl::Torii::send(ip, removePeerTxEnt);
 }
 
-void setTrust(const std::string &publicKey, const double &trust) {}
-void changeTrust(const std::string &publicKey, const double &trust) {}
-void setActive(const std::string &publicKey, const bool active) {}
+void setTrust(const std::string &ip, const std::string &publicKey,
+              const double &trust) {
+  if (!service::isExistPublicKey(publicKey)) return;
+
+  flatbuffers::FlatBufferBuilder fbb;
+  auto setTrustPeerTx = iroha::CreateTransaction(
+      fbb, fbb.CreateString(myself::getPublicKey()),
+      iroha::Command::PeerSetTrust,
+      flatbuffer_service::peer::CreateSetTrust(fbb, publicKey, trust).Union());
+  fbb.Finish(setTrustPeerTx);
+  auto &setTrustPeerTxEnt =
+      *flatbuffers::GetRoot<iroha::Transaction>(fbb.GetBufferPointer());
+  connection::memberShipService::SumeragiImpl::Torii::send(ip,
+                                                           setTrustPeerTxEnt);
+}
+void changeTrust(const std::string &ip, const std::string &publicKey,
+                 const double &trust) {
+  if (!service::isExistPublicKey(publicKey)) return;
+
+  flatbuffers::FlatBufferBuilder fbb;
+  auto changeTrustPeerTx = iroha::CreateTransaction(
+      fbb, fbb.CreateString(myself::getPublicKey()),
+      iroha::Command::PeerChangeTrust,
+      flatbuffer_service::peer::CreateChangeTrust(fbb, publicKey, trust)
+          .Union());
+  fbb.Finish(changeTrustPeerTx);
+  auto &changeTrustPeerTxEnt =
+      *flatbuffers::GetRoot<iroha::Transaction>(fbb.GetBufferPointer());
+  connection::memberShipService::SumeragiImpl::Torii::send(
+      ip, changeTrustPeerTxEnt);
+}
+void setActive(const std::string &ip, const std::string &publicKey,
+               const bool active) {
+  if (!service::isExistPublicKey(publicKey)) return;
+
+  flatbuffers::FlatBufferBuilder fbb;
+  auto setActivePeerTx = iroha::CreateTransaction(
+      fbb, fbb.CreateString(myself::getPublicKey()),
+      iroha::Command::PeerSetActive,
+      flatbuffer_service::peer::CreateSetActive(fbb, publicKey, active)
+          .Union());
+  fbb.Finish(setActivePeerTx);
+  auto &setActivePeerTxEnt =
+      *flatbuffers::GetRoot<iroha::Transaction>(fbb.GetBufferPointer());
+  connection::memberShipService::SumeragiImpl::Torii::send(ip,
+                                                           setActivePeerTxEnt);
+}
 
 }  // namespace isssue
 namespace executor {
@@ -263,8 +300,7 @@ bool add(const peer::Node &peer) {
     if (service::isExistIP(peer.ip))
       throw exception::service::DuplicationIPException(peer.ip);
     if (service::isExistPublicKey(peer.publicKey))
-      throw exception::service::DuplicationPublicKeyException(
-          peer.publicKey);
+      throw exception::service::DuplicationPublicKeyException(peer.publicKey);
   } catch (exception::service::DuplicationPublicKeyException &e) {
     logger::warning("validate addPeer") << e.what();
     return false;

@@ -21,4 +21,6 @@ target_link_libraries(membership_service
     exception
     logger
     config_manager
+    flatbuffer_service
+    connection_with_grpc_flatbuffer
 )

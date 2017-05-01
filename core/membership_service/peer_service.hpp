@@ -41,7 +41,7 @@ struct Node {
        std::string myPubKey = defaultPubKey(),
        double myTrustScore = 100.0,
        std::string ledger_name = defaultLedgerName(),
-       bool active = false, bool join_ledger = false)
+       bool active = false, bool join_ledger = true)
       : ledger_name(ledger_name),
         publicKey(myPubKey),
         ip(myIP),
@@ -95,9 +95,9 @@ namespace isssue {
 // invoke to issue transaction
 void add(const std::string &ip, const peer::Node &);
 void remove(const std::string &ip, const std::string &);
-void setTrust(const std::string &ip, const std::string &, const double &);      // TODO
-void changeTrust(const std::string &ip, const std::string &, const double &);   // TODO
-void setActive(const std::string &ip, const std::string &, const bool active);  // TODO
+void setTrust(const std::string &ip, const std::string &, const double &);
+void changeTrust(const std::string &ip, const std::string &, const double &);
+void setActive(const std::string &ip, const std::string &, const bool active);
 
 }  // namespace isssue
 
