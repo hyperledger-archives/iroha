@@ -31,17 +31,14 @@ namespace repository{
     void append(const iroha::Transaction& tx){
         if(db == nullptr) init();
 
-        auto buf = flatbuffer_service::GetTxPointer(tx);
-        db->append(&buf);
+        auto buf = flatbuffer_service::transaction::GetTxPointer(tx);
+        db->append(&buf.value());
     }
 
-    std::vector<iroha::Asset*> findAssetByPublicKey(const flatbuffers::String& key){
+    std::vector<const iroha::Asset*> findAssetByPublicKey(const flatbuffers::String& key){
         if(db == nullptr) init();
-
         flatbuffers::FlatBufferBuilder fbb;
-        std::vector<iroha::Asset*> res;
-        auto curs = db->accountGetAllAssets(&key);
-        return res;
+        return db->accountGetAllAssets(&key);
     }
 
     bool existAccountOf(const flatbuffers::String& key){
@@ -53,6 +50,11 @@ namespace repository{
         if(db == nullptr) init();
 
         return false;
+    }
+
+    const std::string getMerkleRoot(){
+        if(db == nullptr) init();
+        return db->getMerkleRoot()->str();
     }
 
 };

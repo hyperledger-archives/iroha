@@ -24,9 +24,11 @@ namespace repository{
 
     void append(const iroha::Transaction& tx);
 
-    std::vector<iroha::Asset*> findAssetByPublicKey(const flatbuffers::String& key);
+    std::vector<const iroha::Asset*> findAssetByPublicKey(const flatbuffers::String& key);
 
     bool existAccountOf(const flatbuffers::String& key);
+
+    const std::string getMerkleRoot();
 };
 
 #endif //IROHA_REPOSITORY_H

@@ -71,8 +71,6 @@ namespace flatbuffer_service {
   Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
     flatbuffers::FlatBufferBuilder &fbb, const ::iroha::ConsensusEvent &);
 
-  std::vector<uint8_t> GetTxPointer(const iroha::Transaction &tx);
-
 
   template<typename T>
   VoidHandler ensureNotNull(T *value) {
@@ -156,6 +154,8 @@ namespace flatbuffer_service {
 
 
   namespace transaction {  // namespace transaction
+
+    Expected<std::vector<uint8_t>> GetTxPointer(const iroha::Transaction &tx);
 
     const Transaction &CreateTransaction(
       flatbuffers::FlatBufferBuilder &fbb, iroha::Command cmd_type,

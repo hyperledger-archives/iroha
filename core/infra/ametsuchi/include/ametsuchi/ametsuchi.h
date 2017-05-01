@@ -128,6 +128,8 @@ class Ametsuchi {
                                       iroha::Command command,
                                       bool uncommitted = false);
 
+  const flatbuffers::String* getMerkleRoot();
+
  private:
   /* for internal use only */
 
