@@ -22,6 +22,7 @@
 #include <utils/explore.hpp>
 #include <utils/logger.hpp>
 #include <utils/timer.hpp>
+#include <runtime/runtime.hpp>
 
 #include <main_generated.h>
 
@@ -32,7 +33,7 @@
 #include <queue>
 #include <string>
 #include <thread>
-
+#include <ametsuchi/repository.hpp>
 #include <service/connection.hpp>
 #include "sumeragi.hpp"
 
@@ -66,8 +67,8 @@ namespace sumeragi {
 
     namespace detail {
 
-        std::string hash(const Transaction& tx) {
-            return hash::sha3_256_hex(flatbuffer_service::toString(tx));
+        std::string hash(const Transaction& tx, const std::string& root) {
+            return hash::sha3_256_hex(flatbuffer_service::toString(tx) + root);
         };
 
         bool eventSignatureIsEmpty(const ::iroha::ConsensusEvent& event) {
@@ -180,18 +181,18 @@ namespace sumeragi {
         connection::iroha::SumeragiImpl::Verify::receive(
                 [](const std::string& from, flatbuffers::unique_ptr_t&& eventUniqPtr) {
                     context->printProgress.print(15,
-                                                 "receive transaction form other sumeragi");
+                        "receive transaction form other sumeragi"
+                    );
 
                     auto eventPtr =
                             flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventUniqPtr.get());
 
                     if (eventPtr->code() == iroha::Code::COMMIT) {
                         context->printProgress.print(19, "receive commited event");
-                        // ToDo #(tx) = 1
+                        // Feature work #(tx) = 1
                         const auto txptr = eventPtr->transactions()->Get(0)->tx_nested_root();
-                        if (txCache.find(detail::hash(*txptr)) == txCache.end()) {
-                            // ToDo executor
-                            txCache[detail::hash(*txptr)] = "commited";
+                        if (txCache.find(detail::hash(*txptr, repository::getMerkleRoot())) == txCache.end()) {
+                            txCache[detail::hash(*txptr, repository::getMerkleRoot())] = "commited";
                         }
                     } else {
                         // send processTransaction(event) as a task to processing pool
@@ -257,9 +258,11 @@ namespace sumeragi {
 
         context->printProgress.print(6, "generate hash");
 
+        const auto hash = detail::hash(
+                *getRoot()->transactions()->Get(0)->tx_nested_root(),
+                repository::getMerkleRoot()
+        );  // ToDo: #(tx) = 1
         {
-            const auto hash = detail::hash(
-                    *getRoot()->transactions()->Get(0)->tx_nested_root());  // ToDo: #(tx) = 1
             context->printProgress.print(7, "sign hash using my key-pair");
 
             const auto signature =
@@ -330,8 +333,6 @@ namespace sumeragi {
             } else {
 
                 {
-                    const auto hash = detail::hash(
-                            *getRoot()->transactions()->Get(0)->tx_nested_root());  // ToDo: #(tx) = 1
                     context->printProgress.print(7, "sign hash using my key-pair");
 
                     const auto signature =
