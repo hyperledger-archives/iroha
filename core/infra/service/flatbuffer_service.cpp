@@ -807,6 +807,18 @@ namespace flatbuffer_service {
   }  // namespace asset
 
   namespace transaction {  // namespace transaction
+
+      Expected<std::vector<uint8_t>> GetTxPointer(const iroha::Transaction &tx){
+        flatbuffers::FlatBufferBuilder xbb;
+        auto txOffset = copyTransaction(xbb, tx);
+        if (!txOffset) {
+          return makeUnexpected(txOffset.excptr());
+        }
+        xbb.Finish(txOffset.value());
+        auto ptr = xbb.GetBufferPointer();
+        std::vector<uint8_t> nested(ptr, ptr + xbb.GetSize());
+        return nested;
+      }
 /*
  * nullptrなしの状態をハッシュ化するのは正しいか不明なのでコメントアウト
     const Transaction& CreateTransaction(
