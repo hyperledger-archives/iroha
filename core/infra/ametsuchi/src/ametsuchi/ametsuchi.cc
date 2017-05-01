@@ -211,5 +211,11 @@ std::vector<AM_val> Ametsuchi::getCommandByKey(
   return tx_store.getCommandByKey(pubKey, command, uncommitted);
 }
 
+const flatbuffers::String* Ametsuchi::getMerkleRoot(){
+  flatbuffers::FlatBufferBuilder fbb;
+  fbb.CreateString(reinterpret_cast<const char*>(tx_store.merkle_root().data()));
+  return flatbuffers::GetRoot<flatbuffers::String>(fbb.GetBufferPointer());
+}
+
 
 }  // namespace ametsuchi
