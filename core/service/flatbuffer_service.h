@@ -123,8 +123,7 @@ namespace flatbuffer_service {
   namespace primitives {
     std::vector<uint8_t> CreatePeer(const ::peer::Node &peer);
 
-    std::vector<uint8_t> CreateSignature(flatbuffers::FlatBufferBuilder &fbb,
-                                         const std::string &publicKey,
+    std::vector<uint8_t> CreateSignature(const std::string &publicKey,
                                          std::vector<uint8_t> signature,
                                          uint64_t timestamp);
   }  // namespace primitives
