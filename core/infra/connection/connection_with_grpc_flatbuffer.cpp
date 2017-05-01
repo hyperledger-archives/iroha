@@ -147,25 +147,23 @@ namespace connection {
           *consensusEvent.transactions()->Get(0)->tx_nested_root());
 
       flatbuffers::FlatBufferBuilder fbb;
-      // ToDo: Copy consensus event twice in toConsensusEvent() and
-      // copyConsensusEvent(). What's best solution?
+
       auto eventOffset =
         flatbuffer_service::copyConsensusEvent(fbb, consensusEvent);
+
       if (!eventOffset) {
-        // FIXME:
-        // RPCのエラーではないが、Responseで返すべきか、makeUnexpectedで返すべきか
-        // ERROR;
-        assert(false);  // ToDo: Do error-handling
+        // FIXME: Argment BufferRef<Response>, return grpc::Status
+        assert(false);
       }
 
       fbb.Finish(*eventOffset);
 
-      auto requestConsensusEventRef =
+      auto reqEventRef =
         flatbuffers::BufferRef<::iroha::ConsensusEvent>(fbb.GetBufferPointer(),
                                                         fbb.GetSize());
 
       Status status =
-        stub_->Verify(&context, requestConsensusEventRef, &responseRef);
+        stub_->Verify(&context, reqEventRef, &responseRef);
 
       if (status.ok()) {
         logger::info("connection")
@@ -175,67 +173,35 @@ namespace connection {
         logger::error("connection") << static_cast<int>(status.error_code())
                                     << ": " << status.error_message();
         return responseRef.GetRoot();
-        // std::cout << status.error_code() << ": " << status.error_message();
-        // return {"RPC failed", RESPONSE_ERRCONN};
       }
     }
 
     const ::iroha::Response *Torii(
-      const ::iroha::Transaction &transaction) const {
+      const ::iroha::Transaction &tx) const {
       // Copy transaction to FlatBufferBuilder memory, then create
       // BufferRef<Transaction>
       // and share it to another sumeragi by using stub interface Torii.
       logger::info("connection") << "Operation";
       logger::info("connection")
-          << "Transaction: "
-          << flatbuffer_service::toString(transaction);
+          << "tx: "  << flatbuffer_service::toString(tx);
 
       ::grpc::ClientContext clientContext;
-      flatbuffers::FlatBufferBuilder fbbTransaction;
+      flatbuffers::FlatBufferBuilder xbb;
 
-      std::vector<uint8_t> hashBlob(transaction.hash()->begin(),
-                                    transaction.hash()->end());
-
-      std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
-      for (auto &&txSig : *transaction.signatures()) {
-        std::vector<uint8_t> data(*txSig->signature()->begin(),
-                                  *txSig->signature()->end());
-        signatures.emplace_back(::iroha::CreateSignatureDirect(
-          fbbTransaction, txSig->publicKey()->c_str(), &data));
+      auto txOffset = flatbuffer_service::copyTransaction(xbb, tx);
+      if (!txOffset) {
+        assert(false);
       }
 
-      auto commandOffset = [&] {
-        std::size_t length = 0;
-        auto commandBuf = extractCommandBuffer(transaction, length);
-        flatbuffers::Verifier verifier(commandBuf.get(), length);
-        ::iroha::VerifyCommand(verifier, commandBuf.get(),
-                               transaction.command_type());
-        return flatbuffer_service::CreateCommandDirect(
-          fbbTransaction, commandBuf.get(), transaction.command_type());
-      }();
+      xbb.Finish(txOffset.value());
 
-      std::vector<uint8_t> attachmentData(
-        *transaction.attachment()->data()->begin(),
-        *transaction.attachment()->data()->end());
-
-      auto transactionOffset = ::iroha::CreateTransactionDirect(
-        fbbTransaction, transaction.creatorPubKey()->c_str(),
-        transaction.command_type(), commandOffset, &signatures, &hashBlob,
-        transaction.timestamp(),
-        ::iroha::CreateAttachmentDirect(
-          fbbTransaction, transaction.attachment()->mime()->c_str(),
-          &attachmentData
-        ));
-
-      fbbTransaction.Finish(transactionOffset);
-
-      flatbuffers::BufferRef<::iroha::Transaction> reqTransactionRef(
-        fbbTransaction.GetBufferPointer(), fbbTransaction.GetSize());
+      flatbuffers::BufferRef<::iroha::Transaction> requestTxRef(
+        xbb.GetBufferPointer(), xbb.GetSize());
 
       flatbuffers::BufferRef<Response> responseRef;
 
       Status status =
-        stub_->Torii(&clientContext, reqTransactionRef, &responseRef);
+        stub_->Torii(&clientContext, requestTxRef, &responseRef);
 
       if (status.ok()) {
         logger::info("connection")
@@ -247,19 +213,6 @@ namespace connection {
         // std::cout << status.error_code() << ": " << status.error_message();
         return responseRef.GetRoot();
       }
-    }
-
-  private:
-    flatbuffers::unique_ptr_t extractCommandBuffer(
-      const ::iroha::Transaction &transaction, std::size_t &length) {
-      flatbuffers::FlatBufferBuilder fbbCommand;
-      auto type = transaction.command_type();
-      auto obj = transaction.command();
-      auto commandOffset =
-        flatbuffer_service::CreateCommandDirect(fbbCommand, obj, type);
-      fbbCommand.Finish(commandOffset);
-      length = fbbCommand.GetSize();
-      return fbbCommand.ReleaseBufferPointer();
     }
 
   private:
