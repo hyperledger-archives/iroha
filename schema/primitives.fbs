@@ -71,6 +71,17 @@ table AccountPermissionAsset {
   read:     bool;  // ability to access some amount from account
 }
 
+table AccountPermissionLedgerWrapper {
+  permission: [ubyte] (nested_flatbuffer: "AccountPermissionLedger");
+}
+table AccountPermissionDomainWrapper {
+  permission: [ubyte] (nested_flatbuffer: "AccountPermissionDomain");
+}
+table AccountPermissionAssetWrapper {
+  permission: [ubyte] (nested_flatbuffer: "AccountPermissionAsset");
+}
+
+
 union AccountPermission { AccountPermissionRoot, AccountPermissionLedger, AccountPermissionDomain, AccountPermissionAsset}
 
 /////////////////////////////////////

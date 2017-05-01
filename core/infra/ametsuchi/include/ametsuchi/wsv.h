@@ -18,14 +18,16 @@
 #define AMETSUCHI_WSV_H
 
 
+#include <account_generated.h>
 #include <ametsuchi/common.h>
+#include <asset_generated.h>
+#include <commands_generated.h>
 #include <flatbuffers/flatbuffers.h>
 #include <lmdb.h>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <commands_generated.h>
 
 namespace ametsuchi {
 
@@ -50,18 +52,25 @@ class WSV {
 
 
   // WSV queries:
-  AM_val accountGetAsset(const flatbuffers::String *pubKey,
-                         const flatbuffers::String *ledger_name,
-                         const flatbuffers::String *domain_name,
-                         const flatbuffers::String *asset_name,
-                         bool uncommitted = false, MDB_env *env = nullptr);
+  ::iroha::Asset *accountGetAsset(const flatbuffers::String *pubKey,
+                                        const flatbuffers::String *ledger_name,
+                                        const flatbuffers::String *domain_name,
+                                        const flatbuffers::String *asset_name,
+                                        bool uncommitted = false,
+                                        MDB_env *env = nullptr);
 
-  std::vector<AM_val> accountGetAllAssets(const flatbuffers::String *pubKey,
-                                          bool uncommitted = true,
-                                          MDB_env *env = nullptr);
+  std::vector<const ::iroha::Asset *> accountGetAllAssets(
+      const flatbuffers::String *pubKey, bool uncommitted = true,
+      MDB_env *env = nullptr);
 
-  AM_val pubKeyGetPeer(const flatbuffers::String *pubKey,
-                       bool uncommitted = false, MDB_env *env = nullptr);
+  // asset_id is asset_name + domain_name + ledger_name
+  const ::iroha::Asset *assetidGetAsset(const std::string &&assetid,
+                                        bool uncommitted = false,
+                                        MDB_env *env = nullptr);
+
+  const ::iroha::Peer *pubKeyGetPeer(const flatbuffers::String *pubKey,
+                                     bool uncommitted = false,
+                                     MDB_env *env = nullptr);
 
   /*
    * Get total number of trees
@@ -80,19 +89,42 @@ class WSV {
   void read_created_assets();
 
   // WSV commands:
+  // Use for operate Asset.
+  void add(const iroha::Add *command);
+  void subtract(const iroha::Subtract *command);
+  void transfer(const iroha::Transfer *command);
+
+  // Use for meta operate in domain
   void asset_create(const iroha::AssetCreate *command);
-  void asset_add(const iroha::AssetAdd *command);
   void asset_remove(const iroha::AssetRemove *command);
-  void asset_transfer(const iroha::AssetTransfer *command);
-  void account_add(const iroha::AccountAdd *command);
-  void account_remove(const iroha::AccountRemove *command);
+
+  // Use for peer operate
   void peer_add(const iroha::PeerAdd *command);
   void peer_remove(const iroha::PeerRemove *command);
+  void peer_set_active(const iroha::PeerSetActive *command);
+  void peer_set_trust(const iroha::PeerSetTrust *command);
+  void peer_change_trust(const iroha::PeerChangeTrust *command);
+
+  // Use for account operate
+  void account_add(const iroha::AccountAdd *command);
+  void account_remove(const iroha::AccountRemove *command);
+  void account_add_signatory(const iroha::AccountAddSignatory *command);
+  void account_remove_signatory(const iroha::AccountRemoveSignatory *command);
+  void account_set_use_keys(const iroha::AccountSetUseKeys *command);
+  void account_migrate(const iroha::AccountMigrate *command);
+
+  void chaincode_add(const iroha::ChaincodeAdd *command);
+  void chaincode_remove(const iroha::ChaincodeRemove *command);
+  void chaincode_execute(const iroha::ChaincodeExecute *command);
+
+  void permisson_add(const iroha::PermissionAdd *command);
+  void permisson_remove(const iroha::PermissionRemove *command);
+
   // manipulate with account's assets using these functions
   void account_add_currency(const flatbuffers::String *acc_pub_key,
                             const flatbuffers::Vector<uint8_t> *asset_fb);
-  void account_remove_currency(const flatbuffers::String *acc_pub_key,
-                               const flatbuffers::Vector<uint8_t> *asset_fb);
+  void account_subtract_currency(const flatbuffers::String *acc_pub_key,
+                                 const flatbuffers::Vector<uint8_t> *asset_fb);
 };
 }
 

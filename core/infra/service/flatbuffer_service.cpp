@@ -1,3 +1,4 @@
+
 /**
  * Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
  * http://soramitsu.co.jp
@@ -38,8 +39,8 @@ namespace flatbuffer_service {
    * CreateCommandDirect
    */
   flatbuffers::Offset<void> CreateCommandDirect(
-      flatbuffers::FlatBufferBuilder& _fbb, const void* obj,
-      ::iroha::Command type) {
+    flatbuffers::FlatBufferBuilder& _fbb, const void* obj,
+    ::iroha::Command type) {
     switch (type) {
       case ::iroha::Command::NONE: {
         logger::error("flatbuffer service") << "Command_NONE";
@@ -50,7 +51,7 @@ namespace flatbuffer_service {
         return ::iroha::CreateAssetCreateDirect(_fbb, ptr->asset_name()->c_str(),
                                                 ptr->domain_name()->c_str(),
                                                 ptr->ledger_name()->c_str())
-            .Union();
+          .Union();
       }
       case ::iroha::Command::Add: {
         auto ptr = reinterpret_cast<const ::iroha::Add*>(obj);
@@ -63,71 +64,71 @@ namespace flatbuffer_service {
       case ::iroha::Command::PeerAdd: {
         auto ptr = reinterpret_cast<const ::iroha::PeerAdd*>(obj);
         auto peer =
-            std::vector<uint8_t>(ptr->peer()->begin(), ptr->peer()->end());
+          std::vector<uint8_t>(ptr->peer()->begin(), ptr->peer()->end());
         return ::iroha::CreatePeerAddDirect(_fbb, &peer).Union();
       }
       case ::iroha::Command::PeerRemove: {
         auto ptr = reinterpret_cast<const ::iroha::PeerRemove*>(obj);
         return ::iroha::CreatePeerRemoveDirect(_fbb, ptr->peerPubKey()->c_str())
-            .Union();
+          .Union();
       }
       case ::iroha::Command::PeerSetActive: {
         auto ptr = reinterpret_cast<const ::iroha::PeerSetActive*>(obj);
         return ::iroha::CreatePeerSetActiveDirect(
-                   _fbb, ptr->peerPubKey()->c_str(), ptr->active())
-            .Union();
+          _fbb, ptr->peerPubKey()->c_str(), ptr->active())
+          .Union();
       }
       case ::iroha::Command::PeerSetTrust: {
         auto ptr = reinterpret_cast<const ::iroha::PeerSetTrust*>(obj);
         return ::iroha::CreatePeerSetTrustDirect(_fbb, ptr->peerPubKey()->c_str(),
                                                  ptr->trust())
-            .Union();
+          .Union();
       }
       case ::iroha::Command::PeerChangeTrust: {
         auto ptr = reinterpret_cast<const ::iroha::PeerChangeTrust*>(obj);
         return ::iroha::CreatePeerChangeTrustDirect(
-                   _fbb, ptr->peerPubKey()->c_str(), ptr->delta())
-            .Union();
+          _fbb, ptr->peerPubKey()->c_str(), ptr->delta())
+          .Union();
       }
       case ::iroha::Command::AccountAdd: {
         auto ptr = reinterpret_cast<const ::iroha::AccountAdd*>(obj);
         auto account =
-            std::vector<uint8_t>(ptr->account()->begin(), ptr->account()->end());
+          std::vector<uint8_t>(ptr->account()->begin(), ptr->account()->end());
         return ::iroha::CreateAccountAddDirect(_fbb, &account).Union();
       }
       case ::iroha::Command::AccountRemove: {
         auto ptr = reinterpret_cast<const ::iroha::AccountRemove*>(obj);
         return ::iroha::CreateAccountRemoveDirect(_fbb, ptr->pubkey()->c_str())
-            .Union();
+          .Union();
       }
       case ::iroha::Command::AccountAddSignatory: {
         auto ptr = reinterpret_cast<const ::iroha::AccountAddSignatory*>(obj);
         auto signatory = std::vector<flatbuffers::Offset<flatbuffers::String>>(
-            ptr->signatory()->begin(), ptr->signatory()->end());
+          ptr->signatory()->begin(), ptr->signatory()->end());
         return ::iroha::CreateAccountAddSignatoryDirect(
-                   _fbb, ptr->account()->c_str(), &signatory)
-            .Union();
+          _fbb, ptr->account()->c_str(), &signatory)
+          .Union();
       }
       case ::iroha::Command::AccountRemoveSignatory: {
         auto ptr = reinterpret_cast<const ::iroha::AccountRemoveSignatory*>(obj);
         auto signatory = std::vector<flatbuffers::Offset<flatbuffers::String>>(
-            ptr->signatory()->begin(), ptr->signatory()->end());
+          ptr->signatory()->begin(), ptr->signatory()->end());
         return ::iroha::CreateAccountRemoveSignatoryDirect(
-                   _fbb, ptr->account()->c_str(), &signatory)
-            .Union();
+          _fbb, ptr->account()->c_str(), &signatory)
+          .Union();
       }
       case ::iroha::Command::AccountSetUseKeys: {
         auto ptr = reinterpret_cast<const ::iroha::AccountSetUseKeys*>(obj);
         auto accounts = std::vector<flatbuffers::Offset<flatbuffers::String>>(
-            ptr->accounts()->begin(), ptr->accounts()->end());
+          ptr->accounts()->begin(), ptr->accounts()->end());
         return ::iroha::CreateAccountSetUseKeysDirect(_fbb, &accounts,
                                                       ptr->useKeys())
-            .Union();
+          .Union();
       }
       case ::iroha::Command::ChaincodeAdd: {
         auto ptr = reinterpret_cast<const ::iroha::ChaincodeAdd*>(obj);
         auto code =
-            std::vector<uint8_t>(ptr->code()->begin(), ptr->code()->end());
+          std::vector<uint8_t>(ptr->code()->begin(), ptr->code()->end());
         return ::iroha::CreateChaincodeAddDirect(_fbb, &code).Union();
       }
       case ::iroha::Command::ChaincodeRemove: {
@@ -142,9 +143,9 @@ namespace flatbuffer_service {
       case ::iroha::Command::ChaincodeExecute: {
         auto ptr = reinterpret_cast<const ::iroha::ChaincodeExecute*>(obj);
         return ::iroha::CreateChaincodeExecuteDirect(
-                   _fbb, ptr->code_name()->c_str(), ptr->domain_name()->c_str(),
-                   ptr->ledger_name()->c_str())
-            .Union();
+          _fbb, ptr->code_name()->c_str(), ptr->domain_name()->c_str(),
+          ptr->ledger_name()->c_str())
+          .Union();
       }
       default: {
         // This function should be always tested.
@@ -192,65 +193,65 @@ namespace flatbuffer_service {
     }
 
     std::map<iroha::Command, std::function<std::string(const void*)>>
-        command_to_strings;
+      command_to_strings;
     std::map<iroha::AnyAsset, std::function<std::string(const void*)>>
-        any_asset_to_strings;
+      any_asset_to_strings;
 
     any_asset_to_strings[iroha::AnyAsset::ComplexAsset] =
-        [&](const void* asset) -> std::string {
-      const iroha::ComplexAsset* ast =
+      [&](const void* asset) -> std::string {
+        const iroha::ComplexAsset* ast =
           static_cast<const iroha::ComplexAsset*>(asset);
 
-      std::string res = " ComplexAsset[\n";
-      res += "        asset_name:" + ast->asset_name()->str() + ",\n";
-      res += "        domain_name:" + ast->domain_name()->str() + ",\n";
-      res += "        ledger_name:" + ast->ledger_name()->str() + ",\n";
-      res += "        description:" + ast->description()->str() + "\n";
-      res += "        asset:logic:WIP\n";
-      res += "    ]\n";
-      return res;
-    };
+        std::string res = " ComplexAsset[\n";
+        res += "        asset_name:" + ast->asset_name()->str() + ",\n";
+        res += "        domain_name:" + ast->domain_name()->str() + ",\n";
+        res += "        ledger_name:" + ast->ledger_name()->str() + ",\n";
+        res += "        description:" + ast->description()->str() + "\n";
+        res += "        asset:logic:WIP\n";
+        res += "    ]\n";
+        return res;
+      };
     any_asset_to_strings[iroha::AnyAsset::Currency] =
-        [&](const void* asset) -> std::string {
-      const iroha::Currency* ast = static_cast<const iroha::Currency*>(asset);
+      [&](const void* asset) -> std::string {
+        const iroha::Currency* ast = static_cast<const iroha::Currency*>(asset);
 
-      std::string res = " Currency[\n";
-      res += "        currency_name:" + ast->currency_name()->str() + ",\n";
-      res += "        domain_name:" + ast->domain_name()->str() + ",\n";
-      res += "        ledger_name:" + ast->ledger_name()->str() + ",\n";
-      res += "        description:" + ast->description()->str() + "\n";
-      res += "        amount:" + ast->amount()->str() + "\n";
-      res += "        precision:" + std::to_string(ast->precision()) + "\n";
-      res += "    ]\n";
-      return res;
-    };
-
-    command_to_strings[iroha::Command::AssetCreate] =
-        [&](const void* command) -> std::string {
-      const iroha::AssetCreate* cmd =
-          static_cast<const iroha::AssetCreate*>(command);
-
-      std::string res = "AssetCreate[\n";
-      // res += "    creatorPubKey:" + cmd->creatorPubKey()->str() + ",\n"; No
-      res += "    ledger_name:" + cmd->ledger_name()->str() + ",\n";
-      res += "    domain_name:" + cmd->domain_name()->str() + ",\n";
-      res += "    asset_name:" + cmd->asset_name()->str() + "\n";
-      res += "]\n";
-      return res;
-    };
+        std::string res = " Currency[\n";
+        res += "        currency_name:" + ast->currency_name()->str() + ",\n";
+        res += "        domain_name:" + ast->domain_name()->str() + ",\n";
+        res += "        ledger_name:" + ast->ledger_name()->str() + ",\n";
+        res += "        description:" + ast->description()->str() + "\n";
+        res += "        amount:" + ast->amount()->str() + "\n";
+        res += "        precision:" + std::to_string(ast->precision()) + "\n";
+        res += "    ]\n";
+        return res;
+      };
 
     command_to_strings[iroha::Command::AssetCreate] =
-        [&](const void* command) -> std::string {
-      const iroha::AssetCreate* cmd =
+      [&](const void* command) -> std::string {
+        const iroha::AssetCreate* cmd =
           static_cast<const iroha::AssetCreate*>(command);
 
-      std::string res = "AssetCreate[\n";
-      res += "    ledger_name:" + cmd->ledger_name()->str() + ",\n";
-      res += "    domain_name:" + cmd->domain_name()->str() + ",\n";
-      res += "    asset_name:" + cmd->asset_name()->str() + "\n";
-      res += "]\n";
-      return res;
-    };
+        std::string res = "AssetCreate[\n";
+        // res += "    creatorPubKey:" + cmd->creatorPubKey()->str() + ",\n"; No
+        res += "    ledger_name:" + cmd->ledger_name()->str() + ",\n";
+        res += "    domain_name:" + cmd->domain_name()->str() + ",\n";
+        res += "    asset_name:" + cmd->asset_name()->str() + "\n";
+        res += "]\n";
+        return res;
+      };
+
+    command_to_strings[iroha::Command::AssetCreate] =
+      [&](const void* command) -> std::string {
+        const iroha::AssetCreate* cmd =
+          static_cast<const iroha::AssetCreate*>(command);
+
+        std::string res = "AssetCreate[\n";
+        res += "    ledger_name:" + cmd->ledger_name()->str() + ",\n";
+        res += "    domain_name:" + cmd->domain_name()->str() + ",\n";
+        res += "    asset_name:" + cmd->asset_name()->str() + "\n";
+        res += "]\n";
+        return res;
+      };
     command_to_strings[iroha::Command::Add] =
       [&](const void* command) -> std::string {
         const iroha::Add* cmd = static_cast<const iroha::Add*>(command);
@@ -264,161 +265,161 @@ namespace flatbuffer_service {
         return res;
       };
     command_to_strings[iroha::Command::PeerAdd] =
-        [&](const void* command) -> std::string {
-      const iroha::PeerAdd* cmd = static_cast<const iroha::PeerAdd*>(command);
+      [&](const void* command) -> std::string {
+        const iroha::PeerAdd* cmd = static_cast<const iroha::PeerAdd*>(command);
 
-      std::string res = "PeerAdd[\n";
-      res += "    peer:publicKey:" + cmd->peer_nested_root()->publicKey()->str() +
-             ",\n";
-      res += "    peer:ip:" + cmd->peer_nested_root()->ip()->str() + ",\n";
-      res += "    peer:active:" +
-             std::to_string(cmd->peer_nested_root()->active()) + ",\n";
-      res += "    peer:join_ledger:" +
-             std::to_string(cmd->peer_nested_root()->join_ledger()) + "\n";
-      res += "]\n";
-      return res;
-    };
+        std::string res = "PeerAdd[\n";
+        res += "    peer:publicKey:" + cmd->peer_nested_root()->publicKey()->str() +
+               ",\n";
+        res += "    peer:ip:" + cmd->peer_nested_root()->ip()->str() + ",\n";
+        res += "    peer:active:" +
+               std::to_string(cmd->peer_nested_root()->active()) + ",\n";
+        res += "    peer:join_ledger:" +
+               std::to_string(cmd->peer_nested_root()->join_ledger()) + "\n";
+        res += "]\n";
+        return res;
+      };
     command_to_strings[iroha::Command::PeerRemove] =
-        [&](const void* command) -> std::string {
-      const iroha::PeerRemove* cmd =
+      [&](const void* command) -> std::string {
+        const iroha::PeerRemove* cmd =
           static_cast<const iroha::PeerRemove*>(command);
 
-      std::string res = "PeerRemove[\n";
-      res += "    peer:publicKey:" + cmd->peerPubKey()->str();
-      res += "\n]\n";
-      return res;
-    };
+        std::string res = "PeerRemove[\n";
+        res += "    peer:publicKey:" + cmd->peerPubKey()->str();
+        res += "\n]\n";
+        return res;
+      };
     command_to_strings[iroha::Command::PeerSetActive] =
-        [&](const void* command) -> std::string {
-      const iroha::PeerSetActive* cmd =
+      [&](const void* command) -> std::string {
+        const iroha::PeerSetActive* cmd =
           static_cast<const iroha::PeerSetActive*>(command);
 
-      std::string res = "PeerSetActive[\n";
-      res += "    peer:peerPubKey:" + cmd->peerPubKey()->str() + ",\n";
-      res += "]\n";
-      return res;
-    };
+        std::string res = "PeerSetActive[\n";
+        res += "    peer:peerPubKey:" + cmd->peerPubKey()->str() + ",\n";
+        res += "]\n";
+        return res;
+      };
     command_to_strings[iroha::Command::PeerSetTrust] =
-        [&](const void* command) -> std::string {
-      const iroha::PeerSetTrust* cmd =
+      [&](const void* command) -> std::string {
+        const iroha::PeerSetTrust* cmd =
           static_cast<const iroha::PeerSetTrust*>(command);
 
-      std::string res = "PeerSetTrust[\n";
-      res += "    peerPubKey:" + cmd->peerPubKey()->str() + ",\n";
-      res += "    trust:" + std::to_string(cmd->trust()) + ",\n";
-      res += "]\n";
-      return res;
-    };
+        std::string res = "PeerSetTrust[\n";
+        res += "    peerPubKey:" + cmd->peerPubKey()->str() + ",\n";
+        res += "    trust:" + std::to_string(cmd->trust()) + ",\n";
+        res += "]\n";
+        return res;
+      };
     command_to_strings[iroha::Command::PeerChangeTrust] =
-        [&](const void* command) -> std::string {
-      const iroha::PeerChangeTrust* cmd =
+      [&](const void* command) -> std::string {
+        const iroha::PeerChangeTrust* cmd =
           static_cast<const iroha::PeerChangeTrust*>(command);
 
-      std::string res = "PeerSetTrust[\n";
-      res += "    peerPubKey:" + cmd->peerPubKey()->str() + ",\n";
-      res += "    delta:" + std::to_string(cmd->delta()) + "\n";
-      res += "]\n";
-      return res;
-    };
+        std::string res = "PeerSetTrust[\n";
+        res += "    peerPubKey:" + cmd->peerPubKey()->str() + ",\n";
+        res += "    delta:" + std::to_string(cmd->delta()) + "\n";
+        res += "]\n";
+        return res;
+      };
 
     command_to_strings[iroha::Command::AccountAdd] =
-        [&](const void* command) -> std::string {
-      const iroha::AccountAdd* cmd =
+      [&](const void* command) -> std::string {
+        const iroha::AccountAdd* cmd =
           static_cast<const iroha::AccountAdd*>(command);
-      std::string res = "AccountAdd[\n";
-      if (cmd->account_nested_root() != nullptr) {
-        if (cmd->account_nested_root()->alias() != 0) {
-          res += "    account:alias:" +
-                 cmd->account_nested_root()->alias()->str() + ",\n";
-        }
-        if (cmd->account_nested_root()->pubKey() != nullptr) {
-          res += "    account:pubKey:" +
-                 cmd->account_nested_root()->pubKey()->str() + ",\n";
-        }
-        if (cmd->account_nested_root()->signatories() != nullptr) {
-          for (const auto& s : *cmd->account_nested_root()->signatories()) {
-            res += "        signature[" + s->str() + "]\n";
+        std::string res = "AccountAdd[\n";
+        if (cmd->account_nested_root() != nullptr) {
+          if (cmd->account_nested_root()->alias() != 0) {
+            res += "    account:alias:" +
+                   cmd->account_nested_root()->alias()->str() + ",\n";
+          }
+          if (cmd->account_nested_root()->pubKey() != nullptr) {
+            res += "    account:pubKey:" +
+                   cmd->account_nested_root()->pubKey()->str() + ",\n";
+          }
+          if (cmd->account_nested_root()->signatories() != nullptr) {
+            for (const auto& s : *cmd->account_nested_root()->signatories()) {
+              res += "        signature[" + s->str() + "]\n";
+            }
           }
         }
-      }
-      res += "]\n";
-      return res;
-    };
+        res += "]\n";
+        return res;
+      };
     command_to_strings[iroha::Command::AccountRemove] =
-        [&](const void* command) -> std::string {
-      const iroha::AccountRemove* cmd =
+      [&](const void* command) -> std::string {
+        const iroha::AccountRemove* cmd =
           static_cast<const iroha::AccountRemove*>(command);
 
-      std::string res = "AccountRemove[\n";
-      res += "    account:pubKey:" + std::string(cmd->pubkey()->c_str());
-      res += "]\n";
-      return res;
-    };
+        std::string res = "AccountRemove[\n";
+        res += "    account:pubKey:" + std::string(cmd->pubkey()->c_str());
+        res += "]\n";
+        return res;
+      };
     command_to_strings[iroha::Command::AccountAddSignatory] =
-        [&](const void* command) -> std::string {
-      const iroha::AccountAddSignatory* cmd =
+      [&](const void* command) -> std::string {
+        const iroha::AccountAddSignatory* cmd =
           static_cast<const iroha::AccountAddSignatory*>(command);
 
-      std::string res = "AccountAddSignatory[\n";
-      res += "    account:" + cmd->account()->str() + ",\n";
-      for (const auto& s : *cmd->signatory()) {
-        res += "        signature[" + s->str() + "]\n";
-      }
-      res += "]\n";
-      return res;
-    };
+        std::string res = "AccountAddSignatory[\n";
+        res += "    account:" + cmd->account()->str() + ",\n";
+        for (const auto& s : *cmd->signatory()) {
+          res += "        signature[" + s->str() + "]\n";
+        }
+        res += "]\n";
+        return res;
+      };
     command_to_strings[iroha::Command::AccountRemoveSignatory] =
-        [&](const void* command) -> std::string {
-      const iroha::AccountRemoveSignatory* cmd =
+      [&](const void* command) -> std::string {
+        const iroha::AccountRemoveSignatory* cmd =
           static_cast<const iroha::AccountRemoveSignatory*>(command);
 
-      std::string res = "AccountRemoveSignatory[\n";
-      res += "    account:" + cmd->account()->str() + ",\n";
-      for (const auto& s : *cmd->signatory()) {
-        res += "        signature[" + s->str() + "]\n";
-      }
-      res += "]\n";
-      return res;
-    };
+        std::string res = "AccountRemoveSignatory[\n";
+        res += "    account:" + cmd->account()->str() + ",\n";
+        for (const auto& s : *cmd->signatory()) {
+          res += "        signature[" + s->str() + "]\n";
+        }
+        res += "]\n";
+        return res;
+      };
     command_to_strings[iroha::Command::AccountSetUseKeys] =
-        [&](const void* command) -> std::string {
-      const iroha::AccountSetUseKeys* cmd =
+      [&](const void* command) -> std::string {
+        const iroha::AccountSetUseKeys* cmd =
           static_cast<const iroha::AccountSetUseKeys*>(command);
 
-      std::string res = "AccountSetUseKeys[\n";
-      for (const auto& a : *cmd->accounts()) {
-        res += "        account[" + a->str() + "]\n";
-      }
-      res += "    account:useKeys:" + std::to_string(cmd->useKeys()) + "\n";
-      res += "]\n";
-      return res;
-    };
+        std::string res = "AccountSetUseKeys[\n";
+        for (const auto& a : *cmd->accounts()) {
+          res += "        account[" + a->str() + "]\n";
+        }
+        res += "    account:useKeys:" + std::to_string(cmd->useKeys()) + "\n";
+        res += "]\n";
+        return res;
+      };
 
     command_to_strings[iroha::Command::ChaincodeAdd] =
-        [&](const void* command) -> std::string {
-      const iroha::ChaincodeAdd* cmd =
+      [&](const void* command) -> std::string {
+        const iroha::ChaincodeAdd* cmd =
           static_cast<const iroha::ChaincodeAdd*>(command);
 
-      std::string res = "ChaincodeAdd[\n";
-      res += "]\n";
-      return res;
-    };
+        std::string res = "ChaincodeAdd[\n";
+        res += "]\n";
+        return res;
+      };
     command_to_strings[iroha::Command::ChaincodeRemove] =
-        [&](const void* command) -> std::string {
-      const iroha::ChaincodeRemove* cmd =
+      [&](const void* command) -> std::string {
+        const iroha::ChaincodeRemove* cmd =
           static_cast<const iroha::ChaincodeRemove*>(command);
 
-      std::string res = "ChaincodeRemove[\n";
-      res += "]\n";
-    };
+        std::string res = "ChaincodeRemove[\n";
+        res += "]\n";
+      };
     command_to_strings[iroha::Command::ChaincodeExecute] =
-        [&](const void* command) -> std::string {
-      const iroha::ChaincodeExecute* cmd =
+      [&](const void* command) -> std::string {
+        const iroha::ChaincodeExecute* cmd =
           static_cast<const iroha::ChaincodeExecute*>(command);
 
-      std::string res = "ChaincodeExecute[\n";
-      res += "]\n";
-    };
+        std::string res = "ChaincodeExecute[\n";
+        res += "]\n";
+      };
     res += command_to_strings[tx.command_type()](tx.command());
     return res;
   }
@@ -452,8 +453,8 @@ namespace flatbuffer_service {
         std::vector<uint8_t> aPeerSigBlob(aPeerSig->signature()->begin(),
                                           aPeerSig->signature()->end());
         peerSignatures.push_back(
-            ::iroha::CreateSignatureDirect(fbb, aPeerSig->publicKey()->c_str(),
-                                           &aPeerSigBlob, aPeerSig->timestamp()));
+          ::iroha::CreateSignatureDirect(fbb, aPeerSig->publicKey()->c_str(),
+                                         &aPeerSigBlob, aPeerSig->timestamp()));
       }
 
       return peerSignatures;
@@ -481,14 +482,14 @@ namespace flatbuffer_service {
                                    txSig->signature()->end());
 
         tx_signatures.emplace_back(iroha::CreateSignatureDirect(
-            fbb, txSig->publicKey()->c_str(), &_data, txSig->timestamp()));
+          fbb, txSig->publicKey()->c_str(), &_data, txSig->timestamp()));
       }
 
       return tx_signatures;
     }
 
     Expected<std::vector<uint8_t>> copyHashOfTx(
-        const ::iroha::Transaction& fromTx) {
+      const ::iroha::Transaction& fromTx) {
       auto handler = ensureNotNull(fromTx.hash());
       if (!handler) {
         logger::error("Connection with grpc") << "Transaction hash is null";
@@ -498,7 +499,7 @@ namespace flatbuffer_service {
     }
 
     Expected<flatbuffers::Offset<::iroha::Attachment>> copyAttachmentOfTx(
-        flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
+      flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
       VoidHandler handler;
       handler = ensureNotNull(fromTx.attachment());
       if (!handler) {
@@ -509,14 +510,14 @@ namespace flatbuffer_service {
       handler = ensureNotNull(fromTx.attachment()->data());
       if (!handler) {
         logger::error("Connection with grpc")
-            << "Transaction attachment's data is null";
+          << "Transaction attachment's data is null";
         return makeUnexpected(handler.excptr());
       }
 
       std::vector<uint8_t> data(fromTx.attachment()->data()->begin(),
                                 fromTx.attachment()->data()->end());
       return iroha::CreateAttachmentDirect(
-          fbb, fromTx.attachment()->mime()->c_str(), &data);
+        fbb, fromTx.attachment()->mime()->c_str(), &data);
     }
 
     /**
@@ -542,7 +543,7 @@ namespace flatbuffer_service {
    * - copies transaction and write data to given FlatBufferBuilder.
    */
   Expected<flatbuffers::Offset<::iroha::Transaction>> copyTransaction(
-      flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
+    flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& fromTx) {
     auto tx_signatures = detail::copySignaturesOfTx(fbb, fromTx);
     if (!tx_signatures) {
       return makeUnexpected(tx_signatures.excptr());
@@ -561,7 +562,7 @@ namespace flatbuffer_service {
     const auto pubkey = fromTx.creatorPubKey()->c_str();
     const auto cmdtype = fromTx.command_type();
     const auto cmd = flatbuffer_service::CreateCommandDirect(
-        fbb, fromTx.command(), fromTx.command_type());
+      fbb, fromTx.command(), fromTx.command_type());
 
     return ::iroha::CreateTransactionDirect(fbb, pubkey, cmdtype, cmd,
                                             &tx_signatures.value(), &hash.value(),
@@ -576,7 +577,7 @@ namespace flatbuffer_service {
    * Returns: Expected<Offset<ConsensusEvent>>
    */
   Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
-      flatbuffers::FlatBufferBuilder& fbb, const iroha::ConsensusEvent& event) {
+    flatbuffers::FlatBufferBuilder& fbb, const iroha::ConsensusEvent& event) {
     auto peerSignatures = detail::copyPeerSignaturesOf(fbb, event);
     if (!peerSignatures) {
       return makeUnexpected(peerSignatures.excptr());
@@ -594,7 +595,7 @@ namespace flatbuffer_service {
    * - wrap transaction to TransactionWrapper
    */
   Expected<flatbuffers::Offset<::iroha::TransactionWrapper>> toTxWrapper(
-      flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& tx) {
+    flatbuffers::FlatBufferBuilder& fbb, const ::iroha::Transaction& tx) {
     flatbuffers::FlatBufferBuilder xbb;
     auto txOffset = copyTransaction(xbb, tx);
     if (!txOffset) {
@@ -618,11 +619,11 @@ namespace flatbuffer_service {
    * Returns: Expected<unique_ptr_t>
    */
   Expected<flatbuffers::unique_ptr_t> toConsensusEvent(
-      const iroha::Transaction& fromTx) {
+    const iroha::Transaction& fromTx) {
     flatbuffers::FlatBufferBuilder fbb(16);
 
     std::vector<flatbuffers::Offset<::iroha::Signature>>
-        peerSignatureOffsets;  // Empty.
+      peerSignatureOffsets;  // Empty.
 
     auto txwOffset = toTxWrapper(fbb, fromTx);
 
@@ -630,14 +631,14 @@ namespace flatbuffer_service {
     txs.push_back(*txwOffset);
 
     auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
-        fbb, &peerSignatureOffsets, &txs, ::iroha::Code::UNDECIDED);
+      fbb, &peerSignatureOffsets, &txs, ::iroha::Code::UNDECIDED);
     fbb.Finish(consensusEventOffset);
     return fbb.ReleaseBufferPointer();
   }
 
   Expected<flatbuffers::unique_ptr_t> addSignature(
-      const iroha::ConsensusEvent& event, const std::string& publicKey,
-      const std::string& signature) {
+    const iroha::ConsensusEvent& event, const std::string& publicKey,
+    const std::string& signature) {
     flatbuffers::FlatBufferBuilder fbb(16);
 
     std::vector<flatbuffers::Offset<iroha::Signature>> peerSignatures;
@@ -647,8 +648,8 @@ namespace flatbuffer_service {
       std::vector<uint8_t> aPeerSigBlob(aPeerSig->signature()->begin(),
                                         aPeerSig->signature()->end());
       peerSignatures.push_back(::iroha::CreateSignatureDirect(
-          fbb, aPeerSig->publicKey()->c_str(), &aPeerSigBlob,
-          aPeerSig->timestamp()));
+        fbb, aPeerSig->publicKey()->c_str(), &aPeerSigBlob,
+        aPeerSig->timestamp()));
     }
 
     std::vector<uint8_t> aNewPeerSigBlob;
@@ -656,8 +657,8 @@ namespace flatbuffer_service {
       aNewPeerSigBlob.push_back(c);
     }
     peerSignatures.push_back(
-        ::iroha::CreateSignatureDirect(fbb, publicKey.c_str(),
-                                       &aNewPeerSigBlob, datetime::unixtime()));
+      ::iroha::CreateSignatureDirect(fbb, publicKey.c_str(),
+                                     &aNewPeerSigBlob, datetime::unixtime()));
 
     // ToDo: #(tx) = 1
     auto tx = std::vector<uint8_t>(event.transactions()->Get(0)->tx()->begin(),
@@ -665,17 +666,17 @@ namespace flatbuffer_service {
 
     std::vector<flatbuffers::Offset<iroha::TransactionWrapper>> txwrappers;
     txwrappers.push_back(
-        ::iroha::CreateTransactionWrapperDirect(fbb, &tx));
+      ::iroha::CreateTransactionWrapperDirect(fbb, &tx));
 
     auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
-        fbb, &peerSignatures, &txwrappers, event.code());
+      fbb, &peerSignatures, &txwrappers, event.code());
 
     fbb.Finish(consensusEventOffset);
     return fbb.ReleaseBufferPointer();
   }
 
   Expected<flatbuffers::unique_ptr_t> makeCommit(
-      const iroha::ConsensusEvent& event) {
+    const iroha::ConsensusEvent& event) {
     flatbuffers::FlatBufferBuilder fbb(16);
 
     std::vector<flatbuffers::Offset<iroha::Signature>> peerSignatures;
@@ -684,8 +685,8 @@ namespace flatbuffer_service {
       std::vector<uint8_t> aPeerSigBlob(aPeerSig->signature()->begin(),
                                         aPeerSig->signature()->end());
       peerSignatures.push_back(::iroha::CreateSignatureDirect(
-          fbb, aPeerSig->publicKey()->c_str(), &aPeerSigBlob,
-          aPeerSig->timestamp()));
+        fbb, aPeerSig->publicKey()->c_str(), &aPeerSigBlob,
+        aPeerSig->timestamp()));
     }
 
     auto txwrappers = detail::copyTxWrappersOfEvent(fbb, event);
@@ -694,8 +695,8 @@ namespace flatbuffer_service {
     }
 
     auto consensusEventOffset = ::iroha::CreateConsensusEventDirect(
-        fbb, &peerSignatures, &txwrappers.value(),
-        iroha::Code::COMMIT);
+      fbb, &peerSignatures, &txwrappers.value(),
+      iroha::Code::COMMIT);
 
     fbb.Finish(consensusEventOffset);
     return fbb.ReleaseBufferPointer();
@@ -737,8 +738,8 @@ namespace flatbuffer_service {
     std::vector<uint8_t> CreatePeer(const ::peer::Node& peer) {
       flatbuffers::FlatBufferBuilder fbb;
       auto peer_cp = iroha::CreatePeer(
-          fbb, fbb.CreateString(peer.ledger_name), fbb.CreateString(peer.publicKey),
-          fbb.CreateString(peer.ip), peer.trust, peer.active, peer.join_ledger
+        fbb, fbb.CreateString(peer.ledger_name), fbb.CreateString(peer.publicKey),
+        fbb.CreateString(peer.ip), peer.trust, peer.active, peer.join_ledger
       );
       fbb.Finish(peer_cp);
 
@@ -808,29 +809,24 @@ namespace flatbuffer_service {
   namespace transaction {  // namespace transaction
 /*
  * nullptrなしの状態をハッシュ化するのは正しいか不明なのでコメントアウト
-
     const Transaction& CreateTransaction(
       flatbuffers::FlatBufferBuilder& fbb,
       iroha::Command cmd_type, const flatbuffers::Offset<void>& command,
       const std::string& creator,
       const std::vector<flatbuffers::Offset<iroha::Signature>>& sigs
     ) {
-
       flatbuffers::FlatBufferBuilder xbb;
       auto tx_mt =
         iroha::CreateTransaction(xbb, xbb.CreateString(creator), cmd_type,
                                  command,
                                  xbb.CreateVector(sigs));
       xbb.Finish(tx_mt);
-
        auto hash = hash::sha3_256_hex(
           toString(*flatbuffers::GetRoot<Transaction>(xbb.GetBufferPointer())));
-
       auto tx = iroha::CreateTransaction(
           fbb, fbb.CreateString(creator), cmd_type, command, fbb.CreateVector(sigs),
           fbb.CreateVector(base64::decode(hash)));
       fbb.Finish(tx);
-
       return *flatbuffers::GetRoot<Transaction>(fbb.GetBufferPointer());
     }
 */

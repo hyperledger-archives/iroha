@@ -41,20 +41,12 @@ namespace repository{
         flatbuffers::FlatBufferBuilder fbb;
         std::vector<iroha::Asset*> res;
         auto curs = db->accountGetAllAssets(&key);
-        if(!curs.empty()) {
-            for (ametsuchi::AM_val c: curs) {
-                res.push_back(reinterpret_cast<iroha::Asset*>(
-                    const_cast<void*>(c.data)
-                ));
-            }
-            return res;
-        }
+        return res;
     }
 
     bool existAccountOf(const flatbuffers::String& key){
         if(db == nullptr) init();
-        auto curs = db->getAccountAddByKey(&key);
-        return !curs.empty();
+        return false;
     }
 
     bool checkUserCanPermission(const flatbuffers::String& key){

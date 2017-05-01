@@ -18,11 +18,23 @@
 #ifndef AMETSUCHI_TX_STORE_H
 #define AMETSUCHI_TX_STORE_H
 
+#include <ametsuchi/common.h>
+#include <ametsuchi/merkle_tree/merkle_tree.h>
+#include <commands_generated.h>
 #include <flatbuffers/flatbuffers.h>
 #include <lmdb.h>
 #include <unordered_map>
-#include <ametsuchi/merkle_tree/merkle_tree.h>
-#include <ametsuchi/common.h>
+
+namespace std {
+    template <class T>
+    struct hash {
+        static_assert(is_enum<T>::value, "This hash only works for enumeration types");
+        size_t operator()(T x) const noexcept {
+          using type = typename underlying_type<T>::type;
+          return hash<type>{}(static_cast<type>(x));
+        }
+    };
+}
 
 namespace ametsuchi {
 
@@ -65,53 +77,15 @@ class TxStore {
       const flatbuffers::String *receiverKey, bool uncommitted = true,
       MDB_env *env = nullptr);
 
-  std::vector<AM_val> getAssetCreateByKey(const flatbuffers::String *pubKey,
-                                          bool uncommitted = true,
-                                          MDB_env *env = nullptr);
-
-  std::vector<AM_val> getAssetAddByKey(const flatbuffers::String *pubKey,
-                                       bool uncommitted = true,
-                                       MDB_env *env = nullptr);
-  std::vector<AM_val> getAssetRemoveByKey(const flatbuffers::String *pubKey,
-                                          bool uncommitted = true,
-                                          MDB_env *env = nullptr);
-  std::vector<AM_val> getAssetTransferByKey(const flatbuffers::String *pubKey,
-                                            bool uncommitted = true,
-                                            MDB_env *env = nullptr);
-  std::vector<AM_val> getAccountAddByKey(const flatbuffers::String *pubKey,
-                                         bool uncommitted = true,
-                                         MDB_env *env = nullptr);
-  std::vector<AM_val> getAccountAddSignByKey(const flatbuffers::String *pubKey,
-                                             bool uncommitted = true,
-                                             MDB_env *env = nullptr);
-  std::vector<AM_val> getAccountRemoveByKey(const flatbuffers::String *pubKey,
-                                            bool uncommitted = true,
-                                            MDB_env *env = nullptr);
-  std::vector<AM_val> getAccountRemoveSignByKey(
-      const flatbuffers::String *pubKey, bool uncommitted = true,
-      MDB_env *env = nullptr);
-  std::vector<AM_val> getAccountSetUseKeysByKey(
-      const flatbuffers::String *pubKey, bool uncommitted = true,
-      MDB_env *env = nullptr);
-  std::vector<AM_val> getPeerAddByKey(const flatbuffers::String *pubKey,
+  std::vector<AM_val> getCommandByKey(const flatbuffers::String *pubKey,
+                                      iroha::Command command,
                                       bool uncommitted = true,
                                       MDB_env *env = nullptr);
-  std::vector<AM_val> getPeerChangeTrustByKey(const flatbuffers::String *pubKey,
-                                              bool uncommitted = true,
-                                              MDB_env *env = nullptr);
-  std::vector<AM_val> getPeerRemoveByKey(const flatbuffers::String *pubKey,
-                                         bool uncommitted = true,
-                                         MDB_env *env = nullptr);
-  std::vector<AM_val> getPeerSetActiveByKey(const flatbuffers::String *pubKey,
-                                            bool uncommitted = true,
-                                            MDB_env *env = nullptr);
-  std::vector<AM_val> getPeerSetTrustByKey(const flatbuffers::String *pubKey,
-                                           bool uncommitted = true,
-                                           MDB_env *env = nullptr);
 
  private:
   size_t tx_store_total;
   std::unordered_map<std::string, std::pair<MDB_dbi, MDB_cursor *>> trees_;
+  std::unordered_map<iroha::Command, std::string> command_tree_name_;
 
   merkle::MerkleTree merkleTree_;
 
