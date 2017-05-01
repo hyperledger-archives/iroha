@@ -37,10 +37,21 @@ struct Node {
   bool active;
   bool join_ledger;
 
+  Node(std::string myIP,
+       std::string myPubKey,
+       double myTrustScore,
+       std::string ledger_name = defaultLedgerName(),
+       bool active = false, bool join_ledger = true)
+      : ledger_name(ledger_name),
+        publicKey(myPubKey),
+        ip(myIP),
+        trust(myTrustScore),
+        active(active),
+        join_ledger(join_ledger) {}
   Node(std::string myIP = defaultIP(),
        std::string myPubKey = defaultPubKey(),
-       double myTrustScore = 100.0,
        std::string ledger_name = defaultLedgerName(),
+       double myTrustScore = 100.0,
        bool active = false, bool join_ledger = true)
       : ledger_name(ledger_name),
         publicKey(myPubKey),

@@ -62,7 +62,7 @@ namespace flatbuffer_service {
           .Union();
       }
       case ::iroha::Command::PeerAdd: {
-        auto ptr = reinterpret_cast<const ::iroha::PeerAdd*>(obj);
+        auto ptr = flatbuffers::GetRoot<iroha::PeerAdd>(obj);
         auto peer =
           std::vector<uint8_t>(ptr->peer()->begin(), ptr->peer()->end());
         return ::iroha::CreatePeerAddDirect(_fbb, &peer).Union();

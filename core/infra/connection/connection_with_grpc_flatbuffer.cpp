@@ -185,6 +185,10 @@ namespace connection {
       // Copy transaction to FlatBufferBuilder memory, then create
       // BufferRef<Transaction>
       // and share it to another sumeragi by using stub interface Torii.
+      logger::info("connection") << "Operation";
+      logger::info("connection")
+          << "Transaction: "
+          << flatbuffer_service::toString(transaction);
 
       ::grpc::ClientContext clientContext;
       flatbuffers::FlatBufferBuilder fbbTransaction;
