@@ -806,20 +806,24 @@ namespace flatbuffer_service {
   }  // namespace asset
 
   namespace transaction {  // namespace transaction
+/*
+ * nullptrなしの状態をハッシュ化するのは正しいか不明なのでコメントアウト
 
     const Transaction& CreateTransaction(
       flatbuffers::FlatBufferBuilder& fbb,
       iroha::Command cmd_type, const flatbuffers::Offset<void>& command,
       const std::string& creator,
-      const std::vector<flatbuffers::Offset<iroha::Signature>>& sigs) {
+      const std::vector<flatbuffers::Offset<iroha::Signature>>& sigs
+    ) {
 
       flatbuffers::FlatBufferBuilder xbb;
       auto tx_mt =
         iroha::CreateTransaction(xbb, xbb.CreateString(creator), cmd_type,
-                                 command, xbb.CreateVector(sigs));
+                                 command,
+                                 xbb.CreateVector(sigs));
       xbb.Finish(tx_mt);
 
-      auto hash = hash::sha3_256_hex(
+       auto hash = hash::sha3_256_hex(
           toString(*flatbuffers::GetRoot<Transaction>(xbb.GetBufferPointer())));
 
       auto tx = iroha::CreateTransaction(
@@ -829,7 +833,7 @@ namespace flatbuffer_service {
 
       return *flatbuffers::GetRoot<Transaction>(fbb.GetBufferPointer());
     }
-
+*/
   };  // namespace transaction
 
 }  // namespace flatbuffer_service
