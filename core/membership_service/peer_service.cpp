@@ -67,8 +67,8 @@ void initialize() {
   }
   for (const auto &json_peer : PeerServiceConfig::getInstance().getGroup()) {
     peerList.push_back(std::make_shared<Node>(
-      json_peer["publicKey"].get<std::string>(),
       json_peer["ip"].get<std::string>(),
+      json_peer["publicKey"].get<std::string>(),
        PeerServiceConfig::getInstance().getMaxTrustScore()));
   }
   is_active = false;
