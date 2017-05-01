@@ -144,7 +144,7 @@ TEST_F(connection_with_grpc_flatbuffer_test, Transaction_Add_Asset) {
   connection::iroha::SumeragiImpl::Verify::send(
       config::PeerServiceConfig::getInstance().getMyIp(), *eventptr);
 }
-/*
+
 TEST(FlatbufferServicePeerTest, PeerServiceCreateAdd) {
   auto np = ::peer::Node("ip", "pubKey", 100, "ledger", true, true);
   flatbuffers::FlatBufferBuilder fbb;
@@ -153,7 +153,7 @@ TEST(FlatbufferServicePeerTest, PeerServiceCreateAdd) {
   auto bufptr = fbb.GetBufferPointer();
   auto size = fbb.GetSize();
   std::vector<uint8_t> buf(bufptr, bufptr + size);
-  auto addPeerPtr = flatbuffers::GetRoot<iroha::PeerAdd>(&buf);
+  auto addPeerPtr = flatbuffers::GetRoot<iroha::PeerAdd>(buf.data());
 
   auto peerRoot = addPeerPtr->peer_nested_root();
   ASSERT_STREQ(peerRoot->ledger_name()->c_str(), "ledger");
@@ -164,39 +164,40 @@ TEST(FlatbufferServicePeerTest, PeerServiceCreateAdd) {
   ASSERT_EQ(peerRoot->join_ledger(), true);
 }
 
+
 TEST(FlatbufferServicePeerTest, PeerServiceCreateRemove) {
   flatbuffers::FlatBufferBuilder fbb;
   auto removePeer = flatbuffer_service::peer::CreateRemove(fbb, "pubKey");
   fbb.Finish(removePeer);
   auto bufptr = fbb.GetBufferPointer();
   std::vector<uint8_t> buf {bufptr, bufptr + fbb.GetSize()};
-  auto removePeerPtr = flatbuffers::GetRoot<iroha::PeerRemove>(&buf);
+  auto removePeerPtr = flatbuffers::GetRoot<iroha::PeerRemove>(buf.data());
   //ASSERT_EQ(removePeerPtr->command_type(), iroha::Command::PeerRemove);
   ASSERT_STREQ(removePeerPtr->peerPubKey()->c_str(), "pubKey");
 }
 
 TEST(FlatbufferServicePeerTest, PeerServiceCreateSetTrust) {
   flatbuffers::FlatBufferBuilder fbb;
-  auto setTrust = flatbuffer_service::peer::CreateChangeTrust(fbb, "pubKey", 3.14159265);
-  fbb.Finish(setTrust);
+  auto ofs = flatbuffer_service::peer::CreateSetTrust(fbb, "pubKey", 3.14159265);
+  fbb.Finish(ofs);
   auto bufptr = fbb.GetBufferPointer();
   std::vector<uint8_t> buf {bufptr, bufptr + fbb.GetSize()};
-  auto setTrustPtr = flatbuffers::GetRoot<iroha::PeerChangeTrust>(&buf);
-  //ASSERT_EQ(setTrustPtr->command_type(), ::iroha::Command::PeerChangeTrust);
-  ASSERT_STREQ(setTrustPtr->peerPubKey()->c_str(), "pubKey");
-  ASSERT_EQ(setTrustPtr->delta(), 3.14159265);
+  auto p = flatbuffers::GetRoot<iroha::PeerSetTrust>(buf.data());
+  //ASSERT_EQ(p->command_type(), ::iroha::Command::PeerChangeTrust);
+  ASSERT_STREQ(p->peerPubKey()->c_str(), "pubKey");
+  ASSERT_EQ(p->trust(), 3.14159265);
 }
 
 TEST(FlatbufferServicePeerTest, PeerServiceCreateChangeTrust) {
   flatbuffers::FlatBufferBuilder fbb;
-  auto changeTrust = flatbuffer_service::peer::CreateChangeTrust(fbb, "pubKey", 1.41421356);
-  fbb.Finish(changeTrust);
+  auto ofs = flatbuffer_service::peer::CreateChangeTrust(fbb, "pubKey", 1.41421356);
+  fbb.Finish(ofs);
   auto bufptr = fbb.GetBufferPointer();
   std::vector<uint8_t> buf {bufptr, bufptr + fbb.GetSize()};
-  auto changeTrustPtr = flatbuffers::GetRoot<iroha::PeerChangeTrust>(&buf);
+  auto p = flatbuffers::GetRoot<iroha::PeerChangeTrust>(buf.data());
   //ASSERT_EQ(changeTrustPtr->command_type(), ::iroha::Command::PeerChangeTrust);
-  ASSERT_STREQ(changeTrustPtr->peerPubKey()->c_str(), "pubKey");
-  ASSERT_EQ(changeTrustPtr->delta(), 1.41421356);
+  ASSERT_STREQ(p->peerPubKey()->c_str(), "pubKey");
+  ASSERT_EQ(p->delta(), 1.41421356);
 }
 
 TEST(FlatbufferServicePeerTest, PeerServiceCreateSetActive) {
@@ -205,11 +206,11 @@ TEST(FlatbufferServicePeerTest, PeerServiceCreateSetActive) {
   fbb.Finish(setActive);
   auto bufptr = fbb.GetBufferPointer();
   std::vector<uint8_t> buf {bufptr, bufptr + fbb.GetSize()};
-  auto setActivePtr = flatbuffers::GetRoot<iroha::PeerSetActive>(&buf);
+  auto setActivePtr = flatbuffers::GetRoot<iroha::PeerSetActive>(buf.data());
   ASSERT_STREQ(setActivePtr->peerPubKey()->c_str(), "pubKey");
   ASSERT_EQ(setActivePtr->active(), true);
 }
-*/
+
 TEST(FlatbufferServiceTest, PrimitivesCreatePeer) {
   auto np = ::peer::Node("ip", "pubKey", 100, "ledger", true, true);
   auto peer = flatbuffer_service::primitives::CreatePeer(np);

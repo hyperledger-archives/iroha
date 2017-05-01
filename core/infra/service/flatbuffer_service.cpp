@@ -714,7 +714,7 @@ namespace flatbuffer_service {
     flatbuffers::Offset<PeerChangeTrust> CreateChangeTrust(
       flatbuffers::FlatBufferBuilder &fbb,
       const std::string &pubKey, double delta) {
-      return iroha::CreatePeerChangeTrust(fbb, delta);
+      return iroha::CreatePeerChangeTrust(fbb, fbb.CreateString(pubKey), delta);
     }
 
     flatbuffers::Offset<PeerSetTrust> CreateSetTrust(
