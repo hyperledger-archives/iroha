@@ -28,17 +28,18 @@ inline static const std::string defaultIP() { return ""; }
 inline static const std::string defaultPubKey() { return ""; }
 
 struct Node {
-  std::string ip;
+  std::string ledger_name;
   std::string publicKey;
+  std::string ip;
   double trust;
   bool active;
   bool join_ledger;
-  bool join_network;
-  bool join_validation;
 
-  Node(std::string myIP = defaultIP(), std::string myPubKey = defaultPubKey(),
-       double myTrustScore = 100.0, bool active = false, bool join_net = true, bool join_val = true)
-      : ip(myIP), publicKey(myPubKey), trust(myTrustScore), active(active), join_network(join_net), join_validation(join_val) {}
+  Node(std::string ledger_name, std::string myIP = defaultIP(), std::string myPubKey = defaultPubKey(),
+       double myTrustScore = 100.0, bool active = false, bool join_ledger)
+      : ledger_name(ledger_name), publicKey(myPubKey), ip(myIP), trust(myTrustScore), active(active),
+        join_ledger(join_ledger) {}
+
   bool isDefaultIP() const { return ip == defaultIP(); }
   bool isDefaultPubKey() const { return publicKey == defaultPubKey(); }
 };
