@@ -1,8 +1,8 @@
-
-add_library(repository STATIC repository.cpp)
-
-target_link_libraries(repository
-    iroha_ametsuchi
+ADD_LIBRARY(repository STATIC
+    respository.cpp
 )
 
-
+target_link_libraries(repository
+    ametsuchi
+    flatbuffer_service
+)

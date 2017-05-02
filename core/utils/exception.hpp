@@ -32,6 +32,7 @@ class IrohaException : public std::exception {
   virtual std::string message() const;  // This is for getting exception message
 
  protected:
+
   std::string message_;
 };
 
@@ -40,24 +41,28 @@ class NoError : public IrohaException {
   explicit NoError(const std::string &);
 };
 
+// Iroha should halt.
 class Critical : public IrohaException {
  public:
   explicit Critical(const std::string &);
 };
 
+// used by debug.
 class WontFix : public IrohaException {
  public:
   explicit WontFix(const std::string &);
 };
 
-class HelpWanted : public IrohaException {
+// No problem for running, but it is insecure. ex. using default private key.
+class Insecure : public IrohaException {
  public:
-  explicit HelpWanted(const std::string &);
+  explicit Insecure(const std::string &);
 };
 
-class ConfigError : public IrohaException {
+// no problem for running. Iroha manages for unstop.
+class Ordinary : public IrohaException {
  public:
-  explicit ConfigError(const std::string &);
+  explicit Ordinary(const std::string &);
 };
 
 class None : public NoError {
@@ -65,30 +70,35 @@ class None : public NoError {
   None();
 };
 
-class NotImplementedException : public HelpWanted {
+class NotImplementedException : public Ordinary {
  public:
   explicit NotImplementedException(const std::string &functionName,
                                    const std::string &filename);
 };
 
-class InvalidCastException : public Critical {
+class InvalidCastException : public Ordinary {
  public:
   InvalidCastException(const std::string &from, const std::string &to,
                        const std::string &filename);
   InvalidCastException(const std::string &meg, const std::string &filename);
 };
 
-class DuplicateSetArgumentException : public Critical {
+class DuplicateSetArgumentException : public Ordinary {
  public:
   DuplicateSetArgumentException(const std::string &, const std::string &);
 };
 
-class UnsetBuildArgumentsException : public Critical {
+class UnsetBuildArgumentsException : public Ordinary {
  public:
   UnsetBuildArgumentsException(const std::string &, const std::string &);
 };
 
-class NotFoundPathException : public ConfigError {
+class RequirePropertyMissingException : public IrohaException {
+public:
+    RequirePropertyMissingException(const std::string &, const std::string &);
+};
+
+class NotFoundPathException : public Insecure {
  public:
   NotFoundPathException(const std::string &path);
 };
@@ -96,17 +106,17 @@ class NotFoundPathException : public ConfigError {
 namespace config {
 
 // deprecated, will remove
-class ConfigException : public ConfigError {
+class ConfigException : public Insecure {
  public:
   ConfigException(const std::string &message, const std::string &filename);
 };
 
-class ParseException : public ConfigError {
+class ParseException : public Insecure {
  public:
   ParseException(const std::string &target, bool setDefaultMessage = false);
 };
 
-class UndefinedIrohaHomeException : ConfigError {
+class UndefinedIrohaHomeException : Critical {
  public:
   UndefinedIrohaHomeException();
 };
@@ -114,12 +124,12 @@ class UndefinedIrohaHomeException : ConfigError {
 }  // namespace config
 
 namespace connection {
-class NullptrException : public Critical {
+class NullptrException : public Ordinary {
  public:
   NullptrException(const std::string &target);
 };
 
-class FailedToCreateConsensusEvent : public Critical {
+class FailedToCreateConsensusEvent : public Ordinary {
  public:
   FailedToCreateConsensusEvent();
 };
@@ -127,17 +137,17 @@ class FailedToCreateConsensusEvent : public Critical {
 
 namespace service {
 
-class DuplicationIPException : public ConfigError {
+class DuplicationIPException : public Insecure {
  public:
   explicit DuplicationIPException(const std::string &);
 };
 
-class DuplicationPublicKeyException : public ConfigError {
+class DuplicationPublicKeyException : public Insecure {
  public:
   explicit DuplicationPublicKeyException(const std::string &);
 };
 
-class UnExistFindPeerException : public ConfigError {
+class UnExistFindPeerException : public Insecure {
  public:
   explicit UnExistFindPeerException(const std::string &);
 };
@@ -146,12 +156,12 @@ class UnExistFindPeerException : public ConfigError {
 
 namespace crypto {
 
-class InvalidKeyException : public ConfigError {
+class InvalidKeyException : public Insecure {
  public:
   explicit InvalidKeyException(const std::string &);
 };
 
-class InvalidMessageLengthException : public Critical {
+class InvalidMessageLengthException : public Insecure {
  public:
   explicit InvalidMessageLengthException(const std::string &);
 };

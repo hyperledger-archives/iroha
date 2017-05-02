@@ -1,9 +1,10 @@
-ADD_LIBRARY(executor STATIC
-    executor.cpp
+
+ADD_LIBRARY(validator STATIC
+    validator.cpp
 )
 
-target_link_libraries(executor
+target_link_libraries(validator
+    hash
+    flatbuffer_service
     logger
-    flatbuffers
-    membership_service
 )

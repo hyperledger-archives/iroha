@@ -23,14 +23,17 @@ limitations under the License.
 #include <memory>
 #include <thread>
 #include <vector>
-#include <generated/main_generated.h>
-#include <membership_service/peer_service.hpp>
+
+namespace iroha {
+struct ConsensusEvent;
+}
 
 namespace sumeragi {
 
 using iroha::ConsensusEvent;
 
 void initializeSumeragi();
+
 void loop();
 
 void getNextOrder(std::unique_ptr<ConsensusEvent> event);
