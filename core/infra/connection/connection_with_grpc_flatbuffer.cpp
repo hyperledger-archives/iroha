@@ -148,25 +148,23 @@ namespace connection {
           *consensusEvent.transactions()->Get(0)->tx_nested_root());
 
       flatbuffers::FlatBufferBuilder fbb;
-      // ToDo: Copy consensus event twice in toConsensusEvent() and
-      // copyConsensusEvent(). What's best solution?
+
       auto eventOffset =
         flatbuffer_service::copyConsensusEvent(fbb, consensusEvent);
+
       if (!eventOffset) {
-        // FIXME:
-        // RPCのエラーではないが、Responseで返すべきか、makeUnexpectedで返すべきか
-        // ERROR;
-        assert(false);  // ToDo: Do error-handling
+        // FIXME: Argment BufferRef<Response>, return grpc::Status
+        assert(false);
       }
 
       fbb.Finish(*eventOffset);
 
-      auto requestConsensusEventRef =
+      auto reqEventRef =
         flatbuffers::BufferRef<::iroha::ConsensusEvent>(fbb.GetBufferPointer(),
                                                         fbb.GetSize());
 
       Status status =
-        stub_->Verify(&context, requestConsensusEventRef, &responseRef);
+        stub_->Verify(&context, reqEventRef, &responseRef);
 
       if (status.ok()) {
         logger::info("connection")
@@ -176,63 +174,35 @@ namespace connection {
         logger::error("connection") << static_cast<int>(status.error_code())
                                     << ": " << status.error_message();
         return responseRef.GetRoot();
-        // std::cout << status.error_code() << ": " << status.error_message();
-        // return {"RPC failed", RESPONSE_ERRCONN};
       }
     }
 
     const ::iroha::Response *Torii(
-      const ::iroha::Transaction &transaction) const {
+      const ::iroha::Transaction &tx) const {
       // Copy transaction to FlatBufferBuilder memory, then create
       // BufferRef<Transaction>
       // and share it to another sumeragi by using stub interface Torii.
+      logger::info("connection") << "Operation";
+      logger::info("connection")
+          << "tx: "  << flatbuffer_service::toString(tx);
 
       ::grpc::ClientContext clientContext;
-      flatbuffers::FlatBufferBuilder fbbTransaction;
+      flatbuffers::FlatBufferBuilder xbb;
 
-      std::vector<uint8_t> hashBlob(transaction.hash()->begin(),
-                                    transaction.hash()->end());
-
-      std::vector<flatbuffers::Offset<::iroha::Signature>> signatures;
-      for (auto &&txSig : *transaction.signatures()) {
-        std::vector<uint8_t> data(*txSig->signature()->begin(),
-                                  *txSig->signature()->end());
-        signatures.emplace_back(::iroha::CreateSignatureDirect(
-          fbbTransaction, txSig->publicKey()->c_str(), &data));
+      auto txOffset = flatbuffer_service::copyTransaction(xbb, tx);
+      if (!txOffset) {
+        assert(false);
       }
 
-      auto commandOffset = [&] {
-        std::size_t length = 0;
-        auto commandBuf = extractCommandBuffer(transaction, length);
-        flatbuffers::Verifier verifier(commandBuf.get(), length);
-        ::iroha::VerifyCommand(verifier, commandBuf.get(),
-                               transaction.command_type());
-        return flatbuffer_service::CreateCommandDirect(
-          fbbTransaction, commandBuf.get(), transaction.command_type());
-      }();
+      xbb.Finish(txOffset.value());
 
-      std::vector<uint8_t> attachmentData(
-        *transaction.attachment()->data()->begin(),
-        *transaction.attachment()->data()->end());
-
-      auto transactionOffset = ::iroha::CreateTransactionDirect(
-        fbbTransaction, transaction.creatorPubKey()->c_str(),
-        transaction.command_type(), commandOffset, &signatures, &hashBlob,
-        transaction.timestamp(),
-        ::iroha::CreateAttachmentDirect(
-          fbbTransaction, transaction.attachment()->mime()->c_str(),
-          &attachmentData
-        ));
-
-      fbbTransaction.Finish(transactionOffset);
-
-      flatbuffers::BufferRef<::iroha::Transaction> reqTransactionRef(
-        fbbTransaction.GetBufferPointer(), fbbTransaction.GetSize());
+      flatbuffers::BufferRef<::iroha::Transaction> requestTxRef(
+        xbb.GetBufferPointer(), xbb.GetSize());
 
       flatbuffers::BufferRef<Response> responseRef;
 
       Status status =
-        stub_->Torii(&clientContext, reqTransactionRef, &responseRef);
+        stub_->Torii(&clientContext, requestTxRef, &responseRef);
 
       if (status.ok()) {
         logger::info("connection")
@@ -244,19 +214,6 @@ namespace connection {
         // std::cout << status.error_code() << ": " << status.error_message();
         return responseRef.GetRoot();
       }
-    }
-
-  private:
-    flatbuffers::unique_ptr_t extractCommandBuffer(
-      const ::iroha::Transaction &transaction, std::size_t &length) {
-      flatbuffers::FlatBufferBuilder fbbCommand;
-      auto type = transaction.command_type();
-      auto obj = transaction.command();
-      auto commandOffset =
-        flatbuffer_service::CreateCommandDirect(fbbCommand, obj, type);
-      fbbCommand.Finish(commandOffset);
-      length = fbbCommand.GetSize();
-      return fbbCommand.ReleaseBufferPointer();
     }
 
   private:
@@ -281,7 +238,7 @@ namespace connection {
           fbb.Clear();
           auto responseOffset = ::iroha::CreateResponseDirect(
             fbbResponse, "CANCELLED", ::iroha::Code::FAIL,
-            0);  // ToDo: Currently, if it fails, no signature.
+            0);  // FIXME: Currently, if it fails, no signature.
           fbbResponse.Finish(responseOffset);
 
           *response = flatbuffers::BufferRef<::iroha::Response>(
@@ -296,14 +253,15 @@ namespace connection {
           from, std::move(fbb.ReleaseBufferPointer()));
       }
 
+      auto tx_str = flatbuffer_service::toString(
+        *request->GetRoot()
+          ->transactions()
+          ->Get(0) // Future work: #(tx) = 1
+          ->tx_nested_root());
       auto responseOffset = ::iroha::CreateResponseDirect(
         fbbResponse, "OK!!", ::iroha::Code::UNDECIDED,
-        sign(fbbResponse,
-             hash::sha3_256_hex(flatbuffer_service::toString(
-               *request->GetRoot()
-                 ->transactions()
-                 ->Get(0)
-                 ->tx_nested_root()))));  // ToDo: #(tx) = 1, ToDo:
+        flatbuffer_service::primitives::CreateSignature(
+          fbbResponse, tx_str, datetime::unixtime()));
 
       fbbResponse.Finish(responseOffset);
 
@@ -314,7 +272,7 @@ namespace connection {
     }
 
     Status Torii(ServerContext *context,
-                 const flatbuffers::BufferRef<Transaction> *transactionRef,
+                 const flatbuffers::BufferRef<Transaction> *txRef,
                  flatbuffers::BufferRef<Response> *responseRef) override {
       logger::debug("SumeragiConnectionServiceImpl::Torii") << "RPC works";
 
@@ -323,10 +281,11 @@ namespace connection {
       fbbResponse.Clear();
 
       {
-        const auto tx = transactionRef->GetRoot();
+        const auto tx = txRef->GetRoot();
         flatbuffers::FlatBufferBuilder fbb;
         auto txoffset = flatbuffer_service::copyTransaction(fbb, *tx);
         if (!txoffset) {
+          fbb.Clear();
           auto responseOffset = ::iroha::CreateResponseDirect(
             fbbResponse, "CANCELLED", ::iroha::Code::FAIL,
             0);  // FIXME: Currently, if it fails, no signature.
@@ -343,10 +302,13 @@ namespace connection {
           fbb.ReleaseBufferPointer());
       }
 
+      auto tx_str = flatbuffer_service::toString(*txRef->GetRoot());
+
       auto responseOffset = ::iroha::CreateResponseDirect(
         fbbResponse, "OK!!", ::iroha::Code::UNDECIDED,
-        sign(fbbResponse, hash::sha3_256_hex(flatbuffer_service::toString(
-          *transactionRef->GetRoot()))));
+        flatbuffer_service::primitives::CreateSignature(
+          fbbResponse, tx_str, datetime::unixtime()));
+
       fbbResponse.Finish(responseOffset);
 
       *responseRef = flatbuffers::BufferRef<Response>(
@@ -356,21 +318,6 @@ namespace connection {
     }
 
   private:
-    flatbuffers::Offset<::iroha::Signature> sign(
-      flatbuffers::FlatBufferBuilder &fbb, const std::string &tx) {
-      const auto stamp = datetime::unixtime();
-      const auto hashWithTimestamp =
-        hash::sha3_256_hex(tx + std::to_string(stamp));
-      const auto signature = signature::sign(
-        hashWithTimestamp,
-        config::PeerServiceConfig::getInstance().getMyPublicKey(),
-        config::PeerServiceConfig::getInstance().getMyPrivateKey());
-      const std::vector<uint8_t> sigblob(signature.begin(), signature.end());
-      return ::iroha::CreateSignatureDirect(
-        fbb, config::PeerServiceConfig::getInstance().getMyPublicKey().c_str(),
-        &sigblob, stamp);
-    };
-
     flatbuffers::FlatBufferBuilder fbbResponse;
   };
 
@@ -382,9 +329,9 @@ namespace connection {
     namespace SumeragiImpl {
       namespace Verify {
         bool send(const std::string &ip, const ::iroha::ConsensusEvent &event) {
-          logger::info("Connection with grpc") << "Send!";
+          logger::info("connection") << "Send!";
           if (::peer::service::isExistIP(ip)) {
-            logger::info("Connection with grpc") << "IP exists: " << ip;
+            logger::info("connection") << "IP exists: " << ip;
             SumeragiConnectionClient client(grpc::CreateChannel(
               ip + ":" +
               std::to_string(config::IrohaConfigManager::getInstance()
@@ -392,9 +339,14 @@ namespace connection {
               grpc::InsecureChannelCredentials()));
             // TODO return tx validity
             auto reply = client.Verify(event);
+            if (!reply) {
+              logger::error("connection") << ::iroha::EnumNameCode(reply->code())
+                                          << ", " << reply->message();
+              return false;
+            }
             return true;
           } else {
-            logger::info("Connection with grpc") << "IP doesn't exist: " << ip;
+            logger::info("connection") << "IP doesn't exist: " << ip;
             return false;
           }
         }
@@ -483,31 +435,32 @@ namespace connection {
       }
     }
 
+    // ToDo: Unite the way to hash (below double(?) hash)
     flatbuffers::Offset<::iroha::Signature> sign(
-              flatbuffers::FlatBufferBuilder &fbb, const std::string &tx) {
-          const auto stamp = datetime::unixtime();
-          const auto hashWithTimestamp =
-                  hash::sha3_256_hex(tx + std::to_string(stamp));
-          const auto signature = signature::sign(
-                  hashWithTimestamp,
-                  config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                  config::PeerServiceConfig::getInstance().getMyPrivateKey());
-          const std::vector<uint8_t> sigblob(signature.begin(), signature.end());
-          return ::iroha::CreateSignatureDirect(
-                  fbb, config::PeerServiceConfig::getInstance().getMyPublicKey().c_str(),
-                  &sigblob, stamp);
+      flatbuffers::FlatBufferBuilder &fbb, const std::string &tx) {
+      const auto stamp = datetime::unixtime();
+      const auto hashWithTimestamp =
+        hash::sha3_256_hex(tx + std::to_string(stamp));
+      const auto signature = signature::sign(
+        hashWithTimestamp,
+        config::PeerServiceConfig::getInstance().getMyPublicKey(),
+        config::PeerServiceConfig::getInstance().getMyPrivateKey());
+      const std::vector<uint8_t> sigblob(signature.begin(), signature.end());
+      return ::iroha::CreateSignatureDirect(
+        fbb, config::PeerServiceConfig::getInstance().getMyPublicKey().c_str(),
+        &sigblob, stamp);
     };
 
   private:
     flatbuffers::FlatBufferBuilder fbbResponse;
   };
 
-  namespace MemberShipService {
+  namespace memberShipService {
     namespace HijiriImpl {
       namespace Kagami {
         bool send(const std::string &ip, const ::iroha::Ping &ping) {  // TODO
           logger::info("Connection with grpc") << "Send!";
-          logger::info("Connection with grpc") << "IP exists: " << ip;
+          logger::info("Connection with grpc") << "IP is: " << ip;
           HijiriConnectionClient client(grpc::CreateChannel(
             ip + ":" +
             std::to_string(config::IrohaConfigManager::getInstance()
@@ -518,6 +471,23 @@ namespace connection {
         }
       }  // namespace Kagami
     }  // namespace HijiriImpl
+    namespace SumeragiImpl {
+      namespace Torii {
+        bool send(const std::string &ip, const ::iroha::Transaction &tx) {
+          logger::info("Connection with grpc") << "Send!";
+          if (::peer::service::isExistIP(ip)) {
+            logger::info("Connection with grpc") << "IP Exist: " << ip;
+            SumeragiConnectionClient client(grpc::CreateChannel(
+                ip + ":" +
+                std::to_string(config::IrohaConfigManager::getInstance()
+                                   .getGrpcPortNumber(50051)),
+                grpc::InsecureChannelCredentials()));
+            auto reply = client.Torii(tx);
+            return true;
+          }
+        }
+      } // namespace Torii
+    } // namespace Sumeragi Impl
   }  // namespace MemberShipService
 
 
@@ -692,12 +662,18 @@ namespace connection {
   ServerBuilder builder;
   grpc::Server *server = nullptr;
   std::condition_variable server_cv;
+  bool server_ready = false;
 
   void initialize_peer() {
     // ToDo catch exception of to_string
 
 
     logger::info("Connection GRPC") << " initialize_peer ";
+  }
+
+  void wait_till_ready() {
+    std::unique_lock<std::mutex> lk(wait_for_server);
+    server_cv.wait(lk, [] { return server_ready; });
   }
 
   int run() {
@@ -711,9 +687,13 @@ namespace connection {
     builder.AddListeningPort(address, grpc::InsecureServerCredentials());
     builder.RegisterService(&service);
 
-    wait_for_server.lock();
-    server = builder.BuildAndStart().release();
-    wait_for_server.unlock();
+    {
+      std::lock_guard<std::mutex> lk(wait_for_server);
+      //wait_for_server.lock();
+      server = builder.BuildAndStart().release();
+      server_ready = true;
+      //wait_for_server.unlock();
+    }
     server_cv.notify_one();
 
     server->Wait();

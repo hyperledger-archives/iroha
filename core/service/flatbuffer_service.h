@@ -32,6 +32,7 @@ struct PeerSetTrust;
 struct PeerSetActive;
 struct Signature;
 struct Sumeragi;
+struct Attachment;
 enum class Command : uint8_t;
 }  // namespace iroha
 
@@ -62,11 +63,11 @@ namespace flatbuffer_service {
 
   Expected<int> hasRequreMember(const iroha::Transaction &tx);
 
-  flatbuffers::Offset<void> CreateCommandDirect(
-    flatbuffers::FlatBufferBuilder &_fbb, const void *obj, iroha::Command type);
-
   Expected<flatbuffers::Offset<::iroha::Transaction>> copyTransaction(
     flatbuffers::FlatBufferBuilder &fbb, const ::iroha::Transaction &fromTx);
+
+  flatbuffers::Offset<void> CreateCommandFromTx(
+    flatbuffers::FlatBufferBuilder&, const Transaction&);
 
   Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
     flatbuffers::FlatBufferBuilder &fbb, const ::iroha::ConsensusEvent &);
@@ -121,9 +122,8 @@ namespace flatbuffer_service {
   namespace primitives {
     std::vector<uint8_t> CreatePeer(const ::peer::Node &peer);
 
-    std::vector<uint8_t> CreateSignature(const std::string &publicKey,
-                                         std::vector<uint8_t> signature,
-                                         uint64_t timestamp);
+    flatbuffers::Offset<::iroha::Signature> CreateSignature(
+      flatbuffers::FlatBufferBuilder &fbb, const std::string &hash, uint64_t timestamp);
   }  // namespace primitives
 
 
@@ -157,10 +157,20 @@ namespace flatbuffer_service {
 
     Expected<std::vector<uint8_t>> GetTxPointer(const iroha::Transaction &tx);
 
-    const Transaction &CreateTransaction(
-      flatbuffers::FlatBufferBuilder &fbb, iroha::Command cmd_type,
-      const flatbuffers::Offset<void>& command, const std::string& creator,
-      const std::vector<flatbuffers::Offset<iroha::Signature>>& sigs);
+    std::vector<uint8_t> CreateTransaction(
+      flatbuffers::FlatBufferBuilder& fbb,
+      const std::string& creatorPubKey,
+      iroha::Command cmd_type,
+      const flatbuffers::Offset<void>& command
+    );
+
+    std::vector<uint8_t> CreateTransaction(
+      flatbuffers::FlatBufferBuilder& fbb,
+      const std::string& creatorPubKey,
+      iroha::Command cmd_type,
+      const flatbuffers::Offset<void>& command,
+      flatbuffers::Offset<iroha::Attachment> attachment
+    );
   }
 };      // namespace flatbuffer_service
 #endif  // IROHA_FLATBUFFER_SERVICE_H

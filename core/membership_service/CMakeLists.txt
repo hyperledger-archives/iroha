@@ -22,5 +22,6 @@ target_link_libraries(membership_service
     logger
     config_manager
     cache_map
+    flatbuffer_service
+    connection_with_grpc_flatbuffer
 )
-

@@ -115,6 +115,12 @@ class Ametsuchi {
                                         const std::string &&asset_name,
                                         bool uncommitted = false);
 
+  const std::vector<const ::iroha::AccountPermissionLedger*> assetGetPermissionLedger(const flatbuffers::String *pubKey);
+
+  const std::vector<const ::iroha::AccountPermissionDomain*> assetGetPermissionDomain(const flatbuffers::String *pubKey);
+
+  const std::vector<const ::iroha::AccountPermissionAsset*>  assetGetPermissionAsset(const flatbuffers::String *pubKey);
+
   const ::iroha::Peer *pubKeyGetPeer(const flatbuffers::String *pubKey,
                                      bool uncommitted = false);
 
