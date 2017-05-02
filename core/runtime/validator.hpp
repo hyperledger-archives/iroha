@@ -17,14 +17,14 @@ limitations under the License.
 #ifndef __CORE_RUNTIME_VALIDATOR_HPP__
 #define __CORE_RUNTIME_VALIDATOR_HPP__
 
-#include <main_generated.h>
+#include <transaction_generated.h>
 
 namespace runtime {
     namespace validator {
 
         bool account_exist_validator(const flatbuffers::String &publicKey);
 
-        bool permission_validator(const flatbuffers::String &publicKey);
+        bool permission_validator(const iroha::Transaction &tx);
 
         bool logic_validator(const iroha::Transaction &tx);
     };
