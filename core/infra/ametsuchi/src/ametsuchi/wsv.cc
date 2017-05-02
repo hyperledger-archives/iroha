@@ -692,7 +692,7 @@ void WSV::permisson_add(const iroha::PermissionAdd *command) {
                 apa->ledger_name()->c_str(),
                 apa->account_give_permission(),
                 apa->transfer(),
-                apa->remove(),
+                apa->subtract(),
                 apa->read()
             ));
             auto ptr = fbb.GetBufferPointer();
@@ -907,9 +907,9 @@ std::vector<const ::iroha::Asset *> WSV::accountGetAllAssets(
 const ::iroha::AccountPermissionRoot WSV::accountGetPermissionRoot(const flatbuffers::String *pubKey){
   //ToDo
 }
-std::vector<const ::iroha::AccountPermissionLedger> WSV::accountGetPermissionLedger(const flatbuffers::String *pubKey){
+const std::vector<const ::iroha::AccountPermissionLedger*> WSV::accountGetPermissionLedger(const flatbuffers::String *pubKey){
   MDB_val c_key, c_val;
-  std::vector<const ::iroha::AccountPermissionLedger> permission_vec;
+  std::vector<const ::iroha::AccountPermissionLedger*> permission_vec;
   int res;
 
   c_key.mv_data = (void *)(pubKey->data());
@@ -924,16 +924,16 @@ std::vector<const ::iroha::AccountPermissionLedger> WSV::accountGetPermissionLed
   }
 
   flatbuffers::FlatBufferBuilder fbb;
-  auto account = const_cast<iroha::Account*>(flatbuffers::GetRoot<::iroha::Account>(c_val.mv_data));
+  auto account = flatbuffers::GetRoot<::iroha::Account>(c_val.mv_data);
   for(const auto& pdw: *account->ledgerPermissions()){
     permission_vec.emplace_back(pdw->permission_nested_root());
   }
   return permission_vec;
 }
 
-std::vector<const ::iroha::AccountPermissionDomain> WSV::accountGetPermissionDomain(const flatbuffers::String *pubKey){
+const std::vector<const ::iroha::AccountPermissionDomain*> WSV::accountGetPermissionDomain(const flatbuffers::String *pubKey){
   MDB_val c_key, c_val;
-  std::vector<const ::iroha::AccountPermissionDomain> permission_vec;
+  std::vector<const ::iroha::AccountPermissionDomain*> permission_vec;
   int res;
 
   c_key.mv_data = (void *)(pubKey->data());
@@ -948,16 +948,16 @@ std::vector<const ::iroha::AccountPermissionDomain> WSV::accountGetPermissionDom
   }
 
   flatbuffers::FlatBufferBuilder fbb;
-  auto account = const_cast<iroha::Account*>(flatbuffers::GetRoot<::iroha::Account>(c_val.mv_data));
+  auto account = flatbuffers::GetRoot<::iroha::Account>(c_val.mv_data);
   for(const auto& pdw: *account->domainPermissions()){
     permission_vec.emplace_back(pdw->permission_nested_root());
   }
   return permission_vec;
 }
 
-std::vector<const ::iroha::AccountPermissionAsset>  WSV::accountGetPermissionAsset(const flatbuffers::String *pubKey){
+const std::vector<const ::iroha::AccountPermissionAsset*>  WSV::accountGetPermissionAsset(const flatbuffers::String *pubKey){
   MDB_val c_key, c_val;
-  std::vector<const ::iroha::AccountPermissionAsset> permission_vec;
+  std::vector<const ::iroha::AccountPermissionAsset*> permission_vec;
   int res;
 
   c_key.mv_data = (void *)(pubKey->data());
@@ -972,7 +972,7 @@ std::vector<const ::iroha::AccountPermissionAsset>  WSV::accountGetPermissionAss
   }
 
   flatbuffers::FlatBufferBuilder fbb;
-  auto account = const_cast<iroha::Account*>(flatbuffers::GetRoot<::iroha::Account>(c_val.mv_data));
+  auto account = flatbuffers::GetRoot<::iroha::Account>(c_val.mv_data);
   for(const auto& pdw: *account->assetPermissions()){
     permission_vec.emplace_back(pdw->permission_nested_root());
   }
