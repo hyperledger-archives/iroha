@@ -96,21 +96,19 @@ namespace Torii {
 bool send(const std::string& ip, const ::iroha::Transaction& tx);
 }  // namespace Torii
 }  // namespace SumeragiImpl
-}  // namespace memberShipService
 
 /************************************************************************************
 * Kagami ( means Ping )
 ************************************************************************************/
-    namespace memberShipService {
-      namespace SyncImpl {
-        namespace checkHash {
-          bool send( const std::string& ip, const ::iroha::Ping& ping );
-        } // namespace ChackHash
-        namespace getPeers {
-          bool send( const std::string& ip, const ::iroha::Ping& ping );
-        } // namespace getPeers
-      } // namespace SyncImpl
-    } // namespace memberShipService
+namespace SyncImpl {
+namespace checkHash {
+bool send(const std::string& ip, const ::iroha::Ping& ping);
+}  // namespace ChackHash
+namespace getPeers {
+bool send(const std::string& ip, const ::iroha::Ping& ping);
+}  // namespace getPeers
+}  // namespace SyncImpl
+}  // namespace memberShipService
 
 /************************************************************************************
  * Main connection

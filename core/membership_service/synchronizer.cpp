@@ -20,6 +20,10 @@ limitations under the License.
 
 #include <membership_service/synchronizer.hpp>
 #include <membership_service/peer_service.hpp>
+
+#include <service/connection.hpp>
+#include <service/flatbuffer_service.h>
+
 #include <utils/cache_map.hpp>
 #include <utils/timer.hpp>
 #include <ametsuchi/repository.hpp>
@@ -30,6 +34,14 @@ namespace peer{
   namespace sync {
     std::shared_ptr<::peer::Node> leader;
     void startSynchronizeLedger() {
+      // TODO getConfig default leader ip
+      std::string default_leader_ip = ::peer::myself::getIp(); // change -> getConfig::LeaderIp()
+      std::string message = "getPing!";
+      std::string myip = ::peer::myself::getIp();
+      auto vec = flatbuffer_service::endpoint::CreatePing(message,myip);
+      auto &ping = *flatbuffers::GetRoot<iroha::Ping>(vec.data());
+      connection::memberShipService::SyncImpl::getPeers::send(default_leader_ip,ping);
+
       checkRootHashStep();
     }
 
@@ -69,8 +81,13 @@ namespace peer{
 
       // if roothash is trust roothash, return true. othrewise return false.
       bool checkRootHashAll(){
-        // TODO after integration ametsuchi and implement rpc_service
         std::string root_hash = repository::getMerkleRoot();
+        std::string myip = ::peer::myself::getPublicKey();
+
+        auto vec = flatbuffer_service::endpoint::CreatePing(root_hash,myip);
+        auto &ping = *flatbuffers::GetRoot<::iroha::Ping>(vec.data());
+        if( connection::memberShipService::SyncImpl::checkHash::send(leader->ip, ping) )
+          return true;
         return false;
       }
       bool append_temporary(size_t tx_id,iroha::Transaction* tx){
