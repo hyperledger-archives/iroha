@@ -17,61 +17,11 @@ limitations under the License.
 #include "logger.hpp"
 #include "datetime.hpp"
 
-/*
 namespace logger {
 
-    These macro causes sometimes hard readable compilation error.
-
-    #if __cplusplus <= 201402L
-    #define TYPE_UNC_EXC    bool
-    #define STD_UNC_EXC     std::uncaught_exception
-    #define COND_UNC_EXC    ! STD_UNC_EXC()
-    #else
-    #define TYPE_UNC_EXC    int
-    #define STD_UNC_EXC     std::uncaught_exceptions
-    #define COND_UNC_EXC    uncaught >= STD_UNC_EXC()
-    #endif
-
-    #define LOGGER_DEF_IMPL(LoggerName, UseLevel, HasPrefix, LogType) \
-    LoggerName::LoggerName(std::string&& caller) noexcept \
-      : caller(std::move(caller)), \
-        uncaught(STD_UNC_EXC()) \
-    {} \
-    LoggerName::LoggerName(const std::string& caller) noexcept \
-      : caller(caller), \
-        uncaught(STD_UNC_EXC()) \
-    {} \
-    LoggerName::~LoggerName() { \
-        if  ( COND_UNC_EXC \
-              && \
-              static_cast<int>(detail::LOG_LEVEL) <= static_cast<int>(UseLevel)
-\
-            ) { \
-            const auto useCErr = static_cast<int>(LogLevel::Error) <=
-static_cast<int>(UseLevel);   \
-            ( useCErr ? std::cerr : std::cout ) \
-                        << datetime::unixtime_str() \
-                        << (HasPrefix ? \
-                            std::string(" ") + LogType + " [" + caller + "] " \
-                            :                            "["  + caller + "] " \
-                           ) \
-                        << stream.str() << std::endl;                         \
-        }                                                                     \
-    }
-
-    LOGGER_DEF_IMPL(debug,   LogLevel::Debug,    true,   "DEBUG")
-    LOGGER_DEF_IMPL(info,    LogLevel::Info,     true,   "INFO")
-    LOGGER_DEF_IMPL(warning, LogLevel::Warning,  true,   "WARNING")
-    LOGGER_DEF_IMPL(error,   LogLevel::Error,    true,   "ERROR (-A-)")
-    LOGGER_DEF_IMPL(fatal,   LogLevel::Fatal,    true,   "FATAL (`o')")
-    LOGGER_DEF_IMPL(explore, LogLevel::Explore,  false,  "(EXPLORE)")
-}
-*/
-
-namespace logger {
-
+//enum class LogLevel { Debug = 0, Explore, Info, Warning, Error, Fatal };
 static const std::string level_names[]{
-    "DEBUG", "INFO", "WARNING", "ERROR (-A-)", "FATAL (`o')", "(EXPLORE)"};
+    "DEBUG", "EXPLORE", "INFO", "WARNING", "ERROR (-A-)", "FATAL (`o')"};
 
 class console_sink : public spdlog::sinks::base_sink<std::mutex> {
   using MyType = console_sink;
