@@ -134,10 +134,11 @@ namespace connection {
     explicit SumeragiConnectionClient(std::shared_ptr<Channel> channel)
       : stub_(Sumeragi::NewStub(channel)) {}
 
-    const ::iroha::Response *Verify(
-      const ::iroha::ConsensusEvent &consensusEvent) const {
+    void Verify(
+      const ::iroha::ConsensusEvent &consensusEvent,
+      flatbuffers::BufferRef<Response> *responseRef
+    ) const {
       ClientContext context;
-      flatbuffers::BufferRef<Response> responseRef;
       logger::info("connection") << "Operation";
       logger::info("connection")
         << "size: " << consensusEvent.peerSignatures()->size();
@@ -152,7 +153,7 @@ namespace connection {
         flatbuffer_service::copyConsensusEvent(fbb, consensusEvent);
 
       if (!eventOffset) {
-        // FIXME: Argment BufferRef<Response>, return grpc::Status
+        // FIXME: Use Response
         assert(false);
       }
 
@@ -163,21 +164,21 @@ namespace connection {
                                                         fbb.GetSize());
 
       Status status =
-        stub_->Verify(&context, reqEventRef, &responseRef);
+        stub_->Verify(&context, reqEventRef, responseRef);
 
       if (status.ok()) {
         logger::info("connection")
-          << "response: " << responseRef.GetRoot()->message()->c_str();
-        return responseRef.GetRoot();
+          << "response: " << responseRef->GetRoot()->message()->c_str();
       } else {
         logger::error("connection") << static_cast<int>(status.error_code())
                                     << ": " << status.error_message();
-        return responseRef.GetRoot();
       }
     }
 
-    const ::iroha::Response *Torii(
-      const ::iroha::Transaction &tx) const {
+    void Torii(
+      const ::iroha::Transaction &tx,
+      flatbuffers::BufferRef<Response> *responseRef
+    ) const {
       // Copy transaction to FlatBufferBuilder memory, then create
       // BufferRef<Transaction>
       // and share it to another sumeragi by using stub interface Torii.
@@ -198,20 +199,15 @@ namespace connection {
       flatbuffers::BufferRef<::iroha::Transaction> requestTxRef(
         xbb.GetBufferPointer(), xbb.GetSize());
 
-      flatbuffers::BufferRef<Response> responseRef;
-
       Status status =
-        stub_->Torii(&clientContext, requestTxRef, &responseRef);
+        stub_->Torii(&clientContext, requestTxRef, responseRef);
 
       if (status.ok()) {
         logger::info("connection")
-          << "response: " << responseRef.GetRoot()->message();
-        return responseRef.GetRoot();
+          << "response: " << responseRef->GetRoot()->message();
       } else {
         logger::error("connection") << static_cast<int>(status.error_code())
                                     << ": " << status.error_message();
-        // std::cout << status.error_code() << ": " << status.error_message();
-        return responseRef.GetRoot();
       }
     }
 
@@ -337,8 +333,10 @@ namespace connection {
                                .getGrpcPortNumber(50051)),
               grpc::InsecureChannelCredentials()));
             // TODO return tx validity
-            auto reply = client.Verify(event);
-            if (!reply) {
+            flatbuffers::BufferRef<::iroha::Response> response;
+            client.Verify(event, &response);
+            auto reply = response.GetRoot();
+            if (reply->code() == ::iroha::Code::FAIL) {
               logger::error("connection") << ::iroha::EnumNameCode(reply->code())
                                           << ", " << reply->message();
               return false;
@@ -374,7 +372,10 @@ namespace connection {
     explicit HijiriConnectionClient(std::shared_ptr<Channel> channel)
       : stub_(Hijiri::NewStub(channel)) {}
 
-    const ::iroha::Response *Kagami(const ::iroha::Ping &ping) const {
+    void Kagami(
+      const ::iroha::Ping &ping,
+      flatbuffers::BufferRef<Response>* responseRef
+    ) const {
         ::grpc::ClientContext clientContext;
         flatbuffers::FlatBufferBuilder fbbPing;
 
@@ -387,21 +388,15 @@ namespace connection {
             fbbPing.GetBufferPointer(), fbbPing.GetSize()
         );
 
-        flatbuffers::BufferRef<Response> responseRef;
-
-
-        auto res = stub_->Kagami(&clientContext, reqPingRef, &responseRef);;
+        auto res = stub_->Kagami(&clientContext, reqPingRef, responseRef);;
         logger::info("Connection with grpc") << "Send!";
 
         if (res.ok()) {
             logger::info("connection")
-                    << "response: " << responseRef.GetRoot()->message();
-            return responseRef.GetRoot();
+                    << "response: " << responseRef->GetRoot()->message();
         } else {
             logger::error("connection") << static_cast<int>(res.error_code())
                 << ": " << res.error_message();
-            // std::cout << status.error_code() << ": " << status.error_message();
-            return responseRef.GetRoot();
         }
     }
 
@@ -481,7 +476,10 @@ namespace connection {
                 std::to_string(config::IrohaConfigManager::getInstance()
                                    .getGrpcPortNumber(50051)),
                 grpc::InsecureChannelCredentials()));
-            auto reply = client.Torii(tx);
+
+            flatbuffers::BufferRef<Response> response;
+            client.Torii(tx, &response);
+            auto reply = response.GetRoot();
             return true;
           }
         }
