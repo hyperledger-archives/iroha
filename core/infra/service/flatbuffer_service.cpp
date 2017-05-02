@@ -720,6 +720,8 @@ namespace flatbuffer_service {
     for (auto& c : signature) {
       aNewPeerSigBlob.push_back(c);
     }
+
+    // ToDo: Migrate flatbuffer_service::primitives::CreateSignature()
     peerSignatures.push_back(
       ::iroha::CreateSignatureDirect(fbb, publicKey.c_str(),
                                      &aNewPeerSigBlob, datetime::unixtime()));
@@ -886,65 +888,70 @@ namespace flatbuffer_service {
       return nested;
     }
 
-    const Transaction& CreateTransaction(
+    std::vector<uint8_t> CreateTransaction(
+      flatbuffers::FlatBufferBuilder& fbb,
+      const std::string& creatorPubKey,
+      iroha::Command cmd_type,
+      const flatbuffers::Offset<void>& command
+    ) {
+      std::vector<uint8_t> dummy = {'d','u','m','m','y'};
+      auto attachment = ::iroha::CreateAttachmentDirect(fbb, "dummy", &dummy);
+      return CreateTransaction(
+        fbb, creatorPubKey, cmd_type, command, attachment);
+    }
+
+    /**
+     *  CreateTransaction()
+     *  Notice: This function call fbb.Finish()
+     */
+    std::vector<uint8_t> CreateTransaction(
       flatbuffers::FlatBufferBuilder& fbb,
       const std::string& creatorPubKey,
       iroha::Command cmd_type,
       const flatbuffers::Offset<void>& command,
-      flatbuffers::Offset<iroha::Attachment> attachment = 0
+      flatbuffers::Offset<iroha::Attachment> attachment
     ) {
       const auto timestamp = datetime::unixtime();
       /*
-       sha256(creatorPubKey + command + timestamp + attachment)
+       * sha256(creatorPubKey + command_type + timestamp)
+       * Future work: Use command above (not type) + attachment
        */
       std::string hashable;
-      const auto appendStr = [&](const std::string& s) {
+      auto appendStr = [&](const std::string& s) {
         if (s.empty()) return;
         for (const auto& e: s) {
           hashable.push_back((char)e);
         }
       };
 
-      const auto appendVec = [&](const std::vector<uint8_t>& v) {
+      auto appendVec = [&](const std::vector<uint8_t>& v) {
         if (v.empty()) return;
         for (const auto& e: v) {
           hashable.push_back((char)e);
         }
       };
 
-      const auto tempTxOffset = ::iroha::CreateTransactionDirect(
-        fbb, creatorPubKey.c_str(), cmd_type, command,
-        nullptr, nullptr, 0, 0
-      );
-
-      fbb.Finish(tempTxOffset);
-      const auto tempTx = flatbuffers::GetRoot<::iroha::Transaction>(fbb.GetBufferPointer());
-
       appendStr(creatorPubKey);
-      appendStr(toStringOf(cmd_type, *tempTx));
+      appendStr(::iroha::EnumNameCommand(cmd_type));
       appendStr(std::to_string(timestamp));
-      if (attachment.o != 0) {
-        const auto attstr = toStringAttachmentOf(*tempTx);
-        appendStr(attstr);
-      }
+      //appendStr(attachment)
 
-      fbb.Clear();
+      const auto hash = hashable;//hash::sha3_256_hex(hashable);
 
-      const std::string hash = hash::sha3_256_hex(hashable);
-      const std::vector<uint8_t> hsvec(hash.begin(), hash.end());
-
-      // FIXME: [Signature]
       std::vector<flatbuffers::Offset<::iroha::Signature>> signatures{
         flatbuffer_service::primitives::CreateSignature(
           fbb, hash, timestamp)};
 
-      const auto txOffset = ::iroha::CreateTransactionDirect(
+      std::vector<uint8_t> hsvec(hash.begin(), hash.end());
+
+      auto txOffset = ::iroha::CreateTransactionDirect(
         fbb, creatorPubKey.c_str(), cmd_type, command,
         &signatures, &hsvec, timestamp, attachment);
 
       fbb.Finish(txOffset);
 
-      return *flatbuffers::GetRoot<iroha::Transaction>(fbb.GetBufferPointer());
+      auto bufptr = fbb.GetBufferPointer();
+      return {bufptr, bufptr + fbb.GetSize()};
     }
 
   };  // namespace transaction

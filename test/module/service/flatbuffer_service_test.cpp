@@ -330,12 +330,6 @@ TEST(FlatbufferServiceTest, makeCommit_AccountAdd) {
  ***************************************************************************************/
 TEST(FlatbufferServiceTest, copyConsensusEvent) {
   flatbuffers::FlatBufferBuilder xbb;
-  std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures;
-  std::vector<uint8_t> signature = {'a', 'b', 'c'};
-  peerSignatures.push_back(
-    ::iroha::CreateSignatureDirect(xbb, "PUBKEY1", &signature, 100000));
-  peerSignatures.push_back(
-    ::iroha::CreateSignatureDirect(xbb, "PUBKEY2", &signature, 200000));
 
   std::vector<std::string> signatories{"123", "-=[p"};
   const auto account = flatbuffer_service::account::CreateAccount(
@@ -360,6 +354,14 @@ TEST(FlatbufferServiceTest, copyConsensusEvent) {
   const auto txw = ::iroha::CreateTransactionWrapperDirect(ebb, &txbuf);
   std::vector<flatbuffers::Offset<::iroha::TransactionWrapper>> txwrappers;
   txwrappers.push_back(txw);
+
+  std::vector<flatbuffers::Offset<::iroha::Signature>> peerSignatures;
+  std::vector<uint8_t> signature = {'a', 'b', 'c'};
+  peerSignatures.push_back(
+    ::iroha::CreateSignatureDirect(ebb, "PUBKEY1", &signature, 100000));
+  peerSignatures.push_back(
+    ::iroha::CreateSignatureDirect(ebb, "PUBKEY2", &signature, 200000));
+
   const auto eventofs = ::iroha::CreateConsensusEventDirect(
     ebb, &peerSignatures, &txwrappers, ::iroha::Code::UNDECIDED);
   ebb.Finish(eventofs);
@@ -1061,47 +1063,36 @@ TEST(FlatbufferServiceTest, PrimitivesCreateSignature) {
 /*********************************************************
  * Transaction
  *********************************************************/
-/*
- * CreateTransactionの仕様が不明なためコメントアウト
-TEST(FlatbufferServiceTest, PrimitivesCreateTransaction) {
+
+TEST(FlatbufferServiceTest, TransactionCreateTransaction) {
 
   flatbuffers::FlatBufferBuilder xbb;
-
-  auto np = ::peer::Node("ip", "pubKey", 100, "ledger", true, true);
+  ::peer::Node np("IP", "PUBKEY", "LEDGER", 123.45, true, false);
   auto peer = flatbuffer_service::primitives::CreatePeer(np);
-  auto peerAdd = iroha::CreatePeerAdd(xbb, xbb.CreateVector(peer));
+  auto peerAdd = iroha::CreatePeerAddDirect(xbb, &peer);
 
-  // TODO: Replace with primitives::CreateSignature()
-  std::vector<flatbuffers::Offset<iroha::Signature>> signatures;
+  std::vector<uint8_t> dummy = {'d','u','m','m','y'};
+  auto attachment = ::iroha::CreateAttachmentDirect(xbb, "dummy", &dummy);
 
-  std::vector<uint8_t> sig {'a','b','c','d'};
-  auto sigoffset = iroha::CreateSignatureDirect(xbb, "PUBKEY", &sig, 999999);
-  signatures.push_back(sigoffset);
-
-  const auto& tx = flatbuffer_service::transaction::CreateTransaction(
+  auto txbuf = flatbuffer_service::transaction::CreateTransaction(
     xbb,
+    "Creator",
     iroha::Command::PeerAdd,
     peerAdd.Union(),
-    "Creator",
-    signatures
+    attachment
   );
+  auto tx = flatbuffers::GetRoot<::iroha::Transaction>(txbuf.data());
 
-  ASSERT_STREQ(tx.creatorPubKey()->c_str(), "Creator");
-  ASSERT_EQ(tx.command_type(), iroha::Command::PeerAdd);
-  ASSERT_STREQ(tx.signatures()->Get(0)->publicKey()->c_str(), "PUBKEY");
-  ASSERT_EQ(tx.signatures()->Get(0)->signature()->Get(0), 'a');
-  ASSERT_EQ(tx.signatures()->Get(0)->signature()->Get(1), 'b');
-  ASSERT_EQ(tx.signatures()->Get(0)->signature()->Get(2), 'c');
-  ASSERT_EQ(tx.signatures()->Get(0)->signature()->Get(3), 'd');
-  ASSERT_EQ(tx.signatures()->Get(0)->timestamp(), 999999);
-//  ASSERT_STREQ() // ハッシュ未テスト
+  ASSERT_STREQ(tx->creatorPubKey()->c_str(), "Creator");
+  ASSERT_EQ(tx->command_type(), iroha::Command::PeerAdd);
 
-  auto peerRoot = tx.command_as_PeerAdd()->peer_nested_root();
-  ASSERT_STREQ(peerRoot->ledger_name()->c_str(), "ledger");
-  ASSERT_STREQ(peerRoot->publicKey()->c_str(), "pubKey");
-  ASSERT_STREQ(peerRoot->ip()->c_str(), "ip");
-  ASSERT_EQ(peerRoot->trust(), 100);
+  // ASSERT_STREQ() // Future work: Test hash
+
+  auto peerRoot = tx->command_as_PeerAdd()->peer_nested_root();
+  ASSERT_STREQ(peerRoot->ledger_name()->c_str(), "LEDGER");
+  ASSERT_STREQ(peerRoot->publicKey()->c_str(), "PUBKEY");
+  ASSERT_STREQ(peerRoot->ip()->c_str(), "IP");
+  ASSERT_EQ(peerRoot->trust(), 123.45);
   ASSERT_EQ(peerRoot->active(), true);
-  ASSERT_EQ(peerRoot->join_ledger(), true);
+  ASSERT_EQ(peerRoot->join_ledger(), false);
 }
-*/

@@ -284,6 +284,7 @@ namespace connection {
         flatbuffers::FlatBufferBuilder fbb;
         auto txoffset = flatbuffer_service::copyTransaction(fbb, *tx);
         if (!txoffset) {
+          fbb.Clear();
           auto responseOffset = ::iroha::CreateResponseDirect(
             fbbResponse, "CANCELLED", ::iroha::Code::FAIL,
             0);  // FIXME: Currently, if it fails, no signature.
