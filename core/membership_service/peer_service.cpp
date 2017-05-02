@@ -23,7 +23,6 @@ limitations under the License.
 #include <deque>
 #include <regex>
 
-#include <utils/datetime.hpp>
 #include <commands_generated.h>
 #include <flatbuffers/flatbuffers.h>
 #include <service/flatbuffer_service.h>
@@ -31,6 +30,7 @@ limitations under the License.
 #include <infra/config/peer_service_with_json.hpp>
 #include <membership_service/peer_service.hpp>
 #include <service/connection.hpp>
+#include <utils/datetime.hpp>
 
 namespace peer {
 
@@ -146,48 +146,31 @@ namespace transaction {
 namespace isssue {
 // invoke to issue transaction
 void add(const std::string &ip, const peer::Node &peer) {
-  std::cout << "px: " << peer.ip <<  " " << service::isExistIP(peer.ip) <<  " " << peer.publicKey << " " << service::isExistPublicKey(peer.publicKey) << std::endl;
-
   if (service::isExistIP(peer.ip) || service::isExistPublicKey(peer.publicKey))
     return;
-  std::cout << "px: " << peer.ip << " " << peer.publicKey << std::endl;
-  flatbuffers::FlatBufferBuilder fbb;
-/*
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::String> creatorPubKey = 0,
-    iroha::Command command_type = iroha::Command::NONE,
-    flatbuffers::Offset<void> command = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<iroha::Signature>>> signatures = 0,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> hash = 0,
-    uint64_t timestamp = 0,
-    flatbuffers::Offset<Attachment> attachment = 0
-*/
 
-  // ToDo re write!!!
-  std::vector<uint8_t> signatureBlob{};
-  std::vector<uint8_t> hashBlob{};
-  std::vector<uint8_t> dataBlob{};
+    std::cout << "Start Convert!" << std::endl;
+  flatbuffers::FlatBufferBuilder xbb;
+  auto f_peer = flatbuffer_service::primitives::CreatePeer(peer);
+  auto peerAdd = iroha::CreatePeerAddDirect(xbb, &f_peer);
 
-  std::vector<flatbuffers::Offset<iroha::Signature>> signatureOffset_vec{
-      iroha::CreateSignatureDirect(fbb, myself::getPublicKey().c_str(), &signatureBlob)
-  };
 
-  auto addPeerTx = iroha::CreateTransactionDirect(
-      fbb,
-      myself::getPublicKey().c_str(),
-      iroha::Command::PeerAdd,
-      flatbuffer_service::peer::CreateAdd(fbb, peer).Union(),
-      &signatureOffset_vec,
-      &hashBlob,
-      datetime::unixtime(),// timestamp
-      iroha::CreateAttachmentDirect(fbb, "none", &dataBlob) // Attachment
-  );
-  fbb.Finish(addPeerTx);
-  auto bufptr = fbb.GetBufferPointer();
-  std::vector<uint8_t> buf {bufptr, bufptr + fbb.GetSize()};
-  auto &addPeerTxEnt =
-      *flatbuffers::GetRoot<iroha::Transaction>(buf.data());
-  connection::memberShipService::SumeragiImpl::Torii::send(ip, addPeerTxEnt);
+  auto txbuf = flatbuffer_service::transaction::CreateTransaction(
+      xbb, myself::getPublicKey(), iroha::Command::PeerAdd, peerAdd.Union());
+  auto &tx = *flatbuffers::GetRoot<::iroha::Transaction>(txbuf.data());
+std::cout << "Yes Convert!" << std::endl;
+    if (tx.command_type() == iroha::Command::PeerAdd) {
+      std::cout << "Command Add!" << std::endl;
+      auto peer_add = tx.command_as_PeerAdd();
+      auto peer = peer_add->peer_nested_root();
+      std::cout << peer->ip()->str() << std::endl;
+      std::cout << peer->publicKey()->str() << std::endl;
+      std::cout << peer->ledger_name()->str() << std::endl;
+      std::cout << peer->trust() << std::endl;
+      std::cout << peer->active() << std::endl;
+      std::cout << peer->join_ledger() << std::endl;
+    }
+  connection::memberShipService::SumeragiImpl::Torii::send(ip, tx);
 }
 
 void remove(const std::string &ip, const std::string &publicKey) {

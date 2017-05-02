@@ -20,9 +20,9 @@
 //
 
 #include <gtest/gtest.h>
+#include <service/flatbuffer_service.h>
 #include <transaction_generated.h>
 #include <membership_service/peer_service.hpp>
-#include <service/flatbuffer_service.h>
 #include <service/connection.hpp>
 
 #include <iostream>
@@ -38,10 +38,24 @@ class peer_service_to_issue_transaction_test : public ::testing::Test {
     connection::iroha::SumeragiImpl::Torii::receive([](
         const std::string& from, flatbuffers::unique_ptr_t&& transaction) {
       auto tx = flatbuffers::GetRoot<::iroha::Transaction>(transaction.get());
+      std::cout << "Command type: " << (int)tx->command_type() << std::endl;
 
-      if( tx->command_type() == iroha::Command::PeerAdd ) {
+      if (tx->command_type() == iroha::Command::PeerAdd) {
         std::cout << "Command Add!" << std::endl;
-        ASSERT_TRUE(true);
+        auto peer_add = tx->command_as_PeerAdd();
+        auto peer = peer_add->peer_nested_root();
+        ASSERT_TRUE(peer->ip()->str() == "new_ip");
+        ASSERT_TRUE(peer->publicKey()->str() == "new_pubkey");
+        ASSERT_TRUE(peer->ledger_name()->str() == "ledger");
+        ASSERT_TRUE(peer->trust() == 100.0);
+        ASSERT_TRUE(peer->active() == false);
+        ASSERT_TRUE(peer->join_ledger() == true);
+        std::cout << peer->ip()->str() << std::endl;
+        std::cout << peer->publicKey()->str() << std::endl;
+        std::cout << peer->ledger_name()->str() << std::endl;
+        std::cout << peer->trust() << std::endl;
+        std::cout << peer->active() << std::endl;
+        std::cout << peer->join_ledger() << std::endl;
       }
       /*
        *
@@ -71,6 +85,5 @@ class peer_service_to_issue_transaction_test : public ::testing::Test {
 TEST_F(peer_service_to_issue_transaction_test, PeerAddTest) {
   ::peer::myself::activate();
   const auto peer = ::peer::Node("new_ip", "new_pubkey", "ledger");
-  std::cout << "tx_test: " << peer.ip << " "  << peer.publicKey << " " << peer.ledger_name << std::endl;
   ::peer::transaction::isssue::add(::peer::myself::getIp(), peer);
 }
