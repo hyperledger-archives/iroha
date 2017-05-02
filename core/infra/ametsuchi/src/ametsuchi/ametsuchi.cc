@@ -189,6 +189,17 @@ const ::iroha::Asset *Ametsuchi::assetidGetAsset(const std::string &&ledger_name
                              uncommitted, env);
 }
 
+const std::vector<const ::iroha::AccountPermissionLedger*> Ametsuchi::assetGetPermissionLedger(const flatbuffers::String *pubKey) {
+  return wsv.accountGetPermissionLedger(pubKey);
+}
+const std::vector<const ::iroha::AccountPermissionDomain*> Ametsuchi::assetGetPermissionDomain(const flatbuffers::String *pubKey) {
+  return wsv.accountGetPermissionDomain(pubKey);
+}
+const std::vector<const ::iroha::AccountPermissionAsset*> Ametsuchi::assetGetPermissionAsset(const flatbuffers::String *pubKey) {
+  return wsv.accountGetPermissionAsset(pubKey);
+}
+
+
 const ::iroha::Peer *Ametsuchi::pubKeyGetPeer(const flatbuffers::String *pubKey,
                                               bool uncommitted) {
   return wsv.pubKeyGetPeer(pubKey, uncommitted, env);

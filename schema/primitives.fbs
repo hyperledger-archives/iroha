@@ -67,7 +67,7 @@ table AccountPermissionAsset {
   account_give_permission: bool;  // ability to give permissions to account in this asset
   transfer: bool;  // ability to transfer an asset
   add:      bool;  // ability to add some amount to account
-  remove:   bool;  // ability to remove some amount from account
+  subtract: bool;  // ability to remove some amount from account
   read:     bool;  // ability to access some amount from account
 }
 
