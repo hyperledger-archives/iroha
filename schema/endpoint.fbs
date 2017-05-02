@@ -16,6 +16,12 @@ table Ping {
   sender:   string;
 }
 
+table CheckHashResponse {
+    isCorrect: bool;
+    isRoot: bool;
+    isExist: bool;
+}
+
 // Used by sending transaction
 rpc_service Sumeragi {
 
@@ -29,4 +35,10 @@ rpc_service Sumeragi {
 rpc_service Hijiri {
     // Kagami means ping
     Kagami(Ping):Response    (streaming: "none");
+}
+
+rpc_service Sync {
+    CheckHash(Ping):CheckHashReponse     (streaming: "none");
+    // TODO WIP Can it?
+    //fetchStreamTransaction(Ping):TransactionResponse   (streaming: "true")
 }

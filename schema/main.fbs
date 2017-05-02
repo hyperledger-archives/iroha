@@ -19,11 +19,12 @@ table TransactionWrapper {
   tx: [ubyte] (nested_flatbuffer: "Transaction");
 }
 
-// TODO
+// Can't consensus Is it OK?
 table TransactionResponse {
-  message:      string;
+  index:        ulong;
   code:         Code;
   transaction:  Transaction;
+  message:      string;
 }
 
 table ReceiverConfirmation {

@@ -21,7 +21,9 @@ limitations under the License.
 #ifndef IROHA_SYNCHRONIZER_H
 #define IROHA_SYNCHRONIZER_H
 
-#include <generated/transaction_generated.h>
+#include <transaction_generated.h>
+#include <utils/cache_map.hpp>
+#include <string>
 
 namespace peer{
   namespace sync{
@@ -41,9 +43,8 @@ namespace peer{
     };
 
     namespace detail{
-
       // if roothash is trust roothash, return true. othrewise return false.
-      bool checkRootHashAll(/*merkle::hash_t*/);
+      bool checkRootHashAll(const std::string& hash);
 
       bool append_temporary(size_t,iroha::Transaction*);
       SYNCHRO_RESULT append();

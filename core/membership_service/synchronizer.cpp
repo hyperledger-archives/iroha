@@ -22,10 +22,13 @@ limitations under the License.
 #include <membership_service/peer_service.hpp>
 #include <utils/cache_map.hpp>
 #include <utils/timer.hpp>
+#include <ametsuchi/repository.hpp>
+#include <time.h>
 
 
 namespace peer{
   namespace sync {
+    std::shared_ptr<::peer::Node> leader;
     void startSynchronizeLedger() {
       checkRootHashStep();
     }
@@ -38,14 +41,14 @@ namespace peer{
     void peerStopStep() { // step2
       if( ::peer::myself::isActive() ) {
         ::peer::myself::stop();
-        // TODO send PeerSetActive(false) Transaction
-        // TOOD setup appending() another thread.
+        ::peer::transaction::isssue::setActive(leader->ip,::peer::myself::getIp(),false);
+        detail::appending();
       }
       seekStartFetchIndex();
     }
 
     void seekStartFetchIndex() { // step3 ( not support )
-      // TODO after integration ametsuchi
+      repository::init();
     }
 
     void receiveTransactions() { // step4;
@@ -55,23 +58,40 @@ namespace peer{
     void peerActivateStep() { // step5;
       if( ::peer::myself::isActive() ) return;
       ::peer::myself::activate();
-      // TODO send PeerSetActive(true) Transaction
+      ::peer::transaction::isssue::setActive(leader->ip,::peer::myself::getIp(),true);
     }
 
     namespace detail{
 
       structure::CacheMap<size_t,iroha::Transaction*> temp_tx_;
       size_t current_;
+      time_t upd_time_;
 
       // if roothash is trust roothash, return true. othrewise return false.
-      bool checkRootHashAll(/*merkle::hash_t*/){
+      bool checkRootHashAll(){
         // TODO after integration ametsuchi and implement rpc_service
+        std::string root_hash = repository::getMerkleRoot();
+
       }
       bool append_temporary(size_t tx_id,iroha::Transaction* tx){
         temp_tx_.set( tx_id, tx );
       }
       SYNCHRO_RESULT append(){
-        // TODO after integreation ametsuchi
+        size_t old_current = current_;
+        while( temp_tx_.count(current_) ) {
+          auto &ap_tx = *temp_tx_[current_];
+          repository::append(ap_tx);
+          current_++;
+        }
+        if( old_current != current_) {
+          if( checkRootHashAll() ) return SYNCHRO_RESULT::APPEND_FINISHED;
+        }
+        if( !temp_tx_.empty() ){ // if started downlaoding
+          // if elapsed that tiem is updated more than 2 sec and cache has more than index tx.
+          if( time(NULL) - upd_time_ > 2 && temp_tx_.getMaxKey() > current_ )
+            return SYNCHRO_RESULT::APPEND_ERROR;
+        }
+        return SYNCHRO_RESULT::APPEND_ONGOING;
       }
       void appending(){
         clearCache();
