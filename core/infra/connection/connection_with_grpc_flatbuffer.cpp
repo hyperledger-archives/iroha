@@ -496,12 +496,18 @@ namespace connection {
   ServerBuilder builder;
   grpc::Server *server = nullptr;
   std::condition_variable server_cv;
+  bool server_ready = false;
 
   void initialize_peer() {
     // ToDo catch exception of to_string
 
 
     logger::info("Connection GRPC") << " initialize_peer ";
+  }
+
+  void wait_till_ready() {
+    std::unique_lock<std::mutex> lk(wait_for_server);
+    server_cv.wait(lk, [] { return server_ready; });
   }
 
   int run() {
@@ -515,9 +521,13 @@ namespace connection {
     builder.AddListeningPort(address, grpc::InsecureServerCredentials());
     builder.RegisterService(&service);
 
-    wait_for_server.lock();
-    server = builder.BuildAndStart().release();
-    wait_for_server.unlock();
+    {
+      std::lock_guard<std::mutex> lk(wait_for_server);
+      //wait_for_server.lock();
+      server = builder.BuildAndStart().release();
+      server_ready = true;
+      //wait_for_server.unlock();
+    }
     server_cv.notify_one();
 
     server->Wait();

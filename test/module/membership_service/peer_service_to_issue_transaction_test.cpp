@@ -83,6 +83,7 @@ class peer_service_to_issue_transaction_test : public ::testing::Test {
 
 
 TEST_F(peer_service_to_issue_transaction_test, PeerAddTest) {
+  connection::wait_till_ready();
   ::peer::myself::activate();
   const auto peer = ::peer::Node("new_ip", "new_pubkey", "ledger");
   ::peer::transaction::isssue::add(::peer::myself::getIp(), peer);

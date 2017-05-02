@@ -102,6 +102,7 @@ bool send(const std::string& ip, const ::iroha::Transaction& tx);
  * Main connection
  ************************************************************************************/
 void initialize_peer();
+void wait_till_ready();
 int run();
 void finish();
 
