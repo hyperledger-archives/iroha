@@ -157,10 +157,13 @@ namespace flatbuffer_service {
 
     Expected<std::vector<uint8_t>> GetTxPointer(const iroha::Transaction &tx);
 
-    const Transaction &CreateTransaction(
-      flatbuffers::FlatBufferBuilder &fbb, iroha::Command cmd_type,
-      const flatbuffers::Offset<void>& command, const std::string& creator,
-      const std::vector<flatbuffers::Offset<iroha::Signature>>& sigs);
+    const Transaction& CreateTransaction(
+      flatbuffers::FlatBufferBuilder& fbb,
+      const std::string& creatorPubKey,
+      iroha::Command cmd_type,
+      const flatbuffers::Offset<void>& command,
+      const flatbuffers::Offset<iroha::Attachment>& attachment = 0
+    );
   }
 };      // namespace flatbuffer_service
 #endif  // IROHA_FLATBUFFER_SERVICE_H

@@ -816,40 +816,67 @@ namespace flatbuffer_service {
 
   namespace transaction {  // namespace transaction
 
-      Expected<std::vector<uint8_t>> GetTxPointer(const iroha::Transaction &tx){
-        flatbuffers::FlatBufferBuilder xbb;
-        auto txOffset = copyTransaction(xbb, tx);
-        if (!txOffset) {
-          return makeUnexpected(txOffset.excptr());
-        }
-        xbb.Finish(txOffset.value());
-        auto ptr = xbb.GetBufferPointer();
-        std::vector<uint8_t> nested(ptr, ptr + xbb.GetSize());
-        return nested;
+    Expected<std::vector<uint8_t>> GetTxPointer(const iroha::Transaction &tx){
+      flatbuffers::FlatBufferBuilder xbb;
+      auto txOffset = copyTransaction(xbb, tx);
+      if (!txOffset) {
+        return makeUnexpected(txOffset.excptr());
       }
-/*
- * nullptrなしの状態をハッシュ化するのは正しいか不明なのでコメントアウト
+      xbb.Finish(txOffset.value());
+      auto ptr = xbb.GetBufferPointer();
+      std::vector<uint8_t> nested(ptr, ptr + xbb.GetSize());
+      return nested;
+    }
+
     const Transaction& CreateTransaction(
       flatbuffers::FlatBufferBuilder& fbb,
-      iroha::Command cmd_type, const flatbuffers::Offset<void>& command,
-      const std::string& creator,
-      const std::vector<flatbuffers::Offset<iroha::Signature>>& sigs
+      const std::string& creatorPubKey,
+      iroha::Command cmd_type,
+      const flatbuffers::Offset<void>& command,
+      const flatbuffers::Offset<iroha::Attachment>& attachment = 0
     ) {
-      flatbuffers::FlatBufferBuilder xbb;
-      auto tx_mt =
-        iroha::CreateTransaction(xbb, xbb.CreateString(creator), cmd_type,
-                                 command,
-                                 xbb.CreateVector(sigs));
-      xbb.Finish(tx_mt);
-       auto hash = hash::sha3_256_hex(
-          toString(*flatbuffers::GetRoot<Transaction>(xbb.GetBufferPointer())));
-      auto tx = iroha::CreateTransaction(
-          fbb, fbb.CreateString(creator), cmd_type, command, fbb.CreateVector(sigs),
-          fbb.CreateVector(base64::decode(hash)));
-      fbb.Finish(tx);
-      return *flatbuffers::GetRoot<Transaction>(fbb.GetBufferPointer());
+
+      const auto timestamp = datetime::unixtime();
+      /*
+       sha256(
+    //     creatorPubKey + command + timestamp + attachment
+    // )
+       */
+      std::vector<uint8_t> hashable;
+      auto appendStr = [&](const std::string& s) {
+        if (s.empty()) return "";
+        for (const auto& e: s) {
+          hashable.push_back((char)e);
+        }
+      };
+
+      auto appendVec = [&](const std::vector<uint8_t>& v) {
+        if (v.empty()) return "";
+        for (const auto& e: v) {
+          hashable.push_back((char)e);
+        }
+      };
+
+      appendStr(creatorPubKey);
+      appendStr(flatbuffer_service::toString(cmd_type, command));
+      appendStr(std::to_string(timestamp));
+      appendStr(attachment);
+
+      const auto hash = hash::sha3_256_hex(hashable);
+
+      const auto sigOffset = ::iroha::CreateSignatureDirect(
+        fbb, creatorPubKey.c_str(), &sigblob, timestamp
+      );
+
+      const auto txOffset = ::iroha::CreateTransactionDirect(
+        fbb, creatorPubKey.c_str(), cmd_type, command, sigOffset
+      )
+
+      fbb.Finish(txOffset);
+
+      //
     }
-*/
+
   };  // namespace transaction
 
 }  // namespace flatbuffer_service
