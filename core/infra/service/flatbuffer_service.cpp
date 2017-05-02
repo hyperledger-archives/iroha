@@ -32,127 +32,136 @@
 #include <membership_service/peer_service.hpp>
 #include <memory>
 #include <string>
+#include <commands_generated.h>
 
 namespace flatbuffer_service {
 
-  /**
-   * CreateCommandDirect
-   */
-  flatbuffers::Offset<void> CreateCommandDirect(
-    flatbuffers::FlatBufferBuilder& _fbb, const void* obj,
-    ::iroha::Command type) {
-    switch (type) {
-      case ::iroha::Command::NONE: {
-        logger::error("flatbuffer service") << "Command_NONE";
-        exit(1);
+  flatbuffers::Offset<void> CreateCommandFromTx(
+    flatbuffers::FlatBufferBuilder& fbb, const Transaction& tx) {
+
+    using iroha::Command;
+
+    switch (tx.command_type()) {
+      case Command::NONE: {
+        assert(false && "Command::NONE");
       }
-      case ::iroha::Command::AssetCreate: {
-        auto ptr = reinterpret_cast<const ::iroha::AssetCreate*>(obj);
-        return ::iroha::CreateAssetCreateDirect(_fbb, ptr->asset_name()->c_str(),
-                                                ptr->domain_name()->c_str(),
-                                                ptr->ledger_name()->c_str())
-          .Union();
+      case Command::Add: {
+        auto p = tx.command_as_Add();
+        std::vector<uint8_t> asset(p->asset()->begin(), p->asset()->end());
+        return ::iroha::CreateAddDirect(
+          fbb, p->accPubKey()->c_str(), &asset).Union();
       }
-      case ::iroha::Command::Add: {
-        auto ptr = reinterpret_cast<const ::iroha::Add*>(obj);
-        auto asset =
-          std::vector<uint8_t>(ptr->asset()->begin(), ptr->asset()->end());
-        return ::iroha::CreateAddDirect(_fbb, ptr->accPubKey()->c_str(),
-                                        &asset)
-          .Union();
+      case Command::Subtract: {
+        auto p = tx.command_as_Subtract();
+        std::vector<uint8_t> asset(p->asset()->begin(), p->asset()->end());
+        return ::iroha::CreateSubtractDirect(
+          fbb, p->accPubKey()->c_str(), &asset).Union();
       }
-      case ::iroha::Command::PeerAdd: {
-        auto ptr = flatbuffers::GetRoot<iroha::PeerAdd>(obj);
-        auto peer =
-          std::vector<uint8_t>(ptr->peer()->begin(), ptr->peer()->end());
-        return ::iroha::CreatePeerAddDirect(_fbb, &peer).Union();
+      case Command::Transfer: {
+        auto p = tx.command_as_Transfer();
+        std::vector<uint8_t> asset(p->asset()->begin(), p->asset()->end());
+        return ::iroha::CreateTransferDirect(
+          fbb, &asset, p->sender()->c_str(), p->receiver()->c_str()).Union();
       }
-      case ::iroha::Command::PeerRemove: {
-        auto ptr = reinterpret_cast<const ::iroha::PeerRemove*>(obj);
-        return ::iroha::CreatePeerRemoveDirect(_fbb, ptr->peerPubKey()->c_str())
-          .Union();
+      case Command::AssetCreate: {
+        auto p = tx.command_as_AssetCreate();
+        return ::iroha::CreateAssetCreateDirect(
+          fbb, p->asset_name()->c_str(), p->domain_name()->c_str(),
+          p->ledger_name()->c_str()).Union();
       }
-      case ::iroha::Command::PeerSetActive: {
-        auto ptr = reinterpret_cast<const ::iroha::PeerSetActive*>(obj);
+      case Command::AssetRemove: {
+        auto p = tx.command_as_AssetRemove();
+        return ::iroha::CreateAssetRemoveDirect(
+          fbb, p->asset_name()->c_str(), p->domain_name()->c_str(),
+          p->ledger_name()->c_str()).Union();
+      }
+      case Command::PeerAdd: {
+        auto p = tx.command_as_PeerAdd();
+        std::vector<uint8_t> peer(p->peer()->begin(), p->peer()->end());
+        return ::iroha::CreatePeerAddDirect(fbb, &peer).Union();
+      }
+      case Command::PeerRemove: {
+        auto p = tx.command_as_PeerRemove();
+        return ::iroha::CreatePeerRemoveDirect(
+          fbb, p->peerPubKey()->c_str()).Union();
+      }
+      case Command::PeerSetActive: {
+        auto p = tx.command_as_PeerSetActive();
         return ::iroha::CreatePeerSetActiveDirect(
-          _fbb, ptr->peerPubKey()->c_str(), ptr->active())
-          .Union();
+          fbb, p->peerPubKey()->c_str(), p->active()).Union();
       }
-      case ::iroha::Command::PeerSetTrust: {
-        auto ptr = reinterpret_cast<const ::iroha::PeerSetTrust*>(obj);
-        return ::iroha::CreatePeerSetTrustDirect(_fbb, ptr->peerPubKey()->c_str(),
-                                                 ptr->trust())
-          .Union();
+      case Command::PeerSetTrust: {
+        auto p = tx.command_as_PeerSetTrust();
+        return ::iroha::CreatePeerSetTrustDirect(
+          fbb, p->peerPubKey()->c_str(), p->trust()).Union();
       }
-      case ::iroha::Command::PeerChangeTrust: {
-        auto ptr = reinterpret_cast<const ::iroha::PeerChangeTrust*>(obj);
+      case Command::PeerChangeTrust: {
+        auto p = tx.command_as_PeerChangeTrust();
         return ::iroha::CreatePeerChangeTrustDirect(
-          _fbb, ptr->peerPubKey()->c_str(), ptr->delta())
-          .Union();
+          fbb, p->peerPubKey()->c_str(), p->delta()).Union();
       }
-      case ::iroha::Command::AccountAdd: {
-        auto ptr = reinterpret_cast<const ::iroha::AccountAdd*>(obj);
-        auto account =
-          std::vector<uint8_t>(ptr->account()->begin(), ptr->account()->end());
-        return ::iroha::CreateAccountAddDirect(_fbb, &account).Union();
+      case Command::AccountAdd: {
+        auto p = tx.command_as_AccountAdd();
+        std::vector<uint8_t> account(p->account()->begin(), p->account()->end());
+        return ::iroha::CreateAccountAddDirect(fbb, &account).Union();
       }
-      case ::iroha::Command::AccountRemove: {
-        auto ptr = reinterpret_cast<const ::iroha::AccountRemove*>(obj);
-        return ::iroha::CreateAccountRemoveDirect(_fbb, ptr->pubkey()->c_str())
-          .Union();
+      case Command::AccountRemove: {
+        auto p = tx.command_as_AccountRemove();
+        return ::iroha::CreateAccountRemoveDirect(fbb, p->pubkey()->c_str()).Union();
       }
-      case ::iroha::Command::AccountAddSignatory: {
-        auto ptr = reinterpret_cast<const ::iroha::AccountAddSignatory*>(obj);
-        auto signatory = std::vector<flatbuffers::Offset<flatbuffers::String>>(
-          ptr->signatory()->begin(), ptr->signatory()->end());
+
+      // WILL CHECK
+      case Command::AccountAddSignatory: {
+        auto p = tx.command_as_AccountAddSignatory();
+        std::vector<flatbuffers::Offset<flatbuffers::String>>
+          signatory(p->signatory()->begin(), p->signatory()->end());
         return ::iroha::CreateAccountAddSignatoryDirect(
-          _fbb, ptr->account()->c_str(), &signatory)
-          .Union();
+          fbb, p->account()->c_str(), &signatory).Union();
       }
-      case ::iroha::Command::AccountRemoveSignatory: {
-        auto ptr = reinterpret_cast<const ::iroha::AccountRemoveSignatory*>(obj);
-        auto signatory = std::vector<flatbuffers::Offset<flatbuffers::String>>(
-          ptr->signatory()->begin(), ptr->signatory()->end());
+      case Command::AccountRemoveSignatory: {
+        auto p = tx.command_as_AccountRemoveSignatory();
+        std::vector<flatbuffers::Offset<flatbuffers::String>>
+          signatory(p->signatory()->begin(), p->signatory()->end());
         return ::iroha::CreateAccountRemoveSignatoryDirect(
-          _fbb, ptr->account()->c_str(), &signatory)
-          .Union();
+          fbb, p->account()->c_str(), &signatory).Union();
       }
-      case ::iroha::Command::AccountSetUseKeys: {
-        auto ptr = reinterpret_cast<const ::iroha::AccountSetUseKeys*>(obj);
-        auto accounts = std::vector<flatbuffers::Offset<flatbuffers::String>>(
-          ptr->accounts()->begin(), ptr->accounts()->end());
-        return ::iroha::CreateAccountSetUseKeysDirect(_fbb, &accounts,
-                                                      ptr->useKeys())
-          .Union();
+      case Command::AccountSetUseKeys: {
+        auto p = tx.command_as_AccountSetUseKeys();
+        std::vector<flatbuffers::Offset<flatbuffers::String>>
+          accounts(p->accounts()->begin(), p->accounts()->end());
+        return ::iroha::CreateAccountSetUseKeysDirect(fbb, &accounts, p->useKeys()).Union();
       }
-      case ::iroha::Command::ChaincodeAdd: {
-        auto ptr = reinterpret_cast<const ::iroha::ChaincodeAdd*>(obj);
-        auto code =
-          std::vector<uint8_t>(ptr->code()->begin(), ptr->code()->end());
-        return ::iroha::CreateChaincodeAddDirect(_fbb, &code).Union();
+      case Command::AccountMigrate: {
+        auto p = tx.command_as_AccountMigrate();
+        std::vector<uint8_t> account(p->account()->begin(), p->account()->end());
+        return ::iroha::CreateAccountMigrateDirect(fbb, &account, p->prevPubKey()->c_str()).Union();
       }
-      case ::iroha::Command::ChaincodeRemove: {
-        throw exception::NotImplementedException("ChaincodeRemove", __FILE__);
+      case Command::ChaincodeAdd: {
+        throw exception::NotImplementedException("Command", __FILE__);
+      }
+      case Command::ChaincodeRemove: {
+        throw exception::NotImplementedException("Command", __FILE__);
+      }
+      case Command::ChaincodeExecute: {
+        throw exception::NotImplementedException("Command", __FILE__);
+      }
+      case Command::PermissionRemove: {
         /*
-        auto ptr = reinterpret_cast<const ::iroha::ChaincodeRemove*>(obj);
-        auto code =
-            std::vector<uint8_t>(ptr->code()->begin(), ptr->code()->end());
-        return ::iroha::CreateChaincodeRemoveDirect(_fbb, &code).Union();
+        auto p = tx.command_as_PermissionRemove();
+        ::iroha::CreateP
+        return ::iroha::CreatePermissionRemoveDirect(fbb, p->targetAccount()->c_str(), p->permission_type(), );
          */
+        throw exception::NotImplementedException("Command", __FILE__);
       }
-      case ::iroha::Command::ChaincodeExecute: {
-        auto ptr = reinterpret_cast<const ::iroha::ChaincodeExecute*>(obj);
-        return ::iroha::CreateChaincodeExecuteDirect(
-          _fbb, ptr->code_name()->c_str(), ptr->domain_name()->c_str(),
-          ptr->ledger_name()->c_str())
-          .Union();
+      case Command::PermissionAdd: {
+        /*
+        auto p = tx.command_as_AccountMigrate();
+        std::vector<uint8_t> account(p->account()->begin(), p->account()->end());
+        return ::iroha::CreateAccountMigrateDirect(fbb, &account, p->prevPubKey()->c_str()).Union();
+         */
+        throw exception::NotImplementedException("Command", __FILE__);
       }
-      default: {
-        // This function should be always tested.
-        // If some command has not implemented throw exception.
-        throw exception::NotImplementedException("No match Command type",
-                                                 __FILE__);
-      }
+      default: return false;
     }
   }
 
@@ -561,8 +570,7 @@ namespace flatbuffer_service {
 
     const auto pubkey = fromTx.creatorPubKey()->c_str();
     const auto cmdtype = fromTx.command_type();
-    const auto cmd = flatbuffer_service::CreateCommandDirect(
-      fbb, fromTx.command(), fromTx.command_type());
+    const auto cmd = flatbuffer_service::CreateCommandFromTx(fbb, fromTx);
 
     return ::iroha::CreateTransactionDirect(fbb, pubkey, cmdtype, cmd,
                                             &tx_signatures.value(), &hash.value(),

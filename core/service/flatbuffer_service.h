@@ -62,11 +62,11 @@ namespace flatbuffer_service {
 
   Expected<int> hasRequreMember(const iroha::Transaction &tx);
 
-  flatbuffers::Offset<void> CreateCommandDirect(
-    flatbuffers::FlatBufferBuilder &_fbb, const void *obj, iroha::Command type);
-
   Expected<flatbuffers::Offset<::iroha::Transaction>> copyTransaction(
     flatbuffers::FlatBufferBuilder &fbb, const ::iroha::Transaction &fromTx);
+
+  flatbuffers::Offset<void> CreateCommandFromTx(
+    flatbuffers::FlatBufferBuilder&, const Transaction&);
 
   Expected<flatbuffers::Offset<::iroha::ConsensusEvent>> copyConsensusEvent(
     flatbuffers::FlatBufferBuilder &fbb, const ::iroha::ConsensusEvent &);

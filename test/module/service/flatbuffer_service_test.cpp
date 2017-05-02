@@ -24,6 +24,84 @@
 #include <memory>
 #include <unordered_map>
 
+using flatbuffers::Offset;
+using flatbuffers::FlatBufferBuilder;
+
+/***************************************************************************************
+ * Generator
+ ***************************************************************************************/
+/*
+std::vector<uint8_t> genAccount() {
+  return flatbuffer_service::account::CreateAccount(
+    "pubkey", "alias", "prevPubKey", {"pubkey1", "pubkey2", "pubkey3"}, 1);
+}
+
+std::vector<uint8_t>
+
+std::vector<uint8_t> genAccountPermunationNull(int perm) {
+  // ToDo: After safe exception handling
+}
+
+std::vector<uint8_t> genCurrency() {
+  return flatbuffer_service::asset::CreateCurrency(
+    "IROHA", "Domain", "Ledger", "Desc", "31415", 4);
+}
+
+std::vector<uint8_t> genCurrencyPermunationNull(int perm) {
+  // ToDo: After safe exception handling
+}
+
+Offset<::iroha::Command::AccountAdd> genAccountAddCommand(
+  FlatBufferBuilder& fbb) {
+  auto account = genAccount();
+  return ::iroha::CreateAccountAddDirect(fbb, &account);
+}
+
+Offset<::iroha::Signature> genSignature(FlatBufferBuilder& fbb,
+                                        const std::vector<uint8_t>& blob) {
+  return ::iroha::CreateSignatureDirect(fbb, "SIG PUBKEY", &sigblob);
+}
+
+Offset<Vector<Offset<::iroha::Signature>>> genSignatures(
+  FlatBufferBuilder& fbb) {
+return {genSignature({'a', 'b'}), genSignature('0', '1')};
+}
+
+Offset<::iroha::Attachment> genAttachment(FlatBufferBuilder& fbb) {
+  std::vector<uint8_t> data{'d', 'a', 't', 'a'};
+  return ::iroha::CreateAttachmentDirect(fbb, "none", &data);
+}
+
+Offset<::iroha::Transaction> genTx(FlatBufferBuilder& fbb) {
+  std::vector<uint8_t> hash{'h', 's'};
+  return ::iroha::CreateTransactionWrapperDirect(
+    fbb, "CREATOR", ::iroha::Command::AccountAdd,
+    genAccountAddCommand(fbb), genSignatures(fbb),
+    &hash, 99999, genAttachment(fbb)
+}
+
+std::pair<bool, std::string> issueTx(const std::string& ip) {
+  auto channel =
+    grpc::CreateChannel(ip + ":50051", grpc::InsecureChannelCredentials());
+  auto stub = iroha::Sumeragi::NewStub(channel);
+  grpc::ClientContext context;
+
+  flatbuffers::FlatBufferBuilder fbb;
+  auto txoffset = genTx(fbb);
+  fbb.Finish(txoffset);
+
+  auto txref = flatbuffers::BufferRef<iroha::Transaction>(
+    fbb.GetBufferPointer(), fbb.GetSize());
+
+  flatbuffers::BufferRef<iroha::Response> response;
+
+  auto status = stub->Torii(&context, txref, &response);
+  return {status.ok(), response.GetRoot()->message()->str()};
+}
+*/
+/***************************************************************************************
+ * Test
+ ***************************************************************************************/
 TEST(FlatbufferServiceTest, toString) {
   auto publicKey = "SamplePublicKey";
   // Build a request with the name set.
@@ -60,6 +138,80 @@ TEST(FlatbufferServiceTest, toString) {
   std::cout << flatbuffer_service::toString(*tx.GetRoot()) << std::endl;
 }
 
+
+/*********************************************************
+ * Add
+ *********************************************************/
+TEST(FlatbufferServiceTest, toConsensusEvent_Add) {
+  flatbuffers::FlatBufferBuilder fbb;
+
+  const auto currencyBuf = flatbuffer_service::asset::CreateCurrency(
+    "IROHA", "Domain", "Ledger", "Desc", "31415", 4);
+
+  const auto signatureOffsets = [&] {
+    std::vector<uint8_t> sigblob1 = {'a', 'b'};
+    std::vector<uint8_t> sigblob2 = {'\0', 'a', '\0', 'b'};
+    return std::vector<flatbuffers::Offset<::iroha::Signature>>{
+      ::iroha::CreateSignatureDirect(fbb, "TxPubKey1", &sigblob1, 100000),
+      ::iroha::CreateSignatureDirect(fbb, "TxPubKey2", &sigblob2, 100001)};
+  }();
+
+  const auto _hash = std::vector<uint8_t>{'h', '\0', '?', '\0'};
+
+  const auto stamp = datetime::unixtime();
+
+  const auto attachmentOffset = [&] {
+    auto data = std::vector<uint8_t>{'d', '\0', '!'};
+    return ::iroha::CreateAttachmentDirect(
+      fbb, "=?ISO-2022-JP?B?VG95YW1hX05hbw==?=", &data);
+  }();
+
+  const auto txOffset = ::iroha::CreateTransactionDirect(
+    fbb, "Creator PubKey", iroha::Command::Add,
+    ::iroha::CreateAddDirect(fbb, "AccPubKey", &currencyBuf).Union(),
+    &signatureOffsets, &_hash, stamp, attachmentOffset);
+
+  fbb.Finish(txOffset);
+
+  const auto ptr = fbb.ReleaseBufferPointer();
+  const auto txptr = flatbuffers::GetRoot<::iroha::Transaction>(ptr.get());
+
+  auto consensusEvent = flatbuffer_service::toConsensusEvent(*txptr);
+  ASSERT_TRUE(consensusEvent);
+
+  flatbuffers::unique_ptr_t uptr;
+  consensusEvent.move_value(uptr);
+
+  const auto root = flatbuffers::GetRoot<::iroha::ConsensusEvent>(uptr.get());
+
+  // validate peerSignatures()
+  ASSERT_TRUE(root->peerSignatures()->size() == 0);
+  ASSERT_EQ(root->code(), ::iroha::Code::UNDECIDED);
+
+  // validate transactions()
+  const auto txptrFromEvent =
+    root->transactions()
+      ->Get(0)
+      ->tx_nested_root();  // ToDo: toConsensusEvent() receives 1 tx.
+
+  ASSERT_STREQ(txptrFromEvent->creatorPubKey()->c_str(), "Creator PubKey");
+  ASSERT_EQ(txptrFromEvent->command_type(), ::iroha::Command::Add);
+
+  // validate nested account
+  const auto croot =
+    txptrFromEvent->command_as_Add()->asset_nested_root()->asset_as_Currency();
+
+  ASSERT_STREQ(croot->currency_name()->c_str(), "IROHA");
+  ASSERT_STREQ(croot->domain_name()->c_str(), "Domain");
+  ASSERT_STREQ(croot->ledger_name()->c_str(), "Ledger");
+  ASSERT_STREQ(croot->description()->c_str(), "Desc");
+  ASSERT_STREQ(croot->amount()->c_str(), "31415");
+  ASSERT_EQ(croot->precision(), 4);
+}
+
+/*********************************************************
+ * Account Add
+ *********************************************************/
 TEST(FlatbufferServiceTest, toConsensusEvent_AccountAdd) {
   flatbuffers::FlatBufferBuilder fbb;
 
@@ -155,6 +307,378 @@ TEST(FlatbufferServiceTest, toConsensusEvent_AccountAdd) {
   ASSERT_EQ(txptrFromEvent->attachment()->data()->Get(2), '!');
   ASSERT_EQ(txptrFromEvent->attachment()->data()->size(), 3);
 }
+
+/*********************************************************
+ * Asset Create
+ *********************************************************/
+TEST(FlatbufferServiceTest, toConsensusEvent_AssetCreate) {
+  flatbuffers::FlatBufferBuilder fbb;
+  const auto cmd = ::iroha::CreateAssetCreateDirect(fbb, "Asset", "Domain", "Ledger").Union();
+
+  const auto signatureOffsets = [&] {
+    std::vector<uint8_t> sigblob1 = {'a', 'b'};
+    std::vector<uint8_t> sigblob2 = {'\0', 'a', '\0', 'b'};
+    return std::vector<flatbuffers::Offset<::iroha::Signature>>{
+      ::iroha::CreateSignatureDirect(fbb, "TxPubKey1", &sigblob1, 100000),
+      ::iroha::CreateSignatureDirect(fbb, "TxPubKey2", &sigblob2, 100001)};
+  }();
+
+  const auto _hash = std::vector<uint8_t>{'h', '\0', '?', '\0'};
+
+  const auto stamp = datetime::unixtime();
+
+  const auto attachmentOffset = [&] {
+    auto data = std::vector<uint8_t>{'d', '\0', '!'};
+    return ::iroha::CreateAttachmentDirect(
+      fbb, "=?ISO-2022-JP?B?VG95YW1hX05hbw==?=", &data);
+  }();
+
+  const auto txOffset = ::iroha::CreateTransactionDirect(
+    fbb, "Creator PubKey", iroha::Command::AssetCreate, cmd,
+    &signatureOffsets, &_hash, stamp, attachmentOffset);
+
+  fbb.Finish(txOffset);
+
+  const auto ptr = fbb.ReleaseBufferPointer();
+  const auto txptr = flatbuffers::GetRoot<::iroha::Transaction>(ptr.get());
+
+  auto consensusEvent = flatbuffer_service::toConsensusEvent(*txptr);
+  ASSERT_TRUE(consensusEvent);
+
+  flatbuffers::unique_ptr_t uptr;
+  consensusEvent.move_value(uptr);
+
+  const auto root = flatbuffers::GetRoot<::iroha::ConsensusEvent>(uptr.get());
+
+  // validate peerSignatures()
+  ASSERT_TRUE(root->peerSignatures()->size() == 0);
+  ASSERT_EQ(root->code(), ::iroha::Code::UNDECIDED);
+
+  // validate transactions()
+  const auto revTxPtr =
+    root->transactions()
+      ->Get(0)
+      ->tx_nested_root();  // ToDo: toConsensusEvent() receives 1 tx.
+
+  ASSERT_STREQ(revTxPtr->creatorPubKey()->c_str(), "Creator PubKey");
+  ASSERT_EQ(revTxPtr->command_type(), iroha::Command::AssetCreate);
+
+  auto revcmd = revTxPtr->command_as_AssetCreate();
+  ASSERT_STREQ(revcmd->asset_name()->c_str(), "Asset");
+  ASSERT_STREQ(revcmd->domain_name()->c_str(), "Domain");
+  ASSERT_STREQ(revcmd->ledger_name()->c_str(), "Ledger");
+}
+
+
+/*********************************************************
+ * Peer Add
+ *********************************************************/
+TEST(FlatbufferServiceTest, toConsensusEvent_PeerAdd) {
+  flatbuffers::FlatBufferBuilder fbb;
+
+  ::peer::Node np("IP", "PUBKEY", "LEDGER", 123.45, true, false);
+
+  const auto peer = flatbuffer_service::primitives::CreatePeer(np);
+
+  const auto signatureOffsets = [&] {
+    std::vector<uint8_t> sigblob1 = {'a', 'b'};
+    std::vector<uint8_t> sigblob2 = {'\0', 'a', '\0', 'b'};
+    return std::vector<flatbuffers::Offset<::iroha::Signature>>{
+      ::iroha::CreateSignatureDirect(fbb, "TxPubKey1", &sigblob1, 100000),
+      ::iroha::CreateSignatureDirect(fbb, "TxPubKey2", &sigblob2, 100001)};
+  }();
+
+  const auto _hash = std::vector<uint8_t>{'h', '\0', '?', '\0'};
+
+  const auto stamp = datetime::unixtime();
+
+  const auto attachmentOffset = [&] {
+    auto data = std::vector<uint8_t>{'d', '\0', '!'};
+    return ::iroha::CreateAttachmentDirect(
+      fbb, "=?ISO-2022-JP?B?VG95YW1hX05hbw==?=", &data);
+  }();
+
+  const auto txOffset = ::iroha::CreateTransactionDirect(
+    fbb, "Creator PubKey", iroha::Command::PeerAdd,
+    ::iroha::CreatePeerAddDirect(fbb, &peer).Union(),
+    &signatureOffsets, &_hash, stamp, attachmentOffset);
+
+  fbb.Finish(txOffset);
+
+  const auto ptr = fbb.ReleaseBufferPointer();
+  const auto txptr = flatbuffers::GetRoot<::iroha::Transaction>(ptr.get());
+
+  auto consensusEvent = flatbuffer_service::toConsensusEvent(*txptr);
+  ASSERT_TRUE(consensusEvent);
+
+  flatbuffers::unique_ptr_t uptr;
+  consensusEvent.move_value(uptr);
+
+  const auto root = flatbuffers::GetRoot<::iroha::ConsensusEvent>(uptr.get());
+
+  // validate peerSignatures()
+  ASSERT_TRUE(root->peerSignatures()->size() == 0);
+  ASSERT_EQ(root->code(), ::iroha::Code::UNDECIDED);
+
+  // validate transactions()
+  const auto txptrFromEvent =
+    root->transactions()
+      ->Get(0)
+      ->tx_nested_root();  // ToDo: toConsensusEvent() receives 1 tx.
+
+  ASSERT_STREQ(txptrFromEvent->creatorPubKey()->c_str(), "Creator PubKey");
+  ASSERT_EQ(txptrFromEvent->command_type(), ::iroha::Command::PeerAdd);
+
+  // validate nested account
+  const auto peerroot =
+    txptrFromEvent->command_as_PeerAdd()->peer_nested_root();
+  ASSERT_STREQ(peerroot->ip()->c_str(), "IP");
+  ASSERT_STREQ(peerroot->publicKey()->c_str(), "PUBKEY");
+  ASSERT_STREQ(peerroot->ledger_name()->c_str(), "LEDGER");
+  ASSERT_EQ(peerroot->trust(), 123.45);
+  ASSERT_EQ(peerroot->active(), true);
+  ASSERT_EQ(peerroot->join_ledger(), false);
+}
+
+
+/*********************************************************
+ * Peer Remove
+ *********************************************************/
+TEST(FlatbufferServiceTest, toConsensusEvent_PeerRemove) {
+  flatbuffers::FlatBufferBuilder fbb;
+
+  const auto signatureOffsets = [&] {
+    std::vector<uint8_t> sigblob1 = {'a', 'b'};
+    std::vector<uint8_t> sigblob2 = {'\0', 'a', '\0', 'b'};
+    return std::vector<flatbuffers::Offset<::iroha::Signature>>{
+      ::iroha::CreateSignatureDirect(fbb, "TxPubKey1", &sigblob1, 100000),
+      ::iroha::CreateSignatureDirect(fbb, "TxPubKey2", &sigblob2, 100001)};
+  }();
+
+  const auto _hash = std::vector<uint8_t>{'h', '\0', '?', '\0'};
+
+  const auto stamp = datetime::unixtime();
+
+  const auto attachmentOffset = [&] {
+    auto data = std::vector<uint8_t>{'d', '\0', '!'};
+    return ::iroha::CreateAttachmentDirect(
+      fbb, "=?ISO-2022-JP?B?VG95YW1hX05hbw==?=", &data);
+  }();
+
+  const auto txOffset = ::iroha::CreateTransactionDirect(
+    fbb, "Creator PubKey", iroha::Command::PeerRemove,
+    ::iroha::CreatePeerRemoveDirect(fbb, "PUBKEY").Union(),
+    &signatureOffsets, &_hash, stamp, attachmentOffset);
+
+  fbb.Finish(txOffset);
+
+  const auto ptr = fbb.ReleaseBufferPointer();
+  const auto txptr = flatbuffers::GetRoot<::iroha::Transaction>(ptr.get());
+
+  auto consensusEvent = flatbuffer_service::toConsensusEvent(*txptr);
+  ASSERT_TRUE(consensusEvent);
+
+  flatbuffers::unique_ptr_t uptr;
+  consensusEvent.move_value(uptr);
+
+  const auto root = flatbuffers::GetRoot<::iroha::ConsensusEvent>(uptr.get());
+
+  // validate peerSignatures()
+  ASSERT_TRUE(root->peerSignatures()->size() == 0);
+  ASSERT_EQ(root->code(), ::iroha::Code::UNDECIDED);
+
+  // validate transactions()
+  const auto txptrFromEvent =
+    root->transactions()
+      ->Get(0)
+      ->tx_nested_root();  // ToDo: toConsensusEvent() receives 1 tx.
+
+  ASSERT_STREQ(txptrFromEvent->creatorPubKey()->c_str(), "Creator PubKey");
+  ASSERT_EQ(txptrFromEvent->command_type(), ::iroha::Command::PeerRemove);
+
+  ASSERT_STREQ(txptrFromEvent->command_as_PeerRemove()->peerPubKey()->c_str(), "PUBKEY");
+}
+
+/*********************************************************
+ * Peer SetActive
+ *********************************************************/
+TEST(FlatbufferServiceTest, toConsensusEvent_PeerSetActive) {
+  flatbuffers::FlatBufferBuilder fbb;
+
+  const auto signatureOffsets = [&] {
+    std::vector<uint8_t> sigblob1 = {'a', 'b'};
+    std::vector<uint8_t> sigblob2 = {'\0', 'a', '\0', 'b'};
+    return std::vector<flatbuffers::Offset<::iroha::Signature>>{
+      ::iroha::CreateSignatureDirect(fbb, "TxPubKey1", &sigblob1, 100000),
+      ::iroha::CreateSignatureDirect(fbb, "TxPubKey2", &sigblob2, 100001)};
+  }();
+
+  const auto _hash = std::vector<uint8_t>{'h', '\0', '?', '\0'};
+
+  const auto stamp = datetime::unixtime();
+
+  const auto attachmentOffset = [&] {
+    auto data = std::vector<uint8_t>{'d', '\0', '!'};
+    return ::iroha::CreateAttachmentDirect(
+      fbb, "=?ISO-2022-JP?B?VG95YW1hX05hbw==?=", &data);
+  }();
+
+  const auto txOffset = ::iroha::CreateTransactionDirect(
+    fbb, "Creator PubKey", iroha::Command::PeerSetActive,
+    ::iroha::CreatePeerSetActiveDirect(fbb, "PUBKEY", true).Union(),
+    &signatureOffsets, &_hash, stamp, attachmentOffset);
+
+  fbb.Finish(txOffset);
+
+  const auto ptr = fbb.ReleaseBufferPointer();
+  const auto txptr = flatbuffers::GetRoot<::iroha::Transaction>(ptr.get());
+
+  auto consensusEvent = flatbuffer_service::toConsensusEvent(*txptr);
+  ASSERT_TRUE(consensusEvent);
+
+  flatbuffers::unique_ptr_t uptr;
+  consensusEvent.move_value(uptr);
+
+  const auto root = flatbuffers::GetRoot<::iroha::ConsensusEvent>(uptr.get());
+
+  // validate peerSignatures()
+  ASSERT_TRUE(root->peerSignatures()->size() == 0);
+  ASSERT_EQ(root->code(), ::iroha::Code::UNDECIDED);
+
+  // validate transactions()
+  const auto txptrFromEvent =
+    root->transactions()
+      ->Get(0)
+      ->tx_nested_root();  // ToDo: toConsensusEvent() receives 1 tx.
+
+  ASSERT_STREQ(txptrFromEvent->creatorPubKey()->c_str(), "Creator PubKey");
+  ASSERT_EQ(txptrFromEvent->command_type(), ::iroha::Command::PeerSetActive);
+
+  auto revroot = txptrFromEvent->command_as_PeerSetActive();
+  ASSERT_STREQ(revroot->peerPubKey()->c_str(), "PUBKEY");
+  ASSERT_EQ(revroot->active(), true);
+}
+
+/*********************************************************
+ * Peer SetTrust
+ *********************************************************/
+TEST(FlatbufferServiceTest, toConsensusEvent_PeerSetTrust) {
+  flatbuffers::FlatBufferBuilder fbb;
+
+  const auto signatureOffsets = [&] {
+    std::vector<uint8_t> sigblob1 = {'a', 'b'};
+    std::vector<uint8_t> sigblob2 = {'\0', 'a', '\0', 'b'};
+    return std::vector<flatbuffers::Offset<::iroha::Signature>>{
+      ::iroha::CreateSignatureDirect(fbb, "TxPubKey1", &sigblob1, 100000),
+      ::iroha::CreateSignatureDirect(fbb, "TxPubKey2", &sigblob2, 100001)};
+  }();
+
+  const auto _hash = std::vector<uint8_t>{'h', '\0', '?', '\0'};
+
+  const auto stamp = datetime::unixtime();
+
+  const auto attachmentOffset = [&] {
+    auto data = std::vector<uint8_t>{'d', '\0', '!'};
+    return ::iroha::CreateAttachmentDirect(
+      fbb, "=?ISO-2022-JP?B?VG95YW1hX05hbw==?=", &data);
+  }();
+
+  const auto txOffset = ::iroha::CreateTransactionDirect(
+    fbb, "Creator PubKey", iroha::Command::PeerSetTrust,
+    ::iroha::CreatePeerSetTrustDirect(fbb, "PUBKEY", 987.654).Union(),
+    &signatureOffsets, &_hash, stamp, attachmentOffset);
+
+  fbb.Finish(txOffset);
+
+  const auto ptr = fbb.ReleaseBufferPointer();
+  const auto txptr = flatbuffers::GetRoot<::iroha::Transaction>(ptr.get());
+
+  auto consensusEvent = flatbuffer_service::toConsensusEvent(*txptr);
+  ASSERT_TRUE(consensusEvent);
+
+  flatbuffers::unique_ptr_t uptr;
+  consensusEvent.move_value(uptr);
+
+  const auto root = flatbuffers::GetRoot<::iroha::ConsensusEvent>(uptr.get());
+
+  // validate peerSignatures()
+  ASSERT_TRUE(root->peerSignatures()->size() == 0);
+  ASSERT_EQ(root->code(), ::iroha::Code::UNDECIDED);
+
+  // validate transactions()
+  const auto txptrFromEvent =
+    root->transactions()
+      ->Get(0)
+      ->tx_nested_root();  // ToDo: toConsensusEvent() receives 1 tx.
+
+  ASSERT_STREQ(txptrFromEvent->creatorPubKey()->c_str(), "Creator PubKey");
+  ASSERT_EQ(txptrFromEvent->command_type(), ::iroha::Command::PeerSetTrust);
+
+  auto revroot = txptrFromEvent->command_as_PeerSetTrust();
+  ASSERT_STREQ(revroot->peerPubKey()->c_str(), "PUBKEY");
+  ASSERT_EQ(revroot->trust(), 987.654);
+}
+
+/*********************************************************
+ * Peer ChangeTrust
+ *********************************************************/
+TEST(FlatbufferServiceTest, toConsensusEvent_PeerChangeTrust) {
+  flatbuffers::FlatBufferBuilder fbb;
+
+  const auto signatureOffsets = [&] {
+    std::vector<uint8_t> sigblob1 = {'a', 'b'};
+    std::vector<uint8_t> sigblob2 = {'\0', 'a', '\0', 'b'};
+    return std::vector<flatbuffers::Offset<::iroha::Signature>>{
+      ::iroha::CreateSignatureDirect(fbb, "TxPubKey1", &sigblob1, 100000),
+      ::iroha::CreateSignatureDirect(fbb, "TxPubKey2", &sigblob2, 100001)};
+  }();
+
+  const auto _hash = std::vector<uint8_t>{'h', '\0', '?', '\0'};
+
+  const auto stamp = datetime::unixtime();
+
+  const auto attachmentOffset = [&] {
+    auto data = std::vector<uint8_t>{'d', '\0', '!'};
+    return ::iroha::CreateAttachmentDirect(
+      fbb, "=?ISO-2022-JP?B?VG95YW1hX05hbw==?=", &data);
+  }();
+
+  const auto txOffset = ::iroha::CreateTransactionDirect(
+    fbb, "Creator PubKey", iroha::Command::PeerChangeTrust,
+    ::iroha::CreatePeerChangeTrustDirect(fbb, "PUBKEY", 3.1415).Union(),
+    &signatureOffsets, &_hash, stamp, attachmentOffset);
+
+  fbb.Finish(txOffset);
+
+  const auto ptr = fbb.ReleaseBufferPointer();
+  const auto txptr = flatbuffers::GetRoot<::iroha::Transaction>(ptr.get());
+
+  auto consensusEvent = flatbuffer_service::toConsensusEvent(*txptr);
+  ASSERT_TRUE(consensusEvent);
+
+  flatbuffers::unique_ptr_t uptr;
+  consensusEvent.move_value(uptr);
+
+  const auto root = flatbuffers::GetRoot<::iroha::ConsensusEvent>(uptr.get());
+
+  // validate peerSignatures()
+  ASSERT_TRUE(root->peerSignatures()->size() == 0);
+  ASSERT_EQ(root->code(), ::iroha::Code::UNDECIDED);
+
+  // validate transactions()
+  const auto txptrFromEvent =
+    root->transactions()
+      ->Get(0)
+      ->tx_nested_root();  // ToDo: toConsensusEvent() receives 1 tx.
+
+  ASSERT_STREQ(txptrFromEvent->creatorPubKey()->c_str(), "Creator PubKey");
+  ASSERT_EQ(txptrFromEvent->command_type(), ::iroha::Command::PeerChangeTrust);
+
+  auto revroot = txptrFromEvent->command_as_PeerChangeTrust();
+  ASSERT_STREQ(revroot->peerPubKey()->c_str(), "PUBKEY");
+  ASSERT_EQ(revroot->delta(), 3.1415);
+}
+
 
 TEST(FlatbufferServiceTest, addSignature_AccountAdd) {
   flatbuffers::FlatBufferBuilder fbb;
@@ -496,5 +1020,3 @@ TEST(FlatbufferServiceTest, copyConsensusEvent) {
   ASSERT_STREQ(accnested->signatories()->Get(1)->c_str(), "-=[p");
   ASSERT_EQ(accnested->useKeys(), 1);
 }
-
-
