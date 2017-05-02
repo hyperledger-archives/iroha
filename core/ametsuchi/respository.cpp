@@ -17,8 +17,11 @@
 
 #include <infra/ametsuchi/include/ametsuchi/ametsuchi.h>
 #include <service/flatbuffer_service.h>
-#include <main_generated.h>
 #include <memory>
+#include <service/connection.hpp>
+#include <main_generated.h>
+#include <endpoint_generated.h>
+#include <asset_generated.h>
 
 namespace repository{
 
@@ -57,4 +60,22 @@ namespace repository{
         return db->getMerkleRoot()->str();
     }
 
+    namespace front_repository{
+        void initialize_repository(){
+            connection::iroha::AssetRepositoryImpl::AccountGetAsset::receive([=](
+                const std::string & /* from */, flatbuffers::unique_ptr_t &&query_ptr) -> std::vector<const ::iroha::Asset *>{
+                if(db == nullptr) init();
+                const iroha::AssetQuery& query = *flatbuffers::GetRoot<iroha::AssetQuery>(query_ptr.get());
+                auto ln = query.ledger_name();
+                auto dn = query.domain_name();
+                auto an = query.asset_name();
+                if(ln == nullptr || dn == nullptr || an == nullptr) {
+                    return db->accountGetAllAssets(query.pubKey(), query.uncommitted());
+                }else{
+                    std::vector<const ::iroha::Asset *> res{db->accountGetAsset(query.pubKey(), ln, dn, an, query.uncommitted())};
+                    return res;
+                }
+            });
+        }
+    }
 };
