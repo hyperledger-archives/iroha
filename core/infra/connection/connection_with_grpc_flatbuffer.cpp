@@ -531,9 +531,63 @@ namespace connection {
         : stub_(Sync::NewStub(channel)) {}
 
     const ::iroha::CheckHashResponse *checkHash(const ::iroha::Ping &ping) const {
-    }
-    const ::iroha::PeersResponse *getPeers(const ::iroha::Ping &ping) const {
+      ::grpc::ClientContext clientContext;
+      flatbuffers::FlatBufferBuilder fbbPing;
 
+      auto pingOffset = ::iroha::CreatePingDirect(
+          fbbPing, ping.message()->c_str(), ping.sender()->c_str()
+      );
+      fbbPing.Finish(pingOffset);
+
+      flatbuffers::BufferRef<::iroha::Ping> reqPingRef(
+          fbbPing.GetBufferPointer(), fbbPing.GetSize()
+      );
+
+      flatbuffers::BufferRef<::iroha::CheckHashResponse> responseRef;
+
+      auto res = stub_->checkHash(&clientContext, reqPingRef, &responseRef);;
+      logger::info("Connection with grpc") << "Send!";
+
+      if (res.ok()) {
+        logger::info("connection")
+            << "response: " << responseRef.GetRoot()->isCorrect();
+        return responseRef.GetRoot();
+      } else {
+        logger::error("connection") << static_cast<int>(res.error_code())
+                                    << ": " << res.error_message();
+        // std::cout << status.error_code() << ": " << status.error_message();
+        return responseRef.GetRoot();
+      }
+    }
+
+    const ::iroha::PeersResponse *getPeers(const ::iroha::Ping &ping) const {
+      ::grpc::ClientContext clientContext;
+      flatbuffers::FlatBufferBuilder fbbPing;
+
+      auto pingOffset = ::iroha::CreatePingDirect(
+          fbbPing, ping.message()->c_str(), ping.sender()->c_str()
+      );
+      fbbPing.Finish(pingOffset);
+
+      flatbuffers::BufferRef<::iroha::Ping> reqPingRef(
+          fbbPing.GetBufferPointer(), fbbPing.GetSize()
+      );
+
+      flatbuffers::BufferRef<::iroha::PeersResponse> responseRef;
+
+      auto res = stub_->getPeers(&clientContext, reqPingRef, &responseRef);
+      logger::info("Connection with grpc") << "Send!";
+
+      if (res.ok()) {
+        logger::info("connection")
+            << "response: " << responseRef.GetRoot()->message();
+        return responseRef.GetRoot();
+      } else {
+        logger::error("connection") << static_cast<int>(res.error_code())
+                                    << ": " << res.error_message();
+        // std::cout << status.error_code() << ": " << status.error_message();
+        return responseRef.GetRoot();
+      }
     }
 
   private:
