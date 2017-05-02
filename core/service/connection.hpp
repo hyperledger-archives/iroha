@@ -16,6 +16,8 @@ limitations under the License.
 
 #include <utils/expected.hpp>
 
+#include <main_generated.h>
+
 #include <functional>
 #include <memory>
 #include <string>
@@ -81,6 +83,17 @@ namespace HostDiscovery {
             }
         }
     }  // namespace iroha::SumeragiImpl::Verify
+
+    namespace iroha {
+        namespace AssetRepositoryImpl {
+            namespace AccountGetAsset {
+                using CallBackFunc = std::function<std::vector<const ::iroha::Asset *>(
+                        const std::string & /* from */, flatbuffers::unique_ptr_t && /* message */)>;
+
+                void receive(AccountGetAsset::CallBackFunc &&callback);
+            }
+        }
+    }  // namespace iroha::AssetRepositoryImpl
 
 /************************************************************************************
 * Kagami ( means Ping )

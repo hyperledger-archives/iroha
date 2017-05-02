@@ -33,6 +33,7 @@ limitations under the License.
 #include <memory>
 #include <string>
 #include <vector>
+#include <asset_generated.h>
 
 namespace connection {
   /**
@@ -43,6 +44,8 @@ namespace connection {
   using ConsensusEvent = ::iroha::ConsensusEvent;
   using Ping = ::iroha::Ping;
   using Response = ::iroha::Response;
+  using AssetResponse = ::iroha::AssetResponse;
+  using AssetQuery = ::iroha::AssetQuery;
   using Transaction = ::iroha::Transaction;
   using TransactionWrapper = ::iroha::TransactionWrapper;
   using Signature = ::iroha::Signature;
@@ -84,6 +87,29 @@ namespace connection {
     // ToDo rewrite operator() overload.
     void invoke(const std::string &from, flatbuffers::unique_ptr_t &&arg) {
       (*receiver_)(from, std::move(arg));
+    }
+
+  private:
+    std::shared_ptr<CallBackFunc> receiver_;
+  };
+
+  template<class CallBackFunc, class T>
+  class ReceiverWithReturen {
+  public:
+    VoidHandler set(CallBackFunc &&rhs) {
+        if (receiver_) {
+            return makeUnexpected(exception::DuplicateSetArgumentException(
+                    "Receiver<" + std::string(typeid(CallBackFunc).name()) + ">",
+                    __FILE__));
+        }
+
+        receiver_ = std::make_shared<CallBackFunc>(rhs);
+        return {};
+    }
+
+    // ToDo rewrite operator() overload.
+    T invoke(const std::string &from, flatbuffers::unique_ptr_t &&arg) {
+        return (*receiver_)(from, std::move(arg));
     }
 
   private:
@@ -290,9 +316,9 @@ namespace connection {
 
         fbb.Finish(event.value());
 
-        const std::string from = "from";
-        connection::iroha::SumeragiImpl::Verify::receiver.invoke(
-          from, std::move(fbb.ReleaseBufferPointer()));
+          const std::string from = "from";
+          connection::iroha::SumeragiImpl::Verify::receiver.invoke(
+                  from, std::move(fbb.ReleaseBufferPointer()));
       }
 
       auto responseOffset = ::iroha::CreateResponseDirect(
@@ -518,6 +544,98 @@ namespace connection {
       }  // namespace Kagami
     }  // namespace HijiriImpl
   }  // namespace MemberShipService
+
+  /************************************************************************************
+   * AssetRepository
+   ************************************************************************************/
+  namespace iroha {
+      namespace AssetRepositoryImpl {
+         namespace AccountGetAsset {
+             // ToDo more clear
+             ReceiverWithReturen<AccountGetAsset::CallBackFunc, std::vector<const ::iroha::Asset *>> receiver;
+
+             void receive(AccountGetAsset::CallBackFunc&& callback) {
+                 receiver.set(std::move(callback));
+             }
+         }
+      }
+  }
+  /**
+   * AssetRepositoryConnectionServiceImpl
+   */
+  class AssetRepositoryConnectionServiceImpl final : public ::iroha::AssetRepository::Service {
+  public:
+      Status AccountGetAsset(ServerContext *context,
+                    const flatbuffers::BufferRef<::iroha::AssetQuery> *requestRef,
+                    flatbuffers::BufferRef<::iroha::AssetResponse> *responseRef) override {
+          fbbResponse.Clear();
+          std::vector<const ::iroha::Asset *> assets;
+          {
+              const auto q = requestRef->GetRoot();
+              flatbuffers::FlatBufferBuilder fbb;
+              auto req_offset = ::iroha::CreateAssetQueryDirect(fbb,
+                  q->pubKey()->c_str(),
+                  q->ledger_name()->c_str(),
+                  q->domain_name()->c_str(),
+                  q->asset_name()->c_str(),
+                  q->uncommitted()
+              );
+
+              fbb.Finish(req_offset);
+              assets = connection::iroha::AssetRepositoryImpl::AccountGetAsset::receiver.invoke(
+                      "from",  // TODO: Specify 'from'
+                      fbb.ReleaseBufferPointer()
+              );
+
+              std::vector<uint8_t> types;
+              std::vector<flatbuffers::Offset<void>> res_assets;
+              {
+                  flatbuffers::FlatBufferBuilder fbb_;
+                  for(const ::iroha::Asset* asset: assets){
+                      if(asset->asset_type() == ::iroha::AnyAsset::Currency){
+                          types.push_back(static_cast<uint8_t>(asset->asset_type()));
+                          fbb_.Clear();
+                          res_assets.push_back(::iroha::CreateCurrencyDirect(fbb_,
+                              asset->asset_as_Currency()->currency_name()->c_str(),
+                              asset->asset_as_Currency()->domain_name()->c_str(),
+                              asset->asset_as_Currency()->ledger_name()->c_str(),
+                              asset->asset_as_Currency()->description()->c_str(),
+                              asset->asset_as_Currency()->amount()->c_str(),
+                              asset->asset_as_Currency()->precision()
+                          ).Union());
+                      }
+                  }
+              }
+              auto responseOffset = ::iroha::CreateAssetResponseDirect(
+                    fbbResponse, "Success", ::iroha::Code::COMMIT,
+                    &types, &res_assets
+              );
+              fbbResponse.Finish(responseOffset);
+
+              *responseRef = flatbuffers::BufferRef<AssetResponse>(
+                      fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+          }
+          return Status::OK;
+      }
+  private:
+      flatbuffers::Offset<::iroha::Signature> sign(
+              flatbuffers::FlatBufferBuilder &fbb, const std::string &tx) {
+          const auto stamp = datetime::unixtime();
+          const auto hashWithTimestamp =
+                  hash::sha3_256_hex(tx + std::to_string(stamp));
+          const auto signature = signature::sign(
+                  hashWithTimestamp,
+                  config::PeerServiceConfig::getInstance().getMyPublicKey(),
+                  config::PeerServiceConfig::getInstance().getMyPrivateKey());
+          const std::vector<uint8_t> sigblob(signature.begin(), signature.end());
+          return ::iroha::CreateSignatureDirect(
+                  fbb, config::PeerServiceConfig::getInstance().getMyPublicKey().c_str(),
+                  &sigblob, stamp);
+      };
+
+      flatbuffers::FlatBufferBuilder fbbResponse;
+  };
+
 
   /************************************************************************************
    * Run server
