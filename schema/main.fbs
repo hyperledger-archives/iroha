@@ -21,9 +21,9 @@ table TransactionWrapper {
 
 // TODO
 table TransactionResponse {
-  message:      string;
-  code:         Code;
-  transaction:  Transaction;
+  message:              string  (required);
+  code:                 Code;
+  transactions:         [TransactionWrapper];
 }
 
 table ReceiverConfirmation {
