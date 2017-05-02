@@ -29,6 +29,10 @@ namespace repository{
     bool existAccountOf(const flatbuffers::String& key);
 
     const std::string getMerkleRoot();
+
+    namespace front_repository{
+        void initialize_repository();
+    }
 };
 
 #endif //IROHA_REPOSITORY_H
