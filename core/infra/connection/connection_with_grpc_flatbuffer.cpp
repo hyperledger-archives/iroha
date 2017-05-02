@@ -28,6 +28,7 @@ limitations under the License.
 
 #include <endpoint.grpc.fb.h>
 #include <main_generated.h>
+#include <ametsuchi/repository.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -547,6 +548,19 @@ namespace connection {
     ) override {
       fbbResponse.Clear();
       {
+        std::string hash = request->GetRoot()->message();
+        // Now, only supported root hash copare. (ver1.0)
+        if( repository::getMerkleRoot() == hash ) {
+          auto responseOffset = ::iroha::CreateHashResponseDirect(fbbResponse, true, true, true );
+          fbbResponse.Finish(responseOffset);
+        } else {
+          auto responseOffset = ::iroha::CreateHashResponseDirect(fbbResponse, false, false, false );
+          fbbResponse.Finish(responseOffset);
+        }
+        *responseRef = flatbuffers::BufferRef<::iroha::CheckHashResponse>(
+            fbbResponse.GetBufferPointer(), fbbResponse.GetSize()
+        );
+        return Status::OK;
       }
     }
     Status getPeers(ServerContext *context,
@@ -555,6 +569,27 @@ namespace connection {
     ) override {
       fbbResponse.Clear();
       {
+        std::string leader_ip = request->GetRoot()->message();
+        std::vector<flatbuffers::Offset<::iroha::Peer>> p_vec;
+        for( auto &&p : ::peer::service::getAllPeerList() ) {
+          flatbuffers::FlatBufferBuilder tbb;
+          p_vec.emplace_back(
+              ::iroha::CreatePeer(tbb,
+                                  tbb.CreateString(p->ledger_name),
+                                  tbb.CreateString(p->publicKey),
+                                  tbb.CreateString(p->ip),
+                                  p->trust,p->active,p->join_ledger));
+        }
+        auto res = ::iroha::CreatePeerResponse(
+            fbbResponse,
+            fbbResponse.CreateString("message"),
+            fbbResponse.CreateVector(p_vec),
+            fbbResponse.CreateString(::peer::myself::getPublicKey()));
+        fbbResponse.Finish(res);
+        *responseRef = flatbuffers::BufferRef<::iroha::PeerResponse>(
+            fbbResponse.GetBufferPointer(), fbbResponse.GetSize()
+        );
+        return Status::OK;
       }
     }
 
