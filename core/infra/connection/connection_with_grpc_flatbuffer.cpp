@@ -237,7 +237,7 @@ namespace connection {
           fbb.Clear();
           auto responseOffset = ::iroha::CreateResponseDirect(
             fbbResponse, "CANCELLED", ::iroha::Code::FAIL,
-            0);  // ToDo: Currently, if it fails, no signature.
+            0);  // FIXME: Currently, if it fails, no signature.
           fbbResponse.Finish(responseOffset);
 
           *response = flatbuffers::BufferRef<::iroha::Response>(
@@ -252,14 +252,15 @@ namespace connection {
           from, std::move(fbb.ReleaseBufferPointer()));
       }
 
+      auto tx_str = flatbuffer_service::toString(
+        *request->GetRoot()
+          ->transactions()
+          ->Get(0) // Future work: #(tx) = 1
+          ->tx_nested_root());
       auto responseOffset = ::iroha::CreateResponseDirect(
         fbbResponse, "OK!!", ::iroha::Code::UNDECIDED,
-        sign(fbbResponse,
-             hash::sha3_256_hex(flatbuffer_service::toString(
-               *request->GetRoot()
-                 ->transactions()
-                 ->Get(0)
-                 ->tx_nested_root()))));  // ToDo: #(tx) = 1, ToDo:
+        flatbuffer_service::primitives::CreateSignature(
+          fbbResponse, tx_str, datetime::unixtime()));
 
       fbbResponse.Finish(responseOffset);
 
@@ -270,7 +271,7 @@ namespace connection {
     }
 
     Status Torii(ServerContext *context,
-                 const flatbuffers::BufferRef<Transaction> *transactionRef,
+                 const flatbuffers::BufferRef<Transaction> *txRef,
                  flatbuffers::BufferRef<Response> *responseRef) override {
       logger::debug("SumeragiConnectionServiceImpl::Torii") << "RPC works";
 
@@ -279,7 +280,7 @@ namespace connection {
       fbbResponse.Clear();
 
       {
-        const auto tx = transactionRef->GetRoot();
+        const auto tx = txRef->GetRoot();
         flatbuffers::FlatBufferBuilder fbb;
         auto txoffset = flatbuffer_service::copyTransaction(fbb, *tx);
         if (!txoffset) {
@@ -299,10 +300,13 @@ namespace connection {
           fbb.ReleaseBufferPointer());
       }
 
+      auto tx_str = flatbuffer_service::toString(*txRef->GetRoot());
+
       auto responseOffset = ::iroha::CreateResponseDirect(
         fbbResponse, "OK!!", ::iroha::Code::UNDECIDED,
-        sign(fbbResponse, hash::sha3_256_hex(flatbuffer_service::toString(
-          *transactionRef->GetRoot()))));
+        flatbuffer_service::primitives::CreateSignature(
+          fbbResponse, tx_str, datetime::unixtime()));
+
       fbbResponse.Finish(responseOffset);
 
       *responseRef = flatbuffers::BufferRef<Response>(
@@ -312,21 +316,6 @@ namespace connection {
     }
 
   private:
-    flatbuffers::Offset<::iroha::Signature> sign(
-      flatbuffers::FlatBufferBuilder &fbb, const std::string &tx) {
-      const auto stamp = datetime::unixtime();
-      const auto hashWithTimestamp =
-        hash::sha3_256_hex(tx + std::to_string(stamp));
-      const auto signature = signature::sign(
-        hashWithTimestamp,
-        config::PeerServiceConfig::getInstance().getMyPublicKey(),
-        config::PeerServiceConfig::getInstance().getMyPrivateKey());
-      const std::vector<uint8_t> sigblob(signature.begin(), signature.end());
-      return ::iroha::CreateSignatureDirect(
-        fbb, config::PeerServiceConfig::getInstance().getMyPublicKey().c_str(),
-        &sigblob, stamp);
-    };
-
     flatbuffers::FlatBufferBuilder fbbResponse;
   };
 
@@ -439,19 +428,20 @@ namespace connection {
       }
     }
 
+    // ToDo: Unite the way to hash (below double(?) hash)
     flatbuffers::Offset<::iroha::Signature> sign(
-              flatbuffers::FlatBufferBuilder &fbb, const std::string &tx) {
-          const auto stamp = datetime::unixtime();
-          const auto hashWithTimestamp =
-                  hash::sha3_256_hex(tx + std::to_string(stamp));
-          const auto signature = signature::sign(
-                  hashWithTimestamp,
-                  config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                  config::PeerServiceConfig::getInstance().getMyPrivateKey());
-          const std::vector<uint8_t> sigblob(signature.begin(), signature.end());
-          return ::iroha::CreateSignatureDirect(
-                  fbb, config::PeerServiceConfig::getInstance().getMyPublicKey().c_str(),
-                  &sigblob, stamp);
+      flatbuffers::FlatBufferBuilder &fbb, const std::string &tx) {
+      const auto stamp = datetime::unixtime();
+      const auto hashWithTimestamp =
+        hash::sha3_256_hex(tx + std::to_string(stamp));
+      const auto signature = signature::sign(
+        hashWithTimestamp,
+        config::PeerServiceConfig::getInstance().getMyPublicKey(),
+        config::PeerServiceConfig::getInstance().getMyPrivateKey());
+      const std::vector<uint8_t> sigblob(signature.begin(), signature.end());
+      return ::iroha::CreateSignatureDirect(
+        fbb, config::PeerServiceConfig::getInstance().getMyPublicKey().c_str(),
+        &sigblob, stamp);
     };
 
   private:
