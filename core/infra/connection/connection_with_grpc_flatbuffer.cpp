@@ -327,9 +327,9 @@ namespace connection {
     namespace SumeragiImpl {
       namespace Verify {
         bool send(const std::string &ip, const ::iroha::ConsensusEvent &event) {
-          logger::info("Connection with grpc") << "Send!";
+          logger::info("connection") << "Send!";
           if (::peer::service::isExistIP(ip)) {
-            logger::info("Connection with grpc") << "IP exists: " << ip;
+            logger::info("connection") << "IP exists: " << ip;
             SumeragiConnectionClient client(grpc::CreateChannel(
               ip + ":" +
               std::to_string(config::IrohaConfigManager::getInstance()
@@ -337,9 +337,13 @@ namespace connection {
               grpc::InsecureChannelCredentials()));
             // TODO return tx validity
             auto reply = client.Verify(event);
+            if (!reply) {
+              logger::error("connection") << reply->code() << ", " << reply->message();
+              return false;
+            }
             return true;
           } else {
-            logger::info("Connection with grpc") << "IP doesn't exist: " << ip;
+            logger::info("connection") << "IP doesn't exist: " << ip;
             return false;
           }
         }
