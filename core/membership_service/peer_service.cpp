@@ -149,10 +149,10 @@ void add(const std::string &ip, const peer::Node &peer) {
   if (service::isExistIP(peer.ip) || service::isExistPublicKey(peer.publicKey))
     return;
   flatbuffers::FlatBufferBuilder xbb;
-  auto f_peer = flatbuffer_service::primitives::CreatePeer(peer);
+  auto peerAdd = flatbuffer_service::peer::CreateAdd(xbb, peer);
 
   auto txbuf = flatbuffer_service::transaction::CreateTransaction(
-      xbb, myself::getPublicKey(), iroha::Command::PeerAdd, f_peer.Union());
+      xbb, myself::getPublicKey(), iroha::Command::PeerAdd, peerAdd.Union());
   auto &tx = *flatbuffers::GetRoot<::iroha::Transaction>(txbuf.data());
   connection::memberShipService::SumeragiImpl::Torii::send(ip, tx);
 }
