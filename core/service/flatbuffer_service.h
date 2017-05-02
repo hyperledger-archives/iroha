@@ -32,6 +32,7 @@ struct PeerSetTrust;
 struct PeerSetActive;
 struct Signature;
 struct Sumeragi;
+struct Attachment;
 enum class Command : uint8_t;
 }  // namespace iroha
 
@@ -121,9 +122,8 @@ namespace flatbuffer_service {
   namespace primitives {
     std::vector<uint8_t> CreatePeer(const ::peer::Node &peer);
 
-    std::vector<uint8_t> CreateSignature(const std::string &publicKey,
-                                         std::vector<uint8_t> signature,
-                                         uint64_t timestamp);
+    flatbuffers::Offset<::iroha::Signature> CreateSignature(
+      flatbuffers::FlatBufferBuilder &fbb, const std::string &hash, uint64_t timestamp);
   }  // namespace primitives
 
 
@@ -162,7 +162,7 @@ namespace flatbuffer_service {
       const std::string& creatorPubKey,
       iroha::Command cmd_type,
       const flatbuffers::Offset<void>& command,
-      const flatbuffers::Offset<iroha::Attachment>& attachment = 0
+      flatbuffers::Offset<::iroha::Attachment> attachment
     );
   }
 };      // namespace flatbuffer_service

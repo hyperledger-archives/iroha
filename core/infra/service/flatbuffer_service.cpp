@@ -29,6 +29,7 @@
 #include <main_generated.h>
 #include <iostream>
 #include <map>
+#include <infra/config/peer_service_with_json.hpp>
 #include <membership_service/peer_service.hpp>
 #include <memory>
 #include <string>
@@ -161,10 +162,65 @@ namespace flatbuffer_service {
          */
         throw exception::NotImplementedException("Command", __FILE__);
       }
-      default: return false;
+      default: return flatbuffers::Offset<void>();
     }
   }
 
+  std::string toStringOf(iroha::Command cmd_type, const iroha::Transaction& tx) {
+    using iroha::Command;
+    switch (cmd_type) {
+      case Command::PeerAdd: {
+        auto p = tx.command_as_PeerAdd();
+        auto root = p->peer_nested_root();
+        std::string ret;
+        ret += root->ledger_name()->str();
+        ret += root->publicKey()->str();
+        ret += root->ip()->str();
+        ret += std::to_string(root->trust());
+        ret += std::to_string(root->active());
+        ret += std::to_string(root->join_ledger());
+        return ret;
+      }
+      case Command::PeerRemove: {
+        auto p = tx.command_as_PeerRemove();
+        std::string ret;
+        ret += p->peerPubKey()->str();
+        return ret;
+      }
+      case Command::PeerSetActive: {
+        auto p = tx.command_as_PeerSetActive();
+        std::string ret;
+        ret += p->peerPubKey()->str();
+        ret += std::to_string(p->active());
+        return ret;
+      }
+      case Command::PeerSetTrust: {
+        auto p = tx.command_as_PeerSetTrust();
+        std::string ret;
+        ret += p->peerPubKey()->str();
+        ret += std::to_string(p->trust());
+        return ret;
+      }
+      case Command::PeerChangeTrust: {
+        auto p = tx.command_as_PeerChangeTrust();
+        std::string ret;
+        ret += p->peerPubKey()->str();
+        ret += std::to_string(p->delta());
+        return ret;
+      }
+      default:
+        throw exception::NotImplementedException("peer toStringOf", __FILE__);
+    }
+  }
+
+  std::string toStringAttachmentOf(const Transaction& tx) {
+    auto ret = tx.attachment()->mime()->str();
+    ret += std::string(tx.attachment()->data()->begin(),
+                       tx.attachment()->data()->end());
+    return ret;
+  }
+
+  // ToDo: We should use this for only debug. dump();
   std::string toString(const iroha::Transaction& tx) {
     std::string res = "";
     if (tx.creatorPubKey() != nullptr) {
@@ -755,16 +811,18 @@ namespace flatbuffer_service {
       return {ptr, ptr + fbb.GetSize()};
     }
 
-    std::vector<uint8_t> CreateSignature(const std::string &publicKey,
-                                         std::vector<uint8_t> signature,
-                                         uint64_t timestamp) {
-      flatbuffers::FlatBufferBuilder fbb;
-      auto sig_cc = iroha::CreateSignature(fbb, fbb.CreateString(publicKey),
-                                           fbb.CreateVector(signature), timestamp);
-      fbb.Finish(sig_cc);
-
-      uint8_t* ptr = fbb.GetBufferPointer();
-      return {ptr, ptr + fbb.GetSize()};
+    flatbuffers::Offset<::iroha::Signature> CreateSignature(
+      flatbuffers::FlatBufferBuilder &fbb, const std::string &hash, uint64_t timestamp) {
+      // In oreder to use variable hash and create signature with timestamp,
+      // we need hashed string and timestamp in arguments.
+      const auto signature = signature::sign(
+        hash,
+        config::PeerServiceConfig::getInstance().getMyPublicKey(),
+        config::PeerServiceConfig::getInstance().getMyPrivateKey());
+      const std::vector<uint8_t> sigblob(signature.begin(), signature.end());
+      return ::iroha::CreateSignatureDirect(
+        fbb, config::PeerServiceConfig::getInstance().getMyPublicKey().c_str(),
+        &sigblob, timestamp);
     }
 
   }  // namespace primitives
@@ -833,48 +891,60 @@ namespace flatbuffer_service {
       const std::string& creatorPubKey,
       iroha::Command cmd_type,
       const flatbuffers::Offset<void>& command,
-      const flatbuffers::Offset<iroha::Attachment>& attachment = 0
+      flatbuffers::Offset<iroha::Attachment> attachment = 0
     ) {
-
       const auto timestamp = datetime::unixtime();
       /*
-       sha256(
-    //     creatorPubKey + command + timestamp + attachment
-    // )
+       sha256(creatorPubKey + command + timestamp + attachment)
        */
-      std::vector<uint8_t> hashable;
-      auto appendStr = [&](const std::string& s) {
-        if (s.empty()) return "";
+      std::string hashable;
+      const auto appendStr = [&](const std::string& s) {
+        if (s.empty()) return;
         for (const auto& e: s) {
           hashable.push_back((char)e);
         }
       };
 
-      auto appendVec = [&](const std::vector<uint8_t>& v) {
-        if (v.empty()) return "";
+      const auto appendVec = [&](const std::vector<uint8_t>& v) {
+        if (v.empty()) return;
         for (const auto& e: v) {
           hashable.push_back((char)e);
         }
       };
 
-      appendStr(creatorPubKey);
-      appendStr(flatbuffer_service::toString(cmd_type, command));
-      appendStr(std::to_string(timestamp));
-      appendStr(attachment);
-
-      const auto hash = hash::sha3_256_hex(hashable);
-
-      const auto sigOffset = ::iroha::CreateSignatureDirect(
-        fbb, creatorPubKey.c_str(), &sigblob, timestamp
+      const auto tempTxOffset = ::iroha::CreateTransactionDirect(
+        fbb, creatorPubKey.c_str(), cmd_type, command,
+        nullptr, nullptr, 0, 0
       );
 
+      fbb.Finish(tempTxOffset);
+      const auto tempTx = flatbuffers::GetRoot<::iroha::Transaction>(fbb.GetBufferPointer());
+
+      appendStr(creatorPubKey);
+      appendStr(toStringOf(cmd_type, *tempTx));
+      appendStr(std::to_string(timestamp));
+      if (attachment.o != 0) {
+        const auto attstr = toStringAttachmentOf(*tempTx);
+        appendStr(attstr);
+      }
+
+      fbb.Clear();
+
+      const std::string hash = hash::sha3_256_hex(hashable);
+      const std::vector<uint8_t> hsvec(hash.begin(), hash.end());
+
+      // FIXME: [Signature]
+      std::vector<flatbuffers::Offset<::iroha::Signature>> signatures{
+        flatbuffer_service::primitives::CreateSignature(
+          fbb, hash, timestamp)};
+
       const auto txOffset = ::iroha::CreateTransactionDirect(
-        fbb, creatorPubKey.c_str(), cmd_type, command, sigOffset
-      )
+        fbb, creatorPubKey.c_str(), cmd_type, command,
+        &signatures, &hsvec, timestamp, attachment);
 
       fbb.Finish(txOffset);
 
-      //
+      return *flatbuffers::GetRoot<iroha::Transaction>(fbb.GetBufferPointer());
     }
 
   };  // namespace transaction
