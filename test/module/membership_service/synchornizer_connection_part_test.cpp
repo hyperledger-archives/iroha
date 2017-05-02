@@ -43,8 +43,6 @@ class synchornizer_connection_part_test : public ::testing::Test {
   static void TearDownTestCase() { connection::finish(); }
 
   virtual void SetUp() {
-    server_thread_sync = std::thread(
-        &synchornizer_connection_part_test::serverSyncReceive, this);
   }
 
   virtual void TearDown() { server_thread_torii.detach(); }
@@ -53,15 +51,15 @@ class synchornizer_connection_part_test : public ::testing::Test {
 
 TEST_F(synchornizer_connection_part_test, checkHashAllTest) {
   std::string ip = ::peer::myself::getIp();
-  std::string hash = repository::getMerkleRoot();
+  std::string hash = "";// TODO Can it be used? repository::getMerkleRoot();
   auto vec = flatbuffer_service::endpoint::CreatePing(ip, hash);
-  auto &ping = flatbuffers::GetRoot<iroha::Ping>(vec.data());
-  ASSERT_TRUE(connection::memberShipService::SyncImpl::checkHash(ip, ping));
+  auto &ping = *flatbuffers::GetRoot<iroha::Ping>(vec.data());
+  ASSERT_TRUE(connection::memberShipService::SyncImpl::checkHash::send(ip, ping));
 
   std::string dummy_hash = "ng_hash";
-  vec = flatbuffer_service::endpoint::CreatePing(ip, dummy_hash);
-  auto &ping2 = flatbuffers::GetRoot<iroha::Ping>(vec.data());
-  ASSERT_FALSE(connection::memberShipService::SyncImpl::checkHash(ip, ping));
+  auto vec2 = flatbuffer_service::endpoint::CreatePing(ip, dummy_hash);
+  auto &ping2 = *flatbuffers::GetRoot<iroha::Ping>(vec2.data());
+  ASSERT_FALSE(connection::memberShipService::SyncImpl::checkHash::send(ip, ping2));
 }
 
 TEST_F(synchornizer_connection_part_test, getPeersTest) {
