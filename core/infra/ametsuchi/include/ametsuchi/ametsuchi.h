@@ -134,7 +134,7 @@ class Ametsuchi {
                                       iroha::Command command,
                                       bool uncommitted = false);
 
-  const flatbuffers::String* getMerkleRoot();
+  std::vector<uint8_t> getMerkleRoot();
 
  private:
   /* for internal use only */
