@@ -46,67 +46,95 @@ namespace flatbuffer_service {
         assert(false && "Command::NONE");
       }
       case Command::Add: {
-        /*
-        auto& e = *tx.command_as_Add();
+        auto p = tx.command_as_Add();
+        std::vector<uint8_t> asset(p->asset()->begin(), p->asset()->end());
         return ::iroha::CreateAddDirect(
-          fbb, e.accPubKey()->c_str(),
-          e.asset();
-        );
-         */
+          fbb, p->accPubKey()->c_str(), &asset).Union();
       }
       case Command::Subtract: {
-        throw exception::NotImplementedException("Command", __FILE__);
+        auto p = tx.command_as_Subtract();
+        std::vector<uint8_t> asset(p->asset()->begin(), p->asset()->end());
+        return ::iroha::CreateSubtractDirect(
+          fbb, p->accPubKey()->c_str(), &asset).Union();
       }
       case Command::Transfer: {
-        throw exception::NotImplementedException("Command", __FILE__);
+        auto p = tx.command_as_Transfer();
+        std::vector<uint8_t> asset(p->asset()->begin(), p->asset()->end());
+        return ::iroha::CreateTransferDirect(
+          fbb, &asset, p->sender()->c_str(), p->receiver()->c_str()).Union();
       }
       case Command::AssetCreate: {
         auto p = tx.command_as_AssetCreate();
         return ::iroha::CreateAssetCreateDirect(
-          fbb, p->asset_name()->c_str(), p->domain_name()->c_str(), p->ledger_name()->c_str()
-        ).Union();
+          fbb, p->asset_name()->c_str(), p->domain_name()->c_str(),
+          p->ledger_name()->c_str()).Union();
       }
       case Command::AssetRemove: {
-        throw exception::NotImplementedException("Command", __FILE__);
-        /*
-        auto& e = *tx.command_as_AssetRemove();
+        auto p = tx.command_as_AssetRemove();
         return ::iroha::CreateAssetRemoveDirect(
-          fbb, e.asset_name()->c_str(), e.domain_name()->c_str(), e.ledger_name()->c_str()
-        ).Union();
-         */
+          fbb, p->asset_name()->c_str(), p->domain_name()->c_str(),
+          p->ledger_name()->c_str()).Union();
       }
       case Command::PeerAdd: {
-        throw exception::NotImplementedException("Command", __FILE__);
+        auto p = tx.command_as_PeerAdd();
+        std::vector<uint8_t> peer(p->peer()->begin(), p->peer()->end());
+        return ::iroha::CreatePeerAddDirect(fbb, &peer).Union();
       }
       case Command::PeerRemove: {
-        throw exception::NotImplementedException("Command", __FILE__);
+        auto p = tx.command_as_PeerRemove();
+        return ::iroha::CreatePeerRemoveDirect(
+          fbb, p->peerPubKey()->c_str()).Union();
       }
       case Command::PeerSetActive: {
-        throw exception::NotImplementedException("Command", __FILE__);
+        auto p = tx.command_as_PeerSetActive();
+        return ::iroha::CreatePeerSetActiveDirect(
+          fbb, p->peerPubKey()->c_str(), p->active()).Union();
       }
       case Command::PeerSetTrust: {
-        throw exception::NotImplementedException("Command", __FILE__);
+        auto p = tx.command_as_PeerSetTrust();
+        return ::iroha::CreatePeerSetTrustDirect(
+          fbb, p->peerPubKey()->c_str(), p->trust()).Union();
       }
       case Command::PeerChangeTrust: {
-        throw exception::NotImplementedException("Command", __FILE__);
+        auto p = tx.command_as_PeerChangeTrust();
+        return ::iroha::CreatePeerChangeTrustDirect(
+          fbb, p->peerPubKey()->c_str(), p->delta()).Union();
       }
       case Command::AccountAdd: {
-        throw exception::NotImplementedException("Command", __FILE__);
+        auto p = tx.command_as_AccountAdd();
+        std::vector<uint8_t> account(p->account()->begin(), p->account()->end());
+        return ::iroha::CreateAccountAddDirect(fbb, &account).Union();
       }
       case Command::AccountRemove: {
-        throw exception::NotImplementedException("Command", __FILE__);
+        auto p = tx.command_as_AccountRemove();
+        return ::iroha::CreateAccountRemoveDirect(fbb, p->pubkey()->c_str()).Union();
       }
+
+      // WILL CHECK
       case Command::AccountAddSignatory: {
-        throw exception::NotImplementedException("Command", __FILE__);
+        auto p = tx.command_as_AccountAddSignatory();
+        std::vector<flatbuffers::Offset<flatbuffers::String>>
+          signatory(p->signatory()->begin(), p->signatory()->end());
+        return ::iroha::CreateAccountAddSignatoryDirect(
+          fbb, p->account()->c_str(), &signatory).Union();
       }
       case Command::AccountRemoveSignatory: {
-        throw exception::NotImplementedException("Command", __FILE__);
+        auto p = tx.command_as_AccountRemoveSignatory();
+        std::vector<flatbuffers::Offset<flatbuffers::String>>
+          signatory(p->signatory()->begin(), p->signatory()->end());
+        return ::iroha::CreateAccountRemoveSignatoryDirect(
+          fbb, p->account()->c_str(), &signatory).Union();
       }
       case Command::AccountSetUseKeys: {
-        throw exception::NotImplementedException("Command", __FILE__);
+        auto p = tx.command_as_AccountSetUseKeys();
+        std::vector<flatbuffers::Offset<flatbuffers::String>>
+          accounts(p->accounts()->begin(), p->accounts()->end());
+        return ::iroha::CreateAccountSetUseKeysDirect(fbb, &accounts, p->useKeys()).Union();
       }
       case Command::AccountMigrate: {
-        throw exception::NotImplementedException("Command", __FILE__);
+        auto p = tx.command_as_AccountMigrate();
+        std::vector<uint8_t> account(p->account()->begin(), p->account()->end());
+        return ::iroha::CreateAccountMigrateDirect(fbb, &account, p->prevPubKey()->c_str()).Union();
       }
       case Command::ChaincodeAdd: {
         throw exception::NotImplementedException("Command", __FILE__);
@@ -118,9 +146,19 @@ namespace flatbuffer_service {
         throw exception::NotImplementedException("Command", __FILE__);
       }
       case Command::PermissionRemove: {
+        /*
+        auto p = tx.command_as_PermissionRemove();
+        ::iroha::CreateP
+        return ::iroha::CreatePermissionRemoveDirect(fbb, p->targetAccount()->c_str(), p->permission_type(), );
+         */
         throw exception::NotImplementedException("Command", __FILE__);
       }
       case Command::PermissionAdd: {
+        /*
+        auto p = tx.command_as_AccountMigrate();
+        std::vector<uint8_t> account(p->account()->begin(), p->account()->end());
+        return ::iroha::CreateAccountMigrateDirect(fbb, &account, p->prevPubKey()->c_str()).Union();
+         */
         throw exception::NotImplementedException("Command", __FILE__);
       }
       default: return false;
