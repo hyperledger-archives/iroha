@@ -71,7 +71,7 @@ namespace peer{
       bool checkRootHashAll(){
         // TODO after integration ametsuchi and implement rpc_service
         std::string root_hash = repository::getMerkleRoot();
-
+        return false;
       }
       bool append_temporary(size_t tx_id,iroha::Transaction* tx){
         temp_tx_.set( tx_id, tx );

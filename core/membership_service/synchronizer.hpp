@@ -44,7 +44,7 @@ namespace peer{
 
     namespace detail{
       // if roothash is trust roothash, return true. othrewise return false.
-      bool checkRootHashAll(const std::string& hash);
+      bool checkRootHashAll();
 
       bool append_temporary(size_t,iroha::Transaction*);
       SYNCHRO_RESULT append();
