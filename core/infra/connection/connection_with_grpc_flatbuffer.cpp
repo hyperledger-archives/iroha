@@ -203,11 +203,9 @@ namespace connection {
         stub_->Torii(&clientContext, requestTxRef, responseRef);
 
       if (status.ok()) {
-        logger::info("connection")
-          << "response: " << responseRef->GetRoot()->message();
+        logger::info("connection") << "gRPC OK";
       } else {
-        logger::error("connection") << static_cast<int>(status.error_code())
-                                    << ": " << status.error_message();
+        logger::error("connection") << "gRPC CANCELLED";
       }
     }
 
@@ -389,7 +387,7 @@ namespace connection {
         );
 
         auto res = stub_->Kagami(&clientContext, reqPingRef, responseRef);;
-        logger::info("Connection with grpc") << "Send!";
+        logger::info("connection") << "Send!";
 
         if (res.ok()) {
             logger::info("connection")
@@ -453,8 +451,8 @@ namespace connection {
     namespace HijiriImpl {
       namespace Kagami {
         bool send(const std::string &ip, const ::iroha::Ping &ping) {  // TODO
-          logger::info("Connection with grpc") << "Send!";
-          logger::info("Connection with grpc") << "IP is: " << ip;
+          logger::info("connection") << "Send!";
+          logger::info("connection") << "IP is: " << ip;
           HijiriConnectionClient client(grpc::CreateChannel(
             ip + ":" +
             std::to_string(config::IrohaConfigManager::getInstance()
@@ -468,9 +466,9 @@ namespace connection {
     namespace SumeragiImpl {
       namespace Torii {
         bool send(const std::string &ip, const ::iroha::Transaction &tx) {
-          logger::info("Connection with grpc") << "Send!";
+          logger::info("connection") << "Send!";
           if (::peer::service::isExistIP(ip)) {
-            logger::info("Connection with grpc") << "IP Exist: " << ip;
+            logger::info("connection") << "IP Exist: " << ip;
             SumeragiConnectionClient client(grpc::CreateChannel(
                 ip + ":" +
                 std::to_string(config::IrohaConfigManager::getInstance()
@@ -500,7 +498,7 @@ namespace connection {
     // ToDo catch exception of to_string
 
 
-    logger::info("Connection GRPC") << " initialize_peer ";
+    logger::info("connection") << " initialize_peer ";
   }
 
   void wait_till_ready() {
@@ -509,7 +507,7 @@ namespace connection {
   }
 
   int run() {
-    logger::info("Connection GRPC") << " RUN ";
+    logger::info("connection") << " RUN ";
     auto address =
       "0.0.0.0:" +
       std::to_string(
