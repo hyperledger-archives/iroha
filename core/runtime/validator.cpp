@@ -63,18 +63,18 @@ namespace runtime {
             > {
             switch(asset->asset_type()){
                 case iroha::AnyAsset::ComplexAsset: {
-                    return {
-                            asset->asset_as_ComplexAsset()->ledger_name(),
-                            asset->asset_as_ComplexAsset()->domain_name(),
-                            asset->asset_as_ComplexAsset()->asset_name()
-                    };
+                    return std::make_tuple(
+                        asset->asset_as_ComplexAsset()->ledger_name(),
+                        asset->asset_as_ComplexAsset()->domain_name(),
+                        asset->asset_as_ComplexAsset()->asset_name()
+                    );
                 }
                 case iroha::AnyAsset::Currency:{
-                    return {
+                    return std::make_tuple(
                         asset->asset_as_Currency()->ledger_name(),
                         asset->asset_as_Currency()->domain_name(),
                         asset->asset_as_Currency()->currency_name()
-                    };
+                    );
                 }
                 case iroha::AnyAsset::NONE: throw; // ToDo
             }
@@ -91,11 +91,11 @@ namespace runtime {
                 }break;
                 case iroha::Command::Subtract: {
                     std::tie(ledger_name,domain_name,asset_name) =
-                            getUrlFromAsse(tx.command_as_Add()->asset_nested_root());
+                        getUrlFromAsse(tx.command_as_Add()->asset_nested_root());
                 }break;
                 case iroha::Command::Transfer: {
                     std::tie(ledger_name,domain_name,asset_name) =
-                            getUrlFromAsse(tx.command_as_Add()->asset_nested_root());
+                        getUrlFromAsse(tx.command_as_Add()->asset_nested_root());
                 }break;
                 case iroha::Command::AssetCreate:           return true;
                 case iroha::Command::AssetRemove:           return true;
@@ -118,7 +118,7 @@ namespace runtime {
                 case iroha::Command::NONE:                  break;
             }
 
-            if(ledger_name  == nullptr  ||
+            if(ledger_name  == nullptr ||
                 domain_name == nullptr ||
                 asset_name  == nullptr
             ) return false;
