@@ -19,6 +19,7 @@ limitations under the License.
 #include <transaction_generated.h>
 #include <ametsuchi/ametsuchi.h>
 #include <ametsuchi/repository.hpp>
+#include <tuple>
 
 namespace runtime {
     namespace validator {
@@ -33,7 +34,6 @@ namespace runtime {
             const flatbuffers::String& target_domain,
             const flatbuffers::String& target_asset
         ) -> std::function<bool(const ::iroha::Command)> {
-
             auto asset_permissions  = repository::permission::getPermissionAssetOf(publicKey);
             for(const iroha::AccountPermissionAsset* ap: asset_permissions) {
                 if (
@@ -55,12 +55,79 @@ namespace runtime {
             };
         };
 
+        auto getUrlFromAsse = [](const iroha::Asset* asset) ->
+            std::tuple<
+                const flatbuffers::String*,
+                const flatbuffers::String*,
+                const flatbuffers::String*
+            > {
+            switch(asset->asset_type()){
+                case iroha::AnyAsset::ComplexAsset: {
+                    return {
+                            asset->asset_as_ComplexAsset()->ledger_name(),
+                            asset->asset_as_ComplexAsset()->domain_name(),
+                            asset->asset_as_ComplexAsset()->asset_name()
+                    };
+                }
+                case iroha::AnyAsset::Currency:{
+                    return {
+                        asset->asset_as_Currency()->ledger_name(),
+                        asset->asset_as_Currency()->domain_name(),
+                        asset->asset_as_Currency()->currency_name()
+                    };
+                }
+                case iroha::AnyAsset::NONE: throw; // ToDo
+            }
+        };
+
         bool permission_validator(const iroha::Transaction& tx){
+            const flatbuffers::String* ledger_name = nullptr;
+            const flatbuffers::String* domain_name = nullptr;
+            const flatbuffers::String* asset_name  = nullptr;
+            switch(tx.command_type()) {
+                case iroha::Command::Add: {
+                    std::tie(ledger_name,domain_name,asset_name) =
+                        getUrlFromAsse(tx.command_as_Add()->asset_nested_root());
+                }break;
+                case iroha::Command::Subtract: {
+                    std::tie(ledger_name,domain_name,asset_name) =
+                            getUrlFromAsse(tx.command_as_Add()->asset_nested_root());
+                }break;
+                case iroha::Command::Transfer: {
+                    std::tie(ledger_name,domain_name,asset_name) =
+                            getUrlFromAsse(tx.command_as_Add()->asset_nested_root());
+                }break;
+                case iroha::Command::AssetCreate:           return true;
+                case iroha::Command::AssetRemove:           return true;
+                case iroha::Command::PeerAdd:               return true;
+                case iroha::Command::PeerRemove:            return true;
+                case iroha::Command::PeerSetActive:         return true;
+                case iroha::Command::PeerSetTrust:          return true;
+                case iroha::Command::PeerChangeTrust:       return true;
+                case iroha::Command::AccountAdd:            return true;
+                case iroha::Command::AccountRemove:         return true;
+                case iroha::Command::AccountAddSignatory:   return true;
+                case iroha::Command::AccountRemoveSignatory:return true;
+                case iroha::Command::AccountSetUseKeys:     return true;
+                case iroha::Command::AccountMigrate:        return true;
+                case iroha::Command::ChaincodeAdd:          return true;
+                case iroha::Command::ChaincodeRemove:       return true;
+                case iroha::Command::ChaincodeExecute:      return true;
+                case iroha::Command::PermissionRemove:      return true;
+                case iroha::Command::PermissionAdd:         return true;
+                case iroha::Command::NONE:                  break;
+            }
+
+            if(ledger_name  == nullptr  ||
+                domain_name == nullptr ||
+                asset_name  == nullptr
+            ) return false;
+
             return prev_validator(
-                    *tx.creatorPubKey(),
-                    *tx.command_as_AssetCreate()->ledger_name(),
-                    *tx.command_as_AssetCreate()->domain_name(),
-                    *tx.command_as_AssetCreate()->asset_name()
+                *tx.creatorPubKey(),
+                *ledger_name,
+                *domain_name,
+                *asset_name
             )(tx.command_type());
         }
 
