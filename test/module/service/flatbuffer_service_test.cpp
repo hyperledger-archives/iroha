@@ -23,6 +23,7 @@
 #include <iostream>
 #include <memory>
 #include <unordered_map>
+#include <infra/config/peer_service_with_json.hpp>
 
 using flatbuffers::Offset;
 using flatbuffers::FlatBufferBuilder;
@@ -1045,9 +1046,17 @@ TEST(FlatbufferServiceTest, PrimitivesCreatePeer) {
 }
 
 TEST(FlatbufferServiceTest, PrimitivesCreateSignature) {
-  // ToDo: Validate HASH VALUE
-  //::iroha::CreateSignature();
-
+  flatbuffers::FlatBufferBuilder fbb;
+  auto sigOffset = flatbuffer_service::primitives::CreateSignature(fbb, "HASH", 999);
+  fbb.Finish(sigOffset);
+  auto bufptr = fbb.GetBufferPointer();
+  std::vector<uint8_t> buf(bufptr, bufptr + fbb.GetSize());
+  auto sigroot = flatbuffers::GetRoot<::iroha::Signature>(buf.data());
+  ASSERT_STREQ(sigroot->publicKey()->c_str(),
+               config::PeerServiceConfig::getInstance().getMyPublicKey().c_str());
+  ASSERT_EQ(sigroot->timestamp(), 999);
+  auto signature = std::string(sigroot->signature()->begin(), sigroot->signature()->end());
+  //ASSERT_EQ(signature, );
   /*
    auto signature = flatbuffer_service::primitives::CreateSignature("PUBKEY", {'a','b','c','d'}, 99999);
    auto sigoffset = flatbuffers::GetRoot<iroha::Signature>(signature.data());

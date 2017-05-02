@@ -913,8 +913,8 @@ namespace flatbuffer_service {
     ) {
       const auto timestamp = datetime::unixtime();
       /*
-       * sha256(creatorPubKey + command_type + timestamp)
-       * Future work: Use command above (not type) + attachment
+       * sha256(creatorPubKey + command_type + timestamp + attachment)
+       * Future work: not command_type but command
        */
       std::string hashable;
       auto appendStr = [&](const std::string& s) {
@@ -931,12 +931,16 @@ namespace flatbuffer_service {
         }
       };
 
+      auto atc = flatbuffers::GetTemporaryPointer(fbb, attachment);
+      std::string attachstr = atc->mime()->str() +
+        std::string(atc->data()->begin(), atc->data()->end());
+
       appendStr(creatorPubKey);
       appendStr(::iroha::EnumNameCommand(cmd_type));
       appendStr(std::to_string(timestamp));
-      //appendStr(attachment)
+      appendStr(attachstr);
 
-      const auto hash = hashable;//hash::sha3_256_hex(hashable);
+      const auto hash = hash::sha3_256_hex(hashable);
 
       std::vector<flatbuffers::Offset<::iroha::Signature>> signatures{
         flatbuffer_service::primitives::CreateSignature(
