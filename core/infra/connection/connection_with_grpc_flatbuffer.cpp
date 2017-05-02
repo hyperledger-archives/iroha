@@ -338,7 +338,8 @@ namespace connection {
             // TODO return tx validity
             auto reply = client.Verify(event);
             if (!reply) {
-              logger::error("connection") << reply->code() << ", " << reply->message();
+              logger::error("connection") << ::iroha::EnumNameCode(reply->code())
+                                          << ", " << reply->message();
               return false;
             }
             return true;
