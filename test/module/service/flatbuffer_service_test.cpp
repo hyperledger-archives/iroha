@@ -1096,3 +1096,33 @@ TEST(FlatbufferServiceTest, TransactionCreateTransaction) {
   ASSERT_EQ(peerRoot->active(), true);
   ASSERT_EQ(peerRoot->join_ledger(), false);
 }
+
+TEST(FlatbufferServiceTest, TransactionCreateTransaction_Without_Attachment) {
+
+  flatbuffers::FlatBufferBuilder xbb;
+  ::peer::Node np("IP", "PUBKEY", "LEDGER", 123.45, true, false);
+  auto peer = flatbuffer_service::primitives::CreatePeer(np);
+  auto peerAdd = iroha::CreatePeerAddDirect(xbb, &peer);
+
+
+  auto txbuf = flatbuffer_service::transaction::CreateTransaction(
+      xbb,
+      "Creator",
+      iroha::Command::PeerAdd,
+      peerAdd.Union()
+  );
+  auto tx = flatbuffers::GetRoot<::iroha::Transaction>(txbuf.data());
+
+  ASSERT_STREQ(tx->creatorPubKey()->c_str(), "Creator");
+  ASSERT_EQ(tx->command_type(), iroha::Command::PeerAdd);
+
+  // ASSERT_STREQ() // Future work: Test hash
+
+  auto peerRoot = tx->command_as_PeerAdd()->peer_nested_root();
+  ASSERT_STREQ(peerRoot->ledger_name()->c_str(), "LEDGER");
+  ASSERT_STREQ(peerRoot->publicKey()->c_str(), "PUBKEY");
+  ASSERT_STREQ(peerRoot->ip()->c_str(), "IP");
+  ASSERT_EQ(peerRoot->trust(), 123.45);
+  ASSERT_EQ(peerRoot->active(), true);
+  ASSERT_EQ(peerRoot->join_ledger(), false);
+}
