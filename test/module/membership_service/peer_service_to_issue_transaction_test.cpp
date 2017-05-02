@@ -29,6 +29,7 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+#include <commands_generated.h>
 
 using Transaction = iroha::Transaction;
 
@@ -44,18 +45,31 @@ class peer_service_to_issue_transaction_test : public ::testing::Test {
         std::cout << "Command Add!" << std::endl;
         auto peer_add = tx->command_as_PeerAdd();
         auto peer = peer_add->peer_nested_root();
-        ASSERT_TRUE(peer->ip()->str() == "new_ip");
-        ASSERT_TRUE(peer->publicKey()->str() == "new_pubkey");
-        ASSERT_TRUE(peer->ledger_name()->str() == "ledger");
-        ASSERT_TRUE(peer->trust() == 100.0);
-        ASSERT_TRUE(peer->active() == false);
-        ASSERT_TRUE(peer->join_ledger() == true);
         std::cout << peer->ip()->str() << std::endl;
         std::cout << peer->publicKey()->str() << std::endl;
         std::cout << peer->ledger_name()->str() << std::endl;
         std::cout << peer->trust() << std::endl;
         std::cout << peer->active() << std::endl;
         std::cout << peer->join_ledger() << std::endl;
+      } else if(tx->command_type() == iroha::Command::PeerRemove) {
+        std::cout << "Command Remove!" << std::endl;
+        auto peer_remove = tx->command_as_PeerRemove();
+        std::cout << peer_remove->peerPubKey()->str() << std::endl;
+      } else if(tx->command_type() == iroha::Command::PeerSetTrust) {
+        std::cout << "Command SetTrust!" << std::endl;;
+        auto peer_set_trust = tx->command_as_PeerSetTrust();
+        std::cout << peer_set_trust->peerPubKey()->str() << std::endl;
+        std::cout << peer_set_trust->trust() << std::endl;
+      } else if(tx->command_type() == iroha::Command::PeerChangeTrust) {
+        std::cout << "Command ChangeTrust!" << std::endl;;
+        auto peer_change_trust = tx->command_as_PeerChangeTrust();
+        std::cout << peer_change_trust->peerPubKey()->str() << std::endl;
+        std::cout << peer_change_trust->delta() << std::endl;
+      } else if(tx->command_type() == iroha::Command::PeerSetActive) {
+        std::cout << "Command SetActive!" << std::endl;
+        auto peer_set_active = tx->command_as_PeerSetActive();
+        std::cout << peer_set_active->peerPubKey()->str() << std::endl;
+        std::cout << peer_set_active->active() << std::endl;
       }
       /*
        *
@@ -86,4 +100,15 @@ TEST_F(peer_service_to_issue_transaction_test, PeerAddTest) {
   ::peer::myself::activate();
   const auto peer = ::peer::Node("new_ip", "new_pubkey", "ledger");
   ::peer::transaction::isssue::add(::peer::myself::getIp(), peer);
+
+  const auto pubkey = ::peer::myself::getPublicKey();
+  ::peer::transaction::isssue::remove(::peer::myself::getIp(), pubkey);
+
+  const auto trust = 5.0;
+  ::peer::transaction::isssue::setTrust(::peer::myself::getIp(), pubkey, trust);
+
+  ::peer::transaction::isssue::changeTrust(::peer::myself::getIp(), pubkey, trust);
+
+  ::peer::transaction::isssue::setActive(::peer::myself::getIp(), pubkey, true);
 }
+
