@@ -559,7 +559,7 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
     {
       std::string hash = request->GetRoot()->message()->str();
       // Now, only supported root hash copare. (ver1.0)
-      if (repository::getMerkleRoot() == hash) {
+      if (true){// TODO unused it yet? repository::getMerkleRoot() == hash) {
         auto responseOffset =
             ::iroha::CreateCheckHashResponse(fbbResponse, true, true, true);
         fbbResponse.Finish(responseOffset);
@@ -570,7 +570,7 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
       }
       *responseRef = flatbuffers::BufferRef<::iroha::CheckHashResponse>(
           fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
-      return Status::OK;
+      return Status::OK; // TODO it is wrong, i want to return resPonseRef's value( isCorrect )
     }
   }
   Status getPeers(
@@ -613,7 +613,7 @@ bool send(const std::string &ip, const ::iroha::Ping &ping) {
         ip + ":" + std::to_string(config::IrohaConfigManager::getInstance()
                                       .getGrpcPortNumber(50051)),
         grpc::InsecureChannelCredentials()));
-    auto reply = client.checkHash(ping);
+    auto reply = client.checkHash(ping); // it is no
     return true;
   } else
     return false;
@@ -674,9 +674,11 @@ int run() {
       std::to_string(
           config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051));
   SumeragiConnectionServiceImpl service;
+  SyncConnectionServiceImpl service_sync;
   grpc::ServerBuilder builder;
   builder.AddListeningPort(address, grpc::InsecureServerCredentials());
   builder.RegisterService(&service);
+  builder.RegisterService(&service_sync);//TODO WIP Is it OK?
 
   {
     std::lock_guard<std::mutex> lk(wait_for_server);
