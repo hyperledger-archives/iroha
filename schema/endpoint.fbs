@@ -22,6 +22,12 @@ table CheckHashResponse {
     isExist: bool;
 }
 
+table PeersResponse {
+  message:    string;
+  peers:      [Peer];
+  sender:     string;
+}
+
 // Used by sending transaction
 rpc_service Sumeragi {
 
@@ -38,7 +44,9 @@ rpc_service Hijiri {
 }
 
 rpc_service Sync {
-    CheckHash(Ping):CheckHashReponse     (streaming: "none");
+    checkHash(Ping):CheckHashReponse     (streaming: "none");
+    getPeers(Ping):PeersResponse    (streaming: "none");
+
     // TODO WIP Can it?
     //fetchStreamTransaction(Ping):TransactionResponse   (streaming: "true")
 }

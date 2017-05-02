@@ -95,6 +95,20 @@ namespace HostDiscovery {
     }  // namespace MemberShipService
 
 /************************************************************************************
+* Kagami ( means Ping )
+************************************************************************************/
+    namespace memberShipService {
+      namespace SyncImpl {
+        namespace checkHash {
+          bool send( const std::string& ip, const ::iroha::Ping& ping );
+        } // namespace ChackHash
+        namespace getPeers {
+          bool send( const std::string& ip, const ::iroha::Ping& ping );
+        } // namespace getPeers
+      } // namespace SyncImpl
+    } // namespace memberShipService
+
+/************************************************************************************
  * Main connection
  ************************************************************************************/
     void initialize_peer();

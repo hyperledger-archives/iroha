@@ -519,6 +519,83 @@ namespace connection {
     }  // namespace HijiriImpl
   }  // namespace MemberShipService
 
+
+  /************************************************************************************
+   * Sync
+   ************************************************************************************/
+
+  class SyncConnectionClient {
+  public:
+    explicit SyncConnectionClient(std::shared_ptr<Channel> channel)
+        : stub_(Sync::NewStub(channel)) {}
+
+    const ::iroha::CheckHashResponse *checkHash(const ::iroha::Ping &ping) const {
+    }
+    const ::iroha::PeersResponse *getPeers(const ::iroha::Ping &ping) const {
+
+    }
+
+  private:
+    std::unique_ptr<Sync::Stub> stub_;
+  };
+
+  class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
+  public:
+    Status checkHash(ServerContext *context,
+                  const flatbuffers::BufferRef<Ping> *request,
+                  flatbuffers::BufferRef<::iroha::CheckHashResponse> *responseRef
+    ) override {
+      fbbResponse.Clear();
+      {
+      }
+    }
+    Status getPeers(ServerContext *context,
+                     const flatbuffers::BufferRef<Ping> *request,
+                     flatbuffers::BufferRef<::iroha::PeersResponse> *responseRef
+    ) override {
+      fbbResponse.Clear();
+      {
+      }
+    }
+
+  private:
+    flatbuffers::FlatBufferBuilder fbbResponse;
+  };
+
+  namespace memberShipService {
+    namespace SyncImpl {
+      namespace checkHash {
+        bool send( const std::string& ip, const ::iroha::Ping& ping ) {
+          logger::info("Connection with grpc") << "Send!";
+          if( ::peer::service::isExistIP(ip) ) {
+            logger::info("Connection with grpc") << "IP exists: " << ip;
+            SyncConnectionClient client(grpc::CreateChannel(
+                ip + ":" +
+                std::to_string(config::IrohaConfigManager::getInstance()
+                                   .getGrpcPortNumber(50051)),
+                grpc::InsecureChannelCredentials()));
+            auto reply = client.checkHash(ping);
+            return true;
+          } else
+            return false;
+        }
+      } // namespace ChackHash
+
+      namespace getPeers {
+        bool send( const std::string& ip, const ::iroha::Ping& ping ) {
+          logger::info("Connection with grpc") << "Send!";
+          logger::info("Connection with grpc") << "IP exists: " << ip;
+          SyncConnectionClient client(grpc::CreateChannel(
+              ip + ":" +
+              std::to_string(config::IrohaConfigManager::getInstance()
+                                 .getGrpcPortNumber(50051)),
+              grpc::InsecureChannelCredentials()));
+          auto reply = client.getPeers(ping);
+          return true;
+        }
+      } // namespace ChackHash
+    } // namespace SyncImpl
+  } // namespace memberShipService
   /************************************************************************************
    * Run server
    ************************************************************************************/
