@@ -29,6 +29,10 @@ namespace repository{
     bool existAccountOf(const flatbuffers::String& key);
 
     const std::string getMerkleRoot();
+
+    namespace permission{
+
+    };
 };
 
 #endif //IROHA_REPOSITORY_H
