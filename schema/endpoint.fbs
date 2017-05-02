@@ -27,7 +27,7 @@ table AssetQuery{
 table AssetResponse {
   message:      string  (required);
   code:         Code;
-  assets:       [AnyAsset];
+  assets:       [Asset];
 }
 
 // Used by sending transaction
