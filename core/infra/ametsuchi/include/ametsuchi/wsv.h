@@ -72,6 +72,11 @@ class WSV {
                                      bool uncommitted = false,
                                      MDB_env *env = nullptr);
 
+  const ::iroha::AccountPermissionRoot accountGetPermissionRoot(const flatbuffers::String *pubKey);
+  std::vector<const ::iroha::AccountPermissionLedger> accountGetPermissionLedger(const flatbuffers::String *pubKey);
+  std::vector<const ::iroha::AccountPermissionDomain> accountGetPermissionDomain(const flatbuffers::String *pubKey);
+  std::vector<const ::iroha::AccountPermissionAsset>  accountGetPermissionAsset(const flatbuffers::String *pubKey);
+
   /*
    * Get total number of trees
    */
