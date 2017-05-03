@@ -614,6 +614,7 @@ bool send(const std::string &ip, const ::iroha::Ping &ping) {
       grpc::InsecureChannelCredentials()));
 
   return client.checkHash(ping);
+}
 }  // namespace checkHash
 
 namespace getPeers {
