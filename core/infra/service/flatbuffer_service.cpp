@@ -621,9 +621,6 @@ namespace flatbuffer_service {
     }
 
     auto attachment = detail::copyAttachmentOfTx(fbb, fromTx);
-    if (!attachment) {
-      return makeUnexpected(attachment.excptr());
-    }
 
     const auto pubkey = fromTx.creatorPubKey()->c_str();
     const auto cmdtype = fromTx.command_type();
@@ -632,7 +629,7 @@ namespace flatbuffer_service {
     return ::iroha::CreateTransactionDirect(fbb, pubkey, cmdtype, cmd,
                                             &tx_signatures.value(), &hash.value(),
                                             fromTx.timestamp(),
-                                            attachment.value());
+                                            attachment ? attachment.value() : 0);
   }
 
   /**
