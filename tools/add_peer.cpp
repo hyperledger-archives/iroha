@@ -17,17 +17,18 @@ limitations under the License.
 #include <membership_service/peer_service.hpp>
 
 int main(int argc, char* argv[]) {
-    if (argc != 4) {
+    if (argc != 5) {
         std::cout << "Plz input target IP " << std::endl;
-        std::cout << "Usage: check_ametsuchi publicKey ip-address ledger" << std::endl;
+        std::cout << "Usage: check_ametsuchi publicKey ip-address ledger toPeerIpAddress" << std::endl;
         return 1;
     }
     std::cout << "OwnPublicKey:" << argv[1] << std::endl;
     std::cout << "TargetIP:"     << argv[2] << std::endl;
     std::cout << "LedgerName:"   << argv[3] << std::endl;
+    std::cout << "toPeerIp:"     << argv[4] << std::endl;
 
     const auto peer = ::peer::Node( argv[2],  argv[1], argv[3]);
-    ::peer::transaction::isssue::add(::peer::myself::getIp(), peer);
+    ::peer::transaction::isssue::add( argv[4], peer);
 
     std::cout << "== Done!! ==" << std::endl;
     return 0;
