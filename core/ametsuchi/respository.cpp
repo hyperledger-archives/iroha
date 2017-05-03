@@ -56,6 +56,8 @@ namespace repository {
     }
 
     const std::string getMerkleRoot() {
+        return "TemporaryString";
+
         if (db == nullptr) init();
         auto buf = db->getMerkleRoot();
         auto mr = flatbuffers::GetRoot<flatbuffers::String>(buf.data());

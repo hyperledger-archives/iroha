@@ -133,6 +133,16 @@ class FailedToCreateConsensusEvent : public Ordinary {
  public:
   FailedToCreateConsensusEvent();
 };
+
+class RPCConnectionException : public Ordinary {
+public:
+  RPCConnectionException(int code, const std::string& message);
+};
+
+class InvalidTransactionException : public Ordinary {
+public:
+  InvalidTransactionException();
+};
 }  // namespace connection
 
 namespace service {

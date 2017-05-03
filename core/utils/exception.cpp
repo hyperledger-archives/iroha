@@ -107,6 +107,16 @@ NullptrException::NullptrException(const std::string &target)
 
 FailedToCreateConsensusEvent::FailedToCreateConsensusEvent()
     : Ordinary("FailedToCreateConsensusEvent") {}
+
+RPCConnectionException::RPCConnectionException(int code, const std::string& message)
+  : Ordinary(std::string("RPCConnectionException:")
+             + "ErrorCode: "
+             + std::to_string(code)
+             + "Message: " + message) {}
+
+InvalidTransactionException::InvalidTransactionException()
+  : Ordinary("InvalidTransactionException") {}
+
 }  // namespace connection
 
 namespace service {

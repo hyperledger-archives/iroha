@@ -21,12 +21,15 @@
 #include <main_generated.h>
 
 namespace repository{
+    void init();
 
     void append(const iroha::Transaction& tx);
 
     std::vector<const iroha::Asset*> findAssetByPublicKey(const flatbuffers::String& key);
 
     bool existAccountOf(const flatbuffers::String& key);
+
+    bool checkUserCanPermission(const flatbuffers::String& key);
 
     const std::string getMerkleRoot();
 
