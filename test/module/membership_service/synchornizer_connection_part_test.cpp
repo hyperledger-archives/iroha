@@ -58,7 +58,7 @@ TEST_F(synchornizer_connection_part_test, checkHashAllTest) {
   std::string ip = ::peer::myself::getIp();
   std::string hash = repository::getMerkleRoot();
   std::cout << ip << " " << hash << std::endl;
-  ASSERT_TRUE(hash == "TemporaryString")
+  ASSERT_TRUE(hash == "TemporaryString");
   auto vec = flatbuffer_service::endpoint::CreatePing(ip, hash);
   auto &ping = *flatbuffers::GetRoot<iroha::Ping>(vec.data());
   ASSERT_TRUE(connection::memberShipService::SyncImpl::checkHash::send(ip, ping));
