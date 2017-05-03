@@ -163,7 +163,7 @@ jobs:
             IP=$(docker inspect --format "{{ .NetworkSettings.Networks.iroha_private.IPAddress }}" $(docker ps -lq))
             TAG=$(echo $CIRCLE_BRANCH | sed "s/[^a-zA-Z0-9_\-\.]/./g")
 
-            docker run --rm -it hyperledger/iroha-docker:$TAG sh -c "/iroha/bin/add_peer key $(IP) ledger"
+            #docker run --rm -it hyperledger/iroha-docker:$TAG sh -c "/iroha/bin/add_peer key $(IP) ledger"
 
             docker stop $(docker ps -qln 4)
             docker rm $(docker ps -qln 4)
