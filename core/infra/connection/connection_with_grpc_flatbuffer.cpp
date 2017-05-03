@@ -488,7 +488,9 @@ class SyncConnectionClient {
   explicit SyncConnectionClient(std::shared_ptr<Channel> channel)
       : stub_(Sync::NewStub(channel)) {}
 
-  const ::iroha::CheckHashResponse *checkHash(const ::iroha::Ping &ping) const {
+  std::vector<uint8_t> checkHash(
+    const ::iroha::Ping &ping
+  ) const {
     ::grpc::ClientContext clientContext;
     flatbuffers::FlatBufferBuilder fbbPing;
 
@@ -500,24 +502,25 @@ class SyncConnectionClient {
                                                      fbbPing.GetSize());
 
     flatbuffers::BufferRef<::iroha::CheckHashResponse> responseRef;
-
     auto res = stub_->checkHash(&clientContext, reqPingRef, &responseRef);
-    ;
+
     logger::info("Connection with grpc") << "Send!";
 
     if (res.ok()) {
       logger::info("connection")
           << "response: " << responseRef.GetRoot()->isCorrect();
-      return responseRef.GetRoot();
+      return {responseRef.buf, responseRef.buf + responseRef.len};
     } else {
       logger::error("connection")
           << static_cast<int>(res.error_code()) << ": " << res.error_message();
       // std::cout << status.error_code() << ": " << status.error_message();
-      return responseRef.GetRoot();
+      return {};
     }
   }
 
-  const ::iroha::PeersResponse *getPeers(const ::iroha::Ping &ping) const {
+  std::vector<uint8_t> getPeers(
+    const ::iroha::Ping &ping
+  ) const {
     ::grpc::ClientContext clientContext;
     flatbuffers::FlatBufferBuilder fbbPing;
 
@@ -536,12 +539,12 @@ class SyncConnectionClient {
     if (res.ok()) {
       logger::info("connection")
           << "response: " << responseRef.GetRoot()->message();
-      return responseRef.GetRoot();
+      return {responseRef.buf, responseRef.buf + responseRef.len};
     } else {
       logger::error("connection")
           << static_cast<int>(res.error_code()) << ": " << res.error_message();
       // std::cout << status.error_code() << ": " << status.error_message();
-      return responseRef.GetRoot();
+      return {};
     }
   }
 
@@ -571,10 +574,10 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
       }
       *responseRef = flatbuffers::BufferRef<::iroha::CheckHashResponse>(
           fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
-      return Status::OK;  // TODO it is wrong, i want to return
-                          // resPonseRef's value( isCorrect )
+      return Status::OK;
     }
   }
+
   Status getPeers(
       ServerContext *context, const flatbuffers::BufferRef<Ping> *request,
       flatbuffers::BufferRef<::iroha::PeersResponse> *responseRef) override {
@@ -616,8 +619,11 @@ bool send(const std::string &ip, const ::iroha::Ping &ping) {
             std::to_string(config::IrohaConfigManager::getInstance()
                                .getGrpcPortNumber(50051)),
         grpc::InsecureChannelCredentials()));
-    auto reply = client.checkHash(ping);  // it is no
-    return true;
+
+    flatbuffers::BufferRef<::iroha::CheckHashResponse> responseRef;
+    auto replyvec = client.checkHash(ping);
+    auto reply = flatbuffers::GetRoot<::iroha::CheckHashResponse>(replyvec.data());
+    return reply->isCorrect();
   } else
     return false;
 }
@@ -632,7 +638,11 @@ bool send(const std::string &ip, const ::iroha::Ping &ping) {
           std::to_string(config::IrohaConfigManager::getInstance()
                              .getGrpcPortNumber(50051)),
       grpc::InsecureChannelCredentials()));
-  auto reply = client.getPeers(ping);
+  flatbuffers::BufferRef<::iroha::PeersResponse> responseRef;
+
+  auto replyvec = client.getPeers(ping);
+  auto reply = flatbuffers::GetRoot<::iroha::PeersResponse>(replyvec.data());
+
   for (auto it = reply->peers()->begin(); it != reply->peers()->end(); it++) {
     std::cout << "ip: " << it->ip()->c_str() << std::endl;
     std::cout << "pubkey: " << it->publicKey()->c_str() << std::endl;
