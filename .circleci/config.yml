@@ -162,8 +162,8 @@ jobs:
             docker-compose scale iroha=4
             IP=$(docker inspect --format "{{ .NetworkSettings.Networks.iroha_private.IPAddress }}" $(docker ps -lq))
 
-            docker run --rm -it hyperledger/iroha-docker sh -c "/usr/local/iroha/bin/check_ametsuchi publicKey localhost"
-            
+            docker run --rm -it hyperledger/iroha-docker sh -c "/iroha/bin/check_ametsuchi publicKey localhost"
+
             docker stop $(docker ps -qln 4)
             docker rm $(docker ps -qln 4)
 
