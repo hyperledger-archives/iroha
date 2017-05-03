@@ -24,6 +24,8 @@ limitations under the License.
 #include <service/connection.hpp>
 #include <service/flatbuffer_service.h>
 
+#include <infra/config/iroha_config_with_json.hpp>
+
 #include <utils/cache_map.hpp>
 #include <utils/timer.hpp>
 #include <ametsuchi/repository.hpp>
@@ -34,8 +36,9 @@ namespace peer{
   namespace sync {
     std::shared_ptr<::peer::Node> leader;
     void startSynchronizeLedger() {
-      // TODO getConfig default leader ip
-      std::string default_leader_ip = ::peer::myself::getIp(); // change -> getConfig::LeaderIp()
+      std::string default_leader_ip = config::IrohaConfigManager::getInstance().getConfigLeaderIp(
+          ::peer::myself::getIp()
+      );
       std::string message = "getPing!";
       std::string myip = ::peer::myself::getIp();
       auto vec = flatbuffer_service::endpoint::CreatePing(message,myip);
