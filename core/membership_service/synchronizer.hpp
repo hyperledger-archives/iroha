@@ -46,7 +46,7 @@ namespace peer{
       // if roothash is trust roothash, return true. othrewise return false.
       bool checkRootHashAll();
 
-      bool append_temporary(size_t,iroha::Transaction*);
+      bool append_temporary(size_t,const iroha::Transaction*);
       SYNCHRO_RESULT append();
       void appending();
       void clearCache();

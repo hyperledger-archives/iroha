@@ -33,8 +33,6 @@ class Ametsuchi_Test : public ::testing::Test {
   Ametsuchi_Test() : ametsuchi_(folder) {}
 };
 
-TEST_F(Ametsuchi_Test, SetUpTest) { ASSERT_TRUE(true); }
-/*
 TEST_F(Ametsuchi_Test, AssetTest) {
   // ASSERT_NO_THROW({
   flatbuffers::FlatBufferBuilder fbb(2048);
@@ -44,6 +42,7 @@ TEST_F(Ametsuchi_Test, AssetTest) {
       fbb, iroha::Command::AssetCreate,
       generator::random_AssetCreate(fbb, "Dollar", "USA", "l1").Union());
   ametsuchi_.append(&blob);
+
 
   // Create account with id 1
   blob = generator::random_transaction(
@@ -63,10 +62,10 @@ TEST_F(Ametsuchi_Test, AssetTest) {
   blob = generator::random_transaction(
       fbb, iroha::Command::Add,
       generator::random_Add(fbb, "1", generator::random_asset_wrapper_currency(
-                                          200, 2, "Dollar", "USA", "l1"))
+          200, 2, "Dollar", "USA", "l1"))
           .Union());
   ametsuchi_.append(&blob);
-
+/*
   {
     flatbuffers::FlatBufferBuilder fbb2(2048);
     auto reference_tx =
@@ -75,7 +74,7 @@ TEST_F(Ametsuchi_Test, AssetTest) {
                 fbb2, iroha::Command::Transfer,
                 generator::random_Transfer(
                     fbb2, generator::random_asset_wrapper_currency(
-                              100, 2, "Dollar", "USA", "l1"),
+                        100, 2, "Dollar", "USA", "l1"),
                     "1", "2")
                     .Union())
                 .data())
@@ -87,24 +86,44 @@ TEST_F(Ametsuchi_Test, AssetTest) {
         reference_tx->asset_nested_root()->asset_as_Currency()->domain_name();
     auto reference_cn =
         reference_tx->asset_nested_root()->asset_as_Currency()->currency_name();
+    std::cout << reference_1->str() << " " << reference_ln->str() << " " << reference_dn->str() << std::endl;
+  }
+}
+ /*
+  {
+    flatbuffers::FlatBufferBuilder fk, fl, fd, fc;
+    std::string k = "1", l = "l1", d = "USA", c = "Dollar";
+    fk.Finish(fk.CreateString(k));
+    auto reference_1 = flatbuffers::GetRoot<flatbuffers::String>(fk.GetBufferPointer());
+
+    fl.Finish(fl.CreateString(l));
+    auto reference_ln = flatbuffers::GetRoot<flatbuffers::String>(fl.GetBufferPointer());
+
+    fd.Finish(fd.CreateString(d));
+    auto reference_dn = flatbuffers::GetRoot<flatbuffers::String>(fd.GetBufferPointer());
+
+    fc.Finish(fc.CreateString(c));
+    auto reference_cn = flatbuffers::GetRoot<flatbuffers::String>(fc.GetBufferPointer());
+    std::cout << reference_1->str() << " " << reference_ln->str() << " " << reference_dn->str() << std::endl;
+
     auto cur = ametsuchi_
-                   .accountGetAsset(reference_1, reference_ln, reference_dn,
-                                    reference_cn, true)
-                   ->asset_as_Currency();
+        .accountGetAsset(reference_1, reference_ln, reference_dn,
+                         reference_cn, true)
+        ->asset_as_Currency();
 
     ASSERT_TRUE(cur->amount()->str() == "200");
   }
-
+}
   // Transfer from 1 to 2
   blob = generator::random_transaction(
       fbb, iroha::Command::Transfer,
       generator::random_Transfer(fbb, generator::random_asset_wrapper_currency(
-                                          100, 2, "Dollar", "USA", "l1"),
+          100, 2, "Dollar", "USA", "l1"),
                                  "1", "2")
           .Union());
   ametsuchi_.append(&blob);
 
-  {
+/*  {
     flatbuffers::FlatBufferBuilder fbb2(2048);
     auto reference_tx =
         flatbuffers::GetRoot<iroha::Transaction>(
@@ -158,10 +177,11 @@ TEST_F(Ametsuchi_Test, AssetTest) {
                    ->asset_as_Currency();
 
     ASSERT_TRUE(cur->amount()->str() == "100");
-  }
+  }*/
 
   ametsuchi_.commit();
-
+}
+/*
   {
     flatbuffers::FlatBufferBuilder fbb2(2048);
     auto reference_tx =
