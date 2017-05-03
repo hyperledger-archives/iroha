@@ -1,4 +1,5 @@
-
+add_library(cache_map STATIC
+  cache_map.cpp)
 add_library(datetime STATIC datetime.cpp)
 add_library(logger STATIC logger.cpp)
 
@@ -27,3 +28,4 @@ add_library(ip_tools STATIC ip_tools.cpp)
 target_link_libraries(ip_tools
     logger
 )
+

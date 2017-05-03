@@ -299,6 +299,41 @@ void TxStore::create_new_tree(MDB_txn *append_tx, const std::string &name,
   trees_[name] = init_btree(append_tx, name, flags, dupsort);
 }
 
+AM_val TxStore::getTransaction(size_t index, bool uncommitted, MDB_env *env) {
+  MDB_val tx_key, tx_val;
+  MDB_cursor *tx_cursor;
+  MDB_txn *tx;
+  int res;
+
+  if (uncommitted) {
+    tx_cursor = trees_.at("tx_store").second;
+  } else {
+    // create read-only transaction, create new RO cursor
+    if ((res = mdb_txn_begin(env, nullptr, MDB_RDONLY, &tx)) != 0) {
+      AMETSUCHI_CRITICAL(res, MDB_PANIC);
+      AMETSUCHI_CRITICAL(res, MDB_MAP_RESIZED);
+      AMETSUCHI_CRITICAL(res, MDB_READERS_FULL);
+      AMETSUCHI_CRITICAL(res, ENOMEM);
+    }
+    if ((res = mdb_cursor_open(tx, trees_.at("tx_store").first, &tx_cursor)) !=
+        0) {
+      AMETSUCHI_CRITICAL(res, EINVAL);
+    }
+  }
+
+  tx_key.mv_data = &index;
+  tx_key.mv_size = sizeof(index);
+  if ((res = mdb_cursor_get(tx_cursor, &tx_key, &tx_val, MDB_FIRST)) != 0) {
+    AMETSUCHI_CRITICAL(res, MDB_NOTFOUND);
+    AMETSUCHI_CRITICAL(res, EINVAL);
+  }
+  if (!uncommitted) {
+    mdb_cursor_close(tx_cursor);
+    mdb_txn_abort(tx);
+  }
+  return AM_val(tx_val);
+}
+
 std::vector<AM_val> TxStore::getAssetTransferBySender(
     const flatbuffers::String *senderKey, bool uncommitted, MDB_env *env) {
   return getTxByKey("index_transfer_sender", senderKey, uncommitted, env);

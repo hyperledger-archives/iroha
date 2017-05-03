@@ -16,6 +16,18 @@ table Ping {
   sender:   string;
 }
 
+table CheckHashResponse {
+    isCorrect: bool;
+    isRoot: bool;
+    isExist: bool;
+}
+
+table PeersResponse {
+  message:    string;
+  peers:      [Peer];
+  sender:     string;
+}
+
 table AssetQuery{
   pubKey:      string;
   ledger_name: string;
@@ -50,4 +62,13 @@ rpc_service AssetRepository {
 rpc_service Hijiri {
     // Kagami means ping
     Kagami(Ping):Response    (streaming: "none");
+}
+
+rpc_service Sync {
+    checkHash(Ping):CheckHashResponse     (streaming: "none");
+    getPeers(Ping):PeersResponse    (streaming: "none");
+
+    getTransactions(Ping):TransactionResponse (streaming: "none");
+    // TODO WIP Can it?
+    fetchStreamTransaction(Ping):TransactionResponse   (streaming: "true");
 }

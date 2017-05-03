@@ -65,7 +65,10 @@ MerkleTree::MerkleTree(size_t leafs, size_t blocks) : leafs_(0) {
   i_root_ = i_current_;
 }
 
-hash_t MerkleTree::root() { return trees_.back()[i_root_]; }
+hash_t MerkleTree::root() {
+  if( trees_.empty() ) return std::array<uint8_t, HASH_LEN>();
+  return trees_.back()[i_root_];
+}
 
 void MerkleTree::push(const hash_t &item) {
   tree_t &tree = trees_.back();

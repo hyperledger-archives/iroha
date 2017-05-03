@@ -84,16 +84,16 @@ namespace HostDiscovery {
 }
 }  // namespace iroha::SumeragiImpl::Verify
 
-    namespace iroha {
-        namespace AssetRepositoryImpl {
-            namespace AccountGetAsset {
-                using CallBackFunc = std::function<std::vector<const ::iroha::Asset *>(
-                        const std::string & /* from */, flatbuffers::unique_ptr_t && /* message */)>;
+namespace iroha {
+namespace AssetRepositoryImpl {
+namespace AccountGetAsset {
+using CallBackFunc = std::function<std::vector<const ::iroha::Asset*>(
+    const std::string& /* from */, flatbuffers::unique_ptr_t&& /* message */)>;
 
-                void receive(AccountGetAsset::CallBackFunc &&callback);
-            }
-        }
-    }  // namespace iroha::AssetRepositoryImpl
+void receive(AccountGetAsset::CallBackFunc&& callback);
+}
+}
+}  // namespace iroha::AssetRepositoryImpl
 
 /************************************************************************************
 * Kagami ( means Ping )
@@ -109,6 +109,25 @@ namespace Torii {
 bool send(const std::string& ip, const ::iroha::Transaction& tx);
 }  // namespace Torii
 }  // namespace SumeragiImpl
+
+/************************************************************************************
+* Sync
+************************************************************************************/
+namespace SyncImpl {
+namespace checkHash {
+bool send(const std::string& ip, const ::iroha::Ping& ping);
+}  // namespace ChackHash
+namespace getPeers {
+bool send(const std::string& ip, const ::iroha::Ping& ping);
+}  // namespace getPeers
+namespace getTransactions {
+using CallBackFunc = std::function<std::vector<const ::iroha::Transaction*>(
+        const std::string& /* from */, flatbuffers::unique_ptr_t&& /* message */)>;
+
+void receive(getTransactions::CallBackFunc&& callback);
+bool send(const std::string& ip, const ::iroha::Ping& ping);
+}  // namespace getPeers
+}  // namespace SyncImpl
 }  // namespace memberShipService
 
 /************************************************************************************

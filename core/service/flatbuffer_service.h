@@ -172,5 +172,12 @@ namespace flatbuffer_service {
       flatbuffers::Offset<iroha::Attachment> attachment
     );
   }
+
+  namespace endpoint {
+    std::vector<uint8_t> CreatePing(
+        const std::string &message,
+        const std::string &sender
+    );
+  }
 };      // namespace flatbuffer_service
 #endif  // IROHA_FLATBUFFER_SERVICE_H

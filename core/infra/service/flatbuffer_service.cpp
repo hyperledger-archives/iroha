@@ -34,6 +34,7 @@
 #include <memory>
 #include <string>
 #include <commands_generated.h>
+#include <endpoint_generated.h>
 
 namespace flatbuffer_service {
 
@@ -620,9 +621,6 @@ namespace flatbuffer_service {
     }
 
     auto attachment = detail::copyAttachmentOfTx(fbb, fromTx);
-    if (!attachment) {
-      return makeUnexpected(attachment.excptr());
-    }
 
     const auto pubkey = fromTx.creatorPubKey()->c_str();
     const auto cmdtype = fromTx.command_type();
@@ -631,7 +629,7 @@ namespace flatbuffer_service {
     return ::iroha::CreateTransactionDirect(fbb, pubkey, cmdtype, cmd,
                                             &tx_signatures.value(), &hash.value(),
                                             fromTx.timestamp(),
-                                            attachment.value());
+                                            attachment ? attachment.value() : 0);
   }
 
   /**
@@ -894,10 +892,8 @@ namespace flatbuffer_service {
       iroha::Command cmd_type,
       const flatbuffers::Offset<void>& command
     ) {
-      std::vector<uint8_t> dummy = {'d','u','m','m','y'};
-      auto attachment = ::iroha::CreateAttachmentDirect(fbb, "dummy", &dummy);
       return CreateTransaction(
-        fbb, creatorPubKey, cmd_type, command, attachment);
+        fbb, creatorPubKey, cmd_type, command, 0);
     }
 
     /**
@@ -931,14 +927,17 @@ namespace flatbuffer_service {
         }
       };
 
-      auto atc = flatbuffers::GetTemporaryPointer(fbb, attachment);
-      std::string attachstr = atc->mime()->str() +
-        std::string(atc->data()->begin(), atc->data()->end());
-
       appendStr(creatorPubKey);
       appendStr(::iroha::EnumNameCommand(cmd_type));
       appendStr(std::to_string(timestamp));
-      appendStr(attachstr);
+
+
+      if (attachment.o != 0) {
+        auto atc = flatbuffers::GetTemporaryPointer(fbb, attachment);
+        std::string attachstr = atc->mime()->str() +
+                                std::string(atc->data()->begin(), atc->data()->end());
+        appendStr(attachstr);
+      }
 
       const auto hash = hash::sha3_256_hex(hashable);
 
@@ -960,4 +959,15 @@ namespace flatbuffer_service {
 
   };  // namespace transaction
 
+  namespace endpoint {
+    std::vector<uint8_t> CreatePing(
+        const std::string &message,
+        const std::string &sender
+    ){
+      flatbuffers::FlatBufferBuilder fbb;
+      auto ping = ::iroha::CreatePing(fbb, fbb.CreateString(message), fbb.CreateString(sender));
+      fbb.Finish(ping);
+      return {fbb.GetBufferPointer(), fbb.GetBufferPointer()+fbb.GetSize()};
+    }
+  } // namespace endpoint
 }  // namespace flatbuffer_service
