@@ -22,6 +22,7 @@ limitations under the License.
 #include <consensus/sumeragi.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <utils/logger.hpp>
+#include <ametsuchi/repository.hpp>
 
 std::atomic_bool running(true);
 
@@ -44,6 +45,7 @@ int main() {
   logger::setLogLevel(logger::LogLevel::Debug);
 
   connection::initialize_peer();
+  repository::front_repository::initialize_repository();
   sumeragi::initializeSumeragi();
   // peer::izanami::startIzanami();
 

@@ -30,6 +30,9 @@ namespace repository{
 
     const std::string getMerkleRoot();
 
+    namespace front_repository{
+        void initialize_repository();
+    }
     namespace permission{
         iroha::AccountPermissionRoot                       getPermissionRootOf(const flatbuffers::String &key);
         std::vector<const iroha::AccountPermissionLedger*> getPermissionLedgerOf(const flatbuffers::String &key);
