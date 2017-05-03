@@ -540,7 +540,7 @@ class SyncConnectionClient {
 
     if (res.ok()) {
       logger::info("connection")
-          << "response: " << responseRef.GetRoot()->message();
+          << "response: " << responseRef.GetRoot()->message()->str();
       return {responseRef.buf, responseRef.buf + responseRef.len};
     } else {
       logger::error("connection")
