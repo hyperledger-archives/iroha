@@ -111,7 +111,7 @@ bool send(const std::string& ip, const ::iroha::Transaction& tx);
 }  // namespace SumeragiImpl
 
 /************************************************************************************
-* Kagami ( means Ping )
+* Sync
 ************************************************************************************/
 namespace SyncImpl {
 namespace checkHash {
