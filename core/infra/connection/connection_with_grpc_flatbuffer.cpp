@@ -22,6 +22,7 @@ limitations under the License.
 #include <infra/config/peer_service_with_json.hpp>
 #include <membership_service/peer_service.hpp>
 #include <service/connection.hpp>
+#include <ametsuchi/repository.hpp>
 #include <utils/datetime.hpp>
 #include <utils/expected.hpp>
 #include <utils/logger.hpp>
@@ -488,7 +489,7 @@ class SyncConnectionClient {
   explicit SyncConnectionClient(std::shared_ptr<Channel> channel)
       : stub_(Sync::NewStub(channel)) {}
 
-  std::vector<uint8_t> checkHash(
+  bool checkHash(
     const ::iroha::Ping &ping
   ) const {
     ::grpc::ClientContext clientContext;
@@ -509,12 +510,12 @@ class SyncConnectionClient {
     if (res.ok()) {
       logger::info("connection")
           << "response: " << responseRef.GetRoot()->isCorrect();
-      return {responseRef.buf, responseRef.buf + responseRef.len};
+      return responseRef.GetRoot()->isCorrect();
     } else {
       logger::error("connection")
           << static_cast<int>(res.error_code()) << ": " << res.error_message();
       // std::cout << status.error_code() << ": " << status.error_message();
-      return {};
+      return false;
     }
   }
 
@@ -564,8 +565,7 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
     {
       std::string hash = request->GetRoot()->message()->str();
       // Now, only supported root hash copare. (ver1.0)
-      if (true) {  // TODO unused it yet? repository::getMerkleRoot() ==
-                   // hash) {
+      if (repository::getMerkleRoot() == hash){
         auto responseOffset =
             ::iroha::CreateCheckHashResponse(fbbResponse, true, true, true);
         fbbResponse.Finish(responseOffset);
@@ -621,10 +621,7 @@ bool send(const std::string &ip, const ::iroha::Ping &ping) {
                                .getGrpcPortNumber(50051)),
         grpc::InsecureChannelCredentials()));
 
-    flatbuffers::BufferRef<::iroha::CheckHashResponse> responseRef;
-    auto replyvec = client.checkHash(ping);
-    auto reply = flatbuffers::GetRoot<::iroha::CheckHashResponse>(replyvec.data());
-    return reply->isCorrect();
+    return client.checkHash(ping);
   } else
     return false;
 }

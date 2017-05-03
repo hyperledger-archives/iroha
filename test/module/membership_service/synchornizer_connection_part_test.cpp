@@ -54,8 +54,10 @@ class synchornizer_connection_part_test : public ::testing::Test {
 
 
 TEST_F(synchornizer_connection_part_test, checkHashAllTest) {
+  repository::init();
   std::string ip = ::peer::myself::getIp();
-  std::string hash = "";// TODO Can it be used? repository::getMerkleRoot();
+  std::string hash = repository::getMerkleRoot();
+  std::cout << ip << " " << hash << std::endl;
   auto vec = flatbuffer_service::endpoint::CreatePing(ip, hash);
   auto &ping = *flatbuffers::GetRoot<iroha::Ping>(vec.data());
   ASSERT_TRUE(connection::memberShipService::SyncImpl::checkHash::send(ip, ping));
