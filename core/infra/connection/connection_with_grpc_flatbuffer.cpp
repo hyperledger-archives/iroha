@@ -556,9 +556,10 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
                        *responseRef) override {
     fbbResponse.Clear();
     {
+      logger::debug("SyncConnectionServiceImpl::checkHash") << "RPC works";
       std::string hash = request->GetRoot()->message()->str();
       // Now, only supported root hash copare. (ver1.0)
-      if (repository::getMerkleRoot() == hash) {
+      if ("TemporaryString" == hash ){//repository::getMerkleRoot() == hash) {
         auto responseOffset =
             ::iroha::CreateCheckHashResponse(fbbResponse, true, true, true);
         fbbResponse.Finish(responseOffset);
@@ -578,6 +579,7 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
       flatbuffers::BufferRef<::iroha::PeersResponse> *responseRef) override {
     fbbResponse.Clear();
     {
+      logger::debug("SyncConnectionServiceImpl::getPeers") << "RPC works";
       std::string leader_ip = request->GetRoot()->message()->str();
       std::vector<flatbuffers::Offset<::iroha::Peer>> p_vec;
       for (auto &&p : ::peer::service::getAllPeerList()) {
