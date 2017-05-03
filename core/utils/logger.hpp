@@ -24,37 +24,6 @@ limitations under the License.
 
 namespace logger {
 
-/*
-
-    #define LOGGER_DEF(LoggerName, UseLevel, HasPrefix, LogType) \
-    struct LoggerName \
-    { \
-        explicit LoggerName(std::string&& caller) noexcept; \
-        explicit LoggerName(const std::string& caller) noexcept; \
-        ~LoggerName(); \
-        const std::string   caller; \
-        std::stringstream   stream; \
-        TYPE_UNC_EXC        uncaught; \
-    }; \
-    template <typename T> \
-    inline LoggerName& operator << (LoggerName& record, T&& t) { \
-        record.stream << std::forward<T>(t); \
-        return record; \
-    } \
-    template <typename T> \
-    inline LoggerName& operator << (LoggerName&& record, T&& t) { \
-        return record << std::forward<T>(t); \
-    }
-
-    LOGGER_DEF(debug,   LogLevel::Debug,    true,   "DEBUG")
-    LOGGER_DEF(info,    LogLevel::Info,     true,   "INFO")
-    LOGGER_DEF(warning, LogLevel::Warning,  true,   "WARNING")
-    LOGGER_DEF(error,   LogLevel::Error,    true,   "ERROR (-A-)")
-    LOGGER_DEF(fatal,   LogLevel::Fatal,    true,   "FATAL (`o')")
-    LOGGER_DEF(explore, LogLevel::Explore,  false,  "(EXPLORE)")
-
-*/
-
 enum class LogLevel { Debug = 0, Explore, Info, Warning, Error, Fatal };
 
 namespace detail {

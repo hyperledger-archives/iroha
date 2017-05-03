@@ -43,6 +43,10 @@ class synchornizer_connection_part_test : public ::testing::Test {
   static void TearDownTestCase() { connection::finish(); }
 
   virtual void SetUp() {
+    server_thread_torii = std::thread(
+      &synchornizer_connection_part_test::serverSyncReceive, this);
+    connection::initialize_peer();
+    connection::wait_till_ready();
   }
 
   virtual void TearDown() { server_thread_torii.detach(); }

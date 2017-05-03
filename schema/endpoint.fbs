@@ -44,7 +44,7 @@ rpc_service Hijiri {
 }
 
 rpc_service Sync {
-    checkHash(Ping):CheckHashReponse     (streaming: "none");
+    checkHash(Ping):CheckHashResponse     (streaming: "none");
     getPeers(Ping):PeersResponse    (streaming: "none");
 
     // TODO WIP Can it?

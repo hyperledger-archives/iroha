@@ -222,10 +222,11 @@ std::vector<AM_val> Ametsuchi::getCommandByKey(
   return tx_store.getCommandByKey(pubKey, command, uncommitted);
 }
 
-const flatbuffers::String* Ametsuchi::getMerkleRoot(){
+std::vector<uint8_t> Ametsuchi::getMerkleRoot(){
   flatbuffers::FlatBufferBuilder fbb;
   fbb.Finish(fbb.CreateString(reinterpret_cast<const char*>(tx_store.merkle_root().data())));
-  return flatbuffers::GetRoot<flatbuffers::String>(fbb.GetBufferPointer());
+  auto buf = fbb.GetBufferPointer();
+  return {buf, buf + fbb.GetSize()};
 }
 
 

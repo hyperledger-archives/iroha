@@ -895,6 +895,7 @@ namespace flatbuffer_service {
       iroha::Command cmd_type,
       const flatbuffers::Offset<void>& command
     ) {
+      // FIXME: dummy to nullptr
       std::vector<uint8_t> dummy = {'d','u','m','m','y'};
       auto attachment = ::iroha::CreateAttachmentDirect(fbb, "dummy", &dummy);
       return CreateTransaction(
