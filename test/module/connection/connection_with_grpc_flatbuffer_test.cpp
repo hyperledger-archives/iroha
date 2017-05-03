@@ -152,7 +152,6 @@ class connection_with_grpc_flatbuffer_test : public testing::Test {
   }
 };
 
-/*
 TEST_F(connection_with_grpc_flatbuffer_test, Transaction_Add_Asset) {
   flatbuffers::FlatBufferBuilder xbb;
 
@@ -186,7 +185,7 @@ TEST_F(connection_with_grpc_flatbuffer_test, Transaction_Add_Asset) {
   auto eventptr = flatbuffers::GetRoot<ConsensusEvent>(uptr.get());
   connection::iroha::SumeragiImpl::Verify::send(
       config::PeerServiceConfig::getInstance().getMyIp(), *eventptr);
-}*/
+}
 
 TEST_F(connection_with_grpc_flatbuffer_test, AssetRepository_serverAccountGetAsset) {
 
