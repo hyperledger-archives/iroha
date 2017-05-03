@@ -17,6 +17,7 @@
 
 #include <ametsuchi/ametsuchi.h>
 #include <transaction_generated.h>
+#include <iostream>
 
 // static auto console = spdlog::stdout_color_mt("ametsuchi");
 
@@ -47,7 +48,6 @@ merkle::hash_t Ametsuchi::append(const std::vector<uint8_t> *blob) {
   auto mt_root = tx_store.append(blob);
   // 2. Update WSV
   wsv.update(blob);
-
   return mt_root;
 }
 
@@ -229,12 +229,11 @@ std::vector<AM_val> Ametsuchi::getCommandByKey(
   return tx_store.getCommandByKey(pubKey, command, uncommitted);
 }
 
-std::vector<uint8_t> Ametsuchi::getMerkleRoot() {
-  flatbuffers::FlatBufferBuilder fbb;
-  fbb.Finish(fbb.CreateString(
-      reinterpret_cast<const char *>(tx_store.merkle_root().data())));
-  auto buf = fbb.GetBufferPointer();
-  return {buf, buf + fbb.GetSize()};
+const std::string Ametsuchi::getMerkleRoot() {
+  if (tx_store.merkle_root().empty()) {
+    return "";
+  }
+  return std::string(tx_store.merkle_root().begin(), tx_store.merkle_root().end());
 }
 
 
