@@ -68,6 +68,7 @@ rpc_service Sync {
     checkHash(Ping):CheckHashResponse     (streaming: "none");
     getPeers(Ping):PeersResponse    (streaming: "none");
 
+    getTransactions(Ping):TransactionResponse (streaming: "none");
     // TODO WIP Can it?
-    //fetchStreamTransaction(Ping):TransactionResponse   (streaming: "true")
+    fetchStreamTransaction(Ping):TransactionResponse   (streaming: "true");
 }

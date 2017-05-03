@@ -77,7 +77,7 @@ namespace peer{
 
     namespace detail{
 
-      structure::CacheMap<size_t,iroha::Transaction*> temp_tx_;
+      structure::CacheMap<size_t,const iroha::Transaction*> temp_tx_;
       size_t current_;
       time_t upd_time_;
 
@@ -92,7 +92,7 @@ namespace peer{
           return true;
         return false;
       }
-      bool append_temporary(size_t tx_id,iroha::Transaction* tx){
+      bool append_temporary(size_t tx_id,const iroha::Transaction* tx){
         temp_tx_.set( tx_id, tx );
       }
       SYNCHRO_RESULT append(){

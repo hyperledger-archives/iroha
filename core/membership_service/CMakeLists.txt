@@ -18,6 +18,7 @@ ADD_LIBRARY(membership_service STATIC
     synchronizer.cpp)
 
 target_link_libraries(membership_service
+    timer
     exception
     logger
     config_manager

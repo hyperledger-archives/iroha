@@ -16,17 +16,28 @@
 #include <asset_generated.h>
 #include <flatbuffers/flatbuffers.h>
 #include <main_generated.h>
+#include <endpoint_generated.h>
 #include <primitives_generated.h>
+#include <endpoint.grpc.fb.h>
 #include <membership_service/peer_service.hpp>
 #include <service/flatbuffer_service.h>
 #include <crypto/signature.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <service/connection.hpp>
 
+#include <grpc++/grpc++.h>
 #include <iostream>
 #include <string>
 #include <thread>
 #include <unordered_map>
+
+using grpc::Channel;
+using grpc::Server;
+using grpc::ServerBuilder;
+using grpc::ServerContext;
+using grpc::ClientContext;
+using grpc::Status;
+
 
 using ConsensusEvent = iroha::ConsensusEvent;
 using Transaction = iroha::Transaction;
@@ -89,10 +100,37 @@ class connection_with_grpc_flatbuffer_test : public testing::Test {
     connection::run();
   }
 
+  void serverAccountGetAsset() {
+    connection::iroha::AssetRepositoryImpl::AccountGetAsset::receive([=](
+            const std::string & /* from */, flatbuffers::unique_ptr_t &&query_ptr) -> std::vector<const ::iroha::Asset *>{
+        const iroha::AssetQuery& query = *flatbuffers::GetRoot<iroha::AssetQuery>(query_ptr.get());
+        flatbuffers::FlatBufferBuilder fbb;
+
+        EXPECT_STREQ(query.pubKey()->c_str(),     "my_pubkey");
+        EXPECT_STREQ(query.ledger_name()->c_str(),"req_ledger_name");
+        EXPECT_STREQ(query.domain_name()->c_str(),"req_domain_name");
+        EXPECT_STREQ(query.asset_name()->c_str() ,"req_asset_name");
+
+        auto res_asset = iroha::CreateAsset(
+              fbb,iroha::AnyAsset::Currency,
+              iroha::CreateCurrencyDirect(
+                  fbb,"sample","my_domain","my_ledger", "my_description", "my_amount", 0
+              ).Union()
+        );
+        fbb.Finish(res_asset);
+        std::vector<const ::iroha::Asset *> res{
+            flatbuffers::GetMutableRoot<::iroha::Asset>(fbb.GetBufferPointer())
+        };
+        return res;
+    });
+    connection::run();
+  }
+
   std::thread server_thread_verify;
   std::thread server_thread_torii;
+  std::thread server_thread_accountGetAsset;
 
-  static void SetUpTestCase() { connection::initialize_peer(); }
+    static void SetUpTestCase() { connection::initialize_peer(); }
 
   static void TearDownTestCase() { connection::finish(); }
 
@@ -101,12 +139,16 @@ class connection_with_grpc_flatbuffer_test : public testing::Test {
     server_thread_verify = std::thread(
         &connection_with_grpc_flatbuffer_test::serverVerifyReceive, this);
     server_thread_torii = std::thread(
-        &connection_with_grpc_flatbuffer_test::serverToriiReceive, this);
+          &connection_with_grpc_flatbuffer_test::serverToriiReceive, this);
+    server_thread_accountGetAsset = std::thread(
+          &connection_with_grpc_flatbuffer_test::serverAccountGetAsset, this);
+    connection::wait_till_ready();
   }
 
   virtual void TearDown() {
     server_thread_verify.detach();
     server_thread_torii.detach();
+    server_thread_accountGetAsset.detach();
   }
 };
 
@@ -143,4 +185,64 @@ TEST_F(connection_with_grpc_flatbuffer_test, Transaction_Add_Asset) {
   auto eventptr = flatbuffers::GetRoot<ConsensusEvent>(uptr.get());
   connection::iroha::SumeragiImpl::Verify::send(
       config::PeerServiceConfig::getInstance().getMyIp(), *eventptr);
+}
+
+TEST_F(connection_with_grpc_flatbuffer_test, AssetRepository_serverAccountGetAsset) {
+
+  auto channel = grpc::CreateChannel(
+     "127.0.0.1:50051",
+     grpc::InsecureChannelCredentials()
+  );
+
+  auto stub = iroha::AssetRepository::NewStub(channel);
+  grpc::ClientContext context;
+
+  flatbuffers::FlatBufferBuilder fbb;
+  auto query_offset = iroha::CreateAssetQueryDirect(
+        fbb,
+        "my_pubkey",
+        "req_ledger_name",
+        "req_domain_name",
+        "req_asset_name",
+        true
+  );
+  fbb.Finish(query_offset);
+  auto request = flatbuffers::BufferRef<iroha::AssetQuery>(
+        fbb.GetBufferPointer(),fbb.GetSize()
+  );
+  flatbuffers::BufferRef<iroha::AssetResponse> response;
+  auto status = stub->AccountGetAsset(&context, request, &response);
+
+  if (status.ok()) {
+      auto res = response.GetRoot();
+      ASSERT_EQ(res->assets()->Length(), 1);
+      ASSERT_EQ(res->assets()->Get(0)->asset_type(), iroha::AnyAsset::Currency);
+      ASSERT_STREQ(
+         res->assets()->Get(0)->asset_as_Currency()->currency_name()->c_str(),
+         "sample"
+      );
+      ASSERT_STREQ(
+          res->assets()->Get(0)->asset_as_Currency()->domain_name()->c_str(),
+          "my_domain"
+      );
+      ASSERT_STREQ(
+          res->assets()->Get(0)->asset_as_Currency()->ledger_name()->c_str(),
+          "my_ledger"
+      );
+      ASSERT_STREQ(
+          res->assets()->Get(0)->asset_as_Currency()->description()->c_str(),
+          "my_description"
+      );
+      ASSERT_STREQ(
+          res->assets()->Get(0)->asset_as_Currency()->amount()->c_str(),
+          "my_amount"
+      );
+      ASSERT_EQ(
+          res->assets()->Get(0)->asset_as_Currency()->precision(),
+          0
+      );
+      std::cout << "No problem!" << std::endl;
+  } else {
+      throw;
+  }
 }
