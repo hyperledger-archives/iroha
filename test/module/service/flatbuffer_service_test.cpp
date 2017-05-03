@@ -16,6 +16,7 @@
  */
 #include <gtest/gtest.h>
 #include <main_generated.h>
+#include <endpoint_generated.h>
 #include <service/flatbuffer_service.h>
 #include <membership_service/peer_service.hpp>
 #include <utils/datetime.hpp>
@@ -1134,4 +1135,19 @@ TEST(FlatbufferServiceTest, TransactionCreateTransaction_Without_Attachment) {
   ASSERT_EQ(peerRoot->trust(), 123.45);
   ASSERT_EQ(peerRoot->active(), true);
   ASSERT_EQ(peerRoot->join_ledger(), false);
+}
+
+
+/*********************************************************
+ * Endpoint
+ *********************************************************/
+
+
+TEST(FlatbufferServiceTest, EndPoint_Ping_Test) {
+  auto message = "message!";
+  auto ip = "sender!";
+  auto vec = flatbuffer_service::endpoint::CreatePing(message,ip);
+  auto &ping = *flatbuffers::GetRoot<iroha::Ping>(vec.data());
+  ASSERT_TRUE(ping.message()->str() == "message!");
+  ASSERT_TRUE(ping.sender()->str() == "sender!");
 }

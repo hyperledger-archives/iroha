@@ -34,6 +34,7 @@
 #include <memory>
 #include <string>
 #include <commands_generated.h>
+#include <endpoint_generated.h>
 
 namespace flatbuffer_service {
 
@@ -960,4 +961,15 @@ namespace flatbuffer_service {
 
   };  // namespace transaction
 
+  namespace endpoint {
+    std::vector<uint8_t> CreatePing(
+        const std::string &message,
+        const std::string &sender
+    ){
+      flatbuffers::FlatBufferBuilder fbb;
+      auto ping = ::iroha::CreatePing(fbb, fbb.CreateString(message), fbb.CreateString(sender));
+      fbb.Finish(ping);
+      return {fbb.GetBufferPointer(), fbb.GetBufferPointer()+fbb.GetSize()};
+    }
+  } // namespace endpoint
 }  // namespace flatbuffer_service

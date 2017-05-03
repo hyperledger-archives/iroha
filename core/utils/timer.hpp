@@ -27,6 +27,8 @@ void setAwkTimer(int const sleepMillisecs,
 void setAwkTimerForCurrentThread(int const sleepMillisecs,
                  std::function<void(void)> const &action);
 
+void waitTimer(int const sleepMillisecs);
+
 }  // namespace timer
 
 #endif  // IROHA_TIMER_HPP

@@ -24,3 +24,17 @@ add_test(
   NAME peer_service_to_issue_transaction_test
   COMMAND $<TARGET_FILE:peer_service_to_issue_transaction_test>
 )
+
+add_executable(synchornizer_connection_part_test synchornizer_connection_part_test.cpp)
+target_link_libraries(synchornizer_connection_part_test
+  gtest
+  ametsuchi
+  endpoint_fbs
+  membership_service
+  flatbuffer_service
+  connection_with_grpc_flatbuffer
+)
+add_test(
+  NAME synchornizer_connection_part_test
+  COMMAND $<TARGET_FILE:peer_service_to_issue_transaction_test>
+)
