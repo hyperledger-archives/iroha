@@ -39,3 +39,16 @@ target_link_libraries(make_sumeragi
   hash
   signature
 )
+
+
+###########################
+#      Add peer           #
+###########################
+
+add_executable(add_peer
+    add_peer.cpp
+)
+
+target_link_libraries(add_peer
+    membership_service
+)
