@@ -26,7 +26,7 @@ namespace runtime{
             // Reject
             return;
         }
-        if(!validator::permission_validator(*tx.creatorPubKey())){
+        if(!validator::permission_validator(tx)){
             // Reject
         }
         if(!validator::logic_validator(tx)){

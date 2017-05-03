@@ -23,41 +23,62 @@
 #include <endpoint_generated.h>
 #include <asset_generated.h>
 
-namespace repository{
+namespace repository {
 
     static std::unique_ptr<ametsuchi::Ametsuchi> db;
 
-    void init(){
+    void init() {
         db.reset(new ametsuchi::Ametsuchi("/tmp/"));
     }
 
-    void append(const iroha::Transaction& tx){
-        if(db == nullptr) init();
+    void append(const iroha::Transaction &tx) {
+        if (db == nullptr) init();
 
         auto buf = flatbuffer_service::transaction::GetTxPointer(tx);
         db->append(&buf.value());
     }
 
-    std::vector<const iroha::Asset*> findAssetByPublicKey(const flatbuffers::String& key){
-        if(db == nullptr) init();
+    std::vector<const iroha::Asset *> findAssetByPublicKey(const flatbuffers::String &key) {
+        if (db == nullptr) init();
         flatbuffers::FlatBufferBuilder fbb;
         return db->accountGetAllAssets(&key);
     }
 
-    bool existAccountOf(const flatbuffers::String& key){
-        if(db == nullptr) init();
+    bool existAccountOf(const flatbuffers::String &key) {
+        if (db == nullptr) init();
         return false;
     }
 
-    bool checkUserCanPermission(const flatbuffers::String& key){
-        if(db == nullptr) init();
+    bool checkUserCanPermission(const flatbuffers::String &key) {
+        if (db == nullptr) init();
 
         return false;
     }
 
-    const std::string getMerkleRoot(){
-        if(db == nullptr) init();
-        return db->getMerkleRoot()->str();
+    const std::string getMerkleRoot() {
+        if (db == nullptr) init();
+        auto buf = db->getMerkleRoot();
+        auto mr = flatbuffers::GetRoot<flatbuffers::String>(buf.data());
+        return mr->str();
+    }
+
+    namespace permission {
+
+        std::vector<const iroha::AccountPermissionLedger*> getPermissionLedgerOf(const flatbuffers::String &key) {
+            if (db == nullptr) init();
+            return db->assetGetPermissionLedger(&key);
+        }
+
+        std::vector<const iroha::AccountPermissionDomain*> getPermissionDomainOf(const flatbuffers::String &key) {
+            if (db == nullptr) init();
+            return db->assetGetPermissionDomain(&key);
+        }
+
+        std::vector<const iroha::AccountPermissionAsset*> getPermissionAssetOf(const flatbuffers::String &key){
+            if (db == nullptr) init();
+            return db->assetGetPermissionAsset(&key);
+        }
+
     }
 
     namespace front_repository{

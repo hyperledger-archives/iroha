@@ -420,12 +420,13 @@ void WSV::account_subtract_currency(
     flatbuffers::FlatBufferBuilder fbb;
     auto copy_asset =
         iroha::CreateAsset(fbb, iroha::AnyAsset::Currency,
-                           iroha::CreateCurrency(fbb, fbb.CreateSharedString(account_currency->currency_name()),
-                                                 fbb.CreateSharedString(account_currency->domain_name()),
-                                                 fbb.CreateSharedString(account_currency->ledger_name()),
-                                                 fbb.CreateSharedString(account_currency->description()),
-                                                 fbb.CreateSharedString(account_currency->amount()),
-                                                 account_currency->precision()).Union());
+             iroha::CreateCurrency(fbb, fbb.CreateSharedString(account_currency->currency_name()),
+                 fbb.CreateSharedString(account_currency->domain_name()),
+                 fbb.CreateSharedString(account_currency->ledger_name()),
+                 fbb.CreateSharedString(account_currency->description()),
+                 fbb.CreateSharedString(account_currency->amount()),
+                 account_currency->precision()).Union()
+        );
     fbb.Finish(copy_asset);
     copy = {fbb.GetBufferPointer(), fbb.GetBufferPointer() + fbb.GetSize()};
 
@@ -691,7 +692,7 @@ void WSV::permisson_add(const iroha::PermissionAdd *command) {
                 apa->ledger_name()->c_str(),
                 apa->account_give_permission(),
                 apa->transfer(),
-                apa->remove(),
+                apa->subtract(),
                 apa->read()
             ));
             auto ptr = fbb.GetBufferPointer();
@@ -902,6 +903,82 @@ std::vector<const ::iroha::Asset *> WSV::accountGetAllAssets(
   }
   return ret;
 }
+
+const ::iroha::AccountPermissionRoot WSV::accountGetPermissionRoot(const flatbuffers::String *pubKey){
+  //ToDo
+}
+const std::vector<const ::iroha::AccountPermissionLedger*> WSV::accountGetPermissionLedger(const flatbuffers::String *pubKey){
+  MDB_val c_key, c_val;
+  std::vector<const ::iroha::AccountPermissionLedger*> permission_vec;
+  int res;
+
+  c_key.mv_data = (void *)(pubKey->data());
+  c_key.mv_size = pubKey->size();
+
+  auto cursor = trees_.at("wsv_pubkey_account").second;
+  if ((res = mdb_cursor_get(cursor, &c_key, &c_val, MDB_SET))) {
+    if (res == MDB_NOTFOUND)
+      throw exception::InvalidTransaction::ACCOUNT_NOT_FOUND;
+
+    AMETSUCHI_CRITICAL(res, EINVAL);
+  }
+
+  flatbuffers::FlatBufferBuilder fbb;
+  auto account = flatbuffers::GetRoot<::iroha::Account>(c_val.mv_data);
+  for(const auto& pdw: *account->ledgerPermissions()){
+    permission_vec.emplace_back(pdw->permission_nested_root());
+  }
+  return permission_vec;
+}
+
+const std::vector<const ::iroha::AccountPermissionDomain*> WSV::accountGetPermissionDomain(const flatbuffers::String *pubKey){
+  MDB_val c_key, c_val;
+  std::vector<const ::iroha::AccountPermissionDomain*> permission_vec;
+  int res;
+
+  c_key.mv_data = (void *)(pubKey->data());
+  c_key.mv_size = pubKey->size();
+
+  auto cursor = trees_.at("wsv_pubkey_account").second;
+  if ((res = mdb_cursor_get(cursor, &c_key, &c_val, MDB_SET))) {
+    if (res == MDB_NOTFOUND)
+      throw exception::InvalidTransaction::ACCOUNT_NOT_FOUND;
+
+    AMETSUCHI_CRITICAL(res, EINVAL);
+  }
+
+  flatbuffers::FlatBufferBuilder fbb;
+  auto account = flatbuffers::GetRoot<::iroha::Account>(c_val.mv_data);
+  for(const auto& pdw: *account->domainPermissions()){
+    permission_vec.emplace_back(pdw->permission_nested_root());
+  }
+  return permission_vec;
+}
+
+const std::vector<const ::iroha::AccountPermissionAsset*>  WSV::accountGetPermissionAsset(const flatbuffers::String *pubKey){
+  MDB_val c_key, c_val;
+  std::vector<const ::iroha::AccountPermissionAsset*> permission_vec;
+  int res;
+
+  c_key.mv_data = (void *)(pubKey->data());
+  c_key.mv_size = pubKey->size();
+
+  auto cursor = trees_.at("wsv_pubkey_account").second;
+  if ((res = mdb_cursor_get(cursor, &c_key, &c_val, MDB_SET))) {
+    if (res == MDB_NOTFOUND)
+      throw exception::InvalidTransaction::ACCOUNT_NOT_FOUND;
+
+    AMETSUCHI_CRITICAL(res, EINVAL);
+  }
+
+  flatbuffers::FlatBufferBuilder fbb;
+  auto account = flatbuffers::GetRoot<::iroha::Account>(c_val.mv_data);
+  for(const auto& pdw: *account->assetPermissions()){
+    permission_vec.emplace_back(pdw->permission_nested_root());
+  }
+  return permission_vec;
+}
+
 
 const ::iroha::Peer *WSV::pubKeyGetPeer(const flatbuffers::String *pubKey,
                                         bool uncommitted, MDB_env *env) {

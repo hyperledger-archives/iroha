@@ -25,3 +25,17 @@ add_executable(check_ametsuchi
 target_link_libraries(check_ametsuchi
     connection_with_grpc_flatbuffer
 )
+
+###########################
+#      Makesumeragi test  #
+###########################
+
+add_executable(make_sumeragi
+  make_sumeragi.cpp
+)
+
+target_link_libraries(make_sumeragi
+  json
+  hash
+  signature
+)

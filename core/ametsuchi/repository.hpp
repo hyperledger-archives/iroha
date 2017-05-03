@@ -33,6 +33,12 @@ namespace repository{
     namespace front_repository{
         void initialize_repository();
     }
+    namespace permission{
+        iroha::AccountPermissionRoot                       getPermissionRootOf(const flatbuffers::String &key);
+        std::vector<const iroha::AccountPermissionLedger*> getPermissionLedgerOf(const flatbuffers::String &key);
+        std::vector<const iroha::AccountPermissionDomain*> getPermissionDomainOf(const flatbuffers::String &key);
+        std::vector<const iroha::AccountPermissionAsset*>  getPermissionAssetOf(const flatbuffers::String &key);
+    };
 };
 
 #endif //IROHA_REPOSITORY_H
