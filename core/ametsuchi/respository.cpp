@@ -174,5 +174,4 @@ void initialize_repository() {
         }
     }
 }
-}
 };
