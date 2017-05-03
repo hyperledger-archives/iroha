@@ -99,6 +99,14 @@ namespace repository {
                     return res;
                 }
             });
+
+            connection::memberShipService::SyncImpl::getTransactions::receive([=](
+                    const std::string & /* from */, flatbuffers::unique_ptr_t &&query_ptr) -> std::vector<const ::iroha::Transaction *>{
+                if(db == nullptr) init();
+                // ToDo
+                std::vector<const ::iroha::Transaction *> res;
+                return res;
+            });
         }
     }
 };
