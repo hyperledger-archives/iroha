@@ -54,7 +54,6 @@ class synchornizer_connection_part_test : public ::testing::Test {
 
 
 TEST_F(synchornizer_connection_part_test, checkHashAllTest) {
-  repository::init();
   std::string ip = ::peer::myself::getIp();
   std::string hash = repository::getMerkleRoot();
   std::cout << ip << " " << hash << std::endl;

@@ -63,7 +63,6 @@ namespace peer{
     }
 
     void seekStartFetchIndex() { // step3 ( not support )
-      repository::init();
     }
 
     void receiveTransactions() { // step4;

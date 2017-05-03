@@ -25,61 +25,50 @@
 
 namespace repository {
 
-static std::unique_ptr<ametsuchi::Ametsuchi> db;
-
-void init() { db.reset(new ametsuchi::Ametsuchi("/tmp/")); }
+ametsuchi::Ametsuchi db("/tmp/ametsuchi/");
 
 void append(const iroha::Transaction &tx) {
-  if (db == nullptr) init();
-
   auto buf = flatbuffer_service::transaction::GetTxPointer(tx);
-  db->append(&buf.value());
+  db.append(&buf.value());
 }
 
 const ::iroha::Transaction *getTransaction(size_t index) {
-  return db->getTransaction(index, false);
+  return db.getTransaction(index, false);
 }
 
 std::vector<const iroha::Asset *> findAssetByPublicKey(
     const flatbuffers::String &key) {
-  if (db == nullptr) init();
   flatbuffers::FlatBufferBuilder fbb;
-  return db->accountGetAllAssets(&key);
+  return db.accountGetAllAssets(&key);
 }
 
 bool existAccountOf(const flatbuffers::String &key) {
-  if (db == nullptr) init();
   return false;
 }
 
 bool checkUserCanPermission(const flatbuffers::String &key) {
-  if (db == nullptr) init();
-
   return false;
 }
 
 const std::string getMerkleRoot() {
-  return db->getMerkleRoot();
+  return db.getMerkleRoot();
 }
 
 namespace permission {
 
 std::vector<const iroha::AccountPermissionLedger *> getPermissionLedgerOf(
     const flatbuffers::String &key) {
-  if (db == nullptr) init();
-  return db->assetGetPermissionLedger(&key);
+  return db.assetGetPermissionLedger(&key);
 }
 
 std::vector<const iroha::AccountPermissionDomain *> getPermissionDomainOf(
     const flatbuffers::String &key) {
-  if (db == nullptr) init();
-  return db->assetGetPermissionDomain(&key);
+  return db.assetGetPermissionDomain(&key);
 }
 
 std::vector<const iroha::AccountPermissionAsset *> getPermissionAssetOf(
     const flatbuffers::String &key) {
-  if (db == nullptr) init();
-  return db->assetGetPermissionAsset(&key);
+  return db.assetGetPermissionAsset(&key);
 }
 }
 
@@ -88,14 +77,13 @@ void initialize_repository() {
   connection::iroha::AssetRepositoryImpl::AccountGetAsset::receive(
       [=](const std::string & /* from */, flatbuffers::unique_ptr_t &&query_ptr)
           -> std::vector<const ::iroha::Asset *> {
-        if (db == nullptr) init();
         const iroha::AssetQuery &query =
             *flatbuffers::GetRoot<iroha::AssetQuery>(query_ptr.get());
         auto ln = query.ledger_name();
         auto dn = query.domain_name();
         auto an = query.asset_name();
         if (ln == nullptr || dn == nullptr || an == nullptr) {
-          return db->accountGetAllAssets(query.pubKey(), query.uncommitted());
+          return db.accountGetAllAssets(query.pubKey(), query.uncommitted());
         } else {
           std::vector<const ::iroha::Asset *> res{db->accountGetAsset(
               query.pubKey(), ln, dn, an, query.uncommitted())};
