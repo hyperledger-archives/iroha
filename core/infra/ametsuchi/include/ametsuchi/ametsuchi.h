@@ -25,6 +25,7 @@
 #include <commands_generated.h>
 #include <flatbuffers/flatbuffers.h>
 #include <lmdb.h>
+#include <transaction_generated.h>
 #include <cstdint>
 #include <string>
 #include <unordered_map>
@@ -81,6 +82,10 @@ class Ametsuchi {
    */
   void rollback();
 
+
+  const ::iroha::Transaction *getTransaction(size_t index,
+                                             bool uncommitted = false);
+
   // ********************
   // Ametsuchi queries:
   /**
@@ -115,11 +120,14 @@ class Ametsuchi {
                                         const std::string &&asset_name,
                                         bool uncommitted = false);
 
-  const std::vector<const ::iroha::AccountPermissionLedger*> assetGetPermissionLedger(const flatbuffers::String *pubKey);
+  const std::vector<const ::iroha::AccountPermissionLedger *>
+  assetGetPermissionLedger(const flatbuffers::String *pubKey);
 
-  const std::vector<const ::iroha::AccountPermissionDomain*> assetGetPermissionDomain(const flatbuffers::String *pubKey);
+  const std::vector<const ::iroha::AccountPermissionDomain *>
+  assetGetPermissionDomain(const flatbuffers::String *pubKey);
 
-  const std::vector<const ::iroha::AccountPermissionAsset*>  assetGetPermissionAsset(const flatbuffers::String *pubKey);
+  const std::vector<const ::iroha::AccountPermissionAsset *>
+  assetGetPermissionAsset(const flatbuffers::String *pubKey);
 
   const ::iroha::Peer *pubKeyGetPeer(const flatbuffers::String *pubKey,
                                      bool uncommitted = false);
