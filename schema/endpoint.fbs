@@ -28,6 +28,20 @@ table PeersResponse {
   sender:     string;
 }
 
+table AssetQuery{
+  pubKey:      string;
+  ledger_name: string;
+  domain_name: string;
+  asset_name:  string;
+  uncommitted:   bool;
+}
+
+table AssetResponse {
+  message:      string  (required);
+  code:         Code;
+  assets:       [Asset];
+}
+
 // Used by sending transaction
 rpc_service Sumeragi {
 
@@ -36,6 +50,13 @@ rpc_service Sumeragi {
 
     // sumeragi uses.
     Verify(ConsensusEvent):Response (streaming: "none");
+}
+
+// Used by sending transaction
+rpc_service AssetRepository {
+
+    AccountGetAsset(AssetQuery):AssetResponse (streaming: "none");
+
 }
 
 rpc_service Hijiri {

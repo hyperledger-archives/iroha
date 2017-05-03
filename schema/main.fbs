@@ -21,10 +21,10 @@ table TransactionWrapper {
 
 // Can't consensus Is it OK?
 table TransactionResponse {
-  index:        ulong;
-  code:         Code;
-  transaction:  Transaction;
-  message:      string;
+  message:              string  (required);
+  index:                ulong;
+  code:                 Code;
+  transactions:         [TransactionWrapper];
 }
 
 table ReceiverConfirmation {
