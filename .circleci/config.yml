@@ -156,7 +156,7 @@ jobs:
       #      don't forget to clean up after tests (if needed)
 
       - run:
-          name: setup iroha network
+          name: template test using docker compose
           command: |
             docker-compose up -d
             docker-compose scale iroha=4
