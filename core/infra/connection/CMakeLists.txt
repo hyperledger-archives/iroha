@@ -17,4 +17,5 @@ target_link_libraries(connection_with_grpc_flatbuffer
   flatbuffer_service
   membership_service
   ametsuchi
+  expected
 )

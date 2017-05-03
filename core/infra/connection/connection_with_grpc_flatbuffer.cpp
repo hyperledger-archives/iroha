@@ -135,8 +135,8 @@ class SumeragiConnectionClient {
   explicit SumeragiConnectionClient(std::shared_ptr<Channel> channel)
       : stub_(Sumeragi::NewStub(channel)) {}
 
-  void Verify(const ::iroha::ConsensusEvent &consensusEvent,
-              flatbuffers::BufferRef<Response> *responseRef) const {
+  VoidHandler Verify(const ::iroha::ConsensusEvent &consensusEvent,
+                     flatbuffers::BufferRef<Response> *responseRef) const {
     ClientContext context;
     logger::info("connection") << "Operation";
     logger::info("connection")
@@ -152,8 +152,8 @@ class SumeragiConnectionClient {
         flatbuffer_service::copyConsensusEvent(fbb, consensusEvent);
 
     if (!eventOffset) {
-      // FIXME: Use Response
-      assert(false);
+      // Ordinary, nullptr has been detected.
+      return makeUnexpected(exception::connection::InvalidTransactionException());
     }
 
     fbb.Finish(*eventOffset);
@@ -166,17 +166,15 @@ class SumeragiConnectionClient {
     if (status.ok()) {
       logger::info("SumeragiConnectionClient::Verify")
           << "response: " << responseRef->GetRoot()->message()->c_str();
+      return {};
     } else {
-      logger::error("SumeragiConnectionClient::Verify")
-          << static_cast<int>(status.error_code()) << ": "
-          << status.error_message();
-      logger::error("SumeragiConnectionClient::Verify")
-          << responseRef->GetRoot()->message()->c_str();
+      return makeUnexpected(exception::connection::RPCConnectionException(
+        static_cast<int>(status.error_code()), status.error_message()));
     }
   }
 
-  void Torii(const ::iroha::Transaction &tx,
-             flatbuffers::BufferRef<Response> *responseRef) const {
+  VoidHandler Torii(const ::iroha::Transaction &tx,
+                    flatbuffers::BufferRef<Response> *responseRef) const {
     // Copy transaction to FlatBufferBuilder memory, then create
     // BufferRef<Transaction>
     // and share it to another sumeragi by using stub interface Torii.
@@ -199,11 +197,10 @@ class SumeragiConnectionClient {
     Status status = stub_->Torii(&clientContext, requestTxRef, responseRef);
 
     if (status.ok()) {
-      logger::info("SumeragiConnectionClient::Torii") << "gRPC OK";
+      return {};
     } else {
-      logger::error("SumeragiConnectionClient::Torii")
-          << "gRPC CANCELLED" << static_cast<int>(status.error_code()) << ": "
-          << status.error_message();
+      return makeUnexpected(exception::connection::RPCConnectionException(
+        static_cast<int>(status.error_code()), status.error_message()));
     }
   }
 
@@ -330,7 +327,12 @@ bool send(const std::string &ip, const ::iroha::ConsensusEvent &event) {
         grpc::InsecureChannelCredentials()));
     // TODO return tx validity
     flatbuffers::BufferRef<::iroha::Response> response;
-    client.Verify(event, &response);
+    auto handler = client.Verify(event, &response);
+    if (!handler) {
+      logger::error("connection") << handler.error();
+      return false;
+    }
+
     auto reply = response.GetRoot();
     if (reply->code() == ::iroha::Code::FAIL) {
       logger::error("connection")
