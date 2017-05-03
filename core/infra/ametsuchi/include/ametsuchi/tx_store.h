@@ -68,6 +68,7 @@ class TxStore {
   uint32_t get_trees_total();
 
   // TxStore queries:
+  AM_val getTransaction(size_t index, bool uncommitted = true, MDB_env *env = nullptr);
 
   std::vector<AM_val> getAssetTransferBySender(
       const flatbuffers::String *senderKey, bool uncommitted = true,

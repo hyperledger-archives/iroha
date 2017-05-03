@@ -165,6 +165,11 @@ void Ametsuchi::init_append_tx() {
   mdb_env_stat(env, &mst);
 }
 
+const ::iroha::Transaction *Ametsuchi::getTransaction(size_t index,
+                                                      bool uncommitted) {
+  return flatbuffers::GetRoot<iroha::Transaction>(
+      tx_store.getTransaction(index, uncommitted, env).data);
+}
 
 std::vector<const ::iroha::Asset *> Ametsuchi::accountGetAllAssets(
     const flatbuffers::String *pubKey, bool uncommitted) {
@@ -181,21 +186,23 @@ const ::iroha::Asset *Ametsuchi::accountGetAsset(
 }
 
 
-const ::iroha::Asset *Ametsuchi::assetidGetAsset(const std::string &&ledger_name,
-                                                 const std::string &&domain_name,
-                                                 const std::string &&asset_name,
-                                                 bool uncommitted) {
+const ::iroha::Asset *Ametsuchi::assetidGetAsset(
+    const std::string &&ledger_name, const std::string &&domain_name,
+    const std::string &&asset_name, bool uncommitted) {
   return wsv.assetidGetAsset(asset_name + domain_name + ledger_name,
                              uncommitted, env);
 }
 
-const std::vector<const ::iroha::AccountPermissionLedger*> Ametsuchi::assetGetPermissionLedger(const flatbuffers::String *pubKey) {
+const std::vector<const ::iroha::AccountPermissionLedger *>
+Ametsuchi::assetGetPermissionLedger(const flatbuffers::String *pubKey) {
   return wsv.accountGetPermissionLedger(pubKey);
 }
-const std::vector<const ::iroha::AccountPermissionDomain*> Ametsuchi::assetGetPermissionDomain(const flatbuffers::String *pubKey) {
+const std::vector<const ::iroha::AccountPermissionDomain *>
+Ametsuchi::assetGetPermissionDomain(const flatbuffers::String *pubKey) {
   return wsv.accountGetPermissionDomain(pubKey);
 }
-const std::vector<const ::iroha::AccountPermissionAsset*> Ametsuchi::assetGetPermissionAsset(const flatbuffers::String *pubKey) {
+const std::vector<const ::iroha::AccountPermissionAsset *>
+Ametsuchi::assetGetPermissionAsset(const flatbuffers::String *pubKey) {
   return wsv.accountGetPermissionAsset(pubKey);
 }
 
@@ -222,9 +229,10 @@ std::vector<AM_val> Ametsuchi::getCommandByKey(
   return tx_store.getCommandByKey(pubKey, command, uncommitted);
 }
 
-std::vector<uint8_t> Ametsuchi::getMerkleRoot(){
+std::vector<uint8_t> Ametsuchi::getMerkleRoot() {
   flatbuffers::FlatBufferBuilder fbb;
-  fbb.Finish(fbb.CreateString(reinterpret_cast<const char*>(tx_store.merkle_root().data())));
+  fbb.Finish(fbb.CreateString(
+      reinterpret_cast<const char *>(tx_store.merkle_root().data())));
   auto buf = fbb.GetBufferPointer();
   return {buf, buf + fbb.GetSize()};
 }
