@@ -54,7 +54,9 @@ namespace repository {
 
     const std::string getMerkleRoot() {
         if (db == nullptr) init();
-        return db->getMerkleRoot()->str();
+        auto buf = db->getMerkleRoot();
+        auto mr = flatbuffers::GetRoot<flatbuffers::String>(buf.data());
+        return mr->str();
     }
 
     namespace permission {
