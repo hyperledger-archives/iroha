@@ -85,7 +85,7 @@ void initialize_repository() {
         if (ln == nullptr || dn == nullptr || an == nullptr) {
           return db.accountGetAllAssets(query.pubKey(), query.uncommitted());
         } else {
-          std::vector<const ::iroha::Asset *> res{db->accountGetAsset(
+          std::vector<const ::iroha::Asset *> res{db.accountGetAsset(
               query.pubKey(), ln, dn, an, query.uncommitted())};
           return res;
         }
