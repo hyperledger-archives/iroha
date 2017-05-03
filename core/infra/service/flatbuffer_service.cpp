@@ -895,11 +895,8 @@ namespace flatbuffer_service {
       iroha::Command cmd_type,
       const flatbuffers::Offset<void>& command
     ) {
-      // FIXME: dummy to nullptr
-      std::vector<uint8_t> dummy = {'d','u','m','m','y'};
-      auto attachment = ::iroha::CreateAttachmentDirect(fbb, "dummy", &dummy);
       return CreateTransaction(
-        fbb, creatorPubKey, cmd_type, command, attachment);
+        fbb, creatorPubKey, cmd_type, command, 0);
     }
 
     /**
@@ -933,14 +930,17 @@ namespace flatbuffer_service {
         }
       };
 
-      auto atc = flatbuffers::GetTemporaryPointer(fbb, attachment);
-      std::string attachstr = atc->mime()->str() +
-        std::string(atc->data()->begin(), atc->data()->end());
-
       appendStr(creatorPubKey);
       appendStr(::iroha::EnumNameCommand(cmd_type));
       appendStr(std::to_string(timestamp));
-      appendStr(attachstr);
+
+
+      if (attachment.o != 0) {
+        auto atc = flatbuffers::GetTemporaryPointer(fbb, attachment);
+        std::string attachstr = atc->mime()->str() +
+                                std::string(atc->data()->begin(), atc->data()->end());
+        appendStr(attachstr);
+      }
 
       const auto hash = hash::sha3_256_hex(hashable);
 

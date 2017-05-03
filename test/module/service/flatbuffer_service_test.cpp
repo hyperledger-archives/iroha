@@ -1093,6 +1093,8 @@ TEST(FlatbufferServiceTest, TransactionCreateTransaction) {
   );
   auto tx = flatbuffers::GetRoot<::iroha::Transaction>(txbuf.data());
 
+  std::cout << flatbuffer_service::toString(*tx) << std::endl;
+
   ASSERT_STREQ(tx->creatorPubKey()->c_str(), "Creator");
   ASSERT_EQ(tx->command_type(), iroha::Command::PeerAdd);
 
@@ -1122,6 +1124,8 @@ TEST(FlatbufferServiceTest, TransactionCreateTransaction_Without_Attachment) {
       peerAdd.Union()
   );
   auto tx = flatbuffers::GetRoot<::iroha::Transaction>(txbuf.data());
+
+  std::cout << flatbuffer_service::toString(*tx) << std::endl;
 
   ASSERT_STREQ(tx->creatorPubKey()->c_str(), "Creator");
   ASSERT_EQ(tx->command_type(), iroha::Command::PeerAdd);
