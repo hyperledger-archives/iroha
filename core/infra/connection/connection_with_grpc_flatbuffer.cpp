@@ -522,10 +522,12 @@ class SyncConnectionClient {
     const ::iroha::Ping &ping
   ) const {
     ::grpc::ClientContext clientContext;
+
     flatbuffers::FlatBufferBuilder fbbPing;
 
     auto pingOffset = ::iroha::CreatePingDirect(
         fbbPing, ping.message()->c_str(), ping.sender()->c_str());
+
     fbbPing.Finish(pingOffset);
 
     flatbuffers::BufferRef<::iroha::Ping> reqPingRef(fbbPing.GetBufferPointer(),
@@ -586,11 +588,10 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
       std::string leader_ip = request->GetRoot()->message()->str();
       std::vector<flatbuffers::Offset<::iroha::Peer>> p_vec;
       for (auto &&p : ::peer::service::getAllPeerList()) {
-        flatbuffers::FlatBufferBuilder tbb;
         p_vec.emplace_back(::iroha::CreatePeer(
-            tbb, tbb.CreateString(p->ledger_name),
-            tbb.CreateString(p->publicKey), tbb.CreateString(p->ip), p->trust,
-            p->active, p->join_ledger));
+          fbbResponse, fbbResponse.CreateString(p->ledger_name),
+          fbbResponse.CreateString(p->publicKey), fbbResponse.CreateString(p->ip), p->trust,
+          p->active, p->join_ledger));
       }
       auto res = ::iroha::CreatePeersResponse(
           fbbResponse, fbbResponse.CreateString("message"),
@@ -638,7 +639,6 @@ bool send(const std::string &ip, const ::iroha::Ping &ping) {
           std::to_string(config::IrohaConfigManager::getInstance()
                              .getGrpcPortNumber(50051)),
       grpc::InsecureChannelCredentials()));
-  flatbuffers::BufferRef<::iroha::PeersResponse> responseRef;
 
   auto replyvec = client.getPeers(ping);
   auto reply = flatbuffers::GetRoot<::iroha::PeersResponse>(replyvec.data());
