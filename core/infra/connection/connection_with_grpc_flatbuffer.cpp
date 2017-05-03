@@ -167,11 +167,13 @@ namespace connection {
         stub_->Verify(&context, reqEventRef, responseRef);
 
       if (status.ok()) {
-        logger::info("connection")
+        logger::info("SumeragiConnectionClient::Verify")
           << "response: " << responseRef->GetRoot()->message()->c_str();
       } else {
-        logger::error("connection") << static_cast<int>(status.error_code())
-                                    << ": " << status.error_message();
+        logger::error("SumeragiConnectionClient::Verify")
+          << static_cast<int>(status.error_code())
+          << ": " << status.error_message();
+        logger::error("SumeragiConnectionClient::Verify") << responseRef->GetRoot()->message()->c_str();
       }
     }
 
@@ -203,9 +205,13 @@ namespace connection {
         stub_->Torii(&clientContext, requestTxRef, responseRef);
 
       if (status.ok()) {
-        logger::info("connection") << "gRPC OK";
+        logger::info("SumeragiConnectionClient::Torii")
+          << "gRPC OK";
       } else {
-        logger::error("connection") << "gRPC CANCELLED";
+        logger::error("SumeragiConnectionClient::Torii")
+          << "gRPC CANCELLED"
+          << static_cast<int>(status.error_code())
+          << ": " << status.error_message();
       }
     }
 
@@ -390,11 +396,12 @@ namespace connection {
         logger::info("connection") << "Send!";
 
         if (res.ok()) {
-            logger::info("connection")
-                    << "response: " << responseRef->GetRoot()->message();
+            logger::info("HijiriConnectionClient") << "gRPC OK";
         } else {
-            logger::error("connection") << static_cast<int>(res.error_code())
-                << ": " << res.error_message();
+            logger::error("HijiriConnectionClient")
+              << "gRPC CANCELLED"
+              << static_cast<int>(res.error_code())
+              << ": " << res.error_message();
         }
     }
 
@@ -458,7 +465,10 @@ namespace connection {
             std::to_string(config::IrohaConfigManager::getInstance()
                              .getGrpcPortNumber(50051)),
             grpc::InsecureChannelCredentials()));
-          auto reply = client.Kagami(ping);
+
+          flatbuffers::BufferRef<Response> response;
+          client.Kagami(ping, &response);
+          auto reply = response.GetRoot();
           return true;
         }
       }  // namespace Kagami
