@@ -84,9 +84,9 @@ TEST_COMMAND(AccountAdd)
 TEST_COMMAND(AccountRemove)
 TEST_COMMAND(PeerAdd)
 TEST_COMMAND(PeerRemove)
-TEST_COMMAND(AssetAdd)
-TEST_COMMAND(AssetRemove)
-TEST_COMMAND(AssetTransfer)
+TEST_COMMAND(Add)
+TEST_COMMAND(Subtract)
+TEST_COMMAND(Transfer)
 TEST_COMMAND(AssetCreate)
 
 #undef TEST_COMMAND
