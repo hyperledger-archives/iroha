@@ -59,12 +59,7 @@ bool checkUserCanPermission(const flatbuffers::String &key) {
 }
 
 const std::string getMerkleRoot() {
-  return "TemporaryString";
-
-  if (db == nullptr) init();
-  auto buf = db->getMerkleRoot();
-  auto mr = flatbuffers::GetRoot<flatbuffers::String>(buf.data());
-  return mr->str();
+  return db->getMerkleRoot();
 }
 
 namespace permission {

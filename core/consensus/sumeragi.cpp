@@ -193,6 +193,7 @@ namespace sumeragi {
                         const auto txptr = eventPtr->transactions()->Get(0)->tx_nested_root();
                         if (txCache.find(detail::hash(*txptr, repository::getMerkleRoot())) == txCache.end()) {
                             txCache[detail::hash(*txptr, repository::getMerkleRoot())] = "commited";
+                            runtime::processTransaction(*txptr);
                         }
                     } else {
                         // send processTransaction(event) as a task to processing pool

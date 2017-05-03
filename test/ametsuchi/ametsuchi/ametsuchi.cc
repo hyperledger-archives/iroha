@@ -33,7 +33,10 @@ class Ametsuchi_Test : public ::testing::Test {
   Ametsuchi_Test() : ametsuchi_(folder) {}
 };
 
-TEST_F(Ametsuchi_Test, SetUpTest) { ASSERT_TRUE(true); }
+TEST_F(Ametsuchi_Test, SetUpTest) {
+  sleep(1);
+  ASSERT_TRUE(true);
+}
 /*
 TEST_F(Ametsuchi_Test, AssetTest) {
   // ASSERT_NO_THROW({

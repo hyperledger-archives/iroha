@@ -18,7 +18,7 @@ limitations under the License.
 
 namespace runtime{
     namespace command{
-        void add(){
+        inline void add(){
 
         }
     };
