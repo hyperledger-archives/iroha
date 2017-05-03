@@ -58,13 +58,12 @@ TEST_F(synchornizer_connection_part_test, checkHashAllTest) {
   std::string ip = ::peer::myself::getIp();
   std::string hash = repository::getMerkleRoot();
   std::cout << ip << " " << hash << std::endl;
-  ASSERT_TRUE(hash == "TemporaryString");
-  auto vec = flatbuffer_service::endpoint::CreatePing(ip, hash);
+  auto vec = flatbuffer_service::endpoint::CreatePing(hash, ip);
   auto &ping = *flatbuffers::GetRoot<iroha::Ping>(vec.data());
   ASSERT_TRUE(connection::memberShipService::SyncImpl::checkHash::send(ip, ping));
 
   std::string dummy_hash = "ng_hash";
-  auto vec2 = flatbuffer_service::endpoint::CreatePing(ip, dummy_hash);
+  auto vec2 = flatbuffer_service::endpoint::CreatePing(dummy_hash, ip);
   auto &ping2 = *flatbuffers::GetRoot<iroha::Ping>(vec2.data());
   ASSERT_FALSE(connection::memberShipService::SyncImpl::checkHash::send(ip, ping2));
 }

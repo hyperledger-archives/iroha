@@ -559,7 +559,7 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
       logger::debug("SyncConnectionServiceImpl::checkHash") << "RPC works";
       std::string hash = request->GetRoot()->message()->str();
       // Now, only supported root hash copare. (ver1.0)
-      if ("TemporaryString" == hash ){//repository::getMerkleRoot() == hash) {
+      if (repository::getMerkleRoot() == hash) {
         auto responseOffset =
             ::iroha::CreateCheckHashResponse(fbbResponse, true, true, true);
         fbbResponse.Finish(responseOffset);
