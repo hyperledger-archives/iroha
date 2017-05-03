@@ -588,27 +588,29 @@ namespace connection {
               );
 
               std::vector<uint8_t> types;
-              std::vector<flatbuffers::Offset<void>> res_assets;
+              std::vector<flatbuffers::Offset<::iroha::Asset>> res_assets;
               {
                   flatbuffers::FlatBufferBuilder fbb_;
                   for(const ::iroha::Asset* asset: assets){
                       if(asset->asset_type() == ::iroha::AnyAsset::Currency){
-                          types.push_back(static_cast<uint8_t>(asset->asset_type()));
                           fbb_.Clear();
-                          res_assets.push_back(::iroha::CreateCurrencyDirect(fbb_,
-                              asset->asset_as_Currency()->currency_name()->c_str(),
-                              asset->asset_as_Currency()->domain_name()->c_str(),
-                              asset->asset_as_Currency()->ledger_name()->c_str(),
-                              asset->asset_as_Currency()->description()->c_str(),
-                              asset->asset_as_Currency()->amount()->c_str(),
-                              asset->asset_as_Currency()->precision()
-                          ).Union());
+                          res_assets.push_back(::iroha::CreateAsset(fbb_,
+                              asset->asset_type(),
+                              ::iroha::CreateCurrencyDirect(fbb_,
+                                  asset->asset_as_Currency()->currency_name()->c_str(),
+                                  asset->asset_as_Currency()->domain_name()->c_str(),
+                                  asset->asset_as_Currency()->ledger_name()->c_str(),
+                                  asset->asset_as_Currency()->description()->c_str(),
+                                  asset->asset_as_Currency()->amount()->c_str(),
+                                  asset->asset_as_Currency()->precision()
+                              ).Union()
+                          ));
                       }
                   }
               }
               auto responseOffset = ::iroha::CreateAssetResponseDirect(
                     fbbResponse, "Success", ::iroha::Code::COMMIT,
-                    &types, &res_assets
+                    &res_assets
               );
               fbbResponse.Finish(responseOffset);
 
