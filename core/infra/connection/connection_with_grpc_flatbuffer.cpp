@@ -95,6 +95,30 @@ class Receiver {
   std::shared_ptr<CallBackFunc> receiver_;
 };
 
+template <class CallBackFunc, class T>
+class ReceiverWithReturen {
+ public:
+  VoidHandler set(CallBackFunc &&rhs) {
+    if (receiver_) {
+      return makeUnexpected(exception::DuplicateSetArgumentException(
+          "Receiver<" + std::string(typeid(CallBackFunc).name()) + ">",
+          __FILE__));
+    }
+
+    receiver_ = std::make_shared<CallBackFunc>(rhs);
+    return {};
+  }
+
+  // ToDo rewrite operator() overload.
+  T invoke(const std::string &from, flatbuffers::unique_ptr_t &&arg) {
+    return (*receiver_)(from, std::move(arg));
+  }
+
+ private:
+  std::shared_ptr<CallBackFunc> receiver_;
+};
+
+
 /**
  * Verify
  */
