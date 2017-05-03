@@ -23,6 +23,7 @@
 #include <ametsuchi/tx_store.h>
 #include <ametsuchi/wsv.h>
 #include <commands_generated.h>
+#include <transaction_generated.h>
 #include <flatbuffers/flatbuffers.h>
 #include <lmdb.h>
 #include <cstdint>
@@ -80,6 +81,9 @@ class Ametsuchi {
    * You can rollback appended transaction(s) to previous commit.
    */
   void rollback();
+
+
+  const ::iroha::Transaction* getTransaction(size_t index, bool uncommitted = false);
 
   // ********************
   // Ametsuchi queries:
