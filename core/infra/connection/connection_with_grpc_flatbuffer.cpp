@@ -752,12 +752,10 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
         {
             const auto q = requestRef->GetRoot();
             flatbuffers::FlatBufferBuilder fbb;
-            auto req_offset = ::iroha::CreateAssetQueryDirect(
-                fbb, q->pubKey()->c_str(), q->ledger_name()->c_str(),
-                q->domain_name()->c_str(), q->asset_name()->c_str(),
-                q->uncommitted());
+            auto ping_offset = ::iroha::CreatePingDirect(
+                fbb, q->message()->c_str(), q->sender()->c_str());
+            fbb.Finish(ping_offset);
 
-            fbb.Finish(req_offset);
             transactions = connection::memberShipService::SyncImpl::getTransactions::receiver
                     .invoke("from",  // TODO: Specify 'from'
                     fbb.ReleaseBufferPointer());
@@ -765,9 +763,8 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
             std::vector<uint8_t> types;
             std::vector<flatbuffers::Offset<::iroha::Transaction>> res_txs;
             {
-                flatbuffers::FlatBufferBuilder fbb_;
                 for (const ::iroha::Transaction *transaction : transactions) {
-                    auto ntx = flatbuffer_service::copyTransaction(fbb_,*transaction);
+                    auto ntx = flatbuffer_service::copyTransaction(fbbResponse,*transaction);
                     if(ntx){
                         res_txs.emplace_back(ntx.value());
                     }
