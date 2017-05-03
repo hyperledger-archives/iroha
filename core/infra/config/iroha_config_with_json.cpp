@@ -79,6 +79,10 @@ bool IrohaConfigManager::getActiveStart(bool defaultValue = false) {
   return this->getParam<bool>({"active_start"}, defaultValue);
 }
 
+std::string IrohaConfigManager::getConfigLeaderIp(const std::string& defaultValue){
+  return this->getParam<std::string>({"leader_ip"}, defaultValue);
+}
+
 std::vector<std::string> IrohaConfigManager::getTrustedHosts(
     const std::vector<std::string>& defaultValue) {
   return this->getParam<std::vector<std::string>>({"trusted_hosts"},

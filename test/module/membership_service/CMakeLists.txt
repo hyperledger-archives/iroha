@@ -28,7 +28,7 @@ add_test(
 add_executable(synchornizer_connection_part_test synchornizer_connection_part_test.cpp)
 target_link_libraries(synchornizer_connection_part_test
   gtest
-  ametsuchi
+  repository
   endpoint_fbs
   membership_service
   flatbuffer_service

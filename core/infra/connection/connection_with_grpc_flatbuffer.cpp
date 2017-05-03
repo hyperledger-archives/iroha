@@ -16,6 +16,7 @@ limitations under the License.
 #include <grpc++/grpc++.h>
 #include <service/flatbuffer_service.h>
 
+#include <ametsuchi/repository.hpp>
 #include <crypto/hash.hpp>
 #include <crypto/signature.hpp>
 #include <infra/config/iroha_config_with_json.hpp>
@@ -29,6 +30,7 @@ limitations under the License.
 #include <endpoint.grpc.fb.h>
 #include <main_generated.h>
 
+#include <asset_generated.h>
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -45,6 +47,8 @@ using Ping = ::iroha::Ping;
 using Response = ::iroha::Response;
 using Transaction = ::iroha::Transaction;
 using TransactionWrapper = ::iroha::TransactionWrapper;
+using AssetResponse = ::iroha::AssetResponse;
+using AssetQuery = ::iroha::AssetQuery;
 using Signature = ::iroha::Signature;
 using Sync = ::iroha::Sync;
 
@@ -66,7 +70,7 @@ enum ResponseType {
 
 
 /************************************************************************************
- * Interface: Verify, Torii :: receive()
+ * Interface: Verify :: receive()
  ************************************************************************************/
 template <class CallBackFunc>
 class Receiver {
@@ -90,6 +94,30 @@ class Receiver {
  private:
   std::shared_ptr<CallBackFunc> receiver_;
 };
+
+template <class CallBackFunc, class T>
+class ReceiverWithReturen {
+ public:
+  VoidHandler set(CallBackFunc &&rhs) {
+    if (receiver_) {
+      return makeUnexpected(exception::DuplicateSetArgumentException(
+          "Receiver<" + std::string(typeid(CallBackFunc).name()) + ">",
+          __FILE__));
+    }
+
+    receiver_ = std::make_shared<CallBackFunc>(rhs);
+    return {};
+  }
+
+  // ToDo rewrite operator() overload.
+  T invoke(const std::string &from, flatbuffers::unique_ptr_t &&arg) {
+    return (*receiver_)(from, std::move(arg));
+  }
+
+ private:
+  std::shared_ptr<CallBackFunc> receiver_;
+};
+
 
 /**
  * Verify
@@ -153,7 +181,8 @@ class SumeragiConnectionClient {
 
     if (!eventOffset) {
       // Ordinary, nullptr has been detected.
-      return makeUnexpected(exception::connection::InvalidTransactionException());
+      return makeUnexpected(
+          exception::connection::InvalidTransactionException());
     }
 
     fbb.Finish(*eventOffset);
@@ -169,7 +198,7 @@ class SumeragiConnectionClient {
       return {};
     } else {
       return makeUnexpected(exception::connection::RPCConnectionException(
-        static_cast<int>(status.error_code()), status.error_message()));
+          static_cast<int>(status.error_code()), status.error_message()));
     }
   }
 
@@ -200,7 +229,7 @@ class SumeragiConnectionClient {
       return {};
     } else {
       return makeUnexpected(exception::connection::RPCConnectionException(
-        static_cast<int>(status.error_code()), status.error_message()));
+          static_cast<int>(status.error_code()), status.error_message()));
     }
   }
 
@@ -482,6 +511,97 @@ bool send(const std::string &ip, const ::iroha::Transaction &tx) {
 }  // namespace memberShipService
 
 /************************************************************************************
+ * AssetRepository
+ ************************************************************************************/
+namespace iroha {
+namespace AssetRepositoryImpl {
+namespace AccountGetAsset {
+// ToDo more clear
+ReceiverWithReturen<AccountGetAsset::CallBackFunc,
+                    std::vector<const ::iroha::Asset *>>
+    receiver;
+
+void receive(AccountGetAsset::CallBackFunc &&callback) {
+  receiver.set(std::move(callback));
+}
+}  // namespace AccountGetAsset
+}  // namespace AssetRepositoryImpl
+}  // namespace iroha
+/**
+ * AssetRepositoryConnectionServiceImpl
+ */
+class AssetRepositoryConnectionServiceImpl final
+    : public ::iroha::AssetRepository::Service {
+ public:
+  Status AccountGetAsset(
+      ServerContext *context,
+      const flatbuffers::BufferRef<::iroha::AssetQuery> *requestRef,
+      flatbuffers::BufferRef<::iroha::AssetResponse> *responseRef) override {
+    fbbResponse.Clear();
+    std::vector<const ::iroha::Asset *> assets;
+    {
+      const auto q = requestRef->GetRoot();
+      flatbuffers::FlatBufferBuilder fbb;
+      auto req_offset = ::iroha::CreateAssetQueryDirect(
+          fbb, q->pubKey()->c_str(), q->ledger_name()->c_str(),
+          q->domain_name()->c_str(), q->asset_name()->c_str(),
+          q->uncommitted());
+
+      fbb.Finish(req_offset);
+      assets = connection::iroha::AssetRepositoryImpl::AccountGetAsset::receiver
+                   .invoke("from",  // TODO: Specify 'from'
+                           fbb.ReleaseBufferPointer());
+
+      std::vector<uint8_t> types;
+      std::vector<flatbuffers::Offset<::iroha::Asset>> res_assets;
+      {
+        flatbuffers::FlatBufferBuilder fbb_;
+        for (const ::iroha::Asset *asset : assets) {
+          if (asset->asset_type() == ::iroha::AnyAsset::Currency) {
+            fbb_.Clear();
+            res_assets.push_back(::iroha::CreateAsset(
+                fbb_, asset->asset_type(),
+                ::iroha::CreateCurrencyDirect(
+                    fbb_, asset->asset_as_Currency()->currency_name()->c_str(),
+                    asset->asset_as_Currency()->domain_name()->c_str(),
+                    asset->asset_as_Currency()->ledger_name()->c_str(),
+                    asset->asset_as_Currency()->description()->c_str(),
+                    asset->asset_as_Currency()->amount()->c_str(),
+                    asset->asset_as_Currency()->precision())
+                    .Union()));
+          }
+        }
+      }
+      auto responseOffset = ::iroha::CreateAssetResponseDirect(
+          fbbResponse, "Success", ::iroha::Code::COMMIT, &res_assets);
+      fbbResponse.Finish(responseOffset);
+
+      *responseRef = flatbuffers::BufferRef<AssetResponse>(
+          fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+    }
+    return Status::OK;
+  }
+
+ private:
+  flatbuffers::Offset<::iroha::Signature> sign(
+      flatbuffers::FlatBufferBuilder &fbb, const std::string &tx) {
+    const auto stamp = datetime::unixtime();
+    const auto hashWithTimestamp =
+        hash::sha3_256_hex(tx + std::to_string(stamp));
+    const auto signature = signature::sign(
+        hashWithTimestamp,
+        config::PeerServiceConfig::getInstance().getMyPublicKey(),
+        config::PeerServiceConfig::getInstance().getMyPrivateKey());
+    const std::vector<uint8_t> sigblob(signature.begin(), signature.end());
+    return ::iroha::CreateSignatureDirect(
+        fbb, config::PeerServiceConfig::getInstance().getMyPublicKey().c_str(),
+        &sigblob, stamp);
+  };
+
+  flatbuffers::FlatBufferBuilder fbbResponse;
+};
+
+/************************************************************************************
  * Sync
  ************************************************************************************/
 
@@ -490,9 +610,7 @@ class SyncConnectionClient {
   explicit SyncConnectionClient(std::shared_ptr<Channel> channel)
       : stub_(Sync::NewStub(channel)) {}
 
-  std::vector<uint8_t> checkHash(
-    const ::iroha::Ping &ping
-  ) const {
+  bool checkHash(const ::iroha::Ping &ping) const {
     ::grpc::ClientContext clientContext;
     flatbuffers::FlatBufferBuilder fbbPing;
 
@@ -511,18 +629,16 @@ class SyncConnectionClient {
     if (res.ok()) {
       logger::info("connection")
           << "response: " << responseRef.GetRoot()->isCorrect();
-      return {responseRef.buf, responseRef.buf + responseRef.len};
+      return responseRef.GetRoot()->isCorrect();
     } else {
       logger::error("connection")
           << static_cast<int>(res.error_code()) << ": " << res.error_message();
       // std::cout << status.error_code() << ": " << status.error_message();
-      return {};
+      return false;
     }
   }
 
-  std::vector<uint8_t> getPeers(
-    const ::iroha::Ping &ping
-  ) const {
+  std::vector<uint8_t> getPeers(const ::iroha::Ping &ping) const {
     ::grpc::ClientContext clientContext;
 
     flatbuffers::FlatBufferBuilder fbbPing;
@@ -564,10 +680,10 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
                        *responseRef) override {
     fbbResponse.Clear();
     {
+      logger::debug("SyncConnectionServiceImpl::checkHash") << "RPC works";
       std::string hash = request->GetRoot()->message()->str();
       // Now, only supported root hash copare. (ver1.0)
-      if (true) {  // TODO unused it yet? repository::getMerkleRoot() ==
-                   // hash) {
+      if (repository::getMerkleRoot() == hash) {
         auto responseOffset =
             ::iroha::CreateCheckHashResponse(fbbResponse, true, true, true);
         fbbResponse.Finish(responseOffset);
@@ -587,13 +703,15 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
       flatbuffers::BufferRef<::iroha::PeersResponse> *responseRef) override {
     fbbResponse.Clear();
     {
+      logger::debug("SyncConnectionServiceImpl::getPeers") << "RPC works";
       std::string leader_ip = request->GetRoot()->message()->str();
       std::vector<flatbuffers::Offset<::iroha::Peer>> p_vec;
       for (auto &&p : ::peer::service::getAllPeerList()) {
         p_vec.emplace_back(::iroha::CreatePeer(
-          fbbResponse, fbbResponse.CreateString(p->ledger_name),
-          fbbResponse.CreateString(p->publicKey), fbbResponse.CreateString(p->ip), p->trust,
-          p->active, p->join_ledger));
+            fbbResponse, fbbResponse.CreateString(p->ledger_name),
+            fbbResponse.CreateString(p->publicKey),
+            fbbResponse.CreateString(p->ip), p->trust, p->active,
+            p->join_ledger));
       }
       auto res = ::iroha::CreatePeersResponse(
           fbbResponse, fbbResponse.CreateString("message"),
@@ -615,27 +733,21 @@ namespace SyncImpl {
 namespace checkHash {
 bool send(const std::string &ip, const ::iroha::Ping &ping) {
   logger::info("Connection with grpc") << "Send!";
-  if (::peer::service::isExistIP(ip)) {
-    logger::info("Connection with grpc") << "IP exists: " << ip;
-    SyncConnectionClient client(grpc::CreateChannel(
-        ip + ":" +
-            std::to_string(config::IrohaConfigManager::getInstance()
-                               .getGrpcPortNumber(50051)),
-        grpc::InsecureChannelCredentials()));
+  logger::info("Connection with grpc") << "IP: " << ip;
+  SyncConnectionClient client(grpc::CreateChannel(
+      ip + ":" +
+          std::to_string(config::IrohaConfigManager::getInstance()
+                             .getGrpcPortNumber(50051)),
+      grpc::InsecureChannelCredentials()));
 
-    flatbuffers::BufferRef<::iroha::CheckHashResponse> responseRef;
-    auto replyvec = client.checkHash(ping);
-    auto reply = flatbuffers::GetRoot<::iroha::CheckHashResponse>(replyvec.data());
-    return reply->isCorrect();
-  } else
-    return false;
+  return client.checkHash(ping);
 }
 }  // namespace checkHash
 
 namespace getPeers {
 bool send(const std::string &ip, const ::iroha::Ping &ping) {
   logger::info("Connection with grpc") << "Send!";
-  logger::info("Connection with grpc") << "IP exists: " << ip;
+  logger::info("Connection with grpc") << "IP: " << ip;
   SyncConnectionClient client(grpc::CreateChannel(
       ip + ":" +
           std::to_string(config::IrohaConfigManager::getInstance()

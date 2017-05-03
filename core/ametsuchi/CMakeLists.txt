@@ -5,4 +5,5 @@ ADD_LIBRARY(repository STATIC
 target_link_libraries(repository
     ametsuchi
     flatbuffer_service
+    connection_with_grpc_flatbuffer
 )
