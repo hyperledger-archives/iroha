@@ -33,6 +33,7 @@ limitations under the License.
 #include <asset_generated.h>
 #include <algorithm>
 #include <memory>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -536,7 +537,8 @@ class AssetRepositoryConnectionServiceImpl final
   Status AccountGetAsset(
       ServerContext *context,
       const flatbuffers::BufferRef<::iroha::AssetQuery> *requestRef,
-      flatbuffers::BufferRef<::iroha::AssetResponse> *responseRef) override {
+      flatbuffers::BufferRef<::iroha::AssetResponse> *responseRef
+  ) override {
     fbbResponse.Clear();
     std::vector<const ::iroha::Asset *> assets;
     {
@@ -555,20 +557,20 @@ class AssetRepositoryConnectionServiceImpl final
       std::vector<uint8_t> types;
       std::vector<flatbuffers::Offset<::iroha::Asset>> res_assets;
       {
-        flatbuffers::FlatBufferBuilder fbb_;
         for (const ::iroha::Asset *asset : assets) {
           if (asset->asset_type() == ::iroha::AnyAsset::Currency) {
-            fbb_.Clear();
             res_assets.push_back(::iroha::CreateAsset(
-                fbb_, asset->asset_type(),
+                fbbResponse, asset->asset_type(),
                 ::iroha::CreateCurrencyDirect(
-                    fbb_, asset->asset_as_Currency()->currency_name()->c_str(),
+                    fbbResponse,
+                    asset->asset_as_Currency()->currency_name()->c_str(),
                     asset->asset_as_Currency()->domain_name()->c_str(),
                     asset->asset_as_Currency()->ledger_name()->c_str(),
                     asset->asset_as_Currency()->description()->c_str(),
                     asset->asset_as_Currency()->amount()->c_str(),
                     asset->asset_as_Currency()->precision())
-                    .Union()));
+                    .Union())
+            );
           }
         }
       }
@@ -772,7 +774,8 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
             }
             int index = 0;
             auto responseOffset = ::iroha::CreateTransactionResponseDirect(
-                    fbbResponse, "Success", index, ::iroha::Code::COMMIT, &res_txs);
+                    fbbResponse, "Success", index, ::iroha::Code::COMMIT, &res_txs
+            );
             fbbResponse.Finish(responseOffset);
 
             *responseRef = flatbuffers::BufferRef<TransactionResponse>(
@@ -805,6 +808,7 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
       return Status::OK;
     }
   }
+
 
  private:
   flatbuffers::FlatBufferBuilder fbbResponse;
@@ -897,12 +901,15 @@ int run() {
   auto address =
       "0.0.0.0:" +
       std::to_string(
-          config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051));
+          config::IrohaConfigManager::getInstance().getGrpcPortNumber(50051)
+  );
   SumeragiConnectionServiceImpl service;
+  AssetRepositoryConnectionServiceImpl service_asset;
   SyncConnectionServiceImpl service_sync;
   grpc::ServerBuilder builder;
   builder.AddListeningPort(address, grpc::InsecureServerCredentials());
   builder.RegisterService(&service);
+  builder.RegisterService(&service_asset);
   builder.RegisterService(&service_sync);  // TODO WIP Is it OK?
 
   {
