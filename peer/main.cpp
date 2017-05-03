@@ -42,6 +42,8 @@ int main() {
     return 1;
   }
 
+  repository::init();
+
   logger::setLogLevel(logger::LogLevel::Debug);
 
   connection::initialize_peer();

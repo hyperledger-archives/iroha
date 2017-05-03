@@ -87,7 +87,7 @@ merkle::hash_t TxStore::append(const std::vector<uint8_t> *blob) {
 
   // 4. Push to merkle tree
   merkle::hash_t h;
-  assert(tx->hash()->size() == merkle::HASH_LEN);
+  //assert(tx->hash()->size() == merkle::HASH_LEN);
   std::copy(tx->hash()->begin(), tx->hash()->end(), &h[0]);
   merkleTree_.push(h);
   return merkleTree_.root();
@@ -386,13 +386,13 @@ void TxStore::init_merkle_tree() {
   auto records = read_all_records(trees_.at("merkle_tree").second);
   for (auto &record : records) {
     merkle::hash_t hash;
-    assert(record.second.size == merkle::HASH_LEN);
+    //assert(record.second.size == merkle::HASH_LEN);
     std::copy(
         static_cast<const uint8_t *>(record.second.data),
         static_cast<const uint8_t *>(record.second.data) + record.second.size,
         hash.data());
     merkleTree_.push(hash);
-    assert((merkleTree_.last_block_end() - 1) == *(size_t *)record.first.data);
+    //assert((merkleTree_.last_block_end() - 1) == *(size_t *)record.first.data);
   }
 }
 }

@@ -24,7 +24,7 @@ namespace runtime{
     void processTransaction(const iroha::Transaction& tx){
         if(!validator::account_exist_validator(*tx.creatorPubKey())){
             // Reject
-            return;
+            //return;
         }
         if(!validator::permission_validator(tx)){
             // Reject
@@ -33,6 +33,7 @@ namespace runtime{
             // Reject
         }
         repository::append(tx);
+      std::cout << "APPENDED\n";
     }
 
 };
