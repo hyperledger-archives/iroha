@@ -14,13 +14,13 @@ function(compile_fbs_to_cpp FBS)
   add_dependencies(flatbuffers ${GEN_TARGET})
 endfunction()
 
-compile_fbs_to_cpp(account.fbs)
-compile_fbs_to_cpp(asset.fbs)
-compile_fbs_to_cpp(commands.fbs)
-compile_fbs_to_cpp(endpoint.fbs)
-compile_fbs_to_cpp(main.fbs)
-compile_fbs_to_cpp(primitives.fbs)
-compile_fbs_to_cpp(transaction.fbs)
+#compile_fbs_to_cpp(account.fbs)
+#compile_fbs_to_cpp(asset.fbs)
+#compile_fbs_to_cpp(commands.fbs)
+#compile_fbs_to_cpp(endpoint.fbs)
+#compile_fbs_to_cpp(main.fbs)
+#compile_fbs_to_cpp(primitives.fbs)
+#compile_fbs_to_cpp(transaction.fbs)
 
 add_library(endpoint_fbs STATIC
     ${IROHA_SCHEMA_DIR}/endpoint.grpc.fb.cc
