@@ -120,6 +120,13 @@ bool send(const std::string& ip, const ::iroha::Ping& ping);
 namespace getPeers {
 bool send(const std::string& ip, const ::iroha::Ping& ping);
 }  // namespace getPeers
+namespace getTransactions {
+using CallBackFunc = std::function<std::vector<const ::iroha::Transaction*>(
+        const std::string& /* from */, flatbuffers::unique_ptr_t&& /* message */)>;
+
+void receive(getTransactions::CallBackFunc&& callback);
+bool send(const std::string& ip, const ::iroha::Ping& ping);
+}  // namespace getPeers
 }  // namespace SyncImpl
 }  // namespace memberShipService
 

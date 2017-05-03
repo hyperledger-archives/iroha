@@ -48,6 +48,7 @@ using Response = ::iroha::Response;
 using Transaction = ::iroha::Transaction;
 using TransactionWrapper = ::iroha::TransactionWrapper;
 using AssetResponse = ::iroha::AssetResponse;
+using TransactionResponse = ::iroha::TransactionResponse;
 using AssetQuery = ::iroha::AssetQuery;
 using Signature = ::iroha::Signature;
 using Sync = ::iroha::Sync;
@@ -67,7 +68,6 @@ enum ResponseType {
   RESPONSE_INVALID_SIG,  // wrong signature
   RESPONSE_ERRCONN,      // connection error
 };
-
 
 /************************************************************************************
  * Interface: Verify :: receive()
@@ -604,6 +604,21 @@ class AssetRepositoryConnectionServiceImpl final
 /************************************************************************************
  * Sync
  ************************************************************************************/
+namespace memberShipService {
+namespace SyncImpl {
+
+namespace getTransactions {
+// ToDo more clear
+ReceiverWithReturen<getTransactions::CallBackFunc,
+        std::vector<const ::iroha::Transaction *>
+> receiver;
+void receive(getTransactions::CallBackFunc &&callback) {
+    receiver.set(std::move(callback));
+}
+}  // namespace getTransactions
+
+}  // namespace SyncImpl
+}  // namespace memberShipService
 
 class SyncConnectionClient {
  public:
@@ -635,6 +650,37 @@ class SyncConnectionClient {
           << static_cast<int>(res.error_code()) << ": " << res.error_message();
       // std::cout << status.error_code() << ": " << status.error_message();
       return false;
+    }
+  }
+
+  std::vector<uint8_t> getTransactions(const ::iroha::Ping &ping) const {
+    ::grpc::ClientContext clientContext;
+
+    flatbuffers::FlatBufferBuilder fbbPing;
+
+    auto pingOffset = ::iroha::CreatePingDirect(
+        fbbPing, ping.message()->c_str(), ping.sender()->c_str()
+    );
+
+    fbbPing.Finish(pingOffset);
+
+    flatbuffers::BufferRef<::iroha::Ping> reqPingRef(fbbPing.GetBufferPointer(),
+                                                     fbbPing.GetSize());
+
+    flatbuffers::BufferRef<::iroha::TransactionResponse> responseRef;
+
+    auto res = stub_->getTransactions(&clientContext, reqPingRef, &responseRef);
+    logger::info("Connection with grpc") << "Send!";
+
+    if (res.ok()) {
+        logger::info("connection")
+                << "response: " << responseRef.GetRoot()->message()->str();
+        return {responseRef.buf, responseRef.buf + responseRef.len};
+    } else {
+        logger::error("connection")
+                << static_cast<int>(res.error_code()) << ": " << res.error_message();
+        // std::cout << status.error_code() << ": " << status.error_message();
+        return {};
     }
   }
 
@@ -698,6 +744,45 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
     }
   }
 
+  Status getTransactions(
+        ServerContext *context, const flatbuffers::BufferRef<Ping> *requestRef,
+        flatbuffers::BufferRef<::iroha::TransactionResponse> *responseRef) override {
+        fbbResponse.Clear();
+        std::vector<const ::iroha::Transaction*> transactions;
+        {
+            const auto q = requestRef->GetRoot();
+            flatbuffers::FlatBufferBuilder fbb;
+            auto req_offset = ::iroha::CreateAssetQueryDirect(
+                fbb, q->pubKey()->c_str(), q->ledger_name()->c_str(),
+                q->domain_name()->c_str(), q->asset_name()->c_str(),
+                q->uncommitted());
+
+            fbb.Finish(req_offset);
+            transactions = connection::memberShipService::SyncImpl::getTransactions::receiver
+                    .invoke("from",  // TODO: Specify 'from'
+                    fbb.ReleaseBufferPointer());
+
+            std::vector<uint8_t> types;
+            std::vector<flatbuffers::Offset<::iroha::Transaction>> res_txs;
+            {
+                flatbuffers::FlatBufferBuilder fbb_;
+                for (const ::iroha::Transaction *transaction : transactions) {
+                    auto ntx = flatbuffer_service::copyTransaction(fbb_,*transaction);
+                    if(ntx){
+                        res_txs.emplace_back(ntx.value());
+                    }
+                }
+            }
+            int index = 0;
+            auto responseOffset = ::iroha::CreateTransactionResponseDirect(
+                    fbbResponse, "Success", index, ::iroha::Code::COMMIT, &res_txs);
+            fbbResponse.Finish(responseOffset);
+
+            *responseRef = flatbuffers::BufferRef<TransactionResponse>(
+                    fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+        }
+  }
+
   Status getPeers(
       ServerContext *context, const flatbuffers::BufferRef<Ping> *request,
       flatbuffers::BufferRef<::iroha::PeersResponse> *responseRef) override {
@@ -729,50 +814,64 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
 };
 
 namespace memberShipService {
-namespace SyncImpl {
-namespace checkHash {
-bool send(const std::string &ip, const ::iroha::Ping &ping) {
-  logger::info("Connection with grpc") << "Send!";
-  logger::info("Connection with grpc") << "IP: " << ip;
-  SyncConnectionClient client(grpc::CreateChannel(
-      ip + ":" +
-          std::to_string(config::IrohaConfigManager::getInstance()
-                             .getGrpcPortNumber(50051)),
-      grpc::InsecureChannelCredentials()));
+    namespace SyncImpl {
+        namespace checkHash {
+            bool send(const std::string &ip, const ::iroha::Ping &ping) {
+                logger::info("Connection with grpc") << "Send!";
+                logger::info("Connection with grpc") << "IP: " << ip;
+                SyncConnectionClient client(grpc::CreateChannel(
+                        ip + ":" +
+                        std::to_string(config::IrohaConfigManager::getInstance()
+                                               .getGrpcPortNumber(50051)),
+                        grpc::InsecureChannelCredentials()));
 
-  return client.checkHash(ping);
-}
-}  // namespace checkHash
+                return client.checkHash(ping);
+            }
+        }  // namespace checkHash
 
-namespace getPeers {
-bool send(const std::string &ip, const ::iroha::Ping &ping) {
-  logger::info("Connection with grpc") << "Send!";
-  logger::info("Connection with grpc") << "IP: " << ip;
-  SyncConnectionClient client(grpc::CreateChannel(
-      ip + ":" +
-          std::to_string(config::IrohaConfigManager::getInstance()
-                             .getGrpcPortNumber(50051)),
-      grpc::InsecureChannelCredentials()));
+        namespace getTransactions {
+            bool send(const std::string &ip, const ::iroha::Ping &ping){
+                logger::info("Connection with grpc") << "getTransactions Send!";
+                logger::info("Connection with grpc") << "IP: " << ip;
+                SyncConnectionClient client(grpc::CreateChannel(
+                        ip + ":" +
+                        std::to_string(config::IrohaConfigManager::getInstance()
+                                               .getGrpcPortNumber(50051)),
+                        grpc::InsecureChannelCredentials()));
 
-  auto replyvec = client.getPeers(ping);
-  auto reply = flatbuffers::GetRoot<::iroha::PeersResponse>(replyvec.data());
+                return client.checkHash(ping);
+            }
+        }  // namespace getTransactions
 
-  for (auto it = reply->peers()->begin(); it != reply->peers()->end(); it++) {
-    std::cout << "ip: " << it->ip()->c_str() << std::endl;
-    std::cout << "pubkey: " << it->publicKey()->c_str() << std::endl;
-    std::cout << "leadger: " << it->ledger_name()->c_str() << std::endl;
-    std::string ip = it->ip()->c_str();
-    std::string pubkey = it->publicKey()->c_str();
-    std::string lerger = it->ledger_name()->c_str();
-    auto p = ::peer::Node(ip, pubkey, lerger, it->trust(), it->active(),
-                          it->join_ledger());
-    if (::peer::transaction::validator::add(p))
-      ::peer::transaction::executor::add(p);
-  }
-  return true;
-}
-}  // namespace getPeers
-}  // namespace SyncImpl
+        namespace getPeers {
+            bool send(const std::string &ip, const ::iroha::Ping &ping) {
+                logger::info("Connection with grpc") << "Send!";
+                logger::info("Connection with grpc") << "IP: " << ip;
+                SyncConnectionClient client(grpc::CreateChannel(
+                        ip + ":" +
+                        std::to_string(config::IrohaConfigManager::getInstance()
+                                               .getGrpcPortNumber(50051)),
+                        grpc::InsecureChannelCredentials()));
+
+                auto replyvec = client.getPeers(ping);
+                auto reply = flatbuffers::GetRoot<::iroha::PeersResponse>(replyvec.data());
+
+                for (auto it = reply->peers()->begin(); it != reply->peers()->end(); it++) {
+                    std::cout << "ip: " << it->ip()->c_str() << std::endl;
+                    std::cout << "pubkey: " << it->publicKey()->c_str() << std::endl;
+                    std::cout << "leadger: " << it->ledger_name()->c_str() << std::endl;
+                    std::string ip = it->ip()->c_str();
+                    std::string pubkey = it->publicKey()->c_str();
+                    std::string lerger = it->ledger_name()->c_str();
+                    auto p = ::peer::Node(ip, pubkey, lerger, it->trust(), it->active(),
+                                          it->join_ledger());
+                    if (::peer::transaction::validator::add(p))
+                        ::peer::transaction::executor::add(p);
+                }
+                return true;
+            }
+        }  // namespace getPeers
+    }  // namespace SyncImpl
 }  // namespace memberShipService
 
 /************************************************************************************
