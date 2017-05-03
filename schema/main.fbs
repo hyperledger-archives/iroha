@@ -24,7 +24,7 @@ table TransactionResponse {
   message:              string  (required);
   index:                ulong;
   code:                 Code;
-  transactions:         [TransactionWrapper];
+  transactions:         [Transaction];
 }
 
 table ReceiverConfirmation {
