@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <string>
 #include <asset_generated.h>
 #include <endpoint_generated.h>
 #include <infra/ametsuchi/include/ametsuchi/ametsuchi.h>
@@ -165,11 +166,13 @@ void initialize_repository() {
             });
 
             connection::memberShipService::SyncImpl::getTransactions::receive([=](
-                    const std::string & /* from */, flatbuffers::unique_ptr_t &&query_ptr) -> std::vector<const ::iroha::Transaction *>{
+                    const std::string & /* from */, flatbuffers::unique_ptr_t &&query_ptr) -> std::vector<const ::iroha::Transaction*>{
                 if(db == nullptr) init();
-                // ToDo
-                std::vector<const ::iroha::Transaction *> res;
-                return res;
+                const iroha::Ping& ping = *flatbuffers::GetRoot<iroha::Ping>(query_ptr.get());
+                std::vector<const ::iroha::Transaction*> ret;
+                size_t index = stoi(ping.message()->str());
+                ret.emplace_back( db->getTransaction(index) );
+                return ret;
             });
         }
     }

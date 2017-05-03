@@ -22,6 +22,7 @@ limitations under the License.
 #include <infra/config/iroha_config_with_json.hpp>
 #include <infra/config/peer_service_with_json.hpp>
 #include <membership_service/peer_service.hpp>
+#include <membership_service/synchronizer.hpp>
 #include <service/connection.hpp>
 #include <utils/datetime.hpp>
 #include <utils/expected.hpp>
@@ -772,7 +773,7 @@ class SyncConnectionServiceImpl final : public ::iroha::Sync::Service {
                     }
                 }
             }
-            int index = 0;
+            int index = stoi(q->message()->str());
             auto responseOffset = ::iroha::CreateTransactionResponseDirect(
                     fbbResponse, "Success", index, ::iroha::Code::COMMIT, &res_txs
             );
@@ -840,7 +841,11 @@ namespace memberShipService {
                                                .getGrpcPortNumber(50051)),
                         grpc::InsecureChannelCredentials()));
 
-                return client.checkHash(ping);
+                auto reply = client.getTransactions(ping);
+                auto txRes = flatbuffers::GetRoot<::iroha::TransactionResponse>(reply.data());
+                auto tx = txRes->transactions()->GetAs<::iroha::Transaction>(0);
+                ::peer::sync::detail::append_temporary(txRes->index(), tx);
+                return true;
             }
         }  // namespace getTransactions
 
