@@ -19,8 +19,8 @@
 #include <flatbuffers/flatbuffers.h>
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
-#include <iostream>
 #include <transaction_generated.h>
+#include <iostream>
 #include "../generator/tx_generator.h"
 
 class Ametsuchi_Test : public ::testing::Test {
@@ -59,10 +59,9 @@ TEST_F(Ametsuchi_Test, AssetTest) {
 
   // Add currency to account 1
   blob = generator::random_transaction(
-      fbb, iroha::Command::AssetAdd,
-      generator::random_Add(
-          fbb, "1", generator::random_asset_wrapper_currency(200, 2, "Dollar",
-                                                             "USA", "l1"))
+      fbb, iroha::Command::Add,
+      generator::random_Add(fbb, "1", generator::random_asset_wrapper_currency(
+                                          200, 2, "Dollar", "USA", "l1"))
           .Union());
   ametsuchi_.append(&blob);
 
@@ -71,14 +70,14 @@ TEST_F(Ametsuchi_Test, AssetTest) {
     auto reference_tx =
         flatbuffers::GetRoot<iroha::Transaction>(
             generator::random_transaction(
-                fbb2, iroha::Command::AssetTransfer,
+                fbb2, iroha::Command::Transfer,
                 generator::random_Transfer(
                     fbb2, generator::random_asset_wrapper_currency(
                               100, 2, "Dollar", "USA", "l1"),
                     "1", "2")
                     .Union())
                 .data())
-            ->command_as_AssetTransfer();
+            ->command_as_Transfer();
     auto reference_1 = reference_tx->sender();
     auto reference_ln =
         reference_tx->asset_nested_root()->asset_as_Currency()->ledger_name();
@@ -86,23 +85,20 @@ TEST_F(Ametsuchi_Test, AssetTest) {
         reference_tx->asset_nested_root()->asset_as_Currency()->domain_name();
     auto reference_cn =
         reference_tx->asset_nested_root()->asset_as_Currency()->currency_name();
-    auto cur = flatbuffers::GetRoot<iroha::Asset>(
-                   ametsuchi_
-                       .accountGetAsset(reference_1, reference_ln, reference_dn,
-                                        reference_cn, true)
-                       .data)
+    auto cur = ametsuchi_
+                   .accountGetAsset(reference_1, reference_ln, reference_dn,
+                                    reference_cn, true)
                    ->asset_as_Currency();
 
-    ASSERT_EQ(cur->amount(), 200);
+    ASSERT_TRUE(cur->amount()->str() == "200");
   }
 
   // Transfer from 1 to 2
   blob = generator::random_transaction(
-      fbb, iroha::Command::AssetTransfer,
-      generator::random_Transfer(fbb,
-                                      generator::random_asset_wrapper_currency(
+      fbb, iroha::Command::Transfer,
+      generator::random_Transfer(fbb, generator::random_asset_wrapper_currency(
                                           100, 2, "Dollar", "USA", "l1"),
-                                      "1", "2")
+                                 "1", "2")
           .Union());
   ametsuchi_.append(&blob);
 
@@ -111,14 +107,14 @@ TEST_F(Ametsuchi_Test, AssetTest) {
     auto reference_tx =
         flatbuffers::GetRoot<iroha::Transaction>(
             generator::random_transaction(
-                fbb2, iroha::Command::AssetTransfer,
+                fbb2, iroha::Command::Transfer,
                 generator::random_Transfer(
                     fbb2, generator::random_asset_wrapper_currency(
                               100, 2, "Dollar", "USA", "l1"),
                     "1", "2")
                     .Union())
                 .data())
-            ->command_as_AssetTransfer();
+            ->command_as_Transfer();
     auto reference_1 = reference_tx->sender();
     auto reference_ln =
         reference_tx->asset_nested_root()->asset_as_Currency()->ledger_name();
@@ -126,14 +122,12 @@ TEST_F(Ametsuchi_Test, AssetTest) {
         reference_tx->asset_nested_root()->asset_as_Currency()->domain_name();
     auto reference_cn =
         reference_tx->asset_nested_root()->asset_as_Currency()->currency_name();
-    auto cur = flatbuffers::GetRoot<iroha::Asset>(
-                   ametsuchi_
-                       .accountGetAsset(reference_1, reference_ln, reference_dn,
-                                        reference_cn, true)
-                       .data)
+    auto cur = ametsuchi_
+                   .accountGetAsset(reference_1, reference_ln, reference_dn,
+                                    reference_cn, true)
                    ->asset_as_Currency();
 
-    ASSERT_EQ(cur->amount(), 100);
+    ASSERT_TRUE(cur->amount()->str() == "100");
   }
 
   {
@@ -141,14 +135,14 @@ TEST_F(Ametsuchi_Test, AssetTest) {
     auto reference_tx =
         flatbuffers::GetRoot<iroha::Transaction>(
             generator::random_transaction(
-                fbb2, iroha::Command::AssetTransfer,
+                fbb2, iroha::Command::Transfer,
                 generator::random_Transfer(
                     fbb2, generator::random_asset_wrapper_currency(
                               100, 2, "Dollar", "USA", "l1"),
                     "1", "2")
                     .Union())
                 .data())
-            ->command_as_AssetTransfer();
+            ->command_as_Transfer();
     auto reference_2 = reference_tx->receiver();
     auto reference_ln =
         reference_tx->asset_nested_root()->asset_as_Currency()->ledger_name();
@@ -156,14 +150,12 @@ TEST_F(Ametsuchi_Test, AssetTest) {
         reference_tx->asset_nested_root()->asset_as_Currency()->domain_name();
     auto reference_cn =
         reference_tx->asset_nested_root()->asset_as_Currency()->currency_name();
-    auto cur = flatbuffers::GetRoot<iroha::Asset>(
-                   ametsuchi_
-                       .accountGetAsset(reference_2, reference_ln, reference_dn,
-                                        reference_cn, true)
-                       .data)
+    auto cur = ametsuchi_
+                   .accountGetAsset(reference_2, reference_ln, reference_dn,
+                                    reference_cn, true)
                    ->asset_as_Currency();
 
-    ASSERT_EQ(cur->amount(), 100);
+    ASSERT_TRUE(cur->amount()->str() == "100");
   }
 
   ametsuchi_.commit();
@@ -173,14 +165,14 @@ TEST_F(Ametsuchi_Test, AssetTest) {
     auto reference_tx =
         flatbuffers::GetRoot<iroha::Transaction>(
             generator::random_transaction(
-                fbb2, iroha::Command::AssetTransfer,
+                fbb2, iroha::Command::Transfer,
                 generator::random_Transfer(
                     fbb2, generator::random_asset_wrapper_currency(
                               100, 2, "Dollar", "USA", "l1"),
                     "1", "2")
                     .Union())
                 .data())
-            ->command_as_AssetTransfer();
+            ->command_as_Transfer();
     auto reference_1 = reference_tx->sender();
     auto reference_ln =
         reference_tx->asset_nested_root()->asset_as_Currency()->ledger_name();
@@ -188,14 +180,12 @@ TEST_F(Ametsuchi_Test, AssetTest) {
         reference_tx->asset_nested_root()->asset_as_Currency()->domain_name();
     auto reference_cn =
         reference_tx->asset_nested_root()->asset_as_Currency()->currency_name();
-    auto cur = flatbuffers::GetRoot<iroha::Asset>(
-                   ametsuchi_
-                       .accountGetAsset(reference_1, reference_ln, reference_dn,
-                                        reference_cn)
-                       .data)
+    auto cur = ametsuchi_
+                   .accountGetAsset(reference_1, reference_ln, reference_dn,
+                                    reference_cn)
                    ->asset_as_Currency();
 
-    ASSERT_EQ(cur->amount(), 100);
+    ASSERT_TRUE(cur->amount()->str() == "100");
   }
 
   {
@@ -203,14 +193,14 @@ TEST_F(Ametsuchi_Test, AssetTest) {
     auto reference_tx =
         flatbuffers::GetRoot<iroha::Transaction>(
             generator::random_transaction(
-                fbb2, iroha::Command::AssetTransfer,
+                fbb2, iroha::Command::Transfer,
                 generator::random_Transfer(
                     fbb2, generator::random_asset_wrapper_currency(
                               100, 2, "Dollar", "USA", "l1"),
                     "1", "2")
                     .Union())
                 .data())
-            ->command_as_AssetTransfer();
+            ->command_as_Transfer();
     auto reference_2 = reference_tx->receiver();
     auto reference_ln =
         reference_tx->asset_nested_root()->asset_as_Currency()->ledger_name();
@@ -218,14 +208,11 @@ TEST_F(Ametsuchi_Test, AssetTest) {
         reference_tx->asset_nested_root()->asset_as_Currency()->domain_name();
     auto reference_cn =
         reference_tx->asset_nested_root()->asset_as_Currency()->currency_name();
-    auto cur = flatbuffers::GetRoot<iroha::Asset>(
-                   ametsuchi_
-                       .accountGetAsset(reference_2, reference_ln, reference_dn,
-                                        reference_cn)
-                       .data)
+    auto cur = ametsuchi_
+                   .accountGetAsset(reference_2, reference_ln, reference_dn,
+                                    reference_cn)
                    ->asset_as_Currency();
-
-    ASSERT_EQ(cur->amount(), 100);
+    ASSERT_TRUE(cur->amount()->str() == "100");
   }
 
   //});
@@ -250,7 +237,8 @@ TEST_F(Ametsuchi_Test, PeerTest) {
     flatbuffers::FlatBufferBuilder fbb(2048);
     auto blob = generator::random_transaction(
         fbb, iroha::Command::PeerAdd,
-        generator::random_PeerAdd(fbb, generator::random_peer(ledger,pubkey1, ip1))
+        generator::random_PeerAdd(fbb,
+                                  generator::random_peer(ledger, pubkey1, ip1))
             .Union());
     ametsuchi_.append(&blob);
   }
@@ -259,7 +247,8 @@ TEST_F(Ametsuchi_Test, PeerTest) {
     flatbuffers::FlatBufferBuilder fbb(2048);
     auto blob = generator::random_transaction(
         fbb, iroha::Command::PeerAdd,
-        generator::random_PeerAdd(fbb, generator::random_peer(ledger,pubkey2, ip2))
+        generator::random_PeerAdd(fbb,
+                                  generator::random_peer(ledger, pubkey2, ip2))
             .Union());
     ametsuchi_.append(&blob);
   }
@@ -271,8 +260,7 @@ TEST_F(Ametsuchi_Test, PeerTest) {
     auto query_pubkey =
         flatbuffers::GetRoot<flatbuffers::String>(fbb.GetBufferPointer());
 
-    auto cur = flatbuffers::GetRoot<iroha::Peer>(
-        ametsuchi_.pubKeyGetPeer(query_pubkey, true).data);
+    auto cur = ametsuchi_.pubKeyGetPeer(query_pubkey, true);
 
     ASSERT_TRUE(cur->publicKey()->str() == pubkey1);
     ASSERT_TRUE(cur->ip()->str() == ip1);
@@ -285,8 +273,7 @@ TEST_F(Ametsuchi_Test, PeerTest) {
     auto query_pubkey =
         flatbuffers::GetRoot<flatbuffers::String>(fbb.GetBufferPointer());
 
-    auto cur = flatbuffers::GetRoot<iroha::Peer>(
-        ametsuchi_.pubKeyGetPeer(query_pubkey, true).data);
+    auto cur = ametsuchi_.pubKeyGetPeer(query_pubkey, true);
 
     ASSERT_TRUE(cur->publicKey()->str() == pubkey2);
     ASSERT_TRUE(cur->ip()->str() == ip2);
