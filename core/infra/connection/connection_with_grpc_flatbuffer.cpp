@@ -30,11 +30,11 @@ limitations under the License.
 #include <endpoint.grpc.fb.h>
 #include <main_generated.h>
 
+#include <asset_generated.h>
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
-#include <asset_generated.h>
 
 namespace connection {
 /**
@@ -473,105 +473,103 @@ bool send(const std::string &ip, const ::iroha::Transaction &tx) {
     flatbuffers::BufferRef<Response> response;
     client.Torii(tx, &response);
     auto reply = response.GetRoot();
-    return true;    
+    return true;
   }
 }
 }  // namespace Torii
 }  // namespace SumeragiImpl
 }  // namespace memberShipService
 
-  /************************************************************************************
-   * AssetRepository
-   ************************************************************************************/
-  namespace iroha {
-      namespace AssetRepositoryImpl {
-         namespace AccountGetAsset {
-             // ToDo more clear
-             ReceiverWithReturen<AccountGetAsset::CallBackFunc, std::vector<const ::iroha::Asset *>> receiver;
+/************************************************************************************
+ * AssetRepository
+ ************************************************************************************/
+namespace iroha {
+namespace AssetRepositoryImpl {
+namespace AccountGetAsset {
+// ToDo more clear
+ReceiverWithReturen<AccountGetAsset::CallBackFunc,
+                    std::vector<const ::iroha::Asset *>>
+    receiver;
 
-             void receive(AccountGetAsset::CallBackFunc&& callback) {
-                 receiver.set(std::move(callback));
-             }
-         }
-      }
-  }
-  /**
-   * AssetRepositoryConnectionServiceImpl
-   */
-  class AssetRepositoryConnectionServiceImpl final : public ::iroha::AssetRepository::Service {
-  public:
-      Status AccountGetAsset(ServerContext *context,
-                    const flatbuffers::BufferRef<::iroha::AssetQuery> *requestRef,
-                    flatbuffers::BufferRef<::iroha::AssetResponse> *responseRef) override {
-          fbbResponse.Clear();
-          std::vector<const ::iroha::Asset *> assets;
-          {
-              const auto q = requestRef->GetRoot();
-              flatbuffers::FlatBufferBuilder fbb;
-              auto req_offset = ::iroha::CreateAssetQueryDirect(fbb,
-                  q->pubKey()->c_str(),
-                  q->ledger_name()->c_str(),
-                  q->domain_name()->c_str(),
-                  q->asset_name()->c_str(),
-                  q->uncommitted()
-              );
+void receive(AccountGetAsset::CallBackFunc &&callback) {
+  receiver.set(std::move(callback));
+}
+}
+}
+}
+/**
+ * AssetRepositoryConnectionServiceImpl
+ */
+class AssetRepositoryConnectionServiceImpl final
+    : public ::iroha::AssetRepository::Service {
+ public:
+  Status AccountGetAsset(
+      ServerContext *context,
+      const flatbuffers::BufferRef<::iroha::AssetQuery> *requestRef,
+      flatbuffers::BufferRef<::iroha::AssetResponse> *responseRef) override {
+    fbbResponse.Clear();
+    std::vector<const ::iroha::Asset *> assets;
+    {
+      const auto q = requestRef->GetRoot();
+      flatbuffers::FlatBufferBuilder fbb;
+      auto req_offset = ::iroha::CreateAssetQueryDirect(
+          fbb, q->pubKey()->c_str(), q->ledger_name()->c_str(),
+          q->domain_name()->c_str(), q->asset_name()->c_str(),
+          q->uncommitted());
 
-              fbb.Finish(req_offset);
-              assets = connection::iroha::AssetRepositoryImpl::AccountGetAsset::receiver.invoke(
-                      "from",  // TODO: Specify 'from'
-                      fbb.ReleaseBufferPointer()
-              );
+      fbb.Finish(req_offset);
+      assets = connection::iroha::AssetRepositoryImpl::AccountGetAsset::receiver
+                   .invoke("from",  // TODO: Specify 'from'
+                           fbb.ReleaseBufferPointer());
 
-              std::vector<uint8_t> types;
-              std::vector<flatbuffers::Offset<::iroha::Asset>> res_assets;
-              {
-                  flatbuffers::FlatBufferBuilder fbb_;
-                  for(const ::iroha::Asset* asset: assets){
-                      if(asset->asset_type() == ::iroha::AnyAsset::Currency){
-                          fbb_.Clear();
-                          res_assets.push_back(::iroha::CreateAsset(fbb_,
-                              asset->asset_type(),
-                              ::iroha::CreateCurrencyDirect(fbb_,
-                                  asset->asset_as_Currency()->currency_name()->c_str(),
-                                  asset->asset_as_Currency()->domain_name()->c_str(),
-                                  asset->asset_as_Currency()->ledger_name()->c_str(),
-                                  asset->asset_as_Currency()->description()->c_str(),
-                                  asset->asset_as_Currency()->amount()->c_str(),
-                                  asset->asset_as_Currency()->precision()
-                              ).Union()
-                          ));
-                      }
-                  }
-              }
-              auto responseOffset = ::iroha::CreateAssetResponseDirect(
-                    fbbResponse, "Success", ::iroha::Code::COMMIT,
-                    &res_assets
-              );
-              fbbResponse.Finish(responseOffset);
-
-              *responseRef = flatbuffers::BufferRef<AssetResponse>(
-                      fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+      std::vector<uint8_t> types;
+      std::vector<flatbuffers::Offset<::iroha::Asset>> res_assets;
+      {
+        flatbuffers::FlatBufferBuilder fbb_;
+        for (const ::iroha::Asset *asset : assets) {
+          if (asset->asset_type() == ::iroha::AnyAsset::Currency) {
+            fbb_.Clear();
+            res_assets.push_back(::iroha::CreateAsset(
+                fbb_, asset->asset_type(),
+                ::iroha::CreateCurrencyDirect(
+                    fbb_, asset->asset_as_Currency()->currency_name()->c_str(),
+                    asset->asset_as_Currency()->domain_name()->c_str(),
+                    asset->asset_as_Currency()->ledger_name()->c_str(),
+                    asset->asset_as_Currency()->description()->c_str(),
+                    asset->asset_as_Currency()->amount()->c_str(),
+                    asset->asset_as_Currency()->precision())
+                    .Union()));
           }
-          return Status::OK;
+        }
       }
-  private:
-      flatbuffers::Offset<::iroha::Signature> sign(
-              flatbuffers::FlatBufferBuilder &fbb, const std::string &tx) {
-          const auto stamp = datetime::unixtime();
-          const auto hashWithTimestamp =
-                  hash::sha3_256_hex(tx + std::to_string(stamp));
-          const auto signature = signature::sign(
-                  hashWithTimestamp,
-                  config::PeerServiceConfig::getInstance().getMyPublicKey(),
-                  config::PeerServiceConfig::getInstance().getMyPrivateKey());
-          const std::vector<uint8_t> sigblob(signature.begin(), signature.end());
-          return ::iroha::CreateSignatureDirect(
-                  fbb, config::PeerServiceConfig::getInstance().getMyPublicKey().c_str(),
-                  &sigblob, stamp);
-      };
+      auto responseOffset = ::iroha::CreateAssetResponseDirect(
+          fbbResponse, "Success", ::iroha::Code::COMMIT, &res_assets);
+      fbbResponse.Finish(responseOffset);
 
-      flatbuffers::FlatBufferBuilder fbbResponse;
+      *responseRef = flatbuffers::BufferRef<AssetResponse>(
+          fbbResponse.GetBufferPointer(), fbbResponse.GetSize());
+    }
+    return Status::OK;
+  }
+
+ private:
+  flatbuffers::Offset<::iroha::Signature> sign(
+      flatbuffers::FlatBufferBuilder &fbb, const std::string &tx) {
+    const auto stamp = datetime::unixtime();
+    const auto hashWithTimestamp =
+        hash::sha3_256_hex(tx + std::to_string(stamp));
+    const auto signature = signature::sign(
+        hashWithTimestamp,
+        config::PeerServiceConfig::getInstance().getMyPublicKey(),
+        config::PeerServiceConfig::getInstance().getMyPrivateKey());
+    const std::vector<uint8_t> sigblob(signature.begin(), signature.end());
+    return ::iroha::CreateSignatureDirect(
+        fbb, config::PeerServiceConfig::getInstance().getMyPublicKey().c_str(),
+        &sigblob, stamp);
   };
+
+  flatbuffers::FlatBufferBuilder fbbResponse;
+};
 
 /************************************************************************************
  * Sync
