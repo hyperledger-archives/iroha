@@ -111,10 +111,7 @@ class AbstractConfigManager {
 
  public:
   virtual std::string getConfigName() = 0;
-  std::string getConfigPath() {
-    static auto s = get_iroha_home() + getConfigName();
-    return s;
-  }
+  std::string getConfigPath() { return get_iroha_home() + getConfigName(); }
 
   json getConfigData() {
     if (_loaded) {
