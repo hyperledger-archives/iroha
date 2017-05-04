@@ -36,7 +36,7 @@ struct KeyPair {
   byte_array_t privateKey;
 
   KeyPair(byte_array_t &&pub, byte_array_t &&pri)
-      : publicKey(std::move(pub)), privateKey(std::move(pri)) {}
+      : publicKey(pub), privateKey(pri) {}
 };
 
 std::string sign(const std::string &message, const KeyPair &keyPair);

@@ -25,7 +25,7 @@ limitations under the License.
 namespace config {
 
 namespace detail {
-std::string appendSlashIfNeeded(const std::string& str) {
+std::string append_slash_if_needed(const std::string& str) {
   if (str.empty()) {
     return std::string("/");
   }
@@ -35,7 +35,7 @@ std::string appendSlashIfNeeded(const std::string& str) {
   return str;
 }
 
-VoidHandler ensureDirectoryExists(const std::string& path) {
+VoidHandler ensure_directory_exists(const std::string& path) {
   // TODO: Definitely ensure directory, not file.
   struct stat info;
   if (stat(path.c_str(), &info) != 0) {
@@ -53,9 +53,9 @@ std::string get_iroha_home() {
   }
 
   const auto iroha_home_with_slash =
-      detail::appendSlashIfNeeded(std::string(iroha_home_ptr));
+      detail::append_slash_if_needed(std::string(iroha_home_ptr));
 
-  const auto res = detail::ensureDirectoryExists(iroha_home_with_slash);
+  const auto res = detail::ensure_directory_exists(iroha_home_with_slash);
   if (!res) {
     logger::error("config") << "Invalid $IROHA_HOME";
     std::rethrow_exception(res.excptr());

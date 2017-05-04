@@ -93,7 +93,7 @@ class AbstractConfigManager {
       return tempConfigData;
     } catch (...) {
       std::string list_name = "";
-      for( auto s : params ) list_name += "\"" + s + "\", ";
+      for( auto& s : params ) list_name += "\"" + s + "\", ";
       list_name.erase(list_name.end()-2,list_name.end());
       logger::error("config") << "not Found { " << list_name << " } in " << getConfigName();
       assert(false);
