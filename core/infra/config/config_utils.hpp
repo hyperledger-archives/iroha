@@ -20,7 +20,7 @@ limitations under the License.
 namespace config {
 
 namespace detail {  // for begin testable
-std::string appendSlashIfNeeded(const std::string&);
+std::string append_slash_if_needed(const std::string&);
 }
 
 std::string get_iroha_home();

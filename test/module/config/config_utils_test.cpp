@@ -18,11 +18,11 @@ limitations under the License.
 #include <infra/config/config_utils.hpp>
 
 TEST(ConfigUtils, appendSlashIfNeeded) {
-  using config::detail::appendSlashIfNeeded;
-  ASSERT_STREQ(appendSlashIfNeeded("").c_str(), "/");
-  ASSERT_STREQ(appendSlashIfNeeded("////").c_str(), "////");
-  ASSERT_STREQ(appendSlashIfNeeded("/hoge").c_str(), "/hoge/");
-  ASSERT_STREQ(appendSlashIfNeeded("foo").c_str(), "foo/");
-  ASSERT_STREQ(appendSlashIfNeeded("/opt/iroha").c_str(), "/opt/iroha/");
-  ASSERT_STREQ(appendSlashIfNeeded("/opt/iroha/").c_str(), "/opt/iroha/");
+  using config::detail::append_slash_if_needed;
+  ASSERT_STREQ(append_slash_if_needed("").c_str(), "/");
+  ASSERT_STREQ(append_slash_if_needed("////").c_str(), "////");
+  ASSERT_STREQ(append_slash_if_needed("/hoge").c_str(), "/hoge/");
+  ASSERT_STREQ(append_slash_if_needed("foo").c_str(), "foo/");
+  ASSERT_STREQ(append_slash_if_needed("/opt/iroha").c_str(), "/opt/iroha/");
+  ASSERT_STREQ(append_slash_if_needed("/opt/iroha/").c_str(), "/opt/iroha/");
 }

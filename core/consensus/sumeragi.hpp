@@ -18,8 +18,6 @@ limitations under the License.
 #ifndef CORE_CONSENSUS_SUMERAGI_HPP_
 #define CORE_CONSENSUS_SUMERAGI_HPP_
 
-#define COMPARATOR(code) [](auto&& l, auto&& r) -> bool { return code; }
-
 #include <memory>
 #include <thread>
 #include <vector>

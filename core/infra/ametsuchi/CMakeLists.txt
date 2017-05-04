@@ -34,7 +34,7 @@ set(AMETSUCHI_SRC
   src/ametsuchi/currency.cc
   src/ametsuchi/common.cc
   src/ametsuchi/merkle_tree/merkle_tree.cc
-  )
+)
 
 # Library.
 set(LIBAMETSUCHI_NAME ametsuchi)
@@ -52,23 +52,6 @@ target_link_libraries(${LIBAMETSUCHI_NAME}
 StrictMode(${LIBAMETSUCHI_NAME})
 
 
-# Documentation.
-if(DOCS)
-  find_package(Doxygen)
-  if(DOXYGEN_NOT_FOUND)
-    message(FATAL_ERROR "Doxygen not found")
-  endif()
-  set(DOC_SOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-  set(DOC_HEADERS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-  add_custom_target(
-    doc ALL
-    COMMAND ${DOXYGEN_EXECUTABLE}
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMENT "Generating API documentation with Doxygen"
-    VERBATIM
-  )
-endif(DOCS)
 
 
 
