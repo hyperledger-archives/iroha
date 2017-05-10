@@ -92,6 +92,8 @@ table AssetCreate {
     asset_name:  string (required);
     domain_name: string (required);
     ledger_name: string (required);
+    amount:      string (required);
+    description: string;
 }
 
 table AssetRemove {
