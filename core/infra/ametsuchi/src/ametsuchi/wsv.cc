@@ -260,7 +260,7 @@ void WSV::asset_create(const iroha::AssetCreate *command) {
   flatbuffers::FlatBufferBuilder fbb;
   auto asset = iroha::CreateAsset(
       fbb, iroha::AnyAsset::Currency,
-      iroha::CreateCurrencyDirect(fbb, an->data(), dn->data(), ln->data())
+      iroha::CreateCurrencyDirect(fbb, an->data(), dn->data(), ln->data(), "description", "0", 1)
           .Union());
   fbb.Finish(asset);
 
