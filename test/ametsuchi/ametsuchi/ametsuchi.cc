@@ -93,7 +93,7 @@ TEST_F(Ametsuchi_Test, AssetTest) {
     EXPECT_NE(reference_cn, nullptr);
     auto asset1 = ametsuchi_.accountGetAsset(reference_1, reference_ln, reference_dn, reference_cn, true);
     EXPECT_NE(asset1, nullptr);
-    EXPECT_NE(asset1->asset_as_Currency()->, nullptr);
+    EXPECT_NE(asset1->asset_as_Currency(), nullptr);
     EXPECT_NE(asset1->asset_as_Currency()->amount(), nullptr);
     EXPECT_EQ(asset1->asset_as_Currency()->amount()->str(), "345");
   }
