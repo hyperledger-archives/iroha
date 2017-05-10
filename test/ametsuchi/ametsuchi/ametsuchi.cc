@@ -59,11 +59,13 @@ TEST_F(Ametsuchi_Test, AssetTest) {
       fbb, iroha::Command::Add,
       generator::random_Add(
           fbb, "1",
-          generator::random_asset_wrapper_currency(345,
-                                                   0,
-                                                   "Dollar",
-                                                   "USA",
-                                                   "l1")).Union()
+          generator::random_asset_wrapper_currency(
+             345,
+             0,
+             "Dollar",
+             "USA",
+             "l1")
+      ).Union()
   );
   ametsuchi_.append(&blob);
 
@@ -85,8 +87,14 @@ TEST_F(Ametsuchi_Test, AssetTest) {
     auto reference_ln = reference_tx->asset_nested_root()->asset_as_Currency()->ledger_name();
     auto reference_dn = reference_tx->asset_nested_root()->asset_as_Currency()->domain_name();
     auto reference_cn = reference_tx->asset_nested_root()->asset_as_Currency()->currency_name();
-
+    EXPECT_NE(reference_1, nullptr);
+    EXPECT_NE(reference_ln, nullptr);
+    EXPECT_NE(reference_dn, nullptr);
+    EXPECT_NE(reference_cn, nullptr);
     auto asset1 = ametsuchi_.accountGetAsset(reference_1, reference_ln, reference_dn, reference_cn, true);
+    EXPECT_NE(asset1, nullptr);
+    EXPECT_NE(asset1->asset_as_Currency()->, nullptr);
+    EXPECT_NE(asset1->asset_as_Currency()->amount(), nullptr);
     EXPECT_EQ(asset1->asset_as_Currency()->amount()->str(), "345");
   }
 
