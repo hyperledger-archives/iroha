@@ -23,6 +23,15 @@ namespace logger {
 static const std::string level_names[]{
     "DEBUG", "EXPLORE", "INFO", "WARNING", "ERROR (-A-)", "FATAL (`o')"};
 
+namespace detail {
+  LogLevel LOG_LEVEL = LogLevel::Debug;
+}
+
+void setLogLevel(LogLevel lv) {
+  detail::LOG_LEVEL = lv;
+  spdlog::set_level((spdlog::level::level_enum)lv);
+}
+
 class console_sink : public spdlog::sinks::base_sink<std::mutex> {
   using MyType = console_sink;
 

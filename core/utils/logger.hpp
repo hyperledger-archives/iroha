@@ -26,14 +26,7 @@ namespace logger {
 
 enum class LogLevel { Debug = 0, Explore, Info, Warning, Error, Fatal };
 
-namespace detail {
-static LogLevel LOG_LEVEL = LogLevel::Debug;
-}
-
-inline void setLogLevel(LogLevel lv) {
-  detail::LOG_LEVEL = lv;
-  spdlog::set_level((spdlog::level::level_enum)lv);
-}
+void setLogLevel(LogLevel);
 
 struct base {
   explicit base(std::string &&caller, LogLevel level) noexcept;
