@@ -248,7 +248,8 @@ void WSV::asset_create(const iroha::AssetCreate *command) {
   auto ln = command->ledger_name();
   auto dn = command->domain_name();
   auto an = command->asset_name();
-
+  auto am = command->amount();
+  auto desc = command->description() != nullptr? command->description()->data(): "";
   // in this order: ledger+domain+asset
   std::string pk;
   pk += ln->data();
@@ -260,7 +261,7 @@ void WSV::asset_create(const iroha::AssetCreate *command) {
   flatbuffers::FlatBufferBuilder fbb;
   auto asset = iroha::CreateAsset(
       fbb, iroha::AnyAsset::Currency,
-      iroha::CreateCurrencyDirect(fbb, an->data(), dn->data(), ln->data(), "description", "0", 1)
+      iroha::CreateCurrencyDirect(fbb, an->data(), dn->data(), ln->data(), desc, am->data(), 1)
           .Union());
   fbb.Finish(asset);
 
