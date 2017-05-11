@@ -11,7 +11,7 @@ table Account {
 
   // for m-n multisignature scheme
   // signatories.size() = n, useKeys = m
-  signatories: [string];    // What is this ?
+  signatories: [string]; // signatories are for multisig
   useKeys:     ushort = 1;
 
   root:                 AccountPermissionRoot;
