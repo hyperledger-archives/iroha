@@ -290,7 +290,7 @@ TEST_F(Ametsuchi_Test, PeerTest) {
     ASSERT_TRUE(cur->publicKey()->str() == pubkey2);
     ASSERT_TRUE(cur->ip()->str() ==  ip2);
   }
-/*
+
   {  // Remove peer1
     flatbuffers::FlatBufferBuilder fbb(2048);
     auto blob = generator::random_transaction(
@@ -338,5 +338,5 @@ TEST_F(Ametsuchi_Test, PeerTest) {
   }
 
   ametsuchi_.commit();
-  */
+  
 }
