@@ -338,5 +338,5 @@ TEST_F(Ametsuchi_Test, PeerTest) {
   }
 
   ametsuchi_.commit();
-  
+
 }
