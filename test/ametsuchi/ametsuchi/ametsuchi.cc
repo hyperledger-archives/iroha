@@ -210,7 +210,6 @@ TEST_F(Ametsuchi_Test, AssetTest) {
             "1", "2").Union()
     ).data())->command_as_Transfer();
     auto reference_1 = reference_tx->sender();
-    auto reference_2 = reference_tx->receiver();
     auto reference_ln = reference_tx->asset_nested_root()->asset_as_Currency()->ledger_name();
     auto reference_dn = reference_tx->asset_nested_root()->asset_as_Currency()->domain_name();
     auto reference_cn = reference_tx->asset_nested_root()->asset_as_Currency()->currency_name();
@@ -231,7 +230,6 @@ TEST_F(Ametsuchi_Test, AssetTest) {
                                                      "l1"),
             "1", "2").Union()
     ).data())->command_as_Transfer();
-    auto reference_1 = reference_tx->sender();
     auto reference_2 = reference_tx->receiver();
     auto reference_ln = reference_tx->asset_nested_root()->asset_as_Currency()->ledger_name();
     auto reference_dn = reference_tx->asset_nested_root()->asset_as_Currency()->domain_name();
@@ -239,4 +237,106 @@ TEST_F(Ametsuchi_Test, AssetTest) {
     auto asset2 = ametsuchi_.accountGetAsset(reference_2, reference_ln, reference_dn, reference_cn, false);
     ASSERT_EQ(asset2->asset_as_Currency()->amount()->str(), "50");
   }
+}
+
+TEST_F(Ametsuchi_Test, PeerTest) {
+  std::string ledger_name = "ShinkaiHideo";
+  std::string pubkey1 = "SOULCATCHER_S";
+  std::string ip1 = "KamineShota";
+  std::string pubkey2 = "LIGHTWING";
+  std::string ip2 = "AmagaiRihito";
+
+
+  // Create asset dollar
+
+  {  // Create peer1
+    flatbuffers::FlatBufferBuilder fbb(2048);
+    auto blob = generator::random_transaction(
+        fbb, iroha::Command::PeerAdd,
+        generator::random_PeerAdd(fbb, generator::random_peer(ledger_name,pubkey1, ip1))
+            .Union());
+    auto txs = flatbuffers::GetRoot<iroha::Transaction>(blob.data());
+    ametsuchi_.append(&blob);
+  }
+
+  {  // Create peer2
+    flatbuffers::FlatBufferBuilder fbb(2048);
+    auto blob = generator::random_transaction(
+        fbb, iroha::Command::PeerAdd,
+        generator::random_PeerAdd(fbb, generator::random_peer(ledger_name,pubkey2, ip2))
+            .Union());
+    ametsuchi_.append(&blob);
+  }
+
+  { // Check Peer1
+    flatbuffers::FlatBufferBuilder fbb(256);
+    auto tmp_pubkey = fbb.CreateString(pubkey1);
+    fbb.Finish(tmp_pubkey);
+    auto query_pubkey = flatbuffers::GetRoot<flatbuffers::String>(fbb.GetBufferPointer());
+
+    auto cur = ametsuchi_.pubKeyGetPeer(query_pubkey,true);
+    ASSERT_TRUE(cur->publicKey()->str() == pubkey1);
+    ASSERT_TRUE(cur->ip()->str() ==  ip1);
+  }
+
+  { // Check Peer2
+    flatbuffers::FlatBufferBuilder fbb(256);
+    auto tmp_pubkey = fbb.CreateString(pubkey2);
+    fbb.Finish(tmp_pubkey);
+    auto query_pubkey = flatbuffers::GetRoot<flatbuffers::String>(fbb.GetBufferPointer());
+
+    auto cur = ametsuchi_.pubKeyGetPeer(query_pubkey,true);
+
+    ASSERT_TRUE(cur->publicKey()->str() == pubkey2);
+    ASSERT_TRUE(cur->ip()->str() ==  ip2);
+  }
+/*
+  {  // Remove peer1
+    flatbuffers::FlatBufferBuilder fbb(2048);
+    auto blob = generator::random_transaction(
+        fbb, iroha::Command::PeerRemove,
+        generator::random_PeerRemove(fbb, pubkey1).Union());
+    ametsuchi_.append(&blob);
+  }
+
+  { // Check Peer1
+    flatbuffers::FlatBufferBuilder fbb(256);
+    auto tmp_pubkey = fbb.CreateString(pubkey1);
+    fbb.Finish(tmp_pubkey);
+    auto query_pubkey = flatbuffers::GetRoot<flatbuffers::String>(fbb.GetBufferPointer());
+
+    bool exception_flag = false;
+    try {
+      ametsuchi_.pubKeyGetPeer(query_pubkey, true);
+    } catch ( ... ) {
+      exception_flag = true;
+    }
+    ASSERT_TRUE( exception_flag );
+  }
+
+  {  // Remove peer2
+    flatbuffers::FlatBufferBuilder fbb(2048);
+    auto blob = generator::random_transaction(
+        fbb, iroha::Command::PeerRemove,
+        generator::random_PeerRemove(fbb, pubkey2).Union());
+    ametsuchi_.append(&blob);
+  }
+
+  { // Check Peer2
+    flatbuffers::FlatBufferBuilder fbb(256);
+    auto tmp_pubkey = fbb.CreateString(pubkey2);
+    fbb.Finish(tmp_pubkey);
+    auto query_pubkey = flatbuffers::GetRoot<flatbuffers::String>(fbb.GetBufferPointer());
+
+    bool exception_flag = false;
+    try {
+      ametsuchi_.pubKeyGetPeer(query_pubkey, true);
+    } catch ( ... ) {
+      exception_flag = true;
+    }
+    ASSERT_TRUE( exception_flag );
+  }
+
+  ametsuchi_.commit();
+  */
 }

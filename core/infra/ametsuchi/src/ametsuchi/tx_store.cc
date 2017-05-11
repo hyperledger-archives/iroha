@@ -19,6 +19,7 @@
 #include <ametsuchi/tx_store.h>
 #include <asset_generated.h>
 #include <transaction_generated.h>
+#include <iostream>
 
 namespace ametsuchi {
 
@@ -44,10 +45,11 @@ merkle::hash_t TxStore::append(const std::vector<uint8_t> *blob) {
       AMETSUCHI_CRITICAL(res, EINVAL);
     }
   }
-
+  std::cout << "ok append tx" << std::endl;
   // 2. insert record into index depending on the command
   {
     auto creator = tx->creatorPubKey();
+    std::cout << "creator : " << creator->str() << std::endl;
     if (command_tree_name_.count(tx->command_type()) == 0) {
       throw exception::InvalidTransaction::WRONG_COMMAND;
     } else {
@@ -56,7 +58,7 @@ merkle::hash_t TxStore::append(const std::vector<uint8_t> *blob) {
           tx_store_total);
     }
   }
-
+  std::cout << "ok append record pubkey" << std::endl;
   // 3. insert record into index_transfer_sender and index_transfer_receiver
   if (tx->command_type() == iroha::Command::Transfer) {
     // update index_transfer_sender
@@ -85,6 +87,7 @@ merkle::hash_t TxStore::append(const std::vector<uint8_t> *blob) {
     }
   }
 
+  std::cout << "ok append tx_stroe!" << std::endl;
   // 4. Push to merkle tree
   merkle::hash_t h;
   //assert(tx->hash()->size() == merkle::HASH_LEN);
@@ -139,6 +142,7 @@ TxStore::TxStore(size_t merkle_leaves) : merkleTree_(merkle_leaves) {
   command_tree_name_[iroha::Command::AssetRemove] = "index_asset_remove";
 
   // Use for peer operatePeerAdd,
+  command_tree_name_[iroha::Command::PeerAdd] = "index_peer_add";
   command_tree_name_[iroha::Command::PeerRemove] = "index_peer_remove";
   command_tree_name_[iroha::Command::PeerSetActive] = "index_peer_set_active";
   command_tree_name_[iroha::Command::PeerSetTrust] = "index_peer_set_trust";
@@ -193,7 +197,7 @@ void TxStore::close_dbi(MDB_env *env) {
   }
 }
 uint32_t TxStore::get_trees_total() {
-  TX_STORE_TREES_TOTAL = 24;
+  TX_STORE_TREES_TOTAL = 25;
   return TX_STORE_TREES_TOTAL;
 }
 

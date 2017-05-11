@@ -75,7 +75,6 @@ void WSV::init(MDB_txn *append_tx) {
   // we should know created assets, so read entire table in memory
   read_created_assets();
 
-  assert(get_trees_total() == trees_.size());
 }
 
 void WSV::update(const std::vector<uint8_t> *blob) {
@@ -523,6 +522,7 @@ void WSV::account_remove(const iroha::AccountRemove *command) {
 }
 
 void WSV::peer_add(const iroha::PeerAdd *command) {
+  std::cout << "peer_add!" << std::endl;
   MDB_cursor *cursor = trees_.at("wsv_pubkey_peer").second;
   MDB_val c_key, c_val;
   int res;
@@ -537,6 +537,7 @@ void WSV::peer_add(const iroha::PeerAdd *command) {
   c_val.mv_data = (void *)command->peer()->data();
   c_val.mv_size = command->peer()->size();
 
+  std::cout << "pubkey: " << pubkey->str() << std::endl;
   if ((res = mdb_cursor_put(cursor, &c_key, &c_val, 0))) {
     // account with this public key exists
     if (res == MDB_KEYEXIST) {
@@ -1020,9 +1021,11 @@ const ::iroha::Peer *WSV::pubKeyGetPeer(const flatbuffers::String *pubKey,
     }
   }
 
+  std::cout << "get: " << pubKey->str() << std::endl;
   // if pubKey is not fount, throw exception
   if ((res = mdb_cursor_get(cursor, &c_key, &c_val, MDB_SET))) {
     if (res == MDB_NOTFOUND) {
+      std::cout << "MDB_NOTFOUND!" << std::endl;
       throw exception::InvalidTransaction::PEER_NOT_FOUND;
     }
     AMETSUCHI_CRITICAL(res, EINVAL);
@@ -1032,6 +1035,7 @@ const ::iroha::Peer *WSV::pubKeyGetPeer(const flatbuffers::String *pubKey,
     mdb_cursor_close(cursor);
     mdb_txn_abort(tx);
   }
+  std::cout << flatbuffers::GetRoot<::iroha::Peer>(c_val.mv_data)->publicKey()->str() << std::endl;
   return flatbuffers::GetRoot<::iroha::Peer>(c_val.mv_data);
 }
 
