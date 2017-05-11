@@ -261,7 +261,7 @@ void WSV::asset_create(const iroha::AssetCreate *command) {
   flatbuffers::FlatBufferBuilder fbb;
   auto asset = iroha::CreateAsset(
       fbb, iroha::AnyAsset::Currency,
-      iroha::CreateCurrencyDirect(fbb, an->data(), dn->data(), ln->data(), desc, am->data(), 1)
+      iroha::CreateCurrencyDirect(fbb, an->data(), dn->data(), ln->data(), desc, am->data(), 2)
           .Union());
   fbb.Finish(asset);
 
@@ -381,11 +381,14 @@ void WSV::account_add_currency(const flatbuffers::String *acc_pub_key,
   } catch (exception::InvalidTransaction e) {
     // Create new Asset
     if (e == exception::InvalidTransaction::ASSET_NOT_FOUND) {
+      std::cout << "in Exception! ASSET_NOT_FOUND!" << std::endl;
+      std::cout << "new asset amount: " << currency->amount()->str() << std::endl;
       // write to tree
       c_key.mv_data = (void *)acc_pub_key->data();
       c_key.mv_size = acc_pub_key->size();
       c_val.mv_data = (void *)asset_fb->Data();
       c_val.mv_size = asset_fb->size();
+      std::cout << "asset_fb_amount: " << flatbuffers::GetRoot<::iroha::Asset>(asset_fb->Data())->asset_as_Currency()->amount()->str() << std::endl;
 
       if ((res = mdb_cursor_put(cursor, &c_key, &c_val, 0))) {
         AMETSUCHI_CRITICAL(res, MDB_MAP_FULL);
@@ -789,10 +792,23 @@ void WSV::permisson_remove(const iroha::PermissionRemove *command) {}
   fflush(stdout);
   */
 
+  auto q_a = flatbuffers::GetRoot<::iroha::Asset>(c_val.mv_data)->asset_as_Currency();
+  std::cout << "Query Asset: " << pubKey->str() << ", " << q_a->ledger_name()->str() << ", " << q_a->domain_name()->str() << ", " << q_a->currency_name()->str() << ", " << q_a->amount()->str() << std::endl;
   // if sender has no such asset, then it is incorrect transaction
-  if ((res = mdb_cursor_get(cursor, &c_key, &c_val, MDB_GET_BOTH))) {
-    if (res == MDB_NOTFOUND)
+  if ((res = mdb_cursor_get(cursor, &c_key, &c_val, MDB_GET_BOTH ))) {
+    if (res == MDB_NOTFOUND) {
+      std::cout << "MDB_NOTFOUND!!" << std::endl;
       throw exception::InvalidTransaction::ASSET_NOT_FOUND;
+    }
+    AMETSUCHI_CRITICAL(res, EINVAL);
+  }
+
+  MDB_val r_key, r_val;
+  if ((res = mdb_cursor_get(cursor, &r_key, &r_val, MDB_GET_CURRENT ))) {
+    if (res == MDB_NOTFOUND) {
+      std::cout << "It Is anviribabule!!!!  MDB_NOTFOUND!!" << std::endl;
+      throw exception::InvalidTransaction::ASSET_NOT_FOUND;
+    }
     AMETSUCHI_CRITICAL(res, EINVAL);
   }
 
@@ -800,7 +816,8 @@ void WSV::permisson_remove(const iroha::PermissionRemove *command) {}
     mdb_cursor_close(cursor);
     mdb_txn_abort(tx);
   }
-  return flatbuffers::GetMutableRoot<::iroha::Asset>(c_val.mv_data);
+  std::cout << "result: " << flatbuffers::GetMutableRoot<::iroha::Asset>(r_val.mv_data)->asset_as_Currency()->amount()->str() << std::endl;
+  return flatbuffers::GetMutableRoot<::iroha::Asset>(r_val.mv_data);
 }
 
 // asset_id is asset_name + domain_name + ledger_name

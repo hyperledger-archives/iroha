@@ -33,7 +33,7 @@ namespace generator {
  */
 std::string LEDGER_ = "ledger_default";
 std::string DOMAIN_ = "domain_default";
-std::string INIT_AMOUNT = "100";
+std::string INIT_AMOUNT = "0";
 
     /**
  * Standart lengths of cryptographic primitives

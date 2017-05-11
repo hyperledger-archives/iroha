@@ -18,6 +18,7 @@
 #include <ametsuchi/ametsuchi.h>
 #include <gtest/gtest.h>
 #include <endpoint_generated.h>
+#include <ametsuchi/exception.h>
 #include "../generator/tx_generator.h"
 
 class Ametsuchi_Test : public ::testing::Test {
@@ -61,7 +62,7 @@ TEST_F(Ametsuchi_Test, AssetTest) {
           fbb, "1",
           generator::random_asset_wrapper_currency(
              345,
-             0,
+             2,
              "Dollar",
              "USA",
              "l1")
@@ -76,7 +77,7 @@ TEST_F(Ametsuchi_Test, AssetTest) {
         generator::random_Transfer(
             fbb2,
             generator::random_asset_wrapper_currency(100,
-                                                     0,
+                                                     2,
                                                      "Dollar",
                                                      "USA",
                                                      "l1"),
@@ -91,15 +92,23 @@ TEST_F(Ametsuchi_Test, AssetTest) {
     EXPECT_NE(reference_ln, nullptr);
     EXPECT_NE(reference_dn, nullptr);
     EXPECT_NE(reference_cn, nullptr);
-    auto asset1 = ametsuchi_.accountGetAsset(reference_1, reference_ln, reference_dn, reference_cn, true);
-    EXPECT_NE(asset1, nullptr);
-    EXPECT_NE(asset1->asset_as_Currency(), nullptr);
-    EXPECT_NE(asset1->asset_as_Currency()->ledger_name(), nullptr);
-    EXPECT_NE(asset1->asset_as_Currency()->domain_name(), nullptr);
-    EXPECT_NE(asset1->asset_as_Currency()->currency_name(), nullptr);
-    EXPECT_NE(asset1->asset_as_Currency()->description(), nullptr);
-    EXPECT_NE(asset1->asset_as_Currency()->amount(), nullptr);
-    EXPECT_EQ(asset1->asset_as_Currency()->amount()->str(), "345");
+    try {
+      auto asset1 = ametsuchi_.accountGetAsset(reference_1, reference_ln, reference_dn, reference_cn, true);
+      EXPECT_NE(asset1, nullptr);
+      EXPECT_NE(asset1->asset_as_Currency(), nullptr);
+      EXPECT_NE(asset1->asset_as_Currency()->ledger_name(), nullptr);
+      EXPECT_NE(asset1->asset_as_Currency()->domain_name(), nullptr);
+      EXPECT_NE(asset1->asset_as_Currency()->currency_name(), nullptr);
+      EXPECT_NE(asset1->asset_as_Currency()->description(), nullptr);
+      EXPECT_NE(asset1->asset_as_Currency()->amount(), nullptr);
+      EXPECT_EQ(asset1->asset_as_Currency()->amount()->str(), "345");
+    } catch (ametsuchi::exception::InvalidTransaction e){
+
+      if (e == ametsuchi::exception::InvalidTransaction::ASSET_NOT_FOUND) {
+        std::cout << "Exception! ASSET_NOT_FOUND!! in test" << std::endl;
+      }
+      std::cout << "Throw!!" << std::endl;
+    }
   }
 
 
@@ -109,7 +118,7 @@ TEST_F(Ametsuchi_Test, AssetTest) {
       generator::random_Transfer(
           fbb,
           generator::random_asset_wrapper_currency(100,
-                                                   0,
+                                                   2,
                                                    "Dollar",
                                                    "USA",
                                                    "l1"),
@@ -124,7 +133,7 @@ TEST_F(Ametsuchi_Test, AssetTest) {
         generator::random_Transfer(
             fbb2,
             generator::random_asset_wrapper_currency(100,
-                                                     0,
+                                                     2,
                                                      "Dollar",
                                                      "USA",
                                                      "l1"),
