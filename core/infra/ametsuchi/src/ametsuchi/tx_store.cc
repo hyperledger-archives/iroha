@@ -45,11 +45,9 @@ merkle::hash_t TxStore::append(const std::vector<uint8_t> *blob) {
       AMETSUCHI_CRITICAL(res, EINVAL);
     }
   }
-  std::cout << "ok append tx" << std::endl;
   // 2. insert record into index depending on the command
   {
     auto creator = tx->creatorPubKey();
-    std::cout << "creator : " << creator->str() << std::endl;
     if (command_tree_name_.count(tx->command_type()) == 0) {
       throw exception::InvalidTransaction::WRONG_COMMAND;
     } else {
@@ -58,7 +56,6 @@ merkle::hash_t TxStore::append(const std::vector<uint8_t> *blob) {
           tx_store_total);
     }
   }
-  std::cout << "ok append record pubkey" << std::endl;
   // 3. insert record into index_transfer_sender and index_transfer_receiver
   if (tx->command_type() == iroha::Command::Transfer) {
     // update index_transfer_sender
@@ -87,7 +84,6 @@ merkle::hash_t TxStore::append(const std::vector<uint8_t> *blob) {
     }
   }
 
-  std::cout << "ok append tx_stroe!" << std::endl;
   // 4. Push to merkle tree
   merkle::hash_t h;
   //assert(tx->hash()->size() == merkle::HASH_LEN);

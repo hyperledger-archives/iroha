@@ -372,10 +372,7 @@ void WSV::account_add_currency(const flatbuffers::String *acc_pub_key,
   } catch (exception::InvalidTransaction e) {
     // Create new Asset
     if (e == exception::InvalidTransaction::ASSET_NOT_FOUND) {
-      std::cout << "in Exception! ASSET_NOT_FOUND!" << std::endl;
-      std::cout << "new asset amount: " << currency->amount()->str() << std::endl;
       // write to tree
-      std::cout << "asset_fb_amount: " << flatbuffers::GetRoot<::iroha::Asset>(asset_fb->Data())->asset_as_Currency()->amount()->str() << std::endl;
 
       if ((res = mdb_cursor_put(cursor, &c_key, &c_val, 0))) {
         AMETSUCHI_CRITICAL(res, MDB_MAP_FULL);
@@ -522,7 +519,6 @@ void WSV::account_remove(const iroha::AccountRemove *command) {
 }
 
 void WSV::peer_add(const iroha::PeerAdd *command) {
-  std::cout << "peer_add!" << std::endl;
   MDB_cursor *cursor = trees_.at("wsv_pubkey_peer").second;
   MDB_val c_key, c_val;
   int res;
@@ -537,7 +533,6 @@ void WSV::peer_add(const iroha::PeerAdd *command) {
   c_val.mv_data = (void *)command->peer()->data();
   c_val.mv_size = command->peer()->size();
 
-  std::cout << "pubkey: " << pubkey->str() << std::endl;
   if ((res = mdb_cursor_put(cursor, &c_key, &c_val, 0))) {
     // account with this public key exists
     if (res == MDB_KEYEXIST) {
@@ -723,7 +718,6 @@ void WSV::permisson_remove(const iroha::PermissionRemove *command) {}
                                            const flatbuffers::String *dn,
                                            const flatbuffers::String *an,
                                            bool uncommitted, MDB_env *env) {
-  std::cout << "accountGetAsset!" << std::endl;
   MDB_val c_key, c_val;
   MDB_cursor *cursor;
   MDB_txn *tx;
@@ -735,7 +729,6 @@ void WSV::permisson_remove(const iroha::PermissionRemove *command) {}
   pk += dn->str();
   pk += an->str();
 
-  std::cout << "! " << pk << std::endl;
 
   // if given asset exists, then we can get its blob, which consists of {ledger
   // name, domain name and asset name} to speedup read in DUP btree, because we
@@ -756,20 +749,16 @@ void WSV::permisson_remove(const iroha::PermissionRemove *command) {}
     tx = append_tx_;
   } else {
     // create read-only transaction, create new RO cursor
-    std::cout << "exe! mdb_txn_begin!" << std::endl;
-    if ((res = mdb_txn_begin(env, NULL, MDB_RDONLY, &tx))) {
+     if ((res = mdb_txn_begin(env, NULL, MDB_RDONLY, &tx))) {
       AMETSUCHI_CRITICAL(res, MDB_PANIC);
       AMETSUCHI_CRITICAL(res, MDB_MAP_RESIZED);
       AMETSUCHI_CRITICAL(res, MDB_READERS_FULL);
       AMETSUCHI_CRITICAL(res, ENOMEM);
     }
-    std::cout << "pass mdb_txn_begin!" << std::endl;
-    std::cout << "exe! mdb_cursor_open!" << std::endl;
     if ((res = mdb_cursor_open(tx, trees_.at("wsv_pubkey_assets").first,
                                &cursor))) {
       AMETSUCHI_CRITICAL(res, EINVAL);
     }
-    std::cout << "pass! mdb_cursor_open!" << std::endl;
   }
 
   // query asset by public key
@@ -787,11 +776,9 @@ void WSV::permisson_remove(const iroha::PermissionRemove *command) {}
   */
 
   auto q_a = flatbuffers::GetRoot<::iroha::Asset>(c_val.mv_data)->asset_as_Currency();
-  std::cout << "Query Asset: " << pubKey->str() << ", " << q_a->ledger_name()->str() << ", " << q_a->domain_name()->str() << ", " << q_a->currency_name()->str() << ", " << q_a->amount()->str() << std::endl;
   // if sender has no such asset, then it is incorrect transaction
   if ((res = mdb_cursor_get(cursor, &c_key, &c_val, MDB_GET_BOTH ))) {
     if (res == MDB_NOTFOUND) {
-      std::cout << "MDB_NOTFOUND!!" << std::endl;
       throw exception::InvalidTransaction::ASSET_NOT_FOUND;
     }
     AMETSUCHI_CRITICAL(res, EINVAL);
@@ -800,7 +787,6 @@ void WSV::permisson_remove(const iroha::PermissionRemove *command) {}
   MDB_val r_key, r_val;
   if ((res = mdb_cursor_get(cursor, &r_key, &r_val, MDB_GET_CURRENT ))) {
     if (res == MDB_NOTFOUND) {
-      std::cout << "It Is anviribabule!!!!  MDB_NOTFOUND!!" << std::endl;
       throw exception::InvalidTransaction::ASSET_NOT_FOUND;
     }
     AMETSUCHI_CRITICAL(res, EINVAL);
@@ -810,7 +796,6 @@ void WSV::permisson_remove(const iroha::PermissionRemove *command) {}
     mdb_cursor_close(cursor);
     mdb_txn_abort(tx);
   }
-  std::cout << "result: " << flatbuffers::GetMutableRoot<::iroha::Asset>(r_val.mv_data)->asset_as_Currency()->amount()->str() << std::endl;
   return flatbuffers::GetMutableRoot<::iroha::Asset>(r_val.mv_data);
 }
 
@@ -1021,11 +1006,9 @@ const ::iroha::Peer *WSV::pubKeyGetPeer(const flatbuffers::String *pubKey,
     }
   }
 
-  std::cout << "get: " << pubKey->str() << std::endl;
   // if pubKey is not fount, throw exception
   if ((res = mdb_cursor_get(cursor, &c_key, &c_val, MDB_SET))) {
     if (res == MDB_NOTFOUND) {
-      std::cout << "MDB_NOTFOUND!" << std::endl;
       throw exception::InvalidTransaction::PEER_NOT_FOUND;
     }
     AMETSUCHI_CRITICAL(res, EINVAL);
@@ -1035,7 +1018,6 @@ const ::iroha::Peer *WSV::pubKeyGetPeer(const flatbuffers::String *pubKey,
     mdb_cursor_close(cursor);
     mdb_txn_abort(tx);
   }
-  std::cout << flatbuffers::GetRoot<::iroha::Peer>(c_val.mv_data)->publicKey()->str() << std::endl;
   return flatbuffers::GetRoot<::iroha::Peer>(c_val.mv_data);
 }
 

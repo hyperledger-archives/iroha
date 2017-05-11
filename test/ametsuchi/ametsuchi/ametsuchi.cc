@@ -103,12 +103,10 @@ TEST_F(Ametsuchi_Test, AssetTest) {
       EXPECT_NE(asset1->asset_as_Currency()->amount(), nullptr);
       EXPECT_EQ(asset1->asset_as_Currency()->amount()->str(), "345");
     } catch (ametsuchi::exception::InvalidTransaction e){
-
       if (e == ametsuchi::exception::InvalidTransaction::ASSET_NOT_FOUND) {
         std::cout << "Exception! ASSET_NOT_FOUND!! in test" << std::endl;
         ASSERT_TRUE(false);
       }
-      std::cout << "Throw!!" << std::endl;
     }
   }
 
@@ -194,7 +192,6 @@ TEST_F(Ametsuchi_Test, AssetTest) {
   }
 
   ametsuchi_.commit();
-  std::cout << "commit!!" << std::endl;
 
   {
     flatbuffers::FlatBufferBuilder fbb2(2048);
