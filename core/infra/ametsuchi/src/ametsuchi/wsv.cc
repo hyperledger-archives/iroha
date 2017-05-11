@@ -722,6 +722,7 @@ void WSV::permisson_remove(const iroha::PermissionRemove *command) {}
                                            const flatbuffers::String *dn,
                                            const flatbuffers::String *an,
                                            bool uncommitted, MDB_env *env) {
+  std::cout << "accountGetAsset!" << std::endl;
   MDB_val c_key, c_val;
   MDB_cursor *cursor;
   MDB_txn *tx;
@@ -729,9 +730,11 @@ void WSV::permisson_remove(const iroha::PermissionRemove *command) {}
 
   std::string pk;
 
-  pk += ln->data();
-  pk += dn->data();
-  pk += an->data();
+  pk += ln->str();
+  pk += dn->str();
+  pk += an->str();
+
+  std::cout << "! " << pk << std::endl;
 
   // if given asset exists, then we can get its blob, which consists of {ledger
   // name, domain name and asset name} to speedup read in DUP btree, because we
@@ -752,17 +755,20 @@ void WSV::permisson_remove(const iroha::PermissionRemove *command) {}
     tx = append_tx_;
   } else {
     // create read-only transaction, create new RO cursor
+    std::cout << "exe! mdb_txn_begin!" << std::endl;
     if ((res = mdb_txn_begin(env, NULL, MDB_RDONLY, &tx))) {
       AMETSUCHI_CRITICAL(res, MDB_PANIC);
       AMETSUCHI_CRITICAL(res, MDB_MAP_RESIZED);
       AMETSUCHI_CRITICAL(res, MDB_READERS_FULL);
       AMETSUCHI_CRITICAL(res, ENOMEM);
     }
-
+    std::cout << "pass mdb_txn_begin!" << std::endl;
+    std::cout << "exe! mdb_cursor_open!" << std::endl;
     if ((res = mdb_cursor_open(tx, trees_.at("wsv_pubkey_assets").first,
                                &cursor))) {
       AMETSUCHI_CRITICAL(res, EINVAL);
     }
+    std::cout << "pass! mdb_cursor_open!" << std::endl;
   }
 
   // query asset by public key
