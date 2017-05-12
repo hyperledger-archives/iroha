@@ -678,7 +678,7 @@ TEST(FlatbufferServiceTest, toConsensusEvent_AccountAdd) {
  *********************************************************/
 TEST(FlatbufferServiceTest, toConsensusEvent_AssetCreate) {
   flatbuffers::FlatBufferBuilder fbb;
-  const auto cmd = ::iroha::CreateAssetCreateDirect(fbb, "Asset", "Domain", "Ledger").Union();
+  const auto cmd = ::iroha::CreateAssetCreateDirect(fbb, "Asset", "Domain", "Ledger","100").Union();
 
   const auto signatureOffsets = [&] {
     std::vector<uint8_t> sigblob1 = {'a', 'b'};

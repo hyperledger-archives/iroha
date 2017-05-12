@@ -33,8 +33,9 @@ namespace generator {
  */
 std::string LEDGER_ = "ledger_default";
 std::string DOMAIN_ = "domain_default";
+std::string INIT_AMOUNT = "100";
 
-/**
+    /**
  * Standart lengths of cryptographic primitives
  */
 size_t HASH_SIZE_BLOB_ = 32;
@@ -247,10 +248,12 @@ flatbuffers::Offset<iroha::Subtract> random_Subtract(
 flatbuffers::Offset<iroha::AssetCreate> random_AssetCreate(
     flatbuffers::FlatBufferBuilder& fbb,
     std::string currency_name = random_string(10),
-    std::string domain_name = DOMAIN_, std::string ledger_name = LEDGER_) {
+    std::string domain_name = DOMAIN_, std::string ledger_name = LEDGER_,
+    std::string init_amount = INIT_AMOUNT) {
   return iroha::CreateAssetCreate(fbb, fbb.CreateString(currency_name),
                                   fbb.CreateString(domain_name),
-                                  fbb.CreateString(ledger_name));
+                                  fbb.CreateString(ledger_name),
+                                  fbb.CreateString(init_amount));
 }
 
 

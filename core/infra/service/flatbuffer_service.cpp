@@ -69,7 +69,8 @@ namespace flatbuffer_service {
         auto p = tx.command_as_AssetCreate();
         return ::iroha::CreateAssetCreateDirect(
           fbb, p->asset_name()->c_str(), p->domain_name()->c_str(),
-          p->ledger_name()->c_str()).Union();
+          p->ledger_name()->c_str(),p->amount()->c_str()
+        ).Union();
       }
       case Command::AssetRemove: {
         auto p = tx.command_as_AssetRemove();
