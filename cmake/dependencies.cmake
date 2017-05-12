@@ -327,7 +327,7 @@ add_dependencies(spdlog gabime_spdlog)
 #########################
 find_package(grpc)
 
-if (NOT grpc_FOUND)
+#if (NOT grpc_FOUND)
   ExternalProject_Add(grpc_grpc
     GIT_REPOSITORY "https://github.com/grpc/grpc.git"
 #    GIT_TAG           "v1.3.2"
@@ -344,7 +344,7 @@ if (NOT grpc_FOUND)
   set(grpc_LIB           ${source_dir}/libs/opt/libgrpc.so)
   set(grpcpp_LIB         ${source_dir}/libs/opt/libgrpc++.so)
   set(gpr_LIB            ${source_dir}/libs/opt/gpr.so)
-endif ()
+#endif ()
 
 # libgrpc
 add_library(grpc SHARED IMPORTED)
