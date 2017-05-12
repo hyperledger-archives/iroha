@@ -116,7 +116,7 @@ class ParseException : public Insecure {
   ParseException(const std::string &target, bool setDefaultMessage = false);
 };
 
-class UndefinedIrohaHomeException : Critical {
+class UndefinedIrohaHomeException : public Critical {
  public:
   UndefinedIrohaHomeException();
 };
