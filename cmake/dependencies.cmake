@@ -330,7 +330,7 @@ find_package(grpc)
 if (NOT grpc_FOUND)
   ExternalProject_Add(grpc_grpc
     GIT_REPOSITORY "https://github.com/grpc/grpc.git"
-    GIT_TAG           "v1.3.0"
+#    GIT_TAG           "v1.3.2"
     BUILD_IN_SOURCE   1
     BUILD_COMMAND     $(MAKE)
     CONFIGURE_COMMAND "" # remove configure step
@@ -369,9 +369,9 @@ set_target_properties(grpc++ PROPERTIES
   IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
 )
 
-if(NOT grpc_FOUND)
+#if(NOT grpc_FOUND)
   add_dependencies(grpc grpc_grpc)
-endif()
+#endif()
 
 
 
