@@ -42,6 +42,16 @@ table AssetResponse {
   assets:       [Asset];
 }
 
+table TxWithIndex {
+  tx: Transaction (required);
+  index: ulong;
+}
+
+table TxRequest {
+  index: ulong;
+  sender: string (required);
+}
+
 // Used by sending transaction
 rpc_service Sumeragi {
 
@@ -69,6 +79,5 @@ rpc_service Sync {
     getPeers(Ping):PeersResponse    (streaming: "none");
 
     getTransactions(Ping):TransactionResponse (streaming: "none");
-    // TODO WIP Can it?
-    fetchStreamTransaction(Ping):TransactionResponse   (streaming: "true");
+    fetchStreamTransaction(TxRequest):TxWithIndex (streaming: "server", idempotent);
 }
