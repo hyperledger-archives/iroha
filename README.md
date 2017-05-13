@@ -2,8 +2,6 @@
 [![Join the chat at https://gitter.im/hyperledger-iroha/Lobby](https://badges.gitter.im/hyperledger-iroha/Lobby.svg)](https://gitter.im/hyperledger-iroha/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [![CircleCI](https://circleci.com/gh/hyperledger/iroha/tree/master.svg?style=svg)](https://circleci.com/gh/hyperledger/iroha/tree/master)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/fa0f4ce83e584fc4a32b646536dd40eb)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=soramitsu/iroha&amp;utm_campaign=Badge_Grade)
-[![Documentation Status](https://readthedocs.org/projects/iroha/badge/?version=latest)](http://docs.iroha.tech)
 
 Please see the [**wiki**](https://github.com/hyperledger/iroha/wiki) for information about developing for Iroha and explanation of our algorithms.
 
