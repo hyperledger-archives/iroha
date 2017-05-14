@@ -9,3 +9,4 @@
 | Yanno Ban | yannoban | ban.yanno@nbc.org.kh
 | Hiroshi Sasagawa | SasagawaHiroshi | sasagawa_hiroshi@intec.co.jp |
 | Takumi Yamashita | satelliteyes | yamashita@soramitsu.co.jp |
+| Bogdan Vaneev | Warchant | bogdan@soramitsu.co.jp |
