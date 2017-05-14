@@ -273,7 +273,7 @@ set(flatbuffers_CMAKE_ARGS
   )
 ExternalProject_Add(google_flatbuffers
   GIT_REPOSITORY  "https://github.com/google/flatbuffers.git"
-  GIT_TAG         "master"
+  GIT_TAG         "c7bfe06c54bcd43312ff017e8ca32bc54833d524"
   CMAKE_ARGS      ${flatbuffers_CMAKE_ARGS}
   UPDATE_COMMAND  ""
   TEST_COMMAND    ""
