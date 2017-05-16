@@ -230,11 +230,8 @@ std::vector<AM_val> Ametsuchi::getCommandByKey(
   return tx_store.getCommandByKey(pubKey, command, uncommitted);
 }
 
-const std::string Ametsuchi::getMerkleRoot() {
-  if (tx_store.merkle_root().empty()) {
-    return "";
-  }
-  return std::string(tx_store.merkle_root().begin(), tx_store.merkle_root().end());
+const ametsuchi::merkle::hash_t Ametsuchi::getMerkleRoot() {
+  return tx_store.merkle_root();
 }
 
 
