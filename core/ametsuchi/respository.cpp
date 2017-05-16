@@ -19,6 +19,7 @@
 #include <asset_generated.h>
 #include <endpoint_generated.h>
 #include <infra/ametsuchi/include/ametsuchi/ametsuchi.h>
+#include <infra/config/config_utils.hpp>
 #include <main_generated.h>
 #include <crypto/hash.hpp>
 #include <service/flatbuffer_service.h>
@@ -45,7 +46,7 @@ void init() {
     std::cout << folder + "lock.mdb already exists.\n";
     exit(0);
   }
-  db = std::make_unique<ametsuchi::Ametsuchi>("/tmp/ametsuchi/");
+  db = std::make_unique<ametsuchi::Ametsuchi>(folder);
 }
 
 void append(const iroha::Transaction &tx) {
