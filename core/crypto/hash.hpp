@@ -18,11 +18,14 @@ limitations under the License.
 #define CORE_CRYPTO_HASH_HPP__
 
 #include <string>
+#include <vector>
 
 namespace hash {
 
 std::string sha3_256_hex(std::string message);
+std::string sha3_256_hex(std::vector<uint8_t> message);
 std::string sha3_512_hex(std::string message);
+
 };
 
 #endif  // CORE_CRYPTO_HASH_HPP_

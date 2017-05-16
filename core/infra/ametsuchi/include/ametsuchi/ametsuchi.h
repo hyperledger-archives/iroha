@@ -142,7 +142,7 @@ class Ametsuchi {
                                       iroha::Command command,
                                       bool uncommitted = false);
 
-  const std::string getMerkleRoot();
+  const ametsuchi::merkle::hash_t getMerkleRoot();
 
  private:
   /* for internal use only */
