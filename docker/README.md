@@ -11,11 +11,11 @@ Build depends on the environment variable `IROHA_HOME` so you need to set it:
 
 `export IROHA_HOME=$(pwd)`
 
-Build on docker container for develop environment `warchantua/iroha-dev` so you need to build it:
+Build on docker container for develop environment `hyperledger/iroha-dev` so you need to build it:
 
 ```
 cd docker/dev
-docker build -t warchantua/iroha-dev .
+docker build -t hyperledger/iroha-dev .
 ```
 
 Run build script and wait for completion. 
