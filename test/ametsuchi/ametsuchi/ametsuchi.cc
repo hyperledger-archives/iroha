@@ -23,6 +23,7 @@
 
 class Ametsuchi_Test : public ::testing::Test {
  protected:
+  virtual void SetUp() { system(("rm -rf " + folder).c_str()); }
   virtual void TearDown() { system(("rm -rf " + folder).c_str()); }
 
   std::string folder = "/tmp/ametsuchi/";

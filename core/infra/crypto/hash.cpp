@@ -17,6 +17,7 @@ extern "C" {
 #include <SimpleFIPS202.h>
 }
 #include <crypto/hash.hpp>
+#include <vector>
 
 namespace hash {
 
@@ -41,6 +42,15 @@ std::string sha3_256_hex(std::string message) {
 
   SHA3_256(digest, reinterpret_cast<const unsigned char *>(message.c_str()),
            message.size());
+
+  return digest_to_hexdigest(digest, sha256_size);
+}
+
+std::string sha3_256_hex(std::vector<uint8_t> message) {
+  const int sha256_size = 32;  // bytes
+  unsigned char digest[sha256_size];
+
+  SHA3_256(digest, message.data(), message.size());
 
   return digest_to_hexdigest(digest, sha256_size);
 }

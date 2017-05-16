@@ -50,7 +50,7 @@ class synchornizer_connection_part_test : public ::testing::Test {
     connection::wait_till_ready();
   }
 
-  virtual void TearDown() { server_thread_torii.detach(); }
+  virtual void TearDown() { server_thread_torii.detach(); system("rm -rf /tmp/ametsuchi/"); }
 };
 
 

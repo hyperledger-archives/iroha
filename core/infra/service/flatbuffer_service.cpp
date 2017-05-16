@@ -570,14 +570,11 @@ namespace flatbuffer_service {
       VoidHandler handler;
       handler = ensureNotNull(fromTx.attachment());
       if (!handler) {
-        logger::error("Connection with grpc") << "Transaction attachment is null";
         return makeUnexpected(handler.excptr());
       }
 
       handler = ensureNotNull(fromTx.attachment()->data());
       if (!handler) {
-        logger::error("Connection with grpc")
-          << "Transaction attachment's data is null";
         return makeUnexpected(handler.excptr());
       }
 
