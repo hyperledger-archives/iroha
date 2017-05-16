@@ -1,16 +1,16 @@
 FROM ubuntu:16.04
 
-ENV IROHA_HOME=/usr/local/iroha
-ENV LD_LIBRARY_PATH=${IROHA_HOME}/lib
+COPY iroha /iroha
 
-COPY release ${IROHA_HOME}
+ENV IROHA_HOME=/iroha
+ENV LD_LIBRARY_PATH=/iroha/lib
 
-RUN apt update && apt upgrade -y; \
-    useradd -ms /bin/bash iroha; \
-    chown -R iroha:iroha $IROHA_HOME
+WORKDIR /iroha
+
+RUN useradd -ms /bin/bash iroha; \
+	chown -R iroha:iroha $IROHA_HOME
+
 
 USER iroha
 
-WORKDIR ${IROHA_HOME}
-
-CMD ["/usr/local/iroha/bin/iroha-main"]
+CMD /iroha/scripts/run.sh
