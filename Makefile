@@ -46,7 +46,7 @@ clean:
 	rm -fr build external docker/tiny/iroha
 
 run:
-	docker run -d --name iroha -p 1204:1204 -p 50051:50051 hyperledger/iroha
+	docker run -d --name iroha -p 50051:50051 hyperledger/iroha
 
 logs:
 	docker logs -f iroha
