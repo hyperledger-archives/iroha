@@ -39,7 +39,7 @@ iroha-build:
 
 iroha:
 	rm -fr docker/tiny/iroha
-	rsync -av ${IROHA_HOME}/build/release docker/tiny/iroha
+	rsync -av ${IROHA_HOME}/build/iroha docker/tiny
 	docker build --rm -t hyperledger/iroha docker/tiny
 
 clean:
