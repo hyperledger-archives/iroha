@@ -1,0 +1,31 @@
+include "primitives.fbs";
+include "asset.fbs";
+
+namespace protocol;
+
+table Account {
+  uuid:         [ubyte] (required); // 32 bytes
+  quorum:       ubyte;              // 1 byte
+  signatories:  [ubyte] (required); // 32 bytes
+  username:     string  (required);
+
+  // Where should be permissions?
+  permission:   [Permission];
+}
+
+
+// message represents custom user data, related to account. User is able to store blobs in his account and access it by key.
+// e.g.,
+//{
+//  accPubKey: "account1",
+//  data: {
+//    key: "email",
+//    value: "bogdan@soramitsu.co.jp"
+//  }
+//}
+table Message {
+  uuid: string (required);
+
+  // values can be accessed by key for O(log(n)). Look at "Storing maps" section in flatbuffers docs
+  data: [KeyValueObject];
+}

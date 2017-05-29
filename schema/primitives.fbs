@@ -1,0 +1,35 @@
+namespace protocol;
+
+
+/////////////////////////////////////
+/// Key-Value object
+
+table KeyValueObject {
+  key:   string (key, required);  // primary key, sorted
+  value: [ubyte];                 // arbitrary data
+}
+
+/////////////////////////////////////
+/// Permissions
+
+table Permission {
+    actionType: ubyte; // required (Enum class ActionType)
+    allow:      bool;  // required
+}
+
+/////////////////////////////////////
+/// Peer
+
+table Peer {
+  pubkey:          string (required);  // sorted; primary key.
+  ip:              string (required);  // max size 15 bytes
+  trust:           double;             // 8 bytes
+  active:          bool;               // 1 byte
+}
+/////////////////////////////////////
+
+table Signature {
+  pubkey: [ubyte] (required); // blob (32 bytes)
+  sig:    [ubyte] (required); // blob (44 bytes)
+}
+
