@@ -46,13 +46,14 @@ int main() {
 
   logger::setLogLevel(logger::LogLevel::Debug);
 
-  connection::initialize_peer();
+  connection::initialize();
   repository::front_repository::initialize_repository();
   sumeragi::initializeSumeragi();
   // peer::izanami::startIzanami();
 
   std::thread check_server([&](){
       std::string cmd;
+      connection::waitForReady();
       while (running){
           std::cin >> cmd;
           if(cmd == "quit"){
@@ -61,7 +62,6 @@ int main() {
               return;
           }
       }
-      logger::info("main") << "OWARI";
   });
   connection::run();
   logger::info("main") << "check_server.detach()";
