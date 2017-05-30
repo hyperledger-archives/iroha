@@ -57,7 +57,7 @@ int main() {
       while (running){
           std::cin >> cmd;
           if(cmd == "quit"){
-              logger::info("main") << "will halt ";
+              logger::info("main") << "will halt";
               connection::finish();
               return;
           }
