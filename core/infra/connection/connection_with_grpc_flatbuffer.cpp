@@ -650,7 +650,7 @@ namespace connection {
       flatbuffers::BufferRef<::iroha::CheckHashResponse> responseRef;
       auto res = stub_->checkHash(&clientContext, reqPingRef, &responseRef);
 
-      logger::info("Connection with grpc") << "Send!";
+      logger::info("connection") << "Send!";
 
       if (res.ok()) {
         logger::info("connection")
@@ -681,7 +681,7 @@ namespace connection {
 
       auto res =
           stub_->getTransactions(&clientContext, reqPingRef, &responseRef);
-      logger::info("Connection with grpc") << "Send!";
+      logger::info("connection") << "Send!";
 
       if (res.ok()) {
         logger::info("connection")
@@ -711,7 +711,7 @@ namespace connection {
       flatbuffers::BufferRef<::iroha::PeersResponse> responseRef;
 
       auto res = stub_->getPeers(&clientContext, reqPingRef, &responseRef);
-      logger::info("Connection with grpc") << "Send!";
+      logger::info("connection") << "Send!";
 
       if (res.ok()) {
         logger::info("connection")
@@ -875,8 +875,8 @@ namespace connection {
     namespace SyncImpl {
       namespace checkHash {
         bool send(const std::string &ip, const ::iroha::Ping &ping) {
-          logger::info("Connection with grpc") << "Send!";
-          logger::info("Connection with grpc") << "IP: " << ip;
+          logger::info("connection") << "Send!";
+          logger::info("connection") << "IP: " << ip;
           SyncConnectionClient client(grpc::CreateChannel(
               ip + ":" +
                   std::to_string(config::IrohaConfigManager::getInstance()
@@ -889,8 +889,8 @@ namespace connection {
 
       namespace getTransactions {
         bool send(const std::string &ip, const ::iroha::Ping &ping) {
-          logger::info("Connection with grpc") << "getTransactions Send!";
-          logger::info("Connection with grpc") << "IP: " << ip;
+          logger::info("connection") << "getTransactions Send!";
+          logger::info("connection") << "IP: " << ip;
           SyncConnectionClient client(grpc::CreateChannel(
               ip + ":" +
                   std::to_string(config::IrohaConfigManager::getInstance()
@@ -908,8 +908,8 @@ namespace connection {
 
       namespace getPeers {
         bool send(const std::string &ip, const ::iroha::Ping &ping) {
-          logger::info("Connection with grpc") << "Send!";
-          logger::info("Connection with grpc") << "IP: " << ip;
+          logger::info("connection") << "Send!";
+          logger::info("connection") << "IP: " << ip;
           SyncConnectionClient client(grpc::CreateChannel(
               ip + ":" +
                   std::to_string(config::IrohaConfigManager::getInstance()
@@ -940,7 +940,7 @@ namespace connection {
       namespace fetch {
         std::vector<uint8_t> fetchStreamTransaction(const std::string &ip,
                                                     const TxRequest &request) {
-          logger::info("Connection with grpc") << "Fetch stream transaction";
+          logger::info("connection") << "Fetch stream transaction";
           SyncConnectionClient client(grpc::CreateChannel(
               ip + ":" +
                   std::to_string(config::IrohaConfigManager::getInstance()
