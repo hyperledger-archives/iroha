@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#ifndef CONNECTION_API_COMMAND_SERVICE_HPP
+#define CONNECTION_API_COMMAND_SERVICE_HPP
+
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 
@@ -22,6 +25,7 @@ namespace connection {
 
         class CommandService final
             : public iroha::protocol::CommandService::Service {
+        public:
             grpc::Status Torii(grpc::ClientContext* context,
                                const iroha::protocol::Transaction& request,
                                iroha::protocol::ToriiResponse* response);
@@ -29,3 +33,5 @@ namespace connection {
 
     }  // namespace api
 }  // namespace connection
+
+#endif
