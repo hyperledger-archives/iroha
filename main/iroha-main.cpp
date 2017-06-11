@@ -13,6 +13,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+#include <connection/server_runner.hpp>
+#include <connection/api/command_service.hpp>
+#include <connection/api/query_service.hpp>
+#include <connection/consensus/service.hpp>
+#include <connection/ordering/service.hpp>
+
 int main(int argc,char* argv[]) {
+
+  connection::api::CommandService commandService;
+  connection::api::QueryService queryService;
+  connection::consensus::SumeragiService sumeragiService;
+  connection::ordering::OrderingService orderingService;
+
+  connection::ServerRunner serverRunner("0.0.0.0", {
+      &commandService,
+      &queryService,
+      &sumeragiService,
+      &orderingService
+  });
+
   return 0;
 }
