@@ -23,6 +23,12 @@ namespace connection {
 
         using namespace iroha::protocol;
 
+        std::function<void(const Block&)> dispatchToSumeragi;
+
+        void receive(std::function<void(const iroha::protocol::Block&)> const& func) {
+            dispatchToSumeragi = func;
+        }
+
         grpc::Status CommandService::Torii(grpc::ClientContext* context,
                                            const Transaction& request,
                                            ToriiResponse* response) {

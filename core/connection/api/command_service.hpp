@@ -23,6 +23,8 @@ limitations under the License.
 namespace connection {
     namespace api {
 
+        void receive(std::function<void(const iroha::protocol::Block&)>);
+
         class CommandService final
             : public iroha::protocol::CommandService::Service {
         public:
