@@ -19,12 +19,24 @@ limitations under the License.
 namespace connection {
     namespace api {
 
-        using iroha::protocol::Transaction;
-        using iroha::protocol::ToriiResponse;
+        using namespace iroha::protocol;
 
         grpc::Status CommandService::Torii(grpc::ClientContext* context,
                                            const Transaction& request,
                                            ToriiResponse* response) {
+
+            // TODO: Use this to get client's ip and port.
+            (void) context;
+
+            Block_Body body;
+            *body.mutable_txs()->Add() = request;
+
+            Block block;
+            *block.mutable_body() = body;
+
+            // TODO: Return tracking log number (hash)
+            *response = ToriiResponse();
+
             return grpc::Status::OK;
         }
 
