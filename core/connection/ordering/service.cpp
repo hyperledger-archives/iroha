@@ -19,9 +19,12 @@ limitations under the License.
 namespace connection {
     namespace ordering {
 
-        grpc::Status OrderingService::QueueTransaction(grpc::ServerContext* context,
-                                                       const iroha::protocol::Transaction* request,
-                                                       google::protobuf::Empty* response) {
+        using iroha::protocol::QueueTransactionResponse;
+
+        grpc::Status OrderingService::QueueTransaction(
+            grpc::ClientContext* context,
+            const iroha::protocol::Transaction& request,
+            QueueTransactionResponse* response) {
             return grpc::Status::OK;
         }
 
