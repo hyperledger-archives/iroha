@@ -16,4 +16,5 @@ target_link_libraries(sumeragi
   timer
   repository
   runtime
+  logger
 )

@@ -18,12 +18,14 @@
 #include <connection/api/command_service.hpp>
 #include <connection/consensus/service.hpp>
 #include <connection/consensus/client.hpp>
-//#include <logger/logger.hpp>
+#include <logger/logger.hpp>
 #include <common/timer.hpp>
 #include <common/datetime.hpp>
 #include <thread_pool.hpp>
 #include <vector>
 #include <set>
+
+#include "sumeragi.hpp"
 
 /**
  * |ーーー|　|ーーー|　|ーーー|　|ーーー|
@@ -39,175 +41,174 @@
  * Springer.
  */
 
-namespace sumeragi {
+namespace consensus {
+    namespace sumeragi {
 
-    using iroha::protocol::Block;
-    using iroha::protocol::Signature;
-    using sender = connection::consensus::SumeragiClient;
+        using iroha::protocol::Block;
+        using iroha::protocol::Signature;
 
-    logger::Logger log("sumeragi");
+        connection::consensus::SumeragiClient sender;
+        logger::Logger log("sumeragi");
 
-    static ThreadPool pool(ThreadPoolOptions{
-        .threads_count = 0,
-        //config::IrohaConfigManager::getInstance().getConcurrency(0),
-        .worker_queue_size = 1024
-        //config::IrohaConfigManager::getInstance().getPoolWorkerQueueSize(1024),
-    });
+        static ThreadPool pool(ThreadPoolOptions{
+            .threads_count = 0,
+            //config::IrohaConfigManager::getInstance().getConcurrency(0),
+            .worker_queue_size = 1024
+            //config::IrohaConfigManager::getInstance().getPoolWorkerQueueSize(1024),
+        });
 
-    void initialize() {
+        void initialize() {
 
-        connection::api::receive(
-            [](const Block& block) {
-                // send processTransaction(event) as a task to processing pool
-                // this returns std::future<void> object
-                // (std::future).get() method locks processing until result of
-                // processTransaction will be available but processTransaction returns
-                // void, so we don't have to call it and wait
-                std::function<void()> &&task = std::bind(processBlock, block);
-                pool.process(std::move(task));
-            });
-
-        connection::consensus::receive(
-            [](const Block& block) {
-                // TODO: Judge committed
-                if ( check is_committed false) {
-
-                }
-                else {
+            connection::api::receive(
+                [](const Block &block) {
                     // send processTransaction(event) as a task to processing pool
                     // this returns std::future<void> object
                     // (std::future).get() method locks processing until result of
                     // processTransaction will be available but processTransaction returns
                     // void, so we don't have to call it and wait
-                    // std::function<void()>&& task =
-                    //    std::bind(processTransaction, std::move(event));
-                    // pool.process(std::move(task));
-
                     std::function<void()> &&task = std::bind(processBlock, block);
                     pool.process(std::move(task));
-                }
+                });
+
+            connection::consensus::receive(
+                [](const Block &block) {
+                    // TODO: Judge committed
+                    if ( /*check is_committed*/ false) {
+
+                    } else {
+                        // send processTransaction(event) as a task to processing pool
+                        // this returns std::future<void> object
+                        // (std::future).get() method locks processing until result of
+                        // processTransaction will be available but processTransaction returns
+                        // void, so we don't have to call it and wait
+                        // std::function<void()>&& task =
+                        //    std::bind(processTransaction, std::move(event));
+                        // pool.process(std::move(task));
+
+                        std::function<void()> &&task = std::bind(processBlock, block);
+                        pool.process(std::move(task));
+                    }
+                });
+        }
+
+        // TODO: Append block to db and calc merkle root.
+        std::string appendBlock(const Block &block) {
+            return std::string();
+        }
+
+        Block createSignedBlock(const Block &block, const std::string &merkleRoot) {
+            auto pk = "pk"; // TODO: peer service
+            auto sk = "sk";
+
+            auto sigblob = crypto::signature::sign(merkleRoot, pk, sk);
+            std::string str_sigblob;
+            for (auto e: sigblob) str_sigblob.push_back(e);
+
+            Signature newSignature;
+            *newSignature.mutable_pubkey() = pk;
+            *newSignature.mutable_signature() = str_sigblob;
+
+            Block ret;
+            ret.CopyFrom(block);
+            ret.mutable_header()->set_created_time(common::datetime::unixtime());
+            *ret.mutable_header()->mutable_peer_signature()->Add() = newSignature;
+
+            return ret;
+        }
+
+        bool isLeader(const Block &block) {
+            //auto validLeader = true; // TODO: Use peer service
+            auto validNumOfSignatures = block.header().peer_signature().size() == 1;
+            if (validNumOfSignatures) return true;
+            return false;
+        }
+
+        size_t getMaxFaulty() {
+            return 3;/*peer::service::getActivePeerList().size() / 3; */ // TODO: Peer service
+        }
+
+        size_t getNumValidatingPeers() {
+            return getMaxFaulty() * 2 + 1;
+        }
+
+        size_t getNumAllPeers() {
+            return 4; // TODO: peer service
+        }
+
+        void setTimeOutCommit(const Block &block) {
+            timer::setAwkTimerForCurrentThread(3000, [block] {
+                panic(block);
             });
-    }
-
-    // TODO: Append block to db and calc merkle root.
-    std::string appendBlock(const Block& block) {
-        return std::string();
-    }
-
-    Block createSignedBlock(const Block& block, const std::string& merkleRoot) {
-        auto pk = "pk"; // TODO: peer service
-        auto sk = "sk";
-
-        auto sigblob = crypto::signature::sign(merkleRoot, pk, sk);
-        std::string str_sigblob;
-        for (auto e: sigblob) str_sigblob.push_back(e);
-
-        Signature newSignature;
-        *newSignature.mutable_pubkey() = pk;
-        *newSignature.mutable_signature() = str_sigblob;
-
-        Block ret;
-        ret.CopyFrom(block);
-        ret.mutable_header()->set_created_time(common::datetime::unixtime());
-        *ret.mutable_header()->mutable_peer_signature()->Add() = newSignature;
-
-        return ret;
-    }
-
-    bool isLeader(const Block& block) {
-        //auto validLeader = true; // TODO: Use peer service
-        auto validNumOfSignatures = block.header().peer_signature().size() == 1;
-        if (validNumOfSignatures) return true;
-        return false;
-    }
-
-    size_t getMaxFaulty() {
-        return peer::service::getActivePeerList().size() / 3;
-    }
-
-    size_t getNumValidatingPeers() {
-        return getMaxFaulty() * 2 + 1;
-    }
-
-    size_t getNumAllPeers() {
-        return 4; // TODO: peer service
-    }
-
-    void setTimeOutCommit(const Block& block) {
-        timer::setAwkTimerForCurrentThread(3000, [block]{
-            panic(block);
-        });
-    }
-
-    /**
-     * returns expected tail to send committed block.
-     * if returned value = -1, all peers has been used.
-     */
-
-    int getNextOrder() {
-        static int currentProxyTail = static_cast<int>(getNumValidatingPeers()) - 1;
-        if (currentProxyTail >= getNumAllPeers()) {
-            return -1;
         }
-        return currentProxyTail++;
-    }
 
-    size_t countValidSignatures(const Block& block) {
-        size_t numValidSignatures = 0;
-        std::set<std::string> usedPubkeys;
+        /**
+         * returns expected tail to send committed block.
+         * if returned value = -1, all peers has been used.
+         */
 
-        auto peerSigs = block.header().peer_signature();
-        for (auto const& sig: peerSigs) {
-            // FIXME: bytes in proto -> std::string in C++ (null value problem)
-            if (usedPubkeys.count(sig.pubkey())) continue;
-            const auto bodyMessage = block.body().SerializeAsString();
-            const auto hash = crypto::hash::sha3_256_hex(bodyMessage);
-            if (crypto::signature::verify(sig.signature(), hash, sig.pubkey())) {
-                numValidSignatures++;
-                usedPubkeys.insert(sig.pubkey());
+        int getNextOrder() {
+            static int currentProxyTail = static_cast<int>(getNumValidatingPeers()) - 1;
+            if (currentProxyTail >= getNumAllPeers()) {
+                return -1;
             }
+            return currentProxyTail++;
         }
 
-        return numValidSignatures;
-    }
+        size_t countValidSignatures(const Block &block) {
+            size_t numValidSignatures = 0;
+            std::set<std::string> usedPubkeys;
 
-    void processBlock(const Block& block) {
+            auto peerSigs = block.header().peer_signature();
+            for (auto const &sig: peerSigs) {
+                // FIXME: bytes in proto -> std::string in C++ (null value problem)
+                if (usedPubkeys.count(sig.pubkey())) continue;
+                const auto bodyMessage = block.body().SerializeAsString();
+                const auto hash = crypto::hash::sha3_256_hex(bodyMessage);
+                if (crypto::signature::verify(sig.signature(), hash, sig.pubkey())) {
+                    numValidSignatures++;
+                    usedPubkeys.insert(sig.pubkey());
+                }
+            }
 
-        // Stateful Validation
-        auto valid = validator::stateful::validate(block);
-        if (!valid) {
-            log.info("Stateful validation failed.");
-            return;
+            return numValidSignatures;
         }
 
-        // Add Signature
-        auto merkleRoot = appendBlock(block);
-        auto newBlock = createSignedBlock(block, merkleRoot);
+        void processBlock(const Block &block) {
 
-        if (isLeader(newBlock)) {
-            sender.broadCast(newBlock);
-            setTimeOutCommit(newBlock);
-            return;
-        }
-
-        auto numValidSignatures = countValidSignatures(newBlock);
-
-        if (numValidSignatures < getNumValidatingPeers()) {
-            auto next = getNextOrder();
-            if (next < 0) {
-                log.error("getNextOrder() < 0 in processBlock");
+            // Stateful Validation
+            auto valid = validator::stateful::validate(block);
+            if (!valid) {
+                log.info("Stateful validation failed.");
                 return;
             }
-            sender.unicast(newBlock, static_cast<size_t>(next));
-            setTimeOutCommit(newBlock);
-        }
-        else {
-            if (numValidSignatures == getNumValidatingPeers()) {
-                sender.commit(newBlock);
+
+            // Add Signature
+            auto merkleRoot = appendBlock(block);
+            auto newBlock = createSignedBlock(block, merkleRoot);
+
+            if (isLeader(newBlock)) {
+                sender.broadCast(newBlock);
                 setTimeOutCommit(newBlock);
+                return;
+            }
+
+            auto numValidSignatures = countValidSignatures(newBlock);
+
+            if (numValidSignatures < getNumValidatingPeers()) {
+                auto next = getNextOrder();
+                if (next < 0) {
+                    log.error("getNextOrder() < 0 in processBlock");
+                    return;
+                }
+                sender.unicast(newBlock, static_cast<size_t>(next));
+                setTimeOutCommit(newBlock);
+            } else {
+                if (numValidSignatures == getNumValidatingPeers()) {
+                    sender.commit(newBlock);
+                    setTimeOutCommit(newBlock);
+                }
             }
         }
-    }
 
 
 /**
@@ -229,14 +230,15 @@ namespace sumeragi {
  * |---|  |---|  |---|  |---|  |---|  |---|.
  */
 
-   void panic(const Block& block) {
-        auto next = getNextOrder();
-        if (next < 0) {
-            log.info("否認");
-            return;
+        void panic(const Block &block) {
+            auto next = getNextOrder();
+            if (next < 0) {
+                log.info("否認");
+                return;
+            }
+            sender.unicast(block, static_cast<size_t>(next));
+            setTimeOutCommit(block);
         }
-        sender.unicast(block, static_cast<size_t>(next));
-        setTimeOutCommit(block);
-    }
 
-}  // namespace sumeragi
+    }  // namespace sumeragi
+}  // namespace consensus

@@ -14,6 +14,7 @@
 
 add_subdirectory(ametsuchi)
 add_subdirectory(connection)
+add_subdirectory(consensus)
 add_subdirectory(crypto)
 add_subdirectory(logger)
 add_subdirectory(ordering)
