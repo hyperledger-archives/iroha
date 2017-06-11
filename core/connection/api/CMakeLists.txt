@@ -15,6 +15,6 @@
 add_library(command_service
     command_service.cpp
 )
-target_link_libraries(
+target_link_libraries(command_service
     endpoint
 )

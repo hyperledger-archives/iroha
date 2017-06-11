@@ -12,6 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(api)
-add_subdirectory(consensus)
-add_subdirectory(ordering)
+add_library(connection
+    # server_runner
+    server_runner.cpp
+
+    # api
+    api/command_service.cpp
+    api/query_service.cpp
+
+    # consensus
+    consensus/client.cpp
+    consensus/service.cpp
+
+    # ordering
+    ordering/client.cpp
+    ordering/service.cpp
+)
+target_link_libraries(connection
+    endpoint
+    schema
+)
