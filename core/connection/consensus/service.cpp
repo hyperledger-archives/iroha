@@ -20,10 +20,17 @@ namespace connection {
     namespace consensus {
 
         using iroha::protocol::Block;
+        using iroha::protocol::VerifyResponse;
 
-        grpc::Status SumeragiService::Verify(grpc::ServerContext* context,
-                                             const Block* request,
-                                             ::google::protobuf::Empty* response) {
+        std::function<void(const Block&)> dispatchToSumeragi;
+
+        void receive(const std::function<void(const Block&)>& func) {
+            dispatchToSumeragi = func;
+        }
+
+        grpc::Status SumeragiService::Verify(grpc::ClientContext* context,
+                                             const Block& request,
+                                             VerifyResponse* response) {
             return grpc::Status::OK;
         }
 
