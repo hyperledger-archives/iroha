@@ -13,11 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "runtime.hpp"
+#include "validator.hpp"
 
-namespace runtime {
-    using Transaction = iroha::protocol::Transaction;
-    void processTransaction(const Transaction&){
-
-    }
-}
+namespace validator {
+    namespace stateful {
+        using Block = iroha::protocol::Block;
+        bool validate(const Block& block){
+            // ToDo
+            // 権限
+            // Asset/Accountが存在するか
+            return true;
+        }
+    };
+};

@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-                 http://www.apache.org/licenses/LICENSE-2.0
+     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,21 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#ifndef IROHA_RUNTIME_BASE_HPP
+#define IROHA_RUNTIME_BASE_HPP
 
-#ifndef __CORE_RUNTIME_VALIDATOR_HPP__
-#define __CORE_RUNTIME_VALIDATOR_HPP__
+#include <block.pb.h>
 
-#include <transaction_generated.h>
-
-namespace runtime {
-    namespace validator {
-
-        bool account_exist_validator(const flatbuffers::String &publicKey);
-
-        bool permission_validator(const iroha::Transaction &tx);
-
-        bool logic_validator(const iroha::Transaction &tx);
-    };
+struct base{
+    using Transaction = iroha::protocol::Transaction;
+    virtual processTransaction(const Transaction&);
 };
 
-#endif
+#endif //IROHA_RUNTIME_BASE_HPP

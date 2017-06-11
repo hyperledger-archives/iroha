@@ -1,8 +1,5 @@
-ADD_LIBRARY(runtime STATIC
-    runtime.cpp
-    validator.cpp
-)
+ADD_LIBRARY(runtime STATIC runtime.cpp)
 
 target_link_libraries(runtime
-    repository
+    scheme
 )

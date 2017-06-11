@@ -13,11 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "runtime.hpp"
+#ifndef IROHA_VALIDATION_STATELESS_VALIDATOR_HPP
+#define IROHA_VALIDATION_STATELESS_VALIDATOR_HPP
 
-namespace runtime {
-    using Transaction = iroha::protocol::Transaction;
-    void processTransaction(const Transaction&){
+#include <block.pb.h>
 
-    }
-}
+namespace validator {
+    namespace stateless {
+        using Block = iroha::protocol::Block;
+        bool validate(const Block &);
+    };
+};
+
+#endif //IROHA_VALIDATION_STATELESS_VALIDATOR_HPP

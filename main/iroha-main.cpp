@@ -13,11 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "runtime.hpp"
-
-namespace runtime {
-    using Transaction = iroha::protocol::Transaction;
-    void processTransaction(const Transaction&){
-
-    }
+int main(int argc,char* argv[]) {
+  return 0;
 }

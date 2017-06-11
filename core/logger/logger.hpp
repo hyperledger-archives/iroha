@@ -13,9 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
-#ifndef __LOGGER_HPP_
-#define __LOGGER_HPP_
+#ifndef __IROHA_LOGGER_LOGGER_HPP__
+#define __IROHA_LOGGER_LOGGER_HPP__
 
 #include <sstream>
 #include <string>
@@ -24,61 +23,27 @@ limitations under the License.
 
 namespace logger {
 
-enum class LogLevel { Debug = 0, Explore, Info, Warning, Error, Fatal };
+struct Logger {
+    std::string log_name;
+    std::shared_ptr<spdlog::logger> console;
 
-void setLogLevel(LogLevel);
+    explicit Logger(std::string &&name);
+    explicit Logger(const std::string &name);
 
-struct base {
-  explicit base(std::string &&caller, LogLevel level) noexcept;
-  explicit base(const std::string &caller, LogLevel level) noexcept;
-  virtual ~base() = 0;
-  const std::string caller;
-  std::stringstream stream;
-  bool uncaught = true;
-  std::shared_ptr<spdlog::logger> console;
-  spdlog::level::level_enum level;
+    void debug(std::string &&msg);
+    void debug(const std::string &msg);
+
+    void info(std::string &&msg);
+    void info(const std::string &msg);
+
+    void warning(std::string &&msg);
+    void warning(const std::string &msg);
+
+    void error(std::string &&msg);
+    void error(const std::string &msg);
+
 };
 
-template <typename T>
-inline base &operator<<(base &record, T &&t) {
-  record.stream << std::forward<T>(t);
-  return record;
-}
-
-template <typename T>
-inline base &operator<<(base &&record, T &&t) {
-  return record << std::forward<T>(t);
-}
-
-struct debug : public base {
-  explicit debug(std::string &&caller) noexcept;
-  explicit debug(const std::string &caller) noexcept;
-};
-
-struct info : public base {
-  explicit info(std::string &&caller) noexcept;
-  explicit info(const std::string &caller) noexcept;
-};
-
-struct warning : public base {
-  explicit warning(std::string &&caller) noexcept;
-  explicit warning(const std::string &caller) noexcept;
-};
-
-struct error : public base {
-  explicit error(std::string &&caller) noexcept;
-  explicit error(const std::string &caller) noexcept;
-};
-
-struct fatal : public base {
-  explicit fatal(std::string &&caller) noexcept;
-  explicit fatal(const std::string &caller) noexcept;
-};
-
-struct explore : public base {
-  explicit explore(std::string &&caller) noexcept;
-  explicit explore(const std::string &caller) noexcept;
-};
 }  // namespace logger
 
 #endif

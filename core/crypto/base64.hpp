@@ -13,21 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#pragma once
 
-#ifndef CORE_CRYPTO_BASE64_HPP_
-#define CORE_CRYPTO_BASE64_HPP_
-
-#include <iostream>
-
-#include <memory>
 #include <string>
+#include <string.h>
 #include <vector>
 
-#include <string.h>
-
-namespace base64 {
-const std::string encode(const std::vector<unsigned char> &message);
-std::vector<unsigned char> decode(const std::string &enc);
+namespace crypto {
+    namespace base64 {
+        const std::string encode(const std::vector<unsigned char> &message);
+        std::vector<unsigned char> decode(const std::string &encoded);
+    }
 };
-
-#endif  // CORE_CRYPTO_BASE64_HPP_
