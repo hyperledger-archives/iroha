@@ -21,9 +21,12 @@ limitations under the License.
 namespace connection {
     namespace ordering {
 
-        bool OrderingService::QueueTransaction(
+        using iroha::protocol::QueueTransactionResponse;
+
+        QueueTransactionResponse* OrderingService::QueueTransaction(
             const iroha::protocol::Transaction& request) {
-            return true;
+            auto response = new QueueTransactionResponse();
+            return response;
         }
 
     }  // namespace consensus

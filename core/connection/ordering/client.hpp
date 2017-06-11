@@ -21,7 +21,8 @@ namespace connection {
 
         class OrderingService {
         public:
-            bool QueueTransaction(const iroha::protocol::Transaction& tx);
+            iroha::protocol::QueueTransactionResponse* QueueTransaction(
+                const iroha::protocol::Transaction& tx);
         };
 
     }  // namespace consensus
