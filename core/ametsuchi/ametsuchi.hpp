@@ -14,30 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __CORE_HIJIRI_SERVICE_HPP__
-#define __CORE_HIJIRI_SERVICE_HPP__
+#ifndef __IROHA_AMETSUCHI_AMETSUCHI_HPP__
+#define __IROHA_AMETSUCHI_AMETSUCHI_HPP__
 
-#include <map>
-#include <queue>
-#include <set>
-#include <vector>
+#include <string>
+#include <block.pb.h>
 
-namespace peer {
-namespace hijiri {
-// This is reputation System.
+namespace ametsuchi{
+    // This is stub, maybe it will be changed.
+    std::string getMerkleRoot();
+    void append(const iroha::protocol::Block&);
 
-// check are broken? peer
-void check(const std::string &ip);  // TODO
-
-namespace my{
-
-/*
- * To issue Check my db's root hash.
- */
-void checkRootHash();
 }
-}  // namespace hijiri
-}  // namespace peer
 
-
-#endif
+#endif //__IROHA_AMETSUCHI_AMETSUCHI_HPP__

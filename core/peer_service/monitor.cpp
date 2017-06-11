@@ -15,3 +15,61 @@ limitations under the License.
 */
 
 #include "monitor.hpp"
+
+namespace peer_service{
+  namespace monitor{
+
+    Nodes peerList;
+    std::shared_ptr<peer::Node> getCurrentLeader(){
+
+    }
+    std::string getCurrentLeaderIp(){
+
+    }
+
+
+    void initialize(){
+
+    }
+
+    size_t getMaxFaulty(){
+
+    }
+
+    Nodes getAllPeerList(){
+
+    }
+    std::shared_ptr<peer::Node> getPeerAt(unsigned int index){
+
+    }
+    std::vector<std::string> getAllIpList(){
+
+    }
+
+    Nodes getActivePeerList(){
+
+    }
+    std::shared_ptr<peer::Node> getActivePeerAt(unsigned int index){
+
+    }
+    std::vector<std::string> getActiveIpList(){
+
+    }
+
+
+    bool isExistIP(const std::string &){
+
+    }
+    bool isExistPublicKey(const std::string &){
+
+    }
+
+    Nodes::iterator findPeerIP(const std::string &ip){
+
+    }
+    Nodes::iterator findPeerPublicKey(const std::string &publicKey){
+
+    }
+
+  };  // namespace monitor
+};

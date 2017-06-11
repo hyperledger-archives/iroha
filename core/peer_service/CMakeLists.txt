@@ -14,8 +14,7 @@
 
 ADD_LIBRARY(membership_service STATIC
     peer_service.cpp
-    hijiri.cpp
-    synchronizer.cpp)
+)
 
 target_link_libraries(membership_service
     timer

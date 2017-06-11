@@ -17,23 +17,37 @@ limitations under the License.
 #define __IROHA_PEER_SERVICE_CHANGE_STATE_HPP__
 
 #include <string>
+#include <peer_service/peer_service.hpp>
 
 namespace peer_service{
     namespace change_state{
-        // ToDo Add Command for peer
 
         // This scope is issue transaction
-        void add(const std::string &ip);
-        /*
-        void remove(const std::string &ip, const std::string &);
-        void setTrust(const std::string &ip, const std::string &, const double &);
-        void changeTrust(const std::string &ip, const std::string &, const double &);
-        void setActive(const std::string &ip, const std::string &, const bool active);
-        */
+        namespace transtion {
+          // invoke to issue transaction
+          void add(const std::string &ip, const peer::Node &);
+          void remove(const std::string &ip, const std::string &);
+          void setTrust(const std::string &ip, const std::string &, const double &);
+          void changeTrust(const std::string &ip, const std::string &, const double &);
+          void setActive(const std::string &ip, const std::string &, const bool active);
+        }
+
+        // This scope is validation
+        namespace validation {
+          bool add(const peer::Node &);
+          bool remove(const std::string &);
+          bool setTrust(const std::string &, const double &);
+          bool changeTrust(const std::string &, const double &);
+          bool setActive(const std::string &, const bool active);
+        }
 
         // This scope is runtime
-        namespace runtime{
-            void add(const std::string &ip);
+        namespace runtime {
+          bool add(const peer::Node &);
+          bool remove(const std::string &);
+          bool setTrust(const std::string &, const double &);
+          bool changeTrust(const std::string &, const double &);
+          bool setActive(const std::string &, const bool active);
         }
     };
 };

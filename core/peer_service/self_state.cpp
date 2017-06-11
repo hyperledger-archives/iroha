@@ -20,13 +20,32 @@ namespace peer_service{
         PREPARE, READY, ACTIVE
     };
     namespace self_state{
+        State _state;
+        std::string getPublicKey(){
+            // TODO : receive OLD:PeerServiceConfig
+        }
+        std::string getPrivateKey(){
+            // TODO : receive OLD:PeerServiceConfig
+        }
+        std::string getIp(){
+            // TODO : receive OLD:PeerServiceConfig
+        }
 
-        std::string getPublicKey();
-        std::string getPrivateKey();
-        std::string getIp();
+        bool  isLeader(){
 
-        bool  isLeader();
-        State state();
+        }
+
+        State state(){
+            return _state;
+        }
+
+        void activate(){
+            _state = ACTIVE;
+        }
+        void stop(){
+            _state = PREPARE;
+        }
+
 
     };
 };

@@ -13,29 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef __IROHA_PEER_SERVICE_SELF_STATE_HPP__
-#define __IROHA_PEER_SERVICE_SELF_STATE_HPP__
+#include "ametsuchi.hpp"
 
-#include <string>
-#include <peer_service/peer_service.hpp>
+namespace ametsuchi{
+    // This is stub, maybe it will be changed.
+    std::string getMerkleRoot(){
+        // This is stub
+        return "7c4f8b3fceae31610ff1b683eb7412be65053477b56c79a37eb632177a9370e9";
+    }
 
-namespace peer_service{
-    enum State{
-        PREPARE, READY, ACTIVE
-    };
-    namespace self_state{
+    void append(const iroha::protocol::Block& block){
 
-        std::string getPublicKey();
-        std::string getPrivateKey();
-        std::string getIp();
+    }
 
-        bool  isLeader();
-        State state();
-
-        void activate();
-        void stop();
-
-    };
-};
-
-#endif //__IROHA_PEER_SERVICE_SELF_STATE_HPP__
+}
