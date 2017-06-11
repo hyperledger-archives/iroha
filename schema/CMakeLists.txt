@@ -4,3 +4,7 @@ execute_process(COMMAND "protoc -I. --cpp_out=. --proto_path=commands.proto bloc
 execute_process(COMMAND "protoc -I. --cpp_out=. --proto_path=commands.proto asset.proto")
 execute_process(COMMAND "protoc -I. --cpp_out=. --proto_path=commands.proto commands.proto")
 execute_process(COMMAND "protoc -I. --cpp_out=. --proto_path=commands.proto primitive.proto")
+
+add_library(endpoint STATIC
+  endpoint.pb.cc
+)
