@@ -15,35 +15,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CORE_CONSENSUS_SUMERAGI_HPP_
-#define CORE_CONSENSUS_SUMERAGI_HPP_
+#ifndef __IROHA_CONSENSUS_SUMERAGI_HPP__
+#define __IROHA_CONSENSUS_SUMERAGI_HPP__
 
 #include <memory>
 #include <thread>
 #include <vector>
 
-namespace iroha {
-struct ConsensusEvent;
-}
+#include <block.pb.cc>
 
-namespace sumeragi {
+namespace consensus {
+    namespace sumeragi {
 
-using iroha::ConsensusEvent;
+        void initialize();
 
-void initializeSumeragi();
+        void processBlock(iroha::protocol::Block &event);
 
-void loop();
-
-void getNextOrder(std::unique_ptr<ConsensusEvent> event);
-
-void processTransaction(flatbuffers::unique_ptr_t&& event);
-
-void panic(const ConsensusEvent& event);
-
-void setAwkTimer(const int sleepMillisecs,
-                 const std::function<void(void)> action);
-void determineConsensusOrder(/*std::vector<double> trustVector*/);
-
-};  // namespace sumeragi
-
+    };  // namespace sumeragi
+};
 #endif  // CORE_CONSENSUS_SUMERAGI_HPP_
