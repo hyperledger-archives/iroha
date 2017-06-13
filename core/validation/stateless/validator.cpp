@@ -20,8 +20,8 @@ namespace validator {
         using Transaction = iroha::protocol::Transaction;
         bool validate(const Transaction& tx){
             return
-                tx.header().created_time() < common::datetime::unixtime() && // 過去に作られたTxか
-                tx.header().signature_size() != 0                         && // 電子署名は含まれているか
+                tx.header().created_time() <= common::datetime::unixtime() && // 過去に作られたTxか
+                tx.header().signature_size() != 0                          && // 電子署名は含まれているか
                 tx.body().creator_pubkey().size() == 32;                     // 公開鍵は32byteか ToDo configurable
         }
     };
