@@ -20,16 +20,17 @@ limitations under the License.
 #include <cstdint>
 #include <string>
 
-namespace datetime {
+namespace common {
+    namespace datetime {
 
-std::uint64_t unixtime();
+        std::uint64_t unixtime();
 
-std::string unixtime_str();
+        std::string unixtime_str();
 
-std::string date_str();
+        std::string date_str();
 
-std::string unixtime2date(std::int64_t unixtime);
+        std::string unixtime2date(std::int64_t unixtime);
 
-};  // namespace datetime
-
+    };  // namespace datetime
+}
 #endif
