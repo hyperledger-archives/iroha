@@ -20,8 +20,8 @@ limitations under the License.
 
 namespace validator {
     namespace stateless {
-        using Block = iroha::protocol::Block;
-        bool validate(const Block &);
+        using Transaction = iroha::protocol::Transaction;
+        bool validate(const Transaction &);
     };
 };
 
