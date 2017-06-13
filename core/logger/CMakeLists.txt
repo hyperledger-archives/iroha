@@ -1,10 +1,6 @@
+add_library(logger STATIC logger.cpp)
 
-ADD_LIBRARY(validator STATIC
-    validator.cpp
-)
-
-target_link_libraries(validator
-    hash
-    flatbuffer_service
-    logger
+target_link_libraries(logger
+    datetime
+    spdlog
 )
