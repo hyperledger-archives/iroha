@@ -1,0 +1,91 @@
+syntax = "proto3";
+package iroha.protocol;
+
+// AssetCommand
+message Add{
+  string to_account = 1;
+  Asset asset       = 2;
+}
+message Subtract{
+  string to_account = 1;
+  Asset asset       = 2;
+}
+message Transfer{
+  string sender    = 1;
+  string receiver  = 2;
+  Asset asset      = 3;
+}
+// ToDo
+message Exchange{}
+message AssetSetPermission{
+  string domain_id   = 1;
+  string account_id  = 2;
+  bytes  permissions = 3;
+}
+
+// AccountCommand
+message SignatoriesRegister{
+  string to_account = 1;
+  repeated Signature signatories = 2;
+}
+message SignatoriesUnregister{
+  string from_account = 1;
+  repeated Signature signatories = 2;
+}
+message SetQuorum{
+  string target_account = 1;
+  uint32 quorum = 2;
+}
+message AccountGrant{
+  string to_account = 1;
+}
+message AccountDeprive{
+  string from_account = 1;
+}
+
+
+// DomainCommand
+message AssetCreate{
+  string to_domain = 1;
+  Asset asset = 2;
+}
+message DomainCreate{
+  string domain = 1;
+  string root_account = 2;
+}
+
+message AccountCreate{
+  string username = 1;
+  repeated Signature signatories = 2;
+  uint32 quorum = 3;
+  string domain = 4;
+}
+message AccountSuspend{
+  string target_account = 1;
+}
+message AccountRegister{
+  string target_account = 1;
+  string to_domain = 2;
+  bytes  permissions = 3;
+}
+message AccountUnregister{
+  string target_account = 1;
+}
+
+message DomainSetPermission{
+  string domain_id   = 1;
+  string account_id  = 2;
+  bytes  permissions = 3;
+}
+message DomainSetNotify{
+  string target_address = 1;
+  // ToDo set log level
+}
+
+
+// PeerCommand
+message PeerAdd{}
+message PeerRemove{}
+message PeerSetTrust{}
+message PeerChangeTrust{}
+message PeerSetState{}
