@@ -25,7 +25,7 @@ namespace ordering{
 
         iroha::protocol::Block getBlock();
 
-        unsigned int getSize();
+        unsigned long getSize();
 
     };
 };

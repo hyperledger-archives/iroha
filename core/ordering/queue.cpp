@@ -48,7 +48,7 @@ namespace ordering{
             return block;
         }
 
-        unsigned int getSize(){
+        unsigned long getSize(){
             return tx_queue.size();
         }
 
