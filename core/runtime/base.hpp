@@ -13,14 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef IROHA_RUNTIME_RUNTIME_HPP
-#define IROHA_RUNTIME_RUNTIME_HPP
+#ifndef IROHA_RUNTIME_BASE_HPP
+#define IROHA_RUNTIME_BASE_HPP
 
 #include <block.pb.h>
 
-namespace runtime {
+struct base{
     using Transaction = iroha::protocol::Transaction;
-    void processTransaction(const Transaction&);
-}
+    virtual processTransaction(const Transaction&);
+};
 
-#endif //IROHA_RUNTIME_HPP
+#endif //IROHA_RUNTIME_BASE_HPP
