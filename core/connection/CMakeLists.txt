@@ -12,9 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(connection)
-add_subdirectory(crypto)
-add_subdirectory(logger)
-add_subdirectory(ordering)
-add_subdirectory(runtime)
-add_subdirectory(validation)
+add_library(connection
+    # server_runner
+    server_runner.cpp
+
+    # api
+    api/command_service.cpp
+    api/query_service.cpp
+
+    # consensus
+    consensus/client.cpp
+    consensus/service.cpp
+
+    # ordering
+    ordering/client.cpp
+    ordering/service.cpp
+)
+target_link_libraries(connection
+    endpoint
+    schema
+)
