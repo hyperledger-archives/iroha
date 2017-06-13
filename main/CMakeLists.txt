@@ -1,1 +1,1 @@
-add_executable(iroha-main main.cpp)
+add_executable(iroha-main iroha-main.cpp)
