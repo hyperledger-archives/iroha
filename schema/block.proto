@@ -1,11 +1,7 @@
 syntax = "proto3";
-package iroha.protocol; // I think protocol is better, by mizuki
-import "actions.proto";
-
-message Signature {
-  bytes pubkey    = 1;
-  bytes signature = 2;
-}
+package iroha.protocol;
+import "commands.proto";
+import "primitive.proto";
 
 message Transaction {
   message Header {
@@ -38,61 +34,4 @@ message Block {
 
   Header header = 1;
   Body   body   = 2;
-}
-
-// It will be separated from this file.
-message Command {
-  // AssetCommand
-  message AssetCommand{
-    oneof asset_command {
-      Add         add = 1;
-      Subtract    subtract = 2;
-      Transfer    transfer = 3;
-      Exchange    exchange = 4;
-      AssetSetPermission asset_set_permission = 5;
-    }
-  }
-  // AccountCommand
-  message AccountCommand {
-    oneof account_command {
-      SignatoriesRegister    signatories_register   = 1;
-      SignatoriesUnregister  signatories_unregister = 2;
-      SetQuorum              set_quorum             = 3;
-      AccountGrant           account_grant          = 4;
-      AccountDeprive         account_deprive        = 5;
-    }
-  }
-  // DomainCommand
-  message DomainCommand {
-    oneof domain_command {
-      // Add asset as concept(type?) to domain
-      // If add asset as wallet to user, use AssetCommand::Add.
-      AssetCreate           asset_create         = 1;
-      DomainCreate          domain_create        = 2;
-
-      AccountCreate         account_create       = 3;
-      AccountDelete         account_delete       = 4;
-      AccountRegister       account_register     = 5;
-      AccountUnregister     account_unregister   = 6;
-
-      DomainSetPermission   domain_set_permission = 7;
-      DomainSetNotify       domain_set_notify     = 8;
-    }
-  }
-  // PeerCommand
-  message PeerCommand {
-    oneof peer_command {
-      PeerAdd               peer_add              = 1;
-      PeerRemove            peer_remove           = 2;
-      PeerSetTrust          peer_set_trust        = 3;
-      PeerChangeTrust       peer_change_trust     = 4;
-      PeerSetState          peer_set_state        = 5;
-    }
-  }
-  oneof command {
-    AssetCommand    asset_command   = 1;
-    AccountCommand  account_command = 2;
-    DomainCommand   domain_command  = 3;
-    PeerCommand     peer_command    = 4;
-  }
 }

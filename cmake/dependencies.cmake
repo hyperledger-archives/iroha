@@ -153,7 +153,7 @@ add_dependencies(spdlog gabime_spdlog)
 #########################
 find_package(protobuf)
 
-ExternalProject_Add(gvanas_keccak
+ExternalProject_Add(protobuf
         GIT_REPOSITORY    "https://github.com/google/protobuf"
         GIT_TAG           "v3.3.0"
         BUILD_IN_SOURCE   1
@@ -163,8 +163,8 @@ ExternalProject_Add(gvanas_keccak
         TEST_COMMAND      "" # remove test step
         UPDATE_COMMAND    "" # remove update step
         )
-ExternalProject_Get_Property(gvanas_keccak source_dir)
-set(keccak_SOURCE_DIR "${source_dir}")
+ExternalProject_Get_Property(protobuf source_dir)
+set(protobuf_SOURCE_DIR "${source_dir}")
 
 
 

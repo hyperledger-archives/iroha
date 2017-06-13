@@ -1,5 +1,5 @@
 syntax = "proto3";
-package iroha.protocol; // I think protocol is better, by mizuki
+package iroha.protocol;
 
 // For Add/Subtract/Transfer
 message Asset{
