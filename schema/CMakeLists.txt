@@ -4,7 +4,7 @@
 #execute_process(COMMAND "protoc -I. --cpp_out=. --proto_path=commands.proto asset.proto")
 #execute_process(COMMAND "protoc -I. --cpp_out=. --proto_path=commands.proto commands.proto")
 #execute_process(COMMAND "protoc -I. --cpp_out=. --proto_path=commands.proto primitive.proto")
-
+#execute_process(COMMAND "protoc --proto_path=. --grpc_out=. --cpp_out=. --plugin=protoc-gen-grpc=/usr/local/bin/grpc_cpp_plugin endpoint.proto")
 ADD_LIBRARY(schema STATIC
     asset.pb.cc
     block.pb.cc

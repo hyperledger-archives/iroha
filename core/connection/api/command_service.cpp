@@ -15,6 +15,8 @@ limitations under the License.
 */
 
 #include "command_service.hpp"
+#include <validation/stateless/validator.hpp>
+#include <ordering/quque.hpp>
 
 namespace connection {
     namespace api {
@@ -28,15 +30,14 @@ namespace connection {
             // TODO: Use this to get client's ip and port.
             (void) context;
 
-            Block_Body body;
-            *body.mutable_txs()->Add() = request;
-
-            Block block;
-            *block.mutable_body() = body;
-
-            // TODO: Return tracking log number (hash)
-            *response = ToriiResponse();
-
+            if(validator::stateless::validate(request)){
+                ordering::queue::append(request);
+                // TODO: Return tracking log number (hash)
+                *response = ToriiResponse();
+            }else{
+                // TODO: Return validation failed message
+                *response = ToriiResponse();
+            }
             return grpc::Status::OK;
         }
 
