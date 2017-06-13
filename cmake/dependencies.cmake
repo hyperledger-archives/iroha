@@ -147,27 +147,6 @@ set_target_properties(spdlog PROPERTIES
 
 add_dependencies(spdlog gabime_spdlog)
 
-
-#########################
-#         protobuf      #
-#########################
-find_package(protobuf)
-
-ExternalProject_Add(protobuf
-        GIT_REPOSITORY    "https://github.com/google/protobuf"
-        GIT_TAG           "v3.3.0"
-        BUILD_IN_SOURCE   1
-        BUILD_COMMAND     bash -c "./autogen.sh; ./configure; make -j"
-        CONFIGURE_COMMAND "" # remove configure step
-        INSTALL_COMMAND   "" # remove install step
-        TEST_COMMAND      "" # remove test step
-        UPDATE_COMMAND    "" # remove update step
-        )
-ExternalProject_Get_Property(protobuf source_dir)
-set(protobuf_SOURCE_DIR "${source_dir}")
-
-
-
 #########################
 #         grpc          #
 #########################
