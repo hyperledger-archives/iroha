@@ -1,8 +1,24 @@
-//
-// Created by TaiseiIgarashi on 2017/06/14.
-//
+/*
+Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
 
-#ifndef IROHA_OBSERVER_HPP
-#define IROHA_OBSERVER_HPP
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-#endif //IROHA_OBSERVER_HPP
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+#ifndef __IROHA_ORDERING_OBSERVER_HPP__
+#define __IROHA_ORDERING_OBSERVER_HPP__
+
+namespace ordering {
+    namespace observer {
+        void observe();
+    }
+};
+#endif //__IROHA_ORDERING_OBSERVER_HPP__

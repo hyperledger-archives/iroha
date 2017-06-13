@@ -1,1 +1,1 @@
-add_library(queue STATIC queue.cpp)
+add_library(ordering STATIC queue.cpp observer.cpp)
