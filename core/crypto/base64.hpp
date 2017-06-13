@@ -16,9 +16,12 @@ limitations under the License.
 #pragma once
 
 #include <string>
+#include <string.h>
 #include <vector>
 
 namespace crypto {
-    const std::string encode(const std::vector<unsigned char> &message);
-    std::vector<unsigned char> decode(const std::string &encoded);
+    namespace base64 {
+        const std::string encode(const std::vector<unsigned char> &message);
+        std::vector<unsigned char> decode(const std::string &encoded);
+    }
 };

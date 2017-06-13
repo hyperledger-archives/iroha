@@ -21,40 +21,41 @@ limitations under the License.
 #include <string>
 #include <vector>
 
-namespace signature {
+namespace crypto {
+    namespace signature {
 
-constexpr size_t PRI_KEY_SIZE = 64;
-constexpr size_t PUB_KEY_SIZE = 32;
-constexpr size_t SIG_SIZE = 64;
-constexpr size_t SEED_SIZE = 32;
+        constexpr size_t PRI_KEY_SIZE = 64;
+        constexpr size_t PUB_KEY_SIZE = 32;
+        constexpr size_t SIG_SIZE = 64;
+        constexpr size_t SEED_SIZE = 32;
 
-using byte_t = unsigned char;
-using byte_array_t = std::vector<byte_t>;
+        using byte_t = unsigned char;
+        using byte_array_t = std::vector<byte_t>;
 
-struct KeyPair {
-  byte_array_t publicKey;
-  byte_array_t privateKey;
+        struct KeyPair {
+            byte_array_t publicKey;
+            byte_array_t privateKey;
 
-  KeyPair(byte_array_t &&pub, byte_array_t &&pri)
-      : publicKey(pub), privateKey(pri) {}
+            KeyPair(byte_array_t &&pub, byte_array_t &&pri)
+                    : publicKey(pub), privateKey(pri) {}
+        };
+
+        std::string sign(const std::string &message, const KeyPair &keyPair);
+
+        std::string sign(const std::string &message, const std::string &publicKey_b64,
+                         const std::string &privateKey_b64);
+
+        byte_array_t sign(const std::string &message, const byte_array_t &publicKey,
+                          const byte_array_t &privateKey);
+
+        bool verify(const std::string &signature_b64, const std::string &message,
+                    const std::string &publicKey_b64);
+
+        bool verify(const std::string &signature, const byte_array_t &message,
+                    const byte_array_t &publicKey);
+
+        KeyPair generateKeyPair();
+
+    };  // namespace signature
 };
-
-std::string sign(const std::string &message, const KeyPair &keyPair);
-
-std::string sign(const std::string &message, const std::string &publicKey_b64,
-                 const std::string &privateKey_b64);
-
-byte_array_t sign(const std::string &message, const byte_array_t &publicKey,
-                  const byte_array_t &privateKey);
-
-bool verify(const std::string &signature_b64, const std::string &message,
-            const std::string &publicKey_b64);
-
-bool verify(const std::string &signature, const byte_array_t &message,
-            const byte_array_t &publicKey);
-
-KeyPair generateKeyPair();
-
-};  // namespace signature
-
 #endif  // CORE_CRYPTO_SIGNATURE_HPP_
