@@ -14,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "validator.hpp"
-
+#include <common/datetime.hpp>
 namespace validator {
     namespace stateless {
-        using Block = iroha::protocol::Block;
-        bool validate(const Block& block){
-            // ToDo
-            // 鍵長がおかしい
-            // 要素が抜けてる
-            return true;
+        using Transaction = iroha::protocol::Transaction;
+        bool validate(const Transaction& tx){
+            return
+                tx.header().created_time() < common::datetime::unixtime() && // 過去に作られたTxか
+                tx.header().signature_size() != 0                         && // 電子署名は含まれているか
+                tx.body().creator_pubkey().size() == 32;                     // 公開鍵は32byteか ToDo configurable
         }
     };
 };

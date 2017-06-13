@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-                 http://www.apache.org/licenses/LICENSE-2.0
+     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,23 +13,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#ifndef __IROHA_ORDERING_ORDER_QUQUE_HPP__
+#define __IROHA_ORDERING_ORDER_QUQUE_HPP__
 
-#ifndef CORE_CRYPTO_HASH_HPP__
-#define CORE_CRYPTO_HASH_HPP__
+#include <block.pb.h>
 
-#include <string>
-#include <vector>
+namespace ordering{
+    namespace queue{
 
-namespace crypto {
-    namespace hash {
+        bool append(const iroha::protocol::Transaction&);
 
-        std::string sha3_256_hex(std::string message);
+        iroha::protocol::Block getBlock();
 
-        std::string sha3_256_hex(std::vector <uint8_t> message);
-
-        std::string sha3_512_hex(std::string message);
+        unsigned long getSize();
 
     };
 };
-
-#endif  // CORE_CRYPTO_HASH_HPP_
+#endif //IROHA_ORDER_QUQUE_HPP
