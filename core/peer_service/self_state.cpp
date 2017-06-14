@@ -15,37 +15,67 @@ limitations under the License.
 */
 #include "self_state.hpp"
 
-namespace peer_service{
-    enum State{
-        PREPARE, READY, ACTIVE
-    };
-    namespace self_state{
+
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+
+#include <crypto/base64.hpp>
+#include <crypto/signature.hpp>
+
+namespace peer_service {
+    enum State { PREPARE, READY, ACTIVE };
+    namespace self_state {
+
+        std::string _ip;
+        std::string _public_key;
+        std::string _private_key;
+
         State _state;
-        std::string getPublicKey(){
-            // TODO : receive OLD:PeerServiceConfig
-        }
-        std::string getPrivateKey(){
-            // TODO : receive OLD:PeerServiceConfig
-        }
-        std::string getIp(){
-            // TODO : receive OLD:PeerServiceConfig
+
+        void initializeMyKey() {
+          if (_public_key.empty() || _private_key.empty()) {
+            signature::KeyPair keyPair = signature::generateKeyPair();
+            _public_key = base64::encode(keyPair.publicKey);
+            _private_key = base64::encode(keyPair.privateKey);
+          }
         }
 
-        bool  isLeader(){
+        void initializeMyIp() {
+          if (_ip.empty()) {
+            int sockfd;
+            struct ifreq ifr;
 
-        }
-
-        State state(){
-            return _state;
-        }
-
-        void activate(){
-            _state = ACTIVE;
-        }
-        void stop(){
-            _state = PREPARE;
+            sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+            ifr.ifr_addr.sa_family = AF_INET;
+            strncpy(ifr.ifr_name, interface.c_str(), IFNAMSIZ - 1);
+            ioctl(sockfd, SIOCGIFADDR, &ifr);
+            close(sockfd);
+            _ip = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+          }
         }
 
 
+        std::string getPublicKey() {
+          initializeMyKey();
+          return _public_key;
+        }
+        std::string getPrivateKey() {
+          initializeMyKey();
+          return _private_key;
+        }
+        std::string getIp() {
+          initializeMyIp();
+          return _ip;
+        }
+
+        bool isLeader() {
+        }
+
+        State state() { return _state; }
+
+        void activate() { _state = ACTIVE; }
+        void stop() { _state = PREPARE; }
     };
 };

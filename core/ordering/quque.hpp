@@ -26,8 +26,6 @@ namespace ordering{
         // - transaction を created_time の昇順で取り出す。
         // - transaction (のhash?) を指定してそれを削除する。
 
-        OrderingQueue();
-
         bool append(const iroha::protocol::Transaction&);
         bool remove(const iroha::protocol::Transaction&);
 

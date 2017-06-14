@@ -14,8 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __CORE_PEER_SERVICE_HPP__
-#define __CORE_PEER_SERVICE_HPP__
+#ifndef __IROHA_PEER_SERVICE_PEER_SERVIEC_HPP__
+#define __IROHA_PEER_SERVICE_PEER_SERVIEC_HPP__
+
+
+#include <monitor.hpp>
+#include <change_state.hpp>
+#include <self_state.hpp>
 
 #include <memory>
 #include <string>

@@ -25,6 +25,9 @@ namespace peer_service{
     };
     namespace self_state{
 
+        void initializeMyKey();
+        void initializeMyIp();
+
         std::string getPublicKey();
         std::string getPrivateKey();
         std::string getIp();
