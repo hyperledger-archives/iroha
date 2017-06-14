@@ -18,11 +18,20 @@ limitations under the License.
 
 #include <block.pb.h>
 
+
 namespace ordering{
-    namespace queue{
+  namespace queue {
+
+        // - transaction を挿入する
+        // - transaction を created_time の昇順で取り出す。
+        // - transaction (のhash?) を指定してそれを削除する。
 
         bool append(const iroha::protocol::Transaction&);
+        bool remove(const iroha::protocol::Transaction&);
 
+        void setCreated();  //  set _pre_created time;
+        void setInterval(); //  set _interval
+        bool isCreateBlock();
         iroha::protocol::Block getBlock();
 
         unsigned long getSize();

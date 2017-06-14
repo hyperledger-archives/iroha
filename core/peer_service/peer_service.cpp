@@ -18,7 +18,7 @@ limitations under the License.
 //
 // Created by Takumi Yamashita on 2017/03/16.
 //
-
+/*
 #include <algorithm>
 #include <deque>
 #include <regex>
@@ -344,3 +344,4 @@ bool setActive(const std::string &publicKey, const bool active) {
 }  // namespace validator
 }  // namespace transaction
 }  // namespace peer
+*/
