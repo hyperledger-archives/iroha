@@ -21,9 +21,15 @@ namespace peer_service{
     };
     namespace self_state{
 
-        std::string getPublicKey();
-        std::string getPrivateKey();
-        std::string getIp();
+        std::string getPublicKey(){
+
+        }
+        std::string getPrivateKey(){
+
+        }
+        std::string getIp(){
+            
+        }
 
         bool  isLeader();
         State state();
