@@ -17,6 +17,7 @@ limitations under the License.
 #define __IROHA_PEER_SERVICE_SELF_STATE_HPP__
 
 #include <string>
+#include <peer_service/peer_service.hpp>
 
 namespace peer_service{
     enum State{
