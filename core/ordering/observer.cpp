@@ -15,21 +15,23 @@ limitations under the License.
 */
 #include "observer.hpp"
 #include "quque.hpp"
+#include <common/timer.hpp>
+#include <peer_service/self_state.hpp>
 
 namespace ordering {
     namespace observer {
         // This is invoked in thread.
         void observe() {
             while (1) {
-                setAwkTimer(5000, []() {
+                timer::setAwkTimer(5000, []() {
                     auto block = queue::getBlock();
+                    if(peer_service::self_state::isLeader()){
+                        //   ToDo send leader node
+                    }else{
+                        //   ToDo sumeragi.processBlock();
 
-                    // if( I'm not leader){
-                    //   ToDo send leader node
-                    // }else{
-                    //   ToDo sumeragi.processBlock();
-                    // }
-
+                        //   ToDo send block to replica();
+                    }
                 });
             }
         }
