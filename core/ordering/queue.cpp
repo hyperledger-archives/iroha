@@ -22,11 +22,14 @@ limitations under the License.
 #include <vector>
 #include <functional>
 
+
+const uint64_t DEFAULT_INTERVAL = 5000;
+
 namespace ordering{
     namespace queue{
 
       uint64_t _pre_created; // time of previous created block time
-      uint64_t _interval;    // time of interval created block
+      uint64_t _interval = DEFAULT_INTERVAL;    // time of interval created block
 
 
       using Transaction = iroha::protocol::Transaction;

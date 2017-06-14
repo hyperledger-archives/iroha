@@ -18,8 +18,10 @@ limitations under the License.
 
 #include <block.pb.h>
 
+
 namespace ordering{
   namespace queue {
+
         // - transaction を挿入する
         // - transaction を created_time の昇順で取り出す。
         // - transaction (のhash?) を指定してそれを削除する。
