@@ -18,12 +18,63 @@ limitations under the License.
 namespace peer_service{
     namespace change_state{
 
-        std::string getPublicKey();
-        std::string getPrivateKey();
-        std::string getIp();
+      // This scope is issue transaction
+      namespace transtion {
+        // invoke to issue transaction
+        void add(const std::string &ip, const peer::Node &){
 
-        bool  isLeader();
-        State state();
+        }
+        void remove(const std::string &ip, const std::string &){
+
+        }
+        void setTrust(const std::string &ip, const std::string &, const double &){
+
+        }
+        void changeTrust(const std::string &ip, const std::string &, const double &){
+
+        }
+        void setActive(const std::string &ip, const std::string &, const bool active){
+
+        }
+      }
+
+      // This scope is validation
+      namespace validation {
+        bool add(const peer::Node &){
+
+        }
+        bool remove(const std::string &){
+
+        }
+        bool setTrust(const std::string &, const double &){
+
+        }
+        bool changeTrust(const std::string &, const double &){
+
+        }
+        bool setActive(const std::string &, const bool active){
+
+        }
+      }
+
+      // This scope is runtime
+      namespace runtime {
+        bool add(const peer::Node &){
+
+        }
+        bool remove(const std::string &){
+
+        }
+        bool setTrust(const std::string &, const double &){
+
+        }
+        bool changeTrust(const std::string &, const double &){
+
+        }
+        bool setActive(const std::string &, const bool active){
+
+        }
+      }
 
     };
 };

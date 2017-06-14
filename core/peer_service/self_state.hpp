@@ -31,6 +31,9 @@ namespace peer_service{
         bool  isLeader();
         State state();
 
+        void activate();
+        void stop();
+
     };
 };
 
