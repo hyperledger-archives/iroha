@@ -12,16 +12,17 @@
 #    transaction_repository
 #)
 
-ADD_LIBRARY(membership_service STATIC
+ADD_LIBRARY(peer_service STATIC
     peer_service.cpp
+    monitor.cpp
+    change_state.cpp
+    self_state.cpp
 )
 
-target_link_libraries(membership_service
+target_link_libraries(peer_service
     timer
     exception
     logger
-    config_manager
-    cache_map
-    flatbuffer_service
-    connection_with_grpc_flatbuffer
+    hash
+    signature
 )

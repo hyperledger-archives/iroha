@@ -16,7 +16,7 @@ limitations under the License.
 #include "observer.hpp"
 #include "quque.hpp"
 #include <common/timer.hpp>
-#include <peer_service/self_state.hpp>
+//#include <peer_service/self_state.hpp>
 
 namespace ordering {
     namespace observer {
@@ -25,7 +25,7 @@ namespace ordering {
             while (1) {
                 timer::setAwkTimer(5000, []() {
                     if( queue::isCreateBlock() ) {
-                      if (peer_service::self_state::isLeader()) {
+                      if (1/*peer_service::self_state::isLeader()*/) {
                         auto block = queue::getBlock();
                         //   ToDo send leader node
                       } else {

@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "self_state.hpp"
+#include <peer_service/monitor.hpp>
 
+#include <common/datetime.hpp>
 
 #include <arpa/inet.h>
 #include <net/if.h>
@@ -25,24 +27,28 @@ limitations under the License.
 #include <crypto/signature.hpp>
 
 namespace peer_service {
-    enum State { PREPARE, READY, ACTIVE };
     namespace self_state {
 
         std::string _ip;
         std::string _public_key;
         std::string _private_key;
+        std::string _name;
+        double _trust;
 
+        uint64_t _active_time;
         State _state;
 
         void initializeMyKey() {
           if (_public_key.empty() || _private_key.empty()) {
-            signature::KeyPair keyPair = signature::generateKeyPair();
-            _public_key = base64::encode(keyPair.publicKey);
-            _private_key = base64::encode(keyPair.privateKey);
+            crypto::signature::KeyPair keyPair = crypto::signature::generateKeyPair();
+            _public_key = crypto::base64::encode(keyPair.publicKey);
+            _private_key = crypto::base64::encode(keyPair.privateKey);
           }
         }
 
         void initializeMyIp() {
+          std::string interface = "eth0"; // TODO : temporary "eth0"
+
           if (_ip.empty()) {
             int sockfd;
             struct ifreq ifr;
@@ -69,13 +75,28 @@ namespace peer_service {
           initializeMyIp();
           return _ip;
         }
+        std::string getName() {
+          return _name;//TODO : initialize name
+        }
+        State getState() { return _state; }
+
 
         bool isLeader() {
+          return monitor::getCurrentLeader()->_public_key == _public_key;
         }
 
-        State state() { return _state; }
+        double getTrust() {
+          return 100.0; //TODO temp
+        }
 
-        void activate() { _state = ACTIVE; }
+
+
+      uint64_t getActiveTime() { return _active_time; }
+
+        void activate() {
+          _state = ACTIVE;
+          _active_time = ::common::datetime::unixtime();
+        }
         void stop() { _state = PREPARE; }
     };
 };

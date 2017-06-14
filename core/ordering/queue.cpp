@@ -57,7 +57,7 @@ namespace ordering{
 
           // Temporary implement :: Until Implement Remove Function
           while( !tx_queue.empty() ) {
-            if( tx_queue.top().header().create_time() >= _pre_created )  break
+            if( tx_queue.top().header().created_time() >= _pre_created )  break;
             tx_queue.pop();
           }
         }
