@@ -13,6 +13,7 @@
 # limitations under the License.
 
 add_subdirectory(ametsuchi)
+add_subdirectory(common)
 add_subdirectory(connection)
 add_subdirectory(consensus)
 add_subdirectory(crypto)
