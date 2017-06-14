@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "quque.hpp"
+#include <common/datetime.hpp>
 
 // ToDo This is MVP. so we should discuss how to implements this.
 // In now, I use STL.
@@ -23,8 +24,13 @@ limitations under the License.
 
 namespace ordering{
     namespace queue{
-        using Transaction = iroha::protocol::Transaction;
-        using Block = iroha::protocol::Block;
+
+      uint64_t _pre_created; // time of previous created block time
+      uint64_t _interval;    // time of interval created block
+
+
+      using Transaction = iroha::protocol::Transaction;
+      using Block = iroha::protocol::Block;
 
         struct CompareTransaction : public std::binary_function<Transaction, Transaction, bool> {
             bool operator()(const Transaction& lhs, const Transaction& rhs) const
@@ -39,12 +45,35 @@ namespace ordering{
             return true;
         }
 
+        bool remove(const Transaction &tx){
+          // TODO remove tx
+        }
+
+        void setCreated(){
+          _pre_created = ::common::datetime::unixtime();
+
+          // Temporary implement :: Until Implement Remove Function
+          while( !tx_queue.empty() ) {
+            if( tx_queue.top().header().create_time() >= _pre_created )  break
+            tx_queue.pop();
+          }
+        }
+
+        void setInterval( uint64_t interval ){
+          _interval = interval;
+        }
+
+        bool isCreateBlock(){
+          return _pre_created + _interval < ::common::datetime::unixtime();
+        }
+
         Block getBlock(){
             Block block;
             while(!tx_queue.empty()) {
                 block.mutable_body()->add_txs()->CopyFrom(tx_queue.top());
                 tx_queue.pop();
             }
+            setCreated();
             return block;
         }
 
