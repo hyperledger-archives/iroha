@@ -45,7 +45,7 @@ class CacheMap {
   std::deque<Key> cache_;
 
   // erase last push node
-  size_t erase_one() {
+  size_t pop_last() {
     if (data_.empty()) return data_.size();
     Key& k = cache_.front();
     cache_.pop_front();
@@ -78,7 +78,7 @@ class CacheMap {
   void set_cache_size(size_t max_cache_size) {
     max_cache_size_ = max_cache_size;
     while (data_.size() > max_cache_size_) {
-      erase_one();
+      pop_last();
     }
   }
 
@@ -90,11 +90,11 @@ class CacheMap {
     while (!max_cache_.empty() && max_cache_.back() < k) max_cache_.pop_back();
     max_cache_.push_back(k);
     data_[k] = v;
+    return data_.size();
   }
 
   // [] oprator
   const Value& operator[](const Key& k) {
-    Value v;
     if (data_.count(k) == 0) throw std::out_of_range("cache_map");
     return data_[k];
   }
