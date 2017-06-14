@@ -14,10 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "runtime.hpp"
+#include "operate_peer.hpp"
 
 namespace runtime {
     using Transaction = iroha::protocol::Transaction;
-    void processTransaction(const Transaction&){
 
+    void processTransaction(const Transaction& tx){
+        runtime::OperatePeer().processTransaction(tx);
     }
 }

@@ -20,7 +20,7 @@ limitations under the License.
 
 struct base{
     using Transaction = iroha::protocol::Transaction;
-    virtual processTransaction(const Transaction&);
+    virtual void processTransaction(const Transaction&);
 };
 
 #endif //IROHA_RUNTIME_BASE_HPP
