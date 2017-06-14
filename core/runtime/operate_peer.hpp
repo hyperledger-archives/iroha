@@ -18,7 +18,7 @@ limitations under the License.
 
 #include <block.pb.h>
 #include "base.hpp"
-//#include <peer_service/change_state.hpp>
+#include <peer_service/change_state.hpp>
 
 namespace runtime {
     using Transaction = iroha::protocol::Transaction;
