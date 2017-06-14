@@ -20,17 +20,21 @@ limitations under the License.
 #include <peer_service/peer_service.hpp>
 
 namespace peer_service{
-    enum State{
-        PREPARE, READY, ACTIVE
-    };
     namespace self_state{
+
+        void initializeMyKey();
+        void initializeMyIp();
 
         std::string getPublicKey();
         std::string getPrivateKey();
         std::string getIp();
+        std::string getName();
+        double getTrust();
+        State getState();
 
         bool  isLeader();
-        State state();
+
+        uint64_t getActiveTime();
 
         void activate();
         void stop();

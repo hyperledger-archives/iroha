@@ -14,126 +14,59 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __CORE_PEER_SERVICE_HPP__
-#define __CORE_PEER_SERVICE_HPP__
+#ifndef __IROHA_PEER_SERVICE_PEER_SERVIEC_HPP__
+#define __IROHA_PEER_SERVICE_PEER_SERVIEC_HPP__
 
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace peer {
+namespace peer_service {
 
-inline static const std::string defaultLedgerName() { return ""; }
+    enum State { PREPARE, READY, ACTIVE };
 
-inline static const std::string defaultIP() { return ""; }
+    inline static const std::string defaultName() { return ""; }
 
-inline static const std::string defaultPubKey() { return ""; }
+    inline static const std::string defaultIP() { return ""; }
 
-struct Node {
-  std::string ledger_name;
-  std::string publicKey;
-  std::string ip;
-  double trust;
-  bool active;
-  bool join_ledger;
+    inline static const std::string defaultPubKey() { return ""; }
 
-  Node(std::string myIP,
-       std::string myPubKey,
-       double myTrustScore,
-       std::string ledger_name = defaultLedgerName(),
-       bool active = false, bool join_ledger = true)
-      : ledger_name(ledger_name),
-        publicKey(myPubKey),
-        ip(myIP),
-        trust(myTrustScore),
-        active(active),
-        join_ledger(join_ledger) {}
-  Node(std::string myIP = defaultIP(),
-       std::string myPubKey = defaultPubKey(),
-       std::string ledger_name = defaultLedgerName(),
-       double myTrustScore = 100.0,
-       bool active = false, bool join_ledger = true)
-      : ledger_name(ledger_name),
-        publicKey(myPubKey),
-        ip(myIP),
-        trust(myTrustScore),
-        active(active),
-        join_ledger(join_ledger) {}
+    struct Node {
+      std::string _ip;
+      std::string _public_key;
+      std::string _name;
+      double _trust;
+      State _state;
 
-  bool isDefaultIP() const { return ip == defaultIP(); }
-  bool isDefaultPubKey() const { return publicKey == defaultPubKey(); }
-};
+      Node(std::string ip = defaultIP(),
+           std::string public_key = defaultPubKey(),
+           std::string name = defaultName(),
+           double trust = 100.0,
+           State state = PREPARE)
+          : _ip(ip),
+            _public_key(public_key),
+            _name(name),
+            _trust(trust),
+            _state(state) {}
 
-using Nodes = std::vector<std::shared_ptr<Node>>;
+      Node(const Node &p) :
+        _ip(p._ip),
+        _public_key(p._public_key),
+        _name(p._name),
+        _trust(p._trust),
+        _state(p._state) {}
 
 
-  // TODO : below all delete ( migarete another file ) ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+      bool isDefaultIP() const { return _ip == defaultIP(); }
+      bool isDefaultPubKey() const { return _public_key == defaultPubKey(); }
+    };
+
+    using Nodes = std::vector<std::shared_ptr<Node>>;
 
 
-namespace myself {
+    Nodes _peer_list;
+    Nodes _active_peer_list;
 
-std::string getPublicKey();
-std::string getPrivateKey();
-std::string getIp();
-
-bool isActive();
-void activate();
-void stop();
-
-// equatl to isSumeragi
-bool isLeader();
-
-}  // namespace myself
-
-namespace service {
-
-void initialize();
-
-size_t getMaxFaulty();
-Nodes getAllPeerList();
-Nodes getActivePeerList();
-std::vector<std::string> getIpList();
-
-// is exist which peer?
-bool isExistIP(const std::string &);
-bool isExistPublicKey(const std::string &);
-
-Nodes::iterator findPeerIP(const std::string &ip);
-Nodes::iterator findPeerPublicKey(const std::string &publicKey);
-std::shared_ptr<peer::Node> leader();
-
-}  // namespace service
-
-namespace transaction {
-namespace isssue {
-
-// invoke to issue transaction
-void add(const std::string &ip, const peer::Node &);
-void remove(const std::string &ip, const std::string &);
-void setTrust(const std::string &ip, const std::string &, const double &);
-void changeTrust(const std::string &ip, const std::string &, const double &);
-void setActive(const std::string &ip, const std::string &, const bool active);
-
-}  // namespace isssue
-
-namespace executor {
-// invoke when execute transaction
-bool add(const peer::Node &);
-bool remove(const std::string &);
-bool setTrust(const std::string &, const double &);
-bool changeTrust(const std::string &, const double &);
-bool setActive(const std::string &, const bool active);
-}  // namespace executor
-
-namespace validator {
-// invoke when validator transaction
-bool add(const peer::Node &);
-bool remove(const std::string &);
-bool setTrust(const std::string &, const double &);
-bool changeTrust(const std::string &, const double &);
-bool setActive(const std::string &, const bool active);
-}  // namespace validator
-}  // namespace transaction
-}  // namespace peer
+}  // namespace peer_service
 
 #endif

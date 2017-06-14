@@ -25,29 +25,31 @@ namespace peer_service{
         // This scope is issue transaction
         namespace transtion {
           // invoke to issue transaction
-          void add(const std::string &ip, const peer::Node &);
+          void add(const std::string &ip, const Node &);
           void remove(const std::string &ip, const std::string &);
           void setTrust(const std::string &ip, const std::string &, const double &);
           void changeTrust(const std::string &ip, const std::string &, const double &);
-          void setActive(const std::string &ip, const std::string &, const bool active);
+          void setActive(const std::string &ip, const std::string &, const State state);
         }
 
         // This scope is validation
         namespace validation {
-          bool add(const peer::Node &);
+          bool add(const Node &);
           bool remove(const std::string &);
           bool setTrust(const std::string &, const double &);
           bool changeTrust(const std::string &, const double &);
-          bool setActive(const std::string &, const bool active);
+          bool setActive(const std::string &, const State state);
         }
 
         // This scope is runtime
         namespace runtime {
-          bool add(const peer::Node &);
+          bool add(const Node &);
           bool remove(const std::string &);
           bool setTrust(const std::string &, const double &);
           bool changeTrust(const std::string &, const double &);
-          bool setActive(const std::string &, const bool active);
+          bool setActive(const std::string &, const State state);
+
+          void update();
         }
     };
 };

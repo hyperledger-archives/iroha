@@ -14,38 +14,89 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "self_state.hpp"
+#include <peer_service/monitor.hpp>
 
-namespace peer_service{
-    enum State{
-        PREPARE, READY, ACTIVE
-    };
-    namespace self_state{
+#include <common/datetime.hpp>
+
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+
+#include <crypto/base64.hpp>
+#include <crypto/signature.hpp>
+
+namespace peer_service {
+    namespace self_state {
+
+        std::string _ip;
+        std::string _public_key;
+        std::string _private_key;
+        std::string _name;
+        double _trust;
+
+        uint64_t _active_time;
         State _state;
-        std::string getPublicKey(){
-            // TODO : receive OLD:PeerServiceConfig
-        }
-        std::string getPrivateKey(){
-            // TODO : receive OLD:PeerServiceConfig
-        }
-        std::string getIp(){
-            // TODO : receive OLD:PeerServiceConfig
+
+        void initializeMyKey() {
+          if (_public_key.empty() || _private_key.empty()) {
+            crypto::signature::KeyPair keyPair = crypto::signature::generateKeyPair();
+            _public_key = crypto::base64::encode(keyPair.publicKey);
+            _private_key = crypto::base64::encode(keyPair.privateKey);
+          }
         }
 
-        bool  isLeader(){
+        void initializeMyIp() {
+          std::string interface = "eth0"; // TODO : temporary "eth0"
 
+          if (_ip.empty()) {
+            int sockfd;
+            struct ifreq ifr;
+
+            sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+            ifr.ifr_addr.sa_family = AF_INET;
+            strncpy(ifr.ifr_name, interface.c_str(), IFNAMSIZ - 1);
+            ioctl(sockfd, SIOCGIFADDR, &ifr);
+            close(sockfd);
+            _ip = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+          }
         }
 
-        State state(){
-            return _state;
+
+        std::string getPublicKey() {
+          initializeMyKey();
+          return _public_key;
+        }
+        std::string getPrivateKey() {
+          initializeMyKey();
+          return _private_key;
+        }
+        std::string getIp() {
+          initializeMyIp();
+          return _ip;
+        }
+        std::string getName() {
+          return _name;//TODO : initialize name
+        }
+        State getState() { return _state; }
+
+
+        bool isLeader() {
+          return monitor::getCurrentLeader()->_public_key == _public_key;
         }
 
-        void activate(){
-            _state = ACTIVE;
-        }
-        void stop(){
-            _state = PREPARE;
+        double getTrust() {
+          return 100.0; //TODO temp
         }
 
 
+
+      uint64_t getActiveTime() { return _active_time; }
+
+        void activate() {
+          _state = ACTIVE;
+          _active_time = ::common::datetime::unixtime();
+        }
+        void stop() { _state = PREPARE; }
     };
 };

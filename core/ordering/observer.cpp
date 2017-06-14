@@ -24,13 +24,21 @@ namespace ordering {
         void observe() {
             while (1) {
                 timer::setAwkTimer(5000, []() {
-                    auto block = queue::getBlock();
-                    if(peer_service::self_state::isLeader()){
+                    if( queue::isCreateBlock() ) {
+                      if (peer_service::self_state::isLeader()) {
+                        auto block = queue::getBlock();
                         //   ToDo send leader node
-                    }else{
-                        //   ToDo sumeragi.processBlock();
+                      } else {
 
-                        //   ToDo send block to replica();
+                        /* TODO send ping Dais Peers -> (if all timeout, this peer is altanative leader peer)
+                        auto state = sendPingDaisPeers();
+                        if( state == ALLTIMEOUT ) {
+                          //   ToDo sumeragi.processBlock();
+                          //   ToDo send block to replica();
+                        }
+                         */
+
+                      }
                     }
                 });
             }

@@ -18,11 +18,10 @@ limitations under the License.
 
 #include <peer_service/peer_service.hpp>
 
-
 namespace peer_service{
     namespace monitor{
 
-        std::shared_ptr<peer::Node> getCurrentLeader();
+        std::shared_ptr<Node> getCurrentLeader();
         std::string getCurrentLeaderIp();
 
 
@@ -31,12 +30,13 @@ namespace peer_service{
         size_t getMaxFaulty();
 
         Nodes getAllPeerList();
-        std::shared_ptr<peer::Node> getPeerAt(unsigned int index);
+        std::shared_ptr<Node> getPeerAt(unsigned int index);
         std::vector<std::string> getAllIpList();
 
         Nodes getActivePeerList();
-        std::shared_ptr<peer::Node> getActivePeerAt(unsigned int index);
+        std::shared_ptr<Node> getActivePeerAt(unsigned int index);
         std::vector<std::string> getActiveIpList();
+        int getActivePeerSize();
 
 
         bool isExistIP(const std::string &);
