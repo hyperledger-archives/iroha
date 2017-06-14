@@ -23,9 +23,10 @@ namespace connection {
         class OrderingService final
             : public iroha::protocol::OrderingService::Service {
         public:
-            grpc::Status QueueTransaction(grpc::ServerContext* context,
-                                          const iroha::protocol::Transaction* request,
-                                          google::protobuf::Empty* response);
+            grpc::Status QueueTransaction(
+                grpc::ClientContext* context,
+                const iroha::protocol::Transaction& request,
+                iroha::protocol::QueueTransactionResponse* response);
         };
 
     }  // namespace consensus

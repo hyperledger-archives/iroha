@@ -21,12 +21,11 @@ limitations under the License.
 namespace connection {
     namespace consensus {
 
-        bool SumeragiClient::unicast(const iroha::protocol::Block& block) {
+        bool SumeragiClient::broadCast(const iroha::protocol::Block& block) {
             return true;
         }
 
-        bool SumeragiClient::multicast(const iroha::protocol::Block& block,
-                                       PeerNodesIterator begin, PeerNodesIterator end) {
+        bool SumeragiClient::unicast(const iroha::protocol::Block& block, size_t peerOrder) {
             return true;
         }
 

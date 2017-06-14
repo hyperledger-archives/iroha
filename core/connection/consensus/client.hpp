@@ -22,14 +22,10 @@ limitations under the License.
 namespace connection {
     namespace consensus {
 
-//        using PeerNodesIterator = std::vector<peer_service::self_state::Nodes>::const_iterator;
-        using PeerNodesIterator = std::vector<int>::const_iterator;
-
         class SumeragiClient {
         public:
-            bool unicast(const iroha::protocol::Block& block);
-            bool multicast(const iroha::protocol::Block& block,
-                           PeerNodesIterator begin, PeerNodesIterator end);
+            bool broadCast(const iroha::protocol::Block& block);
+            bool unicast(const iroha::protocol::Block& block, size_t peerOrder);
             bool commit(const iroha::protocol::Block& block);
         };
 

@@ -29,7 +29,9 @@ namespace consensus {
 
         void initialize();
 
-        void processBlock(iroha::protocol::Block &event);
+        void processBlock(const iroha::protocol::Block &block);
+
+        void panic(const iroha::protocol::Block &block);
 
     };  // namespace sumeragi
 };

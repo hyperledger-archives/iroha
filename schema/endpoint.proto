@@ -3,11 +3,23 @@ syntax = "proto3";
 package iroha.protocol;
 
 import "block.proto";
-import "google/protobuf/empty.proto";
+
+enum ResponseCode {
+  OK = 0;
+  FAIL = 1;
+}
 
 message ToriiResponse {}
+
+message VerifyResponse {
+  ResponseCode code = 1;
+}
+
 message QueryResponse {}
-message QueueTransactionResponse {}
+
+message QueueTransactionResponse {
+  ResponseCode code = 1;
+}
 
 service CommandService {
   rpc Torii (Transaction) returns (ToriiResponse);
@@ -18,9 +30,9 @@ service QueryService {
 }
 
 service SumeragiService {
-  rpc Verify (Block) returns (google.protobuf.Empty);
+  rpc Verify (Block) returns (QueueTransactionResponse);
 }
 
 service OrderingService {
-  rpc QueueTransaction (Transaction) returns (google.protobuf.Empty);
+  rpc QueueTransaction (Transaction) returns (QueueTransactionResponse);
 }
