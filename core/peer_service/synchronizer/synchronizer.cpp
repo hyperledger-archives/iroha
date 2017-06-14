@@ -62,7 +62,7 @@ namespace peer_service{
           ::peer_service::self_state::activate();
 
           ::ametsuchi::append(block);
-          //::ametsuchi::commit();
+          ::ametsuchi::commit();
 
           detail::clearCache();
         }

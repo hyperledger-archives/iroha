@@ -24,6 +24,7 @@ namespace ametsuchi{
     // This is stub, maybe it will be changed.
     std::string getMerkleRoot();
     void append(const iroha::protocol::Block&);
+    void commit();
 
 }
 

@@ -26,4 +26,8 @@ namespace ametsuchi{
 
     }
 
+    void commit(){
+
+    }
+
 }
