@@ -21,20 +21,18 @@ limitations under the License.
 #ifndef IROHA_SYNCHRONIZER_H
 #define IROHA_SYNCHRONIZER_H
 
-#include <transaction_generated.h>
-#include <utils/cache_map.hpp>
 #include <string>
+#include <block.pb.h>
 
-namespace peer{
+namespace peer_service{
   namespace sync{
+    using Block = iroha::protocol::Block;
 
 
-    void startSynchronizeLedger();
-    void checkRootHashStep(); // step1
-    void peerStopStep(); // step2
-    void seekStartFetchIndex(); // step3 ( not support )
-    void receiveTransactions(); // step4;
-    void peerActivateStep(); // step5;
+    bool start();
+
+    // When commit block after consensus, invoke this function
+    bool trigger( const Block &);
 
     enum SYNCHRO_RESULT {
       APPEND_ONGOING,
@@ -43,10 +41,7 @@ namespace peer{
     };
 
     namespace detail{
-      // if roothash is trust roothash, return true. othrewise return false.
-      bool checkRootHashAll();
-
-      bool append_temporary(size_t,const iroha::Transaction*);
+      bool append_temporary(uint64_t,const Block&);
       SYNCHRO_RESULT append();
       void appending();
       void clearCache();

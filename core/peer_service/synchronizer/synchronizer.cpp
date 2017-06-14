@@ -18,111 +18,98 @@ limitations under the License.
 // Created by Takumi Yamashita on 2017/04/28.
 //
 
-#include <membership_service/synchronizer.hpp>
-#include <membership_service/peer_service.hpp>
+#include <peer_service/synchronizer/synchronizer.hpp>
+#include <peer_service/monitor.hpp>
+#include <peer_service/self_state.hpp>
 
-#include <service/connection.hpp>
-#include <service/flatbuffer_service.h>
+#include <common/cache_map.hpp>
+#include <common/datetime.hpp>
+#include <common/timer.hpp>
 
-#include <infra/config/iroha_config_with_json.hpp>
-
-#include <utils/cache_map.hpp>
-#include <utils/timer.hpp>
-#include <ametsuchi/repository.hpp>
-#include <time.h>
+#include <ametsuchi/ametsuchi.hpp>
 
 
-namespace peer{
+namespace peer_service{
   namespace sync {
-    std::shared_ptr<::peer::Node> leader;
-    void startSynchronizeLedger() {
-      std::string default_leader_ip = config::IrohaConfigManager::getInstance().getConfigLeaderIp(
-          ::peer::myself::getIp()
-      );
-      std::string message = "getPing!";
-      std::string myip = ::peer::myself::getIp();
-      auto vec = flatbuffer_service::endpoint::CreatePing(message,myip);
-      auto &ping = *flatbuffers::GetRoot<iroha::Ping>(vec.data());
-      connection::memberShipService::SyncImpl::getPeers::send(default_leader_ip,ping);
+    std::shared_ptr<Node> leader;
 
-      checkRootHashStep();
-    }
+    bool start() {
+      ::peer_service::self_state::stop();
 
-    void checkRootHashStep() { // step1
-      if( detail::checkRootHashAll() ) peerActivateStep();
-      else peerStopStep();
-    }
+      std::string default_leader_ip = ::peer_service::monitor::getCurrentLeaderIp();
 
-    void peerStopStep() { // step2
-      if( ::peer::myself::isActive() ) {
-        ::peer::myself::stop();
-        ::peer::transaction::isssue::setActive(leader->ip,::peer::myself::getIp(),false);
+      // TODO [WIP] search default_leader in all peerList
+      if( default_leader_ip == ::peer_service::self_state::getIp() ) return false;
+
+
+      // TODO connection Test Ping default_leader_ip
+
+      // TODO start streaming connect to default_leader_ip
+
+      { // TOOD another thread.
         detail::appending();
       }
-      seekStartFetchIndex();
+      return true;
     }
 
-    void seekStartFetchIndex() { // step3 ( not support )
+
+    // TODO continue implement after complete ametsuchi
+    bool trigger( const Block &block){
+      if( ::peer_service::self_state::getState() == PREPARE ) {
+        // check Statefull validate Block
+        if( true && "WIP" )
+        {
+          ::peer_service::self_state::activate();
+
+          ::ametsuchi::append(block);
+          ::ametsuchi::commit();
+
+          detail::clearCache();
+        }
+        return true;
+      }
+      return false;
     }
 
-    void receiveTransactions() { // step4;
-      // TODO call fetchStreamTransaction()
-    }
-
-    void peerActivateStep() { // step5;
-      if( ::peer::myself::isActive() ) return;
-      ::peer::myself::activate();
-      ::peer::transaction::isssue::setActive(leader->ip,::peer::myself::getIp(),true);
-    }
 
     namespace detail{
 
-      structure::CacheMap<size_t,const iroha::Transaction*> temp_tx_;
-      size_t current_;
-      time_t upd_time_;
+      structure::CacheMap<uint64_t,const Block*> temp_block_;
+      uint64_t current_;
+      uint64_t upd_time_;
 
-      // if roothash is trust roothash, return true. othrewise return false.
-      bool checkRootHashAll(){
-        std::string root_hash = repository::getMerkleRoot();
-        std::string myip = ::peer::myself::getPublicKey();
+      bool append_temporary(uint64_t tx_id,const Block& tx){
+        temp_block_.set( tx_id, &tx );
+        return true;
+      }
 
-        auto vec = flatbuffer_service::endpoint::CreatePing(root_hash,myip);
-        auto &ping = *flatbuffers::GetRoot<::iroha::Ping>(vec.data());
-        if( connection::memberShipService::SyncImpl::checkHash::send(leader->ip, ping) )
-          return true;
-        return false;
-      }
-      bool append_temporary(size_t tx_id,const iroha::Transaction* tx){
-        temp_tx_.set( tx_id, tx );
-      }
-      SYNCHRO_RESULT append(){
-        size_t old_current = current_;
-        while( temp_tx_.count(current_) ) {
-          auto &ap_tx = *temp_tx_[current_];
-          repository::append(ap_tx);
+      SYNCHRO_RESULT append() {
+        while( temp_block_.count(current_) ) {
+          auto &ap_tx = *temp_block_[current_];
+          ametsuchi::append(ap_tx);
           current_++;
+          upd_time_ = common::datetime::unixtime();
         }
-        if( old_current != current_) {
-          if( checkRootHashAll() ) return SYNCHRO_RESULT::APPEND_FINISHED;
-        }
-        if( !temp_tx_.empty() ){ // if started downlaoding
+
+        if( !temp_block_.empty() && upd_time_ < (uint64_t)-1 ){ // if started downlaoding
           // if elapsed that tiem is updated more than 2 sec and cache has more than index tx.
-          if( time(NULL) - upd_time_ > 2 && temp_tx_.getMaxKey() > current_ )
+          if( common::datetime::unixtime() - upd_time_ > 2 && temp_block_.getMaxKey() > current_ )
             return SYNCHRO_RESULT::APPEND_ERROR;
         }
+
         return SYNCHRO_RESULT::APPEND_ONGOING;
       }
+
       void appending(){
+        upd_time_ = (uint64_t)-1;
         clearCache();
 
-        while( !::peer::myself::isActive() ) {
-          timer::waitTimer(1000);
+        while( ::peer_service::self_state::getState() == PREPARE ) {
+          timer::waitTimer(100);
           switch( append() ) {
             case SYNCHRO_RESULT::APPEND_ERROR:
-              checkRootHashAll();
               return;
             case SYNCHRO_RESULT::APPEND_FINISHED:
-              peerActivateStep();
               return;
             case SYNCHRO_RESULT::APPEND_ONGOING:
               break;
@@ -132,7 +119,7 @@ namespace peer{
       }
       void clearCache(){
         current_ = 0;
-        temp_tx_.clear();
+        temp_block_.clear();
       }
     } // namespace datail
 
