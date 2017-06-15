@@ -20,6 +20,8 @@ limitations under the License.
 #include <memory>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <common/datetime.hpp>
 
 namespace peer_service {
 
@@ -36,12 +38,14 @@ namespace peer_service {
       std::string public_key_;
       std::string name_;
       double trust_;
+      uint64_t created_;
       State state_;
 
       Node(std::string ip = defaultIP(),
            std::string public_key = defaultPubKey(),
            std::string name = defaultName(),
            double trust = 100.0,
+           uint64_t created_ = common::datetime::unixtime(),
            State state = PREPARE)
           : ip_(ip),
             public_key_(public_key),
@@ -54,22 +58,32 @@ namespace peer_service {
         public_key_(p.public_key_),
         name_(p.name_),
         trust_(p.trust_),
+        created_(p.created_),
         state_(p.state_) {}
 
       void setIp(std::string ip = defaultIP()){ ip_ = ip; }
       void setPublicKey(std::string public_key = defaultPubKey()){ public_key_ = public_key; }
       void setName(std::string name = defaultName()){ name_ = name; }
       void setTrust(double trust = 100.0){ trust_ = trust; }
+      void setCreated(uint64_t created){ created_ = created; }
       void setState(State state = PREPARE){ state_ = state; }
 
       std::string getIp() const { return ip_; }
       std::string getPublicKey() const { return public_key_; }
       std::string getName() const { return name_; }
       double getTrust() const { return trust_; }
+      uint64_t getCreated() const { return created_; }
       State getState() const { return state_; }
 
       bool isDefaultIP() const { return ip_ == defaultIP(); }
       bool isDefaultPubKey() const { return public_key_ == defaultPubKey(); }
+
+
+
+      bool operator > (const Node& node) const {
+        return ( std::abs(trust_ - node.trust_) < -1e5 ) ? created_ < node.created_ : trust_ > node.trust_;
+      }
+
     };
 
     using Nodes = std::vector<std::shared_ptr<Node>>;

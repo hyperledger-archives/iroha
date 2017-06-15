@@ -87,46 +87,52 @@ namespace peer_service{
               return false;
             if (monitor::isExistPublicKey(peer.public_key_))
               return false;
+            if ( peer.getState()!= PREPARE )
+              return false;
+
             peer_list_.emplace_back( std::make_shared<Node>(peer) );
             return true;
           }
           bool remove(const std::string &publicKey){
             if (!monitor::isExistPublicKey(publicKey))
               return false;
-            peer_list_.erase( monitor::findPeerPublicKey(publicKey) );
+            auto it = monitor::findPeerPublicKey(publicKey);
+            if( it->get()->getState() != PREPARE )
+
+            peer_list_.erase( it );
             return true;
           }
           bool setTrust(const std::string &publicKey, const double &trust){
             if (!monitor::isExistPublicKey(publicKey))
               return false;
 
-            auto node = monitor::findPeerPublicKey(publicKey)->get();
+            auto node = *monitor::findPeerPublicKey(publicKey);
             node->setTrust(trust);
             if( node->getState() == ACTIVE )
-              detail::changeActive(publicKey);
+              detail::changeActive(node);
             return true;
           }
           bool changeTrust(const std::string &publicKey, const double &trust){
             if (!monitor::isExistPublicKey(publicKey))
               return false;
 
-            auto node = monitor::findPeerPublicKey(publicKey)->get();
+            auto node = *monitor::findPeerPublicKey(publicKey);
             node->setTrust(node->getTrust() + trust);
             if( node->getState() == ACTIVE )
-              detail::changeActive(publicKey);
+              detail::changeActive(node);
             return true;
           }
           bool setActive(const std::string &publicKey, const State state){
             if (!monitor::isExistPublicKey(publicKey))
               return false;
 
-            auto node = monitor::findPeerPublicKey(publicKey)->get();
+            auto node = *monitor::findPeerPublicKey(publicKey);
             if( node->getState() == PREPARE ){
               if( state == ACTIVE ) // PRPARE -> ACTIVE
                 detail::insertActive(node);
             } else if( node->getState() == ACTIVE ) {
               if( state == PREPARE ) // ACTIVE -> PREPARE
-                detail::eraseActive(node);
+                detail::eraseActive(publicKey);
             }
             node->state_ = state;
           }
@@ -134,14 +140,28 @@ namespace peer_service{
       };
 
       namespace detail {
-        void insertActive( const Node& node ){
 
+        void insertActive( const std::shared_ptr<Node> node ){
+          for( auto it = active_peer_list_.begin(); it != active_peer_list_.end(); it++ ) {
+            if( *node > *(*it) ) {
+              active_peer_list_.insert(it, node);
+              break;
+            }
+          }
         }
-        void eraseActive( const Node& node ){
 
+        void eraseActive( const std::string& publicKey ){
+          for( auto it = active_peer_list_.begin(); it != active_peer_list_.end(); it++ ) {
+            if( (*it)->getPublicKey() == publicKey ) {
+              active_peer_list_.erase(it);
+              break;
+            }
+          }
         }
-        void changeActive( std::string publicKey ) {
 
+        void changeActive( const std::shared_ptr<Node> node ) {
+          eraseActive( node->getPublicKey() );
+          insertActive( node );
         }
       }
     }

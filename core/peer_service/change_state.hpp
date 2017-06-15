@@ -56,8 +56,8 @@ namespace peer_service{
         // This scope is detail implement change peer_list_ and active_peer_list_
         namespace detail {
           void insertActive( const std::shared_ptr<Node> node );
-          void eraseActive( const std::shared_ptr<Node> node );
-          void changeActive( std::string publicKey );
+          void eraseActive( const std::string& publicKey );
+          void changeActive( const std::shared_ptr<Node> node );
         }
     };
 };
