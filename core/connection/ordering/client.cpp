@@ -35,9 +35,9 @@ namespace connection {
         }
 
         QueueTransactionResponse OrderingClient::QueueTransaction(
-            const iroha::protocol::Transaction& block) {
+            const iroha::protocol::Transaction& tx) {
             QueueTransactionResponse response;
-            stub_->QueueTransaction(&context_, block, &response);
+            stub_->QueueTransaction(&context_, tx, &response);
             return response;
         }
 

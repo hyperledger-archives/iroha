@@ -75,18 +75,18 @@ namespace peer_service{
 
     namespace detail{
 
-      structure::CacheMap<uint64_t,const Block*> temp_block_;
+      structure::CacheMap<uint64_t,Block> temp_block_;
       uint64_t current_;
       uint64_t upd_time_;
 
-      bool append_temporary(uint64_t tx_id,const Block& tx){
-        temp_block_.set( tx_id, &tx );
+      bool append_temporary(uint64_t tx_id,const Block&& tx){
+        temp_block_.set( tx_id, std::move(tx) );
         return true;
       }
 
       SYNCHRO_RESULT append() {
-        while( temp_block_.count(current_) ) {
-          auto &ap_tx = *temp_block_[current_];
+        while( temp_block_.exists(current_) ) {
+          auto &ap_tx = temp_block_[current_];
           ametsuchi::append(ap_tx);
           current_++;
           upd_time_ = common::datetime::unixtime();
