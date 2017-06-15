@@ -30,7 +30,7 @@ service QueryService {
 }
 
 service SumeragiService {
-  rpc Verify (Block) returns (QueueTransactionResponse);
+  rpc Verify (Block) returns (VerifyResponse);
 }
 
 service OrderingService {

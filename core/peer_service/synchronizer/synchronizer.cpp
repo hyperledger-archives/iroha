@@ -75,7 +75,7 @@ namespace peer_service{
 
     namespace detail{
 
-      structure::CacheMap<uint64_t,const Block> temp_block_;
+      structure::CacheMap<uint64_t,Block> temp_block_;
       uint64_t current_;
       uint64_t upd_time_;
 

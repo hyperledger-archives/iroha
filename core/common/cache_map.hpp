@@ -84,12 +84,12 @@ class CacheMap {
 
 
   // set key and value
-  size_t set(const Key& k, const Value& v) {
+  size_t set(const Key& k, const Value&& v) {
     if( data_.count(k) ) return data_.size();
     cache_.push_back(k);
     while (!max_cache_.empty() && max_cache_.back() < k) max_cache_.pop_back();
     max_cache_.push_back(k);
-    data_[k] = v;
+    data_[k] = std::move(v);
     return data_.size();
   }
 
