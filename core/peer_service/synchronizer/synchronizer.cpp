@@ -43,6 +43,7 @@ namespace peer_service{
 
 
       // TODO connection Test Ping default_leader_ip
+      // TODO to issue addPeer(myself) Transaction to default_leader_ip
 
       // TODO start streaming connect to default_leader_ip
 
