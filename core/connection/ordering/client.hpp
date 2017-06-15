@@ -22,8 +22,8 @@ limitations under the License.
 namespace connection {
     namespace ordering {
 
-        bool send(std::string ip, iroha::protocol::Transaction& tx);
-        class OrderingService {
+        bool send(std::string ip, const iroha::protocol::Transaction& tx);
+        class OrderingClient {
         public:
             iroha::protocol::QueueTransactionResponse* QueueTransaction(
                 const iroha::protocol::Transaction& tx);
