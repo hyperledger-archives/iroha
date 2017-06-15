@@ -56,6 +56,17 @@ namespace peer_service {
         trust_(p.trust_),
         state_(p.state_) {}
 
+      void setIp(std::string ip = defaultIP()){ ip_ = ip; }
+      void setPublicKey(std::string public_key = defaultPubKey()){ public_key_ = public_key; }
+      void setName(std::string name = defaultName()){ name_ = name; }
+      void setTrust(double trust = 100.0){ trust_ = trust; }
+      void setState(State state = PREPARE){ state_ = state; }
+
+      std::string getIp() const { return ip_; }
+      std::string getPublicKey() const { return public_key_; }
+      std::string getName() const { return name_; }
+      double getTrust() const { return trust_; }
+      State getState() const { return state_; }
 
       bool isDefaultIP() const { return ip_ == defaultIP(); }
       bool isDefaultPubKey() const { return public_key_ == defaultPubKey(); }
