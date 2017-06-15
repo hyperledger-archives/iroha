@@ -1,5 +1,5 @@
 /*
- * Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
  * http://soramitsu.co.jp
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,30 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <service/flatbuffer_service.h>
-#include <crypto/base64.hpp>
+
 #include <crypto/hash.hpp>
 #include <crypto/signature.hpp>
-#include <infra/config/iroha_config_with_json.hpp>
-#include <infra/config/peer_service_with_json.hpp>
-#include <membership_service/peer_service.hpp>
+#include <validation/stateful/validator.hpp>
+#include <connection/api/command_service.hpp>
+#include <connection/consensus/service.hpp>
+#include <connection/consensus/client.hpp>
+#include <logger/logger.hpp>
+#include <common/timer.hpp>
+#include <common/datetime.hpp>
 #include <thread_pool.hpp>
-#include <utils/explore.hpp>
-#include <utils/logger.hpp>
-#include <utils/timer.hpp>
-#include <runtime/runtime.hpp>
+#include <vector>
+#include <set>
 
-#include <main_generated.h>
-
-#include <atomic>
-#include <cmath>
-#include <deque>
-#include <map>
-#include <queue>
-#include <string>
-#include <thread>
-#include <ametsuchi/repository.hpp>
-#include <service/connection.hpp>
 #include "sumeragi.hpp"
 
 /**
@@ -50,151 +40,30 @@
  * International Conference on Principles of Distributed Systems (pp. 91-106).
  * Springer.
  */
-namespace sumeragi {
 
-    using iroha::ConsensusEvent;
-    using iroha::Signature;
-    using iroha::Transaction;
+namespace consensus {
+    namespace sumeragi {
 
-    std::map<std::string, std::string> txCache;
+        using iroha::protocol::Block;
+        using iroha::protocol::Signature;
 
-    static ThreadPool pool(ThreadPoolOptions{
-        .threads_count =
-                 config::IrohaConfigManager::getInstance().getConcurrency(0),
-        .worker_queue_size =
-                 config::IrohaConfigManager::getInstance().getPoolWorkerQueueSize(1024),
-    });
+        connection::consensus::SumeragiClient sender;
+        logger::Logger log("sumeragi");
 
-    namespace detail {
+        static ThreadPool pool(ThreadPoolOptions{
+            .threads_count = 0,
+            //config::IrohaConfigManager::getInstance().getConcurrency(0),
+            .worker_queue_size = 1024
+            //config::IrohaConfigManager::getInstance().getPoolWorkerQueueSize(1024),
+        });
 
-        std::string hash(const Transaction& tx, const std::string& root) {
-            return hash::sha3_256_hex(flatbuffer_service::toString(tx) + root);
-        };
+        void initialize() {
 
-        bool eventSignatureIsEmpty(const ::iroha::ConsensusEvent& event) {
-            if (event.peerSignatures() != nullptr) {
-                return event.peerSignatures()->size() == 0;
-            } else {
-                return 0;
-            }
-        }
+            connection::consensus::receive(
+                [](const Block &block) {
+                    // TODO: Judge committed
+                    if ( /*check is_committed*/ false) {
 
-    }  // namespace detail
-
-    struct Context {
-        bool isSumeragi = false;      // am I the leader or am I not?
-        std::uint64_t maxFaulty = 0;  // f
-        std::uint64_t proxyTailNdx = 0;
-        std::int32_t panicCount = 0;
-        std::int64_t commitedCount = 0;
-        std::uint64_t numValidatingPeers = 0;
-        std::string myPublicKey;
-        std::string myPrivateKey;
-        std::string myIp;
-        std::deque<std::unique_ptr<peer::Node>> validatingPeers;
-
-        explore::sumeragi::PrintProgress printProgress;
-
-        Context() { update(); }
-
-        Context(std::vector<std::unique_ptr<peer::Node>>&& peers) {
-            for (auto&& p : peers) {
-                validatingPeers.push_back(std::move(p));
-            }
-        }
-
-        void update() {
-            auto peers = config::PeerServiceConfig::getInstance().getGroup();
-            for (const auto& p : peers) {
-                validatingPeers.push_back(std::make_unique<peer::Node>(
-                        p["ip"].get<std::string>(), p["publicKey"].get<std::string>()));
-                logger::info("sumeragi")
-                        << "Add " << p["ip"].get<std::string>() << " to peerList";
-            }
-
-            this->numValidatingPeers = this->validatingPeers.size();
-            // maxFaulty = Default to approx. 1/3 of the network.
-            this->maxFaulty =
-                    config::IrohaConfigManager::getInstance().getMaxFaultyPeers(
-                            this->numValidatingPeers / 3);
-            this->proxyTailNdx = this->maxFaulty * 2 + 1;
-
-            if (this->validatingPeers.empty()) {
-                logger::error("sumeragi") << "could not find any validating peers.";
-                exit(EXIT_FAILURE);
-            }
-            logger::info("sumeragi") << "peerList is not empty";
-
-            if (this->proxyTailNdx >= this->validatingPeers.size()) {
-                this->proxyTailNdx = this->validatingPeers.size() - 1;
-            }
-
-            this->panicCount = 0;
-
-            this->myPublicKey =
-                    config::PeerServiceConfig::getInstance().getMyPublicKey();
-            this->myIp = config::PeerServiceConfig::getInstance().getMyIp();
-            this->myPrivateKey =
-                    config::PeerServiceConfig::getInstance().getMyPrivateKey();
-            this->isSumeragi =
-                    this->validatingPeers.at(0)->publicKey == this->myPublicKey;
-            logger::info("sumeragi") << "update finished";
-
-            this->printProgress.MAX = 100;
-        }
-    };
-
-    std::unique_ptr<Context> context = nullptr;
-
-    void initializeSumeragi() {
-        logger::info("sumeragi") << "Sumeragi setted";
-        logger::info("sumeragi") << "set number of validatingPeer";
-
-        context = std::make_unique<Context>();
-
-        connection::iroha::SumeragiImpl::Torii::receive(
-                [](const std::string& from, flatbuffers::unique_ptr_t&& transaction) {
-                    context->printProgress.print(1, "receive transaction!");
-
-                    auto eventUniqPtr = flatbuffer_service::toConsensusEvent(
-                            *flatbuffers::GetRoot<::iroha::Transaction>(transaction.get()));
-
-                    if (eventUniqPtr) {
-                        context->printProgress.print(2, "make tx consensusEvent");
-                        flatbuffers::unique_ptr_t ptr;
-                        eventUniqPtr.move_value(ptr);
-                        // send processTransaction(event) as a task to processing pool
-                        // this returns std::future<void> object
-                        // (std::future).get() method locks processing until result of
-                        // processTransaction will be available but processTransaction returns
-                        // void, so we don't have to call it and wait
-                        auto&& task = [e = std::move(ptr)]() mutable {
-                            processTransaction(std::move(e));
-                        };
-                        context->printProgress.print(3, "send event to processTransaction");
-                        pool.process(std::move(task));
-                    } else {
-                        logger::error("sumeragi") << eventUniqPtr.error();
-                    }
-                });
-
-        connection::iroha::SumeragiImpl::Verify::receive(
-                [](const std::string& from, flatbuffers::unique_ptr_t&& eventUniqPtr) {
-                    context->printProgress.print(15,
-                        "receive transaction form other sumeragi"
-                    );
-
-                    auto eventPtr =
-                            flatbuffers::GetRoot<::iroha::ConsensusEvent>(eventUniqPtr.get());
-
-                    if (eventPtr->code() == iroha::Code::COMMIT) {
-                        context->printProgress.print(19, "receive commited event");
-                        // Feature work #(tx) = 1
-                        const auto txptr = eventPtr->transactions()->Get(0)->tx_nested_root();
-                        if (txCache.find(detail::hash(*txptr, repository::getMerkleRoot())) == txCache.end()) {
-                            txCache[detail::hash(*txptr, repository::getMerkleRoot())] = "commited";
-                            runtime::processTransaction(*txptr);
-                        }
                     } else {
                         // send processTransaction(event) as a task to processing pool
                         // this returns std::future<void> object
@@ -205,188 +74,131 @@ namespace sumeragi {
                         //    std::bind(processTransaction, std::move(event));
                         // pool.process(std::move(task));
 
-                        // Copy ConsensusEvent
-                        auto&& task = [e = std::move(eventUniqPtr)]() mutable {
-                            processTransaction(std::move(e));
-                        };
+                        std::function<void()> &&task = std::bind(processBlock, block);
                         pool.process(std::move(task));
                     }
                 });
-
-        logger::info("sumeragi") << "initialize numValidatingPeers :"
-                                 << context->numValidatingPeers;
-        logger::info("sumeragi") << "initialize maxFaulty :" << context->maxFaulty;
-        logger::info("sumeragi") << "initialize proxyTailNdx :"
-                                 << context->proxyTailNdx;
-
-        logger::info("sumeragi") << "initialize panicCount :" << context->panicCount;
-        logger::info("sumeragi") << "initialize myPublicKey :"
-                                 << context->myPublicKey;
-
-        // TODO: move the peer service and ordering code to another place
-        // determineConsensusOrder(); // side effect is to modify validatingPeers
-        logger::info("sumeragi") << "initialize is sumeragi :"
-                                 << static_cast<int>(context->isSumeragi);
-        logger::info("sumeragi") << "initialize.....  complete!";
-    }
-
-
-    std::uint64_t getNextOrder() {
-        return 0l;
-        // ToDo
-        // return merkle_transaction_repository::getLastLeafOrder() + 1;
-    }
-
-    void processTransaction(flatbuffers::unique_ptr_t&& eventUniqPtr) {
-        // Do not touch directly
-        flatbuffers::unique_ptr_t storageUniqPtr;
-        ::iroha::ConsensusEvent const* storageRawPtrRef;
-
-        // Helper to set unique_ptr_t
-        auto resetUniqPtr = [&](flatbuffers::unique_ptr_t&& uptr) {
-            storageUniqPtr = std::move(uptr);
-            storageRawPtrRef = flatbuffers::GetRoot<::iroha::ConsensusEvent>(
-                    storageUniqPtr.get());
-        };
-
-        // Convenient accessor
-        const auto getRoot = [&] { return storageRawPtrRef; };
-
-        context->printProgress.print(4, "start processTransaction");
-
-        context->printProgress.print(5, "set input's event unique ptr");
-        resetUniqPtr(std::move(eventUniqPtr));
-
-        context->printProgress.print(6, "generate hash");
-
-        const auto hash = detail::hash(
-                *getRoot()->transactions()->Get(0)->tx_nested_root(),
-                repository::getMerkleRoot()
-        );  // ToDo: #(tx) = 1
-        {
-            context->printProgress.print(7, "sign hash using my key-pair");
-
-            const auto signature =
-                    signature::sign(hash, context->myPublicKey, context->myPrivateKey);
-            explore::sumeragi::printInfo("hash:" + hash + " signature:" + signature);
-
-            context->printProgress.print(8, "Add own signature");
-
-            auto sigAddPtr = flatbuffer_service::addSignature(
-                    *getRoot(), context->myPublicKey, signature);
-            if (!sigAddPtr) {
-                logger::error("sumeragi") << "Failed to process transaction.";
-                return;  // ToDo: If processTx fails, is it ok to return immediately?
-            }
-            flatbuffers::unique_ptr_t uptr;
-            sigAddPtr.move_value(uptr);
-            resetUniqPtr(std::move(uptr));
         }
 
-        context->printProgress.print(9, "if statement");
-        if (detail::eventSignatureIsEmpty(*getRoot()) && context->isSumeragi) {
-            context->printProgress.print(
-                    11, "event doesn't have signature and I'm Sumeragi");
+        // TODO: Append block to db and calc merkle root.
+        std::string appendBlock(const Block &block) {
+            return std::string();
+        }
 
-            // Determine the order for processing this event
-            // event.set_order(getNextOrder());//TODO getNexOrder is always return 0l;
-            // logger::info("sumeragi") << "new  order:" << event.order();
-        } else if (!detail::eventSignatureIsEmpty(*getRoot())) {
-            context->printProgress.print(10, "event has signature");
-            explore::sumeragi::printInfo(
-                    "Signature number is " +
-                    std::to_string(getRoot()->peerSignatures()->size()));
+        Block createSignedBlock(const Block &block, const std::string &merkleRoot) {
+            auto pk = "pk"; // TODO: peer service
+            auto sk = "sk";
 
-            context->printProgress.print(11, "if statement");
-            // Check if we have at least 2f+1 signatures needed for Byzantine fault
-            // tolerance
-            // ToDo re write transaction_validator
-            if (getRoot()->peerSignatures()->size() >= context->maxFaulty * 2 + 1) {
-                explore::sumeragi::printInfo("Signature exists and sig > 2*f + 1");
-                explore::sumeragi::printJudge(getRoot()->peerSignatures()->size(),
-                                              context->numValidatingPeers,
-                                              context->maxFaulty * 2 + 1);
-                explore::sumeragi::printAgree();
+            auto sigblob = crypto::signature::sign(merkleRoot, pk, sk);
+            std::string str_sigblob;
+            for (auto e: sigblob) str_sigblob.push_back(e);
 
-                context->printProgress.print(16, "commit");
+            Signature newSignature;
+            *newSignature.mutable_pubkey() = pk;
+            *newSignature.mutable_signature() = str_sigblob;
 
-                context->commitedCount++;
+            Block ret;
+            ret.CopyFrom(block);
+            ret.mutable_header()->set_created_time(common::datetime::unixtime());
+            *ret.mutable_header()->mutable_peer_signature()->Add() = newSignature;
 
-                explore::sumeragi::printInfo("commit count:" +
-                                             std::to_string(context->commitedCount));
+            return ret;
+        }
 
-                context->printProgress.print(17, "update event commit");
+        bool isLeader(const Block &block) {
+            //auto validLeader = true; // TODO: Use peer service
+            auto validNumOfSignatures = block.header().peer_signature().size() == 1;
+            if (validNumOfSignatures) return true;
+            return false;
+        }
 
-                {
-                    auto committedEvent = flatbuffer_service::makeCommit(*getRoot());
-                    if (!committedEvent) {
-                        logger::error("sumeragi") << "Failed to process transaction.";
-                        return;  // ToDo: If processTx fails, is it ok to return immediately?
-                    }
-                    flatbuffers::unique_ptr_t uptr;
-                    committedEvent.move_value(uptr);
-                    resetUniqPtr(std::move(uptr));
+        size_t getMaxFaulty() {
+            return 3;/*peer::service::getActivePeerList().size() / 3; */ // TODO: Peer service
+        }
+
+        size_t getNumValidatingPeers() {
+            return getMaxFaulty() * 2 + 1;
+        }
+
+        size_t getNumAllPeers() {
+            return 4; // TODO: peer service
+        }
+
+        void setTimeOutCommit(const Block &block) {
+            timer::setAwkTimerForCurrentThread(3000, [block] {
+                panic(block);
+            });
+        }
+
+        /**
+         * returns expected tail to send committed block.
+         * if returned value = -1, all peers has been used.
+         */
+
+        int getNextOrder() {
+            static int currentProxyTail = static_cast<int>(getNumValidatingPeers()) - 1;
+            if (currentProxyTail >= getNumAllPeers()) {
+                return -1;
+            }
+            return currentProxyTail++;
+        }
+
+        size_t countValidSignatures(const Block &block) {
+            size_t numValidSignatures = 0;
+            std::set<std::string> usedPubkeys;
+
+            auto peerSigs = block.header().peer_signature();
+            for (auto const &sig: peerSigs) {
+                // FIXME: bytes in proto -> std::string in C++ (null value problem)
+                if (usedPubkeys.count(sig.pubkey())) continue;
+                const auto bodyMessage = block.body().SerializeAsString();
+                const auto hash = crypto::hash::sha3_256_hex(bodyMessage);
+                if (crypto::signature::verify(sig.signature(), hash, sig.pubkey())) {
+                    numValidSignatures++;
+                    usedPubkeys.insert(sig.pubkey());
                 }
+            }
 
-                context->printProgress.print(18, "SendAll");
-                connection::iroha::SumeragiImpl::Verify::sendAll(*getRoot());
+            return numValidSignatures;
+        }
 
+        void processBlock(const Block &block) {
+
+            // Stateful Validation
+            auto valid = validator::stateful::validate(block);
+            if (!valid) {
+                log.info("Stateful validation failed.");
+                return;
+            }
+
+            // Add Signature
+            auto merkleRoot = appendBlock(block);
+            auto newBlock = createSignedBlock(block, merkleRoot);
+
+            if (isLeader(newBlock)) {
+                sender.broadCast(newBlock);
+                setTimeOutCommit(newBlock);
+                return;
+            }
+
+            auto numValidSignatures = countValidSignatures(newBlock);
+
+            if (numValidSignatures < getNumValidatingPeers()) {
+                auto next = getNextOrder();
+                if (next < 0) {
+                    log.error("getNextOrder() < 0 in processBlock");
+                    return;
+                }
+                sender.unicast(newBlock, static_cast<size_t>(next));
+                setTimeOutCommit(newBlock);
             } else {
-
-                {
-                    context->printProgress.print(7, "sign hash using my key-pair");
-
-                    const auto signature =
-                            signature::sign(hash, context->myPublicKey, context->myPrivateKey);
-                    explore::sumeragi::printInfo("hash:" + hash + " signature:" + signature);
-
-                    context->printProgress.print(8, "Add own signature");
-
-                    auto sigAddPtr = flatbuffer_service::addSignature(
-                            *getRoot(), context->myPublicKey, signature);
-                    if (!sigAddPtr) {
-                        logger::error("sumeragi") << "Failed to process transaction.";
-                        return;  // ToDo: If processTx fails, is it ok to return immediately?
-                    }
-                    flatbuffers::unique_ptr_t uptr;
-                    sigAddPtr.move_value(uptr);
-                    resetUniqPtr(std::move(uptr));
+                if (numValidSignatures == getNumValidatingPeers()) {
+                    sender.commit(newBlock);
+                    setTimeOutCommit(newBlock);
                 }
-
-                explore::sumeragi::printInfo("Signature exists and sig not enough");
-                context->printProgress.print(12, "add peer signature to event");
-
-                explore::sumeragi::printInfo(
-                        "tail public key is " +
-                        context->validatingPeers.at(context->proxyTailNdx)->publicKey);
-
-                context->printProgress.print(13, "If statements [ Am I tail or not?");
-                if (context->validatingPeers.at(context->proxyTailNdx)->publicKey ==
-                    context->myPublicKey) {
-                    explore::sumeragi::printInfo(
-                            "currently signature number:" +
-                            std::to_string(getRoot()->peerSignatures()->size()));
-                    context->printProgress.print(
-                            14, "send to " +
-                                context->validatingPeers.at(context->proxyTailNdx)->ip);
-
-                    connection::iroha::SumeragiImpl::Verify::send(
-                            context->validatingPeers.at(context->proxyTailNdx)->ip,
-                            *getRoot());  // Think In Process
-                } else {
-                    explore::sumeragi::printInfo(
-                            "currently signature number:" +
-                            std::to_string(getRoot()->peerSignatures()->size()));
-
-                    context->printProgress.print(14, "send all");
-                    connection::iroha::SumeragiImpl::Verify::sendAll(*getRoot());
-                    //
-                }
-
-                timer::setAwkTimerForCurrentThread(3000, [&]() { panic(*getRoot()); });
             }
         }
-    }
+
 
 /**
  *
@@ -399,73 +211,23 @@ namespace sumeragi {
  * |---|  |---|  |---|  |---|  |---|  |---|,
  *
  * if 2f+1 signature are not received within the timer's limit, then
- * the set of considered validators, A, is expanded by f (e.g., by 1 in the
- * example below):
+ * the set of considered validators, A, is expanded by 1.
  *  ________________________    __________
  * /           A            \  /    B     \
  * |---|  |---|  |---|  |---|  |---|  |---|
  * | 0 |--| 1 |--| 2 |--| 3 |--| 4 |--| 5 |
  * |---|  |---|  |---|  |---|  |---|  |---|.
  */
-    void panic(const ConsensusEvent& event) {
-        context->panicCount++;  // TODO: reset this later
-        auto broadcastStart =
-                2 * context->maxFaulty + 1 + context->maxFaulty * context->panicCount;
-        auto broadcastEnd = broadcastStart + context->maxFaulty;
 
-        // Do some bounds checking
-        if (broadcastStart > context->numValidatingPeers - 1) {
-            broadcastStart = context->numValidatingPeers - 1;
+        void panic(const Block &block) {
+            auto next = getNextOrder();
+            if (next < 0) {
+                log.info("否認");
+                return;
+            }
+            sender.unicast(block, static_cast<size_t>(next));
+            setTimeOutCommit(block);
         }
 
-        if (broadcastEnd > context->numValidatingPeers - 1) {
-            broadcastEnd = context->numValidatingPeers - 1;
-        }
-
-        logger::info("sumeragi") << "broadcastEnd:" << broadcastEnd;
-        logger::info("sumeragi") << "broadcastStart:" << broadcastStart;
-        // WIP issue hash event
-        // connection::sendAll(event->transaction().hash()); //TODO: change this to
-        // only broadcast to peer range between broadcastStart and broadcastEnd
-    }
-
-/**
- * The consensus order is based primarily on the trust scores. If two trust
- * scores are the same, then the order (ascending) of the public keys for the
- * servers are used.
- */
-    void determineConsensusOrder() {
-        // WIP We create getTrustScore() function. till then circle list
-        /*
-        std::deque<
-                std::unique_ptr<peer::Node>
-        > tmp_deq;
-        for(int i=1;i<context->validatingPeers.size();i++){
-            tmp_deq.push_back(std::move(context->validatingPeers[i]));
-        }
-        tmp_deq.push_back(std::move(context->validatingPeers[0]));
-        context->validatingPeers.clear();
-        context->validatingPeers = std::move(tmp_deq);
-
-        std::sort(context->validatingPeers.begin(), context->validatingPeers.end(),
-              [](const std::unique_ptr<peer::Node> &lhs,
-                 const std::unique_ptr<peer::Node> &rhs) {
-                  return lhs->getTrustScore() > rhs->getTrustScore()
-                         || (lhs->getTrustScore() == rhs->getTrustScore()
-                             && lhs->getPublicKey() < rhs->getPublicKey());
-              }
-        );
-        logger::info("sumeragi")        <<  "determineConsensusOrder sorted!";
-        logger::info("sumeragi")        <<  "determineConsensusOrder myPubkey:"     <<
-        context->myPublicKey;
-
-        for(const auto& peer : context->validatingPeers) {
-            logger::info("sumeragi")    <<  "determineConsensusOrder PublicKey:"    <<
-        peer->getPublicKey(); logger::info("sumeragi")    <<  "determineConsensusOrder
-        ip:"           <<  peer->getIP();
-        }
-        */
-        // context->isSumeragi = context->validatingPeers.at(0)->getPublicKey() ==
-        // context->myPublicKey;
-    }
-}  // namespace sumeragi
+    }  // namespace sumeragi
+}  // namespace consensus
