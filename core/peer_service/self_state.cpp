@@ -29,27 +29,27 @@ limitations under the License.
 namespace peer_service {
     namespace self_state {
 
-        std::string _ip;
-        std::string _public_key;
-        std::string _private_key;
-        std::string _name;
-        double _trust;
+        std::string ip_;
+        std::string public_key_;
+        std::string private_key_;
+        std::string name_;
+        double trust_;
 
-        uint64_t _active_time;
-        State _state;
+        uint64_t active_time_;
+        State state_;
 
         void initializeMyKey() {
-          if (_public_key.empty() || _private_key.empty()) {
+          if (public_key_.empty() || private_key_.empty()) {
             crypto::signature::KeyPair keyPair = crypto::signature::generateKeyPair();
-            _public_key = crypto::base64::encode(keyPair.publicKey);
-            _private_key = crypto::base64::encode(keyPair.privateKey);
+            public_key_ = crypto::base64::encode(keyPair.publicKey);
+            private_key_ = crypto::base64::encode(keyPair.privateKey);
           }
         }
 
         void initializeMyIp() {
           std::string interface = "eth0"; // TODO : temporary "eth0"
 
-          if (_ip.empty()) {
+          if (ip_.empty()) {
             int sockfd;
             struct ifreq ifr;
 
@@ -58,31 +58,31 @@ namespace peer_service {
             strncpy(ifr.ifr_name, interface.c_str(), IFNAMSIZ - 1);
             ioctl(sockfd, SIOCGIFADDR, &ifr);
             close(sockfd);
-            _ip = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+            ip_ = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
           }
         }
 
 
         std::string getPublicKey() {
           initializeMyKey();
-          return _public_key;
+          return public_key_;
         }
         std::string getPrivateKey() {
           initializeMyKey();
-          return _private_key;
+          return private_key_;
         }
         std::string getIp() {
           initializeMyIp();
-          return _ip;
+          return ip_;
         }
         std::string getName() {
-          return _name;//TODO : initialize name
+          return name_;//TODO : initialize name
         }
-        State getState() { return _state; }
+        State getState() { return state_; }
 
 
         bool isLeader() {
-          return monitor::getCurrentLeader()->_public_key == _public_key;
+          return monitor::getCurrentLeader()->public_key_ == public_key_;
         }
 
         double getTrust() {
@@ -91,12 +91,12 @@ namespace peer_service {
 
 
 
-      uint64_t getActiveTime() { return _active_time; }
+      uint64_t getActiveTime() { return active_time_; }
 
         void activate() {
-          _state = ACTIVE;
-          _active_time = ::common::datetime::unixtime();
+          state_ = ACTIVE;
+          active_time_ = ::common::datetime::unixtime();
         }
-        void stop() { _state = PREPARE; }
+        void stop() { state_ = PREPARE; }
     };
 };

@@ -27,16 +27,16 @@ namespace peer_service{
       return getActivePeerAt(0);
     }
     std::string getCurrentLeaderIp(){
-      return getActivePeerAt(0)->_ip;
+      return getActivePeerAt(0)->ip_;
     }
 
 
     void initialize(){
-      if( !_peer_list.empty() ) return;
+      if( !peer_list_.empty() ) return;
       // TODO Read config.json
 
       // At First myself only
-      _peer_list.emplace_back(
+      peer_list_.emplace_back(
           std::make_shared<Node>(
               self_state::getIp(),
               self_state::getPublicKey(),
@@ -52,61 +52,61 @@ namespace peer_service{
     }
 
     Nodes getAllPeerList(){
-      return _peer_list;
+      return peer_list_;
     }
     std::shared_ptr<Node> getPeerAt(unsigned int index){
       try {
-        return _peer_list.at(index);
+        return peer_list_.at(index);
       } catch( const std::out_of_range& oor ){
         // TODO Out ot Range Exception
       }
     }
     std::vector<std::string> getAllIpList(){
       std::vector<std::string> ret;
-      for( auto v : _peer_list )
-        ret.emplace_back( v->_ip );
+      for( auto v : peer_list_ )
+        ret.emplace_back( v->ip_ );
       return ret;
     }
 
     Nodes getActivePeerList(){
-      return _active_peer_list;
+      return active_peer_list_;
     }
     std::shared_ptr<Node> getActivePeerAt(unsigned int index){
       try {
-        return _active_peer_list.at(index);
+        return active_peer_list_.at(index);
       } catch( const std::out_of_range& oor ){
         // TODO Out ot Range Exception
       }
     }
     std::vector<std::string> getActiveIpList(){
       std::vector<std::string> ret;
-      for( auto v : _active_peer_list )
-        ret.emplace_back( v->_ip );
+      for( auto v : active_peer_list_ )
+        ret.emplace_back( v->ip_ );
       return ret;
     }
     int getActivePeerSize(){
-      return _active_peer_list.size();
+      return active_peer_list_.size();
     }
 
 
 
     bool isExistIP(const std::string &ip){
-      return findPeerIP(ip) != _peer_list.end();
+      return findPeerIP(ip) != peer_list_.end();
     }
     bool isExistPublicKey(const std::string &publicKey){
-      return findPeerPublicKey(publicKey) != _peer_list.end();
+      return findPeerPublicKey(publicKey) != peer_list_.end();
     }
 
     Nodes::iterator findPeerIP(const std::string &ip){
       initialize();
-      return std::find_if(_peer_list.begin(), _peer_list.end(),
-                          [&ip](const auto &p) { return p->_ip == ip; });
+      return std::find_if(peer_list_.begin(), peer_list_.end(),
+                          [&ip](const auto &p) { return p->ip_ == ip; });
     }
     Nodes::iterator findPeerPublicKey(const std::string &publicKey){
       initialize();
       return std::find_if(
-          _peer_list.begin(), _peer_list.end(),
-          [&publicKey](const auto &p) { return p->_public_key == publicKey; });
+          peer_list_.begin(), peer_list_.end(),
+          [&publicKey](const auto &p) { return p->public_key_ == publicKey; });
     }
 
   };  // namespace monitor

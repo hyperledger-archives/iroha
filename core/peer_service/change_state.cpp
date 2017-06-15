@@ -44,9 +44,9 @@ namespace peer_service{
       // This scope is validation
       namespace validation {
         bool add(const Node &peer){
-          if (monitor::isExistIP(peer._ip))
+          if (monitor::isExistIP(peer.ip_))
             return false;
-          if (monitor::isExistPublicKey(peer._public_key))
+          if (monitor::isExistPublicKey(peer.public_key_))
             return false;
           return true;
         }
@@ -75,36 +75,36 @@ namespace peer_service{
       // This scope is runtime
       namespace runtime {
         bool add(const Node &peer){
-          if (monitor::isExistIP(peer._ip))
+          if (monitor::isExistIP(peer.ip_))
             return false;
-          if (monitor::isExistPublicKey(peer._public_key))
+          if (monitor::isExistPublicKey(peer.public_key_))
             return false;
-          _peer_list.emplace_back( std::make_shared<Node>(peer) );
+          peer_list_.emplace_back( std::make_shared<Node>(peer) );
           return true;
         }
         bool remove(const std::string &publicKey){
           if (!monitor::isExistPublicKey(publicKey))
             return false;
-          _peer_list.erase( monitor::findPeerPublicKey(publicKey) );
+          peer_list_.erase( monitor::findPeerPublicKey(publicKey) );
           return true;
         }
         bool setTrust(const std::string &publicKey, const double &trust){
           if (!monitor::isExistPublicKey(publicKey))
             return false;
-          monitor::findPeerPublicKey(publicKey)->get()->_trust = trust;
+          monitor::findPeerPublicKey(publicKey)->get()->trust_ = trust;
           return true;
         }
         bool changeTrust(const std::string &publicKey, const double &trust){
           if (!monitor::isExistPublicKey(publicKey))
             return false;
-          monitor::findPeerPublicKey(publicKey)->get()->_trust += trust;
+          monitor::findPeerPublicKey(publicKey)->get()->trust_ += trust;
           return true;
         }
         bool setActive(const std::string &publicKey, const State state){
           if (!monitor::isExistPublicKey(publicKey))
             return false;
 
-          monitor::findPeerPublicKey(publicKey)->get()->_state = state;
+          monitor::findPeerPublicKey(publicKey)->get()->state_ = state;
           update();
         }
 
@@ -112,16 +112,16 @@ namespace peer_service{
         void update(){
           std::unordered_set<std::string> tmp_active;
 
-          for( auto it = _active_peer_list.begin(); it != _active_peer_list.end(); it++ ){
-            if( it->get()->_state != ACTIVE )
-              it = _active_peer_list.erase(it);
+          for( auto it = active_peer_list_.begin(); it != active_peer_list_.end(); it++ ){
+            if( it->get()->state_ != ACTIVE )
+              it = active_peer_list_.erase(it);
             else
-              tmp_active.insert( it->get()->_public_key );
+              tmp_active.insert( it->get()->public_key_ );
           }
 
-          for( auto it = _peer_list.begin(); it != _peer_list.end(); it++ ){
-            if( it->get()->_state == ACTIVE && !tmp_active.count(it->get()->_public_key) )
-              _active_peer_list.emplace_back( *it );
+          for( auto it = peer_list_.begin(); it != peer_list_.end(); it++ ){
+            if( it->get()->state_ == ACTIVE && !tmp_active.count(it->get()->public_key_) )
+              active_peer_list_.emplace_back( *it );
           }
         }
       }

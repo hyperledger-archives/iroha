@@ -32,40 +32,40 @@ namespace peer_service {
     inline static const std::string defaultPubKey() { return ""; }
 
     struct Node {
-      std::string _ip;
-      std::string _public_key;
-      std::string _name;
-      double _trust;
-      State _state;
+      std::string ip_;
+      std::string public_key_;
+      std::string name_;
+      double trust_;
+      State state_;
 
       Node(std::string ip = defaultIP(),
            std::string public_key = defaultPubKey(),
            std::string name = defaultName(),
            double trust = 100.0,
            State state = PREPARE)
-          : _ip(ip),
-            _public_key(public_key),
-            _name(name),
-            _trust(trust),
-            _state(state) {}
+          : ip_(ip),
+            public_key_(public_key),
+            name_(name),
+            trust_(trust),
+            state_(state) {}
 
       Node(const Node &p) :
-        _ip(p._ip),
-        _public_key(p._public_key),
-        _name(p._name),
-        _trust(p._trust),
-        _state(p._state) {}
+        ip_(p.ip_),
+        public_key_(p.public_key_),
+        name_(p.name_),
+        trust_(p.trust_),
+        state_(p.state_) {}
 
 
-      bool isDefaultIP() const { return _ip == defaultIP(); }
-      bool isDefaultPubKey() const { return _public_key == defaultPubKey(); }
+      bool isDefaultIP() const { return ip_ == defaultIP(); }
+      bool isDefaultPubKey() const { return public_key_ == defaultPubKey(); }
     };
 
     using Nodes = std::vector<std::shared_ptr<Node>>;
 
 
-    Nodes _peer_list;
-    Nodes _active_peer_list;
+    Nodes peer_list_;
+    Nodes active_peer_list_;
 
 }  // namespace peer_service
 
