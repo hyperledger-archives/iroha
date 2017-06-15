@@ -17,7 +17,6 @@ include_directories(
 )
 
 add_subdirectory(schema)
-add_subdirectory(core)
-add_subdirectory(main)
+add_subdirectory(irohad)
 
 link_directories(${PROJECT_BINARY_DIR}/lib)
