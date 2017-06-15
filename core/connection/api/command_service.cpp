@@ -23,9 +23,9 @@ namespace connection {
 
         using namespace iroha::protocol;
 
-        std::function<void(const Block&)> dispatchToSumeragi;
+        std::function<void(const Transaction&)> dispatchToSumeragi;
 
-        void receive(std::function<void(const iroha::protocol::Block&)> const& func) {
+        void receive(std::function<void(const iroha::protocol::Transaction&)> const& func) {
             dispatchToSumeragi = func;
         }
 
@@ -37,7 +37,7 @@ namespace connection {
             (void) context;
 
             if(validator::stateless::validate(request)){
-                ordering::queue::append(request);
+                dispatchToSumeragi(request);
                 // TODO: Return tracking log number (hash)
                 *response = ToriiResponse();
             }else{

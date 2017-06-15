@@ -16,8 +16,11 @@ limitations under the License.
 #ifndef __IROHA_ORDERING_OBSERVER_HPP__
 #define __IROHA_ORDERING_OBSERVER_HPP__
 
+#include <block.pb.h>
+
 namespace ordering {
     namespace observer {
+        void initialize();
         void observe();
     }
 };

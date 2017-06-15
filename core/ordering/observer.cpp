@@ -17,9 +17,36 @@ limitations under the License.
 #include "quque.hpp"
 #include <common/timer.hpp>
 #include <peer_service/self_state.hpp>
+#include <peer_service/monitor.hpp>
+
+#include <connection/api/command_service.hpp>
+#include <connection/ordering/client.hpp>
+#include <connection/ordering/service.hpp>
 
 namespace ordering {
+
+
     namespace observer {
+
+      using Transaction = iroha::protocol::Transaction;
+
+      void initialize() {
+        connection::api::receive(
+            [](const Transaction &tx) {
+              // Verified State-less validate Tx
+              // TODO : [WIP] temp implement Send to Leader-group
+              for( std::string ip : ::peer_service::monitor::getActiveIpList() ) {
+                connection::ordering::send(ip,tx);
+              }
+            });
+
+        connection::ordering::receive(
+            [](const Transaction &tx) {
+              // Verified State-less validate Tx
+              queue::append(tx);
+            });
+      }
+
         // This is invoked in thread.
         void observe() {
             while (1) {
@@ -28,6 +55,7 @@ namespace ordering {
                       if (peer_service::self_state::isLeader()) {
                         auto block = queue::getBlock();
                         //   ToDo send leader node
+                        //connection::consensus::send(::peer_service::self_state::getIp(),block);
                       } else {
 
                         /* TODO send ping Dais Peers -> (if all timeout, this peer is altanative leader peer)

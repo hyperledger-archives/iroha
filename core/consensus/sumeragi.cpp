@@ -59,17 +59,6 @@ namespace consensus {
 
         void initialize() {
 
-            connection::api::receive(
-                [](const Block &block) {
-                    // send processTransaction(event) as a task to processing pool
-                    // this returns std::future<void> object
-                    // (std::future).get() method locks processing until result of
-                    // processTransaction will be available but processTransaction returns
-                    // void, so we don't have to call it and wait
-                    std::function<void()> &&task = std::bind(processBlock, block);
-                    pool.process(std::move(task));
-                });
-
             connection::consensus::receive(
                 [](const Block &block) {
                     // TODO: Judge committed

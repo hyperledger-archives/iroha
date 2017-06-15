@@ -28,8 +28,8 @@ const uint64_t DEFAULT_INTERVAL = 5000;
 namespace ordering{
     namespace queue{
 
-      uint64_t _pre_created; // time of previous created block time
-      uint64_t _interval = DEFAULT_INTERVAL;    // time of interval created block
+      uint64_t pre_created_; // time of previous created block time
+      uint64_t interval_ = DEFAULT_INTERVAL;    // time of interval created block
 
 
       using Transaction = iroha::protocol::Transaction;
@@ -53,21 +53,21 @@ namespace ordering{
         }
 
         void setCreated(){
-          _pre_created = ::common::datetime::unixtime();
+          pre_created_ = ::common::datetime::unixtime();
 
           // Temporary implement :: Until Implement Remove Function
           while( !tx_queue.empty() ) {
-            if( tx_queue.top().header().created_time() >= _pre_created )  break;
+            if( tx_queue.top().header().created_time() >= pre_created_ )  break;
             tx_queue.pop();
           }
         }
 
         void setInterval( uint64_t interval ){
-          _interval = interval;
+          interval_ = interval;
         }
 
         bool isCreateBlock(){
-          return _pre_created + _interval < ::common::datetime::unixtime();
+          return pre_created_ + interval_ < ::common::datetime::unixtime();
         }
 
         Block getBlock(){

@@ -20,11 +20,23 @@ namespace connection {
     namespace ordering {
 
         using iroha::protocol::QueueTransactionResponse;
+        using iroha::protocol::Transaction;
 
-        grpc::Status OrderingService::QueueTransaction(
+        std::function<void(const Transaction&)> dispatchToOrdering;
+
+        void receive(std::function<void(const Transaction&)> const& func) {
+          dispatchToOrdering = func;
+        }
+
+
+
+      grpc::Status OrderingService::QueueTransaction(
             grpc::ClientContext* context,
             const iroha::protocol::Transaction& request,
             QueueTransactionResponse* response) {
+
+            dispatchToOrdering(request);
+
             return grpc::Status::OK;
         }
 
