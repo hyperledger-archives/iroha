@@ -114,7 +114,7 @@ class CacheMap {
   size_t max_size() const noexcept { return max_cache_size_; }
   size_t size() const noexcept { return data_.size(); }
   bool empty() const noexcept { return data_.empty(); }
-  size_t count(const Key& k) const { return data_.count(k); }
+  size_t exists(const Key& k) const { return data_.count(k); }
   void clear() noexcept {
     data_.clear();
     max_cache_.clear();

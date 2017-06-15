@@ -41,7 +41,7 @@ namespace peer_service{
     };
 
     namespace detail{
-      bool append_temporary(uint64_t,const Block&);
+      bool append_temporary(uint64_t,const Block&&);
       SYNCHRO_RESULT append();
       void appending();
       void clearCache();
