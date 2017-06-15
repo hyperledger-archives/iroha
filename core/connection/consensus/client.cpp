@@ -15,22 +15,24 @@ limitations under the License.
 */
 
 #include <endpoint.grpc.pb.h>
-
+#include <grpc++/grpc++.h>
 #include "client.hpp"
 
 namespace connection {
     namespace consensus {
 
-        bool SumeragiClient::broadCast(const iroha::protocol::Block& block) {
-            return true;
+        using iroha::protocol::Block;
+        using iroha::protocol::VerifyResponse;
+
+        SumeragiClient::SumeragiClient(const std::string& ip, int port) {
+            auto channel = grpc::CreateChannel(ip + ":" + std::to_string(port), grpc::InsecureChannelCredentials());
+            stub_ = iroha::protocol::SumeragiService::NewStub(channel);
         }
 
-        bool SumeragiClient::unicast(const iroha::protocol::Block& block, size_t peerOrder) {
-            return true;
-        }
-
-        bool SumeragiClient::commit(const iroha::protocol::Block& block) {
-            return true;
+        VerifyResponse SumeragiClient::Verify(const Block& block) {
+            VerifyResponse response;
+            stub_->Verify(&context_, block, &response);
+            return response;
         }
 
     }  // namespace consensus

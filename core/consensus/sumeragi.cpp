@@ -47,7 +47,7 @@ namespace consensus {
         using iroha::protocol::Block;
         using iroha::protocol::Signature;
 
-        connection::consensus::SumeragiClient sender;
+        connection::consensus::SumeragiClient sender("0:0:0:0", 50051);
         logger::Logger log("sumeragi");
 
         static ThreadPool pool(ThreadPoolOptions{
@@ -78,6 +78,18 @@ namespace consensus {
                         pool.process(std::move(task));
                     }
                 });
+        }
+
+        bool unicast(const iroha::protocol::Block& block, size_t peerOrder) {
+
+        }
+
+        bool multicast(const iroha::protocol::Block& block) {
+
+        }
+
+        bool commit(const iroha::protocol::Block& block) {
+
         }
 
         // TODO: Append block to db and calc merkle root.
@@ -176,7 +188,7 @@ namespace consensus {
             auto newBlock = createSignedBlock(block, merkleRoot);
 
             if (isLeader(newBlock)) {
-                sender.broadCast(newBlock);
+                multicast(newBlock); // TODO : Peer service
                 setTimeOutCommit(newBlock);
                 return;
             }
@@ -189,11 +201,11 @@ namespace consensus {
                     log.error("getNextOrder() < 0 in processBlock");
                     return;
                 }
-                sender.unicast(newBlock, static_cast<size_t>(next));
+                unicast(newBlock, static_cast<size_t>(next));
                 setTimeOutCommit(newBlock);
             } else {
                 if (numValidSignatures == getNumValidatingPeers()) {
-                    sender.commit(newBlock);
+                    commit(newBlock);
                     setTimeOutCommit(newBlock);
                 }
             }
@@ -225,7 +237,7 @@ namespace consensus {
                 log.info("否認");
                 return;
             }
-            sender.unicast(block, static_cast<size_t>(next));
+            unicast(block, static_cast<size_t>(next));
             setTimeOutCommit(block);
         }
 
