@@ -22,8 +22,13 @@ namespace connection {
     namespace ordering {
 
         using iroha::protocol::QueueTransactionResponse;
+        using iroha::protocol::Transaction;
 
-        QueueTransactionResponse* OrderingService::QueueTransaction(
+        bool send(std::string ip, const Transaction& tx){
+          // TODO
+        }
+
+        QueueTransactionResponse* OrderingClient::QueueTransaction(
             const iroha::protocol::Transaction& request) {
             auto response = new QueueTransactionResponse();
             return response;

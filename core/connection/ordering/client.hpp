@@ -14,12 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#ifndef __IROHA_CONNECTION_ORDERING_CLIENT_HPP__
+#define __IROHA_CONNECTION_ORDERING_CLIENT_HPP__
+
 #include <block.pb.h>
 
 namespace connection {
     namespace ordering {
 
-        class OrderingService {
+        bool send(std::string ip, const iroha::protocol::Transaction& tx);
+        class OrderingClient {
         public:
             iroha::protocol::QueueTransactionResponse* QueueTransaction(
                 const iroha::protocol::Transaction& tx);
@@ -27,3 +31,5 @@ namespace connection {
 
     }  // namespace consensus
 }  // namespace connection
+
+#endif // __IROHA_CONNECTION_ORDERING_CLIENT_HPP__

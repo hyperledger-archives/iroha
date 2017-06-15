@@ -14,11 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+
+#ifndef __IROHA_CONNECTION_ORDERING_SERVICE_HPP__
+#define __IROHA_CONNECTION_ORDERING_SERVICE_HPP__
+
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 
 namespace connection {
     namespace ordering {
+
+        void receive(const std::function<void(const iroha::protocol::Transaction&)>&);
 
         class OrderingService final
             : public iroha::protocol::OrderingService::Service {
@@ -31,3 +37,5 @@ namespace connection {
 
     }  // namespace consensus
 }  // namespace connection
+
+#endif //__IROHA_CONNECTION_ORDERING_SERVICE_HPP__

@@ -23,10 +23,10 @@ namespace connection {
 
         using namespace iroha::protocol;
 
-        std::function<void(const Block&)> dispatchToSumeragi;
+        std::function<void(const Transaction&)> dispatchToOrdering;
 
-        void receive(std::function<void(const iroha::protocol::Block&)> const& func) {
-            dispatchToSumeragi = func;
+        void receive(std::function<void(const iroha::protocol::Transaction&)> const& func) {
+            dispatchToOrdering = func;
         }
 
         grpc::Status CommandService::Torii(grpc::ClientContext* context,
@@ -37,7 +37,7 @@ namespace connection {
             (void) context;
 
             if(validator::stateless::validate(request)){
-                ordering::queue::append(request);
+                dispatchToOrdering(request);
                 // TODO: Return tracking log number (hash)
                 *response = ToriiResponse();
             }else{

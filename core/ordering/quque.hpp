@@ -29,8 +29,8 @@ namespace ordering{
         bool append(const iroha::protocol::Transaction&);
         bool remove(const iroha::protocol::Transaction&);
 
-        void setCreated();  //  set _pre_created time;
-        void setInterval(); //  set _interval
+        void setCreated();  //  set pre_created_ time;
+        void setInterval(); //  set interval_
         bool isCreateBlock();
         iroha::protocol::Block getBlock();
 
