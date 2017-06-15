@@ -38,7 +38,6 @@ namespace peer_service{
         std::vector<std::string> getActiveIpList();
         int getActivePeerSize();
 
-
         bool isExistIP(const std::string &);
         bool isExistPublicKey(const std::string &);
 
