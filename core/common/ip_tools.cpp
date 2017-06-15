@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <utils/ip_tools.hpp>
-#include <utils/logger.hpp>
+#include <common/ip_tools.hpp>
+#include <logger/logger.hpp>
 
 #include <iostream>
 #include <regex>
@@ -86,7 +86,7 @@ std::pair<uint32_t, uint32_t> getIpRangeByNetmask(const std::string &netmask) {
 
   uint32_t cidrmask = (uint32_t)std::stoul(dividedIp[1]);
   if (cidrmask < 16) {
-    logger::warning("Networks larger than /16 are not supported for now");
+    logger::Logger("ip_tools").warning("Networks larger than /16 are not supported for now");
     return result;
   }
 
