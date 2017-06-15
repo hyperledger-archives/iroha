@@ -15,18 +15,6 @@
 add_library(connection
     # server_runner
     server_runner.cpp
-
-    # api
-    api/command_service.cpp
-    api/query_service.cpp
-
-    # consensus
-    consensus/client.cpp
-    consensus/service.cpp
-
-    # ordering
-    ordering/client.cpp
-    ordering/service.cpp
 )
 target_link_libraries(connection
     endpoint

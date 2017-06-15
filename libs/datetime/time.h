@@ -56,6 +56,26 @@ int64_t now64() {
   // d.count() * (...)  is seconds
   return d.count() * secs_in_period;
 }
+
+//TODO: get these to work
+std::string unixtime_str() {
+  std::time_t result = std::time(nullptr);
+  return std::to_string(result);
+}
+
+std::uint64_t unixtime() {
+  return static_cast<std::uint64_t>(std::time(nullptr));
+}
+
+std::string date_str() {
+  std::time_t result = std::time(nullptr);
+  return std::asctime(std::localtime(&result));
+}
+
+std::string unixtime2date(time_t unixtime) {
+  return std::asctime(std::localtime(&unixtime));
+}
+
 }
 }
 
