@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <connection/server_runner.hpp>
-#include <connection/api/command_service.hpp>
-#include <connection/api/query_service.hpp>
-#include <connection/consensus/service.hpp>
-#include <connection/ordering/service.hpp>
+#include <api/command_service.hpp>
+#include <api/query_service.hpp>
+#include <consensus/connection/service.hpp>
+#include <ordering/connection/service.hpp>
+
+#include "server_runner.hpp"
 
 int main(int argc,char* argv[]) {
 

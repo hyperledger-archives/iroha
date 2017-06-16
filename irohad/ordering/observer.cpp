@@ -15,13 +15,13 @@ limitations under the License.
 */
 #include "observer.hpp"
 #include "quque.hpp"
-#include <common/timer.hpp>
+#include <timer/timer.hpp>
 #include <peer_service/self_state.hpp>
 #include <peer_service/monitor.hpp>
 
-#include <connection/api/command_service.hpp>
-#include <connection/ordering/client.hpp>
-#include <connection/ordering/service.hpp>
+#include <api/command_service.hpp>
+#include <ordering/connection/client.hpp>
+#include <ordering/connection/service.hpp>
 
 namespace ordering {
 
