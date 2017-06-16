@@ -18,25 +18,13 @@ jobs:
             mkdir -p $IROHA_BUILD
       - run:
           name: cmake
-          command: |
-            cd $IROHA_BUILD
-            cmake $IROHA_HOME
+          command: cmake -H$IROHA_HOME -B$IROHA_BUILD
       - run:
           name: make
-          command: |
-            cd $IROHA_BUILD
-            make -j2
+          command: cmake --build $IROHA_BUILD -- -j$(nproc)
       - run:
           name: run tests
-          command: |
-            export TEST_FOLDER=$IROHA_BUILD/test_bin
-            total=0
-            for file in ${TEST_FOLDER}/*; do
-                # run test
-                ${file}
-                total=$((total + $?)) 
-            done
-            exit $total
+          command: cmake --build $IROHA_BUILD --target test
 
 #      - run:
 #          name: analyze source code with cppcheck and sonarqube

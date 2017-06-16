@@ -20,6 +20,7 @@
 
 //#include <ametsuchi/ametsuchi.h>
 
+
 namespace iroha {
 
 class Storage {
