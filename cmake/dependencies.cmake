@@ -258,3 +258,26 @@ set_target_properties(protobuf PROPERTIES
 if (NOT PROTOBUF_FOUND OR NOT PROTOBUF_PROTOC_EXECUTABLE)
   add_dependencies(protobuf google_protobuf protoc)
 endif ()
+
+
+################################
+#          rapidjson           #
+################################
+ExternalProject_Add(miloyip_rapidjson
+        GIT_REPOSITORY    "https://github.com/miloyip/rapidjson"
+        BUILD_COMMAND     "" # remove build step, header only lib
+        CONFIGURE_COMMAND "" # remove configure step
+        INSTALL_COMMAND   "" # remove install step
+        TEST_COMMAND      "" # remove test step
+        UPDATE_COMMAND    "" # remove update step
+        )
+ExternalProject_Get_Property(miloyip_rapidjson source_dir)
+set(miloyip_rapidjson_SOURCE_DIR "${source_dir}")
+
+# since it is header only, we changed STATIC to INTERFACE below
+add_library(rapidjson INTERFACE IMPORTED)
+file(MAKE_DIRECTORY ${rapidjson_SOURCE_DIR}/rapidjson)
+set_target_properties(rapidjson PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES ${rapidjson_SOURCE_DIR}/rapidjson
+        )
+add_dependencies(rapidjson miloyip_rapidjson)
