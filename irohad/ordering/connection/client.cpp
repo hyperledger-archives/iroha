@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <grpc++/grpc++.h>
 #include <endpoint.grpc.pb.h>
 
 #include "client.hpp"
@@ -28,11 +29,17 @@ namespace ordering {
           // TODO
         }
 
-        QueueTransactionResponse* OrderingClient::QueueTransaction(
-            const iroha::protocol::Transaction& request) {
-            auto response = new QueueTransactionResponse();
+        OrderingClient::OrderingClient(const std::string &ip, int port) {
+            auto channel = grpc::CreateChannel(ip + ":" + std::to_string(port), grpc::InsecureChannelCredentials());
+            stub_ = iroha::protocol::OrderingService::NewStub(channel);
+        }
+
+        QueueTransactionResponse OrderingClient::QueueTransaction(
+            const iroha::protocol::Transaction& tx) {
+            QueueTransactionResponse response;
+            stub_->QueueTransaction(&context_, tx, &response);
             return response;
         }
 
-    }  // namespace consensus
-}  // namespace connection
+    }  // namespace connection
+}  // namespace ordering
