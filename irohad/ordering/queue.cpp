@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "quque.hpp"
-#include <common/datetime.hpp>
+#include <datetime/time.hpp>
 
 // ToDo This is MVP. so we should discuss how to implements this.
 // In now, I use STL.
@@ -53,7 +53,7 @@ namespace ordering{
         }
 
         void setCreated(){
-          pre_created_ = ::common::datetime::unixtime();
+          pre_created_ = iroha::time::now64();
 
           // Temporary implement :: Until Implement Remove Function
           while( !tx_queue.empty() ) {
@@ -67,7 +67,7 @@ namespace ordering{
         }
 
         bool isCreateBlock(){
-          return pre_created_ + interval_ < ::common::datetime::unixtime();
+          return pre_created_ + interval_ < iroha::time::now64();
         }
 
         Block getBlock(){

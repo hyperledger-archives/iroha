@@ -31,7 +31,7 @@ using namespace std::chrono;
  * Returns current UNIX timestamp represented in 4 bytes.
  * Represents number of seconds since epoch.
  */
-int32_t now32() {
+uint32_t now32() {
   system_clock::time_point tp = high_resolution_clock::now();
   system_clock::duration d = tp.time_since_epoch();
 
@@ -39,14 +39,14 @@ int32_t now32() {
                         system_clock::period::den;
   // d.count()          in periods
   // d.count() * (...)  is seconds
-  return d.count() * secs_in_period;
+  return static_cast<uint32_t>(d.count() * secs_in_period);
 }
 
 /**
  * Returns current UNIX timestamp represented in 8 bytes.
  * Represents number of seconds since epoch.
  */
-int64_t now64() {
+uint64_t now64() {
   high_resolution_clock::time_point tp = high_resolution_clock::now();
   high_resolution_clock::duration d =
       duration_cast<microseconds>(tp.time_since_epoch());
@@ -54,26 +54,7 @@ int64_t now64() {
                         system_clock::period::den;
   // d.count()          in periods
   // d.count() * (...)  is seconds
-  return d.count() * secs_in_period;
-}
-
-//TODO: get these to work
-std::string unixtime_str() {
-  std::time_t result = std::time(nullptr);
-  return std::to_string(result);
-}
-
-std::uint64_t unixtime() {
-  return static_cast<std::uint64_t>(std::time(nullptr));
-}
-
-std::string date_str() {
-  std::time_t result = std::time(nullptr);
-  return std::asctime(std::localtime(&result));
-}
-
-std::string unixtime2date(time_t unixtime) {
-  return std::asctime(std::localtime(&unixtime));
+  return static_cast<uint64_t>(d.count() * secs_in_period);
 }
 
 }
