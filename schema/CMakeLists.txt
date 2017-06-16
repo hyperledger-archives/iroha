@@ -4,9 +4,9 @@
 
 compile_proto_to_cpp(asset.proto)
 compile_proto_to_cpp(block.proto)
-compile_proto_to_cpp(commands.proto)
 compile_proto_to_cpp(primitive.proto)
-compile_proto_to_grpc_cpp(endpoint.proto)
+compile_proto_to_cpp(commands.proto)
+#compile_proto_to_grpc_cpp(endpoint.proto)
 
-include_directories(${CMAKE_SOURCE_DIR}/proto)
-link_directories(${CMAKE_SOURCE_DIR}/proto)
+include_directories(${CMAKE_SOURCE_DIR}/schema)
+link_directories(${CMAKE_SOURCE_DIR}/schema)
