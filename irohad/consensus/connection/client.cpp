@@ -1,12 +1,9 @@
 /*
 Copyright 2017 Soramitsu Co., Ltd.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,24 +11,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <endpoint.pb.h>
 #include <endpoint.grpc.pb.h>
-
+#include <grpc++/grpc++.h>
 #include "client.hpp"
 
 namespace connection {
-    namespace consensus {
+  namespace consensus {
 
-        bool SumeragiClient::broadCast(const iroha::protocol::Block& block) {
-            return true;
-        }
+    using iroha::protocol::Block;
+    using iroha::protocol::VerifyResponse;
 
-        bool SumeragiClient::unicast(const iroha::protocol::Block& block, size_t peerOrder) {
-            return true;
-        }
+    SumeragiClient::SumeragiClient(const std::string& ip, int port) {
+      auto channel = grpc::CreateChannel(ip + ":" + std::to_string(port), grpc::InsecureChannelCredentials());
+      stub_ = iroha::protocol::SumeragiService::NewStub(channel);
+    }
 
-        bool SumeragiClient::commit(const iroha::protocol::Block& block) {
-            return true;
-        }
+    VerifyResponse SumeragiClient::Verify(const Block& block) {
+      VerifyResponse response;
+      stub_->Verify(&context_, block, &response);
+      return response;
+    }
 
-    }  // namespace consensus
+  }  // namespace consensus
 }  // namespace connection
