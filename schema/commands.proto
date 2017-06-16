@@ -1,0 +1,152 @@
+syntax = "proto3";
+package iroha.protocol;
+import "asset.proto";
+import "primitive.proto";
+
+// AssetCommand
+message Add{
+  string to_account = 1;
+  Asset asset       = 2;
+}
+message Subtract{
+  string to_account = 1;
+  Asset asset       = 2;
+}
+message Transfer{
+  string sender    = 1;
+  string receiver  = 2;
+  Asset asset      = 3;
+}
+// ToDo
+message Exchange{}
+
+message AssetSetPermission{
+  string domain_id   = 1;
+  string account_id  = 2;
+  bytes  permissions = 3;
+}
+
+// AccountCommand
+message SignatoriesRegister{
+  string to_account = 1;
+  repeated Signature signatories = 2;
+}
+message SignatoriesUnregister{
+  string from_account = 1;
+  repeated Signature signatories = 2;
+}
+message SetQuorum{
+  string target_account = 1;
+  uint32 quorum = 2;
+}
+message AccountGrant{
+  string to_account = 1;
+}
+message AccountDeprive{
+  string from_account = 1;
+}
+
+
+// DomainCommand
+message AssetCreate{
+  string to_domain = 1;
+  Asset asset = 2;
+}
+message DomainCreate{
+  string domain = 1;
+  string root_account = 2;
+}
+
+message AccountCreate{
+  string username = 1;
+  repeated Signature signatories = 2;
+  uint32 quorum = 3;
+  string domain = 4;
+}
+message AccountSuspend{
+  string target_account = 1;
+}
+message AccountRegister{
+  string target_account = 1;
+  string to_domain = 2;
+  bytes  permissions = 3;
+}
+message AccountUnregister{
+  string target_account = 1;
+}
+
+message DomainSetPermission{
+  string domain_id   = 1;
+  string account_id  = 2;
+  bytes  permissions = 3;
+}
+message DomainSetNotify{
+  string target_address = 1;
+}
+
+// ToDo
+// PeerCommand
+message PeerAdd{}
+message PeerRemove{}
+message PeerSetTrust{}
+message PeerChangeTrust{}
+message PeerSetState{}
+
+
+
+
+message Command {
+  // AssetCommand
+  message AssetCommand{
+    oneof asset_command {
+      Add         add      = 1;
+      Subtract    subtract = 2;
+      Transfer    transfer = 3;
+      Exchange    exchange = 4;
+      AssetSetPermission asset_set_permission = 5;
+    }
+  }
+  // AccountCommand
+  message AccountCommand {
+    oneof account_command {
+      SignatoriesRegister    signatories_register   = 1;
+      SignatoriesUnregister  signatories_unregister = 2;
+      SetQuorum              set_quorum             = 3;
+      AccountGrant           account_grant          = 4;
+      AccountDeprive         account_deprive        = 5;
+    }
+  }
+  // DomainCommand
+  message DomainCommand {
+    oneof domain_command {
+      // Add asset as concept(type?) to domain
+      // If add asset as wallet to user, use AssetCommand::Add.
+      AssetCreate           asset_create         = 1;
+      DomainCreate          domain_create        = 2;
+
+      AccountCreate         account_create       = 3;
+      AccountSuspend        account_delete       = 4;
+      AccountRegister       account_register     = 5;
+      AccountUnregister     account_unregister   = 6;
+
+      DomainSetPermission   domain_set_permission = 7;
+      DomainSetNotify       domain_set_notify     = 8;
+    }
+  }
+  // PeerCommand
+  message PeerCommand {
+    oneof peer_command {
+      PeerAdd               peer_add              = 1;
+      PeerRemove            peer_remove           = 2;
+      PeerSetTrust          peer_set_trust        = 3;
+      PeerChangeTrust       peer_change_trust     = 4;
+      PeerSetState          peer_set_state        = 5;
+    }
+  }
+  oneof command {
+    AssetCommand    asset_command   = 1;
+    AccountCommand  account_command = 2;
+    DomainCommand   domain_command  = 3;
+    PeerCommand     peer_command    = 4;
+  }
+}
