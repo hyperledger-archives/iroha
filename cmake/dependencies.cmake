@@ -221,3 +221,40 @@ set_target_properties(fuzzer PROPERTIES
   IMPORTED_LOCATION ${LIBFUZZER_LIBRARIES}
   IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
   )
+
+################################
+#           protobuf           #
+################################
+find_package(Protobuf 3.0.0)
+if (NOT PROTOBUF_FOUND OR NOT PROTOBUF_PROTOC_EXECUTABLE)
+  ExternalProject_Add(google_protobuf
+          URL https://github.com/google/protobuf/releases/download/v3.0.0/protobuf-cpp-3.0.0.tar.gz
+          CONFIGURE_COMMAND ./configure
+          BUILD_IN_SOURCE 1
+          BUILD_COMMAND $(MAKE)
+          INSTALL_COMMAND "" # remove install step
+          TEST_COMMAND "" # remove test step
+          UPDATE_COMMAND "" # remove update step
+          )
+  ExternalProject_Get_Property(google_protobuf source_dir)
+  set(protobuf_INCLUDE_DIRS ${source_dir}/src)
+  set(protobuf_LIBRARIES ${source_dir}/src/.libs/libprotobuf.a)
+  set(protoc_EXECUTABLE ${source_dir}/src/protoc)
+  file(MAKE_DIRECTORY ${protobuf_INCLUDE_DIRS})
+  add_custom_target(protoc DEPENDS google_protobuf)
+else ()
+  set(protobuf_INCLUDE_DIRS ${PROTOBUF_INCLUDE_DIRS})
+  set(protobuf_LIBRARIES ${PROTOBUF_LIBRARY})
+  set(protoc_EXECUTABLE ${PROTOBUF_PROTOC_EXECUTABLE})
+  add_custom_target(protoc)
+endif ()
+
+add_library(protobuf STATIC IMPORTED)
+set_target_properties(protobuf PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES ${protobuf_INCLUDE_DIRS}
+        IMPORTED_LOCATION ${protobuf_LIBRARIES}
+        )
+
+if (NOT PROTOBUF_FOUND OR NOT PROTOBUF_PROTOC_EXECUTABLE)
+  add_dependencies(protobuf google_protobuf protoc)
+endif ()
