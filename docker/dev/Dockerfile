@@ -36,21 +36,6 @@ RUN mkdir -p ${IROHA_RELEASE}; \
     mkdir -p ${IROHA_BUILD}; \
     mkdir -p ${IROHA_HOME}
 
-# install protobuf 3.0.0
-RUN cd /tmp; \
-    git clone -b v3.0.0 https://github.com/google/protobuf.git; \
-    cd protobuf; \
-    (git cherry-pick 1760feb621a913189b90fe8595fffb74bce84598; echo Force continue) && \
-    ./autogen.sh && \
-    ./configure --prefix=/usr && \
-    make -j4 && make install
-
-# install grpc
-RUN cd /tmp; \
-    git clone --recursive -b $(curl -L http://grpc.io/release) https://github.com/grpc/grpc; \
-    cd grpc; \
-    make -j4 && make install
-
 # install sonar-scanner
 RUN cd /tmp; \
     wget -O /tmp/sonar.zip https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.0.1.733-linux.zip; \
