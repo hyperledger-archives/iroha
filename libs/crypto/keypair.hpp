@@ -209,6 +209,26 @@ class Keypair {
 
   bool has_private;
 };
+
+
+inline Keypair generate_keypair() {
+
+  constexpr size_t SEEDLEN = 32;
+
+  Keypair::pubkey_t pub;
+  Keypair::privkey_t pri;
+  std::array<uint8_t, SEEDLEN> seed;
+
+  // ed25519_create_seed may return 1 in case if it can not open /dev/urandom
+  if (ed25519_create_seed(seed.data()) == 1) {
+    throw std::runtime_error("can not get seed");
+  }
+
+  ed25519_create_keypair(pub.data(), pri.data(), seed.data());
+
+  return Keypair(pub, pri);
+}
+
 }
 
 #endif  // IROHA_KEYPAIR_H
