@@ -17,8 +17,6 @@ message(STATUS "-DTESTING=${TESTING}")
 message(STATUS "-DBENCHMARKING=${BENCHMARKING}")
 message(STATUS "-DFUZZING=${FUZZING}")
 
-set(IROHA_SCHEMA_DIR "${PROJECT_SOURCE_DIR}/schema")
-
 SET(IROHA_SCHEMA_DIR "${PROJECT_SOURCE_DIR}/schema")
 include_directories(
   ${PROJECT_SOURCE_DIR}/core
@@ -26,6 +24,8 @@ include_directories(
   ${IROHA_SCHEMA_DIR}
 )
 
+include(cmake/dependencies.cmake)
+include(cmake/functions.cmake)
 add_subdirectory(schema)
 add_subdirectory(irohad)
 
