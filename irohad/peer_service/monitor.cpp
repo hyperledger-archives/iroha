@@ -17,7 +17,6 @@ limitations under the License.
 #include <peer_service/monitor.hpp>
 #include <peer_service/self_state.hpp>
 
-
 #include <algorithm>
 
 namespace peer_service{

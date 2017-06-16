@@ -18,8 +18,8 @@ limitations under the License.
 
 #include "client.hpp"
 
-namespace connection {
-    namespace ordering {
+namespace ordering {
+    namespace connection {
 
         using iroha::protocol::QueueTransactionResponse;
         using iroha::protocol::Transaction;

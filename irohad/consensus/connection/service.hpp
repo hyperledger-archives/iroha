@@ -20,8 +20,8 @@ limitations under the License.
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 
-namespace connection {
-    namespace consensus {
+namespace consensus {
+    namespace connection {
 
         void receive(const std::function<void(const iroha::protocol::Block&)>&);
 
@@ -34,7 +34,7 @@ namespace connection {
                 iroha::protocol::VerifyResponse* response);
         };
 
-    }  // namespace consensus
-}  // namespace connection
+    }  // namespace connection
+}  // namespace consensus
 
 #endif
