@@ -272,14 +272,14 @@ ExternalProject_Add(miloyip_rapidjson
         UPDATE_COMMAND    "" # remove update step
         )
 ExternalProject_Get_Property(miloyip_rapidjson source_dir)
-set(rapidjson_SOURCE_DIR "${source_dir}/include")
+set(rapidjson_INCLUDE_DIR "${source_dir}/include")
 
-# since it is header only, we changed STATIC to INTERFACE below
 add_library(rapidjson INTERFACE IMPORTED)
-file(MAKE_DIRECTORY ${rapidjson_SOURCE_DIR}/rapidjson)
+file(MAKE_DIRECTORY ${rapidjson_INCLUDE_DIR})
 set_target_properties(rapidjson PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES ${rapidjson_SOURCE_DIR}
+        INTERFACE_INCLUDE_DIRECTORIES ${rapidjson_INCLUDE_DIR}
         )
+
 add_dependencies(rapidjson miloyip_rapidjson)
 
 #############################

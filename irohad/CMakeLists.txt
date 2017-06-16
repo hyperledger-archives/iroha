@@ -13,10 +13,11 @@
 # limitations under the License.
 
 add_subdirectory(ametsuchi)
+add_subdirectory(api)
 add_subdirectory(common)
-add_subdirectory(connection)
 add_subdirectory(consensus)
 add_subdirectory(logger)
+add_subdirectory(main)
 add_subdirectory(ordering)
-add_subdirectory(validation)
 add_subdirectory(peer_service)
+add_subdirectory(validation)

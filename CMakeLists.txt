@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.5)
+cmake_minimum_required(VERSION 3.0)
 PROJECT(iroha C CXX)
 
 SET(CMAKE_CXX_FLAGS "-std=c++1y -Wall -fPIC")
