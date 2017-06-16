@@ -6,7 +6,11 @@ compile_proto_to_cpp(asset.proto)
 compile_proto_to_cpp(block.proto)
 compile_proto_to_cpp(primitive.proto)
 compile_proto_to_cpp(commands.proto)
-#compile_proto_to_grpc_cpp(endpoint.proto)
+compile_proto_to_grpc_cpp(endpoint.proto)
+
+add_dependencies(commandsproto_h assetproto_h primitiveproto_h)
+add_dependencies(blockproto_h commandsproto_h)
+add_dependencies(endpointproto_h blockproto_h)
 
 add_library(schema
     asset.pb.cc
@@ -23,9 +27,8 @@ add_library(endpoint
     endpoint.grpc.pb.cc
 )
 target_link_libraries(endpoint
-    grpc++
+    protobuf
     grpc
-    gpr
-    pthread
-    dl
+    grpc++
+    grpc++_reflection
 )
