@@ -16,15 +16,14 @@ limitations under the License.
 #include "self_state.hpp"
 #include <peer_service/monitor.hpp>
 
-#include <common/datetime.hpp>
+#include <datetime/time.hpp>
 
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include <crypto/base64.hpp>
-#include <crypto/signature.hpp>
+#include <crypto/crypto.hpp>
 
 namespace peer_service {
     namespace self_state {
@@ -40,9 +39,9 @@ namespace peer_service {
 
         void initializeMyKey() {
           if (public_key_.empty() || private_key_.empty()) {
-            crypto::signature::KeyPair keyPair = crypto::signature::generateKeyPair();
-            public_key_ = crypto::base64::encode(keyPair.publicKey);
-            private_key_ = crypto::base64::encode(keyPair.privateKey);
+            iroha::Keypair keypair = iroha::generate_keypair();
+            public_key_ = keypair.pub_base64();
+            private_key_ = *keypair.priv_base64();
           }
         }
 
@@ -95,7 +94,7 @@ namespace peer_service {
 
         void activate() {
           state_ = ACTIVE;
-          active_time_ = ::common::datetime::unixtime();
+          active_time_ = iroha::time::now64();
         }
         void stop() { state_ = PREPARE; }
     };

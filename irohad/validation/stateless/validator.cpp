@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "validator.hpp"
-#include <common/datetime.hpp>
+#include <datetime/time.hpp>
 
 namespace validator {
   namespace stateless {
     using Transaction = iroha::protocol::Transaction;
     bool validate(const Transaction& tx) {
       return
-        tx.header().created_time() <= common::datetime::unixtime() && // 過去に作られたTxか // TODO: consider when to ignore transactions for being too old
+        tx.header().created_time() <= iroha::time::now64() && // 過去に作られたTxか // TODO: consider when to ignore transactions for being too old
         tx.header().signature_size() != 0                          && // 電子署名は含まれているか
         // TODO: calculate hash
         // TODO: verify the signature for each signature in the header

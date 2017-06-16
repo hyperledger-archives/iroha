@@ -24,8 +24,7 @@ target_link_libraries(peer_service
     timer
     exception
     logger
-    hash
-    signature
+    crypto
     schema
     ametsuchi
     datetime

@@ -1,0 +1,7 @@
+syntax = "proto3";
+package iroha.protocol; // I think protocol is better, by mizuki
+
+message Signature {
+   bytes pubkey    = 1;
+   bytes signature = 2;
+}

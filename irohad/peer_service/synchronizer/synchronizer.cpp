@@ -21,12 +21,11 @@ limitations under the License.
 #include <peer_service/synchronizer/synchronizer.hpp>
 #include <peer_service/monitor.hpp>
 #include <peer_service/self_state.hpp>
+#include <datetime/time.hpp>
+#include <map_queue/map_queue.hpp>
+#include <timer/timer.hpp>
 
-#include <common/cache_map.hpp>
-#include <common/datetime.hpp>
-#include <common/timer.hpp>
-
-#include <ametsuchi/ametsuchi.hpp>
+//#include <ametsuchi/ametsuchi.hpp>
 
 
 namespace peer_service{
@@ -61,8 +60,9 @@ namespace peer_service{
         {
           ::peer_service::self_state::activate();
 
-          ::ametsuchi::append(block);
-          ::ametsuchi::commit();
+          // TODO ametsuchi
+//          ::ametsuchi::append(block);
+//          ::ametsuchi::commit();
 
           detail::clearCache();
         }
@@ -74,7 +74,7 @@ namespace peer_service{
 
     namespace detail{
 
-      structure::CacheMap<uint64_t,const Block*> temp_block_;
+      structure::MapQueue<uint64_t,const Block*> temp_block_;
       uint64_t current_;
       uint64_t upd_time_;
 
@@ -86,14 +86,15 @@ namespace peer_service{
       SYNCHRO_RESULT append() {
         while( temp_block_.count(current_) ) {
           auto &ap_tx = *temp_block_[current_];
-          ametsuchi::append(ap_tx);
+          // TODO ametsuchi
+//          ametsuchi::append(ap_tx);
           current_++;
-          upd_time_ = common::datetime::unixtime();
+          upd_time_ = iroha::time::now64();
         }
 
         if( !temp_block_.empty() && upd_time_ < (uint64_t)-1 ){ // if started downlaoding
           // if elapsed that tiem is updated more than 2 sec and cache has more than index tx.
-          if( common::datetime::unixtime() - upd_time_ > 2 && temp_block_.getMaxKey() > current_ )
+          if( iroha::time::now64() - upd_time_ > 2 && temp_block_.getMaxKey() > current_ )
             return SYNCHRO_RESULT::APPEND_ERROR;
         }
 
