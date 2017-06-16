@@ -272,12 +272,58 @@ ExternalProject_Add(miloyip_rapidjson
         UPDATE_COMMAND    "" # remove update step
         )
 ExternalProject_Get_Property(miloyip_rapidjson source_dir)
-set(miloyip_rapidjson_SOURCE_DIR "${source_dir}")
+set(rapidjson_SOURCE_DIR "${source_dir}/include")
 
 # since it is header only, we changed STATIC to INTERFACE below
 add_library(rapidjson INTERFACE IMPORTED)
 file(MAKE_DIRECTORY ${rapidjson_SOURCE_DIR}/rapidjson)
 set_target_properties(rapidjson PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES ${rapidjson_SOURCE_DIR}/rapidjson
+        INTERFACE_INCLUDE_DIRECTORIES ${rapidjson_SOURCE_DIR}
         )
 add_dependencies(rapidjson miloyip_rapidjson)
+
+#############################
+#         optional          #
+#############################
+ExternalProject_Add(martinmoene_optional
+        GIT_REPOSITORY "https://github.com/martinmoene/optional-lite"
+        GIT_TAG "v2.0.0"
+        CONFIGURE_COMMAND "" # remove configure step
+        BUILD_COMMAND "" # remove build step
+        INSTALL_COMMAND "" # remove install step
+        TEST_COMMAND "" # remove test step
+        UPDATE_COMMAND "" # remove update step
+        )
+ExternalProject_Get_Property(martinmoene_optional source_dir)
+set(optional_INCLUDE_DIRS ${source_dir}/include)
+file(MAKE_DIRECTORY ${optional_INCLUDE_DIRS})
+
+add_library(optional INTERFACE IMPORTED)
+set_target_properties(optional PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES ${optional_INCLUDE_DIRS}
+        )
+
+add_dependencies(optional martinmoene_optional)
+
+########################
+#         any          #
+########################
+ExternalProject_Add(martinmoene_any
+        GIT_REPOSITORY "https://github.com/martinmoene/any-lite"
+        GIT_TAG "v0.0.0"
+        CONFIGURE_COMMAND "" # remove configure step
+        BUILD_COMMAND "" # remove build step
+        INSTALL_COMMAND "" # remove install step
+        TEST_COMMAND "" # remove test step
+        UPDATE_COMMAND "" # remove update step
+        )
+ExternalProject_Get_Property(martinmoene_any source_dir)
+set(any_INCLUDE_DIRS ${source_dir}/include)
+file(MAKE_DIRECTORY ${any_INCLUDE_DIRS})
+
+add_library(any INTERFACE IMPORTED)
+set_target_properties(any PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES ${any_INCLUDE_DIRS}
+        )
+
+add_dependencies(any martinmoene_any)
