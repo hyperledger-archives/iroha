@@ -56,7 +56,6 @@ uint64_t now64() {
   // d.count() * (...)  is seconds
   return static_cast<uint64_t>(d.count() * secs_in_period);
 }
-
 }
 }
 
