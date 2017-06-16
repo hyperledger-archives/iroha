@@ -23,9 +23,7 @@ limitations under the License.
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include <crypto/common.hpp>
-#include <crypto/base64.hpp>
-#include <crypto/signature.hpp>
+#include <crypto/crypto.hpp>
 
 namespace peer_service {
     namespace self_state {
@@ -41,9 +39,9 @@ namespace peer_service {
 
         void initializeMyKey() {
           if (public_key_.empty() || private_key_.empty()) {
-            iroha::signature::KeyPair keyPair = iroha::signature::generateKeyPair();
-            public_key_ = base64_encode(keyPair.publicKey.data(), iroha::PUBLEN);
-            private_key_ = base64_encode(keyPair.privateKey.data(), iroha::PRIVLEN);
+            iroha::Keypair keypair = iroha::generate_keypair();
+            public_key_ = keypair.pub_base64();
+            private_key_ = *keypair.priv_base64();
           }
         }
 
