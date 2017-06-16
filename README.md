@@ -2,6 +2,7 @@
 [![Join the chat at https://gitter.im/hyperledger-iroha/Lobby](https://badges.gitter.im/hyperledger-iroha/Lobby.svg)](https://gitter.im/hyperledger-iroha/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [![CircleCI](https://circleci.com/gh/hyperledger/iroha/tree/master.svg?style=svg)](https://circleci.com/gh/hyperledger/iroha/tree/master)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/960/badge)](https://bestpractices.coreinfrastructure.org/projects/960)
 
 Please see the [**wiki**](https://github.com/hyperledger/iroha/wiki) for information about developing for Iroha and explanation of our algorithms.
 
@@ -9,6 +10,10 @@ Please see the [**wiki**](https://github.com/hyperledger/iroha/wiki) for informa
 
 ![alt tag](Iroha_3_sm.png)
 
+
+# Current Status
+
+Currently Hyperledger Iroha is in development, with an estimate v1.0 beta release in a few weeks. The current version is undergoing significant changes and it is likely there will be problems with use! If you have any issues or questions, please [open an issue](https://github.com/hyperledger/iroha/issues).
 
 # Pull Requests
 Please include a developer certificate with pull requests: https://www.clahub.com/agreements/hyperledger/iroha
