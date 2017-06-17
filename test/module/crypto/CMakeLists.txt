@@ -1,11 +1,9 @@
 # Hash Test
 add_executable(hash_test
-        hash_test.cpp
+  hash_test.cpp
 )
 target_link_libraries(hash_test
-  hash
   crypto
-  hash
   ssl
   gtest
 )
@@ -14,13 +12,11 @@ add_test(
   COMMAND $<TARGET_FILE:hash_test>
 )
 
-
 # Base64 Test
 add_executable(base64_test base64_test.cpp)
-target_link_libraries(base64_test 
-  base64
-  ssl
+target_link_libraries(base64_test
   crypto
+  ssl
   gtest
 )
 add_test(
@@ -28,17 +24,24 @@ add_test(
   COMMAND $<TARGET_FILE:base64_test>
 )
 
-
 # Singature Test
 add_executable(signature_test signature_test.cpp)
-target_link_libraries(signature_test 
-  signature
-  base64
-  hash
-  ed25519
+target_link_libraries(signature_test
+  crypto
   gtest
 )
 add_test(
   NAME signature_test
   COMMAND $<TARGET_FILE:signature_test>
+)
+
+# Crypto Test
+add_executable(crypto_test crypto_test.cpp)
+target_link_libraries(crypto_test
+  crypto
+  gtest
+)
+add_test(
+  NAME crypto_test
+  COMMAND $<TARGET_FILE:crypto_test>
 )

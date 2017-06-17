@@ -47,9 +47,6 @@ inline int sha3_512(unsigned char *output, unsigned char *input,
   return SHA3_512(output, input, in_size);
 }
 
-
-/*
- * Does not compile. Redefinition of sha3_224. Why?
 nonstd::optional<std::vector<uint8_t>> sha3_224(uint8_t *input,
                                                 size_t in_size) {
   std::vector<uint8_t> out(224 / 8);
@@ -80,7 +77,35 @@ nonstd::optional<std::vector<uint8_t>> sha3_512(uint8_t *input,
   int res = SHA3_512(out.data(), input, in_size);
   return !res ? nonstd::optional<std::vector<uint8_t>>(out) : nonstd::nullopt;
 }
- */
+
+std::string sha3_256_hex(const std::string& message) {
+  const int sha256_size = 256 / 8;
+  unsigned char digest[sha256_size];
+
+  SHA3_256(digest, reinterpret_cast<const unsigned char *>(message.c_str()),
+           message.size());
+
+  return digest_to_hexdigest(digest, sha256_size);
+}
+
+std::string sha3_256_hex(const std::vector<uint8_t>& message) {
+  const int sha256_size = 256 / 8;
+  unsigned char digest[sha256_size];
+
+  SHA3_256(digest, message.data(), message.size());
+
+  return digest_to_hexdigest(digest, sha256_size);
+}
+
+std::string sha3_512_hex(const std::string& message) {
+  const int sha512_size = 512 / 8;
+  unsigned char digest[sha512_size];
+
+  SHA3_512(digest, reinterpret_cast<const unsigned char *>(message.c_str()),
+           message.size());
+
+  return digest_to_hexdigest(digest, sha512_size);
+}
 
 }  // namespace iroha
 

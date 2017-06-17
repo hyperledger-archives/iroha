@@ -91,10 +91,10 @@ class Keypair {
   }
 
   /**
- * Build a keypair with public and private key in binary format (string)
- * @param pub
- * @param priv
- */
+   * Build a keypair with public and private key in binary format (string)
+   * @param pub
+   * @param priv
+   */
   explicit Keypair(const std::string &pub, const std::string &priv)
       : has_private(true) {
     std::copy(&pub[0], &pub[PUBLEN], &pubkey[0]);
@@ -109,7 +109,6 @@ class Keypair {
     std::copy(&pub[0], &pub[PUBLEN], &pubkey[0]);
   }
 
-
   /**
    * Build a keypair with only public key in binary format
    * Useful for signature verification.
@@ -118,6 +117,28 @@ class Keypair {
   explicit Keypair(const pubkey_t &pub)
       : pubkey(std::move(pub)), has_private(false) {}
 
+  /**
+   * Build a keypair with public and private key in base64 encoded format (string)
+   * @param pub
+   * @param priv
+   */
+  struct tag_base64_encoded {};
+  explicit Keypair(const std::string &pub_base64, const std::string &priv_base64, tag_base64_encoded)
+    : has_private(true) {
+    auto pub = base64_decode(pub_base64);
+    auto priv = base64_decode(priv_base64);
+    std::copy(&pub[0], &pub[PUBLEN], &pubkey[0]);
+    std::copy(&priv[0], &priv[PUBLEN], &privkey[0]);
+  }
+
+  /**
+    * Build a keypair with public key in base64 encoded format (string)
+    * @param pub
+    */
+  explicit Keypair(const std::string &pub_base64, tag_base64_encoded) : has_private(false) {
+    auto pub = base64_decode(pub_base64);
+    std::copy(&pub[0], &pub[PUBLEN], &pubkey[0]);
+  }
 
   /**
    * Sign the message
@@ -158,6 +179,17 @@ class Keypair {
    */
   bool verify(const std::vector<uint8_t> &msg, const signature_t &sig) {
     return 1 == ed25519_verify(&sig[0], msg.data(), msg.size(), &pubkey[0]);
+  }
+
+  /**
+   * Verify the signature against given message.
+   * @param msg
+   * @param sig
+   * @return true if signature is ok, false otherwise
+   */
+  bool verify(const std::string &msg, const signature_t &sig) {
+    return 1 == ed25519_verify(
+      &sig[0], reinterpret_cast<const uint8_t*>(msg.c_str()), msg.size(), &pubkey[0]);
   }
 
   /**
@@ -202,6 +234,23 @@ class Keypair {
                        : nonstd::nullopt;
   }
 
+  static Keypair generate_keypair() {
+
+    constexpr size_t SEEDLEN = 32;
+
+    Keypair::pubkey_t pub;
+    Keypair::privkey_t pri;
+    std::array<uint8_t, SEEDLEN> seed;
+
+    // ed25519_create_seed may return 1 in case if it can not open /dev/urandom
+    if (ed25519_create_seed(seed.data()) == 1) {
+      throw std::runtime_error("can not get seed");
+    }
+
+    ed25519_create_keypair(pub.data(), pri.data(), seed.data());
+
+    return Keypair(pub, pri);
+  }
 
  private:
   pubkey_t pubkey;
@@ -209,25 +258,6 @@ class Keypair {
 
   bool has_private;
 };
-
-
-inline Keypair generate_keypair() {
-
-  constexpr size_t SEEDLEN = 32;
-
-  Keypair::pubkey_t pub;
-  Keypair::privkey_t pri;
-  std::array<uint8_t, SEEDLEN> seed;
-
-  // ed25519_create_seed may return 1 in case if it can not open /dev/urandom
-  if (ed25519_create_seed(seed.data()) == 1) {
-    throw std::runtime_error("can not get seed");
-  }
-
-  ed25519_create_keypair(pub.data(), pri.data(), seed.data());
-
-  return Keypair(pub, pri);
-}
 
 }
 
