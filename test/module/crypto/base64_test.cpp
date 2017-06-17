@@ -39,10 +39,10 @@ std::vector<T> pointer2Vector(T* array, size_t length) {
 }
 
 void test_text_equals_original_text(unsigned char* text, int text_length) {
-  ASSERT_STREQ((char*)text, (char*)(vector2UnsignedCharPointer(
-                                        base64::decode(base64::encode(
-                                            pointer2Vector(text, text_length))))
-                                        .get()));
+  auto v = pointer2Vector(text, (size_t)text_length);
+  auto encoded = base64_encode(v.data(), (unsigned int)v.size());
+  auto decoded = base64_decode(encoded);
+  ASSERT_STREQ((char*)text, (char*)(vector2UnsignedCharPointer(decoded).get()));
 }
 
 TEST(Base64, EncodeAndDecodeNormalText) {
