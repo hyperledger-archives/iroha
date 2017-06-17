@@ -14,43 +14,43 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include <crypto/base64.hpp>
-#include <crypto/signature.hpp>
+#include <crypto/crypto.hpp>
 
 #include <gtest/gtest.h>
 
 #include <string>
 
+using iroha::Keypair;
+
 TEST(Signature, E) {
-  signature::KeyPair keyPair = signature::generateKeyPair();
-  std::string nonce =
+  Keypair keypair = Keypair::generate_keypair();
+  std::string nonce_ =
       "c0a5cca43b8aa79eb50e3464bc839dd6fd414fae0ddf928ca23dcebf8a8b8dd0";
+  std::vector<uint8_t> nonce(nonce_.begin(), nonce_.end());
+  auto signature = keypair.sign(nonce);
 
-  std::string signature =
-      signature::sign(nonce, base64::encode(keyPair.publicKey),
-                      base64::encode(keyPair.privateKey));
-
-  ASSERT_TRUE(
-      signature::verify(signature, nonce, base64::encode(keyPair.publicKey)));
+  ASSERT_TRUE(keypair.verify(nonce, *signature));
 }
 
-TEST(Signature, keyPair) {
-  signature::KeyPair keyPair = signature::generateKeyPair();
+TEST(Signature, sign_data_size) {
+  Keypair keypair = Keypair::generate_keypair();
 
-  std::string nonce =
+  std::string nonce_ =
       "c0a5cca43b8aa79eb50e3464bc839dd6fd414fae0ddf928ca23dcebf8a8b8dd0";
-  std::string signature_b64 = signature::sign(nonce, keyPair);
+  std::vector<uint8_t> nonce(nonce_.begin(), nonce_.end());
+  auto signature = keypair.sign(nonce.data(), nonce.size());
 
-  std::cout << base64::encode(keyPair.publicKey) << std::endl;
-  std::cout << signature_b64 << std::endl;
-
-  ASSERT_TRUE(signature::verify(signature_b64, nonce,
-                                base64::encode(keyPair.publicKey)));
+  ASSERT_TRUE(keypair.verify(nonce, *signature));
 }
 
 TEST(Signature, PrintkeyPair) {
-  signature::KeyPair keyPair = signature::generateKeyPair();
-  std::cout << base64::encode(keyPair.publicKey) << std::endl;
-  std::cout << base64::encode(keyPair.privateKey) << std::endl;
+  iroha::Keypair keypair = Keypair::generate_keypair();
+  ASSERT_NO_THROW({
+    std::cout << keypair.pub_base64() << std::endl;
+  });
+  ASSERT_NO_THROW({
+    std::cout << *keypair.priv_base64() << std::endl;
+  });
 }
 
 TEST(Signature, generatedByAndroid) {
@@ -65,7 +65,14 @@ TEST(Signature, generatedByAndroid) {
       "0f1a39c82593e8b48e69f000c765c8e8072269d3bd4010634fa51d4e685076e30db22a9f"
       "b75def7379be0e808392922cb8c43d5dd5d5039828ed7ade7e1c6c81";
 
-  ASSERT_TRUE(signature::verify(signature_b64, message, public_key_b64));
+  auto keypair = Keypair(public_key_b64, Keypair::tag_base64_encoded());
+
+  Keypair::signature_t signature;
+  std::vector<uint8_t> signature_v = base64_decode(signature_b64);
+  ASSERT_EQ(signature.size(), signature_v.size());
+  std::copy(signature_v.begin(), signature_v.end(), signature.begin());
+
+  ASSERT_TRUE(keypair.verify(message, signature));
 }
 
 
@@ -77,7 +84,14 @@ TEST(Signature, generatedByiOS) {
   std::string message =
       "46ed8c250356759f68930a94996faaa8f8c98ecbe0dcc58c479c8fad71e30096";
 
-  ASSERT_TRUE(signature::verify(signature_b64, message, public_key_b64));
+  auto keypair = Keypair(public_key_b64, Keypair::tag_base64_encoded());
+
+  Keypair::signature_t signature;
+  std::vector<uint8_t> signature_v = base64_decode(signature_b64);
+  ASSERT_EQ(signature.size(), signature_v.size());
+  std::copy(signature_v.begin(), signature_v.end(), signature.begin());
+
+  ASSERT_TRUE(keypair.verify(message, signature));
 }
 
 TEST(Signature, generatedByGO) {
@@ -90,5 +104,12 @@ TEST(Signature, generatedByGO) {
       "0f1a39c82593e8b48e69f000c765c8e8072269d3bd4010634fa51d4e685076e30db22a9f"
       "b75def7379be0e808392922cb8c43d5dd5d5039828ed7ade7e1c6c81";
 
-  ASSERT_TRUE(signature::verify(signature_b64, message, public_key_b64));
+  auto keypair = Keypair(public_key_b64, Keypair::tag_base64_encoded());
+
+  Keypair::signature_t signature;
+  std::vector<uint8_t> signature_v = base64_decode(signature_b64);
+  ASSERT_EQ(signature.size(), signature_v.size());
+  std::copy(signature_v.begin(), signature_v.end(), signature.begin());
+
+  ASSERT_TRUE(keypair.verify(message, signature));
 }
