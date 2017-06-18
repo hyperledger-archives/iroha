@@ -335,3 +335,79 @@ set_target_properties(any PROPERTIES
         )
 
 add_dependencies(any martinmoene_any)
+
+#########
+#  天地  #
+#########
+ExternalProject_Add(hyperledger_iroha-ametsuchi
+    GIT_REPOSITORY "https://github.com/hyperledger/iroha-ametsuchi"
+    GIT_TAG "develop"
+    CMAKE_ARGS -DTESTING=OFF
+    INSTALL_COMMAND "" # remove install step
+    TEST_COMMAND "" # remove test step
+    UPDATE_COMMAND "" # remove update step
+    )
+ExternalProject_Get_Property(hyperledger_iroha-ametsuchi source_dir binary_dir)
+set(ametsuchi_INCLUDE_DIR ${source_dir}/include)
+set(ametsuchi_LIBRARY ${binary_dir}/lib/libametsuchi.a)
+
+add_library(ametsuchi STATIC IMPORTED)
+file(MAKE_DIRECTORY ${ametsuchi_INCLUDE_DIR})
+
+set_target_properties(ametsuchi PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${ametsuchi_INCLUDE_DIR}
+    IMPORTED_LOCATION ${ametsuchi_LIBRARY}
+    )
+add_dependencies(ametsuchi hyperledger_iroha-ametsuchi)
+
+
+################################
+#            libuv             #
+################################
+ExternalProject_Add(libuv_libuv
+    GIT_REPOSITORY "https://github.com/libuv/libuv.git"
+    GIT_TAG "v1.x"
+    CONFIGURE_COMMAND ./autogen.sh && ./configure
+    BUILD_IN_SOURCE 1
+    BUILD_COMMAND $(MAKE)
+    INSTALL_COMMAND "" # remove install step
+    TEST_COMMAND "" # remove test step
+    UPDATE_COMMAND "" # remove update step
+    )
+ExternalProject_Get_Property(libuv_libuv source_dir)
+set(uv_INCLUDE_DIRS ${source_dir}/include)
+set(uv_LIBRARIES ${source_dir}/.libs/libuv.a)
+file(MAKE_DIRECTORY ${uv_INCLUDE_DIRS})
+
+add_library(uv STATIC IMPORTED)
+set_target_properties(uv PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${uv_INCLUDE_DIRS}
+    IMPORTED_LOCATION ${uv_LIBRARIES}
+    INTERFACE_LINK_LIBRARIES "pthread"
+    )
+
+add_dependencies(uv libuv_libuv)
+
+################################
+#             uvw              #
+################################
+ExternalProject_Add(skypjack_uvw
+    GIT_REPOSITORY "https://github.com/skypjack/uvw.git"
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND "" # remove install step
+    TEST_COMMAND "" # remove test step
+    UPDATE_COMMAND "" # remove update step
+    )
+ExternalProject_Get_Property(skypjack_uvw source_dir)
+add_dependencies(skypjack_uvw uv)
+set(uvw_INCLUDE_DIRS ${source_dir}/src)
+file(MAKE_DIRECTORY ${uvw_INCLUDE_DIRS})
+
+add_library(uvw INTERFACE IMPORTED)
+set_target_properties(uvw PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${uvw_INCLUDE_DIRS};${uv_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES "${uv_LIBRARIES};pthread"
+    )
+
+add_dependencies(uvw skypjack_uvw)

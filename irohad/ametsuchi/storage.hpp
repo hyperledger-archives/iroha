@@ -18,14 +18,16 @@
 #ifndef IROHA_STORAGE_H
 #define IROHA_STORAGE_H
 
-//#include <ametsuchi/ametsuchi.h>
-
+#include <ametsuchi/ametsuchi.hpp>
+#include <memory>
 
 namespace iroha {
 
 class Storage {
+ public:
+  Storage();
  private:
-//  ametsuchi::Ametsuchi client_;
+  std::unique_ptr<ametsuchi::Ametsuchi> ametsuchi_;
 };
 
 }

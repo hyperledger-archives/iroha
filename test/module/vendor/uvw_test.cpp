@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 
-#include "storage.hpp"
+#include <gtest/gtest.h>
+#include <uvw.hpp>
 
-iroha::Storage::Storage() {
-  ametsuchi_ = ametsuchi::Ametsuchi::create();
+TEST(uvw, Basic) {\
+  auto loop = uvw::Loop::getDefault();
+  ASSERT_FALSE(loop->alive());
 }
