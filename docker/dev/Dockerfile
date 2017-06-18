@@ -2,6 +2,7 @@ FROM ubuntu:16.04
 
 RUN apt-get update && apt-get -y upgrade && \
     apt-get -y install build-essential python-software-properties \
+        automake libtool \
         # dev dependencies
         libssl-dev libc-ares-dev xsltproc \
         # CircleCI dependencies
