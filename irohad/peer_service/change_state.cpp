@@ -15,6 +15,7 @@ limitations under the License.
 */
 #include <peer_service/change_state.hpp>
 #include <peer_service/monitor.hpp>
+#include <peer_service/self_state.hpp>
 
 #include <unordered_set>
 
@@ -109,11 +110,11 @@ namespace peer_service {
             detail::eraseActive(publicKey);
         }
         node->state_ = state;
+        return true;
       }
     };
 
     namespace detail {
-
       void insertActive(const std::shared_ptr<Node> node) {
         for (auto it = active_peer_list_.begin(); it != active_peer_list_.end();
              it++) {
@@ -138,6 +139,17 @@ namespace peer_service {
         eraseActive(node->getPublicKey());
         insertActive(node);
       }
+    }
+
+    void initialize() {
+      if (!peer_list_.empty()) return;
+      // TODO Read config.json
+
+      // At First myself only
+      peer_list_.emplace_back(std::make_shared<Node>(
+          self_state::getIp(), self_state::getPublicKey(),
+          self_state::getName(), self_state::getTrust(),
+          self_state::getActiveTime(), self_state::getState()));
     }
   }
 };

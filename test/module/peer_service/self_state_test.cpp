@@ -18,13 +18,12 @@ limitations under the License.
 //
 
 #include <gtest/gtest.h>
-#include <peer_service/peer_service.hpp>
 #include <peer_service/self_state.hpp>
 #include <logger/logger.hpp>
 
 
 TEST(PeerServiceSelfState, CheckStatus){
 
-  logger::Logger("PeerSerciceSelfState").info( "ip: "  + peer_service::self_state::getMyIp() );
+  logger::Logger("PeerSerciceSelfState").info( "ip: "  + peer_service::self_state::getIp() );
 
 }

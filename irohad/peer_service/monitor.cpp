@@ -15,9 +15,6 @@ limitations under the License.
 */
 
 #include <peer_service/monitor.hpp>
-#include <peer_service/self_state.hpp>
-
-#include <algorithm>
 
 namespace peer_service{
   namespace monitor{
@@ -29,23 +26,6 @@ namespace peer_service{
       return getActivePeerAt(0)->ip_;
     }
 
-
-    void initialize(){
-      if( !peer_list_.empty() ) return;
-      // TODO Read config.json
-
-      // At First myself only
-      peer_list_.emplace_back(
-          std::make_shared<Node>(
-              self_state::getIp(),
-              self_state::getPublicKey(),
-              self_state::getName(),
-              self_state::getTrust(),
-              self_state::getActiveTime(),
-              self_state::getState()
-          )
-      );
-    }
 
     size_t getMaxFaulty(){
       return std::max(0, (getActivePeerSize() - 1) / 3);
@@ -60,6 +40,7 @@ namespace peer_service{
       } catch( const std::out_of_range& oor ){
         // TODO Out ot Range Exception
       }
+      return nullptr;
     }
     std::vector<std::string> getAllIpList(){
       std::vector<std::string> ret;
@@ -77,6 +58,7 @@ namespace peer_service{
       } catch( const std::out_of_range& oor ){
         // TODO Out ot Range Exception
       }
+      return nullptr;
     }
     std::vector<std::string> getActiveIpList(){
       std::vector<std::string> ret;
@@ -98,12 +80,10 @@ namespace peer_service{
     }
 
     Nodes::iterator findPeerIP(const std::string &ip){
-      initialize();
       return std::find_if(peer_list_.begin(), peer_list_.end(),
                           [&ip](const auto &p) { return p->ip_ == ip; });
     }
     Nodes::iterator findPeerPublicKey(const std::string &publicKey){
-      initialize();
       return std::find_if(
           peer_list_.begin(), peer_list_.end(),
           [&publicKey](const auto &p) { return p->public_key_ == publicKey; });

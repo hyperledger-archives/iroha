@@ -18,10 +18,10 @@ limitations under the License.
 #define __IROHA_PEER_SERVICE_PEER_SERVIEC_HPP__
 
 #include <algorithm>
-#include <datetime/time.hpp>
 #include <memory>
 #include <string>
 #include <vector>
+#include <datetime/time.hpp>
 
 namespace peer_service {
 
@@ -88,6 +88,7 @@ namespace peer_service {
 
   Nodes peer_list_;
   Nodes active_peer_list_;
+
 
 }  // namespace peer_service
 
