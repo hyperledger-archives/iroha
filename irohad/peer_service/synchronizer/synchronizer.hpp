@@ -21,18 +21,17 @@ limitations under the License.
 #ifndef IROHA_SYNCHRONIZER_H
 #define IROHA_SYNCHRONIZER_H
 
-#include <string>
 #include <block.pb.h>
+#include <string>
 
-namespace peer_service{
-  namespace sync{
+namespace peer_service {
+  namespace sync {
     using Block = iroha::protocol::Block;
-
 
     bool start();
 
     // When commit block after consensus, invoke this function
-    bool trigger( const Block &);
+    bool trigger(const Block &);
 
     enum SYNCHRO_RESULT {
       APPEND_ONGOING,
@@ -40,14 +39,14 @@ namespace peer_service{
       APPEND_FINISHED,
     };
 
-    namespace detail{
-      bool append_temporary(uint64_t,const Block&);
+    namespace detail {
+      bool append_temporary(uint64_t, const Block &&);
       SYNCHRO_RESULT append();
       void appending();
       void clearCache();
-    } // namespace datail
+    }  // namespace datail
 
-  } // namespace sync
-} // namespace peer
+  }  // namespace sync
+}  // namespace peer
 
-#endif //IROHA_SYNCHRONIZER_H
+#endif  // IROHA_SYNCHRONIZER_H

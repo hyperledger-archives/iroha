@@ -25,8 +25,13 @@ namespace connection {
         bool send(std::string ip, const iroha::protocol::Transaction& tx);
         class OrderingClient {
         public:
-            iroha::protocol::QueueTransactionResponse* QueueTransaction(
+            OrderingClient(const std::string& ip, int port);
+
+            iroha::protocol::QueueTransactionResponse QueueTransaction(
                 const iroha::protocol::Transaction& tx);
+        private:
+            grpc::ClientContext context_;
+            std::unique_ptr<iroha::protocol::OrderingService::Stub> stub_;
         };
 
     }  // namespace consensus

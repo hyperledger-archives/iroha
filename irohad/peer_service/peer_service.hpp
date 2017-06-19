@@ -17,55 +17,77 @@ limitations under the License.
 #ifndef __IROHA_PEER_SERVICE_PEER_SERVIEC_HPP__
 #define __IROHA_PEER_SERVICE_PEER_SERVIEC_HPP__
 
+#include <algorithm>
+#include <datetime/time.hpp>
 #include <memory>
 #include <string>
 #include <vector>
 
 namespace peer_service {
 
-    enum State { PREPARE, READY, ACTIVE };
+  enum State { PREPARE, READY, ACTIVE };
 
-    inline static const std::string defaultName() { return ""; }
+  inline static const std::string defaultName() { return ""; }
 
-    inline static const std::string defaultIP() { return ""; }
+  inline static const std::string defaultIP() { return ""; }
 
-    inline static const std::string defaultPubKey() { return ""; }
+  inline static const std::string defaultPubKey() { return ""; }
 
-    struct Node {
-      std::string ip_;
-      std::string public_key_;
-      std::string name_;
-      double trust_;
-      State state_;
+  struct Node {
+    std::string ip_;
+    std::string public_key_;
+    std::string name_;
+    double trust_;
+    uint64_t created_;
+    State state_;
 
-      Node(std::string ip = defaultIP(),
-           std::string public_key = defaultPubKey(),
-           std::string name = defaultName(),
-           double trust = 100.0,
-           State state = PREPARE)
-          : ip_(ip),
-            public_key_(public_key),
-            name_(name),
-            trust_(trust),
-            state_(state) {}
+    Node(std::string ip = defaultIP(), std::string public_key = defaultPubKey(),
+         std::string name = defaultName(), double trust = 100.0,
+         uint64_t created_ = iroha::time::now64(),
+         State state = PREPARE)
+        : ip_(ip),
+          public_key_(public_key),
+          name_(name),
+          trust_(trust),
+          state_(state) {}
 
-      Node(const Node &p) :
-        ip_(p.ip_),
-        public_key_(p.public_key_),
-        name_(p.name_),
-        trust_(p.trust_),
-        state_(p.state_) {}
+    Node(const Node& p)
+        : ip_(p.ip_),
+          public_key_(p.public_key_),
+          name_(p.name_),
+          trust_(p.trust_),
+          created_(p.created_),
+          state_(p.state_) {}
 
+    void setIp(std::string ip = defaultIP()) { ip_ = ip; }
+    void setPublicKey(std::string public_key = defaultPubKey()) {
+      public_key_ = public_key;
+    }
+    void setName(std::string name = defaultName()) { name_ = name; }
+    void setTrust(double trust = 100.0) { trust_ = trust; }
+    void setCreated(uint64_t created) { created_ = created; }
+    void setState(State state = PREPARE) { state_ = state; }
 
-      bool isDefaultIP() const { return ip_ == defaultIP(); }
-      bool isDefaultPubKey() const { return public_key_ == defaultPubKey(); }
-    };
+    std::string getIp() const { return ip_; }
+    std::string getPublicKey() const { return public_key_; }
+    std::string getName() const { return name_; }
+    double getTrust() const { return trust_; }
+    uint64_t getCreated() const { return created_; }
+    State getState() const { return state_; }
 
-    using Nodes = std::vector<std::shared_ptr<Node>>;
+    bool isDefaultIP() const { return ip_ == defaultIP(); }
+    bool isDefaultPubKey() const { return public_key_ == defaultPubKey(); }
 
+    bool operator>(const Node& node) const {
+      return (std::abs(trust_ - node.trust_) < -1e5) ? created_ < node.created_
+                                                     : trust_ > node.trust_;
+    }
+  };
 
-    Nodes peer_list_;
-    Nodes active_peer_list_;
+  using Nodes = std::vector<std::shared_ptr<Node>>;
+
+  Nodes peer_list_;
+  Nodes active_peer_list_;
 
 }  // namespace peer_service
 

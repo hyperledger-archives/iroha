@@ -41,6 +41,7 @@ namespace peer_service{
               self_state::getPublicKey(),
               self_state::getName(),
               self_state::getTrust(),
+              self_state::getActiveTime(),
               self_state::getState()
           )
       );

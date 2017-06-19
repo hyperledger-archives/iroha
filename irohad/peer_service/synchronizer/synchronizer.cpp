@@ -18,51 +18,50 @@ limitations under the License.
 // Created by Takumi Yamashita on 2017/04/28.
 //
 
-#include <peer_service/synchronizer/synchronizer.hpp>
-#include <peer_service/monitor.hpp>
-#include <peer_service/self_state.hpp>
 #include <datetime/time.hpp>
 #include <map_queue/map_queue.hpp>
+#include <peer_service/monitor.hpp>
+#include <peer_service/self_state.hpp>
+#include <peer_service/synchronizer/synchronizer.hpp>
 #include <timer/timer.hpp>
 
 //#include <ametsuchi/ametsuchi.hpp>
 
-
-namespace peer_service{
+namespace peer_service {
   namespace sync {
     std::shared_ptr<Node> leader;
 
     bool start() {
       ::peer_service::self_state::stop();
 
-      std::string default_leader_ip = ::peer_service::monitor::getCurrentLeaderIp();
+      std::string default_leader_ip =
+          ::peer_service::monitor::getCurrentLeaderIp();
 
       // TODO [WIP] search default_leader in all peerList
-      if( default_leader_ip == ::peer_service::self_state::getIp() ) return false;
-
+      if (default_leader_ip == ::peer_service::self_state::getIp())
+        return false;
 
       // TODO connection Test Ping default_leader_ip
+      // TODO to issue addPeer(myself) Transaction to default_leader_ip
 
       // TODO start streaming connect to default_leader_ip
 
-      { // TOOD another thread.
+      {  // TOOD another thread.
         detail::appending();
       }
       return true;
     }
 
-
     // TODO continue implement after complete ametsuchi
-    bool trigger( const Block &block){
-      if( ::peer_service::self_state::getState() == PREPARE ) {
+    bool trigger(const Block &block) {
+      if (::peer_service::self_state::getState() == PREPARE) {
         // check Statefull validate Block
-        if( true && "WIP" )
-        {
+        if (true && "WIP") {
           ::peer_service::self_state::activate();
 
           // TODO ametsuchi
-//          ::ametsuchi::append(block);
-//          ::ametsuchi::commit();
+          //          ::ametsuchi::append(block);
+          //          ::ametsuchi::commit();
 
           detail::clearCache();
         }
@@ -71,43 +70,44 @@ namespace peer_service{
       return false;
     }
 
+    namespace detail {
 
-    namespace detail{
-
-      structure::MapQueue<uint64_t,const Block*> temp_block_;
+      structure::MapQueue<uint64_t, Block> temp_block_;
       uint64_t current_;
       uint64_t upd_time_;
 
-      bool append_temporary(uint64_t tx_id,const Block& tx){
-        temp_block_.set( tx_id, &tx );
+      bool append_temporary(uint64_t tx_id, const Block &&tx) {
+        temp_block_.set(tx_id, std::move(tx));
         return true;
       }
 
       SYNCHRO_RESULT append() {
-        while( temp_block_.count(current_) ) {
-          auto &ap_tx = *temp_block_[current_];
-          // TODO ametsuchi
-//          ametsuchi::append(ap_tx);
+        while (temp_block_.exists(current_)) {
+          auto &ap_tx = temp_block_[current_];
+          // ametsuchi::append(ap_tx);
           current_++;
           upd_time_ = iroha::time::now64();
         }
 
-        if( !temp_block_.empty() && upd_time_ < (uint64_t)-1 ){ // if started downlaoding
-          // if elapsed that tiem is updated more than 2 sec and cache has more than index tx.
-          if( iroha::time::now64() - upd_time_ > 2 && temp_block_.getMaxKey() > current_ )
+        if (!temp_block_.empty() &&
+            upd_time_ < (uint64_t)-1) {  // if started downlaoding
+          // if elapsed that tiem is updated more than 2 sec and cache has more
+          // than index tx.
+          if (iroha::time::now64() - upd_time_ > 2 &&
+              temp_block_.getMaxKey() > current_)
             return SYNCHRO_RESULT::APPEND_ERROR;
         }
 
         return SYNCHRO_RESULT::APPEND_ONGOING;
       }
 
-      void appending(){
+      void appending() {
         upd_time_ = (uint64_t)-1;
         clearCache();
 
-        while( ::peer_service::self_state::getState() == PREPARE ) {
+        while (::peer_service::self_state::getState() == PREPARE) {
           timer::waitTimer(100);
-          switch( append() ) {
+          switch (append()) {
             case SYNCHRO_RESULT::APPEND_ERROR:
               return;
             case SYNCHRO_RESULT::APPEND_FINISHED:
@@ -116,14 +116,12 @@ namespace peer_service{
               break;
           }
         }
-
       }
-      void clearCache(){
+      void clearCache() {
         current_ = 0;
         temp_block_.clear();
       }
-    } // namespace datail
+    }  // namespace datail
 
-
-  } // namespace sync
-} // namespace peer
+  }  // namespace sync
+}  // namespace peer

@@ -84,12 +84,12 @@ class MapQueue {
 
 
   // set key and value
-  size_t set(const Key& k, const Value& v) {
+  size_t set(const Key& k, const Value&& v) {
     if( data_.count(k) ) return data_.size();
     cache_.push_back(k);
     while (!max_cache_.empty() && max_cache_.back() < k) max_cache_.pop_back();
     max_cache_.push_back(k);
-    data_[k] = v;
+    data_[k] = std::move(v);
     return data_.size();
   }
 
@@ -114,7 +114,7 @@ class MapQueue {
   size_t max_size() const noexcept { return max_cache_size_; }
   size_t size() const noexcept { return data_.size(); }
   bool empty() const noexcept { return data_.empty(); }
-  size_t count(const Key& k) const { return data_.count(k); }
+  size_t exists(const Key& k) const { return data_.count(k); }
   void clear() noexcept {
     data_.clear();
     max_cache_.clear();
