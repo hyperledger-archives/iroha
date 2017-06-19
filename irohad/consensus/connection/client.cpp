@@ -16,11 +16,16 @@ limitations under the License.
 #include <grpc++/grpc++.h>
 #include "client.hpp"
 
-namespace connection {
-  namespace consensus {
+namespace consensus {
+  namespace connection {
 
     using iroha::protocol::Block;
     using iroha::protocol::VerifyResponse;
+
+    VerifyResponse unicast(const Block& block, const std::string& ip) {
+      SumeragiClient client(ip, 50051); // TODO: Get port from config
+      return client.Verify(block);
+    }
 
     SumeragiClient::SumeragiClient(const std::string& ip, int port) {
       auto channel = grpc::CreateChannel(ip + ":" + std::to_string(port), grpc::InsecureChannelCredentials());
@@ -33,5 +38,5 @@ namespace connection {
       return response;
     }
 
-  }  // namespace consensus
-}  // namespace connection
+  }  // namespace connection
+}  // namespace consensus
