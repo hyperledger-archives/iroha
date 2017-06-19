@@ -12,6 +12,7 @@ limitations under the License.
 */
 
 #include <block.pb.h>
+#include <endpoint.pb.h>
 #include "service.hpp"
 
 namespace consensus {
@@ -29,6 +30,8 @@ namespace consensus {
     grpc::Status SumeragiService::Verify(grpc::ClientContext* context,
                                          const Block& request,
                                          VerifyResponse* response) {
+      response->set_code(iroha::protocol::ResponseCode::OK);
+      response->set_message("ReceivedBlock");
       return grpc::Status::OK;
     }
   }  // namespace connection
