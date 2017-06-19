@@ -14,8 +14,8 @@ limitations under the License.
 #include <block.pb.h>
 #include "service.hpp"
 
-namespace connection {
-  namespace consensus {
+namespace consensus {
+  namespace connection {
 
     using iroha::protocol::Block;
     using iroha::protocol::VerifyResponse;
@@ -31,5 +31,5 @@ namespace connection {
                                          VerifyResponse* response) {
       return grpc::Status::OK;
     }
-  }  // namespace consensus
-}  // namespace connection
+  }  // namespace connection
+}  // namespace consensus
