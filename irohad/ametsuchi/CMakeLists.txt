@@ -2,9 +2,11 @@
 message(STATUS "Ametsuchi")
 
 add_library(storage
-    storage.cpp storage.hpp
+    storage.cpp
+    index_mediator.cpp
     )
 
 target_link_libraries(storage PUBLIC
     ametsuchi
+    schema
     )

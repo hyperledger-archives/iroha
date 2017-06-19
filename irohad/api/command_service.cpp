@@ -15,37 +15,37 @@ limitations under the License.
 */
 
 #include "command_service.hpp"
+#include <ordering/queue.hpp>
 #include <validation/stateless/validator.hpp>
-#include <ordering/quque.hpp>
 
 namespace connection {
-    namespace api {
+  namespace api {
 
-        using namespace iroha::protocol;
+    using namespace iroha::protocol;
 
-        std::function<void(const Transaction&)> dispatchToOrdering;
+    std::function<void(const Transaction&)> dispatchToOrdering;
 
-        void receive(std::function<void(const iroha::protocol::Transaction&)> const& func) {
-            dispatchToOrdering = func;
-        }
+    void receive(
+        std::function<void(const iroha::protocol::Transaction&)> const& func) {
+      dispatchToOrdering = func;
+    }
 
-        grpc::Status CommandService::Torii(grpc::ClientContext* context,
-                                           const Transaction& request,
-                                           ToriiResponse* response) {
+    grpc::Status CommandService::Torii(grpc::ClientContext* context,
+                                       const Transaction& request,
+                                       ToriiResponse* response) {
+      // TODO: Use this to get client's ip and port.
+      (void)context;
 
-            // TODO: Use this to get client's ip and port.
-            (void) context;
+      if (validator::stateless::validate(request)) {
+        dispatchToOrdering(request);
+        // TODO: Return tracking log number (hash)
+        *response = ToriiResponse();
+      } else {
+        // TODO: Return validation failed message
+        *response = ToriiResponse();
+      }
+      return grpc::Status::OK;
+    }
 
-            if(validator::stateless::validate(request)){
-                dispatchToOrdering(request);
-                // TODO: Return tracking log number (hash)
-                *response = ToriiResponse();
-            }else{
-                // TODO: Return validation failed message
-                *response = ToriiResponse();
-            }
-            return grpc::Status::OK;
-        }
-
-    }  // namespace api
+  }  // namespace api
 }  // namespace connection

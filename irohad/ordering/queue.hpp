@@ -13,15 +13,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef __IROHA_ORDERING_OBSERVER_HPP__
-#define __IROHA_ORDERING_OBSERVER_HPP__
+#ifndef __IROHA_ORDERING_ORDER_QUEUE_HPP__
+#define __IROHA_ORDERING_ORDER_QUEUE_HPP__
 
 #include <block.pb.h>
 
 namespace ordering {
-  namespace observer {
-    void initialize();
-    void observe();
-  }
+  namespace queue {
+
+    // - transaction を挿入する
+    // - transaction を created_time の昇順で取り出す。
+    // - transaction (のhash?) を指定してそれを削除する。
+
+    bool append(const iroha::protocol::Transaction&);
+    bool remove(const iroha::protocol::Transaction&);
+
+    void setCreated();   //  set pre_created_ time;
+    void setInterval();  //  set interval_
+    bool isCreateBlock();
+    iroha::protocol::Block getBlock();
+
+    unsigned long getSize();
+  };
 };
-#endif  //__IROHA_ORDERING_OBSERVER_HPP__
+#endif  // IROHA_ORDER_QUEUE_HPP

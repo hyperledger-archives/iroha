@@ -21,19 +21,19 @@ limitations under the License.
 #include <endpoint.pb.h>
 
 namespace connection {
-    namespace api {
+  namespace api {
 
-        void receive(std::function<void(const iroha::protocol::Transaction&)>);
+    void receive(std::function<void(const iroha::protocol::Transaction&)>);
 
-        class CommandService final
-            : public iroha::protocol::CommandService::Service {
-        public:
-            grpc::Status Torii(grpc::ClientContext* context,
-                               const iroha::protocol::Transaction& request,
-                               iroha::protocol::ToriiResponse* response);
-        };
+    class CommandService final
+        : public iroha::protocol::CommandService::Service {
+     public:
+      grpc::Status Torii(grpc::ClientContext* context,
+                         const iroha::protocol::Transaction& request,
+                         iroha::protocol::ToriiResponse* response);
+    };
 
-    }  // namespace api
+  }  // namespace api
 }  // namespace connection
 
 #endif
