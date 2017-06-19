@@ -16,42 +16,51 @@ limitations under the License.
 #ifndef __IROHA_PEER_SERVICE_CHANGE_STATE_HPP__
 #define __IROHA_PEER_SERVICE_CHANGE_STATE_HPP__
 
-#include <string>
 #include <peer_service/peer_service.hpp>
+#include <string>
 
-namespace peer_service{
-    namespace change_state{
+namespace peer_service {
+  namespace change_state {
 
-        // This scope is issue transaction
-        namespace transtion {
-          // invoke to issue transaction
-          void add(const std::string &ip, const Node &);
-          void remove(const std::string &ip, const std::string &);
-          void setTrust(const std::string &ip, const std::string &, const double &);
-          void changeTrust(const std::string &ip, const std::string &, const double &);
-          void setActive(const std::string &ip, const std::string &, const State state);
-        }
+    // This scope is issue transaction
+    namespace transtion {
+      // invoke to issue transaction
+      void add(const std::string &ip, const Node &);
+      void remove(const std::string &ip, const std::string &);
+      void setTrust(const std::string &ip, const std::string &, const double &);
+      void changeTrust(const std::string &ip, const std::string &,
+                       const double &);
+      void setActive(const std::string &ip, const std::string &,
+                     const State state);
+    }
 
-        // This scope is validation
-        namespace validation {
-          bool add(const Node &);
-          bool remove(const std::string &);
-          bool setTrust(const std::string &, const double &);
-          bool changeTrust(const std::string &, const double &);
-          bool setActive(const std::string &, const State state);
-        }
+    // This scope is validation
+    namespace validation {
+      bool add(const Node &);
+      bool remove(const std::string &);
+      bool setTrust(const std::string &, const double &);
+      bool changeTrust(const std::string &, const double &);
+      bool setActive(const std::string &, const State state);
+    }
 
-        // This scope is runtime
-        namespace runtime {
-          bool add(const Node &);
-          bool remove(const std::string &);
-          bool setTrust(const std::string &, const double &);
-          bool changeTrust(const std::string &, const double &);
-          bool setActive(const std::string &, const State state);
+    // This scope is runtime
+    namespace runtime {
+      bool add(const Node &);
+      bool remove(const std::string &);
+      bool setTrust(const std::string &, const double &);
+      bool changeTrust(const std::string &, const double &);
+      bool setActive(const std::string &, const State state);
 
-          void update();
-        }
-    };
+      void update();
+    }
+
+    // This scope is detail implement change peer_list_ and active_peer_list_
+    namespace detail {
+      void insertActive(const std::shared_ptr<Node> node);
+      void eraseActive(const std::string &publicKey);
+      void changeActive(const std::shared_ptr<Node> node);
+    }
+  };
 };
 
-#endif //IROHA_MONITOR_HPP
+#endif  // IROHA_MONITOR_HPP
