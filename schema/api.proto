@@ -1,0 +1,25 @@
+syntax = "proto3";
+package iroha.api;
+
+
+message Signature {
+    bytes pubkey    = 1;
+    bytes signature = 2;
+}
+
+// may be reused in transaction or block
+message Header{
+    uint32             created_ts = 1;
+    repeated Signature sig        = 2;
+    bytes              hash       = 3;
+};
+
+
+message Transaction {
+    Header header = 1;
+
+    // until we write some basic code and define all fields, this will be just random bytes.
+    // for tests we don't care about internal data!
+    bytes meta    = 2; // here we store creator public key or any meta information in blob
+    bytes body    = 3; // transaction body, which consists of array of actions
+}
