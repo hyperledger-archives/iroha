@@ -14,14 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <grpc++/grpc++.h>
 #include <grpc++/server_builder.h>
 
-namespace connection {
+#ifndef CONNECTION_SERVER_RUNNER_HPP
+#define CONNECTION_SERVER_RUNNER_HPP
 
-    class ServerRunner {
-    public:
-        ServerRunner(const std::string& ip,
-                     const std::vector<grpc::Service*>& services);
-    };
+namespace server_runner {
+  void initialize(const std::string &ip, int port,
+                  const std::vector<grpc::Service *> &services);
+  void run();
+  void shutDown();
+  bool waitForServersReady();
+}  // namespace server_runner
 
-}  // namespace connection
+#endif

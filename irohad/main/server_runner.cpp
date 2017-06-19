@@ -14,31 +14,55 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CONNECTION_SERVER_RUNNER_HPP
-#define CONNECTION_SERVER_RUNNER_HPP
-
-
 #include <grpc++/server.h>
 #include <grpc++/server_builder.h>
 #include <grpc++/server_context.h>
-#include <memory>
+#include <logger/logger.hpp>
 
 #include "server_runner.hpp"
 
-namespace connection {
+namespace server_runner {
 
-    ServerRunner::ServerRunner(const std::string& ip,
-                               const std::vector<grpc::Service*>& services) {
-        grpc::ServerBuilder builder;
+  logger::Logger console("ServerRunner");
 
-        builder.AddListeningPort(ip, grpc::InsecureServerCredentials());
-        for (auto s: services) {
-            builder.RegisterService(s);
-        }
-        std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
-        server->Wait();
+  // server instances
+  std::unique_ptr<grpc::Server> serverInstance;
+  std::mutex waitForServer;
+  std::condition_variable serverInstanceCV;
+
+  // initial settings
+  std::string serverAddress;
+  std::vector<grpc::Service *> services;
+
+  void initialize(const std::string &ip, int port,
+                  const std::vector<grpc::Service *> &srvs) {
+    serverAddress = ip + ":" + std::to_string(port);
+    services = srvs;
+  }
+
+  void run() {
+    grpc::ServerBuilder builder;
+
+    // TODO(motxx): Is it ok to open same port for all services?
+    builder.AddListeningPort(serverAddress, grpc::InsecureServerCredentials());
+    for (auto srv : services) {
+      builder.RegisterService(srv);
     }
 
-}  // namespace connection
+    waitForServer.lock();
+    serverInstance = builder.BuildAndStart();
+    waitForServer.unlock();
+    serverInstanceCV.notify_one();
 
-#endif
+    console.info("Server listening on {}", serverAddress);
+
+    serverInstance->Wait();
+  }
+
+  void shutDown() { serverInstance->Shutdown(); }
+
+  bool waitForServersReady() {
+    std::unique_lock<std::mutex> lock(waitForServer);
+    while (!serverInstance) serverInstanceCV.wait(lock);
+  }
+}  // namespace server_runner
