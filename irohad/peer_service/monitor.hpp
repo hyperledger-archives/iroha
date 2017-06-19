@@ -18,34 +18,32 @@ limitations under the License.
 
 #include <peer_service/peer_service.hpp>
 
-namespace peer_service{
-    namespace monitor{
+namespace peer_service {
+  namespace monitor {
 
-        std::shared_ptr<Node> getCurrentLeader();
-        std::string getCurrentLeaderIp();
+    std::shared_ptr<Node> getCurrentLeader();
+    std::string getCurrentLeaderIp();
 
+    void initialize();
 
-        void initialize();
+    size_t getMaxFaulty();
 
-        size_t getMaxFaulty();
+    Nodes getAllPeerList();
+    std::shared_ptr<Node> getPeerAt(unsigned int index);
+    std::vector<std::string> getAllIpList();
 
-        Nodes getAllPeerList();
-        std::shared_ptr<Node> getPeerAt(unsigned int index);
-        std::vector<std::string> getAllIpList();
+    Nodes getActivePeerList();
+    std::shared_ptr<Node> getActivePeerAt(unsigned int index);
+    std::vector<std::string> getActiveIpList();
+    int getActivePeerSize();
 
-        Nodes getActivePeerList();
-        std::shared_ptr<Node> getActivePeerAt(unsigned int index);
-        std::vector<std::string> getActiveIpList();
-        int getActivePeerSize();
+    bool isExistIP(const std::string &);
+    bool isExistPublicKey(const std::string &);
 
+    Nodes::iterator findPeerIP(const std::string &ip);
+    Nodes::iterator findPeerPublicKey(const std::string &publicKey);
 
-        bool isExistIP(const std::string &);
-        bool isExistPublicKey(const std::string &);
-
-        Nodes::iterator findPeerIP(const std::string &ip);
-        Nodes::iterator findPeerPublicKey(const std::string &publicKey);
-
-    };  // namespace monitor
+  };  // namespace monitor
 };
 
-#endif //IROHA_MONITOR_HPP
+#endif  // IROHA_MONITOR_HPP
