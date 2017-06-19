@@ -59,7 +59,7 @@ namespace consensus {
 
     void initialize() {
 
-      connection::consensus::receive(
+      consensus::connection::receive(
         [](const Block &block) {
           // TODO: Judge committed
           if ( /*check is_committed*/ false) {

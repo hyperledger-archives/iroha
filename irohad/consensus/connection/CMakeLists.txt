@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_library(sumeragi_connection
+add_library(consensus_connection
     client.cpp
     service.cpp
 )
-target_link_libraries(sumeragi_connection
+target_link_libraries(consensus_connection
     endpoint
     schema
 )

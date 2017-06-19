@@ -17,9 +17,42 @@ limitations under the License.
 #include <gtest/gtest.h>
 #include <consensus/connection/service.hpp>
 #include <consensus/connection/client.hpp>
+#include <main/server_runner.hpp>
+#include <thread>
 
 using namespace consensus::connection;
+using iroha::protocol::Block;
 
-TEST(ConsensusConnectionTest, VerifyWhenUsingSync) {
-  SumeragiClient client;
+class ConsensusConnectionTest : public ::testing::Test {
+ protected:
+  virtual void SetUp() {
+    std::vector<grpc::Service*> services {
+      &service_
+    };
+    server_runner::initialize("0.0.0.0", 50051, services);
+    serverThread_ = std::thread(&server_runner::run);
+    server_runner::waitForServersReady();
+  }
+
+  virtual void TearDown() {
+    server_runner::shutDown();
+    serverThread_.join();
+  }
+
+ private:
+  SumeragiService service_;
+  std::thread serverThread_;
+};
+
+/**
+ * Note: Async connection is WIP.
+ *       Temporarily, we tests sync connection.
+ */
+
+TEST_F(ConsensusConnectionTest, SuccessConnectionWhenStandingServer) {
+  Block block;
+  *block.mutable_header()->mutable_merkle_root() = "merkle root example";
+  auto response = unicast(block, "0.0.0.0");
+  ASSERT_EQ(response.code(), iroha::protocol::ResponseCode::OK);
+  ASSERT_STREQ(response.message().c_str(), "ReceivedBlock");
 }

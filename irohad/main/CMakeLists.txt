@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_library(connection server_runner.cpp)
-target_link_libraries(connection
-    endpoint
-    schema
+add_library(server_runner server_runner.cpp)
+target_link_libraries(server_runner
+  logger
+  endpoint
+  schema
 )
 
 add_executable(iroha-main iroha-main.cpp)
 target_link_libraries(iroha-main
-    connection
+  server_runner
 )
