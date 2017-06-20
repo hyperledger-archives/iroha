@@ -35,6 +35,8 @@ namespace peer_service {
 
     uint64_t getActiveTime();
 
+    void setName(const std::string &name);
+    void setName(std::string &&name);
     void activate();
     void stop();
   };

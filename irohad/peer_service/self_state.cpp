@@ -88,6 +88,13 @@ namespace peer_service {
 
     uint64_t getActiveTime() { return active_time_; }
 
+    void setName(const std::string &name){
+      name_ = name;
+    }
+    void setName(std::string &&name){
+      name_ = name;
+    }
+
     void activate() {
       state_ = ACTIVE;
       active_time_ = iroha::time::now64();
