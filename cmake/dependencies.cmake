@@ -308,8 +308,8 @@ file(MAKE_DIRECTORY ${optional_INCLUDE_DIRS})
 
 add_library(optional INTERFACE IMPORTED)
 set_target_properties(optional PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${optional_INCLUDE_DIRS}
-    )
+        INTERFACE_INCLUDE_DIRECTORIES ${optional_INCLUDE_DIRS}
+        )
 
 add_dependencies(optional martinmoene_optional)
 
@@ -331,8 +331,8 @@ file(MAKE_DIRECTORY ${any_INCLUDE_DIRS})
 
 add_library(any INTERFACE IMPORTED)
 set_target_properties(any PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${any_INCLUDE_DIRS}
-    )
+        INTERFACE_INCLUDE_DIRECTORIES ${any_INCLUDE_DIRS}
+        )
 
 add_dependencies(any martinmoene_any)
 
@@ -450,3 +450,27 @@ if (NOT PQxx_FOUND)
 
   add_dependencies(pqxx jtv_libpqxx)
 endif ()
+
+################################
+#            gflags            #
+################################
+externalproject_add(gflags_gflags
+    URL "https://github.com/gflags/gflags/archive/v2.2.0.tar.gz"
+    INSTALL_COMMAND "" # remove install step
+    TEST_COMMAND "" # remove test step
+    UPDATE_COMMAND "" # remove update step
+    )
+externalproject_get_property(gflags_gflags binary_dir)
+set(gflags_INCLUDE_DIR ${binary_dir}/include)
+set(gflags_LIBRARY ${binary_dir}/lib/libgflags.a)
+
+add_library(gflags STATIC IMPORTED)
+file(MAKE_DIRECTORY ${gflags_INCLUDE_DIR})
+
+set_target_properties(gflags PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${gflags_INCLUDE_DIR}
+    IMPORTED_LOCATION ${gflags_LIBRARY}
+    IMPORTED_LINK_INTERFACE_LIBRARIES "pthread"
+    )
+add_dependencies(gflags gflags_gflags)
+
