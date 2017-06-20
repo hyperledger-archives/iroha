@@ -15,7 +15,7 @@ version: '3'
 #   - user: kek
 #   - password: helloworld
 
-serices:
+services:
   redis:
     image: redis:3.2.8
     ports:
