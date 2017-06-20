@@ -18,6 +18,7 @@ limitations under the License.
 #include <peer_service/self_state.hpp>
 
 #include <unordered_set>
+#include <iostream>
 
 namespace peer_service {
 
@@ -102,18 +103,21 @@ namespace peer_service {
         if (node->getState() == ACTIVE) detail::changeActive(node);
         return true;
       }
-      bool setActive(const std::string &publicKey, const State state) {
+      bool setActive(const std::string &publicKey, const State state, uint64_t created) {
         if (!monitor::isExistPublicKey(publicKey)) return false;
 
         auto node = *monitor::findPeerPublicKey(publicKey);
         if (node->getState() == PREPARE) {
-          if (state == ACTIVE)  // PRPARE -> ACTIVE
+          if (state == ACTIVE) {// PRPARE -> ACTIVE
+            node->setCreated(created);
             detail::insertActive(node);
+          }
         } else if (node->getState() == ACTIVE) {
           if (state == PREPARE)  // ACTIVE -> PREPARE
             detail::eraseActive(publicKey);
         }
-        node->state_ = state;
+        node->setState(state);
+
         return true;
       }
     };
@@ -127,6 +131,7 @@ namespace peer_service {
             break;
           }
         }
+        active_peer_list_.emplace_back( node );
       }
 
       void eraseActive(const std::string &publicKey) {
