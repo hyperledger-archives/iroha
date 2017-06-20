@@ -1,11 +1,9 @@
 syntax = "proto3";
-package iroha.api;
+package iroha.proto;
 
+import "primitive.proto";
+import "actions.proto";
 
-message Signature {
-    bytes pubkey    = 1;
-    bytes signature = 2;
-}
 
 // may be reused in transaction or block
 message Header{
@@ -16,10 +14,45 @@ message Header{
 
 
 message Transaction {
+    // HEADER
+    // concat all serialized actions:
+    // python: actions_str = "".join([x.SerializeAsString() for x in actions])
+    // hash = sha3_256(meta->SerializeasString() + actions_str)
     Header header = 1;
 
-    // until we write some basic code and define all fields, this will be just random bytes.
-    // for tests we don't care about internal data!
-    bytes meta    = 2; // here we store creator public key or any meta information in blob
-    bytes body    = 3; // transaction body, which consists of array of actions
+    message Meta {
+        bytes creator_pubkey = 1;
+
+        // used to prevent replay attacks.
+        uint64_t  tx_counter = 2;
+    }
+
+    // META
+    Meta meta = 3;
+
+    // BODY
+    repeated Command actions = 4;
 }
+
+
+message Block {
+    // HEADER
+
+    // hash inside header is calculated as =>
+    // hash = sha3_256(meta->SerializeasString())
+    Header header = 1;
+
+    message Meta {
+        uint16_t tx_n = 1;
+        uint64_t height = 2;
+        bytes    merkle_root = 3;
+        uint64_t created_ts = 4;
+    }
+
+    // META
+    Meta meta = 2;
+
+    // BODY
+    repeated Transaction transactions = 3;
+}
+

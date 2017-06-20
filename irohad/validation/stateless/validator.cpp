@@ -19,6 +19,14 @@ limitations under the License.
 namespace validaton {
   namespace stateless {
     using Transaction = iroha::protocol::Transaction;
+
+    // ENUM {} scheme api service return TX_Status,
+    // Validation Code
+    // singature from future
+    // header hash, body + meta - string concat and take hash - take byte not string
+    // Dygest and 2 byte,
+
+
     bool validate(const Transaction& tx) {
       return
         tx.header().created_time() <= iroha::time::now64() && // 過去に作られたTxか // TODO: consider when to ignore transactions for being too old

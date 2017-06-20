@@ -17,17 +17,69 @@ limitations under the License.
 #ifndef IROHA_BLOCK_HPP
 #define IROHA_BLOCK_HPP
 
-#include "proposal.hpp"
+#include "types.hpp"
+
 namespace iroha {
   namespace dao {
-    struct Block {
-      struct Header;
 
-      const Proposal* body;
-      const Header* head;
+    struct Signature {
+      ed25519::sig_t signature;
+      ed25519::pub_t pubkey;
     };
-  // TODO: implement
-    struct Block::Header {};
+
+
+    struct Action;
+
+    struct AccountAction: public Action{
+
+    };
+
+
+    struct Transaction {
+      // HEADER
+      std::vector<Signature> signatures;
+
+      // timestamp
+      ts64_t created_ts;
+
+      // number that is stored inside each account.
+      // Used to prevent replay attacks.
+      // During stateful validation look at account and compare numbers
+      // if number inside a transaction is less than in account,
+      // this transaction is replayed
+      uint64_t tx_counter;
+
+      // META
+      // transaction creator
+      ed25519::pub_t creator;
+
+      // BODY
+      std::vector<Action> actions;
+    };
+
+    struct Block {
+      // HEADER
+
+      // calculated as sha3_256(meta)
+      // meta includes all fields except hash, sigs, created_ts, transactions
+      hash256_t hash;
+
+      // array of signatures
+      std::vector<Signature> sigs;
+
+      // created timestamp
+      ts64_t created_ts;
+
+      // META
+      // current id = ledger version = number of block in a ledger
+      uint64_t height;
+      hash256_t prev_hash;    // hash of previous block
+      uint16_t tx_number;     // number of transactions
+      hash256_t merkle_root;  // global merkle root
+
+      // BODY
+      std::vector<Transaction> transactions;
+    };
   }
 }
 
