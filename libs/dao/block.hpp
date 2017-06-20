@@ -23,8 +23,8 @@ namespace iroha {
     struct Block {
       struct Header;
 
-      const Proposal body;
-      const Header head;
+      const Proposal* body;
+      const Header* head;
     };
   // TODO: implement
     struct Block::Header {};

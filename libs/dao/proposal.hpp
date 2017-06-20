@@ -18,6 +18,8 @@ limitations under the License.
 #define IROHA_PROPOSAL_HPP
 
 #include "transaction.hpp"
+#include <vector>
+
 namespace iroha {
   namespace dao {
     struct Proposal {

@@ -195,11 +195,11 @@ namespace consensus {
     void processBlock(const Block &block) {
 
       // Stateful Validation
-      auto valid = validator::stateful::validate(block);
-      if (!valid) {
-        log.info("Stateful validation failed.");
-        return;
-      }
+//      auto valid = validaton::stateful::validate(block);
+//      if (!valid) {
+//        log.info("Stateful validation failed.");
+//        return;
+//      }
 
       // Add Signature
       auto merkleRoot = appendBlock(block);

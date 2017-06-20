@@ -23,9 +23,9 @@ namespace iroha {
       struct Meta;
       struct Body;
 
-      const Body body;
-      const Meta meta;
-      const Header header;
+      const Transaction::Body& body;
+      const Transaction::Meta& meta;
+      const Transaction::Header& header;
     };
     // TODO: implement
     struct Transaction::Header {};

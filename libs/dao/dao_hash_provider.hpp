@@ -13,4 +13,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "validator.hpp"
+
+#ifndef IROHA_DAO_HASH_PROVIDER_HPP
+#define IROHA_DAO_HASH_PROVIDER_HPP
+#include <crypto/common.hpp>
+#include "dao.hpp"
+
+namespace iroha {
+  namespace dao {
+    class HashProvider {
+     public:
+      virtual iroha::hash_t get_hash(const Proposal& proposal) = 0;
+
+      virtual iroha::hash_t get_hash(const Block& proposal) = 0;
+
+      virtual iroha::hash_t get_hash(const Transaction& proposal) = 0;
+    };
+  }
+}
+#endif  // IROHA_DAO_HASH_PROVIDER_HPP
