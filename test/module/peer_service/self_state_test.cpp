@@ -23,7 +23,14 @@ limitations under the License.
 
 
 TEST(PeerServiceSelfState, CheckStatus){
+  static auto log = logger::Logger("PeerSerciceSelfState");
 
-  logger::Logger("PeerSerciceSelfState").info( "ip: "  + peer_service::self_state::getIp() );
+  log.info( "        ip: "  + peer_service::self_state::getIp() );
+  log.info( "    pubkey: "  + peer_service::self_state::getPublicKey() );
+  log.info( "privatekey: "  + peer_service::self_state::getPrivateKey() );
+  log.info( "      name: "  + peer_service::self_state::getName() );
+  log.info( "     state: "  + peer_service::self_state::getState() );
+  log.info( "     trust: "  + std::to_string(peer_service::self_state::getTrust()) );
+  log.info( "activetime: "  + peer_service::self_state::getActiveTime() );
 
 }

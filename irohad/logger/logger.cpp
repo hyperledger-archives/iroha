@@ -25,10 +25,14 @@ namespace logger {
 
     Logger::Logger(std::string &&name):
       log_name(name)
-    {};
+    {
+      console = spdlog::stdout_color_mt(name);
+    };
     Logger::Logger(const std::string &name):
       log_name(name)
-    {};
+    {
+      console = spdlog::stdout_color_mt(name);
+    };
 
     void Logger::debug(std::string &&msg){
       console->debug(msg);

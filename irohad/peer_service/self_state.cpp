@@ -23,6 +23,8 @@ limitations under the License.
 
 #include <crypto/crypto.hpp>
 
+#include <iostream>
+
 namespace peer_service {
   namespace self_state {
 
@@ -44,9 +46,9 @@ namespace peer_service {
     }
 
     void initializeMyIp() {
-      std::string interface = "eth0";  // TODO : temporary "eth0"
-
       if (ip_.empty()) {
+        std::string interface = "eth0";  // TODO : temporary "eth0"
+
         int sockfd;
         struct ifreq ifr;
 
@@ -55,7 +57,7 @@ namespace peer_service {
         strncpy(ifr.ifr_name, interface.c_str(), IFNAMSIZ - 1);
         ioctl(sockfd, SIOCGIFADDR, &ifr);
         close(sockfd);
-        ip_ = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+        ip_ =  inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
       }
     }
 

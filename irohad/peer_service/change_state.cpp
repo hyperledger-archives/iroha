@@ -20,6 +20,10 @@ limitations under the License.
 #include <unordered_set>
 
 namespace peer_service {
+
+  extern Nodes peer_list_;
+  extern Nodes active_peer_list_;
+
   namespace change_state {
 
     // This scope is issue transaction

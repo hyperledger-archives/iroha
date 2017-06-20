@@ -86,9 +86,6 @@ namespace peer_service {
 
   using Nodes = std::vector<std::shared_ptr<Node>>;
 
-  Nodes peer_list_;
-  Nodes active_peer_list_;
-
 
 }  // namespace peer_service
 

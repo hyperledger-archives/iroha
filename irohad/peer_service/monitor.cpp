@@ -17,6 +17,10 @@ limitations under the License.
 #include <peer_service/monitor.hpp>
 
 namespace peer_service{
+
+  Nodes peer_list_;
+  Nodes active_peer_list_;
+
   namespace monitor{
 
     std::shared_ptr<Node> getCurrentLeader(){
