@@ -23,22 +23,22 @@ namespace iroha {
   namespace dao {
 
     /**
-     * Crypto provider is abstract service for making cryptography in business logic code.
+     * Crypto provider is an abstract service for making cryptography operations
+     * for business logic objects (DAO).
      */
     class DaoCryptoProvider {
      public:
-
       /**
-       * Method verify signature of transaction.
+       * Method for signature verification of a transaction.
        * @param tx - transaction for verification
-       * @return true if transaction signature valid, otherwise false
+       * @return true if transaction signature is valid, otherwise false
        */
       virtual bool verify(const iroha::dao::Transaction &tx) = 0;
 
       /**
-       * Method signs transaction by own private key.
+       * Method to sign transaction via own private key.
        * @param tx - transaction without signature
-       * @return new transaction signed by crypto provider
+       * @return signed transaction by crypto provider
        */
       virtual iroha::dao::Transaction sign(
           const iroha::dao::Transaction &tx) = 0;

@@ -26,10 +26,11 @@ namespace iroha {
   namespace dao {
 
     /**
-     * Block is DAO-structure that provide all block-related information
+     * Block is DAO-structure,  that provides all block-related information
+     * Block can be divided into three abstractions: {Header, Meta, Body}.
+     *
      */
     struct Block {
-
       /**
        * Calculated as sha3_256(META + BODY fields)
        * HEADER field
@@ -37,37 +38,39 @@ namespace iroha {
       hash256_t hash;
 
       /**
-       * List of signatures
+       * List of signatures for signing the block
        * HEADER field
        */
       std::vector<Signature> sigs;
 
       /**
-       * Creation timestamp
+       * Timestamp of block creation(signing)
        * HEADER field
        */
       ts64_t created_ts;
 
       /**
-       * Number of blocks in ledger
+       * Block number in the ledger
+       * Height can be used as block_id
        * META field
        */
       uint64_t height;
 
       /**
-       * Hash of previous block
+       * Hash of a previous block in the ledger
        * META field
        */
       hash256_t prev_hash;
 
       /**
-       * Number of transactions
+       * Number of transactions in block body
        * META field
        */
-      uint16_t tx_number;
+      uint16_t txs_number;
 
       /**
-       * Root of merkle tree based on block and ledger
+       * Root of merkle tree based on the block and all previous blocks
+       * in the ledger
        * META field
        */
       hash256_t merkle_root;

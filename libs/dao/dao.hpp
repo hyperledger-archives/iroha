@@ -23,7 +23,7 @@
 
 /**
  * DAO - Data Access Object.
- * DAO module provides objects that useful for all other modules in system.
- * DAO objects not depends on transport, such as protobuf.
- * DAO objects in nature should be with public fields and immutable as possible.
+ * DAO module provides objects that are useful for all other modules in system.
+ * DAO objects do not depend on transport, such as protobuf.
+ * DAO objects in general are structures with public immutable fileds.
 */

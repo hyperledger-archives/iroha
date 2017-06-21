@@ -26,12 +26,13 @@ namespace iroha {
   namespace dao {
 
     /**
-     * Transaction is DAO-structure that provides all internal data
+     * Transaction is a DAO-structure that provides abstraction to bunch of
+     * commands with signatures and meta-data.
+     * Transaction can be divided to {Header, Meta, Body}.
      */
     struct Transaction {
-
       /**
-       * List of signatories that sing transaction
+       * List of signatories that sign transaction
        * HEADER field
        */
       std::vector<Signature> signatures;
@@ -43,15 +44,16 @@ namespace iroha {
       ts64_t created_ts;
 
       /**
-       * Creator of transaction
+       * Public key of a transaction creator.
        * META field
        */
       ed25519::pubkey_t creator;
 
       /**
-       * Number that is stored inside each account.
+       * Number for protecting against replay attack.
+       * Number that is stored inside of each account.
        * Used to prevent replay attacks.
-       * During stateful validation look at account and compare numbers
+       * During a stateful validation look at account and compare numbers
        * if number inside a transaction is less than in account,
        * this transaction is replayed.
        * BODY field
