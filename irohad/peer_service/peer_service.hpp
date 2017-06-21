@@ -18,10 +18,10 @@ limitations under the License.
 #define __IROHA_PEER_SERVICE_PEER_SERVIEC_HPP__
 
 #include <algorithm>
+#include <datetime/time.hpp>
 #include <memory>
 #include <string>
 #include <vector>
-#include <datetime/time.hpp>
 
 namespace peer_service {
 
@@ -43,8 +43,7 @@ namespace peer_service {
 
     Node(std::string ip = defaultIP(), std::string public_key = defaultPubKey(),
          std::string name = defaultName(), double trust = 100.0,
-         uint64_t created_ = iroha::time::now64(),
-         State state = PREPARE)
+         uint64_t created_ = iroha::time::now64(), State state = PREPARE)
         : ip_(ip),
           public_key_(public_key),
           name_(name),
@@ -85,7 +84,6 @@ namespace peer_service {
   };
 
   using Nodes = std::vector<std::shared_ptr<Node>>;
-
 
 }  // namespace peer_service
 

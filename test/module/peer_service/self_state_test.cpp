@@ -18,32 +18,37 @@ limitations under the License.
 //
 
 #include <gtest/gtest.h>
-#include <peer_service/self_state.hpp>
 #include <logger/logger.hpp>
+#include <peer_service/self_state.hpp>
 
-
-TEST(PeerServiceSelfState, CheckStatus){
+TEST(PeerServiceSelfState, CheckStatus) {
   static auto log = logger::Logger("PeerServiceSelfState");
 
-  log.info( "        ip: "  + peer_service::self_state::getIp() );
-  log.info( "    pubkey: "  + peer_service::self_state::getPublicKey() );
-  log.info( "privatekey: "  + peer_service::self_state::getPrivateKey() );
-  log.info( "      name: "  + peer_service::self_state::getName() );
-  log.info( "     state: "  + std::to_string(peer_service::self_state::getState()) );
-  log.info( "     trust: "  + std::to_string(peer_service::self_state::getTrust()) );
-  log.info( "activetime: "  + std::to_string(peer_service::self_state::getActiveTime()) );
+  log.info("        ip: " + peer_service::self_state::getIp());
+  log.info("    pubkey: " + peer_service::self_state::getPublicKey());
+  log.info("privatekey: " + peer_service::self_state::getPrivateKey());
+  log.info("      name: " + peer_service::self_state::getName());
+  log.info("     state: " +
+           std::to_string(peer_service::self_state::getState()));
+  log.info("     trust: " +
+           std::to_string(peer_service::self_state::getTrust()));
+  log.info("activetime: " +
+           std::to_string(peer_service::self_state::getActiveTime()));
 }
 
-TEST(PeerServiceSelfState, ActivateStatus){
+TEST(PeerServiceSelfState, ActivateStatus) {
   static auto log = logger::Logger("PeerServiceActivateStatus");
 
   peer_service::self_state::activate();
 
-  log.info( "        ip: "  + peer_service::self_state::getIp() );
-  log.info( "    pubkey: "  + peer_service::self_state::getPublicKey() );
-  log.info( "privatekey: "  + peer_service::self_state::getPrivateKey() );
-  log.info( "      name: "  + peer_service::self_state::getName() );
-  log.info( "     state: "  + std::to_string(peer_service::self_state::getState()) );
-  log.info( "     trust: "  + std::to_string(peer_service::self_state::getTrust()) );
-  log.info( "activetime: "  + std::to_string(peer_service::self_state::getActiveTime()) );
+  log.info("        ip: " + peer_service::self_state::getIp());
+  log.info("    pubkey: " + peer_service::self_state::getPublicKey());
+  log.info("privatekey: " + peer_service::self_state::getPrivateKey());
+  log.info("      name: " + peer_service::self_state::getName());
+  log.info("     state: " +
+           std::to_string(peer_service::self_state::getState()));
+  log.info("     trust: " +
+           std::to_string(peer_service::self_state::getTrust()));
+  log.info("activetime: " +
+           std::to_string(peer_service::self_state::getActiveTime()));
 }

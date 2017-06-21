@@ -48,7 +48,8 @@ namespace peer_service {
       bool remove(const std::string &);
       bool setTrust(const std::string &, const double &);
       bool changeTrust(const std::string &, const double &);
-      bool setActive(const std::string &, const State state, uint64_t created = 0);
+      bool setActive(const std::string &, const State state,
+                     uint64_t created = 0);
 
       void update();
     }
