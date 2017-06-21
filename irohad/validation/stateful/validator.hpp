@@ -16,13 +16,16 @@ limitations under the License.
 #ifndef IROHA_VALIDATION_STATEFUL_VALIDATOR_HPP
 #define IROHA_VALIDATION_STATEFUL_VALIDATOR_HPP
 
-#include <block.pb.h>
+#include <dao/dao.hpp>
 
-namespace validator {
-    namespace stateful {
-        using Block = iroha::protocol::Block;
-        bool validate(const Block &);
+namespace validaton {
+  namespace stateful {
+    class Validator {
+     public:
+      using Propsal = iroha::dao::Proposal;
+      virtual Propsal validate(const Propsal &propsal) = 0;
     };
+  };
 };
 
-#endif //IROHA_VALIDATION_STATELESS_VALIDATOR_HPP
+#endif  // IROHA_VALIDATION_STATELESS_VALIDATOR_HPP

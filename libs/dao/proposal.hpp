@@ -13,4 +13,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "validator.hpp"
+
+#ifndef IROHA_PROPOSAL_HPP
+#define IROHA_PROPOSAL_HPP
+
+#include <vector>
+#include "transaction.hpp"
+
+namespace iroha {
+  namespace dao {
+
+    /**
+     * Proposal is a DAO-structure that provide bunch of transactions emitted by
+     * ordering service.
+     * Proposal has no signatures and other meta information.
+     */
+    struct Proposal {
+      /**
+       * Bunch of transactions provided by ordering service.
+       */
+      const std::vector<Transaction> transactions;
+    };
+  }
+}
+
+#endif  // IROHA_PROPOSAL_HPP
