@@ -20,7 +20,7 @@ limitations under the License.
 
 #include <string>
 
-using iroha::Keypair;
+using iroha::crypto::Keypair;
 
 TEST(Signature, E) {
   Keypair keypair = Keypair::generate_keypair();
@@ -44,13 +44,9 @@ TEST(Signature, sign_data_size) {
 }
 
 TEST(Signature, PrintkeyPair) {
-  iroha::Keypair keypair = Keypair::generate_keypair();
-  ASSERT_NO_THROW({
-    std::cout << keypair.pub_base64() << std::endl;
-  });
-  ASSERT_NO_THROW({
-    std::cout << *keypair.priv_base64() << std::endl;
-  });
+  iroha::crypto::Keypair keypair = Keypair::generate_keypair();
+  ASSERT_NO_THROW({ std::cout << keypair.pub_base64() << std::endl; });
+  ASSERT_NO_THROW({ std::cout << *keypair.priv_base64() << std::endl; });
 }
 
 TEST(Signature, generatedByAndroid) {
@@ -74,7 +70,6 @@ TEST(Signature, generatedByAndroid) {
 
   ASSERT_TRUE(keypair.verify(message, signature));
 }
-
 
 TEST(Signature, generatedByiOS) {
   std::string public_key_b64 = "slyr7oz2+EU6dh2dY9+jNeO/hVrXCkT3rGhcNZo5rrE=";

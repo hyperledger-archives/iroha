@@ -17,45 +17,15 @@ limitations under the License.
 #ifndef IROHA_BLOCK_HPP
 #define IROHA_BLOCK_HPP
 
-#include "types.hpp"
+#include <common.hpp>
+#include "singature.hpp"
+#include "transaction.hpp"
+#include <vector>
 
 namespace iroha {
   namespace dao {
 
-    struct Signature {
-      ed25519::sig_t signature;
-      ed25519::pub_t pubkey;
-    };
 
-
-    struct Action;
-
-    struct AccountAction: public Action{
-
-    };
-
-
-    struct Transaction {
-      // HEADER
-      std::vector<Signature> signatures;
-
-      // timestamp
-      ts64_t created_ts;
-
-      // number that is stored inside each account.
-      // Used to prevent replay attacks.
-      // During stateful validation look at account and compare numbers
-      // if number inside a transaction is less than in account,
-      // this transaction is replayed
-      uint64_t tx_counter;
-
-      // META
-      // transaction creator
-      ed25519::pub_t creator;
-
-      // BODY
-      std::vector<Action> actions;
-    };
 
     struct Block {
       // HEADER

@@ -20,7 +20,7 @@
 #include <functional>
 #include <string>
 
-using namespace iroha;
+using namespace iroha::crypto;
 
 TEST(Crypto, Digests) {
   std::string z = "0123456789abcdef";

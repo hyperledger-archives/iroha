@@ -14,23 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef IROHA_DAO_HASH_PROVIDER_HPP
-#define IROHA_DAO_HASH_PROVIDER_HPP
-#include <crypto/common.hpp>
-#include "dao.hpp"
+#ifndef IROHA_SINGATURE_HPP
+#define IROHA_SINGATURE_HPP
+
 #include <common.hpp>
 
 namespace iroha {
-  namespace dao {
-    template<int T>
-    class HashProvider {
-     public:
-      virtual iroha::hash_t<T> get_hash(const Proposal& proposal) = 0;
+namespace dao {
 
-      virtual iroha::hash_t<T> get_hash(const Block& proposal) = 0;
+struct Signature {
+  iroha::ed25519::sign_t signature;
+  iroha::ed25519::pubkey_t pubkey;
+};
 
-      virtual iroha::hash_t<T> get_hash(const Transaction& proposal) = 0;
-    };
-  }
 }
-#endif  // IROHA_DAO_HASH_PROVIDER_HPP
+}
+
+#endif //IROHA_SINGATURE_HPP

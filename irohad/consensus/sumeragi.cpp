@@ -128,7 +128,7 @@ namespace consensus {
       std::string pkBase64 = peer_service::self_state::getPublicKey();
       std::string skBase64 = peer_service::self_state::getPrivateKey();
 
-      auto keypair = iroha::Keypair(base64_decode(pkBase64), base64_decode(skBase64));
+      auto keypair = iroha::crypto::Keypair(base64_decode(pkBase64), base64_decode(skBase64));
       auto signature = keypair.sign(merkleRoot);
 
       if (!signature) {
