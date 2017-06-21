@@ -15,14 +15,10 @@
  * limitations under the License.
  */
 
-//
-// Created by Takumi Yamashita on 2017/06/21.
-//
-
 #include <gtest/gtest.h>
 #include <iostream>
-#include <string>
 #include <map_queue/map_queue.hpp>
+#include <string>
 
 TEST(MapQueueTest, MapQueueTest) {
   const int N = 10;
