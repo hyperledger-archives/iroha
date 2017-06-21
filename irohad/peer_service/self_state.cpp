@@ -13,10 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "self_state.hpp"
 #include <peer_service/monitor.hpp>
-
-#include <datetime/time.hpp>
+#include <peer_service/self_state.hpp>
 
 #include <arpa/inet.h>
 #include <net/if.h>
@@ -24,6 +22,8 @@ limitations under the License.
 #include <unistd.h>
 
 #include <crypto/crypto.hpp>
+
+#include <iostream>
 
 namespace peer_service {
   namespace self_state {
@@ -47,9 +47,9 @@ namespace peer_service {
     }
 
     void initializeMyIp() {
-      std::string interface = "eth0";  // TODO : temporary "eth0"
-
       if (ip_.empty()) {
+        std::string interface = "eth0";  // TODO : temporary "eth0"
+
         int sockfd;
         struct ifreq ifr;
 
@@ -88,6 +88,9 @@ namespace peer_service {
     }
 
     uint64_t getActiveTime() { return active_time_; }
+
+    void setName(const std::string &name) { name_ = name; }
+    void setName(std::string &&name) { name_ = name; }
 
     void activate() {
       state_ = ACTIVE;
