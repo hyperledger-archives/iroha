@@ -17,6 +17,7 @@ limitations under the License.
 #ifndef IROHA_TRANSACTION_HPP
 #define IROHA_TRANSACTION_HPP
 
+#include <block.pb.h>
 #include <commands.pb.h>
 #include <common.hpp>
 #include <vector>
@@ -31,6 +32,9 @@ namespace iroha {
      * Transaction can be divided to {Header, Meta, Body}.
      */
     struct Transaction {
+
+      static Transaction create(iroha::protocol::Transaction tx);
+
       /**
        * List of signatories that sign transaction
        * HEADER field
@@ -47,7 +51,7 @@ namespace iroha {
        * Public key of a transaction creator.
        * META field
        */
-      ed25519::pubkey_t creator;
+      crypto::ed25519::pubkey_t creator;
 
       /**
        * Number for protecting against replay attack.

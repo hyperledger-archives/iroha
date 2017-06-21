@@ -26,8 +26,8 @@ namespace iroha {
      * Signature is a structure to store crypto information
      */
     struct Signature {
-      iroha::ed25519::sign_t signature;
-      iroha::ed25519::pubkey_t pubkey;
+      iroha::crypto::ed25519::sign_t signature;
+      iroha::crypto::ed25519::pubkey_t pubkey;
     };
   }
 }

@@ -29,6 +29,8 @@ namespace iroha {
      * Proposal has no signatures and other meta information.
      */
     struct Proposal {
+      explicit Proposal(std::vector<Transaction> txs) : transactions(txs){}
+
       /**
        * Bunch of transactions provided by ordering service.
        */
