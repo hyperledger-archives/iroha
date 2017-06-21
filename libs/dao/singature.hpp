@@ -22,6 +22,9 @@ limitations under the License.
 namespace iroha {
   namespace dao {
 
+    /**
+     * Signature is structure for store crypto information
+     */
     struct Signature {
       iroha::ed25519::sign_t signature;
       iroha::ed25519::pubkey_t pubkey;

@@ -16,6 +16,7 @@ limitations under the License.
 
 #ifndef IROHA_TRANSACTION_HPP
 #define IROHA_TRANSACTION_HPP
+
 #include <commands.pb.h>
 #include <common.hpp>
 #include <vector>
@@ -23,25 +24,44 @@ limitations under the License.
 
 namespace iroha {
   namespace dao {
+
+    /**
+     * Transaction is DAO-structure that provides all internal data
+     */
     struct Transaction {
-      // HEADER
+
+      /**
+       * List of signatories that sing transaction
+       * HEADER field
+       */
       std::vector<Signature> signatures;
 
-      // timestamp
+      /**
+       * Creation timestamp
+       * HEADER field
+       */
       ts64_t created_ts;
 
-      // number that is stored inside each account.
-      // Used to prevent replay attacks.
-      // During stateful validation look at account and compare numbers
-      // if number inside a transaction is less than in account,
-      // this transaction is replayed
-      uint64_t tx_counter;
-
-      // META
-      // transaction creator
+      /**
+       * Creator of transaction
+       * META field
+       */
       ed25519::pubkey_t creator;
 
-      // BODY
+      /**
+       * Number that is stored inside each account.
+       * Used to prevent replay attacks.
+       * During stateful validation look at account and compare numbers
+       * if number inside a transaction is less than in account,
+       * this transaction is replayed.
+       * BODY field
+       */
+      uint64_t tx_counter;
+
+      /**
+       * Bunch of commands attached to transaction
+       * BODY field
+       */
       std::vector<iroha::protocol::Command> commands;
     };
   }

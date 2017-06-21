@@ -25,27 +25,57 @@ limitations under the License.
 namespace iroha {
   namespace dao {
 
+    /**
+     * Block is DAO-structure that provide all block-related information
+     */
     struct Block {
-      // HEADER
 
-      // calculated as sha3_256(meta)
-      // meta includes all fields except hash, sigs, created_ts, transactions
+      /**
+       * Calculated as sha3_256(META + BODY fields)
+       * HEADER field
+       */
       hash256_t hash;
 
-      // array of signatures
+      /**
+       * List of signatures
+       * HEADER field
+       */
       std::vector<Signature> sigs;
 
-      // created timestamp
+      /**
+       * Creation timestamp
+       * HEADER field
+       */
       ts64_t created_ts;
 
-      // META
-      // current id = ledger version = number of block in a ledger
+      /**
+       * Number of blocks in ledger
+       * META field
+       */
       uint64_t height;
-      hash256_t prev_hash;    // hash of previous block
-      uint16_t tx_number;     // number of transactions
-      hash256_t merkle_root;  // global merkle root
 
-      // BODY
+      /**
+       * Hash of previous block
+       * META field
+       */
+      hash256_t prev_hash;
+
+      /**
+       * Number of transactions
+       * META field
+       */
+      uint16_t tx_number;
+
+      /**
+       * Root of merkle tree based on block and ledger
+       * META field
+       */
+      hash256_t merkle_root;
+
+      /**
+       * Attached transactions
+       * BODY field
+       */
       std::vector<Transaction> transactions;
     };
   }

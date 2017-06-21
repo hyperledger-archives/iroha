@@ -22,7 +22,16 @@ limitations under the License.
 
 namespace iroha {
   namespace dao {
+
+    /**
+     * Proposal is DAO-structure that provide bunch of transactions emitted by ordering service.
+     * Proposal not contains signatures and other meta information.
+     */
     struct Proposal {
+
+      /**
+       * Bunch of transactions that provided by ordering service.
+       */
       const std::vector<Transaction> transactions;
     };
   }

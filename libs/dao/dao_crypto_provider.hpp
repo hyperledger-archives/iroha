@@ -18,14 +18,30 @@ limitations under the License.
 #define IROHA_DAO_CRYPTO_PROVIDER_HPP
 
 #include <dao/dao.hpp>
+
 namespace iroha {
   namespace dao {
+
+    /**
+     * Crypto provider is abstract service for making cryptography in business logic code.
+     */
     class DaoCryptoProvider {
      public:
-      virtual bool verify(const iroha::dao::Transaction& tx) = 0;
 
-      virtual iroha::Keypair::signature_t sign(
-          const iroha::dao::Transaction& tx) = 0;
+      /**
+       * Method verify signature of transaction.
+       * @param tx - transaction for verification
+       * @return true if transaction signature valid, otherwise false
+       */
+      virtual bool verify(const iroha::dao::Transaction &tx) = 0;
+
+      /**
+       * Method signs transaction by own private key.
+       * @param tx - transaction without signature
+       * @return new transaction signed by crypto provider
+       */
+      virtual iroha::dao::Transaction sign(
+          const iroha::dao::Transaction &tx) = 0;
     };
   }
 }
