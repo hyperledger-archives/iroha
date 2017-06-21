@@ -17,8 +17,8 @@ limitations under the License.
 #ifndef IROHA_PROPOSAL_HPP
 #define IROHA_PROPOSAL_HPP
 
-#include "transaction.hpp"
 #include <vector>
+#include "transaction.hpp"
 
 namespace iroha {
   namespace dao {

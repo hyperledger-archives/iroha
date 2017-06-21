@@ -18,14 +18,12 @@ limitations under the License.
 #define IROHA_BLOCK_HPP
 
 #include <common.hpp>
+#include <vector>
 #include "singature.hpp"
 #include "transaction.hpp"
-#include <vector>
 
 namespace iroha {
   namespace dao {
-
-
 
     struct Block {
       // HEADER

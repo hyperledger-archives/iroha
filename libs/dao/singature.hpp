@@ -20,14 +20,13 @@ limitations under the License.
 #include <common.hpp>
 
 namespace iroha {
-namespace dao {
+  namespace dao {
 
-struct Signature {
-  iroha::ed25519::sign_t signature;
-  iroha::ed25519::pubkey_t pubkey;
-};
-
+    struct Signature {
+      iroha::ed25519::sign_t signature;
+      iroha::ed25519::pubkey_t pubkey;
+    };
+  }
 }
-}
 
-#endif //IROHA_SINGATURE_HPP
+#endif  // IROHA_SINGATURE_HPP
