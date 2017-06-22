@@ -26,13 +26,16 @@ namespace iroha {
 
   namespace ametsuchi {
 
-    class StorageException;
-
     /**
      * Reflects a temporary state of storage
      * Allows queries on the temporary state
      */
     class MutableState : public QueryApi {
+     public:
+      /**
+       * Specifies the error during apply process in TransactionContext
+       */
+      class StorageException;
 
       /**
        * The context used in @see apply transaction method
@@ -45,8 +48,8 @@ namespace iroha {
          * @param command Command to be applied
          * @throws StorageException
          */
-        template<class T>
-        virtual void try_apply(T command) = 0;
+        template <class T>
+        void try_apply(T command);
       };
 
       /**
@@ -62,13 +65,14 @@ namespace iroha {
        * @param function Function that specifies the logic used to apply
        * @return True if transaction was successfully applied, false otherwise
        */
-      virtual bool apply(dao::Transaction transaction,
-                         std::function<void(dao::Transaction,
-                                            TransactionContext)> function) = 0;
+      virtual bool apply(
+          dao::Transaction transaction,
+          std::function<void(dao::Transaction, TransactionContext)>
+              function) = 0;
     };
 
   }  // namespace ametsuchi
 
-} // namespace iroha
+}  // namespace iroha
 
-#endif //IROHA_MUTABLESTATE_HPP
+#endif  // IROHA_MUTABLESTATE_HPP

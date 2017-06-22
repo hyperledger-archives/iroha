@@ -19,16 +19,16 @@ limitations under the License.
 
 #include <common.hpp>
 #include <dao/dao.hpp>
+#include <rxcpp/rx.hpp>
 #include <string>
 #include <vector>
-#include "rxcpp/rx-observable.hpp"
-#include "rxcpp/rx.hpp"
 
 namespace iroha {
 
   namespace ametsuchi {
 
     class QueryApi {
+     public:
       /**
        * Get account by it's first public key.
        * @param pub_key
@@ -36,12 +36,14 @@ namespace iroha {
        */
       virtual iroha::dao::Account get_account(
           iroha::crypto::ed25519::pubkey_t pub_key) = 0;
+
       /**
        * Get asset by full name. For example USD#soramitsu.co.jp
        * @param full_name of an asset (name#domain)
        * @return DAO Asset
        */
       virtual iroha::dao::Asset get_asset(std::string asset_full_name) = 0;
+
       /**
        * Get domain by domain's full name. For example soramitsu.co.jp
        * @param full_name of a domain
@@ -55,6 +57,7 @@ namespace iroha {
        * @return DAO Wallet
        */
       virtual iroha::dao::Wallet get_wallet(std::string wallet_id) = 0;
+
       /**
        * Get all wallets of a account.
        * @param pub_key of a account
@@ -70,6 +73,7 @@ namespace iroha {
        */
       virtual std::vector<iroha::dao::Asset> get_domain_assets(
           std::string domain_full_name) = 0;
+
       /**
        * Get all transactions of an account.
        * @param pub_key - account's first public key
@@ -97,6 +101,6 @@ namespace iroha {
 
   }  // namespace ametsuchi
 
-} // namespace iroha
+}  // namespace iroha
 
 #endif  // IROHA_QUERY_API_HPP
