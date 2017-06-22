@@ -29,10 +29,9 @@ namespace consensus {
       dispatchToSumeragi = func;
     }
 
-    grpc::Status SumeragiService::Verify(grpc::ClientContext* context,
-                                         const Block& request,
-                                         VerifyResponse* response) {
-      std::cout << request.header().merkle_root() << std::endl;
+    grpc::Status SumeragiService::Verify(
+        grpc::ServerContext* context, const ::iroha::protocol::Block* request,
+        iroha::protocol::VerifyResponse* response) {
       response->set_code(iroha::protocol::ResponseCode::OK);
       return grpc::Status::OK;
     }

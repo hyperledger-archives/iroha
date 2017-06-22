@@ -26,8 +26,7 @@ namespace consensus {
       : public iroha::protocol::SumeragiService::Service {
     public:
       grpc::Status Verify(
-        grpc::ClientContext* context,
-        const iroha::protocol::Block& request,
+        grpc::ServerContext* context, const ::iroha::protocol::Block* request,
         iroha::protocol::VerifyResponse* response);
     };
 
