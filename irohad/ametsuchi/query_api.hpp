@@ -15,28 +15,70 @@ limitations under the License.
 */
 #ifndef IROHA_QUERY_API_HPP
 #define IROHA_QUERY_API_HPP
+#include <common.hpp>
 #include <dao.hpp>
+#include <string>
 #include <vector>
+
 namespace iroha {
 
-namespace ametsuchi {
+  namespace ametsuchi {
 
-class QueryApi {
-  //TODO:
-  virtual iroha::dao::Account get_account() = 0;
+    class QueryApi {
+      /**
+       * Get account by it's first public key.
+       * @param pub_key
+       * @return DAO Account
+       */
+      virtual iroha::dao::Account get_account(
+          iroha::crypto::ed25519::pubkey_t pub_key) = 0;
+      /**
+       * Get asset by full name. For example USD#soramitsu.co.jp
+       * @param full_name of an asset (name#domain)
+       * @return DAO Asset
+       */
+      virtual iroha::dao::Asset get_asset(std::string asset_full_name) = 0;
+      /**
+       * Get domain by domain's full name. For example soramitsu.co.jp
+       * @param full_name of a domain
+       * @return DAO Domain
+       */
+      virtual iroha::dao::Domain get_domain(std::string domain_full_name) = 0;
 
-  virtual iroha::dao::Domain get_domain() = 0;
+      /**
+       * Get wallet by wallet_id
+       * @param wallet_id
+       * @return DAO Wallet
+       */
+      virtual iroha::dao::Wallet get_wallet(std::string wallet_id) = 0;
+      /**
+       * Get all wallets of a account.
+       * @param pub_key of a account
+       * @return vector of DAO Wallet
+       */
+      virtual std::vector<iroha::dao::Wallet> get_account_wallets(
+          iroha::crypto::ed25519::pubkey_t pub_key) = 0;
 
-  virtual iroha::dao::Asset get_asset() = 0;
+      /**
+       * Get all asset of a domain.
+       * @param  full_name of a domain
+       * @return vector of DAO Asset
+       */
+      virtual std::vector<iroha::dao::Asset> get_domain_assets(
+          std::string domain_full_name) = 0;
 
-  virtual iroha::dao::Wallet get_wallet() = 0;
+      // TODO: Temporal solution, will be replaced with observable
 
-  virtual std::vector<iroha::dao::Wallet> get_account_wallets() = 0;
+      virtual std::vector<iroha::dao::Transaction> get_account_transactions(
+          iroha::crypto::ed25519::pubkey_t pub_key) = 0;
 
+      virtual std::vector<iroha::dao::Transaction> get_asset_transactions(
+          std::string asset_full_name) = 0;
 
-};
-
+      virtual std::vector<iroha::dao::Transaction> get_wallet_transactions(
+          std::string wallet_id) = 0;
+    };
+  }
 }
-}
 
-#endif //IROHA_QUERY_API_HPP
+#endif  // IROHA_QUERY_API_HPP
