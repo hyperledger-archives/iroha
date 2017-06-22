@@ -21,7 +21,7 @@ namespace consensus {
     using iroha::protocol::Block;
     using iroha::protocol::VerifyResponse;
 
-    VerifyResponse unicast(const Block& block, const std::string& targetPeerIp) {
+    VerifyResponse sendBlock(const Block& block, const std::string& targetPeerIp) {
       SumeragiClient client(targetPeerIp, 50051); // TODO: Get port from config
       return client.Verify(block);
     }

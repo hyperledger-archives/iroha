@@ -23,7 +23,7 @@ limitations under the License.
 namespace consensus {
   namespace connection {
 
-    iroha::protocol::VerifyResponse unicast(
+    iroha::protocol::VerifyResponse sendBlock(
       const iroha::protocol::Block& block, const std::string& targetPeerIp);
 
     class SumeragiClient {
