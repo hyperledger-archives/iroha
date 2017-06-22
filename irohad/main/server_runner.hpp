@@ -20,12 +20,21 @@ limitations under the License.
 #ifndef CONNECTION_SERVER_RUNNER_HPP
 #define CONNECTION_SERVER_RUNNER_HPP
 
-namespace server_runner {
-  void initialize(const std::string &ip, int port,
-                  const std::vector<grpc::Service *> &services);
+class ServerRunner {
+public:
+  ServerRunner(const std::string &ip, int port,
+               const std::vector<grpc::Service *> &services);
   void run();
   void shutDown();
   bool waitForServersReady();
-}  // namespace server_runner
+
+private:
+  std::unique_ptr<grpc::Server> serverInstance_;
+  std::mutex waitForServer_;
+  std::condition_variable serverInstanceCV_;
+
+  std::string serverAddress_;
+  std::vector<grpc::Service *> services_;
+};
 
 #endif

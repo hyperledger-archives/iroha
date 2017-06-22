@@ -21,48 +21,34 @@ limitations under the License.
 
 #include "server_runner.hpp"
 
-namespace server_runner {
+logger::Logger console("ServerRunner");
 
-  logger::Logger console("ServerRunner");
+ServerRunner::ServerRunner(const std::string &ip, int port,
+                           const std::vector<grpc::Service *> &srvs)
+    : serverAddress_(ip + ":" + std::to_string(port)), services_(srvs) {}
 
-  // server instances
-  std::unique_ptr<grpc::Server> serverInstance;
-  std::mutex waitForServer;
-  std::condition_variable serverInstanceCV;
+void ServerRunner::run() {
+  grpc::ServerBuilder builder;
 
-  // initial settings
-  std::string serverAddress;
-  std::vector<grpc::Service *> services;
-
-  void initialize(const std::string &ip, int port,
-                  const std::vector<grpc::Service *> &srvs) {
-    serverAddress = ip + ":" + std::to_string(port);
-    services = srvs;
+  // TODO(motxx): Is it ok to open same port for all services?
+  builder.AddListeningPort(serverAddress_, grpc::InsecureServerCredentials());
+  for (auto srv : services_) {
+    builder.RegisterService(srv);
   }
 
-  void run() {
-    grpc::ServerBuilder builder;
+  waitForServer_.lock();
+  serverInstance_ = builder.BuildAndStart();
+  waitForServer_.unlock();
+  serverInstanceCV_.notify_one();
 
-    // TODO(motxx): Is it ok to open same port for all services?
-    builder.AddListeningPort(serverAddress, grpc::InsecureServerCredentials());
-    for (auto srv : services) {
-      builder.RegisterService(srv);
-    }
+  console.info("Server listening on {}", serverAddress_);
 
-    waitForServer.lock();
-    serverInstance = builder.BuildAndStart();
-    waitForServer.unlock();
-    serverInstanceCV.notify_one();
+  serverInstance_->Wait();
+}
 
-    console.info("Server listening on {}", serverAddress);
+void ServerRunner::shutDown() { serverInstance_->Shutdown(); }
 
-    serverInstance->Wait();
-  }
-
-  void shutDown() { serverInstance->Shutdown(); }
-
-  bool waitForServersReady() {
-    std::unique_lock<std::mutex> lock(waitForServer);
-    while (!serverInstance) serverInstanceCV.wait(lock);
-  }
-}  // namespace server_runner
+bool ServerRunner::waitForServersReady() {
+  std::unique_lock<std::mutex> lock(waitForServer_);
+  while (!serverInstance_) serverInstanceCV_.wait(lock);
+}

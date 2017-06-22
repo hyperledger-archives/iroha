@@ -19,6 +19,7 @@ limitations under the License.
 #include <consensus/connection/client.hpp>
 #include <main/server_runner.hpp>
 #include <thread>
+#include <endpoint.grpc.pb.h>
 
 using namespace consensus::connection;
 using iroha::protocol::Block;
@@ -29,18 +30,27 @@ class ConsensusConnectionTest : public ::testing::Test {
     std::vector<grpc::Service*> services {
       &service_
     };
-    server_runner::initialize("0.0.0.0", 50051, services);
-    serverThread_ = std::thread(&server_runner::run);
-    server_runner::waitForServersReady();
+    serverRunner_ = std::make_unique<ServerRunner>("0.0.0.0", 50051, services);
+    running_ = false;
   }
 
   virtual void TearDown() {
-    server_runner::shutDown();
-    serverThread_.join();
+    if (running_) {
+      serverRunner_->shutDown();
+      serverThread_.join();
+    }
+  }
+
+  void RunServer() {
+    serverThread_ = std::thread(&ServerRunner::run, serverRunner_.get());
+    serverRunner_->waitForServersReady();
+    running_ = true;
   }
 
  private:
-  SumeragiService service_;
+  bool running_;
+  iroha::protocol::SumeragiService::Service service_;
+  std::unique_ptr<ServerRunner> serverRunner_;
   std::thread serverThread_;
 };
 
@@ -48,11 +58,17 @@ class ConsensusConnectionTest : public ::testing::Test {
  * Note: Async connection is WIP.
  *       Temporarily, we tests sync connection.
  */
+TEST_F(ConsensusConnectionTest, FailConnectionWhenNotStandingServer) {
+  Block block;
+  block.mutable_header()->set_merkle_root("merkle");
+  auto response = unicast(block, "0.0.0.0");
+  ASSERT_EQ(response.code(), iroha::protocol::ResponseCode::FAIL);
+}
 
 TEST_F(ConsensusConnectionTest, SuccessConnectionWhenStandingServer) {
+  RunServer();
   Block block;
-  *block.mutable_header()->mutable_merkle_root() = "merkle root example";
+  block.mutable_header()->set_merkle_root("merkle");
   auto response = unicast(block, "0.0.0.0");
   ASSERT_EQ(response.code(), iroha::protocol::ResponseCode::OK);
-  ASSERT_STREQ(response.message().c_str(), "ReceivedBlock");
 }
