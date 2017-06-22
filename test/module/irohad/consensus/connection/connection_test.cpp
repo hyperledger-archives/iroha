@@ -21,36 +21,35 @@ limitations under the License.
 #include <thread>
 #include <endpoint.grpc.pb.h>
 
-using namespace consensus::connection;
+namespace conn = consensus::connection;
 using iroha::protocol::Block;
 
 class ConsensusConnectionTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
-    std::vector<grpc::Service*> services {
+    serverRunner_.reset(new ServerRunner("0.0.0.0", 50051, {
       &service_
-    };
-    serverRunner_ = std::make_unique<ServerRunner>("0.0.0.0", 50051, services);
+    }));
     running_ = false;
   }
 
   virtual void TearDown() {
     if (running_) {
-      serverRunner_->shutDown();
+      serverRunner_->shutdown();
       serverThread_.join();
     }
   }
 
   void RunServer() {
-    serverThread_ = std::thread(&ServerRunner::run, serverRunner_.get());
+    serverThread_ = std::thread(&IServerRunner::run, std::ref(*serverRunner_));
     serverRunner_->waitForServersReady();
     running_ = true;
   }
 
  private:
   bool running_;
-  iroha::protocol::SumeragiService::Service service_;
-  std::unique_ptr<ServerRunner> serverRunner_;
+  conn::SumeragiService service_;
+  std::unique_ptr<IServerRunner> serverRunner_;
   std::thread serverThread_;
 };
 
@@ -60,15 +59,13 @@ class ConsensusConnectionTest : public ::testing::Test {
  */
 TEST_F(ConsensusConnectionTest, FailConnectionWhenNotStandingServer) {
   Block block;
-  block.mutable_header()->set_merkle_root("merkle");
-  auto response = unicast(block, "0.0.0.0");
+  auto response = conn::unicast(block, "0.0.0.0");
   ASSERT_EQ(response.code(), iroha::protocol::ResponseCode::FAIL);
 }
 
 TEST_F(ConsensusConnectionTest, SuccessConnectionWhenStandingServer) {
   RunServer();
   Block block;
-  block.mutable_header()->set_merkle_root("merkle");
-  auto response = unicast(block, "0.0.0.0");
+  auto response = conn::unicast(block, "0.0.0.0");
   ASSERT_EQ(response.code(), iroha::protocol::ResponseCode::OK);
 }

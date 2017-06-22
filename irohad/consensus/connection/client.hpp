@@ -14,9 +14,11 @@ limitations under the License.
 #ifndef CONSENSUS_CONNECTION_CLIENT_HPP
 #define CONSENSUS_CONNECTION_CLIENT_HPP
 
+#include <grpc++/grpc++.h>
 #include <memory>
 #include <block.pb.h>
 #include <endpoint.pb.h>
+#include <endpoint.grpc.pb.h>
 
 namespace consensus {
   namespace connection {

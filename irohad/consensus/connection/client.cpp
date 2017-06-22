@@ -12,8 +12,7 @@ limitations under the License.
 */
 
 #include <grpc++/grpc++.h>
-#include <endpoint.pb.h>
-#include <endpoint.grpc.pb.h>
+#include <block.pb.h>
 #include "client.hpp"
 
 namespace consensus {
