@@ -16,9 +16,11 @@ limitations under the License.
 #ifndef IROHA_QUERY_API_HPP
 #define IROHA_QUERY_API_HPP
 #include <common.hpp>
-#include <dao.hpp>
+#include <dao/dao.hpp>
 #include <string>
 #include <vector>
+#include "rxcpp/rx-observable.hpp"
+#include "rxcpp/rx.hpp"
 
 namespace iroha {
 
@@ -66,17 +68,28 @@ namespace iroha {
        */
       virtual std::vector<iroha::dao::Asset> get_domain_assets(
           std::string domain_full_name) = 0;
+      /**
+       *
+       * @param pub_key
+       * @return
+       */
+      virtual rxcpp::observable<iroha::dao::Transaction>
+      get_account_transactions(iroha::crypto::ed25519::pubkey_t pub_key) = 0;
 
-      // TODO: Temporal solution, will be replaced with observable
-
-      virtual std::vector<iroha::dao::Transaction> get_account_transactions(
-          iroha::crypto::ed25519::pubkey_t pub_key) = 0;
-
-      virtual std::vector<iroha::dao::Transaction> get_asset_transactions(
+      /**
+       *
+       * @param asset_full_name
+       * @return
+       */
+      virtual rxcpp::observable<iroha::dao::Transaction> get_asset_transactions(
           std::string asset_full_name) = 0;
-
-      virtual std::vector<iroha::dao::Transaction> get_wallet_transactions(
-          std::string wallet_id) = 0;
+      /**
+       *
+       * @param wallet_id
+       * @return
+       */
+      virtual rxcpp::observable<iroha::dao::Transaction>
+      get_wallet_transactions(std::string wallet_id) = 0;
     };
   }
 }
