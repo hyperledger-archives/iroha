@@ -27,9 +27,9 @@ namespace api {
   class CommandService final
       : public iroha::protocol::CommandService::Service {
    public:
-    grpc::Status CommandService::Torii(grpc::ServerContext* context,
-                                       const iroha::protocol::Transaction* request,
-                                       iroha::protocol::ToriiResponse* response);
+    grpc::Status Torii(grpc::ServerContext* context,
+                       const iroha::protocol::Transaction* request,
+                       iroha::protocol::ToriiResponse* response);
   };
 
 }  // namespace api

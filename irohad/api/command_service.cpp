@@ -36,12 +36,12 @@ namespace api {
     // TODO: Use this to get client's ip and port.
     (void)context;
 
-    if (validator::stateless::validate(*request)) {
+    if (validation::stateless::validate(*request)) {
       dispatchToOrdering(*request);
       // TODO: Return tracking log number (hash)
       *response = ToriiResponse();
       response->set_code(ResponseCode::OK);
-      response->set_message("successfully dispatching to ordering.")
+      response->set_message("successfully dispatching to ordering.");
     } else {
       // TODO: Return validation failed message
       *response = ToriiResponse();

@@ -18,11 +18,11 @@ limitations under the License.
 
 #include <block.pb.h>
 
-namespace validator {
-    namespace stateless {
-        using Transaction = iroha::protocol::Transaction;
-        bool validate(const Transaction &);
-    };
-};
+namespace validation {
+  namespace stateless {
+    using Transaction = iroha::protocol::Transaction;
+    bool validate(const Transaction &);
+  }  // namespace stateless
+}  // namespace validation
 
-#endif //IROHA_VALIDATION_STATELESS_VALIDATOR_HPP
+#endif  // IROHA_VALIDATION_STATELESS_VALIDATOR_HPP
