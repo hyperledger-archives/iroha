@@ -20,6 +20,10 @@
 #include "block.hpp"
 #include "proposal.hpp"
 #include "transaction.hpp"
+#include "peer.hpp"
+#include "singature.hpp"
+#include "dao_crypto_provider.hpp"
+#include "dao_hash_provider.hpp"
 
 /**
  * DAO - Data Access Object.
