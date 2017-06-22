@@ -22,6 +22,11 @@
 #include "transaction.hpp"
 #include "asset.hpp"
 #include "account.hpp"
+#include "wallet.hpp"
+#include "peer.h"
+#include "singature.hpp"
+#include "domain.hpp"
+
 
 /**
  * DAO - Data Access Object.
