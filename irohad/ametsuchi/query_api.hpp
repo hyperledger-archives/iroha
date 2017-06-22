@@ -13,8 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 #ifndef IROHA_QUERY_API_HPP
 #define IROHA_QUERY_API_HPP
+
 #include <common.hpp>
 #include <dao/dao.hpp>
 #include <string>
@@ -83,6 +85,7 @@ namespace iroha {
        */
       virtual rxcpp::observable<iroha::dao::Transaction> get_asset_transactions(
           std::string asset_full_name) = 0;
+
       /**
        * Get all transactions of a certain wallet
        * @param wallet_id - unique wallet
@@ -91,7 +94,9 @@ namespace iroha {
       virtual rxcpp::observable<iroha::dao::Transaction>
       get_wallet_transactions(std::string wallet_id) = 0;
     };
-  }
-}
+
+  }  // namespace ametsuchi
+
+} // namespace iroha
 
 #endif  // IROHA_QUERY_API_HPP

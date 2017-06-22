@@ -58,15 +58,16 @@ namespace iroha {
       /**
        * Applies a transaction to current mutable state
        * using logic specified in function
-       * @param transaction Transaction to be applies
+       * @param transaction Transaction to be applied
        * @param function Function that specifies the logic used to apply
+       * @return True if transaction was successfully applied, false otherwise
        */
-      virtual void apply(dao::Transaction transaction,
-                         std::function<bool(dao::Transaction,
+      virtual bool apply(dao::Transaction transaction,
+                         std::function<void(dao::Transaction,
                                             TransactionContext)> function) = 0;
     };
 
-  }
+  }  // namespace ametsuchi
 
 } // namespace iroha
 
