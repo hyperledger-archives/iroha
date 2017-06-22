@@ -34,7 +34,7 @@ namespace iroha {
       /**
        * Public key of peer
        */
-      const iroha::ed25519::pubkey_t pubkey;
+      const iroha::crypto::ed25519::pubkey_t pubkey;
 
       /*
        * Peer account
