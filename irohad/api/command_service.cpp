@@ -15,37 +15,40 @@ limitations under the License.
 */
 
 #include "command_service.hpp"
+#include <grpc++/server_context.h>
 #include <ordering/queue.hpp>
 #include <validation/stateless/validator.hpp>
 
-namespace connection {
-  namespace api {
+namespace api {
 
-    using namespace iroha::protocol;
+  using namespace iroha::protocol;
 
-    std::function<void(const Transaction&)> dispatchToOrdering;
+  std::function<void(const Transaction&)> dispatchToOrdering;
 
-    void receive(
-        std::function<void(const iroha::protocol::Transaction&)> const& func) {
-      dispatchToOrdering = func;
+  void receive(
+      std::function<void(const iroha::protocol::Transaction&)> const& func) {
+    dispatchToOrdering = func;
+  }
+
+  grpc::Status CommandService::Torii(grpc::ServerContext* context,
+                                     const Transaction* request,
+                                     ToriiResponse* response) {
+    // TODO: Use this to get client's ip and port.
+    (void)context;
+
+    if (validator::stateless::validate(*request)) {
+      dispatchToOrdering(*request);
+      // TODO: Return tracking log number (hash)
+      *response = ToriiResponse();
+      response->set_code(ResponseCode::OK);
+      response->set_message("successfully dispatching to ordering.")
+    } else {
+      // TODO: Return validation failed message
+      *response = ToriiResponse();
+      response->set_code(ResponseCode::FAIL);
+      response->set_message("failed stateless validation.");
     }
+    return grpc::Status::OK;
+  }
 
-    grpc::Status CommandService::Torii(grpc::ClientContext* context,
-                                       const Transaction& request,
-                                       ToriiResponse* response) {
-      // TODO: Use this to get client's ip and port.
-      (void)context;
-
-      if (validator::stateless::validate(request)) {
-        dispatchToOrdering(request);
-        // TODO: Return tracking log number (hash)
-        *response = ToriiResponse();
-      } else {
-        // TODO: Return validation failed message
-        *response = ToriiResponse();
-      }
-      return grpc::Status::OK;
-    }
-
-  }  // namespace api
-}  // namespace connection
+}  // namespace api
