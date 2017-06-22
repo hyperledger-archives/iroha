@@ -20,12 +20,23 @@ limitations under the License.
 #ifndef CONNECTION_SERVER_RUNNER_HPP
 #define CONNECTION_SERVER_RUNNER_HPP
 
-class ServerRunner {
+/**
+ * For easy replacing with mock server, we use the interface.
+ */
+class IServerRunner {
+public:
+  virtual ~IServerRunner() = default;
+  virtual void run() = 0;
+  virtual void shutdown() = 0;
+  virtual bool waitForServersReady() = 0;
+};
+
+class ServerRunner final : public IServerRunner {
 public:
   ServerRunner(const std::string &ip, int port,
                const std::vector<grpc::Service *> &services);
   void run();
-  void shutDown();
+  void shutdown();
   bool waitForServersReady();
 
 private:

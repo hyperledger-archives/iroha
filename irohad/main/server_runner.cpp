@@ -46,7 +46,7 @@ void ServerRunner::run() {
   serverInstance_->Wait();
 }
 
-void ServerRunner::shutDown() { serverInstance_->Shutdown(); }
+void ServerRunner::shutdown() { serverInstance_->Shutdown(); }
 
 bool ServerRunner::waitForServersReady() {
   std::unique_lock<std::mutex> lock(waitForServer_);
