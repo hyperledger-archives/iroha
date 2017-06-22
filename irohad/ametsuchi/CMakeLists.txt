@@ -18,4 +18,5 @@ target_link_libraries(storage PUBLIC
     block_store
     index
     wsv
+    rxcpp
     )
