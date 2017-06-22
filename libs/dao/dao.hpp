@@ -23,7 +23,7 @@
 #include "asset.hpp"
 #include "account.hpp"
 #include "wallet.hpp"
-#include "peer.h"
+#include "peer.hpp"
 #include "singature.hpp"
 #include "domain.hpp"
 
