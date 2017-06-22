@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_STORAGE_H
-#define IROHA_STORAGE_H
+#ifndef IROHA_AMETSUCHI_H
+#define IROHA_AMETSUCHI_H
 
-#include <ametsuchi/query_api.hpp>
 #include <ametsuchi/mutable_state.hpp>
+#include <ametsuchi/query_api.hpp>
 
 namespace iroha {
 
@@ -29,21 +29,23 @@ namespace iroha {
      * Storage class, which allows queries on current committed state, and
      * creation of state which can be mutated with blocks and transactions
      */
-    class Storage : public QueryApi {
-
+    class Ametsuchi : public QueryApi {
+     public:
       /**
        * Creates a mutable state from the current state
        * @return Created mutable state
        */
-      virtual MutableState createMutableState() = 0;
+      virtual std::unique_ptr<MutableState> createMutableState() = 0;
 
       /**
        * Permanently applies the mutable state to storage
        * @param state Mutated state to be applied
        */
-      virtual void applyMutableState(MutableState &&state) = 0;
+      virtual void applyMutableState(MutableState&& state) = 0;
     };
+
   }  // namespace ametsuchi
 
 }  // namespace iroha
-#endif  // IROHA_STORAGE_H
+
+#endif  // IROHA_AMETSUCHI_H
