@@ -13,20 +13,36 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef IROHA_VALIDATION_STATEFUL_VALIDATOR_HPP
-#define IROHA_VALIDATION_STATEFUL_VALIDATOR_HPP
+#ifndef IROHA_ACCOUNT_HPP
+#define IROHA_ACCOUNT_HPP
 
-#include <dao/dao.hpp>
+#include "singature.hpp"
 
-namespace validaton {
-  namespace stateful {
-    class Validator {
-     public:
-      using Propsal = iroha::dao::Proposal;
-      using Block = iroha::dao::Block;
-      virtual Block validate(const Propsal &propsal) = 0;
+namespace iroha {
+  namespace dao {
+
+    /**
+     * Account Data Access Object
+     */
+    struct Account {
+      /**
+       * ACTIVE - active account
+       * SUSPENDED - not active account
+       *
+       */
+      enum State { ACTIVE, SUSPENDED };
+
+      /*
+       * Account state
+       */
+      const State state;
+
+      /*
+       * Minimum quorum of signatures need for transactions
+       */
+      const uint32_t quorum;
     };
-  };
-};
+  }
+}
 
-#endif  // IROHA_VALIDATION_STATELESS_VALIDATOR_HPP
+#endif  // IROHA_ACCOUNT_HPP

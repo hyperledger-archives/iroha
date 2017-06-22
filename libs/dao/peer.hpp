@@ -17,6 +17,7 @@ limitations under the License.
 #define IROHA_PEER_H
 
 #include <common.hpp>
+#include "account.hpp"
 
 namespace iroha {
   namespace dao {
@@ -25,7 +26,6 @@ namespace iroha {
      * Peer is DAO, which contains information about network participants
      */
     struct Peer {
-
       /**
        * Address of peer for connection
        */
@@ -35,7 +35,12 @@ namespace iroha {
        * Public key of peer
        */
       const iroha::ed25519::pubkey_t pubkey;
+
+      /*
+       * Peer account
+       */
+      const Account account;
     };
   }
 }
-#endif //IROHA_PEER_H
+#endif  // IROHA_PEER_H
