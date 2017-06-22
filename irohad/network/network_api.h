@@ -16,74 +16,72 @@ limitations under the License.
 #ifndef IROHA_NETWORK_H
 #define IROHA_NETWORK_H
 
-#include "rxcpp/rx-observable.hpp"
 #include "dao/dao.hpp"
+#include "rxcpp/rx-observable.hpp"
 
 namespace iroha {
   namespace network {
 
     /**
-     * Interface provide methods for fetching useful consensus-related data.
+     * Interface provides methods for fetching consensus-related data.
      */
-    class ConsensusPublicApi {
+    class ConsensusListner {
      public:
-
       /**
-       * Provide proposals that shared in network for validation
-       * @return observable with new proposals shared in network
+       * Event is triggered when proposal arrives from network.
+       * @return observable with Proposals.
+       * (List of Proposals)
        */
       virtual rxcpp::observable<iroha::dao::Proposal> on_proposal() = 0;
 
       /**
-       * Provide blocks that passed network consensus
+       * Event is triggered when commit block arrives.
        * @return observable with sequence of committed blocks.
        * In common case observable<Block> will contain one element.
-       * But exists scenarios when consensus provide many blocks.
-       * Ex: On peer startup - wait for committed block -
-       * network will provide all blocks committed after last block of current ledger.
+       * But there are scenarios when consensus provide many blocks, e.g.
+       * on peer startup - peer will get all actual blocks.
        */
-      virtual rxcpp::observable<rxcpp::observable<iroha::dao::Block>> on_commit() = 0;
+      virtual rxcpp::observable<rxcpp::observable<iroha::dao::Block>>
+      on_commit() = 0;
     };
 
     /**
-     * Interface for downloading blocks from network
+     * Interface for downloading blocks from a network
      */
     class BlockLoaderApi {
      public:
-
       /**
-       * Method request missed blocks from external peer retatively to top block.
-       * Note, that blocks will be respond in reversed order - from the newest to top block.
-       * This order required for verify blocks before storing in ledger.
-       * @param from - peer for requesting blocks
-       * @param topBlock - started block for downloading
-       * @return observable with respond blocks
+       * Method requests missed blocks from external peer starting from it's top
+       * block.
+       * Note, that blocks will be in order: from the newest
+       * to your actual top block.
+       * This order is required for verify blocks before storing in a ledger.
+       * @param target_peer - peer for requesting blocks
+       * @param topBlock - your last actual block
+       * @return observable with blocks
        */
-      virtual rxcpp::observable<iroha::dao::Block> requestBlocks(iroha::dao::Peer &from,
-                                                                 iroha::dao::Block &topBlock) = 0;
+      virtual rxcpp::observable<iroha::dao::Block> requestBlocks(
+          iroha::dao::Peer &target_peer, iroha::dao::Block &topBlock) = 0;
     };
 
     /**
-     * Interface for propagation transaction in network
+     * Interface for propagating transaction in a network
      */
     class TransactionPropagator {
      public:
-
       /**
-       * Method spread transaction for other members of network
+       * Method spreads transaction to other members of  a network
        * @param tx - transaction for propagation
        */
       virtual void propagate_transaction(iroha::dao::Transaction &tx) = 0;
     };
 
     /**
-     * Public API interface for communication between current peer and other peers in network
+     * Public API interface for communication between current peer and other
+     * peers in a network
      */
-    class PeerToPeerNetworking
-        : public TransactionPropagator, public ConsensusPublicApi {
-
-    };
-
+    class PeerCommunicationService : public TransactionPropagator,
+                                     public ConsensusListner {};
   }
 }
-#endif //IROHA_NETWORK_H
+#endif  // IROHA_NETWORK_H
