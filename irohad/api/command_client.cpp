@@ -23,8 +23,8 @@ namespace api {
   using iroha::protocol::Transaction;
   using iroha::protocol::ToriiResponse;
 
-  ToriiResponse sendBlock(const Transaction& tx,
-                          const std::string& targetPeerIp) {
+  ToriiResponse sendTransaction(const Transaction& tx,
+                                const std::string& targetPeerIp) {
     CommandClient client(targetPeerIp, 50051);  // TODO: Get port from config
     return client.Torii(tx);
   }
@@ -45,6 +45,7 @@ namespace api {
     } else {
       response.Clear();
       response.set_code(iroha::protocol::FAIL);
+      response.set_message("connection failed. cannot send transaction.");
       return response;
     }
   }

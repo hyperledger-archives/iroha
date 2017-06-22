@@ -22,7 +22,7 @@ limitations under the License.
 
 namespace api {
 
-  iroha::protocol::ToriiResponse sendBlock(
+  iroha::protocol::ToriiResponse sendTransaction(
       const iroha::protocol::Transaction& block,
       const std::string& targetPeerIp);
 
