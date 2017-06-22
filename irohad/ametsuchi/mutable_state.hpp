@@ -18,7 +18,7 @@
 #ifndef IROHA_MUTABLESTATE_HPP
 #define IROHA_MUTABLESTATE_HPP
 
-#include <ametsuchi/query_api.h>
+#include <ametsuchi/query_api.hpp>
 #include <dao/block.hpp>
 #include <dao/transaction.hpp>
 
