@@ -14,7 +14,7 @@
 
 # Consensus Connection Test
 add_executable(consensus_connection_test
-  connection_test.cpp
+  consensus_connection_test.cpp
 )
 target_link_libraries(consensus_connection_test
   server_runner

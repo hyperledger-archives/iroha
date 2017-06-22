@@ -59,13 +59,13 @@ class ConsensusConnectionTest : public ::testing::Test {
  */
 TEST_F(ConsensusConnectionTest, FailConnectionWhenNotStandingServer) {
   Block block;
-  auto response = conn::unicast(block, "0.0.0.0");
+  auto response = conn::sendBlock(block, "0.0.0.0");
   ASSERT_EQ(response.code(), iroha::protocol::ResponseCode::FAIL);
 }
 
 TEST_F(ConsensusConnectionTest, SuccessConnectionWhenStandingServer) {
   RunServer();
   Block block;
-  auto response = conn::unicast(block, "0.0.0.0");
+  auto response = conn::sendBlock(block, "0.0.0.0");
   ASSERT_EQ(response.code(), iroha::protocol::ResponseCode::OK);
 }
