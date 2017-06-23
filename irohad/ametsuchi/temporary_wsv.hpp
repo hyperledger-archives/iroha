@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_MUTABLESTATE_HPP
-#define IROHA_MUTABLESTATE_HPP
+#ifndef IROHA_TEMPORARYWSV_HPP
+#define IROHA_TEMPORARYWSV_HPP
 
-#include <ametsuchi/query_api.hpp>
+#include <ametsuchi/command_executor.hpp>
+#include <ametsuchi/wsv_query.hpp>
 #include <dao/block.hpp>
 #include <dao/transaction.hpp>
 
@@ -27,37 +28,11 @@ namespace iroha {
   namespace ametsuchi {
 
     /**
-     * Reflects a temporary state of storage
+     * Reflects a temporary state of world state view
      * Allows queries on the temporary state
      */
-    class MutableState : public QueryApi {
+    class TemporaryWSV : public WSVQuery {
      public:
-      /**
-       * Specifies the error during apply process in TransactionContext
-       */
-      class StorageException;
-
-      /**
-       * The context used in @see apply transaction method
-       */
-      class TransactionContext {
-        /**
-         * Attempts to apply a command to current mutable state
-         * Throws exception in case of internal error
-         * @tparam T Command type
-         * @param command Command to be applied
-         * @throws StorageException
-         */
-        template <class T>
-        void try_apply(T command);
-      };
-
-      /**
-       * Applies a block to current mutable state
-       * @param block Block to be applied
-       */
-      virtual void apply(dao::Block block) = 0;
-
       /**
        * Applies a transaction to current mutable state
        * using logic specified in function
@@ -67,7 +42,7 @@ namespace iroha {
        */
       virtual bool apply(
           dao::Transaction transaction,
-          std::function<void(dao::Transaction, TransactionContext)>
+          std::function<void(dao::Transaction, CommandExecutor, WSVQuery)>
               function) = 0;
     };
 
@@ -75,4 +50,4 @@ namespace iroha {
 
 }  // namespace iroha
 
-#endif  // IROHA_MUTABLESTATE_HPP
+#endif  // IROHA_TEMPORARYWSV_HPP

@@ -18,8 +18,10 @@
 #ifndef IROHA_AMETSUCHI_H
 #define IROHA_AMETSUCHI_H
 
-#include <ametsuchi/mutable_state.hpp>
-#include <ametsuchi/query_api.hpp>
+#include <ametsuchi/block_query.hpp>
+#include <ametsuchi/mutable_storage.hpp>
+#include <ametsuchi/state_query.hpp>
+#include <ametsuchi/temporary_wsv.hpp>
 
 namespace iroha {
 
@@ -29,19 +31,17 @@ namespace iroha {
      * Storage class, which allows queries on current committed state, and
      * creation of state which can be mutated with blocks and transactions
      */
-    class Ametsuchi : public QueryApi {
+    class Ametsuchi : public StateQuery, public BlockQuery {
      public:
       /**
        * Creates a mutable state from the current state
        * @return Created mutable state
        */
-      virtual std::unique_ptr<MutableState> createMutableState() = 0;
+      virtual TemporaryWSV* createTemporaryWSV() = 0;
 
-      /**
-       * Permanently applies the mutable state to storage
-       * @param state Mutated state to be applied
-       */
-      virtual void applyMutableState(MutableState&& state) = 0;
+      virtual MutableStorage* createMutableStorage() = 0;
+
+      virtual void commit(MutableStorage* mutableStorage) = 0;
     };
 
   }  // namespace ametsuchi
