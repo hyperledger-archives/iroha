@@ -21,7 +21,9 @@
 namespace iroha {
 
   namespace ametsuchi {
-
+    /**
+     * Public interface for queries on blocks and transactions
+     */
     class BlockQuery {
      public:
       /**

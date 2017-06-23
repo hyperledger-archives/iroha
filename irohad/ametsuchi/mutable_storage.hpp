@@ -22,11 +22,29 @@
 
 namespace iroha {
   namespace ametsuchi {
-
-    class MutableStorage : public WSVQuery, public BlockQuery {
+    /**
+     * Mutable storage is used apply blocks to the storage.
+     * Allows to query the world state view, transactions, and blocks.
+     */
+    class MutableStorage : public WsvQuery, public BlockQuery {
+      /**
+       * Applies a block to current mutable state
+       * using logic specified in function
+       * @param block Block to be applied
+       * @param function Function that specifies the logic used to apply the
+       * block
+       * Function parameters:
+       *  - Block @see block
+       *  - CommandExecutor
+       *  - WsvQuery
+       * Function returns true if the block is successfully applied, false
+       * otherwise.
+       * @return True if block was successfully applied, false otherwise.
+       *
+       */
       virtual bool apply(
           dao::Block block,
-          std::function<void(dao::Block, CommandExecutor, WSVQuery)>
+          std::function<bool(dao::Block, CommandExecutor, WsvQuery)>
               function) = 0;
     };
 

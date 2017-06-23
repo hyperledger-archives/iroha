@@ -28,21 +28,29 @@ namespace iroha {
   namespace ametsuchi {
 
     /**
-     * Reflects a temporary state of world state view
-     * Allows queries on the temporary state
+     * Temporary world state view
+     * Allows to query the temporal world state view
      */
-    class TemporaryWSV : public WSVQuery {
+    class TemporaryWsv : public WsvQuery {
      public:
       /**
-       * Applies a transaction to current mutable state
+       * Applies a transaction to current state
        * using logic specified in function
        * @param transaction Transaction to be applied
-       * @param function Function that specifies the logic used to apply
+       * @param function Function that specifies the logic used to apply the
+       * transaction
+       * Function parameters:
+       *  - Transaction @see transaction
+       *  - CommandExecutor
+       *  - WSVQuery
+       * Function returns true if the transaction is successfully applied, false
+       * otherwise.
        * @return True if transaction was successfully applied, false otherwise
+       *
        */
       virtual bool apply(
           dao::Transaction transaction,
-          std::function<void(dao::Transaction, CommandExecutor, WSVQuery)>
+          std::function<bool(dao::Transaction, CommandExecutor, WsvQuery)>
               function) = 0;
     };
 

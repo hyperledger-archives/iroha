@@ -80,7 +80,7 @@ namespace iroha {
       iroha::hash256_t get_hash(const Transaction& tx) {
         std::string concat_hash_commands;
         for (auto command : tx.commands) {
-          command.AppendToString(&concat_hash_commands);
+//          command.AppendToString(&concat_hash_commands); TODO implement
         }
         std::copy(tx.creator.begin(), tx.creator.end(),
                   std::back_inserter(concat_hash_commands));

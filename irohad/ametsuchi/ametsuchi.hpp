@@ -28,20 +28,35 @@ namespace iroha {
   namespace ametsuchi {
 
     /**
-     * Storage class, which allows queries on current committed state, and
+     * Storage interface, which allows queries on current committed state, and
      * creation of state which can be mutated with blocks and transactions
      */
     class Ametsuchi : public StateQuery, public BlockQuery {
      public:
+
       /**
-       * Creates a mutable state from the current state
-       * @return Created mutable state
+       * Creates a temporary world state view from the current state.
+       * Temporary state will be not committed and will be erased on destructor
+       * call.
+       * Temporary state might be used for transaction validation.
+       * @return Created temporary wsv
        */
-      virtual TemporaryWSV* createTemporaryWSV() = 0;
+      virtual std::unique_ptr<TemporaryWsv> createTemporaryWsv() = 0;
 
-      virtual MutableStorage* createMutableStorage() = 0;
+      /**
+       * Creates a mutable storage from the current state.
+       * Mutable storage is the only way to commit the block to the ledger.
+       * @return Created mutable storage
+       */
+      virtual std::unique_ptr<MutableStorage> createMutableStorage() = 0;
 
-      virtual void commit(MutableStorage* mutableStorage) = 0;
+      /**
+       * Commit mutable storage to Ametsuchi.
+       * This transforms Ametsuchi to the new state consistent with
+       * MutableStorage.
+       * @param mutableStorage
+       */
+      virtual void commit(std::unique_ptr<MutableStorage>& mutableStorage) = 0;
     };
 
   }  // namespace ametsuchi

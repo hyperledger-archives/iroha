@@ -28,7 +28,10 @@ namespace iroha {
 
   namespace ametsuchi {
 
-    class WSVQuery {
+    /**
+     *  Public interface for world state view queries
+     */
+    class WsvQuery {
      public:
       /**
        * Get account by it's first public key.

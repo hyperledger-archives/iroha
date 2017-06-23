@@ -15,23 +15,18 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef IROHA_COMMAND_HPP
+#define IROHA_COMMAND_HPP
 
-#include "block.hpp"
-#include "proposal.hpp"
-#include "transaction.hpp"
-#include "asset.hpp"
-#include "account.hpp"
-#include "wallet.hpp"
-#include "peer.hpp"
-#include "singature.hpp"
-#include "domain.hpp"
-#include "command.hpp"
+namespace iroha {
+  namespace dao {
+    /**
+      * Abstract Command Data Access Object
+      */
+    struct Command {
+      // TODO: implement
+    };
+  }
+}
 
-
-/**
- * DAO - Data Access Object.
- * DAO module provides objects that are useful for all other modules in system.
- * DAO objects do not depend on transport, such as protobuf.
- * DAO objects in general are structures with public immutable fileds.
-*/
+#endif  // IROHA_COMMAND_HPP

@@ -22,9 +22,8 @@ namespace validaton {
   namespace stateful {
     class Validator {
      public:
-      using Propsal = iroha::dao::Proposal;
-      using Block = iroha::dao::Block;
-      virtual Block validate(const Propsal &propsal) = 0;
+      virtual iroha::dao::Proposal validate(
+          const iroha::dao::Proposal &propsal) = 0;
     };
   };
 };
