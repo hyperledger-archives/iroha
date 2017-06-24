@@ -24,6 +24,7 @@ limitations under the License.
 #include <crypto/crypto.hpp>
 
 #include <iostream>
+#include <cstring>
 
 namespace peer_service {
   namespace self_state {
@@ -39,10 +40,10 @@ namespace peer_service {
 
     void initializeMyKey() {
       if (public_key_.empty() || private_key_.empty()) {
-        iroha::crypto::Keypair keypair =
-            iroha::crypto::Keypair::generate_keypair();
-        public_key_ = keypair.pub_base64();
-        private_key_ = *keypair.priv_base64();
+        auto seed = iroha::create_seed();
+        auto keypair = iroha::create_keypair(seed);
+        public_key_ = keypair.first.to_base64();
+        private_key_ = keypair.second.to_base64();
       }
     }
 

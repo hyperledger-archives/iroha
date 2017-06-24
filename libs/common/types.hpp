@@ -21,6 +21,7 @@
 #include <dirent.h>
 #include <array>
 #include <cstdio>
+#include <crypto/base64.hpp>
 
 /**
  * This file defines common types used in iroha.
@@ -78,9 +79,12 @@ namespace iroha {
     }
 
    private:
-    static const std::string code = {'0', '1', '2', '3', '4', '5', '6', '7',
-                                     '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    static const std::string code;
   };
+
+  template <size_t size_>
+  const std::string blob_t<size_>::code = {'0', '1', '2', '3', '4', '5', '6', '7',
+                                    '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
   template <size_t size>
   using hash_t = blob_t<size>;

@@ -17,8 +17,7 @@ limitations under the License.
 #ifndef IROHA_DAO_HASH_PROVIDER_HPP
 #define IROHA_DAO_HASH_PROVIDER_HPP
 
-#include <common.hpp>
-#include <crypto/common.hpp>
+#include <common/types.hpp>
 #include "dao.hpp"
 
 namespace iroha {
@@ -28,26 +27,26 @@ namespace iroha {
      * Hash provider is an abstract factory for computing hashes on DAO objects.
      * @tparam T - length of hash
      */
-    template <int T>
+    template <size_t N>
     class HashProvider {
      public:
       /**
        * Abstract method for computing hash on DAO: Proposal
        * @param proposal - source object for computing hash
        */
-      virtual iroha::hash_t<T> get_hash(const Proposal &proposal) = 0;
+      virtual blob_t<N> get_hash(const Proposal &proposal) = 0;
 
       /**
        * Abstract method for computing hash on DAO: Block
        * @param block - source object for computing hash
        */
-      virtual iroha::hash_t<T> get_hash(const Block &block) = 0;
+      virtual blob_t<N> get_hash(const Block &block) = 0;
 
       /**
        * Abstract method for computing hash  on DAO: Transaction
        * @param tx - source object for computing hash
        */
-      virtual iroha::hash_t<T> get_hash(const Transaction &tx) = 0;
+      virtual blob_t<N> get_hash(const Transaction &tx) = 0;
     };
   }
 }

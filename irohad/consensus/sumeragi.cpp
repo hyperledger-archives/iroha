@@ -23,6 +23,8 @@
 #include <thread_pool.hpp>
 #include <vector>
 #include <set>
+#include <common/types.hpp>
+#include <common/byteutils.hpp>
 
 #include "connection/service.hpp"
 #include "connection/client.hpp"
@@ -50,47 +52,49 @@ namespace consensus {
 
     logger::Logger log("sumeragi");
 
-    static ThreadPool pool(ThreadPoolOptions{
+    static ThreadPool pool(ThreadPoolOptions {
       .threads_count = 0,
       //config::IrohaConfigManager::getInstance().getConcurrency(0),
       .worker_queue_size = 1024
       //config::IrohaConfigManager::getInstance().getPoolWorkerQueueSize(1024),
-    });
+    }
+    );
 
     void initialize() {
 
       consensus::connection::receive(
-        [](const Block &block) {
-          // TODO: Judge committed
-          if ( /*check is_committed*/ false) {
+          [](const Block &block) {
+            // TODO: Judge committed
+            if ( /*check is_committed*/ false) {
 
-          } else {
-            // send processBlock(block) as a task to processing pool
-            // this returns std::future<void> object
-            // (std::future).get() method locks processing until result of
-            // processBlock will be available but processBlock returns
-            // void, so we don't have to call it and wait
-            std::function<void()> &&task = std::bind(processBlock, block);
-            pool.process(std::move(task));
-          }
-        });
+            } else {
+              // send processBlock(block) as a task to processing pool
+              // this returns std::future<void> object
+              // (std::future).get() method locks processing until result of
+              // processBlock will be available but processBlock returns
+              // void, so we don't have to call it and wait
+              std::function<void()> &&task = std::bind(processBlock, block);
+              pool.process(std::move(task));
+            }
+          });
     }
 
     size_t getMaxFaulty() {
-      return (size_t)peer_service::monitor::getActivePeerSize() / 3;
+      return (size_t) peer_service::monitor::getActivePeerSize() / 3;
     }
 
     size_t getNumValidatingPeers() {
       return getMaxFaulty() * 2 + 1;
     }
 
-    bool unicast(const iroha::protocol::Block& block, size_t peerOrder) {
-      auto peer = peer_service::monitor::getActivePeerAt((unsigned int)peerOrder);
+    bool unicast(const iroha::protocol::Block &block, size_t peerOrder) {
+      auto peer =
+          peer_service::monitor::getActivePeerAt((unsigned int) peerOrder);
       auto response = connection::sendBlock(block, peer->ip_);
       return response.code() == iroha::protocol::ResponseCode::OK;
     }
 
-    bool leaderMulticast(const iroha::protocol::Block& block) {
+    bool leaderMulticast(const iroha::protocol::Block &block) {
       // connection::multicastWithRange(block, 1, getNumValidatingPeers());
       /*
       auto peerSize = getNumValidatingPeers();
@@ -101,7 +105,7 @@ namespace consensus {
       return true;
     }
 
-    bool commit(const iroha::protocol::Block& block) {
+    bool commit(const iroha::protocol::Block &block) {
       // connection::multicastAll(block);
       /*
       auto peerSize = (size_t)peer_service::monitor::getActivePeerSize();
@@ -117,24 +121,30 @@ namespace consensus {
       return std::vector<uint8_t>();
     }
 
-    Block createSignedBlock(const Block &block, const std::vector<uint8_t> &merkleRoot) {
+    Block createSignedBlock(const Block &block,
+                            const std::vector<uint8_t> &merkleRoot) {
 
       // TODO: Use Keypair in peer service.
       std::string pkBase64 = peer_service::self_state::getPublicKey();
       std::string skBase64 = peer_service::self_state::getPrivateKey();
 
-      auto keypair = iroha::crypto::Keypair(base64_decode(pkBase64), base64_decode(skBase64));
-      auto signature = keypair.sign(merkleRoot);
+      auto pubkey_ = base64_decode(pkBase64),
+          privkey_ = base64_decode(skBase64);
+      auto pubkey =
+          iroha::to_blob<iroha::ed25519::pubkey_t::size()>(std::string{
+              pubkey_.begin(), pubkey_.end()});
+      auto privkey =
+          iroha::to_blob<iroha::ed25519::privkey_t::size()>(std::string{
+              privkey_.begin(), privkey_.end()});
 
-      if (!signature) {
-        throw std::runtime_error("failed to create signature");
-      }
+      auto signature =
+          iroha::sign(merkleRoot.data(), merkleRoot.size(), pubkey, privkey);
 
       std::string strSigblob;
-      for (auto e: *signature) strSigblob.push_back(e);
+      for (auto e: signature) strSigblob.push_back(e);
 
       Signature newSignature;
-      *newSignature.mutable_pubkey() = keypair.pub_base64();
+      *newSignature.mutable_pubkey() = pubkey.to_base64();
       *newSignature.mutable_signature() = strSigblob;
 
       Block ret;
@@ -157,7 +167,8 @@ namespace consensus {
      */
 
     int getNextOrder() {
-      thread_local int currentProxyTail = static_cast<int>(getNumValidatingPeers()) - 1;
+      thread_local int
+          currentProxyTail = static_cast<int>(getNumValidatingPeers()) - 1;
       if (currentProxyTail >= peer_service::monitor::getActivePeerSize()) {
         return -1;
       }
@@ -223,7 +234,6 @@ namespace consensus {
         }
       }
     }
-
 
 /**
  *
