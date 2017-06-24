@@ -24,7 +24,7 @@ using iroha::sha3_512;
 
 TEST(Hash, sha3_256_empty_text) {
   std::string res =
-      "a7ffc6f8bf1ed76651c14756a061d662f580ff04de43b49fa82d80a4b80f8434a";
+      "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a";
   std::string str_("");
   std::vector<uint8_t> str(str_.begin(), str_.end());
   ASSERT_STREQ(sha3_256(str.data(), str.size()).to_hexstring().c_str(),
