@@ -11,14 +11,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CONNECTION_CONSENSUS_SERVICE_HPP
-#define CONNECTION_CONSENSUS_SERVICE_HPP
+#ifndef CONSENSUS_CONNECTION_SERVICE_HPP
+#define CONSENSUS_CONNECTION_SERVICE_HPP
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 
-namespace connection {
-  namespace consensus {
+namespace consensus {
+  namespace connection {
 
     void receive(const std::function<void(const iroha::protocol::Block&)>&);
 
@@ -26,12 +26,11 @@ namespace connection {
       : public iroha::protocol::SumeragiService::Service {
     public:
       grpc::Status Verify(
-        grpc::ClientContext* context,
-        const iroha::protocol::Block& request,
+        grpc::ServerContext* context, const ::iroha::protocol::Block* request,
         iroha::protocol::VerifyResponse* response);
     };
 
-  }  // namespace consensus
-}  // namespace connection
+  }  // namespace connection
+}  // namespace consensus
 
-#endif
+#endif // CONSENSUS_CONNECTION_SERVICE_HPP

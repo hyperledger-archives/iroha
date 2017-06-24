@@ -11,27 +11,39 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <endpoint.pb.h>
-#include <endpoint.grpc.pb.h>
 #include <grpc++/grpc++.h>
+#include <block.pb.h>
 #include "client.hpp"
 
-namespace connection {
-  namespace consensus {
+namespace consensus {
+  namespace connection {
 
     using iroha::protocol::Block;
     using iroha::protocol::VerifyResponse;
 
+    VerifyResponse sendBlock(const Block& block, const std::string& targetPeerIp) {
+      SumeragiClient client(targetPeerIp, 50051); // TODO: Get port from config
+      return client.Verify(block);
+    }
+
     SumeragiClient::SumeragiClient(const std::string& ip, int port) {
+      // TODO(motxx): call validation of ip format and port.
       auto channel = grpc::CreateChannel(ip + ":" + std::to_string(port), grpc::InsecureChannelCredentials());
       stub_ = iroha::protocol::SumeragiService::NewStub(channel);
     }
 
     VerifyResponse SumeragiClient::Verify(const Block& block) {
       VerifyResponse response;
-      stub_->Verify(&context_, block, &response);
-      return response;
+      auto status = stub_->Verify(&context_, block, &response);
+
+      if (status.ok()) {
+        return response;
+      } else {
+        response.Clear();
+        response.set_code(iroha::protocol::FAIL);
+        return response;
+      }
     }
 
-  }  // namespace consensus
-}  // namespace connection
+  }  // namespace connection
+}  // namespace consensus

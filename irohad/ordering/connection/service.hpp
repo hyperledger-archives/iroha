@@ -14,28 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
 #ifndef __IROHA_CONNECTION_ORDERING_SERVICE_HPP__
 #define __IROHA_CONNECTION_ORDERING_SERVICE_HPP__
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 
-namespace connection {
-    namespace ordering {
+namespace ordering {
+  namespace connection {
 
-        void receive(const std::function<void(const iroha::protocol::Transaction&)>&);
+    void receive(
+        const std::function<void(const iroha::protocol::Transaction&)>&);
 
-        class OrderingService final
-            : public iroha::protocol::OrderingService::Service {
-        public:
-            grpc::Status QueueTransaction(
-                grpc::ClientContext* context,
-                const iroha::protocol::Transaction& request,
-                iroha::protocol::QueueTransactionResponse* response);
-        };
+    class OrderingService final
+        : public iroha::protocol::OrderingService::Service {
+     public:
+      grpc::Status QueueTransaction(
+          grpc::ClientContext* context,
+          const iroha::protocol::Transaction& request,
+          iroha::protocol::QueueTransactionResponse* response);
+    };
 
-    }  // namespace consensus
-}  // namespace connection
+  }  // namespace connection
+}  // namespace ordering
 
-#endif //__IROHA_CONNECTION_ORDERING_SERVICE_HPP__
+#endif  //__IROHA_CONNECTION_ORDERING_SERVICE_HPP__

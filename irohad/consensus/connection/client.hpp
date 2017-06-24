@@ -11,15 +11,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CONNECTION_CONSENSUS_CLIENT_HPP
-#define CONNECTION_CONSENSUS_CLIENT_HPP
+#ifndef CONSENSUS_CONNECTION_CLIENT_HPP
+#define CONSENSUS_CONNECTION_CLIENT_HPP
 
+#include <grpc++/grpc++.h>
 #include <memory>
 #include <block.pb.h>
 #include <endpoint.pb.h>
+#include <endpoint.grpc.pb.h>
 
-namespace connection {
-  namespace consensus {
+namespace consensus {
+  namespace connection {
+
+    iroha::protocol::VerifyResponse sendBlock(
+      const iroha::protocol::Block& block, const std::string& targetPeerIp);
 
     class SumeragiClient {
     public:
@@ -30,7 +35,7 @@ namespace connection {
       std::unique_ptr<iroha::protocol::SumeragiService::Stub> stub_;
     };
 
-  }  // namespace consensus
-}  // namespace connection
+  }  // namespace connection
+}  // namespace consensus
 
-#endif
+#endif // CONSENSUS_CONNECTION_CLIENT_HPP

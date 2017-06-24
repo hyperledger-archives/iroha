@@ -22,18 +22,18 @@ limitations under the License.
 #include "server_runner.hpp"
 
 int main(int argc,char* argv[]) {
-
+/*
   connection::api::CommandService commandService;
   connection::api::QueryService queryService;
-  connection::consensus::SumeragiService sumeragiService;
-  connection::ordering::OrderingService orderingService;
+  consensus::connection::SumeragiService sumeragiService;
+  ordering::connection::OrderingService orderingService;
 
-  connection::ServerRunner serverRunner("0.0.0.0", {
+  ServerRunner serverRunner("0.0.0.0", 50051, {
       &commandService,
       &queryService,
       &sumeragiService,
       &orderingService
   });
-
+*/
   return 0;
 }

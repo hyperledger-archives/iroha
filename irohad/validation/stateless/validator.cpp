@@ -17,7 +17,7 @@ limitations under the License.
 #include <datetime/time.hpp>
 #include <dao/dao_hash_provider_impl.hpp>
 
-namespace validaton {
+namespace validation {
   namespace stateless {
     using Transaction = iroha::protocol::Transaction;
 
@@ -31,10 +31,10 @@ namespace validaton {
     bool validate(const Transaction& tx) {
       return
         tx.header().created_time() <= iroha::time::now64() && // 過去に作られたTxか // TODO: consider when to ignore transactions for being too old
-        tx.header().signature_size( ) != 0                          && // 電子署名は含まれているか
+        tx.header().signature_size() != 0                  && // 電子署名は含まれているか
         // TODO: calculate hash
         // TODO: verify the signature for each signature in the header
-        tx.body().creator_pubkey().size() == 32;                     // 公開鍵は32byteか ToDo configurable
+        tx.body().creator_pubkey().size() == 32;              // 公開鍵は32byteか ToDo configurable
     }
-  };
-};
+  }
+}

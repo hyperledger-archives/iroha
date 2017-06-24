@@ -18,7 +18,7 @@ limitations under the License.
 
 #include <dao/dao.hpp>
 
-namespace validaton {
+namespace validation {
   namespace stateful {
     class Validator {
      public:

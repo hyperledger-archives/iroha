@@ -14,24 +14,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef API_COMMAND_SERVICE_HPP
-#define API_COMMAND_SERVICE_HPP
+#ifndef API_COMMAND_CLIENT_HPP
+#define API_COMMAND_CLIENT_HPP
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 
 namespace api {
 
-  void receive(std::function<void(const iroha::protocol::Transaction&)>);
+  iroha::protocol::ToriiResponse sendTransaction(
+      const iroha::protocol::Transaction& block,
+      const std::string& targetPeerIp);
 
-  class CommandService final
-      : public iroha::protocol::CommandService::Service {
+  class CommandClient {
    public:
-    grpc::Status Torii(grpc::ServerContext* context,
-                       const iroha::protocol::Transaction* request,
-                       iroha::protocol::ToriiResponse* response);
+    CommandClient(const std::string& ip, int port);
+
+    iroha::protocol::ToriiResponse Torii(
+        const iroha::protocol::Transaction& request);
+
+   private:
+    grpc::ClientContext context_;
+    std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
   };
 
 }  // namespace api
 
-#endif // API_COMMAND_SERVICE_HPP
+#endif  // API_COMMAND_CLIENT_HPP
