@@ -34,14 +34,3 @@ add_test(
   NAME signature_test
   COMMAND $<TARGET_FILE:signature_test>
 )
-
-# Crypto Test
-add_executable(crypto_test crypto_test.cpp)
-target_link_libraries(crypto_test
-  crypto
-  gtest
-)
-add_test(
-  NAME crypto_test
-  COMMAND $<TARGET_FILE:crypto_test>
-)
