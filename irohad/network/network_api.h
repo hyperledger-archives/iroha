@@ -25,7 +25,7 @@ namespace iroha {
     /**
      * Interface provides methods for fetching consensus-related data.
      */
-    class ConsensusListner {
+    class ConsensusListener {
      public:
       /**
        * Event is triggered when proposal arrives from network.
@@ -81,7 +81,7 @@ namespace iroha {
      * peers in a network
      */
     class PeerCommunicationService : public TransactionPropagator,
-                                     public ConsensusListner {};
+                                     public ConsensusListener {};
   }
 }
 #endif  // IROHA_NETWORK_H
