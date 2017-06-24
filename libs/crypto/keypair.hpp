@@ -29,7 +29,7 @@
 
 namespace iroha {
   namespace crypto {
-  using namespace ed25519;
+    using namespace ed25519;
 
     /**
      * Represents a keypair: public and private key.
@@ -86,9 +86,9 @@ namespace iroha {
       }
 
       /**
-        * Build a keypair with public key in binary format
-        * @param pub
-        */
+       * Build a keypair with public key in binary format
+       * @param pub
+       */
       explicit Keypair(const uint8_t *pub) : has_private(false) {
         std::copy(pub, pub + PUBLEN, &pubkey[0]);
       }
@@ -105,9 +105,9 @@ namespace iroha {
       }
 
       /**
-        * Build a keypair with public key in binary format
-        * @param pub
-        */
+       * Build a keypair with public key in binary format
+       * @param pub
+       */
       explicit Keypair(const std::string &pub) : has_private(false) {
         std::copy(&pub[0], &pub[PUBLEN], &pubkey[0]);
       }
@@ -137,9 +137,9 @@ namespace iroha {
       }
 
       /**
-        * Build a keypair with public key in base64 encoded format (string)
-        * @param pub
-        */
+       * Build a keypair with public key in base64 encoded format (string)
+       * @param pub
+       */
       explicit Keypair(const std::string &pub_base64, tag_base64_encoded)
           : has_private(false) {
         auto pub = base64_decode(pub_base64);
@@ -268,7 +268,7 @@ namespace iroha {
 
       bool has_private;
     };
-  }
-}
+  }  // namespace crypto
+}  // namespace iroha
 
 #endif  // IROHA_KEYPAIR_H
