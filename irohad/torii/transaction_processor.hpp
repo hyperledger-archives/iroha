@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_QUERY_PROCESSOR_HPP
-#define IROHA_QUERY_PROCESSOR_HPP
+#ifndef IROHA_TRANSACTION_PROCESSOR_HPP
+#define IROHA_TRANSACTION_PROCESSOR_HPP
 
 #include <dao/dao.hpp>
 #include <rxcpp/rx.hpp>
@@ -25,25 +25,25 @@ namespace iroha {
   namespace torii {
 
     /**
-     * QueryProcessor provides start point for queries in the whole system
+     * Transaction processor is interface with start point
+     * for processing transaction in the system
      */
-    class QueryProcessor {
+    class TransactionProcessor {
      public:
 
       /**
-       * Register client query
-       * @param client - query emitter
-       * @param query - client intent
+       * Add transaction to the system for processing
+       * @param client - transaction owner
+       * @param transaction - transaction for processing
        */
-      virtual void handle(dao::Client client, dao::Query query) = 0;
+      virtual void handle(dao::Client client, dao::Transaction transaction) = 0;
 
       /**
-       * Subscribe for query responses
-       * @return observable with query responses
+       * Subscribes will be notified with transaction status
+       * @return observable for subscribing
        */
-      virtual rxcpp::observable <dao::QueryResponse> notifier() = 0;
+      virtual rxcpp::observable <dao::TransactionResponse> notifier() = 0;
     };
   } //namespace torii
 } //namespace iroha
-
-#endif //IROHA_QUERY_PROCESSOR_HPP
+#endif //IROHA_TRANSACTION_PROCESSOR_HPP
