@@ -466,24 +466,24 @@ set_target_properties(gflags PROPERTIES
 add_dependencies(gflags gflags_gflags)
 
 ##########################
-#       observable       #
+#        rx c++          #
 ##########################
 
-ExternalProject_Add(ddinu_observable
-    GIT_REPOSITORY "https://github.com/ddinu/observable"
+ExternalProject_Add(reactive_extensions_rxcpp
+    GIT_REPOSITORY "https://github.com/Reactive-Extensions/RxCpp"
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND "" # remove install step
     UPDATE_COMMAND "" # remove update step
     TEST_COMMAND "" # remove test step
     )
-ExternalProject_Get_Property(ddinu_observable source_dir)
-set(OBSERVABLE_INCLUDE_DIRS ${source_dir}/include)
-file(MAKE_DIRECTORY ${OBSERVABLE_INCLUDE_DIRS})
+ExternalProject_Get_Property(reactive_extensions_rxcpp source_dir binary_dir)
+set(RXCPP_INCLUDE_DIRS ${source_dir}/Rx/v2/src)
+file(MAKE_DIRECTORY ${RXCPP_INCLUDE_DIRS})
 
-add_library(observable INTERFACE IMPORTED)
-set_target_properties(observable PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${OBSERVABLE_INCLUDE_DIRS}
+add_library(rxcpp INTERFACE IMPORTED)
+set_target_properties(rxcpp PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${RXCPP_INCLUDE_DIRS}
     )
 
-add_dependencies(observable ddinu_observable)
+add_dependencies(rxcpp reactive_extensions_rxcpp)
