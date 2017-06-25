@@ -50,7 +50,7 @@ namespace iroha {
        */
       virtual bool apply(
           dao::Transaction transaction,
-          std::function<bool(dao::Transaction, CommandExecutor, WsvQuery)>
+          std::function<bool(dao::Transaction&, CommandExecutor&, WsvQuery&)>
               function) = 0;
     };
 
