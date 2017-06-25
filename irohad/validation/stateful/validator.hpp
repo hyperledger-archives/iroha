@@ -17,15 +17,30 @@ limitations under the License.
 #define IROHA_VALIDATION_STATEFUL_VALIDATOR_HPP
 
 #include <dao/dao.hpp>
+#include <ametsuchi/temporary_wsv.hpp>
 
-namespace validaton {
-  namespace stateful {
-    class Validator {
+namespace iroha {
+  namespace validation {
+
+    /**
+     * Interface for performing stateful validation
+     */
+    class StatefulValidator {
      public:
-      virtual iroha::dao::Proposal validate(
-          const iroha::dao::Proposal &propsal) = 0;
-    };
-  };
-};
 
+      /**
+       * Function perform stateful validation on proposal
+       * and return proposal with valid transactions
+       * @param proposal - proposal for validation
+       * @param wsv  - temporary wsv for validation,
+       * this wsv not affected on ledger,
+       * all changes after removing wsv will be ignored
+       * @return proposal with valid transactions
+       */
+      virtual iroha::dao::Proposal validate(
+          const iroha::dao::Proposal &proposal,
+          iroha::ametsuchi::TemporaryWsv& wsv) = 0;
+    };
+  }
+}
 #endif  // IROHA_VALIDATION_STATELESS_VALIDATOR_HPP
