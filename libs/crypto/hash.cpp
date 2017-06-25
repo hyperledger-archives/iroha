@@ -44,25 +44,25 @@ namespace iroha {
     return SHA3_512(output, input, in_size);
   }
 
-  hash224_t sha3_224(uint8_t *input, size_t in_size) {
+  hash224_t sha3_224(const uint8_t *input, size_t in_size) {
     hash224_t h;
     SHA3_224(h.begin(), input, in_size);
     return h;
   }
 
-  hash256_t sha3_256(uint8_t *input, size_t in_size) {
+  hash256_t sha3_256(const uint8_t *input, size_t in_size) {
     hash256_t h;
     SHA3_256(h.begin(), input, in_size);
     return h;
   }
 
-  hash384_t sha3_384(uint8_t *input, size_t in_size) {
+  hash384_t sha3_384(const uint8_t *input, size_t in_size) {
     hash384_t h;
     SHA3_384(h.begin(), input, in_size);
     return h;
   }
 
-  hash512_t sha3_512(uint8_t *input, size_t in_size) {
+  hash512_t sha3_512(const uint8_t *input, size_t in_size) {
     hash512_t h;
     SHA3_512(h.begin(), input, in_size);
     return h;

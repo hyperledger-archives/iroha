@@ -20,8 +20,10 @@
 
 #include <dirent.h>
 #include <array>
-#include <cstdio>
 #include <crypto/base64.hpp>
+#include <cstdio>
+#include <gsl/gsl_byte>
+
 
 /**
  * This file defines common types used in iroha.
@@ -33,11 +35,13 @@
  */
 namespace iroha {
 
+  using byte_t = uint8_t;
+
   /**
    * Base type which represents blob of fixed size.
    */
   template <size_t size_>
-  class blob_t : public std::array<uint8_t, size_> {
+  class blob_t : public std::array<byte_t, size_> {
     /**
      * Dark magic of C++, do not touch pls :)
      * author: @warchant
@@ -83,8 +87,9 @@ namespace iroha {
   };
 
   template <size_t size_>
-  const std::string blob_t<size_>::code = {'0', '1', '2', '3', '4', '5', '6', '7',
-                                    '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+  const std::string blob_t<size_>::code = {'0', '1', '2', '3', '4', '5',
+                                           '6', '7', '8', '9', 'a', 'b',
+                                           'c', 'd', 'e', 'f'};
 
   template <size_t size>
   using hash_t = blob_t<size>;
@@ -99,6 +104,11 @@ namespace iroha {
     using sig_t = blob_t<64>;  // ed25519 sig is 64 bytes length
     using pubkey_t = blob_t<32>;
     using privkey_t = blob_t<64>;
+
+    struct keypair_t {
+      pubkey_t pubkey;
+      privkey_t privkey;
+    };
   }
 
   // timestamps

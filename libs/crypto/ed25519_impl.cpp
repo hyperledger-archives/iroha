@@ -21,13 +21,17 @@
 #include "hash.hpp"
 
 namespace iroha {
+
+  using sig_t = ed25519::sig_t;
+  using pubkey_t = ed25519::pubkey_t;
+  using privkey_t = ed25519::privkey_t;
+  using keypair_t = ed25519::keypair_t;
   /**
    * Sign the message
    */
-  ed25519::sig_t sign(const uint8_t *msg, size_t msgsize,
-                      const ed25519::pubkey_t &pub,
-                      const ed25519::privkey_t &priv) {
-    ed25519::sig_t sig;
+  sig_t sign(const uint8_t *msg, size_t msgsize, const pubkey_t &pub,
+             const privkey_t &priv) {
+    sig_t sig;
     ed25519_sign(sig.data(), msg, msgsize, pub.data(), priv.data());
     return sig;
   }
@@ -35,22 +39,9 @@ namespace iroha {
   /**
    * Verify signature
    */
-  bool verify(const uint8_t *msg, size_t msgsize, const ed25519::pubkey_t &pub,
-              const ed25519::sig_t &sig) {
+  bool verify(const uint8_t *msg, size_t msgsize, const pubkey_t &pub,
+              const sig_t &sig) {
     return 1 == ed25519_verify(sig.data(), msg, msgsize, pub.data());
-  }
-
-  /**
-   * Create keypair
-   */
-  std::pair<ed25519::pubkey_t, ed25519::privkey_t> create_keypair(
-      blob_t<32> seed) {
-    ed25519::pubkey_t pub;
-    ed25519::privkey_t priv;
-
-    ed25519_create_keypair(pub.data(), priv.data(), seed.data());
-
-    return std::make_pair(pub, priv);
   }
 
   /**
@@ -69,5 +60,17 @@ namespace iroha {
    */
   blob_t<32> create_seed(std::string passphrase) {
     return sha3_256((uint8_t *)passphrase.data(), passphrase.size());
+  }
+
+  /**
+   * Create keypair
+   */
+  keypair_t create_keypair(blob_t<32> seed) {
+    pubkey_t pub;
+    privkey_t priv;
+
+    ed25519_create_keypair(pub.data(), priv.data(), seed.data());
+
+    return keypair_t{.pubkey = pub, .privkey = priv};
   }
 }

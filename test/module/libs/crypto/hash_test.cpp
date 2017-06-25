@@ -17,6 +17,8 @@ limitations under the License.
 #include <gtest/gtest.h>
 #include <crypto/hash.hpp>
 
+#define LOOP_N (100)
+
 using iroha::sha3_256;
 using iroha::sha3_512;
 
@@ -84,7 +86,7 @@ TEST(Hash, sha3_256_JP_text_LOOP) {
       "3cd375d2948fd4e03e83c104fb5abe47a9ce79f770fe72d1a79c9e9b1b0621f1";
   std::string str_("ご注文は分散台帳ですか？");
   std::vector<uint8_t> str(str_.begin(), str_.end());
-  for (int i = 0; i < 100000; i++) {
+  for (int i = 0; i < LOOP_N; i++) {
     EXPECT_STREQ(sha3_256(str.data(), str.size()).to_hexstring().c_str(),
                  res.c_str());
   }
@@ -97,7 +99,7 @@ TEST(Hash, sha3_512_JP_text_LOOP) {
   std::string str_("ご注文は分散台帳ですか？");
   std::vector<uint8_t> str(str_.begin(), str_.end());
 
-  for (int i = 0; i < 100000; i++) {
+  for (int i = 0; i < LOOP_N; i++) {
     EXPECT_STREQ(sha3_512(str.data(), str.size()).to_hexstring().c_str(),
                  res.c_str());
   }
@@ -127,7 +129,7 @@ TEST(Hash, sha3_256_RU_text_LOOP) {
       "cf5987add8080bbf2e70e45d913acc1d4fc919ff4634428a71dabb3e0777a1a7";
   std::string str_("Является ли Order распределённой программой финансового учёта?");
   std::vector<uint8_t> str(str_.begin(), str_.end());
-  for (int i = 0; i < 100000; i++) {
+  for (int i = 0; i < LOOP_N; i++) {
     EXPECT_STREQ(sha3_256(str.data(), str.size()).to_hexstring().c_str(),
                  res.c_str());
   }
@@ -139,7 +141,7 @@ TEST(Hash, sha3_512_RU_text_LOOP) {
       "339300760eace14edeb28415ade75118aaff810194901583e817878c";
   std::string str_("Является ли Order распределённой программой финансового учёта?");
   std::vector<uint8_t> str(str_.begin(), str_.end());
-  for (int i = 0; i < 100000; i++) {
+  for (int i = 0; i < LOOP_N; i++) {
     EXPECT_STREQ(sha3_512(str.data(), str.size()).to_hexstring().c_str(),
                  res.c_str());
   }

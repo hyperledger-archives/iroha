@@ -32,20 +32,20 @@ TEST(Signature, sign_data_size) {
   auto seed = create_seed();
   auto keypair = create_keypair(seed);
 
-  std::string nonce_ =
+  std::string nonce =
       "c0a5cca43b8aa79eb50e3464bc839dd6fd414fae0ddf928ca23dcebf8a8b8dd0";
-  std::vector<uint8_t> nonce(nonce_.begin(), nonce_.end());
-  auto signature =
-      sign(nonce.data(), nonce.size(), keypair.first, keypair.second);
+  auto signature = sign((const unsigned char*)nonce.c_str(), nonce.size(),
+                        keypair.pubkey, keypair.privkey);
 
-  ASSERT_TRUE(verify(nonce.data(), nonce.size(), keypair.first, signature));
+  ASSERT_TRUE(verify((const unsigned char*)nonce.c_str(), nonce.size(),
+                     keypair.pubkey, signature));
 }
 
 TEST(Signature, PrintkeyPair) {
   auto seed = create_seed();
   auto keypair = create_keypair(seed);
-  ASSERT_NO_THROW({ std::cout << keypair.first.to_base64() << std::endl; });
-  ASSERT_NO_THROW({ std::cout << keypair.second.to_base64() << std::endl; });
+  ASSERT_NO_THROW({ std::cout << keypair.pubkey.to_base64() << std::endl; });
+  ASSERT_NO_THROW({ std::cout << keypair.privkey.to_base64() << std::endl; });
 }
 
 TEST(Signature, generatedByAndroid) {

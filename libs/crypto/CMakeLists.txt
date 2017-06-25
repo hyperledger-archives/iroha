@@ -13,5 +13,5 @@ add_library(crypto STATIC
     )
 target_link_libraries(crypto PUBLIC
     ed25519
-    hash
+        hash
     )
