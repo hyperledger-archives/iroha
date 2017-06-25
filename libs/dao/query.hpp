@@ -15,21 +15,17 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef IROHA_QUERY_HPP
+#define IROHA_QUERY_HPP
+namespace iroha {
+  namespace dao {
+    /**
+     * This dao represents user intent for reading ledger.
+     * Concrete queries should extend this interface.
+     */
+    struct Query {
 
-#include "block.hpp"
-#include "proposal.hpp"
-#include "transaction.hpp"
-#include "asset.hpp"
-#include "account.hpp"
-#include "client.hpp"
-
-#include "query.hpp"
-#include "query_response.hpp"
-
-/**
- * DAO - Data Access Object.
- * DAO module provides objects that are useful for all other modules in system.
- * DAO objects do not depend on transport, such as protobuf.
- * DAO objects in general are structures with public immutable fileds.
-*/
+    };
+  } //namespace dao
+} //namespace iroha
+#endif //IROHA_QUERY_HPP
