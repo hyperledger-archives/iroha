@@ -20,9 +20,9 @@
 
 #include <cstdint>
 #include <memory>
-#include <vector>
-#include <string>
 #include <nonstd/optional.hpp>
+#include <string>
+#include <vector>
 
 namespace iroha {
 
@@ -49,8 +49,7 @@ namespace iroha {
       // TODO merge into one method?
       virtual nonstd::optional<uint64_t> get_block_id_by_tx_hash(
           const std::string &hash) = 0;
-      virtual nonstd::optional<uint64_t> get_tx_id(
-          const std::string &hash) = 0;
+      virtual nonstd::optional<uint64_t> get_tx_id(const std::string &hash) = 0;
       virtual nonstd::optional<uint64_t> last_block_id_index() = 0;
 
       virtual std::vector<std::string> get_tx_hash(

@@ -22,6 +22,10 @@
 #include "transaction.hpp"
 #include "asset.hpp"
 #include "account.hpp"
+#include "peer.hpp"
+#include "singature.hpp"
+#include "dao_crypto_provider.hpp"
+#include "dao_hash_provider.hpp"
 
 /**
  * DAO - Data Access Object.
