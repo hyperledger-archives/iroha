@@ -15,26 +15,17 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef IROHA_CLIENT_HPP
+#define IROHA_CLIENT_HPP
+namespace iroha {
+  namespace dao {
 
-#include "block.hpp"
-#include "proposal.hpp"
-#include "transaction.hpp"
-#include "transaction_response.hpp"
-#include "asset.hpp"
-#include "account.hpp"
-#include "client.hpp"
+    /**
+     * Client is representation of user in system
+     */
+    struct Client {
 
-#include "query.hpp"
-#include "query_response.hpp"
-#include "peer.hpp"
-#include "singature.hpp"
-#include "dao_crypto_provider.hpp"
-#include "dao_hash_provider.hpp"
-
-/**
- * DAO - Data Access Object.
- * DAO module provides objects that are useful for all other modules in system.
- * DAO objects do not depend on transport, such as protobuf.
- * DAO objects in general are structures with public immutable fileds.
-*/
+    };
+  }
+}
+#endif //IROHA_CLIENT_HPP

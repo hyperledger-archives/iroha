@@ -15,26 +15,21 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef IROHA_CLIENT_PROCESSOR_HPP
+#define IROHA_CLIENT_PROCESSOR_HPP
 
-#include "block.hpp"
-#include "proposal.hpp"
-#include "transaction.hpp"
-#include "transaction_response.hpp"
-#include "asset.hpp"
-#include "account.hpp"
-#include "client.hpp"
+#include "query_processor.hpp"
+#include "transaction_processor.hpp"
 
-#include "query.hpp"
-#include "query_response.hpp"
-#include "peer.hpp"
-#include "singature.hpp"
-#include "dao_crypto_provider.hpp"
-#include "dao_hash_provider.hpp"
+namespace iroha {
+  namespace torii {
 
-/**
- * DAO - Data Access Object.
- * DAO module provides objects that are useful for all other modules in system.
- * DAO objects do not depend on transport, such as protobuf.
- * DAO objects in general are structures with public immutable fileds.
-*/
+    /**
+     * Client processor is interface
+     * for processing all user's intents in the system
+     */
+    class ClientProcessor : public QueryProcessor, public TransactionProcessor {
+    };
+  } //namespace torii
+} //namespace iroha
+#endif //IROHA_CLIENT_PROCESSOR_HPP
