@@ -26,7 +26,8 @@ namespace iroha {
   namespace network {
 
     /**
-     *
+     * ChainValidator is interface of chain validation,
+     * that require on commit step of consensus
      */
     class ChainValidator {
 
