@@ -5,20 +5,25 @@ package iroha.protocol;
 import "block.proto";
 
 enum ResponseCode {
-  OK = 0;
-  FAIL = 1;
+  FAIL = 0; // default value
+  OK = 1;
 }
 
-message ToriiResponse {}
+message ToriiResponse {
+  ResponseCode code = 1;
+  string message = 2;
+}
 
 message VerifyResponse {
   ResponseCode code = 1;
+  string message = 2;
 }
 
 message QueryResponse {}
 
 message QueueTransactionResponse {
   ResponseCode code = 1;
+  string message = 2;
 }
 
 service CommandService {

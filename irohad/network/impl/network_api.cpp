@@ -13,15 +13,5 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef __IROHA_ORDERING_OBSERVER_HPP__
-#define __IROHA_ORDERING_OBSERVER_HPP__
 
-#include <block.pb.h>
-
-namespace ordering {
-  namespace observer {
-    void initialize();
-    void observe();
-  }
-}
-#endif  //__IROHA_ORDERING_OBSERVER_HPP__
+#include <network/network_api.h>

@@ -166,10 +166,10 @@ add_dependencies(spdlog gabime_spdlog)
 ################################
 #           protobuf           #
 ################################
-find_package(Protobuf 3.0.0)
+find_package(Protobuf 3.3.0)
 if (NOT PROTOBUF_FOUND OR NOT PROTOBUF_PROTOC_EXECUTABLE)
   ExternalProject_Add(google_protobuf
-      URL https://github.com/google/protobuf/releases/download/v3.0.0/protobuf-cpp-3.0.0.tar.gz
+      URL https://github.com/google/protobuf/releases/download/v3.3.0/protobuf-cpp-3.3.0.tar.gz
       CONFIGURE_COMMAND ./configure
       BUILD_IN_SOURCE 1
       BUILD_COMMAND $(MAKE)

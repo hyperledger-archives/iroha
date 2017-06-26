@@ -14,14 +14,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <grpc++/grpc++.h>
 #include <grpc++/server_builder.h>
 
-namespace connection {
+#ifndef CONNECTION_SERVER_RUNNER_HPP
+#define CONNECTION_SERVER_RUNNER_HPP
 
-    class ServerRunner {
-    public:
-        ServerRunner(const std::string& ip,
-                     const std::vector<grpc::Service*>& services);
-    };
+/**
+ * For easy replacing with mock server, we use the interface.
+ */
+class IServerRunner {
+public:
+  virtual ~IServerRunner() = default;
+  virtual void run() = 0;
+  virtual void shutdown() = 0;
+  virtual bool waitForServersReady() = 0;
+};
 
-}  // namespace connection
+class ServerRunner final : public IServerRunner {
+public:
+  ServerRunner(const std::string &ip, int port,
+               const std::vector<grpc::Service *> &services);
+  void run();
+  void shutdown();
+  bool waitForServersReady();
+
+private:
+  std::unique_ptr<grpc::Server> serverInstance_;
+  std::mutex waitForServer_;
+  std::condition_variable serverInstanceCV_;
+
+  std::string serverAddress_;
+  std::vector<grpc::Service *> services_;
+};
+
+#endif

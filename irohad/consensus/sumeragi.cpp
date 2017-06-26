@@ -59,7 +59,7 @@ namespace consensus {
 
     void initialize() {
 
-      connection::consensus::receive(
+      consensus::connection::receive(
         [](const Block &block) {
           // TODO: Judge committed
           if ( /*check is_committed*/ false) {
@@ -86,13 +86,8 @@ namespace consensus {
 
     bool unicast(const iroha::protocol::Block& block, size_t peerOrder) {
       auto peer = peer_service::monitor::getActivePeerAt((unsigned int)peerOrder);
-//      connection::unicast(peer->ip_);
-
-      // TODO: Move to consensus/connection/
-//      connection::consensus::SumeragiClient client(peer->ip_, 50051); // TODO: Get port from config
-//      auto response = client.Verify(block);
-//      return response.code() == iroha::protocol::ResponseCode::OK;
-      return true;
+      auto response = connection::sendBlock(block, peer->ip_);
+      return response.code() == iroha::protocol::ResponseCode::OK;
     }
 
     bool leaderMulticast(const iroha::protocol::Block& block) {

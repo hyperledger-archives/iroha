@@ -19,22 +19,23 @@ limitations under the License.
 
 #include <block.pb.h>
 
-namespace connection {
-    namespace ordering {
+namespace ordering {
+  namespace connection {
 
-        bool send(std::string ip, const iroha::protocol::Transaction& tx);
-        class OrderingClient {
-        public:
-            OrderingClient(const std::string& ip, int port);
+    bool send(std::string ip, const iroha::protocol::Transaction& tx);
+    class OrderingClient {
+     public:
+      OrderingClient(const std::string& ip, int port);
 
-            iroha::protocol::QueueTransactionResponse QueueTransaction(
-                const iroha::protocol::Transaction& tx);
-        private:
-            grpc::ClientContext context_;
-            std::unique_ptr<iroha::protocol::OrderingService::Stub> stub_;
-        };
+      iroha::protocol::QueueTransactionResponse QueueTransaction(
+          const iroha::protocol::Transaction& tx);
 
-    }  // namespace consensus
-}  // namespace connection
+     private:
+      grpc::ClientContext context_;
+      std::unique_ptr<iroha::protocol::OrderingService::Stub> stub_;
+    };
 
-#endif // __IROHA_CONNECTION_ORDERING_CLIENT_HPP__
+  }  // namespace connection
+}  // namespace ordering
+
+#endif  // __IROHA_CONNECTION_ORDERING_CLIENT_HPP__

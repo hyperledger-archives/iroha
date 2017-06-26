@@ -12,14 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#add_subdirectory(connection)
-
-add_library(ordering STATIC queue.cpp observer.cpp)
-
-target_link_libraries(ordering
-  peer_service
+# Command Connection Test
+add_executable(command_connection_test
+  command_connection_test.cpp
+)
+target_link_libraries(command_connection_test
+  server_runner
+  command_client
   command_service
-  ordering_service
-  consensus_service
-  ordering_connection
+  schema
+  endpoint
+  gtest
+)
+add_test(
+  NAME command_connection_test
+  COMMAND $<TARGET_FILE:command_connection_test>
 )

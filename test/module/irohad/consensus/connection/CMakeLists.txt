@@ -12,14 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#add_subdirectory(connection)
-
-add_library(ordering STATIC queue.cpp observer.cpp)
-
-target_link_libraries(ordering
-  peer_service
-  command_service
-  ordering_service
-  consensus_service
-  ordering_connection
+# Consensus Connection Test
+add_executable(consensus_connection_test
+  consensus_connection_test.cpp
+)
+target_link_libraries(consensus_connection_test
+  server_runner
+  consensus_connection
+  schema
+  endpoint
+  gtest
+)
+add_test(
+  NAME consensus_connection_test
+  COMMAND $<TARGET_FILE:consensus_connection_test>
 )
