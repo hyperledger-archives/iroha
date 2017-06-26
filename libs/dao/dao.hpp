@@ -27,6 +27,10 @@
 
 #include "query.hpp"
 #include "query_response.hpp"
+#include "peer.hpp"
+#include "singature.hpp"
+#include "dao_crypto_provider.hpp"
+#include "dao_hash_provider.hpp"
 
 /**
  * DAO - Data Access Object.
