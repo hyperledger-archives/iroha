@@ -23,8 +23,12 @@
 #include "transaction_response.hpp"
 #include "asset.hpp"
 #include "account.hpp"
+#include "wallet.hpp"
+#include "peer.hpp"
+#include "singature.hpp"
+#include "domain.hpp"
+#include "command.hpp"
 #include "client.hpp"
-
 #include "query.hpp"
 #include "query_response.hpp"
 #include "peer.hpp"
