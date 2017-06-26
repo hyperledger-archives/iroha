@@ -13,15 +13,16 @@
 # limitations under the License.
 
 add_subdirectory(connection)
-
-add_library(sumeragi STATIC sumeragi.cpp)
-
+add_library(sumeragi STATIC
+    sumeragi.cpp
+    )
 target_link_libraries(sumeragi
-  schema
-  endpoint
-  crypto
-  sumeragi_connection
-  thread_pool
-  timer
-  logger
-)
+    schema
+    endpoint
+    crypto
+    sumeragi_connection
+    thread_pool
+    timer
+    logger
+    rxcpp
+    )

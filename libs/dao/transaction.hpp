@@ -17,11 +17,9 @@ limitations under the License.
 #ifndef IROHA_TRANSACTION_HPP
 #define IROHA_TRANSACTION_HPP
 
-#include <block.pb.h>
-#include <commands.pb.h>
 #include <common.hpp>
 #include <vector>
-#include "singature.hpp"
+#include "command.hpp"
 
 namespace iroha {
   namespace dao {
@@ -32,7 +30,6 @@ namespace iroha {
      * Transaction can be divided to {Header, Meta, Body}.
      */
     struct Transaction {
-      static Transaction create(iroha::protocol::Transaction tx);
 
       /**
        * List of signatories that sign transaction
@@ -67,7 +64,7 @@ namespace iroha {
        * Bunch of commands attached to transaction
        * BODY field
        */
-      std::vector<iroha::protocol::Command> commands;
+      std::vector<Command> commands;
     };
   }
 }
