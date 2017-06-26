@@ -32,7 +32,7 @@ namespace iroha {
        * @return observable with Proposals.
        * (List of Proposals)
        */
-      virtual rxcpp::observable<iroha::dao::Proposal> on_proposal() = 0;
+      virtual rxcpp::observable<dao::Proposal> on_proposal() = 0;
 
       /**
        * Event is triggered when commit block arrives.
@@ -41,7 +41,7 @@ namespace iroha {
        * But there are scenarios when consensus provide many blocks, e.g.
        * on peer startup - peer will get all actual blocks.
        */
-      virtual rxcpp::observable<rxcpp::observable<iroha::dao::Block>>
+      virtual rxcpp::observable<rxcpp::observable<dao::Block>>
       on_commit() = 0;
     };
 
@@ -60,8 +60,8 @@ namespace iroha {
        * @param topBlock - your last actual block
        * @return observable with blocks
        */
-      virtual rxcpp::observable<iroha::dao::Block> requestBlocks(
-          iroha::dao::Peer &target_peer, iroha::dao::Block &topBlock) = 0;
+      virtual rxcpp::observable<dao::Block> requestBlocks(
+          dao::Peer &target_peer, dao::Block &topBlock) = 0;
     };
 
     /**
@@ -73,7 +73,7 @@ namespace iroha {
        * Method spreads transaction to other members of  a network
        * @param tx - transaction for propagation
        */
-      virtual void propagate_transaction(iroha::dao::Transaction &tx) = 0;
+      virtual void propagate_transaction(dao::Transaction &tx) = 0;
     };
 
     /**
@@ -81,7 +81,8 @@ namespace iroha {
      * peers in a network
      */
     class PeerCommunicationService : public TransactionPropagator,
-                                     public ConsensusListener {};
+                                     public ConsensusListener {
+    };
   }
 }
 #endif  // IROHA_NETWORK_H
