@@ -21,23 +21,14 @@
 #include <common/types.hpp>
 
 namespace iroha {
-  inline int sha3_224(unsigned char *output, unsigned char *input,
+
+  void sha3_256(unsigned char *output, unsigned char *input,
                       size_t in_size);
 
-  inline int sha3_256(unsigned char *output, unsigned char *input,
+  void sha3_512(unsigned char *output, unsigned char *input,
                       size_t in_size);
-
-  inline int sha3_384(unsigned char *output, unsigned char *input,
-                      size_t in_size);
-
-  inline int sha3_512(unsigned char *output, unsigned char *input,
-                      size_t in_size);
-
-  hash224_t sha3_224(const uint8_t *input, size_t in_size);
 
   hash256_t sha3_256(const uint8_t *input, size_t in_size);
-
-  hash384_t sha3_384(const uint8_t *input, size_t in_size);
 
   hash512_t sha3_512(const uint8_t *input, size_t in_size);
 

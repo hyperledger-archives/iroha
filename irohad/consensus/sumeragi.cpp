@@ -52,13 +52,7 @@ namespace consensus {
 
     logger::Logger log("sumeragi");
 
-    static ThreadPool pool(ThreadPoolOptions {
-      .threads_count = 0,
-      //config::IrohaConfigManager::getInstance().getConcurrency(0),
-      .worker_queue_size = 1024
-      //config::IrohaConfigManager::getInstance().getPoolWorkerQueueSize(1024),
-    }
-    );
+    static tp::ThreadPool pool;
 
     void initialize() {
 
@@ -74,7 +68,7 @@ namespace consensus {
               // processBlock will be available but processBlock returns
               // void, so we don't have to call it and wait
               std::function<void()> &&task = std::bind(processBlock, block);
-              pool.process(std::move(task));
+              pool.post(std::move(task));
             }
           });
     }
