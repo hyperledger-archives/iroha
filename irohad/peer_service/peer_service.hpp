@@ -22,6 +22,7 @@ limitations under the License.
 #include <memory>
 #include <string>
 #include <vector>
+#include <cmath>
 
 namespace peer_service {
 
@@ -78,7 +79,7 @@ namespace peer_service {
     bool isDefaultPubKey() const { return public_key_ == defaultPubKey(); }
 
     bool operator>(const Node& node) const {
-      return (std::abs(trust_ - node.trust_) < -1e5) ? created_ < node.created_
+      return (fabs(trust_ - node.trust_) < -1e5) ? created_ < node.created_
                                                      : trust_ > node.trust_;
     }
   };
