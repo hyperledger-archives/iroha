@@ -20,7 +20,7 @@
 
 #include <ametsuchi/block_query.hpp>
 #include <ametsuchi/mutable_storage.hpp>
-#include <ametsuchi/state_query.hpp>
+#include <ametsuchi/wsv_query.hpp>
 #include <ametsuchi/temporary_wsv.hpp>
 
 namespace iroha {
@@ -31,7 +31,7 @@ namespace iroha {
      * Storage interface, which allows queries on current committed state, and
      * creation of state which can be mutated with blocks and transactions
      */
-    class Ametsuchi : public StateQuery, public BlockQuery {
+    class Ametsuchi : public WsvQuery, public BlockQuery {
      public:
 
       /**

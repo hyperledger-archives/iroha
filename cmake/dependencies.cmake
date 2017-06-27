@@ -66,6 +66,7 @@ add_dependencies(ed25519 mizukisonoko_ed25519)
 ####################################
 ExternalProject_Add(warchant_thread_pool
     GIT_REPOSITORY "https://github.com/Warchant/thread-pool-cpp.git"
+    GIT_TAG "a24e0726a7e804c55555fca16bc6f42d7ff4723a"
     BUILD_COMMAND "" # remove build step, header only lib
     CONFIGURE_COMMAND "" # remove configure step
     INSTALL_COMMAND "" # remove install step
@@ -79,7 +80,7 @@ set(thread_pool_SOURCE_DIR "${source_dir}")
 add_library(thread_pool INTERFACE IMPORTED)
 file(MAKE_DIRECTORY ${thread_pool_SOURCE_DIR}/include)
 set_target_properties(thread_pool PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${thread_pool_SOURCE_DIR}/include
+    INTERFACE_INCLUDE_DIRECTORIES ${thread_pool_SOURCE_DIR}/include/
     )
 add_dependencies(thread_pool warchant_thread_pool)
 
