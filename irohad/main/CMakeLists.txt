@@ -19,7 +19,7 @@ target_link_libraries(server_runner
     logger
     endpoint
     schema
-    ametsuchi
+    storage
     networking
     dao
     torii
