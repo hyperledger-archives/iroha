@@ -79,7 +79,7 @@ namespace peer_service {
     bool isDefaultPubKey() const { return public_key_ == defaultPubKey(); }
 
     bool operator>(const Node& node) const {
-      return (fabs(trust_ - node.trust_) < -1e5) ? created_ < node.created_
+      return (fabs(trust_ - node.trust_) < 1e-5) ? created_ < node.created_
                                                      : trust_ > node.trust_;
     }
   };
