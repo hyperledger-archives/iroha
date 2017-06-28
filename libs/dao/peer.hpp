@@ -43,7 +43,6 @@ namespace iroha {
 
       const PeerRole peer_role;
 
-      //TODO: fix peer
 
     };
   }
