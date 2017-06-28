@@ -15,9 +15,56 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef IROHA_CRYPTO_HPP
+#define IROHA_CRYPTO_HPP
 
-#include "base64.hpp"
-#include "common.hpp"
-#include "hash.hpp"
-#include "keypair.hpp"
+#include <common/types.hpp>
+#include <string>
+
+namespace iroha {
+
+  /**
+   * Sign message with ed25519 crypto algorithm
+   * @param msg
+   * @param msgsize
+   * @param pub
+   * @param priv
+   * @return
+   */
+  ed25519::sig_t sign(const uint8_t *msg, size_t msgsize,
+                      const ed25519::pubkey_t &pub,
+                      const ed25519::privkey_t &priv);
+
+  /**
+   * Verify signature of ed25519 crypto algorithm
+   * @param msg
+   * @param msgsize
+   * @param pub
+   * @param sig
+   * @return true if signature is valid, false otherwise
+   */
+  bool verify(const uint8_t *msg, size_t msgsize, const ed25519::pubkey_t &pub,
+              const ed25519::sig_t &sig);
+
+  /**
+   * Generate random seed reading from /dev/urandom
+   */
+  blob_t<32> create_seed();
+
+  /**
+   * Generate random seed as sha3_256(passphrase)
+   * @param passphrase
+   * @return
+   */
+  blob_t<32> create_seed(std::string passphrase);
+
+  /**
+   * Create new keypair
+   * @param seed
+   * @return
+   */
+  ed25519::keypair_t create_keypair(blob_t<32> seed);
+
+
+}
+#endif  // IROHA_CRYPTO_HPP

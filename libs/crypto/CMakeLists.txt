@@ -1,15 +1,17 @@
-add_library(crypto STATIC
-    common.hpp
-    base64.hpp
+add_library(hash STATIC
+    hash.cpp
     hash.hpp
-    keypair.hpp
-    crypto.cpp
-    crypto.hpp
-)
+    )
 
-target_link_libraries(crypto PUBLIC
-    keccak
+target_link_libraries(hash
     ed25519
-    optional
-    any
-)
+    )
+
+add_library(crypto STATIC
+    crypto.hpp
+    ed25519_impl.cpp
+    )
+target_link_libraries(crypto
+    ed25519
+    hash
+    )

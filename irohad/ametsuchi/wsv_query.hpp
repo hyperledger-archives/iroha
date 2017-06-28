@@ -18,7 +18,7 @@
 #ifndef IROHA_WSVQUERY_HPP
 #define IROHA_WSVQUERY_HPP
 
-#include <common.hpp>
+#include <common/types.hpp>
 #include <dao/dao.hpp>
 #include <rxcpp/rx.hpp>
 #include <string>
@@ -47,7 +47,7 @@ namespace iroha {
        * @return DAO Account
        */
       virtual iroha::dao::Account get_account(
-          iroha::crypto::ed25519::pubkey_t pub_key) = 0;
+          iroha::ed25519::pubkey_t pub_key) = 0;
 
       /**
        * Get asset by full name. For example USD#soramitsu.co.jp
@@ -76,7 +76,7 @@ namespace iroha {
        * @return vector of DAO Wallet
        */
       virtual std::vector<iroha::dao::Wallet> get_account_wallets(
-          iroha::crypto::ed25519::pubkey_t pub_key) = 0;
+          iroha::ed25519::pubkey_t pub_key) = 0;
 
       /**
        * Get all asset of a domain.

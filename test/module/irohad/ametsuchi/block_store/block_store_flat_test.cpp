@@ -17,7 +17,7 @@
 
 #include <gtest/gtest.h>
 #include <ametsuchi/block_store/backend/flat_file.hpp>
-#include <common.hpp>
+#include <common/types.hpp>
 
 namespace iroha {
   namespace ametsuchi {

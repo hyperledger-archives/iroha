@@ -7,37 +7,6 @@ set_directory_properties(PROPERTIES
 # Project dependencies.
 find_package(Threads REQUIRED)
 
-###########################
-#         keccak          #
-###########################
-find_package(LibXslt QUIET)
-if (NOT LIBXSLT_XSLTPROC_EXECUTABLE)
-  message(FATAL_ERROR "xsltproc not found")
-endif ()
-
-ExternalProject_Add(gvanas_keccak
-    GIT_REPOSITORY "https://github.com/gvanas/KeccakCodePackage.git"
-    BUILD_IN_SOURCE 1
-    BUILD_COMMAND bash -c "CFLAGS='-fPIC -DKeccakP200_excluded -DKeccakP400_excluded -DKeccakP800_excluded'\
-    $(MAKE) CC='${CMAKE_C_COMPILER}' generic64/libkeccak.a"
-    CONFIGURE_COMMAND "" # remove configure step
-    INSTALL_COMMAND "" # remove install step
-    TEST_COMMAND "" # remove test step
-    UPDATE_COMMAND "" # remove update step
-    )
-ExternalProject_Get_Property(gvanas_keccak source_dir)
-set(keccak_SOURCE_DIR "${source_dir}")
-
-# Hash internals for keccak
-add_library(keccak STATIC IMPORTED)
-file(MAKE_DIRECTORY ${keccak_SOURCE_DIR}/bin/generic64/libkeccak.a.headers)
-set_target_properties(keccak PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${keccak_SOURCE_DIR}/bin/generic64/libkeccak.a.headers"
-    IMPORTED_LOCATION "${keccak_SOURCE_DIR}/bin/generic64/libkeccak.a"
-    )
-
-add_dependencies(keccak gvanas_keccak)
-
 ############################
 #         ed25519          #
 ############################
@@ -80,7 +49,7 @@ set(thread_pool_SOURCE_DIR "${source_dir}")
 add_library(thread_pool INTERFACE IMPORTED)
 file(MAKE_DIRECTORY ${thread_pool_SOURCE_DIR}/include)
 set_target_properties(thread_pool PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${thread_pool_SOURCE_DIR}/include/
+    INTERFACE_INCLUDE_DIRECTORIES ${thread_pool_SOURCE_DIR}/include
     )
 add_dependencies(thread_pool warchant_thread_pool)
 

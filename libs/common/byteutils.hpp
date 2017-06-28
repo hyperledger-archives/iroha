@@ -15,23 +15,30 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_HASH_H
-#define IROHA_HASH_H
+#ifndef IROHA_BYTEUTILS_H
+#define IROHA_BYTEUTILS_H
 
-#include <common/types.hpp>
+#include <crypto/base64.hpp>
+#include <string>
+#include "types.hpp"
 
 namespace iroha {
 
-  void sha3_256(unsigned char *output, unsigned char *input,
-                      size_t in_size);
+  /**
+   * Converts given string to the blob of given size.
+   * @tparam size
+   * @param s
+   * @return
+   */
+  template <size_t size>
+  blob_t<size> to_blob(std::string s) {
+    if (s.size() != size) throw std::runtime_error("to_blob size mismatch");
 
-  void sha3_512(unsigned char *output, unsigned char *input,
-                      size_t in_size);
+    blob_t<size> b;
+    std::copy(s.begin(), s.end(), b.begin());
 
-  hash256_t sha3_256(const uint8_t *input, size_t in_size);
+    return b;
+  }
+}
 
-  hash512_t sha3_512(const uint8_t *input, size_t in_size);
-
-}  // namespace iroha
-
-#endif  // IROHA_HASH_H
+#endif  // IROHA_BYTEUTILS_H

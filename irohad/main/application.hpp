@@ -15,23 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_HASH_H
-#define IROHA_HASH_H
+#ifndef IROHA_APPLICATION_HPP
+#define IROHA_APPLICATION_HPP
 
-#include <common/types.hpp>
+#include <network/network_api.h>
+#include <ametsuchi/ametsuchi.hpp>
+#include <dao/dao.hpp>
 
-namespace iroha {
+namespace main {
 
-  void sha3_256(unsigned char *output, unsigned char *input,
-                      size_t in_size);
+  /**
+   * Contains instances of global services and shared providers
+   */
+  class Irohad {
+   public:
 
-  void sha3_512(unsigned char *output, unsigned char *input,
-                      size_t in_size);
+    ametsuchi::Ametsuchi &ametsuchi;
 
-  hash256_t sha3_256(const uint8_t *input, size_t in_size);
+    network::PeerCommunicationService &peerService;
 
-  hash512_t sha3_512(const uint8_t *input, size_t in_size);
+    dao::DaoCryptoProvider &cryptoProvider;
 
-}  // namespace iroha
+    dao::HashProvider &hashProvider;
 
-#endif  // IROHA_HASH_H
+  };
+} // namespace iroha
+#endif //IROHA_APPLICATION_HPP

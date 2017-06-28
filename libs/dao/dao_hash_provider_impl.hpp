@@ -18,79 +18,85 @@ limitations under the License.
 #define IROHA_DAO_HASH_PROVIDER_IMPL_HPP
 
 #include <algorithm>
-#include <common.hpp>
+#include <common/types.hpp>
 #include <crypto/base64.hpp>
+#include <crypto/crypto.hpp>
 #include <crypto/hash.hpp>
 #include "dao_hash_provider.hpp"
 
 namespace iroha {
   namespace dao {
-    class HashProviderImpl : public HashProvider<crypto::ed25519::PUBLEN> {
+    class HashProviderImpl : public HashProvider<ed25519::pubkey_t::size()> {
      public:
-      iroha::hash256_t get_hash(const Proposal& proposal) override {
-        std::string tx_concat_hash;
+      iroha::hash256_t get_hash(const Proposal &proposal) override {
+        std::string concat_;
         for (auto tx : proposal.transactions) {
-          auto tx_hash_arr = get_hash(tx);
-          std::string tx_hash_str = crypto::digest_to_hexdigest(
-              tx_hash_arr.data(), crypto::ed25519::PUBLEN);
-
-          tx_concat_hash += tx_hash_str;
+          for (auto command : tx.commands) {
+//          command.AppendToString(&concat_hash_commands); TODO implement
+          }
+          std::copy(tx.creator.begin(), tx.creator.end(),
+                    std::back_inserter(concat_));
         }
-        std::string tx_concat_hash_hex = crypto::sha3_256_hex(tx_concat_hash);
-        auto concat_hash_digest =
-            crypto::hexdigest_to_digest(tx_concat_hash_hex);
+        std::vector<uint8_t> concat(concat_.begin(), concat_.end());
 
-        iroha::hash256_t res;
-        std::copy_n(concat_hash_digest->begin(), res.size(), res.begin());
-        return res;
+        auto concat_hash = sha3_256(concat.data(), concat.size());
+        return concat_hash;
       };
 
-      iroha::hash256_t get_hash(const Block& block) override {
-        std::string concat;
+      iroha::hash256_t get_hash(const Block &block) override {
+        std::string concat_;
 
         // block height
-        concat += std::to_string(block.height);
+        concat_ += std::to_string(block.height);
 
         // prev_hash
         std::copy(block.prev_hash.begin(), block.prev_hash.end(),
-                  std::back_inserter(concat));
+                  std::back_inserter(concat_));
 
         // txnumber
-        concat += std::to_string(block.txs_number);
+        concat_ += std::to_string(block.txs_number);
 
         // merkle root
         std::copy(block.merkle_root.begin(), block.merkle_root.end(),
-                  std::back_inserter(concat));
+                  std::back_inserter(concat_));
 
         for (auto tx : block.transactions) {
-          auto tx_hash_arr = get_hash(tx);
-          std::string tx_hash_str = crypto::digest_to_hexdigest(
-              tx_hash_arr.data(), crypto::ed25519::PUBLEN);
+          for (auto command : tx.commands) {
+//            command.AppendToString(&concat_); TODO implement
+          }
+          std::copy(tx.creator.begin(), tx.creator.end(),
+                    std::back_inserter(concat_));
 
-          concat += tx_hash_str;
+          concat_ += std::to_string(tx.created_ts);
+
+          concat_ += std::to_string(tx.tx_counter);
+
+          for (auto sig : tx.signatures) {
+            std::copy(sig.pubkey.begin(), sig.pubkey.end(),
+                      std::back_inserter(concat_));
+            std::copy(sig.signature.begin(), sig.signature.end(),
+                      std::back_inserter(concat_));
+          }
         }
-        std::string concat_hash_hex = crypto::sha3_256_hex(concat);
-        auto concat_hash_digest = crypto::hexdigest_to_digest(concat_hash_hex);
+        std::vector<uint8_t> concat(concat_.begin(), concat_.end());
 
-        iroha::hash256_t res;
-        std::copy_n(concat_hash_digest->begin(), res.size(), res.begin());
-        return res;
+        auto concat_hash = sha3_256(concat.data(), concat.size());
+        return concat_hash;
       };
 
-      iroha::hash256_t get_hash(const Transaction& tx) {
-        std::string concat_hash_commands;
+      iroha::hash256_t get_hash(const Transaction &tx) {
+        std::string concat_hash_commands_;
         for (auto command : tx.commands) {
-//          command.AppendToString(&concat_hash_commands); TODO implement
+//          command.AppendToString(&concat_hash_commands_); TODO implement
         }
         std::copy(tx.creator.begin(), tx.creator.end(),
-                  std::back_inserter(concat_hash_commands));
+                  std::back_inserter(concat_hash_commands_));
+        std::vector<uint8_t> concat_hash_commands(concat_hash_commands_.begin(),
+                                                  concat_hash_commands_.end());
 
-        std::string concat_hash_hex =
-            crypto::sha3_256_hex(concat_hash_commands);
-        auto concat_hash_digest = crypto::hexdigest_to_digest(concat_hash_hex);
-        iroha::hash256_t res;
-        std::copy_n(concat_hash_digest->begin(), res.size(), res.begin());
-        return res;
+        auto concat_hash =
+            sha3_256(concat_hash_commands.data(), concat_hash_commands.size());
+        return concat_hash;
       }
     };
   }
