@@ -22,15 +22,18 @@ namespace iroha {
 
     CommandValidatorStub::CommandValidatorStub(
         ametsuchi::TemporaryWsv &wsv) : wsv(wsv) {
+      this->handler.insert<dao::AddPeer>(std::bind(&CommandValidatorStub::validateAddPeer,
+                                                   this,
+                                                   std::placeholders::_1));
     }
 
-    bool CommandValidatorStub::validate(dao::Command &command) {
-      // TODO implement map
-      // throw std::invalid_argument("not available type");
-      return true;
+    bool CommandValidatorStub::validate(const dao::Command &command) {
+      return handler.find(command).value_or([](auto &) {
+        return false;
+      })(command);
     }
 
-    bool CommandValidatorStub::validateAddPeer(dao::AddPeer &addPeer) {
+    bool CommandValidatorStub::validateAddPeer(const dao::AddPeer &addPeer) {
       return true;
     }
   } // namespace validation

@@ -33,7 +33,7 @@ namespace iroha {
        * @param command for application
        * @return true if invariant correct, otherwice false
        */
-      virtual bool validate(dao::Command &command) = 0;
+      virtual bool validate(const dao::Command &command) = 0;
     };
   } // namespace validation
 } // namespace iroha
