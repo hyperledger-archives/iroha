@@ -22,12 +22,12 @@
 #include <ametsuchi/ametsuchi.hpp>
 #include <dao/dao.hpp>
 
-namespace iroha {
+namespace main {
 
   /**
    * Contains instances of global services and shared providers
    */
-  class Application {
+  class Irohad {
    public:
 
     ametsuchi::Ametsuchi &ametsuchi;
