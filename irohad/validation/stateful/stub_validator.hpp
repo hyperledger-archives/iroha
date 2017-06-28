@@ -32,7 +32,7 @@ namespace iroha {
       dao::Proposal validate(const dao::Proposal &proposal,
                              ametsuchi::TemporaryWsv &wsv);
      private:
-      const CommandValidator command_validator;
+      const CommandValidator &command_validator;
     };
   } // namespace validation
 } // namespace iroha

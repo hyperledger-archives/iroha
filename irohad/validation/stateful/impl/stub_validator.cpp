@@ -23,30 +23,34 @@ namespace iroha {
     /**
      * Interface for performing stateful validation
      */
-    ValidatorStub::validate(const iroha::dao::Proposal &proposal,
-                            ametsuchi::TemporaryWsv &wsv) = 0 {
+    dao::Proposal ValidatorStub::validate(const iroha::dao::Proposal &proposal,
+                                          ametsuchi::TemporaryWsv &wsv) {
 
-      decltype(proposal.transactions) valid_transactions = {};
+      auto
+          checking_transaction = [this](auto &tx, auto &executor, auto &query) {
+        for (auto command : tx.commands) {
+          executor.execute(command);
+          if (!this->command_validator.validate(
+              *command)) {
+            return false;
+          }
+        }
+        return true;
+      };
 
-      for (auto tx = proposal.transactions.begin();
-           it != proposal.transactions.end(); ++tx) {
+      auto filter = [&wsv, checking_transaction](auto &acc, const auto &tx) {
+        auto answer = wsv.apply(tx, checking_transaction
+        );
+        if (answer) {
+          return acc.push_back(tx);
+        } else acc;
+      };
 
-        auto correct_transaction = wsv
-            .apply(*tx, [](dao::Transaction &tx,
-                           ametsuchi::CommandExecutor &executor,
-                           ametsuchi::WsvQuery &query) {
+      auto &txs = proposal.transactions;
+      decltype(txs) valid = {};
 
-              for (auto command = tx->commands.begin();
-                   command != tx->commands.end(); ++command) {
-                executor.execute(command);
-                if (!this->command_validator.validate(*command)) {
-                  return false;
-                }
-              }
-              return true;
-            });
-      }
-      return dao::Proposal(valid_transactions);
+      return dao::Proposal(std::accumulate(txs.begin(), txs.end(),
+                                           valid, filter));
     }
   } // namespace validation
 } // namespace iroha
