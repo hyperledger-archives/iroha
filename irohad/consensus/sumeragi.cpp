@@ -14,7 +14,6 @@
 
 #include <crypto/crypto.hpp>
 #include <validation/stateful/validator.hpp>
-#include <api/command_service.hpp>
 #include <logger/logger.hpp>
 #include <peer_service/self_state.hpp>
 #include <peer_service/monitor.hpp>
