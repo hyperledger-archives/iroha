@@ -36,6 +36,13 @@ namespace iroha {
        */
       const iroha::crypto::ed25519::pubkey_t pubkey;
 
+      enum PeerRole {
+        VALIDATOR,
+        VIEWER
+      };
+
+      const PeerRole peer_role;
+
       //TODO: fix peer
 
     };
