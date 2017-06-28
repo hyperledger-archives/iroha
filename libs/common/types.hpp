@@ -18,12 +18,9 @@
 #ifndef IROHA_COMMON_HPP
 #define IROHA_COMMON_HPP
 
-#include <dirent.h>
 #include <array>
 #include <crypto/base64.hpp>
 #include <cstdio>
-#include <gsl/gsl_byte>
-
 
 /**
  * This file defines common types used in iroha.
@@ -36,6 +33,9 @@
 namespace iroha {
 
   using byte_t = uint8_t;
+
+  static const std::string code = {'0', '1', '2', '3', '4', '5', '6', '7',
+                                   '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
   /**
    * Base type which represents blob of fixed size.
@@ -81,15 +81,9 @@ namespace iroha {
       }
       return res;
     }
-
-   private:
-    static const std::string code;
   };
 
-  template <size_t size_>
-  const std::string blob_t<size_>::code = {'0', '1', '2', '3', '4', '5',
-                                           '6', '7', '8', '9', 'a', 'b',
-                                           'c', 'd', 'e', 'f'};
+
 
   template <size_t size>
   using hash_t = blob_t<size>;

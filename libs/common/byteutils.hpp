@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by bogdan on 24.06.17.
-//
 
 #ifndef IROHA_BYTEUTILS_H
 #define IROHA_BYTEUTILS_H
