@@ -15,30 +15,30 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMANDEXECUTOR_HPP
-#define IROHA_COMMANDEXECUTOR_HPP
+#ifndef IROHA_BYTEUTILS_H
+#define IROHA_BYTEUTILS_H
 
-#include <dao/command.hpp>
+#include <crypto/base64.hpp>
+#include <string>
+#include "types.hpp"
 
 namespace iroha {
 
-  namespace ametsuchi {
-    /**
-     * Applies command to the world state view
-     */
-    class CommandExecutor {
-     public:
-      /**
-       * Executes a command in a temporary state
-       * @see TemporaryWsv, MutableStorage
-       * @param command Command to execute
-       * @return True if the command is successfully executed, false otherwise
-       */
-      virtual bool execute(const dao::Command& command) = 0;
-    };
+  /**
+   * Converts given string to the blob of given size.
+   * @tparam size
+   * @param s
+   * @return
+   */
+  template <size_t size>
+  blob_t<size> to_blob(std::string s) {
+    if (s.size() != size) throw std::runtime_error("to_blob size mismatch");
 
-  } // namespace ametsuchi
+    blob_t<size> b;
+    std::copy(s.begin(), s.end(), b.begin());
 
-}// namespace iroha
+    return b;
+  }
+}
 
-#endif //IROHA_COMMANDEXECUTOR_HPP
+#endif  // IROHA_BYTEUTILS_H

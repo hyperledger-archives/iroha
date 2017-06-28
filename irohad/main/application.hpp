@@ -15,30 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMANDEXECUTOR_HPP
-#define IROHA_COMMANDEXECUTOR_HPP
+#ifndef IROHA_APPLICATION_HPP
+#define IROHA_APPLICATION_HPP
 
-#include <dao/command.hpp>
+#include <network/network_api.h>
+#include <ametsuchi/ametsuchi.hpp>
+#include <dao/dao.hpp>
 
-namespace iroha {
+namespace main {
 
-  namespace ametsuchi {
-    /**
-     * Applies command to the world state view
-     */
-    class CommandExecutor {
-     public:
-      /**
-       * Executes a command in a temporary state
-       * @see TemporaryWsv, MutableStorage
-       * @param command Command to execute
-       * @return True if the command is successfully executed, false otherwise
-       */
-      virtual bool execute(const dao::Command& command) = 0;
-    };
+  /**
+   * Contains instances of global services and shared providers
+   */
+  class Irohad {
+   public:
 
-  } // namespace ametsuchi
+    ametsuchi::Ametsuchi &ametsuchi;
 
-}// namespace iroha
+    network::PeerCommunicationService &peerService;
 
-#endif //IROHA_COMMANDEXECUTOR_HPP
+    dao::DaoCryptoProvider &cryptoProvider;
+
+    dao::HashProvider &hashProvider;
+
+  };
+} // namespace iroha
+#endif //IROHA_APPLICATION_HPP

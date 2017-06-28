@@ -7,7 +7,7 @@
  * You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
- *        
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,4 +15,18 @@
  * limitations under the License.
  */
 
-#include "crypto.hpp"
+#include <gtest/gtest.h>
+#include <ametsuchi/command_executor_stub.hpp>
+#include <ametsuchi/ametsuchi_stub.hpp>
+
+using iroha::ametsuchi::AmetsuchiStub;
+using iroha::ametsuchi::CommandExecutorStub;
+using namespace iroha::dao;
+
+TEST(CommandExecutorTest, SampleTest) {
+  AmetsuchiStub ametsuchi;
+  CommandExecutorStub executor(ametsuchi);
+
+  ASSERT_TRUE(executor.execute(AddPeer{}));
+  ASSERT_FALSE(executor.execute(Command{}));
+}
