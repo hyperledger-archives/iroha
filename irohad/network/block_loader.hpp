@@ -27,7 +27,7 @@ namespace iroha {
     /**
      * Interface for downloading blocks from a network
      */
-    class BlockLoaderApi {
+    class BlockLoader {
      public:
       /**
        * Method requests missed blocks from external peer starting from it's top
