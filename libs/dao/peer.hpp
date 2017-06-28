@@ -27,7 +27,7 @@ namespace iroha {
      */
     struct Peer {
       /**
-       * Address of peer for connection
+       * Ip address of peer for connection
        */
       const std::string address;
 
@@ -41,6 +41,9 @@ namespace iroha {
         VIEWER
       };
 
+      /**
+       * Peer role in consensus
+       */
       const PeerRole peer_role;
 
 
