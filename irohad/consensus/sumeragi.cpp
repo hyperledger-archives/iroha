@@ -14,13 +14,12 @@
 
 #include <crypto/crypto.hpp>
 #include <validation/stateful/validator.hpp>
-#include <api/command_service.hpp>
+#include <torii/command_service.hpp>
 #include <logger/logger.hpp>
 #include <peer_service/self_state.hpp>
 #include <peer_service/monitor.hpp>
 #include <timer/timer.hpp>
 #include <datetime/time.hpp>
-#include <thread_pool.hpp>
 #include <vector>
 #include <set>
 
@@ -50,33 +49,8 @@ namespace consensus {
 
     logger::Logger log("sumeragi");
 
-
-    static tp::ThreadPool pool;
-
     void initialize() {
 
-      //config::IrohaConfigManager::getInstance().getConcurrency(0),
-      //config::IrohaConfigManager::getInstance().getPoolWorkerQueueSize(1024),
-      tp::ThreadPoolOptions tpOptions;
-      tpOptions.setThreadCount(0);
-      tpOptions.setQueueSize(1024);
-      pool = tp::ThreadPool(tpOptions);
-
-      consensus::connection::receive(
-        [](const Block &block) {
-          // TODO: Judge committed
-          if ( /*check is_committed*/ false) {
-
-          } else {
-            // send processBlock(block) as a task to processing pool
-            // this returns std::future<void> object
-            // (std::future).get() method locks processing until result of
-            // processBlock will be available but processBlock returns
-            // void, so we don't have to call it and wait
-            std::function<void()> &&task = std::bind(processBlock, block);
-            pool.post(std::move(task));
-          }
-        });
     }
 
     size_t getMaxFaulty() {
