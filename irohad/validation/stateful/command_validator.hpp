@@ -18,7 +18,7 @@
 #ifndef IROHA_COMMAND_VALIDATOR_HPP
 #define IROHA_COMMAND_VALIDATOR_HPP
 
-#include <dao/dao>
+#include <dao/dao.hpp>
 
 namespace iroha {
   namespace validation {
