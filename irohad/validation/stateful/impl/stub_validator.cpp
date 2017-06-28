@@ -31,21 +31,20 @@ namespace iroha {
       for (auto tx = proposal.transactions.begin();
            it != proposal.transactions.end(); ++tx) {
 
-        auto correct_transaction = true;
+        auto correct_transaction = wsv
+            .apply(*tx, [](dao::Transaction &tx,
+                           ametsuchi::CommandExecutor &executor,
+                           ametsuchi::WsvQuery &query) {
 
-        for (auto command = tx->commands.begin();
-             command != tx->commands.end(); ++command) {
-
-          // todo apply to wsv
-          bool valid = this->command_validator.validate(*command);
-          if (!valid) {
-            correct_transaction = false;
-            break;
-          }
-        }
-        if (correct_transaction) {
-          valid_transactions.push_back(*tx);
-        }
+              for (auto command = tx->commands.begin();
+                   command != tx->commands.end(); ++command) {
+                executor.execute(command);
+                if (!this->command_validator.validate(*command)) {
+                  return false;
+                }
+              }
+              return true;
+            });
       }
       return dao::Proposal(valid_transactions);
     }
