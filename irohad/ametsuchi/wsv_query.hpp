@@ -34,6 +34,14 @@ namespace iroha {
     class WsvQuery {
      public:
       /**
+       * Get peer by it pub key
+       * @param pub_key
+       * @return Peer DAO
+       */
+      virtual iroha::dao::Peer get_peer(
+          iroha::crypto::ed25519::pubkey_t pub_key) = 0;
+
+      /**
        * Get account by it's first public key.
        * @param pub_key
        * @return DAO Account
