@@ -35,12 +35,12 @@ namespace iroha {
       /*
        * Account state
        */
-      const State state;
+      State state;
 
       /*
        * Minimum quorum of signatures need for transactions
        */
-      const uint32_t quorum;
+      uint32_t quorum;
     };
   }
 }

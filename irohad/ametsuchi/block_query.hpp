@@ -18,6 +18,9 @@
 #ifndef IROHA_BLOCK_QUERY_HPP
 #define IROHA_BLOCK_QUERY_HPP
 
+#include <rxcpp/rx-observable.hpp>
+#include <dao/dao.hpp>
+
 namespace iroha {
 
   namespace ametsuchi {
