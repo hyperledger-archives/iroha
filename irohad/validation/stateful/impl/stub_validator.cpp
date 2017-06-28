@@ -17,21 +17,22 @@
 
 #include <validation/stateful/stub_validator.hpp>
 #include <dao/dao.hpp>
+#include <numeric>
+
 namespace iroha {
   namespace validation {
 
     /**
      * Interface for performing stateful validation
      */
-    dao::Proposal ValidatorStub::validate(const iroha::dao::Proposal &proposal,
+    dao::Proposal ValidatorStub::validate(const dao::Proposal &proposal,
                                           ametsuchi::TemporaryWsv &wsv) {
 
       auto
           checking_transaction = [this](auto &tx, auto &executor, auto &query) {
         for (auto command : tx.commands) {
           executor.execute(command);
-          if (!this->command_validator.validate(
-              *command)) {
+          if (!command_validator.validate(command)) {
             return false;
           }
         }
@@ -42,8 +43,9 @@ namespace iroha {
         auto answer = wsv.apply(tx, checking_transaction
         );
         if (answer) {
-          return acc.push_back(tx);
-        } else acc;
+          acc.push_back(tx);
+        }
+        return acc;
       };
 
       auto &txs = proposal.transactions;

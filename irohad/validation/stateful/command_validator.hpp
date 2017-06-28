@@ -27,6 +27,7 @@ namespace iroha {
      * Interface for checking invariant after performing command
      */
     class CommandValidator {
+     public:
 
       /**
        * Method provide validation of wvs after application command

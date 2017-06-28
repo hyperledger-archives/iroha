@@ -25,14 +25,14 @@ namespace iroha {
   namespace validation {
     class ValidatorStub : public StatefulValidator {
      public:
-      ValidatorStub(const CommandValidator &command_validator)
+      ValidatorStub(CommandValidator &command_validator)
           : command_validator(command_validator) {
       }
 
       dao::Proposal validate(const dao::Proposal &proposal,
                              ametsuchi::TemporaryWsv &wsv);
      private:
-      const CommandValidator &command_validator;
+      CommandValidator &command_validator;
     };
   } // namespace validation
 } // namespace iroha
