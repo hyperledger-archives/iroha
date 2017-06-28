@@ -1,0 +1,39 @@
+/**
+ * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * http://soramitsu.co.jp
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef IROHA_STUB_VALIDATOR_HPP
+#define IROHA_STUB_VALIDATOR_HPP
+
+#include <validation/stateful/validator.hpp>
+#include <validation/stateful/command_validator.hpp>
+
+namespace iroha {
+  namespace validation {
+    class ValidatorStub : public StatefulValidator {
+     public:
+      ValidatorStub(const CommandValidator &command_validator)
+          : command_validator(command_validator) {
+      }
+
+      dao::Proposal validate(const dao::Proposal &proposal,
+                             ametsuchi::TemporaryWsv &wsv);
+     private:
+      const CommandValidator command_validator;
+    };
+  } // namespace validation
+} // namespace iroha
+#endif //IROHA_STUB_VALIDATOR_HPP
