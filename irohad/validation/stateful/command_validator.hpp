@@ -22,6 +22,10 @@
 
 namespace iroha {
   namespace validation {
+
+    /**
+     * Interface for checking invariant after performing command
+     */
     class CommandValidator {
 
       /**
