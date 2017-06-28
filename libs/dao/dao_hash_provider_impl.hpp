@@ -32,7 +32,7 @@ namespace iroha {
         std::string concat_;
         for (auto tx : proposal.transactions) {
           for (auto command : tx.commands) {
-            command.AppendToString(&concat_);
+//          command.AppendToString(&concat_hash_commands); TODO implement
           }
           std::copy(tx.creator.begin(), tx.creator.end(),
                     std::back_inserter(concat_));
@@ -62,7 +62,7 @@ namespace iroha {
 
         for (auto tx : block.transactions) {
           for (auto command : tx.commands) {
-            command.AppendToString(&concat_);
+//            command.AppendToString(&concat_); TODO implement
           }
           std::copy(tx.creator.begin(), tx.creator.end(),
                     std::back_inserter(concat_));
@@ -87,7 +87,7 @@ namespace iroha {
       iroha::hash256_t get_hash(const Transaction &tx) {
         std::string concat_hash_commands_;
         for (auto command : tx.commands) {
-          command.AppendToString(&concat_hash_commands_);
+//          command.AppendToString(&concat_hash_commands_); TODO implement
         }
         std::copy(tx.creator.begin(), tx.creator.end(),
                   std::back_inserter(concat_hash_commands_));

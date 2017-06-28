@@ -18,7 +18,6 @@ limitations under the License.
 #define IROHA_TRANSACTION_HPP
 
 #include <block.pb.h>
-#include <commands.pb.h>
 #include <common/types.hpp>
 #include <vector>
 #include "command.hpp"
