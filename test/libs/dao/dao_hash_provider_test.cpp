@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 #include <gtest/gtest.h>
+#include <common/types.hpp>
 #include <dao/dao_hash_provider_impl.hpp>
 
 iroha::dao::Signature create_signature();
@@ -24,8 +25,8 @@ iroha::dao::Block create_block();
 
 iroha::dao::Signature create_signature() {
   iroha::dao::Signature signature{};
-  memset(signature.signature.data(), 0x0, iroha::crypto::ed25519::SIGNATURELEN);
-  memset(signature.pubkey.data(), 0x0, iroha::crypto::ed25519::PUBLEN);
+  memset(signature.signature.data(), 0x0, iroha::ed25519::sig_t::size());
+  memset(signature.pubkey.data(), 0x0, iroha::ed25519::pubkey_t::size());
   return signature;
 }
 
@@ -54,13 +55,13 @@ iroha::dao::Proposal create_proposal() {
 
 iroha::dao::Block create_block() {
   iroha::dao::Block block{};
-  memset(block.hash.data(), 0x0, iroha::crypto::ed25519::PUBLEN);
+  memset(block.hash.data(), 0x0, iroha::ed25519::pubkey_t::size());
   block.sigs.push_back(create_signature());
   block.created_ts = 0;
   block.height = 0;
-  memset(block.prev_hash.data(), 0x0, iroha::crypto::ed25519::PUBLEN);
+  memset(block.prev_hash.data(), 0x0, iroha::ed25519::pubkey_t::size());
   block.txs_number = 0;
-  memset(block.merkle_root.data(), 0x0, iroha::crypto::ed25519::PUBLEN);
+  memset(block.merkle_root.data(), 0x0, iroha::ed25519::pubkey_t::size());
   block.transactions.push_back(create_transaction());
   return block;
 }
@@ -69,41 +70,36 @@ TEST(DaoHashProviderTest, DaoHashProviderWhenGetHashBlockIsCalled) {
   using iroha::dao::HashProviderImpl;
   using iroha::dao::HashProvider;
 
-  std::unique_ptr<HashProvider<iroha::crypto::ed25519::PUBLEN>> hash_provider =
-      std::make_unique<HashProviderImpl>();
+  std::unique_ptr<HashProvider<iroha::ed25519::pubkey_t::size()>>
+      hash_provider = std::make_unique<HashProviderImpl>();
 
   auto block = create_block();
   auto res = hash_provider->get_hash(block);
-  std::cout << "block hash: "
-            << iroha::crypto::digest_to_hexdigest(
-                   res.data(), iroha::crypto::ed25519::PUBLEN)
-            << std::endl;
+  std::cout << "block hash: " << res.to_hexstring() << std::endl;
 }
 
 TEST(DaoHashProviderTest, DaoHashProviderWhenGetHashProposalIsCalled) {
   using iroha::dao::HashProviderImpl;
   using iroha::dao::HashProvider;
 
-  std::unique_ptr<HashProvider<iroha::crypto::ed25519::PUBLEN>> hash_provider =
-      std::make_unique<HashProviderImpl>();
+  std::unique_ptr<HashProvider<iroha::ed25519::pubkey_t::size()>>
+      hash_provider = std::make_unique<HashProviderImpl>();
 
   iroha::dao::Proposal proposal = create_proposal();
 
   auto res = hash_provider->get_hash(proposal);
-  std::cout << "proposal hash: "
-            << iroha::crypto::digest_to_hexdigest(res.data(), 32) << std::endl;
+  std::cout << "proposal hash: " << res.to_hexstring() << std::endl;
 }
 
 TEST(DaoHashProviderTest, DaoHashProviderWhenGetHashTransactionIsCalled) {
   using iroha::dao::HashProviderImpl;
   using iroha::dao::HashProvider;
 
-  std::unique_ptr<HashProvider<iroha::crypto::ed25519::PUBLEN>> hash_provider =
-      std::make_unique<HashProviderImpl>();
+  std::unique_ptr<HashProvider<iroha::ed25519::pubkey_t::size()>>
+      hash_provider = std::make_unique<HashProviderImpl>();
 
   iroha::dao::Transaction tx = create_transaction();
   auto res = hash_provider->get_hash(tx);
 
-  std::cout << "transaction hash: "
-            << iroha::crypto::digest_to_hexdigest(res.data(), 32) << std::endl;
+  std::cout << "transaction hash: " << res.to_hexstring() << std::endl;
 }

@@ -19,16 +19,13 @@ limitations under the License.
 #include <timer/timer.hpp>
 #include "queue.hpp"
 
-#include <api/command_service.hpp>
-#include <ordering/connection/client.hpp>
-#include <ordering/connection/service.hpp>
-
 namespace ordering {
   namespace observer {
 
     using Transaction = iroha::protocol::Transaction;
 
     void initialize() {
+      /*
       api::receive([](const Transaction &tx) {
         // Verified State-less validate Tx
         // TODO : [WIP] temp implement Send to Leader-group
@@ -41,6 +38,7 @@ namespace ordering {
         // Verified State-less validate Tx
         queue::append(tx);
       });
+       */
     }
 
     // This is invoked in thread.

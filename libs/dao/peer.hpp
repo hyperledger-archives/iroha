@@ -16,7 +16,7 @@ limitations under the License.
 #ifndef IROHA_PEER_H
 #define IROHA_PEER_H
 
-#include <common.hpp>
+#include <common/types.hpp>
 #include "account.hpp"
 
 namespace iroha {
@@ -34,7 +34,7 @@ namespace iroha {
       /**
        * Public key of peer
        */
-      iroha::crypto::ed25519::pubkey_t pubkey;
+      iroha::ed25519::pubkey_t pubkey;
 
       /*
        * Peer account

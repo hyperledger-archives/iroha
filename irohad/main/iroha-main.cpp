@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <api/command_service.hpp>
-#include <api/query_service.hpp>
 #include <consensus/connection/service.hpp>
 #include <ordering/connection/service.hpp>
 
