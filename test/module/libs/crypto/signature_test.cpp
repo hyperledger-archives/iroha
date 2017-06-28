@@ -13,40 +13,39 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+#include <common/byteutils.hpp>
+#include <common/types.hpp>
 #include <crypto/base64.hpp>
 #include <crypto/crypto.hpp>
 
 #include <gtest/gtest.h>
 
-#include <string>
-
-using iroha::crypto::Keypair;
-
-TEST(Signature, E) {
-  Keypair keypair = Keypair::generate_keypair();
-  std::string nonce_ =
-      "c0a5cca43b8aa79eb50e3464bc839dd6fd414fae0ddf928ca23dcebf8a8b8dd0";
-  std::vector<uint8_t> nonce(nonce_.begin(), nonce_.end());
-  auto signature = keypair.sign(nonce);
-
-  ASSERT_TRUE(keypair.verify(nonce, *signature));
-}
+using iroha::create_seed;
+using iroha::create_keypair;
+using iroha::sign;
+using iroha::verify;
+namespace ed25519 = iroha::ed25519;
+using iroha::to_blob;
 
 TEST(Signature, sign_data_size) {
-  Keypair keypair = Keypair::generate_keypair();
+  auto seed = create_seed();
+  auto keypair = create_keypair(seed);
 
-  std::string nonce_ =
+  std::string nonce =
       "c0a5cca43b8aa79eb50e3464bc839dd6fd414fae0ddf928ca23dcebf8a8b8dd0";
-  std::vector<uint8_t> nonce(nonce_.begin(), nonce_.end());
-  auto signature = keypair.sign(nonce.data(), nonce.size());
+  auto signature = sign((const unsigned char*)nonce.c_str(), nonce.size(),
+                        keypair.pubkey, keypair.privkey);
 
-  ASSERT_TRUE(keypair.verify(nonce, *signature));
+  ASSERT_TRUE(verify((const unsigned char*)nonce.c_str(), nonce.size(),
+                     keypair.pubkey, signature));
 }
 
 TEST(Signature, PrintkeyPair) {
-  iroha::crypto::Keypair keypair = Keypair::generate_keypair();
-  ASSERT_NO_THROW({ std::cout << keypair.pub_base64() << std::endl; });
-  ASSERT_NO_THROW({ std::cout << *keypair.priv_base64() << std::endl; });
+  auto seed = create_seed();
+  auto keypair = create_keypair(seed);
+  ASSERT_NO_THROW({ std::cout << keypair.pubkey.to_base64() << std::endl; });
+  ASSERT_NO_THROW({ std::cout << keypair.privkey.to_base64() << std::endl; });
 }
 
 TEST(Signature, generatedByAndroid) {
@@ -57,18 +56,21 @@ TEST(Signature, generatedByAndroid) {
   std::string signature_b64 =
       "HlJIjuds2OaSeyOjWjpnpXis55NvH3TD1SNVEwedu7sAY+Ypkksg3ovHUGfBhwd8uVmIX+"
       "JgnjrhKgPdyeO7DA==";
-  std::string message =
+  std::string message_ =
       "0f1a39c82593e8b48e69f000c765c8e8072269d3bd4010634fa51d4e685076e30db22a9f"
       "b75def7379be0e808392922cb8c43d5dd5d5039828ed7ade7e1c6c81";
+  std::vector<uint8_t> message(message_.begin(), message_.end());
 
-  auto keypair = Keypair(public_key_b64, Keypair::tag_base64_encoded());
+  auto pubkey_ = base64_decode(public_key_b64);
+  auto pubkey = to_blob<ed25519::pubkey_t::size()>(
+      std::string{pubkey_.begin(), pubkey_.end()});
 
-  Keypair::signature_t signature;
+  ed25519::sig_t signature;
   std::vector<uint8_t> signature_v = base64_decode(signature_b64);
   ASSERT_EQ(signature.size(), signature_v.size());
   std::copy(signature_v.begin(), signature_v.end(), signature.begin());
 
-  ASSERT_TRUE(keypair.verify(message, signature));
+  ASSERT_TRUE(verify(message.data(), message.size(), pubkey, signature));
 }
 
 TEST(Signature, generatedByiOS) {
@@ -76,17 +78,20 @@ TEST(Signature, generatedByiOS) {
   std::string signature_b64 =
       "gdMUgjyo++4QpF1xDJNdk1a5zmDAEPM67WD4cn6CVZqDxC8nShb/"
       "L1Tokgo53HSOPDB0qXAVzcBvfcJ1WLjrAQ==";
-  std::string message =
+  std::string message_ =
       "46ed8c250356759f68930a94996faaa8f8c98ecbe0dcc58c479c8fad71e30096";
+  std::vector<uint8_t> message(message_.begin(), message_.end());
 
-  auto keypair = Keypair(public_key_b64, Keypair::tag_base64_encoded());
+  auto pubkey_ = base64_decode(public_key_b64);
+  auto pubkey = to_blob<ed25519::pubkey_t::size()>(
+      std::string{pubkey_.begin(), pubkey_.end()});
 
-  Keypair::signature_t signature;
+  ed25519::sig_t signature;
   std::vector<uint8_t> signature_v = base64_decode(signature_b64);
   ASSERT_EQ(signature.size(), signature_v.size());
   std::copy(signature_v.begin(), signature_v.end(), signature.begin());
 
-  ASSERT_TRUE(keypair.verify(message, signature));
+  ASSERT_TRUE(verify(message.data(), message.size(), pubkey, signature));
 }
 
 TEST(Signature, generatedByGO) {
@@ -95,16 +100,19 @@ TEST(Signature, generatedByGO) {
       "FtLGaJLDK4g/"
       "tRzufBexe6fTAhjENtl6MWAynRpR9c1CZdEWJbbDS9svpU96hXiyGy3BQcwRxUz6eovBJdf6"
       "DQ==";
-  std::string message =
+  std::string message_ =
       "0f1a39c82593e8b48e69f000c765c8e8072269d3bd4010634fa51d4e685076e30db22a9f"
       "b75def7379be0e808392922cb8c43d5dd5d5039828ed7ade7e1c6c81";
+  std::vector<uint8_t> message(message_.begin(), message_.end());
 
-  auto keypair = Keypair(public_key_b64, Keypair::tag_base64_encoded());
+  auto pubkey_ = base64_decode(public_key_b64);
+  auto pubkey = to_blob<ed25519::pubkey_t::size()>(
+      std::string{pubkey_.begin(), pubkey_.end()});
 
-  Keypair::signature_t signature;
+  ed25519::sig_t signature;
   std::vector<uint8_t> signature_v = base64_decode(signature_b64);
   ASSERT_EQ(signature.size(), signature_v.size());
   std::copy(signature_v.begin(), signature_v.end(), signature.begin());
 
-  ASSERT_TRUE(keypair.verify(message, signature));
+  ASSERT_TRUE(verify(message.data(), message.size(), pubkey, signature));
 }

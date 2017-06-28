@@ -17,7 +17,7 @@ limitations under the License.
 #ifndef IROHA_BLOCK_HPP
 #define IROHA_BLOCK_HPP
 
-#include <common.hpp>
+#include <common/types.hpp>
 #include <vector>
 #include "singature.hpp"
 #include "transaction.hpp"
