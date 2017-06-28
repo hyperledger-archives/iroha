@@ -30,7 +30,7 @@ namespace iroha {
     }
 
     dao::Account TemporaryWsvStub::get_account(
-        iroha::crypto::ed25519::pubkey_t pub_key) {
+        ed25519::pubkey_t pub_key) {
       return ametsuchi_.get_account(pub_key);
     }
 
@@ -47,7 +47,7 @@ namespace iroha {
     }
 
     std::vector<dao::Wallet> TemporaryWsvStub::get_account_wallets(
-        iroha::crypto::ed25519::pubkey_t pub_key) {
+        ed25519::pubkey_t pub_key) {
       return ametsuchi_.get_account_wallets(pub_key);
     }
 

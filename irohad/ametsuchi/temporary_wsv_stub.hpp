@@ -32,11 +32,11 @@ namespace iroha {
                  std::function<bool(dao::Transaction &,
                                     CommandExecutor &,
                                     WsvQuery &)> function) override;
-      dao::Account get_account(iroha::crypto::ed25519::pubkey_t pub_key) override;
+      dao::Account get_account(ed25519::pubkey_t pub_key) override;
       dao::Asset get_asset(std::string asset_full_name) override;
       dao::Domain get_domain(std::string domain_full_name) override;
       dao::Wallet get_wallet(std::string wallet_id) override;
-      std::vector<dao::Wallet> get_account_wallets(iroha::crypto::ed25519::pubkey_t pub_key) override;
+      std::vector<dao::Wallet> get_account_wallets(ed25519::pubkey_t pub_key) override;
       std::vector<dao::Asset> get_domain_assets(std::string domain_full_name) override;
      private:
       AmetsuchiStub& ametsuchi_;

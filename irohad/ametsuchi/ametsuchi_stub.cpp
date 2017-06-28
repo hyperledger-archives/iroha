@@ -33,7 +33,7 @@ namespace iroha {
     void AmetsuchiStub::commit(MutableStorage &mutableStorage) { return; }
 
     rxcpp::observable<dao::Transaction> AmetsuchiStub::get_account_transactions(
-        iroha::crypto::ed25519::pubkey_t pub_key) {
+        ed25519::pubkey_t pub_key) {
       return rxcpp::observable<>::create<dao::Transaction>(
           [](rxcpp::subscriber<dao::Transaction> s) {
             s.on_next(dao::Transaction{});
@@ -60,7 +60,7 @@ namespace iroha {
     }
 
     dao::Account AmetsuchiStub::get_account(
-        iroha::crypto::ed25519::pubkey_t pub_key) {
+        ed25519::pubkey_t pub_key) {
       return dao::Account{};
     }
 
@@ -77,7 +77,7 @@ namespace iroha {
     }
 
     std::vector<dao::Wallet> AmetsuchiStub::get_account_wallets(
-        iroha::crypto::ed25519::pubkey_t pub_key) {
+        ed25519::pubkey_t pub_key) {
       return std::vector<dao::Wallet>{dao::Wallet{}};
     }
 

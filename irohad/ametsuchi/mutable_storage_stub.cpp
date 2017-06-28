@@ -22,7 +22,7 @@ namespace iroha {
 
     rxcpp::observable<dao::Transaction>
     MutableStorageStub::get_account_transactions(
-        iroha::crypto::ed25519::pubkey_t pub_key) {
+        ed25519::pubkey_t pub_key) {
       return ametsuchi_.get_account_transactions(pub_key);
     }
 
@@ -37,7 +37,7 @@ namespace iroha {
     }
 
     dao::Account MutableStorageStub::get_account(
-        iroha::crypto::ed25519::pubkey_t pub_key) {
+        ed25519::pubkey_t pub_key) {
       return ametsuchi_.get_account(pub_key);
     }
 
@@ -54,7 +54,7 @@ namespace iroha {
     }
 
     std::vector<dao::Wallet> MutableStorageStub::get_account_wallets(
-        iroha::crypto::ed25519::pubkey_t pub_key) {
+        ed25519::pubkey_t pub_key) {
       return ametsuchi_.get_account_wallets(pub_key);
     }
 
