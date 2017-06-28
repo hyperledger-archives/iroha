@@ -20,7 +20,6 @@
 
 #include <common.hpp>
 #include <dao/dao.hpp>
-#include <rxcpp/rx.hpp>
 #include <string>
 #include <vector>
 

@@ -15,30 +15,18 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMANDEXECUTOR_HPP
-#define IROHA_COMMANDEXECUTOR_HPP
+#include <gtest/gtest.h>
+#include <ametsuchi/command_executor_stub.hpp>
+#include <ametsuchi/ametsuchi_stub.hpp>
 
-#include <dao/command.hpp>
+using iroha::ametsuchi::AmetsuchiStub;
+using iroha::ametsuchi::CommandExecutorStub;
+using namespace iroha::dao;
 
-namespace iroha {
+TEST(CommandExecutorTest, SampleTest) {
+  AmetsuchiStub ametsuchi;
+  CommandExecutorStub executor(ametsuchi);
 
-  namespace ametsuchi {
-    /**
-     * Applies command to the world state view
-     */
-    class CommandExecutor {
-     public:
-      /**
-       * Executes a command in a temporary state
-       * @see TemporaryWsv, MutableStorage
-       * @param command Command to execute
-       * @return True if the command is successfully executed, false otherwise
-       */
-      virtual bool execute(const dao::Command& command) = 0;
-    };
-
-  } // namespace ametsuchi
-
-}// namespace iroha
-
-#endif //IROHA_COMMANDEXECUTOR_HPP
+  ASSERT_TRUE(executor.execute(AddPeer{}));
+  ASSERT_FALSE(executor.execute(Command{}));
+}

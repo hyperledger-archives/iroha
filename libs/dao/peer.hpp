@@ -29,17 +29,17 @@ namespace iroha {
       /**
        * Address of peer for connection
        */
-      const std::string address;
+      std::string address;
 
       /**
        * Public key of peer
        */
-      const iroha::crypto::ed25519::pubkey_t pubkey;
+      iroha::crypto::ed25519::pubkey_t pubkey;
 
       /*
        * Peer account
        */
-      const Account account;
+      Account account;
     };
   }
 }
