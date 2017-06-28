@@ -16,12 +16,16 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 add_library(server_runner server_runner.cpp)
 target_link_libraries(server_runner
-  logger
-  endpoint
-  schema
-)
+    logger
+    endpoint
+    schema
+    storage
+    networking
+    dao
+    torii
+    )
 
 add_executable(iroha-main iroha-main.cpp)
 target_link_libraries(iroha-main
-  server_runner
-)
+    server_runner
+    )
