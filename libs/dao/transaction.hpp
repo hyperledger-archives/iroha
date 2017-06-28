@@ -21,7 +21,7 @@ limitations under the License.
 #include <commands.pb.h>
 #include <common/types.hpp>
 #include <vector>
-#include "singature.hpp"
+#include "command.hpp"
 
 namespace iroha {
   namespace dao {
@@ -66,7 +66,7 @@ namespace iroha {
        * Bunch of commands attached to transaction
        * BODY field
        */
-      std::vector<iroha::protocol::Command> commands;
+      std::vector<Command> commands;
     };
   }
 }

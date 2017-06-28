@@ -4,6 +4,7 @@ SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
 
 #add_subdirectory(ametsuchi)
 
+#
 #addtest(bstore_test block_store/block_store_flat_test.cpp)
 #target_link_libraries(bstore_test
 #        block_store

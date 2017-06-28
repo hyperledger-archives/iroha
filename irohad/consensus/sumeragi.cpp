@@ -52,9 +52,17 @@ namespace consensus {
 
     logger::Logger log("sumeragi");
 
+
     static tp::ThreadPool pool;
 
     void initialize() {
+
+      //config::IrohaConfigManager::getInstance().getConcurrency(0),
+      //config::IrohaConfigManager::getInstance().getPoolWorkerQueueSize(1024),
+      tp::ThreadPoolOptions tpOptions;
+      tpOptions.setThreadCount(0);
+      tpOptions.setQueueSize(1024);
+      pool = tp::ThreadPool(tpOptions);
 
       consensus::connection::receive(
           [](const Block &block) {
