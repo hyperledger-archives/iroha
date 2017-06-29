@@ -38,7 +38,7 @@ namespace iroha {
        * @return Peer DAO
        */
       virtual iroha::dao::Peer get_peer(
-          iroha::crypto::ed25519::pubkey_t pub_key) = 0;
+          iroha::ed25519::pubkey_t pub_key) = 0;
 
       /**
        * Get account by it's first public key.

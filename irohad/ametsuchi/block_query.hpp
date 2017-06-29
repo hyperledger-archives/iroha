@@ -35,7 +35,7 @@ namespace iroha {
        * @return observable of DAO Transaction
        */
       virtual rxcpp::observable<iroha::dao::Transaction>
-      get_account_transactions(iroha::crypto::ed25519::pubkey_t pub_key) = 0;
+      get_account_transactions(iroha::ed25519::pubkey_t pub_key) = 0;
 
       /**
        * Get all transactions with a certain asset

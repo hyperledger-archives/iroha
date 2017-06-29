@@ -22,7 +22,7 @@ namespace iroha {
 
     rxcpp::observable<dao::Transaction>
     MutableStorageStub::get_account_transactions(
-        iroha::crypto::ed25519::pubkey_t pub_key) {
+        iroha::ed25519::pubkey_t pub_key) {
       return ametsuchi_.get_account_transactions(pub_key);
     }
 
@@ -37,7 +37,7 @@ namespace iroha {
     }
 
     dao::Account MutableStorageStub::get_account(
-        iroha::crypto::ed25519::pubkey_t pub_key) {
+        iroha::ed25519::pubkey_t pub_key) {
       return ametsuchi_.get_account(pub_key);
     }
 
@@ -49,12 +49,17 @@ namespace iroha {
       return ametsuchi_.get_domain(domain_full_name);
     }
 
+    dao::Peer MutableStorageStub::get_peer(
+        iroha::ed25519::pubkey_t pub_key) {
+      return ametsuchi_.get_peer(pub_key);
+    }
+
     dao::Wallet MutableStorageStub::get_wallet(std::string wallet_id) {
       return ametsuchi_.get_wallet(wallet_id);
     }
 
     std::vector<dao::Wallet> MutableStorageStub::get_account_wallets(
-        iroha::crypto::ed25519::pubkey_t pub_key) {
+        iroha::ed25519::pubkey_t pub_key) {
       return ametsuchi_.get_account_wallets(pub_key);
     }
 
@@ -65,7 +70,8 @@ namespace iroha {
 
     bool MutableStorageStub::apply(
         dao::Block block,
-        std::function<bool(dao::Block&, CommandExecutor&, WsvQuery&)> function) {
+        std::function<bool(dao::Block &, CommandExecutor &, WsvQuery &)>
+            function) {
       return function(block, executor_, ametsuchi_);
     }
 
