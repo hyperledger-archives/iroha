@@ -19,6 +19,8 @@
 #define IROHA_MUTABLESTORAGE_HPP
 
 #include <ametsuchi/command_executor.hpp>
+#include <ametsuchi/wsv_query.hpp>
+#include <ametsuchi/block_query.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -27,6 +29,7 @@ namespace iroha {
      * Allows to query the world state view, transactions, and blocks.
      */
     class MutableStorage : public WsvQuery, public BlockQuery {
+     public:
       /**
        * Applies a block to current mutable state
        * using logic specified in function
@@ -44,7 +47,7 @@ namespace iroha {
        */
       virtual bool apply(
           dao::Block block,
-          std::function<bool(dao::Block, CommandExecutor, WsvQuery)>
+          std::function<bool(const dao::Block&, CommandExecutor&, WsvQuery&)>
               function) = 0;
     };
 

@@ -31,15 +31,15 @@ namespace iroha {
        * @param pub_key - account's first public key
        * @return observable of DAO Transaction
        */
-      virtual rxcpp::observable<iroha::dao::Transaction>
-      get_account_transactions(iroha::crypto::ed25519::pubkey_t pub_key) = 0;
+      virtual rxcpp::observable<dao::Transaction>
+      get_account_transactions(ed25519::pubkey_t pub_key) = 0;
 
       /**
        * Get all transactions with a certain asset
        * @param asset_full_name - full name of an asset, i.e. name#domain
        * @return observable of DAO Transaction
        */
-      virtual rxcpp::observable<iroha::dao::Transaction> get_asset_transactions(
+      virtual rxcpp::observable<dao::Transaction> get_asset_transactions(
           std::string asset_full_name) = 0;
 
       /**
@@ -47,7 +47,7 @@ namespace iroha {
        * @param wallet_id - unique wallet
        * @return observable of DAO Transaction
        */
-      virtual rxcpp::observable<iroha::dao::Transaction>
+      virtual rxcpp::observable<dao::Transaction>
       get_wallet_transactions(std::string wallet_id) = 0;
     };
 
