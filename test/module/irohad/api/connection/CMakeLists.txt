@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Command Connection Test
-add_executable(command_connection_test
+AddTest(command_connection_test
   command_connection_test.cpp
 )
 target_link_libraries(command_connection_test
@@ -23,8 +23,4 @@ target_link_libraries(command_connection_test
   schema
   endpoint
   gtest
-)
-add_test(
-  NAME command_connection_test
-  COMMAND $<TARGET_FILE:command_connection_test>
 )

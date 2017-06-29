@@ -17,7 +17,7 @@
 
 #include <gtest/gtest.h>
 #include <ametsuchi/storage.hpp>
-#include <common.hpp>
+#include <common/types.hpp>
 #include <cpp_redis/cpp_redis>
 #include <pqxx/pqxx>
 

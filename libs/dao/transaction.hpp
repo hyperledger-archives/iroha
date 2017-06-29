@@ -17,7 +17,8 @@ limitations under the License.
 #ifndef IROHA_TRANSACTION_HPP
 #define IROHA_TRANSACTION_HPP
 
-#include <common.hpp>
+#include <block.pb.h>
+#include <common/types.hpp>
 #include <vector>
 #include "command.hpp"
 
@@ -47,7 +48,7 @@ namespace iroha {
        * Public key of a transaction creator.
        * META field
        */
-      crypto::ed25519::pubkey_t creator;
+      ed25519::pubkey_t creator;
 
       /**
        * Number for protecting against replay attack.
@@ -62,9 +63,10 @@ namespace iroha {
 
       /**
        * Bunch of commands attached to transaction
+       * shared_ptr is used since Proposal has to be copied
        * BODY field
        */
-      std::vector<Command> commands;
+      std::vector<std::shared_ptr<Command>> commands;
     };
   }
 }

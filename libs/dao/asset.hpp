@@ -16,7 +16,7 @@ limitations under the License.
 #ifndef IROHA_ASSET_HPP
 #define IROHA_ASSET_HPP
 
-#include <common.hpp>
+#include <common/types.hpp>
 #include <string>
 
 namespace iroha {

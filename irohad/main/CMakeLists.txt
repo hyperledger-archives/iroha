@@ -19,9 +19,9 @@ target_link_libraries(server_runner
   logger
   endpoint
   schema
-)
+  )
 
 add_executable(iroha-main iroha-main.cpp)
 target_link_libraries(iroha-main
   server_runner
-)
+  )

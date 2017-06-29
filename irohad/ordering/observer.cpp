@@ -29,6 +29,7 @@ namespace ordering {
     using Transaction = iroha::protocol::Transaction;
 
     void initialize() {
+      /*
       api::receive([](const Transaction &tx) {
         // Verified State-less validate Tx
         // TODO : [WIP] temp implement Send to Leader-group
@@ -41,6 +42,7 @@ namespace ordering {
         // Verified State-less validate Tx
         queue::append(tx);
       });
+       */
     }
 
     // This is invoked in thread.
