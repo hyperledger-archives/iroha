@@ -19,8 +19,6 @@
 #define IROHA_AMETSUCHI_STUB_HPP
 
 #include <ametsuchi/ametsuchi.hpp>
-//#include <common.hpp>
-#include <common/types.hpp>
 #include <memory>
 
 namespace iroha {
@@ -33,20 +31,19 @@ namespace iroha {
       std::unique_ptr<TemporaryWsv> createTemporaryWsv() override;
       std::unique_ptr<MutableStorage> createMutableStorage() override;
       void commit(MutableStorage &mutableStorage) override;
-      rxcpp::observable<iroha::dao::Transaction> get_account_transactions(
-          iroha::ed25519::pubkey_t pub_key) override;
-      rxcpp::observable<iroha::dao::Transaction> get_asset_transactions(
+      rxcpp::observable<dao::Transaction> get_account_transactions(
+          ed25519::pubkey_t pub_key) override;
+      rxcpp::observable<dao::Transaction> get_asset_transactions(
           std::string asset_full_name) override;
-      rxcpp::observable<iroha::dao::Transaction> get_wallet_transactions(
+      rxcpp::observable<dao::Transaction> get_wallet_transactions(
           std::string wallet_id) override;
       dao::Account get_account(
-          iroha::ed25519::pubkey_t pub_key) override;
+          ed25519::pubkey_t pub_key) override;
       dao::Asset get_asset(std::string asset_full_name) override;
       dao::Domain get_domain(std::string domain_full_name) override;
       dao::Wallet get_wallet(std::string wallet_id) override;
-
       std::vector<dao::Wallet> get_account_wallets(
-          iroha::ed25519::pubkey_t pub_key) override;
+          ed25519::pubkey_t pub_key) override;
       std::vector<dao::Asset> get_domain_assets(
           std::string domain_full_name) override;
     };
