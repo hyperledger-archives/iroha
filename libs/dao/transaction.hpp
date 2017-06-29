@@ -18,8 +18,9 @@ limitations under the License.
 #define IROHA_TRANSACTION_HPP
 
 #include <common/types.hpp>
+#include <dao/command.hpp>
+#include <memory>
 #include <vector>
-#include "command.hpp"
 
 namespace iroha {
   namespace dao {
@@ -30,7 +31,6 @@ namespace iroha {
      * Transaction can be divided to {Header, Meta, Body}.
      */
     struct Transaction {
-
       /**
        * List of signatories that sign transaction
        * HEADER field

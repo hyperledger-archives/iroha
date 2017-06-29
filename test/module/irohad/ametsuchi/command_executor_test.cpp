@@ -27,6 +27,11 @@ TEST(CommandExecutorTest, SampleTest) {
   AmetsuchiStub ametsuchi;
   CommandExecutorStub executor(ametsuchi);
 
-  ASSERT_TRUE(executor.execute(AddPeer{}));
-  ASSERT_FALSE(executor.execute(Command{}));
+  std::shared_ptr<Command> cmd = std::make_shared<AddPeer>();
+
+  ASSERT_TRUE(executor.execute(*cmd));
+
+  cmd = std::make_shared<Command>();
+
+  ASSERT_FALSE(executor.execute(*cmd));
 }
