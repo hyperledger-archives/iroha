@@ -7,37 +7,6 @@ set_directory_properties(PROPERTIES
 # Project dependencies.
 find_package(Threads REQUIRED)
 
-###########################
-#         keccak          #
-###########################
-find_package(LibXslt QUIET)
-if (NOT LIBXSLT_XSLTPROC_EXECUTABLE)
-  message(FATAL_ERROR "xsltproc not found")
-endif ()
-
-ExternalProject_Add(gvanas_keccak
-    GIT_REPOSITORY "https://github.com/gvanas/KeccakCodePackage.git"
-    BUILD_IN_SOURCE 1
-    BUILD_COMMAND bash -c "CFLAGS='-fPIC -DKeccakP200_excluded -DKeccakP400_excluded -DKeccakP800_excluded'\
-    $(MAKE) CC='${CMAKE_C_COMPILER}' generic64/libkeccak.a"
-    CONFIGURE_COMMAND "" # remove configure step
-    INSTALL_COMMAND "" # remove install step
-    TEST_COMMAND "" # remove test step
-    UPDATE_COMMAND "" # remove update step
-    )
-ExternalProject_Get_Property(gvanas_keccak source_dir)
-set(keccak_SOURCE_DIR "${source_dir}")
-
-# Hash internals for keccak
-add_library(keccak STATIC IMPORTED)
-file(MAKE_DIRECTORY ${keccak_SOURCE_DIR}/bin/generic64/libkeccak.a.headers)
-set_target_properties(keccak PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${keccak_SOURCE_DIR}/bin/generic64/libkeccak.a.headers"
-    IMPORTED_LOCATION "${keccak_SOURCE_DIR}/bin/generic64/libkeccak.a"
-    )
-
-add_dependencies(keccak gvanas_keccak)
-
 ############################
 #         ed25519          #
 ############################
@@ -66,6 +35,7 @@ add_dependencies(ed25519 mizukisonoko_ed25519)
 ####################################
 ExternalProject_Add(warchant_thread_pool
     GIT_REPOSITORY "https://github.com/Warchant/thread-pool-cpp.git"
+    GIT_TAG "a24e0726a7e804c55555fca16bc6f42d7ff4723a"
     BUILD_COMMAND "" # remove build step, header only lib
     CONFIGURE_COMMAND "" # remove configure step
     INSTALL_COMMAND "" # remove install step
@@ -77,9 +47,9 @@ set(thread_pool_SOURCE_DIR "${source_dir}")
 
 # since it is header only, we changed STATIC to INTERFACE below
 add_library(thread_pool INTERFACE IMPORTED)
-file(MAKE_DIRECTORY ${thread_pool_SOURCE_DIR}/thread_pool)
+file(MAKE_DIRECTORY ${thread_pool_SOURCE_DIR}/include)
 set_target_properties(thread_pool PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${thread_pool_SOURCE_DIR}/thread_pool
+    INTERFACE_INCLUDE_DIRECTORIES ${thread_pool_SOURCE_DIR}/include
     )
 add_dependencies(thread_pool warchant_thread_pool)
 
@@ -166,10 +136,10 @@ add_dependencies(spdlog gabime_spdlog)
 ################################
 #           protobuf           #
 ################################
-find_package(Protobuf 3.0.0)
+find_package(Protobuf 3.3.0)
 if (NOT PROTOBUF_FOUND OR NOT PROTOBUF_PROTOC_EXECUTABLE)
   ExternalProject_Add(google_protobuf
-      URL https://github.com/google/protobuf/releases/download/v3.0.0/protobuf-cpp-3.0.0.tar.gz
+      URL https://github.com/google/protobuf/releases/download/v3.3.0/protobuf-cpp-3.3.0.tar.gz
       CONFIGURE_COMMAND ./configure
       BUILD_IN_SOURCE 1
       BUILD_COMMAND $(MAKE)

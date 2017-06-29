@@ -12,9 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_library(command_service
-    command_service.cpp
-)
-target_link_libraries(command_service
-    endpoint
-)
+add_subdirectory(connection)

@@ -23,5 +23,5 @@ namespace ordering {
     void initialize();
     void observe();
   }
-};
+}
 #endif  //__IROHA_ORDERING_OBSERVER_HPP__

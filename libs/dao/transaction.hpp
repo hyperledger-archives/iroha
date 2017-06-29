@@ -17,7 +17,7 @@ limitations under the License.
 #ifndef IROHA_TRANSACTION_HPP
 #define IROHA_TRANSACTION_HPP
 
-#include <common.hpp>
+#include <common/types.hpp>
 #include <vector>
 #include "command.hpp"
 
@@ -47,7 +47,7 @@ namespace iroha {
        * Public key of a transaction creator.
        * META field
        */
-      crypto::ed25519::pubkey_t creator;
+      ed25519::pubkey_t creator;
 
       /**
        * Number for protecting against replay attack.

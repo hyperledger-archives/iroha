@@ -18,9 +18,8 @@
 #ifndef AMETSUCHI_COMMON_HPP
 #define AMETSUCHI_COMMON_HPP
 
-#include <dirent.h>
-#include <cstdio>
 #include <array>
+#include <cstdio>
 
 namespace iroha {
 
@@ -31,10 +30,10 @@ namespace iroha {
    * For std::array it is possible, so we prefer it over std::string.
    */
 
-  template <size_t size>
+  template<size_t size>
   using blob_t = std::array<uint8_t, size>;
 
-  template <size_t size>
+  template<size_t size>
   using hash_t = blob_t<size>;
 
   using hash224_t = hash_t<224 / 8>;
@@ -54,30 +53,5 @@ namespace iroha {
   using ts64_t = uint64_t;
   using ts32_t = uint32_t;
 
-  /*
-   * Remove all files in directory dump_dir and  the directory itself
-   */
-  void remove_all(const std::string &dump_dir) {
-    if (!dump_dir.empty()) {
-      // Directory iterator:
-      struct dirent **namelist;
-      auto status = scandir(dump_dir.c_str(), &namelist, NULL, alphasort);
-      if (status < 0) {
-        // TODO: handle internal error
-      } else {
-        uint n = status;
-        uint i = 1;
-        while (++i < n) {
-          if (std::remove((dump_dir + "/" + namelist[i]->d_name).c_str()))
-            perror("Error deleting file");
-        }
-        for (uint j = 0; j < n; ++j) {
-          free(namelist[j]);
-        }
-        free(namelist);
-      }
-      if (std::remove(dump_dir.c_str())) perror("Error deleting file");
-    }
-  }
 }  // namespace iroha
 #endif  // AMETSUCHI_COMMON_HPP

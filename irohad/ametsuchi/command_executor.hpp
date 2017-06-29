@@ -27,13 +27,14 @@ namespace iroha {
      * Applies command to the world state view
      */
     class CommandExecutor {
+     public:
       /**
        * Executes a command in a temporary state
        * @see TemporaryWsv, MutableStorage
        * @param command Command to execute
        * @return True if the command is successfully executed, false otherwise
        */
-      virtual bool execute(dao::Command command) = 0;
+      virtual bool execute(const dao::Command& command) = 0;
     };
 
   } // namespace ametsuchi

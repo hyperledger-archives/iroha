@@ -14,32 +14,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <grpc++/grpc++.h>
 #include <endpoint.grpc.pb.h>
+#include <grpc++/grpc++.h>
 
 #include "client.hpp"
 
-namespace ordering {
-    namespace connection {
+namespace connection {
+  namespace ordering {
 
-        using iroha::protocol::QueueTransactionResponse;
-        using iroha::protocol::Transaction;
+    using iroha::protocol::QueueTransactionResponse;
+    using iroha::protocol::Transaction;
 
-        bool send(std::string ip, const Transaction& tx){
-          // TODO
-        }
+    bool send(std::string ip, const Transaction& tx) {
+      // TODO
+    }
 
-        OrderingClient::OrderingClient(const std::string &ip, int port) {
-            auto channel = grpc::CreateChannel(ip + ":" + std::to_string(port), grpc::InsecureChannelCredentials());
-            stub_ = iroha::protocol::OrderingService::NewStub(channel);
-        }
+    OrderingClient::OrderingClient(const std::string& ip, int port) {
+      auto channel = grpc::CreateChannel(ip + ":" + std::to_string(port),
+                                         grpc::InsecureChannelCredentials());
+      stub_ = iroha::protocol::OrderingService::NewStub(channel);
+    }
 
-        QueueTransactionResponse OrderingClient::QueueTransaction(
-            const iroha::protocol::Transaction& tx) {
-            QueueTransactionResponse response;
-            stub_->QueueTransaction(&context_, tx, &response);
-            return response;
-        }
+    QueueTransactionResponse OrderingClient::QueueTransaction(
+        const iroha::protocol::Transaction& tx) {
+      QueueTransactionResponse response;
+      stub_->QueueTransaction(&context_, tx, &response);
+      return response;
+    }
 
-    }  // namespace connection
-}  // namespace ordering
+  }  // namespace ordering
+}  // namespace connection

@@ -17,7 +17,7 @@ limitations under the License.
 #ifndef IROHA_SINGATURE_HPP
 #define IROHA_SINGATURE_HPP
 
-#include <common.hpp>
+#include <common/types.hpp>
 
 namespace iroha {
   namespace dao {
@@ -26,8 +26,8 @@ namespace iroha {
      * Signature is a DAO structure to store crypto information
      */
     struct Signature {
-      iroha::crypto::ed25519::sign_t signature;
-      iroha::crypto::ed25519::pubkey_t pubkey;
+      iroha::ed25519::sig_t signature;
+      iroha::ed25519::pubkey_t pubkey;
     };
   }
 }

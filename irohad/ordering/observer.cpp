@@ -19,29 +19,26 @@ limitations under the License.
 #include <timer/timer.hpp>
 #include "queue.hpp"
 
-#include <api/command_service.hpp>
-#include <ordering/connection/client.hpp>
-#include <ordering/connection/service.hpp>
-
 namespace ordering {
-
   namespace observer {
 
     using Transaction = iroha::protocol::Transaction;
 
     void initialize() {
-      connection::api::receive([](const Transaction &tx) {
+      /*
+      api::receive([](const Transaction &tx) {
         // Verified State-less validate Tx
         // TODO : [WIP] temp implement Send to Leader-group
         for (std::string ip : ::peer_service::monitor::getActiveIpList()) {
-          connection::ordering::send(ip, tx);
+          ordering::connection::send(ip, tx);
         }
       });
 
-      connection::ordering::receive([](const Transaction &tx) {
+      ordering::connection::receive([](const Transaction &tx) {
         // Verified State-less validate Tx
         queue::append(tx);
       });
+       */
     }
 
     // This is invoked in thread.
@@ -67,5 +64,5 @@ namespace ordering {
         });
       }
     }
-  }
-};
+  }  // namespace observer
+}  // namespace ordering
