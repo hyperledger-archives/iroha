@@ -25,12 +25,11 @@ namespace iroha {
     bool TemporaryWsvStub::apply(
         dao::Transaction transaction,
         std::function<bool(dao::Transaction &, CommandExecutor &, WsvQuery &)>
-        function) {
+            function) {
       return function(transaction, executor_, ametsuchi_);
     }
 
-    dao::Account TemporaryWsvStub::get_account(
-        ed25519::pubkey_t pub_key) {
+    dao::Account TemporaryWsvStub::get_account(ed25519::pubkey_t pub_key) {
       return ametsuchi_.get_account(pub_key);
     }
 
@@ -58,6 +57,11 @@ namespace iroha {
 
     TemporaryWsvStub::TemporaryWsvStub(AmetsuchiStub &ametsuchi)
         : ametsuchi_(ametsuchi), executor_(*this) {}
+
+    iroha::dao::Peer TemporaryWsvStub::get_peer(
+        iroha::ed25519::pubkey_t pub_key) {
+      return ametsuchi_.get_peer(pub_key);
+    }
   }
 
 }  // namespace iroha
