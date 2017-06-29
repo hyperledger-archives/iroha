@@ -58,9 +58,15 @@ namespace iroha {
             s.on_completed();
           });
     }
-
-    dao::Account AmetsuchiStub::get_account(
-        ed25519::pubkey_t pub_key) {
+    rxcpp::observable<dao::Block> AmetsuchiStub::get_blocks_in_range(
+        uint32_t from, uint32_t to) {
+      return rxcpp::observable<>::create<dao::Block>(
+          [](rxcpp::subscriber<dao::Block> s) {
+            s.on_next(dao::Block{});
+            s.on_completed();
+          });
+    }
+    dao::Account AmetsuchiStub::get_account(ed25519::pubkey_t pub_key) {
       return dao::Account{};
     }
 
@@ -85,5 +91,6 @@ namespace iroha {
         std::string domain_full_name) {
       return std::vector<dao::Asset>{dao::Asset{}};
     }
+
   }  // namespace ametsuchi
 }  // namespace iroha
