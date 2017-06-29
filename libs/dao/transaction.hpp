@@ -63,9 +63,10 @@ namespace iroha {
 
       /**
        * Bunch of commands attached to transaction
+       * shared_ptr is used since Proposal has to be copied
        * BODY field
        */
-      std::vector<Command> commands;
+      std::vector<std::shared_ptr<Command>> commands;
     };
   }
 }
