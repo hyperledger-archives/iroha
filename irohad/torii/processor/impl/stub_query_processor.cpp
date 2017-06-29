@@ -15,35 +15,27 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_QUERY_PROCESSOR_HPP
-#define IROHA_QUERY_PROCESSOR_HPP
 
-#include <dao/dao.hpp>
-#include <rxcpp/rx.hpp>
+#include <torii/processor/stub_query_processor.hpp>
 
 namespace iroha {
   namespace torii {
+    using rxcpp::observable;
+    using rxcpp::subscriber;
+    using std::shared_ptr;
+    using dao::Query;
+    using dao::QueryResponse;
+    using dao::Client;
 
-    /**
-     * QueryProcessor provides start point for queries in the whole system
-     */
-    class QueryProcessor {
-     public:
+    void QueryProcessorStub::handle(Client client, Query query) {
+      return;
+    }
 
-      /**
-       * Register client query
-       * @param client - query emitter
-       * @param query - client intent
-       */
-      virtual void handle(dao::Client client, dao::Query query) = 0;
-
-      /**
-       * Subscribe for query responses
-       * @return observable with query responses
-       */
-      virtual rxcpp::observable<std::shared_ptr<dao::QueryResponse>> notifier() = 0;
-    };
+    observable<shared_ptr<QueryResponse>> QueryProcessorStub::notifier() {
+      return observable<>::create<shared_ptr<QueryResponse>> (
+          [](rxcpp::subscriber<shared_ptr<QueryResponse>> s) {
+            s.on_completed();
+          });
+    }
   } //namespace torii
 } //namespace iroha
-
-#endif //IROHA_QUERY_PROCESSOR_HPP
