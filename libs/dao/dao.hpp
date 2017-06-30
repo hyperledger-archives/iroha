@@ -27,14 +27,20 @@
 #include "peer.hpp"
 #include "singature.hpp"
 #include "domain.hpp"
-#include "command.hpp"
 #include "client.hpp"
-#include "query.hpp"
+
 #include "query_response.hpp"
 #include "peer.hpp"
 #include "singature.hpp"
 #include "dao_crypto_provider.hpp"
 #include "dao_hash_provider.hpp"
+
+// commands
+#include "command.hpp"
+#include <dao/commands/add_peer.hpp>
+
+// query
+#include "query.hpp"
 
 /**
  * DAO - Data Access Object.

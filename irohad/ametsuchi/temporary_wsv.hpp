@@ -22,6 +22,7 @@
 #include <ametsuchi/wsv_query.hpp>
 #include <dao/block.hpp>
 #include <dao/transaction.hpp>
+#include <functional>
 
 namespace iroha {
 
