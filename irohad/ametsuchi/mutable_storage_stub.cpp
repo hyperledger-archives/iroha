@@ -62,7 +62,7 @@ namespace iroha {
     }
 
     bool MutableStorageStub::apply(
-        dao::Block block,
+        const dao::Block &block,
         std::function<bool(const dao::Block &, CommandExecutor &, WsvQuery &)>
             function) {
       return function(block, executor_, ametsuchi_);

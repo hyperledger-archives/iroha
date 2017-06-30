@@ -28,7 +28,7 @@ namespace iroha {
      public:
       MutableStorageStub(AmetsuchiStub& ametsuchi);
       bool apply(
-          dao::Block block,
+          const dao::Block& block,
           std::function<bool(const dao::Block&, CommandExecutor&, WsvQuery&)>
               function) override;
       rxcpp::observable<dao::Transaction> get_account_transactions(
