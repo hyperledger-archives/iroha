@@ -18,9 +18,9 @@
 #ifndef IROHA_MUTABLESTORAGE_HPP
 #define IROHA_MUTABLESTORAGE_HPP
 
+#include <ametsuchi/block_query.hpp>
 #include <ametsuchi/command_executor.hpp>
 #include <ametsuchi/wsv_query.hpp>
-#include <ametsuchi/block_query.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -46,8 +46,8 @@ namespace iroha {
        *
        */
       virtual bool apply(
-          dao::Block block,
-          std::function<bool(dao::Block&, CommandExecutor&, WsvQuery&)>
+          const dao::Block &block,
+          std::function<bool(const dao::Block &, CommandExecutor &, WsvQuery &)>
               function) = 0;
     };
 

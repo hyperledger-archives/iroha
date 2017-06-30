@@ -27,17 +27,18 @@ namespace iroha {
     class MutableStorageStub : public MutableStorage {
      public:
       MutableStorageStub(AmetsuchiStub& ametsuchi);
-      bool apply(dao::Block block,
-                 std::function<bool(dao::Block&, CommandExecutor&, WsvQuery&)>
-                     function) override;
+      bool apply(
+          const dao::Block& block,
+          std::function<bool(const dao::Block&, CommandExecutor&, WsvQuery&)>
+              function) override;
       rxcpp::observable<dao::Transaction> get_account_transactions(
           ed25519::pubkey_t pub_key) override;
       rxcpp::observable<dao::Transaction> get_asset_transactions(
           std::string asset_full_name) override;
       rxcpp::observable<dao::Transaction> get_wallet_transactions(
           std::string wallet_id) override;
-      dao::Peer get_peer(ed25519::pubkey_t pub_key) override;
       dao::Account get_account(ed25519::pubkey_t pub_key) override;
+      dao::Peer get_peer(ed25519::pubkey_t pub_key) override;
       rxcpp::observable<iroha::dao::Block> get_blocks_in_range(
           uint32_t from, uint32_t to) override;
       dao::Asset get_asset(std::string asset_full_name) override;

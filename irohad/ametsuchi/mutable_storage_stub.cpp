@@ -67,14 +67,15 @@ namespace iroha {
     }
 
     bool MutableStorageStub::apply(
-        dao::Block block,
-        std::function<bool(dao::Block &, CommandExecutor &, WsvQuery &)>
+        const dao::Block &block,
+        std::function<bool(const dao::Block &, CommandExecutor &, WsvQuery &)>
             function) {
       return function(block, executor_, ametsuchi_);
     }
 
     MutableStorageStub::MutableStorageStub(AmetsuchiStub &ametsuchi)
         : ametsuchi_(ametsuchi), executor_(*this) {}
+
     rxcpp::observable<dao::Block> MutableStorageStub::get_blocks_in_range(
         uint32_t from, uint32_t to) {
       return ametsuchi_.get_blocks_in_range(from, to);

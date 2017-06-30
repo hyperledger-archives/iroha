@@ -23,8 +23,9 @@ namespace iroha {
   namespace ametsuchi {
 
     bool TemporaryWsvStub::apply(
-        dao::Transaction transaction,
-        std::function<bool(dao::Transaction &, CommandExecutor &, WsvQuery &)>
+        const dao::Transaction &transaction,
+        std::function<bool(const dao::Transaction &, CommandExecutor &,
+                           WsvQuery &)>
             function) {
       return function(transaction, executor_, ametsuchi_);
     }
