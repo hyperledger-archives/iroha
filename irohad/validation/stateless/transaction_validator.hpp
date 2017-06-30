@@ -18,6 +18,8 @@
 #ifndef IROHA_TRANSACTION_VALIDATOR_HPP
 #define IROHA_TRANSACTION_VALIDATOR_HPP
 
+#include <dao/transaction.hpp>
+
 namespace iroha {
   namespace validation {
     /**
@@ -25,9 +27,9 @@ namespace iroha {
      */
     class TransactionValidator {
      public:
-      virtual bool validate(const dao::Transaction &transaction) = 0;
+      virtual bool validate(const dao::Transaction &transaction) const = 0;
     };
-  }// namespace validation
-}//namespace iroha
+  }  // namespace validation
+}  // namespace iroha
 
-#endif //IROHA_TRANSACTION_VALIDATOR_HPP
+#endif  // IROHA_TRANSACTION_VALIDATOR_HPP

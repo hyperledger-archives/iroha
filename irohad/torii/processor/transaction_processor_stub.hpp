@@ -18,16 +18,27 @@
 #ifndef IROHA_TRANSACTION_PROCESSOR_STUB_HPP
 #define IROHA_TRANSACTION_PROCESSOR_STUB_HPP
 
+#include <network/network_api.h>
+#include <dao/dao_crypto_provider.hpp>
 #include <torii/processor/transaction_processor.hpp>
+#include <validation/stateless/validator.hpp>
 
 namespace iroha {
   namespace torii {
     class TransactionProcessorStub : public TransactionProcessor {
      public:
-      TransactionProcessorStub(StatelessValidator)
-      void handle(dao::Client client,
-                  const dao::Transaction &transaction) override;
+      TransactionProcessorStub(const validation::StatelessValidator &validator,
+                               network::PeerCommunicationService &service,
+                               dao::DaoCryptoProvider &provider);
+      void handle(dao::Client client, dao::Transaction &transaction) override;
       rxcpp::observable<dao::TransactionResponse> notifier() override;
+
+     private:
+      const validation::StatelessValidator &validator_;
+      network::PeerCommunicationService &service_;
+      dao::DaoCryptoProvider &provider_;
+
+      rxcpp::observable<dao::TransactionResponse> notifier_;
     };
   }  // namespace torii
 }  // namespace iroha

@@ -26,14 +26,14 @@ namespace iroha {
      */
     class StatelessValidator {
      public:
-
       /**
        * Perform stateless validation on a given transaction
        * @param transaction transaction to be validated
        * @return true if given transaction is valid, false otherwise
        */
-      virtual bool validate(const dao::Transaction &transaction) = 0;
+      virtual bool validate(const dao::Transaction &transaction) const = 0;
     };
   }  // namespace validation
 }  // namespace iroha
+
 #endif  // IROHA_VALIDATION_STATELESS_VALIDATOR_HPP

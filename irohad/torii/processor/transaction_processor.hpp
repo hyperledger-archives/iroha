@@ -36,10 +36,10 @@ namespace iroha {
        * @param transaction - transaction for processing
        */
       virtual void handle(dao::Client client,
-                          const dao::Transaction &transaction) = 0;
+                          dao::Transaction &transaction) = 0;
 
       /**
-       * Subscribes will be notified with transaction status
+       * Subscribers will be notified with transaction status
        * @return observable for subscribing
        */
       virtual rxcpp::observable<dao::TransactionResponse> notifier() = 0;

@@ -18,4 +18,21 @@
 #ifndef IROHA_VALIDATOR_STUB_HPP
 #define IROHA_VALIDATOR_STUB_HPP
 
-#endif //IROHA_VALIDATOR_STUB_HPP
+#include <validation/stateless/transaction_validator.hpp>
+#include <validation/stateless/validator.hpp>
+
+namespace iroha {
+  namespace validation {
+    class StatelessValidatorStub : public StatelessValidator {
+     public:
+      StatelessValidatorStub(const TransactionValidator &validator);
+      bool validate(const dao::Transaction &transaction) const override;
+
+     private:
+      const TransactionValidator &validator_;
+    };
+
+  }  // namespace validation
+}  // namespace iroha
+
+#endif  // IROHA_VALIDATOR_STUB_HPP
