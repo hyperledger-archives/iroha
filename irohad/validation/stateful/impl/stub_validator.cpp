@@ -31,8 +31,8 @@ namespace iroha {
       auto
           checking_transaction = [this](auto &tx, auto &executor, auto &query) {
         for (auto command : tx.commands) {
-          executor.execute(command);
-          if (!command_validator.validate(command)) {
+          executor.execute(*command);
+          if (!command_validator.validate(*command)) {
             return false;
           }
         }
