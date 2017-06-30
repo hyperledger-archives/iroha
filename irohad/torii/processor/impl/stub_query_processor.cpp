@@ -20,22 +20,23 @@
 
 namespace iroha {
   namespace torii {
-    using rxcpp::observable;
     using rxcpp::subscriber;
     using std::shared_ptr;
     using dao::Query;
     using dao::QueryResponse;
     using dao::Client;
 
-    void QueryProcessorStub::handle(Client client, Query query) {
+    void QueryProcessorStub::handle(Client client, Query &query) {
+      auto handle = this->handler.find(query).value_or([](auto &) {
+        // TODO make fail observer notify
+        return;
+      });
+      handle(query);
       return;
     }
 
-    observable<shared_ptr<QueryResponse>> QueryProcessorStub::notifier() {
-      return observable<>::create<shared_ptr<QueryResponse>> (
-          [](rxcpp::subscriber<shared_ptr<QueryResponse>> s) {
-            s.on_completed();
-          });
+    rxcpp::observable<shared_ptr<QueryResponse>> QueryProcessorStub::notifier() {
+      return observer;
     }
   } //namespace torii
 } //namespace iroha

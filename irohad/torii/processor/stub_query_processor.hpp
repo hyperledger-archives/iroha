@@ -19,6 +19,7 @@
 #define IROHA_STUB_QUERY_PROCESSOR_HPP
 
 #include <torii/processor/query_processor.hpp>
+#include <handler_map/handler_map.hpp>
 
 namespace iroha {
   namespace torii {
@@ -29,18 +30,26 @@ namespace iroha {
     class QueryProcessorStub : public QueryProcessor {
      public:
 
+      QueryProcessorStub() {
+      }
+
       /**
        * Register client query
        * @param client - query emitter
        * @param query - client intent
        */
-      virtual void handle(dao::Client client, dao::Query query);
+      virtual void handle(dao::Client client, dao::Query &query);
 
       /**
        * Subscribe for query responses
        * @return observable with query responses
        */
       virtual rxcpp::observable<std::shared_ptr<dao::QueryResponse>> notifier();
+
+     private:
+      HandlerMap<dao::Query, void> handler;
+      rxcpp::observable<std::shared_ptr<dao::QueryResponse>> observer;
+
     };
   } //namespace torii
 } //namespace iroha
