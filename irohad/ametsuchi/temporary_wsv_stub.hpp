@@ -18,28 +18,32 @@
 #ifndef IROHA_TEMPORARY_WSV_STUB_HPP
 #define IROHA_TEMPORARY_WSV_STUB_HPP
 
+#include <ametsuchi/ametsuchi_stub.hpp>
+#include <ametsuchi/command_executor_stub.hpp>
 #include <ametsuchi/temporary_wsv.hpp>
 #include <functional>
-#include <ametsuchi/ametsuchi_stub.hpp>
-#include "command_executor_stub.hpp"
 
 namespace iroha {
   namespace ametsuchi {
     class TemporaryWsvStub : public TemporaryWsv {
      public:
-      TemporaryWsvStub(AmetsuchiStub& ametsuchi);
-      bool apply(dao::Transaction transaction,
-                 std::function<bool(dao::Transaction &,
-                                    CommandExecutor &,
-                                    WsvQuery &)> function) override;
+      TemporaryWsvStub(AmetsuchiStub &ametsuchi);
+      bool apply(const dao::Transaction &transaction,
+                 std::function<bool(const dao::Transaction &, CommandExecutor &,
+                                    WsvQuery &)>
+                     function) override;
       dao::Account get_account(ed25519::pubkey_t pub_key) override;
       dao::Asset get_asset(std::string asset_full_name) override;
       dao::Domain get_domain(std::string domain_full_name) override;
       dao::Wallet get_wallet(std::string wallet_id) override;
-      std::vector<dao::Wallet> get_account_wallets(ed25519::pubkey_t pub_key) override;
-      std::vector<dao::Asset> get_domain_assets(std::string domain_full_name) override;
+      std::vector<dao::Wallet> get_account_wallets(
+          ed25519::pubkey_t pub_key) override;
+      std::vector<dao::Asset> get_domain_assets(
+          std::string domain_full_name) override;
+      iroha::dao::Peer get_peer(iroha::ed25519::pubkey_t pub_key) override;
+
      private:
-      AmetsuchiStub& ametsuchi_;
+      AmetsuchiStub &ametsuchi_;
       CommandExecutorStub executor_;
     };
   }  // namespace ametsuchi
