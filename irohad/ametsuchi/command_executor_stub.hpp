@@ -15,30 +15,32 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMANDEXECUTOR_HPP
-#define IROHA_COMMANDEXECUTOR_HPP
+#ifndef IROHA_COMMAND_EXECUTOR_STUB_HPP
+#define IROHA_COMMAND_EXECUTOR_STUB_HPP
 
-#include <dao/command.hpp>
+#include <ametsuchi/command_executor.hpp>
+#include <ametsuchi/wsv_query.hpp>
+#include <dao/dao.hpp>
+#include <functional>
+#include <handler_map/handler_map.hpp>
+#include <memory>
+#include <unordered_map>
 
 namespace iroha {
-
   namespace ametsuchi {
-    /**
-     * Applies command to the world state view
-     */
-    class CommandExecutor {
+
+    class CommandExecutorStub : public CommandExecutor {
      public:
-      /**
-       * Executes a command in a temporary state
-       * @see TemporaryWsv, MutableStorage
-       * @param command Command to execute
-       * @return True if the command is successfully executed, false otherwise
-       */
-      virtual bool execute(const dao::Command& command) = 0;
+      CommandExecutorStub(WsvQuery &query);
+      bool execute(const dao::Command &command) override;
+
+     private:
+      bool executeAddPeer(const dao::AddPeer &command);
+      WsvQuery &query_;
+      HandlerMap<dao::Command, bool> map_;
     };
 
-  } // namespace ametsuchi
+  }  // namespace ametsuchi
+}  // namespace iroha
 
-}// namespace iroha
-
-#endif //IROHA_COMMANDEXECUTOR_HPP
+#endif  // IROHA_COMMAND_EXECUTOR_STUB_HPP
