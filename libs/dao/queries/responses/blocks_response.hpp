@@ -25,7 +25,7 @@ namespace iroha {
   namespace dao {
 
     /**
-     * Provide user's intent for adding peer to current network
+     * Provide answer of user's block request
      */
     struct GetBlocksResponse : public QueryResponse {
 
