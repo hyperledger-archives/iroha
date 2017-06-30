@@ -17,11 +17,16 @@
 
 #include "application.hpp"
 
+#include <ametsuchi/ametsuchi_stub.hpp>
+#include "dao/dao_crypto_provider_stub.hpp"
+#include "dao/dao_hash_provider_impl.hpp"
+
 namespace main {
 
-// TODO add initialization of ametsuchi and peer service
+  // TODO add initialization of ametsuchi and peer service
   Irohad::Irohad()
-      : hashProvider(Irohad::initialize_hash_provider()),
+      : ametsuchi(Irohad::initialize_ametsuchi()),
+        hashProvider(Irohad::initialize_hash_provider()),
         cryptoProvider(initialize_crypto_provider()) {}
 
   dao::HashProvider<32> &Irohad::initialize_hash_provider() {
@@ -30,6 +35,10 @@ namespace main {
   }
   dao::DaoCryptoProvider &Irohad::initialize_crypto_provider() {
     dao::DaoCryptoProviderStub res;
+    return res;
+  }
+  ametsuchi::Ametsuchi &Irohad::initialize_ametsuchi() {
+    ametsuchi::AmetsuchiStub res;
     return res;
   }
 }

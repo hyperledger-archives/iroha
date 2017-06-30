@@ -21,8 +21,6 @@
 #include <network/network_api.h>
 #include <ametsuchi/ametsuchi.hpp>
 #include <dao/dao.hpp>
-#include "dao/dao_hash_provider_impl.hpp"
-#include "dao/dao_crypto_provider_stub.hpp"
 
 namespace main {
 
@@ -46,6 +44,8 @@ namespace main {
     static dao::HashProvider<32> &initialize_hash_provider();
 
     static dao::DaoCryptoProvider &initialize_crypto_provider();
+
+    static ametsuchi::Ametsuchi &initialize_ametsuchi();
   };
 }  // namespace iroha
 #endif  // IROHA_APPLICATION_HPP
