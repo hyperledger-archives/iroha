@@ -26,9 +26,15 @@ namespace iroha {
     using dao::QueryResponse;
     using dao::Client;
 
+    QueryProcessorStub::QueryProcessorStub() {
+      handler_.insert<dao::GetBlocks>(std::bind(&QueryProcessorStub::handle_get_blocks,
+                                                this,
+                                                std::placeholders::_1));
+    }
+
     void QueryProcessorStub::handle(Client client, Query &query) {
-      auto handle = this->handler.find(query).value_or([](auto &) {
-        // TODO make fail observer notify
+      auto handle = handler_.(query).value_or([](auto &) {
+        // TODO make error handler
         return;
       });
       handle(query);
@@ -36,7 +42,12 @@ namespace iroha {
     }
 
     rxcpp::observable<shared_ptr<QueryResponse>> QueryProcessorStub::notifier() {
-      return observer;
+      return observer_;
     }
+
+    void QueryProcessorStub::handle_get_blocks(dao::GetBlocks blocks) {
+
+    }
+
   } //namespace torii
 } //namespace iroha

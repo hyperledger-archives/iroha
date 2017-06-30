@@ -30,7 +30,7 @@ namespace iroha {
     class QueryProcessorStub : public QueryProcessor {
      public:
 
-      QueryProcessorStub() {
+      explicit QueryProcessorStub() {
       }
 
       /**
@@ -47,8 +47,10 @@ namespace iroha {
       virtual rxcpp::observable<std::shared_ptr<dao::QueryResponse>> notifier();
 
      private:
-      HandlerMap<dao::Query, void> handler;
-      rxcpp::observable<std::shared_ptr<dao::QueryResponse>> observer;
+      HandlerMap<dao::Query, void> handler_;
+      rxcpp::observable<std::shared_ptr<dao::QueryResponse>> observer_;
+
+      void handle_get_blocks(dao::GetBlocks blocks);
 
     };
   } //namespace torii
