@@ -70,5 +70,10 @@ namespace iroha {
 
     MutableStorageStub::MutableStorageStub(AmetsuchiStub &ametsuchi)
         : ametsuchi_(ametsuchi), executor_(*this) {}
+
+    rxcpp::observable<dao::Block> MutableStorageStub::get_blocks_in_range(
+        uint32_t from, uint32_t to) {
+      return ametsuchi_.get_blocks_in_range(from, to);
+    }
   }  // namespace ametsuchi
 }  // namespace iroha
