@@ -14,12 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_DAO_GET_BLOCKS_HPP
+#define IROHA_DAO_GET_BLOCKS_HPP
 
-#ifndef IROHA_ADD_PEER_HPP
-#define IROHA_ADD_PEER_HPP
-
-#include <dao/command.hpp>
-#include <dao/peer.hpp>
+#include <dao/query.hpp>
 
 namespace iroha {
   namespace dao {
@@ -27,13 +25,18 @@ namespace iroha {
     /**
      * Provide user's intent for adding peer to current network
      */
-    struct AddPeer : public Command {
+    struct GetBlocks : public Query {
 
       /**
-       * Peer for adding
+       * Id from which fetch the blocks
        */
-      Peer peer;
+      uint32_t from;
+      /**
+       * Id to which fetch the blocks
+       */
+      uint32_t to;
     };
-  } // namespace dao
-} // namespace iroha
-#endif //IROHA_ADD_PEER_HPP
+  }  // namespace dao
+}  // namespace iroha
+
+#endif  // IROHA_GET_PEER_HPP

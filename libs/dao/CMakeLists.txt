@@ -5,4 +5,5 @@ add_library(dao
 target_link_libraries(dao
     schema
     optional
+    rxcpp
     )
