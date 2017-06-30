@@ -21,8 +21,7 @@ namespace iroha {
   namespace ametsuchi {
 
     rxcpp::observable<dao::Transaction>
-    MutableStorageStub::get_account_transactions(
-        ed25519::pubkey_t pub_key) {
+    MutableStorageStub::get_account_transactions(ed25519::pubkey_t pub_key) {
       return ametsuchi_.get_account_transactions(pub_key);
     }
 
@@ -36,8 +35,7 @@ namespace iroha {
       return ametsuchi_.get_wallet_transactions(wallet_id);
     }
 
-    dao::Account MutableStorageStub::get_account(
-        ed25519::pubkey_t pub_key) {
+    dao::Account MutableStorageStub::get_account(ed25519::pubkey_t pub_key) {
       return ametsuchi_.get_account(pub_key);
     }
 
@@ -65,7 +63,8 @@ namespace iroha {
 
     bool MutableStorageStub::apply(
         dao::Block block,
-        std::function<bool(dao::Block&, CommandExecutor&, WsvQuery&)> function) {
+        std::function<bool(const dao::Block &, CommandExecutor &, WsvQuery &)>
+            function) {
       return function(block, executor_, ametsuchi_);
     }
 
