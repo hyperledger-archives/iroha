@@ -19,6 +19,10 @@ limitations under the License.
 #include <timer/timer.hpp>
 #include "queue.hpp"
 
+#include <torii/command_service.hpp>
+#include <ordering/connection/client.hpp>
+#include <ordering/connection/service.hpp>
+
 namespace ordering {
   namespace observer {
 

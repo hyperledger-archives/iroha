@@ -18,9 +18,9 @@
 #ifndef IROHA_MUTABLE_STORAGE_STUB_HPP
 #define IROHA_MUTABLE_STORAGE_STUB_HPP
 
-#include <ametsuchi/mutable_storage.hpp>
 #include <ametsuchi/ametsuchi_stub.hpp>
 #include <ametsuchi/command_executor_stub.hpp>
+#include <ametsuchi/mutable_storage.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -29,7 +29,7 @@ namespace iroha {
       MutableStorageStub(AmetsuchiStub& ametsuchi);
       bool apply(dao::Block block,
                  std::function<bool(dao::Block&, CommandExecutor&, WsvQuery&)>
-                 function) override;
+                     function) override;
       rxcpp::observable<dao::Transaction> get_account_transactions(
           ed25519::pubkey_t pub_key) override;
       rxcpp::observable<dao::Transaction> get_asset_transactions(
@@ -40,6 +40,9 @@ namespace iroha {
       dao::Peer get_peer(ed25519::pubkey_t pub_key) override;
       dao::Account get_account(
           ed25519::pubkey_t pub_key) override;
+      rxcpp::observable<iroha::dao::Block> get_blocks_in_range(
+          uint32_t from, uint32_t to) override;
+      dao::Account get_account(ed25519::pubkey_t pub_key) override;
       dao::Asset get_asset(std::string asset_full_name) override;
       dao::Domain get_domain(std::string domain_full_name) override;
       dao::Wallet get_wallet(std::string wallet_id) override;
@@ -47,6 +50,7 @@ namespace iroha {
           ed25519::pubkey_t pub_key) override;
       std::vector<dao::Asset> get_domain_assets(
           std::string domain_full_name) override;
+
      private:
       AmetsuchiStub& ametsuchi_;
       CommandExecutorStub executor_;

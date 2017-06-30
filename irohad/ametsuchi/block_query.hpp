@@ -52,6 +52,16 @@ namespace iroha {
        */
       virtual rxcpp::observable<dao::Transaction>
       get_wallet_transactions(std::string wallet_id) = 0;
+
+      /**
+      * Get all blocks with having id in range [from, to].
+      * @param from - starting id
+      * @param to - ending id
+      * @return observable of DAO Block
+      */
+      virtual rxcpp::observable<iroha::dao::Block>
+      get_blocks_in_range(uint32_t from, uint32_t to) = 0;
+
     };
 
   }  // namespace ametsuchi
