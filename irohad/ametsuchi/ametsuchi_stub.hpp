@@ -26,6 +26,8 @@ namespace iroha {
 
     class AmetsuchiStub : public Ametsuchi {
      public:
+      dao::Peer get_peer(
+          iroha::ed25519::pubkey_t pub_key) override;
       std::unique_ptr<TemporaryWsv> createTemporaryWsv() override;
       std::unique_ptr<MutableStorage> createMutableStorage() override;
       void commit(MutableStorage &mutableStorage) override;

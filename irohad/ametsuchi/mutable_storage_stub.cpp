@@ -47,6 +47,11 @@ namespace iroha {
       return ametsuchi_.get_domain(domain_full_name);
     }
 
+    dao::Peer MutableStorageStub::get_peer(
+        ed25519::pubkey_t pub_key) {
+      return ametsuchi_.get_peer(pub_key);
+    }
+
     dao::Wallet MutableStorageStub::get_wallet(std::string wallet_id) {
       return ametsuchi_.get_wallet(wallet_id);
     }

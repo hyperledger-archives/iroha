@@ -92,5 +92,10 @@ namespace iroha {
       return std::vector<dao::Asset>{dao::Asset{}};
     }
 
+    dao::Peer AmetsuchiStub::get_peer(
+        iroha::ed25519::pubkey_t pub_key) {
+      return dao::Peer{};
+    }
+
   }  // namespace ametsuchi
 }  // namespace iroha

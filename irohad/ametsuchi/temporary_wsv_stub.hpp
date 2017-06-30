@@ -40,6 +40,7 @@ namespace iroha {
           ed25519::pubkey_t pub_key) override;
       std::vector<dao::Asset> get_domain_assets(
           std::string domain_full_name) override;
+      iroha::dao::Peer get_peer(iroha::ed25519::pubkey_t pub_key) override;
 
      private:
       AmetsuchiStub &ametsuchi_;
