@@ -14,10 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef IROHA_DAO_GET_BLOCKS_HPP
-#define IROHA_DAO_GET_BLOCKS_HPP
+
+#ifndef IROHA_GET_BLOCKS_RESPONSE_HPP
+#define IROHA_GET_BLOCKS_RESPONSE_HPP
 
 #include <dao/query.hpp>
+#include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
   namespace dao {
@@ -25,18 +27,14 @@ namespace iroha {
     /**
      * Provide user's intent for adding peer to current network
      */
-    struct GetBlocks : public Query {
+    struct GetBlocksResponse : public QueryResponse {
 
       /**
-       * Id from which fetch the blocks
+       * Observable contains all request blocks
        */
-      uint32_t from;
-      /**
-       * Id to which fetch the blocks
-       */
-      uint32_t to;
+      rxcp::observable<Block> blocks;
+
     };
   }  // namespace dao
 }  // namespace iroha
-
-#endif  // IROHA_GET_PEER_HPP
+#endif //IROHA_GET_BLOCKS_RESPONSE_HPP
