@@ -33,7 +33,7 @@ namespace iroha {
     }
 
     void QueryProcessorStub::handle(Client client, Query &query) {
-      auto handle = handler_.(query).value_or([](auto &) {
+      auto handle = handler_.find(query).value_or([](auto &) {
         // TODO make error handler
         return;
       });
@@ -42,11 +42,11 @@ namespace iroha {
     }
 
     rxcpp::observable<shared_ptr<QueryResponse>> QueryProcessorStub::notifier() {
-      return observer_;
+      return subject_.get_observable().publish();
     }
 
     void QueryProcessorStub::handle_get_blocks(dao::GetBlocks blocks) {
-
+      // TODO implement handle blocks
     }
 
   } //namespace torii

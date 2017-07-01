@@ -30,8 +30,7 @@ namespace iroha {
     class QueryProcessorStub : public QueryProcessor {
      public:
 
-      explicit QueryProcessorStub() {
-      }
+      explicit QueryProcessorStub();
 
       /**
        * Register client query
@@ -48,7 +47,7 @@ namespace iroha {
 
      private:
       HandlerMap<dao::Query, void> handler_;
-      rxcpp::observable<std::shared_ptr<dao::QueryResponse>> observer_;
+      rxcpp::subjects::subject<std::shared_ptr<dao::QueryResponse>> subject_;
 
       void handle_get_blocks(dao::GetBlocks blocks);
 
