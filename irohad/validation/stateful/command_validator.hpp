@@ -30,9 +30,9 @@ namespace iroha {
      public:
 
       /**
-       * Method provide validation of wvs after application command
-       * @param command for application
-       * @return true if invariant correct, otherwice false
+       * Method provides validation of wsv after command is applied
+       * @param command to be applied
+       * @return true if invariant correct, otherwise false
        */
       virtual bool validate(const dao::Command &command) = 0;
     };
