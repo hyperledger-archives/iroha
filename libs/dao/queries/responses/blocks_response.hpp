@@ -32,7 +32,7 @@ namespace iroha {
       /**
        * Observable contains all request blocks
        */
-      rxcp::observable<Block> blocks;
+      rxcpp::observable<Block> blocks;
 
     };
   }  // namespace dao
