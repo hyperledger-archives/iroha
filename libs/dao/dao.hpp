@@ -28,7 +28,6 @@
 #include "signature.hpp"
 #include "domain.hpp"
 #include "client.hpp"
-
 #include "query_response.hpp"
 #include "peer.hpp"
 #include "signature.hpp"

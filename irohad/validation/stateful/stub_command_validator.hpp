@@ -15,25 +15,31 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ADD_PEER_HPP
-#define IROHA_ADD_PEER_HPP
+#ifndef IROHA_STUB_COMMAND_VALIDATOR_HPP
+#define IROHA_STUB_COMMAND_VALIDATOR_HPP
 
-#include <dao/command.hpp>
-#include <dao/peer.hpp>
+#include <validation/stateful/command_validator.hpp>
+#include <dao/dao.hpp>
+#include <ametsuchi/temporary_wsv.hpp>
+#include <handler_map/handler_map.hpp>
 
 namespace iroha {
-  namespace dao {
+  namespace validation {
+    class CommandValidatorStub : public CommandValidator {
+     public:
 
-    /**
-     * Provide user's intent for adding peer to current network
-     */
-    struct AddPeer : public Command {
+      CommandValidatorStub(ametsuchi::TemporaryWsv &wsv);
 
-      /**
-       * Peer for adding
-       */
-      Peer peer;
+      bool validate(const dao::Command &command);
+
+      bool validateAddPeer(const dao::AddPeer &addPeer);
+
+     private:
+      ametsuchi::TemporaryWsv &wsv;
+      HandlerMap<dao::Command, bool> handler;
+
     };
-  } // namespace dao
+  } // namespace validation
 } // namespace iroha
-#endif //IROHA_ADD_PEER_HPP
+
+#endif //IROHA_STUB_COMMAND_VALIDATOR_HPP
