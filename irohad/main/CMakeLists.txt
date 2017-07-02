@@ -21,7 +21,14 @@ target_link_libraries(server_runner
   schema
   )
 
+add_library(application application.cpp)
+target_link_libraries(application
+  dao
+  ametsuchi
+  )
+
 add_executable(iroha-main iroha-main.cpp)
 target_link_libraries(iroha-main
   server_runner
+  application
   )
