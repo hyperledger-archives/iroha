@@ -17,24 +17,56 @@
 
 #include <network/peer_communication_stub.hpp>
 
-
 namespace iroha {
   namespace network {
 
+    using ametsuchi::Ametsuchi;
+    using validation::StatefulValidator;
+    using validation::ChainValidator;
+    using ordering::OrderingService;
+    using consensus::ConsensusService;
+    using dao::Block;
+
     rxcpp::observable<rxcpp::observable<dao::Block>>
     PeerCommunicationServiceStub::on_commit() {
-      return recieved_blocks.get_observable();
+      return consensus_.on_commit().take_while([this](auto commit) {
+        auto storage = storage_.createMutableStorage();
+        auto result = chain_validator_.validate(commit, *storage);
+        if (result) {
+          storage_.commit(*storage);
+        }
+        return result;
+      });
     }
 
     void PeerCommunicationServiceStub::propagate_transaction(
         dao::Transaction &tx) {
-      // TODO: send to consensus
+      orderer_.propagate_transaction(tx);
     }
 
     rxcpp::observable<dao::Proposal>
     PeerCommunicationServiceStub::on_proposal() {
-      // TODO: consensus proposal
-      return nullptr;
+      return orderer_.on_proposal().tap([this](dao::Proposal &proposal) {
+        auto wsv = storage_.createTemporaryWsv();
+        auto validated_proposal = stateful_validator_.validate(proposal, *wsv);
+        Block block;
+        std::for_each(validated_proposal.transactions.begin(), validated_proposal.transactions.end(), [&block](const auto &transaction) {
+          block.transactions.push_back(transaction);
+        });
+        // TODO hash and sign
+        consensus_.vote_block(block);
+      });
     }
+
+    PeerCommunicationServiceStub::PeerCommunicationServiceStub(
+        Ametsuchi &storage, StatefulValidator &stateful_validator,
+        ChainValidator &chain_validator, OrderingService &orderer,
+        ConsensusService &consensus, dao::DaoCryptoProvider &crypto_provider)
+        : storage_(storage),
+          stateful_validator_(stateful_validator),
+          chain_validator_(chain_validator),
+          orderer_(orderer),
+          consensus_(consensus),
+          crypto_provider_(crypto_provider) {}
   }
 }

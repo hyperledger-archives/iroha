@@ -18,13 +18,25 @@
 #define IROHA_PEER_COMMUNICATION_STUB_HPP
 
 #include <network/network_api.h>
+#include <ametsuchi/ametsuchi.hpp>
 #include <consensus/consensus_service.hpp>
 #include <ordering/ordering_service.hpp>
+#include <validation/chain/validator.hpp>
+#include <validation/stateful/validator.hpp>
+#include <dao/dao_crypto_provider.hpp>
+#include <dao/dao_hash_provider.hpp>
 
 namespace iroha {
   namespace network {
     class PeerCommunicationServiceStub : public PeerCommunicationService {
      public:
+      PeerCommunicationServiceStub(
+          ametsuchi::Ametsuchi &storage,
+          validation::StatefulValidator &stateful_validator,
+          validation::ChainValidator &chain_validator,
+          ordering::OrderingService &orderer,
+          consensus::ConsensusService &consensus,
+          dao::DaoCryptoProvider &crypto_provider);
 
       rxcpp::observable<dao::Proposal> on_proposal() override;
 
@@ -33,10 +45,13 @@ namespace iroha {
       void propagate_transaction(dao::Transaction &tx) override;
 
      private:
-      ordering::OrderingService orderer;
-      consensus::ConsensusService consensus;
-
-
+      ametsuchi::Ametsuchi &storage_;
+      validation::StatefulValidator &stateful_validator_;
+      validation::ChainValidator &chain_validator_;
+      ordering::OrderingService &orderer_;
+      consensus::ConsensusService &consensus_;
+      dao::DaoCryptoProvider &crypto_provider_;
+      // TODO add hash provider
     };
   }
 }

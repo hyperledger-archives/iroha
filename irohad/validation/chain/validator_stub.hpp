@@ -26,7 +26,7 @@ namespace iroha {
     class ChainValidatorStub : public ChainValidator {
      public:
       ChainValidatorStub(BlockValidator& block_validator);
-      ametsuchi::MutableStorage &validate(rxcpp::observable <dao::Block> &blocks,
+      bool validate(rxcpp::observable <dao::Block> &blocks,
                                ametsuchi::MutableStorage &storage) override;
      private:
       BlockValidator &block_validator_;
