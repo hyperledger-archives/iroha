@@ -21,6 +21,7 @@ limitations under the License.
 #include <dao/command.hpp>
 #include <memory>
 #include <vector>
+#include <dao/signature.hpp>
 
 namespace iroha {
   namespace dao {
