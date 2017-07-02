@@ -17,6 +17,7 @@
 
 #include <network/peer_communication_stub.hpp>
 
+
 namespace iroha {
   namespace network {
 

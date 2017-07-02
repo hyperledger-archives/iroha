@@ -18,6 +18,8 @@
 #define IROHA_PEER_COMMUNICATION_STUB_HPP
 
 #include <network/network_api.h>
+#include <consensus/consensus_service.hpp>
+#include <ordering/ordering_service.hpp>
 
 namespace iroha {
   namespace network {
@@ -31,7 +33,9 @@ namespace iroha {
       void propagate_transaction(dao::Transaction &tx) override;
 
      private:
-      rxcpp::subjects::subject<rxcpp::observable<dao::Block>> recieved_blocks;
+      ordering::OrderingService orderer;
+      consensus::ConsensusService consensus;
+
 
     };
   }
