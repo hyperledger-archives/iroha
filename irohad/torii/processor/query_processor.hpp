@@ -35,7 +35,7 @@ namespace iroha {
        * @param client - query emitter
        * @param query - client intent
        */
-      virtual void handle(dao::Client client, dao::Query query) = 0;
+      virtual void query_handle(dao::Client client, dao::Query query) = 0;
 
       /**
        * Subscribe for query responses
