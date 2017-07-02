@@ -46,6 +46,8 @@ namespace main {
     static dao::DaoCryptoProvider &initialize_crypto_provider();
 
     static ametsuchi::Ametsuchi &initialize_ametsuchi();
+
+    static network::PeerCommunicationService &initialize_peer_service();
   };
 }  // namespace iroha
 #endif  // IROHA_APPLICATION_HPP
