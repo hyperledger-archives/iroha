@@ -50,7 +50,7 @@ namespace iroha {
     class TransactionPropagator {
      public:
       /**
-       * Method spreads transaction to other members of  a network
+       * Method spreads transaction to other members of a network
        * @param tx - transaction for propagation
        */
       virtual void propagate_transaction(dao::Transaction &tx) = 0;
