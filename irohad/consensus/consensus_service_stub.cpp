@@ -29,7 +29,7 @@ namespace iroha {
       return commits_.get_observable();
     }
 
-    void ConsensusServiceStub::propagate_block(dao::Block &block) {
+    void ConsensusServiceStub::vote_block(dao::Block &block) {
       commits_.get_subscriber().on_next(rxcpp::observable<>::from(block));
     }
 

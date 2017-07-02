@@ -27,7 +27,7 @@ namespace iroha {
   namespace consensus {
     class ConsensusServiceStub : public ConsensusService {
      public:
-      void propagate_block(dao::Block &block) override;
+      void vote_block(dao::Block &block) override;
       rxcpp::observable<rxcpp::observable<dao::Block>> on_commit() override;
 
      private:

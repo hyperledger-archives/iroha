@@ -31,10 +31,10 @@ namespace iroha {
      public:
 
       /**
-       * Propagate a block formed from proposal
+       * Vote for a block formed from proposal
        * @param block
        */
-      virtual void propagate_block(dao::Block &block) = 0;
+      virtual void vote_block(dao::Block &block) = 0;
 
       /**
        * Return observable of all commits from the consensus
