@@ -18,6 +18,7 @@
 #include <validation/stateful/stub_validator.hpp>
 #include <dao/dao.hpp>
 #include <numeric>
+#include <validation/stateful/stub_command_validator.hpp>
 
 namespace iroha {
   namespace validation {
@@ -27,17 +28,18 @@ namespace iroha {
      */
     dao::Proposal ValidatorStub::validate(const dao::Proposal &proposal,
                                           ametsuchi::TemporaryWsv &wsv) {
-
+      auto command_validator = CommandValidatorStub(wsv);
       auto
-          checking_transaction = [this](auto &tx, auto &executor, auto &query) {
-        for (auto command : tx.commands) {
-          executor.execute(*command);
-          if (!command_validator.validate(*command)) {
-            return false;
-          }
-        }
-        return true;
-      };
+          checking_transaction =
+          [&command_validator](auto &tx, auto &executor, auto &query) {
+            for (auto command : tx.commands) {
+              executor.execute(*command);
+              if (!command_validator.validate(*command)) {
+                return false;
+              }
+            }
+            return true;
+          };
 
       auto filter = [&wsv, checking_transaction](auto &acc, const auto &tx) {
         auto answer = wsv.apply(tx, checking_transaction
