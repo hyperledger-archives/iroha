@@ -14,22 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_DAO_GET_BLOCKS_HPP
+#define IROHA_DAO_GET_BLOCKS_HPP
 
-#ifndef IROHA_ORDERING_SERVICE_STUB_HPP
-#define IROHA_ORDERING_SERVICE_STUB_HPP
-
-#include <ordering/ordering_service.hpp>
+#include <dao/query.hpp>
 
 namespace iroha {
-  namespace ordering {
-    class OrderingServiceStub : public OrderingService {
-     public:
-      void propagate_transaction(const dao::Transaction &transaction) override;
-      rxcpp::observable<dao::Proposal> on_proposal() override;
-     private:
-      rxcpp::subjects::subject<dao::Proposal> proposals_;
-    };
-  }//namespace ordering
-}// namespace iroha
+  namespace dao {
 
-#endif //IROHA_ORDERING_SERVICE_STUB_HPP
+    /**
+     * Provide user's intent for adding peer to current network
+     */
+    struct GetBlocks : public Query {
+
+      /**
+       * Id from which fetch the blocks
+       */
+      uint32_t from;
+      /**
+       * Id to which fetch the blocks
+       */
+      uint32_t to;
+    };
+  }  // namespace dao
+}  // namespace iroha
+
+#endif  // IROHA_GET_PEER_HPP

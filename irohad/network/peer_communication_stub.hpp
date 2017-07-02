@@ -42,7 +42,7 @@ namespace iroha {
 
       rxcpp::observable<rxcpp::observable<dao::Block>> on_commit() override;
 
-      void propagate_transaction(dao::Transaction &tx) override;
+      void propagate_transaction(const dao::Transaction &tx) override;
 
      private:
       ametsuchi::Ametsuchi &storage_;

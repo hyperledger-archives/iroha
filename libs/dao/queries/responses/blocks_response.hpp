@@ -15,21 +15,26 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ORDERING_SERVICE_STUB_HPP
-#define IROHA_ORDERING_SERVICE_STUB_HPP
+#ifndef IROHA_GET_BLOCKS_RESPONSE_HPP
+#define IROHA_GET_BLOCKS_RESPONSE_HPP
 
-#include <ordering/ordering_service.hpp>
+#include <dao/query.hpp>
+#include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
-  namespace ordering {
-    class OrderingServiceStub : public OrderingService {
-     public:
-      void propagate_transaction(const dao::Transaction &transaction) override;
-      rxcpp::observable<dao::Proposal> on_proposal() override;
-     private:
-      rxcpp::subjects::subject<dao::Proposal> proposals_;
-    };
-  }//namespace ordering
-}// namespace iroha
+  namespace dao {
 
-#endif //IROHA_ORDERING_SERVICE_STUB_HPP
+    /**
+     * Provide answer of user's block request
+     */
+    struct GetBlocksResponse : public QueryResponse {
+
+      /**
+       * Observable contains all request blocks
+       */
+      rxcpp::observable<Block> blocks;
+
+    };
+  }  // namespace dao
+}  // namespace iroha
+#endif //IROHA_GET_BLOCKS_RESPONSE_HPP

@@ -15,21 +15,21 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ORDERING_SERVICE_STUB_HPP
-#define IROHA_ORDERING_SERVICE_STUB_HPP
+#ifndef IROHA_STATELESS_VALIDATOR_STUB_HPP
+#define IROHA_STATELESS_VALIDATOR_STUB_HPP
 
-#include <ordering/ordering_service.hpp>
+#include <validation/stateless/transaction_validator.hpp>
+#include <validation/stateless/validator.hpp>
 
 namespace iroha {
-  namespace ordering {
-    class OrderingServiceStub : public OrderingService {
+  namespace validation {
+    class StatelessValidatorStub : public StatelessValidator {
      public:
-      void propagate_transaction(const dao::Transaction &transaction) override;
-      rxcpp::observable<dao::Proposal> on_proposal() override;
-     private:
-      rxcpp::subjects::subject<dao::Proposal> proposals_;
+      StatelessValidatorStub();
+      bool validate(const dao::Transaction &transaction) const override;
     };
-  }//namespace ordering
-}// namespace iroha
 
-#endif //IROHA_ORDERING_SERVICE_STUB_HPP
+  }  // namespace validation
+}  // namespace iroha
+
+#endif  // IROHA_STATELESS_VALIDATOR_STUB_HPP

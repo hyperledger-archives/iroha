@@ -22,7 +22,7 @@
 #include <ametsuchi/ametsuchi.hpp>
 #include <dao/dao.hpp>
 
-namespace main {
+namespace iroha {
 
   /**
    * Contains instances of global services and shared providers
@@ -30,22 +30,20 @@ namespace main {
   using namespace iroha;
   class Irohad {
    public:
-    ametsuchi::Ametsuchi &ametsuchi;
+    Irohad();
 
-    network::PeerCommunicationService &peerService;
+    ametsuchi::Ametsuchi &ametsuchi;
 
     dao::DaoCryptoProvider &cryptoProvider;
 
     dao::HashProvider<32> &hashProvider;
 
    private:
-    Irohad();
+    static std::unique_ptr<dao::HashProvider<32>> initialize_hash_provider();
 
-    static dao::HashProvider<32> &initialize_hash_provider();
+    static std::unique_ptr<dao::DaoCryptoProvider> initialize_crypto_provider();
 
-    static dao::DaoCryptoProvider &initialize_crypto_provider();
-
-    static ametsuchi::Ametsuchi &initialize_ametsuchi();
+    static std::unique_ptr<ametsuchi::Ametsuchi> initialize_ametsuchi();
   };
 }  // namespace iroha
 #endif  // IROHA_APPLICATION_HPP

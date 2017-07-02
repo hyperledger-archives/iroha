@@ -36,7 +36,7 @@ namespace api {
     // TODO: Use this to get client's ip and port.
     (void)context;
 
-    if (validation::stateless::validate(*request)) {
+    /*if (validation::stateless::validate(*request)) {
       dispatchToOrdering(*request);
       // TODO: Return tracking log number (hash)
       *response = ToriiResponse();
@@ -47,7 +47,7 @@ namespace api {
       *response = ToriiResponse();
       response->set_code(ResponseCode::FAIL);
       response->set_message("failed stateless validation.");
-    }
+    }*/
     return grpc::Status::OK;
   }
 

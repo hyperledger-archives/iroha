@@ -15,21 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ORDERING_SERVICE_STUB_HPP
-#define IROHA_ORDERING_SERVICE_STUB_HPP
+#ifndef IROHA_ERROR_RESPONSE_HPP
+#define IROHA_ERROR_RESPONSE_HPP
 
-#include <ordering/ordering_service.hpp>
+#include <dao/query.hpp>
+#include <string>
 
 namespace iroha {
-  namespace ordering {
-    class OrderingServiceStub : public OrderingService {
-     public:
-      void propagate_transaction(const dao::Transaction &transaction) override;
-      rxcpp::observable<dao::Proposal> on_proposal() override;
-     private:
-      rxcpp::subjects::subject<dao::Proposal> proposals_;
-    };
-  }//namespace ordering
-}// namespace iroha
+  namespace dao {
 
-#endif //IROHA_ORDERING_SERVICE_STUB_HPP
+    /**
+     * Provide error answer with reason about error
+     */
+    struct ErrorResponse : public QueryResponse {
+
+      /**
+       * Reason of error
+       */
+      std::string reason;
+    };
+  }  // namespace dao
+}  // namespace iroha
+#endif //IROHA_ERROR_RESPONSE_HPP

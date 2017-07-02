@@ -16,12 +16,14 @@
  */
 
 #include <validation/chain/validator_stub.hpp>
+#include <validation/chain/block_validator_stub.hpp>
 
 namespace iroha {
   namespace validation {
 
     bool ChainValidatorStub::validate(rxcpp::observable<dao::Block>& blocks,
                                       ametsuchi::MutableStorage& storage) {
+      auto block_validator = BlockValidatorStub(storage);
       auto apply_block = [](const auto& block, auto& executor, auto& query) {
         for (const auto& tx : block.transactions) {
           for (const auto& command : tx.commands) {
@@ -34,14 +36,13 @@ namespace iroha {
       };
       auto result = false;
       blocks.take_while(
-          [&result, this, &storage, apply_block](auto block) {
-            return (result = block_validator_.validate(block) &&
+          [&result, this, &storage, apply_block, block_validator](auto block) {
+            return (result = block_validator.validate(block) &&
                              storage.apply(block, apply_block));
           });
       return result;
     }
 
-    ChainValidatorStub::ChainValidatorStub(BlockValidator& block_validator)
-        : block_validator_(block_validator) {}
+    ChainValidatorStub::ChainValidatorStub() {}
   }  // namespace validation
 }  // namespace iroha

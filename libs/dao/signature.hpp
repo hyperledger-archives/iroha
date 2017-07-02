@@ -26,8 +26,8 @@ namespace iroha {
      * Signature is a DAO structure to store crypto information
      */
     struct Signature {
-      iroha::ed25519::sig_t signature;
-      iroha::ed25519::pubkey_t pubkey;
+      ed25519::sig_t signature;
+      ed25519::pubkey_t pubkey;
     };
   }
 }

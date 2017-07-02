@@ -21,24 +21,21 @@
 #include "dao/dao_crypto_provider_stub.hpp"
 #include "dao/dao_hash_provider_impl.hpp"
 
-namespace main {
+namespace iroha {
 
   // TODO add initialization of ametsuchi and peer service
   Irohad::Irohad()
-      : ametsuchi(Irohad::initialize_ametsuchi()),
-        hashProvider(Irohad::initialize_hash_provider()),
-        cryptoProvider(initialize_crypto_provider()) {}
+      : ametsuchi(*initialize_ametsuchi()),
+        cryptoProvider(*initialize_crypto_provider()),
+        hashProvider(*initialize_hash_provider()) {}
 
-  dao::HashProvider<32> &Irohad::initialize_hash_provider() {
-    dao::HashProviderImpl res;
-    return res;
+  std::unique_ptr<dao::HashProvider<32>> Irohad::initialize_hash_provider() {
+    return std::make_unique<dao::HashProviderImpl>();
   }
-  dao::DaoCryptoProvider &Irohad::initialize_crypto_provider() {
-    dao::DaoCryptoProviderStub res;
-    return res;
+  std::unique_ptr<dao::DaoCryptoProvider> Irohad::initialize_crypto_provider() {
+    return std::make_unique<dao::DaoCryptoProviderStub>();
   }
-  ametsuchi::Ametsuchi &Irohad::initialize_ametsuchi() {
-    ametsuchi::AmetsuchiStub res;
-    return res;
+  std::unique_ptr<ametsuchi::Ametsuchi> Irohad::initialize_ametsuchi() {
+    return std::make_unique<ametsuchi::AmetsuchiStub>();
   }
 }
