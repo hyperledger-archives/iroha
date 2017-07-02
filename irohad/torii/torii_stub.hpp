@@ -15,35 +15,39 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_QUERY_PROCESSOR_HPP
-#define IROHA_QUERY_PROCESSOR_HPP
+#ifndef IROHA_TORII_STUB_HPP
+#define IROHA_TORII_STUB_HPP
 
+#include <torii/processor/client_processor.hpp>
 #include <dao/dao.hpp>
-#include <rxcpp/rx.hpp>
 
 namespace iroha {
   namespace torii {
 
     /**
-     * QueryProcessor provides start point for queries in the whole system
+     * Stub for torii grpc service;
      */
-    class QueryProcessor {
+    class ToriiStub {
      public:
+      explicit ToriiStub(ClientProcessor &processor);
 
       /**
-       * Register client query
-       * @param client - query emitter
-       * @param query - client intent
+       * Emulate query request from client
+       * @param client - query owner
+       * @param query - request for some storage information
        */
-      virtual void query_handle(dao::Client client, dao::Query query) = 0;
+      void get_query(dao::Client client, dao::Query &query);
 
       /**
-       * Subscribe for query responses
-       * @return observable with query responses
+       * Emulate transaction request from client
+       * @param client - transaction owner
+       * @param tx - intent on changing state of ledger
        */
-      virtual rxcpp::observable<dao::QueryResponse> query_notifier() = 0;
+      void get_transaction(dao::Client client, dao::Transaction &tx);
+
+     private:
+      ClientProcessor &processor_;
     };
-  } //namespace torii
-} //namespace iroha
-
-#endif //IROHA_QUERY_PROCESSOR_HPP
+  } // namespace torii
+} // namespace iroha
+#endif //IROHA_TORII_STUB_HPP

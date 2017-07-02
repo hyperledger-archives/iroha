@@ -36,13 +36,13 @@ namespace iroha {
        * @param client - transaction owner
        * @param transaction - transaction for processing
        */
-      virtual void handle(dao::Client client, dao::Transaction transaction) = 0;
+      virtual void transaction_handle(dao::Client client, dao::Transaction transaction) = 0;
 
       /**
        * Subscribes will be notified with transaction status
        * @return observable for subscribing
        */
-      virtual rxcpp::observable <dao::TransactionResponse> notifier() = 0;
+      virtual rxcpp::observable<dao::TransactionResponse> transaction_notifier() = 0;
     };
   } //namespace torii
 } //namespace iroha
