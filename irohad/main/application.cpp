@@ -27,8 +27,7 @@ namespace main {
   Irohad::Irohad()
       : ametsuchi(Irohad::initialize_ametsuchi()),
         hashProvider(Irohad::initialize_hash_provider()),
-        cryptoProvider(initialize_crypto_provider()),
-        peerService(initialize_peer_service()){}
+        cryptoProvider(initialize_crypto_provider()) {}
 
   dao::HashProvider<32> &Irohad::initialize_hash_provider() {
     dao::HashProviderImpl res;
@@ -40,10 +39,6 @@ namespace main {
   }
   ametsuchi::Ametsuchi &Irohad::initialize_ametsuchi() {
     ametsuchi::AmetsuchiStub res;
-    return res;
-  }
-  network::PeerCommunicationService &Irohad::initialize_peer_service() {
-    network::PeerCommunicationService res;
     return res;
   }
 }
