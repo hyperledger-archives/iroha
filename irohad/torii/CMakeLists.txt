@@ -23,3 +23,9 @@ target_link_libraries(command_service
   endpoint
   stateless_validator
 )
+
+add_library(torii impl/torii_stub.cpp)
+target_link_libraries(torii
+  dao
+  rxcpp
+)
