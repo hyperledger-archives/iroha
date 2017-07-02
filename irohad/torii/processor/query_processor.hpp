@@ -41,7 +41,7 @@ namespace iroha {
        * Subscribe for query responses
        * @return observable with query responses
        */
-      virtual rxcpp::observable <dao::QueryResponse> notifier() = 0;
+      virtual rxcpp::observable<dao::QueryResponse> query_notifier() = 0;
     };
   } //namespace torii
 } //namespace iroha

@@ -42,7 +42,7 @@ namespace iroha {
        * Subscribes will be notified with transaction status
        * @return observable for subscribing
        */
-      virtual rxcpp::observable <dao::TransactionResponse> notifier() = 0;
+      virtual rxcpp::observable<dao::TransactionResponse> transaction_notifier() = 0;
     };
   } //namespace torii
 } //namespace iroha
