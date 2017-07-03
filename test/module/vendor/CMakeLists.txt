@@ -36,3 +36,8 @@ AddTest(rxcpp_test rxcpp_test.cpp)
 target_link_libraries(rxcpp_test
     rxcpp
     )
+
+AddTest(rxcpp_subject_usage rxcpp_subject_usage.cpp)
+target_link_libraries(rxcpp_subject_usage
+    rxcpp
+    )

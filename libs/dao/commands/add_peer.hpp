@@ -28,7 +28,7 @@ namespace iroha {
      * Provide user's intent for adding peer to current network
      */
     struct AddPeer : public Command {
-     public:
+
       /**
        * Peer for adding
        */

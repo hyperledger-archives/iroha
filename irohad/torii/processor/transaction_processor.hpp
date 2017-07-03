@@ -30,20 +30,20 @@ namespace iroha {
      */
     class TransactionProcessor {
      public:
-
       /**
        * Add transaction to the system for processing
        * @param client - transaction owner
        * @param transaction - transaction for processing
        */
-      virtual void handle(dao::Client client, dao::Transaction transaction) = 0;
+      virtual void handle(dao::Client client,
+                          dao::Transaction &transaction) = 0;
 
       /**
-       * Subscribes will be notified with transaction status
+       * Subscribers will be notified with transaction status
        * @return observable for subscribing
        */
-      virtual rxcpp::observable <dao::TransactionResponse> notifier() = 0;
+      virtual rxcpp::observable<dao::TransactionResponse> notifier() = 0;
     };
-  } //namespace torii
-} //namespace iroha
-#endif //IROHA_TRANSACTION_PROCESSOR_HPP
+  }  // namespace torii
+}  // namespace iroha
+#endif  // IROHA_TRANSACTION_PROCESSOR_HPP

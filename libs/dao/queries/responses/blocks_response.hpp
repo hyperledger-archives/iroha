@@ -15,35 +15,26 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_QUERY_PROCESSOR_HPP
-#define IROHA_QUERY_PROCESSOR_HPP
+#ifndef IROHA_GET_BLOCKS_RESPONSE_HPP
+#define IROHA_GET_BLOCKS_RESPONSE_HPP
 
-#include <dao/dao.hpp>
-#include <rxcpp/rx.hpp>
+#include <dao/query.hpp>
+#include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
-  namespace torii {
+  namespace dao {
 
     /**
-     * QueryProcessor provides start point for queries in the whole system
+     * Provide answer of user's block request
      */
-    class QueryProcessor {
-     public:
+    struct GetBlocksResponse : public QueryResponse {
 
       /**
-       * Register client query
-       * @param client - query emitter
-       * @param query - client intent
+       * Observable contains all request blocks
        */
-      virtual void handle(dao::Client client, dao::Query &query) = 0;
+      rxcpp::observable<Block> blocks;
 
-      /**
-       * Subscribe for query responses
-       * @return observable with query responses
-       */
-      virtual rxcpp::observable<std::shared_ptr<dao::QueryResponse>> notifier() = 0;
     };
-  } //namespace torii
-} //namespace iroha
-
-#endif //IROHA_QUERY_PROCESSOR_HPP
+  }  // namespace dao
+}  // namespace iroha
+#endif //IROHA_GET_BLOCKS_RESPONSE_HPP

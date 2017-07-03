@@ -19,6 +19,7 @@ limitations under the License.
 
 #include <common/types.hpp>
 #include <dao/command.hpp>
+#include <dao/signature.hpp>
 #include <memory>
 #include <vector>
 #include <dao/signature.hpp>

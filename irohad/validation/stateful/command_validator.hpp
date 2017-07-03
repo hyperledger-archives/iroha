@@ -15,35 +15,28 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_QUERY_PROCESSOR_HPP
-#define IROHA_QUERY_PROCESSOR_HPP
+#ifndef IROHA_COMMAND_VALIDATOR_HPP
+#define IROHA_COMMAND_VALIDATOR_HPP
 
 #include <dao/dao.hpp>
-#include <rxcpp/rx.hpp>
 
 namespace iroha {
-  namespace torii {
+  namespace validation {
 
     /**
-     * QueryProcessor provides start point for queries in the whole system
+     * Interface for checking invariant after performing command
      */
-    class QueryProcessor {
+    class CommandValidator {
      public:
 
       /**
-       * Register client query
-       * @param client - query emitter
-       * @param query - client intent
+       * Method provides validation of wsv after command is applied
+       * @param command to be applied
+       * @return true if invariant correct, otherwise false
        */
-      virtual void handle(dao::Client client, dao::Query &query) = 0;
-
-      /**
-       * Subscribe for query responses
-       * @return observable with query responses
-       */
-      virtual rxcpp::observable<std::shared_ptr<dao::QueryResponse>> notifier() = 0;
+      virtual bool validate(const dao::Command &command) = 0;
     };
-  } //namespace torii
-} //namespace iroha
+  } // namespace validation
+} // namespace iroha
 
-#endif //IROHA_QUERY_PROCESSOR_HPP
+#endif //IROHA_COMMAND_VALIDATOR_HPP

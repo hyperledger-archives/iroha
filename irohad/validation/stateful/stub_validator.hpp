@@ -15,18 +15,22 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-#include <ametsuchi/command_executor_stub.hpp>
-#include <ametsuchi/ametsuchi_stub.hpp>
+#ifndef IROHA_STUB_VALIDATOR_HPP
+#define IROHA_STUB_VALIDATOR_HPP
 
-using iroha::ametsuchi::AmetsuchiStub;
-using iroha::ametsuchi::CommandExecutorStub;
-using namespace iroha::dao;
+#include <validation/stateful/validator.hpp>
+#include <validation/stateful/command_validator.hpp>
 
-TEST(CommandExecutorTest, SampleTest) {
-  AmetsuchiStub ametsuchi;
-  CommandExecutorStub executor(ametsuchi);
+namespace iroha {
+  namespace validation {
+    class ValidatorStub : public StatefulValidator {
+     public:
+      ValidatorStub() {
+      }
 
-  ASSERT_TRUE(executor.execute(AddPeer{}));
-  ASSERT_FALSE(executor.execute(Command{}));
-}
+      dao::Proposal validate(const dao::Proposal &proposal,
+                             ametsuchi::TemporaryWsv &wsv);
+    };
+  } // namespace validation
+} // namespace iroha
+#endif //IROHA_STUB_VALIDATOR_HPP

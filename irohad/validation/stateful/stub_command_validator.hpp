@@ -15,35 +15,31 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_QUERY_PROCESSOR_HPP
-#define IROHA_QUERY_PROCESSOR_HPP
+#ifndef IROHA_STUB_COMMAND_VALIDATOR_HPP
+#define IROHA_STUB_COMMAND_VALIDATOR_HPP
 
+#include <validation/stateful/command_validator.hpp>
 #include <dao/dao.hpp>
-#include <rxcpp/rx.hpp>
+#include <ametsuchi/temporary_wsv.hpp>
+#include <handler_map/handler_map.hpp>
 
 namespace iroha {
-  namespace torii {
-
-    /**
-     * QueryProcessor provides start point for queries in the whole system
-     */
-    class QueryProcessor {
+  namespace validation {
+    class CommandValidatorStub : public CommandValidator {
      public:
 
-      /**
-       * Register client query
-       * @param client - query emitter
-       * @param query - client intent
-       */
-      virtual void handle(dao::Client client, dao::Query &query) = 0;
+      CommandValidatorStub(ametsuchi::TemporaryWsv &wsv);
 
-      /**
-       * Subscribe for query responses
-       * @return observable with query responses
-       */
-      virtual rxcpp::observable<std::shared_ptr<dao::QueryResponse>> notifier() = 0;
+      bool validate(const dao::Command &command);
+
+      bool validateAddPeer(const dao::AddPeer &addPeer);
+
+     private:
+      ametsuchi::TemporaryWsv &wsv;
+      HandlerMap<dao::Command, bool> handler;
+
     };
-  } //namespace torii
-} //namespace iroha
+  } // namespace validation
+} // namespace iroha
 
-#endif //IROHA_QUERY_PROCESSOR_HPP
+#endif //IROHA_STUB_COMMAND_VALIDATOR_HPP

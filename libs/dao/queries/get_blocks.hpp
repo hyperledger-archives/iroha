@@ -14,36 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_DAO_GET_BLOCKS_HPP
+#define IROHA_DAO_GET_BLOCKS_HPP
 
-#ifndef IROHA_QUERY_PROCESSOR_HPP
-#define IROHA_QUERY_PROCESSOR_HPP
-
-#include <dao/dao.hpp>
-#include <rxcpp/rx.hpp>
+#include <dao/query.hpp>
 
 namespace iroha {
-  namespace torii {
+  namespace dao {
 
     /**
-     * QueryProcessor provides start point for queries in the whole system
+     * Provide user's intent for adding peer to current network
      */
-    class QueryProcessor {
-     public:
+    struct GetBlocks : public Query {
 
       /**
-       * Register client query
-       * @param client - query emitter
-       * @param query - client intent
+       * Id from which fetch the blocks
        */
-      virtual void handle(dao::Client client, dao::Query &query) = 0;
-
+      uint32_t from;
       /**
-       * Subscribe for query responses
-       * @return observable with query responses
+       * Id to which fetch the blocks
        */
-      virtual rxcpp::observable<std::shared_ptr<dao::QueryResponse>> notifier() = 0;
+      uint32_t to;
     };
-  } //namespace torii
-} //namespace iroha
+  }  // namespace dao
+}  // namespace iroha
 
-#endif //IROHA_QUERY_PROCESSOR_HPP
+#endif  // IROHA_GET_PEER_HPP

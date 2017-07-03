@@ -15,35 +15,21 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_QUERY_PROCESSOR_HPP
-#define IROHA_QUERY_PROCESSOR_HPP
+#ifndef IROHA_TRANSACTION_VALIDATOR_HPP
+#define IROHA_TRANSACTION_VALIDATOR_HPP
 
-#include <dao/dao.hpp>
-#include <rxcpp/rx.hpp>
+#include <dao/transaction.hpp>
 
 namespace iroha {
-  namespace torii {
-
+  namespace validation {
     /**
-     * QueryProcessor provides start point for queries in the whole system
+     * Interface for performing validation of a transaction
      */
-    class QueryProcessor {
+    class TransactionValidator {
      public:
-
-      /**
-       * Register client query
-       * @param client - query emitter
-       * @param query - client intent
-       */
-      virtual void handle(dao::Client client, dao::Query &query) = 0;
-
-      /**
-       * Subscribe for query responses
-       * @return observable with query responses
-       */
-      virtual rxcpp::observable<std::shared_ptr<dao::QueryResponse>> notifier() = 0;
+      virtual bool validate(const dao::Transaction &transaction) const = 0;
     };
-  } //namespace torii
-} //namespace iroha
+  }  // namespace validation
+}  // namespace iroha
 
-#endif //IROHA_QUERY_PROCESSOR_HPP
+#endif  // IROHA_TRANSACTION_VALIDATOR_HPP
