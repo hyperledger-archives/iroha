@@ -5,7 +5,6 @@ ADD_LIBRARY(stateful_validator STATIC
 
 target_link_libraries(stateful_validator
     schema
-    ametsuchi
     rxcpp
     optional
     )
