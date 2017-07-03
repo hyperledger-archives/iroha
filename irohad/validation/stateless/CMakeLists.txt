@@ -4,9 +4,9 @@ add_library(stateless_validator
     )
 
 target_link_libraries(stateless_validator
-        schema
-        optional
-        ed25519
-        rxcpp
-        dao
-        )
+    schema
+    optional
+    ed25519
+    rxcpp
+    dao
+    )

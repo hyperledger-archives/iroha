@@ -27,7 +27,7 @@ namespace iroha {
      */
     struct Peer {
       /**
-       * Address of peer for connection
+       * IP address of peer for connection
        */
       std::string address;
 
@@ -36,10 +36,17 @@ namespace iroha {
        */
       iroha::ed25519::pubkey_t pubkey;
 
-      /*
-       * Peer account
+      enum PeerRole {
+        VALIDATOR,
+        VIEWER
+      };
+
+      /**
+       * Peer role in consensus
        */
-      Account account;
+      PeerRole peer_role;
+
+
     };
   }
 }
