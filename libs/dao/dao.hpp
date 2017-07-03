@@ -25,10 +25,8 @@
 #include "account.hpp"
 #include "wallet.hpp"
 #include "peer.hpp"
-#include "signature.hpp"
 #include "domain.hpp"
 #include "client.hpp"
-#include "query_response.hpp"
 #include "peer.hpp"
 #include "signature.hpp"
 #include "dao_crypto_provider.hpp"
@@ -40,6 +38,15 @@
 
 // query
 #include "query.hpp"
+#include "query_response.hpp"
+
+// blocks
+#include <dao/queries/get_blocks.hpp>
+#include <dao/queries/responses/blocks_response.hpp>
+
+// answer error
+#include <dao/queries/responses/error_response.hpp>
+
 
 /**
  * DAO - Data Access Object.
