@@ -23,3 +23,11 @@ target_link_libraries(ordering
   consensus_service
   ordering_connection
 )
+
+add_library(ordering_service
+    ordering_service_stub.cpp
+    )
+
+target_link_libraries(ordering_service
+    rxcpp
+    )
