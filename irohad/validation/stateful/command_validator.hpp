@@ -15,18 +15,28 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-#include <ametsuchi/command_executor_stub.hpp>
-#include <ametsuchi/ametsuchi_stub.hpp>
+#ifndef IROHA_COMMAND_VALIDATOR_HPP
+#define IROHA_COMMAND_VALIDATOR_HPP
 
-using iroha::ametsuchi::AmetsuchiStub;
-using iroha::ametsuchi::CommandExecutorStub;
-using namespace iroha::dao;
+#include <dao/dao.hpp>
 
-TEST(CommandExecutorTest, SampleTest) {
-  AmetsuchiStub ametsuchi;
-  CommandExecutorStub executor(ametsuchi);
+namespace iroha {
+  namespace validation {
 
-  ASSERT_TRUE(executor.execute(AddPeer{}));
-  ASSERT_FALSE(executor.execute(Command{}));
-}
+    /**
+     * Interface for checking invariant after performing command
+     */
+    class CommandValidator {
+     public:
+
+      /**
+       * Method provides validation of wsv after command is applied
+       * @param command to be applied
+       * @return true if invariant correct, otherwise false
+       */
+      virtual bool validate(const dao::Command &command) = 0;
+    };
+  } // namespace validation
+} // namespace iroha
+
+#endif //IROHA_COMMAND_VALIDATOR_HPP

@@ -37,10 +37,9 @@ namespace iroha {
        * all changes after removing wsv will be ignored
        * @return proposal with valid transactions
        */
-      virtual iroha::dao::Proposal validate(
-          const iroha::dao::Proposal &proposal,
-          iroha::ametsuchi::TemporaryWsv& wsv) = 0;
+      virtual dao::Proposal validate(const dao::Proposal &proposal,
+                                     ametsuchi::TemporaryWsv &wsv) = 0;
     };
-  }
-}
+  } // namespace validation
+} // namespace iroha
 #endif  // IROHA_VALIDATION_STATELESS_VALIDATOR_HPP

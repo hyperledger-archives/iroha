@@ -25,11 +25,10 @@
 #include "account.hpp"
 #include "wallet.hpp"
 #include "peer.hpp"
-#include "singature.hpp"
 #include "domain.hpp"
 #include "client.hpp"
 #include "peer.hpp"
-#include "singature.hpp"
+#include "signature.hpp"
 #include "dao_crypto_provider.hpp"
 #include "dao_hash_provider.hpp"
 

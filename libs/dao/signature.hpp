@@ -13,4 +13,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "validator.hpp"
+
+#ifndef IROHA_SINGATURE_HPP
+#define IROHA_SINGATURE_HPP
+
+#include <common/types.hpp>
+
+namespace iroha {
+  namespace dao {
+
+    /**
+     * Signature is a DAO structure to store crypto information
+     */
+    struct Signature {
+      ed25519::sig_t signature;
+      ed25519::pubkey_t pubkey;
+    };
+  }
+}
+
+#endif  // IROHA_SINGATURE_HPP

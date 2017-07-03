@@ -15,18 +15,21 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-#include <ametsuchi/command_executor_stub.hpp>
-#include <ametsuchi/ametsuchi_stub.hpp>
+#ifndef IROHA_TRANSACTION_VALIDATOR_HPP
+#define IROHA_TRANSACTION_VALIDATOR_HPP
 
-using iroha::ametsuchi::AmetsuchiStub;
-using iroha::ametsuchi::CommandExecutorStub;
-using namespace iroha::dao;
+#include <dao/transaction.hpp>
 
-TEST(CommandExecutorTest, SampleTest) {
-  AmetsuchiStub ametsuchi;
-  CommandExecutorStub executor(ametsuchi);
+namespace iroha {
+  namespace validation {
+    /**
+     * Interface for performing validation of a transaction
+     */
+    class TransactionValidator {
+     public:
+      virtual bool validate(const dao::Transaction &transaction) const = 0;
+    };
+  }  // namespace validation
+}  // namespace iroha
 
-  ASSERT_TRUE(executor.execute(AddPeer{}));
-  ASSERT_FALSE(executor.execute(Command{}));
-}
+#endif  // IROHA_TRANSACTION_VALIDATOR_HPP

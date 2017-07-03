@@ -15,18 +15,15 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-#include <ametsuchi/command_executor_stub.hpp>
-#include <ametsuchi/ametsuchi_stub.hpp>
+#include <dao/dao.hpp>
+#include <validation/chain/block_validator_stub.hpp>
 
-using iroha::ametsuchi::AmetsuchiStub;
-using iroha::ametsuchi::CommandExecutorStub;
-using namespace iroha::dao;
+namespace iroha {
+  namespace validation {
 
-TEST(CommandExecutorTest, SampleTest) {
-  AmetsuchiStub ametsuchi;
-  CommandExecutorStub executor(ametsuchi);
+    bool BlockValidatorStub::validate(const dao::Block &block) { return false; }
 
-  ASSERT_TRUE(executor.execute(AddPeer{}));
-  ASSERT_FALSE(executor.execute(Command{}));
-}
+    BlockValidatorStub::BlockValidatorStub(ametsuchi::MutableStorage &storage)
+        : storage_(storage) {}
+  }  // namespace validation
+}  // namespace iroha

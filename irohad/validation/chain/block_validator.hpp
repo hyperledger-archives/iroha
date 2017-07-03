@@ -15,18 +15,16 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-#include <ametsuchi/command_executor_stub.hpp>
-#include <ametsuchi/ametsuchi_stub.hpp>
+#ifndef IROHA_CHAIN_BLOCK_VALIDATOR_HPP
+#define IROHA_CHAIN_BLOCK_VALIDATOR_HPP
 
-using iroha::ametsuchi::AmetsuchiStub;
-using iroha::ametsuchi::CommandExecutorStub;
-using namespace iroha::dao;
+namespace iroha {
+  namespace validation {
+    class BlockValidator {
+     public:
+      virtual bool validate(const dao::Block &block) = 0;
+    };
+  }  // namespace validator
+}  // namespace iroha
 
-TEST(CommandExecutorTest, SampleTest) {
-  AmetsuchiStub ametsuchi;
-  CommandExecutorStub executor(ametsuchi);
-
-  ASSERT_TRUE(executor.execute(AddPeer{}));
-  ASSERT_FALSE(executor.execute(Command{}));
-}
+#endif  // IROHA_BLOCK_VALIDATOR_HPP
