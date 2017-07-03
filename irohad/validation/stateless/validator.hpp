@@ -16,13 +16,24 @@ limitations under the License.
 #ifndef IROHA_VALIDATION_STATELESS_VALIDATOR_HPP
 #define IROHA_VALIDATION_STATELESS_VALIDATOR_HPP
 
-#include <block.pb.h>
+#include <dao/transaction.hpp>
 
-namespace validation {
-  namespace stateless {
-    using Transaction = iroha::protocol::Transaction;
-    bool validate(const Transaction &);
-  }  // namespace stateless
-}  // namespace validation
+namespace iroha {
+  namespace validation {
+
+    /**
+     * Interface for performing stateless validation
+     */
+    class StatelessValidator {
+     public:
+      /**
+       * Perform stateless validation on a given transaction
+       * @param transaction transaction to be validated
+       * @return true if given transaction is valid, false otherwise
+       */
+      virtual bool validate(const dao::Transaction &transaction) const = 0;
+    };
+  }  // namespace validation
+}  // namespace iroha
 
 #endif  // IROHA_VALIDATION_STATELESS_VALIDATOR_HPP

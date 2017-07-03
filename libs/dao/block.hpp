@@ -19,7 +19,7 @@ limitations under the License.
 
 #include <common/types.hpp>
 #include <vector>
-#include "singature.hpp"
+#include "signature.hpp"
 #include "transaction.hpp"
 
 namespace iroha {
