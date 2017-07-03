@@ -30,8 +30,8 @@ namespace iroha {
       TransactionProcessorStub(const validation::StatelessValidator &validator,
                                network::PeerCommunicationService &service,
                                dao::DaoCryptoProvider &provider);
-      void handle(dao::Client client, dao::Transaction &transaction) override;
-      rxcpp::observable<dao::TransactionResponse> notifier() override;
+      void transaction_handle(dao::Client client, dao::Transaction &transaction) override;
+      rxcpp::observable<dao::TransactionResponse> transaction_notifier() override;
 
      private:
       const validation::StatelessValidator &validator_;

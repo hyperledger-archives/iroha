@@ -24,7 +24,7 @@ namespace iroha {
     using dao::Proposal;
 
     void OrderingServiceStub::propagate_transaction(
-        dao::Transaction &transaction) {
+        const dao::Transaction &transaction) {
       std::vector<Transaction> transactions{transaction};
       Proposal proposal(transactions);
       proposals_.get_subscriber().on_next(proposal);

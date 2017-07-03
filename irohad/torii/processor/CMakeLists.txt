@@ -1,10 +1,10 @@
-add_library(torii
+add_library(client_processor
     impl/processor.cpp
     impl/stub_query_processor.cpp
     impl/transaction_processor_stub.cpp
     )
 
-target_link_libraries(torii PUBLIC
+target_link_libraries(client_processor PUBLIC
     dao
     rxcpp
     )

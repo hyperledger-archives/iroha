@@ -34,7 +34,7 @@ namespace iroha {
        * Propagate a signed transaction for further processing
        * @param transaction
        */
-      virtual void propagate_transaction(dao::Transaction &transaction) = 0;
+      virtual void propagate_transaction(const dao::Transaction &transaction) = 0;
 
       /**
        * Return observable of all proposals in the consensus
