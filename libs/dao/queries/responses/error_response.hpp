@@ -15,30 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMANDEXECUTOR_HPP
-#define IROHA_COMMANDEXECUTOR_HPP
+#ifndef IROHA_ERROR_RESPONSE_HPP
+#define IROHA_ERROR_RESPONSE_HPP
 
-#include <dao/command.hpp>
+#include <dao/query.hpp>
+#include <string>
 
 namespace iroha {
+  namespace dao {
 
-  namespace ametsuchi {
     /**
-     * Applies command to the world state view
+     * Provide error answer with reason about error
      */
-    class CommandExecutor {
-     public:
+    struct ErrorResponse : public QueryResponse {
+
       /**
-       * Executes a command in a temporary state
-       * @see TemporaryWsv, MutableStorage
-       * @param command Command to execute
-       * @return True if the command is successfully executed, false otherwise
+       * Reason of error
        */
-      virtual bool execute(const dao::Command& command) = 0;
+      std::string reason;
     };
-
-  } // namespace ametsuchi
-
-}// namespace iroha
-
-#endif //IROHA_COMMANDEXECUTOR_HPP
+  }  // namespace dao
+}  // namespace iroha
+#endif //IROHA_ERROR_RESPONSE_HPP

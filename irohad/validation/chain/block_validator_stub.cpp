@@ -15,4 +15,15 @@
  * limitations under the License.
  */
 
-#include <torii/client_processor.hpp>
+#include <dao/dao.hpp>
+#include <validation/chain/block_validator_stub.hpp>
+
+namespace iroha {
+  namespace validation {
+
+    bool BlockValidatorStub::validate(const dao::Block &block) { return false; }
+
+    BlockValidatorStub::BlockValidatorStub(ametsuchi::MutableStorage &storage)
+        : storage_(storage) {}
+  }  // namespace validation
+}  // namespace iroha

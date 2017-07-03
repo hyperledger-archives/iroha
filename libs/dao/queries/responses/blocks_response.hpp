@@ -15,30 +15,26 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMANDEXECUTOR_HPP
-#define IROHA_COMMANDEXECUTOR_HPP
+#ifndef IROHA_GET_BLOCKS_RESPONSE_HPP
+#define IROHA_GET_BLOCKS_RESPONSE_HPP
 
-#include <dao/command.hpp>
+#include <dao/query.hpp>
+#include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
+  namespace dao {
 
-  namespace ametsuchi {
     /**
-     * Applies command to the world state view
+     * Provide answer of user's block request
      */
-    class CommandExecutor {
-     public:
+    struct GetBlocksResponse : public QueryResponse {
+
       /**
-       * Executes a command in a temporary state
-       * @see TemporaryWsv, MutableStorage
-       * @param command Command to execute
-       * @return True if the command is successfully executed, false otherwise
+       * Observable contains all request blocks
        */
-      virtual bool execute(const dao::Command& command) = 0;
+      rxcp::observable<Block> blocks;
+
     };
-
-  } // namespace ametsuchi
-
-}// namespace iroha
-
-#endif //IROHA_COMMANDEXECUTOR_HPP
+  }  // namespace dao
+}  // namespace iroha
+#endif //IROHA_GET_BLOCKS_RESPONSE_HPP

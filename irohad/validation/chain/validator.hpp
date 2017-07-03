@@ -18,32 +18,36 @@
 #ifndef IROHA_CHAIN_VALIDATOR_HPP
 #define IROHA_CHAIN_VALIDATOR_HPP
 
+#include <ametsuchi/mutable_storage.hpp>
 #include <dao/dao.hpp>
 #include <rxcpp/rx-observable.hpp>
-#include <ametsuchi/mutable_storage.hpp>
 
 namespace iroha {
-  namespace network {
+  namespace validation {
 
     /**
      * ChainValidator is interface of chain validation,
      * that require on commit step of consensus
      */
     class ChainValidator {
-
+     public:
       /**
        * Validate method provide chain validation for application it to ledger.
        *
-       * Chain validation assumes that all signatures of new blocks will be valid
-       * and valid related meta information such as previous hash, height and other meta information
-       * @param blocks - observable with all blocks, that should be applied simultaneously
+       * Chain validation assumes that all signatures of new blocks will be
+       * valid
+       * and valid related meta information such as previous hash, height and
+       * other meta information
+       * @param blocks - observable with all blocks, that should be applied
+       * simultaneously
        * @param storage - storage that may be modified during loading
        * @return storage from parameters, with applied blocks
        */
-      virtual ametsuchi::MutableStorage &validate(rxcpp::observable <dao::Block> &blocks,
-                                                  ametsuchi::MutableStorage &storage) = 0;
+      virtual ametsuchi::MutableStorage &validate(
+          rxcpp::observable<dao::Block> &blocks,
+          ametsuchi::MutableStorage &storage) = 0;
     };
-  } // namespace network
-} // namespace iroha
+  }  // namespace validation
+}  // namespace iroha
 
-#endif //IROHA_CHAIN_VALIDATOR_HPP
+#endif  // IROHA_CHAIN_VALIDATOR_HPP

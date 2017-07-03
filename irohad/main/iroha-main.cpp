@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <torii/command_service.hpp>
+#include <torii/query_service.hpp>
 #include <consensus/connection/service.hpp>
 #include <ordering/connection/service.hpp>
 

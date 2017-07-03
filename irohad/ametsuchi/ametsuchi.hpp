@@ -56,7 +56,7 @@ namespace iroha {
        * MutableStorage.
        * @param mutableStorage
        */
-      virtual void commit(std::unique_ptr<MutableStorage>& mutableStorage) = 0;
+      virtual void commit(MutableStorage& mutableStorage) = 0;
     };
 
   }  // namespace ametsuchi

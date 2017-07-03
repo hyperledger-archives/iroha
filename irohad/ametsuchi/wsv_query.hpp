@@ -20,7 +20,6 @@
 
 #include <common/types.hpp>
 #include <dao/dao.hpp>
-#include <rxcpp/rx.hpp>
 #include <string>
 #include <vector>
 
@@ -34,48 +33,56 @@ namespace iroha {
     class WsvQuery {
      public:
       /**
+       * Get peer by it pub key
+       * @param pub_key
+       * @return Peer DAO
+       */
+      virtual iroha::dao::Peer get_peer(
+          iroha::ed25519::pubkey_t pub_key) = 0;
+
+      /**
        * Get account by it's first public key.
        * @param pub_key
        * @return DAO Account
        */
-      virtual iroha::dao::Account get_account(
-          iroha::ed25519::pubkey_t pub_key) = 0;
+      virtual dao::Account get_account(
+          ed25519::pubkey_t pub_key) = 0;
 
       /**
        * Get asset by full name. For example USD#soramitsu.co.jp
        * @param full_name of an asset (name#domain)
        * @return DAO Asset
        */
-      virtual iroha::dao::Asset get_asset(std::string asset_full_name) = 0;
+      virtual dao::Asset get_asset(std::string asset_full_name) = 0;
 
       /**
        * Get domain by domain's full name. For example soramitsu.co.jp
        * @param full_name of a domain
        * @return DAO Domain
        */
-      virtual iroha::dao::Domain get_domain(std::string domain_full_name) = 0;
+      virtual dao::Domain get_domain(std::string domain_full_name) = 0;
 
       /**
        * Get wallet by wallet_id
        * @param wallet_id
        * @return DAO Wallet
        */
-      virtual iroha::dao::Wallet get_wallet(std::string wallet_id) = 0;
+      virtual dao::Wallet get_wallet(std::string wallet_id) = 0;
 
       /**
        * Get all wallets of a account.
        * @param pub_key of a account
        * @return vector of DAO Wallet
        */
-      virtual std::vector<iroha::dao::Wallet> get_account_wallets(
-          iroha::ed25519::pubkey_t pub_key) = 0;
+      virtual std::vector<dao::Wallet> get_account_wallets(
+          ed25519::pubkey_t pub_key) = 0;
 
       /**
        * Get all asset of a domain.
        * @param  full_name of a domain
        * @return vector of DAO Asset
        */
-      virtual std::vector<iroha::dao::Asset> get_domain_assets(
+      virtual std::vector<dao::Asset> get_domain_assets(
           std::string domain_full_name) = 0;
     };
 

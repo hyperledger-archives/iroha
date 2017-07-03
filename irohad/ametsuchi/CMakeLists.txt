@@ -1,19 +1,11 @@
-#add_subdirectory(block_store)
-#add_subdirectory(index)
-#add_subdirectory(wsv)
-
-add_library(storage
-    #    impl/ametsuchi_impl.cpp
-    #    index_mediator.cpp
+add_library(ametsuchi
+    command_executor_stub.cpp
+    temporary_wsv_stub.cpp
+    mutable_storage_stub.cpp
+    ametsuchi_stub.cpp
     )
 
-target_link_libraries(storage PUBLIC
-    schema
-    cpp_redis
-    pqxx
-    optional
-    #    block_store
-    #    index
-    #    wsv
+target_link_libraries(ametsuchi
     rxcpp
+    optional
     )

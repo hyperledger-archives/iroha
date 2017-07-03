@@ -15,30 +15,23 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMANDEXECUTOR_HPP
-#define IROHA_COMMANDEXECUTOR_HPP
+#ifndef IROHA_BLOCK_VALIDATOR_STUB_HPP
+#define IROHA_BLOCK_VALIDATOR_STUB_HPP
 
-#include <dao/command.hpp>
+#include <dao/dao.hpp>
+#include <validation/chain/block_validator.hpp>
+#include <ametsuchi/mutable_storage.hpp>
 
 namespace iroha {
-
-  namespace ametsuchi {
-    /**
-     * Applies command to the world state view
-     */
-    class CommandExecutor {
+  namespace validation {
+    class BlockValidatorStub : public BlockValidator {
      public:
-      /**
-       * Executes a command in a temporary state
-       * @see TemporaryWsv, MutableStorage
-       * @param command Command to execute
-       * @return True if the command is successfully executed, false otherwise
-       */
-      virtual bool execute(const dao::Command& command) = 0;
+      BlockValidatorStub(ametsuchi::MutableStorage &storage);
+      bool validate(const dao::Block &block) override;
+     private:
+      ametsuchi::MutableStorage& storage_;
     };
+  }  // namespace validation
+}  // namespace iroha
 
-  } // namespace ametsuchi
-
-}// namespace iroha
-
-#endif //IROHA_COMMANDEXECUTOR_HPP
+#endif  // IROHA_BLOCK_VALIDATOR_STUB_HPP

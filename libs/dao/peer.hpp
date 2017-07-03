@@ -27,14 +27,14 @@ namespace iroha {
      */
     struct Peer {
       /**
-       * Ip address of peer for connection
+       * IP address of peer for connection
        */
-      const std::string address;
+      std::string address;
 
       /**
        * Public key of peer
        */
-      const iroha::ed25519::pubkey_t pubkey;
+      iroha::ed25519::pubkey_t pubkey;
 
       enum PeerRole {
         VALIDATOR,
@@ -44,7 +44,7 @@ namespace iroha {
       /**
        * Peer role in consensus
        */
-      const PeerRole peer_role;
+      PeerRole peer_role;
 
 
     };

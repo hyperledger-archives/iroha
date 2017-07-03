@@ -15,30 +15,28 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMANDEXECUTOR_HPP
-#define IROHA_COMMANDEXECUTOR_HPP
+#ifndef IROHA_COMMAND_VALIDATOR_HPP
+#define IROHA_COMMAND_VALIDATOR_HPP
 
-#include <dao/command.hpp>
+#include <dao/dao.hpp>
 
 namespace iroha {
+  namespace validation {
 
-  namespace ametsuchi {
     /**
-     * Applies command to the world state view
+     * Interface for checking invariant after performing command
      */
-    class CommandExecutor {
+    class CommandValidator {
      public:
+
       /**
-       * Executes a command in a temporary state
-       * @see TemporaryWsv, MutableStorage
-       * @param command Command to execute
-       * @return True if the command is successfully executed, false otherwise
+       * Method provides validation of wsv after command is applied
+       * @param command to be applied
+       * @return true if invariant correct, otherwise false
        */
-      virtual bool execute(const dao::Command& command) = 0;
+      virtual bool validate(const dao::Command &command) = 0;
     };
+  } // namespace validation
+} // namespace iroha
 
-  } // namespace ametsuchi
-
-}// namespace iroha
-
-#endif //IROHA_COMMANDEXECUTOR_HPP
+#endif //IROHA_COMMAND_VALIDATOR_HPP

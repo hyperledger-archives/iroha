@@ -14,31 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_DAO_GET_BLOCKS_HPP
+#define IROHA_DAO_GET_BLOCKS_HPP
 
-#ifndef IROHA_COMMANDEXECUTOR_HPP
-#define IROHA_COMMANDEXECUTOR_HPP
-
-#include <dao/command.hpp>
+#include <dao/query.hpp>
 
 namespace iroha {
+  namespace dao {
 
-  namespace ametsuchi {
     /**
-     * Applies command to the world state view
+     * Provide user's intent for adding peer to current network
      */
-    class CommandExecutor {
-     public:
+    struct GetBlocks : public Query {
+
       /**
-       * Executes a command in a temporary state
-       * @see TemporaryWsv, MutableStorage
-       * @param command Command to execute
-       * @return True if the command is successfully executed, false otherwise
+       * Id from which fetch the blocks
        */
-      virtual bool execute(const dao::Command& command) = 0;
+      uint32_t from;
+      /**
+       * Id to which fetch the blocks
+       */
+      uint32_t to;
     };
+  }  // namespace dao
+}  // namespace iroha
 
-  } // namespace ametsuchi
-
-}// namespace iroha
-
-#endif //IROHA_COMMANDEXECUTOR_HPP
+#endif  // IROHA_GET_PEER_HPP
