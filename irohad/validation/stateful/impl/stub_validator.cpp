@@ -32,6 +32,7 @@ namespace iroha {
       auto
           checking_transaction =
           [&command_validator](auto &tx, auto &executor, auto &query) {
+            // TODO: Check permissions of tx to execute commands 
             for (auto command : tx.commands) {
               executor.execute(*command);
               if (!command_validator.validate(*command)) {
