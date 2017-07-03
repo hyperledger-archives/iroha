@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ADD_PEER_HPP
-#define IROHA_ADD_PEER_HPP
+#ifndef IROHA_ERROR_RESPONSE_HPP
+#define IROHA_ERROR_RESPONSE_HPP
 
-#include <dao/command.hpp>
-#include <dao/peer.hpp>
+#include <dao/query.hpp>
+#include <string>
 
 namespace iroha {
   namespace dao {
 
     /**
-     * Provide user's intent for adding peer to current network
+     * Provide error answer with reason about error
      */
-    struct AddPeer : public Command {
+    struct ErrorResponse : public QueryResponse {
 
       /**
-       * Peer for adding
+       * Reason of error
        */
-      Peer peer;
+      std::string reason;
     };
-  } // namespace dao
-} // namespace iroha
-#endif //IROHA_ADD_PEER_HPP
+  }  // namespace dao
+}  // namespace iroha
+#endif //IROHA_ERROR_RESPONSE_HPP

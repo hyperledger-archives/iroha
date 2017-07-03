@@ -15,25 +15,26 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ADD_PEER_HPP
-#define IROHA_ADD_PEER_HPP
+#ifndef IROHA_GET_BLOCKS_RESPONSE_HPP
+#define IROHA_GET_BLOCKS_RESPONSE_HPP
 
-#include <dao/command.hpp>
-#include <dao/peer.hpp>
+#include <dao/query.hpp>
+#include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
   namespace dao {
 
     /**
-     * Provide user's intent for adding peer to current network
+     * Provide answer of user's block request
      */
-    struct AddPeer : public Command {
+    struct GetBlocksResponse : public QueryResponse {
 
       /**
-       * Peer for adding
+       * Observable contains all request blocks
        */
-      Peer peer;
+      rxcp::observable<Block> blocks;
+
     };
-  } // namespace dao
-} // namespace iroha
-#endif //IROHA_ADD_PEER_HPP
+  }  // namespace dao
+}  // namespace iroha
+#endif //IROHA_GET_BLOCKS_RESPONSE_HPP
