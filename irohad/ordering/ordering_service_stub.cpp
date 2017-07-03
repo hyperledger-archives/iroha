@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_VALIDATOR_STUB_HPP
-#define IROHA_VALIDATOR_STUB_HPP
-
-#include <validation/chain/validator.hpp>
-#include <validation/chain/block_validator.hpp>
+#include <ordering/ordering_service_stub.hpp>
 
 namespace iroha {
-  namespace validation {
-    class ChainValidatorStub : public ChainValidator {
-     public:
-      ChainValidatorStub(BlockValidator& block_validator);
-      bool validate(rxcpp::observable <dao::Block> &blocks,
-                               ametsuchi::MutableStorage &storage) override;
-     private:
-      BlockValidator &block_validator_;
-    };
-  }// namespace validation
-}//namespace iroha
+  namespace ordering {
 
-#endif //IROHA_VALIDATOR_STUB_HPP
+    using dao::Transaction;
+    using dao::Proposal;
+
+    void OrderingServiceStub::propagate_transaction(
+        dao::Transaction &transaction) {
+      std::vector<Transaction> transactions{transaction};
+      Proposal proposal(transactions);
+      proposals_.get_subscriber().on_next(proposal);
+    }
+
+    rxcpp::observable<dao::Proposal> OrderingServiceStub::on_proposal() {
+      return proposals_.get_observable();
+    }
+  }  // namespace ordering
+}  // namespace iroha

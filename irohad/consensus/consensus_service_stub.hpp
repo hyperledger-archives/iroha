@@ -15,23 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_VALIDATOR_STUB_HPP
-#define IROHA_VALIDATOR_STUB_HPP
+#ifndef IROHA_CONSENSUS_SERVICE_STUB_HPP
+#define IROHA_CONSENSUS_SERVICE_STUB_HPP
 
+#include <ametsuchi/ametsuchi.hpp>
+#include <consensus/consensus_service.hpp>
 #include <validation/chain/validator.hpp>
-#include <validation/chain/block_validator.hpp>
+#include <validation/stateful/validator.hpp>
 
 namespace iroha {
-  namespace validation {
-    class ChainValidatorStub : public ChainValidator {
+  namespace consensus {
+    class ConsensusServiceStub : public ConsensusService {
      public:
-      ChainValidatorStub(BlockValidator& block_validator);
-      bool validate(rxcpp::observable <dao::Block> &blocks,
-                               ametsuchi::MutableStorage &storage) override;
-     private:
-      BlockValidator &block_validator_;
-    };
-  }// namespace validation
-}//namespace iroha
+      void vote_block(dao::Block &block) override;
+      rxcpp::observable<rxcpp::observable<dao::Block>> on_commit() override;
 
-#endif //IROHA_VALIDATOR_STUB_HPP
+     private:
+      rxcpp::subjects::subject<rxcpp::observable<dao::Block>> commits_;
+    };
+  }  // namespace consensus
+}  // namespace iroha
+
+#endif  // IROHA_CONSENSUS_SERVICE_STUB_HPP

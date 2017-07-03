@@ -39,11 +39,11 @@ namespace iroha {
       virtual void transaction_handle(dao::Client client, dao::Transaction transaction) = 0;
 
       /**
-       * Subscribes will be notified with transaction status
+       * Subscribers will be notified with transaction status
        * @return observable for subscribing
        */
       virtual rxcpp::observable<dao::TransactionResponse> transaction_notifier() = 0;
     };
-  } //namespace torii
-} //namespace iroha
-#endif //IROHA_TRANSACTION_PROCESSOR_HPP
+  }  // namespace torii
+}  // namespace iroha
+#endif  // IROHA_TRANSACTION_PROCESSOR_HPP

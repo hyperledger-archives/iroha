@@ -18,20 +18,21 @@
 #ifndef IROHA_VALIDATOR_STUB_HPP
 #define IROHA_VALIDATOR_STUB_HPP
 
-#include <validation/chain/validator.hpp>
-#include <validation/chain/block_validator.hpp>
+#include <validation/stateless/transaction_validator.hpp>
+#include <validation/stateless/validator.hpp>
 
 namespace iroha {
   namespace validation {
-    class ChainValidatorStub : public ChainValidator {
+    class StatelessValidatorStub : public StatelessValidator {
      public:
-      ChainValidatorStub(BlockValidator& block_validator);
-      bool validate(rxcpp::observable <dao::Block> &blocks,
-                               ametsuchi::MutableStorage &storage) override;
-     private:
-      BlockValidator &block_validator_;
-    };
-  }// namespace validation
-}//namespace iroha
+      StatelessValidatorStub(const TransactionValidator &validator);
+      bool validate(const dao::Transaction &transaction) const override;
 
-#endif //IROHA_VALIDATOR_STUB_HPP
+     private:
+      const TransactionValidator &validator_;
+    };
+
+  }  // namespace validation
+}  // namespace iroha
+
+#endif  // IROHA_VALIDATOR_STUB_HPP

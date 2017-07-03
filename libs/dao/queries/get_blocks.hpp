@@ -14,24 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_DAO_GET_BLOCKS_HPP
+#define IROHA_DAO_GET_BLOCKS_HPP
 
-#ifndef IROHA_VALIDATOR_STUB_HPP
-#define IROHA_VALIDATOR_STUB_HPP
-
-#include <validation/chain/validator.hpp>
-#include <validation/chain/block_validator.hpp>
+#include <dao/query.hpp>
 
 namespace iroha {
-  namespace validation {
-    class ChainValidatorStub : public ChainValidator {
-     public:
-      ChainValidatorStub(BlockValidator& block_validator);
-      bool validate(rxcpp::observable <dao::Block> &blocks,
-                               ametsuchi::MutableStorage &storage) override;
-     private:
-      BlockValidator &block_validator_;
-    };
-  }// namespace validation
-}//namespace iroha
+  namespace dao {
 
-#endif //IROHA_VALIDATOR_STUB_HPP
+    /**
+     * Provide user's intent for adding peer to current network
+     */
+    struct GetBlocks : public Query {
+
+      /**
+       * Id from which fetch the blocks
+       */
+      uint32_t from;
+      /**
+       * Id to which fetch the blocks
+       */
+      uint32_t to;
+    };
+  }  // namespace dao
+}  // namespace iroha
+
+#endif  // IROHA_GET_PEER_HPP

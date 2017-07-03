@@ -15,23 +15,26 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_VALIDATOR_STUB_HPP
-#define IROHA_VALIDATOR_STUB_HPP
+#ifndef IROHA_GET_BLOCKS_RESPONSE_HPP
+#define IROHA_GET_BLOCKS_RESPONSE_HPP
 
-#include <validation/chain/validator.hpp>
-#include <validation/chain/block_validator.hpp>
+#include <dao/query.hpp>
+#include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
-  namespace validation {
-    class ChainValidatorStub : public ChainValidator {
-     public:
-      ChainValidatorStub(BlockValidator& block_validator);
-      bool validate(rxcpp::observable <dao::Block> &blocks,
-                               ametsuchi::MutableStorage &storage) override;
-     private:
-      BlockValidator &block_validator_;
-    };
-  }// namespace validation
-}//namespace iroha
+  namespace dao {
 
-#endif //IROHA_VALIDATOR_STUB_HPP
+    /**
+     * Provide answer of user's block request
+     */
+    struct GetBlocksResponse : public QueryResponse {
+
+      /**
+       * Observable contains all request blocks
+       */
+      rxcpp::observable<Block> blocks;
+
+    };
+  }  // namespace dao
+}  // namespace iroha
+#endif //IROHA_GET_BLOCKS_RESPONSE_HPP

@@ -15,25 +15,34 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ADD_PEER_HPP
-#define IROHA_ADD_PEER_HPP
+#ifndef IROHA_ORDERING_SERVICE_HPP
+#define IROHA_ORDERING_SERVICE_HPP
 
-#include <dao/command.hpp>
-#include <dao/peer.hpp>
+#include <dao/transaction.hpp>
+#include <dao/proposal.hpp>
+#include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
-  namespace dao {
-
+  namespace ordering {
     /**
-     * Provide user's intent for adding peer to current network
+     * Ordering service interface for peer communication service
      */
-    struct AddPeer : public Command {
+    class OrderingService {
+     public:
 
       /**
-       * Peer for adding
+       * Propagate a signed transaction for further processing
+       * @param transaction
        */
-      Peer peer;
+      virtual void propagate_transaction(dao::Transaction &transaction) = 0;
+
+      /**
+       * Return observable of all proposals in the consensus
+       * @return
+       */
+      virtual rxcpp::observable<dao::Proposal> on_proposal() = 0;
     };
-  } // namespace dao
-} // namespace iroha
-#endif //IROHA_ADD_PEER_HPP
+  }//namespace ordering
+}// namespace iroha
+
+#endif //IROHA_ORDERING_SERVICE_HPP

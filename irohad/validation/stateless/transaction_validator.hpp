@@ -15,23 +15,21 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_VALIDATOR_STUB_HPP
-#define IROHA_VALIDATOR_STUB_HPP
+#ifndef IROHA_TRANSACTION_VALIDATOR_HPP
+#define IROHA_TRANSACTION_VALIDATOR_HPP
 
-#include <validation/chain/validator.hpp>
-#include <validation/chain/block_validator.hpp>
+#include <dao/transaction.hpp>
 
 namespace iroha {
   namespace validation {
-    class ChainValidatorStub : public ChainValidator {
+    /**
+     * Interface for performing validation of a transaction
+     */
+    class TransactionValidator {
      public:
-      ChainValidatorStub(BlockValidator& block_validator);
-      bool validate(rxcpp::observable <dao::Block> &blocks,
-                               ametsuchi::MutableStorage &storage) override;
-     private:
-      BlockValidator &block_validator_;
+      virtual bool validate(const dao::Transaction &transaction) const = 0;
     };
-  }// namespace validation
-}//namespace iroha
+  }  // namespace validation
+}  // namespace iroha
 
-#endif //IROHA_VALIDATOR_STUB_HPP
+#endif  // IROHA_TRANSACTION_VALIDATOR_HPP

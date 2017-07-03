@@ -15,23 +15,31 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_VALIDATOR_STUB_HPP
-#define IROHA_VALIDATOR_STUB_HPP
+#ifndef IROHA_STUB_COMMAND_VALIDATOR_HPP
+#define IROHA_STUB_COMMAND_VALIDATOR_HPP
 
-#include <validation/chain/validator.hpp>
-#include <validation/chain/block_validator.hpp>
+#include <validation/stateful/command_validator.hpp>
+#include <dao/dao.hpp>
+#include <ametsuchi/temporary_wsv.hpp>
+#include <handler_map/handler_map.hpp>
 
 namespace iroha {
   namespace validation {
-    class ChainValidatorStub : public ChainValidator {
+    class CommandValidatorStub : public CommandValidator {
      public:
-      ChainValidatorStub(BlockValidator& block_validator);
-      bool validate(rxcpp::observable <dao::Block> &blocks,
-                               ametsuchi::MutableStorage &storage) override;
-     private:
-      BlockValidator &block_validator_;
-    };
-  }// namespace validation
-}//namespace iroha
 
-#endif //IROHA_VALIDATOR_STUB_HPP
+      CommandValidatorStub(ametsuchi::TemporaryWsv &wsv);
+
+      bool validate(const dao::Command &command);
+
+      bool validateAddPeer(const dao::AddPeer &addPeer);
+
+     private:
+      ametsuchi::TemporaryWsv &wsv;
+      HandlerMap<dao::Command, bool> handler;
+
+    };
+  } // namespace validation
+} // namespace iroha
+
+#endif //IROHA_STUB_COMMAND_VALIDATOR_HPP

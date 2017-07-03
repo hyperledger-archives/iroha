@@ -15,23 +15,28 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_VALIDATOR_STUB_HPP
-#define IROHA_VALIDATOR_STUB_HPP
+#ifndef IROHA_COMMAND_VALIDATOR_HPP
+#define IROHA_COMMAND_VALIDATOR_HPP
 
-#include <validation/chain/validator.hpp>
-#include <validation/chain/block_validator.hpp>
+#include <dao/dao.hpp>
 
 namespace iroha {
   namespace validation {
-    class ChainValidatorStub : public ChainValidator {
-     public:
-      ChainValidatorStub(BlockValidator& block_validator);
-      bool validate(rxcpp::observable <dao::Block> &blocks,
-                               ametsuchi::MutableStorage &storage) override;
-     private:
-      BlockValidator &block_validator_;
-    };
-  }// namespace validation
-}//namespace iroha
 
-#endif //IROHA_VALIDATOR_STUB_HPP
+    /**
+     * Interface for checking invariant after performing command
+     */
+    class CommandValidator {
+     public:
+
+      /**
+       * Method provides validation of wsv after command is applied
+       * @param command to be applied
+       * @return true if invariant correct, otherwise false
+       */
+      virtual bool validate(const dao::Command &command) = 0;
+    };
+  } // namespace validation
+} // namespace iroha
+
+#endif //IROHA_COMMAND_VALIDATOR_HPP
