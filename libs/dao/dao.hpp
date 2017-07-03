@@ -28,7 +28,6 @@
 #include "domain.hpp"
 #include "client.hpp"
 #include "peer.hpp"
-#include "signature.hpp"
 #include "dao_crypto_provider.hpp"
 #include "dao_hash_provider.hpp"
 

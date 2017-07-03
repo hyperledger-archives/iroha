@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_BLOCK_VALIDATOR_STUB_HPP
-#define IROHA_BLOCK_VALIDATOR_STUB_HPP
+#ifndef IROHA_DAO_CRYPTO_PROVIDER_STUB_HPP
+#define IROHA_DAO_CRYPTO_PROVIDER_STUB_HPP
 
-#include <dao/dao.hpp>
-#include <validation/chain/block_validator.hpp>
-#include <ametsuchi/mutable_storage.hpp>
+#include "dao_crypto_provider.hpp"
+#include "transaction.hpp"
 
 namespace iroha {
-  namespace validation {
-    class BlockValidatorStub : public BlockValidator {
-     public:
-      BlockValidatorStub(ametsuchi::MutableStorage &storage);
-      bool validate(const dao::Block &block) const override;
-     private:
-      ametsuchi::MutableStorage& storage_;
-    };
-  }  // namespace validation
-}  // namespace iroha
+  namespace dao {
 
-#endif  // IROHA_BLOCK_VALIDATOR_STUB_HPP
+    class DaoCryptoProviderStub : public DaoCryptoProvider {
+     public:
+
+      bool verify(const Transaction &tx) override;
+
+      Transaction &sign(Transaction &tx) override;
+    };
+  }
+}
+
+#endif  // IROHA_DAO_CRYPTO_PROVIDER_STUB_HPP

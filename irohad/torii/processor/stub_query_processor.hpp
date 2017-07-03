@@ -37,19 +37,19 @@ namespace iroha {
        * @param client - query emitter
        * @param query - client intent
        */
-      virtual void handle(dao::Client client, dao::Query &query);
+      void query_handle(dao::Client client, const dao::Query &query) override;
 
       /**
        * Subscribe for query responses
        * @return observable with query responses
        */
-      virtual rxcpp::observable<std::shared_ptr<dao::QueryResponse>> notifier();
+      rxcpp::observable<std::shared_ptr<dao::QueryResponse>> query_notifier() override;
 
      private:
       HandlerMap<dao::Query, void> handler_;
       rxcpp::subjects::subject<std::shared_ptr<dao::QueryResponse>> subject_;
 
-      void handle_get_blocks(dao::GetBlocks blocks);
+      void handle_get_blocks(const dao::GetBlocks &blocks);
 
     };
   } //namespace torii

@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 #include <torii/processor/stub_query_processor.hpp>
 
 namespace iroha {
@@ -27,27 +26,30 @@ namespace iroha {
     using dao::Client;
 
     QueryProcessorStub::QueryProcessorStub() {
-      handler_.insert<dao::GetBlocks>(std::bind(&QueryProcessorStub::handle_get_blocks,
-                                                this,
-                                                std::placeholders::_1));
+      handler_.insert<dao::GetBlocks>([this](const auto &query) {
+        return this->handle_get_blocks(query);
+      });
     }
 
-    void QueryProcessorStub::handle(Client client, Query &query) {
+    void QueryProcessorStub::query_handle(dao::Client client,
+                                          const dao::Query &query) {
       auto handle = handler_.find(query).value_or([](auto &) {
-        // TODO make error handler
+        std::cout << "[Q] Handler not found" << std::endl;
         return;
       });
       handle(query);
       return;
     }
 
-    rxcpp::observable<shared_ptr<QueryResponse>> QueryProcessorStub::notifier() {
-      return subject_.get_observable().publish();
+    rxcpp::observable<shared_ptr<QueryResponse>>
+    QueryProcessorStub::query_notifier() {
+      return subject_.get_observable();
     }
 
-    void QueryProcessorStub::handle_get_blocks(dao::GetBlocks blocks) {
-      // TODO implement handle blocks
+    void QueryProcessorStub::handle_get_blocks(const dao::GetBlocks &blocks) {
+      subject_.get_subscriber().on_next(
+          std::make_shared<dao::GetBlocksResponse>());
     }
 
-  } //namespace torii
-} //namespace iroha
+  }  // namespace torii
+}  // namespace iroha

@@ -30,6 +30,7 @@ namespace iroha {
      */
     class TransactionProcessor {
      public:
+
       /**
        * Add transaction to the system for processing
        * @param client - transaction owner

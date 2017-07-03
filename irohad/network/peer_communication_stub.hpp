@@ -44,6 +44,8 @@ namespace iroha {
 
       void propagate_transaction(const dao::Transaction &tx) override;
 
+      void subscribe_on_proposal();
+
      private:
       ametsuchi::Ametsuchi &storage_;
       validation::StatefulValidator &stateful_validator_;

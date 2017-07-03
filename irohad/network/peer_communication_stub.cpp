@@ -30,6 +30,7 @@ namespace iroha {
     rxcpp::observable<rxcpp::observable<dao::Block>>
     PeerCommunicationServiceStub::on_commit() {
       return consensus_.on_commit().take_while([this](auto commit) {
+        std::cout << "[PCS] chain validation" << std::endl;
         auto storage = storage_.createMutableStorage();
         auto result = chain_validator_.validate(commit, *storage);
         if (result) {
@@ -46,16 +47,7 @@ namespace iroha {
 
     rxcpp::observable<dao::Proposal>
     PeerCommunicationServiceStub::on_proposal() {
-      return orderer_.on_proposal().tap([this](dao::Proposal &proposal) {
-        auto wsv = storage_.createTemporaryWsv();
-        auto validated_proposal = stateful_validator_.validate(proposal, *wsv);
-        Block block;
-        std::for_each(validated_proposal.transactions.begin(), validated_proposal.transactions.end(), [&block](const auto &transaction) {
-          block.transactions.push_back(transaction);
-        });
-        // TODO hash and sign
-        consensus_.vote_block(block);
-      });
+      return orderer_.on_proposal();
     }
 
     PeerCommunicationServiceStub::PeerCommunicationServiceStub(
@@ -67,6 +59,23 @@ namespace iroha {
           chain_validator_(chain_validator),
           orderer_(orderer),
           consensus_(consensus),
-          crypto_provider_(crypto_provider) {}
+          crypto_provider_(crypto_provider) {
+    }
+
+    void PeerCommunicationServiceStub::subscribe_on_proposal() {
+      on_proposal().subscribe([this](auto proposal) {
+        std::cout << "[PCS] stateful validation" << std::endl;
+        auto wsv = storage_.createTemporaryWsv();
+        auto validated_proposal = stateful_validator_.validate(proposal, *wsv);
+        Block block;
+        std::for_each(validated_proposal.transactions.begin(),
+                      validated_proposal.transactions.end(),
+                      [&block](const auto &transaction) {
+                        block.transactions.push_back(transaction);
+                      });
+        // TODO hash and sign
+        consensus_.vote_block(block);
+      });
+    }
   }
 }

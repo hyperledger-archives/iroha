@@ -24,7 +24,7 @@ namespace iroha {
      * Concrete queries should extend this interface.
      */
     struct Query {
-
+      virtual ~Query(){}
     };
   } //namespace dao
 } //namespace iroha
