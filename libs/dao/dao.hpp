@@ -28,7 +28,6 @@
 #include "singature.hpp"
 #include "domain.hpp"
 #include "client.hpp"
-
 #include "query_response.hpp"
 #include "peer.hpp"
 #include "singature.hpp"
