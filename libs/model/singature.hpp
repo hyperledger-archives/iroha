@@ -14,29 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef IROHA_PROPOSAL_HPP
-#define IROHA_PROPOSAL_HPP
+#ifndef IROHA_SINGATURE_HPP
+#define IROHA_SINGATURE_HPP
 
-#include <vector>
-#include "transaction.hpp"
+#include <common/types.hpp>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Proposal is a DAO-structure that provide bunch of transactions emitted by
-     * ordering service.
-     * Proposal has no signatures and other meta information.
+     * Signature is a Model structure to store crypto information
      */
-    struct Proposal {
-      explicit Proposal(std::vector<Transaction> txs) : transactions(txs) {}
-
-      /**
-       * Bunch of transactions provided by ordering service.
-       */
-      const std::vector<Transaction> transactions;
+    struct Signature {
+      iroha::ed25519::sig_t signature;
+      iroha::ed25519::pubkey_t pubkey;
     };
   }
 }
 
-#endif  // IROHA_PROPOSAL_HPP
+#endif  // IROHA_SINGATURE_HPP

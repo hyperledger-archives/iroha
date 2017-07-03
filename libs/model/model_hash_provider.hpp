@@ -14,40 +14,40 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef IROHA_DAO_HASH_PROVIDER_HPP
-#define IROHA_DAO_HASH_PROVIDER_HPP
+#ifndef IROHA_MODEL_HASH_PROVIDER_HPP
+#define IROHA_MODEL_HASH_PROVIDER_HPP
 
 #include <common/types.hpp>
-#include "dao.hpp"
+#include "model.hpp"
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Hash provider is an abstract factory for computing hashes on DAO objects.
+     * Hash provider is an abstract factory for computing hashes on Model objects.
      * @tparam T - length of hash
      */
     template <size_t N>
     class HashProvider {
      public:
       /**
-       * Abstract method for computing hash on DAO: Proposal
+       * Abstract method for computing hash on Model: Proposal
        * @param proposal - source object for computing hash
        */
       virtual blob_t<N> get_hash(const Proposal &proposal) = 0;
 
       /**
-       * Abstract method for computing hash on DAO: Block
+       * Abstract method for computing hash on Model: Block
        * @param block - source object for computing hash
        */
       virtual blob_t<N> get_hash(const Block &block) = 0;
 
       /**
-       * Abstract method for computing hash  on DAO: Transaction
+       * Abstract method for computing hash  on Model: Transaction
        * @param tx - source object for computing hash
        */
       virtual blob_t<N> get_hash(const Transaction &tx) = 0;
     };
   }
 }
-#endif  // IROHA_DAO_HASH_PROVIDER_HPP
+#endif  // IROHA_MODEL_HASH_PROVIDER_HPP

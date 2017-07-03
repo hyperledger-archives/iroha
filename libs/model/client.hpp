@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_QUERY_HPP
-#define IROHA_QUERY_HPP
+#ifndef IROHA_CLIENT_HPP
+#define IROHA_CLIENT_HPP
 namespace iroha {
-  namespace dao {
+  namespace model {
+
     /**
-     * This dao represents user intent for reading ledger.
-     * Concrete queries should extend this interface.
+     * Client is representation of user in system
      */
-    struct Query {
+    struct Client {
 
     };
-  } //namespace dao
-} //namespace iroha
-#endif //IROHA_QUERY_HPP
+  }
+}
+#endif //IROHA_CLIENT_HPP

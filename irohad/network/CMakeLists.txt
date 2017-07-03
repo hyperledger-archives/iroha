@@ -4,6 +4,6 @@ add_library(networking
 
 target_link_libraries(networking PUBLIC
     rxcpp
-    dao
+    model
     ametsuchi
     )

@@ -15,29 +15,30 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_QUERY_RESPONSE_HPP
-#define IROHA_QUERY_RESPONSE_HPP
+#ifndef IROHA_TRANSACTION_RESPONSE_HPP
+#define IROHA_TRANSACTION_RESPONSE_HPP
 
-#include "query.hpp"
+#include "transaction.hpp"
 #include "client.hpp"
 
 namespace iroha {
-  namespace dao {
+  namespace model {
+
     /**
-     * Interface of query response for user
+     * Transaction response is data with status during transaction lifecycle
      */
-    struct QueryResponse {
+    struct TransactionResponse {
 
       /**
-       * Client query
+       * Processed transaction
        */
-      Query query;
+      Transaction transaction;
 
       /**
-       * Client identifier
+       * Transaction emitter
        */
       Client client;
     };
-  } //namespace dao
+  } //namespace model
 } //namespace iroha
-#endif //IROHA_QUERY_RESPONSE_HPP
+#endif //IROHA_TRANSACTION_RESPONSE_HPP

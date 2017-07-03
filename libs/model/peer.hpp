@@ -20,10 +20,10 @@ limitations under the License.
 #include "account.hpp"
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Peer is DAO, which contains information about network participants
+     * Peer is Model, which contains information about network participants
      */
     struct Peer {
       /**

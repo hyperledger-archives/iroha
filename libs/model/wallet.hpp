@@ -13,36 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef IROHA_ACCOUNT_HPP
-#define IROHA_ACCOUNT_HPP
-
-#include "singature.hpp"
+#ifndef IROHA_WALLET_HPP
+#define IROHA_WALLET_HPP
 
 namespace iroha {
-  namespace dao {
-
+  namespace model {
     /**
-     * Account Data Access Object
-     */
-    struct Account {
-      /**
-       * ACTIVE - active account
-       * SUSPENDED - not active account
-       *
-       */
-      enum State { ACTIVE, SUSPENDED };
-
-      /*
-       * Account state
-       */
-      State state;
-
-      /*
-       * Minimum quorum of signatures need for transactions
-       */
-      uint32_t quorum;
+      * Wallet Model
+      */
+    struct Wallet {
+      // TODO: implement
     };
   }
 }
 
-#endif  // IROHA_ACCOUNT_HPP
+#endif  // IROHA_WALLET_HPP

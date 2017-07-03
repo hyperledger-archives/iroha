@@ -16,22 +16,22 @@ limitations under the License.
 
 #include <gtest/gtest.h>
 #include <common/types.hpp>
-#include <dao/dao_hash_provider_impl.hpp>
+#include <model/model_hash_provider_impl.hpp>
 
-iroha::dao::Signature create_signature();
-iroha::dao::Transaction create_transaction();
-iroha::dao::Proposal create_proposal();
-iroha::dao::Block create_block();
+iroha::model::Signature create_signature();
+iroha::model::Transaction create_transaction();
+iroha::model::Proposal create_proposal();
+iroha::model::Block create_block();
 
-iroha::dao::Signature create_signature() {
-  iroha::dao::Signature signature{};
+iroha::model::Signature create_signature() {
+  iroha::model::Signature signature{};
   memset(signature.signature.data(), 0x0, iroha::ed25519::sig_t::size());
   memset(signature.pubkey.data(), 0x0, iroha::ed25519::pubkey_t::size());
   return signature;
 }
 
-iroha::dao::Transaction create_transaction() {
-  iroha::dao::Transaction tx{};
+iroha::model::Transaction create_transaction() {
+  iroha::model::Transaction tx{};
   memset(tx.creator.data(), 0x1, 32);
 
   tx.tx_counter = 0;
@@ -44,17 +44,17 @@ iroha::dao::Transaction create_transaction() {
   return tx;
 }
 
-iroha::dao::Proposal create_proposal() {
-  std::vector<iroha::dao::Transaction> txs;
+iroha::model::Proposal create_proposal() {
+  std::vector<iroha::model::Transaction> txs;
   txs.push_back(create_transaction());
   txs.push_back(create_transaction());
 
-  iroha::dao::Proposal proposal(txs);
+  iroha::model::Proposal proposal(txs);
   return proposal;
 }
 
-iroha::dao::Block create_block() {
-  iroha::dao::Block block{};
+iroha::model::Block create_block() {
+  iroha::model::Block block{};
   memset(block.hash.data(), 0x0, iroha::ed25519::pubkey_t::size());
   block.sigs.push_back(create_signature());
   block.created_ts = 0;
@@ -67,8 +67,8 @@ iroha::dao::Block create_block() {
 }
 
 TEST(DaoHashProviderTest, DaoHashProviderWhenGetHashBlockIsCalled) {
-  using iroha::dao::HashProviderImpl;
-  using iroha::dao::HashProvider;
+  using iroha::model::HashProviderImpl;
+  using iroha::model::HashProvider;
 
   std::unique_ptr<HashProvider<iroha::ed25519::pubkey_t::size()>>
       hash_provider = std::make_unique<HashProviderImpl>();
@@ -79,26 +79,26 @@ TEST(DaoHashProviderTest, DaoHashProviderWhenGetHashBlockIsCalled) {
 }
 
 TEST(DaoHashProviderTest, DaoHashProviderWhenGetHashProposalIsCalled) {
-  using iroha::dao::HashProviderImpl;
-  using iroha::dao::HashProvider;
+  using iroha::model::HashProviderImpl;
+  using iroha::model::HashProvider;
 
   std::unique_ptr<HashProvider<iroha::ed25519::pubkey_t::size()>>
       hash_provider = std::make_unique<HashProviderImpl>();
 
-  iroha::dao::Proposal proposal = create_proposal();
+  iroha::model::Proposal proposal = create_proposal();
 
   auto res = hash_provider->get_hash(proposal);
   std::cout << "proposal hash: " << res.to_hexstring() << std::endl;
 }
 
 TEST(DaoHashProviderTest, DaoHashProviderWhenGetHashTransactionIsCalled) {
-  using iroha::dao::HashProviderImpl;
-  using iroha::dao::HashProvider;
+  using iroha::model::HashProviderImpl;
+  using iroha::model::HashProvider;
 
   std::unique_ptr<HashProvider<iroha::ed25519::pubkey_t::size()>>
       hash_provider = std::make_unique<HashProviderImpl>();
 
-  iroha::dao::Transaction tx = create_transaction();
+  iroha::model::Transaction tx = create_transaction();
   auto res = hash_provider->get_hash(tx);
 
   std::cout << "transaction hash: " << res.to_hexstring() << std::endl;

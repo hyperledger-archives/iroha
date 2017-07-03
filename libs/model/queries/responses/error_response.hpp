@@ -15,30 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_TRANSACTION_RESPONSE_HPP
-#define IROHA_TRANSACTION_RESPONSE_HPP
+#ifndef IROHA_ERROR_RESPONSE_HPP
+#define IROHA_ERROR_RESPONSE_HPP
 
-#include "transaction.hpp"
-#include "client.hpp"
+#include <model/query.hpp>
+#include <string>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Transaction response is data with status during transaction lifecycle
+     * Provide error answer with reason about error
      */
-    struct TransactionResponse {
+    struct ErrorResponse : public QueryResponse {
 
       /**
-       * Processed transaction
+       * Reason of error
        */
-      Transaction transaction;
-
-      /**
-       * Transaction emitter
-       */
-      Client client;
+      std::string reason;
     };
-  } //namespace dao
-} //namespace iroha
-#endif //IROHA_TRANSACTION_RESPONSE_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif //IROHA_ERROR_RESPONSE_HPP

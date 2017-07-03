@@ -13,18 +13,5 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef IROHA_WALLET_HPP
-#define IROHA_WALLET_HPP
 
-namespace iroha {
-  namespace dao {
-    /**
-      * Wallet Data Access Object
-      */
-    struct Wallet {
-      // TODO: implement
-    };
-  }
-}
-
-#endif  // IROHA_WALLET_HPP
+#include "model.hpp"

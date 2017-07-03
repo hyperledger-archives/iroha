@@ -20,10 +20,10 @@ limitations under the License.
 #include <string>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Asset Data Access Object
+     * Asset Data Model
      */
     struct Asset {
       /**

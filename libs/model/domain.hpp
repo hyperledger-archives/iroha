@@ -13,5 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#ifndef IROHA_DOMAIN_HPP
+#define IROHA_DOMAIN_HPP
 
-#include "dao.hpp"
+namespace iroha {
+  namespace model {
+    /**
+     * Domain Model
+     */
+    struct Domain {
+      // TODO: implement
+    };
+  }
+}
+
+#endif  // IROHA_DOMAIN_HPP

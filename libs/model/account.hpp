@@ -13,23 +13,36 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#ifndef IROHA_ACCOUNT_HPP
+#define IROHA_ACCOUNT_HPP
 
-#ifndef IROHA_SINGATURE_HPP
-#define IROHA_SINGATURE_HPP
-
-#include <common/types.hpp>
+#include "singature.hpp"
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Signature is a DAO structure to store crypto information
+     * Account Model
      */
-    struct Signature {
-      iroha::ed25519::sig_t signature;
-      iroha::ed25519::pubkey_t pubkey;
+    struct Account {
+      /**
+       * ACTIVE - active account
+       * SUSPENDED - not active account
+       *
+       */
+      enum State { ACTIVE, SUSPENDED };
+
+      /*
+       * Account state
+       */
+      State state;
+
+      /*
+       * Minimum quorum of signatures need for transactions
+       */
+      uint32_t quorum;
     };
   }
 }
 
-#endif  // IROHA_SINGATURE_HPP
+#endif  // IROHA_ACCOUNT_HPP

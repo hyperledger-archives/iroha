@@ -3,6 +3,6 @@ add_library(torii
     )
 
 target_link_libraries(torii PUBLIC
-    dao
+    model
     rxcpp
     )

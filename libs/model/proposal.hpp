@@ -13,18 +13,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef IROHA_DOMAIN_HPP
-#define IROHA_DOMAIN_HPP
+
+#ifndef IROHA_PROPOSAL_HPP
+#define IROHA_PROPOSAL_HPP
+
+#include <vector>
+#include "transaction.hpp"
 
 namespace iroha {
-  namespace dao {
+  namespace model {
+
     /**
-     * Domain Data Access Object
+     * Proposal is a Model-structure that provide bunch of transactions emitted by
+     * ordering service.
+     * Proposal has no signatures and other meta information.
      */
-    struct Domain {
-      // TODO: implement
+    struct Proposal {
+      explicit Proposal(std::vector<Transaction> txs) : transactions(txs) {}
+
+      /**
+       * Bunch of transactions provided by ordering service.
+       */
+      const std::vector<Transaction> transactions;
     };
   }
 }
 
-#endif  // IROHA_DOMAIN_HPP
+#endif  // IROHA_PROPOSAL_HPP

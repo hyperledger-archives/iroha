@@ -14,20 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_DAO_GET_BLOCKS_HPP
+#define IROHA_DAO_GET_BLOCKS_HPP
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#include <model/query.hpp>
 
 namespace iroha {
-  namespace dao {
-    /**
-      * Abstract Command Data Access Object
-      */
-    struct Command {
-      // TODO: implement
-      virtual ~Command(){}
-    };
-  }
-}
+  namespace model {
 
-#endif  // IROHA_COMMAND_HPP
+    /**
+     * Provide user's intent for adding peer to current network
+     */
+    struct GetBlocks : public Query {
+
+      /**
+       * Id from which fetch the blocks
+       */
+      uint32_t from;
+      /**
+       * Id to which fetch the blocks
+       */
+      uint32_t to;
+    };
+  }  // namespace model
+}  // namespace iroha
+
+#endif  // IROHA_GET_PEER_HPP

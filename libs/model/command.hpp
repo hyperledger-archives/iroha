@@ -15,25 +15,19 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ERROR_RESPONSE_HPP
-#define IROHA_ERROR_RESPONSE_HPP
-
-#include <dao/query.hpp>
-#include <string>
+#ifndef IROHA_COMMAND_HPP
+#define IROHA_COMMAND_HPP
 
 namespace iroha {
-  namespace dao {
-
+  namespace model {
     /**
-     * Provide error answer with reason about error
-     */
-    struct ErrorResponse : public QueryResponse {
-
-      /**
-       * Reason of error
-       */
-      std::string reason;
+      * Abstract Command Model
+      */
+    struct Command {
+      // TODO: implement
+      virtual ~Command(){}
     };
-  }  // namespace dao
-}  // namespace iroha
-#endif //IROHA_ERROR_RESPONSE_HPP
+  }
+}
+
+#endif  // IROHA_COMMAND_HPP

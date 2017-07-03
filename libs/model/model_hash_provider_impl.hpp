@@ -14,18 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef IROHA_DAO_HASH_PROVIDER_IMPL_HPP
-#define IROHA_DAO_HASH_PROVIDER_IMPL_HPP
+#ifndef IROHA_MODEL_HASH_PROVIDER_IMPL_HPP
+#define IROHA_MODEL_HASH_PROVIDER_IMPL_HPP
 
 #include <algorithm>
 #include <common/types.hpp>
 #include <crypto/base64.hpp>
 #include <crypto/crypto.hpp>
 #include <crypto/hash.hpp>
-#include "dao_hash_provider.hpp"
+#include "model_hash_provider.hpp"
 
 namespace iroha {
-  namespace dao {
+  namespace model {
     class HashProviderImpl : public HashProvider<ed25519::pubkey_t::size()> {
      public:
       iroha::hash256_t get_hash(const Proposal &proposal) override {
@@ -102,4 +102,4 @@ namespace iroha {
   }
 }
 
-#endif  // IROHA_DAO_HASH_PROVIDER_IMPL_HPP
+#endif  // IROHA_MODEL_HASH_PROVIDER_IMPL_HPP

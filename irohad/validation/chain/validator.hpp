@@ -19,7 +19,7 @@
 #define IROHA_CHAIN_VALIDATOR_HPP
 
 #include <ametsuchi/mutable_storage.hpp>
-#include <dao/dao.hpp>
+#include <model/model.hpp>
 #include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
@@ -44,7 +44,7 @@ namespace iroha {
        * @return storage from parameters, with applied blocks
        */
       virtual ametsuchi::MutableStorage &validate(
-          rxcpp::observable<dao::Block> &blocks,
+          rxcpp::observable<model::Block> &blocks,
           ametsuchi::MutableStorage &storage) = 0;
     };
   }  // namespace validation

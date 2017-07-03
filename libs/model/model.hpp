@@ -31,19 +31,18 @@
 #include "query_response.hpp"
 #include "peer.hpp"
 #include "singature.hpp"
-#include "dao_crypto_provider.hpp"
-#include "dao_hash_provider.hpp"
+#include "model_crypto_provider.hpp"
+#include "model_hash_provider.hpp"
 
 // commands
 #include "command.hpp"
-#include <dao/commands/add_peer.hpp>
+#include <model/commands/add_peer.hpp>
 
 // query
 #include "query.hpp"
 
 /**
- * DAO - Data Access Object.
- * DAO module provides objects that are useful for all other modules in system.
- * DAO objects do not depend on transport, such as protobuf.
- * DAO objects in general are structures with public immutable fileds.
+ * Model module provides objects that are useful for all other modules in system.
+ * Model objects do not depend on transport, such as protobuf.
+ * Model objects in general are structures with public immutable fileds.
 */

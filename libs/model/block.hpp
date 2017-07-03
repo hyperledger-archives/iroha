@@ -23,10 +23,10 @@ limitations under the License.
 #include "transaction.hpp"
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Block is DAO-structure,  that provides all block-related information
+     * Block is Model-structure,  that provides all block-related information
      * Block can be divided into three abstractions: {Header, Meta, Body}.
      *
      */

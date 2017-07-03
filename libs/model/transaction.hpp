@@ -18,15 +18,15 @@ limitations under the License.
 #define IROHA_TRANSACTION_HPP
 
 #include <common/types.hpp>
-#include <dao/command.hpp>
+#include <model/command.hpp>
 #include <memory>
 #include <vector>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Transaction is a DAO-structure that provides abstraction to bunch of
+     * Transaction is a Model-structure that provides abstraction to bunch of
      * commands with signatures and meta-data.
      * Transaction can be divided to {Header, Meta, Body}.
      */

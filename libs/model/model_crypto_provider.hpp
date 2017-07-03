@@ -14,17 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef IROHA_DAO_CRYPTO_PROVIDER_HPP
-#define IROHA_DAO_CRYPTO_PROVIDER_HPP
+#ifndef IROHA_MODEL_CRYPTO_PROVIDER_HPP
+#define IROHA_MODEL_CRYPTO_PROVIDER_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
      * Crypto provider is an abstract service for making cryptography operations
-     * for business logic objects (DAO).
+     * for business logic objects (Model).
      */
     class DaoCryptoProvider {
      public:
@@ -33,16 +33,16 @@ namespace iroha {
        * @param tx - transaction for verification
        * @return true if transaction signature is valid, otherwise false
        */
-      virtual bool verify(const iroha::dao::Transaction &tx) = 0;
+      virtual bool verify(const iroha::model::Transaction &tx) = 0;
 
       /**
        * Method to sign transaction via own private key.
        * @param tx - transaction without signature
        * @return signed transaction by crypto provider
        */
-      virtual iroha::dao::Transaction sign(
-          const iroha::dao::Transaction &tx) = 0;
+      virtual iroha::model::Transaction sign(
+          const iroha::model::Transaction &tx) = 0;
     };
   }
 }
-#endif  // IROHA_DAO_CRYPTO_PROVIDER_HPP
+#endif  // IROHA_MODEL_CRYPTO_PROVIDER_HPP

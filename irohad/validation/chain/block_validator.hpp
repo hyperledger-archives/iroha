@@ -22,7 +22,7 @@ namespace iroha {
   namespace validation {
     class BlockValidator {
      public:
-      virtual bool validate(const dao::Block &block) = 0;
+      virtual bool validate(const model::Block &block) = 0;
     };
   }  // namespace validator
 }  // namespace iroha

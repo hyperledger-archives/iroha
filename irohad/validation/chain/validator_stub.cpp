@@ -21,7 +21,7 @@ namespace iroha {
   namespace validation {
 
     ametsuchi::MutableStorage& ChainValidatorStub::validate(
-        rxcpp::observable<dao::Block>& blocks,
+        rxcpp::observable<model::Block>& blocks,
         ametsuchi::MutableStorage& storage) {
       auto apply_block = [](const auto& block, auto& executor, auto& query) {
         for (const auto& tx : block.transactions) {
@@ -36,7 +36,7 @@ namespace iroha {
       blocks
           .take_while(std::bind(&BlockValidator::validate, &block_validator_,
                                 std::placeholders::_1))
-          .subscribe([&storage, apply_block](dao::Block block) {
+          .subscribe([&storage, apply_block](model::Block block) {
             storage.apply(block, apply_block);
           });
       return storage;

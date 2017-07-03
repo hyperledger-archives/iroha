@@ -15,25 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ADD_PEER_HPP
-#define IROHA_ADD_PEER_HPP
+#ifndef IROHA_QUERY_RESPONSE_HPP
+#define IROHA_QUERY_RESPONSE_HPP
 
-#include <dao/command.hpp>
-#include <dao/peer.hpp>
+#include "query.hpp"
+#include "client.hpp"
 
 namespace iroha {
-  namespace dao {
-
+  namespace model {
     /**
-     * Provide user's intent for adding peer to current network
+     * Interface of query response for user
      */
-    struct AddPeer : public Command {
+    struct QueryResponse {
 
       /**
-       * Peer for adding
+       * Client query
        */
-      Peer peer;
+      Query query;
+
+      /**
+       * Client identifier
+       */
+      Client client;
     };
-  } // namespace dao
-} // namespace iroha
-#endif //IROHA_ADD_PEER_HPP
+  } //namespace model 
+} //namespace iroha
+#endif //IROHA_QUERY_RESPONSE_HPP

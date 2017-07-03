@@ -20,7 +20,7 @@
 
 #include <network/network_api.h>
 #include <ametsuchi/ametsuchi.hpp>
-#include <dao/dao.hpp>
+#include <model/model.hpp>
 
 namespace main {
 
@@ -34,9 +34,9 @@ namespace main {
 
     network::PeerCommunicationService &peerService;
 
-    dao::DaoCryptoProvider &cryptoProvider;
+    model::DaoCryptoProvider &cryptoProvider;
 
-    dao::HashProvider &hashProvider;
+    model::HashProvider &hashProvider;
 
   };
 } // namespace iroha
