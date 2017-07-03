@@ -67,7 +67,7 @@ namespace iroha {
                   commit_response));
     }
 
-    void TransactionProcessorStub::handle(dao::Client client,
+    void TransactionProcessorStub::transaction_handle(dao::Client client,
                                           dao::Transaction &transaction) {
       if (validator_.validate(transaction)) {
         // TODO accumulate client-tx map
@@ -77,7 +77,7 @@ namespace iroha {
     }
 
     rxcpp::observable<TransactionResponse>
-    TransactionProcessorStub::notifier() {
+    TransactionProcessorStub::transaction_notifier() {
       return notifier_;
     }
   }  // namespace torii

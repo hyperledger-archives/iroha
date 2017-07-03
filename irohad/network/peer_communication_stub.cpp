@@ -40,7 +40,7 @@ namespace iroha {
     }
 
     void PeerCommunicationServiceStub::propagate_transaction(
-        dao::Transaction &tx) {
+        const dao::Transaction &tx) {
       orderer_.propagate_transaction(tx);
     }
 
