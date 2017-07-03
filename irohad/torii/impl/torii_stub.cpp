@@ -28,7 +28,7 @@ namespace iroha {
           });
       processor.transaction_notifier()
           .subscribe([](auto t_response) {
-            std::cout << "[R] response received" << std::endl;
+            std::cout << "[T] response received, msg: " << t_response.msg << std::endl;
           });
     }
 

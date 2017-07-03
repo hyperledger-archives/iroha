@@ -29,13 +29,13 @@ namespace iroha {
         cryptoProvider(*initialize_crypto_provider()),
         hashProvider(*initialize_hash_provider()) {}
 
-  std::unique_ptr<dao::HashProvider<32>> Irohad::initialize_hash_provider() {
-    return std::make_unique<dao::HashProviderImpl>();
+  std::shared_ptr<dao::HashProvider<32>> Irohad::initialize_hash_provider() {
+    return std::make_shared<dao::HashProviderImpl>();
   }
-  std::unique_ptr<dao::DaoCryptoProvider> Irohad::initialize_crypto_provider() {
-    return std::make_unique<dao::DaoCryptoProviderStub>();
+  std::shared_ptr<dao::DaoCryptoProvider> Irohad::initialize_crypto_provider() {
+    return std::make_shared<dao::DaoCryptoProviderStub>();
   }
-  std::unique_ptr<ametsuchi::Ametsuchi> Irohad::initialize_ametsuchi() {
-    return std::make_unique<ametsuchi::AmetsuchiStub>();
+  std::shared_ptr<ametsuchi::Ametsuchi> Irohad::initialize_ametsuchi() {
+    return std::make_shared<ametsuchi::AmetsuchiStub>();
   }
 }

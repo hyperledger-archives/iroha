@@ -36,7 +36,9 @@ namespace iroha {
       };
       auto proposal_tx_map = [](const auto &tx) {
         // TODO form response
-        return dao::TransactionResponse{};
+        dao::TransactionResponse res;
+        res.msg = "proposal";
+        return res;
       };
       auto proposal_response = [proposal_tx_filter,
                                 proposal_tx_map](auto proposal) {
@@ -52,7 +54,9 @@ namespace iroha {
       };
       auto commit_tx_map = [](const auto &tx) {
         // TODO form response;
-        return dao::TransactionResponse{};
+        dao::TransactionResponse res;
+        res.msg = "commit";
+        return res;
       };
       auto commit_response = [commit_tx_filter, commit_tx_map](auto block) {
         return rxcpp::observable<>::from(block)

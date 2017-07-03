@@ -23,9 +23,9 @@
 
 namespace iroha {
   namespace validation {
-    class ValidatorStub : public StatefulValidator {
+    class StatefulValidatorStub : public StatefulValidator {
      public:
-      ValidatorStub() {
+      StatefulValidatorStub() {
       }
 
       dao::Proposal validate(const dao::Proposal &proposal,

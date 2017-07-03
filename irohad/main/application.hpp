@@ -39,11 +39,11 @@ namespace iroha {
     dao::HashProvider<32> &hashProvider;
 
    private:
-    static std::unique_ptr<dao::HashProvider<32>> initialize_hash_provider();
+    static std::shared_ptr<dao::HashProvider<32>> initialize_hash_provider();
 
-    static std::unique_ptr<dao::DaoCryptoProvider> initialize_crypto_provider();
+    static std::shared_ptr<dao::DaoCryptoProvider> initialize_crypto_provider();
 
-    static std::unique_ptr<ametsuchi::Ametsuchi> initialize_ametsuchi();
+    static std::shared_ptr<ametsuchi::Ametsuchi> initialize_ametsuchi();
   };
 }  // namespace iroha
 #endif  // IROHA_APPLICATION_HPP

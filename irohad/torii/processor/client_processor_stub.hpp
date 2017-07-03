@@ -36,7 +36,7 @@ namespace iroha {
       ClientProcessorStub(const validation::StatelessValidator &validator,
                           network::PeerCommunicationService &service,
                           dao::DaoCryptoProvider &provider);
-      void query_handle(dao::Client client, dao::Query &query) override;
+      void query_handle(dao::Client client, const dao::Query &query) override;
       rxcpp::observable<std::shared_ptr<dao::QueryResponse>> query_notifier() override;
       void transaction_handle(dao::Client client, dao::Transaction &transaction) override;
       rxcpp::observable<dao::TransactionResponse> transaction_notifier() override;

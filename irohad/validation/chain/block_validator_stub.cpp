@@ -21,7 +21,7 @@
 namespace iroha {
   namespace validation {
 
-    bool BlockValidatorStub::validate(const dao::Block &block) { return false; }
+    bool BlockValidatorStub::validate(const dao::Block &block) const { return true; }
 
     BlockValidatorStub::BlockValidatorStub(ametsuchi::MutableStorage &storage)
         : storage_(storage) {}

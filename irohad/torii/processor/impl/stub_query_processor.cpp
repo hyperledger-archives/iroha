@@ -26,11 +26,13 @@ namespace iroha {
     using dao::Client;
 
     QueryProcessorStub::QueryProcessorStub() {
-      handler_.insert<dao::GetBlocks>(std::bind(
-          &QueryProcessorStub::handle_get_blocks, this, std::placeholders::_1));
+      handler_.insert<dao::GetBlocks>([this](const auto &query) {
+        return this->handle_get_blocks(query);
+      });
     }
 
-    void QueryProcessorStub::query_handle(Client client, Query &query) {
+    void QueryProcessorStub::query_handle(dao::Client client,
+                                          const dao::Query &query) {
       auto handle = handler_.find(query).value_or([](auto &) {
         std::cout << "[Q] Handler not found" << std::endl;
         return;
@@ -44,7 +46,7 @@ namespace iroha {
       return subject_.get_observable();
     }
 
-    void QueryProcessorStub::handle_get_blocks(dao::GetBlocks blocks) {
+    void QueryProcessorStub::handle_get_blocks(const dao::GetBlocks &blocks) {
       subject_.get_subscriber().on_next(
           std::make_shared<dao::GetBlocksResponse>());
     }

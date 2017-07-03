@@ -27,7 +27,7 @@ namespace iroha {
           TransactionProcessorStub(validator, service, provider) {}
 
     void ClientProcessorStub::query_handle(dao::Client client,
-                                           dao::Query &query) {
+                                           const dao::Query &query) {
       QueryProcessorStub::query_handle(client, query);
     }
 

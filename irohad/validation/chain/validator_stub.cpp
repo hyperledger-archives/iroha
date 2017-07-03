@@ -39,7 +39,7 @@ namespace iroha {
           [&result, this, &storage, apply_block, block_validator](auto block) {
             return (result = block_validator.validate(block) &&
                              storage.apply(block, apply_block));
-          });
+          }).subscribe([](auto block){});
       return result;
     }
 

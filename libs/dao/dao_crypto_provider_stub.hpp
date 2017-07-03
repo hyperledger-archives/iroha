@@ -26,17 +26,11 @@ namespace iroha {
 
     class DaoCryptoProviderStub : public DaoCryptoProvider {
      public:
-      bool verify(const iroha::dao::Transaction &tx) override {
-        return true;
-      }
 
-      iroha::dao::Transaction sign(
-          const iroha::dao::Transaction &tx) override{
-        return iroha::dao::Transaction{};
-      }
+      bool verify(const Transaction &tx) override;
 
+      Transaction &sign(Transaction &tx) override;
     };
-
   }
 }
 

@@ -27,10 +27,12 @@ limitations under the License.
 #include <validation/stateless/validator_stub.hpp>
 
 #include <dao/dao.hpp>
+#include <ametsuchi/ametsuchi_stub.hpp>
+#include <dao/dao_crypto_provider_stub.hpp>
 
 #include "server_runner.hpp"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   /*
     connection::api::CommandService commandService;
     connection::api::QueryService queryService;
@@ -44,23 +46,30 @@ int main(int argc, char* argv[]) {
         &orderingService
     });
   */
-  iroha::Irohad irohad;
+//  iroha::Irohad irohad;
+  iroha::ametsuchi::AmetsuchiStub ametsuchi;
+  iroha::dao::DaoCryptoProviderStub crypto_provider;
   iroha::validation::StatelessValidatorStub stateless_validator;
-  iroha::validation::ValidatorStub stateful_validator;
+  iroha::validation::StatefulValidatorStub stateful_validator;
   iroha::validation::ChainValidatorStub chain_validator;
   iroha::ordering::OrderingServiceStub ordering_service;
   iroha::consensus::ConsensusServiceStub consensus_service;
   iroha::network::PeerCommunicationServiceStub peer_communication_service(
-      irohad.ametsuchi, stateful_validator, chain_validator, ordering_service,
-      consensus_service, irohad.cryptoProvider);
+      ametsuchi, stateful_validator, chain_validator, ordering_service,
+      consensus_service, crypto_provider);
   iroha::torii::ClientProcessorStub client_processor(
-      stateless_validator, peer_communication_service, irohad.cryptoProvider);
+      stateless_validator, peer_communication_service, crypto_provider);
   iroha::torii::ToriiStub torii(client_processor);
-
+  // shows required order of execution, since callbacks are called synchronously
+  peer_communication_service.subscribe_on_proposal();
   iroha::dao::GetBlocks query;
   query.from = 32;
   query.to = 64;
   torii.get_query({}, query);
+
+  iroha::dao::Transaction transaction;
+  transaction.commands.push_back(std::make_shared<iroha::dao::AddPeer>());
+  torii.get_transaction({}, transaction);
 
   return 0;
 }

@@ -97,5 +97,8 @@ namespace iroha {
       return dao::Peer{};
     }
 
+    AmetsuchiStub::~AmetsuchiStub() {
+    }
+
   }  // namespace ametsuchi
 }  // namespace iroha
