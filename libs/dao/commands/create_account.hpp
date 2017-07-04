@@ -22,20 +22,16 @@
 
 namespace iroha {
   namespace dao {
+
     /**
      * Command for creation of a new account in the system
      */
     struct CreateAccount : public Command {
 
       /**
-       * Account for add in system
+       * Account's identifier
        */
-      Account new_account;
-
-      /**
-       * First signature attached to account
-       */
-      Signature signature;
+      ed25519::pubkey_t pubkey;
     };
   } // namespace dao
 } // namespace iroha
