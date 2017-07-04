@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef IROHA_SINGATURE_HPP
-#define IROHA_SINGATURE_HPP
+#ifndef IROHA_SIGТATURE_HPP
+#define IROHA_SIGТATURE_HPP
 
 #include <common/types.hpp>
 
@@ -32,4 +32,4 @@ namespace iroha {
   }
 }
 
-#endif  // IROHA_SINGATURE_HPP
+#endif  // IROHA_SIGТATURE_HPP
