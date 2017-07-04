@@ -26,8 +26,12 @@ namespace iroha {
     /**
      * Query for getting signatures of account
      */
-    struct GetSignatures : Query {
+    struct GetIdentities : Query {
 
+      /**
+       * Main identity
+       */
+      ed25519::pubkey_t account_pub;
     };
   } // namespace dao
 } // namespace iroha

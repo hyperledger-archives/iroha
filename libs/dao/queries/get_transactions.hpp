@@ -19,6 +19,7 @@
 #define IROHA_GET_TRANSACTIONS_HPP
 
 #include <dao/dao.hpp>
+#include <string>
 
 namespace iroha {
   namespace dao {
@@ -26,8 +27,12 @@ namespace iroha {
     /**
      * Query for getting transactions of account
      */
-    struct GetTransactions : Query {
+    struct GetWalletTransactions : Query {
 
+      /**
+       * Wallet identifier
+       */
+      std::string wallet_uuid;
     };
   } // namespace dao
 } // namespace iroha

@@ -15,20 +15,21 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_ACCOUNT_PERMISSIONS_HPP
-#define IROHA_GET_ACCOUNT_PERMISSIONS_HPP
+#ifndef IROHA_GET_WALLETS_HPP
+#define IROHA_GET_WALLETS_HPP
 
 #include <dao/dao.hpp>
+#include <string>
 
 namespace iroha {
   namespace dao {
 
     /**
-     * Query for getting permissions of account
+     * Query for get all account's wallet
      */
-    struct GetPermissions : Query {
-
+    struct GetWallets : Query {
+      ed25519::pubkey_t account_pub;
     };
   } // namespace dao
 } // namespace iroha
-#endif //IROHA_GET_ACCOUNT_PERMISSIONS_HPP
+#endif //IROHA_GET_WALLETS_HPP

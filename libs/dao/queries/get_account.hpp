@@ -15,20 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_QUORUM_HPP
-#define IROHA_GET_QUORUM_HPP
+#ifndef IROHA_GET_ACCOUNT_HPP
+#define IROHA_GET_ACCOUNT_HPP
 
 #include <dao/dao.hpp>
+#include <string>
 
 namespace iroha {
   namespace dao {
 
     /**
-     * Query for getting quorum of account
+     * Query for getting account's metadata
      */
-    struct GetQuorum : Query {
+    struct GetAccount : Query {
 
+      /**
+       * Account identity
+       */
+      ed25519::pubkey_t account_pub;
     };
   } // namespace dao
 } // namespace iroha
-#endif //IROHA_GET_QUORUM_HPP
+#endif //IROHA_GET_ACCOUNT_HPP
