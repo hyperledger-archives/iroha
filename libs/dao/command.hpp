@@ -25,7 +25,7 @@ namespace iroha {
       */
     struct Command {
       // TODO: implement
-      virtual ~Command(){}
+      virtual ~Command() = default;
     };
   }
 }
