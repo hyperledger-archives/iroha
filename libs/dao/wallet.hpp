@@ -33,6 +33,11 @@ namespace iroha {
       std::string uuid;
 
       /**
+       * Wallet's currency
+       */
+      Asset asset;
+
+      /**
        * Current wallet's balance
        */
       std::string balance;
