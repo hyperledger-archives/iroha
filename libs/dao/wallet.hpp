@@ -16,13 +16,26 @@ limitations under the License.
 #ifndef IROHA_WALLET_HPP
 #define IROHA_WALLET_HPP
 
+#include <dao/dao.hpp>
+#include <string>
+
 namespace iroha {
   namespace dao {
+
     /**
-      * Wallet Data Access Object
-      */
+     * Wallet Data Access Object
+     */
     struct Wallet {
-      // TODO: implement
+
+      /**
+       * Internal identifier of wallet
+       */
+      uint64_t id;
+
+      /**
+       * Current wallet's balance
+       */
+      std::string balance;
     };
   }
 }
