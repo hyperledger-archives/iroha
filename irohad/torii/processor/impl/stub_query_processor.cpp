@@ -48,7 +48,7 @@ namespace iroha {
 
     void QueryProcessorStub::handle_get_blocks(const dao::GetBlocks &blocks) {
       subject_.get_subscriber().on_next(
-          std::make_shared<dao::GetBlocksResponse>());
+          std::make_shared<dao::BlocksResponse>());
     }
 
   }  // namespace torii
