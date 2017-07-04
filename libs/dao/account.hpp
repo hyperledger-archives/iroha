@@ -25,22 +25,54 @@ namespace iroha {
      * Account Data Access Object
      */
     struct Account {
+
+      struct Permissions {
+
+        /**
+         * Can account add assets to own account;
+         * Dangerous operation - require high number of quorum;
+         */
+        bool issue_assets;
+
+        /**
+         * Can account create new type of assets;
+         * Dangerous operation - require high number of quorum;
+         */
+        bool create_assets;
+
+        /**
+         * Can account read private information of other accounts;
+         * Auditor's permission
+         */
+        bool read_all_accounts;
+
+        /**
+         * Available change only read_all_accounts and unlimited_transfer
+         * Administrator's account permission
+         */
+        bool set_permissions;
+
+        /**
+         * Can account provide unlimited transfers to other accounts;
+         * User's account permission
+         */
+        bool unlimited_transfer;
+      };
+
       /**
-       * ACTIVE - active account
-       * SUSPENDED - not active account
-       *
+       * Account permissions
        */
-      enum State { ACTIVE, SUSPENDED };
+      Permissions permissions;
 
-      /*
-       * Account state
-       */
-      State state;
-
-      /*
+      /**
        * Minimum quorum of signatures need for transactions
        */
       uint32_t quorum;
+
+      /**
+       * Internal identifier of account
+       */
+      uint64_t id;
     };
   }
 }
