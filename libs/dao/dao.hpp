@@ -17,34 +17,48 @@
 
 #pragma once
 
-#include "block.hpp"
-#include "proposal.hpp"
-#include "transaction.hpp"
-#include "transaction_response.hpp"
-#include "asset.hpp"
-#include "account.hpp"
-#include "wallet.hpp"
-#include "peer.hpp"
-#include "domain.hpp"
-#include "client.hpp"
-#include "peer.hpp"
-#include "dao_crypto_provider.hpp"
-#include "dao_hash_provider.hpp"
+#include <dao/block.hpp>
+#include <dao/proposal.hpp>
+#include <dao/transaction.hpp>
+#include <dao/transaction_response.hpp>
+#include <dao/asset.hpp>
+#include <dao/account.hpp>
+#include <dao/wallet.hpp>
+#include <dao/peer.hpp>
+#include <dao/domain.hpp>
+#include <dao/client.hpp>
+#include <dao/peer.hpp>
+#include <dao/dao_crypto_provider.hpp>
+#include <dao/dao_hash_provider.hpp>
 
 // commands
-#include "command.hpp"
+#include <dao/command.hpp>
 #include <dao/commands/add_peer.hpp>
+#include <dao/commands/add_signature.hpp>
+#include <dao/commands/create_account.hpp>
+#include <dao/commands/create_asset.hpp>
+#include <dao/commands/create_wallet.hpp>
+#include <dao/commands/issue_asset.hpp>
+#include <dao/commands/set_permissions.hpp>
+#include <dao/commands/set_quorum.hpp>
+#include <dao/commands/transfer_asset.hpp>
 
 // query
-#include "query.hpp"
-#include "query_response.hpp"
-
-// blocks
+#include <dao/query.hpp>
+#include <dao/queries/get_account.hpp>
 #include <dao/queries/get_blocks.hpp>
-#include <dao/queries/responses/blocks_response.hpp>
+#include <dao/queries/get_identities.hpp>
+#include <dao/queries/get_transactions.hpp>
+#include <dao/queries/get_wallets.hpp>
 
-// answer error
+// query response
+#include <dao/query_response.hpp>
+#include <dao/queries/responses/account_response.hpp>
+#include <dao/queries/responses/blocks_response.hpp>
 #include <dao/queries/responses/error_response.hpp>
+#include <dao/queries/responses/identities_response.hpp>
+#include <dao/queries/responses/transactions_response.hpp>
+#include <dao/queries/responses/wallets_response.hpp>
 
 
 /**
