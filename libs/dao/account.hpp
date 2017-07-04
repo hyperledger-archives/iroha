@@ -16,7 +16,8 @@ limitations under the License.
 #ifndef IROHA_ACCOUNT_HPP
 #define IROHA_ACCOUNT_HPP
 
-#include "signature.hpp"
+#include <dao/dao.hpp>
+#include <string>
 
 namespace iroha {
   namespace dao {
@@ -72,7 +73,7 @@ namespace iroha {
       /**
        * Internal identifier of account
        */
-      uint64_t id;
+      std::string uuid;
     };
   }
 }

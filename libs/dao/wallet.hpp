@@ -30,7 +30,7 @@ namespace iroha {
       /**
        * Internal identifier of wallet
        */
-      uint64_t id;
+      std::string uuid;
 
       /**
        * Current wallet's balance
