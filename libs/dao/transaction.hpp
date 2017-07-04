@@ -22,6 +22,7 @@ limitations under the License.
 #include <dao/signature.hpp>
 #include <memory>
 #include <vector>
+#include <string>
 #include <dao/signature.hpp>
 
 namespace iroha {
@@ -49,7 +50,7 @@ namespace iroha {
        * Public key of a transaction creator.
        * META field
        */
-      ed25519::pubkey_t creator;
+      std::string creator_uuid;
 
       /**
        * Number for protecting against replay attack.
