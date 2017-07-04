@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_BLOCKS_RESPONSE_HPP
-#define IROHA_GET_BLOCKS_RESPONSE_HPP
+#ifndef IROHA_SIGNATURES_RESPONSE_HPP
+#define IROHA_SIGNATURES_RESPONSE_HPP
 
-#include <dao/query.hpp>
-#include <rxcpp/rx-observable.hpp>
+#include <dao/dao.hpp>
+#include <vector>
 
 namespace iroha {
   namespace dao {
 
     /**
-     * Provide answer of user's block request
+     * Provide response with signatures of account
      */
-    struct BlocksResponse : public QueryResponse {
+    struct IdentitiesResponse : public QueryResponse {
 
       /**
-       * Observable contains all request blocks
+       * Vector with all identities attached to account
        */
-      rxcpp::observable<Block> blocks;
+      std::vector <ed25519::pubkey_t> keys;
     };
   }  // namespace dao
 }  // namespace iroha
-#endif //IROHA_GET_BLOCKS_RESPONSE_HPP
+#endif //IROHA_SIGNATURES_RESPONSE_HPP

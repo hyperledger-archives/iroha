@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_BLOCKS_RESPONSE_HPP
-#define IROHA_GET_BLOCKS_RESPONSE_HPP
+#ifndef IROHA_TRANSACTION_RESPONSE_HPP
+#define IROHA_TRANSACTION_RESPONSE_HPP
 
-#include <dao/query.hpp>
+#include <dao/dao.hpp>
 #include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
   namespace dao {
 
     /**
-     * Provide answer of user's block request
+     * Provide responded transactions
      */
-    struct BlocksResponse : public QueryResponse {
+    struct TransactionsResponse : public QueryResponse {
 
       /**
-       * Observable contains all request blocks
+       * Observable contains transactions
        */
-      rxcpp::observable<Block> blocks;
+      rxcpp::observable <Transaction> transactions;
     };
   }  // namespace dao
 }  // namespace iroha
-#endif //IROHA_GET_BLOCKS_RESPONSE_HPP
+#endif //IROHA_TRANSACTION_RESPONSE_HPP

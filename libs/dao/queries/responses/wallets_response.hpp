@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_BLOCKS_RESPONSE_HPP
-#define IROHA_GET_BLOCKS_RESPONSE_HPP
+#ifndef IROHA_WALLET_RESPONSE_HPP
+#define IROHA_WALLET_RESPONSE_HPP
 
-#include <dao/query.hpp>
-#include <rxcpp/rx-observable.hpp>
+#include <dao/dao.hpp>
+#include <vector>
 
 namespace iroha {
   namespace dao {
 
     /**
-     * Provide answer of user's block request
+     * Provide responded wallets
      */
-    struct BlocksResponse : public QueryResponse {
+    struct WalletsResponse : public QueryResponse {
 
       /**
-       * Observable contains all request blocks
+       * List with all attached wallets
        */
-      rxcpp::observable<Block> blocks;
+      std::vector <Wallet> wallets;
     };
   }  // namespace dao
 }  // namespace iroha
-#endif //IROHA_GET_BLOCKS_RESPONSE_HPP
+#endif //IROHA_WALLET_RESPONSE_HPP
