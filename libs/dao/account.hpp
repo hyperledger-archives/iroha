@@ -61,6 +61,11 @@ namespace iroha {
       };
 
       /**
+       * Is this account banned for operations
+       */
+      bool is_banned;
+
+      /**
        * Account permissions
        */
       Permissions permissions;
@@ -71,9 +76,9 @@ namespace iroha {
       uint32_t quorum;
 
       /**
-       * Internal identifier of account
+       * Identifier of account
        */
-      std::string uuid;
+      ed25519::pubkey_t pubkey;
     };
   }
 }

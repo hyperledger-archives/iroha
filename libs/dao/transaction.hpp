@@ -50,7 +50,7 @@ namespace iroha {
        * Public key of a transaction creator.
        * META field
        */
-      std::string creator_uuid;
+      ed25519::pubkey_t creator_uuid;
 
       /**
        * Number for protecting against replay attack.
