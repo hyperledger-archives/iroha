@@ -19,6 +19,7 @@
 #define IROHA_ISSUE_ASSET_HPP
 
 #include <dao/dao.hpp>
+#include <string>
 
 namespace iroha {
   namespace dao {
@@ -28,6 +29,16 @@ namespace iroha {
      */
     struct IssueAsset : public Command {
 
+      /**
+       * Wallet for adding assets
+       * Note: wallet must belong to transaction's creator
+       */
+      std::string wallet_uuid;
+
+      /**
+       * Amount to add to wallet
+       */
+      std::string amount;
     };
   } // namespace dao
 } // namespace iroha

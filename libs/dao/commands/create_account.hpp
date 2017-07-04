@@ -27,6 +27,15 @@ namespace iroha {
      */
     struct CreateAccount : public Command {
 
+      /**
+       * Account for add in system
+       */
+      Account new_account;
+
+      /**
+       * First signature attached to account
+       */
+      Signature signature;
     };
   } // namespace dao
 } // namespace iroha

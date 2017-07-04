@@ -19,6 +19,7 @@
 #define IROHA_SET_QUORUM_HPP
 
 #include <dao/dao.hpp>
+#include <string>
 
 namespace iroha {
   namespace dao {
@@ -27,6 +28,15 @@ namespace iroha {
      */
     struct SetQuorum : public Command {
 
+      /**
+       * Changed account
+       */
+      std::string account_uuid;
+
+      /**
+       * new value of quorum
+       */
+      uint32_t new_quorum;
     };
   } // namespace dao
 } // namespace iroha

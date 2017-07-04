@@ -22,11 +22,16 @@
 
 namespace iroha {
   namespace dao {
+
     /**
      * Create new asset in the system
      */
     struct CreateAsset : public Command {
 
+      /**
+       * Asset for inserting in system
+       */
+      Asset new_asset;
     };
   } // namespace dao
 } // namespace iroha

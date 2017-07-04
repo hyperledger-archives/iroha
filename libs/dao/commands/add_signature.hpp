@@ -19,14 +19,25 @@
 #define IROHA_ADD_SIGNATURE_HPP
 
 #include <dao/dao.hpp>
+#include <string>
 
 namespace iroha {
   namespace dao {
+
     /**
      * Attach signature for account
      */
     struct AddSignature : public Command {
 
+      /**
+       * Destination account for adding new signatures
+       */
+      std::string dst_account;
+
+      /**
+       * New signature
+       */
+      Signature new_signature;
     };
   } // namespace dao
 } // namespace iroha

@@ -19,6 +19,7 @@
 #define IROHA_TRANSFER_ASSET_HPP
 
 #include <dao/dao.hpp>
+#include <string>
 
 namespace iroha {
   namespace dao {
@@ -28,6 +29,20 @@ namespace iroha {
      */
     struct TransferAsset : public Command {
 
+      /**
+       * Source wallet
+       */
+      std::string src_wallet_uuid;
+
+      /**
+       * Destination wallet
+       */
+      std::string dst_wallet_uuid;
+
+      /**
+       * Amount of transferred asset
+       */
+      std::string amount;
     };
   } // namespace dao
 } // namespace iroha

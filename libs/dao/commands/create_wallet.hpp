@@ -28,6 +28,15 @@ namespace iroha {
      */
     struct CreateWallet : public Command {
 
+      /**
+       * Wallet's asset
+       */
+      Asset asset;
+
+      /**
+       * Attached account
+       */
+      Account account;
     };
   } // namespace dao
 } // namespace iroha

@@ -19,6 +19,7 @@
 #define IROHA_SET_PERMISSIONS_HPP
 
 #include <dao/dao.hpp>
+#include <string>
 
 namespace iroha {
   namespace dao {
@@ -27,6 +28,15 @@ namespace iroha {
      */
     struct SetPermissions : public Command {
 
+      /**
+       * Identifier of account
+       */
+      std::string account_uuid;
+
+      /**
+       * New permissions of account
+       */
+      Account::Permissions new_permissions;
     };
   } // namespace dao
 } // namespace iroha
