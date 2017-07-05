@@ -15,18 +15,20 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-#include <ametsuchi/command_executor_stub.hpp>
-#include <ametsuchi/storage_stub.hpp>
+#include <ametsuchi/impl/temporary_wsv_impl.hpp>
 
-using iroha::ametsuchi::AmetsuchiStub;
-using iroha::ametsuchi::CommandExecutorStub;
-using namespace iroha::model;
+namespace iroha {
+  namespace ametsuchi {
 
-TEST(CommandExecutorTest, SampleTest) {
-  AmetsuchiStub ametsuchi;
-  CommandExecutorStub executor(ametsuchi);
+    bool TemporaryWsvImpl::apply(const dao::Transaction &transaction,
+                                 std::function<bool(const dao::Transaction &,
+                                                    CommandExecutor &,
+                                                    WsvQuery &)> function) {
+      return function(transaction, , *this);
+    }
 
-  ASSERT_TRUE(executor.execute(AddPeer{}));
-  ASSERT_FALSE(executor.execute(Command{}));
-}
+    TemporaryWsvImpl::TemporaryWsvImpl(StorageImpl &storage) : storage_(storage) {
+
+    }
+  }//namespace ametsuchi
+}//namespace iroha

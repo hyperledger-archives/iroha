@@ -15,41 +15,34 @@
  * limitations under the License.
  */
 
-#ifndef AMETSUCHI_BLOCK_STORE_BACKEND_FLAT_FILE_HPP
-#define AMETSUCHI_BLOCK_STORE_BACKEND_FLAT_FILE_HPP
+#ifndef IROHA_FLAT_FILE_HPP
+#define IROHA_FLAT_FILE_HPP
 
-#include <ametsuchi/block_store/block_store.hpp>
 #include <string>
+#include <vector>
+#include <memory>
 
 namespace iroha {
-
   namespace ametsuchi {
-
-    namespace block_store {
-
-      class FlatFile : public BlockStore {
+      class FlatFile {
        public:
-        FlatFile(const std::string &path);
+        static std::unique_ptr<FlatFile> create(const std::string &path);
         ~FlatFile();
-        void add(uint32_t id, const std::vector<uint8_t> &block) override;
-        std::vector<uint8_t> get(uint32_t id) const override;
-        uint32_t last_id() const override;
-        void remove(uint32_t id) override;
+        void add(uint32_t id, const std::vector<uint8_t> &block);
+        std::vector<uint8_t> get(uint32_t id) const;
+        void remove(uint32_t id);
 
        private:
-        uint32_t current_id;
+        FlatFile(const std::string &path);
         std::string dump_dir;
         // Get next auto increment
         // Get last consistent id, check iternal consistency of block store
         uint32_t check_consistency();
         std::string id_to_name(uint32_t id) const;
         uint32_t name_to_id(std::string name) const;
-        inline bool file_exist(const std::string &name) const;
-        inline long file_size(const std::string &filename) const;
+        bool file_exist(const std::string &name) const;
+        long file_size(const std::string &filename) const;
       };
-
-    }  // namespace block_store
-
   }  // namespace ametsuchi
 }  // namespace iroha
-#endif  // AMETSUCHI_BLOCK_STORE_BACKEND_FLAT_FILE_HPP
+#endif  // IROHA_FLAT_FILE_HPP

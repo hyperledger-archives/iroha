@@ -15,18 +15,17 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-#include <ametsuchi/command_executor_stub.hpp>
-#include <ametsuchi/storage_stub.hpp>
+#include <ametsuchi/impl/mutable_storage_impl.hpp>
 
-using iroha::ametsuchi::AmetsuchiStub;
-using iroha::ametsuchi::CommandExecutorStub;
-using namespace iroha::model;
+namespace iroha {
+  namespace ametsuchi {
 
-TEST(CommandExecutorTest, SampleTest) {
-  AmetsuchiStub ametsuchi;
-  CommandExecutorStub executor(ametsuchi);
-
-  ASSERT_TRUE(executor.execute(AddPeer{}));
-  ASSERT_FALSE(executor.execute(Command{}));
-}
+    bool MutableStorageImpl::apply(const dao::Block &block,
+                                   std::function<bool(const dao::Block &,
+                                                      CommandExecutor &,
+                                                      WsvQuery &,
+                                                      const dao::Block &)> function) {
+      return function(block, , *this, );
+    }
+  }//namespace ametsuchi
+}//namespace iroha

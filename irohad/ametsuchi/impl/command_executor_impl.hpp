@@ -15,28 +15,21 @@
  * limitations under the License.
  */
 
-#ifndef AMETSUCHI_BLOCK_STORE_BLOCK_STORE_HPP
-#define AMETSUCHI_BLOCK_STORE_BLOCK_STORE_HPP
+#ifndef IROHA_COMMAND_EXECUTOR_IMPL_HPP
+#define IROHA_COMMAND_EXECUTOR_IMPL_HPP
 
-#include <cstdint>
-#include <vector>
+#include <ametsuchi/command_executor.hpp>
 
 namespace iroha {
-
   namespace ametsuchi {
+    class CommandExecutorImpl : public CommandExecutor {
+     public:
+      CommandExecutorImpl();
+      bool execute(const dao::Command &command) override;
+     private:
 
-    namespace block_store {
+    };
+  }//namespace ametsuchi
+}//namespace iroha
 
-      class BlockStore {
-       public:
-        virtual void add(uint32_t id, const std::vector<uint8_t> &block) = 0;
-        virtual std::vector<uint8_t> get(uint32_t id) const = 0;
-        virtual uint32_t last_id() const = 0;
-        virtual void remove(uint32_t id) = 0;
-      };
-
-    }  // namespace block_store
-
-  }  // namespace ametsuchi
-}  // namespace iroha
-#endif  // AMETSUCHI_BLOCK_STORE_BLOCK_STORE_HPP
+#endif //IROHA_COMMAND_EXECUTOR_IMPL_HPP

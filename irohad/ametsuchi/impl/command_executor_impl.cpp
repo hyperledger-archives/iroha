@@ -15,18 +15,15 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-#include <ametsuchi/command_executor_stub.hpp>
-#include <ametsuchi/storage_stub.hpp>
+#include <ametsuchi/impl/command_executor_impl.hpp>
 
-using iroha::ametsuchi::AmetsuchiStub;
-using iroha::ametsuchi::CommandExecutorStub;
-using namespace iroha::model;
+namespace iroha {
+  namespace ametsuchi {
 
-TEST(CommandExecutorTest, SampleTest) {
-  AmetsuchiStub ametsuchi;
-  CommandExecutorStub executor(ametsuchi);
+    bool CommandExecutorImpl::execute(const dao::Command &command) {
+      return false;
+    }
 
-  ASSERT_TRUE(executor.execute(AddPeer{}));
-  ASSERT_FALSE(executor.execute(Command{}));
-}
+
+  } // namespace ametsuchi
+} // namespace iroha

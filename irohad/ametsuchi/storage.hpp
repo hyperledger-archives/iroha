@@ -54,9 +54,9 @@ namespace iroha {
        * Commit mutable storage to Ametsuchi.
        * This transforms Ametsuchi to the new state consistent with
        * MutableStorage.
-       * @param mutableStorage
+       * @param mutableStorage is moved to the function
        */
-      virtual void commit(MutableStorage& mutableStorage) = 0;
+      virtual void commit(std::unique_ptr<MutableStorage> mutableStorage) = 0;
 
       virtual ~Storage() = default;
     };
