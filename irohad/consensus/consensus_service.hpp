@@ -15,21 +15,34 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CLIENT_PROCESSOR_HPP
-#define IROHA_CLIENT_PROCESSOR_HPP
+#ifndef IROHA_CONSENSUS_SERVICE_HPP
+#define IROHA_CONSENSUS_SERVICE_HPP
 
-#include "query_processor.hpp"
-#include "transaction_processor.hpp"
+#include <dao/proposal.hpp>
+#include <dao/block.hpp>
+#include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
-  namespace torii {
-
+  namespace consensus {
     /**
-     * Client processor is interface
-     * for processing all user's intents in the system
+     * Consensus interface for peer communication service
      */
-    class ClientProcessor : public QueryProcessor, public TransactionProcessor {
+    class ConsensusService {
+     public:
+
+      /**
+       * Vote for a block formed from proposal
+       * @param block
+       */
+      virtual void vote_block(dao::Block &block) = 0;
+
+      /**
+       * Return observable of all commits from the consensus
+       * @return
+       */
+      virtual rxcpp::observable<rxcpp::observable<dao::Block>> on_commit() = 0;
     };
-  } //namespace torii
-} //namespace iroha
-#endif //IROHA_CLIENT_PROCESSOR_HPP
+  } // namespace consensus
+} // namespace iroha
+
+#endif //IROHA_CONSENSUS_SERVICE_HPP

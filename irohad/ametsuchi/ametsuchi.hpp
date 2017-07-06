@@ -57,6 +57,8 @@ namespace iroha {
        * @param mutableStorage
        */
       virtual void commit(MutableStorage& mutableStorage) = 0;
+
+      virtual ~Ametsuchi(){}
     };
 
   }  // namespace ametsuchi

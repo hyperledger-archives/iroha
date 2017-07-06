@@ -15,4 +15,14 @@
  * limitations under the License.
  */
 
-#include <torii/processor/client_processor.hpp>
+#include <validation/stateless/transaction_validator_stub.hpp>
+
+namespace iroha {
+  namespace validation {
+
+    bool TransactionValidatorStub::validate(
+        const dao::Transaction &transaction) const {
+      return true;
+    }
+  }  // namespace validation
+}  // namespace iroha

@@ -22,22 +22,28 @@
 #include <ametsuchi/ametsuchi.hpp>
 #include <model/model.hpp>
 
-namespace main {
+namespace iroha {
 
   /**
    * Contains instances of global services and shared providers
    */
+  using namespace iroha;
   class Irohad {
    public:
+    Irohad();
 
     ametsuchi::Ametsuchi &ametsuchi;
 
-    network::PeerCommunicationService &peerService;
-
     model::DaoCryptoProvider &cryptoProvider;
 
-    model::HashProvider &hashProvider;
+    model::HashProvider<32> &hashProvider;
 
+   private:
+    static std::shared_ptr<model::HashProvider<32>> initialize_hash_provider();
+
+    static std::shared_ptr<model::DaoCryptoProvider> initialize_crypto_provider();
+
+    static std::shared_ptr<ametsuchi::Ametsuchi> initialize_ametsuchi();
   };
-} // namespace iroha
-#endif //IROHA_APPLICATION_HPP
+}  // namespace iroha
+#endif  // IROHA_APPLICATION_HPP

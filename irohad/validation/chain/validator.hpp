@@ -41,11 +41,10 @@ namespace iroha {
        * @param blocks - observable with all blocks, that should be applied
        * simultaneously
        * @param storage - storage that may be modified during loading
-       * @return storage from parameters, with applied blocks
+       * @return true if commit is valid, false otherwise
        */
-      virtual ametsuchi::MutableStorage &validate(
-          rxcpp::observable<model::Block> &blocks,
-          ametsuchi::MutableStorage &storage) = 0;
+      virtual bool validate(rxcpp::observable<model::Block> &blocks,
+                            ametsuchi::MutableStorage &storage) = 0;
     };
   }  // namespace validation
 }  // namespace iroha

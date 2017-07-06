@@ -29,6 +29,7 @@ namespace iroha {
 
     bool CommandValidatorStub::validate(const model::Command &command) {
       return handler.find(command).value_or([](auto &) {
+        std::cout << "[CVS] handler not found" << std::endl;
         return false;
       })(command);
     }

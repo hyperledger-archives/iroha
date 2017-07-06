@@ -16,7 +16,7 @@ limitations under the License.
 #ifndef IROHA_ACCOUNT_HPP
 #define IROHA_ACCOUNT_HPP
 
-#include "singature.hpp"
+#include "signature.hpp"
 
 namespace iroha {
   namespace model {

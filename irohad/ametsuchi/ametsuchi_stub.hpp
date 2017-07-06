@@ -47,6 +47,7 @@ namespace iroha {
           ed25519::pubkey_t pub_key) override;
       std::vector<model::Asset> get_domain_assets(
           std::string domain_full_name) override;
+      ~AmetsuchiStub() override;
     };
 
   }  // namespace ametsuchi

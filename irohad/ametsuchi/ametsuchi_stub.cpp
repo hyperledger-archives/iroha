@@ -97,5 +97,8 @@ namespace iroha {
       return model::Peer{};
     }
 
+    AmetsuchiStub::~AmetsuchiStub() {
+    }
+
   }  // namespace ametsuchi
 }  // namespace iroha

@@ -23,7 +23,7 @@ jobs:
           command: cmake -H$IROHA_HOME -B$IROHA_BUILD
       - run:
           name: make
-          command: cmake --build $IROHA_BUILD -- -j$(nproc)
+          command: cmake --build $IROHA_BUILD -- -j4
       - run:
           name: run tests
           command: cmake --build $IROHA_BUILD --target test

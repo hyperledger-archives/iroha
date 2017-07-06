@@ -22,11 +22,14 @@ namespace iroha {
 
     bool CommandExecutorStub::execute(const model::Command &command) {
       auto handler = map_.find(command);
-      return handler.value_or([](const model::Command &) { return false; })(
-          command);
+      return handler.value_or([](const model::Command &) {
+        std::cout << "[CE] handler not found" << std::endl;
+        return false;
+      })(command);
     }
 
     bool CommandExecutorStub::executeAddPeer(const model::AddPeer &command) {
+      std::cout << "[CE] add peer executed" << std::endl;
       return true;
     }
 

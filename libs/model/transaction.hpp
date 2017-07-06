@@ -19,6 +19,7 @@ limitations under the License.
 
 #include <common/types.hpp>
 #include <model/command.hpp>
+#include <model/signature.hpp>
 #include <memory>
 #include <vector>
 

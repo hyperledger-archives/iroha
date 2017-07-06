@@ -16,13 +16,14 @@
  */
 
 #include <validation/chain/validator_stub.hpp>
+#include <validation/chain/block_validator_stub.hpp>
 
 namespace iroha {
   namespace validation {
 
-    ametsuchi::MutableStorage& ChainValidatorStub::validate(
-        rxcpp::observable<model::Block>& blocks,
-        ametsuchi::MutableStorage& storage) {
+    bool ChainValidatorStub::validate(rxcpp::observable<model::Block>& blocks,
+                                      ametsuchi::MutableStorage& storage) {
+      auto block_validator = BlockValidatorStub(storage);
       auto apply_block = [](const auto& block, auto& executor, auto& query) {
         for (const auto& tx : block.transactions) {
           for (const auto& command : tx.commands) {
@@ -33,16 +34,15 @@ namespace iroha {
         }
         return true;
       };
-      blocks
-          .take_while(std::bind(&BlockValidator::validate, &block_validator_,
-                                std::placeholders::_1))
-          .subscribe([&storage, apply_block](model::Block block) {
-            storage.apply(block, apply_block);
-          });
-      return storage;
+      auto result = false;
+      blocks.take_while(
+          [&result, this, &storage, apply_block, block_validator](auto block) {
+            return (result = block_validator.validate(block) &&
+                             storage.apply(block, apply_block));
+          }).subscribe([](auto block){});
+      return result;
     }
 
-    ChainValidatorStub::ChainValidatorStub(BlockValidator& block_validator)
-        : block_validator_(block_validator) {}
+    ChainValidatorStub::ChainValidatorStub() {}
   }  // namespace validation
 }  // namespace iroha

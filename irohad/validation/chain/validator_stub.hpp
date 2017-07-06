@@ -25,11 +25,9 @@ namespace iroha {
   namespace validation {
     class ChainValidatorStub : public ChainValidator {
      public:
-      ChainValidatorStub(BlockValidator& block_validator);
-      ametsuchi::MutableStorage &validate(rxcpp::observable <model::Block> &blocks,
+      ChainValidatorStub();
+      bool validate(rxcpp::observable <model::Block> &blocks,
                                ametsuchi::MutableStorage &storage) override;
-     private:
-      BlockValidator &block_validator_;
     };
   }// namespace validation
 }//namespace iroha

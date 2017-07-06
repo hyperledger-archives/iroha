@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_QUERY_PROCESSOR_HPP
-#define IROHA_QUERY_PROCESSOR_HPP
+#ifndef IROHA_STUB_QUERY_PROCESSOR_HPP
+#define IROHA_STUB_QUERY_PROCESSOR_HPP
 
-#include <model/model.hpp>
-#include <rxcpp/rx.hpp>
+#include <torii/processor/query_processor.hpp>
+#include <handler_map/handler_map.hpp>
+#include <ametsuchi/block_query.hpp>
+#include <ametsuchi/wsv_query.hpp>
 
 namespace iroha {
   namespace torii {
@@ -27,27 +29,34 @@ namespace iroha {
     /**
      * QueryProcessor provides start point for queries in the whole system
      */
-    class QueryProcessor {
+    class QueryProcessorStub : public QueryProcessor {
      public:
+
+      explicit QueryProcessorStub(ametsuchi::WsvQuery &wsv,
+                                  ametsuchi::BlockQuery &block);
 
       /**
        * Register client query
        * @param client - query emitter
        * @param query - client intent
        */
-      virtual void query_handle(model::Client client,
-                                const model::Query &query) = 0;
+      void query_handle(dao::Client client, const dao::Query &query) override;
 
       /**
        * Subscribe for query responses
        * @return observable with query responses
        */
-      virtual rxcpp::observable<std::shared_ptr<model::QueryResponse>> query_notifier() = 0;
+      rxcpp::observable<std::shared_ptr<dao::QueryResponse>> query_notifier() override;
 
-      virtual ~QueryProcessor() {
-      };
+     private:
+      HandlerMap<dao::Query, void> handler_;
+      rxcpp::subjects::subject<std::shared_ptr<dao::QueryResponse>> subject_;
+      ametsuchi::WsvQuery &wsv_;
+      ametsuchi::BlockQuery &block_;
+
+      void handle_get_blocks(const dao::GetBlocks &blocks);
+
     };
   } //namespace torii
 } //namespace iroha
-
-#endif //IROHA_QUERY_PROCESSOR_HPP
+#endif //IROHA_STUB_QUERY_PROCESSOR_HPP

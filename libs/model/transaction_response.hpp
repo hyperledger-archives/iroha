@@ -38,6 +38,8 @@ namespace iroha {
        * Transaction emitter
        */
       Client client;
+
+      std::string msg;
     };
   } //namespace model
 } //namespace iroha

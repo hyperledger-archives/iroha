@@ -15,26 +15,34 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_BLOCKS_RESPONSE_HPP
-#define IROHA_GET_BLOCKS_RESPONSE_HPP
+#ifndef IROHA_ORDERING_SERVICE_HPP
+#define IROHA_ORDERING_SERVICE_HPP
 
-#include <model/query.hpp>
+#include <dao/transaction.hpp>
+#include <dao/proposal.hpp>
 #include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
-  namespace model {
-
+  namespace ordering {
     /**
-     * Provide answer of user's block request
+     * Ordering service interface for peer communication service
      */
-    struct GetBlocksResponse : public QueryResponse {
+    class OrderingService {
+     public:
 
       /**
-       * Observable contains all request blocks
+       * Propagate a signed transaction for further processing
+       * @param transaction
        */
-      rxcpp::observable<Block> blocks;
+      virtual void propagate_transaction(const dao::Transaction &transaction) = 0;
 
+      /**
+       * Return observable of all proposals in the consensus
+       * @return
+       */
+      virtual rxcpp::observable<dao::Proposal> on_proposal() = 0;
     };
-  }  // namespace model
-}  // namespace iroha
-#endif //IROHA_GET_BLOCKS_RESPONSE_HPP
+  }//namespace ordering
+}// namespace iroha
+
+#endif //IROHA_ORDERING_SERVICE_HPP

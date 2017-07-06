@@ -26,7 +26,7 @@ namespace iroha {
     /**
      * Interface for performing stateful validation
      */
-    model::Proposal ValidatorStub::validate(const model::Proposal &proposal,
+    model::Proposal StatefulValidatorStub::validate(const model::Proposal &proposal,
                                           ametsuchi::TemporaryWsv &wsv) {
       auto command_validator = CommandValidatorStub(wsv);
       auto

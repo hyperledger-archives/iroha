@@ -33,15 +33,14 @@ namespace iroha {
        * @param tx - transaction for verification
        * @return true if transaction signature is valid, otherwise false
        */
-      virtual bool verify(const iroha::model::Transaction &tx) = 0;
+      virtual bool verify(const Transaction &tx) = 0;
 
       /**
        * Method to sign transaction via own private key.
        * @param tx - transaction without signature
        * @return signed transaction by crypto provider
        */
-      virtual iroha::model::Transaction sign(
-          const iroha::model::Transaction &tx) = 0;
+      virtual Transaction &sign(Transaction &tx) = 0;
     };
   }
 }

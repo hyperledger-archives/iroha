@@ -15,23 +15,18 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_BLOCK_VALIDATOR_STUB_HPP
-#define IROHA_BLOCK_VALIDATOR_STUB_HPP
+#ifndef IROHA_TRANSACTION_VALIDATOR_STUB_HPP
+#define IROHA_TRANSACTION_VALIDATOR_STUB_HPP
 
-#include <model/model.hpp>
-#include <validation/chain/block_validator.hpp>
-#include <ametsuchi/mutable_storage.hpp>
+#include <validation/stateless/transaction_validator.hpp>
 
 namespace iroha {
   namespace validation {
-    class BlockValidatorStub : public BlockValidator {
+    class TransactionValidatorStub : public TransactionValidator {
      public:
-      BlockValidatorStub(ametsuchi::MutableStorage &storage);
-      bool validate(const model::Block &block) const override;
-     private:
-      ametsuchi::MutableStorage& storage_;
+      bool validate(const dao::Transaction &transaction) const override;
     };
   }  // namespace validation
 }  // namespace iroha
 
-#endif  // IROHA_BLOCK_VALIDATOR_STUB_HPP
+#endif  // IROHA_TRANSACTION_VALIDATOR_STUB_HPP
