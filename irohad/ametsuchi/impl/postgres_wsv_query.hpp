@@ -15,26 +15,21 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_MUTABLE_STORAGE_IMPL_HPP
-#define IROHA_MUTABLE_STORAGE_IMPL_HPP
+#ifndef IROHA_POSTGRES_WSV_QUERY_HPP
+#define IROHA_POSTGRES_WSV_QUERY_HPP
 
-#include <ametsuchi/mutable_storage.hpp>
+#include <ametsuchi/wsv_query.hpp>
+#include <pqxx/nontransaction>
 
 namespace iroha {
   namespace ametsuchi {
-    class MutableStorageImpl : public MutableStorage {
+    class PostgresWsvQuery : public WsvQuery {
      public:
-      MutableStorageImpl();
-      bool apply(const dao::Block &block,
-                 std::function<bool(const dao::Block &, CommandExecutor &,
-                                    WsvQuery &, const dao::Block &)>
-                     function) override;
-
+      PostgresWsvQuery(std::shared_ptr<pqxx::nontransaction> transaction);
      private:
-
-      friend class StorageImpl;
+      std::shared_ptr<pqxx::nontransaction> transaction_;
     };
-  }  // namespace ametsuchi
-}  // namespace iroha
+  }//namespace ametsuchi
+}//namespace iroha
 
-#endif  // IROHA_MUTABLE_STORAGE_IMPL_HPP
+#endif //IROHA_POSTGRES_WSV_QUERY_HPP

@@ -15,21 +15,10 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_EXECUTOR_IMPL_HPP
-#define IROHA_COMMAND_EXECUTOR_IMPL_HPP
-
-#include <ametsuchi/command_executor.hpp>
+#include <ametsuchi/impl/postgres_wsv_query.hpp>
 
 namespace iroha {
   namespace ametsuchi {
-    class CommandExecutorImpl : public CommandExecutor {
-     public:
-      CommandExecutorImpl();
-      bool execute(const dao::Command &command) override;
-     private:
 
-    };
-  }//namespace ametsuchi
-}//namespace iroha
-
-#endif //IROHA_COMMAND_EXECUTOR_IMPL_HPP
+  }  // namespace ametsuchi
+}  // namespace iroha

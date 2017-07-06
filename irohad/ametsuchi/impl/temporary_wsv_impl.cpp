@@ -20,15 +20,29 @@
 namespace iroha {
   namespace ametsuchi {
 
-    bool TemporaryWsvImpl::apply(const dao::Transaction &transaction,
-                                 std::function<bool(const dao::Transaction &,
-                                                    CommandExecutor &,
-                                                    WsvQuery &)> function) {
-      return function(transaction, , *this);
+    bool TemporaryWsvImpl::apply(
+        const dao::Transaction &transaction,
+        std::function<bool(const dao::Transaction &, CommandExecutor &,
+                           WsvQuery &)>
+            function) {
+      transaction_->exec("SAVEPOINT savepoint_;");
+      auto result = function(transaction, *executor_, *this);
+      if (result) {
+        transaction_->exec("RELEASE SAVEPOINT savepoint_;");
+      } else {
+        transaction_->exec("ROLLBACK TO SAVEPOINT savepoint_;");
+      }
+      return result;
     }
 
-    TemporaryWsvImpl::TemporaryWsvImpl(StorageImpl &storage) : storage_(storage) {
-
+    TemporaryWsvImpl::TemporaryWsvImpl(
+        std::shared_ptr<pqxx::nontransaction> transaction,
+        std::unique_ptr<WsvQuery> wsv,
+        std::unique_ptr<CommandExecutor> executor) {
+      transaction_->exec("BEGIN;");
     }
-  }//namespace ametsuchi
-}//namespace iroha
+
+    TemporaryWsvImpl::~TemporaryWsvImpl() { transaction_->exec("ROLLBACK;"); }
+
+  }  // namespace ametsuchi
+}  // namespace iroha

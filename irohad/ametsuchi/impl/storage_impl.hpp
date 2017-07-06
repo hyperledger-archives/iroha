@@ -18,16 +18,34 @@
 #ifndef IROHA_STORAGE_IMPL_HPP
 #define IROHA_STORAGE_IMPL_HPP
 
+#include <ametsuchi/impl/flat_file/flat_file.hpp>
 #include <ametsuchi/storage.hpp>
+#include <cpp_redis/cpp_redis>
+#include <nonstd/optional.hpp>
+#include <pqxx/pqxx>
+#include <shared_mutex>
 
 namespace iroha {
   namespace ametsuchi {
     class StorageImpl : public Storage {
      public:
+      static std::unique_ptr<StorageImpl> create(
+          std::string block_store_dir, std::string redis_host,
+          std::size_t redis_port, std::string postgres_connection);
       std::unique_ptr<TemporaryWsv> createTemporaryWsv() override;
       std::unique_ptr<MutableStorage> createMutableStorage() override;
-      void commit(MutableStorage &mutableStorage) override;
-      ~StorageImpl() override;
+      void commit(std::unique_ptr<MutableStorage> mutableStorage) override;
+
+     private:
+      StorageImpl(std::unique_ptr<FlatFile> block_store,
+                  std::unique_ptr<cpp_redis::redis_client> index, );
+      std::unique_ptr<FlatFile> block_store_;
+      std::unique_ptr<cpp_redis::redis_client> index_;
+      std::unique_ptr<WsvQuery> wsv_;
+      // Allows multiple readers and a single writer
+      std::shared_timed_mutex rw_lock_;
+      // Connection info
+      std::string postgres_options_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

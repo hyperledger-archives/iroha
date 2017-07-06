@@ -15,15 +15,13 @@
  * limitations under the License.
  */
 
-#include <ametsuchi/impl/command_executor_impl.hpp>
+#include <ametsuchi/impl/postgres_command_executor.hpp>
 
 namespace iroha {
   namespace ametsuchi {
 
-    bool CommandExecutorImpl::execute(const dao::Command &command) {
+    bool PostgresCommandExecutor::execute(const dao::Command &command) {
       return false;
     }
-
-
-  } // namespace ametsuchi
-} // namespace iroha
+  }  // namespace ametsuchi
+}  // namespace iroha

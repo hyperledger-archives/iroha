@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_MUTABLESTORAGE_HPP
-#define IROHA_MUTABLESTORAGE_HPP
+#ifndef IROHA_MUTABLE_STORAGE_HPP
+#define IROHA_MUTABLE_STORAGE_HPP
 
 #include <ametsuchi/block_query.hpp>
 #include <ametsuchi/command_executor.hpp>
@@ -56,4 +56,4 @@ namespace iroha {
   }  // namespace ametsuchi
 }  // namespace iroha
 
-#endif  // IROHA_MUTABLESTORAGE_HPP
+#endif  // IROHA_MUTABLE_STORAGE_HPP

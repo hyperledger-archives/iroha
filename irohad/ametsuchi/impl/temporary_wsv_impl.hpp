@@ -18,24 +18,28 @@
 #ifndef IROHA_TEMPORARY_WSV_IMPL_HPP
 #define IROHA_TEMPORARY_WSV_IMPL_HPP
 
-#include <ametsuchi/temporary_wsv.hpp>
 #include <ametsuchi/impl/storage_impl.hpp>
-#include <ametsuchi/impl/command_executor_impl.hpp>
+#include <ametsuchi/temporary_wsv.hpp>
 
 namespace iroha {
   namespace ametsuchi {
     class TemporaryWsvImpl : public TemporaryWsv {
      public:
-      TemporaryWsvImpl(StorageImpl &storage);
+      TemporaryWsvImpl(std::shared_ptr<pqxx::nontransaction> transaction,
+                       std::unique_ptr<WsvQuery> wsv,
+                       std::unique_ptr<CommandExecutor> executor);
       bool apply(const dao::Transaction &transaction,
-                 std::function<bool(const dao::Transaction &,
-                                    CommandExecutor &,
-                                    WsvQuery &)> function) override;
-     private:
-      StorageImpl &storage_;
-      CommandExecutorImpl executor_;
-    };
-  }//namespace ametsuchi
-}//namespace iroha
+                 std::function<bool(const dao::Transaction &, CommandExecutor &,
+                                    WsvQuery &)>
+                     function) override;
+      ~TemporaryWsvImpl() override = default;
 
-#endif //IROHA_TEMPORARY_WSV_IMPL_HPP
+     private:
+      std::shared_ptr<pqxx::nontransaction> transaction_;
+      std::unique_ptr<WsvQuery> wsv_;
+      std::unique_ptr<CommandExecutor> executor_;
+    };
+  }  // namespace ametsuchi
+}  // namespace iroha
+
+#endif  // IROHA_TEMPORARY_WSV_IMPL_HPP
