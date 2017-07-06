@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef IROHA_DAO_GET_BLOCKS_HPP
-#define IROHA_DAO_GET_BLOCKS_HPP
+#ifndef IROHA_MODEL_GET_BLOCKS_HPP
+#define IROHA_MODEL_GET_BLOCKS_HPP
 
 #include <model/query.hpp>
 
@@ -39,4 +39,4 @@ namespace iroha {
   }  // namespace model
 }  // namespace iroha
 
-#endif  // IROHA_GET_PEER_HPP
+#endif  // IROHA_MODEL_GET_PEER_HPP

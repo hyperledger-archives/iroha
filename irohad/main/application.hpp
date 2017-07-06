@@ -34,14 +34,14 @@ namespace iroha {
 
     ametsuchi::Ametsuchi &ametsuchi;
 
-    model::DaoCryptoProvider &cryptoProvider;
+    model::ModelCryptoProvider &cryptoProvider;
 
     model::HashProvider<32> &hashProvider;
 
    private:
     static std::shared_ptr<model::HashProvider<32>> initialize_hash_provider();
 
-    static std::shared_ptr<model::DaoCryptoProvider> initialize_crypto_provider();
+    static std::shared_ptr<model::ModelCryptoProvider> initialize_crypto_provider();
 
     static std::shared_ptr<ametsuchi::Ametsuchi> initialize_ametsuchi();
   };

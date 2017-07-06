@@ -66,7 +66,7 @@ iroha::model::Block create_block() {
   return block;
 }
 
-TEST(DaoHashProviderTest, DaoHashProviderWhenGetHashBlockIsCalled) {
+TEST(ModelHashProviderTest, ModelHashProviderWhenGetHashBlockIsCalled) {
   using iroha::model::HashProviderImpl;
   using iroha::model::HashProvider;
 
@@ -78,7 +78,7 @@ TEST(DaoHashProviderTest, DaoHashProviderWhenGetHashBlockIsCalled) {
   std::cout << "block hash: " << res.to_hexstring() << std::endl;
 }
 
-TEST(DaoHashProviderTest, DaoHashProviderWhenGetHashProposalIsCalled) {
+TEST(ModelHashProviderTest, ModelHashProviderWhenGetHashProposalIsCalled) {
   using iroha::model::HashProviderImpl;
   using iroha::model::HashProvider;
 
@@ -91,7 +91,7 @@ TEST(DaoHashProviderTest, DaoHashProviderWhenGetHashProposalIsCalled) {
   std::cout << "proposal hash: " << res.to_hexstring() << std::endl;
 }
 
-TEST(DaoHashProviderTest, DaoHashProviderWhenGetHashTransactionIsCalled) {
+TEST(ModelHashProviderTest, ModelHashProviderWhenGetHashTransactionIsCalled) {
   using iroha::model::HashProviderImpl;
   using iroha::model::HashProvider;
 

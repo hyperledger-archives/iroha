@@ -26,7 +26,7 @@ namespace iroha {
      * Crypto provider is an abstract service for making cryptography operations
      * for business logic objects (Model).
      */
-    class DaoCryptoProvider {
+    class ModelCryptoProvider {
      public:
       /**
        * Method for signature verification of a transaction.

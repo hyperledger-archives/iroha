@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-#include <dao/dao_crypto_provider_stub.hpp>
+#include <model/model_crypto_provider_stub.hpp>
 
 namespace iroha {
-  namespace dao {
-    bool DaoCryptoProviderStub::verify(const Transaction &tx) {
+  namespace model {
+    bool ModelCryptoProviderStub::verify(const Transaction &tx) {
       return true;
     }
 
-    Transaction &DaoCryptoProviderStub::sign(Transaction &tx) {
+    Transaction &ModelCryptoProviderStub::sign(Transaction &tx) {
       return tx;
     }
-  }// namespace dao
+  }// namespace model
 }// namespace iroha

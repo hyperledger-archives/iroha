@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_DAO_CRYPTO_PROVIDER_STUB_HPP
-#define IROHA_DAO_CRYPTO_PROVIDER_STUB_HPP
+#ifndef IROHA_MODEL_CRYPTO_PROVIDER_STUB_HPP
+#define IROHA_MODEL_CRYPTO_PROVIDER_STUB_HPP
 
-#include "dao_crypto_provider.hpp"
+#include "model_crypto_provider.hpp"
 #include "transaction.hpp"
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
-    class DaoCryptoProviderStub : public DaoCryptoProvider {
+    class ModelCryptoProviderStub : public ModelCryptoProvider {
      public:
 
       bool verify(const Transaction &tx) override;
@@ -34,4 +34,4 @@ namespace iroha {
   }
 }
 
-#endif  // IROHA_DAO_CRYPTO_PROVIDER_STUB_HPP
+#endif  // IROHA_MODEL_CRYPTO_PROVIDER_STUB_HPP

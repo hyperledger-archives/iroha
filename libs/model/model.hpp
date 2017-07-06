@@ -41,11 +41,11 @@
 #include "query_response.hpp"
 
 // blocks
-#include <dao/queries/get_blocks.hpp>
-#include <dao/queries/responses/blocks_response.hpp>
+#include <model/queries/get_blocks.hpp>
+#include <model/queries/responses/blocks_response.hpp>
 
 // answer error
-#include <dao/queries/responses/error_response.hpp>
+#include <model/queries/responses/error_response.hpp>
 
 
 /**
