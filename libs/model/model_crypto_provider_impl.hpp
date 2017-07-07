@@ -15,23 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_MODEL_CRYPTO_PROVIDER_STUB_HPP
-#define IROHA_MODEL_CRYPTO_PROVIDER_STUB_HPP
+#ifndef IROHA_MODEL_CRYPTO_PROVIDER_IMPL_HPP
+#define IROHA_MODEL_CRYPTO_PROVIDER_IMPL_HPP
 
 #include <model/model_crypto_provider.hpp>
-#include <model/transaction.hpp>
+#include <model/model_hash_provider.hpp>
 
 namespace iroha {
   namespace model {
 
-    class ModelCryptoProviderStub : public ModelCryptoProvider {
+    class ModelCryptoProviderImpl : public ModelCryptoProvider {
      public:
+      ModelCryptoProviderImpl(ed25519::privkey_t privkey,
+                            ed25519::pubkey_t pubkey);
 
       bool verify(const Transaction &tx) override;
 
       Transaction &sign(Transaction &tx) override;
+
+     private:
+      ed25519::privkey_t privkey_;
+      ed25519::pubkey_t pubkey_;
     };
   }
 }
 
-#endif  // IROHA_MODEL_CRYPTO_PROVIDER_STUB_HPP
+#endif  // IROHA_MODEL_CRYPTO_PROVIDER_IMPL_HPP
