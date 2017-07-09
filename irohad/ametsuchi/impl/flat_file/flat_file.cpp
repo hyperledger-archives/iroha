@@ -24,10 +24,10 @@
 namespace iroha {
   namespace ametsuchi {
 
-    FlatFile::FlatFile(const std::string &path) {
+    FlatFile::FlatFile(const std::string &path) : dump_dir(path) {
       // Check if path exist:
-      dump_dir = path;
-      check_consistency();
+//      dump_dir = path;
+//      check_consistency();
     }
 
     FlatFile::~FlatFile() {}
@@ -133,7 +133,12 @@ namespace iroha {
     }
 
     std::unique_ptr<FlatFile> FlatFile::create(const std::string &path) {
+      // TODO directory check
       return std::unique_ptr<FlatFile>(new FlatFile(path));
+    }
+
+    std::string FlatFile::directory() const {
+      return dump_dir;
     }
 
   }  // namespace ametsuchi

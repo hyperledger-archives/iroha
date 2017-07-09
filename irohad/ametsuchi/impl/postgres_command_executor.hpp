@@ -25,10 +25,10 @@ namespace iroha {
   namespace ametsuchi {
     class PostgresCommandExecutor : public CommandExecutor {
      public:
-      PostgresCommandExecutor(std::shared_ptr<pqxx::nontransaction> transaction);
+      PostgresCommandExecutor(std::unique_ptr<pqxx::nontransaction> &transaction);
       bool execute(const dao::Command &command) override;
      private:
-      std::shared_ptr<pqxx::nontransaction> transaction_;
+      std::unique_ptr<pqxx::nontransaction> &transaction_;
     };
 
   }// namespace ametsuchi

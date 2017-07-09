@@ -25,9 +25,9 @@ namespace iroha {
   namespace ametsuchi {
     class PostgresWsvQuery : public WsvQuery {
      public:
-      PostgresWsvQuery(std::shared_ptr<pqxx::nontransaction> transaction);
+      PostgresWsvQuery(std::unique_ptr<pqxx::nontransaction> &transaction);
      private:
-      std::shared_ptr<pqxx::nontransaction> transaction_;
+      std::unique_ptr<pqxx::nontransaction> &transaction_;
     };
   }//namespace ametsuchi
 }//namespace iroha

@@ -23,5 +23,9 @@ namespace iroha {
     bool PostgresCommandExecutor::execute(const dao::Command &command) {
       return false;
     }
+
+    PostgresCommandExecutor::PostgresCommandExecutor(
+        std::unique_ptr<pqxx::nontransaction> &transaction)
+        : transaction_(transaction) {}
   }  // namespace ametsuchi
 }  // namespace iroha

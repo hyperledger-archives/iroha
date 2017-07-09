@@ -19,12 +19,12 @@
 #include <ametsuchi/command_executor_stub.hpp>
 #include <ametsuchi/storage_stub.hpp>
 
-using iroha::ametsuchi::AmetsuchiStub;
+using iroha::ametsuchi::StorageStub;
 using iroha::ametsuchi::CommandExecutorStub;
 using namespace iroha::model;
 
 TEST(CommandExecutorTest, SampleTest) {
-  AmetsuchiStub ametsuchi;
+  StorageStub ametsuchi;
   CommandExecutorStub executor(ametsuchi);
 
   ASSERT_TRUE(executor.execute(AddPeer{}));

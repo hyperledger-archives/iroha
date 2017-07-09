@@ -20,12 +20,36 @@
 namespace iroha {
   namespace ametsuchi {
 
-    bool MutableStorageImpl::apply(const dao::Block &block,
-                                   std::function<bool(const dao::Block &,
-                                                      CommandExecutor &,
-                                                      WsvQuery &,
-                                                      const dao::Block &)> function) {
-      return function(block, , *this, );
+    bool MutableStorageImpl::apply(
+        const dao::Block &block,
+        std::function<bool(const dao::Block &, CommandExecutor &, WsvQuery &,
+                           const dao::Block &)>
+            function) {
+      // TODO replace last arg with previous block
+      return function(block, *executor_, *this, {});
     }
-  }//namespace ametsuchi
-}//namespace iroha
+
+    MutableStorageImpl::MutableStorageImpl(
+        std::unique_ptr<FlatFile> &block_store,
+        std::unique_ptr<cpp_redis::redis_client> index,
+        std::unique_ptr<pqxx::nontransaction> transaction,
+        std::unique_ptr<WsvQuery> wsv,
+        std::unique_ptr<CommandExecutor> executor)
+        : block_store_(block_store),
+          index_(std::move(index)),
+          transaction_(std::move(transaction)),
+          wsv_(std::move(wsv)),
+          executor_(std::move(executor)),
+          committed(false) {
+      index_->multi();
+      transaction_->exec("BEGIN;");
+    }
+
+    MutableStorageImpl::~MutableStorageImpl() {
+      if (!committed){
+        index_->discard();
+        transaction_->exec("ROLLBACK;");
+      }
+    }
+  }  // namespace ametsuchi
+}  // namespace iroha

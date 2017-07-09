@@ -25,14 +25,14 @@ namespace iroha {
   namespace ametsuchi {
     class TemporaryWsvImpl : public TemporaryWsv {
      public:
-      TemporaryWsvImpl(std::shared_ptr<pqxx::nontransaction> transaction,
+      TemporaryWsvImpl(std::unique_ptr<pqxx::nontransaction> transaction,
                        std::unique_ptr<WsvQuery> wsv,
                        std::unique_ptr<CommandExecutor> executor);
       bool apply(const dao::Transaction &transaction,
                  std::function<bool(const dao::Transaction &, CommandExecutor &,
                                     WsvQuery &)>
                      function) override;
-      ~TemporaryWsvImpl() override = default;
+      ~TemporaryWsvImpl() override;
 
      private:
       std::shared_ptr<pqxx::nontransaction> transaction_;

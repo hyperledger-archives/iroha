@@ -20,5 +20,8 @@
 namespace iroha {
   namespace ametsuchi {
 
+    PostgresWsvQuery::PostgresWsvQuery(
+        std::unique_ptr<pqxx::nontransaction> &transaction)
+        : transaction_(transaction) {}
   }  // namespace ametsuchi
 }  // namespace iroha

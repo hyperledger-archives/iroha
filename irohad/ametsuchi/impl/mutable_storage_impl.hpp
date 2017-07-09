@@ -18,21 +18,37 @@
 #ifndef IROHA_MUTABLE_STORAGE_IMPL_HPP
 #define IROHA_MUTABLE_STORAGE_IMPL_HPP
 
+#include <ametsuchi/impl/flat_file/flat_file.hpp>
 #include <ametsuchi/mutable_storage.hpp>
+#include <cpp_redis/redis_client.hpp>
+#include <pqxx/nontransaction>
 
 namespace iroha {
   namespace ametsuchi {
     class MutableStorageImpl : public MutableStorage {
+      friend class StorageImpl;
+
      public:
-      MutableStorageImpl();
+      MutableStorageImpl(std::unique_ptr<FlatFile> &block_store,
+                         std::unique_ptr<cpp_redis::redis_client> index,
+                         std::unique_ptr<pqxx::nontransaction> transaction,
+                         std::unique_ptr<WsvQuery> wsv,
+                         std::unique_ptr<CommandExecutor> executor);
       bool apply(const dao::Block &block,
                  std::function<bool(const dao::Block &, CommandExecutor &,
                                     WsvQuery &, const dao::Block &)>
                      function) override;
+      ~MutableStorageImpl() override;
 
      private:
+      std::unique_ptr<FlatFile> &block_store_;
+      std::unique_ptr<cpp_redis::redis_client> index_;
 
-      friend class StorageImpl;
+      std::unique_ptr<pqxx::nontransaction> transaction_;
+      std::unique_ptr<WsvQuery> wsv_;
+      std::unique_ptr<CommandExecutor> executor_;
+
+      bool committed;
     };
   }  // namespace ametsuchi
 }  // namespace iroha
