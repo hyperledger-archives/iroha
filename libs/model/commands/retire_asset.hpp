@@ -14,29 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef IROHA_MODEL_GET_BLOCKS_HPP
-#define IROHA_MODEL_GET_BLOCKS_HPP
+#ifndef IROHA_RETIRE_ASSET_HPP
+#define IROHA_RETIRE_ASSET_HPP
 
-#include <model/query.hpp>
+// TODO: not in mvp
+// Retire assets from the system. Only issuer can do this
 
-namespace iroha {
-  namespace model {
-
-    /**
-     * Provide user's intent for adding peer to current network
-     */
-    struct GetBlocks : public Query {
-
-      /**
-       * Id from which fetch the blocks
-       */
-      uint32_t from;
-      /**
-       * Id to which fetch the blocks
-       */
-      uint32_t to;
-    };
-  }  // namespace model
-}  // namespace iroha
-
-#endif  // IROHA_MODEL_GET_PEER_HPP
+#endif //IROHA_RETIRE_ASSET_HPP
