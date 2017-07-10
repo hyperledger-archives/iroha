@@ -61,16 +61,14 @@ int main(int argc, char *argv[]) {
   iroha::ordering::OrderingServiceStub ordering_service;
   iroha::consensus::ConsensusServiceStub consensus_service;
   iroha::network::PeerCommunicationServiceStub peer_communication_service(
-      ametsuchi, stateful_validator, chain_validator, ordering_service,
-      consensus_service, crypto_provider);
+    ordering_service,
+    consensus_service);
   iroha::torii::TransactionProcessorStub tp(stateless_validator,
-                                            peer_communication_service,
                                             crypto_provider);
   iroha::torii::QueryProcessorStub qp(ametsuchi, ametsuchi);
 
   iroha::torii::ToriiStub torii(tp, qp);
-  // shows required order of execution, since callbacks are called synchronously
-  peer_communication_service.subscribe_on_proposal();
+  // shows required order of execution, since callbacks are called synchronousl
 
   iroha::model::Transaction transaction;
   transaction.commands.push_back(std::make_shared<iroha::model::AddPeer>());

@@ -16,33 +16,16 @@
  */
 
 #include <network/peer_communication_stub.hpp>
+#include <ordering/ordering_service_stub.hpp>
+#include <consensus/consensus_service_stub.hpp>
 
 namespace iroha {
   namespace network {
 
-    using ametsuchi::Ametsuchi;
-    using validation::StatefulValidator;
-    using validation::ChainValidator;
-    using ordering::OrderingService;
-    using consensus::ConsensusService;
-    using model::Block;
 
     rxcpp::observable<rxcpp::observable<model::Block>>
     PeerCommunicationServiceStub::on_commit() {
-      return consensus_.on_commit().take_while([this](auto commit) {
-        std::cout << "[PCS] chain validation" << std::endl;
-        auto storage = storage_.createMutableStorage();
-        auto result = chain_validator_.validate(commit, *storage);
-        if (result) {
-          storage_.commit(*storage);
-        }
-        return result;
-      });
-    }
 
-    void PeerCommunicationServiceStub::propagate_transaction(
-        const model::Transaction &tx) {
-      orderer_.propagate_transaction(tx);
     }
 
     rxcpp::observable<model::Proposal>
@@ -51,31 +34,11 @@ namespace iroha {
     }
 
     PeerCommunicationServiceStub::PeerCommunicationServiceStub(
-        Ametsuchi &storage, StatefulValidator &stateful_validator,
-        ChainValidator &chain_validator, OrderingService &orderer,
-        ConsensusService &consensus, model::ModelCryptoProvider &crypto_provider)
-        : storage_(storage),
-          stateful_validator_(stateful_validator),
-          chain_validator_(chain_validator),
-          orderer_(orderer),
-          consensus_(consensus),
-          crypto_provider_(crypto_provider) {
-    }
+        ordering::OrderingServiceStub &orderer,
+        consensus::ConsensusServiceStub &consensus
+    ):
+        orderer_(orderer),
+        consensus_(consensus) {}
 
-    void PeerCommunicationServiceStub::subscribe_on_proposal() {
-      on_proposal().subscribe([this](auto proposal) {
-        std::cout << "[PCS] stateful validation" << std::endl;
-        auto wsv = storage_.createTemporaryWsv();
-        auto validated_proposal = stateful_validator_.validate(proposal, *wsv);
-        Block block;
-        std::for_each(validated_proposal.transactions.begin(),
-                      validated_proposal.transactions.end(),
-                      [&block](const auto &transaction) {
-                        block.transactions.push_back(transaction);
-                      });
-        // TODO hash and sign
-        consensus_.vote_block(block);
-      });
-    }
   }
 }
