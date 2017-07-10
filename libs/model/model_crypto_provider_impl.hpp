@@ -29,9 +29,7 @@ namespace iroha {
       ModelCryptoProviderImpl(ed25519::privkey_t privkey,
                             ed25519::pubkey_t pubkey);
 
-      bool verify(const Transaction &tx) override;
-
-      Transaction &sign(Transaction &tx) override;
+      bool verify(const Transaction &tx) const override;
 
      private:
       ed25519::privkey_t privkey_;
