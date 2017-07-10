@@ -34,7 +34,6 @@ namespace iroha {
                      function) override;
       model::Account get_account(ed25519::pubkey_t pub_key) override;
       model::Asset get_asset(std::string asset_full_name) override;
-      model::Domain get_domain(std::string domain_full_name) override;
       model::Wallet get_wallet(std::string wallet_id) override;
       std::vector<model::Wallet> get_account_wallets(
           ed25519::pubkey_t pub_key) override;

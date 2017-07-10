@@ -74,10 +74,6 @@ namespace iroha {
       return model::Asset{};
     }
 
-    model::Domain AmetsuchiStub::get_domain(std::string domain_full_name) {
-      return model::Domain{};
-    }
-
     model::Wallet AmetsuchiStub::get_wallet(std::string wallet_id) {
       return model::Wallet{};
     }

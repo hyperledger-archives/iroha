@@ -25,7 +25,6 @@
 #include <model/account.hpp>
 #include <model/wallet.hpp>
 #include <model/peer.hpp>
-#include <model/domain.hpp>
 #include <model/client.hpp>
 #include <model/peer.hpp>
 #include <model/model_crypto_provider.hpp>

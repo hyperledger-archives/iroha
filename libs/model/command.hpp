@@ -24,7 +24,6 @@ namespace iroha {
       * Abstract Command Model
       */
     struct Command {
-      // TODO: implement
       virtual ~Command() = default;
     };
   }

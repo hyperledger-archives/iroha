@@ -43,10 +43,6 @@ namespace iroha {
       return ametsuchi_.get_asset(asset_full_name);
     }
 
-    model::Domain MutableStorageStub::get_domain(std::string domain_full_name) {
-      return ametsuchi_.get_domain(domain_full_name);
-    }
-
     model::Peer MutableStorageStub::get_peer(
         ed25519::pubkey_t pub_key) {
       return ametsuchi_.get_peer(pub_key);
