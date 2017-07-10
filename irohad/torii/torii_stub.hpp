@@ -18,8 +18,9 @@
 #ifndef IROHA_TORII_STUB_HPP
 #define IROHA_TORII_STUB_HPP
 
-#include <torii/processor/client_processor.hpp>
-#include <dao/dao.hpp>
+#include <torii/processor/query_processor.hpp>
+#include <torii/processor/transaction_processor.hpp>
+#include <model/model.hpp>
 
 namespace iroha {
   namespace torii {
@@ -29,24 +30,26 @@ namespace iroha {
      */
     class ToriiStub {
      public:
-      explicit ToriiStub(ClientProcessor &processor);
+      explicit ToriiStub(TransactionProcessor &transaction_processor,
+                         QueryProcessor &query_processor);
 
       /**
        * Emulate query request from client
        * @param client - query owner
        * @param query - request for some storage information
        */
-      void get_query(dao::Client client, dao::Query &query);
+      void get_query(model::Client client, model::Query &query);
 
       /**
        * Emulate transaction request from client
        * @param client - transaction owner
        * @param tx - intent on changing state of ledger
        */
-      void get_transaction(dao::Client client, dao::Transaction &tx);
+      void get_transaction(model::Client client, model::Transaction &tx);
 
      private:
-      ClientProcessor &processor_;
+      TransactionProcessor &transaction_processor_;
+      QueryProcessor &query_processor_;
     };
   } // namespace torii
 } // namespace iroha
