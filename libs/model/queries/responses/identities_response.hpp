@@ -15,24 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ACCOUNT_RESPONSE_HPP
-#define IROHA_ACCOUNT_RESPONSE_HPP
+#ifndef IROHA_SIGNATURES_RESPONSE_HPP
+#define IROHA_SIGNATURES_RESPONSE_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
+#include <vector>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Provide response with account
+     * Provide response with signatures of account
      */
-    struct AccountResponse : public QueryResponse {
+    struct IdentitiesResponse : public QueryResponse {
 
       /**
-       * Attached account
+       * Vector with all identities attached to account
        */
-      Account account;
+      std::vector <ed25519::pubkey_t> keys;
     };
-  }  // namespace dao
+  }  // namespace model
 }  // namespace iroha
-#endif //IROHA_ACCOUNT_RESPONSE_HPP
+#endif //IROHA_SIGNATURES_RESPONSE_HPP

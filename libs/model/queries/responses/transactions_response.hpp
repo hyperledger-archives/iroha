@@ -15,24 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CREATE_ACCOUNT_HPP
-#define IROHA_CREATE_ACCOUNT_HPP
+#ifndef IROHA_TRANSACTION_RESPONSE_HPP
+#define IROHA_TRANSACTION_RESPONSE_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
+#include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Command for creation of a new account in the system
+     * Provide responded transactions
      */
-    struct CreateAccount : public Command {
+    struct TransactionsResponse : public QueryResponse {
 
       /**
-       * Account's identifier
+       * Observable contains transactions
        */
-      ed25519::pubkey_t pubkey;
+      rxcpp::observable <Transaction> transactions;
     };
-  } // namespace dao
-} // namespace iroha
-#endif //IROHA_CREATE_ACCOUNT_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif //IROHA_TRANSACTION_RESPONSE_HPP

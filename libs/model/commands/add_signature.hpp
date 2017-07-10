@@ -15,29 +15,30 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SET_QUORUM_HPP
-#define IROHA_SET_QUORUM_HPP
+#ifndef IROHA_ADD_SIGNATURE_HPP
+#define IROHA_ADD_SIGNATURE_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
 #include <string>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
+
     /**
-     * Change quorum for account
+     * Attach signature for account
      */
-    struct SetQuorum : public Command {
+    struct AddSignature : public Command {
 
       /**
-       * Changed account
+       * Destination account for adding new signatures
        */
-      std::string account_uuid;
+      std::string dst_account;
 
       /**
-       * new value of quorum
+       * New signature
        */
-      uint32_t new_quorum;
+      Signature new_signature;
     };
-  } // namespace dao
+  } // namespace model
 } // namespace iroha
-#endif //IROHA_SET_QUORUM_HPP
+#endif //IROHA_ADD_SIGNATURE_HPP

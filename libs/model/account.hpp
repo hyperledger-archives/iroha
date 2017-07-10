@@ -16,7 +16,7 @@ limitations under the License.
 #ifndef IROHA_ACCOUNT_HPP
 #define IROHA_ACCOUNT_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
 #include <string>
 
 namespace iroha {

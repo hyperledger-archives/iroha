@@ -17,48 +17,48 @@
 
 #pragma once
 
-#include <dao/block.hpp>
-#include <dao/proposal.hpp>
-#include <dao/transaction.hpp>
-#include <dao/transaction_response.hpp>
-#include <dao/asset.hpp>
-#include <dao/account.hpp>
-#include <dao/wallet.hpp>
-#include <dao/peer.hpp>
-#include <dao/domain.hpp>
-#include <dao/client.hpp>
-#include <dao/peer.hpp>
-#include <dao/dao_crypto_provider.hpp>
-#include <dao/dao_hash_provider.hpp>
+#include <model/block.hpp>
+#include <model/proposal.hpp>
+#include <model/transaction.hpp>
+#include <model/transaction_response.hpp>
+#include <model/asset.hpp>
+#include <model/account.hpp>
+#include <model/wallet.hpp>
+#include <model/peer.hpp>
+#include <model/domain.hpp>
+#include <model/client.hpp>
+#include <model/peer.hpp>
+#include <model/model_crypto_provider.hpp>
+#include <model/model_hash_provider.hpp>
 
 // commands
-#include <dao/command.hpp>
-#include <dao/commands/add_peer.hpp>
-#include <dao/commands/add_signature.hpp>
-#include <dao/commands/create_account.hpp>
-#include <dao/commands/create_asset.hpp>
-#include <dao/commands/create_wallet.hpp>
-#include <dao/commands/issue_asset.hpp>
-#include <dao/commands/set_permissions.hpp>
-#include <dao/commands/set_quorum.hpp>
-#include <dao/commands/transfer_asset.hpp>
+#include <model/command.hpp>
+#include <model/commands/add_peer.hpp>
+#include <model/commands/add_signature.hpp>
+#include <model/commands/create_account.hpp>
+#include <model/commands/create_asset.hpp>
+#include <model/commands/create_wallet.hpp>
+#include <model/commands/issue_asset.hpp>
+#include <model/commands/set_permissions.hpp>
+#include <model/commands/set_quorum.hpp>
+#include <model/commands/transfer_asset.hpp>
 
 // query
-#include <dao/query.hpp>
-#include <dao/queries/get_account.hpp>
-#include <dao/queries/get_blocks.hpp>
-#include <dao/queries/get_identities.hpp>
-#include <dao/queries/get_transactions.hpp>
-#include <dao/queries/get_wallets.hpp>
+#include <model/query.hpp>
+#include <model/queries/get_account.hpp>
+#include <model/queries/get_blocks.hpp>
+#include <model/queries/get_identities.hpp>
+#include <model/queries/get_transactions.hpp>
+#include <model/queries/get_wallets.hpp>
 
 // query response
-#include <dao/query_response.hpp>
-#include <dao/queries/responses/account_response.hpp>
-#include <dao/queries/responses/blocks_response.hpp>
-#include <dao/queries/responses/error_response.hpp>
-#include <dao/queries/responses/identities_response.hpp>
-#include <dao/queries/responses/transactions_response.hpp>
-#include <dao/queries/responses/wallets_response.hpp>
+#include <model/query_response.hpp>
+#include <model/queries/responses/account_response.hpp>
+#include <model/queries/responses/blocks_response.hpp>
+#include <model/queries/responses/error_response.hpp>
+#include <model/queries/responses/identities_response.hpp>
+#include <model/queries/responses/transactions_response.hpp>
+#include <model/queries/responses/wallets_response.hpp>
 
 
 /**

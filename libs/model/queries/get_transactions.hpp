@@ -15,30 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ADD_SIGNATURE_HPP
-#define IROHA_ADD_SIGNATURE_HPP
+#ifndef IROHA_GET_TRANSACTIONS_HPP
+#define IROHA_GET_TRANSACTIONS_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
 #include <string>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Attach signature for account
+     * Query for getting transactions of account
      */
-    struct AddSignature : public Command {
+    struct GetWalletTransactions : Query {
 
       /**
-       * Destination account for adding new signatures
+       * Wallet identifier
        */
-      std::string dst_account;
-
-      /**
-       * New signature
-       */
-      Signature new_signature;
+      std::string wallet_uuid;
     };
-  } // namespace dao
+  } // namespace model
 } // namespace iroha
-#endif //IROHA_ADD_SIGNATURE_HPP
+#endif //IROHA_GET_TRANSACTIONS_HPP

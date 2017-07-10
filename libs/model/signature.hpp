@@ -29,6 +29,6 @@ namespace iroha {
       ed25519::sig_t signature;
       ed25519::pubkey_t pubkey;
     };
-  } // namespace dao
+  } // namespace model
 } // namespace iroha
 #endif  // IROHA_SIGNATURE_HPP

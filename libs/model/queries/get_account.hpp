@@ -15,35 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_TRANSFER_ASSET_HPP
-#define IROHA_TRANSFER_ASSET_HPP
+#ifndef IROHA_GET_ACCOUNT_HPP
+#define IROHA_GET_ACCOUNT_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
 #include <string>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Transfer asset from one account to another
+     * Query for getting account's metadata
      */
-    struct TransferAsset : public Command {
+    struct GetAccount : Query {
 
       /**
-       * Source wallet
+       * Account identity
        */
-      std::string src_wallet_uuid;
-
-      /**
-       * Destination wallet
-       */
-      std::string dst_wallet_uuid;
-
-      /**
-       * Amount of transferred asset
-       */
-      std::string amount;
+      ed25519::pubkey_t account_pub;
     };
-  } // namespace dao
+  } // namespace model
 } // namespace iroha
-#endif //IROHA_TRANSFER_ASSET_HPP
+#endif //IROHA_GET_ACCOUNT_HPP

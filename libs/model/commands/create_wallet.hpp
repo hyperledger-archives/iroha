@@ -15,25 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_TRANSACTION_RESPONSE_HPP
-#define IROHA_TRANSACTION_RESPONSE_HPP
+#ifndef IROHA_CREATE_WALLET_HPP
+#define IROHA_CREATE_WALLET_HPP
 
-#include <dao/dao.hpp>
-#include <rxcpp/rx-observable.hpp>
+#include <model/model.hpp>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Provide responded transactions
+     * Create new wallet and attach it to account
      */
-    struct TransactionsResponse : public QueryResponse {
+    struct CreateWallet : public Command {
 
       /**
-       * Observable contains transactions
+       * Wallet's asset
        */
-      rxcpp::observable <Transaction> transactions;
+      Asset asset;
+
+      /**
+       * Attached account
+       */
+      Account account;
     };
-  }  // namespace dao
-}  // namespace iroha
-#endif //IROHA_TRANSACTION_RESPONSE_HPP
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_CREATE_WALLET_HPP

@@ -15,29 +15,35 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SET_PERMISSIONS_HPP
-#define IROHA_SET_PERMISSIONS_HPP
+#ifndef IROHA_TRANSFER_ASSET_HPP
+#define IROHA_TRANSFER_ASSET_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
 #include <string>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
+
     /**
-     * Set permissions for account
+     * Transfer asset from one account to another
      */
-    struct SetPermissions : public Command {
+    struct TransferAsset : public Command {
 
       /**
-       * Identifier of account
+       * Source wallet
        */
-      std::string account_uuid;
+      std::string src_wallet_uuid;
 
       /**
-       * New permissions of account
+       * Destination wallet
        */
-      Account::Permissions new_permissions;
+      std::string dst_wallet_uuid;
+
+      /**
+       * Amount of transferred asset
+       */
+      std::string amount;
     };
-  } // namespace dao
+  } // namespace model
 } // namespace iroha
-#endif //IROHA_SET_PERMISSIONS_HPP
+#endif //IROHA_TRANSFER_ASSET_HPP

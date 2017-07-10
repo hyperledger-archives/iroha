@@ -15,29 +15,24 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CREATE_WALLET_HPP
-#define IROHA_CREATE_WALLET_HPP
+#ifndef IROHA_ACCOUNT_RESPONSE_HPP
+#define IROHA_ACCOUNT_RESPONSE_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Create new wallet and attach it to account
+     * Provide response with account
      */
-    struct CreateWallet : public Command {
-
-      /**
-       * Wallet's asset
-       */
-      Asset asset;
+    struct AccountResponse : public QueryResponse {
 
       /**
        * Attached account
        */
       Account account;
     };
-  } // namespace dao
-} // namespace iroha
-#endif //IROHA_CREATE_WALLET_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif //IROHA_ACCOUNT_RESPONSE_HPP

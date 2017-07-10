@@ -15,25 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_TRANSACTIONS_HPP
-#define IROHA_GET_TRANSACTIONS_HPP
+#ifndef IROHA_SET_PERMISSIONS_HPP
+#define IROHA_SET_PERMISSIONS_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
 #include <string>
 
 namespace iroha {
-  namespace dao {
-
+  namespace model {
     /**
-     * Query for getting transactions of account
+     * Set permissions for account
      */
-    struct GetWalletTransactions : Query {
+    struct SetPermissions : public Command {
 
       /**
-       * Wallet identifier
+       * Identifier of account
        */
-      std::string wallet_uuid;
+      std::string account_uuid;
+
+      /**
+       * New permissions of account
+       */
+      Account::Permissions new_permissions;
     };
-  } // namespace dao
+  } // namespace model
 } // namespace iroha
-#endif //IROHA_GET_TRANSACTIONS_HPP
+#endif //IROHA_SET_PERMISSIONS_HPP

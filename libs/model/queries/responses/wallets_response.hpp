@@ -18,11 +18,11 @@
 #ifndef IROHA_WALLET_RESPONSE_HPP
 #define IROHA_WALLET_RESPONSE_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
 #include <vector>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
      * Provide responded wallets
@@ -34,6 +34,6 @@ namespace iroha {
        */
       std::vector <Wallet> wallets;
     };
-  }  // namespace dao
+  }  // namespace model
 }  // namespace iroha
 #endif //IROHA_WALLET_RESPONSE_HPP

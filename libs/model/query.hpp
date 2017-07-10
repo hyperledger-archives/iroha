@@ -18,7 +18,7 @@
 #ifndef IROHA_QUERY_HPP
 #define IROHA_QUERY_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
 #include <string>
 
 namespace iroha {

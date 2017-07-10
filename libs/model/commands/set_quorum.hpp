@@ -15,31 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ISSUE_ASSET_HPP
-#define IROHA_ISSUE_ASSET_HPP
+#ifndef IROHA_SET_QUORUM_HPP
+#define IROHA_SET_QUORUM_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
 #include <string>
 
 namespace iroha {
-  namespace dao {
-
+  namespace model {
     /**
-     * Add amount of asset to an account
+     * Change quorum for account
      */
-    struct IssueAsset : public Command {
+    struct SetQuorum : public Command {
 
       /**
-       * Wallet for adding assets
-       * Note: wallet must belong to transaction's creator
+       * Changed account
        */
-      std::string wallet_uuid;
+      std::string account_uuid;
 
       /**
-       * Amount to add to wallet
+       * new value of quorum
        */
-      std::string amount;
+      uint32_t new_quorum;
     };
-  } // namespace dao
+  } // namespace model
 } // namespace iroha
-#endif //IROHA_ISSUE_ASSET_HPP
+#endif //IROHA_SET_QUORUM_HPP

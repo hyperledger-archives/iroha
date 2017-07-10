@@ -23,7 +23,7 @@ limitations under the License.
 #include <memory>
 #include <vector>
 #include <string>
-#include <dao/signature.hpp>
+#include <model/signature.hpp>
 
 namespace iroha {
   namespace model {

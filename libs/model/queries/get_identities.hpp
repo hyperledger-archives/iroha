@@ -18,10 +18,10 @@
 #ifndef IROHA_GET_SIGNATURES_HPP
 #define IROHA_GET_SIGNATURES_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
      * Query for getting signatures of account
@@ -33,6 +33,6 @@ namespace iroha {
        */
       ed25519::pubkey_t account_pub;
     };
-  } // namespace dao
+  } // namespace model
 } // namespace iroha
 #endif //IROHA_GET_SIGNATURES_HPP

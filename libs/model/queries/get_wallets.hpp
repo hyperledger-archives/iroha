@@ -15,24 +15,21 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CREATE_ASSET_HPP
-#define IROHA_CREATE_ASSET_HPP
+#ifndef IROHA_GET_WALLETS_HPP
+#define IROHA_GET_WALLETS_HPP
 
-#include <dao/dao.hpp>
+#include <model/model.hpp>
+#include <string>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Create new asset in the system
+     * Query for get all account's wallet
      */
-    struct CreateAsset : public Command {
-
-      /**
-       * Asset for inserting in system
-       */
-      Asset new_asset;
+    struct GetWallets : Query {
+      ed25519::pubkey_t account_pub;
     };
-  } // namespace dao
+  } // namespace model
 } // namespace iroha
-#endif //IROHA_CREATE_ASSET_HPP
+#endif //IROHA_GET_WALLETS_HPP

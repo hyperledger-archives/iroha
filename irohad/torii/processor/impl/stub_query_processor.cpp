@@ -50,7 +50,7 @@ namespace iroha {
 
     void QueryProcessorStub::handle_get_blocks(const model::GetBlocks &blocks) {
       subject_.get_subscriber().on_next(
-          std::make_shared<model::GetBlocksResponse>());
+          std::make_shared<model::BlocksResponse>());
     }
 
   }  // namespace torii

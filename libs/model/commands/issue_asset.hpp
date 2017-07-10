@@ -15,25 +15,31 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SIGNATURES_RESPONSE_HPP
-#define IROHA_SIGNATURES_RESPONSE_HPP
+#ifndef IROHA_ISSUE_ASSET_HPP
+#define IROHA_ISSUE_ASSET_HPP
 
-#include <dao/dao.hpp>
-#include <vector>
+#include <model/model.hpp>
+#include <string>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Provide response with signatures of account
+     * Add amount of asset to an account
      */
-    struct IdentitiesResponse : public QueryResponse {
+    struct IssueAsset : public Command {
 
       /**
-       * Vector with all identities attached to account
+       * Wallet for adding assets
+       * Note: wallet must belong to transaction's creator
        */
-      std::vector <ed25519::pubkey_t> keys;
+      std::string wallet_uuid;
+
+      /**
+       * Amount to add to wallet
+       */
+      std::string amount;
     };
-  }  // namespace dao
-}  // namespace iroha
-#endif //IROHA_SIGNATURES_RESPONSE_HPP
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_ISSUE_ASSET_HPP

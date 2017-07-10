@@ -15,21 +15,24 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_WALLETS_HPP
-#define IROHA_GET_WALLETS_HPP
+#ifndef IROHA_CREATE_ACCOUNT_HPP
+#define IROHA_CREATE_ACCOUNT_HPP
 
-#include <dao/dao.hpp>
-#include <string>
+#include <model/model.hpp>
 
 namespace iroha {
-  namespace dao {
+  namespace model {
 
     /**
-     * Query for get all account's wallet
+     * Command for creation of a new account in the system
      */
-    struct GetWallets : Query {
-      ed25519::pubkey_t account_pub;
+    struct CreateAccount : public Command {
+
+      /**
+       * Account's identifier
+       */
+      ed25519::pubkey_t pubkey;
     };
-  } // namespace dao
+  } // namespace model
 } // namespace iroha
-#endif //IROHA_GET_WALLETS_HPP
+#endif //IROHA_CREATE_ACCOUNT_HPP
