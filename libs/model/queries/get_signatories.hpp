@@ -15,25 +15,24 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SIGNATURES_RESPONSE_HPP
-#define IROHA_SIGNATURES_RESPONSE_HPP
+#ifndef IROHA_GET_SIGNATURES_HPP
+#define IROHA_GET_SIGNATURES_HPP
 
-#include <model/model.hpp>
-#include <vector>
+#include <model/query.hpp>
 
 namespace iroha {
   namespace model {
 
     /**
-     * Provide response with signatures of account
+     * Query for getting signatories attached to account
      */
-    struct IdentitiesResponse : public QueryResponse {
+    struct GetSignatories : Query {
 
       /**
-       * Vector with all identities attached to account
+       * Account public key
        */
-      std::vector <ed25519::pubkey_t> keys;
+      ed25519::pubkey_t account_pub;
     };
-  }  // namespace model
-}  // namespace iroha
-#endif //IROHA_SIGNATURES_RESPONSE_HPP
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_GET_SIGNATURES_HPP

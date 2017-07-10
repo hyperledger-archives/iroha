@@ -15,24 +15,30 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_SIGNATURES_HPP
-#define IROHA_GET_SIGNATURES_HPP
+#ifndef IROHA_ADD_SIGNATURE_HPP
+#define IROHA_ADD_SIGNATURE_HPP
 
-#include <model/model.hpp>
+#include <common/types.hpp>
+#include <model/command.hpp>
+#include <string>
 
 namespace iroha {
   namespace model {
 
     /**
-     * Query for getting signatures of account
+     * Attach signatory for account
      */
-    struct GetIdentities : Query {
+    struct AddSignatory : public Command {
+      /**
+       * Destination account to add new signatory
+       */
+      std::string dst_account;
 
       /**
-       * Main identity
+       * New signatory is identified with public key
        */
-      ed25519::pubkey_t account_pub;
+      ed25519::pubkey_t pubkey;
     };
-  } // namespace model
-} // namespace iroha
-#endif //IROHA_GET_SIGNATURES_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_ADD_SIGNATURE_HPP

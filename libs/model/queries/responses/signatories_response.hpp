@@ -15,30 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ADD_SIGNATURE_HPP
-#define IROHA_ADD_SIGNATURE_HPP
+#ifndef IROHA_SIGNATURES_RESPONSE_HPP
+#define IROHA_SIGNATURES_RESPONSE_HPP
 
-#include <model/model.hpp>
-#include <string>
+#include <common/types.hpp>
+#include <model/query_response.hpp>
+#include <vector>
 
 namespace iroha {
   namespace model {
 
     /**
-     * Attach signature for account
+     * Provide response with signatories attached to the account
      */
-    struct AddSignature : public Command {
-
+    struct SignatoriesResponse : public QueryResponse {
       /**
-       * Destination account for adding new signatures
+       * Vector with all public keys attached to account
        */
-      std::string dst_account;
-
-      /**
-       * New signature
-       */
-      Signature new_signature;
+      std::vector<ed25519::pubkey_t> keys;
     };
-  } // namespace model
-} // namespace iroha
-#endif //IROHA_ADD_SIGNATURE_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_SIGNATURES_RESPONSE_HPP

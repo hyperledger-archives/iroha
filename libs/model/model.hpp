@@ -33,7 +33,7 @@
 // commands
 #include <model/command.hpp>
 #include <model/commands/add_peer.hpp>
-#include <model/commands/add_signature.hpp>
+#include <model/commands/add_signatory.hpp>
 #include <model/commands/create_account.hpp>
 #include <model/commands/create_asset.hpp>
 #include <model/commands/create_wallet.hpp>
@@ -46,7 +46,7 @@
 #include <model/query.hpp>
 #include <model/queries/get_account.hpp>
 #include <model/queries/get_blocks.hpp>
-#include <model/queries/get_identities.hpp>
+#include <model/queries/get_signatories.hpp>
 #include <model/queries/get_transactions.hpp>
 #include <model/queries/get_wallets.hpp>
 
@@ -55,7 +55,7 @@
 #include <model/queries/responses/account_response.hpp>
 #include <model/queries/responses/blocks_response.hpp>
 #include <model/queries/responses/error_response.hpp>
-#include <model/queries/responses/identities_response.hpp>
+#include <model/queries/responses/signatories_response.hpp>
 #include <model/queries/responses/transactions_response.hpp>
 #include <model/queries/responses/wallets_response.hpp>
 
