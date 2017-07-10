@@ -16,6 +16,7 @@
  */
 
 #include <validation/stateful/stub_command_validator.hpp>
+#include <iostream>
 
 namespace iroha {
   namespace validation {

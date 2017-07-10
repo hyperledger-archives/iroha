@@ -28,9 +28,7 @@ namespace iroha {
     QueryProcessorStub::QueryProcessorStub(ametsuchi::WsvQuery &wsv,
                                            ametsuchi::BlockQuery &block) :
         wsv_(wsv), block_(block) {
-      handler_.insert<model::GetBlocks>([this](const auto &query) {
-        return this->handle_get_blocks(query);
-      });
+
     }
 
     void QueryProcessorStub::query_handle(model::Client client,
@@ -48,10 +46,7 @@ namespace iroha {
       return subject_.get_observable();
     }
 
-    void QueryProcessorStub::handle_get_blocks(const model::GetBlocks &blocks) {
-      subject_.get_subscriber().on_next(
-          std::make_shared<model::BlocksResponse>());
-    }
+
 
   }  // namespace torii
 }  // namespace iroha

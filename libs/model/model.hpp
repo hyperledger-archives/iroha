@@ -45,7 +45,6 @@
 // query
 #include <model/query.hpp>
 #include <model/queries/get_account.hpp>
-#include <model/queries/get_blocks.hpp>
 #include <model/queries/get_signatories.hpp>
 #include <model/queries/get_transactions.hpp>
 #include <model/queries/get_wallets.hpp>
@@ -53,7 +52,6 @@
 // query response
 #include <model/query_response.hpp>
 #include <model/queries/responses/account_response.hpp>
-#include <model/queries/responses/blocks_response.hpp>
 #include <model/queries/responses/error_response.hpp>
 #include <model/queries/responses/signatories_response.hpp>
 #include <model/queries/responses/transactions_response.hpp>
