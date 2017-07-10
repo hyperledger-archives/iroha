@@ -20,6 +20,7 @@
 #include <model/model_crypto_provider_impl.hpp>
 #include <model/model_hash_provider_impl.hpp>
 #include <validation/stateless/validator_impl.hpp>
+#include <chrono>
 
 using namespace iroha::model;
 
