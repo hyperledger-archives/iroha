@@ -28,16 +28,12 @@ namespace iroha {
     class TransactionProcessorStub : public TransactionProcessor {
      public:
       TransactionProcessorStub(const validation::StatelessValidator &validator,
-                               network::PeerCommunicationService &service,
                                model::ModelCryptoProvider &provider);
 
       void transaction_handle(model::Client client, model::Transaction &transaction) override;
 
-      rxcpp::observable<model::TransactionResponse> transaction_notifier() override;
-
      private:
       const validation::StatelessValidator &validator_;
-      network::PeerCommunicationService &service_;
       model::ModelCryptoProvider &provider_;
 
       rxcpp::observable<model::TransactionResponse> notifier_;
