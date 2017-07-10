@@ -15,18 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_WALLET_RESPONSE_HPP
+#define IROHA_WALLET_RESPONSE_HPP
+
+#include <model/model.hpp>
+#include <vector>
 
 namespace iroha {
   namespace model {
-    /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
 
-#endif  // IROHA_COMMAND_HPP
+    /**
+     * Provide responded wallets
+     */
+    struct WalletsResponse : public QueryResponse {
+
+      /**
+       * List with all attached wallets
+       */
+      std::vector <Wallet> wallets;
+    };
+  }  // namespace model
+}  // namespace iroha
+#endif //IROHA_WALLET_RESPONSE_HPP

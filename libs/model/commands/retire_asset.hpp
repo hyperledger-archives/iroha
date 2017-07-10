@@ -14,19 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_RETIRE_ASSET_HPP
+#define IROHA_RETIRE_ASSET_HPP
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+// TODO: not in mvp
+// Retire assets from the system. Only issuer can do this
 
-namespace iroha {
-  namespace model {
-    /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
-
-#endif  // IROHA_COMMAND_HPP
+#endif //IROHA_RETIRE_ASSET_HPP

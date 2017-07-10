@@ -15,18 +15,24 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_CREATE_ASSET_HPP
+#define IROHA_CREATE_ASSET_HPP
+
+#include <model/model.hpp>
 
 namespace iroha {
   namespace model {
-    /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
 
-#endif  // IROHA_COMMAND_HPP
+    /**
+     * Create new asset in the system
+     */
+    struct CreateAsset : public Command {
+
+      /**
+       * Asset for inserting in system
+       */
+      Asset new_asset;
+    };
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_CREATE_ASSET_HPP

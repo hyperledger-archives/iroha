@@ -16,13 +16,30 @@ limitations under the License.
 #ifndef IROHA_WALLET_HPP
 #define IROHA_WALLET_HPP
 
+#include <model/model.hpp>
+#include <string>
+
 namespace iroha {
   namespace model {
     /**
       * Wallet Model
       */
     struct Wallet {
-      // TODO: implement
+
+      /**
+       * Internal identifier of wallet
+       */
+      std::string uuid;
+
+      /**
+       * Wallet's currency
+       */
+      Asset asset;
+
+      /**
+       * Current wallet's balance
+       */
+      std::string balance;
     };
   }
 }

@@ -26,40 +26,11 @@ namespace iroha {
      * Asset Data Model
      */
     struct Asset {
-      /**
-       * Asset visibility.
-       * PUB - everyone from any domain can use this asset
-       * PROTECT - account in this domain and it's subdomain can use this asset
-       * PRIV - accounts only in this domain can use this asset
-       */
-      enum Visibility { PUB, PRIV, PROTECT };
 
-      const Visibility visibility;
-      /*
-       * Asset name
+      /**
+       * Asset unique identifier
        */
       const std::string name;
-
-      /*
-       * Full domain name like sberkek.ru
-       */
-      const std::string domain_name;
-
-      /*
-       * Optional JSON
-       */
-      const std::string optional_data;
-
-      /*
-       * If Asset is open every account according to it's domain (see
-       * Visibility)
-       * can create a Wallet using this asset.
-       */
-      const bool is_open;
-      /*
-       * This filed is used for the number representation.
-       */
-      const uint32_t precision;
     };
   }
 }

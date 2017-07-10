@@ -15,18 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_GET_ACCOUNT_HPP
+#define IROHA_GET_ACCOUNT_HPP
+
+#include <model/model.hpp>
+#include <string>
 
 namespace iroha {
   namespace model {
-    /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
 
-#endif  // IROHA_COMMAND_HPP
+    /**
+     * Query for getting account's metadata
+     */
+    struct GetAccount : Query {
+
+      /**
+       * Account identity
+       */
+      ed25519::pubkey_t account_pub;
+    };
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_GET_ACCOUNT_HPP

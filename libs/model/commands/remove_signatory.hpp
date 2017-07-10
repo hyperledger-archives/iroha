@@ -14,19 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_REMOVE_SIGNATORY_HPP
+#define IROHA_REMOVE_SIGNATORY_HPP
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#include <common/types.hpp>
+#include <model/command.hpp>
+#include <string>
 
 namespace iroha {
   namespace model {
-    /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
 
-#endif  // IROHA_COMMAND_HPP
+    /**
+     * Attach signatory for account
+     */
+    struct RemoveSignatory : public Command {
+      /**
+       * Destination account to remove from
+       */
+      std::string dst_account;
+
+      /**
+       * Public key of signatory to remove.
+       * Note: This public key must be attach to account.
+       * There must be at least two signatories to perform this operation.
+       */
+      ed25519::pubkey_t pubkey;
+    };
+  }  // namespace model
+}  // namespace iroha
+
+#endif  // IROHA_REMOVE_SIGNATORY_HPP

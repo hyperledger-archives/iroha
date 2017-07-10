@@ -38,10 +38,6 @@ namespace iroha {
       return ametsuchi_.get_asset(asset_full_name);
     }
 
-    model::Domain TemporaryWsvStub::get_domain(std::string domain_full_name) {
-      return ametsuchi_.get_domain(domain_full_name);
-    }
-
     model::Wallet TemporaryWsvStub::get_wallet(std::string wallet_id) {
       return ametsuchi_.get_wallet(wallet_id);
     }

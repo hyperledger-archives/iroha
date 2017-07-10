@@ -96,5 +96,5 @@ namespace iroha {
       return concat_hash;
     }
 
-  }  // namespace dao
+  }  // namespace model
 }  // namespace iroha

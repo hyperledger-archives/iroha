@@ -14,29 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef IROHA_MODEL_GET_BLOCKS_HPP
-#define IROHA_MODEL_GET_BLOCKS_HPP
 
-#include <model/query.hpp>
+#ifndef IROHA_GET_TRANSACTIONS_HPP
+#define IROHA_GET_TRANSACTIONS_HPP
+
+#include <model/model.hpp>
+#include <string>
 
 namespace iroha {
   namespace model {
 
     /**
-     * Provide user's intent for adding peer to current network
+     * Query for getting transactions of account
      */
-    struct GetBlocks : public Query {
+    struct GetWalletTransactions : Query {
 
       /**
-       * Id from which fetch the blocks
+       * Wallet identifier
        */
-      uint32_t from;
-      /**
-       * Id to which fetch the blocks
-       */
-      uint32_t to;
+      std::string wallet_uuid;
     };
-  }  // namespace model
-}  // namespace iroha
-
-#endif  // IROHA_MODEL_GET_PEER_HPP
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_GET_TRANSACTIONS_HPP

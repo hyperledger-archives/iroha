@@ -22,6 +22,8 @@ limitations under the License.
 #include <model/signature.hpp>
 #include <memory>
 #include <vector>
+#include <string>
+#include <model/signature.hpp>
 
 namespace iroha {
   namespace model {

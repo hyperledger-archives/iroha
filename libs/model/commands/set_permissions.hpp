@@ -15,18 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_SET_PERMISSIONS_HPP
+#define IROHA_SET_PERMISSIONS_HPP
+
+#include <model/model.hpp>
+#include <string>
 
 namespace iroha {
   namespace model {
     /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
+     * Set permissions for account
+     */
+    struct SetPermissions : public Command {
 
-#endif  // IROHA_COMMAND_HPP
+      /**
+       * Identifier of account
+       */
+      std::string account_uuid;
+
+      /**
+       * New permissions of account
+       */
+      Account::Permissions new_permissions;
+    };
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_SET_PERMISSIONS_HPP

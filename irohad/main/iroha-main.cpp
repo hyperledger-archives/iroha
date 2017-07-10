@@ -66,10 +66,6 @@ int main(int argc, char *argv[]) {
   iroha::torii::ToriiStub torii(tp, qp);
   // shows required order of execution, since callbacks are called synchronously
   peer_communication_service.subscribe_on_proposal();
-  iroha::model::GetBlocks query;
-  query.from = 32;
-  query.to = 64;
-  torii.get_query({}, query);
 
   iroha::model::Transaction transaction;
   transaction.commands.push_back(std::make_shared<iroha::model::AddPeer>());

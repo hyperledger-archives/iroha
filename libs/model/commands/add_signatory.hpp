@@ -15,18 +15,30 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_ADD_SIGNATURE_HPP
+#define IROHA_ADD_SIGNATURE_HPP
+
+#include <common/types.hpp>
+#include <model/command.hpp>
+#include <string>
 
 namespace iroha {
   namespace model {
-    /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
 
-#endif  // IROHA_COMMAND_HPP
+    /**
+     * Attach signatory for account
+     */
+    struct AddSignatory : public Command {
+      /**
+       * Destination account to add new signatory
+       */
+      std::string dst_account;
+
+      /**
+       * New signatory is identified with public key
+       */
+      ed25519::pubkey_t pubkey;
+    };
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_ADD_SIGNATURE_HPP

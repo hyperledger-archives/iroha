@@ -15,18 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_TRANSACTION_RESPONSE_HPP
+#define IROHA_TRANSACTION_RESPONSE_HPP
+
+#include <model/model.hpp>
+#include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
   namespace model {
-    /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
 
-#endif  // IROHA_COMMAND_HPP
+    /**
+     * Provide responded transactions
+     */
+    struct TransactionsResponse : public QueryResponse {
+
+      /**
+       * Observable contains transactions
+       */
+      rxcpp::observable <Transaction> transactions;
+    };
+  }  // namespace model
+}  // namespace iroha
+#endif //IROHA_TRANSACTION_RESPONSE_HPP

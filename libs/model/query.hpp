@@ -17,6 +17,10 @@
 
 #ifndef IROHA_QUERY_HPP
 #define IROHA_QUERY_HPP
+
+#include <model/model.hpp>
+#include <string>
+
 namespace iroha {
   namespace model {
     /**
@@ -24,7 +28,13 @@ namespace iroha {
      * Concrete queries should extend this interface.
      */
     struct Query {
-      virtual ~Query(){}
+
+      /**
+       * Signature of query's owner
+       */
+      Signature signature;
+
+      virtual ~Query() {}
     };
   } //namespace model
 } //namespace iroha

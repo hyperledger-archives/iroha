@@ -16,6 +16,7 @@
  */
 
 #include <ametsuchi/command_executor_stub.hpp>
+#include <iostream>
 
 namespace iroha {
   namespace ametsuchi {

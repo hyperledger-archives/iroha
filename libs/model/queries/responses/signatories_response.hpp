@@ -15,18 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_SIGNATURES_RESPONSE_HPP
+#define IROHA_SIGNATURES_RESPONSE_HPP
+
+#include <common/types.hpp>
+#include <model/query_response.hpp>
+#include <vector>
 
 namespace iroha {
   namespace model {
-    /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
 
-#endif  // IROHA_COMMAND_HPP
+    /**
+     * Provide response with signatories attached to the account
+     */
+    struct SignatoriesResponse : public QueryResponse {
+      /**
+       * Vector with all public keys attached to account
+       */
+      std::vector<ed25519::pubkey_t> keys;
+    };
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_SIGNATURES_RESPONSE_HPP

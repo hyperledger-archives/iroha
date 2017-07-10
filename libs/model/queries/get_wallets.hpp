@@ -15,18 +15,21 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_GET_WALLETS_HPP
+#define IROHA_GET_WALLETS_HPP
+
+#include <model/model.hpp>
+#include <string>
 
 namespace iroha {
   namespace model {
-    /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
 
-#endif  // IROHA_COMMAND_HPP
+    /**
+     * Query for get all account's wallet
+     */
+    struct GetWallets : Query {
+      ed25519::pubkey_t account_pub;
+    };
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_GET_WALLETS_HPP

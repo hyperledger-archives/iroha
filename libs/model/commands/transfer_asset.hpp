@@ -15,18 +15,35 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_TRANSFER_ASSET_HPP
+#define IROHA_TRANSFER_ASSET_HPP
+
+#include <model/model.hpp>
+#include <string>
 
 namespace iroha {
   namespace model {
-    /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
 
-#endif  // IROHA_COMMAND_HPP
+    /**
+     * Transfer asset from one account to another
+     */
+    struct TransferAsset : public Command {
+
+      /**
+       * Source wallet
+       */
+      std::string src_wallet_uuid;
+
+      /**
+       * Destination wallet
+       */
+      std::string dst_wallet_uuid;
+
+      /**
+       * Amount of transferred asset
+       */
+      std::string amount;
+    };
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_TRANSFER_ASSET_HPP

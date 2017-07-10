@@ -15,18 +15,31 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_ISSUE_ASSET_HPP
+#define IROHA_ISSUE_ASSET_HPP
+
+#include <model/model.hpp>
+#include <string>
 
 namespace iroha {
   namespace model {
-    /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
 
-#endif  // IROHA_COMMAND_HPP
+    /**
+     * Add amount of asset to an account
+     */
+    struct IssueAsset : public Command {
+
+      /**
+       * Wallet for adding assets
+       * Note: wallet must belong to transaction's creator
+       */
+      std::string wallet_uuid;
+
+      /**
+       * Amount to add to wallet
+       */
+      std::string amount;
+    };
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_ISSUE_ASSET_HPP

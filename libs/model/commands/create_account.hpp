@@ -15,18 +15,24 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_CREATE_ACCOUNT_HPP
+#define IROHA_CREATE_ACCOUNT_HPP
+
+#include <model/model.hpp>
 
 namespace iroha {
   namespace model {
-    /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
 
-#endif  // IROHA_COMMAND_HPP
+    /**
+     * Command for creation of a new account in the system
+     */
+    struct CreateAccount : public Command {
+
+      /**
+       * Account's identifier
+       */
+      ed25519::pubkey_t pubkey;
+    };
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_CREATE_ACCOUNT_HPP

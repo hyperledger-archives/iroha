@@ -35,18 +35,6 @@ namespace iroha {
        * Public key of peer
        */
       iroha::ed25519::pubkey_t pubkey;
-
-      enum PeerRole {
-        VALIDATOR,
-        VIEWER
-      };
-
-      /**
-       * Peer role in consensus
-       */
-      PeerRole peer_role;
-
-
     };
   }
 }

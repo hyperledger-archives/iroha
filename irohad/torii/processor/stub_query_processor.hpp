@@ -54,7 +54,6 @@ namespace iroha {
       ametsuchi::WsvQuery &wsv_;
       ametsuchi::BlockQuery &block_;
 
-      void handle_get_blocks(const model::GetBlocks &blocks);
 
     };
   } //namespace torii

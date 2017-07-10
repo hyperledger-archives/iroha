@@ -15,18 +15,24 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_GET_SIGNATURES_HPP
+#define IROHA_GET_SIGNATURES_HPP
+
+#include <model/query.hpp>
 
 namespace iroha {
   namespace model {
-    /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
 
-#endif  // IROHA_COMMAND_HPP
+    /**
+     * Query for getting signatories attached to account
+     */
+    struct GetSignatories : Query {
+
+      /**
+       * Account public key
+       */
+      ed25519::pubkey_t account_pub;
+    };
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_GET_SIGNATURES_HPP

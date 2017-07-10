@@ -56,13 +56,6 @@ namespace iroha {
       virtual model::Asset get_asset(std::string asset_full_name) = 0;
 
       /**
-       * Get domain by domain's full name. For example soramitsu.co.jp
-       * @param full_name of a domain
-       * @return Model Domain
-       */
-      virtual model::Domain get_domain(std::string domain_full_name) = 0;
-
-      /**
        * Get wallet by wallet_id
        * @param wallet_id
        * @return Model Wallet

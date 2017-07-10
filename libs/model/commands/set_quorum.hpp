@@ -15,18 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_SET_QUORUM_HPP
+#define IROHA_SET_QUORUM_HPP
+
+#include <model/model.hpp>
+#include <string>
 
 namespace iroha {
   namespace model {
     /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
+     * Change quorum for account
+     */
+    struct SetQuorum : public Command {
 
-#endif  // IROHA_COMMAND_HPP
+      /**
+       * Changed account
+       */
+      std::string account_uuid;
+
+      /**
+       * new value of quorum
+       */
+      uint32_t new_quorum;
+    };
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_SET_QUORUM_HPP

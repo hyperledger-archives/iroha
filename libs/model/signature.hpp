@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef IROHA_SINGATURE_HPP
-#define IROHA_SINGATURE_HPP
+#ifndef IROHA_SIGNATURE_HPP
+#define IROHA_SIGNATURE_HPP
 
 #include <common/types.hpp>
 
@@ -29,7 +29,6 @@ namespace iroha {
       ed25519::sig_t signature;
       ed25519::pubkey_t pubkey;
     };
-  }
-}
-
-#endif  // IROHA_SINGATURE_HPP
+  } // namespace model
+} // namespace iroha
+#endif  // IROHA_SIGNATURE_HPP

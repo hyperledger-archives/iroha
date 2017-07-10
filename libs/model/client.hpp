@@ -17,6 +17,7 @@
 
 #ifndef IROHA_CLIENT_HPP
 #define IROHA_CLIENT_HPP
+
 namespace iroha {
   namespace model {
 
