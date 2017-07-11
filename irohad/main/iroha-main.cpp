@@ -35,9 +35,6 @@ limitations under the License.
 
 int main(int argc, char *argv[]) {
 
-  iroha::model::Transaction transaction;
-  transaction.commands.push_back(std::make_shared<iroha::model::AddPeer>());
-  torii.get_transaction({}, transaction);
 
   return 0;
 }

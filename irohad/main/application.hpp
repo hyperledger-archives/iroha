@@ -21,6 +21,7 @@ struct Context{
 
 class Irohad{
   public:
+
     void Irohad();
 
     void run();
