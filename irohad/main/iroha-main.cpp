@@ -34,43 +34,6 @@ limitations under the License.
 #include "server_runner.hpp"
 
 int main(int argc, char *argv[]) {
-  /*
-    connection::api::CommandService commandService;
-    connection::api::QueryService queryService;
-    consensus::connection::SumeragiService sumeragiService;
-    ordering::connection::OrderingService orderingService;
-
-    ServerRunner serverRunner("0.0.0.0", 50051, {
-        &commandService,
-        &queryService,
-        &sumeragiService,
-        &orderingService
-    });
-  */
-//  iroha::Irohad irohad;
-  iroha::ametsuchi::AmetsuchiStub ametsuchi;
-
-  // TODO replace with actual public private keys
-  auto seed = iroha::create_seed("some passphrase");
-  auto keypair = iroha::create_keypair(seed);
-  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair.privkey, keypair.pubkey);
-
-  iroha::validation::StatelessValidatorImpl stateless_validator(crypto_provider);
-  iroha::validation::StatefulValidatorStub stateful_validator;
-  iroha::validation::ChainValidatorStub chain_validator;
-  iroha::ordering::OrderingServiceStub ordering_service;
-  iroha::consensus::ConsensusServiceStub consensus_service;
-  iroha::network::PeerCommunicationServiceStub peer_communication_service(
-      ametsuchi, stateful_validator, chain_validator, ordering_service,
-      consensus_service, crypto_provider);
-  iroha::torii::TransactionProcessorStub tp(stateless_validator,
-                                            peer_communication_service,
-                                            crypto_provider);
-  iroha::torii::QueryProcessorStub qp(ametsuchi, ametsuchi);
-
-  iroha::torii::ToriiStub torii(tp, qp);
-  // shows required order of execution, since callbacks are called synchronously
-  peer_communication_service.subscribe_on_proposal();
 
   iroha::model::Transaction transaction;
   transaction.commands.push_back(std::make_shared<iroha::model::AddPeer>());
