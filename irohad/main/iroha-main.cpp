@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
   iroha::torii::QueryProcessorStub qp(ametsuchi, ametsuchi);
 
   iroha::torii::ToriiStub torii(tp, qp);
-  // shows required order of execution, since callbacks are called synchronousl
+  // shows required order of execution, since callbacks are called synchronously
 
   iroha::model::Transaction transaction;
   transaction.commands.push_back(std::make_shared<iroha::model::AddPeer>());

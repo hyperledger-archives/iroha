@@ -26,8 +26,8 @@ namespace iroha {
 
     TransactionProcessorStub::TransactionProcessorStub(
         const StatelessValidator &validator,
-        ModelCryptoProvider &provider)
-        : validator_(validator), provider_(provider) {
+        ModelCryptoProvider &crptoProvider)
+        : validator_(validator), crptoProvider_(crptoProvider) {
       // Handle on_proposal
       auto proposal_tx_filter = [](const auto &tx) {
         // TODO filter depending on client-tx map

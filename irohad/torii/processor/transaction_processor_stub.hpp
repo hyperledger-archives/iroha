@@ -34,7 +34,7 @@ namespace iroha {
 
      private:
       const validation::StatelessValidator &validator_;
-      model::ModelCryptoProvider &provider_;
+      model::ModelCryptoProvider &crptoProvider_;
 
       rxcpp::observable<model::TransactionResponse> notifier_;
     };
