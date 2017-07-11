@@ -21,8 +21,8 @@ target_link_libraries(server_runner
     schema
     )
 
-add_executable(iroha-main iroha-main.cpp)
-target_link_libraries(iroha-main
+add_library(irohad application.cpp)
+target_link_libraries(irohad
     server_runner
     model
     ametsuchi
@@ -36,4 +36,9 @@ target_link_libraries(iroha-main
     client_processor
     torii
     crypto
+    )
+
+add_executable(iroha-main iroha-main.cpp)
+target_link_libraries(iroha-main
+    irohad
     )
