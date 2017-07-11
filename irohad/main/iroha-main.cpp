@@ -14,27 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <network/network_api.h>
-#include <consensus/connection/service.hpp>
-#include <consensus/consensus_service_stub.hpp>
-#include <network/peer_communication_stub.hpp>
-#include <ordering/ordering_service_stub.hpp>
-#include <torii/processor/stub_query_processor.hpp>
-#include <torii/processor/transaction_processor_stub.hpp>
-#include <torii/torii_stub.hpp>
-#include <validation/chain/validator_stub.hpp>
-#include <validation/stateful/stub_validator.hpp>
-#include <validation/stateless/validator_impl.hpp>
-
-#include <model/model.hpp>
-#include <model/model_crypto_provider_impl.hpp>
-#include <crypto/crypto.hpp>
-#include <ametsuchi/ametsuchi_stub.hpp>
-
-#include "server_runner.hpp"
+#include <main/application.hpp>
 
 int main(int argc, char *argv[]) {
 
+  auto irohad = Irohad();
+  irohad.run();
 
   return 0;
 }

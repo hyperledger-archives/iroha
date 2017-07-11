@@ -12,6 +12,10 @@ limitations under the License.
 */
 #include <main/application.hpp>
 
+Irohad::Irohad(){
+
+}
+
 void Irohad::run(){
 //  iroha::Irohad irohad;
   iroha::ametsuchi::AmetsuchiStub ametsuchi;
