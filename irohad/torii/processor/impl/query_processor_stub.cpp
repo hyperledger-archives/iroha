@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include <torii/processor/stub_query_processor.hpp>
+#include <torii/processor/query_processor_stub.hpp>
 
 namespace iroha {
   namespace torii {

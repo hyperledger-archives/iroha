@@ -45,23 +45,10 @@ namespace iroha {
     };
 
     /**
-     * Interface for propagating transaction in a network
-     */
-    class TransactionPropagator {
-     public:
-      /**
-       * Method spreads transaction to other members of a network
-       * @param tx - transaction for propagation
-       */
-      virtual void propagate_transaction(const model::Transaction &tx) = 0;
-    };
-
-    /**
      * Public API interface for communication between current peer and other
      * peers in a network
      */
-    class PeerCommunicationService : public TransactionPropagator,
-                                     public ConsensusListener {
+    class PeerCommunicationService : public ConsensusListener {
     };
   }
 }
