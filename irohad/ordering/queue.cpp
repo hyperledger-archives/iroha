@@ -71,7 +71,7 @@ namespace ordering {
     Block getBlock() {
       Block block;
       while (!tx_queue.empty()) {
-        block.mutable_body()->add_txs()->CopyFrom(tx_queue.top());
+        block.mutable_body()->add_transactions()->CopyFrom(tx_queue.top());
         tx_queue.pop();
       }
       setCreated();

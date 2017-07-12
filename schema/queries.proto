@@ -1,0 +1,28 @@
+syntax = "proto3";
+package iroha.protocol;
+
+message GetAccount {
+  string account_name = 1;
+}
+
+message GetSignatories {
+  string account_name = 1;
+}
+
+message GetAccountTransactions {
+  string account_name = 1;
+}
+
+message GetAccountAssets{
+  string account_name = 1;
+}
+
+message Query {
+
+  oneof query {
+    GetAccount get_account = 1;
+    GetSignatories get_account_signatories = 2;
+    GetAccountTransactions get_account_transactions = 3;
+    GetAccountAssets get_account_assets = 4;
+  }
+}

@@ -24,6 +24,7 @@
 #include <set>
 #include <common/types.hpp>
 #include <common/byteutils.hpp>
+#include <block.pb.h>
 
 #include "connection/service.hpp"
 #include "connection/client.hpp"
@@ -126,7 +127,6 @@ namespace consensus {
       Block ret;
       ret.CopyFrom(block);
       ret.mutable_header()->set_created_time(iroha::time::now64());
-      *ret.mutable_header()->mutable_peer_signature()->Add() = newSignature;
 
       return ret;
     }
@@ -155,7 +155,7 @@ namespace consensus {
       size_t numValidSignatures = 0;
       std::set<std::string> usedPubkeys;
 
-      auto peerSigs = block.header().peer_signature();
+      auto peerSigs = block.header().signatures();
       for (auto const &sig: peerSigs) {
         // FIXME: bytes in proto -> std::string in C++ (null value problem)
         if (usedPubkeys.count(sig.pubkey())) continue;

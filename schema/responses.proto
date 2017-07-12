@@ -1,0 +1,4 @@
+syntax = "proto3";
+package iroha.protocol;
+
+// TODO: Proto client reponses go here
