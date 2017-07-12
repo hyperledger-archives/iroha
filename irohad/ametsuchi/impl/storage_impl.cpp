@@ -15,32 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_EXECUTOR_STUB_HPP
-#define IROHA_COMMAND_EXECUTOR_STUB_HPP
-
-#include <ametsuchi/command_executor.hpp>
-#include <ametsuchi/wsv_query.hpp>
-#include <model/model.hpp>
-#include <functional>
-#include <handler_map/handler_map.hpp>
-#include <memory>
-#include <unordered_map>
+#include <ametsuchi/impl/storage_impl.hpp>
 
 namespace iroha {
   namespace ametsuchi {
 
-    class CommandExecutorStub : public CommandExecutor {
-     public:
-      CommandExecutorStub(WsvQuery &query);
-      bool execute(const model::Command &command) override;
+    std::unique_ptr<TemporaryWsv> StorageImpl::createTemporaryWsv() {
+      return nullptr;
+    }
 
-     private:
-      bool executeAddPeer(const model::AddPeer &command);
-      WsvQuery &query_;
-      HandlerMap<model::Command, bool> map_;
-    };
+    std::unique_ptr<MutableStorage> StorageImpl::createMutableStorage() {
+      return nullptr;
+    }
 
+    void StorageImpl::commit(MutableStorage &mutableStorage) {
+
+    }
+
+    StorageImpl::~StorageImpl() {
+
+    }
   }  // namespace ametsuchi
 }  // namespace iroha
-
-#endif  // IROHA_COMMAND_EXECUTOR_STUB_HPP

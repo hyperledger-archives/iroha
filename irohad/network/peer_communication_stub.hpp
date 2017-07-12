@@ -18,7 +18,7 @@
 #define IROHA_PEER_COMMUNICATION_STUB_HPP
 
 #include <network/network_api.h>
-#include <ametsuchi/ametsuchi.hpp>
+#include <ametsuchi/storage.hpp>
 #include <consensus/consensus_service_stub.hpp>
 #include <ordering/ordering_service.hpp>
 #include <validation/chain/validator.hpp>

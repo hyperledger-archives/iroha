@@ -33,7 +33,7 @@
 #include <model/model.hpp>
 #include <model/model_crypto_provider_impl.hpp>
 #include <crypto/crypto.hpp>
-#include <ametsuchi/ametsuchi_stub.hpp>
+#include <ametsuchi/impl/storage_impl.hpp>
 
 #include "server_runner.hpp"
 

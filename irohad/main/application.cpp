@@ -22,7 +22,7 @@ Irohad::Irohad():
 
 void Irohad::run(){
 //  iroha::Irohad irohad;
-  iroha::ametsuchi::AmetsuchiStub ametsuchi;
+//  iroha::ametsuchi::StorageImpl ametsuchi;
 
   // TODO replace with actual public private keys
   auto seed = iroha::create_seed("some passphrase");
@@ -41,8 +41,8 @@ void Irohad::run(){
     stateless_validator,
     crypto_provider
   );
-  iroha::torii::QueryProcessorStub qp(ametsuchi, ametsuchi);
+//  iroha::torii::QueryProcessorStub qp(ametsuchi, ametsuchi);
 
-  iroha::torii::ToriiStub torii(tp, qp);
+//  iroha::torii::ToriiStub torii(tp, qp);
 
 }
