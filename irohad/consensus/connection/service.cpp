@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "service.hpp"
+#include <consensus/connection/service.hpp>
 #include <block.pb.h>
 #include <endpoint.pb.h>
 

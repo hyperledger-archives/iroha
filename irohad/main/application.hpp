@@ -27,15 +27,13 @@
 #include <torii/processor/transaction_processor_stub.hpp>
 #include <torii/torii_stub.hpp>
 #include <validation/chain/validator_stub.hpp>
-#include <validation/stateful/stub_validator.hpp>
 #include <validation/stateless/validator_impl.hpp>
 
-#include <model/model.hpp>
 #include <model/model_crypto_provider_impl.hpp>
 #include <crypto/crypto.hpp>
 #include <ametsuchi/impl/storage_impl.hpp>
 
-#include "server_runner.hpp"
+#include <main/server_runner.hpp>
 
 
 class Irohad{

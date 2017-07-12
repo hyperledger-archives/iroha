@@ -30,7 +30,7 @@ void Irohad::run(){
   iroha::model::ModelCryptoProviderImpl crypto_provider(keypair.privkey, keypair.pubkey);
 
   iroha::validation::StatelessValidatorImpl stateless_validator(crypto_provider);
-  iroha::validation::StatefulValidatorStub stateful_validator;
+//  iroha::validation::StatefulValidatorStub stateful_validator;
   iroha::validation::ChainValidatorStub chain_validator;
   iroha::ordering::OrderingServiceStub ordering_service;
   iroha::consensus::ConsensusServiceStub consensus_service;

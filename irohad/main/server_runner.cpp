@@ -19,7 +19,7 @@ limitations under the License.
 #include <grpc++/server_context.h>
 #include <logger/logger.hpp>
 
-#include "server_runner.hpp"
+#include <main/server_runner.hpp>
 
 logger::Logger console("ServerRunner");
 

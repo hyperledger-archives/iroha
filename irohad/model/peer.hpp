@@ -17,7 +17,7 @@ limitations under the License.
 #define IROHA_PEER_H
 
 #include <common/types.hpp>
-#include "account.hpp"
+#include <model/account.hpp>
 
 namespace iroha {
   namespace model {

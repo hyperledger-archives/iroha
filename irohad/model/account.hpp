@@ -17,7 +17,6 @@ limitations under the License.
 #define IROHA_ACCOUNT_HPP
 
 #include <common/types.hpp>
-#include <model/model.hpp>
 #include <string>
 
 namespace iroha {
