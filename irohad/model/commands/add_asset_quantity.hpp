@@ -15,27 +15,40 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_QUERY_HPP
-#define IROHA_QUERY_HPP
+#ifndef IROHA_ISSUE_ASSET_HPP
+#define IROHA_ISSUE_ASSET_HPP
 
 #include <model/model.hpp>
 #include <string>
 
 namespace iroha {
   namespace model {
+
     /**
-     * This model represents user intent for reading ledger.
-     * Concrete queries should extend this interface.
+     * Add amount of asset to an account
      */
-    struct Query {
+    struct AddAssetQuantity : public Command {
+      /**
+       * Account where to add assets
+       */
+      std::string account_name;
 
       /**
-       * Signature of query's owner
+       * Asset to issue
+       * Note: must exist in the system
        */
-      Signature signature;
+      std::string asset_name;
 
-      virtual ~Query() {}
+      /**
+       * Amount to add to wallet
+       */
+      std::string amount;
+
+      bool validate(ametsuchi::WsvQuery& queries,
+                    const Account& creator) override;
+      bool execute(ametsuchi::WsvQuery& queries,
+                   ametsuchi::WsvCommand& commands) override;
     };
-  } //namespace model
-} //namespace iroha
-#endif //IROHA_QUERY_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_ISSUE_ASSET_HPP

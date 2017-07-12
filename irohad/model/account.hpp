@@ -16,6 +16,7 @@ limitations under the License.
 #ifndef IROHA_ACCOUNT_HPP
 #define IROHA_ACCOUNT_HPP
 
+#include <common/types.hpp>
 #include <model/model.hpp>
 #include <string>
 
@@ -26,9 +27,7 @@ namespace iroha {
      * Account Model
      */
     struct Account {
-
       struct Permissions {
-
         /**
          * Can account add assets to own account;
          * Dangerous operation - require high number of quorum;
@@ -61,9 +60,14 @@ namespace iroha {
       };
 
       /**
-       * Is this account banned for operations
+       * User name is used as unique identifier of an account
        */
-      bool is_banned;
+      std::string user_name;
+      /*
+       * Account has only one domain.
+       * Name of the domain of a account
+       */
+      std::string domain_name;
 
       /**
        * Account permissions
@@ -78,7 +82,7 @@ namespace iroha {
       /**
        * Identifier of account
        */
-      ed25519::pubkey_t pubkey;
+      ed25519::pubkey_t master_key;
     };
   }
 }

@@ -15,35 +15,33 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_TRANSFER_ASSET_HPP
-#define IROHA_TRANSFER_ASSET_HPP
+#ifndef IROHA_SET_PERMISSIONS_HPP
+#define IROHA_SET_PERMISSIONS_HPP
 
-#include <model/model.hpp>
+#include <model/command.hpp>
 #include <string>
 
 namespace iroha {
   namespace model {
-
     /**
-     * Transfer asset from one account to another
+     * Set permissions for account
      */
-    struct TransferAsset : public Command {
+    struct SetPermissions : public Command {
+      /**
+       * Identifier of account to set permission
+       */
+      std::string account_name;
 
       /**
-       * Source wallet
+       * New permissions of account
        */
-      std::string src_wallet_uuid;
+      Account::Permissions new_permissions;
 
-      /**
-       * Destination wallet
-       */
-      std::string dst_wallet_uuid;
-
-      /**
-       * Amount of transferred asset
-       */
-      std::string amount;
+      bool validate(ametsuchi::WsvQuery& queries,
+                    const Account& creator) override;
+      bool execute(ametsuchi::WsvQuery& queries,
+                   ametsuchi::WsvCommand& commands) override;
     };
-  } // namespace model
-} // namespace iroha
-#endif //IROHA_TRANSFER_ASSET_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_SET_PERMISSIONS_HPP

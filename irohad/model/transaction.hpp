@@ -23,7 +23,7 @@ limitations under the License.
 #include <memory>
 #include <vector>
 #include <string>
-#include <model/signature.hpp>
+
 
 namespace iroha {
   namespace model {
@@ -59,7 +59,7 @@ namespace iroha {
        * During a stateful validation look at account and compare numbers
        * if number inside a transaction is less than in account,
        * this transaction is replayed.
-       * BODY field
+       * META field
        */
       uint64_t tx_counter;
 

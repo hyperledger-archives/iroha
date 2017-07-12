@@ -14,19 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_CREATE_DOMAIN_HPP
+#define IROHA_CREATE_DOMAIN_HPP
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#include <model/model.hpp>
 
 namespace iroha {
   namespace model {
-    /**
-      * Abstract Command Model
-      */
-    struct Command {
-      virtual ~Command() = default;
-    };
-  }
-}
 
-#endif  // IROHA_COMMAND_HPP
+    /**
+     * Create new asset in the system
+     */
+    struct CreateDomain : public Command {
+      /**
+       * Asset to insert to the system
+       */
+      Domain new_domain;
+
+      bool validate(ametsuchi::WsvQuery& queries,
+                    const Account& creator) override;
+      bool execute(ametsuchi::WsvQuery& queries,
+                   ametsuchi::WsvCommand& commands) override;
+    };
+  }  // namespace model
+}
+#endif  // IROHA_CREATE_DOMAIN_HPP

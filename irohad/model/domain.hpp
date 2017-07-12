@@ -14,10 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef IROHA_RETIRE_ASSET_HPP
-#define IROHA_RETIRE_ASSET_HPP
+#ifndef IROHA_DOMAIN_HPP
+#define IROHA_DOMAIN_HPP
 
-// TODO: not in mvp
-// Retire assets from the system. Only issuer can do this
+#include <common/types.hpp>
+#include <string>
 
-#endif //IROHA_RETIRE_ASSET_HPP
+namespace iroha {
+  namespace model {
+
+    /**
+     * Domain Model
+     * //TODO: rethink in next version, currently only default domain is used
+     */
+    struct Domain {
+      /**
+       * Domain unique identifier
+       */
+      const std::string full_name;
+
+      const std::string parent_full_name;
+      /**
+       * Can everyone join domain
+       */
+      bool open;
+    };
+  }
+}
+
+#endif  // IROHA_DOMAIN_HPP

@@ -13,35 +13,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef IROHA_WALLET_HPP
-#define IROHA_WALLET_HPP
 
-#include <model/model.hpp>
-#include <string>
+#ifndef IROHA_PROPOSAL_HPP
+#define IROHA_PROPOSAL_HPP
+
+#include <vector>
+#include <model/transaction.hpp>
 
 namespace iroha {
   namespace model {
+
     /**
-      * Wallet Model
-      */
-    struct Wallet {
+     * Proposal is a Model-structure that provide bunch of transactions emitted by
+     * ordering service.
+     * Proposal has no signatures and other meta information.
+     */
+    struct Proposal {
+      explicit Proposal(std::vector<Transaction> txs) : transactions(txs) {}
 
       /**
-       * Internal identifier of wallet
+       * Bunch of transactions provided by ordering service.
        */
-      std::string uuid;
-
-      /**
-       * Wallet's currency
-       */
-      Asset asset;
-
-      /**
-       * Current wallet's balance
-       */
-      std::string balance;
+      const std::vector<Transaction> transactions;
     };
   }
 }
 
-#endif  // IROHA_WALLET_HPP
+#endif  // IROHA_PROPOSAL_HPP

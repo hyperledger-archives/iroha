@@ -1,5 +1,4 @@
 add_subdirectory(crypto)
 add_subdirectory(datetime)
 add_subdirectory(timer)
-add_subdirectory(model)
 add_subdirectory(logger)

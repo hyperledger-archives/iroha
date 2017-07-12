@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_ACCOUNT_HPP
-#define IROHA_GET_ACCOUNT_HPP
+#ifndef IROHA_GET_TRANSACTIONS_HPP
+#define IROHA_GET_TRANSACTIONS_HPP
 
 #include <model/model.hpp>
 #include <string>
@@ -25,15 +25,29 @@ namespace iroha {
   namespace model {
 
     /**
-     * Query for getting account's metadata
+     * Query for getting transactions of wallet(AccountAsset) of an account
      */
-    struct GetAccount : Query {
+    struct GetAccountAssetTransactions : Query {
+      /**
+       * Account name
+       */
+      std::string account_name;
 
       /**
-       * Account identity
+       * Asset name
        */
-      ed25519::pubkey_t account_pub;
+      std::string asset_name;
     };
-  } // namespace model
-} // namespace iroha
-#endif //IROHA_GET_ACCOUNT_HPP
+
+    /**
+      * Query for getting transactions of account
+      */
+    struct GetAccountTransactions : Query {
+      /**
+       * Account name
+       */
+      std::string account_name;
+    };
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_GET_TRANSACTIONS_HPP

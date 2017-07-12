@@ -14,29 +14,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef IROHA_PROPOSAL_HPP
-#define IROHA_PROPOSAL_HPP
+#ifndef IROHA_MODEL_CRYPTO_PROVIDER_HPP
+#define IROHA_MODEL_CRYPTO_PROVIDER_HPP
 
-#include <vector>
-#include "transaction.hpp"
+#include <model/transaction.hpp>
 
 namespace iroha {
   namespace model {
 
     /**
-     * Proposal is a Model-structure that provide bunch of transactions emitted by
-     * ordering service.
-     * Proposal has no signatures and other meta information.
+     * Crypto provider is an abstract service for making cryptography operations
+     * for business logic objects (Model).
      */
-    struct Proposal {
-      explicit Proposal(std::vector<Transaction> txs) : transactions(txs) {}
-
+    class ModelCryptoProvider {
+     public:
       /**
-       * Bunch of transactions provided by ordering service.
+       * Method for signature verification of a transaction.
+       * @param tx - transaction for verification
+       * @return true if transaction signature is valid, otherwise false
        */
-      const std::vector<Transaction> transactions;
+      virtual bool verify(const Transaction &tx) const = 0;
+
+
     };
   }
 }
-
-#endif  // IROHA_PROPOSAL_HPP
+#endif  // IROHA_MODEL_CRYPTO_PROVIDER_HPP

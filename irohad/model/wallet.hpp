@@ -13,28 +13,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#ifndef IROHA_WALLET_HPP
+#define IROHA_WALLET_HPP
 
-#ifndef IROHA_MODEL_HASH_PROVIDER_IMPL_HPP
-#define IROHA_MODEL_HASH_PROVIDER_IMPL_HPP
-
-#include <algorithm>
-#include <common/types.hpp>
-#include <crypto/base64.hpp>
-#include <crypto/crypto.hpp>
-#include <crypto/hash.hpp>
-#include "model_hash_provider.hpp"
+#include <string>
 
 namespace iroha {
   namespace model {
-    class HashProviderImpl : public HashProvider<ed25519::pubkey_t::size()> {
-     public:
-      iroha::hash256_t get_hash(const Proposal &proposal) override;
+    /**
+      * Account has Asset model representation
+      */
+    struct Wallet {
+      /**
+       * Asset identifier
+       */
+      std::string asset_name;
 
-      iroha::hash256_t get_hash(const Block &block) override;
+      /**
+       * Account identifier
+       */
+      std::string account_name;
 
-      iroha::hash256_t get_hash(const Transaction &tx) override;
+      /**
+       * Current balance
+       */
+      std::string balance;
     };
   }
 }
 
-#endif  // IROHA_MODEL_HASH_PROVIDER_IMPL_HPP
+#endif  // IROHA_WALLET_HPP

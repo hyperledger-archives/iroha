@@ -15,25 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_TRANSACTIONS_HPP
-#define IROHA_GET_TRANSACTIONS_HPP
+#ifndef IROHA_ADD_PEER_HPP
+#define IROHA_ADD_PEER_HPP
 
-#include <model/model.hpp>
-#include <string>
+#include <model/command.hpp>
+#include <model/peer.hpp>
 
 namespace iroha {
   namespace model {
 
     /**
-     * Query for getting transactions of account
+     * Provide user's intent for adding peer to current network
      */
-    struct GetWalletTransactions : Query {
-
+    struct AddPeer : public Command {
       /**
-       * Wallet identifier
+       * Peer for adding
        */
-      std::string wallet_uuid;
+      Peer peer;
+
+      bool validate(ametsuchi::WsvQuery& queries,
+                    const Account& creator) override;
+      bool execute(ametsuchi::WsvQuery& queries,
+                   ametsuchi::WsvCommand& commands) override;
     };
-  } // namespace model
-} // namespace iroha
-#endif //IROHA_GET_TRANSACTIONS_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_ADD_PEER_HPP

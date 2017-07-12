@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CREATE_ACCOUNT_HPP
-#define IROHA_CREATE_ACCOUNT_HPP
+#ifndef IROHA_GET_ACCOUNT_HPP
+#define IROHA_GET_ACCOUNT_HPP
 
-#include <model/model.hpp>
+#include <model/query.hpp>
+#include <string>
 
 namespace iroha {
   namespace model {
 
     /**
-     * Command for creation of a new account in the system
+     * Query for getting account's metadata
      */
-    struct CreateAccount : public Command {
-
+    struct GetAccount : Query {
       /**
-       * Account's identifier
+       * Account identifier
        */
-      ed25519::pubkey_t pubkey;
+      std::string account_name;
     };
-  } // namespace model
-} // namespace iroha
-#endif //IROHA_CREATE_ACCOUNT_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_GET_ACCOUNT_HPP

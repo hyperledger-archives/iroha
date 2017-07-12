@@ -15,29 +15,43 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SET_QUORUM_HPP
-#define IROHA_SET_QUORUM_HPP
+#ifndef IROHA_TRANSFER_ASSET_HPP
+#define IROHA_TRANSFER_ASSET_HPP
 
-#include <model/model.hpp>
+#include <model/command.hpp>
 #include <string>
 
 namespace iroha {
   namespace model {
+
     /**
-     * Change quorum for account
+     * Transfer asset from one account to another
      */
-    struct SetQuorum : public Command {
+    struct TransferAsset : public Command {
+      /**
+       * Source account
+       */
+      std::string src_account_name;
 
       /**
-       * Changed account
+       * Destination account
        */
-      std::string account_uuid;
+      std::string dst_account_name;
 
       /**
-       * new value of quorum
+       * Asset to transfer
        */
-      uint32_t new_quorum;
+      std::string asset_name;
+      /**
+       * Amount of transferred asset
+       */
+      std::string amount;
+
+      bool validate(ametsuchi::WsvQuery& queries,
+                    const Account& creator) override;
+      bool execute(ametsuchi::WsvQuery& queries,
+                   ametsuchi::WsvCommand& commands) override;
     };
-  } // namespace model
-} // namespace iroha
-#endif //IROHA_SET_QUORUM_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_TRANSFER_ASSET_HPP

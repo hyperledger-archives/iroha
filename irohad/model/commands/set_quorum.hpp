@@ -15,24 +15,33 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_SIGNATURES_HPP
-#define IROHA_GET_SIGNATURES_HPP
+#ifndef IROHA_SET_QUORUM_HPP
+#define IROHA_SET_QUORUM_HPP
 
-#include <model/query.hpp>
+#include <model/model.hpp>
+#include <string>
 
 namespace iroha {
   namespace model {
-
     /**
-     * Query for getting signatories attached to account
+     * Change quorum for account
      */
-    struct GetSignatories : Query {
+    struct SetQuorum : public Command {
+      /**
+       * Account in which change the quorum
+       */
+      std::string account_name;
 
       /**
-       * Account public key
+       * New value of quorum
        */
-      ed25519::pubkey_t account_pub;
+      uint32_t new_quorum;
+
+      bool validate(ametsuchi::WsvQuery& queries,
+                    const Account& creator) override;
+      bool execute(ametsuchi::WsvQuery& queries,
+                   ametsuchi::WsvCommand& commands) override;
     };
-  } // namespace model
-} // namespace iroha
-#endif //IROHA_GET_SIGNATURES_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_SET_QUORUM_HPP

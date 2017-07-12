@@ -14,30 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_ASSIGN_MASTER_KEY_HPP
+#define IROHA_ASSIGN_MASTER_KEY_HPP
 
-#ifndef IROHA_SET_PERMISSIONS_HPP
-#define IROHA_SET_PERMISSIONS_HPP
-
-#include <model/model.hpp>
+#include <common/types.hpp>
+#include <model/command.hpp>
 #include <string>
 
 namespace iroha {
   namespace model {
+
     /**
-     * Set permissions for account
+     * Attach signatory for account
      */
-    struct SetPermissions : public Command {
+    struct AssignMasterKey : public Command {
+      /**
+       * Destination account to assign master key
+       */
+      std::string dst_account;
 
       /**
-       * Identifier of account
+       * Public key to assign.
+       * Note: It must be in account's signatories
        */
-      std::string account_uuid;
+      ed25519::pubkey_t pubkey;
 
-      /**
-       * New permissions of account
-       */
-      Account::Permissions new_permissions;
+      bool validate(ametsuchi::WsvQuery& queries,
+                    const Account& creator) override;
+      bool execute(ametsuchi::WsvQuery& queries,
+                   ametsuchi::WsvCommand& commands) override;
     };
-  } // namespace model
-} // namespace iroha
-#endif //IROHA_SET_PERMISSIONS_HPP
+  }  // namespace model
+}  // namespace iroha
+
+#endif  // IROHA_ASSIGN_MASTER_KEY_HPP

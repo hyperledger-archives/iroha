@@ -18,9 +18,10 @@ limitations under the License.
 #define IROHA_BLOCK_HPP
 
 #include <common/types.hpp>
+#include <model/signature.hpp>
+#include <model/transaction.hpp>
 #include <vector>
-#include "signature.hpp"
-#include "transaction.hpp"
+#include <model/proposal.hpp>
 
 namespace iroha {
   namespace model {

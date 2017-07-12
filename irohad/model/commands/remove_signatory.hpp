@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef IROHA_ADD_SIGNATURE_HPP
-#define IROHA_ADD_SIGNATURE_HPP
+#ifndef IROHA_REMOVE_SIGNATORY_HPP
+#define IROHA_REMOVE_SIGNATORY_HPP
 
 #include <common/types.hpp>
 #include <model/command.hpp>
@@ -28,17 +27,25 @@ namespace iroha {
     /**
      * Attach signatory for account
      */
-    struct AddSignatory : public Command {
+    struct RemoveSignatory : public Command {
       /**
-       * Destination account to add new signatory
+       * Destination account to remove from
        */
       std::string dst_account;
 
       /**
-       * New signatory is identified with public key
+       * Public key of signatory to remove.
+       * Note: This public key must be attach to account.
+       * There must be at least two signatories to perform this operation.
        */
       ed25519::pubkey_t pubkey;
+
+      bool validate(ametsuchi::WsvQuery& queries,
+                    const Account& creator) override;
+      bool execute(ametsuchi::WsvQuery& queries,
+                   ametsuchi::WsvCommand& commands) override;
     };
   }  // namespace model
 }  // namespace iroha
-#endif  // IROHA_ADD_SIGNATURE_HPP
+
+#endif  // IROHA_REMOVE_SIGNATORY_HPP

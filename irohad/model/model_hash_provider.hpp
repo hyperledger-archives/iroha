@@ -18,7 +18,9 @@ limitations under the License.
 #define IROHA_MODEL_HASH_PROVIDER_HPP
 
 #include <common/types.hpp>
-#include "model.hpp"
+#include <model/block.hpp>
+#include <model/transaction.hpp>
+#include <model/proposal.hpp>
 
 namespace iroha {
   namespace model {

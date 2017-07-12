@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CREATE_ASSET_HPP
-#define IROHA_CREATE_ASSET_HPP
+#ifndef IROHA_GET_SIGNATURES_HPP
+#define IROHA_GET_SIGNATURES_HPP
 
-#include <model/model.hpp>
+#include <model/query.hpp>
+#include <string>
 
 namespace iroha {
   namespace model {
 
     /**
-     * Create new asset in the system
+     * Query for getting all signatories attached to account
      */
-    struct CreateAsset : public Command {
-
+    struct GetSignatories : Query {
       /**
-       * Asset for inserting in system
+       * Account identifier
        */
-      Asset new_asset;
+      std::string account_name;
     };
-  } // namespace model
-} // namespace iroha
-#endif //IROHA_CREATE_ASSET_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_GET_SIGNATURES_HPP

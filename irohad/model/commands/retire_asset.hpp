@@ -14,26 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_RETIRE_ASSET_HPP
+#define IROHA_RETIRE_ASSET_HPP
 
-#ifndef IROHA_ADD_PEER_HPP
-#define IROHA_ADD_PEER_HPP
+// TODO: implement in next versions
+// Retire assets from the system. Only issuer can do this
 
-#include <model/command.hpp>
-#include <model/peer.hpp>
-
-namespace iroha {
-  namespace model {
-
-    /**
-     * Provide user's intent for adding peer to current network
-     */
-    struct AddPeer : public Command {
-
-      /**
-       * Peer for adding
-       */
-      Peer peer;
-    };
-  } // namespace model
-} // namespace iroha
-#endif //IROHA_ADD_PEER_HPP
+#endif //IROHA_RETIRE_ASSET_HPP

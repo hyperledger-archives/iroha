@@ -17,6 +17,8 @@
 
 #ifndef IROHA_WSV_COMMAND_HPP
 #define IROHA_WSV_COMMAND_HPP
+#include <model/model.hpp>
+#include <common/types.hpp>
 
 namespace iroha {
   namespace ametsuchi {
