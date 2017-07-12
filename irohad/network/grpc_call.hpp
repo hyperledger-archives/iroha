@@ -44,8 +44,7 @@ namespace network {
   */
 
   /**
-   * to enable various types to process in ServiceHandler::handleRpcs()
-   *
+   * to enable various Call instances to process in ServiceHandler::handleRpcs() by polymorphism.
    * @tparam ServiceHandler
    */
   template <typename ServiceHandler>
@@ -57,16 +56,21 @@ namespace network {
     virtual ~UntypedCall() {}
 
     /**
-     * selects a procedure by state and invokes it by using polymorphism.
-     * @param serviceHandler
+     * invokes when state is RequestReceivedTag.
+     * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
      */
     virtual void requestReceived(ServiceHandler& serviceHandler) = 0;
 
     /**
-     *
+     * invokes when state is ResponseSentTag.
      */
     virtual void responseSent() = 0;
 
+    /**
+     * selects a procedure by state and invokes it by using polymorphism.
+     * this is called from ServiceHandler::handleRpcs()
+     * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
+     */
     void onCompleted(ServiceHandler& serviceHandler) {
       switch (callback_) {
         case State::RequestCreated: {
@@ -102,8 +106,8 @@ namespace network {
     virtual ~Call() {}
 
     /**
-     * called by onCompleted() in super class.
-     *
+     * invokes when state is RequestReceivedTag.
+     * this method is called by onCompleted() in super class (UntypedCall).
      * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
      */
     void requestReceived(ServiceHandler* serviceHandler) override {
@@ -111,17 +115,19 @@ namespace network {
     }
 
     /**
-     *
+     * invokes when state is ResponseSentTag.
+     * this method is called by onCompleted() in super class (UntypedCall).
+     * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
      */
     void responseSent() override {
     }
 
     /**
-     *
+     * notifies response and grpc::Status when finishing handling rpc.
      * @param status
      */
     void sendResponse(const ::grpc::Status& status) {
-      responder_.Finish(response, status, &response_sent_tag_);
+      responder_.Finish(response, status, &ResponseSentTag);
     }
 
     /**
