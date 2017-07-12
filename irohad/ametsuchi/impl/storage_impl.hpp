@@ -15,30 +15,21 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMANDEXECUTOR_HPP
-#define IROHA_COMMANDEXECUTOR_HPP
+#ifndef IROHA_STORAGE_IMPL_HPP
+#define IROHA_STORAGE_IMPL_HPP
 
-#include <model/command.hpp>
+#include <ametsuchi/storage.hpp>
 
 namespace iroha {
-
   namespace ametsuchi {
-    /**
-     * Applies command to the world state view
-     */
-    class CommandExecutor {
+    class StorageImpl : public Storage {
      public:
-      /**
-       * Executes a command in a temporary state
-       * @see TemporaryWsv, MutableStorage
-       * @param command Command to execute
-       * @return True if the command is successfully executed, false otherwise
-       */
-      virtual bool execute(const model::Command& command) = 0;
+      std::unique_ptr<TemporaryWsv> createTemporaryWsv() override;
+      std::unique_ptr<MutableStorage> createMutableStorage() override;
+      void commit(MutableStorage &mutableStorage) override;
+      ~StorageImpl() override;
     };
+  }  // namespace ametsuchi
+}  // namespace iroha
 
-  } // namespace ametsuchi
-
-}// namespace iroha
-
-#endif //IROHA_COMMANDEXECUTOR_HPP
+#endif  // IROHA_STORAGE_IMPL_HPP

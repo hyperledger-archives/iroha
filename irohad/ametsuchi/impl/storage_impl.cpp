@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CONSENSUS_SERVICE_STUB_HPP
-#define IROHA_CONSENSUS_SERVICE_STUB_HPP
-
-#include <ametsuchi/storage.hpp>
-#include <consensus/consensus_service.hpp>
-#include <validation/chain/validator.hpp>
-#include <validation/stateful/validator.hpp>
+#include <ametsuchi/impl/storage_impl.hpp>
 
 namespace iroha {
-  namespace consensus {
-    class ConsensusServiceStub : public ConsensusService {
-     public:
-      void vote_block(model::Block &block) override;
-      rxcpp::observable<rxcpp::observable<model::Block>> on_commit() override;
+  namespace ametsuchi {
 
-     private:
-      rxcpp::subjects::subject<rxcpp::observable<model::Block>> commits_;
-    };
-  }  // namespace consensus
+    std::unique_ptr<TemporaryWsv> StorageImpl::createTemporaryWsv() {
+      return nullptr;
+    }
+
+    std::unique_ptr<MutableStorage> StorageImpl::createMutableStorage() {
+      return nullptr;
+    }
+
+    void StorageImpl::commit(MutableStorage &mutableStorage) {
+
+    }
+
+    StorageImpl::~StorageImpl() {
+
+    }
+  }  // namespace ametsuchi
 }  // namespace iroha
-
-#endif  // IROHA_CONSENSUS_SERVICE_STUB_HPP

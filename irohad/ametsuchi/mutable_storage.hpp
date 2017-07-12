@@ -19,7 +19,7 @@
 #define IROHA_MUTABLESTORAGE_HPP
 
 #include <ametsuchi/block_query.hpp>
-#include <ametsuchi/command_executor.hpp>
+#include <ametsuchi/wsv_command.hpp>
 #include <ametsuchi/wsv_query.hpp>
 
 namespace iroha {
@@ -47,7 +47,7 @@ namespace iroha {
        */
       virtual bool apply(
           const model::Block &block,
-          std::function<bool(const model::Block &, CommandExecutor &, WsvQuery &)>
+          std::function<bool(const model::Block &, WsvCommand &, WsvQuery &)>
               function) = 0;
     };
 

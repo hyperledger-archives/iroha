@@ -27,9 +27,9 @@ namespace iroha {
       auto apply_block = [](const auto& block, auto& executor, auto& query) {
         for (const auto& tx : block.transactions) {
           for (const auto& command : tx.commands) {
-            if (!executor.execute(*command)) {
+            /*if (!executor.execute(*command)) {
               return false;
-            }
+            }*/
           }
         }
         return true;
