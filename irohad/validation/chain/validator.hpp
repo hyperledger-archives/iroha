@@ -19,7 +19,7 @@
 #define IROHA_CHAIN_VALIDATOR_HPP
 
 #include <ametsuchi/mutable_storage.hpp>
-#include <model/model.hpp>
+#include <model/block.hpp>
 #include <rxcpp/rx-observable.hpp>
 
 namespace iroha {

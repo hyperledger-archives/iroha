@@ -18,7 +18,6 @@
 #ifndef IROHA_TRANSACTION_VALIDATOR_IMPL_HPP
 #define IROHA_TRANSACTION_VALIDATOR_IMPL_HPP
 
-#include <model/model.hpp>
 #include <validation/stateless/validator.hpp>
 
 namespace iroha {

@@ -18,8 +18,8 @@
 #ifndef IROHA_BLOCK_LOADER_HPP
 #define IROHA_BLOCK_LOADER_HPP
 
-#include "model/model.hpp"
-#include "rxcpp/rx-observable.hpp"
+#include <model/block.hpp>
+#include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
   namespace network {

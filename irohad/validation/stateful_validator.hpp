@@ -16,7 +16,7 @@ limitations under the License.
 #ifndef IROHA_VALIDATION_STATEFUL_VALIDATOR_HPP
 #define IROHA_VALIDATION_STATEFUL_VALIDATOR_HPP
 
-#include <model/model.hpp>
+#include <model/proposal.hpp>
 #include <ametsuchi/temporary_wsv.hpp>
 
 namespace iroha {
@@ -27,6 +27,7 @@ namespace iroha {
      */
     class StatefulValidator {
      public:
+      virtual ~StatefulValidator() = default;
 
       /**
        * Function perform stateful validation on proposal

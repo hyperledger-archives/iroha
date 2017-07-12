@@ -13,7 +13,7 @@
  */
 
 #include <crypto/crypto.hpp>
-#include <validation/stateful/validator.hpp>
+#include <validation/stateful_validator.hpp>
 #include <torii/command_service.hpp>
 #include <logger/logger.hpp>
 #include <peer_service/self_state.hpp>
@@ -25,9 +25,9 @@
 #include <common/types.hpp>
 #include <common/byteutils.hpp>
 
-#include "connection/service.hpp"
-#include "connection/client.hpp"
-#include "sumeragi.hpp"
+#include <consensus/connection/service.hpp>
+#include <consensus/connection/client.hpp>
+#include <consensus/sumeragi.hpp>
 
 /**
  * |ーーー|　|ーーー|　|ーーー|　|ーーー|

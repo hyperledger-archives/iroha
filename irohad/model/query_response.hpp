@@ -18,8 +18,8 @@
 #ifndef IROHA_QUERY_RESPONSE_HPP
 #define IROHA_QUERY_RESPONSE_HPP
 
-#include "query.hpp"
-#include "client.hpp"
+#include <model/query.hpp>
+#include <model/client.hpp>
 
 namespace iroha {
   namespace model {

@@ -19,7 +19,10 @@
 #define IROHA_WSV_QUERY_HPP
 
 #include <common/types.hpp>
-#include <model/model.hpp>
+#include <model/account.hpp>
+#include <model/asset.hpp>
+#include <model/wallet.hpp>
+#include <model/peer.hpp>
 #include <string>
 #include <vector>
 

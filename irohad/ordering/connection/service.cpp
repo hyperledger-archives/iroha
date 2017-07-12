@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "service.hpp"
+#include <ordering/connection/service.hpp>
 
 namespace ordering {
   namespace connection {

@@ -18,7 +18,8 @@
 #ifndef IROHA_BLOCK_QUERY_HPP
 #define IROHA_BLOCK_QUERY_HPP
 
-#include <model/model.hpp>
+#include <model/transaction.hpp>
+#include <model/block.hpp>
 #include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
@@ -59,7 +60,7 @@ namespace iroha {
       * @param to - ending id
       * @return observable of Model Block
       */
-      virtual rxcpp::observable<iroha::model::Block> get_blocks_in_range(
+      virtual rxcpp::observable<model::Block> get_blocks_in_range(
           uint32_t from, uint32_t to) = 0;
     };
 
