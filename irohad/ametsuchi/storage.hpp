@@ -31,7 +31,7 @@ namespace iroha {
      * Storage interface, which allows queries on current committed state, and
      * creation of state which can be mutated with blocks and transactions
      */
-    class Ametsuchi : public WsvQuery, public BlockQuery {
+    class Storage : public WsvQuery, public BlockQuery {
      public:
 
       /**
@@ -58,7 +58,7 @@ namespace iroha {
        */
       virtual void commit(MutableStorage& mutableStorage) = 0;
 
-      virtual ~Ametsuchi(){}
+      virtual ~Storage() = default;
     };
 
   }  // namespace ametsuchi

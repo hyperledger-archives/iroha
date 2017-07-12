@@ -18,42 +18,31 @@
 #define IROHA_PEER_COMMUNICATION_STUB_HPP
 
 #include <network/network_api.h>
-#include <ametsuchi/ametsuchi.hpp>
-#include <consensus/consensus_service.hpp>
+#include <ametsuchi/storage.hpp>
+#include <consensus/consensus_service_stub.hpp>
 #include <ordering/ordering_service.hpp>
 #include <validation/chain/validator.hpp>
 #include <validation/stateful/validator.hpp>
 #include <model/model_crypto_provider.hpp>
 #include <model/model_hash_provider.hpp>
+#include <ordering/ordering_service_stub.hpp>
 
 namespace iroha {
   namespace network {
     class PeerCommunicationServiceStub : public PeerCommunicationService {
      public:
       PeerCommunicationServiceStub(
-          ametsuchi::Ametsuchi &storage,
-          validation::StatefulValidator &stateful_validator,
-          validation::ChainValidator &chain_validator,
-          ordering::OrderingService &orderer,
-          consensus::ConsensusService &consensus,
-          model::ModelCryptoProvider &crypto_provider);
+          ordering::OrderingServiceStub &orderer,
+          consensus::ConsensusServiceStub &consensus
+      );
 
       rxcpp::observable<model::Proposal> on_proposal() override;
 
       rxcpp::observable<rxcpp::observable<model::Block>> on_commit() override;
 
-      void propagate_transaction(const model::Transaction &tx) override;
-
-      void subscribe_on_proposal();
-
      private:
-      ametsuchi::Ametsuchi &storage_;
-      validation::StatefulValidator &stateful_validator_;
-      validation::ChainValidator &chain_validator_;
-      ordering::OrderingService &orderer_;
-      consensus::ConsensusService &consensus_;
-      model::ModelCryptoProvider &crypto_provider_;
-      // TODO add hash provider
+       ordering::OrderingServiceStub orderer_;
+       consensus::ConsensusServiceStub consensus_;
     };
   }
 }
