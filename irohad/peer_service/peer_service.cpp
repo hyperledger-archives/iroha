@@ -16,84 +16,113 @@ limitations under the License.
 
 #include <peer_service/peer_service.hpp>
 
-namespace iroha{
+namespace iroha {
   namespace peer_service {
 
-    PeerService::PeerService() {
-      self_ = SelfStatus();
+    void initialize() {
+      detail::self_ = SelfStatus();
+
+      // detail::peers_ = ametsuchi::getPeers()
     }
 
     /**
      * @return List of peers that therefore permutation.
      */
-    std::vector<Peer> PeerService::getPermutationPeers(){
-      return std::vector<Peer>();
-    }
+    std::vector<Peer> getPermutationPeers() { return std::vector<Peer>(); }
 
     /**
      * @param i index
      * @return A i-th peer that therefore permutation.
      */
-    Peer PeerService::getPermutationAt(int i){
-      return Peer();
-    }
+    Peer getPermutationAt(int i) { return Peer(); }
 
     /**
      * @return List of peers that is used by ordering service.
      */
-    std::vector<Peer> PeerService::getOrderingPeers(){
-      return std::vector<Peer>();
-    }
+    std::vector<Peer> getOrderingPeers() { return std::vector<Peer>(); }
 
     /**
-     * @return List of peers that is used by ordering service and is that will be send sumeragi.
+     * @return List of peers that is used by ordering service and is that will
+     * be send sumeragi.
      */
-    std::vector<Peer> PeerService::getActiveOrderingPeers(){
-      return std::vector<Peer>();
-    }
+    std::vector<Peer> getActiveOrderingPeers() { return std::vector<Peer>(); }
 
+    /**
+     * @return self status
+     */
+    const SelfStatus &self() {
+     return detail::self_;
+    }
 
     /**
      * When on_porposal sends on_commit, it is called.
-     * It check signs from Block, and identify dead peers which It throw to issue Peer::Remove transaction.
+     * It check signs from Block, and identify dead peers which It throw to
+     * issue Peer::Remove transaction.
      * @param commited_block commited block with signs
      */
-    void PeerService::DiesRemove(const iroha::model::Block& commited_block){
-    }
+    void DiesRemove(const iroha::model::Block &commited_block) {}
 
     /**
      * When on_commit, it is called.
      * It change peer oreder.
      */
-    void PeerService::changePermutation(){
-
-    }
-
+    void changePermutation() {}
 
     /**
      * When commit fails, it is called.
      * It throw to issue Peer::Stop(Self) transaction.
      */
-    void PeerService::selfStop(){
-
-    }
+    void selfStop() {}
 
     /**
      * When commit successes and state of self peer is UnSynced, It is called.
      * It throw to issue Peer::Activate(self) transaction.
      */
-    void PeerService::selfActivate(){
+    void selfActivate() {}
+
+
+    /**
+     * validate command
+     */
+    void validate(const Command::Peer::Add& cmd){
+
+    }
+    void validate(const Command::Peer::Remove& cmd){
+
+    }
+    void validate(const Command::Peer::Activate& cmd){
+
+    }
+    void validate(const Command::Peer::Stop& cmd){
+
+    }
+    void validate(const Command::Peer::ChangeRole& cmd){
 
     }
 
 
-
-    void PeerService::issueStop(std::string ip,Peer &stop_peer){
+    /**
+     * execute command
+     */
+    void execute(const Command::Peer::Add& cmd){
 
     }
-    void PeerService::issueActivate(std::string ip,Peer &activate_peer){
+    void execute(const Command::Peer::Remove& cmd){
+
+    }
+    void execute(const Command::Peer::Activate& cmd){
+
+    }
+    void execute(const Command::Peer::Stop& cmd){
+
+    }
+    void execute(const Command::Peer::ChangeRole& cmd){
 
     }
 
+    namespace detail {
+      void issueStop(std::string ip, Peer &stop_peer) {}
+      void issueActivate(std::string ip, Peer &activate_peer) {}
+    }
   }
 }

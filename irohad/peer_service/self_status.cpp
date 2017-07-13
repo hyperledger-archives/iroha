@@ -71,6 +71,7 @@ namespace iroha {
       self_->status = Peer::PeerStatus::Synced;
       self_->activated_time = iroha::time::now64();
     }
+
     void SelfStatus::stop() { self_->status = Peer::PeerStatus::Synced; }
   };
 };
