@@ -1,5 +1,5 @@
 add_library(processors
-    impl/transaction_processor_stub.cpp
+    impl/transaction_processor_impl.cpp
     impl/query_processor_stub.cpp
     )
 

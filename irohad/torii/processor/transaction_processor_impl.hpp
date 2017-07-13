@@ -26,7 +26,7 @@
 
 namespace iroha {
   namespace torii {
-    class TransactionProcessorStub : public TransactionProcessor {
+    class TransactionProcessorImpl : public TransactionProcessor {
      public:
 
       /**
@@ -35,7 +35,7 @@ namespace iroha {
        * @param validator - perform stateless validation
        * @param crypto_provider - sign income transactions
        */
-      TransactionProcessorStub(network::PeerCommunicationService &pcs,
+      TransactionProcessorImpl(network::PeerCommunicationService &pcs,
                                ordering::OrderingService &os,
                                const validation::StatelessValidator &validator);
 

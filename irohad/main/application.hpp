@@ -24,7 +24,7 @@
 #include <network/peer_communication_stub.hpp>
 #include <ordering/ordering_service_stub.hpp>
 #include <torii/processor/query_processor_stub.hpp>
-#include <torii/processor/transaction_processor_stub.hpp>
+#include <torii/processor/transaction_processor_impl.hpp>
 #include <torii/torii_stub.hpp>
 #include <validation/chain/validator_stub.hpp>
 #include <validation/stateful/stub_validator.hpp>

@@ -18,7 +18,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <torii/processor/transaction_processor_stub.hpp>
+#include <torii/processor/transaction_processor_impl.hpp>
 
 using namespace iroha;
 using ::testing::Return;
@@ -67,7 +67,7 @@ TEST(TransactionProcessorTest,
   StatelessValidationMock validation;
   EXPECT_CALL(validation, validate(_)).WillRepeatedly(Return(true));
 
-  iroha::torii::TransactionProcessorStub tp(pcs, os, validation);
+  iroha::torii::TransactionProcessorImpl tp(pcs, os, validation);
   model::Transaction tx;
   // TODO subscribe with testable subscriber
   tp.transaction_notifier().subscribe([](auto response) {
@@ -91,7 +91,7 @@ TEST(TransactionProcessorTest,
   StatelessValidationMock validation;
   EXPECT_CALL(validation, validate(_)).WillRepeatedly(Return(false));
 
-  iroha::torii::TransactionProcessorStub tp(pcs, os, validation);
+  iroha::torii::TransactionProcessorImpl tp(pcs, os, validation);
   model::Transaction tx;
   // TODO subscribe with testable subscriber
   tp.transaction_notifier().subscribe([](auto response) {

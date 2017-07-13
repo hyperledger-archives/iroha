@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include <torii/processor/transaction_processor_stub.hpp>
+#include <torii/processor/transaction_processor_impl.hpp>
 #include <model/tx_responses/stateless_response.hpp>
 
 namespace iroha {
@@ -27,7 +27,7 @@ namespace iroha {
     using network::PeerCommunicationService;
     using ordering::OrderingService;
 
-    TransactionProcessorStub::TransactionProcessorStub(
+    TransactionProcessorImpl::TransactionProcessorImpl(
         PeerCommunicationService &pcs,
         OrderingService &os,
         const StatelessValidator &validator)
@@ -36,7 +36,7 @@ namespace iroha {
           validator_(validator) {
     }
 
-    void TransactionProcessorStub::transaction_handle(model::Client client,
+    void TransactionProcessorImpl::transaction_handle(model::Client client,
                                                       model::Transaction &transaction) {
       model::StatelessResponse response;
       response.client = client;
@@ -53,7 +53,7 @@ namespace iroha {
     }
 
     rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
-    TransactionProcessorStub::transaction_notifier() {
+    TransactionProcessorImpl::transaction_notifier() {
       return notifier_.get_observable();
     }
 

@@ -38,7 +38,7 @@ void Irohad::run() {
   iroha::network::PeerCommunicationServiceStub peer_communication_service(
       ordering_service,
       consensus_service);
-  iroha::torii::TransactionProcessorStub tp(peer_communication_service,
+  iroha::torii::TransactionProcessorImpl tp(peer_communication_service,
                                             ordering_service,
                                             stateless_validator);
 //  iroha::torii::QueryProcessorStub qp(ametsuchi, ametsuchi);
