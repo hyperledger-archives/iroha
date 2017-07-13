@@ -18,17 +18,17 @@
 #ifndef IROHA_GET_WALLETS_HPP
 #define IROHA_GET_WALLETS_HPP
 
-#include <model/model.hpp>
+#include <model/query.hpp>
 #include <string>
 
 namespace iroha {
   namespace model {
 
     /**
-     * Query for get all account's wallet
+     * Query for get all account's assets and balance
      */
     struct GetAccountAssets : Query {
-      std::string account_name;
+      std::string account_id;
     };
   }  // namespace model
 }  // namespace iroha

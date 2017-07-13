@@ -30,7 +30,7 @@ namespace iroha {
       /**
        * Account in which change the quorum
        */
-      std::string account_name;
+      std::string account_id;
 
       /**
        * New value of quorum

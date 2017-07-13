@@ -18,6 +18,7 @@
 #ifndef IROHA_SET_PERMISSIONS_HPP
 #define IROHA_SET_PERMISSIONS_HPP
 
+#include <model/account.hpp>
 #include <model/command.hpp>
 #include <string>
 
@@ -26,11 +27,11 @@ namespace iroha {
     /**
      * Set permissions for account
      */
-    struct SetPermissions : public Command {
+    struct SetAccountPermissions : public Command {
       /**
        * Identifier of account to set permission
        */
-      std::string account_name;
+      std::string account_id;
 
       /**
        * New permissions of account

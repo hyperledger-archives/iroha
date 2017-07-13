@@ -30,9 +30,9 @@ namespace iroha {
      */
     struct AddSignatory : public Command {
       /**
-       * Destination account to add new signatory
+       * Account to add new signatory
        */
-      std::string dst_account;
+      std::string account_id;
 
       /**
        * New signatory is identified with public key

@@ -17,7 +17,8 @@
 #ifndef IROHA_CREATE_DOMAIN_HPP
 #define IROHA_CREATE_DOMAIN_HPP
 
-#include <model/model.hpp>
+#include <model/command.hpp>
+#include <model/domain.hpp>
 
 namespace iroha {
   namespace model {
@@ -29,7 +30,12 @@ namespace iroha {
       /**
        * Asset to insert to the system
        */
-      Domain new_domain;
+      std::string domain_name;
+
+      /**
+       * Parent domain full name
+       */
+      std::string parent_domain_id;
 
       bool validate(ametsuchi::WsvQuery& queries,
                     const Account& creator) override;

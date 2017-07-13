@@ -29,9 +29,9 @@ namespace iroha {
      */
     struct AssignMasterKey : public Command {
       /**
-       * Destination account to assign master key
+       * Account to assign master key
        */
-      std::string dst_account;
+      std::string account_id;
 
       /**
        * Public key to assign.

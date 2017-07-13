@@ -18,7 +18,7 @@
 #ifndef IROHA_GET_TRANSACTIONS_HPP
 #define IROHA_GET_TRANSACTIONS_HPP
 
-#include <model/model.hpp>
+#include <model/query.hpp>
 #include <string>
 
 namespace iroha {
@@ -29,14 +29,14 @@ namespace iroha {
      */
     struct GetAccountAssetTransactions : Query {
       /**
-       * Account name
+       * Account identifier
        */
-      std::string account_name;
+      std::string account_id;
 
       /**
-       * Asset name
+       * Asset identifier
        */
-      std::string asset_name;
+      std::string asset_id;
     };
 
     /**
@@ -44,9 +44,9 @@ namespace iroha {
       */
     struct GetAccountTransactions : Query {
       /**
-       * Account name
+       * Account identifier
        */
-      std::string account_name;
+      std::string account_id;
     };
   }  // namespace model
 }  // namespace iroha

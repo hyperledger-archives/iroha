@@ -18,7 +18,7 @@
 #ifndef IROHA_CREATE_ACCOUNT_HPP
 #define IROHA_CREATE_ACCOUNT_HPP
 
-#include <model/model.hpp>
+#include <model/command.hpp>
 
 namespace iroha {
   namespace model {
@@ -33,9 +33,9 @@ namespace iroha {
       std::string account_name;
 
       /**
-       * Account's domain
+       * Account's domain (full name)
        */
-      std::string domain_name;
+      std::string domain_id;
 
       /**
        * Master key of account

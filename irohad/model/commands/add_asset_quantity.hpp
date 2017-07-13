@@ -18,7 +18,7 @@
 #ifndef IROHA_ISSUE_ASSET_HPP
 #define IROHA_ISSUE_ASSET_HPP
 
-#include <model/model.hpp>
+#include <model/command.hpp>
 #include <string>
 
 namespace iroha {
@@ -31,13 +31,13 @@ namespace iroha {
       /**
        * Account where to add assets
        */
-      std::string account_name;
+      std::string account_id;
 
       /**
        * Asset to issue
        * Note: must exist in the system
        */
-      std::string asset_name;
+      std::string asset_id;
 
       /**
        * Amount to add to wallet

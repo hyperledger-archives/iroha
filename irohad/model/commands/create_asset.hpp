@@ -18,7 +18,9 @@
 #ifndef IROHA_CREATE_ASSET_HPP
 #define IROHA_CREATE_ASSET_HPP
 
-#include <model/model.hpp>
+#include <model/asset.hpp>
+#include <model/command.hpp>
+#include <string>
 
 namespace iroha {
   namespace model {
@@ -30,7 +32,17 @@ namespace iroha {
       /**
        * Asset to insert to the system
        */
-      Asset new_asset;
+      std::string asset_name;
+
+      /**
+       * Domain id (full name)
+       */
+      std::string domain_id;
+
+      /**
+       * Asset precision
+       */
+      uint8_t precision;
 
       bool validate(ametsuchi::WsvQuery& queries,
                     const Account& creator) override;

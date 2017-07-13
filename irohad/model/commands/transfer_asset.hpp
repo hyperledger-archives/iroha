@@ -39,9 +39,9 @@ namespace iroha {
       std::string dst_account_name;
 
       /**
-       * Asset to transfer
+       * Asset to transfer. Identifier is asset_id
        */
-      std::string asset_name;
+      std::string asset_id;
       /**
        * Amount of transferred asset
        */

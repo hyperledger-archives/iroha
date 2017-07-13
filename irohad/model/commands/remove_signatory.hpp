@@ -29,9 +29,9 @@ namespace iroha {
      */
     struct RemoveSignatory : public Command {
       /**
-       * Destination account to remove from
+       * Account to remove from
        */
-      std::string dst_account;
+      std::string account_id;
 
       /**
        * Public key of signatory to remove.
