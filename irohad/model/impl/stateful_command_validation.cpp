@@ -17,6 +17,9 @@
 
 #include <model/commands/add_asset_quantity.hpp>
 #include <model/commands/add_signatory.hpp>
+#include <model/commands/assign_master_key.hpp>
+
+#include <algorithm>
 
 using namespace iroha::model;
 
@@ -47,8 +50,25 @@ bool AddAssetQuantity::validate(ametsuchi::WsvQuery &queries,
 bool AddSignatory::validate(ametsuchi::WsvQuery &queries,
                             const Account &creator) {
   return
-      // Case 1. When command creator wants to add his/her signatory to some
+      // Case 1. When command creator wants to add their signatory to some
       // account
       creator.master_key == pubkey;
   // TODO: What about other cases ?
+}
+
+bool AssignMasterKey::validate(ametsuchi::WsvQuery &queries,
+                               const Account &creator) {
+  // Case 1: When creator wants to change key in their own account
+
+  auto signs = queries.getSignatories(account_id);
+
+  return
+      // Check if accout has at lest one signatory
+      !signs.empty() &&
+      // Check if new master key is not the same
+      creator.master_key != pubkey &&
+      // Check if new master key is in AccountSignatory relationship
+      std::find(signs.begin(), signs.end(), pubkey) != signs.end();
+
+  // TODO:Can there be case when creator can assign master key of other account?
 }
