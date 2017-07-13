@@ -69,6 +69,7 @@ TEST(TransactionProcessorTest,
 
   iroha::torii::TransactionProcessorStub tp(pcs, os, validation);
   model::Transaction tx;
+  // TODO subscribe with testable subscriber
   tp.transaction_notifier().subscribe([](auto response) {
     auto resp = static_cast<model::StatelessResponse &>(*response);
     ASSERT_EQ(resp.passed, true);
@@ -92,6 +93,7 @@ TEST(TransactionProcessorTest,
 
   iroha::torii::TransactionProcessorStub tp(pcs, os, validation);
   model::Transaction tx;
+  // TODO subscribe with testable subscriber
   tp.transaction_notifier().subscribe([](auto response) {
     auto resp = static_cast<model::StatelessResponse &>(*response);
     ASSERT_EQ(resp.passed, false);
