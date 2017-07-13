@@ -20,6 +20,8 @@
 #include <model/commands/assign_master_key.hpp>
 #include <model/commands/create_account.hpp>
 #include <model/commands/create_asset.hpp>
+#include <model/commands/create_domain.hpp>
+
 #include <algorithm>
 
 using namespace iroha::model;
@@ -34,9 +36,7 @@ bool AddAssetQuantity::validate(ametsuchi::WsvQuery &queries,
                                 const Account &creator) {
   // Check if creator has MoneyCreator permission
   return creator.permissions.issue_assets &&
-         // Check if account exist
-         !queries.getAccount(account_id).user_name.empty() &&
-         // Asset must exist in the system
+          // Asset must exist in the system
          !queries.getAsset(asset_id).name.empty();
   // Check if the amount if meaningful
   // TODO: check if amount is in some scope
@@ -101,4 +101,18 @@ bool CreateAsset::validate(ametsuchi::WsvQuery &queries,
   // Creator must have permission to create assets
   return creator.permissions.create_assets;
 }
+
+/**
+ *
+ * @param queries
+ * @param creator
+ * @return
+ */
+bool CreateDomain::validate(ametsuchi::WsvQuery &queries,
+                            const Account &creator) {
+  // Creator must have permission to create domains
+  return creator.permissions.create_domains;
+}
+
+
 
