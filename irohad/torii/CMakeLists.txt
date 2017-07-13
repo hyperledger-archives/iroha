@@ -18,7 +18,10 @@ target_link_libraries(command_client
   endpoint
 )
 
-add_library(command_service command_service.cpp)
+add_library(command_service
+  command_service.cpp
+  command_service_handler.cpp
+  )
 target_link_libraries(command_service
   endpoint
   stateless_validator

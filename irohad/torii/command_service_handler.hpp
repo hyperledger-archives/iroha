@@ -18,8 +18,10 @@ limitations under the License.
 #define TORII_COMMAND_SERVICE_HANDLER_HPP
 
 #include <network/grpc_async_service.hpp>
+#include <network/grpc_call.hpp>
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
+#include <grpc++/alarm.h>
 
 namespace torii {
   /**
@@ -34,13 +36,13 @@ namespace torii {
      */
     CommandServiceHandler(::grpc::ServerBuilder &builder);
 
-    ~CommandServiceRpcsHandler() override;
+    virtual ~CommandServiceHandler() override;
 
     template <typename RequestType, typename ResponseType>
     using CommandServiceCall =
     network::Call<
       CommandServiceHandler,
-      prot::CommandService::AsyncService,
+      iroha::protocol::CommandService::AsyncService,
       RequestType,
       ResponseType
     >;
@@ -48,13 +50,13 @@ namespace torii {
     /**
      * handles rpcs loop in CommandService.
      */
-    void handleRpcs() override;
+    virtual void handleRpcs() override;
 
     /**
      * releases the completion queue of CommandService.
      * @note Call this method after calling server->Shutdown() in ServerRunner
      */
-    void shutdown() override;
+    virtual void shutdown() override;
 
   private:
 
@@ -65,15 +67,15 @@ namespace torii {
      */
     template <typename RequestType, typename ResponseType>
     void enqueueRequest(
-      network::RequestMethod<prot::CommandService::AsyncService,
+      network::RequestMethod<iroha::protocol::CommandService::AsyncService,
       RequestType, ResponseType> requester,
       network::RpcHandler<
-      CommandServiceHandler, prot::CommandService::AsyncService,
+      CommandServiceHandler, iroha::protocol::CommandService::AsyncService,
       RequestType, ResponseType> rpcHandler
     ) {
       std::unique_lock<std::mutex> lock(mtx_);
       if (!isShutdown_) {
-        CommandServiceCall<prot::Transaction, prot::ToriiResponse>::enqueueRequest(
+        CommandServiceCall<iroha::protocol::Transaction, iroha::protocol::ToriiResponse>::enqueueRequest(
           &asyncService_, cq_.get(), requester, rpcHandler
         );
       }

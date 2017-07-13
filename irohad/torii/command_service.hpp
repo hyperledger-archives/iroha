@@ -35,7 +35,12 @@ namespace torii {
      * @param response - ToriiResponse
      * @return grpc::Status - Status::OK if succeeded. TODO(motxx): grpc::CANCELLED is not supported.
      */
-    static grpc::Status ToriiAsync(iroha::protocol::Transaction const& request, iroha::protocol::ToriiResponse& response);
+    static grpc::Status ToriiAsync(
+      iroha::protocol::Transaction const& request, iroha::protocol::ToriiResponse& response) {
+      response.set_code(iroha::protocol::ResponseCode::OK);
+      response.set_message("Torii async response");
+      return grpc::Status::OK;
+    }
   };
 
 }  // namespace torii

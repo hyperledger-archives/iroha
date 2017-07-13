@@ -25,7 +25,7 @@ namespace prot = iroha::protocol;
 namespace torii {
 
   /**
-   * requires builder to use same server.
+   * registers async command service
    * @param builder
    */
   CommandServiceHandler::CommandServiceHandler(::grpc::ServerBuilder& builder) {
@@ -33,7 +33,7 @@ namespace torii {
     cq_ = builder.AddCompletionQueue();
   }
 
-  ~CommandServiceHandler::CommandServiceRpcsHandler() override {
+  CommandServiceHandler::~CommandServiceHandler() {
     delete shutdownAlarm_;
   }
 
@@ -41,7 +41,7 @@ namespace torii {
    * shuts down service handler.
    * specifically, enqueues a special event that causes the completion queue to be shut down.
    */
-  void CommandServiceHandler::shutdown() override {
+  void CommandServiceHandler::shutdown() {
     bool didShutdown = false;
     {
       std::unique_lock<std::mutex> lock(mtx_);
@@ -61,7 +61,7 @@ namespace torii {
   /**
    * handles rpcs loop in CommandService.
    */
-  void CommandServiceHandler::handleRpcs() override {
+  void CommandServiceHandler::handleRpcs() {
     enqueueRequest<prot::Transaction, prot::ToriiResponse>(
         &prot::CommandService::AsyncService::RequestTorii,
         &CommandServiceHandler::ToriiHandler
@@ -73,7 +73,7 @@ namespace torii {
       auto callbackTag =
           static_cast<network::UntypedCall<CommandServiceHandler>*>(tag);
       if (callbackTag) {
-        callbackTag->onCompleted(*this);
+        callbackTag->onCompleted(this);
       } else {
         // callbackTag is nullptr (a special event that causes shut down cq_)
         cq_->Shutdown();
@@ -86,8 +86,8 @@ namespace torii {
    * and calls an actual CommandService::AsyncTorii() implementation.
    * then, spawns a new Call instance to serve an another client.
    */
-  void CommandServiceHandler::ToriiHandler(CommandServiceCall<
-    prot::Transaction, prot::ToriiResponse>* call) {
+  void CommandServiceHandler::ToriiHandler(
+    CommandServiceCall<prot::Transaction, prot::ToriiResponse>* call) {
     auto stat = CommandService::ToriiAsync(call->request(), call->response());
     call->sendResponse(stat);
 

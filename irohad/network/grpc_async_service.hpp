@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
+#ifndef NETWORK_GRPC_ASYNC_SERVICE_HPP
+#define NETWORK_GRPC_ASYNC_SERVICE_HPP
+
 namespace network {
 
   template <class ServiceHandler, class AsyncService, class RequestType, class ResponseType>
@@ -62,6 +65,8 @@ namespace network {
    */
   template <typename ServiceHandler, typename AsyncService, typename RequestType, typename ResponseType>
   using RpcHandler = void (ServiceHandler::*)(
-    Call<ServiceHandler, AsyncService, RequestType, ResponseType>* call);
+    Call<ServiceHandler, AsyncService, RequestType, ResponseType>*);
 
 }  // namespace network
+
+#endif  // NETWORK_GRPC_ASYNC_SERVICE_HPP

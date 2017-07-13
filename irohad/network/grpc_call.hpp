@@ -19,6 +19,7 @@ limitations under the License.
 
 #include <grpc++/grpc++.h>
 #include <assert.h>
+#include <network/grpc_async_service.hpp>
 
 namespace network {
 
@@ -29,8 +30,12 @@ namespace network {
   template <typename ServiceHandler>
   class UntypedCall {
   public:
-    UntypedCall(State const& state)
-      : state_(state) {}
+
+    enum class State { RequestCreated, ResponseSent };
+
+    UntypedCall(State state)
+      : state_(state) {
+    }
 
     virtual ~UntypedCall() {}
 
@@ -38,32 +43,34 @@ namespace network {
      * invokes when state is RequestReceivedTag.
      * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
      */
-    virtual void requestReceived(ServiceHandler& serviceHandler) = 0;
+    virtual void requestReceived(ServiceHandler* serviceHandler) {
+      assert(false && "Concrete class is not allocated.");
+    }
 
     /**
      * invokes when state is ResponseSentTag.
      */
-    virtual void responseSent() = 0;
+    virtual void responseSent() {
+      assert(false && "Concrete class is not allocated.");
+    }
 
     /**
      * selects a procedure by state and invokes it by using polymorphism.
      * this is called from ServiceHandler::handleRpcs()
      * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
      */
-    void onCompleted(ServiceHandler& serviceHandler) {
+    void onCompleted(ServiceHandler* serviceHandler) {
       switch (state_) {
         case State::RequestCreated: {
-          call_->requestReceived(serviceHandler);
+          requestReceived(serviceHandler);
           break;
         }
         case State::ResponseSent: {
-          call_->responseSent();
+          responseSent();
           break;
         }
       }
     }
-
-    enum class State { RequestCreated, ResponseSent };
 
   private:
     const State state_;
@@ -79,8 +86,15 @@ namespace network {
   template <typename ServiceHandler, typename AsyncService, typename RequestType, typename ResponseType>
   class Call : public UntypedCall<ServiceHandler> {
   public:
-    Call(RpcHandler const& rpcHandler)
-      : rpcHandler_(rpcHandler) {}
+
+    using RpcHandlerType    = network::RpcHandler<ServiceHandler, AsyncService, RequestType, ResponseType>;
+    using RequestMethodType = network::RequestMethod<AsyncService, RequestType, ResponseType>;
+    using CallType          = Call<ServiceHandler, AsyncService, RequestType, ResponseType>;
+    using UntypedCallType   = UntypedCall<ServiceHandler>;
+
+    Call(RpcHandlerType rpcHandler)
+      : UntypedCall<ServiceHandler>(UntypedCallType::State::RequestCreated),
+        rpcHandler_(rpcHandler), responder_(&ctx_) {}
 
     virtual ~Call() {}
 
@@ -90,7 +104,7 @@ namespace network {
      * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
      */
     void requestReceived(ServiceHandler* serviceHandler) override {
-      rpcHandler(*this);
+      (serviceHandler->*rpcHandler_)(this);
     }
 
     /**
@@ -107,8 +121,8 @@ namespace network {
      * notifies response and grpc::Status when finishing handling rpc.
      * @param status
      */
-    void sendResponse(const ::grpc::Status& status) {
-      responder_.Finish(response, status, &ResponseSentTag);
+    void sendResponse(::grpc::Status status) {
+      responder_.Finish(response_, status, &ResponseSentTag);
     }
 
     /**
@@ -121,9 +135,9 @@ namespace network {
      */
     static void enqueueRequest(AsyncService* asyncService,
                                ::grpc::ServerCompletionQueue* cq,
-                               RequestMethod requestMethod,
-                               RpcHandler rpcHandler) {
-      auto call = new Call<ServiceHandler, AsyncService, RequestType, ResponseType>(rpcHandler);
+                               RequestMethodType requestMethod,
+                               RpcHandlerType rpcHandler) {
+      auto call = new CallType(rpcHandler);
 
       (asyncService->*requestMethod)(&call->ctx_, &call->request(),
                                      &call->responder_, cq, cq,
@@ -135,11 +149,11 @@ namespace network {
     auto& response() { return response_; }
 
   private:
-    const UntypedCall<ServiceHandler> RequestReceivedTag { State::RequestCreated };
-    const UntypedCall<ServiceHandler> ResponseSentTag { State::ResponseSent };
+    UntypedCallType RequestReceivedTag { UntypedCallType::State::RequestCreated };
+    UntypedCallType ResponseSentTag { UntypedCallType::State::ResponseSent };
 
   private:
-    const RpcHandler rpcHandler_;
+    RpcHandlerType rpcHandler_;
     RequestType request_;
     ResponseType response_;
     ::grpc::ServerContext ctx_;
