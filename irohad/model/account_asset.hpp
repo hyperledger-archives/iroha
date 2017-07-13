@@ -27,12 +27,12 @@ namespace iroha {
       /**
        * Asset identifier
        */
-      std::string asset_name;
+      std::string asset_id;
 
       /**
        * Account identifier
        */
-      std::string account_name;
+      std::string account_id;
 
       /**
        * Current balance
