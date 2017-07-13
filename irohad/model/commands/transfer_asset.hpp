@@ -31,12 +31,12 @@ namespace iroha {
       /**
        * Source account
        */
-      std::string src_account_name;
+      std::string src_account_id;
 
       /**
        * Destination account
        */
-      std::string dest_account_name;
+      std::string dest_account_id;
 
       /**
        * Asset to transfer. Identifier is asset_id
