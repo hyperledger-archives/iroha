@@ -20,7 +20,7 @@ npm install -g lcov-summary
 cd $IROHA_BUILD 
 lcov --directory . --capture --output-file coverage.info
 lcov --remove coverage.info '/usr/*' --output-file coverage.info
-lcov --remove coverage.info '*external"' --output-file coverage.info
+lcov --remove coverage.info '*external*' --output-file coverage.info
 RESULT_COVERAGE=`lcov-summary ./coverage.info | sed -z 's/\n/\\\\n/g'`
 
 curl -XPOST -H 'Content-Type:application/json' -H "Authorization: token $GITHUB_TOKEN" -d "{\"body\":\"$RESULT_COVERAGE\"}" https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/issues/$PR_NUMBER/comments
