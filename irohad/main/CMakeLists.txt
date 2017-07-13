@@ -33,7 +33,7 @@ target_link_libraries(irohad
     stateful_validator
     hash
     stateless_validator
-    client_processor
+    processors
     torii
     crypto
     )
