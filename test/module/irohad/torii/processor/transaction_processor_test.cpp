@@ -16,14 +16,64 @@
  */
 
 #include <gtest/gtest.h>
-#include <iostream>
+#include <gmock/gmock.h>
+
+#include <torii/processor/transaction_processor_stub.hpp>
+
+using namespace iroha;
+using ::testing::Return;
+using ::testing::_;
+
+/**
+ * Mock for stateless validation
+ */
+class StatelessValidationMock : public validation::StatelessValidator {
+ public:
+  MOCK_CONST_METHOD1(validate, bool(
+      const model::Transaction &transaction));
+};
+
+/**
+ * Mock for peer communication service
+ */
+class PcsMock : public network::PeerCommunicationService {
+ public:
+  MOCK_METHOD0(on_proposal, rxcpp::observable<model::Proposal>());
+  MOCK_METHOD0(on_commit,
+               rxcpp::observable<rxcpp::observable<model::Block>>());
+};
+
+/**
+ * Mock for ordering service
+ */
+class OsMock : public ordering::OrderingService {
+ public:
+  MOCK_METHOD1(propagate_transaction, void(
+      const model::Transaction &transaction));
+  MOCK_METHOD0(on_proposal, rxcpp::observable<model::Proposal>());
+};
 
 /**
  * Transaction processor test case, when handling stateless valid transaction
  */
 TEST(TransactionProcessorTest,
      TransactionProcessorWhereInvokeValidTransaction) {
-  std::cout << "processor test - valid" << std::endl;
+
+  PcsMock pcs;
+
+  OsMock os;
+  EXPECT_CALL(os, propagate_transaction(_)).Times(1);
+
+  StatelessValidationMock validation;
+  EXPECT_CALL(validation, validate(_)).WillRepeatedly(Return(true));
+
+  iroha::torii::TransactionProcessorStub tp(pcs, os, validation);
+  model::Transaction tx;
+  tp.transaction_notifier().subscribe([](auto response) {
+    auto resp = static_cast<model::StatelessResponse &>(*response);
+    ASSERT_EQ(resp.passed, true);
+  });
+  tp.transaction_handle(model::Client(), tx);
 }
 
 /**
@@ -31,5 +81,20 @@ TEST(TransactionProcessorTest,
  */
 TEST(TransactionProcessorTest,
      TransactionProcessorWhereInvokeInvalidTransaction) {
-  std::cout << "processor test - fail" << std::endl;
+
+  PcsMock pcs;
+
+  OsMock os;
+  EXPECT_CALL(os, propagate_transaction(_)).Times(0);
+
+  StatelessValidationMock validation;
+  EXPECT_CALL(validation, validate(_)).WillRepeatedly(Return(false));
+
+  iroha::torii::TransactionProcessorStub tp(pcs, os, validation);
+  model::Transaction tx;
+  tp.transaction_notifier().subscribe([](auto response) {
+    auto resp = static_cast<model::StatelessResponse &>(*response);
+    ASSERT_EQ(resp.passed, false);
+  });
+  tp.transaction_handle(model::Client(), tx);
 }
