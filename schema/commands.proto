@@ -1,69 +1,84 @@
 syntax = "proto3";
 package iroha.protocol;
 
-
-message Asset {
-
-  message Add {
-    string account_name = 1;
-    string asset_name = 2;
+message AddAssetQuantity {
+    string account_id = 1;
+    string asset_id = 2;
     string amount = 3;
-  }
-
-  message Create{
-    string asset_name = 1;
-    uint32 precision = 2;
-  }
-
 }
 
+message AddPeer {
+    string address = 1;
+    bytes pub_key = 2;
+}
 
-message Account {
-  // create new account with quorum and signatories
-  // account id is defined as the first public key
-  // account id = sigs[0].pubkey
-  message AddSign {
-    string account_name = 1;
-    bytes pubkey = 2;
-  }
+message AddSignatory {
+    string account_id = 1;
+    bytes public_key = 2;
+}
 
-  message Create {
-    string account_name = 1;
-    bytes main_pubkey = 2;
-  }
+message AssignMasterKey {
+    string account_id = 1;
+    bytes public_key = 2;
+}
 
-  message RemoveSign {
-    string account_name = 1;
-    bytes pubkey = 2;
-  }
-  message SetPermissions {
-    string account_name = 1;
-    uint32 permissions = 2;
-  }
+message CreateAsset {
+    string asset_name = 1;
+    string domain_id = 2;
+    uint32 precision = 3;
+}
 
-  message SetQuorum {
-    string account_name = 1;
-    int32 quorum = 2;
-  }
+message CreateAccount {
+    string user_name = 1;
+    string domain_id = 2;
+    bytes main_pubkey = 3;
+}
 
-  message Transfer {
-    string dst_account_name = 1;
-    string src_account_name = 2;
+message CreateDomain {
+    string domain_name = 1;
+    string parent_domain_id = 2;
+}
+
+message RemoveSignatory {
+    string account_id = 1;
+    bytes public_key = 2;
+}
+
+message SubtractAssetQuantity {
+    string account_id = 1;
+    string asset_id = 2;
     string amount = 3;
-    string asset_name = 4;
-  }
+}
+
+message SetAccountPermissions {
+    string account_id = 1;
+    uint32 permissions = 2;
+}
+
+message SetAccountQuorum {
+    string account_id = 1;
+    uint32 permissions = 2;
+}
+
+message TransferAsset {
+    string src_account_id = 1;
+    string dst_account_id = 2;
+    string asset_id = 3;
 }
 
 message Command {
-
-  oneof command {
-    Asset.Create asset_create = 1;
-    Asset.Add add_asset_quantity = 2;
-    Account.AddSign add_signatory = 3;
-    Account.Create account_create = 4;
-    Account.RemoveSign remove_signatory = 5;
-    Account.SetPermissions set_account_permissions = 6;
-    Account.SetQuorum set_account_quorum = 7;
-    Account.Transfer transfer = 8;
-  }
+    oneof command {
+        AddAssetQuantity add_asset_quantity = 1;
+        AddPeer add_peer = 2;
+        AddSignatory add_signatory = 3;
+        AssignMasterKey account_assign_mk = 4;
+        CreateAsset create_asset = 5;
+        CreateAccount create_account = 6;
+        CreateDomain create_domain = 7;
+        RemoveSignatory remove_sign = 8;
+        SubtractAssetQuantity subtract_asset_quantity = 9;
+        SetAccountPermissions set_permission = 10;
+        SetAccountQuorum    set_quorum = 11;
+        TransferAsset   transfer_asset = 12;
+    }
 }
