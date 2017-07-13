@@ -38,7 +38,11 @@ namespace iroha {
          * Dangerous operation - require high number of quorum;
          */
         bool create_assets;
-
+           
+        /**
+        * Can create new accounts
+        */
+        bool create_accounts;
         /**
          * Can account read private information of other accounts;
          * Auditor's permission
@@ -56,6 +60,7 @@ namespace iroha {
          * User's account permission
          */
         bool unlimited_transfer;
+        
       };
 
       /**
