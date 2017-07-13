@@ -17,7 +17,7 @@ limitations under the License.
 #ifndef __RANDOM_HPP_
 #define __RANDOM_HPP_
 
-#include "config.hpp"
+#include <common/config.hpp>
 
 #include <random>
 #include <fstream>

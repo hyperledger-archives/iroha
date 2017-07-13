@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "command_service.hpp"
+#include <torii/command_service.hpp>
 #include <grpc++/server_context.h>
 #include <ordering/queue.hpp>
 #include <validation/stateless/validator.hpp>
