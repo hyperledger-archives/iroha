@@ -29,15 +29,10 @@ namespace iroha {
      */
     struct Domain {
       /**
-       * Domain unique identifier
+       * Domain unique identifier (full name)
        */
-      const std::string full_name;
+      const std::string domain_id;
 
-      const std::string parent_full_name;
-      /**
-       * Can everyone join domain
-       */
-      bool open;
     };
   }
 }
