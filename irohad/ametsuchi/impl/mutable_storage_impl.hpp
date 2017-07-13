@@ -33,12 +33,18 @@ namespace iroha {
                          std::unique_ptr<cpp_redis::redis_client> index,
                          std::unique_ptr<pqxx::nontransaction> transaction,
                          std::unique_ptr<WsvQuery> wsv,
-                         std::unique_ptr<CommandExecutor> executor);
-      bool apply(const dao::Block &block,
-                 std::function<bool(const dao::Block &, CommandExecutor &,
-                                    WsvQuery &, const dao::Block &)>
+                         std::unique_ptr<WsvCommand> executor);
+      bool apply(const model::Block &block,
+                 std::function<bool(const model::Block &, WsvCommand &,
+                                    WsvQuery &, const model::Block &)>
                      function) override;
       ~MutableStorageImpl() override;
+      model::Account getAccount(const std::string &account_id) override;
+      std::vector<ed25519::pubkey_t> getSignatories(const std::string &account_id) override;
+      model::Asset getAsset(const std::string &asset_id) override;
+      model::AccountAsset getAccountAsset(const std::string &account_id,
+                                          const std::string &asset_id) override;
+      model::Peer getPeer(const std::string &address) override;
 
      private:
       std::unique_ptr<FlatFile> &block_store_;
@@ -46,7 +52,7 @@ namespace iroha {
 
       std::unique_ptr<pqxx::nontransaction> transaction_;
       std::unique_ptr<WsvQuery> wsv_;
-      std::unique_ptr<CommandExecutor> executor_;
+      std::unique_ptr<WsvCommand> executor_;
 
       bool committed;
     };

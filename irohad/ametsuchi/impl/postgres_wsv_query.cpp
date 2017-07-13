@@ -23,5 +23,36 @@ namespace iroha {
     PostgresWsvQuery::PostgresWsvQuery(
         std::unique_ptr<pqxx::nontransaction> &transaction)
         : transaction_(transaction) {}
+
+    model::Account PostgresWsvQuery::getAccount(const std::string &account_id) {
+      model::Account result;
+      result.account_id = "";
+      return result;
+    }
+
+    std::vector<ed25519::pubkey_t> PostgresWsvQuery::getSignatories(
+        const std::string &account_id) {
+      std::vector<ed25519::pubkey_t> result;
+      return result;
+    }
+
+    model::Asset PostgresWsvQuery::getAsset(const std::string &asset_id) {
+      model::Asset result;
+      result.name = "";
+      return result;
+    }
+
+    model::AccountAsset PostgresWsvQuery::getAccountAsset(
+        const std::string &account_id, const std::string &asset_id) {
+      model::AccountAsset result;
+      result.account_id = "";
+      return result;
+    }
+
+    model::Peer PostgresWsvQuery::getPeer(const std::string &address) {
+      model::Peer result;
+      result.address = "";
+      return result;
+    }
   }  // namespace ametsuchi
 }  // namespace iroha

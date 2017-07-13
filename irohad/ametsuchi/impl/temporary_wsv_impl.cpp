@@ -20,11 +20,10 @@
 namespace iroha {
   namespace ametsuchi {
 
-    bool TemporaryWsvImpl::apply(
-        const dao::Transaction &transaction,
-        std::function<bool(const dao::Transaction &, CommandExecutor &,
-                           WsvQuery &)>
-            function) {
+    bool TemporaryWsvImpl::apply(const model::Transaction &transaction,
+                                 std::function<bool(const model::Transaction &,
+                                                    WsvCommand &, WsvQuery &)>
+                                     function) {
       transaction_->exec("SAVEPOINT savepoint_;");
       auto result = function(transaction, *executor_, *this);
       if (result) {
@@ -37,8 +36,7 @@ namespace iroha {
 
     TemporaryWsvImpl::TemporaryWsvImpl(
         std::unique_ptr<pqxx::nontransaction> transaction,
-        std::unique_ptr<WsvQuery> wsv,
-        std::unique_ptr<CommandExecutor> executor)
+        std::unique_ptr<WsvQuery> wsv, std::unique_ptr<WsvCommand> executor)
         : transaction_(std::move(transaction)),
           wsv_(std::move(wsv)),
           executor_(std::move(executor)) {
@@ -46,6 +44,28 @@ namespace iroha {
     }
 
     TemporaryWsvImpl::~TemporaryWsvImpl() { transaction_->exec("ROLLBACK;"); }
+
+    model::Account TemporaryWsvImpl::getAccount(const std::string &account_id) {
+      return wsv_->getAccount(account_id);
+    }
+
+    std::vector<ed25519::pubkey_t> TemporaryWsvImpl::getSignatories(
+        const std::string &account_id) {
+      return wsv_->getSignatories(account_id);
+    }
+
+    model::Asset TemporaryWsvImpl::getAsset(const std::string &asset_id) {
+      return wsv_->getAsset(asset_id);
+    }
+
+    model::AccountAsset TemporaryWsvImpl::getAccountAsset(
+        const std::string &account_id, const std::string &asset_id) {
+      return wsv_->getAccountAsset(account_id, asset_id);
+    }
+
+    model::Peer TemporaryWsvImpl::getPeer(const std::string &address) {
+      return wsv_->getPeer(address);
+    }
 
   }  // namespace ametsuchi
 }  // namespace iroha

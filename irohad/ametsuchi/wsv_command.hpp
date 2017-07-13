@@ -34,7 +34,7 @@ namespace iroha {
      */
     class WsvCommand {
      public:
-      virtual ~WsvCommand() = 0;
+      virtual ~WsvCommand() = default;
 
       /**
        * Update or insert account

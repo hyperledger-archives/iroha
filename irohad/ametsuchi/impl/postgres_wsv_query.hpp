@@ -18,7 +18,7 @@
 #ifndef IROHA_POSTGRES_WSV_QUERY_HPP
 #define IROHA_POSTGRES_WSV_QUERY_HPP
 
-#include <ametsuchi/wsv_query.hpp>
+#include "ametsuchi/wsv_query.hpp"
 #include <pqxx/nontransaction>
 
 namespace iroha {
@@ -26,10 +26,18 @@ namespace iroha {
     class PostgresWsvQuery : public WsvQuery {
      public:
       PostgresWsvQuery(std::unique_ptr<pqxx::nontransaction> &transaction);
+      model::Account getAccount(const std::string &account_id) override;
+      std::vector<ed25519::pubkey_t> getSignatories(
+          const std::string &account_id) override;
+      model::Asset getAsset(const std::string &asset_id) override;
+      model::AccountAsset getAccountAsset(const std::string &account_id,
+                                          const std::string &asset_id) override;
+      model::Peer getPeer(const std::string &address) override;
+
      private:
       std::unique_ptr<pqxx::nontransaction> &transaction_;
     };
-  }//namespace ametsuchi
-}//namespace iroha
+  }  // namespace ametsuchi
+}  // namespace iroha
 
-#endif //IROHA_POSTGRES_WSV_QUERY_HPP
+#endif  // IROHA_POSTGRES_WSV_QUERY_HPP

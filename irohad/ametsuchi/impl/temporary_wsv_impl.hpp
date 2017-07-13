@@ -27,17 +27,23 @@ namespace iroha {
      public:
       TemporaryWsvImpl(std::unique_ptr<pqxx::nontransaction> transaction,
                        std::unique_ptr<WsvQuery> wsv,
-                       std::unique_ptr<CommandExecutor> executor);
-      bool apply(const dao::Transaction &transaction,
-                 std::function<bool(const dao::Transaction &, CommandExecutor &,
+                       std::unique_ptr<WsvCommand> executor);
+      bool apply(const model::Transaction &transaction,
+                 std::function<bool(const model::Transaction &, WsvCommand &,
                                     WsvQuery &)>
                      function) override;
+      model::Account getAccount(const std::string &account_id) override;
+      std::vector<ed25519::pubkey_t> getSignatories(const std::string &account_id) override;
+      model::Asset getAsset(const std::string &asset_id) override;
+      model::AccountAsset getAccountAsset(const std::string &account_id,
+                                          const std::string &asset_id) override;
+      model::Peer getPeer(const std::string &address) override;
       ~TemporaryWsvImpl() override;
 
      private:
       std::shared_ptr<pqxx::nontransaction> transaction_;
       std::unique_ptr<WsvQuery> wsv_;
-      std::unique_ptr<CommandExecutor> executor_;
+      std::unique_ptr<WsvCommand> executor_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

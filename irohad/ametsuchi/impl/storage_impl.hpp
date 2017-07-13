@@ -36,6 +36,23 @@ namespace iroha {
       std::unique_ptr<MutableStorage> createMutableStorage() override;
       void commit(std::unique_ptr<MutableStorage> mutableStorage) override;
 
+      rxcpp::observable<model::Transaction> get_account_transactions(
+          ed25519::pubkey_t pub_key) override;
+      rxcpp::observable<model::Transaction> get_asset_transactions(
+          std::string asset_full_name) override;
+      rxcpp::observable<model::Transaction> get_account_asset_transactions(
+          std::string account_id, std::string asset_id) override;
+      rxcpp::observable<model::Block> get_blocks_in_range(uint32_t from,
+                                                          uint32_t to) override;
+
+      model::Account getAccount(const std::string &account_id) override;
+      std::vector<ed25519::pubkey_t> getSignatories(
+          const std::string &account_id) override;
+      model::Asset getAsset(const std::string &asset_id) override;
+      model::AccountAsset getAccountAsset(const std::string &account_id,
+                                          const std::string &asset_id) override;
+      model::Peer getPeer(const std::string &address) override;
+
      private:
       StorageImpl(std::string block_store_dir, std::string redis_host,
                   std::size_t redis_port, std::string postgres_options,

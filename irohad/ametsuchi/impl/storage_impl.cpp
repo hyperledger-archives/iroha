@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-#include <ametsuchi/impl/mutable_storage_impl.hpp>
-#include <ametsuchi/impl/postgres_wsv_query.hpp>
-#include <ametsuchi/impl/storage_impl.hpp>
-#include <ametsuchi/impl/temporary_wsv_impl.hpp>
+#include "ametsuchi/impl/storage_impl.hpp"
+#include "ametsuchi/impl/mutable_storage_impl.hpp"
+#include "ametsuchi/impl/postgres_wsv_command.hpp"
+#include "ametsuchi/impl/postgres_wsv_query.hpp"
+#include "ametsuchi/impl/temporary_wsv_impl.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -38,8 +39,8 @@ namespace iroha {
           *postgres_connection, "TemporaryWsv");
       std::unique_ptr<WsvQuery> wsv =
           std::make_unique<PostgresWsvQuery>(wsv_transaction);
-      std::unique_ptr<CommandExecutor> executor =
-          std::make_unique<PostgresCommandExecutor>(wsv_transaction);
+      std::unique_ptr<WsvCommand> executor =
+          std::make_unique<PostgresWsvCommand>(wsv_transaction);
 
       return std::make_unique<TemporaryWsvImpl>(
           std::move(wsv_transaction), std::move(wsv), std::move(executor));
@@ -60,8 +61,8 @@ namespace iroha {
           *postgres_connection, "TemporaryWsv");
       std::unique_ptr<WsvQuery> wsv =
           std::make_unique<PostgresWsvQuery>(wsv_transaction);
-      std::unique_ptr<CommandExecutor> executor =
-          std::make_unique<PostgresCommandExecutor>(wsv_transaction);
+      std::unique_ptr<WsvCommand> executor =
+          std::make_unique<PostgresWsvCommand>(wsv_transaction);
 
       auto index = std::make_unique<cpp_redis::redis_client>();
       try {
@@ -136,6 +137,70 @@ namespace iroha {
           wsv_(std::move(wsv)) {
       wsv_transaction_->exec(
           "SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;");
+    }
+
+    rxcpp::observable<model::Transaction> StorageImpl::get_account_transactions(
+        ed25519::pubkey_t pub_key) {
+      return rxcpp::observable<>::create<model::Transaction>(
+          [](auto s) {
+            s.on_next(model::Transaction{});
+            s.on_completed();
+          });
+    }
+
+    rxcpp::observable<model::Transaction> StorageImpl::get_asset_transactions(
+        std::string asset_full_name) {
+      return rxcpp::observable<>::create<model::Transaction>(
+          [](auto s) {
+            s.on_next(model::Transaction{});
+            s.on_completed();
+          });
+    }
+
+    rxcpp::observable<model::Transaction>
+    StorageImpl::get_account_asset_transactions(std::string account_id,
+                                                std::string asset_id) {
+      return rxcpp::observable<>::create<model::Transaction>(
+          [](auto s) {
+            s.on_next(model::Transaction{});
+            s.on_completed();
+          });
+    }
+
+    rxcpp::observable<model::Block> StorageImpl::get_blocks_in_range(
+        uint32_t from, uint32_t to) {
+      return rxcpp::observable<>::create<model::Block>(
+          [](auto s) {
+            s.on_next(model::Block{});
+            s.on_completed();
+          });
+    }
+
+    model::Account StorageImpl::getAccount(const std::string &account_id) {
+      std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
+      return wsv_->getAccount(account_id);
+    }
+
+    std::vector<ed25519::pubkey_t> StorageImpl::getSignatories(
+        const std::string &account_id) {
+      std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
+      return wsv_->getSignatories(account_id);
+    }
+
+    model::Asset StorageImpl::getAsset(const std::string &asset_id) {
+      std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
+      return wsv_->getAsset(asset_id);
+    }
+
+    model::AccountAsset StorageImpl::getAccountAsset(
+        const std::string &account_id, const std::string &asset_id) {
+      std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
+      return wsv_->getAccountAsset(account_id, asset_id);
+    }
+
+    model::Peer StorageImpl::getPeer(const std::string &address) {
+      std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
+      return wsv_->getPeer(address);
     }
 
   }  // namespace ametsuchi

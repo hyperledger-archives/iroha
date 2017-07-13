@@ -21,9 +21,9 @@ namespace iroha {
   namespace ametsuchi {
 
     bool MutableStorageImpl::apply(
-        const dao::Block &block,
-        std::function<bool(const dao::Block &, CommandExecutor &, WsvQuery &,
-                           const dao::Block &)>
+        const model::Block &block,
+        std::function<bool(const model::Block &, WsvCommand &, WsvQuery &,
+                           const model::Block &)>
             function) {
       // TODO replace last arg with previous block
       return function(block, *executor_, *this, {});
@@ -33,8 +33,7 @@ namespace iroha {
         std::unique_ptr<FlatFile> &block_store,
         std::unique_ptr<cpp_redis::redis_client> index,
         std::unique_ptr<pqxx::nontransaction> transaction,
-        std::unique_ptr<WsvQuery> wsv,
-        std::unique_ptr<CommandExecutor> executor)
+        std::unique_ptr<WsvQuery> wsv, std::unique_ptr<WsvCommand> executor)
         : block_store_(block_store),
           index_(std::move(index)),
           transaction_(std::move(transaction)),
@@ -46,10 +45,33 @@ namespace iroha {
     }
 
     MutableStorageImpl::~MutableStorageImpl() {
-      if (!committed){
+      if (!committed) {
         index_->discard();
         transaction_->exec("ROLLBACK;");
       }
+    }
+
+    model::Account MutableStorageImpl::getAccount(
+        const std::string &account_id) {
+      return wsv_->getAccount(account_id);
+    }
+
+    std::vector<ed25519::pubkey_t> MutableStorageImpl::getSignatories(
+        const std::string &account_id) {
+      return wsv_->getSignatories(account_id);
+    }
+
+    model::Asset MutableStorageImpl::getAsset(const std::string &asset_id) {
+      return wsv_->getAsset(asset_id);
+    }
+
+    model::AccountAsset MutableStorageImpl::getAccountAsset(
+        const std::string &account_id, const std::string &asset_id) {
+      return wsv_->getAccountAsset(account_id, asset_id);
+    }
+
+    model::Peer MutableStorageImpl::getPeer(const std::string &address) {
+      return wsv_->getPeer(address);
     }
   }  // namespace ametsuchi
 }  // namespace iroha
