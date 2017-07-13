@@ -21,14 +21,13 @@ namespace iroha {
   namespace torii {
 
     using validation::StatelessValidator;
-    using network::PeerCommunicationService;
     using model::TransactionResponse;
     using model::ModelCryptoProvider;
 
     TransactionProcessorStub::TransactionProcessorStub(
-        const StatelessValidator &validator, PeerCommunicationService &service,
-        ModelCryptoProvider &provider)
-        : validator_(validator), service_(service), provider_(provider) {
+        const StatelessValidator &validator,
+        ModelCryptoProvider &crptoProvider)
+        : validator_(validator), crptoProvider_(crptoProvider) {
       // Handle on_proposal
       auto proposal_tx_filter = [](const auto &tx) {
         // TODO filter depending on client-tx map
@@ -63,25 +62,15 @@ namespace iroha {
             .filter(commit_tx_filter)
             .map(commit_tx_map);
       };
-
-      notifier_ =
-          service_.on_proposal()
-              .concat_map(proposal_response)
-              .merge(service_.on_commit().concat_map(identity).concat_map(
-                  commit_response));
     }
 
     void TransactionProcessorStub::transaction_handle(model::Client client,
                                           model::Transaction &transaction) {
       if (validator_.validate(transaction)) {
-        // TODO accumulate client-tx map
-        service_.propagate_transaction(transaction);
+        // TODO accumulate client-tx map, send tx to ordering service
+
       }
     }
 
-    rxcpp::observable<TransactionResponse>
-    TransactionProcessorStub::transaction_notifier() {
-      return notifier_;
-    }
   }  // namespace torii
 }  // namespace iroha

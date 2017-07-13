@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_WSVQUERY_HPP
-#define IROHA_WSVQUERY_HPP
+#ifndef IROHA_WSV_QUERY_HPP
+#define IROHA_WSV_QUERY_HPP
 
 #include <common/types.hpp>
 #include <model/model.hpp>
@@ -24,7 +24,6 @@
 #include <vector>
 
 namespace iroha {
-
   namespace ametsuchi {
 
     /**
@@ -32,55 +31,49 @@ namespace iroha {
      */
     class WsvQuery {
      public:
-      /**
-       * Get peer by it pub key
-       * @param pub_key
-       * @return Peer Model
-       */
-      virtual iroha::model::Peer get_peer(
-          iroha::ed25519::pubkey_t pub_key) = 0;
+      virtual ~WsvQuery() = default;
 
       /**
-       * Get account by it's first public key.
-       * @param pub_key
-       * @return Model Account
+       * Get account by user master key
+       * @param master_key
+       * @return
        */
-      virtual model::Account get_account(
-          ed25519::pubkey_t pub_key) = 0;
+      virtual model::Account getAccount(
+          const ed25519::pubkey_t &master_key) = 0;
 
       /**
-       * Get asset by full name. For example USD#soramitsu.co.jp
-       * @param full_name of an asset (name#domain)
-       * @return Model Asset
+       * Get signatories of account by user master key
+       * @param master_key
+       * @return
        */
-      virtual model::Asset get_asset(std::string asset_full_name) = 0;
+      virtual std::vector<ed25519::pubkey_t> getSignatories(
+          const ed25519::pubkey_t &master_key) = 0;
 
       /**
-       * Get wallet by wallet_id
-       * @param wallet_id
-       * @return Model Wallet
+       * Get asset by its name
+       * @param asset_id
+       * @return
        */
-      virtual model::Wallet get_wallet(std::string wallet_id) = 0;
+      virtual model::Asset getAsset(const std::string &asset_id) = 0;
 
       /**
-       * Get all wallets of a account.
-       * @param pub_key of a account
-       * @return vector of Model Wallet
+       * Get wallet of user
+       * @param master_key
+       * @param asset_id
+       * @return
        */
-      virtual std::vector<model::Wallet> get_account_wallets(
-          ed25519::pubkey_t pub_key) = 0;
+      virtual model::Wallet getWallet(const ed25519::pubkey_t &master_key,
+                                      const std::string &asset_id) = 0;
 
       /**
-       * Get all asset of a domain.
-       * @param  full_name of a domain
-       * @return vector of Model Asset
+       * Get peer by given IP address
+       * @param address
+       * @return
        */
-      virtual std::vector<model::Asset> get_domain_assets(
-          std::string domain_full_name) = 0;
+      virtual model::Peer getPeer(const std::string &address) = 0;
     };
 
   }  // namespace ametsuchi
-
 }  // namespace iroha
 
-#endif  // IROHA_WSVQUERY_HPP
+#endif  // IROHA_WSV_QUERY_HPP
