@@ -58,6 +58,11 @@ namespace torii {
      */
     virtual void shutdown() override;
 
+    /**
+     * @return true if completion queue has been shut down.
+     */
+    bool isShutdownCompletionQueue() const { return isShutdownCompletionQueue_; }
+
   private:
 
     /**
@@ -93,7 +98,8 @@ namespace torii {
     iroha::protocol::CommandService::AsyncService asyncService_;
     std::unique_ptr<grpc::ServerCompletionQueue> cq_;
     std::mutex mtx_;
-    bool isShutdown_ = false;
+    bool isShutdown_ = false; // called shutdown()
+    bool isShutdownCompletionQueue_ = false; // called cq_->Shutdown()
     ::grpc::Alarm* shutdownAlarm_ = nullptr;
   };
 }  // namespace torii

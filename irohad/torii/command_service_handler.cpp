@@ -19,6 +19,7 @@ limitations under the License.
 #include <network/grpc_call.hpp>
 #include <torii/command_service_handler.hpp>
 #include <torii/command_service.hpp>
+#include <unistd.h>
 
 namespace prot = iroha::protocol;
 
@@ -52,7 +53,6 @@ namespace torii {
     }
 
     if (didShutdown) {
-      // std::cout << "throw alarm\n";
       // enqueue a special event that causes the completion queue to be shut down.
       // tag is nullptr in order to determine no Call instance allocated when static_cast.
       shutdownAlarm_ = new ::grpc::Alarm(cq_.get(), gpr_now(GPR_CLOCK_MONOTONIC), nullptr);
@@ -73,13 +73,13 @@ namespace torii {
     while (cq_->Next(&tag, &ok)) {
       auto callbackTag =
           static_cast<network::UntypedCall<CommandServiceHandler>::CallOwner*>(tag);
-      if (callbackTag) {
-        // std::cout << "Serve\n";
+      if (ok && callbackTag) {
         callbackTag->onCompleted(this);
       } else {
-        // std::cout << "Shutdown\n";
-        // callbackTag is nullptr (a special event that causes shut down cq_)
+        // callbackTag is nullptr (and) ok is false
+        // if the queue is shutting down.
         cq_->Shutdown();
+        isShutdownCompletionQueue_ = true;
       }
     }
   }
