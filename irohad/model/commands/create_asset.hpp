@@ -30,7 +30,7 @@ namespace iroha {
      */
     struct CreateAsset : public Command {
       /**
-       * Asset to insert to the system
+       * Asset to create in the system
        */
       std::string asset_name;
 
