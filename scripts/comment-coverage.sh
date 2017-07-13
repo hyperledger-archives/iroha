@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -uv
+set -v
 
 
 if [ "$CIRCLE_PULL_REQUEST" == false ] || [ -z "$CIRCLE_PULL_REQUEST" ]; then
