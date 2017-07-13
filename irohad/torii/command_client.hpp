@@ -24,7 +24,7 @@ limitations under the License.
 
 namespace torii {
 
-  iroha::protocol::ToriiResponse sendTransaction(
+  iroha::protocol::ToriiResponse sendTransactionBlocking(
       const iroha::protocol::Transaction& tx,
       const std::string& targetPeerIp,
       int targetPeerPort);

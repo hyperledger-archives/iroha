@@ -46,7 +46,7 @@ namespace network {
     virtual void responseSent() = 0;
 
     /**
-     * owns concrete Call type and able to execute derived functions.
+     * owns concrete Call type and executes derived functions.
      */
     class CallOwner {
     public:
