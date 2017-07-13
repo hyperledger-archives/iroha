@@ -18,7 +18,7 @@
 #include <model/commands/add_asset_quantity.hpp>
 #include <model/commands/add_signatory.hpp>
 #include <model/commands/assign_master_key.hpp>
-
+#include <model/commands/create_account.hpp>
 #include <algorithm>
 
 using namespace iroha::model;
@@ -55,11 +55,15 @@ bool AddSignatory::validate(ametsuchi::WsvQuery &queries,
       creator.master_key == pubkey;
   // TODO: What about other cases ?
 }
-
+/**
+ *
+ * @param queries
+ * @param creator
+ * @return
+ */
 bool AssignMasterKey::validate(ametsuchi::WsvQuery &queries,
                                const Account &creator) {
   // Case 1: When creator wants to change key in their own account
-
   auto signs = queries.getSignatories(account_id);
 
   return
@@ -72,3 +76,16 @@ bool AssignMasterKey::validate(ametsuchi::WsvQuery &queries,
 
   // TODO:Can there be case when creator can assign master key of other account?
 }
+
+/**
+ *
+ * @param queries
+ * @param creator
+ * @return
+ */
+bool CreateAccount::validate(ametsuchi::WsvQuery &queries,
+                             const Account &creator) {
+  // Creator should have permission to create account
+  return creator.permissions.create_assets;
+}
+
