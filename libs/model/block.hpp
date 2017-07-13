@@ -19,8 +19,8 @@ limitations under the License.
 
 #include <common/types.hpp>
 #include <vector>
-#include <model/signature.hpp>
-#include <model/transaction.hpp>
+#include "signature.hpp"
+#include "transaction.hpp"
 
 namespace iroha {
   namespace model {
