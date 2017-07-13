@@ -30,12 +30,10 @@ namespace iroha {
     TransactionProcessorStub::TransactionProcessorStub(
         PeerCommunicationService &pcs,
         OrderingService &os,
-        const StatelessValidator &validator,
-        ModelCryptoProvider &crypto_provider)
+        const StatelessValidator &validator)
         : pcs_(pcs),
           os_(os),
-          validator_(validator),
-          crypto_provider_(crypto_provider) {
+          validator_(validator) {
     }
 
     void TransactionProcessorStub::transaction_handle(model::Client client,

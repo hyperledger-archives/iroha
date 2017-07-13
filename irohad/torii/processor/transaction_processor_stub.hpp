@@ -37,8 +37,7 @@ namespace iroha {
        */
       TransactionProcessorStub(network::PeerCommunicationService &pcs,
                                ordering::OrderingService &os,
-                               const validation::StatelessValidator &validator,
-                               model::ModelCryptoProvider &crypto_provider);
+                               const validation::StatelessValidator &validator);
 
       void transaction_handle(model::Client client,
                               model::Transaction &transaction) override;
@@ -53,7 +52,6 @@ namespace iroha {
 
       // processing
       const validation::StatelessValidator &validator_;
-      model::ModelCryptoProvider &crypto_provider_;
 
       // internal
       rxcpp::subjects::subject<std::shared_ptr<model::TransactionResponse>>

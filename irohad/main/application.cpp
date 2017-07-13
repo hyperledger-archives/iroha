@@ -40,8 +40,7 @@ void Irohad::run() {
       consensus_service);
   iroha::torii::TransactionProcessorStub tp(peer_communication_service,
                                             ordering_service,
-                                            stateless_validator,
-                                            crypto_provider);
+                                            stateless_validator);
 //  iroha::torii::QueryProcessorStub qp(ametsuchi, ametsuchi);
 
 //  iroha::torii::ToriiStub torii(tp, qp);
