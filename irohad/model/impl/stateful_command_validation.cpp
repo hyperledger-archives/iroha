@@ -23,6 +23,9 @@
 #include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/set_permissions.hpp"
+#include "model/commands/set_quorum.hpp"
+#include "model/commands/subtract_asset_quantity.hpp"
+#include "model/commands/transfer_asset.hpp"
 
 #include <algorithm>
 
@@ -37,12 +40,23 @@ namespace iroha {
      */
     bool AddAssetQuantity::validate(ametsuchi::WsvQuery &queries,
                                     const Account &creator) {
+      // TODO: We will get rid off ugly string to float conversion once we have
+      // Decimal abstraction
+      try {
+        // Amount must be in some meaningful range:
+        if (std::stod(amount) > 0) return false;
+      }
+      // Check if asset is formed right
+      catch (const std::invalid_argument &ia) {
+        return false;
+      }
+      // Check if asset is in range
+      catch (const std::out_of_range &oor) {
+        return false;
+      }
+
       // Check if creator has MoneyCreator permission
-      return creator.permissions.issue_assets &&
-             // Asset must exist in the system
-             !queries.getAsset(asset_id).name.empty();
-      // Check if the amount if meaningful
-      // TODO: check if amount is in some scope
+      return creator.permissions.issue_assets;
     }
 
     /**
@@ -134,6 +148,66 @@ namespace iroha {
       // TODO: can be there other cases?
     }
 
+    /**
+     *
+     * @param queries
+     * @param creator
+     * @return
+     */
+    bool SetAccountPermissions::validate(ametsuchi::WsvQuery &queries,
+                                         const Account &creator) {
+      // check if creator has permission to set permissions
+      return creator.permissions.set_permissions;
+
+      // TODO: can creator set new permissions to their account?
+    }
+
+    /**
+    *
+    * @param queries
+    * @param creator
+    * @return
+    */
+    bool SetQuorum::validate(ametsuchi::WsvQuery &queries,
+                             const Account &creator) {
+      // Case 1: creator sets quorum to their account
+      // Quorum must be from 1 to N
+      return new_quorum > 0 && new_quorum < 10 &&
+             creator.account_id == account_id;
+
+      // TODO: should we consider cases when creator sets quorum to other
+    }
+
+    /**
+    * Transaction creator can transfer money only from their account.
+    * @param queries
+    * @param creator
+    * @return
+    */
+    bool TransferAsset::validate(ametsuchi::WsvQuery &queries,
+                                 const Account &creator) {
+      // TODO: We will get rid off ugly string to float conversion once we have
+      // Decimal abstraction
+      try {
+        // get source account's balance and check if it is sufficient
+        auto account_asset = queries.getAccountAsset(src_account_id, asset_id);
+        if (std::stod(account_asset.balance) < std::stod(amount)) return false;
+      }
+      // Check if asset is formed right
+      catch (const std::invalid_argument &ia) {
+        return false;
+      }
+      // Check if asset is in range
+      catch (const std::out_of_range &oor) {
+        return false;
+      }
+
+      return
+          // Can account transfer assets
+          creator.permissions.can_transfer &&
+          // Creator can transfer only from their account
+          creator.account_id == src_account_id;
+    }
 
   }  // namespace model
 
