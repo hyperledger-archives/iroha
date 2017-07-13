@@ -16,25 +16,14 @@ limitations under the License.
 
 #include <grpc++/grpc++.h>
 #include <grpc++/server_builder.h>
+#include <torii/command_service_handler.hpp>
 
-#ifndef CONNECTION_SERVER_RUNNER_HPP
-#define CONNECTION_SERVER_RUNNER_HPP
+#ifndef MAIN_SERVER_RUNNER_HPP
+#define MAIN_SERVER_RUNNER_HPP
 
-/**
- * For easy replacing with mock server, we use the interface.
- */
-class IServerRunner {
+class ServerRunner {
 public:
-  virtual ~IServerRunner() = default;
-  virtual void run() = 0;
-  virtual void shutdown() = 0;
-  virtual bool waitForServersReady() = 0;
-};
-
-class ServerRunner final : public IServerRunner {
-public:
-  ServerRunner(const std::string &ip, int port,
-               const std::vector<grpc::Service *> &services);
+  ServerRunner(const std::string &ip, int port);
   void run();
   void shutdown();
   bool waitForServersReady();
@@ -45,7 +34,7 @@ private:
   std::condition_variable serverInstanceCV_;
 
   std::string serverAddress_;
-  std::vector<grpc::Service *> services_;
+  std::unique_ptr<torii::CommandServiceHandler> commandServiceHandler_;
 };
 
-#endif
+#endif  // MAIN_SERVER_RUNNER_HPP

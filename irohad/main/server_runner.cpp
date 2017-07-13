@@ -18,23 +18,20 @@ limitations under the License.
 #include <grpc++/server_builder.h>
 #include <grpc++/server_context.h>
 #include <logger/logger.hpp>
-
-#include "server_runner.hpp"
+#include <main/server_runner.hpp>
+#include <torii/command_service_handler.hpp>
 
 logger::Logger console("ServerRunner");
 
-ServerRunner::ServerRunner(const std::string &ip, int port,
-                           const std::vector<grpc::Service *> &srvs)
-    : serverAddress_(ip + ":" + std::to_string(port)), services_(srvs) {}
+ServerRunner::ServerRunner(const std::string &ip, int port)
+    : serverAddress_(ip + ":" + std::to_string(port)) {}
 
 void ServerRunner::run() {
   grpc::ServerBuilder builder;
 
-  // TODO(motxx): Is it ok to open same port for all services?
   builder.AddListeningPort(serverAddress_, grpc::InsecureServerCredentials());
-  for (auto srv : services_) {
-    builder.RegisterService(srv);
-  }
+
+  commandServiceHandler_ = std::make_unique<torii::CommandServiceHandler>(builder);
 
   waitForServer_.lock();
   serverInstance_ = builder.BuildAndStart();
