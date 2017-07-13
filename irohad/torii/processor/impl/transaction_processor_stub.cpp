@@ -16,6 +16,7 @@
  */
 
 #include <torii/processor/transaction_processor_stub.hpp>
+#include <model/tx_responses/stateless_response.hpp>
 
 namespace iroha {
   namespace torii {
@@ -23,53 +24,39 @@ namespace iroha {
     using validation::StatelessValidator;
     using model::TransactionResponse;
     using model::ModelCryptoProvider;
+    using network::PeerCommunicationService;
+    using ordering::OrderingService;
 
     TransactionProcessorStub::TransactionProcessorStub(
+        PeerCommunicationService &pcs,
+        OrderingService &os,
         const StatelessValidator &validator,
-        ModelCryptoProvider &crptoProvider)
-        : validator_(validator), crptoProvider_(crptoProvider) {
-      // Handle on_proposal
-      auto proposal_tx_filter = [](const auto &tx) {
-        // TODO filter depending on client-tx map
-        return true;
-      };
-      auto proposal_tx_map = [](const auto &tx) {
-        // TODO form response
-        model::TransactionResponse res;
-        res.msg = "proposal";
-        return res;
-      };
-      auto proposal_response = [proposal_tx_filter,
-                                proposal_tx_map](auto proposal) {
-        return rxcpp::observable<>::from(proposal)
-            .filter(proposal_tx_filter)
-            .map(proposal_tx_map);
-      };
-      // Handle on_commit
-      auto identity = [](auto commit) { return commit; };
-      auto commit_tx_filter = [](const auto &tx) {
-        // TODO filter depending on client-tx map
-        return true;
-      };
-      auto commit_tx_map = [](const auto &tx) {
-        // TODO form response;
-        model::TransactionResponse res;
-        res.msg = "commit";
-        return res;
-      };
-      auto commit_response = [commit_tx_filter, commit_tx_map](auto block) {
-        return rxcpp::observable<>::from(block)
-            .filter(commit_tx_filter)
-            .map(commit_tx_map);
-      };
+        ModelCryptoProvider &crypto_provider)
+        : pcs_(pcs),
+          os_(os),
+          validator_(validator),
+          crypto_provider_(crypto_provider) {
     }
 
     void TransactionProcessorStub::transaction_handle(model::Client client,
-                                          model::Transaction &transaction) {
-      if (validator_.validate(transaction)) {
-        // TODO accumulate client-tx map, send tx to ordering service
+                                                      model::Transaction &transaction) {
+      model::StatelessResponse response;
+      response.client = client;
+      response.transaction = transaction;
+      response.passed = false;
 
+      if (validator_.validate(transaction)) {
+        response.passed = true;
+        os_.propagate_transaction(transaction);
       }
+
+      notifier_.get_subscriber().on_next(
+          std::make_shared<model::StatelessResponse>(response));
+    }
+
+    rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
+    TransactionProcessorStub::transaction_notifier() {
+      return notifier_.get_observable();
     }
 
   }  // namespace torii

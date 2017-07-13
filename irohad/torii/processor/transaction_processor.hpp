@@ -43,7 +43,7 @@ namespace iroha {
        * Subscribers will be notified with transaction status
        * @return observable for subscribing
        */
-      virtual rxcpp::observable<model::TransactionResponse>
+      virtual rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
       transaction_notifier() = 0;
 
     };
