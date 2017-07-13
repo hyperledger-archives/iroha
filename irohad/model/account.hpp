@@ -43,6 +43,12 @@ namespace iroha {
         * Can create new accounts
         */
         bool create_accounts;
+                 
+        /**
+        * Can create new domains
+        */
+        bool create_domains;
+           
         /**
          * Can account read private information of other accounts;
          * Auditor's permission
