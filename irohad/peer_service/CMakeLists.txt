@@ -23,4 +23,5 @@ target_link_libraries(peer_service
     logger
     crypto
     model
+    schema
 )
