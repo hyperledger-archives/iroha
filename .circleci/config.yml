@@ -27,12 +27,12 @@ jobs:
           command: cmake -DCOVERAGE=ON -H$IROHA_HOME -B$IROHA_BUILD
       - run:
           name: make
-          command: cd $IROHA_BUILD && make -j4
+          command: cmake --build $IROHA_BUILD -- -j4
       - run:
           name: run tests
-          command: cd $IROHA_BUILD && make test
+          command: cmake --build $IROHA_BUILD --target test
       - run:
-          name: comment coverage on the PullRequest
+          name: comment coverage on the pull-request
           command: $IROHA_HOME/scripts/comment-coverage.sh
 
 #      - run:
