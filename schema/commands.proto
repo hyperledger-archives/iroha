@@ -43,12 +43,6 @@ message RemoveSignatory {
     bytes public_key = 2;
 }
 
-message SubtractAssetQuantity {
-    string account_id = 1;
-    string asset_id = 2;
-    string amount = 3;
-}
-
 message SetAccountPermissions {
     string account_id = 1;
     uint32 permissions = 2;
@@ -56,7 +50,13 @@ message SetAccountPermissions {
 
 message SetAccountQuorum {
     string account_id = 1;
-    uint32 permissions = 2;
+    uint32 quorum = 2;
+}
+
+message SubtractAssetQuantity {
+    string account_id = 1;
+    string asset_id = 2;
+    string amount = 3;
 }
 
 message TransferAsset {
