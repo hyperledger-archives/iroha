@@ -39,6 +39,13 @@ namespace iroha {
       virtual void transaction_handle(model::Client client,
                                       model::Transaction &transaction) = 0;
 
+      /**
+       * Subscribers will be notified with transaction status
+       * @return observable for subscribing
+       */
+      virtual rxcpp::observable<model::TransactionResponse>
+      transaction_notifier() = 0;
+
     };
   }  // namespace torii
 }  // namespace iroha
