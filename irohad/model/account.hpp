@@ -65,7 +65,7 @@ namespace iroha {
          * Can account provide unlimited transfers to other accounts;
          * User's account permission
          */
-        bool unlimited_transfer;
+        bool can_transfer;
         
       };
 
