@@ -16,43 +16,39 @@ limitations under the License.
 #ifndef __IROHA_PEER_SERVICE_SELF_STATE_HPP__
 #define __IROHA_PEER_SERVICE_SELF_STATE_HPP__
 
-#include <memory>
 #include <ed25519.h>
+#include <memory>
 #include <model/peer.hpp>
+namespace peer_service {
 
-namespace iroha {
-  namespace peer_service {
+  using Peer = iroha::model::Peer;
+  class SelfStatus {
+   public:
+    SelfStatus();
 
-    using Peer = iroha::model::Peer;
-    class SelfStatus{
-    public:
-      SelfStatus();
+    std::string getIp() const;
+    std::string getPublicKey() const;
+    std::string getPrivateKey() const;
+    uint64_t getActiveTime() const;
+    Peer::PeerStatus getStatus() const;
+    Peer::PeerRole getRole() const;
 
-      std::string getIp() const;
-      std::string getPublicKey() const;
-      std::string getPrivateKey() const;
-      uint64_t getActiveTime() const;
-      Peer::PeerStatus getStatus() const;
-      Peer::PeerRole getRole() const;
+    /**
+     * When commit successes and state of self peer is UnSynced, It is called.
+     * It throw to issue Peer::Activate(self) transaction.
+     */
+    void activate();
 
-      /**
-       * When commit successes and state of self peer is UnSynced, It is called.
-       * It throw to issue Peer::Activate(self) transaction.
-       */
-      void activate();
+    /**
+     * When commit fails, it is called.
+     * It throw to issue Peer::Stop(Self) transaction.
+     */
+    void stop();
 
-      /**
-       * When commit fails, it is called.
-       * It throw to issue Peer::Stop(Self) transaction.
-       */
-      void stop();
-
-
-    private:
-      std::unique_ptr<Peer> self_;
-      iroha::ed25519::privkey_t private_key_;
-    };
+   private:
+    std::unique_ptr<Peer> self_;
+    iroha::ed25519::privkey_t private_key_;
   };
-};
+}  // namespace peer_service
 
 #endif  //__IROHA_PEER_SERVICE_SELF_STATE_HPP__

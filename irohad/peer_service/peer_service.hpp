@@ -23,105 +23,101 @@ limitations under the License.
 #include <string>
 #include <vector>
 
+#include <commands.pb.h>
 #include <model/block.hpp>
 #include <model/peer.hpp>
 #include <peer_service/self_status.hpp>
-#include <commands.pb.h>
 
-namespace iroha {
-  namespace peer_service {
+namespace peer_service {
 
-    using Peer = iroha::model::Peer;
-    using Command = iroha::protocol::Command;
+  using Peer = iroha::model::Peer;
+  using Command = iroha::protocol::Command;
 
-    void initialize();
+  void initialize();
 
-    /**
-     * @return List of peers that therefore permutation.
-     */
-    std::vector<std::shared_ptr<Peer>> getPermutationPeers();
+  /**
+   * @return List of peers that therefore permutation.
+   */
+  std::vector<std::shared_ptr<Peer>> getPermutationPeers();
 
-    /**
-     * @param i index
-     * @return A i-th peer that therefore permutation.
-     */
-    Peer getPermutationAt(int i);
+  /**
+   * @param i index
+   * @return A i-th peer that therefore permutation.
+   */
+  Peer getPermutationAt(int i);
 
-    /**
-     * @return List of peers that is used by ordering service.
-     */
-    std::vector<std::shared_ptr<Peer>> getOrderingPeers();
+  /**
+   * @return List of peers that is used by ordering service.
+   */
+  std::vector<std::shared_ptr<Peer>> getOrderingPeers();
 
-    /**
-     * @return List of peers that is used by ordering service and is that will
-     * be send sumeragi.
-     */
-    std::vector<std::shared_ptr<Peer>> getActiveOrderingPeers();
+  /**
+   * @return List of peers that is used by ordering service and is that will
+   * be send sumeragi.
+   */
+  std::vector<std::shared_ptr<Peer>> getActiveOrderingPeers();
 
-    /**
-     * @return self status
-     */
-    const SelfStatus& self();
+  /**
+   * @return self status
+   */
+  const SelfStatus& self();
 
-    /**
-     * When on_porposal sends on_commit, it is called.
-     * It check signs from Block, and identify dead peers which It throw to
-     * issue Peer::Remove transaction.
-     * @param commited_block commited block with signs
-     */
-    void DiesRemove(const iroha::model::Block& commited_block);
+  /**
+   * When on_porposal sends on_commit, it is called.
+   * It check signs from Block, and identify dead peers which It throw to
+   * issue Peer::Remove transaction.
+   * @param commited_block commited block with signs
+   */
+  void DiesRemove(const iroha::model::Block& commited_block);
 
-    /**
-     * When on_commit, it is called.
-     * It change peer oreder.
-     */
-    void changePermutation();
+  /**
+   * When on_commit, it is called.
+   * It change peer oreder.
+   */
+  void changePermutation();
 
-    /**
-     * When commit fails, it is called.
-     * It throw to issue Peer::Stop(Self) transaction.
-     */
-    void selfStop();
+  /**
+   * When commit fails, it is called.
+   * It throw to issue Peer::Stop(Self) transaction.
+   */
+  void selfStop();
 
-    /**
-     * When commit successes and state of self peer is UnSynced, It is called.
-     * It throw to issue Peer::Activate(self) transaction.
-     */
-    void selfActivate();
+  /**
+   * When commit successes and state of self peer is UnSynced, It is called.
+   * It throw to issue Peer::Activate(self) transaction.
+   */
+  void selfActivate();
 
+  /**
+   * validate command
+   */
+  void validate(const Command::Peer::Add&);
+  void validate(const Command::Peer::Remove&);
+  void validate(const Command::Peer::Activate&);
+  void validate(const Command::Peer::Stop&);
+  void validate(const Command::Peer::ChangeRole&);
 
-    /**
-     * validate command
-     */
-    void validate(const Command::Peer::Add& );
-    void validate(const Command::Peer::Remove& );
-    void validate(const Command::Peer::Activate& );
-    void validate(const Command::Peer::Stop& );
-    void validate(const Command::Peer::ChangeRole& );
+  /**
+   * execute command
+   */
+  void execute(const Command::Peer::Add&);
+  void execute(const Command::Peer::Remove&);
+  void execute(const Command::Peer::Activate&);
+  void execute(const Command::Peer::Stop&);
+  void execute(const Command::Peer::ChangeRole&);
 
+  namespace detail {
+    void issueStop(std::string ip, Peer& stop_peer);
 
-    /**
-     * execute command
-     */
-    void execute(const Command::Peer::Add& );
-    void execute(const Command::Peer::Remove& );
-    void execute(const Command::Peer::Activate& );
-    void execute(const Command::Peer::Stop& );
-    void execute(const Command::Peer::ChangeRole& );
+    void issueActivate(std::string ip, Peer& activate_peer);
 
-    namespace detail {
-      void issueStop(std::string ip, Peer& stop_peer);
+    SelfStatus self_;
+    std::vector<int> permutation_;
+    std::vector<int> active_ordering_permutation_;
 
-      void issueActivate(std::string ip, Peer& activate_peer);
+    std::vector<std::shared_ptr<Peer>> peers_;
+  }
 
-      SelfStatus self_;
-      std::vector<int> permutation_;
-      std::vector<int> active_ordering_permutation_;
-
-      std::vector<std::shared_ptr<Peer>> peers_;
-    }
-
-  }  // namespace peer_service
-}  // iroha
+}  // namespace peer_service
 
 #endif
