@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef IROHA_WALLET_HPP
-#define IROHA_WALLET_HPP
+#ifndef IROHA_ACCOUNT_ASSET_HPP
+#define IROHA_ACCOUNT_ASSET_HPP
 
 #include <string>
 
@@ -23,7 +23,7 @@ namespace iroha {
     /**
       * Account has Asset model representation
       */
-    struct Wallet {
+    struct AccountAsset {
       /**
        * Asset identifier
        */
@@ -42,4 +42,4 @@ namespace iroha {
   }
 }
 
-#endif  // IROHA_WALLET_HPP
+#endif  // IROHA_ACCOUNT_ASSET_HPP

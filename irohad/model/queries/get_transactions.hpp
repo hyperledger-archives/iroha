@@ -25,7 +25,7 @@ namespace iroha {
   namespace model {
 
     /**
-     * Query for getting transactions of wallet(AccountAsset) of an account
+     * Query for getting transactions of given asset of an account
      */
     struct GetAccountAssetTransactions : Query {
       /**

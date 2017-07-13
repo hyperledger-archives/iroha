@@ -18,7 +18,7 @@
 #ifndef IROHA_WSV_COMMAND_HPP
 #define IROHA_WSV_COMMAND_HPP
 
-#include <model/wallet.hpp>
+#include <model/account_asset.hpp>
 #include <model/asset.hpp>
 #include <model/account.hpp>
 #include <model/peer.hpp>
@@ -51,11 +51,11 @@ namespace iroha {
       virtual bool insertAsset(const model::Asset &asset) = 0;
 
       /**
-       * Update or insert account wallet
-       * @param wallet
+       * Update or insert account asset
+       * @param asset
        * @return
        */
-      virtual bool upsertWallet(const model::Wallet &wallet) = 0;
+      virtual bool upsertAccountAsset(const model::AccountAsset &asset) = 0;
 
       /**
        *

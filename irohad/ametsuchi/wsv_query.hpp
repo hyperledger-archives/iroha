@@ -21,7 +21,7 @@
 #include <common/types.hpp>
 #include <model/account.hpp>
 #include <model/asset.hpp>
-#include <model/wallet.hpp>
+#include <model/account_asset.hpp>
 #include <model/peer.hpp>
 #include <string>
 #include <vector>
@@ -59,12 +59,12 @@ namespace iroha {
       virtual model::Asset getAsset(const std::string &asset_id) = 0;
 
       /**
-       * Get wallet of user
+       *
        * @param account_id
        * @param asset_id
        * @return
        */
-      virtual model::Wallet getWallet(const std::string &account_id,
+      virtual model::AccountAsset getAccountAsset(const std::string &account_id,
                                       const std::string &asset_id) = 0;
 
       /**

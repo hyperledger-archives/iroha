@@ -15,25 +15,19 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_WALLET_RESPONSE_HPP
-#define IROHA_WALLET_RESPONSE_HPP
+#ifndef IROHA_ACCOUNT_ASSETS_RESPONSE_HPP
+#define IROHA_ACCOUNT_ASSETS_RESPONSE_HPP
 
-#include <model/model.hpp>
+#include <model/query_response.hpp>
 #include <vector>
 
 namespace iroha {
   namespace model {
 
-    /**
-     * Provide responded wallets
-     */
-    struct WalletsResponse : public QueryResponse {
+    struct AccountAssetsResponse : public QueryResponse {
 
-      /**
-       * List with all attached wallets
-       */
-      std::vector <Wallet> wallets;
+      std::vector<AccountAsset> assets;
     };
   }  // namespace model
 }  // namespace iroha
-#endif //IROHA_WALLET_RESPONSE_HPP
+#endif  // IROHA_ACCOUNT_ASSETS_RESPONSE_HPP

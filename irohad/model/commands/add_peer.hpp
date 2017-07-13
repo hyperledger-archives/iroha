@@ -28,10 +28,8 @@ namespace iroha {
      * Provide user's intent for adding peer to current network
      */
     struct AddPeer : public Command {
-      /**
-       * Peer for adding
-       */
-      Peer peer;
+
+
 
       bool validate(ametsuchi::WsvQuery& queries,
                     const Account& creator) override;

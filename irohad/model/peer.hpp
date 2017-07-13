@@ -13,11 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef IROHA_PEER_H
-#define IROHA_PEER_H
+
+#ifndef IROHA_PEER_HPP
+#define IROHA_PEER_HPP
 
 #include <common/types.hpp>
-#include <model/account.hpp>
 
 namespace iroha {
   namespace model {

@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_WALLETS_HPP
-#define IROHA_GET_WALLETS_HPP
+#ifndef IROHA_GET_ACCOUNT_ASSETS_HPP
+#define IROHA_GET_ACCOUNT_ASSETS_HPP
 
 #include <model/query.hpp>
 #include <string>
@@ -32,4 +32,4 @@ namespace iroha {
     };
   }  // namespace model
 }  // namespace iroha
-#endif  // IROHA_GET_WALLETS_HPP
+#endif  // IROHA_GET_ACCOUNT_ASSETS_HPP

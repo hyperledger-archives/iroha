@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ISSUE_ASSET_HPP
-#define IROHA_ISSUE_ASSET_HPP
+#ifndef IROHA_ADD_ASSET_QUANTITY_HPP
+#define IROHA_ADD_ASSET_QUANTITY_HPP
 
 #include <model/command.hpp>
 #include <string>
@@ -40,7 +40,7 @@ namespace iroha {
       std::string asset_id;
 
       /**
-       * Amount to add to wallet
+       * Amount to add to account asset
        */
       std::string amount;
 
@@ -51,4 +51,4 @@ namespace iroha {
     };
   }  // namespace model
 }  // namespace iroha
-#endif  // IROHA_ISSUE_ASSET_HPP
+#endif  // IROHA_ADD_ASSET_QUANTITY_HPP

@@ -18,8 +18,8 @@
 #ifndef IROHA_BLOCK_QUERY_HPP
 #define IROHA_BLOCK_QUERY_HPP
 
-#include <model/transaction.hpp>
 #include <model/block.hpp>
+#include <model/transaction.hpp>
 #include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
@@ -47,12 +47,14 @@ namespace iroha {
           std::string asset_full_name) = 0;
 
       /**
-       * Get all transactions of a certain wallet
-       * @param wallet_id - unique wallet
+       * Get all transactions of a certain account asset
+       * @param account_id
+       * @param asset_id
        * @return observable of Model Transaction
        */
-      virtual rxcpp::observable<model::Transaction> get_wallet_transactions(
-          std::string wallet_id) = 0;
+      virtual rxcpp::observable<model::Transaction>
+      get_account_asset_transactions(std::string account_id,
+                                     std::string asset_id) = 0;
 
       /**
       * Get all blocks with having id in range [from, to].

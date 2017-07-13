@@ -32,11 +32,6 @@ namespace iroha {
        */
       std::string domain_name;
 
-      /**
-       * Parent domain full name
-       */
-      std::string parent_domain_id;
-
       bool validate(ametsuchi::WsvQuery& queries,
                     const Account& creator) override;
       bool execute(ametsuchi::WsvQuery& queries,

@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef IROHA_RETIRE_ASSET_HPP
-#define IROHA_RETIRE_ASSET_HPP
+#ifndef IROHA_SUBTRACT_ASSET_QUANTITY_HPP
+#define IROHA_SUBTRACT_ASSET_QUANTITY_HPP
 
 // TODO: implement in next versions
-// Retire assets from the system. Only issuer can do this
+// Subtract asset quantity from a given account from the system.
+// Only issuer can do this
 
-#endif //IROHA_RETIRE_ASSET_HPP
+#endif //IROHA_SUBTRACT_ASSET_QUANTITY_HPP
