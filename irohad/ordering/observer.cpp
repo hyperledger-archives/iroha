@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "observer.hpp"
+#include <peer_service/monitor.hpp>
+#include <peer_service/self_state.hpp>
 #include <timer/timer.hpp>
 #include "queue.hpp"
 
@@ -48,7 +50,7 @@ namespace ordering {
       while (1) {
         timer::setAwkTimer(5000, []() {
           if (queue::isCreateBlock()) {
-            if (true/*peer_service::self_state::isLeader()*/) {
+            if (peer_service::self_state::isLeader()) {
               auto block = queue::getBlock();
               //   ToDo send leader node
               // connection::consensus::send(::peer_service::self_state::getIp(),block);

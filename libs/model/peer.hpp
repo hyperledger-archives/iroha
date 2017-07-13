@@ -17,6 +17,7 @@ limitations under the License.
 #define IROHA_PEER_H
 
 #include <common/types.hpp>
+#include "account.hpp"
 
 namespace iroha {
   namespace model {
@@ -25,40 +26,15 @@ namespace iroha {
      * Peer is Model, which contains information about network participants
      */
     struct Peer {
-
-
-      /**
-       * Managed Status of Peer
-       */
-      enum PeerStatus {
-        UnSynced,Synced
-      };
-      /**
-       * Express Role
-       */
-      enum PeerRole {
-        Validator,Reader
-      };
-
-
       /**
        * IP address of peer for connection
        */
-      std::string ip;
+      std::string address;
 
       /**
        * Public key of peer
        */
       iroha::ed25519::pubkey_t pubkey;
-
-      /**
-       * Recently activated time.
-       */
-      uint64_t activated_time;
-
-      PeerStatus status;
-
-      PeerRole role;
     };
   }
 }
