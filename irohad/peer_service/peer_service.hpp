@@ -18,104 +18,73 @@ limitations under the License.
 #define __IROHA_PEER_SERVICE_PEER_SERVIEC_HPP__
 
 #include <algorithm>
-#include <cmath>
+#include <datetime/time.hpp>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include <commands.pb.h>
-#include <model/block.hpp>
-#include <model/peer.hpp>
-#include <peer_service/self_status.hpp>
+#include <cmath>
 
 namespace peer_service {
 
-  using Peer = iroha::model::Peer;
-  using Command = iroha::protocol::Command;
+  enum State { PREPARE, READY, ACTIVE };
 
-  void initialize();
+  inline static const std::string defaultName() { return ""; }
 
-  /**
-   * @return List of peers that therefore permutation.
-   */
-  std::vector<std::shared_ptr<Peer>> getPermutationPeers();
+  inline static const std::string defaultIP() { return ""; }
 
-  /**
-   * @param i index
-   * @return A i-th peer that therefore permutation.
-   */
-  Peer getPermutationAt(int i);
+  inline static const std::string defaultPubKey() { return ""; }
 
-  /**
-   * @return List of peers that is used by ordering service.
-   */
-  std::vector<std::shared_ptr<Peer>> getOrderingPeers();
+  struct Node {
+    std::string ip_;
+    std::string public_key_;
+    std::string name_;
+    double trust_;
+    uint64_t created_;
+    State state_;
 
-  /**
-   * @return List of peers that is used by ordering service and is that will
-   * be send sumeragi.
-   */
-  std::vector<std::shared_ptr<Peer>> getActiveOrderingPeers();
+    Node(std::string ip = defaultIP(), std::string public_key = defaultPubKey(),
+         std::string name = defaultName(), double trust = 100.0,
+         uint64_t created_ = iroha::time::now64(), State state = PREPARE)
+        : ip_(ip),
+          public_key_(public_key),
+          name_(name),
+          trust_(trust),
+          state_(state) {}
 
-  /**
-   * @return self status
-   */
-  const SelfStatus& self();
+    Node(const Node& p)
+        : ip_(p.ip_),
+          public_key_(p.public_key_),
+          name_(p.name_),
+          trust_(p.trust_),
+          created_(p.created_),
+          state_(p.state_) {}
 
-  /**
-   * When on_porposal sends on_commit, it is called.
-   * It check signs from Block, and identify dead peers which It throw to
-   * issue Peer::Remove transaction.
-   * @param commited_block commited block with signs
-   */
-  void RemoveDeadPeers(const iroha::model::Block& commited_block);
+    void setIp(std::string ip = defaultIP()) { ip_ = ip; }
+    void setPublicKey(std::string public_key = defaultPubKey()) {
+      public_key_ = public_key;
+    }
+    void setName(std::string name = defaultName()) { name_ = name; }
+    void setTrust(double trust = 100.0) { trust_ = trust; }
+    void setCreated(uint64_t created) { created_ = created; }
+    void setState(State state = PREPARE) { state_ = state; }
 
-  /**
-   * When on_commit, it is called.
-   * It change peer oreder.
-   */
-  void changePermutation();
+    std::string getIp() const { return ip_; }
+    std::string getPublicKey() const { return public_key_; }
+    std::string getName() const { return name_; }
+    double getTrust() const { return trust_; }
+    uint64_t getCreated() const { return created_; }
+    State getState() const { return state_; }
 
-  /**
-   * When commit fails, it is called.
-   * It throw to issue Peer::Stop(Self) transaction.
-   */
-  void selfStop();
+    bool isDefaultIP() const { return ip_ == defaultIP(); }
+    bool isDefaultPubKey() const { return public_key_ == defaultPubKey(); }
 
-  /**
-   * When commit successes and state of self peer is UnSynced, It is called.
-   * It throw to issue Peer::Activate(self) transaction.
-   */
-  void selfActivate();
+    bool operator>(const Node& node) const {
+      return (fabs(trust_ - node.trust_) < 1e-5) ? created_ < node.created_
+                                                     : trust_ > node.trust_;
+    }
+  };
 
-  /**
-   * validate command
-   */
-  void validate(const Command::Peer::Add&);
-  void validate(const Command::Peer::Remove&);
-  void validate(const Command::Peer::Activate&);
-  void validate(const Command::Peer::Stop&);
-  void validate(const Command::Peer::ChangeRole&);
-
-  /**
-   * execute command
-   */
-  void execute(const Command::Peer::Add&);
-  void execute(const Command::Peer::Remove&);
-  void execute(const Command::Peer::Activate&);
-  void execute(const Command::Peer::Stop&);
-  void execute(const Command::Peer::ChangeRole&);
-
-  namespace detail {
-    void issueStop(const std::string& ip, const Peer& stop_peer);
-    void issueActivate(const std::string& ip, const Peer& activate_peer);
-
-    SelfStatus self_;
-    std::vector<int> permutation_;
-    std::vector<int> active_ordering_permutation_;
-
-    std::vector<std::shared_ptr<Peer>> peers_;
-  }
+  using Nodes = std::vector<std::shared_ptr<Node>>;
 
 }  // namespace peer_service
 
