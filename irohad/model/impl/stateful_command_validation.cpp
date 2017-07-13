@@ -29,6 +29,7 @@
 
 #include <algorithm>
 
+
 namespace iroha {
   namespace model {
 
@@ -105,7 +106,10 @@ namespace iroha {
     bool CreateAccount::validate(ametsuchi::WsvQuery &queries,
                                  const Account &creator) {
       // Creator must have permission to create account
-      return creator.permissions.create_assets;
+      return creator.permissions.create_accounts &&
+             // Account must be well-formed (no system symbols)
+             std::all_of(std::begin(account_name), std::end(account_name),
+                         [](char c) { return std::isalnum(c); });
     }
 
     /**
@@ -117,7 +121,11 @@ namespace iroha {
     bool CreateAsset::validate(ametsuchi::WsvQuery &queries,
                                const Account &creator) {
       // Creator must have permission to create assets
-      return creator.permissions.create_assets;
+      return creator.permissions.create_assets &&
+             // Account must be well-formed (no system symbols)
+             std::all_of(std::begin(asset_name), std::end(asset_name),
+                         [](char c) { return std::isalnum(c); });
+      ;
     }
 
     /**
@@ -191,7 +199,11 @@ namespace iroha {
       try {
         // get source account's balance and check if it is sufficient
         auto account_asset = queries.getAccountAsset(src_account_id, asset_id);
-        if (std::stod(account_asset.balance) < std::stod(amount)) return false;
+        // Check if such AccountAsset exist
+        if (!account_asset ||
+            // Check if amount for transfer is not bigger than balance
+            std::stod(account_asset.value().balance) < std::stod(amount))
+          return false;
       }
       // Check if asset is formed right
       catch (const std::invalid_argument &ia) {

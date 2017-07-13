@@ -28,7 +28,7 @@ namespace iroha {
      */
     struct CreateAccount : public Command {
       /**
-       * Account's identifier
+       * Account's user name
        */
       std::string account_name;
 
