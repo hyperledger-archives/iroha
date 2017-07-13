@@ -57,6 +57,8 @@
 #include <model/queries/responses/transactions_response.hpp>
 #include <model/queries/responses/wallets_response.hpp>
 
+// transaction response
+#include <model/tx_responses/stateless_response.hpp>
 
 /**
  * Model module provides objects that are useful for all other modules in system.
