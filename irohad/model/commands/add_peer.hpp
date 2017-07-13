@@ -29,7 +29,9 @@ namespace iroha {
      */
     struct AddPeer : public Command {
 
+      std::string account_id;
 
+      std::string address;
 
       bool validate(ametsuchi::WsvQuery& queries,
                     const Account& creator) override;
