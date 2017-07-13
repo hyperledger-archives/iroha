@@ -16,7 +16,6 @@
  */
 
 #include <ametsuchi/impl/mutable_storage_impl.hpp>
-#include <ametsuchi/impl/postgres_command_executor.hpp>
 #include <ametsuchi/impl/postgres_wsv_query.hpp>
 #include <ametsuchi/impl/storage_impl.hpp>
 #include <ametsuchi/impl/temporary_wsv_impl.hpp>
