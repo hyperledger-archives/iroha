@@ -29,7 +29,6 @@
 
 #include <algorithm>
 
-
 namespace iroha {
   namespace model {
 
@@ -137,7 +136,11 @@ namespace iroha {
     bool CreateDomain::validate(ametsuchi::WsvQuery &queries,
                                 const Account &creator) {
       // Creator must have permission to create domains
-      return creator.permissions.create_domains;
+      return creator.permissions.create_domains &&
+             // Account must be well-formed (no system symbols)
+             std::all_of(std::begin(domain_name), std::end(domain_name),
+                         [](char c) { return std::isalnum(c); });
+      ;
     }
 
     /**
@@ -150,7 +153,7 @@ namespace iroha {
                                    const Account &creator) {
       // Case 1. Creator removes signatory from their account
       return creator.account_id == account_id &&
-             // Can't remove master key (first reassign it)
+             // You can't remove master key (first you should reassign it)
              pubkey != creator.master_key;
 
       // TODO: can be there other cases?
@@ -215,6 +218,8 @@ namespace iroha {
       }
 
       return
+          // Check if src_account exist
+          queries.getAccount(src_account_id) &&
           // Can account transfer assets
           creator.permissions.can_transfer &&
           // Creator can transfer only from their account

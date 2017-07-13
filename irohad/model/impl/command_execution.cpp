@@ -30,12 +30,6 @@
 namespace iroha {
   namespace model {
 
-    /**
-     *
-     * @param queries
-     * @param commands
-     * @return
-     */
     bool AddAssetQuantity::execute(ametsuchi::WsvQuery &queries,
                                    ametsuchi::WsvCommand &commands) {
       auto accountAsset = queries.getAccountAsset(account_id, asset_id);
@@ -46,23 +40,11 @@ namespace iroha {
       return commands.upsertAccountAsset(accountAsset.value());
     }
 
-    /**
-     *
-     * @param queries
-     * @param commands
-     * @return
-     */
     bool AddSignatory::execute(ametsuchi::WsvQuery &queries,
                                ametsuchi::WsvCommand &commands) {
       return commands.insertAccountSignatory(account_id, pubkey);
     }
 
-    /**
-     *
-     * @param queries
-     * @param commands
-     * @return
-     */
     bool AssignMasterKey::execute(ametsuchi::WsvQuery &queries,
                                   ametsuchi::WsvCommand &commands) {
       auto account = queries.getAccount(account_id);
@@ -99,5 +81,71 @@ namespace iroha {
       return commands.insertAsset(new_asset);
     }
 
+    bool CreateDomain::execute(ametsuchi::WsvQuery &queries,
+                               ametsuchi::WsvCommand &commands) {
+      Domain new_domain;
+      new_domain.domain_id = domain_name;
+      // The insert will fail if domain already exist
+      return commands.insertDomain(new_domain);
+    }
+
+    bool RemoveSignatory::execute(ametsuchi::WsvQuery &queries,
+                                  ametsuchi::WsvCommand &commands) {
+      // Delete will fail if account signatory doesn't exist
+      return commands.deleteAccountSignatory(account_id, pubkey);
+    }
+
+    bool SetAccountPermissions::execute(ametsuchi::WsvQuery &queries,
+                                        ametsuchi::WsvCommand &commands) {
+      auto account = queries.getAccount(account_id);
+      if (!account)
+        // There is no such account
+        return false;
+
+      account.value().permissions = new_permissions;
+      return commands.upsertAccount(account.value());
+    }
+
+    bool SetQuorum::execute(ametsuchi::WsvQuery &queries,
+                            ametsuchi::WsvCommand &commands) {
+      auto account = queries.getAccount(account_id);
+      if (!account)
+        // There is no such account
+        return false;
+
+      account.value().quorum = new_quorum;
+      return commands.upsertAccount(account.value());
+    }
+
+    bool TransferAsset::execute(ametsuchi::WsvQuery &queries,
+                                ametsuchi::WsvCommand &commands) {
+      auto src_account_assert =
+          queries.getAccountAsset(src_account_id, asset_id);
+      if (!src_account_assert) {
+        // There is no src AccountAsset
+        return false;
+      }
+
+      AccountAsset dest_AccountAssert;
+      auto dest_account_assert =
+          queries.getAccountAsset(dest_account_id, asset_id);
+      if (!dest_account_assert) {
+        // This assert is new for this account
+        dest_AccountAssert = AccountAsset();
+        dest_AccountAssert.asset_id = asset_id;
+        dest_AccountAssert.account_id = dest_account_id;
+        dest_AccountAssert.balance = amount;
+      } else {
+        // Account already has such asset
+        dest_AccountAssert = dest_account_assert.value();
+        // TODO: how to handle + and - operations
+        dest_AccountAssert.balance = dest_AccountAssert.balance + amount;
+        /*src_account_assert.value().balance =
+            src_account_assert.value().balance - amount;*/
+      }
+
+      return commands.upsertAccountAsset(dest_AccountAssert) &&
+             commands.upsertAccountAsset(src_account_assert.value());
+    }
   }
 }

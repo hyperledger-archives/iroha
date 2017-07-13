@@ -31,8 +31,7 @@ namespace iroha {
       /**
        * Domain unique identifier (full name)
        */
-      const std::string domain_id;
-
+      std::string domain_id;
     };
   }
 }
