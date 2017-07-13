@@ -18,19 +18,17 @@ limitations under the License.
 
 namespace torii {
 
-  CommandService::CommandService() {
-
-  }
-
   /**
    * actual implementation of async Torii in CommandService
    * @param request - Transaction
    * @param response - ToriiResponse
-   * @return grpc::Status - Status::OK if succeeded (TODO(motxx): support Status::CANCELLED)
+   * @return grpc::Status - Status::OK if succeeded. TODO(motxx): grpc::CANCELLED is not supported.
    */
-  grpc::Status CommandService::ToriiAsync(
+  static grpc::Status CommandService::ToriiAsync(
     iroha::protocol::Transaction const& request, iroha::protocol::ToriiResponse& response) {
-
+    response.set_code(iroha::protocol::ResponseCode::OK);
+    response.set_message("Torii async response");
+    return grpc::Status::OK;
   }
 
 }  // namespace torii

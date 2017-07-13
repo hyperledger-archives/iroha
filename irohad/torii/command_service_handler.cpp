@@ -18,14 +18,12 @@ limitations under the License.
 #include <network/grpc_async_service.hpp>
 #include <network/grpc_call.hpp>
 #include <torii/command_service_handler.hpp>
+#include <torii/command_service.hpp>
 
 namespace prot = iroha::protocol;
 
 namespace torii {
 
-  /**
-   * to handle async rpcs of CommandService.
-   */
   /**
    * requires builder to use same server.
    * @param builder
@@ -36,22 +34,38 @@ namespace torii {
   }
 
   ~CommandServiceHandler::CommandServiceRpcsHandler() override {
+    delete shutdownAlarm_;
+  }
+
+  /**
+   * shuts down service handler.
+   * specifically, enqueues a special event that causes the completion queue to be shut down.
+   */
+  void CommandServiceHandler::shutdown() override {
     bool didShutdown = false;
-    { std::unique_lock }
+    {
+      std::unique_lock<std::mutex> lock(mtx_);
+      if (!isShutdown_) {
+        isShutdown_ = true;
+        didShutdown = true;
+      }
+    }
 
     if (didShutdown) {
-      // Alarm
+      // enqueue a special event that causes the completion queue to be shut down.
+      // tag is nullptr in order to determine no Call instance allocated when static_cast.
+      shutdownAlarm_ = new ::grpc::Alarm(cq_.get(), gpr_now(GPR_CLOCK_MONOTONIC), nullptr);
     }
   }
 
   /**
-   * handles all rpc in CommandService.
-   * We use
+   * handles rpcs loop in CommandService.
    */
   void CommandServiceHandler::handleRpcs() override {
     enqueueRequest<prot::Transaction, prot::ToriiResponse>(
         &prot::CommandService::AsyncService::RequestTorii,
-        &CommandServiceHandler::ToriiHandler);
+        &CommandServiceHandler::ToriiHandler
+    );
 
     void* tag;
     bool ok;
@@ -61,22 +75,27 @@ namespace torii {
       if (callbackTag) {
         callbackTag->onCompleted(*this);
       } else {
+        // callbackTag is nullptr (a special event that causes shut down cq_)
         cq_->Shutdown();
       }
     }
   }
 
   /**
-   * releases the completion queue of CommandService.
-   * @note Call this method after calling server->Shutdown() in ServerRunner
-   */
-  void CommandServiceHandler::shutdown() override { cq_->Shutdown(); }
-
-  /**
    * extracts request and response from Call instance
    * and calls an actual CommandService::AsyncTorii() implementation.
-   * then, creates a new Call instance to serve an another client.
+   * then, spawns a new Call instance to serve an another client.
    */
-  void CommandServiceHandler::ToriiHandler() {}
+  void CommandServiceHandler::ToriiHandler(CommandServiceCall<
+    prot::Transaction, prot::ToriiResponse>* call) {
+    auto stat = CommandService::ToriiAsync(call->request(), call->response());
+    call->sendResponse(stat);
+
+    // Spawn a new Call instance to serve an another client.
+    enqueueRequest<prot::Transaction, prot::ToriiResponse>(
+      &prot::CommandService::AsyncService::RequestTorii,
+      &CommandServiceHandler::ToriiHandler
+    );
+  }
 
 }  // namespace torii

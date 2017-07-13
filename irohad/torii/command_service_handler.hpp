@@ -17,10 +17,14 @@ limitations under the License.
 #ifndef TORII_COMMAND_SERVICE_HANDLER_HPP
 #define TORII_COMMAND_SERVICE_HANDLER_HPP
 
+#include <network/grpc_async_service.hpp>
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 
 namespace torii {
+  /**
+   * to handle rpcs loop of CommandService.
+   */
   class CommandServiceHandler : public network::GrpcAsyncService {
   public:
 
@@ -42,8 +46,7 @@ namespace torii {
     >;
 
     /**
-     * handles all rpc in CommandService.
-     * We use
+     * handles rpcs loop in CommandService.
      */
     void handleRpcs() override;
 
@@ -56,8 +59,9 @@ namespace torii {
   private:
 
     /**
-     *
-     * @param requester
+     * helper to call Call::enqueueRequest()
+     * @param requester  - pointer to request method. e.g. &CommandService::AsyncService::RequestTorii
+     * @param rpcHandler - handler of rpc in ServiceHandler.
      */
     template <typename RequestType, typename ResponseType>
     void enqueueRequest(
@@ -80,7 +84,8 @@ namespace torii {
      * and calls an actual CommandService::AsyncTorii() implementation.
      * then, creates a new Call instance to serve an another client.
      */
-    void ToriiHandler();
+    void ToriiHandler(CommandServiceCall<
+      iroha::protocol::Transaction, iroha::protocol::ToriiResponse>*);
 
   private:
     iroha::protocol::CommandService::AsyncService asyncService_;
@@ -88,6 +93,7 @@ namespace torii {
     std::unique_ptr<grpc::ServerCompletionQueue> cq_;
     std::mutex mtx_;  // TODO(motxx): Write the reason of using mutex for ENQUEUE_REQUEST.
     bool isShutdown_ = false;
+    ::grpc::Alarm* shutdownAlarm_ = nullptr;
   };
 }  // namespace torii
 

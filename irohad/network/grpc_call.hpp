@@ -22,27 +22,6 @@ limitations under the License.
 
 namespace network {
 
-  /*
-   * TODO(motxx): Use this and clarify ownership.
-  class ReferenceCountable {
-  public:
-    void ref() {
-      count_++;
-    }
-
-    void unref() {
-      assert(count > 0);
-      count_--;
-      if (!count_) {
-        delete this;
-      }
-    }
-
-  private:
-    size_t count_ = 0;
-  };
-  */
-
   /**
    * to enable various Call instances to process in ServiceHandler::handleRpcs() by polymorphism.
    * @tparam ServiceHandler
@@ -72,7 +51,7 @@ namespace network {
      * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
      */
     void onCompleted(ServiceHandler& serviceHandler) {
-      switch (callback_) {
+      switch (state_) {
         case State::RequestCreated: {
           call_->requestReceived(serviceHandler);
           break;
@@ -120,6 +99,8 @@ namespace network {
      * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
      */
     void responseSent() override {
+      // response has been sent and delete the Call instance.
+      delete this;
     }
 
     /**
@@ -131,7 +112,8 @@ namespace network {
     }
 
     /**
-     *
+     * creates a Call instance for one rpc and enqueues it
+     * to the completion queue.
      * @param serviceHandler
      * @param cq
      * @param requestMethod

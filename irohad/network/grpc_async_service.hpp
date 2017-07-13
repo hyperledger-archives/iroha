@@ -61,6 +61,7 @@ namespace network {
    * and creates a new Call instance to serve new clients.
    */
   template <typename ServiceHandler, typename AsyncService, typename RequestType, typename ResponseType>
-  using RpcHandler = std::function<void(Call<ServiceHandler, AsyncService, RequestType, ResponseType>&)>;
+  using RpcHandler = void (ServiceHandler::*)(
+    Call<ServiceHandler, AsyncService, RequestType, ResponseType>* call);
 
 }  // namespace network

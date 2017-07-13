@@ -29,15 +29,13 @@ namespace torii {
    */
   class CommandService {
   public:
-    CommandService();
-
     /**
      * actual implementation of async Torii in CommandService
      * @param request - Transaction
      * @param response - ToriiResponse
-     * @return grpc::Status - Status::OK if succeeded (TODO(motxx): support Status::CANCELLED)
+     * @return grpc::Status - Status::OK if succeeded. TODO(motxx): grpc::CANCELLED is not supported.
      */
-    grpc::Status ToriiAsync(iroha::protocol::Transaction const& request, iroha::protocol::ToriiResponse& response);
+    static grpc::Status ToriiAsync(iroha::protocol::Transaction const& request, iroha::protocol::ToriiResponse& response);
   };
 
 }  // namespace torii
