@@ -32,7 +32,7 @@ message Block {
     uint32             tx_number      = 1;  // the number of transactions inside. Maximum 16384 or 2^14
     uint32             height         = 2;  // the current block number in a ledger
     bytes              merkle_root    = 3;  // global merkle root
-    bytes              prev_hash      = 4; // Previous block hash
+    bytes              prev_block_hash      = 4; // Previous block hash
   }
 
   message Body {

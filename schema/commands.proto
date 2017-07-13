@@ -62,7 +62,7 @@ message SetAccountQuorum {
 
 message TransferAsset {
     string src_account_id = 1;
-    string dst_account_id = 2;
+    string dest_account_id = 2;
     string asset_id = 3;
 }
 
