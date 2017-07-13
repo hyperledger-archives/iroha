@@ -39,7 +39,7 @@ namespace iroha {
     /**
      * @return List of peers that therefore permutation.
      */
-    std::vector<Peer> getPermutationPeers();
+    std::vector<std::shared_ptr<Peer>> getPermutationPeers();
 
     /**
      * @param i index
@@ -50,13 +50,13 @@ namespace iroha {
     /**
      * @return List of peers that is used by ordering service.
      */
-    std::vector<Peer> getOrderingPeers();
+    std::vector<std::shared_ptr<Peer>> getOrderingPeers();
 
     /**
      * @return List of peers that is used by ordering service and is that will
      * be send sumeragi.
      */
-    std::vector<Peer> getActiveOrderingPeers();
+    std::vector<std::shared_ptr<Peer>> getActiveOrderingPeers();
 
     /**
      * @return self status
