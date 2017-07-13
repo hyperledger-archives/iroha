@@ -9,7 +9,7 @@ message AddAssetQuantity {
 
 message AddPeer {
     string address = 1;
-    bytes pub_key = 2;
+    string account_id = 2;
 }
 
 message AddSignatory {
@@ -63,6 +63,7 @@ message TransferAsset {
     string src_account_id = 1;
     string dest_account_id = 2;
     string asset_id = 3;
+    string ammount = 4;
 }
 
 message Command {
