@@ -36,7 +36,6 @@ message CreateAccount {
 
 message CreateDomain {
     string domain_name = 1;
-    string parent_domain_id = 2;
 }
 
 message RemoveSignatory {
