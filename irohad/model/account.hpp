@@ -61,7 +61,7 @@ namespace iroha {
       /**
        * User name is used as unique identifier of an account
        */
-      std::string user_name;
+      std::string account_id;
       /*
        * Account has only one domain.
        * Name of the domain of a account
