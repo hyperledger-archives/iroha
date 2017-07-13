@@ -29,7 +29,7 @@ namespace iroha {
       /**
        * Asset unique identifier
        */
-      const std::string name;
+      std::string name;
 
       /**
        * Precision of asset
