@@ -68,7 +68,7 @@ namespace peer_service {
    * issue Peer::Remove transaction.
    * @param commited_block commited block with signs
    */
-  void DiesRemove(const iroha::model::Block& commited_block);
+  void RemoveDeadPeers(const iroha::model::Block& commited_block);
 
   /**
    * When on_commit, it is called.
@@ -107,9 +107,8 @@ namespace peer_service {
   void execute(const Command::Peer::ChangeRole&);
 
   namespace detail {
-    void issueStop(std::string ip, Peer& stop_peer);
-
-    void issueActivate(std::string ip, Peer& activate_peer);
+    void issueStop(const std::string& ip, const Peer& stop_peer);
+    void issueActivate(const std::string& ip, const Peer& activate_peer);
 
     SelfStatus self_;
     std::vector<int> permutation_;

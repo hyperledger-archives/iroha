@@ -16,6 +16,7 @@ limitations under the License.
 
 #include <peer_service/peer_service.hpp>
 
+// TODO
 namespace peer_service {
 
   void initialize() {
@@ -35,7 +36,9 @@ namespace peer_service {
    * @param i index
    * @return A i-th peer that therefore permutation.
    */
-  Peer getPermutationAt(int i) { return Peer(); }
+  Peer getPermutationAt(int i) {
+    return Peer();
+  }
 
   /**
    * @return List of peers that is used by ordering service.
@@ -63,7 +66,7 @@ namespace peer_service {
    * issue Peer::Remove transaction.
    * @param commited_block commited block with signs
    */
-  void DiesRemove(const iroha::model::Block& commited_block) {}
+  void RemoveDeadPeers(const iroha::model::Block& commited_block) {}
 
   /**
    * When on_commit, it is called.
@@ -102,7 +105,7 @@ namespace peer_service {
   void execute(const Command::Peer::ChangeRole& cmd) {}
 
   namespace detail {
-    void issueStop(std::string ip, Peer& stop_peer) {}
-    void issueActivate(std::string ip, Peer& activate_peer) {}
+    void issueStop(const std::string& ip, const Peer& stop_peer) {}
+    void issueActivate(const std::string& ip, const Peer& activate_peer) {}
   }  // namespace detail
 }  // namespace peer_servince
