@@ -91,9 +91,8 @@ namespace torii {
 
   private:
     iroha::protocol::CommandService::AsyncService asyncService_;
-    // TODO(motxx): Investigate a required number of completion queues if we use multiple services.
     std::unique_ptr<grpc::ServerCompletionQueue> cq_;
-    std::mutex mtx_;  // TODO(motxx): Write the reason of using mutex for ENQUEUE_REQUEST.
+    std::mutex mtx_;
     bool isShutdown_ = false;
     ::grpc::Alarm* shutdownAlarm_ = nullptr;
   };

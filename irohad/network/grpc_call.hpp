@@ -30,50 +30,51 @@ namespace network {
   template <typename ServiceHandler>
   class UntypedCall {
   public:
+    virtual ~UntypedCall() {}
 
     enum class State { RequestCreated, ResponseSent };
-
-    UntypedCall(State state)
-      : state_(state) {
-    }
-
-    virtual ~UntypedCall() {}
 
     /**
      * invokes when state is RequestReceivedTag.
      * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
      */
-    virtual void requestReceived(ServiceHandler* serviceHandler) {
-      assert(false && "Concrete class is not allocated.");
-    }
+    virtual void requestReceived(ServiceHandler* serviceHandler) = 0;
 
     /**
      * invokes when state is ResponseSentTag.
      */
-    virtual void responseSent() {
-      assert(false && "Concrete class is not allocated.");
-    }
+    virtual void responseSent() = 0;
 
     /**
-     * selects a procedure by state and invokes it by using polymorphism.
-     * this is called from ServiceHandler::handleRpcs()
-     * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
+     * owns concrete Call type and able to execute derived functions.
      */
-    void onCompleted(ServiceHandler* serviceHandler) {
-      switch (state_) {
-        case State::RequestCreated: {
-          requestReceived(serviceHandler);
-          break;
-        }
-        case State::ResponseSent: {
-          responseSent();
-          break;
+    class CallOwner {
+    public:
+      CallOwner(UntypedCall* call, UntypedCall::State state)
+        : call_(call), state_(state) {}
+
+      /**
+       * selects a procedure by state and invokes it by using polymorphism.
+       * this is called from ServiceHandler::handleRpcs()
+       * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
+       */
+      void onCompleted(ServiceHandler *serviceHandler) {
+        switch (state_) {
+          case UntypedCall::State::RequestCreated: {
+            call_->requestReceived(serviceHandler);
+            break;
+          }
+          case UntypedCall::State::ResponseSent: {
+            call_->responseSent();
+            break;
+          }
         }
       }
-    }
 
-  private:
-    const State state_;
+    private:
+      UntypedCall* call_; // owns concrete Call type.
+      const UntypedCall::State state_;
+    };
   };
 
   /**
@@ -91,10 +92,10 @@ namespace network {
     using RequestMethodType = network::RequestMethod<AsyncService, RequestType, ResponseType>;
     using CallType          = Call<ServiceHandler, AsyncService, RequestType, ResponseType>;
     using UntypedCallType   = UntypedCall<ServiceHandler>;
+    using CallOwnerType     = typename UntypedCallType::CallOwner;
 
     Call(RpcHandlerType rpcHandler)
-      : UntypedCall<ServiceHandler>(UntypedCallType::State::RequestCreated),
-        rpcHandler_(rpcHandler), responder_(&ctx_) {}
+      : rpcHandler_(rpcHandler), responder_(&ctx_) {}
 
     virtual ~Call() {}
 
@@ -149,8 +150,8 @@ namespace network {
     auto& response() { return response_; }
 
   private:
-    UntypedCallType RequestReceivedTag { UntypedCallType::State::RequestCreated };
-    UntypedCallType ResponseSentTag { UntypedCallType::State::ResponseSent };
+    CallOwnerType RequestReceivedTag { this, UntypedCallType::State::RequestCreated };
+    CallOwnerType ResponseSentTag { this, UntypedCallType::State::ResponseSent };
 
   private:
     RpcHandlerType rpcHandler_;

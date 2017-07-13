@@ -14,30 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef API_COMMAND_CLIENT_HPP
-#define API_COMMAND_CLIENT_HPP
+#ifndef TORII_COMMAND_CLIENT_HPP
+#define TORII_COMMAND_CLIENT_HPP
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
+#include <grpc++/grpc++.h>
+#include <grpc++/channel.h>
 
-namespace api {
+namespace torii {
 
   iroha::protocol::ToriiResponse sendTransaction(
-      const iroha::protocol::Transaction& block,
-      const std::string& targetPeerIp);
+      const iroha::protocol::Transaction& tx,
+      const std::string& targetPeerIp,
+      int targetPeerPort);
 
-  class CommandClient {
-   public:
-    CommandClient(const std::string& ip, int port);
+}  // namespace torii
 
-    iroha::protocol::ToriiResponse Torii(
-        const iroha::protocol::Transaction& request);
-
-   private:
-    grpc::ClientContext context_;
-    std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
-  };
-
-}  // namespace api
-
-#endif  // API_COMMAND_CLIENT_HPP
+#endif  // TORII_COMMAND_CLIENT_HPP

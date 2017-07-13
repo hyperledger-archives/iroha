@@ -16,7 +16,31 @@ limitations under the License.
 
 #include <gtest/gtest.h>
 #include <main/server_runner.hpp>
+#include <torii/command_service_handler.hpp>
+#include <torii/command_service.hpp>
+#include <torii/command_client.hpp>
+#include <endpoint.pb.h>
+#include <thread>
+
+const std::string Ip = "0.0.0.0";
+const int Port = 50051;
 
 TEST(ToriiAsyncTest, GetToriiResponseWhenSendingTx) {
-  ServerRunner runner("0.0.0.0", 50051);
+  ServerRunner runner(Ip, Port);
+  std::thread th([&runner]{
+    runner.run();
+  });
+
+  runner.waitForServersReady();
+
+  for (int i = 0; i < 100; i++) {
+    std::cout << i << std::endl;
+    auto response = torii::sendTransaction(iroha::protocol::Transaction {}, Ip, Port);
+    ASSERT_EQ(response.code(), iroha::protocol::ResponseCode::OK);
+    ASSERT_STREQ(response.message().c_str(), "Torii async response");
+  }
+
+  // TODO(motxx): Segmentation fault occurs because an event doesn't executed that causes completion queue to be shut down.
+  runner.shutdown();
+  th.join();
 }
