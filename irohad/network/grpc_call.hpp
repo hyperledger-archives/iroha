@@ -24,7 +24,7 @@ limitations under the License.
 namespace network {
 
   /**
-   * to enable various Call instances to process in ServiceHandler::handleRpcs() by polymorphism.
+   * to use polymorphism in ServiceHandler::handleRpcs()
    * @tparam ServiceHandler
    */
   template <typename ServiceHandler>
