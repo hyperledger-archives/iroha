@@ -25,9 +25,19 @@ namespace iroha {
         : transaction_(transaction) {}
 
     model::Account PostgresWsvQuery::getAccount(const std::string &account_id) {
-      model::Account result;
-      result.account_id = "";
-      return result;
+      model::Account account;
+      pqxx::result result;
+      try {
+//        result = transaction_->exec();
+      } catch (const std::exception &e) {
+        // TODO log
+        return account;
+      }
+      if (result.size() != 1){
+        return account;
+      }
+
+      return account;
     }
 
     std::vector<ed25519::pubkey_t> PostgresWsvQuery::getSignatories(
