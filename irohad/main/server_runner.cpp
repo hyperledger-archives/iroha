@@ -21,7 +21,7 @@ limitations under the License.
 #include <main/server_runner.hpp>
 #include <torii/command_service_handler.hpp>
 
-logger::Logger console("ServerRunner");
+logger::Logger Log("ServerRunner");
 
 ServerRunner::ServerRunner(const std::string &ip, int port)
     : serverAddress_(ip + ":" + std::to_string(port)) {}
@@ -38,7 +38,7 @@ void ServerRunner::run() {
   waitForServer_.unlock();
   serverInstanceCV_.notify_one();
 
-  console.info("Server listening on {}", serverAddress_);
+  Log.info("Server listening on {}", serverAddress_);
 
   // proceed to server's main loop
   commandServiceHandler_->handleRpcs();
