@@ -17,37 +17,19 @@ limitations under the License.
 #include <block.pb.h>
 #include <grpc++/grpc++.h>
 #include <thread>
-#include <thread_pool.hpp>
 
 namespace torii {
 
   using iroha::protocol::Transaction;
   using iroha::protocol::ToriiResponse;
 
-  /*
-   * avoids from multiple-definition of ThreadPool
-   * tp::ThradPool is type alias, not class. So we can't use struct ThreadPool;
-   * We shouldn't know about ThreadPoolImpl, that is template class.
-   */
-  struct ThreadContainer {
-    tp::ThreadPool pool;
-  };
-
-  struct ToriiAsyncClientCall {
-    iroha::protocol::ToriiResponse response;
-    grpc::ClientContext context;
-    grpc::Status status;
-    std::unique_ptr<grpc::ClientAsyncResponseReader<iroha::protocol::ToriiResponse>> response_reader;
-  };
-
-  CommandClient::CommandClient(const std::string& ip, const int port)
+  CommandSyncClient::CommandSyncClient(const std::string& ip, const int port)
     : stub_(iroha::protocol::CommandService::NewStub(
-    grpc::CreateChannel(ip + ":" + std::to_string(port), grpc::InsecureChannelCredentials()))),
-      listenerPool_(new ThreadContainer)
+    grpc::CreateChannel(ip + ":" + std::to_string(port), grpc::InsecureChannelCredentials())))
   {}
 
-  CommandClient::~CommandClient() {
-    delete listenerPool_;
+  CommandSyncClient::~CommandSyncClient() {
+    cq_.Shutdown();
   }
 
   /**
@@ -55,7 +37,7 @@ namespace torii {
    * @param tx
    * @return ToriiResponse
    */
-  ToriiResponse CommandClient::ToriiBlocking(const Transaction& tx) {
+  ToriiResponse CommandSyncClient::Torii(const Transaction& tx) {
     ToriiResponse response;
 
     std::unique_ptr<grpc::ClientAsyncResponseReader<iroha::protocol::ToriiResponse>> rpc(
@@ -85,47 +67,73 @@ namespace torii {
     return response;
   }
 
-
-  /*
-   * TODO(motxx): We can't use CommandClient::ToriiNonBlocking() for now. gRPC causes the error
-   * E0714 04:24:40.045388600    4346 sync_posix.c:60]            assertion failed: pthread_mutex_lock(mu) == 0
+  /**
+   * manages state of an async call.
    */
-  /*
-  void CommandClient::ToriiNonBlocking(
+  struct ToriiAsyncClientCall {
+    iroha::protocol::ToriiResponse response;
+    grpc::ClientContext context;
+    grpc::Status status;
+    std::unique_ptr<grpc::ClientAsyncResponseReader<iroha::protocol::ToriiResponse>> response_reader;
+    CommandAsyncClient::Callback callback;
+  };
+
+  /**
+   * requests tx to a torii server and returns response (non-blocking)
+   * @param tx
+   * @param callback
+   */
+  void CommandAsyncClient::Torii(
     const Transaction& tx,
     const std::function<void(ToriiResponse& response)>& callback)
   {
-    ToriiAsyncClientCall* call = new ToriiAsyncClientCall;
+    auto call = new ToriiAsyncClientCall;
     call->response_reader = stub_->AsyncTorii(&call->context, tx, &cq_);
     call->response_reader->Finish(&call->response, &call->status, (void*)call);
-
-    listenerPool_->pool.post(std::bind(ToriiNonBlockingListener, cq_, callback));
+    call->callback = callback;
   }
-  */
 
-  void CommandClient::ToriiNonBlockingListener(
-    grpc::CompletionQueue& cq,
-    const std::function<void(ToriiResponse& response)>& callback)
+  /**
+   * sets ip and port and calls listenToriiNonBlocking() in a new thread.
+   * @param ip
+   * @param port
+   */
+  CommandAsyncClient::CommandAsyncClient(const std::string& ip, const int port)
+    : stub_(iroha::protocol::CommandService::NewStub(
+    grpc::CreateChannel(ip + ":" + std::to_string(port), grpc::InsecureChannelCredentials())))
   {
+    listener_ = std::thread(&CommandAsyncClient::listen, this);
+  }
+
+  CommandAsyncClient::~CommandAsyncClient() {
+    cq_.Shutdown();
+  }
+
+  /**
+   * starts response listener of a non-blocking torii client.
+   */
+  void CommandAsyncClient::listen() {
     void* got_tag;
     bool ok = false;
 
-    while (cq.Next(&got_tag, &ok)) {
-      ToriiAsyncClientCall* call = static_cast<ToriiAsyncClientCall*>(got_tag);
-      assert(ok); // guarantees the request for updates by Finish()
+    while (cq_.Next(&got_tag, &ok)) {
+      if (!got_tag || !ok) {
+        break;
+      }
+
+      auto call = static_cast<ToriiAsyncClientCall*>(got_tag);
 
       if (call->status.ok()) {
-        callback(call->response);
+        call->callback(call->response);
       } else {
         ToriiResponse responseFailure;
         responseFailure.set_code(iroha::protocol::ResponseCode::FAIL);
         responseFailure.set_message("RPC failed");
-        callback(responseFailure);
+        call->callback(responseFailure);
       }
 
       delete call;
     }
   }
-
 
 }  // namespace torii

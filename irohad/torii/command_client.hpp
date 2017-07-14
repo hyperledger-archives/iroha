@@ -22,51 +22,68 @@ limitations under the License.
 #include <grpc++/grpc++.h>
 #include <grpc++/channel.h>
 #include <memory>
+#include <thread>
 
 namespace torii {
 
-  /*
-   * avoids from multiple-definition of ThreadPool
-   * tp::ThradPool is type alias, not class. So we can't use struct ThreadPool;
-   * We shouldn't know about ThreadPoolImpl, that is template class.
-   */
-  struct ThreadContainer;
-
   /**
-   * CommandClient is used by peer service.
+   * CommandSyncClient
    */
-  class CommandClient {
+  class CommandSyncClient {
   public:
-    CommandClient(const std::string& ip, const int port);
-    ~CommandClient();
+    CommandSyncClient(const std::string& ip, const int port);
+    ~CommandSyncClient();
 
     /**
      * requests tx to a torii server and returns response (blocking, sync)
      * @param tx
      * @return ToriiResponse
      */
-    iroha::protocol::ToriiResponse ToriiBlocking(const iroha::protocol::Transaction& tx);
-
-    /*
-     * TODO(motxx): We can't use CommandClient::ToriiNonBlocking() for now. gRPC causes the error
-     * E0714 04:24:40.045388600    4346 sync_posix.c:60]            assertion failed: pthread_mutex_lock(mu) == 0
-     */
-    /*
-    void ToriiNonBlocking(const iroha::protocol::Transaction& tx,
-                          const std::function<void(iroha::protocol::ToriiResponse& response)>& callback);
-     */
-
-  private:
-    static void ToriiNonBlockingListener(
-      grpc::CompletionQueue& cq,
-      const std::function<void(iroha::protocol::ToriiResponse& response)>& callback);
+    iroha::protocol::ToriiResponse Torii(const iroha::protocol::Transaction& tx);
 
   private:
     grpc::ClientContext context_;
     std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
     grpc::CompletionQueue cq_;
     grpc::Status status_;
-    ThreadContainer* listenerPool_; // cannot use smart pointer because of avoiding redefinition.
+  };
+
+  /**
+   * CommandAsyncClient is used by peer service.
+   */
+  class CommandAsyncClient {
+  public:
+    /**
+     * sets ip and port and calls listenToriiNonBlocking() in a new thread.
+     * @param ip
+     * @param port
+     */
+    CommandAsyncClient(const std::string& ip, const int port);
+
+    ~CommandAsyncClient();
+
+    using Callback = std::function<void(iroha::protocol::ToriiResponse& response)>;
+
+    /**
+     * Async Torii rpc
+     * @param tx
+     * @param callback
+     */
+    void Torii(const iroha::protocol::Transaction& tx,
+               const Callback& callback);
+
+  private:
+    /**
+     * starts response listener of non-blocking rpcs.
+     */
+    void listen();
+
+  private:
+    grpc::ClientContext context_;
+    std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
+    grpc::CompletionQueue cq_;
+    grpc::Status status_;
+    std::thread listener_;
   };
 
 }  // namespace torii
