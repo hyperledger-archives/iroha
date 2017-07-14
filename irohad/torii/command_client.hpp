@@ -37,7 +37,7 @@ namespace torii {
    */
   class CommandClient {
   public:
-    CommandClient(const std::string& ip, int port);
+    CommandClient(const std::string& ip, const int port);
     ~CommandClient();
 
     /**

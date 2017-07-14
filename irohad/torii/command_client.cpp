@@ -40,7 +40,7 @@ namespace torii {
     std::unique_ptr<grpc::ClientAsyncResponseReader<iroha::protocol::ToriiResponse>> response_reader;
   };
 
-  CommandClient::CommandClient(const std::string& ip, int port)
+  CommandClient::CommandClient(const std::string& ip, const int port)
     : stub_(iroha::protocol::CommandService::NewStub(
     grpc::CreateChannel(ip + ":" + std::to_string(port), grpc::InsecureChannelCredentials()))),
       listenerPool_(new ThreadContainer)
