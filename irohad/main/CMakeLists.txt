@@ -31,7 +31,6 @@ target_link_libraries(irohad
   ordering_service
   consensus_service
   chain_validator
-  stateful_validator
   hash
   stateless_validator
   client_processor
