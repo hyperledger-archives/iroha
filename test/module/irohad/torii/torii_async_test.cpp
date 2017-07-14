@@ -21,54 +21,54 @@ limitations under the License.
 #include <torii/command_client.hpp>
 #include <endpoint.pb.h>
 #include <thread>
+#include <memory>
 
 constexpr const char* Ip = "0.0.0.0";
 constexpr int Port = 50051;
 
-ServerRunner runner {Ip, Port};
-std::thread th;
-
 class ToriiAsyncTest : public testing::Test {
 public:
   virtual void SetUp() {
-    th = std::thread([]{
-      runner.run();
+    runner = new ServerRunner(Ip, Port);
+    th = std::thread([runner = runner]{
+      runner->run();
     });
 
-    runner.waitForServersReady();
+    runner->waitForServersReady();
   }
 
   virtual void TearDown() {
-    runner.shutdown();
+    runner->shutdown();
+    delete runner;
     th.join();
   }
+
+  ServerRunner* runner;
+  std::thread th;
 };
 
-TEST_F(ToriiAsyncTest, ToriiBlocking) {
+TEST_F(ToriiAsyncTest, ToriiWhenBlocking) {
   EXPECT_GT(static_cast<int>(iroha::protocol::ResponseCode::OK), 0); // to guarantee ASSERT_EQ works TODO(motxx): More reasonable way.
   for (int i = 0; i < 100; i++) {
     std::cout << i << std::endl;
-    auto response = torii::CommandClient(Ip, Port)
-      .ToriiBlocking(iroha::protocol::Transaction {});
+    auto response = torii::CommandSyncClient(Ip, Port)
+      .Torii(iroha::protocol::Transaction {});
     ASSERT_EQ(response.code(), iroha::protocol::ResponseCode::OK);
+    std::cout << "Sync Response\n";
   }
 }
 
-/*
- * TODO(motxx): We can't use CommandClient::ToriiNonBlocking() for now. gRPC causes the error
- * E0714 04:24:40.045388600    4346 sync_posix.c:60]            assertion failed: pthread_mutex_lock(mu) == 0
- */
-/*
-TEST_F(ToriiAsyncTest, ToriiNonBlocking) {
+TEST_F(ToriiAsyncTest, ToriiWhenNonBlocking) {
   EXPECT_GT(static_cast<int>(iroha::protocol::ResponseCode::OK), 0);
+
+  torii::CommandAsyncClient client(Ip, Port);
+
   for (int i = 0; i < 100; i++) {
     std::cout << i << std::endl;
-    torii::CommandClient(Ip, Port)
-      .ToriiNonBlocking(iroha::protocol::Transaction {},
-                        [](iroha::protocol::ToriiResponse response){
-                          ASSERT_EQ(response.code(), iroha::protocol::ResponseCode::OK);
-                          std::cout << "Response validated\n"; // for checking really asynced.
-                        });
+    client.Torii(iroha::protocol::Transaction {},
+                 [](iroha::protocol::ToriiResponse response){
+                   ASSERT_EQ(response.code(), iroha::protocol::ResponseCode::OK);
+                   std::cout << "Async response\n";
+                 });
   }
 }
-*/
