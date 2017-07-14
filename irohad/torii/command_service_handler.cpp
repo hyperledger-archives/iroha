@@ -35,18 +35,13 @@ namespace torii {
     cq_ = builder.AddCompletionQueue();
   }
 
-  CommandServiceHandler::~CommandServiceHandler() {
-    //while (cq_->AsyncNext(&tag, &ok, gpr_time_from_seconds(1, GPR_CLOCK_MONOTONIC)) == 1) ;
-    //delete shutdownAlarm_;
-  }
+  CommandServiceHandler::~CommandServiceHandler() {}
 
   /**
    * shuts down service handler.
    * specifically, enqueues a special event that causes the completion queue to be shut down.
    */
   void CommandServiceHandler::shutdown() {
-    //void* tag;
-    //bool ok;
     cq_->Shutdown();
   }
 
@@ -67,7 +62,7 @@ namespace torii {
       if (ok && callbackTag) {
         callbackTag->onCompleted(this);
       } else {
-         isShutdownCompletionQueue_ = true;
+        isShutdownCompletionQueue_ = true;
         break;
       }
     }

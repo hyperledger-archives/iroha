@@ -100,7 +100,6 @@ namespace torii {
     std::mutex mtx_;
     bool isShutdown_ = false; // called shutdown()
     bool isShutdownCompletionQueue_ = false; // called cq_->Shutdown()
-    ::grpc::Alarm* shutdownAlarm_ = nullptr;
   };
 }  // namespace torii
 
