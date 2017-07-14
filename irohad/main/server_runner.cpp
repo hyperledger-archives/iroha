@@ -26,6 +26,10 @@ logger::Logger Log("ServerRunner");
 ServerRunner::ServerRunner(const std::string &ip, int port)
     : serverAddress_(ip + ":" + std::to_string(port)) {}
 
+ServerRunner::~ServerRunner() {
+  commandServiceHandler_->shutdown();
+}
+
 void ServerRunner::run() {
   grpc::ServerBuilder builder;
 
