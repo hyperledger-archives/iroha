@@ -88,9 +88,9 @@ namespace torii {
     const std::function<void(ToriiResponse& response)>& callback)
   {
     auto call = new ToriiAsyncClientCall;
+    call->callback = callback;
     call->response_reader = stub_->AsyncTorii(&call->context, tx, &cq_);
     call->response_reader->Finish(&call->response, &call->status, (void*)call);
-    call->callback = callback;
   }
 
   /**
@@ -107,6 +107,7 @@ namespace torii {
 
   CommandAsyncClient::~CommandAsyncClient() {
     cq_.Shutdown();
+    listener_.join();
   }
 
   /**

@@ -47,10 +47,11 @@ void ServerRunner::run() {
 }
 
 void ServerRunner::shutdown() {
-  commandServiceHandler_->shutdown();
+  serverInstance_->Shutdown();
+
   while (!commandServiceHandler_->isShutdownCompletionQueue())
     usleep(1); // wait for shutting down completion queue
-  serverInstance_->Shutdown();
+  commandServiceHandler_->shutdown();
 }
 
 bool ServerRunner::waitForServersReady() {

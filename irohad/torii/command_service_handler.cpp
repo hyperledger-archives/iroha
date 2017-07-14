@@ -20,6 +20,7 @@ limitations under the License.
 #include <torii/command_service_handler.hpp>
 #include <torii/command_service.hpp>
 #include <unistd.h>
+#include <grpc/support/time.h>
 
 namespace prot = iroha::protocol;
 
@@ -35,6 +36,10 @@ namespace torii {
   }
 
   CommandServiceHandler::~CommandServiceHandler() {
+    void* tag;
+    bool ok;
+    while (cq_->AsyncNext(&tag, &ok, gpr_time_from_seconds(1, GPR_CLOCK_MONOTONIC)) == 1) ;
+    cq_->Shutdown();
     delete shutdownAlarm_;
   }
 
@@ -76,10 +81,8 @@ namespace torii {
       if (ok && callbackTag) {
         callbackTag->onCompleted(this);
       } else {
-        // callbackTag is nullptr (and) ok is false
-        // if the queue is shutting down.
-        cq_->Shutdown();
-        isShutdownCompletionQueue_ = true;
+         isShutdownCompletionQueue_ = true;
+        break;
       }
     }
   }
