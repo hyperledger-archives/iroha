@@ -18,6 +18,14 @@
 #ifndef IROHA_WSV_COMMAND_HPP
 #define IROHA_WSV_COMMAND_HPP
 
+#include <model/account_asset.hpp>
+#include <model/asset.hpp>
+#include <model/account.hpp>
+#include <model/peer.hpp>
+#include <model/domain.hpp>
+#include <common/types.hpp>
+#include <string>
+
 namespace iroha {
   namespace ametsuchi {
 
@@ -36,36 +44,45 @@ namespace iroha {
       virtual bool upsertAccount(const model::Account &account) = 0;
 
       /**
-       * Insert asset
+       *
        * @param asset
        * @return
        */
       virtual bool insertAsset(const model::Asset &asset) = 0;
 
       /**
-       * Update or insert wallet
-       * @param wallet
+       * Update or insert account asset
+       * @param asset
        * @return
        */
-      virtual bool upsertWallet(const model::Wallet &wallet) = 0;
+      virtual bool upsertAccountAsset(const model::AccountAsset &asset) = 0;
 
       /**
-       * Insert signatory
-       * @param master_key
+       *
        * @param signatory
        * @return
        */
-      virtual bool insertSignatory(const ed25519::pubkey_t master_key,
-                                   const ed25519::pubkey_t signatory) = 0;
+      virtual bool insertSignatory(const ed25519::pubkey_t &signatory) = 0;
 
       /**
-       * Delete signatory
-       * @param master_key
+      * Insert account signatory relationship
+      * @param account_id
+      * @param signatory
+      * @return
+      */
+      virtual bool insertAccountSignatory(
+          const std::string &account_id,
+          const ed25519::pubkey_t &signatory) = 0;
+
+      /**
+       * Delete account signatory relationship
+       * @param account_id
        * @param signatory
        * @return
        */
-      virtual bool deleteSignatory(const ed25519::pubkey_t master_key,
-                                   const ed25519::pubkey_t signatory) = 0;
+      virtual bool deleteAccountSignatory(
+          const std::string &account_id,
+          const ed25519::pubkey_t &signatory) = 0;
 
       /**
        * Update or insert peer
@@ -75,11 +92,18 @@ namespace iroha {
       virtual bool upsertPeer(const model::Peer &peer) = 0;
 
       /**
-       * Delete peer
+       *
        * @param peer
        * @return
        */
       virtual bool deletePeer(const model::Peer &peer) = 0;
+
+      /**
+      *
+      * @param peer
+      * @return
+      */
+      virtual bool insertDomain(const model::Domain &domain) = 0;
     };
 
   }  // namespace ametsuchi
