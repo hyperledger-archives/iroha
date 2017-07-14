@@ -16,6 +16,7 @@
  */
 
 #include "model/commands/add_asset_quantity.hpp"
+#include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
 #include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
@@ -28,6 +29,7 @@
 #include "model/commands/transfer_asset.hpp"
 
 #include <algorithm>
+#include <limits>
 
 namespace iroha {
   namespace model {
@@ -42,8 +44,7 @@ namespace iroha {
                                     const Account &creator) {
       return
           // Amount must be in some meaningful range
-          // TODO: should there be upper bound ?
-          amount > 0 &&
+          amount > 0 && amount < std::numeric_limits<uint32_t>::max() &&
           // Check if creator has MoneyCreator permission
           creator.permissions.issue_assets;
     }
@@ -57,11 +58,23 @@ namespace iroha {
     bool AddSignatory::validate(ametsuchi::WsvQuery &queries,
                                 const Account &creator) {
       return
-          // Case 1. When command creator wants to add their signatory to some
+          // Case 1. When command creator wants to add signatory to their
           // account
-          creator.master_key == pubkey;
-      // TODO: What about other cases ?
+          account_id == creator.account_id ||
+          // Case 2. System admin wants to add signatory to account
+          (creator.permissions.add_signatory);
     }
+
+    bool AddPeer::validate(ametsuchi::WsvQuery &queries,
+                           const Account &creator) {
+      if (queries.getPeer(address))
+        // Such peer already exist
+        return false;
+
+      // TODO: check that address is formed right
+      return true;
+    }
+
     /**
      *
      * @param queries
@@ -70,19 +83,18 @@ namespace iroha {
      */
     bool AssignMasterKey::validate(ametsuchi::WsvQuery &queries,
                                    const Account &creator) {
-      // Case 1: When creator wants to change key in their own account
       auto signs = queries.getSignatories(account_id);
 
       return
-          // Check if accout has at lest one signatory
+          // Two cases - when creator assigns to itself, or system admin
+          (creator.account_id == account_id ||
+           creator.permissions.add_signatory) &&
+          // Check if account has at lest one signatory
           !signs.empty() &&
           // Check if new master key is not the same
           creator.master_key != pubkey &&
           // Check if new master key is in AccountSignatory relationship
           std::find(signs.begin(), signs.end(), pubkey) != signs.end();
-
-      // TODO:Can there be case when creator can assign master key of other
-      // account?
     }
 
     /**
@@ -95,6 +107,8 @@ namespace iroha {
                                  const Account &creator) {
       // Creator must have permission to create account
       return creator.permissions.create_accounts &&
+             // Name is within some range
+             account_name.size() > 0 && account_name.size() < 8 &&
              // Account must be well-formed (no system symbols)
              std::all_of(std::begin(account_name), std::end(account_name),
                          [](char c) { return std::isalnum(c); });
@@ -110,6 +124,8 @@ namespace iroha {
                                const Account &creator) {
       // Creator must have permission to create assets
       return creator.permissions.create_assets &&
+             // Name is within some range
+             asset_name.size() > 0 && asset_name.size() < 8 &&
              // Account must be well-formed (no system symbols)
              std::all_of(std::begin(asset_name), std::end(asset_name),
                          [](char c) { return std::isalnum(c); });
@@ -126,6 +142,8 @@ namespace iroha {
                                 const Account &creator) {
       // Creator must have permission to create domains
       return creator.permissions.create_domains &&
+             // Name is within some range
+             domain_name.size() > 0 && domain_name.size() < 8 &&
              // Account must be well-formed (no system symbols)
              std::all_of(std::begin(domain_name), std::end(domain_name),
                          [](char c) { return std::isalnum(c); });
@@ -140,12 +158,14 @@ namespace iroha {
      */
     bool RemoveSignatory::validate(ametsuchi::WsvQuery &queries,
                                    const Account &creator) {
-      // Case 1. Creator removes signatory from their account
-      return creator.account_id == account_id &&
-             // You can't remove master key (first you should reassign it)
-             pubkey != creator.master_key;
-
-      // TODO: can be there other cases?
+      return
+          // Two cases possible.
+          // 1. Creator removes signatory from their account
+          // 2.System admin
+          (creator.account_id == account_id ||
+           creator.permissions.remove_signatory) &&
+          // You can't remove master key (first you should reassign it)
+          pubkey != creator.master_key;
     }
 
     /**
@@ -158,8 +178,6 @@ namespace iroha {
                                          const Account &creator) {
       // check if creator has permission to set permissions
       return creator.permissions.set_permissions;
-
-      // TODO: can creator set new permissions to their account?
     }
 
     /**
@@ -170,12 +188,12 @@ namespace iroha {
     */
     bool SetQuorum::validate(ametsuchi::WsvQuery &queries,
                              const Account &creator) {
-      // Case 1: creator sets quorum to their account
       // Quorum must be from 1 to N
       return new_quorum > 0 && new_quorum < 10 &&
-             creator.account_id == account_id;
-
-      // TODO: should we consider cases when creator sets quorum to other
+             // Case 1: creator sets quorum to their account
+             // Case 2: system admin
+             (creator.account_id == account_id ||
+              creator.permissions.set_quorum);
     }
 
     /**

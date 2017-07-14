@@ -16,22 +16,23 @@
  */
 
 #include <gtest/gtest.h>
-#include <model/model_crypto_provider_impl.hpp>
 #include <crypto/crypto.hpp>
+#include <model/model_crypto_provider_impl.hpp>
 #include <model/model_hash_provider_impl.hpp>
 
 using namespace iroha::model;
 
 iroha::model::Transaction create_transaction() {
   iroha::model::Transaction tx{};
-  memset(tx.creator.data(), 0x1, 32);
+  tx.creator_account_id = "test";
 
   tx.tx_counter = 0;
   tx.created_ts = 0;
   return tx;
 }
 
-Transaction sign(Transaction &tx, iroha::ed25519::privkey_t privkey, iroha::ed25519::pubkey_t pubkey) {
+Transaction sign(Transaction &tx, iroha::ed25519::privkey_t privkey,
+                 iroha::ed25519::pubkey_t pubkey) {
   HashProviderImpl hash_provider;
   auto tx_hash = hash_provider.get_hash(tx);
 
@@ -46,18 +47,19 @@ Transaction sign(Transaction &tx, iroha::ed25519::privkey_t privkey, iroha::ed25
   return tx;
 }
 
-TEST(CryptoProvider, SignAndVerify){
+TEST(CryptoProvider, SignAndVerify) {
   // generate privkey/pubkey keypair
   auto seed = iroha::create_seed();
   auto keypair = iroha::create_keypair(seed);
 
   auto model_tx = create_transaction();
 
-  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair.privkey, keypair.pubkey);
+  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair.privkey,
+                                                        keypair.pubkey);
   sign(model_tx, keypair.privkey, keypair.pubkey);
   ASSERT_TRUE(crypto_provider.verify(model_tx));
 
   // now modify transaction's meta, so verify should fail
-  memset(model_tx.creator.data(), 0x123, iroha::ed25519::pubkey_t::size());
+  model_tx.creator_account_id = "test";
   ASSERT_FALSE(crypto_provider.verify(model_tx));
 }

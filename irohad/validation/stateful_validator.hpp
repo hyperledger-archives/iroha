@@ -38,9 +38,9 @@ namespace iroha {
        * all changes after removing wsv will be ignored
        * @return proposal with valid transactions
        */
-      virtual model::Proposal validate(const model::Proposal &proposal,
-                                       ametsuchi::WsvCommand &commands,
-                                       ametsuchi::WsvQuery &queries) = 0;
+      virtual model::Proposal validate(
+          const model::Proposal& proposal,
+          ametsuchi::TemporaryWsv& temporaryWsv) = 0;
     };
   }  // namespace validation
 }  // namespace iroha

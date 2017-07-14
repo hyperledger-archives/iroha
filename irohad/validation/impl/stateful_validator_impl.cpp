@@ -22,30 +22,48 @@ namespace iroha {
   namespace validation {
 
     model::Proposal StatefulValidatorImpl::validate(
-        const model::Proposal &proposal, ametsuchi::WsvCommand &wsv_commands,
-        ametsuchi::WsvQuery &wsv_queries) {
-      //
-      std::vector<model::Transaction> verified_transactions;
-      for (auto tx : proposal.transactions) {
-        auto account = wsv_queries.getAccount(tx.creator_account_id);
+        const model::Proposal &proposal,
+        ametsuchi::TemporaryWsv &temporaryWsv) {
+      auto checking_transaction = [&temporaryWsv](auto &tx, auto &executor,
+                                                  auto &query) {
+        auto account = temporaryWsv.getAccount(tx.creator_account_id);
         // Check if tx creator has account and has quorum to execute transaction
-        if (account && tx.signatures.size() >= account.value().quorum) {
-          // TODO: check that signatories are in tx creator account
-          // auto account_signs = queries.getSignatories(tx.creator_account_id);
+        if (!account || tx.signatures.size() < account.value().quorum)
+          return false;
 
-          if (std::all_of(std::begin(tx.commands), std::end(tx.commands),
-                          [](model::Command command) {
-                            return command.validate(wsv_queries,
-                                                    account.value()) &&
-                                   command.execute(wsv_queries, wsv_commands);
-                          }))
-            // If all commands are valid - add that tx is verified
-            verified_transactions.push_back(tx);
+        // Check if signatures in transaction are account signatory
+        auto account_signs = temporaryWsv.getSignatories(tx.creator_account_id);
+        if (account_signs.empty())
+          // No signatories found
+          return false;
+
+        // TODO: Check if signatures in transaction are valid
+
+        // Validate and execute all commands in transaction
+        return std::all_of(
+            std::begin(tx.commands), std::end(tx.commands),
+            [&query, &account, &executor](auto &command) {
+              return command->validate(query, account.value()) &&
+                     command->execute(query, executor);
+            });
+
+      };
+
+      // Filter only valid transactions
+      auto filter = [&temporaryWsv, checking_transaction](auto &acc,
+                                                          const auto &tx) {
+        auto answer = temporaryWsv.apply(tx, checking_transaction);
+        if (answer) {
+          acc.push_back(tx);
         }
-      }
+        return acc;
+      };
 
-      // Return verified Proposal
-      return model::Proposal(verified_transactions);
+      auto &txs = proposal.transactions;
+      decltype(txs) valid = {};
+
+      return model::Proposal(
+          std::accumulate(txs.begin(), txs.end(), valid, filter));
     }
 
   }  // namespace validation

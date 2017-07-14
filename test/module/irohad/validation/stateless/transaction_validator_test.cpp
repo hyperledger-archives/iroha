@@ -41,7 +41,7 @@ Transaction sign(Transaction &tx, iroha::ed25519::privkey_t privkey, iroha::ed25
 
 iroha::model::Transaction create_transaction() {
   iroha::model::Transaction tx{};
-  memset(tx.creator.data(), 0x1, 32);
+  tx.creator_account_id = "test";
 
   tx.tx_counter = 0;
 
@@ -79,7 +79,7 @@ TEST(stateless_validation, stateless_validation_when_invalid_wrong_signature) {
   auto tx = create_transaction();
   sign(tx, keypair.privkey, keypair.pubkey);
 
-  memset(tx.creator.data(), 0x123, iroha::ed25519::pubkey_t::size());
+  tx.creator_account_id = "test";
 
   ASSERT_FALSE(transaction_validator.validate(tx));
 }

@@ -16,6 +16,7 @@
  */
 
 #include "model/commands/add_asset_quantity.hpp"
+#include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
 #include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
@@ -37,6 +38,14 @@ namespace iroha {
       if (!accountAsset) return false;
       accountAsset.value().balance += amount;
       return commands.upsertAccountAsset(accountAsset.value());
+    }
+
+    bool AddPeer::execute(ametsuchi::WsvQuery &queries,
+                          ametsuchi::WsvCommand &commands) {
+      Peer peer;
+      peer.address = address;
+      peer.pubkey = peer_key;
+      return commands.upsertPeer(peer);
     }
 
     bool AddSignatory::execute(ametsuchi::WsvQuery &queries,

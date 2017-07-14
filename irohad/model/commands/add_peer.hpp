@@ -18,8 +18,9 @@
 #ifndef IROHA_ADD_PEER_HPP
 #define IROHA_ADD_PEER_HPP
 
-#include <model/command.hpp>
-#include <model/peer.hpp>
+#include <common/types.hpp>
+#include "model/command.hpp"
+#include "model/peer.hpp"
 
 namespace iroha {
   namespace model {
@@ -28,8 +29,7 @@ namespace iroha {
      * Provide user's intent for adding peer to current network
      */
     struct AddPeer : public Command {
-
-      std::string account_id;
+      ed25519::pubkey_t peer_key;
 
       std::string address;
 
