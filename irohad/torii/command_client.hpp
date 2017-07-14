@@ -14,30 +14,61 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef API_COMMAND_CLIENT_HPP
-#define API_COMMAND_CLIENT_HPP
+#ifndef TORII_COMMAND_CLIENT_HPP
+#define TORII_COMMAND_CLIENT_HPP
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
+#include <grpc++/grpc++.h>
+#include <grpc++/channel.h>
+#include <memory>
 
-namespace api {
+namespace torii {
 
-  iroha::protocol::ToriiResponse sendTransaction(
-      const iroha::protocol::Transaction& block,
-      const std::string& targetPeerIp);
+  /*
+   * avoids from multiple-definition of ThreadPool
+   * tp::ThradPool is type alias, not class. So we can't use struct ThreadPool;
+   * We shouldn't know about ThreadPoolImpl, that is template class.
+   */
+  struct ThreadContainer;
 
+  /**
+   * CommandClient is used by peer service.
+   */
   class CommandClient {
-   public:
-    CommandClient(const std::string& ip, int port);
+  public:
+    CommandClient(const std::string& ip, const int port);
+    ~CommandClient();
 
-    iroha::protocol::ToriiResponse Torii(
-        const iroha::protocol::Transaction& request);
+    /**
+     * requests tx to a torii server and returns response (blocking, sync)
+     * @param tx
+     * @return ToriiResponse
+     */
+    iroha::protocol::ToriiResponse ToriiBlocking(const iroha::protocol::Transaction& tx);
 
-   private:
+    /*
+     * TODO(motxx): We can't use CommandClient::ToriiNonBlocking() for now. gRPC causes the error
+     * E0714 04:24:40.045388600    4346 sync_posix.c:60]            assertion failed: pthread_mutex_lock(mu) == 0
+     */
+    /*
+    void ToriiNonBlocking(const iroha::protocol::Transaction& tx,
+                          const std::function<void(iroha::protocol::ToriiResponse& response)>& callback);
+     */
+
+  private:
+    static void ToriiNonBlockingListener(
+      grpc::CompletionQueue& cq,
+      const std::function<void(iroha::protocol::ToriiResponse& response)>& callback);
+
+  private:
     grpc::ClientContext context_;
     std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
+    grpc::CompletionQueue cq_;
+    grpc::Status status_;
+    ThreadContainer* listenerPool_; // cannot use smart pointer because of avoiding redefinition.
   };
 
-}  // namespace api
+}  // namespace torii
 
-#endif  // API_COMMAND_CLIENT_HPP
+#endif  // TORII_COMMAND_CLIENT_HPP

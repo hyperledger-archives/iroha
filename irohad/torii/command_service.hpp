@@ -14,24 +14,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef API_COMMAND_SERVICE_HPP
-#define API_COMMAND_SERVICE_HPP
+#ifndef TORII_COMMAND_SERVICE_HPP
+#define TORII_COMMAND_SERVICE_HPP
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
+#include <torii/command_service_handler.hpp>
 
-namespace api {
+namespace torii {
 
-  void receive(std::function<void(const iroha::protocol::Transaction&)>);
-
-  class CommandService final
-      : public iroha::protocol::CommandService::Service {
-   public:
-    grpc::Status Torii(grpc::ServerContext* context,
-                       const iroha::protocol::Transaction* request,
-                       iroha::protocol::ToriiResponse* response);
+  /**
+   * Actual implementation of async CommandService.
+   * CommandServiceHandler::(SomeMethod)Handler calls a corresponding method in this class.
+   */
+  class CommandService {
+  public:
+    /**
+     * actual implementation of async Torii in CommandService
+     * @param request - Transaction
+     * @param response - ToriiResponse
+     * @return grpc::Status - Status::OK if succeeded. TODO(motxx): grpc::CANCELLED is not supported.
+     */
+    static grpc::Status ToriiAsync(
+      iroha::protocol::Transaction const& request, iroha::protocol::ToriiResponse& response) {
+      response.set_code(iroha::protocol::ResponseCode::OK);
+      response.set_message("Torii async response");
+      return grpc::Status::OK;
+    }
   };
 
-}  // namespace api
+}  // namespace torii
 
-#endif // API_COMMAND_SERVICE_HPP
+#endif  // TORII_COMMAND_SERVICE_HPP

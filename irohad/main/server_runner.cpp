@@ -18,35 +18,36 @@ limitations under the License.
 #include <grpc++/server_builder.h>
 #include <grpc++/server_context.h>
 #include <logger/logger.hpp>
-
 #include <main/server_runner.hpp>
+#include <torii/command_service_handler.hpp>
 
-logger::Logger console("ServerRunner");
+logger::Logger Log("ServerRunner");
 
-ServerRunner::ServerRunner(const std::string &ip, int port,
-                           const std::vector<grpc::Service *> &srvs)
-    : serverAddress_(ip + ":" + std::to_string(port)), services_(srvs) {}
+ServerRunner::ServerRunner(const std::string &ip, int port)
+    : serverAddress_(ip + ":" + std::to_string(port)) {}
 
 void ServerRunner::run() {
   grpc::ServerBuilder builder;
 
-  // TODO(motxx): Is it ok to open same port for all services?
   builder.AddListeningPort(serverAddress_, grpc::InsecureServerCredentials());
-  for (auto srv : services_) {
-    builder.RegisterService(srv);
-  }
 
-  waitForServer_.lock();
+  commandServiceHandler_ = std::make_unique<torii::CommandServiceHandler>(builder);
+
   serverInstance_ = builder.BuildAndStart();
-  waitForServer_.unlock();
   serverInstanceCV_.notify_one();
 
-  console.info("Server listening on {}", serverAddress_);
+  Log.info("Server listening on {}", serverAddress_);
 
-  serverInstance_->Wait();
+  // proceed to server's main loop
+  commandServiceHandler_->handleRpcs();
 }
 
-void ServerRunner::shutdown() { serverInstance_->Shutdown(); }
+void ServerRunner::shutdown() {
+  commandServiceHandler_->shutdown();
+  while (!commandServiceHandler_->isShutdownCompletionQueue())
+    usleep(1); // wait for shutting down completion queue
+  serverInstance_->Shutdown();
+}
 
 bool ServerRunner::waitForServersReady() {
   std::unique_lock<std::mutex> lock(waitForServer_);
