@@ -33,9 +33,7 @@ void ServerRunner::run() {
 
   commandServiceHandler_ = std::make_unique<torii::CommandServiceHandler>(builder);
 
-  waitForServer_.lock();
   serverInstance_ = builder.BuildAndStart();
-  waitForServer_.unlock();
   serverInstanceCV_.notify_one();
 
   Log.info("Server listening on {}", serverAddress_);
