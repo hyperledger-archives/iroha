@@ -22,7 +22,6 @@ target_link_libraries(command_client
 )
 
 add_library(command_service
-  command_service.cpp
   command_service_handler.cpp
 )
 target_link_libraries(command_service
