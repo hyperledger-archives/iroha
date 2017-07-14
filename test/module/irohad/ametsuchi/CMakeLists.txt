@@ -30,7 +30,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
 #        wsv
 #    )
 #
-#addtest(ametsuchi_test ametsuchi_test.cpp)
-#target_link_libraries(ametsuchi_test
-#    storage
-#    )
+addtest(ametsuchi_test ametsuchi_test.cpp)
+target_link_libraries(ametsuchi_test
+    ametsuchi
+    )

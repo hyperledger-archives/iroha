@@ -43,7 +43,8 @@ namespace iroha {
           std::make_unique<PostgresWsvCommand>(wsv_transaction);
 
       return std::make_unique<TemporaryWsvImpl>(
-          std::move(wsv_transaction), std::move(wsv), std::move(executor));
+          std::move(postgres_connection), std::move(wsv_transaction),
+          std::move(wsv), std::move(executor));
     }
 
     std::unique_ptr<MutableStorage> StorageImpl::createMutableStorage() {
@@ -73,8 +74,8 @@ namespace iroha {
       }
 
       return std::make_unique<MutableStorageImpl>(
-          block_store_, std::move(index), std::move(wsv_transaction),
-          std::move(wsv), std::move(executor));
+          block_store_, std::move(index), std::move(postgres_connection),
+          std::move(wsv_transaction), std::move(wsv), std::move(executor));
     }
 
     std::unique_ptr<StorageImpl> StorageImpl::create(
@@ -109,10 +110,11 @@ namespace iroha {
       std::unique_ptr<WsvQuery> wsv =
           std::make_unique<PostgresWsvQuery>(wsv_transaction);
 
-      return std::unique_ptr<StorageImpl>(new StorageImpl(
-          block_store_dir, redis_host, redis_port, postgres_options,
-          std::move(block_store), std::move(index), std::move(wsv_transaction),
-          std::move(wsv)));
+      return std::unique_ptr<StorageImpl>(
+          new StorageImpl(block_store_dir, redis_host, redis_port,
+                          postgres_options, std::move(block_store),
+                          std::move(index), std::move(postgres_connection),
+                          std::move(wsv_transaction), std::move(wsv)));
     }
 
     void StorageImpl::commit(std::unique_ptr<MutableStorage> mutableStorage) {
@@ -125,6 +127,7 @@ namespace iroha {
         std::size_t redis_port, std::string postgres_options,
         std::unique_ptr<FlatFile> block_store,
         std::unique_ptr<cpp_redis::redis_client> index,
+        std::unique_ptr<pqxx::lazyconnection> wsv_connection,
         std::unique_ptr<pqxx::nontransaction> wsv_transaction,
         std::unique_ptr<WsvQuery> wsv)
         : block_store_dir_(block_store_dir),
@@ -133,6 +136,7 @@ namespace iroha {
           postgres_options_(postgres_options),
           block_store_(std::move(block_store)),
           index_(std::move(index)),
+          wsv_connection_(std::move(wsv_connection)),
           wsv_transaction_(std::move(wsv_transaction)),
           wsv_(std::move(wsv)) {
       wsv_transaction_->exec(
@@ -141,39 +145,35 @@ namespace iroha {
 
     rxcpp::observable<model::Transaction> StorageImpl::get_account_transactions(
         ed25519::pubkey_t pub_key) {
-      return rxcpp::observable<>::create<model::Transaction>(
-          [](auto s) {
-            s.on_next(model::Transaction{});
-            s.on_completed();
-          });
+      return rxcpp::observable<>::create<model::Transaction>([](auto s) {
+        s.on_next(model::Transaction{});
+        s.on_completed();
+      });
     }
 
     rxcpp::observable<model::Transaction> StorageImpl::get_asset_transactions(
         std::string asset_full_name) {
-      return rxcpp::observable<>::create<model::Transaction>(
-          [](auto s) {
-            s.on_next(model::Transaction{});
-            s.on_completed();
-          });
+      return rxcpp::observable<>::create<model::Transaction>([](auto s) {
+        s.on_next(model::Transaction{});
+        s.on_completed();
+      });
     }
 
     rxcpp::observable<model::Transaction>
     StorageImpl::get_account_asset_transactions(std::string account_id,
                                                 std::string asset_id) {
-      return rxcpp::observable<>::create<model::Transaction>(
-          [](auto s) {
-            s.on_next(model::Transaction{});
-            s.on_completed();
-          });
+      return rxcpp::observable<>::create<model::Transaction>([](auto s) {
+        s.on_next(model::Transaction{});
+        s.on_completed();
+      });
     }
 
     rxcpp::observable<model::Block> StorageImpl::get_blocks_in_range(
         uint32_t from, uint32_t to) {
-      return rxcpp::observable<>::create<model::Block>(
-          [](auto s) {
-            s.on_next(model::Block{});
-            s.on_completed();
-          });
+      return rxcpp::observable<>::create<model::Block>([](auto s) {
+        s.on_next(model::Block{});
+        s.on_completed();
+      });
     }
 
     model::Account StorageImpl::getAccount(const std::string &account_id) {

@@ -35,9 +35,11 @@ namespace iroha {
     }
 
     TemporaryWsvImpl::TemporaryWsvImpl(
+        std::unique_ptr<pqxx::lazyconnection> connection,
         std::unique_ptr<pqxx::nontransaction> transaction,
         std::unique_ptr<WsvQuery> wsv, std::unique_ptr<WsvCommand> executor)
-        : transaction_(std::move(transaction)),
+        : connection_(std::move(connection)),
+          transaction_(std::move(transaction)),
           wsv_(std::move(wsv)),
           executor_(std::move(executor)) {
       transaction_->exec("BEGIN;");

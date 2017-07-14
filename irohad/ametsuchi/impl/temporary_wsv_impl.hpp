@@ -18,14 +18,16 @@
 #ifndef IROHA_TEMPORARY_WSV_IMPL_HPP
 #define IROHA_TEMPORARY_WSV_IMPL_HPP
 
-#include <ametsuchi/impl/storage_impl.hpp>
-#include <ametsuchi/temporary_wsv.hpp>
+#include "ametsuchi/temporary_wsv.hpp"
+#include <pqxx/connection>
+#include <pqxx/nontransaction>
 
 namespace iroha {
   namespace ametsuchi {
     class TemporaryWsvImpl : public TemporaryWsv {
      public:
-      TemporaryWsvImpl(std::unique_ptr<pqxx::nontransaction> transaction,
+      TemporaryWsvImpl(std::unique_ptr<pqxx::lazyconnection> connection,
+                       std::unique_ptr<pqxx::nontransaction> transaction,
                        std::unique_ptr<WsvQuery> wsv,
                        std::unique_ptr<WsvCommand> executor);
       bool apply(const model::Transaction &transaction,
@@ -41,7 +43,8 @@ namespace iroha {
       ~TemporaryWsvImpl() override;
 
      private:
-      std::shared_ptr<pqxx::nontransaction> transaction_;
+      std::unique_ptr<pqxx::lazyconnection> connection_;
+      std::unique_ptr<pqxx::nontransaction> transaction_;
       std::unique_ptr<WsvQuery> wsv_;
       std::unique_ptr<WsvCommand> executor_;
     };

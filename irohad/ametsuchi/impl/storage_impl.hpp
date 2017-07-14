@@ -58,6 +58,7 @@ namespace iroha {
                   std::size_t redis_port, std::string postgres_options,
                   std::unique_ptr<FlatFile> block_store,
                   std::unique_ptr<cpp_redis::redis_client> index,
+                  std::unique_ptr<pqxx::lazyconnection> wsv_connection,
                   std::unique_ptr<pqxx::nontransaction> wsv_transaction,
                   std::unique_ptr<WsvQuery> wsv);
       // Storage info
@@ -69,6 +70,7 @@ namespace iroha {
       std::unique_ptr<FlatFile> block_store_;
       std::unique_ptr<cpp_redis::redis_client> index_;
 
+      std::unique_ptr<pqxx::lazyconnection> wsv_connection_;
       std::unique_ptr<pqxx::nontransaction> wsv_transaction_;
       std::unique_ptr<WsvQuery> wsv_;
 

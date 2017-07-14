@@ -18,10 +18,11 @@
 #ifndef IROHA_MUTABLE_STORAGE_IMPL_HPP
 #define IROHA_MUTABLE_STORAGE_IMPL_HPP
 
-#include <ametsuchi/impl/flat_file/flat_file.hpp>
-#include <ametsuchi/mutable_storage.hpp>
+#include "ametsuchi/impl/flat_file/flat_file.hpp"
+#include "ametsuchi/mutable_storage.hpp"
 #include <cpp_redis/redis_client.hpp>
 #include <pqxx/nontransaction>
+#include <pqxx/connection>
 
 namespace iroha {
   namespace ametsuchi {
@@ -31,6 +32,7 @@ namespace iroha {
      public:
       MutableStorageImpl(std::unique_ptr<FlatFile> &block_store,
                          std::unique_ptr<cpp_redis::redis_client> index,
+                         std::unique_ptr<pqxx::lazyconnection> connection,
                          std::unique_ptr<pqxx::nontransaction> transaction,
                          std::unique_ptr<WsvQuery> wsv,
                          std::unique_ptr<WsvCommand> executor);
@@ -50,6 +52,7 @@ namespace iroha {
       std::unique_ptr<FlatFile> &block_store_;
       std::unique_ptr<cpp_redis::redis_client> index_;
 
+      std::unique_ptr<pqxx::lazyconnection> connection_;
       std::unique_ptr<pqxx::nontransaction> transaction_;
       std::unique_ptr<WsvQuery> wsv_;
       std::unique_ptr<WsvCommand> executor_;
