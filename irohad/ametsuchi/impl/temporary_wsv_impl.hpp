@@ -34,12 +34,13 @@ namespace iroha {
                  std::function<bool(const model::Transaction &, WsvCommand &,
                                     WsvQuery &)>
                      function) override;
-      model::Account getAccount(const std::string &account_id) override;
+      nonstd::optional<model::Account> getAccount(const std::string &account_id) override;
       std::vector<ed25519::pubkey_t> getSignatories(const std::string &account_id) override;
-      model::Asset getAsset(const std::string &asset_id) override;
-      model::AccountAsset getAccountAsset(const std::string &account_id,
+      nonstd::optional<model::Asset> getAsset(const std::string &asset_id) override;
+      nonstd::optional<model::AccountAsset> getAccountAsset(const std::string &account_id,
                                           const std::string &asset_id) override;
-      model::Peer getPeer(const std::string &address) override;
+      std::vector<model::Peer> getPeers() override;
+      nonstd::optional<model::Peer> getPeer(const ed25519::pubkey_t &pubkey) override;
       ~TemporaryWsvImpl() override;
 
      private:

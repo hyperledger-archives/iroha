@@ -20,8 +20,8 @@
 
 #include <common/types.hpp>
 #include <model/account.hpp>
-#include <model/asset.hpp>
 #include <model/account_asset.hpp>
+#include <model/asset.hpp>
 #include <model/peer.hpp>
 #include <nonstd/optional.hpp>
 #include <string>
@@ -42,7 +42,8 @@ namespace iroha {
        * @param account_id
        * @return
        */
-      virtual nonstd::optional<model::Account> getAccount(const std::string &account_id) = 0;
+      virtual nonstd::optional<model::Account> getAccount(
+          const std::string &account_id) = 0;
 
       /**
        * Get signatories of account by user account_id
@@ -57,7 +58,8 @@ namespace iroha {
        * @param asset_id
        * @return
        */
-      virtual nonstd::optional<model::Asset> getAsset(const std::string &asset_id) = 0;
+      virtual nonstd::optional<model::Asset> getAsset(
+          const std::string &asset_id) = 0;
 
       /**
        *
@@ -65,15 +67,22 @@ namespace iroha {
        * @param asset_id
        * @return
        */
-      virtual nonstd::optional<model::AccountAsset> getAccountAsset(const std::string &account_id,
-                                      const std::string &asset_id) = 0;
+      virtual nonstd::optional<model::AccountAsset> getAccountAsset(
+          const std::string &account_id, const std::string &asset_id) = 0;
 
       /**
-       * Get peer by given IP address
-       * @param address
+       *
        * @return
        */
-      virtual nonstd::optional<model::Peer> getPeer(const std::string &address) = 0;
+      virtual std::vector<model::Peer> getPeers() = 0;
+
+      /**
+       *
+       * @param pubkey
+       * @return
+       */
+      virtual nonstd::optional<model::Peer> getPeer(
+          const ed25519::pubkey_t &pubkey) = 0;
     };
 
   }  // namespace ametsuchi

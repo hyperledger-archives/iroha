@@ -25,17 +25,18 @@ namespace iroha {
   namespace ametsuchi {
     class PostgresWsvQuery : public WsvQuery {
      public:
-      PostgresWsvQuery(std::unique_ptr<pqxx::nontransaction> &transaction);
-      model::Account getAccount(const std::string &account_id) override;
+      PostgresWsvQuery(pqxx::nontransaction &transaction);
+      nonstd::optional<model::Account> getAccount(const std::string &account_id) override;
       std::vector<ed25519::pubkey_t> getSignatories(
           const std::string &account_id) override;
-      model::Asset getAsset(const std::string &asset_id) override;
-      model::AccountAsset getAccountAsset(const std::string &account_id,
+      nonstd::optional<model::Asset> getAsset(const std::string &asset_id) override;
+      nonstd::optional<model::AccountAsset> getAccountAsset(const std::string &account_id,
                                           const std::string &asset_id) override;
-      model::Peer getPeer(const std::string &address) override;
+      std::vector<model::Peer> getPeers() override;
+      nonstd::optional<model::Peer> getPeer(const ed25519::pubkey_t &pubkey) override;
 
      private:
-      std::unique_ptr<pqxx::nontransaction> &transaction_;
+      pqxx::nontransaction &transaction_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

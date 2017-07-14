@@ -25,7 +25,7 @@ namespace iroha {
   namespace ametsuchi {
     class PostgresWsvCommand : public WsvCommand {
      public:
-      PostgresWsvCommand(std::unique_ptr<pqxx::nontransaction> &transaction);
+      PostgresWsvCommand(pqxx::nontransaction &transaction);
       bool upsertAccount(const model::Account &account) override;
       bool insertAsset(const model::Asset &asset) override;
       bool upsertAccountAsset(const model::AccountAsset &asset) override;
@@ -39,7 +39,7 @@ namespace iroha {
       bool insertDomain(const model::Domain &domain) override;
 
      private:
-      std::unique_ptr<pqxx::nontransaction> &transaction_;
+      pqxx::nontransaction &transaction_;
     };
   } // namespace ametsuchi
 } // namespace iroha

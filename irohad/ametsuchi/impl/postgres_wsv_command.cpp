@@ -16,12 +16,46 @@
  */
 
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
+#include <iostream>
 
 namespace iroha {
   namespace ametsuchi {
 
     bool PostgresWsvCommand::upsertAccount(const model::Account &account) {
-      return false;
+      try {
+        pqxx::binarystring master_key(account.master_key.data(),
+                                      account.master_key.size());
+        std::stringstream permissions;
+        permissions << account.permissions.add_signatory
+                    << account.permissions.can_transfer
+                    << account.permissions.create_accounts
+                    << account.permissions.create_assets
+                    << account.permissions.create_domains
+                    << account.permissions.issue_assets
+                    << account.permissions.read_all_accounts
+                    << account.permissions.remove_signatory
+                    << account.permissions.set_permissions
+                    << account.permissions.set_quorum;
+        transaction_.exec(
+            "INSERT INTO account(\n"
+            "            account_id, domain_id, master_key, quorum, status, "
+            "transaction_count, \n"
+            "            permissions)\n"
+            "    VALUES (" +
+            transaction_.quote(account.account_id) + ", " +
+            transaction_.quote(account.domain_name) + ", " +
+            transaction_.quote(master_key) + ", " +
+            transaction_.quote(account.quorum) + ", " +
+            /*account.status*/ transaction_.quote(0) + ", " +
+            /*account.transaction_count*/ transaction_.quote(0) +
+            ", \n"
+            "            " +
+            transaction_.quote(permissions.str()) + ");");
+      } catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        return false;
+      }
+      return true;
     }
 
     bool PostgresWsvCommand::insertAsset(const model::Asset &asset) {
@@ -35,12 +69,33 @@ namespace iroha {
 
     bool PostgresWsvCommand::insertSignatory(
         const ed25519::pubkey_t &signatory) {
-      return false;
+      try {
+        pqxx::binarystring public_key(signatory.data(), signatory.size());
+        transaction_.exec(
+            "INSERT INTO signatory(\n"
+            "            public_key)\n"
+            "    VALUES (" +
+            transaction_.quote(public_key) + ");");
+      } catch (const std::exception &e) {
+        return false;
+      }
+      return true;
     }
 
     bool PostgresWsvCommand::insertAccountSignatory(
         const std::string &account_id, const ed25519::pubkey_t &signatory) {
-      return false;
+      try {
+        pqxx::binarystring public_key(signatory.data(), signatory.size());
+        transaction_.exec(
+            "INSERT INTO account_has_signatory(\n"
+            "            account_id, public_key)\n"
+            "    VALUES (" +
+            transaction_.quote(account_id) + ", " +
+            transaction_.quote(public_key) + ");");
+      } catch (const std::exception &e) {
+        return false;
+      }
+      return true;
     }
 
     bool PostgresWsvCommand::deleteAccountSignatory(
@@ -57,11 +112,21 @@ namespace iroha {
     }
 
     bool PostgresWsvCommand::insertDomain(const model::Domain &domain) {
-      return false;
+      try {
+        transaction_.exec(
+            "INSERT INTO domain(\n"
+            "            domain_id, open)\n"
+            "    VALUES (" +
+            transaction_.quote(domain.domain_id) + ", " +
+            /*domain.open*/ transaction_.quote(true) + ");");
+      } catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        return false;
+      }
+      return true;
     }
 
-    PostgresWsvCommand::PostgresWsvCommand(
-        std::unique_ptr<pqxx::nontransaction> &transaction)
+    PostgresWsvCommand::PostgresWsvCommand(pqxx::nontransaction &transaction)
         : transaction_(transaction) {}
   }  // namespace ametsuchi
 }  // namespace iroha

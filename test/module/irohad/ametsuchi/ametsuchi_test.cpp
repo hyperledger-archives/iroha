@@ -19,6 +19,8 @@
 #include <ametsuchi/impl/storage_impl.hpp>
 #include <common/types.hpp>
 #include <cpp_redis/cpp_redis>
+#include <model/commands/create_account.hpp>
+#include <model/commands/create_domain.hpp>
 #include <pqxx/pqxx>
 
 namespace iroha {
@@ -70,6 +72,26 @@ namespace iroha {
           StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
       ASSERT_TRUE(storage);
       auto wsv = storage->createTemporaryWsv();
+      model::Transaction txn;
+      model::CreateDomain createDomain;
+      createDomain.domain_name = "ru";
+      model::CreateAccount createAccount;
+      createAccount.account_name = "username";
+      createAccount.domain_id = "ru";
+      txn.commands.push_back(
+          std::make_shared<model::CreateDomain>(createDomain));
+      txn.commands.push_back(
+          std::make_shared<model::CreateAccount>(createAccount));
+      wsv->apply(txn, [](auto &tx, auto &executor, auto &query) {
+        EXPECT_TRUE(tx.commands.at(0)->execute(query, executor));
+        EXPECT_TRUE(tx.commands.at(1)->execute(query, executor));
+        return true;
+      });
+      auto account = wsv->getAccount("username@ru");
+      ASSERT_TRUE(account);
+      ASSERT_EQ(account->account_id, "username@ru");
+      ASSERT_EQ(account->domain_name, "ru");
+      ASSERT_EQ(account->master_key, createAccount.pubkey);
       ASSERT_TRUE(wsv);
     }
 

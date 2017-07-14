@@ -45,13 +45,14 @@ namespace iroha {
       rxcpp::observable<model::Block> get_blocks_in_range(uint32_t from,
                                                           uint32_t to) override;
 
-      model::Account getAccount(const std::string &account_id) override;
+      nonstd::optional<model::Account> getAccount(const std::string &account_id) override;
       std::vector<ed25519::pubkey_t> getSignatories(
           const std::string &account_id) override;
-      model::Asset getAsset(const std::string &asset_id) override;
-      model::AccountAsset getAccountAsset(const std::string &account_id,
+      nonstd::optional<model::Asset> getAsset(const std::string &asset_id) override;
+      nonstd::optional<model::AccountAsset> getAccountAsset(const std::string &account_id,
                                           const std::string &asset_id) override;
-      model::Peer getPeer(const std::string &address) override;
+      std::vector<model::Peer> getPeers() override;
+      nonstd::optional<model::Peer> getPeer(const ed25519::pubkey_t &pubkey) override;
 
      private:
       StorageImpl(std::string block_store_dir, std::string redis_host,
