@@ -40,23 +40,12 @@ namespace iroha {
      */
     bool AddAssetQuantity::validate(ametsuchi::WsvQuery &queries,
                                     const Account &creator) {
-      // TODO: We will get rid off ugly string to float conversion once we have
-      // Decimal abstraction
-      try {
-        // Amount must be in some meaningful range:
-        if (std::stod(amount) > 0) return false;
-      }
-      // Check if asset is formed right
-      catch (const std::invalid_argument &ia) {
-        return false;
-      }
-      // Check if asset is in range
-      catch (const std::out_of_range &oor) {
-        return false;
-      }
-
-      // Check if creator has MoneyCreator permission
-      return creator.permissions.issue_assets;
+      return
+          // Amount must be in some meaningful range
+          // TODO: should there be upper bound ?
+          amount > 0 &&
+          // Check if creator has MoneyCreator permission
+          creator.permissions.issue_assets;
     }
 
     /**
@@ -197,27 +186,13 @@ namespace iroha {
     */
     bool TransferAsset::validate(ametsuchi::WsvQuery &queries,
                                  const Account &creator) {
-      // TODO: We will get rid off ugly string to float conversion once we have
-      // Decimal abstraction
-      try {
-        // get source account's balance and check if it is sufficient
-        auto account_asset = queries.getAccountAsset(src_account_id, asset_id);
-        // Check if such AccountAsset exist
-        if (!account_asset ||
-            // Check if amount for transfer is not bigger than balance
-            std::stod(account_asset.value().balance) < std::stod(amount))
-          return false;
-      }
-      // Check if asset is formed right
-      catch (const std::invalid_argument &ia) {
-        return false;
-      }
-      // Check if asset is in range
-      catch (const std::out_of_range &oor) {
-        return false;
-      }
+      auto account_asset = queries.getAccountAsset(src_account_id, asset_id);
 
       return
+          // Check if such AccountAsset exist
+          account_asset.has_value() &&
+          // Check if account_asset sufficent amount of money
+          account_asset.value().balance < amount &&
           // Check if src_account exist
           queries.getAccount(src_account_id) &&
           // Can account transfer assets
