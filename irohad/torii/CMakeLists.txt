@@ -17,7 +17,6 @@ add_library(command_client
   command_client.cpp
 )
 target_link_libraries(command_client
-  thread_pool
   endpoint
 )
 
