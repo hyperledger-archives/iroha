@@ -36,11 +36,8 @@ namespace torii {
   }
 
   CommandServiceHandler::~CommandServiceHandler() {
-    void* tag;
-    bool ok;
-    while (cq_->AsyncNext(&tag, &ok, gpr_time_from_seconds(1, GPR_CLOCK_MONOTONIC)) == 1) ;
-    cq_->Shutdown();
-    delete shutdownAlarm_;
+    //while (cq_->AsyncNext(&tag, &ok, gpr_time_from_seconds(1, GPR_CLOCK_MONOTONIC)) == 1) ;
+    //delete shutdownAlarm_;
   }
 
   /**
@@ -48,20 +45,9 @@ namespace torii {
    * specifically, enqueues a special event that causes the completion queue to be shut down.
    */
   void CommandServiceHandler::shutdown() {
-    bool didShutdown = false;
-    {
-      std::unique_lock<std::mutex> lock(mtx_);
-      if (!isShutdown_) {
-        isShutdown_ = true;
-        didShutdown = true;
-      }
-    }
-
-    if (didShutdown) {
-      // enqueue a special event that causes the completion queue to be shut down.
-      // tag is nullptr in order to determine no Call instance allocated when static_cast.
-      shutdownAlarm_ = new ::grpc::Alarm(cq_.get(), gpr_now(GPR_CLOCK_MONOTONIC), nullptr);
-    }
+    //void* tag;
+    //bool ok;
+    cq_->Shutdown();
   }
 
   /**
