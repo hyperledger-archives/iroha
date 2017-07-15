@@ -47,13 +47,13 @@ int main(int argc, char* argv[]) {
     create_account(FLAGS_name);
 
   // Send test tx to Iroha
-  }else if(FLAGS_grpc){
-    if(FLAGS_port > 0 && FLAGS_port < 65535){
+  } else if (FLAGS_grpc) {
+    if (FLAGS_port > 0 && FLAGS_port < 65535) {
       std::cout<< "Send transaction to "<< FLAGS_address <<":" << FLAGS_port << std::endl;
       auto client = iroha_cli::CliClient(FLAGS_address,FLAGS_port);
       // ToDo more variables transaction
       client.sendTx(iroha::model::Transaction{});
-    }else{
+    } else {
       std::cout<< "Invalid port number " << FLAGS_port << std::endl;
       iroha_cli::CliClient(FLAGS_address,FLAGS_port);
     }
@@ -71,6 +71,9 @@ std::string hex_str(unsigned char* data, int len) {
   return s;
 }
 
+/**
+ * Command to create a new account using the interactive console.
+ */
 void create_account(std::string name) {
   unsigned char public_key[32], private_key[64], seed[32];
 
