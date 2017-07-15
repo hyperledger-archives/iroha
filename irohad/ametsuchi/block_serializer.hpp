@@ -46,22 +46,22 @@ class BlockSerializer{
   std::vector<uint8_t > serialize(model::Block block);
   model::Block deserialize(std::vector<uint8_t > bytes);
  private:
-  void serialize(PrettyWriter<StringBuffer>& writer, model::Block block);
-  void serialize(PrettyWriter<StringBuffer>& writer, model::Signature signature);
-  void serialize(PrettyWriter<StringBuffer>& writer, model::Transaction transaction);
-  void serialize(PrettyWriter<StringBuffer>& writer, model::Command& command);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::Block& block);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::Signature& signature);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::Transaction& transaction);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::Command& command);
 
-  void serialize(PrettyWriter<StringBuffer>& writer, model::AddPeer& add_peer);
-  void serialize(PrettyWriter<StringBuffer>& writer, model::AddAssetQuantity& add_asset_quantity);
-  void serialize(PrettyWriter<StringBuffer>& writer, model::AddSignatory& add_signatory);
-  void serialize(PrettyWriter<StringBuffer>& writer, model::AssignMasterKey& assign_master_key);
-  void serialize(PrettyWriter<StringBuffer>& writer, model::CreateAccount& create_account);
-  void serialize(PrettyWriter<StringBuffer>& writer, model::CreateAsset& create_asset);
-  void serialize(PrettyWriter<StringBuffer>& writer, model::CreateDomain& create_domain);
-  void serialize(PrettyWriter<StringBuffer>& writer, model::RemoveSignatory& remove_signatory);
-  void serialize(PrettyWriter<StringBuffer>& writer, model::SetAccountPermissions& set_account_permissions);
-  void serialize(PrettyWriter<StringBuffer>& writer, model::SetQuorum& set_quorum);
-  void serialize(PrettyWriter<StringBuffer>& writer, model::TransferAsset& transfer_asset);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::AddPeer& add_peer);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::AddAssetQuantity& add_asset_quantity);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::AddSignatory& add_signatory);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::AssignMasterKey& assign_master_key);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::CreateAccount& create_account);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::CreateAsset& create_asset);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::CreateDomain& create_domain);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::RemoveSignatory& remove_signatory);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::SetAccountPermissions& set_account_permissions);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::SetQuorum& set_quorum);
+  void serialize(PrettyWriter<StringBuffer>& writer, const model::TransferAsset& transfer_asset);
 
   template<typename Base, typename T>
   inline bool instanceof(const T *ptr) {

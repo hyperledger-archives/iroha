@@ -24,7 +24,7 @@ namespace iroha {
 
     /* Serialize */
 
-    std::vector<uint8_t> BlockSerializer::serialize(model::Block block) {
+    std::vector<uint8_t> BlockSerializer::serialize(const model::Block block) {
       rapidjson::StringBuffer sb;
       rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
       serialize(writer, std::move(block));
@@ -34,7 +34,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    model::Block block) {
+                                    const model::Block& block) {
       writer.StartObject();
       writer.String("hash");
       writer.String(block.hash.to_string().c_str());
@@ -72,7 +72,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    model::Signature signature) {
+                                    const model::Signature& signature) {
       writer.StartObject();
 
       writer.String("pubkey");
@@ -85,7 +85,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    model::Transaction transaction) {
+                                    const model::Transaction& transaction) {
       writer.StartObject();
 
       writer.String("signatures");
@@ -115,57 +115,57 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    model::Command& command) {
+                                    const model::Command& command) {
       if (instanceof <model::AddPeer>(&command)) {
-        auto add_peer = static_cast<model::AddPeer&>(command);
+        auto add_peer = static_cast<const model::AddPeer&>(command);
         serialize(writer, add_peer);
       }
       if (instanceof <model::AddAssetQuantity>(&command)) {
         auto add_asset_quantity =
-            static_cast<model::AddAssetQuantity&>(command);
+            static_cast<const model::AddAssetQuantity&>(command);
         serialize(writer, add_asset_quantity);
       }
       if (instanceof <model::AddSignatory>(&command)) {
-        auto add_signatory = static_cast<model::AddSignatory&>(command);
+        auto add_signatory = static_cast<const model::AddSignatory&>(command);
         serialize(writer, add_signatory);
       }
       if (instanceof <model::AssignMasterKey>(&command)) {
-        auto assign_master_key = static_cast<model::AssignMasterKey&>(command);
+        auto assign_master_key = static_cast<const model::AssignMasterKey&>(command);
         serialize(writer, assign_master_key);
       }
       if (instanceof <model::CreateAccount>(&command)) {
-        auto create_account = static_cast<model::CreateAccount&>(command);
+        auto create_account = static_cast<const model::CreateAccount&>(command);
         serialize(writer, create_account);
       }
       if (instanceof <model::CreateAsset>(&command)) {
-        auto create_asset = static_cast<model::CreateAsset&>(command);
+        auto create_asset = static_cast<const model::CreateAsset&>(command);
         serialize(writer, create_asset);
       }
       if (instanceof <model::CreateDomain>(&command)) {
-        auto create_domain = static_cast<model::CreateDomain&>(command);
+        auto create_domain = static_cast<const model::CreateDomain&>(command);
         serialize(writer, create_domain);
       }
       if (instanceof <model::RemoveSignatory>(&command)) {
-        auto remove_signatory = static_cast<model::RemoveSignatory&>(command);
+        auto remove_signatory = static_cast<const model::RemoveSignatory&>(command);
         serialize(writer, remove_signatory);
       }
       if (instanceof <model::SetAccountPermissions>(&command)) {
         auto set_account_permissions =
-            static_cast<model::SetAccountPermissions&>(command);
+            static_cast<const model::SetAccountPermissions&>(command);
         serialize(writer, set_account_permissions);
       }
       if (instanceof <model::SetQuorum>(&command)) {
-        auto set_quorum = static_cast<model::SetQuorum&>(command);
+        auto set_quorum = static_cast<const model::SetQuorum&>(command);
         serialize(writer, set_quorum);
       }
       if (instanceof <model::TransferAsset>(&command)) {
-        auto transfer_asset = static_cast<model::TransferAsset&>(command);
+        auto transfer_asset = static_cast<const model::TransferAsset&>(command);
         serialize(writer, transfer_asset);
       }
     }
 
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    model::AddPeer& add_peer) {
+                                    const model::AddPeer& add_peer) {
       writer.StartObject();
 
       writer.String("command_type");
@@ -182,7 +182,7 @@ namespace iroha {
 
     void BlockSerializer::serialize(
         PrettyWriter<StringBuffer>& writer,
-        model::AddAssetQuantity& add_asset_quantity) {
+        const model::AddAssetQuantity& add_asset_quantity) {
       writer.StartObject();
 
       writer.String("command_type");
@@ -203,7 +203,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    model::AddSignatory& add_signatory) {
+                                    const model::AddSignatory& add_signatory) {
       writer.StartObject();
 
       writer.String("command_type");
@@ -219,7 +219,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    model::AssignMasterKey& assign_master_key) {
+                                    const model::AssignMasterKey& assign_master_key) {
       writer.StartObject();
 
       writer.String("command_type");
@@ -235,7 +235,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    model::CreateAccount& create_account) {
+                                    const model::CreateAccount& create_account) {
       writer.StartObject();
 
       writer.String("command_type");
@@ -254,7 +254,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    model::CreateAsset& create_asset) {
+                                    const model::CreateAsset& create_asset) {
       writer.StartObject();
 
       writer.String("command_type");
@@ -273,7 +273,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    model::CreateDomain& create_domain) {
+                                    const model::CreateDomain& create_domain) {
       writer.StartObject();
 
       writer.String("command_type");
@@ -286,7 +286,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    model::RemoveSignatory& remove_signatory) {
+                                    const model::RemoveSignatory& remove_signatory) {
       writer.StartObject();
 
       writer.String("command_type");
@@ -303,7 +303,7 @@ namespace iroha {
 
     void BlockSerializer::serialize(
         PrettyWriter<StringBuffer>& writer,
-        model::SetAccountPermissions& set_account_permissions) {
+        const model::SetAccountPermissions& set_account_permissions) {
       writer.StartObject();
 
       writer.String("command_type");
@@ -351,7 +351,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    model::SetQuorum& set_quorum) {
+                                    const model::SetQuorum& set_quorum) {
       writer.StartObject();
 
       writer.String("command_type");
@@ -367,7 +367,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    model::TransferAsset& transfer_asset) {
+                                    const model::TransferAsset& transfer_asset) {
       writer.StartObject();
 
       writer.String("command_type");
