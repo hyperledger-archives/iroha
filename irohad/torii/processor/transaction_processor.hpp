@@ -46,6 +46,7 @@ namespace iroha {
       virtual rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
       transaction_notifier() = 0;
 
+      virtual ~TransactionProcessor() = default;
     };
   }  // namespace torii
 }  // namespace iroha
