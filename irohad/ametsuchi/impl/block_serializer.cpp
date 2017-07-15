@@ -17,10 +17,10 @@
 
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/reader.h>
+#include <algorithm>
 #include <ametsuchi/block_serializer.hpp>
 #include <iostream>
 #include <sstream>
-#include <algorithm>
 
 namespace iroha {
   namespace ametsuchi {
@@ -403,35 +403,39 @@ namespace iroha {
 
     nonstd::optional<model::Block> BlockSerializer::deserialize(
         const std::vector<uint8_t>& bytes) {
-
       // TODO: return nullopt when some necessary field is missed
       std::string block_json(bytes.begin(), bytes.end());
       rapidjson::Document doc;
-      if (doc.Parse(block_json.c_str()).HasParseError()){
+      if (doc.Parse(block_json.c_str()).HasParseError()) {
         return nonstd::nullopt;
       }
 
       model::Block block{};
 
       // hash
-      std::string hash_str(doc["hash"].GetString(), doc["hash"].GetStringLength());
+      std::string hash_str(doc["hash"].GetString(),
+                           doc["hash"].GetStringLength());
       auto hash_bytes = hex2bytes(hash_str);
       std::copy(hash_bytes.begin(), hash_bytes.end(), block.hash.begin());
 
-      //signatures
+      // signatures
       auto json_sigs = doc["signatures"].GetArray();
 
-      for (auto iter = json_sigs.begin(); iter < json_sigs.end(); ++iter){
+      for (auto iter = json_sigs.begin(); iter < json_sigs.end(); ++iter) {
         auto json_sig = iter->GetObject();
         model::Signature signature{};
 
-        std::string sig_pubkey(json_sig["pubkey"].GetString(), json_sig["pubkey"].GetStringLength());
+        std::string sig_pubkey(json_sig["pubkey"].GetString(),
+                               json_sig["pubkey"].GetStringLength());
         auto sig_pubkey_bytes = hex2bytes(sig_pubkey);
-        std::copy(sig_pubkey_bytes.begin(), sig_pubkey_bytes.end(), signature.pubkey.begin());
+        std::copy(sig_pubkey_bytes.begin(), sig_pubkey_bytes.end(),
+                  signature.pubkey.begin());
 
-        std::string sig_sign(json_sig["signature"].GetString(), json_sig["signature"].GetStringLength());
+        std::string sig_sign(json_sig["signature"].GetString(),
+                             json_sig["signature"].GetStringLength());
         auto sig_sign_bytes = hex2bytes(sig_sign);
-        std::copy(sig_sign_bytes.begin(), sig_sign_bytes.end(), signature.signature.begin());
+        std::copy(sig_sign_bytes.begin(), sig_sign_bytes.end(),
+                  signature.signature.begin());
 
         block.sigs.push_back(signature);
       }
@@ -439,23 +443,76 @@ namespace iroha {
       // created_ts
       block.created_ts = doc["created_ts"].GetUint64();
 
-      //height
+      // height
       block.height = doc["height"].GetUint64();
 
       // prev_hash
-      std::string prev_hash_str(doc["prev_hash"].GetString(), doc["prev_hash"].GetStringLength());
+      std::string prev_hash_str(doc["prev_hash"].GetString(),
+                                doc["prev_hash"].GetStringLength());
       auto prev_hash_bytes = hex2bytes(prev_hash_str);
-      std::copy(prev_hash_bytes.begin(), prev_hash_bytes.end(), block.prev_hash.begin());
+      std::copy(prev_hash_bytes.begin(), prev_hash_bytes.end(),
+                block.prev_hash.begin());
 
       // txs number
       block.txs_number = static_cast<uint16_t>(doc["txs_number"].GetUint());
 
       // merkle_root
-      std::string merkle_root_str(doc["merkle_root"].GetString(), doc["merkle_root"].GetStringLength());
+      std::string merkle_root_str(doc["merkle_root"].GetString(),
+                                  doc["merkle_root"].GetStringLength());
       auto merkle_root_bytes = hex2bytes(merkle_root_str);
-      std::copy(merkle_root_bytes.begin(), merkle_root_bytes.end(), block.merkle_root.begin());
+      std::copy(merkle_root_bytes.begin(), merkle_root_bytes.end(),
+                block.merkle_root.begin());
+
+      // transactions
+      deserialize(doc, block.transactions);
 
       return block;
+    }
+
+
+    void BlockSerializer::deserialize(
+        Document& doc, std::vector<model::Transaction>& transactions) {
+      auto json_txs = doc["transactions"].GetArray();
+
+      for (auto iter = json_txs.begin(); iter < json_txs.end(); iter++) {
+        model::Transaction tx{};
+
+        auto json_tx = iter->GetObject();
+
+        // signatures
+        auto json_sigs = json_tx["signatures"].GetArray();
+        for (auto sig_iter = json_sigs.begin(); sig_iter < json_sigs.end(); ++sig_iter) {
+          auto json_sig = sig_iter->GetObject();
+          model::Signature signature{};
+
+          std::string sig_pubkey(json_sig["pubkey"].GetString(),
+                                 json_sig["pubkey"].GetStringLength());
+          auto sig_pubkey_bytes = hex2bytes(sig_pubkey);
+          std::copy(sig_pubkey_bytes.begin(), sig_pubkey_bytes.end(),
+                    signature.pubkey.begin());
+
+          std::string sig_sign(json_sig["signature"].GetString(),
+                               json_sig["signature"].GetStringLength());
+          auto sig_sign_bytes = hex2bytes(sig_sign);
+          std::copy(sig_sign_bytes.begin(), sig_sign_bytes.end(),
+                    signature.signature.begin());
+
+          tx.signatures.push_back(signature);
+        }
+
+        // created_ts
+        tx.created_ts = json_tx["created_ts"].GetUint64();
+
+        // creator_account_id
+        tx.creator_account_id = json_tx["creator_account_id"].GetString();
+
+        // tx_counter
+        tx.tx_counter = json_tx["tx_counter"].GetUint64();
+
+        // commands
+
+        transactions.push_back(tx);
+      }
     }
   }
 }

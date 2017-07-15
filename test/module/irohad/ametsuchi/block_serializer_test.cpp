@@ -165,5 +165,22 @@ TEST(block_serialize, block_serialize_test){
     ASSERT_EQ(block.prev_hash, deserialized.prev_hash);
     ASSERT_EQ(block.created_ts, deserialized.created_ts);
     ASSERT_EQ(block.merkle_root, deserialized.merkle_root);
+
+    ASSERT_TRUE(block.transactions.size() > 0);
+    for (int i = 0; i < block.transactions.size(); i++){
+      auto tx = block.transactions[i];
+      auto des_tx = deserialized.transactions[i]; // deserialized tx
+
+      ASSERT_TRUE(tx.signatures.size() > 0);
+      for (int j = 0; j < tx.signatures.size(); j++){
+        ASSERT_EQ(tx.signatures[j].pubkey, des_tx.signatures[j].pubkey);
+        ASSERT_EQ(tx.signatures[j].signature, des_tx.signatures[j].signature);
+      }
+
+      ASSERT_EQ(tx.created_ts, des_tx.created_ts);
+      ASSERT_EQ(tx.creator_account_id, des_tx.creator_account_id);
+      ASSERT_EQ(tx.tx_counter, des_tx.tx_counter);
+    }
+
   }
 }

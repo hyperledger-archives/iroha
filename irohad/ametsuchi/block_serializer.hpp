@@ -63,6 +63,8 @@ class BlockSerializer{
   void serialize(PrettyWriter<StringBuffer>& writer, const model::SetQuorum& set_quorum);
   void serialize(PrettyWriter<StringBuffer>& writer, const model::TransferAsset& transfer_asset);
 
+  void deserialize(Document& doc, std::vector<model::Transaction>& transactions);
+
   template<typename Base, typename T>
   inline bool instanceof(const T *ptr) {
     return typeid(Base) == typeid(*ptr);
