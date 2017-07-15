@@ -97,9 +97,6 @@ namespace iroha {
       Account account;
       account.master_key = pubkey;
       account.account_id = account_name + "@" + domain_id;
-      if (queries.getAccount(account.account_id))
-        // Such account already exist
-        return false;
 
       account.domain_name = domain_id;
       account.quorum = 1;

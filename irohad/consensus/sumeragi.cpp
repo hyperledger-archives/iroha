@@ -154,8 +154,8 @@ namespace consensus {
     size_t countValidSignatures(const Block &block) {
       size_t numValidSignatures = 0;
       std::set<std::string> usedPubkeys;
-
-      auto peerSigs = block.header().signatures();
+      /*
+      auto peerSigs = block.header()..signatures();
       for (auto const &sig: peerSigs) {
         // FIXME: bytes in proto -> std::string in C++ (null value problem)
         if (usedPubkeys.count(sig.pubkey())) continue;
@@ -169,7 +169,7 @@ namespace consensus {
           usedPubkeys.insert(sig.pubkey());
         }
          */
-      }
+     // }
 
       return numValidSignatures;
     }
