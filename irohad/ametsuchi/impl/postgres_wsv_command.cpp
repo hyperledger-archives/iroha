@@ -81,7 +81,19 @@ namespace iroha {
     bool PostgresWsvCommand::upsertAccountAsset(
         const model::AccountAsset &asset) {
       try {
-        transaction_.exec("");
+        transaction_.exec(
+            "INSERT INTO public.account_has_asset(\n"
+            "            account_id, asset_id, amount, permissions)\n"
+            "    VALUES (" +
+            transaction_.quote(asset.account_id) + ", " +
+            transaction_.quote(asset.asset_id) + ", " +
+            transaction_.quote(asset.balance) + ", " +
+            /*asset.permissions*/ transaction_.quote(0) +
+            ")\n"
+            "    ON CONFLICT (account_id, asset_id)\n"
+            "    DO UPDATE SET \n"
+            "        amount=EXCLUDED.amount, \n"
+            "        permissions=EXCLUDED.permissions;");
       } catch (const std::exception &e) {
         return false;
       }

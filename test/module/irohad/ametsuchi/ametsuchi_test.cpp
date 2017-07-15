@@ -16,12 +16,15 @@
  */
 
 #include <gtest/gtest.h>
-#include <ametsuchi/impl/storage_impl.hpp>
-#include <common/types.hpp>
 #include <cpp_redis/cpp_redis>
-#include <model/commands/create_account.hpp>
-#include <model/commands/create_domain.hpp>
+#include <model/commands/add_asset_quantity.hpp>
+#include <model/commands/transfer_asset.hpp>
 #include <pqxx/pqxx>
+#include "ametsuchi/impl/storage_impl.hpp"
+#include "common/types.hpp"
+#include "model/commands/create_account.hpp"
+#include "model/commands/create_asset.hpp"
+#include "model/commands/create_domain.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -70,28 +73,119 @@ namespace iroha {
       auto storage =
           StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
       ASSERT_TRUE(storage);
-      auto wsv = storage->createTemporaryWsv();
+
       model::Transaction txn;
       model::CreateDomain createDomain;
       createDomain.domain_name = "ru";
-      model::CreateAccount createAccount;
-      createAccount.account_name = "username";
-      createAccount.domain_id = "ru";
       txn.commands.push_back(
           std::make_shared<model::CreateDomain>(createDomain));
+      model::CreateAccount createAccount;
+      createAccount.account_name = "user1";
+      createAccount.domain_id = "ru";
       txn.commands.push_back(
           std::make_shared<model::CreateAccount>(createAccount));
-      wsv->apply(txn, [](auto &tx, auto &executor, auto &query) {
-        EXPECT_TRUE(tx.commands.at(0)->execute(query, executor));
-        EXPECT_TRUE(tx.commands.at(1)->execute(query, executor));
-        return true;
-      });
-      auto account = wsv->getAccount("username@ru");
-      ASSERT_TRUE(account);
-      ASSERT_EQ(account->account_id, "username@ru");
-      ASSERT_EQ(account->domain_name, "ru");
-      ASSERT_EQ(account->master_key, createAccount.pubkey);
-      ASSERT_TRUE(wsv);
+
+      {
+        auto wsv = storage->createTemporaryWsv();
+        ASSERT_TRUE(wsv);
+        wsv->apply(txn, [](auto &tx, auto &executor, auto &query) {
+          EXPECT_TRUE(tx.commands.at(0)->execute(query, executor));
+          EXPECT_TRUE(tx.commands.at(1)->execute(query, executor));
+          return true;
+        });
+        auto account = wsv->getAccount("user1@ru");
+        ASSERT_TRUE(account);
+        ASSERT_EQ(account->account_id, "user1@ru");
+        ASSERT_EQ(account->domain_name, "ru");
+        ASSERT_EQ(account->master_key, createAccount.pubkey);
+      }
+
+      {
+        auto account = storage->getAccount("username@ru");
+        ASSERT_FALSE(account);
+      }
+
+      model::Block block;
+      block.transactions.push_back(txn);
+
+      {
+        auto ms = storage->createMutableStorage();
+        ms->apply(block, [](const auto &blk, auto &executor, auto &query,
+                            const auto &top_block) {
+          EXPECT_TRUE(
+              blk.transactions.at(0).commands.at(0)->execute(query, executor));
+          EXPECT_TRUE(
+              blk.transactions.at(0).commands.at(1)->execute(query, executor));
+          return true;
+        });
+        storage->commit(std::move(ms));
+      }
+
+      {
+        auto account = storage->getAccount("user1@ru");
+        ASSERT_TRUE(account);
+        ASSERT_EQ(account->account_id, "user1@ru");
+        ASSERT_EQ(account->domain_name, "ru");
+        ASSERT_EQ(account->master_key, createAccount.pubkey);
+      }
+
+      txn = model::Transaction();
+      createAccount = model::CreateAccount();
+      createAccount.account_name = "user2";
+      createAccount.domain_id = "ru";
+      txn.commands.push_back(
+          std::make_shared<model::CreateAccount>(createAccount));
+      model::CreateAsset createAsset;
+      createAsset.domain_id = "ru";
+      createAsset.asset_name = "RUB";
+      createAsset.precision = 2;
+      txn.commands.push_back(std::make_shared<model::CreateAsset>(createAsset));
+      model::AddAssetQuantity addAssetQuantity;
+      addAssetQuantity.asset_id = "RUB#ru";
+      addAssetQuantity.account_id = "user1@ru";
+      addAssetQuantity.amount = std::decimal::make_decimal64(150ull, -2);
+      txn.commands.push_back(
+          std::make_shared<model::AddAssetQuantity>(addAssetQuantity));
+      model::TransferAsset transferAsset;
+      transferAsset.src_account_id = "user1@ru";
+      transferAsset.dest_account_id = "user2@ru";
+      transferAsset.asset_id = "RUB#ru";
+      transferAsset.amount = std::decimal::make_decimal64(100ull, -2);
+      txn.commands.push_back(
+          std::make_shared<model::TransferAsset>(transferAsset));
+
+      block = model::Block();
+      block.transactions.push_back(txn);
+
+      {
+        auto ms = storage->createMutableStorage();
+        ms->apply(block, [](const auto &blk, auto &executor, auto &query,
+                            const auto &top_block) {
+          EXPECT_TRUE(
+              blk.transactions.at(0).commands.at(0)->execute(query, executor));
+          EXPECT_TRUE(
+              blk.transactions.at(0).commands.at(1)->execute(query, executor));
+          EXPECT_TRUE(
+              blk.transactions.at(0).commands.at(2)->execute(query, executor));
+          EXPECT_TRUE(
+              blk.transactions.at(0).commands.at(3)->execute(query, executor));
+          return true;
+        });
+        storage->commit(std::move(ms));
+      }
+
+      {
+        auto asset1 = storage->getAccountAsset("user1@ru", "RUB#ru");
+        ASSERT_TRUE(asset1);
+        ASSERT_EQ(asset1->account_id, "user1@ru");
+        ASSERT_EQ(asset1->asset_id, "RUB#ru");
+        ASSERT_EQ(asset1->balance, 50);
+        auto asset2 = storage->getAccountAsset("user2@ru", "RUB#ru");
+        ASSERT_TRUE(asset2);
+        ASSERT_EQ(asset2->account_id, "user2@ru");
+        ASSERT_EQ(asset2->asset_id, "RUB#ru");
+        ASSERT_EQ(asset2->balance, 100);
+      }
     }
 
   }  // namespace ametsuchi

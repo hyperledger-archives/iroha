@@ -118,8 +118,13 @@ namespace iroha {
     }
 
     void StorageImpl::commit(std::unique_ptr<MutableStorage> mutableStorage) {
-      auto storage = std::move(mutableStorage);  // get ownership of storage
       std::unique_lock<std::shared_timed_mutex> write(rw_lock_);
+      auto storage_ptr = std::move(mutableStorage);  // get ownership of storage
+      MutableStorageImpl *storage =
+          static_cast<MutableStorageImpl*>(storage_ptr.get());
+      storage->index_->exec();
+      storage->transaction_->exec("COMMIT;");
+      storage->committed = true;
     }
 
     StorageImpl::StorageImpl(
@@ -177,7 +182,8 @@ namespace iroha {
       });
     }
 
-    nonstd::optional<model::Account> StorageImpl::getAccount(const std::string &account_id) {
+    nonstd::optional<model::Account> StorageImpl::getAccount(
+        const std::string &account_id) {
       std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
       return wsv_->getAccount(account_id);
     }
@@ -188,7 +194,8 @@ namespace iroha {
       return wsv_->getSignatories(account_id);
     }
 
-    nonstd::optional<model::Asset> StorageImpl::getAsset(const std::string &asset_id) {
+    nonstd::optional<model::Asset> StorageImpl::getAsset(
+        const std::string &asset_id) {
       std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
       return wsv_->getAsset(asset_id);
     }
