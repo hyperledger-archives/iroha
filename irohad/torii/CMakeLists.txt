@@ -13,12 +13,17 @@
 # limitations under the License.
 add_subdirectory(processor)
 
-add_library(command_client command_client.cpp)
+add_library(command_client
+  command_client.cpp
+)
 target_link_libraries(command_client
+  thread_pool
   endpoint
 )
 
-add_library(command_service command_service.cpp)
+add_library(command_service
+  command_service_handler.cpp
+)
 target_link_libraries(command_service
   endpoint
   stateless_validator

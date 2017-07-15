@@ -16,10 +16,11 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 add_library(server_runner server_runner.cpp)
 target_link_libraries(server_runner
-    logger
-    endpoint
-    schema
-    )
+  command_service
+  logger
+  endpoint
+  schema
+)
 
 add_library(irohad application.cpp)
 target_link_libraries(irohad
@@ -30,7 +31,6 @@ target_link_libraries(irohad
     ordering_service
     consensus_service
     chain_validator
-    stateful_validator
     hash
     stateless_validator
     processors
@@ -40,5 +40,5 @@ target_link_libraries(irohad
 
 add_executable(iroha-main iroha-main.cpp)
 target_link_libraries(iroha-main
-    irohad
-    )
+  irohad
+)

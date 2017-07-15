@@ -17,7 +17,7 @@ limitations under the License.
 #include <endpoint.grpc.pb.h>
 #include <grpc++/grpc++.h>
 
-#include "client.hpp"
+#include <ordering/connection/client.hpp>
 
 namespace connection {
   namespace ordering {

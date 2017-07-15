@@ -13,7 +13,7 @@ limitations under the License.
 
 #include <grpc++/grpc++.h>
 #include <block.pb.h>
-#include "client.hpp"
+#include <consensus/connection/client.hpp>
 
 namespace consensus {
   namespace connection {

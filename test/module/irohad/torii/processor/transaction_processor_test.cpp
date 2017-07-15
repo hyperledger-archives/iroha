@@ -19,6 +19,7 @@
 #include <gmock/gmock.h>
 
 #include <torii/processor/transaction_processor_impl.hpp>
+#include <model/tx_responses/stateless_response.hpp>
 
 using namespace iroha;
 using ::testing::Return;

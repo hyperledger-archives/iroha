@@ -18,8 +18,10 @@
 #ifndef IROHA_TRANSACTION_PROCESSOR_HPP
 #define IROHA_TRANSACTION_PROCESSOR_HPP
 
-#include <model/model.hpp>
 #include <rxcpp/rx.hpp>
+#include <model/transaction.hpp>
+#include <model/client.hpp>
+#include <model/transaction_response.hpp>
 
 namespace iroha {
   namespace torii {

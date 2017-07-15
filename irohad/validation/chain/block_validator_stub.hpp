@@ -18,7 +18,7 @@
 #ifndef IROHA_BLOCK_VALIDATOR_STUB_HPP
 #define IROHA_BLOCK_VALIDATOR_STUB_HPP
 
-#include <model/model.hpp>
+#include <model/block.hpp>
 #include <validation/chain/block_validator.hpp>
 #include <ametsuchi/mutable_storage.hpp>
 

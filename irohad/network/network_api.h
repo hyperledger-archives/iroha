@@ -16,8 +16,9 @@ limitations under the License.
 #ifndef IROHA_NETWORK_H
 #define IROHA_NETWORK_H
 
-#include "model/model.hpp"
-#include "rxcpp/rx-observable.hpp"
+#include <model/proposal.hpp>
+#include <model/block.hpp>
+#include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
   namespace network {
