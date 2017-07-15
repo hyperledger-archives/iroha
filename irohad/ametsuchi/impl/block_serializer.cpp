@@ -15,7 +15,12 @@
  * limitations under the License.
  */
 
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/reader.h>
 #include <ametsuchi/block_serializer.hpp>
+#include <iostream>
+#include <sstream>
+#include <algorithm>
 
 namespace iroha {
   namespace ametsuchi {
@@ -130,7 +135,8 @@ namespace iroha {
         serialize(writer, add_signatory);
       }
       if (instanceof <model::AssignMasterKey>(&command)) {
-        auto assign_master_key = static_cast<const model::AssignMasterKey&>(command);
+        auto assign_master_key =
+            static_cast<const model::AssignMasterKey&>(command);
         serialize(writer, assign_master_key);
       }
       if (instanceof <model::CreateAccount>(&command)) {
@@ -146,7 +152,8 @@ namespace iroha {
         serialize(writer, create_domain);
       }
       if (instanceof <model::RemoveSignatory>(&command)) {
-        auto remove_signatory = static_cast<const model::RemoveSignatory&>(command);
+        auto remove_signatory =
+            static_cast<const model::RemoveSignatory&>(command);
         serialize(writer, remove_signatory);
       }
       if (instanceof <model::SetAccountPermissions>(&command)) {
@@ -218,8 +225,9 @@ namespace iroha {
       writer.EndObject();
     }
 
-    void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    const model::AssignMasterKey& assign_master_key) {
+    void BlockSerializer::serialize(
+        PrettyWriter<StringBuffer>& writer,
+        const model::AssignMasterKey& assign_master_key) {
       writer.StartObject();
 
       writer.String("command_type");
@@ -234,8 +242,9 @@ namespace iroha {
       writer.EndObject();
     }
 
-    void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    const model::CreateAccount& create_account) {
+    void BlockSerializer::serialize(
+        PrettyWriter<StringBuffer>& writer,
+        const model::CreateAccount& create_account) {
       writer.StartObject();
 
       writer.String("command_type");
@@ -285,8 +294,9 @@ namespace iroha {
       writer.EndObject();
     }
 
-    void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    const model::RemoveSignatory& remove_signatory) {
+    void BlockSerializer::serialize(
+        PrettyWriter<StringBuffer>& writer,
+        const model::RemoveSignatory& remove_signatory) {
       writer.StartObject();
 
       writer.String("command_type");
@@ -366,8 +376,9 @@ namespace iroha {
       writer.EndObject();
     }
 
-    void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    const model::TransferAsset& transfer_asset) {
+    void BlockSerializer::serialize(
+        PrettyWriter<StringBuffer>& writer,
+        const model::TransferAsset& transfer_asset) {
       writer.StartObject();
 
       writer.String("command_type");
@@ -388,11 +399,20 @@ namespace iroha {
       writer.EndObject();
     }
 
-  /* Deserialize */
+    /* Deserialize */
 
-  model::Block BlockSerializer::deserialize(std::vector<uint8_t> bytes) {
+    nonstd::optional<model::Block> BlockSerializer::deserialize(
+        const std::vector<uint8_t>& bytes) {
+      std::string block_json(bytes.begin(), bytes.end());
+      rapidjson::Document d;
+      if (d.Parse(block_json.c_str()).HasParseError()){
+        return nonstd::nullopt;
+      }
 
-  }
-
+      model::Block block{};
+//      auto hash_bytes = base64_decode(hash_str);
+//      std::copy_n(std::make_move_iterator(hash_bytes.begin()), hash_bytes.size(), block.hash.begin());
+      return block;
+    }
   }
 }

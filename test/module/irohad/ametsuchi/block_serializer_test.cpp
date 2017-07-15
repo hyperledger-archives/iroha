@@ -160,5 +160,12 @@ TEST(block_serialize, block_serialize_test){
 
   auto bytes = blockSerializer.serialize(block);
   std::string str(bytes.begin(), bytes.end());
-  std::cout << str << std::endl;
+//  std::cout << str << std::endl;
+  // deserialize
+
+  auto res = blockSerializer.deserialize(bytes);
+//  if (res){
+//    auto deserialized = res.value();
+//    ASSERT_EQ(block.hash, deserialized.hash);
+//  }
 }
