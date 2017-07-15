@@ -71,6 +71,12 @@ class BlockSerializer{
   nonstd::optional<model::AddSignatory> deserialize_add_signatory(GenericValue<UTF8<char>>::Object& json_command);
   nonstd::optional<model::AssignMasterKey> deserialize_assign_master_key(GenericValue<UTF8<char>>::Object& json_command);
   nonstd::optional<model::CreateAccount> deserialize_create_account(GenericValue<UTF8<char>>::Object& json_command);
+  nonstd::optional<model::CreateAsset> deserialize_create_asset(GenericValue<UTF8<char>>::Object& json_command);
+  nonstd::optional<model::CreateDomain> deserialize_create_domain(GenericValue<UTF8<char>>::Object& json_command);
+  nonstd::optional<model::RemoveSignatory> deserialize_remove_signatory(GenericValue<UTF8<char>>::Object& json_command);
+  nonstd::optional<model::SetAccountPermissions> deserialize_set_account_permissions(GenericValue<UTF8<char>>::Object& json_command);
+  nonstd::optional<model::SetQuorum> deserialize_set_quorum(GenericValue<UTF8<char>>::Object& json_command);
+  nonstd::optional<model::TransferAsset> deserialize_transfer_asset(GenericValue<UTF8<char>>::Object& json_command);
 
   template<typename Base, typename T>
   inline bool instanceof(const T *ptr) {

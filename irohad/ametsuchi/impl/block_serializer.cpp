@@ -541,7 +541,6 @@ namespace iroha {
             commands.push_back(
                 std::make_shared<model::AddSignatory>(add_signatory.value()));
           }
-
         } else if (command_type == "AssignMasterKey") {
           if (auto assign_master_key =
                   deserialize_assign_master_key(json_command)) {
@@ -554,11 +553,35 @@ namespace iroha {
                 std::make_shared<model::CreateAccount>(create_account.value()));
           }
         } else if (command_type == "CreateAsset") {
+          if (auto create_asset = deserialize_create_asset(json_command)) {
+            commands.push_back(
+                std::make_shared<model::CreateAsset>(create_asset.value()));
+          }
         } else if (command_type == "CreateDomain") {
+          if (auto create_domain = deserialize_create_domain(json_command)) {
+            commands.push_back(
+                std::make_shared<model::CreateDomain>(create_domain.value()));
+          }
         } else if (command_type == "RemoveSignatory") {
+          if (auto remove_signatory = deserialize_remove_signatory(json_command)) {
+            commands.push_back(
+                std::make_shared<model::RemoveSignatory>(remove_signatory.value()));
+          }
         } else if (command_type == "SetAccountPermissions") {
+          if (auto set_account_permissions = deserialize_set_account_permissions(json_command)) {
+            commands.push_back(
+                std::make_shared<model::SetAccountPermissions>(set_account_permissions.value()));
+          }
         } else if (command_type == "SetQuorum") {
+          if (auto set_quorum = deserialize_set_quorum(json_command)) {
+            commands.push_back(
+                std::make_shared<model::SetQuorum>(set_quorum.value()));
+          }
         } else if (command_type == "TransferAsset") {
+          if (auto transfer_asset = deserialize_transfer_asset(json_command)) {
+            commands.push_back(
+                std::make_shared<model::TransferAsset>(transfer_asset.value()));
+          }
         }
       }
     }
@@ -655,6 +678,123 @@ namespace iroha {
       std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
                 create_account.pubkey.begin());
       return create_account;
+    }
+
+    nonstd::optional<model::CreateAsset>
+    BlockSerializer::deserialize_create_asset(
+        GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
+      // TODO: make this function return nullopt when some field is missed
+      model::CreateAsset createAsset;
+
+      // asset_name
+      createAsset.asset_name = json_command["asset_name"].GetString();
+
+      // domain_id
+      createAsset.domain_id = json_command["domain_id"].GetString();
+
+      // precision
+      createAsset.precision = json_command["precision"].GetUint();
+
+      return createAsset;
+    }
+
+    nonstd::optional<model::CreateDomain>
+    BlockSerializer::deserialize_create_domain(
+        GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
+      // TODO: make this function return nullopt when some field is missed
+      model::CreateDomain createDomain;
+
+      // domain_name
+      createDomain.domain_name = json_command["domain_name"].GetString();
+
+      return createDomain;
+    }
+
+    nonstd::optional<model::RemoveSignatory>
+    BlockSerializer::deserialize_remove_signatory(
+        GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
+      // TODO: make this function return nullopt when some field is missed
+      model::RemoveSignatory removeSignatory;
+
+      // account_id
+      removeSignatory.account_id = json_command["account_id"].GetString();
+
+      // pubkey
+      std::string pubkey_str(json_command["pubkey"].GetString(),
+                             json_command["pubkey"].GetStringLength());
+      auto pubkey_bytes = hex2bytes(pubkey_str);
+      std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
+                removeSignatory.pubkey.begin());
+      return removeSignatory;
+    }
+
+    nonstd::optional<model::SetAccountPermissions>
+    BlockSerializer::deserialize_set_account_permissions(
+        GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
+      model::SetAccountPermissions setAccountPermissions;
+
+      // account_id
+      setAccountPermissions.account_id = json_command["account_id"].GetString();
+
+      // permissions
+      auto new_permissions = json_command["new_permissions"].GetObject();
+      setAccountPermissions.new_permissions.add_signatory =
+          new_permissions["add_signatory"].GetBool();
+      setAccountPermissions.new_permissions.can_transfer =
+          new_permissions["can_transfer"].GetBool();
+      setAccountPermissions.new_permissions.create_accounts =
+          new_permissions["create_accounts"].GetBool();
+      setAccountPermissions.new_permissions.create_assets =
+          new_permissions["create_assets"].GetBool();
+      setAccountPermissions.new_permissions.create_domains =
+          new_permissions["create_domains"].GetBool();
+      setAccountPermissions.new_permissions.issue_assets =
+          new_permissions["issue_assets"].GetBool();
+      setAccountPermissions.new_permissions.read_all_accounts =
+          new_permissions["read_all_accounts"].GetBool();
+      setAccountPermissions.new_permissions.remove_signatory =
+          new_permissions["remove_signatory"].GetBool();
+      setAccountPermissions.new_permissions.set_permissions =
+          new_permissions["set_permissions"].GetBool();
+      setAccountPermissions.new_permissions.set_quorum =
+          new_permissions["set_quorum"].GetBool();
+
+      return setAccountPermissions;
+    }
+
+    nonstd::optional<model::SetQuorum> BlockSerializer::deserialize_set_quorum(
+        GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
+      model::SetQuorum setQuorum;
+
+      // account_id
+      setQuorum.account_id = json_command["account_id"].GetString();
+
+      // new_quorum
+      setQuorum.new_quorum = json_command["new_quorum"].GetUint();
+
+      return setQuorum;
+    }
+
+    nonstd::optional<model::TransferAsset>
+    BlockSerializer::deserialize_transfer_asset(
+        GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
+      model::TransferAsset transferAsset;
+
+      // src_account_id
+      transferAsset.src_account_id = json_command["src_account_id"].GetString();
+
+      // dest_account_id
+      transferAsset.dest_account_id =
+          json_command["dest_account_id"].GetString();
+
+      // asset_id
+      transferAsset.asset_id = json_command["asset_id"].GetString();
+
+      // amount
+      transferAsset.amount =
+          std::decimal::decimal64(json_command["amount"].GetDouble());
+
+      return transferAsset;
     }
   }
 }

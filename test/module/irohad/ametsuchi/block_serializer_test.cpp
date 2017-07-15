@@ -219,6 +219,53 @@ TEST(block_serialize, block_serialize_test){
           ASSERT_EQ(create_account.domain_id, des_create_account.domain_id);
           ASSERT_EQ(create_account.pubkey, des_create_account.pubkey);
         }
+        else if (instanceof<iroha::model::CreateAsset>(tx.commands[j].get())) {
+          auto create_asset = static_cast<const iroha::model::CreateAsset&>(*tx.commands[j].get());
+          auto des_create_asset = static_cast<const iroha::model::CreateAsset&>(*des_tx.commands[j].get());
+          ASSERT_EQ(create_asset.asset_name, des_create_asset.asset_name);
+          ASSERT_EQ(create_asset.domain_id, des_create_asset.domain_id);
+          ASSERT_EQ(create_asset.precision, des_create_asset.precision);
+        }
+        else if (instanceof<iroha::model::CreateDomain>(tx.commands[j].get())) {
+          auto create_domain = static_cast<const iroha::model::CreateDomain&>(*tx.commands[j].get());
+          auto des_create_domain = static_cast<const iroha::model::CreateDomain&>(*des_tx.commands[j].get());
+          ASSERT_EQ(create_domain.domain_name, des_create_domain.domain_name);
+        }
+        else if (instanceof<iroha::model::RemoveSignatory>(tx.commands[j].get())) {
+          auto remove_signatory = static_cast<const iroha::model::RemoveSignatory&>(*tx.commands[j].get());
+          auto des_remove_signatory = static_cast<const iroha::model::RemoveSignatory&>(*des_tx.commands[j].get());
+          ASSERT_EQ(remove_signatory.account_id, des_remove_signatory.account_id);
+          ASSERT_EQ(remove_signatory.pubkey, des_remove_signatory.pubkey);
+        }
+        else if (instanceof<iroha::model::SetAccountPermissions>(tx.commands[j].get())) {
+          auto set_account_permissions = static_cast<const iroha::model::SetAccountPermissions&>(*tx.commands[j].get());
+          auto des_set_account_permissions = static_cast<const iroha::model::SetAccountPermissions&>(*des_tx.commands[j].get());
+          ASSERT_EQ(set_account_permissions.account_id, des_set_account_permissions.account_id);
+          ASSERT_EQ(set_account_permissions.new_permissions.add_signatory, des_set_account_permissions.new_permissions.add_signatory);
+          ASSERT_EQ(set_account_permissions.new_permissions.can_transfer, des_set_account_permissions.new_permissions.can_transfer);
+          ASSERT_EQ(set_account_permissions.new_permissions.create_accounts, des_set_account_permissions.new_permissions.create_accounts);
+          ASSERT_EQ(set_account_permissions.new_permissions.create_assets, des_set_account_permissions.new_permissions.create_assets);
+          ASSERT_EQ(set_account_permissions.new_permissions.create_domains, des_set_account_permissions.new_permissions.create_domains);
+          ASSERT_EQ(set_account_permissions.new_permissions.issue_assets, des_set_account_permissions.new_permissions.issue_assets);
+          ASSERT_EQ(set_account_permissions.new_permissions.read_all_accounts, des_set_account_permissions.new_permissions.read_all_accounts);
+          ASSERT_EQ(set_account_permissions.new_permissions.remove_signatory, des_set_account_permissions.new_permissions.remove_signatory);
+          ASSERT_EQ(set_account_permissions.new_permissions.set_permissions, des_set_account_permissions.new_permissions.set_permissions);
+          ASSERT_EQ(set_account_permissions.new_permissions.set_quorum, des_set_account_permissions.new_permissions.set_quorum);
+        }
+        else if (instanceof<iroha::model::SetQuorum>(tx.commands[j].get())) {
+          auto set_quorum = static_cast<const iroha::model::SetQuorum&>(*tx.commands[j].get());
+          auto des_set_quorum = static_cast<const iroha::model::SetQuorum&>(*des_tx.commands[j].get());
+          ASSERT_EQ(set_quorum.account_id, des_set_quorum.account_id);
+          ASSERT_EQ(set_quorum.new_quorum, des_set_quorum.new_quorum);
+        }
+        else if (instanceof<iroha::model::TransferAsset>(tx.commands[j].get())){
+          auto transfer_asset = static_cast<const iroha::model::TransferAsset&>(*tx.commands[j].get());
+          auto des_transfer_asset = static_cast<const iroha::model::TransferAsset&>(*des_tx.commands[j].get());
+          ASSERT_EQ(transfer_asset.src_account_id, des_transfer_asset.src_account_id);
+          ASSERT_EQ(transfer_asset.dest_account_id, des_transfer_asset.dest_account_id);
+          ASSERT_EQ(transfer_asset.asset_id, des_transfer_asset.asset_id);
+          ASSERT_EQ(transfer_asset.amount, des_transfer_asset.amount);
+        }
       }
 
     }
