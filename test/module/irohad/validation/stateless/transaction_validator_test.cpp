@@ -79,7 +79,7 @@ TEST(stateless_validation, stateless_validation_when_invalid_wrong_signature) {
   auto tx = create_transaction();
   sign(tx, keypair.privkey, keypair.pubkey);
 
-  tx.creator_account_id = "test";
+  tx.creator_account_id = "test1";
 
   ASSERT_FALSE(transaction_validator.validate(tx));
 }

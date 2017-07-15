@@ -60,6 +60,6 @@ TEST(CryptoProvider, SignAndVerify) {
   ASSERT_TRUE(crypto_provider.verify(model_tx));
 
   // now modify transaction's meta, so verify should fail
-  model_tx.creator_account_id = "test";
+  model_tx.creator_account_id = "test1";
   ASSERT_FALSE(crypto_provider.verify(model_tx));
 }
