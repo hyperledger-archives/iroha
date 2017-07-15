@@ -19,6 +19,7 @@
 #include <model/commands/add_asset_quantity.hpp>
 #include <model/commands/add_peer.hpp>
 #include <model/commands/add_signatory.hpp>
+#include <model/commands/assign_master_key.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -156,6 +157,21 @@ namespace iroha {
 
         writer.String("pubkey");
         writer.String(add_signatory.pubkey.to_string().c_str());
+
+        writer.EndObject();
+      }
+      if (instanceof <model::AssignMasterKey>(&command)) {
+        auto assign_master_key = static_cast<model::AssignMasterKey&>(command);
+        writer.StartObject();
+
+        writer.String("command_type");
+        writer.String("AssignMasterKey");
+
+        writer.String("account_id");
+        writer.String(assign_master_key.account_id.c_str());
+
+        writer.String("pubkey");
+        writer.String(assign_master_key.pubkey.to_string().c_str());
 
         writer.EndObject();
       }
