@@ -33,6 +33,15 @@ namespace iroha {
 
     using namespace rapidjson;
 
+    std::vector<uint8_t > BlockSerializer::serialize(model::Block block) {
+      rapidjson::StringBuffer sb;
+      rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
+      serialize(writer, std::move(block));
+      auto str = sb.GetString();
+      std::vector<uint8_t > bytes{str, str+sb.GetLength()};
+      return bytes;
+    }
+
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
                                     model::Block block) {
       writer.StartObject();
@@ -246,7 +255,8 @@ namespace iroha {
         writer.EndObject();
       }
       if (instanceof <model::SetAccountPermissions>(&command)) {
-        auto set_account_permissions = static_cast<model::SetAccountPermissions&>(command);
+        auto set_account_permissions =
+            static_cast<model::SetAccountPermissions&>(command);
         writer.StartObject();
 
         writer.String("command_type");
@@ -308,7 +318,7 @@ namespace iroha {
 
         writer.EndObject();
       }
-      if (instanceof <model::TransferAsset>(&command)){
+      if (instanceof <model::TransferAsset>(&command)) {
         auto transfer_asset = static_cast<model::TransferAsset&>(command);
 
         writer.StartObject();

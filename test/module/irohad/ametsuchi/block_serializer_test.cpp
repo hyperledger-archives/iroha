@@ -158,9 +158,7 @@ TEST(block_serialize, block_serialize_test){
 
   iroha::ametsuchi::BlockSerializer blockSerializer;
 
-  rapidjson::StringBuffer sb;
-  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
-  blockSerializer.serialize(writer, block);
-
-  std::cout << sb.GetString();
+  auto bytes = blockSerializer.serialize(block);
+  std::string str(bytes.begin(), bytes.end());
+  std::cout << str << std::endl;
 }
