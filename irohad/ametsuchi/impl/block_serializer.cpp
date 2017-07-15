@@ -22,6 +22,8 @@ namespace iroha {
 
     using namespace rapidjson;
 
+    /* Serialize */
+
     std::vector<uint8_t> BlockSerializer::serialize(model::Block block) {
       rapidjson::StringBuffer sb;
       rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
@@ -382,5 +384,12 @@ namespace iroha {
 
       writer.EndObject();
     }
+
+  /* Deserialize */
+
+  model::Block BlockSerializer::deserialize(std::vector<uint8_t> bytes) {
+
+  }
+
   }
 }

@@ -44,6 +44,7 @@ using namespace rapidjson;
 class BlockSerializer{
  public:
   std::vector<uint8_t > serialize(model::Block block);
+  model::Block deserialize(std::vector<uint8_t > bytes);
  private:
   void serialize(PrettyWriter<StringBuffer>& writer, model::Block block);
   void serialize(PrettyWriter<StringBuffer>& writer, model::Signature signature);
