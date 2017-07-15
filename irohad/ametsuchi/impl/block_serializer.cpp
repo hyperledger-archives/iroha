@@ -518,56 +518,47 @@ namespace iroha {
     void BlockSerializer::deserialize(
         GenericValue<UTF8<char>>::Object& json_tx,
         std::vector<std::shared_ptr<model::Command>>& commands) {
-
       auto json_commands = json_tx["commands"].GetArray();
-      for (auto iter = json_commands.begin(); iter < json_commands.end(); ++iter){
+      for (auto iter = json_commands.begin(); iter < json_commands.end();
+           ++iter) {
         auto json_command = iter->GetObject();
 
         std::string command_type = json_command["command_type"].GetString();
 
-        if (command_type == "AddPeer"){
-          if (auto add_peer = deserialize_add_peer(json_command)){
-            commands.push_back(std::make_shared<model::AddPeer>(add_peer.value()));
+        if (command_type == "AddPeer") {
+          if (auto add_peer = deserialize_add_peer(json_command)) {
+            commands.push_back(
+                std::make_shared<model::AddPeer>(add_peer.value()));
           }
-        } else if (command_type == "AddAssetQuantity"){
-
-        } else if (command_type == "AddSignatory"){
-
-        } else if (command_type == "AssignMasterKey"){
-
-        } else if (command_type == "CreateAccount"){
-
-        } else if (command_type == "CreateAsset"){
-
-        } else if (command_type == "CreateDomain"){
-
-        } else if (command_type == "RemoveSignatory"){
-
-        } else if (command_type == "SetAccountPermissions"){
-
-        } else if (command_type == "SetQuorum"){
-
-        } else if (command_type == "TransferAsset"){
-
+        } else if (command_type == "AddAssetQuantity") {
+        } else if (command_type == "AddSignatory") {
+        } else if (command_type == "AssignMasterKey") {
+        } else if (command_type == "CreateAccount") {
+        } else if (command_type == "CreateAsset") {
+        } else if (command_type == "CreateDomain") {
+        } else if (command_type == "RemoveSignatory") {
+        } else if (command_type == "SetAccountPermissions") {
+        } else if (command_type == "SetQuorum") {
+        } else if (command_type == "TransferAsset") {
         }
       }
     }
 
-  nonstd::optional<model::AddPeer> BlockSerializer::deserialize_add_peer(GenericValue<rapidjson::UTF8>::Object &json_command) {
-    // TODO: make this function return nullopt when some field is missed
-    model::AddPeer add_peer{};
+    nonstd::optional<model::AddPeer> BlockSerializer::deserialize_add_peer(
+        GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
+      // TODO: make this function return nullopt when some field is missed
+      model::AddPeer add_peer{};
 
-    // peer_key
-    std::string peer_key_str(json_command["peer_key"].GetString(),
-                                json_command["peer_key"].GetStringLength());
-    auto peer_key_bytes = hex2bytes(peer_key_str);
-    std::copy(peer_key_bytes.begin(), peer_key_bytes.end(),
-              add_peer.peer_key.begin());
+      // peer_key
+      std::string peer_key_str(json_command["peer_key"].GetString(),
+                               json_command["peer_key"].GetStringLength());
+      auto peer_key_bytes = hex2bytes(peer_key_str);
+      std::copy(peer_key_bytes.begin(), peer_key_bytes.end(),
+                add_peer.peer_key.begin());
 
-    // address
-    add_peer.address = json_command["address"].GetString();
-    return add_peer;
-  }
-
+      // address
+      add_peer.address = json_command["address"].GetString();
+      return add_peer;
+    }
   }
 }

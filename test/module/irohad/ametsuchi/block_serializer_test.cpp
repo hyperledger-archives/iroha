@@ -137,6 +137,11 @@ iroha::model::Block create_block() {
 }
 
 
+template<typename Base, typename T>
+inline bool instanceof(const T *ptr) {
+  return typeid(Base) == typeid(*ptr);
+}
+
 TEST(block_serialize, block_serialize_test){
 
   auto block = create_block();
@@ -182,7 +187,12 @@ TEST(block_serialize, block_serialize_test){
       ASSERT_EQ(tx.tx_counter, des_tx.tx_counter);
 
       for (int j = 0; j < tx.commands.size(); j++){
-
+        if (instanceof<iroha::model::AddPeer>(tx.commands[i].get())){
+          auto add_peer = static_cast<const iroha::model::AddPeer&>(*tx.commands[i].get());
+          auto des_add_peer = static_cast<const iroha::model::AddPeer&>(*des_tx.commands[i].get());
+          ASSERT_EQ(add_peer.address, des_add_peer.address);
+          ASSERT_EQ(add_peer.peer_key, des_add_peer.peer_key);
+        }
       }
 
     }
