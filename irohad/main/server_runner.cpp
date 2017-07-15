@@ -55,7 +55,7 @@ void ServerRunner::shutdown() {
   commandServiceHandler_->shutdown();
 }
 
-bool ServerRunner::waitForServersReady() {
+void ServerRunner::waitForServersReady() {
   std::unique_lock<std::mutex> lock(waitForServer_);
   while (!serverInstance_) serverInstanceCV_.wait(lock);
 }
