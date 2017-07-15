@@ -531,11 +531,15 @@ namespace iroha {
                 std::make_shared<model::AddPeer>(add_peer.value()));
           }
         } else if (command_type == "AddAssetQuantity") {
-          if (auto add_asset_quantity = deserialize_add_asset_quantity(json_command)) {
-            commands.push_back(
-                std::make_shared<model::AddAssetQuantity>(add_asset_quantity.value()));
+          if (auto add_asset_quantity =
+                  deserialize_add_asset_quantity(json_command)) {
+            commands.push_back(std::make_shared<model::AddAssetQuantity>(
+                add_asset_quantity.value()));
           }
         } else if (command_type == "AddSignatory") {
+          auto add_signatory = deserialize_add_signatory(json_command);
+          commands.push_back(std::make_shared<model::AddSignatory>(add_signatory.value()));
+
         } else if (command_type == "AssignMasterKey") {
         } else if (command_type == "CreateAccount") {
         } else if (command_type == "CreateAsset") {
@@ -582,6 +586,25 @@ namespace iroha {
       add_asset_quantity.amount = amount;
 
       return add_asset_quantity;
+    }
+
+    nonstd::optional<model::AddSignatory>
+    BlockSerializer::deserialize_add_signatory(
+        GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
+      // TODO: make this function return nullopt when some field is missed
+      model::AddSignatory add_signatory{};
+
+      // account_id
+      add_signatory.account_id = json_command["account_id"].GetString();
+
+      // pubkey
+      std::string pubkey_str(json_command["pubkey"].GetString(),
+                               json_command["pubkey"].GetStringLength());
+      auto pubkey_bytes = hex2bytes(pubkey_str);
+      std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
+                add_signatory.pubkey.begin());
+
+      return add_signatory;
     }
   }
 }

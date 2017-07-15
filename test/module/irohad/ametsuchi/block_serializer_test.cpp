@@ -200,6 +200,12 @@ TEST(block_serialize, block_serialize_test){
           ASSERT_EQ(add_asset_quantity.asset_id, des_add_asset_quantity.asset_id);
           ASSERT_EQ(add_asset_quantity.account_id, des_add_asset_quantity.account_id);
         }
+        else if (instanceof<iroha::model::AddSignatory>(tx.commands[j].get())){
+          auto add_signatory = static_cast<const iroha::model::AddSignatory&>(*tx.commands[j].get());
+          auto des_add_signatory = static_cast<const iroha::model::AddSignatory&>(*des_tx.commands[j].get());
+          ASSERT_EQ(add_signatory.account_id, des_add_signatory.account_id);
+          ASSERT_EQ(add_signatory.pubkey, des_add_signatory.pubkey);
+        }
       }
 
     }
