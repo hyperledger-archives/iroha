@@ -163,7 +163,7 @@ namespace iroha {
     std::vector<Peer> PostgresWsvQuery::getPeers() {
       pqxx::result result;
       try {
-        transaction_.exec(
+        result = transaction_.exec(
             "SELECT \n"
             "  * \n"
             "FROM \n"
@@ -172,6 +172,15 @@ namespace iroha {
         return {};
       }
       std::vector<Peer> peers;
+      for (const auto &row : result) {
+        model::Peer peer;
+        pqxx::binarystring public_key_str(row.at("public_key"));
+        ed25519::pubkey_t pubkey;
+        std::copy(public_key_str.begin(), public_key_str.end(), pubkey.begin());
+        peer.pubkey = pubkey;
+        row.at("address") >> peer.address;
+        peers.push_back(peer);
+      }
       return peers;
     }
   }  // namespace ametsuchi

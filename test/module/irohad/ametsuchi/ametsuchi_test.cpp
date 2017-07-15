@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 #include <cpp_redis/cpp_redis>
 #include <model/commands/add_asset_quantity.hpp>
+#include <model/commands/add_peer.hpp>
 #include <model/commands/transfer_asset.hpp>
 #include <pqxx/pqxx>
 #include "ametsuchi/impl/storage_impl.hpp"
@@ -186,6 +187,37 @@ namespace iroha {
         ASSERT_EQ(asset2->asset_id, "RUB#ru");
         ASSERT_EQ(asset2->balance, 100);
       }
+    }
+
+    TEST_F(AmetsuchiTest, PeerTest) {
+      auto storage =
+          StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+      ASSERT_TRUE(storage);
+
+      model::Transaction txn;
+      model::AddPeer addPeer;
+      addPeer.peer_key.at(0) = 1;
+      addPeer.address = "192.168.0.1:50051";
+      txn.commands.push_back(std::make_shared<model::AddPeer>(addPeer));
+
+      model::Block block;
+      block.transactions.push_back(txn);
+
+      {
+        auto ms = storage->createMutableStorage();
+        ms->apply(block, [](const auto &blk, auto &executor, auto &query,
+                            const auto &top_block) {
+          EXPECT_TRUE(
+              blk.transactions.at(0).commands.at(0)->execute(query, executor));
+          return true;
+        });
+        storage->commit(std::move(ms));
+      }
+
+      auto peers = storage->getPeers();
+      ASSERT_EQ(peers.size(), 1);
+      ASSERT_EQ(peers.at(0).pubkey, addPeer.peer_key);
+      ASSERT_EQ(peers.at(0).address, addPeer.address);
     }
 
   }  // namespace ametsuchi
