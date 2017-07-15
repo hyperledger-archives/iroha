@@ -30,6 +30,7 @@
 #include <model/commands/create_domain.hpp>
 #include <model/commands/remove_signatory.hpp>
 #include <model/commands/set_permissions.hpp>
+#include <model/commands/set_quorum.hpp>
 
 iroha::model::Signature create_signature();
 iroha::model::Transaction create_transaction();
@@ -110,6 +111,12 @@ iroha::model::Transaction create_transaction() {
   set_account_permissions.account_id = "123";
   set_account_permissions.new_permissions.can_transfer = true;
   tx.commands.push_back(std::make_shared<iroha::model::SetAccountPermissions>(set_account_permissions));
+
+  //SetQuorum
+  iroha::model::SetQuorum set_quorum;
+  set_quorum.account_id = "123";
+  set_quorum.new_quorum = 123;
+  tx.commands.push_back(std::make_shared<iroha::model::SetQuorum>(set_quorum));
   return tx;
 }
 

@@ -25,6 +25,7 @@
 #include <model/commands/create_domain.hpp>
 #include <model/commands/remove_signatory.hpp>
 #include <model/commands/set_permissions.hpp>
+#include <model/commands/set_quorum.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -287,6 +288,22 @@ namespace iroha {
         writer.Bool(set_account_permissions.new_permissions.set_quorum);
 
         writer.EndObject();
+
+        writer.EndObject();
+      }
+      if (instanceof <model::SetQuorum>(&command)) {
+        auto set_quorum = static_cast<model::SetQuorum&>(command);
+
+        writer.StartObject();
+
+        writer.String("command_type");
+        writer.String("SetQuorum");
+
+        writer.String("account_id");
+        writer.String(set_quorum.account_id.c_str());
+
+        writer.String("new_quorum");
+        writer.Uint(set_quorum.new_quorum);
 
         writer.EndObject();
       }
