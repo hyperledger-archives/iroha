@@ -26,6 +26,7 @@
 #include <model/commands/remove_signatory.hpp>
 #include <model/commands/set_permissions.hpp>
 #include <model/commands/set_quorum.hpp>
+#include <model/commands/transfer_asset.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -304,6 +305,25 @@ namespace iroha {
 
         writer.String("new_quorum");
         writer.Uint(set_quorum.new_quorum);
+
+        writer.EndObject();
+      }
+      if (instanceof <model::TransferAsset>(&command)){
+        auto transfer_asset = static_cast<model::TransferAsset&>(command);
+
+        writer.StartObject();
+
+        writer.String("dest_account_id");
+        writer.String(transfer_asset.dest_account_id.c_str());
+
+        writer.String("src_account_id");
+        writer.String(transfer_asset.src_account_id.c_str());
+
+        writer.String("asset_id");
+        writer.String(transfer_asset.asset_id.c_str());
+
+        writer.String("amount");
+        writer.Double(std::decimal::decimal64_to_double(transfer_asset.amount));
 
         writer.EndObject();
       }

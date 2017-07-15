@@ -31,6 +31,7 @@
 #include <model/commands/remove_signatory.hpp>
 #include <model/commands/set_permissions.hpp>
 #include <model/commands/set_quorum.hpp>
+#include <model/commands/transfer_asset.hpp>
 
 iroha::model::Signature create_signature();
 iroha::model::Transaction create_transaction();
@@ -117,6 +118,14 @@ iroha::model::Transaction create_transaction() {
   set_quorum.account_id = "123";
   set_quorum.new_quorum = 123;
   tx.commands.push_back(std::make_shared<iroha::model::SetQuorum>(set_quorum));
+
+  //TransferAsset
+  iroha::model::TransferAsset transfer_asset;
+  transfer_asset.src_account_id = "123";
+  transfer_asset.dest_account_id = "321";
+  transfer_asset.amount = std::decimal::make_decimal64(1010ll, -2);
+  transfer_asset.asset_id = "123";
+  tx.commands.push_back(std::make_shared<iroha::model::TransferAsset>(transfer_asset));
   return tx;
 }
 
