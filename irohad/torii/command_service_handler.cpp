@@ -32,7 +32,7 @@ namespace torii {
    */
   CommandServiceHandler::CommandServiceHandler(::grpc::ServerBuilder& builder) {
     builder.RegisterService(&asyncService_);
-    cq_ = builder.AddCompletionQueue();
+    completionQueue_ = builder.AddCompletionQueue();
   }
 
   CommandServiceHandler::~CommandServiceHandler() {}
@@ -41,7 +41,7 @@ namespace torii {
    * shuts down service handler. (actually, shuts down completion queue only)
    */
   void CommandServiceHandler::shutdown() {
-    cq_->Shutdown();
+    completionQueue_->Shutdown();
   }
 
   /**
@@ -61,11 +61,11 @@ namespace torii {
     bool ok;
 
     /**
-     * pulls a state of a new client's rpc request from completion queue (cq_)
+     * pulls a state of a new client's rpc request from completion queue.
      * If no request, CompletionQueue::Next() waits a new request (blocks this thread).
-     * CompletionQueue::Next() returns false if cq_->Shutdown() is executed.
+     * CompletionQueue::Next() returns false if completionQueue_->Shutdown() is executed.
      */
-    while (cq_->Next(&tag, &ok)) {
+    while (completionQueue_->Next(&tag, &ok)) {
       auto callbackTag =
           static_cast<network::UntypedCall<CommandServiceHandler>::CallOwner*>(tag);
       if (ok && callbackTag) {

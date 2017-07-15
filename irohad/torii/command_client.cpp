@@ -29,7 +29,7 @@ namespace torii {
   {}
 
   CommandSyncClient::~CommandSyncClient() {
-    cq_.Shutdown();
+    completionQueue_.Shutdown();
   }
 
   /**
@@ -41,7 +41,7 @@ namespace torii {
     ToriiResponse response;
 
     std::unique_ptr<grpc::ClientAsyncResponseReader<iroha::protocol::ToriiResponse>> rpc(
-      stub_->AsyncTorii(&context_, tx, &cq_)
+      stub_->AsyncTorii(&context_, tx, &completionQueue_)
     );
 
     using State = network::UntypedCall<torii::CommandServiceHandler>::State;
@@ -54,7 +54,7 @@ namespace torii {
     /**
      * pulls a new rpc response. If no response, blocks this thread.
      */
-    if (!cq_.Next(&got_tag, &ok)) {
+    if (!completionQueue_.Next(&got_tag, &ok)) {
       throw std::runtime_error("CompletionQueue::Next() returns error");
     }
 
@@ -92,7 +92,7 @@ namespace torii {
   {
     auto call = new ToriiAsyncClientCall;
     call->callback = callback;
-    call->responseReader = stub_->AsyncTorii(&call->context, tx, &cq_);
+    call->responseReader = stub_->AsyncTorii(&call->context, tx, &completionQueue_);
     call->responseReader->Finish(&call->response, &call->status, (void*)call);
   }
 
@@ -109,7 +109,7 @@ namespace torii {
   }
 
   CommandAsyncClient::~CommandAsyncClient() {
-    cq_.Shutdown();
+    completionQueue_.Shutdown();
     listener_.join();
   }
 
@@ -129,7 +129,7 @@ namespace torii {
      * pulls a new client's response. If no response, blocks this thread.
      * CompletionQueue::Next() returns false if cq_.Shutdown() is executed.
      */
-    while (cq_.Next(&got_tag, &ok)) {
+    while (completionQueue_.Next(&got_tag, &ok)) {
 
       if (!got_tag || !ok) {
         break;

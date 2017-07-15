@@ -21,7 +21,6 @@ limitations under the License.
 #include <network/grpc_call.hpp>
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
-#include <grpc++/alarm.h>
 
 namespace torii {
   /**
@@ -81,7 +80,7 @@ namespace torii {
       std::unique_lock<std::mutex> lock(mtx_);
       if (!isShutdown_) {
         CommandServiceCall<iroha::protocol::Transaction, iroha::protocol::ToriiResponse>::enqueueRequest(
-          &asyncService_, cq_.get(), requester, rpcHandler
+          &asyncService_, completionQueue_.get(), requester, rpcHandler
         );
       }
     }
@@ -96,7 +95,7 @@ namespace torii {
 
   private:
     iroha::protocol::CommandService::AsyncService asyncService_;
-    std::unique_ptr<grpc::ServerCompletionQueue> cq_;
+    std::unique_ptr<grpc::ServerCompletionQueue> completionQueue_;
     std::mutex mtx_;
     bool isShutdown_ = false; // called shutdown()
     bool isShutdownCompletionQueue_ = false; // called cq_->Shutdown()

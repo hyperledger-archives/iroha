@@ -44,7 +44,7 @@ namespace torii {
   private:
     grpc::ClientContext context_;
     std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
-    grpc::CompletionQueue cq_;
+    grpc::CompletionQueue completionQueue_;
     grpc::Status status_;
   };
 
@@ -81,7 +81,7 @@ namespace torii {
   private:
     grpc::ClientContext context_;
     std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
-    grpc::CompletionQueue cq_;
+    grpc::CompletionQueue completionQueue_;
     grpc::Status status_;
     std::thread listener_; // listens rpcs' responses and executes callbacks.
   };
