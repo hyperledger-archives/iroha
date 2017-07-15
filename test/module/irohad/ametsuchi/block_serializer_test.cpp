@@ -27,6 +27,7 @@
 #include <model/commands/assign_master_key.hpp>
 #include <model/commands/create_account.hpp>
 #include <model/commands/create_asset.hpp>
+#include <model/commands/create_domain.hpp>
 
 iroha::model::Signature create_signature();
 iroha::model::Transaction create_transaction();
@@ -90,6 +91,12 @@ iroha::model::Transaction create_transaction() {
   create_asset.asset_name = "123";
   create_asset.precision = 2;
   tx.commands.push_back(std::make_shared<iroha::model::CreateAsset>(create_asset));
+
+  //CreateDomain
+  iroha::model::CreateDomain create_domain;
+  create_domain.domain_name = "123";
+  tx.commands.push_back(std::make_shared<iroha::model::CreateDomain>(create_domain));
+
   return tx;
 }
 

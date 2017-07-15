@@ -22,6 +22,7 @@
 #include <model/commands/assign_master_key.hpp>
 #include <model/commands/create_account.hpp>
 #include <model/commands/create_asset.hpp>
+#include <model/commands/create_domain.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -213,7 +214,18 @@ namespace iroha {
 
         writer.EndObject();
       }
+      if (instanceof <model::CreateDomain>(&command)) {
+        auto create_domain = static_cast<model::CreateDomain&>(command);
+        writer.StartObject();
 
+        writer.String("command_type");
+        writer.String("CreateDomain");
+
+        writer.String("domain_name");
+        writer.String(create_domain.domain_name.c_str());
+
+        writer.EndObject();
+      }
     }
   }
 }
