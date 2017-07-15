@@ -29,6 +29,7 @@
 #include <model/commands/create_asset.hpp>
 #include <model/commands/create_domain.hpp>
 #include <model/commands/remove_signatory.hpp>
+#include <model/commands/set_permissions.hpp>
 
 iroha::model::Signature create_signature();
 iroha::model::Transaction create_transaction();
@@ -104,6 +105,11 @@ iroha::model::Transaction create_transaction() {
   std::fill(remove_signatory.pubkey.begin(), remove_signatory.pubkey.end(), 0x123);
   tx.commands.push_back(std::make_shared<iroha::model::RemoveSignatory>(remove_signatory));
 
+  //SetPermissions
+  iroha::model::SetAccountPermissions set_account_permissions;
+  set_account_permissions.account_id = "123";
+  set_account_permissions.new_permissions.can_transfer = true;
+  tx.commands.push_back(std::make_shared<iroha::model::SetAccountPermissions>(set_account_permissions));
   return tx;
 }
 

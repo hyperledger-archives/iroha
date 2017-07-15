@@ -24,6 +24,7 @@
 #include <model/commands/create_asset.hpp>
 #include <model/commands/create_domain.hpp>
 #include <model/commands/remove_signatory.hpp>
+#include <model/commands/set_permissions.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -239,6 +240,53 @@ namespace iroha {
 
         writer.String("pubkey");
         writer.String(remove_signatory.pubkey.to_string().c_str());
+
+        writer.EndObject();
+      }
+      if (instanceof <model::SetAccountPermissions>(&command)) {
+        auto set_account_permissions = static_cast<model::SetAccountPermissions&>(command);
+        writer.StartObject();
+
+        writer.String("command_type");
+        writer.String("SetAccountPermissions");
+
+        writer.String("account_id");
+        writer.String(set_account_permissions.account_id.c_str());
+
+        writer.String("new_permissions");
+        writer.StartObject();
+
+        writer.String("add_signatory");
+        writer.Bool(set_account_permissions.new_permissions.add_signatory);
+
+        writer.String("can_transfer");
+        writer.Bool(set_account_permissions.new_permissions.can_transfer);
+
+        writer.String("create_accounts");
+        writer.Bool(set_account_permissions.new_permissions.create_accounts);
+
+        writer.String("create_assets");
+        writer.Bool(set_account_permissions.new_permissions.create_assets);
+
+        writer.String("create_domains");
+        writer.Bool(set_account_permissions.new_permissions.create_domains);
+
+        writer.String("issue_assets");
+        writer.Bool(set_account_permissions.new_permissions.issue_assets);
+
+        writer.String("read_all_accounts");
+        writer.Bool(set_account_permissions.new_permissions.read_all_accounts);
+
+        writer.String("remove_signatory");
+        writer.Bool(set_account_permissions.new_permissions.remove_signatory);
+
+        writer.String("set_permissions");
+        writer.Bool(set_account_permissions.new_permissions.set_permissions);
+
+        writer.String("set_quorum");
+        writer.Bool(set_account_permissions.new_permissions.set_quorum);
+
+        writer.EndObject();
 
         writer.EndObject();
       }
