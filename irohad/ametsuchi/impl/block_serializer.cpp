@@ -23,6 +23,7 @@
 #include <model/commands/create_account.hpp>
 #include <model/commands/create_asset.hpp>
 #include <model/commands/create_domain.hpp>
+#include <model/commands/remove_signatory.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -223,6 +224,21 @@ namespace iroha {
 
         writer.String("domain_name");
         writer.String(create_domain.domain_name.c_str());
+
+        writer.EndObject();
+      }
+      if (instanceof <model::RemoveSignatory>(&command)) {
+        auto remove_signatory = static_cast<model::RemoveSignatory&>(command);
+        writer.StartObject();
+
+        writer.String("command_type");
+        writer.String("RemoveSignatory");
+
+        writer.String("account_id");
+        writer.String(remove_signatory.account_id.c_str());
+
+        writer.String("pubkey");
+        writer.String(remove_signatory.pubkey.to_string().c_str());
 
         writer.EndObject();
       }

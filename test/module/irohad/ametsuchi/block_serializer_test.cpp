@@ -28,6 +28,7 @@
 #include <model/commands/create_account.hpp>
 #include <model/commands/create_asset.hpp>
 #include <model/commands/create_domain.hpp>
+#include <model/commands/remove_signatory.hpp>
 
 iroha::model::Signature create_signature();
 iroha::model::Transaction create_transaction();
@@ -96,6 +97,12 @@ iroha::model::Transaction create_transaction() {
   iroha::model::CreateDomain create_domain;
   create_domain.domain_name = "123";
   tx.commands.push_back(std::make_shared<iroha::model::CreateDomain>(create_domain));
+
+  //RemoveSignatory
+  iroha::model::RemoveSignatory remove_signatory;
+  remove_signatory.account_id = "123";
+  std::fill(remove_signatory.pubkey.begin(), remove_signatory.pubkey.end(), 0x123);
+  tx.commands.push_back(std::make_shared<iroha::model::RemoveSignatory>(remove_signatory));
 
   return tx;
 }
