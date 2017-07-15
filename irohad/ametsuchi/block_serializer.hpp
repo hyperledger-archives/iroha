@@ -24,6 +24,18 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/prettywriter.h>
 
+#include <model/commands/add_asset_quantity.hpp>
+#include <model/commands/add_peer.hpp>
+#include <model/commands/add_signatory.hpp>
+#include <model/commands/assign_master_key.hpp>
+#include <model/commands/create_account.hpp>
+#include <model/commands/create_asset.hpp>
+#include <model/commands/create_domain.hpp>
+#include <model/commands/remove_signatory.hpp>
+#include <model/commands/set_permissions.hpp>
+#include <model/commands/set_quorum.hpp>
+#include <model/commands/transfer_asset.hpp>
+
 namespace iroha{
 namespace ametsuchi{
 
@@ -37,6 +49,19 @@ class BlockSerializer{
   void serialize(PrettyWriter<StringBuffer>& writer, model::Signature signature);
   void serialize(PrettyWriter<StringBuffer>& writer, model::Transaction transaction);
   void serialize(PrettyWriter<StringBuffer>& writer, model::Command& command);
+
+  void serialize(PrettyWriter<StringBuffer>& writer, model::AddPeer& add_peer);
+  void serialize(PrettyWriter<StringBuffer>& writer, model::AddAssetQuantity& add_asset_quantity);
+  void serialize(PrettyWriter<StringBuffer>& writer, model::AddSignatory& add_signatory);
+  void serialize(PrettyWriter<StringBuffer>& writer, model::AssignMasterKey& assign_master_key);
+  void serialize(PrettyWriter<StringBuffer>& writer, model::CreateAccount& create_account);
+  void serialize(PrettyWriter<StringBuffer>& writer, model::CreateAsset& create_asset);
+  void serialize(PrettyWriter<StringBuffer>& writer, model::CreateDomain& create_domain);
+  void serialize(PrettyWriter<StringBuffer>& writer, model::RemoveSignatory& remove_signatory);
+  void serialize(PrettyWriter<StringBuffer>& writer, model::SetAccountPermissions& set_account_permissions);
+  void serialize(PrettyWriter<StringBuffer>& writer, model::SetQuorum& set_quorum);
+  void serialize(PrettyWriter<StringBuffer>& writer, model::TransferAsset& transfer_asset);
+
   template<typename Base, typename T>
   inline bool instanceof(const T *ptr) {
     return typeid(Base) == typeid(*ptr);
