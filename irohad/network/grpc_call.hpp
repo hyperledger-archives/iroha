@@ -47,6 +47,7 @@ namespace network {
 
     /**
      * owns concrete Call type and executes derived functions.
+     * container for vtable to work if casts UntypedCall<> from void*
      */
     class CallOwner {
     public:
@@ -72,17 +73,17 @@ namespace network {
       }
 
     private:
-      UntypedCall* call_; // owns concrete Call type.
+      UntypedCall* call_; // owns concrete Call type, works vtable.
       const UntypedCall::State state_;
     };
   };
 
   /**
    * to manage the state of one rpc.
-   * @tparam ServiceHandler
-   * @tparam AsyncService
-   * @tparam RequestType
-   * @tparam ResponseType
+   * @tparam ServiceHandler - class that has interface GrpcAsyncService.
+   * @tparam AsyncService - [SomeService]::AsyncService in *.grpc.pb.h
+   * @tparam RequestType - type of a request from client
+   * @tparam ResponseType - type of a response to client
    */
   template <typename ServiceHandler, typename AsyncService, typename RequestType, typename ResponseType>
   class Call : public UntypedCall<ServiceHandler> {
