@@ -180,6 +180,11 @@ TEST(block_serialize, block_serialize_test){
       ASSERT_EQ(tx.created_ts, des_tx.created_ts);
       ASSERT_EQ(tx.creator_account_id, des_tx.creator_account_id);
       ASSERT_EQ(tx.tx_counter, des_tx.tx_counter);
+
+      for (int j = 0; j < tx.commands.size(); j++){
+
+      }
+
     }
 
   }
