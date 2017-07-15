@@ -20,6 +20,7 @@ limitations under the License.
 #include <torii/command_service_handler.hpp>
 #include <torii/command_service.hpp>
 #include <unistd.h>
+#include <grpc/support/time.h>
 
 namespace prot = iroha::protocol;
 
@@ -31,32 +32,16 @@ namespace torii {
    */
   CommandServiceHandler::CommandServiceHandler(::grpc::ServerBuilder& builder) {
     builder.RegisterService(&asyncService_);
-    cq_ = builder.AddCompletionQueue();
+    completionQueue_ = builder.AddCompletionQueue();
   }
 
-  CommandServiceHandler::~CommandServiceHandler() {
-    delete shutdownAlarm_;
-  }
+  CommandServiceHandler::~CommandServiceHandler() {}
 
   /**
-   * shuts down service handler.
-   * specifically, enqueues a special event that causes the completion queue to be shut down.
+   * shuts down service handler. (actually, shuts down completion queue only)
    */
   void CommandServiceHandler::shutdown() {
-    bool didShutdown = false;
-    {
-      std::unique_lock<std::mutex> lock(mtx_);
-      if (!isShutdown_) {
-        isShutdown_ = true;
-        didShutdown = true;
-      }
-    }
-
-    if (didShutdown) {
-      // enqueue a special event that causes the completion queue to be shut down.
-      // tag is nullptr in order to determine no Call instance allocated when static_cast.
-      shutdownAlarm_ = new ::grpc::Alarm(cq_.get(), gpr_now(GPR_CLOCK_MONOTONIC), nullptr);
-    }
+    completionQueue_->Shutdown();
   }
 
   /**
@@ -68,18 +53,27 @@ namespace torii {
         &CommandServiceHandler::ToriiHandler
     );
 
+    /**
+     * tag is a state corresponding to one rpc connection.
+     * ok is true if read a regular event, false otherwise (e.g. grpc::Alarm is not a regular event).
+     */
     void* tag;
     bool ok;
-    while (cq_->Next(&tag, &ok)) {
+
+    /**
+     * pulls a state of a new client's rpc request from completion queue.
+     * If no request, CompletionQueue::Next() waits a new request (blocks this thread).
+     * CompletionQueue::Next() returns false if completionQueue_->Shutdown() is executed.
+     */
+    while (completionQueue_->Next(&tag, &ok)) {
       auto callbackTag =
           static_cast<network::UntypedCall<CommandServiceHandler>::CallOwner*>(tag);
       if (ok && callbackTag) {
+        /*assert(callbackTag);*/
         callbackTag->onCompleted(this);
       } else {
-        // callbackTag is nullptr (and) ok is false
-        // if the queue is shutting down.
-        cq_->Shutdown();
         isShutdownCompletionQueue_ = true;
+        break;
       }
     }
   }
