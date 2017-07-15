@@ -370,6 +370,9 @@ namespace iroha {
                                     model::TransferAsset& transfer_asset) {
       writer.StartObject();
 
+      writer.String("command_type");
+      writer.String("TransferAsset");
+
       writer.String("dest_account_id");
       writer.String(transfer_asset.dest_account_id.c_str());
 
