@@ -406,21 +406,21 @@ namespace iroha {
 
       // TODO: return nullopt when some necessary field is missed
       std::string block_json(bytes.begin(), bytes.end());
-      rapidjson::Document d;
-      if (d.Parse(block_json.c_str()).HasParseError()){
+      rapidjson::Document doc;
+      if (doc.Parse(block_json.c_str()).HasParseError()){
         return nonstd::nullopt;
       }
 
       model::Block block{};
 
       // hash
-      d["hash"].GetString();
-      std::string hash_str(d["hash"].GetString(), d["hash"].GetStringLength());
+      doc["hash"].GetString();
+      std::string hash_str(doc["hash"].GetString(), doc["hash"].GetStringLength());
       auto hash_bytes = hex2bytes(hash_str);
       std::copy(hash_bytes.begin(), hash_bytes.end(), block.hash.begin());
 
       //signatures
-      auto json_sigs = d["signatures"].GetArray();
+      auto json_sigs = doc["signatures"].GetArray();
 
       for (auto iter = json_sigs.begin(); iter < json_sigs.end(); ++iter){
         auto json_sig = iter->GetObject();
@@ -438,9 +438,16 @@ namespace iroha {
       }
 
       // created_ts
-      block.created_ts = d["created_ts"].GetUint64();
+      block.created_ts = doc["created_ts"].GetUint64();
 
+      //height
+      block.height = doc["height"].GetUint64();
 
+      // hash
+      doc["prev_hash"].GetString();
+      std::string prev_hash_str(doc["prev_hash"].GetString(), doc["prev_hash"].GetStringLength());
+      auto prev_hash_bytes = hex2bytes(prev_hash_str);
+      std::copy(prev_hash_bytes.begin(), prev_hash_bytes.end(), block.prev_hash.begin());
 
       return block;
     }

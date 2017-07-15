@@ -17,21 +17,6 @@
 
 #include <gtest/gtest.h>
 #include <ametsuchi/block_serializer.hpp>
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/prettywriter.h>
-#include <model/commands/add_peer.hpp>
-#include <model/commands/add_asset_quantity.hpp>
-#include <model/commands/add_signatory.hpp>
-#include <model/commands/assign_master_key.hpp>
-#include <model/commands/create_account.hpp>
-#include <model/commands/create_asset.hpp>
-#include <model/commands/create_domain.hpp>
-#include <model/commands/remove_signatory.hpp>
-#include <model/commands/set_permissions.hpp>
-#include <model/commands/set_quorum.hpp>
-#include <model/commands/transfer_asset.hpp>
 
 iroha::model::Signature create_signature();
 iroha::model::Transaction create_transaction();
@@ -144,7 +129,7 @@ iroha::model::Block create_block() {
   block.sigs.push_back(create_signature());
   block.created_ts = 0;
   block.height = 0;
-  memset(block.prev_hash.data(), 0x123, iroha::ed25519::pubkey_t::size());
+  memset(block.prev_hash.data(), 0x5, iroha::ed25519::pubkey_t::size());
   block.txs_number = 0;
   memset(block.merkle_root.data(), 0x123, iroha::ed25519::pubkey_t::size());
   block.transactions.push_back(create_transaction());
@@ -176,5 +161,7 @@ TEST(block_serialize, block_serialize_test){
       ASSERT_EQ(block.sigs[i].signature, deserialized.sigs[i].signature);
       ASSERT_EQ(block.sigs[i].pubkey, deserialized.sigs[i].pubkey);
     }
+
+    ASSERT_EQ(block.prev_hash, deserialized.prev_hash);
   }
 }
