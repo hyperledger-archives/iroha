@@ -549,6 +549,10 @@ namespace iroha {
                 assign_master_key.value()));
           }
         } else if (command_type == "CreateAccount") {
+          if (auto create_account = deserialize_create_account(json_command)) {
+            commands.push_back(
+                std::make_shared<model::CreateAccount>(create_account.value()));
+          }
         } else if (command_type == "CreateAsset") {
         } else if (command_type == "CreateDomain") {
         } else if (command_type == "RemoveSignatory") {
@@ -630,6 +634,27 @@ namespace iroha {
       std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
                 assign_master_key.pubkey.begin());
       return assign_master_key;
+    }
+
+    nonstd::optional<model::CreateAccount>
+    BlockSerializer::deserialize_create_account(
+        GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
+      // TODO: make this function return nullopt when some field is missed
+      model::CreateAccount create_account{};
+
+      // domain_id
+      create_account.domain_id = json_command["domain_id"].GetString();
+
+      // account_name
+      create_account.account_name = json_command["account_name"].GetString();
+
+      // pubkey
+      std::string pubkey_str(json_command["pubkey"].GetString(),
+                             json_command["pubkey"].GetStringLength());
+      auto pubkey_bytes = hex2bytes(pubkey_str);
+      std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
+                create_account.pubkey.begin());
+      return create_account;
     }
   }
 }

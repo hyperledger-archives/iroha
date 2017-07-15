@@ -212,6 +212,13 @@ TEST(block_serialize, block_serialize_test){
           ASSERT_EQ(assign_master_key.account_id, des_assign_master_key.account_id);
           ASSERT_EQ(assign_master_key.pubkey, des_assign_master_key.pubkey);
         }
+        else if (instanceof<iroha::model::CreateAccount>(tx.commands[j].get())){
+          auto create_account = static_cast<const iroha::model::CreateAccount&>(*tx.commands[j].get());
+          auto des_create_account = static_cast<const iroha::model::CreateAccount&>(*des_tx.commands[j].get());
+          ASSERT_EQ(create_account.account_name, des_create_account.account_name);
+          ASSERT_EQ(create_account.domain_id, des_create_account.domain_id);
+          ASSERT_EQ(create_account.pubkey, des_create_account.pubkey);
+        }
       }
 
     }
