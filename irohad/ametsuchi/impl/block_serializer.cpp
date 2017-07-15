@@ -42,7 +42,7 @@ namespace iroha {
                                     const model::Block& block) {
       writer.StartObject();
       writer.String("hash");
-      writer.String(block.hash.to_string().c_str());
+      writer.String(block.hash.to_hexstring().c_str());
 
       writer.String("signatures");
       writer.StartArray();
@@ -58,13 +58,13 @@ namespace iroha {
       writer.Uint64(block.height);
 
       writer.String("prev_hash");
-      writer.String(block.prev_hash.to_string().c_str());
+      writer.String(block.prev_hash.to_hexstring().c_str());
 
       writer.String("txs_number");
       writer.Uint(block.txs_number);
 
       writer.String("merkle_root");
-      writer.String(block.merkle_root.to_string().c_str());
+      writer.String(block.merkle_root.to_hexstring().c_str());
 
       writer.String("transactions");
       writer.StartArray();
@@ -81,10 +81,10 @@ namespace iroha {
       writer.StartObject();
 
       writer.String("pubkey");
-      writer.String(signature.pubkey.to_string().c_str());
+      writer.String(signature.pubkey.to_hexstring().c_str());
 
       writer.String("signature");
-      writer.String(signature.signature.to_string().c_str());
+      writer.String(signature.signature.to_hexstring().c_str());
 
       writer.EndObject();
     }
@@ -182,7 +182,7 @@ namespace iroha {
       writer.String(add_peer.address.c_str());
 
       writer.String("peer_key");
-      writer.String(add_peer.peer_key.to_string().c_str());
+      writer.String(add_peer.peer_key.to_hexstring().c_str());
 
       writer.EndObject();
     }
@@ -220,7 +220,7 @@ namespace iroha {
       writer.String(add_signatory.account_id.c_str());
 
       writer.String("pubkey");
-      writer.String(add_signatory.pubkey.to_string().c_str());
+      writer.String(add_signatory.pubkey.to_hexstring().c_str());
 
       writer.EndObject();
     }
@@ -237,7 +237,7 @@ namespace iroha {
       writer.String(assign_master_key.account_id.c_str());
 
       writer.String("pubkey");
-      writer.String(assign_master_key.pubkey.to_string().c_str());
+      writer.String(assign_master_key.pubkey.to_hexstring().c_str());
 
       writer.EndObject();
     }
@@ -257,7 +257,7 @@ namespace iroha {
       writer.String(create_account.account_name.c_str());
 
       writer.String("pubkey");
-      writer.String(create_account.pubkey.to_string().c_str());
+      writer.String(create_account.pubkey.to_hexstring().c_str());
 
       writer.EndObject();
     }
@@ -306,7 +306,7 @@ namespace iroha {
       writer.String(remove_signatory.account_id.c_str());
 
       writer.String("pubkey");
-      writer.String(remove_signatory.pubkey.to_string().c_str());
+      writer.String(remove_signatory.pubkey.to_hexstring().c_str());
 
       writer.EndObject();
     }
@@ -403,6 +403,8 @@ namespace iroha {
 
     nonstd::optional<model::Block> BlockSerializer::deserialize(
         const std::vector<uint8_t>& bytes) {
+
+      // TODO: return nullopt when some necessary field is missed
       std::string block_json(bytes.begin(), bytes.end());
       rapidjson::Document d;
       if (d.Parse(block_json.c_str()).HasParseError()){
@@ -410,8 +412,36 @@ namespace iroha {
       }
 
       model::Block block{};
-//      auto hash_bytes = base64_decode(hash_str);
-//      std::copy_n(std::make_move_iterator(hash_bytes.begin()), hash_bytes.size(), block.hash.begin());
+
+      // hash
+      d["hash"].GetString();
+      std::string hash_str(d["hash"].GetString(), d["hash"].GetStringLength());
+      auto hash_bytes = hex2bytes(hash_str);
+      std::copy(hash_bytes.begin(), hash_bytes.end(), block.hash.begin());
+
+      //signatures
+      auto json_sigs = d["signatures"].GetArray();
+
+      for (auto iter = json_sigs.begin(); iter < json_sigs.end(); ++iter){
+        auto json_sig = iter->GetObject();
+        model::Signature signature{};
+
+        std::string sig_pubkey(json_sig["pubkey"].GetString(), json_sig["pubkey"].GetStringLength());
+        auto sig_pubkey_bytes = hex2bytes(sig_pubkey);
+        std::copy(sig_pubkey_bytes.begin(), sig_pubkey_bytes.end(), signature.pubkey.begin());
+
+        std::string sig_sign(json_sig["signature"].GetString(), json_sig["signature"].GetStringLength());
+        auto sig_sign_bytes = hex2bytes(sig_sign);
+        std::copy(sig_sign_bytes.begin(), sig_sign_bytes.end(), signature.signature.begin());
+
+        block.sigs.push_back(signature);
+      }
+
+      // created_ts
+      block.created_ts = d["created_ts"].GetUint64();
+
+
+
       return block;
     }
   }

@@ -140,7 +140,7 @@ iroha::model::Proposal create_proposal() {
 
 iroha::model::Block create_block() {
   iroha::model::Block block{};
-  memset(block.hash.data(), 0x123, iroha::ed25519::pubkey_t::size());
+  memset(block.hash.data(), 0x1, iroha::ed25519::pubkey_t::size());
   block.sigs.push_back(create_signature());
   block.created_ts = 0;
   block.height = 0;
@@ -158,14 +158,23 @@ TEST(block_serialize, block_serialize_test){
 
   iroha::ametsuchi::BlockSerializer blockSerializer;
 
+  std::cout << unsigned(block.hash[0]) << std::endl;
+
   auto bytes = blockSerializer.serialize(block);
   std::string str(bytes.begin(), bytes.end());
-//  std::cout << str << std::endl;
+  std::cout << str << std::endl;
   // deserialize
 
   auto res = blockSerializer.deserialize(bytes);
-//  if (res){
-//    auto deserialized = res.value();
-//    ASSERT_EQ(block.hash, deserialized.hash);
-//  }
+  if (res){
+    auto deserialized = res.value();
+    ASSERT_EQ(block.hash, deserialized.hash);
+    ASSERT_EQ(block.created_ts, deserialized.created_ts);
+
+    ASSERT_TRUE(block.sigs.size() > 0);
+    for (int i = 0; i < block.sigs.size(); i++){
+      ASSERT_EQ(block.sigs[i].signature, deserialized.sigs[i].signature);
+      ASSERT_EQ(block.sigs[i].pubkey, deserialized.sigs[i].pubkey);
+    }
+  }
 }
