@@ -28,6 +28,9 @@ limitations under the License.
 constexpr const char* Ip = "0.0.0.0";
 constexpr int Port = 50051;
 
+constexpr size_t TimesToriiBlocking = 100;
+constexpr size_t TimesToriiNonBlocking = 3;
+
 class ToriiAsyncTest : public testing::Test {
 public:
   virtual void SetUp() {
@@ -52,7 +55,7 @@ public:
 TEST_F(ToriiAsyncTest, ToriiWhenBlocking) {
   EXPECT_GT(static_cast<int>(iroha::protocol::ResponseCode::OK), 0); // to guarantee ASSERT_EQ works TODO(motxx): More reasonable way.
 
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < TimesToriiBlocking; ++i) {
     std::cout << i << std::endl;
     auto response = torii::CommandSyncClient(Ip, Port)
       .Torii(iroha::protocol::Transaction {});
@@ -67,7 +70,7 @@ TEST_F(ToriiAsyncTest, ToriiWhenNonBlocking) {
   torii::CommandAsyncClient client(Ip, Port);
   std::atomic_int count {0};
 
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < TimesToriiNonBlocking; ++i) {
     std::cout << i << std::endl;
     client.Torii(iroha::protocol::Transaction {},
                  [&count](iroha::protocol::ToriiResponse response){
@@ -77,6 +80,6 @@ TEST_F(ToriiAsyncTest, ToriiWhenNonBlocking) {
                  });
   }
 
-  while (count < 3);
-  ASSERT_EQ(count, 3);
+  while (count < TimesToriiNonBlocking);
+  ASSERT_EQ(count, TimesToriiNonBlocking);
 }
