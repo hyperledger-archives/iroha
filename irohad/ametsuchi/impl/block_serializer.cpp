@@ -20,6 +20,7 @@
 #include <model/commands/add_peer.hpp>
 #include <model/commands/add_signatory.hpp>
 #include <model/commands/assign_master_key.hpp>
+#include <model/commands/create_account.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -172,6 +173,24 @@ namespace iroha {
 
         writer.String("pubkey");
         writer.String(assign_master_key.pubkey.to_string().c_str());
+
+        writer.EndObject();
+      }
+      if (instanceof <model::CreateAccount>(&command)) {
+        auto create_account = static_cast<model::CreateAccount&>(command);
+        writer.StartObject();
+
+        writer.String("command_type");
+        writer.String("CreateAccount");
+
+        writer.String("domain_id");
+        writer.String(create_account.domain_id.c_str());
+
+        writer.String("account_name");
+        writer.String(create_account.account_name.c_str());
+
+        writer.String("pubkey");
+        writer.String(create_account.pubkey.to_string().c_str());
 
         writer.EndObject();
       }

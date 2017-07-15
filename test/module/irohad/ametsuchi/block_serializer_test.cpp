@@ -25,6 +25,7 @@
 #include <model/commands/add_asset_quantity.hpp>
 #include <model/commands/add_signatory.hpp>
 #include <model/commands/assign_master_key.hpp>
+#include <model/commands/create_account.hpp>
 
 iroha::model::Signature create_signature();
 iroha::model::Transaction create_transaction();
@@ -74,6 +75,13 @@ iroha::model::Transaction create_transaction() {
   std::fill(assign_master_key.pubkey.begin(), assign_master_key.pubkey.end(), 0x123);
   assign_master_key.account_id = "123";
   tx.commands.push_back(std::make_shared<iroha::model::AssignMasterKey>(assign_master_key));
+
+  //CreateAccount
+  iroha::model::CreateAccount create_account;
+  std::fill(create_account.pubkey.begin(), create_account.pubkey.end(), 0x123);
+  create_account.account_name = "123";
+  create_account.domain_id = "123";
+  tx.commands.push_back(std::make_shared<iroha::model::CreateAccount>(create_account));
 
   return tx;
 }
