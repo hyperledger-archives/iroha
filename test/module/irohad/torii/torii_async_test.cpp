@@ -52,7 +52,7 @@ public:
 TEST_F(ToriiAsyncTest, ToriiWhenBlocking) {
   EXPECT_GT(static_cast<int>(iroha::protocol::ResponseCode::OK), 0); // to guarantee ASSERT_EQ works TODO(motxx): More reasonable way.
 
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 5; ++i) {
     std::cout << i << std::endl;
     auto response = torii::CommandSyncClient(Ip, Port)
       .Torii(iroha::protocol::Transaction {});
