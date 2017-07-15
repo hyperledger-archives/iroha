@@ -67,7 +67,7 @@ TEST_F(ToriiAsyncTest, ToriiWhenNonBlocking) {
   torii::CommandAsyncClient client(Ip, Port);
   std::atomic_int count {0};
 
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 3; ++i) {
     std::cout << i << std::endl;
     client.Torii(iroha::protocol::Transaction {},
                  [&count](iroha::protocol::ToriiResponse response){
