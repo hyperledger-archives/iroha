@@ -206,6 +206,12 @@ TEST(block_serialize, block_serialize_test){
           ASSERT_EQ(add_signatory.account_id, des_add_signatory.account_id);
           ASSERT_EQ(add_signatory.pubkey, des_add_signatory.pubkey);
         }
+        else if (instanceof<iroha::model::AssignMasterKey>(tx.commands[j].get())){
+          auto assign_master_key = static_cast<const iroha::model::AssignMasterKey&>(*tx.commands[j].get());
+          auto des_assign_master_key = static_cast<const iroha::model::AssignMasterKey&>(*des_tx.commands[j].get());
+          ASSERT_EQ(assign_master_key.account_id, des_assign_master_key.account_id);
+          ASSERT_EQ(assign_master_key.pubkey, des_assign_master_key.pubkey);
+        }
       }
 
     }

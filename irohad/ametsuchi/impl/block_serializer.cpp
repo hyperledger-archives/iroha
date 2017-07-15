@@ -537,10 +537,17 @@ namespace iroha {
                 add_asset_quantity.value()));
           }
         } else if (command_type == "AddSignatory") {
-          auto add_signatory = deserialize_add_signatory(json_command);
-          commands.push_back(std::make_shared<model::AddSignatory>(add_signatory.value()));
+          if (auto add_signatory = deserialize_add_signatory(json_command)) {
+            commands.push_back(
+                std::make_shared<model::AddSignatory>(add_signatory.value()));
+          }
 
         } else if (command_type == "AssignMasterKey") {
+          if (auto assign_master_key =
+                  deserialize_assign_master_key(json_command)) {
+            commands.push_back(std::make_shared<model::AssignMasterKey>(
+                assign_master_key.value()));
+          }
         } else if (command_type == "CreateAccount") {
         } else if (command_type == "CreateAsset") {
         } else if (command_type == "CreateDomain") {
@@ -599,12 +606,30 @@ namespace iroha {
 
       // pubkey
       std::string pubkey_str(json_command["pubkey"].GetString(),
-                               json_command["pubkey"].GetStringLength());
+                             json_command["pubkey"].GetStringLength());
       auto pubkey_bytes = hex2bytes(pubkey_str);
       std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
                 add_signatory.pubkey.begin());
 
       return add_signatory;
+    }
+
+    nonstd::optional<model::AssignMasterKey>
+    BlockSerializer::deserialize_assign_master_key(
+        GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
+      // TODO: make this function return nullopt when some field is missed
+      model::AssignMasterKey assign_master_key{};
+
+      // account_id
+      assign_master_key.account_id = json_command["account_id"].GetString();
+
+      // pubkey
+      std::string pubkey_str(json_command["pubkey"].GetString(),
+                             json_command["pubkey"].GetStringLength());
+      auto pubkey_bytes = hex2bytes(pubkey_str);
+      std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
+                assign_master_key.pubkey.begin());
+      return assign_master_key;
     }
   }
 }

@@ -69,6 +69,7 @@ class BlockSerializer{
   nonstd::optional<model::AddPeer> deserialize_add_peer(GenericValue<UTF8<char>>::Object& json_command);
   nonstd::optional<model::AddAssetQuantity> deserialize_add_asset_quantity(GenericValue<UTF8<char>>::Object& json_command);
   nonstd::optional<model::AddSignatory> deserialize_add_signatory(GenericValue<UTF8<char>>::Object& json_command);
+  nonstd::optional<model::AssignMasterKey> deserialize_assign_master_key(GenericValue<UTF8<char>>::Object& json_command);
 
   template<typename Base, typename T>
   inline bool instanceof(const T *ptr) {
