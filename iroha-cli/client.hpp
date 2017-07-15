@@ -27,9 +27,9 @@ namespace iroha_cli {
 
   using iroha::model::Transaction;
 
-  class CliClient{
+  class CliClient {
     public:
-      CliClient(std::string targetIp,int port);
+      CliClient(std::string targetIp, int port);
 
       std::string sendTx(
         const Transaction &tx
@@ -39,7 +39,6 @@ namespace iroha_cli {
       std::string targetIp;
       int port;
   };
-
 };
 
 #endif //IROHA_CLIENT_CPP_HPP
