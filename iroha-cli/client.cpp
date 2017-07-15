@@ -29,36 +29,34 @@
 
 namespace iroha_cli {
 
-    CliClient::CliClient(std::string targetIp,int port):
+  CliClient::CliClient(std::string targetIp, int port):
       targetIp(targetIp),
       port(port)
-    {}
+  {}
 
-    std::string CliClient::sendTx(
-          const Transaction &tx
-    ) {
-       auto channel = grpc::CreateChannel(
-         targetIp + ":" + std::to_string(port),
-         grpc::InsecureChannelCredentials()
-       );
+  std::string CliClient::sendTx(const Transaction &tx) {
+    auto channel = grpc::CreateChannel(
+      targetIp + ":" + std::to_string(port),
+      grpc::InsecureChannelCredentials()
+    );
 
-       auto stub = iroha::protocol::CommandService::NewStub(channel);
+    auto stub = iroha::protocol::CommandService::NewStub(channel);
 
-       iroha::protocol::ToriiResponse response;
-       grpc::ClientContext context;
+    iroha::protocol::ToriiResponse response;
+    grpc::ClientContext context;
 
-       // ToDo model::transaction -> protocol::transaction
-       iroha::protocol::Transaction transaction;
-       grpc::Status status = stub->Torii(&context, transaction, &response);
-        if (status.ok()) {
-          return response.message();
-        } else {
-          std::cout <<
-            status.error_code() << ": " <<
-            status.error_message()
-            << std::endl;
-          return response.message();
-        }
+    // ToDo model::transaction -> protocol::transaction
+    iroha::protocol::Transaction transaction;
+    grpc::Status status = stub->Torii(&context, transaction, &response);
+    
+    if (status.ok()) {
+      return response.message();
+    } else {
+      std::cout <<
+        status.error_code() << ": " <<
+        status.error_message()
+        << std::endl;
+      return response.message();
     }
-
+  }
 };
