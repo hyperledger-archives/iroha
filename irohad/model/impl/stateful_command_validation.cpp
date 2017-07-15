@@ -67,10 +67,6 @@ namespace iroha {
 
     bool AddPeer::validate(ametsuchi::WsvQuery &queries,
                            const Account &creator) {
-      if (queries.getPeer(address))
-        // Such peer already exist
-        return false;
-
       // TODO: check that address is formed right
       return true;
     }
@@ -205,12 +201,17 @@ namespace iroha {
     bool TransferAsset::validate(ametsuchi::WsvQuery &queries,
                                  const Account &creator) {
       auto account_asset = queries.getAccountAsset(src_account_id, asset_id);
+      auto asset = queries.getAsset(asset_id);
 
       return
           // Check if such AccountAsset exist
           account_asset.has_value() &&
+          // Check if asset exist
+          asset.has_value() &&
           // Check if account_asset sufficent amount of money
-          account_asset.value().balance < amount &&
+          std::decimal::make_decimal64(
+              (unsigned long long int)account_asset.value().balance,
+              -asset.value().precision) < amount &&
           // Check if src_account exist
           queries.getAccount(src_account_id) &&
           // Can account transfer assets

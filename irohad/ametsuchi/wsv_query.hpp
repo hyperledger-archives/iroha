@@ -73,7 +73,7 @@ namespace iroha {
        * @param address
        * @return
        */
-      virtual nonstd::optional<model::Peer> getPeer(const std::string &address) = 0;
+      virtual nonstd::optional<model::Peer> getPeers() = 0;
     };
 
   }  // namespace ametsuchi

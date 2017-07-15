@@ -28,16 +28,44 @@
 #include "model/commands/subtract_asset_quantity.hpp"
 #include "model/commands/transfer_asset.hpp"
 
+#include <math.h>
+#include <cmath>
+
 namespace iroha {
   namespace model {
 
     bool AddAssetQuantity::execute(ametsuchi::WsvQuery &queries,
                                    ametsuchi::WsvCommand &commands) {
-      auto accountAsset = queries.getAccountAsset(account_id, asset_id);
+      auto asset = queries.getAsset(asset_id);
+      if (!asset)
+        // No such asset
+        return false;
+
+      auto account_asset = queries.getAccountAsset(account_id, asset_id);
+      AccountAsset accountAsset;
       // Such accountAsset not found
-      if (!accountAsset) return false;
-      accountAsset.value().balance += amount;
-      return commands.upsertAccountAsset(accountAsset.value());
+      if (!account_asset) {
+        // No wallet found -> create new
+        accountAsset = AccountAsset();
+        accountAsset.asset_id = asset_id;
+        accountAsset.account_id = account_id;
+        accountAsset.balance =
+            static_cast<uint64_t>(std::decimal::decimal_to_double(amount) *
+                                  std::pow(10, asset.value().precision));
+      } else {
+        accountAsset = account_asset.value();
+        auto current_balance = std::decimal::make_decimal64(
+            (unsigned long long int)account_asset.value().balance,
+            -asset.value().precision);
+        auto new_balance = current_balance + amount;
+        // TODO: handle overflow
+        accountAsset.balance =
+            static_cast<uint64_t>(std::decimal::decimal_to_double(new_balance) *
+                                  std::pow(10, asset.value().precision));
+      }
+
+      // accountAsset.value().balance += amount;
+      return commands.upsertAccountAsset(accountAsset);
     }
 
     bool AddPeer::execute(ametsuchi::WsvQuery &queries,
@@ -45,6 +73,7 @@ namespace iroha {
       Peer peer;
       peer.address = address;
       peer.pubkey = peer_key;
+      // Will return false if peer is not unique
       return commands.upsertPeer(peer);
     }
 
@@ -139,17 +168,46 @@ namespace iroha {
       AccountAsset dest_AccountAssert;
       auto dest_account_assert =
           queries.getAccountAsset(dest_account_id, asset_id);
+      auto asset = queries.getAsset(asset_id);
+      if (!asset)
+        // No asset found
+        return false;
+      // Precision for both wallets
+      auto precision = asset.value().precision;
+
+      // Get src balance
+      auto src_balance = std::decimal::make_decimal64(
+          (unsigned long long int)src_account_assert.value().balance,
+          -precision);
+      //
+      src_balance -= amount;
+      // Set new balance for source account
+      src_account_assert.value().balance =
+          static_cast<uint64_t>(std::decimal::decimal_to_double(src_balance) *
+                                std::pow(10, precision));
+
       if (!dest_account_assert) {
         // This assert is new for this account - create new AccountAsset
         dest_AccountAssert = AccountAsset();
         dest_AccountAssert.asset_id = asset_id;
         dest_AccountAssert.account_id = dest_account_id;
-        dest_AccountAssert.balance = amount;
+        // Set new balance for dest account
+        dest_AccountAssert.balance = static_cast<uint64_t>(
+            std::decimal::decimal_to_double(amount) * std::pow(10, precision));
+
       } else {
         // Account already has such asset
         dest_AccountAssert = dest_account_assert.value();
-        dest_AccountAssert.balance += amount;
-        src_account_assert.value().balance -= amount;
+        // Get balance dest account
+        auto dest_balance = std::decimal::make_decimal64(
+            (unsigned long long int)dest_account_assert.value().balance,
+            -precision);
+
+        dest_balance += amount;
+        // Set new balance for dest
+        dest_AccountAssert.balance = static_cast<uint64_t>(
+            std::decimal::decimal_to_double(dest_balance) *
+            std::pow(10, precision));
       }
 
       return commands.upsertAccountAsset(dest_AccountAssert) &&
