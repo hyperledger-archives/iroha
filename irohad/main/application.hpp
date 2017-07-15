@@ -18,7 +18,7 @@
 #define IROHA_APPLICATION_HPP
 
 #include <main/context.hpp>
-#include <network/network_api.h>
+#include <network/peer_communication_service.hpp>
 #include <consensus/connection/service.hpp>
 #include <consensus/consensus_service_stub.hpp>
 #include <network/peer_communication_stub.hpp>

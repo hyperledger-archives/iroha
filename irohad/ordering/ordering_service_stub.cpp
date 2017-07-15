@@ -18,20 +18,20 @@
 #include <ordering/ordering_service_stub.hpp>
 
 namespace iroha {
-  namespace ordering {
+  namespace network {
 
     using model::Transaction;
     using model::Proposal;
 
-    void OrderingServiceStub::propagate_transaction(
+    void OrderingGateStub::propagate_transaction(
         const model::Transaction &transaction) {
       std::vector<Transaction> transactions{transaction};
       Proposal proposal(transactions);
       proposals_.get_subscriber().on_next(proposal);
     }
 
-    rxcpp::observable<model::Proposal> OrderingServiceStub::on_proposal() {
+    rxcpp::observable<model::Proposal> OrderingGateStub::on_proposal() {
       return proposals_.get_observable();
     }
-  }  // namespace ordering
+  }  // namespace network
 }  // namespace iroha

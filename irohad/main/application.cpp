@@ -31,14 +31,12 @@ void Irohad::run() {
 
   iroha::validation::StatelessValidatorImpl
       stateless_validator(crypto_provider);
-  iroha::validation::ChainValidatorStub chain_validator;
-  iroha::ordering::OrderingServiceStub ordering_service;
+  iroha::network::OrderingGateStub ordering_service;
   iroha::consensus::ConsensusServiceStub consensus_service;
   iroha::network::PeerCommunicationServiceStub peer_communication_service(
       ordering_service,
       consensus_service);
   iroha::torii::TransactionProcessorImpl tp(peer_communication_service,
-                                            ordering_service,
                                             stateless_validator);
 //  iroha::torii::QueryProcessorStub qp(ametsuchi, ametsuchi);
 

@@ -18,18 +18,18 @@
 #ifndef IROHA_ORDERING_SERVICE_STUB_HPP
 #define IROHA_ORDERING_SERVICE_STUB_HPP
 
-#include <ordering/ordering_service.hpp>
+#include <network/ordering_gate.hpp>
 
 namespace iroha {
-  namespace ordering {
-    class OrderingServiceStub : public OrderingService {
+  namespace network {
+    class OrderingGateStub : public OrderingGate {
      public:
       void propagate_transaction(const model::Transaction &transaction) override;
       rxcpp::observable<model::Proposal> on_proposal() override;
      private:
       rxcpp::subjects::subject<model::Proposal> proposals_;
     };
-  }//namespace ordering
+  }//namespace network
 }// namespace iroha
 
 #endif //IROHA_ORDERING_SERVICE_STUB_HPP
