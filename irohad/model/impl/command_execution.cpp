@@ -67,7 +67,7 @@ namespace iroha {
                                 ametsuchi::WsvCommand &commands) {
       Account account;
       account.master_key = pubkey;
-      account.account_id = domain_id + "@" + account_name;
+      account.account_id = account_name + "@" + domain_id;
       if (queries.getAccount(account.account_id))
         // Such account already exist
         return false;
@@ -77,13 +77,15 @@ namespace iroha {
       Account::Permissions permissions = iroha::model::Account::Permissions();
       account.permissions = permissions;
 
-      return commands.upsertAccount(account);
+      return commands.insertSignatory(pubkey) &&
+             commands.upsertAccount(account) &&
+             commands.insertAccountSignatory(account.account_id, pubkey);
     }
 
     bool CreateAsset::execute(ametsuchi::WsvQuery &queries,
                               ametsuchi::WsvCommand &commands) {
       Asset new_asset;
-      new_asset.name = domain_id + "@" + asset_name;
+      new_asset.name = asset_name + "#" + domain_id;
       new_asset.precision = precision;
       // The insert will fail if asset already exist
       return commands.insertAsset(new_asset);
