@@ -21,6 +21,7 @@
 #include <fstream>
 #include <iostream>
 
+
 DEFINE_bool(new_account, false, "Choose if account does not exist");
 DEFINE_string(name, "", "Name of the account");
 
