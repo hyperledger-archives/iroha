@@ -27,8 +27,7 @@ namespace iroha {
     using model::Account;
     using model::Asset;
 
-    PostgresWsvQuery::PostgresWsvQuery(
-        pqxx::nontransaction &transaction)
+    PostgresWsvQuery::PostgresWsvQuery(pqxx::nontransaction &transaction)
         : transaction_(transaction) {}
 
     optional<Account> PostgresWsvQuery::getAccount(const string &account_id) {
@@ -91,7 +90,7 @@ namespace iroha {
         return {};
       }
       std::vector<ed25519::pubkey_t> signatories;
-      for (const auto &row : result){
+      for (const auto &row : result) {
         pqxx::binarystring public_key_str(row.at("public_key"));
         ed25519::pubkey_t pubkey;
         std::copy(public_key_str.begin(), public_key_str.end(), pubkey.begin());
@@ -101,16 +100,51 @@ namespace iroha {
     }
 
     optional<Asset> PostgresWsvQuery::getAsset(const string &asset_id) {
-      model::Asset result;
-      result.name = "";
-      return result;
+      pqxx::result result;
+      try {
+        result = transaction_.exec(
+            "SELECT \n"
+            "  * \n"
+            "FROM \n"
+            "  public.asset\n"
+            "WHERE \n"
+            "  asset.asset_id = " +
+            transaction_.quote(asset_id) + ";");
+      } catch (const std::exception &e) {
+        // TODO log
+        return nullopt;
+      }
+      if (result.size() != 1) {
+        return nullopt;
+      }
+      Asset asset;
+      auto row = result.at(0);
+      row.at("asset_id") >> asset.name;
+//      row.at("domain_id") >> ?
+      int32_t precision;
+      row.at("precision") >> precision;
+      asset.precision = precision;
+//      row.at("data") >> ?
+      return asset;
     }
 
     nonstd::optional<model::AccountAsset> PostgresWsvQuery::getAccountAsset(
         const std::string &account_id, const std::string &asset_id) {
-      model::AccountAsset result;
-      result.account_id = "";
-      return result;
+      pqxx::result result;
+      try {
+
+      } catch (const std::exception &e) {
+        return nullopt;
+      }
+      if (result.size() != 1) {
+        return nullopt;
+      }
+      model::AccountAsset asset;
+      auto row = result.at(0);
+      row.at("account_id") >> asset.account_id;
+      row.at("asset_id") >> asset.asset_id;
+//      row.at("account_id") >> asset.balance;
+      return asset;
     }
 
     std::vector<model::Peer> PostgresWsvQuery::getPeers() { return {}; }
