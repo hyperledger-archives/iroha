@@ -33,7 +33,8 @@ namespace common {
                 IStreamWrapper isw(ifs);
                 doc.ParseStream(isw);
                 if(doc.HasParseError()){
-                    throw std::runtime_error("parse error");
+                    // ToDo log failed to logger
+                    doc.Parse("{}");
                 }
             }
         }
