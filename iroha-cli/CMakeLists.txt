@@ -9,4 +9,4 @@ target_link_libraries(cli_client
     endpoint)
 
 add_executable(cli-main main.cpp)
-target_link_libraries(cli-main gflags ed25519 logger)
+target_link_libraries(cli-main gflags ed25519 cli_client)
