@@ -187,11 +187,18 @@ TEST(block_serialize, block_serialize_test){
       ASSERT_EQ(tx.tx_counter, des_tx.tx_counter);
 
       for (int j = 0; j < tx.commands.size(); j++){
-        if (instanceof<iroha::model::AddPeer>(tx.commands[i].get())){
-          auto add_peer = static_cast<const iroha::model::AddPeer&>(*tx.commands[i].get());
-          auto des_add_peer = static_cast<const iroha::model::AddPeer&>(*des_tx.commands[i].get());
+        if (instanceof<iroha::model::AddPeer>(tx.commands[j].get())){
+          auto add_peer = static_cast<const iroha::model::AddPeer&>(*tx.commands[j].get());
+          auto des_add_peer = static_cast<const iroha::model::AddPeer&>(*des_tx.commands[j].get());
           ASSERT_EQ(add_peer.address, des_add_peer.address);
           ASSERT_EQ(add_peer.peer_key, des_add_peer.peer_key);
+        }
+        else if (instanceof<iroha::model::AddAssetQuantity>(tx.commands[j].get())){
+          auto add_asset_quantity = static_cast<const iroha::model::AddAssetQuantity&>(*tx.commands[j].get());
+          auto des_add_asset_quantity = static_cast<const iroha::model::AddAssetQuantity&>(*des_tx.commands[j].get());
+          ASSERT_EQ(add_asset_quantity.amount, des_add_asset_quantity.amount);
+          ASSERT_EQ(add_asset_quantity.asset_id, des_add_asset_quantity.asset_id);
+          ASSERT_EQ(add_asset_quantity.account_id, des_add_asset_quantity.account_id);
         }
       }
 

@@ -531,6 +531,10 @@ namespace iroha {
                 std::make_shared<model::AddPeer>(add_peer.value()));
           }
         } else if (command_type == "AddAssetQuantity") {
+          if (auto add_asset_quantity = deserialize_add_asset_quantity(json_command)) {
+            commands.push_back(
+                std::make_shared<model::AddAssetQuantity>(add_asset_quantity.value()));
+          }
         } else if (command_type == "AddSignatory") {
         } else if (command_type == "AssignMasterKey") {
         } else if (command_type == "CreateAccount") {
@@ -559,6 +563,25 @@ namespace iroha {
       // address
       add_peer.address = json_command["address"].GetString();
       return add_peer;
+    }
+
+    nonstd::optional<model::AddAssetQuantity>
+    BlockSerializer::deserialize_add_asset_quantity(
+        GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
+      // TODO: make this function return nullopt when some field is missed
+      model::AddAssetQuantity add_asset_quantity{};
+
+      // account_id
+      add_asset_quantity.account_id = json_command["account_id"].GetString();
+
+      // asset_id
+      add_asset_quantity.asset_id = json_command["asset_id"].GetString();
+
+      // amount
+      auto amount = std::decimal::decimal64(json_command["amount"].GetDouble());
+      add_asset_quantity.amount = amount;
+
+      return add_asset_quantity;
     }
   }
 }
