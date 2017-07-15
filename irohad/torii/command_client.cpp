@@ -51,7 +51,10 @@ namespace torii {
     void* got_tag;
     bool ok = false;
 
-    if (!cq_.Next(&got_tag, &ok)) {  // CompletionQueue::Next() is blocking.
+    /**
+     * pulls a new rpc response. If no response, blocks this thread.
+     */
+    if (!cq_.Next(&got_tag, &ok)) {
       throw std::runtime_error("CompletionQueue::Next() returns error");
     }
 
@@ -68,13 +71,13 @@ namespace torii {
   }
 
   /**
-   * manages state of an async call.
+   * manages state of a Torii async client call.
    */
   struct ToriiAsyncClientCall {
     iroha::protocol::ToriiResponse response;
     grpc::ClientContext context;
     grpc::Status status;
-    std::unique_ptr<grpc::ClientAsyncResponseReader<iroha::protocol::ToriiResponse>> response_reader;
+    std::unique_ptr<grpc::ClientAsyncResponseReader<iroha::protocol::ToriiResponse>> responseReader;
     CommandAsyncClient::Callback callback;
   };
 
@@ -89,8 +92,8 @@ namespace torii {
   {
     auto call = new ToriiAsyncClientCall;
     call->callback = callback;
-    call->response_reader = stub_->AsyncTorii(&call->context, tx, &cq_);
-    call->response_reader->Finish(&call->response, &call->status, (void*)call);
+    call->responseReader = stub_->AsyncTorii(&call->context, tx, &cq_);
+    call->responseReader->Finish(&call->response, &call->status, (void*)call);
   }
 
   /**
@@ -114,10 +117,20 @@ namespace torii {
    * starts response listener of a non-blocking torii client.
    */
   void CommandAsyncClient::listen() {
+
+    /**
+     * got_tag - a state (ToriiAsyncClientCall) that is sent by a command server.
+     * ok - true if a regular event, otherwise false (e.g. grpc::Alarm)
+     */
     void* got_tag;
     bool ok = false;
 
+    /**
+     * pulls a new client's response. If no response, blocks this thread.
+     * CompletionQueue::Next() returns false if cq_.Shutdown() is executed.
+     */
     while (cq_.Next(&got_tag, &ok)) {
+
       if (!got_tag || !ok) {
         break;
       }

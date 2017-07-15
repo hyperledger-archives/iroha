@@ -54,12 +54,23 @@ namespace torii {
         &CommandServiceHandler::ToriiHandler
     );
 
+    /**
+     * tag is a state corresponding to one rpc connection.
+     * ok is true if read a regular event, false otherwise (e.g. grpc::Alarm is not a regular event).
+     */
     void* tag;
     bool ok;
+
+    /**
+     * pulls a state of a new client's rpc request from completion queue (cq_)
+     * If no request, CompletionQueue::Next() waits a new request (blocks this thread).
+     * CompletionQueue::Next() returns false if cq_->Shutdown() is executed.
+     */
     while (cq_->Next(&tag, &ok)) {
       auto callbackTag =
           static_cast<network::UntypedCall<CommandServiceHandler>::CallOwner*>(tag);
       if (ok && callbackTag) {
+        /*assert(callbackTag);*/
         callbackTag->onCompleted(this);
       } else {
         isShutdownCompletionQueue_ = true;

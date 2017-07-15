@@ -83,7 +83,7 @@ namespace torii {
     std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
     grpc::CompletionQueue cq_;
     grpc::Status status_;
-    std::thread listener_;
+    std::thread listener_; // listens rpcs' responses and executes callbacks.
   };
 
 }  // namespace torii
