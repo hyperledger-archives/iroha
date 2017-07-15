@@ -40,8 +40,7 @@ namespace iroha {
             "DROP TABLE IF EXISTS exchange;\n"
             "DROP TABLE IF EXISTS asset;\n"
             "DROP TABLE IF EXISTS domain;\n"
-            "DROP TABLE IF EXISTS signatory;\n"
-            "DROP SEQUENCE IF EXISTS peer_peer_id_seq;";
+            "DROP TABLE IF EXISTS signatory;";
 
         pqxx::connection connection(pgopt_);
         pqxx::work txn(connection);

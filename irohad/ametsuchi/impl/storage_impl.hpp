@@ -45,12 +45,14 @@ namespace iroha {
       rxcpp::observable<model::Block> get_blocks_in_range(uint32_t from,
                                                           uint32_t to) override;
 
-      nonstd::optional<model::Account> getAccount(const std::string &account_id) override;
+      nonstd::optional<model::Account> getAccount(
+          const std::string &account_id) override;
       std::vector<ed25519::pubkey_t> getSignatories(
           const std::string &account_id) override;
-      nonstd::optional<model::Asset> getAsset(const std::string &asset_id) override;
-      nonstd::optional<model::AccountAsset> getAccountAsset(const std::string &account_id,
-                                          const std::string &asset_id) override;
+      nonstd::optional<model::Asset> getAsset(
+          const std::string &asset_id) override;
+      nonstd::optional<model::AccountAsset> getAccountAsset(
+          const std::string &account_id, const std::string &asset_id) override;
       std::vector<model::Peer> getPeers() override;
 
      private:
@@ -103,11 +105,10 @@ namespace iroha {
           "    PRIMARY KEY (account_id, public_key)\n"
           ");\n"
           "CREATE TABLE IF NOT EXISTS peer (\n"
-          "    peer_id serial,\n"
-          "    public_key bytea NOT NULL REFERENCES signatory,\n"
+          "    public_key bytea NOT NULL,\n"
           "    address character varying(21) NOT NULL UNIQUE,\n"
           "    state int NOT NULL DEFAULT 0,\n"
-          "    PRIMARY KEY (peer_id)\n"
+          "    PRIMARY KEY (public_key)\n"
           ");\n"
           "CREATE TABLE IF NOT EXISTS asset (\n"
           "    asset_id character varying(197),\n"

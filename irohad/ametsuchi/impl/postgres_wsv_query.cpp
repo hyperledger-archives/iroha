@@ -121,8 +121,8 @@ namespace iroha {
       }
       Asset asset;
       auto row = result.at(0);
-      row.at("asset_id") >> asset.name;
-      //      row.at("domain_id") >> ?
+      row.at("asset_id") >> asset.asset_id;
+      row.at("domain_id") >> asset.domain_id;
       int32_t precision;
       row.at("precision") >> precision;
       asset.precision = precision;

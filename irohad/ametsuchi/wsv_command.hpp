@@ -37,11 +37,18 @@ namespace iroha {
       virtual ~WsvCommand() = default;
 
       /**
-       * Update or insert account
+       *
+       * @param account
+       * @return
+       */
+      virtual bool insertAccount(const model::Account &account) = 0;
+
+      /**
+       *
        * @param account
        * @return true if no error occurred, false otherwise
        */
-      virtual bool upsertAccount(const model::Account &account) = 0;
+      virtual bool updateAccount(const model::Account &account) = 0;
 
       /**
        *
@@ -85,11 +92,11 @@ namespace iroha {
           const ed25519::pubkey_t &signatory) = 0;
 
       /**
-       * Update or insert peer
+       *
        * @param peer
        * @return
        */
-      virtual bool upsertPeer(const model::Peer &peer) = 0;
+      virtual bool insertPeer(const model::Peer &peer) = 0;
 
       /**
        *

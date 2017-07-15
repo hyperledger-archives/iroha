@@ -74,7 +74,7 @@ namespace iroha {
       peer.address = address;
       peer.pubkey = peer_key;
       // Will return false if peer is not unique
-      return commands.upsertPeer(peer);
+      return commands.insertPeer(peer);
     }
 
     bool AddSignatory::execute(ametsuchi::WsvQuery &queries,
@@ -89,7 +89,7 @@ namespace iroha {
         // Such account not found
         return false;
       account.value().master_key = pubkey;
-      return commands.upsertAccount(account.value());
+      return commands.updateAccount(account.value());
     }
 
     bool CreateAccount::execute(ametsuchi::WsvQuery &queries,
@@ -104,14 +104,15 @@ namespace iroha {
       account.permissions = permissions;
 
       return commands.insertSignatory(pubkey) &&
-             commands.upsertAccount(account) &&
+             commands.insertAccount(account) &&
              commands.insertAccountSignatory(account.account_id, pubkey);
     }
 
     bool CreateAsset::execute(ametsuchi::WsvQuery &queries,
                               ametsuchi::WsvCommand &commands) {
       Asset new_asset;
-      new_asset.name = asset_name + "#" + domain_id;
+      new_asset.asset_id = asset_name + "#" + domain_id;
+      new_asset.domain_id = domain_id;
       new_asset.precision = precision;
       // The insert will fail if asset already exist
       return commands.insertAsset(new_asset);
@@ -139,7 +140,7 @@ namespace iroha {
         return false;
 
       account.value().permissions = new_permissions;
-      return commands.upsertAccount(account.value());
+      return commands.updateAccount(account.value());
     }
 
     bool SetQuorum::execute(ametsuchi::WsvQuery &queries,
@@ -150,7 +151,7 @@ namespace iroha {
         return false;
 
       account.value().quorum = new_quorum;
-      return commands.upsertAccount(account.value());
+      return commands.updateAccount(account.value());
     }
 
     bool TransferAsset::execute(ametsuchi::WsvQuery &queries,
