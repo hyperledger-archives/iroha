@@ -16,10 +16,9 @@
  */
 
 #include <ametsuchi/block_serializer.hpp>
-#include <iostream>
 #include <model/commands/add_asset_quantity.hpp>
 #include <model/commands/add_peer.hpp>
-#include <sstream>
+#include <model/commands/add_signatory.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -142,6 +141,21 @@ namespace iroha {
 
         writer.Double(
             std::decimal::decimal64_to_double(add_asset_quantity.amount));
+
+        writer.EndObject();
+      }
+      if (instanceof <model::AddSignatory>(&command)) {
+        auto add_signatory = static_cast<model::AddSignatory&>(command);
+        writer.StartObject();
+
+        writer.String("command_type");
+        writer.String("AddSignatory");
+
+        writer.String("account_id");
+        writer.String(add_signatory.account_id.c_str());
+
+        writer.String("pubkey");
+        writer.String(add_signatory.pubkey.to_string().c_str());
 
         writer.EndObject();
       }

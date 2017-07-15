@@ -23,6 +23,7 @@
 #include <rapidjson/prettywriter.h>
 #include <model/commands/add_peer.hpp>
 #include <model/commands/add_asset_quantity.hpp>
+#include <model/commands/add_signatory.hpp>
 
 iroha::model::Signature create_signature();
 iroha::model::Transaction create_transaction();
@@ -54,11 +55,18 @@ iroha::model::Transaction create_transaction() {
   std::fill(add_peer.peer_key.begin(), add_peer.peer_key.end(), 0x123);
   tx.commands.push_back(std::make_shared<iroha::model::AddPeer>(add_peer));
 
+  // AddAssetQuantity
   iroha::model::AddAssetQuantity add_asset_qty;
   add_asset_qty.account_id = "123";
   add_asset_qty.asset_id = "123";
   add_asset_qty.amount = std::decimal::make_decimal64(1010LL, -2);
   tx.commands.push_back(std::make_shared<iroha::model::AddAssetQuantity>(add_asset_qty));
+
+  // AddSignatory
+  iroha::model::AddSignatory add_signatory;
+  add_signatory.account_id = "123";
+  std::fill(add_signatory.pubkey.begin(), add_signatory.pubkey.end(), 0x123);
+  tx.commands.push_back(std::make_shared<iroha::model::AddSignatory>(add_signatory));
 
   return tx;
 }
