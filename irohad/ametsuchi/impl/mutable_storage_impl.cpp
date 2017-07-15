@@ -83,10 +83,5 @@ namespace iroha {
     std::vector<model::Peer> MutableStorageImpl::getPeers() {
       return wsv_->getPeers();
     }
-
-    nonstd::optional<model::Peer> MutableStorageImpl::getPeer(
-        const ed25519::pubkey_t &pubkey) {
-      return wsv_->getPeer(pubkey);
-    }
   }  // namespace ametsuchi
 }  // namespace iroha

@@ -75,14 +75,6 @@ namespace iroha {
        * @return
        */
       virtual std::vector<model::Peer> getPeers() = 0;
-
-      /**
-       *
-       * @param pubkey
-       * @return
-       */
-      virtual nonstd::optional<model::Peer> getPeer(
-          const ed25519::pubkey_t &pubkey) = 0;
     };
 
   }  // namespace ametsuchi

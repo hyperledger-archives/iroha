@@ -204,10 +204,5 @@ namespace iroha {
       return wsv_->getPeers();
     }
 
-    nonstd::optional<model::Peer> StorageImpl::getPeer(const ed25519::pubkey_t &pubkey) {
-      std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
-      return wsv_->getPeer(pubkey);
-    }
-
   }  // namespace ametsuchi
 }  // namespace iroha

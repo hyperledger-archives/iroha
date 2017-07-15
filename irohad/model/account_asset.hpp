@@ -16,7 +16,6 @@ limitations under the License.
 #ifndef IROHA_ACCOUNT_ASSET_HPP
 #define IROHA_ACCOUNT_ASSET_HPP
 
-#include <decimal/decimal>
 #include <string>
 
 namespace iroha {

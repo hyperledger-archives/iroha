@@ -26,6 +26,8 @@ namespace iroha {
     using nonstd::nullopt;
     using model::Account;
     using model::Asset;
+    using model::AccountAsset;
+    using model::Peer;
 
     PostgresWsvQuery::PostgresWsvQuery(pqxx::nontransaction &transaction)
         : transaction_(transaction) {}
@@ -106,7 +108,7 @@ namespace iroha {
             "SELECT \n"
             "  * \n"
             "FROM \n"
-            "  public.asset\n"
+            "  asset\n"
             "WHERE \n"
             "  asset.asset_id = " +
             transaction_.quote(asset_id) + ";");
@@ -120,19 +122,29 @@ namespace iroha {
       Asset asset;
       auto row = result.at(0);
       row.at("asset_id") >> asset.name;
-//      row.at("domain_id") >> ?
+      //      row.at("domain_id") >> ?
       int32_t precision;
       row.at("precision") >> precision;
       asset.precision = precision;
-//      row.at("data") >> ?
+      //      row.at("data") >> ?
       return asset;
     }
 
-    nonstd::optional<model::AccountAsset> PostgresWsvQuery::getAccountAsset(
+    optional<AccountAsset> PostgresWsvQuery::getAccountAsset(
         const std::string &account_id, const std::string &asset_id) {
       pqxx::result result;
       try {
-
+        result = transaction_.exec(
+            "SELECT \n"
+            "  * \n"
+            "FROM \n"
+            "  account_has_asset\n"
+            "WHERE \n"
+            "  account_has_asset.account_id = " +
+            transaction_.quote(account_id) +
+            " AND \n"
+            "  account_has_asset.asset_id = " +
+            transaction_.quote(asset_id) + ";");
       } catch (const std::exception &e) {
         return nullopt;
       }
@@ -143,16 +155,24 @@ namespace iroha {
       auto row = result.at(0);
       row.at("account_id") >> asset.account_id;
       row.at("asset_id") >> asset.asset_id;
-//      row.at("account_id") >> asset.balance;
+      row.at("amount") >> asset.balance;
+      //      row.at("permissions") >> ?
       return asset;
     }
 
-    std::vector<model::Peer> PostgresWsvQuery::getPeers() { return {}; }
-
-    nonstd::optional<model::Peer> PostgresWsvQuery::getPeer(
-        const ed25519::pubkey_t &pubkey) {
-      return nullopt;
+    std::vector<Peer> PostgresWsvQuery::getPeers() {
+      pqxx::result result;
+      try {
+        transaction_.exec(
+            "SELECT \n"
+            "  * \n"
+            "FROM \n"
+            "  peer;");
+      } catch (const std::exception &e) {
+        return {};
+      }
+      std::vector<Peer> peers;
+      return peers;
     }
-
   }  // namespace ametsuchi
 }  // namespace iroha

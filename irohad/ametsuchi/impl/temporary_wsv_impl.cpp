@@ -71,10 +71,5 @@ namespace iroha {
       return wsv_->getPeers();
     }
 
-    nonstd::optional<model::Peer> TemporaryWsvImpl::getPeer(
-        const ed25519::pubkey_t &pubkey) {
-      return wsv_->getPeer(pubkey);
-    }
-
   }  // namespace ametsuchi
 }  // namespace iroha
