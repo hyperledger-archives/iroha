@@ -40,7 +40,7 @@ namespace common {
         }
 
         int ConfigLoader::getIntOrElse(const std::string& key, int def){
-            if(doc[key.c_str()].IsInt()){
+            if(doc.IsObject() && doc.HasMember(key.c_str()) && doc[key.c_str()].IsInt()){
                 return doc[key.c_str()].GetInt();
             }else{
                 return def;
@@ -48,7 +48,7 @@ namespace common {
         }
 
         std::string ConfigLoader::getStringOrElse(const std::string& key, std::string def){
-            if(doc[key.c_str()].IsString()){
+            if(doc.IsObject() && doc.HasMember(key.c_str()) && doc[key.c_str()].IsString()){
                 return doc[key.c_str()].GetString();
             }else{
                 return def;
@@ -56,7 +56,7 @@ namespace common {
         }
 
         bool ConfigLoader::getBoolOrElse(const std::string& key, bool def){
-            if(doc[key.c_str()].IsBool()){
+            if(doc.IsObject() && doc.HasMember(key.c_str()) && doc[key.c_str()].IsBool()){
                 return doc[key.c_str()].GetBool();
             }else{
                 return def;
