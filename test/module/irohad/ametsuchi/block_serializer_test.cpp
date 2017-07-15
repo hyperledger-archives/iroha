@@ -163,5 +163,7 @@ TEST(block_serialize, block_serialize_test){
     }
 
     ASSERT_EQ(block.prev_hash, deserialized.prev_hash);
+    ASSERT_EQ(block.created_ts, deserialized.created_ts);
+    ASSERT_EQ(block.merkle_root, deserialized.merkle_root);
   }
 }

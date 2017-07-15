@@ -414,7 +414,6 @@ namespace iroha {
       model::Block block{};
 
       // hash
-      doc["hash"].GetString();
       std::string hash_str(doc["hash"].GetString(), doc["hash"].GetStringLength());
       auto hash_bytes = hex2bytes(hash_str);
       std::copy(hash_bytes.begin(), hash_bytes.end(), block.hash.begin());
@@ -443,11 +442,18 @@ namespace iroha {
       //height
       block.height = doc["height"].GetUint64();
 
-      // hash
-      doc["prev_hash"].GetString();
+      // prev_hash
       std::string prev_hash_str(doc["prev_hash"].GetString(), doc["prev_hash"].GetStringLength());
       auto prev_hash_bytes = hex2bytes(prev_hash_str);
       std::copy(prev_hash_bytes.begin(), prev_hash_bytes.end(), block.prev_hash.begin());
+
+      // txs number
+      block.txs_number = static_cast<uint16_t>(doc["txs_number"].GetUint());
+
+      // merkle_root
+      std::string merkle_root_str(doc["merkle_root"].GetString(), doc["merkle_root"].GetStringLength());
+      auto merkle_root_bytes = hex2bytes(merkle_root_str);
+      std::copy(merkle_root_bytes.begin(), merkle_root_bytes.end(), block.merkle_root.begin());
 
       return block;
     }
