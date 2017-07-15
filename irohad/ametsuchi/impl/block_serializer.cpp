@@ -21,6 +21,7 @@
 #include <model/commands/add_signatory.hpp>
 #include <model/commands/assign_master_key.hpp>
 #include <model/commands/create_account.hpp>
+#include <model/commands/create_asset.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -194,6 +195,25 @@ namespace iroha {
 
         writer.EndObject();
       }
+      if (instanceof <model::CreateAsset>(&command)) {
+        auto create_asset = static_cast<model::CreateAsset&>(command);
+        writer.StartObject();
+
+        writer.String("command_type");
+        writer.String("CreateAsset");
+
+        writer.String("asset_name");
+        writer.String(create_asset.asset_name.c_str());
+
+        writer.String("domain_id");
+        writer.String(create_asset.domain_id.c_str());
+
+        writer.String("precision");
+        writer.Uint(create_asset.precision);
+
+        writer.EndObject();
+      }
+
     }
   }
 }
