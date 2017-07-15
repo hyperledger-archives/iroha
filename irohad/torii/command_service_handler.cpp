@@ -38,8 +38,7 @@ namespace torii {
   CommandServiceHandler::~CommandServiceHandler() {}
 
   /**
-   * shuts down service handler.
-   * specifically, enqueues a special event that causes the completion queue to be shut down.
+   * shuts down service handler. (actually, shuts down completion queue only)
    */
   void CommandServiceHandler::shutdown() {
     cq_->Shutdown();
