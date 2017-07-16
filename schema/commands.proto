@@ -9,7 +9,7 @@ message AddAssetQuantity {
 
 message AddPeer {
     string address = 1;
-    string account_id = 2;
+    bytes peer_key = 2;
 }
 
 message AddSignatory {
@@ -53,12 +53,6 @@ message SetAccountQuorum {
     uint32 quorum = 2;
 }
 
-message SubtractAssetQuantity {
-    string account_id = 1;
-    string asset_id = 2;
-    string amount = 3;
-}
-
 message TransferAsset {
     string src_account_id = 1;
     string dest_account_id = 2;
@@ -76,9 +70,8 @@ message Command {
         CreateAccount create_account = 6;
         CreateDomain create_domain = 7;
         RemoveSignatory remove_sign = 8;
-        SubtractAssetQuantity subtract_asset_quantity = 9;
-        SetAccountPermissions set_permission = 10;
-        SetAccountQuorum    set_quorum = 11;
-        TransferAsset   transfer_asset = 12;
+        SetAccountPermissions set_permission = 9;
+        SetAccountQuorum    set_quorum = 10;
+        TransferAsset   transfer_asset = 11;
     }
 }
