@@ -50,7 +50,7 @@ nonstd::optional<uint32_t> check_consistency(std::string dump_dir) {
     if (status < 0) {
       // TODO: handle internal error
       return nonstd::nullopt;
-    } else {
+    } else if (status > 2) {
       uint n = status;
       tmp_id++;
       uint i = 1;
@@ -88,6 +88,7 @@ namespace iroha {
     FlatFile::~FlatFile() {}
 
     void FlatFile::add(uint32_t id, const std::vector<uint8_t> &block) {
+      auto next_id = id;
       std::string file_name = dump_dir + "/" + id_to_name(id);
       // Write block to binary file
       if (file_exist(file_name)) {
@@ -105,6 +106,9 @@ namespace iroha {
                                pfile);
         fflush(pfile);
         fclose(pfile);
+
+        // Update internals, release lock
+        current_id = next_id;
       }
     }
 

@@ -28,9 +28,9 @@ namespace iroha {
                             auto& top_block) {
         for (const auto& tx : block.transactions) {
           for (const auto& command : tx.commands) {
-            /*if (!executor.execute(*command)) {
+            if (!command->execute(query, executor)){
               return false;
-            }*/
+            }
           }
         }
         return true;

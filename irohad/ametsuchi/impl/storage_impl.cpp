@@ -24,6 +24,28 @@
 namespace iroha {
   namespace ametsuchi {
 
+    StorageImpl::StorageImpl(
+        std::string block_store_dir, std::string redis_host,
+        std::size_t redis_port, std::string postgres_options,
+        std::unique_ptr<FlatFile> block_store,
+        std::unique_ptr<cpp_redis::redis_client> index,
+        std::unique_ptr<pqxx::lazyconnection> wsv_connection,
+        std::unique_ptr<pqxx::nontransaction> wsv_transaction,
+        std::unique_ptr<WsvQuery> wsv)
+        : block_store_dir_(block_store_dir),
+          redis_host_(redis_host),
+          redis_port_(redis_port),
+          postgres_options_(postgres_options),
+          block_store_(std::move(block_store)),
+          index_(std::move(index)),
+          wsv_connection_(std::move(wsv_connection)),
+          wsv_transaction_(std::move(wsv_transaction)),
+          wsv_(std::move(wsv)) {
+      wsv_transaction_->exec(init_);
+      wsv_transaction_->exec(
+          "SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;");
+    }
+
     std::unique_ptr<TemporaryWsv> StorageImpl::createTemporaryWsv() {
       // TODO lock
 
@@ -79,8 +101,7 @@ namespace iroha {
         top_hash =
             serializer_.deserialize(block_store_->get(block_store_->last_id()))
                 ->hash;
-      }
-      else {
+      } else {
         top_hash.fill(0);
       }
 
@@ -140,59 +161,47 @@ namespace iroha {
       storage->committed = true;
     }
 
-    StorageImpl::StorageImpl(
-        std::string block_store_dir, std::string redis_host,
-        std::size_t redis_port, std::string postgres_options,
-        std::unique_ptr<FlatFile> block_store,
-        std::unique_ptr<cpp_redis::redis_client> index,
-        std::unique_ptr<pqxx::lazyconnection> wsv_connection,
-        std::unique_ptr<pqxx::nontransaction> wsv_transaction,
-        std::unique_ptr<WsvQuery> wsv)
-        : block_store_dir_(block_store_dir),
-          redis_host_(redis_host),
-          redis_port_(redis_port),
-          postgres_options_(postgres_options),
-          block_store_(std::move(block_store)),
-          index_(std::move(index)),
-          wsv_connection_(std::move(wsv_connection)),
-          wsv_transaction_(std::move(wsv_transaction)),
-          wsv_(std::move(wsv)) {
-      wsv_transaction_->exec(init_);
-      wsv_transaction_->exec(
-          "SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;");
+    rxcpp::observable<model::Transaction> StorageImpl::getAccountTransactions(
+        std::string account_id) {
+      std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
+      auto last_id = block_store_->last_id();
+      return getBlocks(1, last_id)
+          .flat_map([](auto block) {
+            return rxcpp::observable<>::iterate(block.transactions);
+          })
+          .filter([account_id](auto tx) {
+            return tx.creator_account_id == account_id;
+          });
     }
 
-    rxcpp::observable<model::Transaction> StorageImpl::get_account_transactions(
-        ed25519::pubkey_t pub_key) {
-      return rxcpp::observable<>::create<model::Transaction>([](auto s) {
-        s.on_next(model::Transaction{});
-        s.on_completed();
-      });
-    }
-
-    rxcpp::observable<model::Transaction> StorageImpl::get_asset_transactions(
-        std::string asset_full_name) {
-      return rxcpp::observable<>::create<model::Transaction>([](auto s) {
-        s.on_next(model::Transaction{});
-        s.on_completed();
-      });
-    }
-
-    rxcpp::observable<model::Transaction>
-    StorageImpl::get_account_asset_transactions(std::string account_id,
-                                                std::string asset_id) {
-      return rxcpp::observable<>::create<model::Transaction>([](auto s) {
-        s.on_next(model::Transaction{});
-        s.on_completed();
-      });
-    }
-
-    rxcpp::observable<model::Block> StorageImpl::get_blocks_in_range(
-        uint32_t from, uint32_t to) {
-      return rxcpp::observable<>::create<model::Block>([](auto s) {
-        s.on_next(model::Block{});
-        s.on_completed();
-      });
+    rxcpp::observable<model::Block> StorageImpl::getBlocks(uint32_t from,
+                                                           uint32_t to) {
+      std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
+      auto last_id = block_store_->last_id();
+      if (to > last_id) {
+        to = last_id;
+      }
+      return rxcpp::observable<>::range(from, to)
+          .flat_map([this](auto i) {
+            auto bytes = block_store_->get(i);
+            return rxcpp::observable<>::create<decltype(bytes)>(
+                [bytes](auto s) {
+                  if (!bytes.empty()) {
+                    s.on_next(bytes);
+                  }
+                  s.on_completed();
+                });
+          })
+          .flat_map([this](auto bytes) {
+            auto block = serializer_.deserialize(bytes);
+            return rxcpp::observable<>::create<typename decltype(
+                block)::value_type>([block](auto s) {
+              if (block.has_value()) {
+                s.on_next(*block);
+              }
+              s.on_completed();
+            });
+          });
     }
 
     nonstd::optional<model::Account> StorageImpl::getAccount(

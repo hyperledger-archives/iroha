@@ -15,17 +15,45 @@
  * limitations under the License.
  */
 
+#include <dirent.h>
 #include <gtest/gtest.h>
 #include <cpp_redis/cpp_redis>
-#include <model/commands/add_asset_quantity.hpp>
-#include <model/commands/add_peer.hpp>
-#include <model/commands/transfer_asset.hpp>
 #include <pqxx/pqxx>
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "common/types.hpp"
+#include "model/commands/add_asset_quantity.hpp"
+#include "model/commands/add_peer.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
+#include "model/commands/transfer_asset.hpp"
+#include "model/model_hash_provider_impl.hpp"
+
+void remove_all(const std::string &dump_dir) {
+  if (!dump_dir.empty()) {
+    // Directory iterator:
+    struct dirent **namelist;
+    auto status = scandir(dump_dir.c_str(), &namelist, NULL, alphasort);
+    if (status < 0) {
+      // TODO: handle internal error
+    } else {
+      uint n = status;
+      uint i = 1;
+      while (++i < n) {
+        if (std::remove((dump_dir + "/" + namelist[i]->d_name).c_str())) {
+          perror("Error deleting file");
+        }
+      }
+      for (uint j = 0; j < n; ++j) {
+        free(namelist[j]);
+      }
+      free(namelist);
+    }
+    if (std::remove(dump_dir.c_str())) {
+      perror("Error deleting file");
+    }
+  }
+}
 
 namespace iroha {
   namespace ametsuchi {
@@ -58,7 +86,7 @@ namespace iroha {
         client.sync_commit();
         client.disconnect();
 
-        //        remove_all(block_store_path);
+        remove_all(block_store_path);
       }
 
       std::string pgopt_ =
@@ -71,11 +99,14 @@ namespace iroha {
     };
 
     TEST_F(AmetsuchiTest, SampleTest) {
+      model::HashProviderImpl hashProvider;
+
       auto storage =
           StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
       ASSERT_TRUE(storage);
 
       model::Transaction txn;
+      txn.creator_account_id = "admin1";
       model::CreateDomain createDomain;
       createDomain.domain_name = "ru";
       txn.commands.push_back(
@@ -94,25 +125,33 @@ namespace iroha {
           EXPECT_TRUE(tx.commands.at(1)->execute(query, executor));
           return true;
         });
-        auto account = wsv->getAccount("user1@ru");
+        auto account = wsv->getAccount(createAccount.account_name + "@" +
+                                       createAccount.domain_id);
         ASSERT_TRUE(account);
-        ASSERT_EQ(account->account_id, "user1@ru");
-        ASSERT_EQ(account->domain_name, "ru");
+        ASSERT_EQ(account->account_id,
+                  createAccount.account_name + "@" + createAccount.domain_id);
+        ASSERT_EQ(account->domain_name, createAccount.domain_id);
         ASSERT_EQ(account->master_key, createAccount.pubkey);
       }
 
       {
-        auto account = storage->getAccount("username@ru");
+        auto account = storage->getAccount(createAccount.account_name + "@" +
+                                           createAccount.domain_id);
         ASSERT_FALSE(account);
       }
 
       model::Block block;
       block.transactions.push_back(txn);
+      block.height = 1;
+      block.prev_hash.fill(0);
+      auto block1hash = hashProvider.get_hash(block);
+      block.hash = block1hash;
+      block.txs_number = block.transactions.size();
 
       {
         auto ms = storage->createMutableStorage();
         ms->apply(block, [](const auto &blk, auto &executor, auto &query,
-                            const auto &top_block) {
+                            const auto &top_hash) {
           EXPECT_TRUE(
               blk.transactions.at(0).commands.at(0)->execute(query, executor));
           EXPECT_TRUE(
@@ -123,14 +162,17 @@ namespace iroha {
       }
 
       {
-        auto account = storage->getAccount("user1@ru");
+        auto account = storage->getAccount(createAccount.account_name + "@" +
+                                           createAccount.domain_id);
         ASSERT_TRUE(account);
-        ASSERT_EQ(account->account_id, "user1@ru");
-        ASSERT_EQ(account->domain_name, "ru");
+        ASSERT_EQ(account->account_id,
+                  createAccount.account_name + "@" + createAccount.domain_id);
+        ASSERT_EQ(account->domain_name, createAccount.domain_id);
         ASSERT_EQ(account->master_key, createAccount.pubkey);
       }
 
       txn = model::Transaction();
+      txn.creator_account_id = "admin2";
       createAccount = model::CreateAccount();
       createAccount.account_name = "user2";
       createAccount.domain_id = "ru";
@@ -157,11 +199,16 @@ namespace iroha {
 
       block = model::Block();
       block.transactions.push_back(txn);
+      block.height = 2;
+      block.prev_hash = block1hash;
+      auto block2hash = hashProvider.get_hash(block);
+      block.hash = block2hash;
+      block.txs_number = block.transactions.size();
 
       {
         auto ms = storage->createMutableStorage();
         ms->apply(block, [](const auto &blk, auto &executor, auto &query,
-                            const auto &top_block) {
+                            const auto &top_hash) {
           EXPECT_TRUE(
               blk.transactions.at(0).commands.at(0)->execute(query, executor));
           EXPECT_TRUE(
@@ -187,6 +234,23 @@ namespace iroha {
         ASSERT_EQ(asset2->asset_id, "RUB#ru");
         ASSERT_EQ(asset2->balance, 100);
       }
+
+      // Block store tests
+      storage->getBlocks(1, 2).subscribe([block1hash, block2hash](auto block){
+        if (block.height == 1){
+          EXPECT_EQ(block.hash, block1hash);
+        }
+        else if (block.height == 2){
+          EXPECT_EQ(block.hash, block2hash);
+        }
+      });
+
+      storage->getAccountTransactions("admin1").subscribe([](auto tx){
+        EXPECT_EQ(tx.commands.size(), 2);
+      });
+      storage->getAccountTransactions("admin2").subscribe([](auto tx){
+        EXPECT_EQ(tx.commands.size(), 4);
+      });
     }
 
     TEST_F(AmetsuchiTest, PeerTest) {
@@ -206,7 +270,7 @@ namespace iroha {
       {
         auto ms = storage->createMutableStorage();
         ms->apply(block, [](const auto &blk, auto &executor, auto &query,
-                            const auto &top_block) {
+                            const auto &top_hash) {
           EXPECT_TRUE(
               blk.transactions.at(0).commands.at(0)->execute(query, executor));
           return true;
