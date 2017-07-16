@@ -15,4 +15,5 @@ limitations under the License.
 */
 
 #include <network/peer_communication_service.hpp>
+#include <network/consensus_gate.hpp>
 
