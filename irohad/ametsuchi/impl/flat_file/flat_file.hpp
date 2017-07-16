@@ -30,17 +30,14 @@ namespace iroha {
         ~FlatFile();
         void add(uint32_t id, const std::vector<uint8_t> &block);
         std::vector<uint8_t> get(uint32_t id) const;
-        void remove(uint32_t id);
+        uint32_t last_id() const;
         std::string directory() const;
 
        private:
-        FlatFile(const std::string &path);
+        uint32_t current_id;
         const std::string dump_dir;
-        // Get next auto increment
-        // Get last consistent id, check iternal consistency of block store
-        uint32_t check_consistency();
-        std::string id_to_name(uint32_t id) const;
-        uint32_t name_to_id(std::string name) const;
+
+        FlatFile(uint32_t current_id, const std::string &path);
         bool file_exist(const std::string &name) const;
         long file_size(const std::string &filename) const;
       };

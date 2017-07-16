@@ -18,11 +18,11 @@
 #ifndef IROHA_MUTABLE_STORAGE_IMPL_HPP
 #define IROHA_MUTABLE_STORAGE_IMPL_HPP
 
-#include "ametsuchi/impl/flat_file/flat_file.hpp"
-#include "ametsuchi/mutable_storage.hpp"
 #include <cpp_redis/redis_client.hpp>
-#include <pqxx/nontransaction>
 #include <pqxx/connection>
+#include <pqxx/nontransaction>
+#include <unordered_map>
+#include "ametsuchi/mutable_storage.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -30,7 +30,7 @@ namespace iroha {
       friend class StorageImpl;
 
      public:
-      MutableStorageImpl(std::unique_ptr<FlatFile> &block_store,
+      MutableStorageImpl(hash256_t top_hash,
                          std::unique_ptr<cpp_redis::redis_client> index,
                          std::unique_ptr<pqxx::lazyconnection> connection,
                          std::unique_ptr<pqxx::nontransaction> transaction,
@@ -38,18 +38,22 @@ namespace iroha {
                          std::unique_ptr<WsvCommand> executor);
       bool apply(const model::Block &block,
                  std::function<bool(const model::Block &, WsvCommand &,
-                                    WsvQuery &, const model::Block &)>
+                                    WsvQuery &, const hash256_t &)>
                      function) override;
       ~MutableStorageImpl() override;
-      nonstd::optional<model::Account> getAccount(const std::string &account_id) override;
-      std::vector<ed25519::pubkey_t> getSignatories(const std::string &account_id) override;
-      nonstd::optional<model::Asset> getAsset(const std::string &asset_id) override;
-      nonstd::optional<model::AccountAsset> getAccountAsset(const std::string &account_id,
-                                          const std::string &asset_id) override;
+      nonstd::optional<model::Account> getAccount(
+          const std::string &account_id) override;
+      std::vector<ed25519::pubkey_t> getSignatories(
+          const std::string &account_id) override;
+      nonstd::optional<model::Asset> getAsset(
+          const std::string &asset_id) override;
+      nonstd::optional<model::AccountAsset> getAccountAsset(
+          const std::string &account_id, const std::string &asset_id) override;
       std::vector<model::Peer> getPeers() override;
 
      private:
-      std::unique_ptr<FlatFile> &block_store_;
+      hash256_t top_hash_;
+      std::unordered_map<uint32_t, model::Block> block_store_;
       std::unique_ptr<cpp_redis::redis_client> index_;
 
       std::unique_ptr<pqxx::lazyconnection> connection_;

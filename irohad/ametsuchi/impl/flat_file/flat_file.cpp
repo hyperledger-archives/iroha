@@ -15,20 +15,75 @@
  * limitations under the License.
  */
 
+#include "ametsuchi/impl/flat_file/flat_file.hpp"
 #include <dirent.h>
 #include <stdio.h>
 #include <sys/stat.h>
-#include <ametsuchi/impl/flat_file/flat_file.hpp>
 #include <iostream>
+#include <nonstd/optional.hpp>
+
+std::string id_to_name(uint32_t id) {
+  std::string new_id(16, '\0');
+  sprintf(&new_id[0], "%016u", id);
+  return new_id;
+}
+
+uint32_t name_to_id(std::string name) {
+  std::string::size_type sz;
+  return std::stoul(name, &sz);
+}
+
+void remove(std::string dump_dir, uint32_t id) {
+  // Assume that id exists
+  auto f_name = dump_dir + "/" + id_to_name(id);
+  if (std::remove(f_name.c_str()) != 0) {
+    perror("Error deleting file");
+  }
+}
+
+nonstd::optional<uint32_t> check_consistency(std::string dump_dir) {
+  uint32_t tmp_id = 0u;
+  if (!dump_dir.empty()) {
+    // Directory iterator:
+    struct dirent **namelist;
+    auto status = scandir(dump_dir.c_str(), &namelist, NULL, alphasort);
+    if (status < 0) {
+      // TODO: handle internal error
+      return nonstd::nullopt;
+    } else {
+      uint n = status;
+      tmp_id++;
+      uint i = 1;
+      while (++i < n) {
+        if (id_to_name(tmp_id) != namelist[i]->d_name) {
+          for (uint j = i; j < n; ++j) {
+            remove(dump_dir, name_to_id(namelist[j]->d_name));
+          }
+          break;
+        }
+        tmp_id = name_to_id(namelist[i]->d_name);
+      }
+
+      for (uint j = 0; j < n; ++j) {
+        free(namelist[j]);
+      }
+      free(namelist);
+    }
+
+  } else {
+    // Not a directory
+    // TODO: handle not a directory
+    std::cout << "Not a directory " << std::endl;
+    return nonstd::nullopt;
+  }
+  return tmp_id;
+}
 
 namespace iroha {
   namespace ametsuchi {
 
-    FlatFile::FlatFile(const std::string &path) : dump_dir(path) {
-      // Check if path exist:
-//      dump_dir = path;
-//      check_consistency();
-    }
+    FlatFile::FlatFile(uint32_t current_id, const std::string &path)
+        : current_id(current_id), dump_dir(path) {}
 
     FlatFile::~FlatFile() {}
 
@@ -64,61 +119,8 @@ namespace iroha {
         return buf;
       } else {
         std::cout << "No file with this id found" << std::endl;
-        return std::vector<uint8_t>();
+        return {};
       }
-    }
-
-    void FlatFile::remove(uint32_t id) {
-      // Assume that id exists
-      auto f_name = dump_dir + "/" + id_to_name(id);
-      if (std::remove(f_name.c_str()) != 0) perror("Error deleting file");
-    }
-
-    uint32_t FlatFile::check_consistency() {
-      uint32_t tmp_id = 0u;
-      if (!dump_dir.empty()) {
-        // Directory iterator:
-        struct dirent **namelist;
-        auto status = scandir(dump_dir.c_str(), &namelist, NULL, alphasort);
-        if (status < 0) {
-          // TODO: handle internal error
-        } else {
-          uint n = status;
-          tmp_id++;
-          uint i = 1;
-          while (++i < n) {
-            if (id_to_name(tmp_id) != namelist[i]->d_name) {
-              for (uint j = i; j < n; ++j) {
-                remove(name_to_id(namelist[j]->d_name));
-              }
-              break;
-            }
-            tmp_id = name_to_id(namelist[i]->d_name);
-          }
-
-          for (uint j = 0; j < n; ++j) {
-            free(namelist[j]);
-          }
-          free(namelist);
-        }
-
-      } else {
-        // Not a directory
-        // TODO: handle not a directory
-        std::cout << "Not a directory " << std::endl;
-      }
-      return tmp_id;
-    }
-
-    std::string FlatFile::id_to_name(uint32_t id) const {
-      std::string new_id(16, '\0');
-      sprintf(&new_id[0], "%016u", id);
-      return new_id;
-    }
-
-    uint32_t FlatFile::name_to_id(std::string name) const {
-      std::string::size_type sz;
-      return std::stoul(name, &sz);
     }
 
     bool FlatFile::file_exist(const std::string &name) const {
@@ -134,11 +136,17 @@ namespace iroha {
 
     std::unique_ptr<FlatFile> FlatFile::create(const std::string &path) {
       // TODO directory check
-      return std::unique_ptr<FlatFile>(new FlatFile(path));
+      auto res = check_consistency(path);
+      if (!res) {
+        return nullptr;
+      }
+      return std::unique_ptr<FlatFile>(new FlatFile(*res, path));
     }
 
-    std::string FlatFile::directory() const {
-      return dump_dir;
+    std::string FlatFile::directory() const { return dump_dir; }
+
+    uint32_t FlatFile::last_id() const {
+      return current_id;
     }
 
   }  // namespace ametsuchi

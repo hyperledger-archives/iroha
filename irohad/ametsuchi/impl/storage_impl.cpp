@@ -73,8 +73,19 @@ namespace iroha {
         return nullptr;
       }
 
+      hash256_t top_hash;
+
+      if (block_store_->last_id()) {
+        top_hash =
+            serializer_.deserialize(block_store_->get(block_store_->last_id()))
+                ->hash;
+      }
+      else {
+        top_hash.fill(0);
+      }
+
       return std::make_unique<MutableStorageImpl>(
-          block_store_, std::move(index), std::move(postgres_connection),
+          top_hash, std::move(index), std::move(postgres_connection),
           std::move(wsv_transaction), std::move(wsv), std::move(executor));
     }
 
@@ -120,8 +131,10 @@ namespace iroha {
     void StorageImpl::commit(std::unique_ptr<MutableStorage> mutableStorage) {
       std::unique_lock<std::shared_timed_mutex> write(rw_lock_);
       auto storage_ptr = std::move(mutableStorage);  // get ownership of storage
-      MutableStorageImpl *storage =
-          static_cast<MutableStorageImpl*>(storage_ptr.get());
+      auto storage = static_cast<MutableStorageImpl *>(storage_ptr.get());
+      for (const auto &block : storage->block_store_) {
+        block_store_->add(block.first, serializer_.serialize(block.second));
+      }
       storage->index_->exec();
       storage->transaction_->exec("COMMIT;");
       storage->committed = true;

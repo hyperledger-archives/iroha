@@ -23,12 +23,13 @@ namespace iroha {
     bool MutableStorageImpl::apply(
         const model::Block &block,
         std::function<bool(const model::Block &, WsvCommand &, WsvQuery &,
-                           const model::Block &)>
+                           const hash256_t &)>
             function) {
-      // TODO replace last arg with previous block
       transaction_->exec("SAVEPOINT savepoint_;");
-      auto result = function(block, *executor_, *this, {});
+      auto result = function(block, *executor_, *this, top_hash_);
       if (result) {
+        block_store_.insert(std::make_pair(block.height, block));
+        top_hash_ = block.hash;
         transaction_->exec("RELEASE SAVEPOINT savepoint_;");
       } else {
         transaction_->exec("ROLLBACK TO SAVEPOINT savepoint_;");
@@ -37,12 +38,11 @@ namespace iroha {
     }
 
     MutableStorageImpl::MutableStorageImpl(
-        std::unique_ptr<FlatFile> &block_store,
-        std::unique_ptr<cpp_redis::redis_client> index,
+        hash256_t top_hash, std::unique_ptr<cpp_redis::redis_client> index,
         std::unique_ptr<pqxx::lazyconnection> connection,
         std::unique_ptr<pqxx::nontransaction> transaction,
         std::unique_ptr<WsvQuery> wsv, std::unique_ptr<WsvCommand> executor)
-        : block_store_(block_store),
+        : top_hash_(top_hash),
           index_(std::move(index)),
           connection_(std::move(connection)),
           transaction_(std::move(transaction)),

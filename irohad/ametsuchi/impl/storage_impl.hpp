@@ -18,8 +18,9 @@
 #ifndef IROHA_STORAGE_IMPL_HPP
 #define IROHA_STORAGE_IMPL_HPP
 
-#include <ametsuchi/impl/flat_file/flat_file.hpp>
-#include <ametsuchi/storage.hpp>
+#include "ametsuchi/impl/flat_file/flat_file.hpp"
+#include "ametsuchi/storage.hpp"
+#include "ametsuchi/block_serializer.hpp"
 #include <cpp_redis/cpp_redis>
 #include <nonstd/optional.hpp>
 #include <pqxx/pqxx>
@@ -75,6 +76,8 @@ namespace iroha {
       std::unique_ptr<pqxx::lazyconnection> wsv_connection_;
       std::unique_ptr<pqxx::nontransaction> wsv_transaction_;
       std::unique_ptr<WsvQuery> wsv_;
+
+      BlockSerializer serializer_;
 
       // Allows multiple readers and a single writer
       std::shared_timed_mutex rw_lock_;
