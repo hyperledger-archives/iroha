@@ -33,6 +33,7 @@ namespace iroha {
         auto amount = pb_add_asset_quantity.mutable_amount();
         amount->set_integer_part(add_asset_quantity.amount.int_part);
         amount->set_fractial_part(add_asset_quantity.amount.frac_part);
+        return pb_add_asset_quantity;
       }
 
       model::AddAssetQuantity
@@ -41,10 +42,11 @@ namespace iroha {
         model::AddAssetQuantity add_asset_quantity;
         add_asset_quantity.account_id = pb_add_asset_quantity.account_id();
         add_asset_quantity.asset_id = pb_add_asset_quantity.asset_id();
-        add_asset_quantity.amount.int_part =
-            pb_add_asset_quantity.amount().integer_part();
-        add_asset_quantity.amount.frac_part =
-            pb_add_asset_quantity.amount().fractial_part();
+        Amount amount;
+        amount.int_part = pb_add_asset_quantity.amount().integer_part();
+        amount.frac_part = pb_add_asset_quantity.amount().fractial_part();
+        add_asset_quantity.amount = amount;
+
         return add_asset_quantity;
       }
 
