@@ -57,7 +57,8 @@ TEST(CommandTest, add_signatory) {
 TEST(CommandTest, add_asset_quantity) {
   auto orig_command = iroha::model::AddAssetQuantity();
   orig_command.account_id = "23";
-  orig_command.amount = "1.50";
+  orig_command.amount.int_part = 1;
+  orig_command.amount.frac_part = 50;
   orig_command.asset_id = "23";
 
   auto factory = iroha::model::converters::PbCommandFactory();
@@ -76,18 +77,6 @@ TEST(CommandTest, assign_master_key) {
   auto factory = iroha::model::converters::PbCommandFactory();
   auto proto_command = factory.serializeAssignMasterKey(orig_command);
   auto serial_command = factory.deserializeAssignMasterKey(proto_command);
-
-  //ASSERT_EQ(orig_command, serial_command);
-}
-
-TEST(CommandTest, AddSignatory) {
-  auto orig_command = iroha::model::AddSignatory();
-  orig_command.account_id = "23";
-
-
-  auto factory = iroha::model::converters::PbCommandFactory();
-  auto proto_command = factory.serializeAddSignatory(orig_command);
-  auto serial_command = factory.deserializeAddSignatory(proto_command);
 
   //ASSERT_EQ(orig_command, serial_command);
 }
