@@ -18,9 +18,9 @@
 #ifndef IROHA_TRANSFER_ASSET_HPP
 #define IROHA_TRANSFER_ASSET_HPP
 
-#include <decimal/decimal>
 #include <model/command.hpp>
 #include <string>
+#include "common/types.hpp"
 
 namespace iroha {
   namespace model {
@@ -46,7 +46,7 @@ namespace iroha {
       /**
        * Amount of transferred asset
        */
-      std::decimal::decimal64 amount;
+      Amount amount;
 
       bool validate(ametsuchi::WsvQuery& queries,
                     const Account& creator) override;
