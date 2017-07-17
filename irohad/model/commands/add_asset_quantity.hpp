@@ -20,6 +20,7 @@
 
 #include <model/command.hpp>
 #include <string>
+#include "common/types.hpp"
 
 namespace iroha {
   namespace model {
@@ -42,7 +43,7 @@ namespace iroha {
       /**
        * Amount to add to account asset
        */
-      std::string amount;
+      Amount amount;
 
       bool validate(ametsuchi::WsvQuery& queries,
                     const Account& creator) override;

@@ -14,14 +14,9 @@
 
 set(CMAKE_BUILD_TYPE Debug)
 
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
 
-# Reusable tests
-add_subdirectory(ametsuchi)
-#add_subdirectory(api)
-add_subdirectory(consensus)
-add_subdirectory(logger)
-add_subdirectory(peer_service)
-add_subdirectory(validation)
-add_subdirectory(torii)
-add_subdirectory(model)
+addtest(command_converter_test converters/pb_commands_test.cpp)
+target_link_libraries(command_converter_test
+    model
+    )
