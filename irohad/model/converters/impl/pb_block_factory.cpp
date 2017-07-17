@@ -16,6 +16,7 @@
  */
 
 #include "model/converters/pb_block_factory.hpp"
+#include "model/converters/pb_transaction_factory.hpp"
 
 namespace iroha {
   namespace model {
@@ -27,7 +28,11 @@ namespace iroha {
         // -----|Header|-----
         auto header = pb_block.mutable_header();
         header->set_created_time(block.created_ts);
-        // todo set signatures
+        for (auto sig: block.sigs){
+          auto pb_sig = header->add_signatures();
+          pb_sig->set_pubkey(sig.pubkey.data(), sig.pubkey.size());
+          pb_sig->set_signature(sig.signature.data(), sig.signature.size());
+        }
 
         // -----|Meta|-----
         auto meta = pb_block.mutable_meta();
@@ -40,7 +45,11 @@ namespace iroha {
 
         // -----|Body|-----
         auto body = pb_block.mutable_body();
-        // todo set transactions
+        PbTransactionFactory tx_factory;
+        for (auto tx: block.transactions){
+          auto pb_tx = body->add_transactions();
+          pb_tx->CopyFrom(tx_factory.serialize(tx));
+        }
 
         return pb_block;
       }
@@ -50,7 +59,13 @@ namespace iroha {
 
         // -----|Header|-----
         block.created_ts = pb_block.header().created_time();
-        // todo set signatures
+        auto header = pb_block.header();
+        for (auto pb_sig :header.signatures()){
+          Signature sig{};
+          std::copy(pb_sig.pubkey().begin(), pb_sig.pubkey().end(), sig.pubkey.begin());
+          std::copy(pb_sig.signature().begin(), pb_sig.signature().end(), sig.signature.begin());
+          block.sigs.push_back(sig);
+        }
 
         // -----|Meta|-----
         auto meta = pb_block.meta();
@@ -64,7 +79,10 @@ namespace iroha {
 
         // -----|Body|-----
         auto body = pb_block.body();
-        // todo set transactions
+        PbTransactionFactory tx_factory;
+        for (auto pb_tx: body.transactions()){
+          block.transactions.push_back(tx_factory.deserialize(pb_tx));
+        }
 
         return block;
       }
