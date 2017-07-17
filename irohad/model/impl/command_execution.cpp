@@ -42,6 +42,8 @@ namespace iroha {
         return false;
 
       auto account_asset = queries.getAccountAsset(account_id, asset_id);
+      auto precision = asset.value().precision;
+
       AccountAsset accountAsset;
       // Such accountAsset not found
       if (!account_asset) {
@@ -49,19 +51,14 @@ namespace iroha {
         accountAsset = AccountAsset();
         accountAsset.asset_id = asset_id;
         accountAsset.account_id = account_id;
-        accountAsset.balance =
-            static_cast<uint64_t>(std::decimal::decimal_to_double(amount) *
-                                  std::pow(10, asset.value().precision));
+        accountAsset.balance = amount.get_joint_amount(precision);
       } else {
         accountAsset = account_asset.value();
-        auto current_balance = std::decimal::make_decimal64(
-            (unsigned long long int)account_asset.value().balance,
-            -asset.value().precision);
-        auto new_balance = current_balance + amount;
+        // TODO: handle non trivial arithmetic
+        auto new_balance =
+            account_asset.value().balance + amount.get_joint_amount(precision);
         // TODO: handle overflow
-        accountAsset.balance =
-            static_cast<uint64_t>(std::decimal::decimal_to_double(new_balance) *
-                                  std::pow(10, asset.value().precision));
+        accountAsset.balance = new_balance;
       }
 
       // accountAsset.value().balance += amount;
@@ -174,15 +171,11 @@ namespace iroha {
       auto precision = asset.value().precision;
 
       // Get src balance
-      auto src_balance = std::decimal::make_decimal64(
-          (unsigned long long int)src_account_assert.value().balance,
-          -precision);
-      //
-      src_balance -= amount;
+      auto src_balance = src_account_assert.value().balance;
+      // TODO: handle non-trivial arithmetic
+      src_balance -= amount.get_joint_amount(precision);
       // Set new balance for source account
-      src_account_assert.value().balance =
-          static_cast<uint64_t>(std::decimal::decimal_to_double(src_balance) *
-                                std::pow(10, precision));
+      src_account_assert.value().balance = src_balance;
 
       if (!dest_account_assert) {
         // This assert is new for this account - create new AccountAsset
@@ -190,22 +183,17 @@ namespace iroha {
         dest_AccountAssert.asset_id = asset_id;
         dest_AccountAssert.account_id = dest_account_id;
         // Set new balance for dest account
-        dest_AccountAssert.balance = static_cast<uint64_t>(
-            std::decimal::decimal_to_double(amount) * std::pow(10, precision));
+        dest_AccountAssert.balance = amount.get_joint_amount(precision);
 
       } else {
         // Account already has such asset
         dest_AccountAssert = dest_account_assert.value();
         // Get balance dest account
-        auto dest_balance = std::decimal::make_decimal64(
-            (unsigned long long int)dest_account_assert.value().balance,
-            -precision);
+        auto dest_balance = dest_account_assert.value().balance;
 
-        dest_balance += amount;
+        dest_balance += amount.get_joint_amount(precision);
         // Set new balance for dest
-        dest_AccountAssert.balance = static_cast<uint64_t>(
-            std::decimal::decimal_to_double(dest_balance) *
-            std::pow(10, precision));
+        dest_AccountAssert.balance = dest_balance;
       }
 
       return commands.upsertAccountAsset(dest_AccountAssert) &&
