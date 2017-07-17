@@ -1,10 +1,15 @@
 syntax = "proto3";
 package iroha.protocol;
 
+message Amount {
+    uint64 integer_part = 1;
+    uint64 fractial_part = 2;
+}
+
 message AddAssetQuantity {
     string account_id = 1;
     string asset_id = 2;
-    string amount = 3;
+    Amount amount = 3;
 }
 
 message AddPeer {
@@ -71,7 +76,7 @@ message TransferAsset {
     string src_account_id = 1;
     string dest_account_id = 2;
     string asset_id = 3;
-    string ammount = 4;
+    Amount amount = 4;
 }
 
 message Command {
