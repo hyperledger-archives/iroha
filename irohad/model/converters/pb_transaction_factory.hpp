@@ -20,6 +20,7 @@
 
 #include "block.pb.h"
 #include "model/transaction.hpp"
+#include <memory>
 
 namespace iroha {
   namespace model {
@@ -43,6 +44,9 @@ namespace iroha {
          * @return model block
          */
         model::Transaction deserialize(protocol::Transaction &pb_tx);
+       private:
+//        std::shared_ptr<protocol::Command> serializeAbstractCommand(model::Command &command);
+//        std::shared_ptr<model::Command> deserializeAbstractCommand(protocol::Command &command);
       };
     } // namespace converters
   }  // namespace model

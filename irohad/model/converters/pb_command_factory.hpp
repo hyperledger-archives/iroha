@@ -41,48 +41,52 @@ namespace iroha {
       class PbCommandFactory {
        public:
         // asset quantity
-        protocol::AddAssetQuantity serializeAddAssetQuantity(model::AddAssetQuantity &addAssetQuantity);
-        model::AddAssetQuantity deserializeAddAssetQuantity(protocol::AddAssetQuantity &addAssetQuantity);
+        protocol::AddAssetQuantity serializeAddAssetQuantity(const model::AddAssetQuantity &addAssetQuantity);
+        model::AddAssetQuantity deserializeAddAssetQuantity(const protocol::AddAssetQuantity &addAssetQuantity);
 
         // add peer
-        protocol::AddPeer serializeAddPeer(model::AddPeer &addPeer);
-        model::AddPeer deserializeAddPeer(protocol::AddPeer &addPeer);
+        protocol::AddPeer serializeAddPeer(const model::AddPeer &addPeer);
+        model::AddPeer deserializeAddPeer(const protocol::AddPeer &addPeer);
 
         // add signatory
-        protocol::AddSignatory serializeAddSignatory(model::AddSignatory &addSignatory);
-        model::AddSignatory deserializeAddSignatory(protocol::AddSignatory &addSignatory);
+        protocol::AddSignatory serializeAddSignatory(const model::AddSignatory &addSignatory);
+        model::AddSignatory deserializeAddSignatory(const protocol::AddSignatory &addSignatory);
 
         // assign master key
-        protocol::AssignMasterKey serializeAssignMasterKey(model::AssignMasterKey &assignMasterKey);
-        model::AssignMasterKey deserializeAssignMasterKey(protocol::AssignMasterKey &assignMasterKey);
+        protocol::AssignMasterKey serializeAssignMasterKey(const model::AssignMasterKey &assignMasterKey);
+        model::AssignMasterKey deserializeAssignMasterKey(const protocol::AssignMasterKey &assignMasterKey);
 
         // create asset
-        protocol::CreateAsset serializeCreateAsset(model::CreateAsset &createAsset);
-        model::CreateAsset deserializeCreateAsset(protocol::CreateAsset &createAsset);
+        protocol::CreateAsset serializeCreateAsset(const model::CreateAsset &createAsset);
+        model::CreateAsset deserializeCreateAsset(const protocol::CreateAsset &createAsset);
 
         // create account
-        protocol::CreateAccount serializeCreateAccount(model::CreateAccount &createAccount);
-        model::CreateAccount deserializeCreateAccount(protocol::CreateAccount &createAccount);
+        protocol::CreateAccount serializeCreateAccount(const model::CreateAccount &createAccount);
+        model::CreateAccount deserializeCreateAccount(const protocol::CreateAccount &createAccount);
 
         // create domain
-        protocol::CreateDomain serializeCreateDomain(model::CreateDomain &createDomain);
-        model::CreateDomain deserializeCreateDomain(protocol::CreateDomain &createDomain);
+        protocol::CreateDomain serializeCreateDomain(const model::CreateDomain &createDomain);
+        model::CreateDomain deserializeCreateDomain(const protocol::CreateDomain &createDomain);
 
         // remove signatory
-        protocol::RemoveSignatory serializeRemoveSignatory(model::RemoveSignatory &removeSignatory);
-        model::RemoveSignatory deserializeRemoveSignatory(protocol::RemoveSignatory &removeSignatory);
+        protocol::RemoveSignatory serializeRemoveSignatory(const model::RemoveSignatory &removeSignatory);
+        model::RemoveSignatory deserializeRemoveSignatory(const protocol::RemoveSignatory &removeSignatory);
 
         // set account permissions
-        protocol::SetAccountPermissions serializeSetAccountPermissions(model::SetAccountPermissions &setAccountPermissions);
-        model::SetAccountPermissions deserializeSetAccountPermissions(protocol::SetAccountPermissions &setAccountPermissions);
+        protocol::SetAccountPermissions serializeSetAccountPermissions(const model::SetAccountPermissions &setAccountPermissions);
+        model::SetAccountPermissions deserializeSetAccountPermissions(const protocol::SetAccountPermissions &setAccountPermissions);
 
         // set account quorum
-        protocol::SetAccountQuorum serializeSetQuorum(model::SetQuorum &setAccountQuorum);
-        model::SetQuorum deserializeSetQuorum(protocol::SetAccountQuorum &setAccountQuorum);
+        protocol::SetAccountQuorum serializeSetQuorum(const model::SetQuorum &setAccountQuorum);
+        model::SetQuorum deserializeSetQuorum(const protocol::SetAccountQuorum &setAccountQuorum);
 
         // transfer asset
-        protocol::TransferAsset serializeTransferAsset(model::TransferAsset &subtractAssetQuantity);
-        model::TransferAsset deserializeTransferAsset(protocol::TransferAsset &subtractAssetQuantity);
+        protocol::TransferAsset serializeTransferAsset(const model::TransferAsset &subtractAssetQuantity);
+        model::TransferAsset deserializeTransferAsset(const protocol::TransferAsset &subtractAssetQuantity);
+
+        // abstract
+        protocol::Command &&serializeAbstractCommand(const model::Command &command);
+        std::shared_ptr<model::Command> deserializeAbstractCommand(const protocol::Command &command);
       };
     } // namespace converters
   }  // namespace model

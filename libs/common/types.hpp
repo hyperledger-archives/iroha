@@ -143,5 +143,10 @@ namespace iroha {
     return typeid(Base) == typeid(*ptr);
   }
 
+  template <typename Base, typename T>
+  inline bool instanceof (const T &ptr) {
+    return typeid(Base) == typeid(ptr);
+  }
+
 }  // namespace iroha
 #endif  // IROHA_COMMON_HPP
