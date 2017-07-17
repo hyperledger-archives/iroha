@@ -21,6 +21,7 @@
 #include <array>
 #include <crypto/base64.hpp>
 #include <cstdio>
+#include <string>
 
 /**
  * This file defines common types used in iroha.
@@ -106,6 +107,30 @@ namespace iroha {
   // timestamps
   using ts64_t = uint64_t;
   using ts32_t = uint32_t;
+
+  struct Amount {
+    uint64_t int_part;
+    uint64_t frac_part;
+
+    uint32_t get_frac_number() { return std::to_string(frac_part).length(); }
+
+    uint64_t get_joint_amount(uint32_t precision) {
+      auto coef = ipow(10, precision);
+      return int_part * coef + frac_part;
+    }
+
+   private:
+    int ipow(int base, int exp) {
+      int result = 1;
+      while (exp) {
+        if (exp & 1) result *= base;
+        exp >>= 1;
+        base *= base;
+      }
+
+      return result;
+    }
+  };
 
 }  // namespace iroha
 #endif  // IROHA_COMMON_HPP

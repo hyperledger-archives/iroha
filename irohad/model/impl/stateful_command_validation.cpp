@@ -29,6 +29,7 @@
 #include "model/commands/transfer_asset.hpp"
 
 #include <algorithm>
+#include <decimal/decimal>
 #include <limits>
 
 namespace iroha {
@@ -44,7 +45,8 @@ namespace iroha {
                                     const Account &creator) {
       return
           // Amount must be in some meaningful range
-          amount > 0 && amount < std::numeric_limits<uint32_t>::max() &&
+          (amount.int_part > 0 || amount.frac_part > 0) &&
+          amount.int_part < std::numeric_limits<uint32_t>::max() &&
           // Check if creator has MoneyCreator permission
           creator.permissions.issue_assets;
     }
@@ -202,22 +204,21 @@ namespace iroha {
                                  const Account &creator) {
       auto account_asset = queries.getAccountAsset(src_account_id, asset_id);
       auto asset = queries.getAsset(asset_id);
+      if (!account_asset || !asset) return false;
+      // Amount is formed wrong
+      if (amount.get_frac_number() > asset.value().precision) return false;
+      auto precision = asset.value().precision;
+      amount.get_joint_amount(precision);
 
-      return
-          // Check if such AccountAsset exist
-          account_asset.has_value() &&
-          // Check if asset exist
-          asset.has_value() &&
-          // Check if account_asset sufficent amount of money
-          std::decimal::make_decimal64(
-              (unsigned long long int)account_asset.value().balance,
-              -asset.value().precision) < amount &&
-          // Check if src_account exist
-          queries.getAccount(src_account_id) &&
-          // Can account transfer assets
-          creator.permissions.can_transfer &&
-          // Creator can transfer only from their account
-          creator.account_id == src_account_id;
+      return std::decimal::make_decimal64(
+                 (unsigned long long int)account_asset.value().balance,
+                 -asset.value().precision) < amount &&
+             // Check if src_account exist
+             queries.getAccount(src_account_id) &&
+             // Can account transfer assets
+             creator.permissions.can_transfer &&
+             // Creator can transfer only from their account
+             creator.account_id == src_account_id;
     }
 
   }  // namespace model
