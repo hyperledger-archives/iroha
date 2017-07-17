@@ -28,6 +28,9 @@ namespace iroha {
     struct Signature {
       ed25519::sig_t signature;
       ed25519::pubkey_t pubkey;
+
+      bool operator==(const Signature& rhs) const;
+      bool operator!=(const Signature& rhs) const;
     };
   } // namespace model
 } // namespace iroha

@@ -213,12 +213,13 @@ namespace iroha {
       writer.String(add_asset_quantity.asset_id.c_str());
 
       writer.String("amount");
-      writer.StartArray();
+      writer.StartObject();
+
       writer.String("int_part");
       writer.Uint64(add_asset_quantity.amount.int_part);
       writer.String("frac_part");
       writer.Uint64(add_asset_quantity.amount.frac_part);
-      writer.EndArray();
+      writer.EndObject();
 
       writer.EndObject();
     }
@@ -408,12 +409,12 @@ namespace iroha {
       writer.String(transfer_asset.asset_id.c_str());
 
       writer.String("amount");
-      writer.StartArray();
+      writer.StartObject();
       writer.String("int_part");
       writer.Uint64(transfer_asset.amount.int_part);
       writer.String("frac_part");
       writer.Uint64(transfer_asset.amount.frac_part);
-      writer.EndArray();
+      writer.EndObject();
 
       writer.EndObject();
     }

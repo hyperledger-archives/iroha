@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <model/block.hpp>
 #include <model/commands/add_asset_quantity.hpp>
 #include <model/commands/add_peer.hpp>
 #include <model/commands/add_signatory.hpp>
@@ -26,6 +27,7 @@
 #include <model/commands/set_permissions.hpp>
 #include <model/commands/set_quorum.hpp>
 #include <model/commands/transfer_asset.hpp>
+#include <model/transaction.hpp>
 namespace iroha {
   namespace model {
 
@@ -140,7 +142,7 @@ namespace iroha {
     }
 
     bool Account::Permissions::operator!=(const Permissions &rhs) const {
-      return !rhs.operator==(rhs);
+      return !operator==(rhs);
     }
 
     /* Set permissions */
@@ -180,5 +182,35 @@ namespace iroha {
     bool TransferAsset::operator!=(const Command &command) const {
       return !operator==(command);
     }
+
+    /* Signature */
+    bool Signature::operator==(const Signature &rhs) const {
+      return rhs.pubkey == pubkey && rhs.signature == signature;
+    }
+
+    bool Signature::operator!=(const Signature &rhs) const {
+      return !operator==(rhs);
+    }
+
+    /* Transaction */
+    bool Transaction::operator==(const Transaction &rhs) const {
+      return rhs.tx_counter == tx_counter && rhs.signatures == signatures &&
+             rhs.created_ts == created_ts && rhs.commands == commands;
+    }
+
+    bool Transaction::operator!=(const Transaction &rhs) const {
+      return !operator==(rhs);
+    }
+
+    /* Block */
+    bool Block::operator==(const Block &rhs) const {
+      return rhs.hash == hash && rhs.height == height &&
+             rhs.prev_hash == prev_hash && rhs.txs_number == txs_number &&
+             rhs.merkle_root == merkle_root && rhs.sigs == sigs &&
+             rhs.transactions == transactions && rhs.created_ts == created_ts &&
+             rhs.hash == hash;
+    }
+
+    bool Block::operator!=(const Block &rhs) const { return !operator==(rhs); }
   }
 }
