@@ -42,7 +42,7 @@ namespace iroha {
   /**
    * Base type which represents blob of fixed size.
    */
-  template <size_t size_>
+  template<size_t size_>
   class blob_t : public std::array<byte_t, size_> {
     /**
      * Dark magic of C++, do not touch pls :)
@@ -76,8 +76,8 @@ namespace iroha {
       uint8_t front, back;
       auto ptr = this->data();
       for (uint32_t i = 0, k = 0; i < size_; i++) {
-        front = (uint8_t)(ptr[i] & 0xF0) >> 4;
-        back = (uint8_t)(ptr[i] & 0xF);
+        front = (uint8_t) (ptr[i] & 0xF0) >> 4;
+        back = (uint8_t) (ptr[i] & 0xF);
         res[k++] = code[front];
         res[k++] = code[back];
       }
@@ -85,7 +85,7 @@ namespace iroha {
     }
   };
 
-  template <size_t size>
+  template<size_t size>
   using hash_t = blob_t<size>;
 
   // fixed-size hashes
@@ -118,6 +118,11 @@ namespace iroha {
     uint64_t get_joint_amount(uint32_t precision) {
       auto coef = ipow(10, precision);
       return int_part * coef + frac_part;
+    }
+
+    bool operator==(const Amount &rhs) {
+      return this->int_part == rhs.int_part &&
+          this->frac_part == rhs.frac_part;
     }
 
    private:

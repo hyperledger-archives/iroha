@@ -30,7 +30,9 @@ namespace iroha {
         protocol::AddAssetQuantity pb_add_asset_quantity;
         pb_add_asset_quantity.set_account_id(add_asset_quantity.account_id);
         pb_add_asset_quantity.set_asset_id(add_asset_quantity.asset_id);
-        pb_add_asset_quantity.set_amount(add_asset_quantity.amount);
+        auto amount = pb_add_asset_quantity.mutable_amount();
+        amount->set_integer_part(add_asset_quantity.amount.int_part);
+        amount->set_fractial_part(add_asset_quantity.amount.frac_part);
       }
 
       model::AddAssetQuantity
@@ -39,7 +41,10 @@ namespace iroha {
         model::AddAssetQuantity add_asset_quantity;
         add_asset_quantity.account_id = pb_add_asset_quantity.account_id();
         add_asset_quantity.asset_id = pb_add_asset_quantity.asset_id();
-        add_asset_quantity.amount = pb_add_asset_quantity.amount();
+        add_asset_quantity.amount.int_part =
+            pb_add_asset_quantity.amount().integer_part();
+        add_asset_quantity.amount.frac_part =
+            pb_add_asset_quantity.amount().fractial_part();
         return add_asset_quantity;
       }
 
@@ -239,16 +244,23 @@ namespace iroha {
         pb_transfer_asset.set_src_account_id(transfer_asset.src_account_id);
         pb_transfer_asset.set_dest_account_id(transfer_asset.dest_account_id);
         pb_transfer_asset.set_asset_id(transfer_asset.asset_id);
-        pb_transfer_asset.set_ammount(transfer_asset.amount);
+        auto amount = pb_transfer_asset.mutable_amount();
+        amount->set_integer_part(transfer_asset.amount.int_part);
+        amount->set_fractial_part(transfer_asset.amount.frac_part);
         return pb_transfer_asset;
       }
       model::TransferAsset
       PbCommandFactory::deserializeTransferAsset(protocol::TransferAsset &pb_subtract_asset_quantity) {
         model::TransferAsset transfer_asset;
-        transfer_asset.src_account_id = pb_subtract_asset_quantity.src_account_id();
-        transfer_asset.dest_account_id = pb_subtract_asset_quantity.dest_account_id();
+        transfer_asset.src_account_id =
+            pb_subtract_asset_quantity.src_account_id();
+        transfer_asset.dest_account_id =
+            pb_subtract_asset_quantity.dest_account_id();
         transfer_asset.asset_id = pb_subtract_asset_quantity.asset_id();
-        transfer_asset.amount = pb_subtract_asset_quantity.asset_id();
+        transfer_asset.amount.int_part =
+            pb_subtract_asset_quantity.amount().integer_part();
+        transfer_asset.amount.frac_part =
+            pb_subtract_asset_quantity.amount().fractial_part();
         return transfer_asset;
       }
 
