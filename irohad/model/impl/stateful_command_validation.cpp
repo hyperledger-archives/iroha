@@ -207,18 +207,17 @@ namespace iroha {
       if (!account_asset || !asset) return false;
       // Amount is formed wrong
       if (amount.get_frac_number() > asset.value().precision) return false;
-      auto precision = asset.value().precision;
-      amount.get_joint_amount(precision);
 
-      return std::decimal::make_decimal64(
-                 (unsigned long long int)account_asset.value().balance,
-                 -asset.value().precision) < amount &&
-             // Check if src_account exist
-             queries.getAccount(src_account_id) &&
-             // Can account transfer assets
-             creator.permissions.can_transfer &&
-             // Creator can transfer only from their account
-             creator.account_id == src_account_id;
+      return
+          // Check if src_account exist
+          queries.getAccount(src_account_id) &&
+          // Can account transfer assets
+          creator.permissions.can_transfer &&
+          // Creator can transfer only from their account
+          creator.account_id == src_account_id &&
+          // Balance in your wallet should be at least amount of transfer
+          account_asset.value().balance >=
+              amount.get_joint_amount(asset.value().precision);
     }
 
   }  // namespace model
