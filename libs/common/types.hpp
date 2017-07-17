@@ -21,6 +21,7 @@
 #include <array>
 #include <crypto/base64.hpp>
 #include <cstdio>
+#include <typeinfo>
 
 /**
  * This file defines common types used in iroha.
@@ -106,6 +107,12 @@ namespace iroha {
   // timestamps
   using ts64_t = uint64_t;
   using ts32_t = uint32_t;
+
+  // check the type of the derived class
+  template<typename Base, typename T>
+  inline bool instanceof(const T *ptr) {
+    return typeid(Base) == typeid(*ptr);
+  }
 
 }  // namespace iroha
 #endif  // IROHA_COMMON_HPP

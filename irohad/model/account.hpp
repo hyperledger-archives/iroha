@@ -82,6 +82,9 @@ namespace iroha {
          * User's account permission
          */
         bool can_transfer;
+
+        bool operator==(const Permissions& rhs) const;
+        bool operator!=(const Permissions& rhs) const;
       };
 
       /**
