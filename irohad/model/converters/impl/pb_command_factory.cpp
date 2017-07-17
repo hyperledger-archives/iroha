@@ -30,7 +30,7 @@ namespace iroha {
         protocol::AddAssetQuantity pb_add_asset_quantity;
         pb_add_asset_quantity.set_account_id(add_asset_quantity.account_id);
         pb_add_asset_quantity.set_asset_id(add_asset_quantity.asset_id);
-        // todo set amount
+        pb_add_asset_quantity.set_amount(add_asset_quantity.amount);
       }
 
       model::AddAssetQuantity
@@ -39,7 +39,7 @@ namespace iroha {
         model::AddAssetQuantity add_asset_quantity;
         add_asset_quantity.account_id = pb_add_asset_quantity.account_id();
         add_asset_quantity.asset_id = pb_add_asset_quantity.asset_id();
-        // todo set amount
+        add_asset_quantity.amount = pb_add_asset_quantity.amount();
         return add_asset_quantity;
       }
 
@@ -63,50 +63,194 @@ namespace iroha {
 
       // add signatory
       protocol::AddSignatory
-      PbCommandFactory::serializeAddSignatory(model::AddSignatory &addSignatory) {
-        protocol::AddSignatory add_signatory;
-
-        return add_signatory;
+      PbCommandFactory::serializeAddSignatory(model::AddSignatory &add_signatory) {
+        protocol::AddSignatory pb_add_signatory;
+        pb_add_signatory.set_account_id(add_signatory.account_id);
+        pb_add_signatory.set_public_key(add_signatory.pubkey.data(),
+                                        add_signatory.pubkey.size());
+        return pb_add_signatory;
       }
-      model::AddSignatory PbCommandFactory::deserializeAddSignatory(protocol::AddSignatory &addSignatory) {
-
+      model::AddSignatory PbCommandFactory::deserializeAddSignatory(protocol::AddSignatory &pb_add_signatory) {
+        model::AddSignatory add_signatory;
+        add_signatory.account_id = pb_add_signatory.account_id();
+        std::copy(pb_add_signatory.public_key().begin(),
+                  pb_add_signatory.public_key().end(),
+                  add_signatory.pubkey.begin());
+        return add_signatory;
       }
 
       // assign master key
-      protocol::AssignMasterKey PbCommandFactory::serializeAssignMasterKey(model::AssignMasterKey &assignMasterKey) {}
+      protocol::AssignMasterKey
+      PbCommandFactory::serializeAssignMasterKey(model::AssignMasterKey &assign_master_key) {
+        protocol::AssignMasterKey pb_assign_master_key;
+        pb_assign_master_key.set_account_id(assign_master_key.account_id);
+        pb_assign_master_key.set_public_key(assign_master_key.pubkey.data(),
+                                            assign_master_key.pubkey.size());
+        return pb_assign_master_key;
+      }
+
       model::AssignMasterKey PbCommandFactory::deserializeAssignMasterKey(
-          protocol::AssignMasterKey &assignMasterKey) {}
+          protocol::AssignMasterKey &pb_assign_master_key) {
+        model::AssignMasterKey assign_master_key;
+        assign_master_key.account_id = pb_assign_master_key.account_id();
+        std::copy(pb_assign_master_key.public_key().begin(),
+                  pb_assign_master_key.public_key().end(),
+                  assign_master_key.pubkey.begin());
+        return assign_master_key;
+      }
 
       // create asset
-      protocol::CreateAsset PbCommandFactory::serializeCreateAsset(model::CreateAsset &createAsset) {}
-      model::CreateAsset PbCommandFactory::deserializeCreateAsset(protocol::CreateAsset &createAsset) {}
+      protocol::CreateAsset
+      PbCommandFactory::serializeCreateAsset(model::CreateAsset &create_asset) {
+        protocol::CreateAsset pb_create_asset;
+        pb_create_asset.set_asset_name(create_asset.asset_name);
+        pb_create_asset.set_domain_id(create_asset.domain_id);
+        pb_create_asset.set_precision(create_asset.precision);
+        return pb_create_asset;
+      }
+
+      model::CreateAsset
+      PbCommandFactory::deserializeCreateAsset(protocol::CreateAsset &pb_create_asset) {
+        model::CreateAsset create_asset;
+        create_asset.asset_name = pb_create_asset.asset_name();
+        create_asset.domain_id = pb_create_asset.domain_id();
+        create_asset.precision =
+            static_cast<uint8_t>(pb_create_asset.precision());
+        return create_asset;
+      }
 
       // create account
-      protocol::CreateAccount PbCommandFactory::serializeCreateAccount(model::CreateAccount &createAccount) {}
-      model::CreateAccount PbCommandFactory::deserializeCreateAccount(protocol::CreateAccount &createAccount) {}
+      protocol::CreateAccount
+      PbCommandFactory::serializeCreateAccount(model::CreateAccount &create_account) {
+        protocol::CreateAccount pb_create_account;
+        pb_create_account.set_account_name(create_account.account_name);
+        pb_create_account.set_domain_id(create_account.domain_id);
+        pb_create_account.set_main_pubkey(create_account.pubkey.data(),
+                                          create_account.pubkey.size());
+        return pb_create_account;
+      }
+      model::CreateAccount PbCommandFactory::deserializeCreateAccount(protocol::CreateAccount &pb_create_account) {
+        model::CreateAccount create_account;
+        create_account.account_name = pb_create_account.account_name();
+        create_account.domain_id = pb_create_account.domain_id();
+        std::copy(pb_create_account.main_pubkey().begin(),
+                  pb_create_account.main_pubkey().end(),
+                  create_account.pubkey.begin());
+        return create_account;
+      }
 
       // create domain
-      protocol::CreateDomain PbCommandFactory::serializeCreateDomain(model::CreateDomain &createDomain) {}
-      model::CreateDomain PbCommandFactory::deserializeCreateDomain(protocol::CreateDomain &createDomain) {}
+      protocol::CreateDomain PbCommandFactory::serializeCreateDomain(model::CreateDomain &create_domain) {
+        protocol::CreateDomain pb_create_domain;
+        pb_create_domain.set_domain_name(create_domain.domain_name);
+        return pb_create_domain;
+      }
+
+      model::CreateDomain PbCommandFactory::deserializeCreateDomain(protocol::CreateDomain &pb_create_domain) {
+        model::CreateDomain create_domain;
+        create_domain.domain_name = pb_create_domain.domain_name();
+        return create_domain;
+      }
 
       // remove signatory
-      protocol::RemoveSignatory PbCommandFactory::serializeRemoveSignatory(model::RemoveSignatory &removeSignatory) {}
+      protocol::RemoveSignatory
+      PbCommandFactory::serializeRemoveSignatory(model::RemoveSignatory &remove_signatory) {
+        protocol::RemoveSignatory pb_remove_signatory;
+        pb_remove_signatory.set_account_id(remove_signatory.account_id);
+        pb_remove_signatory.set_public_key(remove_signatory.pubkey.data(),
+                                           remove_signatory.pubkey.size());
+        return pb_remove_signatory;
+      }
+
       model::RemoveSignatory PbCommandFactory::deserializeRemoveSignatory(
-          protocol::RemoveSignatory &removeSignatory) {}
+          protocol::RemoveSignatory &pb_remove_signatory) {
+        model::RemoveSignatory remove_signatory;
+        remove_signatory.account_id = pb_remove_signatory.account_id();
+        return remove_signatory;
+      }
 
       // set account permissions
       protocol::SetAccountPermissions PbCommandFactory::serializeSetAccountPermissions(
-          model::SetAccountPermissions &setAccountPermissions) {}
-      model::SetAccountPermissions PbCommandFactory::deserializeSetAccountPermissions(
-          protocol::SetAccountPermissions &setAccountPermissions) {}
+          model::SetAccountPermissions &set_account_permissions) {
+        protocol::SetAccountPermissions pb_set_account_permissions;
+        pb_set_account_permissions.set_account_id(set_account_permissions.account_id);
+        auto permissions = pb_set_account_permissions.mutable_permissions();
+        permissions->set_issue_assets(set_account_permissions.new_permissions.issue_assets);
+        permissions->set_create_assets(set_account_permissions.new_permissions.create_assets);
+        permissions->set_create_accounts(set_account_permissions.new_permissions.create_accounts);
+        permissions->set_create_domains(set_account_permissions.new_permissions.create_domains);
+        permissions->set_read_all_accounts(set_account_permissions.new_permissions.read_all_accounts);
+        permissions->set_add_signatory(set_account_permissions.new_permissions.add_signatory);
+        permissions->set_remove_signatory(set_account_permissions.new_permissions.remove_signatory);
+        permissions->set_set_quorum(set_account_permissions.new_permissions.set_quorum);
+        permissions->set_can_transfer(set_account_permissions.new_permissions.can_transfer);
+        return pb_set_account_permissions;
+      }
+
+      model::SetAccountPermissions
+      PbCommandFactory::deserializeSetAccountPermissions(
+          protocol::SetAccountPermissions &pb_set_account_permissions) {
+        model::SetAccountPermissions set_account_permissions;
+        set_account_permissions.account_id =
+            pb_set_account_permissions.account_id();
+        set_account_permissions.new_permissions.issue_assets =
+            pb_set_account_permissions.permissions().issue_assets();
+        set_account_permissions.new_permissions.create_assets =
+            pb_set_account_permissions.permissions().create_assets();
+        set_account_permissions.new_permissions.create_accounts =
+            pb_set_account_permissions.permissions().create_accounts();
+        set_account_permissions.new_permissions.create_domains =
+            pb_set_account_permissions.permissions().create_domains();
+        set_account_permissions.new_permissions.read_all_accounts =
+            pb_set_account_permissions.permissions().read_all_accounts();
+        set_account_permissions.new_permissions.add_signatory =
+            pb_set_account_permissions.permissions().add_signatory();
+        set_account_permissions.new_permissions.remove_signatory =
+            pb_set_account_permissions.permissions().remove_signatory();
+        set_account_permissions.new_permissions.set_permissions =
+            pb_set_account_permissions.permissions().set_permissions();
+        set_account_permissions.new_permissions.set_quorum =
+            pb_set_account_permissions.permissions().set_quorum();
+        set_account_permissions.new_permissions.can_transfer =
+            pb_set_account_permissions.permissions().can_transfer();
+        return set_account_permissions;
+      }
 
       // set account quorum
-      protocol::SetAccountQuorum PbCommandFactory::serializeSetQuorum(model::SetQuorum &setAccountQuorum) {}
-      model::SetQuorum PbCommandFactory::deserializeSetQuorum(protocol::SetAccountQuorum &setAccountQuorum) {}
+      protocol::SetAccountQuorum
+      PbCommandFactory::serializeSetQuorum(model::SetQuorum &set_account_quorum) {
+        protocol::SetAccountQuorum pb_set_account_quorum;
+        pb_set_account_quorum.set_account_id(set_account_quorum.account_id);
+        pb_set_account_quorum.set_quorum(set_account_quorum.new_quorum);
+        return pb_set_account_quorum;
+      }
+      model::SetQuorum
+      PbCommandFactory::deserializeSetQuorum(protocol::SetAccountQuorum &pb_set_account_quorum) {
+        model::SetQuorum set_quorum;
+        set_quorum.account_id = pb_set_account_quorum.account_id();
+        set_quorum.new_quorum = pb_set_account_quorum.quorum();
+        return set_quorum;
+      }
 
       // transfer asset
-      protocol::TransferAsset PbCommandFactory::serializeTransferAsset(model::TransferAsset &subtractAssetQuantity) {}
-      model::TransferAsset PbCommandFactory::deserializeTransferAsset(protocol::TransferAsset &subtractAssetQuantity) {}
+      protocol::TransferAsset
+      PbCommandFactory::serializeTransferAsset(model::TransferAsset &transfer_asset) {
+        protocol::TransferAsset pb_transfer_asset;
+        pb_transfer_asset.set_src_account_id(transfer_asset.src_account_id);
+        pb_transfer_asset.set_dest_account_id(transfer_asset.dest_account_id);
+        pb_transfer_asset.set_asset_id(transfer_asset.asset_id);
+        pb_transfer_asset.set_ammount(transfer_asset.amount);
+        return pb_transfer_asset;
+      }
+      model::TransferAsset
+      PbCommandFactory::deserializeTransferAsset(protocol::TransferAsset &pb_subtract_asset_quantity) {
+        model::TransferAsset transfer_asset;
+        transfer_asset.src_account_id = pb_subtract_asset_quantity.src_account_id();
+        transfer_asset.dest_account_id = pb_subtract_asset_quantity.dest_account_id();
+        transfer_asset.asset_id = pb_subtract_asset_quantity.asset_id();
+        transfer_asset.amount = pb_subtract_asset_quantity.asset_id();
+        return transfer_asset;
+      }
 
     } // namespace converters
   }  // namespace model
