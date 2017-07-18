@@ -134,6 +134,10 @@ namespace iroha {
       return this->int_part == rhs.int_part && this->frac_part == rhs.frac_part;
     }
 
+    bool operator!=(const Amount &rhs) const {
+      return !operator==(rhs);
+    }
+
    private:
     int ipow(int base, int exp) {
       int result = 1;
