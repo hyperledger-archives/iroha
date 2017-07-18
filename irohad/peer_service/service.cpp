@@ -24,7 +24,6 @@ namespace peerservice {
                                    const pubkey_t self, const Heartbeat &my,
                                    std::shared_ptr<uvw::Loop> loop)
       : loop_{loop} {
-    this->myHeartbeat.CopyFrom(my);
     update_latest(&my);
 
     for (auto &&node : cluster) {
@@ -37,45 +36,52 @@ namespace peerservice {
         // timeout handler
         ptr->timer->on<uvw::TimerEvent>(
             [ptr, this](const uvw::TimerEvent &e, auto &t) {
-              ptr->ping(&this->myHeartbeat);
+              ptr->ping(&this->latestState);
             });
 
         // heartbeat handler
-        ptr->on<Heartbeat>([this](const Heartbeat &hb, auto &t) {
-          printf("received heartbeat, height=%d\n", hb.height());
-          this->update_latest(&hb);
-        });
+        ptr->on<Heartbeat>(
+            [this](const Heartbeat &hb, auto &t) { this->update_latest(&hb); });
 
         cluster_[node.pubkey] = std::move(ptr);
 
       } else {
         // this node
         self_node_ = node;
-        this->myHeartbeat.set_pubkey(node.pubkey.to_string());
       }
     }
   }
 
-  void PeerServiceImpl::ping() {
-    if (myHeartbeat.gmroot().length() != iroha::hash256_t::size()) {
+  void PeerServiceImpl::start() {
+    if (latestState.gmroot().length() != iroha::hash256_t::size()) {
       throw std::invalid_argument("add your heartbeat");
     }
 
     for (auto &&entry : cluster_) {
       auto &&node = entry.second;
-      node->start_timer(node->next_short_timer);
+      std::async(std::launch::async,
+                 [&node]() { node->start_timer(node->next_short_timer); });
     }
   }
 
   grpc::Status PeerServiceImpl::RequestHeartbeat(grpc::ServerContext *context,
                                                  const Heartbeat *request,
                                                  Heartbeat *response) {
+    printf("[ledger: %d] %s is requesting our heartbeat... ",
+           (int)this->latestState.height(), context->peer().c_str());
     // TODO: handle
     try {
       // TODO: authenticate peer by pubkey and ip. Now we
       // authenticate by pubkey
       auto &&pub = iroha::to_blob<pubkey_t::size()>(
           request->pubkey());  // throws if size does not match
+
+      // we have the latest known state
+      if(pub == self_node_.pubkey) {
+        response->CopyFrom(latestState);
+        return grpc::Status::OK;
+      }
+
       auto &&node =
           cluster_.at(pub);  // throws if no given pubkey in the map cluster_
 
@@ -86,17 +92,16 @@ namespace peerservice {
       }
 
       // if we received a heartbeat with higher ledger that we have
-      if (request->height() > myHeartbeat.height()) {
-        latestState.CopyFrom(*request);
+      if (request->height() > latestState.height()) {
+        update_latest(request);
 
         // event type: peerservice::Heartbeat
         publish(latestState);  // emit to uvw
       }
 
-      // reset sender's timer
-      node->start_timer(ConnectionTo::next_short_timer);
+      node->make_online();
 
-      response->CopyFrom(myHeartbeat);
+      response->CopyFrom(latestState);
       return grpc::Status::OK;
 
     } catch (...) {
@@ -107,7 +112,6 @@ namespace peerservice {
   }
 
   Heartbeat PeerServiceImpl::getLatestState() noexcept { return latestState; }
-  Heartbeat PeerServiceImpl::getMyState() noexcept { return myHeartbeat; }
 
   Node PeerServiceImpl::getMyNode() noexcept { return self_node_; }
 
@@ -127,21 +131,20 @@ namespace peerservice {
     return ret;
   }
 
-  void PeerServiceImpl::setMyState(Heartbeat hb) {
+  void PeerServiceImpl::setMyState(const Heartbeat *hb) noexcept {
     // if latest known state height < than new state
-    update_latest(&hb);
-
-    myHeartbeat = std::move(hb);
+    update_latest(hb);
   }
 
   std::vector<Node> PeerServiceImpl::getOtherNodes() noexcept {
     return other_nodes_;
   }
 
-  void PeerServiceImpl::update_latest(const Heartbeat *hb) {
+  void PeerServiceImpl::update_latest(const Heartbeat *hb) noexcept {
     if (hb != nullptr && hb->height() > latestState.height()) {
       // TODO  change to logger
-      printf("Previous ledger: %d, new ledger: %d\n", (int) latestState.height(), (int) hb->height());
+      printf("Previous ledger: %d, new ledger: %d\n", (int)latestState.height(),
+             (int)hb->height());
       latestState.CopyFrom(*hb);
     }
   }

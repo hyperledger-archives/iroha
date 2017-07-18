@@ -18,16 +18,38 @@
 #include "connection_to.hpp"
 #include "service.hpp"
 
+#ifndef SHORT_TIMER_LOW
+// milliseconds
+#define SHORT_TIMER_LOW 1000
+#endif
+
+#ifndef SHORT_TIMER_HIGH
+// milliseconds
+#define SHORT_TIMER_HIGH 2000
+#endif
+
+#ifndef LONG_TIMER_LOW
+// milliseconds
+#define LONG_TIMER_LOW (1000 * 60 * 1)
+#endif
+
+#ifndef LONG_TIMER_HIGH
+// milliseconds
+#define LONG_TIMER_HIGH (1000 * 60 * 60)
+#endif
+
 namespace peerservice {
+  std::random_device ConnectionTo::random_device;
   // generator with random distribution
-  std::default_random_engine ConnectionTo::generator;
+  std::default_random_engine ConnectionTo::generator(
+      ConnectionTo::random_device());
   // uniform distribution for timer : from 1 sec to 2 secs
-  std::uniform_int_distribution<uint32_t> ConnectionTo::next_short_timer(1000,
-                                                                         2000);
+  std::uniform_int_distribution<uint32_t> ConnectionTo::next_short_timer(
+      SHORT_TIMER_LOW, SHORT_TIMER_HIGH);
 
   // uniform distribution for timer: from 1 min to 1 hour
   std::uniform_int_distribution<uint32_t> ConnectionTo::next_long_timer(
-      1000 * 60 * 1, 1000 * 60 * 60);  // ms
+      LONG_TIMER_LOW, LONG_TIMER_HIGH);  // ms
 
   ConnectionTo::ConnectionTo(const Node &n, std::shared_ptr<uvw::Loop> loop)
       : node(n) {
@@ -59,32 +81,38 @@ namespace peerservice {
     Heartbeat answer;
 
     status = stub_->RequestHeartbeat(&context, *request, &answer);
-    printf("ping %s... ", context.peer().c_str());
+    printf("[my ledger is %d] ping %s... ", request->height(),
+           context.peer().c_str());
 
     // TODO: validate heartbeat messages
     if (status.ok()) {
-      // TODO: change to logger
-      printf("alive\n");
-
       // peer is alive
-      this->start_timer(ConnectionTo::next_short_timer);
-      this->online = true;
+      this->make_online();
       publish(answer);  // publish event to uvw
 
     } else {
       if (status.error_code() == grpc::StatusCode::CANCELLED) {
-        // our heartbeat is invalid
+        // our heartbeat is invalid (this->myHeartbeat)
         // TODO handle this
-        throw "something";
+        throw std::invalid_argument("our heartbeat is invalid");
       }
 
-      // TODO: change to logger
-      printf("dead\n");
-
       // peer is dead
-      this->online = false;
-      // stop timer and wait until dead peer send us heartbeat
-      this->start_timer(ConnectionTo::next_long_timer);
+      this->make_offline();
     }
+  }
+
+  void ConnectionTo::make_online() noexcept {
+    // TODO: change to logger
+    printf("alive\n");
+    this->online = true;
+    this->start_timer(next_short_timer);
+  }
+
+  void ConnectionTo::make_offline() noexcept {
+    // TODO: change to logger
+    printf("dead\n");
+    this->online = false;
+    this->start_timer(next_long_timer);
   }
 }

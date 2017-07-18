@@ -51,12 +51,16 @@ namespace peerservice {
 
     void ping(Heartbeat* request);
 
+    void make_online() noexcept;
+    void make_offline() noexcept;
+
    private:
     Heartbeat cachedHeartbeat;
     std::unique_ptr<PeerService::Stub> stub_;
 
-   public:
+    static std::random_device random_device;
     static std::default_random_engine generator;
+   public:
     static std::uniform_int_distribution<uint32_t> next_short_timer;
     static std::uniform_int_distribution<uint32_t> next_long_timer;
   };

@@ -17,13 +17,14 @@
 
 #include <common/byteutils.hpp>
 #include <peer_service/service.hpp>
+#include <random>
 #include <uvw.hpp>
 
 #define NPEERS 4
 
 using namespace peerservice;
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   if (argc != 3) {
     printf(
         "Provide 1 argument: total number of peers\n"
@@ -47,8 +48,9 @@ int main(int argc, char** argv) {
     cluster.push_back(std::move(node));
   }
 
+  std::random_device rd;
   std::uniform_int_distribution<uint32_t> distr(0, 100);
-  std::default_random_engine generator;
+  std::default_random_engine generator(rd());
 
   // create heartbeat
   Heartbeat hb;
@@ -64,13 +66,20 @@ int main(int argc, char** argv) {
   auto loop = uvw::Loop::create();
   PeerServiceImpl ps(cluster, cluster[ME].pubkey, hb, loop);
 
+  ps.on<Heartbeat>([self = cluster[ME].pubkey](const Heartbeat &event,
+                                               PeerServiceImpl &service) {
+    printf("\n[me: %s] Now I know that peer %s has ledger with height %d\n",
+           self.to_string().c_str(), event.pubkey().c_str(),
+           (int)event.height());
+  });
+
   /// register peer service. this step is mandatory
   grpc::ServerBuilder builder;
   builder.AddListeningPort(listen_on, grpc::InsecureServerCredentials());
   builder.RegisterService(&ps);
   auto server = builder.BuildAndStart();
 
-  ps.ping();
+  ps.start();
 
   loop->run();
 

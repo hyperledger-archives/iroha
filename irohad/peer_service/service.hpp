@@ -42,6 +42,13 @@ namespace peerservice {
   class PeerServiceImpl : public uvw::Emitter<PeerServiceImpl>,
                           public PeerService::Service {
    public:
+    /**
+     * Service constructor, which MUST be registered to grpc server builder.
+     * @param cluster initial information about peers
+     * @param self this node's public key
+     * @param my latest known ledger state (my state)
+     * @param loop uvw::Loop instance
+     */
     PeerServiceImpl(const std::vector<Node>& cluster, const pubkey_t self,
                     const Heartbeat& my,
                     std::shared_ptr<uvw::Loop> loop = uvw::Loop::getDefault());
@@ -49,14 +56,13 @@ namespace peerservice {
     /**
      * Start heartbeating.
      */
-    void ping();
+    void start();
 
     /**
      * Set the information about the last block in heartbeat message.
      * @param hb
      */
-    void setMyState(Heartbeat hb);
-    Heartbeat getMyState() noexcept;
+    void setMyState(const Heartbeat* hb) noexcept;
 
     /**
      * Returns latest state among all available peers
@@ -79,10 +85,10 @@ namespace peerservice {
                                           Heartbeat* response) override;
 
    private:
-    void update_latest(const Heartbeat* hb);
+    void update_latest(const Heartbeat* hb) noexcept;
 
     std::shared_ptr<uvw::Loop> loop_;
-    Heartbeat myHeartbeat;
+    // latest known state. May be from any peer.
     Heartbeat latestState;
     Node self_node_;
 
