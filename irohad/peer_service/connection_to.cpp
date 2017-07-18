@@ -25,11 +25,9 @@ namespace peerservice {
   std::uniform_int_distribution<uint32_t> ConnectionTo::next_short_timer(1000,
                                                                          2000);
 
-  // uniform distribution for timer: from 10 min to 1 hour
-  //  std::uniform_int_distribution<uint32_t> ConnectionTo::next_long_timer(
-  //      1000 * 60 * 10, 1000 * 60 * 60);  // ms
+  // uniform distribution for timer: from 1 min to 1 hour
   std::uniform_int_distribution<uint32_t> ConnectionTo::next_long_timer(
-      5000, 7000);  // ms
+      1000 * 60 * 1, 1000 * 60 * 60);  // ms
 
   ConnectionTo::ConnectionTo(const Node &n, std::shared_ptr<uvw::Loop> loop)
       : node(n) {
@@ -54,19 +52,19 @@ namespace peerservice {
   }
 
   void ConnectionTo::ping(Heartbeat *request) {
-    if(request == nullptr) throw std::invalid_argument("request is nullptr");
+    if (request == nullptr) throw std::invalid_argument("request is nullptr");
 
     grpc::ClientContext context;
     grpc::Status status;
     Heartbeat answer;
 
     status = stub_->RequestHeartbeat(&context, *request, &answer);
-    printf("ping %s\n", context.peer().c_str());
+    printf("ping %s... ", context.peer().c_str());
 
     // TODO: validate heartbeat messages
     if (status.ok()) {
       // TODO: change to logger
-      printf("peer is alive: %s\n", context.peer().c_str());
+      printf("alive\n");
 
       // peer is alive
       this->start_timer(ConnectionTo::next_short_timer);
@@ -81,7 +79,7 @@ namespace peerservice {
       }
 
       // TODO: change to logger
-      printf("peer is dead: %s\n", context.peer().c_str());
+      printf("dead\n");
 
       // peer is dead
       this->online = false;

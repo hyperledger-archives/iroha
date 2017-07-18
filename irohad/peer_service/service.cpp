@@ -21,9 +21,12 @@
 namespace peerservice {
 
   PeerServiceImpl::PeerServiceImpl(const std::vector<Node> &cluster,
-                                   const pubkey_t self,
+                                   const pubkey_t self, const Heartbeat &my,
                                    std::shared_ptr<uvw::Loop> loop)
       : loop_{loop} {
+    this->myHeartbeat.CopyFrom(my);
+    update_latest(&my);
+
     for (auto &&node : cluster) {
       // internal cluster consists of other nodes
       if (node.pubkey != self) {
@@ -34,29 +37,30 @@ namespace peerservice {
         // timeout handler
         ptr->timer->on<uvw::TimerEvent>(
             [ptr, this](const uvw::TimerEvent &e, auto &t) {
-              printf("Timeout \n");
               ptr->ping(&this->myHeartbeat);
             });
 
         // heartbeat handler
         ptr->on<Heartbeat>([this](const Heartbeat &hb, auto &t) {
-          printf("Received heartbeat: height=%d\n", hb.height());
-          // ConnectionTo publishes only heartbeats with higher ledger
-          if (this->latestState.height() < hb.height()) {
-            latestState.CopyFrom(hb);
-            printf("my current ledger height: %d\n", latestState.height());
-          }
+          printf("received heartbeat, height=%d\n", hb.height());
+          this->update_latest(&hb);
         });
 
         cluster_[node.pubkey] = std::move(ptr);
 
       } else {
+        // this node
         self_node_ = node;
+        this->myHeartbeat.set_pubkey(node.pubkey.to_string());
       }
     }
   }
 
   void PeerServiceImpl::ping() {
+    if (myHeartbeat.gmroot().length() != iroha::hash256_t::size()) {
+      throw std::invalid_argument("add your heartbeat");
+    }
+
     for (auto &&entry : cluster_) {
       auto &&node = entry.second;
       node->start_timer(node->next_short_timer);
@@ -75,7 +79,7 @@ namespace peerservice {
       auto &&node =
           cluster_.at(pub);  // throws if no given pubkey in the map cluster_
 
-      // TODO validate. Is this ok?
+      // TODO validate. Is this ok?  We need separate validation module
       if (request->height() < 0 ||
           request->gmroot().size() != iroha::hash256_t::size()) {
         return grpc::Status::CANCELLED;
@@ -125,14 +129,20 @@ namespace peerservice {
 
   void PeerServiceImpl::setMyState(Heartbeat hb) {
     // if latest known state height < than new state
-    if (hb.height() > latestState.height()) {
-      latestState.CopyFrom(hb);
-    }
+    update_latest(&hb);
 
     myHeartbeat = std::move(hb);
   }
 
   std::vector<Node> PeerServiceImpl::getOtherNodes() noexcept {
     return other_nodes_;
+  }
+
+  void PeerServiceImpl::update_latest(const Heartbeat *hb) {
+    if (hb != nullptr && hb->height() > latestState.height()) {
+      // TODO  change to logger
+      printf("Previous ledger: %d, new ledger: %d\n", (int) latestState.height(), (int) hb->height());
+      latestState.CopyFrom(*hb);
+    }
   }
 }

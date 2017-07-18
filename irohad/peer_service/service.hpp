@@ -43,6 +43,7 @@ namespace peerservice {
                           public PeerService::Service {
    public:
     PeerServiceImpl(const std::vector<Node>& cluster, const pubkey_t self,
+                    const Heartbeat& my,
                     std::shared_ptr<uvw::Loop> loop = uvw::Loop::getDefault());
 
     /**
@@ -78,6 +79,8 @@ namespace peerservice {
                                           Heartbeat* response) override;
 
    private:
+    void update_latest(const Heartbeat* hb);
+
     std::shared_ptr<uvw::Loop> loop_;
     Heartbeat myHeartbeat;
     Heartbeat latestState;

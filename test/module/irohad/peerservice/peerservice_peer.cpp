@@ -47,13 +47,22 @@ int main(int argc, char** argv) {
     cluster.push_back(std::move(node));
   }
 
+  std::uniform_int_distribution<uint32_t> distr(0, 100);
+  std::default_random_engine generator;
+
+  // create heartbeat
+  Heartbeat hb;
+  hb.set_height(distr(generator));
+  hb.set_gmroot(std::string(32, 'z'));
+  hb.set_pubkey(cluster[ME].pubkey.to_string());
+
   std::string listen_on =
       cluster[ME].ip + ":" + std::to_string(cluster[ME].port);
   printf("LISTEN ON: %s, pubkey: %s\n", listen_on.c_str(),
          cluster[ME].pubkey.to_string().c_str());
 
   auto loop = uvw::Loop::create();
-  PeerServiceImpl ps(cluster, cluster[ME].pubkey, loop);
+  PeerServiceImpl ps(cluster, cluster[ME].pubkey, hb, loop);
 
   /// register peer service. this step is mandatory
   grpc::ServerBuilder builder;
