@@ -30,6 +30,7 @@ namespace iroha {
      */
     class BlockQuery {
      public:
+      virtual ~BlockQuery() = default;
       /**
        * Get all transactions of an account.
        * @param pub_key - account's first public key
