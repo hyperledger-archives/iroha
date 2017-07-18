@@ -85,7 +85,7 @@ namespace iroha {
         model::TransferAsset deserializeTransferAsset(const protocol::TransferAsset &subtractAssetQuantity);
 
         // abstract
-        protocol::Command &&serializeAbstractCommand(const model::Command &command);
+        protocol::Command serializeAbstractCommand(const model::Command &command);
         std::shared_ptr<model::Command> deserializeAbstractCommand(const protocol::Command &command);
       };
     } // namespace converters
