@@ -31,10 +31,15 @@
 
 #include "model/converters/pb_command_factory.hpp"
 
+void command_converter_test(iroha::model::Command &abstract_command) {
+  auto factory = iroha::model::converters::PbCommandFactory();
+  auto pb_repr = factory.serializeAbstractCommand(abstract_command);
+  auto model_repr = factory.deserializeAbstractCommand(pb_repr);
+  ASSERT_EQ(abstract_command, *model_repr);
+}
 
 TEST(CommandTest, add_peer) {
   auto orig_addPeer = iroha::model::AddPeer();
-  // addPeer.peer_key =
   orig_addPeer.address = "10.90.129.23";
 
   auto factory = iroha::model::converters::PbCommandFactory();
@@ -43,10 +48,12 @@ TEST(CommandTest, add_peer) {
   auto serial_addPeer = factory.deserializeAddPeer(proto_add_peer);
 
   ASSERT_EQ(orig_addPeer, serial_addPeer);
+  command_converter_test(orig_addPeer);
 
   orig_addPeer.address = "134";
   ASSERT_NE(serial_addPeer, orig_addPeer);
 }
+
 
 TEST(CommandTest, add_signatory) {
   auto orig_command = iroha::model::AddSignatory();
@@ -57,7 +64,19 @@ TEST(CommandTest, add_signatory) {
   auto serial_command = factory.deserializeAddSignatory(proto_command);
 
   ASSERT_EQ(orig_command, serial_command);
+  command_converter_test(orig_command);
+
+  orig_command.account_id = "100500";
+  ASSERT_NE(orig_command, serial_command);
 }
+
+TEST(CommandTest, add_signatory_abstract_factory) {
+  auto orig_command = iroha::model::AddSignatory();
+  orig_command.account_id = "23";
+
+  command_converter_test(orig_command);
+}
+
 
 TEST(CommandTest, add_asset_quantity) {
   auto orig_command = iroha::model::AddAssetQuantity();
@@ -74,6 +93,7 @@ TEST(CommandTest, add_asset_quantity) {
   auto serial_command = factory.deserializeAddAssetQuantity(proto_command);
 
   ASSERT_EQ(orig_command, serial_command);
+  command_converter_test(orig_command);
 }
 
 TEST(CommandTest, assign_master_key) {
@@ -84,6 +104,7 @@ TEST(CommandTest, assign_master_key) {
   auto serial_command = factory.deserializeAssignMasterKey(proto_command);
 
   ASSERT_EQ(orig_command, serial_command);
+  command_converter_test(orig_command);
 }
 
 TEST(CommandTest, create_account) {
@@ -94,5 +115,6 @@ TEST(CommandTest, create_account) {
   auto proto_command = factory.serializeCreateAccount(orig_command);
   auto serial_command = factory.deserializeCreateAccount(proto_command);
   ASSERT_EQ(orig_command, serial_command);
+  command_converter_test(orig_command);
 }
 

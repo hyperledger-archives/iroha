@@ -33,7 +33,7 @@ namespace iroha {
 
     /* AddAssetQuantity */
     bool AddAssetQuantity::operator==(const Command &command) const {
-      if (! instanceof <AddAssetQuantity>(&command)) return false;
+      if (! instanceof <AddAssetQuantity>(command)) return false;
       auto add_asset_quantity = static_cast<const AddAssetQuantity &>(command);
       return add_asset_quantity.account_id == account_id &&
              add_asset_quantity.asset_id == asset_id &&
@@ -46,7 +46,7 @@ namespace iroha {
 
     /* AddPeer */
     bool AddPeer::operator==(const Command &command) const {
-      if (! instanceof <AddPeer>(&command)) return false;
+      if (! instanceof <AddPeer>(command)) return false;
       auto add_peer = static_cast<const AddPeer &>(command);
       return add_peer.peer_key == peer_key && add_peer.address == address;
     }
@@ -57,7 +57,7 @@ namespace iroha {
 
     /* AddSignatory */
     bool AddSignatory::operator==(const Command &command) const {
-      if (! instanceof <AddSignatory>(&command)) return false;
+      if (! instanceof <AddSignatory>(command)) return false;
       auto add_signatory = static_cast<const AddSignatory &>(command);
       return add_signatory.account_id == account_id &&
              add_signatory.pubkey == pubkey;
@@ -69,7 +69,7 @@ namespace iroha {
 
     /* Assign master key */
     bool AssignMasterKey::operator==(const Command &command) const {
-      if (! instanceof <AssignMasterKey>(&command)) return false;
+      if (! instanceof <AssignMasterKey>(command)) return false;
       auto assign_master_key = static_cast<const AssignMasterKey &>(command);
       return assign_master_key.account_id == account_id &&
              assign_master_key.pubkey == pubkey;
@@ -81,7 +81,7 @@ namespace iroha {
 
     /* CreateAccount */
     bool CreateAccount::operator==(const Command &command) const {
-      if (! instanceof <CreateAccount>(&command)) return false;
+      if (! instanceof <CreateAccount>(command)) return false;
       auto create_account = static_cast<const CreateAccount &>(command);
       return create_account.pubkey == pubkey &&
              create_account.domain_id == domain_id &&
@@ -94,7 +94,7 @@ namespace iroha {
 
     /* CreateAsset */
     bool CreateAsset::operator==(const Command &command) const {
-      if (! instanceof <CreateAsset>(&command)) return false;
+      if (! instanceof <CreateAsset>(command)) return false;
       auto create_asset = static_cast<const CreateAsset &>(command);
       return create_asset.domain_id == domain_id &&
              create_asset.precision == precision &&
@@ -107,7 +107,7 @@ namespace iroha {
 
     /* Create domain */
     bool CreateDomain::operator==(const Command &command) const {
-      if (! instanceof <CreateDomain>(&command)) return false;
+      if (! instanceof <CreateDomain>(command)) return false;
       auto create_domain = static_cast<const CreateDomain &>(command);
       return create_domain.domain_name == domain_name;
     }
@@ -118,7 +118,7 @@ namespace iroha {
 
     /* Remove signatory */
     bool RemoveSignatory::operator==(const Command &command) const {
-      if (! instanceof <RemoveSignatory>(&command)) return false;
+      if (! instanceof <RemoveSignatory>(command)) return false;
       auto remove_signatory = static_cast<const RemoveSignatory &>(command);
       return remove_signatory.pubkey == pubkey &&
              remove_signatory.account_id == account_id;
@@ -147,7 +147,7 @@ namespace iroha {
 
     /* Set permissions */
     bool SetAccountPermissions::operator==(const Command &command) const {
-      if (! instanceof <SetAccountPermissions>(&command)) return false;
+      if (! instanceof <SetAccountPermissions>(command)) return false;
       auto set_account_permissions =
           static_cast<const SetAccountPermissions &>(command);
       return set_account_permissions.account_id == account_id &&
@@ -160,7 +160,7 @@ namespace iroha {
 
     /* Set Quorum*/
     bool SetQuorum::operator==(const Command &command) const {
-      if (! instanceof <SetQuorum>(&command)) return false;
+      if (! instanceof <SetQuorum>(command)) return false;
       auto set_quorum = static_cast<const SetQuorum &>(command);
       return set_quorum.account_id == account_id &&
              set_quorum.new_quorum == new_quorum;
@@ -172,7 +172,7 @@ namespace iroha {
 
     /* Transfer Asset */
     bool TransferAsset::operator==(const Command &command) const {
-      if (! instanceof <TransferAsset>(&command)) return false;
+      if (! instanceof <TransferAsset>(command)) return false;
       auto transfer_asset = static_cast<const TransferAsset &>(command);
       return transfer_asset.asset_id == asset_id &&
              transfer_asset.amount == amount &&
