@@ -156,14 +156,15 @@ namespace iroha {
      */
     bool RemoveSignatory::validate(ametsuchi::WsvQuery &queries,
                                    const Account &creator) {
+      auto account = queries.getAccount(account_id);
       return
           // Two cases possible.
           // 1. Creator removes signatory from their account
           // 2.System admin
-          (creator.account_id == account_id ||
-           creator.permissions.remove_signatory) &&
+          account.has_value() && (creator.account_id == account_id ||
+                                  creator.permissions.remove_signatory) &&
           // You can't remove master key (first you should reassign it)
-          pubkey != creator.master_key;
+          pubkey != account.value().master_key;
     }
 
     /**

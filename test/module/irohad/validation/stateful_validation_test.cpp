@@ -24,6 +24,7 @@
 #include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
+#include "model/commands/remove_signatory.hpp"
 
 auto ADMIN_ID = "admin@test";
 auto ACCOUNT_ID = "test@test";
@@ -35,6 +36,7 @@ auto BALANCE = 150ul;
 using ::testing::Return;
 using ::testing::AtLeast;
 using ::testing::_;
+using ::testing::AllOf;
 
 iroha::model::Account get_default_creator() {
   iroha::model::Account creator = iroha::model::Account();
@@ -264,6 +266,13 @@ TEST(CommandValidation, add_signatory) {
   command.account_id = "noacc";
   ASSERT_FALSE(command.validate(test_wsv, creator) &&
                command.execute(test_wsv, test_commands));
+
+  // 4. Add same signatory
+  auto account = get_default_account();
+  command.pubkey = account.master_key;
+  command.account_id = ACCOUNT_ID;
+  ASSERT_FALSE(command.validate(test_wsv, creator) &&
+               command.execute(test_wsv, test_commands));
 }
 
 TEST(CommandValidation, assign_master_key) {
@@ -387,5 +396,54 @@ TEST(CommandValidation, create_asset) {
   creator.permissions.add_signatory = false;
   ASSERT_FALSE(command.validate(test_wsv, creator) &&
                command.execute(test_wsv, test_commands));
+}
+
+TEST(CommandValidation, remove_signatory) {
+  WSVQueriesMock test_wsv;
+  WSVCommandsMock test_commands;
+
+  auto creator = get_default_creator();
+  auto orig_account = get_default_account();
+
+  iroha::model::RemoveSignatory command;
+
+  set_default_wsv(test_wsv, test_commands);
+
+  EXPECT_CALL(test_commands, deleteAccountSignatory(_, _))
+      .WillRepeatedly(Return(false));
+
+  EXPECT_CALL(test_commands,
+              deleteAccountSignatory(ACCOUNT_ID, orig_account.master_key))
+      .WillRepeatedly(Return(true));
+
+  EXPECT_CALL(test_commands,
+              deleteAccountSignatory(ACCOUNT_ID, creator.master_key))
+      .WillRepeatedly(Return(true));
+
+  // Valid cases:
+  // 1. Creator is admin
+  creator.permissions.remove_signatory = true;
+  command.account_id = ACCOUNT_ID;
+  command.pubkey = creator.master_key;
+
+  ASSERT_TRUE(command.validate(test_wsv, creator) &&
+              command.execute(test_wsv, test_commands));
+
+  //--------- Non valid cases:--------------
+  // 1. Creator has no permissions
+  creator.permissions.remove_signatory = false;
+  ASSERT_FALSE(command.validate(test_wsv, creator) &&
+               command.execute(test_wsv, test_commands));
+
+  // 2.Remove master key
+  creator.permissions.remove_signatory = true;
+  command.pubkey = orig_account.master_key;
+  ASSERT_FALSE(command.validate(test_wsv, creator) &&
+      command.execute(test_wsv, test_commands));
+
+  // 3. Remove signatory not present in account
+  std::fill(command.pubkey.begin(), command.pubkey.end(), 0xF);
+  ASSERT_FALSE(command.validate(test_wsv, creator) &&
+      command.execute(test_wsv, test_commands));
 
 }
