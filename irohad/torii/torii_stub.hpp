@@ -20,7 +20,6 @@
 
 #include <torii/processor/query_processor.hpp>
 #include <torii/processor/transaction_processor.hpp>
-#include <model/model.hpp>
 
 namespace iroha {
   namespace torii {

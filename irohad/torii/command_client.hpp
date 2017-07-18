@@ -14,30 +14,78 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef API_COMMAND_CLIENT_HPP
-#define API_COMMAND_CLIENT_HPP
+#ifndef TORII_COMMAND_CLIENT_HPP
+#define TORII_COMMAND_CLIENT_HPP
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
+#include <grpc++/grpc++.h>
+#include <grpc++/channel.h>
+#include <memory>
+#include <thread>
 
-namespace api {
+namespace torii {
 
-  iroha::protocol::ToriiResponse sendTransaction(
-      const iroha::protocol::Transaction& block,
-      const std::string& targetPeerIp);
+  /**
+   * CommandSyncClient
+   */
+  class CommandSyncClient {
+  public:
+    CommandSyncClient(const std::string& ip, const int port);
+    ~CommandSyncClient();
 
-  class CommandClient {
-   public:
-    CommandClient(const std::string& ip, int port);
+    /**
+     * requests tx to a torii server and returns response (blocking, sync)
+     * @param tx
+     * @return ToriiResponse
+     */
+    iroha::protocol::ToriiResponse Torii(const iroha::protocol::Transaction& tx);
 
-    iroha::protocol::ToriiResponse Torii(
-        const iroha::protocol::Transaction& request);
-
-   private:
+  private:
     grpc::ClientContext context_;
     std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
+    grpc::CompletionQueue completionQueue_;
+    grpc::Status status_;
   };
 
-}  // namespace api
+  /**
+   * CommandAsyncClient is used by peer service.
+   */
+  class CommandAsyncClient {
+  public:
+    /**
+     * sets ip and port and calls listenToriiNonBlocking() in a new thread.
+     * @param ip
+     * @param port
+     */
+    CommandAsyncClient(const std::string& ip, const int port);
 
-#endif  // API_COMMAND_CLIENT_HPP
+    ~CommandAsyncClient();
+
+    using Callback = std::function<void(iroha::protocol::ToriiResponse& response)>;
+
+    /**
+     * Async Torii rpc
+     * @param tx
+     * @param callback
+     */
+    void Torii(const iroha::protocol::Transaction& tx,
+               const Callback& callback);
+
+  private:
+    /**
+     * starts response listener of non-blocking rpcs.
+     */
+    void listen();
+
+  private:
+    grpc::ClientContext context_;
+    std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
+    grpc::CompletionQueue completionQueue_;
+    grpc::Status status_;
+    std::thread listener_; // listens rpcs' responses and executes callbacks.
+  };
+
+}  // namespace torii
+
+#endif  // TORII_COMMAND_CLIENT_HPP

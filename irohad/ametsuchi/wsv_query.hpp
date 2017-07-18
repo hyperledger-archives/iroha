@@ -19,7 +19,11 @@
 #define IROHA_WSV_QUERY_HPP
 
 #include <common/types.hpp>
-#include <model/model.hpp>
+#include <model/account.hpp>
+#include <model/asset.hpp>
+#include <model/account_asset.hpp>
+#include <model/peer.hpp>
+#include <nonstd/optional.hpp>
 #include <string>
 #include <vector>
 
@@ -34,35 +38,34 @@ namespace iroha {
       virtual ~WsvQuery() = default;
 
       /**
-       * Get account by user master key
-       * @param master_key
+       * Get account by user account_id
+       * @param account_id
        * @return
        */
-      virtual model::Account getAccount(
-          const ed25519::pubkey_t &master_key) = 0;
+      virtual nonstd::optional<model::Account> getAccount(const std::string &account_id) = 0;
 
       /**
-       * Get signatories of account by user master key
-       * @param master_key
+       * Get signatories of account by user account_id
+       * @param account_id
        * @return
        */
       virtual std::vector<ed25519::pubkey_t> getSignatories(
-          const ed25519::pubkey_t &master_key) = 0;
+          const std::string &account_id) = 0;
 
       /**
        * Get asset by its name
        * @param asset_id
        * @return
        */
-      virtual model::Asset getAsset(const std::string &asset_id) = 0;
+      virtual nonstd::optional<model::Asset> getAsset(const std::string &asset_id) = 0;
 
       /**
-       * Get wallet of user
-       * @param master_key
+       *
+       * @param account_id
        * @param asset_id
        * @return
        */
-      virtual model::Wallet getWallet(const ed25519::pubkey_t &master_key,
+      virtual nonstd::optional<model::AccountAsset> getAccountAsset(const std::string &account_id,
                                       const std::string &asset_id) = 0;
 
       /**
@@ -70,7 +73,7 @@ namespace iroha {
        * @param address
        * @return
        */
-      virtual model::Peer getPeer(const std::string &address) = 0;
+      virtual nonstd::optional<model::Peer> getPeers() = 0;
     };
 
   }  // namespace ametsuchi

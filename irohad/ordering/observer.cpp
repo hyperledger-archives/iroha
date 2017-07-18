@@ -13,11 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "observer.hpp"
+#include <ordering/observer.hpp>
 #include <peer_service/monitor.hpp>
 #include <peer_service/self_state.hpp>
 #include <timer/timer.hpp>
-#include "queue.hpp"
+#include <ordering/queue.hpp>
 
 #include <torii/command_service.hpp>
 #include <ordering/connection/client.hpp>

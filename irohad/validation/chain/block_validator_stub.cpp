@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include <model/model.hpp>
+#include <model/block.hpp>
 #include <validation/chain/block_validator_stub.hpp>
 
 namespace iroha {

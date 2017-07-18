@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "index_mediator.hpp"
+#include <ametsuchi/index/index_mediator.hpp>
 #include <block.pb.h>
 
 namespace iroha {

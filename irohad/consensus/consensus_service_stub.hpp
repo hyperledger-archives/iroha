@@ -21,7 +21,7 @@
 #include <ametsuchi/storage.hpp>
 #include <consensus/consensus_service.hpp>
 #include <validation/chain/validator.hpp>
-#include <validation/stateful/validator.hpp>
+#include <validation/stateful_validator.hpp>
 
 namespace iroha {
   namespace consensus {

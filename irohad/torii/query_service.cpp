@@ -17,7 +17,7 @@ limitations under the License.
 #ifndef CONNECTION_API_QUERY_SERVICE_HPP
 #define CONNECTION_API_QUERY_SERVICE_HPP
 
-#include "query_service.hpp"
+#include <torii/query_service.hpp>
 
 namespace connection {
     namespace api {

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "queue.hpp"
+#include <ordering/queue.hpp>
 #include <datetime/time.hpp>
 
 // ToDo This is MVP. so we should discuss how to implements this.
@@ -70,10 +70,12 @@ namespace ordering {
 
     Block getBlock() {
       Block block;
+      /*
       while (!tx_queue.empty()) {
-        block.mutable_body()->add_txs()->CopyFrom(tx_queue.top());
+        block.mutable_body()->add_transactions()->CopyFrom(tx_queue.top());
         tx_queue.pop();
       }
+       */
       setCreated();
       return block;
     }
