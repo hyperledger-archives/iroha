@@ -173,12 +173,15 @@ namespace iroha {
           const protocol::RemoveSignatory &pb_remove_signatory) {
         model::RemoveSignatory remove_signatory;
         remove_signatory.account_id = pb_remove_signatory.account_id();
+        std::copy(pb_remove_signatory.public_key().begin(),
+                  pb_remove_signatory.public_key().end(),
+                  remove_signatory.pubkey.begin());
         return remove_signatory;
       }
 
       // set account permissions
       protocol::SetAccountPermissions PbCommandFactory::serializeSetAccountPermissions(
-          const  model::SetAccountPermissions &set_account_permissions) {
+          const model::SetAccountPermissions &set_account_permissions) {
         protocol::SetAccountPermissions pb_set_account_permissions;
         pb_set_account_permissions.set_account_id(set_account_permissions.account_id);
         auto permissions = pb_set_account_permissions.mutable_permissions();
@@ -196,7 +199,7 @@ namespace iroha {
 
       model::SetAccountPermissions
       PbCommandFactory::deserializeSetAccountPermissions(
-          const  protocol::SetAccountPermissions &pb_set_account_permissions) {
+          const protocol::SetAccountPermissions &pb_set_account_permissions) {
         model::SetAccountPermissions set_account_permissions;
         set_account_permissions.account_id =
             pb_set_account_permissions.account_id();

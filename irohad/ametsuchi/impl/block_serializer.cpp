@@ -629,7 +629,7 @@ namespace iroha {
     BlockSerializer::deserialize_add_asset_quantity(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       // TODO: make this function return nullopt when some field is missed
-      model::AddAssetQuantity add_asset_quantity{};
+      model::AddAssetQuantity add_asset_quantity;
 
       // account_id
       add_asset_quantity.account_id = json_command["account_id"].GetString();
