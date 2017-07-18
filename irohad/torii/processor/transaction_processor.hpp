@@ -21,6 +21,7 @@
 #include <rxcpp/rx.hpp>
 #include <model/transaction.hpp>
 #include <model/client.hpp>
+#include "model/transaction_response.hpp"
 
 namespace iroha {
   namespace torii {
