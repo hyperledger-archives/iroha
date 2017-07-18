@@ -23,21 +23,40 @@
 #include <model/transaction_response.hpp>
 #include <torii/processor/transaction_processor.hpp>
 #include <validation/stateless/validator.hpp>
+#include <ordering/ordering_service.hpp>
 
 namespace iroha {
   namespace torii {
-    class TransactionProcessorStub : public TransactionProcessor {
+    class TransactionProcessorImpl : public TransactionProcessor {
      public:
-      TransactionProcessorStub(const validation::StatelessValidator &validator,
-                               model::ModelCryptoProvider &provider);
 
-      void transaction_handle(model::Client client, model::Transaction &transaction) override;
+      /**
+       * @param pcs - provide information proposals and commits
+       * @param os - ordering service for sharing transactions
+       * @param validator - perform stateless validation
+       * @param crypto_provider - sign income transactions
+       */
+      TransactionProcessorImpl(network::PeerCommunicationService &pcs,
+                               ordering::OrderingService &os,
+                               const validation::StatelessValidator &validator);
+
+      void transaction_handle(model::Client client,
+                              model::Transaction &transaction) override;
+
+      rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
+      transaction_notifier() override;
 
      private:
-      const validation::StatelessValidator &validator_;
-      model::ModelCryptoProvider &crptoProvider_;
+      // connections
+      network::PeerCommunicationService &pcs_;
+      ordering::OrderingService &os_;
 
-      rxcpp::observable<model::TransactionResponse> notifier_;
+      // processing
+      const validation::StatelessValidator &validator_;
+
+      // internal
+      rxcpp::subjects::subject<std::shared_ptr<model::TransactionResponse>>
+          notifier_;
     };
   }  // namespace torii
 }  // namespace iroha

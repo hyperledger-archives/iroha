@@ -32,6 +32,8 @@ namespace iroha {
        * @return true if given transaction is valid, false otherwise
        */
       virtual bool validate(const model::Transaction &transaction) const = 0;
+
+      virtual ~StatelessValidator() = default;
     };
   }  // namespace validation
 }  // namespace iroha

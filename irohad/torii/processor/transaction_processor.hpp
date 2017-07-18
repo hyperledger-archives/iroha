@@ -21,6 +21,7 @@
 #include <rxcpp/rx.hpp>
 #include <model/transaction.hpp>
 #include <model/client.hpp>
+#include "model/transaction_response.hpp"
 
 namespace iroha {
   namespace torii {
@@ -40,6 +41,14 @@ namespace iroha {
       virtual void transaction_handle(model::Client client,
                                       model::Transaction &transaction) = 0;
 
+      /**
+       * Subscribers will be notified with transaction status
+       * @return observable for subscribing
+       */
+      virtual rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
+      transaction_notifier() = 0;
+
+      virtual ~TransactionProcessor() = default;
     };
   }  // namespace torii
 }  // namespace iroha

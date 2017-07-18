@@ -24,19 +24,19 @@ target_link_libraries(server_runner
 
 add_library(irohad application.cpp)
 target_link_libraries(irohad
-  server_runner
-  model
-  ametsuchi
-  networking
-  ordering_service
-  consensus_service
-  chain_validator
-  hash
-  stateless_validator
-  client_processor
-  torii
-  crypto
-)
+    server_runner
+    model
+    ametsuchi
+    networking
+    ordering_service
+    consensus_service
+    chain_validator
+    hash
+    stateless_validator
+    processors
+    torii
+    crypto
+    )
 
 add_executable(iroha-main iroha-main.cpp)
 target_link_libraries(iroha-main

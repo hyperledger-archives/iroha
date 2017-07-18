@@ -15,32 +15,24 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_TRANSACTION_RESPONSE_HPP
-#define IROHA_TRANSACTION_RESPONSE_HPP
+#ifndef IROHA_STATELESS_RESPONSE_HPP
+#define IROHA_STATELESS_RESPONSE_HPP
 
-#include <model/transaction.hpp>
-#include <model/client.hpp>
+#include <model/model.hpp>
 
 namespace iroha {
   namespace model {
 
     /**
-     * Transaction response is data with status during transaction lifecycle
+     * Transaction response that contains
      */
-    struct TransactionResponse {
+    struct StatelessResponse : TransactionResponse {
 
       /**
-       * Processed transaction
+       * Is stateless validation passed
        */
-      Transaction transaction;
-
-      /**
-       * Transaction emitter
-       */
-      Client client;
-
-      virtual ~TransactionResponse() = default;
+      bool passed;
     };
-  } //namespace model
-} //namespace iroha
-#endif //IROHA_TRANSACTION_RESPONSE_HPP
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_STATELESS_RESPONSE_HPP

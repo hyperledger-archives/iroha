@@ -64,8 +64,6 @@ if (TESTING)
       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
       -Dgtest_force_shared_crt=ON
       -Dgtest_disable_pthreads=OFF
-      -DBUILD_GTEST=ON
-      -DBUILD_GMOCK=OFF
       INSTALL_COMMAND "" # remove install step
       UPDATE_COMMAND "" # remove update step
       TEST_COMMAND "" # remove test step
@@ -80,10 +78,22 @@ if (TESTING)
   set_target_properties(gtest
       PROPERTIES
       INTERFACE_INCLUDE_DIRECTORIES ${gtest_SOURCE_DIR}/googletest/include
-      IMPORTED_LINK_INTERFACE_LIBRARIES "pthread;${gtest_BINARY_DIR}/googletest/libgtest_main.a"
-      IMPORTED_LOCATION ${gtest_BINARY_DIR}/googletest/libgtest.a
+      IMPORTED_LINK_INTERFACE_LIBRARIES "pthread;${gtest_BINARY_DIR}/googlemock/gtest/libgtest_main.a"
+      IMPORTED_LOCATION ${gtest_BINARY_DIR}/googlemock/gtest/libgtest.a
       )
+
+  add_library(gmock STATIC IMPORTED)
+  file(MAKE_DIRECTORY ${gtest_SOURCE_DIR}/googlemock/include)
+
+  set_target_properties(gmock
+      PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES ${gtest_SOURCE_DIR}/googlemock/include
+      IMPORTED_LINK_INTERFACE_LIBRARIES "pthread;${gtest_BINARY_DIR}/googlemock/libgmock_main.a"
+      IMPORTED_LOCATION ${gtest_BINARY_DIR}/googlemock/libgmock.a
+      )
+
   add_dependencies(gtest google_test)
+  add_dependencies(gmock google_test)
 endif ()
 
 #############################
