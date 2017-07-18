@@ -27,7 +27,29 @@ namespace peerservice {
     for (auto &&node : cluster) {
       // internal cluster consists of other nodes
       if (node.pubkey != self) {
-        cluster_[node.pubkey] = std::make_shared<ConnectionTo>(node, loop);
+        other_nodes_.push_back(node);
+
+        auto &&ptr = std::make_shared<ConnectionTo>(node, loop);
+
+        // timeout handler
+        ptr->timer->on<uvw::TimerEvent>(
+            [ptr, this](const uvw::TimerEvent &e, auto &t) {
+              printf("Timeout \n");
+              ptr->ping(&this->myHeartbeat);
+            });
+
+        // heartbeat handler
+        ptr->on<Heartbeat>([this](const Heartbeat &hb, auto &t) {
+          printf("Received heartbeat: height=%d\n", hb.height());
+          // ConnectionTo publishes only heartbeats with higher ledger
+          if (this->latestState.height() < hb.height()) {
+            latestState.CopyFrom(hb);
+            printf("my current ledger height: %d\n", latestState.height());
+          }
+        });
+
+        cluster_[node.pubkey] = std::move(ptr);
+
       } else {
         self_node_ = node;
       }
@@ -37,36 +59,51 @@ namespace peerservice {
   void PeerServiceImpl::ping() {
     for (auto &&entry : cluster_) {
       auto &&node = entry.second;
-      Heartbeat hb = node->ping(&this->myHeartbeat);
-      if (hb.height() > latestState.height()) {
-        latestState.CopyFrom(hb);
-      }
+      node->start_timer(node->next_short_timer);
     }
   }
 
   grpc::Status PeerServiceImpl::RequestHeartbeat(grpc::ServerContext *context,
                                                  const Heartbeat *request,
                                                  Heartbeat *response) {
-    // TODO validate. Is this ok?
-    //    if(request->height() < 0 ||  request->gmroot().size() !=
-    //    iroha::hash256_t::size()){
-    //      return grpc::Status::CANCELLED;
-    //    }
+    // TODO: handle
+    try {
+      // TODO: authenticate peer by pubkey and ip. Now we
+      // authenticate by pubkey
+      auto &&pub = iroha::to_blob<pubkey_t::size()>(
+          request->pubkey());  // throws if size does not match
+      auto &&node =
+          cluster_.at(pub);  // throws if no given pubkey in the map cluster_
 
-    // if we received a heartbeat with higher ledger that we have
-    if (request->height() > myHeartbeat.height()) {
-      latestState.CopyFrom(*request);
-      ENewLedger event;
-      event.data.CopyFrom(latestState);
-      publish(event);  // emit to uvw
+      // TODO validate. Is this ok?
+      if (request->height() < 0 ||
+          request->gmroot().size() != iroha::hash256_t::size()) {
+        return grpc::Status::CANCELLED;
+      }
+
+      // if we received a heartbeat with higher ledger that we have
+      if (request->height() > myHeartbeat.height()) {
+        latestState.CopyFrom(*request);
+
+        // event type: peerservice::Heartbeat
+        publish(latestState);  // emit to uvw
+      }
+
+      // reset sender's timer
+      node->start_timer(ConnectionTo::next_short_timer);
+
+      response->CopyFrom(myHeartbeat);
+      return grpc::Status::OK;
+
+    } catch (...) {
+      // TODO: handle exceptions
+      printf("we received bad public key in heartbeat\n");
+      return grpc::Status::CANCELLED;
     }
-
-    response->CopyFrom(myHeartbeat);
-    return grpc::Status::OK;
   }
 
   Heartbeat PeerServiceImpl::getLatestState() noexcept { return latestState; }
-  Heartbeat PeerServiceImpl::getMyHeartbeat() noexcept { return myHeartbeat; }
+  Heartbeat PeerServiceImpl::getMyState() noexcept { return myHeartbeat; }
 
   Node PeerServiceImpl::getMyNode() noexcept { return self_node_; }
 
@@ -75,7 +112,7 @@ namespace peerservice {
   }
 
   std::vector<Node> PeerServiceImpl::getOnlineNodes() noexcept {
-    std::vector<Node> ret;
+    std::vector<Node> ret(other_nodes_.size());
     for (auto &&entry : cluster_) {
       auto &&node = entry.second;
       if (node != nullptr && node->online) {
@@ -93,5 +130,9 @@ namespace peerservice {
     }
 
     myHeartbeat = std::move(hb);
+  }
+
+  std::vector<Node> PeerServiceImpl::getOtherNodes() noexcept {
+    return other_nodes_;
   }
 }

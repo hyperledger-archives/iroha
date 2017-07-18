@@ -7,6 +7,11 @@ package peerservice;
 message Heartbeat {
     bytes gmroot = 1; // highest known global merkle root
     int64 height = 2; // highest known ledger height
+
+    // we have to identify the peer somehow
+    // TODO:  bad solution, because this can be forged.
+    // it should not be signed, because this is big additional load for server.
+    bytes pubkey = 3; // public key of peer who is sending heartbeat
 }
 
 

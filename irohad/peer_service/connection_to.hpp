@@ -23,10 +23,12 @@
 #include <memory>
 #include <uvw.hpp>
 #include "node.hpp"
+#include <random>
 
 namespace peerservice {
 
-  struct ConnectionTo : public::uvw::Emitter<ConnectionTo> {
+  class ConnectionTo : public ::uvw::Emitter<ConnectionTo> {
+   public:
     explicit ConnectionTo(const Node& n, std::shared_ptr<uvw::Loop> loop);
 
     ConnectionTo(const ConnectionTo&) = delete;
@@ -34,23 +36,29 @@ namespace peerservice {
 
     ~ConnectionTo();
 
-    const Node &node;
+    const Node& node;
 
     bool online;
     std::shared_ptr<uvw::TimerHandle> timer;
 
-    void start_timer();
-    void reset_timer();
+    /**
+     * Stops timer if it is running, then starts new non-repetitive timer with
+     * given delay. Whenever we receive any message from peer X, we reset its
+     * timer with short timer. If peer is dead, then we restart long timer.
+     * @param distr
+     */
+    void start_timer(std::uniform_int_distribution<uint32_t>& distr);
 
-    Heartbeat ping(Heartbeat* request);
+    void ping(Heartbeat* request);
 
    private:
     Heartbeat cachedHeartbeat;
     std::unique_ptr<PeerService::Stub> stub_;
 
+   public:
     static std::default_random_engine generator;
-    // from 1 sec to 2 secs
-    static std::uniform_int_distribution<uint16_t> next_timer;
+    static std::uniform_int_distribution<uint32_t> next_short_timer;
+    static std::uniform_int_distribution<uint32_t> next_long_timer;
   };
 }
 

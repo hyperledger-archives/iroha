@@ -21,9 +21,12 @@
 #include <crypto/crypto.hpp>
 #include <peer_service/service.hpp>
 #include <thread>
-#define NPEERS 4
+#define NPEERS 2
 
 using namespace iroha;
+
+using SERVICE = std::pair<std::unique_ptr<grpc::ServerBuilder>,
+                          std::unique_ptr<peerservice::PeerServiceImpl>>;
 
 class Service : public testing::Test {
  public:
@@ -49,52 +52,61 @@ class Service : public testing::Test {
 
       builder->AddListeningPort(on, grpc::InsecureServerCredentials());
 
-      auto &&loop = uvw::Loop::getDefault();
+      auto &&loop = uvw::Loop::create();
       auto &&service = std::make_unique<peerservice::PeerServiceImpl>(
-          cluster, cluster[i].pubkey, loop);
+          cluster, cluster[i].pubkey, std::move(loop));
 
       builder->RegisterService(service.get());
 
       auto &&pair = std::make_pair(std::move(builder), std::move(service));
 
       this->services.push_back(std::move(pair));
-
-      // run each service with own event loop and within one thread
-      std::thread([this]() {
-        auto &&back = this->services.back();
-        auto &&server = back.first->BuildAndStart();
-        server->Wait();
-      }).detach();
     }
   }
 
-  std::vector<std::pair<std::unique_ptr<grpc::ServerBuilder>,
-                        std::unique_ptr<peerservice::PeerServiceImpl>>>
-      services;
+  std::vector<SERVICE> services;
 };
 
+/*
 TEST_F(Service, AyoungerThanB) {
   auto &&A = services[0].second;
   auto &&B = services[1].second;
 
   using peerservice::Heartbeat;
-  using ENewLedger = peerservice::PeerServiceImpl::ENewLedger;
 
   size_t HEIGHT = 3;
 
+  // heartbeat for A
   Heartbeat a;
+  auto aPub = A->getMyNode().pubkey.to_string();
   a.set_height(HEIGHT - 1);  // smaller than HEIGHT, A's ledger has less blocks
+  a.set_gmroot(
+      std::string(iroha::hash256_t::size(), 'a'));  // 32 bytes: aaaaaaaa...aa
+  a.set_allocated_pubkey(&aPub);
+
+  // heartbeat for B
   Heartbeat b;
+  auto bPub = B->getMyNode().pubkey.to_string();
+  b.set_gmroot(
+      std::string(iroha::hash256_t::size(), 'b'));  // 32 bytes: bbbbbbbb...bb
   b.set_height(HEIGHT);
+  b.set_allocated_pubkey(&bPub);
 
   A->setMyState(a);
   B->setMyState(b);
 
+  A->on<Heartbeat>([HEIGHT](const Heartbeat &hb, auto &t) {
+    ASSERT_EQ(HEIGHT, hb.height())
+        << "we recv higher ledger, but heights are different";
+  });
+
   A->ping();
 
-  // buggy:
-  // auto online = A->getOnlineNodes();
-  // EXPECT_EQ(online.size(), NPEERS) << "not all peers online";
+  //    std::this_thread::sleep_for(std::chrono::seconds(5));
+
+  auto online = A->getOnlineNodes();
+  // NPEERS - 1 because we do not ping ourself
+  EXPECT_EQ(online.size(), NPEERS - 1) << "not all peers online";
 
   EXPECT_TRUE(A->getLoop()->alive()) << "A's loop is dead";
   EXPECT_TRUE(B->getLoop()->alive()) << "B's loop is dead";
@@ -103,3 +115,4 @@ TEST_F(Service, AyoungerThanB) {
   ASSERT_EQ(A->getLatestState().height(), HEIGHT)
       << "A(2) -> B(3) and  A did not update its latest state";
 }
+ */

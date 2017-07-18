@@ -42,13 +42,6 @@ namespace peerservice {
   class PeerServiceImpl : public uvw::Emitter<PeerServiceImpl>,
                           public PeerService::Service {
    public:
-    /**
-     * Event that is emitted when we find a peer with higher ledger that ours
-     */
-    struct ENewLedger {
-      Heartbeat data;
-    };
-
     PeerServiceImpl(const std::vector<Node>& cluster, const pubkey_t self,
                     std::shared_ptr<uvw::Loop> loop = uvw::Loop::getDefault());
 
@@ -62,14 +55,15 @@ namespace peerservice {
      * @param hb
      */
     void setMyState(Heartbeat hb);
-    Heartbeat getMyHeartbeat() noexcept;
+    Heartbeat getMyState() noexcept;
 
     /**
-     * Returns latest state of all available peers
+     * Returns latest state among all available peers
      * @return
      */
     Heartbeat getLatestState() noexcept;
     Node getMyNode() noexcept;
+    std::vector<Node> getOtherNodes() noexcept;
     std::shared_ptr<uvw::Loop> getLoop() noexcept;
 
     std::vector<Node> getOnlineNodes() noexcept;
@@ -88,6 +82,8 @@ namespace peerservice {
     Heartbeat myHeartbeat;
     Heartbeat latestState;
     Node self_node_;
+
+    std::vector<Node> other_nodes_;
 
     std::unordered_map<pubkey_t, std::shared_ptr<ConnectionTo>> cluster_;
   };

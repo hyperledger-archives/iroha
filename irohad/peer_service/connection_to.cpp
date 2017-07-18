@@ -19,9 +19,17 @@
 #include "service.hpp"
 
 namespace peerservice {
+  // generator with random distribution
   std::default_random_engine ConnectionTo::generator;
   // uniform distribution for timer : from 1 sec to 2 secs
-  std::uniform_int_distribution<uint16_t> ConnectionTo::next_timer(1000, 2000);
+  std::uniform_int_distribution<uint32_t> ConnectionTo::next_short_timer(1000,
+                                                                         2000);
+
+  // uniform distribution for timer: from 10 min to 1 hour
+  //  std::uniform_int_distribution<uint32_t> ConnectionTo::next_long_timer(
+  //      1000 * 60 * 10, 1000 * 60 * 60);  // ms
+  std::uniform_int_distribution<uint32_t> ConnectionTo::next_long_timer(
+      5000, 7000);  // ms
 
   ConnectionTo::ConnectionTo(const Node &n, std::shared_ptr<uvw::Loop> loop)
       : node(n) {
@@ -37,26 +45,34 @@ namespace peerservice {
 
   ConnectionTo::~ConnectionTo() { this->timer->close(); }
 
-  void ConnectionTo::start_timer() {
-    auto timeout_ms = std::chrono::milliseconds(
-        ConnectionTo::next_timer(ConnectionTo::generator));
+  void ConnectionTo::start_timer(
+      std::uniform_int_distribution<uint32_t> &distr) {
+    if (timer->active()) timer->stop();
+
+    auto timeout_ms = std::chrono::milliseconds(distr(ConnectionTo::generator));
     timer->start(timeout_ms, uvw::TimerHandle::Time{0});
   }
 
-  Heartbeat ConnectionTo::ping(Heartbeat *request) {
+  void ConnectionTo::ping(Heartbeat *request) {
+    if(request == nullptr) throw std::invalid_argument("request is nullptr");
+
     grpc::ClientContext context;
     grpc::Status status;
     Heartbeat answer;
 
     status = stub_->RequestHeartbeat(&context, *request, &answer);
+    printf("ping %s\n", context.peer().c_str());
 
     // TODO: validate heartbeat messages
-
     if (status.ok()) {
+      // TODO: change to logger
+      printf("peer is alive: %s\n", context.peer().c_str());
+
       // peer is alive
-      this->start_timer();
+      this->start_timer(ConnectionTo::next_short_timer);
       this->online = true;
-      return answer;
+      publish(answer);  // publish event to uvw
+
     } else {
       if (status.error_code() == grpc::StatusCode::CANCELLED) {
         // our heartbeat is invalid
@@ -64,11 +80,13 @@ namespace peerservice {
         throw "something";
       }
 
+      // TODO: change to logger
+      printf("peer is dead: %s\n", context.peer().c_str());
+
       // peer is dead
       this->online = false;
-      this->timer->stop();  // stop timer and wait for heartbeat from him
+      // stop timer and wait until dead peer send us heartbeat
+      this->start_timer(ConnectionTo::next_long_timer);
     }
   }
-
-  void ConnectionTo::reset_timer() { timer->again(); }
 }

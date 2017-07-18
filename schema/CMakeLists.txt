@@ -5,7 +5,6 @@
 compile_proto_to_cpp(block.proto)
 compile_proto_to_cpp(primitive.proto)
 compile_proto_to_cpp(commands.proto)
-compile_proto_to_grpc_cpp(election.proto)
 compile_proto_to_grpc_cpp(endpoint.proto)
 compile_proto_to_grpc_cpp(consensus.proto)
 compile_proto_to_grpc_cpp(peer_service.proto)
@@ -59,16 +58,3 @@ target_link_libraries(peer_service_grpc
         grpc++
         )
 
-
-
-
-add_library(election_grpc
-        election.pb.h
-        election.pb.cc
-        election.grpc.pb.h
-        election.grpc.pb.cc
-        )
-target_link_libraries(election_grpc
-        protobuf
-        grpc++
-        )
