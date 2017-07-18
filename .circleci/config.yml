@@ -13,22 +13,22 @@ jobs:
     steps:
       - checkout
 
-      - run:
+      - run_grpc:
           name: ensure, required folders created
           command: |
             mkdir -p $IROHA_HOME
             mkdir -p $IROHA_BUILD
-      - run:
+      - run_grpc:
           name: cmake
           command: cmake -H$IROHA_HOME -B$IROHA_BUILD
-      - run:
+      - run_grpc:
           name: make
           command: cmake --build $IROHA_BUILD -- -j4
-      - run:
-          name: run tests
+      - run_grpc:
+          name: run_grpc tests
           command: cmake --build $IROHA_BUILD --target test
 
-#      - run:
+#      - run_grpc:
 #          name: analyze source code with cppcheck and sonarqube
 #          command: |
 #            export TEST_FOLDER=$IROHA_BUILD/test_bin
@@ -36,7 +36,7 @@ jobs:
 #            cd $IROHA_HOME
 #            cppcheck --enable=all --inconclusive --xml --xml-version=2 core/ peer/ smart_contract/ test/ tools/ 2>/tmp/cppcheck.xml || true
 #
-#            # run valgrind for tests
+#            # run_grpc valgrind for tests
 #            VALGRIND_XML=
 #            mkdir -p valgrind_report
 #            for test in $(ls $TEST_FOLDER); do
@@ -68,7 +68,7 @@ jobs:
 #      - setup_docker_engine
 #
 #      ## At this step we have compiled and tested iroha.
-#      - run:
+#      - run_grpc:
 #          name: setup docker
 #          command: |
 #            set -ex
@@ -76,14 +76,14 @@ jobs:
 #            tar -xz -C /tmp -f /tmp/docker.tgz
 #            mv /tmp/docker/* /usr/bin
 #
-#      - run:
+#      - run_grpc:
 #          name: setup docker-compose
 #          command: |
 #            set -ex
 #            curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
 #            chmod +x /usr/local/bin/docker-compose
 #
-#      - run:
+#      - run_grpc:
 #          name: build and push hyperledger/iroha-docker:$CIRCLE_BRANCH image
 #          command: |
 #            # replace all invalid characters to dots
@@ -134,18 +134,18 @@ jobs:
 #
 #      ## you can use it by tag:
 #      ##   hyperledger/iroha-docker:$TAG
-#      ## don't forget, that call docker run hyperledger/iroha-docker:$TAG is blocking.
-#      ## to make in unblocking, run with -d
+#      ## don't forget, that call docker run_grpc hyperledger/iroha-docker:$TAG is blocking.
+#      ## to make in unblocking, run_grpc with -d
 #      ##
-#      ## put your tests here as separate run command, here is the template:
-#      #- run:
+#      ## put your tests here as separate run_grpc command, here is the template:
+#      #- run_grpc:
 #      #    name: test name
 #      #    command: |
 #      #      test body (bash)
 #      #      test body (bash)
 #      #      don't forget to clean up after tests (if needed)
 #
-#      - run:
+#      - run_grpc:
 #          name: template test using docker compose
 #          command: |
 #            docker-compose up -d
@@ -153,7 +153,7 @@ jobs:
 #            IP=$(docker inspect --format "{{ .NetworkSettings.Networks.iroha_private.IPAddress }}" $(docker ps -lq))
 #            TAG=$(echo $CIRCLE_BRANCH | sed "s/[^a-zA-Z0-9_\-\.]/./g")
 #
-#            #docker run --rm -it hyperledger/iroha-docker:$TAG sh -c "/iroha/bin/add_peer key $(IP) ledger"
+#            #docker run_grpc --rm -it hyperledger/iroha-docker:$TAG sh -c "/iroha/bin/add_peer key $(IP) ledger"
 #
 #            docker stop $(docker ps -qln 4)
 #            docker rm $(docker ps -qln 4)

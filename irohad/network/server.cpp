@@ -15,4 +15,26 @@
  * limitations under the License.
  */
 
-#include "network.hpp"
+#include "server.hpp"
+#include <grpc++/grpc++.h>
+
+namespace network {
+  Server::Server(std::shared_ptr<uvw::Loop> loop)
+      : loop_{loop} {
+
+  }
+
+  void Server::run_grpc(uvw::Addr addr, bool blocking) {
+    // bind grpc service
+    auto listen_on = addr.ip + ":" + std::to_string(addr.port);
+    builder.AddListeningPort(listen_on,
+                             grpc::InsecureServerCredentials());
+    builder.RegisterService(&this->consensus_);
+
+    auto server = builder.BuildAndStart();
+
+    if(blocking) {
+      server->Wait();
+    }
+  }
+}

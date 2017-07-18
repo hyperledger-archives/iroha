@@ -36,7 +36,7 @@ class Service : public testing::Test {
                     []() { return create_keypair(create_seed()); });
 
     std::vector<peerservice::Node> cluster;
-    for (int i = 0; i < NPEERS; i++) {
+    for (int i = 0; i < NPEERS; ++i) {
       peerservice::Node node;
       node.ip = "127.0.0.1";
       node.port = (uint16_t)(65530 + i);
@@ -44,7 +44,7 @@ class Service : public testing::Test {
       cluster.push_back(node);
     }
 
-    for (int i = 0; i < NPEERS; i++) {
+    for (int i = 0; i < NPEERS; ++i) {
       auto &&builder = std::make_unique<grpc::ServerBuilder>();
       auto on = cluster[i].ip + ":" + std::to_string(cluster[i].port);
 

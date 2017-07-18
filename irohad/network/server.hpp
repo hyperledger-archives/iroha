@@ -18,12 +18,29 @@
 #ifndef IROHA_NETWORK_HPP
 #define IROHA_NETWORK_HPP
 
+#include <grpc++/server_builder.h>
+#include <consensus/consensus_service.hpp>
+#include <consensus/messages.hpp>
+#include <uvw.hpp>
 
+namespace network {
 
-class network {
+  /**
+   * This is an entity, which is listens host:port and emits received messages
+   * It emits all types of messages defined in consensus/messages.hpp
+   * GRPC server builder is also here.
+   */
+  class Server : public uvw::Emitter<Server> {
+   public:
+    Server(std::shared_ptr<uvw::Loop> loop = uvw::Loop::getDefault());
 
-};
+    void run_grpc(uvw::Addr addr, bool blocking = true);
 
+   private:
+    std::shared_ptr<uvw::Loop> loop_;
 
-
-#endif //IROHA_NETWORK_HPP
+    grpc::ServerBuilder builder;
+    consensus::ConsensusService consensus_;
+  };
+}
+#endif  // IROHA_NETWORK_HPP
