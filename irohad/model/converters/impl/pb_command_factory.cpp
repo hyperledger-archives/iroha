@@ -267,7 +267,7 @@ namespace iroha {
         return transfer_asset;
       }
 
-      protocol::Command &&
+      protocol::Command
       PbCommandFactory::serializeAbstractCommand(const model::Command &command) {
         PbCommandFactory commandFactory;
         auto cmd = protocol::Command();
@@ -365,7 +365,7 @@ namespace iroha {
               serialized));
         }
 
-        return std::forward<protocol::Command>(cmd);
+        return cmd;
       }
 
       std::shared_ptr<model::Command>

@@ -194,8 +194,12 @@ namespace iroha {
 
     /* Transaction */
     bool Transaction::operator==(const Transaction &rhs) const {
+      if (rhs.commands.size() != commands.size()) return false;
+      for (uint i = 0; i < rhs.commands.size(); i++){
+        if (*rhs.commands.at(i) != *commands.at(i)) return false;
+      }
       return rhs.tx_counter == tx_counter && rhs.signatures == signatures &&
-             rhs.created_ts == created_ts && rhs.commands == commands;
+             rhs.created_ts == created_ts;
     }
 
     bool Transaction::operator!=(const Transaction &rhs) const {
