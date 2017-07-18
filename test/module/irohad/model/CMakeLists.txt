@@ -12,11 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(CMAKE_BUILD_TYPE Debug)
-
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
-
 addtest(command_converter_test converters/pb_commands_test.cpp)
 target_link_libraries(command_converter_test
+    model
+    )
+
+addtest(transaction_converter_test converters/pb_transaction_test.cpp)
+target_link_libraries(transaction_converter_test
+    model
+    )
+
+addtest(block_converter_test converters/pb_block_test.cpp)
+target_link_libraries(block_converter_test
     model
     )
