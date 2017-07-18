@@ -123,7 +123,7 @@ namespace iroha {
       // Creator must have permission to create assets
       return creator.permissions.create_assets &&
              // Name is within some range
-             asset_name.size() > 0 && asset_name.size() < 8 &&
+             asset_name.size() > 0 && asset_name.size() < 10 &&
              // Account must be well-formed (no system symbols)
              std::all_of(std::begin(asset_name), std::end(asset_name),
                          [](char c) { return std::isalnum(c); });
@@ -141,7 +141,7 @@ namespace iroha {
       // Creator must have permission to create domains
       return creator.permissions.create_domains &&
              // Name is within some range
-             domain_name.size() > 0 && domain_name.size() < 8 &&
+             domain_name.size() > 0 && domain_name.size() < 10 &&
              // Account must be well-formed (no system symbols)
              std::all_of(std::begin(domain_name), std::end(domain_name),
                          [](char c) { return std::isalnum(c); });

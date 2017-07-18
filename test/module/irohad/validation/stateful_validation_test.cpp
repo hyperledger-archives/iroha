@@ -23,6 +23,7 @@
 #include "model/commands/add_signatory.hpp"
 #include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
+#include "model/commands/create_asset.hpp"
 
 auto ADMIN_ID = "admin@test";
 auto ACCOUNT_ID = "test@test";
@@ -132,47 +133,8 @@ void set_default_wsv(WSVQueriesMock &test_wsv, WSVCommandsMock &test_commands) {
       .WillRepeatedly(Return(true));
 
   EXPECT_CALL(test_commands, updateAccount(_)).WillRepeatedly(Return(true));
-}
 
-TEST(CommandValidation, create_account) {
-  WSVQueriesMock test_wsv;
-  WSVCommandsMock test_commands;
-
-  auto creator = get_default_creator();
-  // Valid case
-  creator.permissions.create_accounts = true;
-  iroha::model::CreateAccount createAccount;
-  std::fill(createAccount.pubkey.begin(), createAccount.pubkey.end(), 0x2);
-  createAccount.account_name = "test";
-  createAccount.domain_id = "test";
-
-  EXPECT_CALL(test_commands, insertSignatory(createAccount.pubkey))
-      .Times(1)
-      .WillOnce(Return(true));
-
-  EXPECT_CALL(test_commands, insertAccount(_)).Times(1).WillOnce(Return(true));
-
-  EXPECT_CALL(test_commands, insertAccountSignatory(_, _))
-      .Times(1)
-      .WillOnce(Return(true));
-
-  ASSERT_TRUE(createAccount.validate(test_wsv, creator));
-  ASSERT_TRUE(createAccount.execute(test_wsv, test_commands));
-
-  // Non valid cases:
-  // 1. Creator has no permission
-
-  creator.permissions.create_accounts = false;
-  ASSERT_FALSE(createAccount.validate(test_wsv, creator));
-
-  // 2. Not valid name for account
-  creator.permissions.create_accounts = true;
-  createAccount.account_name = "thisisaverybigname";
-  ASSERT_FALSE(createAccount.validate(test_wsv, creator));
-
-  // 3. Not valid name for account (system symbols)
-  createAccount.account_name = "test@";
-  ASSERT_FALSE(createAccount.validate(test_wsv, creator));
+  EXPECT_CALL(test_commands, insertAsset(_)).WillRepeatedly(Return(true));
 }
 
 TEST(CommandValidation, add_asset_quantity) {
@@ -358,4 +320,72 @@ TEST(CommandValidation, assign_master_key) {
                command.execute(test_wsv, test_commands));
 }
 
+TEST(CommandValidation, create_account) {
+  WSVQueriesMock test_wsv;
+  WSVCommandsMock test_commands;
 
+  auto creator = get_default_creator();
+  // Valid case
+  creator.permissions.create_accounts = true;
+  iroha::model::CreateAccount createAccount;
+  std::fill(createAccount.pubkey.begin(), createAccount.pubkey.end(), 0x2);
+  createAccount.account_name = "test";
+  createAccount.domain_id = "test";
+
+  EXPECT_CALL(test_commands, insertSignatory(createAccount.pubkey))
+      .Times(1)
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(test_commands, insertAccount(_)).Times(1).WillOnce(Return(true));
+
+  EXPECT_CALL(test_commands, insertAccountSignatory(_, _))
+      .Times(1)
+      .WillOnce(Return(true));
+
+  ASSERT_TRUE(createAccount.validate(test_wsv, creator));
+  ASSERT_TRUE(createAccount.execute(test_wsv, test_commands));
+
+  // Non valid cases:
+  // 1. Creator has no permission
+
+  creator.permissions.create_accounts = false;
+  ASSERT_FALSE(createAccount.validate(test_wsv, creator));
+
+  // 2. Not valid name for account
+  creator.permissions.create_accounts = true;
+  createAccount.account_name = "thisisaverybigname";
+  ASSERT_FALSE(createAccount.validate(test_wsv, creator));
+
+  // 3. Not valid name for account (system symbols)
+  createAccount.account_name = "test@";
+  ASSERT_FALSE(createAccount.validate(test_wsv, creator));
+}
+
+TEST(CommandValidation, create_asset) {
+  WSVQueriesMock test_wsv;
+  WSVCommandsMock test_commands;
+
+  auto creator = get_default_creator();
+
+  iroha::model::CreateAsset command;
+
+  set_default_wsv(test_wsv, test_commands);
+
+  // Valid cases:
+  // 1. Creator is money creator
+  creator.permissions.create_assets = true;
+  command.precision = 2;
+  command.domain_id = DOMAIN_NAME;
+  command.asset_name = "FCoin";
+
+  ASSERT_TRUE(command.validate(test_wsv, creator) &&
+              command.execute(test_wsv, test_commands));
+
+  //--------- Non valid cases:--------------
+  // 1. Creator has no permissions
+  creator = get_default_creator();
+  creator.permissions.add_signatory = false;
+  ASSERT_FALSE(command.validate(test_wsv, creator) &&
+               command.execute(test_wsv, test_commands));
+
+}
