@@ -25,6 +25,7 @@
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/remove_signatory.hpp"
+#include "model/commands/set_permissions.hpp"
 
 auto ADMIN_ID = "admin@test";
 auto ACCOUNT_ID = "test@test";
@@ -439,11 +440,42 @@ TEST(CommandValidation, remove_signatory) {
   creator.permissions.remove_signatory = true;
   command.pubkey = orig_account.master_key;
   ASSERT_FALSE(command.validate(test_wsv, creator) &&
-      command.execute(test_wsv, test_commands));
+               command.execute(test_wsv, test_commands));
 
   // 3. Remove signatory not present in account
   std::fill(command.pubkey.begin(), command.pubkey.end(), 0xF);
   ASSERT_FALSE(command.validate(test_wsv, creator) &&
-      command.execute(test_wsv, test_commands));
+               command.execute(test_wsv, test_commands));
+}
 
+TEST(CommandValidation, set_account_permissions) {
+  WSVQueriesMock test_wsv;
+  WSVCommandsMock test_commands;
+
+  auto creator = get_default_creator();
+  auto orig_account = get_default_account();
+
+  iroha::model::SetAccountPermissions command;
+
+  set_default_wsv(test_wsv, test_commands);
+  // Valid cases:
+  // 1. Creator is admin
+  creator.permissions.set_permissions = true;
+  command.account_id = ACCOUNT_ID;
+  command.new_permissions.create_assets = true;
+
+  ASSERT_TRUE(command.validate(test_wsv, creator) &&
+              command.execute(test_wsv, test_commands));
+
+  //--------- Non valid cases:--------------
+  // 1. Creator has no permissions
+  creator.permissions.set_permissions = false;
+  ASSERT_FALSE(command.validate(test_wsv, creator) &&
+               command.execute(test_wsv, test_commands));
+
+  // 2.No such account exits
+  creator.permissions.set_permissions = true;
+  command.account_id = "noacc";
+  ASSERT_FALSE(command.validate(test_wsv, creator) &&
+               command.execute(test_wsv, test_commands));
 }
