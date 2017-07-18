@@ -82,15 +82,15 @@ namespace iroha {
     bool AssignMasterKey::validate(ametsuchi::WsvQuery &queries,
                                    const Account &creator) {
       auto signs = queries.getSignatories(account_id);
-
+      auto acc = queries.getAccount(account_id);
       return
           // Two cases - when creator assigns to itself, or system admin
           (creator.account_id == account_id ||
            creator.permissions.add_signatory) &&
-          // Check if account has at lest one signatory
-          signs &&
+          // Check if account exist and has at least one signatory
+          signs && acc.has_value() &&
           // Check if new master key is not the same
-          creator.master_key != pubkey &&
+          acc.value().master_key != pubkey &&
           // Check if new master key is in AccountSignatory relationship
           std::find(signs->begin(), signs->end(), pubkey) != signs->end();
     }
