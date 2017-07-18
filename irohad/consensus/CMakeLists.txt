@@ -23,6 +23,7 @@ target_link_libraries(sumeragi
   sumeragi_connection
   thread_pool
   timer
+  optional
   logger
   rxcpp
   )
@@ -32,4 +33,5 @@ add_library(consensus_service
     )
 target_link_libraries(consensus_service
     rxcpp
+    optional
     )

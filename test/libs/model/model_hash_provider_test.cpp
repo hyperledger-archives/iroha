@@ -32,7 +32,8 @@ iroha::model::Signature create_signature() {
 
 iroha::model::Transaction create_transaction() {
   iroha::model::Transaction tx{};
-  memset(tx.creator.data(), 0x1, 32);
+
+  tx.creator_account_id = "1";
 
   tx.tx_counter = 0;
   tx.created_ts = 0;

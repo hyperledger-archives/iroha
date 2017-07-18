@@ -18,12 +18,11 @@ limitations under the License.
 #define IROHA_TRANSACTION_HPP
 
 #include <common/types.hpp>
+#include <memory>
 #include <model/command.hpp>
 #include <model/signature.hpp>
-#include <memory>
-#include <vector>
 #include <string>
-
+#include <vector>
 
 namespace iroha {
   namespace model {
@@ -47,10 +46,10 @@ namespace iroha {
       ts64_t created_ts;
 
       /**
-       * Public key of a transaction creator.
+       * Account id of transaction creator.
        * META field
        */
-      ed25519::pubkey_t creator;
+      std::string creator_account_id;
 
       /**
        * Number for protecting against replay attack.

@@ -23,6 +23,7 @@
 #include <model/asset.hpp>
 #include <model/account_asset.hpp>
 #include <model/peer.hpp>
+#include <nonstd/optional.hpp>
 #include <string>
 #include <vector>
 
@@ -41,7 +42,7 @@ namespace iroha {
        * @param account_id
        * @return
        */
-      virtual model::Account getAccount(const std::string &account_id) = 0;
+      virtual nonstd::optional<model::Account> getAccount(const std::string &account_id) = 0;
 
       /**
        * Get signatories of account by user account_id
@@ -56,7 +57,7 @@ namespace iroha {
        * @param asset_id
        * @return
        */
-      virtual model::Asset getAsset(const std::string &asset_id) = 0;
+      virtual nonstd::optional<model::Asset> getAsset(const std::string &asset_id) = 0;
 
       /**
        *
@@ -64,7 +65,7 @@ namespace iroha {
        * @param asset_id
        * @return
        */
-      virtual model::AccountAsset getAccountAsset(const std::string &account_id,
+      virtual nonstd::optional<model::AccountAsset> getAccountAsset(const std::string &account_id,
                                       const std::string &asset_id) = 0;
 
       /**
@@ -72,7 +73,7 @@ namespace iroha {
        * @param address
        * @return
        */
-      virtual model::Peer getPeer(const std::string &address) = 0;
+      virtual nonstd::optional<model::Peer> getPeers() = 0;
     };
 
   }  // namespace ametsuchi

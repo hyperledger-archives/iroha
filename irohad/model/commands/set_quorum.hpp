@@ -18,8 +18,9 @@
 #ifndef IROHA_SET_QUORUM_HPP
 #define IROHA_SET_QUORUM_HPP
 
-#include <model/model.hpp>
 #include <string>
+
+#include "model/command.hpp"
 
 namespace iroha {
   namespace model {
