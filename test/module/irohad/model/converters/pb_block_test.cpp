@@ -16,6 +16,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <model/model_hash_provider_impl.hpp>
 #include "commands.pb.h"
 #include "model/block.hpp"
 #include "model/converters/pb_block_factory.hpp"
@@ -62,7 +63,6 @@ TEST(BlockTest, bl_test) {
 
   auto orig_block = iroha::model::Block();
   orig_block.created_ts = 1;
-  std::fill(orig_block.hash.begin(), orig_block.hash.end(), 0x7);
 
   std::fill(orig_block.prev_hash.begin(), orig_block.prev_hash.end(), 0x3);
   orig_block.sigs = {siga};
@@ -72,8 +72,18 @@ TEST(BlockTest, bl_test) {
   orig_block.txs_number = 1;
   orig_block.transactions = {orig_tx};
 
+  iroha::model::HashProviderImpl hash_provider;
+  orig_block.hash = hash_provider.get_hash(orig_block);
+
   auto factory = iroha::model::converters::PbBlockFactory();
   auto proto_block = factory.serialize(orig_block);
   auto serial_block = factory.deserialize(proto_block);
+  ASSERT_EQ(orig_block.created_ts, serial_block.created_ts);
+  ASSERT_EQ(orig_block.transactions, serial_block.transactions);
+  ASSERT_EQ(orig_block.sigs, serial_block.sigs);
+  ASSERT_EQ(orig_block.hash, serial_block.hash);
+  ASSERT_EQ(orig_block.merkle_root, serial_block.merkle_root);
+  ASSERT_EQ(orig_block.prev_hash, serial_block.prev_hash);
+  ASSERT_EQ(orig_block.txs_number, serial_block.txs_number);
   ASSERT_EQ(orig_block, serial_block);
 }

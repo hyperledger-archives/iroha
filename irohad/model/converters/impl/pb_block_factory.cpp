@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <model/model_hash_provider_impl.hpp>
 #include "model/converters/pb_block_factory.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
 
@@ -83,6 +84,9 @@ namespace iroha {
         for (auto pb_tx: body.transactions()){
           block.transactions.push_back(tx_factory.deserialize(pb_tx));
         }
+
+        iroha::model::HashProviderImpl hash_provider;
+        block.hash = hash_provider.get_hash(block);
 
         return block;
       }
