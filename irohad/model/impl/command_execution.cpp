@@ -172,7 +172,9 @@ namespace iroha {
         return false;
       // Precision for both wallets
       auto precision = asset.value().precision;
-
+      if (amount.get_frac_number() > precision)
+        // Precision is wrong
+        return false;
       // Get src balance
       auto src_balance = src_account_assert.value().balance;
       // TODO: handle non-trivial arithmetic

@@ -27,6 +27,7 @@
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
+#include "model/commands/transfer_asset.hpp"
 
 auto ADMIN_ID = "admin@test";
 auto ACCOUNT_ID = "test@test";
@@ -498,22 +499,116 @@ TEST(CommandValidation, set_quorum) {
   command.new_quorum = 2;
 
   ASSERT_TRUE(command.validate(test_wsv, creator) &&
-      command.execute(test_wsv, test_commands));
+              command.execute(test_wsv, test_commands));
 
   // Creator is the account
   creator = orig_account;
 
   ASSERT_TRUE(command.validate(test_wsv, creator) &&
-      command.execute(test_wsv, test_commands));
+              command.execute(test_wsv, test_commands));
   //--------- Non valid cases:--------------
   // 1. Creator has no permissions
   creator = get_default_creator();
   ASSERT_FALSE(command.validate(test_wsv, creator) &&
-      command.execute(test_wsv, test_commands));
+               command.execute(test_wsv, test_commands));
 
   // 2.No such account exits
   creator.permissions.set_quorum = true;
   command.account_id = "noacc";
   ASSERT_FALSE(command.validate(test_wsv, creator) &&
-      command.execute(test_wsv, test_commands));
+               command.execute(test_wsv, test_commands));
 }
+
+TEST(CommandValidation, transfer_asset) {
+  WSVQueriesMock test_wsv;
+  WSVCommandsMock test_commands;
+
+  auto creator = get_default_creator();
+  auto orig_account = get_default_account();
+
+  iroha::model::TransferAsset command;
+
+  set_default_wsv(test_wsv, test_commands);
+
+  // Valid cases:
+  //
+  creator.permissions.can_transfer = true;
+  command.src_account_id = creator.account_id;
+  command.dest_account_id = orig_account.account_id;
+  command.asset_id = ASSET_ID;
+  command.amount.int_part = 1;
+  command.amount.frac_part = 50;
+
+  iroha::model::AccountAsset wallet;
+  wallet.asset_id = ASSET_ID;
+  wallet.account_id = ACCOUNT_ID;
+  wallet.balance = BALANCE;
+
+  EXPECT_CALL(test_wsv, getAccountAsset(_, _))
+      .WillRepeatedly(Return(nonstd::nullopt));
+
+  EXPECT_CALL(test_wsv, getAccountAsset(ADMIN_ID, ASSET_ID))
+      .WillRepeatedly(Return(wallet));
+
+  EXPECT_CALL(test_wsv, getAccountAsset(ACCOUNT_ID, ASSET_ID))
+      .WillOnce(Return(nonstd::nullopt))
+      .WillOnce(Return(wallet))
+      .WillRepeatedly(Return(nonstd::nullopt));
+
+  // Case 1. When there is no wallet - new accountAsset will be created
+  ASSERT_TRUE(command.validate(test_wsv, creator) &&
+              command.execute(test_wsv, test_commands));
+
+  // Case 2. When there is a wallet - no new accountAsset created
+  ASSERT_TRUE(command.validate(test_wsv, creator) &&
+              command.execute(test_wsv, test_commands));
+
+  //--------- Non valid cases:--------------
+  // 1. Creator has no permissions
+  creator.permissions.can_transfer = false;
+  ASSERT_FALSE(command.validate(test_wsv, creator) &&
+               command.execute(test_wsv, test_commands));
+
+  // 2.No dest account exits
+  creator.permissions.can_transfer = true;
+  command.dest_account_id = "noacc";
+  ASSERT_FALSE(command.validate(test_wsv, creator) &&
+               command.execute(test_wsv, test_commands));
+
+  // 3.No src account exits
+  command.dest_account_id = ACCOUNT_ID;
+  command.src_account_id = "noacc";
+  ASSERT_FALSE(command.validate(test_wsv, creator) &&
+               command.execute(test_wsv, test_commands));
+
+  // 4. No sufficient funds
+  command.src_account_id = ADMIN_ID;
+  command.amount.int_part = 1;
+  command.amount.frac_part = 55;
+
+  ASSERT_FALSE(command.validate(test_wsv, creator) &&
+               command.execute(test_wsv, test_commands));
+
+  // 5. Amount has wrong precision
+  command.amount.int_part = 1;
+  command.amount.frac_part = 555;
+  ASSERT_FALSE(command.validate(test_wsv, creator) &&
+               command.execute(test_wsv, test_commands));
+
+  // 6. Transfer creator is not connected to account
+  command.amount.int_part = 1;
+  command.amount.frac_part = 50;
+  creator = orig_account;
+  ASSERT_FALSE(command.validate(test_wsv, creator) &&
+               command.execute(test_wsv, test_commands));
+
+  // 7. Transfer zero assets
+  command.amount.int_part = 0;
+  command.amount.frac_part = 0;
+  creator = get_default_creator();
+  creator.permissions.can_transfer = true;
+  ASSERT_FALSE(command.validate(test_wsv, creator) &&
+               command.execute(test_wsv, test_commands));
+}
+
+// TODO: ADD tests for Add_Peer

@@ -212,13 +212,17 @@ namespace iroha {
       return
           // Check if src_account exist
           queries.getAccount(src_account_id) &&
+          // Check if dest account exist
+          queries.getAccount(dest_account_id) &&
           // Can account transfer assets
           creator.permissions.can_transfer &&
           // Creator can transfer only from their account
           creator.account_id == src_account_id &&
           // Balance in your wallet should be at least amount of transfer
           account_asset.value().balance >=
-              amount.get_joint_amount(asset.value().precision);
+              amount.get_joint_amount(asset.value().precision) &&
+          // Amount must be not zero
+          (amount.frac_part > 0 || amount.int_part > 0);
     }
 
   }  // namespace model
