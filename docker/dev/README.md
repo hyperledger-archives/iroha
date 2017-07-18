@@ -1,6 +1,6 @@
 # How to build:
 
-Navigate to this folder and run_grpc:
+Navigate to this folder and run:
 ```
 docker build -t warchantua/iroha-dev .
 ```

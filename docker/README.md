@@ -26,10 +26,10 @@ ${IROHA_HOME}/docker/build_in_docker.sh
 
 Docker image with tag `hyperledger/iroha-docker:latest` will be built.
 
-# How to run_grpc
+# How to run
 
 ```
-docker run_grpc -d --name=iroha -p 50051:50051 hyperledger/iroha-docker:latest
+docker run -d --name=iroha -p 50051:50051 hyperledger/iroha-docker:latest
 ```
 
 
@@ -47,15 +47,15 @@ Start different containers:
     * postgre - container for WSW
     * redis - container for indexes
 
-For run_grpc use:
+For run use:
 ```sh
-sh run_grpc-ametsuchi-dev.sh
+sh run-ametsuchi-dev.sh
 ```
 
 ## Consnesus
 Currently starts only one container - node, but in future it should deploy also container with ordering service.
  
- For run_grpc use:
+ For run use:
 ```sh
-sh run_grpc-consensus-dev.sh
+sh run-consensus-dev.sh
 ```

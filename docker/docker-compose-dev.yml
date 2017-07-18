@@ -1,6 +1,6 @@
 version: '3'
 
-# How to run_grpc:
+# How to run:
 # docker-compose -f docker-compose-dev.yml up
 #
 # This file creates persistent redis and postgres containers.
