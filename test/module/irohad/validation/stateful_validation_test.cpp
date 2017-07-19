@@ -81,15 +81,16 @@ class WSVQueriesMock : public iroha::ametsuchi::WsvQuery {
  public:
   MOCK_METHOD1(getAccount, nonstd::optional<iroha::model::Account>(
                                const std::string &account_id));
-  MOCK_METHOD1(getSignatories, std::vector<iroha::ed25519::pubkey_t>(
-                                   const std::string &account_id));
+  MOCK_METHOD1(getSignatories,
+               nonstd::optional<std::vector<iroha::ed25519::pubkey_t>>(
+                   const std::string &account_id));
   MOCK_METHOD1(getAsset, nonstd::optional<iroha::model::Asset>(
                              const std::string &asset_id));
 
   MOCK_METHOD2(getAccountAsset,
                nonstd::optional<iroha::model::AccountAsset>(
                    const std::string &account_id, const std::string &asset_id));
-  MOCK_METHOD0(getPeers, std::vector<iroha::model::Peer>());
+  MOCK_METHOD0(getPeers, nonstd::optional<std::vector<iroha::model::Peer>>());
 };
 
 class WSVCommandsMock : public iroha::ametsuchi::WsvCommand {
