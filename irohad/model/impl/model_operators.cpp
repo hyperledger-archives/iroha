@@ -194,13 +194,11 @@ namespace iroha {
 
     /* Transaction */
     bool Transaction::operator==(const Transaction &rhs) const {
-      if (rhs.commands.size() != commands.size()) return false;
-
-      // todo change for cycle to comparison with predicate
-      for (auto i = 0; i < rhs.commands.size(); i++){
-        if (*rhs.commands.at(i) != *commands.at(i)) return false;
-      }
-      return rhs.tx_counter == tx_counter && rhs.signatures == signatures &&
+      return std::equal(
+                 commands.begin(), commands.end(), rhs.commands.begin(),
+                 rhs.commands.end(),
+                 [](const auto &i, const auto &j) { return *i == *j; }) &&
+             rhs.tx_counter == tx_counter && rhs.signatures == signatures &&
              rhs.created_ts == created_ts;
     }
 
