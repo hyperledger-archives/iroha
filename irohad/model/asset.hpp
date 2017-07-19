@@ -29,7 +29,9 @@ namespace iroha {
       /**
        * Asset unique identifier
        */
-      std::string name;
+      std::string asset_id;
+
+      std::string domain_id;
 
       /**
        * Precision of asset

@@ -86,11 +86,11 @@ namespace iroha {
           (creator.account_id == account_id ||
            creator.permissions.add_signatory) &&
           // Check if account has at lest one signatory
-          !signs.empty() &&
+          signs &&
           // Check if new master key is not the same
           creator.master_key != pubkey &&
           // Check if new master key is in AccountSignatory relationship
-          std::find(signs.begin(), signs.end(), pubkey) != signs.end();
+          std::find(signs->begin(), signs->end(), pubkey) != signs->end();
     }
 
     /**

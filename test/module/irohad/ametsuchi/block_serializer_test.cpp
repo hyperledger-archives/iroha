@@ -162,7 +162,7 @@ TEST(block_serialize, block_serialize_test){
     ASSERT_EQ(block.created_ts, deserialized.created_ts);
 
     ASSERT_TRUE(block.sigs.size() > 0);
-    for (int i = 0; i < block.sigs.size(); i++){
+    for (size_t i = 0; i < block.sigs.size(); i++){
       ASSERT_EQ(block.sigs[i].signature, deserialized.sigs[i].signature);
       ASSERT_EQ(block.sigs[i].pubkey, deserialized.sigs[i].pubkey);
     }
@@ -172,12 +172,12 @@ TEST(block_serialize, block_serialize_test){
     ASSERT_EQ(block.merkle_root, deserialized.merkle_root);
 
     ASSERT_TRUE(block.transactions.size() > 0);
-    for (int i = 0; i < block.transactions.size(); i++){
+    for (size_t i = 0; i < block.transactions.size(); i++){
       auto tx = block.transactions[i];
       auto des_tx = deserialized.transactions[i]; // deserialized tx
 
       ASSERT_TRUE(tx.signatures.size() > 0);
-      for (int j = 0; j < tx.signatures.size(); j++){
+      for (size_t j = 0; j < tx.signatures.size(); j++){
         ASSERT_EQ(tx.signatures[j].pubkey, des_tx.signatures[j].pubkey);
         ASSERT_EQ(tx.signatures[j].signature, des_tx.signatures[j].signature);
       }
@@ -186,7 +186,7 @@ TEST(block_serialize, block_serialize_test){
       ASSERT_EQ(tx.creator_account_id, des_tx.creator_account_id);
       ASSERT_EQ(tx.tx_counter, des_tx.tx_counter);
 
-      for (int j = 0; j < tx.commands.size(); j++){
+      for (size_t j = 0; j < tx.commands.size(); j++){
         if (instanceof<iroha::model::AddPeer>(tx.commands[j].get())){
           auto add_peer = static_cast<const iroha::model::AddPeer&>(*tx.commands[j].get());
           auto des_add_peer = static_cast<const iroha::model::AddPeer&>(*des_tx.commands[j].get());

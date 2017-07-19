@@ -33,7 +33,7 @@ namespace iroha {
 
         // Check if signatures in transaction are account signatory
         auto account_signs = temporaryWsv.getSignatories(tx.creator_account_id);
-        if (account_signs.empty())
+        if (!account_signs)
           // No signatories found
           return false;
 

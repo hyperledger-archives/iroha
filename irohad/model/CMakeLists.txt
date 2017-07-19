@@ -9,4 +9,5 @@ target_link_libraries(model
     schema
     optional
     rxcpp
+    hash
     )

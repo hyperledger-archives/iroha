@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
+#include "ametsuchi/impl/flat_file/flat_file.hpp"
 #include <gtest/gtest.h>
-#include <ametsuchi/block_store/backend/flat_file.hpp>
-#include <common/types.hpp>
+#include "ametsuchi_test_common.hpp"
+#include "common/types.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -36,42 +37,47 @@ namespace iroha {
 
       TEST_F(BlStore_Test, Read_Write_Test) {
         std::vector<uint8_t> block(100000, 5);
-        FlatFile bl_store(block_store_path);
+        auto bl_store = FlatFile::create(block_store_path);
+        ASSERT_TRUE(bl_store);
 
         auto id = 1u;
-        bl_store.add(id, block);
+        bl_store->add(id, block);
         auto id2 = 2u;
-        bl_store.add(id2, block);
+        bl_store->add(id2, block);
 
-        auto res = bl_store.get(id);
-        ASSERT_FALSE(res.empty());
-        ASSERT_EQ(res, block);
+        auto res = bl_store->get(id);
+        ASSERT_TRUE(res);
+        ASSERT_FALSE(res->empty());
+        ASSERT_EQ(*res, block);
       }
 
       TEST_F(BlStore_Test, InConsistency_Test) {
         // Adding blocks
         {
           std::vector<uint8_t> block(1000, 5);
-          FlatFile bl_store(block_store_path);
+          auto bl_store = FlatFile::create(block_store_path);
+          ASSERT_TRUE(bl_store);
           // Adding three blocks
           auto id = 1u;
-          bl_store.add(id, block);
+          bl_store->add(id, block);
           auto id2 = 2u;
-          bl_store.add(id2, block);
+          bl_store->add(id2, block);
           auto id3 = 3u;
-          bl_store.add(id3, block);
+          bl_store->add(id3, block);
 
-          auto res = bl_store.get(id);
-          ASSERT_FALSE(res.empty());
-          ASSERT_EQ(res, block);
+          auto res = bl_store->get(id);
+          ASSERT_TRUE(res);
+          ASSERT_FALSE(res->empty());
+          ASSERT_EQ(*res, block);
         }
         // Simulate removal of the block
         {
           // Remove file in the middle of the block store
           std::remove((block_store_path + "/0000000000000002").c_str());
           std::vector<uint8_t> block(1000, 5);
-          FlatFile bl_store(block_store_path);
-          auto res = bl_store.last_id();
+          auto bl_store = FlatFile::create(block_store_path);
+          ASSERT_TRUE(bl_store);
+          auto res = bl_store->last_id();
           // Must return 1
           ASSERT_EQ(res, 1);
         }

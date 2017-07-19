@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#include <validation/chain/validator_stub.hpp>
 #include <validation/chain/block_validator_stub.hpp>
+#include <validation/chain/validator_stub.hpp>
 
 namespace iroha {
   namespace validation {
@@ -24,22 +24,25 @@ namespace iroha {
     bool ChainValidatorStub::validate(rxcpp::observable<model::Block>& blocks,
                                       ametsuchi::MutableStorage& storage) {
       auto block_validator = BlockValidatorStub(storage);
-      auto apply_block = [](const auto& block, auto& executor, auto& query) {
+      auto apply_block = [](const auto& block, auto& executor, auto& query,
+                            auto& top_block) {
         for (const auto& tx : block.transactions) {
           for (const auto& command : tx.commands) {
-            /*if (!executor.execute(*command)) {
+            if (!command->execute(query, executor)){
               return false;
-            }*/
+            }
           }
         }
         return true;
       };
       auto result = false;
-      blocks.take_while(
-          [&result, this, &storage, apply_block, block_validator](auto block) {
+      blocks
+          .take_while([&result, this, &storage, apply_block,
+                       block_validator](auto block) {
             return (result = block_validator.validate(block) &&
                              storage.apply(block, apply_block));
-          }).subscribe([](auto block){});
+          })
+          .subscribe([](auto block) {});
       return result;
     }
 

@@ -162,7 +162,7 @@ namespace consensus {
         const auto bodyMessage = block.body().SerializeAsString();
 
         // TODO: Use new Keypair class.
-        /*
+
         const auto hash = iroha::hash::sha3_256_hex(bodyMessage);
         if (iroha::signature::verify(sig.signature(), hash, sig.pubkey())) {
           numValidSignatures++;
