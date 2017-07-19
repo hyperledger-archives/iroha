@@ -279,9 +279,10 @@ namespace iroha {
       }
 
       auto peers = storage->getPeers();
-      ASSERT_EQ(peers.size(), 1);
-      ASSERT_EQ(peers.at(0).pubkey, addPeer.peer_key);
-      ASSERT_EQ(peers.at(0).address, addPeer.address);
+      ASSERT_TRUE(peers);
+      ASSERT_EQ(peers->size(), 1);
+      ASSERT_EQ(peers->at(0).pubkey, addPeer.peer_key);
+      ASSERT_EQ(peers->at(0).address, addPeer.address);
     }
 
   }  // namespace ametsuchi

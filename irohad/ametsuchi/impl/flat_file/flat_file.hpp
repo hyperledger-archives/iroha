@@ -18,29 +18,30 @@
 #ifndef IROHA_FLAT_FILE_HPP
 #define IROHA_FLAT_FILE_HPP
 
+#include <memory>
+#include <nonstd/optional.hpp>
 #include <string>
 #include <vector>
-#include <memory>
 
 namespace iroha {
   namespace ametsuchi {
-      class FlatFile {
-       public:
-        static std::unique_ptr<FlatFile> create(const std::string &path);
-        ~FlatFile();
-        void add(uint32_t id, const std::vector<uint8_t> &block);
-        std::vector<uint8_t> get(uint32_t id) const;
-        uint32_t last_id() const;
-        std::string directory() const;
+    class FlatFile {
+     public:
+      static std::unique_ptr<FlatFile> create(const std::string &path);
+      ~FlatFile();
+      void add(uint32_t id, const std::vector<uint8_t> &block);
+      nonstd::optional<std::vector<uint8_t>> get(uint32_t id) const;
+      uint32_t last_id() const;
+      std::string directory() const;
 
-       private:
-        uint32_t current_id;
-        const std::string dump_dir;
+     private:
+      uint32_t current_id;
+      const std::string dump_dir;
 
-        FlatFile(uint32_t current_id, const std::string &path);
-        bool file_exist(const std::string &name) const;
-        long file_size(const std::string &filename) const;
-      };
+      FlatFile(uint32_t current_id, const std::string &path);
+      bool file_exist(const std::string &name) const;
+      long file_size(const std::string &filename) const;
+    };
   }  // namespace ametsuchi
 }  // namespace iroha
 #endif  // IROHA_FLAT_FILE_HPP

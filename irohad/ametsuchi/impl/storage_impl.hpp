@@ -18,13 +18,13 @@
 #ifndef IROHA_STORAGE_IMPL_HPP
 #define IROHA_STORAGE_IMPL_HPP
 
-#include "ametsuchi/impl/flat_file/flat_file.hpp"
-#include "ametsuchi/storage.hpp"
-#include "ametsuchi/block_serializer.hpp"
 #include <cpp_redis/cpp_redis>
 #include <nonstd/optional.hpp>
 #include <pqxx/pqxx>
 #include <shared_mutex>
+#include "ametsuchi/block_serializer.hpp"
+#include "ametsuchi/impl/flat_file/flat_file.hpp"
+#include "ametsuchi/storage.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -37,18 +37,20 @@ namespace iroha {
       std::unique_ptr<MutableStorage> createMutableStorage() override;
       void commit(std::unique_ptr<MutableStorage> mutableStorage) override;
 
-      rxcpp::observable<model::Transaction> getAccountTransactions(std::string account_id) override;
-      rxcpp::observable<model::Block> getBlocks(uint32_t from, uint32_t to) override;
+      rxcpp::observable<model::Transaction> getAccountTransactions(
+          std::string account_id) override;
+      rxcpp::observable<model::Block> getBlocks(uint32_t from,
+                                                uint32_t to) override;
 
       nonstd::optional<model::Account> getAccount(
           const std::string &account_id) override;
-      std::vector<ed25519::pubkey_t> getSignatories(
+      nonstd::optional<std::vector<ed25519::pubkey_t>> getSignatories(
           const std::string &account_id) override;
       nonstd::optional<model::Asset> getAsset(
           const std::string &asset_id) override;
       nonstd::optional<model::AccountAsset> getAccountAsset(
           const std::string &account_id, const std::string &asset_id) override;
-      std::vector<model::Peer> getPeers() override;
+      nonstd::optional<std::vector<model::Peer>> getPeers() override;
 
      private:
       StorageImpl(std::string block_store_dir, std::string redis_host,

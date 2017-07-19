@@ -50,7 +50,7 @@ namespace iroha {
        * @param account_id
        * @return
        */
-      virtual std::vector<ed25519::pubkey_t> getSignatories(
+      virtual nonstd::optional<std::vector<ed25519::pubkey_t>> getSignatories(
           const std::string &account_id) = 0;
 
       /**
@@ -74,7 +74,7 @@ namespace iroha {
        *
        * @return
        */
-      virtual std::vector<model::Peer> getPeers() = 0;
+      virtual nonstd::optional<std::vector<model::Peer>> getPeers() = 0;
     };
 
   }  // namespace ametsuchi

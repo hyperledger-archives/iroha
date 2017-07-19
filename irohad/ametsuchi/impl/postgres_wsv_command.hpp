@@ -18,8 +18,8 @@
 #ifndef IROHA_POSTGRES_WSV_COMMAND_HPP
 #define IROHA_POSTGRES_WSV_COMMAND_HPP
 
-#include "ametsuchi/wsv_command.hpp"
 #include <pqxx/nontransaction>
+#include "ametsuchi/wsv_command.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -42,7 +42,7 @@ namespace iroha {
      private:
       pqxx::nontransaction &transaction_;
     };
-  } // namespace ametsuchi
-} // namespace iroha
+  }  // namespace ametsuchi
+}  // namespace iroha
 
-#endif //IROHA_POSTGRES_WSV_COMMAND_HPP
+#endif  // IROHA_POSTGRES_WSV_COMMAND_HPP

@@ -75,8 +75,8 @@ namespace iroha {
       return account;
     }
 
-    std::vector<ed25519::pubkey_t> PostgresWsvQuery::getSignatories(
-        const string &account_id) {
+    nonstd::optional<std::vector<ed25519::pubkey_t>>
+    PostgresWsvQuery::getSignatories(const string &account_id) {
       pqxx::result result;
       try {
         result = transaction_.exec(
@@ -89,7 +89,7 @@ namespace iroha {
             transaction_.quote(account_id) + ";");
       } catch (const std::exception &e) {
         // TODO log
-        return {};
+        return nullopt;
       }
       std::vector<ed25519::pubkey_t> signatories;
       for (const auto &row : result) {
@@ -160,7 +160,7 @@ namespace iroha {
       return asset;
     }
 
-    std::vector<Peer> PostgresWsvQuery::getPeers() {
+    nonstd::optional<std::vector<model::Peer>> PostgresWsvQuery::getPeers() {
       pqxx::result result;
       try {
         result = transaction_.exec(
@@ -169,7 +169,7 @@ namespace iroha {
             "FROM \n"
             "  peer;");
       } catch (const std::exception &e) {
-        return {};
+        return nullopt;
       }
       std::vector<Peer> peers;
       for (const auto &row : result) {

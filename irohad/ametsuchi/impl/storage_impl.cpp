@@ -98,9 +98,17 @@ namespace iroha {
       hash256_t top_hash;
 
       if (block_store_->last_id()) {
-        top_hash =
-            serializer_.deserialize(block_store_->get(block_store_->last_id()))
-                ->hash;
+        auto blob = block_store_->get(block_store_->last_id());
+        if (!blob) {
+          // TODO log block not found error
+          return nullptr;
+        }
+        auto block = serializer_.deserialize(*blob);
+        if (!block) {
+          // TODO log deserialize error
+          return nullptr;
+        }
+        top_hash = block->hash;
       } else {
         top_hash.fill(0);
       }
@@ -184,13 +192,13 @@ namespace iroha {
       return rxcpp::observable<>::range(from, to)
           .flat_map([this](auto i) {
             auto bytes = block_store_->get(i);
-            return rxcpp::observable<>::create<decltype(bytes)>(
-                [bytes](auto s) {
-                  if (!bytes.empty()) {
-                    s.on_next(bytes);
-                  }
-                  s.on_completed();
-                });
+            return rxcpp::observable<>::create<typename decltype(
+                bytes)::value_type>([bytes](auto s) {
+              if (bytes) {
+                s.on_next(*bytes);
+              }
+              s.on_completed();
+            });
           })
           .flat_map([this](auto bytes) {
             auto block = serializer_.deserialize(bytes);
@@ -210,8 +218,8 @@ namespace iroha {
       return wsv_->getAccount(account_id);
     }
 
-    std::vector<ed25519::pubkey_t> StorageImpl::getSignatories(
-        const std::string &account_id) {
+    nonstd::optional<std::vector<ed25519::pubkey_t>>
+    StorageImpl::getSignatories(const std::string &account_id) {
       std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
       return wsv_->getSignatories(account_id);
     }
@@ -228,7 +236,7 @@ namespace iroha {
       return wsv_->getAccountAsset(account_id, asset_id);
     }
 
-    std::vector<model::Peer> StorageImpl::getPeers() {
+    nonstd::optional<std::vector<model::Peer>> StorageImpl::getPeers() {
       std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
       return wsv_->getPeers();
     }

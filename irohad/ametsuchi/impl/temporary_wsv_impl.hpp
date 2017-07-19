@@ -18,9 +18,9 @@
 #ifndef IROHA_TEMPORARY_WSV_IMPL_HPP
 #define IROHA_TEMPORARY_WSV_IMPL_HPP
 
-#include "ametsuchi/temporary_wsv.hpp"
 #include <pqxx/connection>
 #include <pqxx/nontransaction>
+#include "ametsuchi/temporary_wsv.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -34,12 +34,15 @@ namespace iroha {
                  std::function<bool(const model::Transaction &, WsvCommand &,
                                     WsvQuery &)>
                      function) override;
-      nonstd::optional<model::Account> getAccount(const std::string &account_id) override;
-      std::vector<ed25519::pubkey_t> getSignatories(const std::string &account_id) override;
-      nonstd::optional<model::Asset> getAsset(const std::string &asset_id) override;
-      nonstd::optional<model::AccountAsset> getAccountAsset(const std::string &account_id,
-                                          const std::string &asset_id) override;
-      std::vector<model::Peer> getPeers() override;
+      nonstd::optional<model::Account> getAccount(
+          const std::string &account_id) override;
+      nonstd::optional<std::vector<ed25519::pubkey_t>> getSignatories(
+          const std::string &account_id) override;
+      nonstd::optional<model::Asset> getAsset(
+          const std::string &asset_id) override;
+      nonstd::optional<model::AccountAsset> getAccountAsset(
+          const std::string &account_id, const std::string &asset_id) override;
+      nonstd::optional<std::vector<model::Peer>> getPeers() override;
       ~TemporaryWsvImpl() override;
 
      private:

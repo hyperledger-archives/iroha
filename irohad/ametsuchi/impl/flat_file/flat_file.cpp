@@ -20,7 +20,6 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <iostream>
-#include <nonstd/optional.hpp>
 
 std::string id_to_name(uint32_t id) {
   std::string new_id(16, '\0');
@@ -112,7 +111,7 @@ namespace iroha {
       }
     }
 
-    std::vector<uint8_t> FlatFile::get(uint32_t id) const {
+    nonstd::optional<std::vector<uint8_t>> FlatFile::get(uint32_t id) const {
       std::string filename = dump_dir + "/" + id_to_name(id);
       if (file_exist(filename)) {
         auto f_size = file_size(filename);
@@ -122,8 +121,8 @@ namespace iroha {
         fclose(pfile);
         return buf;
       } else {
-        std::cout << "No file with this id found" << std::endl;
-        return {};
+        // TODO log block not found
+        return nonstd::nullopt;
       }
     }
 
@@ -149,9 +148,7 @@ namespace iroha {
 
     std::string FlatFile::directory() const { return dump_dir; }
 
-    uint32_t FlatFile::last_id() const {
-      return current_id;
-    }
+    uint32_t FlatFile::last_id() const { return current_id; }
 
   }  // namespace ametsuchi
 }  // namespace iroha

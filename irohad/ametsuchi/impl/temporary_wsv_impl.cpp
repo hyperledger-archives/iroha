@@ -52,8 +52,8 @@ namespace iroha {
       return wsv_->getAccount(account_id);
     }
 
-    std::vector<ed25519::pubkey_t> TemporaryWsvImpl::getSignatories(
-        const std::string &account_id) {
+    nonstd::optional<std::vector<ed25519::pubkey_t>>
+    TemporaryWsvImpl::getSignatories(const std::string &account_id) {
       return wsv_->getSignatories(account_id);
     }
 
@@ -67,7 +67,7 @@ namespace iroha {
       return wsv_->getAccountAsset(account_id, asset_id);
     }
 
-    std::vector<model::Peer> TemporaryWsvImpl::getPeers() {
+    nonstd::optional<std::vector<model::Peer>> TemporaryWsvImpl::getPeers() {
       return wsv_->getPeers();
     }
 
