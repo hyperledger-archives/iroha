@@ -24,10 +24,9 @@
 namespace iroha {
   namespace consensus {
     namespace yac {
-      class YacNetwork {
-       public:
 
-        // ------|Receive|------
+      class YacNetworkNotifications {
+       public:
 
         /**
          * Callback on receiving commit message
@@ -50,7 +49,11 @@ namespace iroha {
          */
         virtual void on_vote(model::Peer from, VoteMessage vote) = 0;
 
-        // ------|Send|------
+        virtual ~YacNetworkNotifications() = default;
+      };
+
+      class YacNetwork : public YacNetworkNotifications {
+       public:
 
         /**
          * Directly share commit message

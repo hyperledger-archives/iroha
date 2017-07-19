@@ -18,3 +18,7 @@
 #include "consensus/yac/yac.hpp"
 #include "consensus/yac/yac_network_interface.hpp"
 #include "consensus/yac/messages.hpp"
+#include "consensus/yac/cluster_order.hpp"
+#include "consensus/yac/yac_gate.hpp"
+#include "consensus/yac/yac_hash_provider.hpp"
+#include "consensus/yac/cluster_order.hpp"

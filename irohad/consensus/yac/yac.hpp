@@ -18,39 +18,33 @@
 #ifndef IROHA_YAC_HPP
 #define IROHA_YAC_HPP
 
-#include "network/consensus_gate.hpp"
 #include "consensus/yac/yac_network_interface.hpp"
+#include "consensus/yac/yac_gate.hpp"
+#include "network/consensus_gate.hpp"
 #include "model/block.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
-      class Yac : public network::ConsensusGate, public YacNetwork {
+      class Yac : public HashGate, public YacNetworkNotifications {
        public:
 
         // ------|ConsensusGate|------
-        void vote(model::Block) override;
 
-        rxcpp::observable<model::Block> on_commit() override;
+        virtual void vote(YacHash hash) =0;
 
-        // ------|ConsensusGate|------
+        virtual rxcpp::observable<YacHash> on_commit() =0;
 
-        virtual void on_commit(model::Peer from, CommitMessage commit) = 0;
+        // ------|Network Notifications|------
 
-        virtual void on_reject(model::Peer from, RejectMessage reject) = 0;
+        void on_commit(model::Peer from, CommitMessage commit) =0;
 
-        virtual void on_vote(model::Peer from, VoteMessage vote) = 0;
+        void on_reject(model::Peer from, RejectMessage reject) =0;
 
-        // ------|Send|------
-
-        virtual void send_commit(model::Peer to, CommitMessage commit) = 0;
-
-        virtual void send_reject(model::Peer to, RejectMessage reject) = 0;
-
-        virtual void send_vote(model::Peer to, VoteMessage vote) = 0;
+        void on_vote(model::Peer from, VoteMessage vote) =0;
 
        private:
-        rxcpp::subjects::subject<model::Block> notifier_;
+        rxcpp::subjects::subject<YacHash> notifier_;
       };
     } // namespace yac
   } // namespace consensus

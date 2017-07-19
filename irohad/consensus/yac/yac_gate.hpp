@@ -15,40 +15,46 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_MESSAGES_HPP
-#define IROHA_MESSAGES_HPP
+#ifndef IROHA_YAC_GATE_HPP
+#define IROHA_YAC_GATE_HPP
 
-#include <vector>
+#include "network/consensus_gate.hpp"
 #include "consensus/yac/yac_hash_provider.hpp"
+#include "consensus/yac/messages.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
+      class YacGate : public network::ConsensusGate {
+       public:
+        virtual void vote(model::Block) = 0;
 
-      /**
-       * VoteMessage represents voting for some block;
-       */
-      struct VoteMessage {
-        YacHash hash;
-        // todo add sign
+        virtual rxcpp::observable<model::Block> on_commit() = 0;
+
+        virtual ~YacGate() = default;
       };
 
       /**
-       * CommitMsg means consensus on cluster achieved.
-       * All nodes deals on some solution
+       * Provide gate for ya consensus
        */
-      struct CommitMessage {
-        std::vector<VoteMessage> votes;
-      };
+      class HashGate {
+       public:
 
-      /**
-       * Reject means that there is impossible
-       * to collect supermajority for any block
-       */
-      struct RejectMessage {
-        std::vector<VoteMessage> votes;
+        /**
+         * Proposal new hash in network
+         * @param hash - hash for voting
+         */
+        virtual void vote(YacHash hash) = 0;
+
+        /**
+         * Observable with committed hashes in network
+         * @return observable for subscription
+         */
+        virtual rxcpp::observable<YacHash> on_commit() = 0;
+
+        virtual ~HashGate() = default;
       };
     } // namespace yac
   } // namespace consensus
 } // iroha
-#endif //IROHA_MESSAGES_HPP
+#endif //IROHA_YAC_GATE_HPP

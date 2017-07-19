@@ -15,40 +15,27 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_MESSAGES_HPP
-#define IROHA_MESSAGES_HPP
-
-#include <vector>
-#include "consensus/yac/yac_hash_provider.hpp"
-
+#ifndef IROHA_TIME_HPP
+#define IROHA_TIME_HPP
 namespace iroha {
   namespace consensus {
     namespace yac {
 
       /**
-       * VoteMessage represents voting for some block;
+       * Interface provide timer for yac implementation
        */
-      struct VoteMessage {
-        YacHash hash;
-        // todo add sign
-      };
+      class Timer {
+       public:
+        /**
+         * Invoke handler after delay
+         * @param millis - number of milliseconds before invoking
+         * @param handler - function, that will be invoked
+         */
+        virtual void invokeAfterDelay(uint64_t millis, void(*handler)() ) = 0;
 
-      /**
-       * CommitMsg means consensus on cluster achieved.
-       * All nodes deals on some solution
-       */
-      struct CommitMessage {
-        std::vector<VoteMessage> votes;
-      };
-
-      /**
-       * Reject means that there is impossible
-       * to collect supermajority for any block
-       */
-      struct RejectMessage {
-        std::vector<VoteMessage> votes;
+        virtual ~Timer() = default;
       };
     } // namespace yac
   } // namespace consensus
 } // iroha
-#endif //IROHA_MESSAGES_HPP
+#endif //IROHA_TIME_HPP

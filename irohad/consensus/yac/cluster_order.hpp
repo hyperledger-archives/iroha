@@ -15,40 +15,35 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_MESSAGES_HPP
-#define IROHA_MESSAGES_HPP
+#ifndef IROHA_CLUSTER_ORDER_HPP
+#define IROHA_CLUSTER_ORDER_HPP
 
-#include <vector>
-#include "consensus/yac/yac_hash_provider.hpp"
+#include "model/peer.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
 
       /**
-       * VoteMessage represents voting for some block;
+       * Class provide ordering on cluster for current round
        */
-      struct VoteMessage {
-        YacHash hash;
-        // todo add sign
-      };
+      class ClusterOrdering {
+       public:
 
-      /**
-       * CommitMsg means consensus on cluster achieved.
-       * All nodes deals on some solution
-       */
-      struct CommitMessage {
-        std::vector<VoteMessage> votes;
-      };
+        /**
+         * Provide current leader peer
+         */
+        virtual model::Peer currentLeader();
 
-      /**
-       * Reject means that there is impossible
-       * to collect supermajority for any block
-       */
-      struct RejectMessage {
-        std::vector<VoteMessage> votes;
+        /**
+         * Switch to next peer as leader
+         * @return this
+         */
+        virtual ClusterOrdering &switchToNext();
+
+        virtual ~ClusterOrdering() = default;
       };
     } // namespace yac
   } // namespace consensus
 } // iroha
-#endif //IROHA_MESSAGES_HPP
+#endif //IROHA_CLUSTER_ORDER_HPP
