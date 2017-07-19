@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-#include <dirent.h>
 #include <gtest/gtest.h>
 #include <cpp_redis/cpp_redis>
 #include <pqxx/pqxx>
@@ -28,32 +27,7 @@
 #include "model/commands/create_domain.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/model_hash_provider_impl.hpp"
-
-void remove_all(const std::string &dump_dir) {
-  if (!dump_dir.empty()) {
-    // Directory iterator:
-    struct dirent **namelist;
-    auto status = scandir(dump_dir.c_str(), &namelist, NULL, alphasort);
-    if (status < 0) {
-      // TODO: handle internal error
-    } else {
-      uint n = status;
-      uint i = 1;
-      while (++i < n) {
-        if (std::remove((dump_dir + "/" + namelist[i]->d_name).c_str())) {
-          perror("Error deleting file");
-        }
-      }
-      for (uint j = 0; j < n; ++j) {
-        free(namelist[j]);
-      }
-      free(namelist);
-    }
-    if (std::remove(dump_dir.c_str())) {
-      perror("Error deleting file");
-    }
-  }
-}
+#include "ametsuchi_test_common.hpp"
 
 namespace iroha {
   namespace ametsuchi {

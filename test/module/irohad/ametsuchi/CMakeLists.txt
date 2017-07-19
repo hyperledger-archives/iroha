@@ -7,18 +7,21 @@ target_link_libraries(block_serializer_test
     model
     ametsuchi
     )
-#addtest(command_executor_test command_executor_test.cpp)
-#target_link_libraries(command_executor_test
-#    ametsuchi
-#    )
+
+addtest(ametsuchi_test ametsuchi_test.cpp)
+target_link_libraries(ametsuchi_test
+    ametsuchi
+    model
+    )
+
+addtest(flat_file_test flat_file_test.cpp)
+target_link_libraries(flat_file_test
+    ametsuchi
+    )
 
 #add_subdirectory(ametsuchi)
 
 #
-#addtest(bstore_test block_store/block_store_flat_test.cpp)
-#target_link_libraries(bstore_test
-#        block_store
-#    )
 #
 #addtest(block_index_test index/block_index_test.cpp)
 #target_link_libraries(block_index_test
@@ -35,8 +38,3 @@ target_link_libraries(block_serializer_test
 #        wsv
 #    )
 #
-addtest(ametsuchi_test ametsuchi_test.cpp)
-target_link_libraries(ametsuchi_test
-    ametsuchi
-    model
-    )
