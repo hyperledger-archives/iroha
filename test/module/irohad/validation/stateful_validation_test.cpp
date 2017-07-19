@@ -294,7 +294,7 @@ TEST(CommandValidation, assign_master_key) {
                                                 creator.master_key};
 
   EXPECT_CALL(test_wsv, getSignatories(_))
-      .WillRepeatedly(Return(std::vector<iroha::ed25519::pubkey_t>{}));
+      .WillRepeatedly(Return(nonstd::nullopt));
 
   EXPECT_CALL(test_wsv, getSignatories(ACCOUNT_ID))
       .WillRepeatedly(Return(sigs));
