@@ -12,27 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(connection)
-add_subdirectory(yac)
-add_library(sumeragi STATIC
-  sumeragi.cpp
-  )
-target_link_libraries(sumeragi
-  schema
-  endpoint
-  crypto
-  sumeragi_connection
-  thread_pool
-  timer
-  optional
-  logger
-  rxcpp
-  )
-
-add_library(consensus_service
-    consensus_service_stub.cpp
-    )
-target_link_libraries(consensus_service
+add_library(yac
+    impl/yac.cpp
+)
+target_link_libraries(yac
     rxcpp
-    optional
-    )
+)
