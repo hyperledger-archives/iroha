@@ -15,6 +15,35 @@
  * limitations under the License.
  */
 
-#include "consensus/yac/yac.hpp"
-#include "consensus/yac/yac_network_interface.hpp"
-#include "consensus/yac/messages.hpp"
+#ifndef IROHA_MESSAGES_HPP
+#define IROHA_MESSAGES_HPP
+namespace iroha {
+  namespace consensus {
+    namespace yac {
+
+      /**
+       * CommitMsg means consensus on cluster achieved.
+       * All nodes deals on some solution
+       */
+      class CommitMessage {
+
+      };
+
+      /**
+       * VoteMessage represents voting for some block;
+       */
+      class VoteMessage {
+
+      };
+
+      /**
+       * Reject means that there is impossible
+       * to collect supermajority for any block
+       */
+      class RejectMessage {
+
+      };
+    } // namespace yac
+  } // namespace consensus
+} // iroha
+#endif //IROHA_MESSAGES_HPP
