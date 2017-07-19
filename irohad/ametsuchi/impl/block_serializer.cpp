@@ -213,9 +213,13 @@ namespace iroha {
       writer.String(add_asset_quantity.asset_id.c_str());
 
       writer.String("amount");
+      writer.StartObject();
 
-      writer.Double(
-          std::decimal::decimal64_to_double(add_asset_quantity.amount));
+      writer.String("int_part");
+      writer.Uint64(add_asset_quantity.amount.int_part);
+      writer.String("frac_part");
+      writer.Uint64(add_asset_quantity.amount.frac_part);
+      writer.EndObject();
 
       writer.EndObject();
     }
@@ -405,7 +409,12 @@ namespace iroha {
       writer.String(transfer_asset.asset_id.c_str());
 
       writer.String("amount");
-      writer.Double(std::decimal::decimal64_to_double(transfer_asset.amount));
+      writer.StartObject();
+      writer.String("int_part");
+      writer.Uint64(transfer_asset.amount.int_part);
+      writer.String("frac_part");
+      writer.Uint64(transfer_asset.amount.frac_part);
+      writer.EndObject();
 
       writer.EndObject();
     }
@@ -574,14 +583,16 @@ namespace iroha {
                 std::make_shared<model::CreateDomain>(create_domain.value()));
           }
         } else if (command_type == "RemoveSignatory") {
-          if (auto remove_signatory = deserialize_remove_signatory(json_command)) {
-            commands.push_back(
-                std::make_shared<model::RemoveSignatory>(remove_signatory.value()));
+          if (auto remove_signatory =
+                  deserialize_remove_signatory(json_command)) {
+            commands.push_back(std::make_shared<model::RemoveSignatory>(
+                remove_signatory.value()));
           }
         } else if (command_type == "SetAccountPermissions") {
-          if (auto set_account_permissions = deserialize_set_account_permissions(json_command)) {
-            commands.push_back(
-                std::make_shared<model::SetAccountPermissions>(set_account_permissions.value()));
+          if (auto set_account_permissions =
+                  deserialize_set_account_permissions(json_command)) {
+            commands.push_back(std::make_shared<model::SetAccountPermissions>(
+                set_account_permissions.value()));
           }
         } else if (command_type == "SetQuorum") {
           if (auto set_quorum = deserialize_set_quorum(json_command)) {
@@ -618,7 +629,7 @@ namespace iroha {
     BlockSerializer::deserialize_add_asset_quantity(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       // TODO: make this function return nullopt when some field is missed
-      model::AddAssetQuantity add_asset_quantity{};
+      model::AddAssetQuantity add_asset_quantity;
 
       // account_id
       add_asset_quantity.account_id = json_command["account_id"].GetString();
@@ -627,7 +638,10 @@ namespace iroha {
       add_asset_quantity.asset_id = json_command["asset_id"].GetString();
 
       // amount
-      auto amount = std::decimal::decimal64(json_command["amount"].GetDouble());
+      auto json_amount = json_command["amount"].GetObject();
+      Amount amount;
+      amount.int_part = json_amount["int_part"].GetUint64();
+      amount.frac_part = json_amount["frac_part"].GetUint64();
       add_asset_quantity.amount = amount;
 
       return add_asset_quantity;
@@ -802,8 +816,11 @@ namespace iroha {
       transferAsset.asset_id = json_command["asset_id"].GetString();
 
       // amount
-      transferAsset.amount =
-          std::decimal::decimal64(json_command["amount"].GetDouble());
+      auto json_amount = json_command["amount"].GetObject();
+      Amount amount;
+      amount.int_part = json_amount["int_part"].GetUint64();
+      amount.frac_part = json_amount["frac_part"].GetUint64();
+      transferAsset.amount = amount;
 
       return transferAsset;
     }

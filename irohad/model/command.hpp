@@ -34,6 +34,8 @@ namespace iroha {
                             const Account& creator) = 0;
       virtual bool execute(ametsuchi::WsvQuery& queries,
                            ametsuchi::WsvCommand& commands) = 0;
+      virtual bool operator==(const Command& rhs) const = 0;
+      virtual bool operator!=(const Command& rhs) const = 0;
     };
   }
 }

@@ -12,16 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(CMAKE_BUILD_TYPE Debug)
+addtest(command_converter_test converters/pb_commands_test.cpp)
+target_link_libraries(command_converter_test
+    model
+    )
 
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
+addtest(transaction_converter_test converters/pb_transaction_test.cpp)
+target_link_libraries(transaction_converter_test
+    model
+    )
 
-# Reusable tests
-add_subdirectory(ametsuchi)
-#add_subdirectory(api)
-add_subdirectory(consensus)
-add_subdirectory(logger)
-add_subdirectory(peer_service)
-add_subdirectory(validation)
-add_subdirectory(torii)
-add_subdirectory(model)
+addtest(block_converter_test converters/pb_block_test.cpp)
+target_link_libraries(block_converter_test
+    model
+    )
+
+addtest(model_operators_test operators/model_operators_test.cpp)
+target_link_libraries(model_operators_test
+    model
+    )

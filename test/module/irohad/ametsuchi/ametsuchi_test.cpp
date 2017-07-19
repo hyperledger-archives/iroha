@@ -160,14 +160,20 @@ namespace iroha {
       model::AddAssetQuantity addAssetQuantity;
       addAssetQuantity.asset_id = "RUB#ru";
       addAssetQuantity.account_id = "user1@ru";
-      addAssetQuantity.amount = std::decimal::make_decimal64(150ull, -2);
+      iroha::Amount asset_amount;
+      asset_amount.int_part = 1;
+      asset_amount.frac_part = 50;
+      addAssetQuantity.amount = asset_amount;
       txn.commands.push_back(
           std::make_shared<model::AddAssetQuantity>(addAssetQuantity));
       model::TransferAsset transferAsset;
       transferAsset.src_account_id = "user1@ru";
       transferAsset.dest_account_id = "user2@ru";
       transferAsset.asset_id = "RUB#ru";
-      transferAsset.amount = std::decimal::make_decimal64(100ull, -2);
+      iroha::Amount transfer_amount;
+      transfer_amount.int_part = 1;
+      transfer_amount.frac_part = 0;
+      transferAsset.amount = transfer_amount;
       txn.commands.push_back(
           std::make_shared<model::TransferAsset>(transferAsset));
 
@@ -210,21 +216,18 @@ namespace iroha {
       }
 
       // Block store tests
-      storage->getBlocks(1, 2).subscribe([block1hash, block2hash](auto block){
-        if (block.height == 1){
+      storage->getBlocks(1, 2).subscribe([block1hash, block2hash](auto block) {
+        if (block.height == 1) {
           EXPECT_EQ(block.hash, block1hash);
-        }
-        else if (block.height == 2){
+        } else if (block.height == 2) {
           EXPECT_EQ(block.hash, block2hash);
         }
       });
 
-      storage->getAccountTransactions("admin1").subscribe([](auto tx){
-        EXPECT_EQ(tx.commands.size(), 2);
-      });
-      storage->getAccountTransactions("admin2").subscribe([](auto tx){
-        EXPECT_EQ(tx.commands.size(), 4);
-      });
+      storage->getAccountTransactions("admin1").subscribe(
+          [](auto tx) { EXPECT_EQ(tx.commands.size(), 2); });
+      storage->getAccountTransactions("admin2").subscribe(
+          [](auto tx) { EXPECT_EQ(tx.commands.size(), 4); });
     }
 
     TEST_F(AmetsuchiTest, PeerTest) {

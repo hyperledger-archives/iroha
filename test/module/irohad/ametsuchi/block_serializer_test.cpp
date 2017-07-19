@@ -16,7 +16,8 @@
  */
 
 #include <gtest/gtest.h>
-#include <ametsuchi/block_serializer.hpp>
+#include "ametsuchi/block_serializer.hpp"
+#include "common/types.hpp"
 
 iroha::model::Signature create_signature();
 iroha::model::Transaction create_transaction();
@@ -52,7 +53,10 @@ iroha::model::Transaction create_transaction() {
   iroha::model::AddAssetQuantity add_asset_qty;
   add_asset_qty.account_id = "123";
   add_asset_qty.asset_id = "123";
-  add_asset_qty.amount = std::decimal::make_decimal64(1010LL, -2);
+  iroha::Amount amount;
+  amount.int_part = 10;
+  amount.frac_part = 10;
+  add_asset_qty.amount = amount;
   tx.commands.push_back(std::make_shared<iroha::model::AddAssetQuantity>(add_asset_qty));
 
   // AddSignatory
@@ -108,7 +112,7 @@ iroha::model::Transaction create_transaction() {
   iroha::model::TransferAsset transfer_asset;
   transfer_asset.src_account_id = "123";
   transfer_asset.dest_account_id = "321";
-  transfer_asset.amount = std::decimal::make_decimal64(1010ll, -2);
+  transfer_asset.amount = amount;
   transfer_asset.asset_id = "123";
   tx.commands.push_back(std::make_shared<iroha::model::TransferAsset>(transfer_asset));
   return tx;
@@ -196,6 +200,7 @@ TEST(block_serialize, block_serialize_test){
         else if (instanceof<iroha::model::AddAssetQuantity>(tx.commands[j].get())){
           auto add_asset_quantity = static_cast<const iroha::model::AddAssetQuantity&>(*tx.commands[j].get());
           auto des_add_asset_quantity = static_cast<const iroha::model::AddAssetQuantity&>(*des_tx.commands[j].get());
+
           ASSERT_EQ(add_asset_quantity.amount, des_add_asset_quantity.amount);
           ASSERT_EQ(add_asset_quantity.asset_id, des_add_asset_quantity.asset_id);
           ASSERT_EQ(add_asset_quantity.account_id, des_add_asset_quantity.account_id);

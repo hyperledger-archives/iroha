@@ -21,6 +21,8 @@
 #include <array>
 #include <crypto/base64.hpp>
 #include <cstdio>
+#include <string>
+#include <typeinfo>
 
 /**
  * This file defines common types used in iroha.
@@ -74,8 +76,8 @@ namespace iroha {
       uint8_t front, back;
       auto ptr = this->data();
       for (uint32_t i = 0, k = 0; i < size_; i++) {
-        front = (uint8_t)(ptr[i] & 0xF0) >> 4;
-        back = (uint8_t)(ptr[i] & 0xF);
+        front = (uint8_t) (ptr[i] & 0xF0) >> 4;
+        back = (uint8_t) (ptr[i] & 0xF);
         res[k++] = code[front];
         res[k++] = code[back];
       }
@@ -83,7 +85,7 @@ namespace iroha {
     }
   };
 
-  template <size_t size>
+  template<size_t size>
   using hash_t = blob_t<size>;
 
   // fixed-size hashes
@@ -106,6 +108,59 @@ namespace iroha {
   // timestamps
   using ts64_t = uint64_t;
   using ts32_t = uint32_t;
+
+  struct Amount {
+    uint64_t int_part;
+    uint64_t frac_part;
+
+    Amount(uint64_t integer_part, uint64_t fractional_part) {
+      int_part = integer_part;
+      frac_part = fractional_part;
+    }
+
+    Amount() {
+      int_part = 0;
+      frac_part = 0;
+    }
+
+    uint32_t get_frac_number() { return std::to_string(frac_part).length(); }
+
+    uint64_t get_joint_amount(uint32_t precision) {
+      auto coef = ipow(10, precision);
+      return int_part * coef + frac_part;
+    }
+
+    bool operator==(const Amount &rhs) const {
+      return this->int_part == rhs.int_part && this->frac_part == rhs.frac_part;
+    }
+
+    bool operator!=(const Amount &rhs) const {
+      return !operator==(rhs);
+    }
+
+   private:
+    int ipow(int base, int exp) {
+      int result = 1;
+      while (exp) {
+        if (exp & 1) result *= base;
+        exp >>= 1;
+        base *= base;
+      }
+
+      return result;
+    }
+  };
+
+  // check the type of the derived class
+  template<typename Base, typename T>
+  inline bool instanceof(const T *ptr) {
+    return typeid(Base) == typeid(*ptr);
+  }
+
+  template<typename Base, typename T>
+  inline bool instanceof(const T &ptr) {
+    return typeid(Base) == typeid(ptr);
+  }
 
 }  // namespace iroha
 #endif  // IROHA_COMMON_HPP

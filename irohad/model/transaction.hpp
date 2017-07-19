@@ -68,6 +68,9 @@ namespace iroha {
        * BODY field
        */
       std::vector<std::shared_ptr<Command>> commands;
+
+      bool operator==(const Transaction& rhs) const;
+      bool operator!=(const Transaction& rhs) const;
     };
   }
 }

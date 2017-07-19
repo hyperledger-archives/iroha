@@ -15,32 +15,37 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ADD_PEER_HPP
-#define IROHA_ADD_PEER_HPP
+#ifndef IROHA_PBFACTORY_HPP
+#define IROHA_PBFACTORY_HPP
 
-#include <common/types.hpp>
-#include "model/command.hpp"
-#include "model/peer.hpp"
+#include "block.pb.h"
+#include "model/block.hpp"
+
 
 namespace iroha {
   namespace model {
+    namespace converters {
 
-    /**
-     * Provide user's intent for adding peer to current network
-     */
-    struct AddPeer : public Command {
-      ed25519::pubkey_t peer_key;
+      /**
+       * Converting business objects to protobuf and vice versa
+       */
+      class PbBlockFactory {
+       public:
+        /**
+         * Convert block to proto block
+         * @param block - reference to block
+         * @return proto block
+         */
+        protocol::Block serialize(model::Block &block);
 
-      std::string address;
-
-      bool validate(ametsuchi::WsvQuery& queries,
-                    const Account& creator) override;
-      bool execute(ametsuchi::WsvQuery& queries,
-                   ametsuchi::WsvCommand& commands) override;
-
-      bool operator==(const Command& command) const override;
-      bool operator!=(const Command& command) const override;
-    };
+        /**
+         * Convert proto block to model block
+         * @param pb_block - reference to proto block
+         * @return model block
+         */
+        model::Block deserialize(protocol::Block &pb_block);
+      };
+    } // namespace converters
   }  // namespace model
 }  // namespace iroha
-#endif  // IROHA_ADD_PEER_HPP
+#endif //IROHA_PBFACTORY_HPP
