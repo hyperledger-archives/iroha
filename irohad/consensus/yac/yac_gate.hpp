@@ -21,6 +21,7 @@
 #include "network/consensus_gate.hpp"
 #include "consensus/yac/yac_hash_provider.hpp"
 #include "consensus/yac/messages.hpp"
+#include "consensus/yac/cluster_order.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -44,7 +45,7 @@ namespace iroha {
          * Proposal new hash in network
          * @param hash - hash for voting
          */
-        virtual void vote(YacHash hash) = 0;
+        virtual void vote(YacHash hash, ClusterOrdering order) = 0;
 
         /**
          * Observable with committed hashes in network
