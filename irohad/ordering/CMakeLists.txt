@@ -14,9 +14,12 @@
 
 add_library(ordering_service
     ordering_service_stub.cpp
+    impl/ordering_service_impl.cpp
     )
 
 target_link_libraries(ordering_service
     rxcpp
     optional
+    TBB::tbb
+    model
     )
