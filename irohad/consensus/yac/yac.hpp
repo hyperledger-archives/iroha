@@ -33,7 +33,8 @@
 namespace iroha {
   namespace consensus {
     namespace yac {
-      class Yac : public HashGate, public YacNetworkNotifications {
+      class Yac : public HashGate, public YacNetworkNotifications,
+                  std::enable_shared_from_this<Yac> {
        public:
 
         Yac(std::shared_ptr<YacNetwork> network,
@@ -67,8 +68,8 @@ namespace iroha {
         std::shared_ptr<YacCryptoProvider> crypto_;
         std::shared_ptr<Timer> timer_;
         std::shared_ptr<YacNetwork> network_;
-//        std::unordered_map<YacHash,
-//                           std::tuple<model::Peer, VoteMessage>> votes_;
+        std::unordered_map<YacHash,
+                           std::tuple<model::Peer, VoteMessage>> votes_;
 
         // ------|One round|------
         ClusterOrdering cluster_order_;

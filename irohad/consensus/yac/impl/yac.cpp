@@ -16,14 +16,7 @@
  */
 
 #include <utility>
-
 #include "consensus/yac/yac.hpp"
-#include "consensus/yac/yac_network_interface.hpp"
-#include "consensus/yac/messages.hpp"
-#include "consensus/yac/cluster_order.hpp"
-#include "consensus/yac/yac_gate.hpp"
-#include "consensus/yac/yac_hash_provider.hpp"
-#include "consensus/yac/cluster_order.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -36,6 +29,9 @@ namespace iroha {
                                  crypto_(std::move(crypto)),
                                  timer_(std::move(timer)),
                                  delay_(delay) {
+
+        // todo free pointer in destructor
+        network->subscribe(shared_from_this());
       }
 
       // ------|Hash gate|------
@@ -96,6 +92,10 @@ namespace iroha {
       void Yac::applyReject(model::Peer from, RejectMessage commit) {
 
       };
+
+      void Yac::applyVote(model::Peer from, VoteMessage commit) {
+
+      }
     } // namespace yac
   } // namespace consensus
 } // iroha
