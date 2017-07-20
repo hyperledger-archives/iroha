@@ -18,6 +18,7 @@
 #ifndef IROHA_YAC_NETWORK_INTERFACE_HPP
 #define IROHA_YAC_NETWORK_INTERFACE_HPP
 
+#include <memory>
 #include "consensus/yac/messages.hpp"
 #include "model/peer.hpp"
 
@@ -52,8 +53,11 @@ namespace iroha {
         virtual ~YacNetworkNotifications() = default;
       };
 
-      class YacNetwork : public YacNetworkNotifications {
+      class YacNetwork {
        public:
+
+        virtual void subscribe(
+            std::shared_ptr<YacNetworkNotifications> handler) = 0;
 
         /**
          * Directly share commit message
