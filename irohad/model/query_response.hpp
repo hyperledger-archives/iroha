@@ -33,10 +33,7 @@ namespace iroha {
        */
       Query query;
 
-      /**
-       * Client identifier
-       */
-      Client client;
+
     };
   } //namespace model 
 } //namespace iroha

@@ -7,6 +7,7 @@ add_library(model
     converters/impl/pb_block_factory.cpp
     converters/impl/pb_transaction_factory.cpp
     converters/impl/pb_command_factory.cpp
+    impl/query_execution.cpp
     )
 
 target_link_libraries(model

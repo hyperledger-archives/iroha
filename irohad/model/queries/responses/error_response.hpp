@@ -18,7 +18,7 @@
 #ifndef IROHA_ERROR_RESPONSE_HPP
 #define IROHA_ERROR_RESPONSE_HPP
 
-#include <model/query.hpp>
+#include "model/query_response.hpp"
 #include <string>
 
 namespace iroha {

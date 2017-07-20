@@ -18,7 +18,8 @@
 #ifndef IROHA_ACCOUNT_RESPONSE_HPP
 #define IROHA_ACCOUNT_RESPONSE_HPP
 
-#include <model/model.hpp>
+#include "model/account.hpp"
+#include "model/query_response.hpp"
 
 namespace iroha {
   namespace model {
@@ -27,7 +28,6 @@ namespace iroha {
      * Provide response with account
      */
     struct AccountResponse : public QueryResponse {
-
       /**
        * Attached account
        */
@@ -35,4 +35,4 @@ namespace iroha {
     };
   }  // namespace model
 }  // namespace iroha
-#endif //IROHA_ACCOUNT_RESPONSE_HPP
+#endif  // IROHA_ACCOUNT_RESPONSE_HPP

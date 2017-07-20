@@ -34,6 +34,12 @@ namespace iroha {
        */
       Signature signature;
 
+      /**
+      * Account id of transaction creator.
+      * META field
+      */
+      std::string creator_account_id;
+
       virtual ~Query() {}
     };
   } //namespace model

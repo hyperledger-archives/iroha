@@ -18,7 +18,8 @@
 #ifndef IROHA_ACCOUNT_ASSETS_RESPONSE_HPP
 #define IROHA_ACCOUNT_ASSETS_RESPONSE_HPP
 
-#include <model/query_response.hpp>
+#include "model/query_response.hpp"
+#include "model/account_asset.hpp"
 #include <vector>
 
 namespace iroha {
