@@ -111,11 +111,8 @@ namespace torii {
   void ToriiServiceHandler::QueryFindHandler(
     QueryServiceCall<
       iroha::protocol::Query, iroha::protocol::QueryResponse>* call) {
-    std::cout << "HANDLE FIND!\n";
     auto stat = QueryService::FindAsync(call->request(), call->response());
     call->sendResponse(stat);
-
-    std::cout << "OKAY!\n";
 
     // Spawn a new Call instance to serve an another client.
     enqueueRequest<prot::QueryService::AsyncService, prot::Query, prot::QueryResponse>(
