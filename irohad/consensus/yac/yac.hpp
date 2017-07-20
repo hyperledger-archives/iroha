@@ -29,19 +29,19 @@ namespace iroha {
       class Yac : public HashGate, public YacNetworkNotifications {
        public:
 
-        // ------|ConsensusGate|------
+        // ------|Hash gate|------
 
-        virtual void vote(YacHash hash) =0;
+        virtual void vote(YacHash hash) = 0;
 
-        virtual rxcpp::observable<YacHash> on_commit() =0;
+        virtual rxcpp::observable<YacHash> on_commit() = 0;
 
-        // ------|Network Notifications|------
+        // ------|Network notifications|------
 
-        void on_commit(model::Peer from, CommitMessage commit) =0;
+        virtual void on_commit(model::Peer from, CommitMessage commit) = 0;
 
-        void on_reject(model::Peer from, RejectMessage reject) =0;
+        virtual void on_reject(model::Peer from, RejectMessage reject) = 0;
 
-        void on_vote(model::Peer from, VoteMessage vote) =0;
+        virtual void on_vote(model::Peer from, VoteMessage vote) = 0;
 
        private:
         rxcpp::subjects::subject<YacHash> notifier_;
