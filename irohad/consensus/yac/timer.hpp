@@ -17,6 +17,9 @@
 
 #ifndef IROHA_TIME_HPP
 #define IROHA_TIME_HPP
+
+#include <functional>
+
 namespace iroha {
   namespace consensus {
     namespace yac {
@@ -31,7 +34,8 @@ namespace iroha {
          * @param millis - number of milliseconds before invoking
          * @param handler - function, that will be invoked
          */
-        virtual void invokeAfterDelay(uint64_t millis, void(*handler)() ) = 0;
+        virtual void invokeAfterDelay(uint64_t millis,
+                                      std::function<void()> handler) = 0;
 
         /**
          * Stop timer

@@ -18,10 +18,17 @@
 #ifndef IROHA_YAC_HPP
 #define IROHA_YAC_HPP
 
+#include <unordered_map>
+#include <tuple>
+#include <memory>
+
 #include "consensus/yac/yac_network_interface.hpp"
+#include "consensus/yac/yac_crypto_provider.hpp"
 #include "consensus/yac/yac_gate.hpp"
 #include "network/consensus_gate.hpp"
 #include "model/block.hpp"
+#include "consensus/yac/timer.hpp"
+#include "consensus/yac/yac_network_interface.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -29,22 +36,46 @@ namespace iroha {
       class Yac : public HashGate, public YacNetworkNotifications {
        public:
 
+        Yac(std::shared_ptr<YacNetwork> network,
+            std::shared_ptr<YacCryptoProvider> crypto,
+            std::shared_ptr<Timer> timer,
+            uint64_t delay);
+
         // ------|Hash gate|------
 
-        virtual void vote(YacHash hash) = 0;
+        virtual void vote(YacHash hash, ClusterOrdering order);
 
-        virtual rxcpp::observable<YacHash> on_commit() = 0;
+        virtual rxcpp::observable <YacHash> on_commit();
 
         // ------|Network notifications|------
 
-        virtual void on_commit(model::Peer from, CommitMessage commit) = 0;
+        virtual void on_commit(model::Peer from, CommitMessage commit);
 
-        virtual void on_reject(model::Peer from, RejectMessage reject) = 0;
+        virtual void on_reject(model::Peer from, RejectMessage reject);
 
-        virtual void on_vote(model::Peer from, VoteMessage vote) = 0;
+        virtual void on_vote(model::Peer from, VoteMessage vote);
 
        private:
-        rxcpp::subjects::subject<YacHash> notifier_;
+        // ------|Private interface|------
+        void votingStep();
+        void applyCommit(model::Peer from, CommitMessage commit);
+        void applyReject(model::Peer from, RejectMessage commit);
+        void applyVote(model::Peer from, VoteMessage commit);
+
+        // ------|Fields|------
+        rxcpp::subjects::subject <YacHash> notifier_;
+        std::shared_ptr<YacCryptoProvider> crypto_;
+        std::shared_ptr<Timer> timer_;
+        std::shared_ptr<YacNetwork> network_;
+//        std::unordered_map<YacHash,
+//                           std::tuple<model::Peer, VoteMessage>> votes_;
+
+        // ------|One round|------
+        ClusterOrdering cluster_order_;
+        YacHash current_hash_;
+
+        // ------|Constants|------
+        const uint64_t delay_;
       };
     } // namespace yac
   } // namespace consensus
