@@ -38,8 +38,6 @@ void ServerRunner::run() {
 
   // Register services.
   commandServiceHandler_ = std::make_unique<torii::CommandServiceHandler>(builder);
-  queryService_ = std::make_unique<torii::QueryService>();
-  builder.RegisterService(queryService_.get());
 
   serverInstance_ = builder.BuildAndStart();
   serverInstanceCV_.notify_one();

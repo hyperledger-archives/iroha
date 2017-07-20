@@ -37,7 +37,6 @@ private:
 
   std::string serverAddress_;
   std::unique_ptr<torii::CommandServiceHandler> commandServiceHandler_;
-  std::unique_ptr<torii::QueryService> queryService_;
 };
 
 #endif  // MAIN_SERVER_RUNNER_HPP

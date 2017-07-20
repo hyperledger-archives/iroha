@@ -31,7 +31,8 @@ namespace torii {
    * @param builder
    */
   CommandServiceHandler::CommandServiceHandler(::grpc::ServerBuilder& builder) {
-    builder.RegisterService(&asyncService_);
+    builder.RegisterService(&commandAsyncService_);
+    builder.RegisterService(&queryAsyncService_);
     completionQueue_ = builder.AddCompletionQueue();
   }
 
@@ -48,9 +49,18 @@ namespace torii {
    * handles rpcs loop in CommandService.
    */
   void CommandServiceHandler::handleRpcs() {
-    enqueueRequest<prot::Transaction, prot::ToriiResponse>(
+    // CommandService::Torii()
+    enqueueRequest<prot::CommandService::AsyncService, prot::Transaction, prot::ToriiResponse>(
         &prot::CommandService::AsyncService::RequestTorii,
-        &CommandServiceHandler::ToriiHandler
+        &CommandServiceHandler::ToriiHandler,
+        commandAsyncService_
+    );
+
+    // QueryService::Find()
+    enqueueRequest<prot::QueryService::AsyncService, prot::Query, prot::QueryResponse>(
+      &prot::QueryService::AsyncService::RequestFind,
+      &CommandServiceHandler::QueryFindHandler,
+      queryAsyncService_
     );
 
     /**
@@ -89,9 +99,27 @@ namespace torii {
     call->sendResponse(stat);
 
     // Spawn a new Call instance to serve an another client.
-    enqueueRequest<prot::Transaction, prot::ToriiResponse>(
+    enqueueRequest<prot::CommandService::AsyncService, prot::Transaction, prot::ToriiResponse>(
       &prot::CommandService::AsyncService::RequestTorii,
-      &CommandServiceHandler::ToriiHandler
+      &CommandServiceHandler::ToriiHandler,
+      commandAsyncService_
+    );
+  }
+
+  void CommandServiceHandler::QueryFindHandler(
+    QueryServiceCall<
+      iroha::protocol::Query, iroha::protocol::QueryResponse>* call) {
+
+    std::cout << "QueryFindHandler called!\n";
+
+    auto stat = grpc::Status::OK;//CommandService::ToriiAsync(call->request(), call->response());
+    call->sendResponse(stat);
+
+    // Spawn a new Call instance to serve an another client.
+    enqueueRequest<prot::CommandService::AsyncService, prot::Transaction, prot::ToriiResponse>(
+      &prot::CommandService::AsyncService::RequestTorii,
+      &CommandServiceHandler::ToriiHandler,
+      commandAsyncService_
     );
   }
 
