@@ -27,7 +27,7 @@ namespace iroha {
     /**
      * Query for get all account's assets and balance
      */
-    struct GetAccountAssets : Query {
+    struct GetAccountAsset : Query {
       std::string account_id;
       std::string asset_id;
     };

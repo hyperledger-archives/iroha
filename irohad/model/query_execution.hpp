@@ -26,6 +26,7 @@
 #include "model/queries/get_signatories.hpp"
 #include "model/queries/get_transactions.hpp"
 
+#include "ametsuchi/block_query.hpp"
 #include "ametsuchi/wsv_query.hpp"
 
 namespace iroha {
@@ -36,29 +37,29 @@ namespace iroha {
      */
     class QueryProcessingFactory {
      public:
-      model::QueryResponse execute(const model::Query& query);
+      std::shared_ptr<iroha::model::QueryResponse> execute(const model::Query& query);
       QueryProcessingFactory(ametsuchi::WsvQuery& wsvQuery,
                              ametsuchi::BlockQuery& blockQuery);
 
      private:
-      bool validate(const model::GetAccountAssets& query);
+      bool validate(const model::GetAccountAsset& query);
       bool validate(const model::GetAccount& query);
       bool validate(const model::GetSignatories& query);
       bool validate(const model::GetAccountAssetTransactions& query);
       bool validate(const model::GetAccountTransactions& query);
 
-      model::QueryResponse executeGetAccountAssets(
-          const model::GetAccountAssets& query);
-      model::QueryResponse executeGetAccount(const model::GetAccount& query);
-      model::QueryResponse executeGetSignatories(
+     std::shared_ptr<iroha::model::QueryResponse> executeGetAccountAsset(
+          const model::GetAccountAsset& query);
+     std::shared_ptr<iroha::model::QueryResponse> executeGetAccount(const model::GetAccount& query);
+     std::shared_ptr<iroha::model::QueryResponse> executeGetSignatories(
           const model::GetSignatories& query);
-      model::QueryResponse executeGetAccountAssetTransactions(
+     std::shared_ptr<iroha::model::QueryResponse> executeGetAccountAssetTransactions(
           const model::GetAccountAssetTransactions& query);
-      model::QueryResponse executeGetAccountTransactions(
+     std::shared_ptr<iroha::model::QueryResponse> executeGetAccountTransactions(
           const model::GetAccountTransactions& query);
 
-      ametsuchi::WsvQuery _wsvQuery;
-      ametsuchi::BlockQuery _blockQuery;
+      ametsuchi::WsvQuery& _wsvQuery;
+      ametsuchi::BlockQuery& _blockQuery;
     };
 
   }  // namespace model

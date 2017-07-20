@@ -16,7 +16,6 @@
  */
 
 #include "model/query_execution.hpp"
-#include <ametsuchi/block_query.hpp>
 #include "common/types.hpp"
 #include "model/queries/responses/account_assets_response.hpp"
 #include "model/queries/responses/account_response.hpp"
@@ -25,10 +24,8 @@
 #include "model/queries/responses/transactions_response.hpp"
 
 iroha::model::QueryProcessingFactory::QueryProcessingFactory(
-    ametsuchi::WsvQuery& wsvQuery, ametsuchi::BlockQuery& blockQuery) {
-  _wsvQuery = wsvQuery;
-  _blockQuery = blockQuery;
-}
+    ametsuchi::WsvQuery& wsvQuery, ametsuchi::BlockQuery& blockQuery)
+    : _wsvQuery(wsvQuery), _blockQuery(blockQuery) {}
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccount& query) {
@@ -53,7 +50,7 @@ bool iroha::model::QueryProcessingFactory::validate(
 }
 
 bool iroha::model::QueryProcessingFactory::validate(
-    const model::GetAccountAssets& query) {
+    const model::GetAccountAsset& query) {
   auto creator = _wsvQuery.getAccount(query.creator_account_id);
   return
       // Creator account exits
@@ -85,7 +82,7 @@ bool iroha::model::QueryProcessingFactory::validate(
        query.account_id == query.creator_account_id);
 }
 
-iroha::model::QueryResponse
+std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetAccount(
     const model::GetAccount& query) {
   auto acc = _wsvQuery.getAccount(query.account_id);
@@ -93,31 +90,31 @@ iroha::model::QueryProcessingFactory::executeGetAccount(
     iroha::model::ErrorResponse response;
     response.query = query;
     response.reason = "No account";
-    return response;
+    return std::make_shared<ErrorResponse>(response);
   }
   iroha::model::AccountResponse response;
   response.account = acc.value();
   response.query = query;
-  return response;
+  return std::make_shared<iroha::model::AccountResponse>(response);
 }
 
-iroha::model::QueryResponse
-iroha::model::QueryProcessingFactory::executeGetAccountAssets(
-    const model::GetAccountAssets& query) {
+std::shared_ptr<iroha::model::QueryResponse>
+iroha::model::QueryProcessingFactory::executeGetAccountAsset(
+    const model::GetAccountAsset& query) {
   auto acc_assets = _wsvQuery.getAccountAsset(query.account_id, query.asset_id);
   if (!acc_assets.has_value()) {
     iroha::model::ErrorResponse response;
     response.query = query;
     response.reason = "No Account Asset";
-    return response;
+    return std::make_shared<iroha::model::ErrorResponse>(response);
   }
-  iroha::model::AccountAssetsResponse response;
-  response.= acc_assets.value();
+  iroha::model::AccountAssetResponse response;
+  response.acc_asset = acc_assets.value();
   response.query = query;
-  return response;
+  return std::make_shared<iroha::model::AccountAssetResponse>(response);
 }
 
-iroha::model::QueryResponse
+std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetAccountAssetTransactions(
     const model::GetAccountAssetTransactions& query) {
   // auto acc_asset_tx = _blockQuery.
@@ -125,20 +122,20 @@ iroha::model::QueryProcessingFactory::executeGetAccountAssetTransactions(
   iroha::model::ErrorResponse response;
   response.query = query;
   response.reason = "Not implemented";
-  return response;
+  return std::make_shared<iroha::model::ErrorResponse>(response);
 }
 
-iroha::model::QueryResponse
+std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetAccountTransactions(
     const model::GetAccountTransactions& query) {
   auto acc_tx = _blockQuery.getAccountTransactions(query.account_id);
   iroha::model::TransactionsResponse response;
   response.query = query;
   response.transactions = acc_tx;
-  return response;
+  return std::make_shared<iroha::model::TransactionsResponse>(response);
 }
 
-iroha::model::QueryResponse
+std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetSignatories(
     const model::GetSignatories& query) {
   auto signs = _wsvQuery.getSignatories(query.account_id);
@@ -146,15 +143,15 @@ iroha::model::QueryProcessingFactory::executeGetSignatories(
     iroha::model::ErrorResponse response;
     response.query = query;
     response.reason = "No signatories";
-    return response;
+    return std::make_shared<iroha::model::ErrorResponse>(response);
   }
   iroha::model::SignatoriesResponse response;
   response.query = query;
   response.keys = signs.value();
-  return response;
+  return std::make_shared<iroha::model::SignatoriesResponse>(response);
 }
 
-iroha::model::QueryResponse iroha::model::QueryProcessingFactory::execute(
+std::shared_ptr<iroha::model::QueryResponse> iroha::model::QueryProcessingFactory::execute(
     const model::Query& query) {
   if (instanceof <iroha::model::GetAccount>(query)) {
     auto qry = static_cast<const iroha::model::GetAccount&>(query);
@@ -162,19 +159,19 @@ iroha::model::QueryResponse iroha::model::QueryProcessingFactory::execute(
       iroha::model::ErrorResponse response;
       response.query = qry;
       response.reason = "Not valid query";
-      return response;
+      return std::make_shared<ErrorResponse>(response);
     }
     return executeGetAccount(qry);
   }
-  if (instanceof <iroha::model::GetAccountAssets>(query)) {
-    auto qry = static_cast<const iroha::model::GetAccountAssets&>(query);
+  if (instanceof <iroha::model::GetAccountAsset>(query)) {
+    auto qry = static_cast<const iroha::model::GetAccountAsset&>(query);
     if (!validate(qry)) {
       iroha::model::ErrorResponse response;
       response.query = qry;
       response.reason = "Not valid query";
-      return response;
+      return std::make_shared<iroha::model::ErrorResponse>(response);
     }
-    return executeGetAccountAssets(qry);
+    return executeGetAccountAsset(qry);
   }
   if (instanceof <iroha::model::GetSignatories>(query)) {
     auto qry = static_cast<const iroha::model::GetSignatories&>(query);
@@ -182,7 +179,7 @@ iroha::model::QueryResponse iroha::model::QueryProcessingFactory::execute(
       iroha::model::ErrorResponse response;
       response.query = qry;
       response.reason = "Not valid query";
-      return response;
+      return std::make_shared<iroha::model::ErrorResponse>(response);
     }
     return executeGetSignatories(qry);
   }
@@ -192,7 +189,7 @@ iroha::model::QueryResponse iroha::model::QueryProcessingFactory::execute(
       iroha::model::ErrorResponse response;
       response.query = qry;
       response.reason = "Not valid query";
-      return response;
+      return std::make_shared<iroha::model::ErrorResponse>(response);
     }
     return executeGetAccountTransactions(qry);
   }
@@ -203,12 +200,12 @@ iroha::model::QueryResponse iroha::model::QueryProcessingFactory::execute(
       iroha::model::ErrorResponse response;
       response.query = qry;
       response.reason = "Not valid query";
-      return response;
+      return std::make_shared<iroha::model::ErrorResponse>(response);
     }
     return executeGetAccountAssetTransactions(qry);
   }
   iroha::model::ErrorResponse response;
   response.query = query;
   response.reason = "Not implemented";
-  return response;
+  return std::make_shared<iroha::model::ErrorResponse>(response);
 }
