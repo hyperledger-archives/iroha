@@ -20,6 +20,7 @@
 
 #include <vector>
 #include <string>
+#include <functional>
 #include "model/block.hpp"
 #include "model/peer.hpp"
 #include "consensus/yac/cluster_order.hpp"
@@ -31,6 +32,13 @@ namespace iroha {
       class YacHash {
        public:
         std::string hash_value;
+
+        bool operator==(const YacHash &obj) const {
+          if (hash_value == obj.hash_value)
+            return true;
+          else
+            return false;
+        }
       };
 
       /**
@@ -59,5 +67,16 @@ namespace iroha {
     } // namespace yac
   } // namespace consensus
 } // iroha
+
+namespace std {
+
+  template<>
+  struct hash<iroha::consensus::yac::YacHash> {
+    std::size_t operator()(const iroha::consensus::yac::YacHash &obj) const {
+      return std::hash<std::string>()(obj.hash_value);
+    }
+  };
+
+}
 
 #endif //IROHA_YAC_HASH_PROVIDER_HPP
