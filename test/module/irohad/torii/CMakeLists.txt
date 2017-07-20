@@ -12,19 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Torii Test
-add_executable(torii_async_test
-    torii_async_test.cpp
-    )
-target_link_libraries(torii_async_test
-    command_service
-    command_client
-    server_runner
-    gtest
-    )
-add_test(
-    NAME torii_async_test
-    COMMAND $<TARGET_FILE:torii_async_test>
-)
 add_subdirectory(processor)
 
+# command service test
+addtest(torii_async_test torii_async_test.cpp)
+target_link_libraries(torii_async_test
+  command_service
+  command_client
+  server_runner
+  gtest
+  )
+
+# query service test
+addtest(query_service_test query_service_test.cpp)
+target_link_libraries(query_service_test
+  query_service
+  server_runner
+  )

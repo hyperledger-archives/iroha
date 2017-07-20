@@ -31,3 +31,7 @@ message Query {
     GetAccountAssets get_account_assets = 4;
   }
 }
+
+message QueryResponse {
+
+}
