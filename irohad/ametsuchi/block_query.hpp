@@ -30,31 +30,14 @@ namespace iroha {
      */
     class BlockQuery {
      public:
+      virtual ~BlockQuery() = default;
       /**
        * Get all transactions of an account.
        * @param pub_key - account's first public key
        * @return observable of Model Transaction
        */
-      virtual rxcpp::observable<model::Transaction> get_account_transactions(
-          ed25519::pubkey_t pub_key) = 0;
-
-      /**
-       * Get all transactions with a certain asset
-       * @param asset_full_name - full name of an asset, i.e. name#domain
-       * @return observable of Model Transaction
-       */
-      virtual rxcpp::observable<model::Transaction> get_asset_transactions(
-          std::string asset_full_name) = 0;
-
-      /**
-       * Get all transactions of a certain account asset
-       * @param account_id
-       * @param asset_id
-       * @return observable of Model Transaction
-       */
-      virtual rxcpp::observable<model::Transaction>
-      get_account_asset_transactions(std::string account_id,
-                                     std::string asset_id) = 0;
+      virtual rxcpp::observable<model::Transaction> getAccountTransactions(
+          std::string account_id) = 0;
 
       /**
       * Get all blocks with having id in range [from, to].
@@ -62,8 +45,8 @@ namespace iroha {
       * @param to - ending id
       * @return observable of Model Block
       */
-      virtual rxcpp::observable<model::Block> get_blocks_in_range(
-          uint32_t from, uint32_t to) = 0;
+      virtual rxcpp::observable<model::Block> getBlocks(uint32_t from,
+                                                        uint32_t to) = 0;
     };
 
   }  // namespace ametsuchi

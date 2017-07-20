@@ -28,7 +28,7 @@ namespace iroha {
      */
     struct CreateAccount : public Command {
       /**
-       * Account's identifier
+       * Account's user name
        */
       std::string account_name;
 
@@ -46,6 +46,9 @@ namespace iroha {
                     const Account& creator) override;
       bool execute(ametsuchi::WsvQuery& queries,
                    ametsuchi::WsvCommand& commands) override;
+
+      bool operator==(const Command& command) const override;
+      bool operator!=(const Command& command) const override;
     };
   }  // namespace model
 }  // namespace iroha

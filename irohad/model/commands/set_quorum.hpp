@@ -18,8 +18,9 @@
 #ifndef IROHA_SET_QUORUM_HPP
 #define IROHA_SET_QUORUM_HPP
 
-#include <model/model.hpp>
 #include <string>
+
+#include "model/command.hpp"
 
 namespace iroha {
   namespace model {
@@ -41,6 +42,9 @@ namespace iroha {
                     const Account& creator) override;
       bool execute(ametsuchi::WsvQuery& queries,
                    ametsuchi::WsvCommand& commands) override;
+
+      bool operator==(const Command& command) const override;
+      bool operator!=(const Command& command) const override;
     };
   }  // namespace model
 }  // namespace iroha

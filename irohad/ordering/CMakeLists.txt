@@ -30,4 +30,5 @@ add_library(ordering_service
 
 target_link_libraries(ordering_service
     rxcpp
+    optional
     )

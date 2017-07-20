@@ -15,28 +15,33 @@
  * limitations under the License.
  */
 
-#ifndef AMETSUCHI_BLOCK_STORE_BLOCK_STORE_HPP
-#define AMETSUCHI_BLOCK_STORE_BLOCK_STORE_HPP
+#ifndef IROHA_FLAT_FILE_HPP
+#define IROHA_FLAT_FILE_HPP
 
-#include <cstdint>
+#include <memory>
+#include <nonstd/optional.hpp>
+#include <string>
 #include <vector>
 
 namespace iroha {
-
   namespace ametsuchi {
+    class FlatFile {
+     public:
+      static std::unique_ptr<FlatFile> create(const std::string &path);
+      ~FlatFile();
+      void add(uint32_t id, const std::vector<uint8_t> &block);
+      nonstd::optional<std::vector<uint8_t>> get(uint32_t id) const;
+      uint32_t last_id() const;
+      std::string directory() const;
 
-    namespace block_store {
+     private:
+      uint32_t current_id;
+      const std::string dump_dir;
 
-      class BlockStore {
-       public:
-        virtual void add(uint32_t id, const std::vector<uint8_t> &block) = 0;
-        virtual std::vector<uint8_t> get(uint32_t id) const = 0;
-        virtual uint32_t last_id() const = 0;
-        virtual void remove(uint32_t id) = 0;
-      };
-
-    }  // namespace block_store
-
+      FlatFile(uint32_t current_id, const std::string &path);
+      bool file_exist(const std::string &name) const;
+      long file_size(const std::string &filename) const;
+    };
   }  // namespace ametsuchi
 }  // namespace iroha
-#endif  // AMETSUCHI_BLOCK_STORE_BLOCK_STORE_HPP
+#endif  // IROHA_FLAT_FILE_HPP

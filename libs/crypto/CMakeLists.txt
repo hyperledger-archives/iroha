@@ -1,14 +1,12 @@
-add_library(hash STATIC
+add_library(hash
     hash.cpp
-    hash.hpp
     )
 
 target_link_libraries(hash
     ed25519
     )
 
-add_library(crypto STATIC
-    crypto.hpp
+add_library(crypto
     ed25519_impl.cpp
     )
 target_link_libraries(crypto

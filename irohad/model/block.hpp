@@ -81,6 +81,9 @@ namespace iroha {
        * BODY field
        */
       std::vector<Transaction> transactions;
+
+      bool operator==(const Block& rhs) const;
+      bool operator!=(const Block& rhs) const;
     };
   }
 }

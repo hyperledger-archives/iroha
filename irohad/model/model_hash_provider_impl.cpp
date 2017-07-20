@@ -72,9 +72,8 @@ namespace iroha {
         std::copy(command_blob.begin(), command_blob.end(),
                   std::back_inserter(concat_hash_commands_));
       }
-      // Append transaction creator
-      std::copy(tx.creator.begin(), tx.creator.end(),
-                std::back_inserter(concat_hash_commands_));
+     
+      concat_hash_commands_ += tx.creator_account_id;
 
       // TODO: Decide if the header should be included
       /*

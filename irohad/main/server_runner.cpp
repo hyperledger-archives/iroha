@@ -26,6 +26,10 @@ logger::Logger Log("ServerRunner");
 ServerRunner::ServerRunner(const std::string &ip, int port)
     : serverAddress_(ip + ":" + std::to_string(port)) {}
 
+ServerRunner::~ServerRunner() {
+  commandServiceHandler_->shutdown();
+}
+
 void ServerRunner::run() {
   grpc::ServerBuilder builder;
 
@@ -43,10 +47,12 @@ void ServerRunner::run() {
 }
 
 void ServerRunner::shutdown() {
-  commandServiceHandler_->shutdown();
-  while (!commandServiceHandler_->isShutdownCompletionQueue())
-    usleep(1); // wait for shutting down completion queue
   serverInstance_->Shutdown();
+
+  while (!commandServiceHandler_->isShutdownCompletionQueue()) {
+    usleep(1); // wait for shutting down completion queue
+  }
+  commandServiceHandler_->shutdown();
 }
 
 bool ServerRunner::waitForServersReady() {

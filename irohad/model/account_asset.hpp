@@ -37,7 +37,7 @@ namespace iroha {
       /**
        * Current balance
        */
-      std::string balance;
+      uint64_t balance;
     };
   }
 }
