@@ -17,8 +17,9 @@
 #include "model/query_execution.hpp"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <model/queries/responses/account_response.hpp>
-#include <model/queries/responses/error_response.hpp>
+#include <model/queries/responses/account_assets_response.hpp>
+#include "model/queries/responses/account_response.hpp"
+#include "model/queries/responses/error_response.hpp"
 
 using ::testing::Return;
 using ::testing::AtLeast;
@@ -54,6 +55,7 @@ auto ACCOUNT_ID = "test@test";
 auto ADMIN_ID = "admin@test";
 auto DOMAIN_NAME = "test";
 auto ADVERSARY_ID = "adversary@test";
+auto ASSET_ID = "coin";
 
 iroha::model::Account get_default_creator() {
   iroha::model::Account creator = iroha::model::Account();
@@ -95,6 +97,19 @@ void set_default_ametsuchi(WSVQueriesMock &test_wsv,
   auto dummy = get_default_account();
 
   EXPECT_CALL(test_wsv, getAccount(ACCOUNT_ID)).WillRepeatedly(Return(dummy));
+  auto adversary = get_default_adversary();
+  EXPECT_CALL(test_wsv, getAccount(ADVERSARY_ID))
+      .WillRepeatedly(Return(adversary));
+
+  EXPECT_CALL(test_wsv, getAccountAsset(_, _))
+      .WillRepeatedly(Return(nonstd::nullopt));
+
+  auto acc_asset = iroha::model::AccountAsset();
+  acc_asset.asset_id = ASSET_ID;
+  acc_asset.account_id = ACCOUNT_ID;
+  acc_asset.balance = 150;
+  EXPECT_CALL(test_wsv, getAccountAsset(ACCOUNT_ID, ASSET_ID))
+      .WillRepeatedly(Return(acc_asset));
 }
 
 TEST(QueryExecutor, get_account) {
@@ -112,26 +127,150 @@ TEST(QueryExecutor, get_account) {
   query.creator_account_id = ADMIN_ID;
   query.signature.pubkey = get_default_creator().master_key;
   auto response = query_proccesor.execute(query);
-  //ASSERT_EQ(response.get()->query.creator_account_id, ADMIN_ID);
-  auto a = std::static_pointer_cast<iroha::model::AccountResponse>(response);
+  auto cast_resp =
+      std::static_pointer_cast<iroha::model::AccountResponse>(response);
+  ASSERT_EQ(cast_resp->account.account_id, ACCOUNT_ID);
+  ASSERT_EQ(cast_resp->query.creator_account_id, ADMIN_ID);
 
-  //auto cast_resp = static_cast<iroha::model::AccountResponse*>(response.get());
-/*
   // 2. Account creator asks about his account
   query.account_id = ACCOUNT_ID;
   query.creator_account_id = ACCOUNT_ID;
   query.signature.pubkey = get_default_account().master_key;
   response = query_proccesor.execute(query);
-  //cast_resp = static_cast<const iroha::model::AccountResponse &>(response);
-  //ASSERT_EQ(cast_resp.account.account_id, ACCOUNT_ID);
+  cast_resp = std::static_pointer_cast<iroha::model::AccountResponse>(response);
+  ASSERT_EQ(cast_resp->account.account_id, ACCOUNT_ID);
 
-  // 3. Asking non-existed account
+  // --------- Non valid cases: -------
+
+  // 1. Asking non-existed account
+
   query.account_id = "nonacc";
   query.creator_account_id = ADMIN_ID;
   query.signature.pubkey = get_default_creator().master_key;
   response = query_proccesor.execute(query);
-  //auto cast_resp_2 =
- // static_cast<const iroha::model::ErrorResponse &>(response);
-  //ASSERT_EQ(cast_resp_2.reason, "No account");
-   */
+  auto cast_resp_2 =
+      std::dynamic_pointer_cast<iroha::model::AccountResponse>(response);
+  ASSERT_EQ(cast_resp_2, nullptr);
+  auto err_resp =
+      std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
+  ASSERT_EQ(err_resp->reason, "No account");
+  ASSERT_EQ(err_resp->query.creator_account_id, ADMIN_ID);
+
+  // 2. No rights to ask account
+  query.account_id = ACCOUNT_ID;
+  query.creator_account_id = ADVERSARY_ID;
+  query.signature.pubkey = get_default_adversary().master_key;
+  response = query_proccesor.execute(query);
+  cast_resp =
+      std::dynamic_pointer_cast<iroha::model::AccountResponse>(response);
+  ASSERT_EQ(cast_resp, nullptr);
+
+  err_resp = std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
+  ASSERT_EQ(err_resp->reason, "Not valid query");
+
+  // 3. No creator
+  query.account_id = ACCOUNT_ID;
+  query.creator_account_id = "noacc";
+  query.signature.pubkey = get_default_adversary().master_key;
+  response = query_proccesor.execute(query);
+  cast_resp =
+      std::dynamic_pointer_cast<iroha::model::AccountResponse>(response);
+  ASSERT_EQ(cast_resp, nullptr);
+
+  err_resp = std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
+  ASSERT_EQ(err_resp->reason, "Not valid query");
+
+  // TODO: tests for signatures
+}
+
+TEST(QueryExecutor, get_account_asset) {
+  WSVQueriesMock wsv_queries;
+  BlockQueryMock block_queries;
+  auto query_proccesor =
+      iroha::model::QueryProcessingFactory(wsv_queries, block_queries);
+
+  set_default_ametsuchi(wsv_queries, block_queries);
+
+  // Valid cases:
+  // 1. Admin asks account_id
+  iroha::model::GetAccountAsset query;
+  query.account_id = ACCOUNT_ID;
+  query.asset_id = ASSET_ID;
+  query.creator_account_id = ADMIN_ID;
+  query.signature.pubkey = get_default_creator().master_key;
+  auto response = query_proccesor.execute(query);
+  auto cast_resp =
+      std::static_pointer_cast<iroha::model::AccountAssetResponse>(response);
+  ASSERT_EQ(cast_resp->acc_asset.account_id, ACCOUNT_ID);
+  ASSERT_EQ(cast_resp->acc_asset.asset_id, ASSET_ID);
+  ASSERT_EQ(cast_resp->query.creator_account_id, ADMIN_ID);
+
+  // 2. Account creator asks about his account
+  query.account_id = ACCOUNT_ID;
+  query.creator_account_id = ACCOUNT_ID;
+  query.signature.pubkey = get_default_account().master_key;
+  response = query_proccesor.execute(query);
+  cast_resp = std::static_pointer_cast<iroha::model::AccountAssetResponse>(response);
+  ASSERT_EQ(cast_resp->acc_asset.account_id, ACCOUNT_ID);
+  ASSERT_EQ(cast_resp->acc_asset.asset_id, ASSET_ID);
+  ASSERT_EQ(cast_resp->query.creator_account_id, ACCOUNT_ID);
+
+  // --------- Non valid cases: -------
+
+  // 1. Asking non-existed account asset
+
+  query.account_id = "nonacc";
+  query.creator_account_id = ADMIN_ID;
+  query.signature.pubkey = get_default_creator().master_key;
+  response = query_proccesor.execute(query);
+  auto cast_resp_2 =
+      std::dynamic_pointer_cast<iroha::model::AccountAssetResponse>(response);
+  ASSERT_EQ(cast_resp_2, nullptr);
+  auto err_resp =
+      std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
+  ASSERT_EQ(err_resp->reason, "No Account Asset");
+  ASSERT_EQ(err_resp->query.creator_account_id, ADMIN_ID);
+
+
+  // Asking non-existed account asset
+
+  query.account_id = ACCOUNT_ID;
+  query.asset_id = "nonasset";
+  query.creator_account_id = ADMIN_ID;
+  query.signature.pubkey = get_default_creator().master_key;
+  response = query_proccesor.execute(query);
+  cast_resp_2 =
+      std::dynamic_pointer_cast<iroha::model::AccountAssetResponse>(response);
+  ASSERT_EQ(cast_resp_2, nullptr);
+  err_resp =
+      std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
+  ASSERT_EQ(err_resp->reason, "No Account Asset");
+  ASSERT_EQ(err_resp->query.creator_account_id, ADMIN_ID);
+
+  // 2. No rights to ask
+  query.account_id = ACCOUNT_ID;
+  query.asset_id = ASSET_ID;
+  query.creator_account_id = ADVERSARY_ID;
+  query.signature.pubkey = get_default_adversary().master_key;
+  response = query_proccesor.execute(query);
+  cast_resp =
+      std::dynamic_pointer_cast<iroha::model::AccountAssetResponse>(response);
+  ASSERT_EQ(cast_resp, nullptr);
+
+  err_resp = std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
+  ASSERT_EQ(err_resp->reason, "Not valid query");
+
+  // 3. No creator
+  query.account_id = ACCOUNT_ID;
+  query.creator_account_id = "noacc";
+  query.signature.pubkey = get_default_adversary().master_key;
+  response = query_proccesor.execute(query);
+  cast_resp =
+      std::dynamic_pointer_cast<iroha::model::AccountAssetResponse>(response);
+  ASSERT_EQ(cast_resp, nullptr);
+
+  err_resp = std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
+  ASSERT_EQ(err_resp->reason, "Not valid query");
+
+  // TODO: tests for signatures
 }

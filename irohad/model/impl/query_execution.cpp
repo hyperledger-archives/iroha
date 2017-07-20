@@ -30,6 +30,7 @@ iroha::model::QueryProcessingFactory::QueryProcessingFactory(
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccount& query) {
   auto creator = _wsvQuery.getAccount(query.creator_account_id);
+  // TODO: check signatures
   return
       // Creator account exits
       creator.has_value() &&
