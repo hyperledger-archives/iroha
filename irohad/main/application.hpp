@@ -22,7 +22,6 @@
 #include <consensus/consensus_service_stub.hpp>
 #include <torii/processor/query_processor_stub.hpp>
 #include <torii/processor/transaction_processor_impl.hpp>
-#include <torii/torii_stub.hpp>
 #include <validation/chain/validator_stub.hpp>
 #include <validation/stateless/validator_impl.hpp>
 
