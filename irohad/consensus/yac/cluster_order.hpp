@@ -31,6 +31,8 @@ namespace iroha {
       class ClusterOrdering {
        public:
 
+        ClusterOrdering();
+
         ClusterOrdering(std::vector<model::Peer> order);
 
         /**

@@ -21,13 +21,17 @@ namespace iroha {
   namespace consensus {
     namespace yac {
 
+      ClusterOrdering::ClusterOrdering()
+          : order_({}) {
+      }
+
       ClusterOrdering::ClusterOrdering(std::vector<model::Peer> order)
           : order_(order) {
       }
 
       model::Peer ClusterOrdering::currentLeader() {
         if (index_ >= order_.size()) {
-          index_ = 0;
+          index_ = 0; // todo dangerous indexing, what if order_.size == 0?
         }
         return order_.at(index_);
       }
