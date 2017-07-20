@@ -14,17 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CONNECTION_API_QUERY_SERVICE_HPP
-#define CONNECTION_API_QUERY_SERVICE_HPP
-
 #include <torii/query_service.hpp>
 
-namespace connection {
-    namespace api {
-
-        // NOT IMPLEMENTED YET.
-
-    }  // namespace api
-}  // namespace connection
-
-#endif
+namespace torii {
+  ::grpc::Status QueryService::Find(::grpc::ServerContext* context,
+                                    const ::iroha::protocol::Query* request,
+                                    ::iroha::protocol::QueryResponse* response) {
+    // TODO: Implement dispatching request to query processor here.
+    // TODO: Return response.
+    return grpc::Status::OK;
+  }
+}  // namespace torii

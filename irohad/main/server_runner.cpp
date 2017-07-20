@@ -20,6 +20,7 @@ limitations under the License.
 #include <logger/logger.hpp>
 #include <main/server_runner.hpp>
 #include <torii/command_service_handler.hpp>
+#include <torii/query_service.hpp>
 
 logger::Logger Log("ServerRunner");
 
@@ -35,7 +36,10 @@ void ServerRunner::run() {
 
   builder.AddListeningPort(serverAddress_, grpc::InsecureServerCredentials());
 
+  // Register services.
   commandServiceHandler_ = std::make_unique<torii::CommandServiceHandler>(builder);
+  queryService_ = std::make_unique<torii::QueryService>();
+  builder.RegisterService(queryService_.get());
 
   serverInstance_ = builder.BuildAndStart();
   serverInstanceCV_.notify_one();

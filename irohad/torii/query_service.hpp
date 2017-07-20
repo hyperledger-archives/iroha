@@ -14,21 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CONNECTION_API_QUERY_SERVICE_HPP
-#define CONNECTION_API_QUERY_SERVICE_HPP
+#ifndef CONNECTION_TORII_QUERY_SERVICE_HPP
+#define CONNECTION_TORII_QUERY_SERVICE_HPP
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 
-namespace connection {
-    namespace api {
+namespace torii {
 
-        class QueryService final
-            : public iroha::protocol::QueryService::Service {
-            // NOT IMPLEMENTED YET.
-        };
+  class QueryService final : public iroha::protocol::QueryService::Service {
+  public:
+    virtual ::grpc::Status Find(::grpc::ServerContext* context,
+                                const ::iroha::protocol::Query* request,
+                                ::iroha::protocol::QueryResponse* response) override;
+  };
 
-    }  // namespace api
-}  // namespace connection
+}  // namespace torii
 
 #endif
