@@ -15,21 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_STORAGE_IMPL_HPP
-#define IROHA_STORAGE_IMPL_HPP
+#ifndef IROHA_TEMPORARY_FACTORY_HPP
+#define IROHA_TEMPORARY_FACTORY_HPP
 
-#include <ametsuchi/storage.hpp>
+#include <memory>
+#include "ametsuchi/temporary_wsv.hpp"
 
 namespace iroha {
   namespace ametsuchi {
-    class StorageImpl : public Storage {
-     public:
-      std::unique_ptr<TemporaryWsv> createTemporaryWsv() override;
-      std::unique_ptr<MutableStorage> createMutableStorage() override;
-      void commit(std::unique_ptr<MutableStorage> mutableStorage) override;
-      ~StorageImpl() override;
-    };
-  }  // namespace ametsuchi
-}  // namespace iroha
 
-#endif  // IROHA_STORAGE_IMPL_HPP
+    class TemporaryFactory {
+     public:
+      /**
+       * Creates a temporary world state view from the current state.
+       * Temporary state will be not committed and will be erased on destructor
+       * call.
+       * Temporary state might be used for transaction validation.
+       * @return Created temporary wsv
+       */
+      virtual std::unique_ptr<TemporaryWsv> createTemporaryWsv() = 0;
+
+      virtual ~TemporaryFactory() = default;
+    };
+
+  } // namespace ametsuchi
+} // namespace iroha
+#endif //IROHA_TEMPORARY_FACTORY_HPP

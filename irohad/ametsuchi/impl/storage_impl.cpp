@@ -28,7 +28,7 @@ namespace iroha {
       return nullptr;
     }
 
-    void StorageImpl::commit(MutableStorage &mutableStorage) {
+    void StorageImpl::commit(std::unique_ptr<MutableStorage> mutableStorage) {
 
     }
 

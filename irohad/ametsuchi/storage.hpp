@@ -19,9 +19,9 @@
 #define IROHA_AMETSUCHI_H
 
 #include <ametsuchi/block_query.hpp>
-#include <ametsuchi/mutable_storage.hpp>
 #include <ametsuchi/wsv_query.hpp>
-#include <ametsuchi/temporary_wsv.hpp>
+#include "ametsuchi/temporary_factory.hpp"
+#include "ametsuchi/mutable_factory.hpp"
 
 namespace iroha {
 
@@ -31,33 +31,9 @@ namespace iroha {
      * Storage interface, which allows queries on current committed state, and
      * creation of state which can be mutated with blocks and transactions
      */
-    class Storage : public WsvQuery, public BlockQuery {
+    class Storage : public WsvQuery, public BlockQuery, public TemporaryFactory,
+                    public MutableFactory {
      public:
-
-      /**
-       * Creates a temporary world state view from the current state.
-       * Temporary state will be not committed and will be erased on destructor
-       * call.
-       * Temporary state might be used for transaction validation.
-       * @return Created temporary wsv
-       */
-      virtual std::unique_ptr<TemporaryWsv> createTemporaryWsv() = 0;
-
-      /**
-       * Creates a mutable storage from the current state.
-       * Mutable storage is the only way to commit the block to the ledger.
-       * @return Created mutable storage
-       */
-      virtual std::unique_ptr<MutableStorage> createMutableStorage() = 0;
-
-      /**
-       * Commit mutable storage to Ametsuchi.
-       * This transforms Ametsuchi to the new state consistent with
-       * MutableStorage.
-       * @param mutableStorage
-       */
-      virtual void commit(MutableStorage& mutableStorage) = 0;
-
       virtual ~Storage() = default;
     };
 
