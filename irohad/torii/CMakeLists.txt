@@ -28,6 +28,11 @@ target_link_libraries(command_service
   stateless_validator
 )
 
+add_library(query_service query_service.cpp)
+target_link_libraries(query_service
+  endpoint
+)
+
 add_library(torii impl/torii_stub.cpp)
 target_link_libraries(torii
   model
