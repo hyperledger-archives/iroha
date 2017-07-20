@@ -27,17 +27,22 @@
 #  COMMAND $<TARGET_FILE:json_test>
 #)
 
-AddTest(uvw_test uvw_test.cpp)
+addtest(uvw_test uvw_test.cpp)
 target_link_libraries(uvw_test
     uvw
     )
 
-AddTest(rxcpp_test rxcpp_test.cpp)
+addtest(rxcpp_test rxcpp_test.cpp)
 target_link_libraries(rxcpp_test
     rxcpp
     )
 
-AddTest(rxcpp_subject_usage rxcpp_subject_usage.cpp)
+addtest(rxcpp_subject_usage rxcpp_subject_usage.cpp)
 target_link_libraries(rxcpp_subject_usage
     rxcpp
+    )
+
+addtest(tbb_test tbb_test.cpp)
+target_link_libraries(tbb_test
+    TBB::tbb
     )
