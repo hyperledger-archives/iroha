@@ -13,24 +13,16 @@
 # limitations under the License.
 add_subdirectory(processor)
 
-add_library(command_client
-  command_client.cpp
-)
+add_library(command_client command_client.cpp)
 target_link_libraries(command_client
+  torii_service
   endpoint
 )
 
-add_library(command_service
-  command_service_handler.cpp
-)
-target_link_libraries(command_service
+add_library(torii_service torii_service_handler.cpp)
+target_link_libraries(torii_service
   endpoint
   stateless_validator
-)
-
-add_library(query_service query_service.cpp)
-target_link_libraries(query_service
-  endpoint
 )
 
 add_library(torii impl/torii_stub.cpp)

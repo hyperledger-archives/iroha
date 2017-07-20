@@ -15,17 +15,11 @@
 add_subdirectory(processor)
 
 # command service test
-addtest(torii_async_test torii_async_test.cpp)
-target_link_libraries(torii_async_test
-  command_service
+addtest(torii_service_test torii_service_test.cpp)
+target_link_libraries(torii_service_test
+  torii_service
   command_client
+  query_client
   server_runner
   gtest
-  )
-
-# query service test
-addtest(query_service_test query_service_test.cpp)
-target_link_libraries(query_service_test
-  query_service
-  server_runner
   )

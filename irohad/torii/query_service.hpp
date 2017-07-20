@@ -14,21 +14,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CONNECTION_TORII_QUERY_SERVICE_HPP
-#define CONNECTION_TORII_QUERY_SERVICE_HPP
+#ifndef TORII_QUERY_SERVICE_HPP
+#define TORII_QUERY_SERVICE_HPP
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 
 namespace torii {
 
-  class QueryService final : public iroha::protocol::QueryService::Service {
+  /**
+   * Actual implementation of async QueryService.
+   * ToriiServiceHandler::(SomeMethod)Handler calls a corresponding method in this class.
+   */
+  class QueryService {
   public:
-    virtual ::grpc::Status Find(::grpc::ServerContext* context,
-                                const ::iroha::protocol::Query* request,
-                                ::iroha::protocol::QueryResponse* response) override;
+    /**
+     * actual implementation of async Find in QueryService
+     * @param request - Query
+     * @param response - QueryResponse
+     * @return grpc::Status - Status::OK if succeeded. TODO(motxx): grpc::CANCELLED is not supported.
+     */
+    static grpc::Status FindAsync(
+      iroha::protocol::Query const& request, iroha::protocol::QueryResponse& response) {
+      response.set_code(iroha::protocol::ResponseCode::OK);
+      response.set_message("Find async response");
+      return grpc::Status::OK;
+    }
   };
 
 }  // namespace torii
 
-#endif
+#endif  // TORII_QUERY_SERVICE_HPP

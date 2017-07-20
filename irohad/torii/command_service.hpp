@@ -19,13 +19,12 @@ limitations under the License.
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
-#include <torii/command_service_handler.hpp>
 
 namespace torii {
 
   /**
    * Actual implementation of async CommandService.
-   * CommandServiceHandler::(SomeMethod)Handler calls a corresponding method in this class.
+   * ToriiServiceHandler::(SomeMethod)Handler calls a corresponding method in this class.
    */
   class CommandService {
   public:

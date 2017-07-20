@@ -19,6 +19,11 @@ service CommandService {
   rpc Torii (Transaction) returns (ToriiResponse);
 }
 
+message QueryResponse {
+  ResponseCode code = 1;
+  string message = 2;
+}
+
 service QueryService {
   rpc Find (Query) returns (QueryResponse);
 }

@@ -24,23 +24,23 @@ limitations under the License.
 
 namespace torii {
   /**
-   * to handle rpcs loop of CommandService.
+   * to handle rpcs loop of CommandService and QueryService.
    */
-  class CommandServiceHandler : public network::GrpcAsyncService {
+  class ToriiServiceHandler : public network::GrpcAsyncService {
   public:
 
     /**
      * requires builder to use same server.
      * @param builder
      */
-    CommandServiceHandler(::grpc::ServerBuilder &builder);
+    ToriiServiceHandler(::grpc::ServerBuilder &builder);
 
-    virtual ~CommandServiceHandler() override;
+    virtual ~ToriiServiceHandler() override;
 
     template <typename RequestType, typename ResponseType>
     using CommandServiceCall =
     network::Call<
-      CommandServiceHandler,
+      ToriiServiceHandler,
       iroha::protocol::CommandService::AsyncService,
       RequestType,
       ResponseType
@@ -49,7 +49,7 @@ namespace torii {
     template <typename RequestType, typename ResponseType>
     using QueryServiceCall =
     network::Call<
-      CommandServiceHandler,
+      ToriiServiceHandler,
       iroha::protocol::QueryService::AsyncService,
       RequestType,
       ResponseType
@@ -82,12 +82,12 @@ namespace torii {
     template <typename AsyncService, typename RequestType, typename ResponseType>
     void enqueueRequest(
       network::RequestMethod<AsyncService, RequestType, ResponseType> requester,
-      network::RpcHandler<CommandServiceHandler, AsyncService, RequestType, ResponseType> rpcHandler,
+      network::RpcHandler<ToriiServiceHandler, AsyncService, RequestType, ResponseType> rpcHandler,
       AsyncService& asyncService
     ) {
       std::unique_lock<std::mutex> lock(mtx_);
       if (!isShutdown_) {
-        network::Call<CommandServiceHandler, AsyncService, RequestType, ResponseType>::enqueueRequest(
+        network::Call<ToriiServiceHandler, AsyncService, RequestType, ResponseType>::enqueueRequest(
           &asyncService, completionQueue_.get(), requester, rpcHandler
         );
       }

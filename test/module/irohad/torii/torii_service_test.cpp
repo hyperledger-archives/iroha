@@ -16,9 +16,10 @@ limitations under the License.
 
 #include <gtest/gtest.h>
 #include <main/server_runner.hpp>
-#include <torii/command_service_handler.hpp>
+#include <torii/torii_service_handler.hpp>
 #include <torii/command_service.hpp>
 #include <torii/command_client.hpp>
+#include <torii_utils/query_client.hpp>
 #include <endpoint.pb.h>
 #include <thread>
 #include <memory>
@@ -30,8 +31,9 @@ constexpr int Port = 50051;
 
 constexpr size_t TimesToriiBlocking = 100;
 constexpr size_t TimesToriiNonBlocking = 3;
+constexpr size_t TimesFind = 100;
 
-class ToriiAsyncTest : public testing::Test {
+class ToriiServiceTest : public testing::Test {
 public:
   virtual void SetUp() {
     runner = new ServerRunner(Ip, Port);
@@ -52,10 +54,10 @@ public:
   std::thread th;
 };
 
-TEST_F(ToriiAsyncTest, ToriiWhenBlocking) {
+TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
   EXPECT_GT(static_cast<int>(iroha::protocol::ResponseCode::OK), 0); // to guarantee ASSERT_EQ works TODO(motxx): More reasonable way.
 
-  for (int i = 0; i < TimesToriiBlocking; ++i) {
+  for (size_t i = 0; i < TimesToriiBlocking; ++i) {
     std::cout << i << std::endl;
     auto response = torii::CommandSyncClient(Ip, Port)
       .Torii(iroha::protocol::Transaction {});
@@ -64,13 +66,13 @@ TEST_F(ToriiAsyncTest, ToriiWhenBlocking) {
   }
 }
 
-TEST_F(ToriiAsyncTest, ToriiWhenNonBlocking) {
+TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
   EXPECT_GT(static_cast<int>(iroha::protocol::ResponseCode::OK), 0);
 
   torii::CommandAsyncClient client(Ip, Port);
   std::atomic_int count {0};
 
-  for (int i = 0; i < TimesToriiNonBlocking; ++i) {
+  for (size_t i = 0; i < TimesToriiNonBlocking; ++i) {
     std::cout << i << std::endl;
     client.Torii(iroha::protocol::Transaction {},
                  [&count](iroha::protocol::ToriiResponse response){
@@ -80,6 +82,44 @@ TEST_F(ToriiAsyncTest, ToriiWhenNonBlocking) {
                  });
   }
 
-  while (count < TimesToriiNonBlocking);
+  while (count < (int)TimesToriiNonBlocking);
   ASSERT_EQ(count, TimesToriiNonBlocking);
+}
+
+TEST_F(ToriiServiceTest, FindWhereQueryServiceSync) {
+  EXPECT_GT(iroha::protocol::ResponseCode::OK, 0);
+
+  auto response = torii_utils::QuerySyncClient(Ip, Port).Find(iroha::protocol::Query {});
+  ASSERT_TRUE(response.code() == iroha::protocol::ResponseCode::OK);
+  ASSERT_STRNE(response.message().c_str(), torii_utils::FailureMessage);
+}
+
+TEST_F(ToriiServiceTest, FindManyTimesWhereQueryServiceSync) {
+  EXPECT_GT(iroha::protocol::ResponseCode::OK, 0);
+
+  for (size_t i = 0; i < TimesFind; ++i) {
+    auto response = torii_utils::QuerySyncClient(Ip, Port).Find(iroha::protocol::Query {});
+    ASSERT_TRUE(response.code() == iroha::protocol::ResponseCode::OK);
+    ASSERT_STRNE(response.message().c_str(), torii_utils::FailureMessage);
+  }
+}
+
+TEST_F(ToriiServiceTest, MixRPCWhereCommandAndQueryService) {
+  EXPECT_GT(iroha::protocol::ResponseCode::OK, 0);
+  torii::CommandAsyncClient client(Ip, Port);
+
+  for (size_t i = 0; i < TimesFind; ++i) {
+    auto response = torii_utils::QuerySyncClient(Ip, Port).Find(iroha::protocol::Query {});
+    ASSERT_TRUE(response.code() == iroha::protocol::ResponseCode::OK);
+    ASSERT_STRNE(response.message().c_str(), torii_utils::FailureMessage);
+    client.Torii(iroha::protocol::Transaction {},
+      [](iroha::protocol::ToriiResponse response){
+        ASSERT_EQ(response.code(), iroha::protocol::ResponseCode::OK);
+        std::cout << "Async response\n";
+      });
+    auto toriiSyncResponse = torii::CommandSyncClient(Ip, Port)
+      .Torii(iroha::protocol::Transaction {});
+    ASSERT_EQ(toriiSyncResponse.code(), iroha::protocol::ResponseCode::OK);
+    std::cout << "Sync Response\n";
+  }
 }

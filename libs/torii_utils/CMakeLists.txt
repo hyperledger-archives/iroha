@@ -12,33 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-
-add_library(server_runner server_runner.cpp)
-target_link_libraries(server_runner
+add_library(query_client STATIC query_client.cpp)
+target_link_libraries(query_client
   torii_service
-  logger
   endpoint
-  schema
-)
-
-add_library(irohad application.cpp)
-target_link_libraries(irohad
-    server_runner
-    model
-    ametsuchi
-    networking
-    ordering_service
-    consensus_service
-    chain_validator
-    hash
-    stateless_validator
-    processors
-    torii
-    crypto
-    )
-
-add_executable(iroha-main iroha-main.cpp)
-target_link_libraries(iroha-main
-  irohad
-)
+  )
