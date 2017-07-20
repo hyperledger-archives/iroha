@@ -80,8 +80,9 @@ namespace iroha {
                             crypto_->getVote(current_hash_));
         timer_->invokeAfterDelay(delay_, [this]() {
           cluster_order_.switchToNext();
-          // todo if (not necessary) { ...
-          this->votingStep();
+          if (cluster_order_.leaderInValidateSet()) {
+            this->votingStep();
+          }
         });
       }
 
@@ -96,7 +97,7 @@ namespace iroha {
       void Yac::applyVote(model::Peer from, VoteMessage commit) {
         // todo check unique peer
         votes_[commit.hash].push_back(std::make_tuple(from, commit));
-        
+
       }
     } // namespace yac
   } // namespace consensus

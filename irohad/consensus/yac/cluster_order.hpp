@@ -52,6 +52,13 @@ namespace iroha {
          */
         bool leaderInValidateSet();
 
+        /**
+         * Check that parameter greater of equal(geq) that 2f+1
+         * @param val - checked value
+         * @return true if geq supermajority
+         */
+        bool haveSupermajority(uint64_t val);
+
         virtual ~ClusterOrdering() = default;
        private:
         std::vector<model::Peer> order_;

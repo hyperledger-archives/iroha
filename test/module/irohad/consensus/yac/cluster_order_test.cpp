@@ -34,20 +34,31 @@ TEST(ClusterOrderTest, ClusterOrderLeaderSet) {
   iroha::model::Peer p;
   std::vector<iroha::model::Peer> peers = {p, p, p, p, p, p, p};
   iroha::consensus::yac::ClusterOrdering order(peers);
-  ASSERT_EQ(order.leaderInValidateSet(), true); // 0
+  ASSERT_EQ(order.leaderInValidateSet(), true);  // 1
   order.switchToNext();
-  ASSERT_EQ(order.leaderInValidateSet(), true); // 1
+  ASSERT_EQ(order.leaderInValidateSet(), true);  // 2
   order.switchToNext();
-  ASSERT_EQ(order.leaderInValidateSet(), true); // 2
+  ASSERT_EQ(order.leaderInValidateSet(), true);  // 3
   order.switchToNext();
-  ASSERT_EQ(order.leaderInValidateSet(), true); // 3
+  ASSERT_EQ(order.leaderInValidateSet(), true);  // 4
   order.switchToNext();
-  ASSERT_EQ(order.leaderInValidateSet(), true); // 4
-  order.switchToNext();
-  ASSERT_EQ(order.leaderInValidateSet(), false); // 5
+  ASSERT_EQ(order.leaderInValidateSet(), true);  // 5
   order.switchToNext();
   ASSERT_EQ(order.leaderInValidateSet(), false); // 6
   order.switchToNext();
   ASSERT_EQ(order.leaderInValidateSet(), false); // 7
   order.switchToNext();
+}
+
+TEST(ClusterOrderTest, ClusterOrderSupermajority) {
+  iroha::model::Peer p;
+  std::vector<iroha::model::Peer> peers = {p, p, p, p, p, p, p};
+  iroha::consensus::yac::ClusterOrdering order(peers);
+  ASSERT_EQ(order.haveSupermajority(1), false); // 1
+  ASSERT_EQ(order.haveSupermajority(2), false); // 2
+  ASSERT_EQ(order.haveSupermajority(3), false); // 3
+  ASSERT_EQ(order.haveSupermajority(4), false); // 4
+  ASSERT_EQ(order.haveSupermajority(5), true);  // 5
+  ASSERT_EQ(order.haveSupermajority(6), true);  // 6
+  ASSERT_EQ(order.haveSupermajority(7), true);  // 7
 }

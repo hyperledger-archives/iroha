@@ -38,7 +38,12 @@ namespace iroha {
 
       bool ClusterOrdering::leaderInValidateSet() {
         auto f = (order_.size() - 1) / 3;
-        return index_ <= 2 * f + 1;
+        return index_ <= 2 * f;
+      }
+
+      bool ClusterOrdering::haveSupermajority(uint64_t val) {
+        auto f = (order_.size() - 1) / 3;
+        return val >= 2 * f + 1;
       }
 
       ClusterOrdering &ClusterOrdering::switchToNext() {
