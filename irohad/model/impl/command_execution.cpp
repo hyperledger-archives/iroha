@@ -40,10 +40,13 @@ namespace iroha {
       if (!asset)
         // No such asset
         return false;
-
+      if (!queries.getAccount(account_id))
+        // No such account
+        return false;
       auto account_asset = queries.getAccountAsset(account_id, asset_id);
       auto precision = asset.value().precision;
-
+      // Amount is wrongly formed
+      if (amount.get_frac_number() > precision) return false;
       AccountAsset accountAsset;
       // Such accountAsset not found
       if (!account_asset) {
@@ -169,7 +172,9 @@ namespace iroha {
         return false;
       // Precision for both wallets
       auto precision = asset.value().precision;
-
+      if (amount.get_frac_number() > precision)
+        // Precision is wrong
+        return false;
       // Get src balance
       auto src_balance = src_account_assert.value().balance;
       // TODO: handle non-trivial arithmetic

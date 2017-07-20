@@ -1,0 +1,23 @@
+syntax = "proto3";
+package peerservice;
+
+
+
+// peer service specific message:
+message Heartbeat {
+    bytes gmroot = 1; // highest known global merkle root
+    int64 height = 2; // highest known ledger height
+
+    // we have to identify the peer somehow
+    // TODO:  bad solution, because this can be forged.
+    // it should not be signed, because this is big additional load for server.
+    bytes pubkey = 3; // public key of peer who is sending heartbeat
+}
+
+
+service PeerService {
+    // any peer is able to request heartbeat from any other peer
+    // it should send its own state: <merkle_root, height>
+    // answer is peer's <merkle_root, height>
+    rpc RequestHeartbeat (Heartbeat) returns (Heartbeat) {}
+}
