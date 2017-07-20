@@ -15,41 +15,27 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CLUSTER_ORDER_HPP
-#define IROHA_CLUSTER_ORDER_HPP
-
-#include "model/peer.hpp"
-#include <vector>
+#include "consensus/yac/cluster_order.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
 
-      /**
-       * Class provide ordering on cluster for current round
-       */
-      class ClusterOrdering {
-       public:
+      ClusterOrdering::ClusterOrdering(std::vector<model::Peer> order)
+          : order_(order) {
+      }
 
-        ClusterOrdering(std::vector<model::Peer> order);
+      model::Peer ClusterOrdering::currentLeader() {
+        if (index_ >= order_.size()) {
+          index_ = 0;
+        }
+        return order_.at(index_);
+      }
 
-        /**
-         * Provide current leader peer
-         */
-        model::Peer currentLeader();
-
-        /**
-         * Switch to next peer as leader
-         * @return this
-         */
-        ClusterOrdering &switchToNext();
-
-        virtual ~ClusterOrdering() = default;
-       private:
-        std::vector<model::Peer> order_;
-        int index_ = 0;
-      };
+      ClusterOrdering &ClusterOrdering::switchToNext() {
+        ++index_;
+        return *this;
+      }
     } // namespace yac
   } // namespace consensus
 } // iroha
-#endif //IROHA_CLUSTER_ORDER_HPP

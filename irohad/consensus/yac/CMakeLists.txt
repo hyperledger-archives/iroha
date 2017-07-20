@@ -14,6 +14,7 @@
 
 add_library(yac
     impl/yac.cpp
+    impl/cluster_order.cpp
 )
 target_link_libraries(yac
     rxcpp
