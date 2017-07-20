@@ -85,8 +85,9 @@ namespace torii {
    */
   void CommandServiceHandler::ToriiHandler(
     CommandServiceCall<prot::Transaction, prot::ToriiResponse>* call) {
-    auto stat = CommandService::ToriiAsync(call->request(), call->response());
-    call->sendResponse(stat);
+
+    CommandService::ToriiAsync(call->request(), call->response());
+    call->sendResponse(grpc::Status::OK); // TODO(motxx) currently, grpc::Status::CANCELLED is not supported.
 
     // Spawn a new Call instance to serve an another client.
     enqueueRequest<prot::Transaction, prot::ToriiResponse>(

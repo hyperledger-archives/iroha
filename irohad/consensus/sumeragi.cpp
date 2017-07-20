@@ -65,10 +65,7 @@ namespace consensus {
     }
 
     bool unicast(const iroha::protocol::Block &block, size_t peerOrder) {
-      auto peer =
-          peer_service::monitor::getActivePeerAt((unsigned int) peerOrder);
-      auto response = connection::sendBlock(block, peer->ip_);
-      return response.code() == iroha::protocol::ResponseCode::OK;
+      return false;
     }
 
     bool leaderMulticast(const iroha::protocol::Block &block) {
@@ -100,34 +97,7 @@ namespace consensus {
 
     Block createSignedBlock(const Block &block,
                             const std::vector<uint8_t> &merkleRoot) {
-
-      // TODO: Use Keypair in peer service.
-      std::string pkBase64 = peer_service::self_state::getPublicKey();
-      std::string skBase64 = peer_service::self_state::getPrivateKey();
-
-      auto pubkey_ = base64_decode(pkBase64),
-          privkey_ = base64_decode(skBase64);
-      auto pubkey =
-          iroha::to_blob<iroha::ed25519::pubkey_t::size()>(std::string{
-              pubkey_.begin(), pubkey_.end()});
-      auto privkey =
-          iroha::to_blob<iroha::ed25519::privkey_t::size()>(std::string{
-              privkey_.begin(), privkey_.end()});
-
-      auto signature =
-          iroha::sign(merkleRoot.data(), merkleRoot.size(), pubkey, privkey);
-
-      std::string strSigblob;
-      for (auto e: signature) strSigblob.push_back(e);
-
-      Signature newSignature;
-      *newSignature.mutable_pubkey() = pubkey.to_base64();
-      *newSignature.mutable_signature() = strSigblob;
-
       Block ret;
-      ret.CopyFrom(block);
-      ret.mutable_header()->set_created_time(iroha::time::now64());
-
       return ret;
     }
 
@@ -143,72 +113,17 @@ namespace consensus {
      */
 
     int getNextOrder() {
-      thread_local int
-          currentProxyTail = static_cast<int>(getNumValidatingPeers()) - 1;
-      if (currentProxyTail >= peer_service::monitor::getActivePeerSize()) {
-        return -1;
-      }
-      return currentProxyTail++;
+      return 0;
     }
 
     size_t countValidSignatures(const Block &block) {
       size_t numValidSignatures = 0;
-      std::set<std::string> usedPubkeys;
-      /*
-      auto peerSigs = block.header()..signatures();
-      for (auto const &sig: peerSigs) {
-        // FIXME: bytes in proto -> std::string in C++ (null value problem)
-        if (usedPubkeys.count(sig.pubkey())) continue;
-        const auto bodyMessage = block.body().SerializeAsString();
-
-        // TODO: Use new Keypair class.
-
-        const auto hash = iroha::hash::sha3_256_hex(bodyMessage);
-        if (iroha::signature::verify(sig.signature(), hash, sig.pubkey())) {
-          numValidSignatures++;
-          usedPubkeys.insert(sig.pubkey());
-        }
-         */
-     // }
-
       return numValidSignatures;
     }
 
     void processBlock(const Block &block) {
 
-      // Stateful Validation
-//      auto valid = validaton::stateful::validate(block);
-//      if (!valid) {
-//        log.info("Stateful validation failed.");
-//        return;
-//      }
 
-      // Add Signature
-      auto merkleRoot = appendBlock(block);
-      auto newBlock = createSignedBlock(block, merkleRoot);
-
-      if (peer_service::self_state::isLeader()) {
-        leaderMulticast(newBlock);
-        setTimeOutCommit(newBlock);
-        return;
-      }
-
-      auto numValidSignatures = countValidSignatures(newBlock);
-
-      if (numValidSignatures < getNumValidatingPeers()) {
-        auto next = getNextOrder();
-        if (next < 0) {
-          log.error("getNextOrder() < 0 in processBlock");
-          return;
-        }
-        unicast(newBlock, static_cast<size_t>(next));
-        setTimeOutCommit(newBlock);
-      } else {
-        if (numValidSignatures == getNumValidatingPeers()) {
-          commit(newBlock);
-          setTimeOutCommit(newBlock);
-        }
-      }
     }
 
 /**
@@ -231,13 +146,7 @@ namespace consensus {
  */
 
     void panic(const Block &block) {
-      auto next = getNextOrder();
-      if (next < 0) {
-        log.info("否認");
-        return;
-      }
-      unicast(block, static_cast<size_t>(next));
-      setTimeOutCommit(block);
+
     }
 
   }  // namespace sumeragi
