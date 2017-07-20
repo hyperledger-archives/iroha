@@ -19,6 +19,11 @@
 #define IROHA_BYTEUTILS_H
 
 #include <crypto/base64.hpp>
+
+extern "C" {
+#include <crypto/lookup3.h>
+}
+
 #include <string>
 #include "types.hpp"
 
@@ -39,6 +44,17 @@ namespace iroha {
 
     return b;
   }
+}
+
+// extend namespace std with custom hashing function for public key
+namespace std {
+
+  template <>
+  struct hash<iroha::ed25519::pubkey_t> {
+    size_t operator()(const iroha::ed25519::pubkey_t &pub) const {
+      return hashlittle(pub.data(), pub.size(), 1337);
+    }
+  };
 }
 
 #endif  // IROHA_BYTEUTILS_H

@@ -13,3 +13,8 @@ target_link_libraries(crypto
     ed25519
     hash
     )
+
+add_library(lookup3
+        lookup3.h
+        lookup3.c
+        )
