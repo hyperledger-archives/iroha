@@ -20,6 +20,7 @@
 
 #include <vector>
 #include "consensus/yac/yac_hash_provider.hpp"
+#include "model/signature.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -30,7 +31,7 @@ namespace iroha {
        */
       struct VoteMessage {
         YacHash hash;
-        // todo add sign
+        model::Signature signature;
       };
 
       /**
