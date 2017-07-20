@@ -82,15 +82,15 @@ namespace iroha {
     bool AssignMasterKey::validate(ametsuchi::WsvQuery &queries,
                                    const Account &creator) {
       auto signs = queries.getSignatories(account_id);
-
+      auto acc = queries.getAccount(account_id);
       return
           // Two cases - when creator assigns to itself, or system admin
           (creator.account_id == account_id ||
            creator.permissions.add_signatory) &&
-          // Check if account has at lest one signatory
-          signs &&
+          // Check if account exist and has at least one signatory
+          signs && acc.has_value() &&
           // Check if new master key is not the same
-          creator.master_key != pubkey &&
+          acc.value().master_key != pubkey &&
           // Check if new master key is in AccountSignatory relationship
           std::find(signs->begin(), signs->end(), pubkey) != signs->end();
     }
@@ -123,7 +123,7 @@ namespace iroha {
       // Creator must have permission to create assets
       return creator.permissions.create_assets &&
              // Name is within some range
-             asset_name.size() > 0 && asset_name.size() < 8 &&
+             asset_name.size() > 0 && asset_name.size() < 10 &&
              // Account must be well-formed (no system symbols)
              std::all_of(std::begin(asset_name), std::end(asset_name),
                          [](char c) { return std::isalnum(c); });
@@ -141,7 +141,7 @@ namespace iroha {
       // Creator must have permission to create domains
       return creator.permissions.create_domains &&
              // Name is within some range
-             domain_name.size() > 0 && domain_name.size() < 8 &&
+             domain_name.size() > 0 && domain_name.size() < 10 &&
              // Account must be well-formed (no system symbols)
              std::all_of(std::begin(domain_name), std::end(domain_name),
                          [](char c) { return std::isalnum(c); });
@@ -156,14 +156,15 @@ namespace iroha {
      */
     bool RemoveSignatory::validate(ametsuchi::WsvQuery &queries,
                                    const Account &creator) {
+      auto account = queries.getAccount(account_id);
       return
           // Two cases possible.
           // 1. Creator removes signatory from their account
           // 2.System admin
-          (creator.account_id == account_id ||
-           creator.permissions.remove_signatory) &&
+          account.has_value() && (creator.account_id == account_id ||
+                                  creator.permissions.remove_signatory) &&
           // You can't remove master key (first you should reassign it)
-          pubkey != creator.master_key;
+          pubkey != account.value().master_key;
     }
 
     /**
@@ -211,13 +212,17 @@ namespace iroha {
       return
           // Check if src_account exist
           queries.getAccount(src_account_id) &&
+          // Check if dest account exist
+          queries.getAccount(dest_account_id) &&
           // Can account transfer assets
           creator.permissions.can_transfer &&
           // Creator can transfer only from their account
           creator.account_id == src_account_id &&
           // Balance in your wallet should be at least amount of transfer
           account_asset.value().balance >=
-              amount.get_joint_amount(asset.value().precision);
+              amount.get_joint_amount(asset.value().precision) &&
+          // Amount must be not zero
+          (amount.frac_part > 0 || amount.int_part > 0);
     }
 
   }  // namespace model
