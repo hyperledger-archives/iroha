@@ -46,10 +46,16 @@ namespace iroha {
          */
         ClusterOrdering &switchToNext();
 
+        /**
+         * Validate set is on of first 2f+1 elements from 3f+1.
+         * @return true if leader is on of 2f+1 elements
+         */
+        bool leaderInValidateSet();
+
         virtual ~ClusterOrdering() = default;
        private:
         std::vector<model::Peer> order_;
-        int index_ = 0;
+        uint32_t index_ = 0;
       };
     } // namespace yac
   } // namespace consensus

@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <tuple>
 #include <memory>
+#include <vector>
 
 #include "consensus/yac/yac_network_interface.hpp"
 #include "consensus/yac/yac_crypto_provider.hpp"
@@ -46,7 +47,7 @@ namespace iroha {
 
         virtual void vote(YacHash hash, ClusterOrdering order);
 
-        virtual rxcpp::observable <YacHash> on_commit();
+        virtual rxcpp::observable<YacHash> on_commit();
 
         // ------|Network notifications|------
 
@@ -64,12 +65,12 @@ namespace iroha {
         void applyVote(model::Peer from, VoteMessage commit);
 
         // ------|Fields|------
-        rxcpp::subjects::subject <YacHash> notifier_;
+        rxcpp::subjects::subject<YacHash> notifier_;
         std::shared_ptr<YacCryptoProvider> crypto_;
         std::shared_ptr<Timer> timer_;
         std::shared_ptr<YacNetwork> network_;
-        std::unordered_map<YacHash,
-                           std::tuple<model::Peer, VoteMessage>> votes_;
+        std::unordered_map<
+            YacHash, std::vector<std::tuple<model::Peer, VoteMessage>>> votes_;
 
         // ------|One round|------
         ClusterOrdering cluster_order_;

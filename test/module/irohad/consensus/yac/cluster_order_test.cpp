@@ -29,3 +29,25 @@ TEST(ClusterOrderTest, ClusterOrderOnNext) {
   ASSERT_EQ("2", order.switchToNext().currentLeader().address);
   ASSERT_EQ("1", order.switchToNext().currentLeader().address);
 }
+
+TEST(ClusterOrderTest, ClusterOrderLeaderSet) {
+  iroha::model::Peer p;
+  std::vector<iroha::model::Peer> peers = {p, p, p, p, p, p, p};
+  iroha::consensus::yac::ClusterOrdering order(peers);
+  ASSERT_EQ(order.leaderInValidateSet(), true); // 0
+  order.switchToNext();
+  ASSERT_EQ(order.leaderInValidateSet(), true); // 1
+  order.switchToNext();
+  ASSERT_EQ(order.leaderInValidateSet(), true); // 2
+  order.switchToNext();
+  ASSERT_EQ(order.leaderInValidateSet(), true); // 3
+  order.switchToNext();
+  ASSERT_EQ(order.leaderInValidateSet(), true); // 4
+  order.switchToNext();
+  ASSERT_EQ(order.leaderInValidateSet(), false); // 5
+  order.switchToNext();
+  ASSERT_EQ(order.leaderInValidateSet(), false); // 6
+  order.switchToNext();
+  ASSERT_EQ(order.leaderInValidateSet(), false); // 7
+  order.switchToNext();
+}

@@ -36,6 +36,11 @@ namespace iroha {
         return order_.at(index_);
       }
 
+      bool ClusterOrdering::leaderInValidateSet() {
+        auto f = (order_.size() - 1) / 3;
+        return index_ <= 2 * f + 1;
+      }
+
       ClusterOrdering &ClusterOrdering::switchToNext() {
         ++index_;
         return *this;

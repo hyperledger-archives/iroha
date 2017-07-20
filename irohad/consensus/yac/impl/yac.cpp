@@ -41,7 +41,7 @@ namespace iroha {
         this->current_hash_ = hash;
       };
 
-      rxcpp::observable <YacHash> Yac::on_commit() {
+      rxcpp::observable<YacHash> Yac::on_commit() {
         this->notifier_.get_observable();
       }
 
@@ -94,7 +94,9 @@ namespace iroha {
       };
 
       void Yac::applyVote(model::Peer from, VoteMessage commit) {
-
+        // todo check unique peer
+        votes_[commit.hash].push_back(std::make_tuple(from, commit));
+        
       }
     } // namespace yac
   } // namespace consensus
