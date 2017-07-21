@@ -18,27 +18,33 @@
 #ifndef IROHA_ORDERING_SERVICE_IMPL_HPP
 #define IROHA_ORDERING_SERVICE_IMPL_HPP
 
-#include "ordering/ordering_service.hpp"
 #include <tbb/concurrent_queue.h>
 #include "model/transaction.hpp"
+#include "ordering/ordering_service.hpp"
 
 namespace iroha {
   namespace ordering {
 
-  class OrderingServiceImpl : public OrderingService{
-   public:
-    explicit OrderingServiceImpl(size_t max_size, size_t delay_seconds);
-    void propagate_transaction(const model::Transaction &transaction) override;
-    rxcpp::observable<model::Proposal> on_proposal() override;
+    class OrderingServiceImpl : public OrderingService {
+     public:
+      explicit OrderingServiceImpl(size_t max_size, size_t delay_milliseconds);
+      void propagate_transaction(
+          const model::Transaction &transaction) override;
+      rxcpp::observable<model::Proposal> on_proposal() override;
 
-    void generateProposal();
-   private:
-    tbb::concurrent_queue<model::Transaction> queue_;
-    const size_t max_size_; // max number of txs in proposal
-    const size_t delay_seconds_; // wait for specified time if queue is empty
-    rxcpp::subjects::subject<model::Proposal> proposals_;
-  };
+      void generateProposal();
 
+     private:
+      tbb::concurrent_queue<model::Transaction> queue_;
+      const size_t max_size_;  // max number of txs in proposal
+      const size_t
+          delay_milliseconds_;  // wait for specified time if queue is empty
+      rxcpp::subjects::subject<model::Proposal> proposals_;
+
+      // synchronization primitives
+      std::mutex mutex_;
+      std::condition_variable cv_;
+    };
   }
 }
 

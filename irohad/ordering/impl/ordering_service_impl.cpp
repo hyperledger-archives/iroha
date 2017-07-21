@@ -20,12 +20,14 @@
 namespace iroha {
   namespace ordering {
     OrderingServiceImpl::OrderingServiceImpl(size_t max_size,
-                                             size_t delay_seconds)
-        : max_size_(max_size), delay_seconds_(delay_seconds) {}
+                                             size_t delay_milliseconds)
+        : max_size_(max_size), delay_milliseconds_(delay_milliseconds) {}
 
     void OrderingServiceImpl::propagate_transaction(
         const model::Transaction &transaction) {
       queue_.push(transaction);
+      std::unique_lock<std::mutex> lock(mutex_);
+      cv_.notify_one();
     }
 
     rxcpp::observable<model::Proposal> OrderingServiceImpl::on_proposal() {
@@ -34,10 +36,13 @@ namespace iroha {
 
     void OrderingServiceImpl::generateProposal() {
       std::vector<model::Transaction> txs;
+      std::unique_lock<std::mutex> lock(mutex_);
 
-      while (queue_.empty()) {
-        std::this_thread::sleep_for(std::chrono::seconds(delay_seconds_));
-      }
+      // Wait if queue is empty
+      cv_.wait(lock, [this] { return !queue_.empty(); });
+      // Wait for transactions
+      std::this_thread::sleep_for(
+          std::chrono::milliseconds(delay_milliseconds_));
 
       for (model::Transaction tx;
            txs.size() < max_size_ && queue_.try_pop(tx);) {
