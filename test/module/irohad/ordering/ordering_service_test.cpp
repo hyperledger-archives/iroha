@@ -19,15 +19,14 @@
 #include "ordering/impl/ordering_service_impl.hpp"
 
 TEST(OrderingService, OrderingServiceUseCase) {
-  uint16_t proposal_size = 2, proposal_count = 3;
+  size_t proposal_size = 2, proposal_count = 3;
   iroha::ordering::OrderingServiceImpl ordering_service(proposal_size, 1);
   std::vector<iroha::model::Proposal> proposals;
 
-  ordering_service.on_proposal().subscribe([&proposals](auto proposal){
-    proposals.push_back(proposal);
-  });
+  ordering_service.on_proposal().subscribe(
+      [&proposals](auto proposal) { proposals.push_back(proposal); });
 
-  for (size_t i = 0; i < proposal_size * proposal_count; i++){
+  for (size_t i = 0; i < proposal_size * proposal_count; i++) {
     iroha::model::Transaction tx;
     tx.creator_account_id = std::to_string(i);
     ordering_service.propagate_transaction(tx);
@@ -45,5 +44,29 @@ TEST(OrderingService, OrderingServiceUseCase) {
       ASSERT_EQ(tx.creator_account_id, std::to_string(i++));
     }
   }
+}
 
+TEST(OrderingService, MultithreadTest) {
+  size_t proposal_size = 2, proposal_count = 3;
+  iroha::ordering::OrderingServiceImpl ordering_service(proposal_size, 1);
+  std::vector<iroha::model::Proposal> proposals;
+
+  ordering_service.on_proposal().subscribe(
+      [&proposals](auto proposal) { proposals.push_back(proposal); });
+
+  auto generate_transactions = [&ordering_service](auto from, auto to) {
+    for (; from < to; ++from) {
+      iroha::model::Transaction tx;
+      tx.creator_account_id = std::to_string(from);
+      ordering_service.propagate_transaction(tx);
+    }
+  };
+  std::thread(generate_transactions, 0, 3).detach();
+  std::thread(generate_transactions, 3, 6).detach();
+
+  for (size_t i = 0; i < proposal_count; i++) {
+    ordering_service.generateProposal();
+  }
+
+  ASSERT_EQ(proposals.size(), proposal_count);
 }

@@ -19,6 +19,9 @@
 
 namespace iroha {
   namespace ordering {
+    OrderingServiceImpl::OrderingServiceImpl(size_t max_size,
+                                             size_t delay_seconds)
+        : max_size_(max_size), delay_seconds_(delay_seconds) {}
 
     void OrderingServiceImpl::propagate_transaction(
         const model::Transaction &transaction) {
@@ -43,9 +46,5 @@ namespace iroha {
 
       proposals_.get_subscriber().on_next(model::Proposal(txs));
     }
-    
-    OrderingServiceImpl::OrderingServiceImpl(uint16_t max_size,
-                                             uint16_t delay_seconds)
-        : max_size_(max_size), delay_seconds_(delay_seconds) {}
   }
 }
