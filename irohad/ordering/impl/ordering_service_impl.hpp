@@ -27,6 +27,7 @@ namespace iroha {
 
   class OrderingServiceImpl : public OrderingService{
    public:
+    explicit OrderingServiceImpl(uint16_t max_size, uint16_t delay_seconds);
     void propagate_transaction(const model::Transaction &transaction) override;
     rxcpp::observable<model::Proposal> on_proposal() override;
 
@@ -34,6 +35,7 @@ namespace iroha {
    private:
     tbb::concurrent_queue<model::Transaction> queue_;
     const uint16_t max_size_; // max number of txs in proposal
+    const uint16_t delay_seconds_; // wait for specified time if queue is empty
     rxcpp::subjects::subject<model::Proposal> proposals_;
   };
 

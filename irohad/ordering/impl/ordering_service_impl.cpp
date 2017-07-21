@@ -19,24 +19,32 @@
 
 namespace iroha {
   namespace ordering {
+
     void OrderingServiceImpl::propagate_transaction(
         const model::Transaction &transaction) {
-      queue.push(transaction);
+      queue_.push(transaction);
     }
 
     rxcpp::observable<model::Proposal> OrderingServiceImpl::on_proposal() {
       return proposals_.get_observable();
     }
 
-
     void OrderingServiceImpl::generateProposal() {
       std::vector<model::Transaction> txs;
 
-      for (model::Transaction tx; queue_.try_pop(tx) && txs.size() <= max_size_; ){
+      while (queue_.empty()) {
+        std::this_thread::sleep_for(std::chrono::seconds(delay_seconds_));
+      }
+
+      for (model::Transaction tx; txs.size() < max_size_;) {
+        if (!queue_.try_pop(tx)) break;
         txs.push_back(tx);
       }
 
       proposals_.get_subscriber().on_next(model::Proposal(txs));
     }
+    OrderingServiceImpl::OrderingServiceImpl(uint16_t max_size,
+                                             uint16_t delay_seconds)
+        : max_size_(max_size), delay_seconds_(delay_seconds) {}
   }
 }
