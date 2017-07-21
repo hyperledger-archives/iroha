@@ -39,6 +39,11 @@ namespace iroha {
        * All nodes deals on some solution
        */
       struct CommitMessage {
+
+        CommitMessage(std::vector<VoteMessage> votes) {
+          this->votes = votes;
+        }
+
         std::vector<VoteMessage> votes;
       };
 
