@@ -59,6 +59,14 @@ namespace iroha {
          */
         bool haveSupermajority(uint64_t val);
 
+        std::vector<model::Peer> getPeers(){
+          return order_;
+        };
+
+        auto getNumberOfPeers(){
+          return order_.size();
+        }
+
         virtual ~ClusterOrdering() = default;
        private:
         std::vector<model::Peer> order_;
