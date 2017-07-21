@@ -38,6 +38,10 @@ namespace iroha {
             return true;
           else
             return false;
+        };
+
+        bool operator!=(const YacHash &obj) const {
+          return !this->operator==(obj);
         }
       };
 
