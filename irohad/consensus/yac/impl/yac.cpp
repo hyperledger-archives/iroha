@@ -30,7 +30,6 @@ namespace iroha {
                                  timer_(std::move(timer)),
                                  delay_(delay) {
 
-        // todo free pointer in destructor
         network->subscribe(shared_from_this());
       }
 
@@ -38,7 +37,7 @@ namespace iroha {
 
       void Yac::vote(YacHash hash, ClusterOrdering order) {
         this->cluster_order_ = order;
-        this->current_hash_ = hash;
+        votingStep(hash);
       };
 
       rxcpp::observable<YacHash> Yac::on_commit() {
@@ -47,58 +46,116 @@ namespace iroha {
 
       // ------|Network notifications|------
 
+      void Yac::on_vote(model::Peer from, VoteMessage vote) {
+        if (verifyVote(from) && crypto_->verify(vote)) {
+          this->applyVote(vote);
+        }
+      }
+
       void Yac::on_commit(model::Peer from, CommitMessage commit) {
-        auto verified = crypto_->verify(commit);
-        if (verified) {
-          this->applyCommit(from, commit);
+        if (verifyCommit(commit) && crypto_->verify(commit)) {
           timer_->deny();
+          this->applyCommit(commit);
         }
       }
 
       void Yac::on_reject(model::Peer from, RejectMessage reject) {
-        auto verified = crypto_->verify(reject);
-        if (verified) {
-          this->applyReject(from, reject);
+        if (verifyReject(reject) && crypto_->verify(reject)) {
+          this->applyReject(reject);
           timer_->deny();
-        }
-      }
-
-      void Yac::on_vote(model::Peer from, VoteMessage vote) {
-        auto verified = crypto_->verify(vote);
-        if (verified) {
-          this->applyVote(from, vote);
         }
       }
 
       // ------|Private interface|------
 
-      /**
-       * Voting step is strategy of propagating vote until commit/reject message
-       */
-      void Yac::votingStep() {
+      void Yac::votingStep(YacHash hash) {
         network_->send_vote(cluster_order_.currentLeader(),
-                            crypto_->getVote(current_hash_));
-        timer_->invokeAfterDelay(delay_, [this]() {
+                            crypto_->getVote(hash));
+        timer_->invokeAfterDelay(delay_, [this, hash]() {
           cluster_order_.switchToNext();
           if (cluster_order_.leaderInValidateSet()) {
-            this->votingStep();
+            this->votingStep(hash);
           }
         });
       }
 
-      void Yac::applyCommit(model::Peer from, CommitMessage commit) {
-
+      void Yac::clearRoundStorage() {
+        timer_->deny();
+        // todo incorrect behaviour when leader dropped on propagating commit
+        votes_.clear();
+        voted_peers_.clear();
       };
 
-      void Yac::applyReject(model::Peer from, RejectMessage commit) {
+      // ------|Apply data|------
 
+      void Yac::applyCommit(CommitMessage commit) {
+        auto hash = commit.votes.at(0).hash;
+        notifier_.get_subscriber().on_next(hash);
+        clearRoundStorage();
       };
 
-      void Yac::applyVote(model::Peer from, VoteMessage commit) {
-        // todo check unique peer
-        votes_[commit.hash].push_back(std::make_tuple(from, commit));
+      void Yac::applyReject(RejectMessage reject) {
+        clearRoundStorage();
+        // todo after reject missed peers should receive reject also
+      };
 
-      }
+      void Yac::applyVote(VoteMessage commit) {
+        auto hash_votes = votes_[commit.hash];
+        hash_votes.push_back(commit);
+        if (cluster_order_.haveSupermajority(hash_votes.size())) {
+          propagateCommit(commit.hash);
+        }
+      };
+
+      // ------|Checking of input|------
+
+      bool Yac::verifyVote(const model::Peer &peer) {
+        if (voted_peers_.count(peer) == 0) {
+          voted_peers_.insert(peer);
+          return true;
+        } else {
+          return false;
+        }
+      };
+
+      bool Yac::verifyCommit(CommitMessage commit) {
+        if (commit.votes.size() == 0) return false;
+
+        auto hash = commit.votes.at(0).hash;
+        for (const auto &cmt : commit.votes) {
+          if (hash != cmt.hash) return false;
+        }
+        return true;
+      };
+
+      bool Yac::verifyReject(RejectMessage reject) {
+        if (reject.votes.empty()
+            || reject.votes.size() > cluster_order_.getNumberOfPeers())
+          return false;
+        auto votes = std::unordered_map<YacHash, int>();
+        for (const auto &vote:reject.votes) {
+          votes[vote.hash] += 1;
+        }
+        auto flat_map_accum = std::vector<uint32_t>(votes.size());
+        std::transform(votes.begin(), votes.end(), flat_map_accum.begin(),
+                       [](auto pair) { return pair.second; });
+        std::sort(flat_map_accum.begin(), flat_map_accum.end(),
+                  [](auto a, auto b) { return a > b; });
+        auto number_of_missed_votes =
+            cluster_order_.getNumberOfPeers() - votes.size();
+        return !cluster_order_.haveSupermajority(flat_map_accum.at(0) +
+            number_of_missed_votes);
+      };
+
+      // ------|Propagation|------
+
+      void Yac::propagateCommit(YacHash committed_hash) {
+        auto votes = votes_[committed_hash];
+        auto commitMsg = CommitMessage(votes);
+        for (const auto &peer: cluster_order_.getPeers()) {
+          network_->send_commit(peer, commitMsg);
+        }
+      };
     } // namespace yac
   } // namespace consensus
 } // iroha

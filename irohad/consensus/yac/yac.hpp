@@ -19,6 +19,7 @@
 #define IROHA_YAC_HPP
 
 #include <unordered_map>
+#include <unordered_set>
 #include <tuple>
 #include <memory>
 #include <vector>
@@ -59,22 +60,47 @@ namespace iroha {
 
        private:
         // ------|Private interface|------
-        void votingStep();
-        void applyCommit(model::Peer from, CommitMessage commit);
-        void applyReject(model::Peer from, RejectMessage commit);
-        void applyVote(model::Peer from, VoteMessage commit);
+
+        /**
+         * Voting step is strategy of propagating vote until commit/reject message
+         */
+        void votingStep(YacHash hash);
+
+        /**
+         * Erase temporary data of current round
+         */
+        void clearRoundStorage();
+
+        // ------|Apply data|------
+        void applyCommit(CommitMessage commit);
+        void applyReject(RejectMessage reject);
+        void applyVote(VoteMessage commit);
+
+        // ------|Checking of input|------
+
+        /**
+         * Check voting of peer in current round.
+         * Note: if peer didn't vote before - store those information
+         * @param peer - voted peer
+         * @return true if peer don't vote, false otherwice
+         */
+        bool verifyVote(const model::Peer &peer);
+        bool verifyCommit(CommitMessage commit);
+        bool verifyReject(RejectMessage reject);
+
+        // ------|Propagation|------
+        void propagateCommit(YacHash committed_hash);
 
         // ------|Fields|------
         rxcpp::subjects::subject<YacHash> notifier_;
         std::shared_ptr<YacCryptoProvider> crypto_;
         std::shared_ptr<Timer> timer_;
         std::shared_ptr<YacNetwork> network_;
-        std::unordered_map<
-            YacHash, std::vector<std::tuple<model::Peer, VoteMessage>>> votes_;
 
         // ------|One round|------
         ClusterOrdering cluster_order_;
-        YacHash current_hash_;
+        std::unordered_map<YacHash, std::vector<VoteMessage>> votes_;
+        std::unordered_set<model::Peer> voted_peers_;
 
         // ------|Constants|------
         const uint64_t delay_;
