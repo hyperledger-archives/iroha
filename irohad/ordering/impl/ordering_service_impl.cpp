@@ -36,13 +36,14 @@ namespace iroha {
         std::this_thread::sleep_for(std::chrono::seconds(delay_seconds_));
       }
 
-      for (model::Transaction tx; txs.size() < max_size_;) {
-        if (!queue_.try_pop(tx)) break;
+      for (model::Transaction tx;
+           txs.size() < max_size_ && queue_.try_pop(tx);) {
         txs.push_back(tx);
       }
 
       proposals_.get_subscriber().on_next(model::Proposal(txs));
     }
+    
     OrderingServiceImpl::OrderingServiceImpl(uint16_t max_size,
                                              uint16_t delay_seconds)
         : max_size_(max_size), delay_seconds_(delay_seconds) {}
