@@ -24,27 +24,37 @@ limitations under the License.
 
 namespace torii {
   /**
-   * to handle rpcs loop of CommandService.
+   * to handle rpcs loop of CommandService and QueryService.
    */
-  class CommandServiceHandler : public network::GrpcAsyncService {
+  class ToriiServiceHandler : public network::GrpcAsyncService {
   public:
 
     /**
      * requires builder to use same server.
      * @param builder
      */
-    CommandServiceHandler(::grpc::ServerBuilder &builder);
+    ToriiServiceHandler(::grpc::ServerBuilder &builder);
 
-    virtual ~CommandServiceHandler() override;
+    virtual ~ToriiServiceHandler() override;
 
     template <typename RequestType, typename ResponseType>
     using CommandServiceCall =
     network::Call<
-      CommandServiceHandler,
+      ToriiServiceHandler,
       iroha::protocol::CommandService::AsyncService,
       RequestType,
       ResponseType
     >;
+
+    template <typename RequestType, typename ResponseType>
+    using QueryServiceCall =
+    network::Call<
+      ToriiServiceHandler,
+      iroha::protocol::QueryService::AsyncService,
+      RequestType,
+      ResponseType
+    >;
+
 
     /**
      * handles rpcs loop in CommandService.
@@ -69,18 +79,16 @@ namespace torii {
      * @param requester  - pointer to request method. e.g. &CommandService::AsyncService::RequestTorii
      * @param rpcHandler - handler of rpc in ServiceHandler.
      */
-    template <typename RequestType, typename ResponseType>
+    template <typename AsyncService, typename RequestType, typename ResponseType>
     void enqueueRequest(
-      network::RequestMethod<iroha::protocol::CommandService::AsyncService,
-      RequestType, ResponseType> requester,
-      network::RpcHandler<
-      CommandServiceHandler, iroha::protocol::CommandService::AsyncService,
-      RequestType, ResponseType> rpcHandler
+      network::RequestMethod<AsyncService, RequestType, ResponseType> requester,
+      network::RpcHandler<ToriiServiceHandler, AsyncService, RequestType, ResponseType> rpcHandler,
+      AsyncService& asyncService
     ) {
       std::unique_lock<std::mutex> lock(mtx_);
       if (!isShutdown_) {
-        CommandServiceCall<iroha::protocol::Transaction, iroha::protocol::ToriiResponse>::enqueueRequest(
-          &asyncService_, completionQueue_.get(), requester, rpcHandler
+        network::Call<ToriiServiceHandler, AsyncService, RequestType, ResponseType>::enqueueRequest(
+          &asyncService, completionQueue_.get(), requester, rpcHandler
         );
       }
     }
@@ -93,8 +101,12 @@ namespace torii {
     void ToriiHandler(CommandServiceCall<
       iroha::protocol::Transaction, iroha::protocol::ToriiResponse>*);
 
+    void QueryFindHandler(QueryServiceCall<
+      iroha::protocol::Query, iroha::protocol::QueryResponse>*);
+
   private:
-    iroha::protocol::CommandService::AsyncService asyncService_;
+    iroha::protocol::CommandService::AsyncService commandAsyncService_;
+    iroha::protocol::QueryService::AsyncService queryAsyncService_;
     std::unique_ptr<grpc::ServerCompletionQueue> completionQueue_;
     std::mutex mtx_;
     bool isShutdown_ = false; // called shutdown()

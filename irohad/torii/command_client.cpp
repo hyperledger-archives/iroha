@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 #include <torii/command_client.hpp>
-#include <torii/command_service_handler.hpp>
+#include <torii/torii_service_handler.hpp>
 #include <network/grpc_call.hpp>
 #include <block.pb.h>
 #include <grpc++/grpc++.h>
@@ -44,7 +44,7 @@ namespace torii {
       stub_->AsyncTorii(&context_, tx, &completionQueue_)
     );
 
-    using State = network::UntypedCall<torii::CommandServiceHandler>::State;
+    using State = network::UntypedCall<torii::ToriiServiceHandler>::State;
 
     rpc->Finish(&response, &status_, (void *)static_cast<int>(State::ResponseSent));
 

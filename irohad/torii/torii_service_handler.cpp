@@ -17,8 +17,9 @@ limitations under the License.
 #include <endpoint.grpc.pb.h>
 #include <network/grpc_async_service.hpp>
 #include <network/grpc_call.hpp>
-#include <torii/command_service_handler.hpp>
+#include <torii/torii_service_handler.hpp>
 #include <torii/command_service.hpp>
+#include <torii/query_service.hpp>
 #include <unistd.h>
 #include <grpc/support/time.h>
 
@@ -30,27 +31,37 @@ namespace torii {
    * registers async command service
    * @param builder
    */
-  CommandServiceHandler::CommandServiceHandler(::grpc::ServerBuilder& builder) {
-    builder.RegisterService(&asyncService_);
+  ToriiServiceHandler::ToriiServiceHandler(::grpc::ServerBuilder& builder) {
+    builder.RegisterService(&commandAsyncService_);
+    builder.RegisterService(&queryAsyncService_);
     completionQueue_ = builder.AddCompletionQueue();
   }
 
-  CommandServiceHandler::~CommandServiceHandler() {}
+  ToriiServiceHandler::~ToriiServiceHandler() {}
 
   /**
    * shuts down service handler. (actually, shuts down completion queue only)
    */
-  void CommandServiceHandler::shutdown() {
+  void ToriiServiceHandler::shutdown() {
     completionQueue_->Shutdown();
   }
 
   /**
    * handles rpcs loop in CommandService.
    */
-  void CommandServiceHandler::handleRpcs() {
-    enqueueRequest<prot::Transaction, prot::ToriiResponse>(
+  void ToriiServiceHandler::handleRpcs() {
+    // CommandService::Torii()
+    enqueueRequest<prot::CommandService::AsyncService, prot::Transaction, prot::ToriiResponse>(
         &prot::CommandService::AsyncService::RequestTorii,
-        &CommandServiceHandler::ToriiHandler
+        &ToriiServiceHandler::ToriiHandler,
+        commandAsyncService_
+    );
+
+    // QueryService::Find()
+    enqueueRequest<prot::QueryService::AsyncService, prot::Query, prot::QueryResponse>(
+      &prot::QueryService::AsyncService::RequestFind,
+      &ToriiServiceHandler::QueryFindHandler,
+      queryAsyncService_
     );
 
     /**
@@ -67,7 +78,7 @@ namespace torii {
      */
     while (completionQueue_->Next(&tag, &ok)) {
       auto callbackTag =
-          static_cast<network::UntypedCall<CommandServiceHandler>::CallOwner*>(tag);
+          static_cast<network::UntypedCall<ToriiServiceHandler>::CallOwner*>(tag);
       if (ok && callbackTag) {
         /*assert(callbackTag);*/
         callbackTag->onCompleted(this);
@@ -83,16 +94,31 @@ namespace torii {
    * and calls an actual CommandService::AsyncTorii() implementation.
    * then, spawns a new Call instance to serve an another client.
    */
-  void CommandServiceHandler::ToriiHandler(
+  void ToriiServiceHandler::ToriiHandler(
     CommandServiceCall<prot::Transaction, prot::ToriiResponse>* call) {
 
     CommandService::ToriiAsync(call->request(), call->response());
     call->sendResponse(grpc::Status::OK); // TODO(motxx) currently, grpc::Status::CANCELLED is not supported.
 
     // Spawn a new Call instance to serve an another client.
-    enqueueRequest<prot::Transaction, prot::ToriiResponse>(
+    enqueueRequest<prot::CommandService::AsyncService, prot::Transaction, prot::ToriiResponse>(
       &prot::CommandService::AsyncService::RequestTorii,
-      &CommandServiceHandler::ToriiHandler
+      &ToriiServiceHandler::ToriiHandler,
+      commandAsyncService_
+    );
+  }
+
+  void ToriiServiceHandler::QueryFindHandler(
+    QueryServiceCall<
+      iroha::protocol::Query, iroha::protocol::QueryResponse>* call) {
+    auto stat = QueryService::FindAsync(call->request(), call->response());
+    call->sendResponse(stat);
+
+    // Spawn a new Call instance to serve an another client.
+    enqueueRequest<prot::QueryService::AsyncService, prot::Query, prot::QueryResponse>(
+      &prot::QueryService::AsyncService::RequestFind,
+      &ToriiServiceHandler::QueryFindHandler,
+      queryAsyncService_
     );
   }
 

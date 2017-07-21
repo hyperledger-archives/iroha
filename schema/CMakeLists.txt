@@ -5,6 +5,7 @@
 compile_proto_to_cpp(block.proto)
 compile_proto_to_cpp(primitive.proto)
 compile_proto_to_cpp(commands.proto)
+compile_proto_to_cpp(queries.proto)
 compile_proto_to_grpc_cpp(endpoint.proto)
 compile_proto_to_grpc_cpp(peer_service.proto)
 

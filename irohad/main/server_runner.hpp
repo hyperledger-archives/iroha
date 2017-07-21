@@ -16,10 +16,11 @@ limitations under the License.
 
 #include <grpc++/grpc++.h>
 #include <grpc++/server_builder.h>
-#include <torii/command_service_handler.hpp>
 
 #ifndef MAIN_SERVER_RUNNER_HPP
 #define MAIN_SERVER_RUNNER_HPP
+
+namespace torii { class ToriiServiceHandler; }
 
 class ServerRunner {
 public:
@@ -35,7 +36,7 @@ private:
   std::condition_variable serverInstanceCV_;
 
   std::string serverAddress_;
-  std::unique_ptr<torii::CommandServiceHandler> commandServiceHandler_;
+  std::unique_ptr<torii::ToriiServiceHandler> toriiServiceHandler_;
 };
 
 #endif  // MAIN_SERVER_RUNNER_HPP

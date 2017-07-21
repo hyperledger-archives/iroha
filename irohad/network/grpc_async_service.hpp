@@ -19,7 +19,7 @@ limitations under the License.
 
 namespace network {
 
-  template <class ServiceHandler, class AsyncService, class RequestType, class ResponseType>
+  template <typename ServiceHandler, typename AsyncService, typename RequestType, typename ResponseType>
   class Call;
 
   /**

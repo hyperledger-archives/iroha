@@ -19,7 +19,7 @@ limitations under the License.
 #include <grpc++/server_context.h>
 #include <logger/logger.hpp>
 #include <main/server_runner.hpp>
-#include <torii/command_service_handler.hpp>
+#include <torii/torii_service_handler.hpp>
 
 logger::Logger Log("ServerRunner");
 
@@ -27,7 +27,7 @@ ServerRunner::ServerRunner(const std::string &ip, int port)
     : serverAddress_(ip + ":" + std::to_string(port)) {}
 
 ServerRunner::~ServerRunner() {
-  commandServiceHandler_->shutdown();
+  toriiServiceHandler_->shutdown();
 }
 
 void ServerRunner::run() {
@@ -35,7 +35,8 @@ void ServerRunner::run() {
 
   builder.AddListeningPort(serverAddress_, grpc::InsecureServerCredentials());
 
-  commandServiceHandler_ = std::make_unique<torii::CommandServiceHandler>(builder);
+  // Register services.
+  toriiServiceHandler_ = std::make_unique<torii::ToriiServiceHandler>(builder);
 
   serverInstance_ = builder.BuildAndStart();
   serverInstanceCV_.notify_one();
@@ -43,16 +44,16 @@ void ServerRunner::run() {
   Log.info("Server listening on {}", serverAddress_);
 
   // proceed to server's main loop
-  commandServiceHandler_->handleRpcs();
+  toriiServiceHandler_->handleRpcs();
 }
 
 void ServerRunner::shutdown() {
   serverInstance_->Shutdown();
 
-  while (!commandServiceHandler_->isShutdownCompletionQueue()) {
+  while (!toriiServiceHandler_->isShutdownCompletionQueue()) {
     usleep(1); // wait for shutting down completion queue
   }
-  commandServiceHandler_->shutdown();
+  toriiServiceHandler_->shutdown();
 }
 
 void ServerRunner::waitForServersReady() {
