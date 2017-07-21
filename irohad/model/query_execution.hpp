@@ -37,26 +37,43 @@ namespace iroha {
      */
     class QueryProcessingFactory {
      public:
-      std::shared_ptr<iroha::model::QueryResponse> execute(const model::Query& query);
+      /**
+       * Execute and validate query.
+       *
+       * @param query
+       * @return
+       */
+      std::shared_ptr<iroha::model::QueryResponse> execute(
+          const model::Query& query);
       QueryProcessingFactory(ametsuchi::WsvQuery& wsvQuery,
                              ametsuchi::BlockQuery& blockQuery);
 
      private:
-      bool validate(const model::GetAccountAsset& query);
+      bool validate(const model::GetAccountAssets& query);
+
       bool validate(const model::GetAccount& query);
+
       bool validate(const model::GetSignatories& query);
+
       bool validate(const model::GetAccountAssetTransactions& query);
+
       bool validate(const model::GetAccountTransactions& query);
 
-     std::shared_ptr<iroha::model::QueryResponse> executeGetAccountAsset(
-          const model::GetAccountAsset& query);
-     std::shared_ptr<iroha::model::QueryResponse> executeGetAccount(const model::GetAccount& query);
-     std::shared_ptr<iroha::model::QueryResponse> executeGetSignatories(
+      std::shared_ptr<iroha::model::QueryResponse> executeGetAccountAssets(
+          const model::GetAccountAssets& query);
+
+      std::shared_ptr<iroha::model::QueryResponse> executeGetAccount(
+          const model::GetAccount& query);
+
+      std::shared_ptr<iroha::model::QueryResponse> executeGetSignatories(
           const model::GetSignatories& query);
-     std::shared_ptr<iroha::model::QueryResponse> executeGetAccountAssetTransactions(
+
+      std::shared_ptr<iroha::model::QueryResponse>
+      executeGetAccountAssetTransactions(
           const model::GetAccountAssetTransactions& query);
-     std::shared_ptr<iroha::model::QueryResponse> executeGetAccountTransactions(
-          const model::GetAccountTransactions& query);
+
+      std::shared_ptr<iroha::model::QueryResponse>
+      executeGetAccountTransactions(const model::GetAccountTransactions& query);
 
       ametsuchi::WsvQuery& _wsvQuery;
       ametsuchi::BlockQuery& _blockQuery;

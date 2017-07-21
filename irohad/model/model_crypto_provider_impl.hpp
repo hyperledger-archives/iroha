@@ -30,6 +30,7 @@ namespace iroha {
                             ed25519::pubkey_t pubkey);
 
       bool verify(const Transaction &tx) const override;
+      bool verify(const Query &tx) const override;
 
      private:
       ed25519::privkey_t privkey_;

@@ -14,23 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_PB_QUERY_FACTORY_HPP
+#define IROHA_PB_QUERY_FACTORY_HPP
 
-#ifndef IROHA_GET_ACCOUNT_ASSETS_HPP
-#define IROHA_GET_ACCOUNT_ASSETS_HPP
-
-#include <model/query.hpp>
-#include <string>
+#include "model/query.hpp"
+#include "queries.pb.h"
 
 namespace iroha {
   namespace model {
+    namespace converters {
 
-    /**
-     * Query for get all account's assets and balance
-     */
-    struct GetAccountAssets : Query {
-      std::string account_id;
-      std::string asset_id;
-    };
-  }  // namespace model
+      /**
+       * Converting business objects to protobuf and vice versa
+       */
+      class PbQueryFactory {
+       public:
+
+        /**
+         * Convert proto query to model query
+         * @param pb_block - reference to proto query
+         * @return model Query
+         */
+        std::shared_ptr<model::Query> deserialize(protocol::Query &pb_query);
+
+
+      };
+
+    }  // namespace converters
+  }    // namespace model
 }  // namespace iroha
-#endif  // IROHA_GET_ACCOUNT_ASSETS_HPP
+
+#endif  // IROHA_PB_QUERY_FACTORY_HPP

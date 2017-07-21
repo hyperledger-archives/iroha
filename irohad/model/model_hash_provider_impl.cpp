@@ -16,6 +16,11 @@
  */
 
 #include <model/model_hash_provider_impl.hpp>
+#include <model/queries/get_account.hpp>
+#include "common/types.hpp"
+#include "model/queries/get_account_assets.hpp"
+#include "model/queries/get_signatories.hpp"
+#include "model/queries/get_transactions.hpp"
 
 namespace iroha {
   namespace model {
@@ -72,7 +77,7 @@ namespace iroha {
         std::copy(command_blob.begin(), command_blob.end(),
                   std::back_inserter(concat_hash_commands_));
       }
-     
+
       concat_hash_commands_ += tx.creator_account_id;
 
       // TODO: Decide if the header should be included
@@ -93,6 +98,35 @@ namespace iroha {
       auto concat_hash =
           sha3_256(concat_hash_commands.data(), concat_hash_commands.size());
       return concat_hash;
+    }
+
+    iroha::hash256_t HashProviderImpl::get_hash(const Query &query) {
+      std::string result_hash;
+      if (instanceof <model::GetAccount>(query)) {
+        auto cast = static_cast<const GetAccount &>(query);
+        result_hash += cast.account_id;
+        result_hash += cast.creator_account_id;
+      }
+      if (instanceof <model::GetAccountAssets>(query)) {
+        auto cast = static_cast<const GetAccountAssets &>(query);
+        result_hash += cast.account_id;
+        result_hash += cast.asset_id;
+        result_hash += cast.creator_account_id;
+      }
+      if (instanceof <model::GetSignatories>(query)) {
+        auto cast = static_cast<const GetAccountAssets &>(query);
+        result_hash += cast.account_id;
+        result_hash += cast.creator_account_id;
+      }
+      if (instanceof <model::GetAccountTransactions>(query)) {
+        auto cast = static_cast<const GetAccountTransactions &>(query);
+        result_hash += cast.account_id;
+        result_hash += cast.creator_account_id;
+      }
+
+      std::vector<uint8_t> concat_hash_commands(result_hash.begin(),
+                                                result_hash.end());
+      return sha3_256(concat_hash_commands.data(), concat_hash_commands.size());
     }
 
   }  // namespace model

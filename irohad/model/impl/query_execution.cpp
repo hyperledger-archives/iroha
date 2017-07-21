@@ -51,7 +51,7 @@ bool iroha::model::QueryProcessingFactory::validate(
 }
 
 bool iroha::model::QueryProcessingFactory::validate(
-    const model::GetAccountAsset& query) {
+    const model::GetAccountAssets& query) {
   auto creator = _wsvQuery.getAccount(query.creator_account_id);
   return
       // Creator account exits
@@ -100,17 +100,17 @@ iroha::model::QueryProcessingFactory::executeGetAccount(
 }
 
 std::shared_ptr<iroha::model::QueryResponse>
-iroha::model::QueryProcessingFactory::executeGetAccountAsset(
-    const model::GetAccountAsset& query) {
-  auto acc_assets = _wsvQuery.getAccountAsset(query.account_id, query.asset_id);
-  if (!acc_assets.has_value()) {
+iroha::model::QueryProcessingFactory::executeGetAccountAssets(
+    const model::GetAccountAssets& query) {
+  auto acct_asset = _wsvQuery.getAccountAsset(query.account_id, query.asset_id);
+  if (!acct_asset.has_value()) {
     iroha::model::ErrorResponse response;
     response.query = query;
-    response.reason = "No Account Asset";
+    response.reason = "No Account Assets";
     return std::make_shared<iroha::model::ErrorResponse>(response);
   }
   iroha::model::AccountAssetResponse response;
-  response.acc_asset = acc_assets.value();
+  response.acct_asset = acct_asset.value();
   response.query = query;
   return std::make_shared<iroha::model::AccountAssetResponse>(response);
 }
@@ -164,15 +164,15 @@ std::shared_ptr<iroha::model::QueryResponse> iroha::model::QueryProcessingFactor
     }
     return executeGetAccount(qry);
   }
-  if (instanceof <iroha::model::GetAccountAsset>(query)) {
-    auto qry = static_cast<const iroha::model::GetAccountAsset&>(query);
+  if (instanceof <iroha::model::GetAccountAssets>(query)) {
+    auto qry = static_cast<const iroha::model::GetAccountAssets&>(query);
     if (!validate(qry)) {
       iroha::model::ErrorResponse response;
       response.query = qry;
       response.reason = "Not valid query";
       return std::make_shared<iroha::model::ErrorResponse>(response);
     }
-    return executeGetAccountAsset(qry);
+    return executeGetAccountAssets(qry);
   }
   if (instanceof <iroha::model::GetSignatories>(query)) {
     auto qry = static_cast<const iroha::model::GetSignatories&>(query);

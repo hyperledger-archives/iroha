@@ -26,7 +26,7 @@ namespace iroha {
   namespace model {
 
     struct AccountAssetResponse : public QueryResponse {
-      AccountAsset acc_asset;
+      AccountAsset acct_asset;
     };
   }  // namespace model
 }  // namespace iroha

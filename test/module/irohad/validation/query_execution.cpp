@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "model/query_execution.hpp"
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
+#include "model/query_execution.hpp"
 #include <model/queries/responses/account_assets_response.hpp>
 #include "model/queries/responses/account_response.hpp"
 #include "model/queries/responses/error_response.hpp"
@@ -26,13 +28,18 @@ using ::testing::AtLeast;
 using ::testing::_;
 using ::testing::AllOf;
 
+/**
+ * Mock class for Ametsuchi queries
+ */
 class WSVQueriesMock : public iroha::ametsuchi::WsvQuery {
  public:
   MOCK_METHOD1(getAccount, nonstd::optional<iroha::model::Account>(
                                const std::string &account_id));
+
   MOCK_METHOD1(getSignatories,
                nonstd::optional<std::vector<iroha::ed25519::pubkey_t>>(
                    const std::string &account_id));
+
   MOCK_METHOD1(getAsset, nonstd::optional<iroha::model::Asset>(
                              const std::string &asset_id));
 
@@ -42,6 +49,9 @@ class WSVQueriesMock : public iroha::ametsuchi::WsvQuery {
   MOCK_METHOD0(getPeers, nonstd::optional<std::vector<iroha::model::Peer>>());
 };
 
+/**
+ * Mock class for Ametsuchi queries on blocks, transactions
+ */
 class BlockQueryMock : public iroha::ametsuchi::BlockQuery {
  public:
   MOCK_METHOD1(getAccountTransactions,
@@ -51,11 +61,18 @@ class BlockQueryMock : public iroha::ametsuchi::BlockQuery {
                rxcpp::observable<iroha::model::Block>(uint32_t, uint32_t));
 };
 
+/**
+ * Variables for testing
+ */
 auto ACCOUNT_ID = "test@test";
 auto ADMIN_ID = "admin@test";
 auto DOMAIN_NAME = "test";
 auto ADVERSARY_ID = "adversary@test";
 auto ASSET_ID = "coin";
+
+/**
+ * Default accounts for testing
+ */
 
 iroha::model::Account get_default_creator() {
   iroha::model::Account creator = iroha::model::Account();
@@ -85,47 +102,56 @@ iroha::model::Account get_default_adversary() {
   return dummy;
 }
 
+/**
+ * Set default behaviour for Ametsuchi mock classes
+ * @param test_wsv
+ * @param test_blocks
+ */
 void set_default_ametsuchi(WSVQueriesMock &test_wsv,
                            BlockQueryMock &test_blocks) {
-  // No account exist
+  // If No account exist - return nullopt
   EXPECT_CALL(test_wsv, getAccount(_)).WillRepeatedly(Return(nonstd::nullopt));
-  // Admin exist
+
+  // Admin's account exist in the database
   auto admin = get_default_creator();
-
   EXPECT_CALL(test_wsv, getAccount(ADMIN_ID)).WillRepeatedly(Return(admin));
-  // Test account exist
+  // Test account exist in the database
   auto dummy = get_default_account();
-
   EXPECT_CALL(test_wsv, getAccount(ACCOUNT_ID)).WillRepeatedly(Return(dummy));
+  // Adversary database exist in the database
   auto adversary = get_default_adversary();
   EXPECT_CALL(test_wsv, getAccount(ADVERSARY_ID))
       .WillRepeatedly(Return(adversary));
-
+  // If no account_asset exist - return nullopt
   EXPECT_CALL(test_wsv, getAccountAsset(_, _))
       .WillRepeatedly(Return(nonstd::nullopt));
 
-  auto acc_asset = iroha::model::AccountAsset();
-  acc_asset.asset_id = ASSET_ID;
-  acc_asset.account_id = ACCOUNT_ID;
-  acc_asset.balance = 150;
+  // Test account has some amount of test assets
+  auto acct_asset = iroha::model::AccountAsset();
+  acct_asset.asset_id = ASSET_ID;
+  acct_asset.account_id = ACCOUNT_ID;
+  acct_asset.balance = 150;
   EXPECT_CALL(test_wsv, getAccountAsset(ACCOUNT_ID, ASSET_ID))
-      .WillRepeatedly(Return(acc_asset));
+      .WillRepeatedly(Return(acct_asset));
 }
+
 
 TEST(QueryExecutor, get_account) {
   WSVQueriesMock wsv_queries;
   BlockQueryMock block_queries;
+
   auto query_proccesor =
       iroha::model::QueryProcessingFactory(wsv_queries, block_queries);
 
   set_default_ametsuchi(wsv_queries, block_queries);
 
   // Valid cases:
-  // 1. Admin asks account_id
+  // 1. Admin asks about test account
   iroha::model::GetAccount query;
   query.account_id = ACCOUNT_ID;
   query.creator_account_id = ADMIN_ID;
   query.signature.pubkey = get_default_creator().master_key;
+
   auto response = query_proccesor.execute(query);
   auto cast_resp =
       std::static_pointer_cast<iroha::model::AccountResponse>(response);
@@ -142,9 +168,9 @@ TEST(QueryExecutor, get_account) {
 
   // --------- Non valid cases: -------
 
-  // 1. Asking non-existed account
+  // 1. Asking non-existing account
 
-  query.account_id = "nonacc";
+  query.account_id = "nonacct";
   query.creator_account_id = ADMIN_ID;
   query.signature.pubkey = get_default_creator().master_key;
   response = query_proccesor.execute(query);
@@ -183,7 +209,7 @@ TEST(QueryExecutor, get_account) {
   // TODO: tests for signatures
 }
 
-TEST(QueryExecutor, get_account_asset) {
+TEST(QueryExecutor, get_account_assets) {
   WSVQueriesMock wsv_queries;
   BlockQueryMock block_queries;
   auto query_proccesor =
@@ -193,7 +219,7 @@ TEST(QueryExecutor, get_account_asset) {
 
   // Valid cases:
   // 1. Admin asks account_id
-  iroha::model::GetAccountAsset query;
+  iroha::model::GetAccountAssets query;
   query.account_id = ACCOUNT_ID;
   query.asset_id = ASSET_ID;
   query.creator_account_id = ADMIN_ID;
@@ -201,8 +227,8 @@ TEST(QueryExecutor, get_account_asset) {
   auto response = query_proccesor.execute(query);
   auto cast_resp =
       std::static_pointer_cast<iroha::model::AccountAssetResponse>(response);
-  ASSERT_EQ(cast_resp->acc_asset.account_id, ACCOUNT_ID);
-  ASSERT_EQ(cast_resp->acc_asset.asset_id, ASSET_ID);
+  ASSERT_EQ(cast_resp->acct_asset.account_id, ACCOUNT_ID);
+  ASSERT_EQ(cast_resp->acct_asset.asset_id, ASSET_ID);
   ASSERT_EQ(cast_resp->query.creator_account_id, ADMIN_ID);
 
   // 2. Account creator asks about his account
@@ -211,15 +237,15 @@ TEST(QueryExecutor, get_account_asset) {
   query.signature.pubkey = get_default_account().master_key;
   response = query_proccesor.execute(query);
   cast_resp = std::static_pointer_cast<iroha::model::AccountAssetResponse>(response);
-  ASSERT_EQ(cast_resp->acc_asset.account_id, ACCOUNT_ID);
-  ASSERT_EQ(cast_resp->acc_asset.asset_id, ASSET_ID);
+  ASSERT_EQ(cast_resp->acct_asset.account_id, ACCOUNT_ID);
+  ASSERT_EQ(cast_resp->acct_asset.asset_id, ASSET_ID);
   ASSERT_EQ(cast_resp->query.creator_account_id, ACCOUNT_ID);
 
   // --------- Non valid cases: -------
 
   // 1. Asking non-existed account asset
 
-  query.account_id = "nonacc";
+  query.account_id = "nonacct";
   query.creator_account_id = ADMIN_ID;
   query.signature.pubkey = get_default_creator().master_key;
   response = query_proccesor.execute(query);
@@ -228,7 +254,7 @@ TEST(QueryExecutor, get_account_asset) {
   ASSERT_EQ(cast_resp_2, nullptr);
   auto err_resp =
       std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, "No Account Asset");
+  ASSERT_EQ(err_resp->reason, "No Account Assets");
   ASSERT_EQ(err_resp->query.creator_account_id, ADMIN_ID);
 
 
@@ -244,7 +270,7 @@ TEST(QueryExecutor, get_account_asset) {
   ASSERT_EQ(cast_resp_2, nullptr);
   err_resp =
       std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, "No Account Asset");
+  ASSERT_EQ(err_resp->reason, "No Account Assets");
   ASSERT_EQ(err_resp->query.creator_account_id, ADMIN_ID);
 
   // 2. No rights to ask
@@ -262,7 +288,7 @@ TEST(QueryExecutor, get_account_asset) {
 
   // 3. No creator
   query.account_id = ACCOUNT_ID;
-  query.creator_account_id = "noacc";
+  query.creator_account_id = "noacct";
   query.signature.pubkey = get_default_adversary().master_key;
   response = query_proccesor.execute(query);
   cast_resp =

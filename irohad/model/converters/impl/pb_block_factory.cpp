@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#include <model/model_hash_provider_impl.hpp>
 #include "model/converters/pb_block_factory.hpp"
+#include <model/model_hash_provider_impl.hpp>
 #include "model/converters/pb_transaction_factory.hpp"
 
 namespace iroha {
@@ -29,7 +29,7 @@ namespace iroha {
         // -----|Header|-----
         auto header = pb_block.mutable_header();
         header->set_created_time(block.created_ts);
-        for (auto sig: block.sigs){
+        for (auto sig : block.sigs) {
           auto pb_sig = header->add_signatures();
           pb_sig->set_pubkey(sig.pubkey.data(), sig.pubkey.size());
           pb_sig->set_signature(sig.signature.data(), sig.signature.size());
@@ -47,7 +47,7 @@ namespace iroha {
         // -----|Body|-----
         auto body = pb_block.mutable_body();
         PbTransactionFactory tx_factory;
-        for (auto tx: block.transactions){
+        for (auto tx : block.transactions) {
           auto pb_tx = body->add_transactions();
           pb_tx->CopyFrom(tx_factory.serialize(tx));
         }
@@ -61,17 +61,19 @@ namespace iroha {
         // -----|Header|-----
         block.created_ts = pb_block.header().created_time();
         auto header = pb_block.header();
-        for (auto pb_sig :header.signatures()){
+        for (auto pb_sig : header.signatures()) {
           Signature sig{};
-          std::copy(pb_sig.pubkey().begin(), pb_sig.pubkey().end(), sig.pubkey.begin());
-          std::copy(pb_sig.signature().begin(), pb_sig.signature().end(), sig.signature.begin());
+          std::copy(pb_sig.pubkey().begin(), pb_sig.pubkey().end(),
+                    sig.pubkey.begin());
+          std::copy(pb_sig.signature().begin(), pb_sig.signature().end(),
+                    sig.signature.begin());
           block.sigs.push_back(sig);
         }
 
         // -----|Meta|-----
         auto meta = pb_block.meta();
         // potential dangerous cast
-        block.txs_number = (uint16_t) meta.tx_number();
+        block.txs_number = (uint16_t)meta.tx_number();
         block.height = meta.height();
         std::copy(meta.merkle_root().begin(), meta.merkle_root().end(),
                   block.merkle_root.begin());
@@ -81,7 +83,7 @@ namespace iroha {
         // -----|Body|-----
         auto body = pb_block.body();
         PbTransactionFactory tx_factory;
-        for (auto pb_tx: body.transactions()){
+        for (auto pb_tx : body.transactions()) {
           block.transactions.push_back(tx_factory.deserialize(pb_tx));
         }
 
@@ -90,6 +92,6 @@ namespace iroha {
 
         return block;
       }
-    } // namespace converters
-  }  // namespace model
+    }  // namespace converters
+  }    // namespace model
 }  // namespace iroha
