@@ -93,7 +93,7 @@ class FakeNetwork : public YacNetwork {
     notification = handler;
   };
 
-  void release(){
+  void release() {
     notification.reset();
   }
 
@@ -122,7 +122,6 @@ class FakeNetwork : public YacNetwork {
     return *this;
   };
 
- private:
   std::shared_ptr<YacNetworkNotifications> notification;
 };
 
@@ -201,5 +200,55 @@ TEST_F(YacTest, YacWhenVoting) {
 
   YacHash my_hash("my_proposal_hash", "my_block_hash");
   yac->vote(my_hash, default_peers);
+}
+
+/**
+ * Test provide scenario when yac cold started and achieve one vote
+ */
+TEST_F(YacTest, YacWhenColdStartAndAchieveOneVote) {
+  cout << "----------|Coldstart - one vote|----------" << endl;
+
+  EXPECT_CALL(*network, send_commit(_, _)).Times(0);
+  EXPECT_CALL(*network, send_reject(_, _)).Times(0);
+  EXPECT_CALL(*network, send_vote(_, _)).Times(0);
+
+  EXPECT_CALL(*crypto, verify(An<CommitMessage>()))
+      .Times(0);
+  EXPECT_CALL(*crypto, verify(An<RejectMessage>()))
+      .Times(0);
+  EXPECT_CALL(*crypto, verify(An<VoteMessage>()))
+      .Times(1)
+      .WillRepeatedly(Return(true));
+
+  YacHash received_hash("my_proposal", "my_block");
+  auto peer = default_peers.at(0);
+  // assume that our peer receive message
+  network->notification->on_vote(peer, crypto->getVote(received_hash));
+}
+
+/**
+ * Test provide scenario
+ * when yac cold started and achieve supermajority of  votes
+ */
+TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
+  cout << "----------|Coldstart - supermajority of votes|----------"
+       << endl;
+
+  EXPECT_CALL(*network, send_commit(_, _)).Times(0);
+  EXPECT_CALL(*network, send_reject(_, _)).Times(0);
+  EXPECT_CALL(*network, send_vote(_, _)).Times(0);
+
+  EXPECT_CALL(*crypto, verify(An<CommitMessage>()))
+      .Times(0);
+  EXPECT_CALL(*crypto, verify(An<RejectMessage>()))
+      .Times(0);
+  EXPECT_CALL(*crypto, verify(An<VoteMessage>()))
+      .Times(default_peers.size())
+      .WillRepeatedly(Return(true));
+
+  YacHash received_hash("my_proposal", "my_block");
+  for(auto &peer : default_peers){
+    network->notification->on_vote(peer, crypto->getVote(received_hash));
+  }
 }
 #endif //IROHA_YAC_SIMPLE_CASE_TEST_HPP
