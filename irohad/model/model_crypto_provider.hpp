@@ -18,6 +18,7 @@ limitations under the License.
 #define IROHA_MODEL_CRYPTO_PROVIDER_HPP
 
 #include <model/transaction.hpp>
+#include "model/query.hpp"
 
 namespace iroha {
   namespace model {
@@ -34,6 +35,13 @@ namespace iroha {
        * @return true if transaction signature is valid, otherwise false
        */
       virtual bool verify(const Transaction &tx) const = 0;
+
+      /**
+       * Method for signature verification of a transaction.
+       * @param tx - transaction for verification
+       * @return true if transaction signature is valid, otherwise false
+       */
+      virtual bool verify(const Query &tx) const = 0;
 
 
     };

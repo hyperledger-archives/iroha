@@ -18,8 +18,8 @@
 #ifndef IROHA_QUERY_RESPONSE_HPP
 #define IROHA_QUERY_RESPONSE_HPP
 
-#include <model/query.hpp>
 #include <model/client.hpp>
+#include <model/query.hpp>
 
 namespace iroha {
   namespace model {
@@ -27,17 +27,13 @@ namespace iroha {
      * Interface of query response for user
      */
     struct QueryResponse {
-
       /**
        * Client query
        */
       Query query;
 
-      /**
-       * Client identifier
-       */
-      Client client;
+      virtual ~QueryResponse() {}
     };
-  } //namespace model 
-} //namespace iroha
-#endif //IROHA_QUERY_RESPONSE_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_QUERY_RESPONSE_HPP

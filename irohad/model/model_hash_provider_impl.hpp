@@ -24,6 +24,7 @@ limitations under the License.
 #include <crypto/hash.hpp>
 #include <model/model_hash_provider.hpp>
 
+
 namespace iroha {
   namespace model {
     class HashProviderImpl : public HashProvider<ed25519::pubkey_t::size()> {
@@ -33,6 +34,8 @@ namespace iroha {
       iroha::hash256_t get_hash(const Block &block) override;
 
       iroha::hash256_t get_hash(const Transaction &tx) override;
+
+      iroha::hash256_t  get_hash(const Query& query) override;
     };
   }
 }

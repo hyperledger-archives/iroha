@@ -19,7 +19,8 @@
 #define IROHA_QUERY_HPP
 
 #include <string>
-#include <model/signature.hpp>
+#include "common/types.hpp"
+#include "model/signature.hpp"
 
 namespace iroha {
   namespace model {
@@ -28,14 +29,30 @@ namespace iroha {
      * Concrete queries should extend this interface.
      */
     struct Query {
-
       /**
        * Signature of query's creator
        */
       Signature signature;
 
+      /**
+      * Account id of transaction creator.
+      *
+      */
+      std::string creator_account_id;
+
+      /**
+       * Creation timestamp
+       *
+       */
+      ts64_t created_ts;
+
+      /**
+       * Query hash
+       */
+      hash256_t query_hash;
+
       virtual ~Query() {}
     };
-  } //namespace model
-} //namespace iroha
-#endif //IROHA_QUERY_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_QUERY_HPP

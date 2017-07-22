@@ -21,6 +21,7 @@ limitations under the License.
 #include <model/block.hpp>
 #include <model/transaction.hpp>
 #include <model/proposal.hpp>
+#include "model/query.hpp"
 
 namespace iroha {
   namespace model {
@@ -49,6 +50,12 @@ namespace iroha {
        * @param tx - source object for computing hash
        */
       virtual blob_t<N> get_hash(const Transaction &tx) = 0;
+
+      /**
+       * Abstract method for computing hash on Model: Query
+       *
+       */
+      virtual blob_t<N> get_hash(const Query &tx) = 0;
     };
   }
 }
