@@ -47,6 +47,11 @@ namespace iroha {
         ClusterOrdering &switchToNext();
 
         /**
+         * @return true if current leader not last peer in order
+         */
+        bool hashNext();
+
+        /**
          * Validate set is on of first 2f+1 elements from 3f+1.
          * @return true if leader is on of 2f+1 elements
          */
