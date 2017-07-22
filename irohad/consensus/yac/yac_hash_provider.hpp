@@ -31,10 +31,27 @@ namespace iroha {
 
       class YacHash {
        public:
-        std::string hash_value;
+
+        YacHash(std::string proposal, std::string block)
+            : proposal_hash(proposal),
+              block_hash(block) {
+        }
+
+        YacHash() = default;
+
+        /**
+         * Hash computed from proposal
+         */
+        std::string proposal_hash;
+
+        /**
+         * Hash computed from block;
+         */
+        std::string block_hash;
 
         bool operator==(const YacHash &obj) const {
-          if (hash_value == obj.hash_value)
+          if (proposal_hash == obj.proposal_hash &&
+              block_hash == obj.block_hash)
             return true;
           else
             return false;
@@ -77,7 +94,7 @@ namespace std {
   template<>
   struct hash<iroha::consensus::yac::YacHash> {
     std::size_t operator()(const iroha::consensus::yac::YacHash &obj) const {
-      return std::hash<std::string>()(obj.hash_value);
+      return std::hash<std::string>()(obj.proposal_hash + obj.block_hash);
     }
   };
 
