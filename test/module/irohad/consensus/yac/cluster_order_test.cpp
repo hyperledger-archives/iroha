@@ -62,3 +62,14 @@ TEST(ClusterOrderTest, ClusterOrderSupermajority) {
   ASSERT_EQ(order.haveSupermajority(6), true);  // 6
   ASSERT_EQ(order.haveSupermajority(7), true);  // 7
 }
+
+TEST(ClusterOrderTest, CluserOrderSupermajorityWhenEmpty) {
+  iroha::consensus::yac::ClusterOrdering order;
+  ASSERT_EQ(order.haveSupermajority(1), false); // 1
+  ASSERT_EQ(order.haveSupermajority(2), false); // 2
+  ASSERT_EQ(order.haveSupermajority(3), false); // 3
+  ASSERT_EQ(order.haveSupermajority(4), false); // 4
+  ASSERT_EQ(order.haveSupermajority(5), false); // 5
+  ASSERT_EQ(order.haveSupermajority(6), false); // 6
+  ASSERT_EQ(order.haveSupermajority(7), false); // 7
+}
