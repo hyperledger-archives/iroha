@@ -18,19 +18,26 @@
 #include <utility>
 #include "consensus/yac/yac.hpp"
 
+#include <iostream>
+
 namespace iroha {
   namespace consensus {
     namespace yac {
 
+      std::shared_ptr<Yac> Yac::create(std::shared_ptr<YacNetwork> network,
+                                  std::shared_ptr<YacCryptoProvider> crypto,
+                                  std::shared_ptr<Timer> timer,
+                                  uint64_t delay) {
+        return std::make_shared<Yac>(network, crypto, timer, delay);
+      }
+
       Yac::Yac(std::shared_ptr<YacNetwork> network,
                std::shared_ptr<YacCryptoProvider> crypto,
                std::shared_ptr<Timer> timer,
-               uint64_t delay) : network_(std::move(network)),
-                                 crypto_(std::move(crypto)),
-                                 timer_(std::move(timer)),
+               uint64_t delay) : network_(network),
+                                 crypto_(crypto),
+                                 timer_(timer),
                                  delay_(delay) {
-
-        network->subscribe(shared_from_this());
       }
 
       // ------|Hash gate|------
@@ -41,7 +48,7 @@ namespace iroha {
       };
 
       rxcpp::observable<YacHash> Yac::on_commit() {
-        this->notifier_.get_observable();
+        return this->notifier_.get_observable();
       }
 
       // ------|Network notifications|------

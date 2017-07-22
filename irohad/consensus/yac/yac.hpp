@@ -35,14 +35,24 @@
 namespace iroha {
   namespace consensus {
     namespace yac {
-      class Yac : public HashGate, public YacNetworkNotifications,
-                  std::enable_shared_from_this<Yac> {
+      class Yac : public HashGate,
+                  public YacNetworkNotifications,
+                  public std::enable_shared_from_this<Yac> {
        public:
+
+        /**
+         * Method for creating Yac consensus object
+         */
+        static std::shared_ptr<Yac> create(std::shared_ptr<YacNetwork> network,
+                                    std::shared_ptr<YacCryptoProvider> crypto,
+                                    std::shared_ptr<Timer> timer,
+                                    uint64_t delay);
 
         Yac(std::shared_ptr<YacNetwork> network,
             std::shared_ptr<YacCryptoProvider> crypto,
             std::shared_ptr<Timer> timer,
             uint64_t delay);
+
 
         // ------|Hash gate|------
 
