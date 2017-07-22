@@ -80,7 +80,7 @@ namespace iroha {
                             crypto_->getVote(hash));
         timer_->invokeAfterDelay(delay_, [this, hash]() {
           cluster_order_.switchToNext();
-          if (cluster_order_.leaderInValidateSet()) {
+          if (cluster_order_.hashNext()) {
             this->votingStep(hash);
           }
         });
