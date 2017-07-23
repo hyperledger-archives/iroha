@@ -247,8 +247,42 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
       .WillRepeatedly(Return(true));
 
   YacHash received_hash("my_proposal", "my_block");
-  for(auto &peer : default_peers){
+  for (auto &peer : default_peers) {
     network->notification->on_vote(peer, crypto->getVote(received_hash));
   }
+}
+
+/**
+ * Test provide scenario
+ * when yac cold started and achieve commit
+ */
+TEST_F(YacTest, YacWhenColdStartAndAchieveCommitMessage) {
+  cout << "----------|Coldstart - commit received "
+      "(commit inside case)"
+      "|----------"
+       << endl;
+  YacHash propagated_hash("my_proposal", "my_block");
+  yac->on_commit().subscribe([propagated_hash](auto commit_hash) {
+    ASSERT_EQ(propagated_hash, commit_hash);
+    // todo check that invoked once (find test subscriber)
+  });
+
+  EXPECT_CALL(*network, send_commit(_, _)).Times(0);
+  EXPECT_CALL(*network, send_reject(_, _)).Times(0);
+  EXPECT_CALL(*network, send_vote(_, _)).Times(0);
+
+  EXPECT_CALL(*crypto, verify(An<CommitMessage>()))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*crypto, verify(An<RejectMessage>()))
+      .Times(0);
+  EXPECT_CALL(*crypto, verify(An<VoteMessage>()))
+      .Times(0);
+
+  auto committed_peer = default_peers.at(0);
+  auto msg = CommitMessage();
+  for (auto &peer : default_peers) {
+    msg.votes.push_back(crypto->getVote(propagated_hash));
+  }
+  network->notification->on_commit(committed_peer, msg);
 }
 #endif //IROHA_YAC_SIMPLE_CASE_TEST_HPP
