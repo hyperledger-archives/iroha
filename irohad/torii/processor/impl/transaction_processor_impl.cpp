@@ -23,16 +23,12 @@ namespace iroha {
 
     using validation::StatelessValidator;
     using model::TransactionResponse;
-    using model::ModelCryptoProvider;
     using network::PeerCommunicationService;
-    using ordering::OrderingService;
 
     TransactionProcessorImpl::TransactionProcessorImpl(
         PeerCommunicationService &pcs,
-        OrderingService &os,
         const StatelessValidator &validator)
         : pcs_(pcs),
-          os_(os),
           validator_(validator) {
     }
 
@@ -45,7 +41,7 @@ namespace iroha {
 
       if (validator_.validate(transaction)) {
         response.passed = true;
-        os_.propagate_transaction(transaction);
+        pcs_.propagate_transaction(transaction);
       }
 
       notifier_.get_subscriber().on_next(

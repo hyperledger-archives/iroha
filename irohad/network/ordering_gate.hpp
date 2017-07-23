@@ -23,11 +23,12 @@
 #include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
-  namespace ordering {
+  namespace network {
+
     /**
-     * Ordering service interface for peer communication service
+     * Ordering gate provide interface with network transaction order
      */
-    class OrderingService {
+    class OrderingGate {
      public:
 
       /**
@@ -38,11 +39,13 @@ namespace iroha {
 
       /**
        * Return observable of all proposals in the consensus
-       * @return
+       * @return observable with notifications
        */
       virtual rxcpp::observable<model::Proposal> on_proposal() = 0;
+
+      virtual ~OrderingGate() = default;
     };
-  }//namespace ordering
+  }//namespace network
 }// namespace iroha
 
 #endif //IROHA_ORDERING_SERVICE_HPP

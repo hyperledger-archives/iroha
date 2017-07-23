@@ -14,5 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <network/network_api.h>
+#include <network/peer_communication_service.hpp>
+#include <network/consensus_gate.hpp>
 

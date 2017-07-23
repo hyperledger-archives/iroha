@@ -15,30 +15,36 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_AMETSUCHI_H
-#define IROHA_AMETSUCHI_H
+#ifndef IROHA_SYNCHRONIZER_HPP
+#define IROHA_SYNCHRONIZER_HPP
 
-#include <ametsuchi/block_query.hpp>
-#include <ametsuchi/wsv_query.hpp>
-#include "ametsuchi/temporary_factory.hpp"
-#include "ametsuchi/mutable_factory.hpp"
+#include <rxcpp/rx.hpp>
+#include <model/block.hpp>
 
 namespace iroha {
+  namespace synchronizer {
 
-  namespace ametsuchi {
+    using Commit = rxcpp::observable <model::Block>;
 
     /**
-     * Storage interface, which allows queries on current committed state, and
-     * creation of state which can be mutated with blocks and transactions
+     * Synchronizer is interface for fetching missed blocks
      */
-    class Storage : public WsvQuery, public BlockQuery, public TemporaryFactory,
-                    public MutableFactory {
+    class Synchronizer {
      public:
-      virtual ~Storage() = default;
+
+      /**
+       * Processing block last committed block
+       */
+      virtual void process_commit(model::Block block) = 0;
+
+      /**
+       * Emit committed blocks
+       * Note: from one block received on consensus
+       */
+      virtual rxcpp::observable<Commit> on_commit_chain() = 0;
+
+      virtual ~Synchronizer() = default;
     };
-
-  }  // namespace ametsuchi
-
-}  // namespace iroha
-
-#endif  // IROHA_AMETSUCHI_H
+  } // namespace synchronizer
+} // namespace iroha
+#endif //IROHA_SYNCHRONIZER_HPP
