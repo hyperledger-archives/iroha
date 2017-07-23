@@ -15,21 +15,24 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ORDERING_SERVICE_STUB_HPP
-#define IROHA_ORDERING_SERVICE_STUB_HPP
+#ifndef IROHA_STATELESS_RESPONSE_HPP
+#define IROHA_STATELESS_RESPONSE_HPP
 
-#include <network/ordering_gate.hpp>
+#include <model/transaction_response.hpp>
 
 namespace iroha {
-  namespace network {
-    class OrderingGateStub : public OrderingGate {
-     public:
-      void propagate_transaction(const model::Transaction &transaction) override;
-      rxcpp::observable<model::Proposal> on_proposal() override;
-     private:
-      rxcpp::subjects::subject<model::Proposal> proposals_;
-    };
-  }//namespace network
-}// namespace iroha
+  namespace model {
 
-#endif //IROHA_ORDERING_SERVICE_STUB_HPP
+    /**
+     * Transaction response that contains
+     */
+    struct StatelessResponse : TransactionResponse {
+
+      /**
+       * Is stateless validation passed
+       */
+      bool passed;
+    };
+  } // namespace model
+} // namespace iroha
+#endif //IROHA_STATELESS_RESPONSE_HPP

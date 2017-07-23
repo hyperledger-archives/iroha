@@ -1,5 +1,5 @@
 add_library(networking
-    impl/network_api.cpp
+    impl/peer_communication_service.cpp
     peer_communication_stub.cpp
     )
 

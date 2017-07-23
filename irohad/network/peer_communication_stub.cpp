@@ -16,29 +16,27 @@
  */
 
 #include <network/peer_communication_stub.hpp>
-#include <ordering/ordering_service_stub.hpp>
-#include <consensus/consensus_service_stub.hpp>
 
 namespace iroha {
   namespace network {
 
+    PeerCommunicationServiceStub::PeerCommunicationServiceStub(
+        network::OrderingGate &orderer,
+        consensus::ConsensusService &consensus
+    ) : orderer_(orderer), consensus_(consensus) {}
 
-    rxcpp::observable<rxcpp::observable<model::Block>>
-    PeerCommunicationServiceStub::on_commit() {
-
+    void PeerCommunicationServiceStub::propagate_transaction(
+        model::Transaction transaction) {
     }
 
-    rxcpp::observable<model::Proposal>
+    rxcpp::observable <rxcpp::observable<model::Block>>
+    PeerCommunicationServiceStub::on_commit() {
+    }
+
+    rxcpp::observable <model::Proposal>
     PeerCommunicationServiceStub::on_proposal() {
       return orderer_.on_proposal();
     }
-
-    PeerCommunicationServiceStub::PeerCommunicationServiceStub(
-        ordering::OrderingServiceStub &orderer,
-        consensus::ConsensusServiceStub &consensus
-    ):
-        orderer_(orderer),
-        consensus_(consensus) {}
 
   }
 }

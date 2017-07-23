@@ -15,21 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ORDERING_SERVICE_STUB_HPP
-#define IROHA_ORDERING_SERVICE_STUB_HPP
+#ifndef IROHA_TEMPORARY_FACTORY_HPP
+#define IROHA_TEMPORARY_FACTORY_HPP
 
-#include <network/ordering_gate.hpp>
+#include <memory>
+#include "ametsuchi/temporary_wsv.hpp"
 
 namespace iroha {
-  namespace network {
-    class OrderingGateStub : public OrderingGate {
-     public:
-      void propagate_transaction(const model::Transaction &transaction) override;
-      rxcpp::observable<model::Proposal> on_proposal() override;
-     private:
-      rxcpp::subjects::subject<model::Proposal> proposals_;
-    };
-  }//namespace network
-}// namespace iroha
+  namespace ametsuchi {
 
-#endif //IROHA_ORDERING_SERVICE_STUB_HPP
+    class TemporaryFactory {
+     public:
+      /**
+       * Creates a temporary world state view from the current state.
+       * Temporary state will be not committed and will be erased on destructor
+       * call.
+       * Temporary state might be used for transaction validation.
+       * @return Created temporary wsv
+       */
+      virtual std::unique_ptr<TemporaryWsv> createTemporaryWsv() = 0;
+
+      virtual ~TemporaryFactory() = default;
+    };
+
+  } // namespace ametsuchi
+} // namespace iroha
+#endif //IROHA_TEMPORARY_FACTORY_HPP

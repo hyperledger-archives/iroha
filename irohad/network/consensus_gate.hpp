@@ -15,21 +15,35 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ORDERING_SERVICE_STUB_HPP
-#define IROHA_ORDERING_SERVICE_STUB_HPP
+#ifndef IROHA_CONSENSUS_GATE_HPP
+#define IROHA_CONSENSUS_GATE_HPP
 
-#include <network/ordering_gate.hpp>
+#include <rxcpp/rx.hpp>
+#include <model/block.hpp>
 
 namespace iroha {
   namespace network {
-    class OrderingGateStub : public OrderingGate {
-     public:
-      void propagate_transaction(const model::Transaction &transaction) override;
-      rxcpp::observable<model::Proposal> on_proposal() override;
-     private:
-      rxcpp::subjects::subject<model::Proposal> proposals_;
-    };
-  }//namespace network
-}// namespace iroha
 
-#endif //IROHA_ORDERING_SERVICE_STUB_HPP
+    /**
+     * Public api of consensus module
+     */
+    class ConsensusGate {
+     public:
+
+      /**
+       * Providing data for consensus for voting
+       */
+      virtual void vote(model::Block) = 0;
+
+      /**
+       * Emit committed blocks
+       * Note: committed block may be not satisfy for top block in ledger
+       * because synchronization reasons
+       */
+      virtual rxcpp::observable <model::Block> on_commit() = 0;
+
+      virtual ~ConsensusGate() = default;
+    };
+  } // namespace network
+} // namespace iroha
+#endif //IROHA_CONSENSUS_GATE_HPP

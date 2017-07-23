@@ -15,34 +15,36 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ORDERING_SERVICE_HPP
-#define IROHA_ORDERING_SERVICE_HPP
+#ifndef IROHA_SYNCHRONIZER_HPP
+#define IROHA_SYNCHRONIZER_HPP
 
-#include <model/transaction.hpp>
-#include <model/proposal.hpp>
-#include <rxcpp/rx-observable.hpp>
+#include <rxcpp/rx.hpp>
+#include <model/block.hpp>
 
 namespace iroha {
-  namespace ordering {
+  namespace synchronizer {
+
+    using Commit = rxcpp::observable <model::Block>;
+
     /**
-     * Ordering service interface for peer communication service
+     * Synchronizer is interface for fetching missed blocks
      */
-    class OrderingService {
+    class Synchronizer {
      public:
 
       /**
-       * Propagate a signed transaction for further processing
-       * @param transaction
+       * Processing block last committed block
        */
-      virtual void propagate_transaction(const model::Transaction &transaction) = 0;
+      virtual void process_commit(model::Block block) = 0;
 
       /**
-       * Return observable of all proposals in the consensus
-       * @return
+       * Emit committed blocks
+       * Note: from one block received on consensus
        */
-      virtual rxcpp::observable<model::Proposal> on_proposal() = 0;
-    };
-  }//namespace ordering
-}// namespace iroha
+      virtual rxcpp::observable<Commit> on_commit_chain() = 0;
 
-#endif //IROHA_ORDERING_SERVICE_HPP
+      virtual ~Synchronizer() = default;
+    };
+  } // namespace synchronizer
+} // namespace iroha
+#endif //IROHA_SYNCHRONIZER_HPP

@@ -14,32 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef IROHA_SYNCHRONIZER_HPP
-#define IROHA_SYNCHRONIZER_HPP
 
+#ifndef IROHA_ORDERING_SERVICE_HPP
+#define IROHA_ORDERING_SERVICE_HPP
+
+#include <model/transaction.hpp>
+#include <model/proposal.hpp>
 #include <rxcpp/rx-observable.hpp>
-#include "model/block.hpp"
 
 namespace iroha {
-  namespace synchronization {
+  namespace network {
 
-    class Synchronizer {
+    /**
+     * Ordering gate provide interface with network transaction order
+     */
+    class OrderingGate {
      public:
-      // Commit is a bunch of Blocks
-      using Commit = rxcpp::observable<model::Block>;
 
       /**
-       * Process commit message with Chain Validation and write to Ametsuchi
-       * @param commit_message
+       * Propagate a signed transaction for further processing
+       * @param transaction
        */
-      virtual void process_commit(iroha::model::Block commit_message) = 0;
+      virtual void propagate_transaction(const model::Transaction &transaction) = 0;
 
       /**
-       * Event on synchronization of Blocks
-       * @return Commit messages
+       * Return observable of all proposals in the consensus
+       * @return observable with notifications
        */
-      virtual rxcpp::observable<Commit> on_commit_chain() = 0;
+      virtual rxcpp::observable<model::Proposal> on_proposal() = 0;
+
+      virtual ~OrderingGate() = default;
     };
-  }
-}
-#endif  // IROHA_SYNCHRONIZER_HPP
+  }//namespace network
+}// namespace iroha
+
+#endif //IROHA_ORDERING_SERVICE_HPP
