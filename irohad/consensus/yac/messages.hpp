@@ -40,6 +40,9 @@ namespace iroha {
        */
       struct CommitMessage {
 
+        CommitMessage() {
+        }
+
         CommitMessage(std::vector<VoteMessage> votes) {
           this->votes = votes;
         }
