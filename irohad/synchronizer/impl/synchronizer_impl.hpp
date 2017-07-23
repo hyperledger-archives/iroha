@@ -19,11 +19,11 @@
 
 #include "ametsuchi/mutable_factory.hpp"
 #include "network/block_loader.hpp"
-#include "synchronization/synchronizer.hpp"
+#include "synchronizer/synchronizer.hpp"
 #include "validation/chain_validator.hpp"
 
 namespace iroha {
-  namespace synchronization {
+  namespace synchronizer {
     class SynchronizerImpl : public Synchronizer {
      public:
       SynchronizerImpl(validation::ChainValidator& validator,

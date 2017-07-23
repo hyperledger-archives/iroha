@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-#include "synchronization/impl/synchronizer_impl.hpp"
+#include "synchronizer/impl/synchronizer_impl.hpp"
 
 namespace iroha {
-  namespace synchronization {
+  namespace synchronizer {
 
     SynchronizerImpl::SynchronizerImpl(
         validation::ChainValidator &validator,
@@ -63,7 +63,7 @@ namespace iroha {
       }
     }
 
-    rxcpp::observable<Synchronizer::Commit>
+    rxcpp::observable<Commit>
     SynchronizerImpl::on_commit_chain() {
       return notifier_.get_observable();
     }

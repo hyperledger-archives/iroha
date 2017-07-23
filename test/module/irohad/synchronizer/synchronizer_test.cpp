@@ -17,7 +17,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "synchronization/impl/synchronizer_impl.hpp"
+#include "synchronizer/impl/synchronizer_impl.hpp"
 #include "validation/chain_validator.hpp"
 
 using iroha::ametsuchi::MutableFactory;
@@ -60,7 +60,7 @@ TEST(SynchronizerTest, CommitProccesing) {
   MutableFactoryMock mutable_factory;
   BlockLoader block_loader;
 
-  auto synchronizer = iroha::synchronization::SynchronizerImpl(
+  auto synchronizer = iroha::synchronizer::SynchronizerImpl(
       chain_validator, mutable_factory, block_loader);
 
   auto test_block = Block();
