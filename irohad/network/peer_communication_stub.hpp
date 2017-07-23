@@ -21,7 +21,7 @@
 #include <ametsuchi/storage.hpp>
 #include <consensus/consensus_service_stub.hpp>
 #include <ordering/ordering_service.hpp>
-#include <validation/chain/validator.hpp>
+#include <validation/chain_validator.hpp>
 #include <validation/stateful_validator.hpp>
 #include <model/model_crypto_provider.hpp>
 #include <model/model_hash_provider.hpp>

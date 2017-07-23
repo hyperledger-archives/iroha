@@ -15,37 +15,38 @@
  * limitations under the License.
  */
 
-#include <validation/chain/block_validator_stub.hpp>
-#include <validation/chain/validator_stub.hpp>
+#include "validation/impl/chain_validator_impl.hpp"
 
 namespace iroha {
   namespace validation {
 
-    bool ChainValidatorStub::validate(rxcpp::observable<model::Block>& blocks,
-                                      ametsuchi::MutableStorage& storage) {
-      auto block_validator = BlockValidatorStub(storage);
-      auto apply_block = [](const auto& block, auto& executor, auto& query,
-                            auto& top_block) {
-        for (const auto& tx : block.transactions) {
+    bool ChainValidatorImpl::validate_block(
+        const model::Block& block, ametsuchi::MutableStorage& storage) {
+      auto apply_block = [](const auto& current_block, auto& executor,
+                            auto& query, auto& top_block) {
+        for (const auto& tx : current_block.transactions) {
           for (const auto& command : tx.commands) {
-            if (!command->execute(query, executor)){
+            if (!command->execute(query, executor)) {
               return false;
             }
           }
         }
         return true;
       };
+      // TODO: check super-majority and crypto
+      return storage.apply(block, apply_block);
+    }
+
+    bool ChainValidatorImpl::validate_chain(
+        rxcpp::observable<model::Block>& blocks,
+        ametsuchi::MutableStorage& storage) {
       auto result = false;
       blocks
-          .take_while([&result, this, &storage, apply_block,
-                       block_validator](auto block) {
-            return (result = block_validator.validate(block) &&
-                             storage.apply(block, apply_block));
+          .take_while([&result, this, &storage](auto block) {
+            return this->validate_block(block, storage);
           })
           .subscribe([](auto block) {});
       return result;
     }
-
-    ChainValidatorStub::ChainValidatorStub() {}
-  }  // namespace validation
-}  // namespace iroha
+  }
+}

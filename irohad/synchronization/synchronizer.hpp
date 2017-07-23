@@ -14,22 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_SYNCHRONIZER_HPP
+#define IROHA_SYNCHRONIZER_HPP
 
-#ifndef IROHA_VALIDATOR_STUB_HPP
-#define IROHA_VALIDATOR_STUB_HPP
-
-#include <validation/chain/validator.hpp>
-#include <validation/chain/block_validator.hpp>
+#include <rxcpp/rx-observable.hpp>
+#include "model/block.hpp"
 
 namespace iroha {
-  namespace validation {
-    class ChainValidatorStub : public ChainValidator {
-     public:
-      ChainValidatorStub();
-      bool validate(rxcpp::observable <model::Block> &blocks,
-                               ametsuchi::MutableStorage &storage) override;
-    };
-  }// namespace validation
-}//namespace iroha
+  namespace synchronization {
 
-#endif //IROHA_VALIDATOR_STUB_HPP
+    class Synchronizer {
+     public:
+      // Commit is a bunch of Blocks
+      using Commit = rxcpp::observable<model::Block>;
+
+      /**
+       * Process commit message with Chain Validation and write to Ametsuchi
+       * @param commit_message
+       */
+      virtual void process_commit(iroha::model::Block commit_message) = 0;
+
+      /**
+       * Event on synchronization of Blocks
+       * @return Commit messages
+       */
+      virtual rxcpp::observable<Commit> on_commit_chain() = 0;
+    };
+  }
+}
+#endif  // IROHA_SYNCHRONIZER_HPP

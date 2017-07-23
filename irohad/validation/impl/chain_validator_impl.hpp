@@ -14,16 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_CHAIN_VALIDATOR_IMPL_HPP
+#define IROHA_CHAIN_VALIDATOR_IMPL_HPP
 
-#include <model/block.hpp>
-#include <validation/chain/block_validator_stub.hpp>
+#include "validation/chain_validator.hpp"
 
 namespace iroha {
   namespace validation {
+    class ChainValidatorImpl : public ChainValidator {
+     public:
+      bool validate_chain(rxcpp::observable<model::Block> &blocks,
+                          ametsuchi::MutableStorage &storage) override;
 
-    bool BlockValidatorStub::validate(const model::Block &block) const { return true; }
+      bool validate_block(const model::Block &block,
+                          ametsuchi::MutableStorage &storage) override;
+    };
+  }
+}
 
-    BlockValidatorStub::BlockValidatorStub(ametsuchi::MutableStorage &storage)
-        : storage_(storage) {}
-  }  // namespace validation
-}  // namespace iroha
+#endif  // IROHA_CHAIN_VALIDATOR_IMPL_HPP
