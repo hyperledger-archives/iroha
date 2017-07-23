@@ -15,25 +15,33 @@
  * limitations under the License.
  */
 
-#include "simulator.hpp"
-#include <ametsuchi/temporary_factory.hpp>
+#ifndef IROHA_SIMULATOR_HPP
+#define IROHA_SIMULATOR_HPP
+
+#include "simulator/block_creator.hpp"
+#include "simulator/verified_proposal_creator.hpp"
 #include "validation/stateful_validator.hpp"
 
 namespace iroha {
   namespace simulator {
 
-    Simulator::Simulator(validation::StatefulValidator& statefulValidator,
-                         ametsuchi::TemporaryFactory& factory)
-        : validator_(statefulValidator), ametsuchi_factory_(factory) {}
+    class Simulator : public VerifiedProposalCreator {
+     public:
+      Simulator(validation::StatefulValidator& statefulValidator, ametsuchi::TemporaryFactory& factory);
 
-    rxcpp::observable<model::Proposal> Simulator::on_verified_proposal() {
-      return notifier_.get_observable();
-    }
+      void process_proposal(model::Proposal proposal) override;
 
-    void Simulator::process_proposal(model::Proposal proposal) {
-      auto temporaryStorage = ametsuchi_factory_.createTemporaryWsv();
-      notifier_.get_subscriber().on_next(validator_.validate(proposal, *temporaryStorage));
-    }
+      rxcpp::observable<model::Proposal> on_verified_proposal() override;
 
+
+
+     private:
+      // internal
+      rxcpp::subjects::subject<model::Proposal> notifier_;
+      validation::StatefulValidator& validator_;
+      ametsuchi::TemporaryFactory& ametsuchi_factory_;
+    };
   }  // namespace simulator
 }  // namespace iroha
+
+#endif  // IROHA_SIMULATOR_HPP

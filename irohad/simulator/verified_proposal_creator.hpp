@@ -19,7 +19,7 @@
 #define IROHA_VERIFIED_PROPOSAL_CREATOR_HPP
 
 #include <rxcpp/rx.hpp>
-#include <model/proposal.hpp>
+#include "model/proposal.hpp"
 
 namespace iroha {
   namespace simulator {
