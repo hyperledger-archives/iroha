@@ -4,10 +4,16 @@ PROJECT(iroha C CXX)
 SET(CMAKE_CXX_FLAGS "-std=c++1y -Wall -fPIC")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
 SET(CMAKE_CXX_FLAGS_DEBUG   "-g -Wextra -Wno-unused-parameter -O0")
+SET(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
+
+SET(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
+SET(GCC_COVERAGE_LINK_FLAGS    "-lgcov")
+
 SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
 option(BENCHMARKING "Build benchmarks" OFF)
 option(TESTING "Build tests" ON)
+option(COVERAGE "Enable coverage" OFF)
 option(FUZZING "Build fuzzing binaries" OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
@@ -17,6 +23,7 @@ message(STATUS "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 message(STATUS "-DTESTING=${TESTING}")
 message(STATUS "-DBENCHMARKING=${BENCHMARKING}")
 message(STATUS "-DFUZZING=${FUZZING}")
+message(STATUS "-DCOVERAGE=${COVERAGE}")
 
 SET(IROHA_SCHEMA_DIR "${PROJECT_SOURCE_DIR}/schema")
 include_directories(
@@ -34,6 +41,11 @@ add_subdirectory(irohad)
 add_subdirectory(iroha-cli)
 
 link_directories(${PROJECT_BINARY_DIR}/lib)
+
+if (COVERAGE)
+  SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
+  SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
+endif()
 
 if(TESTING)
   enable_testing()

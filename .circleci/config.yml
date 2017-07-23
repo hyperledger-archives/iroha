@@ -14,19 +14,26 @@ jobs:
       - checkout
 
       - run:
+          name: deps install
+          command:  apt update &&  apt install curl -y
+
+      - run:
           name: ensure, required folders created
           command: |
             mkdir -p $IROHA_HOME
             mkdir -p $IROHA_BUILD
       - run:
           name: cmake
-          command: cmake -H$IROHA_HOME -B$IROHA_BUILD
+          command: cmake -DCOVERAGE=ON -H$IROHA_HOME -B$IROHA_BUILD
       - run:
           name: make
           command: cmake --build $IROHA_BUILD -- -j4
       - run:
           name: run tests
           command: cmake --build $IROHA_BUILD --target test
+      - run:
+          name: comment coverage on the pull-request
+          command: $IROHA_HOME/scripts/comment-coverage.sh
 
 #      - run:
 #          name: analyze source code with cppcheck and sonarqube
