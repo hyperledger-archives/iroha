@@ -22,15 +22,16 @@
 #include <iostream>
 
 #include "client.hpp"
-
+#include "validators.hpp"
 
 DEFINE_bool(new_account, false, "Choose if account does not exist");
 DEFINE_string(name, "", "Name of the account");
 
+DEFINE_bool(grpc, false, "Send sample transaction to IrohaNetwork");
+DEFINE_string(address, "127.0.0.1", "Address of the Iroha node");
+DEFINE_int32(port, 50051, "Port of iroha's Torii");
 
-DEFINE_bool(grpc, false, "send sample transaction to IrohaNetwork");
-DEFINE_string(address, "127.0.0.1", "Where is Iroha network");
-DEFINE_int32(port, 50051, "What port to access iroha's Torii");
+DEFINE_validator(port, &iroha_cli::validate_port);
 
 void create_account(std::string name);
 
@@ -46,18 +47,19 @@ int main(int argc, char* argv[]) {
     }
     create_account(FLAGS_name);
 
-  // Send test tx to Iroha
-  } else if (FLAGS_grpc) {
-    if (FLAGS_port > 0 && FLAGS_port < 65535) {
-      std::cout<< "Send transaction to "<< FLAGS_address <<":" << FLAGS_port << std::endl;
-      auto client = iroha_cli::CliClient(FLAGS_address,FLAGS_port);
-      // ToDo more variables transaction
-      client.sendTx(iroha::model::Transaction{});
-    } else {
-      std::cout<< "Invalid port number " << FLAGS_port << std::endl;
-      iroha_cli::CliClient(FLAGS_address,FLAGS_port);
-    }
+    // Send test tx to Iroha
   }
+
+  if (FLAGS_grpc) {
+    std::cout << "Send transaction to " << FLAGS_address << ":" << FLAGS_port
+              << std::endl;
+    auto client = iroha_cli::CliClient(FLAGS_address, FLAGS_port);
+    // ToDo more variables transaction
+    client.sendTx(iroha::model::Transaction{});
+    return 0;
+  }
+
+  return 0;
 }
 
 std::string hex_str(unsigned char* data, int len) {

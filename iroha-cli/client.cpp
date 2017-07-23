@@ -18,27 +18,23 @@
 // In iroha-cli only, " is used.
 #include "client.hpp"
 
-#include <grpc/grpc.h>
 #include <grpc++/channel.h>
 #include <grpc++/client_context.h>
 #include <grpc++/create_channel.h>
 #include <grpc++/security/credentials.h>
+#include <grpc/grpc.h>
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 
 namespace iroha_cli {
 
-  CliClient::CliClient(std::string targetIp, int port):
-      targetIp(targetIp),
-      port(port)
-  {}
+  CliClient::CliClient(std::string target_ip, int port)
+      : target_ip(target_ip), port(port) {}
 
-  std::string CliClient::sendTx(const Transaction &tx) {
-    auto channel = grpc::CreateChannel(
-      targetIp + ":" + std::to_string(port),
-      grpc::InsecureChannelCredentials()
-    );
+  std::string CliClient::sendTx(const iroha::model::Transaction &tx) {
+    auto channel = grpc::CreateChannel(target_ip + ":" + std::to_string(port),
+                                       grpc::InsecureChannelCredentials());
 
     auto stub = iroha::protocol::CommandService::NewStub(channel);
 
@@ -48,15 +44,13 @@ namespace iroha_cli {
     // ToDo model::transaction -> protocol::transaction
     iroha::protocol::Transaction transaction;
     grpc::Status status = stub->Torii(&context, transaction, &response);
-    
+
     if (status.ok()) {
       return response.message();
-    } else {
-      std::cout <<
-        status.error_code() << ": " <<
-        status.error_message()
-        << std::endl;
-      return response.message();
     }
+
+    std::cout << status.error_code() << ": " << status.error_message()
+              << std::endl;
+    return response.message();
   }
 };

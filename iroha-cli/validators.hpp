@@ -15,24 +15,11 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CLIENT_HPP
-#define IROHA_CLIENT_HPP
-
-#include <model/transaction.hpp>
 #include <string>
+#include <gflags/gflags.h>
 
 namespace iroha_cli {
 
-  class CliClient {
-   public:
-    CliClient(std::string target_ip, int port);
+bool validate_port(const char*, gflags::int32);
 
-    std::string sendTx(const iroha::model::Transaction &tx);
-
-   private:
-    std::string target_ip;
-    int port;
-  };
-};
-
-#endif  // IROHA_CLIENT_CPP_HPP
+} // namespace iroha_cli

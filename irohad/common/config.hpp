@@ -18,28 +18,56 @@ limitations under the License.
 #define __COMMON_CONFIG_HPP_
 
 #include <rapidjson/document.h>
-#include <rapidjson/stringbuffer.h>
 #include <rapidjson/istreamwrapper.h>
+#include <rapidjson/stringbuffer.h>
 
 #include <string>
 
 namespace common {
+  namespace config {
 
-    namespace config {
+    using namespace rapidjson;
 
-        using namespace rapidjson;
+    class ConfigLoader {
+     public:
+      ConfigLoader(const std::string& file);
 
-        class ConfigLoader{
-            Document doc;
-        public:
-            ConfigLoader(const std::string& file);
+      int getIntOrDefault(const std::string& key, int def);
+      std::string getStringOrDefault(const std::string& key, const std::string& def);
+      bool getBoolOrDefault(const std::string& key, bool def);
 
-            int getIntOrElse(const std::string& key, int def);
-            std::string getStringOrElse(const std::string& key, std::string def);
-            bool getBoolOrElse(const std::string& key, bool def);
+      // template <class T>
+      // T getValueOrDefault(const std::string& key, T&& def) {
+      //   const auto& val = doc[key.c_str()];
+      //   if (!(doc.IsObject() && doc.HasMember(key.c_str()))) {
+      //     goto end;
+      //   }
 
-        };
+      //   if (std::is_same<T, int>::value && val.IsInt()) {
+      //     // quite dirty hack for pleasing the compiler
+      //     // maybe that switch(type){..} possible
+      //     // to make compile-time
+      //     auto v = val.GetInt();
+      //     return *((T*)(&v));
+      //   }
+
+      //   if (std::is_same<T, std::string>::value && val.IsString()) {
+      //     auto v = val.GetString();
+      //     return *((T*)(&v));
+      //   }
+
+      //   if (std::is_same<T, bool>::value && val.IsBool()) {
+      //     auto v = val.GetBool();
+      //     return *((T*)(&v));
+      //   }
+      // end:
+      //   return def;
+      // }
+
+     private:
+      Document doc;
     };
+  };
 };  // namespace common
 
-#endif // __COMMON_CONFIG_HPP_
+#endif  // __COMMON_CONFIG_HPP_

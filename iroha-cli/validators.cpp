@@ -15,24 +15,16 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CLIENT_HPP
-#define IROHA_CLIENT_HPP
-
-#include <model/transaction.hpp>
-#include <string>
+#include <iostream>
+#include "validators.hpp"
 
 namespace iroha_cli {
 
-  class CliClient {
-   public:
-    CliClient(std::string target_ip, int port);
+bool validate_port(const char*, gflags::int32 port) {
+  if (port > 0 && port < 32768) return 1;
 
-    std::string sendTx(const iroha::model::Transaction &tx);
+  std::cout<<"Port can be only in range (0, 32768)";
+  return 0;
+}
 
-   private:
-    std::string target_ip;
-    int port;
-  };
-};
-
-#endif  // IROHA_CLIENT_CPP_HPP
+} // namespace iroha_cli

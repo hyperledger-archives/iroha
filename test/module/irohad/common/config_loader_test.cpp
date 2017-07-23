@@ -18,46 +18,44 @@
 #include <gtest/gtest.h>
 #include <common/config.hpp>
 
-#include <fstream>
 #include <cstdlib>
+#include <fstream>
 class ConfigLoaderTest : public testing::Test {
-public:
-    virtual void SetUp() {
-        std::ofstream ofs("sample.conf");
-        ofs <<  "{\"name\":\"maruuchi\",\"age\":20, \"isRamen\": false}";
-        ofs.close();
-    }
+ public:
+  virtual void SetUp() {
+    std::ofstream ofs("sample.conf");
+    ofs << "{\"name\":\"maruuchi\",\"age\":20, \"isRamen\": false}";
+    ofs.close();
+  }
 
-    virtual void TearDown() {
-      system("rm sample.conf");
-    }
+  virtual void TearDown() { system("rm sample.conf"); }
 };
 
 TEST_F(ConfigLoaderTest, Normal) {
   auto loader = common::config::ConfigLoader("sample.conf");
-  ASSERT_STREQ(loader.getStringOrElse("name","hibiya").c_str(), "maruuchi");
-  ASSERT_EQ(loader.getIntOrElse("age", 12), 20);
-  ASSERT_FALSE(loader.getBoolOrElse("isRamen", true));
+  ASSERT_STREQ(loader.getStringOrDefault("name", "hibiya").c_str(), "maruuchi");
+  ASSERT_EQ(loader.getIntOrDefault("age", 12), 20);
+  ASSERT_FALSE(loader.getBoolOrDefault("isRamen", true));
 }
 
 TEST_F(ConfigLoaderTest, NoFile) {
   auto loader = common::config::ConfigLoader("sample__.conf");
-  ASSERT_STREQ(loader.getStringOrElse("name","hibiya").c_str(), "hibiya");
-  ASSERT_EQ(loader.getIntOrElse("age", 12), 12);
-  ASSERT_FALSE(loader.getBoolOrElse("isRamen", false));
+  ASSERT_STREQ(loader.getStringOrDefault("name", "hibiya").c_str(), "hibiya");
+  ASSERT_EQ(loader.getIntOrDefault("age", 12), 12);
+  ASSERT_FALSE(loader.getBoolOrDefault("isRamen", false));
 }
 
 TEST_F(ConfigLoaderTest, WrongStrKeyName) {
   auto loader = common::config::ConfigLoader("sample.conf");
-  ASSERT_STREQ(loader.getStringOrElse("names","hibiya").c_str(), "hibiya");
+  ASSERT_STREQ(loader.getStringOrDefault("names", "hibiya").c_str(), "hibiya");
 }
 
 TEST_F(ConfigLoaderTest, WrongIntKeyName) {
   auto loader = common::config::ConfigLoader("sample.conf");
-  ASSERT_EQ(loader.getIntOrElse("ago", 12), 12);
+  ASSERT_EQ(loader.getIntOrDefault("ago", 12), 12);
 }
 
 TEST_F(ConfigLoaderTest, WrongBoolKeyName) {
   auto loader = common::config::ConfigLoader("sample.conf");
-  ASSERT_TRUE(loader.getBoolOrElse("isRamenSanro", true));
+  ASSERT_TRUE(loader.getBoolOrDefault("isRamenSanro", true));
 }

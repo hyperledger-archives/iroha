@@ -6,7 +6,7 @@ add_library(cli_client
     )
 
 target_link_libraries(cli_client
-    endpoint)
+    endpoint optional)
 
-add_executable(cli-main main.cpp)
+add_executable(cli-main main.cpp validators.cpp)
 target_link_libraries(cli-main gflags ed25519 cli_client)
