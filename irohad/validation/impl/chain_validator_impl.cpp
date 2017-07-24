@@ -30,7 +30,7 @@ namespace iroha {
                             auto& query, auto& top_block) {
         for (const auto& tx : current_block.transactions) {
           for (const auto& command : tx.commands) {
-            if (!command->execute(query, executor)) {
+            if (not command->execute(query, executor)) {
               return false;
             }
           }
@@ -63,7 +63,9 @@ namespace iroha {
     bool ChainValidatorImpl::checkSupermajority(
         ametsuchi::MutableStorage& storage, uint64_t signs_num) {
       auto all_peers = storage.getPeers();
-      if (!all_peers) return false;
+      if (not all_peers.has_value()) {
+        return false;
+      }
       auto f = (all_peers.value().size() - 1) / 3;
       return signs_num >= 2 * f + 1;
     }

@@ -31,7 +31,7 @@ namespace iroha {
 
     void SynchronizerImpl::process_commit(iroha::model::Block commit_message) {
       auto storage = mutableFactory_.createMutableStorage();
-      if (!storage) {
+      if (not storage) {
         // TODO: write to log ametsuchi is not ok
         return;
       }

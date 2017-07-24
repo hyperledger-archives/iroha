@@ -51,7 +51,9 @@ namespace iroha {
       HashProviderImpl hashProvider;
       auto block_hash = hashProvider.get_hash(block);
 
-      if (block.sigs.size() == 0) return false;
+      if (block.sigs.size() == 0) {
+        return false;
+      }
 
       for (auto sign : block.sigs) {
         auto verified = iroha::verify(block_hash.data(), block_hash.size(),

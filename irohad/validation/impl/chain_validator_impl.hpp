@@ -24,7 +24,7 @@ namespace iroha {
   namespace validation {
     class ChainValidatorImpl : public ChainValidator {
      public:
-      ChainValidatorImpl(model::ModelCryptoProvider &crypto_provider);
+      explicit ChainValidatorImpl(model::ModelCryptoProvider &crypto_provider);
 
       bool validateChain(rxcpp::observable<model::Block> &blocks,
                          ametsuchi::MutableStorage &storage) override;
@@ -36,7 +36,8 @@ namespace iroha {
       // internal
       model::ModelCryptoProvider &crypto_provider_;
 
-      bool checkSupermajority(ametsuchi::MutableStorage& storage, uint64_t signs_num);
+      bool checkSupermajority(ametsuchi::MutableStorage &storage,
+                              uint64_t signs_num);
     };
   }
 }
