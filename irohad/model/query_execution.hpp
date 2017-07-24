@@ -1,0 +1,85 @@
+/**
+ * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * http://soramitsu.co.jp
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#ifndef IROHA_QUERY_EXECUTION_HPP
+#define IROHA_QUERY_EXECUTION_HPP
+
+#include <nonstd/optional.hpp>
+#include "model/query.hpp"
+#include "model/query_response.hpp"
+
+#include "model/queries/get_account.hpp"
+#include "model/queries/get_account_assets.hpp"
+#include "model/queries/get_signatories.hpp"
+#include "model/queries/get_transactions.hpp"
+
+#include "ametsuchi/block_query.hpp"
+#include "ametsuchi/wsv_query.hpp"
+
+namespace iroha {
+  namespace model {
+
+    /**
+     * Converting business objects to protobuf and vice versa
+     */
+    class QueryProcessingFactory {
+     public:
+      /**
+       * Execute and validate query.
+       *
+       * @param query
+       * @return
+       */
+      std::shared_ptr<iroha::model::QueryResponse> execute(
+          const model::Query& query);
+      QueryProcessingFactory(ametsuchi::WsvQuery& wsvQuery,
+                             ametsuchi::BlockQuery& blockQuery);
+
+     private:
+      bool validate(const model::GetAccountAssets& query);
+
+      bool validate(const model::GetAccount& query);
+
+      bool validate(const model::GetSignatories& query);
+
+      bool validate(const model::GetAccountAssetTransactions& query);
+
+      bool validate(const model::GetAccountTransactions& query);
+
+      std::shared_ptr<iroha::model::QueryResponse> executeGetAccountAssets(
+          const model::GetAccountAssets& query);
+
+      std::shared_ptr<iroha::model::QueryResponse> executeGetAccount(
+          const model::GetAccount& query);
+
+      std::shared_ptr<iroha::model::QueryResponse> executeGetSignatories(
+          const model::GetSignatories& query);
+
+      std::shared_ptr<iroha::model::QueryResponse>
+      executeGetAccountAssetTransactions(
+          const model::GetAccountAssetTransactions& query);
+
+      std::shared_ptr<iroha::model::QueryResponse>
+      executeGetAccountTransactions(const model::GetAccountTransactions& query);
+
+      ametsuchi::WsvQuery& _wsvQuery;
+      ametsuchi::BlockQuery& _blockQuery;
+    };
+
+  }  // namespace model
+}  // namespace iroha
+
+#endif  // IROHA_QUERY_EXECUTION_HPP

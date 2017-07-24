@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package iroha.protocol;
+
+import "block.proto";
+import "queries.proto";
+
+enum ResponseCode {
+  FAIL = 0; // default value
+  OK = 1;
+}
+
+message ToriiResponse {
+  ResponseCode code = 1;
+  string message = 2;
+}
+
+service CommandService {
+  rpc Torii (Transaction) returns (ToriiResponse);
+}
+
+message QueryResponse {
+  ResponseCode code = 1;
+  string message = 2;
+}
+
+service QueryService {
+  rpc Find (Query) returns (QueryResponse);
+}

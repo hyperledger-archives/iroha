@@ -1,0 +1,96 @@
+syntax = "proto3";
+package iroha.protocol;
+
+message Amount {
+    uint64 integer_part = 1;
+    uint64 fractial_part = 2;
+}
+
+message AddAssetQuantity {
+    string account_id = 1;
+    string asset_id = 2;
+    Amount amount = 3;
+}
+
+message AddPeer {
+    string address = 1;
+    bytes peer_key = 2;
+}
+
+message AddSignatory {
+    string account_id = 1;
+    bytes public_key = 2;
+}
+
+message AssignMasterKey {
+    string account_id = 1;
+    bytes public_key = 2;
+}
+
+message CreateAsset {
+    string asset_name = 1;
+    string domain_id = 2;
+    uint32 precision = 3;
+}
+
+message CreateAccount {
+    string account_name = 1;
+    string domain_id = 2;
+    bytes main_pubkey = 3;
+}
+
+message CreateDomain {
+    string domain_name = 1;
+}
+
+message RemoveSignatory {
+    string account_id = 1;
+    bytes public_key = 2;
+}
+
+message SetAccountPermissions {
+
+    message Permissions {
+        bool issue_assets = 1;
+        bool create_assets = 2;
+        bool create_accounts = 3;
+        bool create_domains = 4;
+        bool read_all_accounts = 5;
+        bool add_signatory = 6;
+        bool remove_signatory = 7;
+        bool set_permissions = 8;
+        bool set_quorum = 9;
+        bool can_transfer = 10;
+    }
+
+    string account_id = 1;
+    Permissions permissions = 2;
+}
+
+message SetAccountQuorum {
+    string account_id = 1;
+    uint32 quorum = 2;
+}
+
+message TransferAsset {
+    string src_account_id = 1;
+    string dest_account_id = 2;
+    string asset_id = 3;
+    Amount amount = 4;
+}
+
+message Command {
+    oneof command {
+        AddAssetQuantity add_asset_quantity = 1;
+        AddPeer add_peer = 2;
+        AddSignatory add_signatory = 3;
+        AssignMasterKey account_assign_mk = 4;
+        CreateAsset create_asset = 5;
+        CreateAccount create_account = 6;
+        CreateDomain create_domain = 7;
+        RemoveSignatory remove_sign = 8;
+        SetAccountPermissions set_permission = 9;
+        SetAccountQuorum set_quorum = 10;
+        TransferAsset transfer_asset = 11;
+    }
+}
