@@ -37,8 +37,10 @@ namespace common {
      *  4) implement on_next_* handlers
      *  5) implement validate() method
      */
-    template<typename T>
+    template <typename T>
     class VerificationStrategy {
+      template <typename K> friend
+      class TestObservable;
      public:
 
       /**
@@ -61,13 +63,13 @@ namespace common {
       virtual ~VerificationStrategy() noexcept(false) {
 
       };
+     protected:
 
       /**
        * validation function for invariant
        * @return true if invariant safe, otherwice false
        */
       virtual bool validate() = 0;
-     protected:
 
       /**
        * Exception reason
@@ -79,7 +81,7 @@ namespace common {
      * TestObservable class provide wrapper for observable
      * @tparam T type of data in wrapped observable
      */
-    template<typename T>
+    template <typename T>
     class TestObservable {
      public:
 
@@ -87,7 +89,7 @@ namespace common {
        * Constructor for wrapping observable for checking invariant
        * @param unwrapped_observable - object for wrapping
        */
-      TestObservable(rxcpp::observable<T> unwrapped_observable)
+      TestObservable(rxcpp::observable <T> unwrapped_observable)
           : unwrapped_(unwrapped_observable) {
       };
 
@@ -122,7 +124,7 @@ namespace common {
       }
 
      private:
-      rxcpp::observable<T> unwrapped_;
+      rxcpp::observable <T> unwrapped_;
       std::unique_ptr<VerificationStrategy<T>> strategy_;
     };
 
@@ -130,7 +132,7 @@ namespace common {
      * CallExact check invariant that subscriber called exact number of timers
      * @tparam T - observable parameter
      */
-    template<typename T>
+    template <typename T>
     class CallExact : public VerificationStrategy<T> {
      public:
 
@@ -154,6 +156,7 @@ namespace common {
         expected_number_of_calls_ = 0;
         std::swap(expected_number_of_calls_, rhs.expected_number_of_calls_);
         std::swap(number_of_calls_, rhs.number_of_calls_);
+        return *this;
       }
 
       /**
@@ -170,7 +173,9 @@ namespace common {
         ++number_of_calls_;
       };
 
-      virtual bool validate() {
+     protected:
+
+      bool validate() override {
         auto val = number_of_calls_ == expected_number_of_calls_;
         if (!val) {
           this->invalidate_reason_ = "Expected calls: " +
