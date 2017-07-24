@@ -23,14 +23,16 @@
 #include <utility>
 #include <memory>
 #include <vector>
-#include "consensus/yac/yac.hpp"
 #include <iostream>
+#include "consensus/yac/yac.hpp"
+#include "common/test_observable.hpp"
 
 using ::testing::Return;
 using ::testing::_;
 using ::testing::An;
 
 using namespace iroha::consensus::yac;
+using namespace common::test_observable;
 using namespace std;
 
 /**
@@ -231,8 +233,7 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveOneVote) {
  * when yac cold started and achieve supermajority of  votes
  */
 TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
-  cout << "----------|Coldstart - supermajority of votes|----------"
-       << endl;
+  cout << "----------|Coldstart - supermajority of votes|----------" << endl;
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
@@ -262,9 +263,13 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveCommitMessage) {
       "|----------"
        << endl;
   YacHash propagated_hash("my_proposal", "my_block");
-  yac->on_commit().subscribe([propagated_hash](auto commit_hash) {
+
+  // verify that commit emitted
+  TestObservable<YacHash> wrapper(yac->on_commit());
+  auto invariant = CallExact<YacHash>(1);
+  wrapper.test_subscriber(std::make_unique<CallExact<YacHash>>(
+      std::move(invariant)), [propagated_hash](auto commit_hash) {
     ASSERT_EQ(propagated_hash, commit_hash);
-    // todo check that invoked once (find test subscriber)
   });
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
@@ -284,5 +289,6 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveCommitMessage) {
     msg.votes.push_back(crypto->getVote(propagated_hash));
   }
   network->notification->on_commit(committed_peer, msg);
+  ASSERT_EQ(true, invariant.validate());
 }
 #endif //IROHA_YAC_SIMPLE_CASE_TEST_HPP
