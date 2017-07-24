@@ -1,3 +1,4 @@
+add_subdirectory(chain)
 add_subdirectory(stateless)
 
 add_library(stateful_validator
@@ -11,6 +12,14 @@ target_link_libraries(stateful_validator
     model
     )
 
+
+add_library(stateless_validator
+    impl/stateless_validator_impl.cpp
+    )
+
+target_link_libraries(stateless_validator
+    model
+    )
 add_library(chain_validator
     impl/chain_validator_impl.cpp)
 

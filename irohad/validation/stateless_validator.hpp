@@ -15,27 +15,19 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_TRANSACTION_RESPONSE_HPP
-#define IROHA_TRANSACTION_RESPONSE_HPP
+#ifndef IROHA_STATELESS_VALIDATOR_HPP
+#define IROHA_STATELESS_VALIDATOR_HPP
 
-#include <model/transaction.hpp>
-#include <model/client.hpp>
-
+#include "model/query.hpp"
 namespace iroha {
-  namespace model {
+  namespace validation {
 
-    /**
-     * Transaction response is data with status during transaction lifecycle
-     */
-    struct TransactionResponse {
-
-      /**
-       * Processed transaction
-       */
-      Transaction transaction;
-
-      virtual ~TransactionResponse() = default;
+    class StatelessValidator {
+     public:
+      virtual bool validate(const model::Transaction& transaction) const = 0;
+      virtual bool validate(const model::Query& query) const = 0;
     };
-  } //namespace model
-} //namespace iroha
-#endif //IROHA_TRANSACTION_RESPONSE_HPP
+  }
+}
+
+#endif  // IROHA_STATELESS_VALIDATOR_HPP
