@@ -18,29 +18,21 @@
 #ifndef IROHA_YAC_GATE_HPP
 #define IROHA_YAC_GATE_HPP
 
-#include "network/consensus_gate.hpp"
-#include "consensus/yac/yac_hash_provider.hpp"
-#include "consensus/yac/messages.hpp"
 #include "consensus/yac/cluster_order.hpp"
+#include "consensus/yac/messages.hpp"
+#include "consensus/yac/yac_hash_provider.hpp"
+#include "network/consensus_gate.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
-      class YacGate : public network::ConsensusGate {
-       public:
-        virtual void vote(model::Block) = 0;
-
-        virtual rxcpp::observable<model::Block> on_commit() = 0;
-
-        virtual ~YacGate() = default;
-      };
+      class YacGate : public network::ConsensusGate {};
 
       /**
        * Provide gate for ya consensus
        */
       class HashGate {
        public:
-
         /**
          * Proposal new hash in network
          * @param hash - hash for voting
@@ -55,7 +47,7 @@ namespace iroha {
 
         virtual ~HashGate() = default;
       };
-    } // namespace yac
-  } // namespace consensus
-} // iroha
-#endif //IROHA_YAC_GATE_HPP
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha
+#endif  // IROHA_YAC_GATE_HPP

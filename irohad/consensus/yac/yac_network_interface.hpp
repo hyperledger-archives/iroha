@@ -28,7 +28,6 @@ namespace iroha {
 
       class YacNetworkNotifications {
        public:
-
         /**
          * Callback on receiving commit message
          * @param from - peer that provide message
@@ -55,7 +54,6 @@ namespace iroha {
 
       class YacNetwork {
        public:
-
         virtual void subscribe(
             std::shared_ptr<YacNetworkNotifications> handler) = 0;
 
@@ -85,7 +83,7 @@ namespace iroha {
          */
         virtual ~YacNetwork() = default;
       };
-    } // namespace yac
-  } // namespace consensus
-} // iroha
-#endif //IROHA_YAC_NETWORK_INTERFACE_HPP
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha
+#endif  // IROHA_YAC_NETWORK_INTERFACE_HPP

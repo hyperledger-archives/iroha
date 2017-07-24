@@ -21,24 +21,19 @@ namespace iroha {
   namespace consensus {
     namespace yac {
 
-      ClusterOrdering::ClusterOrdering()
-          : order_({}) {
-      }
+      ClusterOrdering::ClusterOrdering() : order_({}) {}
 
       ClusterOrdering::ClusterOrdering(std::vector<model::Peer> order)
-          : order_(order) {
-      }
+          : order_(order) {}
 
       model::Peer ClusterOrdering::currentLeader() {
         if (index_ >= order_.size()) {
-          index_ = 0; // todo dangerous indexing, what if order_.size == 0?
+          index_ = 0;  // todo dangerous indexing, what if order_.size == 0?
         }
         return order_.at(index_);
       }
 
-      bool ClusterOrdering::hashNext() {
-        return index_ != order_.size();
-      }
+      bool ClusterOrdering::hasNext() { return index_ != order_.size(); }
 
       bool ClusterOrdering::leaderInValidateSet() {
         auto f = (order_.size() - 1) / 3;
@@ -54,6 +49,6 @@ namespace iroha {
         ++index_;
         return *this;
       }
-    } // namespace yac
-  } // namespace consensus
-} // iroha
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha

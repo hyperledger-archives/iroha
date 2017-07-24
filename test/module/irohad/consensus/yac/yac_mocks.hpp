@@ -24,10 +24,7 @@
 using namespace iroha::consensus::yac;
 using iroha::model::Peer;
 
-
-using iroha::model::Peer;
-
-Peer f_peer(std::string address) {
+Peer mk_peer(std::string address) {
   Peer peer;
   peer.address = address;
   return peer;
@@ -48,15 +45,11 @@ class CryptoProviderMock : public YacCryptoProvider {
     return vote;
   };
 
-  CryptoProviderMock() {
-  };
+  CryptoProviderMock(){};
 
-  CryptoProviderMock(const CryptoProviderMock &) {
-  };
+  CryptoProviderMock(const CryptoProviderMock &){};
 
-  CryptoProviderMock &operator=(const CryptoProviderMock &) {
-    return *this;
-  };
+  CryptoProviderMock &operator=(const CryptoProviderMock &) { return *this; };
 };
 
 /**
@@ -71,15 +64,11 @@ class FakeTimer : public Timer {
 
   MOCK_METHOD0(deny, void());
 
-  FakeTimer() {
-  };
+  FakeTimer(){};
 
-  FakeTimer(const FakeTimer &rhs) {
-  };
+  FakeTimer(const FakeTimer &rhs){};
 
-  FakeTimer &operator=(const FakeTimer &rhs) {
-    return *this;
-  };
+  FakeTimer &operator=(const FakeTimer &rhs) { return *this; };
 };
 
 /**
@@ -87,34 +76,26 @@ class FakeTimer : public Timer {
  */
 class FakeNetwork : public YacNetwork {
  public:
-
   void subscribe(std::shared_ptr<YacNetworkNotifications> handler) override {
     notification = handler;
   };
 
-  void release() {
-    notification.reset();
-  }
+  void release() { notification.reset(); }
 
   MOCK_METHOD2(send_commit, void(Peer, CommitMessage));
   MOCK_METHOD2(send_reject, void(Peer, RejectMessage));
   MOCK_METHOD2(send_vote, void(Peer, VoteMessage));
 
-  FakeNetwork() {
-  };
+  FakeNetwork(){};
 
-  FakeNetwork(const FakeNetwork &rhs) {
-    notification = rhs.notification;
-  };
+  FakeNetwork(const FakeNetwork &rhs) { notification = rhs.notification; };
 
   FakeNetwork &operator=(const FakeNetwork &rhs) {
     notification = rhs.notification;
     return *this;
   };
 
-  FakeNetwork(FakeNetwork &&rhs) {
-    std::swap(notification, rhs.notification);
-  };
+  FakeNetwork(FakeNetwork &&rhs) { std::swap(notification, rhs.notification); };
 
   FakeNetwork &operator=(FakeNetwork &&rhs) {
     std::swap(notification, rhs.notification);
@@ -134,29 +115,19 @@ class YacTest : public ::testing::Test {
   std::shared_ptr<Yac> yac;
 
   // ------|Round|------
-  std::vector<Peer> default_peers = {f_peer("1"),
-                                     f_peer("2"),
-                                     f_peer("3"),
-                                     f_peer("4"),
-                                     f_peer("5"),
-                                     f_peer("6"),
-                                     f_peer("7")
-  };
+  std::vector<Peer> default_peers = {mk_peer("1"), mk_peer("2"), mk_peer("3"),
+                                     mk_peer("4"), mk_peer("5"), mk_peer("6"),
+                                     mk_peer("7")};
 
   virtual void SetUp() override {
     network = std::make_shared<FakeNetwork>();
     crypto = std::make_shared<CryptoProviderMock>();
     timer = std::make_shared<FakeTimer>();
-    yac = Yac::create(network,
-                      crypto,
-                      timer,
-                      delay);
+    yac = Yac::create(network, crypto, timer, delay);
     network->subscribe(yac);
   };
 
-  virtual void TearDown() override {
-    network->release();
-  };
+  virtual void TearDown() override { network->release(); };
 };
 
-#endif //IROHA_YAC_MOCKS_HPP
+#endif  // IROHA_YAC_MOCKS_HPP

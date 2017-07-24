@@ -18,14 +18,14 @@
 #ifndef IROHA_YAC_SIMPLE_CASE_TEST_HPP
 #define IROHA_YAC_SIMPLE_CASE_TEST_HPP
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <iostream>
+#include <memory>
+#include <utility>
+#include <vector>
 #include "common/test_observable.hpp"
 #include "yac_mocks.hpp"
-#include <utility>
-#include <memory>
-#include <vector>
-#include <iostream>
 
 using ::testing::Return;
 using ::testing::_;
@@ -35,7 +35,6 @@ using ::testing::AtLeast;
 using namespace iroha::consensus::yac;
 using namespace common::test_observable;
 using namespace std;
-
 
 /**
  * Test provide use case for init yac object
@@ -53,8 +52,7 @@ TEST_F(YacTest, YacWhenInit) {
 
   auto yac_ = Yac::create(std::make_shared<FakeNetwork>(network_),
                           std::make_shared<CryptoProviderMock>(crypto_),
-                          std::make_shared<FakeTimer>(timer_),
-                          fake_delay_);
+                          std::make_shared<FakeTimer>(timer_), fake_delay_);
 
   network_.subscribe(yac_);
 }
@@ -70,30 +68,28 @@ TEST_F(YacTest, YacWhenVoting) {
   EXPECT_CALL(*network, send_vote(_, _)).Times(default_peers.size());
 
   YacHash my_hash("my_proposal_hash", "my_block_hash");
-  yac->vote(my_hash, default_peers);
+  yac->vote(my_hash, ClusterOrdering(default_peers));
 }
 
 /**
  * Test provide scenario when yac cold started and achieve one vote
  */
 TEST_F(YacTest, YacWhenColdStartAndAchieveOneVote) {
-  cout << "----------|Coldstart - one vote|----------" << endl;
+  cout << "----------|Coldstart - receive one vote|----------" << endl;
 
   // verify that commit not emitted
   TestObservable<YacHash> wrapper(yac->on_commit());
   auto invariant = CallExact<YacHash>(0);
-  wrapper.test_subscriber(std::make_unique<CallExact<YacHash>>(
-      std::move(invariant)), [](auto commit_hash) {
-  });
+  wrapper.test_subscriber(
+      std::make_unique<CallExact<YacHash>>(std::move(invariant)),
+      [](auto commit_hash) {});
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
   EXPECT_CALL(*network, send_vote(_, _)).Times(0);
 
-  EXPECT_CALL(*crypto, verify(An<CommitMessage>()))
-      .Times(0);
-  EXPECT_CALL(*crypto, verify(An<RejectMessage>()))
-      .Times(0);
+  EXPECT_CALL(*crypto, verify(An<CommitMessage>())).Times(0);
+  EXPECT_CALL(*crypto, verify(An<RejectMessage>())).Times(0);
   EXPECT_CALL(*crypto, verify(An<VoteMessage>()))
       .Times(1)
       .WillRepeatedly(Return(true));
@@ -112,23 +108,22 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveOneVote) {
  */
 TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
   cout << "----------|Start => receive supermajority of votes"
-      "|----------" << endl;
+          "|----------"
+       << endl;
 
   // verify that commit not emitted
   TestObservable<YacHash> wrapper(yac->on_commit());
   auto invariant = CallExact<YacHash>(0);
-  wrapper.test_subscriber(std::make_unique<CallExact<YacHash>>(
-      std::move(invariant)), [](auto commit_hash) {
-  });
+  wrapper.test_subscriber(
+      std::make_unique<CallExact<YacHash>>(std::move(invariant)),
+      [](auto commit_hash) {});
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
   EXPECT_CALL(*network, send_vote(_, _)).Times(0);
 
-  EXPECT_CALL(*crypto, verify(An<CommitMessage>()))
-      .Times(0);
-  EXPECT_CALL(*crypto, verify(An<RejectMessage>()))
-      .Times(0);
+  EXPECT_CALL(*crypto, verify(An<CommitMessage>())).Times(0);
+  EXPECT_CALL(*crypto, verify(An<RejectMessage>())).Times(0);
   EXPECT_CALL(*crypto, verify(An<VoteMessage>()))
       .Times(default_peers.size())
       .WillRepeatedly(Return(true));
@@ -152,31 +147,30 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveCommitMessage) {
   // verify that commit emitted
   TestObservable<YacHash> wrapper(yac->on_commit());
   auto invariant = CallExact<YacHash>(1);
-  wrapper.test_subscriber(std::make_unique<CallExact<YacHash>>(
-      std::move(invariant)), [propagated_hash](auto commit_hash) {
-    ASSERT_EQ(propagated_hash, commit_hash);
-  });
+  wrapper.test_subscriber(
+      std::make_unique<CallExact<YacHash>>(std::move(invariant)),
+      [propagated_hash](auto commit_hash) {
+        ASSERT_EQ(propagated_hash, commit_hash);
+      });
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
   EXPECT_CALL(*network, send_vote(_, _)).Times(0);
 
-  EXPECT_CALL(*crypto, verify(An<CommitMessage>()))
-      .WillOnce(Return(true));
-  EXPECT_CALL(*crypto, verify(An<RejectMessage>()))
-      .Times(0);
-  EXPECT_CALL(*crypto, verify(An<VoteMessage>()))
-      .Times(0);
+  EXPECT_CALL(*crypto, verify(An<CommitMessage>())).WillOnce(Return(true));
+  EXPECT_CALL(*crypto, verify(An<RejectMessage>())).Times(0);
+  EXPECT_CALL(*crypto, verify(An<VoteMessage>())).Times(0);
 
   EXPECT_CALL(*timer, deny()).Times(AtLeast(1));
 
   auto committed_peer = default_peers.at(0);
   auto msg = CommitMessage();
   for (auto &peer : default_peers) {
+    (void)peer;
     msg.votes.push_back(crypto->getVote(propagated_hash));
   }
   network->notification->on_commit(committed_peer, msg);
 
   ASSERT_EQ(true, wrapper.validate());
 }
-#endif //IROHA_YAC_SIMPLE_CASE_TEST_HPP
+#endif  // IROHA_YAC_SIMPLE_CASE_TEST_HPP

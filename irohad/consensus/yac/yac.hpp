@@ -18,19 +18,18 @@
 #ifndef IROHA_YAC_HPP
 #define IROHA_YAC_HPP
 
+#include <memory>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
-#include <tuple>
-#include <memory>
 #include <vector>
 
-#include "consensus/yac/yac_network_interface.hpp"
+#include "consensus/yac/timer.hpp"
 #include "consensus/yac/yac_crypto_provider.hpp"
 #include "consensus/yac/yac_gate.hpp"
-#include "network/consensus_gate.hpp"
-#include "model/block.hpp"
-#include "consensus/yac/timer.hpp"
 #include "consensus/yac/yac_network_interface.hpp"
+#include "model/block.hpp"
+#include "network/consensus_gate.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -39,20 +38,18 @@ namespace iroha {
                   public YacNetworkNotifications,
                   public std::enable_shared_from_this<Yac> {
        public:
-
         /**
          * Method for creating Yac consensus object
+         * @param delay for timer in milliseconds
          */
-        static std::shared_ptr<Yac> create(std::shared_ptr<YacNetwork> network,
-                                    std::shared_ptr<YacCryptoProvider> crypto,
-                                    std::shared_ptr<Timer> timer,
-                                    uint64_t delay);
+        static std::shared_ptr<Yac> create(
+            std::shared_ptr<YacNetwork> network,
+            std::shared_ptr<YacCryptoProvider> crypto,
+            std::shared_ptr<Timer> timer, uint64_t delay);
 
         Yac(std::shared_ptr<YacNetwork> network,
             std::shared_ptr<YacCryptoProvider> crypto,
-            std::shared_ptr<Timer> timer,
-            uint64_t delay);
-
+            std::shared_ptr<Timer> timer, uint64_t delay);
 
         // ------|Hash gate|------
 
@@ -72,7 +69,8 @@ namespace iroha {
         // ------|Private interface|------
 
         /**
-         * Voting step is strategy of propagating vote until commit/reject message
+         * Voting step is strategy of propagating vote until commit/reject
+         * message
          */
         void votingStep(YacHash hash);
 
@@ -92,7 +90,7 @@ namespace iroha {
          * Check voting of peer in current round.
          * Note: if peer didn't vote before - store those information
          * @param peer - voted peer
-         * @return true if peer don't vote, false otherwice
+         * @return true if peer don't vote, false otherwise
          */
         bool verifyVote(const model::Peer &peer);
         bool verifyCommit(CommitMessage commit);
@@ -103,9 +101,9 @@ namespace iroha {
 
         // ------|Fields|------
         rxcpp::subjects::subject<YacHash> notifier_;
+        std::shared_ptr<YacNetwork> network_;
         std::shared_ptr<YacCryptoProvider> crypto_;
         std::shared_ptr<Timer> timer_;
-        std::shared_ptr<YacNetwork> network_;
 
         // ------|One round|------
         ClusterOrdering cluster_order_;
@@ -115,8 +113,8 @@ namespace iroha {
         // ------|Constants|------
         const uint64_t delay_;
       };
-    } // namespace yac
-  } // namespace consensus
-} // iroha
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha
 
-#endif //IROHA_YAC_HPP
+#endif  // IROHA_YAC_HPP

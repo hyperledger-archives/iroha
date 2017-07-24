@@ -15,30 +15,23 @@
  * limitations under the License.
  */
 
-#include <utility>
 #include "consensus/yac/yac.hpp"
-
-#include <iostream>
 
 namespace iroha {
   namespace consensus {
     namespace yac {
 
-      std::shared_ptr<Yac> Yac::create(std::shared_ptr<YacNetwork> network,
-                                  std::shared_ptr<YacCryptoProvider> crypto,
-                                  std::shared_ptr<Timer> timer,
-                                  uint64_t delay) {
+      std::shared_ptr<Yac> Yac::create(
+          std::shared_ptr<YacNetwork> network,
+          std::shared_ptr<YacCryptoProvider> crypto,
+          std::shared_ptr<Timer> timer, uint64_t delay) {
         return std::make_shared<Yac>(network, crypto, timer, delay);
       }
 
       Yac::Yac(std::shared_ptr<YacNetwork> network,
                std::shared_ptr<YacCryptoProvider> crypto,
-               std::shared_ptr<Timer> timer,
-               uint64_t delay) : network_(network),
-                                 crypto_(crypto),
-                                 timer_(timer),
-                                 delay_(delay) {
-      }
+               std::shared_ptr<Timer> timer, uint64_t delay)
+          : network_(network), crypto_(crypto), timer_(timer), delay_(delay) {}
 
       // ------|Hash gate|------
 
@@ -80,7 +73,7 @@ namespace iroha {
                             crypto_->getVote(hash));
         timer_->invokeAfterDelay(delay_, [this, hash]() {
           cluster_order_.switchToNext();
-          if (cluster_order_.hashNext()) {
+          if (cluster_order_.hasNext()) {
             this->votingStep(hash);
           }
         });
@@ -136,11 +129,11 @@ namespace iroha {
       };
 
       bool Yac::verifyReject(RejectMessage reject) {
-        if (reject.votes.empty()
-            || reject.votes.size() > cluster_order_.getNumberOfPeers())
+        if (reject.votes.empty() ||
+            reject.votes.size() > cluster_order_.getNumberOfPeers())
           return false;
         auto votes = std::unordered_map<YacHash, int>();
-        for (const auto &vote:reject.votes) {
+        for (const auto &vote : reject.votes) {
           votes[vote.hash] += 1;
         }
         auto flat_map_accum = std::vector<uint32_t>(votes.size());
@@ -151,7 +144,7 @@ namespace iroha {
         auto number_of_missed_votes =
             cluster_order_.getNumberOfPeers() - votes.size();
         return !cluster_order_.haveSupermajority(flat_map_accum.at(0) +
-            number_of_missed_votes);
+                                                 number_of_missed_votes);
       };
 
       // ------|Propagation|------
@@ -159,10 +152,10 @@ namespace iroha {
       void Yac::propagateCommit(YacHash committed_hash) {
         auto votes = votes_[committed_hash];
         auto commitMsg = CommitMessage(votes);
-        for (const auto &peer: cluster_order_.getPeers()) {
+        for (const auto &peer : cluster_order_.getPeers()) {
           network_->send_commit(peer, commitMsg);
         }
       };
-    } // namespace yac
-  } // namespace consensus
-} // iroha
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha

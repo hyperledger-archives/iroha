@@ -18,12 +18,12 @@
 #ifndef IROHA_YAC_HASH_PROVIDER_HPP
 #define IROHA_YAC_HASH_PROVIDER_HPP
 
-#include <vector>
-#include <string>
 #include <functional>
+#include <string>
+#include <vector>
+#include "consensus/yac/cluster_order.hpp"
 #include "model/block.hpp"
 #include "model/peer.hpp"
-#include "consensus/yac/cluster_order.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -31,11 +31,8 @@ namespace iroha {
 
       class YacHash {
        public:
-
         YacHash(std::string proposal, std::string block)
-            : proposal_hash(proposal),
-              block_hash(block) {
-        }
+            : proposal_hash(proposal), block_hash(block) {}
 
         YacHash() = default;
 
@@ -50,11 +47,8 @@ namespace iroha {
         std::string block_hash;
 
         bool operator==(const YacHash &obj) const {
-          if (proposal_hash == obj.proposal_hash &&
-              block_hash == obj.block_hash)
-            return true;
-          else
-            return false;
+          return proposal_hash == obj.proposal_hash and
+                 block_hash == obj.block_hash;
         };
 
         bool operator!=(const YacHash &obj) const {
@@ -66,7 +60,6 @@ namespace iroha {
        * Provide methods related to hash operations in ya consensus
        */
       class YacHashProvider {
-
         /**
          * Make hash from block
          * @param block - for hashing
@@ -80,24 +73,23 @@ namespace iroha {
          * @param initial_order
          * @return cluster ordering based on hash and initial order
          */
-        virtual ClusterOrdering order(YacHash hash,
-                                      std::vector<model::Peer> initial_order) = 0;
+        virtual ClusterOrdering order(
+            YacHash hash, std::vector<model::Peer> initial_order) = 0;
 
         virtual ~YacHashProvider() = default;
       };
-    } // namespace yac
-  } // namespace consensus
-} // iroha
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha
 
 namespace std {
 
-  template<>
+  template <>
   struct hash<iroha::consensus::yac::YacHash> {
     std::size_t operator()(const iroha::consensus::yac::YacHash &obj) const {
       return std::hash<std::string>()(obj.proposal_hash + obj.block_hash);
     }
   };
-
 }
 
-#endif //IROHA_YAC_HASH_PROVIDER_HPP
+#endif  // IROHA_YAC_HASH_PROVIDER_HPP

@@ -17,13 +17,15 @@
 
 #ifndef IROHA_YAC_CRYPTO_PROVIDER_HPP
 #define IROHA_YAC_CRYPTO_PROVIDER_HPP
+
+#include "consensus/yac/messages.hpp"
+
 namespace iroha {
   namespace consensus {
     namespace yac {
 
       class YacCryptoProvider {
        public:
-
         /**
          * Verify signatory of message
          * @param msg - for verification
@@ -55,7 +57,8 @@ namespace iroha {
         virtual ~YacCryptoProvider() = default;
       };
 
-    } // namespace yac
-  } // namespace consensus
-}
-#endif //IROHA_YAC_CRYPTO_PROVIDER_HPP
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha
+
+#endif  // IROHA_YAC_CRYPTO_PROVIDER_HPP

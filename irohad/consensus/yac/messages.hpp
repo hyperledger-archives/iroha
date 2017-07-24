@@ -39,13 +39,9 @@ namespace iroha {
        * All nodes deals on some solution
        */
       struct CommitMessage {
+        CommitMessage() {}
 
-        CommitMessage() {
-        }
-
-        CommitMessage(std::vector<VoteMessage> votes) {
-          this->votes = votes;
-        }
+        CommitMessage(std::vector<VoteMessage> votes) { this->votes = votes; }
 
         std::vector<VoteMessage> votes;
       };
@@ -57,7 +53,7 @@ namespace iroha {
       struct RejectMessage {
         std::vector<VoteMessage> votes;
       };
-    } // namespace yac
-  } // namespace consensus
-} // iroha
-#endif //IROHA_MESSAGES_HPP
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha
+#endif  // IROHA_MESSAGES_HPP

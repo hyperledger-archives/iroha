@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_TIME_HPP
-#define IROHA_TIME_HPP
+#ifndef IROHA_YAC_TIMER_HPP
+#define IROHA_YAC_TIMER_HPP
 
 #include <functional>
 
@@ -44,7 +44,7 @@ namespace iroha {
 
         virtual ~Timer() = default;
       };
-    } // namespace yac
-  } // namespace consensus
-} // iroha
-#endif //IROHA_TIME_HPP
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha
+#endif  // IROHA_YAC_TIMER_HPP

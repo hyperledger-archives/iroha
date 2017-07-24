@@ -18,8 +18,8 @@
 #ifndef IROHA_CLUSTER_ORDER_HPP
 #define IROHA_CLUSTER_ORDER_HPP
 
-#include "model/peer.hpp"
 #include <vector>
+#include "model/peer.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -30,10 +30,9 @@ namespace iroha {
        */
       class ClusterOrdering {
        public:
-
         ClusterOrdering();
 
-        ClusterOrdering(std::vector<model::Peer> order);
+        explicit ClusterOrdering(std::vector<model::Peer> order);
 
         /**
          * Provide current leader peer
@@ -49,7 +48,7 @@ namespace iroha {
         /**
          * @return true if current leader not last peer in order
          */
-        bool hashNext();
+        bool hasNext();
 
         /**
          * Validate set is on of first 2f+1 elements from 3f+1.
@@ -64,20 +63,17 @@ namespace iroha {
          */
         bool haveSupermajority(uint64_t val);
 
-        std::vector<model::Peer> getPeers(){
-          return order_;
-        };
+        std::vector<model::Peer> getPeers() { return order_; };
 
-        auto getNumberOfPeers(){
-          return order_.size();
-        }
+        auto getNumberOfPeers() { return order_.size(); }
 
         virtual ~ClusterOrdering() = default;
+
        private:
         std::vector<model::Peer> order_;
         uint32_t index_ = 0;
       };
-    } // namespace yac
-  } // namespace consensus
-} // iroha
-#endif //IROHA_CLUSTER_ORDER_HPP
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha
+#endif  // IROHA_CLUSTER_ORDER_HPP
