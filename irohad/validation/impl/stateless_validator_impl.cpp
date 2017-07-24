@@ -15,13 +15,11 @@
  * limitations under the License.
  */
 
+#include "stateless_validator_impl.hpp"
 #include <chrono>
-#include <model/model_crypto_provider_impl.hpp>
-#include <validation/stateless/validator_impl.hpp>
 
 namespace iroha {
   namespace validation {
-
     StatelessValidatorImpl::StatelessValidatorImpl(
         model::ModelCryptoProvider& crypto_provider)
         : crypto_provider_(crypto_provider) {}
@@ -51,5 +49,9 @@ namespace iroha {
       }
       return true;
     }
-  }  // namespace validation
-}  // namespace iroha
+
+    bool StatelessValidatorImpl::validate(const model::Query& query) const {
+      return true;
+    }
+  }
+}

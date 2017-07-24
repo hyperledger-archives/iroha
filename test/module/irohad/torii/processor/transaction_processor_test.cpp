@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include <torii/processor/transaction_processor_impl.hpp>
 #include "model/tx_responses/stateless_response.hpp"
@@ -24,14 +24,15 @@
 using namespace iroha;
 using ::testing::Return;
 using ::testing::_;
+using ::testing::A;
 
 /**
  * Mock for stateless validation
  */
 class StatelessValidationMock : public validation::StatelessValidator {
  public:
-  MOCK_CONST_METHOD1(validate, bool(
-      const model::Transaction &transaction));
+  MOCK_CONST_METHOD1(validate, bool(const model::Transaction &transaction));
+  MOCK_CONST_METHOD1(validate, bool(const model::Query &query));
 };
 
 /**
@@ -40,8 +41,7 @@ class StatelessValidationMock : public validation::StatelessValidator {
 class PcsMock : public network::PeerCommunicationService {
  public:
   MOCK_METHOD0(on_proposal, rxcpp::observable<model::Proposal>());
-  MOCK_METHOD0(on_commit,
-               rxcpp::observable<rxcpp::observable<model::Block>>());
+  MOCK_METHOD0(on_commit, rxcpp::observable<rxcpp::observable<model::Block>>());
 };
 
 /**
@@ -49,8 +49,8 @@ class PcsMock : public network::PeerCommunicationService {
  */
 class OsMock : public ordering::OrderingService {
  public:
-  MOCK_METHOD1(propagate_transaction, void(
-      const model::Transaction &transaction));
+  MOCK_METHOD1(propagate_transaction,
+               void(const model::Transaction &transaction));
   MOCK_METHOD0(on_proposal, rxcpp::observable<model::Proposal>());
 };
 
@@ -59,14 +59,14 @@ class OsMock : public ordering::OrderingService {
  */
 TEST(TransactionProcessorTest,
      TransactionProcessorWhereInvokeValidTransaction) {
-
   PcsMock pcs;
 
   OsMock os;
   EXPECT_CALL(os, propagate_transaction(_)).Times(1);
 
   StatelessValidationMock validation;
-  EXPECT_CALL(validation, validate(_)).WillRepeatedly(Return(true));
+  EXPECT_CALL(validation, validate(A<const model::Transaction&>())).WillRepeatedly(Return(true));
+  EXPECT_CALL(validation, validate(A<const model::Query&>())).WillRepeatedly(Return(true));
 
   iroha::torii::TransactionProcessorImpl tp(pcs, os, validation);
   model::Transaction tx;
@@ -83,14 +83,14 @@ TEST(TransactionProcessorTest,
  */
 TEST(TransactionProcessorTest,
      TransactionProcessorWhereInvokeInvalidTransaction) {
-
   PcsMock pcs;
 
   OsMock os;
   EXPECT_CALL(os, propagate_transaction(_)).Times(0);
 
   StatelessValidationMock validation;
-  EXPECT_CALL(validation, validate(_)).WillRepeatedly(Return(false));
+  EXPECT_CALL(validation, validate(A<const model::Transaction&>())).WillRepeatedly(Return(false));
+  EXPECT_CALL(validation, validate(A<const model::Query&>())).WillRepeatedly(Return(false));
 
   iroha::torii::TransactionProcessorImpl tp(pcs, os, validation);
   model::Transaction tx;

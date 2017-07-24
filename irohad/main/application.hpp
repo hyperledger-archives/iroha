@@ -23,7 +23,7 @@
 #include <torii/processor/query_processor_stub.hpp>
 #include <torii/processor/transaction_processor_impl.hpp>
 #include <validation/chain/validator_stub.hpp>
-#include <validation/stateless/validator_impl.hpp>
+#include <validation/impl/stateless_validator_impl.hpp>
 
 #include <model/model_crypto_provider_impl.hpp>
 #include <crypto/crypto.hpp>

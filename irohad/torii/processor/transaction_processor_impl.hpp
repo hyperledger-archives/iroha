@@ -22,7 +22,7 @@
 #include <model/model_crypto_provider.hpp>
 #include <model/transaction_response.hpp>
 #include <torii/processor/transaction_processor.hpp>
-#include <validation/stateless/validator.hpp>
+#include <validation/impl/stateless_validator_impl.hpp>
 #include <ordering/ordering_service.hpp>
 
 namespace iroha {

@@ -25,6 +25,8 @@ namespace iroha {
     using model::QueryResponse;
     using model::Client;
 
+  // QueryProcessingFactory
+  // stateless validation
     QueryProcessorStub::QueryProcessorStub(ametsuchi::WsvQuery &wsv,
                                            ametsuchi::BlockQuery &block) :
         wsv_(wsv), block_(block) {
@@ -33,6 +35,7 @@ namespace iroha {
 
     void QueryProcessorStub::query_handle(model::Client client,
                                           const model::Query &query) {
+      // stateless validate
       auto handle = handler_.find(query).value_or([](auto &) {
         std::cout << "[Q] Handler not found" << std::endl;
         return;
