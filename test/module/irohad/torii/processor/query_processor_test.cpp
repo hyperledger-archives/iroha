@@ -42,16 +42,15 @@ class StatelessValidationMock : public validation::StatelessValidator {
  */
 class WsvQueryMock : public ametsuchi::WsvQuery {
  public:
-  MOCK_METHOD1(getAccount, nonstd::optional<model::Account>(
-                                     const std::string &account_id));
-  MOCK_METHOD1(getSignatories,
-                     nonstd::optional<std::vector<ed25519::pubkey_t>>(
-                         const std::string &account_id));
-  MOCK_METHOD1(
-      getAsset, nonstd::optional<model::Asset>(const std::string &asset_id));
-  MOCK_METHOD2(getAccountAsset, nonstd::optional<model::AccountAsset>(
-                                          const std::string &account_id,
-                                          const std::string &asset_id));
+  MOCK_METHOD1(getAccount,
+               nonstd::optional<model::Account>(const std::string &account_id));
+  MOCK_METHOD1(getSignatories, nonstd::optional<std::vector<ed25519::pubkey_t>>(
+                                   const std::string &account_id));
+  MOCK_METHOD1(getAsset,
+               nonstd::optional<model::Asset>(const std::string &asset_id));
+  MOCK_METHOD2(getAccountAsset,
+               nonstd::optional<model::AccountAsset>(
+                   const std::string &account_id, const std::string &asset_id));
   MOCK_METHOD0(getPeers, nonstd::optional<std::vector<model::Peer>>());
 };
 
@@ -85,11 +84,14 @@ TEST(QueryProcessorTest, QueryProcessorWhereInvokeValidQuery) {
 
   iroha::torii::QueryProcessorImpl qpi(qpf, validation);
   model::Query query;
-  // TODO subscribe with testable subscriber
-  qpi.query_notifier().subscribe([](auto response) {
-    auto resp = static_cast<model::QueryStatelessResponse &>(*response);
-    ASSERT_EQ(resp.passed, true);
-  });
+  qpi.query_notifier()
+      .filter([](auto response) {
+        return instanceof <model::QueryStatelessResponse>(response);
+      })
+      .subscribe([](auto response) {
+        auto resp = static_cast<model::QueryStatelessResponse &>(*response);
+        ASSERT_EQ(resp.passed, true);
+      });
   qpi.query_handle(query);
 }
 
@@ -104,10 +106,13 @@ TEST(QueryProcessorTest, QueryProcessorWhereInvokeInValidQuery) {
 
   iroha::torii::QueryProcessorImpl qpi(qpf, validation);
   model::Query query;
-  // TODO subscribe with testable subscriber
-  qpi.query_notifier().subscribe([](auto response) {
-    auto resp = static_cast<model::QueryStatelessResponse &>(*response);
-    ASSERT_EQ(resp.passed, false);
-  });
+  qpi.query_notifier()
+      .filter([](auto response) {
+        return instanceof <model::QueryStatelessResponse>(response);
+      })
+      .subscribe([](auto response) {
+        auto resp = static_cast<model::QueryStatelessResponse &>(*response);
+        ASSERT_EQ(resp.passed, false);
+      });
   qpi.query_handle(query);
 }

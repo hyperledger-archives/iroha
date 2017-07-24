@@ -33,7 +33,8 @@ namespace iroha {
 
       if (validator_.validate(query)) {
         response.passed = true;
-        qpf_.execute(query);
+        auto qpf_response = qpf_.execute(query);
+        subject_.get_subscriber().on_next(qpf_response);
       }
 
       subject_.get_subscriber().on_next(
