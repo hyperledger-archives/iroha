@@ -1,5 +1,3 @@
-add_subdirectory(chain)
-add_subdirectory(stateless)
 
 add_library(stateful_validator
     impl/stateful_validator_impl.cpp
