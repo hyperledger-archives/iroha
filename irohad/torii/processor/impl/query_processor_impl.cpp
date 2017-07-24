@@ -31,14 +31,17 @@ namespace iroha {
       response.query = query;
       response.passed = false;
 
-      if (validator_.validate(query)) {
+      // if not valid send wrong response
+      if (!validator_.validate(query)) {
+        subject_.get_subscriber().on_next(
+            std::make_shared<model::QueryStatelessResponse>(response));
+      } else {  // else send positive response on stateless validation
         response.passed = true;
-        auto qpf_response = qpf_.execute(query);
-        subject_.get_subscriber().on_next(qpf_response);
+        subject_.get_subscriber().on_next(
+            std::make_shared<model::QueryStatelessResponse>(response));
       }
-
-      subject_.get_subscriber().on_next(
-          std::make_shared<model::QueryStatelessResponse>(response));
+      auto qpf_response = qpf_.execute(query);
+      subject_.get_subscriber().on_next(qpf_response);
     }
 
     rxcpp::observable<std::shared_ptr<model::QueryResponse>>
