@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "stateless_validator_impl.hpp"
+#include "validation/impl/stateless_validator_impl.hpp"
 #include <chrono>
 
 namespace iroha {
