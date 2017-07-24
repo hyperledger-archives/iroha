@@ -26,6 +26,7 @@
 #include <iostream>
 #include "consensus/yac/yac.hpp"
 #include "common/test_observable.hpp"
+#include "yac_mocks.hpp"
 
 using ::testing::Return;
 using ::testing::_;
@@ -36,97 +37,7 @@ using namespace iroha::consensus::yac;
 using namespace common::test_observable;
 using namespace std;
 
-/**
- * Mock for yac crypto provider
- */
-class CryptoProviderMock : public YacCryptoProvider {
- public:
-  MOCK_METHOD1(verify, bool(CommitMessage));
-  MOCK_METHOD1(verify, bool(RejectMessage));
-  MOCK_METHOD1(verify, bool(VoteMessage));
-
-  VoteMessage getVote(YacHash hash) override {
-    VoteMessage vote;
-    vote.hash = hash;
-    return vote;
-  };
-
-  CryptoProviderMock() {
-  };
-
-  CryptoProviderMock(const CryptoProviderMock &) {
-  };
-
-  CryptoProviderMock &operator=(const CryptoProviderMock &) const {
-  };
-};
-
-/**
- * Mock for timer
- */
-class FakeTimer : public Timer {
- public:
-  void invokeAfterDelay(uint64_t millis,
-                        std::function<void()> handler) override {
-    handler();
-  };
-
-  MOCK_METHOD0(deny, void());
-
-  FakeTimer() {
-  };
-
-  FakeTimer(const FakeTimer &rhs) {
-  };
-
-  FakeTimer &operator=(const FakeTimer &rhs) {
-    return *this;
-  };
-};
-
 using iroha::model::Peer;
-
-/**
- * Mock for network
- */
-class FakeNetwork : public YacNetwork {
- public:
-
-  void subscribe(std::shared_ptr<YacNetworkNotifications> handler) override {
-    notification = handler;
-  };
-
-  void release() {
-    notification.reset();
-  }
-
-  MOCK_METHOD2(send_commit, void(Peer, CommitMessage));
-  MOCK_METHOD2(send_reject, void(Peer, RejectMessage));
-  MOCK_METHOD2(send_vote, void(Peer, VoteMessage));
-
-  FakeNetwork() {
-  };
-
-  FakeNetwork(const FakeNetwork &rhs) {
-    notification = rhs.notification;
-  };
-
-  FakeNetwork &operator=(const FakeNetwork &rhs) {
-    notification = rhs.notification;
-    return *this;
-  };
-
-  FakeNetwork(FakeNetwork &&rhs) {
-    std::swap(notification, rhs.notification);
-  };
-
-  FakeNetwork &operator=(FakeNetwork &&rhs) {
-    std::swap(notification, rhs.notification);
-    return *this;
-  };
-
-  std::shared_ptr<YacNetworkNotifications> notification;
-};
 
 Peer f_peer(std::string address) {
   Peer peer;
@@ -278,9 +189,7 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
  */
 TEST_F(YacTest, YacWhenColdStartAndAchieveCommitMessage) {
   cout << "----------|Coldstart - commit received "
-      "(commit inside case)"
-      "|----------"
-       << endl;
+      "(commit inside case) |----------" << endl;
   YacHash propagated_hash("my_proposal", "my_block");
 
   // verify that commit emitted
