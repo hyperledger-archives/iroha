@@ -72,10 +72,10 @@ TEST(TransactionProcessorTest,
   model::Transaction tx;
   // TODO subscribe with testable subscriber
   tp.transaction_notifier().subscribe([](auto response) {
-    auto resp = static_cast<model::StatelessResponse &>(*response);
+    auto resp = static_cast<model::TransactionStatelessResponse &>(*response);
     ASSERT_EQ(resp.passed, true);
   });
-  tp.transaction_handle(model::Client(), tx);
+  tp.transaction_handle(tx);
 }
 
 /**
@@ -96,8 +96,8 @@ TEST(TransactionProcessorTest,
   model::Transaction tx;
   // TODO subscribe with testable subscriber
   tp.transaction_notifier().subscribe([](auto response) {
-    auto resp = static_cast<model::StatelessResponse &>(*response);
+    auto resp = static_cast<model::TransactionStatelessResponse &>(*response);
     ASSERT_EQ(resp.passed, false);
   });
-  tp.transaction_handle(model::Client(), tx);
+  tp.transaction_handle(tx);
 }

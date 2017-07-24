@@ -40,8 +40,7 @@ namespace iroha {
                                ordering::OrderingService &os,
                                const validation::StatelessValidator &validator);
 
-      void transaction_handle(model::Client client,
-                              model::Transaction &transaction) override;
+      void transaction_handle(model::Transaction &transaction) override;
 
       rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
       transaction_notifier() override;
