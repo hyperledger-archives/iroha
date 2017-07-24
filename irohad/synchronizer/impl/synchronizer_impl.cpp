@@ -30,13 +30,17 @@ namespace iroha {
 
     void SynchronizerImpl::process_commit(iroha::model::Block commit_message) {
       auto storage = mutableFactory_.createMutableStorage();
+      if (!storage) {
+        // TODO: write to log ametsuchi is not ok
+        return;
+      }
       if (validator_.validate_block(commit_message, *storage)) {
         // Block can be applied to current storage
         // Commit to main Ametsuchi
         mutableFactory_.commit(std::move(storage));
 
-        auto single_commit =
-            rxcpp::observable<>::create<model::Block>([&commit_message](auto s) {
+        auto single_commit = rxcpp::observable<>::create<model::Block>(
+            [&commit_message](auto s) {
               s.on_next(commit_message);
               s.on_completed();
             });
@@ -46,25 +50,31 @@ namespace iroha {
         // Block can't be applied to current storage
         // Download all missing blocks
         // TODO: Loading blocks from other Peer
-        // TODO: Replace with fair realization
-        auto stub_peer = model::Peer();
-        auto stub_block = model::Block();
-        auto chain = blockLoader_.requestBlocks(stub_peer, stub_block);
-        storage = mutableFactory_.createMutableStorage();
+        // TODO: Replace with more effective realization
+        for (auto signature : commit_message.sigs) {
+          auto target_peer = model::Peer();
+          target_peer.pubkey = signature.pubkey;
 
-        if (validator_.validate_chain(chain, *storage)) {
-          // Chain can be applied to ametsuchi
-          mutableFactory_.commit(std::move(storage));
-          notifier_.get_subscriber().on_next(chain);
-        } else {
-          // Chain is wrong, try other peer
-          // TODO: Replace if with loop over all other peers
+          // Get your last top block
+          auto top_block = model::Block();
+          auto chain = blockLoader_.requestBlocks(target_peer, top_block);
+          storage = mutableFactory_.createMutableStorage();
+          if (!storage) {
+            // TODO: write to log, cant create storage
+            return;
+          }
+          if (validator_.validate_chain(chain, *storage)) {
+            // Peer send valid chain
+            mutableFactory_.commit(std::move(storage));
+            notifier_.get_subscriber().on_next(chain);
+            // You are synchonized
+            return;
+          }
         }
       }
     }
 
-    rxcpp::observable<Commit>
-    SynchronizerImpl::on_commit_chain() {
+    rxcpp::observable<Commit> SynchronizerImpl::on_commit_chain() {
       return notifier_.get_observable();
     }
   }
