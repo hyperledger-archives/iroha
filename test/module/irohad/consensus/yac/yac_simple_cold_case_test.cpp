@@ -41,7 +41,7 @@ using namespace std;
  * Test provide use case for init yac object
  */
 TEST_F(YacTest, YacWhenInit) {
-  cout << "----------|YacWhenInit|----------" << endl;
+  cout << "----------|Just init object|----------" << endl;
 
   FakeNetwork network_;
 
@@ -103,7 +103,7 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveOneVote) {
   // assume that our peer receive message
   network->notification->on_vote(peer, crypto->getVote(received_hash));
 
-  ASSERT_EQ(true, invariant.validate());
+  ASSERT_EQ(true, wrapper.validate());
 }
 
 /**
@@ -111,7 +111,8 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveOneVote) {
  * when yac cold started and achieve supermajority of  votes
  */
 TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
-  cout << "----------|Coldstart - supermajority of votes|----------" << endl;
+  cout << "----------|Start => receive supermajority of votes"
+      "|----------" << endl;
 
   // verify that commit not emitted
   TestObservable<YacHash> wrapper(yac->on_commit());
@@ -137,7 +138,7 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
     network->notification->on_vote(peer, crypto->getVote(received_hash));
   }
 
-  ASSERT_EQ(true, invariant.validate());
+  ASSERT_EQ(true, wrapper.validate());
 }
 
 /**
@@ -145,8 +146,7 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
  * when yac cold started and achieve commit
  */
 TEST_F(YacTest, YacWhenColdStartAndAchieveCommitMessage) {
-  cout << "----------|Coldstart - commit received "
-      "(commit inside case) |----------" << endl;
+  cout << "----------|Start => receive commit|----------" << endl;
   YacHash propagated_hash("my_proposal", "my_block");
 
   // verify that commit emitted
@@ -177,6 +177,6 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveCommitMessage) {
   }
   network->notification->on_commit(committed_peer, msg);
 
-  ASSERT_EQ(true, invariant.validate());
+  ASSERT_EQ(true, wrapper.validate());
 }
 #endif //IROHA_YAC_SIMPLE_CASE_TEST_HPP

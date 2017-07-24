@@ -21,7 +21,7 @@
 #include <gtest/gtest.h>
 #include "consensus/yac/yac.hpp"
 
-using iroha::consensus::yac;
+using namespace iroha::consensus::yac;
 using iroha::model::Peer;
 
 
@@ -31,7 +31,7 @@ Peer f_peer(std::string address) {
   Peer peer;
   peer.address = address;
   return peer;
-};
+}
 
 /**
  * Mock for yac crypto provider
@@ -54,7 +54,8 @@ class CryptoProviderMock : public YacCryptoProvider {
   CryptoProviderMock(const CryptoProviderMock &) {
   };
 
-  CryptoProviderMock &operator=(const CryptoProviderMock &) const {
+  CryptoProviderMock &operator=(const CryptoProviderMock &) {
+    return *this;
   };
 };
 
@@ -151,11 +152,11 @@ class YacTest : public ::testing::Test {
                       timer,
                       delay);
     network->subscribe(yac);
-  }
+  };
 
   virtual void TearDown() override {
     network->release();
-  }
+  };
 };
 
 #endif //IROHA_YAC_MOCKS_HPP
