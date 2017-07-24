@@ -15,21 +15,5 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ORDERING_SERVICE_STUB_HPP
-#define IROHA_ORDERING_SERVICE_STUB_HPP
-
-#include <network/ordering_gate.hpp>
-
-namespace iroha {
-  namespace network {
-    class OrderingGateStub : public OrderingGate {
-     public:
-      void propagate_transaction(const model::Transaction &transaction) override;
-      rxcpp::observable<model::Proposal> on_proposal() override;
-     private:
-      rxcpp::subjects::subject<model::Proposal> proposals_;
-    };
-  }//namespace network
-}// namespace iroha
-
-#endif //IROHA_ORDERING_SERVICE_STUB_HPP
+#include <simulator/block_creator.hpp>
+#include <simulator/verified_proposal_creator.hpp>

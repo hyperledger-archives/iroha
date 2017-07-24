@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
-#include <torii/processor/transaction_processor_impl.hpp>
+#include "torii/processor/transaction_processor_impl.hpp"
 #include "model/tx_responses/stateless_response.hpp"
+#include "network/ordering_gate.hpp"
 
 using namespace iroha;
 using ::testing::Return;
@@ -40,17 +41,22 @@ class StatelessValidationMock : public validation::StatelessValidator {
  */
 class PcsMock : public network::PeerCommunicationService {
  public:
+  MOCK_METHOD1(propagate_transaction, void(model::Transaction transaction));
+
   MOCK_METHOD0(on_proposal, rxcpp::observable<model::Proposal>());
-  MOCK_METHOD0(on_commit, rxcpp::observable<rxcpp::observable<model::Block>>());
+
+  MOCK_METHOD0(on_commit,
+               rxcpp::observable < rxcpp::observable < model::Block >> ());
 };
 
 /**
  * Mock for ordering service
  */
-class OsMock : public ordering::OrderingService {
+class OsMock : public network::OrderingGate {
  public:
-  MOCK_METHOD1(propagate_transaction,
-               void(const model::Transaction &transaction));
+  MOCK_METHOD1(propagate_transaction, void(
+      const model::Transaction &transaction));
+
   MOCK_METHOD0(on_proposal, rxcpp::observable<model::Proposal>());
 };
 
@@ -59,16 +65,15 @@ class OsMock : public ordering::OrderingService {
  */
 TEST(TransactionProcessorTest,
      TransactionProcessorWhereInvokeValidTransaction) {
-  PcsMock pcs;
 
-  OsMock os;
-  EXPECT_CALL(os, propagate_transaction(_)).Times(1);
+  PcsMock pcs;
+  EXPECT_CALL(pcs, propagate_transaction(_)).Times(1);
 
   StatelessValidationMock validation;
   EXPECT_CALL(validation, validate(A<const model::Transaction&>())).WillRepeatedly(Return(true));
   EXPECT_CALL(validation, validate(A<const model::Query&>())).WillRepeatedly(Return(true));
 
-  iroha::torii::TransactionProcessorImpl tp(pcs, os, validation);
+  iroha::torii::TransactionProcessorImpl tp(pcs, validation);
   model::Transaction tx;
   // TODO subscribe with testable subscriber
   tp.transaction_notifier().subscribe([](auto response) {
@@ -83,16 +88,15 @@ TEST(TransactionProcessorTest,
  */
 TEST(TransactionProcessorTest,
      TransactionProcessorWhereInvokeInvalidTransaction) {
-  PcsMock pcs;
 
-  OsMock os;
-  EXPECT_CALL(os, propagate_transaction(_)).Times(0);
+  PcsMock pcs;
+  EXPECT_CALL(pcs, propagate_transaction(_)).Times(0);
 
   StatelessValidationMock validation;
   EXPECT_CALL(validation, validate(A<const model::Transaction&>())).WillRepeatedly(Return(false));
   EXPECT_CALL(validation, validate(A<const model::Query&>())).WillRepeatedly(Return(false));
 
-  iroha::torii::TransactionProcessorImpl tp(pcs, os, validation);
+  iroha::torii::TransactionProcessorImpl tp(pcs, validation);
   model::Transaction tx;
   // TODO subscribe with testable subscriber
   tp.transaction_notifier().subscribe([](auto response) {

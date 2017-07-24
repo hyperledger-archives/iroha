@@ -15,3 +15,5 @@ target_link_libraries(model_crypto_provider_test
     hash
     crypto
 )
+
+add_subdirectory(common)

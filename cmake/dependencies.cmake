@@ -400,7 +400,7 @@ if (NOT PQxx_FOUND)
 
   ExternalProject_Add(jtv_libpqxx
       GIT_REPOSITORY "https://github.com/jtv/libpqxx.git"
-      CONFIGURE_COMMAND ./configure --disable-documentation --with-pic
+      CONFIGURE_COMMAND ./configure --disable-documentation --with-pic CXXFLAGS=${CMAKE_CXX_FLAGS}
       BUILD_IN_SOURCE 1
       BUILD_COMMAND $(MAKE)
       INSTALL_COMMAND "" # remove install step
