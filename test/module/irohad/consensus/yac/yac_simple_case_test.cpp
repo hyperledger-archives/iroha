@@ -30,6 +30,7 @@
 using ::testing::Return;
 using ::testing::_;
 using ::testing::An;
+using ::testing::AtLeast;
 
 using namespace iroha::consensus::yac;
 using namespace common::test_observable;
@@ -210,6 +211,13 @@ TEST_F(YacTest, YacWhenVoting) {
 TEST_F(YacTest, YacWhenColdStartAndAchieveOneVote) {
   cout << "----------|Coldstart - one vote|----------" << endl;
 
+  // verify that commit not emitted
+  TestObservable<YacHash> wrapper(yac->on_commit());
+  auto invariant = CallExact<YacHash>(0);
+  wrapper.test_subscriber(std::make_unique<CallExact<YacHash>>(
+      std::move(invariant)), [](auto commit_hash) {
+  });
+
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
   EXPECT_CALL(*network, send_vote(_, _)).Times(0);
@@ -226,6 +234,8 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveOneVote) {
   auto peer = default_peers.at(0);
   // assume that our peer receive message
   network->notification->on_vote(peer, crypto->getVote(received_hash));
+
+  ASSERT_EQ(true, invariant.validate());
 }
 
 /**
@@ -234,6 +244,13 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveOneVote) {
  */
 TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
   cout << "----------|Coldstart - supermajority of votes|----------" << endl;
+
+  // verify that commit not emitted
+  TestObservable<YacHash> wrapper(yac->on_commit());
+  auto invariant = CallExact<YacHash>(0);
+  wrapper.test_subscriber(std::make_unique<CallExact<YacHash>>(
+      std::move(invariant)), [](auto commit_hash) {
+  });
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
@@ -251,6 +268,8 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
   for (auto &peer : default_peers) {
     network->notification->on_vote(peer, crypto->getVote(received_hash));
   }
+
+  ASSERT_EQ(true, invariant.validate());
 }
 
 /**
@@ -283,12 +302,15 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveCommitMessage) {
   EXPECT_CALL(*crypto, verify(An<VoteMessage>()))
       .Times(0);
 
+  EXPECT_CALL(*timer, deny()).Times(AtLeast(1));
+
   auto committed_peer = default_peers.at(0);
   auto msg = CommitMessage();
   for (auto &peer : default_peers) {
     msg.votes.push_back(crypto->getVote(propagated_hash));
   }
   network->notification->on_commit(committed_peer, msg);
+
   ASSERT_EQ(true, invariant.validate());
 }
 #endif //IROHA_YAC_SIMPLE_CASE_TEST_HPP
