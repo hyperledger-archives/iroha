@@ -18,6 +18,7 @@
 #ifndef IROHA_STATELESS_VALIDATOR_HPP
 #define IROHA_STATELESS_VALIDATOR_HPP
 
+#include "model/query.hpp"
 namespace iroha {
   namespace validation {
 

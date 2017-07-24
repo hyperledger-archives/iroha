@@ -18,8 +18,6 @@
 #ifndef IROHA_STATELESS_RESPONSE_HPP
 #define IROHA_STATELESS_RESPONSE_HPP
 
-#include <model/model.hpp>
-
 namespace iroha {
   namespace model {
 
