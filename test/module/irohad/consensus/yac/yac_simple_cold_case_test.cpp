@@ -20,13 +20,12 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include "common/test_observable.hpp"
+#include "yac_mocks.hpp"
 #include <utility>
 #include <memory>
 #include <vector>
 #include <iostream>
-#include "consensus/yac/yac.hpp"
-#include "common/test_observable.hpp"
-#include "yac_mocks.hpp"
 
 using ::testing::Return;
 using ::testing::_;
@@ -37,48 +36,6 @@ using namespace iroha::consensus::yac;
 using namespace common::test_observable;
 using namespace std;
 
-using iroha::model::Peer;
-
-Peer f_peer(std::string address) {
-  Peer peer;
-  peer.address = address;
-  return peer;
-}
-
-class YacTest : public ::testing::Test {
- public:
-  // ------|Netowrk|------
-  std::shared_ptr<FakeNetwork> network;
-  std::shared_ptr<CryptoProviderMock> crypto;
-  std::shared_ptr<FakeTimer> timer;
-  uint64_t delay = 100500;
-  std::shared_ptr<Yac> yac;
-
-  // ------|Round|------
-  std::vector<Peer> default_peers = {f_peer("1"),
-                                     f_peer("2"),
-                                     f_peer("3"),
-                                     f_peer("4"),
-                                     f_peer("5"),
-                                     f_peer("6"),
-                                     f_peer("7")
-  };
-
-  virtual void SetUp() override {
-    network = std::make_shared<FakeNetwork>();
-    crypto = std::make_shared<CryptoProviderMock>();
-    timer = std::make_shared<FakeTimer>();
-    yac = Yac::create(network,
-                      crypto,
-                      timer,
-                      delay);
-    network->subscribe(yac);
-  }
-
-  virtual void TearDown() override {
-    network->release();
-  }
-};
 
 /**
  * Test provide use case for init yac object
