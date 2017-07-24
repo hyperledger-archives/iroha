@@ -26,8 +26,8 @@ iroha::model::Block create_block();
 
 iroha::model::Signature create_signature() {
   iroha::model::Signature signature{};
-  memset(signature.signature.data(), 0x123, iroha::ed25519::sig_t::size());
-  memset(signature.pubkey.data(), 0x123, iroha::ed25519::pubkey_t::size());
+  std::fill(signature.signature.begin(), signature.signature.end(), 0x123);
+  std::fill(signature.pubkey.begin(), signature.pubkey.end(), 0x123);
   return signature;
 }
 
@@ -129,13 +129,13 @@ iroha::model::Proposal create_proposal() {
 
 iroha::model::Block create_block() {
   iroha::model::Block block{};
-  memset(block.hash.data(), 0x1, iroha::ed25519::pubkey_t::size());
+  std::fill(block.hash.begin(), block.hash.end(), 0x1);
   block.sigs.push_back(create_signature());
   block.created_ts = 0;
   block.height = 0;
-  memset(block.prev_hash.data(), 0x5, iroha::ed25519::pubkey_t::size());
+  std::fill(block.prev_hash.begin(), block.prev_hash.end(), 0x5);
   block.txs_number = 0;
-  memset(block.merkle_root.data(), 0x123, iroha::ed25519::pubkey_t::size());
+  std::fill(block.merkle_root.begin(), block.merkle_root.end(), 0x123);
   block.transactions.push_back(create_transaction());
   return block;
 }
