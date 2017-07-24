@@ -52,7 +52,9 @@ TEST_F(YacTest, YacWhenInit) {
 
   auto yac_ = Yac::create(std::make_shared<FakeNetwork>(network_),
                           std::make_shared<CryptoProviderMock>(crypto_),
-                          std::make_shared<FakeTimer>(timer_), fake_delay_);
+                          std::make_shared<FakeTimer>(timer_),
+                          ClusterOrdering(default_peers),
+                          fake_delay_);
 
   network_.subscribe(yac_);
 }

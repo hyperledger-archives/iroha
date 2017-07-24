@@ -45,9 +45,9 @@ class CryptoProviderMock : public YacCryptoProvider {
     return vote;
   };
 
-  CryptoProviderMock(){};
+  CryptoProviderMock() {};
 
-  CryptoProviderMock(const CryptoProviderMock &){};
+  CryptoProviderMock(const CryptoProviderMock &) {};
 
   CryptoProviderMock &operator=(const CryptoProviderMock &) { return *this; };
 };
@@ -64,9 +64,9 @@ class FakeTimer : public Timer {
 
   MOCK_METHOD0(deny, void());
 
-  FakeTimer(){};
+  FakeTimer() {};
 
-  FakeTimer(const FakeTimer &rhs){};
+  FakeTimer(const FakeTimer &rhs) {};
 
   FakeTimer &operator=(const FakeTimer &rhs) { return *this; };
 };
@@ -86,7 +86,7 @@ class FakeNetwork : public YacNetwork {
   MOCK_METHOD2(send_reject, void(Peer, RejectMessage));
   MOCK_METHOD2(send_vote, void(Peer, VoteMessage));
 
-  FakeNetwork(){};
+  FakeNetwork() {};
 
   FakeNetwork(const FakeNetwork &rhs) { notification = rhs.notification; };
 
@@ -123,7 +123,8 @@ class YacTest : public ::testing::Test {
     network = std::make_shared<FakeNetwork>();
     crypto = std::make_shared<CryptoProviderMock>();
     timer = std::make_shared<FakeTimer>();
-    yac = Yac::create(network, crypto, timer, delay);
+    yac = Yac::create(network, crypto,
+                      timer, ClusterOrdering(default_peers), delay);
     network->subscribe(yac);
   };
 

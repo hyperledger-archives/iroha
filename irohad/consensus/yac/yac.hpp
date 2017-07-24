@@ -45,11 +45,15 @@ namespace iroha {
         static std::shared_ptr<Yac> create(
             std::shared_ptr<YacNetwork> network,
             std::shared_ptr<YacCryptoProvider> crypto,
-            std::shared_ptr<Timer> timer, uint64_t delay);
+            std::shared_ptr<Timer> timer,
+            ClusterOrdering order,
+            uint64_t delay);
 
         Yac(std::shared_ptr<YacNetwork> network,
             std::shared_ptr<YacCryptoProvider> crypto,
-            std::shared_ptr<Timer> timer, uint64_t delay);
+            std::shared_ptr<Timer> timer,
+            ClusterOrdering order,
+            uint64_t delay);
 
         // ------|Hash gate|------
 

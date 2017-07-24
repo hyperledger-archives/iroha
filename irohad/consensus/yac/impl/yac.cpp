@@ -24,14 +24,22 @@ namespace iroha {
       std::shared_ptr<Yac> Yac::create(
           std::shared_ptr<YacNetwork> network,
           std::shared_ptr<YacCryptoProvider> crypto,
-          std::shared_ptr<Timer> timer, uint64_t delay) {
-        return std::make_shared<Yac>(network, crypto, timer, delay);
+          std::shared_ptr<Timer> timer,
+          ClusterOrdering order,
+          uint64_t delay) {
+        return std::make_shared<Yac>(network, crypto, timer, order, delay);
       }
 
       Yac::Yac(std::shared_ptr<YacNetwork> network,
                std::shared_ptr<YacCryptoProvider> crypto,
-               std::shared_ptr<Timer> timer, uint64_t delay)
-          : network_(network), crypto_(crypto), timer_(timer), delay_(delay) {}
+               std::shared_ptr<Timer> timer,
+               ClusterOrdering order,
+               uint64_t delay)
+          : network_(network),
+            crypto_(crypto),
+            timer_(timer),
+            cluster_order_(order),
+            delay_(delay) {}
 
       // ------|Hash gate|------
 
@@ -40,7 +48,7 @@ namespace iroha {
         votingStep(hash);
       };
 
-      rxcpp::observable<YacHash> Yac::on_commit() {
+      rxcpp::observable <YacHash> Yac::on_commit() {
         return this->notifier_.get_observable();
       }
 
@@ -144,7 +152,7 @@ namespace iroha {
         auto number_of_missed_votes =
             cluster_order_.getNumberOfPeers() - votes.size();
         return !cluster_order_.haveSupermajority(flat_map_accum.at(0) +
-                                                 number_of_missed_votes);
+            number_of_missed_votes);
       };
 
       // ------|Propagation|------
