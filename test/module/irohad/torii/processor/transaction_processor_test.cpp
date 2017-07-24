@@ -71,7 +71,6 @@ TEST(TransactionProcessorTest,
 
   StatelessValidationMock validation;
   EXPECT_CALL(validation, validate(A<const model::Transaction&>())).WillRepeatedly(Return(true));
-  EXPECT_CALL(validation, validate(A<const model::Query&>())).WillRepeatedly(Return(true));
 
   iroha::torii::TransactionProcessorImpl tp(pcs, validation);
   model::Transaction tx;
