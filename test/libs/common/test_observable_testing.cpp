@@ -21,7 +21,6 @@
 #include <iostream>
 
 using namespace common::test_observable;
-using namespace std;
 
 class TestObservableTesting : public ::testing::Test {
 
@@ -35,12 +34,16 @@ TEST_F(TestObservableTesting, ValidCallExactTest) {
         s.on_completed();
       });
 
-  TestObservable<int> wrapper(ints);
+  auto number_of_calls = 0;
 
+  TestObservable<int> wrapper(ints);
   auto p = CallExact<int>(2);
   wrapper.test_subscriber(std::make_unique<CallExact<int>>(std::move(p)),
-                          [](auto val) {});
+                          [&number_of_calls](auto val) {
+                            ++number_of_calls;
+                          });
   ASSERT_EQ(true, wrapper.validate());
+  ASSERT_EQ(2, number_of_calls);
 }
 
 void f() {
@@ -54,10 +57,14 @@ TEST_F(TestObservableTesting, UnsatisfiedCallExactTest) {
         s.on_completed();
       });
 
-  TestObservable<std::string> wrapper(ints);
+  auto number_of_calls = 0;
 
+  TestObservable<std::string> wrapper(ints);
   auto p = CallExact<std::string>(100500);
   wrapper.test_subscriber(std::make_unique<CallExact<std::string>>(std::move(p)),
-                          [](auto val) { cout << val << "<="; });
+                          [&number_of_calls](auto val) {
+                            ++number_of_calls;
+                          });
   ASSERT_EQ(false, wrapper.validate());
+  ASSERT_EQ(2, number_of_calls);
 }
