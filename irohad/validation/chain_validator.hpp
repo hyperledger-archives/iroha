@@ -42,8 +42,8 @@ namespace iroha {
        * @param storage - storage that may be modified during loading
        * @return true if commit is valid, false otherwise
        */
-      virtual bool validate_chain(rxcpp::observable<model::Block> &blocks,
-                                  ametsuchi::MutableStorage &storage) = 0;
+      virtual bool validateChain(rxcpp::observable<model::Block> &blocks,
+                                 ametsuchi::MutableStorage &storage) = 0;
 
       /**
        * Block validation will check if all signatures and meta-data are valid.
@@ -51,8 +51,8 @@ namespace iroha {
        * @param storage -  storage that may be modified during block appliance
        * @return true if block is valid and can be applied, false otherwise
        */
-      virtual bool validate_block(const model::Block &block,
-                                  ametsuchi::MutableStorage &storage) = 0;
+      virtual bool validateBlock(const model::Block &block,
+                                 ametsuchi::MutableStorage &storage) = 0;
     };
   }  // namespace validation
 }  // namespace iroha

@@ -17,17 +17,26 @@
 #ifndef IROHA_CHAIN_VALIDATOR_IMPL_HPP
 #define IROHA_CHAIN_VALIDATOR_IMPL_HPP
 
+#include "model/model_crypto_provider.hpp"
 #include "validation/chain_validator.hpp"
 
 namespace iroha {
   namespace validation {
     class ChainValidatorImpl : public ChainValidator {
      public:
-      bool validate_chain(rxcpp::observable<model::Block> &blocks,
-                          ametsuchi::MutableStorage &storage) override;
+      ChainValidatorImpl(model::ModelCryptoProvider &crypto_provider);
 
-      bool validate_block(const model::Block &block,
-                          ametsuchi::MutableStorage &storage) override;
+      bool validateChain(rxcpp::observable<model::Block> &blocks,
+                         ametsuchi::MutableStorage &storage) override;
+
+      bool validateBlock(const model::Block &block,
+                         ametsuchi::MutableStorage &storage) override;
+
+     private:
+      // internal
+      model::ModelCryptoProvider &crypto_provider_;
+
+      bool checkSupermajority(ametsuchi::MutableStorage& storage, uint64_t signs_num);
     };
   }
 }

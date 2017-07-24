@@ -20,8 +20,12 @@
 namespace iroha {
   namespace validation {
 
-    bool ChainValidatorImpl::validate_block(
-        const model::Block& block, ametsuchi::MutableStorage& storage) {
+    ChainValidatorImpl::ChainValidatorImpl(
+        model::ModelCryptoProvider& crypto_provider)
+        : crypto_provider_(crypto_provider) {}
+
+    bool ChainValidatorImpl::validateBlock(const model::Block& block,
+                                           ametsuchi::MutableStorage& storage) {
       auto apply_block = [](const auto& current_block, auto& executor,
                             auto& query, auto& top_block) {
         for (const auto& tx : current_block.transactions) {
@@ -33,20 +37,35 @@ namespace iroha {
         }
         return true;
       };
-      // TODO: check super-majority and crypto
-      return storage.apply(block, apply_block);
+
+      return
+          // Check if block has supermajority
+          checkSupermajority(storage, block.sigs.size()) &&
+          // Verify signatories of the block
+          // TODO: use stateful validation here ?
+          crypto_provider_.verify(block) &&
+          // Apply to temporal storage
+          storage.apply(block, apply_block);
     }
 
-    bool ChainValidatorImpl::validate_chain(
+    bool ChainValidatorImpl::validateChain(
         rxcpp::observable<model::Block>& blocks,
         ametsuchi::MutableStorage& storage) {
       auto result = false;
       blocks
           .take_while([&result, this, &storage](auto block) {
-            return this->validate_block(block, storage);
+            return this->validateBlock(block, storage);
           })
           .subscribe([](auto block) {});
       return result;
+    }
+
+    bool ChainValidatorImpl::checkSupermajority(
+        ametsuchi::MutableStorage& storage, uint64_t signs_num) {
+      auto all_peers = storage.getPeers();
+      if (!all_peers) return false;
+      auto f = (all_peers.value().size() - 1) / 3;
+      return signs_num >= 2 * f + 1;
     }
   }
 }
