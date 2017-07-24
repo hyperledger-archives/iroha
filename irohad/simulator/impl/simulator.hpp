@@ -18,6 +18,9 @@
 #ifndef IROHA_SIMULATOR_HPP
 #define IROHA_SIMULATOR_HPP
 
+#include "ametsuchi/block_query.hpp"
+#include "ametsuchi/temporary_factory.hpp"
+#include "model/model_hash_provider_impl.hpp"
 #include "simulator/block_creator.hpp"
 #include "simulator/verified_proposal_creator.hpp"
 #include "validation/stateful_validator.hpp"
@@ -25,21 +28,35 @@
 namespace iroha {
   namespace simulator {
 
-    class Simulator : public VerifiedProposalCreator {
+    class Simulator : public VerifiedProposalCreator, BlockCreator {
      public:
-      Simulator(validation::StatefulValidator& statefulValidator, ametsuchi::TemporaryFactory& factory);
+      Simulator(validation::StatefulValidator& statefulValidator,
+                ametsuchi::TemporaryFactory& factory,
+                ametsuchi::BlockQuery& blockQuery,
+                model::HashProviderImpl& hash_provider);
 
       void process_proposal(model::Proposal proposal) override;
 
-      rxcpp::observable<model::Proposal> on_verified_proposal() override;
+      rxcpp::observable<nonstd::optional<model::Proposal>>
+      on_verified_proposal() override;
 
+      void process_verified_proposal(
+          nonstd::optional<model::Proposal> proposal) override;
 
+      rxcpp::observable<nonstd::optional<model::Block>> on_block() override;
 
      private:
       // internal
-      rxcpp::subjects::subject<model::Proposal> notifier_;
+      rxcpp::subjects::subject<nonstd::optional<model::Proposal>> notifier_;
+      rxcpp::subjects::subject<nonstd::optional<model::Block>> block_notifier_;
+
       validation::StatefulValidator& validator_;
       ametsuchi::TemporaryFactory& ametsuchi_factory_;
+      ametsuchi::BlockQuery& block_queries_;
+      model::HashProviderImpl& hash_provider_;
+
+      // last block
+      model::Block last_block;
     };
   }  // namespace simulator
 }  // namespace iroha

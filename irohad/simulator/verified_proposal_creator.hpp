@@ -18,6 +18,7 @@
 #ifndef IROHA_VERIFIED_PROPOSAL_CREATOR_HPP
 #define IROHA_VERIFIED_PROPOSAL_CREATOR_HPP
 
+#include <nonstd/optional.hpp>
 #include <rxcpp/rx.hpp>
 #include "model/proposal.hpp"
 
@@ -29,7 +30,6 @@ namespace iroha {
      */
     class VerifiedProposalCreator {
      public:
-
       /**
        * Processing proposal for making stateful validation
        * @param proposal - object for validation
@@ -40,10 +40,11 @@ namespace iroha {
        * Emit proposals that was verified by validation
        * @return
        */
-      virtual rxcpp::observable <model::Proposal> on_verified_proposal() = 0;
+      virtual rxcpp::observable<nonstd::optional<model::Proposal>>
+      on_verified_proposal() = 0;
 
       virtual ~VerifiedProposalCreator() = default;
     };
-  } // namespace simulator
-} // namespace iroha
-#endif //IROHA_VERIFIED_PROPOSAL_CREATOR_HPP
+  }  // namespace simulator
+}  // namespace iroha
+#endif  // IROHA_VERIFIED_PROPOSAL_CREATOR_HPP
