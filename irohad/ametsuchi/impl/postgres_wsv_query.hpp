@@ -25,7 +25,7 @@ namespace iroha {
   namespace ametsuchi {
     class PostgresWsvQuery : public WsvQuery {
      public:
-      PostgresWsvQuery(pqxx::nontransaction &transaction);
+      explicit PostgresWsvQuery(pqxx::nontransaction &transaction);
       nonstd::optional<model::Account> getAccount(
           const std::string &account_id) override;
       nonstd::optional<std::vector<ed25519::pubkey_t>> getSignatories(

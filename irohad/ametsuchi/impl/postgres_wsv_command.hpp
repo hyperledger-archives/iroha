@@ -25,7 +25,7 @@ namespace iroha {
   namespace ametsuchi {
     class PostgresWsvCommand : public WsvCommand {
      public:
-      PostgresWsvCommand(pqxx::nontransaction &transaction);
+      explicit PostgresWsvCommand(pqxx::nontransaction &transaction);
       bool insertAccount(const model::Account &account) override;
       bool updateAccount(const model::Account &account) override;
       bool insertAsset(const model::Asset &asset) override;
