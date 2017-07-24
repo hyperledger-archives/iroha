@@ -17,6 +17,7 @@
 
 #include "synchronizer/impl/synchronizer_impl.hpp"
 
+
 namespace iroha {
   namespace synchronizer {
 
@@ -34,7 +35,7 @@ namespace iroha {
         // TODO: write to log ametsuchi is not ok
         return;
       }
-      if (validator_.validate_block(commit_message, *storage)) {
+      if (validator_.validateBlock(commit_message, *storage)) {
         // Block can be applied to current storage
         // Commit to main Ametsuchi
         mutableFactory_.commit(std::move(storage));
@@ -63,7 +64,7 @@ namespace iroha {
             // TODO: write to log, cant create storage
             return;
           }
-          if (validator_.validate_chain(chain, *storage)) {
+          if (validator_.validateChain(chain, *storage)) {
             // Peer send valid chain
             mutableFactory_.commit(std::move(storage));
             notifier_.get_subscriber().on_next(chain);

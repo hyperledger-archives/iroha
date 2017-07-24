@@ -30,10 +30,10 @@ using ::testing::_;
 
 class ChainValidatorMock : public iroha::validation::ChainValidator {
  public:
-  MOCK_METHOD2(validate_chain,
+  MOCK_METHOD2(validateChain,
                bool(rxcpp::observable<Block>&, MutableStorage&));
 
-  MOCK_METHOD2(validate_block, bool(const Block&, MutableStorage&));
+  MOCK_METHOD2(validateBlock, bool(const Block&, MutableStorage&));
 };
 
 class MutableFactoryMock : public MutableFactory {
@@ -69,7 +69,7 @@ TEST(SynchronizerTest, CommitProccesing) {
   EXPECT_CALL(mutable_factory, createMutableStorageProxy())
       .WillRepeatedly(Return(nullptr));
 
-  EXPECT_CALL(chain_validator, validate_block(_, _))
+  EXPECT_CALL(chain_validator, validateBlock(_, _))
       .WillRepeatedly(Return(true));
 
   synchronizer.process_commit(test_block);
