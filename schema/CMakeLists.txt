@@ -9,6 +9,7 @@ compile_proto_to_cpp(queries.proto)
 compile_proto_to_cpp(responses.proto)
 compile_proto_to_grpc_cpp(endpoint.proto)
 compile_proto_to_grpc_cpp(peer_service.proto)
+compile_proto_to_grpc_cpp(yac.proto)
 
 add_dependencies(commandsproto_h primitiveproto_h)
 add_dependencies(queriesproto_h primitiveproto_h)

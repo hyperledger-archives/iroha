@@ -9,11 +9,6 @@ target_link_libraries(yac_cold_case_test
     yac
     )
 
-addtest(timer_test timer_test.cpp)
-target_link_libraries(timer_test
-    yac
-    )
-
 addtest(yac_sunny_day_test yac_sunny_day_test.cpp)
 target_link_libraries(yac_sunny_day_test
     yac
@@ -24,4 +19,14 @@ addtest(yac_storage_test yac_storage_test.cpp)
 target_link_libraries(yac_storage_test
     yac
     model
+    )
+
+addtest(yac_timer_test timer_test.cpp)
+target_link_libraries(yac_timer_test
+    yac
+    )
+
+addtest(yac_network_test network_test.cpp)
+target_link_libraries(yac_network_test
+    yac
     )

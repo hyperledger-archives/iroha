@@ -1,0 +1,33 @@
+syntax = "proto3";
+package iroha.consensus.yac.proto;
+
+import "google/protobuf/empty.proto";
+
+message Signature {
+  bytes pubkey = 1;
+  bytes signature = 2;
+}
+
+message Hash {
+  bytes proposal = 1;
+  bytes block = 2;
+}
+
+message Vote {
+  Hash hash = 1;
+  Signature signature = 2;
+}
+
+message Commit {
+  repeated Vote votes = 1;
+}
+
+message Reject {
+  repeated Vote votes = 1;
+}
+
+service Yac {
+  rpc SendVote (Vote) returns (google.protobuf.Empty);
+  rpc SendCommit (Commit) returns (google.protobuf.Empty);
+  rpc SendReject (Reject) returns (google.protobuf.Empty);
+}
