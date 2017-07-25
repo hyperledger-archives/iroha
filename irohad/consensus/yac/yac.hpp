@@ -28,7 +28,6 @@
 #include "consensus/yac/yac_crypto_provider.hpp"
 #include "consensus/yac/yac_gate.hpp"
 #include "consensus/yac/yac_network_interface.hpp"
-#include "model/block.hpp"
 #include "network/consensus_gate.hpp"
 
 namespace iroha {
