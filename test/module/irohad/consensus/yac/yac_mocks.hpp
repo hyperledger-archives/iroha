@@ -123,7 +123,7 @@ class YacTest : public ::testing::Test {
     network = std::make_shared<FakeNetwork>();
     crypto = std::make_shared<CryptoProviderMock>();
     timer = std::make_shared<FakeTimer>();
-    yac = Yac::create(network, crypto,
+    yac = Yac::create(std::move(YacVoteStorage()), network, crypto,
                       timer, ClusterOrdering(default_peers), delay);
     network->subscribe(yac);
   };

@@ -38,7 +38,7 @@ namespace iroha {
        * @param all - whole number (N)
        * @return true if belong supermajority
        */
-      bool hasSupermajority(uint64_t current, uint64_t all) {
+      inline bool hasSupermajority(uint64_t current, uint64_t all) {
         if (current > all)
           return false;
         auto f = (all - 1) / 3;

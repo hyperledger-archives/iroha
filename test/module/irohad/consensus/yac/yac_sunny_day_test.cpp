@@ -17,6 +17,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <utility>
 #include "yac_mocks.hpp"
 #include "common/test_observable.hpp"
 
@@ -45,7 +46,7 @@ TEST_F(YacTest, ValidCase) {
   uint64_t wait_seconds = 10;
   delay = wait_seconds * 1000;
 
-  yac = Yac::create(network, crypto, timer, my_order, delay);
+  yac = Yac::create(std::move(YacVoteStorage()), network, crypto, timer, my_order, delay);
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(1);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);

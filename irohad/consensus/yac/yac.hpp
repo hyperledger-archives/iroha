@@ -24,31 +24,32 @@
 #include <unordered_set>
 #include <vector>
 
-#include "consensus/yac/timer.hpp"
-#include "consensus/yac/yac_crypto_provider.hpp"
 #include "consensus/yac/yac_gate.hpp"
 #include "consensus/yac/yac_network_interface.hpp"
-#include "network/consensus_gate.hpp"
+#include "consensus/yac/yac_crypto_provider.hpp"
+#include "consensus/yac/timer.hpp"
+#include "consensus/yac/yac_vote_storage.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
       class Yac : public HashGate,
-                  public YacNetworkNotifications,
-                  public std::enable_shared_from_this<Yac> {
+                  public YacNetworkNotifications {
        public:
         /**
          * Method for creating Yac consensus object
          * @param delay for timer in milliseconds
          */
         static std::shared_ptr<Yac> create(
+            YacVoteStorage vote_storage,
             std::shared_ptr<YacNetwork> network,
             std::shared_ptr<YacCryptoProvider> crypto,
             std::shared_ptr<Timer> timer,
             ClusterOrdering order,
             uint64_t delay);
 
-        Yac(std::shared_ptr<YacNetwork> network,
+        Yac(YacVoteStorage vote_storage,
+            std::shared_ptr<YacNetwork> network,
             std::shared_ptr<YacCryptoProvider> crypto,
             std::shared_ptr<Timer> timer,
             ClusterOrdering order,
@@ -73,19 +74,19 @@ namespace iroha {
 
         /**
          * Voting step is strategy of propagating vote until commit/reject
-         * message
+         * messagee
          */
         void votingStep(YacHash hash);
 
         /**
          * Erase temporary data of current round
          */
-        void clearRoundStorage();
+        void closeRound();
 
         // ------|Apply data|------
         void applyCommit(CommitMessage commit);
         void applyReject(RejectMessage reject);
-        void applyVote(VoteMessage commit);
+        void applyVote(VoteMessage vote);
 
         // ------|Checking of input|------
 
@@ -100,18 +101,20 @@ namespace iroha {
         bool verifyReject(RejectMessage reject);
 
         // ------|Propagation|------
-        void propagateCommit(YacHash committed_hash);
+        void propagateCommit(CommitMessage msg);
+        void propagateCommitDirectly(model::Peer to, CommitMessage msg);
+        void propagateReject(RejectMessage msg);
+        void propagateRejectDirectly(model::Peer to, RejectMessage msg);
 
         // ------|Fields|------
         rxcpp::subjects::subject<YacHash> notifier_;
         std::shared_ptr<YacNetwork> network_;
         std::shared_ptr<YacCryptoProvider> crypto_;
         std::shared_ptr<Timer> timer_;
+        YacVoteStorage vote_storage_;
 
         // ------|One round|------
         ClusterOrdering cluster_order_;
-        std::unordered_map<YacHash, std::vector<VoteMessage>> votes_;
-        std::unordered_set<model::Peer> voted_peers_;
 
         // ------|Constants|------
         const uint64_t delay_;

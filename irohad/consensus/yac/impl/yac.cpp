@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include <utility>
+
 #include "consensus/yac/yac.hpp"
 
 namespace iroha {
@@ -22,22 +24,30 @@ namespace iroha {
     namespace yac {
 
       std::shared_ptr<Yac> Yac::create(
+          YacVoteStorage vote_storage,
           std::shared_ptr<YacNetwork> network,
           std::shared_ptr<YacCryptoProvider> crypto,
           std::shared_ptr<Timer> timer,
           ClusterOrdering order,
           uint64_t delay) {
-        return std::make_shared<Yac>(network, crypto, timer, order, delay);
+        return std::make_shared<Yac>(vote_storage,
+                                     network,
+                                     crypto,
+                                     timer,
+                                     order,
+                                     delay);
       }
 
-      Yac::Yac(std::shared_ptr<YacNetwork> network,
+      Yac::Yac(YacVoteStorage vote_storage,
+               std::shared_ptr<YacNetwork> network,
                std::shared_ptr<YacCryptoProvider> crypto,
                std::shared_ptr<Timer> timer,
                ClusterOrdering order,
                uint64_t delay)
-          : network_(network),
-            crypto_(crypto),
-            timer_(timer),
+          : vote_storage_(std::move(vote_storage)),
+            network_(std::move(network)),
+            crypto_(std::move(crypto)),
+            timer_(std::move(timer)),
             cluster_order_(order),
             delay_(delay) {}
 
@@ -48,29 +58,27 @@ namespace iroha {
         votingStep(hash);
       };
 
-      rxcpp::observable <YacHash> Yac::on_commit() {
+      rxcpp::observable<YacHash> Yac::on_commit() {
         return this->notifier_.get_observable();
       }
 
       // ------|Network notifications|------
 
       void Yac::on_vote(model::Peer from, VoteMessage vote) {
-        if (verifyVote(from) && crypto_->verify(vote)) {
+        if (crypto_->verify(vote)) {
           this->applyVote(vote);
         }
       }
 
       void Yac::on_commit(model::Peer from, CommitMessage commit) {
-        if (verifyCommit(commit) && crypto_->verify(commit)) {
-          timer_->deny();
+        if (crypto_->verify(commit)) {
           this->applyCommit(commit);
         }
       }
 
       void Yac::on_reject(model::Peer from, RejectMessage reject) {
-        if (verifyReject(reject) && crypto_->verify(reject)) {
+        if (crypto_->verify(reject)) {
           this->applyReject(reject);
-          timer_->deny();
         }
       }
 
@@ -87,83 +95,60 @@ namespace iroha {
         });
       }
 
-      void Yac::clearRoundStorage() {
+      void Yac::closeRound() {
         timer_->deny();
-        // todo incorrect behaviour when leader dropped on propagating commit
-        votes_.clear();
-        voted_peers_.clear();
       };
 
       // ------|Apply data|------
 
       void Yac::applyCommit(CommitMessage commit) {
+        // todo apply to vote storage for verification
         auto hash = commit.votes.at(0).hash;
         notifier_.get_subscriber().on_next(hash);
-        clearRoundStorage();
+        closeRound();
       };
 
       void Yac::applyReject(RejectMessage reject) {
-        clearRoundStorage();
-        // todo after reject missed peers should receive reject also
+        // todo apply to vote storage
+        closeRound();
       };
 
-      void Yac::applyVote(VoteMessage commit) {
-        auto hash_votes = votes_[commit.hash];
-        hash_votes.push_back(commit);
-        if (cluster_order_.haveSupermajority(hash_votes.size())) {
-          propagateCommit(commit.hash);
-        }
-      };
-
-      // ------|Checking of input|------
-
-      bool Yac::verifyVote(const model::Peer &peer) {
-        if (voted_peers_.count(peer) == 0) {
-          voted_peers_.insert(peer);
-          return true;
+      void Yac::applyVote(VoteMessage vote) {
+        auto result =
+            vote_storage_.storeVote(vote, cluster_order_.getNumberOfPeers());
+        if (result.vote_inserted) {
+          if (result.commit != nonstd::nullopt) {
+            propagateCommit(*result.commit);
+          } else {
+            // todo propagate reject
+          }
         } else {
-          return false;
+          // todo propagate for this peer currently
         }
-      };
-
-      bool Yac::verifyCommit(CommitMessage commit) {
-        if (commit.votes.size() == 0) return false;
-
-        auto hash = commit.votes.at(0).hash;
-        for (const auto &cmt : commit.votes) {
-          if (hash != cmt.hash) return false;
-        }
-        return true;
-      };
-
-      bool Yac::verifyReject(RejectMessage reject) {
-        if (reject.votes.empty() ||
-            reject.votes.size() > cluster_order_.getNumberOfPeers())
-          return false;
-        auto votes = std::unordered_map<YacHash, int>();
-        for (const auto &vote : reject.votes) {
-          votes[vote.hash] += 1;
-        }
-        auto flat_map_accum = std::vector<uint32_t>(votes.size());
-        std::transform(votes.begin(), votes.end(), flat_map_accum.begin(),
-                       [](auto pair) { return pair.second; });
-        std::sort(flat_map_accum.begin(), flat_map_accum.end(),
-                  [](auto a, auto b) { return a > b; });
-        auto number_of_missed_votes =
-            cluster_order_.getNumberOfPeers() - votes.size();
-        return !cluster_order_.haveSupermajority(flat_map_accum.at(0) +
-            number_of_missed_votes);
       };
 
       // ------|Propagation|------
 
-      void Yac::propagateCommit(YacHash committed_hash) {
-        auto votes = votes_[committed_hash];
-        auto commitMsg = CommitMessage(votes);
-        for (const auto &peer : cluster_order_.getPeers()) {
-          network_->send_commit(peer, commitMsg);
+      void Yac::propagateCommit(CommitMessage msg) {
+        for (auto peer :cluster_order_.getPeers()) {
+          propagateCommitDirectly(peer, msg);
         }
-      };
+      }
+
+      void Yac::propagateCommitDirectly(model::Peer to, CommitMessage msg) {
+        network_->send_commit(std::move(to), std::move(msg));
+      }
+
+      void Yac::propagateReject(RejectMessage msg) {
+        for (auto peer :cluster_order_.getPeers()) {
+          propagateRejectDirectly(peer, msg);
+        }
+      }
+
+      void Yac::propagateRejectDirectly(model::Peer to, RejectMessage msg) {
+        network_->send_reject(std::move(to), std::move(msg));
+      }
+
     }  // namespace yac
   }    // namespace consensus
 }  // namespace iroha
