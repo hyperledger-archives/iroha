@@ -9,6 +9,11 @@ target_link_libraries(yac_cold_case_test
     yac
     )
 
+addtest(timer_test timer_test.cpp)
+target_link_libraries(timer_test
+    yac
+    )
+
 addtest(yac_sunny_day_test yac_sunny_day_test.cpp)
 target_link_libraries(yac_sunny_day_test
     yac
