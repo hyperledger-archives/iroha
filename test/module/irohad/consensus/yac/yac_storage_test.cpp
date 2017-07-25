@@ -31,14 +31,6 @@ TEST(YacStorageTest, SupermajorityFunctionForAllCases) {
   ASSERT_EQ(false, hasSupermajority(5, N));
 }
 
-VoteMessage create_vote(YacHash hash, std::string sign) {
-  VoteMessage vote;
-  vote.hash = hash;
-  std::copy(sign.begin(), sign.end(),
-            vote.signature.pubkey.begin());
-  return vote;
-}
-
 TEST(YacStorageTest, YacBlockVoteStorageWhenNormalDataInput) {
   YacHash hash("proposal", "commit");
   int N = 4;

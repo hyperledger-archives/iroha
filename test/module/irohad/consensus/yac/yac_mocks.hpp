@@ -30,6 +30,14 @@ Peer mk_peer(std::string address) {
   return peer;
 }
 
+VoteMessage create_vote(YacHash hash, std::string sign) {
+  VoteMessage vote;
+  vote.hash = hash;
+  std::copy(sign.begin(), sign.end(),
+            vote.signature.pubkey.begin());
+  return vote;
+}
+
 /**
  * Mock for yac crypto provider
  */
