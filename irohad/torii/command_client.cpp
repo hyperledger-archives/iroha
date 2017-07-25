@@ -137,8 +137,9 @@ namespace torii {
         call->callback(call->response);
       } else {
         ToriiResponse responseFailure;
-        responseFailure.set_code(iroha::protocol::ResponseCode::FAIL);
-        responseFailure.set_message("RPC failed");
+        responseFailure.set_validation(iroha::protocol::STATELESS_VALIDATION_FAILED);
+        //responseFailure.set_code(iroha::protocol::ResponseCode::FAIL);
+       // responseFailure.set_message("RPC failed");
         call->callback(responseFailure);
       }
 

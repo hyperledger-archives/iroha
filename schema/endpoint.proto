@@ -5,18 +5,23 @@ package iroha.protocol;
 import "block.proto";
 import "queries.proto";
 
-enum ResponseCode {
-  FAIL = 0; // default value
-  OK = 1;
+
+enum StatelessValidation {
+  STATELESS_VALIDATION_FAILED = 0;
+  STATELESS_VALIDATION_SUCCESS = 1;
 }
 
 message ToriiResponse {
-  ResponseCode code = 1;
-  string message = 2;
+  StatelessValidation validation = 1;
 }
 
 service CommandService {
   rpc Torii (Transaction) returns (ToriiResponse);
+}
+
+enum ResponseCode {
+  FAIL = 0; // default value
+  OK = 1;
 }
 
 message QueryResponse {

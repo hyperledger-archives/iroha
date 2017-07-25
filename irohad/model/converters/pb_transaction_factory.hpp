@@ -43,7 +43,7 @@ namespace iroha {
          * @param pb_block - reference to proto block
          * @return model block
          */
-        model::Transaction deserialize(protocol::Transaction &pb_tx);
+        model::Transaction deserialize(protocol::Transaction const&pb_tx);
        private:
 //        std::shared_ptr<protocol::Command> serializeAbstractCommand(model::Command &command);
 //        std::shared_ptr<model::Command> deserializeAbstractCommand(protocol::Command &command);

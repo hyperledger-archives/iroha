@@ -16,6 +16,7 @@ limitations under the License.
 
 #include <grpc++/grpc++.h>
 #include <grpc++/server_builder.h>
+#include "torii/torii_service_handler.hpp"
 
 #ifndef MAIN_SERVER_RUNNER_HPP
 #define MAIN_SERVER_RUNNER_HPP
@@ -26,7 +27,8 @@ class ServerRunner {
 public:
   ServerRunner(const std::string &ip, int port);
   ~ServerRunner();
-  void run();
+  // TODO: Replace with better
+  void run(std::unique_ptr<torii::CommandService> commandService);
   void shutdown();
   void waitForServersReady();
 

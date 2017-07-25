@@ -19,7 +19,7 @@ limitations under the License.
 #include <grpc++/server_context.h>
 #include <logger/logger.hpp>
 #include <main/server_runner.hpp>
-#include <torii/torii_service_handler.hpp>
+
 
 logger::Logger Log("ServerRunner");
 
@@ -30,13 +30,14 @@ ServerRunner::~ServerRunner() {
   toriiServiceHandler_->shutdown();
 }
 
-void ServerRunner::run() {
+void ServerRunner::run(std::unique_ptr<torii::CommandService> commandService) {
   grpc::ServerBuilder builder;
 
   builder.AddListeningPort(serverAddress_, grpc::InsecureServerCredentials());
 
   // Register services.
   toriiServiceHandler_ = std::make_unique<torii::ToriiServiceHandler>(builder);
+  toriiServiceHandler_->assign_handler(commandService);
 
   serverInstance_ = builder.BuildAndStart();
   serverInstanceCV_.notify_one();

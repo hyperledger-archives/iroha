@@ -21,6 +21,7 @@ limitations under the License.
 #include <network/grpc_call.hpp>
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
+#include "torii/command_service.hpp"
 
 namespace torii {
   /**
@@ -34,6 +35,8 @@ namespace torii {
      * @param builder
      */
     ToriiServiceHandler(::grpc::ServerBuilder &builder);
+
+    void assign_handler(std::unique_ptr<CommandService>& command_service);
 
     virtual ~ToriiServiceHandler() override;
 
@@ -111,6 +114,9 @@ namespace torii {
     std::mutex mtx_;
     bool isShutdown_ = false; // called shutdown()
     bool isShutdownCompletionQueue_ = false; // called cq_->Shutdown()
+
+
+    std::unique_ptr<CommandService> commandService_;
   };
 }  // namespace torii
 

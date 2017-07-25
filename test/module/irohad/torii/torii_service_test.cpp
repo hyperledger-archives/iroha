@@ -61,7 +61,8 @@ TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
     auto stat = torii::CommandSyncClient(Ip, Port)
       .Torii(iroha::protocol::Transaction {}, response);
     ASSERT_TRUE(stat.ok());
-    std::cout << "Sync Response\n";
+    std::cout << response.message() << std::endl;
+    //std::cout << "\n";
   }
 }
 

@@ -19,25 +19,45 @@ limitations under the License.
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
+#include "model/converters/pb_transaction_factory.hpp"
+#include "model/tx_responses/stateless_response.hpp"
+#include "torii/processor/transaction_processor.hpp"
 
 namespace torii {
 
   /**
    * Actual implementation of async CommandService.
-   * ToriiServiceHandler::(SomeMethod)Handler calls a corresponding method in this class.
+   * ToriiServiceHandler::(SomeMethod)Handler calls a corresponding method in
+   * this class.
    */
   class CommandService {
-  public:
+   public:
+    CommandService(iroha::model::converters::PbTransactionFactory& pb_factory,
+                   iroha::torii::TransactionProcessor& txProccesor)
+        : pb_factory_(pb_factory), tx_processor_(txProccesor){};
     /**
      * actual implementation of async Torii in CommandService
      * @param request - Transaction
      * @param response - ToriiResponse
      */
-    static void ToriiAsync(
-      iroha::protocol::Transaction const& request, iroha::protocol::ToriiResponse& response) {
-      response.set_code(iroha::protocol::ResponseCode::OK);
-      response.set_message("Torii async response");
+    void ToriiAsync(iroha::protocol::Transaction const& request,
+                    iroha::protocol::ToriiResponse& response) {
+      auto iroha_tx = pb_factory_.deserialize(request);
+      tx_processor_.transaction_handle(iroha_tx);
+
+      tx_processor_.transaction_notifier().subscribe([&response](
+                                                         auto iroha_response) {
+        // iroha-response is shared_ptr of Transaction Response
+        // TODO: replace with other responses if needed
+
+        response.set_validation(iroha::protocol::STATELESS_VALIDATION_SUCCESS);
+
+      });
     }
+
+   private:
+    iroha::model::converters::PbTransactionFactory& pb_factory_;
+    iroha::torii::TransactionProcessor& tx_processor_;
   };
 
 }  // namespace torii

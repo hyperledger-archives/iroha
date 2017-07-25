@@ -53,7 +53,7 @@ namespace iroha {
         return pb_tx;
       }
 
-      model::Transaction PbTransactionFactory::deserialize(protocol::Transaction &pb_tx) {
+      model::Transaction PbTransactionFactory::deserialize(protocol::Transaction const&pb_tx) {
         model::converters::PbCommandFactory commandFactory;
         model::Transaction tx;
 
