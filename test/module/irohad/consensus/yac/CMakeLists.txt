@@ -13,3 +13,9 @@ addtest(yac_sunny_day_test yac_sunny_day_test.cpp)
 target_link_libraries(yac_sunny_day_test
     yac
     )
+
+addtest(yac_storage_test yac_storage_test.cpp)
+target_link_libraries(yac_storage_test
+    yac
+    model
+    )
