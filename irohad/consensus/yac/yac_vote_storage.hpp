@@ -199,25 +199,20 @@ namespace iroha {
          */
         StorageResult insert(VoteMessage msg) {
           // already defined stated
-          if (reject_state_ != nonstd::nullopt) {
-            return StorageResult(nonstd::nullopt, reject_state_, false);
-          }
-          if (commit_state_ != nonstd::nullopt) {
-            return StorageResult(commit_state_, nonstd::nullopt, false);
+          if (getHash() != msg.hash.proposal_hash or
+              commit_state_ != nonstd::nullopt or
+              reject_state_ != nonstd::nullopt) {
+            return StorageResult(commit_state_, reject_state_, false);
           }
 
           // try to fill
           auto inserted = false;
-
-          auto blockStore =
-              findStore(msg.hash.proposal_hash, msg.hash.block_hash);
-          auto result = blockStore.insert(msg);
-
+          auto index = findStore(msg.hash.proposal_hash, msg.hash.block_hash);
+          auto result = block_votes_.at(index).insert(msg);
           inserted = result.vote_inserted;
           if (inserted) {
             if (result.commit != nonstd::nullopt) {
               // commit case
-
               commit_state_ = result.commit;
               return result;
             } else {
@@ -255,21 +250,21 @@ namespace iroha {
 
        private:
         // --------| private api |--------
-        YacBlockVoteStorage findStore(ProposalHash proposal_hash,
-                                      BlockHash block_hash) {
+        uint64_t findStore(ProposalHash proposal_hash,
+                           BlockHash block_hash) {
 
           // find exist
-          for (auto &&vote_storage: block_votes_) {
-            if (vote_storage.getProposalHash() == proposal_hash and
-                vote_storage.getBlockHash() == block_hash) {
-              return vote_storage;
+          for (auto i = 0; i < block_votes_.size(); ++i) {
+            if (block_votes_.at(i).getProposalHash() == proposal_hash and
+                block_votes_.at(i).getBlockHash() == block_hash) {
+              return i;
             }
           }
           // insert and return new
           YacBlockVoteStorage
               new_container(proposal_hash, block_hash, peers_in_round_);
           block_votes_.push_back(new_container);
-          return new_container;
+          return block_votes_.size() - 1;
         }
 
         std::vector<VoteMessage> aggregateAll() {
@@ -322,7 +317,7 @@ namespace iroha {
          */
         StorageResult storeVote(VoteMessage msg, uint64_t peers_in_round) {
 
-          // TODO verifiy uniqueness of peer
+          // TODO verify uniqueness of peer
 
           // try insert in available proposal storage
           for (auto &&proposal: proposals) {
