@@ -56,8 +56,8 @@ namespace iroha {
         std::condition_variable t_cv_;
 
         // Thread pool
-        std::thread thread_;
         std::atomic<bool> done_;
+        std::thread thread_;
 
         // Denial synchronization
         std::mutex mtx_;

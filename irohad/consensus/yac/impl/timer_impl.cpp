@@ -22,7 +22,7 @@ namespace iroha {
     namespace yac {
 
       TimerImpl::TimerImpl()
-          : valid_(true), thread_(&TimerImpl::worker, this), done_(false) {}
+          : valid_(true), done_(false), thread_(&TimerImpl::worker, this) {}
 
       void TimerImpl::invokeAfterDelay(uint64_t millis,
                                        std::function<void()> handler) {
