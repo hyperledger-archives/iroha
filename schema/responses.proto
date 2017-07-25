@@ -1,4 +1,56 @@
 syntax = "proto3";
 package iroha.protocol;
+import "block.proto";
+import "primitive.proto";
 
-// TODO: Proto client reponses go here
+// *** WSV data structure *** //
+message Asset {
+    string asset_id = 1;
+    string domain_id = 2;
+    uint32 precision = 3;
+}
+
+message Account {
+    string account_id = 1;
+    string domain_name = 2;
+    Permissions permissions = 3;
+    uint32 quorum = 4;
+    bytes master_key = 5;
+}
+
+message AccountAsset {
+    string asset_id = 1;
+    string account_id = 2;
+    uint64 balance = 3;
+}
+
+// *** Responses *** //
+message AccountAssetsResponse {
+    repeated Asset assets = 1;
+}
+
+message AccountResponse {
+    Account account = 1;
+}
+
+message ErrorResponse {
+    string reason = 1;
+}
+
+message SignatoriesResponse {
+    repeated Signature signatories = 1;
+}
+
+message TransactionsResponse {
+    repeated Transaction transactions = 1;
+}
+
+message QueryResponse {
+    oneof response {
+        AccountAssetsResponse account_assets_response = 1;
+        AccountResponse account_response = 2;
+        ErrorResponse error_response = 3;
+        SignatoriesResponse signatories_response = 4;
+        TransactionsResponse transactions_response = 5;
+    }
+}

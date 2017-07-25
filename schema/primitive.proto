@@ -1,6 +1,19 @@
 syntax = "proto3";
 package iroha.protocol;
 
+message Permissions {
+   bool issue_assets = 1;
+   bool create_assets = 2;
+   bool create_accounts = 3;
+   bool create_domains = 4;
+   bool read_all_accounts = 5;
+   bool add_signatory = 6;
+   bool remove_signatory = 7;
+   bool set_permissions = 8;
+   bool set_quorum = 9;
+   bool can_transfer = 10;
+}
+
 message Signature {
    bytes pubkey    = 1;
    bytes signature = 2;

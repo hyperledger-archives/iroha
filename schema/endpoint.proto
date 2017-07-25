@@ -19,16 +19,6 @@ service CommandService {
   rpc Torii (Transaction) returns (ToriiResponse);
 }
 
-enum ResponseCode {
-  FAIL = 0; // default value
-  OK = 1;
-}
-
-message QueryResponse {
-  ResponseCode code = 1;
-  string message = 2;
-}
-
 service QueryService {
   rpc Find (Query) returns (QueryResponse);
 }
