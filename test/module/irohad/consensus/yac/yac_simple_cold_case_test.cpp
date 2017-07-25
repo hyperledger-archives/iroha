@@ -26,6 +26,7 @@
 #include <vector>
 #include "common/test_observable.hpp"
 #include "yac_mocks.hpp"
+#include "consensus/yac/yac_vote_storage.hpp"
 
 using ::testing::Return;
 using ::testing::_;
@@ -50,7 +51,8 @@ TEST_F(YacTest, YacWhenInit) {
 
   auto fake_delay_ = 100500;
 
-  auto yac_ = Yac::create(std::make_shared<FakeNetwork>(network_),
+  auto yac_ = Yac::create(YacVoteStorage(),
+                          std::make_shared<FakeNetwork>(network_),
                           std::make_shared<CryptoProviderMock>(crypto_),
                           std::make_shared<FakeTimer>(timer_),
                           ClusterOrdering(default_peers),
@@ -110,7 +112,7 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveOneVote) {
  */
 TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
   cout << "----------|Start => receive supermajority of votes"
-          "|----------"
+      "|----------"
        << endl;
 
   // verify that commit not emitted
@@ -168,7 +170,7 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveCommitMessage) {
   auto committed_peer = default_peers.at(0);
   auto msg = CommitMessage();
   for (auto &peer : default_peers) {
-    (void)peer;
+    (void) peer;
     msg.votes.push_back(crypto->getVote(propagated_hash));
   }
   network->notification->on_commit(committed_peer, msg);

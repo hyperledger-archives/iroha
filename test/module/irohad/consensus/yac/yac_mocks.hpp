@@ -19,6 +19,7 @@
 #define IROHA_YAC_MOCKS_HPP
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "consensus/yac/yac.hpp"
 
 using namespace iroha::consensus::yac;
