@@ -32,6 +32,10 @@ namespace iroha {
       struct VoteMessage {
         YacHash hash;
         model::Signature signature;
+
+        bool operator==(const VoteMessage &rhs) const {
+          return hash == rhs.hash and signature == rhs.signature;
+        }
       };
 
       /**
@@ -44,6 +48,10 @@ namespace iroha {
         CommitMessage(std::vector<VoteMessage> votes) { this->votes = votes; }
 
         std::vector<VoteMessage> votes;
+
+        bool operator==(const CommitMessage &rhs) const {
+          return votes == rhs.votes;
+        }
       };
 
       /**
@@ -51,7 +59,15 @@ namespace iroha {
        * to collect supermajority for any block
        */
       struct RejectMessage {
+        RejectMessage() {}
+
+        RejectMessage(std::vector<VoteMessage> votes) { this->votes = votes; }
+
         std::vector<VoteMessage> votes;
+
+        bool operator==(const RejectMessage &rhs) const {
+          return votes == rhs.votes;
+        }
       };
     }  // namespace yac
   }    // namespace consensus
