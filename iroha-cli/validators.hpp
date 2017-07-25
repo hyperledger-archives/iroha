@@ -21,5 +21,6 @@
 namespace iroha_cli {
 
 bool validate_port(const char*, gflags::int32);
+bool validate_peers(const char*, const std::string&);
 
 } // namespace iroha_cli

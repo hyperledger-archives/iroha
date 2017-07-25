@@ -16,15 +16,30 @@
  */
 
 #include <iostream>
+#include <sstream>
 #include "validators.hpp"
 
 namespace iroha_cli {
 
 bool validate_port(const char*, gflags::int32 port) {
-  if (port > 0 && port < 32768) return 1;
+  // fixme port max num macro
+  if (port > 0 && port < 65535) return 1;
 
   std::cout<<"Port can be only in range (0, 32768)";
   return 0;
+}
+
+bool validate_peers(const char*, const std::string& s) {
+  std::stringstream ss(s);
+  std::string tmp;
+  while (std::getline(ss, tmp, ';')){
+    // fixme macro
+    if (tmp.size() != 32) {
+      printf("\"%s\" doesn't look like pubkey (size != 32)", tmp.c_str());
+      return 0;
+    }
+  }
+  return 1;
 }
 
 } // namespace iroha_cli
