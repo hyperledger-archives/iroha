@@ -112,15 +112,19 @@ namespace iroha {
       protocol::AccountAssetResponse PbQueryResponseFactory::serialize(
           const model::AccountAssetResponse &accountAssetResponse) const {
         protocol::AccountAssetResponse pb_response;
-        pb_response.mutable_asset()->CopyFrom(
-            serialize(accountAssetResponse.acct_asset));
+        auto pb_account_asset = pb_response.mutable_account_asset();
+        pb_account_asset->set_asset_id(accountAssetResponse.acct_asset.asset_id);
+        pb_account_asset->set_account_id(accountAssetResponse.acct_asset.account_id);
+        pb_account_asset->set_balance(accountAssetResponse.acct_asset.balance);
         return pb_response;
       }
 
       model::AccountAssetResponse PbQueryResponseFactory::deserialize(
           const protocol::AccountAssetResponse &account_asset_response) const {
         model::AccountAssetResponse res;
-        res.acct_asset = deserialize(account_asset_response.asset());
+        res.acct_asset.balance = account_asset_response.account_asset().balance();
+        res.acct_asset.account_id = account_asset_response.account_asset().account_id();
+        res.acct_asset.asset_id = account_asset_response.account_asset().asset_id();
         return res;
       }
 
