@@ -36,6 +36,9 @@ namespace torii {
    public:
     CommandService(iroha::model::converters::PbTransactionFactory& pb_factory,
                    iroha::torii::TransactionProcessor& txProccesor);
+
+    CommandService(const CommandService&) = delete;
+    CommandService& operator=(const CommandService&) = delete;
     /**
      * actual implementation of async Torii in CommandService
      * @param request - Transaction

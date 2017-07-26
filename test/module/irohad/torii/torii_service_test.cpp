@@ -75,8 +75,8 @@ class ToriiServiceTest : public testing::Test {
           iroha::torii::TransactionProcessorImpl(pcsMock, svMock);
       iroha::model::converters::PbTransactionFactory pb_factory;
 
-      auto command_service = std::make_unique<torii::CommandService>(
-          torii::CommandService(pb_factory, tx_processor));
+      auto command_service =
+          std::make_unique<torii::CommandService>(pb_factory, tx_processor);
       runner->run(std::move(command_service));
     });
 
