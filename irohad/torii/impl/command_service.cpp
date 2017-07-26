@@ -23,32 +23,24 @@ namespace torii {
       iroha::model::converters::PbTransactionFactory &pb_factory,
       iroha::torii::TransactionProcessor &txProccesor)
       : pb_factory_(pb_factory), tx_processor_(txProccesor) {
+    // Notifier for all clients
     tx_processor_.transaction_notifier().subscribe([this](auto iroha_response) {
 
-      std::cout << "On_next event triggered " << std::endl;
-
+      // TODO: make for other responses
       if (iroha:: instanceof
           <iroha::model::TransactionStatelessResponse>(*iroha_response)) {
-
-        auto resp = static_cast<iroha::model::TransactionStatelessResponse&>(
+        auto resp = static_cast<iroha::model::TransactionStatelessResponse &>(
             *iroha_response);
-
-        std::cout << "Received response for transaction "
-                  << resp.transaction.tx_counter << std::endl;
-
-        if (resp.passed) {
-          std::cout << "Transaction is valid " << std::endl;
-
-          auto res = this->handler_map_.find(resp.transaction.tx_counter);
-
-          if (res != this->handler_map_.end()) {
-            std::cout << "Handler found " << std::endl;
-            res->second.set_validation(
-                iroha::protocol::STATELESS_VALIDATION_SUCCESS);
-          } else {
-            std::cout << "No handler found " << std::endl;
-          }
+        // Find response in handler map
+        auto res =
+            this->handler_map_.find(resp.transaction.tx_hash.to_string());
+        iroha::protocol::ToriiResponse response;
+        if (res != this->handler_map_.end()) {
+          response = res->second;
         }
+        response.set_validation(
+            resp.passed ? iroha::protocol::STATELESS_VALIDATION_SUCCESS
+                        : iroha::protocol::STATELESS_VALIDATION_FAILED);
       }
     });
   }
@@ -56,8 +48,8 @@ namespace torii {
   void CommandService::ToriiAsync(iroha::protocol::Transaction const &request,
                                   iroha::protocol::ToriiResponse &response) {
     auto iroha_tx = pb_factory_.deserialize(request);
-    std::cout << "Setting handler for tx " << iroha_tx.tx_counter << std::endl;
-    handler_map_.insert({iroha_tx.tx_counter, response});
+    handler_map_.insert({iroha_tx.tx_hash.to_string(), response});
+    // Send transaction to iroha
     tx_processor_.transaction_handle(iroha_tx);
   }
 

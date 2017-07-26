@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-#include <torii/processor/transaction_processor_impl.hpp>
-#include <model/tx_responses/stateless_response.hpp>
 #include <iostream>
+#include <model/tx_responses/stateless_response.hpp>
+#include <torii/processor/transaction_processor_impl.hpp>
 
 namespace iroha {
   namespace torii {
@@ -27,24 +27,20 @@ namespace iroha {
     using network::PeerCommunicationService;
 
     TransactionProcessorImpl::TransactionProcessorImpl(
-        PeerCommunicationService &pcs,
-        const StatelessValidator &validator)
-        : pcs_(pcs),
-          validator_(validator) {
-    }
+        PeerCommunicationService &pcs, const StatelessValidator &validator)
+        : pcs_(pcs), validator_(validator) {}
 
-    void TransactionProcessorImpl::transaction_handle(model::Transaction &transaction) {
+    void TransactionProcessorImpl::transaction_handle(
+        model::Transaction &transaction) {
       model::TransactionStatelessResponse response;
       response.transaction = transaction;
       response.passed = false;
-      std::cout << "Processing transaction " << transaction.tx_counter << std::endl;
+
       if (validator_.validate(transaction)) {
-        std::cout << "Validation ok " << std::endl;
         response.passed = true;
         pcs_.propagate_transaction(transaction);
       }
-      else{
-      std::cout << "Validation not ok " << std::endl; }
+
       notifier_.get_subscriber().on_next(
           std::make_shared<model::TransactionStatelessResponse>(response));
     }

@@ -97,18 +97,15 @@ TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
     std::cout << i << std::endl;
     iroha::protocol::ToriiResponse response;
+    // One client is generating transaction
     auto new_tx = iroha::protocol::Transaction();
     auto meta = new_tx.mutable_meta();
     meta->set_tx_counter(i);
+    meta->set_creator_account_id("accountA");
 
     auto stat = torii::CommandSyncClient(Ip, Port).Torii(new_tx, response);
     ASSERT_TRUE(stat.ok());
-    std::cout << "Response validation: "  << response.validation() << std::endl;
-
-    //ASSERT_EQ(response.validation(),
-    //          iroha::protocol::STATELESS_VALIDATION_SUCCESS);
-    // std::cout << response.message() << std::endl;
-    // std::cout << "\n";
+    ASSERT_EQ(response.validation(), iroha::protocol::STATELESS_VALIDATION_SUCCESS);
   }
 }
 

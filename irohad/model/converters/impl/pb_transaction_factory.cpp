@@ -19,6 +19,7 @@
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/converters/pb_command_factory.hpp"
 #include "common/types.hpp"
+#include "model/model_hash_provider_impl.hpp"
 
 namespace iroha {
   namespace model {
@@ -76,6 +77,9 @@ namespace iroha {
         for (const auto &pb_command: pb_tx.body().commands()) {
           tx.commands.push_back(commandFactory.deserializeAbstractCommand(pb_command));
         }
+
+        model::HashProviderImpl hashProvider;
+        tx.tx_hash = hashProvider.get_hash(tx);
 
         return tx;
       }

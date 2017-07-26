@@ -80,6 +80,7 @@ namespace iroha {
 
       concat_hash_commands_ += tx.creator_account_id;
 
+
       // TODO: Decide if the header should be included
       /*
       for (auto sig : tx.signatures) {
