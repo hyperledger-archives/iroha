@@ -27,6 +27,11 @@ target_link_libraries(block_converter_test
     model
     )
 
+addtest(query_responses_test converters/pb_query_responses_test.cpp)
+target_link_libraries(query_responses_test
+        model
+        )
+
 addtest(model_operators_test operators/model_operators_test.cpp)
 target_link_libraries(model_operators_test
     model

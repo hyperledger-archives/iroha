@@ -25,8 +25,8 @@ message AccountAsset {
 }
 
 // *** Responses *** //
-message AccountAssetsResponse {
-    repeated Asset assets = 1;
+message AccountAssetResponse {
+    Asset asset = 1;
 }
 
 message AccountResponse {
@@ -38,7 +38,7 @@ message ErrorResponse {
 }
 
 message SignatoriesResponse {
-    repeated Signature signatories = 1;
+    repeated bytes keys = 1;
 }
 
 message TransactionsResponse {
@@ -47,7 +47,7 @@ message TransactionsResponse {
 
 message QueryResponse {
     oneof response {
-        AccountAssetsResponse account_assets_response = 1;
+        AccountAssetResponse account_assets_response = 1;
         AccountResponse account_response = 2;
         ErrorResponse error_response = 3;
         SignatoriesResponse signatories_response = 4;
