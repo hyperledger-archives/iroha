@@ -41,7 +41,7 @@ namespace iroha {
       inline bool hasSupermajority(uint64_t current, uint64_t all) {
         if (current > all)
           return false;
-        auto f = (all - 1) / 3;
+        auto f = (all - 1) / 3.0;
         return current >= 2 * f + 1;
       }
 

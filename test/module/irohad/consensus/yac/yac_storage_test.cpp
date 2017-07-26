@@ -32,6 +32,14 @@ TEST(YacStorageTest, SupermajorityFunctionForAllCases) {
   ASSERT_EQ(false, hasSupermajority(5, N));
 }
 
+TEST(YacStorageTest, SupermajorityFunctionForAllCases2) {
+  int N = 2;
+  ASSERT_EQ(false, hasSupermajority(0, N));
+  ASSERT_EQ(false, hasSupermajority(1, N));
+  ASSERT_EQ(true, hasSupermajority(2, N));
+  ASSERT_EQ(false, hasSupermajority(3, N));
+}
+
 TEST(YacStorageTest, YacBlockVoteStorageWhenNormalDataInput) {
   YacHash hash("proposal", "commit");
   int N = 4;
