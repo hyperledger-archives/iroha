@@ -33,7 +33,7 @@ constexpr const char* Ip = "0.0.0.0";
 constexpr int Port = 50051;
 
 constexpr size_t TimesToriiBlocking = 5;
-constexpr size_t TimesToriiNonBlocking = 3;
+constexpr size_t TimesToriiNonBlocking = 5;
 constexpr size_t TimesFind = 100;
 
 using ::testing::Return;
@@ -95,34 +95,30 @@ class ToriiServiceTest : public testing::Test {
 
 TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
-    std::cout << i << std::endl;
     iroha::protocol::ToriiResponse response;
     // One client is generating transaction
     auto new_tx = iroha::protocol::Transaction();
     auto meta = new_tx.mutable_meta();
     meta->set_tx_counter(i);
     meta->set_creator_account_id("accountA");
-
     auto stat = torii::CommandSyncClient(Ip, Port).Torii(new_tx, response);
     ASSERT_TRUE(stat.ok());
     ASSERT_EQ(response.validation(), iroha::protocol::STATELESS_VALIDATION_SUCCESS);
   }
 }
 
-/*
+
 TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
   torii::CommandAsyncClient client(Ip, Port);
   std::atomic_int count{0};
 
   for (size_t i = 0; i < TimesToriiNonBlocking; ++i) {
-    std::cout << i << std::endl;
     auto new_tx = iroha::protocol::Transaction();
     auto meta = new_tx.mutable_meta();
     meta->set_tx_counter(i);
     auto stat = client.Torii(new_tx,
                              [&count](iroha::protocol::ToriiResponse response) {
-                               std::cout << "Response validation: "  << response.validation() << std::endl;
-                               std::cout << "Async response\n";
+                               ASSERT_EQ(response.validation(), iroha::protocol::STATELESS_VALIDATION_SUCCESS);
                                count++;
                              });
   }
