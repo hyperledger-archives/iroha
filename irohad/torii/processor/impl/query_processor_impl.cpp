@@ -16,7 +16,7 @@
  */
 
 #include "torii/processor/query_processor_impl.hpp"
-#include "model/queries/responses/stateless_response.hpp"
+#include "model/queries/responses/error_response.hpp"
 
 namespace iroha {
   namespace torii {
@@ -27,21 +27,17 @@ namespace iroha {
         : qpf_(qpf), validator_(stateless_validator) {}
 
     void QueryProcessorImpl::query_handle(const model::Query &query) {
-      model::QueryStatelessResponse response;
+      model::ErrorResponse response;
       response.query = query;
-      response.passed = false;
 
       // if not valid send wrong response
       if (!validator_.validate(query)) {
         subject_.get_subscriber().on_next(
-            std::make_shared<model::QueryStatelessResponse>(response));
-      } else {  // else send positive response on stateless validation
-        response.passed = true;
-        subject_.get_subscriber().on_next(
-            std::make_shared<model::QueryStatelessResponse>(response));
+            std::make_shared<model::ErrorResponse>(response));
+      } else {  // else execute query
+        auto qpf_response = qpf_.execute(query);
+        subject_.get_subscriber().on_next(qpf_response);
       }
-      auto qpf_response = qpf_.execute(query);
-      subject_.get_subscriber().on_next(qpf_response);
     }
 
     rxcpp::observable<std::shared_ptr<model::QueryResponse>>

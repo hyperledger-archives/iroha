@@ -19,6 +19,7 @@
 #define IROHA_TRANSACTION_RESPONSE_HPP
 
 #include <rxcpp/rx-observable.hpp>
+#include "model/transaction.hpp"
 
 namespace iroha {
   namespace model {

@@ -16,27 +16,33 @@
  */
 
 #include "torii/query_service.hpp"
+#include <model/queries/responses/error_response.hpp>
 
 namespace torii {
   QueryService::QueryService(
-      iroha::model::converters::PbQueryFactory& pb_factory,
+      iroha::model::converters::PbQueryFactory& pb_query_factory,
+      iroha::model::converters::PbQueryResponseFactory&
+          pb_query_response_factory,
       iroha::torii::QueryProcessor& query_processor)
-      : pb_factory_(pb_factory), query_processor_(query_processor) {}
+      : pb_query_factory_(pb_query_factory),
+        pb_query_response_factory_(pb_query_response_factory),
+        query_processor_(query_processor) {
+    query_processor_.query_notifier().subscribe([this](auto iroha_response) {
+
+      auto res =
+          handler_map_.find(iroha_response->query.query_hash.to_string());
+      res->second = pb_query_response_factory_.serialize(*iroha_response);
+
+      if (iroha:: instanceof <iroha::model::ErrorResponse>(*iroha_response)) {
+        auto resp = static_cast<iroha::model::ErrorResponse>(*iroha_response);
+      }
+    });
+  }
 
   void QueryService::FindAsync(iroha::protocol::Query const& request,
                                iroha::protocol::QueryResponse& response) {
-    auto query = pb_factory_.deserialize(request);
+    auto query = pb_query_factory_.deserialize(request);
+    handler_map_.insert({query->query_hash.to_string(), response});
     query_processor_.query_handle(*query);
-    query_processor_.query_notifier()
-        .filter([](auto iroha_response) {
-          return iroha:: instanceof
-              <iroha::model::QueryStatelessResponse>(iroha_response);
-        })
-        .subscribe([&response](auto iroha_response) {
-          auto ep = response.mutable_error_response();
-          ep->set_reason("stateless validation failed");
-        });
-    //      response.set_code(iroha::protocol::ResponseCode::OK);
-    //      response.set_message("Find async response");
   }
 }

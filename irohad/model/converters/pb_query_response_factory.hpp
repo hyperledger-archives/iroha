@@ -23,7 +23,9 @@
 #include <model/account_asset.hpp>
 #include <model/queries/responses/account_assets_response.hpp>
 #include <model/queries/responses/account_response.hpp>
+#include "model/queries/responses/error_response.hpp"
 #include "model/queries/responses/signatories_response.hpp"
+#include "model/queries/responses/transactions_response.hpp"
 
 namespace iroha {
   namespace model {
@@ -34,6 +36,10 @@ namespace iroha {
        */
       class PbQueryResponseFactory {
        public:
+        protocol::QueryResponse serialize(
+            const std::shared_ptr<QueryResponse> query_response);
+
+       private:
         protocol::Account serialize(const model::Account &account) const;
         model::Account deserialize(const protocol::Account &pb_account) const;
 
@@ -56,6 +62,12 @@ namespace iroha {
             const model::SignatoriesResponse &signatoriesResponse) const;
         model::SignatoriesResponse deserialize(
             const protocol::SignatoriesResponse &signatoriesResponse) const;
+
+        protocol::TransactionsResponse serialize(
+            const model::TransactionsResponse &transactionsResponse) const;
+
+        protocol::ErrorResponse serialize(
+            const model::ErrorResponse &errorResponse) const;
       };
     }
   }

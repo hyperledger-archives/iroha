@@ -19,9 +19,11 @@ limitations under the License.
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
+#include <responses.pb.h>
 #include "model/converters/pb_query_factory.hpp"
-#include "model/queries/responses/stateless_response.hpp"
+#include "model/converters/pb_query_response_factory.hpp"
 #include "torii/processor/query_processor.hpp"
+#include <unordered_map>
 
 namespace torii {
   /**
@@ -31,7 +33,9 @@ namespace torii {
    */
   class QueryService {
    public:
-    QueryService(iroha::model::converters::PbQueryFactory& pb_factory,
+    QueryService(iroha::model::converters::PbQueryFactory& pb_query_factory,
+                 iroha::model::converters::PbQueryResponseFactory&
+                     pb_query_response_factory,
                  iroha::torii::QueryProcessor& query_processor);
     /**
      * actual implementation of async Find in QueryService
@@ -42,8 +46,11 @@ namespace torii {
                    iroha::protocol::QueryResponse& response);
 
    private:
-    iroha::model::converters::PbQueryFactory& pb_factory_;
+    iroha::model::converters::PbQueryFactory& pb_query_factory_;
+    iroha::model::converters::PbQueryResponseFactory& pb_query_response_factory_;
     iroha::torii::QueryProcessor& query_processor_;
+    std::unordered_map<std::string, iroha::protocol::QueryResponse&>
+        handler_map_;
   };
 
 }  // namespace torii
