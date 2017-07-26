@@ -4,6 +4,7 @@ package iroha.protocol;
 
 import "block.proto";
 import "queries.proto";
+import "responses.proto";
 
 
 enum StatelessValidation {

@@ -19,7 +19,7 @@
 #include <gtest/gtest.h>
 
 #include "model/query_execution.hpp"
-#include "model/query_responses/stateless_response.hpp"
+#include "model/queries/responses/stateless_response.hpp"
 #include "network/ordering_gate.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 

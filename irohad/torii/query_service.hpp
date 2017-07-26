@@ -19,25 +19,55 @@ limitations under the License.
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
+#include "model/converters/pb_query_factory.hpp"
+#include "model/queries/responses/stateless_response.hpp"
+#include "torii/processor/query_processor.hpp"
+
+namespace iroha {
+  namespace model {
+    // class QueryStatelessResponse;
+    namespace converters {
+      class PbQueryFactory;
+    }
+  }
+}
 
 namespace torii {
-
   /**
    * Actual implementation of async QueryService.
-   * ToriiServiceHandler::(SomeMethod)Handler calls a corresponding method in this class.
+   * ToriiServiceHandler::(SomeMethod)Handler calls a corresponding method in
+   * this class.
    */
   class QueryService {
-  public:
+   public:
+    QueryService(iroha::model::converters::PbQueryFactory& pb_factory,
+                 iroha::torii::QueryProcessor& query_processor)
+        : pb_factory_(pb_factory), query_processor_(query_processor){};
     /**
      * actual implementation of async Find in QueryService
      * @param request - Query
      * @param response - QueryResponse
      */
-    static void FindAsync(
-      iroha::protocol::Query const& request, iroha::protocol::QueryResponse& response) {
-      response.set_code(iroha::protocol::ResponseCode::OK);
-      response.set_message("Find async response");
+    void FindAsync(iroha::protocol::Query const& request,
+                   iroha::protocol::QueryResponse& response) {
+      auto query = pb_factory_.deserialize(request);
+      query_processor_.query_handle(*query);
+      query_processor_.query_notifier()
+          .filter([](auto iroha_response) {
+            return iroha:: instanceof
+                <iroha::model::QueryStatelessResponse>(iroha_response);
+          })
+          .subscribe([&response](auto iroha_response) {
+            auto ep = response.mutable_error_response();
+            ep->set_reason("stateless validation failed");
+          });
+      //      response.set_code(iroha::protocol::ResponseCode::OK);
+      //      response.set_message("Find async response");
     }
+
+   private:
+    iroha::model::converters::PbQueryFactory& pb_factory_;
+    iroha::torii::QueryProcessor& query_processor_;
   };
 
 }  // namespace torii

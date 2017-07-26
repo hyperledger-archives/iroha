@@ -22,6 +22,7 @@ limitations under the License.
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 #include "torii/command_service.hpp"
+#include "torii/query_service.hpp"
 
 namespace torii {
   /**
@@ -36,7 +37,8 @@ namespace torii {
      */
     ToriiServiceHandler(::grpc::ServerBuilder &builder);
 
-    void assign_handler(std::unique_ptr<CommandService>& command_service);
+    void assign_command_handler(std::unique_ptr<CommandService>& command_service);
+    void assign_query_handler(std::unique_ptr<QueryService>& query_service);
 
     virtual ~ToriiServiceHandler() override;
 
@@ -117,6 +119,7 @@ namespace torii {
 
 
     std::unique_ptr<CommandService> commandService_;
+    std::unique_ptr<QueryService> query_service_;
   };
 }  // namespace torii
 

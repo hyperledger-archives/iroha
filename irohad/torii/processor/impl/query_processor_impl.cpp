@@ -16,7 +16,7 @@
  */
 
 #include "torii/processor/query_processor_impl.hpp"
-#include "model/query_responses/stateless_response.hpp"
+#include "model/queries/responses/stateless_response.hpp"
 
 namespace iroha {
   namespace torii {

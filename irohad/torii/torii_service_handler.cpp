@@ -31,8 +31,7 @@ namespace torii {
    * registers async command service
    * @param builder
    */
-  ToriiServiceHandler::ToriiServiceHandler(::grpc::ServerBuilder& builder)
-  {
+  ToriiServiceHandler::ToriiServiceHandler(::grpc::ServerBuilder& builder) {
     builder.RegisterService(&commandAsyncService_);
     builder.RegisterService(&queryAsyncService_);
     completionQueue_ = builder.AddCompletionQueue();
@@ -109,7 +108,7 @@ namespace torii {
   void ToriiServiceHandler::QueryFindHandler(
       QueryServiceCall<iroha::protocol::Query, iroha::protocol::QueryResponse>*
           call) {
-    QueryService::FindAsync(call->request(), call->response());
+    query_service_->FindAsync(call->request(), call->response());
     call->sendResponse(grpc::Status::OK);
 
     // Spawn a new Call instance to serve an another client.
@@ -118,9 +117,13 @@ namespace torii {
         &prot::QueryService::AsyncService::RequestFind,
         &ToriiServiceHandler::QueryFindHandler, queryAsyncService_);
   }
-void ToriiServiceHandler::assign_handler(std::unique_ptr<CommandService> &command_service) {
-  commandService_ = std::move(command_service);
-
-}
+  void ToriiServiceHandler::assign_command_handler(
+      std::unique_ptr<CommandService>& command_service) {
+    commandService_ = std::move(command_service);
+  }
+  void ToriiServiceHandler::assign_query_handler(
+      std::unique_ptr<QueryService>& query_service) {
+    query_service_ = std::move(query_service);
+  }
 
 }  // namespace torii
