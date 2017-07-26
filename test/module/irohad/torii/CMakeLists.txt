@@ -21,5 +21,6 @@ target_link_libraries(torii_service_test
   command_client
   query_client
   server_runner
+  processors
   gtest
   )

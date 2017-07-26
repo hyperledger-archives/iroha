@@ -17,6 +17,7 @@
 
 #include <torii/processor/transaction_processor_impl.hpp>
 #include <model/tx_responses/stateless_response.hpp>
+#include <iostream>
 
 namespace iroha {
   namespace torii {
@@ -36,12 +37,14 @@ namespace iroha {
       model::TransactionStatelessResponse response;
       response.transaction = transaction;
       response.passed = false;
-
+      std::cout << "Processing transaction " << transaction.tx_counter << std::endl;
       if (validator_.validate(transaction)) {
+        std::cout << "Validation ok " << std::endl;
         response.passed = true;
         pcs_.propagate_transaction(transaction);
       }
-
+      else{
+      std::cout << "Validation not ok " << std::endl; }
       notifier_.get_subscriber().on_next(
           std::make_shared<model::TransactionStatelessResponse>(response));
     }
