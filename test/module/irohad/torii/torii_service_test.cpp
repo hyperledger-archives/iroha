@@ -116,6 +116,8 @@ TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
     auto new_tx = iroha::protocol::Transaction();
     auto meta = new_tx.mutable_meta();
     meta->set_tx_counter(i);
+    meta->set_creator_account_id("accountA");
+
     auto stat = client.Torii(new_tx,
                              [&count](iroha::protocol::ToriiResponse response) {
                                ASSERT_EQ(response.validation(), iroha::protocol::STATELESS_VALIDATION_SUCCESS);
@@ -127,6 +129,7 @@ TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
     ;
   ASSERT_EQ(count, TimesToriiNonBlocking);
 }
+
 /*
 TEST_F(ToriiServiceTest, FindWhereQueryServiceSync) {
   iroha::protocol::QueryResponse response;

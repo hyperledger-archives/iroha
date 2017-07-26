@@ -21,8 +21,8 @@ namespace iroha {
   namespace model {
     namespace converters {
 
-      protocol::QueryResponse PbQueryResponseFactory::serialize(
-          const std::shared_ptr<QueryResponse> query_response) {
+      nonstd::optional<protocol::QueryResponse> PbQueryResponseFactory::serialize(
+          const std::shared_ptr<QueryResponse> query_response) const {
         protocol::QueryResponse response;
         if (instanceof <model::ErrorResponse>(*query_response)) {
           auto er = static_cast<model::ErrorResponse &>(*query_response);
@@ -38,11 +38,11 @@ namespace iroha {
           response.mutable_signatories_response()->CopyFrom(serialize(
               static_cast<model::SignatoriesResponse &>(*query_response)));
         } else if (instanceof <model::TransactionsResponse>(*query_response)) {
-          response.mutable_signatories_response()->CopyFrom(serialize(
-              static_cast<model::SignatoriesResponse &>(*query_response)));
+          response.mutable_transactions_response()->CopyFrom(serialize(
+              static_cast<model::TransactionsResponse &>(*query_response)));
         }
         else {
-          // TODO: return nullopt, when method return optional
+          return nonstd::nullopt;
         }
         return response;
       }
@@ -165,7 +165,7 @@ namespace iroha {
 
         for (auto key : signatoriesResponse.keys) {
           std::copy(key.begin(), key.end(),
-                    pb_response.mutable_keys()->Add());  // will it work?
+                    pb_response.mutable_keys()->Add());  // TODO: check will it work?
         }
         return pb_response;
       }

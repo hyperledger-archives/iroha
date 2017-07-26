@@ -19,9 +19,9 @@
 #include <gtest/gtest.h>
 
 #include "model/query_execution.hpp"
-#include "model/queries/responses/stateless_response.hpp"
 #include "network/ordering_gate.hpp"
 #include "torii/processor/query_processor_impl.hpp"
+#include "model/queries/responses/error_response.hpp"
 
 using namespace iroha;
 using ::testing::Return;
@@ -73,29 +73,7 @@ class QpfMock : public model::QueryProcessingFactory {
                             const model::Query &query));
 };
 
-TEST(QueryProcessorTest, QueryProcessorWhereInvokeValidQuery) {
-  WsvQueryMock wsv_query;
-  BlockQueryMock block_query;
-  model::QueryProcessingFactory qpf(wsv_query, block_query);
-
-  StatelessValidationMock validation;
-  EXPECT_CALL(validation, validate(A<const model::Query &>()))
-      .WillRepeatedly(Return(true));
-
-  iroha::torii::QueryProcessorImpl qpi(qpf, validation);
-  model::Query query;
-  qpi.query_notifier()
-      .filter([](auto response) {
-        return instanceof <model::QueryStatelessResponse>(response);
-      })
-      .subscribe([](auto response) {
-        auto resp = static_cast<model::QueryStatelessResponse &>(*response);
-        ASSERT_EQ(resp.passed, true);
-      });
-  qpi.query_handle(query);
-}
-
-TEST(QueryProcessorTest, QueryProcessorWhereInvokeInValidQuery) {
+TEST(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
   WsvQueryMock wsv_query;
   BlockQueryMock block_query;
   model::QueryProcessingFactory qpf(wsv_query, block_query);
@@ -108,11 +86,11 @@ TEST(QueryProcessorTest, QueryProcessorWhereInvokeInValidQuery) {
   model::Query query;
   qpi.query_notifier()
       .filter([](auto response) {
-        return instanceof <model::QueryStatelessResponse>(response);
+        return instanceof <model::ErrorResponse>(response);
       })
       .subscribe([](auto response) {
-        auto resp = static_cast<model::QueryStatelessResponse &>(*response);
-        ASSERT_EQ(resp.passed, false);
+        auto resp = static_cast<model::ErrorResponse &>(*response);
+        ASSERT_EQ(resp.reason, "Not valid");
       });
   qpi.query_handle(query);
 }

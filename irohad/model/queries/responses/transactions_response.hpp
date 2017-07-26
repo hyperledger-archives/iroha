@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_TRANSACTION_RESPONSE_HPP
-#define IROHA_TRANSACTION_RESPONSE_HPP
+#ifndef IROHA_TRANSACTIONS_RESPONSE_HPP
+#define IROHA_TRANSACTIONS_RESPONSE_HPP
 
 #include <rxcpp/rx-observable.hpp>
 #include "model/transaction.hpp"
@@ -36,4 +36,4 @@ namespace iroha {
     };
   }  // namespace model
 }  // namespace iroha
-#endif //IROHA_TRANSACTION_RESPONSE_HPP
+#endif //IROHA_TRANSACTIONS_RESPONSE_HPP

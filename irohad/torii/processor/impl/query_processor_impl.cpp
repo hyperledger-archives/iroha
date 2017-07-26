@@ -29,6 +29,7 @@ namespace iroha {
     void QueryProcessorImpl::query_handle(const model::Query &query) {
       model::ErrorResponse response;
       response.query = query;
+      response.reason = "Not valid";
 
       // if not valid send wrong response
       if (!validator_.validate(query)) {

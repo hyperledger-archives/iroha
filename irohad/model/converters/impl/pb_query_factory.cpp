@@ -27,7 +27,7 @@ namespace iroha {
     namespace converters {
 
       std::shared_ptr<model::Query> PbQueryFactory::deserialize(
-          const protocol::Query &pb_query) {
+           const protocol::Query &pb_query) {
         std::shared_ptr<model::Query> val;
 
         if (pb_query.has_get_account()) {

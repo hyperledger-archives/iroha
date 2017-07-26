@@ -19,10 +19,10 @@
 #define IROHA_PB_QUERY_RESPONSE_FACTORY_HPP
 
 #include <responses.pb.h>
-#include <responses.pb.h>
 #include <model/account_asset.hpp>
 #include <model/queries/responses/account_assets_response.hpp>
 #include <model/queries/responses/account_response.hpp>
+#include <nonstd/optional.hpp>
 #include "model/queries/responses/error_response.hpp"
 #include "model/queries/responses/signatories_response.hpp"
 #include "model/queries/responses/transactions_response.hpp"
@@ -36,10 +36,9 @@ namespace iroha {
        */
       class PbQueryResponseFactory {
        public:
-        protocol::QueryResponse serialize(
-            const std::shared_ptr<QueryResponse> query_response);
+        nonstd::optional<protocol::QueryResponse> serialize(
+            const std::shared_ptr<QueryResponse> query_response) const;
 
-       private:
         protocol::Account serialize(const model::Account &account) const;
         model::Account deserialize(const protocol::Account &pb_account) const;
 
@@ -64,7 +63,9 @@ namespace iroha {
             const protocol::SignatoriesResponse &signatoriesResponse) const;
 
         protocol::TransactionsResponse serialize(
-            const model::TransactionsResponse &transactionsResponse) const;
+            const model::TransactionsResponse &transactionsResponse)
+            const;
+
 
         protocol::ErrorResponse serialize(
             const model::ErrorResponse &errorResponse) const;
