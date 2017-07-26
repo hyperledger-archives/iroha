@@ -45,6 +45,11 @@ namespace iroha {
        */
       std::shared_ptr<iroha::model::QueryResponse> execute(
           const model::Query& query);
+      /**
+       *
+       * @param wsvQuery
+       * @param blockQuery
+       */
       QueryProcessingFactory(ametsuchi::WsvQuery& wsvQuery,
                              ametsuchi::BlockQuery& blockQuery);
 

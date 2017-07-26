@@ -20,10 +20,10 @@ limitations under the License.
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 #include <responses.pb.h>
+#include <unordered_map>
 #include "model/converters/pb_query_factory.hpp"
 #include "model/converters/pb_query_response_factory.hpp"
 #include "torii/processor/query_processor.hpp"
-#include <unordered_map>
 
 namespace torii {
   /**
@@ -37,6 +37,10 @@ namespace torii {
                  iroha::model::converters::PbQueryResponseFactory&
                      pb_query_response_factory,
                  iroha::torii::QueryProcessor& query_processor);
+
+    QueryService(const QueryService&) = delete;
+    QueryService& operator=(const QueryService&) = delete;
+
     /**
      * actual implementation of async Find in QueryService
      * @param request - Query
@@ -47,7 +51,8 @@ namespace torii {
 
    private:
     iroha::model::converters::PbQueryFactory& pb_query_factory_;
-    iroha::model::converters::PbQueryResponseFactory& pb_query_response_factory_;
+    iroha::model::converters::PbQueryResponseFactory&
+        pb_query_response_factory_;
     iroha::torii::QueryProcessor& query_processor_;
     std::unordered_map<std::string, iroha::protocol::QueryResponse&>
         handler_map_;

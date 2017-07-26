@@ -16,9 +16,10 @@
  */
 
 #include "torii/query_service.hpp"
-#include <model/queries/responses/error_response.hpp>
+
 
 namespace torii {
+
   QueryService::QueryService(
       iroha::model::converters::PbQueryFactory& pb_query_factory,
       iroha::model::converters::PbQueryResponseFactory&

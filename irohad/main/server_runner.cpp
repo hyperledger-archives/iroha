@@ -20,17 +20,15 @@ limitations under the License.
 #include <logger/logger.hpp>
 #include <main/server_runner.hpp>
 
-
 logger::Logger Log("ServerRunner");
 
 ServerRunner::ServerRunner(const std::string &ip, int port)
     : serverAddress_(ip + ":" + std::to_string(port)) {}
 
-ServerRunner::~ServerRunner() {
-  toriiServiceHandler_->shutdown();
-}
+ServerRunner::~ServerRunner() { toriiServiceHandler_->shutdown(); }
 
-void ServerRunner::run(std::unique_ptr<torii::CommandService> commandService) {
+void ServerRunner::run(std::unique_ptr<torii::CommandService> commandService,
+                       std::unique_ptr<torii::QueryService> queryService) {
   grpc::ServerBuilder builder;
 
   builder.AddListeningPort(serverAddress_, grpc::InsecureServerCredentials());
@@ -38,6 +36,7 @@ void ServerRunner::run(std::unique_ptr<torii::CommandService> commandService) {
   // Register services.
   toriiServiceHandler_ = std::make_unique<torii::ToriiServiceHandler>(builder);
   toriiServiceHandler_->assign_command_handler(commandService);
+  toriiServiceHandler_->assign_query_handler(queryService);
 
   serverInstance_ = builder.BuildAndStart();
   serverInstanceCV_.notify_one();
@@ -52,7 +51,7 @@ void ServerRunner::shutdown() {
   serverInstance_->Shutdown();
 
   while (!toriiServiceHandler_->isShutdownCompletionQueue()) {
-    usleep(1); // wait for shutting down completion queue
+    usleep(1);  // wait for shutting down completion queue
   }
   toriiServiceHandler_->shutdown();
 }

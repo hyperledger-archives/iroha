@@ -24,18 +24,20 @@ limitations under the License.
 #include <thread>
 #include <torii/command_client.hpp>
 #include <torii/command_service.hpp>
-#include <torii/torii_service_handler.hpp>
+#include <torii/processor/query_processor_impl.hpp>
 #include <torii_utils/query_client.hpp>
 
 #include "torii/processor/transaction_processor_impl.hpp"
 
-constexpr const char* Ip = "0.0.0.0";
+
+constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;
 
 constexpr size_t TimesToriiBlocking = 5;
 constexpr size_t TimesToriiNonBlocking = 5;
 constexpr size_t TimesFind = 100;
 
+using namespace iroha;
 using ::testing::Return;
 using ::testing::A;
 using ::testing::_;
@@ -52,8 +54,45 @@ class PCSMock : public iroha::network::PeerCommunicationService {
 
 class SVMock : public iroha::validation::StatelessValidator {
  public:
-  MOCK_CONST_METHOD1(validate, bool(const iroha::model::Transaction&));
-  MOCK_CONST_METHOD1(validate, bool(const iroha::model::Query&));
+  MOCK_CONST_METHOD1(validate, bool(const iroha::model::Transaction &));
+  MOCK_CONST_METHOD1(validate, bool(const iroha::model::Query &));
+};
+
+
+/**
+ * Mock for wsv query
+ */
+class WsvQueryMock : public ametsuchi::WsvQuery {
+ public:
+  MOCK_METHOD1(getAccount,
+               nonstd::optional<model::Account>(const std::string &account_id));
+  MOCK_METHOD1(getSignatories, nonstd::optional<std::vector<ed25519::pubkey_t>>(
+                                   const std::string &account_id));
+  MOCK_METHOD1(getAsset,
+               nonstd::optional<model::Asset>(const std::string &asset_id));
+  MOCK_METHOD2(getAccountAsset,
+               nonstd::optional<model::AccountAsset>(
+                   const std::string &account_id, const std::string &asset_id));
+  MOCK_METHOD0(getPeers, nonstd::optional<std::vector<model::Peer>>());
+};
+
+/**
+ * Mock for block query
+ */
+class BlockQueryMock : public ametsuchi::BlockQuery {
+  MOCK_METHOD1(getAccountTransactions,
+               rxcpp::observable<model::Transaction>(std::string account_id));
+  MOCK_METHOD2(getBlocks,
+               rxcpp::observable<model::Block>(uint32_t from, uint32_t to));
+};
+
+/**
+ * Mock for query processing factory
+ */
+class QpfMock : public model::QueryProcessingFactory {
+ public:
+  MOCK_METHOD1(execute, std::shared_ptr<iroha::model::QueryResponse>(
+                            const model::Query &query));
 };
 
 class ToriiServiceTest : public testing::Test {
@@ -61,23 +100,41 @@ class ToriiServiceTest : public testing::Test {
   virtual void SetUp() {
     runner = new ServerRunner(Ip, Port);
     th = std::thread([runner = runner] {
+      // ----------- Command Service --------------
       PCSMock pcsMock;
       SVMock svMock;
 
-      EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction&>()))
+      EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
           .WillRepeatedly(Return(true));
 
-      EXPECT_CALL(pcsMock, propagate_transaction(_))
-          .Times(AtLeast(1));
-
+      EXPECT_CALL(pcsMock, propagate_transaction(_)).Times(AtLeast(1));
 
       auto tx_processor =
           iroha::torii::TransactionProcessorImpl(pcsMock, svMock);
-      iroha::model::converters::PbTransactionFactory pb_factory;
-
+      iroha::model::converters::PbTransactionFactory pb_tx_factory;
       auto command_service =
-          std::make_unique<torii::CommandService>(pb_factory, tx_processor);
-      runner->run(std::move(command_service));
+          std::make_unique<torii::CommandService>(pb_tx_factory, tx_processor);
+
+      //----------- Query Service ----------
+      WsvQueryMock wsv_query;
+      BlockQueryMock block_query;
+      model::QueryProcessingFactory qpf(wsv_query, block_query);
+
+
+      EXPECT_CALL(svMock, validate(A<const model::Query &>()))
+          .WillRepeatedly(Return(false));
+
+      iroha::torii::QueryProcessorImpl qpi(qpf, svMock);
+
+      iroha::model::converters::PbQueryFactory pb_query_factory;
+      iroha::model::converters::PbQueryResponseFactory pb_query_resp_factory;
+
+      auto query_service = std::make_unique<torii::QueryService>(
+          pb_query_factory, pb_query_resp_factory, qpi);
+
+
+      //----------- Server run ----------------
+      runner->run(std::move(command_service), std::move(query_service));
     });
 
     runner->waitForServersReady();
@@ -89,7 +146,7 @@ class ToriiServiceTest : public testing::Test {
     th.join();
   }
 
-  ServerRunner* runner;
+  ServerRunner *runner;
   std::thread th;
 };
 
@@ -103,10 +160,10 @@ TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
     meta->set_creator_account_id("accountA");
     auto stat = torii::CommandSyncClient(Ip, Port).Torii(new_tx, response);
     ASSERT_TRUE(stat.ok());
-    ASSERT_EQ(response.validation(), iroha::protocol::STATELESS_VALIDATION_SUCCESS);
+    ASSERT_EQ(response.validation(),
+              iroha::protocol::STATELESS_VALIDATION_SUCCESS);
   }
 }
-
 
 TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
   torii::CommandAsyncClient client(Ip, Port);
@@ -118,11 +175,12 @@ TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
     meta->set_tx_counter(i);
     meta->set_creator_account_id("accountA");
 
-    auto stat = client.Torii(new_tx,
-                             [&count](iroha::protocol::ToriiResponse response) {
-                               ASSERT_EQ(response.validation(), iroha::protocol::STATELESS_VALIDATION_SUCCESS);
-                               count++;
-                             });
+    auto stat =
+        client.Torii(new_tx, [&count](iroha::protocol::ToriiResponse response) {
+          ASSERT_EQ(response.validation(),
+                    iroha::protocol::STATELESS_VALIDATION_SUCCESS);
+          count++;
+        });
   }
 
   while (count < (int)TimesToriiNonBlocking)
@@ -130,14 +188,17 @@ TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
   ASSERT_EQ(count, TimesToriiNonBlocking);
 }
 
-/*
 TEST_F(ToriiServiceTest, FindWhereQueryServiceSync) {
   iroha::protocol::QueryResponse response;
-  auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(
-      iroha::protocol::Query{}, response);
+  auto query = iroha::protocol::Query();
+  query.set_creator_account_id("accountA");
+  query.mutable_get_account()->set_account_id("accountB");
+  auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
+  // Must return Error Response
+  ASSERT_EQ(response.error_response().reason(), "Not valid");
 }
-
+/*
 TEST_F(ToriiServiceTest, FindManyTimesWhereQueryServiceSync) {
   for (size_t i = 0; i < TimesFind; ++i) {
     iroha::protocol::QueryResponse response;
