@@ -35,49 +35,14 @@ namespace torii {
   class CommandService {
    public:
     CommandService(iroha::model::converters::PbTransactionFactory& pb_factory,
-                   iroha::torii::TransactionProcessor& txProccesor)
-        : pb_factory_(pb_factory), tx_processor_(txProccesor) {
-
-      tx_processor_.transaction_notifier().subscribe([this](
-                                                         auto iroha_response) {
-
-        std::cout << "On_next event trigered " << std::endl;
-        // TODO : dynamic cast
-        auto resp = static_cast<iroha::model::TransactionStatelessResponse&>(
-            *iroha_response);
-
-        std::cout << "Received response for transaction "
-                  << resp.transaction.tx_counter << std::endl;
-
-        if (resp.passed) {
-          std::cout << "Transaction is valid " << std::endl;
-
-          auto res = this->handler_map_.find(resp.transaction.tx_counter);
-
-          if (res != this->handler_map_.end()){
-            std::cout << "Handler found " << std::endl;
-            res->second.set_validation(iroha::protocol::STATELESS_VALIDATION_SUCCESS);
-          }
-          else{
-            std::cout << "No handler found " << std::endl;
-          }
-        }
-      });
-    };
+                   iroha::torii::TransactionProcessor& txProccesor);
     /**
      * actual implementation of async Torii in CommandService
      * @param request - Transaction
      * @param response - ToriiResponse
      */
     void ToriiAsync(iroha::protocol::Transaction const& request,
-                    iroha::protocol::ToriiResponse& response) {
-      auto iroha_tx = pb_factory_.deserialize(request);
-      std::cout << "Setting handler for tx " << iroha_tx.tx_counter << std::endl;
-      handler_map_.insert({iroha_tx.tx_counter, response});
-      tx_processor_.transaction_handle(iroha_tx);
-
-
-    }
+                    iroha::protocol::ToriiResponse& response);
 
    private:
     iroha::model::converters::PbTransactionFactory& pb_factory_;
