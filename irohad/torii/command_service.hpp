@@ -19,6 +19,7 @@ limitations under the License.
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
+#include <iostream>
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/tx_responses/stateless_response.hpp"
 #include "torii/processor/transaction_processor.hpp"
@@ -46,11 +47,18 @@ namespace torii {
       tx_processor_.transaction_handle(iroha_tx);
 
       tx_processor_.transaction_notifier().subscribe([&response](
-                                                         auto iroha_response) {
+          auto iroha_response) {
+        auto resp = static_cast<iroha::model::TransactionStatelessResponse&>(
+            *iroha_response);
         // iroha-response is shared_ptr of Transaction Response
         // TODO: replace with other responses if needed
-
-        response.set_validation(iroha::protocol::STATELESS_VALIDATION_SUCCESS);
+        std::cout << "Transaction " << resp.transaction.tx_counter << std::endl;
+        if (resp.passed) {
+          response.set_validation(
+              iroha::protocol::STATELESS_VALIDATION_SUCCESS);
+        } else {
+          response.set_validation(iroha::protocol::STATELESS_VALIDATION_FAILED);
+        }
 
       });
     }

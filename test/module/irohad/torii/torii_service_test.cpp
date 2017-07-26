@@ -87,8 +87,11 @@ TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
     std::cout << i << std::endl;
     iroha::protocol::ToriiResponse response;
+    auto new_tx = iroha::protocol::Transaction();
+    auto meta = new_tx.mutable_meta();
+    meta->set_tx_counter(i);
     auto stat = torii::CommandSyncClient(Ip, Port).Torii(
-        iroha::protocol::Transaction{}, response);
+        new_tx, response);
     ASSERT_TRUE(stat.ok());
     ASSERT_EQ(response.validation(),
               iroha::protocol::STATELESS_VALIDATION_SUCCESS);
