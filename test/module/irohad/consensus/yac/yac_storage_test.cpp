@@ -17,7 +17,7 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
-#include "consensus/yac/yac_vote_storage.hpp"
+#include "consensus/yac/storage/yac_vote_storage.hpp"
 #include "yac_mocks.hpp"
 
 using namespace iroha::consensus::yac;

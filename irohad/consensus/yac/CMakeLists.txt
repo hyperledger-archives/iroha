@@ -15,7 +15,7 @@
 add_library(yac
     impl/yac.cpp
     impl/cluster_order.cpp
-    impl/yac_vote_storage.cpp
+    storage/impl/yac_vote_storage.cpp
     impl/timer_impl.cpp
     impl/network_impl.cpp
     )

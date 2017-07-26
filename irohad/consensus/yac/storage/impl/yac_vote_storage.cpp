@@ -15,4 +15,4 @@
  * limitations under the License.
  */
 
-#include "consensus/yac/yac_vote_storage.hpp"
+#include "consensus/yac/storage/yac_vote_storage.hpp"

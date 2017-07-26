@@ -26,7 +26,6 @@
 #include <vector>
 #include "common/test_observable.hpp"
 #include "yac_mocks.hpp"
-#include "consensus/yac/yac_vote_storage.hpp"
 
 using ::testing::Return;
 using ::testing::_;
