@@ -18,21 +18,21 @@
 #ifndef IROHA_STATELESS_RESPONSE_HPP
 #define IROHA_STATELESS_RESPONSE_HPP
 
+#include "model/query_response.hpp"
+
 namespace iroha {
-namespace model {
+  namespace model {
 
-/**
- * Query response that contains
- */
-struct QueryStatelessResponse : QueryResponse {
+    /**
+     * Query response that contains
+     */
+    struct QueryStatelessResponse : QueryResponse {
+      /**
+       * Is stateless validation passed
+       */
+      bool passed;
+    };
+  }  // namespace model
+}  // namespace iroha
 
-  /**
-   * Is stateless validation passed
-   */
-  bool passed;
-};
-} // namespace model
-} // namespace iroha
-
-
-#endif //IROHA_STATELESS_RESPONSE_HPP
+#endif  // IROHA_STATELESS_RESPONSE_HPP

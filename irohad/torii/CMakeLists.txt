@@ -20,7 +20,9 @@ target_link_libraries(command_client
   model
 )
 
-add_library(torii_service torii_service_handler.cpp)
+add_library(torii_service
+        torii_service_handler.cpp
+        query_service.cpp)
 target_link_libraries(torii_service
   endpoint
   stateless_validator

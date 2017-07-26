@@ -23,15 +23,6 @@ limitations under the License.
 #include "model/queries/responses/stateless_response.hpp"
 #include "torii/processor/query_processor.hpp"
 
-namespace iroha {
-  namespace model {
-    // class QueryStatelessResponse;
-    namespace converters {
-      class PbQueryFactory;
-    }
-  }
-}
-
 namespace torii {
   /**
    * Actual implementation of async QueryService.
@@ -41,29 +32,14 @@ namespace torii {
   class QueryService {
    public:
     QueryService(iroha::model::converters::PbQueryFactory& pb_factory,
-                 iroha::torii::QueryProcessor& query_processor)
-        : pb_factory_(pb_factory), query_processor_(query_processor){};
+                 iroha::torii::QueryProcessor& query_processor);
     /**
      * actual implementation of async Find in QueryService
      * @param request - Query
      * @param response - QueryResponse
      */
     void FindAsync(iroha::protocol::Query const& request,
-                   iroha::protocol::QueryResponse& response) {
-      auto query = pb_factory_.deserialize(request);
-      query_processor_.query_handle(*query);
-      query_processor_.query_notifier()
-          .filter([](auto iroha_response) {
-            return iroha:: instanceof
-                <iroha::model::QueryStatelessResponse>(iroha_response);
-          })
-          .subscribe([&response](auto iroha_response) {
-            auto ep = response.mutable_error_response();
-            ep->set_reason("stateless validation failed");
-          });
-      //      response.set_code(iroha::protocol::ResponseCode::OK);
-      //      response.set_message("Find async response");
-    }
+                   iroha::protocol::QueryResponse& response);
 
    private:
     iroha::model::converters::PbQueryFactory& pb_factory_;

@@ -37,7 +37,7 @@ void ServerRunner::run(std::unique_ptr<torii::CommandService> commandService) {
 
   // Register services.
   toriiServiceHandler_ = std::make_unique<torii::ToriiServiceHandler>(builder);
-  toriiServiceHandler_->assign_handler(commandService);
+  toriiServiceHandler_->assign_command_handler(commandService);
 
   serverInstance_ = builder.BuildAndStart();
   serverInstanceCV_.notify_one();
