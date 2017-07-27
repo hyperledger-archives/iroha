@@ -26,6 +26,7 @@ limitations under the License.
 #include <torii/command_service.hpp>
 #include <torii/processor/query_processor_impl.hpp>
 #include <torii_utils/query_client.hpp>
+#include <queries.pb.h>
 
 #include "torii/processor/transaction_processor_impl.hpp"
 
@@ -106,7 +107,7 @@ class ToriiServiceTest : public testing::Test {
       EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
           .WillRepeatedly(Return(true));
 
-      EXPECT_CALL(pcsMock, propagate_transaction(_)).Times(AtLeast(1));
+      //EXPECT_CALL(pcsMock, propagate_transaction(_)).Times(AtLeast(1));
 
       auto tx_processor =
           iroha::torii::TransactionProcessorImpl(pcsMock, svMock);
@@ -197,13 +198,20 @@ TEST_F(ToriiServiceTest, FindWhereQueryServiceSync) {
   // Must return Error Response
   ASSERT_EQ(response.error_response().reason(), "Not valid");
 }
-/*
+
 TEST_F(ToriiServiceTest, FindManyTimesWhereQueryServiceSync) {
   for (size_t i = 0; i < TimesFind; ++i) {
     iroha::protocol::QueryResponse response;
+    auto query = iroha::protocol::Query();
+    query.set_creator_account_id("accountA");
+    query.mutable_get_account()->set_account_id("accountB");
+    query.set_query_counter(i);
+
     auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(
-        iroha::protocol::Query{}, response);
+        query, response);
     ASSERT_TRUE(stat.ok());
+    // Must return Error Response
+    ASSERT_EQ(response.error_response().reason(), "Not valid");
   }
 }
 
@@ -213,20 +221,37 @@ TEST_F(ToriiServiceTest, MixRPCWhereCommandAndQueryService) {
   for (size_t i = 0; i < TimesFind; ++i) {
     iroha::protocol::QueryResponse qresp;
     grpc::Status stat;
-    stat = torii_utils::QuerySyncClient(Ip, Port).Find(iroha::protocol::Query{},
+    auto query = iroha::protocol::Query();
+    query.set_creator_account_id("accountA");
+    query.mutable_get_account()->set_account_id("accountB");
+    query.set_query_counter(i);
+    stat = torii_utils::QuerySyncClient(Ip, Port).Find(query,
                                                        qresp);
     ASSERT_TRUE(stat.ok());
-    client.Torii(iroha::protocol::Transaction{},
+    ASSERT_EQ(qresp.error_response().reason(), "Not valid");
+    auto new_tx = iroha::protocol::Transaction();
+    auto meta = new_tx.mutable_meta();
+    meta->set_tx_counter(i);
+    meta->set_creator_account_id("accountA");
+
+    client.Torii(new_tx,
                  [](iroha::protocol::ToriiResponse response) {
-                   ASSERT_EQ(response.code(),
-                             iroha::protocol::ResponseCode::OK);
-                   std::cout << "Async response\n";
+                   ASSERT_EQ(response.validation(),
+                             iroha::protocol::STATELESS_VALIDATION_SUCCESS);
+
                  });
+
+    // Sync client
     iroha::protocol::ToriiResponse response;
+    auto new_tx_b = iroha::protocol::Transaction();
+    auto meta_b = new_tx_b.mutable_meta();
+    meta_b->set_tx_counter(i);
+    meta_b->set_creator_account_id("accountB");
     stat = torii::CommandSyncClient(Ip, Port).Torii(
-        iroha::protocol::Transaction{}, response);
+        new_tx_b, response);
     ASSERT_TRUE(stat.ok());
-    std::cout << "Sync Response\n";
+    ASSERT_EQ(response.validation(),
+              iroha::protocol::STATELESS_VALIDATION_SUCCESS);
+
   }
 }
-*/

@@ -34,10 +34,13 @@ message Query {
   Header header = 1;
   string creator_account_id = 2;
 
+
   oneof query {
     GetAccount get_account = 3;
     GetSignatories get_account_signatories = 4;
     GetAccountTransactions get_account_transactions = 5;
     GetAccountAssets get_account_assets = 6;
   }
+  // used to prevent replay attacks.
+  uint64 query_counter = 7;
 }
