@@ -25,12 +25,12 @@
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/writer.h>
 #include "logger/logger.hpp"
-#include "ametsuchi/impl/storage_impl.hpp"
 #include "genesis_block_client.hpp"
 #include "genesis_block_service.hpp"
 #include "validators.hpp"
 #include "model/transaction.hpp"
 #include "model/block.hpp"
+#include "model/model_hash_provider_impl.hpp"
 #include "ametsuchi/block_serializer.hpp"
 
 // ** Genesis Block and Provisioning ** //
@@ -86,17 +86,28 @@ iroha::model::Block parse_genesis_block(std::ifstream &ifs) {
   rapidjson::IStreamWrapper isw(ifs);
   doc.ParseStream(isw);
 
-  assert_fatal(doc.HasParseError(), FLAGS_config + ": parse error");
-  assert_fatal(doc.IsObject(),      "JSON is not object.");
+  // validate doc
+  assert_fatal(doc.HasParseError(),      FLAGS_config + ": parse error");
+  assert_fatal(doc.IsObject(),           "JSON is not object.");
   assert_fatal(doc.HasMember(MemberTxs), "No member '" + std::string(MemberTxs) + "'");
   assert_fatal(doc[MemberTxs].IsArray(), std::string(MemberTxs) + " is not array.");
 
   iroha::model::Block block;
+
+  // parse transactions
   auto block_serializer = iroha::ametsuchi::BlockSerializer();
   auto txs = block_serializer.deserialize_transactions(doc);
   assert_fatal(txs.has_value(), "Failed to deserialize transaction");
+
+  // add block info
+  auto hash_provider = iroha::model::HashProviderImpl();
   block.transactions = *txs;
-  // TODO: Add more members to block.
+  block.height = 1;
+  block.prev_hash.fill(0);
+  block.hash = hash_provider.get_hash(block);
+  block.txs_number = static_cast<decltype(block.txs_number)>(
+    block.transactions.size());
+
   return block;
 }
 
@@ -150,42 +161,6 @@ int main(int argc, char* argv[]) {
   else {
     assert_fatal(false, "Invalid flags");
   }
-
-  /*
-  else if (FLAGS_grpc) {
-    // Send test tx to Iroha
-    if (FLAGS_port > 0 && FLAGS_port < 65535) {
-      std::cout<< "Send transaction to " << FLAGS_address << ":" << FLAGS_port << std::endl;
-      iroha::protocol::Transaction request;
-      iroha::protocol::ToriiResponse response;
-      torii::CommandSyncClient(FLAGS_address, FLAGS_port)
-        .Torii(request, response);
-    } else {
-      std::cout << "Invalid port number " << FLAGS_port << std::endl;
-      //iroha_cli::CliClient(FLAGS_address, FLAGS_port);
-    }
-  }
-  */
-
-  /*
-  if (FLAGS_new_ledger) {
-    auto storage = iroha::ametsuchi::StorageImpl::create(
-        FLAGS_path, FLAGS_redis, FLAGS_redis_port, FLAGS_pg_conn);
-    auto mut = storage->createMutableStorage();
-     auto block;
-     storage.apply(block, [](const auto& current_block, auto& executor,
-                             auto& query, auto& top_block) {
-       for (const auto& tx : current_block.transactions) {
-         for (const auto& command : tx.commands) {
-           if (not command->execute(query, executor)) {
-             return false;
-           }
-         }
-       }
-       return true;
-     });
-  }
-*/
   return 0;
 }
 
