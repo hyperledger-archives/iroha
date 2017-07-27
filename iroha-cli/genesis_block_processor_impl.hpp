@@ -15,18 +15,27 @@
  * limitations under the License.
  */
 
-#include "genesis_block_service.hpp"
-#include "model/converters/pb_block_factory.hpp"
+#ifndef IROHA_GENESIS_BLOCK_PROCESSOR_IMPL_HPP
+#define IROHA_GENESIS_BLOCK_PROCESSOR_IMPL_HPP
+
+#include <model/block.hpp>
+#include <endpoint.grpc.pb.h>
+#include "ametsuchi/mutable_factory.hpp"
+#include "genesis_block_processor.hpp"
 
 namespace iroha {
-  grpc::Status GenesisBlockService::SendGenesisBlock(
-    grpc::ServerContext* context,
-    const iroha::protocol::Block* request,
-    iroha::protocol::ApplyGenesisBlockResponse* response) {
-    auto converter = iroha::model::converters::PbBlockFactory();
-    auto iroha_block = converter.deserialize(*request);
-    auto success = processor_.genesis_block_handle(iroha_block);
-    response->set_applied(success ? iroha::protocol::APPLY_SUCCESS : iroha::protocol::APPLY_FAILURE);
-    return grpc::Status::OK;
-  }
+
+  class GenesisBlockProcessorImpl : public GenesisBlockProcessor {
+  public:
+    GenesisBlockProcessorImpl(ametsuchi::MutableFactory &mutable_factory)
+      : mutable_factory_(mutable_factory) {}
+
+    ~GenesisBlockProcessorImpl() override {}
+    bool genesis_block_handle(const iroha::model::Block &block) override;
+
+  private:
+    ametsuchi::MutableFactory &mutable_factory_;
+  };
 }
+
+#endif  // IROHA_GENESIS_BLOCK_PROCESSOR_IMPL_HPP

@@ -21,16 +21,23 @@
 #include <model/block.hpp>
 #include <grpc++/grpc++.h>
 #include <endpoint.grpc.pb.h>
+#include "genesis_block_processor.hpp"
 
-namespace iroha_cli {
+namespace iroha {
 
   constexpr int GenesisBlockServicePort = 50090;
 
   class GenesisBlockService final : public iroha::protocol::GenesisBlockService::Service {
   public:
+    GenesisBlockService(GenesisBlockProcessor &processor)
+      : processor_(processor)
+    {}
+
     grpc::Status SendGenesisBlock(grpc::ServerContext* context,
                                   const iroha::protocol::Block* request,
                                   iroha::protocol::ApplyGenesisBlockResponse* response) override;
+  private:
+    GenesisBlockProcessor &processor_;
   };
 
 }

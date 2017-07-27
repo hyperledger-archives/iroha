@@ -15,18 +15,20 @@
  * limitations under the License.
  */
 
-#include "genesis_block_service.hpp"
-#include "model/converters/pb_block_factory.hpp"
+#ifndef IROHA_GENESIS_BLOCK_PROCESSOR_HPP
+#define IROHA_GENESIS_BLOCK_PROCESSOR_HPP
+
+#include <endpoint.grpc.pb.h>
+#include "model/block.hpp"
 
 namespace iroha {
-  grpc::Status GenesisBlockService::SendGenesisBlock(
-    grpc::ServerContext* context,
-    const iroha::protocol::Block* request,
-    iroha::protocol::ApplyGenesisBlockResponse* response) {
-    auto converter = iroha::model::converters::PbBlockFactory();
-    auto iroha_block = converter.deserialize(*request);
-    auto success = processor_.genesis_block_handle(iroha_block);
-    response->set_applied(success ? iroha::protocol::APPLY_SUCCESS : iroha::protocol::APPLY_FAILURE);
-    return grpc::Status::OK;
-  }
+
+  class GenesisBlockProcessor {
+  public:
+    virtual ~GenesisBlockProcessor() {}
+    virtual bool genesis_block_handle(const iroha::model::Block &block) = 0;
+  };
+
 }
+
+#endif  // IROHA_GENESIS_BLOCK_PROCESSOR_HPP
