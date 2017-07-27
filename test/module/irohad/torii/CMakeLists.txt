@@ -22,5 +22,14 @@ target_link_libraries(torii_service_test
   query_client
   server_runner
   processors
-  gtest
   )
+
+addtest(torii_queries_test torii_queries_test.cpp)
+target_link_libraries(torii_queries_test
+        torii_service
+        torii_service
+        command_client
+        query_client
+        server_runner
+        processors
+        )

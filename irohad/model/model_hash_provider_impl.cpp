@@ -124,7 +124,7 @@ namespace iroha {
         result_hash += cast.account_id;
         result_hash += cast.creator_account_id;
       }
-
+      result_hash += query.query_counter;
       std::vector<uint8_t> concat_hash_commands(result_hash.begin(),
                                                 result_hash.end());
       return sha3_256(concat_hash_commands.data(), concat_hash_commands.size());

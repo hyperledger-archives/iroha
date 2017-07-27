@@ -14,29 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <endpoint.pb.h>
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <atomic>
-#include <chrono>
-#include <main/server_runner.hpp>
-#include <memory>
-#include <thread>
-#include <torii/command_client.hpp>
-#include <torii/command_service.hpp>
-#include <torii/processor/query_processor_impl.hpp>
-#include <torii_utils/query_client.hpp>
-#include <queries.pb.h>
-
-#include "torii/processor/transaction_processor_impl.hpp"
 #include "mock_classes.hpp"
+#include "main/server_runner.hpp"
+#include "torii/processor/transaction_processor_impl.hpp"
+#include "torii/processor/query_processor_impl.hpp"
+#include "torii/command_service.hpp"
+#include "torii_utils/query_client.hpp"
+
 
 constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;
 
 constexpr size_t TimesToriiBlocking = 5;
 constexpr size_t TimesToriiNonBlocking = 5;
-constexpr size_t TimesFind = 10;
+constexpr size_t TimesFind = 100;
 
 using ::testing::Return;
 using ::testing::A;
@@ -52,11 +44,6 @@ class ToriiServiceTest : public testing::Test {
       // ----------- Command Service --------------
       PCSMock pcsMock;
       SVMock svMock;
-
-      EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
-          .WillRepeatedly(Return(true));
-
-      EXPECT_CALL(pcsMock, propagate_transaction(_)).Times(AtLeast(1));
 
       auto tx_processor =
           iroha::torii::TransactionProcessorImpl(pcsMock, svMock);
@@ -99,41 +86,30 @@ class ToriiServiceTest : public testing::Test {
   std::thread th;
 };
 
-TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
-  for (size_t i = 0; i < TimesToriiBlocking; ++i) {
-    iroha::protocol::ToriiResponse response;
-    // One client is generating transaction
-    auto new_tx = iroha::protocol::Transaction();
-    auto meta = new_tx.mutable_meta();
-    meta->set_tx_counter(i);
-    meta->set_creator_account_id("accountA");
-    auto stat = torii::CommandSyncClient(Ip, Port).Torii(new_tx, response);
+
+TEST_F(ToriiServiceTest, FindWhereQueryServiceSync) {
+  iroha::protocol::QueryResponse response;
+  auto query = iroha::protocol::Query();
+  query.set_creator_account_id("accountA");
+  query.mutable_get_account()->set_account_id("accountB");
+  auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
+  ASSERT_TRUE(stat.ok());
+  // Must return Error Response
+  ASSERT_EQ(response.error_response().reason(), "Not valid");
+}
+
+
+TEST_F(ToriiServiceTest, FindManyTimesWhereQueryServiceSync) {
+  for (size_t i = 0; i < TimesFind; ++i) {
+    iroha::protocol::QueryResponse response;
+    auto query = iroha::protocol::Query();
+    query.set_creator_account_id("accountA");
+    query.mutable_get_account()->set_account_id("accountB");
+    query.set_query_counter(i);
+
+    auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
     ASSERT_TRUE(stat.ok());
-    ASSERT_EQ(response.validation(),
-              iroha::protocol::STATELESS_VALIDATION_SUCCESS);
+    // Must return Error Response
+    ASSERT_EQ(response.error_response().reason(), "Not valid");
   }
 }
-
-TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
-  torii::CommandAsyncClient client(Ip, Port);
-  std::atomic_int count{0};
-
-  for (size_t i = 0; i < TimesToriiNonBlocking; ++i) {
-    auto new_tx = iroha::protocol::Transaction();
-    auto meta = new_tx.mutable_meta();
-    meta->set_tx_counter(i);
-    meta->set_creator_account_id("accountA");
-
-    auto stat =
-        client.Torii(new_tx, [&count](iroha::protocol::ToriiResponse response) {
-          ASSERT_EQ(response.validation(),
-                    iroha::protocol::STATELESS_VALIDATION_SUCCESS);
-          count++;
-        });
-  }
-
-  while (count < (int)TimesToriiNonBlocking)
-    ;
-  ASSERT_EQ(count, TimesToriiNonBlocking);
-}
-

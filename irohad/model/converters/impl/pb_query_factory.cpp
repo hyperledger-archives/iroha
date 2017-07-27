@@ -75,6 +75,7 @@ namespace iroha {
         std::copy(pb_sign.signature().begin(), pb_sign.signature().end(),
                   sign.signature.begin());
 
+        val->query_counter = pb_query.query_counter();
         val->signature = sign;
         val->created_ts = pb_query.header().created_time();
         val->creator_account_id = pb_query.creator_account_id();

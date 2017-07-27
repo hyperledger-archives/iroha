@@ -51,6 +51,11 @@ namespace iroha {
        */
       hash256_t query_hash;
 
+      /**
+       * Query counter
+       */
+      uint64_t query_counter;
+
       virtual ~Query() {}
     };
   }  // namespace model
