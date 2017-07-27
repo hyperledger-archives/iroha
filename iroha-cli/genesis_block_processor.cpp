@@ -16,41 +16,29 @@
  */
 
 #include "genesis_block_processor_impl.hpp"
+#include "logger/logger.hpp"
+
+logger::Logger Log("genesis_block_processor");
 
 namespace iroha {
   bool GenesisBlockProcessorImpl::genesis_block_handle(const iroha::model::Block &block) {
+    auto mutable_storage = mutable_factory_.createMutableStorage();
 
-    model::Block block;
-    block.transactions.push_back(txn);
-    block.height = 1;
-    block.prev_hash.fill(0);
-    auto block1hash = hashProvider.get_hash(block);
-    block.hash = block1hash;
-    block.txs_number = block.transactions.size();
-
-    {
-      auto ms = storage->createMutableStorage();
-      ms->apply(block, [](const auto &blk, auto &executor, auto &query,
-                          const auto &top_hash) {
-        EXPECT_TRUE(
-          blk.transactions.at(0).commands.at(0)->execute(query, executor));
-        EXPECT_TRUE(
-          blk.transactions.at(0).commands.at(1)->execute(query, executor));
-        return true;
+    auto result =
+      mutable_storage->apply(block, [](const auto &block, auto &executor, auto &query,
+                                       const auto &top_hash) {
+        for (const auto &tx : block.transactions) {
+          for (const auto &command : tx.commands) {
+          auto valid = command->execute(query, executor);
+            if (!valid) return false;
+          }
+        }
       });
-      storage->commit(std::move(ms));
+
+    if (result) {
+      mutable_factory_.commit(std::move(mutable_storage));
     }
 
-    auto mutable_storage = mutable_factory_.createMutableStorage();
-    mutable_storage->apply(block, [](const auto &block, auto &executor, auto &query,
-                                     const auto &top_hash) {
-      for (const auto &tx : block.transactions) {
-        for (const auto &command : tx.commands) {
-          auto valid = command->execute(query, executor);
-          if (!valid) return false;
-        }
-      }
-    });
-    mutable_factory_.commit(std::move(mutable_storage));
+    return result;
   }
 }
