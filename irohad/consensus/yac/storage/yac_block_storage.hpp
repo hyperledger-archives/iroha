@@ -27,63 +27,40 @@ namespace iroha {
       /**
        * Class provide storage of votes for one block
        */
-      class YacBlockVoteStorage {
+      class YacBlockStorage {
        public:
 
-        YacBlockVoteStorage(ProposalHash proposal_hash,
-                            BlockHash block_hash,
-                            uint64_t peers_in_round)
-            : proposal_hash_(proposal_hash),
-              block_hash_(block_hash),
-              peers_in_round_(peers_in_round) {
-          committed_state_ = nonstd::nullopt;
-        }
+        YacBlockStorage(ProposalHash proposal_hash,
+                        BlockHash block_hash,
+                        uint64_t peers_in_round);
 
         /**
          * Try to insert vote to storage
          * @param msg - vote for insertion
          * @return actual state of storage
          */
-        StorageResult insert(VoteMessage msg) {
+        StorageResult insert(VoteMessage msg);
 
-          // already have supermajority
-          if (committed_state_ != nonstd::nullopt) {
-            return StorageResult(committed_state_, nonstd::nullopt, false);
-          }
+        /**
+         * return current state of storage
+         * @return if not nullopt commit here
+         */
+        nonstd::optional<CommitMessage> getState();
 
-          auto inserted = false;
+        /**
+         * @return all votes attached to storage
+         */
+        std::vector<VoteMessage> getVotes();
 
-          // check and insert
-          if (msg.hash.proposal_hash == proposal_hash_ and
-              msg.hash.block_hash == block_hash_) {
-            inserted = unique_vote(msg);
-            if (inserted) {
-              votes_.push_back(msg);
-            }
-          }
-          // check supermajority
-          auto supermajority = hasSupermajority(votes_.size(), peers_in_round_);
-          if (supermajority) {
-            committed_state_ = CommitMessage(votes_);
-          }
-          return StorageResult(committed_state_, nonstd::nullopt, inserted);
-        }
+        /**
+         * @return attached proposal hash
+         */
+        ProposalHash getProposalHash();
 
-        nonstd::optional<CommitMessage> getState() {
-          return committed_state_;
-        };
-
-        std::vector<VoteMessage> getVotes() {
-          return votes_;
-        }
-
-        ProposalHash getProposalHash() {
-          return proposal_hash_;
-        }
-
-        BlockHash getBlockHash() {
-          return block_hash_;
-        }
+        /**
+         * @return attached block hash
+         */
+        BlockHash getBlockHash();
 
        private:
         // --------| private fields |--------
@@ -93,14 +70,7 @@ namespace iroha {
          * @param msg - vote for verification
          * @return true if vote doesn't appear in storage
          */
-        bool unique_vote(VoteMessage &msg) {
-          for (auto &&vote: votes_) {
-            if (vote == msg) {
-              return false;
-            }
-          }
-          return true;
-        }
+        bool unique_vote(VoteMessage &msg);
 
         /**
          * Unique hash of proposal for all storage votes

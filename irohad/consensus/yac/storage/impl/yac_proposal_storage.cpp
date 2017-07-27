@@ -85,7 +85,7 @@ namespace iroha {
           }
         }
         // insert and return new
-        YacBlockVoteStorage
+        YacBlockStorage
             new_container(proposal_hash, block_hash, peers_in_round_);
         block_votes_.push_back(new_container);
         return block_votes_.size() - 1;

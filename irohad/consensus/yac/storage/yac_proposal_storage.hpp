@@ -22,7 +22,7 @@
 #include "consensus/yac/messages.hpp"
 #include "consensus/yac/storage/yac_common.hpp"
 #include "consensus/yac/storage/storage_result.hpp"
-#include "consensus/yac/storage/yac_block_vote_storage.hpp"
+#include "consensus/yac/storage/yac_block_storage.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -99,7 +99,7 @@ namespace iroha {
         /**
          * Vector of blocks based on this proposal
          */
-        std::vector<YacBlockVoteStorage> block_votes_;
+        std::vector<YacBlockStorage> block_votes_;
       };
     } // namespace yac
   } // namespace consensus

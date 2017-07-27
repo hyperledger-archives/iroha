@@ -40,10 +40,10 @@ TEST(YacStorageTest, SupermajorityFunctionForAllCases2) {
   ASSERT_EQ(false, hasSupermajority(3, N));
 }
 
-TEST(YacStorageTest, YacBlockVoteStorageWhenNormalDataInput) {
+TEST(YacStorageTest, YacBlockStorageWhenNormalDataInput) {
   YacHash hash("proposal", "commit");
   int N = 4;
-  YacBlockVoteStorage storage(hash.proposal_hash, hash.block_hash, N);
+  YacBlockStorage storage(hash.proposal_hash, hash.block_hash, N);
 
   auto insert_1 = storage.insert(create_vote(hash, "one"));
   ASSERT_EQ(true, insert_1.vote_inserted);
