@@ -15,42 +15,46 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_YAC_VOTE_STORAGE_HPP
-#define IROHA_YAC_VOTE_STORAGE_HPP
-
-#include <unordered_map>
-#include <vector>
+#ifndef IROHA_STORAGE_RESULT_HPP
+#define IROHA_STORAGE_RESULT_HPP
 
 #include "consensus/yac/messages.hpp"
-#include "consensus/yac/storage/yac_common.hpp"
-#include "consensus/yac/storage/yac_proposal_storage.hpp"
-#include "consensus/yac/storage/storage_result.hpp"
+#include <nonstd/optional.hpp>
 
 namespace iroha {
   namespace consensus {
     namespace yac {
 
       /**
-       * Class provide storage for votes and useful methods for it.
+       * Struct represents result of working storage.
+       * Guarantee that at least one optional will be empty
        */
-      class YacVoteStorage {
-       public:
+      struct StorageResult {
+
+        StorageResult(nonstd::optional<CommitMessage> commit_result,
+                      nonstd::optional<RejectMessage> reject_result,
+                      bool inserted_result);
+
+        bool operator==(const StorageResult &rhs) const;
 
         /**
-         * Insert vote in storage
-         * @param msg - current vote message
-         * @param peers_in_round - number of peers participated in round
-         * @return structure with result of inserting
+         * Result contains commit if it available
          */
-        StorageResult storeVote(VoteMessage msg, uint64_t peers_in_round);
+        nonstd::optional<CommitMessage> commit;
 
-       private:
-        // --------| private fields |--------
+        /**
+         * Result contains reject if it available
+         */
+        nonstd::optional<RejectMessage> reject;
 
-        std::vector<YacProposalStorage> proposals;
+        /**
+         * Is vote was inserted in storage.
+         * False, means that this vote suspicious
+         */
+        bool vote_inserted;
       };
 
     } // namespace yac
   } // namespace consensus
 } // namespace iroha
-#endif //IROHA_YAC_VOTE_STORAGE_HPP
+#endif //IROHA_STORAGE_RESULT_HPP

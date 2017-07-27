@@ -15,31 +15,17 @@
  * limitations under the License.
  */
 
-#include "consensus/yac/storage/yac_vote_storage.hpp"
+#include "consensus/yac/storage/yac_common.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
 
-      StorageResult YacVoteStorage::storeVote(VoteMessage msg,
-                                              uint64_t peers_in_round) {
-
-        // TODO verify uniqueness of peer
-
-        // try insert in available proposal storage
-        for (auto &&proposal: proposals) {
-          auto hash = proposal.getProposalHash();
-          if (msg.hash.proposal_hash == hash) {
-            auto result = proposal.insert(msg);
-            return result;
-          }
-        }
-
-        // can't find proposal, create new
-        YacProposalStorage storage(msg.hash.proposal_hash, peers_in_round);
-        auto result = storage.insert(msg);
-        proposals.push_back(storage);
-        return result;
+      bool hasSupermajority(uint64_t current, uint64_t all) {
+        if (current > all)
+          return false;
+        auto f = (all - 1) / 3.0;
+        return current >= 2 * f + 1;
       }
     } // namespace yac
   } // namespace consensus

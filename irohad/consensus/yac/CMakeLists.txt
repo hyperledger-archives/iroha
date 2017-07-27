@@ -15,9 +15,12 @@
 add_library(yac
     impl/yac.cpp
     impl/cluster_order.cpp
-    storage/impl/yac_vote_storage.cpp
     impl/timer_impl.cpp
     impl/network_impl.cpp
+    storage/impl/yac_common.cpp
+    storage/impl/storage_result.cpp
+    storage/impl/yac_proposal_storage.cpp
+    storage/impl/yac_vote_storage.cpp
     )
 target_link_libraries(yac
     rxcpp
