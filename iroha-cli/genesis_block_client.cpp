@@ -39,28 +39,15 @@ namespace iroha_cli {
     grpc::ClientContext context;
     auto block_converter = iroha::model::converters::PbBlockFactory();
     auto proto_block = block_converter.serialize(iroha_block);
-    stub_.SendGenesisBlock(&context, proto_block, &response);
-    /*
-    auto stub = iroha::protocol::GenesisBlockService::NewStub(channel);
-
-    iroha::protocol::ToriiResponse response;
-    grpc::ClientContext context;
-
-    iroha::protocol::Block block;
-    grpc::Status status = stub->SendGenesisBlock(&context, block, &response);
-
-    if (status.ok()) {
-    //  return response.message();
-    }
-
-    std::cout << status.error_code() << ": " << status.error_message()
-              << std::endl;
-    // return response.message();
-    */
-    return grpc::Status::OK;
+    auto stat = stub_.SendGenesisBlock(&context, proto_block, &response);
+    return stat;
   }
 
-  void GenesisBlockClient::SendAbortGenesisBlock(const iroha::model::Block &block) {
-
+  void GenesisBlockClient::SendAbortGenesisBlock(const iroha::model::Block &iroha_block) {
+    grpc::ClientContext context;
+    auto block_converter = iroha::model::converters::PbBlockFactory();
+    auto proto_block = block_converter.serialize(iroha_block);
+    google::protobuf::Empty empty;
+    stub_.SendAbortGenesisBlock(&context, proto_block, &empty);
   }
 }
