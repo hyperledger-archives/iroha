@@ -20,11 +20,11 @@ limitations under the License.
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 #include <iostream>
+#include <string>
+#include <unordered_map>
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/tx_responses/stateless_response.hpp"
 #include "torii/processor/transaction_processor.hpp"
-#include <unordered_map>
-#include <string>
 
 namespace torii {
 
@@ -51,7 +51,8 @@ namespace torii {
    private:
     iroha::model::converters::PbTransactionFactory& pb_factory_;
     iroha::torii::TransactionProcessor& tx_processor_;
-    std::unordered_map<std::string, iroha::protocol::ToriiResponse&> handler_map_;
+    std::unordered_map<std::string, iroha::protocol::ToriiResponse&>
+        handler_map_;
   };
 
 }  // namespace torii

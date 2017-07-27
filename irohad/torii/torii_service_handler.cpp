@@ -118,11 +118,11 @@ namespace torii {
         &ToriiServiceHandler::QueryFindHandler, queryAsyncService_);
   }
   void ToriiServiceHandler::assign_command_handler(
-      std::unique_ptr<CommandService>& command_service) {
+      std::unique_ptr<torii::CommandService>& command_service) {
     commandService_ = std::move(command_service);
   }
   void ToriiServiceHandler::assign_query_handler(
-      std::unique_ptr<QueryService>& query_service) {
+      std::unique_ptr<torii::QueryService>& query_service) {
     query_service_ = std::move(query_service);
   }
 

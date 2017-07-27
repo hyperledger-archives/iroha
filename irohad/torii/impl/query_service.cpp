@@ -17,7 +17,6 @@
 
 #include "torii/query_service.hpp"
 
-
 namespace torii {
 
   QueryService::QueryService(

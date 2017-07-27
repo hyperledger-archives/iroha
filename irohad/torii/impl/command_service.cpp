@@ -39,7 +39,6 @@ namespace torii {
         res->second.set_validation(
             resp.passed ? iroha::protocol::STATELESS_VALIDATION_SUCCESS
                         : iroha::protocol::STATELESS_VALIDATION_FAILED);
-
       }
     });
   }

@@ -33,28 +33,28 @@ namespace torii {
    */
   class QueryService {
    public:
-    QueryService(iroha::model::converters::PbQueryFactory& pb_query_factory,
-                 iroha::model::converters::PbQueryResponseFactory&
-                     pb_query_response_factory,
-                 iroha::torii::QueryProcessor& query_processor);
+    QueryService(iroha::model::converters::PbQueryFactory &pb_query_factory,
+                 iroha::model::converters::PbQueryResponseFactory
+                     &pb_query_response_factory,
+                 iroha::torii::QueryProcessor &query_processor);
 
-    QueryService(const QueryService&) = delete;
-    QueryService& operator=(const QueryService&) = delete;
+    QueryService(const QueryService &) = delete;
+    QueryService &operator=(const QueryService &) = delete;
 
     /**
      * actual implementation of async Find in QueryService
      * @param request - Query
      * @param response - QueryResponse
      */
-    void FindAsync(iroha::protocol::Query const& request,
-                   iroha::protocol::QueryResponse& response);
+    void FindAsync(iroha::protocol::Query const &request,
+                   iroha::protocol::QueryResponse &response);
 
    private:
-    iroha::model::converters::PbQueryFactory& pb_query_factory_;
-    iroha::model::converters::PbQueryResponseFactory&
-        pb_query_response_factory_;
-    iroha::torii::QueryProcessor& query_processor_;
-    std::unordered_map<std::string, iroha::protocol::QueryResponse&>
+    iroha::model::converters::PbQueryFactory &pb_query_factory_;
+    iroha::model::converters::PbQueryResponseFactory
+        &pb_query_response_factory_;
+    iroha::torii::QueryProcessor &query_processor_;
+    std::unordered_map<std::string, iroha::protocol::QueryResponse &>
         handler_map_;
   };
 

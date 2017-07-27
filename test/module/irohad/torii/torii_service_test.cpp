@@ -29,7 +29,6 @@ limitations under the License.
 
 #include "torii/processor/transaction_processor_impl.hpp"
 
-
 constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;
 
@@ -37,7 +36,6 @@ constexpr size_t TimesToriiBlocking = 5;
 constexpr size_t TimesToriiNonBlocking = 5;
 constexpr size_t TimesFind = 100;
 
-using namespace iroha;
 using ::testing::Return;
 using ::testing::A;
 using ::testing::_;
@@ -58,41 +56,42 @@ class SVMock : public iroha::validation::StatelessValidator {
   MOCK_CONST_METHOD1(validate, bool(const iroha::model::Query &));
 };
 
-
 /**
  * Mock for wsv query
  */
-class WsvQueryMock : public ametsuchi::WsvQuery {
+class WsvQueryMock : public iroha::ametsuchi::WsvQuery {
  public:
-  MOCK_METHOD1(getAccount,
-               nonstd::optional<model::Account>(const std::string &account_id));
-  MOCK_METHOD1(getSignatories, nonstd::optional<std::vector<ed25519::pubkey_t>>(
-                                   const std::string &account_id));
-  MOCK_METHOD1(getAsset,
-               nonstd::optional<model::Asset>(const std::string &asset_id));
+  MOCK_METHOD1(getAccount, nonstd::optional<iroha::model::Account>(
+                               const std::string &account_id));
+  MOCK_METHOD1(getSignatories,
+               nonstd::optional<std::vector<iroha::ed25519::pubkey_t>>(
+                   const std::string &account_id));
+  MOCK_METHOD1(getAsset, nonstd::optional<iroha::model::Asset>(
+                             const std::string &asset_id));
   MOCK_METHOD2(getAccountAsset,
-               nonstd::optional<model::AccountAsset>(
+               nonstd::optional<iroha::model::AccountAsset>(
                    const std::string &account_id, const std::string &asset_id));
-  MOCK_METHOD0(getPeers, nonstd::optional<std::vector<model::Peer>>());
+  MOCK_METHOD0(getPeers, nonstd::optional<std::vector<iroha::model::Peer>>());
 };
 
 /**
  * Mock for block query
  */
-class BlockQueryMock : public ametsuchi::BlockQuery {
-  MOCK_METHOD1(getAccountTransactions,
-               rxcpp::observable<model::Transaction>(std::string account_id));
-  MOCK_METHOD2(getBlocks,
-               rxcpp::observable<model::Block>(uint32_t from, uint32_t to));
+class BlockQueryMock : public iroha::ametsuchi::BlockQuery {
+  MOCK_METHOD1(
+      getAccountTransactions,
+      rxcpp::observable<iroha::model::Transaction>(std::string account_id));
+  MOCK_METHOD2(getBlocks, rxcpp::observable<iroha::model::Block>(uint32_t from,
+                                                                 uint32_t to));
 };
 
 /**
  * Mock for query processing factory
  */
-class QpfMock : public model::QueryProcessingFactory {
+class QpfMock : public iroha::model::QueryProcessingFactory {
  public:
   MOCK_METHOD1(execute, std::shared_ptr<iroha::model::QueryResponse>(
-                            const model::Query &query));
+                            const iroha::model::Query &query));
 };
 
 class ToriiServiceTest : public testing::Test {
@@ -112,16 +111,17 @@ class ToriiServiceTest : public testing::Test {
       auto tx_processor =
           iroha::torii::TransactionProcessorImpl(pcsMock, svMock);
       iroha::model::converters::PbTransactionFactory pb_tx_factory;
-      auto command_service =
+      auto command_service =  // std::unique_ptr<torii::CommandService>(new
+                              // torii::CommandService(pb_tx_factory,
+                              // tx_processor));
           std::make_unique<torii::CommandService>(pb_tx_factory, tx_processor);
 
       //----------- Query Service ----------
       WsvQueryMock wsv_query;
       BlockQueryMock block_query;
-      model::QueryProcessingFactory qpf(wsv_query, block_query);
+      iroha::model::QueryProcessingFactory qpf(wsv_query, block_query);
 
-
-      EXPECT_CALL(svMock, validate(A<const model::Query &>()))
+      EXPECT_CALL(svMock, validate(A<const iroha::model::Query &>()))
           .WillRepeatedly(Return(false));
 
       iroha::torii::QueryProcessorImpl qpi(qpf, svMock);
@@ -131,7 +131,6 @@ class ToriiServiceTest : public testing::Test {
 
       auto query_service = std::make_unique<torii::QueryService>(
           pb_query_factory, pb_query_resp_factory, qpi);
-
 
       //----------- Server run ----------------
       runner->run(std::move(command_service), std::move(query_service));
