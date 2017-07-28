@@ -57,14 +57,18 @@ namespace iroha {
 
        private:
         void asyncCompleteRpc();
+        void server();
 
         std::string address_;
         std::unique_ptr<grpc::Server> server_;
         std::unordered_map<model::Peer, std::unique_ptr<proto::Yac::Stub>>
             peers_;
-        std::shared_ptr<YacNetworkNotifications> handler_;
+        std::weak_ptr<YacNetworkNotifications> handler_;
         grpc::CompletionQueue cq_;
         std::thread thread_;
+        std::thread s_thread_;
+
+        std::unordered_map<std::string, model::Peer> peers_addresses_;
 
         struct AsyncClientCall {
           google::protobuf::Empty reply;

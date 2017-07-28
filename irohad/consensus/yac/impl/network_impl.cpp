@@ -18,20 +18,37 @@
 #include "consensus/yac/impl/network_impl.hpp"
 #include <grpc++/grpc++.h>
 
+std::string red(const std::string &string) {
+  const std::string red_start = "\033[31m";
+  const std::string end = "\033[0m";
+  return red_start + string + end;
+}
+
+std::string yellow(const std::string &string) {
+  const std::string yellow_start = "\033[33m";
+  const std::string end = "\033[0m";
+  return yellow_start + string + end;
+}
+
+std::string output(const std::string &string) {
+  return yellow("---> " + string);
+}
+
+std::string input(const std::string &string) { return red("<--- " + string); }
+
 namespace iroha {
   namespace consensus {
     namespace yac {
 
       NetworkImpl::NetworkImpl(const std::string &address,
                                const std::vector<model::Peer> &peers)
-          : address_(address), thread_(&NetworkImpl::asyncCompleteRpc, this) {
-        grpc::ServerBuilder builder;
-        builder.AddListeningPort(address, grpc::InsecureServerCredentials());
-        builder.RegisterService(this);
-        server_ = builder.BuildAndStart();
+          : address_(address),
+            thread_(&NetworkImpl::asyncCompleteRpc, this),
+            s_thread_(&NetworkImpl::server, this) {
         for (const auto &peer : peers) {
           peers_[peer] = proto::Yac::NewStub(grpc::CreateChannel(
               peer.address, grpc::InsecureChannelCredentials()));
+          peers_addresses_[peer.address] = peer;
         }
       }
 
@@ -41,6 +58,10 @@ namespace iroha {
       }
 
       void NetworkImpl::send_commit(model::Peer to, CommitMessage commit) {
+        std::cout << output("send_commit " + to.address + " " +
+                            commit.votes.at(0).hash.block_hash)
+                  << std::endl;
+
         proto::Commit request;
         for (const auto &vote : commit.votes) {
           auto pb_vote = request.add_votes();
@@ -56,6 +77,8 @@ namespace iroha {
 
         auto call = new AsyncClientCall;
 
+        call->context.AddMetadata("address", address_);
+
         call->response_reader =
             peers_.at(to)->AsyncSendCommit(&call->context, request, &cq_);
 
@@ -63,6 +86,10 @@ namespace iroha {
       }
 
       void NetworkImpl::send_reject(model::Peer to, RejectMessage reject) {
+        std::cout << output("send_reject " + to.address + " " +
+                            reject.votes.at(0).hash.block_hash)
+                  << std::endl;
+
         proto::Reject request;
         for (const auto &vote : reject.votes) {
           auto pb_vote = request.add_votes();
@@ -78,6 +105,8 @@ namespace iroha {
 
         auto call = new AsyncClientCall;
 
+        call->context.AddMetadata("address", address_);
+
         call->response_reader =
             peers_.at(to)->AsyncSendReject(&call->context, request, &cq_);
 
@@ -85,6 +114,10 @@ namespace iroha {
       }
 
       void NetworkImpl::send_vote(model::Peer to, VoteMessage vote) {
+        std::cout << output("send_vote " + to.address + " " +
+                            vote.hash.block_hash)
+                  << std::endl;
+
         proto::Vote request;
         auto hash = request.mutable_hash();
         hash->set_block(vote.hash.block_hash);
@@ -97,6 +130,8 @@ namespace iroha {
 
         auto call = new AsyncClientCall;
 
+        call->context.AddMetadata("address", address_);
+
         call->response_reader =
             peers_.at(to)->AsyncSendVote(&call->context, request, &cq_);
 
@@ -107,8 +142,12 @@ namespace iroha {
           ::grpc::ServerContext *context,
           const ::iroha::consensus::yac::proto::Vote *request,
           ::google::protobuf::Empty *response) {
-        model::Peer peer;
-        peer.address = context->peer();
+        auto it = context->client_metadata().find("address");
+        if (it == context->client_metadata().end()) {
+          // ???
+        }
+        auto address = std::string(it->second.data(), it->second.size());
+        auto peer = peers_addresses_.at(address);
 
         VoteMessage vote;
         vote.hash.proposal_hash = request->hash().proposal();
@@ -120,7 +159,11 @@ namespace iroha {
                   request->signature().pubkey().end(),
                   vote.signature.pubkey.begin());
 
-        handler_->on_vote(peer, vote);
+        std::cout << input("SendVote " + peer.address + " " +
+                           vote.hash.block_hash)
+                  << std::endl;
+
+        handler_.lock()->on_vote(peer, vote);
         return grpc::Status::OK;
       }
 
@@ -128,8 +171,12 @@ namespace iroha {
           ::grpc::ServerContext *context,
           const ::iroha::consensus::yac::proto::Commit *request,
           ::google::protobuf::Empty *response) {
-        model::Peer peer;
-        peer.address = context->peer();
+        auto it = context->client_metadata().find("address");
+        if (it == context->client_metadata().end()) {
+          // ???
+        }
+        auto address = std::string(it->second.data(), it->second.size());
+        auto peer = peers_addresses_.at(address);
 
         CommitMessage commit;
         for (const auto &pb_vote : request->votes()) {
@@ -145,7 +192,11 @@ namespace iroha {
           commit.votes.push_back(vote);
         }
 
-        handler_->on_commit(peer, commit);
+        std::cout << input("SendCommit " + peer.address + " " +
+                           commit.votes.at(0).hash.block_hash)
+                  << std::endl;
+
+        handler_.lock()->on_commit(peer, commit);
         return grpc::Status::OK;
       }
 
@@ -153,8 +204,12 @@ namespace iroha {
           ::grpc::ServerContext *context,
           const ::iroha::consensus::yac::proto::Reject *request,
           ::google::protobuf::Empty *response) {
-        model::Peer peer;
-        peer.address = context->peer();
+        auto it = context->client_metadata().find("address");
+        if (it == context->client_metadata().end()) {
+          // ???
+        }
+        auto address = std::string(it->second.data(), it->second.size());
+        auto peer = peers_addresses_.at(address);
 
         RejectMessage reject;
         for (const auto &pb_vote : request->votes()) {
@@ -170,11 +225,19 @@ namespace iroha {
           reject.votes.push_back(vote);
         }
 
-        handler_->on_reject(peer, reject);
+        std::cout << input("SendReject " + peer.address + " " +
+                           reject.votes.at(0).hash.block_hash)
+                  << std::endl;
+
+        handler_.lock()->on_reject(peer, reject);
         return grpc::Status::OK;
       }
 
       NetworkImpl::~NetworkImpl() {
+        server_->Shutdown();
+        if (s_thread_.joinable()) {
+          s_thread_.join();
+        }
         cq_.Shutdown();
         if (thread_.joinable()) {
           thread_.join();
@@ -187,8 +250,20 @@ namespace iroha {
         while (cq_.Next(&got_tag, &ok)) {
           auto call = static_cast<AsyncClientCall *>(got_tag);
 
+          std::cout << input("Received reply from server: error code " +
+                             std::to_string(static_cast<uint64_t>(
+                                 call->status.error_code())))
+                    << std::endl;
+
           delete call;
         }
+      }
+      void NetworkImpl::server() {
+        grpc::ServerBuilder builder;
+        builder.AddListeningPort(address_, grpc::InsecureServerCredentials());
+        builder.RegisterService(this);
+        server_ = builder.BuildAndStart();
+        server_->Wait();
       }
 
     }  // namespace yac
