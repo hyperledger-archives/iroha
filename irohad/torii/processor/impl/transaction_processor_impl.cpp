@@ -30,15 +30,15 @@ namespace iroha {
         PeerCommunicationService &pcs, const StatelessValidator &validator)
         : pcs_(pcs), validator_(validator) {}
 
-    void TransactionProcessorImpl::transaction_handle(
-        model::Transaction &transaction) {
+    void TransactionProcessorImpl::transactionHandle(
+        std::shared_ptr<model::Transaction> transaction) {
       model::TransactionStatelessResponse response;
-      response.transaction = transaction;
+      response.transaction = *transaction;
       response.passed = false;
 
-      if (validator_.validate(transaction)) {
+      if (validator_.validate(*transaction)) {
         response.passed = true;
-        pcs_.propagate_transaction(transaction);
+        pcs_.propagate_transaction(*transaction);
       }
 
       notifier_.get_subscriber().on_next(
@@ -46,7 +46,7 @@ namespace iroha {
     }
 
     rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
-    TransactionProcessorImpl::transaction_notifier() {
+    TransactionProcessorImpl::transactionNotifier() {
       return notifier_.get_observable();
     }
 

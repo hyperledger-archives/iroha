@@ -27,16 +27,16 @@ ServerRunner::ServerRunner(const std::string &ip, int port)
 
 ServerRunner::~ServerRunner() { toriiServiceHandler_->shutdown(); }
 
-void ServerRunner::run(std::unique_ptr<torii::CommandService> commandService,
-                       std::unique_ptr<torii::QueryService> queryService) {
+void ServerRunner::run(std::unique_ptr<torii::CommandService> command_service,
+                       std::unique_ptr<torii::QueryService> query_service) {
   grpc::ServerBuilder builder;
 
   builder.AddListeningPort(serverAddress_, grpc::InsecureServerCredentials());
 
   // Register services.
   toriiServiceHandler_ = std::make_unique<torii::ToriiServiceHandler>(builder);
-  toriiServiceHandler_->assign_command_handler(commandService);
-  toriiServiceHandler_->assign_query_handler(queryService);
+  toriiServiceHandler_->assignCommandHandler(std::move(command_service));
+  toriiServiceHandler_->assignQueryHandler(std::move(query_service));
 
   serverInstance_ = builder.BuildAndStart();
   serverInstanceCV_.notify_one();

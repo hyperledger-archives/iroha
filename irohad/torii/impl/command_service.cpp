@@ -24,7 +24,7 @@ namespace torii {
       iroha::torii::TransactionProcessor &txProccesor)
       : pb_factory_(pb_factory), tx_processor_(txProccesor) {
     // Notifier for all clients
-    tx_processor_.transaction_notifier().subscribe([this](auto iroha_response) {
+    tx_processor_.transactionNotifier().subscribe([this](auto iroha_response) {
 
       // TODO: make for other responses
       if (iroha:: instanceof
@@ -47,9 +47,9 @@ namespace torii {
                                   iroha::protocol::ToriiResponse &response) {
     auto iroha_tx = pb_factory_.deserialize(request);
 
-    handler_map_.insert({iroha_tx.tx_hash.to_string(), response});
+    handler_map_.insert({iroha_tx->tx_hash.to_string(), response});
     // Send transaction to iroha
-    tx_processor_.transaction_handle(iroha_tx);
+    tx_processor_.transactionHandle(iroha_tx);
   }
 
 }  // namespace torii

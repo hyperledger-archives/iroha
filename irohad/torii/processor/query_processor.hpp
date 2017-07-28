@@ -37,13 +37,13 @@ namespace iroha {
        * @param client - query emitter
        * @param query - client intent
        */
-      virtual void query_handle(const model::Query &query) = 0;
+      virtual void queryHandle(std::shared_ptr<model::Query> query) = 0;
 
       /**
        * Subscribe for query responses
        * @return observable with query responses
        */
-      virtual rxcpp::observable<std::shared_ptr<model::QueryResponse>> query_notifier() = 0;
+      virtual rxcpp::observable<std::shared_ptr<model::QueryResponse>> queryNotifier() = 0;
 
       virtual ~QueryProcessor() {
       };

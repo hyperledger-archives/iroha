@@ -75,11 +75,11 @@ TEST(TransactionProcessorTest,
   iroha::torii::TransactionProcessorImpl tp(pcs, validation);
   model::Transaction tx;
   // TODO subscribe with testable subscriber
-  tp.transaction_notifier().subscribe([](auto response) {
+  tp.transactionNotifier().subscribe([](auto response) {
     auto resp = static_cast<model::TransactionStatelessResponse &>(*response);
     ASSERT_EQ(resp.passed, true);
   });
-  tp.transaction_handle(tx);
+  tp.transactionHandle(std::make_shared<iroha::model::Transaction>(tx));
 }
 
 /**
@@ -98,9 +98,9 @@ TEST(TransactionProcessorTest,
   iroha::torii::TransactionProcessorImpl tp(pcs, validation);
   model::Transaction tx;
   // TODO subscribe with testable subscriber
-  tp.transaction_notifier().subscribe([](auto response) {
+  tp.transactionNotifier().subscribe([](auto response) {
     auto resp = static_cast<model::TransactionStatelessResponse &>(*response);
     ASSERT_EQ(resp.passed, false);
   });
-  tp.transaction_handle(tx);
+  tp.transactionHandle(std::make_shared<iroha::model::Transaction>(tx));
 }

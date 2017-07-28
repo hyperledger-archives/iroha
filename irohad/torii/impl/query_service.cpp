@@ -28,7 +28,7 @@ namespace torii {
         pb_query_response_factory_(pb_query_response_factory),
         query_processor_(query_processor) {
     // Subscribe on result from iroha
-    query_processor_.query_notifier().subscribe([this](auto iroha_response) {
+    query_processor_.queryNotifier().subscribe([this](auto iroha_response) {
       // Find client to respond
       auto res =
           handler_map_.find(iroha_response->query.query_hash.to_string());
@@ -46,6 +46,6 @@ namespace torii {
     // Query - response relationship
     handler_map_.insert({query->query_hash.to_string(), response});
     // Send query to iroha
-    query_processor_.query_handle(*query);
+    query_processor_.queryHandle(query);
   }
 }

@@ -95,7 +95,7 @@ namespace torii {
    */
   void ToriiServiceHandler::ToriiHandler(
       CommandServiceCall<prot::Transaction, prot::ToriiResponse>* call) {
-    commandService_->ToriiAsync(call->request(), call->response());
+    command_service_->ToriiAsync(call->request(), call->response());
     call->sendResponse(grpc::Status::OK);
 
     // Spawn a new Call instance to serve an another client.
@@ -117,12 +117,12 @@ namespace torii {
         &prot::QueryService::AsyncService::RequestFind,
         &ToriiServiceHandler::QueryFindHandler, queryAsyncService_);
   }
-  void ToriiServiceHandler::assign_command_handler(
-      std::unique_ptr<torii::CommandService>& command_service) {
-    commandService_ = std::move(command_service);
+  void ToriiServiceHandler::assignCommandHandler(
+      std::unique_ptr<torii::CommandService> command_service) {
+    command_service_ = std::move(command_service);
   }
-  void ToriiServiceHandler::assign_query_handler(
-      std::unique_ptr<torii::QueryService>& query_service) {
+  void ToriiServiceHandler::assignQueryHandler(
+      std::unique_ptr<torii::QueryService> query_service) {
     query_service_ = std::move(query_service);
   }
 

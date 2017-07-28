@@ -84,7 +84,7 @@ namespace iroha {
         auto body = pb_block.body();
         PbTransactionFactory tx_factory;
         for (auto pb_tx : body.transactions()) {
-          block.transactions.push_back(tx_factory.deserialize(pb_tx));
+          block.transactions.push_back(*tx_factory.deserialize(pb_tx));
         }
 
         iroha::model::HashProviderImpl hash_provider;

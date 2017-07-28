@@ -84,7 +84,7 @@ TEST(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
 
   iroha::torii::QueryProcessorImpl qpi(qpf, validation);
   model::Query query;
-  qpi.query_notifier()
+  qpi.queryNotifier()
       .filter([](auto response) {
         return instanceof <model::ErrorResponse>(response);
       })
@@ -92,5 +92,5 @@ TEST(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
         auto resp = static_cast<model::ErrorResponse &>(*response);
         ASSERT_EQ(resp.reason, "Not valid");
       });
-  qpi.query_handle(query);
+  qpi.queryHandle(std::make_shared<model::Query>(query));
 }

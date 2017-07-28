@@ -36,10 +36,10 @@ namespace torii {
      */
     ToriiServiceHandler(::grpc::ServerBuilder& builder);
 
-    void assign_command_handler(
-        std::unique_ptr<torii::CommandService>& command_service);
-    void assign_query_handler(
-        std::unique_ptr<torii::QueryService>& query_service);
+    void assignCommandHandler(
+        std::unique_ptr<torii::CommandService> command_service);
+    void assignQueryHandler(
+        std::unique_ptr<torii::QueryService> query_service);
 
     virtual ~ToriiServiceHandler() override;
 
@@ -117,7 +117,7 @@ namespace torii {
     bool isShutdown_ = false;                 // called shutdown()
     bool isShutdownCompletionQueue_ = false;  // called cq_->Shutdown()
 
-    std::unique_ptr<torii::CommandService> commandService_;
+    std::unique_ptr<torii::CommandService> command_service_;
     std::unique_ptr<torii::QueryService> query_service_;
   };
 }  // namespace torii

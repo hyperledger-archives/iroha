@@ -26,23 +26,23 @@ namespace iroha {
         validation::StatelessValidator &stateless_validator)
         : qpf_(qpf), validator_(stateless_validator) {}
 
-    void QueryProcessorImpl::query_handle(const model::Query &query) {
+    void QueryProcessorImpl::queryHandle(std::shared_ptr<model::Query> query) {
       model::ErrorResponse response;
-      response.query = query;
+      response.query = *query;
       response.reason = "Not valid";
 
       // if not valid send wrong response
-      if (!validator_.validate(query)) {
+      if (!validator_.validate(*query)) {
         subject_.get_subscriber().on_next(
             std::make_shared<model::ErrorResponse>(response));
       } else {  // else execute query
-        auto qpf_response = qpf_.execute(query);
+        auto qpf_response = qpf_.execute(*query);
         subject_.get_subscriber().on_next(qpf_response);
       }
     }
 
     rxcpp::observable<std::shared_ptr<model::QueryResponse>>
-    QueryProcessorImpl::query_notifier() {
+    QueryProcessorImpl::queryNotifier() {
       return subject_.get_observable();
     }
   }

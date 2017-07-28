@@ -37,10 +37,10 @@ namespace iroha {
       TransactionProcessorImpl(network::PeerCommunicationService &pcs,
                                const validation::StatelessValidator &validator);
 
-      void transaction_handle(model::Transaction &transaction) override;
+      void transactionHandle(std::shared_ptr<model::Transaction> transaction) override;
 
       rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
-      transaction_notifier() override;
+      transactionNotifier() override;
 
      private:
       // connections
