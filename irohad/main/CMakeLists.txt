@@ -22,24 +22,35 @@ target_link_libraries(server_runner
   schema
 )
 
-add_library(irohad application.cpp)
-target_link_libraries(irohad
-    server_runner
-    model
-    ametsuchi
-    networking
-    ordering_service
-    consensus_service
-    chain_validator
-    hash
-    stateless_validator
-    processors
-    crypto
-    )
+add_library(genesis_block_service
+  genesis_block_server/genesis_block_service.cpp
+  genesis_block_server/genesis_block_processor.cpp
+)
+target_link_libraries(genesis_block_service
+  ametsuchi
+  endpoint
+  optional
+  logger
+)
 
-add_executable(iroha-main iroha-main.cpp)
-target_link_libraries(iroha-main
-  irohad
+add_library(application application.cpp)
+target_link_libraries(application
+  server_runner
+  model
+  ametsuchi
+  networking
+  ordering_service
+  consensus_service
+  chain_validator
+  hash
+  stateless_validator
+  processors
+  crypto
+)
+
+add_executable(irohad irohad.cpp)
+target_link_libraries(irohad
+  application
   gflags
   rapidjson
   config
