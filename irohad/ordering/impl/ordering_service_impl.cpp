@@ -16,40 +16,107 @@
  */
 
 #include "ordering/impl/ordering_service_impl.hpp"
+#include <grpc++/grpc++.h>
+
+/**
+ * Will be published when transaction is received.
+ */
+struct TransactionEvent {};
 
 namespace iroha {
   namespace ordering {
-    OrderingServiceImpl::OrderingServiceImpl(size_t max_size,
-                                             size_t delay_milliseconds)
-        : max_size_(max_size), delay_milliseconds_(delay_milliseconds) {}
+    OrderingServiceImpl::OrderingServiceImpl(
+        const std::vector<model::Peer> &peers, size_t max_size,
+        size_t delay_milliseconds, std::shared_ptr<uvw::Loop> loop)
+        : loop_(std::move(loop)),
+          timer_(loop_->resource<uvw::TimerHandle>()),
+          thread_(&OrderingServiceImpl::asyncCompleteRpc, this),
+          max_size_(max_size),
+          delay_milliseconds_(delay_milliseconds) {
+      for (const auto &peer : peers) {
+        peers_[peer.address] = proto::OrderingGate::NewStub(grpc::CreateChannel(
+            peer.address, grpc::InsecureChannelCredentials()));
+      }
 
-    void OrderingServiceImpl::propagate_transaction(
-        const model::Transaction &transaction) {
-      queue_.push(transaction);
-      std::unique_lock<std::mutex> lock(mutex_);
-      cv_.notify_one();
+      timer_->on<uvw::TimerEvent>([this](const auto &, auto &) {
+        if (!queue_.empty()) {
+          this->generateProposal();
+        }
+        timer_->start(uvw::TimerHandle::Time(delay_milliseconds_),
+                      uvw::TimerHandle::Time(0));
+      });
+
+      this->on<TransactionEvent>([this](const auto &, auto &) {
+        if (queue_.unsafe_size() >= max_size_) {
+          timer_->stop();
+          this->generateProposal();
+          timer_->start(uvw::TimerHandle::Time(delay_milliseconds_),
+                        uvw::TimerHandle::Time(0));
+        }
+      });
+
+      timer_->start(uvw::TimerHandle::Time(delay_milliseconds_),
+                    uvw::TimerHandle::Time(0));
     }
 
-    rxcpp::observable<model::Proposal> OrderingServiceImpl::on_proposal() {
-      return proposals_.get_observable();
+    grpc::Status OrderingServiceImpl::SendTransaction(
+        ::grpc::ServerContext *context, const protocol::Transaction *request,
+        ::google::protobuf::Empty *response) {
+      handleTransaction(std::move(factory_.deserialize(*request)));
+
+      return grpc::Status::OK;
+    }
+
+    void OrderingServiceImpl::handleTransaction(
+        model::Transaction &&transaction) {
+      queue_.push(transaction);
+
+      publish(TransactionEvent{});
     }
 
     void OrderingServiceImpl::generateProposal() {
-      std::vector<model::Transaction> txs;
-      std::unique_lock<std::mutex> lock(mutex_);
-
-      // Wait if queue is empty
-      cv_.wait(lock, [this] { return !queue_.empty(); });
-      // Wait for transactions
-      std::this_thread::sleep_for(
-          std::chrono::milliseconds(delay_milliseconds_));
-
+      auto txs = decltype(std::declval<model::Proposal>().transactions)();
       for (model::Transaction tx;
            txs.size() < max_size_ && queue_.try_pop(tx);) {
-        txs.push_back(tx);
+        txs.push_back(std::move(tx));
       }
 
-      proposals_.get_subscriber().on_next(model::Proposal(txs));
+      publishProposal(model::Proposal(txs));
+    }
+
+    void OrderingServiceImpl::publishProposal(model::Proposal &&proposal) {
+      auto pb_proposal = proto::Proposal();
+      for (const auto &tx : proposal.transactions) {
+        auto pb_tx = pb_proposal.add_transactions();
+        new (pb_tx) protocol::Transaction(factory_.serialize(tx));
+      }
+
+      for (const auto &peer : peers_) {
+        auto call = new AsyncClientCall;
+
+        call->response_reader =
+            peer.second->AsyncSendProposal(&call->context, pb_proposal, &cq_);
+
+        call->response_reader->Finish(&call->reply, &call->status, call);
+      }
+    }
+
+    OrderingServiceImpl::~OrderingServiceImpl() {
+      timer_->close();
+      cq_.Shutdown();
+      if (thread_.joinable()) {
+        thread_.join();
+      }
+    }
+
+    void OrderingServiceImpl::asyncCompleteRpc() {
+      void *got_tag;
+      auto ok = false;
+      while (cq_.Next(&got_tag, &ok)) {
+        auto call = static_cast<AsyncClientCall *>(got_tag);
+
+        delete call;
+      }
     }
   }
 }

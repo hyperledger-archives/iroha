@@ -15,42 +15,31 @@
  * limitations under the License.
  */
 
-#include <gmock/gmock.h>
 #include <grpc++/grpc++.h>
-#include "network/ordering_gate.hpp"
+#include <gtest/gtest.h>
+#include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::model;
 using namespace iroha::network;
 
-using ::testing::_;
-using ::testing::AtLeast;
-
-class FakeOrderingGate : public OrderingGate,
-                         public proto::OrderingGate::Service {
- public:
-  MOCK_METHOD1(propagate_transaction, void(const Transaction&));
-  MOCK_METHOD0(on_proposal, rxcpp::observable<Proposal>());
-  MOCK_METHOD3(SendProposal,
-               grpc::Status(::grpc::ServerContext*, const proto::Proposal*,
-                            ::google::protobuf::Empty*));
-};
-
-TEST(OrderingServiceTest, SampleTest) {
+TEST(OrderingGateServiceTest, SampleTest) {
   auto loop = uvw::Loop::getDefault();
 
   auto address = "0.0.0.0:50051";
   Peer peer;
   peer.address = address;
 
+  auto gate = std::make_shared<OrderingGateImpl>(peer.address);
   auto service = std::make_shared<OrderingServiceImpl>(std::vector<Peer>{peer},
-                                                       5, 1500, loop);
+                                                       5, 1600, loop);
   std::unique_ptr<grpc::Server> server;
 
-  auto gate = std::make_shared<FakeOrderingGate>();
+  std::vector<Proposal> proposals;
 
-  EXPECT_CALL(*gate, SendProposal(_, _, _)).Times(AtLeast(4));
+  gate->on_proposal().subscribe(
+      [&proposals](auto proposal) { proposals.push_back(proposal); });
 
   std::mutex mtx;
   std::condition_variable cv;
@@ -73,34 +62,17 @@ TEST(OrderingServiceTest, SampleTest) {
 
   auto l_thread = std::thread([&loop] { loop->run(); });
 
-  auto stub = proto::OrderingService::NewStub(
-      grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
+  for (size_t i = 0; i < 10; ++i) {
+    gate->propagate_transaction(Transaction());
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  }
 
-  auto p1 = std::thread([&stub] {
-    for (size_t i = 0; i < 10; ++i) {
-      grpc::ClientContext context;
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-      google::protobuf::Empty reply;
-
-      stub->SendTransaction(&context, iroha::protocol::Transaction(), &reply);
-      std::this_thread::sleep_for(std::chrono::milliseconds(700));
-    }
-  });
-  auto p2 = std::thread([&stub] {
-    for (size_t i = 0; i < 10; ++i) {
-      grpc::ClientContext context;
-
-      google::protobuf::Empty reply;
-
-      stub->SendTransaction(&context, iroha::protocol::Transaction(), &reply);
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    }
-  });
-
-  p1.join();
-  p2.join();
-
-  std::this_thread::sleep_for(std::chrono::seconds(5));
+  ASSERT_EQ(proposals.size(), 3);
+  ASSERT_EQ(proposals.at(0).transactions.size(), 4);
+  ASSERT_EQ(proposals.at(1).transactions.size(), 3);
+  ASSERT_EQ(proposals.at(2).transactions.size(), 3);
 
   loop->stop();
   server->Shutdown();

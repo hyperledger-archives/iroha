@@ -19,31 +19,61 @@
 #define IROHA_ORDERING_SERVICE_IMPL_HPP
 
 #include <tbb/concurrent_queue.h>
-#include "model/transaction.hpp"
-#include "ordering/ordering_service.hpp"
+#include <thread>
+#include <unordered_map>
+#include <uvw.hpp>
+#include "model/converters/pb_transaction_factory.hpp"
+#include "model/proposal.hpp"
+#include "ordering.grpc.pb.h"
 
 namespace iroha {
   namespace ordering {
 
-    class OrderingServiceImpl : public OrderingService {
+    class OrderingServiceImpl : public proto::OrderingService::Service,
+                                public uvw::Emitter<OrderingServiceImpl> {
      public:
-      explicit OrderingServiceImpl(size_t max_size, size_t delay_milliseconds);
-      void propagate_transaction(
-          const model::Transaction &transaction) override;
-      rxcpp::observable<model::Proposal> on_proposal() override;
-
-      void generateProposal();
+      OrderingServiceImpl(
+          const std::vector<model::Peer> &peers, size_t max_size,
+          size_t delay_milliseconds,
+          std::shared_ptr<uvw::Loop> loop = uvw::Loop::getDefault());
+      grpc::Status SendTransaction(
+          ::grpc::ServerContext *context, const protocol::Transaction *request,
+          ::google::protobuf::Empty *response) override;
+      ~OrderingServiceImpl() override;
 
      private:
+      void handleTransaction(model::Transaction &&transaction);
+      void generateProposal();
+      void publishProposal(model::Proposal &&proposal);
+      void asyncCompleteRpc();
+
+      std::shared_ptr<uvw::Loop> loop_;
+      std::shared_ptr<uvw::TimerHandle> timer_;
+
+      model::converters::PbTransactionFactory factory_;
+
+      std::unordered_map<std::string,
+                         std::unique_ptr<proto::OrderingGate::Stub>>
+          peers_;
+      grpc::CompletionQueue cq_;
+      std::thread thread_;
+
       tbb::concurrent_queue<model::Transaction> queue_;
       const size_t max_size_;  // max number of txs in proposal
       const size_t
           delay_milliseconds_;  // wait for specified time if queue is empty
-      rxcpp::subjects::subject<model::Proposal> proposals_;
 
-      // synchronization primitives
-      std::mutex mutex_;
-      std::condition_variable cv_;
+      struct AsyncClientCall {
+        google::protobuf::Empty reply;
+
+        grpc::ClientContext context;
+
+        grpc::Status status;
+
+        std::unique_ptr<
+            grpc::ClientAsyncResponseReader<google::protobuf::Empty>>
+            response_reader;
+      };
     };
   }
 }

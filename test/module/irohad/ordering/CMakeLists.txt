@@ -16,3 +16,13 @@ addtest(ordering_service_test ordering_service_test.cpp)
 target_link_libraries(ordering_service_test
     ordering_service
     )
+
+addtest(ordering_gate_test ordering_gate_test.cpp)
+target_link_libraries(ordering_gate_test
+    ordering_service
+    )
+
+addtest(ordering_gate_service_test ordering_gate_service_test.cpp)
+target_link_libraries(ordering_gate_service_test
+    ordering_service
+    )
