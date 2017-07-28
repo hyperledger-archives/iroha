@@ -20,13 +20,13 @@
 
 namespace iroha {
   grpc::Status GenesisBlockService::SendGenesisBlock(
-    grpc::ServerContext* context,
-    const iroha::protocol::Block* request,
-    iroha::protocol::ApplyGenesisBlockResponse* response) {
+      grpc::ServerContext* context, const iroha::protocol::Block* request,
+      iroha::protocol::ApplyGenesisBlockResponse* response) {
     auto converter = iroha::model::converters::PbBlockFactory();
     auto iroha_block = converter.deserialize(*request);
     auto success = processor_.genesis_block_handle(iroha_block);
-    response->set_applied(success ? iroha::protocol::APPLY_SUCCESS : iroha::protocol::APPLY_FAILURE);
+    response->set_applied(success ? iroha::protocol::APPLY_SUCCESS
+                                  : iroha::protocol::APPLY_FAILURE);
     return grpc::Status::OK;
   }
-}
+}  // namespace iroha

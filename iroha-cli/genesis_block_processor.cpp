@@ -18,22 +18,23 @@
 #include "genesis_block_processor_impl.hpp"
 #include "logger/logger.hpp"
 
-logger::Logger Log("genesis_block_processor");
+logger::Logger Log("GenesisBlockProcessor");
 
 namespace iroha {
-  bool GenesisBlockProcessorImpl::genesis_block_handle(const iroha::model::Block &block) {
+  bool GenesisBlockProcessorImpl::genesis_block_handle(
+      const iroha::model::Block &block) {
     auto mutable_storage = mutable_factory_.createMutableStorage();
 
     auto result =
-      mutable_storage->apply(block, [](const auto &block, auto &executor, auto &query,
-                                       const auto &top_hash) {
-        for (const auto &tx : block.transactions) {
-          for (const auto &command : tx.commands) {
-          auto valid = command->execute(query, executor);
-            if (!valid) return false;
+        mutable_storage->apply(block, [](const auto &block, auto &executor,
+                                         auto &query, const auto &top_hash) {
+          for (const auto &tx : block.transactions) {
+            for (const auto &command : tx.commands) {
+              auto valid = command->execute(query, executor);
+              if (!valid) return false;
+            }
           }
-        }
-      });
+        });
 
     if (result) {
       mutable_factory_.commit(std::move(mutable_storage));
@@ -41,4 +42,4 @@ namespace iroha {
 
     return result;
   }
-}
+}  // namespace iroha

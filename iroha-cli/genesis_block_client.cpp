@@ -23,19 +23,21 @@
 #include <grpc++/create_channel.h>
 #include <grpc++/security/credentials.h>
 #include <grpc/grpc.h>
-
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 
 namespace iroha_cli {
 
-  GenesisBlockClient::GenesisBlockClient(const std::string& target_ip, const int port)
-    : target_ip_(target_ip), port_(port),
-      stub_(grpc::CreateChannel(target_ip_ + ":" + std::to_string(port_),
-                                grpc::InsecureChannelCredentials())) {}
+  GenesisBlockClient::GenesisBlockClient(const std::string &target_ip,
+                                         const int port)
+      : target_ip_(target_ip),
+        port_(port),
+        stub_(grpc::CreateChannel(target_ip_ + ":" + std::to_string(port_),
+                                  grpc::InsecureChannelCredentials())) {}
 
   grpc::Status GenesisBlockClient::SendGenesisBlock(
-    const iroha::model::Block &iroha_block, iroha::protocol::ApplyGenesisBlockResponse &response) {
+      const iroha::model::Block &iroha_block,
+      iroha::protocol::ApplyGenesisBlockResponse &response) {
     grpc::ClientContext context;
     auto block_converter = iroha::model::converters::PbBlockFactory();
     auto proto_block = block_converter.serialize(iroha_block);
@@ -43,11 +45,12 @@ namespace iroha_cli {
     return stat;
   }
 
-  void GenesisBlockClient::SendAbortGenesisBlock(const iroha::model::Block &iroha_block) {
+  void GenesisBlockClient::SendAbortGenesisBlock(
+      const iroha::model::Block &iroha_block) {
     grpc::ClientContext context;
     auto block_converter = iroha::model::converters::PbBlockFactory();
     auto proto_block = block_converter.serialize(iroha_block);
     google::protobuf::Empty empty;
     stub_.SendAbortGenesisBlock(&context, proto_block, &empty);
   }
-}
+}  // namespace iroha_cli
