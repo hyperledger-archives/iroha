@@ -34,6 +34,7 @@ namespace iroha {
               if (!valid) return false;
             }
           }
+          return true;
         });
 
     if (result) {
