@@ -43,7 +43,7 @@ TEST(YacStorageTest, SupermajorityFunctionForAllCases4) {
 TEST(YacStorageTest, YacBlockStorageWhenNormalDataInput) {
   YacHash hash("proposal", "commit");
   int N = 4;
-  YacBlockStorage storage(hash.proposal_hash, hash.block_hash, N);
+  YacBlockStorage storage(hash, N);
 
   auto insert_1 = storage.insert(create_vote(hash, "one"));
   ASSERT_EQ(CommitState::not_committed, insert_1.state);
@@ -65,4 +65,23 @@ TEST(YacStorageTest, YacBlockStorageWhenNormalDataInput) {
   ASSERT_EQ(CommitState::committed_before, insert_4.state);
   ASSERT_EQ(4, insert_4.answer.commit->votes.size());
   ASSERT_EQ(nonstd::nullopt, insert_4.answer.reject);
+}
+
+TEST(YacStorageTest, YacBlockStorageWhenNotCommittedAndCommitAcheive) {
+  YacHash hash("proposal", "commit");
+  int N = 4;
+  YacBlockStorage storage(hash, N);
+
+  auto insert_1 = storage.insert(create_vote(hash, "one"));
+  ASSERT_EQ(CommitState::not_committed, insert_1.state);
+  ASSERT_EQ(nonstd::nullopt, insert_1.answer.commit);
+  ASSERT_EQ(nonstd::nullopt, insert_1.answer.reject);
+
+  auto insert_commit = storage.insert(CommitMessage({create_vote(hash, "two"),
+                                                     create_vote(hash, "three"),
+                                                     create_vote(hash, "four")})
+  );
+  ASSERT_EQ(CommitState::committed, insert_commit.state);
+  ASSERT_EQ(4, insert_commit.answer.commit->votes.size());
+  ASSERT_EQ(nonstd::nullopt, insert_1.answer.reject);
 }

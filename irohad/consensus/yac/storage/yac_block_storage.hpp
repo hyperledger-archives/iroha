@@ -31,8 +31,7 @@ namespace iroha {
       class YacBlockStorage {
        public:
 
-        YacBlockStorage(ProposalHash proposal_hash,
-                        BlockHash block_hash,
+        YacBlockStorage(YacHash hash,
                         uint64_t peers_in_round);
 
         /**
@@ -41,6 +40,13 @@ namespace iroha {
          * @return actual state of storage
          */
         StorageResult insert(VoteMessage msg);
+
+        /**
+         * Insert commit to current storage
+         * @param commit
+         * @return
+         */
+        StorageResult insert(CommitMessage commit);
 
         /**
          * @return current block store state
@@ -86,14 +92,16 @@ namespace iroha {
         bool unique_vote(VoteMessage &msg);
 
         /**
-         * Unique hash of proposal for all storage votes
+         * Verify that commit message satisfy to block storage
+         * @param commit - message for verification
+         * @return true, if satisfied
          */
-        ProposalHash proposal_hash_;
+        bool checkCommitScheme(const CommitMessage &commit);
 
         /**
-         * Unique hash of all votes
+         * Common hash of all votes in storage
          */
-        BlockHash block_hash_;
+        YacHash hash_;
 
         /**
          * All votes stored in block store

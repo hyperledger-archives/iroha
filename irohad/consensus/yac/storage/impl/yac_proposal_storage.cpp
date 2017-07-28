@@ -72,6 +72,20 @@ namespace iroha {
         return getState();
       };
 
+      StorageResult YacProposalStorage::applyCommit(const CommitMessage &commit,
+                                                    uint64_t peers_in_round) {
+        if (commit.votes.empty()) return StorageResult();
+        auto index = findStore(commit.votes.at(0).hash.proposal_hash,
+                               commit.votes.at(0).hash.block_hash);
+        return block_votes_.at(index).insert(commit);
+      }
+
+      StorageResult YacProposalStorage::applyReject(const RejectMessage &reject,
+                                                    uint64_t peers_in_round) {
+        // todo implement method
+        return StorageResult();
+      }
+
       ProposalHash YacProposalStorage::getProposalHash() {
         return hash_;
       }
@@ -113,7 +127,7 @@ namespace iroha {
         }
         // insert and return new
         YacBlockStorage
-            new_container(proposal_hash, block_hash, peers_in_round_);
+            new_container(YacHash(proposal_hash, block_hash), peers_in_round_);
         block_votes_.push_back(new_container);
         return block_votes_.size() - 1;
       };

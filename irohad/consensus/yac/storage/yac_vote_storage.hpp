@@ -44,6 +44,12 @@ namespace iroha {
          */
         StorageResult storeVote(VoteMessage msg, uint64_t peers_in_round);
 
+        StorageResult applyCommit(CommitMessage commit,
+                                  uint64_t peers_in_round);
+
+        StorageResult applyReject(RejectMessage reject,
+                                  uint64_t peers_in_round);
+
        private:
         // --------| private api |--------
 
@@ -58,6 +64,9 @@ namespace iroha {
         uint64_t findProposalStorage(const VoteMessage &msg,
                                      uint64_t peers_in_round);
 
+        /**
+         * Active proposals
+         */
         std::vector<YacProposalStorage> proposals_;
       };
 

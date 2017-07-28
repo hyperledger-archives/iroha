@@ -28,6 +28,22 @@ namespace iroha {
             .insert(msg);
       }
 
+      StorageResult YacVoteStorage::applyCommit(CommitMessage commit,
+                                uint64_t peers_in_round) {
+        if (commit.votes.empty()) return StorageResult();
+
+        auto index = findProposalStorage(commit.votes.at(0), peers_in_round);
+        return proposals_.at(index).applyCommit(commit, peers_in_round);
+      };
+
+      StorageResult YacVoteStorage::applyReject(RejectMessage reject,
+                                uint64_t peers_in_round) {
+        if (reject.votes.empty()) return StorageResult();
+
+        auto index = findProposalStorage(reject.votes.at(0), peers_in_round);
+        return proposals_.at(index).applyReject(reject, peers_in_round);
+      };
+
       // --------| private api |--------
 
       uint64_t YacVoteStorage::findProposalStorage(const VoteMessage &msg,

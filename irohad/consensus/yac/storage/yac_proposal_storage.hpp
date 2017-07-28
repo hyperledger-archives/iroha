@@ -45,6 +45,21 @@ namespace iroha {
         StorageResult insert(VoteMessage msg);
 
         /**
+         * Try to apply commit for storage
+         * @param commit - message for insertion
+         * @return CommitState::not_committed - commit not achieved,
+         *         CommitState::committed - commit achieve on vote
+         *         from this message
+         *         CommitState::committed_before - commit achieved before
+         *         this commit message
+         */
+        StorageResult applyCommit(const CommitMessage &commit,
+                                                                                     uint64_t peers_in_round);
+
+        StorageResult applyReject(const RejectMessage &reject,
+                                  uint64_t peers_in_round);
+
+        /**
          * @return current stored proposal hash
          */
         ProposalHash getProposalHash();
@@ -86,6 +101,23 @@ namespace iroha {
         bool hasRejectProof();
 
         /**
+         * Verify that reject message satisfy scheme
+         * @param reject - message for verification
+         * @return true, if satisfied
+         */
+        bool checkRejectScheme(const RejectMessage &reject) {
+          auto votes = reject.votes;
+          if (votes.size() == 0) return false;
+          auto common_proposal = votes.at(0).hash.proposal_hash;
+          for (auto &&vote:votes) {
+            if (common_proposal != vote.hash.proposal_hash) {
+              return false;
+            }
+          }
+          return true;
+        };
+
+        /**
          * Find block index with provided parameters,
          * if those store absent - create new
          * @param proposal_hash - hash of proposal
@@ -96,7 +128,7 @@ namespace iroha {
 
         /**
          * flat map of all votes stored in this proposal storage
-         * @return all votes with currect proposal hash
+         * @return all votes with current proposal hash
          */
         std::vector<VoteMessage> aggregateAll();
 

@@ -20,12 +20,11 @@
 namespace iroha {
   namespace consensus {
     namespace yac {
-      YacBlockStorage::YacBlockStorage(ProposalHash proposal_hash,
-                                       BlockHash block_hash,
+      YacBlockStorage::YacBlockStorage(YacHash hash,
                                        uint64_t peers_in_round)
-          : proposal_hash_(proposal_hash),
-            block_hash_(block_hash),
-            peers_in_round_(peers_in_round) {
+          : hash_(hash),
+            peers_in_round_(
+                peers_in_round) {
       };
 
       StorageResult YacBlockStorage::insert(VoteMessage msg) {
@@ -38,13 +37,12 @@ namespace iroha {
 
             case not_committed:
               current_state_.state = updateSupermajorityState();
-              if(current_state_.state == CommitState::committed){
+              if (current_state_.state == CommitState::committed) {
                 current_state_.answer.commit = CommitMessage(votes_);
               }
               break;
 
-            case committed:
-              current_state_.state = committed_before;
+            case committed:current_state_.state = committed_before;
               current_state_.answer.commit = CommitMessage(votes_);
               break;
 
@@ -56,6 +54,28 @@ namespace iroha {
         return getState();
       };
 
+      StorageResult YacBlockStorage::insert(CommitMessage commit) {
+        if (checkCommitScheme(commit)) {
+          auto initial_state = getState().state;
+          for (auto &&vote: commit.votes) {
+            current_state_ = insert(vote);
+          }
+          auto end_state = getState();
+          if (initial_state == CommitState::not_committed and (
+              current_state_.state == CommitState::committed or
+                  current_state_.state == CommitState::committed_before)) {
+            current_state_.state = CommitState::committed;
+          }
+          if (initial_state == CommitState::committed and (
+              current_state_.state == CommitState::committed or
+                  current_state_.state == CommitState::committed_before)) {
+            current_state_.state = CommitState::committed_before;
+          }
+          return getState();
+        }
+        return StorageResult();
+      };
+
       StorageResult YacBlockStorage::getState() {
         return current_state_;
       };
@@ -65,11 +85,11 @@ namespace iroha {
       };
 
       ProposalHash YacBlockStorage::getProposalHash() {
-        return proposal_hash_;
+        return hash_.proposal_hash;
       };
 
       BlockHash YacBlockStorage::getBlockHash() {
-        return block_hash_;
+        return hash_.block_hash;
       };
 
       // --------| private fields |--------
@@ -90,6 +110,19 @@ namespace iroha {
       bool YacBlockStorage::unique_vote(VoteMessage &msg) {
         for (auto &&vote: votes_) {
           if (vote == msg) {
+            return false;
+          }
+        }
+        return true;
+      };
+
+      bool YacBlockStorage::checkCommitScheme(const CommitMessage &commit) {
+        auto votes = commit.votes;
+        if (!hasSupermajority(votes.size(), peers_in_round_)) return false;
+        auto common_hash = votes.at(0).hash;
+        if (common_hash != hash_) return false;
+        for (auto &&vote:votes) {
+          if (common_hash != vote.hash) {
             return false;
           }
         }
