@@ -16,62 +16,29 @@
  */
 
 #include "consensus/yac/impl/timer_impl.hpp"
+#include <iostream>
 
 namespace iroha {
   namespace consensus {
     namespace yac {
 
-      TimerImpl::TimerImpl()
-          : valid_(true), done_(false), thread_(&TimerImpl::worker, this) {}
+      TimerImpl::TimerImpl(std::shared_ptr<uvw::Loop> loop)
+          : loop_(std::move(loop)),
+            timer_(loop_->resource<uvw::TimerHandle>()) {
+        timer_->on<uvw::TimerEvent>([this](const auto&, auto&) { handler_(); });
+      }
 
       void TimerImpl::invokeAfterDelay(uint64_t millis,
                                        std::function<void()> handler) {
         deny();
-        std::function<void()> task = [this, millis, handler]() {
-          std::unique_lock<std::mutex> lock(mtx_);
-          if (std::cv_status::timeout ==
-              cv_.wait_for(lock, std::chrono::milliseconds(millis))) {
-            handler();
-          }
-        };
-        std::lock_guard<std::mutex> lock(t_mtx_);
-        task_ = std::make_unique<std::function<void()>>(task);
-        t_cv_.notify_one();
+        handler_ = std::move(handler);
+        timer_->start(uvw::TimerHandle::Time(millis),
+                      uvw::TimerHandle::Time(0));
       }
 
-      void TimerImpl::deny() { cv_.notify_one(); }
+      void TimerImpl::deny() { timer_->stop(); }
 
-      TimerImpl::~TimerImpl() {
-        deny();
-        done_ = true;
-        {
-          std::lock_guard<std::mutex> lock(t_mtx_);
-          valid_ = false;
-          t_cv_.notify_all();
-        }
-        if (thread_.joinable()) {
-          thread_.join();
-        }
-      }
-
-      void TimerImpl::worker() {
-        while (!done_) {
-          std::unique_ptr<std::function<void()>> task;
-          if (waitPop(task)) {
-            (*task)();
-          }
-        }
-      }
-
-      bool TimerImpl::waitPop(std::unique_ptr<std::function<void()>> &out) {
-        std::unique_lock<std::mutex> lock(t_mtx_);
-        t_cv_.wait(lock, [this]() { return task_ || !valid_; });
-        if (!valid_) {
-          return false;
-        }
-        out = std::move(task_);
-        return true;
-      }
+      TimerImpl::~TimerImpl() { timer_->close(); }
 
     }  // namespace yac
   }    // namespace consensus

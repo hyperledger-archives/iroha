@@ -18,15 +18,9 @@
 #ifndef IROHA_TIMER_IMPL_HPP
 #define IROHA_TIMER_IMPL_HPP
 
-#include <atomic>
-#include <condition_variable>
-#include <mutex>
-#include <thread>
+#include <uvw/loop.hpp>
+#include <uvw/timer.hpp>
 #include "consensus/yac/timer.hpp"
-
-namespace tp {
-  class ThreadPool;
-}
 
 namespace iroha {
   namespace consensus {
@@ -34,7 +28,9 @@ namespace iroha {
 
       class TimerImpl : public Timer {
        public:
-        TimerImpl();
+        explicit TimerImpl(
+            std::shared_ptr<uvw::Loop> loop = uvw::Loop::getDefault());
+
         TimerImpl(const TimerImpl&) = delete;
         TimerImpl& operator=(const TimerImpl&) = delete;
 
@@ -45,23 +41,9 @@ namespace iroha {
         ~TimerImpl() override;
 
        private:
-        bool waitPop(std::unique_ptr<std::function<void()>>& out);
-
-        void worker();
-
-        // Task queue
-        std::unique_ptr<std::function<void()>> task_;
-        std::atomic<bool> valid_;
-        std::mutex t_mtx_;
-        std::condition_variable t_cv_;
-
-        // Thread pool
-        std::atomic<bool> done_;
-        std::thread thread_;
-
-        // Denial synchronization
-        std::mutex mtx_;
-        std::condition_variable cv_;
+        std::shared_ptr<uvw::Loop> loop_;
+        std::shared_ptr<uvw::TimerHandle> timer_;
+        std::function<void()> handler_;
       };
 
     }  // namespace yac

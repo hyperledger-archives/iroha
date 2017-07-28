@@ -16,34 +16,58 @@
  */
 
 #include <gtest/gtest.h>
+#include <thread>
 #include "consensus/yac/impl/timer_impl.hpp"
 
 using namespace iroha::consensus::yac;
 
-TEST(TimerTest, NothingInvokedWhenDenied) {
+class TimerTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    loop = uvw::Loop::create();
+    timer = std::make_shared<TimerImpl>(loop);
+    thread = std::thread([this] { ASSERT_TRUE(loop->run()); });
+  }
+
+  void TearDown() override {
+    loop->stop();
+    if (thread.joinable()) {
+      thread.join();
+    }
+    timer.reset();
+    loop.reset();
+  }
+
+ public:
+  std::shared_ptr<Timer> timer;
+  std::shared_ptr<uvw::Loop> loop;
+  std::thread thread;
+};
+
+TEST_F(TimerTest, NothingInvokedWhenDenied) {
   int status = 0;
-  TimerImpl timer;
-  timer.invokeAfterDelay(3 * 1000, [&status]() { status = 1; });
+
+  timer->invokeAfterDelay(3 * 1000, [&status]() { status = 1; });
   std::this_thread::sleep_for(std::chrono::seconds(1));
-  timer.deny();
+  timer->deny();
   std::this_thread::sleep_for(std::chrono::seconds(3));
   ASSERT_EQ(status, 0);
 }
 
-TEST(TimerTest, FirstInvokedWhenOneSubmitted) {
+TEST_F(TimerTest, FirstInvokedWhenOneSubmitted) {
   int status = 0;
-  TimerImpl timer;
-  timer.invokeAfterDelay(3 * 1000, [&status]() { status = 1; });
+
+  timer->invokeAfterDelay(3 * 1000, [&status]() { status = 1; });
   std::this_thread::sleep_for(std::chrono::seconds(4));
   ASSERT_EQ(status, 1);
 }
 
-TEST(TimerTest, SecondInvokedWhenTwoSubmitted) {
+TEST_F(TimerTest, SecondInvokedWhenTwoSubmitted) {
   int status = 0;
-  TimerImpl timer;
-  timer.invokeAfterDelay(3 * 1000, [&status]() { status = 1; });
+
+  timer->invokeAfterDelay(3 * 1000, [&status]() { status = 1; });
   std::this_thread::sleep_for(std::chrono::seconds(1));
-  timer.invokeAfterDelay(3 * 1000, [&status]() { status = 2; });
+  timer->invokeAfterDelay(3 * 1000, [&status]() { status = 2; });
   std::this_thread::sleep_for(std::chrono::seconds(4));
   ASSERT_EQ(status, 2);
 }

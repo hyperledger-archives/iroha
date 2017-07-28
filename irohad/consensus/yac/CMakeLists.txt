@@ -29,4 +29,5 @@ target_link_libraries(yac
     optional
     model
     grpc++
+    uvw
     )
