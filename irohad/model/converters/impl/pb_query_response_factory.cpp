@@ -16,38 +16,50 @@
  */
 
 #include "model/converters/pb_query_response_factory.hpp"
+#include "model/converters/pb_transaction_factory.hpp"
 
 namespace iroha {
   namespace model {
     namespace converters {
 
-      nonstd::optional<protocol::QueryResponse> PbQueryResponseFactory::serialize(
+      nonstd::optional<protocol::QueryResponse>
+      PbQueryResponseFactory::serialize(
           const std::shared_ptr<QueryResponse> query_response) const {
-        protocol::QueryResponse response;
+        nonstd::optional<protocol::QueryResponse> response = nonstd::nullopt;
         if (instanceof <model::ErrorResponse>(*query_response)) {
+          response = nonstd::make_optional<protocol::QueryResponse>();
           auto er = static_cast<model::ErrorResponse &>(*query_response);
-          auto pb_er = serialize(er);
-          response.mutable_error_response()->CopyFrom(pb_er);
-        } else if (instanceof <model::AccountAssetResponse>(*query_response)) {
-          response.mutable_account_assets_response()->CopyFrom(serialize(
-              static_cast<model::AccountAssetResponse &>(*query_response)));
-        } else if (instanceof <model::AccountResponse>(*query_response)) {
-          response.mutable_account_response()->CopyFrom(serialize(
-              static_cast<model::AccountResponse &>(*query_response)));
-        } else if (instanceof <model::SignatoriesResponse>(*query_response)) {
-          response.mutable_signatories_response()->CopyFrom(serialize(
-              static_cast<model::SignatoriesResponse &>(*query_response)));
-        } else if (instanceof <model::TransactionsResponse>(*query_response)) {
-          response.mutable_transactions_response()->CopyFrom(serialize(
-              static_cast<model::TransactionsResponse &>(*query_response)));
+          auto pb_er = serializeErrorResponse(er);
+          response->mutable_error_response()->CopyFrom(pb_er);
         }
-        else {
-          return nonstd::nullopt;
+        if (instanceof <model::AccountAssetResponse>(*query_response)) {
+          response = nonstd::make_optional<protocol::QueryResponse>();
+          response->mutable_account_assets_response()->CopyFrom(
+              serializeAccountAssetResponse(
+                  static_cast<model::AccountAssetResponse &>(*query_response)));
+        }
+        if (instanceof <model::AccountResponse>(*query_response)) {
+          response = nonstd::make_optional<protocol::QueryResponse>();
+          response->mutable_account_response()->CopyFrom(
+              serializeAccountResponse(
+                  static_cast<model::AccountResponse &>(*query_response)));
+        }
+        if (instanceof <model::SignatoriesResponse>(*query_response)) {
+          response = nonstd::make_optional<protocol::QueryResponse>();
+          response->mutable_signatories_response()->CopyFrom(
+              serializeSignatoriesResponse(
+                  static_cast<model::SignatoriesResponse &>(*query_response)));
+        }
+        if (instanceof <model::TransactionsResponse>(*query_response)) {
+          response = nonstd::make_optional<protocol::QueryResponse>();
+          response->mutable_transactions_response()->CopyFrom(
+              serializeTransactionsResponse(
+                  static_cast<model::TransactionsResponse &>(*query_response)));
         }
         return response;
       }
 
-      protocol::Account PbQueryResponseFactory::serialize(
+      protocol::Account PbQueryResponseFactory::serializeAccount(
           const model::Account &account) const {
         protocol::Account pb_account;
         pb_account.set_quorum(account.quorum);
@@ -72,7 +84,7 @@ namespace iroha {
         return pb_account;
       }
 
-      model::Account PbQueryResponseFactory::deserialize(
+      model::Account PbQueryResponseFactory::deserializeAccount(
           const protocol::Account &pb_account) const {
         model::Account res;
         res.account_id = pb_account.account_id();
@@ -102,22 +114,23 @@ namespace iroha {
         return res;
       }
 
-      protocol::AccountResponse PbQueryResponseFactory::serialize(
+      protocol::AccountResponse
+      PbQueryResponseFactory::serializeAccountResponse(
           const model::AccountResponse &accountResponse) const {
         protocol::AccountResponse pb_response;
         pb_response.mutable_account()->CopyFrom(
-            serialize(accountResponse.account));
+            serializeAccount(accountResponse.account));
         return pb_response;
       }
 
-      model::AccountResponse PbQueryResponseFactory::deserialize(
+      model::AccountResponse PbQueryResponseFactory::deserializeAccountResponse(
           const protocol::AccountResponse pb_response) const {
         model::AccountResponse accountResponse;
-        accountResponse.account = deserialize(pb_response.account());
+        accountResponse.account = deserializeAccount(pb_response.account());
         return accountResponse;
       }
 
-      protocol::AccountAsset PbQueryResponseFactory::serialize(
+      protocol::AccountAsset PbQueryResponseFactory::serializeAccountAsset(
           const model::AccountAsset &account_asset) const {
         protocol::AccountAsset pb_account_asset;
         pb_account_asset.set_account_id(account_asset.account_id);
@@ -126,7 +139,7 @@ namespace iroha {
         return pb_account_asset;
       }
 
-      model::AccountAsset PbQueryResponseFactory::deserialize(
+      model::AccountAsset PbQueryResponseFactory::deserializeAccountAsset(
           const protocol::AccountAsset &account_asset) const {
         model::AccountAsset res;
         res.account_id = account_asset.account_id();
@@ -135,7 +148,8 @@ namespace iroha {
         return res;
       }
 
-      protocol::AccountAssetResponse PbQueryResponseFactory::serialize(
+      protocol::AccountAssetResponse
+      PbQueryResponseFactory::serializeAccountAssetResponse(
           const model::AccountAssetResponse &accountAssetResponse) const {
         protocol::AccountAssetResponse pb_response;
         auto pb_account_asset = pb_response.mutable_account_asset();
@@ -147,7 +161,8 @@ namespace iroha {
         return pb_response;
       }
 
-      model::AccountAssetResponse PbQueryResponseFactory::deserialize(
+      model::AccountAssetResponse
+      PbQueryResponseFactory::deserializeAccountAssetResponse(
           const protocol::AccountAssetResponse &account_asset_response) const {
         model::AccountAssetResponse res;
         res.acct_asset.balance =
@@ -159,18 +174,20 @@ namespace iroha {
         return res;
       }
 
-      protocol::SignatoriesResponse PbQueryResponseFactory::serialize(
+      protocol::SignatoriesResponse
+      PbQueryResponseFactory::serializeSignatoriesResponse(
           const model::SignatoriesResponse &signatoriesResponse) const {
         protocol::SignatoriesResponse pb_response;
 
         for (auto key : signatoriesResponse.keys) {
-          std::copy(key.begin(), key.end(),
-                    pb_response.mutable_keys()->Add());  // TODO: check will it work?
+          pb_response.mutable_keys()->Add(
+              std::string{key.data(), key.data() + key.size()});
         }
         return pb_response;
       }
 
-      model::SignatoriesResponse PbQueryResponseFactory::deserialize(
+      model::SignatoriesResponse
+      PbQueryResponseFactory::deserializeSignatoriesResponse(
           const protocol::SignatoriesResponse &signatoriesResponse) const {
         model::SignatoriesResponse res{};
         for (const auto &key : signatoriesResponse.keys()) {
@@ -181,14 +198,15 @@ namespace iroha {
         return res;
       }
 
-      protocol::TransactionsResponse PbQueryResponseFactory::serialize(
+      protocol::TransactionsResponse
+      PbQueryResponseFactory::serializeTransactionsResponse(
           const model::TransactionsResponse &transactionsResponse) const {
         protocol::TransactionsResponse pb_response;
         // TODO: get vector from observable
         return pb_response;
       }
 
-      protocol::ErrorResponse PbQueryResponseFactory::serialize(
+      protocol::ErrorResponse PbQueryResponseFactory::serializeErrorResponse(
           const model::ErrorResponse &errorResponse) const {
         protocol::ErrorResponse pb_response;
         pb_response.set_reason(errorResponse.reason);

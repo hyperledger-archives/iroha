@@ -16,6 +16,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <responses.pb.h>
 #include "model/converters/pb_query_response_factory.hpp"
 
 using namespace iroha;
@@ -29,8 +30,8 @@ TEST(QueryResponseTest, AccountTest) {
   account.domain_name = "domain";
   account.quorum = 32;
 
-  auto pb_account = pb_factory.serialize(account);
-  auto des_account = pb_factory.deserialize(pb_account);
+  auto pb_account = pb_factory.serializeAccount(account);
+  auto des_account = pb_factory.deserializeAccount(pb_account);
 
   ASSERT_EQ(account.account_id, des_account.account_id);
   ASSERT_EQ(account.master_key, des_account.master_key);
@@ -52,8 +53,10 @@ TEST(QueryResponseTest, AccountResponseTest) {
   model::AccountResponse accountResponse;
   accountResponse.account = account;
 
-  auto pb_account_response = pb_factory.serialize(accountResponse);
-  auto des_account_response = pb_factory.deserialize(pb_account_response);
+  auto pb_account_response =
+      pb_factory.serializeAccountResponse(accountResponse);
+  auto des_account_response =
+      pb_factory.deserializeAccountResponse(pb_account_response);
 
   ASSERT_EQ(accountResponse.account.account_id,
             des_account_response.account.account_id);
@@ -64,4 +67,54 @@ TEST(QueryResponseTest, AccountResponseTest) {
   ASSERT_EQ(accountResponse.account.domain_name,
             des_account_response.account.domain_name);
   ASSERT_EQ(accountResponse.account.quorum, account.quorum);
+}
+
+TEST(QueryResponseTest, AccountAsset) {
+  model::converters::PbQueryResponseFactory pb_factory;
+
+  model::AccountAsset account_asset;
+  account_asset.account_id = "123";
+  account_asset.asset_id = "123";
+  account_asset.balance = 1;
+
+  auto pb_account_asset = pb_factory.serializeAccountAsset(account_asset);
+  auto des_account_asset = pb_factory.deserializeAccountAsset(pb_account_asset);
+
+  ASSERT_EQ(account_asset.balance, des_account_asset.balance);
+  ASSERT_EQ(account_asset.asset_id, des_account_asset.asset_id);
+  ASSERT_EQ(account_asset.account_id, des_account_asset.account_id);
+
+  model::AccountAssetResponse account_asset_response;
+  account_asset_response.acct_asset = account_asset;
+
+  auto shrd_aar = std::make_shared<decltype(account_asset_response)>(
+      account_asset_response);
+  auto query_response = *pb_factory.serialize(shrd_aar);
+
+  auto des_account_asset_response = pb_factory.deserializeAccountAssetResponse(
+      query_response.account_assets_response());
+
+  ASSERT_EQ(des_account_asset_response.acct_asset.balance,
+            des_account_asset.balance);
+  ASSERT_EQ(des_account_asset_response.acct_asset.asset_id,
+            des_account_asset.asset_id);
+  ASSERT_EQ(des_account_asset_response.acct_asset.account_id,
+            des_account_asset.account_id);
+}
+
+TEST(QueryResponseTest, SignatoriesTest) {
+  model::converters::PbQueryResponseFactory pb_factory;
+
+  model::SignatoriesResponse signatories_response{};
+  ed25519::pubkey_t pubkey;
+  std::fill(pubkey.begin(), pubkey.end(), 0x1);
+  signatories_response.keys.push_back(pubkey);
+
+  auto shrd_sr =
+      std::make_shared<decltype(signatories_response)>(signatories_response);
+  auto query_response = *pb_factory.serialize(shrd_sr);
+  auto des_signatories_response = pb_factory.deserializeSignatoriesResponse(
+      query_response.signatories_response());
+
+  ASSERT_EQ(signatories_response.keys, des_signatories_response.keys);
 }

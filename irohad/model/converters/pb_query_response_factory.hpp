@@ -39,35 +39,36 @@ namespace iroha {
         nonstd::optional<protocol::QueryResponse> serialize(
             const std::shared_ptr<QueryResponse> query_response) const;
 
-        protocol::Account serialize(const model::Account &account) const;
-        model::Account deserialize(const protocol::Account &pb_account) const;
+        protocol::Account serializeAccount(const model::Account &account) const;
+        model::Account deserializeAccount(
+            const protocol::Account &pb_account) const;
 
-        protocol::AccountResponse serialize(
+        protocol::AccountResponse serializeAccountResponse(
             const model::AccountResponse &accountResponse) const;
-        model::AccountResponse deserialize(
+        model::AccountResponse deserializeAccountResponse(
             const protocol::AccountResponse pb_response) const;
 
-        protocol::AccountAsset serialize(
+        protocol::AccountAsset serializeAccountAsset(
             const model::AccountAsset &account_asset) const;
-        model::AccountAsset deserialize(
+        model::AccountAsset deserializeAccountAsset(
             const protocol::AccountAsset &account_asset) const;
 
-        protocol::AccountAssetResponse serialize(
+        protocol::AccountAssetResponse serializeAccountAssetResponse(
             const model::AccountAssetResponse &accountAssetResponse) const;
-        model::AccountAssetResponse deserialize(
+        model::AccountAssetResponse deserializeAccountAssetResponse(
             const protocol::AccountAssetResponse &account_asset_response) const;
 
-        protocol::SignatoriesResponse serialize(
+        protocol::SignatoriesResponse serializeSignatoriesResponse(
             const model::SignatoriesResponse &signatoriesResponse) const;
-        model::SignatoriesResponse deserialize(
+        model::SignatoriesResponse deserializeSignatoriesResponse(
             const protocol::SignatoriesResponse &signatoriesResponse) const;
 
-        protocol::TransactionsResponse serialize(
-            const model::TransactionsResponse &transactionsResponse)
-            const;
+        protocol::TransactionsResponse serializeTransactionsResponse(
+            const model::TransactionsResponse &transactionsResponse) const;
+        model::TransactionsResponse deserializeTransactionsResponse(
+            const protocol::TransactionsResponse &tx_response) const;
 
-
-        protocol::ErrorResponse serialize(
+        protocol::ErrorResponse serializeErrorResponse(
             const model::ErrorResponse &errorResponse) const;
       };
     }
