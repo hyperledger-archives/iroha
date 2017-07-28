@@ -489,16 +489,6 @@ namespace iroha {
       return block;
     }
 
-    nonstd::optional<std::vector<model::Transaction>> BlockSerializer::deserialize_transactions(Document &doc) {
-      if (!doc.HasMember("transactions")) {
-        return nonstd::nullopt;
-      }
-      // TODO: Validate transaction format.
-      std::vector<iroha::model::Transaction> txs;
-      deserialize(doc, txs);
-      return nonstd::make_optional(txs);
-    }
-
     void BlockSerializer::deserialize(
         Document& doc, std::vector<model::Transaction>& transactions) {
       auto json_txs = doc["transactions"].GetArray();
