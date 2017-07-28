@@ -24,7 +24,7 @@
 #include "ametsuchi/block_serializer.hpp"
 #include "assert_utils.hpp"
 #include "genesis_block_client.hpp"
-#include "genesis_block_service.hpp"
+#include "main/genesis_block_server/genesis_block_service.hpp"
 #include "model/model_hash_provider_impl.hpp"
 
 namespace iroha_cli {
@@ -73,24 +73,51 @@ namespace iroha_cli {
     rapidjson::IStreamWrapper isw(ifs);
     doc.ParseStream(isw);
 
-    // validate doc
-    assert_fatal(doc.HasParseError(), genesis_json_path + ": parse error");
-    assert_fatal(doc.IsObject(), "JSON is not object.");
+    // erorr message helpers
+    auto no_member_error = [](std::string const& member) { return "No member '" + member + "'"; };
+    auto type_error = [](std::string const& value, std::string const& type) { return "'" + value + "' is not " + type; };
+    auto parse_error = [](std::string const& path) { return "Parse error. JSON file path: " + path + "'"; };
 
+    // validate doc
+    assert_fatal(doc.HasParseError(), parse_error(genesis_json_path));
+    assert_fatal(doc.IsObject(), type_error("JSON", "object"));
+
+    // ---- begin validate transactions ---- //
     const char *MemberTxs = "transactions";
-    assert_fatal(doc.HasMember(MemberTxs),
-                 "No member '" + std::string(MemberTxs) + "'");
-    assert_fatal(doc[MemberTxs].IsArray(),
-                 std::string(MemberTxs) + " is not array.");
+
+    auto txs_doc = doc.FindMember(MemberTxs);
+    assert_fatal(txs_doc != doc.MemberEnd(), no_member_error(MemberTxs));
+
+    assert_fatal(txs_doc->value.IsArray(), type_error(MemberTxs, "array"));
+
+    const char *MemberTxSigs = "signatures";
+    assert_fatal(txs_doc->value.HasMember(MemberTxSigs), no_member_error(MemberTxSigs));
+
+    const char *MemberTxCreatedTs = "created_ts";
+    // FIXME: Should iroha define value?
+    assert_fatal(txs_doc->value.HasMember(MemberTxCreatedTs), no_member_error(MemberTxCreatedTs));
+    // assert_fatal(!txs_doc->value.HasMember(MemberTxCreatedTs), has_member_error("MemberTxCreatedTs"));
+
+    const char *MemberTxAccountId = "creator_account_id";
+    assert_fatal(txs_doc->value.HasMember(MemberTxAccountId), no_member_error(MemberTxAccountId));
+
+    const char *MemberTxCounter = "tx_counter";
+    // FIXME: Should iroha define value?
+    assert_fatal(txs_doc->value.HasMember(MemberTxCounter), no_member_error(MemberTxCounter));
+    // assert_fatal(!txs_doc->value.HasMember(MemberTxCounter), has_member_error(MemberTxCounter);
+
+    const char *MemberTxCommands = "commands";
+    assert_fatal(txs_doc->value.HasMember(MemberTxCommands), no_member_error(MemberTxCommands));
+    // ----  end validate transactions  ---- //
 
     // parse transactions
     auto block_serializer = iroha::ametsuchi::BlockSerializer();
-    auto txs = block_serializer.deserialize_transactions(doc);
-    assert_fatal(txs.has_value(), "Failed to deserialize transaction");
+    std::vector<iroha::model::Transaction> txs;
+    block_serializer.deserialize(doc, txs); // TODO: maybe validate commands here. returns optional
 
     // create block
     iroha::model::Block block;
-    block.transactions = *txs;
+    block.transactions = txs;
     block.height = 1;
     block.prev_hash.fill(0);
     block.txs_number =
