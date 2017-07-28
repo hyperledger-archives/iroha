@@ -43,7 +43,7 @@ namespace iroha {
          * Observable with committed hashes in network
          * @return observable for subscription
          */
-        virtual rxcpp::observable<YacHash> on_commit() = 0;
+        virtual rxcpp::observable<CommitMessage> on_commit() = 0;
 
         virtual ~HashGate() = default;
       };

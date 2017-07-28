@@ -59,7 +59,7 @@ namespace iroha {
 
         virtual void vote(YacHash hash, ClusterOrdering order);
 
-        virtual rxcpp::observable<YacHash> on_commit();
+        virtual rxcpp::observable<CommitMessage> on_commit();
 
         // ------|Network notifications|------
 
@@ -95,7 +95,7 @@ namespace iroha {
         void propagateRejectDirectly(model::Peer to, RejectMessage msg);
 
         // ------|Fields|------
-        rxcpp::subjects::subject<YacHash> notifier_;
+        rxcpp::subjects::subject<CommitMessage> notifier_;
         std::shared_ptr<YacNetwork> network_;
         std::shared_ptr<YacCryptoProvider> crypto_;
         std::shared_ptr<Timer> timer_;

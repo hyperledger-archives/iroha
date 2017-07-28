@@ -58,7 +58,7 @@ namespace iroha {
         votingStep(hash);
       };
 
-      rxcpp::observable<YacHash> Yac::on_commit() {
+      rxcpp::observable<CommitMessage> Yac::on_commit() {
         return this->notifier_.get_observable();
       }
 
@@ -103,8 +103,20 @@ namespace iroha {
 
       void Yac::applyCommit(model::Peer from, CommitMessage commit) {
         // todo apply to vote storage for verification
-        auto hash = commit.votes.at(0).hash;
-        notifier_.get_subscriber().on_next(hash);
+
+        auto storage_state = vote_storage_
+            .applyCommit(commit, cluster_order_.getNumberOfPeers());
+        switch (storage_state.state) {
+          case not_committed:
+            // nothing to do
+            break;
+          case committed:notifier_.get_subscriber().on_next(*storage_state.answer.commit);
+            break;
+          case committed_before:
+            // already committed nothing to notify
+            break;
+        }
+
         closeRound();
       };
 

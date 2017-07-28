@@ -26,6 +26,7 @@
 #include <vector>
 #include "common/test_observable.hpp"
 #include "yac_mocks.hpp"
+#include <string>
 
 using ::testing::Return;
 using ::testing::_;
@@ -81,10 +82,10 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveOneVote) {
   cout << "----------|Coldstart - receive one vote|----------" << endl;
 
   // verify that commit not emitted
-  TestObservable<YacHash> wrapper(yac->on_commit());
-  auto invariant = CallExact<YacHash>(0);
+  TestObservable<CommitMessage> wrapper(yac->on_commit());
+  auto invariant = CallExact<CommitMessage>(0);
   wrapper.test_subscriber(
-      std::make_unique<CallExact<YacHash>>(std::move(invariant)),
+      std::make_unique<CallExact<CommitMessage>>(std::move(invariant)),
       [](auto commit_hash) {});
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
@@ -115,10 +116,10 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
        << endl;
 
   // verify that commit not emitted
-  TestObservable<YacHash> wrapper(yac->on_commit());
-  auto invariant = CallExact<YacHash>(0);
+  TestObservable<CommitMessage> wrapper(yac->on_commit());
+  auto invariant = CallExact<CommitMessage>(0);
   wrapper.test_subscriber(
-      std::make_unique<CallExact<YacHash>>(std::move(invariant)),
+      std::make_unique<CallExact<CommitMessage>>(std::move(invariant)),
       [](auto commit_hash) {});
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
@@ -148,12 +149,12 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveCommitMessage) {
   YacHash propagated_hash("my_proposal", "my_block");
 
   // verify that commit emitted
-  TestObservable<YacHash> wrapper(yac->on_commit());
-  auto invariant = CallExact<YacHash>(1);
+  TestObservable<CommitMessage> wrapper(yac->on_commit());
+  auto invariant = CallExact<CommitMessage>(1);
   wrapper.test_subscriber(
-      std::make_unique<CallExact<YacHash>>(std::move(invariant)),
+      std::make_unique<CallExact<CommitMessage>>(std::move(invariant)),
       [propagated_hash](auto commit_hash) {
-        ASSERT_EQ(propagated_hash, commit_hash);
+        ASSERT_EQ(propagated_hash, commit_hash.votes.at(0).hash);
       });
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
@@ -168,9 +169,11 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveCommitMessage) {
 
   auto committed_peer = default_peers.at(0);
   auto msg = CommitMessage();
+  uint64_t number_of_peer = 0;
   for (auto &peer : default_peers) {
     (void) peer;
-    msg.votes.push_back(crypto->getVote(propagated_hash));
+    msg.votes.push_back(create_vote(propagated_hash,
+                                    std::to_string(number_of_peer++)));
   }
   network->notification->on_commit(committed_peer, msg);
 

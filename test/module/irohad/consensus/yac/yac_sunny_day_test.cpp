@@ -95,10 +95,10 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommit) {
                     delay);
 
   YacHash my_hash("proposal_hash", "block_hash");
-  TestObservable<YacHash> wrapper(yac->on_commit());
-  wrapper.test_subscriber(std::make_unique<CallExact<YacHash>>(CallExact<YacHash>(1)),
+  TestObservable<CommitMessage> wrapper(yac->on_commit());
+  wrapper.test_subscriber(std::make_unique<CallExact<CommitMessage>>(CallExact<CommitMessage>(1)),
                           [my_hash](auto val) {
-                            ASSERT_EQ(my_hash, val);
+                            ASSERT_EQ(my_hash, val.votes.at(0).hash);
                             cout << "catched" << endl;
                           });
 
