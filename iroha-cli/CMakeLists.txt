@@ -8,18 +8,6 @@ target_link_libraries(genesis_block_client
   model
   )
 
-# GenesisBlockService
-add_library(genesis_block_service
-  genesis_block_service.cpp
-  genesis_block_processor.cpp
-  )
-target_link_libraries(genesis_block_service
-  ametsuchi
-  endpoint
-  optional
-  logger
-  )
-
 # BootstrapNetwork
 add_library(bootstrap_network bootstrap_network_impl.cpp)
 target_link_libraries(bootstrap_network
