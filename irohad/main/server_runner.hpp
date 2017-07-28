@@ -30,7 +30,6 @@ class ServerRunner {
  public:
   ServerRunner(const std::string &ip, int port);
   ~ServerRunner();
-  // TODO: Replace with better solution ?
   void run(std::unique_ptr<torii::CommandService> commandService,
            std::unique_ptr<torii::QueryService> queryService);
   void shutdown();
