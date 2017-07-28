@@ -26,36 +26,38 @@ namespace iroha {
           : proposal_hash_(proposal_hash),
             block_hash_(block_hash),
             peers_in_round_(peers_in_round) {
-        committed_state_ = nonstd::nullopt;
       };
 
       StorageResult YacBlockStorage::insert(VoteMessage msg) {
+        auto inserted = tryInsert(msg);
+        if (inserted) {
+          // update state branch
+          auto prev_state = current_state_.state;
 
-        // already have supermajority
-        if (committed_state_ != nonstd::nullopt) {
-          return StorageResult(committed_state_, nonstd::nullopt, false);
-        }
+          switch (prev_state) {
 
-        auto inserted = false;
+            case not_committed:
+              current_state_.state = updateSupermajorityState();
+              if(current_state_.state == CommitState::committed){
+                current_state_.answer.commit = CommitMessage(votes_);
+              }
+              break;
 
-        // check and insert
-        if (msg.hash.proposal_hash == proposal_hash_ and
-            msg.hash.block_hash == block_hash_) {
-          inserted = unique_vote(msg);
-          if (inserted) {
-            votes_.push_back(msg);
+            case committed:
+              current_state_.state = committed_before;
+              current_state_.answer.commit = CommitMessage(votes_);
+              break;
+
+            case committed_before:
+              current_state_.answer.commit = CommitMessage(votes_);
+              break;
           }
         }
-        // check supermajority
-        auto supermajority = hasSupermajority(votes_.size(), peers_in_round_);
-        if (supermajority) {
-          committed_state_ = CommitMessage(votes_);
-        }
-        return StorageResult(committed_state_, nonstd::nullopt, inserted);
+        return getState();
       };
 
-      nonstd::optional<CommitMessage> YacBlockStorage::getState() {
-        return committed_state_;
+      StorageResult YacBlockStorage::getState() {
+        return current_state_;
       };
 
       std::vector<VoteMessage> YacBlockStorage::getVotes() {
@@ -72,11 +74,19 @@ namespace iroha {
 
       // --------| private fields |--------
 
-      /**
-         * Verify uniqueness of vote in storage
-         * @param msg - vote for verification
-         * @return true if vote doesn't appear in storage
-         */
+      bool YacBlockStorage::tryInsert(VoteMessage msg) {
+        if (unique_vote(msg)) {
+          votes_.push_back(msg);
+          return true;
+        }
+        return false;
+      };
+
+      CommitState YacBlockStorage::updateSupermajorityState() {
+        return hasSupermajority(votes_.size(), peers_in_round_)
+               ? CommitState::committed : CommitState::not_committed;
+      };
+
       bool YacBlockStorage::unique_vote(VoteMessage &msg) {
         for (auto &&vote: votes_) {
           if (vote == msg) {
@@ -88,4 +98,4 @@ namespace iroha {
 
     } // namespace yac
   } // namespace consensus
-}
+} // namespace iroha

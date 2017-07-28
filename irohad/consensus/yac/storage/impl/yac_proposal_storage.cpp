@@ -22,57 +22,84 @@ namespace iroha {
     namespace yac {
       YacProposalStorage::YacProposalStorage(ProposalHash hash,
                                              uint64_t peers_in_round)
-          : hash_(hash), peers_in_round_(peers_in_round) {
-        commit_state_ = nonstd::nullopt;
-        reject_state_ = nonstd::nullopt;
+          : hash_(hash),
+            peers_in_round_(peers_in_round) {
       }
 
       StorageResult YacProposalStorage::insert(VoteMessage msg) {
-        // already defined stated
-        if (getProposalHash() != msg.hash.proposal_hash or
-            commit_state_ != nonstd::nullopt or
-            reject_state_ != nonstd::nullopt) {
-          return StorageResult(commit_state_, reject_state_, false);
-        }
+        // update state branch
+        if (shouldInsert(msg)) {
+          // insert to block store
+          auto index = findStore(msg.hash.proposal_hash,
+                                 msg.hash.block_hash);
+          auto block_state = block_votes_.at(index).insert(msg);
 
-        // try to fill
-        auto inserted = false;
-        auto index = findStore(msg.hash.proposal_hash, msg.hash.block_hash);
-        auto result = block_votes_.at(index).insert(msg);
-        inserted = result.vote_inserted;
-        if (inserted) {
-          if (result.commit != nonstd::nullopt) {
-            // commit case
-            commit_state_ = result.commit;
-            return result;
-          } else {
-            // check may be reject
+          // check block storage state
+          auto state_of_block = block_state.state;
 
-            // todo fix reject case
-            auto all_votes = aggregateAll();
-            if (hasSupermajority(all_votes.size(), peers_in_round_)) {
-              reject_state_ = RejectMessage(all_votes);
-              result.reject->votes = all_votes;
-              return result;
-            }
+          // this switch use assumption that
+          // if supermajority on some block achieved <==>
+          // there is no available for reject, and vice versa.
+          switch (state_of_block) {
+            case not_committed:
+              if (hasRejectProof()) {
+                auto current_state = current_state_.state;
+                switch (current_state) {
+                  case not_committed:
+                    // update to committed
+                    current_state_.state = CommitState::committed;
+                    current_state_.answer.reject =
+                        RejectMessage(aggregateAll());
+                    break;
+                  case committed:
+                    // update to committed before
+                    current_state_.state = CommitState::committed_before;
+                    current_state_.answer.reject =
+                        RejectMessage(aggregateAll());
+                    break;
+                  case committed_before:
+                    // nothing to do
+                    break;
+                }
+              }
+              break;
+            case committed:current_state_ = block_state;
+              break;
+            case committed_before:current_state_ = block_state;
+              break;
           }
         }
-        return result;
-      }
+        return getState();
+      };
 
       ProposalHash YacProposalStorage::getProposalHash() {
         return hash_;
       }
 
-      nonstd::optional<CommitMessage> YacProposalStorage::getCommitState() {
-        return commit_state_;
-      }
-
-      nonstd::optional<RejectMessage> YacProposalStorage::getRejectState() {
-        return reject_state_;
+      StorageResult YacProposalStorage::getState() {
+        return current_state_;
       };
 
       // --------| private api |--------
+
+      bool YacProposalStorage::shouldInsert(const VoteMessage &msg) {
+        return checkProposalHash(msg.hash.proposal_hash) and
+            checkPeerUniqueness(msg);
+      };
+
+      bool YacProposalStorage::checkProposalHash(ProposalHash vote_hash) {
+        return vote_hash == hash_;
+      };
+
+      bool YacProposalStorage::checkPeerUniqueness(const VoteMessage &msg) {
+        // todo implement method: checking based on public keys
+        return true;
+      };
+
+      bool YacProposalStorage::hasRejectProof() {
+        // todo implement
+        return false;
+      };
 
       uint64_t YacProposalStorage::findStore(ProposalHash proposal_hash,
                                              BlockHash block_hash) {

@@ -34,6 +34,7 @@ namespace iroha {
        */
       class YacProposalStorage {
        public:
+
         YacProposalStorage(ProposalHash hash, uint64_t peers_in_round);
 
         /**
@@ -49,17 +50,40 @@ namespace iroha {
         ProposalHash getProposalHash();
 
         /**
-         * Provide proof of committing proposal (also block)
+         * @return current state of storage
          */
-        nonstd::optional<CommitMessage> getCommitState();
-
-        /**
-         * Provide proof of rejecting proposal
-         */
-        nonstd::optional<RejectMessage> getRejectState();
+        StorageResult getState();
 
        private:
         // --------| private api |--------
+
+        /**
+         * Possible to insert vote
+         * @param msg - vote for insertion
+         * @return true if possible
+         */
+        bool shouldInsert(const VoteMessage &msg);
+
+        /**
+         * Is this vote vilid for insertion in proposal storage
+         * @param vote_hash - hash for verification
+         * @return true if it may be applied
+         */
+        bool checkProposalHash(ProposalHash vote_hash);
+
+        /**
+         * Is this peer first time appear in this proposal storage
+         * @return true, if peer unique
+         */
+        bool checkPeerUniqueness(const VoteMessage &msg);
+
+        /**
+         * Method try to find proof of reject.
+         * This computes as
+         * sum of unvoted nodes + vote with maximal rete < supermajority
+         * @return true, if prove exist
+         */
+        bool hasRejectProof();
 
         /**
          * Find block index with provided parameters,
@@ -82,14 +106,9 @@ namespace iroha {
         ProposalHash hash_;
 
         /**
-         * Provide proof of rejecting proposal
+         * Current state of storage
          */
-        nonstd::optional<RejectMessage> reject_state_;
-
-        /**
-         * Provide proof of committing proposal (also block)
-         */
-        nonstd::optional<CommitMessage> commit_state_;
+        StorageResult current_state_;
 
         /**
          * Provide number of peers participated in current round

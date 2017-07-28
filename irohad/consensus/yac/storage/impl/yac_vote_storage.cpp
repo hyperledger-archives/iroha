@@ -23,24 +23,24 @@ namespace iroha {
 
       StorageResult YacVoteStorage::storeVote(VoteMessage msg,
                                               uint64_t peers_in_round) {
+        return proposals_
+            .at(findProposalStorage(msg, peers_in_round))
+            .insert(msg);
+      }
 
-        // TODO verify uniqueness of peer
+      // --------| private api |--------
 
-        // try insert in available proposal storage
-        for (auto &&proposal: proposals) {
-          auto hash = proposal.getProposalHash();
-          if (msg.hash.proposal_hash == hash) {
-            auto result = proposal.insert(msg);
-            return result;
+      uint64_t YacVoteStorage::findProposalStorage(const VoteMessage &msg,
+                                                   uint64_t peers_in_round) {
+        for (uint64_t i = 0; i < proposals_.size(); ++i) {
+          if (proposals_.at(i).getProposalHash() == msg.hash.proposal_hash) {
+            return i;
           }
         }
-
-        // can't find proposal, create new
-        YacProposalStorage storage(msg.hash.proposal_hash, peers_in_round);
-        auto result = storage.insert(msg);
-        proposals.push_back(storage);
-        return result;
+        proposals_.emplace_back(msg.hash.proposal_hash, peers_in_round);
+        return proposals_.size() - 1;
       }
+
     } // namespace yac
   } // namespace consensus
 } // namespace iroha

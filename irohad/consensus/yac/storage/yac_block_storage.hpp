@@ -24,6 +24,7 @@
 namespace iroha {
   namespace consensus {
     namespace yac {
+
       /**
        * Class provide storage of votes for one block
        */
@@ -42,10 +43,9 @@ namespace iroha {
         StorageResult insert(VoteMessage msg);
 
         /**
-         * return current state of storage
-         * @return if not nullopt commit here
+         * @return current block store state
          */
-        nonstd::optional<CommitMessage> getState();
+        StorageResult getState();
 
         /**
          * @return all votes attached to storage
@@ -66,6 +66,19 @@ namespace iroha {
         // --------| private fields |--------
 
         /**
+         * Try to invert new vote
+         * @param msg - vote for insertion
+         * @return true, if inserted
+         */
+        bool tryInsert(VoteMessage msg);
+
+        /**
+         * Return new status of state based on supermajority metrics
+         * @return actual state status
+         */
+        CommitState updateSupermajorityState();
+
+        /**
          * Verify uniqueness of vote in storage
          * @param msg - vote for verification
          * @return true if vote doesn't appear in storage
@@ -83,14 +96,14 @@ namespace iroha {
         BlockHash block_hash_;
 
         /**
-         * Votes for block hash
+         * All votes stored in block store
          */
         std::vector<VoteMessage> votes_;
 
         /**
-         * Commit state
+         * Provide knowledge about state of block storage
          */
-        nonstd::optional<CommitMessage> committed_state_;
+        StorageResult current_state_;
 
         /**
          * Number of peers in current round

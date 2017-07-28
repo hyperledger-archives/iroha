@@ -84,21 +84,9 @@ namespace iroha {
         void closeRound();
 
         // ------|Apply data|------
-        void applyCommit(CommitMessage commit);
-        void applyReject(RejectMessage reject);
-        void applyVote(VoteMessage vote);
-
-        // ------|Checking of input|------
-
-        /**
-         * Check voting of peer in current round.
-         * Note: if peer didn't vote before - store those information
-         * @param peer - voted peer
-         * @return true if peer don't vote, false otherwise
-         */
-        bool verifyVote(const model::Peer &peer);
-        bool verifyCommit(CommitMessage commit);
-        bool verifyReject(RejectMessage reject);
+        void applyCommit(model::Peer from, CommitMessage commit);
+        void applyReject(model::Peer from, RejectMessage reject);
+        void applyVote(model::Peer from, VoteMessage vote);
 
         // ------|Propagation|------
         void propagateCommit(CommitMessage msg);

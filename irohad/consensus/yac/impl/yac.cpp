@@ -66,19 +66,19 @@ namespace iroha {
 
       void Yac::on_vote(model::Peer from, VoteMessage vote) {
         if (crypto_->verify(vote)) {
-          this->applyVote(vote);
+          this->applyVote(from, vote);
         }
       }
 
       void Yac::on_commit(model::Peer from, CommitMessage commit) {
         if (crypto_->verify(commit)) {
-          this->applyCommit(commit);
+          this->applyCommit(from, commit);
         }
       }
 
       void Yac::on_reject(model::Peer from, RejectMessage reject) {
         if (crypto_->verify(reject)) {
-          this->applyReject(reject);
+          this->applyReject(from, reject);
         }
       }
 
@@ -101,29 +101,44 @@ namespace iroha {
 
       // ------|Apply data|------
 
-      void Yac::applyCommit(CommitMessage commit) {
+      void Yac::applyCommit(model::Peer from, CommitMessage commit) {
         // todo apply to vote storage for verification
         auto hash = commit.votes.at(0).hash;
         notifier_.get_subscriber().on_next(hash);
         closeRound();
       };
 
-      void Yac::applyReject(RejectMessage reject) {
+      void Yac::applyReject(model::Peer from, RejectMessage reject) {
         // todo apply to vote storage
         closeRound();
       };
 
-      void Yac::applyVote(VoteMessage vote) {
-        auto result =
-            vote_storage_.storeVote(vote, cluster_order_.getNumberOfPeers());
-        if (result.vote_inserted) {
-          if (result.commit != nonstd::nullopt) {
-            propagateCommit(*result.commit);
-          } else {
-            // todo propagate reject
-          }
-        } else {
-          // todo propagate for this peer currently
+      void Yac::applyVote(model::Peer from, VoteMessage vote) {
+        auto result = vote_storage_.storeVote(vote,
+                                              cluster_order_
+                                                  .getNumberOfPeers());
+        switch (result.state) {
+          case not_committed:
+            // nothing to do
+            break;
+          case committed:
+            // propagate all
+            if (result.answer.commit != nonstd::nullopt) {
+              propagateCommit(*result.answer.commit);
+            }
+            if (result.answer.reject != nonstd::nullopt) {
+              propagateReject(*result.answer.reject);
+            }
+            break;
+          case committed_before:
+            // propagate directly
+            if (result.answer.commit != nonstd::nullopt) {
+              propagateCommitDirectly(from, *result.answer.commit);
+            }
+            if (result.answer.reject != nonstd::nullopt) {
+              propagateRejectDirectly(from, *result.answer.reject);
+            }
+            break;
         }
       };
 

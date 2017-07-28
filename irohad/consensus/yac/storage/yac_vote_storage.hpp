@@ -45,9 +45,20 @@ namespace iroha {
         StorageResult storeVote(VoteMessage msg, uint64_t peers_in_round);
 
        private:
-        // --------| private fields |--------
+        // --------| private api |--------
 
-        std::vector<YacProposalStorage> proposals;
+        /**
+         * Find existed proposal storage or create new if required
+         * @param msg - vote for finding
+         * @param peers_in_round - number of peer required
+         * for verify supermajority;
+         * This parameter used on creation of proposal storage
+         * @return - index of required proposal storage
+         */
+        uint64_t findProposalStorage(const VoteMessage &msg,
+                                     uint64_t peers_in_round);
+
+        std::vector<YacProposalStorage> proposals_;
       };
 
     } // namespace yac

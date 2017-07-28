@@ -25,18 +25,35 @@ namespace iroha {
   namespace consensus {
     namespace yac {
 
+      enum CommitState {
+        /**
+         * Means that new state after applying still as before - not commit;
+         * state changes: not_committed => not_committed
+         */
+            not_committed,
+
+        /**
+         * State means that change state to committed on current insertion;
+         * state changes: not_committed => committed
+         */
+            committed,
+
+        /**
+         * State means that state still as before - committed;
+         * state changes: committed => committed_before OR
+         *         committed_before => committed_before
+         */
+            committed_before
+      };
+
       /**
-       * Struct represents result of working storage.
-       * Guarantee that at least one optional will be empty
+       * Contains proof of supermajority for all purposes
        */
-      struct StorageResult {
-
-        StorageResult(nonstd::optional<CommitMessage> commit_result,
-                      nonstd::optional<RejectMessage> reject_result,
-                      bool inserted_result);
-
-        bool operator==(const StorageResult &rhs) const;
-
+      struct Answer {
+        Answer() {
+          commit = nonstd::nullopt;
+          reject = nonstd::nullopt;
+        }
         /**
          * Result contains commit if it available
          */
@@ -47,11 +64,34 @@ namespace iroha {
          */
         nonstd::optional<RejectMessage> reject;
 
+        bool operator==(const Answer &rhs) const;
+      };
+
+      /**
+       * Struct represents result of working storage.
+       * Guarantee that at least one optional will be empty
+       */
+      struct StorageResult {
+
+        StorageResult() {
+          state = CommitState::not_committed;
+        };
+
+        StorageResult(Answer provided_answer,
+                      CommitState provided_state);
+
+        bool operator==(const StorageResult &rhs) const;
+
         /**
-         * Is vote was inserted in storage.
-         * False, means that this vote suspicious
+         * Answer with proof of state
          */
-        bool vote_inserted;
+        Answer answer;
+
+        /**
+         * Current state computed after application
+         */
+        CommitState state;
+
       };
 
     } // namespace yac
