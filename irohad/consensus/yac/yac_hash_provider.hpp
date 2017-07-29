@@ -60,6 +60,7 @@ namespace iroha {
        * Provide methods related to hash operations in ya consensus
        */
       class YacHashProvider {
+       public:
         /**
          * Make hash from block
          * @param block - for hashing

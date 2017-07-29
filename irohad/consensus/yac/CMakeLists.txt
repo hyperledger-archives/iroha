@@ -17,13 +17,14 @@ add_library(yac
     impl/cluster_order.cpp
     impl/timer_impl.cpp
     impl/network_impl.cpp
+    impl/peer_orderer_impl.cpp
+    impl/yac_gate_impl.cpp
     storage/impl/yac_common.cpp
     storage/impl/storage_result.cpp
     storage/impl/yac_block_storage.cpp
     storage/impl/yac_proposal_storage.cpp
     storage/impl/yac_vote_storage.cpp
     )
-
 target_link_libraries(yac
     rxcpp
     optional

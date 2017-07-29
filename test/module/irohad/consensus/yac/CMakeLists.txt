@@ -30,3 +30,13 @@ addtest(yac_network_test network_test.cpp)
 target_link_libraries(yac_network_test
     yac
     )
+
+addtest(yac_peer_orderer_test peer_orderer_test.cpp)
+target_link_libraries(yac_peer_orderer_test
+    yac
+    )
+
+addtest(yac_gate_test yac_gate_test.cpp)
+target_link_libraries(yac_gate_test
+    yac
+    )
