@@ -15,34 +15,29 @@
  * limitations under the License.
  */
 
+#include <dirent.h>
 #include <gtest/gtest.h>
 #include <sys/stat.h>
-#include <dirent.h>
-#include "main/genesis_block_server/genesis_block_service.hpp"
-#include "main/genesis_block_server/genesis_block_processor_impl.hpp"
 #include <cpp_redis/cpp_redis>
 #include <pqxx/pqxx>
-#include "ametsuchi/impl/storage_impl.hpp"
-#include "common/types.hpp"
-#include "model/commands/add_asset_quantity.hpp"
-#include "model/commands/add_peer.hpp"
-#include "model/commands/create_account.hpp"
-#include "model/commands/create_asset.hpp"
-#include "model/commands/create_domain.hpp"
-#include "model/commands/transfer_asset.hpp"
-#include "model/model_hash_provider_impl.hpp"
 #include "../../ametsuchi/ametsuchi_test_common.hpp"
+#include "ametsuchi/impl/storage_impl.hpp"
+#include "main/genesis_block_server/genesis_block_processor_impl.hpp"
+#include "model/model_hash_provider_impl.hpp"
+#include "model/account.hpp"
+#include "model/commands/create_account.hpp"
+#include "crypto/crypto.hpp"
 
 using namespace iroha;
 
 class GenesisBlockProcessorTest : public ::testing::Test {
-public:
+ public:
   virtual void SetUp() {
     mkdir(block_store_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
   }
   virtual void TearDown() {
     const auto drop =
-      "DROP TABLE IF EXISTS account_has_asset;\n"
+        "DROP TABLE IF EXISTS account_has_asset;\n"
         "DROP TABLE IF EXISTS account_has_signatory;\n"
         "DROP TABLE IF EXISTS peer;\n"
         "DROP TABLE IF EXISTS account;\n"
@@ -66,8 +61,35 @@ public:
     remove_all(block_store_path);
   }
 
+  static iroha::model::Block create_genesis_block() {
+    iroha::model::Transaction tx;
+    tx.created_ts = 111111;
+    tx.tx_counter = 987654;
+    tx.creator_account_id = "user1";
+
+    iroha::model::CreateAccount create_account;
+    auto keypair = iroha::create_keypair(iroha::create_seed("pass"));
+    create_account.pubkey = keypair.pubkey;
+    create_account.domain_id = "ja";
+    create_account.account_name = "user";
+    tx.commands.push_back(
+        std::make_shared<iroha::model::CreateAccount>(create_account));
+
+    iroha::model::Block block;
+    block.transactions.push_back(tx);
+    block.height = 1;
+    block.prev_hash.fill(0);
+    block.merkle_root.fill(0);
+    block.hash.fill(0);
+    block.created_ts = 12345678;
+    block.txs_number = block.transactions.size();
+    iroha::model::HashProviderImpl hash_provider;
+    block.hash = hash_provider.get_hash(block);
+    return block;
+  }
+
   std::string pgopt_ =
-    "host=localhost port=5432 user=postgres password=mysecretpassword";
+      "host=localhost port=5432 user=postgres password=mysecretpassword";
 
   std::string redishost_ = "localhost";
   size_t redisport_ = 6379;
@@ -75,8 +97,14 @@ public:
   std::string block_store_path = "/tmp/test_genesis_block";
 };
 
-TEST_F(GenesisBlockProcessorTest, process) {
-  auto storage = ametsuchi::StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
-  GenesisBlockProcessorImpl processor_impl(*storage);
-  GenesisBlockService service(processor_impl);
+TEST_F(GenesisBlockProcessorTest, genesis_block_handle) {
+  auto storage = ametsuchi::StorageImpl::create(block_store_path, redishost_,
+                                                redisport_, pgopt_);
+  GenesisBlockProcessorImpl processor_impl(*storage, *storage);
+  auto block = create_genesis_block();
+  ASSERT_TRUE(processor_impl.genesis_block_handle(block));
+  auto account = storage->getAccount("user@ja");
+  ASSERT_STREQ(account->account_id.c_str(), "user@ja");
+  ASSERT_STREQ(account->domain_name.c_str(), "ja");
+  ASSERT_EQ(account->master_key, iroha::create_keypair(iroha::create_seed("pass")).pubkey);
 }
