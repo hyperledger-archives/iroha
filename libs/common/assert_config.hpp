@@ -15,13 +15,28 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CLI_ASSERT_UTILS_HPP
-#define IROHA_CLI_ASSERT_UTILS_HPP
+#ifndef IROHA_CLI_ASSERT_CONFIG_HPP
+#define IROHA_CLI_ASSERT_CONFIG_HPP
 
 #include <string>
 #include <stdexcept>
 
-namespace iroha_cli {
+namespace assert_config {
+  /**
+   * error message helpers that are used in json validation.
+   */
+  inline std::string no_member_error(std::string const &member) {
+    return "No member '" + member + "'";
+  }
+
+  inline std::string type_error(std::string const &value, std::string const &type) {
+    return "'" + value + "' is not " + type;
+  }
+
+  inline std::string parse_error(std::string const &path) {
+    return "Parse error. JSON file path: " + path + "'";
+  }
+
   /**
    * shuts down process when some error occurs.
    * @param error - error message
@@ -42,4 +57,4 @@ namespace iroha_cli {
   }
 }  // namespace iroha_cli
 
-#endif  // IROHA_CLI_ASSERT_UTILS_HPP
+#endif  // IROHA_CLI_ASSERT_CONFIG_HPP

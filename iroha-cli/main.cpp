@@ -22,7 +22,7 @@
 #include <iostream>
 #include "validators.hpp"
 #include "bootstrap_network.hpp"
-#include "assert_utils.hpp"
+#include "common/assert_config.hpp"
 #include "genesis_block_client_impl.hpp"
 
 // ** Genesis Block and Provisioning ** //
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
   if (FLAGS_new_account) {
     // Create new pub/priv key
     if (std::ifstream(FLAGS_name + ".pub")) {
-      iroha_cli::assert_fatal(false, "File already exists");
+      assert_config::assert_fatal(false, "File already exists");
     }
     create_account(FLAGS_name);
   } else if (!FLAGS_config.empty() && !FLAGS_genesis_block.empty()) {
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
     auto block = bootstrap.parse_genesis_block(FLAGS_genesis_block);
     bootstrap.run_network(peers, block);
   } else {
-    iroha_cli::assert_fatal(false, "Invalid flags");
+    assert_config::assert_fatal(false, "Invalid flags");
   }
   return 0;
 }

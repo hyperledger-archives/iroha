@@ -23,27 +23,15 @@
 #include <string>
 #include <vector>
 #include "ametsuchi/block_serializer.hpp"
-#include "assert_utils.hpp"
+#include "common/assert_config.hpp"
 #include "ip_tools/ip_tools.hpp"
-#include "main/genesis_block_server/genesis_block_service.hpp"  // GenesisBlockServicePort
+#include "main/genesis_block_server/genesis_block_server.hpp"  // GenesisBlockServicePort
 #include "model/block.hpp"
 #include "model/model_hash_provider_impl.hpp"
 
+using namespace assert_config;
+
 namespace iroha_cli {
-  /**
-   * error message helpers that are used in json validation.
-   */
-  std::string no_member_error(std::string const &member) {
-    return "No member '" + member + "'";
-  }
-
-  std::string type_error(std::string const &value, std::string const &type) {
-    return "'" + value + "' is not " + type;
-  }
-
-  std::string parse_error(std::string const &path) {
-    return "Parse error. JSON file path: " + path + "'";
-  }
 
   void validate_command(rapidjson::Value &json_val_cmd) {
     auto json_cmd = json_val_cmd.GetObject();
