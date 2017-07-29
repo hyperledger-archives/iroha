@@ -9,12 +9,13 @@ target_link_libraries(genesis_block_client
   )
 
 # BootstrapNetwork
-add_library(bootstrap_network bootstrap_network_impl.cpp)
+add_library(bootstrap_network bootstrap_network.cpp)
 target_link_libraries(bootstrap_network
   genesis_block_client
   rapidjson
   model
   ametsuchi
+  ip_tools
   )
 
 # Gflags config validators

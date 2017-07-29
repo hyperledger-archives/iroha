@@ -19,6 +19,7 @@
 #define IROHA_CLI_ASSERT_UTILS_HPP
 
 #include <string>
+#include <stdexcept>
 
 namespace iroha_cli {
   /**
@@ -26,8 +27,7 @@ namespace iroha_cli {
    * @param error - error message
    */
   inline void fatal_error(std::string const &error) {
-    std::cerr << error << std::endl; // Not use logger here because iroha hasn't waken up yet.
-    exit(-1);
+    throw std::runtime_error(error);
   }
 
   /**
