@@ -26,11 +26,37 @@
 #include "common/types.hpp"
 #include "crypto/crypto.hpp"
 #include "endpoint.grpc.pb.h"
+#include "main/genesis_block_server/genesis_block_service.hpp"
 #include "model/block.hpp"
 #include "model/model_hash_provider_impl.hpp"
-#include "main/genesis_block_server/genesis_block_service.hpp"
 
 using ::testing::Return;
+
+class iroha_cli_test : public ::testing::Test {
+ public:
+  static iroha::model::Block create_genesis_block() {
+    iroha::model::Transaction tx;
+    tx.created_ts = 111111;
+    tx.tx_counter = 987654;
+    tx.creator_account_id = "user1";
+    iroha::model::CreateDomain createDomain;
+    createDomain.domain_name = "ja";
+    tx.commands.push_back(
+        std::make_shared<iroha::model::CreateDomain>(createDomain));
+
+    iroha::model::Block block;
+    block.transactions.push_back(tx);
+    block.height = 1;
+    block.prev_hash.fill(0);
+    block.merkle_root.fill(0);
+    block.hash.fill(0);
+    block.created_ts = 12345678;
+    block.txs_number = block.transactions.size();
+    iroha::model::HashProviderImpl hash_provider;
+    block.hash = hash_provider.get_hash(block);
+    return block;
+  }
+};
 
 class GenesisBlockClientMock : public iroha_cli::GenesisBlockClient {
   /*
@@ -43,17 +69,26 @@ class GenesisBlockClientMock : public iroha_cli::GenesisBlockClient {
                void(const iroha::model::Block &block));
                */
 
-  void set_channel(const std::string &ip, const int port) {}
-  grpc::Status send_genesis_block(const iroha::model::Block &iroha_block,
-                                  iroha::protocol::ApplyGenesisBlockResponse &response) {
-    response.set_applied(iroha::protocol::APPLY_SUCCESS);
+  void set_channel(const std::string &ip, const int port) {
+    // DO NOTHING
+  }
+
+  grpc::Status send_genesis_block(
+      const iroha::model::Block &iroha_block,
+      iroha::protocol::ApplyGenesisBlockResponse &response) {
+    auto expected_block = iroha_cli_test::create_genesis_block();
+    response.set_applied(iroha_block == expected_block
+                             ? iroha::protocol::APPLY_SUCCESS
+                             : iroha::protocol::APPLY_FAILURE);
     return grpc::Status::OK;
   }
 
-  void send_abort_genesis_block(const iroha::model::Block &block) {}
+  void send_abort_genesis_block(const iroha::model::Block &block) {
+    // DO NOTHING
+  }
 };
 
-TEST(iroha_cli, NormalWhenParseTrustedPeers) {
+TEST_F(iroha_cli_test, NormalWhenParseTrustedPeers) {
   auto test_path = "/tmp/_boot_strap_test_target.conf";
   std::ofstream ofs(test_path);
   ofs << R"({"ip":["192.168.0.3","192.168.0.4","192.168.0.5","192.168.0.6"]})";
@@ -70,7 +105,7 @@ TEST(iroha_cli, NormalWhenParseTrustedPeers) {
   ASSERT_TRUE(remove(test_path) == 0);
 }
 
-TEST(iroha_cli, WrongIPNameWhenParseTrustedPeers) {
+TEST_F(iroha_cli_test, WrongIPNameWhenParseTrustedPeers) {
   auto test_path = "/tmp/_bootstrap_test_target.conf";
   std::ofstream ofs(test_path);
   ofs << R"({"IP":["192.168.0.3","192.168.0.4","192.168.0.5","192.168.0.6"]})";
@@ -82,7 +117,7 @@ TEST(iroha_cli, WrongIPNameWhenParseTrustedPeers) {
   ASSERT_TRUE(remove(test_path) == 0);
 }
 
-TEST(iroha_cli, InvalidIPValueWhenParseTrustedPeers) {
+TEST_F(iroha_cli_test, InvalidIPValueWhenParseTrustedPeers) {
   auto test_path = "/tmp/_bootstrap_test_target.conf";
   std::ofstream ofs(test_path);
   ofs << R"({"ip":["192.168.256.3","192.168.0.4","192.168.0.5","192.168.0.6"]})";
@@ -94,7 +129,7 @@ TEST(iroha_cli, InvalidIPValueWhenParseTrustedPeers) {
   ASSERT_TRUE(remove(test_path) == 0);
 }
 
-TEST(iroha_cli, NormalWhenParseGenesisBlock) {
+TEST_F(iroha_cli_test, NormalWhenParseGenesisBlock) {
   auto test_path = "/tmp/_bootstrap_test_genesis.json";
   std::ofstream ofs(test_path);
 
@@ -141,36 +176,18 @@ TEST(iroha_cli, NormalWhenParseGenesisBlock) {
   ASSERT_TRUE(remove(test_path) == 0);
 }
 
-TEST(iroha_cli, NormalWhenRunNetwork) {
-  iroha::model::Transaction tx;
-  tx.creator_account_id = "user1";
-  iroha::model::CreateDomain createDomain;
-  createDomain.domain_name = "ja";
-  tx.commands.push_back(
-      std::make_shared<iroha::model::CreateDomain>(createDomain));
-  iroha::model::CreateAccount createAccount;
-  createAccount.account_name = "user2";
-  createAccount.domain_id = "ja";
-  tx.commands.push_back(
-      std::make_shared<iroha::model::CreateAccount>(createAccount));
-
-  iroha::model::Block block;
-  block.transactions.push_back(tx);
-  block.height = 1;
-  block.prev_hash.fill(0);
-  block.txs_number = block.transactions.size();
-  iroha::model::HashProviderImpl hash_provider;
-  block.hash = hash_provider.get_hash(block);
-
+TEST_F(iroha_cli_test, NormalWhenRunNetwork) {
   GenesisBlockClientMock client_mock;
   iroha::protocol::ApplyGenesisBlockResponse response;
-  //EXPECT_CALL(send_genesis_block, send_genesis_block(block, response))
+  // EXPECT_CALL(set_channel, set_channel("192.168.0.3", "192.168.0.4"))
+  // EXPECT_CALL(send_genesis_block, send_genesis_block(block, response))
   //  .WillRepeatedly(Return(grpc::Status::OK));
 
   iroha_cli::BootstrapNetwork bootstrap(client_mock);
-  
+
+  auto block = create_genesis_block();
+
   ASSERT_NO_THROW({
-    bootstrap.run_network(
-        {"192.168.256.3", "192.168.0.4"}, block);
+    bootstrap.run_network({"192.168.0.3", "192.168.0.4"}, block);
   });
 }
