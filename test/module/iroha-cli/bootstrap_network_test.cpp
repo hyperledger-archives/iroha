@@ -26,7 +26,7 @@
 #include "common/types.hpp"
 #include "crypto/crypto.hpp"
 #include "endpoint.grpc.pb.h"
-#include "main/genesis_block_server/genesis_block_service.hpp"
+#include "main/genesis_block_server/genesis_block_server.hpp"
 #include "model/block.hpp"
 #include "model/model_hash_provider_impl.hpp"
 
@@ -142,14 +142,14 @@ TEST_F(iroha_cli_test, NormalWhenParseGenesisBlock) {
       "tx_counter":1234567,
       "commands":[
         {
+          "command_type":"CreateDomain",
+          "domain_name":"soramitsu"
+        },
+        {
           "command_type":"CreateAccount",
           "pubkey":"blob",
           "account_name":"someone",
           "domain_id":"soramitsu"
-        },
-        {
-          "command_type":"CreateDomain",
-          "domain_name":"soramitsu"
         }
       ]
     },
