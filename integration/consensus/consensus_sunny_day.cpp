@@ -107,6 +107,11 @@ TEST_F(ConsensusSunnyDayTest, SunnyDayTest) {
     server->Wait();
   });
 
+  auto loop = uvw::Loop::getDefault();
+  auto timer = std::thread([loop] {
+    loop->run();
+  });
+
   // Wait for other peers to start
   std::this_thread::sleep_for(std::chrono::seconds(10));
 
@@ -116,6 +121,11 @@ TEST_F(ConsensusSunnyDayTest, SunnyDayTest) {
       std::chrono::milliseconds(delay * default_peers.size() + 10 * 1000));
 
   ASSERT_TRUE(committed);
+
+  loop->stop();
+  if (timer.joinable()){
+    timer.join();
+  }
 
   server->Shutdown();
   if (thread.joinable()) {
