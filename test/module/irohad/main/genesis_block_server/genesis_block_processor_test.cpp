@@ -65,7 +65,12 @@ class GenesisBlockProcessorTest : public ::testing::Test {
     iroha::model::Transaction tx;
     tx.created_ts = 111111;
     tx.tx_counter = 987654;
-    tx.creator_account_id = "user1";
+    tx.creator_account_id = "admin";
+    
+    model::CreateDomain createDomain;
+    createDomain.domain_name = "ja";
+    tx.commands.push_back(
+      std::make_shared<model::CreateDomain>(createDomain));
 
     iroha::model::CreateAccount create_account;
     auto keypair = iroha::create_keypair(iroha::create_seed("pass"));
