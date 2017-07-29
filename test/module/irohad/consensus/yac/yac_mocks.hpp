@@ -123,6 +123,7 @@ class FakeNetwork : public YacNetwork {
 class HashGateMock : public HashGate {
  public:
   MOCK_METHOD2(vote, void(YacHash, ClusterOrdering));
+
   MOCK_METHOD0(on_commit, rxcpp::observable<CommitMessage>());
 
   HashGateMock() = default;
@@ -142,6 +143,7 @@ class HashGateMock : public HashGate {
 class YacPeerOrdererMock : public YacPeerOrderer {
  public:
   MOCK_METHOD0(getInitialOrdering, nonstd::optional<ClusterOrdering>());
+
   MOCK_METHOD1(getOrdering, nonstd::optional<ClusterOrdering>(YacHash));
 
   YacPeerOrdererMock() = default;

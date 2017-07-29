@@ -16,4 +16,116 @@
  */
 
 #include <gmock/gmock.h>
+#include <memory>
 #include "yac_mocks.hpp"
+#include <rxcpp/rx.hpp>
+#include <rxcpp/rx-observable.hpp>
+#include "consensus/yac/impl/yac_gate_impl.hpp"
+#include <common/test_observable.hpp>
+
+using namespace iroha::consensus::yac;
+using namespace common::test_observable;
+
+#include <iostream>
+using namespace std;
+
+using ::testing::Return;
+using ::testing::_;
+using ::testing::An;
+using ::testing::AtLeast;
+
+class BlockCreatorStub : public iroha::simulator::BlockCreator {
+ public:
+  void process_verified_proposal(iroha::model::Proposal proposal) override {
+    // nothing to do
+  };
+
+  rxcpp::observable<iroha::model::Block> on_block() override {
+    return subject.get_observable();
+  };
+
+  rxcpp::subjects::subject<iroha::model::Block> subject;
+
+  BlockCreatorStub() = default;
+
+  BlockCreatorStub(const BlockCreatorStub &rhs) {
+  };
+
+  BlockCreatorStub(BlockCreatorStub &&rhs) {
+  };
+
+  BlockCreatorStub &operator=(const BlockCreatorStub &rhs) {
+    return *this;
+  };
+};
+
+TEST(YacGateTest, YacGateSubscribtionTest) {
+  cout << "----------| Init YacGate |----------" << endl;
+
+  // expected values
+  YacHash expected_hash("proposal", "block");
+  iroha::model::Block expected_block;
+  expected_block.created_ts = 100500;
+  VoteMessage message;
+  message.hash = expected_hash;
+  CommitMessage commit_message({message});
+  auto expected_commit = rxcpp::observable<>::just(commit_message);
+
+  // yac consensus
+  unique_ptr<HashGate> hash_gate =
+      make_unique<HashGateMock>();
+  auto hash_gate_raw = hash_gate.get();
+
+  // generate order of peers
+  unique_ptr<YacPeerOrderer> peer_orderer =
+      make_unique<YacPeerOrdererMock>();
+  auto peer_orderer_raw = peer_orderer.get();
+
+  // make hash from block
+  shared_ptr<YacHashProvider> hash_provider =
+      make_shared<YacHashProviderMock>();
+
+  // make blocks
+  shared_ptr<iroha::simulator::BlockCreator> block_creator =
+      make_shared<BlockCreatorStub>();
+
+  YacGateImpl gate(std::move(hash_gate), std::move(peer_orderer),
+                   hash_provider, block_creator);
+
+  // verify that yac gate subscribed for block_creator
+  TestObservable<iroha::model::Block> block_wrapper(block_creator->on_block());
+  auto block_invariant = CallExact<iroha::model::Block>(1);
+  block_wrapper.test_subscriber(
+      std::make_unique<CallExact<iroha::model::Block>>
+          (std::move(block_invariant)), [](auto block) {});
+
+  // verify that yac gate emit expected block
+  TestObservable<iroha::model::Block> gate_wrapper(gate.on_commit());
+  auto gate_invariant = CallExact<iroha::model::Block>(1);
+  gate_wrapper.test_subscriber(
+      std::make_unique<CallExact<iroha::model::Block>>
+          (std::move(gate_invariant)), [expected_block](auto block) {
+        ASSERT_EQ(block, expected_block);
+      });
+
+  EXPECT_CALL(
+      *static_cast<YacHashProviderMock *>(hash_provider.get()), makeHash(_))
+      .WillOnce(Return(expected_hash));
+
+  EXPECT_CALL(*static_cast<YacPeerOrdererMock *>(peer_orderer_raw),
+              getOrdering(_))
+      .WillOnce(Return(ClusterOrdering()));
+
+  EXPECT_CALL(*static_cast<HashGateMock *>(hash_gate_raw),
+              vote(expected_hash, _)).Times(1);
+
+  EXPECT_CALL(*static_cast<HashGateMock *>(hash_gate_raw),
+              on_commit()).WillOnce(Return(expected_commit));
+
+  auto val = static_cast<BlockCreatorStub *>(block_creator.get());
+
+  // initialize chain
+  val->subject.get_subscriber().on_next(expected_block);
+  ASSERT_EQ(true, block_wrapper.validate());
+  ASSERT_EQ(true, gate_wrapper.validate());
+}
