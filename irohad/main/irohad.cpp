@@ -14,92 +14,101 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <main/application.hpp>
-
-#include <fstream>
 #include <gflags/gflags.h>
-#include <common/config.hpp>
-#include <cstring>
+#include <grpc++/grpc++.h>
 #include <rapidjson/rapidjson.h>
-#include "logger/logger.hpp"
+#include <cstring>
+#include <fstream>
 #include <thread>
+#include "common/assert_config.hpp"
+#include "common/config.hpp"
+#include "main/application.hpp"
+#include "main/genesis_block_server/genesis_block_processor_impl.hpp"
+#include "main/genesis_block_server/genesis_block_server.hpp"
 
-std::vector<std::string> parse_iroha_config(std::string const& iroha_conf_path);
-void run_genesis_block_server();
+rapidjson::Document parse_iroha_config(std::string const& iroha_conf_path);
+bool validate_config(const char*, std::string const& path) {
+  return !path.empty();
+}
 
-DEFINE_string(config, "", "irohad provisioning file path. It has trusted peer's ip addresses.");
+DEFINE_string(config, "", "Specify iroha provisioning path.");
+DEFINE_validator(config, &validate_config);
 
-logger::Logger Log("irohad");
+namespace config_members {
+  const char* Ip = "ip";
+  const char* BlockStorePath = "block_store_path";
+  // const char* ToriiPort = "torii_port"; // TODO: Needs AddPeer.
+  const char* KeyPairPath = "key_pair_path";
+  const char* PgOpt = "pg_opt";
+  const char* RedisHost = "redis_host";
+  const char* RedisPort = "redis_port";
+}  // namespace config_members
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   gflags::ShutDownCommandLineFlags();
 
-  auto irohad = Irohad();
+  auto config = parse_iroha_config(FLAGS_config);
 
-  if (!FLAGS_config.empty()) {
-    // Bootstrap iroha network.
+  auto irohad = Irohad(config[config_members::BlockStorePath].GetString(),
+                       config[config_members::RedisHost].GetString(),
+                       config[config_members::RedisPort].GetUint(),
+                       config[config_members::PgOpt].GetString());
 
-    // TODO: Check if I have a ledger already.
-    // -> Abort?
+  // TODO: Check if I have a ledger already.
 
-    //auto loader = common::config::ConfigLoader(FLAGS_config); // Later we use it
-    auto trusted_peers = parse_iroha_config(FLAGS_config);
+  iroha::GenesisBlockProcessorImpl gen_proc(*irohad.storage, *irohad.storage);
 
-    std::thread
-    run_genesis_block_server();
-  }
+  // shuts down automatically when received genesis block
+  iroha::GenesisBlockServerRunner(gen_proc).run("0.0.0.0",
+                                                iroha::GenesisBlockServicePort);
 
+  // runs iroha
   irohad.run();
 
   return 0;
 }
 
 /**
- * shutsdown process when some error occurs.
- * @param error - error message
- */
-void fatal_error(std::string const& error) {
-  Log.error(error);
-  exit(-1);
-}
-
-/**
- * shutsdown process if a given condition is false.
- * @param condition
- * @param error - error message
- */
-void assert_fatal(bool condition, std::string const& error) {
-  if (!condition) {
-    fatal_error(error);
-  }
-}
-
-/**
  * parse trusted peers in `iroha.conf`
  * @param iroha_conf_path
- * @return
+ * @return rapidjson::Document
  */
-std::vector<std::string> parse_iroha_config(std::string const& iroha_conf_path) {
-  std::vector<std::string> ret;
+rapidjson::Document parse_iroha_config(std::string const& iroha_conf_path) {
+  using namespace assert_config;
+  namespace mbr = config_members;
   rapidjson::Document doc;
   std::ifstream ifs_iroha(iroha_conf_path);
   rapidjson::IStreamWrapper isw(ifs_iroha);
   doc.ParseStream(isw);
-  assert_fatal(doc.HasParseError(), "JSON Parse error: " + FLAGS_config);
+  assert_fatal(!doc.HasParseError(), "JSON parse error: " + iroha_conf_path);
 
-  const char* MemberIp = "ip";
-  assert_fatal(doc.HasMember(MemberIp), "In '" + FLAGS_config + "', member '" +
-                                        std::string(MemberIp) +
-                                        "' doesn't exist.");
-  for (const auto& ip : doc["ip"].GetArray()) {
-    assert_fatal(ip.IsString(),
-                 "'" + std::string(MemberIp) + "' has not string value.");
-    ret.push_back(ip.GetString());
+  assert_fatal(doc.HasMember(mbr::Ip), no_member_error(mbr::Ip));
+  assert_fatal(doc[mbr::Ip].IsArray(), type_error(mbr::Ip, "array"));
+  auto json_ips = doc[mbr::Ip].GetArray();
+  for (auto iter = json_ips.begin(); iter != json_ips.end(); ++iter) {
+    assert_fatal(iter->IsString(), type_error("a member of " + std::string(mbr::Ip), "string"));
   }
-  return ret;
-}
 
-void run_genesis_block_server() {
-  
+  assert_fatal(doc.HasMember(mbr::BlockStorePath),
+               no_member_error(mbr::BlockStorePath));
+  assert_fatal(doc[mbr::BlockStorePath].IsString(),
+               type_error(mbr::BlockStorePath, "string"));
+
+  assert_fatal(doc.HasMember(mbr::KeyPairPath),
+               no_member_error(mbr::KeyPairPath));
+  assert_fatal(doc[mbr::KeyPairPath].IsString(),
+               type_error(mbr::KeyPairPath, "string"));
+
+  assert_fatal(doc.HasMember(mbr::PgOpt), no_member_error(mbr::PgOpt));
+  assert_fatal(doc[mbr::PgOpt].IsString(), type_error(mbr::PgOpt, "string"));
+
+  assert_fatal(doc.HasMember(mbr::RedisHost), no_member_error(mbr::RedisHost));
+  assert_fatal(doc[mbr::RedisHost].IsString(),
+               type_error(mbr::RedisHost, "string"));
+
+  assert_fatal(doc.HasMember(mbr::RedisPort), no_member_error(mbr::RedisPort));
+  assert_fatal(doc[mbr::RedisPort].IsUint(),
+               type_error(mbr::RedisPort, "uint"));
+  return doc;
 }
