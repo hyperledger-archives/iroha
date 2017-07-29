@@ -28,6 +28,7 @@ add_library(genesis_block_service
 )
 target_link_libraries(genesis_block_service
   ametsuchi
+  model
   endpoint
   optional
   logger
