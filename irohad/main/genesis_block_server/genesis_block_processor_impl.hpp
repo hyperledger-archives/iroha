@@ -20,6 +20,7 @@
 
 #include <model/block.hpp>
 #include <endpoint.grpc.pb.h>
+#include "ametsuchi/temporary_factory.hpp"
 #include "ametsuchi/mutable_factory.hpp"
 #include "genesis_block_processor.hpp"
 
@@ -27,13 +28,16 @@ namespace iroha {
 
   class GenesisBlockProcessorImpl : public GenesisBlockProcessor {
   public:
-    GenesisBlockProcessorImpl(ametsuchi::MutableFactory &mutable_factory)
-      : mutable_factory_(mutable_factory) {}
+    GenesisBlockProcessorImpl(ametsuchi::TemporaryFactory &temporary_facotry,
+                              ametsuchi::MutableFactory &mutable_factory)
+      : temporary_factory_(temporary_facotry),
+        mutable_factory_(mutable_factory) {}
 
     ~GenesisBlockProcessorImpl() override {}
     bool genesis_block_handle(const iroha::model::Block &block) override;
 
   private:
+    ametsuchi::TemporaryFactory &temporary_factory_;
     ametsuchi::MutableFactory &mutable_factory_;
   };
 }
