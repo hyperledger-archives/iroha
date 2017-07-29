@@ -35,7 +35,7 @@ using namespace common::test_observable;
 using namespace std;
 
 TEST_F(YacTest, ValidCaseWhenReceiveSupermajority) {
-  cout << "-----------|Start => vote => propagate commit|-----------" << endl;
+  cout << "-----------| Start => vote => propagate commit |-----------" << endl;
 
   auto my_peers = std::vector<iroha::model::Peer>(
       {default_peers.begin(), default_peers.begin() + 4});
@@ -63,9 +63,6 @@ TEST_F(YacTest, ValidCaseWhenReceiveSupermajority) {
   EXPECT_CALL(*crypto, verify(An<RejectMessage>())).Times(0);
   EXPECT_CALL(*crypto, verify(An<VoteMessage>())).WillRepeatedly(Return(true));
 
-  // wait sometime
-  // todo wait here
-
   YacHash my_hash("proposal_hash", "block_hash");
   yac->vote(my_hash, my_order);
 
@@ -75,7 +72,7 @@ TEST_F(YacTest, ValidCaseWhenReceiveSupermajority) {
 }
 
 TEST_F(YacTest, ValidCaseWhenReceiveCommit) {
-  cout << "-----------|Start => vote => recieve commit|-----------" << endl;
+  cout << "-----------| Start => vote => receive commit |-----------" << endl;
 
   auto my_peers = std::vector<iroha::model::Peer>(
       {default_peers.begin(), default_peers.begin() + 4});
@@ -96,7 +93,8 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommit) {
 
   YacHash my_hash("proposal_hash", "block_hash");
   TestObservable<CommitMessage> wrapper(yac->on_commit());
-  wrapper.test_subscriber(std::make_unique<CallExact<CommitMessage>>(CallExact<CommitMessage>(1)),
+  wrapper.test_subscriber(std::make_unique<CallExact<CommitMessage>>(CallExact<
+                              CommitMessage>(1)),
                           [my_hash](auto val) {
                             ASSERT_EQ(my_hash, val.votes.at(0).hash);
                             cout << "catched" << endl;
@@ -111,17 +109,71 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommit) {
   EXPECT_CALL(*crypto, verify(An<RejectMessage>())).Times(0);
   EXPECT_CALL(*crypto, verify(An<VoteMessage>())).WillRepeatedly(Return(true));
 
-  // wait sometime
-  // todo wait here
+  yac->vote(my_hash, my_order);
 
+  auto votes = std::vector<VoteMessage>();
+
+  for (auto i = 0; i < 4; ++i) {
+    votes.push_back(create_vote(my_hash, std::to_string(i)));
+  };
+  yac->on_commit(my_peers.at(0), CommitMessage(votes));
+  ASSERT_EQ(true, wrapper.validate());
+}
+
+TEST_F(YacTest, ValidCaseWhenReceiveCommitTwice) {
+  cout << "-----------|Start => vote => receive commit twice|-----------"
+       << endl;
+
+  auto my_peers = std::vector<iroha::model::Peer>(
+      {default_peers.begin(), default_peers.begin() + 4});
+  ASSERT_EQ(4, my_peers.size());
+
+  ClusterOrdering my_order(my_peers);
+
+  // delay preference
+  uint64_t wait_seconds = 10;
+  delay = wait_seconds * 1000;
+
+  yac = Yac::create(std::move(YacVoteStorage()),
+                    network,
+                    crypto,
+                    timer,
+                    my_order,
+                    delay);
+
+  YacHash my_hash("proposal_hash", "block_hash");
+  TestObservable<CommitMessage> wrapper(yac->on_commit());
+  wrapper.test_subscriber(std::make_unique<CallExact<CommitMessage>>(CallExact<
+                              CommitMessage>(1)),
+                          [my_hash](auto val) {
+                            ASSERT_EQ(my_hash, val.votes.at(0).hash);
+                            cout << "catched" << endl;
+                          });
+
+  EXPECT_CALL(*network, send_commit(_, _)).Times(0);
+  EXPECT_CALL(*network, send_reject(_, _)).Times(0);
+  EXPECT_CALL(*network, send_vote(_, _)).Times(my_peers.size());
+
+  EXPECT_CALL(*crypto, verify(An<CommitMessage>()))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*crypto, verify(An<RejectMessage>())).Times(0);
+  EXPECT_CALL(*crypto, verify(An<VoteMessage>())).WillRepeatedly(Return(true));
 
   yac->vote(my_hash, my_order);
 
   auto votes = std::vector<VoteMessage>();
 
+  // first commit
   for (auto i = 0; i < 3; ++i) {
     votes.push_back(create_vote(my_hash, std::to_string(i)));
   };
   yac->on_commit(my_peers.at(0), CommitMessage(votes));
+
+  // second commit
+  for (auto i = 1; i < 4; ++i) {
+    votes.push_back(create_vote(my_hash, std::to_string(i)));
+  };
+  yac->on_commit(my_peers.at(1), CommitMessage(votes));
+
   ASSERT_EQ(true, wrapper.validate());
 }
