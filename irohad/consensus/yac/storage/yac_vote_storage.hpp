@@ -20,6 +20,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <nonstd/optional.hpp>
 
 #include "consensus/yac/messages.hpp"
 #include "consensus/yac/storage/yac_common.hpp"
@@ -49,6 +50,8 @@ namespace iroha {
 
         StorageResult applyReject(RejectMessage reject,
                                   uint64_t peers_in_round);
+
+        nonstd::optional<StorageResult> findProposal(YacHash hash);
 
        private:
         // --------| private api |--------

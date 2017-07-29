@@ -62,12 +62,12 @@ namespace iroha {
         /**
          * @return current stored proposal hash
          */
-        ProposalHash getProposalHash();
+        ProposalHash getProposalHash() const;
 
         /**
          * @return current state of storage
          */
-        StorageResult getState();
+        StorageResult getState() const;
 
        private:
         // --------| private api |--------

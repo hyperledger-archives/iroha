@@ -85,6 +85,11 @@ namespace iroha {
       // ------|Private interface|------
 
       void Yac::votingStep(YacHash hash) {
+        auto proposal = vote_storage_.findProposal(hash);
+        if (proposal.has_value() and
+            proposal.value().state == CommitState::committed) {
+          return;
+        }
         network_->send_vote(cluster_order_.currentLeader(),
                             crypto_->getVote(hash));
         timer_->invokeAfterDelay(delay_, [this, hash]() {

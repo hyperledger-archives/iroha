@@ -44,6 +44,16 @@ namespace iroha {
         return proposals_.at(index).applyReject(reject, peers_in_round);
       };
 
+      nonstd::optional<StorageResult> YacVoteStorage::findProposal(
+          YacHash hash) {
+        for (const auto &proposal : proposals_) {
+          if (proposal.getProposalHash() == hash.proposal_hash) {
+            return proposal.getState();
+          }
+        }
+        return nonstd::nullopt;
+      }
+
       // --------| private api |--------
 
       uint64_t YacVoteStorage::findProposalStorage(const VoteMessage &msg,

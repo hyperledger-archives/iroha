@@ -77,7 +77,11 @@ namespace iroha {
         if (commit.votes.empty()) return StorageResult();
         auto index = findStore(commit.votes.at(0).hash.proposal_hash,
                                commit.votes.at(0).hash.block_hash);
-        return block_votes_.at(index).insert(commit);
+        auto result = block_votes_.at(index).insert(commit);
+        if (result.state == CommitState::committed) {
+          current_state_ = result;
+        }
+        return result;
       }
 
       StorageResult YacProposalStorage::applyReject(const RejectMessage &reject,
@@ -86,11 +90,11 @@ namespace iroha {
         return StorageResult();
       }
 
-      ProposalHash YacProposalStorage::getProposalHash() {
+      ProposalHash YacProposalStorage::getProposalHash() const {
         return hash_;
       }
 
-      StorageResult YacProposalStorage::getState() {
+      StorageResult YacProposalStorage::getState() const {
         return current_state_;
       };
 
