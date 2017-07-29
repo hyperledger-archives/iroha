@@ -23,6 +23,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <nonstd/optional.hpp>
 
 #include "consensus/yac/yac_gate.hpp"
 #include "consensus/yac/yac_network_interface.hpp"

@@ -60,7 +60,8 @@ class BlockCreatorStub : public iroha::simulator::BlockCreator {
 };
 
 TEST(YacGateTest, YacGateSubscribtionTest) {
-  cout << "----------| Init YacGate |----------" << endl;
+  cout << "----------| Fail case of retrieving cluster order  |----------"
+       << endl;
 
   // expected values
   YacHash expected_hash("proposal", "block");
@@ -77,10 +78,10 @@ TEST(YacGateTest, YacGateSubscribtionTest) {
   auto hash_gate_raw = hash_gate.get();
 
   EXPECT_CALL(*static_cast<HashGateMock *>(hash_gate_raw),
-              vote(expected_hash, _)).Times(1);
+              vote(_, _)).Times(0);
 
   EXPECT_CALL(*static_cast<HashGateMock *>(hash_gate_raw),
-              on_commit()).WillOnce(Return(expected_commit));
+              on_commit()).Times(0);
 
   // generate order of peers
   unique_ptr<YacPeerOrderer> peer_orderer =
@@ -89,7 +90,7 @@ TEST(YacGateTest, YacGateSubscribtionTest) {
 
   EXPECT_CALL(*static_cast<YacPeerOrdererMock *>(peer_orderer_raw),
               getOrdering(_))
-      .WillOnce(Return(ClusterOrdering()));
+      .WillOnce(Return(nonstd::nullopt));
 
   // make hash from block
   shared_ptr<YacHashProvider> hash_provider =
@@ -117,14 +118,4 @@ TEST(YacGateTest, YacGateSubscribtionTest) {
   // initialize chain
   val->subject.get_subscriber().on_next(expected_block);
   ASSERT_EQ(true, block_wrapper.validate());
-
-  // verify that yac gate emit expected block
-  TestObservable<iroha::model::Block> gate_wrapper(gate.on_commit());
-  gate_wrapper.test_subscriber(
-      std::make_unique<CallExact<iroha::model::Block>>
-          (CallExact<iroha::model::Block>(1)), [expected_block](auto block) {
-        ASSERT_EQ(block, expected_block);
-      });
-
-  ASSERT_EQ(true, gate_wrapper.validate());
 }
