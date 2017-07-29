@@ -76,14 +76,28 @@ TEST(YacGateTest, YacGateSubscribtionTest) {
       make_unique<HashGateMock>();
   auto hash_gate_raw = hash_gate.get();
 
+  EXPECT_CALL(*static_cast<HashGateMock *>(hash_gate_raw),
+              vote(expected_hash, _)).Times(1);
+
+  EXPECT_CALL(*static_cast<HashGateMock *>(hash_gate_raw),
+              on_commit()).WillOnce(Return(expected_commit));
+
   // generate order of peers
   unique_ptr<YacPeerOrderer> peer_orderer =
       make_unique<YacPeerOrdererMock>();
   auto peer_orderer_raw = peer_orderer.get();
 
+  EXPECT_CALL(*static_cast<YacPeerOrdererMock *>(peer_orderer_raw),
+              getOrdering(_))
+      .WillOnce(Return(ClusterOrdering()));
+
   // make hash from block
   shared_ptr<YacHashProvider> hash_provider =
       make_shared<YacHashProviderMock>();
+
+  EXPECT_CALL(
+      *static_cast<YacHashProviderMock *>(hash_provider.get()), makeHash(_))
+      .WillOnce(Return(expected_hash));
 
   // make blocks
   shared_ptr<iroha::simulator::BlockCreator> block_creator =
@@ -94,38 +108,23 @@ TEST(YacGateTest, YacGateSubscribtionTest) {
 
   // verify that yac gate subscribed for block_creator
   TestObservable<iroha::model::Block> block_wrapper(block_creator->on_block());
-  auto block_invariant = CallExact<iroha::model::Block>(1);
   block_wrapper.test_subscriber(
       std::make_unique<CallExact<iroha::model::Block>>
-          (std::move(block_invariant)), [](auto block) {});
-
-  // verify that yac gate emit expected block
-  TestObservable<iroha::model::Block> gate_wrapper(gate.on_commit());
-  auto gate_invariant = CallExact<iroha::model::Block>(1);
-  gate_wrapper.test_subscriber(
-      std::make_unique<CallExact<iroha::model::Block>>
-          (std::move(gate_invariant)), [expected_block](auto block) {
-        ASSERT_EQ(block, expected_block);
-      });
-
-  EXPECT_CALL(
-      *static_cast<YacHashProviderMock *>(hash_provider.get()), makeHash(_))
-      .WillOnce(Return(expected_hash));
-
-  EXPECT_CALL(*static_cast<YacPeerOrdererMock *>(peer_orderer_raw),
-              getOrdering(_))
-      .WillOnce(Return(ClusterOrdering()));
-
-  EXPECT_CALL(*static_cast<HashGateMock *>(hash_gate_raw),
-              vote(expected_hash, _)).Times(1);
-
-  EXPECT_CALL(*static_cast<HashGateMock *>(hash_gate_raw),
-              on_commit()).WillOnce(Return(expected_commit));
+          (CallExact<iroha::model::Block>(1)), [](auto block) {});
 
   auto val = static_cast<BlockCreatorStub *>(block_creator.get());
 
   // initialize chain
   val->subject.get_subscriber().on_next(expected_block);
   ASSERT_EQ(true, block_wrapper.validate());
+
+  // verify that yac gate emit expected block
+  TestObservable<iroha::model::Block> gate_wrapper(gate.on_commit());
+  gate_wrapper.test_subscriber(
+      std::make_unique<CallExact<iroha::model::Block>>
+          (CallExact<iroha::model::Block>(1)), [expected_block](auto block) {
+        ASSERT_EQ(block, expected_block);
+      });
+
   ASSERT_EQ(true, gate_wrapper.validate());
 }
