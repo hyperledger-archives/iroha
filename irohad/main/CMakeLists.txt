@@ -22,13 +22,14 @@ target_link_libraries(server_runner
   schema
 )
 
-add_library(genesis_block_service
-  genesis_block_server/genesis_block_service.cpp
-  genesis_block_server/genesis_block_processor.cpp
+add_library(genesis_block_server
+  genesis_block_server/genesis_block_server.cpp
+  genesis_block_server/genesis_block_processor_impl.cpp
 )
-target_link_libraries(genesis_block_service
+target_link_libraries(genesis_block_server
   ametsuchi
   model
+  timer
   endpoint
   optional
   logger
@@ -52,6 +53,7 @@ target_link_libraries(application
 add_executable(irohad irohad.cpp)
 target_link_libraries(irohad
   application
+  genesis_block_server
   gflags
   rapidjson
   config

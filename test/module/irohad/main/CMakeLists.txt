@@ -15,6 +15,6 @@
 addtest(genesis_block_processor_test
   genesis_block_server/genesis_block_processor_test.cpp)
 target_link_libraries(genesis_block_processor_test
-  genesis_block_service
+  genesis_block_server
   crypto
   )
