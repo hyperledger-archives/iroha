@@ -15,24 +15,28 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GENESIS_BLOCK_CLIENT_HPP
-#define IROHA_GENESIS_BLOCK_CLIENT_HPP
+#ifndef IROHA_GENESIS_BLOCK_CLIENT_IMPL_HPP
+#define IROHA_GENESIS_BLOCK_CLIENT_IMPL_HPP
 
 #include <endpoint.grpc.pb.h>
 #include <model/block.hpp>
+#include "genesis_block_client.hpp"
 
 namespace iroha_cli {
 
-  class GenesisBlockClient {
+  class GenesisBlockClientImpl : public GenesisBlockClient {
    public:
-    virtual ~GenesisBlockClient() {}
-    virtual void set_channel(const std::string &ip, const int port) = 0;
-    virtual grpc::Status send_genesis_block(
+    void set_channel(const std::string &target_ip, const int port) override;
+    grpc::Status send_genesis_block(
         const iroha::model::Block &iroha_block,
-        iroha::protocol::ApplyGenesisBlockResponse &response) = 0;
-    virtual void send_abort_genesis_block(const iroha::model::Block &block) = 0;
+        iroha::protocol::ApplyGenesisBlockResponse &response) override;
+    void send_abort_genesis_block(const iroha::model::Block &block) override;
+
+   private:
+    std::string target_ip_;
+    int port_;
   };
 
 }  // namespace iroha_cli
 
-#endif  // IROHA_GENESIS_BLOCK_CLIENT_HPP
+#endif  // IROHA_GENESIS_BLOCK_CLIENT_IMPL_HPP

@@ -18,15 +18,16 @@
 #ifndef IROHA_CLI_BOOTSTRAP_NETWORK_HPP
 #define IROHA_CLI_BOOTSTRAP_NETWORK_HPP
 
-#include <vector>
 #include <string>
+#include <vector>
+#include "genesis_block_client.hpp"
 #include "model/block.hpp"
 
 namespace iroha_cli {
 
   class BootstrapNetwork {
-   public:
-    virtual ~BootstrapNetwork() {}
+  public:
+    BootstrapNetwork(GenesisBlockClient& client) : client_(client) {}
 
     /**
      * parse trusted peer's ip addresses in `target.conf`
@@ -59,7 +60,10 @@ namespace iroha_cli {
      */
     void run_network(std::vector<std::string> const& trusted_peers,
                      iroha::model::Block const& block);
-  };
-}  // namespace iroha_cli
 
+   private:
+    iroha_cli::GenesisBlockClient& client_;
+  };
+
+}  // namespace iroha_cli
 #endif  // IROHA_CLI_BOOTSTRAP_NETWORK_HPP

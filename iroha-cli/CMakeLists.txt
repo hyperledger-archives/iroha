@@ -1,7 +1,7 @@
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 # GenesisBlockClient
-add_library(genesis_block_client genesis_block_client.cpp)
+add_library(genesis_block_client genesis_block_client_impl.cpp)
 target_link_libraries(genesis_block_client
   endpoint
   optional

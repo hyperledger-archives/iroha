@@ -20,14 +20,87 @@
 #include <rapidjson/istreamwrapper.h>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <vector>
 #include "ametsuchi/block_serializer.hpp"
 #include "assert_utils.hpp"
-#include "genesis_block_client.hpp"
 #include "ip_tools/ip_tools.hpp"
-#include "main/genesis_block_server/genesis_block_service.hpp"
+#include "main/genesis_block_server/genesis_block_service.hpp"  // GenesisBlockServicePort
+#include "model/block.hpp"
 #include "model/model_hash_provider_impl.hpp"
 
 namespace iroha_cli {
+  /**
+   * error message helpers that are used in json validation.
+   */
+  std::string no_member_error(std::string const &member) {
+    return "No member '" + member + "'";
+  }
+
+  std::string type_error(std::string const &value, std::string const &type) {
+    return "'" + value + "' is not " + type;
+  }
+
+  std::string parse_error(std::string const &path) {
+    return "Parse error. JSON file path: " + path + "'";
+  }
+
+  void validate_command(rapidjson::Value &json_val_cmd) {
+    auto json_cmd = json_val_cmd.GetObject();
+    const char *MemberCommandType = "command_type";
+    assert_fatal(json_cmd.HasMember(MemberCommandType),
+                 no_member_error(MemberCommandType));
+
+    // TODO: validate command.
+  }
+
+  void validate_transactions(rapidjson::Document &doc) {
+    const char *MemberTxs = "transactions";
+    assert_fatal(doc.HasMember(MemberTxs), no_member_error(MemberTxs));
+    assert_fatal(doc[MemberTxs].IsArray(), type_error(MemberTxs, "array"));
+    auto json_txs = doc[MemberTxs].GetArray();
+
+    for (auto json_tx_iter = json_txs.begin(); json_tx_iter != json_txs.end();
+         ++json_tx_iter) {
+      auto json_tx = json_tx_iter->GetObject();
+      const char *MemberTxSigs = "signatures";
+      assert_fatal(json_tx.HasMember(MemberTxSigs),
+                   no_member_error(MemberTxSigs));
+
+      auto json_sigs = json_tx[MemberTxSigs].GetArray();
+      for (auto json_sigs_iter = json_sigs.begin();
+           json_sigs_iter != json_sigs.end(); ++json_sigs_iter) {
+        assert_fatal(json_sigs_iter->GetObject().HasMember("pubkey"),
+                     no_member_error("pubkey"));
+        assert_fatal(json_sigs_iter->GetObject().HasMember("signature"),
+                     no_member_error("signature"));
+      }
+
+      const char *MemberTxCreatedTs = "created_ts";
+      // FIXME: Should iroha decide default value?
+      assert_fatal(json_tx.HasMember(MemberTxCreatedTs),
+                   no_member_error(MemberTxCreatedTs));
+
+      const char *MemberTxAccountId = "creator_account_id";
+      assert_fatal(json_tx.HasMember(MemberTxAccountId),
+                   no_member_error(MemberTxAccountId));
+
+      const char *MemberTxCounter = "tx_counter";
+      // FIXME: Should iroha decide default value?
+      assert_fatal(json_tx.HasMember(MemberTxCounter),
+                   no_member_error(MemberTxCounter));
+
+      const char *MemberTxCommands = "commands";
+      assert_fatal(json_tx.HasMember(MemberTxCommands),
+                   no_member_error(MemberTxCommands));
+
+      auto json_commands = json_tx[MemberTxCommands].GetArray();
+      for (auto iter = json_commands.begin(); iter != json_commands.end();
+           ++iter) {
+        validate_command(*iter);
+      }
+    }
+  }
 
   /**
    * parse trusted peer's ip addresses in `target.conf`
@@ -59,73 +132,6 @@ namespace iroha_cli {
       ret.push_back(ip_str);
     }
     return ret;
-  }
-
-  // error message helpers
-  std::string no_member_error(std::string const &member) {
-    return "No member '" + member + "'";
-  }
-
-  std::string type_error(std::string const &value, std::string const &type) {
-    return "'" + value + "' is not " + type;
-  }
-
-  std::string parse_error(std::string const &path) {
-    return "Parse error. JSON file path: " + path + "'";
-  }
-
-  void validate_command(rapidjson::Value &json_val_cmd) {
-    auto json_cmd = json_val_cmd.GetObject();
-    const char *MemberCommandType = "command_type";
-    assert_fatal(json_cmd.HasMember(MemberCommandType),
-                 no_member_error(MemberCommandType));
-
-    // TODO: validate command.
-  }
-
-  void validate_transactions(rapidjson::Document &doc) {
-    const char *MemberTxs = "transactions";
-    assert_fatal(doc.HasMember(MemberTxs), no_member_error(MemberTxs));
-    assert_fatal(doc[MemberTxs].IsArray(), type_error(MemberTxs, "array"));
-    auto json_txs = doc[MemberTxs].GetArray();
-
-    for (auto json_tx_iter = json_txs.begin(); json_tx_iter != json_txs.end(); ++json_tx_iter) {
-      auto json_tx = json_tx_iter->GetObject();
-      const char *MemberTxSigs = "signatures";
-      assert_fatal(json_tx.HasMember(MemberTxSigs),
-                   no_member_error(MemberTxSigs));
-
-      auto json_sigs = json_tx[MemberTxSigs].GetArray();
-      for (auto json_sigs_iter = json_sigs.begin(); json_sigs_iter != json_sigs.end(); ++json_sigs_iter) {
-        assert_fatal(json_sigs_iter->GetObject().HasMember("pubkey"),
-                     no_member_error("pubkey"));
-        assert_fatal(json_sigs_iter->GetObject().HasMember("signature"),
-                     no_member_error("signature"));
-      }
-
-      const char *MemberTxCreatedTs = "created_ts";
-      // FIXME: Should iroha decide default value?
-      assert_fatal(json_tx.HasMember(MemberTxCreatedTs),
-                   no_member_error(MemberTxCreatedTs));
-
-      const char *MemberTxAccountId = "creator_account_id";
-      assert_fatal(json_tx.HasMember(MemberTxAccountId),
-                   no_member_error(MemberTxAccountId));
-
-      const char *MemberTxCounter = "tx_counter";
-      // FIXME: Should iroha decide default value?
-      assert_fatal(json_tx.HasMember(MemberTxCounter),
-                   no_member_error(MemberTxCounter));
-
-      const char *MemberTxCommands = "commands";
-      assert_fatal(json_tx.HasMember(MemberTxCommands),
-                   no_member_error(MemberTxCommands));
-
-      auto json_commands = json_tx[MemberTxCommands].GetArray();
-      for (auto iter = json_commands.begin(); iter != json_commands.end(); ++iter) {
-        validate_command(*iter);
-      }
-    }
   }
 
   /**
@@ -182,8 +188,8 @@ namespace iroha_cli {
       std::vector<std::string> const &trusted_peers,
       iroha::model::Block const &block) {
     for (const auto &ip : trusted_peers) {
-      iroha_cli::GenesisBlockClient client(ip, iroha::GenesisBlockServicePort);
-      client.SendAbortGenesisBlock(block);
+      client_.set_channel(ip, iroha::GenesisBlockServicePort);
+      client_.send_abort_genesis_block(block);
     }
   }
 
@@ -195,9 +201,9 @@ namespace iroha_cli {
       iroha::model::Block const &genesis_block) {
     // send block to trusted peers.
     for (const auto &ip : trusted_peers) {
-      iroha_cli::GenesisBlockClient client(ip, iroha::GenesisBlockServicePort);
+      client_.set_channel(ip, iroha::GenesisBlockServicePort);
       iroha::protocol::ApplyGenesisBlockResponse response;
-      auto stat = client.SendGenesisBlock(genesis_block, response);
+      auto stat = client_.send_genesis_block(genesis_block, response);
       if (!stat.ok() || response.applied() == iroha::protocol::APPLY_FAILURE) {
         abort_network(trusted_peers, genesis_block);
         assert_fatal(false,
