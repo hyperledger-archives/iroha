@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <grpc++/grpc++.h>
 #include <gtest/gtest.h>
 #include "consensus/yac/impl/network_impl.hpp"
 #include "consensus/yac/impl/timer_impl.hpp"
@@ -80,12 +81,31 @@ TEST_F(ConsensusSunnyDayTest, SunnyDayTest) {
                     ClusterOrdering(default_peers), delay);
   network->subscribe(yac);
 
-  yac->on_commit().subscribe(
-      [](auto hash) { std::cout << "^_^ COMMITTED!!!" << std::endl; });
+  auto committed = false;
+
+  yac->on_commit().subscribe([&committed](auto hash) {
+    std::cout << "^_^ COMMITTED!!!" << std::endl;
+    committed = true;
+  });
 
   EXPECT_CALL(*crypto, verify(An<CommitMessage>()))
+      .Times(1)
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*crypto, verify(An<VoteMessage>())).WillRepeatedly(Return(true));
+
+  std::unique_ptr<grpc::Server> server;
+
+  auto thread = std::thread([&server, this] {
+    grpc::ServerBuilder builder;
+    int port = 0;
+    builder.AddListeningPort(my_peer.address, grpc::InsecureServerCredentials(),
+                             &port);
+    builder.RegisterService(network.get());
+    server = builder.BuildAndStart();
+    ASSERT_TRUE(server);
+    ASSERT_NE(port, 0);
+    server->Wait();
+  });
 
   // Wait for other peers to start
   std::this_thread::sleep_for(std::chrono::seconds(10));
@@ -93,15 +113,23 @@ TEST_F(ConsensusSunnyDayTest, SunnyDayTest) {
   YacHash my_hash("proposal_hash", "block_hash");
   yac->vote(my_hash, ClusterOrdering(default_peers));
   std::this_thread::sleep_for(
-      std::chrono::milliseconds(delay * default_peers.size() + 30 * 1000));
+      std::chrono::milliseconds(delay * default_peers.size() + 10 * 1000));
+
+  ASSERT_TRUE(committed);
+
+  server->Shutdown();
+  if (thread.joinable()) {
+    thread.join();
+  }
 }
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
-  if (argc != 3) {
-    std::cout << "Required arguments: num_peers my_num" << std::endl;
-    return 1;
+  uint64_t num_peers = 1, my_num = 0;
+  if (argc == 3) {
+    num_peers = std::stoul(argv[1]);
+    my_num = std::stoul(argv[2]);
   }
-  ConsensusSunnyDayTest::init(std::stoul(argv[1]), std::stoul(argv[2]));
+  ConsensusSunnyDayTest::init(num_peers, my_num);
   return RUN_ALL_TESTS();
 }

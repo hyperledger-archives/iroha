@@ -38,15 +38,41 @@ class FakeNetworkNotifications : public YacNetworkNotifications {
 
 TEST(NetworkTest, MessageHandledWhenMessageSent) {
   auto notifications = std::make_shared<FakeNetworkNotifications>();
-  EXPECT_CALL(*notifications, on_vote(_, _)).Times(1);
 
   auto peer = Peer();
   peer.address = "0.0.0.0:50051";
   std::vector<Peer> peers = {peer};
-  std::shared_ptr<YacNetwork> network =
+  std::shared_ptr<NetworkImpl> network =
       std::make_shared<NetworkImpl>(peer.address, peers);
+
+  VoteMessage message;
+  message.hash.block_hash = "block";
+  message.hash.proposal_hash = "proposal";
+
+  EXPECT_CALL(*notifications, on_vote(peer, message)).Times(1);
 
   network->subscribe(notifications);
 
-  network->send_vote(peer, VoteMessage());
+  std::unique_ptr<grpc::Server> server;
+
+  auto thread = std::thread([&server, &peer, &network] {
+    grpc::ServerBuilder builder;
+    int port = 0;
+    builder.AddListeningPort(peer.address, grpc::InsecureServerCredentials(),
+                             &port);
+    builder.RegisterService(network.get());
+    server = builder.BuildAndStart();
+    ASSERT_TRUE(server);
+    ASSERT_NE(port, 0);
+    server->Wait();
+  });
+
+  network->send_vote(peer, message);
+
+  std::this_thread::sleep_for(std::chrono::seconds(5));
+
+  server->Shutdown();
+  if (thread.joinable()) {
+    thread.join();
+  }
 }

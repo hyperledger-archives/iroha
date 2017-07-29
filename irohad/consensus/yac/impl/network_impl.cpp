@@ -43,8 +43,7 @@ namespace iroha {
       NetworkImpl::NetworkImpl(const std::string &address,
                                const std::vector<model::Peer> &peers)
           : address_(address),
-            thread_(&NetworkImpl::asyncCompleteRpc, this),
-            s_thread_(&NetworkImpl::server, this) {
+            thread_(&NetworkImpl::asyncCompleteRpc, this) {
         for (const auto &peer : peers) {
           peers_[peer] = proto::Yac::NewStub(grpc::CreateChannel(
               peer.address, grpc::InsecureChannelCredentials()));
@@ -234,10 +233,6 @@ namespace iroha {
       }
 
       NetworkImpl::~NetworkImpl() {
-        server_->Shutdown();
-        if (s_thread_.joinable()) {
-          s_thread_.join();
-        }
         cq_.Shutdown();
         if (thread_.joinable()) {
           thread_.join();
@@ -257,13 +252,6 @@ namespace iroha {
 
           delete call;
         }
-      }
-      void NetworkImpl::server() {
-        grpc::ServerBuilder builder;
-        builder.AddListeningPort(address_, grpc::InsecureServerCredentials());
-        builder.RegisterService(this);
-        server_ = builder.BuildAndStart();
-        server_->Wait();
       }
 
     }  // namespace yac
