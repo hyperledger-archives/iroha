@@ -21,7 +21,7 @@
 #include <fstream>
 #include <iostream>
 #include "validators.hpp"
-#include "bootstrap_network_impl.hpp"
+#include "bootstrap_network.hpp"
 #include "assert_utils.hpp"
 
 // ** Genesis Block and Provisioning ** //
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
     }
     create_account(FLAGS_name);
   } else if (!FLAGS_config.empty() && !FLAGS_genesis_block.empty()) {
-    auto bootstrap = iroha_cli::BootstrapNetworkImpl();
+    auto bootstrap = iroha_cli::BootstrapNetwork();
     auto peers = bootstrap.parse_trusted_peers(FLAGS_config);
     auto block = bootstrap.parse_genesis_block(FLAGS_genesis_block);
     bootstrap.run_network(peers, block);

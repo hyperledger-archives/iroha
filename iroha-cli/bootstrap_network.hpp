@@ -15,16 +15,18 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CLI_BOOTSTRAP_NETWORK_IMPL_HPP
-#define IROHA_CLI_BOOTSTRAP_NETWORK_IMPL_HPP
+#ifndef IROHA_CLI_BOOTSTRAP_NETWORK_HPP
+#define IROHA_CLI_BOOTSTRAP_NETWORK_HPP
 
-#include "bootstrap_network.hpp"
+#include <vector>
+#include <string>
+#include "model/block.hpp"
 
 namespace iroha_cli {
 
-  class BootstrapNetworkImpl : public BootstrapNework {
+  class BootstrapNetwork {
    public:
-    virtual ~BootstrapNetworkImpl() {}
+    virtual ~BootstrapNetwork() {}
 
     /**
      * parse trusted peer's ip addresses in `target.conf`
@@ -32,7 +34,7 @@ namespace iroha_cli {
      * @return trusted peers' ip
      */
     std::vector<std::string> parse_trusted_peers(
-        std::string const& target_conf_path) override;
+        std::string const& target_conf_path);
 
     /**
      * parse transactions in genesis block `genesis.json`
@@ -40,7 +42,7 @@ namespace iroha_cli {
      * @return iroha::model::Block
      */
     iroha::model::Block parse_genesis_block(
-        std::string const& genesis_json_path) override;
+        std::string const& genesis_json_path);
 
     /**
      * aborts bootstrapping network.
@@ -48,7 +50,7 @@ namespace iroha_cli {
      * @param block
      */
     void abort_network(std::vector<std::string> const& trusted_peers,
-                       iroha::model::Block const& block) override;
+                       iroha::model::Block const& block);
 
     /**
      * bootstraps network of trusted peers.
@@ -56,8 +58,8 @@ namespace iroha_cli {
      * @param block
      */
     void run_network(std::vector<std::string> const& trusted_peers,
-                     iroha::model::Block const& block) override;
+                     iroha::model::Block const& block);
   };
 }  // namespace iroha_cli
 
-#endif  // IROHA_CLI_BOOTSTRAP_NETWORK_IMPL_HPP
+#endif  // IROHA_CLI_BOOTSTRAP_NETWORK_HPP
