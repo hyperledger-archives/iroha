@@ -121,16 +121,57 @@ class FakeNetwork : public YacNetwork {
 };
 
 class HashGateMock : public HashGate {
+ public:
   MOCK_METHOD2(vote, void(YacHash, ClusterOrdering));
+  MOCK_METHOD0(on_commit, rxcpp::observable<CommitMessage>());
+
+  HashGateMock() = default;
+
+  HashGateMock(const HashGateMock &rhs) {
+
+  };
+
+  HashGateMock(HashGateMock &&rhs) {
+  };
+
+  HashGateMock &operator=(const HashGateMock &rhs) {
+    return *this;
+  };
 };
 
 class YacPeerOrdererMock : public YacPeerOrderer {
+ public:
   MOCK_METHOD0(getInitialOrdering, nonstd::optional<ClusterOrdering>());
   MOCK_METHOD1(getOrdering, nonstd::optional<ClusterOrdering>(YacHash));
+
+  YacPeerOrdererMock() = default;
+
+  YacPeerOrdererMock(const YacPeerOrdererMock &rhs) {
+  };
+
+  YacPeerOrdererMock(YacPeerOrdererMock &&rhs) {
+  };
+
+  YacPeerOrdererMock &operator=(const YacPeerOrdererMock &rhs) {
+    return *this;
+  };
 };
 
 class YacHashProviderMock : public YacHashProvider {
+ public:
   MOCK_METHOD1(makeHash, YacHash(iroha::model::Block));
+
+  YacHashProviderMock() = default;
+
+  YacHashProviderMock(const YacHashProviderMock &rhs) {
+  };
+
+  YacHashProviderMock(YacHashProviderMock &&rhs) {
+  };
+
+  YacHashProviderMock &operator=(const YacHashProviderMock &rhs) {
+    return *this;
+  };
 };
 
 class YacTest : public ::testing::Test {
