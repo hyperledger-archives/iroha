@@ -57,19 +57,12 @@ namespace iroha {
       StorageResult YacBlockStorage::insert(CommitMessage commit) {
         if (checkCommitScheme(commit)) {
           auto initial_state = getState().state;
-          for (auto &&vote: commit.votes) {
+          for (auto &&vote : commit.votes) {
             current_state_ = insert(vote);
           }
-          auto end_state = getState();
-          if (initial_state == CommitState::not_committed and (
-              current_state_.state == CommitState::committed or
-                  current_state_.state == CommitState::committed_before)) {
+          if (initial_state == CommitState::not_committed and
+              current_state_.state == CommitState::committed_before) {
             current_state_.state = CommitState::committed;
-          }
-          if (initial_state == CommitState::committed and (
-              current_state_.state == CommitState::committed or
-                  current_state_.state == CommitState::committed_before)) {
-            current_state_.state = CommitState::committed_before;
           }
           return getState();
         }
