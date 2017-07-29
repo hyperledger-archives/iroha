@@ -17,29 +17,35 @@
 #ifndef IROHA_APPLICATION_HPP
 #define IROHA_APPLICATION_HPP
 
+#include <consensus/consensus_service_stub.hpp>
 #include <main/context.hpp>
 #include <network/peer_communication_service.hpp>
-#include <consensus/consensus_service_stub.hpp>
 #include <torii/processor/query_processor_impl.hpp>
 #include <torii/processor/transaction_processor_impl.hpp>
 #include <validation/impl/stateless_validator_impl.hpp>
 
-
-#include <model/model_crypto_provider_impl.hpp>
-#include <crypto/crypto.hpp>
 #include <ametsuchi/impl/storage_impl.hpp>
+#include <crypto/crypto.hpp>
+#include <model/model_crypto_provider_impl.hpp>
 
 #include <main/server_runner.hpp>
 
+class Irohad {
+ public:
+  std::shared_ptr<Context> context;
 
-class Irohad{
-  public:
-    std::shared_ptr<Context> context;
+  Irohad(const std::string &block_store_dir, const std::string &redis_host,
+         size_t redis_port, const std::string &pg_conn);
+  void run();
 
-    Irohad();
+ private:
+  std::string block_store_dir_;
+  std::string redis_host_;
+  size_t redis_port_;
+  std::string pg_conn_;
 
-    void run();
-
+ public:
+  std::unique_ptr<iroha::ametsuchi::StorageImpl> storage;  // FIXME when integration
 };
 
-#endif //IROHA_APPLICATION_HPP
+#endif  // IROHA_APPLICATION_HPP

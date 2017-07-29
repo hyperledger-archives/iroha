@@ -16,10 +16,15 @@ limitations under the License.
 
 #include <main/application.hpp>
 
-Irohad::Irohad():
-  context(new Context())
-{}
+Irohad::Irohad(const std::string &block_store_dir,
+               const std::string &redis_host, size_t redis_port,
+               const std::string &pg_conn)
+    : context(new Context()),
+      block_store_dir_(block_store_dir),
+      redis_host_(redis_host),
+      redis_port_(redis_port),
+      pg_conn_(pg_conn),
+      storage(iroha::ametsuchi::StorageImpl::create(block_store_dir, redis_host,
+                                                    redis_port, pg_conn)) {}
 
-void Irohad::run(){
-
-}
+void Irohad::run() {}
