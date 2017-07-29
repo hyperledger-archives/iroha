@@ -27,10 +27,12 @@ namespace iroha {
 
   constexpr int GenesisBlockServicePort = 50090;
 
+  class GenesisBlockServerRunner;
+
   class GenesisBlockService final : public iroha::protocol::GenesisBlockService::Service {
   public:
-    GenesisBlockService(GenesisBlockProcessor &processor)
-      : processor_(processor)
+    GenesisBlockService(GenesisBlockProcessor &processor, GenesisBlockServerRunner* server_runner)
+      : processor_(processor), server_runner_(server_runner)
     {}
 
     grpc::Status SendGenesisBlock(grpc::ServerContext* context,
@@ -38,6 +40,27 @@ namespace iroha {
                                   iroha::protocol::ApplyGenesisBlockResponse* response) override;
   private:
     GenesisBlockProcessor &processor_;
+    GenesisBlockServerRunner *server_runner_;
+  };
+
+  class GenesisBlockServerRunner {
+  public:
+    GenesisBlockServerRunner(iroha::GenesisBlockProcessor &processor)
+      : processor_(processor) {}
+    /**
+     * runs genesis block server
+     * @param ip
+     * @param port
+     */
+    void run(const std::string &ip, const int port);
+
+    /**
+     * shuts down server if received genesis block.
+     */
+    void shutdown();
+  private:
+    iroha::GenesisBlockProcessor &processor_;
+    std::unique_ptr<grpc::Server> server_;
   };
 
 }

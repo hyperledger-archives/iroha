@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-#include "genesis_block_service.hpp"
+#include "genesis_block_server.hpp"
 #include "model/converters/pb_block_factory.hpp"
+#include "timer/timer.hpp"
 
 namespace iroha {
   grpc::Status GenesisBlockService::SendGenesisBlock(
@@ -27,6 +28,33 @@ namespace iroha {
     auto success = processor_.genesis_block_handle(iroha_block);
     response->set_applied(success ? iroha::protocol::APPLY_SUCCESS
                                   : iroha::protocol::APPLY_FAILURE);
+
+    // GenesisBlockServer shuts down itself after sending response to iroha_cli.
+    timer::setAwkTimer(2000, [this] { server_runner_->shutdown(); });
     return grpc::Status::OK;
   }
+
+  /**
+   * runs genesis block server
+   * @param ip
+   * @param port
+   */
+  void GenesisBlockServerRunner::run(const std::string& ip, const int port) {
+    std::string server_address(ip + ":" + std::to_string(port));
+    iroha::GenesisBlockService service(processor_, this);
+
+    grpc::ServerBuilder builder;
+    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+    builder.RegisterService(&service);
+    server_ = builder.BuildAndStart();
+    std::cout << "GenesisBlockServer listening on " << server_address
+              << std::endl;
+    server_->Wait();
+  }
+
+  /**
+   * shuts down server if received genesis block.
+   */
+  void GenesisBlockServerRunner::shutdown() { server_->Shutdown(); }
+
 }  // namespace iroha
