@@ -20,9 +20,14 @@
 #include "consensus/yac/storage/yac_vote_storage.hpp"
 #include "yac_mocks.hpp"
 
+#include <iostream>
+using namespace std;
+
 using namespace iroha::consensus::yac;
 
 TEST(YacStorageTest, SupermajorityFunctionForAllCases2) {
+  cout << "-----------| F(x, 2), x in {0..3} -----------" << endl;
+
   int N = 2;
   ASSERT_EQ(false, hasSupermajority(0, N));
   ASSERT_EQ(false, hasSupermajority(1, N));
@@ -31,6 +36,8 @@ TEST(YacStorageTest, SupermajorityFunctionForAllCases2) {
 }
 
 TEST(YacStorageTest, SupermajorityFunctionForAllCases4) {
+  cout << "-----------| F(x, 4), x in {0..5} |-----------" << endl;
+
   int N = 4;
   ASSERT_EQ(false, hasSupermajority(0, N));
   ASSERT_EQ(false, hasSupermajority(1, N));
@@ -41,6 +48,8 @@ TEST(YacStorageTest, SupermajorityFunctionForAllCases4) {
 }
 
 TEST(YacStorageTest, YacBlockStorageWhenNormalDataInput) {
+  cout << "-----------| Sequentially insertion of votes |-----------" << endl;
+
   YacHash hash("proposal", "commit");
   int N = 4;
   YacBlockStorage storage(hash, N);
@@ -68,6 +77,8 @@ TEST(YacStorageTest, YacBlockStorageWhenNormalDataInput) {
 }
 
 TEST(YacStorageTest, YacBlockStorageWhenNotCommittedAndCommitAcheive) {
+  cout << "-----------| Insert vote => insert commit |-----------" << endl;
+
   YacHash hash("proposal", "commit");
   int N = 4;
   YacBlockStorage storage(hash, N);
