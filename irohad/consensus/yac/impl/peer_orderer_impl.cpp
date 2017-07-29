@@ -40,7 +40,8 @@ namespace iroha {
           YacHash hash) {
         auto peers = query_->getPeers();
         if (peers.has_value()) {
-          return hash_provider_->order(hash, peers.value());
+          // todo implement effective ordering based on hash value
+          return ClusterOrdering(peers.value());
         }
 
         return nonstd::nullopt;

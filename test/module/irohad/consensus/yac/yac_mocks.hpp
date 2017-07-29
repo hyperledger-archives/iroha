@@ -20,7 +20,13 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
 #include "consensus/yac/yac.hpp"
+#include "consensus/yac/yac_gate.hpp"
+#include "consensus/yac/cluster_order.hpp"
+#include "consensus/yac/yac_hash_provider.hpp"
+#include "consensus/yac/yac_peer_orderer.hpp"
+#include "consensus/yac/messages.hpp"
 
 using namespace iroha::consensus::yac;
 using iroha::model::Peer;
@@ -112,6 +118,19 @@ class FakeNetwork : public YacNetwork {
   };
 
   std::shared_ptr<YacNetworkNotifications> notification;
+};
+
+class HashGateMock : public HashGate {
+  MOCK_METHOD2(vote, void(YacHash, ClusterOrdering));
+};
+
+class YacPeerOrdererMock : public YacPeerOrderer {
+  MOCK_METHOD0(getInitialOrdering, nonstd::optional<ClusterOrdering>());
+  MOCK_METHOD1(getOrdering, nonstd::optional<ClusterOrdering>(YacHash));
+};
+
+class YacHashProviderMock : public YacHashProvider {
+  MOCK_METHOD1(makeHash, YacHash(iroha::model::Block));
 };
 
 class YacTest : public ::testing::Test {

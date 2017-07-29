@@ -68,15 +68,6 @@ namespace iroha {
          */
         virtual YacHash makeHash(model::Block block) = 0;
 
-        /**
-         * Make ordering on cluster
-         * @param hash
-         * @param initial_order
-         * @return cluster ordering based on hash and initial order
-         */
-        virtual ClusterOrdering order(
-            YacHash hash, std::vector<model::Peer> initial_order) = 0;
-
         virtual ~YacHashProvider() = default;
       };
     }  // namespace yac

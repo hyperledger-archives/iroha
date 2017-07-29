@@ -33,7 +33,7 @@ namespace iroha {
         block_creator_->on_block().subscribe([this](auto block) {
           this->vote(block);
         });
-      }
+      };
 
       void YacGateImpl::vote(model::Block block) {
         auto hash = hash_provider_->makeHash(block);
@@ -44,7 +44,7 @@ namespace iroha {
         }
         current_block_ = std::make_pair(hash, block);
         hash_gate_->vote(hash, order.value());
-      }
+      };
 
       rxcpp::observable<model::Block> YacGateImpl::on_commit() {
         return hash_gate_->on_commit().map([this](auto commit_message) {
@@ -55,8 +55,7 @@ namespace iroha {
           // TODO download committed block
           return model::Block();
         });
-      }
-
+      };
     }  // namespace yac
   }    // namespace consensus
 }  // namespace iroha
