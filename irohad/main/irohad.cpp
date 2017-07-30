@@ -17,23 +17,29 @@ limitations under the License.
 #include <gflags/gflags.h>
 #include <grpc++/grpc++.h>
 #include <rapidjson/rapidjson.h>
-#include <cstring>
 #include <fstream>
 #include <thread>
 #include "common/config.hpp"
 #include "main/application.hpp"
 #include "main/genesis_block_server/genesis_block_processor.hpp"
-#include "main/genesis_block_server/genesis_block_server.hpp"
 #include "main/iroha_conf_loader.hpp"
+#include "main/raw_block_insertion.hpp"
 
-bool validate_config(const char*, std::string const& path) {
+bool validate_config(const char *flag_name, std::string const &path) {
+  return not path.empty();
+}
+
+bool validate_genesis_path(const char *flag_name, std::string const &path) {
   return not path.empty();
 }
 
 DEFINE_string(config, "", "Specify iroha provisioning path.");
 DEFINE_validator(config, &validate_config);
 
-int main(int argc, char* argv[]) {
+DEFINE_string(genesis_block, "genesis.json", "Specify file with initial block");
+DEFINE_validator(genesis_block, &validate_genesis_path);
+
+int main(int argc, char *argv[]) {
   namespace mbr = config_members;
 
   gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -43,15 +49,14 @@ int main(int argc, char* argv[]) {
   auto irohad =
       Irohad(config[mbr::BlockStorePath].GetString(),
              config[mbr::RedisHost].GetString(),
-             config[mbr::RedisPort].GetUint(), config[mbr::PgOpt].GetString());
+             config[mbr::RedisPort].GetUint(),
+             config[mbr::PgOpt].GetString());
 
-  // TODO: Check if I have a ledger already.
-
-  iroha::GenesisBlockProcessor gen_processor(*irohad.storage);
-
-  // shuts down automatically when received genesis block
-  iroha::GenesisBlockServerRunner(gen_processor)
-      .run("0.0.0.0", iroha::GenesisBlockServicePort);
+  iroha::main::BlockInserter insertor(irohad.storage);
+  auto block = insertor.parseBlock(FLAGS_genesis_block);
+  if (block.has_value()) {
+    insertor.appyToLedger({block.value()});
+  }
 
   // runs iroha
   irohad.run();
