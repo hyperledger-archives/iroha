@@ -29,13 +29,7 @@
 namespace iroha_cli {
 
   using iroha::protocol::GenesisBlockService;
-/*
-  GenesisBlockClientImpl(const std::string &target_ip,
-                                     const int port)
-      : stub_(GenesisBlockService::NewStub(
-            grpc::CreateChannel(target_ip + ":" + std::to_string(port),
-                                grpc::InsecureChannelCredentials()))) {}
-*/
+
   void GenesisBlockClientImpl::set_channel(const std::string &target_ip,
                                            const int port) {
     target_ip_ = target_ip;
