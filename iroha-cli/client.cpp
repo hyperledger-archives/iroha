@@ -27,30 +27,54 @@
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
 
+#include "ametsuchi/block_serializer.hpp"
+#include "model/converters/pb_transaction_factory.hpp"
+#include "model/model_hash_provider_impl.hpp"
+
 namespace iroha_cli {
 
-  CliClient::CliClient(std::string target_ip, int port)
-      : target_ip(target_ip), port(port) {}
+  CliClient::CliClient(std::string target_ip, int port, std::string name)
+      : client_(target_ip, port) {
+    std::ifstream priv_file(name + ".priv");
+    priv_file >> client_priv_key_;
+    priv_file.close();
 
-  std::string CliClient::sendTx(const iroha::model::Transaction &tx) {
-    auto channel = grpc::CreateChannel(target_ip + ":" + std::to_string(port),
-                                       grpc::InsecureChannelCredentials());
+    std::ifstream pub_file(name + ".pub");
+    pub_file >> client_pub_key_;
+    pub_file.close();
+  }
 
-    auto stub = iroha::protocol::CommandService::NewStub(channel);
-
-    iroha::protocol::ToriiResponse response;
-    grpc::ClientContext context;
-
-    // ToDo model::transaction -> protocol::transaction
-    iroha::protocol::Transaction transaction;
-    grpc::Status status = stub->Torii(&context, transaction, &response);
-
-    if (status.ok()) {
-      return response.message();
+  std::string CliClient::sendTx(std::string json_tx) {
+    iroha::ametsuchi::BlockSerializer serializer;
+    auto tx_opt = serializer.deserialize(json_tx);
+    if (not tx_opt.has_value()) {
+      return "Wrong transaction format";
     }
+    iroha::model::converters::PbTransactionFactory factory;
+    auto model_tx = tx_opt.value();
+    iroha::model::HashProviderImpl hashProvider;
+    auto tx_hash = hashProvider.get_hash(model_tx);
+    auto pubkey = iroha::hex2bytes(client_pub_key_);
+    auto privkey = iroha::hex2bytes(client_priv_key_);
 
-    std::cout << status.error_code() << ": " << status.error_message()
-              << std::endl;
+    iroha::ed25519::pubkey_t ed_pubkey;
+    std::copy(pubkey.begin(), pubkey.end(), ed_pubkey.begin());
+
+    iroha::ed25519::privkey_t ed_privkey;
+    std::copy(privkey.begin(), privkey.end(), ed_privkey.begin());
+    iroha::model::Signature sign;
+    sign.pubkey = ed_pubkey;
+    sign.signature = iroha::sign(tx_hash.data(), tx_hash.size(),
+                                 ed_pubkey,
+                                 ed_privkey);
+    model_tx.signatures = {sign};
+
+    auto pb_tx = factory.serialize(model_tx);
+    iroha::protocol::ToriiResponse response;
+    auto stat = client_.Torii(pb_tx, response);
+    // TODO: std::cout << stat
+    // return response.validation();
     return response.message();
   }
+
 };

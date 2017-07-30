@@ -19,9 +19,9 @@
 #include <rapidjson/reader.h>
 #include <algorithm>
 #include <ametsuchi/block_serializer.hpp>
+#include <common/types.hpp>
 #include <iostream>
 #include <sstream>
-#include <common/types.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -479,49 +479,64 @@ namespace iroha {
       return block;
     }
 
+    nonstd::optional<model::Transaction> BlockSerializer::deserialize(
+        GenericValue<rapidjson::UTF8<char>>::Object& json_tx) {
+      model::Transaction tx{};
+      auto json_sigs = json_tx["signatures"].GetArray();
+      for (auto sig_iter = json_sigs.begin(); sig_iter < json_sigs.end();
+           ++sig_iter) {
+        auto json_sig = sig_iter->GetObject();
+        model::Signature signature{};
+
+        std::string sig_pubkey(json_sig["pubkey"].GetString(),
+                               json_sig["pubkey"].GetStringLength());
+        auto sig_pubkey_bytes = hex2bytes(sig_pubkey);
+        std::copy(sig_pubkey_bytes.begin(), sig_pubkey_bytes.end(),
+                  signature.pubkey.begin());
+
+        std::string sig_sign(json_sig["signature"].GetString(),
+                             json_sig["signature"].GetStringLength());
+        auto sig_sign_bytes = hex2bytes(sig_sign);
+        std::copy(sig_sign_bytes.begin(), sig_sign_bytes.end(),
+                  signature.signature.begin());
+
+        tx.signatures.push_back(signature);
+      }
+      // created_ts
+      tx.created_ts = json_tx["created_ts"].GetUint64();
+
+      // creator_account_id
+      tx.creator_account_id = json_tx["creator_account_id"].GetString();
+
+      // tx_counter
+      tx.tx_counter = json_tx["tx_counter"].GetUint64();
+
+      // commands
+      deserialize(json_tx, tx.commands);
+      return tx;
+    }
+
+    nonstd::optional<model::Transaction> BlockSerializer::deserialize(
+        const std::string json_tx) {
+      Document doc;
+      if (doc.Parse(json_tx.c_str()).HasParseError()) {
+        return nonstd::nullopt;
+      }
+      auto obj_tx = doc.GetObject();
+      return deserialize(obj_tx);
+    }
+
     void BlockSerializer::deserialize(
         Document& doc, std::vector<model::Transaction>& transactions) {
       auto json_txs = doc["transactions"].GetArray();
 
       for (auto iter = json_txs.begin(); iter < json_txs.end(); iter++) {
-        model::Transaction tx{};
-
-        auto json_tx = iter->GetObject();
-
-        // signatures
-        auto json_sigs = json_tx["signatures"].GetArray();
-        for (auto sig_iter = json_sigs.begin(); sig_iter < json_sigs.end();
-             ++sig_iter) {
-          auto json_sig = sig_iter->GetObject();
-          model::Signature signature{};
-
-          std::string sig_pubkey(json_sig["pubkey"].GetString(),
-                                 json_sig["pubkey"].GetStringLength());
-          auto sig_pubkey_bytes = hex2bytes(sig_pubkey);
-          std::copy(sig_pubkey_bytes.begin(), sig_pubkey_bytes.end(),
-                    signature.pubkey.begin());
-
-          std::string sig_sign(json_sig["signature"].GetString(),
-                               json_sig["signature"].GetStringLength());
-          auto sig_sign_bytes = hex2bytes(sig_sign);
-          std::copy(sig_sign_bytes.begin(), sig_sign_bytes.end(),
-                    signature.signature.begin());
-
-          tx.signatures.push_back(signature);
+        auto json_obj = iter->GetObject();
+        auto tx_opt = deserialize(json_obj);
+        if (tx_opt.has_value()) {
+          auto tx = tx_opt.value();
+          transactions.push_back(tx);
         }
-
-        // created_ts
-        tx.created_ts = json_tx["created_ts"].GetUint64();
-
-        // creator_account_id
-        tx.creator_account_id = json_tx["creator_account_id"].GetString();
-
-        // tx_counter
-        tx.tx_counter = json_tx["tx_counter"].GetUint64();
-
-        // commands
-        deserialize(json_tx, tx.commands);
-        transactions.push_back(tx);
       }
     }
 

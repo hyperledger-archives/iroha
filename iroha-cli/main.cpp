@@ -25,6 +25,8 @@
 #include "common/assert_config.hpp"
 #include "genesis_block_client_impl.hpp"
 
+#include "client.hpp"
+
 // ** Genesis Block and Provisioning ** //
 // Reference is here (TODO: move to doc):
 // https://hackmd.io/GwRmwQ2BmCFoCsAGARtOAWBIBMcAcS0GcAZjhNNPvpAKZIDGQA==
@@ -37,6 +39,14 @@ DEFINE_validator(genesis_block, &iroha_cli::validate_genesis_block);
 
 DEFINE_bool(new_account, false, "Choose if account does not exist");
 DEFINE_string(name, "", "Name of the account");
+
+// Sending transaction to Iroha
+DEFINE_bool(grpc, false, "Send sample transaction to IrohaNetwork");
+DEFINE_string(address, "127.0.0.1", "Address of the Iroha node");
+DEFINE_int32(torii_port, 50051, "Port of iroha's Torii");
+DEFINE_validator(torii_port, &iroha_cli::validate_port);
+DEFINE_string(json_transaction, "", "Transaction in json format");
+
 
 void create_account(std::string name);
 
@@ -57,6 +67,14 @@ int main(int argc, char* argv[]) {
     auto block = bootstrap.parse_genesis_block(FLAGS_genesis_block);
     block = bootstrap.merge_tx_add_trusted_peers(block, peers);
     bootstrap.run_network(peers, block);
+  } else  if (FLAGS_grpc) {
+    std::cout << "Send transaction to " << FLAGS_address << ":"
+              << FLAGS_torii_port << std::endl;
+
+    iroha_cli::CliClient client(FLAGS_address, FLAGS_torii_port, FLAGS_name);
+
+    client.sendTx(FLAGS_json_transaction);
+    return 0;
   } else {
     assert_config::assert_fatal(false, "Invalid flags");
   }

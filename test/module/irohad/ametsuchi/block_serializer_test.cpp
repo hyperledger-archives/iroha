@@ -277,3 +277,25 @@ TEST(block_serialize, block_serialize_test){
 
   }
 }
+
+
+TEST(tx_serialize, tx_serialize_test){
+  auto json_tx = "{\"signatures\": [ {\n"
+      "                    \"pubkey\": \"2323232323232323232323232323232323232323232323232323232323232323\",\n"
+      "                    \"signature\": \"23232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323\"\n"
+      "                }], \"created_ts\": 0,\n"
+      "            \"creator_account_id\": \"123\",\n"
+      "            \"tx_counter\": 0,\n"
+      "            \"commands\": [{\n"
+      "                    \"command_type\": \"AddPeer\",\n"
+      "                    \"address\": \"localhost\",\n"
+      "                    \"peer_key\": \"2323232323232323232323232323232323232323232323232323232323232323\"\n"
+      "                }]}";
+
+
+  iroha::ametsuchi::BlockSerializer blockSerializer;
+  auto tx = blockSerializer.deserialize(json_tx);
+  ASSERT_TRUE(tx.has_value());
+  ASSERT_EQ(tx.value().tx_counter, 0);
+  ASSERT_EQ(tx.value().creator_account_id, "123");
+}
