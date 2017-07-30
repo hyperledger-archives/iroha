@@ -195,7 +195,11 @@ namespace iroha_cli {
       if (!stat.ok() || response.applied() == iroha::protocol::APPLY_FAILURE) {
         abort_network(trusted_peers, genesis_block);
         assert_fatal(false,
-                     "Failure of creating genesis block in Ip: '" + ip + "'");
+                     "Failure of creating genesis block. {\"address\":\"" + ip + ":"
+                     + std::to_string(iroha::GenesisBlockServicePort)
+                     + "\" \"stat\":\"" + (stat.ok() ? "true" : "false")
+                     + "\", \"response\":\"" + (response.applied() ? "success" : "failure")
+                     + "\"}");
       }
     }
   }

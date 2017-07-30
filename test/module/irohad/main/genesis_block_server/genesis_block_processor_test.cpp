@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <cpp_redis/cpp_redis>
 #include <pqxx/pqxx>
+#include <main/genesis_block_server/genesis_block_server.hpp>
 #include "../../ametsuchi/ametsuchi_test_common.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "main/genesis_block_server/genesis_block_processor_impl.hpp"
@@ -107,11 +108,12 @@ TEST_F(GenesisBlockProcessorTest, genesis_block_handle) {
                                                 redisport_, pgopt_);
   ASSERT_TRUE(storage);
 
-  GenesisBlockProcessorImpl processor_impl(*storage);
+  GenesisBlockProcessorImpl processor(*storage);
   auto block = create_genesis_block();
-  ASSERT_TRUE(processor_impl.genesis_block_handle(block));
+  ASSERT_TRUE(processor.genesis_block_handle(block));
   auto account = storage->getAccount("user@ja");
   ASSERT_STREQ(account->account_id.c_str(), "user@ja");
   ASSERT_STREQ(account->domain_name.c_str(), "ja");
   ASSERT_EQ(account->master_key, iroha::create_keypair(iroha::create_seed("pass")).pubkey);
 }
+
