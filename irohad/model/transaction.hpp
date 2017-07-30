@@ -33,6 +33,10 @@ namespace iroha {
      * Transaction can be divided to {Header, Meta, Body}.
      */
     struct Transaction {
+      Transaction& setTxCounter(uint64_t tx_counter) {
+        this->tx_counter = tx_counter;
+        return *this;
+      }
       /**
        * List of signatories that sign transaction
        * HEADER field

@@ -118,3 +118,19 @@ TEST(QueryResponseTest, SignatoriesTest) {
 
   ASSERT_EQ(signatories_response.keys, des_signatories_response.keys);
 }
+
+TEST(QueryResponseTest, TransactionsResponseTest) {
+  model::converters::PbQueryResponseFactory pb_factory;
+
+  model::TransactionsResponse txs_response{};
+
+  txs_response.transactions =
+      rxcpp::observable<>::from(model::Transaction().setTxCounter(1),
+                                model::Transaction().setTxCounter(2),
+                                model::Transaction().setTxCounter(3));
+
+  auto shrd_tr = std::make_shared<decltype(txs_response)>(txs_response);
+  auto query_response = *pb_factory.serialize(shrd_tr);
+
+  ASSERT_EQ(query_response.transactions_response().transactions().size(), 3);
+}
