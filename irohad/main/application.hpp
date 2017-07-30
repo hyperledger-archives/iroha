@@ -44,7 +44,7 @@ class Irohad {
   std::string pg_conn_;
 
  public:
-  std::unique_ptr<iroha::ametsuchi::StorageImpl> storage;  // FIXME when integration
+  std::shared_ptr<iroha::ametsuchi::StorageImpl> storage;
 };
 
 #endif  // IROHA_APPLICATION_HPP

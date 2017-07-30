@@ -31,7 +31,7 @@ namespace iroha {
   namespace ametsuchi {
     class StorageImpl : public Storage {
      public:
-      static std::unique_ptr<StorageImpl> create(
+      static std::shared_ptr<StorageImpl> create(
           std::string block_store_dir, std::string redis_host,
           std::size_t redis_port, std::string postgres_connection);
       std::unique_ptr<TemporaryWsv> createTemporaryWsv() override;

@@ -118,7 +118,7 @@ namespace iroha {
           std::move(wsv_transaction), std::move(wsv), std::move(executor));
     }
 
-    std::unique_ptr<StorageImpl> StorageImpl::create(
+    std::shared_ptr<StorageImpl> StorageImpl::create(
         std::string block_store_dir, std::string redis_host,
         std::size_t redis_port, std::string postgres_options) {
       // TODO lock
@@ -150,7 +150,7 @@ namespace iroha {
       std::unique_ptr<WsvQuery> wsv =
           std::make_unique<PostgresWsvQuery>(*wsv_transaction);
 
-      return std::unique_ptr<StorageImpl>(
+      return std::shared_ptr<StorageImpl>(
           new StorageImpl(block_store_dir, redis_host, redis_port,
                           postgres_options, std::move(block_store),
                           std::move(index), std::move(postgres_connection),
