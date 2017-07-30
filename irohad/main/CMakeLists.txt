@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-
 add_library(server_runner server_runner.cpp)
 target_link_libraries(server_runner
   torii_service
@@ -25,6 +23,7 @@ target_link_libraries(server_runner
 add_library(genesis_block_server
   genesis_block_server/genesis_block_server.cpp
   genesis_block_server/genesis_block_processor.cpp
+  impl/raw_block_insertion.cpp
 )
 target_link_libraries(genesis_block_server
   ametsuchi
