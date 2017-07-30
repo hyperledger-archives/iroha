@@ -24,7 +24,7 @@ target_link_libraries(server_runner
 
 add_library(genesis_block_server
   genesis_block_server/genesis_block_server.cpp
-  genesis_block_server/genesis_block_processor_impl.cpp
+  genesis_block_server/genesis_block_processor.cpp
 )
 target_link_libraries(genesis_block_server
   ametsuchi

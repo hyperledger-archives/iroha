@@ -22,7 +22,7 @@ limitations under the License.
 #include <thread>
 #include "common/config.hpp"
 #include "main/application.hpp"
-#include "main/genesis_block_server/genesis_block_processor_impl.hpp"
+#include "main/genesis_block_server/genesis_block_processor.hpp"
 #include "main/genesis_block_server/genesis_block_server.hpp"
 #include "main/iroha_conf_loader.hpp"
 
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 
   // TODO: Check if I have a ledger already.
 
-  iroha::GenesisBlockProcessorImpl gen_processor(*irohad.storage);
+  iroha::GenesisBlockProcessor gen_processor(*irohad.storage);
 
   // shuts down automatically when received genesis block
   iroha::GenesisBlockServerRunner(gen_processor)

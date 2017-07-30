@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-#include "genesis_block_processor_impl.hpp"
+#include "genesis_block_processor.hpp"
 #include "logger/logger.hpp"
 
 logger::Logger Log("GenesisBlockProcessor");
 
 namespace iroha {
-  bool GenesisBlockProcessorImpl::genesis_block_handle(
+  bool GenesisBlockProcessor::genesis_block_handle(
       const iroha::model::Block &block) {
 
     auto ms = mutable_factory_.createMutableStorage();

@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
       assert_config::assert_fatal(false, "File already exists");
     }
     create_account(FLAGS_name);
-  } else if (not FLAGS_config.empty() && !FLAGS_genesis_block.empty()) {
+  } else if (not FLAGS_config.empty() && not FLAGS_genesis_block.empty()) {
     iroha_cli::GenesisBlockClientImpl genesis_block_client;
     auto bootstrap = iroha_cli::BootstrapNetwork(genesis_block_client);
     auto peers = bootstrap.parse_trusted_peers(FLAGS_config);

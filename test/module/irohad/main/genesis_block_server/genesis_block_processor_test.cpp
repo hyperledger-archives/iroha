@@ -23,7 +23,7 @@
 #include <main/genesis_block_server/genesis_block_server.hpp>
 #include "../../ametsuchi/ametsuchi_test_common.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
-#include "main/genesis_block_server/genesis_block_processor_impl.hpp"
+#include "main/genesis_block_server/genesis_block_processor.hpp"
 #include "model/model_hash_provider_impl.hpp"
 #include "model/account.hpp"
 #include "model/commands/create_account.hpp"
@@ -108,7 +108,7 @@ TEST_F(GenesisBlockProcessorTest, genesis_block_handle) {
                                                 redisport_, pgopt_);
   ASSERT_TRUE(storage);
 
-  GenesisBlockProcessorImpl processor(*storage);
+  GenesisBlockProcessor processor(*storage);
   auto block = create_genesis_block();
   ASSERT_TRUE(processor.genesis_block_handle(block));
   auto account = storage->getAccount("user@ja");

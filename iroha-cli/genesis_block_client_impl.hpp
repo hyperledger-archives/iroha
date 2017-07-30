@@ -21,6 +21,7 @@
 #include <endpoint.grpc.pb.h>
 #include <model/block.hpp>
 #include "genesis_block_client.hpp"
+#include "main/genesis_block_server/genesis_block_server.hpp" // GenesisBlockServicePort
 
 namespace iroha_cli {
 
@@ -35,7 +36,7 @@ namespace iroha_cli {
 
    private:
     std::string target_ip_;
-    int port_;
+    int port_ = iroha::GenesisBlockServicePort;
   };
 
 }  // namespace iroha_cli

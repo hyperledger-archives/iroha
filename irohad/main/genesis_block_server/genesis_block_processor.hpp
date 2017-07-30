@@ -15,20 +15,28 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GENESIS_BLOCK_PROCESSOR_HPP
-#define IROHA_GENESIS_BLOCK_PROCESSOR_HPP
+#ifndef IROHA_GENESIS_BLOCK_PROCESSOR_IMPL_HPP
+#define IROHA_GENESIS_BLOCK_PROCESSOR_IMPL_HPP
 
+#include <model/block.hpp>
 #include <endpoint.grpc.pb.h>
-#include "model/block.hpp"
+#include "ametsuchi/temporary_factory.hpp"
+#include "ametsuchi/mutable_factory.hpp"
+#include "genesis_block_processor.hpp"
 
 namespace iroha {
 
   class GenesisBlockProcessor {
   public:
-    virtual ~GenesisBlockProcessor() {}
-    virtual bool genesis_block_handle(const iroha::model::Block &block) = 0;
-  };
+    explicit GenesisBlockProcessor(ametsuchi::MutableFactory &mutable_factory)
+      : mutable_factory_(mutable_factory) {}
 
+    ~GenesisBlockProcessor() {}
+    bool genesis_block_handle(const iroha::model::Block &block);
+
+  private:
+    ametsuchi::MutableFactory &mutable_factory_;
+  };
 }
 
-#endif  // IROHA_GENESIS_BLOCK_PROCESSOR_HPP
+#endif  // IROHA_GENESIS_BLOCK_PROCESSOR_IMPL_HPP
