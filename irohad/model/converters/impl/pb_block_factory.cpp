@@ -23,7 +23,7 @@ namespace iroha {
   namespace model {
     namespace converters {
 
-      protocol::Block PbBlockFactory::serialize(model::Block &block) {
+      protocol::Block PbBlockFactory::serialize(model::Block const&block) {
         protocol::Block pb_block;
 
         // -----|Header|-----
@@ -55,7 +55,7 @@ namespace iroha {
         return pb_block;
       }
 
-      model::Block PbBlockFactory::deserialize(protocol::Block &pb_block) {
+      model::Block PbBlockFactory::deserialize(protocol::Block const&pb_block) {
         model::Block block;
 
         // -----|Header|-----

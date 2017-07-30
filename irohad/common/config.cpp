@@ -18,50 +18,56 @@ limitations under the License.
 #define __RANDOM_HPP_
 
 #include <common/config.hpp>
+#include <type_traits>
 
-#include <random>
 #include <fstream>
+#include <random>
 
 namespace common {
+  namespace config {
+    using namespace rapidjson;
 
-    namespace config {
-        using namespace rapidjson;
+    ConfigLoader::ConfigLoader(const std::string& file_name) {
+      std::ifstream ifs(file_name);
 
-        ConfigLoader::ConfigLoader(const std::string& file_name){
-            std::ifstream ifs(file_name);
-            if(ifs.is_open()){
-                IStreamWrapper isw(ifs);
-                doc.ParseStream(isw);
-                if(doc.HasParseError()){
-                    throw std::runtime_error("parse error");
-                }
-            }
-        }
+      if (not ifs.is_open()) {
+        // TODO: exit with error msg
+      }
 
-        int ConfigLoader::getIntOrElse(const std::string& key, int def){
-            if(doc[key.c_str()].IsInt()){
-                return doc[key.c_str()].GetInt();
-            }else{
-                return def;
-            };
-        }
+      IStreamWrapper isw(ifs);
+      doc.ParseStream(isw);
 
-        std::string ConfigLoader::getStringOrElse(const std::string& key, std::string def){
-            if(doc[key.c_str()].IsString()){
-                return doc[key.c_str()].GetString();
-            }else{
-                return def;
-            };
-        }
+      if (doc.HasParseError()) {
+        // ToDo log failed to logger or maybe just exit with error?
+        doc.Parse("{}");
+      }
+    }
 
-        bool ConfigLoader::getBoolOrElse(const std::string& key, bool def){
-            if(doc[key.c_str()].IsBool()){
-                return doc[key.c_str()].GetBool();
-            }else{
-                return def;
-            };
-        }
-    };
-};  // namespace common
+    int ConfigLoader::getIntOrDefault(const std::string& key, int def) {
+      if (doc.IsObject() && doc.HasMember(key.c_str()) && doc[key.c_str()].IsInt()){
+        return doc[key.c_str()].GetInt();
+      } else {
+        return def;
+      };
+    }
+
+    std::string ConfigLoader::getStringOrDefault(const std::string& key, const std::string &def) {
+      if (doc.IsObject() && doc.HasMember(key.c_str()) && doc[key.c_str()].IsString()) {
+        return doc[key.c_str()].GetString();
+      } else {
+        return def;
+      };
+    }
+
+    bool ConfigLoader::getBoolOrDefault(const std::string& key, bool def) {
+      if (doc.IsObject() && doc.HasMember(key.c_str()) && doc[key.c_str()].IsBool()) {
+        return doc[key.c_str()].GetBool();
+      } else {
+        return def;
+      };
+    }
+
+  };  // namepsace config
+};    // namespace common
 
 #endif

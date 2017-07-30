@@ -4,6 +4,7 @@ package iroha.protocol;
 
 import "block.proto";
 import "queries.proto";
+import "google/protobuf/empty.proto";
 import "responses.proto";
 
 
@@ -20,6 +21,21 @@ service CommandService {
   rpc Torii (Transaction) returns (ToriiResponse);
 }
 
+
 service QueryService {
   rpc Find (Query) returns (QueryResponse);
+}
+
+enum GenesisBlockApplied {
+  APPLY_FAILURE = 0;
+  APPLY_SUCCESS = 1;
+}
+
+message ApplyGenesisBlockResponse {
+  GenesisBlockApplied applied = 1;
+}
+
+service GenesisBlockService {
+  rpc SendGenesisBlock (Block) returns (ApplyGenesisBlockResponse);
+  rpc SendAbortGenesisBlock (Block) returns (google.protobuf.Empty);
 }

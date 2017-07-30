@@ -20,29 +20,47 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include "validators.hpp"
+#include "bootstrap_network.hpp"
+#include "common/assert_config.hpp"
+#include "genesis_block_client_impl.hpp"
+
+// ** Genesis Block and Provisioning ** //
+// Reference is here (TODO: move to doc):
+// https://hackmd.io/GwRmwQ2BmCFoCsAGARtOAWBIBMcAcS0GcAZjhNNPvpAKZIDGQA==
+
+DEFINE_string(config, "", "Trusted peer's ip addresses");
+DEFINE_validator(config, &iroha_cli::validate_config);
+
+DEFINE_string(genesis_block, "", "Genesis block for sending network");
+DEFINE_validator(genesis_block, &iroha_cli::validate_genesis_block);
 
 DEFINE_bool(new_account, false, "Choose if account does not exist");
 DEFINE_string(name, "", "Name of the account");
-
-static bool not_empty_name(const char* flagname, const std::string& value) {
-  return value[0] != '\0';
-}
-DEFINE_validator(name, &not_empty_name);
 
 void create_account(std::string name);
 
 int main(int argc, char* argv[]) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-
   gflags::ShutDownCommandLineFlags();
 
   if (FLAGS_new_account) {
+    // Create new pub/priv key
     if (std::ifstream(FLAGS_name + ".pub")) {
-      std::cout << "File already exists" << std::endl;
-      return -1;
+      assert_config::assert_fatal(false, "File already exists");
     }
     create_account(FLAGS_name);
+  } else if (not FLAGS_config.empty() && not FLAGS_genesis_block.empty()) {
+    iroha_cli::GenesisBlockClientImpl genesis_block_client;
+    auto bootstrap = iroha_cli::BootstrapNetwork(genesis_block_client);
+    auto peers = bootstrap.parse_trusted_peers(FLAGS_config);
+    auto block = bootstrap.parse_genesis_block(FLAGS_genesis_block);
+    block = bootstrap.merge_tx_add_trusted_peers(block, peers);
+    bootstrap.run_network(peers, block);
+  } else {
+    assert_config::assert_fatal(false, "Invalid flags");
   }
+  return 0;
 }
 
 std::string hex_str(unsigned char* data, int len) {
@@ -56,6 +74,9 @@ std::string hex_str(unsigned char* data, int len) {
   return s;
 }
 
+/**
+ * Command to create a new account using the interactive console.
+ */
 void create_account(std::string name) {
   unsigned char public_key[32], private_key[64], seed[32];
 
