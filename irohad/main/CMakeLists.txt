@@ -52,6 +52,7 @@ add_executable(irohad irohad.cpp)
 target_link_libraries(irohad
   application
   genesis_block_server
+  ametsuchi
   gflags
   rapidjson
   config
