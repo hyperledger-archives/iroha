@@ -4,6 +4,7 @@ package iroha.protocol;
 
 import "block.proto";
 import "queries.proto";
+import "google/protobuf/empty.proto";
 
 enum ResponseCode {
   FAIL = 0; // default value
@@ -26,4 +27,18 @@ message QueryResponse {
 
 service QueryService {
   rpc Find (Query) returns (QueryResponse);
+}
+
+enum GenesisBlockApplied {
+  APPLY_FAILURE = 0;
+  APPLY_SUCCESS = 1;
+}
+
+message ApplyGenesisBlockResponse {
+  GenesisBlockApplied applied = 1;
+}
+
+service GenesisBlockService {
+  rpc SendGenesisBlock (Block) returns (ApplyGenesisBlockResponse);
+  rpc SendAbortGenesisBlock (Block) returns (google.protobuf.Empty);
 }

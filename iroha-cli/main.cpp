@@ -20,77 +20,46 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
-
-#include <ametsuchi/impl/storage_impl.hpp>
-#include "client.hpp"
 #include "validators.hpp"
+#include "bootstrap_network.hpp"
+#include "common/assert_config.hpp"
+#include "genesis_block_client_impl.hpp"
+
+// ** Genesis Block and Provisioning ** //
+// Reference is here (TODO: move to doc):
+// https://hackmd.io/GwRmwQ2BmCFoCsAGARtOAWBIBMcAcS0GcAZjhNNPvpAKZIDGQA==
+
+DEFINE_string(config, "", "Trusted peer's ip addresses");
+DEFINE_validator(config, &iroha_cli::validate_config);
+
+DEFINE_string(genesis_block, "", "Genesis block for sending network");
+DEFINE_validator(genesis_block, &iroha_cli::validate_genesis_block);
 
 DEFINE_bool(new_account, false, "Choose if account does not exist");
 DEFINE_string(name, "", "Name of the account");
-
-DEFINE_bool(grpc, false, "Send sample transaction to IrohaNetwork");
-DEFINE_string(address, "127.0.0.1", "Address of the Iroha node");
-// todo: host validator
-DEFINE_int32(torii_port, 50051, "Port of iroha's Torii");
-DEFINE_validator(torii_port, &iroha_cli::validate_port);
-
-DEFINE_bool(new_ledger, false,
-            "Creates new database and genesis block for the ledger");
-DEFINE_string(path, "/var/iroha/db/", "Path of the Ametsuchi");
-// todo: path validator
-DEFINE_string(redis, "127.0.0.1", "Redis address");
-DEFINE_int32(redis_port, 6379, "Redis port");
-DEFINE_validator(redis_port, &iroha_cli::validate_port);
-DEFINE_string(pg_conn, "host=localhost",
-              "Postgres parameters,"
-              "check out http://tinyurl.com/ycspggge");
-DEFINE_string(peers, "", "Public keys of iroha nodes separated by \";\"");
-DEFINE_validator(peers, &iroha_cli::validate_peers);
 
 void create_account(std::string name);
 
 int main(int argc, char* argv[]) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-
   gflags::ShutDownCommandLineFlags();
 
   if (FLAGS_new_account) {
+    // Create new pub/priv key
     if (std::ifstream(FLAGS_name + ".pub")) {
-      std::cout << "File already exists" << std::endl;
-      return -1;
+      assert_config::assert_fatal(false, "File already exists");
     }
     create_account(FLAGS_name);
-
-    // Send test tx to Iroha
+  } else if (not FLAGS_config.empty() && not FLAGS_genesis_block.empty()) {
+    iroha_cli::GenesisBlockClientImpl genesis_block_client;
+    auto bootstrap = iroha_cli::BootstrapNetwork(genesis_block_client);
+    auto peers = bootstrap.parse_trusted_peers(FLAGS_config);
+    auto block = bootstrap.parse_genesis_block(FLAGS_genesis_block);
+    block = bootstrap.merge_tx_add_trusted_peers(block, peers);
+    bootstrap.run_network(peers, block);
+  } else {
+    assert_config::assert_fatal(false, "Invalid flags");
   }
-
-  if (FLAGS_grpc) {
-    std::cout << "Send transaction to " << FLAGS_address << ":"
-              << FLAGS_torii_port << std::endl;
-    auto client = iroha_cli::CliClient(FLAGS_address, FLAGS_torii_port);
-    // ToDo more variables transaction
-    client.sendTx(iroha::model::Transaction{});
-    return 0;
-  }
-
-  if (FLAGS_new_ledger) {
-    auto storage = iroha::ametsuchi::StorageImpl::create(
-        FLAGS_path, FLAGS_redis, FLAGS_redis_port, FLAGS_pg_conn);
-    auto mut = storage->createMutableStorage();
-    // auto block;
-    // storage.apply(block, [](const auto& current_block, auto& executor,
-    //                         auto& query, auto& top_block) {
-    //   for (const auto& tx : current_block.transactions) {
-    //     for (const auto& command : tx.commands) {
-    //       if (not command->execute(query, executor)) {
-    //         return false;
-    //       }
-    //     }
-    //   }
-    //   return true;
-    // });
-  }
-
   return 0;
 }
 

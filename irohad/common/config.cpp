@@ -30,7 +30,7 @@ namespace common {
     ConfigLoader::ConfigLoader(const std::string& file_name) {
       std::ifstream ifs(file_name);
 
-      if (!ifs.is_open()) {
+      if (not ifs.is_open()) {
         // TODO: exit with error msg
       }
 

@@ -15,14 +15,24 @@
  * limitations under the License.
  */
 
-#include <string>
-#include <gflags/gflags.h>
+#ifndef IROHA_GENESIS_BLOCK_CLIENT_HPP
+#define IROHA_GENESIS_BLOCK_CLIENT_HPP
+
+#include <endpoint.grpc.pb.h>
+#include <model/block.hpp>
 
 namespace iroha_cli {
 
-  bool validate_port(const char*, gflags::int32);
-  bool validate_peers(const char*, const std::string&);
-  bool validate_config(const char*, const std::string&);
-  bool validate_genesis_block(const char*, const std::string&);
+  class GenesisBlockClient {
+   public:
+    virtual ~GenesisBlockClient() {}
+    virtual void set_channel(const std::string &ip, const int port) = 0;
+    virtual grpc::Status send_genesis_block(
+        const iroha::model::Block &iroha_block,
+        iroha::protocol::ApplyGenesisBlockResponse &response) = 0;
+    virtual void send_abort_genesis_block(const iroha::model::Block &block) = 0;
+  };
 
-} // namespace iroha_cli
+}  // namespace iroha_cli
+
+#endif  // IROHA_GENESIS_BLOCK_CLIENT_HPP
