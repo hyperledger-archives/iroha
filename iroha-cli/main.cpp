@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
     auto bootstrap = iroha_cli::BootstrapNetwork(genesis_block_client);
     auto peers = bootstrap.parse_trusted_peers(FLAGS_config);
     auto block = bootstrap.parse_genesis_block(FLAGS_genesis_block);
-    bootstrap.merge_tx_add_trusted_peers(block, peers);
+    block = bootstrap.merge_tx_add_trusted_peers(block, peers);
     bootstrap.run_network(peers, block);
   } else {
     assert_config::assert_fatal(false, "Invalid flags");
