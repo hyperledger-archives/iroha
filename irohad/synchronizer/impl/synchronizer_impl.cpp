@@ -40,11 +40,7 @@ namespace iroha {
         // Commit to main Ametsuchi
         mutableFactory_.commit(std::move(storage));
 
-        auto single_commit = rxcpp::observable<>::create<model::Block>(
-            [&commit_message](auto s) {
-              s.on_next(commit_message);
-              s.on_completed();
-            });
+        auto single_commit = rxcpp::observable<>::just(commit_message);
 
         notifier_.get_subscriber().on_next(single_commit);
       } else {
@@ -68,7 +64,7 @@ namespace iroha {
             // Peer send valid chain
             mutableFactory_.commit(std::move(storage));
             notifier_.get_subscriber().on_next(chain);
-            // You are synchonized
+            // You are synchronized
             return;
           }
         }
