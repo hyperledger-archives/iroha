@@ -28,7 +28,7 @@ class TestObservableTesting : public ::testing::Test {
 
 TEST_F(TestObservableTesting, ValidCallExactTest) {
   auto ints = rxcpp::observable<>::create<int>(
-      [](rxcpp::subscriber<int> s) {
+      [](auto s) {
         s.on_next(1);
         s.on_next(2);
         s.on_completed();
@@ -36,10 +36,10 @@ TEST_F(TestObservableTesting, ValidCallExactTest) {
 
   auto number_of_calls = 0;
 
-  TestObservable<int> wrapper(ints);
-  wrapper.test_subscriber(std::make_unique<CallExact<int>>(CallExact<int>(2)),
+  auto wrapper = TestObservable<>::create(ints);
+  wrapper.test_subscriber(CallExact<>::create(ints, 2),
                           [&number_of_calls](auto val) { ++number_of_calls; });
-  ASSERT_EQ(true, wrapper.validate());
+  ASSERT_TRUE(wrapper.validate());
   ASSERT_EQ(2, number_of_calls);
 }
 
@@ -48,7 +48,7 @@ void f() {
 
 TEST_F(TestObservableTesting, UnsatisfiedCallExactTest) {
   auto ints = rxcpp::observable<>::create<int>(
-      [](rxcpp::subscriber<int> s) {
+      [](auto s) {
         s.on_next(1);
         s.on_next(2);
         s.on_completed();
@@ -56,9 +56,9 @@ TEST_F(TestObservableTesting, UnsatisfiedCallExactTest) {
 
   auto number_of_calls = 0;
 
-  TestObservable<int> wrapper(ints);
-  wrapper.test_subscriber(std::make_unique<CallExact<int>>(CallExact<int>(555)),
+  auto wrapper = TestObservable<>::create(ints);
+  wrapper.test_subscriber(CallExact<>::create(ints, 555),
                           [&number_of_calls](auto val) { ++number_of_calls; });
-  ASSERT_EQ(false, wrapper.validate());
+  ASSERT_FALSE(wrapper.validate());
   ASSERT_EQ(2, number_of_calls);
 }
