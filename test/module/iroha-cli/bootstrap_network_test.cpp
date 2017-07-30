@@ -56,6 +56,10 @@ class iroha_cli_test : public ::testing::Test {
     block.hash = hash_provider.get_hash(block);
     return block;
   }
+
+  std::string rnd_hex_pk() {
+    return iroha::create_keypair(iroha::create_seed()).pubkey.to_hexstring();
+  }
 };
 
 class GenesisBlockClientMock : public iroha_cli::GenesisBlockClient {
@@ -91,24 +95,31 @@ class GenesisBlockClientMock : public iroha_cli::GenesisBlockClient {
 TEST_F(iroha_cli_test, NormalWhenParseTrustedPeers) {
   auto test_path = "/tmp/_boot_strap_test_target.conf";
   std::ofstream ofs(test_path);
-  ofs << R"({"ip":["192.168.0.3","192.168.0.4","192.168.0.5","192.168.0.6"]})";
+  ofs << R"({"peers":[
+    {"pubkey":")" + rnd_hex_pk() + R"(", "ip":"192.168.0.3"},
+    {"pubkey":")" + rnd_hex_pk() + R"(", "ip":"192.168.0.4"},
+    {"pubkey":")" + rnd_hex_pk() + R"(", "ip":"192.168.0.5"},
+    {"pubkey":")" + rnd_hex_pk() + R"(", "ip":"192.168.0.6"}
+  ]
+}
+)";
   ofs.close();
 
   GenesisBlockClientMock client_mock;
   iroha_cli::BootstrapNetwork bootstrap(client_mock);
   auto peers = bootstrap.parse_trusted_peers(test_path);
   ASSERT_EQ(peers.size(), 4);
-  ASSERT_STREQ(peers[0].c_str(), "192.168.0.3");
-  ASSERT_STREQ(peers[1].c_str(), "192.168.0.4");
-  ASSERT_STREQ(peers[2].c_str(), "192.168.0.5");
-  ASSERT_STREQ(peers[3].c_str(), "192.168.0.6");
+  ASSERT_STREQ(peers[0].address.c_str(), "192.168.0.3");
+  ASSERT_STREQ(peers[1].address.c_str(), "192.168.0.4");
+  ASSERT_STREQ(peers[2].address.c_str(), "192.168.0.5");
+  ASSERT_STREQ(peers[3].address.c_str(), "192.168.0.6");
   ASSERT_TRUE(remove(test_path) == 0);
 }
 
 TEST_F(iroha_cli_test, WrongIPNameWhenParseTrustedPeers) {
   auto test_path = "/tmp/_bootstrap_test_target.conf";
   std::ofstream ofs(test_path);
-  ofs << R"({"IP":["192.168.0.3","192.168.0.4","192.168.0.5","192.168.0.6"]})";
+  ofs << R"({"peers":[{"pubkey":")" + rnd_hex_pk() + R"(", "Ip":"192.168.0.5"}]})";
   ofs.close();
 
   GenesisBlockClientMock client_mock;
@@ -120,7 +131,7 @@ TEST_F(iroha_cli_test, WrongIPNameWhenParseTrustedPeers) {
 TEST_F(iroha_cli_test, InvalidIPValueWhenParseTrustedPeers) {
   auto test_path = "/tmp/_bootstrap_test_target.conf";
   std::ofstream ofs(test_path);
-  ofs << R"({"ip":["192.168.256.3","192.168.0.4","192.168.0.5","192.168.0.6"]})";
+  ofs << R"({"peers":[{"pubkey":")" + rnd_hex_pk() + R"(", "ip":"192.256.0.5"}]})";
   ofs.close();
 
   GenesisBlockClientMock client_mock;
@@ -187,7 +198,13 @@ TEST_F(iroha_cli_test, NormalWhenRunNetwork) {
 
   auto block = create_genesis_block();
 
+  std::vector<iroha::model::Peer> peers(2);
+  peers[0].address = "192.168.0.3";
+  peers[0].pubkey = iroha::create_keypair(iroha::create_seed()).pubkey;
+  peers[1].address = "192.168.0.4";
+  peers[1].pubkey = iroha::create_keypair(iroha::create_seed()).pubkey;
+
   ASSERT_NO_THROW({
-    bootstrap.run_network({"192.168.0.3", "192.168.0.4"}, block);
+    bootstrap.run_network(peers, block);
   });
 }

@@ -22,23 +22,24 @@
 #include <vector>
 #include "genesis_block_client.hpp"
 #include "model/block.hpp"
+#include "model/peer.hpp"
 
 namespace iroha_cli {
 
   class BootstrapNetwork {
-  public:
+   public:
     BootstrapNetwork(GenesisBlockClient& client) : client_(client) {}
 
     /**
-     * parse trusted peer's ip addresses in `target.conf`
+     * parses trusted peers in `target.conf`
      * @param target_conf_path
-     * @return trusted peers' ip
+     * @return std::vector<iroha::model::Peer>
      */
-    std::vector<std::string> parse_trusted_peers(
+    std::vector<iroha::model::Peer> parse_trusted_peers(
         std::string const& target_conf_path);
 
     /**
-     * parse transactions in genesis block `genesis.json`
+     * parses transactions in genesis block `genesis.json`
      * @param genesis_json_path
      * @return iroha::model::Block
      */
@@ -46,11 +47,21 @@ namespace iroha_cli {
         std::string const& genesis_json_path);
 
     /**
+     * merges trusted peers AddPeer tx with given block
+     * @param block
+     * @param trusted_peers
+     * @return iroha::model::Block
+     */
+    iroha::model::Block merge_tx_add_trusted_peers(
+        const iroha::model::Block& block,
+        std::vector<iroha::model::Peer> const& trusted_peers);
+
+    /**
      * aborts bootstrapping network.
      * @param trusted_peers
      * @param block
      */
-    void abort_network(std::vector<std::string> const& trusted_peers,
+    void abort_network(std::vector<iroha::model::Peer> const& trusted_peers,
                        iroha::model::Block const& block);
 
     /**
@@ -58,7 +69,7 @@ namespace iroha_cli {
      * @param trusted_peers
      * @param block
      */
-    void run_network(std::vector<std::string> const& trusted_peers,
+    void run_network(std::vector<iroha::model::Peer> const& trusted_peers,
                      iroha::model::Block const& block);
 
    private:
