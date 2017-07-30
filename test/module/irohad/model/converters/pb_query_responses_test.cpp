@@ -125,12 +125,20 @@ TEST(QueryResponseTest, TransactionsResponseTest) {
   model::TransactionsResponse txs_response{};
 
   txs_response.transactions =
-      rxcpp::observable<>::from(model::Transaction().setTxCounter(1),
-                                model::Transaction().setTxCounter(2),
-                                model::Transaction().setTxCounter(3));
+      rxcpp::observable<>::from(model::Transaction().setTxCounter(0),
+                                model::Transaction().setTxCounter(1),
+                                model::Transaction().setTxCounter(2));
 
   auto shrd_tr = std::make_shared<decltype(txs_response)>(txs_response);
   auto query_response = *pb_factory.serialize(shrd_tr);
 
   ASSERT_EQ(query_response.transactions_response().transactions().size(), 3);
+  for (size_t i = 0; i < 3; i++) {
+    ASSERT_EQ(query_response.transactions_response()
+                  .transactions()
+                  .Get(i)
+                  .meta()
+                  .tx_counter(),
+              i);
+  }
 }
