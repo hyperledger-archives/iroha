@@ -23,21 +23,6 @@ logger::Logger Log("GenesisBlockProcessor");
 namespace iroha {
   bool GenesisBlockProcessorImpl::genesis_block_handle(
       const iroha::model::Block &block) {
-    auto wsv = temporary_factory_.createTemporaryWsv();
-
-    for (const auto &tx : block.transactions) {
-      auto result =
-          wsv->apply(tx, [](const auto &tx, auto &executor, auto &query) {
-            for (const auto &command : tx.commands) {
-              auto valid = command->execute(query, executor);
-              if (!valid) return false;
-            }
-            return true;
-          });
-      if (!result) {
-        return false;
-      }
-    }
 
     auto ms = mutable_factory_.createMutableStorage();
 

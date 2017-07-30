@@ -105,7 +105,9 @@ class GenesisBlockProcessorTest : public ::testing::Test {
 TEST_F(GenesisBlockProcessorTest, genesis_block_handle) {
   auto storage = ametsuchi::StorageImpl::create(block_store_path, redishost_,
                                                 redisport_, pgopt_);
-  GenesisBlockProcessorImpl processor_impl(*storage, *storage);
+  ASSERT_TRUE(storage);
+
+  GenesisBlockProcessorImpl processor_impl(*storage);
   auto block = create_genesis_block();
   ASSERT_TRUE(processor_impl.genesis_block_handle(block));
   auto account = storage->getAccount("user@ja");

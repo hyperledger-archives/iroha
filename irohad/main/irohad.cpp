@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 
   // TODO: Check if I have a ledger already.
 
-  iroha::GenesisBlockProcessorImpl gen_proc(*irohad.storage, *irohad.storage);
+  iroha::GenesisBlockProcessorImpl gen_proc(*irohad.storage);
 
   // shuts down automatically when received genesis block
   iroha::GenesisBlockServerRunner(gen_proc).run("0.0.0.0",
