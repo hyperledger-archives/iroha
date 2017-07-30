@@ -31,7 +31,9 @@ namespace iroha {
       for (const auto &tx : blk.transactions) {
         for (const auto &command : tx.commands) {
           auto valid = command->execute(query, executor);
-          if (!valid) return false;
+          if (not valid) {
+            return false;
+          }
         }
       }
       return true;
