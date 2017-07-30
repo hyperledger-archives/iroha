@@ -37,18 +37,16 @@ namespace iroha {
 
       void process_proposal(model::Proposal proposal) override;
 
-      rxcpp::observable<nonstd::optional<model::Proposal>>
-      on_verified_proposal() override;
+      rxcpp::observable<model::Proposal> on_verified_proposal() override;
 
-      void process_verified_proposal(
-          nonstd::optional<model::Proposal> proposal) override;
+      void process_verified_proposal(model::Proposal proposal) override;
 
-      rxcpp::observable<nonstd::optional<model::Block>> on_block() override;
+      rxcpp::observable<model::Block> on_block() override;
 
      private:
       // internal
-      rxcpp::subjects::subject<nonstd::optional<model::Proposal>> notifier_;
-      rxcpp::subjects::subject<nonstd::optional<model::Block>> block_notifier_;
+      rxcpp::subjects::subject<model::Proposal> notifier_;
+      rxcpp::subjects::subject<model::Block> block_notifier_;
 
       validation::StatefulValidator& validator_;
       ametsuchi::TemporaryFactory& ametsuchi_factory_;
