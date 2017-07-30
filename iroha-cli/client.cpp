@@ -72,9 +72,12 @@ namespace iroha_cli {
     auto pb_tx = factory.serialize(model_tx);
     iroha::protocol::ToriiResponse response;
     auto stat = client_.Torii(pb_tx, response);
-    // TODO: std::cout << stat
-    // return response.validation();
-    return response.message();
+    if (response.validation() == iroha::protocol::STATELESS_VALIDATION_SUCCESS){
+      std::cout << "Stateless validation success" << std::endl;
+    } else{
+      std::cout << "Stateless validation error" << std::endl;
+    }
+    return "";
   }
 
 };
