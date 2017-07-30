@@ -28,7 +28,7 @@ namespace iroha {
 
   class GenesisBlockProcessorImpl : public GenesisBlockProcessor {
   public:
-    GenesisBlockProcessorImpl(ametsuchi::MutableFactory &mutable_factory)
+    explicit GenesisBlockProcessorImpl(ametsuchi::MutableFactory &mutable_factory)
       : mutable_factory_(mutable_factory) {}
 
     ~GenesisBlockProcessorImpl() override {}

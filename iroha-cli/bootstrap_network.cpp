@@ -105,7 +105,7 @@ namespace iroha_cli {
     rapidjson::Document doc;
     rapidjson::IStreamWrapper isw(ifs);
     doc.ParseStream(isw);
-    assert_fatal(!doc.HasParseError(), "JSON Parse error: " + target_conf_path);
+    assert_fatal(not doc.HasParseError(), "JSON Parse error: " + target_conf_path);
 
     const char *MemberPeers = "peers";
     assert_fatal(doc.HasMember(MemberPeers), no_member_error(MemberPeers));
@@ -157,7 +157,7 @@ namespace iroha_cli {
     doc.ParseStream(isw);
 
     // validate doc
-    assert_fatal(!doc.HasParseError(), parse_error(genesis_json_path));
+    assert_fatal(not doc.HasParseError(), parse_error(genesis_json_path));
     assert_fatal(doc.IsObject(), type_error("JSON", "object"));
 
     validate_transactions(doc);
@@ -205,7 +205,9 @@ namespace iroha_cli {
     }
     std::vector<iroha::model::Transaction> txs;
     txs.push_back(add_peers_tx);
-    for (const auto &tx : block.transactions) txs.push_back(tx);
+    for (const auto &tx : block.transactions) {
+      txs.push_back(tx);
+    }
 
     auto ret = block;
     ret.transactions = txs;
@@ -241,7 +243,7 @@ namespace iroha_cli {
       client_.set_channel(peer.address, iroha::GenesisBlockServicePort);
       iroha::protocol::ApplyGenesisBlockResponse response;
       auto stat = client_.send_genesis_block(genesis_block, response);
-      if (!stat.ok() || response.applied() == iroha::protocol::APPLY_FAILURE) {
+      if (not stat.ok() || response.applied() == iroha::protocol::APPLY_FAILURE) {
         abort_network(trusted_peers, genesis_block);
         assert_fatal(false,
                      "Failure of creating genesis block. {\"address\":\"" +

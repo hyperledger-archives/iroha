@@ -45,7 +45,7 @@ inline rapidjson::Document parse_iroha_config(std::string const& iroha_conf_path
   std::ifstream ifs_iroha(iroha_conf_path);
   rapidjson::IStreamWrapper isw(ifs_iroha);
   doc.ParseStream(isw);
-  assert_fatal(!doc.HasParseError(), "JSON parse error: " + iroha_conf_path);
+  assert_fatal(not doc.HasParseError(), "JSON parse error: " + iroha_conf_path);
 
   assert_fatal(doc.HasMember(mbr::Ip), no_member_error(mbr::Ip));
   assert_fatal(doc[mbr::Ip].IsArray(), type_error(mbr::Ip, "array"));

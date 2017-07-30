@@ -26,6 +26,7 @@ namespace iroha_cli {
 
   class GenesisBlockClientImpl : public GenesisBlockClient {
    public:
+    GenesisBlockClientImpl(){}
     void set_channel(const std::string &target_ip, const int port) override;
     grpc::Status send_genesis_block(
         const iroha::model::Block &iroha_block,

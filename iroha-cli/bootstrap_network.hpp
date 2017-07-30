@@ -28,7 +28,7 @@ namespace iroha_cli {
 
   class BootstrapNetwork {
    public:
-    BootstrapNetwork(GenesisBlockClient& client) : client_(client) {}
+    explicit BootstrapNetwork(GenesisBlockClient& client) : client_(client) {}
 
     /**
      * parses trusted peers in `target.conf`

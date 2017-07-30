@@ -27,7 +27,7 @@ limitations under the License.
 #include "main/iroha_conf_loader.hpp"
 
 bool validate_config(const char*, std::string const& path) {
-  return !path.empty();
+  return not path.empty();
 }
 
 DEFINE_string(config, "", "Specify iroha provisioning path.");
