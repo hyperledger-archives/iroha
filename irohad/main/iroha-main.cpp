@@ -16,7 +16,16 @@ limitations under the License.
 
 #include <main/application.hpp>
 
+#include <gflags/gflags.h>
+#include <common/config.hpp>
+#include <cstring>
+
+DEFINE_string(config, "iroha.conf", "Irohad worki path");
+
 int main(int argc, char *argv[]) {
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  gflags::ShutDownCommandLineFlags();
+  auto loader = common::config::ConfigLoader(FLAGS_config);
 
   auto irohad = Irohad();
   irohad.run();
