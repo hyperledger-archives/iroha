@@ -31,6 +31,7 @@ namespace iroha {
 
     rxcpp::observable <rxcpp::observable<model::Block>>
     PeerCommunicationServiceStub::on_commit() {
+      return consensus_.on_commit();
     }
 
     rxcpp::observable <model::Proposal>

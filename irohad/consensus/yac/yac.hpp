@@ -96,14 +96,15 @@ namespace iroha {
         void propagateRejectDirectly(model::Peer to, RejectMessage msg);
 
         // ------|Fields|------
-        rxcpp::subjects::subject<CommitMessage> notifier_;
+        YacVoteStorage vote_storage_;
         std::shared_ptr<YacNetwork> network_;
         std::shared_ptr<YacCryptoProvider> crypto_;
         std::shared_ptr<Timer> timer_;
-        YacVoteStorage vote_storage_;
+        rxcpp::subjects::subject<CommitMessage> notifier_;
 
         // ------|One round|------
         ClusterOrdering cluster_order_;
+
 
         // ------|Constants|------
         const uint64_t delay_;

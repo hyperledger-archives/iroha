@@ -123,7 +123,7 @@ namespace iroha {
                                              BlockHash block_hash) {
 
         // find exist
-        for (auto i = 0; i < block_votes_.size(); ++i) {
+        for (uint32_t i = 0; i < block_votes_.size(); ++i) {
           if (block_votes_.at(i).getProposalHash() == proposal_hash and
               block_votes_.at(i).getBlockHash() == block_hash) {
             return i;
