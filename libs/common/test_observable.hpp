@@ -98,7 +98,8 @@ namespace common {
        * @param subscriber - business logic subscriber
        */
       void test_subscriber(std::unique_ptr<VerificationStrategy<T>> strategy,
-                           std::function<void(T val)> subscriber) {
+                           std::function<void(T val)> subscriber = [](T val) {
+                           }) {
         strategy_ = std::move(strategy);
         unwrapped_.subscribe([this, subscriber](T val) {
           // verify before invariant
