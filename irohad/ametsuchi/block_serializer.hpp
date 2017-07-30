@@ -43,9 +43,33 @@ using namespace rapidjson;
 
 class BlockSerializer{
  public:
+  /**
+   * Serialize block to blob
+   * @param block
+   * @return
+   */
   std::vector<uint8_t > serialize(model::Block block);
+  /**
+   * Deserialize blob block to model Block
+   * @param bytes
+   * @return
+   */
   nonstd::optional<model::Block> deserialize(const std::vector<uint8_t >& bytes);
+
+  /**
+   * Deserialize transactions to vector<>
+   * @param doc
+   * @param transactions
+   */
   void deserialize(Document& doc, std::vector<model::Transaction>& transactions); // its' also used in iroha-cli
+
+  /**
+   * Deserialize json transaction to iroha model Transaction
+   * @param json_tx
+   * @return Will return nullopt if transaction is ill-formed
+   */
+  nonstd::optional<model::Transaction> deserialize(const std::string json_tx);
+
  private:
   void serialize(PrettyWriter<StringBuffer>& writer, const model::Block& block);
   void serialize(PrettyWriter<StringBuffer>& writer, const model::Signature& signature);
@@ -64,6 +88,8 @@ class BlockSerializer{
   void serialize(PrettyWriter<StringBuffer>& writer, const model::SetQuorum& set_quorum);
   void serialize(PrettyWriter<StringBuffer>& writer, const model::TransferAsset& transfer_asset);
 
+  // Deserialize one transaction
+  nonstd::optional<model::Transaction> deserialize(GenericValue<rapidjson::UTF8<char>>::Object& json_tx);
   void deserialize(GenericValue<rapidjson::UTF8<char>>::Object& json_tx,
                    std::vector<std::shared_ptr<model::Command>>& commands);
   nonstd::optional<model::AddPeer> deserialize_add_peer(GenericValue<UTF8<char>>::Object& json_command);

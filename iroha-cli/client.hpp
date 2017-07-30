@@ -20,18 +20,27 @@
 
 #include <model/transaction.hpp>
 #include <string>
+#include "ametsuchi/block_serializer.hpp"
+#include "torii/command_client.hpp"
+#include <fstream>
+#include "common/types.hpp"
 
 namespace iroha_cli {
 
   class CliClient {
    public:
-    CliClient(std::string target_ip, int port);
-
-    std::string sendTx(const iroha::model::Transaction &tx);
+    explicit CliClient(std::string target_ip, int port, std::string account_name);
+    /**
+     * Send transaction to Iroha-Network
+     * @param json_tx
+     * @return
+     */
+    std::string sendTx(std::string json_tx);
 
    private:
-    std::string target_ip;
-    int port;
+    torii::CommandSyncClient client_;
+    std::string client_priv_key_;
+    std::string client_pub_key_;
   };
 };
 

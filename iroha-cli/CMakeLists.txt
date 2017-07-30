@@ -26,9 +26,10 @@ target_link_libraries(cli-flags_validators gflags)
 add_executable(iroha-cli
   main.cpp
   validators.cpp
+  client.cpp
   )
 target_link_libraries(iroha-cli
-  ed25519
+  crypto
   cli-flags_validators
   bootstrap_network
   rapidjson
@@ -36,4 +37,5 @@ target_link_libraries(iroha-cli
   ametsuchi
   model
   optional
+  command_client
   )
