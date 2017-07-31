@@ -278,19 +278,18 @@ TEST(BlockSerialize, BlockSerializeWhenValid){
 
 TEST(BlockSerialize, BlockSerializeWhenInvalid){
   auto block = create_block();
-  // Empty Block
-  block.transactions = {};
   iroha::ametsuchi::BlockSerializer blockSerializer;
 
   std::cout << unsigned(block.hash[0]) << std::endl;
 
   auto bytes = blockSerializer.serialize(block);
+  bytes[0] = 0x1;
   std::string str(bytes.begin(), bytes.end());
   std::cout << str << std::endl;
 
   // deserialize
   auto res = blockSerializer.deserialize(bytes);
-  ASSERT_EQ(res.value().transactions.size(), 0);
+  ASSERT_FALSE(res.has_value());
 
 }
 

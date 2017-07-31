@@ -420,13 +420,14 @@ namespace iroha {
       }
 
       model::Block block{};
-      // Check if hash is presented
-      if (doc.HasMember("hash")) {
-        std::string hash_str(doc["hash"].GetString(),
-                             doc["hash"].GetStringLength());
-        auto hash_bytes = hex2bytes(hash_str);
-        std::copy(hash_bytes.begin(), hash_bytes.end(), block.hash.begin());
+      // Check if hash is present
+      if (not doc.HasMember("hash")) {
+        return nonstd::nullopt;
       }
+      std::string hash_str(doc["hash"].GetString(),
+                           doc["hash"].GetStringLength());
+      auto hash_bytes = hex2bytes(hash_str);
+      std::copy(hash_bytes.begin(), hash_bytes.end(), block.hash.begin());
 
       // Signatures are critical part of a Block, if there are none - Block is
       // invalid
@@ -458,19 +459,19 @@ namespace iroha {
         block.sigs.push_back(signature);
       }
       // created_ts
-      if (not doc.HasMember("created_ts")){
+      if (not doc.HasMember("created_ts")) {
         return nonstd::nullopt;
       }
       block.created_ts = doc["created_ts"].GetUint64();
 
       // height
-      if (not doc.HasMember("height")){
+      if (not doc.HasMember("height")) {
         return nonstd::nullopt;
       }
       block.height = doc["height"].GetUint64();
 
       // prev_hash
-      if (not doc.HasMember("prev_hash")){
+      if (not doc.HasMember("prev_hash")) {
         return nonstd::nullopt;
       }
       std::string prev_hash_str(doc["prev_hash"].GetString(),
@@ -479,12 +480,12 @@ namespace iroha {
       std::copy(prev_hash_bytes.begin(), prev_hash_bytes.end(),
                 block.prev_hash.begin());
       // txs number
-      if (not doc.HasMember("txs_number")){
+      if (not doc.HasMember("txs_number")) {
         return nonstd::nullopt;
       }
       block.txs_number = static_cast<uint16_t>(doc["txs_number"].GetUint());
       // merkle_root is optional
-      if (doc.HasMember("merkle_root")){
+      if (doc.HasMember("merkle_root")) {
         std::string merkle_root_str(doc["merkle_root"].GetString(),
                                     doc["merkle_root"].GetStringLength());
         auto merkle_root_bytes = hex2bytes(merkle_root_str);
@@ -565,7 +566,7 @@ namespace iroha {
 
     bool BlockSerializer::deserialize(
         Document& doc, std::vector<model::Transaction>& transactions) {
-      if (not doc.HasMember("transactions")){
+      if (not doc.HasMember("transactions")) {
         return false;
       }
       auto json_txs = doc["transactions"].GetArray();
@@ -575,7 +576,7 @@ namespace iroha {
         if (tx_opt.has_value()) {
           auto tx = tx_opt.value();
           transactions.push_back(tx);
-        }else{
+        } else {
           return false;
         }
       }
