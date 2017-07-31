@@ -66,7 +66,7 @@ namespace iroha {
          * @param block - for hashing
          * @return hashed value of block
          */
-        virtual YacHash makeHash(model::Block block) = 0;
+        virtual YacHash makeHash(model::Block &block) = 0;
 
         virtual ~YacHashProvider() = default;
       };
