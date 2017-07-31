@@ -32,7 +32,7 @@ using ::testing::DefaultValue;
 
 class ChainValidatorMock : public iroha::validation::ChainValidator {
  public:
-  MOCK_METHOD2(validateChain, bool(rxcpp::observable<Block>&, MutableStorage&));
+  MOCK_METHOD2(validateChain, bool(Commit, MutableStorage&));
 
   MOCK_METHOD2(validateBlock, bool(const Block&, MutableStorage&));
 };

@@ -15,35 +15,14 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SYNCHRONIZER_HPP
-#define IROHA_SYNCHRONIZER_HPP
+#ifndef IROHA_COMMIT_HPP
+#define IROHA_COMMIT_HPP
 
 #include <rxcpp/rx-observable.hpp>
 #include "model/block.hpp"
-#include "model/commit.hpp"
 
 namespace iroha {
-  namespace synchronizer {
+  using Commit = rxcpp::observable<model::Block>;
+}  // namespace iroha
 
-    /**
-     * Synchronizer is interface for fetching missed blocks
-     */
-    class Synchronizer {
-     public:
-
-      /**
-       * Processing block last committed block
-       */
-      virtual void process_commit(model::Block block) = 0;
-
-      /**
-       * Emit committed blocks
-       * Note: from one block received on consensus
-       */
-      virtual rxcpp::observable<Commit> on_commit_chain() = 0;
-
-      virtual ~Synchronizer() = default;
-    };
-  } // namespace synchronizer
-} // namespace iroha
-#endif //IROHA_SYNCHRONIZER_HPP
+#endif  // IROHA_COMMIT_HPP

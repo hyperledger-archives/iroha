@@ -18,14 +18,12 @@
 #ifndef IROHA_CHAIN_VALIDATOR_HPP
 #define IROHA_CHAIN_VALIDATOR_HPP
 
-#include <ametsuchi/mutable_storage.hpp>
-#include <model/block.hpp>
 #include <rxcpp/rx-observable.hpp>
+#include "ametsuchi/mutable_storage.hpp"
+#include "model/block.hpp"
+#include "model/commit.hpp"
 
 namespace iroha {
-
-  using Commit = rxcpp::observable<model::Block>;
-
   namespace validation {
 
     /**
