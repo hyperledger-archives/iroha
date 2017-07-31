@@ -67,7 +67,7 @@ namespace common {
 
       /**
        * validation function for invariant
-       * @return true if invariant safe, otherwice false
+       * @return true if invariant safe, otherwise false
        */
       virtual bool validate() = 0;
 
@@ -81,28 +81,26 @@ namespace common {
      * TestObservable class provide wrapper for observable
      * @tparam T type of data in wrapped observable
      */
-    template <typename T = void>
+    template <typename T>
     class TestObservable {
      public:
 
       /**
        * Constructor for wrapping observable for checking invariant
        * @param unwrapped_observable - object for wrapping
+       * @param strategy - invariant for validation
        */
-      TestObservable(rxcpp::observable <T> unwrapped_observable)
-          : unwrapped_(unwrapped_observable) {
-      };
+      TestObservable(rxcpp::observable<T> unwrapped_observable,
+                     std::unique_ptr<VerificationStrategy<T>> strategy)
+          : unwrapped_(unwrapped_observable), strategy_(std::move(strategy)) {}
 
       /**
        * Method provide subscription
        * for wrapped observable with checking invariant.
-       * @param strategy - invariant for validation
        * @param subscriber - business logic subscriber
        */
-      void test_subscriber(std::unique_ptr<VerificationStrategy<T>> strategy,
-                           std::function<void(T val)> subscriber = [](T val) {
-                           }) {
-        strategy_ = std::move(strategy);
+      TestObservable<T> &subscribe(std::function<void(T val)> subscriber =
+                                       [](T) {}) {
         unwrapped_.subscribe([this, subscriber](T val) {
           // verify before invariant
           this->strategy_->on_next_before(val);
@@ -113,6 +111,8 @@ namespace common {
           // verify after invariant
           this->strategy_->on_next_after(val);
         });
+
+        return *this;
       };
 
       /**
@@ -128,20 +128,19 @@ namespace common {
       std::unique_ptr<VerificationStrategy<T>> strategy_;
     };
 
-    template <>
-    class TestObservable<void> {
-     public:
-      template <typename T>
-      static auto create(rxcpp::observable <T> unwrapped_observable) {
-        return TestObservable<T>(unwrapped_observable);
-      }
-    };
+    template <template <typename K> class S, typename T, typename... Args>
+    TestObservable<T> make_test_observable(
+        rxcpp::observable<T> unwrapped_observable, Args &&... args) {
+      return TestObservable<T>(
+          unwrapped_observable,
+          std::make_unique<S<T>>(std::forward<Args>(args)...));
+    }
 
     /**
      * CallExact check invariant that subscriber called exact number of timers
      * @tparam T - observable parameter
      */
-    template <typename T = void>
+    template <typename T>
     class CallExact : public VerificationStrategy<T> {
      public:
 
@@ -198,15 +197,6 @@ namespace common {
      private:
       uint64_t expected_number_of_calls_;
       uint64_t number_of_calls_ = 0;
-    };
-
-    template <>
-    class CallExact<void> {
-     public:
-      template <typename T>
-      static auto create(rxcpp::observable <T> unwrapped_observable, uint64_t expected_number_of_calls) {
-        return std::make_unique<CallExact<T>>(expected_number_of_calls);
-      }
     };
 
   } // namespace test_observable
