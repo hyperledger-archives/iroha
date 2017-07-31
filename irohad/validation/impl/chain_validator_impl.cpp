@@ -27,8 +27,11 @@ namespace iroha {
     bool ChainValidatorImpl::validateBlock(const model::Block& block,
                                            ametsuchi::MutableStorage& storage) {
       auto apply_block = [](const auto& current_block, auto& executor,
-                            auto& query, auto& top_block) {
+                            auto& query, const auto& top_hash) {
         for (const auto& tx : current_block.transactions) {
+          if (current_block.prev_hash != top_hash) {
+            return false;
+          }
           for (const auto& command : tx.commands) {
             if (not command->execute(query, executor)) {
               return false;
@@ -44,20 +47,18 @@ namespace iroha {
           // Verify signatories of the block
           // TODO: use stateful validation here ?
           crypto_provider_.verify(block) &&
-          // Apply to temporal storage
+          // Apply to temporary storage
           storage.apply(block, apply_block);
     }
 
-    bool ChainValidatorImpl::validateChain(
-        rxcpp::observable<model::Block>& blocks,
-        ametsuchi::MutableStorage& storage) {
-      auto result = false;
-      blocks
-          .take_while([&result, this, &storage](auto block) {
+    bool ChainValidatorImpl::validateChain(Commit blocks,
+                                           ametsuchi::MutableStorage& storage) {
+      return blocks
+          .all([this, &storage](auto block) {
             return this->validateBlock(block, storage);
           })
-          .subscribe([](auto block) {});
-      return result;
+          .as_blocking()
+          .first();
     }
 
     bool ChainValidatorImpl::checkSupermajority(
@@ -66,7 +67,8 @@ namespace iroha {
       if (not all_peers.has_value()) {
         return false;
       }
-      auto f = (all_peers.value().size() - 1) / 3;
+      int64_t all = all_peers.value().size();
+      auto f = (all - 1) / 3.0;
       return signs_num >= 2 * f + 1;
     }
   }

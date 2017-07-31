@@ -24,8 +24,6 @@
 namespace iroha {
   namespace synchronizer {
 
-    using Commit = rxcpp::observable <model::Block>;
-
     /**
      * Synchronizer is interface for fetching missed blocks
      */

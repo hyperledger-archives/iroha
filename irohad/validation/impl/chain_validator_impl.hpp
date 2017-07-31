@@ -26,7 +26,7 @@ namespace iroha {
      public:
       explicit ChainValidatorImpl(model::ModelCryptoProvider &crypto_provider);
 
-      bool validateChain(rxcpp::observable<model::Block> &blocks,
+      bool validateChain(Commit blocks,
                          ametsuchi::MutableStorage &storage) override;
 
       bool validateBlock(const model::Block &block,
