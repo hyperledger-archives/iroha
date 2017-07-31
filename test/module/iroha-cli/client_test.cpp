@@ -95,3 +95,23 @@ TEST_F(ClientTest, SendTxWhenValid) {
   std::cout << "Sending  json transaction to Iroha" << std::endl;
   std::cout << client.sendTx(json_tx) << std::endl;
 }
+
+TEST_F(ClientTest, SendTxWhenInvalidJson) {
+  iroha_cli::CliClient client(Ip, Port, "test");
+  EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(pcsMock,propagate_transaction(_)).Times(1);
+  // Json with no Transaction
+  auto json_tx ="{\n"
+      "  \"creator_account_id\": \"test\", \n"
+      "  \"commands\":[{\n"
+      "  \"command_type\": \"AddPeer\",\n"
+      "    \"address\": \"localhost\",\n"
+      "    \"peer_key\": \"2323232323232323232323232323232323232323232323232323232323232323\"\n"
+      "  }]\n"
+      "}";
+  std::cout << "Sending  json transaction to Iroha" << std::endl;
+  std::cout << client.sendTx(json_tx) << std::endl;
+
+}
+
