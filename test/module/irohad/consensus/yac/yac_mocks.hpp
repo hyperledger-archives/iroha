@@ -120,6 +120,9 @@ class FakeNetwork : public YacNetwork {
   std::shared_ptr<YacNetworkNotifications> notification;
 };
 
+/**
+ *Mock realisation of yac consensus
+ */
 class HashGateMock : public HashGate {
  public:
   MOCK_METHOD2(vote, void(YacHash, ClusterOrdering));
@@ -140,6 +143,9 @@ class HashGateMock : public HashGate {
   };
 };
 
+/**
+ * Mock for ordering
+ */
 class YacPeerOrdererMock : public YacPeerOrderer {
  public:
   MOCK_METHOD0(getInitialOrdering, nonstd::optional<ClusterOrdering>());
@@ -159,9 +165,12 @@ class YacPeerOrdererMock : public YacPeerOrderer {
   };
 };
 
+/**
+ * Mock for hash provider
+ */
 class YacHashProviderMock : public YacHashProvider {
  public:
-  MOCK_METHOD1(makeHash, YacHash(iroha::model::Block));
+  MOCK_METHOD1(makeHash, YacHash(iroha::model::Block & ));
 
   YacHashProviderMock() = default;
 
