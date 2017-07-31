@@ -27,12 +27,11 @@ namespace iroha {
         : qpf_(qpf), validator_(stateless_validator) {}
 
     void QueryProcessorImpl::queryHandle(std::shared_ptr<model::Query> query) {
-      model::ErrorResponse response;
-      response.query = *query;
-      response.reason = "Not valid";
-
       // if not valid send wrong response
       if (!validator_.validate(*query)) {
+        model::ErrorResponse response;
+        response.query = *query;
+        response.reason = model::ErrorResponse::STATELESS_INVALID;
         subject_.get_subscriber().on_next(
             std::make_shared<model::ErrorResponse>(response));
       } else {  // else execute query

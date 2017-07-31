@@ -18,8 +18,8 @@
 #ifndef IROHA_ERROR_RESPONSE_HPP
 #define IROHA_ERROR_RESPONSE_HPP
 
-#include "model/query_response.hpp"
 #include <string>
+#include "model/query_response.hpp"
 
 namespace iroha {
   namespace model {
@@ -28,12 +28,19 @@ namespace iroha {
      * Provide error answer with reason about error
      */
     struct ErrorResponse : public QueryResponse {
-
       /**
        * Reason of error
        */
-      std::string reason;
+      enum Reason {
+        STATELESS_INVALID,
+        STATEFUL_INVALID,
+        NO_ACCOUNT,
+        NO_ACCOUNT_ASSETS,
+        NO_SIGNATORIES,
+        NOT_SUPPORTED
+      };
+      Reason reason;
     };
   }  // namespace model
 }  // namespace iroha
-#endif //IROHA_ERROR_RESPONSE_HPP
+#endif  // IROHA_ERROR_RESPONSE_HPP

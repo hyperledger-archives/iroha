@@ -18,10 +18,10 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "model/queries/responses/error_response.hpp"
 #include "model/query_execution.hpp"
 #include "network/ordering_gate.hpp"
 #include "torii/processor/query_processor_impl.hpp"
-#include "model/queries/responses/error_response.hpp"
 
 using namespace iroha;
 using ::testing::Return;
@@ -90,7 +90,7 @@ TEST(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
       })
       .subscribe([](auto response) {
         auto resp = static_cast<model::ErrorResponse &>(*response);
-        ASSERT_EQ(resp.reason, "Not valid");
+        ASSERT_EQ(resp.reason, iroha::model::ErrorResponse::STATELESS_INVALID);
       });
   qpi.queryHandle(std::make_shared<model::Query>(query));
 }

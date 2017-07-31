@@ -52,7 +52,7 @@ class ToriiServiceTest : public testing::Test {
       // ----------- Command Service --------------
 
       auto tx_processor =
-          iroha::torii::TransactionProcessorImpl(pcsMock, svMock);
+          iroha::torii::TransactionProcessorImpl(pcsMock, statelessValidatorMock);
       iroha::model::converters::PbTransactionFactory pb_tx_factory;
       auto command_service =  // std::unique_ptr<torii::CommandService>(new
                               // torii::CommandService(pb_tx_factory,
@@ -62,7 +62,7 @@ class ToriiServiceTest : public testing::Test {
       //----------- Query Service ----------
       iroha::model::QueryProcessingFactory qpf(wsv_query, block_query);
 
-      iroha::torii::QueryProcessorImpl qpi(qpf, svMock);
+      iroha::torii::QueryProcessorImpl qpi(qpf, statelessValidatorMock);
 
       iroha::model::converters::PbQueryFactory pb_query_factory;
       iroha::model::converters::PbQueryResponseFactory pb_query_resp_factory;
@@ -90,18 +90,17 @@ class ToriiServiceTest : public testing::Test {
   BlockQueryMock block_query;
 
   PCSMock pcsMock;
-  StatelessValidatorMock svMock;
+  StatelessValidatorMock statelessValidatorMock;
 };
 
 TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
-  EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
+  EXPECT_CALL(statelessValidatorMock, validate(A<const iroha::model::Transaction &>()))
       .WillRepeatedly(Return(true));
 
   EXPECT_CALL(pcsMock, propagate_transaction(_)).Times(AtLeast(1));
 
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
     iroha::protocol::ToriiResponse response;
-    // One client is generating transaction
     auto new_tx = iroha::protocol::Transaction();
     auto meta = new_tx.mutable_meta();
     meta->set_tx_counter(i);
@@ -117,7 +116,7 @@ TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
   torii::CommandAsyncClient client(Ip, Port);
   std::atomic_int count{0};
 
-  EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
+  EXPECT_CALL(statelessValidatorMock, validate(A<const iroha::model::Transaction &>()))
       .WillRepeatedly(Return(true));
 
   EXPECT_CALL(pcsMock, propagate_transaction(_)).Times(AtLeast(1));

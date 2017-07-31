@@ -179,7 +179,7 @@ TEST(QueryExecutor, get_account) {
   ASSERT_EQ(cast_resp_2, nullptr);
   auto err_resp =
       std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, "No account");
+  ASSERT_EQ(err_resp->reason, iroha::model::ErrorResponse::NO_ACCOUNT);
   ASSERT_EQ(err_resp->query.creator_account_id, ADMIN_ID);
 
   // 2. No rights to ask account
@@ -192,7 +192,7 @@ TEST(QueryExecutor, get_account) {
   ASSERT_EQ(cast_resp, nullptr);
 
   err_resp = std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, "Not valid query");
+  ASSERT_EQ(err_resp->reason, iroha::model::ErrorResponse::STATEFUL_INVALID);
 
   // 3. No creator
   query.account_id = ACCOUNT_ID;
@@ -204,7 +204,7 @@ TEST(QueryExecutor, get_account) {
   ASSERT_EQ(cast_resp, nullptr);
 
   err_resp = std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, "Not valid query");
+  ASSERT_EQ(err_resp->reason, iroha::model::ErrorResponse::STATEFUL_INVALID);
 
   // TODO: tests for signatures
 }
@@ -254,7 +254,7 @@ TEST(QueryExecutor, get_account_assets) {
   ASSERT_EQ(cast_resp_2, nullptr);
   auto err_resp =
       std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, "No Account Assets");
+  ASSERT_EQ(err_resp->reason, iroha::model::ErrorResponse::NO_ACCOUNT_ASSETS);
   ASSERT_EQ(err_resp->query.creator_account_id, ADMIN_ID);
 
 
@@ -270,7 +270,7 @@ TEST(QueryExecutor, get_account_assets) {
   ASSERT_EQ(cast_resp_2, nullptr);
   err_resp =
       std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, "No Account Assets");
+  ASSERT_EQ(err_resp->reason, iroha::model::ErrorResponse::NO_ACCOUNT_ASSETS);
   ASSERT_EQ(err_resp->query.creator_account_id, ADMIN_ID);
 
   // 2. No rights to ask
@@ -284,7 +284,7 @@ TEST(QueryExecutor, get_account_assets) {
   ASSERT_EQ(cast_resp, nullptr);
 
   err_resp = std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, "Not valid query");
+  ASSERT_EQ(err_resp->reason, iroha::model::ErrorResponse::STATEFUL_INVALID);
 
   // 3. No creator
   query.account_id = ACCOUNT_ID;
@@ -296,7 +296,7 @@ TEST(QueryExecutor, get_account_assets) {
   ASSERT_EQ(cast_resp, nullptr);
 
   err_resp = std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, "Not valid query");
+  ASSERT_EQ(err_resp->reason, iroha::model::ErrorResponse::STATEFUL_INVALID);
 
   // TODO: tests for signatures
 }

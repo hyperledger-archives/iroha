@@ -87,9 +87,10 @@ iroha::model::QueryProcessingFactory::executeGetAccount(
     const model::GetAccount& query) {
   auto acc = _wsvQuery.getAccount(query.account_id);
   if (!acc.has_value()) {
+    std::cout << "Account not found" << std::endl;
     iroha::model::ErrorResponse response;
     response.query = query;
-    response.reason = "No account";
+    response.reason = iroha::model::ErrorResponse::NO_ACCOUNT;
     return std::make_shared<ErrorResponse>(response);
   }
   iroha::model::AccountResponse response;
@@ -105,7 +106,7 @@ iroha::model::QueryProcessingFactory::executeGetAccountAssets(
   if (!acct_asset.has_value()) {
     iroha::model::ErrorResponse response;
     response.query = query;
-    response.reason = "No Account Assets";
+    response.reason = iroha::model::ErrorResponse::NO_ACCOUNT_ASSETS;
     return std::make_shared<iroha::model::ErrorResponse>(response);
   }
   iroha::model::AccountAssetResponse response;
@@ -121,7 +122,7 @@ iroha::model::QueryProcessingFactory::executeGetAccountAssetTransactions(
   // TODO: implement
   iroha::model::ErrorResponse response;
   response.query = query;
-  response.reason = "Not implemented";
+  response.reason = ErrorResponse::NOT_SUPPORTED;
   return std::make_shared<iroha::model::ErrorResponse>(response);
 }
 
@@ -142,7 +143,7 @@ iroha::model::QueryProcessingFactory::executeGetSignatories(
   if (!signs.has_value()) {
     iroha::model::ErrorResponse response;
     response.query = query;
-    response.reason = "No signatories";
+    response.reason = model::ErrorResponse::NO_SIGNATORIES;
     return std::make_shared<iroha::model::ErrorResponse>(response);
   }
   iroha::model::SignatoriesResponse response;
@@ -158,7 +159,7 @@ std::shared_ptr<iroha::model::QueryResponse> iroha::model::QueryProcessingFactor
     if (!validate(qry)) {
       iroha::model::ErrorResponse response;
       response.query = qry;
-      response.reason = "Not valid query";
+      response.reason = model::ErrorResponse::STATEFUL_INVALID;
       return std::make_shared<ErrorResponse>(response);
     }
     return executeGetAccount(qry);
@@ -168,7 +169,7 @@ std::shared_ptr<iroha::model::QueryResponse> iroha::model::QueryProcessingFactor
     if (!validate(qry)) {
       iroha::model::ErrorResponse response;
       response.query = qry;
-      response.reason = "Not valid query";
+      response.reason = model::ErrorResponse::STATEFUL_INVALID;
       return std::make_shared<iroha::model::ErrorResponse>(response);
     }
     return executeGetAccountAssets(qry);
@@ -178,7 +179,7 @@ std::shared_ptr<iroha::model::QueryResponse> iroha::model::QueryProcessingFactor
     if (!validate(qry)) {
       iroha::model::ErrorResponse response;
       response.query = qry;
-      response.reason = "Not valid query";
+      response.reason = model::ErrorResponse::STATEFUL_INVALID;
       return std::make_shared<iroha::model::ErrorResponse>(response);
     }
     return executeGetSignatories(qry);
@@ -188,7 +189,7 @@ std::shared_ptr<iroha::model::QueryResponse> iroha::model::QueryProcessingFactor
     if (!validate(qry)) {
       iroha::model::ErrorResponse response;
       response.query = qry;
-      response.reason = "Not valid query";
+      response.reason = model::ErrorResponse::STATEFUL_INVALID;
       return std::make_shared<iroha::model::ErrorResponse>(response);
     }
     return executeGetAccountTransactions(qry);
@@ -199,7 +200,7 @@ std::shared_ptr<iroha::model::QueryResponse> iroha::model::QueryProcessingFactor
     if (!validate(qry)) {
       iroha::model::ErrorResponse response;
       response.query = qry;
-      response.reason = "Not valid query";
+      response.reason = model::ErrorResponse::STATEFUL_INVALID;
       return std::make_shared<iroha::model::ErrorResponse>(response);
     }
     return executeGetAccountAssetTransactions(qry);
@@ -207,6 +208,6 @@ std::shared_ptr<iroha::model::QueryResponse> iroha::model::QueryProcessingFactor
   std::cout << "cast failed!" << std::endl;
   iroha::model::ErrorResponse response;
   response.query = query;
-  response.reason = "Not implemented";
+  response.reason = model::ErrorResponse::NOT_SUPPORTED;
   return std::make_shared<iroha::model::ErrorResponse>(response);
 }

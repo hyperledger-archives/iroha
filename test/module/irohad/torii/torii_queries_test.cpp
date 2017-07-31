@@ -41,8 +41,8 @@ class ToriiServiceTest : public testing::Test {
     th = std::thread([ this, runner = runner ] {
       // ----------- Command Service --------------
 
-      auto tx_processor =
-          iroha::torii::TransactionProcessorImpl(this->pcsMock, this->svMock);
+      auto tx_processor = iroha::torii::TransactionProcessorImpl(
+          this->pcsMock, this->statelessValidatorMock);
       iroha::model::converters::PbTransactionFactory pb_tx_factory;
       auto command_service =  // std::unique_ptr<torii::CommandService>(new
                               // torii::CommandService(pb_tx_factory,
@@ -54,7 +54,7 @@ class ToriiServiceTest : public testing::Test {
       iroha::model::QueryProcessingFactory qpf(this->wsv_query,
                                                this->block_query);
 
-      iroha::torii::QueryProcessorImpl qpi(qpf, this->svMock);
+      iroha::torii::QueryProcessorImpl qpi(qpf, this->statelessValidatorMock);
 
       iroha::model::converters::PbQueryFactory pb_query_factory;
       iroha::model::converters::PbQueryResponseFactory pb_query_resp_factory;
@@ -79,7 +79,7 @@ class ToriiServiceTest : public testing::Test {
   std::thread th;
 
   PCSMock pcsMock;
-  StatelessValidatorMock svMock;
+  StatelessValidatorMock statelessValidatorMock;
   WsvQueryMock wsv_query;
   BlockQueryMock block_query;
 };
@@ -89,7 +89,8 @@ class ToriiServiceTest : public testing::Test {
  */
 
 TEST_F(ToriiServiceTest, FindWhenResponseInvalid) {
-  EXPECT_CALL(svMock, validate(A<const iroha::model::Query &>()))
+  EXPECT_CALL(statelessValidatorMock,
+              validate(A<const iroha::model::Query &>()))
       .WillRepeatedly(Return(false));
 
   iroha::protocol::QueryResponse response;
@@ -99,7 +100,8 @@ TEST_F(ToriiServiceTest, FindWhenResponseInvalid) {
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
   // Must return Error Response
-  ASSERT_EQ(response.error_response().reason(), "Not valid");
+  ASSERT_EQ(response.error_response().reason(),
+            iroha::model::ErrorResponse::STATELESS_INVALID);
 }
 
 /**
@@ -107,7 +109,8 @@ TEST_F(ToriiServiceTest, FindWhenResponseInvalid) {
  */
 
 TEST_F(ToriiServiceTest, FindAccountWhenStatefulInvalid) {
-  EXPECT_CALL(svMock, validate(A<const iroha::model::Query &>()))
+  EXPECT_CALL(statelessValidatorMock,
+              validate(A<const iroha::model::Query &>()))
       .WillRepeatedly(Return(true));
 
   iroha::model::Account account;
@@ -124,14 +127,48 @@ TEST_F(ToriiServiceTest, FindAccountWhenStatefulInvalid) {
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
   // Should not return Error Response because stateless valid
-  ASSERT_NE(response.error_response().reason(), "Not valid");
+  ASSERT_NE(response.error_response().reason(),
+            iroha::model::ErrorResponse::STATELESS_INVALID);
   // Must be invalid due to failed stateful validation caused by no permission
   // to read account
-  ASSERT_EQ(response.error_response().reason(), "Not valid query");
+  ASSERT_EQ(response.error_response().reason(),
+            iroha::model::ErrorResponse::STATEFUL_INVALID);
+}
+
+TEST_F(ToriiServiceTest, FindAccountWhenHasReadPermissions) {
+  EXPECT_CALL(statelessValidatorMock,
+              validate(A<const iroha::model::Query &>()))
+      .WillRepeatedly(Return(true));
+
+  iroha::model::Account accountA;
+  accountA.account_id = "accountA";
+  accountA.permissions.read_all_accounts = true;
+
+  EXPECT_CALL(wsv_query, getAccount(accountA.account_id))
+      .WillRepeatedly(Return(accountA));
+
+  iroha::model::Account accountB;
+  accountB.account_id = "accountB";
+
+  EXPECT_CALL(wsv_query, getAccount(accountB.account_id))
+      .WillRepeatedly(Return(accountB));
+
+  iroha::protocol::QueryResponse response;
+
+  auto query = iroha::protocol::Query();
+  query.set_creator_account_id("accountA");
+  query.mutable_get_account()->set_account_id("accountB");
+
+  auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
+  ASSERT_TRUE(stat.ok());
+  // Should not return Error Response because tx is stateless and stateful valid
+  ASSERT_FALSE(response.has_error_response());
+  ASSERT_EQ(response.account_response().account().account_id(), "accountB");
 }
 
 TEST_F(ToriiServiceTest, FindAccountWhenValid) {
-  EXPECT_CALL(svMock, validate(A<const iroha::model::Query &>()))
+  EXPECT_CALL(statelessValidatorMock,
+              validate(A<const iroha::model::Query &>()))
       .WillRepeatedly(Return(true));
 
   iroha::model::Account account;
@@ -147,10 +184,8 @@ TEST_F(ToriiServiceTest, FindAccountWhenValid) {
 
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
-  // Should not return Error Response because stateless valid
-  ASSERT_NE(response.error_response().reason(), "Not valid");
-  // Must be stateful valid
-  ASSERT_NE(response.error_response().reason(), "Not valid query");
+  // Should not return Error Response because tx is stateless and stateful valid
+  ASSERT_FALSE(response.has_error_response());
   ASSERT_EQ(response.account_response().account().account_id(), "accountA");
 }
 
@@ -159,7 +194,8 @@ TEST_F(ToriiServiceTest, FindAccountWhenValid) {
  */
 
 TEST_F(ToriiServiceTest, FindAccountAssetWhenStatefulInvalid) {
-  EXPECT_CALL(svMock, validate(A<const iroha::model::Query &>()))
+  EXPECT_CALL(statelessValidatorMock,
+              validate(A<const iroha::model::Query &>()))
       .WillRepeatedly(Return(true));
 
   iroha::model::Account account;
@@ -176,7 +212,8 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenStatefulInvalid) {
   asset.precision = 2;
 
   EXPECT_CALL(wsv_query, getAccount(_)).WillRepeatedly(Return(account));
-  EXPECT_CALL(wsv_query, getAccountAsset(_, _)).WillRepeatedly(Return(account_asset));
+  EXPECT_CALL(wsv_query, getAccountAsset(_, _))
+      .WillRepeatedly(Return(account_asset));
   EXPECT_CALL(wsv_query, getAsset(_)).WillRepeatedly(Return(asset));
 
   iroha::protocol::QueryResponse response;
@@ -189,14 +226,17 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenStatefulInvalid) {
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
   // Should not return Error Response because stateless valid
-  ASSERT_NE(response.error_response().reason(), "Not valid");
+  ASSERT_NE(response.error_response().reason(),
+            iroha::model::ErrorResponse::STATELESS_INVALID);
   // Must be invalid due to failed stateful validation caused by no permission
   // to read account asset
-  ASSERT_EQ(response.error_response().reason(), "Not valid query");
+  ASSERT_EQ(response.error_response().reason(),
+            iroha::model::ErrorResponse::STATEFUL_INVALID);
 }
 
 TEST_F(ToriiServiceTest, FindAccountAssetWhenValid) {
-  EXPECT_CALL(svMock, validate(A<const iroha::model::Query &>()))
+  EXPECT_CALL(statelessValidatorMock,
+              validate(A<const iroha::model::Query &>()))
       .WillRepeatedly(Return(true));
 
   iroha::model::Account account;
@@ -213,7 +253,8 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenValid) {
   asset.precision = 2;
 
   EXPECT_CALL(wsv_query, getAccount(_)).WillRepeatedly(Return(account));
-  EXPECT_CALL(wsv_query, getAccountAsset(_, _)).WillRepeatedly(Return(account_asset));
+  EXPECT_CALL(wsv_query, getAccountAsset(_, _))
+      .WillRepeatedly(Return(account_asset));
   EXPECT_CALL(wsv_query, getAsset(_)).WillRepeatedly(Return(asset));
 
   iroha::protocol::QueryResponse response;
@@ -225,15 +266,16 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenValid) {
 
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
-  // Should not return Error Response because stateless valid
-  ASSERT_NE(response.error_response().reason(), "Not valid");
-  // Must be valid
-  ASSERT_NE(response.error_response().reason(), "Not valid query");
+  // Should not return Error Response because tx is stateless and stateful valid
+  ASSERT_FALSE(response.has_error_response());
 
   // Check if the fields in account asset response are correct
-  ASSERT_EQ(response.account_assets_response().account_asset().asset_id(), account_asset.asset_id);
-  ASSERT_EQ(response.account_assets_response().account_asset().account_id(), account_asset.account_id);
-  ASSERT_EQ(response.account_assets_response().account_asset().balance(), account_asset.balance);
+  ASSERT_EQ(response.account_assets_response().account_asset().asset_id(),
+            account_asset.asset_id);
+  ASSERT_EQ(response.account_assets_response().account_asset().account_id(),
+            account_asset.account_id);
+  ASSERT_EQ(response.account_assets_response().account_asset().balance(),
+            account_asset.balance);
 }
 
 /**
@@ -241,7 +283,8 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenValid) {
  */
 
 TEST_F(ToriiServiceTest, FindSignatoriesWhenStatefulInvalid) {
-  EXPECT_CALL(svMock, validate(A<const iroha::model::Query &>()))
+  EXPECT_CALL(statelessValidatorMock,
+              validate(A<const iroha::model::Query &>()))
       .WillRepeatedly(Return(true));
 
   iroha::model::Account account;
@@ -264,14 +307,17 @@ TEST_F(ToriiServiceTest, FindSignatoriesWhenStatefulInvalid) {
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
   // Should not return Error Response because stateless valid
-  ASSERT_NE(response.error_response().reason(), "Not valid");
+  ASSERT_NE(response.error_response().reason(),
+            iroha::model::ErrorResponse::STATELESS_INVALID);
   // Must be invalid due to failed stateful validation caused by no permission
   // to read account
-  ASSERT_EQ(response.error_response().reason(), "Not valid query");
+  ASSERT_EQ(response.error_response().reason(),
+            iroha::model::ErrorResponse::STATEFUL_INVALID);
 }
 
 TEST_F(ToriiServiceTest, FindSignatoriesWhenValid) {
-  EXPECT_CALL(svMock, validate(A<const iroha::model::Query &>()))
+  EXPECT_CALL(statelessValidatorMock,
+              validate(A<const iroha::model::Query &>()))
       .WillRepeatedly(Return(true));
 
   iroha::model::Account account;
@@ -293,10 +339,9 @@ TEST_F(ToriiServiceTest, FindSignatoriesWhenValid) {
 
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
-  // Should not return Error Response because stateless valid
-  ASSERT_NE(response.error_response().reason(), "Not valid");
-  // Must be valid
-  ASSERT_NE(response.error_response().reason(), "Not valid query");
+  /// Should not return Error Response because tx is stateless and stateful
+  /// valid
+  ASSERT_FALSE(response.has_error_response());
   // check if fields in response are valid
   auto signatory = response.signatories_response().keys(0);
   decltype(pubkey) response_pubkey;
@@ -309,7 +354,8 @@ TEST_F(ToriiServiceTest, FindSignatoriesWhenValid) {
  */
 
 TEST_F(ToriiServiceTest, FindTransactionsWhenValid) {
-  EXPECT_CALL(svMock, validate(A<const iroha::model::Query &>()))
+  EXPECT_CALL(statelessValidatorMock,
+              validate(A<const iroha::model::Query &>()))
       .WillRepeatedly(Return(true));
 
   iroha::model::Account account;
@@ -335,11 +381,9 @@ TEST_F(ToriiServiceTest, FindTransactionsWhenValid) {
 
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
-  // Should not return Error Response because stateless valid
-  ASSERT_NE(response.error_response().reason(), "Not valid");
-  // Must be stateful valid
-  ASSERT_NE(response.error_response().reason(), "Not valid query");
-  for (size_t i = 0; i < response.transactions_response().transactions_size();
+  // Should not return Error Response because tx is stateless and stateful valid
+  ASSERT_FALSE(response.has_error_response());
+  for (auto i = 0; i < response.transactions_response().transactions_size();
        i++) {
     ASSERT_EQ(response.transactions_response()
                   .transactions(i)
@@ -353,7 +397,8 @@ TEST_F(ToriiServiceTest, FindTransactionsWhenValid) {
 }
 
 TEST_F(ToriiServiceTest, FindManyTimesWhereQueryServiceSync) {
-  EXPECT_CALL(svMock, validate(A<const iroha::model::Query &>()))
+  EXPECT_CALL(statelessValidatorMock,
+              validate(A<const iroha::model::Query &>()))
       .WillRepeatedly(Return(false));
 
   for (size_t i = 0; i < TimesFind; ++i) {
@@ -366,6 +411,7 @@ TEST_F(ToriiServiceTest, FindManyTimesWhereQueryServiceSync) {
     auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
     ASSERT_TRUE(stat.ok());
     // Must return Error Response
-    ASSERT_EQ(response.error_response().reason(), "Not valid");
+    ASSERT_EQ(response.error_response().reason(),
+              iroha::model::ErrorResponse::STATELESS_INVALID);
   }
 }
