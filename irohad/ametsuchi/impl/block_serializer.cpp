@@ -413,7 +413,6 @@ namespace iroha {
 
     nonstd::optional<model::Block> BlockSerializer::deserialize(
         const std::vector<uint8_t>& bytes) {
-      // TODO: return nullopt when some necessary field is missed
       std::string block_json(bytes.begin(), bytes.end());
       rapidjson::Document doc;
       if (doc.Parse(block_json.c_str()).HasParseError()) {
@@ -421,20 +420,29 @@ namespace iroha {
       }
 
       model::Block block{};
+      // Check if hash is presented
+      if (doc.HasMember("hash")) {
+        std::string hash_str(doc["hash"].GetString(),
+                             doc["hash"].GetStringLength());
+        auto hash_bytes = hex2bytes(hash_str);
+        std::copy(hash_bytes.begin(), hash_bytes.end(), block.hash.begin());
+      }
 
-      // hash
-      std::string hash_str(doc["hash"].GetString(),
-                           doc["hash"].GetStringLength());
-      auto hash_bytes = hex2bytes(hash_str);
-      std::copy(hash_bytes.begin(), hash_bytes.end(), block.hash.begin());
-
-      // signatures
+      // Signatures are critical part of a Block, if there are none - Block is
+      // invalid
+      if (not doc.HasMember("signatures")) {
+        return nonstd::nullopt;
+      }
       auto json_sigs = doc["signatures"].GetArray();
 
       for (auto iter = json_sigs.begin(); iter < json_sigs.end(); ++iter) {
         auto json_sig = iter->GetObject();
         model::Signature signature{};
-
+        // Signature must have two fields: pubkey and signature
+        if (not json_sig.HasMember("pubkey") ||
+            not json_sig.HasMember("signature")) {
+          return nonstd::nullopt;
+        }
         std::string sig_pubkey(json_sig["pubkey"].GetString(),
                                json_sig["pubkey"].GetStringLength());
         auto sig_pubkey_bytes = hex2bytes(sig_pubkey);
@@ -449,32 +457,45 @@ namespace iroha {
 
         block.sigs.push_back(signature);
       }
-
       // created_ts
+      if (not doc.HasMember("created_ts")){
+        return nonstd::nullopt;
+      }
       block.created_ts = doc["created_ts"].GetUint64();
 
       // height
+      if (not doc.HasMember("height")){
+        return nonstd::nullopt;
+      }
       block.height = doc["height"].GetUint64();
 
       // prev_hash
+      if (not doc.HasMember("prev_hash")){
+        return nonstd::nullopt;
+      }
       std::string prev_hash_str(doc["prev_hash"].GetString(),
                                 doc["prev_hash"].GetStringLength());
       auto prev_hash_bytes = hex2bytes(prev_hash_str);
       std::copy(prev_hash_bytes.begin(), prev_hash_bytes.end(),
                 block.prev_hash.begin());
-
       // txs number
+      if (not doc.HasMember("txs_number")){
+        return nonstd::nullopt;
+      }
       block.txs_number = static_cast<uint16_t>(doc["txs_number"].GetUint());
+      // merkle_root is optional
+      if (doc.HasMember("merkle_root")){
+        std::string merkle_root_str(doc["merkle_root"].GetString(),
+                                    doc["merkle_root"].GetStringLength());
+        auto merkle_root_bytes = hex2bytes(merkle_root_str);
+        std::copy(merkle_root_bytes.begin(), merkle_root_bytes.end(),
+                  block.merkle_root.begin());
+      }
 
-      // merkle_root
-      std::string merkle_root_str(doc["merkle_root"].GetString(),
-                                  doc["merkle_root"].GetStringLength());
-      auto merkle_root_bytes = hex2bytes(merkle_root_str);
-      std::copy(merkle_root_bytes.begin(), merkle_root_bytes.end(),
-                block.merkle_root.begin());
-
-      // transactions
-      deserialize(doc, block.transactions);
+      // Deserialize transactions
+      if (not deserialize(doc, block.transactions)) {
+        return nonstd::nullopt;
+      };
 
       return block;
     }
@@ -482,37 +503,53 @@ namespace iroha {
     nonstd::optional<model::Transaction> BlockSerializer::deserialize(
         GenericValue<rapidjson::UTF8<char>>::Object& json_tx) {
       model::Transaction tx{};
-      auto json_sigs = json_tx["signatures"].GetArray();
-      for (auto sig_iter = json_sigs.begin(); sig_iter < json_sigs.end();
-           ++sig_iter) {
-        auto json_sig = sig_iter->GetObject();
-        model::Signature signature{};
+      if (json_tx.HasMember("signatures")) {
+        auto json_sigs = json_tx["signatures"].GetArray();
+        for (auto sig_iter = json_sigs.begin(); sig_iter < json_sigs.end();
+             ++sig_iter) {
+          auto json_sig = sig_iter->GetObject();
+          model::Signature signature{};
 
-        std::string sig_pubkey(json_sig["pubkey"].GetString(),
-                               json_sig["pubkey"].GetStringLength());
-        auto sig_pubkey_bytes = hex2bytes(sig_pubkey);
-        std::copy(sig_pubkey_bytes.begin(), sig_pubkey_bytes.end(),
-                  signature.pubkey.begin());
+          std::string sig_pubkey(json_sig["pubkey"].GetString(),
+                                 json_sig["pubkey"].GetStringLength());
+          auto sig_pubkey_bytes = hex2bytes(sig_pubkey);
+          std::copy(sig_pubkey_bytes.begin(), sig_pubkey_bytes.end(),
+                    signature.pubkey.begin());
 
-        std::string sig_sign(json_sig["signature"].GetString(),
-                             json_sig["signature"].GetStringLength());
-        auto sig_sign_bytes = hex2bytes(sig_sign);
-        std::copy(sig_sign_bytes.begin(), sig_sign_bytes.end(),
-                  signature.signature.begin());
+          std::string sig_sign(json_sig["signature"].GetString(),
+                               json_sig["signature"].GetStringLength());
+          auto sig_sign_bytes = hex2bytes(sig_sign);
+          std::copy(sig_sign_bytes.begin(), sig_sign_bytes.end(),
+                    signature.signature.begin());
 
-        tx.signatures.push_back(signature);
+          tx.signatures.push_back(signature);
+        }
       }
-      // created_ts
-      tx.created_ts = json_tx["created_ts"].GetUint64();
-
+      if (json_tx.HasMember("created_ts")) {
+        // created_ts
+        tx.created_ts = json_tx["created_ts"].GetUint64();
+      }
       // creator_account_id
-      tx.creator_account_id = json_tx["creator_account_id"].GetString();
-
+      if (json_tx.HasMember("creator_account_id")) {
+        // created_ts
+        tx.creator_account_id = json_tx["creator_account_id"].GetString();
+      } else {
+        // No creator
+        return nonstd::nullopt;
+      }
       // tx_counter
-      tx.tx_counter = json_tx["tx_counter"].GetUint64();
-
-      // commands
-      deserialize(json_tx, tx.commands);
+      if (json_tx.HasMember("tx_counter")) {
+        tx.tx_counter = json_tx["tx_counter"].GetUint64();
+      } else {
+        return nonstd::nullopt;
+      }
+      if (not json_tx.HasMember("commands")) {
+        return nonstd::nullopt;
+      }
+      // deserialize commands
+      if (not deserialize(json_tx, tx.commands)) {
+        return nonstd::nullopt;
+      }
       return tx;
     }
 
@@ -526,91 +563,123 @@ namespace iroha {
       return deserialize(obj_tx);
     }
 
-    void BlockSerializer::deserialize(
+    bool BlockSerializer::deserialize(
         Document& doc, std::vector<model::Transaction>& transactions) {
+      if (not doc.HasMember("transactions")){
+        return false;
+      }
       auto json_txs = doc["transactions"].GetArray();
-
       for (auto iter = json_txs.begin(); iter < json_txs.end(); iter++) {
         auto json_obj = iter->GetObject();
         auto tx_opt = deserialize(json_obj);
         if (tx_opt.has_value()) {
           auto tx = tx_opt.value();
           transactions.push_back(tx);
+        }else{
+          return false;
         }
       }
+      return true;
     }
 
-    void BlockSerializer::deserialize(
+    bool BlockSerializer::deserialize(
         GenericValue<UTF8<char>>::Object& json_tx,
         std::vector<std::shared_ptr<model::Command>>& commands) {
       auto json_commands = json_tx["commands"].GetArray();
       for (auto iter = json_commands.begin(); iter < json_commands.end();
            ++iter) {
         auto json_command = iter->GetObject();
-
+        if (not json_command.HasMember("command_type")) {
+          return false;
+        }
         std::string command_type = json_command["command_type"].GetString();
 
         if (command_type == "AddPeer") {
           if (auto add_peer = deserialize_add_peer(json_command)) {
             commands.push_back(
                 std::make_shared<model::AddPeer>(add_peer.value()));
+          } else {
+            return false;
           }
         } else if (command_type == "AddAssetQuantity") {
           if (auto add_asset_quantity =
                   deserialize_add_asset_quantity(json_command)) {
             commands.push_back(std::make_shared<model::AddAssetQuantity>(
                 add_asset_quantity.value()));
+          } else {
+            return false;
           }
         } else if (command_type == "AddSignatory") {
           if (auto add_signatory = deserialize_add_signatory(json_command)) {
             commands.push_back(
                 std::make_shared<model::AddSignatory>(add_signatory.value()));
+          } else {
+            return false;
           }
         } else if (command_type == "AssignMasterKey") {
           if (auto assign_master_key =
                   deserialize_assign_master_key(json_command)) {
             commands.push_back(std::make_shared<model::AssignMasterKey>(
                 assign_master_key.value()));
+          } else {
+            return false;
           }
         } else if (command_type == "CreateAccount") {
           if (auto create_account = deserialize_create_account(json_command)) {
             commands.push_back(
                 std::make_shared<model::CreateAccount>(create_account.value()));
+          } else {
+            return false;
           }
         } else if (command_type == "CreateAsset") {
           if (auto create_asset = deserialize_create_asset(json_command)) {
             commands.push_back(
                 std::make_shared<model::CreateAsset>(create_asset.value()));
+          } else {
+            return false;
           }
         } else if (command_type == "CreateDomain") {
           if (auto create_domain = deserialize_create_domain(json_command)) {
             commands.push_back(
                 std::make_shared<model::CreateDomain>(create_domain.value()));
+          } else {
+            return false;
           }
         } else if (command_type == "RemoveSignatory") {
           if (auto remove_signatory =
                   deserialize_remove_signatory(json_command)) {
             commands.push_back(std::make_shared<model::RemoveSignatory>(
                 remove_signatory.value()));
+          } else {
+            return false;
           }
         } else if (command_type == "SetAccountPermissions") {
           if (auto set_account_permissions =
                   deserialize_set_account_permissions(json_command)) {
             commands.push_back(std::make_shared<model::SetAccountPermissions>(
                 set_account_permissions.value()));
+          } else {
+            return false;
           }
         } else if (command_type == "SetQuorum") {
           if (auto set_quorum = deserialize_set_quorum(json_command)) {
             commands.push_back(
                 std::make_shared<model::SetQuorum>(set_quorum.value()));
+          } else {
+            return false;
           }
         } else if (command_type == "TransferAsset") {
           if (auto transfer_asset = deserialize_transfer_asset(json_command)) {
             commands.push_back(
                 std::make_shared<model::TransferAsset>(transfer_asset.value()));
+          } else {
+            return false;
           }
+        } else {
+          return false;
         }
       }
+      return true;
     }
 
     nonstd::optional<model::AddPeer> BlockSerializer::deserialize_add_peer(
@@ -829,5 +898,5 @@ namespace iroha {
 
       return transferAsset;
     }
-  }
-}
+  }  // namespace ametsuchi
+}  // namespace iroha

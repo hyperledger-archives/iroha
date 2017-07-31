@@ -36,6 +36,8 @@
 #include <model/commands/set_quorum.hpp>
 #include <model/commands/transfer_asset.hpp>
 
+#include "common/types.hpp"
+
 namespace iroha{
 namespace ametsuchi{
 
@@ -57,11 +59,12 @@ class BlockSerializer{
   nonstd::optional<model::Block> deserialize(const std::vector<uint8_t >& bytes);
 
   /**
-   * Deserialize transactions to vector<>
+   * Deserialize transactions from json doc to vector<>
    * @param doc
    * @param transactions
+   * @return False: if json is ill-formed
    */
-  void deserialize(Document& doc, std::vector<model::Transaction>& transactions); // its' also used in iroha-cli
+  bool deserialize(Document& doc, std::vector<model::Transaction>& transactions); // its' also used in iroha-cli
 
   /**
    * Deserialize json transaction to iroha model Transaction
@@ -90,8 +93,11 @@ class BlockSerializer{
 
   // Deserialize one transaction
   nonstd::optional<model::Transaction> deserialize(GenericValue<rapidjson::UTF8<char>>::Object& json_tx);
-  void deserialize(GenericValue<rapidjson::UTF8<char>>::Object& json_tx,
+  // Deserialize commands withing trasaction json_tx
+  // Return false if json is ill-formed
+  bool deserialize(GenericValue<rapidjson::UTF8<char>>::Object& json_tx,
                    std::vector<std::shared_ptr<model::Command>>& commands);
+  // Json serilaization for each command
   nonstd::optional<model::AddPeer> deserialize_add_peer(GenericValue<UTF8<char>>::Object& json_command);
   nonstd::optional<model::AddAssetQuantity> deserialize_add_asset_quantity(GenericValue<UTF8<char>>::Object& json_command);
   nonstd::optional<model::AddSignatory> deserialize_add_signatory(GenericValue<UTF8<char>>::Object& json_command);
@@ -104,10 +110,6 @@ class BlockSerializer{
   nonstd::optional<model::SetQuorum> deserialize_set_quorum(GenericValue<UTF8<char>>::Object& json_command);
   nonstd::optional<model::TransferAsset> deserialize_transfer_asset(GenericValue<UTF8<char>>::Object& json_command);
 
-  template<typename Base, typename T>
-  inline bool instanceof(const T *ptr) {
-    return typeid(Base) == typeid(*ptr);
-  }
 };
 
 }
