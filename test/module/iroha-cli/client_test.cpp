@@ -83,17 +83,15 @@ TEST_F(ClientTest, SendTxWhenValid) {
       .WillRepeatedly(Return(true));
   EXPECT_CALL(pcsMock,propagate_transaction(_)).Times(1);
 
-  auto json_tx =
-      "{"
-      "\"creator_account_id\": \"123\",\n"
-      "\"tx_counter\": 0,\n"
-      "\"commands\": [{\n"
+  auto json_tx ="{\n"
+      "  \"creator_account_id\": \"test\", \n"
+      "  \"tx_counter\": 0,\n"
+      "  \"commands\":[{\n"
       "  \"command_type\": \"AddPeer\",\n"
-      "  \"address\": \"localhost\",\n"
-      "  \"peer_key\": "
-      "\"2323232323232323232323232323232323232323232323232323232323232323\"\n"
-      "}]}";
+      "    \"address\": \"localhost\",\n"
+      "    \"peer_key\": \"2323232323232323232323232323232323232323232323232323232323232323\"\n"
+      "  }]\n"
+      "}";
   std::cout << "Sending  json transaction to Iroha" << std::endl;
   std::cout << client.sendTx(json_tx) << std::endl;
-
 }
