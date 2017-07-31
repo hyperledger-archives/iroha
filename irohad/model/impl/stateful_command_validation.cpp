@@ -29,7 +29,6 @@
 #include "model/commands/transfer_asset.hpp"
 
 #include <algorithm>
-#include <decimal/decimal>
 #include <limits>
 
 namespace iroha {
