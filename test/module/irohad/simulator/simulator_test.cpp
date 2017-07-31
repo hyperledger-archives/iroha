@@ -70,22 +70,18 @@ TEST(SimulatorTest, ValidWhenPreviousBlock) {
 
   EXPECT_CALL(validator, validate(_, _)).WillOnce(Return(proposal));
 
-  TestObservable<model::Proposal> proposal_wrapper(
-      simulator.on_verified_proposal());
-  proposal_wrapper.test_subscriber(
-      std::make_unique<CallExact<model::Proposal>>(1),
-      [&proposal](auto verified_proposal) {
-        ASSERT_EQ(verified_proposal.height, proposal.height);
-        ASSERT_EQ(verified_proposal.transactions, proposal.transactions);
-      });
+  auto proposal_wrapper =
+      make_test_observable<CallExact>(simulator.on_verified_proposal(), 1);
+  proposal_wrapper.subscribe([&proposal](auto verified_proposal) {
+    ASSERT_EQ(verified_proposal.height, proposal.height);
+    ASSERT_EQ(verified_proposal.transactions, proposal.transactions);
+  });
 
-  TestObservable<model::Block> block_wrapper(simulator.on_block());
-  block_wrapper.test_subscriber(
-      std::make_unique<CallExact<model::Block>>(1),
-      [&proposal](auto block) {
-        ASSERT_EQ(block.height, proposal.height);
-        ASSERT_EQ(block.transactions, proposal.transactions);
-      });
+  auto block_wrapper = make_test_observable<CallExact>(simulator.on_block(), 1);
+  block_wrapper.subscribe([&proposal](auto block) {
+    ASSERT_EQ(block.height, proposal.height);
+    ASSERT_EQ(block.transactions, proposal.transactions);
+  });
 
   simulator.process_proposal(proposal);
 
@@ -112,14 +108,12 @@ TEST(SimulatorTest, FailWhenNoBlock) {
 
   EXPECT_CALL(validator, validate(_, _)).Times(0);
 
-  TestObservable<model::Proposal> proposal_wrapper(
-      simulator.on_verified_proposal());
-  proposal_wrapper.test_subscriber(
-      std::make_unique<CallExact<model::Proposal>>(0), [](auto proposal) {});
+  auto proposal_wrapper =
+      make_test_observable<CallExact>(simulator.on_verified_proposal(), 0);
+  proposal_wrapper.subscribe();
 
-  TestObservable<model::Block> block_wrapper(simulator.on_block());
-  block_wrapper.test_subscriber(std::make_unique<CallExact<model::Block>>(0),
-                                [](auto block) {});
+  auto block_wrapper = make_test_observable<CallExact>(simulator.on_block(), 0);
+  block_wrapper.subscribe();
 
   simulator.process_proposal(proposal);
 
@@ -149,14 +143,12 @@ TEST(SimulatorTest, FailWhenSameAsProposalHeight) {
 
   EXPECT_CALL(validator, validate(_, _)).Times(0);
 
-  TestObservable<model::Proposal> proposal_wrapper(
-      simulator.on_verified_proposal());
-  proposal_wrapper.test_subscriber(
-      std::make_unique<CallExact<model::Proposal>>(0), [](auto proposal) {});
+  auto proposal_wrapper =
+      make_test_observable<CallExact>(simulator.on_verified_proposal(), 0);
+  proposal_wrapper.subscribe();
 
-  TestObservable<model::Block> block_wrapper(simulator.on_block());
-  block_wrapper.test_subscriber(std::make_unique<CallExact<model::Block>>(0),
-                                [](auto block) {});
+  auto block_wrapper = make_test_observable<CallExact>(simulator.on_block(), 0);
+  block_wrapper.subscribe();
 
   simulator.process_proposal(proposal);
 

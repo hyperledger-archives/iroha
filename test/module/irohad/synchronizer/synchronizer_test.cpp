@@ -97,17 +97,16 @@ TEST(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
 
   EXPECT_CALL(block_loader, requestBlocks(_, _)).Times(0);
 
-  TestObservable<Commit> wrapper(synchronizer.on_commit_chain());
-  wrapper.test_subscriber(
-      std::make_unique<CallExact<Commit>>(1), [&test_block](auto commit) {
-        TestObservable<Block> block_wrapper(commit);
-        block_wrapper.test_subscriber(
-            std::make_unique<CallExact<Block>>(1), [&test_block](auto block) {
-              // Check commit block
-              ASSERT_EQ(block.height, test_block.height);
-            });
-        ASSERT_TRUE(block_wrapper.validate());
-      });
+  auto wrapper =
+      make_test_observable<CallExact>(synchronizer.on_commit_chain(), 1);
+  wrapper.subscribe([&test_block](auto commit) {
+    auto block_wrapper = make_test_observable<CallExact>(commit, 1);
+    block_wrapper.subscribe([&test_block](auto block) {
+      // Check commit block
+      ASSERT_EQ(block.height, test_block.height);
+    });
+    ASSERT_TRUE(block_wrapper.validate());
+  });
 
   synchronizer.process_commit(test_block);
 
@@ -134,9 +133,9 @@ TEST(SynchronizerTest, ValidWhenBadStorage) {
 
   EXPECT_CALL(block_loader, requestBlocks(_, _)).Times(0);
 
-  TestObservable<Commit> wrapper(synchronizer.on_commit_chain());
-  wrapper.test_subscriber(
-      std::make_unique<CallExact<Commit>>(0), [](auto commit) {});
+  auto wrapper =
+      make_test_observable<CallExact>(synchronizer.on_commit_chain(), 0);
+  wrapper.subscribe();
 
   synchronizer.process_commit(test_block);
 
@@ -169,17 +168,16 @@ TEST(SynchronizerTest, ValidWhenBlockValidationFailure) {
   EXPECT_CALL(block_loader, requestBlocks(_, _))
       .WillOnce(Return(rxcpp::observable<>::just(test_block)));
 
-  TestObservable<Commit> wrapper(synchronizer.on_commit_chain());
-  wrapper.test_subscriber(
-      std::make_unique<CallExact<Commit>>(1), [&test_block](auto commit) {
-        TestObservable<Block> block_wrapper(commit);
-        block_wrapper.test_subscriber(
-            std::make_unique<CallExact<Block>>(1), [&test_block](auto block) {
-              // Check commit block
-              ASSERT_EQ(block.height, test_block.height);
-            });
-        ASSERT_TRUE(block_wrapper.validate());
-      });
+  auto wrapper =
+      make_test_observable<CallExact>(synchronizer.on_commit_chain(), 1);
+  wrapper.subscribe([&test_block](auto commit) {
+    auto block_wrapper = make_test_observable<CallExact>(commit, 1);
+    block_wrapper.subscribe([&test_block](auto block) {
+      // Check commit block
+      ASSERT_EQ(block.height, test_block.height);
+    });
+    ASSERT_TRUE(block_wrapper.validate());
+  });
 
   synchronizer.process_commit(test_block);
 
