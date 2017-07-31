@@ -50,8 +50,9 @@ namespace iroha_cli {
     if (not tx_opt.has_value()) {
       return "Wrong transaction format";
     }
-    iroha::model::converters::PbTransactionFactory factory;
+
     auto model_tx = tx_opt.value();
+    // Get hash of transaction
     iroha::model::HashProviderImpl hashProvider;
     auto tx_hash = hashProvider.get_hash(model_tx);
     auto pubkey = iroha::hex2bytes(client_pub_key_);
@@ -62,22 +63,24 @@ namespace iroha_cli {
 
     iroha::ed25519::privkey_t ed_privkey;
     std::copy(privkey.begin(), privkey.end(), ed_privkey.begin());
+    // Sign transaction
     iroha::model::Signature sign;
     sign.pubkey = ed_pubkey;
-    sign.signature = iroha::sign(tx_hash.data(), tx_hash.size(),
-                                 ed_pubkey,
-                                 ed_privkey);
+    sign.signature =
+        iroha::sign(tx_hash.data(), tx_hash.size(), ed_pubkey, ed_privkey);
     model_tx.signatures = {sign};
-
+    // Convert to protobuf
+    iroha::model::converters::PbTransactionFactory factory;
     auto pb_tx = factory.serialize(model_tx);
+    // Send to iroha:
     iroha::protocol::ToriiResponse response;
     auto stat = client_.Torii(pb_tx, response);
-    if (response.validation() == iroha::protocol::STATELESS_VALIDATION_SUCCESS){
-      std::cout << "Stateless validation success" << std::endl;
-    } else{
-      std::cout << "Stateless validation error" << std::endl;
+    if (response.validation() ==
+        iroha::protocol::STATELESS_VALIDATION_SUCCESS) {
+      return "Stateless validation success";
+    } else {
+      return "Stateless validation error";
     }
-    return "";
   }
 
-};
+};  // namespace iroha_cli
