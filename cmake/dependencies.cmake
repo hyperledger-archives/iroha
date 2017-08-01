@@ -468,3 +468,12 @@ set_target_properties(rxcpp PROPERTIES
     )
 
 add_dependencies(rxcpp reactive_extensions_rxcpp)
+
+##########################
+#          TBB           #
+##########################
+include(cmake/Modules/TBBGet.cmake)
+include(cmake/Modules/TBBBuild.cmake)
+tbb_get(TBB_ROOT tbb_root SOURCE_CODE SAVE_TO ${EP_PREFIX})
+tbb_build(TBB_ROOT ${tbb_root} CONFIG_DIR TBB_DIR)
+find_package(TBB REQUIRED)

@@ -16,7 +16,7 @@
  */
 
 #include "model/converters/pb_transaction_factory.hpp"
-#include <model/commands/add_asset_quantity.hpp>
+#include "model/commands/add_asset_quantity.hpp"
 #include "common/types.hpp"
 #include "model/converters/pb_command_factory.hpp"
 #include "model/model_hash_provider_impl.hpp"
@@ -26,7 +26,7 @@ namespace iroha {
     namespace converters {
 
       protocol::Transaction PbTransactionFactory::serialize(
-          model::Transaction &tx) {
+          const model::Transaction &tx) const {
         model::converters::PbCommandFactory factory;
         protocol::Transaction pb_tx;
 
@@ -56,7 +56,7 @@ namespace iroha {
       }
 
       std::shared_ptr<model::Transaction> PbTransactionFactory::deserialize(
-          protocol::Transaction const &pb_tx) {
+          const protocol::Transaction &pb_tx) const {
         model::converters::PbCommandFactory commandFactory;
         model::Transaction tx;
 
