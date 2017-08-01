@@ -35,8 +35,6 @@ using ::testing::AtLeast;
 class ClientTest : public testing::Test {
  public:
   virtual void SetUp() {
-    // Create public key file
-
     // Run a server
     runner = std::make_unique<ServerRunner>(Ip, Port);
     th = std::thread([this] {
