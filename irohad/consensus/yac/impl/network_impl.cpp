@@ -128,7 +128,7 @@ namespace iroha {
           ::google::protobuf::Empty *response) {
         auto it = context->client_metadata().find("address");
         if (it == context->client_metadata().end()) {
-          // ???
+          // TODO handle missing source address
         }
         auto address = std::string(it->second.data(), it->second.size());
         auto peer = peers_addresses_.at(address);
@@ -157,7 +157,7 @@ namespace iroha {
           ::google::protobuf::Empty *response) {
         auto it = context->client_metadata().find("address");
         if (it == context->client_metadata().end()) {
-          // ???
+          // TODO handle missing source address
         }
         auto address = std::string(it->second.data(), it->second.size());
         auto peer = peers_addresses_.at(address);
@@ -190,7 +190,7 @@ namespace iroha {
           ::google::protobuf::Empty *response) {
         auto it = context->client_metadata().find("address");
         if (it == context->client_metadata().end()) {
-          // ???
+          // TODO handle missing source address
         }
         auto address = std::string(it->second.data(), it->second.size());
         auto peer = peers_addresses_.at(address);
