@@ -16,7 +16,6 @@
  */
 
 #include "ordering/impl/ordering_service_impl.hpp"
-#include <grpc++/grpc++.h>
 
 /**
  * Will be published when transaction is received.
@@ -30,7 +29,6 @@ namespace iroha {
         size_t delay_milliseconds, std::shared_ptr<uvw::Loop> loop)
         : loop_(std::move(loop)),
           timer_(loop_->resource<uvw::TimerHandle>()),
-          thread_(&OrderingServiceImpl::asyncCompleteRpc, this),
           max_size_(max_size),
           delay_milliseconds_(delay_milliseconds) {
       for (const auto &peer : peers) {
@@ -101,22 +99,6 @@ namespace iroha {
       }
     }
 
-    OrderingServiceImpl::~OrderingServiceImpl() {
-      timer_->close();
-      cq_.Shutdown();
-      if (thread_.joinable()) {
-        thread_.join();
-      }
-    }
-
-    void OrderingServiceImpl::asyncCompleteRpc() {
-      void *got_tag;
-      auto ok = false;
-      while (cq_.Next(&got_tag, &ok)) {
-        auto call = static_cast<AsyncClientCall *>(got_tag);
-
-        delete call;
-      }
-    }
+    OrderingServiceImpl::~OrderingServiceImpl() { timer_->close(); }
   }  // namespace ordering
 }  // namespace iroha

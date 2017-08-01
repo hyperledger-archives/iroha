@@ -16,15 +16,13 @@
  */
 
 #include "ordering/impl/ordering_gate_impl.hpp"
-#include <grpc++/grpc++.h>
 
 namespace iroha {
   namespace ordering {
 
     OrderingGateImpl::OrderingGateImpl(const std::string &server_address)
         : client_(proto::OrderingService::NewStub(grpc::CreateChannel(
-              server_address, grpc::InsecureChannelCredentials()))),
-          thread_(&OrderingGateImpl::asyncCompleteRpc, this) {}
+              server_address, grpc::InsecureChannelCredentials()))) {}
 
     void OrderingGateImpl::propagate_transaction(
         const model::Transaction &transaction) {
@@ -57,23 +55,6 @@ namespace iroha {
 
     void OrderingGateImpl::handleProposal(model::Proposal &&proposal) {
       proposals_.get_subscriber().on_next(proposal);
-    }
-
-    void OrderingGateImpl::asyncCompleteRpc() {
-      void *got_tag;
-      auto ok = false;
-      while (cq_.Next(&got_tag, &ok)) {
-        auto call = static_cast<AsyncClientCall *>(got_tag);
-
-        delete call;
-      }
-    }
-
-    OrderingGateImpl::~OrderingGateImpl() {
-      cq_.Shutdown();
-      if (thread_.joinable()) {
-        thread_.join();
-      }
     }
   }  // namespace ordering
 }  // namespace iroha

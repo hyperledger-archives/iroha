@@ -19,6 +19,7 @@
 #define IROHA_ORDERING_GATE_IMPL_HPP
 
 #include "model/converters/pb_transaction_factory.hpp"
+#include "network/impl/async_grpc_client.hpp"
 #include "network/ordering_gate.hpp"
 #include "ordering.grpc.pb.h"
 
@@ -26,7 +27,8 @@ namespace iroha {
   namespace ordering {
 
     class OrderingGateImpl : public network::OrderingGate,
-                             public proto::OrderingGate::Service {
+                             public proto::OrderingGate::Service,
+                             network::AsyncGrpcClient<google::protobuf::Empty> {
      public:
       explicit OrderingGateImpl(const std::string &server_address);
       void propagate_transaction(
@@ -35,7 +37,6 @@ namespace iroha {
       grpc::Status SendProposal(::grpc::ServerContext *context,
                                 const proto::Proposal *request,
                                 ::google::protobuf::Empty *response) override;
-      ~OrderingGateImpl() override;
 
      private:
       /**
@@ -45,28 +46,9 @@ namespace iroha {
        */
       void handleProposal(model::Proposal &&proposal);
 
-      /**
-       * Listen to gRPC server responses
-       */
-      void asyncCompleteRpc();
-
       rxcpp::subjects::subject<model::Proposal> proposals_;
       model::converters::PbTransactionFactory factory_;
-      grpc::CompletionQueue cq_;
       std::unique_ptr<proto::OrderingService::Stub> client_;
-      std::thread thread_;
-
-      struct AsyncClientCall {
-        google::protobuf::Empty reply;
-
-        grpc::ClientContext context;
-
-        grpc::Status status;
-
-        std::unique_ptr<
-            grpc::ClientAsyncResponseReader<google::protobuf::Empty>>
-            response_reader;
-      };
     };
   }  // namespace ordering
 }  // namespace iroha

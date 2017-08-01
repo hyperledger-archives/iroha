@@ -19,18 +19,20 @@
 #define IROHA_ORDERING_SERVICE_IMPL_HPP
 
 #include <tbb/concurrent_queue.h>
-#include <thread>
 #include <unordered_map>
 #include <uvw.hpp>
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/proposal.hpp"
+#include "network/impl/async_grpc_client.hpp"
 #include "ordering.grpc.pb.h"
 
 namespace iroha {
   namespace ordering {
 
-    class OrderingServiceImpl : public proto::OrderingService::Service,
-                                public uvw::Emitter<OrderingServiceImpl> {
+    class OrderingServiceImpl
+        : public proto::OrderingService::Service,
+          public uvw::Emitter<OrderingServiceImpl>,
+          network::AsyncGrpcClient<google::protobuf::Empty> {
      public:
       OrderingServiceImpl(
           const std::vector<model::Peer> &peers, size_t max_size,
@@ -61,11 +63,6 @@ namespace iroha {
        */
       void publishProposal(model::Proposal &&proposal);
 
-      /**
-       * Listen to gRPC server responses
-       */
-      void asyncCompleteRpc();
-
       std::shared_ptr<uvw::Loop> loop_;
       std::shared_ptr<uvw::TimerHandle> timer_;
 
@@ -74,25 +71,11 @@ namespace iroha {
       std::unordered_map<std::string,
                          std::unique_ptr<proto::OrderingGate::Stub>>
           peers_;
-      grpc::CompletionQueue cq_;
-      std::thread thread_;
 
       tbb::concurrent_queue<model::Transaction> queue_;
       const size_t max_size_;  // max number of txs in proposal
       const size_t
           delay_milliseconds_;  // wait for specified time if queue is empty
-
-      struct AsyncClientCall {
-        google::protobuf::Empty reply;
-
-        grpc::ClientContext context;
-
-        grpc::Status status;
-
-        std::unique_ptr<
-            grpc::ClientAsyncResponseReader<google::protobuf::Empty>>
-            response_reader;
-      };
     };
   }  // namespace ordering
 }  // namespace iroha
