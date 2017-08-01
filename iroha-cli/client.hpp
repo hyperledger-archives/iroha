@@ -32,7 +32,7 @@ namespace iroha_cli {
    public:
     enum Status {
       WRONG_FORMAT,
-      NO_KEYS,
+      NO_ACCOUNT,
       NOT_VALID,
       OK
     };

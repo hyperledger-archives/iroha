@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
         break;
       case iroha_cli::CliClient::WRONG_FORMAT:  std::cout << "Transaction wrong json format" << std::endl;
         break;
-      case iroha_cli::CliClient::NO_KEYS: std::cout << "No public and private key found. Run with new_account flag." << std::endl;
+      case iroha_cli::CliClient::NO_ACCOUNT: std::cout << "No public and private key found. Run with new_account flag." << std::endl;
         break;
       case iroha_cli::CliClient::NOT_VALID: std::cout << "Transaction is not valid." << std::endl;
         break;

@@ -153,7 +153,6 @@ TEST_F(ClientTest, SendTxWhenStatelessInvalid) {
 
 
 TEST_F(ClientTest, SendTxWhenNoKeys) {
-  std::string account_name = "test";
   // Client without public, private keys
   iroha_cli::CliClient client(Ip, Port);
   EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
@@ -169,5 +168,5 @@ TEST_F(ClientTest, SendTxWhenNoKeys) {
       "  }]\n"
       "}";
   std::cout << "Sending  json transaction to Iroha" << std::endl;
-  ASSERT_EQ(client.sendTx(json_tx), iroha_cli::CliClient::NO_KEYS);
+  ASSERT_EQ(client.sendTx(json_tx), iroha_cli::CliClient::NO_ACCOUNT);
 }

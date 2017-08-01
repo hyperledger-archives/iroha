@@ -50,14 +50,14 @@ namespace iroha_cli {
     std::string client_priv_key_;
     std::ifstream priv_file(model_tx.creator_account_id + ".priv");
     if (not priv_file) {
-      return NO_KEYS;
+      return NO_ACCOUNT;
     }
     priv_file >> client_priv_key_;
     priv_file.close();
 
     std::ifstream pub_file(model_tx.creator_account_id + ".pub");
     if (not pub_file) {
-      return NO_KEYS;
+      return NO_ACCOUNT;
     }
     pub_file >> client_pub_key_;
     pub_file.close();
