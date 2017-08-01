@@ -17,60 +17,51 @@
 
 #include <gmock/gmock.h>
 #include <grpc++/grpc++.h>
+#include "common/test_subscriber.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
+#include "ordering_mocks.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::model;
 using namespace iroha::network;
+using namespace common::test_subscriber;
 
 using ::testing::_;
 
-class FakeOrderingService : public proto::OrderingService::Service {
+class OrderingGateTest : public OrderingTest {
  public:
-  MOCK_METHOD3(SendTransaction,
-               ::grpc::Status(::grpc::ServerContext*,
-                              const iroha::protocol::Transaction*,
-                              ::google::protobuf::Empty*));
+  OrderingGateTest() {
+    gate_impl = std::make_shared<OrderingGateImpl>(address);
+    gate = gate_impl;
+    fake_service = static_cast<FakeOrderingService*>(service.get());
+  }
+
+  std::shared_ptr<OrderingGateImpl> gate_impl;
+  FakeOrderingService* fake_service;
 };
 
-TEST(OrderingGateTest, SampleTest) {
-  auto address = "0.0.0.0:50051";
-  Peer peer;
-  peer.address = address;
-
-  auto gate = std::make_shared<OrderingGateImpl>(peer.address);
-  std::unique_ptr<grpc::Server> server;
-
-  auto service = std::make_shared<FakeOrderingService>();
-
-  EXPECT_CALL(*service, SendTransaction(_, _, _)).Times(5);
-
-  std::mutex mtx;
-  std::condition_variable cv;
-
-  auto s_thread = std::thread([&cv, address, &service, &server, &gate] {
-    grpc::ServerBuilder builder;
-    int port = 0;
-    builder.AddListeningPort(address, grpc::InsecureServerCredentials(), &port);
-    builder.RegisterService(service.get());
-    builder.RegisterService(gate.get());
-    server = builder.BuildAndStart();
-    ASSERT_NE(port, 0);
-    ASSERT_TRUE(server);
-    cv.notify_one();
-    server->Wait();
-  });
-
-  std::unique_lock<std::mutex> lock(mtx);
-  cv.wait(lock);
+TEST_F(OrderingGateTest, TransactionReceivedByServerWhenSent) {
+  // Init => send 5 transactions => 5 transactions are processed by server
+  EXPECT_CALL(*fake_service, SendTransaction(_, _, _)).Times(5);
 
   for (size_t i = 0; i < 5; ++i) {
-    gate->propagate_transaction(Transaction());
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    gate_impl->propagate_transaction(Transaction());
   }
 
-  server->Shutdown();
-  if (s_thread.joinable()) {
-    s_thread.join();
-  }
+  // Ensure that server processed the transactions
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+}
+
+TEST_F(OrderingGateTest, ProposalReceivedByGateWhenSent) {
+  auto wrapper = make_test_subscriber<CallExact>(gate_impl->on_proposal(), 1);
+  wrapper.subscribe();
+
+  grpc::ServerContext context;
+  iroha::ordering::proto::Proposal proposal;
+
+  google::protobuf::Empty response;
+
+  gate_impl->SendProposal(&context, &proposal, &response);
+
+  ASSERT_TRUE(wrapper.validate());
 }

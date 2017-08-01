@@ -15,71 +15,102 @@
  * limitations under the License.
  */
 
-#include <grpc++/grpc++.h>
-#include <gtest/gtest.h>
+#include "common/test_subscriber.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
+#include "ordering_mocks.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::model;
 using namespace iroha::network;
+using namespace common::test_subscriber;
 
-TEST(OrderingGateServiceTest, SampleTest) {
-  auto loop = uvw::Loop::getDefault();
+class OrderingGateServiceTest : public OrderingTest {
+ public:
+  OrderingGateServiceTest() {
+    gate_impl = std::make_shared<OrderingGateImpl>(address);
+    gate = gate_impl;
+  }
 
-  auto address = "0.0.0.0:50051";
-  Peer peer;
-  peer.address = address;
+  void SetUp() override { loop = uvw::Loop::create(); }
 
-  auto gate = std::make_shared<OrderingGateImpl>(peer.address);
-  auto service = std::make_shared<OrderingServiceImpl>(std::vector<Peer>{peer},
-                                                       5, 1600, loop);
-  std::unique_ptr<grpc::Server> server;
+  void start() override {
+    OrderingTest::start();
+    loop_thread = std::thread([this] { loop->run(); });
+  }
 
+  void shutdown() override {
+    proposals.clear();
+    loop->stop();
+    if (loop_thread.joinable()) {
+      loop_thread.join();
+    }
+    OrderingTest::shutdown();
+  }
+
+  std::shared_ptr<uvw::Loop> loop;
+  std::thread loop_thread;
+  std::shared_ptr<OrderingGateImpl> gate_impl;
   std::vector<Proposal> proposals;
+};
 
-  gate->on_proposal().subscribe(
-      [&proposals](auto proposal) { proposals.push_back(proposal); });
+TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenTimer) {
+  service = std::make_shared<OrderingServiceImpl>(std::vector<Peer>{peer}, 100,
+                                                  400, loop);
 
-  std::mutex mtx;
-  std::condition_variable cv;
+  start();
 
-  auto s_thread = std::thread([&cv, address, &service, &server, &gate] {
-    grpc::ServerBuilder builder;
-    int port = 0;
-    builder.AddListeningPort(address, grpc::InsecureServerCredentials(), &port);
-    builder.RegisterService(service.get());
-    builder.RegisterService(gate.get());
-    server = builder.BuildAndStart();
-    ASSERT_NE(port, 0);
-    ASSERT_TRUE(server);
-    cv.notify_one();
-    server->Wait();
-  });
-
-  std::unique_lock<std::mutex> lock(mtx);
-  cv.wait(lock);
-
-  auto l_thread = std::thread([&loop] { loop->run(); });
+  auto wrapper = make_test_subscriber<CallExact>(gate_impl->on_proposal(), 2);
+  wrapper.subscribe([this](auto proposal) { proposals.push_back(proposal); });
 
   for (size_t i = 0; i < 10; ++i) {
-    gate->propagate_transaction(Transaction());
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    Transaction tx;
+    tx.tx_counter = i;
+    gate_impl->propagate_transaction(tx);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
   }
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  std::this_thread::sleep_for(std::chrono::seconds(1));
 
-  ASSERT_EQ(proposals.size(), 3);
-  ASSERT_EQ(proposals.at(0).transactions.size(), 4);
-  ASSERT_EQ(proposals.at(1).transactions.size(), 3);
-  ASSERT_EQ(proposals.at(2).transactions.size(), 3);
+  ASSERT_TRUE(wrapper.validate());
+  ASSERT_EQ(proposals.size(), 2);
+  ASSERT_EQ(proposals.at(0).transactions.size(), 8);
+  ASSERT_EQ(proposals.at(1).transactions.size(), 2);
 
-  loop->stop();
-  server->Shutdown();
-  if (l_thread.joinable()) {
-    l_thread.join();
+  size_t i = 0;
+  for (auto &&proposal : proposals) {
+    for (auto &&tx : proposal.transactions) {
+      ASSERT_EQ(tx.tx_counter, i++);
+    }
   }
-  if (s_thread.joinable()) {
-    s_thread.join();
+}
+
+TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
+  service = std::make_shared<OrderingServiceImpl>(std::vector<Peer>{peer}, 5,
+                                                  1000, loop);
+
+  start();
+
+  auto wrapper = make_test_subscriber<CallExact>(gate_impl->on_proposal(), 2);
+  wrapper.subscribe([this](auto proposal) { proposals.push_back(proposal); });
+
+  for (size_t i = 0; i < 10; ++i) {
+    Transaction tx;
+    tx.tx_counter = i;
+    gate_impl->propagate_transaction(tx);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+  ASSERT_TRUE(wrapper.validate());
+  ASSERT_EQ(proposals.size(), 2);
+
+  size_t i = 0;
+  for (auto &&proposal : proposals) {
+    ASSERT_EQ(proposal.transactions.size(), 5);
+    for (auto &&tx : proposal.transactions) {
+      ASSERT_EQ(tx.tx_counter, i++);
+    }
   }
 }

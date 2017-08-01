@@ -17,8 +17,8 @@
 
 #include <gmock/gmock.h>
 #include <grpc++/grpc++.h>
-#include "network/ordering_gate.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
+#include "ordering_mocks.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::model;
@@ -27,87 +27,71 @@ using namespace iroha::network;
 using ::testing::_;
 using ::testing::AtLeast;
 
-class FakeOrderingGate : public OrderingGate,
-                         public proto::OrderingGate::Service {
+class OrderingServiceTest : public OrderingTest {
  public:
-  MOCK_METHOD1(propagate_transaction, void(const Transaction&));
-  MOCK_METHOD0(on_proposal, rxcpp::observable<Proposal>());
-  MOCK_METHOD3(SendProposal,
-               grpc::Status(::grpc::ServerContext*, const proto::Proposal*,
-                            ::google::protobuf::Empty*));
+  OrderingServiceTest() {
+    fake_gate = static_cast<FakeOrderingGate*>(gate.get());
+  }
+
+  void SetUp() override { loop = uvw::Loop::create(); }
+
+  void start() override {
+    OrderingTest::start();
+    loop_thread = std::thread([this] { loop->run(); });
+    client = proto::OrderingService::NewStub(
+        grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
+  }
+
+  void shutdown() override {
+    loop->stop();
+    if (loop_thread.joinable()) {
+      loop_thread.join();
+    }
+    OrderingTest::shutdown();
+  }
+
+  std::shared_ptr<uvw::Loop> loop;
+  std::thread loop_thread;
+  FakeOrderingGate* fake_gate;
+  std::unique_ptr<iroha::ordering::proto::OrderingService::Stub> client;
 };
 
-TEST(OrderingServiceTest, SampleTest) {
-  auto loop = uvw::Loop::getDefault();
+TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
+  // Init => proposal size 5 => 2 proposals after 10 transactions
+  service = std::make_shared<OrderingServiceImpl>(std::vector<Peer>{peer}, 5,
+                                                  1000, loop);
+  EXPECT_CALL(*fake_gate, SendProposal(_, _, _)).Times(2);
 
-  auto address = "0.0.0.0:50051";
-  Peer peer;
-  peer.address = address;
+  start();
 
-  auto service = std::make_shared<OrderingServiceImpl>(std::vector<Peer>{peer},
-                                                       5, 1500, loop);
-  std::unique_ptr<grpc::Server> server;
+  for (size_t i = 0; i < 10; ++i) {
+    grpc::ClientContext context;
 
-  auto gate = std::make_shared<FakeOrderingGate>();
+    google::protobuf::Empty reply;
 
-  EXPECT_CALL(*gate, SendProposal(_, _, _)).Times(AtLeast(4));
-
-  std::mutex mtx;
-  std::condition_variable cv;
-
-  auto s_thread = std::thread([&cv, address, &service, &server, &gate] {
-    grpc::ServerBuilder builder;
-    int port = 0;
-    builder.AddListeningPort(address, grpc::InsecureServerCredentials(), &port);
-    builder.RegisterService(service.get());
-    builder.RegisterService(gate.get());
-    server = builder.BuildAndStart();
-    ASSERT_NE(port, 0);
-    ASSERT_TRUE(server);
-    cv.notify_one();
-    server->Wait();
-  });
-
-  std::unique_lock<std::mutex> lock(mtx);
-  cv.wait(lock);
-
-  auto l_thread = std::thread([&loop] { loop->run(); });
-
-  auto stub = proto::OrderingService::NewStub(
-      grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
-
-  auto p1 = std::thread([&stub] {
-    for (size_t i = 0; i < 10; ++i) {
-      grpc::ClientContext context;
-
-      google::protobuf::Empty reply;
-
-      stub->SendTransaction(&context, iroha::protocol::Transaction(), &reply);
-      std::this_thread::sleep_for(std::chrono::milliseconds(700));
-    }
-  });
-  auto p2 = std::thread([&stub] {
-    for (size_t i = 0; i < 10; ++i) {
-      grpc::ClientContext context;
-
-      google::protobuf::Empty reply;
-
-      stub->SendTransaction(&context, iroha::protocol::Transaction(), &reply);
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    }
-  });
-
-  p1.join();
-  p2.join();
-
-  std::this_thread::sleep_for(std::chrono::seconds(5));
-
-  loop->stop();
-  server->Shutdown();
-  if (l_thread.joinable()) {
-    l_thread.join();
+    client->SendTransaction(&context, iroha::protocol::Transaction(), &reply);
   }
-  if (s_thread.joinable()) {
-    s_thread.join();
+
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+}
+
+TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
+  // Init => proposal timer 400 ms => 10 tx by 50 ms => 2 proposals in 1 second
+  service = std::make_shared<OrderingServiceImpl>(std::vector<Peer>{peer}, 100,
+                                                  400, loop);
+  EXPECT_CALL(*fake_gate, SendProposal(_, _, _)).Times(2);
+
+  start();
+
+  for (size_t i = 0; i < 10; ++i) {
+    grpc::ClientContext context;
+
+    google::protobuf::Empty reply;
+
+    client->SendTransaction(&context, iroha::protocol::Transaction(), &reply);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
   }
+
+  std::this_thread::sleep_for(std::chrono::seconds(1));
 }
