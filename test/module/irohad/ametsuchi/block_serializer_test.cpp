@@ -19,6 +19,8 @@
 #include "ametsuchi/block_serializer.hpp"
 #include "common/types.hpp"
 
+using namespace iroha;
+
 iroha::model::Signature create_signature();
 iroha::model::Transaction create_transaction();
 iroha::model::Proposal create_proposal();
@@ -141,12 +143,8 @@ iroha::model::Block create_block() {
 }
 
 
-template<typename Base, typename T>
-inline bool instanceof(const T *ptr) {
-  return typeid(Base) == typeid(*ptr);
-}
 
-TEST(block_serialize, block_serialize_test){
+TEST(BlockSerialize, BlockSerializeWhenValid){
 
   auto block = create_block();
 
@@ -278,8 +276,24 @@ TEST(block_serialize, block_serialize_test){
   }
 }
 
+TEST(BlockSerialize, BlockSerializeWhenInvalid){
+  auto block = create_block();
+  iroha::ametsuchi::BlockSerializer blockSerializer;
 
-TEST(tx_serialize, tx_serialize_test){
+  std::cout << unsigned(block.hash[0]) << std::endl;
+
+  auto bytes = blockSerializer.serialize(block);
+  bytes[0] = 0x1;
+  std::string str(bytes.begin(), bytes.end());
+  std::cout << str << std::endl;
+
+  // deserialize
+  auto res = blockSerializer.deserialize(bytes);
+  ASSERT_FALSE(res.has_value());
+
+}
+
+TEST(TransactionSerialize, TxSerializeWhenValid){
   auto json_tx = "{\"signatures\": [ {\n"
       "                    \"pubkey\": \"2323232323232323232323232323232323232323232323232323232323232323\",\n"
       "                    \"signature\": \"23232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323\"\n"
@@ -298,4 +312,20 @@ TEST(tx_serialize, tx_serialize_test){
   ASSERT_TRUE(tx.has_value());
   ASSERT_EQ(tx.value().tx_counter, 0);
   ASSERT_EQ(tx.value().creator_account_id, "123");
+}
+
+TEST(TransactionSerialize, TxSerializeWhenInvalid){
+  // Json transaction without tx_counter
+  auto json_tx = "{ \"created_ts\": 0,\n"
+      "            \"creator_account_id\": \"123\",\n"
+      "            \"commands\": [{\n"
+      "                    \"command_type\": \"AddPeer\",\n"
+      "                    \"address\": \"localhost\",\n"
+      "                    \"peer_key\": \"2323232323232323232323232323232323232323232323232323232323232323\"\n"
+      "                }]}";
+
+
+  iroha::ametsuchi::BlockSerializer blockSerializer;
+  auto tx = blockSerializer.deserialize(json_tx);
+  ASSERT_FALSE(tx.has_value());
 }

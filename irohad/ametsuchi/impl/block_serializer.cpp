@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#define RAPIDJSON_HAS_STDSTRING 1
+
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/reader.h>
 #include <algorithm>
@@ -28,12 +30,58 @@ namespace iroha {
 
     using namespace rapidjson;
 
+    BlockSerializer::BlockSerializer() {
+      serializers_[typeid(model::AddPeer)] =
+          &BlockSerializer::serialize_add_peer;
+      serializers_[typeid(model::AddAssetQuantity)] =
+          &BlockSerializer::serialize_add_asset_quantity;
+      serializers_[typeid(model::AddSignatory)] =
+          &BlockSerializer::serialize_add_signatory;
+      serializers_[typeid(model::AssignMasterKey)] =
+          &BlockSerializer::serialize_assign_master_key;
+      serializers_[typeid(model::CreateAccount)] =
+          &BlockSerializer::serialize_create_account;
+      serializers_[typeid(model::CreateAsset)] =
+          &BlockSerializer::serialize_create_asset;
+      serializers_[typeid(model::CreateDomain)] =
+          &BlockSerializer::serialize_create_domain;
+      serializers_[typeid(model::RemoveSignatory)] =
+          &BlockSerializer::serialize_remove_signatory;
+      serializers_[typeid(model::SetAccountPermissions)] =
+          &BlockSerializer::serialize_set_account_permissions;
+      serializers_[typeid(model::SetQuorum)] =
+          &BlockSerializer::serialize_set_quorum;
+      serializers_[typeid(model::TransferAsset)] =
+          &BlockSerializer::serialize_transfer_asset;
+
+      deserializers_["AddPeer"] = &BlockSerializer::deserialize_add_peer;
+      deserializers_["AddAssetQuantity"] =
+          &BlockSerializer::deserialize_add_asset_quantity;
+      deserializers_["AddSignatory"] =
+          &BlockSerializer::deserialize_add_signatory;
+      deserializers_["AssignMasterKey"] =
+          &BlockSerializer::deserialize_assign_master_key;
+      deserializers_["CreateAccount"] =
+          &BlockSerializer::deserialize_create_account;
+      deserializers_["CreateAsset"] =
+          &BlockSerializer::deserialize_create_asset;
+      deserializers_["CreateDomain"] =
+          &BlockSerializer::deserialize_create_domain;
+      deserializers_["RemoveSignatory"] =
+          &BlockSerializer::deserialize_remove_signatory;
+      deserializers_["SetAccountPermissions"] =
+          &BlockSerializer::deserialize_set_account_permissions;
+      deserializers_["SetQuorum"] = &BlockSerializer::deserialize_set_quorum;
+      deserializers_["TransferAsset"] =
+          &BlockSerializer::deserialize_transfer_asset;
+    }
+
     /* Serialize */
 
     std::vector<uint8_t> BlockSerializer::serialize(const model::Block block) {
       rapidjson::StringBuffer sb;
       rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
-      serialize(writer, std::move(block));
+      serialize(writer, block);
       auto str = sb.GetString();
       std::vector<uint8_t> bytes{str, str + sb.GetLength()};
       return bytes;
@@ -43,7 +91,7 @@ namespace iroha {
                                     const model::Block& block) {
       writer.StartObject();
       writer.String("hash");
-      writer.String(block.hash.to_hexstring().c_str());
+      writer.String(block.hash.to_hexstring());
 
       writer.String("signatures");
       writer.StartArray();
@@ -59,13 +107,13 @@ namespace iroha {
       writer.Uint64(block.height);
 
       writer.String("prev_hash");
-      writer.String(block.prev_hash.to_hexstring().c_str());
+      writer.String(block.prev_hash.to_hexstring());
 
       writer.String("txs_number");
       writer.Uint(block.txs_number);
 
       writer.String("merkle_root");
-      writer.String(block.merkle_root.to_hexstring().c_str());
+      writer.String(block.merkle_root.to_hexstring());
 
       writer.String("transactions");
       writer.StartArray();
@@ -82,10 +130,10 @@ namespace iroha {
       writer.StartObject();
 
       writer.String("pubkey");
-      writer.String(signature.pubkey.to_hexstring().c_str());
+      writer.String(signature.pubkey.to_hexstring());
 
       writer.String("signature");
-      writer.String(signature.signature.to_hexstring().c_str());
+      writer.String(signature.signature.to_hexstring());
 
       writer.EndObject();
     }
@@ -105,7 +153,7 @@ namespace iroha {
       writer.Uint64(transaction.created_ts);
 
       writer.String("creator_account_id");
-      writer.String(transaction.creator_account_id.c_str());
+      writer.String(transaction.creator_account_id);
 
       writer.String("tx_counter");
       writer.Uint64(transaction.tx_counter);
@@ -122,85 +170,46 @@ namespace iroha {
 
     void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
                                     const model::Command& command) {
-      if (instanceof <model::AddPeer>(&command)) {
-        auto add_peer = static_cast<const model::AddPeer&>(command);
-        serialize(writer, add_peer);
-      }
-      if (instanceof <model::AddAssetQuantity>(&command)) {
-        auto add_asset_quantity =
-            static_cast<const model::AddAssetQuantity&>(command);
-        serialize(writer, add_asset_quantity);
-      }
-      if (instanceof <model::AddSignatory>(&command)) {
-        auto add_signatory = static_cast<const model::AddSignatory&>(command);
-        serialize(writer, add_signatory);
-      }
-      if (instanceof <model::AssignMasterKey>(&command)) {
-        auto assign_master_key =
-            static_cast<const model::AssignMasterKey&>(command);
-        serialize(writer, assign_master_key);
-      }
-      if (instanceof <model::CreateAccount>(&command)) {
-        auto create_account = static_cast<const model::CreateAccount&>(command);
-        serialize(writer, create_account);
-      }
-      if (instanceof <model::CreateAsset>(&command)) {
-        auto create_asset = static_cast<const model::CreateAsset&>(command);
-        serialize(writer, create_asset);
-      }
-      if (instanceof <model::CreateDomain>(&command)) {
-        auto create_domain = static_cast<const model::CreateDomain&>(command);
-        serialize(writer, create_domain);
-      }
-      if (instanceof <model::RemoveSignatory>(&command)) {
-        auto remove_signatory =
-            static_cast<const model::RemoveSignatory&>(command);
-        serialize(writer, remove_signatory);
-      }
-      if (instanceof <model::SetAccountPermissions>(&command)) {
-        auto set_account_permissions =
-            static_cast<const model::SetAccountPermissions&>(command);
-        serialize(writer, set_account_permissions);
-      }
-      if (instanceof <model::SetQuorum>(&command)) {
-        auto set_quorum = static_cast<const model::SetQuorum&>(command);
-        serialize(writer, set_quorum);
-      }
-      if (instanceof <model::TransferAsset>(&command)) {
-        auto transfer_asset = static_cast<const model::TransferAsset&>(command);
-        serialize(writer, transfer_asset);
+      auto it = serializers_.find(typeid(command));
+      if (it != serializers_.end()) {
+        (this->*it->second)(writer, command);
       }
     }
 
-    void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    const model::AddPeer& add_peer) {
+    void BlockSerializer::serialize_add_peer(PrettyWriter<StringBuffer>& writer,
+                                    const model::Command& command) {
+      auto add_peer = static_cast<const model::AddPeer&>(command);
+
       writer.StartObject();
 
       writer.String("command_type");
       writer.String("AddPeer");
 
       writer.String("address");
-      writer.String(add_peer.address.c_str());
+      writer.String(add_peer.address);
 
       writer.String("peer_key");
-      writer.String(add_peer.peer_key.to_hexstring().c_str());
+      writer.String(add_peer.peer_key.to_hexstring());
 
       writer.EndObject();
     }
 
-    void BlockSerializer::serialize(
+    void BlockSerializer::serialize_add_asset_quantity(
         PrettyWriter<StringBuffer>& writer,
-        const model::AddAssetQuantity& add_asset_quantity) {
+        const model::Command& command) {
+      auto add_asset_quantity =
+          static_cast<const model::AddAssetQuantity&>(command);
+
       writer.StartObject();
 
       writer.String("command_type");
       writer.String("AddAssetQuantity");
 
       writer.String("account_id");
-      writer.String(add_asset_quantity.account_id.c_str());
+      writer.String(add_asset_quantity.account_id);
 
       writer.String("asset_id");
-      writer.String(add_asset_quantity.asset_id.c_str());
+      writer.String(add_asset_quantity.asset_id);
 
       writer.String("amount");
       writer.StartObject();
@@ -214,71 +223,80 @@ namespace iroha {
       writer.EndObject();
     }
 
-    void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    const model::AddSignatory& add_signatory) {
+    void BlockSerializer::serialize_add_signatory(
+        PrettyWriter<StringBuffer>& writer, const model::Command& command) {
+      auto add_signatory = static_cast<const model::AddSignatory&>(command);
+
       writer.StartObject();
 
       writer.String("command_type");
       writer.String("AddSignatory");
 
       writer.String("account_id");
-      writer.String(add_signatory.account_id.c_str());
+      writer.String(add_signatory.account_id);
 
       writer.String("pubkey");
-      writer.String(add_signatory.pubkey.to_hexstring().c_str());
+      writer.String(add_signatory.pubkey.to_hexstring());
 
       writer.EndObject();
     }
 
-    void BlockSerializer::serialize(
+    void BlockSerializer::serialize_assign_master_key(
         PrettyWriter<StringBuffer>& writer,
-        const model::AssignMasterKey& assign_master_key) {
+        const model::Command& command) {
+      auto assign_master_key =
+          static_cast<const model::AssignMasterKey&>(command);
+
       writer.StartObject();
 
       writer.String("command_type");
       writer.String("AssignMasterKey");
 
       writer.String("account_id");
-      writer.String(assign_master_key.account_id.c_str());
+      writer.String(assign_master_key.account_id);
 
       writer.String("pubkey");
-      writer.String(assign_master_key.pubkey.to_hexstring().c_str());
+      writer.String(assign_master_key.pubkey.to_hexstring());
 
       writer.EndObject();
     }
 
-    void BlockSerializer::serialize(
+    void BlockSerializer::serialize_create_account(
         PrettyWriter<StringBuffer>& writer,
-        const model::CreateAccount& create_account) {
+        const model::Command& command) {
+      auto create_account = static_cast<const model::CreateAccount&>(command);
+
       writer.StartObject();
 
       writer.String("command_type");
       writer.String("CreateAccount");
 
       writer.String("domain_id");
-      writer.String(create_account.domain_id.c_str());
+      writer.String(create_account.domain_id);
 
       writer.String("account_name");
-      writer.String(create_account.account_name.c_str());
+      writer.String(create_account.account_name);
 
       writer.String("pubkey");
-      writer.String(create_account.pubkey.to_hexstring().c_str());
+      writer.String(create_account.pubkey.to_hexstring());
 
       writer.EndObject();
     }
 
-    void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    const model::CreateAsset& create_asset) {
+    void BlockSerializer::serialize_create_asset(
+        PrettyWriter<StringBuffer>& writer, const model::Command& command) {
+      auto create_asset = static_cast<const model::CreateAsset&>(command);
+
       writer.StartObject();
 
       writer.String("command_type");
       writer.String("CreateAsset");
 
       writer.String("asset_name");
-      writer.String(create_asset.asset_name.c_str());
+      writer.String(create_asset.asset_name);
 
       writer.String("domain_id");
-      writer.String(create_asset.domain_id.c_str());
+      writer.String(create_asset.domain_id);
 
       writer.String("precision");
       writer.Uint(create_asset.precision);
@@ -286,46 +304,54 @@ namespace iroha {
       writer.EndObject();
     }
 
-    void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    const model::CreateDomain& create_domain) {
+    void BlockSerializer::serialize_create_domain(
+        PrettyWriter<StringBuffer>& writer, const model::Command& command) {
+      auto create_domain = static_cast<const model::CreateDomain&>(command);
+
       writer.StartObject();
 
       writer.String("command_type");
       writer.String("CreateDomain");
 
       writer.String("domain_name");
-      writer.String(create_domain.domain_name.c_str());
+      writer.String(create_domain.domain_name);
 
       writer.EndObject();
     }
 
-    void BlockSerializer::serialize(
+    void BlockSerializer::serialize_remove_signatory(
         PrettyWriter<StringBuffer>& writer,
-        const model::RemoveSignatory& remove_signatory) {
+        const model::Command& command) {
+      auto remove_signatory =
+          static_cast<const model::RemoveSignatory&>(command);
+
       writer.StartObject();
 
       writer.String("command_type");
       writer.String("RemoveSignatory");
 
       writer.String("account_id");
-      writer.String(remove_signatory.account_id.c_str());
+      writer.String(remove_signatory.account_id);
 
       writer.String("pubkey");
-      writer.String(remove_signatory.pubkey.to_hexstring().c_str());
+      writer.String(remove_signatory.pubkey.to_hexstring());
 
       writer.EndObject();
     }
 
-    void BlockSerializer::serialize(
+    void BlockSerializer::serialize_set_account_permissions(
         PrettyWriter<StringBuffer>& writer,
-        const model::SetAccountPermissions& set_account_permissions) {
+        const model::Command& command) {
+      auto set_account_permissions =
+          static_cast<const model::SetAccountPermissions&>(command);
+
       writer.StartObject();
 
       writer.String("command_type");
       writer.String("SetAccountPermissions");
 
       writer.String("account_id");
-      writer.String(set_account_permissions.account_id.c_str());
+      writer.String(set_account_permissions.account_id);
 
       writer.String("new_permissions");
       writer.StartObject();
@@ -365,15 +391,17 @@ namespace iroha {
       writer.EndObject();
     }
 
-    void BlockSerializer::serialize(PrettyWriter<StringBuffer>& writer,
-                                    const model::SetQuorum& set_quorum) {
+    void BlockSerializer::serialize_set_quorum(
+        PrettyWriter<StringBuffer>& writer, const model::Command& command) {
+      auto set_quorum = static_cast<const model::SetQuorum&>(command);
+
       writer.StartObject();
 
       writer.String("command_type");
       writer.String("SetQuorum");
 
       writer.String("account_id");
-      writer.String(set_quorum.account_id.c_str());
+      writer.String(set_quorum.account_id);
 
       writer.String("new_quorum");
       writer.Uint(set_quorum.new_quorum);
@@ -381,22 +409,24 @@ namespace iroha {
       writer.EndObject();
     }
 
-    void BlockSerializer::serialize(
+    void BlockSerializer::serialize_transfer_asset(
         PrettyWriter<StringBuffer>& writer,
-        const model::TransferAsset& transfer_asset) {
+        const model::Command& command) {
+      auto transfer_asset = static_cast<const model::TransferAsset&>(command);
+
       writer.StartObject();
 
       writer.String("command_type");
       writer.String("TransferAsset");
 
       writer.String("dest_account_id");
-      writer.String(transfer_asset.dest_account_id.c_str());
+      writer.String(transfer_asset.dest_account_id);
 
       writer.String("src_account_id");
-      writer.String(transfer_asset.src_account_id.c_str());
+      writer.String(transfer_asset.src_account_id);
 
       writer.String("asset_id");
-      writer.String(transfer_asset.asset_id.c_str());
+      writer.String(transfer_asset.asset_id);
 
       writer.String("amount");
       writer.StartObject();
@@ -413,41 +443,33 @@ namespace iroha {
 
     nonstd::optional<model::Block> BlockSerializer::deserialize(
         const std::vector<uint8_t>& bytes) {
-      // TODO: return nullopt when some necessary field is missed
       std::string block_json(bytes.begin(), bytes.end());
       rapidjson::Document doc;
-      if (doc.Parse(block_json.c_str()).HasParseError()) {
+      if (doc.Parse(block_json).HasParseError()) {
+        return nonstd::nullopt;
+      }
+
+      auto req_fields = {"hash", "signatures", "created_ts", "height",
+                         "prev_hash", "txs_number"};
+      auto verify_member = [&doc](auto&& field) {
+        return not doc.HasMember(field);
+      };
+
+      auto json_sigs = doc["signatures"].GetArray();
+
+      if (std::any_of(req_fields.begin(), req_fields.end(), verify_member)) {
         return nonstd::nullopt;
       }
 
       model::Block block{};
 
-      // hash
-      std::string hash_str(doc["hash"].GetString(),
-                           doc["hash"].GetStringLength());
-      auto hash_bytes = hex2bytes(hash_str);
-      std::copy(hash_bytes.begin(), hash_bytes.end(), block.hash.begin());
+      // Check if hash is present
+      deserialize(doc["hash"].GetString(), block.hash);
 
-      // signatures
-      auto json_sigs = doc["signatures"].GetArray();
-
-      for (auto iter = json_sigs.begin(); iter < json_sigs.end(); ++iter) {
-        auto json_sig = iter->GetObject();
-        model::Signature signature{};
-
-        std::string sig_pubkey(json_sig["pubkey"].GetString(),
-                               json_sig["pubkey"].GetStringLength());
-        auto sig_pubkey_bytes = hex2bytes(sig_pubkey);
-        std::copy(sig_pubkey_bytes.begin(), sig_pubkey_bytes.end(),
-                  signature.pubkey.begin());
-
-        std::string sig_sign(json_sig["signature"].GetString(),
-                             json_sig["signature"].GetStringLength());
-        auto sig_sign_bytes = hex2bytes(sig_sign);
-        std::copy(sig_sign_bytes.begin(), sig_sign_bytes.end(),
-                  signature.signature.begin());
-
-        block.sigs.push_back(signature);
+      // Signatures are critical part of a Block, if there are none - Block is
+      // invalid
+      if (not deserialize(json_sigs, block.sigs)) {
+        return nonstd::nullopt;
       }
 
       // created_ts
@@ -457,24 +479,20 @@ namespace iroha {
       block.height = doc["height"].GetUint64();
 
       // prev_hash
-      std::string prev_hash_str(doc["prev_hash"].GetString(),
-                                doc["prev_hash"].GetStringLength());
-      auto prev_hash_bytes = hex2bytes(prev_hash_str);
-      std::copy(prev_hash_bytes.begin(), prev_hash_bytes.end(),
-                block.prev_hash.begin());
+      deserialize(doc["prev_hash"].GetString(), block.prev_hash);
 
       // txs number
-      block.txs_number = static_cast<uint16_t>(doc["txs_number"].GetUint());
+      block.txs_number =
+          static_cast<decltype(block.txs_number)>(doc["txs_number"].GetUint());
+      // merkle_root is optional
+      if (doc.HasMember("merkle_root")) {
+        deserialize(doc["merkle_root"].GetString(), block.merkle_root);
+      }
 
-      // merkle_root
-      std::string merkle_root_str(doc["merkle_root"].GetString(),
-                                  doc["merkle_root"].GetStringLength());
-      auto merkle_root_bytes = hex2bytes(merkle_root_str);
-      std::copy(merkle_root_bytes.begin(), merkle_root_bytes.end(),
-                block.merkle_root.begin());
-
-      // transactions
-      deserialize(doc, block.transactions);
+      // Deserialize transactions
+      if (not deserialize(doc, block.transactions)) {
+        return nonstd::nullopt;
+      };
 
       return block;
     }
@@ -482,352 +500,311 @@ namespace iroha {
     nonstd::optional<model::Transaction> BlockSerializer::deserialize(
         GenericValue<rapidjson::UTF8<char>>::Object& json_tx) {
       model::Transaction tx{};
-      auto json_sigs = json_tx["signatures"].GetArray();
-      for (auto sig_iter = json_sigs.begin(); sig_iter < json_sigs.end();
-           ++sig_iter) {
-        auto json_sig = sig_iter->GetObject();
-        model::Signature signature{};
 
-        std::string sig_pubkey(json_sig["pubkey"].GetString(),
-                               json_sig["pubkey"].GetStringLength());
-        auto sig_pubkey_bytes = hex2bytes(sig_pubkey);
-        std::copy(sig_pubkey_bytes.begin(), sig_pubkey_bytes.end(),
-                  signature.pubkey.begin());
-
-        std::string sig_sign(json_sig["signature"].GetString(),
-                             json_sig["signature"].GetStringLength());
-        auto sig_sign_bytes = hex2bytes(sig_sign);
-        std::copy(sig_sign_bytes.begin(), sig_sign_bytes.end(),
-                  signature.signature.begin());
-
-        tx.signatures.push_back(signature);
+      auto req_fields = {"creator_account_id", "tx_counter", "commands"};
+      auto verify_member = [&json_tx](auto&& field) {
+        return not json_tx.HasMember(field);
+      };
+      if (std::any_of(req_fields.begin(), req_fields.end(), verify_member)) {
+        return nonstd::nullopt;
       }
-      // created_ts
-      tx.created_ts = json_tx["created_ts"].GetUint64();
 
+      if (json_tx.HasMember("signatures")) {
+        deserialize(json_tx["signatures"].GetArray(), tx.signatures);
+      }
+      if (json_tx.HasMember("created_ts")) {
+        // created_ts
+        tx.created_ts = json_tx["created_ts"].GetUint64();
+      }
       // creator_account_id
       tx.creator_account_id = json_tx["creator_account_id"].GetString();
 
       // tx_counter
       tx.tx_counter = json_tx["tx_counter"].GetUint64();
 
-      // commands
-      deserialize(json_tx, tx.commands);
+      // deserialize commands
+      if (not deserialize(json_tx, tx.commands)) {
+        return nonstd::nullopt;
+      }
       return tx;
     }
 
     nonstd::optional<model::Transaction> BlockSerializer::deserialize(
         const std::string json_tx) {
       Document doc;
-      if (doc.Parse(json_tx.c_str()).HasParseError()) {
+      if (doc.Parse(json_tx).HasParseError()) {
         return nonstd::nullopt;
       }
       auto obj_tx = doc.GetObject();
       return deserialize(obj_tx);
     }
 
-    void BlockSerializer::deserialize(
+    bool BlockSerializer::deserialize(
         Document& doc, std::vector<model::Transaction>& transactions) {
-      auto json_txs = doc["transactions"].GetArray();
-
-      for (auto iter = json_txs.begin(); iter < json_txs.end(); iter++) {
-        auto json_obj = iter->GetObject();
-        auto tx_opt = deserialize(json_obj);
-        if (tx_opt.has_value()) {
-          auto tx = tx_opt.value();
-          transactions.push_back(tx);
-        }
+      if (not doc.HasMember("transactions")) {
+        return false;
       }
+      auto json_txs = doc["transactions"].GetArray();
+      for (auto&& iter : json_txs) {
+        auto json_obj = iter.GetObject();
+        auto tx_opt = deserialize(json_obj);
+        if (not tx_opt.has_value()) {
+          return false;
+        }
+        auto tx = tx_opt.value();
+        transactions.push_back(tx);
+      }
+      return true;
     }
 
-    void BlockSerializer::deserialize(
+    bool BlockSerializer::deserialize(
+        GenericValue<rapidjson::UTF8<char>>::Array json_sigs,
+        std::vector<model::Signature>& sigs) {
+      for (auto&& sig_iter : json_sigs) {
+        auto json_sig = sig_iter.GetObject();
+        model::Signature signature{};
+
+        if (not sig_iter.HasMember("pubkey") or
+            not sig_iter.HasMember("signature")) {
+          return false;
+        }
+
+        deserialize(json_sig["pubkey"].GetString(), signature.pubkey);
+
+        deserialize(json_sig["signature"].GetString(), signature.signature);
+
+        sigs.push_back(signature);
+      }
+      return true;
+    }
+
+    bool BlockSerializer::deserialize(
         GenericValue<UTF8<char>>::Object& json_tx,
         std::vector<std::shared_ptr<model::Command>>& commands) {
       auto json_commands = json_tx["commands"].GetArray();
-      for (auto iter = json_commands.begin(); iter < json_commands.end();
-           ++iter) {
-        auto json_command = iter->GetObject();
 
-        std::string command_type = json_command["command_type"].GetString();
-
-        if (command_type == "AddPeer") {
-          if (auto add_peer = deserialize_add_peer(json_command)) {
-            commands.push_back(
-                std::make_shared<model::AddPeer>(add_peer.value()));
-          }
-        } else if (command_type == "AddAssetQuantity") {
-          if (auto add_asset_quantity =
-                  deserialize_add_asset_quantity(json_command)) {
-            commands.push_back(std::make_shared<model::AddAssetQuantity>(
-                add_asset_quantity.value()));
-          }
-        } else if (command_type == "AddSignatory") {
-          if (auto add_signatory = deserialize_add_signatory(json_command)) {
-            commands.push_back(
-                std::make_shared<model::AddSignatory>(add_signatory.value()));
-          }
-        } else if (command_type == "AssignMasterKey") {
-          if (auto assign_master_key =
-                  deserialize_assign_master_key(json_command)) {
-            commands.push_back(std::make_shared<model::AssignMasterKey>(
-                assign_master_key.value()));
-          }
-        } else if (command_type == "CreateAccount") {
-          if (auto create_account = deserialize_create_account(json_command)) {
-            commands.push_back(
-                std::make_shared<model::CreateAccount>(create_account.value()));
-          }
-        } else if (command_type == "CreateAsset") {
-          if (auto create_asset = deserialize_create_asset(json_command)) {
-            commands.push_back(
-                std::make_shared<model::CreateAsset>(create_asset.value()));
-          }
-        } else if (command_type == "CreateDomain") {
-          if (auto create_domain = deserialize_create_domain(json_command)) {
-            commands.push_back(
-                std::make_shared<model::CreateDomain>(create_domain.value()));
-          }
-        } else if (command_type == "RemoveSignatory") {
-          if (auto remove_signatory =
-                  deserialize_remove_signatory(json_command)) {
-            commands.push_back(std::make_shared<model::RemoveSignatory>(
-                remove_signatory.value()));
-          }
-        } else if (command_type == "SetAccountPermissions") {
-          if (auto set_account_permissions =
-                  deserialize_set_account_permissions(json_command)) {
-            commands.push_back(std::make_shared<model::SetAccountPermissions>(
-                set_account_permissions.value()));
-          }
-        } else if (command_type == "SetQuorum") {
-          if (auto set_quorum = deserialize_set_quorum(json_command)) {
-            commands.push_back(
-                std::make_shared<model::SetQuorum>(set_quorum.value()));
-          }
-        } else if (command_type == "TransferAsset") {
-          if (auto transfer_asset = deserialize_transfer_asset(json_command)) {
-            commands.push_back(
-                std::make_shared<model::TransferAsset>(transfer_asset.value()));
-          }
+      auto deserialize_command = [this, &commands](auto &&value) {
+        auto json_command = value.GetObject();
+        if (not json_command.HasMember("command_type")) {
+          return false;
         }
-      }
+        std::string command_type = json_command["command_type"].GetString();
+        auto it = deserializers_.find(command_type);
+        std::shared_ptr<model::Command> cmd;
+        if (it != deserializers_.end() and
+            (cmd = (this->*it->second)(json_command))) {
+          commands.push_back(cmd);
+          return true;
+        }
+        return false;
+      };
+
+      return std::all_of(json_commands.begin(), json_commands.end(),
+                         deserialize_command);
     }
 
-    nonstd::optional<model::AddPeer> BlockSerializer::deserialize_add_peer(
+    std::shared_ptr<model::Command> BlockSerializer::deserialize_add_peer(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       // TODO: make this function return nullopt when some field is missed
-      model::AddPeer add_peer{};
+      auto add_peer = std::make_shared<model::AddPeer>();
 
       // peer_key
-      std::string peer_key_str(json_command["peer_key"].GetString(),
-                               json_command["peer_key"].GetStringLength());
-      auto peer_key_bytes = hex2bytes(peer_key_str);
-      std::copy(peer_key_bytes.begin(), peer_key_bytes.end(),
-                add_peer.peer_key.begin());
+      deserialize(json_command["peer_key"].GetString(), add_peer->peer_key);
 
       // address
-      add_peer.address = json_command["address"].GetString();
+      add_peer->address = json_command["address"].GetString();
       return add_peer;
     }
 
-    nonstd::optional<model::AddAssetQuantity>
+    std::shared_ptr<model::Command>
     BlockSerializer::deserialize_add_asset_quantity(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       // TODO: make this function return nullopt when some field is missed
-      model::AddAssetQuantity add_asset_quantity;
+      auto add_asset_quantity = std::make_shared<model::AddAssetQuantity>();
 
       // account_id
-      add_asset_quantity.account_id = json_command["account_id"].GetString();
+      add_asset_quantity->account_id = json_command["account_id"].GetString();
 
       // asset_id
-      add_asset_quantity.asset_id = json_command["asset_id"].GetString();
+      add_asset_quantity->asset_id = json_command["asset_id"].GetString();
 
       // amount
       auto json_amount = json_command["amount"].GetObject();
       Amount amount;
       amount.int_part = json_amount["int_part"].GetUint64();
       amount.frac_part = json_amount["frac_part"].GetUint64();
-      add_asset_quantity.amount = amount;
+      add_asset_quantity->amount = amount;
 
       return add_asset_quantity;
     }
 
-    nonstd::optional<model::AddSignatory>
+    std::shared_ptr<model::Command>
     BlockSerializer::deserialize_add_signatory(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       // TODO: make this function return nullopt when some field is missed
-      model::AddSignatory add_signatory{};
+      auto add_signatory = std::make_shared<model::AddSignatory>();
 
       // account_id
-      add_signatory.account_id = json_command["account_id"].GetString();
+      add_signatory->account_id = json_command["account_id"].GetString();
 
       // pubkey
-      std::string pubkey_str(json_command["pubkey"].GetString(),
-                             json_command["pubkey"].GetStringLength());
-      auto pubkey_bytes = hex2bytes(pubkey_str);
-      std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
-                add_signatory.pubkey.begin());
+      deserialize(json_command["pubkey"].GetString(), add_signatory->pubkey);
 
       return add_signatory;
     }
 
-    nonstd::optional<model::AssignMasterKey>
+    std::shared_ptr<model::Command>
     BlockSerializer::deserialize_assign_master_key(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       // TODO: make this function return nullopt when some field is missed
-      model::AssignMasterKey assign_master_key{};
+      auto assign_master_key = std::make_shared<model::AssignMasterKey>();
 
       // account_id
-      assign_master_key.account_id = json_command["account_id"].GetString();
+      assign_master_key->account_id = json_command["account_id"].GetString();
 
       // pubkey
-      std::string pubkey_str(json_command["pubkey"].GetString(),
-                             json_command["pubkey"].GetStringLength());
-      auto pubkey_bytes = hex2bytes(pubkey_str);
-      std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
-                assign_master_key.pubkey.begin());
+      deserialize(json_command["pubkey"].GetString(),
+                  assign_master_key->pubkey);
+
       return assign_master_key;
     }
 
-    nonstd::optional<model::CreateAccount>
+    std::shared_ptr<model::Command>
     BlockSerializer::deserialize_create_account(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       // TODO: make this function return nullopt when some field is missed
-      model::CreateAccount create_account{};
+      auto create_account = std::make_shared<model::CreateAccount>();
 
       // domain_id
-      create_account.domain_id = json_command["domain_id"].GetString();
+      create_account->domain_id = json_command["domain_id"].GetString();
 
       // account_name
-      create_account.account_name = json_command["account_name"].GetString();
+      create_account->account_name = json_command["account_name"].GetString();
 
       // pubkey
-      std::string pubkey_str(json_command["pubkey"].GetString(),
-                             json_command["pubkey"].GetStringLength());
-      auto pubkey_bytes = hex2bytes(pubkey_str);
-      std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
-                create_account.pubkey.begin());
+      deserialize(json_command["pubkey"].GetString(), create_account->pubkey);
+
       return create_account;
     }
 
-    nonstd::optional<model::CreateAsset>
+    std::shared_ptr<model::Command>
     BlockSerializer::deserialize_create_asset(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       // TODO: make this function return nullopt when some field is missed
-      model::CreateAsset createAsset;
+      auto createAsset = std::make_shared<model::CreateAsset>();
 
       // asset_name
-      createAsset.asset_name = json_command["asset_name"].GetString();
+      createAsset->asset_name = json_command["asset_name"].GetString();
 
       // domain_id
-      createAsset.domain_id = json_command["domain_id"].GetString();
+      createAsset->domain_id = json_command["domain_id"].GetString();
 
       // precision
-      createAsset.precision = json_command["precision"].GetUint();
+      createAsset->precision = json_command["precision"].GetUint();
 
       return createAsset;
     }
 
-    nonstd::optional<model::CreateDomain>
+    std::shared_ptr<model::Command>
     BlockSerializer::deserialize_create_domain(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       // TODO: make this function return nullopt when some field is missed
-      model::CreateDomain createDomain;
+      auto createDomain = std::make_shared<model::CreateDomain>();
 
       // domain_name
-      createDomain.domain_name = json_command["domain_name"].GetString();
+      createDomain->domain_name = json_command["domain_name"].GetString();
 
       return createDomain;
     }
 
-    nonstd::optional<model::RemoveSignatory>
+    std::shared_ptr<model::Command>
     BlockSerializer::deserialize_remove_signatory(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       // TODO: make this function return nullopt when some field is missed
-      model::RemoveSignatory removeSignatory;
+      auto removeSignatory = std::make_shared<model::RemoveSignatory>();
 
       // account_id
-      removeSignatory.account_id = json_command["account_id"].GetString();
+      removeSignatory->account_id = json_command["account_id"].GetString();
 
       // pubkey
-      std::string pubkey_str(json_command["pubkey"].GetString(),
-                             json_command["pubkey"].GetStringLength());
-      auto pubkey_bytes = hex2bytes(pubkey_str);
-      std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
-                removeSignatory.pubkey.begin());
+      deserialize(json_command["pubkey"].GetString(), removeSignatory->pubkey);
+
       return removeSignatory;
     }
 
-    nonstd::optional<model::SetAccountPermissions>
+    std::shared_ptr<model::Command>
     BlockSerializer::deserialize_set_account_permissions(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
-      model::SetAccountPermissions setAccountPermissions;
+      auto setAccountPermissions =
+          std::make_shared<model::SetAccountPermissions>();
 
       // account_id
-      setAccountPermissions.account_id = json_command["account_id"].GetString();
+      setAccountPermissions->account_id =
+          json_command["account_id"].GetString();
 
       // permissions
       auto new_permissions = json_command["new_permissions"].GetObject();
-      setAccountPermissions.new_permissions.add_signatory =
+      setAccountPermissions->new_permissions.add_signatory =
           new_permissions["add_signatory"].GetBool();
-      setAccountPermissions.new_permissions.can_transfer =
+      setAccountPermissions->new_permissions.can_transfer =
           new_permissions["can_transfer"].GetBool();
-      setAccountPermissions.new_permissions.create_accounts =
+      setAccountPermissions->new_permissions.create_accounts =
           new_permissions["create_accounts"].GetBool();
-      setAccountPermissions.new_permissions.create_assets =
+      setAccountPermissions->new_permissions.create_assets =
           new_permissions["create_assets"].GetBool();
-      setAccountPermissions.new_permissions.create_domains =
+      setAccountPermissions->new_permissions.create_domains =
           new_permissions["create_domains"].GetBool();
-      setAccountPermissions.new_permissions.issue_assets =
+      setAccountPermissions->new_permissions.issue_assets =
           new_permissions["issue_assets"].GetBool();
-      setAccountPermissions.new_permissions.read_all_accounts =
+      setAccountPermissions->new_permissions.read_all_accounts =
           new_permissions["read_all_accounts"].GetBool();
-      setAccountPermissions.new_permissions.remove_signatory =
+      setAccountPermissions->new_permissions.remove_signatory =
           new_permissions["remove_signatory"].GetBool();
-      setAccountPermissions.new_permissions.set_permissions =
+      setAccountPermissions->new_permissions.set_permissions =
           new_permissions["set_permissions"].GetBool();
-      setAccountPermissions.new_permissions.set_quorum =
+      setAccountPermissions->new_permissions.set_quorum =
           new_permissions["set_quorum"].GetBool();
 
       return setAccountPermissions;
     }
 
-    nonstd::optional<model::SetQuorum> BlockSerializer::deserialize_set_quorum(
+    std::shared_ptr<model::Command> BlockSerializer::deserialize_set_quorum(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
-      model::SetQuorum setQuorum;
+      auto setQuorum = std::make_shared<model::SetQuorum>();
 
       // account_id
-      setQuorum.account_id = json_command["account_id"].GetString();
+      setQuorum->account_id = json_command["account_id"].GetString();
 
       // new_quorum
-      setQuorum.new_quorum = json_command["new_quorum"].GetUint();
+      setQuorum->new_quorum = json_command["new_quorum"].GetUint();
 
       return setQuorum;
     }
 
-    nonstd::optional<model::TransferAsset>
+    std::shared_ptr<model::Command>
     BlockSerializer::deserialize_transfer_asset(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
-      model::TransferAsset transferAsset;
+      auto transferAsset = std::make_shared<model::TransferAsset>();
 
       // src_account_id
-      transferAsset.src_account_id = json_command["src_account_id"].GetString();
+      transferAsset->src_account_id =
+          json_command["src_account_id"].GetString();
 
       // dest_account_id
-      transferAsset.dest_account_id =
+      transferAsset->dest_account_id =
           json_command["dest_account_id"].GetString();
 
       // asset_id
-      transferAsset.asset_id = json_command["asset_id"].GetString();
+      transferAsset->asset_id = json_command["asset_id"].GetString();
 
       // amount
       auto json_amount = json_command["amount"].GetObject();
       Amount amount;
       amount.int_part = json_amount["int_part"].GetUint64();
       amount.frac_part = json_amount["frac_part"].GetUint64();
-      transferAsset.amount = amount;
+      transferAsset->amount = amount;
 
       return transferAsset;
     }
-  }
-}
+  }  // namespace ametsuchi
+}  // namespace iroha

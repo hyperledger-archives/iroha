@@ -18,11 +18,15 @@
 #ifndef IROHA_BLOCK_SERIALIZER_HPP
 #define IROHA_BLOCK_SERIALIZER_HPP
 
-#include <model/block.hpp>
+#include <functional>
+#include <unordered_map>
+#include <typeindex>
+
 #include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/stringbuffer.h>
 #include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
+#include <model/block.hpp>
 
 #include <model/commands/add_asset_quantity.hpp>
 #include <model/commands/add_peer.hpp>
@@ -36,81 +40,135 @@
 #include <model/commands/set_quorum.hpp>
 #include <model/commands/transfer_asset.hpp>
 
-namespace iroha{
-namespace ametsuchi{
+#include "common/types.hpp"
 
-using namespace rapidjson;
+namespace iroha {
+  namespace ametsuchi {
 
-class BlockSerializer{
- public:
-  /**
-   * Serialize block to blob
-   * @param block
-   * @return
-   */
-  std::vector<uint8_t > serialize(model::Block block);
-  /**
-   * Deserialize blob block to model Block
-   * @param bytes
-   * @return
-   */
-  nonstd::optional<model::Block> deserialize(const std::vector<uint8_t >& bytes);
+    using namespace rapidjson;
 
-  /**
-   * Deserialize transactions to vector<>
-   * @param doc
-   * @param transactions
-   */
-  void deserialize(Document& doc, std::vector<model::Transaction>& transactions); // its' also used in iroha-cli
+    class BlockSerializer {
+     public:
+      BlockSerializer();
+      /**
+       * Serialize block to blob
+       * @param block
+       * @return
+       */
+      std::vector<uint8_t> serialize(model::Block block);
+      /**
+       * Deserialize blob block to model Block
+       * @param bytes
+       * @return
+       */
+      nonstd::optional<model::Block> deserialize(
+          const std::vector<uint8_t>& bytes);
 
-  /**
-   * Deserialize json transaction to iroha model Transaction
-   * @param json_tx
-   * @return Will return nullopt if transaction is ill-formed
-   */
-  nonstd::optional<model::Transaction> deserialize(const std::string json_tx);
+      /**
+       * Deserialize transactions from json doc to vector<>
+       * @param doc
+       * @param transactions
+       * @return False: if json is ill-formed
+       */
+      bool deserialize(Document& doc,
+                       std::vector<model::Transaction>&
+                           transactions);  // its' also used in iroha-cli
 
- private:
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::Block& block);
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::Signature& signature);
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::Transaction& transaction);
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::Command& command);
+      /**
+       * Deserialize json transaction to iroha model Transaction
+       * @param json_tx
+       * @return Will return nullopt if transaction is ill-formed
+       */
+      nonstd::optional<model::Transaction> deserialize(
+          const std::string json_tx);
 
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::AddPeer& add_peer);
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::AddAssetQuantity& add_asset_quantity);
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::AddSignatory& add_signatory);
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::AssignMasterKey& assign_master_key);
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::CreateAccount& create_account);
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::CreateAsset& create_asset);
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::CreateDomain& create_domain);
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::RemoveSignatory& remove_signatory);
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::SetAccountPermissions& set_account_permissions);
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::SetQuorum& set_quorum);
-  void serialize(PrettyWriter<StringBuffer>& writer, const model::TransferAsset& transfer_asset);
+     private:
+      using Serializer = void (BlockSerializer::*)(PrettyWriter<StringBuffer>&,
+                                                   const model::Command&);
+      using Deserializer = std::shared_ptr<model::Command> (BlockSerializer::*)(
+          GenericValue<UTF8<char>>::Object&);
 
-  // Deserialize one transaction
-  nonstd::optional<model::Transaction> deserialize(GenericValue<rapidjson::UTF8<char>>::Object& json_tx);
-  void deserialize(GenericValue<rapidjson::UTF8<char>>::Object& json_tx,
-                   std::vector<std::shared_ptr<model::Command>>& commands);
-  nonstd::optional<model::AddPeer> deserialize_add_peer(GenericValue<UTF8<char>>::Object& json_command);
-  nonstd::optional<model::AddAssetQuantity> deserialize_add_asset_quantity(GenericValue<UTF8<char>>::Object& json_command);
-  nonstd::optional<model::AddSignatory> deserialize_add_signatory(GenericValue<UTF8<char>>::Object& json_command);
-  nonstd::optional<model::AssignMasterKey> deserialize_assign_master_key(GenericValue<UTF8<char>>::Object& json_command);
-  nonstd::optional<model::CreateAccount> deserialize_create_account(GenericValue<UTF8<char>>::Object& json_command);
-  nonstd::optional<model::CreateAsset> deserialize_create_asset(GenericValue<UTF8<char>>::Object& json_command);
-  nonstd::optional<model::CreateDomain> deserialize_create_domain(GenericValue<UTF8<char>>::Object& json_command);
-  nonstd::optional<model::RemoveSignatory> deserialize_remove_signatory(GenericValue<UTF8<char>>::Object& json_command);
-  nonstd::optional<model::SetAccountPermissions> deserialize_set_account_permissions(GenericValue<UTF8<char>>::Object& json_command);
-  nonstd::optional<model::SetQuorum> deserialize_set_quorum(GenericValue<UTF8<char>>::Object& json_command);
-  nonstd::optional<model::TransferAsset> deserialize_transfer_asset(GenericValue<UTF8<char>>::Object& json_command);
+      std::unordered_map<std::type_index, Serializer> serializers_;
+      std::unordered_map<std::string, Deserializer> deserializers_;
 
-  template<typename Base, typename T>
-  inline bool instanceof(const T *ptr) {
-    return typeid(Base) == typeid(*ptr);
+      void serialize(PrettyWriter<StringBuffer>& writer,
+                     const model::Block& block);
+      void serialize(PrettyWriter<StringBuffer>& writer,
+                     const model::Signature& signature);
+      void serialize(PrettyWriter<StringBuffer>& writer,
+                     const model::Transaction& transaction);
+      void serialize(PrettyWriter<StringBuffer>& writer,
+                     const model::Command& command);
+
+      void serialize_add_peer(PrettyWriter<StringBuffer>& writer,
+                     const model::Command& command);
+      void serialize_add_asset_quantity(PrettyWriter<StringBuffer>& writer,
+                     const model::Command& command);
+      void serialize_add_signatory(PrettyWriter<StringBuffer>& writer,
+                     const model::Command& command);
+      void serialize_assign_master_key(PrettyWriter<StringBuffer>& writer,
+                     const model::Command& command);
+      void serialize_create_account(PrettyWriter<StringBuffer>& writer,
+                     const model::Command& command);
+      void serialize_create_asset(PrettyWriter<StringBuffer>& writer,
+                     const model::Command& command);
+      void serialize_create_domain(PrettyWriter<StringBuffer>& writer,
+                     const model::Command& command);
+      void serialize_remove_signatory(PrettyWriter<StringBuffer>& writer,
+                     const model::Command& command);
+      void serialize_set_account_permissions(
+          PrettyWriter<StringBuffer>& writer,
+          const model::Command& command);
+      void serialize_set_quorum(PrettyWriter<StringBuffer>& writer,
+                     const model::Command& command);
+      void serialize_transfer_asset(PrettyWriter<StringBuffer>& writer,
+                     const model::Command& command);
+
+      // Deserialize one transaction
+      nonstd::optional<model::Transaction> deserialize(
+          GenericValue<rapidjson::UTF8<char>>::Object& json_tx);
+
+      // Deserialize hex string to array
+      template <size_t size>
+      void deserialize(const std::string& string, blob_t<size>& array) {
+        auto bytes = hex2bytes(string);
+        std::copy(bytes.begin(), bytes.end(), array.begin());
+      }
+
+      // Deserialize signatures
+      bool deserialize(GenericValue<rapidjson::UTF8<char>>::Array json_sigs,
+                       std::vector<model::Signature>& sigs);
+
+      // Deserialize commands withing trasaction json_tx
+      // Return false if json is ill-formed
+      bool deserialize(GenericValue<rapidjson::UTF8<char>>::Object& json_tx,
+                       std::vector<std::shared_ptr<model::Command>>& commands);
+
+      // Json serilaization for each command
+      std::shared_ptr<model::Command> deserialize_add_peer(
+          GenericValue<UTF8<char>>::Object& json_command);
+      std::shared_ptr<model::Command> deserialize_add_asset_quantity(
+          GenericValue<UTF8<char>>::Object& json_command);
+      std::shared_ptr<model::Command> deserialize_add_signatory(
+          GenericValue<UTF8<char>>::Object& json_command);
+      std::shared_ptr<model::Command> deserialize_assign_master_key(
+          GenericValue<UTF8<char>>::Object& json_command);
+      std::shared_ptr<model::Command> deserialize_create_account(
+          GenericValue<UTF8<char>>::Object& json_command);
+      std::shared_ptr<model::Command> deserialize_create_asset(
+          GenericValue<UTF8<char>>::Object& json_command);
+      std::shared_ptr<model::Command> deserialize_create_domain(
+          GenericValue<UTF8<char>>::Object& json_command);
+      std::shared_ptr<model::Command> deserialize_remove_signatory(
+          GenericValue<UTF8<char>>::Object& json_command);
+      std::shared_ptr<model::Command> deserialize_set_account_permissions(
+          GenericValue<UTF8<char>>::Object& json_command);
+      std::shared_ptr<model::Command> deserialize_set_quorum(
+          GenericValue<UTF8<char>>::Object& json_command);
+      std::shared_ptr<model::Command> deserialize_transfer_asset(
+          GenericValue<UTF8<char>>::Object& json_command);
+    };
   }
-};
-
-}
 }
 
-#endif //IROHA_BLOCK_SERIALIZER_HPP
+#endif  // IROHA_BLOCK_SERIALIZER_HPP
