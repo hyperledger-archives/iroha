@@ -103,7 +103,8 @@ class FakeNetwork : public YacNetwork {
 
   FakeNetwork() {};
 
-  FakeNetwork(const FakeNetwork &rhs) { notification = rhs.notification; };
+  FakeNetwork(const FakeNetwork &rhs) : notification(rhs.notification) {
+  };
 
   FakeNetwork &operator=(const FakeNetwork &rhs) {
     notification = rhs.notification;

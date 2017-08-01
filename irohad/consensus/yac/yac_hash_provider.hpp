@@ -32,7 +32,9 @@ namespace iroha {
       class YacHash {
        public:
         YacHash(std::string proposal, std::string block)
-            : proposal_hash(proposal), block_hash(block) {}
+            : proposal_hash(std::move(proposal)),
+              block_hash(std::move(block)) {
+        }
 
         YacHash() = default;
 
@@ -48,7 +50,7 @@ namespace iroha {
 
         bool operator==(const YacHash &obj) const {
           return proposal_hash == obj.proposal_hash and
-                 block_hash == obj.block_hash;
+              block_hash == obj.block_hash;
         };
 
         bool operator!=(const YacHash &obj) const {

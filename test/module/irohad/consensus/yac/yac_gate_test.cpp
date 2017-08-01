@@ -51,7 +51,7 @@ class BlockCreatorStub : public iroha::simulator::BlockCreator {
   BlockCreatorStub(const BlockCreatorStub &rhs) {
   };
 
-  BlockCreatorStub(BlockCreatorStub &&rhs) {
+  BlockCreatorStub(BlockCreatorStub &&rhs) : subject(rhs.subject) {
   };
 
   BlockCreatorStub &operator=(const BlockCreatorStub &rhs) {

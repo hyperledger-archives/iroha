@@ -27,9 +27,11 @@ namespace iroha {
 
       class PeerOrdererImpl : public YacPeerOrderer {
        public:
-        PeerOrdererImpl(std::shared_ptr<ametsuchi::WsvQuery> query,
+        explicit PeerOrdererImpl(std::shared_ptr<ametsuchi::WsvQuery> query,
                         std::shared_ptr<YacHashProvider> hash_provider);
+
         nonstd::optional<ClusterOrdering> getInitialOrdering() override;
+
         nonstd::optional<ClusterOrdering> getOrdering(YacHash hash) override;
 
        private:

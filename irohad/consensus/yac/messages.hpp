@@ -45,7 +45,8 @@ namespace iroha {
       struct CommitMessage {
         CommitMessage() = default;
 
-        CommitMessage(std::vector<VoteMessage> votes) { this->votes = votes; }
+        explicit  CommitMessage(std::vector<VoteMessage> votes) : votes(votes) {
+        }
 
         std::vector<VoteMessage> votes;
 
@@ -61,7 +62,8 @@ namespace iroha {
       struct RejectMessage {
         RejectMessage() = default;
 
-        RejectMessage(std::vector<VoteMessage> votes) { this->votes = votes; }
+        explicit  RejectMessage(std::vector<VoteMessage> votes) : votes(votes) {
+        }
 
         std::vector<VoteMessage> votes;
 
