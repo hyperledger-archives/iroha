@@ -29,6 +29,14 @@
 namespace iroha {
   namespace ordering {
 
+    /**
+     * OrderingService implementation with gRPC synchronous server
+     * Allows receiving transactions concurrently from multiple peers by using
+     * concurrent queue
+     * Sends proposal by given timer interval and proposal size
+     * @param delay_milliseconds timer delay
+     * @param max_size proposal size
+     */
     class OrderingServiceImpl
         : public proto::OrderingService::Service,
           public uvw::Emitter<OrderingServiceImpl>,

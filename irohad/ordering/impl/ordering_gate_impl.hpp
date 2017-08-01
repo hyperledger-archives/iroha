@@ -26,6 +26,12 @@
 namespace iroha {
   namespace ordering {
 
+    /**
+     * OrderingGate implementation with gRPC asynchronous client
+     * Interacts with given OrderingService
+     * by propagating transactions and receiving proposals
+     * @param server_address OrderingService address
+     */
     class OrderingGateImpl : public network::OrderingGate,
                              public proto::OrderingGate::Service,
                              network::AsyncGrpcClient<google::protobuf::Empty> {
