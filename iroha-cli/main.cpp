@@ -30,20 +30,22 @@
 // https://hackmd.io/GwRmwQ2BmCFoCsAGARtOAWBIBMcAcS0GcAZjhNNPvpAKZIDGQA==
 
 DEFINE_string(config, "", "Trusted peer's ip addresses");
-//DEFINE_validator(config, &iroha_cli::validate_config);
+DEFINE_validator(config, &iroha_cli::validate_config);
 
 DEFINE_string(genesis_block, "", "Genesis block for sending network");
-//DEFINE_validator(genesis_block, &iroha_cli::validate_genesis_block);
+DEFINE_validator(genesis_block, &iroha_cli::validate_genesis_block);
 
 DEFINE_bool(new_account, false, "Choose if account does not exist");
 DEFINE_string(name, "", "Name of the account");
+DEFINE_string(pass_phrase, "", "Name of the account");
 
 // Sending transaction to Iroha
 DEFINE_bool(grpc, false, "Send sample transaction to IrohaNetwork");
-DEFINE_string(address, "127.0.0.1", "Address of the Iroha node");
+DEFINE_string(address, "0.0.0.0", "Address of the Iroha node");
 DEFINE_int32(torii_port, 50051, "Port of iroha's Torii");
-//DEFINE_validator(torii_port, &iroha_cli::validate_port);
+DEFINE_validator(torii_port, &iroha_cli::validate_port);
 DEFINE_string(json_transaction, "", "Transaction in json format");
+
 
 
 void create_account(std::string name);
@@ -57,7 +59,7 @@ int main(int argc, char* argv[]) {
     if (std::ifstream(FLAGS_name + ".pub")) {
       assert_config::assert_fatal(false, "File already exists");
     }
-    iroha_cli::CliClient::create_account(FLAGS_name);
+    iroha_cli::CliClient::create_account(FLAGS_name, FLAGS_pass_phrase);
     std::cout << "Public and private key has been generated in current directory"
               << std::endl;
 

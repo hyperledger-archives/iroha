@@ -46,14 +46,10 @@ namespace iroha_cli {
      */
     Status sendTx(std::string json_tx);
 
-    static void create_account(std::string account_name);
-
-    iroha::protocol::ToriiResponse get_Tx_response();
+    static void create_account(std::string account_name, std::string pass_phrase);
 
    private:
     torii::CommandSyncClient client_;
-
-    static std::string hex_str(unsigned char* data, int len);
   };
 }  // namespace iroha_cli
 

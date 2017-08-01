@@ -31,7 +31,8 @@
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/model_hash_provider_impl.hpp"
 
-#include <ed25519.h>
+#include "crypto/crypto.hpp"
+#include "common/types.hpp"
 
 namespace iroha_cli {
 
@@ -76,6 +77,7 @@ namespace iroha_cli {
     // Sign transaction
     iroha::model::Signature sign;
     sign.pubkey = ed_pubkey;
+    // TODO: Fix signature to work with data, not hash
     sign.signature =
         iroha::sign(tx_hash.data(), tx_hash.size(), ed_pubkey, ed_privkey);
     model_tx.signatures = {sign};
@@ -92,34 +94,17 @@ namespace iroha_cli {
                : NOT_VALID;
   }
 
- std::string CliClient::hex_str(unsigned char* data, int len) {
-    constexpr char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
-                               '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-    std::string s((unsigned long)(len * 2), ' ');
-    for (int i = 0; i < len; ++i) {
-      s[2 * i] = hexmap[(data[i] & 0xF0) >> 4];
-      s[2 * i + 1] = hexmap[data[i] & 0x0F];
-    }
-    return s;
-  }
+  void CliClient::create_account(std::string account_name, std::string pass_phrase) {
 
-  void CliClient::create_account(std::string account_name) {
-    unsigned char public_key[32], private_key[64], seed[32];
-
-    ed25519_create_keypair(public_key, private_key, seed);
-    auto pub_hex = hex_str(public_key, 32);
-
-    auto priv_hex = hex_str(private_key, 64);
+    auto seed = iroha::create_seed(pass_phrase);
+    auto key_pairs = iroha::create_keypair(seed);
 
     // Save pubkey to file
     std::ofstream pub_file(account_name + ".pub");
-    pub_file << pub_hex;
-    pub_file.close();
-
+    pub_file << key_pairs.pubkey.to_hexstring();
     // Save privkey to file
     std::ofstream priv_file(account_name + ".priv");
-    priv_file << priv_hex;
-    priv_file.close();
+    priv_file << key_pairs.privkey.to_hexstring();
   }
 
 };  // namespace iroha_cli
