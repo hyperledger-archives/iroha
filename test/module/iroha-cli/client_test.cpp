@@ -35,6 +35,8 @@ using ::testing::AtLeast;
 class ClientTest : public testing::Test {
  public:
   virtual void SetUp() {
+    // Create public key file
+
     // Run a server
     runner = new ServerRunner(Ip, Port);
     th = std::thread([ this] {
@@ -78,7 +80,9 @@ class ClientTest : public testing::Test {
 };
 
 TEST_F(ClientTest, SendTxWhenValid) {
-  iroha_cli::CliClient client(Ip, Port, "test");
+  std::string account_name = "test";
+  iroha_cli::CliClient::create_account(account_name);
+  iroha_cli::CliClient client(Ip, Port);
   EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(pcsMock,propagate_transaction(_)).Times(1);
@@ -93,11 +97,17 @@ TEST_F(ClientTest, SendTxWhenValid) {
       "  }]\n"
       "}";
   std::cout << "Sending  json transaction to Iroha" << std::endl;
-  std::cout << client.sendTx(json_tx) << std::endl;
+  auto status = client.sendTx(json_tx);
+  ASSERT_EQ(status, iroha_cli::CliClient::OK);
+  // Remove private and public key
+  std::remove((account_name+".pub").c_str());
+  std::remove((account_name+".priv").c_str());
 }
 
 TEST_F(ClientTest, SendTxWhenInvalidJson) {
-  iroha_cli::CliClient client(Ip, Port, "test");
+  std::string account_name = "test";
+  iroha_cli::CliClient::create_account(account_name);
+  iroha_cli::CliClient client(Ip, Port);
   EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
       .WillRepeatedly(Return(true));
   // Json with no Transaction
@@ -110,7 +120,54 @@ TEST_F(ClientTest, SendTxWhenInvalidJson) {
       "  }]\n"
       "}";
   std::cout << "Sending  json transaction to Iroha" << std::endl;
-  std::cout << client.sendTx(json_tx) << std::endl;
-
+  ASSERT_EQ(client.sendTx(json_tx), iroha_cli::CliClient::WRONG_FORMAT);
+  // Remove private and public key
+  std::remove((account_name+".pub").c_str());
+  std::remove((account_name+".priv").c_str());
 }
 
+
+TEST_F(ClientTest, SendTxWhenStatelessInvalid) {
+  std::string account_name = "test";
+  iroha_cli::CliClient::create_account(account_name);
+  iroha_cli::CliClient client(Ip, Port);
+  EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
+      .WillRepeatedly(Return(false));
+  // Json with no Transaction
+  auto json_tx ="{\n"
+      "  \"creator_account_id\": \"test\", \n"
+      "  \"tx_counter\": 0,\n"
+      "  \"commands\":[{\n"
+      "  \"command_type\": \"AddPeer\",\n"
+      "    \"address\": \"localhost\",\n"
+      "    \"peer_key\": \"2323232323232323232323232323232323232323232323232323232323232323\"\n"
+      "  }]\n"
+      "}";
+  std::cout << "Sending  json transaction to Iroha" << std::endl;
+  ASSERT_EQ(client.sendTx(json_tx), iroha_cli::CliClient::NOT_VALID);
+  // Remove private and public key
+  std::remove((account_name+".pub").c_str());
+  std::remove((account_name+".priv").c_str());
+}
+
+
+
+TEST_F(ClientTest, SendTxWhenNoKeys) {
+  std::string account_name = "test";
+  // Client without public, private keys
+  iroha_cli::CliClient client(Ip, Port);
+  EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
+      .WillRepeatedly(Return(true));
+  // Json with no Transaction
+  auto json_tx ="{\n"
+      "  \"creator_account_id\": \"test\", \n"
+      "  \"tx_counter\": 0,\n"
+      "  \"commands\":[{\n"
+      "  \"command_type\": \"AddPeer\",\n"
+      "    \"address\": \"localhost\",\n"
+      "    \"peer_key\": \"2323232323232323232323232323232323232323232323232323232323232323\"\n"
+      "  }]\n"
+      "}";
+  std::cout << "Sending  json transaction to Iroha" << std::endl;
+  ASSERT_EQ(client.sendTx(json_tx), iroha_cli::CliClient::NO_KEYS);
+}

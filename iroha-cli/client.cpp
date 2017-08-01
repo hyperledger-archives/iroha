@@ -31,27 +31,37 @@
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/model_hash_provider_impl.hpp"
 
+#include <ed25519.h>
+
 namespace iroha_cli {
 
-  CliClient::CliClient(std::string target_ip, int port, std::string name)
-      : client_(target_ip, port) {
-    std::ifstream priv_file(name + ".priv");
-    priv_file >> client_priv_key_;
-    priv_file.close();
+  CliClient::CliClient(std::string target_ip, int port)
+      : client_(target_ip, port) {}
 
-    std::ifstream pub_file(name + ".pub");
-    pub_file >> client_pub_key_;
-    pub_file.close();
-  }
-
-  std::string CliClient::sendTx(std::string json_tx) {
+  CliClient::Status CliClient::sendTx(std::string json_tx) {
     iroha::ametsuchi::BlockSerializer serializer;
     auto tx_opt = serializer.deserialize(json_tx);
     if (not tx_opt.has_value()) {
-      return "Wrong transaction format";
+      return WRONG_FORMAT;
     }
-
     auto model_tx = tx_opt.value();
+    // Get private and public key of transaction creator
+    std::string client_pub_key_;
+    std::string client_priv_key_;
+    std::ifstream priv_file(model_tx.creator_account_id + ".priv");
+    if (not priv_file) {
+      return NO_KEYS;
+    }
+    priv_file >> client_priv_key_;
+    priv_file.close();
+
+    std::ifstream pub_file(model_tx.creator_account_id + ".pub");
+    if (not pub_file) {
+      return NO_KEYS;
+    }
+    pub_file >> client_pub_key_;
+    pub_file.close();
+
     // Get hash of transaction
     iroha::model::HashProviderImpl hashProvider;
     auto tx_hash = hashProvider.get_hash(model_tx);
@@ -75,12 +85,41 @@ namespace iroha_cli {
     // Send to iroha:
     iroha::protocol::ToriiResponse response;
     auto stat = client_.Torii(pb_tx, response);
-    if (response.validation() ==
-        iroha::protocol::STATELESS_VALIDATION_SUCCESS) {
-      return "Stateless validation success";
-    } else {
-      return "Stateless validation error";
+
+    return response.validation() ==
+                   iroha::protocol::STATELESS_VALIDATION_SUCCESS
+               ? OK
+               : NOT_VALID;
+  }
+
+ std::string CliClient::hex_str(unsigned char* data, int len) {
+    constexpr char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                               '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    std::string s((unsigned long)(len * 2), ' ');
+    for (int i = 0; i < len; ++i) {
+      s[2 * i] = hexmap[(data[i] & 0xF0) >> 4];
+      s[2 * i + 1] = hexmap[data[i] & 0x0F];
     }
+    return s;
+  }
+
+  void CliClient::create_account(std::string account_name) {
+    unsigned char public_key[32], private_key[64], seed[32];
+
+    ed25519_create_keypair(public_key, private_key, seed);
+    auto pub_hex = hex_str(public_key, 32);
+
+    auto priv_hex = hex_str(private_key, 64);
+
+    // Save pubkey to file
+    std::ofstream pub_file(account_name + ".pub");
+    pub_file << pub_hex;
+    pub_file.close();
+
+    // Save privkey to file
+    std::ofstream priv_file(account_name + ".priv");
+    priv_file << priv_hex;
+    priv_file.close();
   }
 
 };  // namespace iroha_cli

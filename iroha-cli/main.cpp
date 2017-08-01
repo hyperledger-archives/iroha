@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-#include <ed25519.h>
 #include <gflags/gflags.h>
-#include <cstring>
 #include <fstream>
 #include <iostream>
 #include "validators.hpp"
@@ -59,7 +57,10 @@ int main(int argc, char* argv[]) {
     if (std::ifstream(FLAGS_name + ".pub")) {
       assert_config::assert_fatal(false, "File already exists");
     }
-    create_account(FLAGS_name);
+    iroha_cli::CliClient::create_account(FLAGS_name);
+    std::cout << "Public and private key has been generated in current directory"
+              << std::endl;
+
   } else if (not FLAGS_config.empty() && not FLAGS_genesis_block.empty()) {
     iroha_cli::GenesisBlockClientImpl genesis_block_client;
     auto bootstrap = iroha_cli::BootstrapNetwork(genesis_block_client);
@@ -71,48 +72,23 @@ int main(int argc, char* argv[]) {
     std::cout << "Send transaction to " << FLAGS_address << ":"
               << FLAGS_torii_port << std::endl;
 
-    iroha_cli::CliClient client(FLAGS_address, FLAGS_torii_port, FLAGS_name);
+    iroha_cli::CliClient client(FLAGS_address, FLAGS_torii_port);
+    auto status = client.sendTx(FLAGS_json_transaction);
+    switch(status) {
+      case iroha_cli::CliClient::OK: std::cout << "Transaction successfully sent" << std::endl;
+        break;
+      case iroha_cli::CliClient::WRONG_FORMAT:  std::cout << "Transaction wrong json format" << std::endl;
+        break;
+      case iroha_cli::CliClient::NO_KEYS: std::cout << "No public and private key found. Run with new_account flag." << std::endl;
+        break;
+      case iroha_cli::CliClient::NOT_VALID: std::cout << "Transaction is not valid." << std::endl;
+        break;
+      }
 
-    client.sendTx(FLAGS_json_transaction);
-    return 0;
+
   } else {
     assert_config::assert_fatal(false, "Invalid flags");
   }
   return 0;
 }
 
-std::string hex_str(unsigned char* data, int len) {
-  constexpr char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
-                             '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-  std::string s((unsigned long)(len * 2), ' ');
-  for (int i = 0; i < len; ++i) {
-    s[2 * i] = hexmap[(data[i] & 0xF0) >> 4];
-    s[2 * i + 1] = hexmap[data[i] & 0x0F];
-  }
-  return s;
-}
-
-/**
- * Command to create a new account using the interactive console.
- */
-void create_account(std::string name) {
-  unsigned char public_key[32], private_key[64], seed[32];
-
-  ed25519_create_keypair(public_key, private_key, seed);
-  auto pub_hex = hex_str(public_key, 32);
-
-  auto priv_hex = hex_str(private_key, 64);
-
-  // Save pubkey to file
-  std::ofstream pub_file(name + ".pub");
-  pub_file << pub_hex;
-  pub_file.close();
-
-  // Save privkey to file
-  std::ofstream priv_file(name + ".priv");
-  priv_file << priv_hex;
-  priv_file.close();
-
-  std::cout << "Public and private key has been generated in current directory"
-            << std::endl;
-}

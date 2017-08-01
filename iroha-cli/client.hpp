@@ -25,23 +25,35 @@
 #include "common/types.hpp"
 #include "torii/command_client.hpp"
 
+
 namespace iroha_cli {
 
   class CliClient {
    public:
-    explicit CliClient(std::string target_ip, int port,
-                       std::string account_name);
+    enum Status {
+      WRONG_FORMAT,
+      NO_KEYS,
+      NOT_VALID,
+      OK
+    };
+
+
+    explicit CliClient(std::string target_ip, int port);
     /**
      * Send transaction to Iroha-Network
      * @param json_tx
      * @return
      */
-    std::string sendTx(std::string json_tx);
+    Status sendTx(std::string json_tx);
+
+    static void create_account(std::string account_name);
+
+    iroha::protocol::ToriiResponse get_Tx_response();
 
    private:
     torii::CommandSyncClient client_;
-    std::string client_priv_key_;
-    std::string client_pub_key_;
+
+    static std::string hex_str(unsigned char* data, int len);
   };
 }  // namespace iroha_cli
 
