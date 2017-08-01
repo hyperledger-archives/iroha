@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_TEST_OBSERVABLE_HPP
-#define IROHA_TEST_OBSERVABLE_HPP
+#ifndef IROHA_TEST_SUBSCRIBER_HPP
+#define IROHA_TEST_SUBSCRIBER_HPP
 
-#include <rxcpp/rx.hpp>
 #include <functional>
 #include <memory>
+#include <rxcpp/rx-observable.hpp>
 #include <utility>
 
 namespace common {
-  namespace test_observable {
+  namespace test_subscriber {
 
     /**
      * Interface of testing verification uses in test subscriber;
@@ -39,32 +39,28 @@ namespace common {
      */
     template <typename T>
     class VerificationStrategy {
-      template <typename K> friend
-      class TestObservable;
-     public:
+      template <typename K>
+      friend class TestSubscriber;
 
+     public:
       /**
        * Handler that called before providing value to target subscriber
        * @param next - new value
        */
-      virtual void on_next_before(T next) {
-      };
+      virtual void on_next_before(T next) {}
 
       /**
        * Handler that called after calling target subscriber
        * @param next - new value
        */
-      virtual void on_next_after(T next) {
-      };
+      virtual void on_next_after(T next) {}
 
       /**
        * Implement destructor for verify invariant
        */
-      virtual ~VerificationStrategy() noexcept(false) {
+      virtual ~VerificationStrategy() = default;
 
-      };
      protected:
-
       /**
        * validation function for invariant
        * @return true if invariant safe, otherwise false
@@ -78,19 +74,18 @@ namespace common {
     };
 
     /**
-     * TestObservable class provide wrapper for observable
+     * TestSubscriber class provide wrapper for observable
      * @tparam T type of data in wrapped observable
      */
     template <typename T>
-    class TestObservable {
+    class TestSubscriber {
      public:
-
       /**
        * Constructor for wrapping observable for checking invariant
        * @param unwrapped_observable - object for wrapping
        * @param strategy - invariant for validation
        */
-      TestObservable(rxcpp::observable<T> unwrapped_observable,
+      TestSubscriber(rxcpp::observable<T> unwrapped_observable,
                      std::unique_ptr<VerificationStrategy<T>> strategy)
           : unwrapped_(unwrapped_observable), strategy_(std::move(strategy)) {}
 
@@ -99,7 +94,7 @@ namespace common {
        * for wrapped observable with checking invariant.
        * @param subscriber - business logic subscriber
        */
-      TestObservable<T> &subscribe(std::function<void(T val)> subscriber =
+      TestSubscriber<T> &subscribe(std::function<void(T val)> subscriber =
                                        [](T) {}) {
         unwrapped_.subscribe([this, subscriber](T val) {
           // verify before invariant
@@ -113,25 +108,23 @@ namespace common {
         });
 
         return *this;
-      };
+      }
 
       /**
        * Validate invariant
        * @return true if invariant correct
        */
-      bool validate() {
-        return strategy_->validate();
-      }
+      bool validate() { return strategy_->validate(); }
 
      private:
-      rxcpp::observable <T> unwrapped_;
+      rxcpp::observable<T> unwrapped_;
       std::unique_ptr<VerificationStrategy<T>> strategy_;
     };
 
     template <template <typename K> class S, typename T, typename... Args>
-    TestObservable<T> make_test_observable(
+    TestSubscriber<T> make_test_subscriber(
         rxcpp::observable<T> unwrapped_observable, Args &&... args) {
-      return TestObservable<T>(
+      return TestSubscriber<T>(
           unwrapped_observable,
           std::make_unique<S<T>>(std::forward<Args>(args)...));
     }
@@ -143,14 +136,12 @@ namespace common {
     template <typename T>
     class CallExact : public VerificationStrategy<T> {
      public:
-
       /**
        * @param expected_number_of_calls - number of calls
        * that required for call
        */
-      CallExact(uint64_t expected_number_of_calls) :
-          expected_number_of_calls_(expected_number_of_calls) {
-      };
+      CallExact(uint64_t expected_number_of_calls)
+          : expected_number_of_calls_(expected_number_of_calls) {}
 
       CallExact(CallExact<T> &&rhs) {
         number_of_calls_ = 0;
@@ -177,28 +168,24 @@ namespace common {
        */
       CallExact(const CallExact<T> &rhs) = delete;
 
-      void on_next_after(T next) override {
-        ++number_of_calls_;
-      };
+      void on_next_after(T next) override { ++number_of_calls_; }
 
      protected:
-
       bool validate() override {
         auto val = number_of_calls_ == expected_number_of_calls_;
         if (!val) {
-          this->invalidate_reason_ = "Expected calls: " +
-              std::to_string(expected_number_of_calls_) +
-              ", but called " +
-              std::to_string(number_of_calls_);
+          this->invalidate_reason_ =
+              "Expected calls: " + std::to_string(expected_number_of_calls_) +
+              ", but called " + std::to_string(number_of_calls_);
         }
         return val;
-      };
+      }
 
      private:
       uint64_t expected_number_of_calls_;
       uint64_t number_of_calls_ = 0;
     };
 
-  } // namespace test_observable
-} // namespace common
-#endif //IROHA_TEST_OBSERVABLE_HPP
+  }  // namespace test_subscriber
+}  // namespace common
+#endif  // IROHA_TEST_SUBSCRIBER_HPP

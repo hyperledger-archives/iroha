@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-#include "common/test_observable.hpp"
 #include "simulator/impl/simulator.hpp"
 #include <gmock/gmock.h>
+#include "common/test_subscriber.hpp"
 
 using namespace iroha;
-using namespace common::test_observable;
+using namespace common::test_subscriber;
 
 using ::testing::Return;
 using ::testing::_;
@@ -71,13 +71,13 @@ TEST(SimulatorTest, ValidWhenPreviousBlock) {
   EXPECT_CALL(validator, validate(_, _)).WillOnce(Return(proposal));
 
   auto proposal_wrapper =
-      make_test_observable<CallExact>(simulator.on_verified_proposal(), 1);
+      make_test_subscriber<CallExact>(simulator.on_verified_proposal(), 1);
   proposal_wrapper.subscribe([&proposal](auto verified_proposal) {
     ASSERT_EQ(verified_proposal.height, proposal.height);
     ASSERT_EQ(verified_proposal.transactions, proposal.transactions);
   });
 
-  auto block_wrapper = make_test_observable<CallExact>(simulator.on_block(), 1);
+  auto block_wrapper = make_test_subscriber<CallExact>(simulator.on_block(), 1);
   block_wrapper.subscribe([&proposal](auto block) {
     ASSERT_EQ(block.height, proposal.height);
     ASSERT_EQ(block.transactions, proposal.transactions);
@@ -109,10 +109,10 @@ TEST(SimulatorTest, FailWhenNoBlock) {
   EXPECT_CALL(validator, validate(_, _)).Times(0);
 
   auto proposal_wrapper =
-      make_test_observable<CallExact>(simulator.on_verified_proposal(), 0);
+      make_test_subscriber<CallExact>(simulator.on_verified_proposal(), 0);
   proposal_wrapper.subscribe();
 
-  auto block_wrapper = make_test_observable<CallExact>(simulator.on_block(), 0);
+  auto block_wrapper = make_test_subscriber<CallExact>(simulator.on_block(), 0);
   block_wrapper.subscribe();
 
   simulator.process_proposal(proposal);
@@ -144,10 +144,10 @@ TEST(SimulatorTest, FailWhenSameAsProposalHeight) {
   EXPECT_CALL(validator, validate(_, _)).Times(0);
 
   auto proposal_wrapper =
-      make_test_observable<CallExact>(simulator.on_verified_proposal(), 0);
+      make_test_subscriber<CallExact>(simulator.on_verified_proposal(), 0);
   proposal_wrapper.subscribe();
 
-  auto block_wrapper = make_test_observable<CallExact>(simulator.on_block(), 0);
+  auto block_wrapper = make_test_subscriber<CallExact>(simulator.on_block(), 0);
   block_wrapper.subscribe();
 
   simulator.process_proposal(proposal);

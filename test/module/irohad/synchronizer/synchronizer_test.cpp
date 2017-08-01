@@ -16,15 +16,15 @@
  */
 
 #include <gmock/gmock.h>
+#include "common/test_subscriber.hpp"
 #include "synchronizer/impl/synchronizer_impl.hpp"
-#include "common/test_observable.hpp"
 #include "validation/chain_validator.hpp"
 
 using namespace iroha;
 using namespace iroha::model;
 using namespace iroha::ametsuchi;
 using namespace iroha::synchronizer;
-using namespace common::test_observable;
+using namespace common::test_subscriber;
 
 using ::testing::Return;
 using ::testing::_;
@@ -32,9 +32,9 @@ using ::testing::DefaultValue;
 
 class ChainValidatorMock : public iroha::validation::ChainValidator {
  public:
-  MOCK_METHOD2(validateChain, bool(Commit, MutableStorage&));
+  MOCK_METHOD2(validateChain, bool(Commit, MutableStorage &));
 
-  MOCK_METHOD2(validateBlock, bool(const Block&, MutableStorage&));
+  MOCK_METHOD2(validateBlock, bool(const Block &, MutableStorage &));
 };
 
 class MutableFactoryMock : public MutableFactory {
@@ -46,23 +46,21 @@ class MutableFactoryMock : public MutableFactory {
     commit_(mutableStorage);
   }
 
-  MOCK_METHOD1(commit_, void(std::unique_ptr<MutableStorage>&));
+  MOCK_METHOD1(commit_, void(std::unique_ptr<MutableStorage> &));
 };
 
 class MutableStorageMock : public MutableStorage {
-  MOCK_METHOD2(apply,
-               bool(const Block &,
-                    std::function<bool(const Block &, WsvCommand &,
-                                       WsvQuery &, const hash256_t &)>));
+  MOCK_METHOD2(apply, bool(const Block &,
+                           std::function<bool(const Block &, WsvCommand &,
+                                              WsvQuery &, const hash256_t &)>));
   MOCK_METHOD1(getAccount,
                nonstd::optional<Account>(const std::string &account_id));
   MOCK_METHOD1(getSignatories, nonstd::optional<std::vector<ed25519::pubkey_t>>(
-      const std::string &account_id));
-  MOCK_METHOD1(getAsset,
-               nonstd::optional<Asset>(const std::string &asset_id));
+                                   const std::string &account_id));
+  MOCK_METHOD1(getAsset, nonstd::optional<Asset>(const std::string &asset_id));
   MOCK_METHOD2(getAccountAsset,
-               nonstd::optional<AccountAsset>(
-                   const std::string &account_id, const std::string &asset_id));
+               nonstd::optional<AccountAsset>(const std::string &account_id,
+                                              const std::string &asset_id));
   MOCK_METHOD0(getPeers, nonstd::optional<std::vector<Peer>>());
 };
 
@@ -72,7 +70,7 @@ std::unique_ptr<MutableStorage> createMutableStorageMock() {
 
 class BlockLoader : public iroha::network::BlockLoader {
  public:
-  MOCK_METHOD2(requestBlocks, rxcpp::observable<Block>(Peer&, Block&));
+  MOCK_METHOD2(requestBlocks, rxcpp::observable<Block>(Peer &, Block &));
 };
 
 TEST(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
@@ -98,9 +96,9 @@ TEST(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
   EXPECT_CALL(block_loader, requestBlocks(_, _)).Times(0);
 
   auto wrapper =
-      make_test_observable<CallExact>(synchronizer.on_commit_chain(), 1);
+      make_test_subscriber<CallExact>(synchronizer.on_commit_chain(), 1);
   wrapper.subscribe([&test_block](auto commit) {
-    auto block_wrapper = make_test_observable<CallExact>(commit, 1);
+    auto block_wrapper = make_test_subscriber<CallExact>(commit, 1);
     block_wrapper.subscribe([&test_block](auto block) {
       // Check commit block
       ASSERT_EQ(block.height, test_block.height);
@@ -128,13 +126,12 @@ TEST(SynchronizerTest, ValidWhenBadStorage) {
 
   EXPECT_CALL(mutable_factory, commit_(_)).Times(0);
 
-  EXPECT_CALL(chain_validator, validateBlock(test_block, _))
-      .Times(0);
+  EXPECT_CALL(chain_validator, validateBlock(test_block, _)).Times(0);
 
   EXPECT_CALL(block_loader, requestBlocks(_, _)).Times(0);
 
   auto wrapper =
-      make_test_observable<CallExact>(synchronizer.on_commit_chain(), 0);
+      make_test_subscriber<CallExact>(synchronizer.on_commit_chain(), 0);
   wrapper.subscribe();
 
   synchronizer.process_commit(test_block);
@@ -162,16 +159,15 @@ TEST(SynchronizerTest, ValidWhenBlockValidationFailure) {
 
   EXPECT_CALL(chain_validator, validateBlock(test_block, _))
       .WillOnce(Return(false));
-  EXPECT_CALL(chain_validator, validateChain(_, _))
-      .WillOnce(Return(true));
+  EXPECT_CALL(chain_validator, validateChain(_, _)).WillOnce(Return(true));
 
   EXPECT_CALL(block_loader, requestBlocks(_, _))
       .WillOnce(Return(rxcpp::observable<>::just(test_block)));
 
   auto wrapper =
-      make_test_observable<CallExact>(synchronizer.on_commit_chain(), 1);
+      make_test_subscriber<CallExact>(synchronizer.on_commit_chain(), 1);
   wrapper.subscribe([&test_block](auto commit) {
-    auto block_wrapper = make_test_observable<CallExact>(commit, 1);
+    auto block_wrapper = make_test_subscriber<CallExact>(commit, 1);
     block_wrapper.subscribe([&test_block](auto block) {
       // Check commit block
       ASSERT_EQ(block.height, test_block.height);
