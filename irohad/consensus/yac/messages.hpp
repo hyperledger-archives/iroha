@@ -43,7 +43,7 @@ namespace iroha {
        * All nodes deals on some solution
        */
       struct CommitMessage {
-        CommitMessage() {}
+        CommitMessage() = default;
 
         CommitMessage(std::vector<VoteMessage> votes) { this->votes = votes; }
 
@@ -59,7 +59,7 @@ namespace iroha {
        * to collect supermajority for any block
        */
       struct RejectMessage {
-        RejectMessage() {}
+        RejectMessage() = default;
 
         RejectMessage(std::vector<VoteMessage> votes) { this->votes = votes; }
 
