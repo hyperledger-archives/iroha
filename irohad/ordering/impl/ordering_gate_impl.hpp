@@ -38,7 +38,16 @@ namespace iroha {
       ~OrderingGateImpl() override;
 
      private:
+      /**
+       * Process proposal received from network
+       * Publishes proposal to on_proposal subscribers
+       * @param proposal
+       */
       void handleProposal(model::Proposal &&proposal);
+
+      /**
+       * Listen to gRPC server responses
+       */
       void asyncCompleteRpc();
 
       rxcpp::subjects::subject<model::Proposal> proposals_;

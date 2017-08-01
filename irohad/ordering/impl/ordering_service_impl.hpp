@@ -42,9 +42,28 @@ namespace iroha {
       ~OrderingServiceImpl() override;
 
      private:
+      /**
+       * Process transaction received from network
+       * Enqueues transaction and publishes corresponding event
+       * @param transaction
+       */
       void handleTransaction(model::Transaction &&transaction);
+
+      /**
+       * Collect transactions from queue
+       * Passes the generated proposal to publishProposal
+       */
       void generateProposal();
+
+      /**
+       * Transform model proposal to transport object and send to peers
+       * @param proposal
+       */
       void publishProposal(model::Proposal &&proposal);
+
+      /**
+       * Listen to gRPC server responses
+       */
       void asyncCompleteRpc();
 
       std::shared_ptr<uvw::Loop> loop_;
