@@ -15,16 +15,15 @@
  * limitations under the License.
  */
 
+#include <utility>
 #include "consensus/yac/cluster_order.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
 
-      ClusterOrdering::ClusterOrdering() : order_({}) {}
-
       ClusterOrdering::ClusterOrdering(std::vector<model::Peer> order)
-          : order_(order) {}
+          : order_(std::move(order)) {}
 
       model::Peer ClusterOrdering::currentLeader() {
         if (index_ >= order_.size()) {
@@ -33,16 +32,8 @@ namespace iroha {
         return order_.at(index_);
       }
 
-      bool ClusterOrdering::hasNext() { return index_ != order_.size(); }
-
-      bool ClusterOrdering::leaderInValidateSet() {
-        auto f = (order_.size() - 1) / 3;
-        return index_ <= 2 * f;
-      }
-
-      bool ClusterOrdering::haveSupermajority(uint64_t val) {
-        auto f = (order_.size() - 1) / 3;
-        return val >= 2 * f + 1;
+      bool ClusterOrdering::hasNext() {
+        return index_ != order_.size();
       }
 
       ClusterOrdering &ClusterOrdering::switchToNext() {

@@ -30,7 +30,6 @@ namespace iroha {
        */
       class ClusterOrdering {
        public:
-        ClusterOrdering();
 
         explicit ClusterOrdering(std::vector<model::Peer> order);
 
@@ -49,19 +48,6 @@ namespace iroha {
          * @return true if current leader not last peer in order
          */
         bool hasNext();
-
-        /**
-         * Validate set is on of first 2f+1 elements from 3f+1.
-         * @return true if leader is on of 2f+1 elements
-         */
-        bool leaderInValidateSet();
-
-        /**
-         * Check that parameter greater of equal(geq) that 2f+1
-         * @param val - checked value
-         * @return true if geq supermajority
-         */
-        bool haveSupermajority(uint64_t val);
 
         std::vector<model::Peer> getPeers() { return order_; };
 

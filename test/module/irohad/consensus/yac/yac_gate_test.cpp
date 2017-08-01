@@ -90,7 +90,7 @@ TEST(YacGateTest, YacGateSubscribtionTest) {
 
   EXPECT_CALL(*static_cast<YacPeerOrdererMock *>(peer_orderer_raw),
               getOrdering(_))
-      .WillOnce(Return(ClusterOrdering()));
+      .WillOnce(Return(ClusterOrdering({mk_peer("fake_node")})));
 
   // make hash from block
   shared_ptr<YacHashProvider> hash_provider =
