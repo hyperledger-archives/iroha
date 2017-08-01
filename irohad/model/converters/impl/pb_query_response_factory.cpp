@@ -234,7 +234,7 @@ namespace iroha {
             pb_response.set_reason(protocol::ErrorResponse::STATELESS_INVALID);
             break;
           case ErrorResponse::STATEFUL_INVALID:
-            pb_response.set_reason(protocol::ErrorResponse::STATEFULL_INVALID);
+            pb_response.set_reason(protocol::ErrorResponse::STATEFUL_INVALID);
             break;
           case ErrorResponse::NO_ACCOUNT:
             pb_response.set_reason(protocol::ErrorResponse::NO_ACCOUNT);

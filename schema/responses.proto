@@ -36,7 +36,7 @@ message AccountResponse {
 message ErrorResponse {
     enum Reason  {
         STATELESS_INVALID = 0;
-        STATEFULL_INVALID = 1;
+        STATEFUL_INVALID = 1;
         NO_ACCOUNT = 2;
         NO_ACCOUNT_ASSETS = 3;
         NO_SIGNATORIES = 4;
