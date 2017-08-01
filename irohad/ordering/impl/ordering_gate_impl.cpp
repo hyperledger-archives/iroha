@@ -48,7 +48,7 @@ namespace iroha {
       auto transactions =
           decltype(std::declval<model::Proposal>().transactions)();
       for (const auto &tx : request->transactions()) {
-        transactions.push_back(factory_.deserialize(tx));
+        transactions.push_back(*factory_.deserialize(tx));
       }
 
       handleProposal(model::Proposal(transactions));

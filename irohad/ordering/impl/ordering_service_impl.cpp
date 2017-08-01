@@ -62,7 +62,7 @@ namespace iroha {
     grpc::Status OrderingServiceImpl::SendTransaction(
         ::grpc::ServerContext *context, const protocol::Transaction *request,
         ::google::protobuf::Empty *response) {
-      handleTransaction(std::move(factory_.deserialize(*request)));
+      handleTransaction(std::move(*factory_.deserialize(*request)));
 
       return grpc::Status::OK;
     }
