@@ -117,7 +117,7 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommit) {
     votes.push_back(create_vote(my_hash, std::to_string(i)));
   };
   yac->on_commit(my_peers.at(0), CommitMessage(votes));
-  ASSERT_EQ(true, wrapper.validate());
+  ASSERT_TRUE(wrapper.validate());
 }
 
 TEST_F(YacTest, ValidCaseWhenReceiveCommitTwice) {
@@ -175,7 +175,7 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommitTwice) {
   };
   yac->on_commit(my_peers.at(1), CommitMessage(votes));
 
-  ASSERT_EQ(true, wrapper.validate());
+  ASSERT_TRUE(wrapper.validate());
 }
 
 TEST_F(YacTest, ValidCaseWhenSoloConsensus) {

@@ -103,7 +103,7 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveOneVote) {
   // assume that our peer receive message
   network->notification->on_vote(peer, crypto->getVote(received_hash));
 
-  ASSERT_EQ(true, wrapper.validate());
+  ASSERT_TRUE(wrapper.validate());
 }
 
 /**
@@ -137,7 +137,7 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
     network->notification->on_vote(peer, crypto->getVote(received_hash));
   }
 
-  ASSERT_EQ(true, wrapper.validate());
+  ASSERT_TRUE(wrapper.validate());
 }
 
 /**
@@ -177,6 +177,6 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveCommitMessage) {
   }
   network->notification->on_commit(committed_peer, msg);
 
-  ASSERT_EQ(true, wrapper.validate());
+  ASSERT_TRUE(wrapper.validate());
 }
 #endif  // IROHA_YAC_SIMPLE_CASE_TEST_HPP

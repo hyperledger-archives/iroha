@@ -117,7 +117,7 @@ TEST(YacGateTest, YacGateSubscribtionTest) {
 
   // initialize chain
   val->subject.get_subscriber().on_next(expected_block);
-  ASSERT_EQ(true, block_wrapper.validate());
+  ASSERT_TRUE(block_wrapper.validate());
 
   // verify that yac gate emit expected block
   TestObservable<iroha::model::Block> gate_wrapper(gate.on_commit());
@@ -127,7 +127,7 @@ TEST(YacGateTest, YacGateSubscribtionTest) {
         ASSERT_EQ(block, expected_block);
       });
 
-  ASSERT_EQ(true, gate_wrapper.validate());
+  ASSERT_TRUE(gate_wrapper.validate());
 }
 
 TEST(YacGateTest, YacGateSubscribtionTestFailCase) {
@@ -188,5 +188,5 @@ TEST(YacGateTest, YacGateSubscribtionTestFailCase) {
 
   // initialize chain
   val->subject.get_subscriber().on_next(expected_block);
-  ASSERT_EQ(true, block_wrapper.validate());
+  ASSERT_TRUE(block_wrapper.validate());
 }

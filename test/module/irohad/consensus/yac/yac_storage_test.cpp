@@ -29,22 +29,22 @@ TEST(YacStorageTest, SupermajorityFunctionForAllCases2) {
   cout << "-----------| F(x, 2), x in {0..3} -----------" << endl;
 
   int N = 2;
-  ASSERT_EQ(false, hasSupermajority(0, N));
-  ASSERT_EQ(false, hasSupermajority(1, N));
-  ASSERT_EQ(true, hasSupermajority(2, N));
-  ASSERT_EQ(false, hasSupermajority(3, N));
+  ASSERT_FALSE(hasSupermajority(0, N));
+  ASSERT_FALSE(hasSupermajority(1, N));
+  ASSERT_TRUE(hasSupermajority(2, N));
+  ASSERT_FALSE(hasSupermajority(3, N));
 }
 
 TEST(YacStorageTest, SupermajorityFunctionForAllCases4) {
   cout << "-----------| F(x, 4), x in {0..5} |-----------" << endl;
 
   int N = 4;
-  ASSERT_EQ(false, hasSupermajority(0, N));
-  ASSERT_EQ(false, hasSupermajority(1, N));
-  ASSERT_EQ(false, hasSupermajority(2, N));
-  ASSERT_EQ(true, hasSupermajority(3, N));
-  ASSERT_EQ(true, hasSupermajority(4, N));
-  ASSERT_EQ(false, hasSupermajority(5, N));
+  ASSERT_FALSE(hasSupermajority(0, N));
+  ASSERT_FALSE(hasSupermajority(1, N));
+  ASSERT_FALSE(hasSupermajority(2, N));
+  ASSERT_TRUE(hasSupermajority(3, N));
+  ASSERT_TRUE(hasSupermajority(4, N));
+  ASSERT_FALSE(hasSupermajority(5, N));
 }
 
 TEST(YacStorageTest, YacBlockStorageWhenNormalDataInput) {
