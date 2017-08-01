@@ -39,23 +39,26 @@ namespace iroha {
 
       /**
        * Parse block from file
-       * @param path - path with tagret block
+       * @param data - raw presenetation of block
        * @return object if operation done successfully, nullopt otherwice
        */
-      nonstd::optional<model::Block> parseBlock(std::string path);
+      nonstd::optional<model::Block> parseBlock(std::string &data);
 
       /**
        * Apply block to current state of ledger
        * @param blocks - list of blocks for insertion
        */
-      void appyToLedger(std::vector<model::Block> blocks);
+      void applyToLedger(std::vector<model::Block> &blocks);
 
-     private:
-
+      /**
+       * Additional method
+       * Loading file from target path
+       * @param path - target file
+       * @return string with content or nullopt
+       */
       nonstd::optional<std::string> loadFile(std::string &path);
 
-      nonstd::optional<std::vector<uint8_t>> convertString(std::string &value);
-
+     private:
       std::shared_ptr<ametsuchi::Storage> storage_;
     };
 

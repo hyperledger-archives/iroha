@@ -18,29 +18,23 @@
 #include "main/raw_block_insertion.hpp"
 #include "ametsuchi/block_serializer.hpp"
 #include <fstream>
+#include <utility>
+#include "common/blob_converter.hpp"
 
 namespace iroha {
   namespace main {
 
     BlockInserter::BlockInserter(std::shared_ptr<ametsuchi::Storage> storage)
-        : storage_(storage) {
+        : storage_(std::move(storage)) {
     };
 
-    nonstd::optional<model::Block> BlockInserter::parseBlock(std::string path) {
-      auto string_repr = loadFile(path);
-      if (not string_repr.has_value()) {
-        return nonstd::nullopt;
-      }
-
-      auto blob = convertString(string_repr.value());
-      if (not blob.has_value()) {
-        return nonstd::nullopt;
-      }
+    nonstd::optional<model::Block> BlockInserter::parseBlock(std::string &data) {
+      auto blob = common::convert(data);
       ametsuchi::BlockSerializer serializer;
-      return serializer.deserialize(blob.value());
+      return serializer.deserialize(blob);
     };
 
-    void BlockInserter::appyToLedger(std::vector<model::Block> blocks) {
+    void BlockInserter::applyToLedger(std::vector<model::Block> &blocks) {
       auto mutable_storage = storage_->createMutableStorage();
       for (auto &&block : blocks) {
         mutable_storage->apply(block,
@@ -59,15 +53,6 @@ namespace iroha {
       std::string str((std::istreambuf_iterator<char>(file)),
                       std::istreambuf_iterator<char>());
       return str;
-    };
-
-    nonstd::optional<std::vector<uint8_t>> BlockInserter::convertString(
-        std::string &value) {
-      std::vector<uint8_t> result;
-      for (auto chr: value) {
-        result.push_back(chr);
-      }
-      return result;
     };
 
   } // namespace main
