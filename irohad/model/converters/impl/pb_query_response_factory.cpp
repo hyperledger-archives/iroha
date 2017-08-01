@@ -201,29 +201,19 @@ namespace iroha {
       protocol::TransactionsResponse
       PbQueryResponseFactory::serializeTransactionsResponse(
           const model::TransactionsResponse &transactionsResponse) const {
-        protocol::TransactionsResponse pb_response;
         PbTransactionFactory pb_transaction_factory;
 
         // converting observable to the vector using reduce
-        transactionsResponse.transactions
-            .reduce(
-                std::vector<model::Transaction>(),
-                // TODO: get rid of passing vector by value
-                [](std::vector<model::Transaction> o, model::Transaction tx) {
-                  o.push_back(tx);
-                  return std::move(o);
-                },
-                [](std::vector<model::Transaction> o) { return std::move(o); })
+        return transactionsResponse.transactions
+            .reduce(protocol::TransactionsResponse(),
+                    [&pb_transaction_factory](auto &&response, auto tx) {
+                      response.add_transactions()->CopyFrom(
+                          pb_transaction_factory.serialize(tx));
+                      return response;
+                    },
+                    [](auto &&response) { return response; })
             .as_blocking()  // we need to wait when on_complete happens
-            .subscribe(
-                [&pb_transaction_factory, &pb_response](auto transactions) {
-                  // add txs to pb_response
-                  for (auto tx : transactions) {
-                    pb_response.add_transactions()->CopyFrom(
-                        pb_transaction_factory.serialize(tx));
-                  }
-                });
-        return pb_response;
+            .first();
       }
 
       protocol::ErrorResponse PbQueryResponseFactory::serializeErrorResponse(
