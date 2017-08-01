@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 #include <thread>
 #include "consensus/yac/impl/network_impl.hpp"
+#include "yac_mocks.hpp"
 
 using namespace iroha::consensus::yac;
 using iroha::model::Peer;
@@ -39,15 +40,14 @@ class FakeNetworkNotifications : public YacNetworkNotifications {
 TEST(NetworkTest, MessageHandledWhenMessageSent) {
   auto notifications = std::make_shared<FakeNetworkNotifications>();
 
-  auto peer = Peer();
-  peer.address = "0.0.0.0:50051";
+  auto peer = mk_peer("0.0.0.0:50051");
   std::vector<Peer> peers = {peer};
   std::shared_ptr<NetworkImpl> network =
       std::make_shared<NetworkImpl>(peer.address, peers);
 
   VoteMessage message;
-  message.hash.block_hash = "block";
   message.hash.proposal_hash = "proposal";
+  message.hash.block_hash = "block";
 
   EXPECT_CALL(*notifications, on_vote(peer, message)).Times(1);
 
@@ -55,7 +55,10 @@ TEST(NetworkTest, MessageHandledWhenMessageSent) {
 
   std::unique_ptr<grpc::Server> server;
 
-  auto thread = std::thread([&server, &peer, &network] {
+  std::mutex mtx;
+  std::condition_variable cv;
+
+  auto thread = std::thread([&server, &peer, &network, &cv] {
     grpc::ServerBuilder builder;
     int port = 0;
     builder.AddListeningPort(peer.address, grpc::InsecureServerCredentials(),
@@ -64,12 +67,17 @@ TEST(NetworkTest, MessageHandledWhenMessageSent) {
     server = builder.BuildAndStart();
     ASSERT_TRUE(server);
     ASSERT_NE(port, 0);
+    cv.notify_one();
     server->Wait();
   });
 
+  // wait unlit server woke up
+  std::unique_lock<std::mutex> lock(mtx);
+  cv.wait(lock);
+
   network->send_vote(peer, message);
 
-  std::this_thread::sleep_for(std::chrono::seconds(5));
+  std::this_thread::sleep_for(std::chrono::seconds(2));
 
   server->Shutdown();
   if (thread.joinable()) {
