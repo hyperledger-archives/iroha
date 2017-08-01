@@ -1,5 +1,4 @@
-addtest(test_observable_testing test_observable_testing.cpp)
-target_link_libraries(test_observable_testing
+addtest(test_subscriber_testing test_subscriber_testing.cpp)
+target_link_libraries(test_subscriber_testing
     rxcpp
     )
-
