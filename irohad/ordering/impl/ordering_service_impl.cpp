@@ -75,7 +75,7 @@ namespace iroha {
     void OrderingServiceImpl::generateProposal() {
       auto txs = decltype(std::declval<model::Proposal>().transactions)();
       for (model::Transaction tx;
-           txs.size() < max_size_ && queue_.try_pop(tx);) {
+           txs.size() < max_size_ and queue_.try_pop(tx);) {
         txs.push_back(std::move(tx));
       }
 
