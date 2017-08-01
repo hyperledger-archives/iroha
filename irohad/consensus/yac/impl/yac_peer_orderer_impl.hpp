@@ -28,7 +28,7 @@ namespace iroha {
       class YacPeerOrdererImpl : public YacPeerOrderer {
        public:
 
-        YacPeerOrdererImpl(std::shared_ptr<ametsuchi::WsvQuery> wsv);
+        explicit YacPeerOrdererImpl(std::shared_ptr<ametsuchi::WsvQuery> wsv);
 
         nonstd::optional<ClusterOrdering> getInitialOrdering() override ;
 
