@@ -54,7 +54,7 @@ namespace iroha {
         };
 
         bool operator!=(const YacHash &obj) const {
-          return !this->operator==(obj);
+          return not(*this == obj);
         };
       };
 
