@@ -17,24 +17,9 @@
 
 #include "consensus/yac/impl/network_impl.hpp"
 #include <grpc++/grpc++.h>
+#include "logger/logger.hpp"
 
-std::string red(const std::string &string) {
-  const std::string red_start = "\033[31m";
-  const std::string end = "\033[0m";
-  return red_start + string + end;
-}
-
-std::string yellow(const std::string &string) {
-  const std::string yellow_start = "\033[33m";
-  const std::string end = "\033[0m";
-  return yellow_start + string + end;
-}
-
-std::string output(const std::string &string) {
-  return yellow("---> " + string);
-}
-
-std::string input(const std::string &string) { return red("<--- " + string); }
+using namespace logger;
 
 namespace iroha {
   namespace consensus {
