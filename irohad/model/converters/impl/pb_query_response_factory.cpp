@@ -180,8 +180,7 @@ namespace iroha {
         protocol::SignatoriesResponse pb_response;
 
         for (auto key : signatoriesResponse.keys) {
-          pb_response.mutable_keys()->Add(
-              std::string{key.data(), key.data() + key.size()});
+          pb_response.add_keys(key.data(), key.size());
         }
         return pb_response;
       }
