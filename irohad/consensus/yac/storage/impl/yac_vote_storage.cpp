@@ -23,32 +23,32 @@ namespace iroha {
 
       StorageResult YacVoteStorage::storeVote(VoteMessage msg,
                                               uint64_t peers_in_round) {
-        return proposals_
+        return proposal_storages_
             .at(findProposalStorage(msg, peers_in_round))
             .insert(msg);
       }
 
       StorageResult YacVoteStorage::applyCommit(CommitMessage commit,
-                                uint64_t peers_in_round) {
+                                                uint64_t peers_in_round) {
         if (commit.votes.empty()) return StorageResult();
 
         auto index = findProposalStorage(commit.votes.at(0), peers_in_round);
-        return proposals_.at(index).applyCommit(commit, peers_in_round);
+        return proposal_storages_.at(index).applyCommit(commit, peers_in_round);
       };
 
       StorageResult YacVoteStorage::applyReject(RejectMessage reject,
-                                uint64_t peers_in_round) {
+                                                uint64_t peers_in_round) {
         if (reject.votes.empty()) return StorageResult();
 
         auto index = findProposalStorage(reject.votes.at(0), peers_in_round);
-        return proposals_.at(index).applyReject(reject, peers_in_round);
+        return proposal_storages_.at(index).applyReject(reject, peers_in_round);
       };
 
       nonstd::optional<StorageResult> YacVoteStorage::findProposal(
           YacHash hash) {
-        for (const auto &proposal : proposals_) {
-          if (proposal.getProposalHash() == hash.proposal_hash) {
-            return proposal.getState();
+        for (const auto &proposal_storage : proposal_storages_) {
+          if (proposal_storage.getProposalHash() == hash.proposal_hash) {
+            return proposal_storage.getState();
           }
         }
         return nonstd::nullopt;
@@ -58,13 +58,14 @@ namespace iroha {
 
       uint64_t YacVoteStorage::findProposalStorage(const VoteMessage &msg,
                                                    uint64_t peers_in_round) {
-        for (uint64_t i = 0; i < proposals_.size(); ++i) {
-          if (proposals_.at(i).getProposalHash() == msg.hash.proposal_hash) {
+        for (uint64_t i = 0; i < proposal_storages_.size(); ++i) {
+          if (proposal_storages_.at(i).getProposalHash()
+              == msg.hash.proposal_hash) {
             return i;
           }
         }
-        proposals_.emplace_back(msg.hash.proposal_hash, peers_in_round);
-        return proposals_.size() - 1;
+        proposal_storages_.emplace_back(msg.hash.proposal_hash, peers_in_round);
+        return proposal_storages_.size() - 1;
       }
 
     } // namespace yac

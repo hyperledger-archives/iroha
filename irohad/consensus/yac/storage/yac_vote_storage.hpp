@@ -70,7 +70,7 @@ namespace iroha {
         /**
          * Active proposals
          */
-        std::vector<YacProposalStorage> proposals_;
+        std::vector<YacProposalStorage> proposal_storages_;
       };
 
     } // namespace yac
