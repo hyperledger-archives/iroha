@@ -18,7 +18,7 @@
 #define IROHA_PEER_COMMUNICATION_STUB_HPP
 
 #include <ametsuchi/storage.hpp>
-#include <consensus/consensus_service_stub.hpp>
+#include "synchronizer/synchronizer.hpp"
 #include <model/model_crypto_provider.hpp>
 #include <model/model_hash_provider.hpp>
 #include <network/ordering_gate.hpp>
@@ -26,23 +26,24 @@
 #include <ordering/ordering_service_stub.hpp>
 #include <validation/chain_validator.hpp>
 #include <validation/stateful_validator.hpp>
+#include "model/commit.hpp"
 
 namespace iroha {
   namespace network {
     class PeerCommunicationServiceStub : public PeerCommunicationService {
      public:
-      PeerCommunicationServiceStub(network::OrderingGate& orderer,
-                                   consensus::ConsensusService& consensus);
+      PeerCommunicationServiceStub(network::OrderingGate &orderer,
+                                   synchronizer::Synchronizer &synchronizer);
 
       void propagate_transaction(model::Transaction transaction);
 
       rxcpp::observable<model::Proposal> on_proposal() override;
 
-      rxcpp::observable<rxcpp::observable<model::Block>> on_commit() override;
+      rxcpp::observable<Commit> on_commit() override;
 
      private:
-      network::OrderingGate& orderer_;
-      consensus::ConsensusService& consensus_;
+      network::OrderingGate &orderer_;
+      synchronizer::Synchronizer &synchronizer_;
     };
   }  // namespace network
 }  // namespace iroha

@@ -42,7 +42,6 @@ target_link_libraries(application
   ametsuchi
   networking
   ordering_service
-  consensus_service
   chain_validator
   hash
   stateless_validator

@@ -21,10 +21,10 @@
 #include <rxcpp/rx.hpp>
 #include <rxcpp/rx-observable.hpp>
 #include "consensus/yac/impl/yac_gate_impl.hpp"
-#include <common/test_observable.hpp>
+#include "common/test_subscriber.hpp"
 
 using namespace iroha::consensus::yac;
-using namespace common::test_observable;
+using namespace common::test_subscriber;
 
 #include <iostream>
 using namespace std;
@@ -108,10 +108,8 @@ TEST(YacGateTest, YacGateSubscribtionTest) {
                    hash_provider, block_creator);
 
   // verify that yac gate subscribed for block_creator
-  TestObservable<iroha::model::Block> block_wrapper(block_creator->on_block());
-  block_wrapper.test_subscriber(
-      std::make_unique<CallExact<iroha::model::Block>>
-          (CallExact<iroha::model::Block>(1)), [](auto block) {});
+  auto block_wrapper = make_test_subscriber<CallExact>(block_creator->on_block(), 1);
+  block_wrapper.subscribe();
 
   auto val = static_cast<BlockCreatorStub *>(block_creator.get());
 
@@ -120,12 +118,10 @@ TEST(YacGateTest, YacGateSubscribtionTest) {
   ASSERT_TRUE(block_wrapper.validate());
 
   // verify that yac gate emit expected block
-  TestObservable<iroha::model::Block> gate_wrapper(gate.on_commit());
-  gate_wrapper.test_subscriber(
-      std::make_unique<CallExact<iroha::model::Block>>
-          (CallExact<iroha::model::Block>(1)), [expected_block](auto block) {
-        ASSERT_EQ(block, expected_block);
-      });
+  auto gate_wrapper = make_test_subscriber<CallExact>(gate.on_commit(), 1);
+  gate_wrapper.subscribe([expected_block](auto block) {
+    ASSERT_EQ(block, expected_block);
+  });
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -179,10 +175,9 @@ TEST(YacGateTest, YacGateSubscribtionTestFailCase) {
                    hash_provider, block_creator);
 
   // verify that yac gate subscribed for block_creator
-  TestObservable<iroha::model::Block> block_wrapper(block_creator->on_block());
-  block_wrapper.test_subscriber(
-      std::make_unique<CallExact<iroha::model::Block>>
-          (CallExact<iroha::model::Block>(1)), [](auto block) {});
+
+  auto block_wrapper = make_test_subscriber<CallExact>(block_creator->on_block(), 1);
+  block_wrapper.subscribe();
 
   auto val = static_cast<BlockCreatorStub *>(block_creator.get());
 

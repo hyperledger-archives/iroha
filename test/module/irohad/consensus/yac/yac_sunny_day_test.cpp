@@ -20,7 +20,7 @@
 #include <utility>
 #include <string>
 #include "yac_mocks.hpp"
-#include "common/test_observable.hpp"
+#include "common/test_subscriber.hpp"
 
 #include <vector>
 #include <iostream>
@@ -31,7 +31,7 @@ using ::testing::An;
 using ::testing::AtLeast;
 
 using namespace iroha::consensus::yac;
-using namespace common::test_observable;
+using namespace common::test_subscriber;
 using namespace std;
 
 TEST_F(YacTest, ValidCaseWhenReceiveSupermajority) {
@@ -92,13 +92,11 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommit) {
                     delay);
 
   YacHash my_hash("proposal_hash", "block_hash");
-  TestObservable<CommitMessage> wrapper(yac->on_commit());
-  wrapper.test_subscriber(std::make_unique<CallExact<CommitMessage>>(CallExact<
-                              CommitMessage>(1)),
-                          [my_hash](auto val) {
-                            ASSERT_EQ(my_hash, val.votes.at(0).hash);
-                            cout << "catched" << endl;
-                          });
+  auto wrapper = make_test_subscriber<CallExact>(yac->on_commit(), 1);
+  wrapper.subscribe([my_hash](auto val) {
+    ASSERT_EQ(my_hash, val.votes.at(0).hash);
+    cout << "catched" << endl;
+  });
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
@@ -142,13 +140,11 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommitTwice) {
                     delay);
 
   YacHash my_hash("proposal_hash", "block_hash");
-  TestObservable<CommitMessage> wrapper(yac->on_commit());
-  wrapper.test_subscriber(std::make_unique<CallExact<CommitMessage>>(CallExact<
-                              CommitMessage>(1)),
-                          [my_hash](auto val) {
-                            ASSERT_EQ(my_hash, val.votes.at(0).hash);
-                            cout << "catched" << endl;
-                          });
+  auto wrapper = make_test_subscriber<CallExact>(yac->on_commit(), 1);
+  wrapper.subscribe([my_hash](auto val) {
+    ASSERT_EQ(my_hash, val.votes.at(0).hash);
+    cout << "catched" << endl;
+  });
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
@@ -180,7 +176,7 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommitTwice) {
 
 TEST_F(YacTest, ValidCaseWhenSoloConsensus) {
   cout << "-----------| Start => vote => propagate commit => receive commit "
-          "|-----------"
+      "|-----------"
        << endl;
 
   auto my_peers = std::vector<iroha::model::Peer>({default_peers.at(0)});
@@ -209,13 +205,11 @@ TEST_F(YacTest, ValidCaseWhenSoloConsensus) {
 
   YacHash my_hash("proposal_hash", "block_hash");
 
-  TestObservable<CommitMessage> wrapper(yac->on_commit());
-  wrapper.test_subscriber(
-      std::make_unique<CallExact<CommitMessage>>(CallExact<CommitMessage>(1)),
-      [my_hash](auto val) {
-        ASSERT_EQ(my_hash, val.votes.at(0).hash);
-        cout << "catched" << endl;
-      });
+  auto wrapper = make_test_subscriber<CallExact>(yac->on_commit(), 1);
+  wrapper.subscribe([my_hash](auto val) {
+    ASSERT_EQ(my_hash, val.votes.at(0).hash);
+    cout << "catched" << endl;
+  });
 
   yac->vote(my_hash, my_order);
 

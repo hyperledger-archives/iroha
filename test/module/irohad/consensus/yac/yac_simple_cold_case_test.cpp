@@ -24,7 +24,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include "common/test_observable.hpp"
+#include "common/test_subscriber.hpp"
 #include "yac_mocks.hpp"
 #include <string>
 
@@ -34,7 +34,7 @@ using ::testing::An;
 using ::testing::AtLeast;
 
 using namespace iroha::consensus::yac;
-using namespace common::test_observable;
+using namespace common::test_subscriber;
 using namespace std;
 
 /**
@@ -82,11 +82,8 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveOneVote) {
   cout << "----------|Coldstart - receive one vote|----------" << endl;
 
   // verify that commit not emitted
-  TestObservable<CommitMessage> wrapper(yac->on_commit());
-  auto invariant = CallExact<CommitMessage>(0);
-  wrapper.test_subscriber(
-      std::make_unique<CallExact<CommitMessage>>(std::move(invariant)),
-      [](auto commit_hash) {});
+  auto wrapper = make_test_subscriber<CallExact>(yac->on_commit(), 0);
+  wrapper.subscribe();
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
@@ -116,11 +113,8 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
        << endl;
 
   // verify that commit not emitted
-  TestObservable<CommitMessage> wrapper(yac->on_commit());
-  auto invariant = CallExact<CommitMessage>(0);
-  wrapper.test_subscriber(
-      std::make_unique<CallExact<CommitMessage>>(std::move(invariant)),
-      [](auto commit_hash) {});
+  auto wrapper = make_test_subscriber<CallExact>(yac->on_commit(), 0);
+  wrapper.subscribe();
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
@@ -149,13 +143,10 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveCommitMessage) {
   YacHash propagated_hash("my_proposal", "my_block");
 
   // verify that commit emitted
-  TestObservable<CommitMessage> wrapper(yac->on_commit());
-  auto invariant = CallExact<CommitMessage>(1);
-  wrapper.test_subscriber(
-      std::make_unique<CallExact<CommitMessage>>(std::move(invariant)),
-      [propagated_hash](auto commit_hash) {
-        ASSERT_EQ(propagated_hash, commit_hash.votes.at(0).hash);
-      });
+  auto wrapper = make_test_subscriber<CallExact>(yac->on_commit(), 1);
+  wrapper.subscribe([propagated_hash](auto commit_hash) {
+    ASSERT_EQ(propagated_hash, commit_hash.votes.at(0).hash);
+  });
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
