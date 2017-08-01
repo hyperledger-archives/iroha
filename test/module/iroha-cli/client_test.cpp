@@ -100,7 +100,6 @@ TEST_F(ClientTest, SendTxWhenInvalidJson) {
   iroha_cli::CliClient client(Ip, Port, "test");
   EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(pcsMock,propagate_transaction(_)).Times(1);
   // Json with no Transaction
   auto json_tx ="{\n"
       "  \"creator_account_id\": \"test\", \n"
