@@ -449,73 +449,44 @@ namespace iroha {
         return nonstd::nullopt;
       }
 
-      model::Block block{};
-      // Check if hash is present
-      if (not doc.HasMember("hash")) {
+      auto req_fields = {"hash", "signatures", "created_ts", "height",
+                         "prev_hash", "txs_number"};
+      auto verify_member = [&doc](auto&& field) {
+        return not doc.HasMember(field);
+      };
+
+      auto json_sigs = doc["signatures"].GetArray();
+
+      if (std::any_of(req_fields.begin(), req_fields.end(), verify_member)) {
         return nonstd::nullopt;
       }
-      std::string hash_str = doc["hash"].GetString();
-      auto hash_bytes = hex2bytes(hash_str);
-      std::copy(hash_bytes.begin(), hash_bytes.end(), block.hash.begin());
+
+      model::Block block{};
+
+      // Check if hash is present
+      deserialize(doc["hash"].GetString(), block.hash);
 
       // Signatures are critical part of a Block, if there are none - Block is
       // invalid
-      if (not doc.HasMember("signatures")) {
+      if (not deserialize(json_sigs, block.sigs)) {
         return nonstd::nullopt;
       }
-      auto json_sigs = doc["signatures"].GetArray();
 
-      for (auto iter = json_sigs.begin(); iter < json_sigs.end(); ++iter) {
-        auto json_sig = iter->GetObject();
-        model::Signature signature{};
-        // Signature must have two fields: pubkey and signature
-        if (not json_sig.HasMember("pubkey") ||
-            not json_sig.HasMember("signature")) {
-          return nonstd::nullopt;
-        }
-        std::string sig_pubkey = json_sig["pubkey"].GetString();
-        auto sig_pubkey_bytes = hex2bytes(sig_pubkey);
-        std::copy(sig_pubkey_bytes.begin(), sig_pubkey_bytes.end(),
-                  signature.pubkey.begin());
-
-        std::string sig_sign = json_sig["signature"].GetString();
-        auto sig_sign_bytes = hex2bytes(sig_sign);
-        std::copy(sig_sign_bytes.begin(), sig_sign_bytes.end(),
-                  signature.signature.begin());
-
-        block.sigs.push_back(signature);
-      }
       // created_ts
-      if (not doc.HasMember("created_ts")) {
-        return nonstd::nullopt;
-      }
       block.created_ts = doc["created_ts"].GetUint64();
 
       // height
-      if (not doc.HasMember("height")) {
-        return nonstd::nullopt;
-      }
       block.height = doc["height"].GetUint64();
 
       // prev_hash
-      if (not doc.HasMember("prev_hash")) {
-        return nonstd::nullopt;
-      }
-      std::string prev_hash_str = doc["prev_hash"].GetString();
-      auto prev_hash_bytes = hex2bytes(prev_hash_str);
-      std::copy(prev_hash_bytes.begin(), prev_hash_bytes.end(),
-                block.prev_hash.begin());
+      deserialize(doc["prev_hash"].GetString(), block.prev_hash);
+
       // txs number
-      if (not doc.HasMember("txs_number")) {
-        return nonstd::nullopt;
-      }
-      block.txs_number = static_cast<uint16_t>(doc["txs_number"].GetUint());
+      block.txs_number =
+          static_cast<decltype(block.txs_number)>(doc["txs_number"].GetUint());
       // merkle_root is optional
       if (doc.HasMember("merkle_root")) {
-        std::string merkle_root_str = doc["merkle_root"].GetString();
-        auto merkle_root_bytes = hex2bytes(merkle_root_str);
-        std::copy(merkle_root_bytes.begin(), merkle_root_bytes.end(),
-                  block.merkle_root.begin());
+        deserialize(doc["merkle_root"].GetString(), block.merkle_root);
       }
 
       // Deserialize transactions
@@ -529,47 +500,28 @@ namespace iroha {
     nonstd::optional<model::Transaction> BlockSerializer::deserialize(
         GenericValue<rapidjson::UTF8<char>>::Object& json_tx) {
       model::Transaction tx{};
+
+      auto req_fields = {"creator_account_id", "tx_counter", "commands"};
+      auto verify_member = [&json_tx](auto&& field) {
+        return not json_tx.HasMember(field);
+      };
+      if (std::any_of(req_fields.begin(), req_fields.end(), verify_member)) {
+        return nonstd::nullopt;
+      }
+
       if (json_tx.HasMember("signatures")) {
-        auto json_sigs = json_tx["signatures"].GetArray();
-        for (auto sig_iter = json_sigs.begin(); sig_iter < json_sigs.end();
-             ++sig_iter) {
-          auto json_sig = sig_iter->GetObject();
-          model::Signature signature{};
-
-          std::string sig_pubkey = json_sig["pubkey"].GetString();
-          auto sig_pubkey_bytes = hex2bytes(sig_pubkey);
-          std::copy(sig_pubkey_bytes.begin(), sig_pubkey_bytes.end(),
-                    signature.pubkey.begin());
-
-          std::string sig_sign = json_sig["signature"].GetString();
-          auto sig_sign_bytes = hex2bytes(sig_sign);
-          std::copy(sig_sign_bytes.begin(), sig_sign_bytes.end(),
-                    signature.signature.begin());
-
-          tx.signatures.push_back(signature);
-        }
+        deserialize(json_tx["signatures"].GetArray(), tx.signatures);
       }
       if (json_tx.HasMember("created_ts")) {
         // created_ts
         tx.created_ts = json_tx["created_ts"].GetUint64();
       }
       // creator_account_id
-      if (json_tx.HasMember("creator_account_id")) {
-        // created_ts
-        tx.creator_account_id = json_tx["creator_account_id"].GetString();
-      } else {
-        // No creator
-        return nonstd::nullopt;
-      }
+      tx.creator_account_id = json_tx["creator_account_id"].GetString();
+
       // tx_counter
-      if (json_tx.HasMember("tx_counter")) {
-        tx.tx_counter = json_tx["tx_counter"].GetUint64();
-      } else {
-        return nonstd::nullopt;
-      }
-      if (not json_tx.HasMember("commands")) {
-        return nonstd::nullopt;
-      }
+      tx.tx_counter = json_tx["tx_counter"].GetUint64();
+
       // deserialize commands
       if (not deserialize(json_tx, tx.commands)) {
         return nonstd::nullopt;
@@ -593,15 +545,35 @@ namespace iroha {
         return false;
       }
       auto json_txs = doc["transactions"].GetArray();
-      for (auto iter = json_txs.begin(); iter < json_txs.end(); iter++) {
-        auto json_obj = iter->GetObject();
+      for (auto&& iter : json_txs) {
+        auto json_obj = iter.GetObject();
         auto tx_opt = deserialize(json_obj);
-        if (tx_opt.has_value()) {
-          auto tx = tx_opt.value();
-          transactions.push_back(tx);
-        } else {
+        if (not tx_opt.has_value()) {
           return false;
         }
+        auto tx = tx_opt.value();
+        transactions.push_back(tx);
+      }
+      return true;
+    }
+
+    bool BlockSerializer::deserialize(
+        GenericValue<rapidjson::UTF8<char>>::Array json_sigs,
+        std::vector<model::Signature>& sigs) {
+      for (auto&& sig_iter : json_sigs) {
+        auto json_sig = sig_iter.GetObject();
+        model::Signature signature{};
+
+        if (not sig_iter.HasMember("pubkey") or
+            not sig_iter.HasMember("signature")) {
+          return false;
+        }
+
+        deserialize(json_sig["pubkey"].GetString(), signature.pubkey);
+
+        deserialize(json_sig["signature"].GetString(), signature.signature);
+
+        sigs.push_back(signature);
       }
       return true;
     }
@@ -637,10 +609,7 @@ namespace iroha {
       auto add_peer = std::make_shared<model::AddPeer>();
 
       // peer_key
-      std::string peer_key_str = json_command["peer_key"].GetString();
-      auto peer_key_bytes = hex2bytes(peer_key_str);
-      std::copy(peer_key_bytes.begin(), peer_key_bytes.end(),
-                add_peer->peer_key.begin());
+      deserialize(json_command["peer_key"].GetString(), add_peer->peer_key);
 
       // address
       add_peer->address = json_command["address"].GetString();
@@ -679,10 +648,7 @@ namespace iroha {
       add_signatory->account_id = json_command["account_id"].GetString();
 
       // pubkey
-      std::string pubkey_str = json_command["pubkey"].GetString();
-      auto pubkey_bytes = hex2bytes(pubkey_str);
-      std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
-                add_signatory->pubkey.begin());
+      deserialize(json_command["pubkey"].GetString(), add_signatory->pubkey);
 
       return add_signatory;
     }
@@ -697,10 +663,9 @@ namespace iroha {
       assign_master_key->account_id = json_command["account_id"].GetString();
 
       // pubkey
-      std::string pubkey_str = json_command["pubkey"].GetString();
-      auto pubkey_bytes = hex2bytes(pubkey_str);
-      std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
-                assign_master_key->pubkey.begin());
+      deserialize(json_command["pubkey"].GetString(),
+                  assign_master_key->pubkey);
+
       return assign_master_key;
     }
 
@@ -717,10 +682,8 @@ namespace iroha {
       create_account->account_name = json_command["account_name"].GetString();
 
       // pubkey
-      std::string pubkey_str = json_command["pubkey"].GetString();
-      auto pubkey_bytes = hex2bytes(pubkey_str);
-      std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
-                create_account->pubkey.begin());
+      deserialize(json_command["pubkey"].GetString(), create_account->pubkey);
+
       return create_account;
     }
 
@@ -764,20 +727,20 @@ namespace iroha {
       removeSignatory->account_id = json_command["account_id"].GetString();
 
       // pubkey
-      std::string pubkey_str = json_command["pubkey"].GetString();
-      auto pubkey_bytes = hex2bytes(pubkey_str);
-      std::copy(pubkey_bytes.begin(), pubkey_bytes.end(),
-                removeSignatory->pubkey.begin());
+      deserialize(json_command["pubkey"].GetString(), removeSignatory->pubkey);
+
       return removeSignatory;
     }
 
     std::shared_ptr<model::Command>
     BlockSerializer::deserialize_set_account_permissions(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
-      auto setAccountPermissions = std::make_shared<model::SetAccountPermissions>();
+      auto setAccountPermissions =
+          std::make_shared<model::SetAccountPermissions>();
 
       // account_id
-      setAccountPermissions->account_id = json_command["account_id"].GetString();
+      setAccountPermissions->account_id =
+          json_command["account_id"].GetString();
 
       // permissions
       auto new_permissions = json_command["new_permissions"].GetObject();
@@ -824,7 +787,8 @@ namespace iroha {
       auto transferAsset = std::make_shared<model::TransferAsset>();
 
       // src_account_id
-      transferAsset->src_account_id = json_command["src_account_id"].GetString();
+      transferAsset->src_account_id =
+          json_command["src_account_id"].GetString();
 
       // dest_account_id
       transferAsset->dest_account_id =

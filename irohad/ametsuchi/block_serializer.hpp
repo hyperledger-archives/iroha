@@ -127,10 +127,23 @@ namespace iroha {
       // Deserialize one transaction
       nonstd::optional<model::Transaction> deserialize(
           GenericValue<rapidjson::UTF8<char>>::Object& json_tx);
+
+      // Deserialize hex string to array
+      template <size_t size>
+      void deserialize(const std::string& string, blob_t<size>& array) {
+        auto bytes = hex2bytes(string);
+        std::copy(bytes.begin(), bytes.end(), array.begin());
+      }
+
+      // Deserialize signatures
+      bool deserialize(GenericValue<rapidjson::UTF8<char>>::Array json_sigs,
+                       std::vector<model::Signature>& sigs);
+
       // Deserialize commands withing trasaction json_tx
       // Return false if json is ill-formed
       bool deserialize(GenericValue<rapidjson::UTF8<char>>::Object& json_tx,
                        std::vector<std::shared_ptr<model::Command>>& commands);
+
       // Json serilaization for each command
       std::shared_ptr<model::Command> deserialize_add_peer(
           GenericValue<UTF8<char>>::Object& json_command);
