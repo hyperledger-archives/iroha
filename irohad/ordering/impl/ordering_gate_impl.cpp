@@ -22,16 +22,15 @@ namespace iroha {
   namespace ordering {
 
     OrderingGateImpl::OrderingGateImpl(const std::string &server_address)
-        : thread_(&OrderingGateImpl::asyncCompleteRpc, this) {
-      stub_ = proto::OrderingService::NewStub(grpc::CreateChannel(
-          server_address, grpc::InsecureChannelCredentials()));
-    }
+        : client_(proto::OrderingService::NewStub(grpc::CreateChannel(
+              server_address, grpc::InsecureChannelCredentials()))),
+          thread_(&OrderingGateImpl::asyncCompleteRpc, this) {}
 
     void OrderingGateImpl::propagate_transaction(
         const model::Transaction &transaction) {
       auto call = new AsyncClientCall;
 
-      call->response_reader = stub_->AsyncSendTransaction(
+      call->response_reader = client_->AsyncSendTransaction(
           &call->context, factory_.serialize(transaction), &cq_);
 
       call->response_reader->Finish(&call->reply, &call->status, call);
@@ -76,5 +75,5 @@ namespace iroha {
         thread_.join();
       }
     }
-  }
-}
+  }  // namespace ordering
+}  // namespace iroha

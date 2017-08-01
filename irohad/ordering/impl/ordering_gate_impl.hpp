@@ -44,7 +44,7 @@ namespace iroha {
       rxcpp::subjects::subject<model::Proposal> proposals_;
       model::converters::PbTransactionFactory factory_;
       grpc::CompletionQueue cq_;
-      std::unique_ptr<proto::OrderingService::Stub> stub_;
+      std::unique_ptr<proto::OrderingService::Stub> client_;
       std::thread thread_;
 
       struct AsyncClientCall {
@@ -59,7 +59,7 @@ namespace iroha {
             response_reader;
       };
     };
-  }
-}
+  }  // namespace ordering
+}  // namespace iroha
 
 #endif  // IROHA_ORDERING_GATE_IMPL_HPP

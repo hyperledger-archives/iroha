@@ -75,7 +75,7 @@ namespace iroha {
             response_reader;
       };
     };
-  }
-}
+  }  // namespace ordering
+}  // namespace iroha
 
 #endif  // IROHA_ORDERING_SERVICE_IMPL_HPP

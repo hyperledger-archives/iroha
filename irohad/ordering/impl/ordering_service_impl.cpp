@@ -118,5 +118,5 @@ namespace iroha {
         delete call;
       }
     }
-  }
-}
+  }  // namespace ordering
+}  // namespace iroha
