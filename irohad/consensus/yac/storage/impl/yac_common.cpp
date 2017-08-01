@@ -15,25 +15,18 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CONSENSUS_SERVICE_STUB_HPP
-#define IROHA_CONSENSUS_SERVICE_STUB_HPP
-
-#include <ametsuchi/storage.hpp>
-#include <consensus/consensus_service.hpp>
-#include "validation/chain_validator.hpp"
-#include <validation/stateful_validator.hpp>
+#include "consensus/yac/storage/yac_common.hpp"
 
 namespace iroha {
   namespace consensus {
-    class ConsensusServiceStub : public ConsensusService {
-     public:
-      void vote_block(model::Block &block) override;
-      rxcpp::observable<rxcpp::observable<model::Block>> on_commit() override;
+    namespace yac {
 
-     private:
-      rxcpp::subjects::subject<rxcpp::observable<model::Block>> commits_;
-    };
-  }  // namespace consensus
-}  // namespace iroha
-
-#endif  // IROHA_CONSENSUS_SERVICE_STUB_HPP
+      bool hasSupermajority(uint64_t current, uint64_t all) {
+        if (current > all)
+          return false;
+        auto f = (all - 1) / 3.0;
+        return current >= 2 * f + 1;
+      }
+    } // namespace yac
+  } // namespace consensus
+} // namespace iroha

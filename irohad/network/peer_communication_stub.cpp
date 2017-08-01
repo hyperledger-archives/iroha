@@ -22,18 +22,19 @@ namespace iroha {
 
     PeerCommunicationServiceStub::PeerCommunicationServiceStub(
         network::OrderingGate &orderer,
-        consensus::ConsensusService &consensus
-    ) : orderer_(orderer), consensus_(consensus) {}
+        synchronizer::Synchronizer &synchronizer
+    ) : orderer_(orderer), synchronizer_(synchronizer) {}
 
     void PeerCommunicationServiceStub::propagate_transaction(
         model::Transaction transaction) {
     }
 
-    rxcpp::observable <rxcpp::observable<model::Block>>
+    rxcpp::observable<Commit>
     PeerCommunicationServiceStub::on_commit() {
+      return synchronizer_.on_commit_chain();
     }
 
-    rxcpp::observable <model::Proposal>
+    rxcpp::observable<model::Proposal>
     PeerCommunicationServiceStub::on_proposal() {
       return orderer_.on_proposal();
     }

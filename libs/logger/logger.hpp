@@ -23,7 +23,15 @@ limitations under the License.
 
 namespace logger {
 
-struct Logger {
+  std::string red(const std::string& string);
+
+  std::string yellow(const std::string& string);
+
+  std::string output(const std::string& string);
+
+  std::string input(const std::string& string);
+
+  struct Logger {
     std::shared_ptr<spdlog::logger> console;
 
     Logger(std::string &&name):
@@ -73,7 +81,5 @@ struct Logger {
 };
 
 }  // namespace logger
-
-#include "logger.cpp"
 
 #endif

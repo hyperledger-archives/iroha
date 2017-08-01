@@ -81,7 +81,7 @@ namespace peerservice {
     Heartbeat answer;
 
     status = stub_->RequestHeartbeat(&context, *request, &answer);
-    printf("[my ledger is %d] ping %s... ", request->height(),
+    printf("[my ledger is %lu] ping %s... ", request->height(),
            context.peer().c_str());
 
     // TODO: validate heartbeat messages

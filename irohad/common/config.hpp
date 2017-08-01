@@ -30,44 +30,19 @@ namespace common {
 
     class ConfigLoader {
      public:
-      ConfigLoader(const std::string& file);
+      ConfigLoader(const std::string &file);
 
-      int getIntOrDefault(const std::string& key, int def);
-      std::string getStringOrDefault(const std::string& key, const std::string& def);
-      bool getBoolOrDefault(const std::string& key, bool def);
+      int getIntOrDefault(const std::string &key, int def);
 
-      // template <class T>
-      // T getValueOrDefault(const std::string& key, T&& def) {
-      //   const auto& val = doc[key.c_str()];
-      //   if (!(doc.IsObject() && doc.HasMember(key.c_str()))) {
-      //     goto end;
-      //   }
+      std::string getStringOrDefault(const std::string &key,
+                                     const std::string &def);
 
-      //   if (std::is_same<T, int>::value && val.IsInt()) {
-      //     // quite dirty hack for pleasing the compiler
-      //     // maybe that switch(type){..} possible
-      //     // to make compile-time
-      //     auto v = val.GetInt();
-      //     return *((T*)(&v));
-      //   }
-
-      //   if (std::is_same<T, std::string>::value && val.IsString()) {
-      //     auto v = val.GetString();
-      //     return *((T*)(&v));
-      //   }
-
-      //   if (std::is_same<T, bool>::value && val.IsBool()) {
-      //     auto v = val.GetBool();
-      //     return *((T*)(&v));
-      //   }
-      // end:
-      //   return def;
-      // }
+      bool getBoolOrDefault(const std::string &key, bool def);
 
      private:
       Document doc;
     };
-  };
-};  // namespace common
+  } // namespace config
+}  // namespace common
 
 #endif  // __COMMON_CONFIG_HPP_

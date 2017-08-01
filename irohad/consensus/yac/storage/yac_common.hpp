@@ -15,34 +15,27 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CONSENSUS_SERVICE_HPP
-#define IROHA_CONSENSUS_SERVICE_HPP
+#ifndef IROHA_YAC_COMMON_HPP
+#define IROHA_YAC_COMMON_HPP
 
-#include <model/proposal.hpp>
-#include <model/block.hpp>
-#include <rxcpp/rx-observable.hpp>
+#include "consensus/yac/messages.hpp"
 
 namespace iroha {
   namespace consensus {
-    /**
-     * Consensus interface for peer communication service
-     */
-    class ConsensusService {
-     public:
+    namespace yac {
+
+      using ProposalHash = decltype(YacHash::proposal_hash);
+
+      using BlockHash = decltype(YacHash::block_hash);
 
       /**
-       * Vote for a block formed from proposal
-       * @param block
+       * Check that current number >= supermajority.
+       * @param current - current number for validation
+       * @param all - whole number (N)
+       * @return true if belong supermajority
        */
-      virtual void vote_block(model::Block &block) = 0;
-
-      /**
-       * Return observable of all commits from the consensus
-       * @return
-       */
-      virtual rxcpp::observable<rxcpp::observable<model::Block>> on_commit() = 0;
-    };
+      bool hasSupermajority(uint64_t current, uint64_t all);
+    } // namespace yac
   } // namespace consensus
 } // namespace iroha
-
-#endif //IROHA_CONSENSUS_SERVICE_HPP
+#endif //IROHA_YAC_COMMON_HPP

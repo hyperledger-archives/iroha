@@ -15,23 +15,21 @@
  * limitations under the License.
  */
 
-#include <consensus/consensus_service_stub.hpp>
+#include <gtest/gtest.h>
+#include "consensus/yac/impl/yac_hash_provider_impl.hpp"
+#include <string>
 
-namespace iroha {
-  namespace consensus {
+using namespace iroha::consensus::yac;
 
-    using model::Transaction;
-    using model::Proposal;
-    using model::Block;
 
-    rxcpp::observable<rxcpp::observable<model::Block>>
-    ConsensusServiceStub::on_commit() {
-      return commits_.get_observable();
-    }
+TEST(YacHashProviderTest, MakeYacHashTest) {
+  YacHashProviderImpl hash_provider;
+  iroha::model::Block block;
+  std::string test_hash = std::string(block.hash.size(), 'f');
+  std::copy(test_hash.begin(), test_hash.end(), block.hash.begin());
 
-    void ConsensusServiceStub::vote_block(model::Block &block) {
-      commits_.get_subscriber().on_next(rxcpp::observable<>::from(block));
-    }
+  auto yac_hash = hash_provider.makeHash(block);
 
-  }  // namespace consensus
-}  // namespace iroha
+  ASSERT_EQ(test_hash, yac_hash.proposal_hash);
+  ASSERT_EQ(test_hash, yac_hash.block_hash);
+}

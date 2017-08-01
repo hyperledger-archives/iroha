@@ -17,7 +17,6 @@
 #ifndef IROHA_APPLICATION_HPP
 #define IROHA_APPLICATION_HPP
 
-#include <consensus/consensus_service_stub.hpp>
 #include <main/context.hpp>
 #include <network/peer_communication_service.hpp>
 #include <torii/processor/query_processor_impl.hpp>
