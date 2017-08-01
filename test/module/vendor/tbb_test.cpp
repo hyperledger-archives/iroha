@@ -19,7 +19,7 @@
 #include <tbb/concurrent_queue.h>
 #include <iostream>
 
-TEST(TBBTest, ConcurrentQueueTest) {
+TEST(TBBTest, ConcurrentQueueUsage) {
   tbb::concurrent_queue<int> queue;
   for (int i = 0; i < 10; ++i) queue.push(i);
   typedef tbb::concurrent_queue<int>::iterator iter;
