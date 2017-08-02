@@ -18,12 +18,13 @@
 #include <gflags/gflags.h>
 #include <fstream>
 #include <iostream>
-#include "validators.hpp"
 #include "bootstrap_network.hpp"
 #include "common/assert_config.hpp"
 #include "genesis_block_client_impl.hpp"
+#include "validators.hpp"
 
 #include "client.hpp"
+#include "impl/keys_manager_impl.hpp"
 
 // ** Genesis Block and Provisioning ** //
 // Reference is here (TODO: move to doc):
@@ -46,8 +47,6 @@ DEFINE_int32(torii_port, 50051, "Port of iroha's Torii");
 DEFINE_validator(torii_port, &iroha_cli::validate_port);
 DEFINE_string(json_transaction, "", "Transaction in json format");
 
-
-
 void create_account(std::string name);
 
 int main(int argc, char* argv[]) {
@@ -56,13 +55,14 @@ int main(int argc, char* argv[]) {
 
   if (FLAGS_new_account) {
     // Create new pub/priv key
-    if (std::ifstream(FLAGS_name + ".pub")) {
-      assert_config::assert_fatal(false, "File already exists");
-    }
-    iroha_cli::CliClient::create_account(FLAGS_name, FLAGS_pass_phrase);
-    std::cout << "Public and private key has been generated in current directory"
-              << std::endl;
-
+    auto keysManager = iroha_cli::KeysManagerImpl(FLAGS_name);
+    if (not keysManager.createKeys(FLAGS_pass_phrase)) {
+      std::cout << "Keys already exist" << std::endl;
+    } else {
+      std::cout
+          << "Public and private key has been generated in current directory"
+          << std::endl;
+    };
   } else if (not FLAGS_config.empty() && not FLAGS_genesis_block.empty()) {
     iroha_cli::GenesisBlockClientImpl genesis_block_client;
     auto bootstrap = iroha_cli::BootstrapNetwork(genesis_block_client);
@@ -70,27 +70,25 @@ int main(int argc, char* argv[]) {
     auto block = bootstrap.parse_genesis_block(FLAGS_genesis_block);
     block = bootstrap.merge_tx_add_trusted_peers(block, peers);
     bootstrap.run_network(peers, block);
-  } else  if (FLAGS_grpc) {
+  } else if (FLAGS_grpc) {
     std::cout << "Send transaction to " << FLAGS_address << ":"
               << FLAGS_torii_port << std::endl;
-
     iroha_cli::CliClient client(FLAGS_address, FLAGS_torii_port);
     auto status = client.sendTx(FLAGS_json_transaction);
-    switch(status) {
-      case iroha_cli::CliClient::OK: std::cout << "Transaction successfully sent" << std::endl;
+    switch (status) {
+      case iroha_cli::CliClient::OK:
+        std::cout << "Transaction successfully sent" << std::endl;
         break;
-      case iroha_cli::CliClient::WRONG_FORMAT:  std::cout << "Transaction wrong json format" << std::endl;
+      case iroha_cli::CliClient::WRONG_FORMAT:
+        std::cout << "Transaction wrong json format" << std::endl;
         break;
-      case iroha_cli::CliClient::NO_ACCOUNT: std::cout << "No public and private key found. Run with new_account flag." << std::endl;
+      case iroha_cli::CliClient::NOT_VALID:
+        std::cout << "Transaction is not valid." << std::endl;
         break;
-      case iroha_cli::CliClient::NOT_VALID: std::cout << "Transaction is not valid." << std::endl;
-        break;
-      }
-
+    }
 
   } else {
     assert_config::assert_fatal(false, "Invalid flags");
   }
   return 0;
 }
-

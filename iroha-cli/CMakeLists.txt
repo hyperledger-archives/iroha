@@ -22,7 +22,15 @@ target_link_libraries(bootstrap_network
 add_library(cli-flags_validators validators.cpp)
 target_link_libraries(cli-flags_validators gflags)
 
-add_library(client client.cpp)
+add_library(keys_manager impl/keys_manager_impl.cpp)
+target_link_libraries(keys_manager
+    optional
+    crypto
+    )
+
+add_library(client
+    client.cpp
+    )
 target_link_libraries(client
     model
     crypto
@@ -39,12 +47,11 @@ add_executable(iroha-cli
     )
 target_link_libraries(iroha-cli
     client
-    crypto
     cli-flags_validators
     bootstrap_network
     rapidjson
     logger
     ametsuchi
     model
-    optional
+    keys_manager
     )

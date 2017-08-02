@@ -15,29 +15,32 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CLIENT_HPP
-#define IROHA_CLIENT_HPP
+#ifndef IROHA_CLI_KEYS_MANAGER_HPP
+#define IROHA_CLI_KEYS_MANAGER_HPP
 
-#include <string>
-#include "torii/command_client.hpp"
+#include <nonstd/optional.hpp>
+#include "crypto/crypto.hpp"
 
 namespace iroha_cli {
 
-  class CliClient {
-   public:
-    enum Status { WRONG_FORMAT, NOT_VALID, OK };
+class KeysManager {
+ public:
+  /**
+   * Load keys associated with account
+   * @param account_name
+   * @return nullopt if no keypair found locally
+   */
+  virtual nonstd::optional<iroha::ed25519::keypair_t> loadKeys() = 0;
 
-    CliClient(std::string target_ip, int port);
-    /**
-     * Send transaction to Iroha-Network
-     * @param json_tx
-     * @return
-     */
-    Status sendTx(std::string json_tx);
+  /**
+   * Create keys and associate with account
+   * @param account_name
+   * @param pass_phrase
+   * @return false if create account failed
+   */
+  virtual bool createKeys(std::string pass_phrase) = 0;
 
-   private:
-    torii::CommandSyncClient client_;
-  };
-}  // namespace iroha_cli
+};
 
-#endif  // IROHA_CLIENT_CPP_HPP
+} // namepsace iroha_cli
+#endif  // IROHA_CLI_KEYS_MANAGER_HPP
