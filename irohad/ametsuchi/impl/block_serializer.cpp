@@ -177,7 +177,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize_add_peer(PrettyWriter<StringBuffer>& writer,
-                                    const model::Command& command) {
+                                             const model::Command& command) {
       auto add_peer = static_cast<const model::AddPeer&>(command);
 
       writer.StartObject();
@@ -195,8 +195,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize_add_asset_quantity(
-        PrettyWriter<StringBuffer>& writer,
-        const model::Command& command) {
+        PrettyWriter<StringBuffer>& writer, const model::Command& command) {
       auto add_asset_quantity =
           static_cast<const model::AddAssetQuantity&>(command);
 
@@ -242,8 +241,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize_assign_master_key(
-        PrettyWriter<StringBuffer>& writer,
-        const model::Command& command) {
+        PrettyWriter<StringBuffer>& writer, const model::Command& command) {
       auto assign_master_key =
           static_cast<const model::AssignMasterKey&>(command);
 
@@ -262,8 +260,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize_create_account(
-        PrettyWriter<StringBuffer>& writer,
-        const model::Command& command) {
+        PrettyWriter<StringBuffer>& writer, const model::Command& command) {
       auto create_account = static_cast<const model::CreateAccount&>(command);
 
       writer.StartObject();
@@ -320,8 +317,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize_remove_signatory(
-        PrettyWriter<StringBuffer>& writer,
-        const model::Command& command) {
+        PrettyWriter<StringBuffer>& writer, const model::Command& command) {
       auto remove_signatory =
           static_cast<const model::RemoveSignatory&>(command);
 
@@ -340,8 +336,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize_set_account_permissions(
-        PrettyWriter<StringBuffer>& writer,
-        const model::Command& command) {
+        PrettyWriter<StringBuffer>& writer, const model::Command& command) {
       auto set_account_permissions =
           static_cast<const model::SetAccountPermissions&>(command);
 
@@ -410,8 +405,7 @@ namespace iroha {
     }
 
     void BlockSerializer::serialize_transfer_asset(
-        PrettyWriter<StringBuffer>& writer,
-        const model::Command& command) {
+        PrettyWriter<StringBuffer>& writer, const model::Command& command) {
       auto transfer_asset = static_cast<const model::TransferAsset&>(command);
 
       writer.StartObject();
@@ -449,8 +443,8 @@ namespace iroha {
         return nonstd::nullopt;
       }
 
-      auto req_fields = {"hash", "signatures", "created_ts", "height",
-                         "prev_hash", "txs_number"};
+      auto req_fields = {"hash",   "signatures", "created_ts",
+                         "height", "prev_hash",  "txs_number"};
       auto verify_member = [&doc](auto&& field) {
         return not doc.HasMember(field);
       };
@@ -501,7 +495,8 @@ namespace iroha {
         GenericValue<rapidjson::UTF8<char>>::Object& json_tx) {
       model::Transaction tx{};
 
-      auto req_fields = {"creator_account_id", "tx_counter", "commands"};
+      auto req_fields = {"creator_account_id", "tx_counter", "commands",
+                         "signatures", "created_ts"};
       auto verify_member = [&json_tx](auto&& field) {
         return not json_tx.HasMember(field);
       };
@@ -509,19 +504,15 @@ namespace iroha {
         return nonstd::nullopt;
       }
 
-      if (json_tx.HasMember("signatures")) {
-        deserialize(json_tx["signatures"].GetArray(), tx.signatures);
+      if (not deserialize(json_tx["signatures"].GetArray(), tx.signatures)) {
+        return nonstd::nullopt;
       }
-      if (json_tx.HasMember("created_ts")) {
-        // created_ts
-        tx.created_ts = json_tx["created_ts"].GetUint64();
-      }
+      // Created ts
+      tx.created_ts = json_tx["created_ts"].GetUint64();
       // creator_account_id
       tx.creator_account_id = json_tx["creator_account_id"].GetString();
-
       // tx_counter
       tx.tx_counter = json_tx["tx_counter"].GetUint64();
-
       // deserialize commands
       if (not deserialize(json_tx, tx.commands)) {
         return nonstd::nullopt;
@@ -583,7 +574,7 @@ namespace iroha {
         std::vector<std::shared_ptr<model::Command>>& commands) {
       auto json_commands = json_tx["commands"].GetArray();
 
-      auto deserialize_command = [this, &commands](auto &&value) {
+      auto deserialize_command = [this, &commands](auto&& value) {
         auto json_command = value.GetObject();
         if (not json_command.HasMember("command_type")) {
           return false;
@@ -638,8 +629,7 @@ namespace iroha {
       return add_asset_quantity;
     }
 
-    std::shared_ptr<model::Command>
-    BlockSerializer::deserialize_add_signatory(
+    std::shared_ptr<model::Command> BlockSerializer::deserialize_add_signatory(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       // TODO: make this function return nullopt when some field is missed
       auto add_signatory = std::make_shared<model::AddSignatory>();
@@ -669,8 +659,7 @@ namespace iroha {
       return assign_master_key;
     }
 
-    std::shared_ptr<model::Command>
-    BlockSerializer::deserialize_create_account(
+    std::shared_ptr<model::Command> BlockSerializer::deserialize_create_account(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       // TODO: make this function return nullopt when some field is missed
       auto create_account = std::make_shared<model::CreateAccount>();
@@ -687,8 +676,7 @@ namespace iroha {
       return create_account;
     }
 
-    std::shared_ptr<model::Command>
-    BlockSerializer::deserialize_create_asset(
+    std::shared_ptr<model::Command> BlockSerializer::deserialize_create_asset(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       // TODO: make this function return nullopt when some field is missed
       auto createAsset = std::make_shared<model::CreateAsset>();
@@ -705,8 +693,7 @@ namespace iroha {
       return createAsset;
     }
 
-    std::shared_ptr<model::Command>
-    BlockSerializer::deserialize_create_domain(
+    std::shared_ptr<model::Command> BlockSerializer::deserialize_create_domain(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       // TODO: make this function return nullopt when some field is missed
       auto createDomain = std::make_shared<model::CreateDomain>();
@@ -781,8 +768,7 @@ namespace iroha {
       return setQuorum;
     }
 
-    std::shared_ptr<model::Command>
-    BlockSerializer::deserialize_transfer_asset(
+    std::shared_ptr<model::Command> BlockSerializer::deserialize_transfer_asset(
         GenericValue<rapidjson::UTF8<char>>::Object& json_command) {
       auto transferAsset = std::make_shared<model::TransferAsset>();
 

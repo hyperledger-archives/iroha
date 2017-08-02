@@ -15,17 +15,16 @@
  * limitations under the License.
  */
 
-#include <ed25519.h>
 #include <gflags/gflags.h>
-#include <cstring>
 #include <fstream>
 #include <iostream>
-#include "validators.hpp"
 #include "bootstrap_network.hpp"
 #include "common/assert_config.hpp"
 #include "genesis_block_client_impl.hpp"
+#include "validators.hpp"
 
 #include "client.hpp"
+#include "impl/keys_manager_impl.hpp"
 
 // ** Genesis Block and Provisioning ** //
 // Reference is here (TODO: move to doc):
@@ -39,14 +38,14 @@ DEFINE_validator(genesis_block, &iroha_cli::validate_genesis_block);
 
 DEFINE_bool(new_account, false, "Choose if account does not exist");
 DEFINE_string(name, "", "Name of the account");
+DEFINE_string(pass_phrase, "", "Name of the account");
 
 // Sending transaction to Iroha
 DEFINE_bool(grpc, false, "Send sample transaction to IrohaNetwork");
-DEFINE_string(address, "127.0.0.1", "Address of the Iroha node");
+DEFINE_string(address, "0.0.0.0", "Address of the Iroha node");
 DEFINE_int32(torii_port, 50051, "Port of iroha's Torii");
 DEFINE_validator(torii_port, &iroha_cli::validate_port);
 DEFINE_string(json_transaction, "", "Transaction in json format");
-
 
 void create_account(std::string name);
 
@@ -56,10 +55,14 @@ int main(int argc, char* argv[]) {
 
   if (FLAGS_new_account) {
     // Create new pub/priv key
-    if (std::ifstream(FLAGS_name + ".pub")) {
-      assert_config::assert_fatal(false, "File already exists");
-    }
-    create_account(FLAGS_name);
+    auto keysManager = iroha_cli::KeysManagerImpl(FLAGS_name);
+    if (not keysManager.createKeys(FLAGS_pass_phrase)) {
+      std::cout << "Keys already exist" << std::endl;
+    } else {
+      std::cout
+          << "Public and private key has been generated in current directory"
+          << std::endl;
+    };
   } else if (not FLAGS_config.empty() && not FLAGS_genesis_block.empty()) {
     iroha_cli::GenesisBlockClientImpl genesis_block_client;
     auto bootstrap = iroha_cli::BootstrapNetwork(genesis_block_client);
@@ -67,52 +70,25 @@ int main(int argc, char* argv[]) {
     auto block = bootstrap.parse_genesis_block(FLAGS_genesis_block);
     block = bootstrap.merge_tx_add_trusted_peers(block, peers);
     bootstrap.run_network(peers, block);
-  } else  if (FLAGS_grpc) {
+  } else if (FLAGS_grpc) {
     std::cout << "Send transaction to " << FLAGS_address << ":"
               << FLAGS_torii_port << std::endl;
+    iroha_cli::CliClient client(FLAGS_address, FLAGS_torii_port);
+    auto status = client.sendTx(FLAGS_json_transaction);
+    switch (status) {
+      case iroha_cli::CliClient::OK:
+        std::cout << "Transaction successfully sent" << std::endl;
+        break;
+      case iroha_cli::CliClient::WRONG_FORMAT:
+        std::cout << "Transaction wrong json format" << std::endl;
+        break;
+      case iroha_cli::CliClient::NOT_VALID:
+        std::cout << "Transaction is not valid." << std::endl;
+        break;
+    }
 
-    iroha_cli::CliClient client(FLAGS_address, FLAGS_torii_port, FLAGS_name);
-
-    client.sendTx(FLAGS_json_transaction);
-    return 0;
   } else {
     assert_config::assert_fatal(false, "Invalid flags");
   }
   return 0;
-}
-
-std::string hex_str(unsigned char* data, int len) {
-  constexpr char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
-                             '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-  std::string s((unsigned long)(len * 2), ' ');
-  for (int i = 0; i < len; ++i) {
-    s[2 * i] = hexmap[(data[i] & 0xF0) >> 4];
-    s[2 * i + 1] = hexmap[data[i] & 0x0F];
-  }
-  return s;
-}
-
-/**
- * Command to create a new account using the interactive console.
- */
-void create_account(std::string name) {
-  unsigned char public_key[32], private_key[64], seed[32];
-
-  ed25519_create_keypair(public_key, private_key, seed);
-  auto pub_hex = hex_str(public_key, 32);
-
-  auto priv_hex = hex_str(private_key, 64);
-
-  // Save pubkey to file
-  std::ofstream pub_file(name + ".pub");
-  pub_file << pub_hex;
-  pub_file.close();
-
-  // Save privkey to file
-  std::ofstream priv_file(name + ".priv");
-  priv_file << priv_hex;
-  priv_file.close();
-
-  std::cout << "Public and private key has been generated in current directory"
-            << std::endl;
 }

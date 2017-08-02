@@ -21,9 +21,8 @@
 namespace iroha {
   namespace model {
 
-    ModelCryptoProviderImpl::ModelCryptoProviderImpl(ed25519::privkey_t privkey,
-                                                     ed25519::pubkey_t pubkey)
-        : privkey_(privkey), pubkey_(pubkey) {}
+    ModelCryptoProviderImpl::ModelCryptoProviderImpl(ed25519::keypair_t keypair)
+        : privkey_(keypair.privkey), pubkey_(keypair.pubkey) {}
 
     bool ModelCryptoProviderImpl::verify(const Transaction &tx) const {
       HashProviderImpl hash_provider;
