@@ -105,7 +105,7 @@ class AddAssetQuantityTest : public CommandValidateExecuteTest {
 };
 
 TEST_F(AddAssetQuantityTest, ValidWhenNewWallet) {
-  // Case 1. Add asset first time - no wallet
+  // Add asset first time - no wallet
   // When there is no wallet - new accountAsset will be created
   creator.permissions.issue_assets = true;
   EXPECT_CALL(*wsv_query, getAccountAsset(add_asset_quantity->account_id, _))
@@ -120,7 +120,7 @@ TEST_F(AddAssetQuantityTest, ValidWhenNewWallet) {
 }
 
 TEST_F(AddAssetQuantityTest, ValidWhenExistingWallet) {
-  // Case 2. There is already asset- there is a wallet
+  // There is already asset- there is a wallet
   // When there is a wallet - no new accountAsset created
   creator.permissions.issue_assets = true;
   EXPECT_CALL(*wsv_query, getAccountAsset(add_asset_quantity->account_id,
@@ -136,14 +136,14 @@ TEST_F(AddAssetQuantityTest, ValidWhenExistingWallet) {
 }
 
 TEST_F(AddAssetQuantityTest, InvalidWhenNoPermission) {
-  // 1. Creator has no permission
+  // Creator has no permission
   creator.permissions.issue_assets = false;
 
   ASSERT_FALSE(validateAndExecute());
 }
 
 TEST_F(AddAssetQuantityTest, InvalidWhenZeroAmount) {
-  // 2. Amount is zero
+  // Amount is zero
   add_asset_quantity->amount.int_part = 0;
   add_asset_quantity->amount.frac_part = 0;
 
@@ -151,7 +151,7 @@ TEST_F(AddAssetQuantityTest, InvalidWhenZeroAmount) {
 }
 
 TEST_F(AddAssetQuantityTest, InvalidWhenWrongPrecision) {
-  // 3. Amount is with wrong precision (must be 2)
+  // Amount is with wrong precision (must be 2)
   creator.permissions.issue_assets = true;
   add_asset_quantity->amount.frac_part = 300;
 
@@ -161,7 +161,7 @@ TEST_F(AddAssetQuantityTest, InvalidWhenWrongPrecision) {
 }
 
 TEST_F(AddAssetQuantityTest, InvalidWhenNoAccount) {
-  // 4. Account to add doesn't exist
+  // Account to add doesn't exist
   creator.permissions.issue_assets = true;
   add_asset_quantity->account_id = "noacc";
 
@@ -173,7 +173,7 @@ TEST_F(AddAssetQuantityTest, InvalidWhenNoAccount) {
 }
 
 TEST_F(AddAssetQuantityTest, InvalidWhenNoAsset) {
-  // 5. Asset doesn't exist
+  // Asset doesn't exist
   creator.permissions.issue_assets = true;
   add_asset_quantity->asset_id = "noass";
 
@@ -200,7 +200,7 @@ class AddSignatoryTest : public CommandValidateExecuteTest {
 };
 
 TEST_F(AddSignatoryTest, ValidWhenCreatorHasPermissions) {
-  // 1. Creator has permissions
+  // Creator has permissions
   creator.permissions.add_signatory = true;
   EXPECT_CALL(*wsv_command, insertAccountSignatory(add_signatory->account_id,
                                                    add_signatory->pubkey))
@@ -210,7 +210,7 @@ TEST_F(AddSignatoryTest, ValidWhenCreatorHasPermissions) {
 }
 
 TEST_F(AddSignatoryTest, ValidWhenSameAccount) {
-  // 2. When creator is adding public keys to his account
+  // When creator is adding public keys to his account
   creator.permissions.add_signatory = false;
   add_signatory->account_id = creator.account_id;
 
@@ -222,14 +222,14 @@ TEST_F(AddSignatoryTest, ValidWhenSameAccount) {
 }
 
 TEST_F(AddSignatoryTest, InvalidWhenNoPermissions) {
-  // 1. Creator has no permission
+  // Creator has no permission
   creator.permissions.add_signatory = false;
 
   ASSERT_FALSE(validateAndExecute());
 }
 
 TEST_F(AddSignatoryTest, InvalidWhenNoKey) {
-  // 2. Trying to add non existed public key
+  // Trying to add nonexistent public key
   creator.permissions.add_signatory = true;
   add_signatory->pubkey.fill(0xF);
 
@@ -241,7 +241,7 @@ TEST_F(AddSignatoryTest, InvalidWhenNoKey) {
 }
 
 TEST_F(AddSignatoryTest, InvalidWhenNoAccount) {
-  // 3. Add to non existed account
+  // Add to nonexistent account
   creator.permissions.add_signatory = true;
   add_signatory->account_id = "noacc";
 
@@ -253,7 +253,7 @@ TEST_F(AddSignatoryTest, InvalidWhenNoAccount) {
 }
 
 TEST_F(AddSignatoryTest, InvalidWhenSameKey) {
-  // 4. Add same signatory
+  // Add same signatory
   creator.permissions.add_signatory = true;
   add_signatory->pubkey = account.master_key;
 
@@ -284,7 +284,7 @@ class AssignMasterKeyTest : public CommandValidateExecuteTest {
 };
 
 TEST_F(AssignMasterKeyTest, ValidWhenCreatorHasPermissions) {
-  // 1. Creator is sys admin
+  // Creator is sys admin
   creator.permissions.add_signatory = true;
 
   EXPECT_CALL(*wsv_query, getAccount(assign_master_key->account_id))
@@ -297,7 +297,7 @@ TEST_F(AssignMasterKeyTest, ValidWhenCreatorHasPermissions) {
 }
 
 TEST_F(AssignMasterKeyTest, ValidWhenSameAccount) {
-  // 2. Creator is account itself
+  // Creator is account itself
   creator.account_id = assign_master_key->account_id;
 
   EXPECT_CALL(*wsv_query, getAccount(assign_master_key->account_id))
@@ -310,14 +310,14 @@ TEST_F(AssignMasterKeyTest, ValidWhenSameAccount) {
 }
 
 TEST_F(AssignMasterKeyTest, InvalidWhenNoPermissions) {
-  // 1. Creator has no permissions
+  // Creator has no permissions
   creator.permissions.add_signatory = false;
 
   ASSERT_FALSE(validateAndExecute());
 }
 
 TEST_F(AssignMasterKeyTest, InvalidWhenNoKey) {
-  // 2. Assign random master key
+  // Assign random master key
   creator.permissions.add_signatory = true;
   assign_master_key->pubkey.fill(0xF);
 
@@ -330,7 +330,7 @@ TEST_F(AssignMasterKeyTest, InvalidWhenNoKey) {
 }
 
 TEST_F(AssignMasterKeyTest, InvalidWhenNoAccount) {
-  // 3. Add to non existed account
+  // Add to nonexistent account
   creator.permissions.add_signatory = true;
   assign_master_key->account_id = "noacc";
 
@@ -375,14 +375,14 @@ TEST_F(CreateAccountTest, ValidWhenNewAccount) {
 }
 
 TEST_F(CreateAccountTest, InvalidWhenNoPermissions) {
-  // 1. Creator has no permission
+  // Creator has no permission
   creator.permissions.create_accounts = false;
 
   ASSERT_FALSE(validateAndExecute());
 }
 
 TEST_F(CreateAccountTest, InvalidWhenLongName) {
-  // 2. Not valid name for account
+  // Not valid name for account
   creator.permissions.create_accounts = true;
   create_account->account_name = "thisisaverybigname";
 
@@ -390,7 +390,7 @@ TEST_F(CreateAccountTest, InvalidWhenLongName) {
 }
 
 TEST_F(CreateAccountTest, InvalidWhenBadName) {
-  // 3. Not valid name for account (system symbols)
+  // Not valid name for account (system symbols)
   creator.permissions.create_accounts = true;
   create_account->account_name = "test@";
 
@@ -415,6 +415,7 @@ class CreateAssetTest : public CommandValidateExecuteTest {
 };
 
 TEST_F(CreateAssetTest, ValidWhenCreatorHasPermissions) {
+  // Creator is money creator
   creator.permissions.create_assets = true;
 
   EXPECT_CALL(*wsv_command, insertAsset(_)).WillOnce(Return(true));
@@ -423,6 +424,7 @@ TEST_F(CreateAssetTest, ValidWhenCreatorHasPermissions) {
 }
 
 TEST_F(CreateAssetTest, InvalidWhenNoPermissions) {
+  // Creator has no permissions
   creator.permissions.create_assets = false;
 
   ASSERT_FALSE(validateAndExecute());
@@ -445,6 +447,7 @@ class RemoveSignatoryTest : public CommandValidateExecuteTest {
 };
 
 TEST_F(RemoveSignatoryTest, ValidWhenCreatorHasPermissions) {
+  // Creator is admin
   creator.permissions.remove_signatory = true;
 
   EXPECT_CALL(*wsv_query, getAccount(remove_signatory->account_id))
@@ -457,14 +460,14 @@ TEST_F(RemoveSignatoryTest, ValidWhenCreatorHasPermissions) {
 }
 
 TEST_F(RemoveSignatoryTest, InvalidWhenNoPermissions) {
-  // 1. Creator has no permissions
+  // Creator has no permissions
   creator.permissions.remove_signatory = false;
 
   ASSERT_FALSE(validateAndExecute());
 }
 
 TEST_F(RemoveSignatoryTest, InvalidWhenMasterKey) {
-  // 2. Remove master key
+  // Remove master key
   creator.permissions.remove_signatory = true;
   remove_signatory->pubkey = account.master_key;
 
@@ -475,7 +478,7 @@ TEST_F(RemoveSignatoryTest, InvalidWhenMasterKey) {
 }
 
 TEST_F(RemoveSignatoryTest, InvalidWhenNoKey) {
-  // 3. Remove signatory not present in account
+  // Remove signatory not present in account
   creator.permissions.remove_signatory = true;
   remove_signatory->pubkey.fill(0xF);
 
@@ -505,7 +508,7 @@ class SetAccountPermissionsTest : public CommandValidateExecuteTest {
 };
 
 TEST_F(SetAccountPermissionsTest, ValidWhenCreatorHasPermissions) {
-  // 1. Creator is admin
+  // Creator is admin
   creator.permissions.set_permissions = true;
 
   EXPECT_CALL(*wsv_query, getAccount(set_account_permissions->account_id))
@@ -516,14 +519,14 @@ TEST_F(SetAccountPermissionsTest, ValidWhenCreatorHasPermissions) {
 }
 
 TEST_F(SetAccountPermissionsTest, InvalidWhenNoPermissions) {
-  // 1. Creator has no permissions
+  // Creator has no permissions
   creator.permissions.set_permissions = false;
 
   ASSERT_FALSE(validateAndExecute());
 }
 
 TEST_F(SetAccountPermissionsTest, InvalidWhenNoAccount) {
-  // 2. No such account exits
+  // No such account exists
   creator.permissions.set_permissions = true;
   set_account_permissions->account_id = "noacc";
 
@@ -550,7 +553,7 @@ class SetQuorumTest : public CommandValidateExecuteTest {
 };
 
 TEST_F(SetQuorumTest, ValidWhenCreatorHasPermissions) {
-  // 1. Creator is admin
+  // Creator is admin
   creator.permissions.set_quorum = true;
 
   EXPECT_CALL(*wsv_query, getAccount(set_quorum->account_id))
@@ -572,14 +575,14 @@ TEST_F(SetQuorumTest, ValidWhenSameAccount) {
 }
 
 TEST_F(SetQuorumTest, InvalidWhenNoPermissions) {
-  // 1. Creator has no permissions
+  // Creator has no permissions
   creator.permissions.set_quorum = false;
 
   ASSERT_FALSE(validateAndExecute());
 }
 
 TEST_F(SetQuorumTest, InvalidWhenNoAccount) {
-  // 2. No such account exists
+  // No such account exists
   creator.permissions.set_quorum = true;
   set_quorum->account_id = "noacc";
 
@@ -626,7 +629,7 @@ class TransferAssetTest : public CommandValidateExecuteTest {
 };
 
 TEST_F(TransferAssetTest, ValidWhenNewWallet) {
-  // Case 1. When there is no wallet - new accountAsset will be created
+  // When there is no wallet - new accountAsset will be created
   creator.permissions.can_transfer = true;
   EXPECT_CALL(*wsv_query, getAccountAsset(transfer_asset->dest_account_id, _))
       .WillOnce(Return(nonstd::nullopt));
@@ -647,7 +650,7 @@ TEST_F(TransferAssetTest, ValidWhenNewWallet) {
 }
 
 TEST_F(TransferAssetTest, ValidWhenExistingWallet) {
-  // Case 2. When there is a wallet - no new accountAsset created
+  // When there is a wallet - no new accountAsset created
   creator.permissions.can_transfer = true;
   EXPECT_CALL(*wsv_query, getAccountAsset(transfer_asset->dest_account_id,
                                           transfer_asset->asset_id))
@@ -669,14 +672,14 @@ TEST_F(TransferAssetTest, ValidWhenExistingWallet) {
 }
 
 TEST_F(TransferAssetTest, InvalidWhenNoPermissions) {
-  // 1. Creator has no permissions
+  // Creator has no permissions
   creator.permissions.can_transfer = false;
 
   ASSERT_FALSE(validateAndExecute());
 }
 
 TEST_F(TransferAssetTest, InvalidWhenNoDestAccount) {
-  // 2.No dest account exists
+  // No destination account exists
   creator.permissions.can_transfer = true;
   transfer_asset->dest_account_id = "noacc";
 
@@ -692,7 +695,7 @@ TEST_F(TransferAssetTest, InvalidWhenNoDestAccount) {
 }
 
 TEST_F(TransferAssetTest, InvalidWhenNoSrcAccountAsset) {
-  // 3. No src account asset exits
+  // No source account asset exists
   creator.permissions.can_transfer = true;
 
   EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
@@ -705,7 +708,7 @@ TEST_F(TransferAssetTest, InvalidWhenNoSrcAccountAsset) {
 }
 
 TEST_F(TransferAssetTest, InvalidWhenInsufficientFunds) {
-  // 4. No sufficient funds
+  // No sufficient funds
   creator.permissions.can_transfer = true;
   transfer_asset->amount.int_part = 1;
   transfer_asset->amount.frac_part = 55;
@@ -722,7 +725,7 @@ TEST_F(TransferAssetTest, InvalidWhenInsufficientFunds) {
 }
 
 TEST_F(TransferAssetTest, InvalidWhenWrongPrecision) {
-  // 5. Amount has wrong precision
+  // Amount has wrong precision
   creator.permissions.can_transfer = true;
   transfer_asset->amount.frac_part = 555;
 
@@ -733,7 +736,7 @@ TEST_F(TransferAssetTest, InvalidWhenWrongPrecision) {
 }
 
 TEST_F(TransferAssetTest, InvalidWhenDifferentCreator) {
-  // 6. Transfer creator is not connected to account
+  // Transfer creator is not connected to account
   creator.permissions.can_transfer = true;
   creator = account;
 
@@ -741,7 +744,7 @@ TEST_F(TransferAssetTest, InvalidWhenDifferentCreator) {
 }
 
 TEST_F(TransferAssetTest, InvalidWhenZeroAmount) {
-  // 7. Transfer zero assets
+  // Transfer zero assets
   creator.permissions.can_transfer = true;
   transfer_asset->amount.int_part = 0;
   transfer_asset->amount.frac_part = 0;
