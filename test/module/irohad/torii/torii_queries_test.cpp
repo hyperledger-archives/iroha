@@ -229,9 +229,6 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenStatefulInvalid) {
 
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
-  // Should not return Error Response because stateless valid
-  ASSERT_NE(response.error_response().reason(),
-            iroha::model::ErrorResponse::STATELESS_INVALID);
   // Must be invalid due to failed stateful validation caused by no permission
   // to read account asset
   ASSERT_EQ(response.error_response().reason(),

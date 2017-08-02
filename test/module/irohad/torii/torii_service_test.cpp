@@ -119,7 +119,6 @@ TEST_F(ToriiServiceTest, ToriiWhenBlockingInvalid) {
 
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
     iroha::protocol::ToriiResponse response;
-    // One client is generating transaction
     auto new_tx = iroha::protocol::Transaction();
     auto meta = new_tx.mutable_meta();
     meta->set_tx_counter(i);
