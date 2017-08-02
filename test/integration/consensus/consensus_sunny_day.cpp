@@ -106,7 +106,7 @@ class ConsensusSunnyDayTest : public ::testing::Test {
     }
   }
 
-  static uint64_t my_num;
+  static uint64_t my_num, delay_before, delay_after;
   static Peer my_peer;
   static std::vector<Peer> default_peers;
 
@@ -116,10 +116,20 @@ class ConsensusSunnyDayTest : public ::testing::Test {
     for (decltype(num_peers) i = 0; i < num_peers; ++i) {
       default_peers.push_back(mk_local_peer(10000 + i));
     }
+    if (num_peers == 1) {
+      delay_before = 0;
+      delay_after = 50;
+    }
+    else {
+      delay_before = 10 * 1000;
+      delay_after = 3 * default_peers.size() + 10 * 1000;
+    }
   }
 };
 
 uint64_t ConsensusSunnyDayTest::my_num;
+uint64_t ConsensusSunnyDayTest::delay_before;
+uint64_t ConsensusSunnyDayTest::delay_after;
 Peer ConsensusSunnyDayTest::my_peer;
 std::vector<Peer> ConsensusSunnyDayTest::default_peers;
 
@@ -134,12 +144,12 @@ TEST_F(ConsensusSunnyDayTest, SunnyDayTest) {
   EXPECT_CALL(*crypto, verify(An<VoteMessage>())).WillRepeatedly(Return(true));
 
   // Wait for other peers to start
-  std::this_thread::sleep_for(std::chrono::seconds(10));
+  std::this_thread::sleep_for(std::chrono::milliseconds(delay_before));
 
   YacHash my_hash("proposal_hash", "block_hash");
   yac->vote(my_hash, ClusterOrdering(default_peers));
   std::this_thread::sleep_for(
-      std::chrono::milliseconds(delay * default_peers.size() + 10 * 1000));
+      std::chrono::milliseconds(delay_after));
 
   ASSERT_TRUE(wrapper.validate());
 }
