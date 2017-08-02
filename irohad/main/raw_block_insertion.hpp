@@ -40,9 +40,9 @@ namespace iroha {
       /**
        * Parse block from file
        * @param data - raw presenetation of block
-       * @return object if operation done successfully, nullopt otherwice
+       * @return object if operation done successfully, nullopt otherwise
        */
-      nonstd::optional<model::Block> parseBlock(std::string &data);
+      nonstd::optional<model::Block> parseBlock(std::string data);
 
       /**
        * Apply block to current state of ledger
@@ -56,7 +56,7 @@ namespace iroha {
        * @param path - target file
        * @return string with content or nullopt
        */
-      nonstd::optional<std::string> loadFile(std::string &path);
+      nonstd::optional<std::string> loadFile(std::string path);
 
      private:
       std::shared_ptr<ametsuchi::MutableFactory> factory_;

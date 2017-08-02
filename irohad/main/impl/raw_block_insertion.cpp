@@ -28,7 +28,7 @@ namespace iroha {
         : factory_(std::move(factory)) {
     };
 
-    nonstd::optional<model::Block> BlockInserter::parseBlock(std::string &data) {
+    nonstd::optional<model::Block> BlockInserter::parseBlock(std::string data) {
       auto blob = stringToBytes(data);
       ametsuchi::BlockSerializer serializer;
       return serializer.deserialize(blob);
@@ -48,7 +48,7 @@ namespace iroha {
       factory_->commit(std::move(storage));
     };
 
-    nonstd::optional<std::string> BlockInserter::loadFile(std::string &path) {
+    nonstd::optional<std::string> BlockInserter::loadFile(std::string path) {
       std::ifstream file(path);
       std::string str((std::istreambuf_iterator<char>(file)),
                       std::istreambuf_iterator<char>());

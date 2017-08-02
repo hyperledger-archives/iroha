@@ -52,10 +52,10 @@ int main(int argc, char *argv[]) {
              config[mbr::RedisPort].GetUint(),
              config[mbr::PgOpt].GetString());
 
-  iroha::main::BlockInserter insertor(irohad.storage);
-  auto block = insertor.parseBlock(FLAGS_genesis_block);
+  iroha::main::BlockInserter inserter(irohad.storage);
+  auto block = inserter.parseBlock(FLAGS_genesis_block);
   if (block.has_value()) {
-    insertor.applyToLedger({block.value()});
+    inserter.applyToLedger({block.value()});
   }
 
   // runs iroha

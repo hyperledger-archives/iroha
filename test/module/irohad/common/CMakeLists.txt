@@ -5,8 +5,6 @@ target_link_libraries(config_loader_test
     )
 
 AddTest(blob_converter_test blob_converter_test.cpp)
-target_link_libraries(blob_converter_test
-    )
 
 AddTest(block_insertion_test block_insertion_test.cpp)
 target_link_libraries(block_insertion_test
