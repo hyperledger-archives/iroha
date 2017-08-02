@@ -95,6 +95,7 @@ class ToriiServiceTest : public testing::Test {
 TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
   EXPECT_CALL(statelessValidatorMock,
               validate(A<const iroha::model::Transaction &>()))
+      .Times(TimesToriiBlocking)
       .WillRepeatedly(Return(true));
 
   EXPECT_CALL(pcsMock, propagate_transaction(_)).Times(AtLeast(1));
@@ -115,6 +116,7 @@ TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
 TEST_F(ToriiServiceTest, ToriiWhenBlockingInvalid) {
   EXPECT_CALL(statelessValidatorMock,
               validate(A<const iroha::model::Transaction &>()))
+      .Times(TimesToriiBlocking)
       .WillRepeatedly(Return(false));
 
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
@@ -136,6 +138,7 @@ TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
 
   EXPECT_CALL(statelessValidatorMock,
               validate(A<const iroha::model::Transaction &>()))
+      .Times(TimesToriiNonBlocking)
       .WillRepeatedly(Return(true));
 
   EXPECT_CALL(pcsMock, propagate_transaction(_)).Times(AtLeast(1));

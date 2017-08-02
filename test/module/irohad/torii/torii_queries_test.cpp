@@ -111,7 +111,7 @@ TEST_F(ToriiServiceTest, FindWhenResponseInvalid) {
 TEST_F(ToriiServiceTest, FindAccountWhenStatefulInvalid) {
   EXPECT_CALL(statelessValidatorMock,
               validate(A<const iroha::model::Query &>()))
-      .WillRepeatedly(Return(true));
+      .WillOnce(Return(true));
 
   iroha::model::Account account;
   account.account_id = "accountB";
