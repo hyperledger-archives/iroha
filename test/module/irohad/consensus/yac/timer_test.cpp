@@ -47,27 +47,27 @@ class TimerTest : public ::testing::Test {
 TEST_F(TimerTest, NothingInvokedWhenDenied) {
   int status = 0;
 
-  timer->invokeAfterDelay(3 * 1000, [&status]() { status = 1; });
-  std::this_thread::sleep_for(std::chrono::seconds(1));
+  timer->invokeAfterDelay(50, [&status]() { status = 1; });
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
   timer->deny();
-  std::this_thread::sleep_for(std::chrono::seconds(3));
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
   ASSERT_EQ(status, 0);
 }
 
 TEST_F(TimerTest, FirstInvokedWhenOneSubmitted) {
   int status = 0;
 
-  timer->invokeAfterDelay(3 * 1000, [&status]() { status = 1; });
-  std::this_thread::sleep_for(std::chrono::seconds(4));
+  timer->invokeAfterDelay(10, [&status]() { status = 1; });
+  std::this_thread::sleep_for(std::chrono::milliseconds(20));
   ASSERT_EQ(status, 1);
 }
 
 TEST_F(TimerTest, SecondInvokedWhenTwoSubmitted) {
   int status = 0;
 
-  timer->invokeAfterDelay(3 * 1000, [&status]() { status = 1; });
-  std::this_thread::sleep_for(std::chrono::seconds(1));
-  timer->invokeAfterDelay(3 * 1000, [&status]() { status = 2; });
-  std::this_thread::sleep_for(std::chrono::seconds(4));
+  timer->invokeAfterDelay(10, [&status]() { status = 1; });
+  std::this_thread::sleep_for(std::chrono::milliseconds(5));
+  timer->invokeAfterDelay(10, [&status]() { status = 2; });
+  std::this_thread::sleep_for(std::chrono::milliseconds(20));
   ASSERT_EQ(status, 2);
 }
