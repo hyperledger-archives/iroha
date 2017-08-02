@@ -32,12 +32,30 @@ namespace iroha {
        * Reason of error
        */
       enum Reason {
+        /**
+         * signatures or created time are invalid
+         */
         STATELESS_INVALID,
+        /**
+         * permissions are invalid
+         */
         STATEFUL_INVALID,
-        NO_ACCOUNT, // when requested account does not exist
-        NO_ACCOUNT_ASSETS,// when requested account asset does not exist
-        NO_SIGNATORIES,// when requested signatories does not exist
-        NOT_SUPPORTED // when unidentified request was received
+        /**
+         * when requested account does not exist
+         */
+        NO_ACCOUNT,
+        /**
+         * when requested account asset does not exist
+         */
+        NO_ACCOUNT_ASSETS,
+        /**
+         * when requested signatories does not exist
+         */
+        NO_SIGNATORIES,
+        /**
+         * when unidentified request was received
+         */
+        NOT_SUPPORTED
       };
       Reason reason;
     };
