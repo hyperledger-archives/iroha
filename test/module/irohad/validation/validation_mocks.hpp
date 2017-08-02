@@ -28,7 +28,7 @@ namespace iroha {
     class MockStatelessValidator : public StatelessValidator {
      public:
       MOCK_CONST_METHOD1(validate, bool(const model::Transaction &));
-      MOCK_CONST_METHOD1(validate, bool(const model::Query &));
+      MOCK_CONST_METHOD1(validate, bool(std::shared_ptr<const model::Query>));
     };
 
     class MockStatefulValidator : public validation::StatefulValidator {
