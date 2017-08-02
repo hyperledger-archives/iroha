@@ -44,10 +44,7 @@ namespace iroha {
    */
   template <size_t size_>
   class blob_t : public std::array<byte_t, size_> {
-    /**
-     * Dark magic of C++, do not touch pls :)
-     * author: @warchant
-     */
+
    public:
     /**
      * In compile-time returns size of current blob.
@@ -85,7 +82,37 @@ namespace iroha {
     }
   };
 
-  template<size_t size>
+  // hex2bytes
+  inline std::vector<uint8_t> hex2bytes(const std::string &hex) {
+    std::vector<uint8_t> bytes;
+
+    for (size_t i = 0; i < hex.length(); i += 2) {
+      std::string byteString = hex.substr(i, 2);
+      uint8_t byte = (uint8_t) strtol(byteString.c_str(), NULL, 16);
+      bytes.push_back(byte);
+    }
+    return bytes;
+  }
+
+  /**
+   * Convert string to blob vector
+   * @param source - string for conversion
+   * @return vector<blob>
+   */
+  inline std::vector<uint8_t> stringToBytes(const std::string &source) {
+    return std::vector<uint8_t>(source.begin(), source.end());
+  }
+
+  /**
+   * blob vector to string
+   * @param source - vector for conversion
+   * @return result string
+   */
+  inline std::string bytesToString(const std::vector<uint8_t> &source) {
+    return std::string(source.begin(), source.end());
+  }
+
+  template <size_t size>
   using hash_t = blob_t<size>;
 
   // fixed-size hashes
@@ -152,26 +179,14 @@ namespace iroha {
   };
 
   // check the type of the derived class
-  template<typename Base, typename T>
+  template <typename Base, typename T>
   inline bool instanceof(const T *ptr) {
     return typeid(Base) == typeid(*ptr);
   }
 
-  template<typename Base, typename T>
+  template <typename Base, typename T>
   inline bool instanceof(const T &ptr) {
     return typeid(Base) == typeid(ptr);
-  }
-
-  // hex2bytes
-  inline std::vector<uint8_t> hex2bytes(const std::string& hex) {
-    std::vector<uint8_t> bytes;
-
-    for (size_t i = 0; i < hex.length(); i += 2) {
-      std::string byteString = hex.substr(i, 2);
-      uint8_t byte = (uint8_t)strtol(byteString.c_str(), NULL, 16);
-      bytes.push_back(byte);
-    }
-    return bytes;
   }
 
 }  // namespace iroha
