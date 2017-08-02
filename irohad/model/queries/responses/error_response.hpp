@@ -34,10 +34,10 @@ namespace iroha {
       enum Reason {
         STATELESS_INVALID,
         STATEFUL_INVALID,
-        NO_ACCOUNT,
-        NO_ACCOUNT_ASSETS,
-        NO_SIGNATORIES,
-        NOT_SUPPORTED
+        NO_ACCOUNT, // when requested account does not exist
+        NO_ACCOUNT_ASSETS,// when requested account asset does not exist
+        NO_SIGNATORIES,// when requested signatories does not exist
+        NOT_SUPPORTED // when unidentified request was received
       };
       Reason reason;
     };
