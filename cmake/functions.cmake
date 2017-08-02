@@ -23,7 +23,7 @@ endfunction()
 function(addtest test_name SOURCES)
   add_executable(${test_name} ${SOURCES})
   target_link_libraries(${test_name} gtest gmock)
-  target_include_directories(${test_name} PUBLIC ${PROJECT_SOURCE_DIR}/test ${PROJECT_SOURCE_DIR}/integration)
+  target_include_directories(${test_name} PUBLIC ${PROJECT_SOURCE_DIR}/test)
   add_test(
       NAME ${test_name}
       COMMAND $<TARGET_FILE:${test_name}>

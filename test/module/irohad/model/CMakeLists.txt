@@ -50,3 +50,8 @@ addtest(model_operators_test operators/model_operators_test.cpp)
 target_link_libraries(model_operators_test
     model
     )
+
+addtest(command_validate_execute_test command_validate_execute_test.cpp)
+target_link_libraries(command_validate_execute_test
+    model
+    )
