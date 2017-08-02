@@ -34,7 +34,7 @@ using ::testing::A;
 class StatelessValidationMock : public validation::StatelessValidator {
  public:
   MOCK_CONST_METHOD1(validate, bool(const model::Transaction &transaction));
-  MOCK_CONST_METHOD1(validate, bool(const model::Query &query));
+  MOCK_CONST_METHOD1(validate, bool(std::shared_ptr<const model::Query> query));
 };
 
 /**
@@ -70,7 +70,7 @@ class BlockQueryMock : public ametsuchi::BlockQuery {
 class QpfMock : public model::QueryProcessingFactory {
  public:
   MOCK_METHOD1(execute, std::shared_ptr<iroha::model::QueryResponse>(
-                            const model::Query &query));
+                            std::shared_ptr<const model::Query> query));
 };
 
 TEST(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
@@ -79,7 +79,7 @@ TEST(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
   model::QueryProcessingFactory qpf(wsv_query, block_query);
 
   StatelessValidationMock validation;
-  EXPECT_CALL(validation, validate(A<const model::Query &>()))
+  EXPECT_CALL(validation, validate(A<std::shared_ptr<const model::Query>>()))
       .WillRepeatedly(Return(false));
 
   iroha::torii::QueryProcessorImpl qpi(qpf, validation);

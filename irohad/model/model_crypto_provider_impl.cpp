@@ -39,10 +39,10 @@ namespace iroha {
       return true;
     }
 
-    bool ModelCryptoProviderImpl::verify(const Query &query) const {
+    bool ModelCryptoProviderImpl::verify(std::shared_ptr<const Query> query) const {
       HashProviderImpl hashProvider;
       auto query_hash = hashProvider.get_hash(query);
-      auto sign = query.signature;
+      auto sign = query->signature;
       return iroha::verify(query_hash.data(), query_hash.size(), sign.pubkey,
                            sign.signature);
     }

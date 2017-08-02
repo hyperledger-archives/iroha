@@ -28,14 +28,14 @@ namespace iroha {
 
     void QueryProcessorImpl::queryHandle(std::shared_ptr<model::Query> query) {
       // if not valid send wrong response
-      if (!validator_.validate(*query)) {
+      if (!validator_.validate(query)) {
         model::ErrorResponse response;
-        response.query = *query;
+        response.query_hash = query->query_hash;
         response.reason = model::ErrorResponse::STATELESS_INVALID;
         subject_.get_subscriber().on_next(
             std::make_shared<model::ErrorResponse>(response));
       } else {  // else execute query
-        auto qpf_response = qpf_.execute(*query);
+        auto qpf_response = qpf_.execute(query);
         subject_.get_subscriber().on_next(qpf_response);
       }
     }

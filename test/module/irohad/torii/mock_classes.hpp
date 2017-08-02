@@ -35,7 +35,7 @@ class PCSMock : public iroha::network::PeerCommunicationService {
 class StatelessValidatorMock : public iroha::validation::StatelessValidator {
  public:
   MOCK_CONST_METHOD1(validate, bool(const iroha::model::Transaction &));
-  MOCK_CONST_METHOD1(validate, bool(const iroha::model::Query &));
+  MOCK_CONST_METHOD1(validate, bool(std::shared_ptr<const iroha::model::Query>));
 };
 
 /**
@@ -74,7 +74,7 @@ class BlockQueryMock : public iroha::ametsuchi::BlockQuery {
 class QpfMock : public iroha::model::QueryProcessingFactory {
  public:
   MOCK_METHOD1(execute, std::shared_ptr<iroha::model::QueryResponse>(
-                            const iroha::model::Query &query));
+                            const std::shared_ptr<iroha::model::Query> query));
 };
 
 #endif  // IROHA_MOCK_CLASSES_HPP

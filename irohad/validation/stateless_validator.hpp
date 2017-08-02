@@ -25,7 +25,7 @@ namespace iroha {
     class StatelessValidator {
      public:
       virtual bool validate(const model::Transaction& transaction) const = 0;
-      virtual bool validate(const model::Query& query) const = 0;
+      virtual bool validate(std::shared_ptr<const model::Query> query) const = 0;
     };
   }
 }

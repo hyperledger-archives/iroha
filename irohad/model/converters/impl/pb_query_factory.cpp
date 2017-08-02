@@ -77,7 +77,7 @@ namespace iroha {
         val->created_ts = pb_query.header().created_time();
         val->creator_account_id = pb_query.creator_account_id();
         model::HashProviderImpl hashProvider; // TODO: get rid off unnecessary object initialization
-        val->query_hash = hashProvider.get_hash(*val);
+        val->query_hash = hashProvider.get_hash(val);
         return val;
       }
     }

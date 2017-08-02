@@ -42,7 +42,7 @@ namespace iroha {
        * @param tx - transaction for verification
        * @return true if transaction signature is valid, otherwise false
        */
-      virtual bool verify(const Query &tx) const = 0;
+      virtual bool verify(std::shared_ptr<const Query> tx) const = 0;
 
       /**
        *

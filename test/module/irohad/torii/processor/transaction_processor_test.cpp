@@ -33,7 +33,7 @@ using ::testing::A;
 class StatelessValidationMock : public validation::StatelessValidator {
  public:
   MOCK_CONST_METHOD1(validate, bool(const model::Transaction &transaction));
-  MOCK_CONST_METHOD1(validate, bool(const model::Query &query));
+  MOCK_CONST_METHOD1(validate, bool(std::shared_ptr<const model::Query> query));
 };
 
 /**
@@ -93,7 +93,7 @@ TEST(TransactionProcessorTest,
 
   StatelessValidationMock validation;
   EXPECT_CALL(validation, validate(A<const model::Transaction&>())).WillRepeatedly(Return(false));
-  EXPECT_CALL(validation, validate(A<const model::Query&>())).WillRepeatedly(Return(false));
+  EXPECT_CALL(validation, validate(A<std::shared_ptr<const model::Query>>())).WillRepeatedly(Return(false));
 
   iroha::torii::TransactionProcessorImpl tp(pcs, validation);
   model::Transaction tx;

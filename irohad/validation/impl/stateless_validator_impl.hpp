@@ -29,7 +29,7 @@ namespace iroha {
       explicit StatelessValidatorImpl(
           model::ModelCryptoProvider& crypto_provider);
       bool validate(const model::Transaction& transaction) const override;
-      bool validate(const model::Query& query) const override;
+      bool validate(std::shared_ptr<const model::Query> query) const override;
 
      private:
       static constexpr uint64_t MAX_DELAY =

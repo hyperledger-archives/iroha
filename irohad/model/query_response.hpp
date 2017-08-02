@@ -20,6 +20,7 @@
 
 #include <model/client.hpp>
 #include <model/query.hpp>
+#include <memory>
 
 namespace iroha {
   namespace model {
@@ -30,7 +31,7 @@ namespace iroha {
       /**
        * Client query
        */
-      Query query;
+      hash256_t query_hash;
 
       virtual ~QueryResponse() {}
     };

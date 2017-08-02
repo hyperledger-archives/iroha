@@ -32,7 +32,7 @@ namespace torii {
     query_processor_.queryNotifier().subscribe([this](auto iroha_response) {
       // Find client to respond
       auto res =
-          handler_map_.find(iroha_response->query.query_hash.to_string());
+          handler_map_.find(iroha_response->query_hash.to_string());
       // Serialize to proto an return to response
       res->second =
           pb_query_response_factory_.serialize(iroha_response).value();
