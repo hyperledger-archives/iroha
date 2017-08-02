@@ -155,7 +155,7 @@ iroha::model::QueryProcessingFactory::executeGetSignatories(
 std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::execute(
     std::shared_ptr<const model::Query> query) {
-  if (instanceof <iroha::model::GetAccount>(*query)) {
+  if (instanceof <iroha::model::GetAccount>(query.get())) {
     auto qry = std::static_pointer_cast<const iroha::model::GetAccount>(query);
 
     if (!validate(*qry)) {
@@ -166,7 +166,7 @@ iroha::model::QueryProcessingFactory::execute(
     }
     return executeGetAccount(*qry);
   }
-  if (instanceof <iroha::model::GetAccountAssets>(*query)) {
+  if (instanceof <iroha::model::GetAccountAssets>(query.get())) {
     auto qry =
         std::static_pointer_cast<const iroha::model::GetAccountAssets>(query);
     if (!validate(*qry)) {
@@ -177,7 +177,7 @@ iroha::model::QueryProcessingFactory::execute(
     }
     return executeGetAccountAssets(*qry);
   }
-  if (instanceof <iroha::model::GetSignatories>(*query)) {
+  if (instanceof <iroha::model::GetSignatories>(query.get())) {
     auto qry =
         std::static_pointer_cast<const iroha::model::GetSignatories>(query);
     if (!validate(*qry)) {
@@ -188,7 +188,7 @@ iroha::model::QueryProcessingFactory::execute(
     }
     return executeGetSignatories(*qry);
   }
-  if (instanceof <iroha::model::GetAccountTransactions>(query)) {
+  if (instanceof <iroha::model::GetAccountTransactions>(query.get())) {
     auto qry =
         std::static_pointer_cast<const iroha::model::GetAccountTransactions>(
             query);
@@ -200,7 +200,7 @@ iroha::model::QueryProcessingFactory::execute(
     }
     return executeGetAccountTransactions(*qry);
   }
-  if (instanceof <iroha::model::GetAccountAssetTransactions>(query)) {
+  if (instanceof <iroha::model::GetAccountAssetTransactions>(query.get())) {
     auto qry = std::static_pointer_cast<
         const iroha::model::GetAccountAssetTransactions>(query);
     if (!validate(*qry)) {
@@ -211,7 +211,6 @@ iroha::model::QueryProcessingFactory::execute(
     }
     return executeGetAccountAssetTransactions(*qry);
   }
-  std::cout << "cast failed!" << std::endl;
   iroha::model::ErrorResponse response;
   response.query_hash = query->query_hash;
   response.reason = model::ErrorResponse::NOT_SUPPORTED;
