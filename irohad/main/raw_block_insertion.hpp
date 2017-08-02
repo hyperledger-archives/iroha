@@ -35,7 +35,7 @@ namespace iroha {
      */
     class BlockInserter {
      public:
-      BlockInserter(std::shared_ptr<ametsuchi::Storage> storage);
+      explicit BlockInserter(std::shared_ptr<ametsuchi::MutableFactory> factory);
 
       /**
        * Parse block from file
@@ -48,7 +48,7 @@ namespace iroha {
        * Apply block to current state of ledger
        * @param blocks - list of blocks for insertion
        */
-      void applyToLedger(std::vector<model::Block> &blocks);
+      void applyToLedger(std::vector<model::Block> blocks);
 
       /**
        * Additional method
@@ -59,7 +59,7 @@ namespace iroha {
       nonstd::optional<std::string> loadFile(std::string &path);
 
      private:
-      std::shared_ptr<ametsuchi::Storage> storage_;
+      std::shared_ptr<ametsuchi::MutableFactory> factory_;
     };
 
   } // namespace main

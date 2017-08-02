@@ -24,8 +24,8 @@
 namespace iroha {
   namespace main {
 
-    BlockInserter::BlockInserter(std::shared_ptr<ametsuchi::Storage> storage)
-        : storage_(std::move(storage)) {
+    BlockInserter::BlockInserter(std::shared_ptr<ametsuchi::MutableFactory> factory)
+        : factory_(std::move(factory)) {
     };
 
     nonstd::optional<model::Block> BlockInserter::parseBlock(std::string &data) {
@@ -34,10 +34,10 @@ namespace iroha {
       return serializer.deserialize(blob);
     };
 
-    void BlockInserter::applyToLedger(std::vector<model::Block> &blocks) {
-      auto mutable_storage = storage_->createMutableStorage();
+    void BlockInserter::applyToLedger(std::vector<model::Block> blocks) {
+      auto storage = factory_->createMutableStorage();
       for (auto &&block : blocks) {
-        mutable_storage->apply(block,
+        storage->apply(block,
                                [](const auto &,
                                   auto &,
                                   auto &,
@@ -45,7 +45,7 @@ namespace iroha {
                                  return true;
                                });
       }
-      storage_->commit(std::move(mutable_storage));
+      factory_->commit(std::move(storage));
     };
 
     nonstd::optional<std::string> BlockInserter::loadFile(std::string &path) {
