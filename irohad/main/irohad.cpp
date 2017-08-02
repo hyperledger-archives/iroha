@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
   iroha::main::BlockInserter insertor(irohad.storage);
   auto block = insertor.parseBlock(FLAGS_genesis_block);
   if (block.has_value()) {
-    insertor.appyToLedger({block.value()});
+    insertor.applyToLedger({block.value()});
   }
 
   // runs iroha
