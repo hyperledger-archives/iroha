@@ -9,9 +9,10 @@ target_link_libraries(blob_converter_test
     blob_converter
     )
 
-AddTest(block_to_json_generation block_to_json_generation.cpp)
-target_link_libraries(block_to_json_generation
+AddTest(block_inserion_test block_inserion_test.cpp)
+target_link_libraries(block_inserion_test
     ametsuchi
     model
     blob_converter
+    genesis_block_server
     )
