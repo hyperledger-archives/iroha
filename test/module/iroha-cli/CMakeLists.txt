@@ -11,3 +11,4 @@ target_link_libraries(client_test
     processors
     server_runner
     )
+target_include_directories(client_test PUBLIC ${PROJECT_SOURCE_DIR}/iroha-cli)

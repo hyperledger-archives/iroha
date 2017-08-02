@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-#include "../../../iroha-cli/client.hpp"
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include "client.hpp"
 
-#include "../irohad/torii/mock_classes.hpp"
+#include "module/irohad/torii/mock_classes.hpp"
 #include "main/server_runner.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
@@ -71,7 +71,7 @@ class ClientTest : public testing::Test {
   std::unique_ptr<ServerRunner> runner;
   std::thread th;
   PCSMock pcsMock;
-  SVMock svMock;
+  StatelessValidatorMock svMock;
   WsvQueryMock wsv_query;
   BlockQueryMock block_query;
 };
