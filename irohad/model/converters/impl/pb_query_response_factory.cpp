@@ -180,8 +180,7 @@ namespace iroha {
         protocol::SignatoriesResponse pb_response;
 
         for (auto key : signatoriesResponse.keys) {
-          pb_response.mutable_keys()->Add(
-              std::string{key.data(), key.data() + key.size()});
+          pb_response.add_keys(key.data(), key.size());
         }
         return pb_response;
       }
@@ -201,35 +200,44 @@ namespace iroha {
       protocol::TransactionsResponse
       PbQueryResponseFactory::serializeTransactionsResponse(
           const model::TransactionsResponse &transactionsResponse) const {
-        protocol::TransactionsResponse pb_response;
         PbTransactionFactory pb_transaction_factory;
-        
+
         // converting observable to the vector using reduce
-        transactionsResponse.transactions
-            .reduce(
-                std::vector<model::Transaction>(),
-                // TODO: get rid of passing vector by value
-                [](std::vector<model::Transaction> o, model::Transaction tx) {
-                  o.push_back(tx);
-                  return std::move(o);
-                },
-                [](std::vector<model::Transaction> o) { return std::move(o); })
-            .as_blocking() // we need to wait when on_complete happens
-            .subscribe(
-                [&pb_transaction_factory, &pb_response](auto transactions) {
-                  // add txs to pb_response
-                  for (auto tx : transactions) {
-                    pb_response.add_transactions()->CopyFrom(
-                        pb_transaction_factory.serialize(tx));
-                  }
-                });
-        return pb_response;
+        return transactionsResponse.transactions
+            .reduce(protocol::TransactionsResponse(),
+                    [&pb_transaction_factory](auto &&response, auto tx) {
+                      response.add_transactions()->CopyFrom(
+                          pb_transaction_factory.serialize(tx));
+                      return response;
+                    },
+                    [](auto &&response) { return response; })
+            .as_blocking()  // we need to wait when on_complete happens
+            .first();
       }
 
       protocol::ErrorResponse PbQueryResponseFactory::serializeErrorResponse(
           const model::ErrorResponse &errorResponse) const {
         protocol::ErrorResponse pb_response;
-        pb_response.set_reason(errorResponse.reason);
+        switch (errorResponse.reason) {
+          case ErrorResponse::STATELESS_INVALID:
+            pb_response.set_reason(protocol::ErrorResponse::STATELESS_INVALID);
+            break;
+          case ErrorResponse::STATEFUL_INVALID:
+            pb_response.set_reason(protocol::ErrorResponse::STATEFUL_INVALID);
+            break;
+          case ErrorResponse::NO_ACCOUNT:
+            pb_response.set_reason(protocol::ErrorResponse::NO_ACCOUNT);
+            break;
+          case ErrorResponse::NO_ACCOUNT_ASSETS:
+            pb_response.set_reason(protocol::ErrorResponse::NO_ACCOUNT_ASSETS);
+            break;
+          case ErrorResponse::NO_SIGNATORIES:
+            pb_response.set_reason(protocol::ErrorResponse::NO_SIGNATORIES);
+            break;
+          case ErrorResponse::NOT_SUPPORTED:
+            pb_response.set_reason(protocol::ErrorResponse::NOT_SUPPORTED);
+            break;
+        }
         return pb_response;
       }
     }

@@ -17,6 +17,7 @@
 
 #include <model/model_hash_provider_impl.hpp>
 #include <model/queries/get_account.hpp>
+#include <iostream>
 #include "common/types.hpp"
 #include "model/queries/get_account_assets.hpp"
 #include "model/queries/get_signatories.hpp"
@@ -101,30 +102,30 @@ namespace iroha {
       return concat_hash;
     }
 
-    iroha::hash256_t HashProviderImpl::get_hash(const Query &query) {
+    iroha::hash256_t HashProviderImpl::get_hash(std::shared_ptr<const Query> query) {
       std::string result_hash;
       if (instanceof <model::GetAccount>(query)) {
-        auto cast = static_cast<const GetAccount &>(query);
+        auto cast = static_cast<const GetAccount &>(*query);
         result_hash += cast.account_id;
         result_hash += cast.creator_account_id;
       }
       if (instanceof <model::GetAccountAssets>(query)) {
-        auto cast = static_cast<const GetAccountAssets &>(query);
+        auto cast = static_cast<const GetAccountAssets &>(*query);
         result_hash += cast.account_id;
         result_hash += cast.asset_id;
         result_hash += cast.creator_account_id;
       }
       if (instanceof <model::GetSignatories>(query)) {
-        auto cast = static_cast<const GetAccountAssets &>(query);
+        auto cast = static_cast<const GetSignatories &>(*query);
         result_hash += cast.account_id;
         result_hash += cast.creator_account_id;
       }
       if (instanceof <model::GetAccountTransactions>(query)) {
-        auto cast = static_cast<const GetAccountTransactions &>(query);
+        auto cast = static_cast<const GetAccountTransactions &>(*query);
         result_hash += cast.account_id;
         result_hash += cast.creator_account_id;
       }
-      result_hash += query.query_counter;
+      result_hash += query->query_counter;
       std::vector<uint8_t> concat_hash_commands(result_hash.begin(),
                                                 result_hash.end());
       return sha3_256(concat_hash_commands.data(), concat_hash_commands.size());

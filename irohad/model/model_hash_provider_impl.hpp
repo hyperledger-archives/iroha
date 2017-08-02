@@ -35,7 +35,7 @@ namespace iroha {
 
       iroha::hash256_t get_hash(const Transaction &tx) override;
 
-      iroha::hash256_t  get_hash(const Query& query) override;
+      iroha::hash256_t  get_hash(std::shared_ptr<const Query> query) override;
     };
   }
 }

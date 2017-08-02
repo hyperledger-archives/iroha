@@ -21,15 +21,13 @@
 namespace iroha {
   namespace validation {
     StatelessValidatorImpl::StatelessValidatorImpl(
-        model::ModelCryptoProvider &crypto_provider)
+        model::ModelCryptoProvider& crypto_provider)
         : crypto_provider_(crypto_provider) {}
 
     bool StatelessValidatorImpl::validate(
-        const model::Transaction &transaction) const {
+        const model::Transaction& transaction) const {
       // signatures are correct
-      {
-        if (!crypto_provider_.verify(transaction)) return false;
-      }
+      if (!crypto_provider_.verify(transaction)) return false;
 
       // time between creation and validation of tx
       uint64_t now = static_cast<uint64_t>(
@@ -47,7 +45,7 @@ namespace iroha {
       return true;
     }
 
-    bool StatelessValidatorImpl::validate(const model::Query &query) const {
+    bool StatelessValidatorImpl::validate(std::shared_ptr<const model::Query> query) const {
       // signatures are correct
       if (!crypto_provider_.verify(query)) return false;
 
@@ -56,12 +54,12 @@ namespace iroha {
           std::chrono::duration_cast<std::chrono::milliseconds>(
               std::chrono::system_clock::now().time_since_epoch()).count());
 
-      if (now - query.created_ts > MAX_DELAY) {
+      if (now - query->created_ts > MAX_DELAY) {
         return false;
       }
 
       // query is not sent from future
-      if (now < query.created_ts) {
+      if (now < query->created_ts) {
         return false;
       }
       return true;

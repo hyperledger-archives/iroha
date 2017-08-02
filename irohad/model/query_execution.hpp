@@ -44,7 +44,7 @@ namespace iroha {
        * @return
        */
       std::shared_ptr<iroha::model::QueryResponse> execute(
-          const model::Query& query);
+          std::shared_ptr<const model::Query> query);
       /**
        *
        * @param wsvQuery

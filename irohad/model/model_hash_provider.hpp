@@ -55,7 +55,7 @@ namespace iroha {
        * Abstract method for computing hash on Model: Query
        *
        */
-      virtual blob_t<N> get_hash(const Query &tx) = 0;
+      virtual blob_t<N> get_hash(std::shared_ptr<const Query> tx) = 0;
     };
   }
 }

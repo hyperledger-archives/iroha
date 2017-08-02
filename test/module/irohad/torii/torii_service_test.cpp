@@ -17,6 +17,7 @@ limitations under the License.
 #include <endpoint.pb.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <queries.pb.h>
 #include <atomic>
 #include <chrono>
 #include <main/server_runner.hpp>
@@ -26,10 +27,9 @@ limitations under the License.
 #include <torii/command_service.hpp>
 #include <torii/processor/query_processor_impl.hpp>
 #include <torii_utils/query_client.hpp>
-#include <queries.pb.h>
 
-#include "torii/processor/transaction_processor_impl.hpp"
 #include "mock_classes.hpp"
+#include "torii/processor/transaction_processor_impl.hpp"
 
 constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;
@@ -43,23 +43,15 @@ using ::testing::A;
 using ::testing::_;
 using ::testing::AtLeast;
 
-
 class ToriiServiceTest : public testing::Test {
  public:
   virtual void SetUp() {
     runner = new ServerRunner(Ip, Port);
-    th = std::thread([runner = runner] {
+    th = std::thread([this] {
       // ----------- Command Service --------------
-      PCSMock pcsMock;
-      SVMock svMock;
 
-      EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
-          .WillRepeatedly(Return(true));
-
-      EXPECT_CALL(pcsMock, propagate_transaction(_)).Times(AtLeast(1));
-
-      auto tx_processor =
-          iroha::torii::TransactionProcessorImpl(pcsMock, svMock);
+      auto tx_processor = iroha::torii::TransactionProcessorImpl(
+          pcsMock, statelessValidatorMock);
       iroha::model::converters::PbTransactionFactory pb_tx_factory;
       auto command_service =  // std::unique_ptr<torii::CommandService>(new
                               // torii::CommandService(pb_tx_factory,
@@ -67,14 +59,9 @@ class ToriiServiceTest : public testing::Test {
           std::make_unique<torii::CommandService>(pb_tx_factory, tx_processor);
 
       //----------- Query Service ----------
-      WsvQueryMock wsv_query;
-      BlockQueryMock block_query;
       iroha::model::QueryProcessingFactory qpf(wsv_query, block_query);
 
-      EXPECT_CALL(svMock, validate(A<const iroha::model::Query &>()))
-          .WillRepeatedly(Return(false));
-
-      iroha::torii::QueryProcessorImpl qpi(qpf, svMock);
+      iroha::torii::QueryProcessorImpl qpi(qpf, statelessValidatorMock);
 
       iroha::model::converters::PbQueryFactory pb_query_factory;
       iroha::model::converters::PbQueryResponseFactory pb_query_resp_factory;
@@ -97,12 +84,24 @@ class ToriiServiceTest : public testing::Test {
 
   ServerRunner *runner;
   std::thread th;
+
+  WsvQueryMock wsv_query;
+  BlockQueryMock block_query;
+
+  PCSMock pcsMock;
+  StatelessValidatorMock statelessValidatorMock;
 };
 
 TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
+  EXPECT_CALL(statelessValidatorMock,
+              validate(A<const iroha::model::Transaction &>()))
+      .Times(TimesToriiBlocking)
+      .WillRepeatedly(Return(true));
+
+  EXPECT_CALL(pcsMock, propagate_transaction(_)).Times(AtLeast(1));
+
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
     iroha::protocol::ToriiResponse response;
-    // One client is generating transaction
     auto new_tx = iroha::protocol::Transaction();
     auto meta = new_tx.mutable_meta();
     meta->set_tx_counter(i);
@@ -114,9 +113,35 @@ TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
   }
 }
 
+TEST_F(ToriiServiceTest, ToriiWhenBlockingInvalid) {
+  EXPECT_CALL(statelessValidatorMock,
+              validate(A<const iroha::model::Transaction &>()))
+      .Times(TimesToriiBlocking)
+      .WillRepeatedly(Return(false));
+
+  for (size_t i = 0; i < TimesToriiBlocking; ++i) {
+    iroha::protocol::ToriiResponse response;
+    auto new_tx = iroha::protocol::Transaction();
+    auto meta = new_tx.mutable_meta();
+    meta->set_tx_counter(i);
+    meta->set_creator_account_id("accountA");
+    auto stat = torii::CommandSyncClient(Ip, Port).Torii(new_tx, response);
+    ASSERT_TRUE(stat.ok());
+    ASSERT_EQ(response.validation(),
+              iroha::protocol::STATELESS_VALIDATION_FAILED);
+  }
+}
+
 TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
   torii::CommandAsyncClient client(Ip, Port);
   std::atomic_int count{0};
+
+  EXPECT_CALL(statelessValidatorMock,
+              validate(A<const iroha::model::Transaction &>()))
+      .Times(TimesToriiNonBlocking)
+      .WillRepeatedly(Return(true));
+
+  EXPECT_CALL(pcsMock, propagate_transaction(_)).Times(AtLeast(1));
 
   for (size_t i = 0; i < TimesToriiNonBlocking; ++i) {
     auto new_tx = iroha::protocol::Transaction();
@@ -136,4 +161,3 @@ TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
     ;
   ASSERT_EQ(count, TimesToriiNonBlocking);
 }
-
