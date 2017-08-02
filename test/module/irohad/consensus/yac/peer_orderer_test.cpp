@@ -15,63 +15,69 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-#include <vector>
-#include "yac_mocks.hpp"
-#include "module/irohad/torii/mock_classes.hpp"
-#include "consensus/yac/impl/yac_peer_orderer_impl.hpp"
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/consensus/yac/yac_mocks.hpp"
 
+#include <vector>
+#include "consensus/yac/impl/yac_peer_orderer_impl.hpp"
 #include <iostream>
+
+using namespace iroha::ametsuchi;
+using namespace iroha::consensus::yac;
+
 using namespace std;
 using ::testing::Return;
 
-TEST(YacPeerOrdererTest, PeerOrdererInitialOrderWhenInvokeNormalCase) {
+class YacPeerOrdererTest : public ::testing::Test {
+ public:
+
+  YacPeerOrdererTest() : wsv(make_shared<MockWsvQuery>()), orderer(wsv) {}
+
+  void SetUp() override {
+    wsv = make_shared<MockWsvQuery>();
+    orderer = YacPeerOrdererImpl(wsv);
+  }
+
+  std::vector<iroha::model::Peer> peers = [] {
+    std::vector<iroha::model::Peer> result;
+    for (size_t i = 1; i <= 4; ++i) {
+      result.push_back(iroha::consensus::yac::mk_peer(std::to_string(i)));
+    }
+    return result;
+  }();
+
+  shared_ptr<MockWsvQuery> wsv;
+  YacPeerOrdererImpl orderer;
+};
+
+TEST_F(YacPeerOrdererTest, PeerOrdererInitialOrderWhenInvokeNormalCase) {
   cout << "----------| InitialOrder() => valid object |----------" << endl;
 
-  std::vector<iroha::model::Peer> peers = {mk_peer("1"),
-                                           mk_peer("2"),
-                                           mk_peer("3"),
-                                           mk_peer("4")};
-
-  shared_ptr<WsvQueryMock> wsv = make_shared<WsvQueryMock>();
   EXPECT_CALL(*wsv, getPeers()).WillOnce(Return(peers));
-  YacPeerOrdererImpl orderer(wsv);
   auto order = orderer.getInitialOrdering();
   ASSERT_EQ(order.value().getPeers(), peers);
 }
 
-TEST(YacPeerOrdererTest, PeerOrdererInitialOrderWhenInvokeFailCase) {
+TEST_F(YacPeerOrdererTest, PeerOrdererInitialOrderWhenInvokeFailCase) {
   cout << "----------| InitialOrder() => nullopt case |----------" << endl;
 
-  shared_ptr<WsvQueryMock> wsv = make_shared<WsvQueryMock>();
   EXPECT_CALL(*wsv, getPeers()).WillOnce(Return(nonstd::nullopt));
-  YacPeerOrdererImpl orderer(wsv);
   auto order = orderer.getInitialOrdering();
   ASSERT_EQ(order, nonstd::nullopt);
 }
 
-TEST(YacPeerOrdererTest, PeerOrdererOrderingWhenInvokeNormalCase) {
+TEST_F(YacPeerOrdererTest, PeerOrdererOrderingWhenInvokeNormalCase) {
   cout << "----------| Order() => valid object |----------" << endl;
 
-  std::vector<iroha::model::Peer> peers = {mk_peer("1"),
-                                           mk_peer("2"),
-                                           mk_peer("3"),
-                                           mk_peer("4")};
-
-  shared_ptr<WsvQueryMock> wsv = make_shared<WsvQueryMock>();
   EXPECT_CALL(*wsv, getPeers()).WillOnce(Return(peers));
-  YacPeerOrdererImpl orderer(wsv);
   auto order = orderer.getOrdering(YacHash());
   ASSERT_EQ(order.value().getPeers().size(), peers.size());
 }
 
-TEST(YacPeerOrdererTest, PeerOrdererOrderingWhenInvokeFaillCase) {
+TEST_F(YacPeerOrdererTest, PeerOrdererOrderingWhenInvokeFaillCase) {
   cout << "----------| Order() => nullopt case |----------" << endl;
 
-  shared_ptr<WsvQueryMock> wsv = make_shared<WsvQueryMock>();
   EXPECT_CALL(*wsv, getPeers()).WillOnce(Return(nonstd::nullopt));
-  YacPeerOrdererImpl orderer(wsv);
   auto order = orderer.getOrdering(YacHash());
   ASSERT_EQ(order, nonstd::nullopt);
 }

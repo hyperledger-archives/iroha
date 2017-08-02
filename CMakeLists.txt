@@ -50,7 +50,6 @@ endif()
 if(TESTING)
   enable_testing()
   add_subdirectory(test)
-  add_subdirectory(integration)
 endif()
 
 

@@ -15,8 +15,7 @@
  * limitations under the License.
  */
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
 #include "model/query_execution.hpp"
 #include <model/queries/responses/account_assets_response.hpp>
@@ -28,38 +27,7 @@ using ::testing::AtLeast;
 using ::testing::_;
 using ::testing::AllOf;
 
-/**
- * Mock class for Ametsuchi queries
- */
-class WSVQueriesMock : public iroha::ametsuchi::WsvQuery {
- public:
-  MOCK_METHOD1(getAccount, nonstd::optional<iroha::model::Account>(
-                               const std::string &account_id));
-
-  MOCK_METHOD1(getSignatories,
-               nonstd::optional<std::vector<iroha::ed25519::pubkey_t>>(
-                   const std::string &account_id));
-
-  MOCK_METHOD1(getAsset, nonstd::optional<iroha::model::Asset>(
-                             const std::string &asset_id));
-
-  MOCK_METHOD2(getAccountAsset,
-               nonstd::optional<iroha::model::AccountAsset>(
-                   const std::string &account_id, const std::string &asset_id));
-  MOCK_METHOD0(getPeers, nonstd::optional<std::vector<iroha::model::Peer>>());
-};
-
-/**
- * Mock class for Ametsuchi queries on blocks, transactions
- */
-class BlockQueryMock : public iroha::ametsuchi::BlockQuery {
- public:
-  MOCK_METHOD1(getAccountTransactions,
-               rxcpp::observable<iroha::model::Transaction>(std::string));
-
-  MOCK_METHOD2(getBlocks,
-               rxcpp::observable<iroha::model::Block>(uint32_t, uint32_t));
-};
+using namespace iroha::ametsuchi;
 
 /**
  * Variables for testing
@@ -107,8 +75,8 @@ iroha::model::Account get_default_adversary() {
  * @param test_wsv
  * @param test_blocks
  */
-void set_default_ametsuchi(WSVQueriesMock &test_wsv,
-                           BlockQueryMock &test_blocks) {
+void set_default_ametsuchi(MockWsvQuery &test_wsv,
+                           MockBlockQuery &test_blocks) {
   // If No account exist - return nullopt
   EXPECT_CALL(test_wsv, getAccount(_)).WillRepeatedly(Return(nonstd::nullopt));
 
@@ -137,8 +105,8 @@ void set_default_ametsuchi(WSVQueriesMock &test_wsv,
 
 
 TEST(QueryExecutor, get_account) {
-  WSVQueriesMock wsv_queries;
-  BlockQueryMock block_queries;
+  MockWsvQuery wsv_queries;
+  MockBlockQuery block_queries;
 
   auto query_proccesor =
       iroha::model::QueryProcessingFactory(wsv_queries, block_queries);
@@ -208,8 +176,8 @@ TEST(QueryExecutor, get_account) {
 }
 
 TEST(QueryExecutor, get_account_assets) {
-  WSVQueriesMock wsv_queries;
-  BlockQueryMock block_queries;
+  MockWsvQuery wsv_queries;
+  MockBlockQuery block_queries;
   auto query_proccesor =
       iroha::model::QueryProcessingFactory(wsv_queries, block_queries);
 

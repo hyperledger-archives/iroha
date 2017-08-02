@@ -15,30 +15,19 @@
  * limitations under the License.
  */
 
-#include <gmock/gmock.h>
+#include "module/irohad/consensus/yac/yac_mocks.hpp"
+
 #include <grpc++/grpc++.h>
-#include <gtest/gtest.h>
 #include <thread>
 #include "consensus/yac/impl/network_impl.hpp"
-#include "yac_mocks.hpp"
 
 using namespace iroha::consensus::yac;
 using iroha::model::Peer;
 
 using ::testing::_;
 
-/**
- * Mock for network notifications
- */
-class FakeNetworkNotifications : public YacNetworkNotifications {
- public:
-  MOCK_METHOD2(on_commit, void(Peer, CommitMessage));
-  MOCK_METHOD2(on_reject, void(Peer, RejectMessage));
-  MOCK_METHOD2(on_vote, void(Peer, VoteMessage));
-};
-
 TEST(NetworkTest, MessageHandledWhenMessageSent) {
-  auto notifications = std::make_shared<FakeNetworkNotifications>();
+  auto notifications = std::make_shared<MockYacNetworkNotifications>();
 
   auto peer = mk_peer("0.0.0.0:50051");
   std::vector<Peer> peers = {peer};
@@ -71,7 +60,7 @@ TEST(NetworkTest, MessageHandledWhenMessageSent) {
     server->Wait();
   });
 
-  // wait unlit server woke up
+  // wait until server woke up
   std::unique_lock<std::mutex> lock(mtx);
   cv.wait(lock);
 

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-#include "common/test_subscriber.hpp"
+#include "framework/test_subscriber.hpp"
 #include <gtest/gtest.h>
 
 #include <iostream>
 
-using namespace common::test_subscriber;
+using namespace framework::test_subscriber;
 
 class TestSubscriberTesting : public ::testing::Test {};
 

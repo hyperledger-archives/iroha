@@ -14,12 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <gtest/gtest.h>
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/network/network_mocks.hpp"
+#include "module/irohad/validation/validation_mocks.hpp"
+
 #include "main/server_runner.hpp"
-#include "mock_classes.hpp"
-#include "torii/command_service.hpp"
-#include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
+#include "torii/processor/query_processor_impl.hpp"
+#include "torii/command_service.hpp"
 #include "torii_utils/query_client.hpp"
 
 constexpr const char *Ip = "0.0.0.0";
@@ -33,6 +35,10 @@ using ::testing::Return;
 using ::testing::A;
 using ::testing::_;
 using ::testing::AtLeast;
+
+using namespace iroha::network;
+using namespace iroha::validation;
+using namespace iroha::ametsuchi;
 
 class ToriiServiceTest : public testing::Test {
  public:
@@ -78,10 +84,10 @@ class ToriiServiceTest : public testing::Test {
   ServerRunner *runner;
   std::thread th;
 
-  PCSMock pcsMock;
-  StatelessValidatorMock statelessValidatorMock;
-  WsvQueryMock wsv_query;
-  BlockQueryMock block_query;
+  MockPeerCommunicationService pcsMock;
+  MockStatelessValidator statelessValidatorMock;
+  MockWsvQuery wsv_query;
+  MockBlockQuery block_query;
 };
 
 /**

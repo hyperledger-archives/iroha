@@ -62,7 +62,7 @@ class iroha_cli_test : public ::testing::Test {
   }
 };
 
-class GenesisBlockClientMock : public iroha_cli::GenesisBlockClient {
+class MockGenesisBlockClient : public iroha_cli::GenesisBlockClient {
   /*
   MOCK_METHOD2(set_channel, void(const std::string &ip, const int port));
   MOCK_METHOD2(
@@ -109,7 +109,7 @@ TEST_F(iroha_cli_test, NormalWhenParseTrustedPeers) {
 )";
   ofs.close();
 
-  GenesisBlockClientMock client_mock;
+  MockGenesisBlockClient client_mock;
   iroha_cli::BootstrapNetwork bootstrap(client_mock);
   auto peers = bootstrap.parse_trusted_peers(test_path);
   ASSERT_EQ(peers.size(), 4);
@@ -127,7 +127,7 @@ TEST_F(iroha_cli_test, WrongIPNameWhenParseTrustedPeers) {
              R"(", "Ip":"192.168.0.5"}]})";
   ofs.close();
 
-  GenesisBlockClientMock client_mock;
+  MockGenesisBlockClient client_mock;
   iroha_cli::BootstrapNetwork bootstrap(client_mock);
   ASSERT_ANY_THROW({ bootstrap.parse_trusted_peers(test_path); });
   ASSERT_TRUE(remove(test_path) == 0);
@@ -140,7 +140,7 @@ TEST_F(iroha_cli_test, InvalidIPValueWhenParseTrustedPeers) {
              R"(", "ip":"192.256.0.5"}]})";
   ofs.close();
 
-  GenesisBlockClientMock client_mock;
+  MockGenesisBlockClient client_mock;
   iroha_cli::BootstrapNetwork bootstrap(client_mock);
   ASSERT_ANY_THROW({ bootstrap.parse_trusted_peers(test_path); });
   ASSERT_TRUE(remove(test_path) == 0);
@@ -187,7 +187,7 @@ TEST_F(iroha_cli_test, NormalWhenParseGenesisBlock) {
 )");
   ofs.close();
 
-  GenesisBlockClientMock client_mock;
+  MockGenesisBlockClient client_mock;
   iroha_cli::BootstrapNetwork bootstrap(client_mock);
   auto genesis = bootstrap.parse_genesis_block(test_path);
   ASSERT_TRUE(remove(test_path) == 0);
@@ -195,7 +195,7 @@ TEST_F(iroha_cli_test, NormalWhenParseGenesisBlock) {
 
 TEST_F(iroha_cli_test, MergeAddTrustedPeersWhenCreatingGenesisBlock) {
   auto block = create_genesis_block();
-  GenesisBlockClientMock client_mock;
+  MockGenesisBlockClient client_mock;
   iroha_cli::BootstrapNetwork bootstrap(client_mock);
   std::vector<iroha::model::Peer> peers(2);
   peers[0].address = "192.168.0.3";
@@ -214,7 +214,7 @@ TEST_F(iroha_cli_test, MergeAddTrustedPeersWhenCreatingGenesisBlock) {
 }
 
 TEST_F(iroha_cli_test, NormalWhenRunNetwork) {
-  GenesisBlockClientMock client_mock;
+  MockGenesisBlockClient client_mock;
   iroha::protocol::ApplyGenesisBlockResponse response;
   // EXPECT_CALL(set_channel, set_channel("192.168.0.3", "192.168.0.4"))
   // EXPECT_CALL(send_genesis_block, send_genesis_block(block, response))

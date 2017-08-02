@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <nonstd/optional.hpp>
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_signatory.hpp"
@@ -40,6 +38,8 @@ using ::testing::Return;
 using ::testing::AtLeast;
 using ::testing::_;
 using ::testing::AllOf;
+
+using namespace iroha::ametsuchi;
 
 iroha::model::Account get_default_creator() {
   iroha::model::Account creator = iroha::model::Account();
@@ -77,44 +77,7 @@ iroha::model::Asset get_default_asset() {
   return asset;
 }
 
-class WSVQueriesMock : public iroha::ametsuchi::WsvQuery {
- public:
-  MOCK_METHOD1(getAccount, nonstd::optional<iroha::model::Account>(
-                               const std::string &account_id));
-  MOCK_METHOD1(getSignatories,
-               nonstd::optional<std::vector<iroha::ed25519::pubkey_t>>(
-                   const std::string &account_id));
-  MOCK_METHOD1(getAsset, nonstd::optional<iroha::model::Asset>(
-                             const std::string &asset_id));
-
-  MOCK_METHOD2(getAccountAsset,
-               nonstd::optional<iroha::model::AccountAsset>(
-                   const std::string &account_id, const std::string &asset_id));
-  MOCK_METHOD0(getPeers, nonstd::optional<std::vector<iroha::model::Peer>>());
-};
-
-class WSVCommandsMock : public iroha::ametsuchi::WsvCommand {
- public:
-  MOCK_METHOD1(insertAccount, bool(const iroha::model::Account &));
-  MOCK_METHOD1(updateAccount, bool(const iroha::model::Account &));
-  MOCK_METHOD1(insertAsset, bool(const iroha::model::Asset &));
-  MOCK_METHOD1(upsertAccountAsset, bool(const iroha::model::AccountAsset &));
-  MOCK_METHOD1(insertSignatory, bool(const iroha::ed25519::pubkey_t &));
-
-  MOCK_METHOD2(insertAccountSignatory,
-               bool(const std::string &, const iroha::ed25519::pubkey_t &));
-
-  MOCK_METHOD2(deleteAccountSignatory,
-               bool(const std::string &, const iroha::ed25519::pubkey_t &));
-
-  MOCK_METHOD1(insertPeer, bool(const iroha::model::Peer &));
-
-  MOCK_METHOD1(deletePeer, bool(const iroha::model::Peer &));
-
-  MOCK_METHOD1(insertDomain, bool(const iroha::model::Domain &));
-};
-
-void set_default_wsv(WSVQueriesMock &test_wsv, WSVCommandsMock &test_commands) {
+void set_default_wsv(MockWsvQuery &test_wsv, MockWsvCommand &test_commands) {
   // No account exist
   EXPECT_CALL(test_wsv, getAccount(_)).WillRepeatedly(Return(nonstd::nullopt));
   // Admin exist
@@ -144,8 +107,8 @@ void set_default_wsv(WSVQueriesMock &test_wsv, WSVCommandsMock &test_commands) {
 }
 
 TEST(CommandValidation, add_asset_quantity) {
-  WSVQueriesMock test_wsv;
-  WSVCommandsMock test_commands;
+  MockWsvQuery test_wsv;
+  MockWsvCommand test_commands;
 
   auto creator = get_default_creator();
 
@@ -216,8 +179,8 @@ TEST(CommandValidation, add_asset_quantity) {
 }
 
 TEST(CommandValidation, add_signatory) {
-  WSVQueriesMock test_wsv;
-  WSVCommandsMock test_commands;
+  MockWsvQuery test_wsv;
+  MockWsvCommand test_commands;
 
   auto creator = get_default_creator();
 
@@ -280,8 +243,8 @@ TEST(CommandValidation, add_signatory) {
 }
 
 TEST(CommandValidation, assign_master_key) {
-  WSVQueriesMock test_wsv;
-  WSVCommandsMock test_commands;
+  MockWsvQuery test_wsv;
+  MockWsvCommand test_commands;
 
   auto creator = get_default_creator();
   auto orig_account = get_default_account();
@@ -334,8 +297,8 @@ TEST(CommandValidation, assign_master_key) {
 }
 
 TEST(CommandValidation, create_account) {
-  WSVQueriesMock test_wsv;
-  WSVCommandsMock test_commands;
+  MockWsvQuery test_wsv;
+  MockWsvCommand test_commands;
 
   auto creator = get_default_creator();
   // Valid case
@@ -375,8 +338,8 @@ TEST(CommandValidation, create_account) {
 }
 
 TEST(CommandValidation, create_asset) {
-  WSVQueriesMock test_wsv;
-  WSVCommandsMock test_commands;
+  MockWsvQuery test_wsv;
+  MockWsvCommand test_commands;
 
   auto creator = get_default_creator();
 
@@ -403,8 +366,8 @@ TEST(CommandValidation, create_asset) {
 }
 
 TEST(CommandValidation, remove_signatory) {
-  WSVQueriesMock test_wsv;
-  WSVCommandsMock test_commands;
+  MockWsvQuery test_wsv;
+  MockWsvCommand test_commands;
 
   auto creator = get_default_creator();
   auto orig_account = get_default_account();
@@ -452,8 +415,8 @@ TEST(CommandValidation, remove_signatory) {
 }
 
 TEST(CommandValidation, set_account_permissions) {
-  WSVQueriesMock test_wsv;
-  WSVCommandsMock test_commands;
+  MockWsvQuery test_wsv;
+  MockWsvCommand test_commands;
 
   auto creator = get_default_creator();
   auto orig_account = get_default_account();
@@ -484,8 +447,8 @@ TEST(CommandValidation, set_account_permissions) {
 }
 
 TEST(CommandValidation, set_quorum) {
-  WSVQueriesMock test_wsv;
-  WSVCommandsMock test_commands;
+  MockWsvQuery test_wsv;
+  MockWsvCommand test_commands;
 
   auto creator = get_default_creator();
   auto orig_account = get_default_account();
@@ -521,8 +484,8 @@ TEST(CommandValidation, set_quorum) {
 }
 
 TEST(CommandValidation, transfer_asset) {
-  WSVQueriesMock test_wsv;
-  WSVCommandsMock test_commands;
+  MockWsvQuery test_wsv;
+  MockWsvCommand test_commands;
 
   auto creator = get_default_creator();
   auto orig_account = get_default_account();
