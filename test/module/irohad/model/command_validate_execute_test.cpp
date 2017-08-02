@@ -46,12 +46,12 @@ class CommandValidateExecuteTest : public ::testing::Test {
 
     creator.account_id = admin_id;
     creator.domain_name = domain_id;
-    std::fill(creator.master_key.begin(), creator.master_key.end(), 0x1);
+    creator.master_key.fill(0x1);
     creator.quorum = 1;
 
     account.account_id = account_id;
     account.domain_name = domain_id;
-    std::fill(account.master_key.begin(), account.master_key.end(), 0x2);
+    account.master_key.fill(0x2);
     account.quorum = 1;
   }
 
@@ -191,8 +191,7 @@ class AddSignatoryTest : public CommandValidateExecuteTest {
 
     add_signatory = std::make_shared<AddSignatory>();
     add_signatory->account_id = account_id;
-    std::fill(add_signatory->pubkey.begin(), add_signatory->pubkey.end(),
-              0x1);  // Such Pubkey exist
+    add_signatory->pubkey = creator.master_key;  // Such Pubkey exist
 
     command = add_signatory;
   }
@@ -232,7 +231,7 @@ TEST_F(AddSignatoryTest, InvalidWhenNoPermissions) {
 TEST_F(AddSignatoryTest, InvalidWhenNoKey) {
   // 2. Trying to add non existed public key
   creator.permissions.add_signatory = true;
-  std::fill(add_signatory->pubkey.begin(), add_signatory->pubkey.end(), 0xF);
+  add_signatory->pubkey.fill(0xF);
 
   EXPECT_CALL(*wsv_command, insertAccountSignatory(add_signatory->account_id,
                                                    add_signatory->pubkey))
@@ -275,8 +274,7 @@ class AssignMasterKeyTest : public CommandValidateExecuteTest {
 
     assign_master_key = std::make_shared<AssignMasterKey>();
     assign_master_key->account_id = account_id;
-    std::fill(assign_master_key->pubkey.begin(), assign_master_key->pubkey.end(),
-              0x1);
+    assign_master_key->pubkey = creator.master_key;
 
     command = assign_master_key;
   }
@@ -321,8 +319,7 @@ TEST_F(AssignMasterKeyTest, InvalidWhenNoPermissions) {
 TEST_F(AssignMasterKeyTest, InvalidWhenNoKey) {
   // 2. Assign random master key
   creator.permissions.add_signatory = true;
-  std::fill(assign_master_key->pubkey.begin(), assign_master_key->pubkey.end(),
-            0xF);
+  assign_master_key->pubkey.fill(0xF);
 
   EXPECT_CALL(*wsv_query, getAccount(assign_master_key->account_id))
       .WillOnce(Return(account));
@@ -480,8 +477,7 @@ TEST_F(RemoveSignatoryTest, InvalidWhenMasterKey) {
 TEST_F(RemoveSignatoryTest, InvalidWhenNoKey) {
   // 3. Remove signatory not present in account
   creator.permissions.remove_signatory = true;
-  std::fill(remove_signatory->pubkey.begin(), remove_signatory->pubkey.end(),
-            0xF);
+  remove_signatory->pubkey.fill(0xF);
 
   EXPECT_CALL(*wsv_query, getAccount(remove_signatory->account_id))
       .WillOnce(Return(account));
