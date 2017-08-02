@@ -15,16 +15,19 @@
  * limitations under the License.
  */
 
+#include "module/irohad/consensus/yac/yac_mocks.hpp"
+
 #include <grpc++/grpc++.h>
-#include <gtest/gtest.h>
 #include "consensus/yac/impl/network_impl.hpp"
 #include "consensus/yac/impl/timer_impl.hpp"
-#include "module/irohad/consensus/yac/yac_mocks.hpp"
+#include "framework/test_subscriber.hpp"
 
 using ::testing::Return;
 using ::testing::An;
 
+using namespace iroha::model;
 using namespace iroha::consensus::yac;
+using namespace framework::test_subscriber;
 
 Peer mk_local_peer(uint64_t num) {
   Peer peer;
@@ -32,7 +35,7 @@ Peer mk_local_peer(uint64_t num) {
   return peer;
 }
 
-class FixedCryptoProvider : public CryptoProviderMock {
+class FixedCryptoProvider : public MockYacCryptoProvider {
  public:
   explicit FixedCryptoProvider(const std::string &public_key) {
     pubkey.fill(0);
@@ -40,7 +43,7 @@ class FixedCryptoProvider : public CryptoProviderMock {
   }
 
   VoteMessage getVote(YacHash hash) override {
-    auto vote = CryptoProviderMock::getVote(hash);
+    auto vote = MockYacCryptoProvider::getVote(hash);
     vote.signature.pubkey = pubkey;
     return vote;
   }
@@ -50,13 +53,60 @@ class FixedCryptoProvider : public CryptoProviderMock {
 
 class ConsensusSunnyDayTest : public ::testing::Test {
  public:
+  std::thread thread, loop_thread;
+  std::unique_ptr<grpc::Server> server;
+  std::shared_ptr<uvw::Loop> loop;
   std::shared_ptr<NetworkImpl> network;
-  std::shared_ptr<CryptoProviderMock> crypto;
+  std::shared_ptr<MockYacCryptoProvider> crypto;
   std::shared_ptr<TimerImpl> timer;
   uint64_t delay = 3 * 1000;
   std::shared_ptr<Yac> yac;
 
-  static uint64_t my_num;
+  void SetUp() override {
+    network = std::make_shared<NetworkImpl>(my_peer.address, default_peers);
+    crypto = std::make_shared<FixedCryptoProvider>(std::to_string(my_num));
+    timer = std::make_shared<TimerImpl>();
+    yac = Yac::create(std::move(YacVoteStorage()), network, crypto, timer,
+                      ClusterOrdering(default_peers), delay);
+    network->subscribe(yac);
+
+    std::mutex mtx;
+    std::condition_variable cv;
+
+    thread = std::thread([&cv, this] {
+      grpc::ServerBuilder builder;
+      int port = 0;
+      builder.AddListeningPort(my_peer.address,
+                               grpc::InsecureServerCredentials(), &port);
+      builder.RegisterService(network.get());
+      server = builder.BuildAndStart();
+      ASSERT_TRUE(server);
+      ASSERT_NE(port, 0);
+      cv.notify_one();
+      server->Wait();
+    });
+
+    // wait until server woke up
+    std::unique_lock<std::mutex> lock(mtx);
+    cv.wait(lock);
+
+    loop = uvw::Loop::create();
+    loop_thread = std::thread([this] { loop->run(); });
+  }
+
+  void TearDown() override {
+    loop->stop();
+    if (loop_thread.joinable()) {
+      loop_thread.join();
+    }
+
+    server->Shutdown();
+    if (thread.joinable()) {
+      thread.join();
+    }
+  }
+
+  static uint64_t my_num, delay_before, delay_after;
   static Peer my_peer;
   static std::vector<Peer> default_peers;
 
@@ -66,71 +116,42 @@ class ConsensusSunnyDayTest : public ::testing::Test {
     for (decltype(num_peers) i = 0; i < num_peers; ++i) {
       default_peers.push_back(mk_local_peer(10000 + i));
     }
+    if (num_peers == 1) {
+      delay_before = 0;
+      delay_after = 50;
+    }
+    else {
+      delay_before = 10 * 1000;
+      delay_after = 3 * default_peers.size() + 10 * 1000;
+    }
   }
 };
 
 uint64_t ConsensusSunnyDayTest::my_num;
+uint64_t ConsensusSunnyDayTest::delay_before;
+uint64_t ConsensusSunnyDayTest::delay_after;
 Peer ConsensusSunnyDayTest::my_peer;
 std::vector<Peer> ConsensusSunnyDayTest::default_peers;
 
 TEST_F(ConsensusSunnyDayTest, SunnyDayTest) {
-  network = std::make_shared<NetworkImpl>(my_peer.address, default_peers);
-  crypto = std::make_shared<FixedCryptoProvider>(std::to_string(my_num));
-  timer = std::make_shared<TimerImpl>();
-  yac = Yac::create(std::move(YacVoteStorage()), network, crypto, timer,
-                    ClusterOrdering(default_peers), delay);
-  network->subscribe(yac);
-
-  auto committed = false;
-
-  yac->on_commit().subscribe([&committed](auto hash) {
-    std::cout << "^_^ COMMITTED!!!" << std::endl;
-    committed = true;
-  });
+  auto wrapper = make_test_subscriber<CallExact>(yac->on_commit(), 1);
+  wrapper.subscribe(
+      [](auto hash) { std::cout << "^_^ COMMITTED!!!" << std::endl; });
 
   EXPECT_CALL(*crypto, verify(An<CommitMessage>()))
       .Times(1)
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*crypto, verify(An<VoteMessage>())).WillRepeatedly(Return(true));
 
-  std::unique_ptr<grpc::Server> server;
-
-  auto thread = std::thread([&server, this] {
-    grpc::ServerBuilder builder;
-    int port = 0;
-    builder.AddListeningPort(my_peer.address, grpc::InsecureServerCredentials(),
-                             &port);
-    builder.RegisterService(network.get());
-    server = builder.BuildAndStart();
-    ASSERT_TRUE(server);
-    ASSERT_NE(port, 0);
-    server->Wait();
-  });
-
-  auto loop = uvw::Loop::getDefault();
-  auto timer = std::thread([loop] {
-    loop->run();
-  });
-
   // Wait for other peers to start
-  std::this_thread::sleep_for(std::chrono::seconds(10));
+  std::this_thread::sleep_for(std::chrono::milliseconds(delay_before));
 
   YacHash my_hash("proposal_hash", "block_hash");
   yac->vote(my_hash, ClusterOrdering(default_peers));
   std::this_thread::sleep_for(
-      std::chrono::milliseconds(delay * default_peers.size() + 10 * 1000));
+      std::chrono::milliseconds(delay_after));
 
-  ASSERT_TRUE(committed);
-
-  loop->stop();
-  if (timer.joinable()){
-    timer.join();
-  }
-
-  server->Shutdown();
-  if (thread.joinable()) {
-    thread.join();
-  }
+  ASSERT_TRUE(wrapper.validate());
 }
 
 int main(int argc, char **argv) {

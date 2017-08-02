@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-#include <gmock/gmock.h>
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/model/model_mocks.hpp"
 #include "validation/impl/chain_validator_impl.hpp"
 
 using namespace iroha;
@@ -29,85 +30,13 @@ using ::testing::Return;
 using ::testing::InvokeArgument;
 using ::testing::ByRef;
 
-class CryptoProviderMock : public ModelCryptoProvider {
- public:
-  MOCK_CONST_METHOD1(verify, bool(const Transaction &));
-  MOCK_CONST_METHOD1(verify, bool(std::shared_ptr<const Query>));
-  MOCK_CONST_METHOD1(verify, bool(const Block &));
-};
-
-class MutableStorageMock : public MutableStorage {
- public:
-
-  MutableStorageMock() = default;
-
-  MutableStorageMock(const MutableStorageMock&) = delete;
-
-  MutableStorageMock(MutableStorageMock&&) {}
-
-  MOCK_METHOD2(apply,
-               bool(const Block &,
-                   std::function<bool(const Block &, WsvCommand &,
-                   WsvQuery &, const hash256_t &)>));
-  MOCK_METHOD1(getAccount,
-               nonstd::optional<Account>(const std::string &account_id));
-  MOCK_METHOD1(getSignatories, nonstd::optional<std::vector<ed25519::pubkey_t>>(
-      const std::string &account_id));
-  MOCK_METHOD1(getAsset,
-               nonstd::optional<Asset>(const std::string &asset_id));
-  MOCK_METHOD2(getAccountAsset,
-               nonstd::optional<AccountAsset>(
-                   const std::string &account_id, const std::string &asset_id));
-  MOCK_METHOD0(getPeers, nonstd::optional<std::vector<Peer>>());
-};
-
-class WsvCommandMock : public iroha::ametsuchi::WsvCommand {
- public:
-
-  WsvCommandMock() = default;
-
-  WsvCommandMock(const WsvCommandMock&) = delete;
-
-  WsvCommandMock(WsvCommandMock&&) {}
-
-  MOCK_METHOD1(insertAccount, bool(const iroha::model::Account &));
-  MOCK_METHOD1(updateAccount, bool(const iroha::model::Account &));
-  MOCK_METHOD1(insertAsset, bool(const iroha::model::Asset &));
-  MOCK_METHOD1(upsertAccountAsset, bool(const iroha::model::AccountAsset &));
-  MOCK_METHOD1(insertSignatory, bool(const iroha::ed25519::pubkey_t &));
-
-  MOCK_METHOD2(insertAccountSignatory,
-               bool(const std::string &, const iroha::ed25519::pubkey_t &));
-
-  MOCK_METHOD2(deleteAccountSignatory,
-               bool(const std::string &, const iroha::ed25519::pubkey_t &));
-
-  MOCK_METHOD1(insertPeer, bool(const iroha::model::Peer &));
-
-  MOCK_METHOD1(deletePeer, bool(const iroha::model::Peer &));
-
-  MOCK_METHOD1(insertDomain, bool(const iroha::model::Domain &));
-};
-
-class MockCommand : public Command {
- public:
-  MOCK_METHOD2(validate, bool(WsvQuery &, const Account &));
-  MOCK_METHOD2(execute, bool(WsvQuery &, WsvCommand &));
-
-  MOCK_CONST_METHOD1(Equals, bool(const Command &));
-  bool operator==(const Command &rhs) const override { return Equals(rhs); }
-
-  MOCK_CONST_METHOD1(NotEquals, bool(const Command &));
-  bool operator!=(const Command &rhs) const override { return NotEquals(rhs); }
-};
-
 class ChainValidationTest : public ::testing::Test {
  public:
   ChainValidationTest() : validator(provider) {}
 
-  CryptoProviderMock provider;
+  MockCryptoProvider provider;
   ChainValidatorImpl validator;
-  MutableStorageMock storage;
+  MockMutableStorage storage;
 };
 
 TEST_F(ChainValidationTest, ValidWhenOnePeer) {
@@ -139,7 +68,7 @@ TEST_F(ChainValidationTest, ValidWhenNoPeers) {
 }
 
 TEST_F(ChainValidationTest, FailWhenDifferentPrevHash) {
-  WsvCommandMock wsvCommand;
+  MockWsvCommand wsvCommand;
 
   EXPECT_CALL(storage, getPeers())
       .WillOnce(Return(std::vector<model::Peer>(1)));
@@ -165,7 +94,7 @@ TEST_F(ChainValidationTest, FailWhenDifferentPrevHash) {
 }
 
 TEST_F(ChainValidationTest, ValidWhenSamePrevHash) {
-  WsvCommandMock wsvCommand;
+  MockWsvCommand wsvCommand;
 
   EXPECT_CALL(storage, getPeers())
       .WillOnce(Return(std::vector<model::Peer>(1)));

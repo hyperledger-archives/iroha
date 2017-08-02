@@ -19,8 +19,8 @@
 #include <gmock/gmock.h>
 #include <utility>
 #include <string>
-#include "yac_mocks.hpp"
-#include "common/test_subscriber.hpp"
+#include "module/irohad/consensus/yac/yac_mocks.hpp"
+#include "framework/test_subscriber.hpp"
 
 #include <vector>
 #include <iostream>
@@ -31,7 +31,7 @@ using ::testing::An;
 using ::testing::AtLeast;
 
 using namespace iroha::consensus::yac;
-using namespace common::test_subscriber;
+using namespace framework::test_subscriber;
 using namespace std;
 
 TEST_F(YacTest, ValidCaseWhenReceiveSupermajority) {

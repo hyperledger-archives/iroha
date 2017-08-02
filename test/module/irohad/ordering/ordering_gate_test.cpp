@@ -15,16 +15,15 @@
  * limitations under the License.
  */
 
-#include <gmock/gmock.h>
-#include <grpc++/grpc++.h>
-#include "common/test_subscriber.hpp"
+#include "module/irohad/ordering/ordering_mocks.hpp"
+
+#include "framework/test_subscriber.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
-#include "ordering_mocks.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::model;
 using namespace iroha::network;
-using namespace common::test_subscriber;
+using namespace framework::test_subscriber;
 
 using ::testing::_;
 
@@ -33,11 +32,11 @@ class OrderingGateTest : public OrderingTest {
   OrderingGateTest() {
     gate_impl = std::make_shared<OrderingGateImpl>(address);
     gate = gate_impl;
-    fake_service = static_cast<FakeOrderingService*>(service.get());
+    fake_service = static_cast<MockOrderingService*>(service.get());
   }
 
   std::shared_ptr<OrderingGateImpl> gate_impl;
-  FakeOrderingService* fake_service;
+  MockOrderingService* fake_service;
 };
 
 TEST_F(OrderingGateTest, TransactionReceivedByServerWhenSent) {

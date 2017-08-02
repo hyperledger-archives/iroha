@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-#include <gmock/gmock.h>
+#include "module/irohad/ordering/ordering_mocks.hpp"
+
 #include <grpc++/grpc++.h>
 #include "ordering/impl/ordering_service_impl.hpp"
-#include "ordering_mocks.hpp"
 
+using namespace iroha;
 using namespace iroha::ordering;
 using namespace iroha::model;
 using namespace iroha::network;
@@ -30,7 +31,7 @@ using ::testing::AtLeast;
 class OrderingServiceTest : public OrderingTest {
  public:
   OrderingServiceTest() {
-    fake_gate = static_cast<FakeOrderingGate*>(gate.get());
+    fake_gate = static_cast<ordering::MockOrderingGate*>(gate.get());
   }
 
   void SetUp() override { loop = uvw::Loop::create(); }
@@ -52,7 +53,7 @@ class OrderingServiceTest : public OrderingTest {
 
   std::shared_ptr<uvw::Loop> loop;
   std::thread loop_thread;
-  FakeOrderingGate* fake_gate;
+  ordering::MockOrderingGate* fake_gate;
   std::unique_ptr<iroha::ordering::proto::OrderingService::Stub> client;
 };
 

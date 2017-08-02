@@ -12,6 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+addtest(model_hash_provider_test model_hash_provider_test.cpp)
+target_link_libraries(model_hash_provider_test
+    model
+    optional
+    hash
+    )
+
+addtest(model_crypto_provider_test model_crypto_provider_test.cpp)
+target_link_libraries(model_crypto_provider_test
+    model
+    hash
+    crypto
+    )
+
 addtest(command_converter_test converters/pb_commands_test.cpp)
 target_link_libraries(command_converter_test
     model
@@ -29,10 +43,15 @@ target_link_libraries(block_converter_test
 
 addtest(query_responses_test converters/pb_query_responses_test.cpp)
 target_link_libraries(query_responses_test
-        model
-        )
+    model
+    )
 
 addtest(model_operators_test operators/model_operators_test.cpp)
 target_link_libraries(model_operators_test
+    model
+    )
+
+addtest(command_validate_execute_test command_validate_execute_test.cpp)
+target_link_libraries(command_validate_execute_test
     model
     )

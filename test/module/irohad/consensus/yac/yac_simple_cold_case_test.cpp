@@ -24,7 +24,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include "common/test_subscriber.hpp"
+#include "framework/test_subscriber.hpp"
 #include "yac_mocks.hpp"
 #include <string>
 
@@ -34,7 +34,7 @@ using ::testing::An;
 using ::testing::AtLeast;
 
 using namespace iroha::consensus::yac;
-using namespace common::test_subscriber;
+using namespace framework::test_subscriber;
 using namespace std;
 
 /**
@@ -43,18 +43,18 @@ using namespace std;
 TEST_F(YacTest, YacWhenInit) {
   cout << "----------|Just init object|----------" << endl;
 
-  FakeNetwork network_;
+  MockYacNetwork network_;
 
-  CryptoProviderMock crypto_;
+  MockYacCryptoProvider crypto_;
 
-  FakeTimer timer_;
+  MockTimer timer_;
 
   auto fake_delay_ = 100500;
 
   auto yac_ = Yac::create(YacVoteStorage(),
-                          std::make_shared<FakeNetwork>(network_),
-                          std::make_shared<CryptoProviderMock>(crypto_),
-                          std::make_shared<FakeTimer>(timer_),
+                          std::make_shared<MockYacNetwork>(network_),
+                          std::make_shared<MockYacCryptoProvider>(crypto_),
+                          std::make_shared<MockTimer>(timer_),
                           ClusterOrdering(default_peers),
                           fake_delay_);
 

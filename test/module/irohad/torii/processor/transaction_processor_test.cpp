@@ -15,92 +15,79 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "module/irohad/network/network_mocks.hpp"
+#include "module/irohad/validation/validation_mocks.hpp"
 
 #include "torii/processor/transaction_processor_impl.hpp"
 #include "model/tx_responses/stateless_response.hpp"
-#include "network/ordering_gate.hpp"
+#include "framework/test_subscriber.hpp"
 
 using namespace iroha;
+using namespace iroha::network;
+using namespace iroha::validation;
+using namespace iroha::torii;
+using namespace iroha::model;
+using namespace framework::test_subscriber;
+
 using ::testing::Return;
 using ::testing::_;
 using ::testing::A;
 
-/**
- * Mock for stateless validation
- */
-class StatelessValidationMock : public validation::StatelessValidator {
+class TransactionProcessorTest : public ::testing::Test {
  public:
-  MOCK_CONST_METHOD1(validate, bool(const model::Transaction &transaction));
-  MOCK_CONST_METHOD1(validate, bool(std::shared_ptr<const model::Query> query));
-};
 
-/**
- * Mock for peer communication service
- */
-class PcsMock : public network::PeerCommunicationService {
- public:
-  MOCK_METHOD1(propagate_transaction, void(model::Transaction transaction));
+  void SetUp() override {
+    pcs = std::make_shared<MockPeerCommunicationService>();
+    validation = std::make_shared<MockStatelessValidator>();
+    tp = std::make_shared<TransactionProcessorImpl>(*pcs, *validation);
+  }
 
-  MOCK_METHOD0(on_proposal, rxcpp::observable<model::Proposal>());
-
-  MOCK_METHOD0(on_commit,
-               rxcpp::observable < rxcpp::observable < model::Block >> ());
-};
-
-/**
- * Mock for ordering service
- */
-class OsMock : public network::OrderingGate {
- public:
-  MOCK_METHOD1(propagate_transaction, void(
-      const model::Transaction &transaction));
-
-  MOCK_METHOD0(on_proposal, rxcpp::observable<model::Proposal>());
+  std::shared_ptr<MockPeerCommunicationService> pcs;
+  std::shared_ptr<MockStatelessValidator> validation;
+  std::shared_ptr<TransactionProcessorImpl> tp;
 };
 
 /**
  * Transaction processor test case, when handling stateless valid transaction
  */
-TEST(TransactionProcessorTest,
+TEST_F(TransactionProcessorTest,
      TransactionProcessorWhereInvokeValidTransaction) {
 
-  PcsMock pcs;
-  EXPECT_CALL(pcs, propagate_transaction(_)).Times(1);
+  EXPECT_CALL(*pcs, propagate_transaction(_)).Times(1);
 
-  StatelessValidationMock validation;
-  EXPECT_CALL(validation, validate(A<const model::Transaction&>())).WillRepeatedly(Return(true));
+  EXPECT_CALL(*validation, validate(A<const Transaction&>())).WillRepeatedly(Return(true));
 
-  iroha::torii::TransactionProcessorImpl tp(pcs, validation);
-  model::Transaction tx;
-  // TODO subscribe with testable subscriber
-  tp.transactionNotifier().subscribe([](auto response) {
-    auto resp = static_cast<model::TransactionStatelessResponse &>(*response);
+  auto tx = std::make_shared<Transaction>();
+
+  auto wrapper = make_test_subscriber<CallExact>(tp->transactionNotifier(), 1);
+  wrapper.subscribe([](auto response) {
+    auto resp = static_cast<TransactionStatelessResponse &>(*response);
     ASSERT_EQ(resp.passed, true);
   });
-  tp.transactionHandle(std::make_shared<iroha::model::Transaction>(tx));
+  tp->transactionHandle(tx);
+
+  ASSERT_TRUE(wrapper.validate());
 }
 
 /**
  * Transaction processor test case, when handling invalid transaction
  */
-TEST(TransactionProcessorTest,
+TEST_F(TransactionProcessorTest,
      TransactionProcessorWhereInvokeInvalidTransaction) {
 
-  PcsMock pcs;
-  EXPECT_CALL(pcs, propagate_transaction(_)).Times(0);
+  EXPECT_CALL(*pcs, propagate_transaction(_)).Times(0);
 
-  StatelessValidationMock validation;
-  EXPECT_CALL(validation, validate(A<const model::Transaction&>())).WillRepeatedly(Return(false));
-  EXPECT_CALL(validation, validate(A<std::shared_ptr<const model::Query>>())).WillRepeatedly(Return(false));
+  EXPECT_CALL(*validation, validate(A<const Transaction&>())).WillRepeatedly(Return(false));
+  EXPECT_CALL(*validation, validate(A<std::shared_ptr<const Query>>())).WillRepeatedly(Return(false));
 
-  iroha::torii::TransactionProcessorImpl tp(pcs, validation);
-  model::Transaction tx;
-  // TODO subscribe with testable subscriber
-  tp.transactionNotifier().subscribe([](auto response) {
-    auto resp = static_cast<model::TransactionStatelessResponse &>(*response);
+  auto tx = std::make_shared<Transaction>();
+
+  auto wrapper = make_test_subscriber<CallExact>(tp->transactionNotifier(), 1);
+  wrapper.subscribe([](auto response) {
+    auto resp = static_cast<TransactionStatelessResponse &>(*response);
     ASSERT_EQ(resp.passed, false);
   });
-  tp.transactionHandle(std::make_shared<iroha::model::Transaction>(tx));
+  tp->transactionHandle(tx);
+
+  ASSERT_TRUE(wrapper.validate());
 }

@@ -15,82 +15,43 @@
  * limitations under the License.
  */
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/validation/validation_mocks.hpp"
 
-#include "model/queries/responses/error_response.hpp"
 #include "model/query_execution.hpp"
 #include "network/ordering_gate.hpp"
 #include "torii/processor/query_processor_impl.hpp"
+#include "model/queries/responses/error_response.hpp"
+#include "framework/test_subscriber.hpp"
 
 using namespace iroha;
+using namespace iroha::ametsuchi;
+using namespace iroha::validation;
+using namespace framework::test_subscriber;
+
 using ::testing::Return;
 using ::testing::_;
 using ::testing::A;
 
-/**
- * Mock for stateless validation
- */
-class StatelessValidationMock : public validation::StatelessValidator {
- public:
-  MOCK_CONST_METHOD1(validate, bool(const model::Transaction &transaction));
-  MOCK_CONST_METHOD1(validate, bool(std::shared_ptr<const model::Query> query));
-};
-
-/**
- * Mock for wsv query
- */
-class WsvQueryMock : public ametsuchi::WsvQuery {
- public:
-  MOCK_METHOD1(getAccount,
-               nonstd::optional<model::Account>(const std::string &account_id));
-  MOCK_METHOD1(getSignatories, nonstd::optional<std::vector<ed25519::pubkey_t>>(
-                                   const std::string &account_id));
-  MOCK_METHOD1(getAsset,
-               nonstd::optional<model::Asset>(const std::string &asset_id));
-  MOCK_METHOD2(getAccountAsset,
-               nonstd::optional<model::AccountAsset>(
-                   const std::string &account_id, const std::string &asset_id));
-  MOCK_METHOD0(getPeers, nonstd::optional<std::vector<model::Peer>>());
-};
-
-/**
- * Mock for block query
- */
-class BlockQueryMock : public ametsuchi::BlockQuery {
-  MOCK_METHOD1(getAccountTransactions,
-               rxcpp::observable<model::Transaction>(std::string account_id));
-  MOCK_METHOD2(getBlocks,
-               rxcpp::observable<model::Block>(uint32_t from, uint32_t to));
-};
-
-/**
- * Mock for query processing factory
- */
-class QpfMock : public model::QueryProcessingFactory {
- public:
-  MOCK_METHOD1(execute, std::shared_ptr<iroha::model::QueryResponse>(
-                            std::shared_ptr<const model::Query> query));
-};
-
 TEST(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
-  WsvQueryMock wsv_query;
-  BlockQueryMock block_query;
+  MockWsvQuery wsv_query;
+  MockBlockQuery block_query;
   model::QueryProcessingFactory qpf(wsv_query, block_query);
 
-  StatelessValidationMock validation;
+  MockStatelessValidator validation;
   EXPECT_CALL(validation, validate(A<std::shared_ptr<const model::Query>>()))
       .WillRepeatedly(Return(false));
 
   iroha::torii::QueryProcessorImpl qpi(qpf, validation);
-  model::Query query;
-  qpi.queryNotifier()
-      .filter([](auto response) {
+  auto query = std::make_shared<model::Query>();
+
+  auto wrapper = make_test_subscriber<CallExact>(
+      qpi.queryNotifier().filter([](auto response) {
         return instanceof <model::ErrorResponse>(response);
-      })
-      .subscribe([](auto response) {
-        auto resp = static_cast<model::ErrorResponse &>(*response);
-        ASSERT_EQ(resp.reason, iroha::model::ErrorResponse::STATELESS_INVALID);
-      });
-  qpi.queryHandle(std::make_shared<model::Query>(query));
+      }), 1);
+  wrapper.subscribe([](auto response) {
+    auto resp = static_cast<model::ErrorResponse &>(*response);
+    ASSERT_EQ(resp.reason, iroha::model::ErrorResponse::STATELESS_INVALID);
+  });
+  qpi.queryHandle(query);
 }

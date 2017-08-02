@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "common/test_subscriber.hpp"
+#include "framework/test_subscriber.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
 #include "ordering_mocks.hpp"
@@ -23,7 +23,7 @@
 using namespace iroha::ordering;
 using namespace iroha::model;
 using namespace iroha::network;
-using namespace common::test_subscriber;
+using namespace framework::test_subscriber;
 
 class OrderingGateServiceTest : public OrderingTest {
  public:

@@ -15,43 +15,24 @@
  * limitations under the License.
  */
 
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/validation/validation_mocks.hpp"
+
 #include "simulator/impl/simulator.hpp"
-#include <gmock/gmock.h>
-#include "common/test_subscriber.hpp"
+#include "framework/test_subscriber.hpp"
 
 using namespace iroha;
-using namespace common::test_subscriber;
+using namespace iroha::validation;
+using namespace iroha::ametsuchi;
+using namespace framework::test_subscriber;
 
 using ::testing::Return;
 using ::testing::_;
 
-class TemporaryFactoryMock : public ametsuchi::TemporaryFactory {
- public:
-  MOCK_METHOD0(createTemporaryWsv, std::unique_ptr<ametsuchi::TemporaryWsv>());
-};
-
-class StatefulValidatorMock : public validation::StatefulValidator {
- public:
-  MOCK_METHOD2(validate, model::Proposal(const model::Proposal&,
-                                         ametsuchi::TemporaryWsv&));
-};
-
-/**
- * Mock class for Ametsuchi queries on blocks, transactions
- */
-class BlockQueryMock : public ametsuchi::BlockQuery {
- public:
-  MOCK_METHOD1(getAccountTransactions,
-               rxcpp::observable<iroha::model::Transaction>(std::string));
-
-  MOCK_METHOD2(getBlocks,
-               rxcpp::observable<iroha::model::Block>(uint32_t, uint32_t));
-};
-
 TEST(SimulatorTest, ValidWhenPreviousBlock) {
-  StatefulValidatorMock validator;
-  TemporaryFactoryMock factory;
-  BlockQueryMock query;
+  MockStatefulValidator validator;
+  MockTemporaryFactory factory;
+  MockBlockQuery query;
   model::HashProviderImpl provider;
 
   auto simulator = simulator::Simulator(validator, factory, query, provider);
@@ -90,9 +71,9 @@ TEST(SimulatorTest, ValidWhenPreviousBlock) {
 }
 
 TEST(SimulatorTest, FailWhenNoBlock) {
-  StatefulValidatorMock validator;
-  TemporaryFactoryMock factory;
-  BlockQueryMock query;
+  MockStatefulValidator validator;
+  MockTemporaryFactory factory;
+  MockBlockQuery query;
   model::HashProviderImpl provider;
 
   auto simulator = simulator::Simulator(validator, factory, query, provider);
@@ -122,9 +103,9 @@ TEST(SimulatorTest, FailWhenNoBlock) {
 }
 
 TEST(SimulatorTest, FailWhenSameAsProposalHeight) {
-  StatefulValidatorMock validator;
-  TemporaryFactoryMock factory;
-  BlockQueryMock query;
+  MockStatefulValidator validator;
+  MockTemporaryFactory factory;
+  MockBlockQuery query;
   model::HashProviderImpl provider;
 
   auto simulator = simulator::Simulator(validator, factory, query, provider);

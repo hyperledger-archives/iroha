@@ -14,10 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include "module/irohad/network/network_mocks.hpp"
+#include "module/irohad/validation/validation_mocks.hpp"
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+
 #include <endpoint.pb.h>
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <queries.pb.h>
 #include <atomic>
 #include <chrono>
 #include <main/server_runner.hpp>
@@ -27,8 +28,8 @@ limitations under the License.
 #include <torii/command_service.hpp>
 #include <torii/processor/query_processor_impl.hpp>
 #include <torii_utils/query_client.hpp>
+#include <queries.pb.h>
 
-#include "mock_classes.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
 
 constexpr const char *Ip = "0.0.0.0";
@@ -42,6 +43,10 @@ using ::testing::Return;
 using ::testing::A;
 using ::testing::_;
 using ::testing::AtLeast;
+
+using namespace iroha::network;
+using namespace iroha::validation;
+using namespace iroha::ametsuchi;
 
 class ToriiServiceTest : public testing::Test {
  public:
@@ -85,11 +90,11 @@ class ToriiServiceTest : public testing::Test {
   ServerRunner *runner;
   std::thread th;
 
-  WsvQueryMock wsv_query;
-  BlockQueryMock block_query;
+  MockWsvQuery wsv_query;
+  MockBlockQuery block_query;
 
-  PCSMock pcsMock;
-  StatelessValidatorMock statelessValidatorMock;
+  MockPeerCommunicationService pcsMock;
+  MockStatelessValidator statelessValidatorMock;
 };
 
 TEST_F(ToriiServiceTest, ToriiWhenBlocking) {

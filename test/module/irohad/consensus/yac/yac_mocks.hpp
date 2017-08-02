@@ -18,198 +18,189 @@
 #ifndef IROHA_YAC_MOCKS_HPP
 #define IROHA_YAC_MOCKS_HPP
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "consensus/yac/cluster_order.hpp"
+#include "consensus/yac/messages.hpp"
 #include "consensus/yac/yac.hpp"
 #include "consensus/yac/yac_gate.hpp"
-#include "consensus/yac/cluster_order.hpp"
 #include "consensus/yac/yac_hash_provider.hpp"
 #include "consensus/yac/yac_peer_orderer.hpp"
-#include "consensus/yac/messages.hpp"
 
-using namespace iroha::consensus::yac;
-using iroha::model::Peer;
+namespace iroha {
+  namespace consensus {
+    namespace yac {
+      model::Peer mk_peer(std::string address) {
+        model::Peer peer;
+        peer.address = address;
+        return peer;
+      }
 
-Peer mk_peer(std::string address) {
-  Peer peer;
-  peer.address = address;
-  return peer;
-}
+      VoteMessage create_vote(YacHash hash, std::string sign) {
+        VoteMessage vote;
+        vote.hash = hash;
+        std::copy(sign.begin(), sign.end(), vote.signature.pubkey.begin());
+        return vote;
+      }
 
-VoteMessage create_vote(YacHash hash, std::string sign) {
-  VoteMessage vote;
-  vote.hash = hash;
-  std::copy(sign.begin(), sign.end(),
-            vote.signature.pubkey.begin());
-  return vote;
-}
+      class MockYacCryptoProvider : public YacCryptoProvider {
+       public:
+        MOCK_METHOD1(verify, bool(CommitMessage));
+        MOCK_METHOD1(verify, bool(RejectMessage));
+        MOCK_METHOD1(verify, bool(VoteMessage));
 
-/**
- * Mock for yac crypto provider
- */
-class CryptoProviderMock : public YacCryptoProvider {
- public:
-  MOCK_METHOD1(verify, bool(CommitMessage));
-  MOCK_METHOD1(verify, bool(RejectMessage));
-  MOCK_METHOD1(verify, bool(VoteMessage));
+        VoteMessage getVote(YacHash hash) override {
+          VoteMessage vote;
+          vote.hash = hash;
+          return vote;
+        }
 
-  VoteMessage getVote(YacHash hash) override {
-    VoteMessage vote;
-    vote.hash = hash;
-    return vote;
-  };
+        MockYacCryptoProvider() = default;
 
-  CryptoProviderMock() {};
+        MockYacCryptoProvider(const MockYacCryptoProvider &) {}
 
-  CryptoProviderMock(const CryptoProviderMock &) {};
+        MockYacCryptoProvider &operator=(const MockYacCryptoProvider &) {
+          return *this;
+        }
+      };
 
-  CryptoProviderMock &operator=(const CryptoProviderMock &) { return *this; };
-};
+      class MockTimer : public Timer {
+       public:
+        void invokeAfterDelay(uint64_t millis,
+                              std::function<void()> handler) override {
+          handler();
+        }
 
-/**
- * Mock for timer
- */
-class FakeTimer : public Timer {
- public:
-  void invokeAfterDelay(uint64_t millis,
-                        std::function<void()> handler) override {
-    handler();
-  };
+        MOCK_METHOD0(deny, void());
 
-  MOCK_METHOD0(deny, void());
+        MockTimer() = default;
 
-  FakeTimer() {};
+        MockTimer(const MockTimer &rhs) {}
 
-  FakeTimer(const FakeTimer &rhs) {};
+        MockTimer &operator=(const MockTimer &rhs) { return *this; }
+      };
 
-  FakeTimer &operator=(const FakeTimer &rhs) { return *this; };
-};
+      class MockYacNetwork : public YacNetwork {
+       public:
+        void subscribe(
+            std::shared_ptr<YacNetworkNotifications> handler) override {
+          notification = handler;
+        };
 
-/**
- * Mock for network
- */
-class FakeNetwork : public YacNetwork {
- public:
-  void subscribe(std::shared_ptr<YacNetworkNotifications> handler) override {
-    notification = handler;
-  };
+        void release() { notification.reset(); }
 
-  void release() { notification.reset(); }
+        MOCK_METHOD2(send_commit, void(model::Peer, CommitMessage));
+        MOCK_METHOD2(send_reject, void(model::Peer, RejectMessage));
+        MOCK_METHOD2(send_vote, void(model::Peer, VoteMessage));
 
-  MOCK_METHOD2(send_commit, void(Peer, CommitMessage));
-  MOCK_METHOD2(send_reject, void(Peer, RejectMessage));
-  MOCK_METHOD2(send_vote, void(Peer, VoteMessage));
+        MockYacNetwork() = default;
 
-  FakeNetwork() {};
+        MockYacNetwork(const MockYacNetwork &rhs)
+            : notification(rhs.notification) {}
 
-  FakeNetwork(const FakeNetwork &rhs) : notification(rhs.notification) {
-  };
+        MockYacNetwork &operator=(const MockYacNetwork &rhs) {
+          notification = rhs.notification;
+          return *this;
+        }
 
-  FakeNetwork &operator=(const FakeNetwork &rhs) {
-    notification = rhs.notification;
-    return *this;
-  };
+        MockYacNetwork(MockYacNetwork &&rhs) {
+          std::swap(notification, rhs.notification);
+        }
 
-  FakeNetwork(FakeNetwork &&rhs) { std::swap(notification, rhs.notification); };
+        MockYacNetwork &operator=(MockYacNetwork &&rhs) {
+          std::swap(notification, rhs.notification);
+          return *this;
+        }
 
-  FakeNetwork &operator=(FakeNetwork &&rhs) {
-    std::swap(notification, rhs.notification);
-    return *this;
-  };
+        std::shared_ptr<YacNetworkNotifications> notification;
+      };
 
-  std::shared_ptr<YacNetworkNotifications> notification;
-};
+      class MockHashGate : public HashGate {
+       public:
+        MOCK_METHOD2(vote, void(YacHash, ClusterOrdering));
 
-/**
- *Mock realisation of yac consensus
- */
-class HashGateMock : public HashGate {
- public:
-  MOCK_METHOD2(vote, void(YacHash, ClusterOrdering));
+        MOCK_METHOD0(on_commit, rxcpp::observable<CommitMessage>());
 
-  MOCK_METHOD0(on_commit, rxcpp::observable<CommitMessage>());
+        MockHashGate() = default;
 
-  HashGateMock() = default;
+        MockHashGate(const MockHashGate &rhs) {}
 
-  HashGateMock(const HashGateMock &rhs) {
+        MockHashGate(MockHashGate &&rhs) {}
 
-  };
+        MockHashGate &operator=(const MockHashGate &rhs) { return *this; };
+      };
 
-  HashGateMock(HashGateMock &&rhs) {
-  };
+      class MockYacPeerOrderer : public YacPeerOrderer {
+       public:
+        MOCK_METHOD0(getInitialOrdering, nonstd::optional<ClusterOrdering>());
 
-  HashGateMock &operator=(const HashGateMock &rhs) {
-    return *this;
-  };
-};
+        MOCK_METHOD1(getOrdering, nonstd::optional<ClusterOrdering>(YacHash));
 
-/**
- * Mock for ordering
- */
-class YacPeerOrdererMock : public YacPeerOrderer {
- public:
-  MOCK_METHOD0(getInitialOrdering, nonstd::optional<ClusterOrdering>());
+        MockYacPeerOrderer() = default;
 
-  MOCK_METHOD1(getOrdering, nonstd::optional<ClusterOrdering>(YacHash));
+        MockYacPeerOrderer(const MockYacPeerOrderer &rhs){};
 
-  YacPeerOrdererMock() = default;
+        MockYacPeerOrderer(MockYacPeerOrderer &&rhs){};
 
-  YacPeerOrdererMock(const YacPeerOrdererMock &rhs) {
-  };
+        MockYacPeerOrderer &operator=(const MockYacPeerOrderer &rhs) {
+          return *this;
+        };
+      };
 
-  YacPeerOrdererMock(YacPeerOrdererMock &&rhs) {
-  };
+      class MockYacHashProvider : public YacHashProvider {
+       public:
+        MOCK_METHOD1(makeHash, YacHash(model::Block &));
 
-  YacPeerOrdererMock &operator=(const YacPeerOrdererMock &rhs) {
-    return *this;
-  };
-};
+        MockYacHashProvider() = default;
 
-/**
- * Mock for hash provider
- */
-class YacHashProviderMock : public YacHashProvider {
- public:
-  MOCK_METHOD1(makeHash, YacHash(iroha::model::Block & ));
+        MockYacHashProvider(const MockYacHashProvider &rhs){};
 
-  YacHashProviderMock() = default;
+        MockYacHashProvider(MockYacHashProvider &&rhs){};
 
-  YacHashProviderMock(const YacHashProviderMock &rhs) {
-  };
+        MockYacHashProvider &operator=(const MockYacHashProvider &rhs) {
+          return *this;
+        };
+      };
 
-  YacHashProviderMock(YacHashProviderMock &&rhs) {
-  };
+      class MockYacNetworkNotifications : public YacNetworkNotifications {
+       public:
+        MOCK_METHOD2(on_commit, void(model::Peer, CommitMessage));
+        MOCK_METHOD2(on_reject, void(model::Peer, RejectMessage));
+        MOCK_METHOD2(on_vote, void(model::Peer, VoteMessage));
+      };
 
-  YacHashProviderMock &operator=(const YacHashProviderMock &rhs) {
-    return *this;
-  };
-};
+      class YacTest : public ::testing::Test {
+       public:
+        // ------|Network|------
+        std::shared_ptr<MockYacNetwork> network;
+        std::shared_ptr<MockYacCryptoProvider> crypto;
+        std::shared_ptr<MockTimer> timer;
+        uint64_t delay = 100500;
+        std::shared_ptr<Yac> yac;
 
-class YacTest : public ::testing::Test {
- public:
-  // ------|Netowrk|------
-  std::shared_ptr<FakeNetwork> network;
-  std::shared_ptr<CryptoProviderMock> crypto;
-  std::shared_ptr<FakeTimer> timer;
-  uint64_t delay = 100500;
-  std::shared_ptr<Yac> yac;
+        // ------|Round|------
+        std::vector<model::Peer> default_peers = [] {
+          std::vector<model::Peer> result;
+          for (size_t i = 1; i <= 7; ++i) {
+            result.push_back(mk_peer(std::to_string(i)));
+          }
+          return result;
+        }();
 
-  // ------|Round|------
-  std::vector<Peer> default_peers = {mk_peer("1"), mk_peer("2"), mk_peer("3"),
-                                     mk_peer("4"), mk_peer("5"), mk_peer("6"),
-                                     mk_peer("7")};
+        void SetUp() override {
+          network = std::make_shared<MockYacNetwork>();
+          crypto = std::make_shared<MockYacCryptoProvider>();
+          timer = std::make_shared<MockTimer>();
+          yac = Yac::create(
+              std::move(YacVoteStorage()), network, crypto,
+              timer, ClusterOrdering(default_peers), delay);
+          network->subscribe(yac);
+        };
 
-  virtual void SetUp() override {
-    network = std::make_shared<FakeNetwork>();
-    crypto = std::make_shared<CryptoProviderMock>();
-    timer = std::make_shared<FakeTimer>();
-    yac = Yac::create(std::move(YacVoteStorage()), network, crypto,
-                      timer, ClusterOrdering(default_peers), delay);
-    network->subscribe(yac);
-  };
-
-  virtual void TearDown() override { network->release(); };
-};
+        void TearDown() override { network->release(); };
+      };
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha
 
 #endif  // IROHA_YAC_MOCKS_HPP

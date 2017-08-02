@@ -23,7 +23,7 @@
 #include <rxcpp/rx-observable.hpp>
 #include <utility>
 
-namespace common {
+namespace framework {
   namespace test_subscriber {
 
     /**

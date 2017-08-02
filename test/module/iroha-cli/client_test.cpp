@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/network/network_mocks.hpp"
+#include "module/irohad/validation/validation_mocks.hpp"
+
 #include "client.hpp"
 
-#include "module/irohad/torii/mock_classes.hpp"
 #include "main/server_runner.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
@@ -31,6 +32,10 @@ using ::testing::Return;
 using ::testing::A;
 using ::testing::_;
 using ::testing::AtLeast;
+
+using namespace iroha::ametsuchi;
+using namespace iroha::network;
+using namespace iroha::validation;
 
 class ClientTest : public testing::Test {
  public:
@@ -70,10 +75,10 @@ class ClientTest : public testing::Test {
 
   std::unique_ptr<ServerRunner> runner;
   std::thread th;
-  PCSMock pcsMock;
-  StatelessValidatorMock svMock;
-  WsvQueryMock wsv_query;
-  BlockQueryMock block_query;
+  MockPeerCommunicationService pcsMock;
+  MockStatelessValidator svMock;
+  MockWsvQuery wsv_query;
+  MockBlockQuery block_query;
 };
 
 TEST_F(ClientTest, SendTxWhenValid) {
