@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <utility>
 #include "keys_manager_impl.hpp"
 #include <fstream>
 #include "common/types.hpp"
@@ -22,7 +23,7 @@
 namespace iroha_cli {
 
   KeysManagerImpl::KeysManagerImpl(std::string account_name)
-      : account_name_(account_name) {}
+      : account_name_(std::move(account_name)) {}
 
   nonstd::optional<iroha::ed25519::keypair_t> KeysManagerImpl::loadKeys() {
     // Try to load from local file

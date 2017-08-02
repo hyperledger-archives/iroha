@@ -22,7 +22,7 @@
 namespace iroha_cli {
   class KeysManagerImpl : public KeysManager {
    public:
-    KeysManagerImpl(std::string account_name);
+    explicit KeysManagerImpl(std::string account_name);
 
     nonstd::optional<iroha::ed25519::keypair_t> loadKeys() override;
 
