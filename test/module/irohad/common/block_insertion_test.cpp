@@ -17,6 +17,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "main/raw_block_insertion.hpp"
 
 #include "common/types.hpp"
@@ -36,43 +37,10 @@ using namespace iroha::model;
 using namespace iroha;
 using namespace std;
 
-class MutableFactoryMock : public MutableFactory {
- public:
-  MOCK_METHOD0(createMutableStorage, std::unique_ptr<MutableStorage>());
-
-  // gmock workaround for non-copyable parameters
-  void commit(std::unique_ptr<MutableStorage> mutableStorage) override {
-    commit_(mutableStorage);
-  }
-
-  MOCK_METHOD1(commit_, void(std::unique_ptr<MutableStorage>
-      &));
-};
-
-class MutableStorageMock : public MutableStorage {
- public:
-  MOCK_METHOD2(apply, bool(
-      const Block &,
-      std::function<bool(const Block &, WsvCommand &,
-      WsvQuery &, const hash256_t &)>));
-  MOCK_METHOD1(getAccount,
-               nonstd::optional<Account>(
-                   const std::string &account_id));
-  MOCK_METHOD1(getSignatories, nonstd::optional<std::vector<ed25519::pubkey_t>>(
-      const std::string &account_id));
-  MOCK_METHOD1(getAsset, nonstd::optional<Asset>(
-      const std::string &asset_id));
-  MOCK_METHOD2(getAccountAsset,
-               nonstd::optional<AccountAsset>(
-                   const std::string &account_id,
-                   const std::string &asset_id));
-  MOCK_METHOD0(getPeers, nonstd::optional<std::vector<Peer>>());
-};
-
-MutableStorageMock *storage_mock = new MutableStorageMock();
+MockMutableStorage *storage_mock = new MockMutableStorage();
 
 std::unique_ptr<MutableStorage> createMutableStorageMock() {
-  return unique_ptr<MutableStorage>(storage_mock);
+  return unique_ptr<MockMutableStorage>(storage_mock);
 }
 
 Transaction getTransaction(uint64_t create_time, std::string address) {
@@ -119,7 +87,7 @@ TEST(BlockInsertionTest, BlockInsertionWhenParseBlock) {
   cout << "----------| block => string_repr(block)"
       " => parseBlock() |----------" << endl;
 
-  shared_ptr<MutableFactoryMock> factory = make_shared<MutableFactoryMock>();
+  shared_ptr<MockMutableFactory> factory = make_shared<MockMutableFactory>();
   BlockInserter inserter(factory);
   auto block = generateBlock();
   auto blob = BlockSerializer().serialize(block);
@@ -132,7 +100,7 @@ TEST(BlockInsertionTest, BlockInsertionWhenParseBlock) {
 TEST(BlockInsertionTest, BlockInsertionWhenApplyToStorage) {
   cout << "----------| block => applyToLedger() |----------" << endl;
 
-  shared_ptr<MutableFactoryMock> factory = make_shared<MutableFactoryMock>();
+  shared_ptr<MockMutableFactory> factory = make_shared<MockMutableFactory>();
   DefaultValue<std::unique_ptr<MutableStorage>>::SetFactory(
       &createMutableStorageMock);
 
