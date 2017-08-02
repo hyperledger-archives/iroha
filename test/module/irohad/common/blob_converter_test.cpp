@@ -16,10 +16,10 @@
  */
 
 #include <gtest/gtest.h>
-#include "common/blob_converter.hpp"
+#include "common/types.hpp"
 #include <iostream>
 
-using namespace iroha::common;
+using namespace iroha;
 using namespace std;
 
 TEST(ConverterTest, UsageTest) {
@@ -27,7 +27,7 @@ TEST(ConverterTest, UsageTest) {
       " => convert to string |----------" << endl;
 
   std::string source = "blob was here!";
-  auto blob = convert(source);
-  auto converted = convert(blob);
+  auto blob = stringToBytes(source);
+  auto converted = bytesToString(blob);
   ASSERT_EQ(source, converted);
 }

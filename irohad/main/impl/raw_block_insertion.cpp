@@ -19,7 +19,7 @@
 #include "ametsuchi/block_serializer.hpp"
 #include <fstream>
 #include <utility>
-#include "common/blob_converter.hpp"
+#include "common/types.hpp"
 
 namespace iroha {
   namespace main {
@@ -29,7 +29,7 @@ namespace iroha {
     };
 
     nonstd::optional<model::Block> BlockInserter::parseBlock(std::string &data) {
-      auto blob = common::convert(data);
+      auto blob = stringToBytes(data);
       ametsuchi::BlockSerializer serializer;
       return serializer.deserialize(blob);
     };

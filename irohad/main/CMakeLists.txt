@@ -26,7 +26,6 @@ add_library(genesis_block_server
   impl/raw_block_insertion.cpp
 )
 target_link_libraries(genesis_block_server
-  blob_converter
   ametsuchi
   model
   timer

@@ -25,7 +25,7 @@
 #include "model/transaction.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/transfer_asset.hpp"
-#include "common/blob_converter.hpp"
+#include "common/types.hpp"
 #include <iostream>
 
 using ::testing::DefaultValue;
@@ -112,7 +112,7 @@ TEST(JsonRepr, JsonBlockReprGeneration) {
 
   BlockSerializer serializer;
   auto blob = serializer.serialize(generateBlock());
-  cout << iroha::common::convert(blob) << endl;
+  cout << iroha::bytesToString(blob) << endl;
 }
 
 TEST(BlockInsertionTest, BlockInsertionWhenParseBlock) {
@@ -120,13 +120,12 @@ TEST(BlockInsertionTest, BlockInsertionWhenParseBlock) {
       " => parseBlock() |----------" << endl;
 
   shared_ptr<MutableFactoryMock> factory = make_shared<MutableFactoryMock>();
-
+  BlockInserter inserter(factory);
   auto block = generateBlock();
   auto blob = BlockSerializer().serialize(block);
-
-  BlockInserter inserter(factory);
-  auto str = iroha::common::convert(blob);
+  auto str = iroha::bytesToString(blob);
   auto new_block = inserter.parseBlock(str);
+  ASSERT_NE(nonstd::nullopt, new_block);
   ASSERT_EQ(block, new_block.value());
 }
 
@@ -147,4 +146,3 @@ TEST(BlockInsertionTest, BlockInsertionWhenApplyToStorage) {
 
   inserter.applyToLedger(blocks);
 }
-

@@ -44,10 +44,7 @@ namespace iroha {
    */
   template <size_t size_>
   class blob_t : public std::array<byte_t, size_> {
-    /**
-     * Dark magic of C++, do not touch pls :)
-     * author: @warchant
-     */
+
    public:
     /**
      * In compile-time returns size of current blob.
@@ -84,6 +81,44 @@ namespace iroha {
       return res;
     }
   };
+
+  // hex2bytes
+  inline std::vector<uint8_t> hex2bytes(const std::string& hex) {
+    std::vector<uint8_t> bytes;
+
+    for (size_t i = 0; i < hex.length(); i += 2) {
+      std::string byteString = hex.substr(i, 2);
+      uint8_t byte = (uint8_t)strtol(byteString.c_str(), NULL, 16);
+      bytes.push_back(byte);
+    }
+    return bytes;
+  }
+
+  /**
+   * Convert string to blob vector
+   * @param source - string for conversion
+   * @return vector<blob>
+   */
+  inline std::vector<uint8_t> stringToBytes(std::string &source) {
+    std::vector<uint8_t> result;
+    for (auto &&chr: source) {
+      result.push_back(chr);
+    }
+    return result;
+  }
+
+  /**
+   * blob vector to string
+   * @param source - vector for conversion
+   * @return result string
+   */
+  inline std::string bytesToString(std::vector<uint8_t> &source) {
+    std::string result;
+    for (auto &&elem: source) {
+      result += elem;
+    }
+    return result;
+  }
 
   template<size_t size>
   using hash_t = blob_t<size>;
@@ -160,18 +195,6 @@ namespace iroha {
   template<typename Base, typename T>
   inline bool instanceof(const T &ptr) {
     return typeid(Base) == typeid(ptr);
-  }
-
-  // hex2bytes
-  inline std::vector<uint8_t> hex2bytes(const std::string& hex) {
-    std::vector<uint8_t> bytes;
-
-    for (size_t i = 0; i < hex.length(); i += 2) {
-      std::string byteString = hex.substr(i, 2);
-      uint8_t byte = (uint8_t)strtol(byteString.c_str(), NULL, 16);
-      bytes.push_back(byte);
-    }
-    return bytes;
   }
 
 }  // namespace iroha
