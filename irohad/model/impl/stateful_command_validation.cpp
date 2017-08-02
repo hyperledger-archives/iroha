@@ -95,8 +95,8 @@ namespace iroha {
           // Has at least one signatory
           signs.has_value() and not signs.value().empty() and
           // Check if new master key is in AccountSignatory relationship
-          std::find(signs.value().begin(), signs.value().end(), pubkey) !=
-              signs.value().end();
+          std::any_of(signs.value().begin(), signs.value().end(),
+                      [this](auto &&key) { return key == pubkey; });
     }
 
     /**
