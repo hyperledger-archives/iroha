@@ -97,6 +97,11 @@ namespace iroha {
       MOCK_METHOD0(getPeers, nonstd::optional<std::vector<model::Peer>>());
     };
 
+    /**
+     * Factory for generation mock mutable storages.
+     * This method provide technique,
+     * when required to return object wrapped in unique pointer.
+     */
     std::unique_ptr<MutableStorage> createMockMutableStorage() {
       return std::make_unique<MockMutableStorage>();
     }
@@ -105,8 +110,8 @@ namespace iroha {
      public:
       MOCK_METHOD0(createMutableStorage, std::unique_ptr<MutableStorage>());
 
-      // gmock workaround for non-copyable parameters
       void commit(std::unique_ptr<MutableStorage> mutableStorage) override {
+        // gmock workaround for non-copyable parameters
         commit_(mutableStorage);
       }
 

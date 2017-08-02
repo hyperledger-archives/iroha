@@ -73,7 +73,7 @@ namespace iroha {
 
         MOCK_METHOD0(deny, void());
 
-        MockTimer() {}
+        MockTimer() = default;
 
         MockTimer(const MockTimer &rhs) {}
 
@@ -187,7 +187,7 @@ namespace iroha {
           return result;
         }();
 
-        virtual void SetUp() override {
+        void SetUp() override {
           network = std::make_shared<MockYacNetwork>();
           crypto = std::make_shared<MockYacCryptoProvider>();
           timer = std::make_shared<MockTimer>();
@@ -197,7 +197,7 @@ namespace iroha {
           network->subscribe(yac);
         };
 
-        virtual void TearDown() override { network->release(); };
+        void TearDown() override { network->release(); };
       };
     }  // namespace yac
   }    // namespace consensus
