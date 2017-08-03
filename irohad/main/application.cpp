@@ -15,19 +15,47 @@ limitations under the License.
 */
 
 #include "main/application.hpp"
+#include "torii/command_service.hpp"
+#include "model/converters/pb_transaction_factory.hpp"
+#include "torii/processor/transaction_processor_impl.hpp"
+
+#include "simulator/impl/simulator.hpp"
 #include "network/impl/peer_communication_service_impl.hpp"
+
+using namespace iroha;
+using namespace iroha::ametsuchi;
+using namespace iroha::simulator;
+using namespace iroha::validation;
+using namespace iroha::network;
+using namespace iroha::model;
 
 Irohad::Irohad(const std::string &block_store_dir,
                const std::string &redis_host, size_t redis_port,
                const std::string &pg_conn, const std::string &address)
-    : context(new Context()),
-      block_store_dir_(block_store_dir),
+    : block_store_dir_(block_store_dir),
       redis_host_(redis_host),
       redis_port_(redis_port),
       pg_conn_(pg_conn),
       address_(address),
-      storage(iroha::ametsuchi::StorageImpl::create(block_store_dir, redis_host,
+      storage(StorageImpl::create(block_store_dir, redis_host,
                                                     redis_port, pg_conn)) {}
+
+std::shared_ptr<BlockCreator> Irohad::createSimulator(
+    std::shared_ptr<OrderingGate> ordering_gate,
+    std::shared_ptr<StatefulValidator> stateful_validator,
+    std::shared_ptr<ametsuchi::BlockQuery> block_query,
+    std::shared_ptr<TemporaryFactory> temporary_factory,
+    std::shared_ptr<HashProviderImpl> hash_provider) {
+  auto simulator = std::make_shared<Simulator>(
+      stateful_validator, temporary_factory, block_query, hash_provider);
+  std::shared_ptr<BlockCreator> res = simulator;
+
+  ordering_gate->on_proposal().subscribe([&simulator](auto &&proposal) {
+    simulator->process_proposal(proposal);
+  });
+
+  return res;
+}
 
 void Irohad::run() {
   // TODO : Intergrate ServerRunner and all other components here.

@@ -14,46 +14,47 @@
 
 add_library(server_runner server_runner.cpp)
 target_link_libraries(server_runner
-  torii_service
-  logger
-  endpoint
-  schema
-)
+    torii_service
+    logger
+    endpoint
+    schema
+    )
 
 add_library(genesis_block_server
-  genesis_block_server/genesis_block_server.cpp
-  genesis_block_server/genesis_block_processor.cpp
-  impl/raw_block_insertion.cpp
-)
+    genesis_block_server/genesis_block_server.cpp
+    genesis_block_server/genesis_block_processor.cpp
+    impl/raw_block_insertion.cpp
+    )
 target_link_libraries(genesis_block_server
-  ametsuchi
-  model
-  timer
-  endpoint
-  optional
-  logger
-)
+    ametsuchi
+    model
+    timer
+    endpoint
+    optional
+    logger
+    )
 
 add_library(application application.cpp)
 target_link_libraries(application
-  server_runner
-  model
-  ametsuchi
-  networking
-  ordering_service
-  chain_validator
-  hash
-  stateless_validator
-  processors
-  crypto
-)
+    server_runner
+    model
+    ametsuchi
+    networking
+    ordering_service
+    chain_validator
+    hash
+    stateless_validator
+    processors
+    crypto
+    simulator
+    )
 
 add_executable(irohad irohad.cpp)
 target_link_libraries(irohad
-  application
-  genesis_block_server
-  ametsuchi
-  gflags
-  rapidjson
-  config
-)
+    application
+    genesis_block_server
+    ametsuchi
+    gflags
+    rapidjson
+    config
+    )

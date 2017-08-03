@@ -17,7 +17,6 @@
 #ifndef IROHA_APPLICATION_HPP
 #define IROHA_APPLICATION_HPP
 
-#include <main/context.hpp>
 #include <network/peer_communication_service.hpp>
 #include <torii/processor/query_processor_impl.hpp>
 #include <torii/processor/transaction_processor_impl.hpp>
@@ -30,14 +29,24 @@
 #include "model/model_crypto_provider_impl.hpp"
 #include "torii/command_service.hpp"
 
+#include "simulator/block_creator.hpp"
+#include "network/ordering_gate.hpp"
+#include "validation/stateful_validator.hpp"
+#include "model/model_hash_provider_impl.hpp"
+
 class Irohad {
  public:
-  std::shared_ptr<Context> context;
 
   Irohad(const std::string &block_store_dir, const std::string &redis_host,
          size_t redis_port, const std::string &pg_conn,
          const std::string &address);
   void run();
+  std::shared_ptr<iroha::simulator::BlockCreator> createSimulator(
+      std::shared_ptr<iroha::network::OrderingGate> ordering_gate,
+      std::shared_ptr<iroha::validation::StatefulValidator> stateful_validator,
+      std::shared_ptr<iroha::ametsuchi::BlockQuery> block_query,
+      std::shared_ptr<iroha::ametsuchi::TemporaryFactory> temporary_factory,
+      std::shared_ptr<iroha::model::HashProviderImpl> hash_provider);
 
   std::unique_ptr<torii::CommandService> createCommandService(
       std::shared_ptr<iroha::model::converters::PbTransactionFactory>

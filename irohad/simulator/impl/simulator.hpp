@@ -28,12 +28,13 @@
 namespace iroha {
   namespace simulator {
 
-    class Simulator : public VerifiedProposalCreator, BlockCreator {
+    class Simulator : public VerifiedProposalCreator, public BlockCreator {
      public:
-      Simulator(validation::StatefulValidator& statefulValidator,
-                ametsuchi::TemporaryFactory& factory,
-                ametsuchi::BlockQuery& blockQuery,
-                model::HashProviderImpl& hash_provider);
+      Simulator(
+          std::shared_ptr<validation::StatefulValidator> statefulValidator,
+          std::shared_ptr<ametsuchi::TemporaryFactory> factory,
+          std::shared_ptr<ametsuchi::BlockQuery> blockQuery,
+          std::shared_ptr<model::HashProviderImpl> hash_provider);
 
       void process_proposal(model::Proposal proposal) override;
 
@@ -48,10 +49,10 @@ namespace iroha {
       rxcpp::subjects::subject<model::Proposal> notifier_;
       rxcpp::subjects::subject<model::Block> block_notifier_;
 
-      validation::StatefulValidator& validator_;
-      ametsuchi::TemporaryFactory& ametsuchi_factory_;
-      ametsuchi::BlockQuery& block_queries_;
-      model::HashProviderImpl& hash_provider_;
+      std::shared_ptr<validation::StatefulValidator> validator_;
+      std::shared_ptr<ametsuchi::TemporaryFactory> ametsuchi_factory_;
+      std::shared_ptr<ametsuchi::BlockQuery> block_queries_;
+      std::shared_ptr<model::HashProviderImpl> hash_provider_;
 
       // last block
       model::Block last_block;
