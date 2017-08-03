@@ -20,6 +20,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 #include "consensus/yac/yac.hpp"
 #include "consensus/yac/messages.hpp"
@@ -90,10 +91,10 @@ namespace iroha {
         uint64_t delay_seconds = 5;
 
         return Yac::create(YacVoteStorage(),
-                           createNetwork(network_address,
+                           createNetwork(std::move(network_address),
                                          initial_order.getPeers()),
                            createCryptoProvider(),
-                           createTimer(loop),
+                           createTimer(std::move(loop)),
                            initial_order,
                            delay_seconds * 1000);
 
@@ -103,8 +104,8 @@ namespace iroha {
                                   std::shared_ptr<uvw::Loop> loop,
                                   std::unique_ptr<YacPeerOrderer> peer_orderer,
                                   std::shared_ptr<simulator::BlockCreator> block_creator) {
-        auto yac = createYac(network_address,
-                             loop,
+        auto yac = createYac(std::move(network_address),
+                             std::move(loop),
                              peer_orderer->getInitialOrdering().value());
 
         auto hash_provider = createHashProvider();

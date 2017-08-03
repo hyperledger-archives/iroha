@@ -18,7 +18,6 @@
 #ifndef IROHA_CONSENSUS_INIT_HPP
 #define IROHA_CONSENSUS_INIT_HPP
 
-#include <gmock/gmock.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -26,9 +25,9 @@
 #include "consensus/yac/messages.hpp"
 #include "consensus/yac/impl/yac_gate_impl.hpp"
 #include "consensus/yac/impl/network_impl.hpp"
-#include <consensus/yac/impl/timer_impl.hpp>
-#include <consensus/yac/impl/peer_orderer_impl.hpp>
-#include <consensus/yac/impl/yac_hash_provider_impl.hpp>
+#include "consensus/yac/impl/timer_impl.hpp"
+#include "consensus/yac/impl/peer_orderer_impl.hpp"
+#include "consensus/yac/impl/yac_hash_provider_impl.hpp"
 
 namespace iroha {
   namespace consensus {
