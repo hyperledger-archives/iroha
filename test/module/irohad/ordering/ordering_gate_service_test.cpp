@@ -64,7 +64,7 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenTimer) {
   wrapper.subscribe([this](auto proposal) { proposals.push_back(proposal); });
 
   for (size_t i = 0; i < 10; ++i) {
-    std::shared_ptr<Transaction> tx;
+    auto tx = std::make_shared<Transaction>();
     tx->tx_counter = i;
     gate_impl->propagate_transaction(tx);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -95,7 +95,7 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
   wrapper.subscribe([this](auto proposal) { proposals.push_back(proposal); });
 
   for (size_t i = 0; i < 10; ++i) {
-    std::shared_ptr<Transaction> tx;
+    auto tx = std::make_shared<Transaction>();
     tx->tx_counter = i;
     gate_impl->propagate_transaction(tx);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
