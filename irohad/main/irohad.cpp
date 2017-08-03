@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
              config[mbr::RedisHost].GetString(),
              config[mbr::RedisPort].GetUint(),
              config[mbr::PgOpt].GetString(),
-             config[mbr::ToriiPort].GetUint());
+             config[mbr::ToriiPort].GetUint(), FLAGS_peer_number);
 
   iroha::main::BlockInserter inserter(irohad.storage);
   auto block = inserter.parseBlock(FLAGS_genesis_block);

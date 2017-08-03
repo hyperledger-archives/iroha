@@ -100,7 +100,7 @@ namespace iroha {
 
       }
 
-      auto YacInit::initConsensusGate(std::string network_address,
+      std::shared_ptr<YacGateImpl> YacInit::initConsensusGate(std::string network_address,
                                   std::shared_ptr<uvw::Loop> loop,
                                   std::shared_ptr<YacPeerOrderer> peer_orderer,
                                   std::shared_ptr<simulator::BlockCreator> block_creator) {

@@ -66,7 +66,7 @@ void Irohad::run() {
   loop = uvw::Loop::create();
   auto torii_server =
       std::make_unique<ServerRunner>("0.0.0.0" + std::to_string(torii_port_));
-  std::thread server_thread([this] {
+  std::thread server_thread([this, &torii_server] {
     // Protobuf converters
     auto pb_tx_factory =
         std::make_shared<PbTransactionFactory>();
@@ -85,8 +85,8 @@ void Irohad::run() {
     auto chain_validator =
         std::make_shared<ChainValidatorImpl>(crypto_verifier);
 
-    PeerOrdererImpl orderer(storage);
-    auto ordering = orderer.getInitialOrdering().value().getPeers();
+    auto orderer = std::make_shared<PeerOrdererImpl>(storage);
+    auto ordering = orderer->getInitialOrdering().value().getPeers();
 
     // Ordering gate
     OrderingInit ordering_init;
@@ -99,8 +99,8 @@ void Irohad::run() {
 
     // Consensus gate
     YacInit yac_init;
-    auto consensus_gate =
-        yac_init.initConsensusGate(ordering.at(), loop, orderer, simulator);
+    auto consensus_gate = yac_init.initConsensusGate(
+        ordering.at(peer_number_).address, loop, orderer, simulator);
 
     // Block loader
     auto block_loader = std::make_shared<MockBlockLoader>();
@@ -123,7 +123,17 @@ void Irohad::run() {
                              stateless_validator);
     auto query_service = createQueryService(
         pb_query_factory, pb_query_response_factory, query_processor);
-    torii_server->run(comand_service, query_service);
+
+    std::thread internal_thread([this, &ordering, &ordering_init, &yac_init] {
+      grpc::ServerBuilder builder;
+      builder.AddListeningPort(ordering.at(peer_number_).address, grpc::InsecureServerCredentials());
+      builder.RegisterService(ordering_init.orderingService().get());
+      builder.RegisterService(yac_init.consensus_network.get());
+      auto server = builder.BuildAndStart();
+      server->Wait();
+    });
+
+    torii_server->run(std::move(comand_service), std::move(query_service));
 
   });
   torii_server->waitForServersReady();
