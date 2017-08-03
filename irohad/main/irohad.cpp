@@ -56,7 +56,8 @@ int main(int argc, char *argv[]) {
              config[mbr::ToriiPort].GetUint(), FLAGS_peer_number);
 
   iroha::main::BlockInserter inserter(irohad.storage);
-  auto block = inserter.parseBlock(FLAGS_genesis_block);
+  auto file = inserter.loadFile(FLAGS_genesis_block);
+  auto block = inserter.parseBlock(file.value());
   if (block.has_value()) {
     inserter.applyToLedger({block.value()});
   }
