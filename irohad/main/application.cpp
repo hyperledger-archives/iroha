@@ -82,18 +82,25 @@ void Irohad::run() {
     // Validators:
     auto stateless_validator = createStatelessValidator(crypto_verifier);
     auto stateful_validator = std::make_shared<StatefulValidatorImpl>();
-    auto
-        chain_validator = std::make_shared<ChainValidatorImpl>(crypto_verifier);
+    auto chain_validator =
+        std::make_shared<ChainValidatorImpl>(crypto_verifier);
 
-
+    PeerOrdererImpl orderer(storage);
+    auto ordering = orderer.getInitialOrdering().value().getPeers();
 
     // Ordering gate
     OrderingInit ordering_init;
-    auto ordering_gate = ordering_init.initOrderingGate(peers_, loop, 10, 1000);
+    auto ordering_gate =
+        ordering_init.initOrderingGate(ordering, loop, 10, 1000);
+
+    // Simulator
+    auto simulator = createSimulator(ordering_gate, stateful_validator, storage,
+                                     storage, hash_provider);
 
     // Consensus gate
     YacInit yac_init;
-    auto consensus_gate = yac_init.initConsensusGate();
+    auto consensus_gate =
+        yac_init.initConsensusGate(ordering.at(), loop, orderer, simulator);
 
     // Block loader
     auto block_loader = std::make_shared<MockBlockLoader>();

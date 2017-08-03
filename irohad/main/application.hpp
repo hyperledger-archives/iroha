@@ -98,7 +98,6 @@ class Irohad {
   size_t redis_port_;
   std::string pg_conn_;
   size_t torii_port_;
-  std::vector<std::string> peers_;
   std::shared_ptr<uvw::Loop> loop;
 
  public:
