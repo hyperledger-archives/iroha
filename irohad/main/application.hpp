@@ -28,6 +28,7 @@
 
 #include "main/server_runner.hpp"
 #include "model/model_crypto_provider_impl.hpp"
+#include "torii/command_service.hpp"
 
 class Irohad {
  public:
@@ -35,18 +36,31 @@ class Irohad {
 
   Irohad(const std::string &block_store_dir, const std::string &redis_host,
          size_t redis_port, const std::string &pg_conn,
-         const std::string& address);
+         const std::string &address);
   void run();
+
+  std::unique_ptr<torii::CommandService> createCommandService(
+      std::shared_ptr<iroha::model::converters::PbTransactionFactory>
+          pb_factory,
+      std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor);
+
+  std::unique_ptr<torii::QueryService> createQueryService(
+      std::shared_ptr<iroha::model::converters::PbQueryFactory>
+          pb_query_factory,
+      std::shared_ptr<iroha::model::converters::PbQueryResponseFactory>
+          pb_query_response_factory,
+      std::shared_ptr<iroha::torii::QueryProcessor> query_processor);
 
  private:
   std::string block_store_dir_;
   std::string redis_host_;
   size_t redis_port_;
   std::string pg_conn_;
+  std::string address_;
 
  public:
   std::shared_ptr<iroha::ametsuchi::StorageImpl> storage;
-  std::unique_ptr<ServerRunner> server_runner_;
+
 };
 
 #endif  // IROHA_APPLICATION_HPP

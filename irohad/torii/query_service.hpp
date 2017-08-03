@@ -33,10 +33,12 @@ namespace torii {
    */
   class QueryService {
    public:
-    QueryService(iroha::model::converters::PbQueryFactory &pb_query_factory,
-                 iroha::model::converters::PbQueryResponseFactory
-                     &pb_query_response_factory,
-                 iroha::torii::QueryProcessor &query_processor);
+    QueryService(
+        std::shared_ptr<iroha::model::converters::PbQueryFactory>
+            pb_query_factory,
+        std::shared_ptr<iroha::model::converters::PbQueryResponseFactory>
+            pb_query_response_factory,
+        std::shared_ptr<iroha::torii::QueryProcessor> query_processor);
 
     QueryService(const QueryService &) = delete;
     QueryService &operator=(const QueryService &) = delete;
@@ -50,10 +52,11 @@ namespace torii {
                    iroha::protocol::QueryResponse &response);
 
    private:
-    iroha::model::converters::PbQueryFactory &pb_query_factory_;
-    iroha::model::converters::PbQueryResponseFactory
-        &pb_query_response_factory_;
-    iroha::torii::QueryProcessor &query_processor_;
+    std::shared_ptr<iroha::model::converters::PbQueryFactory> pb_query_factory_;
+    std::shared_ptr<iroha::model::converters::PbQueryResponseFactory>
+        pb_query_response_factory_;
+    std::shared_ptr<iroha::torii::QueryProcessor> query_processor_;
+
     std::unordered_map<std::string, iroha::protocol::QueryResponse &>
         handler_map_;
   };

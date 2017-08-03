@@ -35,8 +35,10 @@ namespace torii {
    */
   class CommandService {
    public:
-    CommandService(iroha::model::converters::PbTransactionFactory& pb_factory,
-                   iroha::torii::TransactionProcessor& txProccesor);
+    CommandService(
+        std::shared_ptr<iroha::model::converters::PbTransactionFactory>
+            pb_factory,
+        std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor);
 
     CommandService(const CommandService&) = delete;
     CommandService& operator=(const CommandService&) = delete;
@@ -49,8 +51,8 @@ namespace torii {
                     iroha::protocol::ToriiResponse& response);
 
    private:
-    iroha::model::converters::PbTransactionFactory& pb_factory_;
-    iroha::torii::TransactionProcessor& tx_processor_;
+    std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory_;
+    std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor_;
     std::unordered_map<std::string, iroha::protocol::ToriiResponse&>
         handler_map_;
   };

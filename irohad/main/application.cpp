@@ -15,11 +15,9 @@ limitations under the License.
 */
 
 #include "main/application.hpp"
-#include "torii/command_service.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
+#include "torii/command_service.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
-
-using namespace iroha;
 
 Irohad::Irohad(const std::string &block_store_dir,
                const std::string &redis_host, size_t redis_port,
@@ -29,10 +27,31 @@ Irohad::Irohad(const std::string &block_store_dir,
       redis_host_(redis_host),
       redis_port_(redis_port),
       pg_conn_(pg_conn),
+      address_(address),
       storage(iroha::ametsuchi::StorageImpl::create(block_store_dir, redis_host,
-                                                    redis_port, pg_conn)),
-      server_runner_(new ServerRunner(address)){}
+                                                    redis_port, pg_conn)) {}
 
 void Irohad::run() {
   // TODO : Intergrate ServerRunner and all other components here.
+  auto torii_server = std::make_unique<ServerRunner>(address_);
+  std::thread server_thread([&torii_server] {
+    // torii_server->run()
+  });
+  torii_server->waitForServersReady();
+  server_thread.join();
+}
+
+std::unique_ptr<torii::CommandService> Irohad::createCommandService(
+    std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory,
+    std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor) {
+  return std::make_unique<torii::CommandService>(pb_factory, txProccesor);
+}
+
+std::unique_ptr<torii::QueryService> Irohad::createQueryService(
+    std::shared_ptr<iroha::model::converters::PbQueryFactory> pb_query_factory,
+    std::shared_ptr<iroha::model::converters::PbQueryResponseFactory>
+        pb_query_response_factory,
+    std::shared_ptr<iroha::torii::QueryProcessor> query_processor) {
+  return std::make_unique<torii::QueryService>(
+      pb_query_factory, pb_query_response_factory, query_processor);
 }

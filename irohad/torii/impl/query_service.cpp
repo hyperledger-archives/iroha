@@ -20,22 +20,21 @@
 namespace torii {
 
   QueryService::QueryService(
-      iroha::model::converters::PbQueryFactory& pb_query_factory,
-      iroha::model::converters::PbQueryResponseFactory&
+      std::shared_ptr<iroha::model::converters::PbQueryFactory>
+          pb_query_factory,
+      std::shared_ptr<iroha::model::converters::PbQueryResponseFactory>
           pb_query_response_factory,
-      iroha::torii::QueryProcessor& query_processor)
+      std::shared_ptr<iroha::torii::QueryProcessor> query_processor)
       : pb_query_factory_(pb_query_factory),
         pb_query_response_factory_(pb_query_response_factory),
         query_processor_(query_processor) {
-
     // Subscribe on result from iroha
-    query_processor_.queryNotifier().subscribe([this](auto iroha_response) {
+    query_processor_->queryNotifier().subscribe([this](auto iroha_response) {
       // Find client to respond
-      auto res =
-          handler_map_.find(iroha_response->query_hash.to_string());
+      auto res = handler_map_.find(iroha_response->query_hash.to_string());
       // Serialize to proto an return to response
       res->second =
-          pb_query_response_factory_.serialize(iroha_response).value();
+          pb_query_response_factory_->serialize(iroha_response).value();
 
     });
   }
@@ -43,10 +42,10 @@ namespace torii {
   void QueryService::FindAsync(iroha::protocol::Query const& request,
                                iroha::protocol::QueryResponse& response) {
     // Get iroha model query
-    auto query = pb_query_factory_.deserialize(request);
+    auto query = pb_query_factory_->deserialize(request);
     // Query - response relationship
     handler_map_.insert({query->query_hash.to_string(), response});
     // Send query to iroha
-    query_processor_.queryHandle(query);
+    query_processor_->queryHandle(query);
   }
 }

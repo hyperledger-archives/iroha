@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
-#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
 #include <endpoint.pb.h>
+#include <queries.pb.h>
 #include <atomic>
 #include <chrono>
 #include <main/server_runner.hpp>
@@ -28,7 +29,6 @@ limitations under the License.
 #include <torii/command_service.hpp>
 #include <torii/processor/query_processor_impl.hpp>
 #include <torii_utils/query_client.hpp>
-#include <queries.pb.h>
 
 #include "torii/processor/transaction_processor_impl.hpp"
 
@@ -51,25 +51,24 @@ using namespace iroha::ametsuchi;
 class ToriiServiceTest : public testing::Test {
  public:
   virtual void SetUp() {
-    runner = new ServerRunner(std::string(Ip) + ":" +  std::to_string(Port));
+    runner = new ServerRunner(std::string(Ip) + ":" + std::to_string(Port));
     th = std::thread([this] {
       // ----------- Command Service --------------
 
-      auto tx_processor = iroha::torii::TransactionProcessorImpl(
-          pcsMock, statelessValidatorMock);
-      iroha::model::converters::PbTransactionFactory pb_tx_factory;
-      auto command_service =  // std::unique_ptr<torii::CommandService>(new
-                              // torii::CommandService(pb_tx_factory,
-                              // tx_processor));
+      auto tx_processor =
+          std::make_shared<iroha::torii::TransactionProcessorImpl>(
+              pcsMock, statelessValidatorMock);
+      auto pb_tx_factory = std::make_shared<iroha::model::converters::PbTransactionFactory>();
+      auto command_service =
           std::make_unique<torii::CommandService>(pb_tx_factory, tx_processor);
 
       //----------- Query Service ----------
       iroha::model::QueryProcessingFactory qpf(wsv_query, block_query);
 
-      iroha::torii::QueryProcessorImpl qpi(qpf, statelessValidatorMock);
+      auto qpi = std::make_shared< iroha::torii::QueryProcessorImpl>(qpf, statelessValidatorMock);
 
-      iroha::model::converters::PbQueryFactory pb_query_factory;
-      iroha::model::converters::PbQueryResponseFactory pb_query_resp_factory;
+      auto pb_query_factory = std::make_shared<iroha::model::converters::PbQueryFactory>();
+      auto pb_query_resp_factory = std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
 
       auto query_service = std::make_unique<torii::QueryService>(
           pb_query_factory, pb_query_resp_factory, qpi);

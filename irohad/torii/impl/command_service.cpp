@@ -20,11 +20,12 @@ limitations under the License.
 namespace torii {
 
   CommandService::CommandService(
-      iroha::model::converters::PbTransactionFactory &pb_factory,
-      iroha::torii::TransactionProcessor &txProccesor)
+      std::shared_ptr<iroha::model::converters::PbTransactionFactory>
+          pb_factory,
+      std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor)
       : pb_factory_(pb_factory), tx_processor_(txProccesor) {
     // Notifier for all clients
-    tx_processor_.transactionNotifier().subscribe([this](auto iroha_response) {
+    tx_processor_->transactionNotifier().subscribe([this](auto iroha_response) {
 
       // TODO: make for other responses
       if (iroha:: instanceof
@@ -45,11 +46,11 @@ namespace torii {
 
   void CommandService::ToriiAsync(iroha::protocol::Transaction const &request,
                                   iroha::protocol::ToriiResponse &response) {
-    auto iroha_tx = pb_factory_.deserialize(request);
+    auto iroha_tx = pb_factory_->deserialize(request);
 
     handler_map_.insert({iroha_tx->tx_hash.to_string(), response});
     // Send transaction to iroha
-    tx_processor_.transactionHandle(iroha_tx);
+    tx_processor_->transactionHandle(iroha_tx);
   }
 
 }  // namespace torii

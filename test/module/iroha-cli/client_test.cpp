@@ -41,22 +41,24 @@ class ClientTest : public testing::Test {
  public:
   virtual void SetUp() {
     // Run a server
-    runner = std::make_unique<ServerRunner>(std::string(Ip) + ":"  + std::to_string(Port));
+    runner = std::make_unique<ServerRunner>(std::string(Ip) + ":" +
+                                            std::to_string(Port));
     th = std::thread([this] {
       // ----------- Command Service --------------
       auto tx_processor =
-          iroha::torii::TransactionProcessorImpl(pcsMock, svMock);
-      iroha::model::converters::PbTransactionFactory pb_tx_factory;
+          std::make_shared<iroha::torii::TransactionProcessorImpl>(pcsMock,
+                                                                   svMock);
+      auto pb_tx_factory = std::make_shared<iroha::model::converters::PbTransactionFactory>();;
       auto command_service =
           std::make_unique<torii::CommandService>(pb_tx_factory, tx_processor);
 
       //----------- Query Service ----------
       iroha::model::QueryProcessingFactory qpf(wsv_query, block_query);
 
-      iroha::torii::QueryProcessorImpl qpi(qpf, svMock);
+      auto qpi = std::make_shared< iroha::torii::QueryProcessorImpl>(qpf, svMock);
 
-      iroha::model::converters::PbQueryFactory pb_query_factory;
-      iroha::model::converters::PbQueryResponseFactory pb_query_resp_factory;
+      auto pb_query_factory = std::make_shared<iroha::model::converters::PbQueryFactory>();
+      auto pb_query_resp_factory = std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
 
       auto query_service = std::make_unique<torii::QueryService>(
           pb_query_factory, pb_query_resp_factory, qpi);
