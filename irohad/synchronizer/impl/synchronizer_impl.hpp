@@ -26,18 +26,18 @@ namespace iroha {
   namespace synchronizer {
     class SynchronizerImpl : public Synchronizer {
      public:
-      SynchronizerImpl(validation::ChainValidator& validator,
-                       ametsuchi::MutableFactory& mutableFactory,
-                       network::BlockLoader& blockLoader);
+      SynchronizerImpl(std::shared_ptr<validation::ChainValidator> validator,
+                       std::shared_ptr<ametsuchi::MutableFactory> mutableFactory,
+                       std::shared_ptr<network::BlockLoader> blockLoader);
 
       void process_commit(iroha::model::Block commit_message) override;
 
       rxcpp::observable<Commit> on_commit_chain() override;
 
      private:
-      validation::ChainValidator& validator_;
-      ametsuchi::MutableFactory& mutableFactory_;
-      network::BlockLoader& blockLoader_;
+      std::shared_ptr<validation::ChainValidator> validator_;
+      std::shared_ptr<ametsuchi::MutableFactory> mutableFactory_;
+      std::shared_ptr<network::BlockLoader> blockLoader_;
 
       // internal
       rxcpp::subjects::subject<Commit> notifier_;

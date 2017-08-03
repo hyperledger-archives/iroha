@@ -15,7 +15,12 @@ limitations under the License.
 */
 
 #include "main/application.hpp"
+#include <synchronizer/impl/synchronizer_impl.hpp>
+#include <validation/impl/chain_validator_impl.hpp>
+#include <gmock/gmock.h>
 #include "model/converters/pb_transaction_factory.hpp"
+#include "torii/processor/transaction_processor_impl.hpp"
+#include "network/block_loader.hpp"
 
 #include "simulator/impl/simulator.hpp"
 #include "network/impl/peer_communication_service_impl.hpp"
@@ -63,8 +68,20 @@ createPeerCommunicationService(std::shared_ptr<OrderingGate> ordering_gate,
                                                         synchronizer);
 }
 
+class MockBlockLoader : public iroha::network::BlockLoader {
+ public:
+  MOCK_METHOD2(requestBlocks,
+      rxcpp::observable<model::Block>(model::Peer &,
+                                      model::Block &));
+};
+
 void Irohad::run() {
   // TODO : Intergrate ServerRunner and all other components here.
+  /*
+  auto chain_validator = std::make_shared<iroha::validation::ChainValidatorImpl>();
+  auto block_loader = std::make_shared<MockBlockLoader>();
+  auto syncronizer = initializeSynchronizer(chain_validator, storage, block_loader);
+   */
   auto torii_server = std::make_unique<ServerRunner>(address_);
   std::thread server_thread([this] {
     // Protobuf converters
@@ -99,6 +116,15 @@ void Irohad::run() {
   });
   torii_server->waitForServersReady();
   server_thread.join();
+}
+
+std::shared_ptr<iroha::synchronizer::Synchronizer>
+Irohad::initializeSynchronizer(
+    std::shared_ptr<iroha::validation::ChainValidator> validator,
+    std::shared_ptr<iroha::ametsuchi::MutableFactory> mutableFactory,
+    std::shared_ptr<iroha::network::BlockLoader> blockLoader) {
+  return std::make_shared<iroha::synchronizer::SynchronizerImpl>(
+      std::move(validator), mutableFactory, blockLoader);
 }
 
 std::unique_ptr<::torii::CommandService> Irohad::createCommandService(

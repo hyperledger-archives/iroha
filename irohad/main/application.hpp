@@ -24,6 +24,9 @@
 
 #include <ametsuchi/impl/storage_impl.hpp>
 #include <crypto/crypto.hpp>
+#include "network/block_loader.hpp"
+#include "synchronizer/synchronizer.hpp"
+#include "validation/chain_validator.hpp"
 
 #include "main/server_runner.hpp"
 #include "model/model_crypto_provider_impl.hpp"
@@ -82,6 +85,11 @@ class Irohad {
       std::shared_ptr<iroha::ametsuchi::BlockQuery> blockQuery);
 
  private:
+  std::shared_ptr<iroha::synchronizer::Synchronizer> initializeSynchronizer(
+      std::shared_ptr<iroha::validation::ChainValidator> validator,
+      std::shared_ptr<iroha::ametsuchi::MutableFactory> mutableFactory,
+      std::shared_ptr<iroha::network::BlockLoader> blockLoader);
+
   std::string block_store_dir_;
   std::string redis_host_;
   size_t redis_port_;

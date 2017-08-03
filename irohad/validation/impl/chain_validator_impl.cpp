@@ -21,7 +21,7 @@ namespace iroha {
   namespace validation {
 
     ChainValidatorImpl::ChainValidatorImpl(
-        model::ModelCryptoProvider& crypto_provider)
+        std::shared_ptr<model::ModelCryptoProvider> crypto_provider)
         : crypto_provider_(crypto_provider) {}
 
     bool ChainValidatorImpl::validateBlock(const model::Block& block,
@@ -46,7 +46,7 @@ namespace iroha {
           checkSupermajority(storage, block.sigs.size()) &&
           // Verify signatories of the block
           // TODO: use stateful validation here ?
-          crypto_provider_.verify(block) &&
+          crypto_provider_->verify(block) &&
           // Apply to temporary storage
           storage.apply(block, apply_block);
     }
