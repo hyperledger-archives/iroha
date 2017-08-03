@@ -35,7 +35,7 @@ class Irohad {
 
   Irohad(const std::string &block_store_dir, const std::string &redis_host,
          size_t redis_port, const std::string &pg_conn,
-         const std::string& ip, const int port);
+         const std::string& address);
   void run();
 
  private:

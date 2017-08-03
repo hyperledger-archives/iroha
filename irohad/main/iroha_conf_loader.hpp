@@ -25,7 +25,6 @@
 
 namespace config_members {
   const char* Ip = "ip";
-  const char* ServerPort = "server_port";
   const char* BlockStorePath = "block_store_path";
   // const char* ToriiPort = "torii_port"; // TODO: Needs AddPeer.
   const char* KeyPairPath = "key_pair_path";

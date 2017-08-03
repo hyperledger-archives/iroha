@@ -23,8 +23,7 @@ using namespace iroha;
 
 Irohad::Irohad(const std::string &block_store_dir,
                const std::string &redis_host, size_t redis_port,
-               const std::string &pg_conn, const std::string &ip,
-               const int port)
+               const std::string &pg_conn, const std::string &address)
     : context(new Context()),
       block_store_dir_(block_store_dir),
       redis_host_(redis_host),
@@ -32,7 +31,7 @@ Irohad::Irohad(const std::string &block_store_dir,
       pg_conn_(pg_conn),
       storage(iroha::ametsuchi::StorageImpl::create(block_store_dir, redis_host,
                                                     redis_port, pg_conn)),
-      server_runner_(new ServerRunner(ip, port)){}
+      server_runner_(new ServerRunner(address)){}
 
 void Irohad::run() {
   // TODO : Intergrate ServerRunner and all other components here.

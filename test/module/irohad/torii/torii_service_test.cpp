@@ -51,7 +51,7 @@ using namespace iroha::ametsuchi;
 class ToriiServiceTest : public testing::Test {
  public:
   virtual void SetUp() {
-    runner = new ServerRunner(Ip, Port);
+    runner = new ServerRunner(std::string(Ip) + ":" +  std::to_string(Port));
     th = std::thread([this] {
       // ----------- Command Service --------------
 

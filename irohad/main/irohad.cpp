@@ -51,8 +51,7 @@ int main(int argc, char *argv[]) {
              config[mbr::RedisHost].GetString(),
              config[mbr::RedisPort].GetUint(),
              config[mbr::PgOpt].GetString(),
-             config[mbr::Ip].GetString(),
-             config[mbr::ServerPort].GetUint());
+             config[mbr::Ip].GetString());
 
   iroha::main::BlockInserter inserter(irohad.storage);
   auto block = inserter.parseBlock(FLAGS_genesis_block);

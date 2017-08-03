@@ -41,7 +41,7 @@ class ClientTest : public testing::Test {
  public:
   virtual void SetUp() {
     // Run a server
-    runner = std::make_unique<ServerRunner>(Ip, Port);
+    runner = std::make_unique<ServerRunner>(std::string(Ip) + ":"  + std::to_string(Port));
     th = std::thread([this] {
       // ----------- Command Service --------------
       auto tx_processor =
