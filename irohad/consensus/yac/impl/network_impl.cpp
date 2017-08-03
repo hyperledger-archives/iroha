@@ -25,8 +25,8 @@ namespace iroha {
   namespace consensus {
     namespace yac {
 
-      NetworkImpl::NetworkImpl(std::string address,
-                               std::vector<model::Peer> peers)
+      NetworkImpl::NetworkImpl(const std::string &address,
+                               const std::vector<model::Peer> &peers)
           : address_(address),
             thread_(&NetworkImpl::asyncCompleteRpc, this) {
         for (const auto &peer : peers) {

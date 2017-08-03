@@ -27,6 +27,8 @@
 #include "consensus/yac/impl/yac_gate_impl.hpp"
 #include "consensus/yac/impl/network_impl.hpp"
 #include <consensus/yac/impl/timer_impl.hpp>
+#include <consensus/yac/impl/peer_orderer_impl.hpp>
+#include <consensus/yac/impl/yac_hash_provider_impl.hpp>
 
 namespace iroha {
   namespace consensus {
@@ -55,17 +57,34 @@ namespace iroha {
 
       class YacInit {
        public:
-        void initConsensusGate() {
-          YacGateImpl();
+        auto initConsensusGate(std::string network_address,
+                               std::shared_ptr<uvw::Loop> loop,
+                               std::unique_ptr<YacPeerOrderer> peer_orderer) {
+          auto yac = createYac(network_address,
+                               loop,
+                               peer_orderer->getInitialOrdering().value());
+
+          auto hash_provider = createHashProvider();
+          return std::make_shared<YacGateImpl>(std::unique_ptr<HashGate>(yac.release()),
+                                               peer_orderer,
+                                               hash_provider);
         }
+
+        std::shared_ptr<NetworkImpl> consensus_network;
        private:
         std::unique_ptr<consensus::yac::Yac> createYac(std::string network_address,
-                                                       std::vector<model::Peer> initial_peers) {
+                                                       std::shared_ptr<uvw::Loop> loop,
+                                                       ClusterOrdering initial_order) {
+          uint64_t delay_seconds = 5;
 
-          Yac::create(YacVoteStorage(),
-                      createNetwork(network_address, initial_peers),
-          createCryptoProvider(), );
-          return nullptr;
+          return Yac::create(YacVoteStorage(),
+                             createNetwork(network_address,
+                                           initial_order.getPeers()),
+                             createCryptoProvider(),
+                             createTimer(loop),
+                             initial_order,
+                             delay_seconds * 1000);
+
         }
 
         // ----------| Yac dependencies |----------
@@ -91,8 +110,12 @@ namespace iroha {
           return crypto;
         }
 
-        auto createTimer(std::shared_ptr<uvw::Loop> loop){
+        auto createTimer(std::shared_ptr<uvw::Loop> loop) {
           return std::make_shared<TimerImpl>(loop);
+        }
+
+        auto createHashProvider() {
+          return std::make_shared<YacHashProviderImpl>();
         }
       };
     } // namespace yac

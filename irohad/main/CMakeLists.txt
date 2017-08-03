@@ -40,6 +40,7 @@ add_library(application
     impl/consensus_init.cpp
     )
 target_link_libraries(application
+    gtest
     yac
     server_runner
     model
