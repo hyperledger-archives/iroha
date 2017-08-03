@@ -62,8 +62,9 @@ std::shared_ptr<BlockCreator> Irohad::createSimulator(
 }
 
 std::shared_ptr<iroha::network::PeerCommunicationService>
-createPeerCommunicationService(std::shared_ptr<OrderingGate> ordering_gate,
-                               std::shared_ptr<Synchronizer> synchronizer) {
+Irohad::createPeerCommunicationService(
+    std::shared_ptr<OrderingGate> ordering_gate,
+    std::shared_ptr<Synchronizer> synchronizer) {
   return std::make_shared<PeerCommunicationServiceImpl>(ordering_gate,
                                                         synchronizer);
 }
