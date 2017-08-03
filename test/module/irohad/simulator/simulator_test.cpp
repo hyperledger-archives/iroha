@@ -24,17 +24,28 @@
 using namespace iroha;
 using namespace iroha::validation;
 using namespace iroha::ametsuchi;
+using namespace iroha::model;
 using namespace framework::test_subscriber;
 
 using ::testing::Return;
 using ::testing::_;
 
-TEST(SimulatorTest, ValidWhenPreviousBlock) {
-  MockStatefulValidator validator;
-  MockTemporaryFactory factory;
-  MockBlockQuery query;
-  model::HashProviderImpl provider;
+class SimulatorTest : public ::testing::Test {
+ public:
+  void SetUp() override {
+    validator = std::make_shared<MockStatefulValidator>();
+    factory = std::make_shared<MockTemporaryFactory>();
+    query = std::make_shared<MockBlockQuery>();
+    provider = std::make_shared<HashProviderImpl>();
+  }
 
+  std::shared_ptr<MockStatefulValidator> validator;
+  std::shared_ptr<MockTemporaryFactory> factory;
+  std::shared_ptr<MockBlockQuery> query;
+  std::shared_ptr<HashProviderImpl> provider;
+};
+
+TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
   auto simulator = simulator::Simulator(validator, factory, query, provider);
 
   auto txs = std::vector<model::Transaction>(2);
@@ -44,12 +55,12 @@ TEST(SimulatorTest, ValidWhenPreviousBlock) {
   model::Block block;
   block.height = proposal.height - 1;
 
-  EXPECT_CALL(factory, createTemporaryWsv()).Times(1);
+  EXPECT_CALL(*factory, createTemporaryWsv()).Times(1);
 
-  EXPECT_CALL(query, getBlocks(proposal.height - 1, proposal.height))
+  EXPECT_CALL(*query, getBlocks(proposal.height - 1, proposal.height))
       .WillOnce(Return(rxcpp::observable<>::just(block)));
 
-  EXPECT_CALL(validator, validate(_, _)).WillOnce(Return(proposal));
+  EXPECT_CALL(*validator, validate(_, _)).WillOnce(Return(proposal));
 
   auto proposal_wrapper =
       make_test_subscriber<CallExact>(simulator.on_verified_proposal(), 1);
@@ -70,24 +81,19 @@ TEST(SimulatorTest, ValidWhenPreviousBlock) {
   ASSERT_TRUE(block_wrapper.validate());
 }
 
-TEST(SimulatorTest, FailWhenNoBlock) {
-  MockStatefulValidator validator;
-  MockTemporaryFactory factory;
-  MockBlockQuery query;
-  model::HashProviderImpl provider;
-
+TEST_F(SimulatorTest, FailWhenNoBlock) {
   auto simulator = simulator::Simulator(validator, factory, query, provider);
 
   auto txs = std::vector<model::Transaction>(2);
   auto proposal = model::Proposal(txs);
   proposal.height = 2;
 
-  EXPECT_CALL(factory, createTemporaryWsv()).Times(0);
+  EXPECT_CALL(*factory, createTemporaryWsv()).Times(0);
 
-  EXPECT_CALL(query, getBlocks(proposal.height - 1, proposal.height))
+  EXPECT_CALL(*query, getBlocks(proposal.height - 1, proposal.height))
       .WillOnce(Return(rxcpp::observable<>::empty<model::Block>()));
 
-  EXPECT_CALL(validator, validate(_, _)).Times(0);
+  EXPECT_CALL(*validator, validate(_, _)).Times(0);
 
   auto proposal_wrapper =
       make_test_subscriber<CallExact>(simulator.on_verified_proposal(), 0);
@@ -102,12 +108,7 @@ TEST(SimulatorTest, FailWhenNoBlock) {
   ASSERT_TRUE(block_wrapper.validate());
 }
 
-TEST(SimulatorTest, FailWhenSameAsProposalHeight) {
-  MockStatefulValidator validator;
-  MockTemporaryFactory factory;
-  MockBlockQuery query;
-  model::HashProviderImpl provider;
-
+TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
   auto simulator = simulator::Simulator(validator, factory, query, provider);
 
   auto txs = std::vector<model::Transaction>(2);
@@ -117,12 +118,12 @@ TEST(SimulatorTest, FailWhenSameAsProposalHeight) {
   model::Block block;
   block.height = proposal.height;
 
-  EXPECT_CALL(factory, createTemporaryWsv()).Times(0);
+  EXPECT_CALL(*factory, createTemporaryWsv()).Times(0);
 
-  EXPECT_CALL(query, getBlocks(proposal.height - 1, proposal.height))
+  EXPECT_CALL(*query, getBlocks(proposal.height - 1, proposal.height))
       .WillOnce(Return(rxcpp::observable<>::just(block)));
 
-  EXPECT_CALL(validator, validate(_, _)).Times(0);
+  EXPECT_CALL(*validator, validate(_, _)).Times(0);
 
   auto proposal_wrapper =
       make_test_subscriber<CallExact>(simulator.on_verified_proposal(), 0);
