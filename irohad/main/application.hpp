@@ -47,6 +47,8 @@ class Irohad {
       std::shared_ptr<iroha::ametsuchi::BlockQuery> block_query,
       std::shared_ptr<iroha::ametsuchi::TemporaryFactory> temporary_factory,
       std::shared_ptr<iroha::model::HashProviderImpl> hash_provider);
+  std::shared_ptr<iroha::network::PeerCommunicationService>
+  createPeerCommunicationService();
 
   std::unique_ptr<torii::CommandService> createCommandService(
       std::shared_ptr<iroha::model::converters::PbTransactionFactory>

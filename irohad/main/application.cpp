@@ -28,6 +28,7 @@ using namespace iroha::simulator;
 using namespace iroha::validation;
 using namespace iroha::network;
 using namespace iroha::model;
+using namespace iroha::synchronizer;
 
 Irohad::Irohad(const std::string &block_store_dir,
                const std::string &redis_host, size_t redis_port,
@@ -55,6 +56,13 @@ std::shared_ptr<BlockCreator> Irohad::createSimulator(
   });
 
   return res;
+}
+
+std::shared_ptr<iroha::network::PeerCommunicationService>
+createPeerCommunicationService(std::shared_ptr<OrderingGate> ordering_gate,
+                               std::shared_ptr<Synchronizer> synchronizer) {
+  return std::make_shared<PeerCommunicationServiceImpl>(ordering_gate,
+                                                        synchronizer);
 }
 
 void Irohad::run() {

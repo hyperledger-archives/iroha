@@ -19,21 +19,23 @@ limitations under the License.
 namespace iroha {
   namespace network {
     PeerCommunicationServiceImpl::PeerCommunicationServiceImpl(
-        OrderingGate& orderingGate, synchronizer::Synchronizer& synchronizer)
-        : orderingGate_(orderingGate), synchronizer_(synchronizer) {}
+        std::shared_ptr<OrderingGate> ordering_gate,
+        std::shared_ptr<synchronizer::Synchronizer> synchronizer)
+        : ordering_gate_(std::move(ordering_gate)),
+          synchronizer_(std::move(synchronizer)) {}
 
     void PeerCommunicationServiceImpl::propagate_transaction(
         std::shared_ptr<const model::Transaction> transaction) {
-      orderingGate_.propagate_transaction(transaction);
+      ordering_gate_->propagate_transaction(transaction);
     }
 
     rxcpp::observable<model::Proposal>
     PeerCommunicationServiceImpl::on_proposal() {
-      return orderingGate_.on_proposal();
+      return ordering_gate_->on_proposal();
     }
 
     rxcpp::observable<Commit> PeerCommunicationServiceImpl::on_commit() {
-      return synchronizer_.on_commit_chain();
+      return synchronizer_->on_commit_chain();
     }
   }
 }

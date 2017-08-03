@@ -25,8 +25,9 @@ namespace iroha {
   namespace network {
     class PeerCommunicationServiceImpl : public PeerCommunicationService {
      public:
-      PeerCommunicationServiceImpl(OrderingGate& orderingGate,
-                                   synchronizer::Synchronizer& synchronizer);
+      PeerCommunicationServiceImpl(
+          std::shared_ptr<OrderingGate> ordering_gate,
+          std::shared_ptr<synchronizer::Synchronizer> synchronizer);
 
       void propagate_transaction(
           std::shared_ptr<const model::Transaction> transaction) override;
@@ -36,8 +37,8 @@ namespace iroha {
       rxcpp::observable<Commit> on_commit() override;
 
      private:
-      OrderingGate& orderingGate_;
-      synchronizer::Synchronizer& synchronizer_;
+      std::shared_ptr<OrderingGate> ordering_gate_;
+      std::shared_ptr<synchronizer::Synchronizer> synchronizer_;
     };
   }
 }
