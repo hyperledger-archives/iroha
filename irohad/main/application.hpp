@@ -25,16 +25,17 @@
 
 #include <ametsuchi/impl/storage_impl.hpp>
 #include <crypto/crypto.hpp>
-#include <model/model_crypto_provider_impl.hpp>
 
-#include <main/server_runner.hpp>
+#include "main/server_runner.hpp"
+#include "model/model_crypto_provider_impl.hpp"
 
 class Irohad {
  public:
   std::shared_ptr<Context> context;
 
   Irohad(const std::string &block_store_dir, const std::string &redis_host,
-         size_t redis_port, const std::string &pg_conn);
+         size_t redis_port, const std::string &pg_conn,
+         const std::string& ip, const int port);
   void run();
 
  private:
@@ -45,6 +46,7 @@ class Irohad {
 
  public:
   std::shared_ptr<iroha::ametsuchi::StorageImpl> storage;
+  std::unique_ptr<ServerRunner> server_runner_;
 };
 
 #endif  // IROHA_APPLICATION_HPP

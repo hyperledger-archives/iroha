@@ -36,10 +36,14 @@ namespace iroha {
                              public proto::OrderingGate::Service,
                              network::AsyncGrpcClient<google::protobuf::Empty> {
      public:
+
       explicit OrderingGateImpl(const std::string &server_address);
+
       void propagate_transaction(
           const model::Transaction &transaction) override;
+
       rxcpp::observable<model::Proposal> on_proposal() override;
+
       grpc::Status SendProposal(::grpc::ServerContext *context,
                                 const proto::Proposal *request,
                                 ::google::protobuf::Empty *response) override;

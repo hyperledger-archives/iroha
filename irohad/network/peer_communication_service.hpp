@@ -37,7 +37,7 @@ namespace iroha {
        * Propagate transaction in network
        * @param transaction - object for propagation
        */
-      virtual void propagate_transaction(model::Transaction transaction) = 0;
+      virtual void propagate_transaction(const model::Transaction& transaction) = 0;
 
       /**
        * Event is triggered when proposal arrives from network.

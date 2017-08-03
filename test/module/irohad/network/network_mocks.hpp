@@ -27,7 +27,7 @@ namespace iroha {
   namespace network {
     class MockPeerCommunicationService : public PeerCommunicationService {
      public:
-      MOCK_METHOD1(propagate_transaction, void(model::Transaction));
+      MOCK_METHOD1(propagate_transaction, void(const model::Transaction&));
 
       MOCK_METHOD0(on_proposal, rxcpp::observable<model::Proposal>());
 
