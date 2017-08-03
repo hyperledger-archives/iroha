@@ -30,7 +30,8 @@ namespace iroha {
         : loop_(std::move(loop)),
           timer_(loop_->resource<uvw::TimerHandle>()),
           max_size_(max_size),
-          delay_milliseconds_(delay_milliseconds) {
+          delay_milliseconds_(delay_milliseconds),
+          proposal_height(1) {
       for (const auto &peer : peers) {
         peers_[peer.address] = proto::OrderingGate::NewStub(grpc::CreateChannel(
             peer.address, grpc::InsecureChannelCredentials()));
@@ -79,7 +80,10 @@ namespace iroha {
         txs.push_back(std::move(tx));
       }
 
-      publishProposal(model::Proposal(txs));
+      model::Proposal proposal(txs);
+      proposal.height = proposal_height++;
+
+      publishProposal(std::move(proposal));
     }
 
     void OrderingServiceImpl::publishProposal(model::Proposal &&proposal) {
