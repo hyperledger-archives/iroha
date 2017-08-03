@@ -105,13 +105,13 @@ void set_default_ametsuchi(MockWsvQuery &test_wsv,
 
 
 TEST(QueryExecutor, get_account) {
-  MockWsvQuery wsv_queries;
-  MockBlockQuery block_queries;
+  auto wsv_queries = std::make_shared<MockWsvQuery>();
+  auto block_queries = std::make_shared<MockBlockQuery>();
 
   auto query_proccesor =
       iroha::model::QueryProcessingFactory(wsv_queries, block_queries);
 
-  set_default_ametsuchi(wsv_queries, block_queries);
+  set_default_ametsuchi(*wsv_queries, *block_queries);
 
   // Valid cases:
   // 1. Admin asks about test account
@@ -176,12 +176,13 @@ TEST(QueryExecutor, get_account) {
 }
 
 TEST(QueryExecutor, get_account_assets) {
-  MockWsvQuery wsv_queries;
-  MockBlockQuery block_queries;
+  auto wsv_queries = std::make_shared<MockWsvQuery>();
+  auto block_queries = std::make_shared<MockBlockQuery>();
+
   auto query_proccesor =
       iroha::model::QueryProcessingFactory(wsv_queries, block_queries);
 
-  set_default_ametsuchi(wsv_queries, block_queries);
+  set_default_ametsuchi(*wsv_queries, *block_queries);
 
   // Valid cases:
   // 1. Admin asks account_id

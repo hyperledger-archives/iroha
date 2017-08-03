@@ -54,21 +54,31 @@ class ToriiServiceTest : public testing::Test {
     runner = new ServerRunner(std::string(Ip) + ":" + std::to_string(Port));
     th = std::thread([this] {
       // ----------- Command Service --------------
+      pcsMock = std::make_shared<MockPeerCommunicationService>();
+      statelessValidatorMock = std::make_shared<MockStatelessValidator>();
+      wsv_query = std::make_shared<MockWsvQuery>();
+      block_query = std::make_shared<MockBlockQuery>();
+
 
       auto tx_processor =
           std::make_shared<iroha::torii::TransactionProcessorImpl>(
               pcsMock, statelessValidatorMock);
-      auto pb_tx_factory = std::make_shared<iroha::model::converters::PbTransactionFactory>();
+      auto pb_tx_factory =
+          std::make_shared<iroha::model::converters::PbTransactionFactory>();
       auto command_service =
           std::make_unique<torii::CommandService>(pb_tx_factory, tx_processor);
 
       //----------- Query Service ----------
-      iroha::model::QueryProcessingFactory qpf(wsv_query, block_query);
+      auto qpf = std::make_unique<iroha::model::QueryProcessingFactory>(
+          wsv_query, block_query);
 
-      auto qpi = std::make_shared< iroha::torii::QueryProcessorImpl>(qpf, statelessValidatorMock);
+      auto qpi = std::make_shared<iroha::torii::QueryProcessorImpl>(
+          std::move(qpf), statelessValidatorMock);
 
-      auto pb_query_factory = std::make_shared<iroha::model::converters::PbQueryFactory>();
-      auto pb_query_resp_factory = std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
+      auto pb_query_factory =
+          std::make_shared<iroha::model::converters::PbQueryFactory>();
+      auto pb_query_resp_factory =
+          std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
 
       auto query_service = std::make_unique<torii::QueryService>(
           pb_query_factory, pb_query_resp_factory, qpi);
@@ -89,20 +99,20 @@ class ToriiServiceTest : public testing::Test {
   ServerRunner *runner;
   std::thread th;
 
-  MockWsvQuery wsv_query;
-  MockBlockQuery block_query;
+  std::shared_ptr<MockWsvQuery> wsv_query;
+  std::shared_ptr<MockBlockQuery> block_query;
 
-  MockPeerCommunicationService pcsMock;
-  MockStatelessValidator statelessValidatorMock;
+  std::shared_ptr<MockPeerCommunicationService> pcsMock;
+  std::shared_ptr<MockStatelessValidator> statelessValidatorMock;
 };
 
 TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
-  EXPECT_CALL(statelessValidatorMock,
+  EXPECT_CALL(*statelessValidatorMock,
               validate(A<const iroha::model::Transaction &>()))
       .Times(TimesToriiBlocking)
       .WillRepeatedly(Return(true));
 
-  EXPECT_CALL(pcsMock, propagate_transaction(_)).Times(AtLeast(1));
+  EXPECT_CALL(*pcsMock, propagate_transaction(_)).Times(AtLeast(1));
 
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
     iroha::protocol::ToriiResponse response;
@@ -118,7 +128,7 @@ TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
 }
 
 TEST_F(ToriiServiceTest, ToriiWhenBlockingInvalid) {
-  EXPECT_CALL(statelessValidatorMock,
+  EXPECT_CALL(*statelessValidatorMock,
               validate(A<const iroha::model::Transaction &>()))
       .Times(TimesToriiBlocking)
       .WillRepeatedly(Return(false));
@@ -140,12 +150,12 @@ TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
   torii::CommandAsyncClient client(Ip, Port);
   std::atomic_int count{0};
 
-  EXPECT_CALL(statelessValidatorMock,
+  EXPECT_CALL(*statelessValidatorMock,
               validate(A<const iroha::model::Transaction &>()))
       .Times(TimesToriiNonBlocking)
       .WillRepeatedly(Return(true));
 
-  EXPECT_CALL(pcsMock, propagate_transaction(_)).Times(AtLeast(1));
+  EXPECT_CALL(*pcsMock, propagate_transaction(_)).Times(AtLeast(1));
 
   for (size_t i = 0; i < TimesToriiNonBlocking; ++i) {
     auto new_tx = iroha::protocol::Transaction();

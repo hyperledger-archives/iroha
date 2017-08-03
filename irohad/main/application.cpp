@@ -15,9 +15,7 @@ limitations under the License.
 */
 
 #include "main/application.hpp"
-#include "model/converters/pb_transaction_factory.hpp"
-#include "torii/command_service.hpp"
-#include "torii/processor/transaction_processor_impl.hpp"
+#include "network/impl/peer_communication_service_impl.hpp"
 
 Irohad::Irohad(const std::string &block_store_dir,
                const std::string &redis_host, size_t redis_port,
@@ -34,8 +32,36 @@ Irohad::Irohad(const std::string &block_store_dir,
 void Irohad::run() {
   // TODO : Intergrate ServerRunner and all other components here.
   auto torii_server = std::make_unique<ServerRunner>(address_);
-  std::thread server_thread([&torii_server] {
-    // torii_server->run()
+  std::thread server_thread([this] {
+    // Protobuf converters
+    auto pb_tx_factory =
+        std::make_shared<iroha::model::converters::PbTransactionFactory>();
+    auto pb_query_factory =
+        std::make_shared<iroha::model::converters::PbQueryFactory>();
+    auto pb_query_response_factory =
+        std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
+    // Crypto Provider:
+    auto crypto_verifier =
+        std::make_shared<iroha::model::ModelCryptoProviderImpl>();
+    // Validators:
+    auto stateless_validator = createStatelessValidator(crypto_verifier);
+
+    // PeerCommunicationService
+    // TODO: replace with create
+    // auto pcs = createPeerCommunicationService();
+    // Torii:
+    // --- Transactions:
+    // auto tx_processor = createTransactionProcessor(pcs, stateless_validator);
+    // auto comand_service = createCommandService(pb_tx_factory, tx_processor);
+    // --- Queries
+    auto query_proccessing_factory =
+        createQueryProcessingFactory(storage, storage);
+    auto query_processor =
+        createQueryProcessor(std::move(query_proccessing_factory), stateless_validator);
+    auto query_service = createQueryService(
+        pb_query_factory, pb_query_response_factory, query_processor);
+    //torii_server->run(comand_service, query_service);
+
   });
   torii_server->waitForServersReady();
   server_thread.join();
@@ -54,4 +80,33 @@ std::unique_ptr<torii::QueryService> Irohad::createQueryService(
     std::shared_ptr<iroha::torii::QueryProcessor> query_processor) {
   return std::make_unique<torii::QueryService>(
       pb_query_factory, pb_query_response_factory, query_processor);
+}
+
+std::shared_ptr<iroha::torii::QueryProcessor> Irohad::createQueryProcessor(
+    std::unique_ptr<iroha::model::QueryProcessingFactory> qpf,
+    std::shared_ptr<iroha::validation::StatelessValidator>
+        stateless_validator) {
+  return std::make_shared<iroha::torii::QueryProcessorImpl>(
+      std::move(qpf), stateless_validator);
+}
+
+std::shared_ptr<iroha::torii::TransactionProcessor>
+Irohad::createTransactionProcessor(
+    std::shared_ptr<iroha::network::PeerCommunicationService> pcs,
+    std::shared_ptr<iroha::validation::StatelessValidator> validator) {
+  return std::make_shared<iroha::torii::TransactionProcessorImpl>(pcs,
+                                                                  validator);
+}
+std::shared_ptr<iroha::validation::StatelessValidator>
+Irohad::createStatelessValidator(
+    std::shared_ptr<iroha::model::ModelCryptoProvider> crypto_provider) {
+  return std::make_shared<iroha::validation::StatelessValidatorImpl>(
+      crypto_provider);
+}
+std::unique_ptr<iroha::model::QueryProcessingFactory>
+Irohad::createQueryProcessingFactory(
+    std::shared_ptr<iroha::ametsuchi::WsvQuery> wsvQuery,
+    std::shared_ptr<iroha::ametsuchi::BlockQuery> blockQuery) {
+  return std::make_unique<iroha::model::QueryProcessingFactory>(wsvQuery,
+                                                                blockQuery);
 }

@@ -45,20 +45,31 @@ class ClientTest : public testing::Test {
                                             std::to_string(Port));
     th = std::thread([this] {
       // ----------- Command Service --------------
+      pcsMock = std::make_shared<MockPeerCommunicationService>();
+      svMock = std::make_shared<MockStatelessValidator>();
+      wsv_query = std::make_shared<MockWsvQuery>();
+      block_query = std::make_shared<MockBlockQuery>();
+
       auto tx_processor =
           std::make_shared<iroha::torii::TransactionProcessorImpl>(pcsMock,
                                                                    svMock);
-      auto pb_tx_factory = std::make_shared<iroha::model::converters::PbTransactionFactory>();;
+      auto pb_tx_factory =
+          std::make_shared<iroha::model::converters::PbTransactionFactory>();
+      ;
       auto command_service =
           std::make_unique<torii::CommandService>(pb_tx_factory, tx_processor);
 
       //----------- Query Service ----------
-      iroha::model::QueryProcessingFactory qpf(wsv_query, block_query);
+      auto qpf = std::make_unique<iroha::model::QueryProcessingFactory>(
+          wsv_query, block_query);
 
-      auto qpi = std::make_shared< iroha::torii::QueryProcessorImpl>(qpf, svMock);
+      auto qpi = std::make_shared<iroha::torii::QueryProcessorImpl>(
+          std::move(qpf), svMock);
 
-      auto pb_query_factory = std::make_shared<iroha::model::converters::PbQueryFactory>();
-      auto pb_query_resp_factory = std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
+      auto pb_query_factory =
+          std::make_shared<iroha::model::converters::PbQueryFactory>();
+      auto pb_query_resp_factory =
+          std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
 
       auto query_service = std::make_unique<torii::QueryService>(
           pb_query_factory, pb_query_resp_factory, qpi);
@@ -77,17 +88,18 @@ class ClientTest : public testing::Test {
 
   std::unique_ptr<ServerRunner> runner;
   std::thread th;
-  MockPeerCommunicationService pcsMock;
-  MockStatelessValidator svMock;
-  MockWsvQuery wsv_query;
-  MockBlockQuery block_query;
+  std::shared_ptr<MockPeerCommunicationService> pcsMock;
+  std::shared_ptr<MockStatelessValidator> svMock;
+
+  std::shared_ptr<MockWsvQuery> wsv_query;
+  std::shared_ptr<MockBlockQuery> block_query;
 };
 
 TEST_F(ClientTest, SendTxWhenValid) {
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
+  EXPECT_CALL(*svMock, validate(A<const iroha::model::Transaction &>()))
       .WillOnce(Return(true));
-  EXPECT_CALL(pcsMock, propagate_transaction(_)).Times(1);
+  EXPECT_CALL(*pcsMock, propagate_transaction(_)).Times(1);
 
   auto json_tx =
       "{\"signatures\": [ {\n"
@@ -113,7 +125,7 @@ TEST_F(ClientTest, SendTxWhenValid) {
 TEST_F(ClientTest, SendTxWhenInvalidJson) {
   iroha_cli::CliClient client(Ip, Port);
   // Must not call stateful validation
-  EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
+  EXPECT_CALL(*svMock, validate(A<const iroha::model::Transaction &>()))
       .Times(0);
   // Json with no Transaction
   auto json_tx =
@@ -132,7 +144,7 @@ TEST_F(ClientTest, SendTxWhenInvalidJson) {
 
 TEST_F(ClientTest, SendTxWhenStatelessInvalid) {
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(svMock, validate(A<const iroha::model::Transaction &>()))
+  EXPECT_CALL(*svMock, validate(A<const iroha::model::Transaction &>()))
       .WillOnce(Return(false));
   auto json_tx =
       "{\"signatures\": [ {\n"

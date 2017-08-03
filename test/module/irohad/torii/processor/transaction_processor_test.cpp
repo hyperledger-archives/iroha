@@ -39,7 +39,7 @@ class TransactionProcessorTest : public ::testing::Test {
   void SetUp() override {
     pcs = std::make_shared<MockPeerCommunicationService>();
     validation = std::make_shared<MockStatelessValidator>();
-    tp = std::make_shared<TransactionProcessorImpl>(*pcs, *validation);
+    tp = std::make_shared<TransactionProcessorImpl>(pcs, validation);
   }
 
   std::shared_ptr<MockPeerCommunicationService> pcs;

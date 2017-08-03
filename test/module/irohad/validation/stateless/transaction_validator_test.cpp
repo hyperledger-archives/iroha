@@ -55,7 +55,7 @@ iroha::model::Transaction create_transaction() {
 TEST(stateless_validation, stateless_validation_when_valid) {
   auto seed = iroha::create_seed();
   auto keypair = iroha::create_keypair(seed);
-  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair);
+  auto crypto_provider = std::make_shared<iroha::model::ModelCryptoProviderImpl>();
   iroha::validation::StatelessValidatorImpl transaction_validator(
       crypto_provider);
 
@@ -69,7 +69,7 @@ TEST(stateless_validation, stateless_validation_when_invalid_wrong_signature) {
   auto seed = iroha::create_seed();
   auto keypair = iroha::create_keypair(seed);
 
-  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair);
+  auto crypto_provider = std::make_shared<iroha::model::ModelCryptoProviderImpl>();
   iroha::validation::StatelessValidatorImpl transaction_validator(
       crypto_provider);
 
@@ -86,7 +86,7 @@ TEST(stateless_validation,
   auto seed = iroha::create_seed();
   auto keypair = iroha::create_keypair(seed);
 
-  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair);
+  auto crypto_provider = std::make_shared<iroha::model::ModelCryptoProviderImpl>();
   iroha::validation::StatelessValidatorImpl transaction_validator(
       crypto_provider);
 
@@ -107,7 +107,7 @@ TEST(stateless_validation,
   auto seed = iroha::create_seed();
   auto keypair = iroha::create_keypair(seed);
 
-  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair);
+  auto crypto_provider = std::make_shared<iroha::model::ModelCryptoProviderImpl>();
   iroha::validation::StatelessValidatorImpl transaction_validator(
       crypto_provider);
 

@@ -46,10 +46,14 @@ class ToriiServiceTest : public testing::Test {
     runner = new ServerRunner(std::string(Ip) + ":" + std::to_string(Port));
     th = std::thread([this] {
       // ----------- Command Service --------------
+      pcsMock = std::make_shared<MockPeerCommunicationService>();
+      statelessValidatorMock = std::make_shared<MockStatelessValidator>();
+      wsv_query = std::make_shared<MockWsvQuery>();
+      block_query = std::make_shared<MockBlockQuery>();
 
       auto tx_processor =
           std::make_shared<iroha::torii::TransactionProcessorImpl>(
-              this->pcsMock, this->statelessValidatorMock);
+              pcsMock, statelessValidatorMock);
       auto pb_tx_factory =
           std::make_shared<iroha::model::converters::PbTransactionFactory>();
 
@@ -58,11 +62,11 @@ class ToriiServiceTest : public testing::Test {
 
       //----------- Query Service ----------
 
-      iroha::model::QueryProcessingFactory qpf(this->wsv_query,
-                                               this->block_query);
+      auto qpf = std::make_unique<iroha::model::QueryProcessingFactory>(
+          wsv_query, block_query);
 
       auto qpi = std::make_shared<iroha::torii::QueryProcessorImpl>(
-          qpf, statelessValidatorMock);
+          std::move(qpf), statelessValidatorMock);
 
       auto pb_query_factory =
           std::make_shared<iroha::model::converters::PbQueryFactory>();
@@ -88,10 +92,11 @@ class ToriiServiceTest : public testing::Test {
   ServerRunner *runner;
   std::thread th;
 
-  MockPeerCommunicationService pcsMock;
-  MockStatelessValidator statelessValidatorMock;
-  MockWsvQuery wsv_query;
-  MockBlockQuery block_query;
+  std::shared_ptr<MockPeerCommunicationService> pcsMock;
+  std::shared_ptr<MockStatelessValidator> statelessValidatorMock;
+
+  std::shared_ptr<MockWsvQuery> wsv_query;
+  std::shared_ptr<MockBlockQuery> block_query;
 };
 
 /**
@@ -99,7 +104,7 @@ class ToriiServiceTest : public testing::Test {
  */
 
 TEST_F(ToriiServiceTest, FindWhenResponseInvalid) {
-  EXPECT_CALL(statelessValidatorMock,
+  EXPECT_CALL(*statelessValidatorMock,
               validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(false));
 
@@ -119,16 +124,16 @@ TEST_F(ToriiServiceTest, FindWhenResponseInvalid) {
  */
 
 TEST_F(ToriiServiceTest, FindAccountWhenStatefulInvalid) {
-  EXPECT_CALL(statelessValidatorMock,
+  EXPECT_CALL(*statelessValidatorMock,
               validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
   account.account_id = "accountB";
 
-  EXPECT_CALL(wsv_query, getAccount("accountB"))
+  EXPECT_CALL(*wsv_query, getAccount("accountB"))
       .Times(0);  // won't be called since stateful validation should fail
-  EXPECT_CALL(wsv_query, getAccount("accountA"))
+  EXPECT_CALL(*wsv_query, getAccount("accountA"))
       .Times(1);  // supposed to be called once when
 
   iroha::protocol::QueryResponse response;
@@ -146,7 +151,7 @@ TEST_F(ToriiServiceTest, FindAccountWhenStatefulInvalid) {
 }
 
 TEST_F(ToriiServiceTest, FindAccountWhenHasReadPermissions) {
-  EXPECT_CALL(statelessValidatorMock,
+  EXPECT_CALL(*statelessValidatorMock,
               validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(true));
 
@@ -155,14 +160,14 @@ TEST_F(ToriiServiceTest, FindAccountWhenHasReadPermissions) {
   accountA.permissions.read_all_accounts = true;
 
   // Should be called once, when stateful validation will be in progress
-  EXPECT_CALL(wsv_query, getAccount(accountA.account_id))
+  EXPECT_CALL(*wsv_query, getAccount(accountA.account_id))
       .WillOnce(Return(accountA));
 
   iroha::model::Account accountB;
   accountB.account_id = "accountB";
 
   // Should be called once, after successful stateful validation
-  EXPECT_CALL(wsv_query, getAccount(accountB.account_id))
+  EXPECT_CALL(*wsv_query, getAccount(accountB.account_id))
       .WillOnce(Return(accountB));
 
   iroha::protocol::QueryResponse response;
@@ -179,7 +184,7 @@ TEST_F(ToriiServiceTest, FindAccountWhenHasReadPermissions) {
 }
 
 TEST_F(ToriiServiceTest, FindAccountWhenValid) {
-  EXPECT_CALL(statelessValidatorMock,
+  EXPECT_CALL(*statelessValidatorMock,
               validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(true));
 
@@ -187,7 +192,7 @@ TEST_F(ToriiServiceTest, FindAccountWhenValid) {
   account.account_id = "accountA";
 
   // Should be called once when stateful validation is in progress
-  EXPECT_CALL(wsv_query, getAccount("accountA"))
+  EXPECT_CALL(*wsv_query, getAccount("accountA"))
       .Times(2)
       .WillRepeatedly(Return(account));
 
@@ -209,7 +214,7 @@ TEST_F(ToriiServiceTest, FindAccountWhenValid) {
  */
 
 TEST_F(ToriiServiceTest, FindAccountAssetWhenStatefulInvalid) {
-  EXPECT_CALL(statelessValidatorMock,
+  EXPECT_CALL(*statelessValidatorMock,
               validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(true));
 
@@ -226,8 +231,8 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenStatefulInvalid) {
   asset.domain_id = "USA";
   asset.precision = 2;
 
-  EXPECT_CALL(wsv_query, getAccount("accountA")).WillOnce(Return(account));
-  EXPECT_CALL(wsv_query, getAccountAsset(_, _))
+  EXPECT_CALL(*wsv_query, getAccount("accountA")).WillOnce(Return(account));
+  EXPECT_CALL(*wsv_query, getAccountAsset(_, _))
       .Times(0);  // won't be called due to failed stateful validation
 
   iroha::protocol::QueryResponse response;
@@ -246,7 +251,7 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenStatefulInvalid) {
 }
 
 TEST_F(ToriiServiceTest, FindAccountAssetWhenValid) {
-  EXPECT_CALL(statelessValidatorMock,
+  EXPECT_CALL(*statelessValidatorMock,
               validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(true));
 
@@ -263,8 +268,8 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenValid) {
   asset.domain_id = "USA";
   asset.precision = 2;
 
-  EXPECT_CALL(wsv_query, getAccount("accountA")).WillOnce(Return(account));
-  EXPECT_CALL(wsv_query, getAccountAsset(_, _)).WillOnce(Return(account_asset));
+  EXPECT_CALL(*wsv_query, getAccount("accountA")).WillOnce(Return(account));
+  EXPECT_CALL(*wsv_query, getAccountAsset(_, _)).WillOnce(Return(account_asset));
 
   iroha::protocol::QueryResponse response;
 
@@ -292,7 +297,7 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenValid) {
  */
 
 TEST_F(ToriiServiceTest, FindSignatoriesWhenStatefulInvalid) {
-  EXPECT_CALL(statelessValidatorMock,
+  EXPECT_CALL(*statelessValidatorMock,
               validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(true));
 
@@ -304,8 +309,8 @@ TEST_F(ToriiServiceTest, FindSignatoriesWhenStatefulInvalid) {
   std::vector<iroha::ed25519::pubkey_t> keys;
   keys.push_back(pubkey);
 
-  EXPECT_CALL(wsv_query, getAccount("accountA")).WillOnce(Return(account));
-  EXPECT_CALL(wsv_query, getSignatories(_)).Times(0);
+  EXPECT_CALL(*wsv_query, getAccount("accountA")).WillOnce(Return(account));
+  EXPECT_CALL(*wsv_query, getSignatories(_)).Times(0);
 
   iroha::protocol::QueryResponse response;
 
@@ -322,7 +327,7 @@ TEST_F(ToriiServiceTest, FindSignatoriesWhenStatefulInvalid) {
 }
 
 TEST_F(ToriiServiceTest, FindSignatoriesWhenValid) {
-  EXPECT_CALL(statelessValidatorMock,
+  EXPECT_CALL(*statelessValidatorMock,
               validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(true));
 
@@ -334,8 +339,8 @@ TEST_F(ToriiServiceTest, FindSignatoriesWhenValid) {
   std::vector<iroha::ed25519::pubkey_t> keys;
   keys.push_back(pubkey);
 
-  EXPECT_CALL(wsv_query, getAccount("accountA")).WillOnce(Return(account));
-  EXPECT_CALL(wsv_query, getSignatories(_)).WillOnce(Return(keys));
+  EXPECT_CALL(*wsv_query, getAccount("accountA")).WillOnce(Return(account));
+  EXPECT_CALL(*wsv_query, getSignatories(_)).WillOnce(Return(keys));
 
   iroha::protocol::QueryResponse response;
 
@@ -360,7 +365,7 @@ TEST_F(ToriiServiceTest, FindSignatoriesWhenValid) {
  */
 
 TEST_F(ToriiServiceTest, FindTransactionsWhenValid) {
-  EXPECT_CALL(statelessValidatorMock,
+  EXPECT_CALL(*statelessValidatorMock,
               validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(true));
 
@@ -375,8 +380,8 @@ TEST_F(ToriiServiceTest, FindTransactionsWhenValid) {
       iroha::model::Transaction().setTxCounter(2).setCreatorAccountId(
           account.account_id));
 
-  EXPECT_CALL(wsv_query, getAccount(_)).WillOnce(Return(account));
-  EXPECT_CALL(block_query, getAccountTransactions(account.account_id))
+  EXPECT_CALL(*wsv_query, getAccount(_)).WillOnce(Return(account));
+  EXPECT_CALL(*block_query, getAccountTransactions(account.account_id))
       .WillOnce(Return(txs_observable));
 
   iroha::protocol::QueryResponse response;
@@ -403,7 +408,7 @@ TEST_F(ToriiServiceTest, FindTransactionsWhenValid) {
 }
 
 TEST_F(ToriiServiceTest, FindManyTimesWhereQueryServiceSync) {
-  EXPECT_CALL(statelessValidatorMock,
+  EXPECT_CALL(*statelessValidatorMock,
               validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(false));
 

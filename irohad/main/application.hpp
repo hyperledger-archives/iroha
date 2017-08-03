@@ -51,6 +51,25 @@ class Irohad {
           pb_query_response_factory,
       std::shared_ptr<iroha::torii::QueryProcessor> query_processor);
 
+  std::shared_ptr<iroha::torii::QueryProcessor> createQueryProcessor(
+      std::unique_ptr<iroha::model::QueryProcessingFactory> qpf,
+      std::shared_ptr<iroha::validation::StatelessValidator>
+          stateless_validator);
+
+  std::shared_ptr<iroha::torii::TransactionProcessor>
+  createTransactionProcessor(
+      std::shared_ptr<iroha::network::PeerCommunicationService> pcs,
+      std::shared_ptr<iroha::validation::StatelessValidator> validator);
+
+  std::shared_ptr<iroha::validation::StatelessValidator>
+  createStatelessValidator(
+      std::shared_ptr<iroha::model::ModelCryptoProvider> crypto_provider);
+
+  std::unique_ptr<iroha::model::QueryProcessingFactory>
+  createQueryProcessingFactory(
+      std::shared_ptr<iroha::ametsuchi::WsvQuery> wsvQuery,
+      std::shared_ptr<iroha::ametsuchi::BlockQuery> blockQuery);
+
  private:
   std::string block_store_dir_;
   std::string redis_host_;
@@ -60,7 +79,6 @@ class Irohad {
 
  public:
   std::shared_ptr<iroha::ametsuchi::StorageImpl> storage;
-
 };
 
 #endif  // IROHA_APPLICATION_HPP

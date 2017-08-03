@@ -50,8 +50,8 @@ namespace iroha {
        * @param wsvQuery
        * @param blockQuery
        */
-      QueryProcessingFactory(ametsuchi::WsvQuery& wsvQuery,
-                             ametsuchi::BlockQuery& blockQuery);
+      QueryProcessingFactory(std::shared_ptr<ametsuchi::WsvQuery> wsvQuery,
+                             std::shared_ptr<ametsuchi::BlockQuery> blockQuery);
 
      private:
       bool validate(const model::GetAccountAssets& query);
@@ -80,8 +80,8 @@ namespace iroha {
       std::shared_ptr<iroha::model::QueryResponse>
       executeGetAccountTransactions(const model::GetAccountTransactions& query);
 
-      ametsuchi::WsvQuery& _wsvQuery;
-      ametsuchi::BlockQuery& _blockQuery;
+      std::shared_ptr<ametsuchi::WsvQuery> _wsvQuery;
+      std::shared_ptr<ametsuchi::BlockQuery> _blockQuery;
     };
 
   }  // namespace model
