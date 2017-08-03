@@ -15,9 +15,7 @@ limitations under the License.
 */
 
 #include "main/application.hpp"
-#include "torii/command_service.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
-#include "torii/processor/transaction_processor_impl.hpp"
 
 #include "simulator/impl/simulator.hpp"
 #include "network/impl/peer_communication_service_impl.hpp"
@@ -103,18 +101,18 @@ void Irohad::run() {
   server_thread.join();
 }
 
-std::unique_ptr<torii::CommandService> Irohad::createCommandService(
+std::unique_ptr<::torii::CommandService> Irohad::createCommandService(
     std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory,
     std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor) {
-  return std::make_unique<torii::CommandService>(pb_factory, txProccesor);
+  return std::make_unique<::torii::CommandService>(pb_factory, txProccesor);
 }
 
-std::unique_ptr<torii::QueryService> Irohad::createQueryService(
+std::unique_ptr<::torii::QueryService> Irohad::createQueryService(
     std::shared_ptr<iroha::model::converters::PbQueryFactory> pb_query_factory,
     std::shared_ptr<iroha::model::converters::PbQueryResponseFactory>
         pb_query_response_factory,
     std::shared_ptr<iroha::torii::QueryProcessor> query_processor) {
-  return std::make_unique<torii::QueryService>(
+  return std::make_unique<::torii::QueryService>(
       pb_query_factory, pb_query_response_factory, query_processor);
 }
 

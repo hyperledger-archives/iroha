@@ -50,12 +50,12 @@ class Irohad {
   std::shared_ptr<iroha::network::PeerCommunicationService>
   createPeerCommunicationService();
 
-  std::unique_ptr<torii::CommandService> createCommandService(
+  std::unique_ptr<::torii::CommandService> createCommandService(
       std::shared_ptr<iroha::model::converters::PbTransactionFactory>
           pb_factory,
       std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor);
 
-  std::unique_ptr<torii::QueryService> createQueryService(
+  std::unique_ptr<::torii::QueryService> createQueryService(
       std::shared_ptr<iroha::model::converters::PbQueryFactory>
           pb_query_factory,
       std::shared_ptr<iroha::model::converters::PbQueryResponseFactory>
