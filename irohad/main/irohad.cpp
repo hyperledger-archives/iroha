@@ -39,6 +39,8 @@ DEFINE_validator(config, &validate_config);
 DEFINE_string(genesis_block, "genesis.json", "Specify file with initial block");
 DEFINE_validator(genesis_block, &validate_genesis_path);
 
+DEFINE_uint64(peer_number, 0, "Specify peer number");
+
 int main(int argc, char *argv[]) {
   namespace mbr = config_members;
 

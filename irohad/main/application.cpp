@@ -43,20 +43,23 @@ using namespace iroha::consensus::yac;
 
 Irohad::Irohad(const std::string &block_store_dir,
                const std::string &redis_host, size_t redis_port,
-               const std::string &pg_conn, size_t torii_port)
+               const std::string &pg_conn, size_t torii_port,
+               uint64_t peer_number)
     : block_store_dir_(block_store_dir),
       redis_host_(redis_host),
       redis_port_(redis_port),
       pg_conn_(pg_conn),
       torii_port_(torii_port),
       storage(StorageImpl::create(block_store_dir, redis_host, redis_port,
-                                  pg_conn)) {}
+                                  pg_conn)),
+      peer_number_(peer_number) {
+}
 
 class MockBlockLoader : public iroha::network::BlockLoader {
  public:
   MOCK_METHOD2(requestBlocks,
-      rxcpp::observable<model::Block>(model::Peer &,
-                                      model::Block &));
+               rxcpp::observable<model::Block>(model::Peer & ,
+                                               model::Block & ));
 };
 
 void Irohad::run() {
@@ -79,9 +82,10 @@ void Irohad::run() {
     // Validators:
     auto stateless_validator = createStatelessValidator(crypto_verifier);
     auto stateful_validator = std::make_shared<StatefulValidatorImpl>();
-    auto chain_validator = std::make_shared<ChainValidatorImpl>(crypto_verifier);
+    auto
+        chain_validator = std::make_shared<ChainValidatorImpl>(crypto_verifier);
 
-    
+
 
     // Ordering gate
     OrderingInit ordering_init;
@@ -99,16 +103,17 @@ void Irohad::run() {
         initializeSynchronizer(chain_validator, storage, block_loader);
 
     // PeerCommunicationService
-     auto pcs = createPeerCommunicationService(ordering_gate, synchronizer);
+    auto pcs = createPeerCommunicationService(ordering_gate, synchronizer);
     // Torii:
     // --- Transactions:
-     auto tx_processor = createTransactionProcessor(pcs, stateless_validator);
-     auto comand_service = createCommandService(pb_tx_factory, tx_processor);
+    auto tx_processor = createTransactionProcessor(pcs, stateless_validator);
+    auto comand_service = createCommandService(pb_tx_factory, tx_processor);
     // --- Queries
     auto query_proccessing_factory =
         createQueryProcessingFactory(storage, storage);
     auto query_processor =
-        createQueryProcessor(std::move(query_proccessing_factory), stateless_validator);
+        createQueryProcessor(std::move(query_proccessing_factory),
+                             stateless_validator);
     auto query_service = createQueryService(
         pb_query_factory, pb_query_response_factory, query_processor);
     torii_server->run(comand_service, query_service);

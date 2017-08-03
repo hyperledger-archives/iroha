@@ -42,7 +42,8 @@ class Irohad {
  public:
 
   Irohad(const std::string &block_store_dir, const std::string &redis_host,
-         size_t redis_port, const std::string &pg_conn, size_t torii_port);
+         size_t redis_port, const std::string &pg_conn, size_t torii_port,
+         uint64_t peer_number);
   void run();
   std::shared_ptr<iroha::simulator::BlockCreator> createSimulator(
       std::shared_ptr<iroha::network::OrderingGate> ordering_gate,
@@ -102,6 +103,7 @@ class Irohad {
 
  public:
   std::shared_ptr<iroha::ametsuchi::StorageImpl> storage;
+  uint64_t peer_number_;
 };
 
 #endif  // IROHA_APPLICATION_HPP
