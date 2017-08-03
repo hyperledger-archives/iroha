@@ -30,8 +30,8 @@ namespace iroha {
 
       class NetworkImpl : public YacNetwork, public proto::Yac::Service {
        public:
-        explicit NetworkImpl(const std::string &address,
-                             const std::vector<model::Peer> &peers);
+        explicit NetworkImpl(std::string address,
+                             std::vector<model::Peer> peers);
         void subscribe(
             std::shared_ptr<YacNetworkNotifications> handler) override;
         void send_commit(model::Peer to, CommitMessage commit) override;

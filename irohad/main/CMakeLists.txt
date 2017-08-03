@@ -37,8 +37,10 @@ target_link_libraries(genesis_block_server
 add_library(application
     application.cpp
     impl/ordering_init.cpp
+    impl/consensus_init.cpp
     )
 target_link_libraries(application
+    yac
     server_runner
     model
     ametsuchi
