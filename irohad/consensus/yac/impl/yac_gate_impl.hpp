@@ -29,7 +29,7 @@ namespace iroha {
       class YacGateImpl : public YacGate {
        public:
         YacGateImpl(std::shared_ptr<HashGate> hash_gate,
-                    std::unique_ptr<YacPeerOrderer> orderer,
+                    std::shared_ptr<YacPeerOrderer> orderer,
                     std::shared_ptr<YacHashProvider> hash_provider,
                     std::shared_ptr<simulator::BlockCreator> block_creator);
         void vote(model::Block block) override;
@@ -37,7 +37,7 @@ namespace iroha {
 
        private:
         std::shared_ptr<HashGate> hash_gate_;
-        std::unique_ptr<YacPeerOrderer> orderer_;
+        std::shared_ptr<YacPeerOrderer> orderer_;
         std::shared_ptr<YacHashProvider> hash_provider_;
         std::shared_ptr<simulator::BlockCreator> block_creator_;
 
