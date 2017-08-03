@@ -51,6 +51,7 @@ target_link_libraries(application
     chain_validator
     hash
     stateless_validator
+    stateful_validator
     processors
     crypto
     simulator

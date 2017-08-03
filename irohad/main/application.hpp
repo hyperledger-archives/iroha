@@ -24,6 +24,7 @@
 
 #include <ametsuchi/impl/storage_impl.hpp>
 #include <crypto/crypto.hpp>
+#include <uvw/loop.hpp>
 #include "network/block_loader.hpp"
 #include "synchronizer/synchronizer.hpp"
 #include "validation/chain_validator.hpp"
@@ -41,8 +42,7 @@ class Irohad {
  public:
 
   Irohad(const std::string &block_store_dir, const std::string &redis_host,
-         size_t redis_port, const std::string &pg_conn,
-         const std::string &address);
+         size_t redis_port, const std::string &pg_conn, size_t torii_port);
   void run();
   std::shared_ptr<iroha::simulator::BlockCreator> createSimulator(
       std::shared_ptr<iroha::network::OrderingGate> ordering_gate,
@@ -96,7 +96,9 @@ class Irohad {
   std::string redis_host_;
   size_t redis_port_;
   std::string pg_conn_;
-  std::string address_;
+  size_t torii_port_;
+  std::vector<std::string> peers_;
+  std::shared_ptr<uvw::Loop> loop;
 
  public:
   std::shared_ptr<iroha::ametsuchi::StorageImpl> storage;

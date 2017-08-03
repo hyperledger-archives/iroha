@@ -26,7 +26,7 @@
 namespace config_members {
   const char* Ip = "ip";
   const char* BlockStorePath = "block_store_path";
-  // const char* ToriiPort = "torii_port"; // TODO: Needs AddPeer.
+  const char* ToriiPort = "torii_port";  // TODO: Needs AddPeer.
   const char* KeyPairPath = "key_pair_path";
   const char* PgOpt = "pg_opt";
   const char* RedisHost = "redis_host";
@@ -58,6 +58,10 @@ inline rapidjson::Document parse_iroha_config(std::string const& iroha_conf_path
                no_member_error(mbr::BlockStorePath));
   assert_fatal(doc[mbr::BlockStorePath].IsString(),
                type_error(mbr::BlockStorePath, "string"));
+
+  assert_fatal(doc.HasMember(mbr::ToriiPort), no_member_error(mbr::ToriiPort));
+  assert_fatal(doc[mbr::ToriiPort].IsUint(),
+               type_error(mbr::ToriiPort, "uint"));
 
   assert_fatal(doc.HasMember(mbr::KeyPairPath),
                no_member_error(mbr::KeyPairPath));

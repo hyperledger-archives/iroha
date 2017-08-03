@@ -42,13 +42,10 @@ namespace iroha {
      public:
       std::shared_ptr<OrderingGate> initOrderingGate(
           std::vector<model::Peer> peers, std::shared_ptr<uvw::Loop> loop,
-          std::string network_address, size_t max_size,
-          size_t delay_milliseconds) {
-        if (network_address == peers.front().address) {
-          ordering_service_ =
-              createService(peers, max_size, delay_milliseconds, loop);
-        }
-        return createGate(network_address);
+          size_t max_size, size_t delay_milliseconds) {
+        ordering_service_ =
+            createService(peers, max_size, delay_milliseconds, loop);
+        return createGate(peers.front().address);
       }
 
       std::shared_ptr<ordering::OrderingServiceImpl> orderingService() const {

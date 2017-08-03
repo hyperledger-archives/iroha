@@ -25,6 +25,11 @@ limitations under the License.
 #include "simulator/impl/simulator.hpp"
 #include "network/impl/peer_communication_service_impl.hpp"
 
+#include "validation/impl/stateful_validator_impl.hpp"
+
+#include "main/impl/ordering_init.hpp"
+#include "main/impl/consensus_init.hpp"
+
 using namespace iroha;
 using namespace iroha::ametsuchi;
 using namespace iroha::simulator;
@@ -32,42 +37,20 @@ using namespace iroha::validation;
 using namespace iroha::network;
 using namespace iroha::model;
 using namespace iroha::synchronizer;
+using namespace iroha::torii;
+using namespace iroha::model::converters;
+using namespace iroha::consensus::yac;
 
 Irohad::Irohad(const std::string &block_store_dir,
                const std::string &redis_host, size_t redis_port,
-               const std::string &pg_conn, const std::string &address)
+               const std::string &pg_conn, size_t torii_port)
     : block_store_dir_(block_store_dir),
       redis_host_(redis_host),
       redis_port_(redis_port),
       pg_conn_(pg_conn),
-      address_(address),
-      storage(StorageImpl::create(block_store_dir, redis_host,
-                                                    redis_port, pg_conn)) {}
-
-std::shared_ptr<BlockCreator> Irohad::createSimulator(
-    std::shared_ptr<OrderingGate> ordering_gate,
-    std::shared_ptr<StatefulValidator> stateful_validator,
-    std::shared_ptr<ametsuchi::BlockQuery> block_query,
-    std::shared_ptr<TemporaryFactory> temporary_factory,
-    std::shared_ptr<HashProviderImpl> hash_provider) {
-  auto simulator = std::make_shared<Simulator>(
-      stateful_validator, temporary_factory, block_query, hash_provider);
-  std::shared_ptr<BlockCreator> res = simulator;
-
-  ordering_gate->on_proposal().subscribe([&simulator](auto &&proposal) {
-    simulator->process_proposal(proposal);
-  });
-
-  return res;
-}
-
-std::shared_ptr<iroha::network::PeerCommunicationService>
-Irohad::createPeerCommunicationService(
-    std::shared_ptr<OrderingGate> ordering_gate,
-    std::shared_ptr<Synchronizer> synchronizer) {
-  return std::make_shared<PeerCommunicationServiceImpl>(ordering_gate,
-                                                        synchronizer);
-}
+      torii_port_(torii_port),
+      storage(StorageImpl::create(block_store_dir, redis_host, redis_port,
+                                  pg_conn)) {}
 
 class MockBlockLoader : public iroha::network::BlockLoader {
  public:
@@ -77,34 +60,50 @@ class MockBlockLoader : public iroha::network::BlockLoader {
 };
 
 void Irohad::run() {
-  // TODO : Intergrate ServerRunner and all other components here.
-  /*
-  auto chain_validator = std::make_shared<iroha::validation::ChainValidatorImpl>();
-  auto block_loader = std::make_shared<MockBlockLoader>();
-  auto syncronizer = initializeSynchronizer(chain_validator, storage, block_loader);
-   */
-  auto torii_server = std::make_unique<ServerRunner>(address_);
+  loop = uvw::Loop::create();
+  auto torii_server =
+      std::make_unique<ServerRunner>("0.0.0.0" + std::to_string(torii_port_));
   std::thread server_thread([this] {
     // Protobuf converters
     auto pb_tx_factory =
-        std::make_shared<iroha::model::converters::PbTransactionFactory>();
+        std::make_shared<PbTransactionFactory>();
     auto pb_query_factory =
-        std::make_shared<iroha::model::converters::PbQueryFactory>();
+        std::make_shared<PbQueryFactory>();
     auto pb_query_response_factory =
-        std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
+        std::make_shared<PbQueryResponseFactory>();
     // Crypto Provider:
     auto crypto_verifier =
-        std::make_shared<iroha::model::ModelCryptoProviderImpl>();
+        std::make_shared<ModelCryptoProviderImpl>();
+    // Hash provider
+    auto hash_provider = std::make_shared<HashProviderImpl>();
     // Validators:
     auto stateless_validator = createStatelessValidator(crypto_verifier);
+    auto stateful_validator = std::make_shared<StatefulValidatorImpl>();
+    auto chain_validator = std::make_shared<ChainValidatorImpl>(crypto_verifier);
+
+    
+
+    // Ordering gate
+    OrderingInit ordering_init;
+    auto ordering_gate = ordering_init.initOrderingGate(peers_, loop, 10, 1000);
+
+    // Consensus gate
+    YacInit yac_init;
+    auto consensus_gate = yac_init.initConsensusGate();
+
+    // Block loader
+    auto block_loader = std::make_shared<MockBlockLoader>();
+
+    // Synchronizer
+    auto synchronizer =
+        initializeSynchronizer(chain_validator, storage, block_loader);
 
     // PeerCommunicationService
-    // TODO: replace with create
-    // auto pcs = createPeerCommunicationService();
+     auto pcs = createPeerCommunicationService(ordering_gate, synchronizer);
     // Torii:
     // --- Transactions:
-    // auto tx_processor = createTransactionProcessor(pcs, stateless_validator);
-    // auto comand_service = createCommandService(pb_tx_factory, tx_processor);
+     auto tx_processor = createTransactionProcessor(pcs, stateless_validator);
+     auto comand_service = createCommandService(pb_tx_factory, tx_processor);
     // --- Queries
     auto query_proccessing_factory =
         createQueryProcessingFactory(storage, storage);
@@ -112,62 +111,83 @@ void Irohad::run() {
         createQueryProcessor(std::move(query_proccessing_factory), stateless_validator);
     auto query_service = createQueryService(
         pb_query_factory, pb_query_response_factory, query_processor);
-    //torii_server->run(comand_service, query_service);
+    torii_server->run(comand_service, query_service);
 
   });
   torii_server->waitForServersReady();
+  std::thread loop_thread([this] {
+    loop->run();
+  });
   server_thread.join();
+  loop_thread.join();
 }
 
-std::shared_ptr<iroha::synchronizer::Synchronizer>
-Irohad::initializeSynchronizer(
-    std::shared_ptr<iroha::validation::ChainValidator> validator,
-    std::shared_ptr<iroha::ametsuchi::MutableFactory> mutableFactory,
-    std::shared_ptr<iroha::network::BlockLoader> blockLoader) {
-  return std::make_shared<iroha::synchronizer::SynchronizerImpl>(
-      std::move(validator), mutableFactory, blockLoader);
+std::shared_ptr<BlockCreator> Irohad::createSimulator(
+    std::shared_ptr<OrderingGate> ordering_gate,
+    std::shared_ptr<StatefulValidator> stateful_validator,
+    std::shared_ptr<BlockQuery> block_query,
+    std::shared_ptr<TemporaryFactory> temporary_factory,
+    std::shared_ptr<HashProviderImpl> hash_provider) {
+  auto simulator = std::make_shared<Simulator>(
+      stateful_validator, temporary_factory, block_query, hash_provider);
+  std::shared_ptr<BlockCreator> res = simulator;
+
+  ordering_gate->on_proposal().subscribe(
+      [&simulator](auto &&proposal) { simulator->process_proposal(proposal); });
+
+  return res;
+}
+
+std::shared_ptr<PeerCommunicationService>
+Irohad::createPeerCommunicationService(
+    std::shared_ptr<OrderingGate> ordering_gate,
+    std::shared_ptr<Synchronizer> synchronizer) {
+  return std::make_shared<PeerCommunicationServiceImpl>(ordering_gate,
+                                                        synchronizer);
+}
+
+std::shared_ptr<Synchronizer> Irohad::initializeSynchronizer(
+    std::shared_ptr<ChainValidator> validator,
+    std::shared_ptr<MutableFactory> mutableFactory,
+    std::shared_ptr<BlockLoader> blockLoader) {
+  return std::make_shared<SynchronizerImpl>(std::move(validator),
+                                            mutableFactory, blockLoader);
 }
 
 std::unique_ptr<::torii::CommandService> Irohad::createCommandService(
-    std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory,
-    std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor) {
+    std::shared_ptr<PbTransactionFactory> pb_factory,
+    std::shared_ptr<TransactionProcessor> txProccesor) {
   return std::make_unique<::torii::CommandService>(pb_factory, txProccesor);
 }
 
 std::unique_ptr<::torii::QueryService> Irohad::createQueryService(
-    std::shared_ptr<iroha::model::converters::PbQueryFactory> pb_query_factory,
-    std::shared_ptr<iroha::model::converters::PbQueryResponseFactory>
-        pb_query_response_factory,
-    std::shared_ptr<iroha::torii::QueryProcessor> query_processor) {
+    std::shared_ptr<PbQueryFactory> pb_query_factory,
+    std::shared_ptr<PbQueryResponseFactory> pb_query_response_factory,
+    std::shared_ptr<QueryProcessor> query_processor) {
   return std::make_unique<::torii::QueryService>(
       pb_query_factory, pb_query_response_factory, query_processor);
 }
 
-std::shared_ptr<iroha::torii::QueryProcessor> Irohad::createQueryProcessor(
-    std::unique_ptr<iroha::model::QueryProcessingFactory> qpf,
-    std::shared_ptr<iroha::validation::StatelessValidator>
-        stateless_validator) {
-  return std::make_shared<iroha::torii::QueryProcessorImpl>(
-      std::move(qpf), stateless_validator);
+std::shared_ptr<QueryProcessor> Irohad::createQueryProcessor(
+    std::unique_ptr<QueryProcessingFactory> qpf,
+    std::shared_ptr<StatelessValidator> stateless_validator) {
+  return std::make_shared<QueryProcessorImpl>(std::move(qpf),
+                                              stateless_validator);
 }
 
-std::shared_ptr<iroha::torii::TransactionProcessor>
-Irohad::createTransactionProcessor(
-    std::shared_ptr<iroha::network::PeerCommunicationService> pcs,
-    std::shared_ptr<iroha::validation::StatelessValidator> validator) {
-  return std::make_shared<iroha::torii::TransactionProcessorImpl>(pcs,
-                                                                  validator);
+std::shared_ptr<TransactionProcessor> Irohad::createTransactionProcessor(
+    std::shared_ptr<PeerCommunicationService> pcs,
+    std::shared_ptr<StatelessValidator> validator) {
+  return std::make_shared<TransactionProcessorImpl>(pcs, validator);
 }
-std::shared_ptr<iroha::validation::StatelessValidator>
-Irohad::createStatelessValidator(
-    std::shared_ptr<iroha::model::ModelCryptoProvider> crypto_provider) {
-  return std::make_shared<iroha::validation::StatelessValidatorImpl>(
-      crypto_provider);
+
+std::shared_ptr<StatelessValidator> Irohad::createStatelessValidator(
+    std::shared_ptr<ModelCryptoProvider> crypto_provider) {
+  return std::make_shared<StatelessValidatorImpl>(crypto_provider);
 }
-std::unique_ptr<iroha::model::QueryProcessingFactory>
-Irohad::createQueryProcessingFactory(
-    std::shared_ptr<iroha::ametsuchi::WsvQuery> wsvQuery,
-    std::shared_ptr<iroha::ametsuchi::BlockQuery> blockQuery) {
-  return std::make_unique<iroha::model::QueryProcessingFactory>(wsvQuery,
-                                                                blockQuery);
+
+std::unique_ptr<QueryProcessingFactory> Irohad::createQueryProcessingFactory(
+    std::shared_ptr<WsvQuery> wsvQuery,
+    std::shared_ptr<BlockQuery> blockQuery) {
+  return std::make_unique<QueryProcessingFactory>(wsvQuery, blockQuery);
 }
