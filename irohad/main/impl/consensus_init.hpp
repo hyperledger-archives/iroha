@@ -56,23 +56,39 @@ namespace iroha {
       };
 
       class YacInit {
-       public:
-        auto initConsensusGate(std::string network_address,
-                               std::shared_ptr<uvw::Loop> loop,
-                               std::unique_ptr<YacPeerOrderer> peer_orderer) {
-          auto yac = createYac(network_address,
-                               loop,
-                               peer_orderer->getInitialOrdering().value());
+       private:
+        // ----------| Yac dependencies |----------
 
-          auto hash_provider = createHashProvider();
-          return std::make_shared<YacGateImpl>(std::unique_ptr<HashGate>(yac.release()),
-                                               peer_orderer,
-                                               hash_provider);
+        auto createNetwork(std::string network_address,
+                           std::vector<model::Peer> initial_peers) {
+          // todo set as field
+          return std::make_shared<NetworkImpl>(network_address, initial_peers);
         }
 
-        std::shared_ptr<NetworkImpl> consensus_network;
-       private:
-        std::unique_ptr<consensus::yac::Yac> createYac(std::string network_address,
+        auto createCryptoProvider() {
+          std::shared_ptr<MockYacCryptoProvider>
+              crypto = std::make_shared<MockYacCryptoProvider>();
+
+          EXPECT_CALL(*crypto, verify(testing::An<CommitMessage>()))
+              .WillRepeatedly(testing::Return(true));
+
+          EXPECT_CALL(*crypto, verify(testing::An<RejectMessage>()))
+              .WillRepeatedly(testing::Return(true));
+
+          EXPECT_CALL(*crypto, verify(testing::An<VoteMessage>()))
+              .WillRepeatedly(testing::Return(true));
+          return crypto;
+        }
+
+        auto createTimer(std::shared_ptr<uvw::Loop> loop) {
+          return std::make_shared<TimerImpl>(loop);
+        }
+
+        auto createHashProvider() {
+          return std::make_shared<YacHashProviderImpl>();
+        }
+
+        std::shared_ptr<consensus::yac::Yac> createYac(std::string network_address,
                                                        std::shared_ptr<uvw::Loop> loop,
                                                        ClusterOrdering initial_order) {
           uint64_t delay_seconds = 5;
@@ -87,36 +103,22 @@ namespace iroha {
 
         }
 
-        // ----------| Yac dependencies |----------
+       public:
+        auto initConsensusGate(
+            std::string network_address, std::shared_ptr<uvw::Loop> loop,
+            std::unique_ptr<YacPeerOrderer> peer_orderer,
+            std::shared_ptr<simulator::BlockCreator> block_creator) {
+          auto yac = createYac(network_address,
+                               loop,
+                               peer_orderer->getInitialOrdering().value());
 
-        auto createNetwork(std::string network_address,
-                           std::vector<model::Peer> initial_peers) {
-          // todo set as field
-          return std::make_shared<NetworkImpl>(network_address, initial_peers);
+          auto hash_provider = createHashProvider();
+          return std::make_shared<YacGateImpl>(std::move(yac),
+                                               std::move(peer_orderer),
+                                               hash_provider, block_creator);
         }
 
-        auto createCryptoProvider() {
-          std::shared_ptr<MockYacCryptoProvider>
-              crypto = std::make_shared<MockYacCryptoProvider>();
-
-          EXPECT_CALL(crypto, verify(testing::An<CommitMessage>()))
-              .WillRepeatedly(testing::Return(true));
-
-          EXPECT_CALL(crypto, verify(testing::An<RejectMessage>()))
-              .WillRepeatedly(testing::Return(true));
-
-          EXPECT_CALL(crypto, verify(testing::An<VoteMessage>()))
-              .WillRepeatedly(testing::Return(true));
-          return crypto;
-        }
-
-        auto createTimer(std::shared_ptr<uvw::Loop> loop) {
-          return std::make_shared<TimerImpl>(loop);
-        }
-
-        auto createHashProvider() {
-          return std::make_shared<YacHashProviderImpl>();
-        }
+        std::shared_ptr<NetworkImpl> consensus_network;
       };
     } // namespace yac
   } // namespace consensus

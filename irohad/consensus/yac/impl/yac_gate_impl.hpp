@@ -28,7 +28,7 @@ namespace iroha {
 
       class YacGateImpl : public YacGate {
        public:
-        YacGateImpl(std::unique_ptr<HashGate> hash_gate,
+        YacGateImpl(std::shared_ptr<HashGate> hash_gate,
                     std::unique_ptr<YacPeerOrderer> orderer,
                     std::shared_ptr<YacHashProvider> hash_provider,
                     std::shared_ptr<simulator::BlockCreator> block_creator);
@@ -36,7 +36,7 @@ namespace iroha {
         rxcpp::observable<model::Block> on_commit() override;
 
        private:
-        std::unique_ptr<HashGate> hash_gate_;
+        std::shared_ptr<HashGate> hash_gate_;
         std::unique_ptr<YacPeerOrderer> orderer_;
         std::shared_ptr<YacHashProvider> hash_provider_;
         std::shared_ptr<simulator::BlockCreator> block_creator_;
