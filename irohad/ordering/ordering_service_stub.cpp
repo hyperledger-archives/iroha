@@ -23,9 +23,8 @@ namespace iroha {
     using model::Transaction;
     using model::Proposal;
 
-    void OrderingGateStub::propagate_transaction(
-        const model::Transaction &transaction) {
-      std::vector<Transaction> transactions{transaction};
+    void OrderingGateStub::propagate_transaction(std::shared_ptr<const model::Transaction> transaction) {
+      std::vector<const Transaction> transactions{*transaction};
       Proposal proposal(transactions);
       proposals_.get_subscriber().on_next(proposal);
     }

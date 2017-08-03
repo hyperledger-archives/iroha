@@ -23,14 +23,14 @@ namespace iroha {
         : orderingGate_(orderingGate), synchronizer_(synchronizer) {}
 
     void PeerCommunicationServiceImpl::propagate_transaction(
-        const model::Transaction& transaction) {
+        std::shared_ptr<const model::Transaction> transaction) {
       orderingGate_.propagate_transaction(transaction);
     }
 
-    rxcpp::observable<model::Proposal> PeerCommunicationServiceImpl::on_proposal() {
+    rxcpp::observable<model::Proposal>
+    PeerCommunicationServiceImpl::on_proposal() {
       return orderingGate_.on_proposal();
     }
-
 
     rxcpp::observable<Commit> PeerCommunicationServiceImpl::on_commit() {
       return synchronizer_.on_commit_chain();

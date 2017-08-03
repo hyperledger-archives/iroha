@@ -38,7 +38,7 @@ namespace iroha {
 
       if (validator_.validate(*transaction)) {
         response.passed = true;
-        pcs_.propagate_transaction(*transaction);
+        pcs_.propagate_transaction(transaction);
       }
 
       notifier_.get_subscriber().on_next(

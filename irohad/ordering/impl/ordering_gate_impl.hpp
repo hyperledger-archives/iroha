@@ -40,7 +40,7 @@ namespace iroha {
       explicit OrderingGateImpl(const std::string &server_address);
 
       void propagate_transaction(
-          const model::Transaction &transaction) override;
+          std::shared_ptr<const model::Transaction> transaction) override;
 
       rxcpp::observable<model::Proposal> on_proposal() override;
 

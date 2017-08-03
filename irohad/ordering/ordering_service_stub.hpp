@@ -24,7 +24,7 @@ namespace iroha {
   namespace network {
     class OrderingGateStub : public OrderingGate {
      public:
-      void propagate_transaction(const model::Transaction &transaction) override;
+      void propagate_transaction(std::shared_ptr<const model::Transaction> transaction) override;
       rxcpp::observable<model::Proposal> on_proposal() override;
      private:
       rxcpp::subjects::subject<model::Proposal> proposals_;
