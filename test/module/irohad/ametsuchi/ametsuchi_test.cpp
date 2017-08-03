@@ -36,6 +36,21 @@ namespace iroha {
      protected:
       virtual void SetUp() {
         mkdir(block_store_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        auto pg_host = std::getenv("IROHA_POSTGRES_HOST");
+        auto pg_port = std::getenv("IROHA_POSTGRES_PORT");
+        auto pg_user = std::getenv("IROHA_POSTGRES_USER");
+        auto pg_pass = std::getenv("IROHA_POSTGRES_PASSWORD");
+        auto rd_host = std::getenv("IROHA_REDIS_HOST");
+        auto rd_port = std::getenv("IROHA_REDIS_PORT");
+        if (!pg_host) {
+          return;
+        }
+        std::stringstream ss;
+        ss << "host=" << pg_host << " port=" << pg_port << " user=" << pg_user
+           << " password=" << pg_pass;
+        pgopt_ = ss.str();
+        redishost_ = rd_host;
+        redisport_ = std::stoull(rd_port);
       }
       virtual void TearDown() {
         const auto drop =
