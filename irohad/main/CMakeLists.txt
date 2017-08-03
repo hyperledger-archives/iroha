@@ -41,6 +41,7 @@ add_library(application
     )
 target_link_libraries(application
     gtest
+    gmock
     yac
     server_runner
     model
