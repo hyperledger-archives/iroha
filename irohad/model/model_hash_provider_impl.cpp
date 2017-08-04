@@ -23,6 +23,22 @@
 #include "model/queries/get_signatories.hpp"
 #include "model/queries/get_transactions.hpp"
 
+static const std::string code = {'0', '1', '2', '3', '4', '5', '6', '7',
+                                 '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
+std::string bytestringToHexstring1(std::string str) {
+  std::string res(str.size() * 2, 0);
+  uint8_t front, back;
+  auto ptr = str.data();
+  for (uint32_t i = 0, k = 0; i < str.size(); i++) {
+    front = (uint8_t) (ptr[i] & 0xF0) >> 4;
+    back = (uint8_t) (ptr[i] & 0xF);
+    res[k++] = code[front];
+    res[k++] = code[back];
+  }
+  return res;
+}
+
 namespace iroha {
   namespace model {
 
@@ -47,23 +63,46 @@ namespace iroha {
       // Append block height
       concat_ += std::to_string(block.height);
 
+      std::cout << "[HP] Block height added" << std::endl;
+      std::cout << bytestringToHexstring1(concat_) << std::endl;
+
       // Append prev_hash
       std::copy(block.prev_hash.begin(), block.prev_hash.end(),
                 std::back_inserter(concat_));
 
+      std::cout << "[HP] prev_hash added" << std::endl;
+      std::cout << bytestringToHexstring1(concat_) << std::endl;
+
       // Append txnumber
       concat_ += std::to_string(block.txs_number);
 
+      std::cout << "[HP] txs_number added" << std::endl;
+      std::cout << bytestringToHexstring1(concat_) << std::endl;
+
       // Append merkle root
+      std::cout << "Merkle root:" << std::endl;
+      std::cout << block.merkle_root.to_hexstring() << std::endl;
       std::copy(block.merkle_root.begin(), block.merkle_root.end(),
                 std::back_inserter(concat_));
+
+      std::cout << "[HP] merkle root added" << std::endl;
+      std::cout << bytestringToHexstring1(concat_) << std::endl;
+
       // Append transactions data
       for (auto tx : block.transactions) {
         concat_ += get_hash(tx).to_string();
       }
+
+      std::cout << "[HP] txs data added" << std::endl;
+      std::cout << bytestringToHexstring1(concat_) << std::endl;
+
       std::vector<uint8_t> concat(concat_.begin(), concat_.end());
 
       auto concat_hash = sha3_256(concat.data(), concat.size());
+
+      std::cout << "Resulting hash" << std::endl;
+      std::cout << concat_hash.to_hexstring() << std::endl;
+
       return concat_hash;
     }
 

@@ -39,6 +39,7 @@ namespace iroha {
 
       timer_->on<uvw::TimerEvent>([this](const auto &, auto &) {
         if (!queue_.empty()) {
+          std::cout << "TimerEvent generateProposal()" << std::endl;
           this->generateProposal();
         }
         timer_->start(uvw::TimerHandle::Time(delay_milliseconds_),
@@ -46,6 +47,7 @@ namespace iroha {
       });
 
       this->on<TransactionEvent>([this](const auto &, auto &) {
+        std::cout << "TransactionEvent" << std::endl;
         if (queue_.unsafe_size() >= max_size_) {
           timer_->stop();
           this->generateProposal();

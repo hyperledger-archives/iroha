@@ -124,7 +124,7 @@ void Irohad::run() {
     // Ordering gate
     OrderingInit ordering_init;
     auto ordering_gate =
-        ordering_init.initOrderingGate(ordering, loop, 10, 1000);
+        ordering_init.initOrderingGate(ordering, loop, 10, 5000);
 
     std::cout << "ordering gate created" << std::endl;
 

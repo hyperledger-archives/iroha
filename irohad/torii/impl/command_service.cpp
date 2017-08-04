@@ -48,7 +48,17 @@ namespace torii {
                                   iroha::protocol::ToriiResponse &response) {
     auto iroha_tx = pb_factory_->deserialize(request);
 
-    handler_map_.insert({iroha_tx->tx_hash.to_string(), response});
+    auto tx_hash = iroha_tx->tx_hash.to_string();
+
+    std::cout << "[Torii] tx hash: " << iroha_tx->tx_hash.to_hexstring() << std::endl;
+    std::cout << "[Torii] tx ts: " << iroha_tx->created_ts << std::endl;
+
+    if (handler_map_.count(tx_hash)) {
+      response.set_validation(iroha::protocol::STATELESS_VALIDATION_FAILED);
+      return;
+    }
+
+    handler_map_.insert({tx_hash, response});
     // Send transaction to iroha
     tx_processor_->transactionHandle(iroha_tx);
   }

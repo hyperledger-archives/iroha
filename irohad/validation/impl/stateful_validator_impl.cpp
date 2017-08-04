@@ -17,6 +17,8 @@
 
 #include <algorithm>
 #include <numeric>
+#include <iostream>
+#include <model/model_hash_provider_impl.hpp>
 #include "validation/impl/stateful_validator_impl.hpp"
 
 namespace iroha {
@@ -53,6 +55,8 @@ namespace iroha {
       // Filter only valid transactions
       auto filter = [&temporaryWsv, checking_transaction](auto &acc,
                                                           const auto &tx) {
+        std::cout << iroha::model::HashProviderImpl().get_hash(tx).to_hexstring() << std::endl;
+
         auto answer = temporaryWsv.apply(tx, checking_transaction);
         if (answer) {
           acc.push_back(tx);
