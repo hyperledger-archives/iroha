@@ -71,107 +71,95 @@ class MockCryptoProvider : public ModelCryptoProvider {
 void Irohad::run() {
   loop = uvw::Loop::create();
 
-  auto torii_server =
+  torii_server =
       std::make_unique<ServerRunner>("0.0.0.0:" + std::to_string(torii_port_));
 
-  std::thread server_thread([this, &torii_server] {
-    // Protobuf converters
-    auto pb_tx_factory =
-        std::make_shared<PbTransactionFactory>();
-    auto pb_query_factory =
-        std::make_shared<PbQueryFactory>();
-    auto pb_query_response_factory =
-        std::make_shared<PbQueryResponseFactory>();
+  // Protobuf converters
+  auto pb_tx_factory = std::make_shared<PbTransactionFactory>();
+  auto pb_query_factory = std::make_shared<PbQueryFactory>();
+  auto pb_query_response_factory = std::make_shared<PbQueryResponseFactory>();
 
-    // Crypto Provider:
-    auto crypto_verifier =
-        std::make_shared<MockCryptoProvider>();
+  // Crypto Provider:
+  auto crypto_verifier = std::make_shared<MockCryptoProvider>();
 
-    EXPECT_CALL(*crypto_verifier, verify(::testing::A<const Transaction &>())).WillRepeatedly(::testing::Return(true));
-    EXPECT_CALL(*crypto_verifier, verify(::testing::A<std::shared_ptr<const Query>>())).WillRepeatedly(::testing::Return(true));
-    EXPECT_CALL(*crypto_verifier, verify(::testing::A<const Block &>()))
-        .WillRepeatedly(::testing::Return(true));
+  EXPECT_CALL(*crypto_verifier, verify(::testing::A<const Transaction &>()))
+      .WillRepeatedly(::testing::Return(true));
+  EXPECT_CALL(*crypto_verifier,
+              verify(::testing::A<std::shared_ptr<const Query>>()))
+      .WillRepeatedly(::testing::Return(true));
+  EXPECT_CALL(*crypto_verifier, verify(::testing::A<const Block &>()))
+      .WillRepeatedly(::testing::Return(true));
 
-    // Hash provider
-    auto hash_provider = std::make_shared<HashProviderImpl>();
+  // Hash provider
+  auto hash_provider = std::make_shared<HashProviderImpl>();
 
-    // Validators:
-    auto stateless_validator = createStatelessValidator(crypto_verifier);
-    auto stateful_validator = std::make_shared<StatefulValidatorImpl>();
-    auto chain_validator =
-        std::make_shared<ChainValidatorImpl>(crypto_verifier);
+  // Validators:
+  auto stateless_validator = createStatelessValidator(crypto_verifier);
+  auto stateful_validator = std::make_shared<StatefulValidatorImpl>();
+  auto chain_validator = std::make_shared<ChainValidatorImpl>(crypto_verifier);
 
-    auto orderer = std::make_shared<PeerOrdererImpl>(storage);
+  auto orderer = std::make_shared<PeerOrdererImpl>(storage);
 
-    auto ordering = orderer->getInitialOrdering().value().getPeers();
+  auto ordering = orderer->getInitialOrdering().value().getPeers();
 
-    // Ordering gate
-    OrderingInit ordering_init;
-    auto ordering_gate =
-        ordering_init.initOrderingGate(ordering, loop, 10, 5000);
+  // Ordering gate
+  auto ordering_gate = ordering_init.initOrderingGate(ordering, loop, 10, 5000);
 
-    // Simulator
-    auto simulator = createSimulator(ordering_gate, stateful_validator, storage,
-                                     storage, hash_provider);
+  // Simulator
+  auto simulator = createSimulator(ordering_gate, stateful_validator, storage,
+                                   storage, hash_provider);
 
-    // Consensus gate
-    YacInit yac_init;
-    auto consensus_gate = yac_init.initConsensusGate(
-        ordering.at(peer_number_).address, loop, orderer, simulator);
+  // Consensus gate
+  auto consensus_gate = yac_init.initConsensusGate(
+      ordering.at(peer_number_).address, loop, orderer, simulator);
 
-    // Block loader
-    auto block_loader = std::make_shared<MockBlockLoader>();
+  // Block loader
+  auto block_loader = std::make_shared<MockBlockLoader>();
 
-    // Synchronizer
-    auto synchronizer = initializeSynchronizer(consensus_gate, chain_validator,
-                                               storage, block_loader);
+  // Synchronizer
+  auto synchronizer = initializeSynchronizer(consensus_gate, chain_validator,
+                                             storage, block_loader);
 
-    // PeerCommunicationService
-    auto pcs = createPeerCommunicationService(ordering_gate, synchronizer);
+  // PeerCommunicationService
+  auto pcs = createPeerCommunicationService(ordering_gate, synchronizer);
 
-    pcs->on_proposal().subscribe([](auto) {
-      std::cout << "~~~~~~~PROPOSAL! =^._.^=~~~~~~~" << std::endl;
-    });
+  pcs->on_proposal().subscribe([](auto) {
+    std::cout << "~~~~~~~PROPOSAL! =^._.^=~~~~~~~" << std::endl;
+  });
 
-    pcs->on_commit().subscribe([](auto) {
-      std::cout << "~~~~~~~COMMITTED! ^_^~~~~~~~" << std::endl;
-    });
+  pcs->on_commit().subscribe(
+      [](auto) { std::cout << "~~~~~~~COMMITTED! ^_^~~~~~~~" << std::endl; });
 
-    // Torii:
-    // --- Transactions:
-    auto tx_processor = createTransactionProcessor(pcs, stateless_validator);
+  // Torii:
+  // --- Transactions:
+  auto tx_processor = createTransactionProcessor(pcs, stateless_validator);
 
-    auto comand_service = createCommandService(pb_tx_factory, tx_processor);
+  auto comand_service = createCommandService(pb_tx_factory, tx_processor);
 
-    // --- Queries
-    auto query_proccessing_factory =
-        createQueryProcessingFactory(storage, storage);
+  // --- Queries
+  auto query_proccessing_factory =
+      createQueryProcessingFactory(storage, storage);
 
-    auto query_processor =
-        createQueryProcessor(std::move(query_proccessing_factory),
-                             stateless_validator);
+  auto query_processor = createQueryProcessor(
+      std::move(query_proccessing_factory), stateless_validator);
 
-    auto query_service = createQueryService(
-        pb_query_factory, pb_query_response_factory, query_processor);
+  auto query_service = createQueryService(
+      pb_query_factory, pb_query_response_factory, query_processor);
 
-    std::thread internal_thread([this, &ordering, &ordering_init, &yac_init, &ordering_gate] {
-      grpc::ServerBuilder builder;
-      int port = 0;
-      builder.AddListeningPort(ordering.at(peer_number_).address, grpc::InsecureServerCredentials(), &port);
-      builder.RegisterService(ordering_gate.get());
-      builder.RegisterService(ordering_init.orderingService().get());
-      builder.RegisterService(yac_init.consensus_network.get());
-      auto server = builder.BuildAndStart();
-      server->Wait();
-    });
-
+  grpc::ServerBuilder builder;
+  int port = 0;
+  builder.AddListeningPort(ordering.at(peer_number_).address,
+                           grpc::InsecureServerCredentials(), &port);
+  builder.RegisterService(ordering_init.ordering_gate.get());
+  builder.RegisterService(ordering_init.ordering_service.get());
+  builder.RegisterService(yac_init.consensus_network.get());
+  internal_server = builder.BuildAndStart();
+  std::thread internal_thread([this] { internal_server->Wait(); });
+  std::thread server_thread([this] {
     torii_server->run(std::move(comand_service), std::move(query_service));
-
   });
-  torii_server->waitForServersReady();
-  std::thread loop_thread([this] {
-    loop->run();
-  });
+  std::thread loop_thread([this] { loop->run(); });
+  internal_thread.join();
   server_thread.join();
   loop_thread.join();
 }

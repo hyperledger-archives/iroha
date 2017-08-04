@@ -37,20 +37,19 @@ namespace iroha {
             peers, max_size, delay_milliseconds, loop);
       }
 
-      std::shared_ptr<ordering::OrderingServiceImpl> ordering_service_;
-
      public:
       std::shared_ptr<ordering::OrderingGateImpl> initOrderingGate(
           std::vector<model::Peer> peers, std::shared_ptr<uvw::Loop> loop,
           size_t max_size, size_t delay_milliseconds) {
-        ordering_service_ =
+        ordering_service =
             createService(peers, max_size, delay_milliseconds, loop);
-        return createGate(peers.front().address);
+        ordering_gate = createGate(peers.front().address);
+        return ordering_gate;
       }
 
-      std::shared_ptr<ordering::OrderingServiceImpl> orderingService() const {
-        return ordering_service_;
-      }
+      std::shared_ptr<ordering::OrderingServiceImpl> ordering_service;
+      std::shared_ptr<ordering::OrderingGateImpl> ordering_gate;
+
     };
   }  // namespace network
 }  // namespace iroha

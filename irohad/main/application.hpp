@@ -41,6 +41,9 @@
 
 #include "simulator/impl/simulator.hpp"
 
+#include "main/impl/ordering_init.hpp"
+#include "main/impl/consensus_init.hpp"
+
 class Irohad {
  public:
 
@@ -48,12 +51,21 @@ class Irohad {
          size_t redis_port, const std::string &pg_conn, size_t torii_port,
          uint64_t peer_number);
   void run();
+
+ private:
+  std::shared_ptr<iroha::synchronizer::Synchronizer> initializeSynchronizer(
+      std::shared_ptr<iroha::network::ConsensusGate> consensus_gate,
+      std::shared_ptr<iroha::validation::ChainValidator> validator,
+      std::shared_ptr<iroha::ametsuchi::MutableFactory> mutableFactory,
+      std::shared_ptr<iroha::network::BlockLoader> blockLoader);
+
   std::shared_ptr<iroha::simulator::Simulator> createSimulator(
       std::shared_ptr<iroha::network::OrderingGate> ordering_gate,
       std::shared_ptr<iroha::validation::StatefulValidator> stateful_validator,
       std::shared_ptr<iroha::ametsuchi::BlockQuery> block_query,
       std::shared_ptr<iroha::ametsuchi::TemporaryFactory> temporary_factory,
       std::shared_ptr<iroha::model::HashProviderImpl> hash_provider);
+
   std::shared_ptr<iroha::network::PeerCommunicationService>
   createPeerCommunicationService(
       std::shared_ptr<iroha::network::OrderingGate> ordering_gate,
@@ -61,20 +73,20 @@ class Irohad {
 
   std::unique_ptr<::torii::CommandService> createCommandService(
       std::shared_ptr<iroha::model::converters::PbTransactionFactory>
-          pb_factory,
+      pb_factory,
       std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor);
 
   std::unique_ptr<::torii::QueryService> createQueryService(
       std::shared_ptr<iroha::model::converters::PbQueryFactory>
-          pb_query_factory,
+      pb_query_factory,
       std::shared_ptr<iroha::model::converters::PbQueryResponseFactory>
-          pb_query_response_factory,
+      pb_query_response_factory,
       std::shared_ptr<iroha::torii::QueryProcessor> query_processor);
 
   std::shared_ptr<iroha::torii::QueryProcessor> createQueryProcessor(
       std::unique_ptr<iroha::model::QueryProcessingFactory> qpf,
       std::shared_ptr<iroha::validation::StatelessValidator>
-          stateless_validator);
+      stateless_validator);
 
   std::shared_ptr<iroha::torii::TransactionProcessor>
   createTransactionProcessor(
@@ -90,19 +102,17 @@ class Irohad {
       std::shared_ptr<iroha::ametsuchi::WsvQuery> wsvQuery,
       std::shared_ptr<iroha::ametsuchi::BlockQuery> blockQuery);
 
- private:
-  std::shared_ptr<iroha::synchronizer::Synchronizer> initializeSynchronizer(
-      std::shared_ptr<iroha::network::ConsensusGate> consensus_gate,
-      std::shared_ptr<iroha::validation::ChainValidator> validator,
-      std::shared_ptr<iroha::ametsuchi::MutableFactory> mutableFactory,
-      std::shared_ptr<iroha::network::BlockLoader> blockLoader);
-
   std::string block_store_dir_;
   std::string redis_host_;
   size_t redis_port_;
   std::string pg_conn_;
   size_t torii_port_;
   std::shared_ptr<uvw::Loop> loop;
+
+  std::unique_ptr<ServerRunner> torii_server;
+  std::unique_ptr<grpc::Server> internal_server;
+  iroha::network::OrderingInit ordering_init;
+  iroha::consensus::yac::YacInit yac_init;
 
  public:
   std::shared_ptr<iroha::ametsuchi::StorageImpl> storage;
