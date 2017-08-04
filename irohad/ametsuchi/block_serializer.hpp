@@ -82,9 +82,6 @@ namespace iroha {
       nonstd::optional<model::Transaction> deserialize(
           const std::string json_tx);
 
-      void serialize(PrettyWriter<StringBuffer>& writer,
-                     const model::Transaction& transaction);
-
      private:
       using Serializer = void (BlockSerializer::*)(PrettyWriter<StringBuffer>&,
                                                    const model::Command&);
@@ -98,7 +95,8 @@ namespace iroha {
                      const model::Block& block);
       void serialize(PrettyWriter<StringBuffer>& writer,
                      const model::Signature& signature);
-      
+      void serialize(PrettyWriter<StringBuffer>& writer,
+                     const model::Transaction& transaction);
       void serialize(PrettyWriter<StringBuffer>& writer,
                      const model::Command& command);
 
