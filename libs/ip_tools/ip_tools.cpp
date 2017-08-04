@@ -88,7 +88,6 @@ namespace iroha {
 
       uint32_t cidrmask = (uint32_t) std::stoul(dividedIp[1]);
       if (cidrmask < 16) {
-        logger::Logger("ip_tools").warning("Networks larger than /16 are not supported for now");
         return result;
       }
 

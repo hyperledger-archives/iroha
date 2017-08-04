@@ -17,21 +17,34 @@ limitations under the License.
 #include "logger/logger.hpp"
 
 namespace logger {
-  std::string red(const std::string& string) {
+  std::string red(const std::string &string) {
     const std::string red_start = "\033[31m";
     const std::string end = "\033[0m";
     return red_start + string + end;
   }
 
-  std::string yellow(const std::string& string) {
+  std::string yellow(const std::string &string) {
     const std::string yellow_start = "\033[33m";
     const std::string end = "\033[0m";
     return yellow_start + string + end;
   }
 
-  std::string output(const std::string& string) {
+  std::string output(const std::string &string) {
     return yellow("---> " + string);
   }
 
-  std::string input(const std::string& string) { return red("<--- " + string); }
+  std::string input(const std::string &string) { return red("<--- " + string); }
+
+  std::shared_ptr<spdlog::logger> createLogger(const std::string &tag) {
+    return spdlog::stdout_color_mt(tag);
+  }
+
+  std::shared_ptr<spdlog::logger> log(const std::string &tag) {
+    auto logger = spdlog::get(tag);
+    if (logger == nullptr) {
+      logger = createLogger(tag);
+    }
+    return logger;
+  }
+
 }  // namespace logger
