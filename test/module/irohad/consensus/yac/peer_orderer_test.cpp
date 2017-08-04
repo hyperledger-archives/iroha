@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
+#include <vector>
+#include <memory>
+#include <iostream>
+
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
-
-#include <vector>
 #include "consensus/yac/impl/yac_peer_orderer_impl.hpp"
-#include <iostream>
+#include "ametsuchi/peer_query.hpp"
 
 using namespace iroha::ametsuchi;
 using namespace iroha::consensus::yac;
@@ -31,11 +33,13 @@ using ::testing::Return;
 class YacPeerOrdererTest : public ::testing::Test {
  public:
 
-  YacPeerOrdererTest() : wsv(make_shared<MockWsvQuery>()), orderer(wsv) {}
+  YacPeerOrdererTest()
+      : wsv(make_shared<MockWsvQuery>()),
+        orderer(make_shared<PeerQuery>(wsv)) {}
 
   void SetUp() override {
     wsv = make_shared<MockWsvQuery>();
-    orderer = YacPeerOrdererImpl(wsv);
+    orderer = YacPeerOrdererImpl(make_shared<PeerQuery>(wsv));
   }
 
   std::vector<iroha::model::Peer> peers = [] {
