@@ -47,6 +47,15 @@
 class Irohad {
  public:
 
+  /**
+   * Constructor that initializes common iroha pipeline
+   * @param block_store_dir - folder where blocks will be stored
+   * @param redis_host - host of redis connection
+   * @param redis_port - port of redis connection
+   * @param pg_conn - initialization string for postgre
+   * @param torii_port - port for torii binding
+   * @param peer_number - number of peer in ledger // todo replace with pub key
+   */
   Irohad(const std::string &block_store_dir, const std::string &redis_host,
          size_t redis_port, const std::string &pg_conn, size_t torii_port,
          uint64_t peer_number);
