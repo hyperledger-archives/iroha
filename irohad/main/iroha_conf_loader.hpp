@@ -24,7 +24,6 @@
 #include "common/assert_config.hpp"
 
 namespace config_members {
-  const char* Ip = "ip";
   const char* BlockStorePath = "block_store_path";
   const char* ToriiPort = "torii_port";  // TODO: Needs AddPeer.
   const char* KeyPairPath = "key_pair_path";
@@ -47,13 +46,6 @@ inline rapidjson::Document parse_iroha_config(std::string const& iroha_conf_path
   doc.ParseStream(isw);
   assert_fatal(not doc.HasParseError(), "JSON parse error: " + iroha_conf_path);
 
-  /*assert_fatal(doc.HasMember(mbr::Ip), no_member_error(mbr::Ip));
-  assert_fatal(doc[mbr::Ip].IsArray(), type_error(mbr::Ip, "array"));
-  auto json_ips = doc[mbr::Ip].GetArray();
-  for (auto iter = json_ips.begin(); iter != json_ips.end(); ++iter) {
-    assert_fatal(iter->IsString(), type_error("a member of " + std::string(mbr::Ip), "string"));
-  }*/
-
   assert_fatal(doc.HasMember(mbr::BlockStorePath),
                no_member_error(mbr::BlockStorePath));
   assert_fatal(doc[mbr::BlockStorePath].IsString(),
@@ -63,10 +55,7 @@ inline rapidjson::Document parse_iroha_config(std::string const& iroha_conf_path
   assert_fatal(doc[mbr::ToriiPort].IsUint(),
                type_error(mbr::ToriiPort, "uint"));
 
-  /*assert_fatal(doc.HasMember(mbr::KeyPairPath),
-               no_member_error(mbr::KeyPairPath));
-  assert_fatal(doc[mbr::KeyPairPath].IsString(),
-               type_error(mbr::KeyPairPath, "string"));*/
+  // TODO restore key pair path parameter when crypto is ready
 
   assert_fatal(doc.HasMember(mbr::PgOpt), no_member_error(mbr::PgOpt));
   assert_fatal(doc[mbr::PgOpt].IsString(), type_error(mbr::PgOpt, "string"));
