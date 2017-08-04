@@ -26,7 +26,7 @@ namespace iroha {
 
     void OrderingGateImpl::propagate_transaction(
         std::shared_ptr<const model::Transaction> transaction) {
-      std::cout << "OG propagate_transaction" << std::endl;
+      std::cout << "[OG] propagate_transaction" << std::endl;
       auto call = new AsyncClientCall;
 
       call->response_reader = client_->AsyncSendTransaction(
@@ -42,7 +42,7 @@ namespace iroha {
     grpc::Status OrderingGateImpl::SendProposal(
         ::grpc::ServerContext *context, const proto::Proposal *request,
         ::google::protobuf::Empty *response) {
-      std::cout << "OG SendProposal" << std::endl;
+      std::cout << "[OG] SendProposal" << std::endl;
 
       // auto removes const qualifier of model::Proposal.transactions
       auto transactions =
@@ -51,7 +51,7 @@ namespace iroha {
         transactions.push_back(*factory_.deserialize(tx));
       }
 
-      std::cout << "OG proposal Transactions deserialized" << std::endl;
+      std::cout << "[OG] proposal Transactions deserialized" << std::endl;
 
       model::Proposal proposal(transactions);
       proposal.height = request->height();
@@ -61,7 +61,7 @@ namespace iroha {
     }
 
     void OrderingGateImpl::handleProposal(model::Proposal &&proposal) {
-      std::cout << "OG handleProposal" << std::endl;
+      std::cout << "[OG] handleProposal" << std::endl;
       proposals_.get_subscriber().on_next(proposal);
     }
   }  // namespace ordering

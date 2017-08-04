@@ -25,6 +25,7 @@
 #include <ametsuchi/impl/storage_impl.hpp>
 #include <crypto/crypto.hpp>
 #include <uvw/loop.hpp>
+#include "network/consensus_gate.hpp"
 #include "network/block_loader.hpp"
 #include "synchronizer/synchronizer.hpp"
 #include "validation/chain_validator.hpp"
@@ -48,6 +49,7 @@ class Irohad {
          uint64_t peer_number);
   void run();
   std::shared_ptr<iroha::simulator::Simulator> createSimulator(
+      std::shared_ptr<iroha::network::OrderingGate> ordering_gate,
       std::shared_ptr<iroha::validation::StatefulValidator> stateful_validator,
       std::shared_ptr<iroha::ametsuchi::BlockQuery> block_query,
       std::shared_ptr<iroha::ametsuchi::TemporaryFactory> temporary_factory,
@@ -90,6 +92,7 @@ class Irohad {
 
  private:
   std::shared_ptr<iroha::synchronizer::Synchronizer> initializeSynchronizer(
+      std::shared_ptr<iroha::network::ConsensusGate> consensus_gate,
       std::shared_ptr<iroha::validation::ChainValidator> validator,
       std::shared_ptr<iroha::ametsuchi::MutableFactory> mutableFactory,
       std::shared_ptr<iroha::network::BlockLoader> blockLoader);

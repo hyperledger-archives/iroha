@@ -129,15 +129,8 @@ void Irohad::run() {
     std::cout << "ordering gate created" << std::endl;
 
     // Simulator
-    auto simulator = createSimulator(stateful_validator, storage,
+    auto simulator = createSimulator(ordering_gate, stateful_validator, storage,
                                      storage, hash_provider);
-
-    ordering_gate->on_proposal().subscribe(
-        [&simulator](auto proposal) {
-          std::cout << proposal.height << std::endl;
-          simulator->process_proposal(proposal);
-
-        });
 
     std::cout << "simulator created" << std::endl;
 
@@ -154,8 +147,8 @@ void Irohad::run() {
     std::cout << "block loader created" << std::endl;
 
     // Synchronizer
-    auto synchronizer =
-        initializeSynchronizer(chain_validator, storage, block_loader);
+    auto synchronizer = initializeSynchronizer(consensus_gate, chain_validator,
+                                               storage, block_loader);
 
     std::cout << "synchronizer created" << std::endl;
 
@@ -163,6 +156,14 @@ void Irohad::run() {
     auto pcs = createPeerCommunicationService(ordering_gate, synchronizer);
 
     std::cout << "peer communication service created" << std::endl;
+
+    pcs->on_proposal().subscribe([](auto) {
+      std::cout << "~~~~~~~PROPOSAL! >_<~~~~~~~" << std::endl;
+    });
+
+    pcs->on_commit().subscribe([](auto) {
+      std::cout << "~~~~~~~COMMITED! ^_^~~~~~~~" << std::endl;
+    });
 
     // Torii:
     // --- Transactions:
@@ -218,12 +219,19 @@ void Irohad::run() {
 }
 
 std::shared_ptr<Simulator> Irohad::createSimulator(
+    std::shared_ptr<OrderingGate> ordering_gate,
     std::shared_ptr<StatefulValidator> stateful_validator,
     std::shared_ptr<BlockQuery> block_query,
     std::shared_ptr<TemporaryFactory> temporary_factory,
     std::shared_ptr<HashProviderImpl> hash_provider) {
   auto simulator = std::make_shared<Simulator>(
       stateful_validator, temporary_factory, block_query, hash_provider);
+
+  ordering_gate->on_proposal().subscribe(
+      [simulator](auto proposal) {
+        std::cout << "Proposal height: " << proposal.height << std::endl;
+        simulator->process_proposal(proposal);
+      });
 
   return simulator;
 }
@@ -237,11 +245,19 @@ Irohad::createPeerCommunicationService(
 }
 
 std::shared_ptr<Synchronizer> Irohad::initializeSynchronizer(
+    std::shared_ptr<ConsensusGate> consensus_gate,
     std::shared_ptr<ChainValidator> validator,
     std::shared_ptr<MutableFactory> mutableFactory,
     std::shared_ptr<BlockLoader> blockLoader) {
-  return std::make_shared<SynchronizerImpl>(std::move(validator),
-                                            mutableFactory, blockLoader);
+  auto synchronizer = std::make_shared<SynchronizerImpl>(
+      std::move(validator), mutableFactory, blockLoader);
+
+  consensus_gate->on_commit().subscribe([synchronizer](auto block) {
+    std::cout << "Block size: " << block.transactions.size() << std::endl;
+    synchronizer->process_commit(block);
+  });
+
+  return synchronizer;
 }
 
 std::unique_ptr<::torii::CommandService> Irohad::createCommandService(

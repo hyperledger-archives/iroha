@@ -176,7 +176,7 @@ namespace iroha {
         return nullopt;
       }
       std::vector<Peer> peers;
-      std::cout << result.size() << std::endl;
+      std::cout << "[AM] number of peers: " << result.size() << std::endl;
       for (const auto &row : result) {
         model::Peer peer;
         pqxx::binarystring public_key_str(row.at("public_key"));

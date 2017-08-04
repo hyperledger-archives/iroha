@@ -43,9 +43,9 @@ namespace iroha {
         while (cq_.Next(&got_tag, &ok)) {
           auto call = static_cast<AsyncClientCall *>(got_tag);
 
-          std::cout << call->status.error_code() << std::endl;
-          std::cout << call->status.error_message() << std::endl;
-          std::cout << call->status.error_details() << std::endl;
+          std::cout << "gRPC call status: " << call->status.error_code() << std::endl;
+          std::cout << "gRPC call message: " << call->status.error_message() << std::endl;
+          std::cout << "gRPC call details: " << call->status.error_details() << std::endl;
 
           delete call;
         }

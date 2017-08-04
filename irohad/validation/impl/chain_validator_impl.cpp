@@ -28,14 +28,16 @@ namespace iroha {
                                            ametsuchi::MutableStorage& storage) {
       auto apply_block = [](const auto& current_block, auto& executor,
                             auto& query, const auto& top_hash) {
+        if (current_block.prev_hash != top_hash) {
+          return false;
+        }
+        std::cout << "prev_hash success" << std::endl;
         for (const auto& tx : current_block.transactions) {
-          if (current_block.prev_hash != top_hash) {
-            return false;
-          }
           for (const auto& command : tx.commands) {
             if (not command->execute(query, executor)) {
               return false;
             }
+            std::cout << "command success" << std::endl;
           }
         }
         return true;
@@ -69,6 +71,7 @@ namespace iroha {
       }
       int64_t all = all_peers.value().size();
       auto f = (all - 1) / 3.0;
+      std::cout << "Supermajority check: " << (signs_num >= 2 * f + 1) << std::endl;
       return signs_num >= 2 * f + 1;
     }
   }

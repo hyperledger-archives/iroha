@@ -48,7 +48,7 @@ namespace iroha {
           .subscribe([this](auto block) {
             this->last_block = block;
           });
-      if (last_block.height != proposal.height - 1) {
+      if (last_block.height + 1 != proposal.height) {
         return;
       }
       std::cout << "last block OK" << std::endl;
@@ -60,11 +60,14 @@ namespace iroha {
 
     void Simulator::process_verified_proposal(model::Proposal proposal) {
       model::Block new_block;
+      std::cout << "process_verified_proposal height: " << proposal.height << std::endl;
       new_block.height = proposal.height;
       new_block.prev_hash = last_block.hash;
       new_block.transactions = proposal.transactions;
       new_block.txs_number = proposal.transactions.size();
       new_block.hash = hash_provider_->get_hash(new_block);
+
+      new_block.sigs.push_back({});
 
       block_notifier_.get_subscriber().on_next(new_block);
     }

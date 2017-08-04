@@ -63,8 +63,11 @@ namespace iroha {
       auto &txs = proposal.transactions;
       decltype(txs) valid = {};
 
-      return model::Proposal(
+      model::Proposal validated_proposal(
           std::accumulate(txs.begin(), txs.end(), valid, filter));
+      validated_proposal.height = proposal.height;
+
+      return validated_proposal;
     }
 
   }  // namespace validation
