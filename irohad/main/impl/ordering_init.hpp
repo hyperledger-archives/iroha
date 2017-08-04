@@ -24,28 +24,43 @@
 
 namespace iroha {
   namespace network {
+
+    /**
+     * Class aimed to effective initialization of OrderingGate component
+     */
     class OrderingInit {
      private:
-      auto createGate(std::string network_address) {
-        return std::make_shared<ordering::OrderingGateImpl>(network_address);
-      }
 
+      /**
+       * Init effective realisation of ordering gate (client of ordering service)
+       * @param network_address - address of ordering service
+       */
+      auto createGate(std::string network_address);
+
+      /**
+       * Init ordering service
+       * @param peers - endpoints of peers for connection
+       * @param max_size - limitation of proposal size
+       * @param delay_milliseconds - delay before emitting proposal
+       * @param loop - handler of async events
+       */
       auto createService(std::vector<model::Peer> peers, size_t max_size,
                          size_t delay_milliseconds,
-                         std::shared_ptr<uvw::Loop> loop) {
-        return std::make_shared<ordering::OrderingServiceImpl>(
-            peers, max_size, delay_milliseconds, loop);
-      }
+                         std::shared_ptr<uvw::Loop> loop);
 
      public:
+
+      /**
+       * Initialization of ordering gate(client) and ordering service (service)
+       * @param peers - endpoints of peers for connection
+       * @param loop - handler of async events
+       * @param max_size - limitation of proposal size
+       * @param delay_milliseconds - delay before emitting proposal
+       * @return effective realisation of OrderingGate
+       */
       std::shared_ptr<ordering::OrderingGateImpl> initOrderingGate(
           std::vector<model::Peer> peers, std::shared_ptr<uvw::Loop> loop,
-          size_t max_size, size_t delay_milliseconds) {
-        ordering_service =
-            createService(peers, max_size, delay_milliseconds, loop);
-        ordering_gate = createGate(peers.front().address);
-        return ordering_gate;
-      }
+          size_t max_size, size_t delay_milliseconds);
 
       std::shared_ptr<ordering::OrderingServiceImpl> ordering_service;
       std::shared_ptr<ordering::OrderingGateImpl> ordering_gate;

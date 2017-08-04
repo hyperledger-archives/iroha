@@ -17,3 +17,30 @@
 
 #include "main/impl/ordering_init.hpp"
 
+namespace iroha {
+  namespace network {
+    auto OrderingInit::createGate(std::string network_address) {
+      return std::make_shared<ordering::OrderingGateImpl>(network_address);
+    }
+
+    auto OrderingInit::createService(std::vector<model::Peer> peers,
+                                     size_t max_size,
+                                     size_t delay_milliseconds,
+                                     std::shared_ptr<uvw::Loop> loop) {
+
+      return std::make_shared<ordering::OrderingServiceImpl>(peers,
+                                                             max_size,
+                                                             delay_milliseconds,
+                                                             loop);
+    }
+
+    std::shared_ptr<ordering::OrderingGateImpl> OrderingInit::initOrderingGate(
+        std::vector<model::Peer> peers, std::shared_ptr<uvw::Loop> loop,
+        size_t max_size, size_t delay_milliseconds) {
+      ordering_service =
+          createService(peers, max_size, delay_milliseconds, loop);
+      ordering_gate = createGate(peers.front().address);
+      return ordering_gate;
+    }
+  }  // namespace network
+}  // namespace iroha
