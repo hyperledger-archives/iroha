@@ -22,13 +22,13 @@ namespace iroha {
   namespace consensus {
     namespace yac {
       YacPeerOrdererImpl::YacPeerOrdererImpl(
-          std::shared_ptr<ametsuchi::WsvQuery> wsv)
+          std::shared_ptr<ametsuchi::PeerQuery> wsv)
           : wsv_(std::move(wsv)) {
       };
 
       nonstd::optional<ClusterOrdering>
       YacPeerOrdererImpl::getInitialOrdering() {
-        auto peers = wsv_->getPeers();
+        auto peers = wsv_->getLedgerPeers();
         if(not peers.has_value()) return nonstd::nullopt;
         return ClusterOrdering(peers.value());
       };

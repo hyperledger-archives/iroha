@@ -15,30 +15,35 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_YAC_PEER_ORDERER_IMPL_HPP
-#define IROHA_YAC_PEER_ORDERER_IMPL_HPP
+#ifndef IROHA_PEER_QUERY_HPP
+#define IROHA_PEER_QUERY_HPP
 
-#include "consensus/yac/yac_peer_orderer.hpp"
-#include "ametsuchi/peer_query.hpp"
+#include <vector>
 #include <memory>
+#include "model/peer.hpp"
+#include "ametsuchi/wsv_query.hpp"
 
 namespace iroha {
-  namespace consensus {
-    namespace yac {
-      class YacPeerOrdererImpl : public YacPeerOrderer {
-       public:
+  namespace ametsuchi {
 
-        explicit YacPeerOrdererImpl(std::shared_ptr<ametsuchi::PeerQuery> wsv);
+    /**
+     * Class provide clean dependency for getPeers() method
+     * from WsvQuery interface
+     */
+    class PeerQuery {
+     public:
+      explicit PeerQuery(std::shared_ptr<WsvQuery> wsv);
 
-        nonstd::optional<ClusterOrdering> getInitialOrdering() override ;
+      /**
+       * Fetch peers stored in ledger
+       * @return list of peers in insertion to ledger order
+       */
+      nonstd::optional<std::vector<model::Peer>> getLedgerPeers();
 
-        nonstd::optional<ClusterOrdering> getOrdering(YacHash hash) override;
+     private:
+      std::shared_ptr<WsvQuery> wsv_;
+    };
 
-       private:
-        std::shared_ptr<ametsuchi::PeerQuery> wsv_;
-      };
-    }  // namespace yac
-  }    // namespace consensus
+  }  // namespace ametsuchi
 }  // namespace iroha
-
-#endif //IROHA_YAC_PEER_ORDERER_IMPL_HPP
+#endif //IROHA_PEER_QUERY_HPP
