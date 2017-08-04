@@ -28,7 +28,7 @@ namespace torii {
 
 class ServerRunner {
  public:
-  ServerRunner(const std::string &address);
+  explicit ServerRunner(const std::string &address);
   ~ServerRunner();
   void run(std::unique_ptr<torii::CommandService> commandService,
            std::unique_ptr<torii::QueryService> queryService);
