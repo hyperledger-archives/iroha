@@ -36,7 +36,7 @@ namespace iroha_cli {
     Status sendTx(std::string json_tx);
 
    private:
-    std::shared_ptr<torii::CommandSyncClient> client_;
+    torii::CommandSyncClient client_;
   };
 }  // namespace iroha_cli
 

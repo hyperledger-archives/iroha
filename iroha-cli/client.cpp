@@ -23,20 +23,14 @@
 
 namespace iroha_cli {
 
-  CliClient::CliClient(std::string target_ip, int port) {
-    std::cout << "CliClient()" << std::endl;
-    std::cout << target_ip << " " << port << std::endl;
-    client_ = std::make_shared<torii::CommandSyncClient>(target_ip, port);
-    std::cout << "CliClient() ctor done" << std::endl;
-  }
+  CliClient::CliClient(std::string target_ip, int port)
+    : client_(std::move(target_ip), port) {}
 
   CliClient::Status CliClient::sendTx(std::string json_tx) {
     iroha::ametsuchi::BlockSerializer serializer;
-    std::ifstream file(json_tx);
-    std::string str((std::istreambuf_iterator<char>(file)),
-                    std::istreambuf_iterator<char>());
-    auto tx_opt = serializer.deserialize(std::move(str));
+    auto tx_opt = serializer.deserialize(std::move(json_tx));
     if (not tx_opt.has_value()) {
+      std::cout << "wrong format" << std::endl;
       return WRONG_FORMAT;
     }
     auto model_tx = tx_opt.value();
@@ -45,7 +39,7 @@ namespace iroha_cli {
     auto pb_tx = factory.serialize(model_tx);
     // Send to iroha:
     iroha::protocol::ToriiResponse response;
-    auto stat = client_->Torii(pb_tx, response);
+    auto stat = client_.Torii(pb_tx, response);
 
     return response.validation() ==
                    iroha::protocol::STATELESS_VALIDATION_SUCCESS

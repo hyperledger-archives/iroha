@@ -71,13 +71,13 @@ int main(int argc, char* argv[]) {
     block = bootstrap.merge_tx_add_trusted_peers(block, peers);
     bootstrap.run_network(peers, block);
   } else if (FLAGS_grpc) {
-    std::cout << "*Send transaction to " << FLAGS_address << ":"
+    std::cout << "Send transaction to " << FLAGS_address << ":"
               << FLAGS_torii_port << std::endl;
     iroha_cli::CliClient client(FLAGS_address, FLAGS_torii_port);
-
-    std::cout << "client created" << std::endl;
-
-    auto status = client.sendTx(FLAGS_json_transaction);
+    std::ifstream file(FLAGS_json_transaction);
+    std::string str((std::istreambuf_iterator<char>(file)),
+                    std::istreambuf_iterator<char>());
+    auto status = client.sendTx(str);
     switch (status) {
       case iroha_cli::CliClient::OK:
         std::cout << "Transaction successfully sent" << std::endl;

@@ -42,10 +42,10 @@ namespace torii {
                        iroha::protocol::ToriiResponse& response);
 
   private:
-//    grpc::ClientContext context_;
+    grpc::ClientContext context_;
     std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
     grpc::CompletionQueue completionQueue_;
-//    grpc::Status status_;
+    grpc::Status status_;
   };
 
   /**
