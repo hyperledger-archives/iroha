@@ -25,17 +25,14 @@ struct TransactionEvent {};
 namespace iroha {
   namespace ordering {
     OrderingServiceImpl::OrderingServiceImpl(
-        const std::vector<model::Peer> &peers, size_t max_size,
+        std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
         size_t delay_milliseconds, std::shared_ptr<uvw::Loop> loop)
         : loop_(std::move(loop)),
           timer_(loop_->resource<uvw::TimerHandle>()),
+          wsv_(wsv),
           max_size_(max_size),
           delay_milliseconds_(delay_milliseconds),
           proposal_height(2) {
-      for (const auto &peer : peers) {
-        peers_[peer.address] = proto::OrderingGate::NewStub(grpc::CreateChannel(
-            peer.address, grpc::InsecureChannelCredentials()));
-      }
 
       timer_->on<uvw::TimerEvent>([this](const auto &, auto &) {
         if (!queue_.empty()) {
@@ -87,11 +84,12 @@ namespace iroha {
     }
 
     void OrderingServiceImpl::publishProposal(model::Proposal &&proposal) {
+      preparePeersForProposalRound();
       proto::Proposal pb_proposal;
       pb_proposal.set_height(proposal.height);
       for (const auto &tx : proposal.transactions) {
         auto pb_tx = pb_proposal.add_transactions();
-        new (pb_tx) protocol::Transaction(factory_.serialize(tx));
+        new(pb_tx) protocol::Transaction(factory_.serialize(tx));
       }
 
       for (const auto &peer : peers_) {
@@ -101,6 +99,19 @@ namespace iroha {
             peer.second->AsyncSendProposal(&call->context, pb_proposal, &cq_);
 
         call->response_reader->Finish(&call->reply, &call->status, call);
+      }
+    }
+
+    void OrderingServiceImpl::preparePeersForProposalRound() {
+      peers_.clear();
+      auto round_peers = wsv_->getLedgerPeers();
+      if (not round_peers.has_value()) {
+        // todo log error
+        return;
+      }
+      for (const auto &peer : round_peers.value()) {
+        peers_[peer.address] = proto::OrderingGate::NewStub(grpc::CreateChannel(
+            peer.address, grpc::InsecureChannelCredentials()));
       }
     }
 

@@ -15,15 +15,18 @@
  * limitations under the License.
  */
 
-#include "ametsuchi/peer_query.hpp"
+#include <utility>
+
+#include "ametsuchi/impl/peer_query_wsv.hpp"
 
 namespace iroha {
   namespace ametsuchi {
 
-    PeerQuery::PeerQuery(std::shared_ptr<WsvQuery> wsv) : wsv_(wsv) {
+    PeerQueryWsv::PeerQueryWsv(std::shared_ptr<WsvQuery> wsv)
+        : wsv_(std::move(wsv)) {
     }
 
-    nonstd::optional<std::vector<model::Peer>> PeerQuery::getLedgerPeers() {
+    nonstd::optional<std::vector<model::Peer>> PeerQueryWsv::getLedgerPeers() {
       return wsv_->getPeers();
     }
 

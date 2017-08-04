@@ -15,30 +15,32 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_PEER_QUERY_HPP
-#define IROHA_PEER_QUERY_HPP
+#ifndef IROHA_PEER_QUERY_WSV_HPP
+#define IROHA_PEER_QUERY_WSV_HPP
 
 #include <vector>
 #include <memory>
 #include "model/peer.hpp"
 #include "ametsuchi/wsv_query.hpp"
+#include "ametsuchi/peer_query.hpp"
 
 namespace iroha {
   namespace ametsuchi {
 
     /**
-     * Interface provide clean dependency for getting peers in system
+     * Implementation of PeerQuery interface based on WsvQuery fetching
      */
-    class PeerQuery {
+    class PeerQueryWsv : public PeerQuery {
      public:
+      explicit PeerQueryWsv(std::shared_ptr<WsvQuery> wsv);
 
       /**
        * Fetch peers stored in ledger
        * @return list of peers in insertion to ledger order
        */
-      virtual nonstd::optional<std::vector<model::Peer>> getLedgerPeers() = 0;
+      nonstd::optional<std::vector<model::Peer>> getLedgerPeers() override;
 
-      virtual ~PeerQuery() = default;
+      ~PeerQueryWsv() override = default;
 
      private:
       std::shared_ptr<WsvQuery> wsv_;
@@ -46,4 +48,4 @@ namespace iroha {
 
   }  // namespace ametsuchi
 }  // namespace iroha
-#endif //IROHA_PEER_QUERY_HPP
+#endif //IROHA_PEER_QUERY_WSV_HPP

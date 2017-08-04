@@ -18,6 +18,7 @@ add_library(ordering_service
     )
 
 target_link_libraries(ordering_service
+    ametsuchi
     rxcpp
     optional
     TBB::tbb
