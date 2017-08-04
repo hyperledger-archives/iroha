@@ -124,7 +124,7 @@ void Irohad::run() {
   auto block_loader = std::make_shared<MockBlockLoader>();
 
   // Synchronizer
-  auto synchronizer = initializeSynchronizer(consensus_gate, chain_validator,
+  auto synchronizer = createSynchronizer(consensus_gate, chain_validator,
                                              storage, block_loader);
 
   // PeerCommunicationService
@@ -194,7 +194,7 @@ Irohad::createPeerCommunicationService(
                                                         synchronizer);
 }
 
-std::shared_ptr<Synchronizer> Irohad::initializeSynchronizer(
+std::shared_ptr<Synchronizer> Irohad::createSynchronizer(
     std::shared_ptr<ConsensusGate> consensus_gate,
     std::shared_ptr<ChainValidator> validator,
     std::shared_ptr<MutableFactory> mutableFactory,

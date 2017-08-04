@@ -63,7 +63,7 @@ class Irohad {
   ~Irohad();
 
  private:
-  std::shared_ptr<iroha::synchronizer::Synchronizer> initializeSynchronizer(
+  std::shared_ptr<iroha::synchronizer::Synchronizer> createSynchronizer(
       std::shared_ptr<iroha::network::ConsensusGate> consensus_gate,
       std::shared_ptr<iroha::validation::ChainValidator> validator,
       std::shared_ptr<iroha::ametsuchi::MutableFactory> mutableFactory,
