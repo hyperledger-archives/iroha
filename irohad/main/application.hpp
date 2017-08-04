@@ -38,6 +38,8 @@
 #include "validation/stateful_validator.hpp"
 #include "model/model_hash_provider_impl.hpp"
 
+#include "simulator/impl/simulator.hpp"
+
 class Irohad {
  public:
 
@@ -45,8 +47,7 @@ class Irohad {
          size_t redis_port, const std::string &pg_conn, size_t torii_port,
          uint64_t peer_number);
   void run();
-  std::shared_ptr<iroha::simulator::BlockCreator> createSimulator(
-      std::shared_ptr<iroha::network::OrderingGate> ordering_gate,
+  std::shared_ptr<iroha::simulator::Simulator> createSimulator(
       std::shared_ptr<iroha::validation::StatefulValidator> stateful_validator,
       std::shared_ptr<iroha::ametsuchi::BlockQuery> block_query,
       std::shared_ptr<iroha::ametsuchi::TemporaryFactory> temporary_factory,

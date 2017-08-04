@@ -57,8 +57,8 @@ namespace iroha {
 
       auto YacInit::createNetwork(std::string network_address,
                                   std::vector<model::Peer> initial_peers) {
-        // todo set as field
-        return std::make_shared<NetworkImpl>(network_address, initial_peers);
+        consensus_network = std::make_shared<NetworkImpl>(network_address, initial_peers);
+        return consensus_network;
       }
 
       auto YacInit::createCryptoProvider() {
@@ -107,6 +107,7 @@ namespace iroha {
         auto yac = createYac(std::move(network_address),
                              std::move(loop),
                              peer_orderer->getInitialOrdering().value());
+        consensus_network->subscribe(yac);
 
         auto hash_provider = createHashProvider();
         return std::make_shared<YacGateImpl>(std::move(yac),

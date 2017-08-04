@@ -31,10 +31,10 @@
 // https://hackmd.io/GwRmwQ2BmCFoCsAGARtOAWBIBMcAcS0GcAZjhNNPvpAKZIDGQA==
 
 DEFINE_string(config, "", "Trusted peer's ip addresses");
-DEFINE_validator(config, &iroha_cli::validate_config);
+//DEFINE_validator(config, &iroha_cli::validate_config);
 
 DEFINE_string(genesis_block, "", "Genesis block for sending network");
-DEFINE_validator(genesis_block, &iroha_cli::validate_genesis_block);
+//DEFINE_validator(genesis_block, &iroha_cli::validate_genesis_block);
 
 DEFINE_bool(new_account, false, "Choose if account does not exist");
 DEFINE_string(name, "", "Name of the account");
@@ -71,9 +71,12 @@ int main(int argc, char* argv[]) {
     block = bootstrap.merge_tx_add_trusted_peers(block, peers);
     bootstrap.run_network(peers, block);
   } else if (FLAGS_grpc) {
-    std::cout << "Send transaction to " << FLAGS_address << ":"
+    std::cout << "*Send transaction to " << FLAGS_address << ":"
               << FLAGS_torii_port << std::endl;
     iroha_cli::CliClient client(FLAGS_address, FLAGS_torii_port);
+
+    std::cout << "client created" << std::endl;
+
     auto status = client.sendTx(FLAGS_json_transaction);
     switch (status) {
       case iroha_cli::CliClient::OK:

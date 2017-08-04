@@ -40,7 +40,7 @@ namespace iroha {
       std::shared_ptr<ordering::OrderingServiceImpl> ordering_service_;
 
      public:
-      std::shared_ptr<OrderingGate> initOrderingGate(
+      std::shared_ptr<ordering::OrderingGateImpl> initOrderingGate(
           std::vector<model::Peer> peers, std::shared_ptr<uvw::Loop> loop,
           size_t max_size, size_t delay_milliseconds) {
         ordering_service_ =

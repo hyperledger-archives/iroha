@@ -53,6 +53,7 @@ Irohad::Irohad(const std::string &block_store_dir,
       storage(StorageImpl::create(block_store_dir, redis_host, redis_port,
                                   pg_conn)),
       peer_number_(peer_number) {
+  std::cout << "irohad init - storage: " << storage << std::endl;
 }
 
 class MockBlockLoader : public iroha::network::BlockLoader {
@@ -62,10 +63,23 @@ class MockBlockLoader : public iroha::network::BlockLoader {
                                                model::Block & ));
 };
 
+class MockCryptoProvider : public ModelCryptoProvider {
+ public:
+  MOCK_CONST_METHOD1(verify, bool(const Transaction &));
+  MOCK_CONST_METHOD1(verify, bool(std::shared_ptr<const Query>));
+  MOCK_CONST_METHOD1(verify, bool(const Block &));
+};
+
 void Irohad::run() {
   loop = uvw::Loop::create();
+
+  std::cout << "loop created" << std::endl;
+
   auto torii_server =
-      std::make_unique<ServerRunner>("0.0.0.0" + std::to_string(torii_port_));
+      std::make_unique<ServerRunner>("0.0.0.0:" + std::to_string(torii_port_));
+
+  std::cout << "torii server assigned" << std::endl;
+
   std::thread server_thread([this, &torii_server] {
     // Protobuf converters
     auto pb_tx_factory =
@@ -74,62 +88,121 @@ void Irohad::run() {
         std::make_shared<PbQueryFactory>();
     auto pb_query_response_factory =
         std::make_shared<PbQueryResponseFactory>();
+
+    std::cout << "proto factories created" << std::endl;
+
     // Crypto Provider:
     auto crypto_verifier =
-        std::make_shared<ModelCryptoProviderImpl>();
+        std::make_shared<MockCryptoProvider>();
+
+    EXPECT_CALL(*crypto_verifier, verify(::testing::A<const Transaction &>())).WillRepeatedly(::testing::Return(true));
+    EXPECT_CALL(*crypto_verifier, verify(::testing::A<std::shared_ptr<const Query>>())).WillRepeatedly(::testing::Return(true));
+    EXPECT_CALL(*crypto_verifier, verify(::testing::A<const Block &>()))
+        .WillRepeatedly(::testing::Return(true));
+
     // Hash provider
     auto hash_provider = std::make_shared<HashProviderImpl>();
+
+    std::cout << "crypto and hash providers created" << std::endl;
+
     // Validators:
     auto stateless_validator = createStatelessValidator(crypto_verifier);
     auto stateful_validator = std::make_shared<StatefulValidatorImpl>();
     auto chain_validator =
         std::make_shared<ChainValidatorImpl>(crypto_verifier);
 
+    std::cout << "validators created" << std::endl;
+
     auto orderer = std::make_shared<PeerOrdererImpl>(storage);
+
+    std::cout << "orderer created" << std::endl;
+
     auto ordering = orderer->getInitialOrdering().value().getPeers();
+
+    std::cout << "peers retrieved from db. size: " << ordering.size() << std::endl;
 
     // Ordering gate
     OrderingInit ordering_init;
     auto ordering_gate =
         ordering_init.initOrderingGate(ordering, loop, 10, 1000);
 
+    std::cout << "ordering gate created" << std::endl;
+
     // Simulator
-    auto simulator = createSimulator(ordering_gate, stateful_validator, storage,
+    auto simulator = createSimulator(stateful_validator, storage,
                                      storage, hash_provider);
+
+    ordering_gate->on_proposal().subscribe(
+        [&simulator](auto proposal) {
+          std::cout << proposal.height << std::endl;
+          simulator->process_proposal(proposal);
+
+        });
+
+    std::cout << "simulator created" << std::endl;
 
     // Consensus gate
     YacInit yac_init;
     auto consensus_gate = yac_init.initConsensusGate(
         ordering.at(peer_number_).address, loop, orderer, simulator);
 
+    std::cout << "consensus gate created" << std::endl;
+
     // Block loader
     auto block_loader = std::make_shared<MockBlockLoader>();
+
+    std::cout << "block loader created" << std::endl;
 
     // Synchronizer
     auto synchronizer =
         initializeSynchronizer(chain_validator, storage, block_loader);
 
+    std::cout << "synchronizer created" << std::endl;
+
     // PeerCommunicationService
     auto pcs = createPeerCommunicationService(ordering_gate, synchronizer);
+
+    std::cout << "peer communication service created" << std::endl;
+
     // Torii:
     // --- Transactions:
     auto tx_processor = createTransactionProcessor(pcs, stateless_validator);
+
+    std::cout << "tx processor created" << std::endl;
+
     auto comand_service = createCommandService(pb_tx_factory, tx_processor);
+
+    std::cout << "command service created" << std::endl;
+
     // --- Queries
     auto query_proccessing_factory =
         createQueryProcessingFactory(storage, storage);
+
+    std::cout << "query processing factory created" << std::endl;
+
     auto query_processor =
         createQueryProcessor(std::move(query_proccessing_factory),
                              stateless_validator);
+
+    std::cout << "query processor created" << std::endl;
+
     auto query_service = createQueryService(
         pb_query_factory, pb_query_response_factory, query_processor);
 
-    std::thread internal_thread([this, &ordering, &ordering_init, &yac_init] {
+    std::cout << "query service created" << std::endl;
+
+    std::thread internal_thread([this, &ordering, &ordering_init, &yac_init, &ordering_gate] {
+      std::cout << "internal thread started" << std::endl;
+      std::cout << ordering_init.orderingService().get() << std::endl;
+      std::cout << yac_init.consensus_network.get() << std::endl;
       grpc::ServerBuilder builder;
-      builder.AddListeningPort(ordering.at(peer_number_).address, grpc::InsecureServerCredentials());
+      int port = 0;
+      builder.AddListeningPort(ordering.at(peer_number_).address, grpc::InsecureServerCredentials(), &port);
+      builder.RegisterService(ordering_gate.get());
       builder.RegisterService(ordering_init.orderingService().get());
       builder.RegisterService(yac_init.consensus_network.get());
       auto server = builder.BuildAndStart();
+      std::cout << "internal server port: " << port << std::endl;
       server->Wait();
     });
 
@@ -144,20 +217,15 @@ void Irohad::run() {
   loop_thread.join();
 }
 
-std::shared_ptr<BlockCreator> Irohad::createSimulator(
-    std::shared_ptr<OrderingGate> ordering_gate,
+std::shared_ptr<Simulator> Irohad::createSimulator(
     std::shared_ptr<StatefulValidator> stateful_validator,
     std::shared_ptr<BlockQuery> block_query,
     std::shared_ptr<TemporaryFactory> temporary_factory,
     std::shared_ptr<HashProviderImpl> hash_provider) {
   auto simulator = std::make_shared<Simulator>(
       stateful_validator, temporary_factory, block_query, hash_provider);
-  std::shared_ptr<BlockCreator> res = simulator;
 
-  ordering_gate->on_proposal().subscribe(
-      [&simulator](auto &&proposal) { simulator->process_proposal(proposal); });
-
-  return res;
+  return simulator;
 }
 
 std::shared_ptr<PeerCommunicationService>

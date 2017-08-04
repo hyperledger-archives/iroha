@@ -46,7 +46,7 @@ class SimulatorTest : public ::testing::Test {
 };
 
 TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
-  auto simulator = simulator::Simulator(validator, factory, query, provider);
+  simulator::Simulator simulator(validator, factory, query, provider);
 
   auto txs = std::vector<model::Transaction>(2);
   auto proposal = model::Proposal(txs);
@@ -82,7 +82,7 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
 }
 
 TEST_F(SimulatorTest, FailWhenNoBlock) {
-  auto simulator = simulator::Simulator(validator, factory, query, provider);
+  simulator::Simulator simulator(validator, factory, query, provider);
 
   auto txs = std::vector<model::Transaction>(2);
   auto proposal = model::Proposal(txs);
@@ -109,7 +109,7 @@ TEST_F(SimulatorTest, FailWhenNoBlock) {
 }
 
 TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
-  auto simulator = simulator::Simulator(validator, factory, query, provider);
+  simulator::Simulator simulator(validator, factory, query, provider);
 
   auto txs = std::vector<model::Transaction>(2);
   auto proposal = model::Proposal(txs);

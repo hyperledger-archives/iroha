@@ -17,6 +17,7 @@
 
 #include <model/model_crypto_provider_impl.hpp>
 #include <model/model_hash_provider_impl.hpp>
+#include <iostream>
 
 namespace iroha {
   namespace model {
@@ -25,9 +26,15 @@ namespace iroha {
       HashProviderImpl hash_provider;
       auto tx_hash = hash_provider.get_hash(tx);
 
+      std::cout << "tx_hash: " << tx.tx_hash.to_hexstring() << std::endl;
+      std::cout << "calculated: " << tx_hash.to_hexstring() << std::endl;
+
       if (tx.signatures.size() == 0) return false;
 
       for (auto sign : tx.signatures) {
+        std::cout << "pub: " << sign.pubkey.to_hexstring() << std::endl;
+        std::cout << "sig: " << sign.signature.to_hexstring() << std::endl;
+        
         auto verified = iroha::verify(tx_hash.data(), tx_hash.size(),
                                       sign.pubkey, sign.signature);
         if (!verified) return false;

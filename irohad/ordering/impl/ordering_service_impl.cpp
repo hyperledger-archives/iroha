@@ -31,7 +31,7 @@ namespace iroha {
           timer_(loop_->resource<uvw::TimerHandle>()),
           max_size_(max_size),
           delay_milliseconds_(delay_milliseconds),
-          proposal_height(1) {
+          proposal_height(2) {
       for (const auto &peer : peers) {
         peers_[peer.address] = proto::OrderingGate::NewStub(grpc::CreateChannel(
             peer.address, grpc::InsecureChannelCredentials()));
@@ -74,6 +74,7 @@ namespace iroha {
     }
 
     void OrderingServiceImpl::generateProposal() {
+      std::cout << "generateProposal()" << std::endl;
       auto txs = decltype(std::declval<model::Proposal>().transactions)();
       for (model::Transaction tx;
            txs.size() < max_size_ and queue_.try_pop(tx);) {
@@ -87,7 +88,9 @@ namespace iroha {
     }
 
     void OrderingServiceImpl::publishProposal(model::Proposal &&proposal) {
-      auto pb_proposal = proto::Proposal();
+      std::cout << "publishProposal()" << std::endl;
+      proto::Proposal pb_proposal;
+      pb_proposal.set_height(proposal.height);
       for (const auto &tx : proposal.transactions) {
         auto pb_tx = pb_proposal.add_transactions();
         new (pb_tx) protocol::Transaction(factory_.serialize(tx));

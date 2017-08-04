@@ -5,7 +5,8 @@ import "block.proto";
 import "google/protobuf/empty.proto";
 
 message Proposal {
-  repeated iroha.protocol.Transaction transactions = 1;
+  uint64 height = 1;
+  repeated iroha.protocol.Transaction transactions = 2;
 }
 
 service OrderingGate {

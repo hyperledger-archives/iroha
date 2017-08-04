@@ -125,7 +125,7 @@ namespace iroha {
 
       auto block_store = FlatFile::create(block_store_dir);
       if (!block_store) {
-        // TODO log error
+        std::cout << "block store init error" << std::endl;
         return nullptr;
       }
 
@@ -133,7 +133,7 @@ namespace iroha {
       try {
         index->connect(redis_host, redis_port);
       } catch (const cpp_redis::redis_error &e) {
-        // TODO log error
+        std::cout << "redis init error" << std::endl;
         return nullptr;
       }
 
@@ -142,7 +142,7 @@ namespace iroha {
       try {
         postgres_connection->activate();
       } catch (const pqxx::broken_connection &e) {
-        // TODO log error
+        std::cout << "postgres init error" << std::endl;
         return nullptr;
       }
       auto wsv_transaction = std::make_unique<pqxx::nontransaction>(
@@ -238,6 +238,9 @@ namespace iroha {
 
     nonstd::optional<std::vector<model::Peer>> StorageImpl::getPeers() {
       std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
+
+      std::cout << "[AM] getPeers()" << std::endl;
+
       return wsv_->getPeers();
     }
 

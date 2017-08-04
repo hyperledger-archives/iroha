@@ -33,6 +33,8 @@ namespace iroha {
 
     void TransactionProcessorImpl::transactionHandle(
         std::shared_ptr<model::Transaction> transaction) {
+      std::cout << "transactionHandle()" << std::endl;
+      
       model::TransactionStatelessResponse response;
       response.transaction = *transaction;
       response.passed = false;

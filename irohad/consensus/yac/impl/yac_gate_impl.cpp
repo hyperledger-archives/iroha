@@ -48,6 +48,7 @@ namespace iroha {
 
       rxcpp::observable<model::Block> YacGateImpl::on_commit() {
         return hash_gate_->on_commit().map([this](auto commit_message) {
+          std::cout << "Yac hash commit received" << std::endl;
           if (commit_message.votes.at(0).hash == current_block_.first) {
             return current_block_.second;
           }

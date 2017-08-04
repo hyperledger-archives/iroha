@@ -36,6 +36,9 @@ namespace iroha {
           std::shared_ptr<ametsuchi::BlockQuery> blockQuery,
           std::shared_ptr<model::HashProviderImpl> hash_provider);
 
+      Simulator(const Simulator&) = delete;
+      Simulator& operator=(const Simulator&) = delete;
+
       void process_proposal(model::Proposal proposal) override;
 
       rxcpp::observable<model::Proposal> on_verified_proposal() override;

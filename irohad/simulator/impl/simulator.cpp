@@ -39,6 +39,7 @@ namespace iroha {
     }
 
     void Simulator::process_proposal(model::Proposal proposal) {
+      std::cout << "Simulator process_proposal" << std::endl;
       auto current_height = proposal.height;
       // Get last block from local ledger
       last_block = model::Block();
@@ -50,7 +51,9 @@ namespace iroha {
       if (last_block.height != proposal.height - 1) {
         return;
       }
+      std::cout << "last block OK" << std::endl;
       auto temporaryStorage = ametsuchi_factory_->createTemporaryWsv();
+      std::cout << "created temporary wsv" << std::endl;
       notifier_.get_subscriber().on_next(
           validator_->validate(proposal, *temporaryStorage));
     }

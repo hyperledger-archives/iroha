@@ -30,12 +30,14 @@ namespace iroha {
           blockLoader_(blockLoader) {}
 
     void SynchronizerImpl::process_commit(iroha::model::Block commit_message) {
+      std::cout << "Synchronizer commit received" << std::endl;
       auto storage = mutableFactory_->createMutableStorage();
       if (not storage) {
         // TODO: write to log ametsuchi is not ok
         return;
       }
       if (validator_->validateBlock(commit_message, *storage)) {
+        std::cout << "Synchronizer block validated" << std::endl;
         // Block can be applied to current storage
         // Commit to main Ametsuchi
         mutableFactory_->commit(std::move(storage));

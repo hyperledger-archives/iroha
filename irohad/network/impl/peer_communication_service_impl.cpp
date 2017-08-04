@@ -26,6 +26,7 @@ namespace iroha {
 
     void PeerCommunicationServiceImpl::propagate_transaction(
         std::shared_ptr<const model::Transaction> transaction) {
+      std::cout << "PCS propoagate_transaction" << std::endl;
       ordering_gate_->propagate_transaction(transaction);
     }
 

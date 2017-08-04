@@ -36,16 +36,31 @@ namespace iroha {
 
     void BlockInserter::applyToLedger(std::vector<model::Block> blocks) {
       auto storage = factory_->createMutableStorage();
+
+      std::cout << "mutable storage created" << std::endl;
+
       for (auto &&block : blocks) {
-        storage->apply(block,
-                               [](const auto &,
-                                  auto &,
-                                  auto &,
-                                  const auto &) {
+        auto result = storage->apply(block,
+                               [](const auto& current_block, auto& executor,
+                                  auto& query, const auto& top_hash) {
+                                 for (const auto& tx : current_block.transactions) {
+                                   for (const auto& command : tx.commands) {
+                                     if (not command->execute(query, executor)) {
+                                       std::cout << "command execution failed" << std::endl;
+                                       return false;
+                                     }
+                                   }
+                                 }
                                  return true;
                                });
+        std::cout << "block application result: " << result << std::endl;
       }
+
+      std::cout << "blocks applied" << std::endl;
+
       factory_->commit(std::move(storage));
+
+      std::cout << "storage committed" << std::endl;
     };
 
     nonstd::optional<std::string> BlockInserter::loadFile(std::string path) {

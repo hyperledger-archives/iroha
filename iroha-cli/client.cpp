@@ -15,19 +15,27 @@
  * limitations under the License.
  */
 
-#include <utility>
 #include "client.hpp"
+#include <utility>
+#include <fstream>
 #include "ametsuchi/block_serializer.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
 
 namespace iroha_cli {
 
-  CliClient::CliClient(std::string target_ip, int port)
-      : client_(std::move(target_ip), port) {}
+  CliClient::CliClient(std::string target_ip, int port) {
+    std::cout << "CliClient()" << std::endl;
+    std::cout << target_ip << " " << port << std::endl;
+    client_ = std::make_shared<torii::CommandSyncClient>(target_ip, port);
+    std::cout << "CliClient() ctor done" << std::endl;
+  }
 
   CliClient::Status CliClient::sendTx(std::string json_tx) {
     iroha::ametsuchi::BlockSerializer serializer;
-    auto tx_opt = serializer.deserialize(std::move(json_tx));
+    std::ifstream file(json_tx);
+    std::string str((std::istreambuf_iterator<char>(file)),
+                    std::istreambuf_iterator<char>());
+    auto tx_opt = serializer.deserialize(std::move(str));
     if (not tx_opt.has_value()) {
       return WRONG_FORMAT;
     }
@@ -37,7 +45,7 @@ namespace iroha_cli {
     auto pb_tx = factory.serialize(model_tx);
     // Send to iroha:
     iroha::protocol::ToriiResponse response;
-    auto stat = client_.Torii(pb_tx, response);
+    auto stat = client_->Torii(pb_tx, response);
 
     return response.validation() ==
                    iroha::protocol::STATELESS_VALIDATION_SUCCESS
