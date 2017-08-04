@@ -25,14 +25,14 @@ namespace iroha {
     using namespace rapidjson;
 
     QuerySerializer::QuerySerializer() {
-      deserializers_["get_account"] = &QuerySerializer::deserializeGetAccount;
-      deserializers_["get_account_assets"] =
+      deserializers_["GetAccount"] = &QuerySerializer::deserializeGetAccount;
+      deserializers_["GetAccountAssets"] =
           &QuerySerializer::deserializeGetAccountAssets;
-      deserializers_["get_account_asset_transactions"] =
+      deserializers_["GetAccountAssetTransactions"] =
           &QuerySerializer::deserializeGetAccountAssetTransactions;
-      deserializers_["get_account_transactions"] =
+      deserializers_["GetAccountTransactions"] =
           &QuerySerializer::deserializeGetAccountTransactions;
-      deserializers_["get_account_signatories"] =
+      deserializers_["GetAccountSignatories"] =
           &QuerySerializer::deserializeGetSignatories;
     }
 
@@ -46,14 +46,15 @@ namespace iroha {
 
       // check if all necessary fields are there
       auto obj_query = doc.GetObject();
-      auto req_fields = {"signature",  "creator_account_id", "created_ts",
-                         "query_hash", "query_counter",      "query_type"};
+      auto req_fields = {"signature", "creator_account_id", "created_ts",
+                         "query_counter", "query_type"};
       if (std::any_of(req_fields.begin(), req_fields.end(),
                       [&obj_query](auto &&field) {
                         return not obj_query.HasMember(field);
                       })) {
         return nonstd::nullopt;
       }
+
 
       auto sig = obj_query["signature"].GetObject();
 
@@ -80,7 +81,8 @@ namespace iroha {
       auto query_type = obj_query["query_type"].GetString();
 
       auto it = deserializers_.find(query_type);
-      if (it != deserializers_.end() and (this->*it->second)(obj_query, pb_query)) {
+      if (it != deserializers_.end() and
+          (this->*it->second)(obj_query, pb_query)) {
         return pb_query;
       } else {
         return nonstd::nullopt;
@@ -151,6 +153,7 @@ namespace iroha {
       // check if all fields exist
       if (not(obj_query.HasMember("account_id") &&
               obj_query.HasMember("asset_id"))) {
+
         return false;
       }
       auto pb_get_account_assets = pb_query.mutable_get_account_assets();
@@ -160,5 +163,5 @@ namespace iroha {
 
       return true;
     }
-  }
-}
+  }  // namespace ametsuchi
+}  // namespace iroha
