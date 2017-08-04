@@ -18,6 +18,7 @@
 #include <gflags/gflags.h>
 #include <fstream>
 #include <iostream>
+#include <responses.pb.h>
 #include "bootstrap_network.hpp"
 #include "common/assert_config.hpp"
 #include "genesis_block_client_impl.hpp"
@@ -46,6 +47,7 @@ DEFINE_string(address, "0.0.0.0", "Address of the Iroha node");
 DEFINE_int32(torii_port, 50051, "Port of iroha's Torii");
 DEFINE_validator(torii_port, &iroha_cli::validate_port);
 DEFINE_string(json_transaction, "", "Transaction in json format");
+DEFINE_string(json_query, "", "Query in json format");
 
 void create_account(std::string name);
 
@@ -71,23 +73,42 @@ int main(int argc, char* argv[]) {
     block = bootstrap.merge_tx_add_trusted_peers(block, peers);
     bootstrap.run_network(peers, block);
   } else if (FLAGS_grpc) {
-    std::cout << "Send transaction to " << FLAGS_address << ":"
-              << FLAGS_torii_port << std::endl;
     iroha_cli::CliClient client(FLAGS_address, FLAGS_torii_port);
-    std::ifstream file(FLAGS_json_transaction);
-    std::string str((std::istreambuf_iterator<char>(file)),
-                    std::istreambuf_iterator<char>());
-    auto status = client.sendTx(str);
-    switch (status) {
-      case iroha_cli::CliClient::OK:
-        std::cout << "Transaction successfully sent" << std::endl;
-        break;
-      case iroha_cli::CliClient::WRONG_FORMAT:
-        std::cout << "Transaction wrong json format" << std::endl;
-        break;
-      case iroha_cli::CliClient::NOT_VALID:
-        std::cout << "Transaction is not valid." << std::endl;
-        break;
+    if (not FLAGS_json_transaction.empty()) {
+      std::cout << "Send transaction to " << FLAGS_address << ":"
+                << FLAGS_torii_port << std::endl;
+      std::ifstream file(FLAGS_json_transaction);
+      std::string str((std::istreambuf_iterator<char>(file)),
+                      std::istreambuf_iterator<char>());
+      auto status = client.sendTx(str);
+        switch (status) {
+        case iroha_cli::CliClient::OK:
+          std::cout << "Transaction successfully sent" << std::endl;
+          break;
+        case iroha_cli::CliClient::WRONG_FORMAT:
+          std::cout << "Transaction wrong json format" << std::endl;
+          break;
+        case iroha_cli::CliClient::NOT_VALID:
+          std::cout << "Transaction is not valid." << std::endl;
+          break;
+      }
+      if (not FLAGS_json_query.empty()){
+        std::cout << "Send query to " <<  FLAGS_address << ":"
+                  << FLAGS_torii_port << std::endl;
+        std::ifstream file(FLAGS_json_transaction);
+        std::string str((std::istreambuf_iterator<char>(file)),
+                        std::istreambuf_iterator<char>());
+        auto response = client.sendQuery(str);
+        if (response.has_error_response()) {
+          std::cout << "Iroha returned error " << response.error_response().reason()<< std::endl;
+        }
+        if (response.has_account_response()){
+          auto account = response.account_response().account();
+          std::cout << "[Account:] " << std::endl;
+          std::cout << "---- AccountID: "<<  account.account_id() << std::endl;
+        }
+        // TODO: implement beautiful output
+      }
     }
 
   } else {
