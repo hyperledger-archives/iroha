@@ -10,24 +10,24 @@ Blockchain platform Hyperledger Iroha is designed for simple creation and manage
 <img height="300px" src="docs/Iroha_3_sm.png"
  alt="Iroha logo" title="Iroha" align="right" />
 
-It does following things:
+Iroha main features:
 
 Among the basic functional requirements of the system are the following groups:
-1. Asset management: where asset could be the equivalent of a currency or as indivisible assets — land rights, serial numbers, patents, etc.
+1. Managment of custom complex assets, such as currency or indivisible rights, serial numbers, patents, etc.
 2. Management of user accounts, user domains
-3. The system of rights and verification of user permissions for the execution of transactions and requests in the system
-4. Validation of business rules for transaction in the system
+3. The system of rights and verification of user permissions for the execution of transactions and queries in the system
+4. Validation of business rules for transactions and queries in the system
 
 
 Among the non-functional requirements can be noted:
 * the ability to deploy the system in linux containers on a standard configuration of office computers (no more than 2GB of RAM, 1TB storage)
-* high degree of network fault tolerance (the system continues its operability and guarantees data reliability provided that no more than F nodes of the network fail at the same time, where 3F + 1 is the total number of nodes)
+* high degree of network fault tolerance (Byzantine Fault Tolerant)
 * quick processing of queries (less than 3 seconds in normal operating conditions)
 * the system's bandwidth capacity (expected value of 100 thousand transactions per second)
 
 ## Current Status
 
-Iroha v0.95 preview veriosn is released on [TBD].
+Iroha v0.95 preview version is released on [TBD].
 
 ## Iroha repository 101
 
@@ -70,8 +70,7 @@ You may use docker ennvironment to build and run the system. Execute the followi
 
 ```
 git clone https://github.com/hyperledger/iroha.git
-cd iroha
-sh docker/run-ametsuchi-dev.sh
+sh iroha/docker/run-ametsuchi-dev.sh
 ```
 
 After that, container will run in interactive mode. So, you can run any IDE or editor on your local environment, while building the system in docker environment
