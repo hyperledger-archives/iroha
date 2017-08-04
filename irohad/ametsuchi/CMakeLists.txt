@@ -7,6 +7,8 @@ add_library(ametsuchi
 
     impl/postgres_wsv_query.cpp
     impl/postgres_wsv_command.cpp
+    impl/block_serializer.cpp
+    impl/query_serializer.cpp
 
     impl/peer_query_wsv.cpp
     )
