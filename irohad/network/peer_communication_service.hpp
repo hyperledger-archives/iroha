@@ -32,6 +32,7 @@ namespace iroha {
      */
     class PeerCommunicationService {
      public:
+
       /**
        * Propagate transaction in network
        * @param transaction - object for propagation

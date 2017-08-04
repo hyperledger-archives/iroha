@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-#include <ametsuchi/block_serializer.hpp>
 #include "simulator/impl/simulator.hpp"
 
 namespace iroha {
@@ -40,7 +39,6 @@ namespace iroha {
     }
 
     void Simulator::process_proposal(model::Proposal proposal) {
-      std::cout << "Simulator process_proposal" << std::endl;
       auto current_height = proposal.height;
       // Get last block from local ledger
       last_block = model::Block();
@@ -52,9 +50,7 @@ namespace iroha {
       if (last_block.height + 1 != proposal.height) {
         return;
       }
-      std::cout << "last block OK" << std::endl;
       auto temporaryStorage = ametsuchi_factory_->createTemporaryWsv();
-      std::cout << "created temporary wsv" << std::endl;
       notifier_.get_subscriber().on_next(
           validator_->validate(proposal, *temporaryStorage));
     }
@@ -63,15 +59,12 @@ namespace iroha {
       model::Block new_block;
       new_block.height = proposal.height;
       new_block.prev_hash = last_block.hash;
-
       new_block.transactions = proposal.transactions;
       new_block.txs_number = proposal.transactions.size();
+      new_block.created_ts = 0;
       new_block.merkle_root.fill(0);
       new_block.hash = hash_provider_->get_hash(new_block);
-
       new_block.sigs.push_back({});
-
-      new_block.created_ts = 0;
 
       block_notifier_.get_subscriber().on_next(new_block);
     }

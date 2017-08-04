@@ -108,7 +108,6 @@ namespace iroha {
 
       void Yac::applyCommit(model::Peer from, CommitMessage commit) {
         // todo apply to vote storage for verification
-        std::cout << "Yac applyCommit()" << std::endl;
 
         auto storage_state = vote_storage_
             .applyCommit(commit, cluster_order_.getNumberOfPeers());

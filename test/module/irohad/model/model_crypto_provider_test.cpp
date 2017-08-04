@@ -56,7 +56,6 @@ TEST(CryptoProvider, SignAndVerify) {
 
   iroha::model::ModelCryptoProviderImpl crypto_provider;
   sign(model_tx, keypair.privkey, keypair.pubkey);
-
   ASSERT_TRUE(crypto_provider.verify(model_tx));
 
   // now modify transaction's meta, so verify should fail

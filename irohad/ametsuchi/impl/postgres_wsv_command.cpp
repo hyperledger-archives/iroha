@@ -73,7 +73,6 @@ namespace iroha {
             transaction_.quote(precision) + ", " + /*asset.data*/ "NULL" +
             ");");
       } catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
         return false;
       }
       return true;
@@ -96,7 +95,6 @@ namespace iroha {
             "        amount=EXCLUDED.amount, \n"
             "        permissions=EXCLUDED.permissions;");
       } catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
         return false;
       }
       return true;
@@ -112,7 +110,6 @@ namespace iroha {
             "    VALUES (" +
             transaction_.quote(public_key) + ");");
       } catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
         return false;
       }
       return true;
@@ -129,7 +126,6 @@ namespace iroha {
             transaction_.quote(account_id) + ", " +
             transaction_.quote(public_key) + ");");
       } catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
         return false;
       }
       return true;
@@ -145,14 +141,12 @@ namespace iroha {
             transaction_.quote(account_id) + " AND public_key=" +
             transaction_.quote(public_key) + ";");
       } catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
         return false;
       }
       return true;
     }
 
     bool PostgresWsvCommand::insertPeer(const model::Peer &peer) {
-      std::cout << "[AM] insertPeer()" << std::endl;
       pqxx::binarystring public_key(peer.pubkey.data(), peer.pubkey.size());
       try {
         transaction_.exec(
@@ -163,8 +157,6 @@ namespace iroha {
             transaction_.quote(peer.address) + ", " +
             /*peer.state*/ transaction_.quote(0) + ");");
       } catch (const std::exception &e) {
-        std::cout << "[AM] insertPeer() db error" << std::endl;
-        std::cout << e.what() << std::endl;
         return false;
       }
       return true;
@@ -179,7 +171,6 @@ namespace iroha {
             transaction_.quote(public_key) + " AND address=" +
             transaction_.quote(peer.address) + ";");
       } catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
         return false;
       }
       return true;

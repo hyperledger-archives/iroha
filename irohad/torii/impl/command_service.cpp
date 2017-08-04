@@ -50,9 +50,6 @@ namespace torii {
 
     auto tx_hash = iroha_tx->tx_hash.to_string();
 
-    std::cout << "[Torii] tx hash: " << iroha_tx->tx_hash.to_hexstring() << std::endl;
-    std::cout << "[Torii] tx ts: " << iroha_tx->created_ts << std::endl;
-
     if (handler_map_.count(tx_hash)) {
       response.set_validation(iroha::protocol::STATELESS_VALIDATION_FAILED);
       return;

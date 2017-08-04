@@ -15,22 +15,20 @@
  * limitations under the License.
  */
 
-#include "client.hpp"
 #include <utility>
-#include <fstream>
+#include "client.hpp"
 #include "ametsuchi/block_serializer.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
 
 namespace iroha_cli {
 
   CliClient::CliClient(std::string target_ip, int port)
-    : client_(std::move(target_ip), port) {}
+      : client_(std::move(target_ip), port) {}
 
   CliClient::Status CliClient::sendTx(std::string json_tx) {
     iroha::ametsuchi::BlockSerializer serializer;
     auto tx_opt = serializer.deserialize(std::move(json_tx));
     if (not tx_opt.has_value()) {
-      std::cout << "wrong format" << std::endl;
       return WRONG_FORMAT;
     }
     auto model_tx = tx_opt.value();

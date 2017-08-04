@@ -16,7 +16,6 @@
  */
 
 #include <ametsuchi/impl/postgres_wsv_query.hpp>
-#include <iostream>
 
 namespace iroha {
   namespace ametsuchi {
@@ -45,8 +44,7 @@ namespace iroha {
             "  account.account_id = " +
             transaction_.quote(account_id) + ";");
       } catch (const std::exception &e) {
-        std::cout << "select error" << std::endl;
-        std::cout << e.what() << std::endl;
+        // TODO log
         return nullopt;
       }
       if (result.size() != 1) {
@@ -171,12 +169,9 @@ namespace iroha {
             "FROM \n"
             "  peer;");
       } catch (const std::exception &e) {
-        std::cout << "select error" << std::endl;
-        std::cout << e.what() << std::endl;
         return nullopt;
       }
       std::vector<Peer> peers;
-      std::cout << "[AM] number of peers: " << result.size() << std::endl;
       for (const auto &row : result) {
         model::Peer peer;
         pqxx::binarystring public_key_str(row.at("public_key"));

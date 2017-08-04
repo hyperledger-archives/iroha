@@ -55,20 +55,13 @@ int main(int argc, char *argv[]) {
              config[mbr::PgOpt].GetString(),
              config[mbr::ToriiPort].GetUint(), FLAGS_peer_number);
 
-  std::cout << "config parsed" << std::endl;
-
   iroha::main::BlockInserter inserter(irohad.storage);
   auto file = inserter.loadFile(FLAGS_genesis_block);
   auto block = inserter.parseBlock(file.value());
 
-  std::cout << "block parsed" << std::endl;
-  std::cout << "size: " << block.value().transactions.size() << std::endl;
-
   if (block.has_value()) {
     inserter.applyToLedger({block.value()});
   }
-
-  std::cout << "block applied" << std::endl;
 
   // runs iroha
   irohad.run();

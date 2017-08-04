@@ -39,7 +39,6 @@ namespace iroha {
 
       timer_->on<uvw::TimerEvent>([this](const auto &, auto &) {
         if (!queue_.empty()) {
-          std::cout << "TimerEvent generateProposal()" << std::endl;
           this->generateProposal();
         }
         timer_->start(uvw::TimerHandle::Time(delay_milliseconds_),
@@ -47,7 +46,6 @@ namespace iroha {
       });
 
       this->on<TransactionEvent>([this](const auto &, auto &) {
-        std::cout << "TransactionEvent" << std::endl;
         if (queue_.unsafe_size() >= max_size_) {
           timer_->stop();
           this->generateProposal();
@@ -76,7 +74,6 @@ namespace iroha {
     }
 
     void OrderingServiceImpl::generateProposal() {
-      std::cout << "generateProposal()" << std::endl;
       auto txs = decltype(std::declval<model::Proposal>().transactions)();
       for (model::Transaction tx;
            txs.size() < max_size_ and queue_.try_pop(tx);) {
@@ -90,7 +87,6 @@ namespace iroha {
     }
 
     void OrderingServiceImpl::publishProposal(model::Proposal &&proposal) {
-      std::cout << "publishProposal()" << std::endl;
       proto::Proposal pb_proposal;
       pb_proposal.set_height(proposal.height);
       for (const auto &tx : proposal.transactions) {

@@ -26,12 +26,8 @@ namespace iroha {
                            const hash256_t &)>
             function) {
       transaction_->exec("SAVEPOINT savepoint_;");
-      std::cout << "[MS] starting block application" << std::endl;
-      std::cout << "[MS] top hash " << top_hash_.to_hexstring() << std::endl;
       auto result = function(block, *executor_, *this, top_hash_);
       if (result) {
-        std::cout << "[MS] block application success" << std::endl;
-        std::cout << "[MS] block height: " << block.height << std::endl;
         block_store_.insert(std::make_pair(block.height, block));
         top_hash_ = block.hash;
         transaction_->exec("RELEASE SAVEPOINT savepoint_;");

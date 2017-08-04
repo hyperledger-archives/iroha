@@ -48,18 +48,10 @@ namespace iroha {
 
       rxcpp::observable<model::Block> YacGateImpl::on_commit() {
         return hash_gate_->on_commit().map([this](auto commit_message) {
-          std::cout << "Yac hash commit received" << std::endl;
           if (commit_message.votes.at(0).hash == current_block_.first) {
-            std::cout << "Signature before:" << std::endl;
-            std::cout << current_block_.second.sigs.front().pubkey.to_hexstring() << std::endl;
-            std::cout << current_block_.second.sigs.front().signature.to_hexstring() << std::endl;
-
             current_block_.second.sigs.clear();
             for (auto &&vote : commit_message.votes) {
               current_block_.second.sigs.push_back(vote.signature);
-              std::cout << "New signature added:" << std::endl;
-              std::cout << current_block_.second.sigs.back().pubkey.to_hexstring() << std::endl;
-              std::cout << current_block_.second.sigs.back().signature.to_hexstring() << std::endl;
             }
             return current_block_.second;
           }

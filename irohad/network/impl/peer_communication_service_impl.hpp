@@ -40,7 +40,7 @@ namespace iroha {
       std::shared_ptr<OrderingGate> ordering_gate_;
       std::shared_ptr<synchronizer::Synchronizer> synchronizer_;
     };
-  }
-}
+  }  // namespace network
+}  // namespace iroha
 
 #endif  // IROHA_PEER_COMMUNICATION_SERVICE_IMPL_HPP

@@ -49,8 +49,7 @@ TEST(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
   auto wrapper = make_test_subscriber<CallExact>(
       qpi.queryNotifier().filter([](auto response) {
         return instanceof <model::ErrorResponse>(response);
-      }),
-      1);
+      }), 1);
   wrapper.subscribe([](auto response) {
     auto resp = static_cast<model::ErrorResponse &>(*response);
     ASSERT_EQ(resp.reason, iroha::model::ErrorResponse::STATELESS_INVALID);

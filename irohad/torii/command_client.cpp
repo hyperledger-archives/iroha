@@ -56,10 +56,6 @@ namespace torii {
       throw std::runtime_error("CompletionQueue::Next() returns error");
     }
 
-    std::cout << status_.error_code() << std::endl;
-    std::cout << status_.error_message() << std::endl;
-    std::cout << status_.error_details() << std::endl;
-
     assert(got_tag == (void *)static_cast<int>(State::ResponseSent));
     assert(ok);
 

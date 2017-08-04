@@ -17,7 +17,6 @@
 
 #include "validation/impl/stateless_validator_impl.hpp"
 #include <chrono>
-#include <iostream>
 
 namespace iroha {
   namespace validation {
@@ -27,10 +26,8 @@ namespace iroha {
 
     bool StatelessValidatorImpl::validate(
         const model::Transaction& transaction) const {
-      std::cout << "StatelessValidator::validate()" << std::endl;
       // signatures are correct
       if (!crypto_provider_->verify(transaction)) return false;
-      std::cout << "signatures are correct" << std::endl;
 
       // time between creation and validation of tx
       uint64_t now = static_cast<uint64_t>(
@@ -41,15 +38,10 @@ namespace iroha {
         return false;
       }
 
-      std::cout << "time between creation and validation of tx" << std::endl;
-
       // tx is not sent from future
       if (now < transaction.created_ts) {
         return false;
       }
-
-      std::cout << "tx is not sent from future" << std::endl;
-      
       return true;
     }
 
