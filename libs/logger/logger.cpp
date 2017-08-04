@@ -35,7 +35,12 @@ namespace logger {
 
   std::string input(const std::string &string) { return red("<--- " + string); }
 
+  void setGlobalPattern(){
+    spdlog::set_pattern("[%H:%M:%S] [%n] [th: %t] [%l] << %v");
+  }
+
   std::shared_ptr<spdlog::logger> createLogger(const std::string &tag) {
+    setGlobalPattern();
     return spdlog::stdout_color_mt(tag);
   }
 
