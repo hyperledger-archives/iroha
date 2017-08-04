@@ -22,8 +22,8 @@ namespace iroha {
     namespace yac {
 
       YacGateImpl::YacGateImpl(
-          std::unique_ptr<HashGate> hash_gate,
-          std::unique_ptr<YacPeerOrderer> orderer,
+          std::shared_ptr<HashGate> hash_gate,
+          std::shared_ptr<YacPeerOrderer> orderer,
           std::shared_ptr<YacHashProvider> hash_provider,
           std::shared_ptr<simulator::BlockCreator> block_creator)
           : hash_gate_(std::move(hash_gate)),
@@ -49,6 +49,10 @@ namespace iroha {
       rxcpp::observable<model::Block> YacGateImpl::on_commit() {
         return hash_gate_->on_commit().map([this](auto commit_message) {
           if (commit_message.votes.at(0).hash == current_block_.first) {
+            current_block_.second.sigs.clear();
+            for (auto &&vote : commit_message.votes) {
+              current_block_.second.sigs.push_back(vote.signature);
+            }
             return current_block_.second;
           }
 

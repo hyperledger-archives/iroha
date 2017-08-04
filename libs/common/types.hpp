@@ -112,6 +112,25 @@ namespace iroha {
     return std::string(source.begin(), source.end());
   }
 
+  /**
+   * Convert string of raw bytes to printable hex string
+   * @param str
+   * @return
+   */
+  inline std::string bytestringToHexstring(std::string str) {
+    std::string res(str.size() * 2, 0);
+    uint8_t front, back;
+    auto ptr = str.data();
+    for (uint32_t i = 0, k = 0; i < str.size(); i++) {
+      front = (uint8_t) (ptr[i] & 0xF0) >> 4;
+      back = (uint8_t) (ptr[i] & 0xF);
+      res[k++] = code[front];
+      res[k++] = code[back];
+    }
+    return res;
+  }
+
+
   template <size_t size>
   using hash_t = blob_t<size>;
 

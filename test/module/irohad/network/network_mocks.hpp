@@ -27,7 +27,8 @@ namespace iroha {
   namespace network {
     class MockPeerCommunicationService : public PeerCommunicationService {
      public:
-      MOCK_METHOD1(propagate_transaction, void(model::Transaction));
+      MOCK_METHOD1(propagate_transaction,
+                   void(std::shared_ptr<const model::Transaction>));
 
       MOCK_METHOD0(on_proposal, rxcpp::observable<model::Proposal>());
 
@@ -44,7 +45,7 @@ namespace iroha {
     class MockOrderingGate : public OrderingGate {
      public:
       MOCK_METHOD1(propagate_transaction,
-                   void(const model::Transaction &transaction));
+                   void(std::shared_ptr<const model::Transaction> transaction));
 
       MOCK_METHOD0(on_proposal, rxcpp::observable<model::Proposal>());
     };

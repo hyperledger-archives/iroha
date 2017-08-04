@@ -36,26 +36,25 @@ using ::testing::_;
 using ::testing::DefaultValue;
 
 TEST(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
-  MockChainValidator chain_validator;
-  MockMutableFactory mutable_factory;
-  MockBlockLoader block_loader;
+  auto chain_validator = std::make_shared<MockChainValidator>();
+  auto mutable_factory = std::make_shared<MockMutableFactory>();
+  auto block_loader = std::make_shared<MockBlockLoader>();
 
   auto synchronizer = iroha::synchronizer::SynchronizerImpl(
       chain_validator, mutable_factory, block_loader);
-
   Block test_block;
   test_block.height = 5;
 
   DefaultValue<std::unique_ptr<MutableStorage>>::SetFactory(
       &createMockMutableStorage);
-  EXPECT_CALL(mutable_factory, createMutableStorage()).Times(1);
+  EXPECT_CALL(*mutable_factory, createMutableStorage()).Times(1);
 
-  EXPECT_CALL(mutable_factory, commit_(_)).Times(1);
+  EXPECT_CALL(*mutable_factory, commit_(_)).Times(1);
 
-  EXPECT_CALL(chain_validator, validateBlock(test_block, _))
+  EXPECT_CALL(*chain_validator, validateBlock(test_block, _))
       .WillOnce(Return(true));
 
-  EXPECT_CALL(block_loader, requestBlocks(_, _)).Times(0);
+  EXPECT_CALL(*block_loader, requestBlocks(_, _)).Times(0);
 
   auto wrapper =
       make_test_subscriber<CallExact>(synchronizer.on_commit_chain(), 1);
@@ -74,23 +73,23 @@ TEST(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
 }
 
 TEST(SynchronizerTest, ValidWhenBadStorage) {
-  MockChainValidator chain_validator;
-  MockMutableFactory mutable_factory;
-  MockBlockLoader block_loader;
-
-  auto synchronizer = iroha::synchronizer::SynchronizerImpl(
-      chain_validator, mutable_factory, block_loader);
+  auto chain_validator = std::make_shared<MockChainValidator>();
+  auto mutable_factory = std::make_shared<MockMutableFactory>();
+  auto block_loader = std::make_shared<MockBlockLoader>();
 
   Block test_block;
 
   DefaultValue<std::unique_ptr<MutableStorage>>::Clear();
-  EXPECT_CALL(mutable_factory, createMutableStorage()).Times(1);
+  EXPECT_CALL(*mutable_factory, createMutableStorage()).Times(1);
 
-  EXPECT_CALL(mutable_factory, commit_(_)).Times(0);
+  EXPECT_CALL(*mutable_factory, commit_(_)).Times(0);
 
-  EXPECT_CALL(chain_validator, validateBlock(test_block, _)).Times(0);
+  EXPECT_CALL(*chain_validator, validateBlock(test_block, _)).Times(0);
 
-  EXPECT_CALL(block_loader, requestBlocks(_, _)).Times(0);
+  EXPECT_CALL(*block_loader, requestBlocks(_, _)).Times(0);
+
+  auto synchronizer = iroha::synchronizer::SynchronizerImpl(
+      chain_validator, mutable_factory, block_loader);
 
   auto wrapper =
       make_test_subscriber<CallExact>(synchronizer.on_commit_chain(), 0);
@@ -102,12 +101,9 @@ TEST(SynchronizerTest, ValidWhenBadStorage) {
 }
 
 TEST(SynchronizerTest, ValidWhenBlockValidationFailure) {
-  MockChainValidator chain_validator;
-  MockMutableFactory mutable_factory;
-  MockBlockLoader block_loader;
-
-  auto synchronizer = iroha::synchronizer::SynchronizerImpl(
-      chain_validator, mutable_factory, block_loader);
+  auto chain_validator = std::make_shared<MockChainValidator>();
+  auto mutable_factory = std::make_shared<MockMutableFactory>();
+  auto block_loader = std::make_shared<MockBlockLoader>();
 
   Block test_block;
   test_block.height = 5;
@@ -115,16 +111,19 @@ TEST(SynchronizerTest, ValidWhenBlockValidationFailure) {
 
   DefaultValue<std::unique_ptr<MutableStorage>>::SetFactory(
       &createMockMutableStorage);
-  EXPECT_CALL(mutable_factory, createMutableStorage()).Times(2);
+  EXPECT_CALL(*mutable_factory, createMutableStorage()).Times(2);
 
-  EXPECT_CALL(mutable_factory, commit_(_)).Times(1);
+  EXPECT_CALL(*mutable_factory, commit_(_)).Times(1);
 
-  EXPECT_CALL(chain_validator, validateBlock(test_block, _))
+  EXPECT_CALL(*chain_validator, validateBlock(test_block, _))
       .WillOnce(Return(false));
-  EXPECT_CALL(chain_validator, validateChain(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(*chain_validator, validateChain(_, _)).WillOnce(Return(true));
 
-  EXPECT_CALL(block_loader, requestBlocks(_, _))
+  EXPECT_CALL(*block_loader, requestBlocks(_, _))
       .WillOnce(Return(rxcpp::observable<>::just(test_block)));
+
+  auto synchronizer = iroha::synchronizer::SynchronizerImpl(
+      chain_validator, mutable_factory, block_loader);
 
   auto wrapper =
       make_test_subscriber<CallExact>(synchronizer.on_commit_chain(), 1);

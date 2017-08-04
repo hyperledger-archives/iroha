@@ -17,4 +17,5 @@ target_link_libraries(model
     optional
     rxcpp
     hash
+    crypto
     )

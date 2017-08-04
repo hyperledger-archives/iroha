@@ -21,13 +21,13 @@
 namespace iroha {
   namespace validation {
     StatelessValidatorImpl::StatelessValidatorImpl(
-        model::ModelCryptoProvider& crypto_provider)
+        std::shared_ptr<model::ModelCryptoProvider> crypto_provider)
         : crypto_provider_(crypto_provider) {}
 
     bool StatelessValidatorImpl::validate(
         const model::Transaction& transaction) const {
       // signatures are correct
-      if (!crypto_provider_.verify(transaction)) return false;
+      if (!crypto_provider_->verify(transaction)) return false;
 
       // time between creation and validation of tx
       uint64_t now = static_cast<uint64_t>(
@@ -47,7 +47,7 @@ namespace iroha {
 
     bool StatelessValidatorImpl::validate(std::shared_ptr<const model::Query> query) const {
       // signatures are correct
-      if (!crypto_provider_.verify(query)) return false;
+      if (!crypto_provider_->verify(query)) return false;
 
       // time between creation and validation of the query
       uint64_t now = static_cast<uint64_t>(

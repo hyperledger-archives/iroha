@@ -44,7 +44,7 @@ TEST_F(OrderingGateTest, TransactionReceivedByServerWhenSent) {
   EXPECT_CALL(*fake_service, SendTransaction(_, _, _)).Times(5);
 
   for (size_t i = 0; i < 5; ++i) {
-    gate_impl->propagate_transaction(Transaction());
+    gate_impl->propagate_transaction(std::make_shared<Transaction>());
   }
 
   // Ensure that server processed the transactions

@@ -54,7 +54,7 @@ TEST(CryptoProvider, SignAndVerify) {
 
   auto model_tx = create_transaction();
 
-  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair);
+  iroha::model::ModelCryptoProviderImpl crypto_provider;
   sign(model_tx, keypair.privkey, keypair.pubkey);
   ASSERT_TRUE(crypto_provider.verify(model_tx));
 

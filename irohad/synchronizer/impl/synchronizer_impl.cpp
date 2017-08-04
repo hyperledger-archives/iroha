@@ -22,23 +22,23 @@ namespace iroha {
   namespace synchronizer {
 
     SynchronizerImpl::SynchronizerImpl(
-        validation::ChainValidator &validator,
-        ametsuchi::MutableFactory &mutableFactory,
-        network::BlockLoader &blockLoader)
+        std::shared_ptr<validation::ChainValidator> validator,
+        std::shared_ptr<ametsuchi::MutableFactory> mutableFactory,
+        std::shared_ptr<network::BlockLoader> blockLoader)
         : validator_(validator),
           mutableFactory_(mutableFactory),
           blockLoader_(blockLoader) {}
 
     void SynchronizerImpl::process_commit(iroha::model::Block commit_message) {
-      auto storage = mutableFactory_.createMutableStorage();
+      auto storage = mutableFactory_->createMutableStorage();
       if (not storage) {
         // TODO: write to log ametsuchi is not ok
         return;
       }
-      if (validator_.validateBlock(commit_message, *storage)) {
+      if (validator_->validateBlock(commit_message, *storage)) {
         // Block can be applied to current storage
         // Commit to main Ametsuchi
-        mutableFactory_.commit(std::move(storage));
+        mutableFactory_->commit(std::move(storage));
 
         auto single_commit = rxcpp::observable<>::just(commit_message);
 
@@ -54,15 +54,15 @@ namespace iroha {
 
           // Get your last top block
           auto top_block = model::Block();
-          auto chain = blockLoader_.requestBlocks(target_peer, top_block);
-          storage = mutableFactory_.createMutableStorage();
+          auto chain = blockLoader_->requestBlocks(target_peer, top_block);
+          storage = mutableFactory_->createMutableStorage();
           if (!storage) {
             // TODO: write to log, cant create storage
             return;
           }
-          if (validator_.validateChain(chain, *storage)) {
+          if (validator_->validateChain(chain, *storage)) {
             // Peer send valid chain
-            mutableFactory_.commit(std::move(storage));
+            mutableFactory_->commit(std::move(storage));
             notifier_.get_subscriber().on_next(chain);
             // You are synchronized
             return;

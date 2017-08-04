@@ -20,14 +20,15 @@
 namespace iroha {
   namespace simulator {
 
-    Simulator::Simulator(validation::StatefulValidator& statefulValidator,
-                         ametsuchi::TemporaryFactory& factory,
-                         ametsuchi::BlockQuery& blockQuery,
-                         model::HashProviderImpl& hash_provider)
-        : validator_(statefulValidator),
-          ametsuchi_factory_(factory),
-          block_queries_(blockQuery),
-          hash_provider_(hash_provider) {
+    Simulator::Simulator(
+        std::shared_ptr<validation::StatefulValidator> statefulValidator,
+        std::shared_ptr<ametsuchi::TemporaryFactory> factory,
+        std::shared_ptr<ametsuchi::BlockQuery> blockQuery,
+        std::shared_ptr<model::HashProviderImpl> hash_provider)
+        : validator_(std::move(statefulValidator)),
+          ametsuchi_factory_(std::move(factory)),
+          block_queries_(std::move(blockQuery)),
+          hash_provider_(std::move(hash_provider)) {
       notifier_.get_observable().subscribe([this](auto verified_proposal) {
         this->process_verified_proposal(verified_proposal);
       });
@@ -41,17 +42,17 @@ namespace iroha {
       auto current_height = proposal.height;
       // Get last block from local ledger
       last_block = model::Block();
-      block_queries_.getBlocks(current_height - 1, current_height)
+      block_queries_->getBlocks(current_height - 1, current_height)
           .as_blocking()
           .subscribe([this](auto block) {
             this->last_block = block;
           });
-      if (last_block.height != proposal.height - 1) {
+      if (last_block.height + 1 != proposal.height) {
         return;
       }
-      auto temporaryStorage = ametsuchi_factory_.createTemporaryWsv();
+      auto temporaryStorage = ametsuchi_factory_->createTemporaryWsv();
       notifier_.get_subscriber().on_next(
-          validator_.validate(proposal, *temporaryStorage));
+          validator_->validate(proposal, *temporaryStorage));
     }
 
     void Simulator::process_verified_proposal(model::Proposal proposal) {
@@ -60,7 +61,10 @@ namespace iroha {
       new_block.prev_hash = last_block.hash;
       new_block.transactions = proposal.transactions;
       new_block.txs_number = proposal.transactions.size();
-      new_block.hash = hash_provider_.get_hash(new_block);
+      new_block.created_ts = 0;
+      new_block.merkle_root.fill(0);
+      new_block.hash = hash_provider_->get_hash(new_block);
+      new_block.sigs.push_back({});
 
       block_notifier_.get_subscriber().on_next(new_block);
     }

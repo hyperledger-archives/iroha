@@ -38,12 +38,17 @@ namespace iroha {
       auto storage = factory_->createMutableStorage();
       for (auto &&block : blocks) {
         storage->apply(block,
-                               [](const auto &,
-                                  auto &,
-                                  auto &,
-                                  const auto &) {
-                                 return true;
-                               });
+                       [](const auto &current_block, auto &executor,
+                          auto &query, const auto &top_hash) {
+                         for (const auto &tx : current_block.transactions) {
+                           for (const auto &command : tx.commands) {
+                             if (not command->execute(query, executor)) {
+                               return false;
+                             }
+                           }
+                         }
+                         return true;
+                       });
       }
       factory_->commit(std::move(storage));
     };

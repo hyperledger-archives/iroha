@@ -18,9 +18,7 @@ limitations under the License.
 #define TORII_COMMAND_CLIENT_HPP
 
 #include <endpoint.grpc.pb.h>
-#include <endpoint.pb.h>
 #include <grpc++/grpc++.h>
-#include <grpc++/channel.h>
 #include <memory>
 #include <thread>
 
@@ -31,7 +29,7 @@ namespace torii {
    */
   class CommandSyncClient {
   public:
-    CommandSyncClient(const std::string& ip, const int port);
+    CommandSyncClient(std::string ip, int port);
     ~CommandSyncClient();
 
     /**

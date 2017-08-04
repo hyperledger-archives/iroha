@@ -39,6 +39,8 @@ DEFINE_validator(config, &validate_config);
 DEFINE_string(genesis_block, "genesis.json", "Specify file with initial block");
 DEFINE_validator(genesis_block, &validate_genesis_path);
 
+DEFINE_uint64(peer_number, 0, "Specify peer number");
+
 int main(int argc, char *argv[]) {
   namespace mbr = config_members;
 
@@ -46,14 +48,16 @@ int main(int argc, char *argv[]) {
   gflags::ShutDownCommandLineFlags();
 
   auto config = parse_iroha_config(FLAGS_config);
-  auto irohad =
-      Irohad(config[mbr::BlockStorePath].GetString(),
-             config[mbr::RedisHost].GetString(),
-             config[mbr::RedisPort].GetUint(),
-             config[mbr::PgOpt].GetString());
+  Irohad irohad(config[mbr::BlockStorePath].GetString(),
+                config[mbr::RedisHost].GetString(),
+                config[mbr::RedisPort].GetUint(),
+                config[mbr::PgOpt].GetString(),
+                config[mbr::ToriiPort].GetUint(), FLAGS_peer_number);
 
   iroha::main::BlockInserter inserter(irohad.storage);
-  auto block = inserter.parseBlock(FLAGS_genesis_block);
+  auto file = inserter.loadFile(FLAGS_genesis_block);
+  auto block = inserter.parseBlock(file.value());
+
   if (block.has_value()) {
     inserter.applyToLedger({block.value()});
   }

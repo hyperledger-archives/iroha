@@ -27,7 +27,8 @@ namespace iroha {
     using network::PeerCommunicationService;
 
     TransactionProcessorImpl::TransactionProcessorImpl(
-        PeerCommunicationService &pcs, const StatelessValidator &validator)
+        std::shared_ptr<PeerCommunicationService> pcs,
+        std::shared_ptr<StatelessValidator> validator)
         : pcs_(pcs), validator_(validator) {}
 
     void TransactionProcessorImpl::transactionHandle(
@@ -36,9 +37,9 @@ namespace iroha {
       response.transaction = *transaction;
       response.passed = false;
 
-      if (validator_.validate(*transaction)) {
+      if (validator_->validate(*transaction)) {
         response.passed = true;
-        pcs_.propagate_transaction(*transaction);
+        pcs_->propagate_transaction(transaction);
       }
 
       notifier_.get_subscriber().on_next(

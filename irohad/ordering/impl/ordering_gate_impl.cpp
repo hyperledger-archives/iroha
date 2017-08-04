@@ -25,11 +25,11 @@ namespace iroha {
               server_address, grpc::InsecureChannelCredentials()))) {}
 
     void OrderingGateImpl::propagate_transaction(
-        const model::Transaction &transaction) {
+        std::shared_ptr<const model::Transaction> transaction) {
       auto call = new AsyncClientCall;
 
       call->response_reader = client_->AsyncSendTransaction(
-          &call->context, factory_.serialize(transaction), &cq_);
+          &call->context, factory_.serialize(*transaction), &cq_);
 
       call->response_reader->Finish(&call->reply, &call->status, call);
     }
@@ -48,7 +48,9 @@ namespace iroha {
         transactions.push_back(*factory_.deserialize(tx));
       }
 
-      handleProposal(model::Proposal(transactions));
+      model::Proposal proposal(transactions);
+      proposal.height = request->height();
+      handleProposal(std::move(proposal));
 
       return grpc::Status::OK;
     }

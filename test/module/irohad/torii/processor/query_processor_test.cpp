@@ -18,11 +18,11 @@
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
 
+#include "framework/test_subscriber.hpp"
+#include "model/queries/responses/error_response.hpp"
 #include "model/query_execution.hpp"
 #include "network/ordering_gate.hpp"
 #include "torii/processor/query_processor_impl.hpp"
-#include "model/queries/responses/error_response.hpp"
-#include "framework/test_subscriber.hpp"
 
 using namespace iroha;
 using namespace iroha::ametsuchi;
@@ -34,15 +34,16 @@ using ::testing::_;
 using ::testing::A;
 
 TEST(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
-  MockWsvQuery wsv_query;
-  MockBlockQuery block_query;
-  model::QueryProcessingFactory qpf(wsv_query, block_query);
+  auto wsv_queries = std::make_shared<MockWsvQuery>();
+  auto block_queries = std::make_shared<MockBlockQuery>();
+  auto qpf =
+      std::make_unique<model::QueryProcessingFactory>(wsv_queries, block_queries);
 
-  MockStatelessValidator validation;
-  EXPECT_CALL(validation, validate(A<std::shared_ptr<const model::Query>>()))
+  auto validation = std::make_shared<MockStatelessValidator>();
+  EXPECT_CALL(*validation, validate(A<std::shared_ptr<const model::Query>>()))
       .WillRepeatedly(Return(false));
 
-  iroha::torii::QueryProcessorImpl qpi(qpf, validation);
+  iroha::torii::QueryProcessorImpl qpi(std::move(qpf), validation);
   auto query = std::make_shared<model::Query>();
 
   auto wrapper = make_test_subscriber<CallExact>(

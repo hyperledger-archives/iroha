@@ -31,8 +31,8 @@ namespace iroha {
     class QueryProcessorImpl : public QueryProcessor {
      public:
       explicit QueryProcessorImpl(
-          model::QueryProcessingFactory &qpf,
-          validation::StatelessValidator &stateless_validator);
+          std::unique_ptr<model::QueryProcessingFactory> qpf,
+          std::shared_ptr<validation::StatelessValidator> stateless_validator);
 
       /**
        * Register client query
@@ -49,8 +49,8 @@ namespace iroha {
 
      private:
       rxcpp::subjects::subject<std::shared_ptr<model::QueryResponse>> subject_;
-      model::QueryProcessingFactory &qpf_;
-      validation::StatelessValidator &validator_;
+      std::unique_ptr<model::QueryProcessingFactory> qpf_;
+      std::shared_ptr<validation::StatelessValidator> validator_;
     };
   }
 }

@@ -23,12 +23,13 @@
 #include "model/queries/responses/transactions_response.hpp"
 
 iroha::model::QueryProcessingFactory::QueryProcessingFactory(
-    ametsuchi::WsvQuery& wsvQuery, ametsuchi::BlockQuery& blockQuery)
+    std::shared_ptr<ametsuchi::WsvQuery> wsvQuery,
+    std::shared_ptr<ametsuchi::BlockQuery> blockQuery)
     : _wsvQuery(wsvQuery), _blockQuery(blockQuery) {}
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccount& query) {
-  auto creator = _wsvQuery.getAccount(query.creator_account_id);
+  auto creator = _wsvQuery->getAccount(query.creator_account_id);
   // TODO: check signatures
   return
       // Creator account exits
@@ -40,7 +41,7 @@ bool iroha::model::QueryProcessingFactory::validate(
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetSignatories& query) {
-  auto creator = _wsvQuery.getAccount(query.creator_account_id);
+  auto creator = _wsvQuery->getAccount(query.creator_account_id);
   return
       // Creator account exits
       creator.has_value() &&
@@ -51,7 +52,7 @@ bool iroha::model::QueryProcessingFactory::validate(
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccountAssets& query) {
-  auto creator = _wsvQuery.getAccount(query.creator_account_id);
+  auto creator = _wsvQuery->getAccount(query.creator_account_id);
   return
       // Creator account exits
       creator.has_value() &&
@@ -62,7 +63,7 @@ bool iroha::model::QueryProcessingFactory::validate(
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccountTransactions& query) {
-  auto creator = _wsvQuery.getAccount(query.creator_account_id);
+  auto creator = _wsvQuery->getAccount(query.creator_account_id);
   return
       // Creator account exits
       creator.has_value() &&
@@ -73,7 +74,7 @@ bool iroha::model::QueryProcessingFactory::validate(
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccountAssetTransactions& query) {
-  auto creator = _wsvQuery.getAccount(query.creator_account_id);
+  auto creator = _wsvQuery->getAccount(query.creator_account_id);
   return
       // Creator account exits
       creator.has_value() &&
@@ -85,7 +86,7 @@ bool iroha::model::QueryProcessingFactory::validate(
 std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetAccount(
     const model::GetAccount& query) {
-  auto acc = _wsvQuery.getAccount(query.account_id);
+  auto acc = _wsvQuery->getAccount(query.account_id);
   if (!acc.has_value()) {
     std::cout << "Account not found" << std::endl;
     iroha::model::ErrorResponse response;
@@ -102,7 +103,7 @@ iroha::model::QueryProcessingFactory::executeGetAccount(
 std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetAccountAssets(
     const model::GetAccountAssets& query) {
-  auto acct_asset = _wsvQuery.getAccountAsset(query.account_id, query.asset_id);
+  auto acct_asset = _wsvQuery->getAccountAsset(query.account_id, query.asset_id);
   if (!acct_asset.has_value()) {
     iroha::model::ErrorResponse response;
     response.query_hash = query.query_hash;
@@ -129,7 +130,7 @@ iroha::model::QueryProcessingFactory::executeGetAccountAssetTransactions(
 std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetAccountTransactions(
     const model::GetAccountTransactions& query) {
-  auto acc_tx = _blockQuery.getAccountTransactions(query.account_id);
+  auto acc_tx = _blockQuery->getAccountTransactions(query.account_id);
   iroha::model::TransactionsResponse response;
   response.query_hash = query.query_hash;
   response.transactions = acc_tx;
@@ -139,7 +140,7 @@ iroha::model::QueryProcessingFactory::executeGetAccountTransactions(
 std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetSignatories(
     const model::GetSignatories& query) {
-  auto signs = _wsvQuery.getSignatories(query.account_id);
+  auto signs = _wsvQuery->getSignatories(query.account_id);
   if (!signs.has_value()) {
     iroha::model::ErrorResponse response;
     response.query_hash = query.query_hash;

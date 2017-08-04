@@ -35,22 +35,23 @@ using ::testing::_;
 using ::testing::An;
 using ::testing::AtLeast;
 
-TEST(YacGateTest, YacGateSubscribtionTest) {
-  cout << "----------| BlockCreator (block)=> YacHate (vote)=> "
+TEST(YacGateTest, YacGateSubscriptionTest) {
+  cout << "----------| BlockCreator (block)=> YacGate (vote)=> "
       "HashGate (commit) => YacGate => on_commit() |----------" << endl;
 
   // expected values
   YacHash expected_hash("proposal", "block");
   iroha::model::Block expected_block;
   expected_block.created_ts = 100500;
+  expected_block.sigs.push_back({});
   VoteMessage message;
   message.hash = expected_hash;
+  message.signature = expected_block.sigs.front();
   CommitMessage commit_message({message});
   auto expected_commit = rxcpp::observable<>::just(commit_message);
 
   // yac consensus
-  unique_ptr<HashGate> hash_gate =
-      make_unique<MockHashGate>();
+  unique_ptr<HashGate> hash_gate = make_unique<MockHashGate>();
   auto hash_gate_raw = hash_gate.get();
 
   EXPECT_CALL(*static_cast<MockHashGate *>(hash_gate_raw),

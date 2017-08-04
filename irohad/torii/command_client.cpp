@@ -23,10 +23,10 @@ namespace torii {
   using iroha::protocol::Transaction;
   using iroha::protocol::ToriiResponse;
 
-  CommandSyncClient::CommandSyncClient(const std::string& ip, const int port)
-    : stub_(iroha::protocol::CommandService::NewStub(
-    grpc::CreateChannel(ip + ":" + std::to_string(port), grpc::InsecureChannelCredentials())))
-  {}
+  CommandSyncClient::CommandSyncClient(std::string ip, int port)
+      : stub_(iroha::protocol::CommandService::NewStub(
+            grpc::CreateChannel(ip + ":" + std::to_string(port),
+                                grpc::InsecureChannelCredentials()))) {}
 
   CommandSyncClient::~CommandSyncClient() {
     completionQueue_.Shutdown();
@@ -40,9 +40,7 @@ namespace torii {
    */
   grpc::Status CommandSyncClient::Torii(const Transaction& tx, ToriiResponse& response) {
 
-    std::unique_ptr<grpc::ClientAsyncResponseReader<iroha::protocol::ToriiResponse>> rpc(
-      stub_->AsyncTorii(&context_, tx, &completionQueue_)
-    );
+    auto rpc = stub_->AsyncTorii(&context_, tx, &completionQueue_);
 
     using State = network::UntypedCall<torii::ToriiServiceHandler>::State;
 

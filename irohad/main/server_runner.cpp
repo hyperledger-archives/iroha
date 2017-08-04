@@ -22,8 +22,8 @@ limitations under the License.
 
 logger::Logger Log("ServerRunner");
 
-ServerRunner::ServerRunner(const std::string &ip, int port)
-    : serverAddress_(ip + ":" + std::to_string(port)) {}
+ServerRunner::ServerRunner(const std::string &address)
+    : serverAddress_(address) {}
 
 ServerRunner::~ServerRunner() { toriiServiceHandler_->shutdown(); }
 

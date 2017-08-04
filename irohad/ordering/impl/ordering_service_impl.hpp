@@ -84,6 +84,7 @@ namespace iroha {
       const size_t max_size_;  // max number of txs in proposal
       const size_t
           delay_milliseconds_;  // wait for specified time if queue is empty
+      size_t proposal_height;
     };
   }  // namespace ordering
 }  // namespace iroha

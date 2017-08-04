@@ -43,7 +43,8 @@ namespace iroha {
 
       void NetworkImpl::send_commit(model::Peer to, CommitMessage commit) {
         std::cout << output("send_commit " + to.address + " " +
-                            commit.votes.at(0).hash.block_hash)
+                            bytestringToHexstring(
+                                commit.votes.at(0).hash.block_hash))
                   << std::endl;
 
         proto::Commit request;
@@ -71,7 +72,8 @@ namespace iroha {
 
       void NetworkImpl::send_reject(model::Peer to, RejectMessage reject) {
         std::cout << output("send_reject " + to.address + " " +
-                            reject.votes.at(0).hash.block_hash)
+                            bytestringToHexstring(
+                                reject.votes.at(0).hash.block_hash))
                   << std::endl;
 
         proto::Reject request;
@@ -99,7 +101,7 @@ namespace iroha {
 
       void NetworkImpl::send_vote(model::Peer to, VoteMessage vote) {
         std::cout << output("send_vote " + to.address + " " +
-                            vote.hash.block_hash)
+                            bytestringToHexstring(vote.hash.block_hash))
                   << std::endl;
 
         proto::Vote request;
@@ -144,7 +146,7 @@ namespace iroha {
                   vote.signature.pubkey.begin());
 
         std::cout << input("SendVote " + peer.address + " " +
-                           vote.hash.block_hash)
+                           bytestringToHexstring(vote.hash.block_hash))
                   << std::endl;
 
         handler_.lock()->on_vote(peer, vote);
@@ -177,7 +179,8 @@ namespace iroha {
         }
 
         std::cout << input("SendCommit " + peer.address + " " +
-                           commit.votes.at(0).hash.block_hash)
+                           bytestringToHexstring(
+                               commit.votes.at(0).hash.block_hash))
                   << std::endl;
 
         handler_.lock()->on_commit(peer, commit);
@@ -210,7 +213,8 @@ namespace iroha {
         }
 
         std::cout << input("SendReject " + peer.address + " " +
-                           reject.votes.at(0).hash.block_hash)
+                           bytestringToHexstring(
+                               reject.votes.at(0).hash.block_hash))
                   << std::endl;
 
         handler_.lock()->on_reject(peer, reject);

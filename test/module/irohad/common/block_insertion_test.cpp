@@ -15,19 +15,20 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include <gtest/gtest.h>
 #include "main/raw_block_insertion.hpp"
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
-#include "common/types.hpp"
+#include <fstream>
+#include <iostream>
+#include <model/model_hash_provider_impl.hpp>
 #include "ametsuchi/block_serializer.hpp"
+#include "common/types.hpp"
 #include "model/block.hpp"
-#include "model/transaction.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/transfer_asset.hpp"
-#include "common/types.hpp"
-#include <iostream>
+#include "model/transaction.hpp"
 
 using ::testing::DefaultValue;
 using ::testing::_;
@@ -43,36 +44,88 @@ std::unique_ptr<MutableStorage> createMutableStorageMock() {
   return unique_ptr<MockMutableStorage>(storage_mock);
 }
 
-Transaction getTransaction(uint64_t create_time, std::string address) {
-  Transaction transaction;
+Transaction getAddPeerTransaction(uint64_t create_time, std::string address) {
+  Transaction transaction{};
   transaction.created_ts = create_time;
+  Signature sign{};
+  transaction.signatures = {sign};
 
-  AddPeer add_peer;
-  add_peer.address = std::move(address);
+  auto add_peer = std::make_shared<AddPeer>();
+  add_peer->address = address;
+  add_peer->peer_key = {};
 
-  TransferAsset transfer_asset;
-  transfer_asset.amount = iroha::Amount(69, 42);
-  transfer_asset.asset_id = "tugrik";
-  transfer_asset.src_account_id = "Tourist";
-  transfer_asset.dest_account_id = "Petr";
-  transaction.commands = {
-      std::make_shared<AddPeer>(add_peer),
-      std::make_shared<TransferAsset>(transfer_asset),
-  };
+  transaction.commands = {add_peer};
+  return transaction;
+}
+
+Transaction getTestCreateTransaction(uint64_t create_time) {
+  Transaction transaction{};
+  transaction.created_ts = create_time;
+  Signature sign{};
+  transaction.signatures = {sign};
+
+  auto create_domain = std::make_shared<CreateDomain>();
+  create_domain->domain_name = "test";
+
+  auto create_asset = std::make_shared<CreateAsset>();
+  create_asset->domain_id = "test";
+  create_asset->asset_name = "coin";
+  create_asset->precision = 2;
+
+  auto create_admin = std::make_shared<CreateAccount>();
+  create_admin->domain_id = "test";
+  create_admin->account_name = "admin";
+
+  auto create_acc = std::make_shared<CreateAccount>();
+  create_acc->domain_id = "test";
+  create_acc->account_name = "test";
+
+  auto set_perm = std::make_shared<SetAccountPermissions>();
+  set_perm->account_id = "admin@test";
+  Account::Permissions permissions;
+  permissions.can_transfer = true;
+  permissions.read_all_accounts = true;
+  permissions.issue_assets = true;
+  permissions.set_permissions = true;
+  set_perm->new_permissions = permissions;
+
+
+  transaction.commands = {create_domain, create_asset, create_admin, create_acc,
+                          set_perm};
   return transaction;
 }
 
 Block generateBlock() {
   Block block;
-  block.created_ts = 100500;
-  block.height = 228;
+  block.created_ts =
+      (ts64_t)chrono::system_clock::now().time_since_epoch().count();
+  block.height = 1;
+  std::fill(block.prev_hash.begin(), block.prev_hash.end(), 0);
+  block.txs_number = 4;
 
-  block.transactions = {
-      getTransaction(322, "ulitsa pushkina, dom kolotushkina"),
-      getTransaction(666, "Petushki"),
+  auto start_port = 10001u;
+  for (size_t i = start_port; i < start_port + block.txs_number; ++i) {
+    block.transactions.push_back(getAddPeerTransaction(
+        block.created_ts, "0.0.0.0:" + std::to_string(i)));
+  }
 
-  };
+  block.transactions.push_back(getTestCreateTransaction(block.created_ts));
+  block.txs_number++;
+
+  Signature sign{};
+  block.sigs = {sign};
+  block.hash = model::HashProviderImpl().get_hash(block);
   return block;
+}
+
+bool save_to_file(std::string json, std::string file_name) {
+  // Save pubkey to file
+  std::ofstream file(file_name);
+  if (not file) {
+    return false;
+  }
+  file << json;
+  return true;
 }
 
 TEST(JsonRepr, JsonBlockReprGeneration) {
@@ -80,12 +133,16 @@ TEST(JsonRepr, JsonBlockReprGeneration) {
 
   BlockSerializer serializer;
   auto blob = serializer.serialize(generateBlock());
-  cout << iroha::bytesToString(blob) << endl;
+  auto json_block = iroha::bytesToString(blob);
+
+  cout << json_block << endl;
+  ASSERT_TRUE(save_to_file(json_block, "zero.block"));
 }
 
 TEST(BlockInsertionTest, BlockInsertionWhenParseBlock) {
   cout << "----------| block => string_repr(block)"
-      " => parseBlock() |----------" << endl;
+          " => parseBlock() |----------"
+       << endl;
 
   shared_ptr<MockMutableFactory> factory = make_shared<MockMutableFactory>();
   BlockInserter inserter(factory);
@@ -93,7 +150,7 @@ TEST(BlockInsertionTest, BlockInsertionWhenParseBlock) {
   auto blob = BlockSerializer().serialize(block);
   auto str = iroha::bytesToString(blob);
   auto new_block = inserter.parseBlock(str);
-  ASSERT_NE(nonstd::nullopt, new_block);
+  ASSERT_TRUE(new_block.has_value());
   ASSERT_EQ(block, new_block.value());
 }
 

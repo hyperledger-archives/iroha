@@ -24,7 +24,7 @@ namespace iroha {
   namespace validation {
     class ChainValidatorImpl : public ChainValidator {
      public:
-      explicit ChainValidatorImpl(model::ModelCryptoProvider &crypto_provider);
+      explicit ChainValidatorImpl(std::shared_ptr<model::ModelCryptoProvider> crypto_provider);
 
       bool validateChain(Commit blocks,
                          ametsuchi::MutableStorage &storage) override;
@@ -34,7 +34,7 @@ namespace iroha {
 
      private:
       // internal
-      model::ModelCryptoProvider &crypto_provider_;
+      std::shared_ptr<model::ModelCryptoProvider> crypto_provider_;
 
       bool checkSupermajority(ametsuchi::MutableStorage &storage,
                               uint64_t signs_num);
