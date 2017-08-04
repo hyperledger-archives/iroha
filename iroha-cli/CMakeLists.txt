@@ -37,6 +37,7 @@ target_link_libraries(client
     optional
     rapidjson
     command_client
+    query_client
     ametsuchi
     )
 

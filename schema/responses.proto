@@ -41,6 +41,7 @@ message ErrorResponse {
         NO_ACCOUNT_ASSETS = 3; // when requested account asset does not exist
         NO_SIGNATORIES = 4; // when requested signatories does not exist
         NOT_SUPPORTED = 5; // when unidentified request was received
+        WRONG_FORMAT = 6; // when json format wrong
     }
     Reason reason = 1;
 }

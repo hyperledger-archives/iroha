@@ -19,12 +19,13 @@
 #include <utility>
 #include "model/converters/json_common.hpp"
 #include "model/converters/json_transaction_factory.hpp"
+#include <ametsuchi/query_serializer.hpp>
 #include "model/converters/pb_transaction_factory.hpp"
 
 namespace iroha_cli {
 
   CliClient::CliClient(std::string target_ip, int port)
-      : client_(std::move(target_ip), port) {}
+      : command_client_(target_ip, port), query_client_(target_ip, port) {}
 
   CliClient::Status CliClient::sendTx(std::string json_tx) {
     iroha::model::converters::JsonTransactionFactory serializer;
@@ -42,12 +43,31 @@ namespace iroha_cli {
     auto pb_tx = factory.serialize(model_tx);
     // Send to iroha:
     iroha::protocol::ToriiResponse response;
-    auto stat = client_.Torii(pb_tx, response);
+    auto stat = command_client_.Torii(pb_tx, response);
 
     return response.validation() ==
                    iroha::protocol::STATELESS_VALIDATION_SUCCESS
                ? OK
                : NOT_VALID;
+  }
+
+  iroha::protocol::QueryResponse CliClient::sendQuery(std::string json_query) {
+    iroha::ametsuchi::QuerySerializer serializer;
+
+    auto query_opt = serializer.deserialize(std::move(json_query));
+
+    iroha::protocol::QueryResponse query_response;
+
+    if (not query_opt.has_value()) {
+      iroha::protocol::ErrorResponse er;
+      er.set_reason(iroha::protocol::ErrorResponse::WRONG_FORMAT);
+      query_response.mutable_error_response()->CopyFrom(er);
+      return query_response;
+    }
+
+    query_client_.Find(*query_opt, query_response);
+
+    return query_response;
   }
 
 };  // namespace iroha_cli

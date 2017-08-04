@@ -19,6 +19,7 @@
 #define IROHA_CLIENT_HPP
 
 #include <string>
+#include <torii_utils/query_client.hpp>
 #include "torii/command_client.hpp"
 
 namespace iroha_cli {
@@ -35,8 +36,11 @@ namespace iroha_cli {
      */
     Status sendTx(std::string json_tx);
 
+    iroha::protocol::QueryResponse sendQuery(std::string json_query);
+
    private:
-    torii::CommandSyncClient client_;
+    torii::CommandSyncClient command_client_;
+    torii_utils::QuerySyncClient query_client_;
   };
 }  // namespace iroha_cli
 
