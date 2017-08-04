@@ -51,6 +51,7 @@ class Irohad {
          size_t redis_port, const std::string &pg_conn, size_t torii_port,
          uint64_t peer_number);
   void run();
+  ~Irohad();
 
  private:
   std::shared_ptr<iroha::synchronizer::Synchronizer> initializeSynchronizer(
@@ -109,10 +110,15 @@ class Irohad {
   size_t torii_port_;
   std::shared_ptr<uvw::Loop> loop;
 
+  std::unique_ptr<::torii::CommandService> command_service;
+  std::unique_ptr<::torii::QueryService> query_service;
+
   std::unique_ptr<ServerRunner> torii_server;
   std::unique_ptr<grpc::Server> internal_server;
   iroha::network::OrderingInit ordering_init;
   iroha::consensus::yac::YacInit yac_init;
+
+  std::thread internal_thread, server_thread, loop_thread;
 
  public:
   std::shared_ptr<iroha::ametsuchi::StorageImpl> storage;

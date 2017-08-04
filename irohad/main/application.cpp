@@ -54,6 +54,13 @@ Irohad::Irohad(const std::string &block_store_dir,
                                   pg_conn)),
       peer_number_(peer_number) {}
 
+Irohad::~Irohad() {
+  torii_server->shutdown();
+  internal_thread.join();
+  server_thread.join();
+  loop_thread.join();
+}
+
 class MockBlockLoader : public iroha::network::BlockLoader {
  public:
   MOCK_METHOD2(requestBlocks,
@@ -134,7 +141,7 @@ void Irohad::run() {
   // --- Transactions:
   auto tx_processor = createTransactionProcessor(pcs, stateless_validator);
 
-  auto comand_service = createCommandService(pb_tx_factory, tx_processor);
+  command_service = createCommandService(pb_tx_factory, tx_processor);
 
   // --- Queries
   auto query_proccessing_factory =
@@ -143,7 +150,7 @@ void Irohad::run() {
   auto query_processor = createQueryProcessor(
       std::move(query_proccessing_factory), stateless_validator);
 
-  auto query_service = createQueryService(
+  query_service = createQueryService(
       pb_query_factory, pb_query_response_factory, query_processor);
 
   grpc::ServerBuilder builder;
@@ -154,14 +161,12 @@ void Irohad::run() {
   builder.RegisterService(ordering_init.ordering_service.get());
   builder.RegisterService(yac_init.consensus_network.get());
   internal_server = builder.BuildAndStart();
-  std::thread internal_thread([this] { internal_server->Wait(); });
-  std::thread server_thread([this] {
-    torii_server->run(std::move(comand_service), std::move(query_service));
+  internal_thread = std::thread([this] { internal_server->Wait(); });
+  server_thread = std::thread([this] {
+    torii_server->run(std::move(command_service), std::move(query_service));
   });
-  std::thread loop_thread([this] { loop->run(); });
-  internal_thread.join();
-  server_thread.join();
-  loop_thread.join();
+  loop_thread = std::thread([this] { loop->run(); });
+  torii_server->waitForServersReady();
 }
 
 std::shared_ptr<Simulator> Irohad::createSimulator(
