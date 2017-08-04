@@ -16,6 +16,7 @@
  */
 
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
 
 #include "simulator/impl/simulator.hpp"
@@ -25,6 +26,8 @@ using namespace iroha;
 using namespace iroha::validation;
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
+using namespace iroha::simulator;
+using namespace iroha::network;
 using namespace framework::test_subscriber;
 
 using ::testing::Return;
@@ -37,17 +40,31 @@ class SimulatorTest : public ::testing::Test {
     factory = std::make_shared<MockTemporaryFactory>();
     query = std::make_shared<MockBlockQuery>();
     provider = std::make_shared<HashProviderImpl>();
+    ordering_gate = std::make_shared<MockOrderingGate>();
+  }
+
+  void init() {
+    simulator = std::make_shared<Simulator>(ordering_gate, validator, factory,
+                                            query, provider);
   }
 
   std::shared_ptr<MockStatefulValidator> validator;
   std::shared_ptr<MockTemporaryFactory> factory;
   std::shared_ptr<MockBlockQuery> query;
   std::shared_ptr<HashProviderImpl> provider;
+  std::shared_ptr<MockOrderingGate> ordering_gate;
+
+  std::shared_ptr<Simulator> simulator;
 };
 
-TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
-  simulator::Simulator simulator(validator, factory, query, provider);
+TEST_F(SimulatorTest, ValidWhenInitialized) {
+  EXPECT_CALL(*ordering_gate, on_proposal())
+      .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
 
+  init();
+}
+
+TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
   auto txs = std::vector<model::Transaction>(2);
   auto proposal = model::Proposal(txs);
   proposal.height = 2;
@@ -62,28 +79,31 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
 
   EXPECT_CALL(*validator, validate(_, _)).WillOnce(Return(proposal));
 
+  EXPECT_CALL(*ordering_gate, on_proposal())
+      .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
+
+  init();
+
   auto proposal_wrapper =
-      make_test_subscriber<CallExact>(simulator.on_verified_proposal(), 1);
+      make_test_subscriber<CallExact>(simulator->on_verified_proposal(), 1);
   proposal_wrapper.subscribe([&proposal](auto verified_proposal) {
     ASSERT_EQ(verified_proposal.height, proposal.height);
     ASSERT_EQ(verified_proposal.transactions, proposal.transactions);
   });
 
-  auto block_wrapper = make_test_subscriber<CallExact>(simulator.on_block(), 1);
+  auto block_wrapper = make_test_subscriber<CallExact>(simulator->on_block(), 1);
   block_wrapper.subscribe([&proposal](auto block) {
     ASSERT_EQ(block.height, proposal.height);
     ASSERT_EQ(block.transactions, proposal.transactions);
   });
 
-  simulator.process_proposal(proposal);
+  simulator->process_proposal(proposal);
 
   ASSERT_TRUE(proposal_wrapper.validate());
   ASSERT_TRUE(block_wrapper.validate());
 }
 
 TEST_F(SimulatorTest, FailWhenNoBlock) {
-  simulator::Simulator simulator(validator, factory, query, provider);
-
   auto txs = std::vector<model::Transaction>(2);
   auto proposal = model::Proposal(txs);
   proposal.height = 2;
@@ -95,22 +115,25 @@ TEST_F(SimulatorTest, FailWhenNoBlock) {
 
   EXPECT_CALL(*validator, validate(_, _)).Times(0);
 
+  EXPECT_CALL(*ordering_gate, on_proposal())
+      .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
+
+  init();
+
   auto proposal_wrapper =
-      make_test_subscriber<CallExact>(simulator.on_verified_proposal(), 0);
+      make_test_subscriber<CallExact>(simulator->on_verified_proposal(), 0);
   proposal_wrapper.subscribe();
 
-  auto block_wrapper = make_test_subscriber<CallExact>(simulator.on_block(), 0);
+  auto block_wrapper = make_test_subscriber<CallExact>(simulator->on_block(), 0);
   block_wrapper.subscribe();
 
-  simulator.process_proposal(proposal);
+  simulator->process_proposal(proposal);
 
   ASSERT_TRUE(proposal_wrapper.validate());
   ASSERT_TRUE(block_wrapper.validate());
 }
 
 TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
-  simulator::Simulator simulator(validator, factory, query, provider);
-
   auto txs = std::vector<model::Transaction>(2);
   auto proposal = model::Proposal(txs);
   proposal.height = 2;
@@ -125,14 +148,19 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
 
   EXPECT_CALL(*validator, validate(_, _)).Times(0);
 
+  EXPECT_CALL(*ordering_gate, on_proposal())
+      .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
+
+  init();
+
   auto proposal_wrapper =
-      make_test_subscriber<CallExact>(simulator.on_verified_proposal(), 0);
+      make_test_subscriber<CallExact>(simulator->on_verified_proposal(), 0);
   proposal_wrapper.subscribe();
 
-  auto block_wrapper = make_test_subscriber<CallExact>(simulator.on_block(), 0);
+  auto block_wrapper = make_test_subscriber<CallExact>(simulator->on_block(), 0);
   block_wrapper.subscribe();
 
-  simulator.process_proposal(proposal);
+  simulator->process_proposal(proposal);
 
   ASSERT_TRUE(proposal_wrapper.validate());
   ASSERT_TRUE(block_wrapper.validate());

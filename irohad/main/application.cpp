@@ -193,15 +193,9 @@ std::shared_ptr<Simulator> Irohad::createSimulator(
     std::shared_ptr<BlockQuery> block_query,
     std::shared_ptr<TemporaryFactory> temporary_factory,
     std::shared_ptr<HashProviderImpl> hash_provider) {
-  auto simulator = std::make_shared<Simulator>(
-      stateful_validator, temporary_factory, block_query, hash_provider);
-
-  ordering_gate->on_proposal().subscribe(
-      [simulator](auto proposal) {
-        simulator->process_proposal(proposal);
-      });
-
-  return simulator;
+  return std::make_shared<Simulator>(ordering_gate, stateful_validator,
+                                     temporary_factory, block_query,
+                                     hash_provider);
 }
 
 std::shared_ptr<PeerCommunicationService>
@@ -217,14 +211,8 @@ std::shared_ptr<Synchronizer> Irohad::createSynchronizer(
     std::shared_ptr<ChainValidator> validator,
     std::shared_ptr<MutableFactory> mutableFactory,
     std::shared_ptr<BlockLoader> blockLoader) {
-  auto synchronizer = std::make_shared<SynchronizerImpl>(
-      std::move(validator), mutableFactory, blockLoader);
-
-  consensus_gate->on_commit().subscribe([synchronizer](auto block) {
-    synchronizer->process_commit(block);
-  });
-
-  return synchronizer;
+  return std::make_shared<SynchronizerImpl>(consensus_gate, validator,
+                                            mutableFactory, blockLoader);
 }
 
 std::unique_ptr<::torii::CommandService> Irohad::createCommandService(

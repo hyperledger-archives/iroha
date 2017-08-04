@@ -23,6 +23,7 @@ namespace iroha {
   namespace synchronizer {
 
     SynchronizerImpl::SynchronizerImpl(
+        std::shared_ptr<network::ConsensusGate> consensus_gate,
         std::shared_ptr<validation::ChainValidator> validator,
         std::shared_ptr<ametsuchi::MutableFactory> mutableFactory,
         std::shared_ptr<network::BlockLoader> blockLoader)
@@ -30,6 +31,9 @@ namespace iroha {
           mutableFactory_(std::move(mutableFactory)),
           blockLoader_(std::move(blockLoader)) {
       log_ = logger::log("synchronizer");
+      consensus_gate->on_commit().subscribe([this](auto block) {
+        this->process_commit(block);
+      });
     }
 
     void SynchronizerImpl::process_commit(iroha::model::Block commit_message) {

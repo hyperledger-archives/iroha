@@ -20,8 +20,9 @@
 
 #include <gmock/gmock.h>
 #include "network/block_loader.hpp"
-#include "network/peer_communication_service.hpp"
+#include "network/consensus_gate.hpp"
 #include "network/ordering_gate.hpp"
+#include "network/peer_communication_service.hpp"
 
 namespace iroha {
   namespace network {
@@ -48,6 +49,13 @@ namespace iroha {
                    void(std::shared_ptr<const model::Transaction> transaction));
 
       MOCK_METHOD0(on_proposal, rxcpp::observable<model::Proposal>());
+    };
+
+    class MockConsensusGate : public ConsensusGate {
+     public:
+      MOCK_METHOD1(vote, void(model::Block));
+
+      MOCK_METHOD0(on_commit, rxcpp::observable<model::Block>());
     };
   }  // namespace network
 }  // namespace iroha

@@ -19,6 +19,7 @@
 
 #include "ametsuchi/mutable_factory.hpp"
 #include "network/block_loader.hpp"
+#include "network/consensus_gate.hpp"
 #include "synchronizer/synchronizer.hpp"
 #include "validation/chain_validator.hpp"
 
@@ -28,9 +29,11 @@ namespace iroha {
   namespace synchronizer {
     class SynchronizerImpl : public Synchronizer {
      public:
-      SynchronizerImpl(std::shared_ptr<validation::ChainValidator> validator,
-                       std::shared_ptr<ametsuchi::MutableFactory> mutableFactory,
-                       std::shared_ptr<network::BlockLoader> blockLoader);
+      SynchronizerImpl(
+          std::shared_ptr<network::ConsensusGate> consensus_gate,
+          std::shared_ptr<validation::ChainValidator> validator,
+          std::shared_ptr<ametsuchi::MutableFactory> mutableFactory,
+          std::shared_ptr<network::BlockLoader> blockLoader);
 
       void process_commit(iroha::model::Block commit_message) override;
 

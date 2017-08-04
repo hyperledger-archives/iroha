@@ -21,6 +21,7 @@ namespace iroha {
   namespace simulator {
 
     Simulator::Simulator(
+        std::shared_ptr<network::OrderingGate> ordering_gate,
         std::shared_ptr<validation::StatefulValidator> statefulValidator,
         std::shared_ptr<ametsuchi::TemporaryFactory> factory,
         std::shared_ptr<ametsuchi::BlockQuery> blockQuery,
@@ -30,6 +31,9 @@ namespace iroha {
           block_queries_(std::move(blockQuery)),
           hash_provider_(std::move(hash_provider)) {
       log_ = logger::log("Simulator");
+      ordering_gate->on_proposal().subscribe(
+          [this](auto proposal) { this->process_proposal(proposal); });
+
       notifier_.get_observable().subscribe([this](auto verified_proposal) {
         this->process_verified_proposal(verified_proposal);
       });
