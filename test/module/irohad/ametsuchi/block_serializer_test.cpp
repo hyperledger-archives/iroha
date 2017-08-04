@@ -16,13 +16,8 @@
  */
 
 #include <gtest/gtest.h>
-#include <chrono>
 #include "ametsuchi/block_serializer.hpp"
 #include "common/types.hpp"
-
-#include "crypto/crypto.hpp"
-#include "model/model_crypto_provider_impl.hpp"
-#include "model/model_hash_provider_impl.hpp"
 
 using namespace iroha;
 
@@ -36,41 +31,6 @@ iroha::model::Signature create_signature() {
   std::fill(signature.signature.begin(), signature.signature.end(), 0x123);
   std::fill(signature.pubkey.begin(), signature.pubkey.end(), 0x123);
   return signature;
-}
-
-TEST(TxSerialize, PrintTx) {
-  iroha::model::Transaction tx{};
-  tx.tx_counter = 1;
-  tx.creator_account_id = "admin@test";
-  tx.created_ts = static_cast<uint64_t>(
-      std::chrono::duration_cast<std::chrono::milliseconds>(
-          std::chrono::system_clock::now().time_since_epoch()).count());;
-  iroha::model::AddAssetQuantity command;
-  command.account_id = "test@test";
-  command.asset_id = "coin#test";
-  command.amount.int_part = 20;
-  command.amount.frac_part = 0;
-  tx.commands.push_back(std::make_shared<model::AddAssetQuantity>(command));
-
-  model::HashProviderImpl hashProvider;
-  model::ModelCryptoProviderImpl cryptoProvider;
-
-  tx.tx_hash = hashProvider.get_hash(tx);
-
-  auto keypair = iroha::create_keypair(iroha::create_seed("322"));
-  model::Signature signature;
-  signature.pubkey = keypair.pubkey;
-  signature.signature = iroha::sign(tx.tx_hash.data(), tx.tx_hash.size(), signature.pubkey, keypair.privkey);
-
-  tx.signatures.push_back(signature);
-
-  ASSERT_TRUE(iroha::verify(tx.tx_hash.data(), tx.tx_hash.size(), tx.signatures.front().pubkey, tx.signatures.front().signature));
-
-  rapidjson::StringBuffer sb;
-  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
-  ametsuchi::BlockSerializer().serialize(writer, tx);
-  std::cout << sb.GetString() << std::endl;
-
 }
 
 iroha::model::Transaction create_transaction() {
