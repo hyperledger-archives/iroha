@@ -19,11 +19,14 @@
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
 #include "ordering_mocks.hpp"
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::model;
 using namespace iroha::network;
 using namespace framework::test_subscriber;
+using namespace iroha::ametsuchi;
+using ::testing::Return;
 
 class OrderingGateServiceTest : public OrderingTest {
  public:
@@ -55,8 +58,15 @@ class OrderingGateServiceTest : public OrderingTest {
 };
 
 TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenTimer) {
-  service = std::make_shared<OrderingServiceImpl>(std::vector<Peer>{peer}, 100,
-                                                  400, loop);
+  // todo write use case
+
+  std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
+  EXPECT_CALL(*wsv, getLedgerPeers()).WillRepeatedly(Return(std::vector<Peer>{
+      peer}));
+  service = std::make_shared<OrderingServiceImpl>(wsv,
+                                                  100,
+                                                  400,
+                                                  loop);
 
   start();
 
@@ -86,7 +96,13 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenTimer) {
 }
 
 TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
-  service = std::make_shared<OrderingServiceImpl>(std::vector<Peer>{peer}, 5,
+  // todo write use case
+
+  std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
+  EXPECT_CALL(*wsv, getLedgerPeers()).WillRepeatedly(Return(std::vector<Peer>{
+      peer}));
+
+  service = std::make_shared<OrderingServiceImpl>(wsv, 5,
                                                   1000, loop);
 
   start();

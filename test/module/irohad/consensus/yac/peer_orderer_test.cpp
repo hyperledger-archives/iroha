@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
+#include <vector>
+#include <memory>
+#include <iostream>
+
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
-
-#include <vector>
 #include "consensus/yac/impl/yac_peer_orderer_impl.hpp"
-#include <iostream>
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
 using namespace iroha::ametsuchi;
 using namespace iroha::consensus::yac;
@@ -31,10 +33,11 @@ using ::testing::Return;
 class YacPeerOrdererTest : public ::testing::Test {
  public:
 
-  YacPeerOrdererTest() : wsv(make_shared<MockWsvQuery>()), orderer(wsv) {}
+  YacPeerOrdererTest()
+      : orderer(make_shared<MockPeerQuery>()) {}
 
   void SetUp() override {
-    wsv = make_shared<MockWsvQuery>();
+    wsv = make_shared<MockPeerQuery>();
     orderer = YacPeerOrdererImpl(wsv);
   }
 
@@ -46,14 +49,14 @@ class YacPeerOrdererTest : public ::testing::Test {
     return result;
   }();
 
-  shared_ptr<MockWsvQuery> wsv;
+  shared_ptr<MockPeerQuery> wsv;
   YacPeerOrdererImpl orderer;
 };
 
 TEST_F(YacPeerOrdererTest, PeerOrdererInitialOrderWhenInvokeNormalCase) {
   cout << "----------| InitialOrder() => valid object |----------" << endl;
 
-  EXPECT_CALL(*wsv, getPeers()).WillOnce(Return(peers));
+  EXPECT_CALL(*wsv, getLedgerPeers()).WillOnce(Return(peers));
   auto order = orderer.getInitialOrdering();
   ASSERT_EQ(order.value().getPeers(), peers);
 }
@@ -61,7 +64,7 @@ TEST_F(YacPeerOrdererTest, PeerOrdererInitialOrderWhenInvokeNormalCase) {
 TEST_F(YacPeerOrdererTest, PeerOrdererInitialOrderWhenInvokeFailCase) {
   cout << "----------| InitialOrder() => nullopt case |----------" << endl;
 
-  EXPECT_CALL(*wsv, getPeers()).WillOnce(Return(nonstd::nullopt));
+  EXPECT_CALL(*wsv, getLedgerPeers()).WillOnce(Return(nonstd::nullopt));
   auto order = orderer.getInitialOrdering();
   ASSERT_EQ(order, nonstd::nullopt);
 }
@@ -69,7 +72,7 @@ TEST_F(YacPeerOrdererTest, PeerOrdererInitialOrderWhenInvokeFailCase) {
 TEST_F(YacPeerOrdererTest, PeerOrdererOrderingWhenInvokeNormalCase) {
   cout << "----------| Order() => valid object |----------" << endl;
 
-  EXPECT_CALL(*wsv, getPeers()).WillOnce(Return(peers));
+  EXPECT_CALL(*wsv, getLedgerPeers()).WillOnce(Return(peers));
   auto order = orderer.getOrdering(YacHash());
   ASSERT_EQ(order.value().getPeers().size(), peers.size());
 }
@@ -77,7 +80,7 @@ TEST_F(YacPeerOrdererTest, PeerOrdererOrderingWhenInvokeNormalCase) {
 TEST_F(YacPeerOrdererTest, PeerOrdererOrderingWhenInvokeFaillCase) {
   cout << "----------| Order() => nullopt case |----------" << endl;
 
-  EXPECT_CALL(*wsv, getPeers()).WillOnce(Return(nonstd::nullopt));
+  EXPECT_CALL(*wsv, getLedgerPeers()).WillOnce(Return(nonstd::nullopt));
   auto order = orderer.getOrdering(YacHash());
   ASSERT_EQ(order, nonstd::nullopt);
 }

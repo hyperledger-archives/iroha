@@ -19,19 +19,22 @@
 
 #include <grpc++/grpc++.h>
 #include "ordering/impl/ordering_service_impl.hpp"
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
 using namespace iroha;
 using namespace iroha::ordering;
 using namespace iroha::model;
 using namespace iroha::network;
+using namespace iroha::ametsuchi;
 
 using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::Return;
 
 class OrderingServiceTest : public OrderingTest {
  public:
   OrderingServiceTest() {
-    fake_gate = static_cast<ordering::MockOrderingGate*>(gate.get());
+    fake_gate = static_cast<ordering::MockOrderingGate *>(gate.get());
   }
 
   void SetUp() override { loop = uvw::Loop::create(); }
@@ -53,14 +56,19 @@ class OrderingServiceTest : public OrderingTest {
 
   std::shared_ptr<uvw::Loop> loop;
   std::thread loop_thread;
-  ordering::MockOrderingGate* fake_gate;
+  ordering::MockOrderingGate *fake_gate;
   std::unique_ptr<iroha::ordering::proto::OrderingService::Stub> client;
 };
 
 TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
   // Init => proposal size 5 => 2 proposals after 10 transactions
-  service = std::make_shared<OrderingServiceImpl>(std::vector<Peer>{peer}, 5,
-                                                  1000, loop);
+
+  std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
+  EXPECT_CALL(*wsv, getLedgerPeers()).WillRepeatedly(Return(std::vector<Peer>{
+      peer}));
+
+  service = std::make_shared<OrderingServiceImpl>(wsv, 5, 1000, loop);
+
   EXPECT_CALL(*fake_gate, SendProposal(_, _, _)).Times(2);
 
   start();
@@ -78,8 +86,13 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
 
 TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   // Init => proposal timer 400 ms => 10 tx by 50 ms => 2 proposals in 1 second
-  service = std::make_shared<OrderingServiceImpl>(std::vector<Peer>{peer}, 100,
-                                                  400, loop);
+
+  std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
+  EXPECT_CALL(*wsv, getLedgerPeers()).WillRepeatedly(Return(std::vector<Peer>{
+      peer}));
+
+  service = std::make_shared<OrderingServiceImpl>(wsv, 100, 400, loop);
+
   EXPECT_CALL(*fake_gate, SendProposal(_, _, _)).Times(2);
 
   start();

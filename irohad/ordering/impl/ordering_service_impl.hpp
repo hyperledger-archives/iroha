@@ -18,6 +18,7 @@
 #ifndef IROHA_ORDERING_SERVICE_IMPL_HPP
 #define IROHA_ORDERING_SERVICE_IMPL_HPP
 
+#include <memory>
 #include <tbb/concurrent_queue.h>
 #include <unordered_map>
 #include <uvw.hpp>
@@ -25,6 +26,7 @@
 #include "model/proposal.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "ordering.grpc.pb.h"
+#include "ametsuchi/peer_query.hpp"
 
 namespace iroha {
   namespace ordering {
@@ -43,7 +45,7 @@ namespace iroha {
           network::AsyncGrpcClient<google::protobuf::Empty> {
      public:
       OrderingServiceImpl(
-          const std::vector<model::Peer> &peers, size_t max_size,
+          std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
           size_t delay_milliseconds,
           std::shared_ptr<uvw::Loop> loop = uvw::Loop::getDefault());
       grpc::Status SendTransaction(
@@ -67,23 +69,35 @@ namespace iroha {
 
       /**
        * Transform model proposal to transport object and send to peers
-       * @param proposal
+       * @param proposal - object for propagation
        */
       void publishProposal(model::Proposal &&proposal);
 
+      /**
+       * Method update peers for sending proposal
+       */
+      void preparePeersForProposalRound();
+
       std::shared_ptr<uvw::Loop> loop_;
       std::shared_ptr<uvw::TimerHandle> timer_;
+      std::shared_ptr<ametsuchi::PeerQuery> wsv_;
 
       model::converters::PbTransactionFactory factory_;
 
       std::unordered_map<std::string,
-                         std::unique_ptr<proto::OrderingGate::Stub>>
-          peers_;
+                         std::unique_ptr<proto::OrderingGate::Stub>> peers_;
 
       tbb::concurrent_queue<model::Transaction> queue_;
-      const size_t max_size_;  // max number of txs in proposal
-      const size_t
-          delay_milliseconds_;  // wait for specified time if queue is empty
+
+      /**
+       * max number of txs in proposal
+       */
+      const size_t max_size_;
+
+      /**
+       *  wait for specified time if queue is empty
+       */
+      const size_t delay_milliseconds_;
       size_t proposal_height;
     };
   }  // namespace ordering

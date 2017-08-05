@@ -29,6 +29,7 @@ limitations under the License.
 
 #include "main/impl/ordering_init.hpp"
 #include "main/impl/consensus_init.hpp"
+#include "ametsuchi/impl/peer_query_wsv.hpp"
 
 using namespace iroha;
 using namespace iroha::ametsuchi;
@@ -70,9 +71,11 @@ class MockBlockLoader : public iroha::network::BlockLoader {
 
 class MockCryptoProvider : public ModelCryptoProvider {
  public:
-  MOCK_CONST_METHOD1(verify, bool(const Transaction &));
+  MOCK_CONST_METHOD1(verify, bool(
+      const Transaction &));
   MOCK_CONST_METHOD1(verify, bool(std::shared_ptr<const Query>));
-  MOCK_CONST_METHOD1(verify, bool(const Block &));
+  MOCK_CONST_METHOD1(verify, bool(
+      const Block &));
 };
 
 void Irohad::run() {
@@ -107,25 +110,28 @@ void Irohad::run() {
 
   auto orderer = std::make_shared<PeerOrdererImpl>(storage);
 
-  auto ordering = orderer->getInitialOrdering().value().getPeers();
+  auto wsv = std::make_shared<ametsuchi::PeerQueryWsv>(storage);
+  auto peer_address = wsv->getLedgerPeers().value().at(peer_number_).address;
 
   // Ordering gate
-  auto ordering_gate = ordering_init.initOrderingGate(ordering, loop, 10, 5000);
+  auto ordering_gate = ordering_init.initOrderingGate(wsv, loop, 10, 5000);
 
   // Simulator
   auto simulator = createSimulator(ordering_gate, stateful_validator, storage,
                                    storage, hash_provider);
 
   // Consensus gate
-  auto consensus_gate = yac_init.initConsensusGate(
-      ordering.at(peer_number_).address, loop, orderer, simulator);
+  auto consensus_gate = yac_init.initConsensusGate(peer_address,
+                                                   loop,
+                                                   orderer,
+                                                   simulator);
 
   // Block loader
   auto block_loader = std::make_shared<MockBlockLoader>();
 
   // Synchronizer
   auto synchronizer = createSynchronizer(consensus_gate, chain_validator,
-                                             storage, block_loader);
+                                         storage, block_loader);
 
   // PeerCommunicationService
   auto pcs = createPeerCommunicationService(ordering_gate, synchronizer);
@@ -156,7 +162,7 @@ void Irohad::run() {
 
   grpc::ServerBuilder builder;
   int port = 0;
-  builder.AddListeningPort(ordering.at(peer_number_).address,
+  builder.AddListeningPort(peer_address,
                            grpc::InsecureServerCredentials(), &port);
   builder.RegisterService(ordering_init.ordering_gate.get());
   builder.RegisterService(ordering_init.ordering_service.get());

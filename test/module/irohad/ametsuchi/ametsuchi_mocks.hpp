@@ -25,6 +25,7 @@
 #include "ametsuchi/temporary_factory.hpp"
 #include "ametsuchi/temporary_wsv.hpp"
 #include "ametsuchi/wsv_query.hpp"
+#include "ametsuchi/peer_query.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -116,6 +117,14 @@ namespace iroha {
       }
 
       MOCK_METHOD1(commit_, void(std::unique_ptr<MutableStorage> &));
+    };
+
+    class MockPeerQuery : public PeerQuery {
+     public:
+      MockPeerQuery() = default;
+
+      MOCK_METHOD0(getLedgerPeers,
+                   nonstd::optional<std::vector<model::Peer>>());
     };
 
   }  // namespace ametsuchi

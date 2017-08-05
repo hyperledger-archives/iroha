@@ -21,6 +21,7 @@
 #include <uvw.hpp>
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
+#include "ametsuchi/peer_query.hpp"
 
 namespace iroha {
   namespace network {
@@ -44,7 +45,8 @@ namespace iroha {
        * @param delay_milliseconds - delay before emitting proposal
        * @param loop - handler of async events
        */
-      auto createService(std::vector<model::Peer> peers, size_t max_size,
+      auto createService(std::shared_ptr<ametsuchi::PeerQuery> wsv,
+                         size_t max_size,
                          size_t delay_milliseconds,
                          std::shared_ptr<uvw::Loop> loop);
 
@@ -59,8 +61,10 @@ namespace iroha {
        * @return effective realisation of OrderingGate
        */
       std::shared_ptr<ordering::OrderingGateImpl> initOrderingGate(
-          std::vector<model::Peer> peers, std::shared_ptr<uvw::Loop> loop,
-          size_t max_size, size_t delay_milliseconds);
+          std::shared_ptr<ametsuchi::PeerQuery> wsv,
+          std::shared_ptr<uvw::Loop> loop,
+          size_t max_size,
+          size_t delay_milliseconds);
 
       std::shared_ptr<ordering::OrderingServiceImpl> ordering_service;
       std::shared_ptr<ordering::OrderingGateImpl> ordering_gate;
