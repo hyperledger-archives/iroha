@@ -21,27 +21,32 @@ using namespace iroha::protocol;
 namespace iroha_cli {
 
   QueryResponseHandler::QueryResponseHandler()
-      : log_(logger::log("QueryResponseHandler")) {
-    handler_map_[typeid(ErrorResponse)] =
-        &QueryResponseHandler::handleErrorResponse;
-    handler_map_[typeid(AccountResponse)] =
-        &QueryResponseHandler::handleAccountResponse;
-    handler_map_[typeid(AccountAssetResponse)] =
-        &QueryResponseHandler::handleAccountAssetsResponse;
-    handler_map_[typeid(TransactionsResponse)] =
-        &QueryResponseHandler::handleTransactionsResponse;
-    handler_map_[typeid(SignatoriesResponse)] =
-        &QueryResponseHandler::handleSignatoriesResponse;
-  }
+      : log_(logger::log("QueryResponseHandler")) {}
 
   void QueryResponseHandler::handle(
       const iroha::protocol::QueryResponse &response) {
-    auto it = handler_map_.find(typeid(response));
-    if (it != handler_map_.end()) {
-      (this->*it->second)(response);
-    } else {
-      log_->error("Response Handle not Implemented");
+    if (response.has_error_response()) {
+      handleErrorResponse(response);
+      return;
     }
+    if (response.has_account_assets_response()) {
+      handleAccountAssetsResponse(response);
+      return;
+    }
+    if (response.has_account_response()) {
+      handleAccountResponse(response);
+      return;
+    }
+    if (response.has_signatories_response()) {
+      handleSignatoriesResponse(response);
+      return;
+    }
+    if (response.has_transactions_response()) {
+      handleTransactionsResponse(response);
+      return;
+    }
+    // Response of some other type received
+    log_->error("Response Handle not Implemented");
   }
 
   void QueryResponseHandler::handleErrorResponse(

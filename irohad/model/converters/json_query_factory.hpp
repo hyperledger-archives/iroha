@@ -29,6 +29,8 @@
 #include "model/query.hpp"
 #include "queries.pb.h"
 
+#include "logger/logger.hpp"
+
 namespace iroha {
   namespace model {
     namespace converters {
@@ -70,6 +72,9 @@ namespace iroha {
         bool deserializeGetAccountAssets(
             GenericValue<UTF8<char>>::Object &obj_query,
             iroha::protocol::Query &pb_query);
+        // Logger
+        std::shared_ptr<spdlog::logger> log_;
+
       };
     }  // namespace converters
   }    // namespace model

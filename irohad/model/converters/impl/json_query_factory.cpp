@@ -24,7 +24,7 @@ namespace iroha {
 
       using namespace rapidjson;
 
-      JsonQueryFactory::JsonQueryFactory() {
+      JsonQueryFactory::JsonQueryFactory() :log_(logger::log("JsonQueryFactory")) {
         deserializers_["GetAccount"] = &JsonQueryFactory::deserializeGetAccount;
         deserializers_["GetAccountAssets"] =
             &JsonQueryFactory::deserializeGetAccountAssets;
@@ -38,12 +38,13 @@ namespace iroha {
 
       nonstd::optional<iroha::protocol::Query> JsonQueryFactory::deserialize(
           const std::string query_json) {
+        log_->info("Deserialize query json");
         iroha::protocol::Query pb_query;
         Document doc;
         if (doc.Parse(query_json.c_str()).HasParseError()) {
+          log_->error("Json is ill-formed");
           return nonstd::nullopt;
         }
-
         // check if all necessary fields are there
         auto obj_query = doc.GetObject();
         auto req_fields = {"signature", "creator_account_id", "created_ts",
@@ -52,6 +53,7 @@ namespace iroha {
                         [&obj_query](auto &&field) {
                           return not obj_query.HasMember(field);
                         })) {
+          log_->error("No required fields in json");
           return nonstd::nullopt;
         }
 
@@ -59,13 +61,16 @@ namespace iroha {
 
         // check if signature has all needed fields
         if (not sig.HasMember("pubkey")) {
+          log_->error("No pubkey in signature in json");
           return nonstd::nullopt;
         }
         if (not sig.HasMember("signature")) {
+          log_->error("No signature in json");
           return nonstd::nullopt;
         }
 
         auto pb_header = pb_query.mutable_header();
+        pb_header->set_created_time(obj_query["created_ts"].GetUint64());
         auto pb_sig = pb_header->mutable_signature();
         pb_sig->set_pubkey(sig["pubkey"].GetString());
         pb_sig->set_signature(sig["signature"].GetString());
@@ -76,6 +81,7 @@ namespace iroha {
 
         // set query counter
         pb_query.set_query_counter(obj_query["query_counter"].GetUint64());
+
 
         auto query_type = obj_query["query_type"].GetString();
 
@@ -92,6 +98,7 @@ namespace iroha {
           rapidjson::GenericValue<rapidjson::UTF8<char>>::Object &obj_query,
           protocol::Query &pb_query) {
         if (not obj_query.HasMember("account_id")) {
+          log_->error("No account id in json");
           return false;
         }
         auto pb_get_account = pb_query.mutable_get_account();
@@ -104,6 +111,7 @@ namespace iroha {
           rapidjson::GenericValue<rapidjson::UTF8<char>>::Object &obj_query,
           protocol::Query &pb_query) {
         if (not obj_query.HasMember("account_id")) {
+          log_->error("No account id in json");
           return false;
         }
         auto pb_get_signatories = pb_query.mutable_get_account_signatories();
@@ -116,6 +124,7 @@ namespace iroha {
           rapidjson::GenericValue<rapidjson::UTF8<char>>::Object &obj_query,
           protocol::Query &pb_query) {
         if (not obj_query.HasMember("account_id")) {
+          log_->error("No account id in json");
           return false;
         }
         auto pb_get_account_transactions =
@@ -131,6 +140,7 @@ namespace iroha {
           protocol::Query &pb_query) {
         if (not(obj_query.HasMember("account_id") &&
                 obj_query.HasMember("asset_id"))) {
+          log_->error("No account, asset id in json");
           return false;
         }
 
@@ -149,6 +159,7 @@ namespace iroha {
           protocol::Query &pb_query) {
         if (not(obj_query.HasMember("account_id") &&
                 obj_query.HasMember("asset_id"))) {
+          log_->error("No account, asset id in json");
           return false;
         }
         auto pb_get_account_assets = pb_query.mutable_get_account_assets();

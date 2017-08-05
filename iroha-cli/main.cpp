@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
     if (not FLAGS_json_query.empty()) {
       logger->info("Send query to {}:{}", FLAGS_address, FLAGS_torii_port);
       iroha_cli::QueryResponseHandler responseHandler;
-      std::ifstream file(FLAGS_json_transaction);
+      std::ifstream file(FLAGS_json_query);
       std::string str((std::istreambuf_iterator<char>(file)),
                       std::istreambuf_iterator<char>());
       auto response = client.sendQuery(str);

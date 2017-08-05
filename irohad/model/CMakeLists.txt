@@ -35,4 +35,5 @@ target_link_libraries(model_converters
     rapidjson
     optional
     schema
+    logger
     )
