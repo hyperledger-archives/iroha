@@ -10,55 +10,42 @@ Blockchain platform Hyperledger Iroha is designed for simple creation and manage
 <img height="300px" src="docs/Iroha_3_sm.png"
  alt="Iroha logo" title="Iroha" align="right" />
 
-Iroha main features:
+Among features of the system are the following groups:
+1. Creation and management of custom complex assets, such as currency or indivisible rights, serial numbers, patents, etc.
+2. Management of user accounts
+3. Taxonomy of accounts based on _domains_ — or _sub-ledgers_ in the system
+4. The system of rights and verification of user permissions for the execution of transactions and queries in the system
+5. Validation of business rules for transactions and queries in the system
 
-Among the basic functional requirements of the system are the following groups:
-1. Managment of custom complex assets, such as currency or indivisible rights, serial numbers, patents, etc.
-2. Management of user accounts, user domains
-3. The system of rights and verification of user permissions for the execution of transactions and queries in the system
-4. Validation of business rules for transactions and queries in the system
 
-
-Among the non-functional requirements can be noted:
-* the ability to deploy the system in linux containers on a standard configuration of office computers (no more than 2GB of RAM, 1TB storage)
-* high degree of network fault tolerance (Byzantine Fault Tolerant)
-* quick processing of queries (less than 3 seconds in normal operating conditions)
-* the system's bandwidth capacity (expected value of 100 thousand transactions per second)
+Among the non-functional requirements can be noted a high degree of network fault tolerance _(Byzantine Fault Tolerant)_.
 
 ## Current Status
 
 Iroha v0.95 preview version is released on [TBD].
 
+
 ## Iroha repository 101
 
-System runs as a daemon, representing single peer in Iroha network. For each peer there is following package structure, corresponing to components of the system:
+System runs as a daemon, representing single peer in Iroha network. For each peer there is following package structure, corresponding to components of the system:
 
-<img height="300px" src="docs/simple-package-diagram.png"
- alt="Diagram" title="Diagram" align="right" />
 
-* Torii (gate) — package contains classes, which are in charge of interaction with users (clients)
-* Network — interaction in network of peers
-* Validation — checks business rules and validity (right format) of transactions or queries
-* Synchronizer — helps to sync newcomers or temporary disconnected peers
-* Simulator — generates temporary snapshot of storage to validate transactions
-* Ametsuchi — ledger block storage
-* Model — system entities, and converters for them
+ 
+ <table class="image">
+ <caption align="bottom">Packages and cross-dependencies</caption>
+ <tr><td><img height="300px" src="docs/simple-package-diagram.png"
+          alt="Diagram" title="Diagram" align="right" /></td></tr>
+ </table>
+
+* *Torii* (gate) is a package that contains classes, which are in charge of interaction with users (clients)
+* *Network* encompasses interaction in network of peers
+* *Validation* classes check business rules and validity (right format) of transactions or queries
+* *Synchronizer* helps to sync newcomer peers or temporary disconnected peers
+* *Simulator* generates temporary snapshot of storage to validate transactions
+* *Ametsuchi* is ledger block storage
+* *Model* classes are system entities, and converters for them
 
 <br>
-
-There components are passing following _model objects_, which represent entities in the system:
-* Asset — equivalent of some currency or something that has value
-* Account — represents client and his/her assets
-<img height="350px" src="docs/model-explained.png"
- alt="Diagram" title="Diagram" align="right" />
-* Block — single record in continuously growing list of ledger records
-* Command — atomic action for change in the system (addition, removal, etc.)
-* Domain — taxonomic/structural unit of accounts organization
-* Peer — represents Iroha node in the system
-* Proposal — list of transactions, that will be checked before forming a block
-* Query — provides an interface to know current state of ledger
-* Signature — used as a confirmation of the user signed the transaction, acts as user's identity
-* Transaction — set of joint commands that will be applied to ledger atomically, and signatures for commands
 
 For other components and more explanation please take a look at *technical and design docs.*
 
@@ -83,7 +70,8 @@ To build the system, execute the the following:
 cmake -H. -Bbuild; cmake --build build -- -j4;
 ```
 
-P.S. Consider executing ``` git clean -ix``` and choosing `c` option when you want to rebuild the system (to clean up generated protobuf code).
+Consider executing ``` git clean -ix``` and choosing `c` option when you want to rebuild the system (to clean up generated protobuf code).
+Also, use `--clean-first` flag for rebuild.
 
 ### Test
 
@@ -93,7 +81,7 @@ P.S. Consider executing ``` git clean -ix``` and choosing `c` option when you wa
 
 | Technical docs 📓 | Guides ⁉️ | Contributing ✏️ |
 |---|---|---|
-|[TBD]|[TBD]|[TBD]|
+|[![Technical docs](docs/icons/docs.png)](http://google.com/)| [![How-to](docs/icons/how-to.png)](http://google.com/) |[![Contributing](docs/icons/contributing.png)](http://google.com/)|
 
 ## Need help?
 
