@@ -10,13 +10,12 @@ Blockchain platform Hyperledger Iroha is designed for simple creation and manage
 <img height="300px" src="docs/Iroha_3_sm.png"
  alt="Iroha logo" title="Iroha" align="right" />
 
-Among features of the system are the following groups:
-1. Creation and management of custom complex assets, such as currency or indivisible rights, serial numbers, patents, etc.
+Iroha has the following features:
+1. Creation and management of custom complex assets, such as currencies or indivisible rights, serial numbers, patents, etc.
 2. Management of user accounts
 3. Taxonomy of accounts based on _domains_ — or _sub-ledgers_ in the system
 4. The system of rights and verification of user permissions for the execution of transactions and queries in the system
 5. Validation of business rules for transactions and queries in the system
-
 
 Among the non-functional requirements can be noted a high degree of network fault tolerance _(Byzantine Fault Tolerant)_.
 
@@ -24,35 +23,34 @@ Among the non-functional requirements can be noted a high degree of network faul
 
 Iroha v0.95 preview version is released on [TBD].
 
-
 ## Iroha repository 101
 
-System runs as a daemon, representing single peer in Iroha network. For each peer there is following package structure, corresponding to components of the system:
+Iroha runs as a daemon _(irohad)_, representing a single peer in the Iroha network. For each peer, there is the following package structure, corresponding to components in the system:
 
-* *Torii* (gate) is a package that contains classes, which are in charge of interaction with users (clients)
-* *Network* encompasses interaction in network of peers
-* *Validation* classes check business rules and validity (right format) of transactions or queries
-* *Synchronizer* helps to sync newcomer peers or temporary disconnected peers
-* *Simulator* generates temporary snapshot of storage to validate transactions
-* *Ametsuchi* is ledger block storage
+* *Torii* (⛩, gate) is a package that contains classes, which are in charge of interaction with users (clients)
+* *Network* encompasses interaction with the network of peers
+* *Validation* classes check business rules and validity (correct format) of transactions or queries
+* *Synchronizer* helps to synchronize new peers in the system or temporarily disconnected peers
+* *Simulator* generates a temporary snapshot of storage to validate transactions
+* *Ametsuchi* is the ledger block storage
 * *Model* classes are system entities, and converters for them
 
 <br>
 
-For other components and more explanation please take a look at *technical and design docs.*
+For other components and more explanations, please take a look at the *technical and design docs.*
 
 ## Quickstart
 
 ### Docker
 
-You may use docker ennvironment to build and run the system. Execute the following:
+You may use the docker ennvironment to build and run the system, by executing the following:
 
 ```
 git clone https://github.com/hyperledger/iroha.git
 sh iroha/docker/run-ametsuchi-dev.sh
 ```
 
-After that, container will run in interactive mode. So, you can run any IDE or editor on your local environment, while building the system in docker environment
+After that, the container will run in interactive mode. So, you can run any IDE or editor on your local environment, while building the system in docker environment
 
 ### Build
 
@@ -62,8 +60,8 @@ To build the system, execute the the following:
 cmake -H. -Bbuild; cmake --build build -- -j4;
 ```
 
-Consider executing ``` git clean -ix``` and choosing `c` option when you want to rebuild the system (to clean up generated protobuf code).
-Also, use `--clean-first` flag for rebuild.
+Consider executing ``` git clean -ix``` and choosing the `c` option when you want to rebuild the system (to clean up generated protobuf code).
+Also, use the `--clean-first` flag for rebuild.
 
 ### Test
 
