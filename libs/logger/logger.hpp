@@ -33,6 +33,24 @@ namespace logger {
 
   std::shared_ptr<spdlog::logger> log(const std::string &tag);
 
+  /**
+   * Convert bool value to human readable string repr
+   * @param value value for transformation
+   * @return "true" or "false"
+   */
+  std::string boolRepr(bool value);
+
+  /**
+   * Converts object to bool and provides string repr of it
+   * @tparam T - type of object, T must implement bool operator
+   * @param val - value for convertation
+   * @return string representation of bool object
+   */
+  template <typename T>
+  std::string logBool(T val) {
+    return boolRepr(bool(val));
+  }
+
 }  // namespace logger
 
 #endif

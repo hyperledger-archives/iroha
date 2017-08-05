@@ -28,3 +28,13 @@ TEST(LoggerTest, getLoggerTest) {
   another_logger->info(logger::yellow(
       "color args output {} // note: require char *").c_str(), "=^._.^=");
 }
+
+TEST(LoggerTest, boolReprTest) {
+  ASSERT_EQ("true", logger::boolRepr(true));
+  ASSERT_EQ("false", logger::boolRepr(false));
+}
+
+TEST(LoggerTest, logBoolTest) {
+  ASSERT_EQ("true", logger::logBool(1));
+  ASSERT_EQ("false", logger::boolRepr(nullptr));
+}
