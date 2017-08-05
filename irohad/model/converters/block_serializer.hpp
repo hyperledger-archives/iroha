@@ -29,6 +29,8 @@
 #include <model/block.hpp>
 
 #include "model/converters/json_command_factory.hpp"
+#include "model/converters/json_transaction_factory.hpp"
+#include "model/converters/json_block_factory.hpp"
 
 #include "common/types.hpp"
 
@@ -74,35 +76,8 @@ namespace iroha {
      private:
 
       model::converters::JsonCommandFactory commandFactory;
-
-      void serialize(PrettyWriter<StringBuffer>& writer,
-                     const model::Block& block);
-      void serialize(PrettyWriter<StringBuffer>& writer,
-                     const model::Signature& signature);
-      void serialize(PrettyWriter<StringBuffer>& writer,
-                     const model::Transaction& transaction);
-      void serialize(PrettyWriter<StringBuffer>& writer,
-                     const model::Command& command);
-
-      // Deserialize one transaction
-      nonstd::optional<model::Transaction> deserialize(
-          GenericValue<rapidjson::UTF8<char>>::Object& json_tx);
-
-      // Deserialize hex string to array
-      template <size_t size>
-      void deserialize(const std::string& string, blob_t<size>& array) {
-        auto bytes = hex2bytes(string);
-        std::copy(bytes.begin(), bytes.end(), array.begin());
-      }
-
-      // Deserialize signatures
-      bool deserialize(GenericValue<rapidjson::UTF8<char>>::Array json_sigs,
-                       std::vector<model::Signature>& sigs);
-
-      // Deserialize commands withing trasaction json_tx
-      // Return false if json is ill-formed
-      bool deserialize(GenericValue<rapidjson::UTF8<char>>::Object& json_tx,
-                       std::vector<std::shared_ptr<model::Command>>& commands);
+      model::converters::JsonTransactionFactory transactionFactory;
+      model::converters::JsonBlockFactory blockFactory;
     };
   }
 }

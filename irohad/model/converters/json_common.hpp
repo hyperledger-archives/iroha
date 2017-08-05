@@ -15,29 +15,30 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_JSON_TRANSACTION_FACTORY_HPP
-#define IROHA_JSON_TRANSACTION_FACTORY_HPP
+#ifndef IROHA_JSON_COMMON_HPP
+#define IROHA_JSON_COMMON_HPP
 
-#include "model/converters/json_command_factory.hpp"
-#include "model/transaction.hpp"
+#include <rapidjson/document.h>
+#include <initializer_list>
+#include <nonstd/optional.hpp>
+#include <string>
+#include "model/signature.hpp"
 
 namespace iroha {
   namespace model {
     namespace converters {
 
-      class JsonTransactionFactory {
-       public:
-        rapidjson::Document serialize(const Transaction &transaction);
+      bool verifyRequiredMembers(
+          const rapidjson::Document& document,
+          const std::initializer_list<std::string> members);
 
-        nonstd::optional<Transaction> deserialize(
-            const rapidjson::Document &document);
+      rapidjson::Document serializeSignature(const Signature& signature);
 
-       private:
-        JsonCommandFactory factory_;
-      };
+      nonstd::optional<Signature> deserializeSignature(
+          const rapidjson::Document& document);
 
     }  // namespace converters
   }    // namespace model
 }  // namespace iroha
 
-#endif //IROHA_JSON_TRANSACTION_FACTORY_HPP
+#endif  // IROHA_JSON_COMMON_HPP

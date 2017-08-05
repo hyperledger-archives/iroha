@@ -127,7 +127,7 @@ namespace iroha {
       }
 
       // AddPeer
-      rapidjson::Document JsonCommandFactory::serializeAddPeer(
+      Document JsonCommandFactory::serializeAddPeer(
           std::shared_ptr<Command> command) {
         auto add_peer = static_cast<AddPeer *>(command.get());
 
@@ -144,7 +144,7 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> JsonCommandFactory::deserializeAddPeer(
-          const rapidjson::Document &command) {
+          const Document &command) {
         auto add_peer = std::make_shared<AddPeer>();
 
         // peer key
@@ -156,7 +156,7 @@ namespace iroha {
       }
 
       // AddSignatory
-      rapidjson::Document JsonCommandFactory::serializeAddSignatory(
+      Document JsonCommandFactory::serializeAddSignatory(
           std::shared_ptr<Command> command) {
         auto add_signatory = static_cast<AddSignatory *>(command.get());
 
@@ -173,7 +173,7 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> JsonCommandFactory::deserializeAddSignatory(
-          const rapidjson::Document &command) {
+          const Document &command) {
         auto add_signatory = std::make_shared<AddSignatory>();
 
         // account_id
@@ -186,7 +186,7 @@ namespace iroha {
       }
 
       // AssignMasterKey
-      rapidjson::Document JsonCommandFactory::serializeAssignMasterKey(
+      Document JsonCommandFactory::serializeAssignMasterKey(
           std::shared_ptr<Command> command) {
         auto assign_master_key = static_cast<AssignMasterKey *>(command.get());
 
@@ -204,7 +204,7 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> JsonCommandFactory::deserializeAssignMasterKey(
-          const rapidjson::Document &command) {
+          const Document &command) {
         auto assign_master_key = std::make_shared<AssignMasterKey>();
 
         // account_id
@@ -218,7 +218,7 @@ namespace iroha {
       }
 
       // CreateAccount
-      rapidjson::Document JsonCommandFactory::serializeCreateAccount(
+      Document JsonCommandFactory::serializeCreateAccount(
           std::shared_ptr<Command> command) {
         auto create_account = static_cast<CreateAccount *>(command.get());
 
@@ -237,7 +237,7 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> JsonCommandFactory::deserializeCreateAccount(
-          const rapidjson::Document &command) {
+          const Document &command) {
         auto create_account = std::make_shared<CreateAccount>();
 
         // account_name
@@ -253,7 +253,7 @@ namespace iroha {
       }
 
       // CreateAsset
-      rapidjson::Document JsonCommandFactory::serializeCreateAsset(
+      Document JsonCommandFactory::serializeCreateAsset(
           std::shared_ptr<Command> command) {
         auto create_asset = static_cast<CreateAsset *>(command.get());
 
@@ -270,7 +270,7 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> JsonCommandFactory::deserializeCreateAsset(
-          const rapidjson::Document &command) {
+          const Document &command) {
         auto create_asset = std::make_shared<CreateAsset>();
 
         // asset_name
@@ -286,7 +286,7 @@ namespace iroha {
       }
 
       // CreateDomain
-      rapidjson::Document JsonCommandFactory::serializeCreateDomain(
+      Document JsonCommandFactory::serializeCreateDomain(
           std::shared_ptr<Command> command) {
         auto create_domain = static_cast<CreateDomain *>(command.get());
 
@@ -302,7 +302,7 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> JsonCommandFactory::deserializeCreateDomain(
-          const rapidjson::Document &command) {
+          const Document &command) {
         auto create_domain = std::make_shared<CreateDomain>();
 
         // domain_name
@@ -312,7 +312,7 @@ namespace iroha {
       }
 
       // RemoveSignatory
-      rapidjson::Document JsonCommandFactory::serializeRemoveSignatory(
+      Document JsonCommandFactory::serializeRemoveSignatory(
           std::shared_ptr<Command> command) {
         auto remove_signatory = static_cast<RemoveSignatory *>(command.get());
 
@@ -330,7 +330,7 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> JsonCommandFactory::deserializeRemoveSignatory(
-          const rapidjson::Document &command) {
+          const Document &command) {
         auto remove_signatory = std::make_shared<RemoveSignatory>();
 
         // account_id
@@ -344,7 +344,7 @@ namespace iroha {
       }
 
       // SetAccountPermissions
-      rapidjson::Document JsonCommandFactory::serializeSetAccountPermissions(
+      Document JsonCommandFactory::serializeSetAccountPermissions(
           std::shared_ptr<Command> command) {
         auto set_account_permissions =
             static_cast<SetAccountPermissions *>(command.get());
@@ -401,7 +401,7 @@ namespace iroha {
 
       std::shared_ptr<Command>
       JsonCommandFactory::deserializeSetAccountPermissions(
-          const rapidjson::Document &command) {
+          const Document &command) {
         auto set_account_permissions =
             std::make_shared<SetAccountPermissions>();
 
@@ -435,7 +435,7 @@ namespace iroha {
       }
 
       // SetAccountQuorum
-      rapidjson::Document JsonCommandFactory::serializeSetQuorum(
+      Document JsonCommandFactory::serializeSetQuorum(
           std::shared_ptr<Command> command) {
         auto set_quorum = static_cast<SetQuorum *>(command.get());
 
@@ -451,7 +451,7 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> JsonCommandFactory::deserializeSetQuorum(
-          const rapidjson::Document &command) {
+          const Document &command) {
         auto set_quorum = std::make_shared<SetQuorum>();
 
         // account_id
@@ -464,7 +464,7 @@ namespace iroha {
       }
 
       // TransferAsset
-      rapidjson::Document JsonCommandFactory::serializeTransferAsset(
+      Document JsonCommandFactory::serializeTransferAsset(
           std::shared_ptr<Command> command) {
         auto transfer_asset = static_cast<TransferAsset *>(command.get());
 
@@ -492,7 +492,7 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> JsonCommandFactory::deserializeTransferAsset(
-          const rapidjson::Document &command) {
+          const Document &command) {
         auto transfer_asset = std::make_shared<TransferAsset>();
 
         // src_account_id

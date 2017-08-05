@@ -18,4 +18,27 @@
 #ifndef IROHA_JSON_BLOCK_FACTORY_HPP
 #define IROHA_JSON_BLOCK_FACTORY_HPP
 
-#endif //IROHA_JSON_BLOCK_FACTORY_HPP
+#include "model/converters/json_transaction_factory.hpp"
+#include "model/block.hpp"
+
+
+namespace iroha {
+  namespace model {
+    namespace converters {
+
+      class JsonBlockFactory {
+       public:
+        rapidjson::Document serialize(const Block &block);
+
+        nonstd::optional<Block> deserialize(
+            const rapidjson::Document &document);
+
+       private:
+        JsonTransactionFactory factory_;
+      };
+
+    }  // namespace converters
+  }    // namespace model
+}  // namespace iroha
+
+#endif  // IROHA_JSON_BLOCK_FACTORY_HPP
