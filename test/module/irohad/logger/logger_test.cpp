@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 #include <gtest/gtest.h>
-#include <logger/logger.hpp>
+#include "logger/logger.hpp"
 
 TEST(LoggerTest, getLoggerTest) {
   auto one_logger = logger::log("one_logger");
