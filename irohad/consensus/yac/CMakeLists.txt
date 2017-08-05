@@ -28,7 +28,6 @@ add_library(yac
     storage/impl/yac_vote_storage.cpp
     )
 target_link_libraries(yac
-    ametsuchi
     rxcpp
     optional
     model

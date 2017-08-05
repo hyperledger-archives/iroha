@@ -40,8 +40,6 @@ namespace iroha {
        */
       nonstd::optional<std::vector<model::Peer>> getLedgerPeers() override;
 
-      ~PeerQueryWsv() override = default;
-
      private:
       std::shared_ptr<WsvQuery> wsv_;
     };

@@ -40,8 +40,6 @@ namespace iroha {
 
       virtual ~PeerQuery() = default;
 
-     private:
-      std::shared_ptr<WsvQuery> wsv_;
     };
 
   }  // namespace ametsuchi
