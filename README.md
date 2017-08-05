@@ -29,14 +29,6 @@ Iroha v0.95 preview version is released on [TBD].
 
 System runs as a daemon, representing single peer in Iroha network. For each peer there is following package structure, corresponding to components of the system:
 
-
- 
- <table class="image">
- <caption align="bottom">Packages and cross-dependencies</caption>
- <tr><td><img height="300px" src="docs/simple-package-diagram.png"
-          alt="Diagram" title="Diagram" align="right" /></td></tr>
- </table>
-
 * *Torii* (gate) is a package that contains classes, which are in charge of interaction with users (clients)
 * *Network* encompasses interaction in network of peers
 * *Validation* classes check business rules and validity (right format) of transactions or queries
@@ -79,7 +71,7 @@ Also, use `--clean-first` flag for rebuild.
 
 ## Find out more
 
-| Technical docs 📓 | Guides ⁉️ | Contributing ✏️ |
+| Technical docs | Guides | Contributing |
 |---|---|---|
 |[![Technical docs](docs/icons/docs.png)](http://google.com/)| [![How-to](docs/icons/how-to.png)](http://google.com/) |[![Contributing](docs/icons/contributing.png)](http://google.com/)|
 
