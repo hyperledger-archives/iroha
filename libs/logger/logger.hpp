@@ -23,6 +23,8 @@ limitations under the License.
 
 namespace logger {
 
+  using Logger = std::shared_ptr<spdlog::logger>;
+
   std::string red(const std::string &string);
 
   std::string yellow(const std::string &string);
@@ -31,7 +33,7 @@ namespace logger {
 
   std::string input(const std::string &string);
 
-  std::shared_ptr<spdlog::logger> log(const std::string &tag);
+  Logger log(const std::string &tag);
 
   /**
    * Convert bool value to human readable string repr

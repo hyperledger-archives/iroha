@@ -22,10 +22,13 @@ namespace iroha {
         std::shared_ptr<OrderingGate> ordering_gate,
         std::shared_ptr<synchronizer::Synchronizer> synchronizer)
         : ordering_gate_(std::move(ordering_gate)),
-          synchronizer_(std::move(synchronizer)) {}
+          synchronizer_(std::move(synchronizer)) {
+      log_ = logger::log("PCS");
+    }
 
     void PeerCommunicationServiceImpl::propagate_transaction(
         std::shared_ptr<const model::Transaction> transaction) {
+      log_->info("propagate tx");
       ordering_gate_->propagate_transaction(transaction);
     }
 

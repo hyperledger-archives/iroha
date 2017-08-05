@@ -36,5 +36,5 @@ TEST(LoggerTest, boolReprTest) {
 
 TEST(LoggerTest, logBoolTest) {
   ASSERT_EQ("true", logger::logBool(1));
-  ASSERT_EQ("false", logger::boolRepr(nullptr));
+  ASSERT_EQ("false", logger::boolRepr((void *) nullptr));
 }

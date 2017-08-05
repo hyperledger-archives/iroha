@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-#include "synchronizer/impl/synchronizer_impl.hpp"
+#include <utility>
 
+#include "synchronizer/impl/synchronizer_impl.hpp"
 
 namespace iroha {
   namespace synchronizer {
@@ -25,14 +26,17 @@ namespace iroha {
         std::shared_ptr<validation::ChainValidator> validator,
         std::shared_ptr<ametsuchi::MutableFactory> mutableFactory,
         std::shared_ptr<network::BlockLoader> blockLoader)
-        : validator_(validator),
-          mutableFactory_(mutableFactory),
-          blockLoader_(blockLoader) {}
+        : validator_(std::move(validator)),
+          mutableFactory_(std::move(mutableFactory)),
+          blockLoader_(std::move(blockLoader)) {
+      log_ = logger::log("synchronizer");
+    }
 
     void SynchronizerImpl::process_commit(iroha::model::Block commit_message) {
+      log_->info("commit processing");
       auto storage = mutableFactory_->createMutableStorage();
       if (not storage) {
-        // TODO: write to log ametsuchi is not ok
+        log_->error("ametsuchi is not ok");
         return;
       }
       if (validator_->validateBlock(commit_message, *storage)) {
@@ -57,7 +61,7 @@ namespace iroha {
           auto chain = blockLoader_->requestBlocks(target_peer, top_block);
           storage = mutableFactory_->createMutableStorage();
           if (!storage) {
-            // TODO: write to log, cant create storage
+            log_->error("cannot create storage");
             return;
           }
           if (validator_->validateChain(chain, *storage)) {

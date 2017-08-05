@@ -25,6 +25,8 @@
 #include "simulator/verified_proposal_creator.hpp"
 #include "validation/stateful_validator.hpp"
 
+#include "logger/logger.hpp"
+
 namespace iroha {
   namespace simulator {
 
@@ -56,6 +58,8 @@ namespace iroha {
       std::shared_ptr<ametsuchi::TemporaryFactory> ametsuchi_factory_;
       std::shared_ptr<ametsuchi::BlockQuery> block_queries_;
       std::shared_ptr<model::HashProviderImpl> hash_provider_;
+
+      logger::Logger log_;
 
       // last block
       model::Block last_block;

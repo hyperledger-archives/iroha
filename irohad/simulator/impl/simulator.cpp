@@ -29,6 +29,7 @@ namespace iroha {
           ametsuchi_factory_(std::move(factory)),
           block_queries_(std::move(blockQuery)),
           hash_provider_(std::move(hash_provider)) {
+      log_ = logger::log("Simulator");
       notifier_.get_observable().subscribe([this](auto verified_proposal) {
         this->process_verified_proposal(verified_proposal);
       });
@@ -39,6 +40,7 @@ namespace iroha {
     }
 
     void Simulator::process_proposal(model::Proposal proposal) {
+      log_->info("process proposal");
       auto current_height = proposal.height;
       // Get last block from local ledger
       last_block = model::Block();
@@ -56,6 +58,7 @@ namespace iroha {
     }
 
     void Simulator::process_verified_proposal(model::Proposal proposal) {
+      log_->info("process verified proposal");
       model::Block new_block;
       new_block.height = proposal.height;
       new_block.prev_hash = last_block.hash;

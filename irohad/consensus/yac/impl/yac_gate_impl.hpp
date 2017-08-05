@@ -22,6 +22,8 @@
 #include "consensus/yac/yac_peer_orderer.hpp"
 #include "simulator/block_creator.hpp"
 
+#include "logger/logger.hpp"
+
 namespace iroha {
   namespace consensus {
     namespace yac {
@@ -40,6 +42,8 @@ namespace iroha {
         std::shared_ptr<YacPeerOrderer> orderer_;
         std::shared_ptr<YacHashProvider> hash_provider_;
         std::shared_ptr<simulator::BlockCreator> block_creator_;
+
+        logger::Logger log_;
 
         std::pair<YacHash, model::Block> current_block_;
       };
