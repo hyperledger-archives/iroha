@@ -42,6 +42,7 @@ add_library(application
     impl/consensus_init.cpp
     )
 target_link_libraries(application
+    logger
     gtest
     gmock
     yac

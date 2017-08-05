@@ -13,6 +13,7 @@ add_library(ametsuchi
     )
 
 target_link_libraries(ametsuchi
+    logger
     rxcpp
     optional
     pqxx

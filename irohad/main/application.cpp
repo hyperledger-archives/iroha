@@ -53,7 +53,10 @@ Irohad::Irohad(const std::string &block_store_dir,
       torii_port_(torii_port),
       storage(StorageImpl::create(block_store_dir, redis_host, redis_port,
                                   pg_conn)),
-      peer_number_(peer_number) {}
+      peer_number_(peer_number) {
+      log_ = logger::log("IROHAD");
+      log_->info("created");
+}
 
 Irohad::~Irohad() {
   internal_server->Shutdown();
@@ -88,6 +91,7 @@ void Irohad::run() {
   auto pb_tx_factory = std::make_shared<PbTransactionFactory>();
   auto pb_query_factory = std::make_shared<PbQueryFactory>();
   auto pb_query_response_factory = std::make_shared<PbQueryResponseFactory>();
+  log_->info("[Init] => converters");
 
   // Crypto Provider:
   auto crypto_verifier = std::make_shared<MockCryptoProvider>();
@@ -99,22 +103,28 @@ void Irohad::run() {
       .WillRepeatedly(::testing::Return(true));
   EXPECT_CALL(*crypto_verifier, verify(::testing::A<const Block &>()))
       .WillRepeatedly(::testing::Return(true));
+  log_->info("[Init] => crypto provider");
 
   // Hash provider
   auto hash_provider = std::make_shared<HashProviderImpl>();
+  log_->info("[Init] => hash provider");
 
   // Validators:
   auto stateless_validator = createStatelessValidator(crypto_verifier);
   auto stateful_validator = std::make_shared<StatefulValidatorImpl>();
   auto chain_validator = std::make_shared<ChainValidatorImpl>(crypto_verifier);
+  log_->info("[Init] => validators");
 
   auto orderer = std::make_shared<PeerOrdererImpl>(storage);
+  log_->info("[Init] => peer orderer");
 
   auto wsv = std::make_shared<ametsuchi::PeerQueryWsv>(storage);
   auto peer_address = wsv->getLedgerPeers().value().at(peer_number_).address;
 
   // Ordering gate
   auto ordering_gate = ordering_init.initOrderingGate(wsv, loop, 10, 5000);
+  log_->info("[Init] => init ordering gate - [{}]",
+              logger::logBool(ordering_gate));
 
   // Simulator
   auto simulator = createSimulator(ordering_gate, stateful_validator, storage,
@@ -136,12 +146,12 @@ void Irohad::run() {
   // PeerCommunicationService
   auto pcs = createPeerCommunicationService(ordering_gate, synchronizer);
 
-  pcs->on_proposal().subscribe([](auto) {
-    // TODO log proposals
+  pcs->on_proposal().subscribe([this](auto) {
+    log_->info("~~~~~~~~~| PROPOSAL ^_^ |~~~~~~~~~ ");
   });
 
-  pcs->on_commit().subscribe([](auto) {
-    // TODO log commits
+  pcs->on_commit().subscribe([this](auto) {
+    log_->info("~~~~~~~~~| COMMIT =^._.^= |~~~~~~~~~ ");
   });
 
   // Torii:
@@ -172,6 +182,7 @@ void Irohad::run() {
   server_thread = std::thread([this] {
     torii_server->run(std::move(command_service), std::move(query_service));
   });
+  log_->info("===> iroha initialized");
   torii_server->waitForServersReady();
   loop->run();
 }
