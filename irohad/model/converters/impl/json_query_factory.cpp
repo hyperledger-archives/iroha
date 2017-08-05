@@ -26,7 +26,7 @@ namespace iroha {
 
       JsonQueryFactory::JsonQueryFactory() :log_(logger::log("JsonQueryFactory")) {
         deserializers_["GetAccount"] = &JsonQueryFactory::deserializeGetAccount;
-        deserializers_["GetAccountAssets"] =
+        deserializers_["GetAccountAsset"] =
             &JsonQueryFactory::deserializeGetAccountAssets;
         deserializers_["GetAccountAssetTransactions"] =
             &JsonQueryFactory::deserializeGetAccountAssetTransactions;

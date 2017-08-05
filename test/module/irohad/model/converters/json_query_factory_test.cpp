@@ -70,7 +70,7 @@ TEST(QuerySerializerTest, SerializeGetAccountAssetsWhenValid) {
           "            \"created_ts\": 0,\n"
           "            \"creator_account_id\": \"123\",\n"
           "            \"query_counter\": 0,\n"
-          "            \"query_type\": \"GetAccountAssets\",\n"
+          "            \"query_type\": \"GetAccountAsset\",\n"
           "            \"account_id\": \"test@test\",\n"
           "            \"asset_id\": \"coin#test\"\n"
           "                }";
