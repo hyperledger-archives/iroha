@@ -71,7 +71,7 @@ Also, use the `--clean-first` flag for rebuild.
 
 | Technical docs | Guides | Contributing |
 |---|---|---|
-|[![Technical docs](docs/icons/docs.png)](http://google.com/)| [![How-to](docs/icons/how-to.png)](http://google.com/) |[![Contributing](docs/icons/contributing.png)](http://google.com/)|
+|[![Technical docs](docs/icons/docs.png)](http://google.com/)| [![How-to](docs/icons/how-to.png)](http://google.com/) |[![Contributing](docs/icons/contributing.png)](https://github.com/hyperledger/iroha/wiki/How-to-contribute)|
 
 ## Need help?
 
