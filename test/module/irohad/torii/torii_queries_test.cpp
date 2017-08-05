@@ -372,13 +372,17 @@ TEST_F(ToriiServiceTest, FindTransactionsWhenValid) {
   iroha::model::Account account;
   account.account_id = "accountA";
 
-  auto txs_observable = rxcpp::observable<>::from(
-      iroha::model::Transaction().setTxCounter(0).setCreatorAccountId(
-          account.account_id),
-      iroha::model::Transaction().setTxCounter(1).setCreatorAccountId(
-          account.account_id),
-      iroha::model::Transaction().setTxCounter(2).setCreatorAccountId(
-          account.account_id));
+  auto txs_observable  =
+          rxcpp::observable<>::iterate([account] {
+              std::vector<iroha::model::Transaction> result;
+              for (size_t i = 0; i < 3; ++i) {
+                iroha::model::Transaction current;
+                current.creator_account_id = account.account_id;
+                current.tx_counter = i;
+                result.push_back(current);
+              }
+              return result;
+          }());
 
   EXPECT_CALL(*wsv_query, getAccount(_)).WillOnce(Return(account));
   EXPECT_CALL(*block_query, getAccountTransactions(account.account_id))
