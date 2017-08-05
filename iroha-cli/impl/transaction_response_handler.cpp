@@ -14,34 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef IROHA_CLIENT_HPP
-#define IROHA_CLIENT_HPP
-
-#include <string>
-#include <torii_utils/query_client.hpp>
-#include "torii/command_client.hpp"
+#include "transaction_response_handler.hpp"
+#include "logger/logger.hpp"
 
 namespace iroha_cli {
 
-  class CliClient {
-   public:
-    enum TxStatus { WRONG_FORMAT, NOT_VALID, OK };
+  void TransactionResponseHandler::handle(
+      const CliClient::TxStatus status) const {
+    switch (status) {
+      case iroha_cli::CliClient::OK:
+        log_->info("Transaction successfully sent");
+        break;
+      case iroha_cli::CliClient::WRONG_FORMAT:
+        log_->error("Transaction wrong json format");
+        break;
+      case iroha_cli::CliClient::NOT_VALID:
+        log_->error("Transaction is not valid");
+        break;
+    }
+  }
+  TransactionResponseHandler::TransactionResponseHandler()
+      : log_(logger::log("TransactionResponseHandler")) {}
 
-    CliClient(std::string target_ip, int port);
-    /**
-     * Send transaction to Iroha-Network
-     * @param json_tx
-     * @return
-     */
-    TxStatus sendTx(std::string json_tx);
-
-    iroha::protocol::QueryResponse sendQuery(std::string json_query);
-
-   private:
-    torii::CommandSyncClient command_client_;
-    torii_utils::QuerySyncClient query_client_;
-  };
 }  // namespace iroha_cli
-
-#endif  // IROHA_CLIENT_CPP_HPP

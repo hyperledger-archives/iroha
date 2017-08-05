@@ -170,7 +170,7 @@ TEST_F(ClientTest, SendQueryWhenInvalidJson) {
   iroha_cli::CliClient client(Ip, Port);
   // Must not call stateful validation since json is invalid and shouldn't be
   // passed to stateless validation
-  EXPECT_CALL(svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
+  EXPECT_CALL(*svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .Times(0);
   auto json_query =
       "{\n"
@@ -191,7 +191,7 @@ TEST_F(ClientTest, SendQueryWhenInvalidJson) {
 
 TEST_F(ClientTest, SendQueryWhenStatelessInvalid) {
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
+  EXPECT_CALL(*svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(false));
   auto json_query =
       "{\"signature\": {\n"
@@ -216,7 +216,7 @@ TEST_F(ClientTest, SendQueryWhenStatelessInvalid) {
 
 TEST_F(ClientTest, SendQueryWhenValid) {
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
+  EXPECT_CALL(*svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(true));
   auto account_admin = iroha::model::Account();
   account_admin.account_id = "admin@test";
@@ -225,9 +225,9 @@ TEST_F(ClientTest, SendQueryWhenValid) {
   auto account_test = iroha::model::Account();
   account_test.account_id = "test@test";
 
-  EXPECT_CALL(wsv_query, getAccount("admin@test"))
+  EXPECT_CALL(*wsv_query, getAccount("admin@test"))
       .WillOnce(Return(account_admin));
-  EXPECT_CALL(wsv_query, getAccount("test@test"))
+  EXPECT_CALL(*wsv_query, getAccount("test@test"))
       .WillOnce(Return(account_test));
 
   auto json_query =
@@ -252,7 +252,7 @@ TEST_F(ClientTest, SendQueryWhenValid) {
 
 TEST_F(ClientTest, SendQueryWhenStatefulInvalid) {
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
+  EXPECT_CALL(*svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(true));
   auto account_admin = iroha::model::Account();
   account_admin.account_id = "admin@test";
@@ -260,9 +260,9 @@ TEST_F(ClientTest, SendQueryWhenStatefulInvalid) {
   auto account_test = iroha::model::Account();
   account_test.account_id = "test@test";
 
-  EXPECT_CALL(wsv_query, getAccount("admin@test"))
+  EXPECT_CALL(*wsv_query, getAccount("admin@test"))
       .WillOnce(Return(account_admin));
-  EXPECT_CALL(wsv_query, getAccount("test@test")).Times(0);
+  EXPECT_CALL(*wsv_query, getAccount("test@test")).Times(0);
 
   auto json_query =
       "{\"signature\": {\n"

@@ -16,9 +16,9 @@
  */
 
 #include <gflags/gflags.h>
+#include <responses.pb.h>
 #include <fstream>
 #include <iostream>
-#include <responses.pb.h>
 #include "bootstrap_network.hpp"
 #include "common/assert_config.hpp"
 #include "genesis_block_client_impl.hpp"
@@ -26,16 +26,19 @@
 
 #include "client.hpp"
 #include "impl/keys_manager_impl.hpp"
+#include "logger/logger.hpp"
+#include "query_response_handler.hpp"
+#include "transaction_response_handler.hpp"
 
 // ** Genesis Block and Provisioning ** //
 // Reference is here (TODO: move to doc):
 // https://hackmd.io/GwRmwQ2BmCFoCsAGARtOAWBIBMcAcS0GcAZjhNNPvpAKZIDGQA==
 
 DEFINE_string(config, "", "Trusted peer's ip addresses");
-//DEFINE_validator(config, &iroha_cli::validate_config);
+// DEFINE_validator(config, &iroha_cli::validate_config);
 
 DEFINE_string(genesis_block, "", "Genesis block for sending network");
-//DEFINE_validator(genesis_block, &iroha_cli::validate_genesis_block);
+// DEFINE_validator(genesis_block, &iroha_cli::validate_genesis_block);
 
 DEFINE_bool(new_account, false, "Choose if account does not exist");
 DEFINE_string(name, "", "Name of the account");
@@ -49,31 +52,20 @@ DEFINE_validator(torii_port, &iroha_cli::validate_port);
 DEFINE_string(json_transaction, "", "Transaction in json format");
 DEFINE_string(json_query, "", "Query in json format");
 
-void print_response(iroha::protocol::QueryResponse response){
-  // TODO: implement beautiful output
-  if (response.has_error_response()){
-    std::cout << "Iroha returned error " << response.error_response().reason()<< std::endl;
-  }
-  if (response.has_account_response()){
-    auto account = response.account_response().account();
-    std::cout << "[Account:] " << std::endl;
-    std::cout << "---- AccountID: "<<  account.account_id() << std::endl;
-  }
-}
+using namespace iroha::protocol;
 
 int main(int argc, char* argv[]) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   gflags::ShutDownCommandLineFlags();
-
+  auto logger = logger::log("CLI-MAIN");
   if (FLAGS_new_account) {
     // Create new pub/priv key
     auto keysManager = iroha_cli::KeysManagerImpl(FLAGS_name);
     if (not keysManager.createKeys(FLAGS_pass_phrase)) {
-      std::cout << "Keys already exist" << std::endl;
+      logger->error("Keys already exist");
     } else {
-      std::cout
-          << "Public and private key has been generated in current directory"
-          << std::endl;
+      logger->info(
+          "Public and private key has been generated in current directory");
     };
   } else if (not FLAGS_config.empty() && not FLAGS_genesis_block.empty()) {
     iroha_cli::GenesisBlockClientImpl genesis_block_client;
@@ -85,32 +77,23 @@ int main(int argc, char* argv[]) {
   } else if (FLAGS_grpc) {
     iroha_cli::CliClient client(FLAGS_address, FLAGS_torii_port);
     if (not FLAGS_json_transaction.empty()) {
-      std::cout << "Send transaction to " << FLAGS_address << ":"
-                << FLAGS_torii_port << std::endl;
+      iroha_cli::TransactionResponseHandler tx_resp_handler;
+      logger->info("Send transaction to {}:{} ", FLAGS_address,
+                   FLAGS_torii_port);
       std::ifstream file(FLAGS_json_transaction);
       std::string str((std::istreambuf_iterator<char>(file)),
                       std::istreambuf_iterator<char>());
-      auto status = client.sendTx(str);
-        switch (status) {
-        case iroha_cli::CliClient::OK:
-          std::cout << "Transaction successfully sent" << std::endl;
-          break;
-        case iroha_cli::CliClient::WRONG_FORMAT:
-          std::cout << "Transaction wrong json format" << std::endl;
-          break;
-        case iroha_cli::CliClient::NOT_VALID:
-          std::cout << "Transaction is not valid." << std::endl;
-          break;
-      }
+
+      tx_resp_handler.handle(client.sendTx(str));
     }
-    if (not FLAGS_json_query.empty()){
-      std::cout << "Send query to " <<  FLAGS_address << ":"
-                                    << FLAGS_torii_port << std::endl;
+    if (not FLAGS_json_query.empty()) {
+      logger->info("Send query to {}:{}", FLAGS_address, FLAGS_torii_port);
+      iroha_cli::QueryResponseHandler responseHandler;
       std::ifstream file(FLAGS_json_transaction);
       std::string str((std::istreambuf_iterator<char>(file)),
                       std::istreambuf_iterator<char>());
       auto response = client.sendQuery(str);
-      print_response(response);
+      responseHandler.handle(response);
     }
 
   } else {

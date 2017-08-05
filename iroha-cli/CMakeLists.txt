@@ -30,15 +30,22 @@ target_link_libraries(keys_manager
 
 add_library(client
     client.cpp
+    impl/query_response_handler.cpp
+    impl/transaction_response_handler.cpp
     )
 target_link_libraries(client
     model_converters
     crypto
     optional
+    logger
     rapidjson
     command_client
     query_client
     ametsuchi
+    )
+
+target_include_directories(client PUBLIC
+    ${PROJECT_SOURCE_DIR}/iroha-cli
     )
 
 # IrohaCli
@@ -51,7 +58,6 @@ target_link_libraries(iroha-cli
     cli-flags_validators
     bootstrap_network
     rapidjson
-    logger
     ametsuchi
     model
     keys_manager

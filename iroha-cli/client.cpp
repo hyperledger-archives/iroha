@@ -27,7 +27,7 @@ namespace iroha_cli {
   CliClient::CliClient(std::string target_ip, int port)
       : command_client_(target_ip, port), query_client_(target_ip, port) {}
 
-  CliClient::Status CliClient::sendTx(std::string json_tx) {
+  CliClient::TxStatus CliClient::sendTx(std::string json_tx) {
     iroha::model::converters::JsonTransactionFactory serializer;
     auto doc = iroha::model::converters::stringToJson(std::move(json_tx));
     if (not doc.has_value()) {
