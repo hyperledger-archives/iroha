@@ -79,6 +79,7 @@ class ClientTest : public testing::Test {
     });
 
     runner->waitForServersReady();
+
   }
 
   virtual void TearDown() {
@@ -93,6 +94,8 @@ class ClientTest : public testing::Test {
 
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
+
+
 };
 
 TEST_F(ClientTest, SendTxWhenValid) {
@@ -117,7 +120,7 @@ TEST_F(ClientTest, SendTxWhenValid) {
       "                    \"peer_key\": "
       "\"2323232323232323232323232323232323232323232323232323232323232323\"\n"
       "                }]}";
-  std::cout << "Sending  json transaction to Iroha" << std::endl;
+
   auto status = client.sendTx(json_tx);
   ASSERT_EQ(status, iroha_cli::CliClient::OK);
 }
@@ -138,7 +141,7 @@ TEST_F(ClientTest, SendTxWhenInvalidJson) {
       "\"2323232323232323232323232323232323232323232323232323232323232323\"\n"
       "  }]\n"
       "}";
-  std::cout << "Sending  json transaction to Iroha" << std::endl;
+
   ASSERT_EQ(client.sendTx(json_tx), iroha_cli::CliClient::WRONG_FORMAT);
 }
 
@@ -162,7 +165,7 @@ TEST_F(ClientTest, SendTxWhenStatelessInvalid) {
       "                    \"peer_key\": "
       "\"2323232323232323232323232323232323232323232323232323232323232323\"\n"
       "                }]}";
-  std::cout << "Sending  json transaction to Iroha" << std::endl;
+
   ASSERT_EQ(client.sendTx(json_tx), iroha_cli::CliClient::NOT_VALID);
 }
 
@@ -182,7 +185,7 @@ TEST_F(ClientTest, SendQueryWhenInvalidJson) {
       "\"2323232323232323232323232323232323232323232323232323232323232323\"\n"
       "  }]\n"
       "}";
-  std::cout << "Sending  json query to Iroha" << std::endl;
+
   auto res = client.sendQuery(json_query);
   ASSERT_TRUE(res.has_error_response());
   ASSERT_EQ(res.error_response().reason(),
@@ -207,7 +210,7 @@ TEST_F(ClientTest, SendQueryWhenStatelessInvalid) {
       "            \"query_type\": \"GetAccount\",\n"
       "            \"account_id\": \"test@test\"\n"
       "                }";
-  std::cout << "Sending  json query to Iroha" << std::endl;
+
   auto res = client.sendQuery(json_query);
   ASSERT_TRUE(res.has_error_response());
   ASSERT_EQ(res.error_response().reason(),
@@ -244,7 +247,7 @@ TEST_F(ClientTest, SendQueryWhenValid) {
       "            \"query_type\": \"GetAccount\",\n"
       "            \"account_id\": \"test@test\"\n"
       "                }";
-  std::cout << "Sending  json query to Iroha" << std::endl;
+
   auto res = client.sendQuery(json_query);
   ASSERT_TRUE(res.has_account_response());
   ASSERT_EQ(res.account_response().account().account_id(), "test@test");
@@ -278,7 +281,7 @@ TEST_F(ClientTest, SendQueryWhenStatefulInvalid) {
       "            \"query_type\": \"GetAccount\",\n"
       "            \"account_id\": \"test@test\"\n"
       "                }";
-  std::cout << "Sending  json query to Iroha" << std::endl;
+
   auto res = client.sendQuery(json_query);
   ASSERT_TRUE(res.has_error_response());
   ASSERT_EQ(res.error_response().reason(),
