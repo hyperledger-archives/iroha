@@ -16,8 +16,9 @@
  */
 
 #include <gtest/gtest.h>
-#include "ametsuchi/block_serializer.hpp"
+#include "model/converters/block_serializer.hpp"
 #include "common/types.hpp"
+#include "model/converters/pb_command_factory.hpp"
 
 using namespace iroha;
 

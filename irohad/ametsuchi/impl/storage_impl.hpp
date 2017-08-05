@@ -23,7 +23,7 @@
 #include <pqxx/pqxx>
 #include <shared_mutex>
 #include <cmath>
-#include "ametsuchi/block_serializer.hpp"
+#include "model/converters/block_serializer.hpp"
 #include "ametsuchi/impl/flat_file/flat_file.hpp"
 #include "ametsuchi/storage.hpp"
 #include "logger/logger.hpp"

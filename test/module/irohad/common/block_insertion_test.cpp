@@ -23,7 +23,8 @@
 #include <fstream>
 #include <iostream>
 #include <model/model_hash_provider_impl.hpp>
-#include "ametsuchi/block_serializer.hpp"
+#include "model/converters/block_serializer.hpp"
+#include "model/converters/pb_command_factory.hpp"
 #include "common/types.hpp"
 #include "model/block.hpp"
 #include "model/commands/add_peer.hpp"

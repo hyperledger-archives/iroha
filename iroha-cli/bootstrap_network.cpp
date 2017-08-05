@@ -22,7 +22,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "ametsuchi/block_serializer.hpp"
+#include "model/converters/block_serializer.hpp"
+#include "model/converters/pb_command_factory.hpp"
 #include "common/assert_config.hpp"
 #include "common/types.hpp"
 #include "ip_tools/ip_tools.hpp"

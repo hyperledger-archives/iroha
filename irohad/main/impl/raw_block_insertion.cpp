@@ -16,7 +16,7 @@
  */
 
 #include "main/raw_block_insertion.hpp"
-#include "ametsuchi/block_serializer.hpp"
+#include "model/converters/block_serializer.hpp"
 #include <fstream>
 #include <utility>
 #include "common/types.hpp"

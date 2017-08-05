@@ -17,7 +17,7 @@
 
 #include <utility>
 #include "client.hpp"
-#include "ametsuchi/block_serializer.hpp"
+#include "model/converters/block_serializer.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
 
 namespace iroha_cli {
