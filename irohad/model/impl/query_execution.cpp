@@ -88,7 +88,6 @@ iroha::model::QueryProcessingFactory::executeGetAccount(
     const model::GetAccount& query) {
   auto acc = _wsvQuery->getAccount(query.account_id);
   if (!acc.has_value()) {
-    std::cout << "Account not found" << std::endl;
     iroha::model::ErrorResponse response;
     response.query_hash = query.query_hash;
     response.reason = iroha::model::ErrorResponse::NO_ACCOUNT;

@@ -27,8 +27,7 @@ namespace iroha {
 
       NetworkImpl::NetworkImpl(const std::string &address,
                                const std::vector<model::Peer> &peers)
-          : address_(address),
-            thread_(&NetworkImpl::asyncCompleteRpc, this) {
+          : address_(address) {
         for (const auto &peer : peers) {
           peers_[peer] = proto::Yac::NewStub(grpc::CreateChannel(
               peer.address, grpc::InsecureChannelCredentials()));
@@ -42,11 +41,6 @@ namespace iroha {
       }
 
       void NetworkImpl::send_commit(model::Peer to, CommitMessage commit) {
-        std::cout << output("send_commit " + to.address + " " +
-                            bytestringToHexstring(
-                                commit.votes.at(0).hash.block_hash))
-                  << std::endl;
-
         proto::Commit request;
         for (const auto &vote : commit.votes) {
           auto pb_vote = request.add_votes();
@@ -71,11 +65,6 @@ namespace iroha {
       }
 
       void NetworkImpl::send_reject(model::Peer to, RejectMessage reject) {
-        std::cout << output("send_reject " + to.address + " " +
-                            bytestringToHexstring(
-                                reject.votes.at(0).hash.block_hash))
-                  << std::endl;
-
         proto::Reject request;
         for (const auto &vote : reject.votes) {
           auto pb_vote = request.add_votes();
@@ -100,10 +89,6 @@ namespace iroha {
       }
 
       void NetworkImpl::send_vote(model::Peer to, VoteMessage vote) {
-        std::cout << output("send_vote " + to.address + " " +
-                            bytestringToHexstring(vote.hash.block_hash))
-                  << std::endl;
-
         proto::Vote request;
         auto hash = request.mutable_hash();
         hash->set_block(vote.hash.block_hash);
@@ -145,10 +130,6 @@ namespace iroha {
                   request->signature().pubkey().end(),
                   vote.signature.pubkey.begin());
 
-        std::cout << input("SendVote " + peer.address + " " +
-                           bytestringToHexstring(vote.hash.block_hash))
-                  << std::endl;
-
         handler_.lock()->on_vote(peer, vote);
         return grpc::Status::OK;
       }
@@ -177,11 +158,6 @@ namespace iroha {
                     vote.signature.pubkey.begin());
           commit.votes.push_back(vote);
         }
-
-        std::cout << input("SendCommit " + peer.address + " " +
-                           bytestringToHexstring(
-                               commit.votes.at(0).hash.block_hash))
-                  << std::endl;
 
         handler_.lock()->on_commit(peer, commit);
         return grpc::Status::OK;
@@ -212,35 +188,8 @@ namespace iroha {
           reject.votes.push_back(vote);
         }
 
-        std::cout << input("SendReject " + peer.address + " " +
-                           bytestringToHexstring(
-                               reject.votes.at(0).hash.block_hash))
-                  << std::endl;
-
         handler_.lock()->on_reject(peer, reject);
         return grpc::Status::OK;
-      }
-
-      NetworkImpl::~NetworkImpl() {
-        cq_.Shutdown();
-        if (thread_.joinable()) {
-          thread_.join();
-        }
-      }
-
-      void NetworkImpl::asyncCompleteRpc() {
-        void *got_tag;
-        auto ok = false;
-        while (cq_.Next(&got_tag, &ok)) {
-          auto call = static_cast<AsyncClientCall *>(got_tag);
-
-          std::cout << input("Received reply from server: error code " +
-                             std::to_string(static_cast<uint64_t>(
-                                 call->status.error_code())))
-                    << std::endl;
-
-          delete call;
-        }
       }
 
     }  // namespace yac

@@ -47,8 +47,7 @@ namespace iroha {
     builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
     builder.RegisterService(&service);
     server_ = builder.BuildAndStart();
-    std::cout << "GenesisBlockServer listening on " << server_address
-              << std::endl;
+    // TODO log server start
     server_->Wait();
   }
 

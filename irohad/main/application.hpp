@@ -127,7 +127,7 @@ class Irohad {
   iroha::network::OrderingInit ordering_init;
   iroha::consensus::yac::YacInit yac_init;
 
-  std::thread internal_thread, server_thread, loop_thread;
+  std::thread internal_thread, server_thread;
 
  public:
   std::shared_ptr<iroha::ametsuchi::StorageImpl> storage;

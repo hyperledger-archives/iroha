@@ -55,10 +55,10 @@ Irohad::Irohad(const std::string &block_store_dir,
       peer_number_(peer_number) {}
 
 Irohad::~Irohad() {
+  internal_server->Shutdown();
   torii_server->shutdown();
   internal_thread.join();
   server_thread.join();
-  loop_thread.join();
 }
 
 class MockBlockLoader : public iroha::network::BlockLoader {
@@ -131,11 +131,12 @@ void Irohad::run() {
   auto pcs = createPeerCommunicationService(ordering_gate, synchronizer);
 
   pcs->on_proposal().subscribe([](auto) {
-    std::cout << "~~~~~~~PROPOSAL! =^._.^=~~~~~~~" << std::endl;
+    // TODO log proposals
   });
 
-  pcs->on_commit().subscribe(
-      [](auto) { std::cout << "~~~~~~~COMMITTED! ^_^~~~~~~~" << std::endl; });
+  pcs->on_commit().subscribe([](auto) {
+    // TODO log commits
+  });
 
   // Torii:
   // --- Transactions:
@@ -165,8 +166,8 @@ void Irohad::run() {
   server_thread = std::thread([this] {
     torii_server->run(std::move(command_service), std::move(query_service));
   });
-  loop_thread = std::thread([this] { loop->run(); });
   torii_server->waitForServersReady();
+  loop->run();
 }
 
 std::shared_ptr<Simulator> Irohad::createSimulator(

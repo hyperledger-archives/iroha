@@ -21,6 +21,7 @@
 #include <atomic>
 #include <thread>
 #include <unordered_map>
+#include "network/impl/async_grpc_client.hpp"
 #include "consensus/yac/yac_network_interface.hpp"
 #include "yac.grpc.pb.h"
 
@@ -28,7 +29,9 @@ namespace iroha {
   namespace consensus {
     namespace yac {
 
-      class NetworkImpl : public YacNetwork, public proto::Yac::Service {
+      class NetworkImpl : public YacNetwork,
+                          public proto::Yac::Service,
+                          network::AsyncGrpcClient<google::protobuf::Empty> {
        public:
         explicit NetworkImpl(const std::string &address,
                              const std::vector<model::Peer> &peers);
@@ -37,7 +40,6 @@ namespace iroha {
         void send_commit(model::Peer to, CommitMessage commit) override;
         void send_reject(model::Peer to, RejectMessage reject) override;
         void send_vote(model::Peer to, VoteMessage vote) override;
-        ~NetworkImpl() override;
 
         /*
          * gRPC server methods
@@ -56,28 +58,12 @@ namespace iroha {
             ::google::protobuf::Empty *response) override;
 
        private:
-        void asyncCompleteRpc();
-
         std::string address_;
         std::unordered_map<model::Peer, std::unique_ptr<proto::Yac::Stub>>
             peers_;
         std::weak_ptr<YacNetworkNotifications> handler_;
-        grpc::CompletionQueue cq_;
-        std::thread thread_;
 
         std::unordered_map<std::string, model::Peer> peers_addresses_;
-
-        struct AsyncClientCall {
-          google::protobuf::Empty reply;
-
-          grpc::ClientContext context;
-
-          grpc::Status status;
-
-          std::unique_ptr<
-              grpc::ClientAsyncResponseReader<google::protobuf::Empty>>
-              response_reader;
-        };
       };
 
     }  // namespace yac
