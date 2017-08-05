@@ -18,7 +18,6 @@
 #include "genesis_block_processor.hpp"
 #include "logger/logger.hpp"
 
-logger::Logger Log("GenesisBlockProcessor");
 
 namespace iroha {
   bool GenesisBlockProcessor::genesis_block_handle(

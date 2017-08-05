@@ -20,7 +20,6 @@ limitations under the License.
 #include <logger/logger.hpp>
 #include <main/server_runner.hpp>
 
-logger::Logger Log("ServerRunner");
 
 ServerRunner::ServerRunner(const std::string &address)
     : serverAddress_(address) {}
@@ -40,8 +39,6 @@ void ServerRunner::run(std::unique_ptr<torii::CommandService> command_service,
 
   serverInstance_ = builder.BuildAndStart();
   serverInstanceCV_.notify_one();
-
-  Log.info("Server listening on {}", serverAddress_);
 
   // proceed to server's main loop
   toriiServiceHandler_->handleRpcs();
