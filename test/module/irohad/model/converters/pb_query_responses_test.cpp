@@ -16,7 +16,6 @@
  */
 
 #include <gtest/gtest.h>
-#include <responses.pb.h>
 #include "model/converters/pb_query_response_factory.hpp"
 
 using namespace iroha;
@@ -125,9 +124,15 @@ TEST(QueryResponseTest, TransactionsResponseTest) {
   model::TransactionsResponse txs_response{};
 
   txs_response.transactions =
-      rxcpp::observable<>::from(model::Transaction().setTxCounter(0),
-                                model::Transaction().setTxCounter(1),
-                                model::Transaction().setTxCounter(2));
+          rxcpp::observable<>::iterate([] {
+              std::vector<model::Transaction> result;
+              for (size_t i = 0; i < 3; ++i) {
+                model::Transaction current;
+                current.tx_counter = i;
+                result.push_back(current);
+              }
+              return result;
+          }());
 
   auto shrd_tr = std::make_shared<decltype(txs_response)>(txs_response);
   auto query_response = *pb_factory.serialize(shrd_tr);
