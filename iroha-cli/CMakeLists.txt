@@ -32,7 +32,7 @@ add_library(client
     client.cpp
     )
 target_link_libraries(client
-    model
+    model_converters
     crypto
     optional
     rapidjson

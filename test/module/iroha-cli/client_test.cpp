@@ -56,7 +56,6 @@ class ClientTest : public testing::Test {
                                                                    svMock);
       auto pb_tx_factory =
           std::make_shared<iroha::model::converters::PbTransactionFactory>();
-      ;
       auto command_service =
           std::make_unique<torii::CommandService>(pb_tx_factory, tx_processor);
 
@@ -125,7 +124,7 @@ TEST_F(ClientTest, SendTxWhenValid) {
 
 TEST_F(ClientTest, SendTxWhenInvalidJson) {
   iroha_cli::CliClient client(Ip, Port);
-  // Must not call stateful validation
+  // Must not call stateful validation since json is invalid
   EXPECT_CALL(*svMock, validate(A<const iroha::model::Transaction &>()))
       .Times(0);
   // Json with no Transaction
@@ -169,7 +168,8 @@ TEST_F(ClientTest, SendTxWhenStatelessInvalid) {
 
 TEST_F(ClientTest, SendQueryWhenInvalidJson) {
   iroha_cli::CliClient client(Ip, Port);
-  // Must not call stateful validation
+  // Must not call stateful validation since json is invalid and shouldn't be
+  // passed to stateless validation
   EXPECT_CALL(svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .Times(0);
   auto json_query =
@@ -191,7 +191,6 @@ TEST_F(ClientTest, SendQueryWhenInvalidJson) {
 
 TEST_F(ClientTest, SendQueryWhenStatelessInvalid) {
   iroha_cli::CliClient client(Ip, Port);
-  // Must not call stateful validation
   EXPECT_CALL(svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(false));
   auto json_query =
@@ -217,7 +216,6 @@ TEST_F(ClientTest, SendQueryWhenStatelessInvalid) {
 
 TEST_F(ClientTest, SendQueryWhenValid) {
   iroha_cli::CliClient client(Ip, Port);
-  // Must not call stateful validation
   EXPECT_CALL(svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(true));
   auto account_admin = iroha::model::Account();
@@ -254,7 +252,6 @@ TEST_F(ClientTest, SendQueryWhenValid) {
 
 TEST_F(ClientTest, SendQueryWhenStatefulInvalid) {
   iroha_cli::CliClient client(Ip, Port);
-  // Must not call stateful validation
   EXPECT_CALL(svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(true));
   auto account_admin = iroha::model::Account();
@@ -265,8 +262,7 @@ TEST_F(ClientTest, SendQueryWhenStatefulInvalid) {
 
   EXPECT_CALL(wsv_query, getAccount("admin@test"))
       .WillOnce(Return(account_admin));
-  EXPECT_CALL(wsv_query, getAccount("test@test"))
-      .Times(0);
+  EXPECT_CALL(wsv_query, getAccount("test@test")).Times(0);
 
   auto json_query =
       "{\"signature\": {\n"

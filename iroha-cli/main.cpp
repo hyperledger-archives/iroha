@@ -49,7 +49,17 @@ DEFINE_validator(torii_port, &iroha_cli::validate_port);
 DEFINE_string(json_transaction, "", "Transaction in json format");
 DEFINE_string(json_query, "", "Query in json format");
 
-void create_account(std::string name);
+void print_response(iroha::protocol::QueryResponse response){
+  // TODO: implement beautiful output
+  if (response.has_error_response()){
+    std::cout << "Iroha returned error " << response.error_response().reason()<< std::endl;
+  }
+  if (response.has_account_response()){
+    auto account = response.account_response().account();
+    std::cout << "[Account:] " << std::endl;
+    std::cout << "---- AccountID: "<<  account.account_id() << std::endl;
+  }
+}
 
 int main(int argc, char* argv[]) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -92,23 +102,15 @@ int main(int argc, char* argv[]) {
           std::cout << "Transaction is not valid." << std::endl;
           break;
       }
-      if (not FLAGS_json_query.empty()){
-        std::cout << "Send query to " <<  FLAGS_address << ":"
-                  << FLAGS_torii_port << std::endl;
-        std::ifstream file(FLAGS_json_transaction);
-        std::string str((std::istreambuf_iterator<char>(file)),
-                        std::istreambuf_iterator<char>());
-        auto response = client.sendQuery(str);
-        if (response.has_error_response()) {
-          std::cout << "Iroha returned error " << response.error_response().reason()<< std::endl;
-        }
-        if (response.has_account_response()){
-          auto account = response.account_response().account();
-          std::cout << "[Account:] " << std::endl;
-          std::cout << "---- AccountID: "<<  account.account_id() << std::endl;
-        }
-        // TODO: implement beautiful output
-      }
+    }
+    if (not FLAGS_json_query.empty()){
+      std::cout << "Send query to " <<  FLAGS_address << ":"
+                                    << FLAGS_torii_port << std::endl;
+      std::ifstream file(FLAGS_json_transaction);
+      std::string str((std::istreambuf_iterator<char>(file)),
+                      std::istreambuf_iterator<char>());
+      auto response = client.sendQuery(str);
+      print_response(response);
     }
 
   } else {

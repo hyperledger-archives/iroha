@@ -16,10 +16,10 @@
  */
 
 #include "client.hpp"
+#include <model/converters/json_query_factory.hpp>
 #include <utility>
 #include "model/converters/json_common.hpp"
 #include "model/converters/json_transaction_factory.hpp"
-#include <ametsuchi/query_serializer.hpp>
 #include "model/converters/pb_transaction_factory.hpp"
 
 namespace iroha_cli {
@@ -52,7 +52,7 @@ namespace iroha_cli {
   }
 
   iroha::protocol::QueryResponse CliClient::sendQuery(std::string json_query) {
-    iroha::ametsuchi::QuerySerializer serializer;
+    iroha::model::converters::JsonQueryFactory serializer;
 
     auto query_opt = serializer.deserialize(std::move(json_query));
 
@@ -65,7 +65,7 @@ namespace iroha_cli {
       return query_response;
     }
 
-    query_client_.Find(*query_opt, query_response);
+    query_client_.Find(query_opt.value(), query_response);
 
     return query_response;
   }

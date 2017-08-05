@@ -8,12 +8,6 @@ target_link_libraries(block_serializer_test
     ametsuchi
     )
 
-addtest(query_serializer_test query_serializer_test.cpp)
-target_link_libraries(query_serializer_test
-    model
-    ametsuchi
-    )
-
 addtest(ametsuchi_test ametsuchi_test.cpp)
 target_link_libraries(ametsuchi_test
     ametsuchi
