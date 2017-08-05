@@ -16,7 +16,6 @@
  */
 
 #include <gtest/gtest.h>
-#include <responses.pb.h>
 #include "model/converters/pb_query_response_factory.hpp"
 
 using namespace iroha;
