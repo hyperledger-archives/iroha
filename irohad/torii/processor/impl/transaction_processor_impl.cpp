@@ -18,6 +18,7 @@
 #include <iostream>
 #include <model/tx_responses/stateless_response.hpp>
 #include <torii/processor/transaction_processor_impl.hpp>
+#include <utility>
 
 namespace iroha {
   namespace torii {
@@ -29,10 +30,13 @@ namespace iroha {
     TransactionProcessorImpl::TransactionProcessorImpl(
         std::shared_ptr<PeerCommunicationService> pcs,
         std::shared_ptr<StatelessValidator> validator)
-        : pcs_(pcs), validator_(validator) {}
+        : pcs_(std::move(pcs)), validator_(std::move(validator)) {
+      log_ = logger::log("TxProcessor");
+    }
 
     void TransactionProcessorImpl::transactionHandle(
         std::shared_ptr<model::Transaction> transaction) {
+      log_->info("handle transaction");
       model::TransactionStatelessResponse response;
       response.transaction = *transaction;
       response.passed = false;
@@ -41,7 +45,7 @@ namespace iroha {
         response.passed = true;
         pcs_->propagate_transaction(transaction);
       }
-
+      log_->info("stateless validation status: {}", response.passed);
       notifier_.get_subscriber().on_next(
           std::make_shared<model::TransactionStatelessResponse>(response));
     }

@@ -22,10 +22,13 @@ namespace iroha {
 
     ChainValidatorImpl::ChainValidatorImpl(
         std::shared_ptr<model::ModelCryptoProvider> crypto_provider)
-        : crypto_provider_(crypto_provider) {}
+        : crypto_provider_(crypto_provider) {
+      log_ = logger::log("ChainValidator");
+    }
 
     bool ChainValidatorImpl::validateBlock(const model::Block& block,
                                            ametsuchi::MutableStorage& storage) {
+      log_->info("validate block");
       auto apply_block = [](const auto& current_block, auto& executor,
                             auto& query, const auto& top_hash) {
         if (current_block.prev_hash != top_hash) {
@@ -53,6 +56,7 @@ namespace iroha {
 
     bool ChainValidatorImpl::validateChain(Commit blocks,
                                            ametsuchi::MutableStorage& storage) {
+      log_->info("validate chain...");
       return blocks
           .all([this, &storage](auto block) {
             return this->validateBlock(block, storage);

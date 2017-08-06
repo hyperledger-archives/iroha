@@ -5,4 +5,5 @@ add_library(synchronizer
 target_link_libraries(synchronizer PUBLIC
     model
     rxcpp
+    logger
     )

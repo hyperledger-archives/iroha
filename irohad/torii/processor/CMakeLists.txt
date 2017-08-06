@@ -7,4 +7,5 @@ target_link_libraries(processors PUBLIC
     model
     rxcpp
     stateless_validator
+    logger
     )

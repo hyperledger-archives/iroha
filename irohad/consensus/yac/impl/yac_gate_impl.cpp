@@ -30,16 +30,18 @@ namespace iroha {
             orderer_(std::move(orderer)),
             hash_provider_(std::move(hash_provider)),
             block_creator_(std::move(block_creator)) {
+        log_ = logger::log("YacGate");
         block_creator_->on_block().subscribe([this](auto block) {
           this->vote(block);
         });
       };
 
       void YacGateImpl::vote(model::Block block) {
+        log_->info("vote for block");
         auto hash = hash_provider_->makeHash(block);
         auto order = orderer_->getOrdering(hash);
         if (not order.has_value()) {
-          // TODO log error
+          log_->error("ordering doesn't provide peers => pass round");
           return;
         }
         current_block_ = std::make_pair(hash, block);
@@ -53,10 +55,13 @@ namespace iroha {
             for (auto &&vote : commit_message.votes) {
               current_block_.second.sigs.push_back(vote.signature);
             }
+            log_->info("consensus: commit top block");
             return current_block_.second;
           }
 
           // TODO download committed block
+          log_->warn(
+              "Functionality of downloading blocks absent, return empty block");
           return model::Block();
         });
       };

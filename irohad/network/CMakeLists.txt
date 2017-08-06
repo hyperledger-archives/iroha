@@ -8,4 +8,5 @@ target_link_libraries(networking PUBLIC
     ametsuchi
     ordering_service
     synchronizer
+    logger
     )

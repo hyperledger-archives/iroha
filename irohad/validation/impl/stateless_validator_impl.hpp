@@ -21,6 +21,8 @@
 #include "model/model_crypto_provider.hpp"
 #include "validation/stateless_validator.hpp"
 
+#include "logger/logger.hpp"
+
 namespace iroha {
   namespace validation {
 
@@ -35,6 +37,8 @@ namespace iroha {
       static constexpr uint64_t MAX_DELAY =
           1000 * 3600 * 24;  // max-delay between tx creation and validation
       std::shared_ptr<model::ModelCryptoProvider> crypto_provider_;
+
+      logger::Logger log_;
     };
   }
 }

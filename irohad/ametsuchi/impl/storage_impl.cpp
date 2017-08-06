@@ -41,6 +41,8 @@ namespace iroha {
           wsv_connection_(std::move(wsv_connection)),
           wsv_transaction_(std::move(wsv_transaction)),
           wsv_(std::move(wsv)) {
+      log_ = logger::log("StorageImpl");
+
       wsv_transaction_->exec(init_);
       wsv_transaction_->exec(
           "SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;");
@@ -54,7 +56,7 @@ namespace iroha {
       try {
         postgres_connection->activate();
       } catch (const pqxx::broken_connection &e) {
-        // TODO log error
+        log_->error("Connection to PostgreSQL broken: {}", e.what());
         return nullptr;
       }
       auto wsv_transaction = std::make_unique<pqxx::nontransaction>(
@@ -77,7 +79,7 @@ namespace iroha {
       try {
         postgres_connection->activate();
       } catch (const pqxx::broken_connection &e) {
-        // TODO log error
+        log_->error("Connection to PostgreSQL broken: {}", e.what());
         return nullptr;
       }
       auto wsv_transaction = std::make_unique<pqxx::nontransaction>(
@@ -91,7 +93,7 @@ namespace iroha {
       try {
         index->connect(redis_host_, redis_port_);
       } catch (const cpp_redis::redis_error &e) {
-        // TODO log error
+        log_->error("Connection to redis broken: {}", e.what());
         return nullptr;
       }
 
@@ -100,12 +102,12 @@ namespace iroha {
       if (block_store_->last_id()) {
         auto blob = block_store_->get(block_store_->last_id());
         if (!blob) {
-          // TODO log block not found error
+          log_->error("Fetching of blob failed");
           return nullptr;
         }
         auto block = serializer_.deserialize(*blob);
         if (!block) {
-          // TODO log deserialize error
+          log_->error("Deserialization of block failed");
           return nullptr;
         }
         top_hash = block->hash;
@@ -121,34 +123,43 @@ namespace iroha {
     std::shared_ptr<StorageImpl> StorageImpl::create(
         std::string block_store_dir, std::string redis_host,
         std::size_t redis_port, std::string postgres_options) {
+      auto log_ = logger::log("StorageImpl:create");
+      log_->info("Start storage creation");
       // TODO lock
 
       auto block_store = FlatFile::create(block_store_dir);
       if (!block_store) {
-        // TODO log error
+        log_->error("Cannot create block store in {}", block_store_dir);
         return nullptr;
       }
+      log_->info("block store created");
 
       auto index = std::make_unique<cpp_redis::redis_client>();
       try {
         index->connect(redis_host, redis_port);
       } catch (const cpp_redis::redis_error &e) {
-        // TODO log error
+        log_->error("Connection {}:{} with redis broken",
+                    redis_host,
+                    redis_port);
         return nullptr;
       }
+      log_->info("connection to redis completed");
 
       auto postgres_connection =
           std::make_unique<pqxx::lazyconnection>(postgres_options);
       try {
         postgres_connection->activate();
       } catch (const pqxx::broken_connection &e) {
-        // TODO log error
+        log_->error("Cannot with postgre broken: {}", e.what());
         return nullptr;
       }
+      log_->info("connection to postgre completed");
+
       auto wsv_transaction = std::make_unique<pqxx::nontransaction>(
           *postgres_connection, "Storage");
       std::unique_ptr<WsvQuery> wsv =
           std::make_unique<PostgresWsvQuery>(*wsv_transaction);
+      log_->info("transaction to postgre initialized");
 
       return std::shared_ptr<StorageImpl>(
           new StorageImpl(block_store_dir, redis_host, redis_port,
@@ -193,7 +204,7 @@ namespace iroha {
           .flat_map([this](auto i) {
             auto bytes = block_store_->get(i);
             return rxcpp::observable<>::create<typename decltype(
-                bytes)::value_type>([bytes](auto s) {
+            bytes)::value_type>([bytes](auto s) {
               if (bytes) {
                 s.on_next(*bytes);
               }
@@ -203,7 +214,7 @@ namespace iroha {
           .flat_map([this](auto bytes) {
             auto block = serializer_.deserialize(bytes);
             return rxcpp::observable<>::create<typename decltype(
-                block)::value_type>([block](auto s) {
+            block)::value_type>([block](auto s) {
               if (block.has_value()) {
                 s.on_next(*block);
               }

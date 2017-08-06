@@ -17,17 +17,23 @@
 
 #include "validation/impl/stateless_validator_impl.hpp"
 #include <chrono>
+#include <utility>
 
 namespace iroha {
   namespace validation {
     StatelessValidatorImpl::StatelessValidatorImpl(
         std::shared_ptr<model::ModelCryptoProvider> crypto_provider)
-        : crypto_provider_(crypto_provider) {}
+        : crypto_provider_(std::move(crypto_provider)) {
+      log_ = logger::log("SLV");
+    }
 
     bool StatelessValidatorImpl::validate(
         const model::Transaction& transaction) const {
       // signatures are correct
-      if (!crypto_provider_->verify(transaction)) return false;
+      if (!crypto_provider_->verify(transaction)){
+        log_->warn("crypto verification broken");
+        return false;
+      }
 
       // time between creation and validation of tx
       uint64_t now = static_cast<uint64_t>(
@@ -35,19 +41,26 @@ namespace iroha {
               std::chrono::system_clock::now().time_since_epoch()).count());
 
       if (now - transaction.created_ts > MAX_DELAY) {
+        log_->warn("timestamp broken: too old");
         return false;
       }
 
       // tx is not sent from future
+      // todo make future gap for passing timestamp, like with old timestamps
       if (now < transaction.created_ts) {
+        log_->warn("timestamp broken: send from future");
         return false;
       }
+      log_->info("transaction validated");
       return true;
     }
 
     bool StatelessValidatorImpl::validate(std::shared_ptr<const model::Query> query) const {
       // signatures are correct
-      if (!crypto_provider_->verify(query)) return false;
+      if (!crypto_provider_->verify(query)){
+        log_->warn("crypto verification broken");
+        return false;
+      }
 
       // time between creation and validation of the query
       uint64_t now = static_cast<uint64_t>(
@@ -55,13 +68,17 @@ namespace iroha {
               std::chrono::system_clock::now().time_since_epoch()).count());
 
       if (now - query->created_ts > MAX_DELAY) {
+        log_->warn("timestamp broken: too old");
         return false;
       }
 
       // query is not sent from future
+      // todo make future gap for passing timestamp, like with old timestamps
       if (now < query->created_ts) {
+        log_->warn("timestamp broken: send from future");
         return false;
       }
+      log_->info("query validated");
       return true;
     }
   }

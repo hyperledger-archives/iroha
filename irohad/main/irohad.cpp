@@ -16,14 +16,14 @@ limitations under the License.
 
 #include <gflags/gflags.h>
 #include <grpc++/grpc++.h>
-#include <rapidjson/rapidjson.h>
 #include <fstream>
 #include <thread>
 #include "common/config.hpp"
 #include "main/application.hpp"
-#include "main/genesis_block_server/genesis_block_processor.hpp"
 #include "main/iroha_conf_loader.hpp"
 #include "main/raw_block_insertion.hpp"
+
+#include "logger/logger.hpp"
 
 bool validate_config(const char *flag_name, std::string const &path) {
   return not path.empty();
@@ -42,27 +42,35 @@ DEFINE_validator(genesis_block, &validate_genesis_path);
 DEFINE_uint64(peer_number, 0, "Specify peer number");
 
 int main(int argc, char *argv[]) {
+  auto log = logger::log("MAIN");
+  log->info("start");
   namespace mbr = config_members;
 
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   gflags::ShutDownCommandLineFlags();
 
   auto config = parse_iroha_config(FLAGS_config);
+  log->info("config initialized");
   Irohad irohad(config[mbr::BlockStorePath].GetString(),
                 config[mbr::RedisHost].GetString(),
                 config[mbr::RedisPort].GetUint(),
                 config[mbr::PgOpt].GetString(),
                 config[mbr::ToriiPort].GetUint(), FLAGS_peer_number);
+  log->info("storage initialized: {}", logger::logBool(irohad.storage));
 
   iroha::main::BlockInserter inserter(irohad.storage);
   auto file = inserter.loadFile(FLAGS_genesis_block);
   auto block = inserter.parseBlock(file.value());
+  log->info("Block is parsed");
 
   if (block.has_value()) {
     inserter.applyToLedger({block.value()});
+    log->info("Genesis block inserted, number of transactions: {}",
+               block.value().transactions.size());
   }
 
   // runs iroha
+  log->info("Running iroha");
   irohad.run();
 
   return 0;

@@ -22,10 +22,13 @@ namespace iroha {
 
     OrderingGateImpl::OrderingGateImpl(const std::string &server_address)
         : client_(proto::OrderingService::NewStub(grpc::CreateChannel(
-              server_address, grpc::InsecureChannelCredentials()))) {}
+              server_address, grpc::InsecureChannelCredentials()))) {
+      log_ = logger::log("OrderingGate");
+    }
 
     void OrderingGateImpl::propagate_transaction(
         std::shared_ptr<const model::Transaction> transaction) {
+      log_->info("propagate tx");
       auto call = new AsyncClientCall;
 
       call->response_reader = client_->AsyncSendTransaction(
@@ -41,12 +44,14 @@ namespace iroha {
     grpc::Status OrderingGateImpl::SendProposal(
         ::grpc::ServerContext *context, const proto::Proposal *request,
         ::google::protobuf::Empty *response) {
+      log_->info("receive proposal");
       // auto removes const qualifier of model::Proposal.transactions
       auto transactions =
           decltype(std::declval<model::Proposal>().transactions)();
       for (const auto &tx : request->transactions()) {
         transactions.push_back(*factory_.deserialize(tx));
       }
+      log_->info("transactions in proposal: {}", transactions.size());
 
       model::Proposal proposal(transactions);
       proposal.height = request->height();

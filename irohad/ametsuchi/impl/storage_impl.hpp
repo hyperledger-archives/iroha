@@ -26,6 +26,7 @@
 #include "ametsuchi/block_serializer.hpp"
 #include "ametsuchi/impl/flat_file/flat_file.hpp"
 #include "ametsuchi/storage.hpp"
+#include "logger/logger.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -78,6 +79,8 @@ namespace iroha {
 
       // Allows multiple readers and a single writer
       std::shared_timed_mutex rw_lock_;
+
+      logger::Logger log_;
 
       const std::string init_ =
           "CREATE TABLE IF NOT EXISTS domain (\n"

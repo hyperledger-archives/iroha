@@ -22,6 +22,8 @@
 #include "synchronizer/synchronizer.hpp"
 #include "validation/chain_validator.hpp"
 
+#include "logger/logger.hpp"
+
 namespace iroha {
   namespace synchronizer {
     class SynchronizerImpl : public Synchronizer {
@@ -41,6 +43,8 @@ namespace iroha {
 
       // internal
       rxcpp::subjects::subject<Commit> notifier_;
+
+      logger::Logger log_;
     };
   }
 }

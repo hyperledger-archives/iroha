@@ -44,6 +44,8 @@
 #include "main/impl/ordering_init.hpp"
 #include "main/impl/consensus_init.hpp"
 
+#include "logger/logger.hpp"
+
 class Irohad {
  public:
 
@@ -128,6 +130,11 @@ class Irohad {
   iroha::consensus::yac::YacInit yac_init;
 
   std::thread internal_thread, server_thread;
+
+  logger::Logger log_;
+
+
+
 
  public:
   std::shared_ptr<iroha::ametsuchi::StorageImpl> storage;

@@ -24,4 +24,5 @@ target_link_libraries(ordering_service
     model
     uvw
     grpc++
+    logger
     )

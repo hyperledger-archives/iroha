@@ -23,6 +23,8 @@ limitations under the License.
 
 namespace logger {
 
+  using Logger = std::shared_ptr<spdlog::logger>;
+
   std::string red(const std::string &string);
 
   std::string yellow(const std::string &string);
@@ -31,7 +33,25 @@ namespace logger {
 
   std::string input(const std::string &string);
 
-  std::shared_ptr<spdlog::logger> log(const std::string &tag);
+  Logger log(const std::string &tag);
+
+  /**
+   * Convert bool value to human readable string repr
+   * @param value value for transformation
+   * @return "true" or "false"
+   */
+  std::string boolRepr(bool value);
+
+  /**
+   * Converts object to bool and provides string repr of it
+   * @tparam T - type of object, T must implement bool operator
+   * @param val - value for convertation
+   * @return string representation of bool object
+   */
+  template <typename T>
+  std::string logBool(T val) {
+    return boolRepr(bool(val));
+  }
 
 }  // namespace logger
 

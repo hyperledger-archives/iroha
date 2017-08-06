@@ -22,9 +22,14 @@
 namespace iroha {
   namespace validation {
 
+    StatefulValidatorImpl::StatefulValidatorImpl() {
+      log_ = logger::log("SFV");
+    }
+
     model::Proposal StatefulValidatorImpl::validate(
         const model::Proposal &proposal,
         ametsuchi::TemporaryWsv &temporaryWsv) {
+      log_->info("transactions in proposal: {}", proposal.transactions.size());
       auto checking_transaction = [&temporaryWsv](auto &tx, auto &executor,
                                                   auto &query) {
         auto account = temporaryWsv.getAccount(tx.creator_account_id);
@@ -45,7 +50,7 @@ namespace iroha {
             std::begin(tx.commands), std::end(tx.commands),
             [&query, &account, &executor](auto &command) {
               return command->validate(query, account.value()) &&
-                     command->execute(query, executor);
+                  command->execute(query, executor);
             });
 
       };
@@ -66,7 +71,8 @@ namespace iroha {
       model::Proposal validated_proposal(
           std::accumulate(txs.begin(), txs.end(), valid, filter));
       validated_proposal.height = proposal.height;
-
+      log_->info("transactions in verified proposal: {}",
+                 validated_proposal.transactions.size());
       return validated_proposal;
     }
 

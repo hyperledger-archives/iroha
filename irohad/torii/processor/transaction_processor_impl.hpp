@@ -22,6 +22,7 @@
 #include <network/peer_communication_service.hpp>
 #include <torii/processor/transaction_processor.hpp>
 #include <validation/stateless_validator.hpp>
+#include "logger/logger.hpp"
 
 namespace iroha {
   namespace torii {
@@ -53,6 +54,8 @@ namespace iroha {
       // internal
       rxcpp::subjects::subject<std::shared_ptr<model::TransactionResponse>>
           notifier_;
+
+      logger::Logger log_;
     };
   }  // namespace torii
 }  // namespace iroha
