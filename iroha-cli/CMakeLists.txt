@@ -32,6 +32,7 @@ add_library(client
     client.cpp
     impl/query_response_handler.cpp
     impl/transaction_response_handler.cpp
+    impl/grpc_response_handler.cpp
     )
 target_link_libraries(client
     model_converters

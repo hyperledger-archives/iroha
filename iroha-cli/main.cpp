@@ -25,10 +25,9 @@
 #include "validators.hpp"
 
 #include "client.hpp"
+#include "grpc_response_handler.hpp"
 #include "impl/keys_manager_impl.hpp"
 #include "logger/logger.hpp"
-#include "query_response_handler.hpp"
-#include "transaction_response_handler.hpp"
 
 // ** Genesis Block and Provisioning ** //
 // Reference is here (TODO: move to doc):
@@ -76,24 +75,21 @@ int main(int argc, char* argv[]) {
     bootstrap.run_network(peers, block);
   } else if (FLAGS_grpc) {
     iroha_cli::CliClient client(FLAGS_address, FLAGS_torii_port);
+    iroha_cli::GrpcResponseHandler response_handler;
     if (not FLAGS_json_transaction.empty()) {
-      iroha_cli::TransactionResponseHandler tx_resp_handler;
       logger->info("Send transaction to {}:{} ", FLAGS_address,
                    FLAGS_torii_port);
       std::ifstream file(FLAGS_json_transaction);
       std::string str((std::istreambuf_iterator<char>(file)),
                       std::istreambuf_iterator<char>());
-
-      tx_resp_handler.handle(client.sendTx(str));
+      response_handler.handle(client.sendTx(str));
     }
     if (not FLAGS_json_query.empty()) {
       logger->info("Send query to {}:{}", FLAGS_address, FLAGS_torii_port);
-      iroha_cli::QueryResponseHandler responseHandler;
       std::ifstream file(FLAGS_json_query);
       std::string str((std::istreambuf_iterator<char>(file)),
                       std::istreambuf_iterator<char>());
-      auto response = client.sendQuery(str);
-      responseHandler.handle(response);
+      response_handler.handle(client.sendQuery(str));
     }
 
   } else {

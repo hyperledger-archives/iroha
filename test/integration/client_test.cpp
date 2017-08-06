@@ -38,7 +38,7 @@ using namespace iroha::ametsuchi;
 using namespace iroha::network;
 using namespace iroha::validation;
 
-class ClientTest : public testing::Test {
+class ClientServerTest : public testing::Test {
  public:
   virtual void SetUp() {
     // Run a server
@@ -79,7 +79,6 @@ class ClientTest : public testing::Test {
     });
 
     runner->waitForServersReady();
-
   }
 
   virtual void TearDown() {
@@ -94,11 +93,9 @@ class ClientTest : public testing::Test {
 
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
-
-
 };
 
-TEST_F(ClientTest, SendTxWhenValid) {
+TEST_F(ClientServerTest, SendTxWhenValid) {
   iroha_cli::CliClient client(Ip, Port);
   EXPECT_CALL(*svMock, validate(A<const iroha::model::Transaction &>()))
       .WillOnce(Return(true));
@@ -122,10 +119,10 @@ TEST_F(ClientTest, SendTxWhenValid) {
       "                }]}";
 
   auto status = client.sendTx(json_tx);
-  ASSERT_EQ(status, iroha_cli::CliClient::OK);
+  ASSERT_EQ(status.answer, iroha_cli::CliClient::OK);
 }
 
-TEST_F(ClientTest, SendTxWhenInvalidJson) {
+TEST_F(ClientServerTest, SendTxWhenInvalidJson) {
   iroha_cli::CliClient client(Ip, Port);
   // Must not call stateful validation since json is invalid
   EXPECT_CALL(*svMock, validate(A<const iroha::model::Transaction &>()))
@@ -142,10 +139,10 @@ TEST_F(ClientTest, SendTxWhenInvalidJson) {
       "  }]\n"
       "}";
 
-  ASSERT_EQ(client.sendTx(json_tx), iroha_cli::CliClient::WRONG_FORMAT);
+  ASSERT_EQ(client.sendTx(json_tx).answer, iroha_cli::CliClient::WRONG_FORMAT);
 }
 
-TEST_F(ClientTest, SendTxWhenStatelessInvalid) {
+TEST_F(ClientServerTest, SendTxWhenStatelessInvalid) {
   iroha_cli::CliClient client(Ip, Port);
   EXPECT_CALL(*svMock, validate(A<const iroha::model::Transaction &>()))
       .WillOnce(Return(false));
@@ -166,14 +163,15 @@ TEST_F(ClientTest, SendTxWhenStatelessInvalid) {
       "\"2323232323232323232323232323232323232323232323232323232323232323\"\n"
       "                }]}";
 
-  ASSERT_EQ(client.sendTx(json_tx), iroha_cli::CliClient::NOT_VALID);
+  ASSERT_EQ(client.sendTx(json_tx).answer, iroha_cli::CliClient::NOT_VALID);
 }
 
-TEST_F(ClientTest, SendQueryWhenInvalidJson) {
+TEST_F(ClientServerTest, SendQueryWhenInvalidJson) {
   iroha_cli::CliClient client(Ip, Port);
   // Must not call stateful validation since json is invalid and shouldn't be
   // passed to stateless validation
-  EXPECT_CALL(*svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
+  EXPECT_CALL(*svMock,
+              validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .Times(0);
   auto json_query =
       "{\n"
@@ -187,14 +185,16 @@ TEST_F(ClientTest, SendQueryWhenInvalidJson) {
       "}";
 
   auto res = client.sendQuery(json_query);
-  ASSERT_TRUE(res.has_error_response());
-  ASSERT_EQ(res.error_response().reason(),
+  ASSERT_TRUE(res.status.ok());
+  ASSERT_TRUE(res.answer.has_error_response());
+  ASSERT_EQ(res.answer.error_response().reason(),
             iroha::protocol::ErrorResponse::WRONG_FORMAT);
 }
 
-TEST_F(ClientTest, SendQueryWhenStatelessInvalid) {
+TEST_F(ClientServerTest, SendQueryWhenStatelessInvalid) {
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(*svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
+  EXPECT_CALL(*svMock,
+              validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(false));
   auto json_query =
       "{\"signature\": {\n"
@@ -212,14 +212,16 @@ TEST_F(ClientTest, SendQueryWhenStatelessInvalid) {
       "                }";
 
   auto res = client.sendQuery(json_query);
-  ASSERT_TRUE(res.has_error_response());
-  ASSERT_EQ(res.error_response().reason(),
+  ASSERT_TRUE(res.status.ok());
+  ASSERT_TRUE(res.answer.has_error_response());
+  ASSERT_EQ(res.answer.error_response().reason(),
             iroha::model::ErrorResponse::STATELESS_INVALID);
 }
 
-TEST_F(ClientTest, SendQueryWhenValid) {
+TEST_F(ClientServerTest, SendQueryWhenValid) {
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(*svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
+  EXPECT_CALL(*svMock,
+              validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(true));
   auto account_admin = iroha::model::Account();
   account_admin.account_id = "admin@test";
@@ -249,13 +251,13 @@ TEST_F(ClientTest, SendQueryWhenValid) {
       "                }";
 
   auto res = client.sendQuery(json_query);
-  ASSERT_TRUE(res.has_account_response());
-  ASSERT_EQ(res.account_response().account().account_id(), "test@test");
+  ASSERT_EQ(res.answer.account_response().account().account_id(), "test@test");
 }
 
-TEST_F(ClientTest, SendQueryWhenStatefulInvalid) {
+TEST_F(ClientServerTest, SendQueryWhenStatefulInvalid) {
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(*svMock, validate(A<std::shared_ptr<const iroha::model::Query>>()))
+  EXPECT_CALL(*svMock,
+              validate(A<std::shared_ptr<const iroha::model::Query>>()))
       .WillOnce(Return(true));
   auto account_admin = iroha::model::Account();
   account_admin.account_id = "admin@test";
@@ -283,7 +285,8 @@ TEST_F(ClientTest, SendQueryWhenStatefulInvalid) {
       "                }";
 
   auto res = client.sendQuery(json_query);
-  ASSERT_TRUE(res.has_error_response());
-  ASSERT_EQ(res.error_response().reason(),
+  ASSERT_TRUE(res.status.ok());
+  ASSERT_TRUE(res.answer.has_error_response());
+  ASSERT_EQ(res.answer.error_response().reason(),
             iroha::protocol::ErrorResponse::STATEFUL_INVALID);
 }

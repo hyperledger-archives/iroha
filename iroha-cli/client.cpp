@@ -27,7 +27,8 @@ namespace iroha_cli {
   CliClient::CliClient(std::string target_ip, int port)
       : command_client_(target_ip, port), query_client_(target_ip, port) {}
 
-  CliClient::TxStatus CliClient::sendTx(std::string json_tx) {
+  CliClient::Response<CliClient::TxStatus> CliClient::sendTx(std::string json_tx) {
+    CliClient::Response<CliClient::TxStatus> response;
     iroha::model::converters::JsonTransactionFactory serializer;
     auto doc = iroha::model::converters::stringToJson(std::move(json_tx));
     if (not doc.has_value()) {
@@ -35,23 +36,27 @@ namespace iroha_cli {
     }
     auto tx_opt = serializer.deserialize(doc.value());
     if (not tx_opt.has_value()) {
-      return WRONG_FORMAT;
+      response.status = grpc::Status::OK;
+      response.answer = WRONG_FORMAT;
+      return response;
     }
     auto model_tx = tx_opt.value();
     // Convert to protobuf
     iroha::model::converters::PbTransactionFactory factory;
     auto pb_tx = factory.serialize(model_tx);
     // Send to iroha:
-    iroha::protocol::ToriiResponse response;
-    auto stat = command_client_.Torii(pb_tx, response);
-
-    return response.validation() ==
-                   iroha::protocol::STATELESS_VALIDATION_SUCCESS
-               ? OK
-               : NOT_VALID;
+    iroha::protocol::ToriiResponse toriiResponse;
+    response.status = command_client_.Torii(pb_tx, toriiResponse);
+    response.answer = toriiResponse.validation() ==
+                              iroha::protocol::STATELESS_VALIDATION_SUCCESS
+                          ? OK
+                          : NOT_VALID;
+    return response;
   }
 
-  iroha::protocol::QueryResponse CliClient::sendQuery(std::string json_query) {
+  CliClient::Response<iroha::protocol::QueryResponse> CliClient::sendQuery(
+      std::string json_query) {
+    CliClient::Response<iroha::protocol::QueryResponse> response;
     iroha::model::converters::JsonQueryFactory serializer;
 
     auto query_opt = serializer.deserialize(std::move(json_query));
@@ -62,12 +67,14 @@ namespace iroha_cli {
       iroha::protocol::ErrorResponse er;
       er.set_reason(iroha::protocol::ErrorResponse::WRONG_FORMAT);
       query_response.mutable_error_response()->CopyFrom(er);
-      return query_response;
+      response.status = grpc::Status::OK;
+      response.answer = query_response;
+      return response;
     }
 
-    query_client_.Find(query_opt.value(), query_response);
-
-    return query_response;
+    response.status = query_client_.Find(query_opt.value(), query_response);
+    response.answer = query_response;
+    return response;
   }
 
 };  // namespace iroha_cli
