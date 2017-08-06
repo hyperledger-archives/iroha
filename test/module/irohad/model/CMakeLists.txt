@@ -70,3 +70,8 @@ addtest(json_block_converter_test converters/json_block_test.cpp)
 target_link_libraries(json_block_converter_test
     model
     )
+
+addtest(json_query_factory_test converters/json_query_factory_test.cpp)
+target_link_libraries(json_query_factory_test
+    model_converters
+    )

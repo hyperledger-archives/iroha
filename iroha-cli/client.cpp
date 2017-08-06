@@ -16,6 +16,7 @@
  */
 
 #include "client.hpp"
+#include <model/converters/json_query_factory.hpp>
 #include <utility>
 #include "model/converters/json_common.hpp"
 #include "model/converters/json_transaction_factory.hpp"
@@ -24,30 +25,58 @@
 namespace iroha_cli {
 
   CliClient::CliClient(std::string target_ip, int port)
-      : client_(std::move(target_ip), port) {}
+      : command_client_(target_ip, port), query_client_(target_ip, port) {}
 
-  CliClient::Status CliClient::sendTx(std::string json_tx) {
+  CliClient::Response<CliClient::TxStatus> CliClient::sendTx(std::string json_tx) {
+    CliClient::Response<CliClient::TxStatus> response;
     iroha::model::converters::JsonTransactionFactory serializer;
     auto doc = iroha::model::converters::stringToJson(std::move(json_tx));
     if (not doc.has_value()) {
-      return WRONG_FORMAT;
+      response.status = grpc::Status::OK;
+      response.answer = WRONG_FORMAT;
+      return response;
     }
     auto tx_opt = serializer.deserialize(doc.value());
     if (not tx_opt.has_value()) {
-      return WRONG_FORMAT;
+      response.status = grpc::Status::OK;
+      response.answer = WRONG_FORMAT;
+      return response;
     }
     auto model_tx = tx_opt.value();
     // Convert to protobuf
     iroha::model::converters::PbTransactionFactory factory;
     auto pb_tx = factory.serialize(model_tx);
     // Send to iroha:
-    iroha::protocol::ToriiResponse response;
-    auto stat = client_.Torii(pb_tx, response);
+    iroha::protocol::ToriiResponse toriiResponse;
+    response.status = command_client_.Torii(pb_tx, toriiResponse);
+    response.answer = toriiResponse.validation() ==
+                              iroha::protocol::STATELESS_VALIDATION_SUCCESS
+                          ? OK
+                          : NOT_VALID;
+    return response;
+  }
 
-    return response.validation() ==
-                   iroha::protocol::STATELESS_VALIDATION_SUCCESS
-               ? OK
-               : NOT_VALID;
+  CliClient::Response<iroha::protocol::QueryResponse> CliClient::sendQuery(
+      std::string json_query) {
+    CliClient::Response<iroha::protocol::QueryResponse> response;
+    iroha::model::converters::JsonQueryFactory serializer;
+
+    auto query_opt = serializer.deserialize(std::move(json_query));
+
+    iroha::protocol::QueryResponse query_response;
+
+    if (not query_opt.has_value()) {
+      iroha::protocol::ErrorResponse er;
+      er.set_reason(iroha::protocol::ErrorResponse::WRONG_FORMAT);
+      query_response.mutable_error_response()->CopyFrom(er);
+      response.status = grpc::Status::OK;
+      response.answer = query_response;
+      return response;
+    }
+
+    response.status = query_client_.Find(query_opt.value(), query_response);
+    response.answer = query_response;
+    return response;
   }
 
 };  // namespace iroha_cli

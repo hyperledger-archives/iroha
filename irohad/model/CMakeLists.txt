@@ -25,3 +25,15 @@ target_link_libraries(model
     rapidjson
     logger
     )
+
+
+add_library(model_converters
+    converters/impl/json_query_factory.cpp
+    )
+
+target_link_libraries(model_converters
+    rapidjson
+    optional
+    schema
+    logger
+    )

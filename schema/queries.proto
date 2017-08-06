@@ -39,8 +39,9 @@ message Query {
     GetAccount get_account = 3;
     GetSignatories get_account_signatories = 4;
     GetAccountTransactions get_account_transactions = 5;
-    GetAccountAssets get_account_assets = 6;
+    GetAccountAssetTransactions get_account_asset_transactions = 6;
+    GetAccountAssets get_account_assets = 7;
   }
   // used to prevent replay attacks.
-  uint64 query_counter = 7;
+  uint64 query_counter = 8;
 }
