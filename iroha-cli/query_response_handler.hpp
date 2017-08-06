@@ -21,6 +21,8 @@
 #include <unordered_map>
 #include "logger/logger.hpp"
 #include "responses.pb.h"
+#include <memory>
+#include <map>
 
 namespace iroha_cli {
   class QueryResponseHandler {
@@ -45,7 +47,8 @@ namespace iroha_cli {
     // -- --
     using Handler =
         void (QueryResponseHandler::*)(const iroha::protocol::QueryResponse&);
-    std::unordered_map<std::type_index, Handler> handler_map_;
+    std::unordered_map<int , Handler> handler_map_;
+    std::unordered_map<int, std::string> error_handler_map_;
 
     std::shared_ptr<spdlog::logger> log_;
   };

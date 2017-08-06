@@ -21,62 +21,50 @@ using namespace iroha::protocol;
 namespace iroha_cli {
 
   QueryResponseHandler::QueryResponseHandler()
-      : log_(logger::log("QueryResponseHandler")) {}
+      : log_(logger::log("QueryResponseHandler")) {
+    handler_map_[QueryResponse::ResponseCase::kErrorResponse] =
+        &QueryResponseHandler::handleErrorResponse;
+    handler_map_[QueryResponse::ResponseCase::kAccountResponse] =
+        &QueryResponseHandler::handleAccountResponse;
+    handler_map_[QueryResponse::ResponseCase::kAccountAssetsResponse] =
+        &QueryResponseHandler::handleAccountAssetsResponse;
+    handler_map_[QueryResponse::ResponseCase::kSignatoriesResponse] =
+        &QueryResponseHandler::handleSignatoriesResponse;
+    handler_map_[QueryResponse::ResponseCase::kTransactionsResponse] =
+        &QueryResponseHandler::handleTransactionsResponse;
+
+    // Error responses:
+    error_handler_map_[ErrorResponse::STATEFUL_INVALID] =
+        "Query is stateful invalid";
+    error_handler_map_[ErrorResponse::STATELESS_INVALID] =
+        "Query is stateless invalid";
+    error_handler_map_[ErrorResponse::NO_ACCOUNT] = "Account not found";
+    error_handler_map_[ErrorResponse::NO_ACCOUNT_ASSETS] =
+        "Account assets not found";
+    error_handler_map_[ErrorResponse::NO_SIGNATORIES] = "No signatories found";
+    error_handler_map_[ErrorResponse::NOT_SUPPORTED] = "Query not supported";
+    error_handler_map_[ErrorResponse::WRONG_FORMAT] = "Query has wrong format";
+  }
 
   void QueryResponseHandler::handle(
       const iroha::protocol::QueryResponse &response) {
-    if (response.has_error_response()) {
-      handleErrorResponse(response);
-      return;
+    auto it = handler_map_.find(response.response_case());
+    if (it != handler_map_.end()) {
+      (this->*it->second)(response);
+    } else {
+      log_->error("Response Handle not Implemented");
     }
-    if (response.has_account_assets_response()) {
-      handleAccountAssetsResponse(response);
-      return;
-    }
-    if (response.has_account_response()) {
-      handleAccountResponse(response);
-      return;
-    }
-    if (response.has_signatories_response()) {
-      handleSignatoriesResponse(response);
-      return;
-    }
-    if (response.has_transactions_response()) {
-      handleTransactionsResponse(response);
-      return;
-    }
-    // Response of some other type received
-    log_->error("Response Handle not Implemented");
   }
 
   void QueryResponseHandler::handleErrorResponse(
       const iroha::protocol::QueryResponse &response) {
-    switch (response.error_response().reason()) {
-      case ErrorResponse::STATEFUL_INVALID:
-        log_->error("Query is stateful invalid");
-        break;
-      case ErrorResponse::STATELESS_INVALID:
-        log_->error("Query is stateless invalid");
-        break;
-      case ErrorResponse::NO_ACCOUNT:
-        log_->error("Account not found");
-        break;
-      case ErrorResponse::NO_ACCOUNT_ASSETS:
-        log_->error("Account assets not found");
-        break;
-      case ErrorResponse::NO_SIGNATORIES:
-        log_->error("No signatories found");
-        break;
-      case ErrorResponse::NOT_SUPPORTED:
-        log_->error("Query not supported");
-        break;
-      case ErrorResponse::WRONG_FORMAT:
-        log_->error("Query has wrong format");
-        break;
-      case ErrorResponse_Reason_ErrorResponse_Reason_INT_MIN_SENTINEL_DO_NOT_USE_:
-        break;
-      case ErrorResponse_Reason_ErrorResponse_Reason_INT_MAX_SENTINEL_DO_NOT_USE_:
-        break;
+    auto it = error_handler_map_.find((response.error_response().reason()));
+    if (it != error_handler_map_.end()) {
+      log_->error(it->second);
+    } else {
+      // Response of some other type received
+      log_->error("Error Response Handle of type {} not Implemented",
+                  response.error_response().reason());
     }
   }
 
