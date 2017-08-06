@@ -32,7 +32,9 @@ namespace iroha_cli {
     iroha::model::converters::JsonTransactionFactory serializer;
     auto doc = iroha::model::converters::stringToJson(std::move(json_tx));
     if (not doc.has_value()) {
-      return WRONG_FORMAT;
+      response.status = grpc::Status::OK;
+      response.answer = WRONG_FORMAT;
+      return response;
     }
     auto tx_opt = serializer.deserialize(doc.value());
     if (not tx_opt.has_value()) {
