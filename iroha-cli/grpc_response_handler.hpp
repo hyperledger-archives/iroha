@@ -33,7 +33,6 @@ namespace iroha_cli {
     TransactionResponseHandler tx_handler_;
     QueryResponseHandler query_handler_;
     void handleGrpcErrors(grpc::StatusCode code);
-    // Map
     std::shared_ptr<spdlog::logger> log_;
     std::unordered_map<int, std::string> handler_map_;
   };
