@@ -22,7 +22,7 @@
 #include <fstream>
 #include <memory>
 #include "genesis_block_client.hpp"
-#include "ametsuchi/block_serializer.hpp"
+#include "model/converters/pb_command_factory.hpp"
 #include "common/types.hpp"
 #include "crypto/crypto.hpp"
 #include "endpoint.grpc.pb.h"

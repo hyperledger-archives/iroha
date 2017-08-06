@@ -23,18 +23,21 @@
 #include <fstream>
 #include <iostream>
 #include <model/model_hash_provider_impl.hpp>
-#include "ametsuchi/block_serializer.hpp"
+#include "model/converters/json_block_factory.hpp"
+#include "model/converters/pb_command_factory.hpp"
 #include "common/types.hpp"
 #include "model/block.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/transaction.hpp"
+#include "model/converters/json_common.hpp"
 
 using ::testing::DefaultValue;
 using ::testing::_;
 using namespace iroha::main;
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
+using namespace iroha::model::converters;
 using namespace iroha;
 using namespace std;
 
@@ -131,9 +134,9 @@ bool save_to_file(std::string json, std::string file_name) {
 TEST(JsonRepr, JsonBlockReprGeneration) {
   cout << "----------| generate block => print |----------" << endl;
 
-  BlockSerializer serializer;
+  JsonBlockFactory serializer;
   auto blob = serializer.serialize(generateBlock());
-  auto json_block = iroha::bytesToString(blob);
+  auto json_block = jsonToString(blob);
 
   cout << json_block << endl;
   ASSERT_TRUE(save_to_file(json_block, "zero.block"));
@@ -147,8 +150,8 @@ TEST(BlockInsertionTest, BlockInsertionWhenParseBlock) {
   shared_ptr<MockMutableFactory> factory = make_shared<MockMutableFactory>();
   BlockInserter inserter(factory);
   auto block = generateBlock();
-  auto blob = BlockSerializer().serialize(block);
-  auto str = iroha::bytesToString(blob);
+  auto doc = JsonBlockFactory().serialize(block);
+  auto str = jsonToString(doc);
   auto new_block = inserter.parseBlock(str);
   ASSERT_TRUE(new_block.has_value());
   ASSERT_EQ(block, new_block.value());

@@ -28,6 +28,7 @@
 #include "model/account.hpp"
 #include "model/commands/create_account.hpp"
 #include "crypto/crypto.hpp"
+#include "model/converters/pb_command_factory.hpp"
 
 using namespace iroha;
 

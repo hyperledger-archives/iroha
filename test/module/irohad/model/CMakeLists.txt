@@ -55,3 +55,18 @@ addtest(command_validate_execute_test command_validate_execute_test.cpp)
 target_link_libraries(command_validate_execute_test
     model
     )
+
+addtest(json_command_converter_test converters/json_commands_test.cpp)
+target_link_libraries(json_command_converter_test
+    model
+    )
+
+addtest(json_transaction_converter_test converters/json_transaction_test.cpp)
+target_link_libraries(json_transaction_converter_test
+    model
+    )
+
+addtest(json_block_converter_test converters/json_block_test.cpp)
+target_link_libraries(json_block_converter_test
+    model
+    )

@@ -112,6 +112,13 @@ namespace iroha {
     return std::string(source.begin(), source.end());
   }
 
+  // Deserialize hex string to array
+  template <size_t size>
+  inline void hexstringToArray(const std::string& string, blob_t<size>& array) {
+    auto bytes = hex2bytes(string);
+    std::copy(bytes.begin(), bytes.end(), array.begin());
+  }
+
   /**
    * Convert string of raw bytes to printable hex string
    * @param str

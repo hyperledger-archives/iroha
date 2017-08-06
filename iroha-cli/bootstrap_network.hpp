@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include "genesis_block_client.hpp"
+#include "model/converters/json_transaction_factory.hpp"
 #include "model/block.hpp"
 #include "model/peer.hpp"
 
@@ -74,6 +75,7 @@ namespace iroha_cli {
 
    private:
     iroha_cli::GenesisBlockClient& client_;
+    iroha::model::converters::JsonTransactionFactory factory_;
   };
 
 }  // namespace iroha_cli

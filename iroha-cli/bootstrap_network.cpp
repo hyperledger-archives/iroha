@@ -22,7 +22,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "ametsuchi/block_serializer.hpp"
+#include "model/commands/add_peer.hpp"
 #include "common/assert_config.hpp"
 #include "common/types.hpp"
 #include "ip_tools/ip_tools.hpp"
@@ -34,63 +34,6 @@
 using namespace assert_config;
 
 namespace iroha_cli {
-
-  void validate_command(rapidjson::Value &json_val_cmd) {
-    auto json_cmd = json_val_cmd.GetObject();
-    const char *MemberCommandType = "command_type";
-    assert_fatal(json_cmd.HasMember(MemberCommandType),
-                 no_member_error(MemberCommandType));
-
-    // TODO: validate command.
-  }
-
-  void validate_transactions(rapidjson::Document &doc) {
-    const char *MemberTxs = "transactions";
-    assert_fatal(doc.HasMember(MemberTxs), no_member_error(MemberTxs));
-    assert_fatal(doc[MemberTxs].IsArray(), type_error(MemberTxs, "array"));
-    auto json_txs = doc[MemberTxs].GetArray();
-
-    for (auto json_tx_iter = json_txs.begin(); json_tx_iter != json_txs.end();
-         ++json_tx_iter) {
-      auto json_tx = json_tx_iter->GetObject();
-      const char *MemberTxSigs = "signatures";
-      assert_fatal(json_tx.HasMember(MemberTxSigs),
-                   no_member_error(MemberTxSigs));
-
-      auto json_sigs = json_tx[MemberTxSigs].GetArray();
-      for (auto json_sigs_iter = json_sigs.begin();
-           json_sigs_iter != json_sigs.end(); ++json_sigs_iter) {
-        assert_fatal(json_sigs_iter->GetObject().HasMember("pubkey"),
-                     no_member_error("pubkey"));
-        assert_fatal(json_sigs_iter->GetObject().HasMember("signature"),
-                     no_member_error("signature"));
-      }
-
-      const char *MemberTxCreatedTs = "created_ts";
-      // FIXME: Should iroha decide default value?
-      assert_fatal(json_tx.HasMember(MemberTxCreatedTs),
-                   no_member_error(MemberTxCreatedTs));
-
-      const char *MemberTxAccountId = "creator_account_id";
-      assert_fatal(json_tx.HasMember(MemberTxAccountId),
-                   no_member_error(MemberTxAccountId));
-
-      const char *MemberTxCounter = "tx_counter";
-      // FIXME: Should iroha decide default value?
-      assert_fatal(json_tx.HasMember(MemberTxCounter),
-                   no_member_error(MemberTxCounter));
-
-      const char *MemberTxCommands = "commands";
-      assert_fatal(json_tx.HasMember(MemberTxCommands),
-                   no_member_error(MemberTxCommands));
-
-      auto json_commands = json_tx[MemberTxCommands].GetArray();
-      for (auto iter = json_commands.begin(); iter != json_commands.end();
-           ++iter) {
-        validate_command(*iter);
-      }
-    }
-  }
 
   /**
    * parse trusted peers in `target.conf`
@@ -160,16 +103,19 @@ namespace iroha_cli {
     assert_fatal(not doc.HasParseError(), parse_error(genesis_json_path));
     assert_fatal(doc.IsObject(), type_error("JSON", "object"));
 
-    validate_transactions(doc);
-
     // parse transactions
-    auto block_serializer = iroha::ametsuchi::BlockSerializer();
     std::vector<iroha::model::Transaction> txs;
 
-    try {
-      block_serializer.deserialize(doc, txs);
-    } catch (...) {
-      assert_fatal(false, "Failed to parse command");
+    auto& transactions = doc["transactions"];
+    for (auto it = transactions.Begin(); it != transactions.End(); ++it) {
+      rapidjson::Document transaction_document;
+      auto &allocator = transaction_document.GetAllocator();
+      transaction_document.CopyFrom(*it, allocator);
+      auto transaction = factory_.deserialize(transaction_document);
+      if (not transaction) {
+        // TODO log transaction parsing failure
+      }
+      txs.emplace_back(transaction.value());
     }
 
     // create block
