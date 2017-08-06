@@ -35,13 +35,38 @@ using ::testing::Return;
 using ::testing::_;
 using ::testing::DefaultValue;
 
-TEST(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
-  auto chain_validator = std::make_shared<MockChainValidator>();
-  auto mutable_factory = std::make_shared<MockMutableFactory>();
-  auto block_loader = std::make_shared<MockBlockLoader>();
+class SynchronizerTest : public ::testing::Test {
+ public:
+  void SetUp() override {
+    chain_validator = std::make_shared<MockChainValidator>();
+    mutable_factory = std::make_shared<MockMutableFactory>();
+    block_loader = std::make_shared<MockBlockLoader>();
+    consensus_gate = std::make_shared<MockConsensusGate>();
+  }
 
-  auto synchronizer = iroha::synchronizer::SynchronizerImpl(
-      chain_validator, mutable_factory, block_loader);
+  void init() {
+    synchronizer = std::make_shared<SynchronizerImpl>(
+        consensus_gate, chain_validator, mutable_factory, block_loader);
+  }
+
+  std::shared_ptr<MockChainValidator> chain_validator;
+  std::shared_ptr<MockMutableFactory> mutable_factory;
+  std::shared_ptr<MockBlockLoader> block_loader;
+  std::shared_ptr<MockConsensusGate> consensus_gate;
+
+  std::shared_ptr<SynchronizerImpl> synchronizer;
+};
+
+TEST_F(SynchronizerTest, ValidWhenInitialized) {
+  // synchronizer constructor => on_commit subscription called
+  EXPECT_CALL(*consensus_gate, on_commit())
+      .WillOnce(Return(rxcpp::observable<>::empty<Block>()));
+
+  init();
+}
+
+TEST_F(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
+  // commit from consensus => chain validation passed => commit successful
   Block test_block;
   test_block.height = 5;
 
@@ -56,8 +81,13 @@ TEST(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
 
   EXPECT_CALL(*block_loader, requestBlocks(_, _)).Times(0);
 
+  EXPECT_CALL(*consensus_gate, on_commit())
+      .WillOnce(Return(rxcpp::observable<>::empty<Block>()));
+
+  init();
+
   auto wrapper =
-      make_test_subscriber<CallExact>(synchronizer.on_commit_chain(), 1);
+      make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 1);
   wrapper.subscribe([&test_block](auto commit) {
     auto block_wrapper = make_test_subscriber<CallExact>(commit, 1);
     block_wrapper.subscribe([&test_block](auto block) {
@@ -67,16 +97,13 @@ TEST(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
     ASSERT_TRUE(block_wrapper.validate());
   });
 
-  synchronizer.process_commit(test_block);
+  synchronizer->process_commit(test_block);
 
   ASSERT_TRUE(wrapper.validate());
 }
 
-TEST(SynchronizerTest, ValidWhenBadStorage) {
-  auto chain_validator = std::make_shared<MockChainValidator>();
-  auto mutable_factory = std::make_shared<MockMutableFactory>();
-  auto block_loader = std::make_shared<MockBlockLoader>();
-
+TEST_F(SynchronizerTest, ValidWhenBadStorage) {
+  // commit from consensus => storage not created => no commit
   Block test_block;
 
   DefaultValue<std::unique_ptr<MutableStorage>>::Clear();
@@ -88,23 +115,22 @@ TEST(SynchronizerTest, ValidWhenBadStorage) {
 
   EXPECT_CALL(*block_loader, requestBlocks(_, _)).Times(0);
 
-  auto synchronizer = iroha::synchronizer::SynchronizerImpl(
-      chain_validator, mutable_factory, block_loader);
+  EXPECT_CALL(*consensus_gate, on_commit())
+      .WillOnce(Return(rxcpp::observable<>::empty<Block>()));
+
+  init();
 
   auto wrapper =
-      make_test_subscriber<CallExact>(synchronizer.on_commit_chain(), 0);
+      make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 0);
   wrapper.subscribe();
 
-  synchronizer.process_commit(test_block);
+  synchronizer->process_commit(test_block);
 
   ASSERT_TRUE(wrapper.validate());
 }
 
-TEST(SynchronizerTest, ValidWhenBlockValidationFailure) {
-  auto chain_validator = std::make_shared<MockChainValidator>();
-  auto mutable_factory = std::make_shared<MockMutableFactory>();
-  auto block_loader = std::make_shared<MockBlockLoader>();
-
+TEST_F(SynchronizerTest, ValidWhenBlockValidationFailure) {
+  // commit from consensus => chain validation failed => commit successful
   Block test_block;
   test_block.height = 5;
   test_block.sigs.emplace_back();
@@ -122,11 +148,13 @@ TEST(SynchronizerTest, ValidWhenBlockValidationFailure) {
   EXPECT_CALL(*block_loader, requestBlocks(_, _))
       .WillOnce(Return(rxcpp::observable<>::just(test_block)));
 
-  auto synchronizer = iroha::synchronizer::SynchronizerImpl(
-      chain_validator, mutable_factory, block_loader);
+  EXPECT_CALL(*consensus_gate, on_commit())
+      .WillOnce(Return(rxcpp::observable<>::empty<Block>()));
+
+  init();
 
   auto wrapper =
-      make_test_subscriber<CallExact>(synchronizer.on_commit_chain(), 1);
+      make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 1);
   wrapper.subscribe([&test_block](auto commit) {
     auto block_wrapper = make_test_subscriber<CallExact>(commit, 1);
     block_wrapper.subscribe([&test_block](auto block) {
@@ -136,7 +164,7 @@ TEST(SynchronizerTest, ValidWhenBlockValidationFailure) {
     ASSERT_TRUE(block_wrapper.validate());
   });
 
-  synchronizer.process_commit(test_block);
+  synchronizer->process_commit(test_block);
 
   ASSERT_TRUE(wrapper.validate());
 }
