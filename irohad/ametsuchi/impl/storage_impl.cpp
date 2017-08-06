@@ -94,7 +94,7 @@ namespace iroha {
       try {
         index->connect(redis_host_, redis_port_);
       } catch (const cpp_redis::redis_error &e) {
-        log_->error("Connection to redis broken: {}", e.what());
+        log_->error("Connection to Redis broken: {}", e.what());
         return nullptr;
       }
 
@@ -109,6 +109,7 @@ namespace iroha {
 
         auto document = model::converters::vectorToJson(blob.value());
         if (not document.has_value()) {
+          log_->error("Blob parsing failed");
           return nullptr;
         }
 
@@ -145,28 +146,28 @@ namespace iroha {
       try {
         index->connect(redis_host, redis_port);
       } catch (const cpp_redis::redis_error &e) {
-        log_->error("Connection {}:{} with redis broken",
+        log_->error("Connection {}:{} with Redis broken",
                     redis_host,
                     redis_port);
         return nullptr;
       }
-      log_->info("connection to redis completed");
+      log_->info("connection to Redis completed");
 
       auto postgres_connection =
           std::make_unique<pqxx::lazyconnection>(postgres_options);
       try {
         postgres_connection->activate();
       } catch (const pqxx::broken_connection &e) {
-        log_->error("Cannot with postgre broken: {}", e.what());
+        log_->error("Cannot with PostgreSQL broken: {}", e.what());
         return nullptr;
       }
-      log_->info("connection to postgre completed");
+      log_->info("connection to PostgreSQL completed");
 
       auto wsv_transaction = std::make_unique<pqxx::nontransaction>(
           *postgres_connection, "Storage");
       std::unique_ptr<WsvQuery> wsv =
           std::make_unique<PostgresWsvQuery>(*wsv_transaction);
-      log_->info("transaction to postgre initialized");
+      log_->info("transaction to PostgreSQL initialized");
 
       return std::shared_ptr<StorageImpl>(
           new StorageImpl(block_store_dir, redis_host, redis_port,
