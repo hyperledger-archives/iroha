@@ -30,7 +30,7 @@ namespace iroha {
 
       bool verifyRequiredMembers(
           const rapidjson::Document& document,
-          const std::initializer_list<std::string> members);
+          const std::initializer_list<std::string>& members);
 
       rapidjson::Document serializeSignature(const Signature& signature);
 

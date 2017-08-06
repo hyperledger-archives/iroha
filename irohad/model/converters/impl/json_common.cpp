@@ -31,7 +31,7 @@ namespace iroha {
 
       bool verifyRequiredMembers(
           const Document& document,
-          const std::initializer_list<std::string> members) {
+          const std::initializer_list<std::string>& members) {
         auto verify_member = [&document](const auto& field) {
           return document.HasMember(field);
         };
