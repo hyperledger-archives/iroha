@@ -12,10 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_library(consensus_service
-    consensus_service_stub.cpp
-    )
-target_link_libraries(consensus_service
-    rxcpp
-    optional
-    )
+add_subdirectory(yac)

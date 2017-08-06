@@ -18,9 +18,9 @@
 #ifndef IROHA_BLOCK_CREATOR_HPP
 #define IROHA_BLOCK_CREATOR_HPP
 
-#include <rxcpp/rx.hpp>
-#include <model/proposal.hpp>
-#include <model/block.hpp>
+#include <rxcpp/rx-observable.hpp>
+#include "model/block.hpp"
+#include "model/proposal.hpp"
 
 namespace iroha {
   namespace simulator {
@@ -35,7 +35,7 @@ namespace iroha {
        * Processing proposal for making stateful validation
        * @param proposal - object for validation
        */
-      virtual void process_verified_proposal(model::Proposal proposal) = 0;
+      virtual void process_verified_proposal(model::Proposal) = 0;
 
       /**
        * Emit blocks made from proposals

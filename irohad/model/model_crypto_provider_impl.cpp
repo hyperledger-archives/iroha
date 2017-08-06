@@ -21,10 +21,6 @@
 namespace iroha {
   namespace model {
 
-    ModelCryptoProviderImpl::ModelCryptoProviderImpl(ed25519::privkey_t privkey,
-                                                     ed25519::pubkey_t pubkey)
-        : privkey_(privkey), pubkey_(pubkey) {}
-
     bool ModelCryptoProviderImpl::verify(const Transaction &tx) const {
       HashProviderImpl hash_provider;
       auto tx_hash = hash_provider.get_hash(tx);
@@ -39,12 +35,28 @@ namespace iroha {
       return true;
     }
 
-    bool ModelCryptoProviderImpl::verify(const Query &query) const {
+    bool ModelCryptoProviderImpl::verify(std::shared_ptr<const Query> query) const {
       HashProviderImpl hashProvider;
       auto query_hash = hashProvider.get_hash(query);
-      auto sign = query.signature;
+      auto sign = query->signature;
       return iroha::verify(query_hash.data(), query_hash.size(), sign.pubkey,
                            sign.signature);
+    }
+
+    bool ModelCryptoProviderImpl::verify(const Block &block) const {
+      HashProviderImpl hashProvider;
+      auto block_hash = hashProvider.get_hash(block);
+
+      if (block.sigs.size() == 0) {
+        return false;
+      }
+
+      for (auto sign : block.sigs) {
+        auto verified = iroha::verify(block_hash.data(), block_hash.size(),
+                                      sign.pubkey, sign.signature);
+        if (!verified) return false;
+      }
+      return true;
     }
   }
 }

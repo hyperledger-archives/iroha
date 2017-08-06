@@ -40,13 +40,13 @@ namespace iroha {
       if (!asset)
         // No such asset
         return false;
+      auto precision = asset.value().precision;
+      // Amount is wrongly formed
+      if (amount.get_frac_number() > precision) return false;
       if (!queries.getAccount(account_id))
         // No such account
         return false;
       auto account_asset = queries.getAccountAsset(account_id, asset_id);
-      auto precision = asset.value().precision;
-      // Amount is wrongly formed
-      if (amount.get_frac_number() > precision) return false;
       AccountAsset accountAsset;
       // Such accountAsset not found
       if (!account_asset) {
@@ -156,15 +156,15 @@ namespace iroha {
 
     bool TransferAsset::execute(ametsuchi::WsvQuery &queries,
                                 ametsuchi::WsvCommand &commands) {
-      auto src_account_assert =
+      auto src_account_asset =
           queries.getAccountAsset(src_account_id, asset_id);
-      if (!src_account_assert) {
+      if (!src_account_asset) {
         // There is no src AccountAsset
         return false;
       }
 
-      AccountAsset dest_AccountAssert;
-      auto dest_account_assert =
+      AccountAsset dest_AccountAsset;
+      auto dest_account_asset =
           queries.getAccountAsset(dest_account_id, asset_id);
       auto asset = queries.getAsset(asset_id);
       if (!asset)
@@ -176,33 +176,33 @@ namespace iroha {
         // Precision is wrong
         return false;
       // Get src balance
-      auto src_balance = src_account_assert.value().balance;
+      auto src_balance = src_account_asset.value().balance;
       // TODO: handle non-trivial arithmetic
       src_balance -= amount.get_joint_amount(precision);
       // Set new balance for source account
-      src_account_assert.value().balance = src_balance;
+      src_account_asset.value().balance = src_balance;
 
-      if (!dest_account_assert) {
+      if (!dest_account_asset) {
         // This assert is new for this account - create new AccountAsset
-        dest_AccountAssert = AccountAsset();
-        dest_AccountAssert.asset_id = asset_id;
-        dest_AccountAssert.account_id = dest_account_id;
+        dest_AccountAsset = AccountAsset();
+        dest_AccountAsset.asset_id = asset_id;
+        dest_AccountAsset.account_id = dest_account_id;
         // Set new balance for dest account
-        dest_AccountAssert.balance = amount.get_joint_amount(precision);
+        dest_AccountAsset.balance = amount.get_joint_amount(precision);
 
       } else {
         // Account already has such asset
-        dest_AccountAssert = dest_account_assert.value();
+        dest_AccountAsset = dest_account_asset.value();
         // Get balance dest account
-        auto dest_balance = dest_account_assert.value().balance;
+        auto dest_balance = dest_account_asset.value().balance;
 
         dest_balance += amount.get_joint_amount(precision);
         // Set new balance for dest
-        dest_AccountAssert.balance = dest_balance;
+        dest_AccountAsset.balance = dest_balance;
       }
 
-      return commands.upsertAccountAsset(dest_AccountAssert) &&
-             commands.upsertAccountAsset(src_account_assert.value());
+      return commands.upsertAccountAsset(dest_AccountAsset) &&
+             commands.upsertAccountAsset(src_account_asset.value());
     }
   }
 }

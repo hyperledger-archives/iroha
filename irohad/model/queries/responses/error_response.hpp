@@ -18,8 +18,8 @@
 #ifndef IROHA_ERROR_RESPONSE_HPP
 #define IROHA_ERROR_RESPONSE_HPP
 
-#include "model/query_response.hpp"
 #include <string>
+#include "model/query_response.hpp"
 
 namespace iroha {
   namespace model {
@@ -28,12 +28,37 @@ namespace iroha {
      * Provide error answer with reason about error
      */
     struct ErrorResponse : public QueryResponse {
-
       /**
        * Reason of error
        */
-      std::string reason;
+      enum Reason {
+        /**
+         * signatures or created time are invalid
+         */
+        STATELESS_INVALID,
+        /**
+         * permissions are invalid
+         */
+        STATEFUL_INVALID,
+        /**
+         * when requested account does not exist
+         */
+        NO_ACCOUNT,
+        /**
+         * when requested account asset does not exist
+         */
+        NO_ACCOUNT_ASSETS,
+        /**
+         * when requested signatories does not exist
+         */
+        NO_SIGNATORIES,
+        /**
+         * when unidentified request was received
+         */
+        NOT_SUPPORTED
+      };
+      Reason reason;
     };
   }  // namespace model
 }  // namespace iroha
-#endif //IROHA_ERROR_RESPONSE_HPP
+#endif  // IROHA_ERROR_RESPONSE_HPP

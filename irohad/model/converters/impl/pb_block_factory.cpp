@@ -23,7 +23,7 @@ namespace iroha {
   namespace model {
     namespace converters {
 
-      protocol::Block PbBlockFactory::serialize(model::Block &block) {
+      protocol::Block PbBlockFactory::serialize(model::Block const&block) {
         protocol::Block pb_block;
 
         // -----|Header|-----
@@ -55,7 +55,7 @@ namespace iroha {
         return pb_block;
       }
 
-      model::Block PbBlockFactory::deserialize(protocol::Block &pb_block) {
+      model::Block PbBlockFactory::deserialize(protocol::Block const&pb_block) {
         model::Block block;
 
         // -----|Header|-----
@@ -84,7 +84,7 @@ namespace iroha {
         auto body = pb_block.body();
         PbTransactionFactory tx_factory;
         for (auto pb_tx : body.transactions()) {
-          block.transactions.push_back(tx_factory.deserialize(pb_tx));
+          block.transactions.push_back(*tx_factory.deserialize(pb_tx));
         }
 
         iroha::model::HashProviderImpl hash_provider;

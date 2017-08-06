@@ -35,7 +35,7 @@ namespace iroha {
          * @param pb_block - reference to proto query
          * @return model Query
          */
-        std::shared_ptr<model::Query> deserialize(protocol::Query &pb_query);
+        std::shared_ptr<model::Query> deserialize(const protocol::Query &pb_query);
 
 
       };

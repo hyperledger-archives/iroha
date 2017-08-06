@@ -18,9 +18,9 @@
 #ifndef IROHA_PB_TRANSACTION_FACTORY_HPP
 #define IROHA_PB_TRANSACTION_FACTORY_HPP
 
+#include <memory>
 #include "block.pb.h"
 #include "model/transaction.hpp"
-#include <memory>
 
 namespace iroha {
   namespace model {
@@ -36,19 +36,17 @@ namespace iroha {
          * @param block - reference to block
          * @return proto block
          */
-        protocol::Transaction serialize(model::Transaction &tx);
+        protocol::Transaction serialize(const model::Transaction &tx) const;
 
         /**
          * Convert proto block to model block
          * @param pb_block - reference to proto block
          * @return model block
          */
-        model::Transaction deserialize(protocol::Transaction &pb_tx);
-       private:
-//        std::shared_ptr<protocol::Command> serializeAbstractCommand(model::Command &command);
-//        std::shared_ptr<model::Command> deserializeAbstractCommand(protocol::Command &command);
+        std::shared_ptr<model::Transaction> deserialize(
+            const protocol::Transaction &pb_tx) const;
       };
-    } // namespace converters
-  }  // namespace model
+    }  // namespace converters
+  }    // namespace model
 }  // namespace iroha
-#endif //IROHA_PB_TRANSACTION_FACTORY_HPP
+#endif  // IROHA_PB_TRANSACTION_FACTORY_HPP

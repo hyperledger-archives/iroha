@@ -1,4 +1,65 @@
 syntax = "proto3";
 package iroha.protocol;
+import "block.proto";
+import "primitive.proto";
 
-// TODO: Proto client reponses go here
+// *** WSV data structure *** //
+message Asset {
+    string asset_id = 1;
+    string domain_id = 2;
+    uint32 precision = 3;
+}
+
+message Account {
+    string account_id = 1;
+    string domain_name = 2;
+    Permissions permissions = 3;
+    uint32 quorum = 4;
+    bytes master_key = 5;
+}
+
+message AccountAsset {
+    string asset_id = 1;
+    string account_id = 2;
+    uint64 balance = 3;
+}
+
+// *** Responses *** //
+message AccountAssetResponse {
+    AccountAsset account_asset = 1;
+}
+
+message AccountResponse {
+    Account account = 1;
+}
+
+message ErrorResponse {
+    enum Reason  {
+        STATELESS_INVALID = 0;
+        STATEFUL_INVALID = 1;
+        NO_ACCOUNT = 2; // when requested account does not exist
+        NO_ACCOUNT_ASSETS = 3; // when requested account asset does not exist
+        NO_SIGNATORIES = 4; // when requested signatories does not exist
+        NOT_SUPPORTED = 5; // when unidentified request was received
+        WRONG_FORMAT = 6; // when json format wrong
+    }
+    Reason reason = 1;
+}
+
+message SignatoriesResponse {
+    repeated bytes keys = 1;
+}
+
+message TransactionsResponse {
+    repeated Transaction transactions = 1;
+}
+
+message QueryResponse {
+    oneof response {
+        AccountAssetResponse account_assets_response = 1;
+        AccountResponse account_response = 2;
+        ErrorResponse error_response = 3;
+        SignatoriesResponse signatories_response = 4;
+        TransactionsResponse transactions_response = 5;
+    }
+}

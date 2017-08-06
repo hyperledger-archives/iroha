@@ -23,10 +23,10 @@ namespace torii {
   using iroha::protocol::Transaction;
   using iroha::protocol::ToriiResponse;
 
-  CommandSyncClient::CommandSyncClient(const std::string& ip, const int port)
-    : stub_(iroha::protocol::CommandService::NewStub(
-    grpc::CreateChannel(ip + ":" + std::to_string(port), grpc::InsecureChannelCredentials())))
-  {}
+  CommandSyncClient::CommandSyncClient(std::string ip, int port)
+      : stub_(iroha::protocol::CommandService::NewStub(
+            grpc::CreateChannel(ip + ":" + std::to_string(port),
+                                grpc::InsecureChannelCredentials()))) {}
 
   CommandSyncClient::~CommandSyncClient() {
     completionQueue_.Shutdown();
@@ -35,14 +35,12 @@ namespace torii {
   /**
    * requests tx to a torii server and returns response (blocking, sync)
    * @param tx
-   * @return ToriiResponse
+   * @param response - returns ToriiResponse if succeeded
+   * @return grpc::Status - returns connection is success or not.
    */
-  ToriiResponse CommandSyncClient::Torii(const Transaction& tx) {
-    ToriiResponse response;
+  grpc::Status CommandSyncClient::Torii(const Transaction& tx, ToriiResponse& response) {
 
-    std::unique_ptr<grpc::ClientAsyncResponseReader<iroha::protocol::ToriiResponse>> rpc(
-      stub_->AsyncTorii(&context_, tx, &completionQueue_)
-    );
+    auto rpc = stub_->AsyncTorii(&context_, tx, &completionQueue_);
 
     using State = network::UntypedCall<torii::ToriiServiceHandler>::State;
 
@@ -61,13 +59,7 @@ namespace torii {
     assert(got_tag == (void *)static_cast<int>(State::ResponseSent));
     assert(ok);
 
-    if (status_.ok()) {
-      return response;
-    }
-
-    response.set_code(iroha::protocol::ResponseCode::FAIL);
-    response.set_message("RPC failed");
-    return response;
+    return status_;
   }
 
   /**
@@ -85,8 +77,9 @@ namespace torii {
    * requests tx to a torii server and returns response (non-blocking)
    * @param tx
    * @param callback
+   * @return grpc::Status
    */
-  void CommandAsyncClient::Torii(
+  grpc::Status CommandAsyncClient::Torii(
     const Transaction& tx,
     const std::function<void(ToriiResponse& response)>& callback)
   {
@@ -94,6 +87,7 @@ namespace torii {
     call->callback = callback;
     call->responseReader = stub_->AsyncTorii(&call->context, tx, &completionQueue_);
     call->responseReader->Finish(&call->response, &call->status, (void*)call);
+    return call->status;
   }
 
   /**
@@ -141,8 +135,9 @@ namespace torii {
         call->callback(call->response);
       } else {
         ToriiResponse responseFailure;
-        responseFailure.set_code(iroha::protocol::ResponseCode::FAIL);
-        responseFailure.set_message("RPC failed");
+        responseFailure.set_validation(iroha::protocol::STATELESS_VALIDATION_FAILED);
+        //responseFailure.set_code(iroha::protocol::ResponseCode::FAIL);
+       // responseFailure.set_message("RPC failed");
         call->callback(responseFailure);
       }
 

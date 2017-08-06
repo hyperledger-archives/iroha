@@ -78,5 +78,5 @@ TEST(TransactionTest, tx_test) {
     case iroha::protocol::Command::COMMAND_NOT_SET:break;
   }
   auto serial_tx = factory.deserialize(proto_tx);
-  ASSERT_EQ(orig_tx, serial_tx);
+  ASSERT_EQ(orig_tx, *serial_tx);
 }

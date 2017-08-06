@@ -18,28 +18,31 @@ limitations under the License.
 #define __COMMON_CONFIG_HPP_
 
 #include <rapidjson/document.h>
-#include <rapidjson/stringbuffer.h>
 #include <rapidjson/istreamwrapper.h>
+#include <rapidjson/stringbuffer.h>
 
 #include <string>
 
 namespace common {
+  namespace config {
 
-    namespace config {
+    using namespace rapidjson;
 
-        using namespace rapidjson;
+    class ConfigLoader {
+     public:
+      ConfigLoader(const std::string &file);
 
-        class ConfigLoader{
-            Document doc;
-        public:
-            ConfigLoader(const std::string& file);
+      int getIntOrDefault(const std::string &key, int def);
 
-            int getIntOrElse(const std::string& key, int def);
-            std::string getStringOrElse(const std::string& key, std::string def);
-            bool getBoolOrElse(const std::string& key, bool def);
+      std::string getStringOrDefault(const std::string &key,
+                                     const std::string &def);
 
-        };
+      bool getBoolOrDefault(const std::string &key, bool def);
+
+     private:
+      Document doc;
     };
-};  // namespace common
+  } // namespace config
+}  // namespace common
 
-#endif // __COMMON_CONFIG_HPP_
+#endif  // __COMMON_CONFIG_HPP_

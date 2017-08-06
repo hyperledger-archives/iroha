@@ -244,6 +244,7 @@ endif ()
 ################################
 ExternalProject_Add(miloyip_rapidjson
     GIT_REPOSITORY "https://github.com/miloyip/rapidjson"
+    GIT_TAG "c34e3dfc72b6c90775aad132f27c29bbf1d79222"
     BUILD_COMMAND "" # remove build step, header only lib
     CONFIGURE_COMMAND "" # remove configure step
     INSTALL_COMMAND "" # remove install step
@@ -467,3 +468,12 @@ set_target_properties(rxcpp PROPERTIES
     )
 
 add_dependencies(rxcpp reactive_extensions_rxcpp)
+
+##########################
+#          TBB           #
+##########################
+include(cmake/Modules/TBBGet.cmake)
+include(cmake/Modules/TBBBuild.cmake)
+tbb_get(TBB_ROOT tbb_root SOURCE_CODE SAVE_TO ${EP_PREFIX})
+tbb_build(TBB_ROOT ${tbb_root} CONFIG_DIR TBB_DIR)
+find_package(TBB REQUIRED)

@@ -40,7 +40,7 @@ namespace iroha {
        * Note: committed block may be not satisfy for top block in ledger
        * because synchronization reasons
        */
-      virtual rxcpp::observable <model::Block> on_commit() = 0;
+      virtual rxcpp::observable<model::Block> on_commit() = 0;
 
       virtual ~ConsensusGate() = default;
     };

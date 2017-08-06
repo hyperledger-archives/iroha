@@ -26,15 +26,12 @@ namespace iroha {
 
     class ModelCryptoProviderImpl : public ModelCryptoProvider {
      public:
-      ModelCryptoProviderImpl(ed25519::privkey_t privkey,
-                            ed25519::pubkey_t pubkey);
-
       bool verify(const Transaction &tx) const override;
-      bool verify(const Query &tx) const override;
 
-     private:
-      ed25519::privkey_t privkey_;
-      ed25519::pubkey_t pubkey_;
+      bool verify(std::shared_ptr<const Query> tx) const override;
+
+      bool verify(const Block& block) const override;
+
     };
   }
 }

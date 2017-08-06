@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 
-#include <torii/processor/transaction_processor_impl.hpp>
+#include <iostream>
 #include <model/tx_responses/stateless_response.hpp>
+#include <torii/processor/transaction_processor_impl.hpp>
+#include <utility>
 
 namespace iroha {
   namespace torii {
@@ -26,30 +28,30 @@ namespace iroha {
     using network::PeerCommunicationService;
 
     TransactionProcessorImpl::TransactionProcessorImpl(
-        PeerCommunicationService &pcs,
-        const StatelessValidator &validator)
-        : pcs_(pcs),
-          validator_(validator) {
+        std::shared_ptr<PeerCommunicationService> pcs,
+        std::shared_ptr<StatelessValidator> validator)
+        : pcs_(std::move(pcs)), validator_(std::move(validator)) {
+      log_ = logger::log("TxProcessor");
     }
 
-    void TransactionProcessorImpl::transaction_handle(model::Client client,
-                                                      model::Transaction &transaction) {
-      model::StatelessResponse response;
-      response.client = client;
-      response.transaction = transaction;
+    void TransactionProcessorImpl::transactionHandle(
+        std::shared_ptr<model::Transaction> transaction) {
+      log_->info("handle transaction");
+      model::TransactionStatelessResponse response;
+      response.transaction = *transaction;
       response.passed = false;
 
-      if (validator_.validate(transaction)) {
+      if (validator_->validate(*transaction)) {
         response.passed = true;
-        pcs_.propagate_transaction(transaction);
+        pcs_->propagate_transaction(transaction);
       }
-
+      log_->info("stateless validation status: {}", response.passed);
       notifier_.get_subscriber().on_next(
-          std::make_shared<model::StatelessResponse>(response));
+          std::make_shared<model::TransactionStatelessResponse>(response));
     }
 
     rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
-    TransactionProcessorImpl::transaction_notifier() {
+    TransactionProcessorImpl::transactionNotifier() {
       return notifier_.get_observable();
     }
 

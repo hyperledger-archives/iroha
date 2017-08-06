@@ -72,7 +72,6 @@ nonstd::optional<uint32_t> check_consistency(std::string dump_dir) {
   } else {
     // Not a directory
     // TODO: handle not a directory
-    std::cout << "Not a directory " << std::endl;
     return nonstd::nullopt;
   }
   return tmp_id;
@@ -98,7 +97,7 @@ namespace iroha {
         FILE *pfile;
         pfile = fopen(file_name.c_str(), "wb");
         if (!pfile) {
-          std::cout << "Can't create file " << std::endl;
+          // TODO log file error
           return;
         }
         /*auto res = */ fwrite(block.data(), sizeof(uint8_t), block.size(),

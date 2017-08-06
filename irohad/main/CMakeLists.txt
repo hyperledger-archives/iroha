@@ -16,28 +16,56 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 add_library(server_runner server_runner.cpp)
 target_link_libraries(server_runner
-  torii_service
-  logger
-  endpoint
-  schema
-)
+    torii_service
+    logger
+    endpoint
+    schema
+    )
 
-add_library(irohad application.cpp)
-target_link_libraries(irohad
+add_library(genesis_block_server
+    genesis_block_server/genesis_block_server.cpp
+    genesis_block_server/genesis_block_processor.cpp
+    impl/raw_block_insertion.cpp
+    )
+target_link_libraries(genesis_block_server
+    ametsuchi
+    model
+    timer
+    endpoint
+    optional
+    logger
+    )
+
+add_library(application
+    application.cpp
+    impl/ordering_init.cpp
+    impl/consensus_init.cpp
+    )
+target_link_libraries(application
+    logger
+    gtest
+    gmock
+    yac
     server_runner
     model
     ametsuchi
     networking
     ordering_service
-    consensus_service
     chain_validator
     hash
     stateless_validator
+    stateful_validator
     processors
     crypto
+    simulator
     )
 
-add_executable(iroha-main iroha-main.cpp)
-target_link_libraries(iroha-main
-  irohad
-)
+add_executable(irohad irohad.cpp)
+target_link_libraries(irohad
+    application
+    genesis_block_server
+    ametsuchi
+    gflags
+    rapidjson
+    config
+    )

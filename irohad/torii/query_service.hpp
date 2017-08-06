@@ -19,27 +19,46 @@ limitations under the License.
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
+#include <responses.pb.h>
+#include <unordered_map>
+#include "model/converters/pb_query_factory.hpp"
+#include "model/converters/pb_query_response_factory.hpp"
+#include "torii/processor/query_processor.hpp"
 
 namespace torii {
-
   /**
    * Actual implementation of async QueryService.
-   * ToriiServiceHandler::(SomeMethod)Handler calls a corresponding method in this class.
+   * ToriiServiceHandler::(SomeMethod)Handler calls a corresponding method in
+   * this class.
    */
   class QueryService {
-  public:
+   public:
+    QueryService(
+        std::shared_ptr<iroha::model::converters::PbQueryFactory>
+            pb_query_factory,
+        std::shared_ptr<iroha::model::converters::PbQueryResponseFactory>
+            pb_query_response_factory,
+        std::shared_ptr<iroha::torii::QueryProcessor> query_processor);
+
+    QueryService(const QueryService &) = delete;
+    QueryService &operator=(const QueryService &) = delete;
+
     /**
      * actual implementation of async Find in QueryService
      * @param request - Query
      * @param response - QueryResponse
-     * @return grpc::Status - Status::OK if succeeded. TODO(motxx): grpc::CANCELLED is not supported.
      */
-    static grpc::Status FindAsync(
-      iroha::protocol::Query const& request, iroha::protocol::QueryResponse& response) {
-      response.set_code(iroha::protocol::ResponseCode::OK);
-      response.set_message("Find async response");
-      return grpc::Status::OK;
-    }
+    void FindAsync(iroha::protocol::Query const &request,
+                   iroha::protocol::QueryResponse &response);
+
+   private:
+    std::shared_ptr<iroha::model::converters::PbQueryFactory> pb_query_factory_;
+    std::shared_ptr<iroha::model::converters::PbQueryResponseFactory>
+        pb_query_response_factory_;
+    std::shared_ptr<iroha::torii::QueryProcessor> query_processor_;
+
+    std::unordered_map<std::string, iroha::protocol::QueryResponse &>
+        handler_map_;
   };
 
 }  // namespace torii

@@ -35,7 +35,25 @@ namespace iroha {
        * Public key of peer
        */
       iroha::ed25519::pubkey_t pubkey;
+
+      bool operator==(const Peer &obj) const {
+        if (address == obj.address &&
+            pubkey == obj.pubkey)
+          return true;
+        else
+          return false;
+      };
     };
   }
+}
+
+namespace std {
+  template<>
+  struct hash<iroha::model::Peer> {
+    std::size_t operator()(const iroha::model::Peer &obj) const {
+      // todo add pubkey hash combination to result
+      return std::hash<std::string>()(obj.address);
+    }
+  };
 }
 #endif  // IROHA_PEER_H

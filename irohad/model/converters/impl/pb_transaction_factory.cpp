@@ -15,24 +15,25 @@
  * limitations under the License.
  */
 
-#include <model/commands/add_asset_quantity.hpp>
 #include "model/converters/pb_transaction_factory.hpp"
-#include "model/converters/pb_command_factory.hpp"
+#include "model/commands/add_asset_quantity.hpp"
 #include "common/types.hpp"
+#include "model/converters/pb_command_factory.hpp"
+#include "model/model_hash_provider_impl.hpp"
 
 namespace iroha {
   namespace model {
     namespace converters {
 
-      protocol::Transaction PbTransactionFactory::serialize(model::Transaction &tx) {
+      protocol::Transaction PbTransactionFactory::serialize(
+          const model::Transaction &tx) const {
         model::converters::PbCommandFactory factory;
         protocol::Transaction pb_tx;
 
         // -----|Header|-----
         auto header = pb_tx.mutable_header();
         header->set_created_time(tx.created_ts);
-        for (auto &signature: tx.signatures) {
-
+        for (auto &signature : tx.signatures) {
           auto proto_signature = pb_tx.mutable_header()->add_signatures();
           proto_signature->set_pubkey(signature.pubkey.data(),
                                       signature.pubkey.size());
@@ -46,20 +47,22 @@ namespace iroha {
         meta->set_tx_counter(tx.tx_counter);
 
         // -----|Body|-----
-        for (auto &command: tx.commands) {
+        for (auto &command : tx.commands) {
           auto cmd = pb_tx.mutable_body()->add_commands();
-          new(cmd) protocol::Command(factory.serializeAbstractCommand(*command));
+          new (cmd)
+              protocol::Command(factory.serializeAbstractCommand(*command));
         }
         return pb_tx;
       }
 
-      model::Transaction PbTransactionFactory::deserialize(protocol::Transaction &pb_tx) {
+      std::shared_ptr<model::Transaction> PbTransactionFactory::deserialize(
+          const protocol::Transaction &pb_tx) const {
         model::converters::PbCommandFactory commandFactory;
         model::Transaction tx;
 
         // -----|Header|-----
         tx.created_ts = pb_tx.header().created_time();
-        for (auto &pb_sign: pb_tx.header().signatures()) {
+        for (auto &pb_sign : pb_tx.header().signatures()) {
           model::Signature sign;
           std::copy(pb_sign.pubkey().begin(), pb_sign.pubkey().end(),
                     sign.pubkey.begin());
@@ -73,13 +76,17 @@ namespace iroha {
         tx.tx_counter = pb_tx.meta().tx_counter();
 
         // -----|Body|-----
-        for (const auto &pb_command: pb_tx.body().commands()) {
-          tx.commands.push_back(commandFactory.deserializeAbstractCommand(pb_command));
+        for (const auto &pb_command : pb_tx.body().commands()) {
+          tx.commands.push_back(
+              commandFactory.deserializeAbstractCommand(pb_command));
         }
 
-        return tx;
+        model::HashProviderImpl hashProvider;
+        tx.tx_hash = hashProvider.get_hash(tx);
+
+        return std::make_shared<model::Transaction>(tx);
       }
 
-    } // namespace converters
-  }  // namespace model
+    }  // namespace converters
+  }    // namespace model
 }  // namespace iroha

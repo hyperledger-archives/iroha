@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <model/model_hash_provider_impl.hpp>
 #include "model/converters/pb_query_factory.hpp"
 #include "model/queries/get_account.hpp"
 #include "model/queries/get_account_assets.hpp"
@@ -26,7 +27,7 @@ namespace iroha {
     namespace converters {
 
       std::shared_ptr<model::Query> PbQueryFactory::deserialize(
-          protocol::Query &pb_query) {
+           const protocol::Query &pb_query) {
         std::shared_ptr<model::Query> val;
 
         if (pb_query.has_get_account()) {
@@ -34,7 +35,7 @@ namespace iroha {
           auto pb_cast = pb_query.get_account();
           auto account_query = GetAccount();
           account_query.account_id = pb_cast.account_id();
-          val = std::make_shared<model::Query>(account_query);
+          val = std::make_shared<model::GetAccount>(account_query);
         }
 
         if (pb_query.has_get_account_assets()) {
@@ -43,14 +44,14 @@ namespace iroha {
           auto query = GetAccountAssets();
           query.account_id = pb_cast.account_id();
           query.asset_id = pb_cast.asset_id();
-          val = std::make_shared<model::Query>(query);
+          val = std::make_shared<model::GetAccountAssets>(query);
         }
         if (pb_query.has_get_account_signatories()) {
           // Convert to get Signatories
           auto pb_cast = pb_query.get_account_signatories();
           auto query = GetSignatories();
           query.account_id = pb_cast.account_id();
-          val = std::make_shared<model::Query>(query);
+          val = std::make_shared<model::GetSignatories>(query);
         }
 
         if (pb_query.has_get_account_transactions()) {
@@ -58,14 +59,12 @@ namespace iroha {
           auto pb_cast = pb_query.get_account_transactions();
           auto query = GetAccountTransactions();
           query.account_id = pb_cast.account_id();
-          val = std::make_shared<model::Query>(query);
+          val = std::make_shared<model::GetAccountTransactions>(query);
         }
-
         if (!val) {
           // Query not implemented
           return nullptr;
         }
-
         Signature sign;
         auto pb_sign = pb_query.header().signature();
         std::copy(pb_sign.pubkey().begin(), pb_sign.pubkey().end(),
@@ -73,10 +72,12 @@ namespace iroha {
 
         std::copy(pb_sign.signature().begin(), pb_sign.signature().end(),
                   sign.signature.begin());
-
+        val->query_counter = pb_query.query_counter();
         val->signature = sign;
         val->created_ts = pb_query.header().created_time();
         val->creator_account_id = pb_query.creator_account_id();
+        model::HashProviderImpl hashProvider; // TODO: get rid off unnecessary object initialization
+        val->query_hash = hashProvider.get_hash(val);
         return val;
       }
     }

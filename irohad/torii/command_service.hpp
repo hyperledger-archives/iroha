@@ -19,25 +19,42 @@ limitations under the License.
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
+#include <iostream>
+#include <string>
+#include <unordered_map>
+#include "model/converters/pb_transaction_factory.hpp"
+#include "model/tx_responses/stateless_response.hpp"
+#include "torii/processor/transaction_processor.hpp"
 
 namespace torii {
 
   /**
    * Actual implementation of async CommandService.
-   * ToriiServiceHandler::(SomeMethod)Handler calls a corresponding method in this class.
+   * ToriiServiceHandler::(SomeMethod)Handler calls a corresponding method in
+   * this class.
    */
   class CommandService {
-  public:
+   public:
+    CommandService(
+        std::shared_ptr<iroha::model::converters::PbTransactionFactory>
+            pb_factory,
+        std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor);
+
+    CommandService(const CommandService&) = delete;
+    CommandService& operator=(const CommandService&) = delete;
     /**
      * actual implementation of async Torii in CommandService
      * @param request - Transaction
      * @param response - ToriiResponse
      */
-    static void ToriiAsync(
-      iroha::protocol::Transaction const& request, iroha::protocol::ToriiResponse& response) {
-      response.set_code(iroha::protocol::ResponseCode::OK);
-      response.set_message("Torii async response");
-    }
+    void ToriiAsync(iroha::protocol::Transaction const& request,
+                    iroha::protocol::ToriiResponse& response);
+
+   private:
+    std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory_;
+    std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor_;
+    std::unordered_map<std::string, iroha::protocol::ToriiResponse&>
+        handler_map_;
   };
 
 }  // namespace torii

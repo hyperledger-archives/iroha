@@ -18,14 +18,14 @@
 #ifndef IROHA_PEER_COMMUNICATION_SERVICE_HPP
 #define IROHA_PEER_COMMUNICATION_SERVICE_HPP
 
-#include <rxcpp/rx.hpp>
-#include <model/proposal.hpp>
 #include <model/block.hpp>
+#include <model/proposal.hpp>
+#include <rxcpp/rx.hpp>
 
 namespace iroha {
   namespace network {
 
-    using Commit = rxcpp::observable <model::Block>;
+    using Commit = rxcpp::observable<model::Block>;
 
     /**
      * Public API for notification about domain data
@@ -37,14 +37,15 @@ namespace iroha {
        * Propagate transaction in network
        * @param transaction - object for propagation
        */
-      virtual void propagate_transaction(model::Transaction transaction) = 0;
+      virtual void propagate_transaction(
+          std::shared_ptr<const model::Transaction> transaction) = 0;
 
       /**
        * Event is triggered when proposal arrives from network.
        * @return observable with Proposals.
        * (List of Proposals)
        */
-      virtual rxcpp::observable <model::Proposal> on_proposal() = 0;
+      virtual rxcpp::observable<model::Proposal> on_proposal() = 0;
 
       /**
         * Event is triggered when commit block arrives.
@@ -53,10 +54,10 @@ namespace iroha {
         * But there are scenarios when consensus provide many blocks, e.g.
         * on peer startup - peer will get all actual blocks.
         */
-      virtual rxcpp::observable <Commit> on_commit() = 0;
+      virtual rxcpp::observable<Commit> on_commit() = 0;
 
       virtual ~PeerCommunicationService() = default;
     };
-  } // namespace network
-} // namespace iroha
-#endif //IROHA_PEER_COMMUNICATION_SERVICE_HPP
+  }  // namespace network
+}  // namespace iroha
+#endif  // IROHA_PEER_COMMUNICATION_SERVICE_HPP

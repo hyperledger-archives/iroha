@@ -1,0 +1,76 @@
+/**
+ * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * http://soramitsu.co.jp
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef IROHA_ORDERING_INIT_HPP
+#define IROHA_ORDERING_INIT_HPP
+
+#include <uvw.hpp>
+#include "ordering/impl/ordering_gate_impl.hpp"
+#include "ordering/impl/ordering_service_impl.hpp"
+#include "ametsuchi/peer_query.hpp"
+
+namespace iroha {
+  namespace network {
+
+    /**
+     * Class aimed to effective initialization of OrderingGate component
+     */
+    class OrderingInit {
+     private:
+
+      /**
+       * Init effective realisation of ordering gate (client of ordering service)
+       * @param network_address - address of ordering service
+       */
+      auto createGate(std::string network_address);
+
+      /**
+       * Init ordering service
+       * @param peers - endpoints of peers for connection
+       * @param max_size - limitation of proposal size
+       * @param delay_milliseconds - delay before emitting proposal
+       * @param loop - handler of async events
+       */
+      auto createService(std::shared_ptr<ametsuchi::PeerQuery> wsv,
+                         size_t max_size,
+                         size_t delay_milliseconds,
+                         std::shared_ptr<uvw::Loop> loop);
+
+     public:
+
+      /**
+       * Initialization of ordering gate(client) and ordering service (service)
+       * @param peers - endpoints of peers for connection
+       * @param loop - handler of async events
+       * @param max_size - limitation of proposal size
+       * @param delay_milliseconds - delay before emitting proposal
+       * @return effective realisation of OrderingGate
+       */
+      std::shared_ptr<ordering::OrderingGateImpl> initOrderingGate(
+          std::shared_ptr<ametsuchi::PeerQuery> wsv,
+          std::shared_ptr<uvw::Loop> loop,
+          size_t max_size,
+          size_t delay_milliseconds);
+
+      std::shared_ptr<ordering::OrderingServiceImpl> ordering_service;
+      std::shared_ptr<ordering::OrderingGateImpl> ordering_gate;
+
+    };
+  }  // namespace network
+}  // namespace iroha
+
+#endif  // IROHA_ORDERING_INIT_HPP

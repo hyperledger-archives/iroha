@@ -7,13 +7,14 @@ add_library(ametsuchi
 
     impl/postgres_wsv_query.cpp
     impl/postgres_wsv_command.cpp
-    impl/block_serializer.cpp
+    impl/peer_query_wsv.cpp
     )
 
 target_link_libraries(ametsuchi
+    logger
     rxcpp
     optional
     pqxx
     cpp_redis
-    rapidjson
+    model
     )

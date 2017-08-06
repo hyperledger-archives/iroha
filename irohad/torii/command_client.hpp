@@ -18,9 +18,7 @@ limitations under the License.
 #define TORII_COMMAND_CLIENT_HPP
 
 #include <endpoint.grpc.pb.h>
-#include <endpoint.pb.h>
 #include <grpc++/grpc++.h>
-#include <grpc++/channel.h>
 #include <memory>
 #include <thread>
 
@@ -31,15 +29,17 @@ namespace torii {
    */
   class CommandSyncClient {
   public:
-    CommandSyncClient(const std::string& ip, const int port);
+    CommandSyncClient(std::string ip, int port);
     ~CommandSyncClient();
 
     /**
      * requests tx to a torii server and returns response (blocking, sync)
      * @param tx
-     * @return ToriiResponse
+     * @param response - returns ToriiResponse if succeeded
+     * @return grpc::Status - returns connection is success or not.
      */
-    iroha::protocol::ToriiResponse Torii(const iroha::protocol::Transaction& tx);
+    grpc::Status Torii(const iroha::protocol::Transaction& tx,
+                       iroha::protocol::ToriiResponse& response);
 
   private:
     grpc::ClientContext context_;
@@ -68,9 +68,9 @@ namespace torii {
      * Async Torii rpc
      * @param tx
      * @param callback
+     * @return grpc::Status
      */
-    void Torii(const iroha::protocol::Transaction& tx,
-               const Callback& callback);
+    grpc::Status Torii(const iroha::protocol::Transaction& tx, const Callback& callback);
 
   private:
     /**

@@ -23,57 +23,36 @@ limitations under the License.
 
 namespace logger {
 
-struct Logger {
-    std::shared_ptr<spdlog::logger> console;
+  using Logger = std::shared_ptr<spdlog::logger>;
 
-    Logger(std::string &&name):
-            console(spdlog::stdout_color_mt(name))
-    {};
+  std::string red(const std::string &string);
 
-    Logger(const std::string &name):
-            console(spdlog::stdout_color_mt(name))
-    {};
+  std::string yellow(const std::string &string);
 
-    template <typename ... Args>
-    void debug(const char* fmt, const Args&... args){
-        console->debug(fmt,args...);
-    }
-    template <typename ... Args>
-    void debug(const std::string& fmt, const Args&... args){
-        console->debug(fmt,args...);
-    }
+  std::string output(const std::string &string);
 
-    template <typename ... Args>
-    void info(const char* fmt, const Args&... args){
-        console->info(fmt,args...);
-    }
-    template <typename ... Args>
-    void info(const std::string& fmt, const Args&... args){
-        console->info(fmt,args...);
-    }
+  std::string input(const std::string &string);
 
-    template <typename ... Args>
-    void warning(const char* fmt, const Args&... args){
-        console->warn(fmt,args...);
-    }
-    template <typename ... Args>
-    void warning(const std::string& fmt, const Args&... args){
-        console->warn(fmt,args...);
-    }
+  Logger log(const std::string &tag);
 
-    template <typename ... Args>
-    void error(const char* fmt, const Args&... args){
-        console->error(fmt,args...);
-    }
-    template <typename ... Args>
-    void error(const std::string& fmt, const Args&... args){
-        console->error(fmt,args...);
-    }
+  /**
+   * Convert bool value to human readable string repr
+   * @param value value for transformation
+   * @return "true" or "false"
+   */
+  std::string boolRepr(bool value);
 
-};
+  /**
+   * Converts object to bool and provides string repr of it
+   * @tparam T - type of object, T must implement bool operator
+   * @param val - value for convertation
+   * @return string representation of bool object
+   */
+  template <typename T>
+  std::string logBool(T val) {
+    return boolRepr(bool(val));
+  }
 
 }  // namespace logger
-
-#include "logger.cpp"
 
 #endif

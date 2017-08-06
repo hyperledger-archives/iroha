@@ -29,7 +29,6 @@
 #include "model/commands/transfer_asset.hpp"
 
 #include <algorithm>
-#include <decimal/decimal>
 #include <limits>
 
 namespace iroha {
@@ -81,18 +80,23 @@ namespace iroha {
      */
     bool AssignMasterKey::validate(ametsuchi::WsvQuery &queries,
                                    const Account &creator) {
-      auto signs = queries.getSignatories(account_id);
+      // Two cases - when creator assigns to itself, or system admin
+      if (not (creator.account_id == account_id or
+              creator.permissions.add_signatory)) {
+        return false;
+      }
       auto acc = queries.getAccount(account_id);
+      // Check if account exist and new master key is not the same
+      if (not (acc.has_value() and acc.value().master_key != pubkey)) {
+        return false;
+      }
+      auto signs = queries.getSignatories(account_id);
       return
-          // Two cases - when creator assigns to itself, or system admin
-          (creator.account_id == account_id ||
-           creator.permissions.add_signatory) &&
-          // Check if account exist and has at least one signatory
-          signs && acc.has_value() &&
-          // Check if new master key is not the same
-          acc.value().master_key != pubkey &&
+          // Has at least one signatory
+          signs.has_value() and not signs.value().empty() and
           // Check if new master key is in AccountSignatory relationship
-          std::find(signs->begin(), signs->end(), pubkey) != signs->end();
+          std::any_of(signs.value().begin(), signs.value().end(),
+                      [this](auto &&key) { return key == pubkey; });
     }
 
     /**
@@ -156,13 +160,16 @@ namespace iroha {
      */
     bool RemoveSignatory::validate(ametsuchi::WsvQuery &queries,
                                    const Account &creator) {
+      // Two cases possible.
+      // 1. Creator removes signatory from their account
+      // 2. System admin
+      if (not (creator.account_id == account_id or
+          creator.permissions.remove_signatory)) {
+        return false;
+      }
       auto account = queries.getAccount(account_id);
       return
-          // Two cases possible.
-          // 1. Creator removes signatory from their account
-          // 2.System admin
-          account.has_value() && (creator.account_id == account_id ||
-                                  creator.permissions.remove_signatory) &&
+          account.has_value() &&
           // You can't remove master key (first you should reassign it)
           pubkey != account.value().master_key;
     }
@@ -203,26 +210,29 @@ namespace iroha {
     */
     bool TransferAsset::validate(ametsuchi::WsvQuery &queries,
                                  const Account &creator) {
-      auto account_asset = queries.getAccountAsset(src_account_id, asset_id);
+      // Can account transfer assets
+      // Creator can transfer only from their account
+      // Amount must be not zero
+      if (not (creator.permissions.can_transfer and
+              creator.account_id == src_account_id and
+              (amount.frac_part > 0 or amount.int_part > 0))) {
+        return false;
+      }
+
       auto asset = queries.getAsset(asset_id);
-      if (!account_asset || !asset) return false;
+      if (not asset) return false;
       // Amount is formed wrong
       if (amount.get_frac_number() > asset.value().precision) return false;
 
+      auto account_asset = queries.getAccountAsset(src_account_id, asset_id);
+
       return
-          // Check if src_account exist
-          queries.getAccount(src_account_id) &&
+          account_asset.has_value() and
           // Check if dest account exist
-          queries.getAccount(dest_account_id) &&
-          // Can account transfer assets
-          creator.permissions.can_transfer &&
-          // Creator can transfer only from their account
-          creator.account_id == src_account_id &&
+          queries.getAccount(dest_account_id) and
           // Balance in your wallet should be at least amount of transfer
           account_asset.value().balance >=
-              amount.get_joint_amount(asset.value().precision) &&
-          // Amount must be not zero
-          (amount.frac_part > 0 || amount.int_part > 0);
+              amount.get_joint_amount(asset.value().precision);
     }
 
   }  // namespace model

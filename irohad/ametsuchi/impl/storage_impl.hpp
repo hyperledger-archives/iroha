@@ -23,15 +23,16 @@
 #include <pqxx/pqxx>
 #include <shared_mutex>
 #include <cmath>
-#include "ametsuchi/block_serializer.hpp"
+#include "model/converters/json_block_factory.hpp"
 #include "ametsuchi/impl/flat_file/flat_file.hpp"
 #include "ametsuchi/storage.hpp"
+#include "logger/logger.hpp"
 
 namespace iroha {
   namespace ametsuchi {
     class StorageImpl : public Storage {
      public:
-      static std::unique_ptr<StorageImpl> create(
+      static std::shared_ptr<StorageImpl> create(
           std::string block_store_dir, std::string redis_host,
           std::size_t redis_port, std::string postgres_connection);
       std::unique_ptr<TemporaryWsv> createTemporaryWsv() override;
@@ -74,10 +75,12 @@ namespace iroha {
       std::unique_ptr<pqxx::nontransaction> wsv_transaction_;
       std::unique_ptr<WsvQuery> wsv_;
 
-      BlockSerializer serializer_;
+      model::converters::JsonBlockFactory serializer_;
 
       // Allows multiple readers and a single writer
       std::shared_timed_mutex rw_lock_;
+
+      logger::Logger log_;
 
       const std::string init_ =
           "CREATE TABLE IF NOT EXISTS domain (\n"

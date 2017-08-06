@@ -19,7 +19,7 @@
 #include <crypto/crypto.hpp>
 #include <model/model_crypto_provider_impl.hpp>
 #include <model/model_hash_provider_impl.hpp>
-#include <validation/stateless/validator_impl.hpp>
+#include "validation/impl/stateless_validator_impl.hpp"
 #include <chrono>
 
 using namespace iroha::model;
@@ -55,9 +55,8 @@ iroha::model::Transaction create_transaction() {
 TEST(stateless_validation, stateless_validation_when_valid) {
   auto seed = iroha::create_seed();
   auto keypair = iroha::create_keypair(seed);
-
-  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair.privkey,
-                                                        keypair.pubkey);
+  auto crypto_provider =
+      std::make_shared<iroha::model::ModelCryptoProviderImpl>();
   iroha::validation::StatelessValidatorImpl transaction_validator(
       crypto_provider);
 
@@ -71,8 +70,8 @@ TEST(stateless_validation, stateless_validation_when_invalid_wrong_signature) {
   auto seed = iroha::create_seed();
   auto keypair = iroha::create_keypair(seed);
 
-  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair.privkey,
-                                                        keypair.pubkey);
+  auto crypto_provider =
+      std::make_shared<iroha::model::ModelCryptoProviderImpl>();
   iroha::validation::StatelessValidatorImpl transaction_validator(
       crypto_provider);
 
@@ -89,8 +88,8 @@ TEST(stateless_validation,
   auto seed = iroha::create_seed();
   auto keypair = iroha::create_keypair(seed);
 
-  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair.privkey,
-                                                        keypair.pubkey);
+  auto crypto_provider =
+      std::make_shared<iroha::model::ModelCryptoProviderImpl>();
   iroha::validation::StatelessValidatorImpl transaction_validator(
       crypto_provider);
 
@@ -111,8 +110,8 @@ TEST(stateless_validation,
   auto seed = iroha::create_seed();
   auto keypair = iroha::create_keypair(seed);
 
-  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair.privkey,
-                                                        keypair.pubkey);
+  auto crypto_provider =
+      std::make_shared<iroha::model::ModelCryptoProviderImpl>();
   iroha::validation::StatelessValidatorImpl transaction_validator(
       crypto_provider);
 

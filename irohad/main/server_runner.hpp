@@ -16,21 +16,26 @@ limitations under the License.
 
 #include <grpc++/grpc++.h>
 #include <grpc++/server_builder.h>
+#include "torii/command_service.hpp"
+#include "torii/torii_service_handler.hpp"
 
 #ifndef MAIN_SERVER_RUNNER_HPP
 #define MAIN_SERVER_RUNNER_HPP
 
-namespace torii { class ToriiServiceHandler; }
+namespace torii {
+  class ToriiServiceHandler;
+}
 
 class ServerRunner {
-public:
-  ServerRunner(const std::string &ip, int port);
+ public:
+  explicit ServerRunner(const std::string &address);
   ~ServerRunner();
-  void run();
+  void run(std::unique_ptr<torii::CommandService> commandService,
+           std::unique_ptr<torii::QueryService> queryService);
   void shutdown();
   void waitForServersReady();
 
-private:
+ private:
   std::unique_ptr<grpc::Server> serverInstance_;
   std::mutex waitForServer_;
   std::condition_variable serverInstanceCV_;

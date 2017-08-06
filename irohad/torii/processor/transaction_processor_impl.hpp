@@ -18,41 +18,44 @@
 #ifndef IROHA_TRANSACTION_PROCESSOR_STUB_HPP
 #define IROHA_TRANSACTION_PROCESSOR_STUB_HPP
 
-#include <network/peer_communication_service.hpp>
 #include <model/transaction_response.hpp>
+#include <network/peer_communication_service.hpp>
 #include <torii/processor/transaction_processor.hpp>
-#include <validation/stateless/validator.hpp>
+#include <validation/stateless_validator.hpp>
+#include "logger/logger.hpp"
 
 namespace iroha {
   namespace torii {
     class TransactionProcessorImpl : public TransactionProcessor {
      public:
-
       /**
        * @param pcs - provide information proposals and commits
        * @param os - ordering service for sharing transactions
        * @param validator - perform stateless validation
        * @param crypto_provider - sign income transactions
        */
-      TransactionProcessorImpl(network::PeerCommunicationService &pcs,
-                               const validation::StatelessValidator &validator);
+      TransactionProcessorImpl(
+          std::shared_ptr<network::PeerCommunicationService> pcs,
+          std::shared_ptr<validation::StatelessValidator> validator);
 
-      void transaction_handle(model::Client client,
-                              model::Transaction &transaction) override;
+      void transactionHandle(
+          std::shared_ptr<model::Transaction> transaction) override;
 
       rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
-      transaction_notifier() override;
+      transactionNotifier() override;
 
      private:
       // connections
-      network::PeerCommunicationService &pcs_;
+      std::shared_ptr<network::PeerCommunicationService> pcs_;
 
       // processing
-      const validation::StatelessValidator &validator_;
+      std::shared_ptr<validation::StatelessValidator> validator_;
 
       // internal
       rxcpp::subjects::subject<std::shared_ptr<model::TransactionResponse>>
           notifier_;
+
+      logger::Logger log_;
     };
   }  // namespace torii
 }  // namespace iroha

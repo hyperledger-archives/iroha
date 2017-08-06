@@ -17,10 +17,16 @@ add_library(command_client command_client.cpp)
 target_link_libraries(command_client
   torii_service
   endpoint
+  model
 )
 
-add_library(torii_service torii_service_handler.cpp)
+add_library(torii_service
+        torii_service_handler.cpp
+        impl/query_service.cpp
+        impl/command_service.cpp)
+
 target_link_libraries(torii_service
   endpoint
   stateless_validator
+  model
 )

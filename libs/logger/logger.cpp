@@ -14,5 +14,46 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// This file is used to link dependencies library
-#include "logger.hpp"
+#include "logger/logger.hpp"
+
+namespace logger {
+  std::string red(const std::string &string) {
+    const std::string red_start = "\033[31m";
+    const std::string end = "\033[0m";
+    return red_start + string + end;
+  }
+
+  std::string yellow(const std::string &string) {
+    const std::string yellow_start = "\033[33m";
+    const std::string end = "\033[0m";
+    return yellow_start + string + end;
+  }
+
+  std::string output(const std::string &string) {
+    return yellow("---> " + string);
+  }
+
+  std::string input(const std::string &string) { return red("<--- " + string); }
+
+  void setGlobalPattern() {
+    spdlog::set_pattern("[%H:%M:%S][th: %t][%l] [%n] << %v");
+  }
+
+  std::shared_ptr<spdlog::logger> createLogger(const std::string &tag) {
+    setGlobalPattern();
+    return spdlog::stdout_color_mt(tag);
+  }
+
+  std::shared_ptr<spdlog::logger> log(const std::string &tag) {
+    auto logger = spdlog::get(tag);
+    if (logger == nullptr) {
+      logger = createLogger(tag);
+    }
+    return logger;
+  }
+
+  std::string boolRepr(bool value) {
+    return value ? "true" : "false";
+  }
+
+}  // namespace logger

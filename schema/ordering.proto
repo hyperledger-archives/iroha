@@ -1,0 +1,18 @@
+syntax = "proto3";
+package iroha.ordering.proto;
+
+import "block.proto";
+import "google/protobuf/empty.proto";
+
+message Proposal {
+  uint64 height = 1;
+  repeated iroha.protocol.Transaction transactions = 2;
+}
+
+service OrderingGate {
+  rpc SendProposal (Proposal) returns (google.protobuf.Empty);
+}
+
+service OrderingService {
+  rpc SendTransaction (iroha.protocol.Transaction) returns (google.protobuf.Empty);
+}
