@@ -80,7 +80,7 @@ namespace iroha {
       // Allows multiple readers and a single writer
       std::shared_timed_mutex rw_lock_;
 
-      decltype(logger::log("")) log_;
+      logger::Logger log_;
 
       const std::string init_ =
           "CREATE TABLE IF NOT EXISTS domain (\n"
