@@ -54,5 +54,7 @@ void ServerRunner::shutdown() {
 
 void ServerRunner::waitForServersReady() {
   std::unique_lock<std::mutex> lock(waitForServer_);
-  serverInstanceCV_.wait(lock, [this] { return serverInstance_; });
+  while (not serverInstance_) {
+    serverInstanceCV_.wait(lock);
+  }
 }
