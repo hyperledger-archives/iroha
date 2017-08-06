@@ -26,6 +26,10 @@ namespace iroha {
   namespace model {
     namespace converters {
 
+      JsonBlockFactory::JsonBlockFactory() {
+        log_ = logger::log("JsonBlockFactory");
+      }
+
       Document JsonBlockFactory::serialize(const Block &block) {
         Document document;
         auto &allocator = document.GetAllocator();
@@ -58,7 +62,6 @@ namespace iroha {
                   .CopyFrom(factory_.serialize(transaction), allocator),
               allocator);
         }
-
         document.AddMember("transactions", commands, allocator);
 
         return document;
@@ -74,29 +77,25 @@ namespace iroha {
           return nonstd::nullopt;
         }
 
-        for (auto it = document["signatures"].Begin();
-             it != document["signatures"].End(); ++it) {
+        auto &signatures = document["signatures"];
+        for (auto it = signatures.Begin(); it != signatures.End(); ++it) {
           Document signature_document;
           auto &allocator = signature_document.GetAllocator();
           signature_document.CopyFrom(*it, allocator);
           auto signature = deserializeSignature(signature_document);
           if (not signature.has_value()) {
+            log_->error("Signature parsing failure");
             return nonstd::nullopt;
           }
           block.sigs.emplace_back(signature.value());
         }
 
         block.created_ts = document["created_ts"].GetUint64();
-
         block.height = document["height"].GetUint64();
-
         block.txs_number = static_cast<decltype(block.txs_number)>(
             document["txs_number"].GetUint());
-
         hexstringToArray(document["hash"].GetString(), block.hash);
-
         hexstringToArray(document["prev_hash"].GetString(), block.prev_hash);
-
         hexstringToArray(document["merkle_root"].GetString(),
                          block.merkle_root);
 
@@ -106,7 +105,8 @@ namespace iroha {
           auto &allocator = transaction_document.GetAllocator();
           transaction_document.CopyFrom(*it, allocator);
           auto transaction = factory_.deserialize(transaction_document);
-          if (not transaction) {
+          if (not transaction.has_value()) {
+            log_->error("Transaction parsing failure");
             return nonstd::nullopt;
           }
           block.transactions.emplace_back(transaction.value());

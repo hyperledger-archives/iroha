@@ -26,11 +26,13 @@ namespace iroha {
 
     BlockInserter::BlockInserter(std::shared_ptr<ametsuchi::MutableFactory> factory)
         : factory_(std::move(factory)) {
-    };
+      log_ = logger::log("BlockInserter");
+    }
 
     nonstd::optional<model::Block> BlockInserter::parseBlock(std::string data) {
       auto document = model::converters::stringToJson(data);
       if (not document.has_value()) {
+        log_->error("Blob parsing failed");
         return nonstd::nullopt;
       }
       return block_factory_.deserialize(document.value());

@@ -18,9 +18,9 @@
 #ifndef IROHA_JSON_BLOCK_FACTORY_HPP
 #define IROHA_JSON_BLOCK_FACTORY_HPP
 
-#include "model/converters/json_transaction_factory.hpp"
+#include "logger/logger.hpp"
 #include "model/block.hpp"
-
+#include "model/converters/json_transaction_factory.hpp"
 
 namespace iroha {
   namespace model {
@@ -28,6 +28,7 @@ namespace iroha {
 
       class JsonBlockFactory {
        public:
+        JsonBlockFactory();
         rapidjson::Document serialize(const Block &block);
 
         nonstd::optional<Block> deserialize(
@@ -35,6 +36,7 @@ namespace iroha {
 
        private:
         JsonTransactionFactory factory_;
+        logger::Logger log_;
       };
 
     }  // namespace converters

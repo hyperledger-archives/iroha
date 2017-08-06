@@ -23,4 +23,5 @@ target_link_libraries(model
     hash
     crypto
     rapidjson
+    logger
     )

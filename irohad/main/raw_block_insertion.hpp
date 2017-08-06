@@ -18,13 +18,14 @@
 #ifndef IROHA_RAW_BLOCK_INSERTION_HPP
 #define IROHA_RAW_BLOCK_INSERTION_HPP
 
-#include <string>
-#include <nonstd/optional.hpp>
-#include "model/block.hpp"
-#include "ametsuchi/storage.hpp"
-#include "model/converters/json_block_factory.hpp"
-#include <vector>
 #include <memory>
+#include <nonstd/optional.hpp>
+#include <string>
+#include <vector>
+#include "ametsuchi/storage.hpp"
+#include "logger/logger.hpp"
+#include "model/block.hpp"
+#include "model/converters/json_block_factory.hpp"
 
 namespace iroha {
   namespace main {
@@ -62,6 +63,8 @@ namespace iroha {
      private:
       std::shared_ptr<ametsuchi::MutableFactory> factory_;
       model::converters::JsonBlockFactory block_factory_;
+
+      logger::Logger log_;
     };
 
   } // namespace main
