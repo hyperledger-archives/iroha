@@ -7,6 +7,7 @@ target_link_libraries(stateful_validator
     ed25519
     rxcpp
     model
+    logger
     )
 
 add_library(stateless_validator
@@ -14,6 +15,7 @@ add_library(stateless_validator
     )
 target_link_libraries(stateless_validator
     model
+    logger
     )
 
 add_library(chain_validator

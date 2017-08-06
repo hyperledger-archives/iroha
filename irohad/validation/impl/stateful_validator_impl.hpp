@@ -18,6 +18,9 @@
 #define IROHA_STATEFUL_VALIDATIOR_IMPL_HPP
 
 #include "validation/stateful_validator.hpp"
+
+#include "logger/logger.hpp"
+
 namespace iroha {
   namespace validation {
 
@@ -26,6 +29,9 @@ namespace iroha {
      */
     class StatefulValidatorImpl : public StatefulValidator {
      public:
+
+      StatefulValidatorImpl();
+
       /**
        * Function perform stateful validation on proposal
        * and return proposal with valid transactions
@@ -37,6 +43,8 @@ namespace iroha {
        */
       model::Proposal validate(const model::Proposal& proposal,
                                ametsuchi::TemporaryWsv& temporaryWsv) override;
+     private:
+        logger::Logger log_;
     };
   }  // namespace validation
 }  // namespace iroha
