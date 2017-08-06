@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
   iroha::main::BlockInserter inserter(irohad.storage);
   auto file = inserter.loadFile(FLAGS_genesis_block);
   auto block = inserter.parseBlock(file.value());
-  log->info("Parsed block");
+  log->info("Block is parsed");
 
   if (block.has_value()) {
     inserter.applyToLedger({block.value()});
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
   }
 
   // runs iroha
-  log->info("runs iroha");
+  log->info("Running iroha");
   irohad.run();
 
   return 0;

@@ -33,10 +33,10 @@ namespace iroha {
     }
 
     void SynchronizerImpl::process_commit(iroha::model::Block commit_message) {
-      log_->info("commit processing");
+      log_->info("processing commit");
       auto storage = mutableFactory_->createMutableStorage();
       if (not storage) {
-        log_->error("ametsuchi is not ok");
+        log_->error("Cannot create mutable storage");
         return;
       }
       if (validator_->validateBlock(commit_message, *storage)) {

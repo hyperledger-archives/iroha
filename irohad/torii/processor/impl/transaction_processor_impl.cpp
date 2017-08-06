@@ -32,12 +32,11 @@ namespace iroha {
         std::shared_ptr<StatelessValidator> validator)
         : pcs_(std::move(pcs)), validator_(std::move(validator)) {
       log_ = logger::log("TxProcessor");
-      log_->info("ctor");
     }
 
     void TransactionProcessorImpl::transactionHandle(
         std::shared_ptr<model::Transaction> transaction) {
-      log_->info("transaction handle");
+      log_->info("handle transaction");
       model::TransactionStatelessResponse response;
       response.transaction = *transaction;
       response.passed = false;

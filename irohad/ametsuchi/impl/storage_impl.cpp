@@ -56,7 +56,7 @@ namespace iroha {
       try {
         postgres_connection->activate();
       } catch (const pqxx::broken_connection &e) {
-        log_->error("Connection to postre broken: {}", e.what());
+        log_->error("Connection to PostgreSQL broken: {}", e.what());
         return nullptr;
       }
       auto wsv_transaction = std::make_unique<pqxx::nontransaction>(
@@ -79,7 +79,7 @@ namespace iroha {
       try {
         postgres_connection->activate();
       } catch (const pqxx::broken_connection &e) {
-        log_->error("Connection to postre broken: {}", e.what());
+        log_->error("Connection to PostgreSQL broken: {}", e.what());
         return nullptr;
       }
       auto wsv_transaction = std::make_unique<pqxx::nontransaction>(

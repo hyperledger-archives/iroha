@@ -131,8 +131,7 @@ class Irohad {
 
   std::thread internal_thread, server_thread;
 
-  // todo verify is those decltype correct
-  std::shared_ptr<spdlog::logger> log_;
+  logger::Logger log_;
 
 
 

@@ -60,7 +60,8 @@ namespace iroha {
           }
 
           // TODO download committed block
-          log_->warn("missed downloading of blocks");
+          log_->warn(
+              "Functionality of downloading blocks absent, return empty block");
           return model::Block();
         });
       };
