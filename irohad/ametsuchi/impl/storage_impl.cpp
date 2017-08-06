@@ -20,6 +20,7 @@
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
+#include "model/converters/json_common.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -101,12 +102,18 @@ namespace iroha {
 
       if (block_store_->last_id()) {
         auto blob = block_store_->get(block_store_->last_id());
-        if (!blob) {
+        if (not blob.has_value()) {
           log_->error("Fetching of blob failed");
           return nullptr;
         }
-        auto block = serializer_.deserialize(*blob);
-        if (!block) {
+
+        auto document = model::converters::vectorToJson(blob.value());
+        if (not document.has_value()) {
+          return nullptr;
+        }
+
+        auto block = serializer_.deserialize(document.value());
+        if (not block.has_value()) {
           log_->error("Deserialization of block failed");
           return nullptr;
         }
@@ -173,7 +180,9 @@ namespace iroha {
       auto storage_ptr = std::move(mutableStorage);  // get ownership of storage
       auto storage = static_cast<MutableStorageImpl *>(storage_ptr.get());
       for (const auto &block : storage->block_store_) {
-        block_store_->add(block.first, serializer_.serialize(block.second));
+        block_store_->add(block.first,
+                          model::converters::jsonToVector(
+                              serializer_.serialize(block.second)));
       }
       storage->index_->exec();
       storage->transaction_->exec("COMMIT;");
@@ -200,27 +209,24 @@ namespace iroha {
       if (to > last_id) {
         to = last_id;
       }
-      return rxcpp::observable<>::range(from, to)
-          .flat_map([this](auto i) {
-            auto bytes = block_store_->get(i);
-            return rxcpp::observable<>::create<typename decltype(
-            bytes)::value_type>([bytes](auto s) {
-              if (bytes) {
-                s.on_next(*bytes);
+      return rxcpp::observable<>::range(from, to).flat_map([this](auto i) {
+        auto bytes = block_store_->get(i);
+        return rxcpp::observable<>::create<model::Block>(
+            [this, bytes](auto s) {
+              if (not bytes.has_value()) {
+                s.on_completed();
               }
-              s.on_completed();
-            });
-          })
-          .flat_map([this](auto bytes) {
-            auto block = serializer_.deserialize(bytes);
-            return rxcpp::observable<>::create<typename decltype(
-            block)::value_type>([block](auto s) {
-              if (block.has_value()) {
-                s.on_next(*block);
+              auto document = model::converters::vectorToJson(bytes.value());
+              if (not document.has_value()) {
+                s.on_completed();
               }
-              s.on_completed();
+              auto block = serializer_.deserialize(document.value());
+              if (not block.has_value()) {
+                s.on_completed();
+              }
+              s.on_next(block.value());
             });
-          });
+      });
     }
 
     nonstd::optional<model::Account> StorageImpl::getAccount(

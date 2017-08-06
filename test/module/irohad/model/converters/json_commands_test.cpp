@@ -37,14 +37,18 @@ using namespace iroha;
 using namespace iroha::model;
 using namespace iroha::model::converters;
 
-void command_converter_test(std::shared_ptr<Command> abstract_command) {
+class JsonCommandTest : public ::testing::Test {
+ public:
   JsonCommandFactory factory;
-  auto json_repr = factory.serializeAbstractCommand(abstract_command);
-  auto model_repr = factory.deserializeAbstractCommand(json_repr);
-  ASSERT_EQ(*abstract_command, *model_repr);
-}
 
-TEST(JsonCommandTest, add_asset_quantity) {
+  void command_converter_test(std::shared_ptr<Command> abstract_command) {
+    auto json_repr = factory.serializeAbstractCommand(abstract_command);
+    auto model_repr = factory.deserializeAbstractCommand(json_repr);
+    ASSERT_EQ(*abstract_command, *model_repr);
+  }
+};
+
+TEST_F(JsonCommandTest, add_asset_quantity) {
   auto orig_command = std::make_shared<AddAssetQuantity>();
   orig_command->account_id = "23";
   iroha::Amount amount;
@@ -53,8 +57,7 @@ TEST(JsonCommandTest, add_asset_quantity) {
 
   orig_command->amount = amount;
   orig_command->asset_id = "23";
-
-  JsonCommandFactory factory;
+  
   auto json_command = factory.serializeAddAssetQuantity(orig_command);
   auto serial_command = factory.deserializeAddAssetQuantity(json_command);
 
@@ -62,12 +65,9 @@ TEST(JsonCommandTest, add_asset_quantity) {
   command_converter_test(orig_command);
 }
 
-TEST(JsonCommandTest, add_peer) {
+TEST_F(JsonCommandTest, add_peer) {
   auto orig_addPeer = std::make_shared<AddPeer>();
   orig_addPeer->address = "10.90.129.23";
-
-  JsonCommandFactory factory;
-
   auto proto_add_peer = factory.serializeAddPeer(orig_addPeer);
   auto serial_addPeer = factory.deserializeAddPeer(proto_add_peer);
 
@@ -78,11 +78,11 @@ TEST(JsonCommandTest, add_peer) {
   ASSERT_NE(*serial_addPeer, *orig_addPeer);
 }
 
-TEST(JsonCommandTest, add_signatory) {
+TEST_F(JsonCommandTest, add_signatory) {
   auto orig_command = std::make_shared<AddSignatory>();
   orig_command->account_id = "23";
 
-  JsonCommandFactory factory;
+  
   auto json_command = factory.serializeAddSignatory(orig_command);
   auto serial_command = factory.deserializeAddSignatory(json_command);
 
@@ -93,17 +93,17 @@ TEST(JsonCommandTest, add_signatory) {
   ASSERT_NE(*orig_command, *serial_command);
 }
 
-TEST(JsonCommandTest, add_signatory_abstract_factory) {
+TEST_F(JsonCommandTest, add_signatory_abstract_factory) {
   auto orig_command = std::make_shared<AddSignatory>();
   orig_command->account_id = "23";
 
   command_converter_test(orig_command);
 }
 
-TEST(JsonCommandTest, assign_master_key) {
+TEST_F(JsonCommandTest, assign_master_key) {
   auto orig_command = std::make_shared<AssignMasterKey>();
   orig_command->account_id = "23";
-  JsonCommandFactory factory;
+  
   auto json_command = factory.serializeAssignMasterKey(orig_command);
   auto serial_command = factory.deserializeAssignMasterKey(json_command);
 
@@ -111,9 +111,7 @@ TEST(JsonCommandTest, assign_master_key) {
   command_converter_test(orig_command);
 }
 
-TEST(JsonCommandTest, create_asset) {
-  JsonCommandFactory factory;
-
+TEST_F(JsonCommandTest, create_asset) {
   auto orig_command = std::make_shared<CreateAsset>();
   orig_command->domain_id = "kek_cheburek";
   orig_command->precision = 1;
@@ -127,20 +125,18 @@ TEST(JsonCommandTest, create_asset) {
   command_converter_test(orig_command);
 }
 
-TEST(JsonCommandTest, create_account) {
+TEST_F(JsonCommandTest, create_account) {
   auto orig_command = std::make_shared<CreateAccount>();
   orig_command->account_name = "keker";
   orig_command->domain_id = "cheburek";
-  JsonCommandFactory factory;
+  
   auto json_command = factory.serializeCreateAccount(orig_command);
   auto serial_command = factory.deserializeCreateAccount(json_command);
   ASSERT_EQ(*orig_command, *serial_command);
   command_converter_test(orig_command);
 }
 
-TEST(JsonCommandTest, remove_signatory) {
-  JsonCommandFactory factory;
-
+TEST_F(JsonCommandTest, remove_signatory) {
   auto orig_command = std::make_shared<RemoveSignatory>();
   orig_command->account_id = "Vasya";
   std::fill(orig_command->pubkey.begin(), orig_command->pubkey.end(), 0xF);
@@ -153,9 +149,7 @@ TEST(JsonCommandTest, remove_signatory) {
   command_converter_test(orig_command);
 }
 
-TEST(JsonCommandTest, set_acount_permissions) {
-  JsonCommandFactory factory;
-
+TEST_F(JsonCommandTest, set_acount_permissions) {
   auto orig_command = std::make_shared<SetAccountPermissions>();
   orig_command->account_id = "Vasya";
   iroha::model::Account::Permissions perm;
@@ -172,9 +166,7 @@ TEST(JsonCommandTest, set_acount_permissions) {
   command_converter_test(orig_command);
 }
 
-TEST(JsonCommandTest, set_account_quorum) {
-  JsonCommandFactory factory;
-
+TEST_F(JsonCommandTest, set_account_quorum) {
   auto orig_command = std::make_shared<SetQuorum>();
   orig_command->new_quorum = 11;
   orig_command->account_id = "Vasya";
@@ -187,9 +179,7 @@ TEST(JsonCommandTest, set_account_quorum) {
   command_converter_test(orig_command);
 }
 
-TEST(JsonCommandTest, set_transfer_asset) {
-  JsonCommandFactory factory;
-
+TEST_F(JsonCommandTest, set_transfer_asset) {
   auto orig_command = std::make_shared<TransferAsset>();
   orig_command->amount = {1, 20};
   orig_command->asset_id = "tugrik";

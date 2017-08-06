@@ -18,15 +18,19 @@
 #define RAPIDJSON_HAS_STDSTRING 1
 
 #include "model/converters/json_common.hpp"
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
 #include <algorithm>
 #include "common/types.hpp"
+
+using namespace rapidjson;
 
 namespace iroha {
   namespace model {
     namespace converters {
 
       bool verifyRequiredMembers(
-          const rapidjson::Document& document,
+          const Document& document,
           const std::initializer_list<std::string> members) {
         auto verify_member = [&document](const auto& field) {
           return document.HasMember(field);
@@ -34,9 +38,8 @@ namespace iroha {
         return std::all_of(members.begin(), members.end(), verify_member);
       }
 
-      rapidjson::Document serializeSignature(
-          const Signature& signature) {
-        rapidjson::Document document;
+      Document serializeSignature(const Signature& signature) {
+        Document document;
         auto& allocator = document.GetAllocator();
         document.SetObject();
 
@@ -49,7 +52,7 @@ namespace iroha {
       }
 
       nonstd::optional<Signature> deserializeSignature(
-          const rapidjson::Document& document) {
+          const Document& document) {
         model::Signature signature{};
 
         if (not document.HasMember("pubkey") or
@@ -63,6 +66,31 @@ namespace iroha {
                          signature.signature);
 
         return signature;
+      }
+
+      nonstd::optional<Document> stringToJson(const std::string& string) {
+        Document document;
+        document.Parse(string);
+        if (document.HasParseError()) {
+          return nonstd::nullopt;
+        }
+        return document;
+      }
+
+      std::string jsonToString(const Document& document) {
+        StringBuffer sb;
+        PrettyWriter<StringBuffer> writer(sb);
+        document.Accept(writer);
+        return sb.GetString();
+      }
+
+      nonstd::optional<Document> vectorToJson(
+          const std::vector<uint8_t>& vector) {
+        return stringToJson(bytesToString(vector));
+      }
+
+      std::vector<uint8_t> jsonToVector(const Document& document) {
+        return stringToBytes(jsonToString(document));
       }
 
     }  // namespace converters

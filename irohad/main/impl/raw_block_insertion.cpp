@@ -16,7 +16,7 @@
  */
 
 #include "main/raw_block_insertion.hpp"
-#include "model/converters/block_serializer.hpp"
+#include "model/converters/json_common.hpp"
 #include <fstream>
 #include <utility>
 #include "common/types.hpp"
@@ -29,9 +29,11 @@ namespace iroha {
     };
 
     nonstd::optional<model::Block> BlockInserter::parseBlock(std::string data) {
-      auto blob = stringToBytes(data);
-      ametsuchi::BlockSerializer serializer;
-      return serializer.deserialize(blob);
+      auto document = model::converters::stringToJson(data);
+      if (not document.has_value()) {
+        return nonstd::nullopt;
+      }
+      return block_factory_.deserialize(document.value());
     };
 
     void BlockInserter::applyToLedger(std::vector<model::Block> blocks) {

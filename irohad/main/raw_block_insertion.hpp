@@ -22,6 +22,7 @@
 #include <nonstd/optional.hpp>
 #include "model/block.hpp"
 #include "ametsuchi/storage.hpp"
+#include "model/converters/json_block_factory.hpp"
 #include <vector>
 #include <memory>
 
@@ -60,6 +61,7 @@ namespace iroha {
 
      private:
       std::shared_ptr<ametsuchi::MutableFactory> factory_;
+      model::converters::JsonBlockFactory block_factory_;
     };
 
   } // namespace main

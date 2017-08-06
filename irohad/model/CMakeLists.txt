@@ -10,8 +10,6 @@ add_library(model
     converters/impl/pb_query_response_factory.cpp
     impl/query_execution.cpp
     converters/impl/pb_query_factory.cpp
-    converters/impl/block_serializer.cpp
-
     converters/impl/json_common.cpp
     converters/impl/json_command_factory.cpp
     converters/impl/json_transaction_factory.cpp

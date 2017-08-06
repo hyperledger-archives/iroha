@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-#include <utility>
 #include "client.hpp"
-#include "model/converters/block_serializer.hpp"
+#include <utility>
+#include "model/converters/json_common.hpp"
+#include "model/converters/json_transaction_factory.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
 
 namespace iroha_cli {
@@ -26,8 +27,12 @@ namespace iroha_cli {
       : client_(std::move(target_ip), port) {}
 
   CliClient::Status CliClient::sendTx(std::string json_tx) {
-    iroha::ametsuchi::BlockSerializer serializer;
-    auto tx_opt = serializer.deserialize(std::move(json_tx));
+    iroha::model::converters::JsonTransactionFactory serializer;
+    auto doc = iroha::model::converters::stringToJson(std::move(json_tx));
+    if (not doc.has_value()) {
+      return WRONG_FORMAT;
+    }
+    auto tx_opt = serializer.deserialize(doc.value());
     if (not tx_opt.has_value()) {
       return WRONG_FORMAT;
     }

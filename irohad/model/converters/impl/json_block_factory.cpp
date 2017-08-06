@@ -100,8 +100,8 @@ namespace iroha {
         hexstringToArray(document["merkle_root"].GetString(),
                          block.merkle_root);
 
-        for (auto it = document["transactions"].Begin();
-             it != document["transactions"].End(); ++it) {
+        auto& transactions = document["transactions"];
+        for (auto it = transactions.Begin(); it != transactions.End(); ++it) {
           Document transaction_document;
           auto &allocator = transaction_document.GetAllocator();
           transaction_document.CopyFrom(*it, allocator);

@@ -37,6 +37,16 @@ namespace iroha {
       nonstd::optional<Signature> deserializeSignature(
           const rapidjson::Document& document);
 
+      nonstd::optional<rapidjson::Document> stringToJson(
+          const std::string& string);
+
+      std::string jsonToString(const rapidjson::Document& document);
+
+      nonstd::optional<rapidjson::Document> vectorToJson(
+          const std::vector<uint8_t>& vector);
+
+      std::vector<uint8_t> jsonToVector(const rapidjson::Document& document);
+
     }  // namespace converters
   }    // namespace model
 }  // namespace iroha
