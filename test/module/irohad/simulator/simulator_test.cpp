@@ -58,6 +58,7 @@ class SimulatorTest : public ::testing::Test {
 };
 
 TEST_F(SimulatorTest, ValidWhenInitialized) {
+  // simulator constructor => on_proposal subscription called
   EXPECT_CALL(*ordering_gate, on_proposal())
       .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
 
@@ -65,6 +66,7 @@ TEST_F(SimulatorTest, ValidWhenInitialized) {
 }
 
 TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
+  // proposal with height 2 => height 1 block present => new block generated
   auto txs = std::vector<model::Transaction>(2);
   auto proposal = model::Proposal(txs);
   proposal.height = 2;
@@ -104,6 +106,7 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
 }
 
 TEST_F(SimulatorTest, FailWhenNoBlock) {
+  // height 2 proposal => height 1 block not present => no validated proposal
   auto txs = std::vector<model::Transaction>(2);
   auto proposal = model::Proposal(txs);
   proposal.height = 2;
@@ -134,6 +137,7 @@ TEST_F(SimulatorTest, FailWhenNoBlock) {
 }
 
 TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
+  // proposal with height 2 => height 2 block present => no validated proposal
   auto txs = std::vector<model::Transaction>(2);
   auto proposal = model::Proposal(txs);
   proposal.height = 2;

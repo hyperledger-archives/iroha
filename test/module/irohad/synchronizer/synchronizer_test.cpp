@@ -58,6 +58,7 @@ class SynchronizerTest : public ::testing::Test {
 };
 
 TEST_F(SynchronizerTest, ValidWhenInitialized) {
+  // synchronizer constructor => on_commit subscription called
   EXPECT_CALL(*consensus_gate, on_commit())
       .WillOnce(Return(rxcpp::observable<>::empty<Block>()));
 
@@ -65,6 +66,7 @@ TEST_F(SynchronizerTest, ValidWhenInitialized) {
 }
 
 TEST_F(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
+  // commit from consensus => chain validation passed => commit successful
   Block test_block;
   test_block.height = 5;
 
@@ -101,6 +103,7 @@ TEST_F(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
 }
 
 TEST_F(SynchronizerTest, ValidWhenBadStorage) {
+  // commit from consensus => storage not created => no commit
   Block test_block;
 
   DefaultValue<std::unique_ptr<MutableStorage>>::Clear();
@@ -127,6 +130,7 @@ TEST_F(SynchronizerTest, ValidWhenBadStorage) {
 }
 
 TEST_F(SynchronizerTest, ValidWhenBlockValidationFailure) {
+  // commit from consensus => chain validation failed => commit successful
   Block test_block;
   test_block.height = 5;
   test_block.sigs.emplace_back();
