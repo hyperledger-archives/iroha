@@ -18,9 +18,9 @@
 #ifndef IROHA_GENESIS_BLOCK_SERVICE_HPP
 #define IROHA_GENESIS_BLOCK_SERVICE_HPP
 
-#include <model/block.hpp>
-#include <grpc++/grpc++.h>
 #include <endpoint.grpc.pb.h>
+#include <grpc++/grpc++.h>
+#include <model/block.hpp>
 #include "genesis_block_processor.hpp"
 
 namespace iroha {
@@ -29,24 +29,26 @@ namespace iroha {
 
   class GenesisBlockServerRunner;
 
-  class GenesisBlockService final : public iroha::protocol::GenesisBlockService::Service {
-  public:
-    GenesisBlockService(GenesisBlockProcessor &processor, GenesisBlockServerRunner* server_runner)
-      : processor_(processor), server_runner_(server_runner)
-    {}
+  class GenesisBlockService final
+      : public iroha::protocol::GenesisBlockService::Service {
+   public:
+    GenesisBlockService(GenesisBlockProcessor &processor,
+                        GenesisBlockServerRunner *server_runner)
+        : processor_(processor), server_runner_(server_runner) {}
 
-    grpc::Status SendGenesisBlock(grpc::ServerContext* context,
-                                  const iroha::protocol::Block* request,
-                                  iroha::protocol::ApplyGenesisBlockResponse* response) override;
-  private:
+    grpc::Status SendGenesisBlock(
+        grpc::ServerContext *context, const iroha::protocol::Block *request,
+        iroha::protocol::ApplyGenesisBlockResponse *response) override;
+
+   private:
     GenesisBlockProcessor &processor_;
     GenesisBlockServerRunner *server_runner_;
   };
 
   class GenesisBlockServerRunner {
-  public:
-    GenesisBlockServerRunner(iroha::GenesisBlockProcessor &processor)
-      : processor_(processor) {}
+   public:
+    explicit GenesisBlockServerRunner(iroha::GenesisBlockProcessor &processor)
+        : processor_(processor) {}
     /**
      * runs genesis block server
      * @param ip
@@ -58,11 +60,12 @@ namespace iroha {
      * shuts down server if received genesis block.
      */
     void shutdown();
-  private:
+
+   private:
     iroha::GenesisBlockProcessor &processor_;
     std::unique_ptr<grpc::Server> server_;
   };
 
-}
+}  // namespace iroha
 
 #endif  // IROHA_GENESIS_BLOCK_SERVICE_HPP

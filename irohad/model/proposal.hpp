@@ -30,7 +30,8 @@ namespace iroha {
      * Proposal has no signatures and other meta information.
      */
     struct Proposal {
-      explicit Proposal(std::vector<Transaction> txs) : transactions(txs) {}
+      explicit Proposal(std::vector<Transaction> txs)
+          : transactions(txs), height(0) {}
 
       /**
        * Bunch of transactions provided by ordering service.
@@ -43,7 +44,7 @@ namespace iroha {
        */
       uint64_t height;
     };
-  }
-}
+  }  // namespace model
+}  // namespace iroha
 
 #endif  // IROHA_PROPOSAL_HPP

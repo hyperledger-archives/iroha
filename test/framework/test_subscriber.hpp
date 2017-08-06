@@ -140,7 +140,7 @@ namespace framework {
        * @param expected_number_of_calls - number of calls
        * that required for call
        */
-      CallExact(uint64_t expected_number_of_calls)
+      explicit CallExact(uint64_t expected_number_of_calls)
           : expected_number_of_calls_(expected_number_of_calls) {}
 
       CallExact(CallExact<T> &&rhs) {
@@ -187,5 +187,5 @@ namespace framework {
     };
 
   }  // namespace test_subscriber
-}  // namespace common
+}  // namespace framework
 #endif  // IROHA_TEST_SUBSCRIBER_HPP

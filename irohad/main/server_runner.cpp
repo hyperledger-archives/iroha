@@ -20,7 +20,6 @@ limitations under the License.
 #include <logger/logger.hpp>
 #include <main/server_runner.hpp>
 
-
 ServerRunner::ServerRunner(const std::string &address)
     : serverAddress_(address) {}
 
@@ -47,7 +46,7 @@ void ServerRunner::run(std::unique_ptr<torii::CommandService> command_service,
 void ServerRunner::shutdown() {
   serverInstance_->Shutdown();
 
-  while (!toriiServiceHandler_->isShutdownCompletionQueue()) {
+  while (not toriiServiceHandler_->isShutdownCompletionQueue()) {
     usleep(1);  // wait for shutting down completion queue
   }
   toriiServiceHandler_->shutdown();
@@ -55,5 +54,5 @@ void ServerRunner::shutdown() {
 
 void ServerRunner::waitForServersReady() {
   std::unique_lock<std::mutex> lock(waitForServer_);
-  while (!serverInstance_) serverInstanceCV_.wait(lock);
+  serverInstanceCV_.wait(lock, [this] { return serverInstance_; });
 }
