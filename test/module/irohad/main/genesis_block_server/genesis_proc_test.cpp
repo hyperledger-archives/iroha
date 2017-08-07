@@ -21,7 +21,7 @@
 #include <cpp_redis/cpp_redis>
 #include <pqxx/pqxx>
 #include <main/genesis_block_server/genesis_block_server.hpp>
-#include "../../ametsuchi/ametsuchi_test_common.hpp"
+#include "common/files.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "main/genesis_block_server/genesis_block_processor.hpp"
 #include "model/model_hash_provider_impl.hpp"

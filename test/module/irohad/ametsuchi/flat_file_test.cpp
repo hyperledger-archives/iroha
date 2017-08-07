@@ -17,7 +17,7 @@
 
 #include "ametsuchi/impl/flat_file/flat_file.hpp"
 #include <gtest/gtest.h>
-#include "ametsuchi_test_common.hpp"
+#include "common/files.hpp"
 #include "common/types.hpp"
 
 namespace iroha {

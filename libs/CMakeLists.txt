@@ -1,3 +1,4 @@
+add_subdirectory(common)
 add_subdirectory(crypto)
 add_subdirectory(datetime)
 add_subdirectory(timer)

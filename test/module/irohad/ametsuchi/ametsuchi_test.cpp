@@ -27,7 +27,7 @@
 #include "model/commands/create_domain.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/model_hash_provider_impl.hpp"
-#include "ametsuchi_test_common.hpp"
+#include "common/files.hpp"
 #include "framework/test_subscriber.hpp"
 
 using namespace iroha::model;

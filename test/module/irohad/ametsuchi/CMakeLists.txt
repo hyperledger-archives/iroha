@@ -6,9 +6,11 @@ addtest(ametsuchi_test ametsuchi_test.cpp)
 target_link_libraries(ametsuchi_test
     ametsuchi
     model
+    libs_common
     )
 
 addtest(flat_file_test flat_file_test.cpp)
 target_link_libraries(flat_file_test
     ametsuchi
+    libs_common
     )
