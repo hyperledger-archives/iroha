@@ -18,8 +18,8 @@
 #ifndef IROHA_AMETSUCHI_H
 #define IROHA_AMETSUCHI_H
 
-#include <ametsuchi/block_query.hpp>
-#include <ametsuchi/wsv_query.hpp>
+#include "ametsuchi/block_query.hpp"
+#include "ametsuchi/wsv_query.hpp"
 #include "ametsuchi/temporary_factory.hpp"
 #include "ametsuchi/mutable_factory.hpp"
 
