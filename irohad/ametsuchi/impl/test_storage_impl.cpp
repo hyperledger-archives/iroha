@@ -40,13 +40,15 @@ namespace iroha {
                       std::move(wsv_connection),
                       std::move(wsv_transaction),
                       std::move(wsv)) {
+      log_ = logger::log("TestStorage");
     }
 
     void TestStorageImpl::insertBlock(model::Block block) {
-
+      log_->warn("insertBlock not implemented");
     }
 
     void TestStorageImpl::dropStorage() {
+      log_->info("Drop ledger");
       auto drop =
           "DROP TABLE IF EXISTS account_has_asset;\n"
               "DROP TABLE IF EXISTS account_has_signatory;\n"

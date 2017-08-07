@@ -20,11 +20,12 @@
 
 #include "ametsuchi/test_storage.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
+#include "logger/logger.hpp"
 
 namespace iroha {
   namespace ametsuchi {
 
-    class TestStorageImpl : public TestStorage, private StorageImpl  {
+    class TestStorageImpl : public TestStorage, private StorageImpl {
      public:
 
       TestStorageImpl(std::string &block_store_dir,
@@ -37,9 +38,11 @@ namespace iroha {
                       std::unique_ptr<pqxx::nontransaction> &wsv_transaction,
                       std::unique_ptr<WsvQuery> &wsv);
 
-      void insertBlock(model::Block block) override ;
+      void insertBlock(model::Block block) override;
 
-      void dropStorage() override ;
+      void dropStorage() override;
+
+      logger::Logger log_;
     };
 
   }  // namespace ametsuchi
