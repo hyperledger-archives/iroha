@@ -57,6 +57,14 @@ namespace iroha {
       nonstd::optional<std::vector<model::Peer>> getPeers() override;
 
      private:
+      // bd info
+      const std::string redis_host_;
+      const std::size_t redis_port_;
+      const std::string postgres_options_;
+
+      // methods and fields useful for extensibility for test purpose
+     protected:
+
       StorageImpl(std::string block_store_dir, std::string redis_host,
                   std::size_t redis_port, std::string postgres_options,
                   std::unique_ptr<FlatFile> block_store,
@@ -64,17 +72,25 @@ namespace iroha {
                   std::unique_ptr<pqxx::lazyconnection> wsv_connection,
                   std::unique_ptr<pqxx::nontransaction> wsv_transaction,
                   std::unique_ptr<WsvQuery> wsv);
-      // Storage info
-      const std::string block_store_dir_;
-      const std::string redis_host_;
-      const std::size_t redis_port_;
-      const std::string postgres_options_;
 
-      std::unique_ptr<FlatFile> block_store_;
+      /**
+       * Folder with raw blocks
+       */
+      const std::string block_store_dir_;
+
+      /**
+       * Pg connection with direct transaction management
+       */
+      std::unique_ptr<pqxx::nontransaction> wsv_transaction_;
+
+      /**
+       * Redis connection
+       */
       std::unique_ptr<cpp_redis::redis_client> index_;
 
+     private:
+      std::unique_ptr<FlatFile> block_store_;
       std::unique_ptr<pqxx::lazyconnection> wsv_connection_;
-      std::unique_ptr<pqxx::nontransaction> wsv_transaction_;
       std::unique_ptr<WsvQuery> wsv_;
 
       model::converters::JsonBlockFactory serializer_;
