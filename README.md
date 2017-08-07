@@ -21,7 +21,10 @@ Among the non-functional requirements can be noted a high degree of network faul
 
 ## Current Status
 
-Iroha v0.95 preview version is released on [TBD].
+Iroha v0.95 preview version is released on 6 of August.
+Please, get familiar with [preview notes](https://github.com/hyperledger/iroha/releases).
+
+Next milestone is [Alpha](https://github.com/hyperledger/iroha/wiki/Iroha-release-lifecycle) version, coming at [September 2017] (https://github.com/hyperledger/iroha/wiki/Iroha-release-plan).
 
 ## Iroha repository 101
 
@@ -62,10 +65,6 @@ cmake -H. -Bbuild; cmake --build build -- -j4;
 
 Consider executing ``` git clean -ix``` and choosing the `c` option when you want to rebuild the system (to clean up generated protobuf code).
 Also, use the `--clean-first` flag for rebuild.
-
-### Test
-
-`[TBD]`.
 
 ## Find out more
 
