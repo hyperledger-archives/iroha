@@ -68,17 +68,22 @@ namespace iroha {
     bool TestStorageImpl::insertBlock(model::Block block) {
       auto storage = createMutableStorage();
       auto inserted = storage->apply(block,
-                     [](const auto &current_block, auto &executor,
-                        auto &query, const auto &top_hash) {
-                       for (const auto &tx : current_block.transactions) {
-                         for (const auto &command : tx.commands) {
-                           if (not command->execute(query, executor)) {
-                             return false;
-                           }
-                         }
-                       }
-                       return true;
-                     });
+                                     [](const auto &current_block,
+                                        auto &executor,
+                                        auto &query,
+                                        const auto &top_hash) {
+                                       for (const auto
+                                             &tx : current_block.transactions) {
+                                         for (const auto
+                                               &command : tx.commands) {
+                                           if (not command->execute(query,
+                                                                    executor)) {
+                                             return false;
+                                           }
+                                         }
+                                       }
+                                       return true;
+                                     });
       commit(std::move(storage));
       return inserted;
     }
@@ -105,6 +110,47 @@ namespace iroha {
 
       // erase blocks
       remove_all(block_store_dir_);
+    }
+
+    // ----------| StorageImpl |----------
+
+    std::unique_ptr<TemporaryWsv> TestStorageImpl::createTemporaryWsv() {
+      return StorageImpl::createTemporaryWsv();
+    }
+    std::unique_ptr<MutableStorage> TestStorageImpl::createMutableStorage() {
+      return StorageImpl::createMutableStorage();
+    }
+    void TestStorageImpl::commit(std::unique_ptr<MutableStorage> mutableStorage) {
+      return StorageImpl::commit(std::move(mutableStorage));
+    }
+
+    rxcpp::observable<model::Transaction> TestStorageImpl::getAccountTransactions(
+        std::string account_id) {
+      return StorageImpl::getAccountTransactions(account_id);
+    }
+    rxcpp::observable<model::Block> TestStorageImpl::getBlocks(uint32_t from,
+                                                               uint32_t to) {
+      return StorageImpl::getBlocks(from, to);
+    }
+
+    nonstd::optional<model::Account> TestStorageImpl::getAccount(
+        const std::string &account_id) {
+      return StorageImpl::getAccount(account_id);
+    }
+    nonstd::optional<std::vector<ed25519::pubkey_t>> TestStorageImpl::getSignatories(
+        const std::string &account_id) {
+      return StorageImpl::getSignatories(account_id);
+    }
+    nonstd::optional<model::Asset> TestStorageImpl::getAsset(
+        const std::string &asset_id) {
+      return StorageImpl::getAsset(asset_id);
+    }
+    nonstd::optional<model::AccountAsset> TestStorageImpl::getAccountAsset(
+        const std::string &account_id, const std::string &asset_id) {
+      return StorageImpl::getAccountAsset(account_id, asset_id);
+    }
+    nonstd::optional<std::vector<model::Peer>> TestStorageImpl::getPeers() {
+      return StorageImpl::getPeers();
     }
 
   }  // namespace ametsuchi
