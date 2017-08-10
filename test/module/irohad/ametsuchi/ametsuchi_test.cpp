@@ -16,8 +16,6 @@
  */
 
 #include <gtest/gtest.h>
-#include <cpp_redis/cpp_redis>
-#include <pqxx/pqxx>
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "common/types.hpp"
 #include "model/commands/add_asset_quantity.hpp"

@@ -19,6 +19,8 @@
 #define IROHA_AMETSUCHI_MOCKS_HPP
 
 #include <gmock/gmock.h>
+#include <cpp_redis/cpp_redis>
+#include <pqxx/pqxx>
 #include "ametsuchi/block_query.hpp"
 #include "ametsuchi/mutable_factory.hpp"
 #include "ametsuchi/mutable_storage.hpp"
