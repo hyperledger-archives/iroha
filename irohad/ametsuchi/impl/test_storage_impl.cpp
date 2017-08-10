@@ -22,15 +22,37 @@
 namespace iroha {
   namespace ametsuchi {
 
-    TestStorageImpl::TestStorageImpl(std::string &block_store_dir,
-                                     std::string &redis_host,
+    std::shared_ptr<TestStorageImpl> TestStorageImpl::create(
+        std::string block_store_dir,
+        std::string redis_host,
+        std::size_t redis_port,
+        std::string postgres_options) {
+
+      auto ctx = initConnections(std::move(block_store_dir),
+                                 std::move(redis_host),
+                                 std::move(redis_port),
+                                 std::move(postgres_options));
+
+      return std::shared_ptr<TestStorageImpl>(
+          new TestStorageImpl(block_store_dir,
+                          redis_host, redis_port,
+                          postgres_options,
+                          std::move(ctx->block_store),
+                          std::move(ctx->index),
+                          std::move(ctx->pg_lazy),
+                          std::move(ctx->pg_nontx),
+                          std::move(ctx->wsv)));
+    }
+
+    TestStorageImpl::TestStorageImpl(std::string block_store_dir,
+                                     std::string redis_host,
                                      size_t redis_port,
-                                     std::string &postgres_options,
-                                     std::unique_ptr<FlatFile> &block_store,
-                                     std::unique_ptr<cpp_redis::redis_client> &index,
-                                     std::unique_ptr<pqxx::lazyconnection> &wsv_connection,
-                                     std::unique_ptr<pqxx::nontransaction> &wsv_transaction,
-                                     std::unique_ptr<WsvQuery> &wsv)
+                                     std::string postgres_options,
+                                     std::unique_ptr<FlatFile> block_store,
+                                     std::unique_ptr<cpp_redis::redis_client> index,
+                                     std::unique_ptr<pqxx::lazyconnection> wsv_connection,
+                                     std::unique_ptr<pqxx::nontransaction> wsv_transaction,
+                                     std::unique_ptr<WsvQuery> wsv)
         : StorageImpl(block_store_dir,
                       redis_host,
                       redis_port,

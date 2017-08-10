@@ -85,7 +85,6 @@ namespace iroha {
           const std::string &account_id, const std::string &asset_id) override;
       nonstd::optional<std::vector<model::Peer>> getPeers() override;
 
-      // methods and fields useful for extensibility for test purpose
      protected:
 
       StorageImpl(std::string block_store_dir,

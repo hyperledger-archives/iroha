@@ -25,24 +25,50 @@
 namespace iroha {
   namespace ametsuchi {
 
-    class TestStorageImpl : public TestStorage, private StorageImpl {
+    class TestStorageImpl : public TestStorage, public StorageImpl {
      public:
 
-      TestStorageImpl(std::string &block_store_dir,
-                      std::string &redis_host,
-                      size_t redis_port,
-                      std::string &postgres_options,
-                      std::unique_ptr<FlatFile> &block_store,
-                      std::unique_ptr<cpp_redis::redis_client> &index,
-                      std::unique_ptr<pqxx::lazyconnection> &wsv_connection,
-                      std::unique_ptr<pqxx::nontransaction> &wsv_transaction,
-                      std::unique_ptr<WsvQuery> &wsv);
+      static std::shared_ptr<TestStorageImpl> create(
+          std::string block_store_dir, std::string redis_host,
+          std::size_t redis_port, std::string postgres_connection);
 
       void insertBlock(model::Block block) override;
 
       void dropStorage() override;
 
+     protected:
+      TestStorageImpl(std::string block_store_dir,
+                      std::string redis_host,
+                      size_t redis_port,
+                      std::string postgres_options,
+                      std::unique_ptr<FlatFile> block_store,
+                      std::unique_ptr<cpp_redis::redis_client> index,
+                      std::unique_ptr<pqxx::lazyconnection> wsv_connection,
+                      std::unique_ptr<pqxx::nontransaction> wsv_transaction,
+                      std::unique_ptr<WsvQuery> wsv);
+     private:
       logger::Logger log_;
+
+      // storage interface
+     public:
+      std::unique_ptr<TemporaryWsv> createTemporaryWsv();
+      std::unique_ptr<MutableStorage> createMutableStorage();
+      void commit(std::unique_ptr<MutableStorage> mutableStorage);
+
+      rxcpp::observable<model::Transaction> getAccountTransactions(
+          std::string account_id);
+      rxcpp::observable<model::Block> getBlocks(uint32_t from,
+                                                uint32_t to);
+
+      nonstd::optional<model::Account> getAccount(
+          const std::string &account_id);
+      nonstd::optional<std::vector<ed25519::pubkey_t>> getSignatories(
+          const std::string &account_id);
+      nonstd::optional<model::Asset> getAsset(
+          const std::string &asset_id);
+      nonstd::optional<model::AccountAsset> getAccountAsset(
+          const std::string &account_id, const std::string &asset_id);
+      nonstd::optional<std::vector<model::Peer>> getPeers();
     };
 
   }  // namespace ametsuchi
