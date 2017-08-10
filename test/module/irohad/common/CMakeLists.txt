@@ -11,4 +11,6 @@ target_link_libraries(block_insertion_test
     ametsuchi
     model
     genesis_block_server
+    test_block_generator
+    logger
     )
