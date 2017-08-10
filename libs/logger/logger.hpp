@@ -46,7 +46,7 @@ namespace logger {
    * @param tag - tagging name for identifiing logger
    * @return logger object
    */
-  Logger logTest(const std::string &tag);
+  Logger testLog(const std::string &tag);
 
   /**
    * Convert bool value to human readable string repr
