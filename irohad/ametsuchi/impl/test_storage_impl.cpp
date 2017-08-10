@@ -35,13 +35,13 @@ namespace iroha {
 
       return std::shared_ptr<TestStorageImpl>(
           new TestStorageImpl(block_store_dir,
-                          redis_host, redis_port,
-                          postgres_options,
-                          std::move(ctx->block_store),
-                          std::move(ctx->index),
-                          std::move(ctx->pg_lazy),
-                          std::move(ctx->pg_nontx),
-                          std::move(ctx->wsv)));
+                              redis_host, redis_port,
+                              postgres_options,
+                              std::move(ctx->block_store),
+                              std::move(ctx->index),
+                              std::move(ctx->pg_lazy),
+                              std::move(ctx->pg_nontx),
+                              std::move(ctx->wsv)));
     }
 
     TestStorageImpl::TestStorageImpl(std::string block_store_dir,
@@ -65,8 +65,22 @@ namespace iroha {
       log_ = logger::log("TestStorage");
     }
 
-    void TestStorageImpl::insertBlock(model::Block block) {
-      log_->warn("insertBlock not implemented");
+    bool TestStorageImpl::insertBlock(model::Block block) {
+      auto storage = createMutableStorage();
+      auto inserted = storage->apply(block,
+                     [](const auto &current_block, auto &executor,
+                        auto &query, const auto &top_hash) {
+                       for (const auto &tx : current_block.transactions) {
+                         for (const auto &command : tx.commands) {
+                           if (not command->execute(query, executor)) {
+                             return false;
+                           }
+                         }
+                       }
+                       return true;
+                     });
+      commit(std::move(storage));
+      return inserted;
     }
 
     void TestStorageImpl::dropStorage() {

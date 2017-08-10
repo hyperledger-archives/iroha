@@ -33,8 +33,9 @@ namespace iroha {
       /**
        * Raw insertion of blocks without validation
        * @param block - block for insertion
+       * @return true if inserted
        */
-      virtual void insertBlock(model::Block block) = 0;
+      virtual bool insertBlock(model::Block block) = 0;
 
       /**
        * Remove all information from ledger

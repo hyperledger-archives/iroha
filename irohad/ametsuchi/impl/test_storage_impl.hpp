@@ -32,7 +32,7 @@ namespace iroha {
           std::string block_store_dir, std::string redis_host,
           std::size_t redis_port, std::string postgres_connection);
 
-      void insertBlock(model::Block block) override;
+      bool insertBlock(model::Block block) override;
 
       void dropStorage() override;
 
