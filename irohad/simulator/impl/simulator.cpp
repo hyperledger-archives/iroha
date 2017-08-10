@@ -67,8 +67,8 @@ namespace iroha {
       new_block.prev_hash = last_block.value().hash;
       new_block.transactions = proposal.transactions;
       new_block.txs_number = proposal.transactions.size();
-      new_block.created_ts = 0;
-      new_block.merkle_root.fill(0);
+      new_block.created_ts = 0; // todo set timestamp from proposal
+      new_block.merkle_root.fill(0); // todo make effective impl
       new_block.hash = hash_provider_->get_hash(new_block);
       new_block.sigs.push_back({});
 
