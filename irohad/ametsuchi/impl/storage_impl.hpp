@@ -102,29 +102,26 @@ namespace iroha {
        */
       const std::string block_store_dir_;
 
-     private:
       // bd info
       const std::string redis_host_;
       const std::size_t redis_port_;
       const std::string postgres_options_;
+
+     private:
       std::unique_ptr<FlatFile> block_store_;
 
-     protected:
       /**
        * Redis connection
        */
       std::unique_ptr<cpp_redis::redis_client> index_;
 
-     private:
       std::unique_ptr<pqxx::lazyconnection> wsv_connection_;
 
-     protected:
       /**
        * Pg connection with direct transaction management
        */
       std::unique_ptr<pqxx::nontransaction> wsv_transaction_;
 
-     private:
       std::unique_ptr<WsvQuery> wsv_;
 
       model::converters::JsonBlockFactory serializer_;
@@ -134,6 +131,7 @@ namespace iroha {
 
       logger::Logger log_;
 
+     protected:
       const std::string init_ =
           "CREATE TABLE IF NOT EXISTS domain (\n"
           "    domain_id character varying(164),\n"

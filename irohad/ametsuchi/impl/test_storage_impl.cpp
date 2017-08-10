@@ -28,10 +28,10 @@ namespace iroha {
         std::size_t redis_port,
         std::string postgres_options) {
 
-      auto ctx = initConnections(std::move(block_store_dir),
-                                 std::move(redis_host),
-                                 std::move(redis_port),
-                                 std::move(postgres_options));
+      auto ctx = initConnections(block_store_dir,
+                                 redis_host,
+                                 redis_port,
+                                 postgres_options);
 
       return std::shared_ptr<TestStorageImpl>(
           new TestStorageImpl(block_store_dir,
@@ -66,6 +66,7 @@ namespace iroha {
     }
 
     bool TestStorageImpl::insertBlock(model::Block block) {
+      log_->info("create mutable storage");
       auto storage = createMutableStorage();
       auto inserted = storage->apply(block,
                                      [](const auto &current_block,
@@ -84,6 +85,7 @@ namespace iroha {
                                        }
                                        return true;
                                      });
+      log_->info("block inserted: {}", inserted);
       commit(std::move(storage));
       return inserted;
     }
@@ -101,14 +103,26 @@ namespace iroha {
               "DROP TABLE IF EXISTS signatory;";
 
       // erase db
-      wsv_transaction_->exec(drop);
-      wsv_transaction_->commit();
+      log_->info("drop dp");
+      pqxx::connection connection(postgres_options_);
+      pqxx::work txn(connection);
+      txn.exec(drop);
+      txn.commit();
+
+      pqxx::connection init_connection(postgres_options_);
+      pqxx::work init_txn(connection);
+      init_txn.exec(init_);
+      init_txn.commit();
 
       // erase tx index
-      index_->flushall();
-      index_->sync_commit();
+      log_->info("drop redis");
+      cpp_redis::redis_client client;
+      client.connect(redis_host_, redis_port_);
+      client.flushall();
+      client.sync_commit();
 
       // erase blocks
+      log_->info("drop block store");
       remove_all(block_store_dir_);
     }
 

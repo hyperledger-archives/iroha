@@ -33,7 +33,7 @@ namespace framework {
   namespace generator {
     Transaction getAddPeerTransaction(uint64_t create_time,
                                       std::string address) {
-      Transaction transaction{};
+      Transaction transaction;
       transaction.created_ts = create_time;
       Signature sign{};
       transaction.signatures = {sign};
@@ -47,7 +47,7 @@ namespace framework {
     }
 
     Transaction getTestCreateTransaction(uint64_t create_time) {
-      Transaction transaction{};
+      Transaction transaction;
       transaction.created_ts = create_time;
       Signature sign{};
       transaction.signatures = {sign};
@@ -85,8 +85,7 @@ namespace framework {
 
     Block generateBlock() {
       Block block;
-      block.created_ts =
-          (ts64_t) std::chrono::system_clock::now().time_since_epoch().count();
+      block.created_ts = 100500;
       block.height = 1;
       std::fill(block.prev_hash.begin(), block.prev_hash.end(), 0);
       block.txs_number = 4;

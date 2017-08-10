@@ -39,8 +39,5 @@ void remove_all(const std::string &dump_dir) {
       }
       free(namelist);
     }
-    if (std::remove(dump_dir.c_str()) != 0) {
-      log->error("Error on deletion folder {}", dump_dir);
-    }
   }
 }
