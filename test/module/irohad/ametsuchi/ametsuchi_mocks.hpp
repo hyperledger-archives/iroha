@@ -27,6 +27,7 @@
 #include "ametsuchi/wsv_query.hpp"
 #include "ametsuchi/peer_query.hpp"
 #include "logger/logger.hpp"
+#include "common/files.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -153,10 +154,11 @@ namespace iroha {
         std::stringstream ss;
         ss << "host=" << pg_host << " port=" << pg_port << " user=" << pg_user
            << " password=" << pg_pass;
-        log->info("host={}, port={}, user={}, password={}", pg_host, pg_port, pg_user, pg_pass);
         pgopt_ = ss.str();
         redishost_ = rd_host;
         redisport_ = std::stoull(rd_port);
+        log->info("host={}, port={}, user={}, password={}",
+                  pg_host, pg_port, pg_user, pg_pass);
       }
       virtual void TearDown() {
         const auto drop =

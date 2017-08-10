@@ -27,7 +27,6 @@
 #include "model/commands/create_domain.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/model_hash_provider_impl.hpp"
-#include "common/files.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
 using namespace iroha::ametsuchi;
