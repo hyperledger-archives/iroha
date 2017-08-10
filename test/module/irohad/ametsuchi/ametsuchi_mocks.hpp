@@ -26,6 +26,7 @@
 #include "ametsuchi/temporary_wsv.hpp"
 #include "ametsuchi/wsv_query.hpp"
 #include "ametsuchi/peer_query.hpp"
+#include "logger/logger.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -129,6 +130,67 @@ namespace iroha {
 
       MOCK_METHOD0(getLedgerPeers,
                    nonstd::optional<std::vector<model::Peer>>());
+    };
+
+    /**
+     * Class with ametsuchi initialization
+     */
+    class AmetsuchiTest : public ::testing::Test {
+     protected:
+      virtual void SetUp() {
+        auto log = logger::testLog("AmetsuchiTest");
+
+        mkdir(block_store_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        auto pg_host = std::getenv("IROHA_POSTGRES_HOST");
+        auto pg_port = std::getenv("IROHA_POSTGRES_PORT");
+        auto pg_user = std::getenv("IROHA_POSTGRES_USER");
+        auto pg_pass = std::getenv("IROHA_POSTGRES_PASSWORD");
+        auto rd_host = std::getenv("IROHA_REDIS_HOST");
+        auto rd_port = std::getenv("IROHA_REDIS_PORT");
+        if (!pg_host) {
+          return;
+        }
+        std::stringstream ss;
+        ss << "host=" << pg_host << " port=" << pg_port << " user=" << pg_user
+           << " password=" << pg_pass;
+        log->info("host={}, port={}, user={}, password={}", pg_host, pg_port, pg_user, pg_pass);
+        pgopt_ = ss.str();
+        redishost_ = rd_host;
+        redisport_ = std::stoull(rd_port);
+      }
+      virtual void TearDown() {
+        const auto drop =
+            "DROP TABLE IF EXISTS account_has_asset;\n"
+                "DROP TABLE IF EXISTS account_has_signatory;\n"
+                "DROP TABLE IF EXISTS peer;\n"
+                "DROP TABLE IF EXISTS account;\n"
+                "DROP TABLE IF EXISTS exchange;\n"
+                "DROP TABLE IF EXISTS asset;\n"
+                "DROP TABLE IF EXISTS domain;\n"
+                "DROP TABLE IF EXISTS signatory;";
+
+        pqxx::connection connection(pgopt_);
+        pqxx::work txn(connection);
+        txn.exec(drop);
+        txn.commit();
+        connection.disconnect();
+
+        cpp_redis::redis_client client;
+        client.connect(redishost_, redisport_);
+        client.flushall();
+        client.sync_commit();
+        client.disconnect();
+
+        remove_all(block_store_path);
+      }
+
+      std::string pgopt_ =
+          "host=localhost port=5432 user=postgres password=mysecretpassword";
+
+      std::string redishost_ = "localhost";
+      size_t redisport_ = 6379;
+
+      std::string block_store_path = "/tmp/block_store";
     };
 
   }  // namespace ametsuchi
