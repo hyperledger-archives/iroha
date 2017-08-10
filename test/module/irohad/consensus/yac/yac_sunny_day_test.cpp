@@ -47,7 +47,7 @@ TEST_F(YacTest, ValidCaseWhenReceiveSupermajority) {
   uint64_t wait_seconds = 10;
   delay = wait_seconds * 1000;
 
-  yac = Yac::create(std::move(YacVoteStorage()),
+  yac = Yac::create(YacVoteStorage(),
                     network,
                     crypto,
                     timer,
@@ -57,6 +57,8 @@ TEST_F(YacTest, ValidCaseWhenReceiveSupermajority) {
   EXPECT_CALL(*network, send_commit(_, _)).Times(my_peers.size());
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
   EXPECT_CALL(*network, send_vote(_, _)).Times(my_peers.size());
+
+  EXPECT_CALL(*timer, deny()).Times(0);
 
   EXPECT_CALL(*crypto, verify(An<CommitMessage>()))
       .Times(0);
@@ -84,7 +86,7 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommit) {
   uint64_t wait_seconds = 10;
   delay = wait_seconds * 1000;
 
-  yac = Yac::create(std::move(YacVoteStorage()),
+  yac = Yac::create(YacVoteStorage(),
                     network,
                     crypto,
                     timer,
@@ -101,6 +103,8 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommit) {
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
   EXPECT_CALL(*network, send_vote(_, _)).Times(my_peers.size());
+
+  EXPECT_CALL(*timer, deny()).Times(AtLeast(1));
 
   EXPECT_CALL(*crypto, verify(An<CommitMessage>()))
       .WillRepeatedly(Return(true));
@@ -131,8 +135,9 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommitTwice) {
   // delay preference
   uint64_t wait_seconds = 10;
   delay = wait_seconds * 1000;
+  EXPECT_CALL(*timer, deny()).Times(2);
 
-  yac = Yac::create(std::move(YacVoteStorage()),
+  yac = Yac::create(YacVoteStorage(),
                     network,
                     crypto,
                     timer,
@@ -188,12 +193,14 @@ TEST_F(YacTest, ValidCaseWhenSoloConsensus) {
   uint64_t wait_seconds = 10;
   delay = wait_seconds * 1000;
 
-  yac = Yac::create(std::move(YacVoteStorage()), network, crypto, timer,
+  yac = Yac::create(YacVoteStorage(), network, crypto, timer,
                     my_order, delay);
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(my_peers.size());
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
   EXPECT_CALL(*network, send_vote(_, _)).Times(my_peers.size());
+
+  EXPECT_CALL(*timer, deny()).Times(AtLeast(1));
 
   EXPECT_CALL(*crypto, verify(An<CommitMessage>()))
       .Times(1)
@@ -238,12 +245,14 @@ TEST_F(YacTest, ValidCaseWhenVoteAfterCommit) {
   uint64_t wait_seconds = 10;
   delay = wait_seconds * 1000;
 
-  yac = Yac::create(std::move(YacVoteStorage()), network, crypto, timer,
+  yac = Yac::create(YacVoteStorage(), network, crypto, timer,
                     my_order, delay);
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
   EXPECT_CALL(*network, send_vote(_, _)).Times(0);
+
+  EXPECT_CALL(*timer, deny()).Times(AtLeast(1));
 
   EXPECT_CALL(*crypto, verify(An<CommitMessage>()))
       .Times(1)
