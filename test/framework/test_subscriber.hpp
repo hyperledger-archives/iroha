@@ -56,6 +56,17 @@ namespace framework {
       virtual void on_next_after(T next) {}
 
       /**
+       * Handler which is called after target subscriber call
+       * @param ep
+       */
+      virtual void on_error(std::exception_ptr ep) {}
+
+      /**
+       * Handler which is called after target subscriber call
+       */
+      virtual void on_completed() {}
+
+      /**
        * Implement destructor for verify invariant
        */
       virtual ~VerificationStrategy() = default;
@@ -94,18 +105,36 @@ namespace framework {
        * for wrapped observable with checking invariant.
        * @param subscriber - business logic subscriber
        */
-      TestSubscriber<T> &subscribe(std::function<void(T val)> subscriber =
-                                       [](T) {}) {
-        unwrapped_.subscribe([this, subscriber](T val) {
-          // verify before invariant
-          this->strategy_->on_next_before(val);
+      TestSubscriber<T> &subscribe(
+          std::function<void(T)> subscriber = [](T) {},
+          std::function<void(std::exception_ptr)> error =
+              [](std::exception_ptr) {},
+          std::function<void()> completed = []() {}) {
+        unwrapped_.subscribe(
+            [this, subscriber](T val) {
+              // verify before invariant
+              this->strategy_->on_next_before(val);
 
-          // invoke subscriber
-          subscriber(val);
+              // invoke subscriber
+              subscriber(val);
 
-          // verify after invariant
-          this->strategy_->on_next_after(val);
-        });
+              // verify after invariant
+              this->strategy_->on_next_after(val);
+            },
+            [this, error](std::exception_ptr ep) {
+              // invoke subscriber
+              error(ep);
+
+              // verify
+              this->strategy_->on_error(ep);
+            },
+            [this, completed]() {
+              // invoke subscriber
+              completed();
+
+              // verify
+              this->strategy_->on_completed();
+            });
 
         return *this;
       }
@@ -184,6 +213,47 @@ namespace framework {
      private:
       uint64_t expected_number_of_calls_;
       uint64_t number_of_calls_ = 0;
+    };
+
+    /**
+     * Checks that on_completed was called by observable
+     * @tparam T
+     */
+    template <typename T>
+    class IsCompleted : public VerificationStrategy<T> {
+     public:
+      IsCompleted() = default;
+
+      IsCompleted(IsCompleted<T> &&rhs)
+          : on_complete_called(rhs.on_complete_called) {
+        rhs.on_complete_called = false;
+      }
+
+      IsCompleted& operator=(IsCompleted<T> &&rhs) {
+        on_complete_called = rhs.on_complete_called;
+        rhs.on_complete_called = false;
+        return *this;
+      }
+
+      IsCompleted(const IsCompleted &) = delete;
+
+      IsCompleted& operator=(const IsCompleted &) = delete;
+
+      void on_completed() override {
+        on_complete_called = true;
+      }
+
+     protected:
+      bool validate() override {
+        if (not on_complete_called) {
+          this->invalidate_reason_ =
+              "on_completed expected to be called once, but never called";
+        }
+        return on_complete_called;
+      }
+
+     private:
+      bool on_complete_called = false;
     };
 
   }  // namespace test_subscriber
