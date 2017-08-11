@@ -21,37 +21,39 @@ namespace iroha {
   namespace consensus {
     namespace yac {
 
-      StorageResult YacVoteStorage::storeVote(VoteMessage msg,
-                                              uint64_t peers_in_round) {
+      nonstd::optional<Answer> YacVoteStorage::store(VoteMessage msg,
+                                                     uint64_t peers_in_round) {
         return proposal_storages_
             .at(findProposalStorage(msg, peers_in_round))
             .insert(msg);
       }
 
-      StorageResult YacVoteStorage::applyCommit(CommitMessage commit,
-                                                uint64_t peers_in_round) {
-        if (commit.votes.empty()) return StorageResult();
+      nonstd::optional<Answer> YacVoteStorage::store(CommitMessage commit,
+                                                     uint64_t peers_in_round) {
+        if (not sameProposals(commit.votes)) {
+          return nonstd::nullopt;
+        }
 
         auto index = findProposalStorage(commit.votes.at(0), peers_in_round);
         return proposal_storages_.at(index).applyCommit(commit, peers_in_round);
       };
 
-      StorageResult YacVoteStorage::applyReject(RejectMessage reject,
-                                                uint64_t peers_in_round) {
-        if (reject.votes.empty()) return StorageResult();
+      nonstd::optional<Answer> YacVoteStorage::store(RejectMessage reject,
+                                                     uint64_t peers_in_round) {
+        if (not sameProposals(reject.votes)) {
+          return nonstd::nullopt;
+        }
 
         auto index = findProposalStorage(reject.votes.at(0), peers_in_round);
         return proposal_storages_.at(index).applyReject(reject, peers_in_round);
       };
 
-      nonstd::optional<StorageResult> YacVoteStorage::findProposal(
-          YacHash hash) {
-        for (const auto &proposal_storage : proposal_storages_) {
-          if (proposal_storage.getProposalHash() == hash.proposal_hash) {
-            return proposal_storage.getState();
-          }
-        }
-        return nonstd::nullopt;
+      bool getProcessingState(ProposalHash hash) {
+        // todo implement
+      }
+
+      void markAsProcessedState(ProposalHash hash) {
+        // todo implement
       }
 
       // --------| private api |--------

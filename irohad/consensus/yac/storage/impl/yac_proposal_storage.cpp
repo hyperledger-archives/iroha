@@ -26,7 +26,7 @@ namespace iroha {
             peers_in_round_(peers_in_round) {
       }
 
-      StorageResult YacProposalStorage::insert(VoteMessage msg) {
+      nonstd::optional<Answer> YacProposalStorage::insert(VoteMessage msg) {
         // update state branch
         if (shouldInsert(msg)) {
           // insert to block store
@@ -72,8 +72,7 @@ namespace iroha {
         return getState();
       };
 
-      StorageResult YacProposalStorage::applyCommit(const CommitMessage &commit,
-                                                    uint64_t peers_in_round) {
+      Answer YacProposalStorage::insert(std::vector<VoteMessage> messages) {
         if (commit.votes.empty()) return StorageResult();
         auto index = findStore(commit.votes.at(0).hash.proposal_hash,
                                commit.votes.at(0).hash.block_hash);
@@ -84,17 +83,7 @@ namespace iroha {
         return result;
       }
 
-      StorageResult YacProposalStorage::applyReject(const RejectMessage &reject,
-                                                    uint64_t peers_in_round) {
-        // todo implement method
-        return StorageResult();
-      }
-
-      ProposalHash YacProposalStorage::getProposalHash() const {
-        return hash_;
-      }
-
-      StorageResult YacProposalStorage::getState() const {
+      Answer YacProposalStorage::getState() const {
         return current_state_;
       };
 
@@ -117,6 +106,18 @@ namespace iroha {
       bool YacProposalStorage::hasRejectProof() {
         // todo implement
         return false;
+      };
+
+      bool YacProposalStorage::checkRejectScheme(const RejectMessage &reject) {
+        auto votes = reject.votes;
+        if (votes.size() == 0) return false;
+        auto common_proposal = votes.at(0).hash.proposal_hash;
+        for (auto &&vote:votes) {
+          if (common_proposal != vote.hash.proposal_hash) {
+            return false;
+          }
+        }
+        return true;
       };
 
       uint64_t YacProposalStorage::findStore(ProposalHash proposal_hash,

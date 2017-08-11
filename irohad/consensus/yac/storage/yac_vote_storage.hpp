@@ -41,17 +41,43 @@ namespace iroha {
          * Insert vote in storage
          * @param msg - current vote message
          * @param peers_in_round - number of peers participated in round
-         * @return structure with result of inserting
+         * @return structure with result of inserting. Nullopt if mgs not valid.
          */
-        StorageResult storeVote(VoteMessage msg, uint64_t peers_in_round);
+        nonstd::optional<Answer> store(VoteMessage msg,
+                                       uint64_t peers_in_round);
 
-        StorageResult applyCommit(CommitMessage commit,
-                                  uint64_t peers_in_round);
+        /**
+         * Insert commit in storage
+         * @param commit - message with votes
+         * @param peers_in_round - number of peers in current consensus round
+         * @return structure with result of inserting.
+         * Nullopt if commit not valid.
+         */
+        nonstd::optional<Answer> store(CommitMessage commit,
+                                       uint64_t peers_in_round);
 
-        StorageResult applyReject(RejectMessage reject,
-                                  uint64_t peers_in_round);
+        /**
+         * Insert reject message in storage
+         * @param reject - message with votes
+         * @param peers_in_round - number of peers in current consensus round
+         * @return structure with result of inserting.
+         * Nullopt if reject not valid.
+         */
+        nonstd::optional<Answer> store(RejectMessage reject,
+                                       uint64_t peers_in_round);
 
-        nonstd::optional<StorageResult> findProposal(YacHash hash);
+        /**
+         * Method provide state of processing for concrete hash
+         * @param hash - target tag
+         * @return value attached to parameter's hash. Default is false.
+         */
+        bool getProcessingState(ProposalHash hash);
+
+        /**
+         * Mark hash as processed.
+         * @param hash - target tag
+         */
+        void markAsProcessedState(ProposalHash hash);
 
        private:
         // --------| private api |--------
@@ -68,9 +94,14 @@ namespace iroha {
                                      uint64_t peers_in_round);
 
         /**
-         * Active proposals
+         * Active proposal storages
          */
-        std::vector<YacProposalStorage> proposal_storages_;
+        std::unordered_set<YacProposalStorage> proposal_storages_;
+
+        /**
+         * Processing map provide user flags about processing some hashes
+         */
+        std::unordered_map<ProposalHash, bool> processing_state;
       };
 
     } // namespace yac

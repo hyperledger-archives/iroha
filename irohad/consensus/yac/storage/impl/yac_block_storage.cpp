@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
+#include <utility>
+
 #include "consensus/yac/storage/yac_block_storage.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
-      YacBlockStorage::YacBlockStorage(YacHash hash,
-                                       uint64_t peers_in_round)
-          : hash_(hash),
-            peers_in_round_(
-                peers_in_round) {
-      };
 
-      StorageResult YacBlockStorage::insert(VoteMessage msg) {
+      YacBlockStorage::YacBlockStorage(YacHash hash, uint64_t peers_in_round)
+          : hash_(std::move(hash)), peers_in_round_(peers_in_round) {
+      }
+
+      nonstd::optional<Answer> YacBlockStorage::insert(VoteMessage msg) {
         auto inserted = tryInsert(msg);
         if (inserted) {
           // update state branch
@@ -52,9 +52,10 @@ namespace iroha {
           }
         }
         return getState();
-      };
+      }
 
-      StorageResult YacBlockStorage::insert(CommitMessage commit) {
+      nonstd::optional<Answer>
+      YacBlockStorage::insert(std::vector<CommitMessage>) {
         if (checkCommitScheme(commit)) {
           auto initial_state = getState().state;
           for (auto &&vote : commit.votes) {
@@ -67,38 +68,21 @@ namespace iroha {
           return getState();
         }
         return StorageResult();
-      };
+      }
 
-      StorageResult YacBlockStorage::getState() {
+      Answer YacBlockStorage::getState() {
         return current_state_;
-      };
+      }
 
       std::vector<VoteMessage> YacBlockStorage::getVotes() {
         return votes_;
-      };
+      }
 
-      ProposalHash YacBlockStorage::getProposalHash() {
-        return hash_.proposal_hash;
-      };
+      YacHash YacBlockStorage::getStorageHash() {
+        // todo implement
+      }
 
-      BlockHash YacBlockStorage::getBlockHash() {
-        return hash_.block_hash;
-      };
-
-      // --------| private fields |--------
-
-      bool YacBlockStorage::tryInsert(VoteMessage msg) {
-        if (unique_vote(msg)) {
-          votes_.push_back(msg);
-          return true;
-        }
-        return false;
-      };
-
-      CommitState YacBlockStorage::updateSupermajorityState() {
-        return hasSupermajority(votes_.size(), peers_in_round_)
-               ? CommitState::committed : CommitState::not_committed;
-      };
+      // --------| private api |--------
 
       bool YacBlockStorage::unique_vote(VoteMessage &msg) {
         for (auto &&vote: votes_) {
@@ -107,20 +91,7 @@ namespace iroha {
           }
         }
         return true;
-      };
-
-      bool YacBlockStorage::checkCommitScheme(const CommitMessage &commit) {
-        auto votes = commit.votes;
-        if (!hasSupermajority(votes.size(), peers_in_round_)) return false;
-        auto common_hash = votes.at(0).hash;
-        if (common_hash != hash_) return false;
-        for (auto &&vote:votes) {
-          if (common_hash != vote.hash) {
-            return false;
-          }
-        }
-        return true;
-      };
+      }
 
     } // namespace yac
   } // namespace consensus

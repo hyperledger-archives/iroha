@@ -18,6 +18,8 @@
 #ifndef IROHA_YAC_BLOCK_VOTE_STORAGE_HPP
 #define IROHA_YAC_BLOCK_VOTE_STORAGE_HPP
 
+#include <vector>
+#include <nonstd/optional.hpp>
 #include "consensus/yac/storage/storage_result.hpp"
 #include "consensus/yac/storage/yac_common.hpp"
 
@@ -31,58 +33,34 @@ namespace iroha {
       class YacBlockStorage {
        public:
 
-        YacBlockStorage(YacHash hash,
-                        uint64_t peers_in_round);
+        YacBlockStorage(YacHash hash, uint64_t peers_in_round);
 
         /**
          * Try to insert vote to storage
          * @param msg - vote for insertion
          * @return actual state of storage
          */
-        StorageResult insert(VoteMessage msg);
+        nonstd::optional<Answer> insert(VoteMessage msg);
 
         /**
-         * Insert commit to current storage
-         * @param commit
-         * @return
+         * Insert vector of votes to current storage
+         * @param votes - bunch of votes for insertion
+         * @return state of storage after insertion last vote
          */
-        StorageResult insert(CommitMessage commit);
+        Answer insert(std::vector<CommitMessage> votes);
 
         /**
          * @return current block store state
          */
-        StorageResult getState();
+        Answer getState();
 
         /**
-         * @return all votes attached to storage
+         * Provide hash attached to this storage
          */
-        std::vector<VoteMessage> getVotes();
-
-        /**
-         * @return attached proposal hash
-         */
-        ProposalHash getProposalHash();
-
-        /**
-         * @return attached block hash
-         */
-        BlockHash getBlockHash();
+        YacHash getStorageHash();
 
        private:
-        // --------| private fields |--------
-
-        /**
-         * Try to invert new vote
-         * @param msg - vote for insertion
-         * @return true, if inserted
-         */
-        bool tryInsert(VoteMessage msg);
-
-        /**
-         * Return new status of state based on supermajority metrics
-         * @return actual state status
-         */
-        CommitState updateSupermajorityState();
+        // --------| private api |--------
 
         /**
          * Verify uniqueness of vote in storage
@@ -90,13 +68,6 @@ namespace iroha {
          * @return true if vote doesn't appear in storage
          */
         bool unique_vote(VoteMessage &msg);
-
-        /**
-         * Verify that commit message satisfy to block storage
-         * @param commit - message for verification
-         * @return true, if satisfied
-         */
-        bool checkCommitScheme(const CommitMessage &commit);
 
         /**
          * Common hash of all votes in storage
@@ -107,11 +78,6 @@ namespace iroha {
          * All votes stored in block store
          */
         std::vector<VoteMessage> votes_;
-
-        /**
-         * Provide knowledge about state of block storage
-         */
-        StorageResult current_state_;
 
         /**
          * Number of peers in current round

@@ -19,6 +19,8 @@
 #define IROHA_YAC_PROPOSAL_STORAGE_HPP
 
 #include <vector>
+#include <nonstd/optional.hpp>
+
 #include "consensus/yac/messages.hpp"
 #include "consensus/yac/storage/yac_common.hpp"
 #include "consensus/yac/storage/storage_result.hpp"
@@ -38,36 +40,26 @@ namespace iroha {
         YacProposalStorage(ProposalHash hash, uint64_t peers_in_round);
 
         /**
-         * Try to insert vote to block
-         * @param msg - vote
-         * @return result, that contains actual state of storage
+         * Try to insert vote to storage
+         * @param vote - object for insertion
+         * @return result, that contains actual state of storage.
+         * Nullopt if not inserted, possible reasons - duplication,
+         * wrong proposal hash.
          */
-        StorageResult insert(VoteMessage msg);
+        nonstd::optional<Answer> insert(VoteMessage &vote);
 
         /**
-         * Try to apply commit for storage
-         * @param commit - message for insertion
-         * @return CommitState::not_committed - commit not achieved,
-         *         CommitState::committed - commit achieve on vote
-         *         from this message
-         *         CommitState::committed_before - commit achieved before
-         *         this commit message
+         * Insert bundle of messages into storage
+         * @param messages - collection of messages
+         * @return result, that contains actual state of storage,
+         * after insertion of all votes.
          */
-        StorageResult applyCommit(const CommitMessage &commit,
-                                                                                     uint64_t peers_in_round);
-
-        StorageResult applyReject(const RejectMessage &reject,
-                                  uint64_t peers_in_round);
-
-        /**
-         * @return current stored proposal hash
-         */
-        ProposalHash getProposalHash() const;
+        Answer insert(std::vector<VoteMessage> messages);
 
         /**
          * @return current state of storage
          */
-        StorageResult getState() const;
+        Answer getState() const;
 
        private:
         // --------| private api |--------
@@ -80,7 +72,7 @@ namespace iroha {
         bool shouldInsert(const VoteMessage &msg);
 
         /**
-         * Is this vote vilid for insertion in proposal storage
+         * Is this vote valid for insertion in proposal storage
          * @param vote_hash - hash for verification
          * @return true if it may be applied
          */
@@ -105,17 +97,7 @@ namespace iroha {
          * @param reject - message for verification
          * @return true, if satisfied
          */
-        bool checkRejectScheme(const RejectMessage &reject) {
-          auto votes = reject.votes;
-          if (votes.size() == 0) return false;
-          auto common_proposal = votes.at(0).hash.proposal_hash;
-          for (auto &&vote:votes) {
-            if (common_proposal != vote.hash.proposal_hash) {
-              return false;
-            }
-          }
-          return true;
-        };
+        bool checkRejectScheme(const RejectMessage &reject);
 
         /**
          * Find block index with provided parameters,
@@ -140,7 +122,7 @@ namespace iroha {
         /**
          * Current state of storage
          */
-        StorageResult current_state_;
+        Answer current_state_;
 
         /**
          * Provide number of peers participated in current round

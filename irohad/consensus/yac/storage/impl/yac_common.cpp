@@ -27,6 +27,15 @@ namespace iroha {
         auto f = (all - 1) / 3.0;
         return current >= 2 * f + 1;
       }
+
+      bool sameProposals(std::vector<VoteMessage> votes) {
+        // todo implement
+      }
+
+      nonstd::optional<ProposalHash>
+      getProposalHash(std::vector<VoteMessage> &votes) {
+        // todo implement
+      }
     } // namespace yac
   } // namespace consensus
 } // namespace iroha

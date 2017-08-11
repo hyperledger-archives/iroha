@@ -25,35 +25,16 @@ namespace iroha {
   namespace consensus {
     namespace yac {
 
-      enum CommitState {
-        /**
-         * Means that new state after applying still as before - not commit;
-         * state changes: not_committed => not_committed
-         */
-            not_committed,
-
-        /**
-         * State means that change state to committed on current insertion;
-         * state changes: not_committed => committed
-         */
-            committed,
-
-        /**
-         * State means that state still as before - committed;
-         * state changes: committed => committed_before OR
-         *         committed_before => committed_before
-         */
-            committed_before
-      };
-
       /**
-       * Contains proof of supermajority for all purposes
+       * Contains proof of supermajority for all purposes;
+       * Guarantee that at least one optional will be empty
        */
       struct Answer {
         Answer() {
           commit = nonstd::nullopt;
           reject = nonstd::nullopt;
         }
+
         /**
          * Result contains commit if it available
          */
@@ -64,34 +45,12 @@ namespace iroha {
          */
         nonstd::optional<RejectMessage> reject;
 
+        /**
+         * Common proposal hash that common for reject/commit message
+         */
+        nonstd::optional<ProposalHash> hash;
+
         bool operator==(const Answer &rhs) const;
-      };
-
-      /**
-       * Struct represents result of working storage.
-       * Guarantee that at least one optional will be empty
-       */
-      struct StorageResult {
-
-        StorageResult() {
-          state = CommitState::not_committed;
-        };
-
-        StorageResult(Answer provided_answer,
-                      CommitState provided_state);
-
-        bool operator==(const StorageResult &rhs) const;
-
-        /**
-         * Answer with proof of state
-         */
-        Answer answer;
-
-        /**
-         * Current state computed after application
-         */
-        CommitState state;
-
       };
 
     } // namespace yac
