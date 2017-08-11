@@ -41,7 +41,7 @@ namespace iroha {
        * @param votes - collection of votes
        * @return true, if proposals same
        */
-      bool sameProposals(std::vector<VoteMessage> votes);
+      bool sameProposals(const std::vector<VoteMessage> &votes);
 
       /**
        * Provide hash common for whole collection
@@ -49,7 +49,7 @@ namespace iroha {
        * @return hash, if collection has same proposal hash, otherwice nullopt
        */
       nonstd::optional<ProposalHash>
-      getProposalHash(std::vector<VoteMessage> &votes);
+      getProposalHash(const std::vector<VoteMessage> &votes);
     } // namespace yac
   } // namespace consensus
 } // namespace iroha
