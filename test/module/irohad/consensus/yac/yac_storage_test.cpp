@@ -16,36 +16,13 @@
  */
 
 #include <gtest/gtest.h>
-#include <algorithm>
 #include "consensus/yac/storage/yac_vote_storage.hpp"
-#include "yac_mocks.hpp"
+#include "module/irohad/consensus/yac/yac_mocks.hpp"
 #include "logger/logger.hpp"
 
 using namespace iroha::consensus::yac;
 
 static logger::Logger log_ = logger::testLog("YacStorage");
-
-TEST(YacStorageTest, SupermajorityFunctionForAllCases2) {
-  log_->info("-----------| F(x, 2), x in {0..3} -----------");
-
-  int N = 2;
-  ASSERT_FALSE(hasSupermajority(0, N));
-  ASSERT_FALSE(hasSupermajority(1, N));
-  ASSERT_TRUE(hasSupermajority(2, N));
-  ASSERT_FALSE(hasSupermajority(3, N));
-}
-
-TEST(YacStorageTest, SupermajorityFunctionForAllCases4) {
-  log_->info("-----------| F(x, 4), x in {0..5} |-----------");
-
-  int N = 4;
-  ASSERT_FALSE(hasSupermajority(0, N));
-  ASSERT_FALSE(hasSupermajority(1, N));
-  ASSERT_FALSE(hasSupermajority(2, N));
-  ASSERT_TRUE(hasSupermajority(3, N));
-  ASSERT_TRUE(hasSupermajority(4, N));
-  ASSERT_FALSE(hasSupermajority(5, N));
-}
 
 TEST(YacStorageTest, YacBlockStorageWhenNormalDataInput) {
   log_->info("-----------| Sequentially insertion of votes |-----------");

@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "consensus/yac/yac.hpp"
+#include "consensus/yac/storage/yac_common.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -113,7 +114,7 @@ namespace iroha {
           return;
         }
 
-        auto proposal_hash = commit.votes.at(0).hash.proposal_hash;
+        auto proposal_hash = getProposalHash(commit.votes).value();
         auto already_processed =
             vote_storage_.getProcessingState(proposal_hash);
 
