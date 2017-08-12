@@ -105,11 +105,6 @@ namespace iroha {
                           const auto &top_hash) { return true; });
       storage->commit(std::move(ms));
 
-      auto times_wrapper =
-          make_test_subscriber<CallExact>(storage->getBlocks(1, 1), 1);
-      times_wrapper.subscribe();
-      ASSERT_TRUE(times_wrapper.validate());
-
       auto completed_wrapper =
           make_test_subscriber<IsCompleted>(storage->getBlocks(1, 1));
       completed_wrapper.subscribe();
