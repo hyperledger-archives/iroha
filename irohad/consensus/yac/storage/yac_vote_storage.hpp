@@ -67,18 +67,8 @@ namespace iroha {
         nonstd::optional<Answer> store(RejectMessage reject,
                                        uint64_t peers_in_round);
 
-        /**
-         * Find existed proposal storage or create new if required
-         * @param msg - vote for finding
-         * @param peers_in_round - number of peer required
-         * for verify supermajority;
-         * This parameter used on creation of proposal storage
-         * @return - pointer for required proposal storage
-         */
         std::shared_ptr<YacProposalStorage>
-        findProposalStorage(const VoteMessage &msg,
-                            uint64_t peers_in_round);
-
+        getProposalStorage(ProposalHash hash);
         /**
          * Method provide state of processing for concrete hash
          * @param hash - target tag
@@ -95,8 +85,24 @@ namespace iroha {
        private:
         // --------| private api |--------
 
+        /**
+         * Insert votes in storage
+         * @param votes - collection for insertion
+         * @param peers_in_round - number of peers in current round
+         * @return answer after insertion collection
+         */
         nonstd::optional<Answer> insert_votes(std::vector<VoteMessage> &votes,
                                               uint64_t peers_in_round);
+        /**
+         * Find existed proposal storage or create new if required
+         * @param msg - vote for finding
+         * @param peers_in_round - number of peer required
+         * for verify supermajority;
+         * This parameter used on creation of proposal storage
+         * @return - pointer for required proposal storage
+         */
+        std::shared_ptr<YacProposalStorage>
+        findProposalStorage(const VoteMessage &msg, uint64_t peers_in_round);
 
         // --------| fields |--------
 

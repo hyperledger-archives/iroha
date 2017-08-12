@@ -37,16 +37,13 @@ namespace iroha {
       }
 
       std::shared_ptr<YacProposalStorage>
-      YacVoteStorage::findProposalStorage(const VoteMessage &msg,
-                                          uint64_t peers_in_round) {
-        for (uint64_t i = 0; i < proposal_storages_.size(); ++i) {
-          if (proposal_storages_.at(i)->getProposalHash()
-              == msg.hash.proposal_hash) {
-            return proposal_storages_.at(i);
+      YacVoteStorage::getProposalStorage(ProposalHash hash) {
+        for (const auto &&storage: proposal_storages_) {
+          if (storage->getProposalHash() == hash) {
+            return storage;
           }
         }
-        proposal_storages_.emplace_back(msg.hash.proposal_hash, peers_in_round);
-        return proposal_storages_.at(proposal_storages_.size() - 1);
+        return nullptr;
       }
 
       bool YacVoteStorage::getProcessingState(const ProposalHash &hash) {
@@ -73,6 +70,17 @@ namespace iroha {
 
         auto storage = findProposalStorage(votes.at(0), peers_in_round);
         return storage->insert(votes);
+      }
+
+      std::shared_ptr<YacProposalStorage>
+      YacVoteStorage::findProposalStorage(const VoteMessage &msg,
+                                          uint64_t peers_in_round) {
+        auto val = getProposalStorage(msg.hash.proposal_hash);
+        if (val != nullptr) {
+          return val;
+        }
+        proposal_storages_.emplace_back(msg.hash.proposal_hash, peers_in_round);
+        return proposal_storages_.at(proposal_storages_.size() - 1);
       }
 
     } // namespace yac

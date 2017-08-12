@@ -85,9 +85,8 @@ namespace iroha {
       // ------|Private interface|------
 
       void Yac::votingStep(YacHash hash) {
-        auto proposal = vote_storage_.findProposal(hash);
-        if (proposal.has_value() and
-            proposal.value().state == CommitState::committed) {
+        auto storage = vote_storage_.getProposalStorage(hash.proposal_hash);
+        if (storage != nullptr and storage->getState().hash.has_value()) {
           return;
         }
         network_->send_vote(cluster_order_.currentLeader(),
@@ -107,21 +106,28 @@ namespace iroha {
       // ------|Apply data|------
 
       void Yac::applyCommit(model::Peer from, CommitMessage commit) {
-        // todo apply to vote storage for verification
-
-        auto storage_state = vote_storage_
-            .applyCommit(commit, cluster_order_.getNumberOfPeers());
-        switch (storage_state.state) {
-          case not_committed:
-            // nothing to do
-            break;
-          case committed:notifier_.get_subscriber().on_next(*storage_state.answer.commit);
-            break;
-          case committed_before:
-            // already committed nothing to notify
-            break;
+        auto answer =
+            vote_storage_.store(commit, cluster_order_.getNumberOfPeers());
+        if (not answer.has_value() or not answer.value().hash.has_value()) {
+          // commit don't applied
+          return;
         }
 
+        auto proposal_hash = commit.votes.at(0).hash.proposal_hash;
+        auto already_processed =
+            vote_storage_.getProcessingState(proposal_hash);
+
+        if (not already_processed) {
+
+          if (answer->commit.has_value()) {
+            notifier_.get_subscriber().on_next(*answer->commit);
+          }
+
+          if (answer->reject.has_value()) {
+            // todo work on reject case
+          }
+          vote_storage_.markAsProcessedState(proposal_hash);
+        }
         closeRound();
       };
 
@@ -131,32 +137,38 @@ namespace iroha {
       };
 
       void Yac::applyVote(model::Peer from, VoteMessage vote) {
-        auto result = vote_storage_.storeVote(vote,
-                                              cluster_order_
-                                                  .getNumberOfPeers());
-        switch (result.state) {
-          case not_committed:
-            // nothing to do
-            break;
-          case committed:
-            // propagate all
-            if (result.answer.commit != nonstd::nullopt) {
-              propagateCommit(*result.answer.commit);
-            }
-            if (result.answer.reject != nonstd::nullopt) {
-              propagateReject(*result.answer.reject);
-            }
-            break;
-          case committed_before:
-            // propagate directly
-            if (result.answer.commit != nonstd::nullopt) {
-              propagateCommitDirectly(from, *result.answer.commit);
-            }
-            if (result.answer.reject != nonstd::nullopt) {
-              propagateRejectDirectly(from, *result.answer.reject);
-            }
-            break;
+        auto answer =
+            vote_storage_.store(vote, cluster_order_.getNumberOfPeers());
+
+        if (not answer.has_value() or not answer.value().hash.has_value()) {
+          // commit don't applied
+          return;
         }
+
+        auto proposal_hash = vote.hash.proposal_hash;
+        auto already_processed =
+            vote_storage_.getProcessingState(proposal_hash);
+
+        if (answer->commit.has_value()) {
+          if (not already_processed) {
+            // propagate for all
+            propagateCommit(answer->commit.value());
+          } else {
+            // propagate directly
+            propagateCommitDirectly(from, answer->commit.value());
+          }
+        }
+
+        if (answer->reject.has_value()) {
+          if (not already_processed) {
+            // propagate reject for all
+            propagateReject(answer->reject.value());
+          } else {
+            // propagate directly
+            propagateRejectDirectly(from, answer->reject.value());
+          }
+        }
+
       };
 
       // ------|Propagation|------
