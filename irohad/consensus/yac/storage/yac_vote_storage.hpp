@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <vector>
 #include <nonstd/optional.hpp>
+#include <memory>
 
 #include "consensus/yac/messages.hpp"
 #include "consensus/yac/storage/yac_common.hpp"
@@ -67,6 +68,18 @@ namespace iroha {
                                        uint64_t peers_in_round);
 
         /**
+         * Find existed proposal storage or create new if required
+         * @param msg - vote for finding
+         * @param peers_in_round - number of peer required
+         * for verify supermajority;
+         * This parameter used on creation of proposal storage
+         * @return - pointer for required proposal storage
+         */
+        std::shared_ptr<YacProposalStorage>
+        findProposalStorage(const VoteMessage &msg,
+                            uint64_t peers_in_round);
+
+        /**
          * Method provide state of processing for concrete hash
          * @param hash - target tag
          * @return value attached to parameter's hash. Default is false.
@@ -82,17 +95,6 @@ namespace iroha {
        private:
         // --------| private api |--------
 
-        /**
-         * Find existed proposal storage or create new if required
-         * @param msg - vote for finding
-         * @param peers_in_round - number of peer required
-         * for verify supermajority;
-         * This parameter used on creation of proposal storage
-         * @return - index of required proposal storage
-         */
-        uint64_t findProposalStorage(const VoteMessage &msg,
-                                     uint64_t peers_in_round);
-
         nonstd::optional<Answer> insert_votes(std::vector<VoteMessage> &votes,
                                               uint64_t peers_in_round);
 
@@ -101,7 +103,7 @@ namespace iroha {
         /**
          * Active proposal storages
          */
-        std::vector<YacProposalStorage> proposal_storages_;
+        std::vector<std::shared_ptr<YacProposalStorage>> proposal_storages_;
 
         /**
          * Processing map provide user flags about processing some hashes

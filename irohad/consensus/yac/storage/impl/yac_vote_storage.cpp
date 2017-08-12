@@ -21,26 +21,37 @@ namespace iroha {
   namespace consensus {
     namespace yac {
 
-      nonstd::optional<Answer> YacVoteStorage::store(VoteMessage msg,
+      nonstd::optional<Answer> YacVoteStorage::store(VoteMessage vote,
                                                      uint64_t peers_in_round) {
-        return proposal_storages_
-            .at(findProposalStorage(msg, peers_in_round))
-            .insert(msg);
+        return findProposalStorage(vote, peers_in_round)->insert(vote);
       }
 
       nonstd::optional<Answer> YacVoteStorage::store(CommitMessage commit,
                                                      uint64_t peers_in_round) {
         return insert_votes(commit.votes, peers_in_round);
-      };
+      }
 
       nonstd::optional<Answer> YacVoteStorage::store(RejectMessage reject,
                                                      uint64_t peers_in_round) {
         return insert_votes(reject.votes, peers_in_round);
-      };
+      }
+
+      std::shared_ptr<YacProposalStorage>
+      YacVoteStorage::findProposalStorage(const VoteMessage &msg,
+                                          uint64_t peers_in_round) {
+        for (uint64_t i = 0; i < proposal_storages_.size(); ++i) {
+          if (proposal_storages_.at(i)->getProposalHash()
+              == msg.hash.proposal_hash) {
+            return proposal_storages_.at(i);
+          }
+        }
+        proposal_storages_.emplace_back(msg.hash.proposal_hash, peers_in_round);
+        return proposal_storages_.at(proposal_storages_.size() - 1);
+      }
 
       bool YacVoteStorage::getProcessingState(const ProposalHash &hash) {
         auto val = processing_state_.find(hash);
-        if(val == processing_state_.end()){
+        if (val == processing_state_.end()) {
           return false;
         }
 
@@ -53,18 +64,6 @@ namespace iroha {
 
       // --------| private api |--------
 
-      uint64_t YacVoteStorage::findProposalStorage(const VoteMessage &msg,
-                                                   uint64_t peers_in_round) {
-        for (uint64_t i = 0; i < proposal_storages_.size(); ++i) {
-          if (proposal_storages_.at(i).getProposalHash()
-              == msg.hash.proposal_hash) {
-            return i;
-          }
-        }
-        proposal_storages_.emplace_back(msg.hash.proposal_hash, peers_in_round);
-        return proposal_storages_.size() - 1;
-      }
-
       nonstd::optional<Answer> YacVoteStorage::insert_votes(std::vector<
           VoteMessage> &votes,
                                                             uint64_t peers_in_round) {
@@ -72,8 +71,8 @@ namespace iroha {
           return nonstd::nullopt;
         }
 
-        auto index = findProposalStorage(votes.at(0), peers_in_round);
-        return proposal_storages_.at(index).insert(votes);
+        auto storage = findProposalStorage(votes.at(0), peers_in_round);
+        return storage->insert(votes);
       }
 
     } // namespace yac
