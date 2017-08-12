@@ -16,7 +16,7 @@
  */
 
 #include <utility>
-
+#include <algorithm>
 #include "consensus/yac/storage/yac_block_storage.hpp"
 
 namespace iroha {
@@ -28,69 +28,50 @@ namespace iroha {
       }
 
       nonstd::optional<Answer> YacBlockStorage::insert(VoteMessage msg) {
-        auto inserted = tryInsert(msg);
-        if (inserted) {
-          // update state branch
-          auto prev_state = current_state_.state;
-
-          switch (prev_state) {
-
-            case not_committed:
-              current_state_.state = updateSupermajorityState();
-              if (current_state_.state == CommitState::committed) {
-                current_state_.answer.commit = CommitMessage(votes_);
-              }
-              break;
-
-            case committed:current_state_.state = committed_before;
-              current_state_.answer.commit = CommitMessage(votes_);
-              break;
-
-            case committed_before:
-              current_state_.answer.commit = CommitMessage(votes_);
-              break;
-          }
+        if (not validScheme(msg) or
+            not uniqueVote(msg)) {
+          return nonstd::nullopt;
         }
+        votes_.push_back(msg);
         return getState();
       }
 
-      nonstd::optional<Answer>
-      YacBlockStorage::insert(std::vector<CommitMessage>) {
-        if (checkCommitScheme(commit)) {
-          auto initial_state = getState().state;
-          for (auto &&vote : commit.votes) {
-            current_state_ = insert(vote);
-          }
-          if (initial_state == CommitState::not_committed and
-              current_state_.state == CommitState::committed_before) {
-            current_state_.state = CommitState::committed;
-          }
-          return getState();
-        }
-        return StorageResult();
+      Answer YacBlockStorage::insert(std::vector<VoteMessage> votes) {
+        std::for_each(votes.begin(), votes.end(),
+                      [this](auto vote) {
+                        this->insert(vote);
+                      });
+        return getState();
       }
 
       Answer YacBlockStorage::getState() {
-        return current_state_;
-      }
-
-      std::vector<VoteMessage> YacBlockStorage::getVotes() {
-        return votes_;
+        auto supermajority = hasSupermajority(votes_.size(), peers_in_round_);
+        Answer answer;
+        if (supermajority) {
+          answer.hash = getStorageHash().proposal_hash;
+          answer.commit = CommitMessage(votes_);
+        }
+        return answer;
       }
 
       YacHash YacBlockStorage::getStorageHash() {
-        // todo implement
+        return hash_;
       }
 
       // --------| private api |--------
 
-      bool YacBlockStorage::unique_vote(VoteMessage &msg) {
+      bool YacBlockStorage::uniqueVote(VoteMessage &msg) {
+        // lookup take O(n) times
         for (auto &&vote: votes_) {
           if (vote == msg) {
             return false;
           }
         }
         return true;
+      }
+
+      bool YacBlockStorage::validScheme(VoteMessage &vote) {
+        return getStorageHash() == vote.hash;
       }
 
     } // namespace yac

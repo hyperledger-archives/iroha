@@ -28,7 +28,7 @@ namespace iroha {
     namespace yac {
 
       /**
-       * Class provide storage of votes for one block
+       * Class provide storage of votes for one block.
        */
       class YacBlockStorage {
        public:
@@ -47,7 +47,7 @@ namespace iroha {
          * @param votes - bunch of votes for insertion
          * @return state of storage after insertion last vote
          */
-        Answer insert(std::vector<CommitMessage> votes);
+        Answer insert(std::vector<VoteMessage> votes);
 
         /**
          * @return current block store state
@@ -67,7 +67,16 @@ namespace iroha {
          * @param msg - vote for verification
          * @return true if vote doesn't appear in storage
          */
-        bool unique_vote(VoteMessage &msg);
+        bool uniqueVote(VoteMessage &vote);
+
+        /**
+         * Verify that vote has same proposal and
+         * blocks hashes with storage
+         * @return true, if validation passed
+         */
+        bool validScheme(VoteMessage &vote);
+
+        // --------| fields |--------
 
         /**
          * Common hash of all votes in storage
