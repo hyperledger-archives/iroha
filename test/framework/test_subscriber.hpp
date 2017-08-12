@@ -57,7 +57,7 @@ namespace framework {
 
       /**
        * Handler which is called after target subscriber call
-       * @param ep
+       * @param ep - pointer to exception thrown in observable
        */
       virtual void on_error(std::exception_ptr ep) {}
 
@@ -125,14 +125,12 @@ namespace framework {
               // invoke subscriber
               error(ep);
 
-              // verify
               this->strategy_->on_error(ep);
             },
             [this, completed]() {
               // invoke subscriber
               completed();
 
-              // verify
               this->strategy_->on_completed();
             });
 
@@ -217,7 +215,7 @@ namespace framework {
 
     /**
      * Checks that on_completed was called by observable
-     * @tparam T
+     * @tparam T - observable parameter
      */
     template <typename T>
     class IsCompleted : public VerificationStrategy<T> {
