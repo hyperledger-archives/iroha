@@ -18,6 +18,7 @@
 #ifndef IROHA_STORAGE_RESULT_HPP
 #define IROHA_STORAGE_RESULT_HPP
 
+#include "consensus/yac/storage/yac_common.hpp"
 #include "consensus/yac/messages.hpp"
 #include <nonstd/optional.hpp>
 

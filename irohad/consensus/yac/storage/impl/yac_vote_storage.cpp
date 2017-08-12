@@ -38,7 +38,7 @@ namespace iroha {
 
       std::shared_ptr<YacProposalStorage>
       YacVoteStorage::getProposalStorage(ProposalHash hash) {
-        for (const auto &&storage: proposal_storages_) {
+        for (auto storage: proposal_storages_) {
           if (storage->getProposalHash() == hash) {
             return storage;
           }
@@ -61,9 +61,9 @@ namespace iroha {
 
       // --------| private api |--------
 
-      nonstd::optional<Answer> YacVoteStorage::insert_votes(std::vector<
-          VoteMessage> &votes,
-                                                            uint64_t peers_in_round) {
+      nonstd::optional<Answer>
+      YacVoteStorage::insert_votes(std::vector<VoteMessage> &votes,
+                                   uint64_t peers_in_round) {
         if (not sameProposals(votes)) {
           return nonstd::nullopt;
         }
@@ -79,7 +79,9 @@ namespace iroha {
         if (val != nullptr) {
           return val;
         }
-        proposal_storages_.emplace_back(msg.hash.proposal_hash, peers_in_round);
+        proposal_storages_.push_back(
+            std::make_shared<YacProposalStorage>(
+                msg.hash.proposal_hash, peers_in_round));
         return proposal_storages_.at(proposal_storages_.size() - 1);
       }
 
