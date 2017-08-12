@@ -57,6 +57,9 @@ namespace iroha {
                       });
         return getState();
       }
+      ProposalHash YacProposalStorage::getProposalHash(){
+        return hash_;
+      }
 
       Answer YacProposalStorage::getState() const {
         return current_state_;

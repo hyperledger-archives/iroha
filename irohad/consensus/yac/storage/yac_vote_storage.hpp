@@ -71,13 +71,13 @@ namespace iroha {
          * @param hash - target tag
          * @return value attached to parameter's hash. Default is false.
          */
-        bool getProcessingState(ProposalHash hash);
+        bool getProcessingState(const ProposalHash &hash);
 
         /**
          * Mark hash as processed.
          * @param hash - target tag
          */
-        void markAsProcessedState(ProposalHash hash);
+        void markAsProcessedState(const ProposalHash &hash);
 
        private:
         // --------| private api |--------
@@ -93,15 +93,20 @@ namespace iroha {
         uint64_t findProposalStorage(const VoteMessage &msg,
                                      uint64_t peers_in_round);
 
+        nonstd::optional<Answer> insert_votes(std::vector<VoteMessage> &votes,
+                                              uint64_t peers_in_round);
+
+        // --------| fields |--------
+
         /**
          * Active proposal storages
          */
-        std::unordered_set<YacProposalStorage> proposal_storages_;
+        std::vector<YacProposalStorage> proposal_storages_;
 
         /**
          * Processing map provide user flags about processing some hashes
          */
-        std::unordered_map<ProposalHash, bool> processing_state;
+        std::unordered_map<ProposalHash, bool> processing_state_;
       };
 
     } // namespace yac

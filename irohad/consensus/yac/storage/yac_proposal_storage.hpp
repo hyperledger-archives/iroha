@@ -57,6 +57,11 @@ namespace iroha {
         Answer insert(std::vector<VoteMessage> messages);
 
         /**
+         * Provides hash assigned for storage
+         */
+        ProposalHash getProposalHash();
+
+        /**
          * @return current state of storage
          */
         Answer getState() const;

@@ -30,30 +30,25 @@ namespace iroha {
 
       nonstd::optional<Answer> YacVoteStorage::store(CommitMessage commit,
                                                      uint64_t peers_in_round) {
-        if (not sameProposals(commit.votes)) {
-          return nonstd::nullopt;
-        }
-
-        auto index = findProposalStorage(commit.votes.at(0), peers_in_round);
-        return proposal_storages_.at(index).applyCommit(commit, peers_in_round);
+        return insert_votes(commit.votes, peers_in_round);
       };
 
       nonstd::optional<Answer> YacVoteStorage::store(RejectMessage reject,
                                                      uint64_t peers_in_round) {
-        if (not sameProposals(reject.votes)) {
-          return nonstd::nullopt;
-        }
-
-        auto index = findProposalStorage(reject.votes.at(0), peers_in_round);
-        return proposal_storages_.at(index).applyReject(reject, peers_in_round);
+        return insert_votes(reject.votes, peers_in_round);
       };
 
-      bool getProcessingState(ProposalHash hash) {
-        // todo implement
+      bool YacVoteStorage::getProcessingState(const ProposalHash &hash) {
+        auto val = processing_state_.find(hash);
+        if(val == processing_state_.end()){
+          return false;
+        }
+
+        return val->second;
       }
 
-      void markAsProcessedState(ProposalHash hash) {
-        // todo implement
+      void YacVoteStorage::markAsProcessedState(const ProposalHash &hash) {
+        processing_state_[hash] = true;
       }
 
       // --------| private api |--------
@@ -68,6 +63,17 @@ namespace iroha {
         }
         proposal_storages_.emplace_back(msg.hash.proposal_hash, peers_in_round);
         return proposal_storages_.size() - 1;
+      }
+
+      nonstd::optional<Answer> YacVoteStorage::insert_votes(std::vector<
+          VoteMessage> &votes,
+                                                            uint64_t peers_in_round) {
+        if (not sameProposals(votes)) {
+          return nonstd::nullopt;
+        }
+
+        auto index = findProposalStorage(votes.at(0), peers_in_round);
+        return proposal_storages_.at(index).insert(votes);
       }
 
     } // namespace yac
