@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <algorithm>
 #include "consensus/yac/storage/yac_proposal_storage.hpp"
 
 namespace iroha {
@@ -22,65 +23,39 @@ namespace iroha {
     namespace yac {
       YacProposalStorage::YacProposalStorage(ProposalHash hash,
                                              uint64_t peers_in_round)
-          : hash_(hash),
+          : current_state_(Answer()),
+            hash_(std::move(hash)),
             peers_in_round_(peers_in_round) {
       }
 
       nonstd::optional<Answer> YacProposalStorage::insert(VoteMessage msg) {
-        // update state branch
         if (shouldInsert(msg)) {
           // insert to block store
           auto index = findStore(msg.hash.proposal_hash,
                                  msg.hash.block_hash);
-          auto block_state = block_votes_.at(index).insert(msg);
+          auto block_state = block_storages_.at(index).insert(msg);
 
-          // check block storage state
-          auto state_of_block = block_state.state;
-
-          // this switch use assumption that
-          // if supermajority on some block achieved <==>
-          // there is no available for reject, and vice versa.
-          switch (state_of_block) {
-            case not_committed:
-              if (hasRejectProof()) {
-                auto current_state = current_state_.state;
-                switch (current_state) {
-                  case not_committed:
-                    // update to committed
-                    current_state_.state = CommitState::committed;
-                    current_state_.answer.reject =
-                        RejectMessage(aggregateAll());
-                    break;
-                  case committed:
-                    // update to committed before
-                    current_state_.state = CommitState::committed_before;
-                    current_state_.answer.reject =
-                        RejectMessage(aggregateAll());
-                    break;
-                  case committed_before:
-                    // nothing to do
-                    break;
-                }
-              }
-              break;
-            case committed:current_state_ = block_state;
-              break;
-            case committed_before:current_state_ = block_state;
-              break;
+          if (block_state.has_value() and
+              block_state->hash.has_value()) {
+            // supermajority on block achieved
+            current_state_ = *block_state;
+          } else {
+            // try to find reject case
+            auto reject = findRejectProof();
+            if (reject.has_value()) {
+              current_state_ = *reject;
+            }
           }
         }
         return getState();
       };
 
       Answer YacProposalStorage::insert(std::vector<VoteMessage> messages) {
-        if (commit.votes.empty()) return StorageResult();
-        auto index = findStore(commit.votes.at(0).hash.proposal_hash,
-                               commit.votes.at(0).hash.block_hash);
-        auto result = block_votes_.at(index).insert(commit);
-        if (result.state == CommitState::committed) {
-          current_state_ = result;
-        }
-        return result;
+        std::for_each(messages.begin(), messages.end(),
+                      [this](auto vote) {
+                        this->insert(std::move(vote));
+                      });
+        return getState();
       }
 
       Answer YacProposalStorage::getState() const {
@@ -103,48 +78,27 @@ namespace iroha {
         return true;
       };
 
-      bool YacProposalStorage::hasRejectProof() {
+      nonstd::optional<Answer> YacProposalStorage::findRejectProof() {
         // todo implement
-        return false;
-      };
-
-      bool YacProposalStorage::checkRejectScheme(const RejectMessage &reject) {
-        auto votes = reject.votes;
-        if (votes.size() == 0) return false;
-        auto common_proposal = votes.at(0).hash.proposal_hash;
-        for (auto &&vote:votes) {
-          if (common_proposal != vote.hash.proposal_hash) {
-            return false;
-          }
-        }
-        return true;
+        return nonstd::nullopt;
       };
 
       uint64_t YacProposalStorage::findStore(ProposalHash proposal_hash,
                                              BlockHash block_hash) {
 
         // find exist
-        for (uint32_t i = 0; i < block_votes_.size(); ++i) {
-          if (block_votes_.at(i).getProposalHash() == proposal_hash and
-              block_votes_.at(i).getBlockHash() == block_hash) {
+        for (uint32_t i = 0; i < block_storages_.size(); ++i) {
+          auto yac_hash = block_storages_.at(i).getStorageHash();
+          if (yac_hash.proposal_hash == proposal_hash and
+              yac_hash.block_hash == block_hash) {
             return i;
           }
         }
         // insert and return new
         YacBlockStorage
             new_container(YacHash(proposal_hash, block_hash), peers_in_round_);
-        block_votes_.push_back(new_container);
-        return block_votes_.size() - 1;
-      };
-
-      std::vector<VoteMessage> YacProposalStorage::aggregateAll() {
-        std::vector<VoteMessage> all_votes;
-        for (auto vote_storage: block_votes_) {
-          auto votes = vote_storage.getVotes();
-          all_votes.insert(all_votes.end(),
-                           votes.begin(), votes.end());
-        }
-        return all_votes;
+        block_storages_.push_back(new_container);
+        return block_storages_.size() - 1;
       };
 
     } // namespace yac

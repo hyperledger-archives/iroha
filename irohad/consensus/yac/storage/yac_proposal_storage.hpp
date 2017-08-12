@@ -32,7 +32,7 @@ namespace iroha {
 
       /**
        * Class for storing votes related to given proposal hash
-       * and gain information about commits/rejects in system
+       * and gain information about commits/rejects for those hash
        */
       class YacProposalStorage {
        public:
@@ -46,7 +46,7 @@ namespace iroha {
          * Nullopt if not inserted, possible reasons - duplication,
          * wrong proposal hash.
          */
-        nonstd::optional<Answer> insert(VoteMessage &vote);
+        nonstd::optional<Answer> insert(VoteMessage vote);
 
         /**
          * Insert bundle of messages into storage
@@ -88,16 +88,9 @@ namespace iroha {
          * Method try to find proof of reject.
          * This computes as
          * sum of unvoted nodes + vote with maximal rete < supermajority
-         * @return true, if prove exist
+         * @return
          */
-        bool hasRejectProof();
-
-        /**
-         * Verify that reject message satisfy scheme
-         * @param reject - message for verification
-         * @return true, if satisfied
-         */
-        bool checkRejectScheme(const RejectMessage &reject);
+        nonstd::optional<Answer> findRejectProof();
 
         /**
          * Find block index with provided parameters,
@@ -108,16 +101,7 @@ namespace iroha {
          */
         uint64_t findStore(ProposalHash proposal_hash, BlockHash block_hash);
 
-        /**
-         * flat map of all votes stored in this proposal storage
-         * @return all votes with current proposal hash
-         */
-        std::vector<VoteMessage> aggregateAll();
-
-        /**
-         * Hash of proposal
-         */
-        ProposalHash hash_;
+        // --------| fields |--------
 
         /**
          * Current state of storage
@@ -125,14 +109,19 @@ namespace iroha {
         Answer current_state_;
 
         /**
+         * Vector of block storages based on this proposal
+         */
+        std::vector<YacBlockStorage> block_storages_;
+
+        /**
+         * Hash of proposal
+         */
+        ProposalHash hash_;
+
+        /**
          * Provide number of peers participated in current round
          */
         uint64_t peers_in_round_;
-
-        /**
-         * Vector of blocks based on this proposal
-         */
-        std::vector<YacBlockStorage> block_votes_;
       };
     } // namespace yac
   } // namespace consensus
