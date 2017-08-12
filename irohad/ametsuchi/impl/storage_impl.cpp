@@ -226,6 +226,7 @@ namespace iroha {
                 s.on_completed();
               }
               s.on_next(block.value());
+              s.on_completed();
             });
       });
     }

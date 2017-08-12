@@ -28,6 +28,10 @@
 #include "model/commands/transfer_asset.hpp"
 #include "model/model_hash_provider_impl.hpp"
 #include "ametsuchi_test_common.hpp"
+#include "framework/test_subscriber.hpp"
+
+using namespace iroha::model;
+using namespace framework::test_subscriber;
 
 namespace iroha {
   namespace ametsuchi {
@@ -86,6 +90,26 @@ namespace iroha {
 
       std::string block_store_path = "/tmp/block_store";
     };
+
+    TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
+      // Commit block => get block => observable completed
+      auto storage =
+          StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+      ASSERT_TRUE(storage);
+
+      model::Block block;
+      block.height = 1;
+
+      auto ms = storage->createMutableStorage();
+      ms->apply(block, [](const auto &blk, auto &executor, auto &query,
+                          const auto &top_hash) { return true; });
+      storage->commit(std::move(ms));
+
+      auto completed_wrapper =
+          make_test_subscriber<IsCompleted>(storage->getBlocks(1, 1));
+      completed_wrapper.subscribe();
+      ASSERT_TRUE(completed_wrapper.validate());
+    }
 
     TEST_F(AmetsuchiTest, SampleTest) {
       model::HashProviderImpl hashProvider;
