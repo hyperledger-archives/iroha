@@ -30,7 +30,9 @@ namespace iroha {
       }
 
       bool sameProposals(const std::vector<VoteMessage> &votes) {
-        if (votes.empty()) return false;
+        if (votes.empty()) {
+          return false;
+        }
 
         auto first = votes.at(0);
         return std::all_of(votes.begin(), votes.end(),
@@ -41,7 +43,9 @@ namespace iroha {
 
       nonstd::optional<ProposalHash>
       getProposalHash(const std::vector<VoteMessage> &votes) {
-        if (not sameProposals(votes)) return nonstd::nullopt;
+        if (not sameProposals(votes)) {
+          return nonstd::nullopt;
+        }
 
         return votes.at(0).hash.proposal_hash;
       }
