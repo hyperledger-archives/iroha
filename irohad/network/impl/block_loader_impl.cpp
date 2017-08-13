@@ -24,7 +24,7 @@ using namespace iroha::model;
 rxcpp::observable<Block> BlockLoaderImpl::requestBlocks(Peer target_peer,
                                                         Block topBlock) {
   return rxcpp::observable<>::create<Block>(
-      [this, target_peer, topBlock](auto s) {
+      [this, target_peer, topBlock](auto subscriber) {
         proto::BlocksRequest request;
         grpc::ClientContext context;
         protocol::Block block;
@@ -33,20 +33,19 @@ rxcpp::observable<Block> BlockLoaderImpl::requestBlocks(Peer target_peer,
         request.set_height(topBlock.height + 1);
 
         auto reader =
-            this->getPeerClient(target_peer).retrieveBlocks(&context, request);
+            this->getPeerStub(target_peer).retrieveBlocks(&context, request);
         while (reader->Read(&block)) {
-          s.on_next(factory_.deserialize(block));
+          subscriber.on_next(factory_.deserialize(block));
         }
         reader->Finish();
-        s.on_completed();
+        subscriber.on_completed();
       });
 }
 
-proto::Loader::Stub &BlockLoaderImpl::getPeerClient(
-    const Peer &peer) {
-  auto it = peers_.find(peer.address);
-  if (it == peers_.end()) {
-    it = peers_.insert(std::make_pair(peer.address,proto::Loader::NewStub(
+proto::Loader::Stub &BlockLoaderImpl::getPeerStub(const Peer &peer) {
+  auto it = peer_connections_.find(peer);
+  if (it == peer_connections_.end()) {
+    it = peer_connections_.insert(std::make_pair(peer, proto::Loader::NewStub(
             grpc::CreateChannel(peer.address,
                                 grpc::InsecureChannelCredentials())))).first;
   }

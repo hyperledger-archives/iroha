@@ -63,7 +63,7 @@ TEST(NetworkTest, MessageHandledWhenMessageSent) {
 
   // wait for response reader thread
   std::unique_lock<std::mutex> lock(mtx);
-  cv.wait(lock);
+  cv.wait_for(lock, std::chrono::milliseconds(100));
 
   server->Shutdown();
 }

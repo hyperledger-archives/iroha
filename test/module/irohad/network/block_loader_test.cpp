@@ -100,18 +100,18 @@ TEST_F(BlockLoaderTest, ValidWhenMultipleBlocks) {
   auto next_height = block.height + 1;
 
   std::vector<Block> blocks;
-  for (decltype(Block().height) i = next_height; i < next_height + num_blocks;
-       ++i) {
-    blocks.emplace_back();
-    blocks.back().height = i;
+  for (auto i = next_height; i < next_height + num_blocks; ++i) {
+    Block block;
+    block.height = i;
+    blocks.push_back(block);
   }
 
   EXPECT_CALL(*storage, getBlocksFrom(next_height))
       .WillOnce(Return(rxcpp::observable<>::iterate(blocks)));
   auto wrapper = make_test_subscriber<CallExact>(
       loader->requestBlocks(peer, block), num_blocks);
-  decltype(Block().height) i = next_height;
-  wrapper.subscribe([&i](auto block) { ASSERT_EQ(block.height, i++); });
+  auto height = next_height;
+  wrapper.subscribe([&height](auto block) { ASSERT_EQ(block.height, height++); });
 
   ASSERT_TRUE(wrapper.validate());
 }

@@ -32,12 +32,16 @@ namespace iroha {
           model::Peer target_peer, model::Block topBlock) override;
 
      private:
-      proto::Loader::Stub &getPeerClient(
-          const model::Peer &peer);
+      /**
+       * Get or create a RPC stub for connecting to peer
+       * @param peer for connecting
+       * @return RPC stub
+       */
+      proto::Loader::Stub &getPeerStub(const model::Peer &peer);
 
       model::converters::PbBlockFactory factory_;
-      std::unordered_map<std::string, std::unique_ptr<proto::Loader::Stub>>
-          peers_;
+      std::unordered_map<model::Peer, std::unique_ptr<proto::Loader::Stub>>
+          peer_connections_;
     };
   }  // namespace network
 }  // namespace iroha
