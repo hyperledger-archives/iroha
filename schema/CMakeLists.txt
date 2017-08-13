@@ -11,6 +11,7 @@ compile_proto_to_grpc_cpp(endpoint.proto)
 compile_proto_to_grpc_cpp(peer_service.proto)
 compile_proto_to_grpc_cpp(yac.proto)
 compile_proto_to_grpc_cpp(ordering.proto)
+compile_proto_to_grpc_cpp(loader.proto)
 
 add_dependencies(commandsproto_h primitiveproto_h)
 add_dependencies(queriesproto_h primitiveproto_h)
@@ -55,3 +56,12 @@ target_link_libraries(peer_service_grpc
         grpc++
         )
 
+add_library(loader_grpc
+    loader.pb.cc
+    loader.grpc.pb.cc
+    )
+target_link_libraries(loader_grpc
+    schema
+    protobuf
+    grpc++
+    )

@@ -41,7 +41,10 @@ namespace iroha {
        */
       virtual rxcpp::observable <model::Block> requestBlocks(
           model::Peer &target_peer, model::Block &topBlock) = 0;
+
+      virtual ~BlockLoader() = default;
     };
   } // namespace network
 } // namespace iroha
+
 #endif //IROHA_BLOCK_LOADER_HPP
