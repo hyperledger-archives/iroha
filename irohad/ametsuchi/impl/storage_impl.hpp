@@ -43,6 +43,7 @@ namespace iroha {
           std::string account_id) override;
       rxcpp::observable<model::Block> getBlocks(uint32_t from,
                                                 uint32_t to) override;
+      rxcpp::observable<model::Block> getBlocks(uint32_t from) override;
 
       nonstd::optional<model::Account> getAccount(
           const std::string &account_id) override;

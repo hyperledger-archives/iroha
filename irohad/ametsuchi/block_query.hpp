@@ -47,6 +47,13 @@ namespace iroha {
       */
       virtual rxcpp::observable<model::Block> getBlocks(uint32_t from,
                                                         uint32_t to) = 0;
+
+      /**
+      * Get all blocks starting from given id.
+      * @param from - starting id
+      * @return observable of Model Block
+      */
+      virtual rxcpp::observable<model::Block> getBlocks(uint32_t from) = 0;
     };
 
   }  // namespace ametsuchi

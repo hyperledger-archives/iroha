@@ -72,6 +72,8 @@ namespace iroha {
           rxcpp::observable<model::Transaction>(std::string account_id));
       MOCK_METHOD2(getBlocks,
                    rxcpp::observable<model::Block>(uint32_t from, uint32_t to));
+      MOCK_METHOD1(getBlocks,
+                   rxcpp::observable<model::Block>(uint32_t));
     };
 
     class MockTemporaryFactory : public TemporaryFactory {

@@ -231,6 +231,11 @@ namespace iroha {
       });
     }
 
+
+    rxcpp::observable<model::Block> StorageImpl::getBlocks(uint32_t from) {
+      return getBlocks(from, block_store_->last_id());
+    }
+
     nonstd::optional<model::Account> StorageImpl::getAccount(
         const std::string &account_id) {
       std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
