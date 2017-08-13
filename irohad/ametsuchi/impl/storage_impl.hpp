@@ -102,7 +102,7 @@ namespace iroha {
        */
       const std::string block_store_dir_;
 
-      // bd info
+      // db info
       const std::string redis_host_;
       const std::size_t redis_port_;
       const std::string postgres_options_;

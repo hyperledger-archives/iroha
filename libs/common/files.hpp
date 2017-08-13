@@ -19,9 +19,7 @@
 #define IROHA_FILES_HPP
 
 /**
- * This source file contains common related methods
- *
- *
+ * This source file contains common methods related to files
  */
 
 /**
