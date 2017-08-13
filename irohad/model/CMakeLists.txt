@@ -37,3 +37,14 @@ target_link_libraries(model_converters
     schema
     logger
     )
+
+add_library(model_registrations
+    registration/impl/commnand_registration.cpp
+    registration/impl/query_registration.cpp
+    registration/impl/query_response_registration.cpp
+    registration/impl/transaction_response_registration.cpp
+    )
+
+target_link_libraries(model_registrations
+    model
+    )
