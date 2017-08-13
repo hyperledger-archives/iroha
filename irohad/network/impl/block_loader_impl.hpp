@@ -29,7 +29,7 @@ namespace iroha {
     class BlockLoaderImpl : public BlockLoader {
      public:
       rxcpp::observable<model::Block> requestBlocks(
-          model::Peer &target_peer, model::Block &topBlock) override;
+          model::Peer target_peer, model::Block topBlock) override;
 
      private:
       proto::Loader::Stub &getPeerClient(

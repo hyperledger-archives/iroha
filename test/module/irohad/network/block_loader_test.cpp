@@ -60,10 +60,11 @@ class BlockLoaderTest : public testing::Test {
 };
 
 TEST_F(BlockLoaderTest, ValidWhenSameTopBlock) {
+  // Current block height 1 => Other block height 1 => no blocks received
   Block block;
   block.height = 1;
 
-  EXPECT_CALL(*storage, getBlocks(block.height + 1))
+  EXPECT_CALL(*storage, getBlocksFrom(block.height + 1))
       .WillOnce(Return(rxcpp::observable<>::empty<Block>()));
   auto wrapper =
       make_test_subscriber<CallExact>(loader->requestBlocks(peer, block), 0);
@@ -73,13 +74,14 @@ TEST_F(BlockLoaderTest, ValidWhenSameTopBlock) {
 }
 
 TEST_F(BlockLoaderTest, ValidWhenOneBlock) {
+  // Current block height 1 => Other block height 2 => one block received
   Block block;
   block.height = 1;
 
   Block top_block;
   block.height = block.height + 1;
 
-  EXPECT_CALL(*storage, getBlocks(block.height + 1))
+  EXPECT_CALL(*storage, getBlocksFrom(block.height + 1))
       .WillOnce(Return(rxcpp::observable<>::just(top_block)));
   auto wrapper =
       make_test_subscriber<CallExact>(loader->requestBlocks(peer, block), 1);
@@ -90,6 +92,7 @@ TEST_F(BlockLoaderTest, ValidWhenOneBlock) {
 }
 
 TEST_F(BlockLoaderTest, ValidWhenMultipleBlocks) {
+  // Current block height 1 => Other block height n => n-1 blocks received
   Block block;
   block.height = 1;
 
@@ -103,7 +106,7 @@ TEST_F(BlockLoaderTest, ValidWhenMultipleBlocks) {
     blocks.back().height = i;
   }
 
-  EXPECT_CALL(*storage, getBlocks(next_height))
+  EXPECT_CALL(*storage, getBlocksFrom(next_height))
       .WillOnce(Return(rxcpp::observable<>::iterate(blocks)));
   auto wrapper = make_test_subscriber<CallExact>(
       loader->requestBlocks(peer, block), num_blocks);

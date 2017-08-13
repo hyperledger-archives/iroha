@@ -21,8 +21,8 @@
 using namespace iroha::network;
 using namespace iroha::model;
 
-rxcpp::observable<Block> BlockLoaderImpl::requestBlocks(Peer &target_peer,
-                                                        Block &topBlock) {
+rxcpp::observable<Block> BlockLoaderImpl::requestBlocks(Peer target_peer,
+                                                        Block topBlock) {
   return rxcpp::observable<>::create<Block>(
       [this, target_peer, topBlock](auto s) {
         proto::BlocksRequest request;

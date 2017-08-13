@@ -26,7 +26,7 @@ BlockLoaderService::BlockLoaderService(std::shared_ptr<BlockQuery> storage)
 grpc::Status BlockLoaderService::retrieveBlocks(
     ::grpc::ServerContext *context, const proto::BlocksRequest *request,
     ::grpc::ServerWriter<::iroha::protocol::Block> *writer) {
-  storage_->getBlocks(request->height())
+  storage_->getBlocksFrom(request->height())
       .map([this](auto block) { return factory_.serialize(block); })
       .as_blocking()
       .subscribe([writer](auto block) { writer->Write(block); });

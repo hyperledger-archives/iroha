@@ -68,17 +68,14 @@ Irohad::~Irohad() {
 class MockBlockLoader : public iroha::network::BlockLoader {
  public:
   MOCK_METHOD2(requestBlocks,
-               rxcpp::observable<model::Block>(model::Peer & ,
-                                               model::Block & ));
+               rxcpp::observable<model::Block>(model::Peer, model::Block));
 };
 
 class MockCryptoProvider : public ModelCryptoProvider {
  public:
-  MOCK_CONST_METHOD1(verify, bool(
-      const Transaction &));
+  MOCK_CONST_METHOD1(verify, bool(const Transaction &));
   MOCK_CONST_METHOD1(verify, bool(std::shared_ptr<const Query>));
-  MOCK_CONST_METHOD1(verify, bool(
-      const Block &));
+  MOCK_CONST_METHOD1(verify, bool(const Block &));
 };
 
 void Irohad::run() {

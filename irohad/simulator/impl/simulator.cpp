@@ -45,15 +45,14 @@ namespace iroha {
 
     void Simulator::process_proposal(model::Proposal proposal) {
       log_->info("process proposal");
-      auto current_height = proposal.height;
       // Get last block from local ledger
-      last_block = model::Block();
-      block_queries_->getBlocks(current_height - 1, current_height)
+      block_queries_->getTopBlocks(1)
           .as_blocking()
           .subscribe([this](auto block) {
-            this->last_block = block;
+            last_block = block;
           });
-      if (last_block.height + 1 != proposal.height) {
+      if (not last_block.has_value() or
+          last_block.value().height + 1 != proposal.height) {
         return;
       }
       auto temporaryStorage = ametsuchi_factory_->createTemporaryWsv();
@@ -65,7 +64,7 @@ namespace iroha {
       log_->info("process verified proposal");
       model::Block new_block;
       new_block.height = proposal.height;
-      new_block.prev_hash = last_block.hash;
+      new_block.prev_hash = last_block.value().hash;
       new_block.transactions = proposal.transactions;
       new_block.txs_number = proposal.transactions.size();
       new_block.created_ts = 0;

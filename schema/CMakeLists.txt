@@ -22,6 +22,7 @@ add_dependencies(endpointproto_h blockproto_h)
 add_dependencies(endpointproto_h queriesproto_h)
 add_dependencies(endpointproto_h responsesproto_h)
 add_dependencies(orderingproto_h blockproto_h)
+add_dependencies(loaderproto_h blockproto_h)
 
 add_library(schema
     block.pb.cc
@@ -61,7 +62,6 @@ add_library(loader_grpc
     loader.grpc.pb.cc
     )
 target_link_libraries(loader_grpc
-    schema
     protobuf
     grpc++
     )

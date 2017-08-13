@@ -193,8 +193,7 @@ namespace iroha {
     rxcpp::observable<model::Transaction> StorageImpl::getAccountTransactions(
         std::string account_id) {
       std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
-      auto last_id = block_store_->last_id();
-      return getBlocks(1, last_id)
+      return getBlocksFrom(1)
           .flat_map([](auto block) {
             return rxcpp::observable<>::iterate(block.transactions);
           })
@@ -203,14 +202,15 @@ namespace iroha {
           });
     }
 
-    rxcpp::observable<model::Block> StorageImpl::getBlocks(uint32_t from,
-                                                           uint32_t to) {
+    rxcpp::observable<model::Block> StorageImpl::getBlocks(uint32_t height,
+                                                           uint32_t count) {
       std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
+      auto to = height + count;
       auto last_id = block_store_->last_id();
       if (to > last_id) {
         to = last_id;
       }
-      return rxcpp::observable<>::range(from, to).flat_map([this](auto i) {
+      return rxcpp::observable<>::range(height, to).flat_map([this](auto i) {
         auto bytes = block_store_->get(i);
         return rxcpp::observable<>::create<model::Block>(
             [this, bytes](auto s) {
@@ -232,8 +232,16 @@ namespace iroha {
     }
 
 
-    rxcpp::observable<model::Block> StorageImpl::getBlocks(uint32_t from) {
-      return getBlocks(from, block_store_->last_id());
+    rxcpp::observable<model::Block> StorageImpl::getBlocksFrom(uint32_t height) {
+      return getBlocks(height, block_store_->last_id());
+    }
+
+    rxcpp::observable<model::Block> StorageImpl::getTopBlocks(uint32_t count) {
+      auto last_id = block_store_->last_id();
+      if (count > last_id) {
+        count = last_id;
+      }
+      return getBlocks(last_id - count + 1, last_id);
     }
 
     nonstd::optional<model::Account> StorageImpl::getAccount(
