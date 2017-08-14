@@ -86,8 +86,8 @@ namespace iroha {
       // ------|Private interface|------
 
       void Yac::votingStep(YacHash hash) {
-        auto storage = vote_storage_.getProposalStorage(hash.proposal_hash);
-        if (storage != nullptr and storage->getState().has_value()) {
+        auto committed = vote_storage_.isHashCommitted(hash.proposal_hash);
+        if (committed) {
           return;
         }
         network_->send_vote(cluster_order_.currentLeader(),

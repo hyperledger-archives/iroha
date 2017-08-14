@@ -36,7 +36,30 @@ namespace iroha {
        * Class provide storage for votes and useful methods for it.
        */
       class YacVoteStorage {
+
+       private:
+        // --------| private api |--------
+
+        /**
+         * Retrieve iterator for storage with parameters hash
+         * @param hash - object for finding
+         * @return iterator to proposal storage
+         */
+        auto getProposalStorage(ProposalHash hash);
+
+        /**
+         * Find existed proposal storage or create new if required
+         * @param msg - vote for finding
+         * @param peers_in_round - number of peer required
+         * for verify supermajority;
+         * This parameter used on creation of proposal storage
+         * @return - iter for required proposal storage
+         */
+        auto findProposalStorage(const VoteMessage &msg,
+                                 uint64_t peers_in_round);
+
        public:
+        // --------| public api |--------
 
         /**
          * Insert vote in storage
@@ -67,8 +90,13 @@ namespace iroha {
         nonstd::optional<Answer> store(RejectMessage reject,
                                        uint64_t peers_in_round);
 
-        std::shared_ptr<YacProposalStorage>
-        getProposalStorage(ProposalHash hash);
+        /**
+         * Provide status about closing round with parameters hash
+         * @param hash - target hash of round
+         * @return true, if rould closed
+         */
+        bool isHashCommitted(ProposalHash hash);
+
         /**
          * Method provide state of processing for concrete hash
          * @param hash - target tag
@@ -93,23 +121,13 @@ namespace iroha {
          */
         nonstd::optional<Answer> insert_votes(std::vector<VoteMessage> &votes,
                                               uint64_t peers_in_round);
-        /**
-         * Find existed proposal storage or create new if required
-         * @param msg - vote for finding
-         * @param peers_in_round - number of peer required
-         * for verify supermajority;
-         * This parameter used on creation of proposal storage
-         * @return - pointer for required proposal storage
-         */
-        std::shared_ptr<YacProposalStorage>
-        findProposalStorage(const VoteMessage &msg, uint64_t peers_in_round);
 
         // --------| fields |--------
 
         /**
          * Active proposal storages
          */
-        std::vector<std::shared_ptr<YacProposalStorage>> proposal_storages_;
+        std::vector<YacProposalStorage> proposal_storages_;
 
         /**
          * Processing map provide user flags about processing some hashes
