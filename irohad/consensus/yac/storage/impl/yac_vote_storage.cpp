@@ -71,8 +71,7 @@ namespace iroha {
       }
 
       bool YacVoteStorage::getProcessingState(const ProposalHash &hash) {
-        auto val = processing_state_.find(hash);
-        return not(processing_state_.end() == val);
+        return processing_state_.count(hash) != 0;
       }
 
       void YacVoteStorage::markAsProcessedState(const ProposalHash &hash) {
