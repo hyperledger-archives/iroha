@@ -150,7 +150,7 @@ namespace iroha {
         auto pg_pass = std::getenv("IROHA_POSTGRES_PASSWORD");
         auto rd_host = std::getenv("IROHA_REDIS_HOST");
         auto rd_port = std::getenv("IROHA_REDIS_PORT");
-        if (!pg_host) {
+        if (not pg_host) {
           return;
         }
         std::stringstream ss;
