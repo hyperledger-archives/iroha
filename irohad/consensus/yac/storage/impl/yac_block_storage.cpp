@@ -60,12 +60,9 @@ namespace iroha {
 
       bool YacBlockStorage::uniqueVote(VoteMessage &msg) {
         // lookup take O(n) times
-        for (auto &&vote: votes_) {
-          if (vote == msg) {
-            return false;
-          }
-        }
-        return true;
+        return std::all_of(votes_.begin(), votes_.end(), [&msg](auto vote) {
+          return vote != msg;
+        });
       }
 
       bool YacBlockStorage::validScheme(VoteMessage &vote) {

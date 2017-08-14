@@ -16,6 +16,7 @@
  */
 
 #include <algorithm>
+#include <utility>
 
 #include "consensus/yac/storage/yac_vote_storage.hpp"
 
@@ -61,7 +62,11 @@ namespace iroha {
       }
 
       bool YacVoteStorage::isHashCommitted(ProposalHash hash) {
-
+        auto iter = getProposalStorage(std::move(hash));
+        if (iter == proposal_storages_.end()) {
+          return false;
+        }
+        return iter->getState().has_value();
       }
 
       bool YacVoteStorage::getProcessingState(const ProposalHash &hash) {
