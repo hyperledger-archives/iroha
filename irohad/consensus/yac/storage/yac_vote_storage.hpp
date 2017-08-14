@@ -18,9 +18,10 @@
 #ifndef IROHA_YAC_VOTE_STORAGE_HPP
 #define IROHA_YAC_VOTE_STORAGE_HPP
 
-#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <nonstd/optional.hpp>
+#include <memory>
 
 #include "consensus/yac/messages.hpp"
 #include "consensus/yac/storage/yac_common.hpp"
@@ -35,26 +36,16 @@ namespace iroha {
        * Class provide storage for votes and useful methods for it.
        */
       class YacVoteStorage {
-       public:
-
-        /**
-         * Insert vote in storage
-         * @param msg - current vote message
-         * @param peers_in_round - number of peers participated in round
-         * @return structure with result of inserting
-         */
-        StorageResult storeVote(VoteMessage msg, uint64_t peers_in_round);
-
-        StorageResult applyCommit(CommitMessage commit,
-                                  uint64_t peers_in_round);
-
-        StorageResult applyReject(RejectMessage reject,
-                                  uint64_t peers_in_round);
-
-        nonstd::optional<StorageResult> findProposal(YacHash hash);
 
        private:
         // --------| private api |--------
+
+        /**
+         * Retrieve iterator for storage with parameters hash
+         * @param hash - object for finding
+         * @return iterator to proposal storage
+         */
+        auto getProposalStorage(ProposalHash hash);
 
         /**
          * Find existed proposal storage or create new if required
@@ -62,15 +53,87 @@ namespace iroha {
          * @param peers_in_round - number of peer required
          * for verify supermajority;
          * This parameter used on creation of proposal storage
-         * @return - index of required proposal storage
+         * @return - iter for required proposal storage
          */
-        uint64_t findProposalStorage(const VoteMessage &msg,
-                                     uint64_t peers_in_round);
+        auto findProposalStorage(const VoteMessage &msg,
+                                 uint64_t peers_in_round);
+
+       public:
+        // --------| public api |--------
 
         /**
-         * Active proposals
+         * Insert vote in storage
+         * @param msg - current vote message
+         * @param peers_in_round - number of peers participated in round
+         * @return structure with result of inserting. Nullopt if mgs not valid.
+         */
+        nonstd::optional<Answer> store(VoteMessage msg,
+                                       uint64_t peers_in_round);
+
+        /**
+         * Insert commit in storage
+         * @param commit - message with votes
+         * @param peers_in_round - number of peers in current consensus round
+         * @return structure with result of inserting.
+         * Nullopt if commit not valid.
+         */
+        nonstd::optional<Answer> store(CommitMessage commit,
+                                       uint64_t peers_in_round);
+
+        /**
+         * Insert reject message in storage
+         * @param reject - message with votes
+         * @param peers_in_round - number of peers in current consensus round
+         * @return structure with result of inserting.
+         * Nullopt if reject not valid.
+         */
+        nonstd::optional<Answer> store(RejectMessage reject,
+                                       uint64_t peers_in_round);
+
+        /**
+         * Provide status about closing round with parameters hash
+         * @param hash - target hash of round
+         * @return true, if rould closed
+         */
+        bool isHashCommitted(ProposalHash hash);
+
+        /**
+         * Method provide state of processing for concrete hash
+         * @param hash - target tag
+         * @return value attached to parameter's hash. Default is false.
+         */
+        bool getProcessingState(const ProposalHash &hash);
+
+        /**
+         * Mark hash as processed.
+         * @param hash - target tag
+         */
+        void markAsProcessedState(const ProposalHash &hash);
+
+       private:
+        // --------| private api |--------
+
+        /**
+         * Insert votes in storage
+         * @param votes - collection for insertion
+         * @param peers_in_round - number of peers in current round
+         * @return answer after insertion collection
+         */
+        nonstd::optional<Answer> insert_votes(std::vector<VoteMessage> &votes,
+                                              uint64_t peers_in_round);
+
+        // --------| fields |--------
+
+        /**
+         * Active proposal storages
          */
         std::vector<YacProposalStorage> proposal_storages_;
+
+        /**
+         * Processing set provide user flags about processing some hashes.
+         * If hash exists <=> processed
+         */
+        std::unordered_set<ProposalHash> processing_state_;
       };
 
     } // namespace yac

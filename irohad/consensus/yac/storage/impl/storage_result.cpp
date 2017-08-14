@@ -25,17 +25,6 @@ namespace iroha {
         return this->commit == rhs.commit and
             this->reject == rhs.reject;
       };
-
-      StorageResult::StorageResult(Answer provided_answer,
-                                   CommitState provided_state)
-          : answer(provided_answer),
-            state(provided_state) {
-      };
-
-      bool StorageResult::operator==(const StorageResult &rhs) const {
-        return this->answer == rhs.answer and
-            this->state == rhs.state;
-      };
     } // namespace yac
   } // namespace consensus
 } // namespace iroha

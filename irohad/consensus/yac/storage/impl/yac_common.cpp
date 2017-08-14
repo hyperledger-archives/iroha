@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <algorithm>
 #include "consensus/yac/storage/yac_common.hpp"
 
 namespace iroha {
@@ -26,6 +27,27 @@ namespace iroha {
           return false;
         auto f = (all - 1) / 3.0;
         return current >= 2 * f + 1;
+      }
+
+      bool sameProposals(const std::vector<VoteMessage> &votes) {
+        if (votes.empty()) {
+          return false;
+        }
+
+        auto first = votes.at(0);
+        return std::all_of(votes.begin(), votes.end(),
+                           [&first](auto current) {
+                             return first.hash == current.hash;
+                           });
+      }
+
+      nonstd::optional<ProposalHash>
+      getProposalHash(const std::vector<VoteMessage> &votes) {
+        if (not sameProposals(votes)) {
+          return nonstd::nullopt;
+        }
+
+        return votes.at(0).hash.proposal_hash;
       }
     } // namespace yac
   } // namespace consensus

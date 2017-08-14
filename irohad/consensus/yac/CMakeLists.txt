@@ -21,6 +21,7 @@ add_library(yac
     impl/yac_gate_impl.cpp
     impl/yac_hash_provider_impl.cpp
     impl/yac_peer_orderer_impl.cpp
+
     storage/impl/yac_common.cpp
     storage/impl/storage_result.cpp
     storage/impl/yac_block_storage.cpp

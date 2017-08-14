@@ -16,83 +16,54 @@
  */
 
 #include <gtest/gtest.h>
-#include <algorithm>
 #include "consensus/yac/storage/yac_vote_storage.hpp"
-#include "yac_mocks.hpp"
-
-#include <iostream>
-using namespace std;
+#include "module/irohad/consensus/yac/yac_mocks.hpp"
+#include "logger/logger.hpp"
 
 using namespace iroha::consensus::yac;
 
-TEST(YacStorageTest, SupermajorityFunctionForAllCases2) {
-  cout << "-----------| F(x, 2), x in {0..3} -----------" << endl;
-
-  int N = 2;
-  ASSERT_FALSE(hasSupermajority(0, N));
-  ASSERT_FALSE(hasSupermajority(1, N));
-  ASSERT_TRUE(hasSupermajority(2, N));
-  ASSERT_FALSE(hasSupermajority(3, N));
-}
-
-TEST(YacStorageTest, SupermajorityFunctionForAllCases4) {
-  cout << "-----------| F(x, 4), x in {0..5} |-----------" << endl;
-
-  int N = 4;
-  ASSERT_FALSE(hasSupermajority(0, N));
-  ASSERT_FALSE(hasSupermajority(1, N));
-  ASSERT_FALSE(hasSupermajority(2, N));
-  ASSERT_TRUE(hasSupermajority(3, N));
-  ASSERT_TRUE(hasSupermajority(4, N));
-  ASSERT_FALSE(hasSupermajority(5, N));
-}
+static logger::Logger log_ = logger::testLog("YacStorage");
 
 TEST(YacStorageTest, YacBlockStorageWhenNormalDataInput) {
-  cout << "-----------| Sequentially insertion of votes |-----------" << endl;
+  log_->info("-----------| Sequentially insertion of votes |-----------");
 
   YacHash hash("proposal", "commit");
   int N = 4;
   YacBlockStorage storage(hash, N);
 
   auto insert_1 = storage.insert(create_vote(hash, "one"));
-  ASSERT_EQ(CommitState::not_committed, insert_1.state);
-  ASSERT_EQ(nonstd::nullopt, insert_1.answer.commit);
-  ASSERT_EQ(nonstd::nullopt, insert_1.answer.reject);
+  ASSERT_EQ(nonstd::nullopt, insert_1);
 
   auto insert_2 = storage.insert(create_vote(hash, "two"));
-  ASSERT_EQ(CommitState::not_committed, insert_2.state);
-  ASSERT_EQ(nonstd::nullopt, insert_2.answer.commit);
-  ASSERT_EQ(nonstd::nullopt, insert_2.answer.reject);
+  ASSERT_EQ(nonstd::nullopt, insert_2);
 
   auto insert_3 = storage.insert(create_vote(hash, "three"));
-  ASSERT_EQ(CommitState::committed, insert_3.state);
-  ASSERT_NE(nonstd::nullopt, insert_3.answer.commit);
-  ASSERT_EQ(3, insert_3.answer.commit->votes.size());
-  ASSERT_EQ(nonstd::nullopt, insert_3.answer.reject);
+  ASSERT_NE(nonstd::nullopt, insert_3);
+  ASSERT_NE(nonstd::nullopt, insert_3->commit);
+  ASSERT_EQ(3, insert_3->commit->votes.size());
+  ASSERT_EQ(nonstd::nullopt, insert_3->reject);
 
   auto insert_4 = storage.insert(create_vote(hash, "four"));
-  ASSERT_EQ(CommitState::committed_before, insert_4.state);
-  ASSERT_EQ(4, insert_4.answer.commit->votes.size());
-  ASSERT_EQ(nonstd::nullopt, insert_4.answer.reject);
+  ASSERT_NE(nonstd::nullopt, insert_4);
+  ASSERT_NE(nonstd::nullopt, insert_4->commit);
+  ASSERT_EQ(4, insert_4->commit->votes.size());
+  ASSERT_EQ(nonstd::nullopt, insert_4->reject);
 }
 
 TEST(YacStorageTest, YacBlockStorageWhenNotCommittedAndCommitAcheive) {
-  cout << "-----------| Insert vote => insert commit |-----------" << endl;
+  log_->info("-----------| Insert vote => insert commit |-----------");
 
   YacHash hash("proposal", "commit");
   int N = 4;
   YacBlockStorage storage(hash, N);
 
   auto insert_1 = storage.insert(create_vote(hash, "one"));
-  ASSERT_EQ(CommitState::not_committed, insert_1.state);
-  ASSERT_EQ(nonstd::nullopt, insert_1.answer.commit);
-  ASSERT_EQ(nonstd::nullopt, insert_1.answer.reject);
+  ASSERT_EQ(nonstd::nullopt, insert_1);
 
-  auto insert_commit = storage.insert(CommitMessage({create_vote(hash, "two"),
-                                                     create_vote(hash, "three"),
-                                                     create_vote(hash, "four")})
+  auto insert_commit = storage.insert({create_vote(hash, "two"),
+                                       create_vote(hash, "three"),
+                                       create_vote(hash, "four")}
   );
-  ASSERT_EQ(CommitState::committed, insert_commit.state);
-  ASSERT_EQ(4, insert_commit.answer.commit->votes.size());
-  ASSERT_EQ(nonstd::nullopt, insert_1.answer.reject);
+  ASSERT_EQ(4, insert_commit->commit->votes.size());
+  ASSERT_EQ(nonstd::nullopt, insert_commit->reject);
 }

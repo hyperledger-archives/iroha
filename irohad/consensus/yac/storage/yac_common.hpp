@@ -35,6 +35,21 @@ namespace iroha {
        * @return true if belong supermajority
        */
       bool hasSupermajority(uint64_t current, uint64_t all);
+
+      /**
+       * Check that all votes in collection has same proposal hash
+       * @param votes - collection of votes
+       * @return true, if proposals same
+       */
+      bool sameProposals(const std::vector<VoteMessage> &votes);
+
+      /**
+       * Provide hash common for whole collection
+       * @param votes - collection with votes
+       * @return hash, if collection has same proposal hash, otherwice nullopt
+       */
+      nonstd::optional<ProposalHash>
+      getProposalHash(const std::vector<VoteMessage> &votes);
     } // namespace yac
   } // namespace consensus
 } // namespace iroha

@@ -18,7 +18,6 @@ target_link_libraries(yac_sunny_day_test
 addtest(yac_storage_test yac_storage_test.cpp)
 target_link_libraries(yac_storage_test
     yac
-    model
     )
 
 addtest(yac_timer_test timer_test.cpp)
@@ -44,5 +43,10 @@ target_link_libraries(yac_gate_test
 
 addtest(yac_hash_provider_test yac_hash_provider_test.cpp)
 target_link_libraries(yac_hash_provider_test
+    yac
+    )
+
+addtest(yac_common_test yac_common_test.cpp)
+target_link_libraries(yac_common_test
     yac
     )

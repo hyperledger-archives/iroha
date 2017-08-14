@@ -18,6 +18,8 @@
 #ifndef IROHA_YAC_BLOCK_VOTE_STORAGE_HPP
 #define IROHA_YAC_BLOCK_VOTE_STORAGE_HPP
 
+#include <vector>
+#include <nonstd/optional.hpp>
 #include "consensus/yac/storage/storage_result.hpp"
 #include "consensus/yac/storage/yac_common.hpp"
 
@@ -26,77 +28,57 @@ namespace iroha {
     namespace yac {
 
       /**
-       * Class provide storage of votes for one block
+       * Class provide storage of votes for one block.
        */
       class YacBlockStorage {
        public:
 
-        YacBlockStorage(YacHash hash,
-                        uint64_t peers_in_round);
+        YacBlockStorage(YacHash hash, uint64_t peers_in_round);
 
         /**
          * Try to insert vote to storage
          * @param msg - vote for insertion
-         * @return actual state of storage
+         * @return actual state of storage,
+         * nullopt when storage doesn't has supermajority
          */
-        StorageResult insert(VoteMessage msg);
+        nonstd::optional<Answer> insert(VoteMessage msg);
 
         /**
-         * Insert commit to current storage
-         * @param commit
-         * @return
+         * Insert vector of votes to current storage
+         * @param votes - bunch of votes for insertion
+         * @return state of storage after insertion last vote,
+         * nullopt when storage doesn't has supermajority
          */
-        StorageResult insert(CommitMessage commit);
+        nonstd::optional<Answer> insert(std::vector<VoteMessage> votes);
 
         /**
          * @return current block store state
          */
-        StorageResult getState();
+        nonstd::optional<Answer> getState();
 
         /**
-         * @return all votes attached to storage
+         * Provide hash attached to this storage
          */
-        std::vector<VoteMessage> getVotes();
-
-        /**
-         * @return attached proposal hash
-         */
-        ProposalHash getProposalHash();
-
-        /**
-         * @return attached block hash
-         */
-        BlockHash getBlockHash();
+        YacHash getStorageHash();
 
        private:
-        // --------| private fields |--------
-
-        /**
-         * Try to invert new vote
-         * @param msg - vote for insertion
-         * @return true, if inserted
-         */
-        bool tryInsert(VoteMessage msg);
-
-        /**
-         * Return new status of state based on supermajority metrics
-         * @return actual state status
-         */
-        CommitState updateSupermajorityState();
+        // --------| private api |--------
 
         /**
          * Verify uniqueness of vote in storage
          * @param msg - vote for verification
          * @return true if vote doesn't appear in storage
          */
-        bool unique_vote(VoteMessage &msg);
+        bool uniqueVote(VoteMessage &vote);
 
         /**
-         * Verify that commit message satisfy to block storage
-         * @param commit - message for verification
-         * @return true, if satisfied
+         * Verify that vote has same proposal and
+         * blocks hashes with storage
+         * @return true, if validation passed
          */
-        bool checkCommitScheme(const CommitMessage &commit);
+        bool validScheme(VoteMessage &vote);
+
+        // --------| fields |--------
 
         /**
          * Common hash of all votes in storage
@@ -107,11 +89,6 @@ namespace iroha {
          * All votes stored in block store
          */
         std::vector<VoteMessage> votes_;
-
-        /**
-         * Provide knowledge about state of block storage
-         */
-        StorageResult current_state_;
 
         /**
          * Number of peers in current round
