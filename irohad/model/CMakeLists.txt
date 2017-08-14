@@ -38,13 +38,10 @@ target_link_libraries(model_converters
     logger
     )
 
-add_library(model_registrations
-    registration/impl/commnand_registration.cpp
-    registration/impl/query_registration.cpp
-    registration/impl/query_response_registration.cpp
-    registration/impl/transaction_response_registration.cpp
+add_library(model_registrations INTERFACE)
+target_include_directories(model_registrations INTERFACE
+    registration
     )
-
-target_link_libraries(model_registrations
+target_link_libraries(model_registrations INTERFACE
     model
     )
