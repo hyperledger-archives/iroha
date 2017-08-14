@@ -106,7 +106,7 @@ namespace iroha {
         /**
          * Method try to find proof of reject.
          * This computes as
-         * sum of unvoted nodes + vote with maximal rete < supermajority
+         * number of unvoted nodes + most frequent vote count < supermajority
          * @return
          */
         nonstd::optional<Answer> findRejectProof();
