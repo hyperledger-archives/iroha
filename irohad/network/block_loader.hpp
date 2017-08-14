@@ -18,8 +18,10 @@
 #ifndef IROHA_BLOCK_LOADER_HPP
 #define IROHA_BLOCK_LOADER_HPP
 
-#include <model/block.hpp>
 #include <rxcpp/rx-observable.hpp>
+
+#include "model/block.hpp"
+#include "model/peer.hpp"
 
 namespace iroha {
   namespace network {
@@ -39,9 +41,12 @@ namespace iroha {
        * @param topBlock - your last actual block
        * @return observable with blocks
        */
-      virtual rxcpp::observable <model::Block> requestBlocks(
-          model::Peer &target_peer, model::Block &topBlock) = 0;
+      virtual rxcpp::observable<model::Block> requestBlocks(
+          model::Peer target_peer, model::Block topBlock) = 0;
+
+      virtual ~BlockLoader() = default;
     };
   } // namespace network
 } // namespace iroha
+
 #endif //IROHA_BLOCK_LOADER_HPP

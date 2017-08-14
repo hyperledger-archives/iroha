@@ -18,13 +18,13 @@
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
 
 #include <grpc++/grpc++.h>
-#include <thread>
 #include "consensus/yac/impl/network_impl.hpp"
 
 using namespace iroha::consensus::yac;
 using iroha::model::Peer;
 
 using ::testing::_;
+using ::testing::InvokeWithoutArgs;
 
 TEST(NetworkTest, MessageHandledWhenMessageSent) {
   auto notifications = std::make_shared<MockYacNetworkNotifications>();
@@ -38,38 +38,32 @@ TEST(NetworkTest, MessageHandledWhenMessageSent) {
   message.hash.proposal_hash = "proposal";
   message.hash.block_hash = "block";
 
+  std::mutex mtx;
+  std::condition_variable cv;
+  ON_CALL(*notifications, on_vote(peer, message))
+      .WillByDefault(
+          InvokeWithoutArgs(&cv, &std::condition_variable::notify_one));
+
   EXPECT_CALL(*notifications, on_vote(peer, message)).Times(1);
 
   network->subscribe(notifications);
 
   std::unique_ptr<grpc::Server> server;
 
-  std::mutex mtx;
-  std::condition_variable cv;
-
-  auto thread = std::thread([&server, &peer, &network, &cv] {
-    grpc::ServerBuilder builder;
-    int port = 0;
-    builder.AddListeningPort(peer.address, grpc::InsecureServerCredentials(),
-                             &port);
-    builder.RegisterService(network.get());
-    server = builder.BuildAndStart();
-    ASSERT_TRUE(server);
-    ASSERT_NE(port, 0);
-    cv.notify_one();
-    server->Wait();
-  });
-
-  // wait until server woke up
-  std::unique_lock<std::mutex> lock(mtx);
-  cv.wait(lock);
+  grpc::ServerBuilder builder;
+  int port = 0;
+  builder.AddListeningPort(peer.address, grpc::InsecureServerCredentials(),
+                           &port);
+  builder.RegisterService(network.get());
+  server = builder.BuildAndStart();
+  ASSERT_TRUE(server);
+  ASSERT_NE(port, 0);
 
   network->send_vote(peer, message);
 
-  std::this_thread::sleep_for(std::chrono::seconds(2));
+  // wait for response reader thread
+  std::unique_lock<std::mutex> lock(mtx);
+  cv.wait_for(lock, std::chrono::milliseconds(100));
 
   server->Shutdown();
-  if (thread.joinable()) {
-    thread.join();
-  }
 }

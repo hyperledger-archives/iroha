@@ -18,6 +18,7 @@
 #ifndef IROHA_SIMULATOR_HPP
 #define IROHA_SIMULATOR_HPP
 
+#include <nonstd/optional.hpp>
 #include "ametsuchi/block_query.hpp"
 #include "ametsuchi/temporary_factory.hpp"
 #include "model/model_hash_provider_impl.hpp"
@@ -64,7 +65,7 @@ namespace iroha {
       logger::Logger log_;
 
       // last block
-      model::Block last_block;
+      nonstd::optional<model::Block> last_block;
     };
   }  // namespace simulator
 }  // namespace iroha

@@ -23,7 +23,6 @@
 #include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
-
   namespace ametsuchi {
     /**
      * Public interface for queries on blocks and transactions
@@ -40,17 +39,30 @@ namespace iroha {
           std::string account_id) = 0;
 
       /**
-      * Get all blocks with having id in range [from, to].
-      * @param from - starting id
-      * @param to - ending id
+      * Get given number of blocks starting with given height.
+      * @param height - starting height
+      * @param count - number of blocks to retrieve
       * @return observable of Model Block
       */
-      virtual rxcpp::observable<model::Block> getBlocks(uint32_t from,
-                                                        uint32_t to) = 0;
+      virtual rxcpp::observable<model::Block> getBlocks(uint32_t height,
+                                                        uint32_t count) = 0;
+
+      /**
+      * Get all blocks starting from given height.
+      * @param from - starting height
+      * @return observable of Model Block
+      */
+      virtual rxcpp::observable<model::Block> getBlocksFrom(
+          uint32_t height) = 0;
+
+      /**
+      * Get given number of blocks from top.
+      * @param count - number of blocks to retrieve
+      * @return observable of Model Block
+      */
+      virtual rxcpp::observable<model::Block> getTopBlocks(uint32_t count) = 0;
     };
-
   }  // namespace ametsuchi
-
 }  // namespace iroha
 
 #endif  // IROHA_BLOCK_QUERY_HPP
