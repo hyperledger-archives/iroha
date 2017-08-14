@@ -76,3 +76,9 @@ addtest(json_query_factory_test converters/json_query_factory_test.cpp)
 target_link_libraries(json_query_factory_test
     model_converters
     )
+
+addtest(static_map static_map.cpp)
+target_link_libraries(static_map
+    model_registrations
+    logger
+    )

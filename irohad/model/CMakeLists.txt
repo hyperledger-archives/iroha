@@ -37,3 +37,11 @@ target_link_libraries(model_converters
     schema
     logger
     )
+
+add_library(model_registrations INTERFACE)
+target_include_directories(model_registrations INTERFACE
+    registration
+    )
+target_link_libraries(model_registrations INTERFACE
+    model
+    )

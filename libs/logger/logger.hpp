@@ -18,6 +18,8 @@ limitations under the License.
 
 #include <sstream>
 #include <string>
+#include <functional>
+#include <algorithm>
 
 #include <spdlog/spdlog.h>
 
@@ -61,9 +63,32 @@ namespace logger {
    * @param val - value for convertation
    * @return string representation of bool object
    */
-  template <typename T>
+  template<typename T>
   std::string logBool(T val) {
     return boolRepr(bool(val));
+  }
+
+  /**
+   * Function provide string representation of collection
+   * @tparam Collection - type should implement for semantic
+   * @tparam Lambda - function that transform argument to string
+   * @param collection - bunch of objects
+   * @param transform - function that convert object to string
+   * @return string repr of collection
+   */
+  template<class Collection, class Lambda>
+  std::string to_string(Collection collection, Lambda transform) {
+    const std::string left_bracket = "{";
+    const std::string right_bracket = "}";
+    const std::string separator = ", ";
+
+    std::string result = left_bracket;
+    std::for_each(collection.begin(), collection.end(),
+                  [&result, &transform, &separator](auto value) {
+                    result += transform(value) + separator;
+                  });
+    result = result.substr(0, result.size() - separator.size());
+    return result + right_bracket;
   }
 
 }  // namespace logger
