@@ -28,11 +28,9 @@ namespace iroha {
       }
 
       nonstd::optional<Answer> YacBlockStorage::insert(VoteMessage msg) {
-        if (not validScheme(msg) or
-            not uniqueVote(msg)) {
-          return nonstd::nullopt;
+        if (validScheme(msg) and uniqueVote(msg)) {
+          votes_.push_back(msg);
         }
-        votes_.push_back(msg);
         return getState();
       }
 

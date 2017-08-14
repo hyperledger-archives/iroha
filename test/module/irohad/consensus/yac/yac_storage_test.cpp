@@ -65,5 +65,5 @@ TEST(YacStorageTest, YacBlockStorageWhenNotCommittedAndCommitAcheive) {
                                        create_vote(hash, "four")}
   );
   ASSERT_EQ(4, insert_commit->commit->votes.size());
-  ASSERT_EQ(nonstd::nullopt, insert_1->reject);
+  ASSERT_EQ(nonstd::nullopt, insert_commit->reject);
 }
