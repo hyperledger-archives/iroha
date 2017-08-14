@@ -32,16 +32,14 @@
 namespace iroha {
   namespace model {
 
-    static ClassHandler transaction_response_handler;
-
     class TransactionResponseRegistry {
      public:
       TransactionResponseRegistry() {
         transaction_response_handler.register_type(typeid(TransactionStatelessResponse));
       }
-    };
 
-    static TransactionResponseRegistry transaction_response_registry;
+      ClassHandler transaction_response_handler;
+    };
 
   } // namespace model
 } // namespace iroha

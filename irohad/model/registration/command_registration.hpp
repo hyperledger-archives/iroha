@@ -40,8 +40,6 @@
 namespace iroha {
   namespace model {
 
-    static ClassHandler command_handler;
-
     class CommandRegistry {
      public:
       CommandRegistry() {
@@ -57,9 +55,9 @@ namespace iroha {
         command_handler.register_type(typeid(SetQuorum));
         command_handler.register_type(typeid(TransferAsset));
       }
-    };
 
-    static CommandRegistry command_registry;
+      ClassHandler command_handler;
+    };
 
   } // namespace model
 } // namespace iroha

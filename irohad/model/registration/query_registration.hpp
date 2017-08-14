@@ -34,8 +34,6 @@
 namespace iroha {
   namespace model {
 
-    static ClassHandler query_handler;
-
     class QueryRegistry {
      public:
       QueryRegistry() {
@@ -44,9 +42,9 @@ namespace iroha {
         query_handler.register_type(typeid(GetSignatories));
         query_handler.register_type(typeid(GetAccountTransactions));
       }
-    };
 
-    static QueryRegistry query_registry;
+      ClassHandler query_handler;
+    };
 
   } // namespace model
 } // namespace iroha

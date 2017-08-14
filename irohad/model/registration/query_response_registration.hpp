@@ -35,8 +35,6 @@
 namespace iroha {
   namespace model {
 
-    static ClassHandler query_response_handler;
-
     class QueryResponseRegistry {
      public:
       QueryResponseRegistry() {
@@ -46,9 +44,9 @@ namespace iroha {
         query_response_handler.register_type(typeid(SignatoriesResponse));
         query_response_handler.register_type(typeid(TransactionsResponse));
       }
-    };
 
-    static QueryResponseRegistry query_response_registry;
+      ClassHandler query_response_handler;
+    };
 
   } // namespace model
 } // namespace iroha
