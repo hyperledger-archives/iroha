@@ -26,9 +26,12 @@
 #include "model/commands/transfer_asset.hpp"
 #include "model/model_hash_provider_impl.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "framework/test_subscriber.hpp"
 
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
+using namespace framework::test_subscriber;
+
 
     TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
       // Commit block => get block => observable completed
