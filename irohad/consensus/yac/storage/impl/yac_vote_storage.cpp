@@ -40,8 +40,9 @@ namespace iroha {
         if (val != proposal_storages_.end()) {
           return val;
         }
-        proposal_storages_.emplace_back(msg.hash.proposal_hash, peers_in_round);
-        return proposal_storages_.end() - 1;
+        return proposal_storages_
+            .emplace(proposal_storages_.end(),
+                     msg.hash.proposal_hash, peers_in_round);
       }
 
       // --------| public api |--------
@@ -71,15 +72,11 @@ namespace iroha {
 
       bool YacVoteStorage::getProcessingState(const ProposalHash &hash) {
         auto val = processing_state_.find(hash);
-        if (val == processing_state_.end()) {
-          return false;
-        }
-
-        return val->second;
+        return not(processing_state_.end() == val);
       }
 
       void YacVoteStorage::markAsProcessedState(const ProposalHash &hash) {
-        processing_state_[hash] = true;
+        processing_state_.insert(hash);
       }
 
       // --------| private api |--------

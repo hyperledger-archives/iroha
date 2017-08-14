@@ -28,19 +28,20 @@ namespace iroha {
                                          BlockHash block_hash) {
 
         // find exist
-        for (auto iter = block_storages_.begin(); iter < block_storages_.end();
-             ++iter) {
-          auto yac_hash = iter->getStorageHash();
-          if (yac_hash.proposal_hash == proposal_hash and
-              yac_hash.block_hash == block_hash) {
-            return iter;
-          }
+        auto iter =
+            std::find_if(block_storages_.begin(), block_storages_.end(),
+                         [&proposal_hash, &block_hash](auto block_storage) {
+                           auto yac_hash = block_storage.getStorageHash();
+                           return yac_hash.proposal_hash == proposal_hash and
+                               yac_hash.block_hash == block_hash;
+                         });
+        if (iter != block_storages_.end()) {
+          return iter;
         }
         // insert and return new
-        YacBlockStorage
-            new_container(YacHash(proposal_hash, block_hash), peers_in_round_);
-        block_storages_.push_back(new_container);
-        return block_storages_.end() - 1;
+        return block_storages_
+            .emplace(block_storages_.end(),
+                     YacHash(proposal_hash, block_hash), peers_in_round_);
       }
 
       // --------| public api |--------

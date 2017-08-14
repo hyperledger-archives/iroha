@@ -18,7 +18,7 @@
 #ifndef IROHA_YAC_VOTE_STORAGE_HPP
 #define IROHA_YAC_VOTE_STORAGE_HPP
 
-#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <nonstd/optional.hpp>
 #include <memory>
@@ -130,9 +130,10 @@ namespace iroha {
         std::vector<YacProposalStorage> proposal_storages_;
 
         /**
-         * Processing map provide user flags about processing some hashes
+         * Processing set provide user flags about processing some hashes.
+         * If hash exists <=> processed
          */
-        std::unordered_map<ProposalHash, bool> processing_state_;
+        std::unordered_set<ProposalHash> processing_state_;
       };
 
     } // namespace yac

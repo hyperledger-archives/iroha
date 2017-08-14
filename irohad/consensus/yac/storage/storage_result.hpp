@@ -33,11 +33,11 @@ namespace iroha {
        * Guarantee that at least one optional will be empty
        */
       struct Answer {
-        Answer(CommitMessage cmt){
+        explicit Answer(CommitMessage cmt){
           commit = std::move(cmt);
         }
 
-        Answer(RejectMessage rjt){
+        explicit Answer(RejectMessage rjt){
           reject = std::move(rjt);
         }
 
