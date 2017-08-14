@@ -131,9 +131,11 @@ namespace iroha {
     std::unique_ptr<TemporaryWsv> TestStorageImpl::createTemporaryWsv() {
       return StorageImpl::createTemporaryWsv();
     }
+
     std::unique_ptr<MutableStorage> TestStorageImpl::createMutableStorage() {
       return StorageImpl::createMutableStorage();
     }
+
     void TestStorageImpl::commit(std::unique_ptr<MutableStorage> mutableStorage) {
       return StorageImpl::commit(std::move(mutableStorage));
     }
@@ -142,27 +144,40 @@ namespace iroha {
         std::string account_id) {
       return StorageImpl::getAccountTransactions(account_id);
     }
-    rxcpp::observable<model::Block> TestStorageImpl::getBlocks(uint32_t from,
-                                                               uint32_t to) {
-      return StorageImpl::getBlocks(from, to);
-    }
+
+    rxcpp::observable<model::Block> TestStorageImpl::getBlocks(uint32_t height,
+                                                               uint32_t count) {
+      return StorageImpl::getBlocks(height, count);
+    };
+
+    rxcpp::observable<model::Block> TestStorageImpl::getBlocksFrom(uint32_t height) {
+      return StorageImpl::getBlocksFrom(height);
+    };
+
+    rxcpp::observable<model::Block> TestStorageImpl::getTopBlocks(uint32_t count) {
+      return StorageImpl::getTopBlocks(count);
+    };
 
     nonstd::optional<model::Account> TestStorageImpl::getAccount(
         const std::string &account_id) {
       return StorageImpl::getAccount(account_id);
     }
+
     nonstd::optional<std::vector<ed25519::pubkey_t>> TestStorageImpl::getSignatories(
         const std::string &account_id) {
       return StorageImpl::getSignatories(account_id);
     }
+
     nonstd::optional<model::Asset> TestStorageImpl::getAsset(
         const std::string &asset_id) {
       return StorageImpl::getAsset(asset_id);
     }
+
     nonstd::optional<model::AccountAsset> TestStorageImpl::getAccountAsset(
         const std::string &account_id, const std::string &asset_id) {
       return StorageImpl::getAccountAsset(account_id, asset_id);
     }
+
     nonstd::optional<std::vector<model::Peer>> TestStorageImpl::getPeers() {
       return StorageImpl::getPeers();
     }

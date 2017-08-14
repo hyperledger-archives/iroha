@@ -51,24 +51,38 @@ namespace iroha {
 
       // storage interface
      public:
-      std::unique_ptr<TemporaryWsv> createTemporaryWsv();
-      std::unique_ptr<MutableStorage> createMutableStorage();
-      void commit(std::unique_ptr<MutableStorage> mutableStorage);
+      std::unique_ptr<TemporaryWsv> createTemporaryWsv() override;
 
-      rxcpp::observable<model::Transaction> getAccountTransactions(
-          std::string account_id);
-      rxcpp::observable<model::Block> getBlocks(uint32_t from,
-                                                uint32_t to);
+      std::unique_ptr<MutableStorage> createMutableStorage() override;
 
-      nonstd::optional<model::Account> getAccount(
-          const std::string &account_id);
-      nonstd::optional<std::vector<ed25519::pubkey_t>> getSignatories(
-          const std::string &account_id);
-      nonstd::optional<model::Asset> getAsset(
-          const std::string &asset_id);
-      nonstd::optional<model::AccountAsset> getAccountAsset(
-          const std::string &account_id, const std::string &asset_id);
-      nonstd::optional<std::vector<model::Peer>> getPeers();
+      void commit(std::unique_ptr<MutableStorage> mutableStorage) override;
+
+      rxcpp::observable<model::Transaction>
+      getAccountTransactions(std::string account_id) override;
+
+      rxcpp::observable<model::Block>
+      getBlocks(uint32_t height, uint32_t count) override;
+
+      rxcpp::observable<model::Block>
+      getBlocksFrom(uint32_t height) override;
+
+      rxcpp::observable<model::Block>
+      getTopBlocks(uint32_t count) override;
+
+      nonstd::optional<model::Account>
+      getAccount(const std::string &account_id) override;
+
+      nonstd::optional<std::vector<ed25519::pubkey_t>>
+      getSignatories(const std::string &account_id) override;
+
+      nonstd::optional<model::Asset>
+      getAsset(const std::string &asset_id) override;
+
+      nonstd::optional<model::AccountAsset>
+      getAccountAsset(const std::string &account_id,
+                      const std::string &asset_id) override;
+
+      nonstd::optional<std::vector<model::Peer>> getPeers() override ;
     };
 
   }  // namespace ametsuchi
