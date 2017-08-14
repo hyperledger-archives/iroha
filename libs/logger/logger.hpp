@@ -33,7 +33,20 @@ namespace logger {
 
   std::string input(const std::string &string);
 
+  /**
+   * Provide logger object
+   * @param tag - tagging name for identifiing logger
+   * @return logger object
+   */
   Logger log(const std::string &tag);
+
+  /**
+   * Provide logger for using in test purposes;
+   * This logger write data only for console
+   * @param tag - tagging name for identifiing logger
+   * @return logger object
+   */
+  Logger testLog(const std::string &tag);
 
   /**
    * Convert bool value to human readable string repr

@@ -15,24 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_AMETSUCHI_TEST_COMMON_HPP
-#define IROHA_AMETSUCHI_TEST_COMMON_HPP
-
 #include <dirent.h>
+#include "logger/logger.hpp"
 
-void remove_all(const std::string &dump_dir) {
+#include "common/files.hpp"
+
+void iroha::remove_all(const std::string &dump_dir) {
+  auto log = logger::log("common::remove_all");
   if (!dump_dir.empty()) {
     // Directory iterator:
     struct dirent **namelist;
-    auto status = scandir(dump_dir.c_str(), &namelist, NULL, alphasort);
+    auto status = scandir(dump_dir.c_str(), &namelist, nullptr, alphasort);
     if (status < 0) {
-      // TODO: handle internal error
+      log->error("Internal error on scanning folder {}", dump_dir);
     } else {
       uint n = status;
       uint i = 1;
       while (++i < n) {
         if (std::remove((dump_dir + "/" + namelist[i]->d_name).c_str())) {
-          perror("Error deleting file");
+          log->error("Error on deletion file {}", namelist[i]->d_name);
         }
       }
       for (uint j = 0; j < n; ++j) {
@@ -40,10 +41,5 @@ void remove_all(const std::string &dump_dir) {
       }
       free(namelist);
     }
-    if (std::remove(dump_dir.c_str())) {
-      perror("Error deleting file");
-    }
   }
 }
-
-#endif //IROHA_AMETSUCHI_TEST_COMMON_HPP

@@ -15,30 +15,18 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_AMETSUCHI_H
-#define IROHA_AMETSUCHI_H
+#ifndef IROHA_FILES_HPP
+#define IROHA_FILES_HPP
 
-#include "ametsuchi/block_query.hpp"
-#include "ametsuchi/wsv_query.hpp"
-#include "ametsuchi/temporary_factory.hpp"
-#include "ametsuchi/mutable_factory.hpp"
-
+/**
+ * This source file contains common methods related to files
+ */
 namespace iroha {
 
-  namespace ametsuchi {
-
-    /**
-     * Storage interface, which allows queries on current committed state, and
-     * creation of state which can be mutated with blocks and transactions
-     */
-    class Storage : public WsvQuery, public BlockQuery, public TemporaryFactory,
-                    public MutableFactory {
-     public:
-      virtual ~Storage() = default;
-    };
-
-  }  // namespace ametsuchi
-
-}  // namespace iroha
-
-#endif  // IROHA_AMETSUCHI_H
+  /**
+   * Remove all files inside folder
+   * @param dump_dir - target folder
+   */
+  void remove_all(const std::string &dump_dir);
+} // namespace iroha
+#endif //IROHA_FILES_HPP
