@@ -47,12 +47,12 @@ namespace iroha {
          * @param votes - bunch of votes for insertion
          * @return state of storage after insertion last vote
          */
-        Answer insert(std::vector<VoteMessage> votes);
+        nonstd::optional<Answer> insert(std::vector<VoteMessage> votes);
 
         /**
          * @return current block store state
          */
-        Answer getState();
+        nonstd::optional<Answer> getState();
 
         /**
          * Provide hash attached to this storage

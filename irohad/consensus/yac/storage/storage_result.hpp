@@ -18,6 +18,8 @@
 #ifndef IROHA_STORAGE_RESULT_HPP
 #define IROHA_STORAGE_RESULT_HPP
 
+#include <utility>
+
 #include "consensus/yac/storage/yac_common.hpp"
 #include "consensus/yac/messages.hpp"
 #include <nonstd/optional.hpp>
@@ -31,10 +33,15 @@ namespace iroha {
        * Guarantee that at least one optional will be empty
        */
       struct Answer {
-        Answer() {
-          commit = nonstd::nullopt;
-          reject = nonstd::nullopt;
+        Answer(CommitMessage cmt){
+          commit = std::move(cmt);
         }
+
+        Answer(RejectMessage rjt){
+          reject = std::move(rjt);
+        }
+
+        Answer() = delete;
 
         /**
          * Result contains commit if it available
@@ -45,11 +52,6 @@ namespace iroha {
          * Result contains reject if it available
          */
         nonstd::optional<RejectMessage> reject;
-
-        /**
-         * Common proposal hash that common for reject/commit message
-         */
-        nonstd::optional<ProposalHash> hash;
 
         bool operator==(const Answer &rhs) const;
       };

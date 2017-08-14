@@ -36,7 +36,7 @@ namespace iroha {
         return getState();
       }
 
-      Answer YacBlockStorage::insert(std::vector<VoteMessage> votes) {
+      nonstd::optional<Answer> YacBlockStorage::insert(std::vector<VoteMessage> votes) {
         std::for_each(votes.begin(), votes.end(),
                       [this](auto vote) {
                         this->insert(vote);
@@ -44,14 +44,12 @@ namespace iroha {
         return getState();
       }
 
-      Answer YacBlockStorage::getState() {
+      nonstd::optional<Answer> YacBlockStorage::getState() {
         auto supermajority = hasSupermajority(votes_.size(), peers_in_round_);
-        Answer answer;
         if (supermajority) {
-          answer.hash = getStorageHash().proposal_hash;
-          answer.commit = CommitMessage(votes_);
+          return Answer(CommitMessage(votes_));
         }
-        return answer;
+        return nonstd::nullopt;
       }
 
       YacHash YacBlockStorage::getStorageHash() {

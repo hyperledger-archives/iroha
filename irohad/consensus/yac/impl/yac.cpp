@@ -87,7 +87,7 @@ namespace iroha {
 
       void Yac::votingStep(YacHash hash) {
         auto storage = vote_storage_.getProposalStorage(hash.proposal_hash);
-        if (storage != nullptr and storage->getState().hash.has_value()) {
+        if (storage != nullptr and storage->getState().has_value()) {
           return;
         }
         network_->send_vote(cluster_order_.currentLeader(),
@@ -109,7 +109,7 @@ namespace iroha {
       void Yac::applyCommit(model::Peer from, CommitMessage commit) {
         auto answer =
             vote_storage_.store(commit, cluster_order_.getNumberOfPeers());
-        if (not answer.has_value() or not answer.value().hash.has_value()) {
+        if (not answer.has_value()) {
           // commit don't applied
           return;
         }
@@ -141,7 +141,7 @@ namespace iroha {
         auto answer =
             vote_storage_.store(vote, cluster_order_.getNumberOfPeers());
 
-        if (not answer.has_value() or not answer.value().hash.has_value()) {
+        if (not answer.has_value()) {
           // commit don't applied
           return;
         }

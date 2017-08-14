@@ -23,7 +23,7 @@ namespace iroha {
     namespace yac {
       YacProposalStorage::YacProposalStorage(ProposalHash hash,
                                              uint64_t peers_in_round)
-          : current_state_(Answer()),
+          : current_state_(nonstd::nullopt),
             hash_(std::move(hash)),
             peers_in_round_(peers_in_round) {
       }
@@ -36,7 +36,7 @@ namespace iroha {
           auto block_state = block_storages_.at(index).insert(msg);
 
           if (block_state.has_value() and
-              block_state->hash.has_value()) {
+              block_state->commit.has_value()) {
             // supermajority on block achieved
             current_state_ = *block_state;
           } else {
@@ -50,7 +50,7 @@ namespace iroha {
         return getState();
       };
 
-      Answer YacProposalStorage::insert(std::vector<VoteMessage> messages) {
+      nonstd::optional<Answer> YacProposalStorage::insert(std::vector<VoteMessage> messages) {
         std::for_each(messages.begin(), messages.end(),
                       [this](auto vote) {
                         this->insert(std::move(vote));
@@ -61,7 +61,7 @@ namespace iroha {
         return hash_;
       }
 
-      Answer YacProposalStorage::getState() const {
+      nonstd::optional<Answer> YacProposalStorage::getState() const {
         return current_state_;
       };
 

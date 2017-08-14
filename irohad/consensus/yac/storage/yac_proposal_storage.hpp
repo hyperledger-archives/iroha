@@ -54,7 +54,7 @@ namespace iroha {
          * @return result, that contains actual state of storage,
          * after insertion of all votes.
          */
-        Answer insert(std::vector<VoteMessage> messages);
+        nonstd::optional<Answer> insert(std::vector<VoteMessage> messages);
 
         /**
          * Provides hash assigned for storage
@@ -64,7 +64,7 @@ namespace iroha {
         /**
          * @return current state of storage
          */
-        Answer getState() const;
+        nonstd::optional<Answer> getState() const;
 
        private:
         // --------| private api |--------
@@ -111,7 +111,7 @@ namespace iroha {
         /**
          * Current state of storage
          */
-        Answer current_state_;
+        nonstd::optional<Answer> current_state_;
 
         /**
          * Vector of block storages based on this proposal
