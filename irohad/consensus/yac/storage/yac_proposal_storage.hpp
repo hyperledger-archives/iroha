@@ -35,7 +35,21 @@ namespace iroha {
        * and gain information about commits/rejects for those hash
        */
       class YacProposalStorage {
+
+       private:
+        // --------| private api |--------
+
+        /**
+         * Find block index with provided parameters,
+         * if those store absent - create new
+         * @param proposal_hash - hash of proposal
+         * @param block_hash - hash of block
+         * @return iterator to storage
+         */
+        auto findStore(ProposalHash proposal_hash, BlockHash block_hash);
+
        public:
+        // --------| public api |--------
 
         YacProposalStorage(ProposalHash hash, uint64_t peers_in_round);
 
@@ -97,14 +111,7 @@ namespace iroha {
          */
         nonstd::optional<Answer> findRejectProof();
 
-        /**
-         * Find block index with provided parameters,
-         * if those store absent - create new
-         * @param proposal_hash - hash of proposal
-         * @param block_hash - hash of block
-         * @return index of storage
-         */
-        uint64_t findStore(ProposalHash proposal_hash, BlockHash block_hash);
+
 
         // --------| fields |--------
 
