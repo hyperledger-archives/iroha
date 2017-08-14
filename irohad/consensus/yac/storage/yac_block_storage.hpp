@@ -38,14 +38,16 @@ namespace iroha {
         /**
          * Try to insert vote to storage
          * @param msg - vote for insertion
-         * @return actual state of storage
+         * @return actual state of storage,
+         * nullopt when storage doesn't has supermajority
          */
         nonstd::optional<Answer> insert(VoteMessage msg);
 
         /**
          * Insert vector of votes to current storage
          * @param votes - bunch of votes for insertion
-         * @return state of storage after insertion last vote
+         * @return state of storage after insertion last vote,
+         * nullopt when storage doesn't has supermajority
          */
         nonstd::optional<Answer> insert(std::vector<VoteMessage> votes);
 
