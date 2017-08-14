@@ -16,6 +16,7 @@
  */
 
 #include <utility>
+#include <algorithm>
 
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
@@ -135,7 +136,7 @@ namespace iroha {
                                                                      std::string redis_host,
                                                                      std::size_t redis_port,
                                                                      std::string postgres_options) {
-      auto log_ = logger::log("StorageImpl:create");
+      auto log_ = logger::log("StorageImpl:initConnection");
       log_->info("Start storage creation");
       // TODO lock
 
@@ -190,6 +191,9 @@ namespace iroha {
                                  redis_host,
                                  redis_port,
                                  postgres_options);
+      if(not ctx.has_value()) {
+        return nullptr;
+      }
 
       return std::shared_ptr<StorageImpl>(
           new StorageImpl(block_store_dir,

@@ -31,7 +31,9 @@ namespace iroha {
           mkdir(block_store_path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
         }
-        virtual void TearDown() { remove_all(block_store_path); }
+        virtual void TearDown() {
+          iroha::remove_all(block_store_path);
+        }
         std::string block_store_path = "/tmp/dump";
       };
 

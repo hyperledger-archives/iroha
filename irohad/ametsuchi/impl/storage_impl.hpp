@@ -115,11 +115,11 @@ namespace iroha {
        */
       std::unique_ptr<cpp_redis::redis_client> index_;
 
-      std::unique_ptr<pqxx::lazyconnection> wsv_connection_;
-
       /**
        * Pg connection with direct transaction management
        */
+      std::unique_ptr<pqxx::lazyconnection> wsv_connection_;
+
       std::unique_ptr<pqxx::nontransaction> wsv_transaction_;
 
       std::unique_ptr<WsvQuery> wsv_;

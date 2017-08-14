@@ -185,7 +185,7 @@ namespace iroha {
         client.sync_commit();
         client.disconnect();
 
-        remove_all(block_store_path);
+        iroha::remove_all(block_store_path);
       }
 
       std::string pgopt_ =

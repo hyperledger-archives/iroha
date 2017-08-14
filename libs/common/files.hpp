@@ -21,10 +21,12 @@
 /**
  * This source file contains common methods related to files
  */
+namespace iroha {
 
-/**
- * Remove all files inside folder
- * @param dump_dir - target folder
- */
-void remove_all(const std::string &dump_dir);
+  /**
+   * Remove all files inside folder
+   * @param dump_dir - target folder
+   */
+  void remove_all(const std::string &dump_dir);
+} // namespace iroha
 #endif //IROHA_FILES_HPP

@@ -18,7 +18,9 @@
 #include <dirent.h>
 #include "logger/logger.hpp"
 
-void remove_all(const std::string &dump_dir) {
+#include "common/files.hpp"
+
+void iroha::remove_all(const std::string &dump_dir) {
   auto log = logger::log("common::remove_all");
   if (!dump_dir.empty()) {
     // Directory iterator:
