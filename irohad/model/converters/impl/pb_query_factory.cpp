@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include <model/model_hash_provider_impl.hpp>
 #include "model/converters/pb_query_factory.hpp"
+#include "model/model_hash_provider_impl.hpp"
 #include "model/queries/get_account.hpp"
 #include "model/queries/get_account_assets.hpp"
 #include "model/queries/get_signatories.hpp"
@@ -26,8 +25,21 @@ namespace iroha {
   namespace model {
     namespace converters {
 
+      PbQueryFactory::PbQueryFactory() {
+        log_ = logger::log("PbQueryFactory");
+        serializers_[typeid(GetAccount)] = &PbQueryFactory::serializeGetAccount;
+        serializers_[typeid(GetAccountAssets)] =
+            &PbQueryFactory::serializeGetAccountAssets;
+        serializers_[typeid(GetAccountAssets)] =
+            &PbQueryFactory::serializeGetAccountAssets;
+        serializers_[typeid(GetAccountTransactions)] =
+            &PbQueryFactory::serializeGetAccountTransactions;
+        serializers_[typeid(GetSignatories)] =
+            &PbQueryFactory::serializeGetSignatories;
+      }
+
       std::shared_ptr<model::Query> PbQueryFactory::deserialize(
-           const protocol::Query &pb_query) {
+          const protocol::Query& pb_query) {
         std::shared_ptr<model::Query> val;
 
         if (pb_query.has_get_account()) {
@@ -76,10 +88,66 @@ namespace iroha {
         val->signature = sign;
         val->created_ts = pb_query.header().created_time();
         val->creator_account_id = pb_query.creator_account_id();
-        model::HashProviderImpl hashProvider; // TODO: get rid off unnecessary object initialization
+        model::HashProviderImpl hashProvider;  // TODO: get rid off unnecessary
+                                               // object initialization
         val->query_hash = hashProvider.get_hash(val);
         return val;
       }
-    }
-  }
-}
+
+      nonstd::optional<protocol::Query> PbQueryFactory::serialize(
+          std::shared_ptr<Query> query) {
+        protocol::Query pb_query;
+        pb_query.set_creator_account_id(query->creator_account_id);
+        auto header = pb_query.mutable_header();
+        header->set_created_time(query->created_ts);
+        // Set signatures
+        auto sig = header->mutable_signature();
+        sig->set_signature(query->signature.signature.to_string());
+        sig->set_pubkey(query->signature.pubkey.to_string());
+
+        auto it = serializers_.find(typeid(*query));
+        if (it != serializers_.end()) {
+          (this->*it->second)(pb_query, query);
+          return pb_query;
+        }
+        log_->error("Query type not found");
+        return nonstd::nullopt;
+      }
+
+      void PbQueryFactory::serializeGetAccount(protocol::Query& pb_query,
+                                               std::shared_ptr<Query> query) {
+        auto tmp = std::static_pointer_cast<GetAccount>(query);
+        auto account_id = tmp->account_id;
+        auto pb_query_mut = pb_query.mutable_get_account();
+        pb_query_mut->set_account_id(account_id);
+      };
+
+      void PbQueryFactory::serializeGetAccountAssets(
+          protocol::Query& pb_query, std::shared_ptr<Query> query) {
+        auto tmp = std::static_pointer_cast<GetAccountAssets>(query);
+        auto account_id = tmp->account_id;
+        auto asset_id = tmp->asset_id;
+        auto pb_query_mut = pb_query.mutable_get_account_assets();
+        pb_query_mut->set_account_id(account_id);
+        pb_query_mut->set_asset_id(asset_id);
+      };
+
+      void PbQueryFactory::serializeGetAccountTransactions(
+          protocol::Query& pb_query, std::shared_ptr<Query> query) {
+        auto tmp = std::static_pointer_cast<GetAccountTransactions>(query);
+        auto account_id = tmp->account_id;
+        auto pb_query_mut = pb_query.mutable_get_account_transactions();
+        pb_query_mut->set_account_id(account_id);
+      }
+
+      void PbQueryFactory::serializeGetSignatories(
+          protocol::Query& pb_query, std::shared_ptr<Query> query) {
+        auto tmp = std::static_pointer_cast<GetSignatories>(query);
+        auto account_id = tmp->account_id;
+        auto pb_query_mut = pb_query.mutable_get_account_signatories();
+        pb_query_mut->set_account_id(account_id);
+      }
+
+    }  // namespace converters
+  }    // namespace model
+}  // namespace iroha

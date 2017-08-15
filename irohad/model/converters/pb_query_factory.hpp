@@ -19,6 +19,10 @@
 
 #include "model/query.hpp"
 #include "queries.pb.h"
+#include <typeindex>
+#include <unordered_map>
+#include "logger/logger.hpp"
+#include <nonstd/optional.hpp>
 
 namespace iroha {
   namespace model {
@@ -35,8 +39,35 @@ namespace iroha {
          * @param pb_block - reference to proto query
          * @return model Query
          */
-        std::shared_ptr<model::Query> deserialize(const protocol::Query &pb_query);
+        std::shared_ptr<Query> deserialize(const protocol::Query &pb_query);
 
+        /**
+         * Convert model query to proto query
+         * @param query
+         * @return
+         */
+        nonstd::optional<protocol::Query> serialize(std::shared_ptr<Query> query);
+
+        PbQueryFactory();
+
+       private:
+        // Query serializer:
+        void serializeGetAccount(protocol::Query& pb_query,
+                                            std::shared_ptr<Query> query);
+        void serializeGetAccountAssets(protocol::Query& pb_query,
+                                 std::shared_ptr<Query> query);
+        void serializeGetAccountTransactions(protocol::Query& pb_query,
+                                 std::shared_ptr<Query> query);
+        void serializeGetSignatories(protocol::Query& pb_query,
+                                 std::shared_ptr<Query> query);
+
+
+        using Serializer = void (PbQueryFactory::*)(
+            protocol::Query&,
+            std::shared_ptr<Query>);
+        std::unordered_map<std::type_index, Serializer> serializers_;
+
+        logger::Logger log_;
 
       };
 
