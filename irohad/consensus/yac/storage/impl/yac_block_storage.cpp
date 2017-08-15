@@ -42,6 +42,10 @@ namespace iroha {
         return getState();
       }
 
+      auto YacBlockStorage::getVotes(){
+        return votes_;
+      }
+
       nonstd::optional<Answer> YacBlockStorage::getState() {
         auto supermajority = hasSupermajority(votes_.size(), peers_in_round_);
         if (supermajority) {

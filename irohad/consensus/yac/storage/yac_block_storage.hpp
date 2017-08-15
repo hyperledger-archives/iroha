@@ -52,6 +52,11 @@ namespace iroha {
         nonstd::optional<Answer> insert(std::vector<VoteMessage> votes);
 
         /**
+         * @return votes attached to storage
+         */
+        auto getVotes();
+
+        /**
          * @return current block store state
          */
         nonstd::optional<Answer> getState();
