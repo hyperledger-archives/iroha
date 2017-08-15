@@ -48,7 +48,10 @@ namespace torii {
      * @param response - ToriiResponse
      */
     void ToriiAsync(iroha::protocol::Transaction const& request,
-                    iroha::protocol::ToriiResponse& response);
+                    google::protobuf::Empty& response);
+
+    void StatusAsync(iroha::protocol::Transaction const& request,
+                     iroha::protocol::ToriiResponse& response);
 
    private:
     std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory_;

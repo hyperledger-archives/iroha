@@ -18,8 +18,8 @@
 #ifndef IROHA_TRANSACTION_RESPONSE_HPP
 #define IROHA_TRANSACTION_RESPONSE_HPP
 
-#include <model/transaction.hpp>
 #include <model/client.hpp>
+#include <model/transaction.hpp>
 
 namespace iroha {
   namespace model {
@@ -28,14 +28,23 @@ namespace iroha {
      * Transaction response is data with status during transaction lifecycle
      */
     struct TransactionResponse {
-
       /**
        * Processed transaction
        */
       Transaction transaction;
 
+      enum Status {
+        STATELESS_VALIDATION_FAILED,
+        STATELESS_VALIDATION_SUCCESS,
+        STATEFUL_VALIDATION_FAILED,
+        STATEFUL_VALIDATION_SUCCESS,
+        COMMITTED,
+        ON_PROCESS,
+        NOT_RECEIVED
+      };
+
       virtual ~TransactionResponse() = default;
     };
-  } //namespace model
-} //namespace iroha
-#endif //IROHA_TRANSACTION_RESPONSE_HPP
+  }  // namespace model
+}  // namespace iroha
+#endif  // IROHA_TRANSACTION_RESPONSE_HPP

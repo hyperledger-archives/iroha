@@ -15,6 +15,7 @@ limitations under the License.
  */
 
 #include <endpoint.grpc.pb.h>
+#include <google/protobuf/empty.pb.h>
 #include <grpc/support/time.h>
 #include <unistd.h>
 #include <network/grpc_async_service.hpp>
@@ -50,8 +51,13 @@ namespace torii {
   void ToriiServiceHandler::handleRpcs() {
     // CommandService::Torii()
     enqueueRequest<prot::CommandService::AsyncService, prot::Transaction,
-                   prot::ToriiResponse>(
+                   google::protobuf::Empty>(
         &prot::CommandService::AsyncService::RequestTorii,
+        &ToriiServiceHandler::ToriiHandler, commandAsyncService_);
+
+    enqueueRequest<prot::CommandService::AsyncService, prot::Transaction,
+                   prot::ToriiResponse>(
+        &prot::CommandService::AsyncService::RequestStatus,
         &ToriiServiceHandler::ToriiHandler, commandAsyncService_);
 
     // QueryService::Find()
@@ -94,15 +100,27 @@ namespace torii {
    * then, spawns a new Call instance to serve an another client.
    */
   void ToriiServiceHandler::ToriiHandler(
-      CommandServiceCall<prot::Transaction, prot::ToriiResponse>* call) {
+      CommandServiceCall<prot::Transaction, google::protobuf::Empty>* call) {
     command_service_->ToriiAsync(call->request(), call->response());
     call->sendResponse(grpc::Status::OK);
 
     // Spawn a new Call instance to serve an another client.
     enqueueRequest<prot::CommandService::AsyncService, prot::Transaction,
-                   prot::ToriiResponse>(
+                   google::protobuf::Empty>(
         &prot::CommandService::AsyncService::RequestTorii,
         &ToriiServiceHandler::ToriiHandler, commandAsyncService_);
+  }
+
+  void ToriiServiceHandler::StatusHandler(
+      CommandServiceCall<iroha::protocol::Transaction,
+                         iroha::protocol::ToriiResponse>* call) {
+    command_service_->StatusAsync(call->request(), call->response());
+    call->sendResponse(grpc::Status::OK);
+
+    enqueueRequest<prot::CommandService::AsyncService, prot::Transaction,
+                   iroha::protocol::ToriiResponse>(
+        &prot::CommandService::AsyncService::RequestStatus,
+        &ToriiServiceHandler::StatusHandler, commandAsyncService_);
   }
 
   void ToriiServiceHandler::QueryFindHandler(

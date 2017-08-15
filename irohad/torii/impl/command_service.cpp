@@ -45,10 +45,13 @@ namespace torii {
   }
 
   void CommandService::ToriiAsync(iroha::protocol::Transaction const &request,
-                                  iroha::protocol::ToriiResponse &response) {
+                                  google::protobuf::Empty &empty) {
     auto iroha_tx = pb_factory_->deserialize(request);
 
     auto tx_hash = iroha_tx->tx_hash.to_string();
+
+    iroha::protocol::ToriiResponse response;
+    response.set_validation(iroha::protocol::StatelessValidation::ON_PROCESS);
 
     if (handler_map_.count(tx_hash) > 0) {
       response.set_validation(iroha::protocol::STATELESS_VALIDATION_FAILED);
@@ -59,5 +62,8 @@ namespace torii {
     // Send transaction to iroha
     tx_processor_->transactionHandle(iroha_tx);
   }
+
+  void CommandService::StatusAsync(iroha::protocol::Transaction const &request,
+                                   iroha::protocol::ToriiResponse &response) {}
 
 }  // namespace torii
