@@ -22,9 +22,8 @@
 
 using namespace iroha::consensus::yac;
 
-static logger::Logger log_ = logger::testLog("YacCommon");
-
-TEST(YacStorageTest, SupermajorityFunctionForAllCases2) {
+TEST(YacCommonTest, SupermajorityFunctionForAllCases2) {
+  logger::Logger log_ = logger::testLog("YacCommon");
   log_->info("-----------| F(x, 2), x in {0..3} -----------");
 
   int N = 2;
@@ -34,7 +33,8 @@ TEST(YacStorageTest, SupermajorityFunctionForAllCases2) {
   ASSERT_FALSE(hasSupermajority(3, N));
 }
 
-TEST(YacStorageTest, SupermajorityFunctionForAllCases4) {
+TEST(YacCommonTest, SupermajorityFunctionForAllCases4) {
+  logger::Logger log_ = logger::testLog("YacCommon");
   log_->info("-----------| F(x, 4), x in {0..5} |-----------");
 
   int N = 4;
@@ -46,7 +46,27 @@ TEST(YacStorageTest, SupermajorityFunctionForAllCases4) {
   ASSERT_FALSE(hasSupermajority(5, N));
 }
 
-TEST(YacStorageTest, SameProposalTest) {
+TEST(YacCommonTest, RejectProofSuccessfulCase) {
+  logger::Logger log_ = logger::testLog("YacCommon");
+  log_->info("-----------| RejectProof(x, 6, 7) in {1..3} |-----------");
+
+  ASSERT_TRUE(hasReject(1, 6, 7));
+  ASSERT_TRUE(hasReject(2, 6, 7));
+  ASSERT_TRUE(hasReject(3, 6, 7));
+
+}
+
+TEST(YacCommonTest, RejectProofNegativeCase) {
+  logger::Logger log_ = logger::testLog("YacCommon");
+  log_->info("-----------| RejectPxroof(x, 6, 7) in {4..6}|-----------");
+
+  ASSERT_FALSE(hasReject(4, 6, 7));
+  ASSERT_FALSE(hasReject(5, 6, 7));
+  ASSERT_FALSE(hasReject(6, 6, 7));
+}
+
+TEST(YacCommonTest, SameProposalTest) {
+  logger::Logger log_ = logger::testLog("YacCommon");
   log_->info("-----------| Verify ok and fail cases |-----------");
 
   YacHash hash("proposal", "commit");
@@ -60,7 +80,8 @@ TEST(YacStorageTest, SameProposalTest) {
   ASSERT_FALSE(sameProposals(votes));
 }
 
-TEST(YacSotrageTest, getProposalHashTest) {
+TEST(YacCommonTest, getProposalHashTest) {
+  logger::Logger log_ = logger::testLog("YacCommon");
   log_->info("-----------| Verify ok and fail cases |-----------");
 
   YacHash hash("proposal", "commit");

@@ -29,6 +29,11 @@ namespace iroha {
         return current >= 2 * f + 1;
       }
 
+      bool hasReject(uint64_t frequent, uint64_t voted, uint64_t all) {
+        auto not_voted = all - voted;
+        return not hasSupermajority(frequent + not_voted, all);
+      }
+
       bool sameProposals(const std::vector<VoteMessage> &votes) {
         if (votes.empty()) {
           return false;
