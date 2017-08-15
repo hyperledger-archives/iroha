@@ -36,10 +36,11 @@ namespace iroha {
         return peer;
       }
 
-      VoteMessage create_vote(YacHash hash, std::string sign) {
+      VoteMessage create_vote(YacHash hash, std::string pub_key) {
         VoteMessage vote;
         vote.hash = hash;
-        std::copy(sign.begin(), sign.end(), vote.signature.pubkey.begin());
+        std::copy(pub_key.begin(), pub_key.end(),
+                  vote.signature.pubkey.begin());
         return vote;
       }
 
@@ -138,9 +139,9 @@ namespace iroha {
 
         MockYacPeerOrderer() = default;
 
-        MockYacPeerOrderer(const MockYacPeerOrderer &rhs){};
+        MockYacPeerOrderer(const MockYacPeerOrderer &rhs) {};
 
-        MockYacPeerOrderer(MockYacPeerOrderer &&rhs){};
+        MockYacPeerOrderer(MockYacPeerOrderer &&rhs) {};
 
         MockYacPeerOrderer &operator=(const MockYacPeerOrderer &rhs) {
           return *this;
@@ -149,13 +150,13 @@ namespace iroha {
 
       class MockYacHashProvider : public YacHashProvider {
        public:
-        MOCK_METHOD1(makeHash, YacHash(model::Block &));
+        MOCK_METHOD1(makeHash, YacHash(model::Block & ));
 
         MockYacHashProvider() = default;
 
-        MockYacHashProvider(const MockYacHashProvider &rhs){};
+        MockYacHashProvider(const MockYacHashProvider &rhs) {};
 
-        MockYacHashProvider(MockYacHashProvider &&rhs){};
+        MockYacHashProvider(MockYacHashProvider &&rhs) {};
 
         MockYacHashProvider &operator=(const MockYacHashProvider &rhs) {
           return *this;
