@@ -16,6 +16,9 @@
  */
 
 #include <algorithm>
+#include <numeric>
+#include <iterator>
+#include "consensus/yac/storage/yac_common.hpp"
 #include "consensus/yac/storage/yac_proposal_storage.hpp"
 
 namespace iroha {
@@ -107,7 +110,38 @@ namespace iroha {
       }
 
       nonstd::optional<Answer> YacProposalStorage::findRejectProof() {
-        // todo implement
+        auto max_vote =
+            std::max_element(block_storages_.begin(), block_storages_.end(),
+                             [](auto &left, auto &right) {
+                               return left.getNumberOfVotes() <
+                                   right.getNumberOfVotes();
+                             })->getNumberOfVotes();
+
+        uint64_t all_votes =
+            std::accumulate(block_storages_.begin(), block_storages_.end(),
+                            0ull, [](auto &acc, auto &storage) {
+                  return acc + storage.getNumberOfVotes();
+                });
+
+        auto is_reject =
+            hasReject(max_vote,
+                      static_cast<uint64_t>(all_votes),
+                      peers_in_round_);
+
+        if (is_reject) {
+          std::vector<VoteMessage> result;
+          result.reserve(all_votes);
+          std::for_each(block_storages_.begin(), block_storages_.end(),
+                        [&result](auto &storage) {
+                          auto votes_from_block_storage = storage.getVotes();
+                          std::move(votes_from_block_storage.begin(),
+                                    votes_from_block_storage.end(),
+                                    std::back_inserter(result));
+                        });
+
+          return Answer(RejectMessage(std::move(result)));
+        }
+
         return nonstd::nullopt;
       }
 

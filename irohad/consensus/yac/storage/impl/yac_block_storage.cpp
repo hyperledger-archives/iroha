@@ -42,8 +42,12 @@ namespace iroha {
         return getState();
       }
 
-      auto YacBlockStorage::getVotes(){
+      std::vector<VoteMessage> YacBlockStorage::getVotes() {
         return votes_;
+      }
+
+      uint64_t YacBlockStorage::getNumberOfVotes() {
+        return votes_.size();
       }
 
       nonstd::optional<Answer> YacBlockStorage::getState() {

@@ -19,6 +19,7 @@
 #define IROHA_YAC_PROPOSAL_STORAGE_HPP
 
 #include <vector>
+#include <unordered_map>
 #include <nonstd/optional.hpp>
 
 #include "consensus/yac/messages.hpp"
@@ -106,8 +107,8 @@ namespace iroha {
         /**
          * Method try to find proof of reject.
          * This computes as
-         * number of unvoted nodes + most frequent vote count < supermajority
-         * @return
+         * number of not voted peers + most frequent vote count < supermajority
+         * @return answer with proof
          */
         nonstd::optional<Answer> findRejectProof();
 

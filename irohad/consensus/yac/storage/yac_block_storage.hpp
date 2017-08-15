@@ -54,7 +54,12 @@ namespace iroha {
         /**
          * @return votes attached to storage
          */
-        auto getVotes();
+        std::vector<VoteMessage> getVotes();
+
+        /**
+         * @return number of votes attached to storage
+         */
+        uint64_t getNumberOfVotes();
 
         /**
          * @return current block store state
