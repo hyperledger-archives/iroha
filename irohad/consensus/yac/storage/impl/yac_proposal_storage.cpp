@@ -26,8 +26,6 @@ namespace iroha {
   namespace consensus {
     namespace yac {
 
-      static logger::Logger log_ = logger::log("ProposalStorage");
-
       // --------| private api |--------
 
       auto YacProposalStorage::findStore(ProposalHash proposal_hash,
@@ -68,12 +66,12 @@ namespace iroha {
           if (block_state.has_value() and
               block_state->commit.has_value()) {
             // supermajority on block achieved
-            current_state_ = block_state;
+            current_state_ = std::move(block_state);
           } else {
             // try to find reject case
-            auto reject = findRejectProof();
-            if (reject.has_value()) {
-              current_state_ = reject;
+            auto reject_state = findRejectProof();
+            if (reject_state.has_value()) {
+              current_state_ = std::move(reject_state);
             }
           }
         }
