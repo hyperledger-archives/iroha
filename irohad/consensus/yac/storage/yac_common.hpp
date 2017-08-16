@@ -37,6 +37,17 @@ namespace iroha {
       bool hasSupermajority(uint64_t current, uint64_t all);
 
       /**
+       * Check if there is available reject proof.
+       * Reject proof is proof that in current round
+       * no one hash doesn't achieve supermajority.
+       * @param frequent - number of times, that appears most frequent element
+       * @param voted - all number of voted peers
+       * @param all - number of peers in round
+       * @return true, if reject
+       */
+      bool hasReject(uint64_t frequent, uint64_t voted, uint64_t all);
+
+      /**
        * Check that all votes in collection has same proposal hash
        * @param votes - collection of votes
        * @return true, if proposals same

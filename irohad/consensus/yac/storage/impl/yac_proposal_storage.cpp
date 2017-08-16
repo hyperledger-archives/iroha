@@ -16,7 +16,11 @@
  */
 
 #include <algorithm>
+#include <numeric>
+#include "consensus/yac/storage/yac_common.hpp"
 #include "consensus/yac/storage/yac_proposal_storage.hpp"
+
+#include <logger/logger.hpp>
 
 namespace iroha {
   namespace consensus {
@@ -62,12 +66,12 @@ namespace iroha {
           if (block_state.has_value() and
               block_state->commit.has_value()) {
             // supermajority on block achieved
-            current_state_ = *block_state;
+            current_state_ = std::move(block_state);
           } else {
             // try to find reject case
-            auto reject = findRejectProof();
-            if (reject.has_value()) {
-              current_state_ = *reject;
+            auto reject_state = findRejectProof();
+            if (reject_state.has_value()) {
+              current_state_ = std::move(reject_state);
             }
           }
         }
@@ -102,12 +106,45 @@ namespace iroha {
       }
 
       bool YacProposalStorage::checkPeerUniqueness(const VoteMessage &msg) {
-        // todo implement method: checking based on public keys
-        return true;
+        return std::all_of(block_storages_.begin(), block_storages_.end(),
+                           [&msg](YacBlockStorage &storage) {
+                             if (storage.getStorageHash() != msg.hash) {
+                               return true;
+                             }
+                             return not storage.isContains(msg);
+                           });
       }
 
       nonstd::optional<Answer> YacProposalStorage::findRejectProof() {
-        // todo implement
+        auto max_vote =
+            std::max_element(block_storages_.begin(), block_storages_.end(),
+                             [](auto &left, auto &right) {
+                               return left.getNumberOfVotes() <
+                                   right.getNumberOfVotes();
+                             })->getNumberOfVotes();
+
+        auto all_votes =
+            std::accumulate(block_storages_.begin(), block_storages_.end(),
+                            0ull, [](auto &acc, auto &storage) {
+                  return acc + storage.getNumberOfVotes();
+                });
+
+        auto is_reject = hasReject(max_vote, all_votes, peers_in_round_);
+
+        if (is_reject) {
+          std::vector<VoteMessage> result;
+          result.reserve(all_votes);
+          std::for_each(block_storages_.begin(), block_storages_.end(),
+                        [&result](auto &storage) {
+                          auto votes_from_block_storage = storage.getVotes();
+                          std::move(votes_from_block_storage.begin(),
+                                    votes_from_block_storage.end(),
+                                    std::back_inserter(result));
+                        });
+
+          return Answer(RejectMessage(std::move(result)));
+        }
+
         return nonstd::nullopt;
       }
 

@@ -20,6 +20,7 @@ limitations under the License.
 #include <string>
 #include <functional>
 #include <algorithm>
+#include <nonstd/optional.hpp>
 
 #include <spdlog/spdlog.h>
 
@@ -89,6 +90,20 @@ namespace logger {
                   });
     result = result.substr(0, result.size() - separator.size());
     return result + right_bracket;
+  }
+
+  /**
+   * Function provide string representation of optional value
+   * @tparam Optional - type of optional
+   * @tparam Lambda - function that consume value type and return std::string
+   * @param opt - value wrapped by optional
+   * @param transform - function that transforming value to std::string
+   * @return string repr of value
+   */
+  template<class Optional, class Lambda>
+  std::string opt_to_string(Optional opt, Lambda transform){
+    const std::string null_value = "nullopt";
+    return opt.has_value() ? null_value : transform(*opt);
   }
 
 }  // namespace logger
