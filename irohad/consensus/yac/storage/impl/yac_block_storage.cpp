@@ -50,6 +50,10 @@ namespace iroha {
         return votes_.size();
       }
 
+      bool YacBlockStorage::isContains(const VoteMessage &msg) const {
+        return std::count(votes_.begin(), votes_.end(), msg) != 0;
+      }
+
       nonstd::optional<Answer> YacBlockStorage::getState() {
         auto supermajority = hasSupermajority(votes_.size(), peers_in_round_);
         if (supermajority) {

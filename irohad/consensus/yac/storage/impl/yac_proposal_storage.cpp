@@ -17,7 +17,6 @@
 
 #include <algorithm>
 #include <numeric>
-#include <iterator>
 #include "consensus/yac/storage/yac_common.hpp"
 #include "consensus/yac/storage/yac_proposal_storage.hpp"
 
@@ -105,8 +104,13 @@ namespace iroha {
       }
 
       bool YacProposalStorage::checkPeerUniqueness(const VoteMessage &msg) {
-        // todo implement method: checking based on public keys
-        return true;
+        return std::any_of(block_storages_.begin(), block_storages_.end(),
+                           [&msg](YacBlockStorage &storage) {
+                             if (storage.getStorageHash() != msg.hash) {
+                               return true;
+                             }
+                             return not storage.isContains(msg);
+                           });
       }
 
       nonstd::optional<Answer> YacProposalStorage::findRejectProof() {
@@ -117,16 +121,13 @@ namespace iroha {
                                    right.getNumberOfVotes();
                              })->getNumberOfVotes();
 
-        uint64_t all_votes =
+        auto all_votes =
             std::accumulate(block_storages_.begin(), block_storages_.end(),
                             0ull, [](auto &acc, auto &storage) {
                   return acc + storage.getNumberOfVotes();
                 });
 
-        auto is_reject =
-            hasReject(max_vote,
-                      static_cast<uint64_t>(all_votes),
-                      peers_in_round_);
+        auto is_reject = hasReject(max_vote, all_votes, peers_in_round_);
 
         if (is_reject) {
           std::vector<VoteMessage> result;

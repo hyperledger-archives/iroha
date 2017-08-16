@@ -67,6 +67,13 @@ namespace iroha {
         nonstd::optional<Answer> getState();
 
         /**
+         * Verify that passed vote contains in storage
+         * @param msg  - vote for finding
+         * @return true, if contains
+         */
+        bool isContains(const VoteMessage &msg) const;
+
+        /**
          * Provide hash attached to this storage
          */
         YacHash getStorageHash();
