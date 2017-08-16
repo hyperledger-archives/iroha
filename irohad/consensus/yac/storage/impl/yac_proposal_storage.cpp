@@ -20,9 +20,13 @@
 #include "consensus/yac/storage/yac_common.hpp"
 #include "consensus/yac/storage/yac_proposal_storage.hpp"
 
+#include <logger/logger.hpp>
+
 namespace iroha {
   namespace consensus {
     namespace yac {
+
+      static logger::Logger log_ = logger::log("ProposalStorage");
 
       // --------| private api |--------
 
@@ -104,7 +108,7 @@ namespace iroha {
       }
 
       bool YacProposalStorage::checkPeerUniqueness(const VoteMessage &msg) {
-        return std::any_of(block_storages_.begin(), block_storages_.end(),
+        return std::all_of(block_storages_.begin(), block_storages_.end(),
                            [&msg](YacBlockStorage &storage) {
                              if (storage.getStorageHash() != msg.hash) {
                                return true;
