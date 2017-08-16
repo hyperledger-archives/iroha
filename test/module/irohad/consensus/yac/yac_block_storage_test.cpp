@@ -23,7 +23,7 @@
 
 using namespace iroha::consensus::yac;
 
-static logger::Logger log_ = logger::testLog("YacStorage");
+static logger::Logger log_ = logger::testLog("YacBlockStorage");
 
 class YacBlockStorageTest : public ::testing::Test {
  public:
