@@ -16,10 +16,11 @@
  */
 
 #include "client.hpp"
-#include <model/converters/json_query_factory.hpp>
 #include <utility>
 #include "model/converters/json_common.hpp"
+#include "model/converters/json_query_factory.hpp"
 #include "model/converters/json_transaction_factory.hpp"
+#include "model/converters/pb_query_factory.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
 
 namespace iroha_cli {
@@ -27,7 +28,8 @@ namespace iroha_cli {
   CliClient::CliClient(std::string target_ip, int port)
       : command_client_(target_ip, port), query_client_(target_ip, port) {}
 
-  CliClient::Response<CliClient::TxStatus> CliClient::sendTx(std::string json_tx) {
+  CliClient::Response<CliClient::TxStatus> CliClient::sendTx(
+      std::string json_tx) {
     CliClient::Response<CliClient::TxStatus> response;
     iroha::model::converters::JsonTransactionFactory serializer;
     auto doc = iroha::model::converters::stringToJson(std::move(json_tx));
@@ -65,7 +67,7 @@ namespace iroha_cli {
 
     iroha::protocol::QueryResponse query_response;
 
-    if (not query_opt.has_value()) {
+    if (not query_opt) {
       iroha::protocol::ErrorResponse er;
       er.set_reason(iroha::protocol::ErrorResponse::WRONG_FORMAT);
       query_response.mutable_error_response()->CopyFrom(er);
@@ -73,8 +75,9 @@ namespace iroha_cli {
       response.answer = query_response;
       return response;
     }
-
-    response.status = query_client_.Find(query_opt.value(), query_response);
+    iroha::model::converters::PbQueryFactory proto_serializer;
+    auto pb_query = proto_serializer.serialize(query_opt);
+    response.status = query_client_.Find(pb_query.value(), query_response);
     response.answer = query_response;
     return response;
   }

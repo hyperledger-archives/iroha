@@ -19,6 +19,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "model/generators/query_generator.hpp"
+#include "model/generators/signature_generator.hpp"
 
 using namespace iroha::model::converters;
 using namespace iroha::model::generators;
@@ -108,27 +109,37 @@ TEST(QuerySerializerTest, SerializeGetAccount){
   JsonQueryFactory queryFactory;
   QueryGenerator queryGenerator;
   auto val = queryGenerator.generateGetAccount(0, "123", 0, "test");
+  val->signature = generateSignature(42);
   auto json = queryFactory.serialize(val);
   ASSERT_TRUE(json.has_value());
-  std::cout << json.value() << std::endl;
+  auto ser_val = queryFactory.deserialize(json.value());
+  ASSERT_EQ(val->query_hash, ser_val->query_hash);
+  ASSERT_EQ(val->signature.signature, ser_val->signature.signature);
 }
 
 TEST(QuerySerializerTest, SerializeGetAccountAssets){
   JsonQueryFactory queryFactory;
   QueryGenerator queryGenerator;
   auto val = queryGenerator.generateGetAccountAssets(0, "123", 0, "test", "coin");
+  val->signature = generateSignature(42);
   auto json = queryFactory.serialize(val);
   ASSERT_TRUE(json.has_value());
-  std::cout << json.value() << std::endl;
+  auto ser_val = queryFactory.deserialize(json.value());
+  ASSERT_EQ(val->query_hash, ser_val->query_hash);
+  ASSERT_EQ(val->signature.signature, ser_val->signature.signature);
+
 }
 
 TEST(QuerySerializerTest, SerializeGetAccountTransactions){
   JsonQueryFactory queryFactory;
   QueryGenerator queryGenerator;
   auto val = queryGenerator.generateGetAccountTransactions(0, "123", 0, "test");
+  val->signature = generateSignature(42);
   auto json = queryFactory.serialize(val);
   ASSERT_TRUE(json.has_value());
-  std::cout << json.value() << std::endl;
+  auto ser_val = queryFactory.deserialize(json.value());
+  ASSERT_EQ(val->query_hash, ser_val->query_hash);
+  ASSERT_EQ(val->signature.signature, ser_val->signature.signature);
 }
 
 
@@ -136,7 +147,10 @@ TEST(QuerySerializerTest, SerializeGetSignatories){
   JsonQueryFactory queryFactory;
   QueryGenerator queryGenerator;
   auto val = queryGenerator.generateGetSignatories(0, "123", 0, "test");
+  val->signature = generateSignature(42);
   auto json = queryFactory.serialize(val);
   ASSERT_TRUE(json.has_value());
-  std::cout << json.value() << std::endl;
+  auto ser_val = queryFactory.deserialize(json.value());
+  ASSERT_EQ(val->query_hash, ser_val->query_hash);
+  ASSERT_EQ(val->signature.signature, ser_val->signature.signature);
 }
