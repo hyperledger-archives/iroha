@@ -68,12 +68,12 @@ namespace iroha {
           if (block_state.has_value() and
               block_state->commit.has_value()) {
             // supermajority on block achieved
-            current_state_ = *block_state;
+            current_state_ = block_state;
           } else {
             // try to find reject case
             auto reject = findRejectProof();
             if (reject.has_value()) {
-              current_state_ = *reject;
+              current_state_ = reject;
             }
           }
         }
