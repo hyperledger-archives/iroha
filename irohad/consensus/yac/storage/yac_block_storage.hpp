@@ -31,6 +31,15 @@ namespace iroha {
        * Class provide storage of votes for one block.
        */
       class YacBlockStorage {
+       private:
+
+        // --------| fields |--------
+
+        /**
+         * All votes stored in block store
+         */
+        std::vector<VoteMessage> votes_;
+
        public:
 
         YacBlockStorage(YacHash hash, uint64_t peers_in_round);
@@ -54,12 +63,12 @@ namespace iroha {
         /**
          * @return votes attached to storage
          */
-        std::vector<VoteMessage> getVotes();
+        auto getVotes() -> decltype(votes_);
 
         /**
          * @return number of votes attached to storage
          */
-        uint64_t getNumberOfVotes();
+        auto getNumberOfVotes() -> decltype(votes_)::size_type;
 
         /**
          * @return current block store state
@@ -101,11 +110,6 @@ namespace iroha {
          * Common hash of all votes in storage
          */
         YacHash hash_;
-
-        /**
-         * All votes stored in block store
-         */
-        std::vector<VoteMessage> votes_;
 
         /**
          * Number of peers in current round

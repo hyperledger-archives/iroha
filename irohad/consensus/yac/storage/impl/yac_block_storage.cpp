@@ -42,11 +42,11 @@ namespace iroha {
         return getState();
       }
 
-      std::vector<VoteMessage> YacBlockStorage::getVotes() {
+      auto YacBlockStorage::getVotes() -> decltype(votes_) {
         return votes_;
       }
 
-      uint64_t YacBlockStorage::getNumberOfVotes() {
+      auto YacBlockStorage::getNumberOfVotes() -> decltype(votes_)::size_type {
         return votes_.size();
       }
 
