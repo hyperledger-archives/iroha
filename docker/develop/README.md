@@ -2,7 +2,7 @@
 
 Navigate to this folder and run:
 ```
-docker build -t warchantua/iroha-dev .
+docker build -t hyperledger/iroha-docker-develop .
 ```
 
 # Why

@@ -17,7 +17,7 @@ version: '3'
 
 services:
   node:
-    image: lebdron/iroha-dev
+    image: hyperledger/iroha-docker-develop
     environment:
       - IROHA_PEER_PUBKEY_PATH=/home/bogdan/iroha/testbase.pub
       - IROHA_PEER_PRIVKEY_PATH=/home/bogdan/iroha/testbase.priv

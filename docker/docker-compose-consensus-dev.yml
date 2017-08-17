@@ -2,7 +2,7 @@ version: '3'
 
 services:
   node:
-    image: lebdron/iroha-dev
+    image: hyperledger/iroha-docker-develop
     volumes:
       - ../:/iroha
     stdin_open: true
