@@ -1,29 +1,29 @@
-# How to build `iroha` using docker
+# Set up `iroha` development environment
 
-# Git repository
+## Git repository
 
 Clone `iroha` repository on your directory.
 
 ```bash
-git clone https://github.com/hyperledger/iroha /path/to/iroha
+git clone -b develop --depth=1 https://github.com/hyperledger/iroha /path/to/iroha
 ```
 
-# Development environment
-
-Build on docker container for develop environment `hyperledger/iroha-docker-develop` so you need to build it:
+## How to run development environment
 
 ```bash
-docker build -t hyperledger/iroha-docker-develop /path/to/iroha/docker/develop
+/path/to/iroha/scripts/run-iroha-dev.sh
 ```
 
-# How to run
+You will be attached to interactive environment for development and testing with `iroha` folder mounted from host machine
 
+## Build `iroha` and run tests
+
+Build:
 ```bash
-/path/to/iroha/scripts/run-iroha.dev.sh
+cmake -H. -Bbuild; cmake --build build -- -j$(nproc)
 ```
 
-You will be attached to interactive environment for development and testing
-
-# Troubleshooting
-
-To successfully build docker image, you should be able to build it locally: [follow this guilde](../docs/how_to_build.rst) in case of troubles.
+Test:
+```bash
+cmake --build build --target test
+```

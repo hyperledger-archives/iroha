@@ -19,6 +19,7 @@ services:
     volumes:
       - ../:/opt/iroha
     working_dir: /opt/iroha
+
   redis:
     image: redis:3.2.8
 
