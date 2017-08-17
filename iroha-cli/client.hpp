@@ -41,9 +41,9 @@ namespace iroha_cli {
      * @return
      */
     CliClient::Response<CliClient::TxStatus> sendTx(std::string json_tx);
+    CliClient::Response<iroha::protocol::ToriiResponse> getTxStatus(std::string tx_hash);
 
     CliClient::Response<iroha::protocol::QueryResponse> sendQuery(std::string json_query);
-
    private:
     torii::CommandSyncClient command_client_;
     torii_utils::QuerySyncClient query_client_;

@@ -28,7 +28,7 @@ namespace torii {
    * CommandSyncClient
    */
   class CommandSyncClient {
-  public:
+   public:
     CommandSyncClient(std::string ip, int port);
     ~CommandSyncClient();
 
@@ -38,10 +38,12 @@ namespace torii {
      * @param response - returns ToriiResponse if succeeded
      * @return grpc::Status - returns connection is success or not.
      */
-    grpc::Status Torii(const iroha::protocol::Transaction& tx,
-                       iroha::protocol::ToriiResponse& response);
+    grpc::Status Torii(const iroha::protocol::Transaction& tx);
 
-  private:
+    grpc::Status Status(const iroha::protocol::TxStatusRequest& tx,
+                        iroha::protocol::ToriiResponse& response);
+
+   private:
     grpc::ClientContext context_;
     std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
     grpc::CompletionQueue completionQueue_;
@@ -52,7 +54,7 @@ namespace torii {
    * CommandAsyncClient is used by peer service.
    */
   class CommandAsyncClient {
-  public:
+   public:
     /**
      * sets ip and port and calls listenToriiNonBlocking() in a new thread.
      * @param ip
@@ -62,7 +64,8 @@ namespace torii {
 
     ~CommandAsyncClient();
 
-    using Callback = std::function<void(iroha::protocol::ToriiResponse& response)>;
+    using Callback = std::function<void(google::protobuf::Empty& response)>;
+    using StatusCallback = std::function<void(iroha::protocol::ToriiResponse)>;
 
     /**
      * Async Torii rpc
@@ -70,20 +73,25 @@ namespace torii {
      * @param callback
      * @return grpc::Status
      */
-    grpc::Status Torii(const iroha::protocol::Transaction& tx, const Callback& callback);
+    grpc::Status Torii(const iroha::protocol::Transaction& tx,
+                       const Callback& callback);
 
-  private:
+    grpc::Status Status(const iroha::protocol::TxStatusRequest& tx,
+                        const StatusCallback& callback);
+
+   private:
     /**
      * starts response listener of non-blocking rpcs.
      */
     void listen();
 
-  private:
+   private:
     grpc::ClientContext context_;
     std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
     grpc::CompletionQueue completionQueue_;
     grpc::Status status_;
-    std::thread listener_; // listens rpcs' responses and executes callbacks.
+    std::thread listener_;  // listens rpcs' responses and executes callbacks.
+    std::thread status_listener_;
   };
 
 }  // namespace torii

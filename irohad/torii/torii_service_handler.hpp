@@ -106,7 +106,7 @@ namespace torii {
     void ToriiHandler(CommandServiceCall<iroha::protocol::Transaction,
                                          google::protobuf::Empty>*);
 
-    void StatusHandler(CommandServiceCall<iroha::protocol::Transaction,
+    void StatusHandler(CommandServiceCall<iroha::protocol::TxStatusRequest,
                                          iroha::protocol::ToriiResponse>*);
 
 

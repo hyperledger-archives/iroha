@@ -31,7 +31,7 @@ namespace iroha {
       /**
        * Processed transaction
        */
-      Transaction transaction;
+      std::string tx_hash;
 
       enum Status {
         STATELESS_VALIDATION_FAILED,
@@ -42,6 +42,8 @@ namespace iroha {
         ON_PROCESS,
         NOT_RECEIVED
       };
+
+      Status current_status;
 
       virtual ~TransactionResponse() = default;
     };

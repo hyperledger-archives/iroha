@@ -55,10 +55,10 @@ namespace torii {
         &prot::CommandService::AsyncService::RequestTorii,
         &ToriiServiceHandler::ToriiHandler, commandAsyncService_);
 
-    enqueueRequest<prot::CommandService::AsyncService, prot::Transaction,
+    enqueueRequest<prot::CommandService::AsyncService, prot::TxStatusRequest,
                    prot::ToriiResponse>(
         &prot::CommandService::AsyncService::RequestStatus,
-        &ToriiServiceHandler::ToriiHandler, commandAsyncService_);
+        &ToriiServiceHandler::StatusHandler, commandAsyncService_);
 
     // QueryService::Find()
     enqueueRequest<prot::QueryService::AsyncService, prot::Query,
@@ -112,12 +112,12 @@ namespace torii {
   }
 
   void ToriiServiceHandler::StatusHandler(
-      CommandServiceCall<iroha::protocol::Transaction,
+      CommandServiceCall<iroha::protocol::TxStatusRequest,
                          iroha::protocol::ToriiResponse>* call) {
     command_service_->StatusAsync(call->request(), call->response());
     call->sendResponse(grpc::Status::OK);
 
-    enqueueRequest<prot::CommandService::AsyncService, prot::Transaction,
+    enqueueRequest<prot::CommandService::AsyncService, prot::TxStatusRequest,
                    iroha::protocol::ToriiResponse>(
         &prot::CommandService::AsyncService::RequestStatus,
         &ToriiServiceHandler::StatusHandler, commandAsyncService_);

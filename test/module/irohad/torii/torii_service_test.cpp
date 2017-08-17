@@ -115,15 +115,13 @@ TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
   EXPECT_CALL(*pcsMock, propagate_transaction(_)).Times(AtLeast(1));
 
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
-    iroha::protocol::ToriiResponse response;
     auto new_tx = iroha::protocol::Transaction();
     auto meta = new_tx.mutable_meta();
     meta->set_tx_counter(i);
     meta->set_creator_account_id("accountA");
-    auto stat = torii::CommandSyncClient(Ip, Port).Torii(new_tx, response);
+
+    auto stat = torii::CommandSyncClient(Ip, Port).Torii(new_tx);
     ASSERT_TRUE(stat.ok());
-    ASSERT_EQ(response.validation(),
-              iroha::protocol::STATELESS_VALIDATION_SUCCESS);
   }
 }
 
@@ -134,15 +132,12 @@ TEST_F(ToriiServiceTest, ToriiWhenBlockingInvalid) {
       .WillRepeatedly(Return(false));
 
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
-    iroha::protocol::ToriiResponse response;
     auto new_tx = iroha::protocol::Transaction();
     auto meta = new_tx.mutable_meta();
     meta->set_tx_counter(i);
     meta->set_creator_account_id("accountA");
-    auto stat = torii::CommandSyncClient(Ip, Port).Torii(new_tx, response);
+    auto stat = torii::CommandSyncClient(Ip, Port).Torii(new_tx);
     ASSERT_TRUE(stat.ok());
-    ASSERT_EQ(response.validation(),
-              iroha::protocol::STATELESS_VALIDATION_FAILED);
   }
 }
 
@@ -164,9 +159,7 @@ TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
     meta->set_creator_account_id("accountA");
 
     auto stat =
-        client.Torii(new_tx, [&count](iroha::protocol::ToriiResponse response) {
-          ASSERT_EQ(response.validation(),
-                    iroha::protocol::STATELESS_VALIDATION_SUCCESS);
+        client.Torii(new_tx, [&count](auto response) {
           count++;
         });
   }

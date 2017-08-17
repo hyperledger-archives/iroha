@@ -32,13 +32,55 @@ namespace iroha {
         std::shared_ptr<StatelessValidator> validator)
         : pcs_(std::move(pcs)), validator_(std::move(validator)) {
       log_ = logger::log("TxProcessor");
+
+      // insert all txs from proposal to proposal set
+      pcs_->on_proposal().subscribe([this](model::Proposal proposal) {
+        for (auto tx : proposal.transactions) {
+          proposal_set_.insert(tx.tx_hash.to_string());
+          TransactionResponse response;
+          response.tx_hash = tx.tx_hash.to_string();
+          response.current_status =
+              TransactionResponse::STATELESS_VALIDATION_SUCCESS;
+        }
+      });
+
+      // move commited txs from proposal to candidate map
+      pcs_->on_commit().subscribe(
+          [this](rxcpp::observable<model::Block> blocks) {
+            blocks.subscribe(
+                // on next..
+                [this](model::Block block) {
+                  for (auto tx : block.transactions) {
+                    if (this->proposal_set_.count(tx.tx_hash.to_string())) {
+                      candidate_set_.insert(tx.tx_hash.to_string());
+                    }
+                  }
+                },
+                // on complete
+                [this]() {
+                  for (auto tx_hash : proposal_set_) {
+                    TransactionResponse response;
+                    response.tx_hash = tx_hash;
+                    response.current_status =
+                        TransactionResponse::STATEFUL_VALIDATION_FAILED;
+                  }
+                  proposal_set_.clear();
+
+                  for (auto tx_hash : candidate_set_) {
+                    TransactionResponse response;
+                    response.tx_hash = tx_hash;
+                    response.current_status = TransactionResponse::COMMITTED;
+                  }
+                  candidate_set_.clear();
+                });
+          });
     }
 
     void TransactionProcessorImpl::transactionHandle(
         std::shared_ptr<model::Transaction> transaction) {
       log_->info("handle transaction");
       model::TransactionStatelessResponse response;
-      response.transaction = *transaction;
+      response.tx_hash = transaction->tx_hash.to_string();
       response.passed = false;
 
       if (validator_->validate(*transaction)) {

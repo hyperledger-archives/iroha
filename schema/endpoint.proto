@@ -22,9 +22,13 @@ message ToriiResponse {
   StatelessValidation validation = 1;
 }
 
+message TxStatusRequest{
+  bytes tx_hash = 1;
+}
+
 service CommandService {
   rpc Torii (Transaction) returns (google.protobuf.Empty);
-  rpc Status (Transaction) returns (ToriiResponse);
+  rpc Status (TxStatusRequest) returns (ToriiResponse);
 }
 
 

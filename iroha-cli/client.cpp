@@ -35,13 +35,13 @@ namespace iroha_cli {
     auto doc = iroha::model::converters::stringToJson(std::move(json_tx));
     if (not doc.has_value()) {
       response.status = grpc::Status::OK;
-      response.answer = WRONG_FORMAT;
+      response.answer = TxStatus::WRONG_FORMAT;
       return response;
     }
     auto tx_opt = serializer.deserialize(doc.value());
     if (not tx_opt.has_value()) {
       response.status = grpc::Status::OK;
-      response.answer = WRONG_FORMAT;
+      response.answer = TxStatus::WRONG_FORMAT;
       return response;
     }
     auto model_tx = tx_opt.value();
@@ -49,13 +49,25 @@ namespace iroha_cli {
     iroha::model::converters::PbTransactionFactory factory;
     auto pb_tx = factory.serialize(model_tx);
     // Send to iroha:
-    iroha::protocol::ToriiResponse toriiResponse;
-    response.status = command_client_.Torii(pb_tx, toriiResponse);
-    response.answer = toriiResponse.validation() ==
-                              iroha::protocol::STATELESS_VALIDATION_SUCCESS
-                          ? OK
-                          : NOT_VALID;
+    response.status = command_client_.Torii(pb_tx);
+    response.answer = TxStatus::OK;
+
     return response;
+  }
+
+  CliClient::Response<iroha::protocol::ToriiResponse> CliClient::getTxStatus(std::string tx_hash) {
+    /*
+    CliClient::Response<CliClient::TxStatus> response;
+    // Send to iroha:
+    iroha::protocol::ToriiResponse toriiResponse;
+    response.status = command_client_.Status(tx_hash, toriiResponse);
+    response.answer = toriiResponse.validation() ==
+        iroha::protocol::STATELESS_VALIDATION_SUCCESS
+                      ? OK
+                      : NOT_VALID;
+
+    return response;
+     */
   }
 
   CliClient::Response<iroha::protocol::QueryResponse> CliClient::sendQuery(

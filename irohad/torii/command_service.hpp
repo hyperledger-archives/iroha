@@ -50,7 +50,7 @@ namespace torii {
     void ToriiAsync(iroha::protocol::Transaction const& request,
                     google::protobuf::Empty& response);
 
-    void StatusAsync(iroha::protocol::Transaction const& request,
+    void StatusAsync(iroha::protocol::TxStatusRequest const& request,
                      iroha::protocol::ToriiResponse& response);
 
    private:

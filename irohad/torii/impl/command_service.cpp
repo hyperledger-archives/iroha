@@ -27,19 +27,42 @@ namespace torii {
     // Notifier for all clients
     tx_processor_->transactionNotifier().subscribe([this](auto iroha_response) {
 
+      // Find response in handler map
+      auto res = this->handler_map_.find(iroha_response->tx_hash);
+
       // TODO: make for other responses
-      if (iroha:: instanceof
-          <iroha::model::TransactionStatelessResponse>(*iroha_response)) {
-        auto resp = static_cast<iroha::model::TransactionStatelessResponse &>(
-            *iroha_response);
-        // Find response in handler map
-
-        auto res =
-            this->handler_map_.find(resp.transaction.tx_hash.to_string());
-
+      if (iroha_response->current_status ==
+          iroha::model::TransactionResponse::STATEFUL_VALIDATION_FAILED) {
         res->second.set_validation(
-            resp.passed ? iroha::protocol::STATELESS_VALIDATION_SUCCESS
-                        : iroha::protocol::STATELESS_VALIDATION_FAILED);
+            iroha::protocol::STATELESS_VALIDATION_FAILED);
+      }
+
+      switch (iroha_response->current_status) {
+        case iroha::model::TransactionResponse::STATELESS_VALIDATION_FAILED:
+          res->second.set_validation(
+              iroha::protocol::STATELESS_VALIDATION_FAILED);
+          break;
+        case iroha::model::TransactionResponse::STATELESS_VALIDATION_SUCCESS:
+          res->second.set_validation(
+              iroha::protocol::STATELESS_VALIDATION_SUCCESS);
+          break;
+        case iroha::model::TransactionResponse::STATEFUL_VALIDATION_FAILED:
+          res->second.set_validation(
+              iroha::protocol::STATEFUL_VALIDATION_FAILED);
+          break;
+        case iroha::model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS:
+          res->second.set_validation(
+              iroha::protocol::STATELESS_VALIDATION_SUCCESS);
+          break;
+        case iroha::model::TransactionResponse::COMMITTED:
+          res->second.set_validation(iroha::protocol::COMMITTED);
+          break;
+        case iroha::model::TransactionResponse::ON_PROCESS:
+          res->second.set_validation(iroha::protocol::ON_PROCESS);
+          break;
+        case iroha::model::TransactionResponse::NOT_RECEIVED:
+          res->second.set_validation(iroha::protocol::NOT_RECEIVED);
+          break;
       }
     });
   }
@@ -63,7 +86,17 @@ namespace torii {
     tx_processor_->transactionHandle(iroha_tx);
   }
 
-  void CommandService::StatusAsync(iroha::protocol::Transaction const &request,
-                                   iroha::protocol::ToriiResponse &response) {}
+  void CommandService::StatusAsync(
+      iroha::protocol::TxStatusRequest const &request,
+      iroha::protocol::ToriiResponse &response) {
+    auto resp = handler_map_.find(request.tx_hash());
+
+    if (resp == handler_map_.end()) {
+      response.set_validation(
+          iroha::protocol::StatelessValidation::NOT_RECEIVED);
+      return;
+    }
+    response.CopyFrom(resp->second);
+  }
 
 }  // namespace torii
