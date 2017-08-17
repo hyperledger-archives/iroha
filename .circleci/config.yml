@@ -4,7 +4,7 @@ jobs:
     # must be IROHA_HOME:
     working_directory: /opt/iroha
     docker:
-      - image: lebdron/iroha-dev
+      - image: hyperledger/iroha-docker-develop
         environment:
           IROHA_HOME: /opt/iroha
           IROHA_BUILD: /tmp/build
@@ -12,11 +12,6 @@ jobs:
       - image: redis:3.2.8
     steps:
       - checkout
-
-      - run:
-          name: deps install
-          command:  apt update &&  apt install curl -y
-
       - run:
           name: ensure, required folders created
           command: |
