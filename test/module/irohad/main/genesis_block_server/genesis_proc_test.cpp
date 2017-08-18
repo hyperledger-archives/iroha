@@ -60,8 +60,11 @@ class GenesisBlockProcessorTest : public AmetsuchiTest {
     block.hash = hash_provider.get_hash(block);
     return block;
   }
-
-  std::string block_store_path = "/tmp/test_genesis_block";
+ protected:
+  void SetUp() override {
+    block_store_path = "/tmp/test_genesis_block";
+    AmetsuchiTest::SetUp();
+  }
 };
 
 TEST_F(GenesisBlockProcessorTest, genesis_block_handle) {
