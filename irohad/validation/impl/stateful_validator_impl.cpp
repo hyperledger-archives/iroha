@@ -30,8 +30,7 @@ namespace iroha {
         const model::Proposal &proposal,
         ametsuchi::TemporaryWsv &temporaryWsv) {
       log_->info("transactions in proposal: {}", proposal.transactions.size());
-      auto checking_transaction = [&temporaryWsv](auto &tx, auto &executor,
-                                                  auto &query) {
+      auto checking_transaction = [&temporaryWsv](auto &tx, auto &query) {
         auto account = temporaryWsv.getAccount(tx.creator_account_id);
         // Check if tx creator has account and has quorum to execute transaction
         if (!account || tx.signatures.size() < account.value().quorum)
@@ -39,20 +38,12 @@ namespace iroha {
 
         // Check if signatures in transaction are account signatory
         auto account_signs = temporaryWsv.getSignatories(tx.creator_account_id);
-        if (!account_signs)
+        if (not account_signs)
           // No signatories found
           return false;
 
         // TODO: Check if signatures in transaction are valid
-
-        // Validate and execute all commands in transaction
-        return std::all_of(
-            std::begin(tx.commands), std::end(tx.commands),
-            [&query, &account, &executor](auto &command) {
-              return command->validate(query, account.value()) &&
-                  command->execute(query, executor);
-            });
-
+        return true;
       };
 
       // Filter only valid transactions

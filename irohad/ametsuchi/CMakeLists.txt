@@ -20,4 +20,5 @@ target_link_libraries(ametsuchi
     cpp_redis
     model
     libs_common
+    command_execution
     )

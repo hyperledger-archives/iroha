@@ -3,8 +3,6 @@ add_subdirectory(generators)
 add_library(model
     model_crypto_provider_impl.cpp
     model_hash_provider_impl.cpp
-    impl/stateful_command_validation.cpp
-    impl/command_execution.cpp
     impl/model_operators.cpp
     converters/impl/pb_block_factory.cpp
     converters/impl/pb_transaction_factory.cpp
@@ -47,4 +45,12 @@ target_include_directories(model_registrations INTERFACE
     )
 target_link_libraries(model_registrations INTERFACE
     model
+    )
+
+add_library(command_execution
+    execution/impl/command_executor.cpp
+    execution/impl/command_executor_factory.cpp
+    )
+target_link_libraries(command_execution
+    ametsuchi
     )

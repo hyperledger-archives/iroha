@@ -22,7 +22,9 @@
 #include <pqxx/connection>
 #include <pqxx/nontransaction>
 #include <unordered_map>
+
 #include "ametsuchi/mutable_storage.hpp"
+#include "model/execution/command_executor_factory.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -30,14 +32,14 @@ namespace iroha {
       friend class StorageImpl;
 
      public:
-      MutableStorageImpl(hash256_t top_hash,
-                         std::unique_ptr<cpp_redis::redis_client> index,
-                         std::unique_ptr<pqxx::lazyconnection> connection,
-                         std::unique_ptr<pqxx::nontransaction> transaction,
-                         std::unique_ptr<WsvQuery> wsv,
-                         std::unique_ptr<WsvCommand> executor);
+      MutableStorageImpl(
+          hash256_t top_hash, std::unique_ptr<cpp_redis::redis_client> index,
+          std::unique_ptr<pqxx::lazyconnection> connection,
+          std::unique_ptr<pqxx::nontransaction> transaction,
+          std::unique_ptr<WsvQuery> wsv, std::unique_ptr<WsvCommand> executor,
+          std::shared_ptr<model::CommandExecutorFactory> command_executors);
       bool apply(const model::Block &block,
-                 std::function<bool(const model::Block &, WsvCommand &,
+                 std::function<bool(const model::Block &,
                                     WsvQuery &, const hash256_t &)>
                      function) override;
       ~MutableStorageImpl() override;
@@ -60,6 +62,7 @@ namespace iroha {
       std::unique_ptr<pqxx::nontransaction> transaction_;
       std::unique_ptr<WsvQuery> wsv_;
       std::unique_ptr<WsvCommand> executor_;
+      std::shared_ptr<model::CommandExecutorFactory> command_executors_;
 
       bool committed;
     };

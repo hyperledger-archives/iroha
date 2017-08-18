@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "common/types.hpp"
+#include "framework/test_subscriber.hpp"
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/create_account.hpp"
@@ -26,74 +27,46 @@
 #include "model/commands/transfer_asset.hpp"
 #include "model/model_hash_provider_impl.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
-#include "framework/test_subscriber.hpp"
 
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
 using namespace framework::test_subscriber;
 
-
-    TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
-      // Commit block => get block => observable completed
-      auto storage =
-          StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
-      ASSERT_TRUE(storage);
-
-      Block block;
-      block.height = 1;
-
-      auto ms = storage->createMutableStorage();
-      ms->apply(block, [](const auto &blk, auto &executor, auto &query,
-                          const auto &top_hash) { return true; });
-      storage->commit(std::move(ms));
-
-      auto completed_wrapper =
-          make_test_subscriber<IsCompleted>(storage->getBlocks(1, 1));
-      completed_wrapper.subscribe();
-      ASSERT_TRUE(completed_wrapper.validate());
-    }
-
-    TEST_F(AmetsuchiTest, SampleTest) {
-      HashProviderImpl hashProvider;
-
+TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
+  // Commit block => get block => observable completed
   auto storage =
       StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
 
+  Block block;
+  block.height = 1;
+
+  auto ms = storage->createMutableStorage();
+  ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
+  storage->commit(std::move(ms));
+
+  auto completed_wrapper =
+      make_test_subscriber<IsCompleted>(storage->getBlocks(1, 1));
+  completed_wrapper.subscribe();
+  ASSERT_TRUE(completed_wrapper.validate());
+}
+
+TEST_F(AmetsuchiTest, SampleTest) {
+  HashProviderImpl hashProvider;
+
+  auto storage =
+      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  ASSERT_TRUE(storage);
+  
   Transaction txn;
   txn.creator_account_id = "admin1";
   CreateDomain createDomain;
   createDomain.domain_name = "ru";
-  txn.commands.push_back(
-      std::make_shared<CreateDomain>(createDomain));
+  txn.commands.push_back(std::make_shared<CreateDomain>(createDomain));
   CreateAccount createAccount;
   createAccount.account_name = "user1";
   createAccount.domain_id = "ru";
-  txn.commands.push_back(
-      std::make_shared<CreateAccount>(createAccount));
-
-  {
-    auto wsv = storage->createTemporaryWsv();
-    ASSERT_TRUE(wsv);
-    wsv->apply(txn, [](auto &tx, auto &executor, auto &query) {
-      EXPECT_TRUE(tx.commands.at(0)->execute(query, executor));
-      EXPECT_TRUE(tx.commands.at(1)->execute(query, executor));
-      return true;
-    });
-    auto account = wsv->getAccount(createAccount.account_name + "@" +
-        createAccount.domain_id);
-    ASSERT_TRUE(account);
-    ASSERT_EQ(account->account_id,
-              createAccount.account_name + "@" + createAccount.domain_id);
-    ASSERT_EQ(account->domain_name, createAccount.domain_id);
-    ASSERT_EQ(account->master_key, createAccount.pubkey);
-  }
-
-  {
-    auto account = storage->getAccount(createAccount.account_name + "@" +
-        createAccount.domain_id);
-    ASSERT_FALSE(account);
-  }
+  txn.commands.push_back(std::make_shared<CreateAccount>(createAccount));
 
   Block block;
   block.transactions.push_back(txn);
@@ -105,12 +78,7 @@ using namespace framework::test_subscriber;
 
   {
     auto ms = storage->createMutableStorage();
-    ms->apply(block, [](const auto &blk, auto &executor, auto &query,
-                        const auto &top_hash) {
-      EXPECT_TRUE(
-          blk.transactions.at(0).commands.at(0)->execute(query, executor));
-      EXPECT_TRUE(
-          blk.transactions.at(0).commands.at(1)->execute(query, executor));
+    ms->apply(block, [](const auto &blk, auto &query, const auto &top_hash) {
       return true;
     });
     storage->commit(std::move(ms));
@@ -118,7 +86,7 @@ using namespace framework::test_subscriber;
 
   {
     auto account = storage->getAccount(createAccount.account_name + "@" +
-        createAccount.domain_id);
+                                       createAccount.domain_id);
     ASSERT_TRUE(account);
     ASSERT_EQ(account->account_id,
               createAccount.account_name + "@" + createAccount.domain_id);
@@ -131,8 +99,7 @@ using namespace framework::test_subscriber;
   createAccount = CreateAccount();
   createAccount.account_name = "user2";
   createAccount.domain_id = "ru";
-  txn.commands.push_back(
-      std::make_shared<CreateAccount>(createAccount));
+  txn.commands.push_back(std::make_shared<CreateAccount>(createAccount));
   CreateAsset createAsset;
   createAsset.domain_id = "ru";
   createAsset.asset_name = "RUB";
@@ -145,8 +112,7 @@ using namespace framework::test_subscriber;
   asset_amount.int_part = 1;
   asset_amount.frac_part = 50;
   addAssetQuantity.amount = asset_amount;
-  txn.commands.push_back(
-      std::make_shared<AddAssetQuantity>(addAssetQuantity));
+  txn.commands.push_back(std::make_shared<AddAssetQuantity>(addAssetQuantity));
   TransferAsset transferAsset;
   transferAsset.src_account_id = "user1@ru";
   transferAsset.dest_account_id = "user2@ru";
@@ -155,8 +121,7 @@ using namespace framework::test_subscriber;
   transfer_amount.int_part = 1;
   transfer_amount.frac_part = 0;
   transferAsset.amount = transfer_amount;
-  txn.commands.push_back(
-      std::make_shared<TransferAsset>(transferAsset));
+  txn.commands.push_back(std::make_shared<TransferAsset>(transferAsset));
 
   block = Block();
   block.transactions.push_back(txn);
@@ -168,18 +133,7 @@ using namespace framework::test_subscriber;
 
   {
     auto ms = storage->createMutableStorage();
-    ms->apply(block, [](const auto &blk, auto &executor, auto &query,
-                        const auto &top_hash) {
-      EXPECT_TRUE(
-          blk.transactions.at(0).commands.at(0)->execute(query, executor));
-      EXPECT_TRUE(
-          blk.transactions.at(0).commands.at(1)->execute(query, executor));
-      EXPECT_TRUE(
-          blk.transactions.at(0).commands.at(2)->execute(query, executor));
-      EXPECT_TRUE(
-          blk.transactions.at(0).commands.at(3)->execute(query, executor));
-      return true;
-    });
+    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
     storage->commit(std::move(ms));
   }
 
@@ -227,12 +181,7 @@ TEST_F(AmetsuchiTest, PeerTest) {
 
   {
     auto ms = storage->createMutableStorage();
-    ms->apply(block, [](const auto &blk, auto &executor, auto &query,
-                        const auto &top_hash) {
-      EXPECT_TRUE(
-          blk.transactions.at(0).commands.at(0)->execute(query, executor));
-      return true;
-    });
+    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
     storage->commit(std::move(ms));
   }
 

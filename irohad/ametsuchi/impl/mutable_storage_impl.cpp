@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+
 #include <ametsuchi/impl/mutable_storage_impl.hpp>
 
 namespace iroha {
@@ -22,11 +24,22 @@ namespace iroha {
 
     bool MutableStorageImpl::apply(
         const model::Block &block,
-        std::function<bool(const model::Block &, WsvCommand &, WsvQuery &,
-                           const hash256_t &)>
+        std::function<bool(const model::Block &, WsvQuery &, const hash256_t &)>
             function) {
+      auto execute_command = [this](auto command) {
+        return command_executors_->getCommandExecutor(command)->execute(
+            *command, *this, *executor_);
+      };
+      auto execute_transaction = [this, execute_command](auto &transaction) {
+        return std::all_of(transaction.commands.begin(),
+                           transaction.commands.end(), execute_command);
+      };
+
       transaction_->exec("SAVEPOINT savepoint_;");
-      auto result = function(block, *executor_, *this, top_hash_);
+      auto result = function(block, *this, top_hash_) &&
+                    std::all_of(block.transactions.begin(),
+                                block.transactions.end(), execute_transaction);
+
       if (result) {
         block_store_.insert(std::make_pair(block.height, block));
         top_hash_ = block.hash;
@@ -41,13 +54,15 @@ namespace iroha {
         hash256_t top_hash, std::unique_ptr<cpp_redis::redis_client> index,
         std::unique_ptr<pqxx::lazyconnection> connection,
         std::unique_ptr<pqxx::nontransaction> transaction,
-        std::unique_ptr<WsvQuery> wsv, std::unique_ptr<WsvCommand> executor)
+        std::unique_ptr<WsvQuery> wsv, std::unique_ptr<WsvCommand> executor,
+        std::shared_ptr<model::CommandExecutorFactory> command_executors)
         : top_hash_(top_hash),
           index_(std::move(index)),
           connection_(std::move(connection)),
           transaction_(std::move(transaction)),
           wsv_(std::move(wsv)),
           executor_(std::move(executor)),
+          command_executors_(std::move(command_executors)),
           committed(false) {
       index_->multi();
       transaction_->exec("BEGIN;");

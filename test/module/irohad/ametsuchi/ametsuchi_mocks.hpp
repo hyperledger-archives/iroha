@@ -91,7 +91,7 @@ namespace iroha {
      public:
       MOCK_METHOD2(apply,
                    bool(const model::Block &,
-                        std::function<bool(const model::Block &, WsvCommand &,
+                        std::function<bool(const model::Block &,
                                            WsvQuery &, const hash256_t &)>));
       MOCK_METHOD1(getAccount, nonstd::optional<model::Account>(
                                    const std::string &account_id));

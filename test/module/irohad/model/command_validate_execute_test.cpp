@@ -26,6 +26,7 @@
 #include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
+#include "model/execution/command_executor_factory.hpp"
 
 using ::testing::Return;
 using ::testing::AtLeast;
@@ -41,6 +42,8 @@ class CommandValidateExecuteTest : public ::testing::Test {
  public:
 
   void SetUp() override {
+    factory = CommandExecutorFactory::create().value();
+
     wsv_query = std::make_shared<StrictMock<MockWsvQuery>>();
     wsv_command = std::make_shared<StrictMock<MockWsvCommand>>();
 
@@ -56,8 +59,9 @@ class CommandValidateExecuteTest : public ::testing::Test {
   }
 
   bool validateAndExecute() {
-    return command->validate(*wsv_query, creator) and
-        command->execute(*wsv_query, *wsv_command);
+    auto executor = factory->getCommandExecutor(command);
+    return executor->validate(*command, *wsv_query, creator) and
+        executor->execute(*command, *wsv_query, *wsv_command);
   }
 
   std::string admin_id = "admin@test", account_id = "test@test",
@@ -69,6 +73,8 @@ class CommandValidateExecuteTest : public ::testing::Test {
   Account creator, account;
 
   std::shared_ptr<Command> command;
+
+  std::shared_ptr<CommandExecutorFactory> factory;
 };
 
 

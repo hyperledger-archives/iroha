@@ -39,7 +39,6 @@ namespace iroha {
        * block
        * Function parameters:
        *  - Block @see block
-       *  - CommandExecutor
        *  - WsvQuery
        *  - hash256_t - hash of top block in blockchain
        * Function returns true if the block is successfully applied, false
@@ -48,7 +47,7 @@ namespace iroha {
        */
       virtual bool apply(
           const model::Block &block,
-          std::function<bool(const model::Block &, WsvCommand &, WsvQuery &,
+          std::function<bool(const model::Block &, WsvQuery &,
                              const hash256_t &)>
               function) = 0;
     };

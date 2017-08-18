@@ -25,18 +25,8 @@ namespace iroha {
 
     auto ms = mutable_factory_.createMutableStorage();
 
-    auto result = ms->apply(block, [](const auto &blk, auto &executor,
-                                      auto &query, const auto &top_hash) {
-      for (const auto &tx : blk.transactions) {
-        for (const auto &command : tx.commands) {
-          auto valid = command->execute(query, executor);
-          if (not valid) {
-            return false;
-          }
-        }
-      }
-      return true;
-    });
+    auto result = ms->apply(block, [](const auto &blk, auto &query,
+                                      const auto &top_hash) { return true; });
 
     if (result) {
       mutable_factory_.commit(std::move(ms));

@@ -88,8 +88,7 @@ TEST_F(ChainValidationTest, FailWhenDifferentPrevHash) {
   myhash.fill(0);
 
   EXPECT_CALL(storage, apply(_, _))
-      .WillOnce(InvokeArgument<1>(ByRef(block), ByRef(wsvCommand),
-                                  ByRef(storage), ByRef(myhash)));
+      .WillOnce(InvokeArgument<1>(ByRef(block), ByRef(storage), ByRef(myhash)));
 
   ASSERT_FALSE(validator.validateBlock(block, storage));
 }
@@ -113,11 +112,8 @@ TEST_F(ChainValidationTest, ValidWhenSamePrevHash) {
   hash256_t myhash;
   myhash.fill(0);
 
-  EXPECT_CALL(*cmd, execute(_, _)).WillOnce(Return(true));
-
   EXPECT_CALL(storage, apply(_, _))
-      .WillOnce(InvokeArgument<1>(ByRef(block), ByRef(wsvCommand),
-                                  ByRef(storage), ByRef(myhash)));
+      .WillOnce(InvokeArgument<1>(ByRef(block), ByRef(storage), ByRef(myhash)));
 
   ASSERT_TRUE(validator.validateBlock(block, storage));
 }

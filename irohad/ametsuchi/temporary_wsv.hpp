@@ -43,7 +43,6 @@ namespace iroha {
        * transaction
        * Function parameters:
        *  - Transaction @see transaction
-       *  - CommandExecutor
        *  - WSVQuery
        * Function returns true if the transaction is successfully applied, false
        * otherwise.
@@ -51,7 +50,7 @@ namespace iroha {
        */
       virtual bool apply(const model::Transaction &transaction,
                          std::function<bool(const model::Transaction &,
-                                            WsvCommand &, WsvQuery &)>
+                                            WsvQuery &)>
                              function) = 0;
     };
 

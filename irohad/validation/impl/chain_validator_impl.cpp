@@ -29,17 +29,10 @@ namespace iroha {
     bool ChainValidatorImpl::validateBlock(const model::Block& block,
                                            ametsuchi::MutableStorage& storage) {
       log_->info("validate block");
-      auto apply_block = [](const auto& current_block, auto& executor,
+      auto apply_block = [](const auto& current_block,
                             auto& query, const auto& top_hash) {
         if (current_block.prev_hash != top_hash) {
           return false;
-        }
-        for (const auto& tx : current_block.transactions) {
-          for (const auto& command : tx.commands) {
-            if (not command->execute(query, executor)) {
-              return false;
-            }
-          }
         }
         return true;
       };
