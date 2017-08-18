@@ -18,6 +18,7 @@
 #ifndef IROHA_JSON_COMMAND_FACTORY_HPP
 #define IROHA_JSON_COMMAND_FACTORY_HPP
 
+#include "model/common.hpp"
 #include <rapidjson/document.h>
 #include <memory>
 #include <typeindex>
@@ -100,7 +101,7 @@ namespace iroha {
         // Abstract
         rapidjson::Document serializeAbstractCommand(
             std::shared_ptr<Command> command);
-        std::shared_ptr<model::Command> deserializeAbstractCommand(
+        optional_ptr <model::Command> deserializeAbstractCommand(
             const rapidjson::Document &command);
 
        private:

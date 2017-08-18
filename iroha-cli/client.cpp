@@ -67,7 +67,7 @@ namespace iroha_cli {
 
     iroha::protocol::QueryResponse query_response;
 
-    if (not query_opt) {
+    if (not query_opt.has_value()) {
       iroha::protocol::ErrorResponse er;
       er.set_reason(iroha::protocol::ErrorResponse::WRONG_FORMAT);
       query_response.mutable_error_response()->CopyFrom(er);
@@ -76,7 +76,7 @@ namespace iroha_cli {
       return response;
     }
     iroha::model::converters::PbQueryFactory proto_serializer;
-    auto pb_query = proto_serializer.serialize(query_opt);
+    auto pb_query = proto_serializer.serialize(query_opt.value());
     response.status = query_client_.Find(pb_query.value(), query_response);
     response.answer = query_response;
     return response;

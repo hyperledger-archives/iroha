@@ -23,6 +23,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
+#include "model/common.hpp"
 #include <memory>
 #include <nonstd/optional.hpp>
 #include <typeindex>
@@ -47,7 +48,7 @@ namespace iroha {
          * @param query_json string representation of query
          * @return deserialized query
          */
-        std::shared_ptr<Query> deserialize(const std::string query_json);
+        optional_ptr <Query> deserialize(const std::string query_json);
 
         /**
          * Convert model Query to json string

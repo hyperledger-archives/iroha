@@ -47,13 +47,13 @@ namespace iroha {
             &JsonQueryFactory::serializeGetAccountTransactions;
       }
 
-      std::shared_ptr<iroha::model::Query> JsonQueryFactory::deserialize(
+      optional_ptr<model::Query> JsonQueryFactory::deserialize(
           const std::string query_json) {
         log_->info("Deserialize query json");
         Document doc;
         if (doc.Parse(query_json.c_str()).HasParseError()) {
           log_->error("Json is ill-formed");
-          return nullptr;
+          return nonstd::nullopt;
         }
 
         auto obj_query = doc.GetObject();
@@ -66,7 +66,7 @@ namespace iroha {
                             return not obj_query.HasMember(field);
                           })) {
             log_->error("No required fields in json");
-            return nullptr;
+            return nonstd::nullopt;
           }
         }
 
@@ -74,27 +74,27 @@ namespace iroha {
         {
           if (not obj_query["signature"].IsObject()) {
             log_->error("Type mismatch in json. signature must be object");
-            return nullptr;
+            return nonstd::nullopt;
           }
 
           if (not obj_query["creator_account_id"].IsString()) {
             log_->error("Type mismatch in json. created_js must be string");
-            return nullptr;
+            return nonstd::nullopt;
           }
 
           if (not obj_query["created_ts"].IsUint64()) {
             log_->error("Type mismatch in json. created_ts must be uint64");
-            return nullptr;
+            return nonstd::nullopt;
           }
 
           if (not obj_query["query_counter"].IsUint64()) {
             log_->error("Type mismatch in json. query_counter must be uint64");
-            return nullptr;
+            return nonstd::nullopt;
           }
 
           if (not obj_query["query_type"].IsString()) {
             log_->error("Type mismatch in json. query_type must be string");
-            return nullptr;
+            return nonstd::nullopt;
           }
         }
 
@@ -104,11 +104,11 @@ namespace iroha {
         {
           if (not sig.HasMember("pubkey")) {
             log_->error("No pubkey in signature in json");
-            return nullptr;
+            return nonstd::nullopt;
           }
           if (not sig.HasMember("signature")) {
             log_->error("No signature in json");
-            return nullptr;
+            return nonstd::nullopt;
           }
         }
 
@@ -117,12 +117,12 @@ namespace iroha {
           if (not sig["pubkey"].IsString()) {
             log_->error(
                 "Type mismatch in json. pubkey in signature must be string");
-            return nullptr;
+            return nonstd::nullopt;
           }
           if (not sig["signature"].IsString()) {
             log_->error(
                 "Type mismatch in json. signature in signature must be string");
-            return nullptr;
+            return nonstd::nullopt;
           }
         }
 
@@ -131,7 +131,7 @@ namespace iroha {
         if (it != deserializers_.end()) {
           auto query = (this->*it->second)(obj_query);
           if (not query) {
-            return nullptr;
+            return nonstd::nullopt;
           }
 
           // Set query signature
@@ -142,7 +142,7 @@ namespace iroha {
           return query;
         }
         log_->error("No query type found");
-        return nullptr;
+        return nonstd::nullopt;
       }
 
       std::shared_ptr<iroha::model::Query>

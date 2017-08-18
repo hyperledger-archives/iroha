@@ -94,10 +94,10 @@ namespace iroha {
           auto &allocator = command_document.GetAllocator();
           command_document.CopyFrom(*it, allocator);
           auto command = factory_.deserializeAbstractCommand(command_document);
-          if (not command) {
+          if (not command.has_value()) {
             return nonstd::nullopt;
           }
-          tx.commands.emplace_back(command);
+          tx.commands.emplace_back(command.value());
         }
 
         return tx;

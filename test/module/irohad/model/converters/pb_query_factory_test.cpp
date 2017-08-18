@@ -29,9 +29,8 @@ TEST(PbQueryFactoryTest, SerializeGetAccount){
   auto pb_query = queryFactory.serialize(query);
   ASSERT_TRUE(pb_query.has_value());
   auto res_query = queryFactory.deserialize(pb_query.value());
-  ASSERT_TRUE(res_query);
-  // TODO: replace with operator = ?
-  ASSERT_EQ(res_query->query_hash, query->query_hash);
+  ASSERT_TRUE(res_query.has_value());
+  ASSERT_EQ(res_query.value()->query_hash, query->query_hash);
 }
 
 TEST(PbQueryFactoryTest, SerializeGetAccountAssets){
@@ -41,9 +40,8 @@ TEST(PbQueryFactoryTest, SerializeGetAccountAssets){
   auto pb_query = queryFactory.serialize(query);
   ASSERT_TRUE(pb_query.has_value());
   auto res_query = queryFactory.deserialize(pb_query.value());
-  ASSERT_TRUE(res_query);
-  // TODO: replace with operator = ?
-  ASSERT_EQ(res_query->query_hash, query->query_hash);
+  ASSERT_TRUE(res_query.has_value());
+  ASSERT_EQ(res_query.value()->query_hash, query->query_hash);
 }
 
 TEST(PbQueryFactoryTest, SerializeGetAccountTransactions){
@@ -53,9 +51,9 @@ TEST(PbQueryFactoryTest, SerializeGetAccountTransactions){
   auto pb_query = queryFactory.serialize(query);
   ASSERT_TRUE(pb_query.has_value());
   auto res_query = queryFactory.deserialize(pb_query.value());
-  ASSERT_TRUE(res_query);
+  ASSERT_TRUE(res_query.has_value());
   // TODO: replace with operator = ?
-  ASSERT_EQ(res_query->query_hash, query->query_hash);
+  ASSERT_EQ(res_query.value()->query_hash, query->query_hash);
 }
 
 TEST(PbQueryFactoryTest, SerializeGetSignatories){
@@ -65,7 +63,7 @@ TEST(PbQueryFactoryTest, SerializeGetSignatories){
   auto pb_query = queryFactory.serialize(query);
   ASSERT_TRUE(pb_query.has_value());
   auto res_query = queryFactory.deserialize(pb_query.value());
-  ASSERT_TRUE(res_query);
+  ASSERT_TRUE(res_query.has_value());
   // TODO: replace with operator = ?
-  ASSERT_EQ(res_query->query_hash, query->query_hash);
+  ASSERT_EQ(res_query.value()->query_hash, query->query_hash);
 }

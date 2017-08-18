@@ -14,12 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#include "model/common.hpp"
 #include "model/converters/pb_query_factory.hpp"
 #include "model/model_hash_provider_impl.hpp"
 #include "model/queries/get_account.hpp"
 #include "model/queries/get_account_assets.hpp"
 #include "model/queries/get_signatories.hpp"
 #include "model/queries/get_transactions.hpp"
+
 
 namespace iroha {
   namespace model {
@@ -38,7 +41,7 @@ namespace iroha {
             &PbQueryFactory::serializeGetSignatories;
       }
 
-      std::shared_ptr<model::Query> PbQueryFactory::deserialize(
+    optional_ptr<model::Query> PbQueryFactory::deserialize(
           const protocol::Query& pb_query) {
         std::shared_ptr<model::Query> val;
 
@@ -75,7 +78,7 @@ namespace iroha {
         }
         if (!val) {
           // Query not implemented
-          return nullptr;
+          return nonstd::nullopt;
         }
         Signature sign;
         auto pb_sign = pb_query.header().signature();
