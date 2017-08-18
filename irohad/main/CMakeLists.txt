@@ -28,7 +28,6 @@ add_library(genesis_block_server
     impl/raw_block_insertion.cpp
     )
 target_link_libraries(genesis_block_server
-    ametsuchi
     model
     timer
     endpoint
@@ -64,7 +63,6 @@ add_executable(irohad irohad.cpp)
 target_link_libraries(irohad
     application
     genesis_block_server
-    ametsuchi
     gflags
     rapidjson
     config

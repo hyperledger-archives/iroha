@@ -26,7 +26,7 @@
 #include "model/commands/create_domain.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/model_hash_provider_impl.hpp"
-#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
@@ -57,7 +57,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   auto storage =
       StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
-  
+
   Transaction txn;
   txn.creator_account_id = "admin1";
   CreateDomain createDomain;

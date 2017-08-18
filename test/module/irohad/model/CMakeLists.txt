@@ -54,7 +54,7 @@ target_link_libraries(model_operators_test
 addtest(command_validate_execute_test command_validate_execute_test.cpp)
 target_link_libraries(command_validate_execute_test
     model
-    ametsuchi
+    command_execution
     )
 
 addtest(json_command_converter_test converters/json_commands_test.cpp)

@@ -18,7 +18,7 @@
 #include "gtest/gtest.h"
 #include "logger/logger.hpp"
 #include "ametsuchi/impl/test_storage_impl.hpp"
-#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 #include "framework/test_block_generator.hpp"
 
 #include "model/commands/add_asset_quantity.hpp"

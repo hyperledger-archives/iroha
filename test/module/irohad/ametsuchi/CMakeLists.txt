@@ -16,3 +16,9 @@ target_link_libraries(testing_storage_test
     test_block_generator
     libs_common
     )
+
+add_library(ametsuchi_fixture INTERFACE)
+target_link_libraries(ametsuchi_fixture INTERFACE
+    pqxx
+    cpp_redis
+    )

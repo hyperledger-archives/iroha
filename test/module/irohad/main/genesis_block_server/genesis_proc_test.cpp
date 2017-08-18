@@ -15,79 +15,30 @@
  * limitations under the License.
  */
 
-#include <dirent.h>
-#include <gtest/gtest.h>
-#include <sys/stat.h>
-#include <cpp_redis/cpp_redis>
-#include <pqxx/pqxx>
-#include <main/genesis_block_server/genesis_block_server.hpp>
-#include "common/files.hpp"
+#include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
+
 #include "ametsuchi/impl/storage_impl.hpp"
-#include "main/genesis_block_server/genesis_block_processor.hpp"
+#include "main/genesis_block_server/genesis_block_server.hpp"
 #include "model/model_hash_provider_impl.hpp"
-#include "model/account.hpp"
 #include "model/commands/create_account.hpp"
-#include "crypto/crypto.hpp"
 #include "model/converters/pb_command_factory.hpp"
 
 using namespace iroha;
+using namespace iroha::ametsuchi;
+using namespace iroha::model;
 
-class GenesisBlockProcessorTest : public ::testing::Test {
+class GenesisBlockProcessorTest : public AmetsuchiTest {
  public:
-  virtual void SetUp() {
-    mkdir(block_store_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    auto pg_host = std::getenv("IROHA_POSTGRES_HOST");
-    auto pg_port = std::getenv("IROHA_POSTGRES_PORT");
-    auto pg_user = std::getenv("IROHA_POSTGRES_USER");
-    auto pg_pass = std::getenv("IROHA_POSTGRES_PASSWORD");
-    auto rd_host = std::getenv("IROHA_REDIS_HOST");
-    auto rd_port = std::getenv("IROHA_REDIS_PORT");
-    if (!pg_host) {
-      return;
-    }
-    std::stringstream ss;
-    ss << "host=" << pg_host << " port=" << pg_port << " user=" << pg_user
-       << " password=" << pg_pass;
-    pgopt_ = ss.str();
-    redishost_ = rd_host;
-    redisport_ = std::stoull(rd_port);
-  }
-  virtual void TearDown() {
-    const auto drop =
-        "DROP TABLE IF EXISTS account_has_asset;\n"
-        "DROP TABLE IF EXISTS account_has_signatory;\n"
-        "DROP TABLE IF EXISTS peer;\n"
-        "DROP TABLE IF EXISTS account;\n"
-        "DROP TABLE IF EXISTS exchange;\n"
-        "DROP TABLE IF EXISTS asset;\n"
-        "DROP TABLE IF EXISTS domain;\n"
-        "DROP TABLE IF EXISTS signatory;";
-
-    pqxx::connection connection(pgopt_);
-    pqxx::work txn(connection);
-    txn.exec(drop);
-    txn.commit();
-    connection.disconnect();
-
-    cpp_redis::redis_client client;
-    client.connect(redishost_, redisport_);
-    client.flushall();
-    client.sync_commit();
-    client.disconnect();
-
-    remove_all(block_store_path);
-  }
-
   static iroha::model::Block create_genesis_block() {
     iroha::model::Transaction tx;
     tx.created_ts = 111111;
     tx.tx_counter = 987654;
     tx.creator_account_id = "admin";
-    
+
     model::CreateDomain createDomain;
     createDomain.domain_name = "ja";
     tx.commands.push_back(
-      std::make_shared<model::CreateDomain>(createDomain));
+        std::make_shared<model::CreateDomain>(createDomain));
 
     iroha::model::CreateAccount create_account;
     auto keypair = iroha::create_keypair(iroha::create_seed("pass"));
@@ -105,22 +56,16 @@ class GenesisBlockProcessorTest : public ::testing::Test {
     block.hash.fill(0);
     block.created_ts = 12345678;
     block.txs_number = block.transactions.size();
-    iroha::model::HashProviderImpl hash_provider;
+    HashProviderImpl hash_provider;
     block.hash = hash_provider.get_hash(block);
     return block;
   }
-
-  std::string pgopt_ =
-      "host=localhost port=5432 user=postgres password=mysecretpassword";
-
-  std::string redishost_ = "localhost";
-  size_t redisport_ = 6379;
 
   std::string block_store_path = "/tmp/test_genesis_block";
 };
 
 TEST_F(GenesisBlockProcessorTest, genesis_block_handle) {
-  auto storage = ametsuchi::StorageImpl::create(block_store_path, redishost_,
+  auto storage = StorageImpl::create(block_store_path, redishost_,
                                                 redisport_, pgopt_);
   ASSERT_TRUE(storage);
 

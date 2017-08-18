@@ -2,10 +2,9 @@ add_library(networking
     impl/peer_communication_service_impl.cpp
     )
 
-target_link_libraries(networking PUBLIC
+target_link_libraries(networking
     rxcpp
     model
-    ametsuchi
     ordering_service
     synchronizer
     logger
