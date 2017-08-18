@@ -27,14 +27,31 @@
 
 namespace iroha {
   namespace model {
+    /**
+     * Contains map of command executors for commands used in the system
+     */
     class CommandExecutorFactory {
      public:
+      /**
+       * Create factory by initializing the map and validating it against
+       * command registry
+       * @return CommandExecutorFactory object, if initialization is
+       * successful
+       */
       static nonstd::optional<std::shared_ptr<CommandExecutorFactory>> create();
 
+      /**
+       * Retrieve command executor for a given command from the map
+       * @param command - command for retrieving command executor
+       * @return command executor for a given command
+       */
       std::shared_ptr<CommandExecutor> getCommandExecutor(
           std::shared_ptr<Command> command);
 
      private:
+      /**
+       * Initialize factory with given command executor map
+       */
       explicit CommandExecutorFactory(
           std::unordered_map<std::type_index,
                              std::shared_ptr<CommandExecutor>>);

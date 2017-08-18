@@ -24,21 +24,51 @@
 
 namespace iroha {
   namespace model {
+    /**
+     * Encapsulates validation and execution logic for the command
+     */
     class CommandExecutor {
      public:
+      /**
+       * Check permissions and perform stateful validation
+       * @param command - command to be validated
+       * @param queries - world state view query interface
+       * @param creator - transaction creators account
+       * @return true, if validation is successful
+       */
       bool validate(const Command &command, ametsuchi::WsvQuery &queries,
                     const Account &creator);
 
+      /**
+       * Execute the command on the world state view
+       * @param command - command to be executed
+       * @param queries - world state view query interface
+       * @param commands - world state view command interface
+       * @return true, if execution is successful
+       */
       virtual bool execute(const Command &command, ametsuchi::WsvQuery &queries,
                            ametsuchi::WsvCommand &commands) = 0;
 
       virtual ~CommandExecutor() = default;
 
      protected:
+      /**
+       * Check permission for given creator account
+       * @param command - command to be validated
+       * @param queries - world state view query interface
+       * @param creator - transaction creators account
+       * @return true, if validation is successful
+       */
       virtual bool hasPermissions(const Command &command,
                                   ametsuchi::WsvQuery &queries,
                                   const Account &creator) = 0;
 
+      /**
+       * Perform stateful validation for the command
+       * @param command - command to be validated
+       * @param queries - world state view query interface
+       * @return true, if command is valid
+       */
       virtual bool isValid(const Command &command,
                            ametsuchi::WsvQuery &queries) = 0;
     };
