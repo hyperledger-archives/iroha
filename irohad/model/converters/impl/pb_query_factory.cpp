@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
-#include "model/common.hpp"
 #include "model/converters/pb_query_factory.hpp"
+#include "model/common.hpp"
 #include "model/model_hash_provider_impl.hpp"
 #include "model/queries/get_account.hpp"
 #include "model/queries/get_account_assets.hpp"
 #include "model/queries/get_signatories.hpp"
 #include "model/queries/get_transactions.hpp"
-
 
 namespace iroha {
   namespace model {
@@ -41,7 +40,7 @@ namespace iroha {
             &PbQueryFactory::serializeGetSignatories;
       }
 
-    optional_ptr<model::Query> PbQueryFactory::deserialize(
+      optional_ptr<model::Query> PbQueryFactory::deserialize(
           const protocol::Query& pb_query) {
         std::shared_ptr<model::Query> val;
 
@@ -97,9 +96,8 @@ namespace iroha {
         return val;
       }
 
-      nonstd::optional<protocol::Query> PbQueryFactory::serialize(
-          std::shared_ptr<Query> query) {
-        protocol::Query pb_query;
+      void PbQueryFactory::serializeQueryMetaData(
+          protocol::Query& pb_query, std::shared_ptr<Query> query) {
         pb_query.set_creator_account_id(query->creator_account_id);
         auto header = pb_query.mutable_header();
         header->set_created_time(query->created_ts);
@@ -107,48 +105,62 @@ namespace iroha {
         auto sig = header->mutable_signature();
         sig->set_signature(query->signature.signature.to_string());
         sig->set_pubkey(query->signature.pubkey.to_string());
+      }
 
+      nonstd::optional<protocol::Query> PbQueryFactory::serialize(
+          std::shared_ptr<Query> query) {
         auto it = serializers_.find(typeid(*query));
         if (it != serializers_.end()) {
-          (this->*it->second)(pb_query, query);
-          return pb_query;
+          return (this->*it->second)(query);
         }
         log_->error("Query type not found");
         return nonstd::nullopt;
       }
 
-      void PbQueryFactory::serializeGetAccount(protocol::Query& pb_query,
-                                               std::shared_ptr<Query> query) {
+      protocol::Query PbQueryFactory::serializeGetAccount(
+          std::shared_ptr<Query> query) {
+        protocol::Query pb_query;
+        serializeQueryMetaData(pb_query, query);
         auto tmp = std::static_pointer_cast<GetAccount>(query);
         auto account_id = tmp->account_id;
         auto pb_query_mut = pb_query.mutable_get_account();
         pb_query_mut->set_account_id(account_id);
+        return pb_query;
       };
 
-      void PbQueryFactory::serializeGetAccountAssets(
-          protocol::Query& pb_query, std::shared_ptr<Query> query) {
+      protocol::Query PbQueryFactory::serializeGetAccountAssets(
+          std::shared_ptr<Query> query) {
+        protocol::Query pb_query;
+        serializeQueryMetaData(pb_query, query);
         auto tmp = std::static_pointer_cast<GetAccountAssets>(query);
         auto account_id = tmp->account_id;
         auto asset_id = tmp->asset_id;
         auto pb_query_mut = pb_query.mutable_get_account_assets();
         pb_query_mut->set_account_id(account_id);
         pb_query_mut->set_asset_id(asset_id);
+        return pb_query;
       };
 
-      void PbQueryFactory::serializeGetAccountTransactions(
-          protocol::Query& pb_query, std::shared_ptr<Query> query) {
+      protocol::Query PbQueryFactory::serializeGetAccountTransactions(
+          std::shared_ptr<Query> query) {
+        protocol::Query pb_query;
+        serializeQueryMetaData(pb_query, query);
         auto tmp = std::static_pointer_cast<GetAccountTransactions>(query);
         auto account_id = tmp->account_id;
         auto pb_query_mut = pb_query.mutable_get_account_transactions();
         pb_query_mut->set_account_id(account_id);
+        return pb_query;
       }
 
-      void PbQueryFactory::serializeGetSignatories(
-          protocol::Query& pb_query, std::shared_ptr<Query> query) {
+      protocol::Query PbQueryFactory::serializeGetSignatories(
+          std::shared_ptr<Query> query) {
+        protocol::Query pb_query;
+        serializeQueryMetaData(pb_query, query);
         auto tmp = std::static_pointer_cast<GetSignatories>(query);
         auto account_id = tmp->account_id;
         auto pb_query_mut = pb_query.mutable_get_account_signatories();
         pb_query_mut->set_account_id(account_id);
+        return pb_query;
       }
 
     }  // namespace converters
