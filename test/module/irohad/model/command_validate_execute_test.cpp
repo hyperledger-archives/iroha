@@ -22,6 +22,7 @@
 #include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
+#include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
@@ -437,6 +438,37 @@ TEST_F(CreateAssetTest, InvalidWhenNoPermissions) {
 }
 
 
+class CreateDomainTest : public CommandValidateExecuteTest {
+ public:
+  void SetUp() override {
+    CommandValidateExecuteTest::SetUp();
+
+    create_domain = std::make_shared<CreateDomain>();
+    create_domain->domain_name = "CN";
+
+    command = create_domain;
+  }
+
+  std::shared_ptr<CreateDomain> create_domain;
+};
+
+TEST_F(CreateDomainTest, ValidWhenCreatorHasPermissions) {
+  // Creator is money creator
+  creator.permissions.create_domains = true;
+
+  EXPECT_CALL(*wsv_command, insertDomain(_)).WillOnce(Return(true));
+
+  ASSERT_TRUE(validateAndExecute());
+}
+
+TEST_F(CreateDomainTest, InvalidWhenNoPermissions) {
+  // Creator has no permissions
+  creator.permissions.create_domains = false;
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
+
 class RemoveSignatoryTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
@@ -758,4 +790,4 @@ TEST_F(TransferAssetTest, InvalidWhenZeroAmount) {
   ASSERT_FALSE(validateAndExecute());
 }
 
-// TODO AddDomain and AddPeer tests
+
