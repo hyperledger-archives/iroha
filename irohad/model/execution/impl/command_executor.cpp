@@ -47,20 +47,24 @@ bool AddAssetQuantityExecutor::execute(const Command &command,
   auto add_asset_quantity = static_cast<const AddAssetQuantity &>(command);
 
   auto asset = queries.getAsset(add_asset_quantity.asset_id);
-  if (!asset)
+  if (not asset.has_value()) {
     // No such asset
     return false;
+  }
   auto precision = asset.value().precision;
   // Amount is wrongly formed
-  if (add_asset_quantity.amount.get_frac_number() > precision) return false;
-  if (!queries.getAccount(add_asset_quantity.account_id))
+  if (add_asset_quantity.amount.get_frac_number() > precision) {
+    return false;
+  }
+  if (not queries.getAccount(add_asset_quantity.account_id).has_value()) {
     // No such account
     return false;
+  }
   auto account_asset = queries.getAccountAsset(add_asset_quantity.account_id,
                                                add_asset_quantity.asset_id);
   AccountAsset accountAsset;
   // Such accountAsset not found
-  if (!account_asset) {
+  if (not account_asset.has_value()) {
     // No wallet found -> create new
     accountAsset = AccountAsset();
     accountAsset.asset_id = add_asset_quantity.asset_id;
@@ -97,7 +101,7 @@ bool AddAssetQuantityExecutor::isValid(const Command &command,
   return (add_asset_quantity.amount.int_part > 0 ||
           add_asset_quantity.amount.frac_part > 0) &&
          add_asset_quantity.amount.int_part <
-             std::numeric_limits<uint32_t>::max();
+             (std::numeric_limits<uint32_t>::max)();
 }
 
 // ----------------- AddPeer -----------------
@@ -165,9 +169,10 @@ bool AssignMasterKeyExecutor::execute(const Command &command,
   auto assign_master_key = static_cast<const AssignMasterKey &>(command);
 
   auto account = queries.getAccount(assign_master_key.account_id);
-  if (!account)
+  if (not account.has_value()) {
     // Such account not found
     return false;
+  }
   account.value().master_key = assign_master_key.pubkey;
   return commands.updateAccount(account.value());
 }
@@ -360,10 +365,10 @@ bool SetAccountPermissionsExecutor::execute(const Command &command,
       static_cast<const SetAccountPermissions &>(command);
 
   auto account = queries.getAccount(set_account_permissions.account_id);
-  if (!account)
+  if (not account.has_value()) {
     // There is no such account
     return false;
-
+  }
   account.value().permissions = set_account_permissions.new_permissions;
   return commands.updateAccount(account.value());
 }
@@ -388,10 +393,10 @@ bool SetQuorumExecutor::execute(const Command &command,
   auto set_quorum = static_cast<const SetQuorum &>(command);
 
   auto account = queries.getAccount(set_quorum.account_id);
-  if (!account)
+  if (not account.has_value()) {
     // There is no such account
     return false;
-
+  }
   account.value().quorum = set_quorum.new_quorum;
   return commands.updateAccount(account.value());
 }
@@ -425,7 +430,7 @@ bool TransferAssetExecutor::execute(const Command &command,
 
   auto src_account_asset = queries.getAccountAsset(
       transfer_asset.src_account_id, transfer_asset.asset_id);
-  if (!src_account_asset) {
+  if (not src_account_asset.has_value()) {
     // There is no src AccountAsset
     return false;
   }
@@ -434,14 +439,16 @@ bool TransferAssetExecutor::execute(const Command &command,
   auto dest_account_asset = queries.getAccountAsset(
       transfer_asset.dest_account_id, transfer_asset.asset_id);
   auto asset = queries.getAsset(transfer_asset.asset_id);
-  if (!asset)
+  if (not asset.has_value()) {
     // No asset found
     return false;
+  }
   // Precision for both wallets
   auto precision = asset.value().precision;
-  if (transfer_asset.amount.get_frac_number() > precision)
+  if (transfer_asset.amount.get_frac_number() > precision) {
     // Precision is wrong
     return false;
+  }
   // Get src balance
   auto src_balance = src_account_asset.value().balance;
   // TODO: handle non-trivial arithmetic
@@ -449,7 +456,7 @@ bool TransferAssetExecutor::execute(const Command &command,
   // Set new balance for source account
   src_account_asset.value().balance = src_balance;
 
-  if (!dest_account_asset) {
+  if (not dest_account_asset.has_value()) {
     // This assert is new for this account - create new AccountAsset
     dest_AccountAsset = AccountAsset();
     dest_AccountAsset.asset_id = transfer_asset.asset_id;
@@ -495,11 +502,13 @@ bool TransferAssetExecutor::isValid(const Command &command,
   }
 
   auto asset = queries.getAsset(transfer_asset.asset_id);
-  if (not asset) return false;
-  // Amount is formed wrong
-  if (transfer_asset.amount.get_frac_number() > asset.value().precision)
+  if (not asset.has_value()) {
     return false;
-
+  }
+  // Amount is formed wrong
+  if (transfer_asset.amount.get_frac_number() > asset.value().precision) {
+    return false;
+  }
   auto account_asset = queries.getAccountAsset(transfer_asset.src_account_id,
                                                transfer_asset.asset_id);
 
