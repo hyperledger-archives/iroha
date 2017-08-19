@@ -56,26 +56,6 @@ TEST_F(BlStore_Test, Read_Write_Test) {
   ASSERT_EQ(*res, block);
 }
 
-TEST_F(BlStore_Test, InConsistency_Test) {
-  // Adding blocks
-  std::vector<uint8_t> block(1000, 5);
-  auto bl_store = FlatFile::create(block_store_path);
-  ASSERT_TRUE(bl_store);
-  // Adding three blocks
-  auto id = 1u;
-  bl_store->add(id, block);
-  auto id2 = 2u;
-  bl_store->add(id2, block);
-  auto id3 = 3u;
-  bl_store->add(id3, block);
-
-  auto res = bl_store->get(id);
-  ASSERT_TRUE(res);
-  ASSERT_FALSE(res->empty());
-  ASSERT_EQ(block.size(), res->size());
-  ASSERT_EQ(block, *res);
-}
-
 TEST_F(BlStore_Test, BlockStoreWhenRemoveBlock) {
   log_->info("----------| Simulate removal of the block |----------");
   // Remove file in the middle of the block store
