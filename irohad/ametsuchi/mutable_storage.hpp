@@ -39,7 +39,7 @@ namespace iroha {
        * block
        * Function parameters:
        *  - Block @see block
-       *  - WsvQuery
+       *  - WsvQuery - world state view query interface for mutable storage
        *  - hash256_t - hash of top block in blockchain
        * Function returns true if the block is successfully applied, false
        * otherwise.

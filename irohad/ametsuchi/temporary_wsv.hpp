@@ -43,7 +43,7 @@ namespace iroha {
        * transaction
        * Function parameters:
        *  - Transaction @see transaction
-       *  - WSVQuery
+       *  - WsvQuery - world state view query interface for temporary storage
        * Function returns true if the transaction is successfully applied, false
        * otherwise.
        * @return True if transaction was successfully applied, false otherwise
