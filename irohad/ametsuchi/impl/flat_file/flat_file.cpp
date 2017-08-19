@@ -47,7 +47,7 @@ std::string id_to_name(Identifier id) {
  */
 Identifier name_to_id(const std::string &name) {
   std::string::size_type sz;
-  return static_cast<uint32_t>(std::stoul(name, &sz));
+  return static_cast<Identifier>(std::stoul(name, &sz));
 }
 
 /**
@@ -65,16 +65,12 @@ bool file_exist(const std::string &name) {
  * @param dump_dir - target dir
  * @param id - identifier of file
  */
-void remove(const std::string &dump_dir, Identifier id) {
-  auto f_name = dump_dir + SEPARATOR + id_to_name(id);
-
-  if (not file_exist(f_name)) {
-    return;
-  }
+void remove(const std::string &dump_dir, std::string filename) {
+  auto f_name = dump_dir + SEPARATOR + filename;
 
   if (std::remove(f_name.c_str()) != 0) {
     logger::log("FLAT_FILE")->error("remove({}, {}): error on deleting file",
-                                    dump_dir, id);
+                                    dump_dir, filename);
   }
 }
 
@@ -87,38 +83,39 @@ nonstd::optional<Identifier> check_consistency(const std::string &dump_dir) {
   auto log = logger::log("FLAT_FILE");
 
   Identifier tmp_id = 0u;
-  if (not dump_dir.empty()) {
-    // Directory iterator:
-    struct dirent **namelist;
-    auto status = scandir(dump_dir.c_str(), &namelist, nullptr, alphasort);
-    if (status < 0) {
-      log->error("check_consistency({}), scandir error: {}", dump_dir, status);
-      return nonstd::nullopt;
-    }
-
-    if (status > 2) {
-      auto n = static_cast<uint32_t>(status);
-      tmp_id++;
-      for (auto i = 2u; i < n; ++i) {
-        if (id_to_name(tmp_id) != namelist[i]->d_name) {
-          for (auto j = i; j < n; ++j) {
-            remove(dump_dir, name_to_id(namelist[j]->d_name));
-          }
-          break;
-        }
-        tmp_id = name_to_id(namelist[i]->d_name);
-      }
-
-      for (auto j = 0u; j < n; ++j) {
-        free(namelist[j]);
-      }
-      free(namelist);
-    }
-
-  } else {
+  if (dump_dir.empty()) {
     log->error("check_consistency({}), not directory", dump_dir);
     return nonstd::nullopt;
   }
+  // Directory iterator:
+  struct dirent **namelist;
+  auto status = scandir(dump_dir.c_str(), &namelist, nullptr, alphasort);
+  if (status < 0) {
+    log->error("check_consistency({}), scandir error: {}", dump_dir, status);
+    return nonstd::nullopt;
+  }
+  if (status < 3) {
+    log->info("check_consistency({}), directory is empty", dump_dir);
+    return 0;
+  }
+
+  auto n = static_cast<uint32_t>(status);
+  tmp_id++;
+  for (auto i = 2u; i < n; ++i) {
+    if (id_to_name(tmp_id) != namelist[i]->d_name) {
+      for (auto j = i; j < n; ++j) {
+        remove(dump_dir, namelist[j]->d_name);
+      }
+      break;
+    }
+    tmp_id = name_to_id(namelist[i]->d_name);
+  }
+
+  for (auto j = 0u; j < n; ++j) {
+    free(namelist[j]);
+  }
+  free(namelist);
+
   return tmp_id;
 }
 
@@ -180,22 +177,20 @@ void FlatFile::add(Identifier id, const std::vector<uint8_t> &block) {
 
 nonstd::optional<std::vector<uint8_t>> FlatFile::get(Identifier id) const {
   std::string filename = dump_dir_ + SEPARATOR + id_to_name(id);
-  if (file_exist(filename)) {
-    auto fileSize = file_size(filename);
-    std::vector<uint8_t> buf;
-    buf.resize(fileSize);
-    std::ifstream file(filename, std::ifstream::binary);
-    if (not file.is_open()) {
-      log_->info("get({}) problem with opening file", id);
-      return nonstd::nullopt;
-    }
-    file.read(reinterpret_cast<char *>(&buf[0]), fileSize);
-    return buf;
+  if (not file_exist(filename)) {
+    log_->info("get({}) file not found", id);
+    return nonstd::nullopt;
   }
-
-  log_->info("get({}) file not found", id);
-  return nonstd::nullopt;
-
+  auto fileSize = file_size(filename);
+  std::vector<uint8_t> buf;
+  buf.resize(fileSize);
+  std::ifstream file(filename, std::ifstream::binary);
+  if (not file.is_open()) {
+    log_->info("get({}) problem with opening file", id);
+    return nonstd::nullopt;
+  }
+  file.read(reinterpret_cast<char *>(buf.data()), fileSize);
+  return buf;
 }
 
 std::string FlatFile::directory() const { return dump_dir_; }
@@ -204,7 +199,7 @@ Identifier FlatFile::last_id() const { return current_id_.load(); }
 
 // ----------| private API |----------
 
-FlatFile::FlatFile(uint32_t current_id, const std::string &path)
+FlatFile::FlatFile(Identifier current_id, const std::string &path)
     : dump_dir_(path) {
   log_ = logger::log("FlatFile");
   current_id_.store(current_id);
