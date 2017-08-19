@@ -18,6 +18,7 @@
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
 #include "model/commands/add_asset_quantity.hpp"
+#include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
 #include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
@@ -453,7 +454,7 @@ class CreateDomainTest : public CommandValidateExecuteTest {
 };
 
 TEST_F(CreateDomainTest, ValidWhenCreatorHasPermissions) {
-  // Creator is money creator
+  // Valid case
   creator.permissions.create_domains = true;
 
   EXPECT_CALL(*wsv_command, insertDomain(_)).WillOnce(Return(true));
@@ -791,3 +792,24 @@ TEST_F(TransferAssetTest, InvalidWhenZeroAmount) {
 }
 
 
+class AddPeerTest : public CommandValidateExecuteTest {
+ public:
+  void SetUp() override {
+    CommandValidateExecuteTest::SetUp();
+
+    add_peer = std::make_shared<AddPeer>();
+    add_peer->address = "iroha_node:10001";
+    add_peer->peer_key.fill(4);
+
+    command = add_peer;
+  }
+
+  std::shared_ptr<AddPeer> add_peer;
+};
+
+TEST_F(AddPeerTest, ValidCase) {
+  // Valid case
+  EXPECT_CALL(*wsv_command, insertPeer(_)).WillOnce(Return(true));
+
+  ASSERT_TRUE(validateAndExecute());
+}
