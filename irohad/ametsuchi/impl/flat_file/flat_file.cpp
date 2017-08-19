@@ -20,134 +20,187 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <iostream>
+#include <fstream>
 
-std::string id_to_name(uint32_t id) {
-  std::string new_id(16, '\0');
-  sprintf(&new_id[0], "%016u", id);
+using namespace iroha::ametsuchi;
+
+const uint32_t DIGIT_CAPACITY = 16;
+
+// todo rework separator with platform independent approach
+const std::string SEPARATOR = "/";
+
+/**
+ * Convert id to string repr
+ * @param id - for conversion
+ * @return string repr of identifier
+ */
+std::string id_to_name(Identifier id) {
+  std::string new_id(DIGIT_CAPACITY, '\0');
+  std::sprintf(&new_id[0], "%016u", id);
   return new_id;
 }
 
-uint32_t name_to_id(std::string name) {
+/**
+ * Convert string to identifier
+ * @param name - string for conversion
+ * @return numeric identifier
+ */
+Identifier name_to_id(const std::string &name) {
   std::string::size_type sz;
-  return std::stoul(name, &sz);
+  return static_cast<Identifier>(std::stoul(name, &sz));
 }
 
-void remove(std::string dump_dir, uint32_t id) {
-  // Assume that id exists
-  auto f_name = dump_dir + "/" + id_to_name(id);
+/**
+ * Check if file exists
+ * @param name - full path to file
+ * @return true, if exists
+ */
+bool file_exist(const std::string &name) {
+  struct stat buffer{};
+  return (stat(name.c_str(), &buffer) == 0);
+}
+
+/**
+ * Remove file from folder
+ * @param dump_dir - target dir
+ * @param id - identifier of file
+ */
+void remove(const std::string &dump_dir, std::string filename) {
+  auto f_name = dump_dir + SEPARATOR + filename;
+
   if (std::remove(f_name.c_str()) != 0) {
-    perror("Error deleting file");
+    logger::log("FLAT_FILE")->error("remove({}, {}): error on deleting file",
+                                    dump_dir, filename);
   }
 }
 
-nonstd::optional<uint32_t> check_consistency(std::string dump_dir) {
-  uint32_t tmp_id = 0u;
-  if (!dump_dir.empty()) {
-    // Directory iterator:
-    struct dirent **namelist;
-    auto status = scandir(dump_dir.c_str(), &namelist, NULL, alphasort);
-    if (status < 0) {
-      // TODO: handle internal error
-      return nonstd::nullopt;
-    } else if (status > 2) {
-      uint n = status;
-      tmp_id++;
-      uint i = 1;
-      while (++i < n) {
-        if (id_to_name(tmp_id) != namelist[i]->d_name) {
-          for (uint j = i; j < n; ++j) {
-            remove(dump_dir, name_to_id(namelist[j]->d_name));
-          }
-          break;
-        }
-        tmp_id = name_to_id(namelist[i]->d_name);
-      }
+/**
+ * Checking consistency of storage for provided folder
+ * @param dump_dir - folder of storage
+ * @return - last available identifier
+ */
+nonstd::optional<Identifier> check_consistency(const std::string &dump_dir) {
+  auto log = logger::log("FLAT_FILE");
 
-      for (uint j = 0; j < n; ++j) {
-        free(namelist[j]);
-      }
-      free(namelist);
-    }
-
-  } else {
-    // Not a directory
-    // TODO: handle not a directory
+  Identifier tmp_id = 0u;
+  if (dump_dir.empty()) {
+    log->error("check_consistency({}), not directory", dump_dir);
     return nonstd::nullopt;
   }
+  // Directory iterator:
+  struct dirent **namelist;
+  auto status = scandir(dump_dir.c_str(), &namelist, nullptr, alphasort);
+  if (status < 0) {
+    log->error("check_consistency({}), scandir error: {}", dump_dir, status);
+    return nonstd::nullopt;
+  }
+  if (status < 3) {
+    log->info("check_consistency({}), directory is empty", dump_dir);
+    return 0;
+  }
+
+  auto n = static_cast<uint32_t>(status);
+  tmp_id++;
+  for (auto i = 2u; i < n; ++i) {
+    if (id_to_name(tmp_id) != namelist[i]->d_name) {
+      for (auto j = i; j < n; ++j) {
+        remove(dump_dir, namelist[j]->d_name);
+      }
+      break;
+    }
+    tmp_id = name_to_id(namelist[i]->d_name);
+  }
+
+  for (auto j = 0u; j < n; ++j) {
+    free(namelist[j]);
+  }
+  free(namelist);
+
   return tmp_id;
 }
 
-namespace iroha {
-  namespace ametsuchi {
+/**
+ * Compute size of file in bytes
+ * @param filename - file for processing
+ * @return number of bytes contains in file
+ */
+long file_size(const std::string &filename) {
+  struct stat stat_buf{};
+  int rc = stat(filename.c_str(), &stat_buf);
+  return rc == 0 ? stat_buf.st_size : 0u;
+}
 
-    FlatFile::FlatFile(uint32_t current_id, const std::string &path)
-        : current_id(current_id), dump_dir(path) {}
+// ----------| public API |----------
 
-    FlatFile::~FlatFile() {}
+std::unique_ptr<FlatFile> FlatFile::create(const std::string &path) {
+  auto log_ = logger::log("FlatFile::create()");
 
-    void FlatFile::add(uint32_t id, const std::vector<uint8_t> &block) {
-      auto next_id = id;
-      std::string file_name = dump_dir + "/" + id_to_name(id);
-      // Write block to binary file
-      if (file_exist(file_name)) {
-        // File already exist
-
-      } else {
-        // New file will be created
-        FILE *pfile;
-        pfile = fopen(file_name.c_str(), "wb");
-        if (!pfile) {
-          // TODO log file error
-          return;
-        }
-        /*auto res = */ fwrite(block.data(), sizeof(uint8_t), block.size(),
-                               pfile);
-        fflush(pfile);
-        fclose(pfile);
-
-        // Update internals, release lock
-        current_id = next_id;
-      }
+  // todo change creating folder with system independent approach
+  if (mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1) {
+    if (errno != EEXIST) {
+      log_->error("Cannot create storage dir: {}", path);
     }
+  }
+  auto res = check_consistency(path);
+  if (!res) {
+    log_->error("Checking consistency for {} - failed", path);
+    return nullptr;
+  }
+  return std::unique_ptr<FlatFile>(new FlatFile(*res, path));
+}
 
-    nonstd::optional<std::vector<uint8_t>> FlatFile::get(uint32_t id) const {
-      std::string filename = dump_dir + "/" + id_to_name(id);
-      if (file_exist(filename)) {
-        auto f_size = file_size(filename);
-        std::vector<uint8_t> buf(f_size);
-        FILE *pfile = fopen(filename.c_str(), "rb");
-        fread(&buf[0], sizeof(uint8_t), f_size, pfile);
-        fclose(pfile);
-        return buf;
-      } else {
-        // TODO log block not found
-        return nonstd::nullopt;
-      }
-    }
+void FlatFile::add(Identifier id, const std::vector<uint8_t> &block) {
+  auto next_id = id;
+  auto file_name = dump_dir_ + SEPARATOR + id_to_name(id);
 
-    bool FlatFile::file_exist(const std::string &name) const {
-      struct stat buffer;
-      return (stat(name.c_str(), &buffer) == 0);
-    }
+  // Write block to binary file
+  if (file_exist(file_name)) {
+    // File already exist
+    log_->warn("insertion for {} failed, because file already exists", id);
+    return;
+  }
+  // New file will be created
+  std::ofstream file(file_name, std::ofstream::binary);
+  if (not file.is_open()) {
+    log_->warn("Cannot open file by index {} for writing", id);
+  }
 
-    long FlatFile::file_size(const std::string &filename) const {
-      struct stat stat_buf;
-      int rc = stat(filename.c_str(), &stat_buf);
-      return rc == 0 ? stat_buf.st_size : 0u;
-    }
+  auto val_size = sizeof(std::remove_reference<decltype(block)>::
+  type::value_type);
 
-    std::unique_ptr<FlatFile> FlatFile::create(const std::string &path) {
-      // TODO directory check
-      auto res = check_consistency(path);
-      if (!res) {
-        return nullptr;
-      }
-      return std::unique_ptr<FlatFile>(new FlatFile(*res, path));
-    }
+  file.write(reinterpret_cast<const char *>(block.data()),
+             block.size() * val_size);
 
-    std::string FlatFile::directory() const { return dump_dir; }
+  // Update internals, release lock
+  current_id_ = next_id;
+}
 
-    uint32_t FlatFile::last_id() const { return current_id; }
+nonstd::optional<std::vector<uint8_t>> FlatFile::get(Identifier id) const {
+  std::string filename = dump_dir_ + SEPARATOR + id_to_name(id);
+  if (not file_exist(filename)) {
+    log_->info("get({}) file not found", id);
+    return nonstd::nullopt;
+  }
+  auto fileSize = file_size(filename);
+  std::vector<uint8_t> buf;
+  buf.resize(fileSize);
+  std::ifstream file(filename, std::ifstream::binary);
+  if (not file.is_open()) {
+    log_->info("get({}) problem with opening file", id);
+    return nonstd::nullopt;
+  }
+  file.read(reinterpret_cast<char *>(buf.data()), fileSize);
+  return buf;
+}
 
-  }  // namespace ametsuchi
-}  // namespace iroha
+std::string FlatFile::directory() const { return dump_dir_; }
+
+Identifier FlatFile::last_id() const { return current_id_.load(); }
+
+// ----------| private API |----------
+
+FlatFile::FlatFile(Identifier current_id, const std::string &path)
+    : dump_dir_(path) {
+  log_ = logger::log("FlatFile");
+  current_id_.store(current_id);
+}

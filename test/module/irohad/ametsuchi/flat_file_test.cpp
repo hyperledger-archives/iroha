@@ -20,72 +20,84 @@
 #include "common/files.hpp"
 #include "common/types.hpp"
 
-namespace iroha {
-  namespace ametsuchi {
+#include "logger/logger.hpp"
 
-    namespace block_store {
+using namespace iroha::ametsuchi;
 
-      class BlStore_Test : public ::testing::Test {
-       protected:
-        virtual void SetUp() {
-          mkdir(block_store_path.c_str(),
-                S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-        }
-        virtual void TearDown() {
-          iroha::remove_all(block_store_path);
-        }
-        std::string block_store_path = "/tmp/dump";
-      };
+static logger::Logger log_ = logger::testLog("BlockStore");
 
-      TEST_F(BlStore_Test, Read_Write_Test) {
-        std::vector<uint8_t> block(100000, 5);
-        auto bl_store = FlatFile::create(block_store_path);
-        ASSERT_TRUE(bl_store);
+class BlStore_Test : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    mkdir(block_store_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+  }
+  void TearDown() override {
+    iroha::remove_all(block_store_path);
+    rmdir(block_store_path.c_str());
+  }
+  std::string block_store_path = "/tmp/dump";
+};
 
-        auto id = 1u;
-        bl_store->add(id, block);
-        auto id2 = 2u;
-        bl_store->add(id2, block);
+TEST_F(BlStore_Test, Read_Write_Test) {
+  std::vector<uint8_t> block(100000, 5);
+  auto bl_store = FlatFile::create(block_store_path);
+  ASSERT_TRUE(bl_store);
 
-        auto res = bl_store->get(id);
-        ASSERT_TRUE(res);
-        ASSERT_FALSE(res->empty());
-        ASSERT_EQ(*res, block);
-      }
+  auto id = 1u;
+  bl_store->add(id, block);
+  auto id2 = 2u;
+  bl_store->add(id2, block);
 
-      TEST_F(BlStore_Test, InConsistency_Test) {
-        // Adding blocks
-        {
-          std::vector<uint8_t> block(1000, 5);
-          auto bl_store = FlatFile::create(block_store_path);
-          ASSERT_TRUE(bl_store);
-          // Adding three blocks
-          auto id = 1u;
-          bl_store->add(id, block);
-          auto id2 = 2u;
-          bl_store->add(id2, block);
-          auto id3 = 3u;
-          bl_store->add(id3, block);
+  auto res = bl_store->get(id);
+  ASSERT_TRUE(res);
+  ASSERT_FALSE(res->empty());
 
-          auto res = bl_store->get(id);
-          ASSERT_TRUE(res);
-          ASSERT_FALSE(res->empty());
-          ASSERT_EQ(*res, block);
-        }
-        // Simulate removal of the block
-        {
-          // Remove file in the middle of the block store
-          std::remove((block_store_path + "/0000000000000002").c_str());
-          std::vector<uint8_t> block(1000, 5);
-          auto bl_store = FlatFile::create(block_store_path);
-          ASSERT_TRUE(bl_store);
-          auto res = bl_store->last_id();
-          // Must return 1
-          ASSERT_EQ(res, 1);
-        }
-      }
+  ASSERT_EQ(res->size(), block.size());
+  ASSERT_EQ(*res, block);
+}
 
-    }  // namespace block_store
+TEST_F(BlStore_Test, BlockStoreWhenRemoveBlock) {
+  log_->info("----------| Simulate removal of the block |----------");
+  // Remove file in the middle of the block store
+  {
+    log_->info("----------| create blockstore and insert 3 elements "
+                   "|----------");
 
-  }  // namespace ametsuchi
-}  // namespace iroha
+    auto bl_store = FlatFile::create(block_store_path);
+    ASSERT_TRUE(bl_store);
+
+    std::vector<uint8_t> block(1000, 5);
+    // Adding three blocks
+    auto id = 1u;
+    bl_store->add(id, block);
+    auto id2 = 2u;
+    bl_store->add(id2, block);
+    auto id3 = 3u;
+    bl_store->add(id3, block);
+  }
+
+  log_->info("----------| remove second and init new storage |----------");
+  std::remove((block_store_path + "/0000000000000002").c_str());
+  std::vector<uint8_t> block(1000, 5);
+  auto bl_store = FlatFile::create(block_store_path);
+  ASSERT_TRUE(bl_store);
+  auto res = bl_store->last_id();
+  ASSERT_EQ(res, 1);
+}
+
+TEST_F(BlStore_Test, BlockStoreWhenAbsentFolder) {
+  log_->info("----------| Check that folder absent => create => "
+                 "make storage => remove storage |----------");
+  std::string target_path = "/tmp/bump";
+  rmdir(target_path.c_str());
+  {
+    auto bl_store = FlatFile::create(block_store_path);
+    ASSERT_TRUE(bl_store);
+    std::vector<uint8_t> block(100000, 5);
+    auto id = 1u;
+    bl_store->add(id, block);
+    auto res = bl_store->last_id();
+    ASSERT_EQ(res, 1);
+  }
+  rmdir(target_path.c_str());
+}
