@@ -30,6 +30,11 @@ namespace iroha {
   namespace ametsuchi {
 
     /**
+     * Type of storage key
+     */
+    using Identifier = uint32_t;
+
+    /**
      * Solid storage based on raw files
      */
     class FlatFile {
@@ -48,24 +53,24 @@ namespace iroha {
        * @param id - reference key
        * @param blob - data associated with key
        */
-      void add(uint32_t id, const std::vector<uint8_t> &blob);
+      void add(Identifier id, const std::vector<uint8_t> &blob);
 
       /**
        * Get data associated with
        * @param id - reference key
        * @return - blob, if exists
        */
-      nonstd::optional<std::vector<uint8_t>> get(uint32_t id) const;
-
-      /**
-       * @return maximal not null key
-       */
-      uint32_t last_id() const;
+      nonstd::optional<std::vector<uint8_t>> get(Identifier id) const;
 
       /**
        * @return folder of storage
        */
       std::string directory() const;
+
+      /**
+       * @return maximal not null key
+       */
+      Identifier last_id() const;
 
       // ----------| modify operations |----------
 
@@ -85,14 +90,14 @@ namespace iroha {
        * @param last_id - maximal key written in storage
        * @param path - folder of storage
        */
-      FlatFile(uint32_t last_id, const std::string &path);
+      FlatFile(Identifier last_id, const std::string &path);
 
       // ----------| private fields |----------
 
       /**
        * Last written key
        */
-      std::atomic<uint32_t> current_id_;
+      std::atomic<Identifier> current_id_;
 
       /**
        * Folder of storage

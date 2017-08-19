@@ -34,7 +34,7 @@ const std::string SEPARATOR = "/";
  * @param id - for conversion
  * @return string repr of identifier
  */
-std::string id_to_name(uint32_t id) {
+std::string id_to_name(Identifier id) {
   std::string new_id(DIGIT_CAPACITY, '\0');
   std::sprintf(&new_id[0], "%016u", id);
   return new_id;
@@ -45,7 +45,7 @@ std::string id_to_name(uint32_t id) {
  * @param name - string for conversion
  * @return numeric identifier
  */
-uint32_t name_to_id(const std::string &name) {
+Identifier name_to_id(const std::string &name) {
   std::string::size_type sz;
   return static_cast<uint32_t>(std::stoul(name, &sz));
 }
@@ -65,7 +65,7 @@ bool file_exist(const std::string &name) {
  * @param dump_dir - target dir
  * @param id - identifier of file
  */
-void remove(const std::string &dump_dir, uint32_t id) {
+void remove(const std::string &dump_dir, Identifier id) {
   auto f_name = dump_dir + SEPARATOR + id_to_name(id);
 
   if (not file_exist(f_name)) {
@@ -83,10 +83,10 @@ void remove(const std::string &dump_dir, uint32_t id) {
  * @param dump_dir - folder of storage
  * @return - last available identifier
  */
-nonstd::optional<uint32_t> check_consistency(const std::string &dump_dir) {
+nonstd::optional<Identifier> check_consistency(const std::string &dump_dir) {
   auto log = logger::log("FLAT_FILE");
 
-  auto tmp_id = 0u;
+  Identifier tmp_id = 0u;
   if (not dump_dir.empty()) {
     // Directory iterator:
     struct dirent **namelist;
@@ -152,7 +152,7 @@ std::unique_ptr<FlatFile> FlatFile::create(const std::string &path) {
   return std::unique_ptr<FlatFile>(new FlatFile(*res, path));
 }
 
-void FlatFile::add(uint32_t id, const std::vector<uint8_t> &block) {
+void FlatFile::add(Identifier id, const std::vector<uint8_t> &block) {
   auto next_id = id;
   auto file_name = dump_dir_ + SEPARATOR + id_to_name(id);
 
@@ -178,14 +178,14 @@ void FlatFile::add(uint32_t id, const std::vector<uint8_t> &block) {
   current_id_ = next_id;
 }
 
-nonstd::optional<std::vector<uint8_t>> FlatFile::get(uint32_t id) const {
+nonstd::optional<std::vector<uint8_t>> FlatFile::get(Identifier id) const {
   std::string filename = dump_dir_ + SEPARATOR + id_to_name(id);
   if (file_exist(filename)) {
     auto fileSize = file_size(filename);
     std::vector<uint8_t> buf;
     buf.resize(fileSize);
     std::ifstream file(filename, std::ifstream::binary);
-    if(not file.is_open()){
+    if (not file.is_open()) {
       log_->info("get({}) problem with opening file", id);
       return nonstd::nullopt;
     }
@@ -198,9 +198,9 @@ nonstd::optional<std::vector<uint8_t>> FlatFile::get(uint32_t id) const {
 
 }
 
-uint32_t FlatFile::last_id() const { return current_id_.load(); }
-
 std::string FlatFile::directory() const { return dump_dir_; }
+
+Identifier FlatFile::last_id() const { return current_id_.load(); }
 
 // ----------| private API |----------
 
