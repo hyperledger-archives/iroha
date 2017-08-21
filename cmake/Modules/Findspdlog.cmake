@@ -1,12 +1,30 @@
-find_path(spdlog_INCLUDE_DIRS spdlog/spdlog.h)
+add_library(spdlog INTERFACE IMPORTED)
 
-if(spdlog_INCLUDE_DIRS)
-  file(STRINGS "${spdlog_INCLUDE_DIRS}/spdlog/spdlog.h" spdlog_version_str REGEX "#define SPDLOG_VERSION ")
-  string(REGEX REPLACE "#define SPDLOG_VERSION \"([.0-9]+)\"" "\\1" spdlog_VERSION "${spdlog_version_str}")
-endif()
+find_path(spdlog_INCLUDE_DIR spdlog/spdlog.h)
+mark_as_advanced(spdlog_INCLUDE_DIR)
 
 find_package(PackageHandleStandardArgs REQUIRED)
-find_package_handle_standard_args(spdlog
-  REQUIRED_VARS spdlog_INCLUDE_DIRS
-  VERSION_VAR spdlog_VERSION
-)
+find_package_handle_standard_args(spdlog DEFAULT_MSG
+    spdlog_INCLUDE_DIR
+    )
+
+if (NOT SPDLOG_FOUND)
+  externalproject_add(gabime_spdlog
+      GIT_REPOSITORY https://github.com/gabime/spdlog
+      GIT_TAG f85a08622e20b74bff34381cafcb8ef8167b29d0
+      CONFIGURE_COMMAND "" # remove configure step
+      BUILD_COMMAND "" # remove build step
+      INSTALL_COMMAND "" # remove install step
+      TEST_COMMAND "" # remove test step
+      UPDATE_COMMAND "" # remove update step
+      )
+  externalproject_get_property(gabime_spdlog source_dir)
+  set(spdlog_INCLUDE_DIR ${source_dir}/include)
+  file(MAKE_DIRECTORY ${spdlog_INCLUDE_DIR})
+
+  add_dependencies(spdlog gabime_spdlog)
+endif ()
+
+set_target_properties(spdlog PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${spdlog_INCLUDE_DIR}
+    )
