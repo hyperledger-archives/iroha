@@ -33,13 +33,13 @@ if (NOT grpc_FOUND)
       BUILD_IN_SOURCE 1
       # 1. ${CMAKE_COMMAND} -E env - runs env command, which sets environment variables written as NAME=VALUE
       # 2. HAS_PKG_CONFIG=false - disable pkg-config so that it doesn't try to find protobuf.pc
-      # 3. PROTOC=${protobuf_protoc_EXECUTABLE}\ -I${protobuf_INCLUDE_DIR} - add path flag to protobuf executable, \ escapes space
-      # 4. PATH=${protobuf_protoc_EXECUTABLE_DIR}:$ENV{PATH} - append protoc folder to path
+      # 3. PROTOC=${protoc_EXECUTABLE}\ -I${protobuf_INCLUDE_DIR} - add path flag to protobuf executable, \ escapes space
+      # 4. PATH=${protoc_EXECUTABLE_DIR}:$ENV{PATH} - append protoc folder to path
       # 5. LDFLAGS=-L${protobuf_LIBRARY_DIR} - add protobuf library dir for linker
       # 6. CFLAGS=-I${protobuf_INCLUDE_DIR} - add protobuf include dir for compiler
       # 7. CPPFLAGS=-I${protobuf_INCLUDE_DIR} - add protobuf include dir for preprocessor
       # 8. LD_LIBRARY_PATH=${protobuf_LIBRARY_DIR}:$ENV{LD_LIBRARY_PATH} - add protobuf include dir for library loader
-      BUILD_COMMAND ${CMAKE_COMMAND} -E env HAS_PKG_CONFIG=false PROTOC=${protobuf_protoc_EXECUTABLE} PATH=${protobuf_protoc_EXECUTABLE_DIR}:$ENV{PATH} LDFLAGS=-L${protobuf_LIBRARY_DIR} CFLAGS=-I${protobuf_INCLUDE_DIR} CPPFLAGS=-I${protobuf_INCLUDE_DIR} LD_LIBRARY_PATH=${protobuf_LIBRARY_DIR}:$ENV{LD_LIBRARY_PATH} $(MAKE)
+      BUILD_COMMAND ${CMAKE_COMMAND} -E env HAS_PKG_CONFIG=false PROTOC=${protoc_EXECUTABLE}\ -I${protobuf_INCLUDE_DIR} LDFLAGS=-L${protobuf_LIBRARY_DIR} CFLAGS=-I${protobuf_INCLUDE_DIR} CPPFLAGS=-I${protobuf_INCLUDE_DIR} LD_LIBRARY_PATH=${protobuf_LIBRARY_DIR}:$ENV{LD_LIBRARY_PATH} $(MAKE)
       CONFIGURE_COMMAND "" # remove configure step
       INSTALL_COMMAND "" # remove install step
       TEST_COMMAND "" # remove test step

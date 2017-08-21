@@ -23,6 +23,6 @@ target_link_libraries(ordering_service
     tbb
     model
     uvw
-    grpc++
+    ordering_grpc
     logger
     )

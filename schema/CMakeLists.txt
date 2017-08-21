@@ -1,6 +1,19 @@
-# Temporary comment-outed for compilation
-#compile_proto_to_cpp     (api.proto)
-#compile_proto_to_grpc_cpp(api_service.proto)
+#
+# Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+# http://soramitsu.co.jp
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 compile_proto_to_cpp(block.proto)
 compile_proto_to_cpp(primitive.proto)
@@ -13,55 +26,58 @@ compile_proto_to_grpc_cpp(yac.proto)
 compile_proto_to_grpc_cpp(ordering.proto)
 compile_proto_to_grpc_cpp(loader.proto)
 
-add_dependencies(commandsproto_h primitiveproto_h)
-add_dependencies(queriesproto_h primitiveproto_h)
-add_dependencies(blockproto_h commandsproto_h)
-add_dependencies(responsesproto_h blockproto_h)
-add_dependencies(responsesproto_h primitiveproto_h)
-add_dependencies(endpointproto_h blockproto_h)
-add_dependencies(endpointproto_h queriesproto_h)
-add_dependencies(endpointproto_h responsesproto_h)
-add_dependencies(orderingproto_h blockproto_h)
-add_dependencies(loaderproto_h blockproto_h)
-
 add_library(schema
     block.pb.cc
     commands.pb.cc
     primitive.pb.cc
     queries.pb.cc
     responses.pb.cc
-)
+    )
 target_link_libraries(schema
     protobuf
-)
+    )
 
 add_library(endpoint
     endpoint.pb.cc
     endpoint.grpc.pb.cc
-)
+    )
 target_link_libraries(endpoint
     protobuf
-    grpc
     grpc++
-    grpc++_reflection
-)
+    )
 
 add_library(peer_service_grpc
-        peer_service.grpc.pb.cc
-        peer_service.grpc.pb.h
-        peer_service.pb.cc
-        peer_service.pb.h
-        )
+    peer_service.grpc.pb.cc
+    peer_service.pb.cc
+    )
 target_link_libraries(peer_service_grpc
-        protobuf
-        grpc++
-        )
+    protobuf
+    grpc++
+    )
+
+add_library(yac_grpc
+    yac.pb.cc
+    yac.grpc.pb.cc
+    )
+target_link_libraries(yac_grpc
+    protobuf
+    grpc++
+    )
+
+add_library(ordering_grpc
+    ordering.pb.cc
+    ordering.grpc.pb.cc
+    )
+target_link_libraries(ordering_grpc
+    schema
+    grpc++
+    )
 
 add_library(loader_grpc
     loader.pb.cc
     loader.grpc.pb.cc
     )
 target_link_libraries(loader_grpc
-    protobuf
+    schema
     grpc++
     )

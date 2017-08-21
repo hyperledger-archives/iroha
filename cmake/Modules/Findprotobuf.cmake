@@ -7,14 +7,14 @@ mark_as_advanced(protobuf_INCLUDE_DIR)
 find_library(protobuf_LIBRARY protobuf)
 mark_as_advanced(protobuf_LIBRARY)
 
-find_program(protobuf_protoc_EXECUTABLE protoc)
-mark_as_advanced(protobuf_protoc_EXECUTABLE)
+find_program(protoc_EXECUTABLE protoc)
+mark_as_advanced(protoc_EXECUTABLE)
 
 find_package(PackageHandleStandardArgs REQUIRED)
 find_package_handle_standard_args(protobuf DEFAULT_MSG
     protobuf_INCLUDE_DIR
     protobuf_LIBRARY
-    protobuf_protoc_EXECUTABLE
+    protoc_EXECUTABLE
     )
 
 if (NOT protobuf_FOUND)
@@ -31,7 +31,7 @@ if (NOT protobuf_FOUND)
   externalproject_get_property(google_protobuf source_dir)
   set(protobuf_INCLUDE_DIR ${source_dir}/src)
   set(protobuf_LIBRARY ${source_dir}/src/.libs/libprotobuf.a)
-  set(protobuf_protoc_EXECUTABLE ${source_dir}/src/protoc -I${protobuf_INCLUDE_DIR})
+  set(protoc_EXECUTABLE ${source_dir}/src/protoc)
   file(MAKE_DIRECTORY ${protobuf_INCLUDE_DIR})
 
   add_dependencies(protoc google_protobuf)
@@ -47,5 +47,5 @@ set_target_properties(protobuf PROPERTIES
     )
 
 set_target_properties(protoc PROPERTIES
-    IMPORTED_LOCATION ${protobuf_protoc_EXECUTABLE}
+    IMPORTED_LOCATION ${protoc_EXECUTABLE}
     )

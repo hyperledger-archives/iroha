@@ -36,7 +36,7 @@ if (NOT pq_FOUND)
   set(postgres_INCLUDE_DIR ${source_dir}/src/include)
   set(pq_INCLUDE_DIR ${source_dir}/src/interfaces/libpq)
   set(pq_LIBRARY ${source_dir}/src/interfaces/libpq/libpq.a)
-  set(postgres_pgconfig_EXECUTABLE ${source_dir}/src/bin/pg_config/pg_config)
+  set(pg_config_EXECUTABLE ${source_dir}/src/bin/pg_config/pg_config)
   file(MAKE_DIRECTORY ${pq_INCLUDE_DIR} ${postgres_INCLUDE_DIR})
 
   add_dependencies(pg_config postgres_postgres)

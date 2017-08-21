@@ -32,7 +32,7 @@ target_link_libraries(yac
     rxcpp
     optional
     model
-    grpc++
+    yac_grpc
     uvw
     logger
     )
