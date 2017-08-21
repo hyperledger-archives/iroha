@@ -17,6 +17,19 @@ jobs:
           command: |
             mkdir -p $IROHA_HOME
             mkdir -p $IROHA_BUILD
+      - restore_cache:
+          keys:
+            - build-cache-{{ .Branch }}
+            - build-cache
+          paths:
+            - ~/.ccache
+      - run:
+          name: ccache setup
+          command: |
+            ccache --version
+            ccache --show-stats
+            ccache --zero-stats
+            ccache --max-size=1G
       - run:
           name: cmake
           command: cmake -DCOVERAGE=ON -H$IROHA_HOME -B$IROHA_BUILD
@@ -26,6 +39,19 @@ jobs:
       - run:
           name: run tests
           command: cmake --build $IROHA_BUILD --target test
+      - run:
+          name: ccache teardown
+          command: |
+            ccache --cleanup
+            ccache --show-stats
+      - save_cache:
+          key: build-cache-{{ .Branch }}
+          paths:
+            - ~/.ccache
+      - save_cache:
+          key: build-cache
+          paths:
+            - ~/.ccache
 #      - run:
 #          name: comment coverage on the pull-request
 #          command: $IROHA_HOME/scripts/comment-coverage.sh
