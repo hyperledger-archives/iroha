@@ -13,6 +13,8 @@ then
   docker-compose -f ${IROHA_HOME}/docker/docker-compose.yml -p ${PROJECT} exec \
     node adduser --disabled-password --gecos "" ${USER} --uid ${USERID}
   docker-compose -f ${IROHA_HOME}/docker/docker-compose.yml -p ${PROJECT} exec \
+    node chown -R ${USER}:${USER} /tmp/ccache
+  docker-compose -f ${IROHA_HOME}/docker/docker-compose.yml -p ${PROJECT} exec \
     --user ${USER} node /bin/bash
   docker-compose -f ${IROHA_HOME}/docker/docker-compose.yml -p ${PROJECT} down
 else
