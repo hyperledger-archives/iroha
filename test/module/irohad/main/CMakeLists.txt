@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-addtest(genesis_block_processor_test
-  genesis_block_server/genesis_proc_test.cpp)
+addtest(genesis_block_processor_test genesis_block_server/genesis_proc_test.cpp)
 target_link_libraries(genesis_block_processor_test
-  genesis_block_server
-  crypto
-  libs_common
-  )
+    genesis_block_server
+    crypto
+    libs_common
+    ametsuchi
+    ametsuchi_fixture
+    )

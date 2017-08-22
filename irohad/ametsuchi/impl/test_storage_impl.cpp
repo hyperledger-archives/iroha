@@ -68,23 +68,9 @@ namespace iroha {
     bool TestStorageImpl::insertBlock(model::Block block) {
       log_->info("create mutable storage");
       auto storage = createMutableStorage();
-      auto inserted = storage->apply(block,
-                                     [](const auto &current_block,
-                                        auto &executor,
-                                        auto &query,
-                                        const auto &top_hash) {
-                                       for (const auto
-                                             &tx : current_block.transactions) {
-                                         for (const auto
-                                               &command : tx.commands) {
-                                           if (not command->execute(query,
-                                                                    executor)) {
-                                             return false;
-                                           }
-                                         }
-                                       }
-                                       return true;
-                                     });
+      auto inserted =
+          storage->apply(block, [](const auto &current_block, auto &query,
+                                   const auto &top_hash) { return true; });
       log_->info("block inserted: {}", inserted);
       commit(std::move(storage));
       return inserted;

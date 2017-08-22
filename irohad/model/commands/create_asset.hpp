@@ -44,11 +44,6 @@ namespace iroha {
        */
       uint8_t precision;
 
-      bool validate(ametsuchi::WsvQuery& queries,
-                    const Account& creator) override;
-      bool execute(ametsuchi::WsvQuery& queries,
-                   ametsuchi::WsvCommand& commands) override;
-
       bool operator==(const Command& command) const override;
       bool operator!=(const Command& command) const override;
     };

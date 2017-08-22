@@ -18,14 +18,17 @@
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
 #include "model/commands/add_asset_quantity.hpp"
+#include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
 #include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
+#include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
+#include "model/execution/command_executor_factory.hpp"
 
 using ::testing::Return;
 using ::testing::AtLeast;
@@ -41,6 +44,8 @@ class CommandValidateExecuteTest : public ::testing::Test {
  public:
 
   void SetUp() override {
+    factory = CommandExecutorFactory::create().value();
+
     wsv_query = std::make_shared<StrictMock<MockWsvQuery>>();
     wsv_command = std::make_shared<StrictMock<MockWsvCommand>>();
 
@@ -56,8 +61,9 @@ class CommandValidateExecuteTest : public ::testing::Test {
   }
 
   bool validateAndExecute() {
-    return command->validate(*wsv_query, creator) and
-        command->execute(*wsv_query, *wsv_command);
+    auto executor = factory->getCommandExecutor(command);
+    return executor->validate(*command, *wsv_query, creator) and
+        executor->execute(*command, *wsv_query, *wsv_command);
   }
 
   std::string admin_id = "admin@test", account_id = "test@test",
@@ -69,6 +75,8 @@ class CommandValidateExecuteTest : public ::testing::Test {
   Account creator, account;
 
   std::shared_ptr<Command> command;
+
+  std::shared_ptr<CommandExecutorFactory> factory;
 };
 
 
@@ -431,6 +439,37 @@ TEST_F(CreateAssetTest, InvalidWhenNoPermissions) {
 }
 
 
+class CreateDomainTest : public CommandValidateExecuteTest {
+ public:
+  void SetUp() override {
+    CommandValidateExecuteTest::SetUp();
+
+    create_domain = std::make_shared<CreateDomain>();
+    create_domain->domain_name = "CN";
+
+    command = create_domain;
+  }
+
+  std::shared_ptr<CreateDomain> create_domain;
+};
+
+TEST_F(CreateDomainTest, ValidWhenCreatorHasPermissions) {
+  // Valid case
+  creator.permissions.create_domains = true;
+
+  EXPECT_CALL(*wsv_command, insertDomain(_)).WillOnce(Return(true));
+
+  ASSERT_TRUE(validateAndExecute());
+}
+
+TEST_F(CreateDomainTest, InvalidWhenNoPermissions) {
+  // Creator has no permissions
+  creator.permissions.create_domains = false;
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
+
 class RemoveSignatoryTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
@@ -752,4 +791,25 @@ TEST_F(TransferAssetTest, InvalidWhenZeroAmount) {
   ASSERT_FALSE(validateAndExecute());
 }
 
-// TODO AddDomain and AddPeer tests
+
+class AddPeerTest : public CommandValidateExecuteTest {
+ public:
+  void SetUp() override {
+    CommandValidateExecuteTest::SetUp();
+
+    add_peer = std::make_shared<AddPeer>();
+    add_peer->address = "iroha_node:10001";
+    add_peer->peer_key.fill(4);
+
+    command = add_peer;
+  }
+
+  std::shared_ptr<AddPeer> add_peer;
+};
+
+TEST_F(AddPeerTest, ValidCase) {
+  // Valid case
+  EXPECT_CALL(*wsv_command, insertPeer(_)).WillOnce(Return(true));
+
+  ASSERT_TRUE(validateAndExecute());
+}

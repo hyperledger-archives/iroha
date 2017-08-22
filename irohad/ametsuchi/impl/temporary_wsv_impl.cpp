@@ -17,15 +17,25 @@
 
 #include <ametsuchi/impl/temporary_wsv_impl.hpp>
 
+#include <algorithm>
+
 namespace iroha {
   namespace ametsuchi {
 
-    bool TemporaryWsvImpl::apply(const model::Transaction &transaction,
-                                 std::function<bool(const model::Transaction &,
-                                                    WsvCommand &, WsvQuery &)>
-                                     function) {
+    bool TemporaryWsvImpl::apply(
+        const model::Transaction &transaction,
+        std::function<bool(const model::Transaction &, WsvQuery &)> function) {
+      auto execute_command = [this, transaction](auto command) {
+        auto executor = command_executors_->getCommandExecutor(command);
+        auto account = this->getAccount(transaction.creator_account_id).value();
+        return executor->validate(*command, *this, account) &&
+            executor->execute(*command, *this, *executor_);
+      };
+
       transaction_->exec("SAVEPOINT savepoint_;");
-      auto result = function(transaction, *executor_, *this);
+      auto result = function(transaction, *this) &&
+          std::all_of(transaction.commands.begin(),
+                      transaction.commands.end(), execute_command);
       if (result) {
         transaction_->exec("RELEASE SAVEPOINT savepoint_;");
       } else {
@@ -37,11 +47,13 @@ namespace iroha {
     TemporaryWsvImpl::TemporaryWsvImpl(
         std::unique_ptr<pqxx::lazyconnection> connection,
         std::unique_ptr<pqxx::nontransaction> transaction,
-        std::unique_ptr<WsvQuery> wsv, std::unique_ptr<WsvCommand> executor)
+        std::unique_ptr<WsvQuery> wsv, std::unique_ptr<WsvCommand> executor,
+        std::shared_ptr<model::CommandExecutorFactory> command_executors)
         : connection_(std::move(connection)),
           transaction_(std::move(transaction)),
           wsv_(std::move(wsv)),
-          executor_(std::move(executor)) {
+          executor_(std::move(executor)),
+          command_executors_(std::move(command_executors)) {
       transaction_->exec("BEGIN;");
     }
 

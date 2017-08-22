@@ -24,6 +24,7 @@
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
 #include "model/converters/json_common.hpp"
+#include "model/execution/command_executor_factory.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -56,6 +57,12 @@ namespace iroha {
     std::unique_ptr<TemporaryWsv> StorageImpl::createTemporaryWsv() {
       // TODO lock
 
+      auto command_executors = model::CommandExecutorFactory::create();
+      if (not command_executors.has_value()) {
+        log_->error("Cannot create CommandExecutorFactory");
+        return nullptr;
+      }
+
       auto postgres_connection =
           std::make_unique<pqxx::lazyconnection>(postgres_options_);
       try {
@@ -73,11 +80,18 @@ namespace iroha {
 
       return std::make_unique<TemporaryWsvImpl>(
           std::move(postgres_connection), std::move(wsv_transaction),
-          std::move(wsv), std::move(executor));
+          std::move(wsv), std::move(executor),
+          std::move(command_executors.value()));
     }
 
     std::unique_ptr<MutableStorage> StorageImpl::createMutableStorage() {
       // TODO lock
+
+      auto command_executors = model::CommandExecutorFactory::create();
+      if (not command_executors.has_value()) {
+        log_->error("Cannot create CommandExecutorFactory");
+        return nullptr;
+      }
 
       auto postgres_connection =
           std::make_unique<pqxx::lazyconnection>(postgres_options_);
@@ -129,7 +143,8 @@ namespace iroha {
 
       return std::make_unique<MutableStorageImpl>(
           top_hash, std::move(index), std::move(postgres_connection),
-          std::move(wsv_transaction), std::move(wsv), std::move(executor));
+          std::move(wsv_transaction), std::move(wsv), std::move(executor),
+          std::move(command_executors.value()));
     }
 
     nonstd::optional<ConnectionContext> StorageImpl::initConnections(std::string block_store_dir,

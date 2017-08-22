@@ -14,7 +14,6 @@ target_link_libraries(bootstrap_network
     genesis_block_client
     rapidjson
     model
-    ametsuchi
     ip_tools
     )
 
@@ -42,7 +41,6 @@ target_link_libraries(client
     rapidjson
     command_client
     query_client
-    ametsuchi
     model_generators
     )
 
@@ -60,7 +58,6 @@ target_link_libraries(iroha-cli
     cli-flags_validators
     bootstrap_network
     rapidjson
-    ametsuchi
     model
     keys_manager
     )

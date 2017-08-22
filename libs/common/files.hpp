@@ -18,6 +18,8 @@
 #ifndef IROHA_FILES_HPP
 #define IROHA_FILES_HPP
 
+#include <string>
+
 /**
  * This source file contains common methods related to files
  */
