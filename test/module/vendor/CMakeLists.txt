@@ -32,11 +32,6 @@ target_link_libraries(uvw_test
     uvw
     )
 
-addtest(rxcpp_test rxcpp_test.cpp)
-target_link_libraries(rxcpp_test
-    rxcpp
-    )
-
 addtest(rxcpp_subject_usage rxcpp_subject_usage.cpp)
 target_link_libraries(rxcpp_subject_usage
     rxcpp
@@ -44,5 +39,5 @@ target_link_libraries(rxcpp_subject_usage
 
 addtest(tbb_test tbb_test.cpp)
 target_link_libraries(tbb_test
-    TBB::tbb
+    tbb
     )

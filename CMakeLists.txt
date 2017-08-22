@@ -1,4 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
+
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+  message(STATUS "ccache enabled (${CCACHE_PROGRAM})")
+endif()
+
 PROJECT(iroha C CXX)
 
 SET(CMAKE_CXX_FLAGS "-std=c++1y -Wall -fPIC")

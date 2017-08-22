@@ -11,8 +11,6 @@ RUN apt-get -y --no-install-recommends install build-essential python-software-p
         libssl-dev libc-ares-dev \
         # CircleCI dependencies
         git ssh tar gzip ca-certificates \
-        # PostgreSQL
-        libpq-dev \
         # other
         wget curl cmake file unzip gdb iputils-ping vim ccache; \
     apt-get -y clean
@@ -24,16 +22,16 @@ RUN git clone https://github.com/google/protobuf /tmp/protobuf-3.3.0; \
     (cd /tmp/protobuf-3.3.0/ ; /tmp/protobuf-3.3.0/configure); \
     make -C /tmp/protobuf-3.3.0; \
     make -C /tmp/protobuf-3.3.0 install; \
-    ldconfig
+    ldconfig; \
+    rm -rf /tmp/protobuf-3.3.0
 
 # install grpc 1.3.2
 RUN git clone https://github.com/grpc/grpc /tmp/grpc-1.3.2; \
     (cd /tmp/grpc-1.3.2 ; git checkout c80d3321d0f77bef8cfff8b32490a07c1e90a5ad); \
-    rmdir /tmp/grpc-1.3.2/third_party/protobuf; \
-    ln -s /tmp/protobuf-3.3.0 /tmp/grpc-1.3.2/third_party/protobuf; \
     make -C /tmp/grpc-1.3.2; \
     make -C /tmp/grpc-1.3.2 install; \
-    rm -rf /tmp/protobuf-3.3.0 /tmp/grpc-1.3.2
+    ldconfig; \
+    rm -rf /tmp/grpc-1.3.2
 
 # install gtest 1.8.0
 RUN git clone https://github.com/google/googletest /tmp/googletest-release-1.8.0; \
@@ -86,6 +84,17 @@ RUN git clone https://github.com/martinmoene/optional-lite /tmp/optional-lite-2.
     cp -r /tmp/optional-lite-2.1.0/include/nonstd /usr/local/include; \
     rm -rf /tmp/optional-lite-2.1.0
 
+# install libpq 9.5.8
+RUN git clone https://git.postgresql.org/git/postgresql.git /tmp/postgresql-9.5.8; \
+    (cd /tmp/postgresql-9.5.8 ; git checkout 029386ccbddd0a33d481b94e511f5219b03e6636); \
+    (cd /tmp/postgresql-9.5.8 ; /tmp/postgresql-9.5.8/configure --without-readline --prefix=/usr/local); \
+    make -C /tmp/postgresql-9.5.8/src/bin/pg_config; \
+    make -C /tmp/postgresql-9.5.8/src/interfaces/libpq; \
+    make -C /tmp/postgresql-9.5.8/src/bin/pg_config install; \
+    make -C /tmp/postgresql-9.5.8/src/interfaces/libpq install; \
+    make -C /tmp/postgresql-9.5.8/src/include install; \
+    rm -rf /tmp/postgresql-9.5.8
+
 # install pqxx 5.1.0
 RUN git clone https://github.com/jtv/libpqxx /tmp/libpqxx-5.1.0; \
     (cd /tmp/libpqxx-5.1.0 ; git checkout 5b17abce5ac2b1a2f8278718405b7ade8bb30ae9); \
@@ -103,17 +112,20 @@ RUN git clone https://github.com/Cylix/cpp_redis /tmp/cpp_redis-3.5.3; \
     cmake --build /tmp/cpp_redis-3.5.3/build --target install; \
     rm -rf /tmp/cpp_redis-3.5.3
 
-# install libuv and uvw
+# install libuv 1.13.1
 RUN git clone https://github.com/libuv/libuv /tmp/libuv-1.13.1; \
     (cd /tmp/libuv-1.13.1 ; git checkout 2bb4b68758f07cd8617838e68c44c125bc567ba6); \
     /tmp/libuv-1.13.1/autogen.sh; \
     (cd /tmp/libuv-1.13.1 ; /tmp/libuv-1.13.1/configure); \
     make -C /tmp/libuv-1.13.1; \
     make -C /tmp/libuv-1.13.1 install; \
-    git clone https://github.com/skypjack/uvw /tmp/uvw-1.1.0_libuv-v1.13; \
+    rm -rf /tmp/libuv-1.13.1
+
+# install uvw 1.1.0
+RUN git clone https://github.com/skypjack/uvw /tmp/uvw-1.1.0_libuv-v1.13; \
     (cd /tmp/uvw-1.1.0_libuv-v1.13 ; git checkout 00de1f1110ce4a9803a85a214af5326529f11312); \
     cp -r /tmp/uvw-1.1.0_libuv-v1.13/src/* /usr/local/include; \
-    rm -rf /tmp/libuv-1.13.1 /tmp/uvw-1.1.0_libuv-v1.13
+    rm -rf /tmp/uvw-1.1.0_libuv-v1.13
 
 # install tbb
 RUN git clone https://github.com/01org/tbb /tmp/tbb-2017_U7; \

@@ -12,12 +12,14 @@ services:
       - IROHA_POSTGRES_PASSWORD=helloworld
       - IROHA_REDIS_HOST=iroha_redis_1
       - IROHA_REDIS_PORT=6379
+      - CCACHE_DIR=/tmp/ccache
     depends_on:
       - redis
       - postgres
     tty: true
     volumes:
       - ../:/opt/iroha
+      - ccache-data:/tmp/ccache
     working_dir: /opt/iroha
 
   redis:
@@ -28,3 +30,6 @@ services:
     environment:
       - POSTGRES_USER=iroha
       - IROHA_POSTGRES_PASSWORD=helloworld
+
+volumes:
+  ccache-data:
