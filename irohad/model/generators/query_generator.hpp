@@ -29,22 +29,22 @@ namespace iroha {
       class QueryGenerator {
        public:
 
-        GetAccount generateGetAccount(ts64_t timestamp, std::string creator,
+        std::shared_ptr<GetAccount> generateGetAccount(ts64_t timestamp, std::string creator,
                                       uint64_t query_counter,
                                       std::string account_id);
 
-        GetAccountAssets generateGetAccountAssets(ts64_t timestamp,
+        std::shared_ptr<GetAccountAssets> generateGetAccountAssets(ts64_t timestamp,
                                                   std::string creator,
                                                   uint64_t query_counter,
                                                   std::string account_id,
                                                   std::string asset_id);
 
-        GetSignatories generateGetSignatories(ts64_t timestamp,
+        std::shared_ptr<GetSignatories> generateGetSignatories(ts64_t timestamp,
                                               std::string creator,
                                               uint64_t query_counter,
                                               std::string account_id);
 
-        GetAccountTransactions generateGetAccountTransactions(
+        std::shared_ptr<GetAccountTransactions> generateGetAccountTransactions(
             ts64_t timestamp, std::string creator, uint64_t query_counter,
             std::string account_id);
 

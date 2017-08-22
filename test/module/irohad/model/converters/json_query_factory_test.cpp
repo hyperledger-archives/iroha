@@ -18,10 +18,13 @@
 #include "model/converters/json_query_factory.hpp"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "model/generators/query_generator.hpp"
+#include "model/generators/signature_generator.hpp"
 
 using namespace iroha::model::converters;
+using namespace iroha::model::generators;
 
-TEST(QuerySerializerTest, SerializeGetAccountWhenValid) {
+TEST(QuerySerializerTest, DeserializeGetAccountWhenValid) {
   JsonQueryFactory querySerializer;
 
   auto json_query =
@@ -40,11 +43,10 @@ TEST(QuerySerializerTest, SerializeGetAccountWhenValid) {
       "                }";
   auto res = querySerializer.deserialize(json_query);
   ASSERT_TRUE(res.has_value());
-  ASSERT_TRUE(res.value().has_get_account());
-  ASSERT_EQ(res.value().get_account().account_id(), "test@test");
+  ASSERT_EQ("123",res.value()->creator_account_id);
 }
 
-TEST(QuerySerializerTest, SerializeGetAccountWhenInvalid) {
+TEST(QuerySerializerTest, DeserializeGetAccountWhenInvalid) {
   JsonQueryFactory querySerializer;
   auto json_query =
       "            {\"created_ts\": 0,\n"
@@ -57,7 +59,7 @@ TEST(QuerySerializerTest, SerializeGetAccountWhenInvalid) {
 }
 
 
-TEST(QuerySerializerTest, SerializeGetAccountAssetsWhenValid) {
+TEST(QuerySerializerTest, DeserializeGetAccountAssetsWhenValid) {
   JsonQueryFactory querySerializer;
   auto json_query =
       "{\"signature\": {\n"
@@ -70,19 +72,19 @@ TEST(QuerySerializerTest, SerializeGetAccountAssetsWhenValid) {
           "            \"created_ts\": 0,\n"
           "            \"creator_account_id\": \"123\",\n"
           "            \"query_counter\": 0,\n"
-          "            \"query_type\": \"GetAccountAsset\",\n"
+          "            \"query_type\": \"GetAccountAssets\",\n"
           "            \"account_id\": \"test@test\",\n"
           "            \"asset_id\": \"coin#test\"\n"
           "                }";
   auto res = querySerializer.deserialize(json_query);
   ASSERT_TRUE(res.has_value());
-  ASSERT_TRUE(res.value().has_get_account_assets());
-  ASSERT_EQ(res.value().get_account_assets().account_id(), "test@test");
-  ASSERT_EQ(res.value().get_account_assets().asset_id(), "coin#test");
+  auto casted = std::static_pointer_cast<iroha::model::GetAccountAssets>(res.value());
+  ASSERT_EQ("test@test", casted->account_id);
+  ASSERT_EQ("coin#test", casted->asset_id);
 }
 
 
-TEST(QuerySerializerTest, SerializeWhenUnknownType) {
+TEST(QuerySerializerTest, DeserializeWhenUnknownType) {
   JsonQueryFactory querySerializer;
   auto json_query =
       "{\"signature\": {\n"
@@ -101,4 +103,58 @@ TEST(QuerySerializerTest, SerializeWhenUnknownType) {
           "                }";
   auto res = querySerializer.deserialize(json_query);
   ASSERT_FALSE(res.has_value());
+}
+
+TEST(QuerySerializerTest, SerializeGetAccount){
+  JsonQueryFactory queryFactory;
+  QueryGenerator queryGenerator;
+  auto val = queryGenerator.generateGetAccount(0, "123", 0, "test");
+  val->signature = generateSignature(42);
+  auto json = queryFactory.serialize(val);
+  ASSERT_TRUE(json.has_value());
+  auto ser_val = queryFactory.deserialize(json.value());
+  ASSERT_TRUE(ser_val.has_value());
+  ASSERT_EQ(val->query_hash, ser_val.value()->query_hash);
+  ASSERT_EQ(val->signature.signature, ser_val.value()->signature.signature);
+}
+
+TEST(QuerySerializerTest, SerializeGetAccountAssets){
+  JsonQueryFactory queryFactory;
+  QueryGenerator queryGenerator;
+  auto val = queryGenerator.generateGetAccountAssets(0, "123", 0, "test", "coin");
+  val->signature = generateSignature(42);
+  auto json = queryFactory.serialize(val);
+  ASSERT_TRUE(json.has_value());
+  auto ser_val = queryFactory.deserialize(json.value());
+  ASSERT_TRUE(ser_val.has_value());
+  ASSERT_EQ(val->query_hash, ser_val.value()->query_hash);
+  ASSERT_EQ(val->signature.signature, ser_val.value()->signature.signature);
+
+}
+
+TEST(QuerySerializerTest, SerializeGetAccountTransactions){
+  JsonQueryFactory queryFactory;
+  QueryGenerator queryGenerator;
+  auto val = queryGenerator.generateGetAccountTransactions(0, "123", 0, "test");
+  val->signature = generateSignature(42);
+  auto json = queryFactory.serialize(val);
+  ASSERT_TRUE(json.has_value());
+  auto ser_val = queryFactory.deserialize(json.value());
+  ASSERT_TRUE(ser_val.has_value());
+  ASSERT_EQ(val->query_hash, ser_val.value()->query_hash);
+  ASSERT_EQ(val->signature.signature, ser_val.value()->signature.signature);
+}
+
+
+TEST(QuerySerializerTest, SerializeGetSignatories){
+  JsonQueryFactory queryFactory;
+  QueryGenerator queryGenerator;
+  auto val = queryGenerator.generateGetSignatories(0, "123", 0, "test");
+  val->signature = generateSignature(42);
+  auto json = queryFactory.serialize(val);
+  ASSERT_TRUE(json.has_value());
+  auto ser_val = queryFactory.deserialize(json.value());
+  ASSERT_TRUE(ser_val.has_value());
+  ASSERT_EQ(val->query_hash, ser_val.value()->query_hash);
+  ASSERT_EQ(val->signature.signature, ser_val.value()->signature.signature);
 }

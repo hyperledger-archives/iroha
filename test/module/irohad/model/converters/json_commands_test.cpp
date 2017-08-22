@@ -44,7 +44,8 @@ class JsonCommandTest : public ::testing::Test {
   void command_converter_test(std::shared_ptr<Command> abstract_command) {
     auto json_repr = factory.serializeAbstractCommand(abstract_command);
     auto model_repr = factory.deserializeAbstractCommand(json_repr);
-    ASSERT_EQ(*abstract_command, *model_repr);
+    ASSERT_TRUE(model_repr.has_value());
+    ASSERT_EQ(*abstract_command, *model_repr.value());
   }
 };
 

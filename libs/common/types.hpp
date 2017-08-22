@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMON_HPP
-#define IROHA_COMMON_HPP
+#ifndef IROHA_COMMON_TYPES_HPP
+#define IROHA_COMMON_TYPES_HPP
 
 #include <array>
 #include <cstdio>
@@ -216,4 +216,4 @@ namespace iroha {
   }
 
 }  // namespace iroha
-#endif  // IROHA_COMMON_HPP
+#endif  // IROHA_COMMON_TYPES_HPP

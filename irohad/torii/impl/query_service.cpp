@@ -44,8 +44,8 @@ namespace torii {
     // Get iroha model query
     auto query = pb_query_factory_->deserialize(request);
     // Query - response relationship
-    handler_map_.insert({query->query_hash.to_string(), response});
+    handler_map_.insert({query.value()->query_hash.to_string(), response});
     // Send query to iroha
-    query_processor_->queryHandle(query);
+    query_processor_->queryHandle(query.value());
   }
 }

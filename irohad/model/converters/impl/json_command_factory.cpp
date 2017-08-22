@@ -523,7 +523,7 @@ namespace iroha {
         return Document();
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeAbstractCommand(
+      optional_ptr<model::Command> JsonCommandFactory::deserializeAbstractCommand(
           const Document &command) {
         auto command_type = command["command_type"].GetString();
 
@@ -531,7 +531,7 @@ namespace iroha {
         if (it != deserializers_.end()) {
           return (this->*it->second)(command);
         }
-        return nullptr;
+        return nonstd::nullopt;
       }
 
     }  // namespace converters
