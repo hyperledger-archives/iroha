@@ -50,12 +50,12 @@ namespace torii {
 
     auto tx_hash = iroha_tx->tx_hash.to_string();
 
-    if (handler_map_.count(tx_hash)) {
+    if (handler_map_.count(tx_hash) > 0) {
       response.set_validation(iroha::protocol::STATELESS_VALIDATION_FAILED);
       return;
     }
 
-    handler_map_.insert({tx_hash, response});
+    handler_map_.emplace(tx_hash, response);
     // Send transaction to iroha
     tx_processor_->transactionHandle(iroha_tx);
   }
