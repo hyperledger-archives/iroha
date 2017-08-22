@@ -32,3 +32,8 @@ target_link_libraries(torii_queries_test
     server_runner
     processors
     )
+
+addtest(query_service_test query_service_test.cpp)
+target_link_libraries(query_service_test
+    torii_service
+    )

@@ -108,25 +108,25 @@ namespace iroha {
       if (instanceof <model::GetAccount>(query)) {
         auto cast = static_cast<const GetAccount &>(*query);
         result_hash += cast.account_id;
-        result_hash += cast.creator_account_id;
       }
       if (instanceof <model::GetAccountAssets>(query)) {
         auto cast = static_cast<const GetAccountAssets &>(*query);
         result_hash += cast.account_id;
         result_hash += cast.asset_id;
-        result_hash += cast.creator_account_id;
       }
       if (instanceof <model::GetSignatories>(query)) {
         auto cast = static_cast<const GetSignatories &>(*query);
         result_hash += cast.account_id;
-        result_hash += cast.creator_account_id;
       }
       if (instanceof <model::GetAccountTransactions>(query)) {
         auto cast = static_cast<const GetAccountTransactions &>(*query);
         result_hash += cast.account_id;
-        result_hash += cast.creator_account_id;
       }
+
+      result_hash += query->creator_account_id;
       result_hash += query->query_counter;
+      result_hash += query->created_ts;
+
       std::vector<uint8_t> concat_hash_commands(result_hash.begin(),
                                                 result_hash.end());
       return sha3_256(concat_hash_commands.data(), concat_hash_commands.size());
