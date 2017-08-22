@@ -7,11 +7,6 @@ set_directory_properties(PROPERTIES
 # Project dependencies.
 find_package(Threads REQUIRED)
 
-############################
-#         ed25519          #
-############################
-find_package(ed25519)
-
 ##########################
 #         gtest          #
 ##########################

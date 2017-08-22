@@ -1,3 +1,5 @@
+add_subdirectory(ed25519)
+
 add_library(hash
     hash.cpp
     )
@@ -15,6 +17,6 @@ target_link_libraries(crypto
     )
 
 add_library(lookup3
-        lookup3.h
-        lookup3.c
-        )
+    lookup3.h
+    lookup3.c
+    )
