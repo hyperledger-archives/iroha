@@ -31,11 +31,6 @@ namespace torii {
       auto res = this->handler_map_.find(iroha_response->tx_hash);
 
       // TODO: make for other responses
-      if (iroha_response->current_status ==
-          iroha::model::TransactionResponse::STATEFUL_VALIDATION_FAILED) {
-        res->second.set_validation(
-            iroha::protocol::STATELESS_VALIDATION_FAILED);
-      }
 
       switch (iroha_response->current_status) {
         case iroha::model::TransactionResponse::STATELESS_VALIDATION_FAILED:

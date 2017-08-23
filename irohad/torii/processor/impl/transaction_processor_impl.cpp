@@ -52,7 +52,12 @@ namespace iroha {
                 [this](model::Block block) {
                   for (auto tx : block.transactions) {
                     if (this->proposal_set_.count(tx.tx_hash.to_string())) {
+                      proposal_set_.erase(tx.tx_hash.to_string());
                       candidate_set_.insert(tx.tx_hash.to_string());
+                      TransactionResponse response;
+                      response.tx_hash = tx.tx_hash.to_string();
+                      response.current_status = model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS;
+                      notifier_.get_subscriber().on_next(std::make_shared<model::TransactionResponse>(response));
                     }
                   }
                 },
@@ -63,6 +68,7 @@ namespace iroha {
                     response.tx_hash = tx_hash;
                     response.current_status =
                         TransactionResponse::STATEFUL_VALIDATION_FAILED;
+                    notifier_.get_subscriber().on_next(std::make_shared<model::TransactionResponse>(response));
                   }
                   proposal_set_.clear();
 
@@ -70,6 +76,7 @@ namespace iroha {
                     TransactionResponse response;
                     response.tx_hash = tx_hash;
                     response.current_status = TransactionResponse::COMMITTED;
+                    notifier_.get_subscriber().on_next(std::make_shared<model::TransactionResponse>(response));
                   }
                   candidate_set_.clear();
                 });

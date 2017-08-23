@@ -59,7 +59,6 @@ class ToriiServiceTest : public testing::Test {
       wsv_query = std::make_shared<MockWsvQuery>();
       block_query = std::make_shared<MockBlockQuery>();
 
-
       auto tx_processor =
           std::make_shared<iroha::torii::TransactionProcessorImpl>(
               pcsMock, statelessValidatorMock);
@@ -158,10 +157,65 @@ TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
     meta->set_tx_counter(i);
     meta->set_creator_account_id("accountA");
 
-    auto stat =
-        client.Torii(new_tx, [&count](auto response) {
-          count++;
-        });
+    auto stat = client.Torii(new_tx, [&count](auto response) { count++; });
+  }
+
+  while (count < (int)TimesToriiNonBlocking)
+    ;
+  ASSERT_EQ(count, TimesToriiNonBlocking);
+}
+
+using Commit = rxcpp::observable<iroha::model::Block>;
+
+class PeerCommunicationServiceMock2 : public PeerCommunicationService {
+ public:
+  PeerCommunicationServiceMock2(
+      rxcpp::subjects::subject<std::shared_ptr<const iroha::model::Proposal>>
+          prop_notifier,
+      rxcpp::subjects::subject<Commit> commit_notifier)
+      : prop_notifier_(prop_notifier), commit_notifier_(commit_notifier){};
+
+  void propagate_transaction(
+      std::shared_ptr<const iroha::model::Transaction> transaction) override {}
+
+  rxcpp::observable<iroha::model::Proposal> on_proposal() override {
+    return prop_notifier_.get_observable();
+  }
+  rxcpp::observable<Commit> on_commit() override {
+    return commit_notifier_.get_observable();
+  }
+
+ private:
+  rxcpp::subjects::subject<std::shared_ptr<const iroha::model::Proposal>>
+      prop_notifier_;
+  rxcpp::subjects::subject<Commit> commit_notifier_;
+};
+
+TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
+  torii::CommandAsyncClient client(Ip, Port);
+  std::atomic_int count{0};
+
+  EXPECT_CALL(*statelessValidatorMock,
+              validate(A<const iroha::model::Transaction &>()))
+      .Times(TimesToriiNonBlocking)
+      .WillRepeatedly(Return(true));
+
+  rxcpp::subjects::subject<std::shared_ptr<const iroha::model::Proposal>>
+      prop_notifier;
+
+  rxcpp::subjects::subject<Commit> commit_notifier_;
+
+  PeerCommunicationServiceMock2 pcs(prop_notifier, commit_notifier_);
+
+
+
+  for (size_t i = 0; i < TimesToriiNonBlocking; ++i) {
+    auto new_tx = iroha::protocol::Transaction();
+    auto meta = new_tx.mutable_meta();
+    meta->set_tx_counter(i);
+    meta->set_creator_account_id("accountA");
+
+    auto stat = client.Torii(new_tx, [&count](auto response) { count++; });
   }
 
   while (count < (int)TimesToriiNonBlocking)
