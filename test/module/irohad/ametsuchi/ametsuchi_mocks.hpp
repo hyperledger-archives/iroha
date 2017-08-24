@@ -58,6 +58,7 @@ namespace iroha {
       MOCK_METHOD2(deleteAccountSignatory,
                    bool(const std::string &, const ed25519::pubkey_t &));
 
+      MOCK_METHOD1(deleteSignatory, bool(const ed25519::pubkey_t &));
 
       MOCK_METHOD1(insertPeer, bool(const model::Peer &));
 

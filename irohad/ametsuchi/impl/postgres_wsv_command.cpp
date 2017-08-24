@@ -143,6 +143,19 @@ namespace iroha {
       return true;
     }
 
+    bool PostgresWsvCommand::deleteSignatory(const ed25519::pubkey_t &signatory) {
+      pqxx::binarystring public_key(signatory.data(), signatory.size());
+      try {
+        transaction_.exec(
+            "DELETE FROM signatory\n"
+                " WHERE public_key=" +
+            transaction_.quote(public_key) + ";");
+      } catch (const std::exception &e) {
+        return false;
+      }
+      return true;
+    }
+
     bool PostgresWsvCommand::insertPeer(const model::Peer &peer) {
       pqxx::binarystring public_key(peer.pubkey.data(), peer.pubkey.size());
       try {

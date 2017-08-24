@@ -154,7 +154,8 @@ bool AddSignatoryExecutor::execute(const Command &command,
                                    ametsuchi::WsvCommand &commands) {
   auto add_signatory = static_cast<const AddSignatory &>(command);
 
-  return commands.insertAccountSignatory(add_signatory.account_id,
+  return commands.insertSignatory(add_signatory.pubkey) &&
+         commands.insertAccountSignatory(add_signatory.account_id,
                                          add_signatory.pubkey);
 }
 
@@ -315,7 +316,8 @@ bool RemoveSignatoryExecutor::execute(const Command &command,
 
   // Delete will fail if account signatory doesn't exist
   return commands.deleteAccountSignatory(remove_signatory.account_id,
-                                         remove_signatory.pubkey);
+                                         remove_signatory.pubkey) &&
+         commands.deleteSignatory(remove_signatory.pubkey);
 }
 
 bool RemoveSignatoryExecutor::hasPermissions(const Command &command,
