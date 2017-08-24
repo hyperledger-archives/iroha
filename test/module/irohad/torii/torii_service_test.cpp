@@ -24,6 +24,7 @@ limitations under the License.
 #include <chrono>
 #include <main/server_runner.hpp>
 #include <memory>
+#include <model/model_hash_provider_impl.hpp>
 #include <thread>
 #include <torii/command_client.hpp>
 #include <torii/command_service.hpp>
@@ -170,8 +171,7 @@ using Commit = rxcpp::observable<iroha::model::Block>;
 class PeerCommunicationServiceMock2 : public PeerCommunicationService {
  public:
   PeerCommunicationServiceMock2(
-      rxcpp::subjects::subject<std::shared_ptr<const iroha::model::Proposal>>
-          prop_notifier,
+      rxcpp::subjects::subject<iroha::model::Proposal> prop_notifier,
       rxcpp::subjects::subject<Commit> commit_notifier)
       : prop_notifier_(prop_notifier), commit_notifier_(commit_notifier){};
 
@@ -186,12 +186,72 @@ class PeerCommunicationServiceMock2 : public PeerCommunicationService {
   }
 
  private:
-  rxcpp::subjects::subject<std::shared_ptr<const iroha::model::Proposal>>
-      prop_notifier_;
+  rxcpp::subjects::subject<iroha::model::Proposal> prop_notifier_;
   rxcpp::subjects::subject<Commit> commit_notifier_;
 };
 
-TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
+class ToriiStatusTest : public testing::Test {
+ public:
+  virtual void SetUp() {
+    runner = new ServerRunner(std::string(Ip) + ":" + std::to_string(Port));
+    th = std::thread([this] {
+      // ----------- Command Service --------------
+      pcsMock = std::make_shared<PeerCommunicationServiceMock2>(
+          prop_notifier_, commit_notifier_);
+      statelessValidatorMock = std::make_shared<MockStatelessValidator>();
+      wsv_query = std::make_shared<MockWsvQuery>();
+      block_query = std::make_shared<MockBlockQuery>();
+
+      auto tx_processor =
+          std::make_shared<iroha::torii::TransactionProcessorImpl>(
+              pcsMock, statelessValidatorMock);
+      auto pb_tx_factory =
+          std::make_shared<iroha::model::converters::PbTransactionFactory>();
+      auto command_service =
+          std::make_unique<torii::CommandService>(pb_tx_factory, tx_processor);
+
+      //----------- Query Service ----------
+      auto qpf = std::make_unique<iroha::model::QueryProcessingFactory>(
+          wsv_query, block_query);
+
+      auto qpi = std::make_shared<iroha::torii::QueryProcessorImpl>(
+          std::move(qpf), statelessValidatorMock);
+
+      auto pb_query_factory =
+          std::make_shared<iroha::model::converters::PbQueryFactory>();
+      auto pb_query_resp_factory =
+          std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
+
+      auto query_service = std::make_unique<torii::QueryService>(
+          pb_query_factory, pb_query_resp_factory, qpi);
+
+      //----------- Server run ----------------
+      runner->run(std::move(command_service), std::move(query_service));
+    });
+
+    runner->waitForServersReady();
+  }
+
+  virtual void TearDown() {
+    runner->shutdown();
+    delete runner;
+    th.join();
+  }
+
+  ServerRunner *runner;
+  std::thread th;
+
+  std::shared_ptr<MockWsvQuery> wsv_query;
+  std::shared_ptr<MockBlockQuery> block_query;
+
+  rxcpp::subjects::subject<iroha::model::Proposal> prop_notifier_;
+  rxcpp::subjects::subject<Commit> commit_notifier_;
+
+  std::shared_ptr<PeerCommunicationServiceMock2> pcsMock;
+  std::shared_ptr<MockStatelessValidator> statelessValidatorMock;
+};
+
+TEST_F(ToriiStatusTest, StatusWhenNonBlocking) {
   torii::CommandAsyncClient client(Ip, Port);
   std::atomic_int count{0};
 
@@ -200,15 +260,12 @@ TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
       .Times(TimesToriiNonBlocking)
       .WillRepeatedly(Return(true));
 
-  rxcpp::subjects::subject<std::shared_ptr<const iroha::model::Proposal>>
-      prop_notifier;
+  std::vector<iroha::model::Transaction> txs;
+  std::vector<std::string> tx_hashes;
+  iroha::model::converters::PbTransactionFactory tx_factory;
+  iroha::model::HashProviderImpl hashProvider;
 
-  rxcpp::subjects::subject<Commit> commit_notifier_;
-
-  PeerCommunicationServiceMock2 pcs(prop_notifier, commit_notifier_);
-
-
-
+  // generate txs with corresponding hashes
   for (size_t i = 0; i < TimesToriiNonBlocking; ++i) {
     auto new_tx = iroha::protocol::Transaction();
     auto meta = new_tx.mutable_meta();
@@ -216,6 +273,31 @@ TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
     meta->set_creator_account_id("accountA");
 
     auto stat = client.Torii(new_tx, [&count](auto response) { count++; });
+
+    auto iroha_tx = tx_factory.deserialize(new_tx);
+    txs.push_back(*iroha_tx);
+    tx_hashes.push_back(hashProvider.get_hash(*iroha_tx).to_string());
+  }
+
+  // create proposals
+  for (size_t i = 0; i < TimesToriiNonBlocking; i += 5) {
+    std::vector<iroha::model::Transaction> prop_txs(txs.begin() + i,
+                                                    txs.begin() + i + 5);
+
+    iroha::model::Proposal proposal(prop_txs);
+    txs.clear();
+    prop_notifier_.get_subscriber().on_next(proposal);
+
+    iroha::protocol::TxStatusRequest tx_request;
+    tx_request.set_tx_hash(tx_hashes.at(i));
+
+    for (int j = i; j < i + 5; j++) {
+      client.Status(tx_request, [](iroha::protocol::ToriiResponse response) {
+        ASSERT_EQ(response.validation(),
+                  iroha::protocol::STATELESS_VALIDATION_SUCCESS);
+      });
+    }
+
   }
 
   while (count < (int)TimesToriiNonBlocking)
