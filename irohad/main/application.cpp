@@ -112,10 +112,11 @@ void Irohad::run() {
   auto chain_validator = std::make_shared<ChainValidatorImpl>(crypto_verifier);
   log_->info("[Init] => validators");
 
-  auto orderer = std::make_shared<PeerOrdererImpl>(storage);
+  auto wsv = std::make_shared<ametsuchi::PeerQueryWsv>(storage);
+
+  auto orderer = std::make_shared<PeerOrdererImpl>(wsv);
   log_->info("[Init] => peer orderer");
 
-  auto wsv = std::make_shared<ametsuchi::PeerQueryWsv>(storage);
   auto peer_address = wsv->getLedgerPeers().value().at(peer_number_).address;
 
   // Ordering gate
