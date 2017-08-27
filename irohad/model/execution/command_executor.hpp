@@ -21,6 +21,7 @@
 #include "ametsuchi/wsv_command.hpp"
 #include "ametsuchi/wsv_query.hpp"
 #include "model/command.hpp"
+#include "logger/logger.hpp"
 
 namespace iroha {
   namespace model {
@@ -29,6 +30,9 @@ namespace iroha {
      */
     class CommandExecutor {
      public:
+
+      CommandExecutor();
+
       /**
        * Check permissions and perform stateful validation
        * @param command - command to be validated
@@ -71,6 +75,8 @@ namespace iroha {
        */
       virtual bool isValid(const Command &command,
                            ametsuchi::WsvQuery &queries) = 0;
+
+      logger::Logger log_;
     };
 
     class AddAssetQuantityExecutor : public CommandExecutor {
