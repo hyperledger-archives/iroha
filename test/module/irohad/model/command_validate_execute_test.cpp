@@ -41,6 +41,9 @@ using namespace iroha::model;
 
 class CommandValidateExecuteTest : public ::testing::Test {
  public:
+  CommandValidateExecuteTest() {
+    spdlog::set_level(spdlog::level::off);
+  }
 
   void SetUp() override {
     factory = CommandExecutorFactory::create().value();
@@ -207,6 +210,8 @@ class AddSignatoryTest : public CommandValidateExecuteTest {
 TEST_F(AddSignatoryTest, ValidWhenCreatorHasPermissions) {
   // Creator has permissions
   creator.permissions.add_signatory = true;
+  EXPECT_CALL(*wsv_command, insertSignatory(add_signatory->pubkey))
+      .WillOnce(Return(true));
   EXPECT_CALL(*wsv_command, insertAccountSignatory(add_signatory->account_id,
                                                    add_signatory->pubkey))
       .WillOnce(Return(true));
@@ -219,6 +224,8 @@ TEST_F(AddSignatoryTest, ValidWhenSameAccount) {
   creator.permissions.add_signatory = false;
   add_signatory->account_id = creator.account_id;
 
+  EXPECT_CALL(*wsv_command, insertSignatory(add_signatory->pubkey))
+      .WillOnce(Return(true));
   EXPECT_CALL(*wsv_command, insertAccountSignatory(add_signatory->account_id,
                                                    add_signatory->pubkey))
       .WillOnce(Return(true));
@@ -233,23 +240,13 @@ TEST_F(AddSignatoryTest, InvalidWhenNoPermissions) {
   ASSERT_FALSE(validateAndExecute());
 }
 
-TEST_F(AddSignatoryTest, InvalidWhenNoKey) {
-  // Trying to add nonexistent public key
-  creator.permissions.add_signatory = true;
-  add_signatory->pubkey.fill(0xF);
-
-  EXPECT_CALL(*wsv_command, insertAccountSignatory(add_signatory->account_id,
-                                                   add_signatory->pubkey))
-      .WillOnce(Return(false));
-
-  ASSERT_FALSE(validateAndExecute());
-}
-
 TEST_F(AddSignatoryTest, InvalidWhenNoAccount) {
   // Add to nonexistent account
   creator.permissions.add_signatory = true;
   add_signatory->account_id = "noacc";
 
+  EXPECT_CALL(*wsv_command, insertSignatory(add_signatory->pubkey))
+      .WillOnce(Return(true));
   EXPECT_CALL(*wsv_command, insertAccountSignatory(add_signatory->account_id,
                                                    add_signatory->pubkey))
       .WillOnce(Return(false));
@@ -262,8 +259,7 @@ TEST_F(AddSignatoryTest, InvalidWhenSameKey) {
   creator.permissions.add_signatory = true;
   add_signatory->pubkey.fill(2);
 
-  EXPECT_CALL(*wsv_command, insertAccountSignatory(add_signatory->account_id,
-                                                   add_signatory->pubkey))
+  EXPECT_CALL(*wsv_command, insertSignatory(add_signatory->pubkey))
       .WillOnce(Return(false));
 
   ASSERT_FALSE(validateAndExecute());
@@ -412,6 +408,8 @@ TEST_F(RemoveSignatoryTest, ValidWhenCreatorHasPermissions) {
 
   EXPECT_CALL(*wsv_query, getAccount(remove_signatory->account_id))
       .WillOnce(Return(account));
+  EXPECT_CALL(*wsv_command, deleteSignatory(remove_signatory->pubkey))
+      .WillOnce(Return(true));
   EXPECT_CALL(*wsv_command, deleteAccountSignatory(remove_signatory->account_id,
                                                    remove_signatory->pubkey))
       .WillOnce(Return(true));

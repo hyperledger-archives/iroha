@@ -51,14 +51,13 @@ namespace iroha {
       MOCK_METHOD1(insertAsset, bool(const model::Asset &));
       MOCK_METHOD1(upsertAccountAsset, bool(const model::AccountAsset &));
       MOCK_METHOD1(insertSignatory, bool(const ed25519::pubkey_t &));
+      MOCK_METHOD1(deleteSignatory, bool(const ed25519::pubkey_t &));
 
       MOCK_METHOD2(insertAccountSignatory,
                    bool(const std::string &, const ed25519::pubkey_t &));
 
       MOCK_METHOD2(deleteAccountSignatory,
                    bool(const std::string &, const ed25519::pubkey_t &));
-
-      MOCK_METHOD1(deleteSignatory, bool(const ed25519::pubkey_t &));
 
       MOCK_METHOD1(insertPeer, bool(const model::Peer &));
 

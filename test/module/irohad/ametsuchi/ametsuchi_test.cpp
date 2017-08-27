@@ -428,3 +428,120 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   blocks->getAccountAssetTransactions(user3id, asset2id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
 }
+
+TEST_F(AmetsuchiTest, AddSignatoryTest) {
+  HashProviderImpl hashProvider;
+
+  auto storage = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  ASSERT_TRUE(storage);
+  auto wsv = storage->getWsvQuery();
+
+  iroha::ed25519::pubkey_t pubkey1, pubkey2;
+  pubkey1.at(0) = 1;
+  pubkey2.at(0) = 2;
+
+  // 1st tx
+  Transaction txn;
+  txn.creator_account_id = "admin1";
+  CreateDomain createDomain;
+  createDomain.domain_name = "domain";
+  txn.commands.push_back(std::make_shared<CreateDomain>(createDomain));
+  CreateAccount createAccount;
+  createAccount.account_name = "user1";
+  createAccount.domain_id = "domain";
+  createAccount.pubkey = pubkey1;
+  txn.commands.push_back(std::make_shared<CreateAccount>(createAccount));
+
+  Block block;
+  block.transactions.push_back(txn);
+  block.height = 1;
+  block.prev_hash.fill(0);
+  auto block1hash = hashProvider.get_hash(block);
+  block.hash = block1hash;
+  block.txs_number = block.transactions.size();
+
+  {
+    auto ms = storage->createMutableStorage();
+    ms->apply(block, [](const auto &blk, auto &query, const auto &top_hash) {
+      return true;
+    });
+    storage->commit(std::move(ms));
+  }
+
+  {
+    auto account = wsv->getAccount(createAccount.account_name + "@" + createAccount.domain_id);
+    ASSERT_TRUE(account);
+    ASSERT_EQ(account->account_id, createAccount.account_name + "@" + createAccount.domain_id);
+    ASSERT_EQ(account->domain_name, createAccount.domain_id);
+
+    auto signatories = wsv->getSignatories(createAccount.account_name + "@" + createAccount.domain_id);
+    ASSERT_TRUE(signatories);
+    ASSERT_EQ(signatories->size(), 1);
+    ASSERT_EQ(signatories->at(0), pubkey1);
+  }
+
+  // 2nd tx
+  txn = Transaction();
+  txn.creator_account_id = createAccount.account_name + "@" + createAccount.domain_id;
+  auto addSignatory = AddSignatory();
+  addSignatory.account_id = createAccount.account_name + "@" + createAccount.domain_id;
+  addSignatory.pubkey = pubkey2;
+  txn.commands.push_back(std::make_shared<AddSignatory>(addSignatory));
+
+  block = Block();
+  block.transactions.push_back(txn);
+  block.height = 2;
+  block.prev_hash = block1hash;
+  auto block2hash = hashProvider.get_hash(block);
+  block.hash = block2hash;
+  block.txs_number = block.transactions.size();
+
+  {
+    auto ms = storage->createMutableStorage();
+    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
+    storage->commit(std::move(ms));
+  }
+
+  {
+    auto account = wsv->getAccount(createAccount.account_name + "@" + createAccount.domain_id);
+    ASSERT_TRUE(account);
+
+    auto signatories = wsv->getSignatories(createAccount.account_name + "@" + createAccount.domain_id);
+    ASSERT_TRUE(signatories);
+    ASSERT_EQ(signatories->size(), 2);
+    ASSERT_EQ(signatories->at(0), pubkey1);
+    ASSERT_EQ(signatories->at(1), pubkey2);
+  }
+
+  // 3th tx
+  txn = Transaction();
+  txn.creator_account_id = createAccount.account_name + "@" + createAccount.domain_id;
+  auto removeSignatory = RemoveSignatory();
+  removeSignatory.account_id = createAccount.account_name + "@" + createAccount.domain_id;
+  removeSignatory.pubkey = pubkey1;
+  txn.commands.push_back(std::make_shared<RemoveSignatory>(removeSignatory));
+
+  block = Block();
+  block.transactions.push_back(txn);
+  block.height = 3;
+  block.prev_hash = block2hash;
+  auto block3hash = hashProvider.get_hash(block);
+  block.hash = block3hash;
+  block.txs_number = block.transactions.size();
+
+  {
+    auto ms = storage->createMutableStorage();
+    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
+    storage->commit(std::move(ms));
+  }
+
+  {
+    auto account = wsv->getAccount(createAccount.account_name + "@" + createAccount.domain_id);
+    ASSERT_TRUE(account);
+
+    auto signatories = wsv->getSignatories(createAccount.account_name + "@" + createAccount.domain_id);
+    ASSERT_TRUE(signatories);
+    ASSERT_EQ(signatories->size(), 1);
+    ASSERT_EQ(signatories->at(0), pubkey2);
+  }
+}
