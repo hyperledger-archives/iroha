@@ -67,7 +67,6 @@ TEST(TransactionTest, tx_test) {
     case iroha::protocol::Command::kAddAssetQuantity:break;
     case iroha::protocol::Command::kAddPeer:break;
     case iroha::protocol::Command::kAddSignatory:break;
-    case iroha::protocol::Command::kAccountAssignMk:break;
     case iroha::protocol::Command::kCreateAsset:break;
     case iroha::protocol::Command::kCreateAccount:break;
     case iroha::protocol::Command::kCreateDomain:break;

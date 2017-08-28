@@ -96,17 +96,6 @@ TEST(CommandTest, add_signatory_abstract_factory) {
   command_converter_test(orig_command);
 }
 
-TEST(CommandTest, assign_master_key) {
-  auto orig_command = iroha::model::AssignMasterKey();
-  orig_command.account_id = "23";
-  auto factory = iroha::model::converters::PbCommandFactory();
-  auto proto_command = factory.serializeAssignMasterKey(orig_command);
-  auto serial_command = factory.deserializeAssignMasterKey(proto_command);
-
-  ASSERT_EQ(orig_command, serial_command);
-  command_converter_test(orig_command);
-}
-
 TEST(CommandTest, create_asset) {
   auto factory = iroha::model::converters::PbCommandFactory();
 
