@@ -9,7 +9,6 @@ AddTest(blob_converter_test blob_converter_test.cpp)
 AddTest(block_insertion_test block_insertion_test.cpp)
 target_link_libraries(block_insertion_test
     json_model_converters
-    genesis_block_server
     test_block_generator
     raw_block_insertion
     logger
