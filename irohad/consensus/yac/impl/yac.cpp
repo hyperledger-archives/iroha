@@ -66,18 +66,21 @@ namespace iroha {
       // ------|Network notifications|------
 
       void Yac::on_vote(model::Peer from, VoteMessage vote) {
+        std::lock_guard<std::mutex> guard(mutex_);
         if (crypto_->verify(vote)) {
           this->applyVote(from, vote);
         }
       }
 
       void Yac::on_commit(model::Peer from, CommitMessage commit) {
+        std::lock_guard<std::mutex> guard(mutex_);
         if (crypto_->verify(commit)) {
           this->applyCommit(from, commit);
         }
       }
 
       void Yac::on_reject(model::Peer from, RejectMessage reject) {
+        std::lock_guard<std::mutex> guard(mutex_);
         if (crypto_->verify(reject)) {
           this->applyReject(from, reject);
         }

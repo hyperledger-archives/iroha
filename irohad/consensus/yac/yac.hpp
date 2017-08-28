@@ -23,6 +23,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <mutex>
 #include <nonstd/optional.hpp>
 
 #include "consensus/yac/yac_gate.hpp"
@@ -101,6 +102,7 @@ namespace iroha {
         std::shared_ptr<YacCryptoProvider> crypto_;
         std::shared_ptr<Timer> timer_;
         rxcpp::subjects::subject<CommitMessage> notifier_;
+        std::mutex mutex_;
 
         // ------|One round|------
         ClusterOrdering cluster_order_;
