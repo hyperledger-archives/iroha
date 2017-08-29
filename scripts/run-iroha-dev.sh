@@ -1,11 +1,11 @@
 #!/bin/bash
 
-USER=$(whoami)
-USERID=$(id -u ${USER})
+USER=iroha
+USERID=$(id -u $(whoami))
 
 CURDIR="$(cd "$(dirname "$0")"; pwd)"
 IROHA_HOME="$(dirname "${CURDIR}")"
-PROJECT=iroha
+PROJECT=iroha${USERID}
 
 if [ ! "$(docker ps -q -f name=${PROJECT}_node_1)" ] # node already running
 then
