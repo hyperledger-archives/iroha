@@ -1,9 +1,13 @@
 # Gflags config validators
-add_library(cli-flags_validators validators.cpp)
-target_link_libraries(cli-flags_validators gflags
+add_library(cli-flags_validators
+    validators.cpp
+    )
+target_link_libraries(cli-flags_validators
+    gflags
     )
 
-add_library(keys_manager impl/keys_manager_impl.cpp
+add_library(keys_manager
+    impl/keys_manager_impl.cpp
     )
 target_link_libraries(keys_manager
     optional
