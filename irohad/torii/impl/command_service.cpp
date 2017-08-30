@@ -25,16 +25,47 @@ namespace torii {
       std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor)
       : pb_factory_(pb_factory), tx_processor_(txProccesor) {
     // Notifier for all clients
-    tx_processor_->transactionNotifier().subscribe([this](auto iroha_response) {
-
+    tx_processor_->transactionNotifier().subscribe([this](
+        std::shared_ptr<iroha::model::TransactionResponse> iroha_response) {
       // Find response in handler map
       auto res = this->handler_map_.find(iroha_response->tx_hash);
-      if (res == this->handler_map_.end()){
+      if (res == this->handler_map_.end()) {
         iroha::protocol::ToriiResponse response;
         response.set_validation(iroha::protocol::NOT_RECEIVED);
         this->handler_map_.insert({iroha_response->tx_hash, response});
         return;
       }
+      switch (iroha_response->current_status) {
+        case iroha::model::TransactionResponse::STATELESS_VALIDATION_FAILED:
+          res->second.set_validation(iroha::protocol::StatelessValidation::
+                                         STATELESS_VALIDATION_FAILED);
+          break;
+        case iroha::model::TransactionResponse::STATELESS_VALIDATION_SUCCESS:
+          res->second.set_validation(iroha::protocol::StatelessValidation::
+                                         STATELESS_VALIDATION_SUCCESS);
+          break;
+        case iroha::model::TransactionResponse::STATEFUL_VALIDATION_FAILED:
+          res->second.set_validation(
+              iroha::protocol::StatelessValidation::STATEFUL_VALIDATION_FAILED);
+          break;
+        case iroha::model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS:
+          res->second.set_validation(iroha::protocol::StatelessValidation::
+                                         STATEFUL_VALIDATION_SUCCESS);
+          break;
+        case iroha::model::TransactionResponse::COMMITTED:
+          res->second.set_validation(
+              iroha::protocol::StatelessValidation::COMMITTED);
+          break;
+        case iroha::model::TransactionResponse::ON_PROCESS:
+          res->second.set_validation(
+              iroha::protocol::StatelessValidation::ON_PROCESS);
+          break;
+        case iroha::model::TransactionResponse::NOT_RECEIVED:
+          res->second.set_validation(
+              iroha::protocol::StatelessValidation::NOT_RECEIVED);
+          break;
+      }
+
       this->handler_map_.insert({iroha_response->tx_hash, res->second});
     });
   }
