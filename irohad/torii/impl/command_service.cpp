@@ -29,36 +29,13 @@ namespace torii {
 
       // Find response in handler map
       auto res = this->handler_map_.find(iroha_response->tx_hash);
-
-      // TODO: make for other responses
-
-      switch (iroha_response->current_status) {
-        case iroha::model::TransactionResponse::STATELESS_VALIDATION_FAILED:
-          res->second.set_validation(
-              iroha::protocol::STATELESS_VALIDATION_FAILED);
-          break;
-        case iroha::model::TransactionResponse::STATELESS_VALIDATION_SUCCESS:
-          res->second.set_validation(
-              iroha::protocol::STATELESS_VALIDATION_SUCCESS);
-          break;
-        case iroha::model::TransactionResponse::STATEFUL_VALIDATION_FAILED:
-          res->second.set_validation(
-              iroha::protocol::STATEFUL_VALIDATION_FAILED);
-          break;
-        case iroha::model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS:
-          res->second.set_validation(
-              iroha::protocol::STATELESS_VALIDATION_SUCCESS);
-          break;
-        case iroha::model::TransactionResponse::COMMITTED:
-          res->second.set_validation(iroha::protocol::COMMITTED);
-          break;
-        case iroha::model::TransactionResponse::ON_PROCESS:
-          res->second.set_validation(iroha::protocol::ON_PROCESS);
-          break;
-        case iroha::model::TransactionResponse::NOT_RECEIVED:
-          res->second.set_validation(iroha::protocol::NOT_RECEIVED);
-          break;
+      if (res == this->handler_map_.end()){
+        iroha::protocol::ToriiResponse response;
+        response.set_validation(iroha::protocol::NOT_RECEIVED);
+        this->handler_map_.insert({iroha_response->tx_hash, response});
+        return;
       }
+      this->handler_map_.insert({iroha_response->tx_hash, res->second});
     });
   }
 
@@ -72,7 +49,6 @@ namespace torii {
     response.set_validation(iroha::protocol::StatelessValidation::ON_PROCESS);
 
     if (handler_map_.count(tx_hash) > 0) {
-      response.set_validation(iroha::protocol::STATELESS_VALIDATION_FAILED);
       return;
     }
 

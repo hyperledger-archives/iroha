@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <endpoint.pb.h>
 #include <iostream>
 #include <model/tx_responses/stateless_response.hpp>
 #include <torii/processor/transaction_processor_impl.hpp>
@@ -41,62 +42,72 @@ namespace iroha {
           response.tx_hash = tx.tx_hash.to_string();
           response.current_status =
               TransactionResponse::STATELESS_VALIDATION_SUCCESS;
+          notifier_.get_subscriber().on_next(
+              std::make_shared<model::TransactionResponse>(response));
         }
       });
 
       // move commited txs from proposal to candidate map
-      pcs_->on_commit().subscribe(
-          [this](rxcpp::observable<model::Block> blocks) {
-            blocks.subscribe(
-                // on next..
-                [this](model::Block block) {
-                  for (auto tx : block.transactions) {
-                    if (this->proposal_set_.count(tx.tx_hash.to_string())) {
-                      proposal_set_.erase(tx.tx_hash.to_string());
-                      candidate_set_.insert(tx.tx_hash.to_string());
-                      TransactionResponse response;
-                      response.tx_hash = tx.tx_hash.to_string();
-                      response.current_status = model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS;
-                      notifier_.get_subscriber().on_next(std::make_shared<model::TransactionResponse>(response));
-                    }
-                  }
-                },
-                // on complete
-                [this]() {
-                  for (auto tx_hash : proposal_set_) {
-                    TransactionResponse response;
-                    response.tx_hash = tx_hash;
-                    response.current_status =
-                        TransactionResponse::STATEFUL_VALIDATION_FAILED;
-                    notifier_.get_subscriber().on_next(std::make_shared<model::TransactionResponse>(response));
-                  }
-                  proposal_set_.clear();
+      pcs_->on_commit().subscribe([this](
+          rxcpp::observable<model::Block> blocks) {
+        blocks.subscribe(
+            // on next..
+            [this](model::Block block) {
+              for (auto tx : block.transactions) {
+                if (this->proposal_set_.count(tx.tx_hash.to_string())) {
+                  proposal_set_.erase(tx.tx_hash.to_string());
+                  candidate_set_.insert(tx.tx_hash.to_string());
+                  TransactionResponse response;
+                  response.tx_hash = tx.tx_hash.to_string();
+                  response.current_status =
+                      model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS;
+                  notifier_.get_subscriber().on_next(
+                      std::make_shared<model::TransactionResponse>(response));
+                }
+              }
+            },
+            // on complete
+            [this]() {
+              for (auto tx_hash : proposal_set_) {
+                TransactionResponse response;
+                response.tx_hash = tx_hash;
+                response.current_status =
+                    TransactionResponse::STATEFUL_VALIDATION_FAILED;
+                notifier_.get_subscriber().on_next(
+                    std::make_shared<model::TransactionResponse>(response));
+              }
+              proposal_set_.clear();
 
-                  for (auto tx_hash : candidate_set_) {
-                    TransactionResponse response;
-                    response.tx_hash = tx_hash;
-                    response.current_status = TransactionResponse::COMMITTED;
-                    notifier_.get_subscriber().on_next(std::make_shared<model::TransactionResponse>(response));
-                  }
-                  candidate_set_.clear();
-                });
-          });
+              for (auto tx_hash : candidate_set_) {
+                TransactionResponse response;
+                response.tx_hash = tx_hash;
+                response.current_status = TransactionResponse::COMMITTED;
+                notifier_.get_subscriber().on_next(
+                    std::make_shared<model::TransactionResponse>(response));
+              }
+              candidate_set_.clear();
+            });
+      });
     }
 
     void TransactionProcessorImpl::transactionHandle(
         std::shared_ptr<model::Transaction> transaction) {
       log_->info("handle transaction");
-      model::TransactionStatelessResponse response;
+      model::TransactionResponse response;
       response.tx_hash = transaction->tx_hash.to_string();
-      response.passed = false;
+      response.current_status =
+          model::TransactionResponse::Status::NOT_RECEIVED;
 
       if (validator_->validate(*transaction)) {
-        response.passed = true;
+        response.current_status =
+            TransactionResponse::Status::STATELESS_VALIDATION_SUCCESS;
         pcs_->propagate_transaction(transaction);
       }
-      log_->info("stateless validation status: {}", response.passed);
+      log_->info("stateless validation status: {}",
+                 response.current_status ==
+                     TransactionResponse::Status::STATELESS_VALIDATION_SUCCESS);
       notifier_.get_subscriber().on_next(
-          std::make_shared<model::TransactionStatelessResponse>(response));
+          std::make_shared<model::TransactionResponse>(response));
     }
 
     rxcpp::observable<std::shared_ptr<model::TransactionResponse>>

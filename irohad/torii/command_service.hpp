@@ -56,7 +56,7 @@ namespace torii {
    private:
     std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory_;
     std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor_;
-    std::unordered_map<std::string, iroha::protocol::ToriiResponse&>
+    std::unordered_map<std::string, iroha::protocol::ToriiResponse>
         handler_map_;
   };
 

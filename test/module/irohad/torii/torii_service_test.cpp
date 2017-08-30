@@ -49,6 +49,7 @@ using namespace iroha::network;
 using namespace iroha::validation;
 using namespace iroha::ametsuchi;
 
+/*
 class ToriiServiceTest : public testing::Test {
  public:
   virtual void SetUp() {
@@ -165,6 +166,7 @@ TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
     ;
   ASSERT_EQ(count, TimesToriiNonBlocking);
 }
+*/
 
 using Commit = rxcpp::observable<iroha::model::Block>;
 
@@ -190,7 +192,7 @@ class PeerCommunicationServiceMock2 : public PeerCommunicationService {
   rxcpp::subjects::subject<Commit> commit_notifier_;
 };
 
-class ToriiStatusTest : public testing::Test {
+class ToriiServiceTest : public testing::Test {
  public:
   virtual void SetUp() {
     runner = new ServerRunner(std::string(Ip) + ":" + std::to_string(Port));
@@ -251,7 +253,133 @@ class ToriiStatusTest : public testing::Test {
   std::shared_ptr<MockStatelessValidator> statelessValidatorMock;
 };
 
-TEST_F(ToriiStatusTest, StatusWhenNonBlocking) {
+TEST_F(ToriiServiceTest, StatusWhenTxWasNotReceivedBlocking) {
+  std::vector<iroha::model::Transaction> txs;
+  std::vector<std::string> tx_hashes;
+
+  iroha::model::converters::PbTransactionFactory tx_factory;
+  iroha::model::HashProviderImpl hashProvider;
+
+  // create transactions, but do not send them
+  for (size_t i = 0; i < TimesToriiBlocking; ++i) {
+    auto new_tx = iroha::protocol::Transaction();
+    auto meta = new_tx.mutable_meta();
+    meta->set_tx_counter(i);
+    meta->set_creator_account_id("accountA");
+
+    auto iroha_tx = tx_factory.deserialize(new_tx);
+    txs.push_back(*iroha_tx);
+    auto tx_hash = hashProvider.get_hash(*iroha_tx);
+    tx_hashes.push_back(tx_hash.to_string());
+  }
+
+  // get statuses of unsent transactions
+  for (size_t i = 0; i < TimesToriiBlocking; ++i) {
+    iroha::protocol::TxStatusRequest tx_request;
+    tx_request.set_tx_hash(tx_hashes.at(i));
+    iroha::protocol::ToriiResponse toriiResponse;
+    torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
+
+    ASSERT_EQ(toriiResponse.validation(),
+              iroha::protocol::StatelessValidation::NOT_RECEIVED);
+  }
+}
+
+TEST_F(ToriiServiceTest, StatusWhenBlocking) {
+  EXPECT_CALL(*statelessValidatorMock,
+              validate(A<const iroha::model::Transaction &>()))
+      .Times(TimesToriiBlocking)
+      .WillRepeatedly(Return(true));
+
+  std::vector<iroha::model::Transaction> txs;
+  std::vector<std::string> tx_hashes;
+
+  iroha::model::converters::PbTransactionFactory tx_factory;
+  iroha::model::HashProviderImpl hashProvider;
+
+  // create transactions and send them to Torii
+  for (size_t i = 0; i < TimesToriiBlocking; ++i) {
+    auto new_tx = iroha::protocol::Transaction();
+    auto meta = new_tx.mutable_meta();
+    meta->set_tx_counter(i);
+    meta->set_creator_account_id("accountA");
+
+    auto stat = torii::CommandSyncClient(Ip, Port).Torii(new_tx);
+
+    auto iroha_tx = tx_factory.deserialize(new_tx);
+    txs.push_back(*iroha_tx);
+    auto tx_hash = hashProvider.get_hash(*iroha_tx);
+    tx_hashes.push_back(tx_hash.to_string());
+
+    ASSERT_TRUE(stat.ok());
+  }
+
+  // create proposal from these transactions
+  iroha::model::Proposal proposal(txs);
+  prop_notifier_.get_subscriber().on_next(proposal);
+
+  // check if stateless validation passed
+  for (size_t i = 0; i < TimesToriiBlocking; ++i) {
+    iroha::protocol::TxStatusRequest tx_request;
+    tx_request.set_tx_hash(tx_hashes.at(i));
+    iroha::protocol::ToriiResponse toriiResponse;
+    torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
+
+    ASSERT_EQ(
+        toriiResponse.validation(),
+        iroha::protocol::StatelessValidation::STATELESS_VALIDATION_SUCCESS);
+  }
+
+  // create block from the all transactions but the last one
+  iroha::model::Block block;
+  block.transactions.insert(block.transactions.begin(), txs.begin(),
+                            txs.end() - 1);
+
+  // create commit from block notifier's observable
+  rxcpp::subjects::subject<iroha::model::Block> block_notifier_;
+  Commit commit = block_notifier_.get_observable();
+
+  // invoke on next of commit_notifier by sending new block to commit
+  commit_notifier_.get_subscriber().on_next(commit);
+  block_notifier_.get_subscriber().on_next(block);
+
+  // check if all transactions but the last one passed stateful validation
+  for (size_t i = 0; i < TimesToriiBlocking - 1; ++i) {
+    iroha::protocol::TxStatusRequest tx_request;
+    tx_request.set_tx_hash(tx_hashes.at(i));
+    iroha::protocol::ToriiResponse toriiResponse;
+    torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
+
+    ASSERT_EQ(
+        toriiResponse.validation(),
+        iroha::protocol::StatelessValidation::STATEFUL_VALIDATION_SUCCESS);
+  }
+
+  // end current commit
+  block_notifier_.get_subscriber().on_completed();
+
+  // check if all transactions but the last have committed state
+  for (size_t i = 0; i < TimesToriiBlocking - 1; ++i) {
+    iroha::protocol::TxStatusRequest tx_request;
+    tx_request.set_tx_hash(tx_hashes.at(i));
+    iroha::protocol::ToriiResponse toriiResponse;
+    torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
+
+    ASSERT_EQ(toriiResponse.validation(),
+              iroha::protocol::StatelessValidation::COMMITTED);
+  }
+
+  // check if the last transaction from txs has failed stateful validation
+  iroha::protocol::TxStatusRequest last_tx_request;
+  last_tx_request.set_tx_hash(tx_hashes.at(TimesToriiBlocking - 1));
+  iroha::protocol::ToriiResponse stful_invalid_response;
+  torii::CommandSyncClient(Ip, Port).Status(last_tx_request,
+                                            stful_invalid_response);
+  ASSERT_EQ(stful_invalid_response.validation(),
+            iroha::protocol::StatelessValidation::STATEFUL_VALIDATION_FAILED);
+}
+/*
+TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
   torii::CommandAsyncClient client(Ip, Port);
   std::atomic_int count{0};
 
@@ -272,35 +400,39 @@ TEST_F(ToriiStatusTest, StatusWhenNonBlocking) {
     meta->set_tx_counter(i);
     meta->set_creator_account_id("accountA");
 
-    auto stat = client.Torii(new_tx, [&count](auto response) { count++; });
+    auto stat = client.Torii(new_tx, [&count](auto response) {
+      std::cout << "in torii" << std::endl;
+      count++;
+    });
 
     auto iroha_tx = tx_factory.deserialize(new_tx);
     txs.push_back(*iroha_tx);
     tx_hashes.push_back(hashProvider.get_hash(*iroha_tx).to_string());
   }
 
-  // create proposals
-  for (size_t i = 0; i < TimesToriiNonBlocking; i += 5) {
-    std::vector<iroha::model::Transaction> prop_txs(txs.begin() + i,
-                                                    txs.begin() + i + 5);
-
-    iroha::model::Proposal proposal(prop_txs);
-    txs.clear();
-    prop_notifier_.get_subscriber().on_next(proposal);
-
-    iroha::protocol::TxStatusRequest tx_request;
-    tx_request.set_tx_hash(tx_hashes.at(i));
-
-    for (int j = i; j < i + 5; j++) {
-      client.Status(tx_request, [](iroha::protocol::ToriiResponse response) {
-        ASSERT_EQ(response.validation(),
-                  iroha::protocol::STATELESS_VALIDATION_SUCCESS);
-      });
-    }
-
-  }
-
   while (count < (int)TimesToriiNonBlocking)
     ;
+
+  std::cout << "torii finished" << std::endl;
+
   ASSERT_EQ(count, TimesToriiNonBlocking);
+  std::atomic_int count2{0};
+
+  // create proposal from these transactions
+  iroha::model::Proposal proposal(txs);
+  prop_notifier_.get_subscriber().on_next(proposal);
+
+  // check if stateless validation passed
+  for (size_t i = 0; i < TimesToriiBlocking; ++i) {
+    iroha::protocol::TxStatusRequest tx_request;
+    tx_request.set_tx_hash(tx_hashes.at(i));
+    iroha::protocol::ToriiResponse toriiResponse;
+    client.Status(tx_request, [&count2](auto response) {
+      ASSERT_EQ(
+          response.validation(),
+          iroha::protocol::StatelessValidation::STATELESS_VALIDATION_SUCCESS);
+      count2++;
+    });
+  }
 }
+*/
