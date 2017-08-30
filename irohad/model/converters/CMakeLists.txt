@@ -7,7 +7,6 @@ add_library(json_model_converters
     )
 target_link_libraries(json_model_converters
     model
-    model_generators
     rapidjson
     schema
     crypto
