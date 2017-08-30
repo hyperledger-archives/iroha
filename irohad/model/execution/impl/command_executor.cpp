@@ -35,7 +35,7 @@ using namespace iroha::model;
 using namespace iroha::ametsuchi;
 
 CommandExecutor::CommandExecutor() {
-  log_ = logger::log("CommandExecutor");
+  log_ = logger::log("DefaultCommandExecutorLogger");
 }
 
 bool CommandExecutor::validate(const Command &command, WsvQuery &queries,
@@ -45,6 +45,10 @@ bool CommandExecutor::validate(const Command &command, WsvQuery &queries,
 
 // ----------------- AddAssetQuantity -----------------
 
+AddAssetQuantityExecutor::AddAssetQuantityExecutor() {
+  log_ = logger::log("AddAssetQuantityExecutor");
+}
+
 bool AddAssetQuantityExecutor::execute(const Command &command,
                                        WsvQuery &queries,
                                        WsvCommand &commands) {
@@ -52,7 +56,7 @@ bool AddAssetQuantityExecutor::execute(const Command &command,
 
   auto asset = queries.getAsset(add_asset_quantity.asset_id);
   if (not asset.has_value()) {
-    log_->info("[AddAssetQuantity] asset {} is absent",
+    log_->info("asset {} is absent",
                add_asset_quantity.asset_id);
 
     return false;
@@ -60,12 +64,12 @@ bool AddAssetQuantityExecutor::execute(const Command &command,
   auto precision = asset.value().precision;
 
   if (add_asset_quantity.amount.get_frac_number() > precision) {
-    log_->info("[AddAssetQuantity] amount is wrong formed:");
+    log_->info("amount is wrong formed:");
 
     return false;
   }
   if (not queries.getAccount(add_asset_quantity.account_id).has_value()) {
-    log_->info("[AddAssetQuantity] amount {} is absent",
+    log_->info("amount {} is absent",
                add_asset_quantity.account_id);
 
     return false;
@@ -73,7 +77,7 @@ bool AddAssetQuantityExecutor::execute(const Command &command,
   auto account_asset = queries.getAccountAsset(add_asset_quantity.account_id,
                                                add_asset_quantity.asset_id);
   if (not account_asset.has_value()) {
-    log_->info("[AddAssetQuantity] create wallet {} for {}",
+    log_->info("create wallet {} for {}",
                add_asset_quantity.asset_id,
                add_asset_quantity.account_id);
 
@@ -117,6 +121,10 @@ bool AddAssetQuantityExecutor::isValid(const Command &command,
 
 // ----------------- AddPeer -----------------
 
+AddPeerExecutor::AddPeerExecutor() {
+  log_ = logger::log("AddPeerExecutor");
+}
+
 bool AddPeerExecutor::execute(const Command &command,
                               ametsuchi::WsvQuery &queries,
                               ametsuchi::WsvCommand &commands) {
@@ -142,6 +150,10 @@ bool AddPeerExecutor::isValid(const Command &command,
 }
 
 // ----------------- AddSignatory -----------------
+
+AddSignatoryExecutor::AddSignatoryExecutor() {
+  log_ = logger::log("AddSignatoryExecutor");
+}
 
 bool AddSignatoryExecutor::execute(const Command &command,
                                    ametsuchi::WsvQuery &queries,
@@ -174,6 +186,10 @@ bool AddSignatoryExecutor::isValid(const Command &command,
 
 // ----------------- AssignMasterKey -----------------
 
+AssignMasterKeyExecutor::AssignMasterKeyExecutor() {
+  log_ = logger::log("AssignMasterKeyExecutor");
+}
+
 bool AssignMasterKeyExecutor::execute(const Command &command,
                                       ametsuchi::WsvQuery &queries,
                                       ametsuchi::WsvCommand &commands) {
@@ -181,7 +197,7 @@ bool AssignMasterKeyExecutor::execute(const Command &command,
 
   auto account = queries.getAccount(assign_master_key.account_id);
   if (not account.has_value()) {
-    log_->info("[AssignMasterKey] account {} not found",
+    log_->info("account {} not found",
                assign_master_key.account_id);
 
     return false;
@@ -208,6 +224,7 @@ bool AssignMasterKeyExecutor::isValid(const Command &command,
   // Check if account exist and new master key is not the same
   if (not(acc.has_value() and
       acc.value().master_key != assign_master_key.pubkey)) {
+    log_->info("account not exists or master keys are not same");
     return false;
   }
   auto signs = queries.getSignatories(assign_master_key.account_id);
@@ -222,6 +239,10 @@ bool AssignMasterKeyExecutor::isValid(const Command &command,
 }
 
 // ----------------- CreateAccount -----------------
+
+CreateAccountExecutor::CreateAccountExecutor() {
+  log_ = logger::log("CreateAccountExecutor");
+}
 
 bool CreateAccountExecutor::execute(const Command &command,
                                     ametsuchi::WsvQuery &queries,
@@ -267,6 +288,10 @@ bool CreateAccountExecutor::isValid(const Command &command,
 
 // ----------------- CreateAsset -----------------
 
+CreateAssetExecutor::CreateAssetExecutor() {
+  log_ = logger::log("CreateAssetExecutor");
+}
+
 bool CreateAssetExecutor::execute(const Command &command,
                                   ametsuchi::WsvQuery &queries,
                                   ametsuchi::WsvCommand &commands) {
@@ -303,6 +328,10 @@ bool CreateAssetExecutor::isValid(const Command &command,
 
 // ----------------- CreateDomain -----------------
 
+CreateDomainExecutor::CreateDomainExecutor() {
+  log_ = logger::log("CreateDomainExecutor");
+}
+
 bool CreateDomainExecutor::execute(const Command &command,
                                    ametsuchi::WsvQuery &queries,
                                    ametsuchi::WsvCommand &commands) {
@@ -336,6 +365,10 @@ bool CreateDomainExecutor::isValid(const Command &command,
 }
 
 // ----------------- RemoveSignatory -----------------
+
+RemoveSignatoryExecutor::RemoveSignatoryExecutor() {
+  log_ = logger::log("RemoveSignatoryExecutor");
+}
 
 bool RemoveSignatoryExecutor::execute(const Command &command,
                                       ametsuchi::WsvQuery &queries,
@@ -371,6 +404,10 @@ bool RemoveSignatoryExecutor::isValid(const Command &command,
 
 // ----------------- SetAccountPermissions -----------------
 
+SetAccountPermissionsExecutor::SetAccountPermissionsExecutor() {
+  log_ = logger::log("SetAccountPermissionsExecutor");
+}
+
 bool SetAccountPermissionsExecutor::execute(const Command &command,
                                             ametsuchi::WsvQuery &queries,
                                             ametsuchi::WsvCommand &commands) {
@@ -380,7 +417,7 @@ bool SetAccountPermissionsExecutor::execute(const Command &command,
   auto account = queries.getAccount(set_account_permissions.account_id);
   if (not account.has_value()) {
     // There is no such account
-    log_->info("[SetAccountPermissions] account {} is absent",
+    log_->info("account {} is absent",
                set_account_permissions.account_id);
     return false;
   }
@@ -402,6 +439,10 @@ bool SetAccountPermissionsExecutor::isValid(const Command &command,
 
 // ----------------- SetQuorum -----------------
 
+SetQuorumExecutor::SetQuorumExecutor() {
+  log_ = logger::log("SetQuorumExecutor");
+}
+
 bool SetQuorumExecutor::execute(const Command &command,
                                 ametsuchi::WsvQuery &queries,
                                 ametsuchi::WsvCommand &commands) {
@@ -410,6 +451,7 @@ bool SetQuorumExecutor::execute(const Command &command,
   auto account = queries.getAccount(set_quorum.account_id);
   if (not account.has_value()) {
     // There is no such account
+    log_->info("Absent account {}", set_quorum.account_id);
     return false;
   }
   account.value().quorum = set_quorum.new_quorum;
@@ -438,6 +480,10 @@ bool SetQuorumExecutor::isValid(const Command &command,
 
 // ----------------- TransferAsset -----------------
 
+TransferAssetExecutor::TransferAssetExecutor() {
+  log_ = logger::log("TransferAssetExecutor");
+}
+
 bool TransferAssetExecutor::execute(const Command &command,
                                     ametsuchi::WsvQuery &queries,
                                     ametsuchi::WsvCommand &commands) {
@@ -446,7 +492,7 @@ bool TransferAssetExecutor::execute(const Command &command,
   auto src_account_asset = queries.getAccountAsset(
       transfer_asset.src_account_id, transfer_asset.asset_id);
   if (not src_account_asset.has_value()) {
-    log_->info("[TransferAsset] asset {} is absent of {}",
+    log_->info("asset {} is absent of {}",
                transfer_asset.asset_id,
                transfer_asset.src_account_id);
 
@@ -458,7 +504,7 @@ bool TransferAssetExecutor::execute(const Command &command,
       transfer_asset.dest_account_id, transfer_asset.asset_id);
   auto asset = queries.getAsset(transfer_asset.asset_id);
   if (not asset.has_value()) {
-    log_->info("[TransferAsset] asset {} is absent of {}",
+    log_->info("asset {} is absent of {}",
                transfer_asset.asset_id,
                transfer_asset.dest_account_id);
 
@@ -467,7 +513,7 @@ bool TransferAssetExecutor::execute(const Command &command,
   // Precision for both wallets
   auto precision = asset.value().precision;
   if (transfer_asset.amount.get_frac_number() > precision) {
-    log_->info("[TransferAsset] precision is wrong");
+    log_->info("precision is wrong");
 
     return false;
   }
@@ -517,9 +563,9 @@ bool TransferAssetExecutor::isValid(const Command &command,
                                     ametsuchi::WsvQuery &queries) {
   auto transfer_asset = static_cast<const TransferAsset &>(command);
 
-  // Amount must be not zero
   if (not(transfer_asset.amount.frac_part > 0 or
       transfer_asset.amount.int_part > 0)) {
+    log_->info("amount must be not zero");
     return false;
   }
 
