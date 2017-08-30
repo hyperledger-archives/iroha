@@ -50,12 +50,6 @@ namespace iroha {
         std::shared_ptr<Command> deserializeAddSignatory(
             const rapidjson::Document &command);
 
-        // AssignMasterKey
-        rapidjson::Document serializeAssignMasterKey(
-            std::shared_ptr<Command> command);
-        std::shared_ptr<Command> deserializeAssignMasterKey(
-            const rapidjson::Document &command);
-
         // CreateAccount
         rapidjson::Document serializeCreateAccount(
             std::shared_ptr<Command> command);

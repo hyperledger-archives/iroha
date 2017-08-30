@@ -21,7 +21,6 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
@@ -42,8 +41,6 @@ namespace iroha {
         serializers_[typeid(AddPeer)] = &JsonCommandFactory::serializeAddPeer;
         serializers_[typeid(AddSignatory)] =
             &JsonCommandFactory::serializeAddSignatory;
-        serializers_[typeid(AssignMasterKey)] =
-            &JsonCommandFactory::serializeAssignMasterKey;
         serializers_[typeid(CreateAccount)] =
             &JsonCommandFactory::serializeCreateAccount;
         serializers_[typeid(CreateAsset)] =
@@ -64,8 +61,6 @@ namespace iroha {
         deserializers_["AddPeer"] = &JsonCommandFactory::deserializeAddPeer;
         deserializers_["AddSignatory"] =
             &JsonCommandFactory::deserializeAddSignatory;
-        deserializers_["AssignMasterKey"] =
-            &JsonCommandFactory::deserializeAssignMasterKey;
         deserializers_["CreateAccount"] =
             &JsonCommandFactory::deserializeCreateAccount;
         deserializers_["CreateAsset"] =
@@ -183,38 +178,6 @@ namespace iroha {
         hexstringToArray(command["pubkey"].GetString(), add_signatory->pubkey);
 
         return add_signatory;
-      }
-
-      // AssignMasterKey
-      Document JsonCommandFactory::serializeAssignMasterKey(
-          std::shared_ptr<Command> command) {
-        auto assign_master_key = static_cast<AssignMasterKey *>(command.get());
-
-        Document document;
-        auto &allocator = document.GetAllocator();
-
-        document.SetObject();
-        document.AddMember("command_type", "AssignMasterKey", allocator);
-        document.AddMember("account_id", assign_master_key->account_id,
-                           allocator);
-        document.AddMember("pubkey", assign_master_key->pubkey.to_hexstring(),
-                           allocator);
-
-        return document;
-      }
-
-      std::shared_ptr<Command> JsonCommandFactory::deserializeAssignMasterKey(
-          const Document &command) {
-        auto assign_master_key = std::make_shared<AssignMasterKey>();
-
-        // account_id
-        assign_master_key->account_id = command["account_id"].GetString();
-
-        // pubkey
-        hexstringToArray(command["pubkey"].GetString(),
-                         assign_master_key->pubkey);
-
-        return assign_master_key;
       }
 
       // CreateAccount

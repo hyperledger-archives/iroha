@@ -20,7 +20,6 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
@@ -268,82 +267,6 @@ TEST_F(AddSignatoryTest, InvalidWhenSameKey) {
   EXPECT_CALL(*wsv_command, insertAccountSignatory(add_signatory->account_id,
                                                    add_signatory->pubkey))
       .WillOnce(Return(false));
-
-  ASSERT_FALSE(validateAndExecute());
-}
-
-
-class AssignMasterKeyTest : public CommandValidateExecuteTest {
- public:
-  void SetUp() override {
-    CommandValidateExecuteTest::SetUp();
-
-    pubkeys = {creator.master_key, account.master_key};
-
-    assign_master_key = std::make_shared<AssignMasterKey>();
-    assign_master_key->account_id = account_id;
-    assign_master_key->pubkey = creator.master_key;
-
-    command = assign_master_key;
-  }
-
-  std::vector<ed25519::pubkey_t> pubkeys;
-  std::shared_ptr<AssignMasterKey> assign_master_key;
-};
-
-TEST_F(AssignMasterKeyTest, ValidWhenCreatorHasPermissions) {
-  // Creator is sys admin
-  creator.permissions.add_signatory = true;
-
-  EXPECT_CALL(*wsv_query, getAccount(assign_master_key->account_id))
-      .Times(2).WillRepeatedly(Return(account));
-  EXPECT_CALL(*wsv_query, getSignatories(assign_master_key->account_id))
-      .WillOnce(Return(pubkeys));
-  EXPECT_CALL(*wsv_command, updateAccount(_)).WillOnce(Return(true));
-
-  ASSERT_TRUE(validateAndExecute());
-}
-
-TEST_F(AssignMasterKeyTest, ValidWhenSameAccount) {
-  // Creator is account itself
-  creator.account_id = assign_master_key->account_id;
-
-  EXPECT_CALL(*wsv_query, getAccount(assign_master_key->account_id))
-      .Times(2).WillRepeatedly(Return(account));
-  EXPECT_CALL(*wsv_query, getSignatories(assign_master_key->account_id))
-      .WillOnce(Return(pubkeys));
-  EXPECT_CALL(*wsv_command, updateAccount(_)).WillOnce(Return(true));
-
-  ASSERT_TRUE(validateAndExecute());
-}
-
-TEST_F(AssignMasterKeyTest, InvalidWhenNoPermissions) {
-  // Creator has no permissions
-  creator.permissions.add_signatory = false;
-
-  ASSERT_FALSE(validateAndExecute());
-}
-
-TEST_F(AssignMasterKeyTest, InvalidWhenNoKey) {
-  // Assign random master key
-  creator.permissions.add_signatory = true;
-  assign_master_key->pubkey.fill(0xF);
-
-  EXPECT_CALL(*wsv_query, getAccount(assign_master_key->account_id))
-      .WillOnce(Return(account));
-  EXPECT_CALL(*wsv_query, getSignatories(assign_master_key->account_id))
-      .WillOnce(Return(pubkeys));
-
-  ASSERT_FALSE(validateAndExecute());
-}
-
-TEST_F(AssignMasterKeyTest, InvalidWhenNoAccount) {
-  // Add to nonexistent account
-  creator.permissions.add_signatory = true;
-  assign_master_key->account_id = "noacc";
-
-  EXPECT_CALL(*wsv_query, getAccount(assign_master_key->account_id))
-      .WillOnce(Return(nonstd::nullopt));
 
   ASSERT_FALSE(validateAndExecute());
 }
