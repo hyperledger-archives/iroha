@@ -20,8 +20,6 @@
 #include "consensus/yac/yac.hpp"
 #include "consensus/yac/storage/yac_common.hpp"
 
-using namespace logger;
-
 namespace iroha {
   namespace consensus {
     namespace yac {
@@ -53,14 +51,14 @@ namespace iroha {
             timer_(std::move(timer)),
             cluster_order_(order),
             delay_(delay) {
-        log_ = log("YAC");
+        log_ = logger::log("YAC");
       }
 
       // ------|Hash gate|------
 
       void Yac::vote(YacHash hash, ClusterOrdering order) {
 
-        log_->info("Order for voting: {}", to_string(order.getPeers(),
+        log_->info("Order for voting: {}", logger::to_string(order.getPeers(),
                                                      [](auto val) {
                                                        return val.address;
                                                      }));

@@ -38,7 +38,9 @@ namespace iroha {
 
       void YacGateImpl::vote(model::Block block) {
         auto hash = hash_provider_->makeHash(block);
-        log_->info("vote for block", hash.block_hash);
+        log_->info("vote for block ({}, {})",
+                   hash.proposal_hash,
+                   hash.block_hash);
         auto order = orderer_->getOrdering(hash);
         if (not order.has_value()) {
           log_->error("ordering doesn't provide peers => pass round");
