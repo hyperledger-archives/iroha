@@ -214,7 +214,6 @@ bool AssignMasterKeyExecutor::isValid(const Command &command,
   auto assign_master_key = static_cast<const AssignMasterKey &>(command);
 
   auto acc = queries.getAccount(assign_master_key.account_id);
-  // Check if account exist and new master key is not the same
   if (not(acc.has_value() and
       acc.value().master_key != assign_master_key.pubkey)) {
     log_->info("account {} not exists or master keys are not same",
