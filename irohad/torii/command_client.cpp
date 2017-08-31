@@ -86,13 +86,17 @@ namespace torii {
     return status_;
   }
 
+  struct AsyncClientCall {
+    grpc::ClientContext context;
+    grpc::Status status;
+
+    virtual ~AsyncClientCall() {}
+  };
   /**
    * manages state of a Torii async client call.
    */
-  struct ToriiAsyncClientCall {
+  struct ToriiAsyncClientCall : public AsyncClientCall {
     google::protobuf::Empty response;
-    grpc::ClientContext context;
-    grpc::Status status;
     std::unique_ptr<grpc::ClientAsyncResponseReader<google::protobuf::Empty>>
         responseReader;
     CommandAsyncClient::Callback callback;
@@ -101,10 +105,8 @@ namespace torii {
   /**
    * manages state of a Status async client call.
    */
-  struct StatusAsyncClientCall {
+  struct StatusAsyncClientCall : public AsyncClientCall {
     iroha::protocol::ToriiResponse response;
-    grpc::ClientContext context;
-    grpc::Status status;
     std::unique_ptr<
         grpc::ClientAsyncResponseReader<iroha::protocol::ToriiResponse>>
         responseReader;
@@ -176,43 +178,17 @@ namespace torii {
       if (!got_tag || !ok) {
         break;
       }
+      auto call = static_cast<AsyncClientCall*>(got_tag);
 
-      if (iroha:: instanceof <ToriiAsyncClientCall>(got_tag)) {
-        auto call = static_cast<ToriiAsyncClientCall*>(got_tag);
-
-        call->callback(call->response);
-
-        /*
-        if (call->status.ok()) {
-          call->callback(call->response);
-        } else {
-          google::protobuf::Empty responseFailure;
-          responseFailure.set_validation(
-              iroha::protocol::STATELESS_VALIDATION_FAILED);
-          // responseFailure.set_code(iroha::protocol::ResponseCode::FAIL);
-          // responseFailure.set_message("RPC failed");
-          call->callback(responseFailure);
-        }*/
-
-        delete call;
+      if (ToriiAsyncClientCall* torii_call =
+              dynamic_cast<ToriiAsyncClientCall*>(call)) {
+        torii_call->callback(torii_call->response);
       }
-      if (iroha::instanceof<StatusAsyncClientCall>(got_tag)){
-        auto call = static_cast<StatusAsyncClientCall*>(got_tag);
-        call->callback(call->response);
-
-        if (call->status.ok()) {
-          call->callback(call->response);
-        } else {
-          ToriiResponse responseFailure;
-          responseFailure.set_validation(
-              iroha::protocol::STATELESS_VALIDATION_FAILED);
-          // responseFailure.set_code(iroha::protocol::ResponseCode::FAIL);
-          // responseFailure.set_message("RPC failed");
-          call->callback(responseFailure);
-        }
-
-        delete call;
+      if (StatusAsyncClientCall* status_call =
+              dynamic_cast<StatusAsyncClientCall*>(call)) {
+        status_call->callback(status_call->response);
       }
+      delete call;
     }
   }
 

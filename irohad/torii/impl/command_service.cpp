@@ -73,6 +73,7 @@ namespace torii {
   void CommandService::ToriiAsync(iroha::protocol::Transaction const &request,
                                   google::protobuf::Empty &empty) {
     auto iroha_tx = pb_factory_->deserialize(request);
+//    std::cout << "in torii" << iroha_tx->tx_hash.to_string().substr(0,3) << std::endl;
 
     auto tx_hash = iroha_tx->tx_hash.to_string();
 
@@ -91,6 +92,7 @@ namespace torii {
   void CommandService::StatusAsync(
       iroha::protocol::TxStatusRequest const &request,
       iroha::protocol::ToriiResponse &response) {
+//    std::cout << "in status: " << request.tx_hash().substr(0, 3) << std::endl;
     auto resp = handler_map_.find(request.tx_hash());
 
     if (resp == handler_map_.end()) {
