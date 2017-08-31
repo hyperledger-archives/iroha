@@ -280,8 +280,8 @@ TEST_F(ToriiServiceTest, StatusWhenTxWasNotReceivedBlocking) {
     iroha::protocol::ToriiResponse toriiResponse;
     torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
 
-    ASSERT_EQ(toriiResponse.validation(),
-              iroha::protocol::StatelessValidation::NOT_RECEIVED);
+    ASSERT_EQ(toriiResponse.tx_status(),
+              iroha::protocol::TxStatus::NOT_RECEIVED);
   }
 }
 
@@ -334,8 +334,8 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
     torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
 
     ASSERT_EQ(
-        toriiResponse.validation(),
-        iroha::protocol::StatelessValidation::STATELESS_VALIDATION_SUCCESS);
+        toriiResponse.tx_status(),
+        iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
   }
 
   // create block from the all transactions but the last one
@@ -359,8 +359,8 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
     torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
 
     ASSERT_EQ(
-        toriiResponse.validation(),
-        iroha::protocol::StatelessValidation::STATEFUL_VALIDATION_SUCCESS);
+        toriiResponse.tx_status(),
+        iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS);
   }
 
   // end current commit
@@ -373,8 +373,8 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
     iroha::protocol::ToriiResponse toriiResponse;
     torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
 
-    ASSERT_EQ(toriiResponse.validation(),
-              iroha::protocol::StatelessValidation::COMMITTED);
+    ASSERT_EQ(toriiResponse.tx_status(),
+              iroha::protocol::TxStatus::COMMITTED);
   }
 
   // check if the last transaction from txs has failed stateful validation
@@ -383,8 +383,8 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
   iroha::protocol::ToriiResponse stful_invalid_response;
   torii::CommandSyncClient(Ip, Port).Status(last_tx_request,
                                             stful_invalid_response);
-  ASSERT_EQ(stful_invalid_response.validation(),
-            iroha::protocol::StatelessValidation::STATEFUL_VALIDATION_FAILED);
+  ASSERT_EQ(stful_invalid_response.tx_status(),
+            iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED);
 }
 
 TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
@@ -435,8 +435,8 @@ TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
     iroha::protocol::ToriiResponse toriiResponse;
     client.Status(tx_request, [&status_counter](auto response) {
       ASSERT_EQ(
-          response.validation(),
-          iroha::protocol::StatelessValidation::STATELESS_VALIDATION_SUCCESS);
+          response.tx_status(),
+          iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
       status_counter++;
     });
   }
@@ -464,8 +464,8 @@ TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
     iroha::protocol::ToriiResponse toriiResponse;
     client.Status(tx_request, [&status_counter](auto response) {
       ASSERT_EQ(
-          response.validation(),
-          iroha::protocol::StatelessValidation::STATEFUL_VALIDATION_SUCCESS);
+          response.tx_status(),
+          iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS);
       status_counter++;
     });
   }
@@ -483,8 +483,8 @@ TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
     tx_request.set_tx_hash(tx_hashes.at(i));
     iroha::protocol::ToriiResponse toriiResponse;
     client.Status(tx_request, [&status_counter](auto response) {
-      ASSERT_EQ(response.validation(),
-                iroha::protocol::StatelessValidation::COMMITTED);
+      ASSERT_EQ(response.tx_status(),
+                iroha::protocol::TxStatus::COMMITTED);
       status_counter++;
     });
   }

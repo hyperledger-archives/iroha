@@ -8,7 +8,7 @@ import "google/protobuf/empty.proto";
 import "responses.proto";
 
 
-enum StatelessValidation {
+enum TxStatus {
   STATELESS_VALIDATION_FAILED = 0;
   STATELESS_VALIDATION_SUCCESS = 1;
   STATEFUL_VALIDATION_FAILED = 2;
@@ -19,7 +19,7 @@ enum StatelessValidation {
 }
 
 message ToriiResponse {
-  StatelessValidation validation = 1;
+  TxStatus tx_status = 1;
 }
 
 message TxStatusRequest{
