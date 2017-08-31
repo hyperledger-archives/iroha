@@ -43,7 +43,7 @@ bool CommandExecutor::validate(const Command &command, WsvQuery &queries,
   return hasPermissions(command, queries, creator) && isValid(command, queries);
 }
 
-// ----------------- AddAssetQuantity -----------------
+// ----------------------------| AddAssetQuantity |-----------------------------
 
 AddAssetQuantityExecutor::AddAssetQuantityExecutor() {
   log_ = logger::log("AddAssetQuantityExecutor");
@@ -56,22 +56,17 @@ bool AddAssetQuantityExecutor::execute(const Command &command,
 
   auto asset = queries.getAsset(add_asset_quantity.asset_id);
   if (not asset.has_value()) {
-    log_->info("asset {} is absent",
-               add_asset_quantity.asset_id);
-
+    log_->info("asset {} is absent", add_asset_quantity.asset_id);
     return false;
   }
   auto precision = asset.value().precision;
 
   if (add_asset_quantity.amount.get_frac_number() > precision) {
     log_->info("amount is wrong formed:");
-
     return false;
   }
   if (not queries.getAccount(add_asset_quantity.account_id).has_value()) {
-    log_->info("amount {} is absent",
-               add_asset_quantity.account_id);
-
+    log_->info("amount {} is absent", add_asset_quantity.account_id);
     return false;
   }
   auto account_asset = queries.getAccountAsset(add_asset_quantity.account_id,
@@ -119,7 +114,7 @@ bool AddAssetQuantityExecutor::isValid(const Command &command,
           (std::numeric_limits<uint32_t>::max)();
 }
 
-// ----------------- AddPeer -----------------
+// ---------------------------------| AddPeer |---------------------------------
 
 AddPeerExecutor::AddPeerExecutor() {
   log_ = logger::log("AddPeerExecutor");
@@ -149,7 +144,7 @@ bool AddPeerExecutor::isValid(const Command &command,
   return true;
 }
 
-// ----------------- AddSignatory -----------------
+// ------------------------------| AddSignatory |-------------------------------
 
 AddSignatoryExecutor::AddSignatoryExecutor() {
   log_ = logger::log("AddSignatoryExecutor");
@@ -170,8 +165,7 @@ bool AddSignatoryExecutor::hasPermissions(const Command &command,
   auto add_signatory = static_cast<const AddSignatory &>(command);
 
   return
-    // Case 1. When command creator wants to add signatory to their
-    // account
+    // Case 1. When command creator wants to add signatory to their account
       add_signatory.account_id == creator.account_id or
           // Case 2. System admin wants to add signatory to account
           creator.permissions.add_signatory;
@@ -184,7 +178,7 @@ bool AddSignatoryExecutor::isValid(const Command &command,
   return true;
 }
 
-// ----------------- AssignMasterKey -----------------
+// -----------------------------| AssignMasterKey |-----------------------------
 
 AssignMasterKeyExecutor::AssignMasterKeyExecutor() {
   log_ = logger::log("AssignMasterKeyExecutor");
@@ -197,8 +191,7 @@ bool AssignMasterKeyExecutor::execute(const Command &command,
 
   auto account = queries.getAccount(assign_master_key.account_id);
   if (not account.has_value()) {
-    log_->info("account {} not found",
-               assign_master_key.account_id);
+    log_->info("account {} not found", assign_master_key.account_id);
 
     return false;
   }
@@ -224,7 +217,8 @@ bool AssignMasterKeyExecutor::isValid(const Command &command,
   // Check if account exist and new master key is not the same
   if (not(acc.has_value() and
       acc.value().master_key != assign_master_key.pubkey)) {
-    log_->info("account not exists or master keys are not same");
+    log_->info("account {} not exists or master keys are not same",
+               assign_master_key.account_id);
     return false;
   }
   auto signs = queries.getSignatories(assign_master_key.account_id);
@@ -238,7 +232,7 @@ bool AssignMasterKeyExecutor::isValid(const Command &command,
                       });
 }
 
-// ----------------- CreateAccount -----------------
+// ------------------------------| CreateAccount |------------------------------
 
 CreateAccountExecutor::CreateAccountExecutor() {
   log_ = logger::log("CreateAccountExecutor");
@@ -286,7 +280,7 @@ bool CreateAccountExecutor::isValid(const Command &command,
                       [](char c) { return std::isalnum(c); });
 }
 
-// ----------------- CreateAsset -----------------
+// -------------------------------| CreateAsset |-------------------------------
 
 CreateAssetExecutor::CreateAssetExecutor() {
   log_ = logger::log("CreateAssetExecutor");
@@ -326,7 +320,7 @@ bool CreateAssetExecutor::isValid(const Command &command,
                       [](char c) { return std::isalnum(c); });
 }
 
-// ----------------- CreateDomain -----------------
+// ------------------------------| CreateDomain |-------------------------------
 
 CreateDomainExecutor::CreateDomainExecutor() {
   log_ = logger::log("CreateDomainExecutor");
@@ -364,7 +358,7 @@ bool CreateDomainExecutor::isValid(const Command &command,
                       [](char c) { return std::isalnum(c); });
 }
 
-// ----------------- RemoveSignatory -----------------
+// -----------------------------| RemoveSignatory |-----------------------------
 
 RemoveSignatoryExecutor::RemoveSignatoryExecutor() {
   log_ = logger::log("RemoveSignatoryExecutor");
@@ -416,9 +410,7 @@ bool SetAccountPermissionsExecutor::execute(const Command &command,
 
   auto account = queries.getAccount(set_account_permissions.account_id);
   if (not account.has_value()) {
-    // There is no such account
-    log_->info("account {} is absent",
-               set_account_permissions.account_id);
+    log_->info("account {} is absent", set_account_permissions.account_id);
     return false;
   }
   account.value().permissions = set_account_permissions.new_permissions;
@@ -437,7 +429,7 @@ bool SetAccountPermissionsExecutor::isValid(const Command &command,
   return true;
 }
 
-// ----------------- SetQuorum -----------------
+// --------------------------------| SetQuorum |--------------------------------
 
 SetQuorumExecutor::SetQuorumExecutor() {
   log_ = logger::log("SetQuorumExecutor");
@@ -450,8 +442,7 @@ bool SetQuorumExecutor::execute(const Command &command,
 
   auto account = queries.getAccount(set_quorum.account_id);
   if (not account.has_value()) {
-    // There is no such account
-    log_->info("Absent account {}", set_quorum.account_id);
+    log_->info("absent account {}", set_quorum.account_id);
     return false;
   }
   account.value().quorum = set_quorum.new_quorum;
@@ -478,7 +469,7 @@ bool SetQuorumExecutor::isValid(const Command &command,
   return set_quorum.new_quorum > 0 and set_quorum.new_quorum < 10;
 }
 
-// ----------------- TransferAsset -----------------
+// ------------------------------| TransferAsset |------------------------------
 
 TransferAssetExecutor::TransferAssetExecutor() {
   log_ = logger::log("TransferAssetExecutor");
@@ -513,8 +504,7 @@ bool TransferAssetExecutor::execute(const Command &command,
   // Precision for both wallets
   auto precision = asset.value().precision;
   if (transfer_asset.amount.get_frac_number() > precision) {
-    log_->info("precision is wrong");
-
+    log_->info("precision {} is wrong", precision);
     return false;
   }
   // Get src balance
