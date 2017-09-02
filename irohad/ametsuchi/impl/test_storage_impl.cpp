@@ -52,7 +52,7 @@ namespace iroha {
                                      std::unique_ptr<cpp_redis::redis_client> index,
                                      std::unique_ptr<pqxx::lazyconnection> wsv_connection,
                                      std::unique_ptr<pqxx::nontransaction> wsv_transaction,
-                                     std::unique_ptr<WsvQuery> wsv)
+                                     std::shared_ptr<WsvQuery> wsv)
         : StorageImpl(block_store_dir,
                       redis_host,
                       redis_port,
@@ -126,6 +126,10 @@ namespace iroha {
       return StorageImpl::commit(std::move(mutableStorage));
     }
 
+    std::shared_ptr<WsvQuery> TestStorageImpl::getWsvQuery() const {
+      return StorageImpl::getWsvQuery();
+    }
+
     rxcpp::observable<model::Transaction> TestStorageImpl::getAccountTransactions(
         std::string account_id) {
       return StorageImpl::getAccountTransactions(account_id);
@@ -147,31 +151,6 @@ namespace iroha {
 
     rxcpp::observable<model::Block> TestStorageImpl::getTopBlocks(uint32_t count) {
       return StorageImpl::getTopBlocks(count);
-    };
-
-    nonstd::optional<model::Account> TestStorageImpl::getAccount(
-        const std::string &account_id) {
-      return StorageImpl::getAccount(account_id);
     }
-
-    nonstd::optional<std::vector<ed25519::pubkey_t>> TestStorageImpl::getSignatories(
-        const std::string &account_id) {
-      return StorageImpl::getSignatories(account_id);
-    }
-
-    nonstd::optional<model::Asset> TestStorageImpl::getAsset(
-        const std::string &asset_id) {
-      return StorageImpl::getAsset(asset_id);
-    }
-
-    nonstd::optional<model::AccountAsset> TestStorageImpl::getAccountAsset(
-        const std::string &account_id, const std::string &asset_id) {
-      return StorageImpl::getAccountAsset(account_id, asset_id);
-    }
-
-    nonstd::optional<std::vector<model::Peer>> TestStorageImpl::getPeers() {
-      return StorageImpl::getPeers();
-    }
-
   }  // namespace ametsuchi
 }  // namespace iroha

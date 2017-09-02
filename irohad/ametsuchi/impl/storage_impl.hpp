@@ -36,7 +36,7 @@ namespace iroha {
                         std::unique_ptr<cpp_redis::redis_client> index,
                         std::unique_ptr<pqxx::lazyconnection> pg_lazy,
                         std::unique_ptr<pqxx::nontransaction> pg_nontx,
-                        std::unique_ptr<WsvQuery> wsv)
+                        std::shared_ptr<WsvQuery> wsv)
           : block_store(std::move(block_store)),
             index(std::move(index)),
             pg_lazy(std::move(pg_lazy)),
@@ -48,7 +48,7 @@ namespace iroha {
       std::unique_ptr<cpp_redis::redis_client> index;
       std::unique_ptr<pqxx::lazyconnection> pg_lazy;
       std::unique_ptr<pqxx::nontransaction> pg_nontx;
-      std::unique_ptr<WsvQuery> wsv;
+      std::shared_ptr<WsvQuery> wsv;
     };
 
     class StorageImpl : public Storage {
@@ -68,6 +68,8 @@ namespace iroha {
       std::unique_ptr<MutableStorage> createMutableStorage() override;
       void commit(std::unique_ptr<MutableStorage> mutableStorage) override;
 
+      std::shared_ptr<WsvQuery> getWsvQuery() const override;
+
       rxcpp::observable<model::Transaction> getAccountTransactions(
           std::string account_id) override;
       rxcpp::observable<model::Transaction> getAccountAssetTransactions(
@@ -76,16 +78,6 @@ namespace iroha {
                                                 uint32_t count) override;
       rxcpp::observable<model::Block> getBlocksFrom(uint32_t height) override;
       rxcpp::observable<model::Block> getTopBlocks(uint32_t count) override;
-
-      nonstd::optional<model::Account> getAccount(
-          const std::string &account_id) override;
-      nonstd::optional<std::vector<ed25519::pubkey_t>> getSignatories(
-          const std::string &account_id) override;
-      nonstd::optional<model::Asset> getAsset(
-          const std::string &asset_id) override;
-      nonstd::optional<model::AccountAsset> getAccountAsset(
-          const std::string &account_id, const std::string &asset_id) override;
-      nonstd::optional<std::vector<model::Peer>> getPeers() override;
 
      protected:
 
@@ -97,7 +89,7 @@ namespace iroha {
                   std::unique_ptr<cpp_redis::redis_client> index,
                   std::unique_ptr<pqxx::lazyconnection> wsv_connection,
                   std::unique_ptr<pqxx::nontransaction> wsv_transaction,
-                  std::unique_ptr<WsvQuery> wsv);
+                  std::shared_ptr<WsvQuery> wsv);
 
       /**
        * Folder with raw blocks
@@ -124,7 +116,7 @@ namespace iroha {
 
       std::unique_ptr<pqxx::nontransaction> wsv_transaction_;
 
-      std::unique_ptr<WsvQuery> wsv_;
+      std::shared_ptr<WsvQuery> wsv_;
 
       model::converters::JsonBlockFactory serializer_;
 

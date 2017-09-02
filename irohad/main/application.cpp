@@ -60,11 +60,9 @@ Irohad::~Irohad() {
 
 class MockCryptoProvider : public ModelCryptoProvider {
  public:
-  MOCK_CONST_METHOD1(verify, bool(
-      const Transaction &));
+  MOCK_CONST_METHOD1(verify, bool(const Transaction &));
   MOCK_CONST_METHOD1(verify, bool(std::shared_ptr<const Query>));
-  MOCK_CONST_METHOD1(verify, bool(
-      const Block &));
+  MOCK_CONST_METHOD1(verify, bool(const Block &));
 };
 
 void Irohad::run() {
@@ -101,7 +99,7 @@ void Irohad::run() {
   auto chain_validator = std::make_shared<ChainValidatorImpl>();
   log_->info("[Init] => validators");
 
-  auto wsv = std::make_shared<ametsuchi::PeerQueryWsv>(storage);
+  auto wsv = std::make_shared<ametsuchi::PeerQueryWsv>(storage->getWsvQuery());
 
   auto orderer = std::make_shared<PeerOrdererImpl>(wsv);
   log_->info("[Init] => peer orderer");
@@ -150,7 +148,7 @@ void Irohad::run() {
 
   // --- Queries
   auto query_proccessing_factory =
-      createQueryProcessingFactory(storage, storage);
+      createQueryProcessingFactory(storage->getWsvQuery(), storage);
 
   auto query_processor = createQueryProcessor(
       std::move(query_proccessing_factory), stateless_validator);

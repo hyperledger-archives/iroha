@@ -45,7 +45,7 @@ namespace iroha {
                       std::unique_ptr<cpp_redis::redis_client> index,
                       std::unique_ptr<pqxx::lazyconnection> wsv_connection,
                       std::unique_ptr<pqxx::nontransaction> wsv_transaction,
-                      std::unique_ptr<WsvQuery> wsv);
+                      std::shared_ptr<WsvQuery> wsv);
      private:
       logger::Logger log_;
 
@@ -56,6 +56,8 @@ namespace iroha {
       std::unique_ptr<MutableStorage> createMutableStorage() override;
 
       void commit(std::unique_ptr<MutableStorage> mutableStorage) override;
+
+      std::shared_ptr<WsvQuery> getWsvQuery() const override;
 
       rxcpp::observable<model::Transaction>
       getAccountTransactions(std::string account_id) override;
@@ -71,21 +73,6 @@ namespace iroha {
 
       rxcpp::observable<model::Block>
       getTopBlocks(uint32_t count) override;
-
-      nonstd::optional<model::Account>
-      getAccount(const std::string &account_id) override;
-
-      nonstd::optional<std::vector<ed25519::pubkey_t>>
-      getSignatories(const std::string &account_id) override;
-
-      nonstd::optional<model::Asset>
-      getAsset(const std::string &asset_id) override;
-
-      nonstd::optional<model::AccountAsset>
-      getAccountAsset(const std::string &account_id,
-                      const std::string &asset_id) override;
-
-      nonstd::optional<std::vector<model::Peer>> getPeers() override ;
     };
 
   }  // namespace ametsuchi

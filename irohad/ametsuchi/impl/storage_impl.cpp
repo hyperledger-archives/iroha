@@ -35,7 +35,7 @@ namespace iroha {
                              std::unique_ptr<cpp_redis::redis_client> index,
                              std::unique_ptr<pqxx::lazyconnection> wsv_connection,
                              std::unique_ptr<pqxx::nontransaction> wsv_transaction,
-                             std::unique_ptr<WsvQuery> wsv)
+                             std::shared_ptr<WsvQuery> wsv)
         : block_store_dir_(std::move(block_store_dir)),
           redis_host_(std::move(redis_host)),
           redis_port_(redis_port),
@@ -53,8 +53,6 @@ namespace iroha {
     }
 
     std::unique_ptr<TemporaryWsv> StorageImpl::createTemporaryWsv() {
-      // TODO lock
-
       auto command_executors = model::CommandExecutorFactory::create();
       if (not command_executors.has_value()) {
         log_->error("Cannot create CommandExecutorFactory");
@@ -83,8 +81,6 @@ namespace iroha {
     }
 
     std::unique_ptr<MutableStorage> StorageImpl::createMutableStorage() {
-      // TODO lock
-
       auto command_executors = model::CommandExecutorFactory::create();
       if (not command_executors.has_value()) {
         log_->error("Cannot create CommandExecutorFactory");
@@ -151,7 +147,6 @@ namespace iroha {
                                                                      std::string postgres_options) {
       auto log_ = logger::log("StorageImpl:initConnection");
       log_->info("Start storage creation");
-      // TODO lock
 
       auto block_store = FlatFile::create(block_store_dir);
       if (!block_store) {
@@ -183,8 +178,8 @@ namespace iroha {
 
       auto wsv_transaction = std::make_unique<pqxx::nontransaction>(
           *postgres_connection, "Storage");
-      std::unique_ptr<WsvQuery> wsv =
-          std::make_unique<PostgresWsvQuery>(*wsv_transaction);
+      std::shared_ptr<WsvQuery> wsv =
+          std::make_shared<PostgresWsvQuery>(*wsv_transaction);
       log_->info("transaction to PostgreSQL initialized");
 
       return nonstd::make_optional<ConnectionContext>(std::move(block_store),
@@ -231,6 +226,10 @@ namespace iroha {
       storage->index_->exec();
       storage->transaction_->exec("COMMIT;");
       storage->committed = true;
+    }
+
+    std::shared_ptr<WsvQuery> StorageImpl::getWsvQuery() const {
+      return wsv_;
     }
 
     rxcpp::observable<model::Transaction> StorageImpl::getAccountTransactions(
@@ -305,35 +304,5 @@ namespace iroha {
       }
       return getBlocks(last_id - count + 1, count);
     }
-
-    nonstd::optional<model::Account> StorageImpl::getAccount(
-        const std::string &account_id) {
-      std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
-      return wsv_->getAccount(account_id);
-    }
-
-    nonstd::optional<std::vector<ed25519::pubkey_t>>
-    StorageImpl::getSignatories(const std::string &account_id) {
-      std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
-      return wsv_->getSignatories(account_id);
-    }
-
-    nonstd::optional<model::Asset> StorageImpl::getAsset(
-        const std::string &asset_id) {
-      std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
-      return wsv_->getAsset(asset_id);
-    }
-
-    nonstd::optional<model::AccountAsset> StorageImpl::getAccountAsset(
-        const std::string &account_id, const std::string &asset_id) {
-      std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
-      return wsv_->getAccountAsset(account_id, asset_id);
-    }
-
-    nonstd::optional<std::vector<model::Peer>> StorageImpl::getPeers() {
-      std::shared_lock<std::shared_timed_mutex> write(rw_lock_);
-      return wsv_->getPeers();
-    }
-
   }  // namespace ametsuchi
 }  // namespace iroha

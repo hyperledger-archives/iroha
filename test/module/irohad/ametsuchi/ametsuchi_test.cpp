@@ -60,6 +60,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   auto storage =
       StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
+  auto wsv = storage->getWsvQuery();
 
   Transaction txn;
   txn.creator_account_id = "admin1";
@@ -77,7 +78,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   block.prev_hash.fill(0);
   auto block1hash = hashProvider.get_hash(block);
   block.hash = block1hash;
-  block.txs_number = static_cast<uint16_t>(block.transactions.size());
+  block.txs_number = block.transactions.size();
 
   {
     auto ms = storage->createMutableStorage();
@@ -88,7 +89,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   }
 
   {
-    auto account = storage->getAccount(createAccount.account_name + "@" +
+    auto account = wsv->getAccount(createAccount.account_name + "@" +
                                        createAccount.domain_id);
     ASSERT_TRUE(account);
     ASSERT_EQ(account->account_id,
@@ -132,7 +133,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   block.prev_hash = block1hash;
   auto block2hash = hashProvider.get_hash(block);
   block.hash = block2hash;
-  block.txs_number = static_cast<uint16_t>(block.transactions.size());
+  block.txs_number = block.transactions.size();
 
   {
     auto ms = storage->createMutableStorage();
@@ -141,12 +142,12 @@ TEST_F(AmetsuchiTest, SampleTest) {
   }
 
   {
-    auto asset1 = storage->getAccountAsset("user1@ru", "RUB#ru");
+    auto asset1 = wsv->getAccountAsset("user1@ru", "RUB#ru");
     ASSERT_TRUE(asset1);
     ASSERT_EQ(asset1->account_id, "user1@ru");
     ASSERT_EQ(asset1->asset_id, "RUB#ru");
     ASSERT_EQ(asset1->balance, 50);
-    auto asset2 = storage->getAccountAsset("user2@ru", "RUB#ru");
+    auto asset2 = wsv->getAccountAsset("user2@ru", "RUB#ru");
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, "user2@ru");
     ASSERT_EQ(asset2->asset_id, "RUB#ru");
@@ -177,6 +178,7 @@ TEST_F(AmetsuchiTest, PeerTest) {
   auto storage =
       StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
+  auto wsv = storage->getWsvQuery();
 
   Transaction txn;
   AddPeer addPeer;
@@ -193,7 +195,7 @@ TEST_F(AmetsuchiTest, PeerTest) {
     storage->commit(std::move(ms));
   }
 
-  auto peers = storage->getPeers();
+  auto peers = wsv->getPeers();
   ASSERT_TRUE(peers);
   ASSERT_EQ(peers->size(), 1);
   ASSERT_EQ(peers->at(0).pubkey, addPeer.peer_key);
@@ -205,6 +207,7 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
 
   auto storage = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
+  auto wsv = storage->getWsvQuery();
 
   const auto admin = "admin1";
   const auto domain = "domain";
@@ -275,25 +278,25 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   }
 
   {
-    auto account1 = storage->getAccount(user1id);
+    auto account1 = wsv->getAccount(user1id);
     ASSERT_TRUE(account1);
     ASSERT_EQ(account1->account_id, user1id);
     ASSERT_EQ(account1->domain_name, domain);
-    auto account2 = storage->getAccount(user2id);
+    auto account2 = wsv->getAccount(user2id);
     ASSERT_TRUE(account2);
     ASSERT_EQ(account2->account_id, user2id);
     ASSERT_EQ(account2->domain_name, domain);
-    auto account3 = storage->getAccount(user3id);
+    auto account3 = wsv->getAccount(user3id);
     ASSERT_TRUE(account3);
     ASSERT_EQ(account3->account_id, user3id);
     ASSERT_EQ(account3->domain_name, domain);
 
-    auto asset1 = storage->getAccountAsset(user1id, asset1id);
+    auto asset1 = wsv->getAccountAsset(user1id, asset1id);
     ASSERT_TRUE(asset1);
     ASSERT_EQ(asset1->account_id, user1id);
     ASSERT_EQ(asset1->asset_id, asset1id);
     ASSERT_EQ(asset1->balance, 300);
-    auto asset2 = storage->getAccountAsset(user2id, asset2id);
+    auto asset2 = wsv->getAccountAsset(user2id, asset2id);
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, user2id);
     ASSERT_EQ(asset2->asset_id, asset2id);
@@ -325,12 +328,12 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   }
 
   {
-    auto asset1 = storage->getAccountAsset(user1id, asset1id);
+    auto asset1 = wsv->getAccountAsset(user1id, asset1id);
     ASSERT_TRUE(asset1);
     ASSERT_EQ(asset1->account_id, user1id);
     ASSERT_EQ(asset1->asset_id, asset1id);
     ASSERT_EQ(asset1->balance, 180);
-    auto asset2 = storage->getAccountAsset(user2id, asset1id);
+    auto asset2 = wsv->getAccountAsset(user2id, asset1id);
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, user2id);
     ASSERT_EQ(asset2->asset_id, asset1id);
@@ -370,17 +373,17 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   }
 
   {
-    auto asset1 = storage->getAccountAsset(user2id, asset2id);
+    auto asset1 = wsv->getAccountAsset(user2id, asset2id);
     ASSERT_TRUE(asset1);
     ASSERT_EQ(asset1->account_id, user2id);
     ASSERT_EQ(asset1->asset_id, asset2id);
     ASSERT_EQ(asset1->balance, 90);
-    auto asset2 = storage->getAccountAsset(user3id, asset2id);
+    auto asset2 = wsv->getAccountAsset(user3id, asset2id);
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, user3id);
     ASSERT_EQ(asset2->asset_id, asset2id);
     ASSERT_EQ(asset2->balance, 150);
-    auto asset3 = storage->getAccountAsset(user1id, asset2id);
+    auto asset3 = wsv->getAccountAsset(user1id, asset2id);
     ASSERT_TRUE(asset3);
     ASSERT_EQ(asset3->account_id, user1id);
     ASSERT_EQ(asset3->asset_id, asset2id);

@@ -31,9 +31,11 @@ namespace iroha {
      * Storage interface, which allows queries on current committed state, and
      * creation of state which can be mutated with blocks and transactions
      */
-    class Storage : public WsvQuery, public BlockQuery, public TemporaryFactory,
+    class Storage : public BlockQuery, public TemporaryFactory,
                     public MutableFactory {
      public:
+      virtual std::shared_ptr<WsvQuery> getWsvQuery() const = 0;
+
       virtual ~Storage() = default;
     };
 
