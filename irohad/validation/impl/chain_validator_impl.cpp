@@ -28,16 +28,20 @@ namespace iroha {
                                            ametsuchi::MutableStorage &storage) {
       log_->info("validate block: height {}, hash {}", block.height,
                  block.hash.to_hexstring());
-      auto apply_block = [](const auto &current_block,
-                            auto &query, const auto &top_hash) {
-        return current_block.prev_hash == top_hash;
+      auto apply_block = [this](const auto &block,
+                                auto &query, const auto &top_hash) {
+        auto peers = query.getPeers();
+        if (not peers.has_value()) {
+          return false;
+        }
+        return block.prev_hash == top_hash &&
+            this->hasSupermajority(block.sigs.size(),
+                                   peers.value().size()) &&
+            this->peersSubset(block.sigs, peers.value());
       };
 
-      return
-          // Check if block has supermajority
-          checkSupermajority(storage, block.sigs.size()) and
-          // Apply to temporary storage
-          storage.apply(block, apply_block);
+      // Apply to temporary storage
+      return storage.apply(block, apply_block);
     }
 
     bool ChainValidatorImpl::validateChain(Commit blocks,
@@ -54,15 +58,23 @@ namespace iroha {
           .first();
     }
 
-    bool ChainValidatorImpl::checkSupermajority(
-        ametsuchi::MutableStorage &storage, uint64_t signs_num) {
-      auto all_peers = storage.getPeers();
-      if (not all_peers.has_value()) {
+    bool ChainValidatorImpl::hasSupermajority(uint64_t current, uint64_t all) {
+      if (current > all)
         return false;
-      }
-      int64_t all = all_peers.value().size();
       auto f = (all - 1) / 3.0;
-      return signs_num >= 2 * f + 1;
+      return current >= 2 * f + 1;
+    }
+
+    bool ChainValidatorImpl::peersSubset(
+        std::vector<model::Signature> signatures,
+        std::vector<model::Peer> peers) {
+      return std::all_of(
+          signatures.begin(), signatures.end(), [peers](auto signature) {
+            return std::find_if(peers.begin(), peers.end(),
+                                [signature](auto peer) {
+                                  return signature.pubkey == peer.pubkey;
+                                }) != peers.end();
+          });
     }
   }
 }

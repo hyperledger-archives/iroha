@@ -25,10 +25,10 @@ namespace iroha {
     bool MutableStorageImpl::apply(
         const model::Block &block,
         std::function<bool(const model::Block &, WsvQuery &, const hash256_t &)>
-            function) {
+        function) {
       auto execute_command = [this](auto command) {
         return command_executors_->getCommandExecutor(command)->execute(
-            *command, *this, *executor_);
+            *command, *wsv_, *executor_);
       };
       auto execute_transaction = [this, execute_command](auto &transaction) {
         return std::all_of(transaction.commands.begin(),
@@ -36,9 +36,9 @@ namespace iroha {
       };
 
       transaction_->exec("SAVEPOINT savepoint_;");
-      auto result = function(block, *this, top_hash_) &&
-                    std::all_of(block.transactions.begin(),
-                                block.transactions.end(), execute_transaction);
+      auto result = function(block, *wsv_, top_hash_) &&
+          std::all_of(block.transactions.begin(),
+                      block.transactions.end(), execute_transaction);
 
       if (result) {
         block_store_.insert(std::make_pair(block.height, block));
@@ -73,30 +73,6 @@ namespace iroha {
         index_->discard();
         transaction_->exec("ROLLBACK;");
       }
-    }
-
-    nonstd::optional<model::Account> MutableStorageImpl::getAccount(
-        const std::string &account_id) {
-      return wsv_->getAccount(account_id);
-    }
-
-    nonstd::optional<std::vector<ed25519::pubkey_t>>
-    MutableStorageImpl::getSignatories(const std::string &account_id) {
-      return wsv_->getSignatories(account_id);
-    }
-
-    nonstd::optional<model::Asset> MutableStorageImpl::getAsset(
-        const std::string &asset_id) {
-      return wsv_->getAsset(asset_id);
-    }
-
-    nonstd::optional<model::AccountAsset> MutableStorageImpl::getAccountAsset(
-        const std::string &account_id, const std::string &asset_id) {
-      return wsv_->getAccountAsset(account_id, asset_id);
-    }
-
-    nonstd::optional<std::vector<model::Peer>> MutableStorageImpl::getPeers() {
-      return wsv_->getPeers();
     }
   }  // namespace ametsuchi
 }  // namespace iroha

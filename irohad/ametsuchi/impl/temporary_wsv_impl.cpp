@@ -17,8 +17,6 @@
 
 #include <ametsuchi/impl/temporary_wsv_impl.hpp>
 
-#include <algorithm>
-
 namespace iroha {
   namespace ametsuchi {
 
@@ -27,13 +25,13 @@ namespace iroha {
         std::function<bool(const model::Transaction &, WsvQuery &)> function) {
       auto execute_command = [this, transaction](auto command) {
         auto executor = command_executors_->getCommandExecutor(command);
-        auto account = this->getAccount(transaction.creator_account_id).value();
-        return executor->validate(*command, *this, account) &&
-            executor->execute(*command, *this, *executor_);
+        auto account = wsv_->getAccount(transaction.creator_account_id).value();
+        return executor->validate(*command, *wsv_, account) &&
+            executor->execute(*command, *wsv_, *executor_);
       };
 
       transaction_->exec("SAVEPOINT savepoint_;");
-      auto result = function(transaction, *this) &&
+      auto result = function(transaction, *wsv_) &&
           std::all_of(transaction.commands.begin(),
                       transaction.commands.end(), execute_command);
       if (result) {
@@ -58,30 +56,5 @@ namespace iroha {
     }
 
     TemporaryWsvImpl::~TemporaryWsvImpl() { transaction_->exec("ROLLBACK;"); }
-
-    nonstd::optional<model::Account> TemporaryWsvImpl::getAccount(
-        const std::string &account_id) {
-      return wsv_->getAccount(account_id);
-    }
-
-    nonstd::optional<std::vector<ed25519::pubkey_t>>
-    TemporaryWsvImpl::getSignatories(const std::string &account_id) {
-      return wsv_->getSignatories(account_id);
-    }
-
-    nonstd::optional<model::Asset> TemporaryWsvImpl::getAsset(
-        const std::string &asset_id) {
-      return wsv_->getAsset(asset_id);
-    }
-
-    nonstd::optional<model::AccountAsset> TemporaryWsvImpl::getAccountAsset(
-        const std::string &account_id, const std::string &asset_id) {
-      return wsv_->getAccountAsset(account_id, asset_id);
-    }
-
-    nonstd::optional<std::vector<model::Peer>> TemporaryWsvImpl::getPeers() {
-      return wsv_->getPeers();
-    }
-
   }  // namespace ametsuchi
 }  // namespace iroha

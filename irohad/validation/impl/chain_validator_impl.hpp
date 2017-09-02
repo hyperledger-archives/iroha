@@ -35,8 +35,17 @@ namespace iroha {
 
      private:
 
-      bool checkSupermajority(ametsuchi::MutableStorage &storage,
-                              uint64_t signs_num);
+      bool hasSupermajority(uint64_t current, uint64_t all);
+
+      /**
+       * Checks if public keys of signatures are present in peers collection
+       * @param signatures - collection of signatures
+       * @param peers - collection of peers
+       * @return true, if all public keys of signatures are present in peers
+       * collection, false otherwise
+       */
+      bool peersSubset(std::vector<model::Signature> signatures,
+                       std::vector<model::Peer> peers);
 
       logger::Logger log_;
 
