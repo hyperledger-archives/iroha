@@ -40,6 +40,7 @@ TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
   auto storage =
       StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
+  auto blocks = storage->getBlockQuery();
 
   Block block;
   block.height = 1;
@@ -49,7 +50,7 @@ TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
   storage->commit(std::move(ms));
 
   auto completed_wrapper =
-      make_test_subscriber<IsCompleted>(storage->getBlocks(1, 1));
+      make_test_subscriber<IsCompleted>(blocks->getBlocks(1, 1));
   completed_wrapper.subscribe();
   ASSERT_TRUE(completed_wrapper.validate());
 }
@@ -61,6 +62,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
       StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
+  auto blocks = storage->getBlockQuery();
 
   Transaction txn;
   txn.creator_account_id = "admin1";
@@ -155,7 +157,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   }
 
   // Block store tests
-  storage->getBlocks(1, 2).subscribe([block1hash, block2hash](auto eachBlock) {
+  blocks->getBlocks(1, 2).subscribe([block1hash, block2hash](auto eachBlock) {
     if (eachBlock.height == 1) {
       EXPECT_EQ(eachBlock.hash, block1hash);
     } else if (eachBlock.height == 2) {
@@ -163,14 +165,14 @@ TEST_F(AmetsuchiTest, SampleTest) {
     }
   });
 
-  storage->getAccountTransactions("admin1").subscribe(
+  blocks->getAccountTransactions("admin1").subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 2); });
-  storage->getAccountTransactions("admin2").subscribe(
+  blocks->getAccountTransactions("admin2").subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 4); });
 
-  storage->getAccountAssetTransactions("user1@ru", "RUB#ru").subscribe(
+  blocks->getAccountAssetTransactions("user1@ru", "RUB#ru").subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  storage->getAccountAssetTransactions("user2@ru", "RUB#ru").subscribe(
+  blocks->getAccountAssetTransactions("user2@ru", "RUB#ru").subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
 }
 
@@ -208,6 +210,7 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   auto storage = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
+  auto blocks = storage->getBlockQuery();
 
   const auto admin = "admin1";
   const auto domain = "domain";
@@ -391,7 +394,7 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   }
 
   // Block store tests
-  storage->getBlocks(1, 3).subscribe([block1hash, block2hash, block3hash](auto eachBlock) {
+  blocks->getBlocks(1, 3).subscribe([block1hash, block2hash, block3hash](auto eachBlock) {
     if (eachBlock.height == 1) {
       EXPECT_EQ(eachBlock.hash, block1hash);
     } else if (eachBlock.height == 2) {
@@ -401,28 +404,28 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
     }
   });
 
-  storage->getAccountTransactions(admin).subscribe(
+  blocks->getAccountTransactions(admin).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 8); });
-  storage->getAccountTransactions(user1id).subscribe(
+  blocks->getAccountTransactions(user1id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  storage->getAccountTransactions(user2id).subscribe(
+  blocks->getAccountTransactions(user2id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 2); });
-  storage->getAccountTransactions(user3id).subscribe(
+  blocks->getAccountTransactions(user3id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 0); });
 
   // (user1 -> user2 # asset1)
   // (user2 -> user3 # asset2)
   // (user2 -> user1 # asset2)
-  storage->getAccountAssetTransactions(user1id, asset1id).subscribe(
+  blocks->getAccountAssetTransactions(user1id, asset1id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  storage->getAccountAssetTransactions(user2id, asset1id).subscribe(
+  blocks->getAccountAssetTransactions(user2id, asset1id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  storage->getAccountAssetTransactions(user3id, asset1id).subscribe(
+  blocks->getAccountAssetTransactions(user3id, asset1id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 0); });
-  storage->getAccountAssetTransactions(user1id, asset2id).subscribe(
+  blocks->getAccountAssetTransactions(user1id, asset2id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  storage->getAccountAssetTransactions(user2id, asset2id).subscribe(
+  blocks->getAccountAssetTransactions(user2id, asset2id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 2); });
-  storage->getAccountAssetTransactions(user3id, asset2id).subscribe(
+  blocks->getAccountAssetTransactions(user3id, asset2id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
 }

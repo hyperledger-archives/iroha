@@ -35,6 +35,12 @@ namespace iroha {
 
      private:
 
+      /**
+       * Check that current number >= supermajority.
+       * @param current - current number for validation
+       * @param all - whole number (N)
+       * @return true if belong supermajority
+       */
       bool hasSupermajority(uint64_t current, uint64_t all);
 
       /**

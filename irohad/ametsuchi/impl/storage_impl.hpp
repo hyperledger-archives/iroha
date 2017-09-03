@@ -18,15 +18,17 @@
 #ifndef IROHA_STORAGE_IMPL_HPP
 #define IROHA_STORAGE_IMPL_HPP
 
+#include "ametsuchi/storage.hpp"
+
+#include <cmath>
+#include <shared_mutex>
+
 #include <cpp_redis/cpp_redis>
 #include <nonstd/optional.hpp>
 #include <pqxx/pqxx>
-#include <shared_mutex>
-#include <cmath>
-#include "model/converters/json_block_factory.hpp"
 #include "ametsuchi/impl/flat_file/flat_file.hpp"
-#include "ametsuchi/storage.hpp"
 #include "logger/logger.hpp"
+#include "model/converters/json_block_factory.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -35,20 +37,17 @@ namespace iroha {
       ConnectionContext(std::unique_ptr<FlatFile> block_store,
                         std::unique_ptr<cpp_redis::redis_client> index,
                         std::unique_ptr<pqxx::lazyconnection> pg_lazy,
-                        std::unique_ptr<pqxx::nontransaction> pg_nontx,
-                        std::shared_ptr<WsvQuery> wsv)
+                        std::unique_ptr<pqxx::nontransaction> pg_nontx)
           : block_store(std::move(block_store)),
             index(std::move(index)),
             pg_lazy(std::move(pg_lazy)),
-            pg_nontx(std::move(pg_nontx)),
-            wsv(std::move(wsv)) {
+            pg_nontx(std::move(pg_nontx)) {
       }
 
       std::unique_ptr<FlatFile> block_store;
       std::unique_ptr<cpp_redis::redis_client> index;
       std::unique_ptr<pqxx::lazyconnection> pg_lazy;
       std::unique_ptr<pqxx::nontransaction> pg_nontx;
-      std::shared_ptr<WsvQuery> wsv;
     };
 
     class StorageImpl : public Storage {
@@ -65,19 +64,14 @@ namespace iroha {
           std::size_t redis_port, std::string postgres_connection);
 
       std::unique_ptr<TemporaryWsv> createTemporaryWsv() override;
+
       std::unique_ptr<MutableStorage> createMutableStorage() override;
+
       void commit(std::unique_ptr<MutableStorage> mutableStorage) override;
 
       std::shared_ptr<WsvQuery> getWsvQuery() const override;
 
-      rxcpp::observable<model::Transaction> getAccountTransactions(
-          std::string account_id) override;
-      rxcpp::observable<model::Transaction> getAccountAssetTransactions(
-          std::string account_id, std::string asset_id) override;
-      rxcpp::observable<model::Block> getBlocks(uint32_t height,
-                                                uint32_t count) override;
-      rxcpp::observable<model::Block> getBlocksFrom(uint32_t height) override;
-      rxcpp::observable<model::Block> getTopBlocks(uint32_t count) override;
+      std::shared_ptr<BlockQuery> getBlockQuery() const override;
 
      protected:
 
@@ -88,8 +82,7 @@ namespace iroha {
                   std::unique_ptr<FlatFile> block_store,
                   std::unique_ptr<cpp_redis::redis_client> index,
                   std::unique_ptr<pqxx::lazyconnection> wsv_connection,
-                  std::unique_ptr<pqxx::nontransaction> wsv_transaction,
-                  std::shared_ptr<WsvQuery> wsv);
+                  std::unique_ptr<pqxx::nontransaction> wsv_transaction);
 
       /**
        * Folder with raw blocks
@@ -117,6 +110,8 @@ namespace iroha {
       std::unique_ptr<pqxx::nontransaction> wsv_transaction_;
 
       std::shared_ptr<WsvQuery> wsv_;
+
+      std::shared_ptr<BlockQuery> blocks_;
 
       model::converters::JsonBlockFactory serializer_;
 

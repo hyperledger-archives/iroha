@@ -31,7 +31,6 @@ namespace iroha {
       TemporaryWsvImpl(
           std::unique_ptr<pqxx::lazyconnection> connection,
           std::unique_ptr<pqxx::nontransaction> transaction,
-          std::unique_ptr<WsvQuery> wsv, std::unique_ptr<WsvCommand> executor,
           std::shared_ptr<model::CommandExecutorFactory> command_executors);
 
       bool apply(const model::Transaction &transaction,

@@ -36,7 +36,6 @@ namespace iroha {
           hash256_t top_hash, std::unique_ptr<cpp_redis::redis_client> index,
           std::unique_ptr<pqxx::lazyconnection> connection,
           std::unique_ptr<pqxx::nontransaction> transaction,
-          std::unique_ptr<WsvQuery> wsv, std::unique_ptr<WsvCommand> executor,
           std::shared_ptr<model::CommandExecutorFactory> command_executors);
 
       bool apply(const model::Block &block,

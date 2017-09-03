@@ -34,9 +34,9 @@ namespace iroha {
         if (not peers.has_value()) {
           return false;
         }
-        return block.prev_hash == top_hash &&
+        return block.prev_hash == top_hash and
             this->hasSupermajority(block.sigs.size(),
-                                   peers.value().size()) &&
+                                   peers.value().size()) and
             this->peersSubset(block.sigs, peers.value());
       };
 

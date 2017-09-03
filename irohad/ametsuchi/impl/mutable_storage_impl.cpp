@@ -15,12 +15,29 @@
  * limitations under the License.
  */
 
-#include <algorithm>
+#include "ametsuchi/impl/mutable_storage_impl.hpp"
 
-#include <ametsuchi/impl/mutable_storage_impl.hpp>
+#include "ametsuchi/impl/postgres_wsv_query.hpp"
+#include "ametsuchi/impl/postgres_wsv_command.hpp"
 
 namespace iroha {
   namespace ametsuchi {
+    MutableStorageImpl::MutableStorageImpl(
+        hash256_t top_hash, std::unique_ptr<cpp_redis::redis_client> index,
+        std::unique_ptr<pqxx::lazyconnection> connection,
+        std::unique_ptr<pqxx::nontransaction> transaction,
+        std::shared_ptr<model::CommandExecutorFactory> command_executors)
+        : top_hash_(top_hash),
+          index_(std::move(index)),
+          connection_(std::move(connection)),
+          transaction_(std::move(transaction)),
+          wsv_(std::make_unique<PostgresWsvQuery>(*transaction_)),
+          executor_(std::make_unique<PostgresWsvCommand>(*transaction_)),
+          command_executors_(std::move(command_executors)),
+          committed(false) {
+      index_->multi();
+      transaction_->exec("BEGIN;");
+    }
 
     bool MutableStorageImpl::apply(
         const model::Block &block,
@@ -50,26 +67,8 @@ namespace iroha {
       return result;
     }
 
-    MutableStorageImpl::MutableStorageImpl(
-        hash256_t top_hash, std::unique_ptr<cpp_redis::redis_client> index,
-        std::unique_ptr<pqxx::lazyconnection> connection,
-        std::unique_ptr<pqxx::nontransaction> transaction,
-        std::unique_ptr<WsvQuery> wsv, std::unique_ptr<WsvCommand> executor,
-        std::shared_ptr<model::CommandExecutorFactory> command_executors)
-        : top_hash_(top_hash),
-          index_(std::move(index)),
-          connection_(std::move(connection)),
-          transaction_(std::move(transaction)),
-          wsv_(std::move(wsv)),
-          executor_(std::move(executor)),
-          command_executors_(std::move(command_executors)),
-          committed(false) {
-      index_->multi();
-      transaction_->exec("BEGIN;");
-    }
-
     MutableStorageImpl::~MutableStorageImpl() {
-      if (!committed) {
+      if (not committed) {
         index_->discard();
         transaction_->exec("ROLLBACK;");
       }

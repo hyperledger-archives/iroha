@@ -112,11 +112,13 @@ void Irohad::run() {
              logger::logBool(ordering_gate));
 
   // Simulator
-  auto simulator = createSimulator(ordering_gate, stateful_validator, storage,
-                                   storage, hash_provider);
+  auto simulator =
+      createSimulator(ordering_gate, stateful_validator,
+                      storage->getBlockQuery(), storage, hash_provider);
 
   // Block loader
-  auto block_loader = loader_init.initBlockLoader(wsv, storage, crypto_verifier);
+  auto block_loader = loader_init.initBlockLoader(wsv, storage->getBlockQuery(),
+                                                  crypto_verifier);
 
   // Consensus gate
   auto consensus_gate = yac_init.initConsensusGate(peer_address,
@@ -147,8 +149,8 @@ void Irohad::run() {
   command_service = createCommandService(pb_tx_factory, tx_processor);
 
   // --- Queries
-  auto query_proccessing_factory =
-      createQueryProcessingFactory(storage->getWsvQuery(), storage);
+  auto query_proccessing_factory = createQueryProcessingFactory(
+      storage->getWsvQuery(), storage->getBlockQuery());
 
   auto query_processor = createQueryProcessor(
       std::move(query_proccessing_factory), stateless_validator);

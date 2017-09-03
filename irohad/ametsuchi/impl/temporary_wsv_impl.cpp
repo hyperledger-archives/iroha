@@ -15,10 +15,24 @@
  * limitations under the License.
  */
 
-#include <ametsuchi/impl/temporary_wsv_impl.hpp>
+#include "ametsuchi/impl/temporary_wsv_impl.hpp"
+
+#include "ametsuchi/impl/postgres_wsv_query.hpp"
+#include "ametsuchi/impl/postgres_wsv_command.hpp"
 
 namespace iroha {
   namespace ametsuchi {
+    TemporaryWsvImpl::TemporaryWsvImpl(
+        std::unique_ptr<pqxx::lazyconnection> connection,
+        std::unique_ptr<pqxx::nontransaction> transaction,
+        std::shared_ptr<model::CommandExecutorFactory> command_executors)
+        : connection_(std::move(connection)),
+          transaction_(std::move(transaction)),
+          wsv_(std::make_unique<PostgresWsvQuery>(*transaction_)),
+          executor_(std::make_unique<PostgresWsvCommand>(*transaction_)),
+          command_executors_(std::move(command_executors)) {
+      transaction_->exec("BEGIN;");
+    }
 
     bool TemporaryWsvImpl::apply(
         const model::Transaction &transaction,
@@ -40,19 +54,6 @@ namespace iroha {
         transaction_->exec("ROLLBACK TO SAVEPOINT savepoint_;");
       }
       return result;
-    }
-
-    TemporaryWsvImpl::TemporaryWsvImpl(
-        std::unique_ptr<pqxx::lazyconnection> connection,
-        std::unique_ptr<pqxx::nontransaction> transaction,
-        std::unique_ptr<WsvQuery> wsv, std::unique_ptr<WsvCommand> executor,
-        std::shared_ptr<model::CommandExecutorFactory> command_executors)
-        : connection_(std::move(connection)),
-          transaction_(std::move(transaction)),
-          wsv_(std::move(wsv)),
-          executor_(std::move(executor)),
-          command_executors_(std::move(command_executors)) {
-      transaction_->exec("BEGIN;");
     }
 
     TemporaryWsvImpl::~TemporaryWsvImpl() { transaction_->exec("ROLLBACK;"); }
