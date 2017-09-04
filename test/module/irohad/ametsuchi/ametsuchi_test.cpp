@@ -440,7 +440,10 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   pubkey1.at(0) = 1;
   pubkey2.at(0) = 2;
 
-  // 1st tx
+  auto user1id = "user1@domain";
+  auto user2id = "user2@domain";
+
+  // 1st tx (create user1 with pubkey1)
   Transaction txn;
   txn.creator_account_id = "admin1";
   CreateDomain createDomain;
@@ -469,22 +472,22 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   }
 
   {
-    auto account = wsv->getAccount(createAccount.account_name + "@" + createAccount.domain_id);
+    auto account = wsv->getAccount(user1id);
     ASSERT_TRUE(account);
-    ASSERT_EQ(account->account_id, createAccount.account_name + "@" + createAccount.domain_id);
+    ASSERT_EQ(account->account_id, user1id);
     ASSERT_EQ(account->domain_name, createAccount.domain_id);
 
-    auto signatories = wsv->getSignatories(createAccount.account_name + "@" + createAccount.domain_id);
+    auto signatories = wsv->getSignatories(user1id);
     ASSERT_TRUE(signatories);
     ASSERT_EQ(signatories->size(), 1);
     ASSERT_EQ(signatories->at(0), pubkey1);
   }
 
-  // 2nd tx
+  // 2nd tx (add sig2 to user1)
   txn = Transaction();
-  txn.creator_account_id = createAccount.account_name + "@" + createAccount.domain_id;
+  txn.creator_account_id = user1id;
   auto addSignatory = AddSignatory();
-  addSignatory.account_id = createAccount.account_name + "@" + createAccount.domain_id;
+  addSignatory.account_id = user1id;
   addSignatory.pubkey = pubkey2;
   txn.commands.push_back(std::make_shared<AddSignatory>(addSignatory));
 
@@ -503,23 +506,24 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   }
 
   {
-    auto account = wsv->getAccount(createAccount.account_name + "@" + createAccount.domain_id);
+    auto account = wsv->getAccount(user1id);
     ASSERT_TRUE(account);
 
-    auto signatories = wsv->getSignatories(createAccount.account_name + "@" + createAccount.domain_id);
+    auto signatories = wsv->getSignatories(user1id);
     ASSERT_TRUE(signatories);
     ASSERT_EQ(signatories->size(), 2);
     ASSERT_EQ(signatories->at(0), pubkey1);
     ASSERT_EQ(signatories->at(1), pubkey2);
   }
 
-  // 3th tx
+  // 3rd tx (create user2 with pubkey1 that is same as user1's key)
   txn = Transaction();
-  txn.creator_account_id = createAccount.account_name + "@" + createAccount.domain_id;
-  auto removeSignatory = RemoveSignatory();
-  removeSignatory.account_id = createAccount.account_name + "@" + createAccount.domain_id;
-  removeSignatory.pubkey = pubkey1;
-  txn.commands.push_back(std::make_shared<RemoveSignatory>(removeSignatory));
+  txn.creator_account_id = "admin2";
+  createAccount = CreateAccount();
+  createAccount.account_name = "user2";
+  createAccount.domain_id = "domain";
+  createAccount.pubkey = pubkey1; // same as user1's pubkey1
+  txn.commands.push_back(std::make_shared<CreateAccount>(createAccount));
 
   block = Block();
   block.transactions.push_back(txn);
@@ -536,12 +540,60 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   }
 
   {
-    auto account = wsv->getAccount(createAccount.account_name + "@" + createAccount.domain_id);
+    auto account1 = wsv->getAccount(user1id);
+    ASSERT_TRUE(account1);
+
+    auto account2 = wsv->getAccount(user2id);
+    ASSERT_TRUE(account2);
+
+    auto signatories1 = wsv->getSignatories(user1id);
+    ASSERT_TRUE(signatories1);
+    ASSERT_EQ(signatories1->size(), 2);
+    ASSERT_EQ(signatories1->at(0), pubkey1);
+    ASSERT_EQ(signatories1->at(1), pubkey2);
+
+    auto signatories2 = wsv->getSignatories(user2id);
+    ASSERT_TRUE(signatories2);
+    ASSERT_EQ(signatories2->size(), 1);
+    ASSERT_EQ(signatories2->at(0), pubkey1);
+  }
+
+  // 4th tx (remove pubkey1 from user1)
+  txn = Transaction();
+  txn.creator_account_id = user1id;
+  auto removeSignatory = RemoveSignatory();
+  removeSignatory.account_id = user1id;
+  removeSignatory.pubkey = pubkey1;
+  txn.commands.push_back(std::make_shared<RemoveSignatory>(removeSignatory));
+
+  block = Block();
+  block.transactions.push_back(txn);
+  block.height = 4;
+  block.prev_hash = block3hash;
+  auto block4hash = hashProvider.get_hash(block);
+  block.hash = block4hash;
+  block.txs_number = block.transactions.size();
+
+  {
+    auto ms = storage->createMutableStorage();
+    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
+    storage->commit(std::move(ms));
+  }
+
+  {
+    auto account = wsv->getAccount(user1id);
     ASSERT_TRUE(account);
 
-    auto signatories = wsv->getSignatories(createAccount.account_name + "@" + createAccount.domain_id);
-    ASSERT_TRUE(signatories);
-    ASSERT_EQ(signatories->size(), 1);
-    ASSERT_EQ(signatories->at(0), pubkey2);
+    // user1 has only pubkey2.
+    auto signatories1 = wsv->getSignatories(user1id);
+    ASSERT_TRUE(signatories1);
+    ASSERT_EQ(signatories1->size(), 1);
+    ASSERT_EQ(signatories1->at(0), pubkey2);
+
+    // user2 still has pubkey1.
+    auto signatories2 = wsv->getSignatories(user2id);
+    ASSERT_TRUE(signatories2);
+    ASSERT_EQ(signatories2->size(), 1);
+    ASSERT_EQ(signatories2->at(0), pubkey1);
   }
 }
