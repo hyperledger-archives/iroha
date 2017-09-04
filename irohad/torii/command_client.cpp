@@ -86,6 +86,9 @@ namespace torii {
     return status_;
   }
 
+  /**
+   * manages ClientContext and Status
+   */
   struct AsyncClientCall {
     grpc::ClientContext context;
     grpc::Status status;
@@ -99,7 +102,7 @@ namespace torii {
     google::protobuf::Empty response;
     std::unique_ptr<grpc::ClientAsyncResponseReader<google::protobuf::Empty>>
         responseReader;
-    CommandAsyncClient::Callback callback;
+    CommandAsyncClient::ToriiCallback callback;
   };
 
   /**
@@ -130,6 +133,11 @@ namespace torii {
     return call->status;
   }
 
+/**
+ * @param tx_request contains hash of requested tx
+ * @param callback callback to process obtained status
+ * @return grpc::Status determining if connection was successful
+ */
   grpc::Status CommandAsyncClient::Status(
       const iroha::protocol::TxStatusRequest& tx_request,
       const StatusCallback& callback) {

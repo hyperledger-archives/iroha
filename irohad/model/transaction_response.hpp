@@ -34,13 +34,13 @@ namespace iroha {
       std::string tx_hash;
 
       enum Status {
-        STATELESS_VALIDATION_FAILED,
-        STATELESS_VALIDATION_SUCCESS,
-        STATEFUL_VALIDATION_FAILED,
-        STATEFUL_VALIDATION_SUCCESS,
-        COMMITTED,
-        ON_PROCESS,
-        NOT_RECEIVED
+        STATELESS_VALIDATION_FAILED, // stateless validation failed
+        STATELESS_VALIDATION_SUCCESS, // stateless validation passed
+        STATEFUL_VALIDATION_FAILED, // stateful validation failed
+        STATEFUL_VALIDATION_SUCCESS, // stateful validation passed
+        COMMITTED, // tx pipeline succeeded, tx is committed
+        ON_PROCESS, // transaction is received, but not validated
+        NOT_RECEIVED // transaction is not in handler map
       };
 
       Status current_status;
