@@ -49,130 +49,11 @@ using namespace iroha::network;
 using namespace iroha::validation;
 using namespace iroha::ametsuchi;
 
-/*
-class ToriiServiceTest : public testing::Test {
- public:
-  virtual void SetUp() {
-    runner = new ServerRunner(std::string(Ip) + ":" + std::to_string(Port));
-    th = std::thread([this] {
-      // ----------- Command Service --------------
-      pcsMock = std::make_shared<MockPeerCommunicationService>();
-      statelessValidatorMock = std::make_shared<MockStatelessValidator>();
-      wsv_query = std::make_shared<MockWsvQuery>();
-      block_query = std::make_shared<MockBlockQuery>();
-
-      auto tx_processor =
-          std::make_shared<iroha::torii::TransactionProcessorImpl>(
-              pcsMock, statelessValidatorMock);
-      auto pb_tx_factory =
-          std::make_shared<iroha::model::converters::PbTransactionFactory>();
-      auto command_service =
-          std::make_unique<torii::CommandService>(pb_tx_factory, tx_processor);
-
-      //----------- Query Service ----------
-      auto qpf = std::make_unique<iroha::model::QueryProcessingFactory>(
-          wsv_query, block_query);
-
-      auto qpi = std::make_shared<iroha::torii::QueryProcessorImpl>(
-          std::move(qpf), statelessValidatorMock);
-
-      auto pb_query_factory =
-          std::make_shared<iroha::model::converters::PbQueryFactory>();
-      auto pb_query_resp_factory =
-          std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
-
-      auto query_service = std::make_unique<torii::QueryService>(
-          pb_query_factory, pb_query_resp_factory, qpi);
-
-      //----------- Server run ----------------
-      runner->run(std::move(command_service), std::move(query_service));
-    });
-
-    runner->waitForServersReady();
-  }
-
-  virtual void TearDown() {
-    runner->shutdown();
-    delete runner;
-    th.join();
-  }
-
-  ServerRunner *runner;
-  std::thread th;
-
-  std::shared_ptr<MockWsvQuery> wsv_query;
-  std::shared_ptr<MockBlockQuery> block_query;
-
-  std::shared_ptr<MockPeerCommunicationService> pcsMock;
-  std::shared_ptr<MockStatelessValidator> statelessValidatorMock;
-};
-
-TEST_F(ToriiServiceTest, ToriiWhenBlocking) {
-  EXPECT_CALL(*statelessValidatorMock,
-              validate(A<const iroha::model::Transaction &>()))
-      .Times(TimesToriiBlocking)
-      .WillRepeatedly(Return(true));
-
-  EXPECT_CALL(*pcsMock, propagate_transaction(_)).Times(AtLeast(1));
-
-  for (size_t i = 0; i < TimesToriiBlocking; ++i) {
-    auto new_tx = iroha::protocol::Transaction();
-    auto meta = new_tx.mutable_meta();
-    meta->set_tx_counter(i);
-    meta->set_creator_account_id("accountA");
-
-    auto stat = torii::CommandSyncClient(Ip, Port).Torii(new_tx);
-    ASSERT_TRUE(stat.ok());
-  }
-}
-
-TEST_F(ToriiServiceTest, ToriiWhenBlockingInvalid) {
-  EXPECT_CALL(*statelessValidatorMock,
-              validate(A<const iroha::model::Transaction &>()))
-      .Times(TimesToriiBlocking)
-      .WillRepeatedly(Return(false));
-
-  for (size_t i = 0; i < TimesToriiBlocking; ++i) {
-    auto new_tx = iroha::protocol::Transaction();
-    auto meta = new_tx.mutable_meta();
-    meta->set_tx_counter(i);
-    meta->set_creator_account_id("accountA");
-    auto stat = torii::CommandSyncClient(Ip, Port).Torii(new_tx);
-    ASSERT_TRUE(stat.ok());
-  }
-}
-
-TEST_F(ToriiServiceTest, ToriiWhenNonBlocking) {
-  torii::CommandAsyncClient client(Ip, Port);
-  std::atomic_int count{0};
-
-  EXPECT_CALL(*statelessValidatorMock,
-              validate(A<const iroha::model::Transaction &>()))
-      .Times(TimesToriiNonBlocking)
-      .WillRepeatedly(Return(true));
-
-  EXPECT_CALL(*pcsMock, propagate_transaction(_)).Times(AtLeast(1));
-
-  for (size_t i = 0; i < TimesToriiNonBlocking; ++i) {
-    auto new_tx = iroha::protocol::Transaction();
-    auto meta = new_tx.mutable_meta();
-    meta->set_tx_counter(i);
-    meta->set_creator_account_id("accountA");
-
-    auto stat = client.Torii(new_tx, [&count](auto response) { count++; });
-  }
-
-  while (count < (int)TimesToriiNonBlocking)
-    ;
-  ASSERT_EQ(count, TimesToriiNonBlocking);
-}
-*/
-
 using Commit = rxcpp::observable<iroha::model::Block>;
 
-class PeerCommunicationServiceMock2 : public PeerCommunicationService {
+class CustomPeerCommunicationServiceMock : public PeerCommunicationService {
  public:
-  PeerCommunicationServiceMock2(
+  CustomPeerCommunicationServiceMock(
       rxcpp::subjects::subject<iroha::model::Proposal> prop_notifier,
       rxcpp::subjects::subject<Commit> commit_notifier)
       : prop_notifier_(prop_notifier), commit_notifier_(commit_notifier){};
@@ -198,7 +79,7 @@ class ToriiServiceTest : public testing::Test {
     runner = new ServerRunner(std::string(Ip) + ":" + std::to_string(Port));
     th = std::thread([this] {
       // ----------- Command Service --------------
-      pcsMock = std::make_shared<PeerCommunicationServiceMock2>(
+      pcsMock = std::make_shared<CustomPeerCommunicationServiceMock>(
           prop_notifier_, commit_notifier_);
       statelessValidatorMock = std::make_shared<MockStatelessValidator>();
       wsv_query = std::make_shared<MockWsvQuery>();
@@ -249,7 +130,7 @@ class ToriiServiceTest : public testing::Test {
   rxcpp::subjects::subject<iroha::model::Proposal> prop_notifier_;
   rxcpp::subjects::subject<Commit> commit_notifier_;
 
-  std::shared_ptr<PeerCommunicationServiceMock2> pcsMock;
+  std::shared_ptr<CustomPeerCommunicationServiceMock> pcsMock;
   std::shared_ptr<MockStatelessValidator> statelessValidatorMock;
 };
 
