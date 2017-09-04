@@ -123,6 +123,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   transferAsset.src_account_id = "user1@ru";
   transferAsset.dest_account_id = "user2@ru";
   transferAsset.asset_id = "RUB#ru";
+  transferAsset.description = "test transfer";
   iroha::Amount transfer_amount;
   transfer_amount.int_part = 1;
   transfer_amount.frac_part = 0;

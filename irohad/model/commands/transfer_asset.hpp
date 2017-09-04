@@ -43,6 +43,12 @@ namespace iroha {
        * Asset to transfer. Identifier is asset_id
        */
       std::string asset_id;
+
+      /**
+       * Transfer description
+       */
+      std::string description;
+
       /**
        * Amount of transferred asset
        */

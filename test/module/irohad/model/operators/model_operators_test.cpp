@@ -223,6 +223,7 @@ TransferAsset createTransferAsset() {
   transferAsset.amount.frac_part = 10;
   transferAsset.src_account_id = "1";
   transferAsset.dest_account_id = "2";
+  transferAsset.description = "test";
   return transferAsset;
 }
 

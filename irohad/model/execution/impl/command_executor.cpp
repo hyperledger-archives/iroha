@@ -484,7 +484,9 @@ bool TransferAssetExecutor::execute(const Command &command,
   if (not src_account_asset.has_value()) {
     log_->info("asset {} is absent of {}",
                transfer_asset.asset_id,
-               transfer_asset.src_account_id);
+               transfer_asset.src_account_id,
+               transfer_asset.description
+    );
 
     return false;
   }
@@ -496,7 +498,9 @@ bool TransferAssetExecutor::execute(const Command &command,
   if (not asset.has_value()) {
     log_->info("asset {} is absent of {}",
                transfer_asset.asset_id,
-               transfer_asset.dest_account_id);
+               transfer_asset.dest_account_id,
+               transfer_asset.description
+    );
 
     return false;
   }

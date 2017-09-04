@@ -478,6 +478,8 @@ namespace iroha {
         document.AddMember("dest_account_id", transfer_asset->dest_account_id,
                            allocator);
         document.AddMember("asset_id", transfer_asset->asset_id, allocator);
+        document.AddMember("description", transfer_asset->description,
+                           allocator);
 
         Value amount;
         amount.SetObject();
@@ -505,6 +507,9 @@ namespace iroha {
         // asset_id
         transfer_asset->asset_id = command["asset_id"].GetString();
 
+        // description
+        transfer_asset->description = command["description"].GetString();
+
         // amount
         auto json_amount = command["amount"].GetObject();
         transfer_asset->amount.int_part = json_amount["int_part"].GetUint64();
@@ -523,8 +528,8 @@ namespace iroha {
         return Document();
       }
 
-      optional_ptr<model::Command> JsonCommandFactory::deserializeAbstractCommand(
-          const Document &command) {
+      optional_ptr<model::Command>
+      JsonCommandFactory::deserializeAbstractCommand(const Document &command) {
         auto command_type = command["command_type"].GetString();
 
         auto it = deserializers_.find(command_type);
