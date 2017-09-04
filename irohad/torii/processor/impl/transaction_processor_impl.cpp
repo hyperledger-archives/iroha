@@ -17,7 +17,7 @@
 
 #include <endpoint.pb.h>
 #include <iostream>
-#include <model/tx_responses/stateless_response.hpp>
+#include <model/transaction_response.hpp>
 #include <torii/processor/transaction_processor_impl.hpp>
 #include <utility>
 
@@ -96,7 +96,7 @@ namespace iroha {
       model::TransactionResponse response;
       response.tx_hash = transaction->tx_hash.to_string();
       response.current_status =
-          model::TransactionResponse::Status::NOT_RECEIVED;
+          model::TransactionResponse::Status::STATELESS_VALIDATION_FAILED;
 
       if (validator_->validate(*transaction)) {
         response.current_status =

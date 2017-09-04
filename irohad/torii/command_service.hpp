@@ -23,7 +23,7 @@ limitations under the License.
 #include <string>
 #include <unordered_map>
 #include "model/converters/pb_transaction_factory.hpp"
-#include "model/tx_responses/stateless_response.hpp"
+#include "model/transaction_response.hpp"
 #include "torii/processor/transaction_processor.hpp"
 
 namespace torii {

@@ -32,7 +32,7 @@ namespace iroha_cli {
       T answer;
     };
 
-    enum TxStatus { WRONG_FORMAT, NOT_VALID, OK,  };
+    enum TxStatus { WRONG_FORMAT, OK,  };
 
     CliClient(std::string target_ip, int port);
     /**

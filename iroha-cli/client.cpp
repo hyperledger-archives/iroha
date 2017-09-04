@@ -56,18 +56,15 @@ namespace iroha_cli {
   }
 
   CliClient::Response<iroha::protocol::ToriiResponse> CliClient::getTxStatus(std::string tx_hash) {
-    /*
-    CliClient::Response<CliClient::TxStatus> response;
+    CliClient::Response<iroha::protocol::ToriiResponse> response;
     // Send to iroha:
+    iroha::protocol::TxStatusRequest statusRequest;
+    statusRequest.set_tx_hash(tx_hash);
     iroha::protocol::ToriiResponse toriiResponse;
-    response.status = command_client_.Status(tx_hash, toriiResponse);
-    response.answer = toriiResponse.validation() ==
-        iroha::protocol::STATELESS_VALIDATION_SUCCESS
-                      ? OK
-                      : NOT_VALID;
+    response.status = command_client_.Status(statusRequest, toriiResponse);
+    response.answer = toriiResponse;
 
     return response;
-     */
   }
 
   CliClient::Response<iroha::protocol::QueryResponse> CliClient::sendQuery(
