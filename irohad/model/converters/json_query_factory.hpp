@@ -33,6 +33,7 @@
 
 #include "logger/logger.hpp"
 #include "model/generators/query_generator.hpp"
+#include "model/converters/json_common.hpp"
 
 namespace iroha {
   namespace model {
@@ -57,6 +58,8 @@ namespace iroha {
             std::shared_ptr<Query> model_query);
 
        private:
+        Convert<std::shared_ptr<Query>> transform;
+
         optional_ptr<Query> deserialize(const rapidjson::Document &document);
 
         using Deserializer =

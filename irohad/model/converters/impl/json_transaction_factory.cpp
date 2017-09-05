@@ -63,42 +63,34 @@ namespace iroha {
 
       nonstd::optional<Transaction> JsonTransactionFactory::deserialize(
           const Value &document) {
-        return nonstd::make_optional<Transaction>() | [&document](
-                                                          auto transaction) {
-          return deserializeField(transaction, &Transaction::created_ts,
-                                  document, "created_ts", &Value::IsUint64,
-                                  &Value::GetUint64);
-        } | [&document](auto transaction) {
-          return deserializeField(transaction, &Transaction::creator_account_id,
-                                  document, "creator_account_id",
-                                  &Value::IsString, &Value::GetString);
-        } | [&document](auto transaction) {
-          return deserializeField(transaction, &Transaction::tx_counter,
-                                  document, "tx_counter", &Value::IsUint64,
-                                  &Value::GetUint64);
-        } | [&document](auto transaction) {
-          return deserializeField(transaction, &Transaction::signatures,
-                                  document, "signatures", &Value::IsArray,
-                                  &Value::GetArray);
-        } | [this, &document](auto transaction) {
-          return deserializeField(
-              transaction, &Transaction::commands, document, "commands",
-              &Value::IsArray, &Value::GetArray, [this](auto array) {
-                return std::accumulate(
-                    array.begin(), array.end(),
-                    nonstd::make_optional<Transaction::CommandsType>(),
-                    [this](auto init, auto &x) {
-                      return factory_.deserializeAbstractCommand(x) |
-                             [&init](auto command) {
-                               init.value().push_back(command);
-                               return init;
-                             };
-                    });
-              });
-        } | [this, &document](auto transaction) {
-          transaction.tx_hash = hash_provider_.get_hash(transaction);
-          return nonstd::make_optional(transaction);
-        };
+        auto des = makeFieldDeserializer(document);
+
+        return nonstd::make_optional<Transaction>() |
+               des.Uint64(&Transaction::created_ts, "created_ts") |
+               des.String(&Transaction::creator_account_id,
+                          "creator_account_id") |
+               des.Uint64(&Transaction::tx_counter, "tx_counter") |
+               des.Array(&Transaction::signatures, "signatures") |
+               des.Array(
+                   &Transaction::commands, "commands",
+                   [this](auto array) {
+                     return std::accumulate(
+                         array.begin(), array.end(),
+                         nonstd::make_optional<Transaction::CommandsType>(),
+                         [this](auto init, auto &x) {
+                           return init | [this, &x](auto commands) {
+                             return factory_.deserializeAbstractCommand(x) |
+                                    [&commands](auto command) {
+                                      commands.push_back(command);
+                                      return nonstd::make_optional(commands);
+                                    };
+                           };
+                         });
+                   }) |
+               [this, &document](auto transaction) {
+                 transaction.tx_hash = hash_provider_.get_hash(transaction);
+                 return nonstd::make_optional(transaction);
+               };
       }
 
     }  // namespace converters

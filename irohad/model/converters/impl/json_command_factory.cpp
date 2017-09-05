@@ -106,23 +106,12 @@ namespace iroha {
 
       optional_ptr<Command> JsonCommandFactory::deserializeAddAssetQuantity(
           const Value &document) {
+        auto des = makeFieldDeserializer(document);
         return make_optional_ptr<AddAssetQuantity>() |
-               [&document](auto command) {
-                 return deserializeField(command, &AddAssetQuantity::account_id,
-                                         document, "account_id",
-                                         &Value::IsString, &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(command, &AddAssetQuantity::asset_id,
-                                         document, "asset_id", &Value::IsString,
-                                         &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(command, &AddAssetQuantity::amount,
-                                         document, "amount", &Value::IsObject,
-                                         &Value::GetObject);
-               } |
-               [](auto command) { return optional_ptr<Command>(command); };
+               des.String(&AddAssetQuantity::account_id, "account_id") |
+               des.String(&AddAssetQuantity::asset_id, "asset_id") |
+               des.Object(&AddAssetQuantity::amount, "amount") |
+               transform;
       }
 
       // AddPeer
@@ -144,18 +133,11 @@ namespace iroha {
 
       optional_ptr<Command> JsonCommandFactory::deserializeAddPeer(
           const Value &document) {
+        auto des = makeFieldDeserializer(document);
         return make_optional_ptr<AddPeer>() |
-               [&document](auto command) {
-                 return deserializeField(command, &AddPeer::peer_key, document,
-                                         "peer_key", &Value::IsString,
-                                         &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(command, &AddPeer::address, document,
-                                         "address", &Value::IsString,
-                                         &Value::GetString);
-               } |
-               [](auto command) { return optional_ptr<Command>(command); };
+               des.String(&AddPeer::peer_key, "peer_key") |
+               des.String(&AddPeer::address, "address") |
+               transform;
       }
 
       // AddSignatory
@@ -177,18 +159,11 @@ namespace iroha {
 
       optional_ptr<Command> JsonCommandFactory::deserializeAddSignatory(
           const Value &document) {
+        auto des = makeFieldDeserializer(document);
         return make_optional_ptr<AddSignatory>() |
-               [&document](auto command) {
-                 return deserializeField(command, &AddSignatory::account_id,
-                                         document, "account_id",
-                                         &Value::IsString, &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(command, &AddSignatory::pubkey,
-                                         document, "pubkey", &Value::IsString,
-                                         &Value::GetString);
-               } |
-               [](auto command) { return optional_ptr<Command>(command); };
+               des.String(&AddSignatory::account_id, "account_id") |
+               des.String(&AddSignatory::pubkey, "pubkey") |
+               transform;
       }
 
       // CreateAccount
@@ -212,23 +187,12 @@ namespace iroha {
 
       optional_ptr<Command> JsonCommandFactory::deserializeCreateAccount(
           const Value &document) {
+        auto des = makeFieldDeserializer(document);
         return make_optional_ptr<CreateAccount>() |
-               [&document](auto command) {
-                 return deserializeField(command, &CreateAccount::account_name,
-                                         document, "account_name",
-                                         &Value::IsString, &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(command, &CreateAccount::domain_id,
-                                         document, "domain_id",
-                                         &Value::IsString, &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(command, &CreateAccount::pubkey,
-                                         document, "pubkey", &Value::IsString,
-                                         &Value::GetString);
-               } |
-               [](auto command) { return optional_ptr<Command>(command); };
+               des.String(&CreateAccount::account_name, "account_name") |
+               des.String(&CreateAccount::domain_id, "domain_id") |
+               des.String(&CreateAccount::pubkey, "pubkey") |
+               transform;
       }
 
       // CreateAsset
@@ -250,23 +214,12 @@ namespace iroha {
 
       optional_ptr<Command> JsonCommandFactory::deserializeCreateAsset(
           const Value &document) {
+        auto des = makeFieldDeserializer(document);
         return make_optional_ptr<CreateAsset>() |
-               [&document](auto command) {
-                 return deserializeField(command, &CreateAsset::asset_name,
-                                         document, "asset_name",
-                                         &Value::IsString, &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(command, &CreateAsset::domain_id,
-                                         document, "domain_id",
-                                         &Value::IsString, &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(command, &CreateAsset::precision,
-                                         document, "precision", &Value::IsUint,
-                                         &Value::GetUint);
-               } |
-               [](auto command) { return optional_ptr<Command>(command); };
+               des.String(&CreateAsset::asset_name, "asset_name") |
+               des.String(&CreateAsset::domain_id, "domain_id") |
+               des.Uint(&CreateAsset::precision, "precision") |
+               transform;
       }
 
       // CreateDomain
@@ -287,13 +240,10 @@ namespace iroha {
 
       optional_ptr<Command> JsonCommandFactory::deserializeCreateDomain(
           const Value &document) {
+        auto des = makeFieldDeserializer(document);
         return make_optional_ptr<CreateDomain>() |
-               [&document](auto command) {
-                 return deserializeField(command, &CreateDomain::domain_name,
-                                         document, "domain_name",
-                                         &Value::IsString, &Value::GetString);
-               } |
-               [](auto command) { return optional_ptr<Command>(command); };
+               des.String(&CreateDomain::domain_name, "domain_name") |
+               transform;
       }
 
       // RemoveSignatory
@@ -316,18 +266,11 @@ namespace iroha {
 
       optional_ptr<Command> JsonCommandFactory::deserializeRemoveSignatory(
           const Value &document) {
+        auto des = makeFieldDeserializer(document);
         return make_optional_ptr<RemoveSignatory>() |
-               [&document](auto command) {
-                 return deserializeField(command, &RemoveSignatory::account_id,
-                                         document, "account_id",
-                                         &Value::IsString, &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(command, &RemoveSignatory::pubkey,
-                                         document, "pubkey", &Value::IsString,
-                                         &Value::GetString);
-               } |
-               [](auto command) { return optional_ptr<Command>(command); };
+               des.String(&RemoveSignatory::account_id, "account_id") |
+               des.String(&RemoveSignatory::pubkey, "pubkey") |
+               transform;
       }
 
       // SetAccountPermissions
@@ -389,18 +332,12 @@ namespace iroha {
       optional_ptr<Command>
       JsonCommandFactory::deserializeSetAccountPermissions(
           const Value &document) {
+        auto des = makeFieldDeserializer(document);
         return make_optional_ptr<SetAccountPermissions>() |
-               [&document](auto command) {
-                 return deserializeField(
-                     command, &SetAccountPermissions::account_id, document,
-                     "account_id", &Value::IsString, &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(
-                     command, &SetAccountPermissions::new_permissions, document,
-                     "new_permissions", &Value::IsObject, &Value::GetObject);
-               } |
-               [](auto command) { return optional_ptr<Command>(command); };
+               des.String(&SetAccountPermissions::account_id, "account_id") |
+               des.Object(&SetAccountPermissions::new_permissions,
+                          "new_permissions") |
+               transform;
       }
 
       // SetAccountQuorum
@@ -421,18 +358,11 @@ namespace iroha {
 
       optional_ptr<Command> JsonCommandFactory::deserializeSetQuorum(
           const Value &document) {
+        auto des = makeFieldDeserializer(document);
         return make_optional_ptr<SetQuorum>() |
-               [&document](auto command) {
-                 return deserializeField(command, &SetQuorum::account_id,
-                                         document, "account_id",
-                                         &Value::IsString, &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(command, &SetQuorum::new_quorum,
-                                         document, "new_quorum", &Value::IsUint,
-                                         &Value::GetUint);
-               } |
-               [](auto command) { return optional_ptr<Command>(command); };
+               des.String(&SetQuorum::account_id, "account_id") |
+               des.Uint(&SetQuorum::new_quorum, "new_quorum") |
+               transform;
       }
 
       // TransferAsset
@@ -467,33 +397,14 @@ namespace iroha {
 
       optional_ptr<Command> JsonCommandFactory::deserializeTransferAsset(
           const Value &document) {
+        auto des = makeFieldDeserializer(document);
         return make_optional_ptr<TransferAsset>() |
-               [&document](auto command) {
-                 return deserializeField(
-                     command, &TransferAsset::src_account_id, document,
-                     "src_account_id", &Value::IsString, &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(
-                     command, &TransferAsset::dest_account_id, document,
-                     "dest_account_id", &Value::IsString, &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(command, &TransferAsset::asset_id,
-                                         document, "asset_id", &Value::IsString,
-                                         &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(command, &TransferAsset::description,
-                                         document, "description", &Value::IsString,
-                                         &Value::GetString);
-               } |
-               [&document](auto command) {
-                 return deserializeField(command, &TransferAsset::amount,
-                                         document, "amount", &Value::IsObject,
-                                         &Value::GetObject);
-               } |
-               [](auto command) { return optional_ptr<Command>(command); };
+               des.String(&TransferAsset::src_account_id, "src_account_id") |
+               des.String(&TransferAsset::dest_account_id, "dest_account_id") |
+               des.String(&TransferAsset::asset_id, "asset_id") |
+               des.String(&TransferAsset::description, "description") |
+               des.Object(&TransferAsset::amount, "amount") |
+               transform;
       }
 
       // Abstract
@@ -504,8 +415,8 @@ namespace iroha {
 
       optional_ptr<model::Command>
       JsonCommandFactory::deserializeAbstractCommand(const Value &document) {
-        return deserializeField(document, "command_type", &Value::IsString,
-                                &Value::GetString) |
+        auto des = makeFieldDeserializer(document);
+        return des.String("command_type") |
                    [this, &document](
                        auto command_type) -> optional_ptr<model::Command> {
           auto it = deserializers_.find(command_type);

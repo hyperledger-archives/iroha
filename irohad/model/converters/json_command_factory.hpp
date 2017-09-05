@@ -33,82 +33,35 @@ namespace iroha {
       template <typename T>
       struct Transform<T, Amount> {
         auto operator()(T x) {
-          return nonstd::make_optional<Amount>() | [&x](auto amount) {
-            return deserializeField(amount, &Amount::int_part, x, "int_part",
-                                    &rapidjson::Value::IsUint64,
-                                    &rapidjson::Value::GetUint64);
-          } | [&x](auto amount) {
-            return deserializeField(amount, &Amount::frac_part, x, "frac_part",
-                                    &rapidjson::Value::IsUint64,
-                                    &rapidjson::Value::GetUint64);
-          };
+          auto des = makeFieldDeserializer(x);
+          return nonstd::make_optional<Amount>() |
+                 des.Uint64(&Amount::int_part, "int_part") |
+                 des.Uint64(&Amount::frac_part, "frac_part");
         }
       };
 
       template <typename T>
       struct Transform<T, Account::Permissions> {
         auto operator()(T x) {
+          auto des = makeFieldDeserializer(x);
           return nonstd::make_optional<Account::Permissions>() |
-                 [&x](auto permissions) {
-                   return deserializeField(
-                       permissions, &Account::Permissions::add_signatory, x,
-                       "add_signatory", &rapidjson::Value::IsBool,
-                       &rapidjson::Value::GetBool);
-                 } |
-                 [&x](auto permissions) {
-                   return deserializeField(
-                       permissions, &Account::Permissions::can_transfer, x,
-                       "can_transfer", &rapidjson::Value::IsBool,
-                       &rapidjson::Value::GetBool);
-                 } |
-                 [&x](auto permissions) {
-                   return deserializeField(
-                       permissions, &Account::Permissions::create_accounts, x,
-                       "create_accounts", &rapidjson::Value::IsBool,
-                       &rapidjson::Value::GetBool);
-                 } |
-                 [&x](auto permissions) {
-                   return deserializeField(
-                       permissions, &Account::Permissions::create_assets, x,
-                       "create_assets", &rapidjson::Value::IsBool,
-                       &rapidjson::Value::GetBool);
-                 } |
-                 [&x](auto permissions) {
-                   return deserializeField(
-                       permissions, &Account::Permissions::create_domains, x,
-                       "create_domains", &rapidjson::Value::IsBool,
-                       &rapidjson::Value::GetBool);
-                 } |
-                 [&x](auto permissions) {
-                   return deserializeField(
-                       permissions, &Account::Permissions::issue_assets, x,
-                       "issue_assets", &rapidjson::Value::IsBool,
-                       &rapidjson::Value::GetBool);
-                 } |
-                 [&x](auto permissions) {
-                   return deserializeField(
-                       permissions, &Account::Permissions::read_all_accounts, x,
-                       "read_all_accounts", &rapidjson::Value::IsBool,
-                       &rapidjson::Value::GetBool);
-                 } |
-                 [&x](auto permissions) {
-                   return deserializeField(
-                       permissions, &Account::Permissions::remove_signatory, x,
-                       "remove_signatory", &rapidjson::Value::IsBool,
-                       &rapidjson::Value::GetBool);
-                 } |
-                 [&x](auto permissions) {
-                   return deserializeField(
-                       permissions, &Account::Permissions::set_permissions, x,
-                       "set_permissions", &rapidjson::Value::IsBool,
-                       &rapidjson::Value::GetBool);
-                 } |
-                 [&x](auto permissions) {
-                   return deserializeField(
-                       permissions, &Account::Permissions::set_quorum, x,
-                       "set_quorum", &rapidjson::Value::IsBool,
-                       &rapidjson::Value::GetBool);
-                 };
+                 des.Bool(&Account::Permissions::add_signatory,
+                          "add_signatory") |
+                 des.Bool(&Account::Permissions::can_transfer, "can_transfer") |
+                 des.Bool(&Account::Permissions::create_accounts,
+                          "create_accounts") |
+                 des.Bool(&Account::Permissions::create_assets,
+                          "create_assets") |
+                 des.Bool(&Account::Permissions::create_domains,
+                          "create_domains") |
+                 des.Bool(&Account::Permissions::issue_assets, "issue_assets") |
+                 des.Bool(&Account::Permissions::read_all_accounts,
+                          "read_all_accounts") |
+                 des.Bool(&Account::Permissions::remove_signatory,
+                          "remove_signatory") |
+                 des.Bool(&Account::Permissions::set_permissions,
+                          "set_permissions") |
+                 des.Bool(&Account::Permissions::set_quorum, "set_quorum");
         }
       };
 
@@ -182,6 +135,8 @@ namespace iroha {
             const rapidjson::Value &document);
 
        private:
+        Convert<std::shared_ptr<Command>> transform;
+
         using Serializer = rapidjson::Document (JsonCommandFactory::*)(
             std::shared_ptr<Command>);
         using Deserializer = optional_ptr<Command> (

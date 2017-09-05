@@ -19,7 +19,6 @@
 
 #include "model/converters/json_query_factory.hpp"
 #include "common/types.hpp"
-#include "model/converters/json_common.hpp"
 
 using namespace rapidjson;
 
@@ -59,92 +58,65 @@ namespace iroha {
 
       optional_ptr<Query> JsonQueryFactory::deserialize(
           const rapidjson::Document &document) {
-        return deserializeField(document, "query_type", &Value::IsString,
-                                &Value::GetString) |
-                   [this, &document](auto command_type) -> optional_ptr<Query> {
-          auto it = deserializers_.find(command_type);
-          if (it != deserializers_.end()) {
-            return (this->*deserializers_.at(command_type))(document);
-          }
-          return nonstd::nullopt;
-        } | [&document](auto query) {
-          return deserializeField(query, &Query::created_ts,
-                                  document, "created_ts", &Value::IsUint64,
-                                  &Value::GetUint64);
-        } | [&document](auto query) {
-          return deserializeField(query, &Query::creator_account_id,
-                                  document, "creator_account_id",
-                                  &Value::IsString, &Value::GetString);
-        } | [&document](auto query) {
-          return deserializeField(query, &Query::query_counter,
-                                  document, "query_counter", &Value::IsUint64,
-                                  &Value::GetUint64);
-        } | [&document](auto query) {
-          return deserializeField(query, &Query::signature,
-                                  document, "signature", &Value::IsObject,
-                                  &Value::GetObject);
-        } | [this, &document](auto query) {
-          query->query_hash = hash_provider_.get_hash(query);
-          return nonstd::make_optional(query);
-        };
+        auto des = makeFieldDeserializer(document);
+        return des.String("query_type") | [this, &document](auto command_type)
+                   -> optional_ptr<Query> {
+                     auto it = deserializers_.find(command_type);
+                     if (it != deserializers_.end()) {
+                       return (this->*deserializers_.at(command_type))(
+                           document);
+                     }
+                     return nonstd::nullopt;
+                   } | des.Uint64(&Query::created_ts, "created_ts") |
+                          des.String(&Query::creator_account_id,
+                                     "creator_account_id") |
+                          des.Uint64(&Query::query_counter, "query_counter") |
+                          des.Object(&Query::signature, "signature") |
+                          [this, &document](auto query) {
+                            query->query_hash = hash_provider_.get_hash(query);
+                            return nonstd::make_optional(query);
+                          };
       }
 
-      optional_ptr<Query> JsonQueryFactory::deserializeGetAccount(const
-          Value &obj_query) {
-        return make_optional_ptr<GetAccount>() | [&obj_query](auto block) {
-          return deserializeField(block, &GetAccount::account_id, obj_query,
-                                  "account_id", &Value::IsString,
-                                  &Value::GetString);
-        } | [](auto query) { return optional_ptr<Query>(query); };
+      optional_ptr<Query> JsonQueryFactory::deserializeGetAccount(
+          const Value &obj_query) {
+        auto des = makeFieldDeserializer(obj_query);
+        return make_optional_ptr<GetAccount>() |
+               des.String(&GetAccount::account_id, "account_id") | transform;
       }
 
-      optional_ptr<Query> JsonQueryFactory::deserializeGetSignatories(const
-          Value &obj_query) {
-        return make_optional_ptr<GetSignatories>() | [&obj_query](auto block) {
-          return deserializeField(block, &GetSignatories::account_id, obj_query,
-                                  "account_id", &Value::IsString,
-                                  &Value::GetString);
-        } | [](auto query) { return optional_ptr<Query>(query); };
+      optional_ptr<Query> JsonQueryFactory::deserializeGetSignatories(
+          const Value &obj_query) {
+        auto des = makeFieldDeserializer(obj_query);
+        return make_optional_ptr<GetSignatories>() |
+               des.String(&GetSignatories::account_id, "account_id") |
+               transform;
       }
 
-      optional_ptr<Query> JsonQueryFactory::deserializeGetAccountTransactions(const
-          Value &obj_query) {
-        return make_optional_ptr<GetAccountTransactions>() | [&obj_query](
-                                                                 auto block) {
-          return deserializeField(block, &GetAccountTransactions::account_id,
-                                  obj_query, "account_id", &Value::IsString,
-                                  &Value::GetString);
-        } | [](auto query) { return optional_ptr<Query>(query); };
+      optional_ptr<Query> JsonQueryFactory::deserializeGetAccountTransactions(
+          const Value &obj_query) {
+        auto des = makeFieldDeserializer(obj_query);
+        return make_optional_ptr<GetAccountTransactions>() |
+               des.String(&GetAccountTransactions::account_id, "account_id") |
+               transform;
       }
 
       optional_ptr<Query>
-      JsonQueryFactory::deserializeGetAccountAssetTransactions(const
-          Value &obj_query) {
-        return make_optional_ptr<GetAccountAssetTransactions>() | [&obj_query](
-            auto block) {
-          return deserializeField(block,
-                                  &GetAccountAssetTransactions::account_id,
-                                  obj_query, "account_id", &Value::IsString,
-                                  &Value::GetString);
-        } | [&obj_query](auto block) {
-          return deserializeField(block, &GetAccountAssetTransactions::asset_id,
-                                  obj_query, "asset_id", &Value::IsString,
-                                  &Value::GetString);
-        } | [](auto query) { return optional_ptr<Query>(query); };
+      JsonQueryFactory::deserializeGetAccountAssetTransactions(
+          const Value &obj_query) {
+        auto des = makeFieldDeserializer(obj_query);
+        return make_optional_ptr<GetAccountAssetTransactions>() |
+            des.String(&GetAccountAssetTransactions::account_id, "account_id") |
+            des.String(&GetAccountAssetTransactions::asset_id, "asset_id") |
+            transform;
       }
 
-      optional_ptr<Query> JsonQueryFactory::deserializeGetAccountAssets(const
-          Value &obj_query) {
-        return make_optional_ptr<GetAccountAssets>() | [&obj_query](
-                                                           auto block) {
-          return deserializeField(block, &GetAccountAssets::account_id,
-                                  obj_query, "account_id", &Value::IsString,
-                                  &Value::GetString);
-        } | [&obj_query](auto block) {
-          return deserializeField(block, &GetAccountAssets::asset_id, obj_query,
-                                  "asset_id", &Value::IsString,
-                                  &Value::GetString);
-        } | [](auto query) { return optional_ptr<Query>(query); };
+      optional_ptr<Query> JsonQueryFactory::deserializeGetAccountAssets(
+          const Value &obj_query) {
+        auto des = makeFieldDeserializer(obj_query);
+        return make_optional_ptr<GetAccountAssets>() |
+               des.String(&GetAccountAssets::account_id, "account_id") |
+               des.String(&GetAccountAssets::asset_id, "asset_id") | transform;
       }
 
       // --- Serialization:

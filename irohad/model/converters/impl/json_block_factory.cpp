@@ -66,46 +66,30 @@ namespace iroha {
 
       nonstd::optional<Block> JsonBlockFactory::deserialize(
           const Document &document) {
-        return nonstd::make_optional<model::Block>() | [&document](auto block) {
-          return deserializeField(block, &Block::created_ts, document,
-                                  "created_ts", &Value::IsUint64,
-                                  &Value::GetUint64);
-        } | [&document](auto block) {
-          return deserializeField(block, &Block::height, document, "height",
-                                  &Value::IsUint64, &Value::GetUint64);
-        } | [&document](auto block) {
-          return deserializeField(block, &Block::txs_number, document,
-                                  "txs_number", &Value::IsUint,
-                                  &Value::GetUint);
-        } | [&document](auto block) {
-          return deserializeField(block, &Block::hash, document, "hash",
-                                  &Value::IsString, &Value::GetString);
-        } | [&document](auto block) {
-          return deserializeField(block, &Block::prev_hash, document,
-                                  "prev_hash", &Value::IsString,
-                                  &Value::GetString);
-        } | [&document](auto block) {
-          return deserializeField(block, &Block::merkle_root, document,
-                                  "merkle_root", &Value::IsString,
-                                  &Value::GetString);
-        } | [&document](auto block) {
-          return deserializeField(block, &Block::sigs, document, "signatures",
-                                  &Value::IsArray, &Value::GetArray);
-        } | [this, &document](auto transaction) {
-          return deserializeField(
-              transaction, &Block::transactions, document, "transactions",
-              &Value::IsArray, &Value::GetArray, [this](auto array) {
-                return std::accumulate(
-                    array.begin(), array.end(),
-                    nonstd::make_optional<Block::TransactionsType>(),
-                    [this](auto init, auto &x) {
-                      return factory_.deserialize(x) | [&init](auto command) {
-                        init.value().push_back(command);
-                        return init;
-                      };
-                    });
-              });
-        };
+        auto des = makeFieldDeserializer(document);
+        return nonstd::make_optional<model::Block>() |
+               des.Uint64(&Block::created_ts, "created_ts") |
+               des.Uint64(&Block::height, "height") |
+               des.Uint(&Block::txs_number, "txs_number") |
+               des.String(&Block::hash, "hash") |
+               des.String(&Block::prev_hash, "prev_hash") |
+               des.String(&Block::merkle_root, "merkle_root") |
+               des.Array(&Block::sigs, "signatures") |
+               des.Array(&Block::transactions, "transactions", [this](
+                                                                   auto array) {
+                 return std::accumulate(
+                     array.begin(), array.end(),
+                     nonstd::make_optional<Block::TransactionsType>(),
+                     [this](auto init, auto &x) {
+                       return init | [this, &x](auto transactions) {
+                         return factory_.deserialize(x) |
+                                [&transactions](auto transaction) {
+                                  transactions.push_back(transaction);
+                                  return nonstd::make_optional(transactions);
+                                };
+                       };
+                     });
+               });
       }
 
     }  // namespace converters
