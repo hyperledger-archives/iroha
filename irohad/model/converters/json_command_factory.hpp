@@ -24,10 +24,93 @@
 #include <typeindex>
 #include <unordered_map>
 #include "model/command.hpp"
+#include "model/converters/json_common.hpp"
 
 namespace iroha {
   namespace model {
     namespace converters {
+
+      template <typename T>
+      struct Transform<T, Amount> {
+        auto operator()(T x) {
+          return nonstd::make_optional<Amount>() | [&x](auto amount) {
+            return deserializeField(amount, &Amount::int_part, x, "int_part",
+                                    &rapidjson::Value::IsUint64,
+                                    &rapidjson::Value::GetUint64);
+          } | [&x](auto amount) {
+            return deserializeField(amount, &Amount::frac_part, x, "frac_part",
+                                    &rapidjson::Value::IsUint64,
+                                    &rapidjson::Value::GetUint64);
+          };
+        }
+      };
+
+      template <typename T>
+      struct Transform<T, Account::Permissions> {
+        auto operator()(T x) {
+          return nonstd::make_optional<Account::Permissions>() |
+                 [&x](auto permissions) {
+                   return deserializeField(
+                       permissions, &Account::Permissions::add_signatory, x,
+                       "add_signatory", &rapidjson::Value::IsBool,
+                       &rapidjson::Value::GetBool);
+                 } |
+                 [&x](auto permissions) {
+                   return deserializeField(
+                       permissions, &Account::Permissions::can_transfer, x,
+                       "can_transfer", &rapidjson::Value::IsBool,
+                       &rapidjson::Value::GetBool);
+                 } |
+                 [&x](auto permissions) {
+                   return deserializeField(
+                       permissions, &Account::Permissions::create_accounts, x,
+                       "create_accounts", &rapidjson::Value::IsBool,
+                       &rapidjson::Value::GetBool);
+                 } |
+                 [&x](auto permissions) {
+                   return deserializeField(
+                       permissions, &Account::Permissions::create_assets, x,
+                       "create_assets", &rapidjson::Value::IsBool,
+                       &rapidjson::Value::GetBool);
+                 } |
+                 [&x](auto permissions) {
+                   return deserializeField(
+                       permissions, &Account::Permissions::create_domains, x,
+                       "create_domains", &rapidjson::Value::IsBool,
+                       &rapidjson::Value::GetBool);
+                 } |
+                 [&x](auto permissions) {
+                   return deserializeField(
+                       permissions, &Account::Permissions::issue_assets, x,
+                       "issue_assets", &rapidjson::Value::IsBool,
+                       &rapidjson::Value::GetBool);
+                 } |
+                 [&x](auto permissions) {
+                   return deserializeField(
+                       permissions, &Account::Permissions::read_all_accounts, x,
+                       "read_all_accounts", &rapidjson::Value::IsBool,
+                       &rapidjson::Value::GetBool);
+                 } |
+                 [&x](auto permissions) {
+                   return deserializeField(
+                       permissions, &Account::Permissions::remove_signatory, x,
+                       "remove_signatory", &rapidjson::Value::IsBool,
+                       &rapidjson::Value::GetBool);
+                 } |
+                 [&x](auto permissions) {
+                   return deserializeField(
+                       permissions, &Account::Permissions::set_permissions, x,
+                       "set_permissions", &rapidjson::Value::IsBool,
+                       &rapidjson::Value::GetBool);
+                 } |
+                 [&x](auto permissions) {
+                   return deserializeField(
+                       permissions, &Account::Permissions::set_quorum, x,
+                       "set_quorum", &rapidjson::Value::IsBool,
+                       &rapidjson::Value::GetBool);
+                 };
+        }
+      };
 
       class JsonCommandFactory {
        public:
@@ -36,73 +119,73 @@ namespace iroha {
         // AddAssetQuantity
         rapidjson::Document serializeAddAssetQuantity(
             std::shared_ptr<Command> command);
-        std::shared_ptr<Command> deserializeAddAssetQuantity(
-            const rapidjson::Document &command);
+        optional_ptr<Command> deserializeAddAssetQuantity(
+            const rapidjson::Value &document);
 
         // AddPeer
         rapidjson::Document serializeAddPeer(std::shared_ptr<Command> command);
-        std::shared_ptr<Command> deserializeAddPeer(
-            const rapidjson::Document &command);
+        optional_ptr<Command> deserializeAddPeer(
+            const rapidjson::Value &document);
 
         // AddSignatory
         rapidjson::Document serializeAddSignatory(
             std::shared_ptr<Command> command);
-        std::shared_ptr<Command> deserializeAddSignatory(
-            const rapidjson::Document &command);
+        optional_ptr<Command> deserializeAddSignatory(
+            const rapidjson::Value &document);
 
         // CreateAccount
         rapidjson::Document serializeCreateAccount(
             std::shared_ptr<Command> command);
-        std::shared_ptr<Command> deserializeCreateAccount(
-            const rapidjson::Document &command);
+        optional_ptr<Command> deserializeCreateAccount(
+            const rapidjson::Value &document);
 
         // CreateAsset
         rapidjson::Document serializeCreateAsset(
             std::shared_ptr<Command> command);
-        std::shared_ptr<Command> deserializeCreateAsset(
-            const rapidjson::Document &command);
+        optional_ptr<Command> deserializeCreateAsset(
+            const rapidjson::Value &document);
 
         // CreateDomain
         rapidjson::Document serializeCreateDomain(
             std::shared_ptr<Command> command);
-        std::shared_ptr<Command> deserializeCreateDomain(
-            const rapidjson::Document &command);
+        optional_ptr<Command> deserializeCreateDomain(
+            const rapidjson::Value &document);
 
         // RemoveSignatory
         rapidjson::Document serializeRemoveSignatory(
             std::shared_ptr<Command> command);
-        std::shared_ptr<Command> deserializeRemoveSignatory(
-            const rapidjson::Document &command);
+        optional_ptr<Command> deserializeRemoveSignatory(
+            const rapidjson::Value &document);
 
         // SetAccountPermissions
         rapidjson::Document serializeSetAccountPermissions(
             std::shared_ptr<Command> command);
-        std::shared_ptr<Command> deserializeSetAccountPermissions(
-            const rapidjson::Document &command);
+        optional_ptr<Command> deserializeSetAccountPermissions(
+            const rapidjson::Value &document);
 
         // SetQuorum
         rapidjson::Document serializeSetQuorum(
             std::shared_ptr<Command> command);
-        std::shared_ptr<Command> deserializeSetQuorum(
-            const rapidjson::Document &command);
+        optional_ptr<Command> deserializeSetQuorum(
+            const rapidjson::Value &document);
 
         // TransferAsset
         rapidjson::Document serializeTransferAsset(
             std::shared_ptr<Command> command);
-        std::shared_ptr<Command> deserializeTransferAsset(
-            const rapidjson::Document &command);
+        optional_ptr<Command> deserializeTransferAsset(
+            const rapidjson::Value &document);
 
         // Abstract
         rapidjson::Document serializeAbstractCommand(
             std::shared_ptr<Command> command);
         optional_ptr <model::Command> deserializeAbstractCommand(
-            const rapidjson::Document &command);
+            const rapidjson::Value &document);
 
        private:
         using Serializer = rapidjson::Document (JsonCommandFactory::*)(
             std::shared_ptr<Command>);
-        using Deserializer = std::shared_ptr<model::Command> (
-            JsonCommandFactory::*)(const rapidjson::Document &);
+        using Deserializer = optional_ptr<Command> (
+            JsonCommandFactory::*)(const rapidjson::Value &);
 
         std::unordered_map<std::type_index, Serializer> serializers_;
         std::unordered_map<std::string, Deserializer> deserializers_;

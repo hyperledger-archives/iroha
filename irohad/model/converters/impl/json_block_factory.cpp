@@ -38,10 +38,7 @@ namespace iroha {
         Value signatures;
         signatures.SetArray();
         for (const auto &signature : block.sigs) {
-          signatures.PushBack(
-              Document(&allocator)
-                  .CopyFrom(serializeSignature(signature), allocator),
-              allocator);
+          signatures.PushBack(serializeSignature(signature, allocator), allocator);
         }
         document.AddMember("signatures", signatures, allocator);
 
@@ -69,50 +66,46 @@ namespace iroha {
 
       nonstd::optional<Block> JsonBlockFactory::deserialize(
           const Document &document) {
-        model::Block block{};
-
-        if (not verifyRequiredMembers(
-                document, {"hash", "signatures", "created_ts", "height",
-                           "prev_hash", "txs_number"})) {
-          return nonstd::nullopt;
-        }
-
-        auto &signatures = document["signatures"];
-        for (auto it = signatures.Begin(); it != signatures.End(); ++it) {
-          Document signature_document;
-          auto &allocator = signature_document.GetAllocator();
-          signature_document.CopyFrom(*it, allocator);
-          auto signature = deserializeSignature(signature_document);
-          if (not signature.has_value()) {
-            log_->error("Signature parsing failure");
-            return nonstd::nullopt;
-          }
-          block.sigs.emplace_back(signature.value());
-        }
-
-        block.created_ts = document["created_ts"].GetUint64();
-        block.height = document["height"].GetUint64();
-        block.txs_number = static_cast<decltype(block.txs_number)>(
-            document["txs_number"].GetUint());
-        hexstringToArray(document["hash"].GetString(), block.hash);
-        hexstringToArray(document["prev_hash"].GetString(), block.prev_hash);
-        hexstringToArray(document["merkle_root"].GetString(),
-                         block.merkle_root);
-
-        auto& transactions = document["transactions"];
-        for (auto it = transactions.Begin(); it != transactions.End(); ++it) {
-          Document transaction_document;
-          auto &allocator = transaction_document.GetAllocator();
-          transaction_document.CopyFrom(*it, allocator);
-          auto transaction = factory_.deserialize(transaction_document);
-          if (not transaction.has_value()) {
-            log_->error("Transaction parsing failure");
-            return nonstd::nullopt;
-          }
-          block.transactions.emplace_back(transaction.value());
-        }
-
-        return block;
+        return nonstd::make_optional<model::Block>() | [&document](auto block) {
+          return deserializeField(block, &Block::created_ts, document,
+                                  "created_ts", &Value::IsUint64,
+                                  &Value::GetUint64);
+        } | [&document](auto block) {
+          return deserializeField(block, &Block::height, document, "height",
+                                  &Value::IsUint64, &Value::GetUint64);
+        } | [&document](auto block) {
+          return deserializeField(block, &Block::txs_number, document,
+                                  "txs_number", &Value::IsUint,
+                                  &Value::GetUint);
+        } | [&document](auto block) {
+          return deserializeField(block, &Block::hash, document, "hash",
+                                  &Value::IsString, &Value::GetString);
+        } | [&document](auto block) {
+          return deserializeField(block, &Block::prev_hash, document,
+                                  "prev_hash", &Value::IsString,
+                                  &Value::GetString);
+        } | [&document](auto block) {
+          return deserializeField(block, &Block::merkle_root, document,
+                                  "merkle_root", &Value::IsString,
+                                  &Value::GetString);
+        } | [&document](auto block) {
+          return deserializeField(block, &Block::sigs, document, "signatures",
+                                  &Value::IsArray, &Value::GetArray);
+        } | [this, &document](auto transaction) {
+          return deserializeField(
+              transaction, &Block::transactions, document, "transactions",
+              &Value::IsArray, &Value::GetArray, [this](auto array) {
+                return std::accumulate(
+                    array.begin(), array.end(),
+                    nonstd::make_optional<Block::TransactionsType>(),
+                    [this](auto init, auto &x) {
+                      return factory_.deserialize(x) | [&init](auto command) {
+                        init.value().push_back(command);
+                        return init;
+                      };
+                    });
+              });
+        };
       }
 
     }  // namespace converters

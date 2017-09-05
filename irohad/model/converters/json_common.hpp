@@ -23,19 +23,172 @@
 #include <nonstd/optional.hpp>
 #include <string>
 #include "model/signature.hpp"
+#include "model/block.hpp"
+#include <algorithm>
+#include "model/common.hpp"
 
 namespace iroha {
+  // Deserialize hex string to array
+  template <size_t size>
+  nonstd::optional<blob_t<size>> hexstringToArray(const std::string& string) {
+    if (size * 2 != string.size()) {
+      return nonstd::nullopt;
+    }
+    blob_t<size> array;
+    auto bytes = hex2bytes(string);
+    std::copy(bytes.begin(), bytes.end(), array.begin());
+    return array;
+  }
+
   namespace model {
     namespace converters {
+      template<typename T, typename Transform>
+      auto operator|(T t, Transform f) -> decltype(f(*t)) {
+        if (t) {
+          return f(*t);
+        }
+        return {};
+      }
 
-      bool verifyRequiredMembers(
-          const rapidjson::Document& document,
-          const std::initializer_list<std::string>& members);
+      template <typename T, typename V>
+      struct Transform {
+        auto operator()(T x) {
+          return nonstd::optional<V>(x);
+        }
+      };
 
-      rapidjson::Document serializeSignature(const Signature& signature);
+      template <typename T>
+      struct Transform<T, Block::HashType> {
+        auto operator()(T x) {
+          return hexstringToArray<Block::HashType::size()>(x);
+        }
+      };
 
-      nonstd::optional<Signature> deserializeSignature(
-          const rapidjson::Document& document);
+      template <typename T>
+      struct Transform<T, Signature::SignatureType> {
+        auto operator()(T x) {
+          return hexstringToArray<Signature::SignatureType::size()>(x);
+        }
+      };
+
+      template <typename T, typename D>
+      nonstd::optional<T> deserializeField(const D& document,
+                                           const std::string& field,
+                                           bool (rapidjson::Value::*verify)()
+                                               const,
+                                           T (rapidjson::Value::*get)() const) {
+        if (document.HasMember(field.c_str()) and
+            (document[field.c_str()].*verify)()) {
+          return (document[field.c_str()].*get)();
+        }
+        return nonstd::nullopt;
+      }
+
+      template <typename T, typename V, typename B, typename D,
+                typename Transform = Transform<T, V>>
+      nonstd::optional<B> deserializeField(B block, V B::*member,
+                                           const D& document,
+                                           const std::string& field,
+                                           bool (rapidjson::Value::*verify)()
+                                               const,
+                                           T (rapidjson::Value::*get)() const,
+                                           Transform transform = Transform()) {
+        return deserializeField(document, field, verify, get) | transform |
+                   [&block, &member](auto transformed) -> nonstd::optional<B> {
+          block.*member = transformed;
+          return block;
+        };
+      }
+
+      template <typename T, typename V, typename B, typename D,
+          typename Transform = Transform<T, V>>
+      nonstd::optional<B> deserializeOptionalField(B block, V B::*member,
+                                           const D& document,
+                                           const std::string& field,
+                                           bool (rapidjson::Value::*verify)()
+                                           const,
+                                           T (rapidjson::Value::*get)() const,
+                                           Transform transform = Transform()) {
+        auto optfield = deserializeField(document, field, verify, get);
+        if (optfield) {
+          optfield | transform | [&block, &member](auto transformed) {
+            block.*member = transformed;
+          };
+        }
+        return block;
+      }
+
+      template <typename T, typename V, typename B, typename D,
+          typename Transform = Transform<T, V>>
+      optional_ptr<B> deserializeField(std::shared_ptr<B> block, V B::*member,
+                                           const D& document,
+                                           const std::string& field,
+                                           bool (rapidjson::Value::*verify)()
+                                           const,
+                                           T (rapidjson::Value::*get)() const,
+                                           Transform transform = Transform()) {
+        return deserializeField(document, field, verify, get) | transform |
+            [&block, &member](auto transformed) -> optional_ptr<B> {
+              (*block).*member = transformed;
+              return block;
+            };
+      }
+
+      template <typename T, typename V, typename B, typename D,
+          typename Transform = Transform<T, V>>
+      optional_ptr<B> deserializeOptionalField(std::shared_ptr<B> block, V B::*member,
+                                                   const D& document,
+                                                   const std::string& field,
+                                                   bool (rapidjson::Value::*verify)()
+                                                   const,
+                                                   T (rapidjson::Value::*get)() const,
+                                                   Transform transform = Transform()) {
+        auto optfield = deserializeField(document, field, verify, get);
+        if (optfield) {
+          optfield | transform | [&block, &member](auto transformed) {
+            (*block).*member = transformed;
+          };
+        }
+        return block;
+      }
+
+      template <typename D>
+      auto deserializeSignature(const D& value) {
+        return nonstd::make_optional<Signature>() |
+            [&value](auto signature) {
+              return deserializeField(
+                  signature, &Signature::pubkey, value, "pubkey",
+                  &rapidjson::Value::IsString, &rapidjson::Value::GetString);
+            } | [&value](auto signature) {
+          return deserializeField(
+              signature, &Signature::signature, value, "signature",
+              &rapidjson::Value::IsString, &rapidjson::Value::GetString);
+        };
+      }
+
+      template <typename T>
+      struct Transform<T, Signature> {
+        auto operator()(T x) {
+          return deserializeSignature(x);
+        }
+      };
+
+      template <typename T>
+      struct Transform<T, Block::SignaturesType> {
+        auto operator()(T x) {
+          return std::accumulate(x.begin(), x.end(),
+                                 nonstd::make_optional<Block::SignaturesType>(),
+                                 [](auto init, auto& x) {
+                                   return deserializeSignature(x) |
+                                          [&init](auto signature) {
+                                            init.value().push_back(signature);
+                                            return init;
+                                          };
+                                 });
+        }
+      };
+
+      rapidjson::Value serializeSignature(const Signature& signature, rapidjson::Document::AllocatorType &allocator);
 
       nonstd::optional<rapidjson::Document> stringToJson(
           const std::string& string);

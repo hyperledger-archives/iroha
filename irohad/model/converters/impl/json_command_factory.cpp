@@ -18,6 +18,7 @@
 #define RAPIDJSON_HAS_STDSTRING 1
 
 #include "model/converters/json_command_factory.hpp"
+
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
@@ -103,22 +104,25 @@ namespace iroha {
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeAddAssetQuantity(
-          const Document &command) {
-        auto add_asset_quantity = std::make_shared<AddAssetQuantity>();
-
-        // account_id
-        add_asset_quantity->account_id = command["account_id"].GetString();
-
-        // asset_id
-        add_asset_quantity->asset_id = command["asset_id"].GetString();
-
-        // amount
-        auto amount = command["amount"].GetObject();
-        add_asset_quantity->amount.int_part = amount["int_part"].GetUint64();
-        add_asset_quantity->amount.frac_part = amount["frac_part"].GetUint64();
-
-        return add_asset_quantity;
+      optional_ptr<Command> JsonCommandFactory::deserializeAddAssetQuantity(
+          const Value &document) {
+        return make_optional_ptr<AddAssetQuantity>() |
+               [&document](auto command) {
+                 return deserializeField(command, &AddAssetQuantity::account_id,
+                                         document, "account_id",
+                                         &Value::IsString, &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(command, &AddAssetQuantity::asset_id,
+                                         document, "asset_id", &Value::IsString,
+                                         &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(command, &AddAssetQuantity::amount,
+                                         document, "amount", &Value::IsObject,
+                                         &Value::GetObject);
+               } |
+               [](auto command) { return optional_ptr<Command>(command); };
       }
 
       // AddPeer
@@ -138,16 +142,20 @@ namespace iroha {
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeAddPeer(
-          const Document &command) {
-        auto add_peer = std::make_shared<AddPeer>();
-
-        // peer key
-        hexstringToArray(command["peer_key"].GetString(), add_peer->peer_key);
-
-        // address
-        add_peer->address = command["address"].GetString();
-        return add_peer;
+      optional_ptr<Command> JsonCommandFactory::deserializeAddPeer(
+          const Value &document) {
+        return make_optional_ptr<AddPeer>() |
+               [&document](auto command) {
+                 return deserializeField(command, &AddPeer::peer_key, document,
+                                         "peer_key", &Value::IsString,
+                                         &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(command, &AddPeer::address, document,
+                                         "address", &Value::IsString,
+                                         &Value::GetString);
+               } |
+               [](auto command) { return optional_ptr<Command>(command); };
       }
 
       // AddSignatory
@@ -167,17 +175,20 @@ namespace iroha {
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeAddSignatory(
-          const Document &command) {
-        auto add_signatory = std::make_shared<AddSignatory>();
-
-        // account_id
-        add_signatory->account_id = command["account_id"].GetString();
-
-        // pubkey
-        hexstringToArray(command["pubkey"].GetString(), add_signatory->pubkey);
-
-        return add_signatory;
+      optional_ptr<Command> JsonCommandFactory::deserializeAddSignatory(
+          const Value &document) {
+        return make_optional_ptr<AddSignatory>() |
+               [&document](auto command) {
+                 return deserializeField(command, &AddSignatory::account_id,
+                                         document, "account_id",
+                                         &Value::IsString, &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(command, &AddSignatory::pubkey,
+                                         document, "pubkey", &Value::IsString,
+                                         &Value::GetString);
+               } |
+               [](auto command) { return optional_ptr<Command>(command); };
       }
 
       // CreateAccount
@@ -199,20 +210,25 @@ namespace iroha {
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeCreateAccount(
-          const Document &command) {
-        auto create_account = std::make_shared<CreateAccount>();
-
-        // account_name
-        create_account->account_name = command["account_name"].GetString();
-
-        // domain_id
-        create_account->domain_id = command["domain_id"].GetString();
-
-        // pubkey
-        hexstringToArray(command["pubkey"].GetString(), create_account->pubkey);
-
-        return create_account;
+      optional_ptr<Command> JsonCommandFactory::deserializeCreateAccount(
+          const Value &document) {
+        return make_optional_ptr<CreateAccount>() |
+               [&document](auto command) {
+                 return deserializeField(command, &CreateAccount::account_name,
+                                         document, "account_name",
+                                         &Value::IsString, &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(command, &CreateAccount::domain_id,
+                                         document, "domain_id",
+                                         &Value::IsString, &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(command, &CreateAccount::pubkey,
+                                         document, "pubkey", &Value::IsString,
+                                         &Value::GetString);
+               } |
+               [](auto command) { return optional_ptr<Command>(command); };
       }
 
       // CreateAsset
@@ -232,20 +248,25 @@ namespace iroha {
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeCreateAsset(
-          const Document &command) {
-        auto create_asset = std::make_shared<CreateAsset>();
-
-        // asset_name
-        create_asset->asset_name = command["asset_name"].GetString();
-
-        // domain_id
-        create_asset->domain_id = command["domain_id"].GetString();
-
-        // precision
-        create_asset->precision = command["precision"].GetUint();
-
-        return create_asset;
+      optional_ptr<Command> JsonCommandFactory::deserializeCreateAsset(
+          const Value &document) {
+        return make_optional_ptr<CreateAsset>() |
+               [&document](auto command) {
+                 return deserializeField(command, &CreateAsset::asset_name,
+                                         document, "asset_name",
+                                         &Value::IsString, &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(command, &CreateAsset::domain_id,
+                                         document, "domain_id",
+                                         &Value::IsString, &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(command, &CreateAsset::precision,
+                                         document, "precision", &Value::IsUint,
+                                         &Value::GetUint);
+               } |
+               [](auto command) { return optional_ptr<Command>(command); };
       }
 
       // CreateDomain
@@ -264,14 +285,15 @@ namespace iroha {
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeCreateDomain(
-          const Document &command) {
-        auto create_domain = std::make_shared<CreateDomain>();
-
-        // domain_name
-        create_domain->domain_name = command["domain_name"].GetString();
-
-        return create_domain;
+      optional_ptr<Command> JsonCommandFactory::deserializeCreateDomain(
+          const Value &document) {
+        return make_optional_ptr<CreateDomain>() |
+               [&document](auto command) {
+                 return deserializeField(command, &CreateDomain::domain_name,
+                                         document, "domain_name",
+                                         &Value::IsString, &Value::GetString);
+               } |
+               [](auto command) { return optional_ptr<Command>(command); };
       }
 
       // RemoveSignatory
@@ -292,18 +314,20 @@ namespace iroha {
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeRemoveSignatory(
-          const Document &command) {
-        auto remove_signatory = std::make_shared<RemoveSignatory>();
-
-        // account_id
-        remove_signatory->account_id = command["account_id"].GetString();
-
-        // pubkey
-        hexstringToArray(command["pubkey"].GetString(),
-                         remove_signatory->pubkey);
-
-        return remove_signatory;
+      optional_ptr<Command> JsonCommandFactory::deserializeRemoveSignatory(
+          const Value &document) {
+        return make_optional_ptr<RemoveSignatory>() |
+               [&document](auto command) {
+                 return deserializeField(command, &RemoveSignatory::account_id,
+                                         document, "account_id",
+                                         &Value::IsString, &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(command, &RemoveSignatory::pubkey,
+                                         document, "pubkey", &Value::IsString,
+                                         &Value::GetString);
+               } |
+               [](auto command) { return optional_ptr<Command>(command); };
       }
 
       // SetAccountPermissions
@@ -362,39 +386,21 @@ namespace iroha {
         return document;
       }
 
-      std::shared_ptr<Command>
+      optional_ptr<Command>
       JsonCommandFactory::deserializeSetAccountPermissions(
-          const Document &command) {
-        auto set_account_permissions =
-            std::make_shared<SetAccountPermissions>();
-
-        // account_id
-        set_account_permissions->account_id = command["account_id"].GetString();
-
-        // permissions
-        auto new_permissions = command["new_permissions"].GetObject();
-        set_account_permissions->new_permissions.add_signatory =
-            new_permissions["add_signatory"].GetBool();
-        set_account_permissions->new_permissions.can_transfer =
-            new_permissions["can_transfer"].GetBool();
-        set_account_permissions->new_permissions.create_accounts =
-            new_permissions["create_accounts"].GetBool();
-        set_account_permissions->new_permissions.create_assets =
-            new_permissions["create_assets"].GetBool();
-        set_account_permissions->new_permissions.create_domains =
-            new_permissions["create_domains"].GetBool();
-        set_account_permissions->new_permissions.issue_assets =
-            new_permissions["issue_assets"].GetBool();
-        set_account_permissions->new_permissions.read_all_accounts =
-            new_permissions["read_all_accounts"].GetBool();
-        set_account_permissions->new_permissions.remove_signatory =
-            new_permissions["remove_signatory"].GetBool();
-        set_account_permissions->new_permissions.set_permissions =
-            new_permissions["set_permissions"].GetBool();
-        set_account_permissions->new_permissions.set_quorum =
-            new_permissions["set_quorum"].GetBool();
-
-        return set_account_permissions;
+          const Value &document) {
+        return make_optional_ptr<SetAccountPermissions>() |
+               [&document](auto command) {
+                 return deserializeField(
+                     command, &SetAccountPermissions::account_id, document,
+                     "account_id", &Value::IsString, &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(
+                     command, &SetAccountPermissions::new_permissions, document,
+                     "new_permissions", &Value::IsObject, &Value::GetObject);
+               } |
+               [](auto command) { return optional_ptr<Command>(command); };
       }
 
       // SetAccountQuorum
@@ -413,17 +419,20 @@ namespace iroha {
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeSetQuorum(
-          const Document &command) {
-        auto set_quorum = std::make_shared<SetQuorum>();
-
-        // account_id
-        set_quorum->account_id = command["account_id"].GetString();
-
-        // new_quorum
-        set_quorum->new_quorum = command["new_quorum"].GetUint();
-
-        return set_quorum;
+      optional_ptr<Command> JsonCommandFactory::deserializeSetQuorum(
+          const Value &document) {
+        return make_optional_ptr<SetQuorum>() |
+               [&document](auto command) {
+                 return deserializeField(command, &SetQuorum::account_id,
+                                         document, "account_id",
+                                         &Value::IsString, &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(command, &SetQuorum::new_quorum,
+                                         document, "new_quorum", &Value::IsUint,
+                                         &Value::GetUint);
+               } |
+               [](auto command) { return optional_ptr<Command>(command); };
       }
 
       // TransferAsset
@@ -456,52 +465,56 @@ namespace iroha {
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeTransferAsset(
-          const Document &command) {
-        auto transfer_asset = std::make_shared<TransferAsset>();
-
-        // src_account_id
-        transfer_asset->src_account_id = command["src_account_id"].GetString();
-
-        // dest_account_id
-        transfer_asset->dest_account_id =
-            command["dest_account_id"].GetString();
-
-        // asset_id
-        transfer_asset->asset_id = command["asset_id"].GetString();
-
-        // description
-        transfer_asset->description = command["description"].GetString();
-
-        // amount
-        auto json_amount = command["amount"].GetObject();
-        transfer_asset->amount.int_part = json_amount["int_part"].GetUint64();
-        transfer_asset->amount.frac_part = json_amount["frac_part"].GetUint64();
-
-        return transfer_asset;
+      optional_ptr<Command> JsonCommandFactory::deserializeTransferAsset(
+          const Value &document) {
+        return make_optional_ptr<TransferAsset>() |
+               [&document](auto command) {
+                 return deserializeField(
+                     command, &TransferAsset::src_account_id, document,
+                     "src_account_id", &Value::IsString, &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(
+                     command, &TransferAsset::dest_account_id, document,
+                     "dest_account_id", &Value::IsString, &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(command, &TransferAsset::asset_id,
+                                         document, "asset_id", &Value::IsString,
+                                         &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(command, &TransferAsset::description,
+                                         document, "description", &Value::IsString,
+                                         &Value::GetString);
+               } |
+               [&document](auto command) {
+                 return deserializeField(command, &TransferAsset::amount,
+                                         document, "amount", &Value::IsObject,
+                                         &Value::GetObject);
+               } |
+               [](auto command) { return optional_ptr<Command>(command); };
       }
 
       // Abstract
       Document JsonCommandFactory::serializeAbstractCommand(
           std::shared_ptr<Command> command) {
-        auto it = serializers_.find(typeid(*command));
-        if (it != serializers_.end()) {
-          return (this->*it->second)(command);
-        }
-        return Document();
+        return (this->*serializers_.at(typeid(*command)))(command);
       }
 
       optional_ptr<model::Command>
-      JsonCommandFactory::deserializeAbstractCommand(const Document &command) {
-        auto command_type = command["command_type"].GetString();
-
-        auto it = deserializers_.find(command_type);
-        if (it != deserializers_.end()) {
-          return (this->*it->second)(command);
-        }
-        return nonstd::nullopt;
+      JsonCommandFactory::deserializeAbstractCommand(const Value &document) {
+        return deserializeField(document, "command_type", &Value::IsString,
+                                &Value::GetString) |
+                   [this, &document](
+                       auto command_type) -> optional_ptr<model::Command> {
+          auto it = deserializers_.find(command_type);
+          if (it != deserializers_.end()) {
+            return (this->*deserializers_.at(command_type))(document);
+          }
+          return nonstd::nullopt;
+        };
       }
-
     }  // namespace converters
   }    // namespace model
 }  // namespace iroha

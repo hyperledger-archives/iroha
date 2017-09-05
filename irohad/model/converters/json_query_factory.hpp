@@ -37,8 +37,6 @@
 namespace iroha {
   namespace model {
     namespace converters {
-      using namespace rapidjson;
-
       class JsonQueryFactory {
        public:
         JsonQueryFactory();
@@ -48,7 +46,7 @@ namespace iroha {
          * @param query_json string representation of query
          * @return deserialized query
          */
-        optional_ptr <Query> deserialize(const std::string query_json);
+        optional_ptr<Query> deserialize(const std::string query_json);
 
         /**
          * Convert model Query to json string
@@ -59,29 +57,42 @@ namespace iroha {
             std::shared_ptr<Query> model_query);
 
        private:
-        using Deserializer = std::shared_ptr<Query> (JsonQueryFactory::*)(
-            GenericValue<UTF8<char>>::Object &);
+        optional_ptr<Query> deserialize(const rapidjson::Document &document);
+
+        using Deserializer =
+            optional_ptr<Query> (JsonQueryFactory::*)(const rapidjson::Value &);
 
         std::unordered_map<std::string, Deserializer> deserializers_;
         // Deserialize handlers
-        std::shared_ptr<Query> deserializeGetAccount(GenericValue<UTF8<char>>::Object &obj_query);
-        std::shared_ptr<Query> deserializeGetSignatories(GenericValue<UTF8<char>>::Object &obj_query);
-        std::shared_ptr<Query> deserializeGetAccountTransactions(GenericValue<UTF8<char>>::Object &obj_query);
-        std::shared_ptr<Query> deserializeGetAccountAssetTransactions(GenericValue<UTF8<char>>::Object &obj_query);
-        std::shared_ptr<Query> deserializeGetAccountAssets(GenericValue<UTF8<char>>::Object &obj_query);
+        optional_ptr<Query> deserializeGetAccount(
+            const rapidjson::Value &obj_query);
+        optional_ptr<Query> deserializeGetSignatories(
+            const rapidjson::Value &obj_query);
+        optional_ptr<Query> deserializeGetAccountTransactions(
+            const rapidjson::Value &obj_query);
+        optional_ptr<Query> deserializeGetAccountAssetTransactions(
+            const rapidjson::Value &obj_query);
+        optional_ptr<Query> deserializeGetAccountAssets(
+            const rapidjson::Value &obj_query);
         // Serializers:
-        using Serializer = void (JsonQueryFactory::*)(Document &, std::shared_ptr<Query>);
+        using Serializer = void (JsonQueryFactory::*)(rapidjson::Document &,
+                                                      std::shared_ptr<Query>);
         std::unordered_map<std::type_index, Serializer> serializers_;
         // Serialization handlers
-        void serializeGetAccount(Document &json_doc, std::shared_ptr<Query> query);
-        void serializeGetAccountAssets(Document &json_doc, std::shared_ptr<Query> query);
-        void serializeGetAccountTransactions(Document &json_doc, std::shared_ptr<Query> query);
-        void serializeGetAccountAssetTransactions(Document &json_doc, std::shared_ptr<Query> query);
-        void serializeGetSignatories(Document &json_doc, std::shared_ptr<Query> query);
+        void serializeGetAccount(rapidjson::Document &json_doc,
+                                 std::shared_ptr<Query> query);
+        void serializeGetAccountAssets(rapidjson::Document &json_doc,
+                                       std::shared_ptr<Query> query);
+        void serializeGetAccountTransactions(rapidjson::Document &json_doc,
+                                             std::shared_ptr<Query> query);
+        void serializeGetAccountAssetTransactions(rapidjson::Document &json_doc,
+                                                  std::shared_ptr<Query> query);
+        void serializeGetSignatories(rapidjson::Document &json_doc,
+                                     std::shared_ptr<Query> query);
 
         // Logger
         std::shared_ptr<spdlog::logger> log_;
-        generators::QueryGenerator query_generator_;
+        HashProviderImpl hash_provider_;
       };
     }  // namespace converters
   }    // namespace model

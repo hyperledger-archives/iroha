@@ -28,19 +28,8 @@ using namespace rapidjson;
 namespace iroha {
   namespace model {
     namespace converters {
-
-      bool verifyRequiredMembers(
-          const Document& document,
-          const std::initializer_list<std::string>& members) {
-        auto verify_member = [&document](const auto& field) {
-          return document.HasMember(field);
-        };
-        return std::all_of(members.begin(), members.end(), verify_member);
-      }
-
-      Document serializeSignature(const Signature& signature) {
-        Document document;
-        auto& allocator = document.GetAllocator();
+      Value serializeSignature(const Signature& signature, Document::AllocatorType &allocator) {
+        Value document;
         document.SetObject();
 
         document.AddMember("pubkey", signature.pubkey.to_hexstring(),
@@ -49,23 +38,6 @@ namespace iroha {
                            allocator);
 
         return document;
-      }
-
-      nonstd::optional<Signature> deserializeSignature(
-          const Document& document) {
-        model::Signature signature{};
-
-        if (not document.HasMember("pubkey") or
-            not document.HasMember("signature")) {
-          return nonstd::nullopt;
-        }
-
-        hexstringToArray(document["pubkey"].GetString(), signature.pubkey);
-
-        hexstringToArray(document["signature"].GetString(),
-                         signature.signature);
-
-        return signature;
       }
 
       nonstd::optional<Document> stringToJson(const std::string& string) {
@@ -92,7 +64,6 @@ namespace iroha {
       std::vector<uint8_t> jsonToVector(const Document& document) {
         return stringToBytes(jsonToString(document));
       }
-
     }  // namespace converters
   }    // namespace model
 }  // namespace iroha
