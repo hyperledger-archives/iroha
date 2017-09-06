@@ -26,6 +26,7 @@
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
+#include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/model_hash_provider_impl.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
@@ -595,5 +596,74 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
     ASSERT_TRUE(signatories2);
     ASSERT_EQ(signatories2->size(), 1);
     ASSERT_EQ(signatories2->at(0), pubkey1);
+  }
+
+  // 5th tx (add sig2 to user2 and set quorum = 1)
+  txn = Transaction();
+  txn.creator_account_id = user2id;
+  addSignatory = AddSignatory();
+  addSignatory.account_id = user2id;
+  addSignatory.pubkey = pubkey2;
+  txn.commands.push_back(std::make_shared<AddSignatory>(addSignatory));
+  auto seqQuorum = SetQuorum();
+  seqQuorum.account_id = user2id;
+  seqQuorum.new_quorum = 2;
+  txn.commands.push_back(std::make_shared<SetQuorum>(seqQuorum));
+
+  block = Block();
+  block.transactions.push_back(txn);
+  block.height = 5;
+  block.prev_hash = block4hash;
+  auto block5hash = hashProvider.get_hash(block);
+  block.hash = block5hash;
+  block.txs_number = block.transactions.size();
+
+  {
+    auto ms = storage->createMutableStorage();
+    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
+    storage->commit(std::move(ms));
+  }
+
+  {
+    auto account = wsv->getAccount(user2id);
+    ASSERT_TRUE(account);
+    ASSERT_EQ(account->quorum, 2);
+
+    // user2 has pubkey1 and pubkey2.
+    auto signatories = wsv->getSignatories(user2id);
+    ASSERT_TRUE(signatories);
+    ASSERT_EQ(signatories->size(), 2);
+    ASSERT_EQ(signatories->at(0), pubkey1);
+    ASSERT_EQ(signatories->at(1), pubkey2);
+  }
+
+  // 6th tx (remove sig2 fro user2: This must success)
+  txn = Transaction();
+  txn.creator_account_id = user2id;
+  removeSignatory = RemoveSignatory();
+  removeSignatory.account_id = user2id;
+  removeSignatory.pubkey = pubkey2;
+  txn.commands.push_back(std::make_shared<RemoveSignatory>(removeSignatory));
+
+  block = Block();
+  block.transactions.push_back(txn);
+  block.height = 6;
+  block.prev_hash = block5hash;
+  auto block6hash = hashProvider.get_hash(block);
+  block.hash = block6hash;
+  block.txs_number = block.transactions.size();
+
+  {
+    auto ms = storage->createMutableStorage();
+    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
+    storage->commit(std::move(ms));
+  }
+
+  {
+    // user2 only has pubkey1.
+    auto signatories = wsv->getSignatories(user2id);
+    ASSERT_TRUE(signatories);
+    ASSERT_EQ(signatories->size(), 1);
+    ASSERT_EQ(signatories->at(0), pubkey1);
   }
 }

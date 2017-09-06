@@ -392,6 +392,13 @@ class RemoveSignatoryTest : public CommandValidateExecuteTest {
   void SetUp() override {
     CommandValidateExecuteTest::SetUp();
 
+    ed25519::pubkey_t creator_key, account_key;
+    creator_key.fill(0x1);
+    account_key.fill(0x2);
+
+    account_pubkeys = {account_key};
+    many_pubkeys = {creator_key, account_key};
+
     remove_signatory = std::make_shared<RemoveSignatory>();
     remove_signatory->account_id = account_id;
     remove_signatory->pubkey.fill(1);
@@ -399,22 +406,48 @@ class RemoveSignatoryTest : public CommandValidateExecuteTest {
     command = remove_signatory;
   }
 
+  std::vector<ed25519::pubkey_t> account_pubkeys;
+  std::vector<ed25519::pubkey_t> many_pubkeys;
   std::shared_ptr<RemoveSignatory> remove_signatory;
 };
 
-TEST_F(RemoveSignatoryTest, ValidWhenCreatorHasPermissions) {
+TEST_F(RemoveSignatoryTest, ValidWhenMultipleKeys) {
   // Creator is admin
   creator.permissions.remove_signatory = true;
 
   EXPECT_CALL(*wsv_query, getAccount(remove_signatory->account_id))
       .WillOnce(Return(account));
-  EXPECT_CALL(*wsv_command, deleteSignatory(remove_signatory->pubkey))
-      .WillOnce(Return(true));
+
+  EXPECT_CALL(*wsv_query, getSignatories(remove_signatory->account_id))
+      .WillOnce(Return(many_pubkeys));
+
   EXPECT_CALL(*wsv_command, deleteAccountSignatory(remove_signatory->account_id,
                                                    remove_signatory->pubkey))
       .WillOnce(Return(true));
+  EXPECT_CALL(*wsv_command, deleteSignatory(remove_signatory->pubkey))
+      .WillOnce(Return(true));
 
   ASSERT_TRUE(validateAndExecute());
+}
+
+TEST_F(RemoveSignatoryTest, InvalidWhenSingleKey) {
+  // Creator is admin
+  creator.permissions.remove_signatory = true;
+
+  EXPECT_CALL(*wsv_query, getAccount(remove_signatory->account_id))
+      .WillOnce(Return(account));
+
+  EXPECT_CALL(*wsv_query, getSignatories(remove_signatory->account_id))
+      .WillOnce(Return(account_pubkeys));
+
+  // delete methods must not be called because the account quorum is 1.
+  EXPECT_CALL(*wsv_command, deleteAccountSignatory(remove_signatory->account_id,
+                                                   remove_signatory->pubkey))
+      .Times(0);
+  EXPECT_CALL(*wsv_command, deleteSignatory(remove_signatory->pubkey))
+      .Times(0);
+
+  ASSERT_FALSE(validateAndExecute());
 }
 
 TEST_F(RemoveSignatoryTest, InvalidWhenNoPermissions) {
@@ -431,9 +464,9 @@ TEST_F(RemoveSignatoryTest, InvalidWhenNoKey) {
 
   EXPECT_CALL(*wsv_query, getAccount(remove_signatory->account_id))
       .WillOnce(Return(account));
-  EXPECT_CALL(*wsv_command, deleteAccountSignatory(remove_signatory->account_id,
-                                                   remove_signatory->pubkey))
-      .WillOnce(Return(false));
+
+  EXPECT_CALL(*wsv_query, getSignatories(remove_signatory->account_id))
+      .WillOnce(Return(account_pubkeys));
 
   ASSERT_FALSE(validateAndExecute());
 }

@@ -337,7 +337,17 @@ bool RemoveSignatoryExecutor::isValid(const Command &command,
   auto remove_signatory = static_cast<const RemoveSignatory &>(command);
 
   auto account = queries.getAccount(remove_signatory.account_id);
-  return account.has_value();
+  auto signatories = queries.getSignatories(remove_signatory.account_id);
+
+  if (not (account.has_value() and signatories.has_value())) {
+    // No account or signatories found
+    return false;
+  }
+
+  auto newSignatoriesSize = signatories.value().size() - 1;
+
+  // You can't remove if size of rest signatories less than the quorum
+  return newSignatoriesSize >= account.value().quorum;
 }
 
 // ----------------- SetAccountPermissions -----------------
