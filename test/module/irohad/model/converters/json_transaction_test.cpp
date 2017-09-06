@@ -54,34 +54,34 @@ TEST_F(JsonTransactionTest, InvalidWhenFieldsMissing){
 }
 
 TEST_F(JsonTransactionTest, InvalidWhenNegativeAddAssetQuantity) {
-  auto transaction_string = "{\n"
-      "    \"signatures\": [\n"
-      "        {\n"
-      "            \"pubkey\": \"f24325aa9b91526a83e722e19fa2a3ad7f3966abe066a9302b5d2092fe960254\",\n"
-      "            \"signature\": \"4563f8de6ee45e44b462a7027d1640376dece03eaf1091f8e69cdc9531957b178f00667e9241ba2d09f49b7861419b89af4986eb4d332e9d7efb31bb1105890e\"\n"
-      "        }\n"
-      "    ],\n"
-      "    \"created_ts\": 1503845603221,\n"
-      "    \"creator_account_id\": \"admin@test\",\n"
-      "    \"tx_counter\": 1,\n"
-      "    \"commands\": [\n"
-      "        {\n"
-      "            \"command_type\": \"CreateAsset\", \n"
-      "            \"asset_name\": \"usd\", \n"
-      "            \"domain_id\": \"test\", \n"
-      "            \"precision\": \"2\"\n"
-      "        }, \n"
-      "        {\n"
-      "            \"command_type\": \"AddAssetQuantity\",\n"
-      "            \"account_id\": \"admin@test\",\n"
-      "            \"asset_id\": \"usd#test\",\n"
-      "            \"amount\": {\n"
-      "                \"int_part\": -20,\n"
-      "                \"frac_part\": 0\n"
-      "            }\n"
-      "        }\n"
-      "    ]\n"
-      "}";
+  auto transaction_string = R"({
+    "signatures": [
+        {
+            "pubkey": "f24325aa9b91526a83e722e19fa2a3ad7f3966abe066a9302b5d2092fe960254",
+            "signature": "4563f8de6ee45e44b462a7027d1640376dece03eaf1091f8e69cdc9531957b178f00667e9241ba2d09f49b7861419b89af4986eb4d332e9d7efb31bb1105890e"
+        }
+    ],
+    "created_ts": 1503845603221,
+    "creator_account_id": "admin@test",
+    "tx_counter": 1,
+    "commands": [
+        {
+            "command_type": "CreateAsset",
+            "asset_name": "usd",
+            "domain_id": "test",
+            "precision": "2"
+        },
+        {
+            "command_type": "AddAssetQuantity",
+            "account_id": "admin@test",
+            "asset_id": "usd#test",
+            "amount": {
+                "int_part": -20,
+                "frac_part": 0
+            }
+        }
+    ]
+  })";
   auto json = stringToJson(transaction_string);
 
   ASSERT_TRUE(json.has_value());

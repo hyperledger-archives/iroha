@@ -27,20 +27,17 @@ using namespace iroha::model::generators;
 TEST(QuerySerializerTest, DeserializeGetAccountWhenValid) {
   JsonQueryFactory querySerializer;
 
-  auto json_query =
-      "{\"signature\": {\n"
-      "                    \"pubkey\": "
-      "\"2323232323232323232323232323232323232323232323232323232323232323\",\n"
-      "                    \"signature\": "
-      "\"2323232323232323232323232323232323232323232323232323232323232323232323"
-      "2323232323232323232323232323232323232323232323232323232323\"\n"
-      "                }, \n"
-      "            \"created_ts\": 0,\n"
-      "            \"creator_account_id\": \"123\",\n"
-      "            \"query_counter\": 0,\n"
-      "            \"query_type\": \"GetAccount\",\n"
-      "            \"account_id\": \"test@test\"\n"
-      "                }";
+  auto json_query = R"({
+    "signature":{
+        "pubkey":"2323232323232323232323232323232323232323232323232323232323232323",
+        "signature":"23232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323"
+    },
+    "created_ts":0,
+    "creator_account_id":"123",
+    "query_counter":0,
+    "query_type":"GetAccount",
+    "account_id":"test@test"
+  })";
   auto res = querySerializer.deserialize(json_query);
   ASSERT_TRUE(res.has_value());
   ASSERT_EQ("123",res.value()->creator_account_id);
@@ -48,12 +45,12 @@ TEST(QuerySerializerTest, DeserializeGetAccountWhenValid) {
 
 TEST(QuerySerializerTest, DeserializeGetAccountWhenInvalid) {
   JsonQueryFactory querySerializer;
-  auto json_query =
-      "            {\"created_ts\": 0,\n"
-      "            \"creator_account_id\": \"123\",\n"
-      "            \"query_counter\": 0,\n"
-      "            \"query_type\": \"GetAccount\"\n"
-      "                }";
+  auto json_query = R"({
+    "created_ts":0,
+    "creator_account_id":"123",
+    "query_counter":0,
+    "query_type":"GetAccount"
+  })";
   auto res = querySerializer.deserialize(json_query);
   ASSERT_FALSE(res.has_value());
 }
@@ -61,21 +58,18 @@ TEST(QuerySerializerTest, DeserializeGetAccountWhenInvalid) {
 
 TEST(QuerySerializerTest, DeserializeGetAccountAssetsWhenValid) {
   JsonQueryFactory querySerializer;
-  auto json_query =
-      "{\"signature\": {\n"
-          "                    \"pubkey\": "
-          "\"2323232323232323232323232323232323232323232323232323232323232323\",\n"
-          "                    \"signature\": "
-          "\"2323232323232323232323232323232323232323232323232323232323232323232323"
-          "2323232323232323232323232323232323232323232323232323232323\"\n"
-          "                }, \n"
-          "            \"created_ts\": 0,\n"
-          "            \"creator_account_id\": \"123\",\n"
-          "            \"query_counter\": 0,\n"
-          "            \"query_type\": \"GetAccountAssets\",\n"
-          "            \"account_id\": \"test@test\",\n"
-          "            \"asset_id\": \"coin#test\"\n"
-          "                }";
+  auto json_query = R"({
+    "signature":{
+        "pubkey":"2323232323232323232323232323232323232323232323232323232323232323",
+        "signature":"23232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323"
+    },
+    "created_ts":0,
+    "creator_account_id":"123",
+    "query_counter":0,
+    "query_type":"GetAccountAssets",
+    "account_id":"test@test",
+    "asset_id":"coin#test"
+  })";
   auto res = querySerializer.deserialize(json_query);
   ASSERT_TRUE(res.has_value());
   auto casted = std::static_pointer_cast<iroha::model::GetAccountAssets>(res.value());
@@ -86,21 +80,18 @@ TEST(QuerySerializerTest, DeserializeGetAccountAssetsWhenValid) {
 
 TEST(QuerySerializerTest, DeserializeWhenUnknownType) {
   JsonQueryFactory querySerializer;
-  auto json_query =
-      "{\"signature\": {\n"
-          "                    \"pubkey\": "
-          "\"2323232323232323232323232323232323232323232323232323232323232323\",\n"
-          "                    \"signature\": "
-          "\"2323232323232323232323232323232323232323232323232323232323232323232323"
-          "2323232323232323232323232323232323232323232323232323232323\"\n"
-          "                }, \n"
-          "            \"created_ts\": 0,\n"
-          "            \"creator_account_id\": \"123\",\n"
-          "            \"query_counter\": 0,\n"
-          "            \"query_type\": \"GetSomething\",\n"
-          "            \"account_id\": \"test@test\",\n"
-          "            \"asset_id\": \"coin#test\"\n"
-          "                }";
+  auto json_query = R"({
+    "signature":{
+        "pubkey":"2323232323232323232323232323232323232323232323232323232323232323",
+        "signature":"23232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323"
+    },
+    "created_ts":0,
+    "creator_account_id":"123",
+    "query_counter":0,
+    "query_type":"GetSomething",
+    "account_id":"test@test",
+    "asset_id":"coin#test"
+  })";
   auto res = querySerializer.deserialize(json_query);
   ASSERT_FALSE(res.has_value());
 }

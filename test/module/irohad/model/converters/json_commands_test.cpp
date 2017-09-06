@@ -49,15 +49,15 @@ class JsonCommandTest : public ::testing::Test {
 };
 
 TEST_F(JsonCommandTest, InvalidWhenUnknownCommandType) {
-  auto cmd = "{\n"
-      "            \"command_type\": \"Unknown\",\n"
-      "            \"account_id\": \"admin@test\",\n"
-      "            \"asset_id\": \"usd#test\",\n"
-      "            \"amount\": {\n"
-      "                \"int_part\": -20,\n"
-      "                \"frac_part\": 0\n"
-      "            }\n"
-      "        }";
+  auto cmd = R"({
+    "command_type": "Unknown",
+    "account_id": "admin@test",
+    "asset_id": "usd#test",
+    "amount": {
+        "int_part": -20,
+        "frac_part": 0
+    }
+  })";
 
   auto &&json = stringToJson(cmd);
   ASSERT_TRUE(json.has_value());
