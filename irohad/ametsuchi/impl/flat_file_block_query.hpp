@@ -27,7 +27,7 @@ namespace iroha {
   namespace ametsuchi {
     class FlatFileBlockQuery : public BlockQuery {
      public:
-      FlatFileBlockQuery(FlatFile &block_store);
+      explicit FlatFileBlockQuery(FlatFile &block_store);
 
       rxcpp::observable<model::Transaction> getAccountTransactions(
           std::string account_id) override;

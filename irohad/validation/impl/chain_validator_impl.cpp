@@ -17,9 +17,10 @@
 
 #include "validation/impl/chain_validator_impl.hpp"
 
+#include "consensus/consensus_common.hpp"
+
 namespace iroha {
   namespace validation {
-
     ChainValidatorImpl::ChainValidatorImpl() {
       log_ = logger::log("ChainValidator");
     }
@@ -28,16 +29,16 @@ namespace iroha {
                                            ametsuchi::MutableStorage &storage) {
       log_->info("validate block: height {}, hash {}", block.height,
                  block.hash.to_hexstring());
-      auto apply_block = [this](const auto &block,
-                                auto &query, const auto &top_hash) {
-        auto peers = query.getPeers();
+      auto apply_block = [this](const auto &block, auto &queries,
+                                const auto &top_hash) {
+        auto peers = queries.getPeers();
         if (not peers.has_value()) {
           return false;
         }
         return block.prev_hash == top_hash and
-            this->hasSupermajority(block.sigs.size(),
-                                   peers.value().size()) and
-            this->peersSubset(block.sigs, peers.value());
+               consensus::hasSupermajority(block.sigs.size(),
+                                           peers.value().size()) and
+               consensus::peersSubset(block.sigs, peers.value());
       };
 
       // Apply to temporary storage
@@ -56,25 +57,6 @@ namespace iroha {
           })
           .as_blocking()
           .first();
-    }
-
-    bool ChainValidatorImpl::hasSupermajority(uint64_t current, uint64_t all) {
-      if (current > all)
-        return false;
-      auto f = (all - 1) / 3.0;
-      return current >= 2 * f + 1;
-    }
-
-    bool ChainValidatorImpl::peersSubset(
-        std::vector<model::Signature> signatures,
-        std::vector<model::Peer> peers) {
-      return std::all_of(
-          signatures.begin(), signatures.end(), [peers](auto signature) {
-            return std::find_if(peers.begin(), peers.end(),
-                                [signature](auto peer) {
-                                  return signature.pubkey == peer.pubkey;
-                                }) != peers.end();
-          });
     }
   }
 }
