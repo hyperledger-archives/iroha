@@ -18,7 +18,6 @@
 #define RAPIDJSON_HAS_STDSTRING 1
 
 #include "model/converters/json_query_factory.hpp"
-#include "common/types.hpp"
 
 using namespace rapidjson;
 
@@ -27,55 +26,48 @@ namespace iroha {
     namespace converters {
       JsonQueryFactory::JsonQueryFactory()
           : log_(logger::log("JsonQueryFactory")) {
-        deserializers_["GetAccount"] = &JsonQueryFactory::deserializeGetAccount;
-        deserializers_["GetAccountAssets"] =
-            &JsonQueryFactory::deserializeGetAccountAssets;
-        deserializers_["GetAccountTransactions"] =
-            &JsonQueryFactory::deserializeGetAccountTransactions;
-        deserializers_["GetAccountAssetTransactions"] =
-            &JsonQueryFactory::deserializeGetAccountAssetTransactions;
-        deserializers_["GetAccountSignatories"] =
-            &JsonQueryFactory::deserializeGetSignatories;
+        deserializers_ = {
+            {"GetAccount", &JsonQueryFactory::deserializeGetAccount},
+            {"GetAccountAssets",
+             &JsonQueryFactory::deserializeGetAccountAssets},
+            {"GetAccountTransactions",
+             &JsonQueryFactory::deserializeGetAccountTransactions},
+            {"GetAccountAssetTransactions",
+             &JsonQueryFactory::deserializeGetAccountAssetTransactions},
+            {"GetAccountSignatories",
+             &JsonQueryFactory::deserializeGetSignatories}};
         // Serializers
-        serializers_[typeid(GetAccount)] =
-            &JsonQueryFactory::serializeGetAccount;
-        serializers_[typeid(GetSignatories)] =
-            &JsonQueryFactory::serializeGetSignatories;
-        serializers_[typeid(GetAccountAssets)] =
-            &JsonQueryFactory::serializeGetAccountAssets;
-        serializers_[typeid(GetAccountTransactions)] =
-            &JsonQueryFactory::serializeGetAccountTransactions;
-        serializers_[typeid(GetAccountAssetTransactions)] =
-            &JsonQueryFactory::serializeGetAccountAssetTransactions;
+        serializers_ = {
+            {typeid(GetAccount), &JsonQueryFactory::serializeGetAccount},
+            {typeid(GetSignatories),
+             &JsonQueryFactory::serializeGetSignatories},
+            {typeid(GetAccountAssets),
+             &JsonQueryFactory::serializeGetAccountAssets},
+            {typeid(GetAccountTransactions),
+             &JsonQueryFactory::serializeGetAccountTransactions},
+            {typeid(GetAccountAssetTransactions),
+             &JsonQueryFactory::serializeGetAccountAssetTransactions}};
       }
 
       optional_ptr<Query> JsonQueryFactory::deserialize(
           const std::string query_json) {
-        return stringToJson(query_json) | [this](auto &json) {
-          return this->deserialize(json);
-        };
+        return stringToJson(query_json) |
+               [this](auto &json) { return this->deserialize(json); };
       }
 
       optional_ptr<Query> JsonQueryFactory::deserialize(
           const rapidjson::Document &document) {
         auto des = makeFieldDeserializer(document);
-        return des.String("query_type") | [this, &document](auto command_type)
-                   -> optional_ptr<Query> {
-                     auto it = deserializers_.find(command_type);
-                     if (it != deserializers_.end()) {
-                       return (this->*deserializers_.at(command_type))(
-                           document);
-                     }
-                     return nonstd::nullopt;
-                   } | des.Uint64(&Query::created_ts, "created_ts") |
-                          des.String(&Query::creator_account_id,
-                                     "creator_account_id") |
-                          des.Uint64(&Query::query_counter, "query_counter") |
-                          des.Object(&Query::signature, "signature") |
-                          [this, &document](auto query) {
-                            query->query_hash = hash_provider_.get_hash(query);
-                            return nonstd::make_optional(query);
-                          };
+        return des.String("query_type") | makeMap(deserializers_) |
+               makeInvoker(*this, document) |
+               des.Uint64(&Query::created_ts, "created_ts") |
+               des.String(&Query::creator_account_id, "creator_account_id") |
+               des.Uint64(&Query::query_counter, "query_counter") |
+               des.Object(&Query::signature, "signature") |
+               [this, &document](auto query) {
+                 query->query_hash = hash_provider_.get_hash(query);
+                 return nonstd::make_optional(query);
+               };
       }
 
       optional_ptr<Query> JsonQueryFactory::deserializeGetAccount(
@@ -132,18 +124,14 @@ namespace iroha {
         doc.AddMember("created_ts", model_query->created_ts, allocator);
         Value signature;
         signature.SetObject();
-        signature.CopyFrom(serializeSignature(model_query->signature, allocator),
-                           allocator);
+        signature.CopyFrom(
+            serializeSignature(model_query->signature, allocator), allocator);
 
         doc.AddMember("signature", signature, allocator);
 
-        auto it = serializers_.find(typeid(*model_query));
-        if (it != serializers_.end()) {
-          (this->*it->second)(doc, model_query);
-          return jsonToString(doc);
-        }
-        log_->error("Query type convertation not implemented");
-        return nonstd::nullopt;
+        makeInvoker(*this, doc,
+                     model_query)(serializers_.at(typeid(*model_query)));
+        return jsonToString(doc);
       }
 
       void JsonQueryFactory::serializeGetAccount(Document &json_doc,
@@ -153,6 +141,7 @@ namespace iroha {
         auto get_account = std::static_pointer_cast<GetAccount>(query);
         json_doc.AddMember("account_id", get_account->account_id, allocator);
       }
+
       void JsonQueryFactory::serializeGetAccountAssets(
           Document &json_doc, std::shared_ptr<Query> query) {
         auto &allocator = json_doc.GetAllocator();
@@ -188,7 +177,6 @@ namespace iroha {
         json_doc.AddMember("account_id", get_account_asset->account_id, allocator);
         json_doc.AddMember("asset_id", get_account_asset->asset_id, allocator);
       }
-
     }  // namespace converters
   }    // namespace model
 }  // namespace iroha
