@@ -16,6 +16,9 @@
  */
 
 #include <responses.pb.h>
+#include <model/converters/json_transaction_factory.hpp>
+#include <model/model_hash_provider_impl.hpp>
+#include "model/converters/json_common.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
@@ -50,6 +53,15 @@ class ClientServerTest : public testing::Test {
       svMock = std::make_shared<MockStatelessValidator>();
       wsv_query = std::make_shared<MockWsvQuery>();
       block_query = std::make_shared<MockBlockQuery>();
+
+      rxcpp::subjects::subject<iroha::model::Proposal> prop_notifier;
+      rxcpp::subjects::subject<Commit> commit_notifier;
+
+      EXPECT_CALL(*pcsMock, on_proposal())
+          .WillRepeatedly(Return(prop_notifier.get_observable()));
+
+      EXPECT_CALL(*pcsMock, on_commit())
+          .WillRepeatedly(Return(commit_notifier.get_observable()));
 
       auto tx_processor =
           std::make_shared<iroha::torii::TransactionProcessorImpl>(pcsMock,
@@ -143,7 +155,6 @@ TEST_F(ClientServerTest, SendTxWhenInvalidJson) {
 }
 
 TEST_F(ClientServerTest, SendTxWhenStatelessInvalid) {
-  iroha_cli::CliClient client(Ip, Port);
   EXPECT_CALL(*svMock, validate(A<const iroha::model::Transaction &>()))
       .WillOnce(Return(false));
   auto json_tx =
@@ -163,7 +174,18 @@ TEST_F(ClientServerTest, SendTxWhenStatelessInvalid) {
       "\"2323232323232323232323232323232323232323232323232323232323232323\"\n"
       "                }]}";
 
-  ASSERT_EQ(client.sendTx(json_tx).answer, iroha_cli::CliClient::NOT_VALID);
+  auto doc = iroha::model::converters::stringToJson(json_tx).value();
+  iroha::model::converters::JsonTransactionFactory transactionFactory;
+  auto tx = transactionFactory.deserialize(doc).value();
+  iroha::model::HashProviderImpl hashProvider;
+  tx.tx_hash = hashProvider.get_hash(tx);
+
+  ASSERT_EQ(iroha_cli::CliClient(Ip, Port).sendTx(json_tx).answer,
+            iroha_cli::CliClient::OK);
+  ASSERT_EQ(iroha_cli::CliClient(Ip, Port)
+                .getTxStatus(tx.tx_hash.to_string())
+                .answer.tx_status(),
+            iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED);
 }
 
 TEST_F(ClientServerTest, SendQueryWhenInvalidJson) {
