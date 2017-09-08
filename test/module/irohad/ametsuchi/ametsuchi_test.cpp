@@ -40,6 +40,7 @@ TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
   auto storage =
       StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
+  auto blocks = storage->getBlockQuery();
 
   Block block;
   block.height = 1;
@@ -49,7 +50,7 @@ TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
   storage->commit(std::move(ms));
 
   auto completed_wrapper =
-      make_test_subscriber<IsCompleted>(storage->getBlocks(1, 1));
+      make_test_subscriber<IsCompleted>(blocks->getBlocks(1, 1));
   completed_wrapper.subscribe();
   ASSERT_TRUE(completed_wrapper.validate());
 }
@@ -60,6 +61,8 @@ TEST_F(AmetsuchiTest, SampleTest) {
   auto storage =
       StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
+  auto wsv = storage->getWsvQuery();
+  auto blocks = storage->getBlockQuery();
 
   Transaction txn;
   txn.creator_account_id = "admin1";
@@ -77,7 +80,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   block.prev_hash.fill(0);
   auto block1hash = hashProvider.get_hash(block);
   block.hash = block1hash;
-  block.txs_number = static_cast<uint16_t>(block.transactions.size());
+  block.txs_number = block.transactions.size();
 
   {
     auto ms = storage->createMutableStorage();
@@ -88,7 +91,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   }
 
   {
-    auto account = storage->getAccount(createAccount.account_name + "@" +
+    auto account = wsv->getAccount(createAccount.account_name + "@" +
                                        createAccount.domain_id);
     ASSERT_TRUE(account);
     ASSERT_EQ(account->account_id,
@@ -132,7 +135,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   block.prev_hash = block1hash;
   auto block2hash = hashProvider.get_hash(block);
   block.hash = block2hash;
-  block.txs_number = static_cast<uint16_t>(block.transactions.size());
+  block.txs_number = block.transactions.size();
 
   {
     auto ms = storage->createMutableStorage();
@@ -141,12 +144,12 @@ TEST_F(AmetsuchiTest, SampleTest) {
   }
 
   {
-    auto asset1 = storage->getAccountAsset("user1@ru", "RUB#ru");
+    auto asset1 = wsv->getAccountAsset("user1@ru", "RUB#ru");
     ASSERT_TRUE(asset1);
     ASSERT_EQ(asset1->account_id, "user1@ru");
     ASSERT_EQ(asset1->asset_id, "RUB#ru");
     ASSERT_EQ(asset1->balance, 50);
-    auto asset2 = storage->getAccountAsset("user2@ru", "RUB#ru");
+    auto asset2 = wsv->getAccountAsset("user2@ru", "RUB#ru");
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, "user2@ru");
     ASSERT_EQ(asset2->asset_id, "RUB#ru");
@@ -154,7 +157,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   }
 
   // Block store tests
-  storage->getBlocks(1, 2).subscribe([block1hash, block2hash](auto eachBlock) {
+  blocks->getBlocks(1, 2).subscribe([block1hash, block2hash](auto eachBlock) {
     if (eachBlock.height == 1) {
       EXPECT_EQ(eachBlock.hash, block1hash);
     } else if (eachBlock.height == 2) {
@@ -162,14 +165,14 @@ TEST_F(AmetsuchiTest, SampleTest) {
     }
   });
 
-  storage->getAccountTransactions("admin1").subscribe(
+  blocks->getAccountTransactions("admin1").subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 2); });
-  storage->getAccountTransactions("admin2").subscribe(
+  blocks->getAccountTransactions("admin2").subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 4); });
 
-  storage->getAccountAssetTransactions("user1@ru", "RUB#ru").subscribe(
+  blocks->getAccountAssetTransactions("user1@ru", "RUB#ru").subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  storage->getAccountAssetTransactions("user2@ru", "RUB#ru").subscribe(
+  blocks->getAccountAssetTransactions("user2@ru", "RUB#ru").subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
 }
 
@@ -177,6 +180,7 @@ TEST_F(AmetsuchiTest, PeerTest) {
   auto storage =
       StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
+  auto wsv = storage->getWsvQuery();
 
   Transaction txn;
   AddPeer addPeer;
@@ -193,7 +197,7 @@ TEST_F(AmetsuchiTest, PeerTest) {
     storage->commit(std::move(ms));
   }
 
-  auto peers = storage->getPeers();
+  auto peers = wsv->getPeers();
   ASSERT_TRUE(peers);
   ASSERT_EQ(peers->size(), 1);
   ASSERT_EQ(peers->at(0).pubkey, addPeer.peer_key);
@@ -205,6 +209,8 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
 
   auto storage = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
+  auto wsv = storage->getWsvQuery();
+  auto blocks = storage->getBlockQuery();
 
   const auto admin = "admin1";
   const auto domain = "domain";
@@ -275,25 +281,25 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   }
 
   {
-    auto account1 = storage->getAccount(user1id);
+    auto account1 = wsv->getAccount(user1id);
     ASSERT_TRUE(account1);
     ASSERT_EQ(account1->account_id, user1id);
     ASSERT_EQ(account1->domain_name, domain);
-    auto account2 = storage->getAccount(user2id);
+    auto account2 = wsv->getAccount(user2id);
     ASSERT_TRUE(account2);
     ASSERT_EQ(account2->account_id, user2id);
     ASSERT_EQ(account2->domain_name, domain);
-    auto account3 = storage->getAccount(user3id);
+    auto account3 = wsv->getAccount(user3id);
     ASSERT_TRUE(account3);
     ASSERT_EQ(account3->account_id, user3id);
     ASSERT_EQ(account3->domain_name, domain);
 
-    auto asset1 = storage->getAccountAsset(user1id, asset1id);
+    auto asset1 = wsv->getAccountAsset(user1id, asset1id);
     ASSERT_TRUE(asset1);
     ASSERT_EQ(asset1->account_id, user1id);
     ASSERT_EQ(asset1->asset_id, asset1id);
     ASSERT_EQ(asset1->balance, 300);
-    auto asset2 = storage->getAccountAsset(user2id, asset2id);
+    auto asset2 = wsv->getAccountAsset(user2id, asset2id);
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, user2id);
     ASSERT_EQ(asset2->asset_id, asset2id);
@@ -325,12 +331,12 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   }
 
   {
-    auto asset1 = storage->getAccountAsset(user1id, asset1id);
+    auto asset1 = wsv->getAccountAsset(user1id, asset1id);
     ASSERT_TRUE(asset1);
     ASSERT_EQ(asset1->account_id, user1id);
     ASSERT_EQ(asset1->asset_id, asset1id);
     ASSERT_EQ(asset1->balance, 180);
-    auto asset2 = storage->getAccountAsset(user2id, asset1id);
+    auto asset2 = wsv->getAccountAsset(user2id, asset1id);
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, user2id);
     ASSERT_EQ(asset2->asset_id, asset1id);
@@ -370,17 +376,17 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   }
 
   {
-    auto asset1 = storage->getAccountAsset(user2id, asset2id);
+    auto asset1 = wsv->getAccountAsset(user2id, asset2id);
     ASSERT_TRUE(asset1);
     ASSERT_EQ(asset1->account_id, user2id);
     ASSERT_EQ(asset1->asset_id, asset2id);
     ASSERT_EQ(asset1->balance, 90);
-    auto asset2 = storage->getAccountAsset(user3id, asset2id);
+    auto asset2 = wsv->getAccountAsset(user3id, asset2id);
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, user3id);
     ASSERT_EQ(asset2->asset_id, asset2id);
     ASSERT_EQ(asset2->balance, 150);
-    auto asset3 = storage->getAccountAsset(user1id, asset2id);
+    auto asset3 = wsv->getAccountAsset(user1id, asset2id);
     ASSERT_TRUE(asset3);
     ASSERT_EQ(asset3->account_id, user1id);
     ASSERT_EQ(asset3->asset_id, asset2id);
@@ -388,7 +394,7 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   }
 
   // Block store tests
-  storage->getBlocks(1, 3).subscribe([block1hash, block2hash, block3hash](auto eachBlock) {
+  blocks->getBlocks(1, 3).subscribe([block1hash, block2hash, block3hash](auto eachBlock) {
     if (eachBlock.height == 1) {
       EXPECT_EQ(eachBlock.hash, block1hash);
     } else if (eachBlock.height == 2) {
@@ -398,28 +404,28 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
     }
   });
 
-  storage->getAccountTransactions(admin).subscribe(
+  blocks->getAccountTransactions(admin).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 8); });
-  storage->getAccountTransactions(user1id).subscribe(
+  blocks->getAccountTransactions(user1id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  storage->getAccountTransactions(user2id).subscribe(
+  blocks->getAccountTransactions(user2id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 2); });
-  storage->getAccountTransactions(user3id).subscribe(
+  blocks->getAccountTransactions(user3id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 0); });
 
   // (user1 -> user2 # asset1)
   // (user2 -> user3 # asset2)
   // (user2 -> user1 # asset2)
-  storage->getAccountAssetTransactions(user1id, asset1id).subscribe(
+  blocks->getAccountAssetTransactions(user1id, asset1id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  storage->getAccountAssetTransactions(user2id, asset1id).subscribe(
+  blocks->getAccountAssetTransactions(user2id, asset1id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  storage->getAccountAssetTransactions(user3id, asset1id).subscribe(
+  blocks->getAccountAssetTransactions(user3id, asset1id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 0); });
-  storage->getAccountAssetTransactions(user1id, asset2id).subscribe(
+  blocks->getAccountAssetTransactions(user1id, asset2id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  storage->getAccountAssetTransactions(user2id, asset2id).subscribe(
+  blocks->getAccountAssetTransactions(user2id, asset2id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 2); });
-  storage->getAccountAssetTransactions(user3id, asset2id).subscribe(
+  blocks->getAccountAssetTransactions(user3id, asset2id).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
 }
