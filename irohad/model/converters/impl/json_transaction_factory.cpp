@@ -64,33 +64,32 @@ namespace iroha {
       nonstd::optional<Transaction> JsonTransactionFactory::deserialize(
           const Value &document) {
         auto des = makeFieldDeserializer(document);
-
-        return nonstd::make_optional<Transaction>() |
-               des.Uint64(&Transaction::created_ts, "created_ts") |
-               des.String(&Transaction::creator_account_id,
-                          "creator_account_id") |
-               des.Uint64(&Transaction::tx_counter, "tx_counter") |
-               des.Array(&Transaction::signatures, "signatures") |
-               des.Array(
-                   &Transaction::commands, "commands",
+        return nonstd::make_optional<Transaction>()
+            | des.Uint64(&Transaction::created_ts, "created_ts")
+            | des.String(&Transaction::creator_account_id, "creator_account_id")
+            | des.Uint64(&Transaction::tx_counter, "tx_counter")
+            | des.Array(&Transaction::signatures, "signatures")
+            | des.Array(&Transaction::commands, "commands",
                    [this](auto array) {
                      return std::accumulate(
                          array.begin(), array.end(),
                          nonstd::make_optional<Transaction::CommandsType>(),
                          [this](auto init, auto &x) {
-                           return init | [this, &x](auto commands) {
-                             return factory_.deserializeAbstractCommand(x) |
-                                    [&commands](auto command) {
-                                      commands.push_back(command);
-                                      return nonstd::make_optional(commands);
-                                    };
-                           };
+                           return init
+                               | [this, &x](auto commands) {
+                                   return factory_.deserializeAbstractCommand(x)
+                                       | [&commands](auto command) {
+                                           commands.push_back(command);
+                                           return nonstd::make_optional(
+                                               commands);
+                                         };
+                                 };
                          });
-                   }) |
-               [this, &document](auto transaction) {
-                 transaction.tx_hash = hash_provider_.get_hash(transaction);
-                 return nonstd::make_optional(transaction);
-               };
+                   })
+            | [this, &document](auto transaction) {
+                transaction.tx_hash = hash_provider_.get_hash(transaction);
+                return nonstd::make_optional(transaction);
+              };
       }
 
     }  // namespace converters

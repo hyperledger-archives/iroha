@@ -127,13 +127,14 @@ namespace iroha {
       }
 
       /**
-       * Bind operator. If argument has value, unwraps argument and calls given
-       * function, which should return wrapped value
+       * Bind operator. If argument has value, dereferences argument and calls
+       * given function, which should return wrapped value
+       * operator| is used since it has to be binary and left-associative
        * @tparam T - monadic type
        * @tparam Transform - transform function type
        * @param t - monadic value
-       * @param f - function, which takes unwrapped value, and returns wrapped
-       * value
+       * @param f - function, which takes dereferenced value, and returns
+       * wrapped value
        * @return monadic value, which can be of another type
        */
       template <typename T, typename Transform>
@@ -245,11 +246,12 @@ namespace iroha {
                                                const,
                                            T (rapidjson::Value::*get)() const,
                                            Transform transform = Transform()) {
-        return deserializeField(document, field, verify, get) | transform |
-                   [&block, &member](auto transformed) -> nonstd::optional<B> {
-          block.*member = transformed;
-          return block;
-        };
+        return deserializeField(document, field, verify, get)
+            | transform
+            | [&block, &member](auto transformed) {
+                block.*member = transformed;
+                return nonstd::make_optional(block);
+              };
       }
 
       /**
@@ -278,11 +280,12 @@ namespace iroha {
                                        bool (rapidjson::Value::*verify)() const,
                                        T (rapidjson::Value::*get)() const,
                                        Transform transform = Transform()) {
-        return deserializeField(document, field, verify, get) | transform |
-                   [&block, &member](auto transformed) -> optional_ptr<B> {
-          (*block).*member = transformed;
-          return block;
-        };
+        return deserializeField(document, field, verify, get)
+            | transform
+            | [&block, &member](auto transformed) {
+                (*block).*member = transformed;
+                return nonstd::make_optional(block);
+              };
       }
 
       /**
@@ -460,9 +463,9 @@ namespace iroha {
       template <typename D>
       auto deserializeSignature(const D &value) {
         auto des = makeFieldDeserializer(value);
-        return nonstd::make_optional<Signature>() |
-               des.String(&Signature::pubkey, "pubkey") |
-               des.String(&Signature::signature, "signature");
+        return nonstd::make_optional<Signature>()
+            | des.String(&Signature::pubkey, "pubkey")
+            | des.String(&Signature::signature, "signature");
       }
 
       /**
@@ -485,13 +488,14 @@ namespace iroha {
               x.begin(), x.end(),
               nonstd::make_optional<Block::SignaturesType>(),
               [](auto init, auto &x) {
-                return init | [&x](auto signatures) {
-                  return deserializeSignature(x) |
-                         [&signatures](auto signature) {
-                           signatures.push_back(signature);
-                           return nonstd::make_optional(signatures);
-                         };
-                };
+                return init
+                    | [&x](auto signatures) {
+                        return deserializeSignature(x)
+                            | [&signatures](auto signature) {
+                                signatures.push_back(signature);
+                                return nonstd::make_optional(signatures);
+                              };
+                      };
               });
         }
       };

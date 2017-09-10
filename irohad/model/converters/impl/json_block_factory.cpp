@@ -67,27 +67,29 @@ namespace iroha {
       nonstd::optional<Block> JsonBlockFactory::deserialize(
           const Document &document) {
         auto des = makeFieldDeserializer(document);
-        return nonstd::make_optional<model::Block>() |
-               des.Uint64(&Block::created_ts, "created_ts") |
-               des.Uint64(&Block::height, "height") |
-               des.Uint(&Block::txs_number, "txs_number") |
-               des.String(&Block::hash, "hash") |
-               des.String(&Block::prev_hash, "prev_hash") |
-               des.String(&Block::merkle_root, "merkle_root") |
-               des.Array(&Block::sigs, "signatures") |
-               des.Array(&Block::transactions, "transactions", [this](
+        return nonstd::make_optional<model::Block>()
+            | des.Uint64(&Block::created_ts, "created_ts")
+            | des.Uint64(&Block::height, "height")
+            | des.Uint(&Block::txs_number, "txs_number")
+            | des.String(&Block::hash, "hash")
+            | des.String(&Block::prev_hash, "prev_hash")
+            | des.String(&Block::merkle_root, "merkle_root")
+            | des.Array(&Block::sigs, "signatures")
+            | des.Array(&Block::transactions, "transactions", [this](
                                                                    auto array) {
                  return std::accumulate(
                      array.begin(), array.end(),
                      nonstd::make_optional<Block::TransactionsType>(),
                      [this](auto init, auto &x) {
-                       return init | [this, &x](auto transactions) {
-                         return factory_.deserialize(x) |
-                                [&transactions](auto transaction) {
-                                  transactions.push_back(transaction);
-                                  return nonstd::make_optional(transactions);
-                                };
-                       };
+                       return init
+                           | [this, &x](auto transactions) {
+                               return factory_.deserialize(x)
+                                   | [&transactions](auto transaction) {
+                                       transactions.push_back(transaction);
+                                       return nonstd::make_optional(
+                                           transactions);
+                                     };
+                             };
                      });
                });
       }
