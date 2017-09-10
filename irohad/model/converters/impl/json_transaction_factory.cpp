@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-#define RAPIDJSON_HAS_STDSTRING 1
-
 #include "model/converters/json_transaction_factory.hpp"
 
 #include <algorithm>

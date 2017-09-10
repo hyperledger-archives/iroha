@@ -22,32 +22,18 @@
 #include <string>
 #include <unordered_map>
 
+#define RAPIDJSON_HAS_STDSTRING 1
 #include <rapidjson/document.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
 #include <nonstd/optional.hpp>
 
+#include "common/byteutils.hpp"
 #include "model/block.hpp"
 #include "model/common.hpp"
 #include "model/signature.hpp"
 
 namespace iroha {
-
-  /**
-   * Try to transform string to array of given size
-   * @tparam size - output array size
-   * @param string - input string for transform
-   * @return array of given size if size matches, nullopt otherwise
-   */
-  template <size_t size>
-  nonstd::optional<blob_t<size>> hexstringToArray(const std::string &string) {
-    if (size * 2 != string.size()) {
-      return nonstd::nullopt;
-    }
-    blob_t<size> array;
-    auto bytes = hex2bytes(string);
-    std::copy(bytes.begin(), bytes.end(), array.begin());
-    return array;
-  }
-
   namespace model {
     namespace converters {
       /**
@@ -75,24 +61,13 @@ namespace iroha {
        * @tparam Args - member function arguments types
        */
       template <typename T, typename... Args>
-      struct Invoker {
+      class Invoker {
+       public:
         /**
          * @param object - object of given class
          * @param args - arguments of member function
          */
         Invoker(T &object, Args &&... args) : object(object), args(args...) {}
-
-        /**
-         * Invoke function on saved object
-         * @tparam F - function type to be called
-         * @tparam Is - index sequence of arguments from tuple
-         * @param f - function to be called
-         * @return result of function call
-         */
-        template <typename F, std::size_t... Is>
-        auto operator()(F f, std::index_sequence<Is...>) {
-          return (object.*f)(std::get<Is>(args)...);
-        }
 
         /**
          * Invoke function on saved object. Helper function to get
@@ -104,7 +79,19 @@ namespace iroha {
          */
         template <typename F, std::size_t... Is>
         auto operator()(F f) {
-          return operator()(f, std::index_sequence_for<Args...>{});
+          return apply(f, std::index_sequence_for<Args...>{});
+        }
+       private:
+        /**
+         * Invoke function on saved object
+         * @tparam F - function type to be called
+         * @tparam Is - index sequence of arguments from tuple
+         * @param f - function to be called
+         * @return result of function call
+         */
+        template <typename F, std::size_t... Is>
+        auto apply(F f, std::index_sequence<Is...>) {
+          return (object.*f)(std::get<Is>(args)...);
         }
 
         // object for function call
@@ -124,25 +111,6 @@ namespace iroha {
       template <typename T, typename... Args>
       auto makeInvoker(T &object, Args &&... args) {
         return Invoker<T, Args...>(object, std::forward<Args>(args)...);
-      }
-
-      /**
-       * Bind operator. If argument has value, dereferences argument and calls
-       * given function, which should return wrapped value
-       * operator| is used since it has to be binary and left-associative
-       * @tparam T - monadic type
-       * @tparam Transform - transform function type
-       * @param t - monadic value
-       * @param f - function, which takes dereferenced value, and returns
-       * wrapped value
-       * @return monadic value, which can be of another type
-       */
-      template <typename T, typename Transform>
-      auto operator|(T t, Transform f) -> decltype(f(*t)) {
-        if (t) {
-          return f(*t);
-        }
-        return {};
       }
 
       /**
@@ -208,13 +176,10 @@ namespace iroha {
        */
       template <typename T, typename D>
       nonstd::optional<T> deserializeField(const D &document,
-                                           const std::string &field,
-                                           bool (rapidjson::Value::*verify)()
-                                               const,
-                                           T (rapidjson::Value::*get)() const) {
+                                           const std::string &field) {
         if (document.HasMember(field.c_str()) and
-            (document[field.c_str()].*verify)()) {
-          return (document[field.c_str()].*get)();
+            document[field.c_str()].template Is<T>()) {
+          return document[field.c_str()].template Get<T>();
         }
         return nonstd::nullopt;
       }
@@ -242,11 +207,8 @@ namespace iroha {
       nonstd::optional<B> deserializeField(B block, V B::*member,
                                            const D &document,
                                            const std::string &field,
-                                           bool (rapidjson::Value::*verify)()
-                                               const,
-                                           T (rapidjson::Value::*get)() const,
                                            Transform transform = Transform()) {
-        return deserializeField(document, field, verify, get)
+        return deserializeField<T>(document, field)
             | transform
             | [&block, &member](auto transformed) {
                 block.*member = transformed;
@@ -277,10 +239,8 @@ namespace iroha {
       optional_ptr<B> deserializeField(std::shared_ptr<B> block, V B::*member,
                                        const D &document,
                                        const std::string &field,
-                                       bool (rapidjson::Value::*verify)() const,
-                                       T (rapidjson::Value::*get)() const,
                                        Transform transform = Transform()) {
-        return deserializeField(document, field, verify, get)
+        return deserializeField<T>(document, field)
             | transform
             | [&block, &member](auto transformed) {
                 (*block).*member = transformed;
@@ -318,12 +278,10 @@ namespace iroha {
         template <typename T, typename V, typename B,
                   typename Transform = Transform<T, V>>
         auto deserialize(V B::*member, const std::string &field,
-                         bool (rapidjson::Value::*verify)() const,
-                         T (rapidjson::Value::*get)() const,
                          Transform transform = Transform()) {
-          return [this, member, field, verify, get, transform](auto block) {
-            return deserializeField(block, member, document, field, verify, get,
-                                    transform);
+          return [this, member, field, transform](auto block) {
+            return deserializeField<T>(block, member, document, field,
+                                       transform);
           };
         }
 
@@ -337,8 +295,7 @@ namespace iroha {
          */
         template <typename V, typename B>
         auto Uint(V B::*member, const std::string &field) {
-          return deserialize(member, field, &rapidjson::Value::IsUint,
-                             &rapidjson::Value::GetUint);
+          return deserialize<uint32_t>(member, field);
         }
 
         /**
@@ -351,8 +308,7 @@ namespace iroha {
          */
         template <typename V, typename B>
         auto Uint64(V B::*member, const std::string &field) {
-          return deserialize(member, field, &rapidjson::Value::IsUint64,
-                             &rapidjson::Value::GetUint64);
+          return deserialize<uint64_t>(member, field);
         }
 
         /**
@@ -365,8 +321,7 @@ namespace iroha {
          */
         template <typename V, typename B>
         auto Bool(V B::*member, const std::string &field) {
-          return deserialize(member, field, &rapidjson::Value::IsBool,
-                             &rapidjson::Value::GetBool);
+          return deserialize<bool>(member, field);
         }
 
         /**
@@ -379,8 +334,7 @@ namespace iroha {
          */
         template <typename V, typename B>
         auto String(V B::*member, const std::string &field) {
-          return deserialize(member, field, &rapidjson::Value::IsString,
-                             &rapidjson::Value::GetString);
+          return deserialize<std::string>(member, field);
         }
 
         /**
@@ -389,8 +343,7 @@ namespace iroha {
          * @return deserialized field on success, nullopt otherwise
          */
         auto String(const std::string &field) {
-          return deserializeField(document, field, &rapidjson::Value::IsString,
-                                  &rapidjson::Value::GetString);
+          return deserializeField<std::string>(document, field);
         }
 
         /**
@@ -403,8 +356,7 @@ namespace iroha {
          */
         template <typename V, typename B>
         auto Array(V B::*member, const std::string &field) {
-          return deserialize(member, field, &rapidjson::Value::IsArray,
-                             &rapidjson::Value::GetArray);
+          return deserialize<rapidjson::Value::ConstArray>(member, field);
         }
 
         /**
@@ -421,8 +373,8 @@ namespace iroha {
         template <typename V, typename B, typename Transform>
         auto Array(V B::*member, const std::string &field,
                    Transform transform) {
-          return deserialize(member, field, &rapidjson::Value::IsArray,
-                             &rapidjson::Value::GetArray, transform);
+          return deserialize<rapidjson::Value::ConstArray>(member, field,
+                                                           transform);
         }
 
         /**
@@ -435,8 +387,7 @@ namespace iroha {
          */
         template <typename V, typename B>
         auto Object(V B::*member, const std::string &field) {
-          return deserialize(member, field, &rapidjson::Value::IsObject,
-                             &rapidjson::Value::GetObject);
+          return deserialize<rapidjson::Value::ConstObject>(member, field);
         }
 
         // document for deserialization

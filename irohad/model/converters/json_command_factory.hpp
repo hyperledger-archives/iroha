@@ -19,7 +19,6 @@
 #define IROHA_JSON_COMMAND_FACTORY_HPP
 
 #include "model/common.hpp"
-#include <rapidjson/document.h>
 #include <memory>
 #include <typeindex>
 #include <unordered_map>
@@ -29,42 +28,6 @@
 namespace iroha {
   namespace model {
     namespace converters {
-
-      template <typename T>
-      struct Transform<T, Amount> {
-        auto operator()(T x) {
-          auto des = makeFieldDeserializer(x);
-          return nonstd::make_optional<Amount>() |
-                 des.Uint64(&Amount::int_part, "int_part") |
-                 des.Uint64(&Amount::frac_part, "frac_part");
-        }
-      };
-
-      template <typename T>
-      struct Transform<T, Account::Permissions> {
-        auto operator()(T x) {
-          auto des = makeFieldDeserializer(x);
-          return nonstd::make_optional<Account::Permissions>() |
-                 des.Bool(&Account::Permissions::add_signatory,
-                          "add_signatory") |
-                 des.Bool(&Account::Permissions::can_transfer, "can_transfer") |
-                 des.Bool(&Account::Permissions::create_accounts,
-                          "create_accounts") |
-                 des.Bool(&Account::Permissions::create_assets,
-                          "create_assets") |
-                 des.Bool(&Account::Permissions::create_domains,
-                          "create_domains") |
-                 des.Bool(&Account::Permissions::issue_assets, "issue_assets") |
-                 des.Bool(&Account::Permissions::read_all_accounts,
-                          "read_all_accounts") |
-                 des.Bool(&Account::Permissions::remove_signatory,
-                          "remove_signatory") |
-                 des.Bool(&Account::Permissions::set_permissions,
-                          "set_permissions") |
-                 des.Bool(&Account::Permissions::set_quorum, "set_quorum");
-        }
-      };
-
       class JsonCommandFactory {
        public:
         JsonCommandFactory();

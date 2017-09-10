@@ -18,11 +18,6 @@
 #ifndef IROHA_JSON_QUERY_FACTORY_HPP
 #define IROHA_JSON_QUERY_FACTORY_HPP
 
-#include <rapidjson/document.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
-
 #include "model/common.hpp"
 #include <memory>
 #include <nonstd/optional.hpp>

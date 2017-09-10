@@ -15,11 +15,7 @@
  * limitations under the License.
  */
 
-#define RAPIDJSON_HAS_STDSTRING 1
-
 #include "model/converters/json_common.hpp"
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/stringbuffer.h>
 #include <algorithm>
 #include "common/types.hpp"
 

@@ -23,6 +23,10 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
+#include <sstream>
+#include <iomanip>
+
+#include <nonstd/optional.hpp>
 
 /**
  * This file defines common types used in iroha.
@@ -32,8 +36,27 @@
  *
  * For std::array it is possible, so we prefer it over std::string.
  */
-namespace iroha {
 
+/**
+ * Bind operator. If argument has value, dereferences argument and calls
+ * given function, which should return wrapped value
+ * operator| is used since it has to be binary and left-associative
+ * @tparam T - monadic type
+ * @tparam Transform - transform function type
+ * @param t - monadic value
+ * @param f - function, which takes dereferenced value, and returns
+ * wrapped value
+ * @return monadic value, which can be of another type
+ */
+template <typename T, typename Transform>
+auto operator|(T t, Transform f) -> decltype(f(*t)) {
+  if (t) {
+    return f(*t);
+  }
+  return {};
+}
+
+namespace iroha {
   using byte_t = uint8_t;
 
   static const std::string code = {'0', '1', '2', '3', '4', '5', '6', '7',
@@ -82,18 +105,6 @@ namespace iroha {
     }
   };
 
-  // hex2bytes
-  inline std::vector<uint8_t> hex2bytes(const std::string &hex) {
-    std::vector<uint8_t> bytes;
-
-    for (size_t i = 0; i < hex.length(); i += 2) {
-      std::string byteString = hex.substr(i, 2);
-      uint8_t byte = (uint8_t) strtol(byteString.c_str(), NULL, 16);
-      bytes.push_back(byte);
-    }
-    return bytes;
-  }
-
   /**
    * Convert string to blob vector
    * @param source - string for conversion
@@ -112,31 +123,42 @@ namespace iroha {
     return std::string(source.begin(), source.end());
   }
 
-  // Deserialize hex string to array
-  template <size_t size>
-  inline void hexstringToArray(const std::string& string, blob_t<size>& array) {
-    auto bytes = hex2bytes(string);
-    std::copy(bytes.begin(), bytes.end(), array.begin());
-  }
-
   /**
    * Convert string of raw bytes to printable hex string
    * @param str
    * @return
    */
   inline std::string bytestringToHexstring(std::string str) {
-    std::string res(str.size() * 2, 0);
-    uint8_t front, back;
-    auto ptr = str.data();
-    for (uint32_t i = 0, k = 0; i < str.size(); i++) {
-      front = (uint8_t) (ptr[i] & 0xF0) >> 4;
-      back = (uint8_t) (ptr[i] & 0xF);
-      res[k++] = code[front];
-      res[k++] = code[back];
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0');
+    for(const auto &c : str) {
+      ss << std::setw(2) << static_cast<int>(c);
     }
-    return res;
+    return ss.str();
   }
 
+  /**
+   * Convert printable hex string to string of raw bytes
+   * @param str
+   * @return
+   */
+  inline nonstd::optional<std::string> hexstringToBytestring(std::string str) {
+    if (str.empty() or str.size() % 2 != 0) {
+      return nonstd::nullopt;
+    }
+    std::string result(str.size() / 2, 0);
+    for (size_t i = 0; i < result.length(); ++i) {
+      std::string byte = str.substr(i * 2, 2);
+      try {
+        result.at(i) = std::stoul(byte, nullptr, 16);
+      } catch (const std::invalid_argument &e) {
+        return nonstd::nullopt;
+      } catch (const std::out_of_range &e) {
+        return nonstd::nullopt;
+      }
+    }
+    return result;
+  }
 
   template <size_t size>
   using hash_t = blob_t<size>;

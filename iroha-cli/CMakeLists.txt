@@ -17,6 +17,9 @@ target_link_libraries(keys_manager
     optional
     crypto
     )
+target_include_directories(keys_manager PUBLIC
+    ${PROJECT_SOURCE_DIR}/iroha-cli
+    )
 
 add_library(client
     client.cpp
@@ -39,7 +42,6 @@ target_link_libraries(client
     parser
     model
     )
-
 target_include_directories(client PUBLIC
     ${PROJECT_SOURCE_DIR}/iroha-cli
     )
