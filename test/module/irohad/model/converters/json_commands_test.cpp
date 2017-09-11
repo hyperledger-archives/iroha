@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+
 #include <gtest/gtest.h>
+
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
@@ -26,10 +29,7 @@
 #include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
-
 #include "model/converters/json_command_factory.hpp"
-
-#include <algorithm>
 
 using namespace rapidjson;
 using namespace iroha;
@@ -47,6 +47,28 @@ class JsonCommandTest : public ::testing::Test {
     ASSERT_EQ(*abstract_command, *model_repr.value());
   }
 };
+
+TEST_F(JsonCommandTest, ClassHandlerTest) {
+  std::vector<std::shared_ptr<Command>> commands = {
+      std::make_shared<AddAssetQuantity>(),
+      std::make_shared<AddPeer>(),
+      std::make_shared<AddSignatory>(),
+      std::make_shared<AssignMasterKey>(),
+      std::make_shared<CreateAccount>(),
+      std::make_shared<CreateAsset>(),
+      std::make_shared<CreateDomain>(),
+      std::make_shared<RemoveSignatory>(),
+      std::make_shared<SetAccountPermissions>(),
+      std::make_shared<SetQuorum>(),
+      std::make_shared<TransferAsset>()
+  };
+  for (const auto &command : commands) {
+    auto ser = factory.serializeAbstractCommand(command);
+    auto des = factory.deserializeAbstractCommand(ser);
+    ASSERT_TRUE(des.has_value());
+    ASSERT_EQ(*des.value(), *command);
+  }
+}
 
 TEST_F(JsonCommandTest, InvalidWhenUnknownCommandType) {
   auto cmd = R"({

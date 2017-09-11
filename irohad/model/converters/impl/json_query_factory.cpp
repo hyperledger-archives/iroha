@@ -114,7 +114,7 @@ namespace iroha {
 
       // --- Serialization:
 
-      nonstd::optional<std::string> JsonQueryFactory::serialize(
+      std::string JsonQueryFactory::serialize(
           std::shared_ptr<Query> model_query) {
         Document doc;
         auto &allocator = doc.GetAllocator();

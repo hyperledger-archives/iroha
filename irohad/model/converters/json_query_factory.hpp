@@ -49,8 +49,7 @@ namespace iroha {
          * @param model_query - model representation of query
          * @return serialized Query in json format
          */
-        nonstd::optional<std::string> serialize(
-            std::shared_ptr<Query> model_query);
+        std::string serialize(std::shared_ptr<Query> model_query);
 
        private:
         Convert<std::shared_ptr<Query>> transform;
