@@ -191,6 +191,7 @@ TEST(CommandTest, set_transfer_asset) {
   orig_command.asset_id = "tugrik";
   orig_command.src_account_id = "Vasya";
   orig_command.dest_account_id = "Petya";
+  orig_command.description = "from Vasya to Petya without love";
 
   auto proto_command = factory.serializeTransferAsset(orig_command);
   auto serial_command = factory.deserializeTransferAsset(proto_command);

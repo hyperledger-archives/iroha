@@ -67,7 +67,7 @@ class CommandValidateExecuteTest : public ::testing::Test {
   }
 
   std::string admin_id = "admin@test", account_id = "test@test",
-      asset_id = "coin#test", domain_id = "test";
+      asset_id = "coin#test", domain_id = "test", description = "test transfer";
 
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockWsvCommand> wsv_command;
@@ -654,6 +654,7 @@ class TransferAssetTest : public CommandValidateExecuteTest {
     transfer_asset->src_account_id = admin_id;
     transfer_asset->dest_account_id = account_id;
     transfer_asset->asset_id = asset_id;
+    transfer_asset->description = description;
     transfer_asset->amount.int_part = 1;
     transfer_asset->amount.frac_part = 50;
 

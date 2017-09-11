@@ -58,7 +58,7 @@ TEST_F(JsonCommandTest, add_asset_quantity) {
 
   orig_command->amount = amount;
   orig_command->asset_id = "23";
-  
+
   auto json_command = factory.serializeAddAssetQuantity(orig_command);
   auto serial_command = factory.deserializeAddAssetQuantity(json_command);
 
@@ -83,7 +83,6 @@ TEST_F(JsonCommandTest, add_signatory) {
   auto orig_command = std::make_shared<AddSignatory>();
   orig_command->account_id = "23";
 
-  
   auto json_command = factory.serializeAddSignatory(orig_command);
   auto serial_command = factory.deserializeAddSignatory(json_command);
 
@@ -104,7 +103,7 @@ TEST_F(JsonCommandTest, add_signatory_abstract_factory) {
 TEST_F(JsonCommandTest, assign_master_key) {
   auto orig_command = std::make_shared<AssignMasterKey>();
   orig_command->account_id = "23";
-  
+
   auto json_command = factory.serializeAssignMasterKey(orig_command);
   auto serial_command = factory.deserializeAssignMasterKey(json_command);
 
@@ -130,7 +129,7 @@ TEST_F(JsonCommandTest, create_account) {
   auto orig_command = std::make_shared<CreateAccount>();
   orig_command->account_name = "keker";
   orig_command->domain_id = "cheburek";
-  
+
   auto json_command = factory.serializeCreateAccount(orig_command);
   auto serial_command = factory.deserializeCreateAccount(json_command);
   ASSERT_EQ(*orig_command, *serial_command);
@@ -186,6 +185,7 @@ TEST_F(JsonCommandTest, set_transfer_asset) {
   orig_command->asset_id = "tugrik";
   orig_command->src_account_id = "Vasya";
   orig_command->dest_account_id = "Petya";
+  orig_command->description = "from Vasya to Petya with love";
 
   auto json_command = factory.serializeTransferAsset(orig_command);
   auto serial_command = factory.deserializeTransferAsset(json_command);

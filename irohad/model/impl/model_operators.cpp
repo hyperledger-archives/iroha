@@ -27,7 +27,7 @@
 #include <model/commands/set_permissions.hpp>
 #include <model/commands/set_quorum.hpp>
 #include <model/commands/transfer_asset.hpp>
-#include <model/transaction.hpp>
+
 namespace iroha {
   namespace model {
 
@@ -177,7 +177,8 @@ namespace iroha {
       return transfer_asset.asset_id == asset_id &&
              transfer_asset.amount == amount &&
              transfer_asset.src_account_id == src_account_id &&
-             transfer_asset.dest_account_id == dest_account_id;
+             transfer_asset.dest_account_id == dest_account_id &&
+             transfer_asset.description == description;
     }
     bool TransferAsset::operator!=(const Command &command) const {
       return !operator==(command);
