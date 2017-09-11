@@ -53,7 +53,8 @@ namespace iroha {
             s.on_completed();
             return;
           }
-          auto document = model::converters::vectorToJson(bytes.value());
+          auto document =
+              model::converters::stringToJson(bytesToString(bytes.value()));
           if (not document.has_value()) {
             s.on_completed();
             return;

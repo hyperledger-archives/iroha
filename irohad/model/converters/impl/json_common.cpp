@@ -51,15 +51,6 @@ namespace iroha {
         document.Accept(writer);
         return sb.GetString();
       }
-
-      nonstd::optional<Document> vectorToJson(
-          const std::vector<uint8_t>& vector) {
-        return stringToJson(bytesToString(vector));
-      }
-
-      std::vector<uint8_t> jsonToVector(const Document& document) {
-        return stringToBytes(jsonToString(document));
-      }
     }  // namespace converters
   }    // namespace model
 }  // namespace iroha

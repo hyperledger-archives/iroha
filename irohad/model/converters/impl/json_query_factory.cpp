@@ -57,8 +57,8 @@ namespace iroha {
           const rapidjson::Document &document) {
         auto des = makeFieldDeserializer(document);
         return des.String("query_type")
-            | makeMap(deserializers_)
-            | makeInvoker(*this, document)
+            | makeOptionalGet(deserializers_)
+            | makeMethodInvoke(*this, document)
             | des.Uint64(&Query::created_ts, "created_ts")
             | des.String(&Query::creator_account_id, "creator_account_id")
             | des.Uint64(&Query::query_counter, "query_counter")
@@ -130,8 +130,8 @@ namespace iroha {
 
         doc.AddMember("signature", signature, allocator);
 
-        makeInvoker(*this, doc,
-                     model_query)(serializers_.at(typeid(*model_query)));
+        makeMethodInvoke(*this, doc,
+                         model_query)(serializers_.at(typeid(*model_query)));
         return jsonToString(doc);
       }
 

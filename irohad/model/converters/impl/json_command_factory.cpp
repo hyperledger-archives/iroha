@@ -433,14 +433,15 @@ namespace iroha {
       // Abstract
       Document JsonCommandFactory::serializeAbstractCommand(
           std::shared_ptr<Command> command) {
-        return makeInvoker(*this, command)(serializers_.at(typeid(*command)));
+        return makeMethodInvoke(*this,
+                                command)(serializers_.at(typeid(*command)));
       }
 
       optional_ptr<model::Command>
       JsonCommandFactory::deserializeAbstractCommand(const Value &document) {
         return makeFieldDeserializer(document).String("command_type")
-            | makeMap(deserializers_)
-            | makeInvoker(*this, document);
+            | makeOptionalGet(deserializers_)
+            | makeMethodInvoke(*this, document);
       }
     }  // namespace converters
   }    // namespace model

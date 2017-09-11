@@ -180,8 +180,8 @@ namespace iroha {
       auto storage = static_cast<MutableStorageImpl *>(storage_ptr.get());
       for (const auto &block : storage->block_store_) {
         block_store_->add(block.first,
-                          model::converters::jsonToVector(
-                              serializer_.serialize(block.second)));
+                          stringToBytes(model::converters::jsonToString(
+                              serializer_.serialize(block.second))));
       }
       storage->index_->exec();
       storage->transaction_->exec("COMMIT;");

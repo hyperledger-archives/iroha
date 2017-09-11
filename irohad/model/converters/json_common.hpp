@@ -45,7 +45,7 @@ namespace iroha {
        * nullopt otherwise
        */
       template <typename K, typename V>
-      auto makeMap(std::unordered_map<K, V> map) {
+      auto makeOptionalGet(std::unordered_map<K, V> map) {
         return [&map](auto key) -> nonstd::optional<V> {
           auto it = map.find(key);
           if (it != std::end(map)) {
@@ -56,61 +56,19 @@ namespace iroha {
       }
 
       /**
-       * Functor for invoking class method by pointer to member
-       * @tparam T - class for method call
-       * @tparam Args - member function arguments types
+       * Return function which invokes class method by pointer to member with
+       * provided arguments
+       * @tparam T - provided class type
+       * @tparam Args - provided arguments types
+       * @param object - class object
+       * @param args - function arguments
+       * @return described function
        */
       template <typename T, typename... Args>
-      class Invoker {
-       public:
-        /**
-         * @param object - object of given class
-         * @param args - arguments of member function
-         */
-        Invoker(T &object, Args &&... args) : object(object), args(args...) {}
-
-        /**
-         * Invoke function on saved object. Helper function to get
-         * index sequence
-         * @tparam F - function type to be called
-         * @tparam Is - index sequence of arguments from tuple
-         * @param f - function to be called
-         * @return result of function call
-         */
-        template <typename F, std::size_t... Is>
-        auto operator()(F f) {
-          return apply(f, std::index_sequence_for<Args...>{});
-        }
-       private:
-        /**
-         * Invoke function on saved object
-         * @tparam F - function type to be called
-         * @tparam Is - index sequence of arguments from tuple
-         * @param f - function to be called
-         * @return result of function call
-         */
-        template <typename F, std::size_t... Is>
-        auto apply(F f, std::index_sequence<Is...>) {
-          return (object.*f)(std::get<Is>(args)...);
-        }
-
-        // object for function call
-        T &object;
-        // arguments for function call
-        std::tuple<Args...> args;
-      };
-
-      /**
-       * Factory method for Invoker functor
-       * @tparam T - class type for method call
-       * @tparam Args - member function arguments types
-       * @param object - object of given class
-       * @param args - arguments of member function
-       * @return Invoker instance for given arguments
-       */
-      template <typename T, typename... Args>
-      auto makeInvoker(T &object, Args &&... args) {
-        return Invoker<T, Args...>(object, std::forward<Args>(args)...);
+      auto makeMethodInvoke(T &object, Args &&... args) {
+        return [&](auto f) {
+          return (object.*f)(std::forward<Args>(args)...);
+        };
       }
 
       /**
@@ -204,7 +162,7 @@ namespace iroha {
        */
       template <typename T, typename V, typename B, typename D,
                 typename Transform = Transform<T, V>>
-      nonstd::optional<B> deserializeField(B block, V B::*member,
+      nonstd::optional<B> deserializeObjectField(B block, V B::*member,
                                            const D &document,
                                            const std::string &field,
                                            Transform transform = Transform()) {
@@ -236,7 +194,7 @@ namespace iroha {
        */
       template <typename T, typename V, typename B, typename D,
                 typename Transform = Transform<T, V>>
-      optional_ptr<B> deserializeField(std::shared_ptr<B> block, V B::*member,
+      optional_ptr<B> deserializeObjectField(std::shared_ptr<B> block, V B::*member,
                                        const D &document,
                                        const std::string &field,
                                        Transform transform = Transform()) {
@@ -280,7 +238,7 @@ namespace iroha {
         auto deserialize(V B::*member, const std::string &field,
                          Transform transform = Transform()) {
           return [this, member, field, transform](auto block) {
-            return deserializeField<T>(block, member, document, field,
+            return deserializeObjectField<T>(block, member, document, field,
                                        transform);
           };
         }
@@ -455,7 +413,7 @@ namespace iroha {
        * Serialize signature to JSON with given allocator
        * @param signature - signature for serialization
        * @param allocator - allocator for JSON value
-       * @return
+       * @return JSON value with signature
        */
       rapidjson::Value serializeSignature(
           const Signature &signature,
@@ -475,21 +433,6 @@ namespace iroha {
        * @return pretty printed JSON document
        */
       std::string jsonToString(const rapidjson::Document &document);
-
-      /**
-       * Try to parse JSON from vector
-       * @param vector - vector for parsing
-       * @return JSON document on success, nullopt otherwise
-       */
-      nonstd::optional<rapidjson::Document> vectorToJson(
-          const std::vector<uint8_t> &vector);
-
-      /**
-       * Pretty print JSON document to vector
-       * @param document - document for printing
-       * @return pretty printed JSON document
-       */
-      std::vector<uint8_t> jsonToVector(const rapidjson::Document &document);
     }  // namespace converters
   }    // namespace model
 }  // namespace iroha
