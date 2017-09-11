@@ -52,7 +52,7 @@ namespace iroha {
         std::string serialize(std::shared_ptr<Query> model_query);
 
        private:
-        Convert<std::shared_ptr<Query>> transform;
+        Convert<std::shared_ptr<Query>> toQuery;
 
         optional_ptr<Query> deserialize(const rapidjson::Document &document);
 

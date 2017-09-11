@@ -72,64 +72,37 @@ namespace iroha {
       }
 
       /**
-       * Transform given type to optional of another type
-       * @tparam T - input type
-       * @tparam V - output type
-       */
-      template <typename T, typename V>
-      struct Transform {
-        auto operator()(T x) { return nonstd::optional<V>(x); }
-      };
-
-      /**
-       * Transform functor which specifies output type
+       * Convert functor which specifies output type
        * @tparam V - output type
        */
       template <typename V>
       struct Convert {
         /**
-         * Transform input type to defined type
+         * Convert input type to defined type
          * @tparam T - input type
          * @param x - input value
          * @return optional of output type from input value
          */
         template <typename T>
-        auto operator()(T x) {
+        auto operator()(T &&x) {
           return nonstd::optional<V>(x);
         }
       };
 
-      /**
-       * Transform given type to Block::HashType
-       * @tparam T - input type
-       */
-      template <typename T>
-      struct Transform<T, Block::HashType> {
-        auto operator()(T x) {
-          return hexstringToArray<Block::HashType::size()>(x);
+      template <size_t size>
+      struct Convert<blob_t<size>> {
+        template <typename T>
+        auto operator()(T &&x) {
+          return hexstringToArray<size>(x);
         }
       };
 
       /**
-       * Transform given type to Signature::SignatureType
-       * @tparam T - input type
-       */
-      template <typename T>
-      struct Transform<T, Signature::SignatureType> {
-        auto operator()(T x) {
-          return hexstringToArray<Signature::SignatureType::size()>(x);
-        }
-      };
-
-      /**
-       * Deserialize field from given document with given verification and
-       * getter
+       * Deserialize field from given document with given type
        * @tparam T - getter return type
        * @tparam D - document type
        * @param document - document value for deserialization
        * @param field - field name for deserialization
-       * @param verify - verification method for field
-       * @param get - getter for field
        * @return deserialized field on success, nullopt otherwise
        */
       template <typename T, typename D>
@@ -140,70 +113,6 @@ namespace iroha {
           return document[field.c_str()].template Get<T>();
         }
         return nonstd::nullopt;
-      }
-
-      /**
-       * Deserialize field from given document with given verification and
-       * getter, transform the value to required type, and assign it to block
-       * member
-       * @tparam T - getter return type
-       * @tparam V - block member type
-       * @tparam B - block type
-       * @tparam D - document type
-       * @tparam Transform - transform function type
-       * @param block - block value for member assignment
-       * @param member - pointer to member in block
-       * @param document - document value for deserialization
-       * @param field - field name for deserialization
-       * @param verify - verification method for field
-       * @param get - getter for field
-       * @param transform - transform function from T to V
-       * @return block with deserialized member on success, nullopt otherwise
-       */
-      template <typename T, typename V, typename B, typename D,
-                typename Transform = Transform<T, V>>
-      nonstd::optional<B> deserializeObjectField(B block, V B::*member,
-                                           const D &document,
-                                           const std::string &field,
-                                           Transform transform = Transform()) {
-        return deserializeField<T>(document, field)
-            | transform
-            | [&block, &member](auto transformed) {
-                block.*member = transformed;
-                return nonstd::make_optional(block);
-              };
-      }
-
-      /**
-       * Deserialize field from given document with given verification and
-       * getter, transform the value to required type, and assign it to block
-       * member. Block is wrapped in shared pointer
-       * @tparam T - getter return type
-       * @tparam V - block member type
-       * @tparam B - block type
-       * @tparam D - document type
-       * @tparam Transform - transform function type
-       * @param block - block value for member assignment
-       * @param member - pointer to member in block
-       * @param document - document value for deserialization
-       * @param field - field name for deserialization
-       * @param verify - verification method for field
-       * @param get - getter for field
-       * @param transform - transform function from T to V
-       * @return block with deserialized member on success, nullopt otherwise
-       */
-      template <typename T, typename V, typename B, typename D,
-                typename Transform = Transform<T, V>>
-      optional_ptr<B> deserializeObjectField(std::shared_ptr<B> block, V B::*member,
-                                       const D &document,
-                                       const std::string &field,
-                                       Transform transform = Transform()) {
-        return deserializeField<T>(document, field)
-            | transform
-            | [&block, &member](auto transformed) {
-                (*block).*member = transformed;
-                return nonstd::make_optional(block);
-              };
       }
 
       /**
@@ -218,28 +127,60 @@ namespace iroha {
         explicit FieldDeserializer(const D &document) : document(document) {}
 
         /**
+         * Assign the value to the block member
+         * @tparam V - block member type
+         * @tparam B - block type
+         * @param block - block value for member assignment
+         * @param member - pointer to member in block
+         * @return block with deserialized member on success, nullopt otherwise
+         */
+        template <typename V, typename B>
+        auto assignObjectField(B block, V B::*member) {
+          return [=](auto transformed) mutable {
+            block.*member = transformed;
+            return nonstd::make_optional(block);
+          };
+        }
+
+        /**
+         * Assign the value to the block member. Block is wrapped in shared
+         * pointer
+         * @tparam V - block member type
+         * @tparam B - block type
+         * @param block - block value for member assignment
+         * @param member - pointer to member in block
+         * @return block with deserialized member on success, nullopt otherwise
+         */
+        template <typename V, typename B>
+        auto assignObjectField(std::shared_ptr<B> block, V B::*member) {
+          return [=](auto transformed) mutable {
+            (*block).*member = transformed;
+            return nonstd::make_optional(block);
+          };
+        }
+
+        /**
          * Create function, which will deserialize document field with given
          * verification and getter, transform the value to required type, and
          * assign it to block member
          * @tparam T - getter return type
          * @tparam V - block member type
          * @tparam B - block type
-         * @tparam Transform - transform function type
+         * @tparam Convert - transform function type
          * @param member - pointer to member in block
          * @param field - field name for deserialization
-         * @param verify - verification method for field
-         * @param get - getter for field
          * @param transform - transform function from T to V
          * @return function, which takes block, returns block with deserialized
          * member on success, nullopt otherwise
          */
         template <typename T, typename V, typename B,
-                  typename Transform = Transform<T, V>>
+                  typename Convert = Convert<V>>
         auto deserialize(V B::*member, const std::string &field,
-                         Transform transform = Transform()) {
+                         Convert transform = Convert()) {
           return [this, member, field, transform](auto block) {
-            return deserializeObjectField<T>(block, member, document, field,
-                                       transform);
+            return deserializeField<T>(document, field)
+                | transform
+                | this->assignObjectField(block, member);
           };
         }
 
@@ -305,32 +246,19 @@ namespace iroha {
         }
 
         /**
-         * Deserialize field of Array type to given member field of block
-         * @tparam V - block member type
-         * @tparam B - block type
-         * @param member - pointer to member in block
-         * @param field - field name for deserialization
-         * @return @see deserialize
-         */
-        template <typename V, typename B>
-        auto Array(V B::*member, const std::string &field) {
-          return deserialize<rapidjson::Value::ConstArray>(member, field);
-        }
-
-        /**
          * Deserialize field of Array type to given member field of block,
          * using provided transform function
          * @tparam V - block member type
          * @tparam B - block type
-         * @tparam Transform - transform function type
+         * @tparam Convert - transform function type
          * @param member - pointer to member in block
          * @param field - field name for deserialization
          * @param transform - transform function from Array to V
          * @return @see deserialize
          */
-        template <typename V, typename B, typename Transform>
+        template <typename V, typename B, typename Convert = Convert<V>>
         auto Array(V B::*member, const std::string &field,
-                   Transform transform) {
+                   Convert transform = Convert()) {
           return deserialize<rapidjson::Value::ConstArray>(member, field,
                                                            transform);
         }
@@ -343,9 +271,11 @@ namespace iroha {
          * @param field - field name for deserialization
          * @return @see deserialize
          */
-        template <typename V, typename B>
-        auto Object(V B::*member, const std::string &field) {
-          return deserialize<rapidjson::Value::ConstObject>(member, field);
+        template <typename V, typename B, typename Convert = Convert<V>>
+        auto Object(V B::*member, const std::string &field,
+                    Convert transform = Convert()) {
+          return deserialize<rapidjson::Value::ConstObject>(member, field,
+                                                            transform);
         }
 
         // document for deserialization
@@ -363,48 +293,33 @@ namespace iroha {
         return FieldDeserializer<D>(document);
       }
 
-      /**
-       * Try to deserialize signature from given document
-       * @tparam D - document type
-       * @param value - document object
-       * @return signature on success, nullopt otherwise
-       */
-      template <typename D>
-      auto deserializeSignature(const D &value) {
-        auto des = makeFieldDeserializer(value);
-        return nonstd::make_optional<Signature>()
-            | des.String(&Signature::pubkey, "pubkey")
-            | des.String(&Signature::signature, "signature");
-      }
-
-      /**
-       * Transform given type to Signature
-       * @tparam T - input type
-       */
-      template <typename T>
-      struct Transform<T, Signature> {
-        auto operator()(T x) { return deserializeSignature(x); }
+      template <>
+      struct Convert<Signature> {
+        template <typename T>
+        auto operator()(T &&x) {
+          auto des = makeFieldDeserializer(x);
+          return nonstd::make_optional<Signature>()
+              | des.String(&Signature::pubkey, "pubkey")
+              | des.String(&Signature::signature, "signature");
+        }
       };
 
-      /**
-       * Transform given type to Block::SignaturesType
-       * @tparam T - input type
-       */
-      template <typename T>
-      struct Transform<T, Block::SignaturesType> {
-        auto operator()(T x) {
+      template <>
+      struct Convert<Block::SignaturesType> {
+        template <typename T>
+        auto operator()(T &&x) {
           return std::accumulate(
               x.begin(), x.end(),
               nonstd::make_optional<Block::SignaturesType>(),
               [](auto init, auto &x) {
                 return init
                     | [&x](auto signatures) {
-                        return deserializeSignature(x)
-                            | [&signatures](auto signature) {
-                                signatures.push_back(signature);
-                                return nonstd::make_optional(signatures);
-                              };
-                      };
+                      return Convert<Signature>()(x)
+                          | [&signatures](auto signature) {
+                            signatures.push_back(signature);
+                            return nonstd::make_optional(signatures);
+                          };
+                    };
               });
         }
       };

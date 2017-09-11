@@ -74,7 +74,7 @@ namespace iroha {
         auto des = makeFieldDeserializer(obj_query);
         return make_optional_ptr<GetAccount>()
             | des.String(&GetAccount::account_id, "account_id")
-            | transform;
+            | toQuery;
       }
 
       optional_ptr<Query> JsonQueryFactory::deserializeGetSignatories(
@@ -82,7 +82,7 @@ namespace iroha {
         auto des = makeFieldDeserializer(obj_query);
         return make_optional_ptr<GetSignatories>()
             | des.String(&GetSignatories::account_id, "account_id")
-            | transform;
+            | toQuery;
       }
 
       optional_ptr<Query> JsonQueryFactory::deserializeGetAccountTransactions(
@@ -90,7 +90,7 @@ namespace iroha {
         auto des = makeFieldDeserializer(obj_query);
         return make_optional_ptr<GetAccountTransactions>()
             | des.String(&GetAccountTransactions::account_id, "account_id")
-            | transform;
+            | toQuery;
       }
 
       optional_ptr<Query>
@@ -100,7 +100,7 @@ namespace iroha {
         return make_optional_ptr<GetAccountAssetTransactions>()
             | des.String(&GetAccountAssetTransactions::account_id, "account_id")
             | des.String(&GetAccountAssetTransactions::asset_id, "asset_id")
-            | transform;
+            | toQuery;
       }
 
       optional_ptr<Query> JsonQueryFactory::deserializeGetAccountAssets(
@@ -109,7 +109,7 @@ namespace iroha {
         return make_optional_ptr<GetAccountAssets>()
             | des.String(&GetAccountAssets::account_id, "account_id")
             | des.String(&GetAccountAssets::asset_id, "asset_id")
-            | transform;
+            | toQuery;
       }
 
       // --- Serialization:
