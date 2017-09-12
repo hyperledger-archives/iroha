@@ -11,6 +11,8 @@ RUN apt-get -y --no-install-recommends install build-essential python-software-p
         libssl-dev libc-ares-dev \
         # CircleCI dependencies
         git ssh tar gzip ca-certificates python3 python3-pip python3-setuptools \
+        # code coverage
+        lcov \
         # other
         wget curl cmake file unzip gdb iputils-ping vim ccache; \
     apt-get -y clean
