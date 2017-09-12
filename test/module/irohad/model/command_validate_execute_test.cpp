@@ -50,12 +50,10 @@ class CommandValidateExecuteTest : public ::testing::Test {
 
     creator.account_id = admin_id;
     creator.domain_name = domain_id;
-    creator.master_key.fill(0x1);
     creator.quorum = 1;
 
     account.account_id = account_id;
     account.domain_name = domain_id;
-    account.master_key.fill(0x2);
     account.quorum = 1;
   }
 
@@ -198,7 +196,7 @@ class AddSignatoryTest : public CommandValidateExecuteTest {
 
     add_signatory = std::make_shared<AddSignatory>();
     add_signatory->account_id = account_id;
-    add_signatory->pubkey = creator.master_key;  // Such Pubkey exist
+    add_signatory->pubkey.fill(1);  // Such Pubkey exist
 
     command = add_signatory;
   }
@@ -262,7 +260,7 @@ TEST_F(AddSignatoryTest, InvalidWhenNoAccount) {
 TEST_F(AddSignatoryTest, InvalidWhenSameKey) {
   // Add same signatory
   creator.permissions.add_signatory = true;
-  add_signatory->pubkey = account.master_key;
+  add_signatory->pubkey.fill(2);
 
   EXPECT_CALL(*wsv_command, insertAccountSignatory(add_signatory->account_id,
                                                    add_signatory->pubkey))
@@ -280,7 +278,7 @@ class CreateAccountTest : public CommandValidateExecuteTest {
     create_account = std::make_shared<CreateAccount>();
     create_account->account_name = "test";
     create_account->domain_id = domain_id;
-    create_account->pubkey = account.master_key;
+    create_account->pubkey.fill(2);
 
     command = create_account;
   }
@@ -400,7 +398,7 @@ class RemoveSignatoryTest : public CommandValidateExecuteTest {
 
     remove_signatory = std::make_shared<RemoveSignatory>();
     remove_signatory->account_id = account_id;
-    remove_signatory->pubkey = creator.master_key;
+    remove_signatory->pubkey.fill(1);
 
     command = remove_signatory;
   }
@@ -424,17 +422,6 @@ TEST_F(RemoveSignatoryTest, ValidWhenCreatorHasPermissions) {
 TEST_F(RemoveSignatoryTest, InvalidWhenNoPermissions) {
   // Creator has no permissions
   creator.permissions.remove_signatory = false;
-
-  ASSERT_FALSE(validateAndExecute());
-}
-
-TEST_F(RemoveSignatoryTest, InvalidWhenMasterKey) {
-  // Remove master key
-  creator.permissions.remove_signatory = true;
-  remove_signatory->pubkey = account.master_key;
-
-  EXPECT_CALL(*wsv_query, getAccount(remove_signatory->account_id))
-      .WillOnce(Return(account));
 
   ASSERT_FALSE(validateAndExecute());
 }

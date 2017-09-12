@@ -22,7 +22,6 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
@@ -97,7 +96,6 @@ TEST_F(AmetsuchiTest, SampleTest) {
     ASSERT_EQ(account->account_id,
               createAccount.account_name + "@" + createAccount.domain_id);
     ASSERT_EQ(account->domain_name, createAccount.domain_id);
-    ASSERT_EQ(account->master_key, createAccount.pubkey);
   }
 
   txn = Transaction();

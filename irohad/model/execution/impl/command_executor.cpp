@@ -189,7 +189,6 @@ bool CreateAccountExecutor::execute(const Command &command,
   auto create_account = static_cast<const CreateAccount &>(command);
 
   Account account;
-  account.master_key = create_account.pubkey;
   account.account_id =
       create_account.account_name + "@" + create_account.domain_id;
 
@@ -336,9 +335,7 @@ bool RemoveSignatoryExecutor::isValid(const Command &command,
   auto remove_signatory = static_cast<const RemoveSignatory &>(command);
 
   auto account = queries.getAccount(remove_signatory.account_id);
-  return account.has_value() and
-      // You can't remove master key (first you should reassign it)
-      remove_signatory.pubkey != account.value().master_key;
+  return account.has_value();
 }
 
 // ----------------- SetAccountPermissions -----------------
