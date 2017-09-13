@@ -19,7 +19,6 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
@@ -97,17 +96,6 @@ TEST_F(JsonCommandTest, add_signatory_abstract_factory) {
   auto orig_command = std::make_shared<AddSignatory>();
   orig_command->account_id = "23";
 
-  command_converter_test(orig_command);
-}
-
-TEST_F(JsonCommandTest, assign_master_key) {
-  auto orig_command = std::make_shared<AssignMasterKey>();
-  orig_command->account_id = "23";
-
-  auto json_command = factory.serializeAssignMasterKey(orig_command);
-  auto serial_command = factory.deserializeAssignMasterKey(json_command);
-
-  ASSERT_EQ(*orig_command, *serial_command);
   command_converter_test(orig_command);
 }
 

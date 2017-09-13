@@ -134,7 +134,6 @@ namespace iroha {
           "CREATE TABLE IF NOT EXISTS account (\n"
           "    account_id character varying(197),    \n"
           "    domain_id character varying(164) NOT NULL REFERENCES domain,\n"
-          "    master_key bytea NOT NULL REFERENCES signatory(public_key),\n"
           "    quorum int NOT NULL,\n"
           "    status int NOT NULL DEFAULT 0,    \n"
           "    transaction_count int NOT NULL DEFAULT 0, \n"

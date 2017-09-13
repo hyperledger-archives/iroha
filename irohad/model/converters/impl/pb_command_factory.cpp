@@ -85,26 +85,6 @@ namespace iroha {
         return add_signatory;
       }
 
-      // assign master key
-      protocol::AssignMasterKey PbCommandFactory::serializeAssignMasterKey(
-          const model::AssignMasterKey &assign_master_key) {
-        protocol::AssignMasterKey pb_assign_master_key;
-        pb_assign_master_key.set_account_id(assign_master_key.account_id);
-        pb_assign_master_key.set_public_key(assign_master_key.pubkey.data(),
-                                            assign_master_key.pubkey.size());
-        return pb_assign_master_key;
-      }
-
-      model::AssignMasterKey PbCommandFactory::deserializeAssignMasterKey(
-          const protocol::AssignMasterKey &pb_assign_master_key) {
-        model::AssignMasterKey assign_master_key;
-        assign_master_key.account_id = pb_assign_master_key.account_id();
-        std::copy(pb_assign_master_key.public_key().begin(),
-                  pb_assign_master_key.public_key().end(),
-                  assign_master_key.pubkey.begin());
-        return assign_master_key;
-      }
-
       // create asset
       protocol::CreateAsset PbCommandFactory::serializeCreateAsset(
           const model::CreateAsset &create_asset) {
@@ -313,18 +293,10 @@ namespace iroha {
               new protocol::AddSignatory(serialized));
         }
 
-        // -----|AssignMasterKey|-----
-        if (instanceof <model::AssignMasterKey>(command)) {
-          auto serialized = commandFactory.serializeAssignMasterKey(
-              static_cast<const model::AssignMasterKey &>(command));
-          cmd.set_allocated_account_assign_mk(
-              new protocol::AssignMasterKey(serialized));
-        }
-
-        // -----|AssignMasterKey|-----
-        if (instanceof <model::CreateAsset>(command)) {
+        // -----|CreateAsset|-----
+        if (instanceof<model::CreateAsset>(command)) {
           auto serialized = commandFactory.serializeCreateAsset(
-              static_cast<const model::CreateAsset &>(command));
+                  static_cast<const model::CreateAsset &>(command));
           cmd.set_allocated_create_asset(new protocol::CreateAsset(serialized));
         }
 
@@ -404,13 +376,6 @@ namespace iroha {
           auto pb_command = command.add_signatory();
           auto cmd = commandFactory.deserializeAddSignatory(pb_command);
           val = std::make_shared<model::AddSignatory>(cmd);
-        }
-
-        // -----|AssignMasterKey|-----
-        if (command.has_account_assign_mk()) {
-          auto pb_command = command.account_assign_mk();
-          auto cmd = commandFactory.deserializeAssignMasterKey(pb_command);
-          val = std::make_shared<model::AssignMasterKey>(cmd);
         }
 
         // -----|CreateAsset|-----

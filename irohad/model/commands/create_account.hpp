@@ -38,7 +38,7 @@ namespace iroha {
       std::string domain_id;
 
       /**
-       * Master key of account
+       * Signatory of account
        */
       ed25519::pubkey_t pubkey;
 

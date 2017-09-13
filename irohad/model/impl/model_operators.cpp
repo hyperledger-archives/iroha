@@ -19,7 +19,6 @@
 #include <model/commands/add_asset_quantity.hpp>
 #include <model/commands/add_peer.hpp>
 #include <model/commands/add_signatory.hpp>
-#include <model/commands/assign_master_key.hpp>
 #include <model/commands/create_account.hpp>
 #include <model/commands/create_asset.hpp>
 #include <model/commands/create_domain.hpp>
@@ -64,18 +63,6 @@ namespace iroha {
     }
 
     bool AddSignatory::operator!=(const Command &command) const {
-      return !operator==(command);
-    }
-
-    /* Assign master key */
-    bool AssignMasterKey::operator==(const Command &command) const {
-      if (! instanceof <AssignMasterKey>(command)) return false;
-      auto assign_master_key = static_cast<const AssignMasterKey &>(command);
-      return assign_master_key.account_id == account_id &&
-             assign_master_key.pubkey == pubkey;
-    }
-
-    bool AssignMasterKey::operator!=(const Command &command) const {
       return !operator==(command);
     }
 

@@ -22,7 +22,6 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
@@ -55,12 +54,6 @@ namespace iroha {
             const model::AddSignatory &addSignatory);
         model::AddSignatory deserializeAddSignatory(
             const protocol::AddSignatory &addSignatory);
-
-        // assign master key
-        protocol::AssignMasterKey serializeAssignMasterKey(
-            const model::AssignMasterKey &assignMasterKey);
-        model::AssignMasterKey deserializeAssignMasterKey(
-            const protocol::AssignMasterKey &assignMasterKey);
 
         // create asset
         protocol::CreateAsset serializeCreateAsset(

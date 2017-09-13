@@ -37,9 +37,6 @@ namespace iroha {
         std::shared_ptr<Command> generateRemoveSignatory(
             const std::string &account_id, const ed25519::pubkey_t &key);
 
-        std::shared_ptr<Command> generateAssignMasterKey(
-            const std::string &account_id, const ed25519::pubkey_t &key);
-
         std::shared_ptr<Command> generateCreateAccount(
             const std::string &account_name, const std::string &domain_id,
             const ed25519::pubkey_t &key);
