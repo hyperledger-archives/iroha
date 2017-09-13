@@ -23,8 +23,12 @@ if(COVERAGE)
   set(CMAKE_C_FLAGS "--coverage ${CMAKE_C_FLAGS}")
   set(CMAKE_SHARED_LINKER_FLAGS "--coverage ${CMAKE_SHARED_LINKER_FLAGS}")
   set(CMAKE_EXE_LINKER_FLAGS "--coverage ${CMAKE_EXE_LINKER_FLAGS}")
+  add_custom_target(coverage.init.info
+      COMMAND ${LCOV_PROGRAM} -o ${PROJECT_BINARY_DIR}/coverage.init.info -c -i -d ${PROJECT_BINARY_DIR}
+      )
   add_custom_target(coverage.info
       COMMAND ${LCOV_PROGRAM} -o ${PROJECT_BINARY_DIR}/coverage.info -c -d ${PROJECT_BINARY_DIR}
+      COMMAND ${LCOV_PROGRAM} -o ${PROJECT_BINARY_DIR}/coverage.info -a ${PROJECT_BINARY_DIR}/coverage.init.info -a ${PROJECT_BINARY_DIR}/coverage.info
       COMMAND ${LCOV_PROGRAM} -o ${PROJECT_BINARY_DIR}/coverage.info -r ${PROJECT_BINARY_DIR}/coverage.info '/usr*' '${CMAKE_SOURCE_DIR}/external/*'
       )
 endif()

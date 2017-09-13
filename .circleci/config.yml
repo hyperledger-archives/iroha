@@ -42,10 +42,13 @@ jobs:
           name: make
           command: cmake --build $IROHA_BUILD -- -j4
       - run:
+          name: code coverage pre
+          command: cmake --build $IROHA_BUILD --target coverage.init.info
+      - run:
           name: run tests
           command: cmake --build $IROHA_BUILD --target test
       - run:
-          name: code coverage
+          name: code coverage post
           command: |
             cmake --build $IROHA_BUILD --target coverage.info
             lcov --list $IROHA_BUILD/coverage.info
