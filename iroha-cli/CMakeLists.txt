@@ -1,5 +1,7 @@
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
+add_subdirectory(interactive)
+
 # Gflags config validators
 add_library(cli-flags_validators
     validators.cpp
@@ -23,12 +25,19 @@ add_library(client
     impl/grpc_response_handler.cpp
     )
 target_link_libraries(client
+    interactive_cli
+    crypto
+    optional
+    logger
+    rapidjson
     pb_model_converters
     json_model_converters
     model_generators
     command_client
     query_client
-    logger
+    model_generators
+    parser
+    model
     )
 
 target_include_directories(client PUBLIC

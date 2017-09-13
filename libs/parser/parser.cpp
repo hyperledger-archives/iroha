@@ -14,31 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef IROHA_CREATE_DOMAIN_HPP
-#define IROHA_CREATE_DOMAIN_HPP
 
-#include <model/command.hpp>
-#include <model/domain.hpp>
+#include "parser.hpp"
 
-namespace iroha {
-  namespace model {
+namespace parser {
 
-    /**
-     * Create new asset in the system
-     */
-    struct CreateDomain : public Command {
-      /**
-       * Asset to insert to the system
-       */
-      std::string domain_name;
+nonstd::optional<std::string> parseFirstCommand(std::string line){
+  auto vec = split(line);
+  if (vec.size() == 0) {
+    return nonstd::nullopt;
+  }
+  return vec[0];
+};
 
-      bool operator==(const Command& command) const override;
-      bool operator!=(const Command& command) const override;
-
-      CreateDomain() {}
-
-      CreateDomain(std::string domain_name) : domain_name(domain_name) {}
-    };
-  }  // namespace model
-}
-#endif  // IROHA_CREATE_DOMAIN_HPP
+  std::vector<std::string> split(std::string line) {
+    std::transform(line.begin(), line.end(), line.begin(), ::tolower);
+    std::istringstream iss(line);
+    return {std::istream_iterator<std::string>{iss},
+            std::istream_iterator<std::string>{}};
+  }
+}  // namespace parser
