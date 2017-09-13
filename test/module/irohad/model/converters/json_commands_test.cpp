@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+
 #include <gtest/gtest.h>
+
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
@@ -26,10 +29,7 @@
 #include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
-
 #include "model/converters/json_command_factory.hpp"
-
-#include <algorithm>
 
 using namespace rapidjson;
 using namespace iroha;
@@ -48,6 +48,43 @@ class JsonCommandTest : public ::testing::Test {
   }
 };
 
+TEST_F(JsonCommandTest, ClassHandlerTest) {
+  std::vector<std::shared_ptr<Command>> commands = {
+      std::make_shared<AddAssetQuantity>(),
+      std::make_shared<AddPeer>(),
+      std::make_shared<AddSignatory>(),
+      std::make_shared<CreateAccount>(),
+      std::make_shared<CreateAsset>(),
+      std::make_shared<CreateDomain>(),
+      std::make_shared<RemoveSignatory>(),
+      std::make_shared<SetAccountPermissions>(),
+      std::make_shared<SetQuorum>(),
+      std::make_shared<TransferAsset>()
+  };
+  for (const auto &command : commands) {
+    auto ser = factory.serializeAbstractCommand(command);
+    auto des = factory.deserializeAbstractCommand(ser);
+    ASSERT_TRUE(des.has_value());
+    ASSERT_EQ(*des.value(), *command);
+  }
+}
+
+TEST_F(JsonCommandTest, InvalidWhenUnknownCommandType) {
+  auto cmd = R"({
+    "command_type": "Unknown",
+    "account_id": "admin@test",
+    "asset_id": "usd#test",
+    "amount": {
+        "int_part": -20,
+        "frac_part": 0
+    }
+  })";
+
+  auto json = stringToJson(cmd);
+  ASSERT_TRUE(json.has_value());
+  ASSERT_FALSE(factory.deserializeAbstractCommand(json.value()).has_value());
+}
+
 TEST_F(JsonCommandTest, add_asset_quantity) {
   auto orig_command = std::make_shared<AddAssetQuantity>();
   orig_command->account_id = "23";
@@ -61,7 +98,8 @@ TEST_F(JsonCommandTest, add_asset_quantity) {
   auto json_command = factory.serializeAddAssetQuantity(orig_command);
   auto serial_command = factory.deserializeAddAssetQuantity(json_command);
 
-  ASSERT_EQ(*orig_command, *serial_command);
+  ASSERT_TRUE(serial_command.has_value());
+  ASSERT_EQ(*orig_command, *serial_command.value());
   command_converter_test(orig_command);
 }
 
@@ -71,11 +109,12 @@ TEST_F(JsonCommandTest, add_peer) {
   auto proto_add_peer = factory.serializeAddPeer(orig_addPeer);
   auto serial_addPeer = factory.deserializeAddPeer(proto_add_peer);
 
-  ASSERT_EQ(*orig_addPeer, *serial_addPeer);
+  ASSERT_TRUE(serial_addPeer.has_value());
+  ASSERT_EQ(*orig_addPeer, *serial_addPeer.value());
   command_converter_test(orig_addPeer);
 
   orig_addPeer->address = "134";
-  ASSERT_NE(*serial_addPeer, *orig_addPeer);
+  ASSERT_NE(*serial_addPeer.value(), *orig_addPeer);
 }
 
 TEST_F(JsonCommandTest, add_signatory) {
@@ -85,11 +124,12 @@ TEST_F(JsonCommandTest, add_signatory) {
   auto json_command = factory.serializeAddSignatory(orig_command);
   auto serial_command = factory.deserializeAddSignatory(json_command);
 
-  ASSERT_EQ(*orig_command, *serial_command);
+  ASSERT_TRUE(serial_command.has_value());
+  ASSERT_EQ(*orig_command, *serial_command.value());
   command_converter_test(orig_command);
 
   orig_command->account_id = "100500";
-  ASSERT_NE(*orig_command, *serial_command);
+  ASSERT_NE(*orig_command, *serial_command.value());
 }
 
 TEST_F(JsonCommandTest, add_signatory_abstract_factory) {
@@ -108,7 +148,8 @@ TEST_F(JsonCommandTest, create_asset) {
   auto json_command = factory.serializeCreateAsset(orig_command);
   auto serial_command = factory.deserializeCreateAsset(json_command);
 
-  ASSERT_EQ(*orig_command, *serial_command);
+  ASSERT_TRUE(serial_command.has_value());
+  ASSERT_EQ(*orig_command, *serial_command.value());
 
   command_converter_test(orig_command);
 }
@@ -120,7 +161,9 @@ TEST_F(JsonCommandTest, create_account) {
 
   auto json_command = factory.serializeCreateAccount(orig_command);
   auto serial_command = factory.deserializeCreateAccount(json_command);
-  ASSERT_EQ(*orig_command, *serial_command);
+
+  ASSERT_TRUE(serial_command.has_value());
+  ASSERT_EQ(*orig_command, *serial_command.value());
   command_converter_test(orig_command);
 }
 
@@ -132,7 +175,8 @@ TEST_F(JsonCommandTest, remove_signatory) {
   auto json_command = factory.serializeRemoveSignatory(orig_command);
   auto serial_command = factory.deserializeRemoveSignatory(json_command);
 
-  ASSERT_EQ(*orig_command, *serial_command);
+  ASSERT_TRUE(serial_command.has_value());
+  ASSERT_EQ(*orig_command, *serial_command.value());
 
   command_converter_test(orig_command);
 }
@@ -149,7 +193,8 @@ TEST_F(JsonCommandTest, set_acount_permissions) {
   auto json_command = factory.serializeSetAccountPermissions(orig_command);
   auto serial_command = factory.deserializeSetAccountPermissions(json_command);
 
-  ASSERT_EQ(*orig_command, *serial_command);
+  ASSERT_TRUE(serial_command.has_value());
+  ASSERT_EQ(*orig_command, *serial_command.value());
 
   command_converter_test(orig_command);
 }
@@ -162,7 +207,8 @@ TEST_F(JsonCommandTest, set_account_quorum) {
   auto json_command = factory.serializeSetQuorum(orig_command);
   auto serial_command = factory.deserializeSetQuorum(json_command);
 
-  ASSERT_EQ(*orig_command, *serial_command);
+  ASSERT_TRUE(serial_command.has_value());
+  ASSERT_EQ(*orig_command, *serial_command.value());
 
   command_converter_test(orig_command);
 }
@@ -178,7 +224,8 @@ TEST_F(JsonCommandTest, set_transfer_asset) {
   auto json_command = factory.serializeTransferAsset(orig_command);
   auto serial_command = factory.deserializeTransferAsset(json_command);
 
-  ASSERT_EQ(*orig_command, *serial_command);
+  ASSERT_TRUE(serial_command.has_value());
+  ASSERT_EQ(*orig_command, *serial_command.value());
 
   command_converter_test(orig_command);
 }

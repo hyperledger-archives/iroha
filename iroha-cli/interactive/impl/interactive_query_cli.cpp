@@ -180,18 +180,13 @@ namespace iroha_cli {
       auto path = params[0];
       iroha::model::converters::JsonQueryFactory json_factory;
       auto json_string = json_factory.serialize(query_);
-      if (not json_string.has_value()) {
-        std::cout << "Error while forming a json" << std::endl;
-        // Continue parsing
-        return true;
-      }
       std::ofstream output_file(path);
       if (not output_file) {
         std::cout << "Cannot create file" << std::endl;
         // Continue parsing
         return true;
       }
-      output_file << json_string.value();
+      output_file << json_string;
       std::cout << "Successfully saved!" << std::endl;
       printEnd();
       // Stop parsing
