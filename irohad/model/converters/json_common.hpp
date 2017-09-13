@@ -22,6 +22,7 @@
 #include <string>
 #include <unordered_map>
 
+// Enable std::string support in rapidjson
 #define RAPIDJSON_HAS_STDSTRING 1
 #include <rapidjson/document.h>
 #include <rapidjson/prettywriter.h>
@@ -36,41 +37,6 @@
 namespace iroha {
   namespace model {
     namespace converters {
-      /**
-       * Create map get function for value retrieval by key
-       * @tparam K - map key type
-       * @tparam V - map value type
-       * @param map - map for value retrieval
-       * @return function which takes key, returns value if key exists,
-       * nullopt otherwise
-       */
-      template <typename K, typename V>
-      auto makeOptionalGet(std::unordered_map<K, V> map) {
-        return [&map](auto key) -> nonstd::optional<V> {
-          auto it = map.find(key);
-          if (it != std::end(map)) {
-            return it->second;
-          }
-          return nonstd::nullopt;
-        };
-      }
-
-      /**
-       * Return function which invokes class method by pointer to member with
-       * provided arguments
-       * @tparam T - provided class type
-       * @tparam Args - provided arguments types
-       * @param object - class object
-       * @param args - function arguments
-       * @return described function
-       */
-      template <typename T, typename... Args>
-      auto makeMethodInvoke(T &object, Args &&... args) {
-        return [&](auto f) {
-          return (object.*f)(std::forward<Args>(args)...);
-        };
-      }
-
       /**
        * Convert functor which specifies output type
        * @tparam V - output type
@@ -127,42 +93,9 @@ namespace iroha {
         explicit FieldDeserializer(const D &document) : document(document) {}
 
         /**
-         * Assign the value to the block member
-         * @tparam V - block member type
-         * @tparam B - block type
-         * @param block - block value for member assignment
-         * @param member - pointer to member in block
-         * @return block with deserialized member on success, nullopt otherwise
-         */
-        template <typename V, typename B>
-        auto assignObjectField(B block, V B::*member) {
-          return [=](auto transformed) mutable {
-            block.*member = transformed;
-            return nonstd::make_optional(block);
-          };
-        }
-
-        /**
-         * Assign the value to the block member. Block is wrapped in shared
-         * pointer
-         * @tparam V - block member type
-         * @tparam B - block type
-         * @param block - block value for member assignment
-         * @param member - pointer to member in block
-         * @return block with deserialized member on success, nullopt otherwise
-         */
-        template <typename V, typename B>
-        auto assignObjectField(std::shared_ptr<B> block, V B::*member) {
-          return [=](auto transformed) mutable {
-            (*block).*member = transformed;
-            return nonstd::make_optional(block);
-          };
-        }
-
-        /**
-         * Create function, which will deserialize document field with given
-         * verification and getter, transform the value to required type, and
-         * assign it to block member
+         * Create function, which deserializes document field,
+         * transforms the value to required type, and
+         * assigns it to block member
          * @tparam T - getter return type
          * @tparam V - block member type
          * @tparam B - block type
@@ -180,7 +113,7 @@ namespace iroha {
           return [this, member, field, transform](auto block) {
             return deserializeField<T>(document, field)
                 | transform
-                | this->assignObjectField(block, member);
+                | assignObjectField(block, member);
           };
         }
 
@@ -308,19 +241,19 @@ namespace iroha {
       struct Convert<Block::SignaturesType> {
         template <typename T>
         auto operator()(T &&x) {
-          return std::accumulate(
-              x.begin(), x.end(),
-              nonstd::make_optional<Block::SignaturesType>(),
-              [](auto init, auto &x) {
-                return init
-                    | [&x](auto signatures) {
-                      return Convert<Signature>()(x)
-                          | [&signatures](auto signature) {
+          auto acc_signatures = [](auto init, auto &x) {
+            return init
+                | [&x](auto signatures) {
+                    return Convert<Signature>()(x)
+                        | [&signatures](auto signature) {
                             signatures.push_back(signature);
                             return nonstd::make_optional(signatures);
                           };
-                    };
-              });
+                  };
+          };
+          return std::accumulate(x.begin(), x.end(),
+                                 nonstd::make_optional<Block::SignaturesType>(),
+                                 acc_signatures);
         }
       };
 

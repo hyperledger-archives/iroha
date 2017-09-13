@@ -65,6 +65,22 @@ namespace iroha {
       nonstd::optional<Block> JsonBlockFactory::deserialize(
           const Document &document) {
         auto des = makeFieldDeserializer(document);
+        auto des_transactions = [this](auto array) {
+          auto acc_transactions = [this](auto init, auto &x) {
+            return init
+                | [this, &x](auto transactions) {
+                    return factory_.deserialize(x)
+                        | [&transactions](auto transaction) {
+                            transactions.push_back(transaction);
+                            return nonstd::make_optional(transactions);
+                          };
+                  };
+          };
+          return std::accumulate(
+              array.begin(), array.end(),
+              nonstd::make_optional<Block::TransactionsType>(),
+              acc_transactions);
+        };
         return nonstd::make_optional<model::Block>()
             | des.Uint64(&Block::created_ts, "created_ts")
             | des.Uint64(&Block::height, "height")
@@ -73,23 +89,7 @@ namespace iroha {
             | des.String(&Block::prev_hash, "prev_hash")
             | des.String(&Block::merkle_root, "merkle_root")
             | des.Array(&Block::sigs, "signatures")
-            | des.Array(&Block::transactions, "transactions", [this](
-                                                                   auto array) {
-                 return std::accumulate(
-                     array.begin(), array.end(),
-                     nonstd::make_optional<Block::TransactionsType>(),
-                     [this](auto init, auto &x) {
-                       return init
-                           | [this, &x](auto transactions) {
-                               return factory_.deserialize(x)
-                                   | [&transactions](auto transaction) {
-                                       transactions.push_back(transaction);
-                                       return nonstd::make_optional(
-                                           transactions);
-                                     };
-                             };
-                     });
-               });
+            | des.Array(&Block::transactions, "transactions", des_transactions);
       }
 
     }  // namespace converters

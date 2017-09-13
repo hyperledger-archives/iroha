@@ -15,9 +15,12 @@
  * limitations under the License.
  */
 
+#include "impl/keys_manager_impl.hpp"
+
 #include <utility>
-#include "keys_manager_impl.hpp"
 #include <fstream>
+
+using iroha::operator|;
 
 namespace iroha_cli {
   /**
@@ -30,13 +33,11 @@ namespace iroha_cli {
    * @return keypair on success, otherwise nullopt
    */
   template<typename T, typename V>
-  auto deserializeKeypairField(T iroha::ed25519::keypair_t::*field, V value) {
-    return [field, value](auto keypair) {
+  auto deserializeKeypairField(T iroha::ed25519::keypair_t::*field,
+                               const V &value) {
+    return [=](auto keypair) mutable {
       return iroha::hexstringToArray<T::size()>(value)
-          | [&](auto value) {
-            keypair.*field = value;
-            return nonstd::make_optional(keypair);
-          };
+          | iroha::assignObjectField(keypair, field);
     };
   }
 

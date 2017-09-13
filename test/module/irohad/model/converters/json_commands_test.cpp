@@ -81,7 +81,7 @@ TEST_F(JsonCommandTest, InvalidWhenUnknownCommandType) {
     }
   })";
 
-  auto &&json = stringToJson(cmd);
+  auto json = stringToJson(cmd);
   ASSERT_TRUE(json.has_value());
   ASSERT_FALSE(factory.deserializeAbstractCommand(json.value()).has_value());
 }

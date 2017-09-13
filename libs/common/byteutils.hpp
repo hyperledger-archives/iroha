@@ -32,7 +32,7 @@ namespace iroha {
 
   /**
    * Create blob_t from string of specified size
-   * @tparam size - expected size of string
+   * @tparam size - size of blob_t, expected size of string
    * @param s - string to convert
    * @return blob, if conversion was successful, otherwise nullopt
    */
@@ -47,7 +47,7 @@ namespace iroha {
   }
 
   /**
-   * Try to transform string to array of given size
+   * Convert hexstring to array of given size
    * @tparam size - output array size
    * @param string - input string for transform
    * @return array of given size if size matches, nullopt otherwise

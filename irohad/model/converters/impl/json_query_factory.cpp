@@ -63,7 +63,7 @@ namespace iroha {
             | des.String(&Query::creator_account_id, "creator_account_id")
             | des.Uint64(&Query::query_counter, "query_counter")
             | des.Object(&Query::signature, "signature")
-            | [this, &document](auto query) {
+            | [this](auto query) {
                 query->query_hash = hash_provider_.get_hash(query);
                 return nonstd::make_optional(query);
               };

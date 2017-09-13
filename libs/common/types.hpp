@@ -37,25 +37,6 @@
  * For std::array it is possible, so we prefer it over std::string.
  */
 
-/**
- * Bind operator. If argument has value, dereferences argument and calls
- * given function, which should return wrapped value
- * operator| is used since it has to be binary and left-associative
- * @tparam T - monadic type
- * @tparam Transform - transform function type
- * @param t - monadic value
- * @param f - function, which takes dereferenced value, and returns
- * wrapped value
- * @return monadic value, which can be of another type
- */
-template <typename T, typename Transform>
-auto operator|(T t, Transform f) -> decltype(f(*t)) {
-  if (t) {
-    return f(*t);
-  }
-  return {};
-}
-
 namespace iroha {
   using byte_t = uint8_t;
 
@@ -64,6 +45,11 @@ namespace iroha {
 
   /**
    * Base type which represents blob of fixed size.
+   *
+   * std::string is convenient to use but it is not safe.
+   * We can not specify the fixed length for string.
+   *
+   * For std::array it is possible, so we prefer it over std::string.
    */
   template <size_t size_>
   class blob_t : public std::array<byte_t, size_> {
@@ -128,7 +114,7 @@ namespace iroha {
    * @param str
    * @return
    */
-  inline std::string bytestringToHexstring(std::string str) {
+  inline std::string bytestringToHexstring(const std::string &str) {
     std::stringstream ss;
     ss << std::hex << std::setfill('0');
     for(const auto &c : str) {
@@ -142,7 +128,8 @@ namespace iroha {
    * @param str
    * @return
    */
-  inline nonstd::optional<std::string> hexstringToBytestring(std::string str) {
+  inline nonstd::optional<std::string> hexstringToBytestring(
+      const std::string &str) {
     if (str.empty() or str.size() % 2 != 0) {
       return nonstd::nullopt;
     }
@@ -158,6 +145,108 @@ namespace iroha {
       }
     }
     return result;
+  }
+
+  /**
+   * Bind operator. If argument has value, dereferences argument and calls
+   * given function, which should return wrapped value
+   * operator| is used since it has to be binary and left-associative
+   *
+   * nonstd::optional<int> f();
+   * nonstd::optional<double> g(int);
+   *
+   * nonstd::optional<double> d = f()
+   *    | g;
+   *
+   * @tparam T - monadic type
+   * @tparam Transform - transform function type
+   * @param t - monadic value
+   * @param f - function, which takes dereferenced value, and returns
+   * wrapped value
+   * @return monadic value, which can be of another type
+   */
+  template <typename T, typename Transform>
+  auto operator|(T t, Transform f) -> decltype(f(*t)) {
+    if (t) {
+      return f(*t);
+    }
+    return {};
+  }
+
+  /**
+   * Create map get function for value retrieval by key
+   * @tparam K - map key type
+   * @tparam V - map value type
+   * @param map - map for value retrieval
+   * @return function which takes key, returns value if key exists,
+   * nullopt otherwise
+   */
+  template <typename C>
+  auto makeOptionalGet(C map) {
+    return [&map](auto key) -> nonstd::optional<typename C::mapped_type> {
+      auto it = map.find(key);
+      if (it != std::end(map)) {
+        return it->second;
+      }
+      return nonstd::nullopt;
+    };
+  }
+
+  /**
+   * Return function which invokes class method by pointer to member with
+   * provided arguments
+   *
+   * class A {
+   * int f(int, double);
+   * }
+   *
+   * A a;
+   * int i = makeMethodInvoke(a, 1, 1.0);
+   *
+   * @tparam T - provided class type
+   * @tparam Args - provided arguments types
+   * @param object - class object
+   * @param args - function arguments
+   * @return described function
+   */
+  template <typename T, typename... Args>
+  auto makeMethodInvoke(T &object, Args &&... args) {
+    return [&](auto f) {
+      return (object.*f)(std::forward<Args>(args)...);
+    };
+  }
+
+  /**
+   * Assign the value to the object member
+   * @tparam V - object member type
+   * @tparam B - object type
+   * @param object - object value for member assignment
+   * @param member - pointer to member in block
+   * @return object with deserialized member on success, nullopt otherwise
+   */
+  template <typename V, typename B>
+  auto assignObjectField(B object, V B::*member) {
+    return [=](auto value) mutable {
+      object.*member = value;
+      return nonstd::make_optional(object);
+    };
+  }
+
+  /**
+   * Assign the value to the object member. Block is wrapped in monad
+   * @tparam P - monadic type
+   * @tparam V - object member type
+   * @tparam B - object type
+   * @param object - object value for member assignment
+   * @param member - pointer to member in object
+   * @return object with deserialized member on success, nullopt otherwise
+   */
+  template <template<typename C> class P, typename V, typename B>
+  auto assignObjectField(P<B> object, V B::*member) {
+    return [=](auto value) mutable {
+      (*object).*member = value;
+      return nonstd::make_optional(object);
+    };
   }
 
   template <size_t size>
