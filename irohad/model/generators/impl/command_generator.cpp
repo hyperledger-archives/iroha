@@ -19,7 +19,6 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
@@ -48,11 +47,6 @@ namespace iroha {
       std::shared_ptr<Command> CommandGenerator::generateRemoveSignatory(
           const std::string &account_id, const ed25519::pubkey_t &key) {
         return generateCommand<RemoveSignatory>(account_id, key);
-      }
-
-      std::shared_ptr<Command> CommandGenerator::generateAssignMasterKey(
-          const std::string &account_id, const ed25519::pubkey_t &key) {
-        return generateCommand<AssignMasterKey>(account_id, key);
       }
 
       std::shared_ptr<Command> CommandGenerator::generateCreateAccount(

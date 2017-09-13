@@ -35,7 +35,6 @@ namespace iroha_cli {
           {ADD_ASSET_QTY, "Add Asset Quantity"},
           {ADD_PEER, "Add Peer to Iroha Network"},
           {ADD_SIGN, "Add Signatory to Account"},
-          {ASSIGN_M_KEY, "Assign Master Key to Account"},
           {CREATE_ACC, "Create Account"},
           {CREATE_DOMAIN, "Create Domain"},
           {CREATE_ASSET, "Create Asset"},
@@ -61,7 +60,6 @@ namespace iroha_cli {
           {ADD_ASSET_QTY, {acc_id, ast_id, ammout_a, ammout_b}},
           {ADD_PEER, {peer_id, pub_key}},
           {ADD_SIGN, {acc_id, pub_key}},
-          {ASSIGN_M_KEY, {acc_id, pub_key}},
           {CREATE_ACC, {acc_name, dom_id, pub_key}},
           {CREATE_DOMAIN, {dom_id}},
           {CREATE_ASSET, {ast_name, dom_id, ast_precision}},
@@ -79,7 +77,6 @@ namespace iroha_cli {
           {ADD_ASSET_QTY, &InteractiveTransactionCli::parseAddAssetQuantity},
           {ADD_PEER, &InteractiveTransactionCli::parseAddPeer},
           {ADD_SIGN, &InteractiveTransactionCli::parseAddSignatory},
-          {ASSIGN_M_KEY, &InteractiveTransactionCli::parseAssignMasterKey},
           {CREATE_ACC, &InteractiveTransactionCli::parseCreateAccount},
           {CREATE_DOMAIN, &InteractiveTransactionCli::parseCreateDomain},
           {CREATE_ASSET, &InteractiveTransactionCli::parseCreateAsset},
@@ -205,16 +202,6 @@ namespace iroha_cli {
       iroha::ed25519::pubkey_t pubkey;
       iroha::hexstringToArray(key, pubkey);
       return generator_.generateAddSignatory(account_id, pubkey);
-    }
-
-    std::shared_ptr<iroha::model::Command>
-    InteractiveTransactionCli::parseAssignMasterKey(
-        std::vector<std::string> params) {
-      auto account_id = params[0];
-      auto key = params[1];
-      iroha::ed25519::pubkey_t pubkey;
-      iroha::hexstringToArray(key, pubkey);
-      return generator_.generateAssignMasterKey(account_id, pubkey);
     }
 
     std::shared_ptr<iroha::model::Command>

@@ -62,7 +62,6 @@ namespace iroha_cli {
       const std::string ADD_ASSET_QTY = "add_ast_qty";
       const std::string ADD_PEER = "add_peer";
       const std::string ADD_SIGN = "add_sign";
-      const std::string ASSIGN_M_KEY = "asn_mk";
       const std::string CREATE_ACC = "crt_acc";
       const std::string CREATE_ASSET = "crt_ast";
       const std::string CREATE_DOMAIN = "crt_dmn";
@@ -98,8 +97,6 @@ namespace iroha_cli {
       std::shared_ptr<iroha::model::Command> parseAddPeer(
           std::vector<std::string> line);
       std::shared_ptr<iroha::model::Command> parseAddSignatory(
-          std::vector<std::string> line);
-      std::shared_ptr<iroha::model::Command> parseAssignMasterKey(
           std::vector<std::string> line);
       std::shared_ptr<iroha::model::Command> parseCreateAccount(
           std::vector<std::string> line);
