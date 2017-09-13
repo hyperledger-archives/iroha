@@ -53,7 +53,6 @@ TEST_F(JsonCommandTest, ClassHandlerTest) {
       std::make_shared<AddAssetQuantity>(),
       std::make_shared<AddPeer>(),
       std::make_shared<AddSignatory>(),
-      std::make_shared<AssignMasterKey>(),
       std::make_shared<CreateAccount>(),
       std::make_shared<CreateAsset>(),
       std::make_shared<CreateDomain>(),
