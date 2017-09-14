@@ -32,6 +32,18 @@ namespace iroha {
     PostgresWsvQuery::PostgresWsvQuery(pqxx::nontransaction &transaction)
         : transaction_(transaction) {}
 
+    nonstd::optional<std::vector<std::string>>
+    PostgresWsvQuery::getAccountRoles(const std::string &account_id) {
+      // TODO: implement
+      return nonstd::nullopt;
+    };
+
+    nonstd::optional<std::vector<std::string>>
+    PostgresWsvQuery::getRolePermissions(const std::string &role_name) {
+      // TODO: implement
+      return nonstd::nullopt;
+    };
+
     optional<Account> PostgresWsvQuery::getAccount(const string &account_id) {
       pqxx::result result;
       try {

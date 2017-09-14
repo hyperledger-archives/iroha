@@ -25,17 +25,18 @@
 namespace iroha {
   namespace model {
     /**
-      * Abstract Command Model
-      */
+     * Abstract Command Model
+     */
     struct Command {
       virtual ~Command() = default;
 
-      virtual bool operator==(const Command& rhs) {
+      virtual bool operator==(const Command& rhs) const = 0;
+
+      virtual bool operator!=(const Command& rhs) const {
         return !operator==(rhs);
-      };
-      virtual bool operator!=(const Command& rhs) const = 0;
+      }
     };
-  }
-}
+  }  // namespace model
+}  // namespace iroha
 
 #endif  // IROHA_COMMAND_HPP

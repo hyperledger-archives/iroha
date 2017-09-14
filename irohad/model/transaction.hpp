@@ -77,7 +77,9 @@ namespace iroha {
       using CommandsType = decltype(commands);
 
       bool operator==(const Transaction& rhs) const;
-      bool operator!=(const Transaction& rhs) const;
+      bool operator!=(const Transaction& rhs) const {
+        return !operator==(rhs);
+      };
     };
   }
 }

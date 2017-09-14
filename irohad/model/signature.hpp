@@ -35,7 +35,9 @@ namespace iroha {
       using KeyType = decltype(pubkey);
 
       bool operator==(const Signature& rhs) const;
-      bool operator!=(const Signature& rhs) const;
+      bool operator!=(const Signature& rhs) const{
+        return !operator==(rhs);
+      };
     };
   } // namespace model
 } // namespace iroha

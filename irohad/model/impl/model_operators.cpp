@@ -29,8 +29,6 @@
 
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
-#include "model/commands/resume_account.hpp"
-#include "model/commands/suspend_account.hpp"
 
 namespace iroha {
   namespace model {
@@ -45,18 +43,6 @@ namespace iroha {
       if (! instanceof <CreateRole>(command)) return false;
       auto cmd = static_cast<const CreateRole &>(command);
       return cmd.role_name == role_name;
-    }
-
-    bool ResumeAccount::operator==(const Command &command) const {
-      if (! instanceof <ResumeAccount>(command)) return false;
-      auto cmd = static_cast<const ResumeAccount &>(command);
-      return cmd.account_id == account_id;
-    }
-
-    bool SuspendAccount::operator==(const Command &command) const {
-      if (! instanceof <SuspendAccount>(command)) return false;
-      auto cmd = static_cast<const SuspendAccount &>(command);
-      return cmd.account_id == account_id;
     }
 
     /* AddAssetQuantity */

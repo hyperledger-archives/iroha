@@ -36,13 +36,21 @@ namespace iroha {
      public:
       virtual ~WsvCommand() = default;
 
+      /**
+       * Insert role entity
+       * @param role_name
+       * @return true if insert successful
+       */
+      virtual bool insertRole(const std::string &role_name) = 0;
 
-      virtual bool insertRole(const std::string& role_name);
-
+      /**
+       * Bind account and role
+       * @param account_id
+       * @param role_name
+       * @return true if insert successful
+       */
       virtual bool insertAccountRole(const std::string &account_id,
-                                     const std::string &role_name);
-
-
+                                     const std::string &role_name) = 0;
 
       /**
        *
