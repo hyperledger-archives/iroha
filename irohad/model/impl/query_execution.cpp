@@ -18,6 +18,7 @@
 #include "model/query_execution.hpp"
 #include "model/queries/responses/account_assets_response.hpp"
 #include "model/queries/responses/account_response.hpp"
+#include "model/queries/responses/asset_response.hpp"
 #include "model/queries/responses/error_response.hpp"
 #include "model/queries/responses/signatories_response.hpp"
 #include "model/queries/responses/transactions_response.hpp"
@@ -26,6 +27,26 @@ iroha::model::QueryProcessingFactory::QueryProcessingFactory(
     std::shared_ptr<ametsuchi::WsvQuery> wsvQuery,
     std::shared_ptr<ametsuchi::BlockQuery> blockQuery)
     : _wsvQuery(wsvQuery), _blockQuery(blockQuery) {}
+
+bool iroha::model::QueryProcessingFactory::validate(
+    const model::GetAssetInfo& query) {
+  auto creator = _wsvQuery->getAccount(query.creator_account_id);
+  // TODO: check signatures
+  return
+      // Creator account exits
+      // TODO: add permission check
+      creator.has_value();
+}
+
+bool iroha::model::QueryProcessingFactory::validate(
+    const model::GetRoles& query) {
+  auto creator = _wsvQuery->getAccount(query.creator_account_id);
+  // TODO: check signatures
+  return
+      // Creator account exits
+      // TODO: add permission check
+      creator.has_value();
+}
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccount& query) {
@@ -84,6 +105,32 @@ bool iroha::model::QueryProcessingFactory::validate(
 }
 
 std::shared_ptr<iroha::model::QueryResponse>
+iroha::model::QueryProcessingFactory::executeGetAssetInfo(
+    const model::GetAssetInfo& query) {
+  auto ast = _wsvQuery->getAsset(query.asset_id);
+  if (!ast.has_value()) {
+    iroha::model::ErrorResponse response;
+    response.query_hash = query.query_hash;
+    response.reason = iroha::model::ErrorResponse::NO_ASSET;
+    return std::make_shared<ErrorResponse>(response);
+  }
+  iroha::model::AssetResponse response;
+  response.asset = ast.value();
+  response.query_hash = query.query_hash;
+  return std::make_shared<iroha::model::AssetResponse>(response);
+}
+
+std::shared_ptr<iroha::model::QueryResponse>
+iroha::model::QueryProcessingFactory::executeGetRoles(
+    const model::GetRoles& query) {
+  // TODO: implement
+  iroha::model::ErrorResponse response;
+  response.query_hash = query.query_hash;
+  response.reason = iroha::model::ErrorResponse::NOT_SUPPORTED;
+  return std::make_shared<ErrorResponse>(response);
+}
+
+std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetAccount(
     const model::GetAccount& query) {
   auto acc = _wsvQuery->getAccount(query.account_id);
@@ -102,7 +149,8 @@ iroha::model::QueryProcessingFactory::executeGetAccount(
 std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetAccountAssets(
     const model::GetAccountAssets& query) {
-  auto acct_asset = _wsvQuery->getAccountAsset(query.account_id, query.asset_id);
+  auto acct_asset =
+      _wsvQuery->getAccountAsset(query.account_id, query.asset_id);
   if (!acct_asset.has_value()) {
     iroha::model::ErrorResponse response;
     response.query_hash = query.query_hash;
@@ -120,7 +168,8 @@ iroha::model::QueryProcessingFactory::executeGetAccountAssets(
 std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetAccountAssetTransactions(
     const model::GetAccountAssetTransactions& query) {
-  auto acc_asset_tx = _blockQuery->getAccountAssetTransactions(query.account_id, query.asset_id);
+  auto acc_asset_tx = _blockQuery->getAccountAssetTransactions(query.account_id,
+                                                               query.asset_id);
   iroha::model::TransactionsResponse response;
   response.query_hash = query.query_hash;
   response.transactions = acc_asset_tx;
@@ -156,6 +205,7 @@ iroha::model::QueryProcessingFactory::executeGetSignatories(
 std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::execute(
     std::shared_ptr<const model::Query> query) {
+  // TODO: change to handler map or/with templates
   if (instanceof <iroha::model::GetAccount>(query.get())) {
     auto qry = std::static_pointer_cast<const iroha::model::GetAccount>(query);
 

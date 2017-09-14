@@ -25,7 +25,7 @@ namespace iroha {
     /**
      * Get all roles and their permissions in current system
      */
-    class GetRoles : Query {};
+    struct GetRoles : Query {};
   }  // namespace model
 }  // namespace iroha
 

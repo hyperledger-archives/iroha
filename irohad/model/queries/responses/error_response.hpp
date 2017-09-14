@@ -45,6 +45,10 @@ namespace iroha {
          */
         NO_ACCOUNT,
         /**
+         * when requested asset does not exist
+         */
+        NO_ASSET,
+        /**
          * when requested account asset does not exist
          */
         NO_ACCOUNT_ASSETS,

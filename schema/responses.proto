@@ -41,6 +41,7 @@ message ErrorResponse {
         NO_SIGNATORIES = 4; // when requested signatories does not exist
         NOT_SUPPORTED = 5; // when unidentified request was received
         WRONG_FORMAT = 6; // when json format wrong
+        NO_ASSET = 7; // when requested asset does not exist
     }
     Reason reason = 1;
 }

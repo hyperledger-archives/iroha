@@ -26,7 +26,7 @@ namespace iroha {
     /**
      * Get meta data of asset
      */
-    class GetAssetInfo : Query {
+    struct GetAssetInfo : Query {
       /**
        * Asset Id
        */

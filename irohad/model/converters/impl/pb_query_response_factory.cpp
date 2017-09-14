@@ -218,6 +218,9 @@ namespace iroha {
           const model::ErrorResponse &errorResponse) const {
         protocol::ErrorResponse pb_response;
         switch (errorResponse.reason) {
+          case ErrorResponse::NO_ASSET:
+            pb_response.set_reason(protocol::ErrorResponse::NO_ASSET);
+            break;
           case ErrorResponse::STATELESS_INVALID:
             pb_response.set_reason(protocol::ErrorResponse::STATELESS_INVALID);
             break;
