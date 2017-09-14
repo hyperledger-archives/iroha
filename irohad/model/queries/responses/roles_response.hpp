@@ -15,31 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ADD_PEER_HPP
-#define IROHA_ADD_PEER_HPP
+#ifndef IROHA_ROLES_RESPONSE_HPP
+#define IROHA_ROLES_RESPONSE_HPP
 
-#include <common/types.hpp>
-#include "model/command.hpp"
-#include "model/peer.hpp"
+#include "model/query_response.hpp"
 
 namespace iroha {
   namespace model {
 
+    struct RolePermissions {
+      std::string role_name;
+      std::vector<std::string> permissions;
+    };
+
     /**
-     * Provide user's intent for adding peer to current network
+     * Provide response with asset
      */
-    struct AddPeer : public Command {
-      ed25519::pubkey_t peer_key;
-
-      std::string address;
-
-      bool operator==(const Command& command) const override;
-
-      AddPeer() {}
-
-      AddPeer(ed25519::pubkey_t peer_key, std::string address)
-          : peer_key(peer_key), address(address) {}
+    struct RolesResponse : public QueryResponse {
+      /**
+       * Attached roles with corresponding permissions
+       */
+      std::vector<RolePermissions> roles_permissions;
     };
   }  // namespace model
 }  // namespace iroha
-#endif  // IROHA_ADD_PEER_HPP
+
+#endif  // IROHA_ROLES_RESPONSE_HPP

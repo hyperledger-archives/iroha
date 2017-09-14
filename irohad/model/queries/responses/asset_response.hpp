@@ -15,31 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ADD_PEER_HPP
-#define IROHA_ADD_PEER_HPP
+#ifndef IROHA_ASSET_RESPONSE_HPP
+#define IROHA_ASSET_RESPONSE_HPP
 
-#include <common/types.hpp>
-#include "model/command.hpp"
-#include "model/peer.hpp"
+#include "model/asset.hpp"
+#include "model/query_response.hpp"
 
 namespace iroha {
   namespace model {
 
     /**
-     * Provide user's intent for adding peer to current network
+     * Provide response with asset
      */
-    struct AddPeer : public Command {
-      ed25519::pubkey_t peer_key;
-
-      std::string address;
-
-      bool operator==(const Command& command) const override;
-
-      AddPeer() {}
-
-      AddPeer(ed25519::pubkey_t peer_key, std::string address)
-          : peer_key(peer_key), address(address) {}
+    struct AssetResponse : public QueryResponse {
+      /**
+       * Attached asset
+       */
+      Asset asset;
     };
   }  // namespace model
 }  // namespace iroha
-#endif  // IROHA_ADD_PEER_HPP
+
+#endif  // IROHA_ASSET_RESPONSE_HPP

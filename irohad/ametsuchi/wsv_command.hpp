@@ -18,12 +18,12 @@
 #ifndef IROHA_WSV_COMMAND_HPP
 #define IROHA_WSV_COMMAND_HPP
 
+#include <common/types.hpp>
+#include <model/account.hpp>
 #include <model/account_asset.hpp>
 #include <model/asset.hpp>
-#include <model/account.hpp>
-#include <model/peer.hpp>
 #include <model/domain.hpp>
-#include <common/types.hpp>
+#include <model/peer.hpp>
 #include <string>
 
 namespace iroha {
@@ -35,6 +35,14 @@ namespace iroha {
     class WsvCommand {
      public:
       virtual ~WsvCommand() = default;
+
+
+      virtual bool insertRole(const std::string& role_name);
+
+      virtual bool insertAccountRole(const std::string &account_id,
+                                     const std::string &role_name);
+
+
 
       /**
        *
@@ -72,11 +80,11 @@ namespace iroha {
       virtual bool insertSignatory(const ed25519::pubkey_t &signatory) = 0;
 
       /**
-      * Insert account signatory relationship
-      * @param account_id
-      * @param signatory
-      * @return
-      */
+       * Insert account signatory relationship
+       * @param account_id
+       * @param signatory
+       * @return
+       */
       virtual bool insertAccountSignatory(
           const std::string &account_id,
           const ed25519::pubkey_t &signatory) = 0;
@@ -114,10 +122,10 @@ namespace iroha {
       virtual bool deletePeer(const model::Peer &peer) = 0;
 
       /**
-      *
-      * @param peer
-      * @return
-      */
+       *
+       * @param peer
+       * @return
+       */
       virtual bool insertDomain(const model::Domain &domain) = 0;
     };
 

@@ -14,32 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_SUSPEND_ACCOUNT_HPP
+#define IROHA_SUSPEND_ACCOUNT_HPP
 
-#ifndef IROHA_ADD_PEER_HPP
-#define IROHA_ADD_PEER_HPP
-
-#include <common/types.hpp>
+#include <string>
 #include "model/command.hpp"
-#include "model/peer.hpp"
 
 namespace iroha {
   namespace model {
 
     /**
-     * Provide user's intent for adding peer to current network
+     * Suspend account in Iroha system.
      */
-    struct AddPeer : public Command {
-      ed25519::pubkey_t peer_key;
-
-      std::string address;
+    struct SuspendAccount : public Command {
+      /**
+       * Account to suspend in the system
+       */
+      std::string account_id;
 
       bool operator==(const Command& command) const override;
 
-      AddPeer() {}
-
-      AddPeer(ed25519::pubkey_t peer_key, std::string address)
-          : peer_key(peer_key), address(address) {}
     };
   }  // namespace model
 }  // namespace iroha
-#endif  // IROHA_ADD_PEER_HPP
+#endif  // IROHA_SUSPEND_ACCOUNT_HPP

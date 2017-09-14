@@ -37,6 +37,12 @@ namespace iroha {
      public:
       virtual ~WsvQuery() = default;
 
+      virtual nonstd::optional<std::vector<std::string>> getAccountRoles(
+          const std::string &account_id);
+
+      virtual nonstd::optional<std::vector<std::string>> getRolePermissions(
+          const std::string &role_name);
+
       /**
        * Get account by user account_id
        * @param account_id

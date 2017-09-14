@@ -14,32 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_APPEND_ROLE_HPP
+#define IROHA_APPEND_ROLE_HPP
 
-#ifndef IROHA_ADD_PEER_HPP
-#define IROHA_ADD_PEER_HPP
-
-#include <common/types.hpp>
+#include <string>
 #include "model/command.hpp"
-#include "model/peer.hpp"
 
 namespace iroha {
   namespace model {
 
     /**
-     * Provide user's intent for adding peer to current network
+     * Add role to account
      */
-    struct AddPeer : public Command {
-      ed25519::pubkey_t peer_key;
-
-      std::string address;
+    struct AppendRole : public Command {
+      /**
+       * Account to which add new role
+       */
+      std::string account_id;
+      /**
+       * Role to add to account
+       */
+      std::string role_name;
 
       bool operator==(const Command& command) const override;
 
-      AddPeer() {}
-
-      AddPeer(ed25519::pubkey_t peer_key, std::string address)
-          : peer_key(peer_key), address(address) {}
     };
   }  // namespace model
 }  // namespace iroha
-#endif  // IROHA_ADD_PEER_HPP
+#endif  // IROHA_APPEND_ROLE_HPP

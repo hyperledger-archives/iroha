@@ -30,6 +30,11 @@
 #include "model/commands/transfer_asset.hpp"
 #include "model/execution/command_executor.hpp"
 
+#include "model/commands/append_role.hpp"
+#include "model/commands/create_role.hpp"
+#include "model/commands/resume_account.hpp"
+#include "model/commands/suspend_account.hpp"
+
 using namespace iroha::model;
 using namespace iroha::ametsuchi;
 
@@ -40,6 +45,110 @@ CommandExecutor::CommandExecutor() {
 bool CommandExecutor::validate(const Command &command, WsvQuery &queries,
                                const Account &creator) {
   return hasPermissions(command, queries, creator) && isValid(command, queries);
+}
+
+// ----------------------------| Append Role |-----------------------------
+AppendRoleExecutor::AppendRoleExecutor() {
+  log_ = logger::log("AppendRoleExecutor");
+}
+
+bool AppendRoleExecutor::execute(const Command &command,
+                                 ametsuchi::WsvQuery &queries,
+                                 ametsuchi::WsvCommand &commands) {
+  auto cmd_value = static_cast<const AppendRole &>(command);
+
+  return commands.insertAccountRole(cmd_value.account_id, cmd_value.role_name);
+}
+
+bool AppendRoleExecutor::hasPermissions(const Command &command,
+                                        ametsuchi::WsvQuery &queries,
+                                        const Account &creator) {
+  // TODO: implement
+  return true;
+}
+
+bool AppendRoleExecutor::isValid(const Command &command,
+                                 ametsuchi::WsvQuery &queries) {
+  // TODO: check. No additional checks required ?
+  return true;
+}
+
+// ----------------------------| Create Role |-----------------------------
+CreateRoleExecutor::CreateRoleExecutor() {
+  log_ = logger::log("CreateRoleExecutor");
+}
+
+bool CreateRoleExecutor::execute(const Command &command,
+                                 ametsuchi::WsvQuery &queries,
+                                 ametsuchi::WsvCommand &commands) {
+  auto cmd_value = static_cast<const CreateRole &>(command);
+
+  return commands.insertRole(cmd_value.role_name);
+}
+
+bool CreateRoleExecutor::hasPermissions(const Command &command,
+                                        ametsuchi::WsvQuery &queries,
+                                        const Account &creator) {
+  // TODO: implement
+  return true;
+}
+
+bool CreateRoleExecutor::isValid(const Command &command,
+                                 ametsuchi::WsvQuery &queries) {
+  // TODO: check. Add checks on naming of the role
+  return true;
+}
+
+// ----------------------------| Suspend Account |-----------------------------
+SuspendAccountExecutor::SuspendAccountExecutor() {
+  log_ = logger::log("SuspendAccountExecutor");
+}
+
+bool SuspendAccountExecutor::execute(const Command &command,
+                                 ametsuchi::WsvQuery &queries,
+                                 ametsuchi::WsvCommand &commands) {
+  auto cmd_value = static_cast<const SuspendAccount &>(command);
+  // TODO: implement
+  return false;
+}
+
+bool SuspendAccountExecutor::hasPermissions(const Command &command,
+                                        ametsuchi::WsvQuery &queries,
+                                        const Account &creator) {
+  // TODO: implement
+  return true;
+}
+
+bool SuspendAccountExecutor::isValid(const Command &command,
+                                 ametsuchi::WsvQuery &queries) {
+  // TODO: check.
+  return true;
+}
+
+// ----------------------------| Resume Account |-----------------------------
+ResumeAccountExecutor::ResumeAccountExecutor() {
+  log_ = logger::log("ResumeAccountExecutor");
+}
+
+bool ResumeAccountExecutor::execute(const Command &command,
+                                     ametsuchi::WsvQuery &queries,
+                                     ametsuchi::WsvCommand &commands) {
+  auto cmd_value = static_cast<const SuspendAccount &>(command);
+  // TODO: implement
+  return false;
+}
+
+bool ResumeAccountExecutor::hasPermissions(const Command &command,
+                                            ametsuchi::WsvQuery &queries,
+                                            const Account &creator) {
+  // TODO: implement
+  return true;
+}
+
+bool ResumeAccountExecutor::isValid(const Command &command,
+                                     ametsuchi::WsvQuery &queries) {
+  // TODO: check.
+  return true;
 }
 
 // ----------------------------| AddAssetQuantity |-----------------------------
