@@ -36,6 +36,7 @@ namespace iroha {
       MOCK_METHOD1(getRolePermissions,
                    nonstd::optional<std::vector<std::string>>(
                        const std::string &role_name));
+      MOCK_METHOD0(getRoles, nonstd::optional<std::vector<std::string>>());
       MOCK_METHOD1(getAccount, nonstd::optional<model::Account>(
                                    const std::string &account_id));
       MOCK_METHOD1(getSignatories,

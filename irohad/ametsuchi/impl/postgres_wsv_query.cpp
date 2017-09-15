@@ -44,6 +44,11 @@ namespace iroha {
       return nonstd::nullopt;
     };
 
+    nonstd::optional<std::vector<std::string>> PostgresWsvQuery::getRoles() {
+      // TODO: implement
+      return nonstd::nullopt;
+    };
+
     optional<Account> PostgresWsvQuery::getAccount(const string &account_id) {
       pqxx::result result;
       try {

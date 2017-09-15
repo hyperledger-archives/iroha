@@ -53,6 +53,10 @@ namespace iroha {
           const std::string &role_name) = 0;
 
       /**
+       * @return All roles currently in the system
+       */
+      virtual nonstd::optional<std::vector<std::string>> getRoles() = 0;
+      /**
        * Get account by user account_id
        * @param account_id
        * @return

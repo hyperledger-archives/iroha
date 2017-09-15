@@ -36,7 +36,7 @@ TEST(HandlerTest, CommandRegistration) {
               return index.name();
             }));
 
-  ASSERT_EQ(10, registry.command_handler.types().size());
+  ASSERT_EQ(13, registry.command_handler.types().size());
 }
 
 TEST(HandlerTest, QueryRegistration) {
@@ -49,7 +49,7 @@ TEST(HandlerTest, QueryRegistration) {
               return index.name();
             }));
 
-  ASSERT_EQ(5, registry.query_handler.types().size());
+  ASSERT_EQ(7, registry.query_handler.types().size());
 }
 
 TEST(HandlerTest, QueryResponseRegistration) {
@@ -62,7 +62,7 @@ TEST(HandlerTest, QueryResponseRegistration) {
               return index.name();
             }));
 
-  ASSERT_EQ(5, registry.query_response_handler.types().size());
+  ASSERT_EQ(7, registry.query_response_handler.types().size());
 }
 
 TEST(HandlerTest, TransactionResponseRegistration) {

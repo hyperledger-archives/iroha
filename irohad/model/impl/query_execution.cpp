@@ -20,6 +20,7 @@
 #include "model/queries/responses/account_response.hpp"
 #include "model/queries/responses/asset_response.hpp"
 #include "model/queries/responses/error_response.hpp"
+#include "model/queries/responses/roles_response.hpp"
 #include "model/queries/responses/signatories_response.hpp"
 #include "model/queries/responses/transactions_response.hpp"
 
@@ -123,11 +124,29 @@ iroha::model::QueryProcessingFactory::executeGetAssetInfo(
 std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetRoles(
     const model::GetRoles& query) {
-  // TODO: implement
-  iroha::model::ErrorResponse response;
+  auto roles = _wsvQuery->getRoles();
+  if (not roles.has_value()) {
+    iroha::model::ErrorResponse response;
+    response.query_hash = query.query_hash;
+    response.reason = iroha::model::ErrorResponse::NO_ROLES;
+    return std::make_shared<ErrorResponse>(response);
+  }
+  iroha::model::RolesResponse response;
   response.query_hash = query.query_hash;
-  response.reason = iroha::model::ErrorResponse::NOT_SUPPORTED;
-  return std::make_shared<ErrorResponse>(response);
+
+  std::for_each(roles.value().begin(), roles.value().end(),
+                [&_wsvQuery, &response](auto role) {
+                  RolePermissions val;
+                  auto permissions = _wsvQuery->getRolePermissions(role);
+                  val.role_name = role;
+                  if (not permissions.has_value()) {
+                    val.permissions = {};
+                  } else {
+                    val.permissions = permissions.value();
+                  }
+                  response.roles_permissions.push_back(std::move(val));
+                });
+  return std::make_shared<iroha::model::RolesResponse>(response);
 }
 
 std::shared_ptr<iroha::model::QueryResponse>
