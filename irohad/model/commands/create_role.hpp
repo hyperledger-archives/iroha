@@ -34,6 +34,8 @@ namespace iroha {
 
       bool operator==(const Command& command) const override;
 
+      CreateRole(){}
+
       CreateRole(std::string role_name_)
       : role_name(role_name_) {}
 

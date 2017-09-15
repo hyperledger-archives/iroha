@@ -29,6 +29,9 @@
 #include "model/commands/transfer_asset.hpp"
 #include <regex>
 
+#include "model/commands/append_role.hpp"
+#include "model/commands/create_role.hpp"
+
 using namespace rapidjson;
 
 namespace iroha {
@@ -76,7 +79,10 @@ namespace iroha {
              &JsonCommandFactory::serializeSetAccountPermissions},
             {typeid(SetQuorum), &JsonCommandFactory::serializeSetQuorum},
             {typeid(TransferAsset),
-             &JsonCommandFactory::serializeTransferAsset}};
+             &JsonCommandFactory::serializeTransferAsset},
+            {typeid(AppendRole), &JsonCommandFactory::serializeAppendRole},
+            {typeid(CreateRole), &JsonCommandFactory::serializeCreateRole}
+        };
 
         deserializers_ = {
             {"AddAssetQuantity",
@@ -91,7 +97,10 @@ namespace iroha {
             {"SetAccountPermissions",
              &JsonCommandFactory::deserializeSetAccountPermissions},
             {"SetQuorum", &JsonCommandFactory::deserializeSetQuorum},
-            {"TransferAsset", &JsonCommandFactory::deserializeTransferAsset}};
+            {"TransferAsset", &JsonCommandFactory::deserializeTransferAsset},
+            {"AppendRole", &JsonCommandFactory::deserializeAppendRole},
+            {"CreateRole", &JsonCommandFactory::deserializeCreateRole}
+        };
       }
 
       // AddAssetQuantity
@@ -447,7 +456,51 @@ namespace iroha {
             | toCommand;
       }
 
-      // Abstract
+    rapidjson::Document JsonCommandFactory::serializeAppendRole(
+        std::shared_ptr<Command> command) {
+      auto cmd = static_cast<AppendRole *>(command.get());
+
+      Document document;
+      auto &allocator = document.GetAllocator();
+
+      document.SetObject();
+      document.AddMember("command_type", "AppendRole", allocator);
+      document.AddMember("account_id", cmd->account_id, allocator);
+      document.AddMember("role_name", cmd->role_name, allocator);
+      return document;
+    }
+
+    optional_ptr<Command> JsonCommandFactory::deserializeAppendRole(
+        const rapidjson::Value &document) {
+      auto des = makeFieldDeserializer(document);
+      return make_optional_ptr<AppendRole>()
+          | des.String(&AppendRole::account_id, "account_id")
+          | des.String(&AppendRole::role_name, "role_name")
+          | toCommand;
+    }
+
+    rapidjson::Document JsonCommandFactory::serializeCreateRole(
+        std::shared_ptr<Command> command) {
+      auto cmd = static_cast<CreateRole *>(command.get());
+
+      Document document;
+      auto &allocator = document.GetAllocator();
+
+      document.SetObject();
+      document.AddMember("command_type", "CreateRole", allocator);
+      document.AddMember("role_name", cmd->role_name, allocator);
+      return document;
+    }
+
+    optional_ptr<Command> JsonCommandFactory::deserializeCreateRole(
+        const rapidjson::Value &document) {
+      auto des = makeFieldDeserializer(document);
+      return make_optional_ptr<CreateRole>()
+          | des.String(&CreateRole::role_name, "role_name")
+          | toCommand;
+    }
+
+     // Abstract
       Document JsonCommandFactory::serializeAbstractCommand(
           std::shared_ptr<Command> command) {
         return makeMethodInvoke(*this,

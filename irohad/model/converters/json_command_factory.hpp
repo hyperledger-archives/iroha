@@ -91,6 +91,18 @@ namespace iroha {
         optional_ptr<Command> deserializeTransferAsset(
             const rapidjson::Value &document);
 
+        // AppendRole
+        rapidjson::Document serializeAppendRole(
+            std::shared_ptr<Command> command);
+        optional_ptr<Command> deserializeAppendRole(
+            const rapidjson::Value &document);
+
+        // CreateRole
+        rapidjson::Document serializeCreateRole(
+            std::shared_ptr<Command> command);
+        optional_ptr<Command> deserializeCreateRole(
+            const rapidjson::Value &document);
+
         // Abstract
         rapidjson::Document serializeAbstractCommand(
             std::shared_ptr<Command> command);

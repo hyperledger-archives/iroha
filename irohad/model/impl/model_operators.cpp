@@ -69,10 +69,6 @@ namespace iroha {
              add_signatory.pubkey == pubkey;
     }
 
-    bool AddSignatory::operator!=(const Command &command) const {
-      return !operator==(command);
-    }
-
     /* CreateAccount */
     bool CreateAccount::operator==(const Command &command) const {
       if (! instanceof <CreateAccount>(command)) return false;

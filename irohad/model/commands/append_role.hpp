@@ -38,6 +38,8 @@ namespace iroha {
 
       bool operator==(const Command& command) const override;
 
+      AppendRole(){}
+
       AppendRole(std::string account_id_, std::string role_name_)
           : account_id(account_id_), role_name(role_name_) {}
     };
