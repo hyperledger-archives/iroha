@@ -60,6 +60,8 @@ namespace iroha {
 
       bool validate(const model::GetRoles& query);
 
+      bool validate(const model::GetRolePermissions& query);
+
       bool validate(const model::GetAccountAssets& query);
 
       bool validate(const model::GetAccount& query);
@@ -75,6 +77,9 @@ namespace iroha {
 
       std::shared_ptr<iroha::model::QueryResponse> executeGetRoles(
           const model::GetRoles& query);
+
+      std::shared_ptr<iroha::model::QueryResponse> executeGetRolePermissions(
+          const model::GetRolePermissions& query);
 
       std::shared_ptr<iroha::model::QueryResponse> executeGetAccountAssets(
           const model::GetAccountAssets& query);

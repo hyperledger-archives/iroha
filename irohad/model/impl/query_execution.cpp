@@ -24,6 +24,8 @@
 #include "model/queries/responses/signatories_response.hpp"
 #include "model/queries/responses/transactions_response.hpp"
 
+using namespace iroha::model;
+
 iroha::model::QueryProcessingFactory::QueryProcessingFactory(
     std::shared_ptr<ametsuchi::WsvQuery> wsvQuery,
     std::shared_ptr<ametsuchi::BlockQuery> blockQuery)
@@ -41,6 +43,15 @@ bool iroha::model::QueryProcessingFactory::validate(
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetRoles& query) {
+  auto creator = _wsvQuery->getAccount(query.creator_account_id);
+  // TODO: check signatures
+  return
+      // Creator account exits
+      // TODO: add permission check
+      creator.has_value();
+}
+
+bool QueryProcessingFactory::validate(const model::GetRolePermissions& query) {
   auto creator = _wsvQuery->getAccount(query.creator_account_id);
   // TODO: check signatures
   return
@@ -106,8 +117,7 @@ bool iroha::model::QueryProcessingFactory::validate(
 }
 
 std::shared_ptr<iroha::model::QueryResponse>
-iroha::model::QueryProcessingFactory::executeGetAssetInfo(
-    const model::GetAssetInfo& query) {
+QueryProcessingFactory::executeGetAssetInfo(const model::GetAssetInfo& query) {
   auto ast = _wsvQuery->getAsset(query.asset_id);
   if (!ast.has_value()) {
     iroha::model::ErrorResponse response;
@@ -122,31 +132,35 @@ iroha::model::QueryProcessingFactory::executeGetAssetInfo(
 }
 
 std::shared_ptr<iroha::model::QueryResponse>
-iroha::model::QueryProcessingFactory::executeGetRoles(
-    const model::GetRoles& query) {
+QueryProcessingFactory::executeGetRoles(const model::GetRoles& query) {
   auto roles = _wsvQuery->getRoles();
   if (not roles.has_value()) {
-    iroha::model::ErrorResponse response;
+    ErrorResponse response;
     response.query_hash = query.query_hash;
-    response.reason = iroha::model::ErrorResponse::NO_ROLES;
+    response.reason = ErrorResponse::NO_ROLES;
     return std::make_shared<ErrorResponse>(response);
   }
-  iroha::model::RolesResponse response;
+  RolesResponse response;
   response.query_hash = query.query_hash;
+  std::move(roles.value().begin(), roles.value().end(), response.roles.begin());
+  return std::make_shared<RolesResponse>(response);
+}
 
-  std::for_each(roles.value().begin(), roles.value().end(),
-                [&_wsvQuery, &response](auto role) {
-                  RolePermissions val;
-                  auto permissions = _wsvQuery->getRolePermissions(role);
-                  val.role_name = role;
-                  if (not permissions.has_value()) {
-                    val.permissions = {};
-                  } else {
-                    val.permissions = permissions.value();
-                  }
-                  response.roles_permissions.push_back(std::move(val));
-                });
-  return std::make_shared<iroha::model::RolesResponse>(response);
+std::shared_ptr<iroha::model::QueryResponse>
+QueryProcessingFactory::executeGetRolePermissions(
+    const model::GetRolePermissions& query) {
+  auto perm = _wsvQuery->getRolePermissions(query.role_id);
+  if (not perm.has_value()) {
+    ErrorResponse response;
+    response.query_hash = query.query_hash;
+    response.reason = ErrorResponse::NO_ROLES;
+    return std::make_shared<ErrorResponse>(response);
+  }
+  RolePermissionsResponse response;
+  response.query_hash = query.query_hash;
+  std::move(perm.value().begin(), perm.value().end(),
+            response.role_permissions.begin());
+  return std::make_shared<RolePermissionsResponse>(response);
 }
 
 std::shared_ptr<iroha::model::QueryResponse>

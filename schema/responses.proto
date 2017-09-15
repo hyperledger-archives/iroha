@@ -32,6 +32,18 @@ message AccountResponse {
     Account account = 1;
 }
 
+message AssetResponse {
+    Asset asset = 1;
+}
+
+message RolesResponse {
+    repeated string roles = 1;
+}
+
+message RolePermissionsResponse {
+    repeated string permissions = 1;
+}
+
 message ErrorResponse {
     enum Reason  {
         STATELESS_INVALID = 0;
@@ -42,6 +54,7 @@ message ErrorResponse {
         NOT_SUPPORTED = 5; // when unidentified request was received
         WRONG_FORMAT = 6; // when json format wrong
         NO_ASSET = 7; // when requested asset does not exist
+        NO_ROLES = 8; // when there are no roles defined in the system
     }
     Reason reason = 1;
 }
@@ -54,6 +67,8 @@ message TransactionsResponse {
     repeated Transaction transactions = 1;
 }
 
+
+
 message QueryResponse {
     oneof response {
         AccountAssetResponse account_assets_response = 1;
@@ -61,5 +76,8 @@ message QueryResponse {
         ErrorResponse error_response = 3;
         SignatoriesResponse signatories_response = 4;
         TransactionsResponse transactions_response = 5;
+        AssetResponse asset_response = 6;
+        RolesResponse roles_response = 7;
+        RolePermissionsResponse role_permissions_response = 8;
     }
 }

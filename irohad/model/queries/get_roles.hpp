@@ -23,9 +23,24 @@
 namespace iroha {
   namespace model {
     /**
-     * Get all roles and their permissions in current system
+     * Get all roles in the current system
      */
-    struct GetRoles : Query {};
+    struct GetRoles : Query {
+      GetRoles(){}
+    };
+
+    /**
+     * Get all permissions related to specific role
+     */
+    struct GetRolePermissions : Query {
+      GetRolePermissions(){}
+
+      GetRolePermissions(std::string role_id): role_id(role_id) {}
+      /**
+       * Role to query
+       */
+      std::string role_id;
+    };
   }  // namespace model
 }  // namespace iroha
 

@@ -47,6 +47,7 @@ namespace iroha {
         query_response_handler.register_type(typeid(TransactionsResponse));
         query_response_handler.register_type(typeid(AssetResponse));
         query_response_handler.register_type(typeid(RolesResponse));
+        query_response_handler.register_type(typeid(RolePermissionsResponse));
       }
 
       ClassHandler query_response_handler;

@@ -26,6 +26,10 @@ namespace iroha {
      * Asset Data Model
      */
     struct Asset {
+      Asset() {}
+
+      Asset(std::string asset_id, std::string domain_id, uint8_t precision)
+          : asset_id(asset_id), domain_id(domain_id), precision(precision) {}
       /**
        * Asset unique identifier
        */
@@ -38,7 +42,7 @@ namespace iroha {
        */
       uint8_t precision;
     };
-  }
-}
+  }  // namespace model
+}  // namespace iroha
 
 #endif  // IROHA_ASSET_HPP

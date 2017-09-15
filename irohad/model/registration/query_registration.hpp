@@ -45,6 +45,7 @@ namespace iroha {
         query_handler.register_type(typeid(GetAccountAssetTransactions));
         query_handler.register_type(typeid(GetRoles));
         query_handler.register_type(typeid(GetAssetInfo));
+        query_handler.register_type(typeid(GetRolePermissions));
       }
 
       ClassHandler query_handler;

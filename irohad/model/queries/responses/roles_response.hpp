@@ -23,19 +23,26 @@
 namespace iroha {
   namespace model {
 
-    struct RolePermissions {
-      std::string role_name;
-      std::vector<std::string> permissions;
-    };
 
     /**
-     * Provide response with asset
+     * Response with all permissions related to role
+     */
+    struct RolePermissionsResponse : QueryResponse {
+      /**
+       * All role's permissions
+       */
+      std::vector<std::string> role_permissions;
+    };
+
+
+    /**
+     * Provide response with all roles of the current system
      */
     struct RolesResponse : public QueryResponse {
       /**
-       * Attached roles with corresponding permissions
+       * Attached roles
        */
-      std::vector<RolePermissions> roles_permissions;
+      std::vector<std::string> roles;
     };
   }  // namespace model
 }  // namespace iroha

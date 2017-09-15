@@ -27,6 +27,11 @@ namespace iroha {
      * Get meta data of asset
      */
     struct GetAssetInfo : Query {
+
+      GetAssetInfo(){}
+
+      GetAssetInfo(std::string asset_id): asset_id(asset_id){}
+
       /**
        * Asset Id
        */

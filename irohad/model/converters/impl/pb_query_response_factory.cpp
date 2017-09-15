@@ -27,6 +27,7 @@ namespace iroha {
       PbQueryResponseFactory::serialize(
           const std::shared_ptr<QueryResponse> query_response) const {
         nonstd::optional<protocol::QueryResponse> response = nonstd::nullopt;
+        // TODO: refactor
         if (instanceof <model::ErrorResponse>(*query_response)) {
           response = nonstd::make_optional<protocol::QueryResponse>();
           auto er = static_cast<model::ErrorResponse &>(*query_response);
@@ -57,6 +58,24 @@ namespace iroha {
               serializeTransactionsResponse(
                   static_cast<model::TransactionsResponse &>(*query_response)));
         }
+        if (instanceof <model::AssetResponse>(*query_response)) {
+          response = nonstd::make_optional<protocol::QueryResponse>();
+          response->mutable_asset_response()->CopyFrom(serializeAssetResponse(
+              static_cast<model::AssetResponse &>(*query_response)));
+        }
+        if (instanceof <model::RolesResponse>(*query_response)) {
+          response = nonstd::make_optional<protocol::QueryResponse>();
+          response->mutable_roles_response()->CopyFrom(serializeRolesResponse(
+              static_cast<model::RolesResponse &>(*query_response)));
+        }
+        if (instanceof <model::RolePermissionsResponse>(*query_response)) {
+          response = nonstd::make_optional<protocol::QueryResponse>();
+          response->mutable_role_permissions_response()->CopyFrom(
+              serializeRolePermissionsResponse(
+                  static_cast<model::RolePermissionsResponse &>(
+                      *query_response)));
+        }
+
         return response;
       }
 
@@ -196,6 +215,61 @@ namespace iroha {
         return res;
       }
 
+      protocol::AssetResponse PbQueryResponseFactory::serializeAssetResponse(
+          const model::AssetResponse &response) const {
+        protocol::AssetResponse res;
+        auto asset = res.mutable_asset();
+        asset->set_asset_id(response.asset.asset_id);
+        asset->set_domain_id(response.asset.domain_id);
+        asset->set_precision(response.asset.precision);
+        return res;
+      }
+
+      model::AssetResponse PbQueryResponseFactory::deserializeAssetResponse(
+          const protocol::AssetResponse &response) const {
+        model::AssetResponse res;
+        auto asset = response.asset();
+        res.asset =
+            Asset(asset.asset_id(), asset.domain_id(), asset.precision());
+        return res;
+      }
+
+      protocol::RolesResponse PbQueryResponseFactory::serializeRolesResponse(
+          const model::RolesResponse &response) const {
+        protocol::RolesResponse res;
+        for (auto role : response.roles) {
+          res.add_roles(role);
+        }
+        return res;
+      }
+
+      model::RolesResponse PbQueryResponseFactory::deserializeRolesResponse(
+          const protocol::RolesResponse &response) const {
+        model::RolesResponse res{};
+        std::copy(response.roles().begin(), response.roles().end(),
+                  res.roles.begin());
+        return res;
+      }
+
+      protocol::RolePermissionsResponse
+      PbQueryResponseFactory::serializeRolePermissionsResponse(
+          const model::RolePermissionsResponse &response) const {
+        protocol::RolePermissionsResponse res;
+        for (auto perm : response.role_permissions) {
+          res.add_permissions(perm);
+        }
+        return res;
+      }
+
+      model::RolePermissionsResponse
+      PbQueryResponseFactory::deserializeRolePermissionsResponse(
+          const protocol::RolePermissionsResponse &response) const {
+        model::RolePermissionsResponse res;
+        std::copy(response.permissions().begin(), response.permissions().end(),
+                  res.role_permissions.begin());
+        return res;
+      }
+
       protocol::TransactionsResponse
       PbQueryResponseFactory::serializeTransactionsResponse(
           const model::TransactionsResponse &transactionsResponse) const {
@@ -239,9 +313,12 @@ namespace iroha {
           case ErrorResponse::NOT_SUPPORTED:
             pb_response.set_reason(protocol::ErrorResponse::NOT_SUPPORTED);
             break;
+          case ErrorResponse::NO_ROLES:
+            pb_response.set_reason(protocol::ErrorResponse::NO_ROLES);
+            break;
         }
         return pb_response;
       }
-    }
-  }
-}
+    }  // namespace converters
+  }    // namespace model
+}  // namespace iroha
