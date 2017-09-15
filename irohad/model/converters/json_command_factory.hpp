@@ -103,6 +103,12 @@ namespace iroha {
         optional_ptr<Command> deserializeCreateRole(
             const rapidjson::Value &document);
 
+        // GrantPermission
+        rapidjson::Document serializeGrantPermission(
+            std::shared_ptr<Command> command);
+        optional_ptr<Command> deserializeGrantPermission(
+            const rapidjson::Value &document);
+
         // Abstract
         rapidjson::Document serializeAbstractCommand(
             std::shared_ptr<Command> command);

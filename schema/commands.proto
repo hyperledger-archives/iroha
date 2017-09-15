@@ -57,6 +57,20 @@ message TransferAsset {
     Amount amount = 5;
 }
 
+message AppendRole {
+    string account_id = 1;
+    string role_name = 2;
+}
+
+message CreateRole {
+    string role_name = 1;
+}
+
+message GrantPermission {
+    string account_id = 1;
+    string permission_name = 2;
+}
+
 message Command {
     oneof command {
         AddAssetQuantity add_asset_quantity = 1;

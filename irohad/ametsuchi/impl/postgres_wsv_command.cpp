@@ -35,6 +35,13 @@ namespace iroha {
       return false;
     };
 
+   bool PostgresWsvCommand::insertAccountGrantablePermission(
+      const std::string &permittee_account_id,
+      const std::string &account_id, const std::string &permission_id){
+     // TODO: implement
+     return false;
+   };
+
     bool PostgresWsvCommand::insertAccount(const model::Account &account) {
       std::stringstream permissions;
       permissions << account.permissions.add_signatory

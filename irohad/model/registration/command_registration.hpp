@@ -32,6 +32,10 @@
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 
+#include "model/commands/append_role.hpp"
+#include "model/commands/create_role.hpp"
+#include "model/commands/grant_permission.hpp"
+
 /**
  * File contains registration for all command subclasses
  */
@@ -52,6 +56,9 @@ namespace iroha {
         command_handler.register_type(typeid(SetAccountPermissions));
         command_handler.register_type(typeid(SetQuorum));
         command_handler.register_type(typeid(TransferAsset));
+        command_handler.register_type(typeid(AppendRole));
+        command_handler.register_type(typeid(CreateRole));
+        command_handler.register_type(typeid(GrantPermission));
       }
 
       ClassHandler command_handler;

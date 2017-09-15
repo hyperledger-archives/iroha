@@ -18,6 +18,7 @@
 #include "model/converters/pb_command_factory.hpp"
 #include "model/converters/pb_common.hpp"
 
+#include <commands.pb.h>
 #include <string>
 
 namespace iroha {
@@ -237,6 +238,7 @@ namespace iroha {
       protocol::TransferAsset PbCommandFactory::serializeTransferAsset(
           const model::TransferAsset &transfer_asset) {
         protocol::TransferAsset pb_transfer_asset;
+
         pb_transfer_asset.set_src_account_id(transfer_asset.src_account_id);
         pb_transfer_asset.set_dest_account_id(transfer_asset.dest_account_id);
         pb_transfer_asset.set_asset_id(transfer_asset.asset_id);
@@ -258,6 +260,44 @@ namespace iroha {
         transfer_asset.amount =
             deserializeAmount(pb_subtract_asset_quantity.amount());
         return transfer_asset;
+      }
+
+      model::AppendRole PbCommandFactory::deserializeAppendRole(
+          const protocol::AppendRole &command) {
+        return AppendRole(command.account_id(), command.role_name());
+      }
+
+      protocol::AppendRole PbCommandFactory::serializeAppendRole(
+          const model::AppendRole &command) {
+        protocol::AppendRole cmd;
+        cmd.set_account_id(command.account_id);
+        cmd.set_role_name(command.role_name);
+        return cmd;
+      }
+
+      model::CreateRole PbCommandFactory::deserializeCreateRole(
+          const protocol::CreateRole &command) {
+        return CreateRole(command.role_name());
+      }
+
+      protocol::CreateRole PbCommandFactory::serializeCreateRole(
+          const model::CreateRole &command) {
+        protocol::CreateRole cmd;
+        cmd.set_role_name(command.role_name);
+        return cmd;
+      }
+
+      protocol::GrantPermission PbCommandFactory::serializeGrantPermission(
+          const model::GrantPermission &command) {
+        protocol::GrantPermission cmd;
+        cmd.set_account_id(command.account_id);
+        cmd.set_permission_name(command.permission_name);
+        return cmd;
+      }
+
+      model::GrantPermission PbCommandFactory::deserializeGrantPermission(
+          const protocol::GrantPermission &command) {
+        return GrantPermission(command.account_id(), command.permission_name());
       }
 
       protocol::Command PbCommandFactory::serializeAbstractCommand(

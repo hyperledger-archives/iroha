@@ -20,7 +20,7 @@
 #include "client.hpp"
 #include "grpc_response_handler.hpp"
 #include "model/converters/json_query_factory.hpp"
-#include "parser/parser.hpp"
+
 
 using namespace std::chrono_literals;
 

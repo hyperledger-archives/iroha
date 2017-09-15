@@ -17,15 +17,20 @@
 
 #include "interactive/interactive_transaction_cli.hpp"
 #include <fstream>
-#include "client.hpp"
-#include "grpc_response_handler.hpp"
 #include "model/converters/json_common.hpp"
 #include "model/converters/json_transaction_factory.hpp"
 #include "model/generators/transaction_generator.hpp"
 
+#include <chrono>
+#include "client.hpp"
+#include "grpc_response_handler.hpp"
+#include "model/commands/append_role.hpp"
+#include "model/commands/create_role.hpp"
+#include "model/commands/grant_permission.hpp"
 #include "parser/parser.hpp"
 
 using namespace std::chrono_literals;
+using namespace iroha::model;
 
 namespace iroha_cli {
   namespace interactive {
@@ -42,7 +47,10 @@ namespace iroha_cli {
           {SET_PERM, "Set Permissions to Account"},
           {SET_QUO, "Set Account Quorum"},
           {SUB_ASSET_QTY, "Subtract  Assets Quantity from Account"},
-          {TRAN_ASSET, "Transfer Assets"}};
+          {TRAN_ASSET, "Transfer Assets"},
+          {CREATE_ROLE, "Create new role"},
+          {APPEND_ROLE, "Add new role to account"},
+          {GRANT_PERM, "Grant permission over your account"}};
 
       const auto acc_id = "Account Id";
       const auto ast_id = "Asset Id";
@@ -55,6 +63,8 @@ namespace iroha_cli {
       const auto ast_name = "Asset name";
       const auto ast_precision = "Asset precision";
       const auto quorum = "Quorum";
+      const auto role = "Role name";
+      const auto perm = "Permission name";
 
       command_params_descriptions_ = {
           {ADD_ASSET_QTY, {acc_id, ast_id, ammout_a, ammout_b}},
@@ -70,8 +80,9 @@ namespace iroha_cli {
           {TRAN_ASSET,
            {std::string("Src") + acc_id, std::string("Dest") + acc_id, ast_id,
             ammout_a, ammout_b}},
-
-      };
+          {CREATE_ROLE, {role}},
+          {APPEND_ROLE, {acc_id, role}},
+          {GRANT_PERM, {acc_id, perm}}};
 
       command_handlers_ = {
           {ADD_ASSET_QTY, &InteractiveTransactionCli::parseAddAssetQuantity},
@@ -85,7 +96,10 @@ namespace iroha_cli {
           {SET_QUO, &InteractiveTransactionCli::parseSetQuorum},
           {SUB_ASSET_QTY,
            &InteractiveTransactionCli::parseSubtractAssetQuantity},
-          {TRAN_ASSET, &InteractiveTransactionCli::parseTransferAsset}};
+          {TRAN_ASSET, &InteractiveTransactionCli::parseTransferAsset},
+          {CREATE_ROLE, &InteractiveTransactionCli::parseCreateRole},
+          {APPEND_ROLE, &InteractiveTransactionCli::parseAppendRole},
+          {GRANT_PERM, &InteractiveTransactionCli::parseGrantPermission}};
 
       commands_menu_ = formMenu(command_handlers_, command_params_descriptions_,
                                 commands_description_map_);
@@ -166,6 +180,29 @@ namespace iroha_cli {
       current_context_ = RESULT;
       printMenu("Command is formed. Choose what to do:", result_menu_);
       return true;
+    }
+
+    std::shared_ptr<iroha::model::Command>
+    InteractiveTransactionCli::parseCreateRole(
+        std::vector<std::string> params) {
+      auto role = params[0];
+      return std::make_shared<CreateRole>(role);
+    }
+
+    std::shared_ptr<iroha::model::Command>
+    InteractiveTransactionCli::parseAppendRole(
+        std::vector<std::string> params) {
+      auto acc_id = params[0];
+      auto role = params[1];
+      return std::make_shared<AppendRole>(acc_id, role);
+    }
+
+    std::shared_ptr<iroha::model::Command>
+    InteractiveTransactionCli::parseGrantPermission(
+        std::vector<std::string> params) {
+      auto acc_id = params[0];
+      auto permission = params[1];
+      return std::make_shared<GrantPermission>(acc_id, permission);
     }
 
     std::shared_ptr<iroha::model::Command>

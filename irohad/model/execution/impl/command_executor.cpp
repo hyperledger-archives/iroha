@@ -32,6 +32,7 @@
 
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
+#include "model/commands/grant_permission.hpp"
 
 using namespace iroha::model;
 using namespace iroha::ametsuchi;
@@ -97,6 +98,36 @@ bool CreateRoleExecutor::isValid(const Command &command,
   return true;
 }
 
+// ----------------------------| Grant Permission |-----------------------------
+GrantPermissionExecutor::GrantPermissionExecutor() : creator_() {
+  log_ = logger::log("GrantPermissionExecutor");
+}
+
+bool GrantPermissionExecutor::execute(const Command &command,
+                                      ametsuchi::WsvQuery &queries,
+                                      ametsuchi::WsvCommand &commands) {
+  if (creator_.account_id.empty()) {
+    return false;
+  }
+  auto cmd_value = static_cast<const GrantPermission &>(command);
+  return commands.insertAccountGrantablePermission(
+      cmd_value.account_id, creator_.account_id, cmd_value.permission_name);
+}
+
+bool GrantPermissionExecutor::hasPermissions(const Command &command,
+                                             ametsuchi::WsvQuery &queries,
+                                             const Account &creator) {
+  // TODO: think how to make it better
+  creator_ = creator;
+  // TODO: implement
+  return true;
+}
+
+bool GrantPermissionExecutor::isValid(const Command &command,
+                                      ametsuchi::WsvQuery &queries) {
+  // TODO: check. Add checks on naming of the role
+  return true;
+}
 
 // ----------------------------| AddAssetQuantity |-----------------------------
 

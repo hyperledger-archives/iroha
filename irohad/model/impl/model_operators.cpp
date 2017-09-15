@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include <model/block.hpp>
 #include <model/commands/add_asset_quantity.hpp>
 #include <model/commands/add_peer.hpp>
@@ -22,6 +21,7 @@
 #include <model/commands/create_account.hpp>
 #include <model/commands/create_asset.hpp>
 #include <model/commands/create_domain.hpp>
+#include <model/commands/grant_permission.hpp>
 #include <model/commands/remove_signatory.hpp>
 #include <model/commands/set_permissions.hpp>
 #include <model/commands/set_quorum.hpp>
@@ -29,6 +29,7 @@
 
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
+#include "model/commands/set_permissions.hpp"
 
 namespace iroha {
   namespace model {
@@ -43,6 +44,13 @@ namespace iroha {
       if (! instanceof <CreateRole>(command)) return false;
       auto cmd = static_cast<const CreateRole &>(command);
       return cmd.role_name == role_name;
+    }
+
+    bool GrantPermission::operator==(const Command &command) const {
+      if (! instanceof <GrantPermission>(command)) return false;
+      auto cmd = static_cast<const GrantPermission &>(command);
+      return cmd.account_id == account_id &&
+             cmd.permission_name == permission_name;
     }
 
     /* AddAssetQuantity */

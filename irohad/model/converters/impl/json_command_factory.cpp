@@ -31,6 +31,7 @@
 
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
+#include "model/commands/grant_permission.hpp"
 
 using namespace rapidjson;
 
@@ -81,7 +82,8 @@ namespace iroha {
             {typeid(TransferAsset),
              &JsonCommandFactory::serializeTransferAsset},
             {typeid(AppendRole), &JsonCommandFactory::serializeAppendRole},
-            {typeid(CreateRole), &JsonCommandFactory::serializeCreateRole}
+            {typeid(CreateRole), &JsonCommandFactory::serializeCreateRole},
+            {typeid(GrantPermission), &JsonCommandFactory::serializeGrantPermission}
         };
 
         deserializers_ = {
@@ -99,7 +101,8 @@ namespace iroha {
             {"SetQuorum", &JsonCommandFactory::deserializeSetQuorum},
             {"TransferAsset", &JsonCommandFactory::deserializeTransferAsset},
             {"AppendRole", &JsonCommandFactory::deserializeAppendRole},
-            {"CreateRole", &JsonCommandFactory::deserializeCreateRole}
+            {"CreateRole", &JsonCommandFactory::deserializeCreateRole},
+            {"GrantPermission", &JsonCommandFactory::deserializeGrantPermission}
         };
       }
 
@@ -497,6 +500,28 @@ namespace iroha {
       auto des = makeFieldDeserializer(document);
       return make_optional_ptr<CreateRole>()
           | des.String(&CreateRole::role_name, "role_name")
+          | toCommand;
+    }
+
+    rapidjson::Document JsonCommandFactory::serializeGrantPermission(
+        std::shared_ptr<Command> command) {
+      auto cmd = static_cast<GrantPermission *>(command.get());
+
+      Document document;
+      auto &allocator = document.GetAllocator();
+      document.SetObject();
+      document.AddMember("command_type", "GrantPermission", allocator);
+      document.AddMember("account_id", cmd->account_id, allocator);
+      document.AddMember("permission_name", cmd->permission_name, allocator);
+      return document;
+    }
+
+    optional_ptr<Command> JsonCommandFactory::deserializeGrantPermission(
+        const rapidjson::Value &document) {
+      auto des = makeFieldDeserializer(document);
+      return make_optional_ptr<GrantPermission>()
+          | des.String(&GrantPermission::account_id, "account_id")
+          | des.String(&GrantPermission::permission_name, "permission_name")
           | toCommand;
     }
 

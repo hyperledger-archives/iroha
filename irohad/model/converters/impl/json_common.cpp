@@ -16,8 +16,7 @@
  */
 
 #include "model/converters/json_common.hpp"
-#include <algorithm>
-#include "common/types.hpp"
+
 
 using namespace rapidjson;
 

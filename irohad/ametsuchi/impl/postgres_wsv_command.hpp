@@ -44,6 +44,9 @@ namespace iroha {
       bool insertPeer(const model::Peer &peer) override;
       bool deletePeer(const model::Peer &peer) override;
       bool insertDomain(const model::Domain &domain) override;
+      bool insertAccountGrantablePermission(
+          const std::string &permittee_account_id,
+          const std::string &account_id, const std::string &permission_id);
 
      private:
       pqxx::nontransaction &transaction_;

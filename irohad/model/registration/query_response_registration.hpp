@@ -26,6 +26,8 @@
 #include "model/queries/responses/error_response.hpp"
 #include "model/queries/responses/signatories_response.hpp"
 #include "model/queries/responses/transactions_response.hpp"
+#include "model/queries/responses/asset_response.hpp"
+#include "model/queries/responses/roles_response.hpp"
 
 
 /**
@@ -43,6 +45,8 @@ namespace iroha {
         query_response_handler.register_type(typeid(ErrorResponse));
         query_response_handler.register_type(typeid(SignatoriesResponse));
         query_response_handler.register_type(typeid(TransactionsResponse));
+        query_response_handler.register_type(typeid(AssetResponse));
+        query_response_handler.register_type(typeid(RolesResponse));
       }
 
       ClassHandler query_response_handler;

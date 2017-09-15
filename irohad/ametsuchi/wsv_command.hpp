@@ -53,6 +53,17 @@ namespace iroha {
                                      const std::string &role_name) = 0;
 
       /**
+       * Insert grantable permission
+       * @param permittee_account_id to who give the grant permission
+       * @param account_id on which account
+       * @param permission_id what permission
+       * @return true is execution is successful
+       */
+      virtual bool insertAccountGrantablePermission(
+          const std::string &permittee_account_id,
+          const std::string &account_id, const std::string &permission_id) = 0;
+
+      /**
        *
        * @param account
        * @return
