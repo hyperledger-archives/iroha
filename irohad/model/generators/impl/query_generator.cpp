@@ -86,6 +86,33 @@ namespace iroha {
         return query;
       }
 
+      std::shared_ptr<GetAssetInfo> QueryGenerator::generateGetAssetInfo() {
+        auto query = std::make_shared<GetAssetInfo>("coin#test");
+        query->created_ts = 0;
+        query->creator_account_id = "admin@test";
+        query->query_counter = 0;
+        query->query_hash = hash_provider_.get_hash(query);
+        return query;
+      }
+
+      std::shared_ptr<GetRoles> QueryGenerator::generateGetRoles() {
+        auto query = std::make_shared<GetRoles>();
+        query->created_ts = 0;
+        query->creator_account_id = "admin@test";
+        query->query_counter = 0;
+        query->query_hash = hash_provider_.get_hash(query);
+        return query;
+      }
+
+      std::shared_ptr<GetRolePermissions> QueryGenerator::generateGetRolePermissions() {
+        auto query = std::make_shared<GetRolePermissions>("admin");
+        query->created_ts = 0;
+        query->creator_account_id = "admin@test";
+        query->query_counter = 0;
+        query->query_hash = hash_provider_.get_hash(query);
+        return query;
+      }
+
     }  // namespace generators
   }    // namespace model
 }  // namespace iroha

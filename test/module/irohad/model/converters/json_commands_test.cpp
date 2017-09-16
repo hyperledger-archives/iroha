@@ -23,9 +23,12 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
+#include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
+#include "model/commands/create_role.hpp"
+#include "model/commands/grant_permission.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
@@ -60,8 +63,7 @@ TEST_F(JsonCommandTest, ClassHandlerTest) {
       std::make_shared<RemoveSignatory>(),
       std::make_shared<SetAccountPermissions>(),
       std::make_shared<SetQuorum>(),
-      std::make_shared<TransferAsset>()
-  };
+      std::make_shared<TransferAsset>()};
   for (const auto &command : commands) {
     auto ser = factory.serializeAbstractCommand(command);
     auto des = factory.deserializeAbstractCommand(ser);
@@ -222,6 +224,39 @@ TEST_F(JsonCommandTest, set_transfer_asset) {
 
   auto json_command = factory.serializeTransferAsset(orig_command);
   auto serial_command = factory.deserializeTransferAsset(json_command);
+
+  ASSERT_TRUE(serial_command.has_value());
+  ASSERT_EQ(*orig_command, *serial_command.value());
+
+  command_converter_test(orig_command);
+}
+
+TEST_F(JsonCommandTest, append_role) {
+  auto orig_command = std::make_shared<AppendRole>("test@test", "master");
+  auto json_command = factory.serializeAppendRole(orig_command);
+  auto serial_command = factory.deserializeAppendRole(json_command);
+
+  ASSERT_TRUE(serial_command.has_value());
+  ASSERT_EQ(*orig_command, *serial_command.value());
+
+  command_converter_test(orig_command);
+}
+
+TEST_F(JsonCommandTest, create_role) {
+  auto orig_command = std::make_shared<CreateRole>("master");
+  auto json_command = factory.serializeCreateRole(orig_command);
+  auto serial_command = factory.deserializeCreateRole(json_command);
+
+  ASSERT_TRUE(serial_command.has_value());
+  ASSERT_EQ(*orig_command, *serial_command.value());
+
+  command_converter_test(orig_command);
+}
+
+TEST_F(JsonCommandTest, grant_permission) {
+  auto orig_command = std::make_shared<GrantPermission>("admin@test","can_read");
+  auto json_command = factory.serializeGrantPermission(orig_command);
+  auto serial_command = factory.deserializeGrantPermission(json_command);
 
   ASSERT_TRUE(serial_command.has_value());
   ASSERT_EQ(*orig_command, *serial_command.value());

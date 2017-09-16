@@ -29,6 +29,9 @@
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/transaction.hpp"
+#include "model/commands/create_role.hpp"
+#include "model/commands/append_role.hpp"
+#include "model/commands/grant_permission.hpp"
 
 using namespace iroha::model;
 
@@ -214,6 +217,40 @@ TEST(ModelOperatorTest, TransferAssetTest) {
 
   ASSERT_EQ(first, second);
   second.asset_id = "22";
+  ASSERT_NE(first, second);
+}
+
+
+// -----|CreateRole|-----
+
+TEST(ModelOperatorTest, CreateRoleTest) {
+  auto first = CreateRole("master");
+  auto second = CreateRole("master");
+
+  ASSERT_EQ(first, second);
+  second.role_name = "padawan";
+  ASSERT_NE(first, second);
+}
+
+// -----|AppendRole|-----
+
+TEST(ModelOperatorTest, AppendRoleTest) {
+  auto first = AppendRole("yoda","master");
+  auto second = AppendRole("yoda","master");
+
+  ASSERT_EQ(first, second);
+  second.account_id = "obi";
+  ASSERT_NE(first, second);
+}
+
+// -----|GrantPermission|-----
+
+TEST(ModelOperatorTest, GrantPermissionTest) {
+  auto first = GrantPermission("admin","can_read");
+  auto second = GrantPermission("admin","can_read");
+
+  ASSERT_EQ(first, second);
+  second.account_id = "non-admin";
   ASSERT_NE(first, second);
 }
 

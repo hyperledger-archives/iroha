@@ -304,6 +304,31 @@ namespace iroha {
           const model::Command &command) {
         PbCommandFactory commandFactory;
         auto cmd = protocol::Command();
+        // TODO: refactor this
+
+        // -----|CreateRole|-----
+        if (instanceof <model::CreateRole>(command)) {
+          auto serialized = commandFactory.serializeCreateRole(
+              static_cast<const model::CreateRole &>(command));
+          cmd.set_allocated_create_role(
+              new protocol::CreateRole(serialized));
+        }
+
+        // -----|AppendRole|-----
+        if (instanceof <model::AppendRole>(command)) {
+          auto serialized = commandFactory.serializeAppendRole(
+              static_cast<const model::AppendRole &>(command));
+          cmd.set_allocated_append_role(
+              new protocol::AppendRole(serialized));
+        }
+
+        // -----|GrantPermission|-----
+        if (instanceof <model::GrantPermission>(command)) {
+          auto serialized = commandFactory.serializeGrantPermission(
+              static_cast<const model::GrantPermission &>(command));
+          cmd.set_allocated_grant_permission(
+              new protocol::GrantPermission(serialized));
+        }
 
         // -----|AddAssetQuantity|-----
         if (instanceof <model::AddAssetQuantity>(command)) {
@@ -391,6 +416,27 @@ namespace iroha {
           const protocol::Command &command) {
         PbCommandFactory commandFactory;
         std::shared_ptr<model::Command> val;
+
+        // -----|CreateRole|-----
+        if (command.has_create_role()) {
+          auto pb_command = command.create_role();
+          auto cmd = commandFactory.deserializeCreateRole(pb_command);
+          val = std::make_shared<model::CreateRole>(cmd);
+        }
+
+        // -----|AppendRole|-----
+        if (command.has_append_role()) {
+          auto pb_command = command.append_role();
+          auto cmd = commandFactory.deserializeAppendRole(pb_command);
+          val = std::make_shared<model::AppendRole>(cmd);
+        }
+
+        // -----|GrantPermission|-----
+        if (command.has_grant_permission()) {
+          auto pb_command = command.grant_permission();
+          auto cmd = commandFactory.deserializeGrantPermission(pb_command);
+          val = std::make_shared<model::GrantPermission>(cmd);
+        }
 
         // -----|AddAssetQuantity|-----
         if (command.has_add_asset_quantity()) {

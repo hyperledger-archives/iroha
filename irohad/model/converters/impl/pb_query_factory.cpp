@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
+#include <queries.pb.h>
 #include "model/converters/pb_query_factory.hpp"
-#include "model/common.hpp"
 #include "model/model_hash_provider_impl.hpp"
 #include "model/queries/get_account.hpp"
 #include "model/queries/get_account_assets.hpp"
@@ -221,6 +221,7 @@ namespace iroha {
       protocol::Query PbQueryFactory::serializeGetRoles(
           std::shared_ptr<Query> query) {
         protocol::Query pb_query;
+        auto mut = pb_query.mutable_get_roles();
         serializeQueryMetaData(pb_query, query);
         auto tmp = std::static_pointer_cast<GetRoles>(query);
         return pb_query;

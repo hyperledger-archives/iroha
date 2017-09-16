@@ -250,3 +250,6 @@ TEST(QueryExecutor, get_account_assets) {
 
   // TODO: tests for signatures
 }
+
+
+// TODO: Refactor add tests for get roles, get role permissions and get asset info

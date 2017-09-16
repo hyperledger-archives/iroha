@@ -40,7 +40,11 @@ namespace iroha {
             {"GetAccountAssetTransactions",
              &JsonQueryFactory::deserializeGetAccountAssetTransactions},
             {"GetAccountSignatories",
-             &JsonQueryFactory::deserializeGetSignatories}};
+             &JsonQueryFactory::deserializeGetSignatories},
+            {"GetRoles", &JsonQueryFactory::deserializeGetRoles},
+            {"GetRolePermissions", &JsonQueryFactory::deserializeGetRolePermissions},
+            {"GetAssetInfo", &JsonQueryFactory::deserializeGetAssetInfo}
+        };
         // Serializers
         serializers_ = {
             {typeid(GetAccount), &JsonQueryFactory::serializeGetAccount},
@@ -51,7 +55,11 @@ namespace iroha {
             {typeid(GetAccountTransactions),
              &JsonQueryFactory::serializeGetAccountTransactions},
             {typeid(GetAccountAssetTransactions),
-             &JsonQueryFactory::serializeGetAccountAssetTransactions}};
+             &JsonQueryFactory::serializeGetAccountAssetTransactions},
+            {typeid(GetAssetInfo), &JsonQueryFactory::serializeGetAssetInfo},
+            {typeid(GetRoles), &JsonQueryFactory::serializeGetRoles},
+            {typeid(GetRolePermissions), &JsonQueryFactory::serializeGetRolePermissions}
+        };
       }
 
       optional_ptr<Query> JsonQueryFactory::deserialize(

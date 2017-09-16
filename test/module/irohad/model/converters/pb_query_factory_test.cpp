@@ -19,8 +19,22 @@
 #include "model/converters/pb_query_factory.hpp"
 #include "model/generators/query_generator.hpp"
 
+#include "model/queries/get_roles.hpp"
+#include "model/queries/get_asset_info.hpp"
+
 using namespace iroha::model::converters;
 using namespace iroha::model::generators;
+using namespace iroha::model;
+
+void runQueryTest(std::shared_ptr<Query> query){
+  PbQueryFactory queryFactory;
+  auto pb_query = queryFactory.serialize(query);
+  ASSERT_TRUE(pb_query.has_value());
+  auto res_query = queryFactory.deserialize(pb_query.value());
+  ASSERT_TRUE(res_query.has_value());
+  // TODO: overload operator == for queries and replace with it
+  ASSERT_EQ(res_query.value()->query_hash, query->query_hash);
+}
 
 TEST(PbQueryFactoryTest, SerializeGetAccount){
   PbQueryFactory queryFactory;
@@ -68,4 +82,20 @@ TEST(PbQueryFactoryTest, SerializeGetSignatories){
   ASSERT_TRUE(res_query.has_value());
   // TODO: overload operator == for queries and replace with it
   ASSERT_EQ(res_query.value()->query_hash, query->query_hash);
+}
+
+TEST(PbQueryFactoryTest, get_roles){
+
+  auto query = QueryGenerator{}.generateGetRoles();
+  runQueryTest(query);
+}
+
+TEST(PbQueryFactoryTest, get_role_permissions){
+  auto query = QueryGenerator{}.generateGetRolePermissions();
+  runQueryTest(query);
+}
+
+TEST(PbQueryFactoryTest, get_asset_info){
+  auto query = QueryGenerator{}.generateGetAssetInfo();
+  runQueryTest(query);
 }

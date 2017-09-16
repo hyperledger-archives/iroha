@@ -119,16 +119,15 @@ TEST(QueryResponseTest, TransactionsResponseTest) {
 
   model::TransactionsResponse txs_response{};
 
-  txs_response.transactions =
-          rxcpp::observable<>::iterate([] {
-              std::vector<model::Transaction> result;
-              for (size_t i = 0; i < 3; ++i) {
-                model::Transaction current;
-                current.tx_counter = i;
-                result.push_back(current);
-              }
-              return result;
-          }());
+  txs_response.transactions = rxcpp::observable<>::iterate([] {
+    std::vector<model::Transaction> result;
+    for (size_t i = 0; i < 3; ++i) {
+      model::Transaction current;
+      current.tx_counter = i;
+      result.push_back(current);
+    }
+    return result;
+  }());
 
   auto shrd_tr = std::make_shared<decltype(txs_response)>(txs_response);
   auto query_response = *pb_factory.serialize(shrd_tr);
@@ -142,4 +141,58 @@ TEST(QueryResponseTest, TransactionsResponseTest) {
                   .tx_counter(),
               i);
   }
+}
+
+TEST(QueryResponseTest, roles_response) {
+  model::converters::PbQueryResponseFactory pb_factory;
+
+  model::RolesResponse response{};
+  response.roles = {"master", "padawan", "council"};
+
+  auto shrd_resp = std::make_shared<decltype(response)>(response);
+  auto query_response = *pb_factory.serialize(shrd_resp);
+
+  ASSERT_EQ(response.roles.size(),
+            query_response.roles_response().roles().size());
+  for (size_t i = 0; i < response.roles.size(); i++) {
+    ASSERT_EQ(query_response.roles_response().roles().Get(i),
+              response.roles.at(i));
+  }
+}
+
+TEST(QueryResponseTest, role_permissions) {
+  model::converters::PbQueryResponseFactory pb_factory;
+
+  model::RolePermissionsResponse response{};
+  response.role_permissions = {"can_read", "can_write"};
+
+  auto shrd_resp = std::make_shared<decltype(response)>(response);
+  auto query_response = *pb_factory.serialize(shrd_resp);
+
+  ASSERT_EQ(response.role_permissions.size(),
+            query_response.role_permissions_response().permissions().size());
+  for (size_t i = 0; i < response.role_permissions.size(); i++) {
+    ASSERT_EQ(query_response.role_permissions_response().permissions().Get(i),
+              response.role_permissions.at(i));
+  }
+}
+
+TEST(QueryResponseTest, asset_response) {
+  model::converters::PbQueryResponseFactory pb_factory;
+
+  model::AssetResponse response{};
+  response.asset.asset_id = "coin#test";
+  response.asset.domain_id = "test";
+  response.asset.precision = 2;
+
+  auto shrd_resp = std::make_shared<decltype(response)>(response);
+  auto query_response = *pb_factory.serialize(shrd_resp);
+
+  ASSERT_EQ(response.asset.asset_id,
+            query_response.asset_response().asset().asset_id());
+  ASSERT_EQ(response.asset.domain_id,
+            query_response.asset_response().asset().domain_id());
+  ASSERT_EQ(response.asset.precision,
+            query_response.asset_response().asset().precision());
+
 }
