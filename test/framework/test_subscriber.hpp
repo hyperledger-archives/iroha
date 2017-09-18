@@ -148,9 +148,11 @@ namespace framework {
       std::unique_ptr<VerificationStrategy<T>> strategy_;
     };
 
-    template <template <typename K> class S, typename T, typename... Args>
+    template <template <typename K> class S,
+              template <typename V, typename SO> class O, typename T,
+              typename SourceOperator, typename... Args>
     TestSubscriber<T> make_test_subscriber(
-        rxcpp::observable<T> unwrapped_observable, Args &&... args) {
+        O<T, SourceOperator> unwrapped_observable, Args &&... args) {
       return TestSubscriber<T>(
           unwrapped_observable,
           std::make_unique<S<T>>(std::forward<Args>(args)...));

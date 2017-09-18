@@ -27,31 +27,24 @@ find_package_handle_standard_args(grpc DEFAULT_MSG
     )
 
 if (NOT grpc_FOUND)
+  find_package(Git REQUIRED)
   externalproject_add(grpc_grpc
       GIT_REPOSITORY https://github.com/grpc/grpc
-      GIT_TAG c80d3321d0f77bef8cfff8b32490a07c1e90a5ad
-      BUILD_IN_SOURCE 1
-      # 1. ${CMAKE_COMMAND} -E env - runs env command, which sets environment variables written as NAME=VALUE
-      # 2. HAS_PKG_CONFIG=false - disable pkg-config so that it doesn't try to find protobuf.pc
-      # 3. PROTOC=${protoc_EXECUTABLE}\ -I${protobuf_INCLUDE_DIR} - add path flag to protobuf executable, \ escapes space
-      # 4. PATH=${protoc_EXECUTABLE_DIR}:$ENV{PATH} - append protoc folder to path
-      # 5. LDFLAGS=-L${protobuf_LIBRARY_DIR} - add protobuf library dir for linker
-      # 6. CFLAGS=-I${protobuf_INCLUDE_DIR} - add protobuf include dir for compiler
-      # 7. CPPFLAGS=-I${protobuf_INCLUDE_DIR} - add protobuf include dir for preprocessor
-      # 8. LD_LIBRARY_PATH=${protobuf_LIBRARY_DIR}:$ENV{LD_LIBRARY_PATH} - add protobuf include dir for library loader
-      BUILD_COMMAND ${CMAKE_COMMAND} -E env HAS_PKG_CONFIG=false PROTOC=${protoc_EXECUTABLE}\ -I${protobuf_INCLUDE_DIR} LDFLAGS=-L${protobuf_LIBRARY_DIR} CFLAGS=-I${protobuf_INCLUDE_DIR} CPPFLAGS=-I${protobuf_INCLUDE_DIR} LD_LIBRARY_PATH=${protobuf_LIBRARY_DIR}:$ENV{LD_LIBRARY_PATH} $(MAKE)
-      CONFIGURE_COMMAND "" # remove configure step
+      GIT_TAG bfcbad3b86c7912968dc8e64f2121c920dad4dfb
+      CMAKE_ARGS -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_PROTOBUF_PACKAGE_TYPE=CONFIG -DProtobuf_DIR=${EP_PREFIX}/src/google_protobuf-build/lib/cmake/protobuf -DgRPC_ZLIB_PROVIDER=package -DBUILD_SHARED_LIBS=ON
+      PATCH_COMMAND ${GIT_EXECUTABLE} am ${PROJECT_SOURCE_DIR}/patch/fix-protobuf-package-include.patch
       INSTALL_COMMAND "" # remove install step
       TEST_COMMAND "" # remove test step
       UPDATE_COMMAND "" # remove update step
       )
-  externalproject_get_property(grpc_grpc source_dir)
+  externalproject_get_property(grpc_grpc source_dir binary_dir)
   set(grpc_INCLUDE_DIR ${source_dir}/include)
-  set(grpc_LIBRARY ${source_dir}/libs/opt/libgrpc.so)
-  set(grpc_grpc++_LIBRARY ${source_dir}/libs/opt/libgrpc++.so)
-  set(grpc_grpc++_reflection_LIBRARY ${source_dir}/libs/opt/libgrpc++_reflection.so)
-  set(grpc_CPP_PLUGIN ${source_dir}/bins/opt/grpc_cpp_plugin)
+  set(grpc_LIBRARY ${binary_dir}/${CMAKE_SHARED_LIBRARY_PREFIX}grpc${CMAKE_SHARED_LIBRARY_SUFFIX})
+  set(grpc_grpc++_LIBRARY ${binary_dir}/${CMAKE_SHARED_LIBRARY_PREFIX}grpc++${CMAKE_SHARED_LIBRARY_SUFFIX})
+  set(grpc_grpc++_reflection_LIBRARY ${binary_dir}/${CMAKE_SHARED_LIBRARY_PREFIX}grpc++_reflection${CMAKE_SHARED_LIBRARY_SUFFIX})
+  set(grpc_CPP_PLUGIN ${binary_dir}/grpc_cpp_plugin)
   file(MAKE_DIRECTORY ${grpc_INCLUDE_DIR})
+  link_directories(${binary_dir})
 
   add_dependencies(grpc_grpc protobuf)
   add_dependencies(grpc grpc_grpc)

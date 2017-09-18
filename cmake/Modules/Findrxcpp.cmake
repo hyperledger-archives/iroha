@@ -11,7 +11,7 @@ find_package_handle_standard_args(rxcpp DEFAULT_MSG
 if (NOT rxcpp_FOUND)
   externalproject_add(reactive_extensions_rxcpp
       GIT_REPOSITORY https://github.com/Reactive-Extensions/rxcpp
-      GIT_TAG 08c47e42930168cedf76037f8c76d47565251599
+      GIT_TAG 1b2e0589f19cb34d8cd58803677701dcf2161876
       CONFIGURE_COMMAND ""
       BUILD_COMMAND ""
       INSTALL_COMMAND "" # remove install step

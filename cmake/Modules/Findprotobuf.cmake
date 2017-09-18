@@ -20,19 +20,18 @@ find_package_handle_standard_args(protobuf DEFAULT_MSG
 if (NOT protobuf_FOUND)
   externalproject_add(google_protobuf
       GIT_REPOSITORY https://github.com/google/protobuf
-      GIT_TAG a6189acd18b00611c1dc7042299ad75486f08a1a
-      CONFIGURE_COMMAND ./autogen.sh && ./configure
-      BUILD_IN_SOURCE 1
-      BUILD_COMMAND $(MAKE)
+      GIT_TAG 6f325805c0bc956f927b0e2dbfb4dd8133b4ed69
+      CONFIGURE_COMMAND ${CMAKE_COMMAND} -G${CMAKE_GENERATOR} -H${EP_PREFIX}/src/google_protobuf/cmake -B${EP_PREFIX}/src/google_protobuf-build -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_SHARED_LIBS=ON
       INSTALL_COMMAND ""
       TEST_COMMAND "" # remove test step
       UPDATE_COMMAND "" # remove update step
       )
-  externalproject_get_property(google_protobuf source_dir)
+  externalproject_get_property(google_protobuf source_dir binary_dir)
   set(protobuf_INCLUDE_DIR ${source_dir}/src)
-  set(protobuf_LIBRARY ${source_dir}/src/.libs/libprotobuf.a)
-  set(protoc_EXECUTABLE ${source_dir}/src/protoc)
+  set(protobuf_LIBRARY ${binary_dir}/${CMAKE_SHARED_LIBRARY_PREFIX}protobuf${CMAKE_SHARED_LIBRARY_SUFFIX})
+  set(protoc_EXECUTABLE ${binary_dir}/protoc)
   file(MAKE_DIRECTORY ${protobuf_INCLUDE_DIR})
+  link_directories(${binary_dir})
 
   add_dependencies(protoc google_protobuf)
   add_dependencies(protobuf google_protobuf protoc)
