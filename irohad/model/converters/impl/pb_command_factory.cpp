@@ -262,6 +262,7 @@ namespace iroha {
         return transfer_asset;
       }
 
+      // Append Role
       model::AppendRole PbCommandFactory::deserializeAppendRole(
           const protocol::AppendRole &command) {
         return AppendRole(command.account_id(), command.role_name());
@@ -275,6 +276,7 @@ namespace iroha {
         return cmd;
       }
 
+      // Create Role
       model::CreateRole PbCommandFactory::deserializeCreateRole(
           const protocol::CreateRole &command) {
         return CreateRole(command.role_name());
@@ -287,6 +289,7 @@ namespace iroha {
         return cmd;
       }
 
+      // Grant Permission
       protocol::GrantPermission PbCommandFactory::serializeGrantPermission(
           const model::GrantPermission &command) {
         protocol::GrantPermission cmd;
@@ -300,6 +303,20 @@ namespace iroha {
         return GrantPermission(command.account_id(), command.permission_name());
       }
 
+      protocol::RevokePermission PbCommandFactory::serializeRevokePermission(
+          const model::RevokePermission &command) {
+        protocol::RevokePermission cmd;
+        cmd.set_account_id(command.account_id);
+        cmd.set_permission_name(command.permission_name);
+        return cmd;
+      }
+
+      model::RevokePermission PbCommandFactory::deserializeRevokePermission(
+          const protocol::RevokePermission &command) {
+        return RevokePermission(command.account_id(),
+                                command.permission_name());
+      }
+
       protocol::Command PbCommandFactory::serializeAbstractCommand(
           const model::Command &command) {
         PbCommandFactory commandFactory;
@@ -310,16 +327,14 @@ namespace iroha {
         if (instanceof <model::CreateRole>(command)) {
           auto serialized = commandFactory.serializeCreateRole(
               static_cast<const model::CreateRole &>(command));
-          cmd.set_allocated_create_role(
-              new protocol::CreateRole(serialized));
+          cmd.set_allocated_create_role(new protocol::CreateRole(serialized));
         }
 
         // -----|AppendRole|-----
         if (instanceof <model::AppendRole>(command)) {
           auto serialized = commandFactory.serializeAppendRole(
               static_cast<const model::AppendRole &>(command));
-          cmd.set_allocated_append_role(
-              new protocol::AppendRole(serialized));
+          cmd.set_allocated_append_role(new protocol::AppendRole(serialized));
         }
 
         // -----|GrantPermission|-----
@@ -328,6 +343,14 @@ namespace iroha {
               static_cast<const model::GrantPermission &>(command));
           cmd.set_allocated_grant_permission(
               new protocol::GrantPermission(serialized));
+        }
+
+        // -----|RevokePermission|-----
+        if (instanceof <model::RevokePermission>(command)) {
+          auto serialized = commandFactory.serializeRevokePermission(
+              static_cast<const model::RevokePermission &>(command));
+          cmd.set_allocated_revoke_permission(
+              new protocol::RevokePermission(serialized));
         }
 
         // -----|AddAssetQuantity|-----
@@ -436,6 +459,13 @@ namespace iroha {
           auto pb_command = command.grant_permission();
           auto cmd = commandFactory.deserializeGrantPermission(pb_command);
           val = std::make_shared<model::GrantPermission>(cmd);
+        }
+
+        // -----|RevokePermission|-----
+        if (command.has_revoke_permission()) {
+          auto pb_command = command.revoke_permission();
+          auto cmd = commandFactory.deserializeRevokePermission(pb_command);
+          val = std::make_shared<model::RevokePermission>(cmd);
         }
 
         // -----|AddAssetQuantity|-----

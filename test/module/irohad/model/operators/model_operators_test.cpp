@@ -32,6 +32,7 @@
 #include "model/commands/create_role.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/grant_permission.hpp"
+#include "model/commands/revoke_permission.hpp"
 
 using namespace iroha::model;
 
@@ -248,6 +249,17 @@ TEST(ModelOperatorTest, AppendRoleTest) {
 TEST(ModelOperatorTest, GrantPermissionTest) {
   auto first = GrantPermission("admin","can_read");
   auto second = GrantPermission("admin","can_read");
+
+  ASSERT_EQ(first, second);
+  second.account_id = "non-admin";
+  ASSERT_NE(first, second);
+}
+
+// -----|RevokePermission|-----
+
+TEST(ModelOperatorTest, RevokePermissionTest) {
+  auto first = RevokePermission("admin","can_read");
+  auto second = RevokePermission("admin","can_read");
 
   ASSERT_EQ(first, second);
   second.account_id = "non-admin";

@@ -30,6 +30,7 @@
 #include "model/commands/create_role.hpp"
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/remove_signatory.hpp"
+#include "model/commands/revoke_permission.hpp"
 #include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
@@ -257,6 +258,17 @@ TEST_F(JsonCommandTest, grant_permission) {
   auto orig_command = std::make_shared<GrantPermission>("admin@test","can_read");
   auto json_command = factory.serializeGrantPermission(orig_command);
   auto serial_command = factory.deserializeGrantPermission(json_command);
+
+  ASSERT_TRUE(serial_command.has_value());
+  ASSERT_EQ(*orig_command, *serial_command.value());
+
+  command_converter_test(orig_command);
+}
+
+TEST_F(JsonCommandTest, revoke_permission) {
+  auto orig_command = std::make_shared<RevokePermission>("admin@test","can_read");
+  auto json_command = factory.serializeRevokePermission(orig_command);
+  auto serial_command = factory.deserializeRevokePermission(json_command);
 
   ASSERT_TRUE(serial_command.has_value());
   ASSERT_EQ(*orig_command, *serial_command.value());

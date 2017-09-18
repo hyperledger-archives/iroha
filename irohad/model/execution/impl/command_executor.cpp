@@ -33,6 +33,7 @@
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
 #include "model/commands/grant_permission.hpp"
+#include "model/commands/revoke_permission.hpp"
 
 using namespace iroha::model;
 using namespace iroha::ametsuchi;
@@ -124,6 +125,37 @@ bool GrantPermissionExecutor::hasPermissions(const Command &command,
 }
 
 bool GrantPermissionExecutor::isValid(const Command &command,
+                                      ametsuchi::WsvQuery &queries) {
+  // TODO: check. Add checks on naming of the role
+  return true;
+}
+
+// ----------------------------| Revoke Permission |-----------------------------
+RevokePermissionExecutor::RevokePermissionExecutor() : creator_() {
+  log_ = logger::log("RevokePermissionExecutor");
+}
+
+bool RevokePermissionExecutor::execute(const Command &command,
+                                      ametsuchi::WsvQuery &queries,
+                                      ametsuchi::WsvCommand &commands) {
+  if (creator_.account_id.empty()) {
+    return false;
+  }
+  auto cmd_value = static_cast<const RevokePermission&>(command);
+  return commands.deleteAccountGrantablePermission(
+      cmd_value.account_id, creator_.account_id, cmd_value.permission_name);
+}
+
+bool RevokePermissionExecutor::hasPermissions(const Command &command,
+                                             ametsuchi::WsvQuery &queries,
+                                             const Account &creator) {
+  // TODO: think how to make it better
+  creator_ = creator;
+  // TODO: implement
+  return true;
+}
+
+bool RevokePermissionExecutor::isValid(const Command &command,
                                       ametsuchi::WsvQuery &queries) {
   // TODO: check. Add checks on naming of the role
   return true;

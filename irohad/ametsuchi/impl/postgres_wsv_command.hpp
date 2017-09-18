@@ -46,7 +46,11 @@ namespace iroha {
       bool insertDomain(const model::Domain &domain) override;
       bool insertAccountGrantablePermission(
           const std::string &permittee_account_id,
-          const std::string &account_id, const std::string &permission_id);
+          const std::string &account_id, const std::string &permission_id) override;
+
+      bool deleteAccountGrantablePermission(
+          const std::string &permittee_account_id,
+          const std::string &account_id, const std::string &permission_id) override;
 
      private:
       pqxx::nontransaction &transaction_;

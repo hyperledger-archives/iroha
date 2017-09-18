@@ -32,6 +32,7 @@
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
 #include "model/commands/grant_permission.hpp"
+#include "model/commands/revoke_permission.hpp"
 
 using namespace rapidjson;
 
@@ -83,7 +84,9 @@ namespace iroha {
              &JsonCommandFactory::serializeTransferAsset},
             {typeid(AppendRole), &JsonCommandFactory::serializeAppendRole},
             {typeid(CreateRole), &JsonCommandFactory::serializeCreateRole},
-            {typeid(GrantPermission), &JsonCommandFactory::serializeGrantPermission}
+            {typeid(GrantPermission),
+             &JsonCommandFactory::serializeGrantPermission},
+            {typeid(RevokePermission), &JsonCommandFactory::serializeRevokePermission}
         };
 
         deserializers_ = {
@@ -102,7 +105,9 @@ namespace iroha {
             {"TransferAsset", &JsonCommandFactory::deserializeTransferAsset},
             {"AppendRole", &JsonCommandFactory::deserializeAppendRole},
             {"CreateRole", &JsonCommandFactory::deserializeCreateRole},
-            {"GrantPermission", &JsonCommandFactory::deserializeGrantPermission}
+            {"GrantPermission",
+             &JsonCommandFactory::deserializeGrantPermission},
+            {"RevokePermission", &JsonCommandFactory::deserializeRevokePermission}
         };
       }
 
@@ -516,14 +521,36 @@ namespace iroha {
       return document;
     }
 
-    optional_ptr<Command> JsonCommandFactory::deserializeGrantPermission(
-        const rapidjson::Value &document) {
-      auto des = makeFieldDeserializer(document);
-      return make_optional_ptr<GrantPermission>()
-          | des.String(&GrantPermission::account_id, "account_id")
-          | des.String(&GrantPermission::permission_name, "permission_name")
-          | toCommand;
-    }
+      optional_ptr<Command> JsonCommandFactory::deserializeGrantPermission(
+          const rapidjson::Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<GrantPermission>()|
+             des.String(&GrantPermission::account_id, "account_id")|
+             des.String(&GrantPermission::permission_name, "permission_name") |
+               toCommand;
+      }
+
+      rapidjson::Document JsonCommandFactory::serializeRevokePermission(
+          std::shared_ptr<Command> command) {
+        auto cmd = static_cast<RevokePermission *>(command.get());
+
+        Document document;
+        auto &allocator = document.GetAllocator();
+        document.SetObject();
+        document.AddMember("command_type", "RevokePermission", allocator);
+        document.AddMember("account_id", cmd->account_id, allocator);
+        document.AddMember("permission_name", cmd->permission_name, allocator);
+        return document;
+      }
+
+      optional_ptr<Command> JsonCommandFactory::deserializeRevokePermission(
+          const rapidjson::Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<RevokePermission>()
+            |  des.String(&RevokePermission::account_id, "account_id")
+            |  des.String(&RevokePermission::permission_name,"permission_name")
+            | toCommand;
+      }
 
      // Abstract
       Document JsonCommandFactory::serializeAbstractCommand(

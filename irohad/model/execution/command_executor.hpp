@@ -23,7 +23,6 @@
 #include "logger/logger.hpp"
 #include "model/command.hpp"
 
-
 namespace iroha {
   namespace model {
     /**
@@ -110,6 +109,23 @@ namespace iroha {
     class GrantPermissionExecutor : public CommandExecutor {
      public:
       GrantPermissionExecutor();
+      bool execute(const Command &command, ametsuchi::WsvQuery &queries,
+                   ametsuchi::WsvCommand &commands) override;
+
+     protected:
+      bool hasPermissions(const Command &command, ametsuchi::WsvQuery &queries,
+                          const Account &creator) override;
+
+      bool isValid(const Command &command,
+                   ametsuchi::WsvQuery &queries) override;
+
+     private:
+      Account creator_;
+    };
+
+    class RevokePermissionExecutor : public CommandExecutor {
+     public:
+      RevokePermissionExecutor();
       bool execute(const Command &command, ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands) override;
 

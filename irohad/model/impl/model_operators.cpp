@@ -29,6 +29,7 @@
 
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
+#include "model/commands/revoke_permission.hpp"
 #include "model/commands/set_permissions.hpp"
 
 namespace iroha {
@@ -49,6 +50,13 @@ namespace iroha {
     bool GrantPermission::operator==(const Command &command) const {
       if (! instanceof <GrantPermission>(command)) return false;
       auto cmd = static_cast<const GrantPermission &>(command);
+      return cmd.account_id == account_id &&
+             cmd.permission_name == permission_name;
+    }
+
+    bool RevokePermission::operator==(const Command &command) const {
+      if (! instanceof <RevokePermission>(command)) return false;
+      auto cmd = static_cast<const RevokePermission &>(command);
       return cmd.account_id == account_id &&
              cmd.permission_name == permission_name;
     }

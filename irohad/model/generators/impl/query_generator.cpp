@@ -20,6 +20,18 @@ namespace iroha {
   namespace model {
     namespace generators {
 
+
+      void QueryGenerator::setQueryMetaData(std::shared_ptr<Query> query,
+                                            ts64_t timestamp,
+                                            std::string creator,
+                                            uint64_t query_counter) {
+        query->creator_account_id = creator;
+        query->query_counter = query_counter;
+        query->created_ts = timestamp;
+        // TODO: Refactor this with new hash system
+        query->query_hash = hash_provider_.get_hash(query);
+      }
+
       std::shared_ptr<GetAccount> QueryGenerator::generateGetAccount(ts64_t timestamp,
                                                     std::string creator,
                                                     uint64_t query_counter,

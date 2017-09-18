@@ -31,6 +31,7 @@
 #include "model/commands/create_role.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/grant_permission.hpp"
+#include "model/commands/revoke_permission.hpp"
 
 #include "model/converters/pb_command_factory.hpp"
 
@@ -226,6 +227,19 @@ TEST(CommandTest, grant_permission) {
 
   auto proto_command = factory.serializeGrantPermission(orig_command);
   auto serial_command = factory.deserializeGrantPermission(proto_command);
+
+  ASSERT_EQ(orig_command, serial_command);
+
+  command_converter_test(orig_command);
+}
+
+TEST(CommandTest, revoke_permission) {
+  auto factory = iroha::model::converters::PbCommandFactory();
+
+  auto orig_command = RevokePermission("admin@test", "can_read");
+
+  auto proto_command = factory.serializeRevokePermission(orig_command);
+  auto serial_command = factory.deserializeRevokePermission(proto_command);
 
   ASSERT_EQ(orig_command, serial_command);
 

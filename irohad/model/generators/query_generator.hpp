@@ -72,6 +72,9 @@ namespace iroha {
          */
         std::shared_ptr<GetRolePermissions> generateGetRolePermissions();
 
+        void setQueryMetaData(std::shared_ptr<Query> query, ts64_t timestamp,
+                              std::string creator, uint64_t query_counter);
+
        private:
         HashProviderImpl hash_provider_;
       };

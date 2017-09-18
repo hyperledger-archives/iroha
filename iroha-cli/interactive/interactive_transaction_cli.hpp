@@ -74,6 +74,7 @@ namespace iroha_cli {
       const std::string CREATE_ROLE = "crt_role";
       const std::string APPEND_ROLE = "apnd_role";
       const std::string GRANT_PERM = "grant_perm";
+      const std::string REVOKE_PERM = "revoke_perm";
 
       // ---- Command parsers ----
       using CommandHandler = std::shared_ptr<iroha::model::Command> (
@@ -124,6 +125,8 @@ namespace iroha_cli {
       std::shared_ptr<iroha::model::Command> parseCreateRole(
           std::vector<std::string> line);
       std::shared_ptr<iroha::model::Command> parseGrantPermission(
+          std::vector<std::string> line);
+      std::shared_ptr<iroha::model::Command> parseRevokePermission(
           std::vector<std::string> line);
 
       // ---- Result parsers ------

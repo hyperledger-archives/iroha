@@ -27,6 +27,7 @@
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
 #include "model/commands/grant_permission.hpp"
+#include "model/commands/revoke_permission.hpp"
 #include "parser/parser.hpp"
 
 using namespace std::chrono_literals;
@@ -50,7 +51,9 @@ namespace iroha_cli {
           {TRAN_ASSET, "Transfer Assets"},
           {CREATE_ROLE, "Create new role"},
           {APPEND_ROLE, "Add new role to account"},
-          {GRANT_PERM, "Grant permission over your account"}};
+          {GRANT_PERM, "Grant permission over your account"},
+          {REVOKE_PERM, "Revoke permission from account"}
+      };
 
       const auto acc_id = "Account Id";
       const auto ast_id = "Asset Id";
@@ -82,7 +85,9 @@ namespace iroha_cli {
             ammout_a, ammout_b}},
           {CREATE_ROLE, {role}},
           {APPEND_ROLE, {acc_id, role}},
-          {GRANT_PERM, {acc_id, perm}}};
+          {GRANT_PERM, {acc_id, perm}},
+          {REVOKE_PERM, {acc_id, perm}}
+      };
 
       command_handlers_ = {
           {ADD_ASSET_QTY, &InteractiveTransactionCli::parseAddAssetQuantity},
@@ -99,7 +104,9 @@ namespace iroha_cli {
           {TRAN_ASSET, &InteractiveTransactionCli::parseTransferAsset},
           {CREATE_ROLE, &InteractiveTransactionCli::parseCreateRole},
           {APPEND_ROLE, &InteractiveTransactionCli::parseAppendRole},
-          {GRANT_PERM, &InteractiveTransactionCli::parseGrantPermission}};
+          {GRANT_PERM, &InteractiveTransactionCli::parseGrantPermission},
+          {REVOKE_PERM, &InteractiveTransactionCli::parseGrantPermission}
+      };
 
       commands_menu_ = formMenu(command_handlers_, command_params_descriptions_,
                                 commands_description_map_);
@@ -127,7 +134,8 @@ namespace iroha_cli {
           {SAVE_CODE, &InteractiveTransactionCli::parseSaveFile},
           {SEND_CODE, &InteractiveTransactionCli::parseSendToIroha},
           {ADD_CMD, &InteractiveTransactionCli::parseAddCommand},
-          {BACK_CODE, &InteractiveTransactionCli::parseGoBack}};
+          {BACK_CODE, &InteractiveTransactionCli::parseGoBack}
+      };
 
       result_menu_ = formMenu(result_handlers_, result_params_descriptions,
                               result_desciption);
@@ -203,6 +211,14 @@ namespace iroha_cli {
       auto acc_id = params[0];
       auto permission = params[1];
       return std::make_shared<GrantPermission>(acc_id, permission);
+    }
+
+    std::shared_ptr<iroha::model::Command>
+    InteractiveTransactionCli::parseRevokePermission(
+        std::vector<std::string> params) {
+      auto acc_id = params[0];
+      auto permission = params[1];
+      return std::make_shared<RevokePermission>(acc_id, permission);
     }
 
     std::shared_ptr<iroha::model::Command>

@@ -32,6 +32,7 @@
 #include "model/commands/create_role.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/grant_permission.hpp"
+#include "model/commands/revoke_permission.hpp"
 
 using ::testing::Return;
 using ::testing::AtLeast;
@@ -803,5 +804,20 @@ class GrantPermissionTest: public CommandValidateExecuteTest {
 
 TEST_F(GrantPermissionTest, VadlidCase){
   EXPECT_CALL(*wsv_command, insertAccountGrantablePermission(_, _, _)).WillOnce(Return(true));
+  ASSERT_TRUE(validateAndExecute());
+}
+
+class RevokePermissionTest: public CommandValidateExecuteTest {
+ public:
+  void SetUp() override {
+    CommandValidateExecuteTest::SetUp();
+    exact_command = std::make_shared<RevokePermission>("yoda","can_teach");
+    command = exact_command;
+  }
+  std::shared_ptr<RevokePermission> exact_command;
+};
+
+TEST_F(RevokePermissionTest, VadlidCase){
+  EXPECT_CALL(*wsv_command, deleteAccountGrantablePermission(_, _, _)).WillOnce(Return(true));
   ASSERT_TRUE(validateAndExecute());
 }

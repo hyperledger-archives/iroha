@@ -64,6 +64,17 @@ namespace iroha {
           const std::string &account_id, const std::string &permission_id) = 0;
 
       /**
+       * Delete grantable permission
+       * @param permittee_account_id to who the grant permission was previously granted
+       * @param account_id on which account
+       * @param permission_id what permission
+       * @return true is execution is successful
+       */
+      virtual bool deleteAccountGrantablePermission(
+          const std::string &permittee_account_id,
+          const std::string &account_id, const std::string &permission_id) = 0;
+
+      /**
        *
        * @param account
        * @return

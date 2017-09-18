@@ -71,6 +71,11 @@ message GrantPermission {
     string permission_name = 2;
 }
 
+message RevokePermission {
+    string account_id = 1;
+    string permission_name = 2;
+}
+
 message Command {
     oneof command {
         AddAssetQuantity add_asset_quantity = 1;
@@ -86,5 +91,6 @@ message Command {
         AppendRole append_role = 11;
         CreateRole create_role = 12;
         GrantPermission grant_permission = 13;
+        RevokePermission revoke_permission = 14;
     }
 }
