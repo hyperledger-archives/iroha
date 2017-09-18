@@ -78,6 +78,14 @@ namespace iroha {
      */
     Amount percentage(const Amount& percents) const;
 
+    /**
+     * Sums up two optionals of the amounts.
+     * Requires to have the same scale.
+     * Otherwise nullopt is returned
+     * @param a left term
+     * @param b right term
+     * @param optional result
+     */
     friend nonstd::optional<Amount> operator+(nonstd::optional<Amount> a,
                                               nonstd::optional<Amount> b) {
       // check precisions
@@ -92,6 +100,14 @@ namespace iroha {
       return res;
     }
 
+    /**
+     * Subtracts right term from the left term
+     * Requires to have the same scale.
+     * Otherwise nullopt is returned
+     * @param a left term
+     * @param b right term
+     * @param optional result
+     */
     friend nonstd::optional<Amount> operator-(nonstd::optional<Amount> a,
                                               nonstd::optional<Amount> b) {
       // check precisions
@@ -104,9 +120,6 @@ namespace iroha {
       }
       return a->subtract(*b);
     }
-
-    Amount& operator+=(const Amount&);
-    Amount& operator-=(const Amount&);
 
     /**
      * Comparisons are possible between amounts with different precisions.
@@ -134,15 +147,14 @@ namespace iroha {
     int compareTo(const Amount& other) const;
 
     /**
-     * Sums two amounts. Requires to have the same scale.
-     * Otherwise invalid argument exception is thrown
+     * Sums two amounts.
      * @return
      */
     Amount add(const Amount&) const;
     /**
      * Subtracts one amount from another.
      * Requires to have the same scale between both amounts.
-     * Otherwise invalid argument exception is thrown
+     * Otherwise nullopt is returned
      * @return
      */
     Amount subtract(const Amount&) const;

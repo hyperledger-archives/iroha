@@ -81,25 +81,9 @@ namespace iroha {
     return {new_val, precision_};
   }
 
-  Amount &Amount::operator+=(const Amount &other) {
-    if (precision_ != other.precision_) {
-      throw std::invalid_argument("precisions are not the same");
-    }
-    value_ += other.value_;
-    return *this;
-  }
-
   Amount Amount::subtract(const Amount &other) const {
     auto new_val = value_ - other.value_;
     return {new_val, precision_};
-  }
-
-  Amount &Amount::operator-=(const Amount &other) {
-    if (precision_ != other.precision_) {
-      throw std::invalid_argument("precisions are not the same");
-    }
-    value_ -= other.value_;
-    return *this;
   }
 
   int Amount::compareTo(const Amount &other) const {
