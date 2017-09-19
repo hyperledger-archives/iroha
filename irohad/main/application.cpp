@@ -123,6 +123,7 @@ void Irohad::initCryptoProvider() {
 void Irohad::initHashProvider() {
   hash_provider = std::make_shared<HashProviderImpl>();
 
+  // Hash provider
   log_->info("[Init] => hash provider");
 }
 

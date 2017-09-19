@@ -17,8 +17,8 @@
 
 #include <gtest/gtest.h>
 #include <crypto/crypto.hpp>
+#include <crypto/hash.hpp>
 #include <model/model_crypto_provider_impl.hpp>
-#include <model/model_hash_provider_impl.hpp>
 
 using namespace iroha::model;
 
@@ -33,8 +33,7 @@ iroha::model::Transaction create_transaction() {
 
 Transaction sign(Transaction &tx, iroha::ed25519::privkey_t privkey,
                  iroha::ed25519::pubkey_t pubkey) {
-  HashProviderImpl hash_provider;
-  auto tx_hash = hash_provider.get_hash(tx);
+  auto tx_hash = iroha::sha3_256(tx);
 
   auto sign = iroha::sign(tx_hash.data(), tx_hash.size(), pubkey, privkey);
 

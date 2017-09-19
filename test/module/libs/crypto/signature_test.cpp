@@ -25,12 +25,10 @@ using iroha::create_seed;
 using iroha::create_keypair;
 using iroha::sign;
 using iroha::verify;
-namespace ed25519 = iroha::ed25519;
 using iroha::stringToBlob;
 
 TEST(Signature, sign_data_size) {
-  auto seed = create_seed();
-  auto keypair = create_keypair(seed);
+  auto keypair = iroha::create_keypair();
 
   std::string nonce =
       "c0a5cca43b8aa79eb50e3464bc839dd6fd414fae0ddf928ca23dcebf8a8b8dd0";
@@ -42,8 +40,7 @@ TEST(Signature, sign_data_size) {
 }
 
 TEST(Signature, PrintkeyPair) {
-  auto seed = create_seed();
-  auto keypair = create_keypair(seed);
+  auto keypair = iroha::create_keypair();
   ASSERT_NO_THROW({ std::cout << keypair.pubkey.to_base64() << std::endl; });
   ASSERT_NO_THROW({ std::cout << keypair.privkey.to_base64() << std::endl; });
 }
@@ -62,10 +59,10 @@ TEST(Signature, generatedByAndroid) {
   std::vector<uint8_t> message(message_.begin(), message_.end());
 
   auto pubkey_ = base64_decode(public_key_b64);
-  auto pubkey = stringToBlob<ed25519::pubkey_t::size()>(
+  auto pubkey = stringToBlob<iroha::pubkey_t::size()>(
       std::string{pubkey_.begin(), pubkey_.end()});
 
-  ed25519::sig_t signature;
+  iroha::sig_t signature;
   std::vector<uint8_t> signature_v = base64_decode(signature_b64);
   ASSERT_EQ(signature.size(), signature_v.size());
   std::copy(signature_v.begin(), signature_v.end(), signature.begin());
@@ -85,10 +82,10 @@ TEST(Signature, generatedByiOS) {
   std::vector<uint8_t> message(message_.begin(), message_.end());
 
   auto pubkey_ = base64_decode(public_key_b64);
-  auto pubkey = stringToBlob<ed25519::pubkey_t::size()>(
+  auto pubkey = stringToBlob<iroha::pubkey_t::size()>(
       std::string{pubkey_.begin(), pubkey_.end()});
 
-  ed25519::sig_t signature;
+  iroha::sig_t signature;
   std::vector<uint8_t> signature_v = base64_decode(signature_b64);
   ASSERT_EQ(signature.size(), signature_v.size());
   std::copy(signature_v.begin(), signature_v.end(), signature.begin());
@@ -110,10 +107,10 @@ TEST(Signature, generatedByGO) {
   std::vector<uint8_t> message(message_.begin(), message_.end());
 
   auto pubkey_ = base64_decode(public_key_b64);
-  auto pubkey = stringToBlob<ed25519::pubkey_t::size()>(
+  auto pubkey = stringToBlob<iroha::pubkey_t::size()>(
       std::string{pubkey_.begin(), pubkey_.end()});
 
-  ed25519::sig_t signature;
+  iroha::sig_t signature;
   std::vector<uint8_t> signature_v = base64_decode(signature_b64);
   ASSERT_EQ(signature.size(), signature_v.size());
   std::copy(signature_v.begin(), signature_v.end(), signature.begin());

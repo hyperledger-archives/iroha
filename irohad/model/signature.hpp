@@ -26,11 +26,11 @@ namespace iroha {
      * Signature is a Model structure to store crypto information
      */
     struct Signature {
-      ed25519::sig_t signature;
+      sig_t signature;
 
       using SignatureType = decltype(signature);
 
-      ed25519::pubkey_t pubkey;
+      pubkey_t pubkey;
 
       using KeyType = decltype(pubkey);
 

@@ -32,6 +32,32 @@ namespace iroha {
 
   hash512_t sha3_512(const uint8_t *input, size_t in_size);
 
+  hash256_t sha3_256(const std::string &msg);
+
+  hash512_t sha3_512(const std::string &msg);
+
+  namespace model {
+    struct Transaction;
+    struct Block;
+    struct Query;
+  } // namespace model
+
+  hash256_t sha3_256(const model::Transaction& tx);
+  hash256_t sha3_256(const model::Block& tx);
+  hash256_t sha3_256(const model::Query& tx);
+
+
+  // forward declaration for proto objects
+  namespace protocol {
+    class Transaction;
+    class Block;
+    class Query;
+  } // namespace protocol
+
+  hash256_t sha3_256(const protocol::Transaction& tx);
+  hash256_t sha3_256(const protocol::Block& tx);
+  hash256_t sha3_256(const protocol::Query& tx);
+
 }  // namespace iroha
 
 #endif  // IROHA_HASH_H

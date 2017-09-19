@@ -19,7 +19,6 @@
 #include "model/queries/get_signatories.hpp"
 #include "model/queries/get_transactions.hpp"
 
-#include "model/model_hash_provider_impl.hpp"
 #include "model/queries/get_asset_info.hpp"
 #include "model/queries/get_roles.hpp"
 
@@ -74,9 +73,6 @@ namespace iroha {
 
         void setQueryMetaData(std::shared_ptr<Query> query, ts64_t timestamp,
                               std::string creator, uint64_t query_counter);
-
-       private:
-        HashProviderImpl hash_provider_;
       };
     }  // namespace generators
   }    // namespace model

@@ -19,6 +19,7 @@ extern "C" {
 #include <sha3.h>
 }
 
+#include "crypto/hash.hpp"
 #include "common/types.hpp"
 
 namespace sha3 {
@@ -57,5 +58,24 @@ namespace iroha {
     sha3::sha3_512_(input, in_size, h.data());
     return h;
   }
+
+  hash256_t sha3_256(const std::string &msg) {
+    hash256_t h;
+    sha3::sha3_256_((uint8_t *)msg.data(), msg.size(), h.data());
+    return h;
+  }
+
+  hash512_t sha3_512(const std::string &msg) {
+    hash512_t h;
+    sha3::sha3_512_((uint8_t *)msg.data(), msg.size(), h.data());
+    return h;
+  }
+
+  hash256_t sha3_256(const model::Transaction& tx) { return {}; }
+  hash256_t sha3_256(const model::Block& tx) { return {}; }
+  hash256_t sha3_256(const model::Query& tx) { return {}; }
+  hash256_t sha3_256(const protocol::Transaction& tx) { return {}; }
+  hash256_t sha3_256(const protocol::Block& tx) { return {}; }
+  hash256_t sha3_256(const protocol::Query& tx) { return {}; }
 
 }  // namespace iroha
