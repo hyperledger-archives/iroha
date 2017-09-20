@@ -32,6 +32,13 @@ namespace iroha {
     PostgresWsvQuery::PostgresWsvQuery(pqxx::nontransaction &transaction)
         : transaction_(transaction) {}
 
+    bool PostgresWsvQuery::hasAccountGrantablePermission(
+        const std::string &permitee_account_id, const std::string &account_id,
+        const std::string &permission_id) {
+      // TODO: implement
+      return false;
+    };
+
     nonstd::optional<std::vector<std::string>>
     PostgresWsvQuery::getAccountRoles(const std::string &account_id) {
       // TODO: implement

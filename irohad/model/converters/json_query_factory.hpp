@@ -23,9 +23,9 @@
 #include "logger/logger.hpp"
 #include "model/common.hpp"
 #include "model/converters/json_common.hpp"
+#include "model/model_hash_provider_impl.hpp"
 #include "model/query.hpp"
 #include "queries.pb.h"
-#include "model/model_hash_provider_impl.hpp"
 
 namespace iroha {
   namespace model {

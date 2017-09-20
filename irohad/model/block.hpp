@@ -89,9 +89,7 @@ namespace iroha {
       using TransactionsType = decltype(transactions);
 
       bool operator==(const Block& rhs) const;
-      bool operator!=(const Block& rhs) const {
-        return !operator==(rhs);
-      };
+      bool operator!=(const Block& rhs) const;
     };
   }
 }

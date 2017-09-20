@@ -38,11 +38,12 @@ namespace iroha {
        */
       std::string permission_name;
 
-      bool operator==(const Command& command) const override;
+      bool operator==(const Command &command) const override;
 
       RevokePermission() {}
 
-      RevokePermission(std::string account_id_, std::string permission_name_)
+      RevokePermission(const std::string &account_id_,
+                       const std::string &permission_name_)
           : account_id(account_id_), permission_name(permission_name_) {}
     };
   }  // namespace model

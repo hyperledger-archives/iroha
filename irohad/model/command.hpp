@@ -32,9 +32,7 @@ namespace iroha {
 
       virtual bool operator==(const Command& rhs) const = 0;
 
-      virtual bool operator!=(const Command& rhs) const {
-        return !operator==(rhs);
-      }
+      virtual bool operator!=(const Command& rhs) const;
     };
   }  // namespace model
 }  // namespace iroha

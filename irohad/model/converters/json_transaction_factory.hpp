@@ -42,4 +42,4 @@ namespace iroha {
   }    // namespace model
 }  // namespace iroha
 
-#endif //IROHA_JSON_TRANSACTION_FACTORY_HPP
+#endif  // IROHA_JSON_TRANSACTION_FACTORY_HPP

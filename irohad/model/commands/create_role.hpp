@@ -17,8 +17,8 @@
 #ifndef IROHA_CREATE_ROLE_HPP
 #define IROHA_CREATE_ROLE_HPP
 
-#include "model/command.hpp"
 #include <string>
+#include "model/command.hpp"
 
 namespace iroha {
   namespace model {
@@ -32,13 +32,18 @@ namespace iroha {
        */
       std::string role_name;
 
-      bool operator==(const Command& command) const override;
+      /**
+       * Role permissions
+       */
+      std::vector<std::string> permissions;
 
-      CreateRole(){}
+      bool operator==(const Command &command) const override;
 
-      CreateRole(std::string role_name_)
-      : role_name(role_name_) {}
+      CreateRole() {}
 
+      CreateRole(const std::string &role_name_,
+                 const std::vector<std::string> &perms)
+          : role_name(role_name_), permissions(perms) {}
     };
   }  // namespace model
 }  // namespace iroha

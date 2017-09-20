@@ -197,7 +197,7 @@ TEST(CommandTest, set_transfer_asset) {
 TEST(CommandTest, create_role) {
   auto factory = iroha::model::converters::PbCommandFactory();
 
-  auto orig_command = CreateRole("master");
+  auto orig_command = CreateRole("master", {"CanDoMagic"});
 
   auto proto_command = factory.serializeCreateRole(orig_command);
   auto serial_command = factory.deserializeCreateRole(proto_command);

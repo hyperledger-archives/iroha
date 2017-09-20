@@ -17,13 +17,13 @@
 
 #include "model/converters/json_common.hpp"
 
-
 using namespace rapidjson;
 
 namespace iroha {
   namespace model {
     namespace converters {
-      Value serializeSignature(const Signature& signature, Document::AllocatorType &allocator) {
+      Value serializeSignature(const Signature& signature,
+                               Document::AllocatorType& allocator) {
         Value document;
         document.SetObject();
 

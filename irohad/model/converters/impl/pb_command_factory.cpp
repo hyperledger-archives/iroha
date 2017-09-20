@@ -279,13 +279,22 @@ namespace iroha {
       // Create Role
       model::CreateRole PbCommandFactory::deserializeCreateRole(
           const protocol::CreateRole &command) {
-        return CreateRole(command.role_name());
+        std::vector<std::string> perms;
+        std::for_each(command.permissions().begin(), command.permissions().end(),
+                  [&perms](auto perm){
+                    perms.push_back(perm);
+                  });
+        return CreateRole(command.role_name(), perms);
       }
 
       protocol::CreateRole PbCommandFactory::serializeCreateRole(
           const model::CreateRole &command) {
         protocol::CreateRole cmd;
         cmd.set_role_name(command.role_name);
+        //cmd.mutable_permissions();
+        std::for_each(command.permissions.begin(), command.permissions.end(), [&cmd](auto perm){
+          cmd.add_permissions(perm);
+        });
         return cmd;
       }
 

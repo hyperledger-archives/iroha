@@ -36,11 +36,11 @@ namespace iroha {
        */
       std::string role_name;
 
-      bool operator==(const Command& command) const override;
+      bool operator==(const Command &command) const override;
 
-      AppendRole(){}
+      AppendRole() {}
 
-      AppendRole(std::string account_id_, std::string role_name_)
+      AppendRole(const std::string &account_id_, const std::string &role_name_)
           : account_id(account_id_), role_name(role_name_) {}
     };
   }  // namespace model

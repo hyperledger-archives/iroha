@@ -42,6 +42,9 @@ namespace iroha {
           const std::string &account_id, const std::string &asset_id) override;
       nonstd::optional<std::vector<model::Peer>> getPeers() override;
       nonstd::optional<std::vector<std::string>> getRoles() override;
+      bool hasAccountGrantablePermission(
+          const std::string &permitee_account_id, const std::string &account_id,
+          const std::string &permission_id) override;
 
      private:
       pqxx::nontransaction &transaction_;

@@ -225,8 +225,8 @@ TEST(ModelOperatorTest, TransferAssetTest) {
 // -----|CreateRole|-----
 
 TEST(ModelOperatorTest, CreateRoleTest) {
-  auto first = CreateRole("master");
-  auto second = CreateRole("master");
+  auto first = CreateRole("master", {"CanDoMagic"});
+  auto second = CreateRole("master", {"CanDoMagic"});
 
   ASSERT_EQ(first, second);
   second.role_name = "padawan";

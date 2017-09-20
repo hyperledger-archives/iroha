@@ -42,9 +42,9 @@ namespace iroha {
             {"GetAccountSignatories",
              &JsonQueryFactory::deserializeGetSignatories},
             {"GetRoles", &JsonQueryFactory::deserializeGetRoles},
-            {"GetRolePermissions", &JsonQueryFactory::deserializeGetRolePermissions},
-            {"GetAssetInfo", &JsonQueryFactory::deserializeGetAssetInfo}
-        };
+            {"GetRolePermissions",
+             &JsonQueryFactory::deserializeGetRolePermissions},
+            {"GetAssetInfo", &JsonQueryFactory::deserializeGetAssetInfo}};
         // Serializers
         serializers_ = {
             {typeid(GetAccount), &JsonQueryFactory::serializeGetAccount},
@@ -58,76 +58,75 @@ namespace iroha {
              &JsonQueryFactory::serializeGetAccountAssetTransactions},
             {typeid(GetAssetInfo), &JsonQueryFactory::serializeGetAssetInfo},
             {typeid(GetRoles), &JsonQueryFactory::serializeGetRoles},
-            {typeid(GetRolePermissions), &JsonQueryFactory::serializeGetRolePermissions}
-        };
+            {typeid(GetRolePermissions),
+             &JsonQueryFactory::serializeGetRolePermissions}};
       }
 
       optional_ptr<Query> JsonQueryFactory::deserialize(
           const std::string query_json) {
         return stringToJson(query_json) |
-               [this](auto &json) { return this->deserialize(json); };
+            [this](auto &json) { return this->deserialize(json); };
       }
 
       optional_ptr<Query> JsonQueryFactory::deserialize(
           const rapidjson::Document &document) {
         auto des = makeFieldDeserializer(document);
-        return des.String("query_type") | makeOptionalGet(deserializers_) |
-               makeMethodInvoke(*this, document) |
-               des.Uint64(&Query::created_ts, "created_ts") |
-               des.String(&Query::creator_account_id, "creator_account_id") |
-               des.Uint64(&Query::query_counter, "query_counter") |
-               des.Object(&Query::signature, "signature") | [this](auto query) {
-                 query->query_hash = hash_provider_.get_hash(query);
-                 return nonstd::make_optional(query);
-               };
+        return des.String("query_type") | makeOptionalGet(deserializers_)
+            | makeMethodInvoke(*this, document)
+            | des.Uint64(&Query::created_ts, "created_ts")
+            | des.String(&Query::creator_account_id, "creator_account_id")
+            | des.Uint64(&Query::query_counter, "query_counter")
+            | des.Object(&Query::signature, "signature") | [this](auto query) {
+                query->query_hash = hash_provider_.get_hash(query);
+                return nonstd::make_optional(query);
+              };
       }
 
       optional_ptr<Query> JsonQueryFactory::deserializeGetAccount(
           const Value &obj_query) {
         auto des = makeFieldDeserializer(obj_query);
-        return make_optional_ptr<GetAccount>() |
-               des.String(&GetAccount::account_id, "account_id") | toQuery;
+        return make_optional_ptr<GetAccount>()
+            | des.String(&GetAccount::account_id, "account_id") | toQuery;
       }
 
       optional_ptr<Query> JsonQueryFactory::deserializeGetSignatories(
           const Value &obj_query) {
         auto des = makeFieldDeserializer(obj_query);
-        return make_optional_ptr<GetSignatories>() |
-               des.String(&GetSignatories::account_id, "account_id") | toQuery;
+        return make_optional_ptr<GetSignatories>()
+            | des.String(&GetSignatories::account_id, "account_id") | toQuery;
       }
 
       optional_ptr<Query> JsonQueryFactory::deserializeGetAccountTransactions(
           const Value &obj_query) {
         auto des = makeFieldDeserializer(obj_query);
-        return make_optional_ptr<GetAccountTransactions>() |
-               des.String(&GetAccountTransactions::account_id, "account_id") |
-               toQuery;
+        return make_optional_ptr<GetAccountTransactions>()
+            | des.String(&GetAccountTransactions::account_id, "account_id")
+            | toQuery;
       }
 
       optional_ptr<Query>
       JsonQueryFactory::deserializeGetAccountAssetTransactions(
           const Value &obj_query) {
         auto des = makeFieldDeserializer(obj_query);
-        return make_optional_ptr<GetAccountAssetTransactions>() |
-               des.String(&GetAccountAssetTransactions::account_id,
-                          "account_id") |
-               des.String(&GetAccountAssetTransactions::asset_id, "asset_id") |
-               toQuery;
+        return make_optional_ptr<GetAccountAssetTransactions>()
+            | des.String(&GetAccountAssetTransactions::account_id, "account_id")
+            | des.String(&GetAccountAssetTransactions::asset_id, "asset_id")
+            | toQuery;
       }
 
       optional_ptr<Query> JsonQueryFactory::deserializeGetAccountAssets(
           const Value &obj_query) {
         auto des = makeFieldDeserializer(obj_query);
-        return make_optional_ptr<GetAccountAssets>() |
-               des.String(&GetAccountAssets::account_id, "account_id") |
-               des.String(&GetAccountAssets::asset_id, "asset_id") | toQuery;
+        return make_optional_ptr<GetAccountAssets>()
+            | des.String(&GetAccountAssets::account_id, "account_id")
+            | des.String(&GetAccountAssets::asset_id, "asset_id") | toQuery;
       }
 
       optional_ptr<Query> JsonQueryFactory::deserializeGetAssetInfo(
           const rapidjson::Value &obj_query) {
         auto des = makeFieldDeserializer(obj_query);
-        return make_optional_ptr<GetAssetInfo>() |
-               des.String(&GetAssetInfo::asset_id, "asset_id") | toQuery;
+        return make_optional_ptr<GetAssetInfo>()
+            | des.String(&GetAssetInfo::asset_id, "asset_id") | toQuery;
       }
 
       optional_ptr<Query> JsonQueryFactory::deserializeGetRoles(
@@ -138,8 +137,8 @@ namespace iroha {
       optional_ptr<Query> JsonQueryFactory::deserializeGetRolePermissions(
           const rapidjson::Value &obj_query) {
         auto des = makeFieldDeserializer(obj_query);
-        return make_optional_ptr<GetRolePermissions>() |
-               des.String(&GetRolePermissions::role_id, "role_id") | toQuery;
+        return make_optional_ptr<GetRolePermissions>()
+            | des.String(&GetRolePermissions::role_id, "role_id") | toQuery;
       }
 
       // --- Serialization:
@@ -160,8 +159,8 @@ namespace iroha {
 
         doc.AddMember("signature", signature, allocator);
 
-        makeMethodInvoke(*this, doc,
-                         model_query)(serializers_.at(typeid(*model_query)));
+        makeMethodInvoke (*this, doc,
+                          model_query)(serializers_.at(typeid(*model_query)));
         return jsonToString(doc);
       }
 

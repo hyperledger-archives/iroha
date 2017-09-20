@@ -48,6 +48,10 @@ namespace iroha {
                                         const std::string &account_id,
                                         const std::string &asset_id));
       MOCK_METHOD0(getPeers, nonstd::optional<std::vector<model::Peer>>());
+      MOCK_METHOD3(hasAccountGrantablePermission,
+                   bool(const std::string &permitee_account_id,
+                       const std::string &account_id,
+                       const std::string &permission_id));
     };
 
     class MockWsvCommand : public WsvCommand {
@@ -62,9 +66,8 @@ namespace iroha {
 
       MOCK_METHOD3(deleteAccountGrantablePermission,
                    bool(const std::string &permittee_account_id,
-                       const std::string &account_id,
-                       const std::string &permission_id));
-
+                        const std::string &account_id,
+                        const std::string &permission_id));
       MOCK_METHOD1(insertAccount, bool(const model::Account &));
       MOCK_METHOD1(updateAccount, bool(const model::Account &));
       MOCK_METHOD1(insertAsset, bool(const model::Asset &));

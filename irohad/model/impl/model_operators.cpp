@@ -14,50 +14,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <model/block.hpp>
-#include <model/commands/add_asset_quantity.hpp>
-#include <model/commands/add_peer.hpp>
-#include <model/commands/add_signatory.hpp>
-#include <model/commands/create_account.hpp>
-#include <model/commands/create_asset.hpp>
-#include <model/commands/create_domain.hpp>
-#include <model/commands/grant_permission.hpp>
-#include <model/commands/remove_signatory.hpp>
-#include <model/commands/set_permissions.hpp>
-#include <model/commands/set_quorum.hpp>
-#include <model/commands/transfer_asset.hpp>
-
+#include "model/block.hpp"
+#include "model/commands/add_asset_quantity.hpp"
+#include "model/commands/add_peer.hpp"
+#include "model/commands/add_signatory.hpp"
 #include "model/commands/append_role.hpp"
+#include "model/commands/create_account.hpp"
+#include "model/commands/create_asset.hpp"
+#include "model/commands/create_domain.hpp"
 #include "model/commands/create_role.hpp"
+#include "model/commands/grant_permission.hpp"
+#include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
 #include "model/commands/set_permissions.hpp"
+#include "model/commands/set_quorum.hpp"
+#include "model/commands/transfer_asset.hpp"
 
 namespace iroha {
   namespace model {
 
+    bool Command::operator!=(const Command &rhs) const {
+      return not operator==(rhs);
+    }
+
+    bool Block::operator!=(const Block &rhs) const {
+      return not operator==(rhs);
+    }
+
+    bool Transaction::operator!=(const Transaction &rhs) const {
+      return not operator==(rhs);
+    }
+
     bool AppendRole::operator==(const Command &command) const {
       if (! instanceof <AppendRole>(command)) return false;
       auto cmd = static_cast<const AppendRole &>(command);
-      return cmd.account_id == account_id && cmd.role_name == role_name;
+      return cmd.account_id == account_id and cmd.role_name == role_name;
     }
 
     bool CreateRole::operator==(const Command &command) const {
       if (! instanceof <CreateRole>(command)) return false;
       auto cmd = static_cast<const CreateRole &>(command);
-      return cmd.role_name == role_name;
+      return cmd.role_name == role_name and cmd.permissions == permissions;
     }
 
     bool GrantPermission::operator==(const Command &command) const {
       if (! instanceof <GrantPermission>(command)) return false;
       auto cmd = static_cast<const GrantPermission &>(command);
-      return cmd.account_id == account_id &&
+      return cmd.account_id == account_id and
              cmd.permission_name == permission_name;
     }
 
     bool RevokePermission::operator==(const Command &command) const {
       if (! instanceof <RevokePermission>(command)) return false;
       auto cmd = static_cast<const RevokePermission &>(command);
-      return cmd.account_id == account_id &&
+      return cmd.account_id == account_id and
              cmd.permission_name == permission_name;
     }
 

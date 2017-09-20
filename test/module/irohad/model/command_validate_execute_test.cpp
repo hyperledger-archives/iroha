@@ -765,7 +765,8 @@ class CreateRoleTest: public CommandValidateExecuteTest {
  public:
   void SetUp() override {
     CommandValidateExecuteTest::SetUp();
-    create_role = std::make_shared<CreateRole>("master");
+    std::vector<std::string> perm = {"CanDoMagic"};
+    create_role = std::make_shared<CreateRole>("master", perm);
     command = create_role;
   }
   std::shared_ptr<CreateRole> create_role;
