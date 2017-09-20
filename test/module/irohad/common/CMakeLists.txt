@@ -1,4 +1,7 @@
 AddTest(blob_converter_test blob_converter_test.cpp)
+target_link_libraries(blob_converter_test
+    common
+    )
 
 AddTest(block_insertion_test block_insertion_test.cpp)
 target_link_libraries(block_insertion_test

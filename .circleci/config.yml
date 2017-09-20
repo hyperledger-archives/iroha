@@ -37,7 +37,7 @@ jobs:
             ccache --max-size=1G
       - run:
           name: cmake
-          command: cmake -DCOVERAGE=ON -H$IROHA_HOME -B$IROHA_BUILD
+          command: cmake -DCOVERAGE=ON -DFIND_PROTOBUF=ON -DFIND_GRPC=ON -H$IROHA_HOME -B$IROHA_BUILD
       - run:
           name: make
           command: cmake --build $IROHA_BUILD -- -j2

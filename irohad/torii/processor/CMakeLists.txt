@@ -8,4 +8,5 @@ target_link_libraries(processors PUBLIC
     rxcpp
     stateless_validator
     logger
+    endpoint
     )

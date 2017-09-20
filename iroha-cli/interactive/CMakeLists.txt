@@ -25,6 +25,7 @@ add_library(interactive_cli
 target_link_libraries(interactive_cli
     model
     parser
+    client
     )
 target_include_directories(interactive_cli PUBLIC
     ${PROJECT_SOURCE_DIR}/iroha-cli

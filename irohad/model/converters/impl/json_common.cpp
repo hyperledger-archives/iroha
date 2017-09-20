@@ -42,7 +42,7 @@ namespace iroha {
         if (document.HasParseError()) {
           return nonstd::nullopt;
         }
-        return document;
+        return nonstd::make_optional(std::move(document));
       }
 
       std::string jsonToString(const Document& document) {

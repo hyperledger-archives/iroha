@@ -60,7 +60,7 @@ namespace iroha {
         return hash_gate_->on_commit().flat_map([this](auto commit_message) {
           // map commit to block if it is present or loaded from other peer
           return rxcpp::observable<>::create<model::Block>(
-              [this, &commit_message](auto subscriber) {
+              [this, commit_message](auto subscriber) {
                 const auto hash = getHash(commit_message.votes);
                 if (not hash.has_value()) {
                   log_->info("Invalid commit message, hashes are different");
@@ -70,7 +70,7 @@ namespace iroha {
                 // if node has voted for the committed block
                 if (hash == current_block_.first) {
                   // append signatures of other nodes
-                  this->moveSignatures(commit_message);
+                  this->copySignatures(commit_message);
                   log_->info("consensus: commit top block: height {}, hash {}",
                              current_block_.second.height,
                              current_block_.second.hash.to_hexstring());
@@ -115,11 +115,10 @@ namespace iroha {
         });
       }
 
-      void YacGateImpl::moveSignatures(CommitMessage &commit) {
+      void YacGateImpl::copySignatures(const CommitMessage &commit) {
         current_block_.second.sigs.clear();
-        for (auto &&vote : commit.votes) {
-          current_block_.second.sigs.push_back(
-              std::move(vote.signature));
+        for (const auto &vote : commit.votes) {
+          current_block_.second.sigs.push_back(vote.signature);
         }
       }
     }  // namespace yac
