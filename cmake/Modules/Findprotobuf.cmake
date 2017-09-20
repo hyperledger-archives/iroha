@@ -20,7 +20,7 @@ find_package_handle_standard_args(protobuf DEFAULT_MSG
 if (NOT protobuf_FOUND)
   externalproject_add(google_protobuf
       GIT_REPOSITORY https://github.com/google/protobuf
-      GIT_TAG 6f325805c0bc956f927b0e2dbfb4dd8133b4ed69
+      GIT_TAG 80a37e0782d2d702d52234b62dd4b9ec74fd2c95
       CONFIGURE_COMMAND ${CMAKE_COMMAND} -G${CMAKE_GENERATOR} -H${EP_PREFIX}/src/google_protobuf/cmake -B${EP_PREFIX}/src/google_protobuf-build -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_SHARED_LIBS=ON
       INSTALL_COMMAND ""
       TEST_COMMAND "" # remove test step
