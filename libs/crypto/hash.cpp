@@ -21,6 +21,9 @@ extern "C" {
 
 #include "crypto/hash.hpp"
 #include "common/types.hpp"
+#include "model/converters/pb_transaction_factory.hpp"
+#include "model/converters/pb_block_factory.hpp"
+#include "model/converters/pb_query_factory.hpp"
 
 namespace sha3 {
   void sha3_256_(const unsigned char *message,
@@ -71,11 +74,37 @@ namespace iroha {
     return h;
   }
 
-  hash256_t sha3_256(const model::Transaction& tx) { return {}; }
-  hash256_t sha3_256(const model::Block& tx) { return {}; }
-  hash256_t sha3_256(const model::Query& tx) { return {}; }
-  hash256_t sha3_256(const protocol::Transaction& tx) { return {}; }
-  hash256_t sha3_256(const protocol::Block& tx) { return {}; }
-  hash256_t sha3_256(const protocol::Query& tx) { return {}; }
+  // remove factories
+  static model::converters::PbTransactionFactory tx_factory;
+  static model::converters::PbBlockFactory block_factory;
+  static model::converters::PbQueryFactory query_factory;
+
+  hash256_t sha3_256(const model::Transaction& tx) {
+    auto &&pb_dat = tx_factory.serialize(tx);
+    return sha3_256(pb_dat);
+  }
+
+  hash256_t sha3_256(const model::Block& block) {
+    auto &&pb_dat = block_factory.serialize(block);
+    return sha3_256(pb_dat);
+  }
+
+  hash256_t sha3_256(const model::Query& query) {
+    std::shared_ptr<const model::Query> qptr(&query, [](auto){});
+    auto &&pb_dat = query_factory.serialize(qptr);
+    return sha3_256(*pb_dat);
+  }
+
+  hash256_t sha3_256(const protocol::Transaction& tx) {
+    return sha3_256(tx.payload().SerializeAsString());
+  }
+
+  hash256_t sha3_256(const protocol::Block& block) {
+    return sha3_256(block.payload().SerializeAsString());
+  }
+
+  hash256_t sha3_256(const protocol::Query& query) {
+    return sha3_256(query.payload().SerializeAsString());
+  }
 
 }  // namespace iroha

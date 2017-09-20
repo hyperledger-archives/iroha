@@ -228,7 +228,7 @@ TEST_F(ToriiQueriesTest, FindAccountWhenValid) {
   auto query = iroha::protocol::Query();
 
   query.mutable_payload()->set_creator_account_id("accountA");
-  query.mutable_payload()->mutable_get_account()->set_account_id("accountB");
+  query.mutable_payload()->mutable_get_account()->set_account_id("accountA");
   query.mutable_signature()->set_pubkey(pubkey_test);
   query.mutable_signature()->set_signature(signature_test);
 

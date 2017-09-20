@@ -75,10 +75,12 @@ namespace iroha {
               break;
             }
             case Query_Payload::QueryCase::kGetAccountAssetTransactions: {
-              // UNIMPLEMENTED
-              // TODO(warchant): implement
-              return nonstd::nullopt;
-              // do not need break because of return
+              const auto &pb_cast = pl.get_account_asset_transactions();
+              auto query = GetAccountAssetTransactions();
+              query.account_id = pb_cast.account_id();
+              query.asset_id = pb_cast.asset_id();
+              val = std::make_shared<model::GetAccountAssetTransactions>(query);
+              break;
             }
             case Query_Payload::QueryCase::kGetAccountSignatories: {
               // Convert to get Signatories
@@ -165,6 +167,7 @@ namespace iroha {
       protocol::Query PbQueryFactory::serializeGetAccountTransactions(
           std::shared_ptr<const Query> query) {
         protocol::Query pb_query;
+        serializeQueryMetaData(pb_query, query);
         auto tmp =
             std::static_pointer_cast<const GetAccountTransactions>(query);
         auto pb_query_mut =

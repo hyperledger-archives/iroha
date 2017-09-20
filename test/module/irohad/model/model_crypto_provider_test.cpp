@@ -20,8 +20,6 @@
 #include <crypto/hash.hpp>
 #include <model/model_crypto_provider_impl.hpp>
 
-using namespace iroha::model;
-
 iroha::model::Transaction create_transaction() {
   iroha::model::Transaction tx{};
   tx.creator_account_id = "test";
@@ -31,13 +29,13 @@ iroha::model::Transaction create_transaction() {
   return tx;
 }
 
-Transaction sign(Transaction &tx, iroha::ed25519::privkey_t privkey,
-                 iroha::ed25519::pubkey_t pubkey) {
+iroha::model::Transaction sign(iroha::model::Transaction &tx, iroha::privkey_t privkey,
+                 iroha::pubkey_t pubkey) {
   auto tx_hash = iroha::sha3_256(tx);
 
   auto sign = iroha::sign(tx_hash.data(), tx_hash.size(), pubkey, privkey);
 
-  Signature signature{};
+  iroha::model::Signature signature{};
   signature.signature = sign;
   signature.pubkey = pubkey;
 

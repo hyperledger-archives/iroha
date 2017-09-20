@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <crypto/hash.hpp>
 #include <endpoint.pb.h>
 #include <iostream>
 #include <model/transaction_response.hpp>

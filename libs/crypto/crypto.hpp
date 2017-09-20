@@ -35,6 +35,9 @@ namespace iroha {
                       const pubkey_t &pub,
                       const privkey_t &priv);
 
+  sig_t sign(const std::string &msg, const pubkey_t &pub,
+             const privkey_t &priv);
+
   /**
    * Verify signature of ed25519 crypto algorithm
    * @param msg

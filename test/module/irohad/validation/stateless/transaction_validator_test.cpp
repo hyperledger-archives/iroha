@@ -22,14 +22,12 @@
 #include <validation/impl/stateless_validator_impl.hpp>
 #include <chrono>
 
-using namespace iroha::model;
+iroha::model::Transaction sign(iroha::model::Transaction &tx, const iroha::privkey_t &privkey, const iroha::pubkey_t &pubkey) {
+  auto tx_hash = iroha::sha3_256(tx).to_string();
 
-Transaction sign(Transaction &tx, iroha::privkey_t privkey, iroha::pubkey_t pubkey) {
-  auto tx_hash = iroha::sha3_256(tx);
+  auto sign = iroha::sign(tx_hash, pubkey, privkey);
 
-  auto sign = iroha::sign(tx_hash.data(), tx_hash.size(), pubkey, privkey);
-
-  Signature signature{};
+  iroha::model::Signature signature{};
   signature.signature = sign;
   signature.pubkey = pubkey;
 
