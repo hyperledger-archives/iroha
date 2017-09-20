@@ -55,15 +55,19 @@ namespace iroha {
                   pg_user, pg_pass);
       }
       virtual void TearDown() {
-        const auto drop =
-            "DROP TABLE IF EXISTS account_has_asset;\n"
-            "DROP TABLE IF EXISTS account_has_signatory;\n"
-            "DROP TABLE IF EXISTS peer;\n"
-            "DROP TABLE IF EXISTS account;\n"
-            "DROP TABLE IF EXISTS exchange;\n"
-            "DROP TABLE IF EXISTS asset;\n"
-            "DROP TABLE IF EXISTS domain;\n"
-            "DROP TABLE IF EXISTS signatory;";
+        const auto drop = R"(
+DROP TABLE IF EXISTS account_has_signatory;
+DROP TABLE IF EXISTS account_has_asset;
+DROP TABLE IF EXISTS role_has_permissions;
+DROP TABLE IF EXISTS account_has_roles;
+DROP TABLE IF EXISTS account_has_grantable_permissions;
+DROP TABLE IF EXISTS account;
+DROP TABLE IF EXISTS asset;
+DROP TABLE IF EXISTS domain;
+DROP TABLE IF EXISTS signatory;
+DROP TABLE IF EXISTS peer;
+DROP TABLE IF EXISTS role;
+)";
 
         pqxx::connection connection(pgopt_);
         pqxx::work txn(connection);

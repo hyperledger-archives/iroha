@@ -121,59 +121,67 @@ namespace iroha {
       logger::Logger log_;
 
      protected:
-      const std::string init_ =
-          "CREATE TABLE IF NOT EXISTS domain (\n"
-          "    domain_id character varying(164),\n"
-          "    open bool NOT NULL DEFAULT TRUE,\n"
-          "    PRIMARY KEY (domain_id)\n"
-          ");\n"
-          "CREATE TABLE IF NOT EXISTS signatory (\n"
-          "    public_key bytea NOT NULL,\n"
-          "    PRIMARY KEY (public_key)\n"
-          ");\n"
-          "CREATE TABLE IF NOT EXISTS account (\n"
-          "    account_id character varying(197),    \n"
-          "    domain_id character varying(164) NOT NULL REFERENCES domain,\n"
-          "    quorum int NOT NULL,\n"
-          "    status int NOT NULL DEFAULT 0,    \n"
-          "    transaction_count int NOT NULL DEFAULT 0, \n"
-          "    permissions bit varying NOT NULL,\n"
-          "    PRIMARY KEY (account_id)\n"
-          ");\n"
-          "CREATE TABLE IF NOT EXISTS account_has_signatory (\n"
-          "    account_id character varying(197) NOT NULL REFERENCES account,\n"
-          "    public_key bytea NOT NULL REFERENCES signatory,\n"
-          "    PRIMARY KEY (account_id, public_key)\n"
-          ");\n"
-          "CREATE TABLE IF NOT EXISTS peer (\n"
-          "    public_key bytea NOT NULL,\n"
-          "    address character varying(21) NOT NULL UNIQUE,\n"
-          "    state int NOT NULL DEFAULT 0,\n"
-          "    PRIMARY KEY (public_key)\n"
-          ");\n"
-          "CREATE TABLE IF NOT EXISTS asset (\n"
-          "    asset_id character varying(197),\n"
-          "    domain_id character varying(164) NOT NULL REFERENCES domain,\n"
-          "    precision int NOT NULL,\n"
-          "    data json,\n"
-          "    PRIMARY KEY (asset_id)\n"
-          ");\n"
-          "CREATE TABLE IF NOT EXISTS account_has_asset (\n"
-          "    account_id character varying(197) NOT NULL REFERENCES account,\n"
-          "    asset_id character varying(197) NOT NULL REFERENCES asset,\n"
-          "    amount decimal NOT NULL,\n"
-          "    permissions bit varying NOT NULL,\n"
-          "    PRIMARY KEY (account_id, asset_id)\n"
-          ");\n"
-          "CREATE TABLE IF NOT EXISTS exchange (\n"
-          "    asset1_id character varying(197) NOT NULL REFERENCES "
-          "asset(asset_id),\n"
-          "    asset2_id character varying(197) NOT NULL REFERENCES "
-          "asset(asset_id),\n"
-          "    asset1 bigint NOT NULL,\n"
-          "    asset2 bigint NOT NULL,\n"
-          "    PRIMARY KEY (asset1_id, asset2_id)\n"
-          ");";
+      const std::string init_ = R"(
+CREATE TABLE IF NOT EXISTS domain (
+    domain_id character varying(164),
+    PRIMARY KEY (domain_id)
+);
+CREATE TABLE IF NOT EXISTS signatory (
+    public_key bytea NOT NULL,
+    PRIMARY KEY (public_key)
+);
+CREATE TABLE IF NOT EXISTS account (
+    account_id character varying(197),
+    domain_id character varying(164) NOT NULL REFERENCES domain,
+    quorum int NOT NULL,
+    transaction_count int NOT NULL DEFAULT 0,
+    permissions bit varying NOT NULL,
+    PRIMARY KEY (account_id)
+);
+CREATE TABLE IF NOT EXISTS account_has_signatory (
+    account_id character varying(197) NOT NULL REFERENCES account,
+    public_key bytea NOT NULL REFERENCES signatory,
+    PRIMARY KEY (account_id, public_key)
+);
+CREATE TABLE IF NOT EXISTS peer (
+    public_key bytea NOT NULL,
+    address character varying(21) NOT NULL UNIQUE,
+    PRIMARY KEY (public_key)
+);
+CREATE TABLE IF NOT EXISTS asset (
+    asset_id character varying(197),
+    domain_id character varying(164) NOT NULL REFERENCES domain,
+    precision int NOT NULL,
+    data json,
+    PRIMARY KEY (asset_id)
+);
+CREATE TABLE IF NOT EXISTS account_has_asset (
+    account_id character varying(197) NOT NULL REFERENCES account,
+    asset_id character varying(197) NOT NULL REFERENCES asset,
+    amount decimal NOT NULL,
+    PRIMARY KEY (account_id, asset_id)
+);
+CREATE TABLE IF NOT EXISTS role (
+    role_id character varying(45),
+    PRIMARY KEY (role_id)
+);
+CREATE TABLE IF NOT EXISTS role_has_permissions (
+    role_id character varying(45) NOT NULL REFERENCES role,
+    permission_id character varying(45),
+    PRIMARY KEY (role_id, permission_id)
+);
+CREATE TABLE IF NOT EXISTS account_has_roles (
+    account_id character varying(197) NOT NULL REFERENCES account,
+    role_id character varying(45) NOT NULL REFERENCES role,
+    PRIMARY KEY (account_id, role_id)
+);
+CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
+    permittee_account_id character varying(197) NOT NULL REFERENCES account,
+    account_id character varying(197) NOT NULL REFERENCES account,
+    permission_id character varying(45),
+    PRIMARY KEY (permittee_account_id, account_id, permission_id)
+);
+)";
     };
   }  // namespace ametsuchi
 }  // namespace iroha

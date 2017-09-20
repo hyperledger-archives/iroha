@@ -30,7 +30,7 @@ namespace iroha {
     using model::Peer;
 
     PostgresWsvQuery::PostgresWsvQuery(pqxx::nontransaction &transaction)
-        : transaction_(transaction) {}
+        : transaction_(transaction), log_(logger::log("PostgresWsvQuery")) {}
 
     bool PostgresWsvQuery::hasAccountGrantablePermission(
         const std::string &permitee_account_id, const std::string &account_id,
@@ -68,10 +68,11 @@ namespace iroha {
             "  account.account_id = " +
             transaction_.quote(account_id) + ";");
       } catch (const std::exception &e) {
-        // TODO log
+        log_->error(e.what());
         return nullopt;
       }
       if (result.size() != 1) {
+        log_->info("result.size(): " + std::to_string(result.size()));
         return nullopt;
       }
       Account account;
@@ -79,7 +80,6 @@ namespace iroha {
       row.at("account_id") >> account.account_id;
       row.at("domain_id") >> account.domain_name;
       row.at("quorum") >> account.quorum;
-      //      row.at("status") >> ?
       //      row.at("transaction_count") >> ?
       std::string permissions;
       row.at("permissions") >> permissions;
@@ -109,7 +109,7 @@ namespace iroha {
             "  account_has_signatory.account_id = " +
             transaction_.quote(account_id) + ";");
       } catch (const std::exception &e) {
-        // TODO log
+        log_->error(e.what());
         return nullopt;
       }
       std::vector<pubkey_t> signatories;
@@ -134,10 +134,11 @@ namespace iroha {
             "  asset.asset_id = " +
             transaction_.quote(asset_id) + ";");
       } catch (const std::exception &e) {
-        // TODO log
+        log_->error(e.what());
         return nullopt;
       }
       if (result.size() != 1) {
+        log_->info("result.size(): " + std::to_string(result.size()));
         return nullopt;
       }
       Asset asset;
@@ -167,9 +168,11 @@ namespace iroha {
             "  account_has_asset.asset_id = " +
             transaction_.quote(asset_id) + ";");
       } catch (const std::exception &e) {
+        log_->error(e.what());
         return nullopt;
       }
       if (result.size() != 1) {
+        log_->info("result.size(): " + std::to_string(result.size()));
         return nullopt;
       }
       model::AccountAsset asset;
@@ -179,7 +182,6 @@ namespace iroha {
       std::string amount_str;
       row.at("amount") >> amount_str;
       asset.balance = Amount::createFromString(amount_str).value();
-      //      row.at("permissions") >> ?
       return asset;
     }
 
@@ -192,6 +194,7 @@ namespace iroha {
             "FROM \n"
             "  peer;");
       } catch (const std::exception &e) {
+        log_->error(e.what());
         return nullopt;
       }
       std::vector<Peer> peers;
