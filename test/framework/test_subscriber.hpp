@@ -148,6 +148,22 @@ namespace framework {
       std::unique_ptr<VerificationStrategy<T>> strategy_;
     };
 
+    /**
+     * Create test subscriber with specified strategy for given observable and
+     * strategy arguments
+     * @tparam S - strategy type
+     * @tparam O - observable type
+     * @tparam T - type of elements emitted by observable
+     * @tparam SourceOperator - internal rxcpp type
+     * @tparam Args - types of strategy constructor arguments
+     * @param unwrapped_observable - observable to test
+     * @param args - strategy arguments
+     * @return test subscriber described above
+     *
+     * Example:
+     *   auto o = rxcpp::observable<>::just(1);
+     *   auto sub = make_test_subscriber<CallExact>(o, 1);
+     */
     template <template <typename K> class S,
               template <typename V, typename SO> class O, typename T,
               typename SourceOperator, typename... Args>
