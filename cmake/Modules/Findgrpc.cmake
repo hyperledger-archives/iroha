@@ -3,20 +3,22 @@ add_library(grpc++ UNKNOWN IMPORTED)
 add_library(grpc++_reflection UNKNOWN IMPORTED)
 add_executable(grpc_cpp_plugin IMPORTED)
 
-find_path(grpc_INCLUDE_DIR grpc/grpc.h)
-mark_as_advanced(grpc_INCLUDE_DIR)
+if (FIND_GRPC)
+  find_path(grpc_INCLUDE_DIR grpc/grpc.h)
+  mark_as_advanced(grpc_INCLUDE_DIR)
 
-find_library(grpc_LIBRARY grpc)
-mark_as_advanced(grpc_LIBRARY)
+  find_library(grpc_LIBRARY grpc)
+  mark_as_advanced(grpc_LIBRARY)
 
-find_library(grpc_grpc++_LIBRARY grpc++)
-mark_as_advanced(grpc_grpc++_LIBRARY)
+  find_library(grpc_grpc++_LIBRARY grpc++)
+  mark_as_advanced(grpc_grpc++_LIBRARY)
 
-find_library(grpc_grpc++_reflection_LIBRARY grpc++_reflection)
-mark_as_advanced(grpc_grpc++_reflection_LIBRARY)
+  find_library(grpc_grpc++_reflection_LIBRARY grpc++_reflection)
+  mark_as_advanced(grpc_grpc++_reflection_LIBRARY)
 
-find_program(grpc_CPP_PLUGIN grpc_cpp_plugin)
-mark_as_advanced(grpc_CPP_PLUGIN)
+  find_program(grpc_CPP_PLUGIN grpc_cpp_plugin)
+  mark_as_advanced(grpc_CPP_PLUGIN)
+endif()
 
 find_package(PackageHandleStandardArgs REQUIRED)
 find_package_handle_standard_args(grpc DEFAULT_MSG

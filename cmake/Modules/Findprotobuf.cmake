@@ -1,14 +1,16 @@
 add_library(protobuf UNKNOWN IMPORTED)
 add_executable(protoc IMPORTED)
 
-find_path(protobuf_INCLUDE_DIR google/protobuf/service.h)
-mark_as_advanced(protobuf_INCLUDE_DIR)
+if (FIND_PROTOBUF)
+  find_path(protobuf_INCLUDE_DIR google/protobuf/service.h)
+  mark_as_advanced(protobuf_INCLUDE_DIR)
 
-find_library(protobuf_LIBRARY protobuf)
-mark_as_advanced(protobuf_LIBRARY)
+  find_library(protobuf_LIBRARY protobuf)
+  mark_as_advanced(protobuf_LIBRARY)
 
-find_program(protoc_EXECUTABLE protoc)
-mark_as_advanced(protoc_EXECUTABLE)
+  find_program(protoc_EXECUTABLE protoc)
+  mark_as_advanced(protoc_EXECUTABLE)
+endif()
 
 find_package(PackageHandleStandardArgs REQUIRED)
 find_package_handle_standard_args(protobuf DEFAULT_MSG
