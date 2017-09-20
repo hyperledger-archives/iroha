@@ -35,25 +35,70 @@ namespace iroha {
     bool PostgresWsvQuery::hasAccountGrantablePermission(
         const std::string &permitee_account_id, const std::string &account_id,
         const std::string &permission_id) {
-      // TODO: implement
-      return false;
+      pqxx::result result;
+      try {
+        result = transaction_.exec(
+            "SELECT * FROM account_has_grantable_permissions WHERE "
+            "permittee_account_id = " +
+            transaction_.quote(permitee_account_id) + " AND account_id = " +
+            transaction_.quote(account_id) + " AND permission_id = " +
+            transaction_.quote(permission_id) + ";");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return false;
+      }
+      return result.size() == 1;
     };
 
     nonstd::optional<std::vector<std::string>>
     PostgresWsvQuery::getAccountRoles(const std::string &account_id) {
-      // TODO: implement
-      return nonstd::nullopt;
+      pqxx::result result;
+      try {
+        result = transaction_.exec(
+            "SELECT role_id FROM account_has_roles WHERE account_id = " +
+            transaction_.quote(account_id) + ";");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return nullopt;
+      }
+      std::vector<std::string> roles;
+      for (const auto &row : result) {
+        roles.emplace_back(row.at("role_id").c_str());
+      }
+      return roles;
     };
 
     nonstd::optional<std::vector<std::string>>
     PostgresWsvQuery::getRolePermissions(const std::string &role_name) {
-      // TODO: implement
-      return nonstd::nullopt;
+      pqxx::result result;
+      try {
+        result = transaction_.exec(
+            "SELECT permission_id FROM role_has_permissions WHERE role_id = " +
+            transaction_.quote(role_name) + ";");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return nullopt;
+      }
+      std::vector<std::string> permissions;
+      for (const auto &row : result) {
+        permissions.emplace_back(row.at("permission_id").c_str());
+      }
+      return permissions;
     };
 
     nonstd::optional<std::vector<std::string>> PostgresWsvQuery::getRoles() {
-      // TODO: implement
-      return nonstd::nullopt;
+      pqxx::result result;
+      try {
+        result = transaction_.exec("SELECT role_id FROM role;");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return nullopt;
+      }
+      std::vector<std::string> roles;
+      for (const auto &row : result) {
+        roles.emplace_back(row.at("role_id").c_str());
+      }
+      return roles;
     };
 
     optional<Account> PostgresWsvQuery::getAccount(const string &account_id) {
