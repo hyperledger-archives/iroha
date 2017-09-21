@@ -35,6 +35,24 @@ namespace iroha {
   const std::string can_transfer = "CanTransfer";
   const std::string can_receive = "CanReceive";
 
+  // ---------|Query permissions|-------------
+  const std::string can_read_assets = "CanReadAssets";
+  const std::string can_get_roles = "CanGetRoles";
+  const std::string can_get_my_account = "CanGetMyAccount";
+  const std::string can_get_all_accounts = "CanGetAllAccounts";
+
+  const std::string can_get_my_signatories = "CanGetMySignatories";
+  const std::string can_get_all_signatories = "CanGetAllSignatories";
+
+  const std::string can_get_my_acc_ast = "CanGetMyAccountAssets";
+  const std::string can_get_all_acc_ast = "CanGetAllAccountAssets";
+
+  const std::string can_get_my_acc_txs = "CanGetMyAccountTransactions";
+  const std::string can_get_all_acc_txs = "CanGetAllAccountTransactions";
+
+  const std::string can_get_my_acc_ast_txs = "CanGetMyAccountAssetsTransactions";
+  const std::string can_get_all_acc_ast_txs = "CanGetAllAccountAssetsTransactions";
+
   } // namespace model
 }  // namespace iroha
 

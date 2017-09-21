@@ -18,6 +18,8 @@
 #ifndef IROHA_COMMON_EXECUTOR_HPP
 #define IROHA_COMMON_EXECUTOR_HPP
 
+#include "ametsuchi/wsv_query.hpp"
+
 namespace iroha {
   namespace model {
 
@@ -29,7 +31,7 @@ namespace iroha {
    * @return  True if account has permission, false otherwise
    */
   bool checkAccountRolePermission(const std::string &account_id,
-                                  WsvQuery &queries,
+                                  iroha::ametsuchi::WsvQuery &queries,
                                   const std::string &permission_id);
 
   }
