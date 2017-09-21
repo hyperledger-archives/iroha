@@ -38,6 +38,7 @@ bool iroha::model::QueryProcessingFactory::validate(
   // TODO 26/09/17 grimadas: check signatures IR-499
   return
       // Creator account exits
+      // TODO: Check role of the account
       // TODO: add permission check
       creator.has_value();
 }
@@ -47,7 +48,7 @@ bool iroha::model::QueryProcessingFactory::validate(
   auto creator = _wsvQuery->getAccount(query.creator_account_id);
   // TODO 26/09/17 grimadas: check signatures IR-499
   return
-      // Creator account exits
+      // TODO: check if role Creator account exits
       // TODO: add permission check
       creator.has_value();
 }
@@ -57,6 +58,7 @@ bool QueryProcessingFactory::validate(const model::GetRolePermissions& query) {
   // TODO 26/09/17 grimadas: check signatures IR-499
   return
       // Creator account exits
+      // TODO: check role can do that
       // TODO: add permission check
       creator.has_value();
 }
@@ -76,6 +78,7 @@ bool iroha::model::QueryProcessingFactory::validate(
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetSignatories& query) {
   auto creator = _wsvQuery->getAccount(query.creator_account_id);
+  // TODO: Either has role to all accounts, either to myself, either grant
   return
       // Creator account exits
       creator.has_value() &&
@@ -87,6 +90,7 @@ bool iroha::model::QueryProcessingFactory::validate(
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccountAssets& query) {
   auto creator = _wsvQuery->getAccount(query.creator_account_id);
+  // TODO: Either has role to all accounts, either to myself, either grant
   return
       // Creator account exits
       creator.has_value() &&
@@ -98,6 +102,7 @@ bool iroha::model::QueryProcessingFactory::validate(
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccountTransactions& query) {
   auto creator = _wsvQuery->getAccount(query.creator_account_id);
+  // TODO: Either has role to all accounts, either to myself, either grant
   return
       // Creator account exits
       creator.has_value() &&
@@ -109,6 +114,7 @@ bool iroha::model::QueryProcessingFactory::validate(
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccountAssetTransactions& query) {
   auto creator = _wsvQuery->getAccount(query.creator_account_id);
+  // TODO: Either has role to all accounts, either to myself, either grant
   return
       // Creator account exits
       creator.has_value() &&
