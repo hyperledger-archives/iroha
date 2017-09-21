@@ -72,8 +72,6 @@ namespace iroha {
               commandFactory.deserializeAbstractCommand(pb_command));
         }
 
-        tx.tx_hash = iroha::sha3_256(pb_tx);
-
         return std::make_shared<model::Transaction>(tx);
       }
 

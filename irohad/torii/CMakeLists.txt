@@ -31,4 +31,5 @@ target_link_libraries(torii_service
     stateless_validator
     model
     logger
+    hash
     )

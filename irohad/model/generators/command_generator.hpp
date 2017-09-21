@@ -30,17 +30,17 @@ namespace iroha {
       class CommandGenerator {
        public:
         std::shared_ptr<Command> generateAddPeer(const std::string &address,
-                                                 const ed25519::pubkey_t &key);
+                                                 const pubkey_t &key);
 
         std::shared_ptr<Command> generateAddSignatory(const std::string &account_id,
-                                                      const ed25519::pubkey_t &key);
+                                                      const pubkey_t &key);
 
         std::shared_ptr<Command> generateRemoveSignatory(
-            const std::string &account_id, const ed25519::pubkey_t &key);
+            const std::string &account_id, const pubkey_t &key);
 
         std::shared_ptr<Command> generateCreateAccount(
             const std::string &account_name, const std::string &domain_id,
-            const ed25519::pubkey_t &key);
+            const pubkey_t &key);
 
         std::shared_ptr<Command> generateCreateDomain(const std::string &domain_name);
 

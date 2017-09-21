@@ -33,7 +33,7 @@ namespace iroha_cli {
    * @return keypair on success, otherwise nullopt
    */
   template<typename T, typename V>
-  auto deserializeKeypairField(T iroha::ed25519::keypair_t::*field,
+  auto deserializeKeypairField(T iroha::keypair_t::*field,
                                const V &value) {
     return [=](auto keypair) mutable {
       return iroha::hexstringToArray<T::size()>(value)
@@ -44,7 +44,7 @@ namespace iroha_cli {
   KeysManagerImpl::KeysManagerImpl(std::string account_name)
       : account_name_(std::move(account_name)) {}
 
-  nonstd::optional<iroha::ed25519::keypair_t> KeysManagerImpl::loadKeys() {
+  nonstd::optional<iroha::keypair_t> KeysManagerImpl::loadKeys() {
     // Try to load from local file
     std::ifstream priv_file(account_name_ + ".priv");
     std::ifstream pub_file(account_name_ + ".pub");
@@ -56,10 +56,10 @@ namespace iroha_cli {
     priv_file >> client_priv_key_;
     pub_file >> client_pub_key_;
 
-    return nonstd::make_optional<iroha::ed25519::keypair_t>()
-        | deserializeKeypairField(&iroha::ed25519::keypair_t::pubkey,
+    return nonstd::make_optional<iroha::keypair_t>()
+        | deserializeKeypairField(&iroha::keypair_t::pubkey,
                                   client_pub_key_)
-        | deserializeKeypairField(&iroha::ed25519::keypair_t::privkey,
+        | deserializeKeypairField(&iroha::keypair_t::privkey,
                                   client_priv_key_);
   }
 

@@ -37,14 +37,15 @@ namespace iroha {
       /**
        * New signatory is identified with public key
        */
-      ed25519::pubkey_t pubkey;
+      pubkey_t pubkey;
 
       bool operator==(const Command &command) const override;
+      bool operator!=(const Command &command) const override;
 
       AddSignatory() {}
 
       AddSignatory(const std::string &account_id,
-                   const ed25519::pubkey_t &pubkey)
+                   const pubkey_t &pubkey)
           : account_id(account_id), pubkey(pubkey) {}
     };
   }  // namespace model

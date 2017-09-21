@@ -185,12 +185,11 @@ TEST_F(ClientServerTest, SendTxWhenStatelessInvalid) {
   auto doc = iroha::model::converters::stringToJson(json_string).value();
   iroha::model::converters::JsonTransactionFactory transactionFactory;
   auto tx = transactionFactory.deserialize(doc).value();
-  tx.tx_hash = iroha::sha3_256(tx);
 
   ASSERT_EQ(iroha_cli::CliClient(Ip, Port).sendTx(tx).answer,
             iroha_cli::CliClient::OK);
   ASSERT_EQ(iroha_cli::CliClient(Ip, Port)
-                .getTxStatus(tx.tx_hash.to_string())
+                .getTxStatus(iroha::sha3_256(tx).to_string())
                 .answer.tx_status(),
             iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED);
 }

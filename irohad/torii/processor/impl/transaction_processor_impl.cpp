@@ -37,10 +37,10 @@ namespace iroha {
 
       // insert all txs from proposal to proposal set
       pcs_->on_proposal().subscribe([this](model::Proposal proposal) {
-        for (auto tx : proposal.transactions) {
-          proposal_set_.insert(tx.tx_hash.to_string());
+        for (const auto &tx : proposal.transactions) {
+          proposal_set_.insert(sha3_256(tx).to_string());
           TransactionResponse response;
-          response.tx_hash = tx.tx_hash.to_string();
+          response.tx_hash = sha3_256(tx).to_string();
           response.current_status =
               TransactionResponse::STATELESS_VALIDATION_SUCCESS;
           notifier_.get_subscriber().on_next(
@@ -54,12 +54,12 @@ namespace iroha {
         blocks.subscribe(
             // on next..
             [this](model::Block block) {
-              for (auto tx : block.transactions) {
-                if (this->proposal_set_.count(tx.tx_hash.to_string())) {
-                  proposal_set_.erase(tx.tx_hash.to_string());
-                  candidate_set_.insert(tx.tx_hash.to_string());
+              for (const auto &tx : block.transactions) {
+                if (this->proposal_set_.count(sha3_256(tx).to_string())) {
+                  proposal_set_.erase(sha3_256(tx).to_string());
+                  candidate_set_.insert(sha3_256(tx).to_string());
                   TransactionResponse response;
-                  response.tx_hash = tx.tx_hash.to_string();
+                  response.tx_hash = sha3_256(tx).to_string();
                   response.current_status =
                       model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS;
                   notifier_.get_subscriber().on_next(
@@ -95,7 +95,7 @@ namespace iroha {
         std::shared_ptr<model::Transaction> transaction) {
       log_->info("handle transaction");
       model::TransactionResponse response;
-      response.tx_hash = transaction->tx_hash.to_string();
+      response.tx_hash = sha3_256(*transaction).to_string();
       response.current_status =
           model::TransactionResponse::Status::STATELESS_VALIDATION_FAILED;
 

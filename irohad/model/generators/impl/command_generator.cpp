@@ -35,23 +35,23 @@ namespace iroha {
     namespace generators {
 
       std::shared_ptr<Command> CommandGenerator::generateAddPeer(
-          const std::string &address, const ed25519::pubkey_t &key) {
+          const std::string &address, const pubkey_t &key) {
         return generateCommand<AddPeer>(key, address);
       }
 
       std::shared_ptr<Command> CommandGenerator::generateAddSignatory(
-          const std::string &account_id, const ed25519::pubkey_t &key) {
+          const std::string &account_id, const pubkey_t &key) {
         return generateCommand<AddSignatory>(account_id, key);
       }
 
       std::shared_ptr<Command> CommandGenerator::generateRemoveSignatory(
-          const std::string &account_id, const ed25519::pubkey_t &key) {
+          const std::string &account_id, const pubkey_t &key) {
         return generateCommand<RemoveSignatory>(account_id, key);
       }
 
       std::shared_ptr<Command> CommandGenerator::generateCreateAccount(
           const std::string &account_name, const std::string &domain_id,
-          const ed25519::pubkey_t &key) {
+          const pubkey_t &key) {
         return generateCommand<CreateAccount>(account_name, domain_id, key);
       }
 
