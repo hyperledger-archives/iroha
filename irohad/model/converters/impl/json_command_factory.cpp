@@ -27,6 +27,7 @@
 #include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
+#include <regex>
 
 using namespace rapidjson;
 
@@ -38,9 +39,24 @@ namespace iroha {
         template <typename T>
         auto operator()(T &&x) {
           auto des = makeFieldDeserializer(x);
-          return nonstd::make_optional<Amount>()
-              | des.Uint64(&Amount::int_part, "int_part")
-              | des.Uint64(&Amount::frac_part, "frac_part");
+          auto str_int_value = des.String("value");
+          //TODO: add checks below
+          /*
+          if (!str_int_value.has_value()){
+            return nonstd::nullopt;
+          }
+
+          std::regex e("\\d+");
+          if (!std::regex_match(str_int_value.value(), e)){
+            return nonstd::nullopt;
+          }
+           */
+          uint256_t value(str_int_value.value());
+          uint8_t precision;
+          rapidjson::Document dd;
+          precision = des.document["precision"].GetUint();
+
+          return nonstd::make_optional<Amount>({value, static_cast<uint8_t >(precision)});
         }
       };
 
@@ -95,9 +111,9 @@ namespace iroha {
 
         Value amount;
         amount.SetObject();
-        amount.AddMember("int_part", add_asset_quantity->amount.int_part,
+        amount.AddMember("value", add_asset_quantity->amount.getIntValue().str(),
                          allocator);
-        amount.AddMember("frac_part", add_asset_quantity->amount.frac_part,
+        amount.AddMember("precision", add_asset_quantity->amount.getPrecision(),
                          allocator);
 
         document.AddMember("amount", amount, allocator);
@@ -409,9 +425,9 @@ namespace iroha {
 
         Value amount;
         amount.SetObject();
-        amount.AddMember("int_part", transfer_asset->amount.int_part,
+        amount.AddMember("value", transfer_asset->amount.getIntValue().str(),
                          allocator);
-        amount.AddMember("frac_part", transfer_asset->amount.frac_part,
+        amount.AddMember("precision", transfer_asset->amount.getPrecision(),
                          allocator);
 
         document.AddMember("amount", amount, allocator);

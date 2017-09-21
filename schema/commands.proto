@@ -2,9 +2,16 @@ syntax = "proto3";
 package iroha.protocol;
 import "primitive.proto";
 
+message uint256 {
+    uint64 first = 1;
+    uint64 second = 2;
+    uint64 third = 3;
+    uint64 fourth = 4;
+}
+
 message Amount {
-    uint64 integer_part = 1;
-    uint64 fractial_part = 2;
+    uint256 value = 1;
+    uint32 precision = 2;
 }
 
 message AddAssetQuantity {

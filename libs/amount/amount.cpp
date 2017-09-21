@@ -33,12 +33,35 @@ namespace iroha {
     return result;
   }
 
+  uint256_t getJointUint256(uint64_t first, uint64_t second, uint64_t third,
+                            uint64_t fourth) {
+    uint256_t res(0);
+    res |= first;
+    res <<= 64;
+    res |= second;
+    res <<= 64;
+    res |= third;
+    res <<= 64;
+    res |= fourth;
+    return res;
+  }
+
   Amount::Amount() : value_(0), precision_(0) {}
 
   Amount::Amount(uint256_t value) : value_(value), precision_(0) {}
 
   Amount::Amount(uint256_t amount, uint8_t precision)
       : value_(amount), precision_(precision) {}
+
+  Amount::Amount(uint64_t first, uint64_t second, uint64_t third,
+                 uint64_t fourth) : value_(0), precision_(0) {
+    value_ = getJointUint256(first, second, third, fourth);
+  }
+
+  Amount::Amount(uint64_t first, uint64_t second, uint64_t third,
+                 uint64_t fourth, uint8_t precision) : value_(0), precision_(precision) {
+    value_ = getJointUint256(first, second, third, fourth);
+  }
 
   Amount::Amount(const Amount &am)
       : value_(am.value_), precision_(am.precision_) {}
@@ -57,6 +80,23 @@ namespace iroha {
     std::swap(value_, other.value_);
     std::swap(precision_, other.precision_);
     return *this;
+  }
+
+  uint256_t Amount::getIntValue() {
+    return value_;
+  }
+
+  uint8_t Amount::getPrecision() {
+    return precision_;
+  }
+
+  std::vector<uint64_t > Amount::to_uint64s() {
+    std::vector<uint64_t > array(4);;
+    for (int i = 0; i < 4; i++) {
+      uint64_t res = (value_ >> i*64).convert_to<uint64_t>();
+      array[3 - i] = res;
+    }
+    return array;
   }
 
   Amount Amount::percentage(uint256_t percents) const {

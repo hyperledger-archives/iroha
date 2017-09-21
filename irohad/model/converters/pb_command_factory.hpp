@@ -39,6 +39,10 @@ namespace iroha {
        */
       class PbCommandFactory {
        public:
+        // amount
+        protocol::Amount serializeAmount(iroha::Amount iroha_amount);
+        iroha::Amount deserializeAmount(protocol::Amount pb_amount);
+
         // asset quantity
         protocol::AddAssetQuantity serializeAddAssetQuantity(
             const model::AddAssetQuantity &addAssetQuantity);

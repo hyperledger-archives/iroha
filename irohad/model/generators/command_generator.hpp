@@ -22,6 +22,7 @@
 #include "generator/generator.hpp"
 #include "model/account.hpp"
 #include "model/command.hpp"
+#include "amount/amount.hpp"
 
 namespace iroha {
   namespace model {
