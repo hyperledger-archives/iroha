@@ -55,6 +55,7 @@ bool hasQueryPermission(const std::string& creator,
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAssetInfo& query) {
   // TODO: check signatures
+  // TODO: add can read assets in domain
   return checkAccountRolePermission(query.creator_account_id, *_wsvQuery,
                                     can_read_assets);
 }
