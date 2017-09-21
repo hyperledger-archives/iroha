@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "framework/test_subscriber.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
@@ -30,10 +31,13 @@ using namespace std::chrono_literals;
 using ::testing::Return;
 
 class OrderingGateServiceTest : public OrderingTest {
- public:
+public:
   OrderingGateServiceTest() {
-    gate_impl = std::make_shared<OrderingGateImpl>(address);
+    auto transport = std::make_shared<OrderingGateTransportGrpc>(address);
+    gate_impl = std::make_shared<OrderingGateImpl>(transport);
     gate = gate_impl;
+    gate_transport_service = transport;
+    transport->subscribe(gate_impl);
     counter = 2;
   }
 
@@ -68,7 +72,7 @@ class OrderingGateServiceTest : public OrderingTest {
     tx->tx_counter = i;
     gate_impl->propagate_transaction(tx);
     // otherwise tx may come unordered
-    std::this_thread::sleep_for(1ms);
+    std::this_thread::sleep_for(20ms);
   }
 
   std::shared_ptr<uvw::Loop> loop;
@@ -85,7 +89,7 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
 
   std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
   EXPECT_CALL(*wsv, getLedgerPeers()).WillRepeatedly(Return(std::vector<Peer>{
-      peer}));
+          peer}));
   const size_t max_proposal = 100;
   const size_t commit_delay = 400;
 
@@ -103,7 +107,8 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   }
 
   cv.wait_for(lk, 10s);
-  send_transaction(8); send_transaction(9);
+  send_transaction(8);
+  send_transaction(9);
   cv.wait_for(lk, 10s);
 
   ASSERT_TRUE(wrapper.validate());
@@ -126,7 +131,7 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
 
   std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
   EXPECT_CALL(*wsv, getLedgerPeers()).WillRepeatedly(Return(std::vector<Peer>{
-      peer}));
+          peer}));
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
 

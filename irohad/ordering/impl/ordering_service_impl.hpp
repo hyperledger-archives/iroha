@@ -22,6 +22,7 @@
 #include <tbb/concurrent_queue.h>
 #include <unordered_map>
 #include <uvw.hpp>
+#include "ordering.grpc.pb.h"
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/proposal.hpp"
 #include "network/impl/async_grpc_client.hpp"
@@ -40,20 +41,22 @@ namespace iroha {
      * @param max_size proposal size
      */
     class OrderingServiceImpl
-        : public proto::OrderingService::Service,
-          public uvw::Emitter<OrderingServiceImpl>,
-          network::AsyncGrpcClient<google::protobuf::Empty> {
-     public:
+            : public proto::OrderingService::Service,
+              public uvw::Emitter<OrderingServiceImpl>,
+              network::AsyncGrpcClient<google::protobuf::Empty> {
+    public:
       OrderingServiceImpl(
-          std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
-          size_t delay_milliseconds,
-          std::shared_ptr<uvw::Loop> loop = uvw::Loop::getDefault());
+              std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
+              size_t delay_milliseconds,
+              std::shared_ptr<uvw::Loop> loop = uvw::Loop::getDefault());
+
       grpc::Status SendTransaction(
-          ::grpc::ServerContext *context, const protocol::Transaction *request,
-          ::google::protobuf::Empty *response) override;
+              ::grpc::ServerContext *context, const protocol::Transaction *request,
+              ::google::protobuf::Empty *response) override;
+
       ~OrderingServiceImpl() override;
 
-     private:
+    private:
       /**
        * Process transaction received from network
        * Enqueues transaction and publishes corresponding event
@@ -85,9 +88,9 @@ namespace iroha {
       model::converters::PbTransactionFactory factory_;
 
       std::unordered_map<std::string,
-                         std::unique_ptr<proto::OrderingGate::Stub>> peers_;
+              std::unique_ptr<proto::OrderingGateTransportGrpc::Stub>> peers_;
 
-      tbb::concurrent_queue<model::Transaction> queue_;
+      tbb::concurrent_queue <model::Transaction> queue_;
 
       /**
        * max number of txs in proposal

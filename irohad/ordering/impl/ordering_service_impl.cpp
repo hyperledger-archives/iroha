@@ -20,19 +20,20 @@
 /**
  * Will be published when transaction is received.
  */
-struct TransactionEvent {};
+struct TransactionEvent {
+};
 
 namespace iroha {
   namespace ordering {
     OrderingServiceImpl::OrderingServiceImpl(
-        std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
-        size_t delay_milliseconds, std::shared_ptr<uvw::Loop> loop)
-        : loop_(std::move(loop)),
-          timer_(loop_->resource<uvw::TimerHandle>()),
-          wsv_(wsv),
-          max_size_(max_size),
-          delay_milliseconds_(delay_milliseconds),
-          proposal_height(2) {
+            std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
+            size_t delay_milliseconds, std::shared_ptr<uvw::Loop> loop)
+            : loop_(std::move(loop)),
+              timer_(loop_->resource<uvw::TimerHandle>()),
+              wsv_(wsv),
+              max_size_(max_size),
+              delay_milliseconds_(delay_milliseconds),
+              proposal_height(2) {
 
       timer_->on<uvw::TimerEvent>([this](const auto &, auto &) {
         if (!queue_.empty()) {
@@ -56,15 +57,15 @@ namespace iroha {
     }
 
     grpc::Status OrderingServiceImpl::SendTransaction(
-        ::grpc::ServerContext *context, const protocol::Transaction *request,
-        ::google::protobuf::Empty *response) {
+            ::grpc::ServerContext *context, const protocol::Transaction *request,
+            ::google::protobuf::Empty *response) {
       handleTransaction(std::move(*factory_.deserialize(*request)));
 
       return grpc::Status::OK;
     }
 
     void OrderingServiceImpl::handleTransaction(
-        model::Transaction &&transaction) {
+            model::Transaction &&transaction) {
       queue_.push(transaction);
 
       publish(TransactionEvent{});
@@ -96,7 +97,7 @@ namespace iroha {
         auto call = new AsyncClientCall;
 
         call->response_reader =
-            peer.second->AsyncSendProposal(&call->context, pb_proposal, &cq_);
+                peer.second->AsyncOnProposal(&call->context, pb_proposal, &cq_);
 
         call->response_reader->Finish(&call->reply, &call->status, call);
       }
@@ -110,8 +111,8 @@ namespace iroha {
         return;
       }
       for (const auto &peer : round_peers.value()) {
-        peers_[peer.address] = proto::OrderingGate::NewStub(grpc::CreateChannel(
-            peer.address, grpc::InsecureChannelCredentials()));
+        peers_[peer.address] = proto::OrderingGateTransportGrpc::NewStub(grpc::CreateChannel(
+                peer.address, grpc::InsecureChannelCredentials()));
       }
     }
 

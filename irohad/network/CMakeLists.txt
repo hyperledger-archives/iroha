@@ -13,6 +13,7 @@ target_link_libraries(networking
 add_library(block_loader
     impl/block_loader_impl.cpp
     )
+
 target_link_libraries(block_loader
     pb_model_converters
     loader_grpc

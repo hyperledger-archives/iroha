@@ -18,6 +18,8 @@
 #ifndef IROHA_ORDERING_GATE_IMPL_HPP
 #define IROHA_ORDERING_GATE_IMPL_HPP
 
+#include "network/ordering_gate_transport.hpp"
+#include "ordering.pb.h"
 #include "model/converters/pb_transaction_factory.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "network/ordering_gate.hpp"
@@ -34,23 +36,22 @@ namespace iroha {
      * by propagating transactions and receiving proposals
      * @param server_address OrderingService address
      */
-    class OrderingGateImpl : public network::OrderingGate,
-                             public proto::OrderingGate::Service,
-                             network::AsyncGrpcClient<google::protobuf::Empty> {
-     public:
+    class OrderingGateImpl :
+            public network::OrderingGate,
+            public network::OrderingGateNotification {
+    public:
 
-      explicit OrderingGateImpl(const std::string &server_address);
+      explicit OrderingGateImpl(std::shared_ptr<iroha::network::OrderingGateTransport> transport);
 
       void propagate_transaction(
-          std::shared_ptr<const model::Transaction> transaction) override;
+              std::shared_ptr<const model::Transaction> transaction) override;
 
       rxcpp::observable<model::Proposal> on_proposal() override;
 
-      grpc::Status SendProposal(::grpc::ServerContext *context,
-                                const proto::Proposal *request,
-                                ::google::protobuf::Empty *response) override;
+      void OnProposal(model::Proposal proposal) override;
 
-     private:
+
+    private:
       /**
        * Process proposal received from network
        * Publishes proposal to on_proposal subscribers
@@ -59,9 +60,9 @@ namespace iroha {
       void handleProposal(model::Proposal &&proposal);
 
       rxcpp::subjects::subject<model::Proposal> proposals_;
-      model::converters::PbTransactionFactory factory_;
-      std::unique_ptr<proto::OrderingService::Stub> client_;
+      std::shared_ptr<iroha::network::OrderingGateTransport> transport_;
       logger::Logger log_;
+
     };
   }  // namespace ordering
 }  // namespace iroha

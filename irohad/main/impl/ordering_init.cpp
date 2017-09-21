@@ -15,12 +15,15 @@
  * limitations under the License.
  */
 
+#include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "main/impl/ordering_init.hpp"
 
 namespace iroha {
   namespace network {
-    auto OrderingInit::createGate(std::string network_address) {
-      return std::make_shared<ordering::OrderingGateImpl>(network_address);
+    auto OrderingInit::createGate(std::shared_ptr<OrderingGateTransport> transport) {
+      auto gate = std::make_shared<ordering::OrderingGateImpl>(transport);
+      transport->subscribe(gate);
+      return gate;
     }
 
     auto OrderingInit::createService(std::shared_ptr<ametsuchi::PeerQuery> wsv,
@@ -38,10 +41,11 @@ namespace iroha {
         std::shared_ptr<ametsuchi::PeerQuery> wsv,
         std::shared_ptr<uvw::Loop> loop,
         size_t max_size,
-        size_t delay_milliseconds) {
+        size_t delay_milliseconds,
+        std::shared_ptr<OrderingGateTransport> transport) {
       ordering_service =
           createService(wsv, max_size, delay_milliseconds, loop);
-      ordering_gate = createGate(wsv->getLedgerPeers().value().front().address);
+      ordering_gate = createGate(transport);
       return ordering_gate;
     }
   }  // namespace network

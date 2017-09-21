@@ -30,13 +30,13 @@ namespace iroha {
      * Class aimed to effective initialization of OrderingGate component
      */
     class OrderingInit {
-     private:
+    private:
 
       /**
        * Init effective realisation of ordering gate (client of ordering service)
        * @param network_address - address of ordering service
        */
-      auto createGate(std::string network_address);
+      auto createGate(std::shared_ptr<OrderingGateTransport>);
 
       /**
        * Init ordering service
@@ -50,7 +50,7 @@ namespace iroha {
                          size_t delay_milliseconds,
                          std::shared_ptr<uvw::Loop> loop);
 
-     public:
+    public:
 
       /**
        * Initialization of ordering gate(client) and ordering service (service)
@@ -61,13 +61,15 @@ namespace iroha {
        * @return effective realisation of OrderingGate
        */
       std::shared_ptr<ordering::OrderingGateImpl> initOrderingGate(
-          std::shared_ptr<ametsuchi::PeerQuery> wsv,
-          std::shared_ptr<uvw::Loop> loop,
-          size_t max_size,
-          size_t delay_milliseconds);
+              std::shared_ptr<ametsuchi::PeerQuery> wsv,
+              std::shared_ptr<uvw::Loop> loop,
+              size_t max_size,
+              size_t delay_milliseconds,
+              std::shared_ptr<OrderingGateTransport>);
 
       std::shared_ptr<ordering::OrderingServiceImpl> ordering_service;
       std::shared_ptr<ordering::OrderingGateImpl> ordering_gate;
+      std::shared_ptr<network::OrderingGateTransport> ordering_gate_transport;
 
     };
   }  // namespace network
