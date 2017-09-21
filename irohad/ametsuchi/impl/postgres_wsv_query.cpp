@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include <ametsuchi/impl/postgres_wsv_query.hpp>
+#include "ametsuchi/impl/postgres_wsv_query.hpp"
 
 namespace iroha {
   namespace ametsuchi {

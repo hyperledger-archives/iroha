@@ -4,6 +4,12 @@ target_link_libraries(ametsuchi_test
     libs_common
     )
 
+addtest(wsv_query_command_test wsv_query_command_test.cpp)
+target_link_libraries(wsv_query_command_test
+    ametsuchi
+    libs_common
+    )
+
 addtest(flat_file_test flat_file_test.cpp)
 target_link_libraries(flat_file_test
     ametsuchi
