@@ -17,41 +17,53 @@
 #ifndef IROHA_ORDERING_GATE_TRANSPORT_H
 #define IROHA_ORDERING_GATE_TRANSPORT_H
 
-
 #include <memory>
 #include "model/proposal.hpp"
 
 namespace iroha {
   namespace network {
 
+    /**
+     * OrderingGateNotification is a base class for any ordering gate
+     * implementation that want to be notified about incoming proposals
+     */
     class OrderingGateNotification {
-    public:
+     public:
       /**
-       * Callback on receiving commit message
-       * @param from - peer that provide message
-       * @param commit - provided message
+       * Callback on receiving proposal
+       * @param proposal - proposal object itself
        */
       virtual void OnProposal(model::Proposal) = 0;
-
 
       virtual ~OrderingGateNotification() = default;
     };
 
-
+    /**
+     * A generic transport interface for ordering gate, any output transaction
+     * must go through this transport Moreover, it receives transaction and then
+     * routes it to a subscriber
+     */
     class OrderingGateTransport {
-    public:
-      virtual void subscribe(std::shared_ptr<OrderingGateNotification> subscriber) = 0;
-
-      virtual void propagate_transaction(std::shared_ptr<const model::Transaction> transaction) = 0;
-
+     public:
+      /**
+       * Subscribes a notification class to current transport
+       * @param subscriber : A pointer to OrderingGateNotification, that needs
+       * to be notified
+       */
+      virtual void subscribe(
+          std::shared_ptr<OrderingGateNotification> subscriber) = 0;
 
       /**
-       * Virtual destructor required for inheritance
+       * Propagates transaction over network
+       * @param transaction : transaction to be propagated
        */
+      virtual void propagate_transaction(
+          std::shared_ptr<const model::Transaction> transaction) = 0;
+
       virtual ~OrderingGateTransport() = default;
     };
 
-  }    // namespace consensus
+  }  // namespace network
 }  // namespace iroha
 
-#endif //IROHA_ORDERING_GATE_TRANSPORT_H
+#endif  // IROHA_ORDERING_GATE_TRANSPORT_H

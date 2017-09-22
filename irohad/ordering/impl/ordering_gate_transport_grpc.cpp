@@ -19,12 +19,12 @@
 using namespace iroha::ordering;
 
 grpc::Status OrderingGateTransportGrpc::OnProposal(
-        ::grpc::ServerContext *context, const proto::Proposal *request,
-        ::google::protobuf::Empty *response) {
+    ::grpc::ServerContext *context, const proto::Proposal *request,
+    ::google::protobuf::Empty *response) {
   log_->info("receive proposal");
-  // auto removes const qualifier of model::Proposal.transactions
+
   auto transactions =
-          decltype(std::declval<model::Proposal>().transactions)();
+      decltype(std::declval<model::Proposal>().transactions)();
   for (const auto &tx : request->transactions()) {
     transactions.push_back(*factory_.deserialize(tx));
   }
@@ -37,23 +37,26 @@ grpc::Status OrderingGateTransportGrpc::OnProposal(
   return grpc::Status::OK;
 }
 
-OrderingGateTransportGrpc::OrderingGateTransportGrpc(const std::string &server_address) :
-        client_(proto::OrderingService::NewStub(grpc::CreateChannel(
-                server_address, grpc::InsecureChannelCredentials()))),
-        log_(logger::log("OrderingGate")) {}
+OrderingGateTransportGrpc::OrderingGateTransportGrpc(
+    const std::string &server_address)
+    : client_(proto::OrderingService::NewStub(grpc::CreateChannel(
+          server_address, grpc::InsecureChannelCredentials()))),
+      log_(logger::log("OrderingGate")) {}
 
-
-void OrderingGateTransportGrpc::propagate_transaction(std::shared_ptr<const model::Transaction> transaction) {
+void OrderingGateTransportGrpc::propagate_transaction(
+    std::shared_ptr<const model::Transaction> transaction) {
+  log_->info("Propagate tx (on transport");
   auto call = new AsyncClientCall;
 
   call->response_reader = client_->AsyncSendTransaction(
-          &call->context, factory_.serialize(*transaction), &cq_);
+      &call->context, factory_.serialize(*transaction), &cq_);
 
   call->response_reader->Finish(&call->reply, &call->status, call);
-
 }
 
-void OrderingGateTransportGrpc::subscribe(std::shared_ptr<iroha::network::OrderingGateNotification> subscriber) {
-  subscriber_ = subscriber;
+void OrderingGateTransportGrpc::subscribe(
+    std::shared_ptr<iroha::network::OrderingGateNotification> subscriber) {
+  log_->info("Subscribe");
 
+  subscriber_ = subscriber;
 }

@@ -19,9 +19,10 @@
 #define IROHA_ORDERING_INIT_HPP
 
 #include <uvw.hpp>
-#include "ordering/impl/ordering_gate_impl.hpp"
-#include "ordering/impl/ordering_service_impl.hpp"
 #include "ametsuchi/peer_query.hpp"
+#include "ordering/impl/ordering_gate_impl.hpp"
+#include "ordering/impl/ordering_gate_transport_grpc.hpp"
+#include "ordering/impl/ordering_service_impl.hpp"
 
 namespace iroha {
   namespace network {
@@ -30,10 +31,10 @@ namespace iroha {
      * Class aimed to effective initialization of OrderingGate component
      */
     class OrderingInit {
-    private:
-
+     private:
       /**
-       * Init effective realisation of ordering gate (client of ordering service)
+       * Init effective realisation of ordering gate (client of ordering
+       * service)
        * @param network_address - address of ordering service
        */
       auto createGate(std::shared_ptr<OrderingGateTransport>);
@@ -46,12 +47,10 @@ namespace iroha {
        * @param loop - handler of async events
        */
       auto createService(std::shared_ptr<ametsuchi::PeerQuery> wsv,
-                         size_t max_size,
-                         size_t delay_milliseconds,
+                         size_t max_size, size_t delay_milliseconds,
                          std::shared_ptr<uvw::Loop> loop);
 
-    public:
-
+     public:
       /**
        * Initialization of ordering gate(client) and ordering service (service)
        * @param peers - endpoints of peers for connection
@@ -61,16 +60,14 @@ namespace iroha {
        * @return effective realisation of OrderingGate
        */
       std::shared_ptr<ordering::OrderingGateImpl> initOrderingGate(
-              std::shared_ptr<ametsuchi::PeerQuery> wsv,
-              std::shared_ptr<uvw::Loop> loop,
-              size_t max_size,
-              size_t delay_milliseconds,
-              std::shared_ptr<OrderingGateTransport>);
+          std::shared_ptr<ametsuchi::PeerQuery> wsv,
+          std::shared_ptr<uvw::Loop> loop, size_t max_size,
+          size_t delay_milliseconds, const std::string& network_address);
 
       std::shared_ptr<ordering::OrderingServiceImpl> ordering_service;
       std::shared_ptr<ordering::OrderingGateImpl> ordering_gate;
-      std::shared_ptr<network::OrderingGateTransport> ordering_gate_transport;
-
+      std::shared_ptr<ordering::OrderingGateTransportGrpc>
+          ordering_gate_transport;
     };
   }  // namespace network
 }  // namespace iroha
