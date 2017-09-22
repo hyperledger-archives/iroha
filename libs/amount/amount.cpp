@@ -101,8 +101,11 @@ nonstd::optional<Amount> Amount::createFromString(std::string str_amount) {
     str_amount.erase(dot_place, dot_place);
   }
 
+  auto begin = str_amount.find_first_not_of('0');
+
+
   // create uint256 value from obtained string
-  uint256_t value(str_amount);
+  uint256_t value(str_amount.substr(begin));
   return Amount(value, precision);
 }
 
