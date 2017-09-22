@@ -71,7 +71,7 @@ TEST(BlockTest, bl_test) {
   orig_block.txs_number = 1;
   orig_block.transactions = {orig_tx};
 
-  orig_block.hash = iroha::sha3_256(orig_block);
+  orig_block.hash = iroha::hash(orig_block);
 
   auto factory = iroha::model::converters::PbBlockFactory();
   auto proto_block = factory.serialize(orig_block);

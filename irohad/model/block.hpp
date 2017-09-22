@@ -33,7 +33,7 @@ namespace iroha {
      */
     struct Block {
       /**
-       * Calculated as sha3_256(META + BODY fields)
+       * Calculated as hash(META + BODY fields)
        * HEADER field
        */
       hash256_t hash;

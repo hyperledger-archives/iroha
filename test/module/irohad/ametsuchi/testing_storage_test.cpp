@@ -49,7 +49,7 @@ Block getBlock() {
   block.transactions.push_back(txn);
   block.height = 1;
   block.prev_hash.fill(0);
-  auto block1hash = iroha::sha3_256(block);
+  auto block1hash = iroha::hash(block);
   block.hash = block1hash;
   block.txs_number = block.transactions.size();
   return block;

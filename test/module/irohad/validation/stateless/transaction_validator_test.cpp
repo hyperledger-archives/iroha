@@ -23,7 +23,7 @@
 #include <chrono>
 
 iroha::model::Transaction sign(iroha::model::Transaction &tx, const iroha::privkey_t &privkey, const iroha::pubkey_t &pubkey) {
-  auto tx_hash = iroha::sha3_256(tx).to_string();
+  auto tx_hash = iroha::hash(tx).to_string();
 
   auto sign = iroha::sign(tx_hash, pubkey, privkey);
 

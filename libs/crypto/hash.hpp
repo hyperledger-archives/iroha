@@ -38,9 +38,9 @@ namespace iroha {
     struct Query;
   } // namespace model
 
-  hash256_t sha3_256(const model::Transaction& tx);
-  hash256_t sha3_256(const model::Block& tx);
-  hash256_t sha3_256(const model::Query& tx);
+  hash256_t hash(const model::Transaction& tx);
+  hash256_t hash(const model::Block& tx);
+  hash256_t hash(const model::Query& tx);
 
   // forward declaration for proto objects
   namespace protocol {
@@ -49,9 +49,9 @@ namespace iroha {
     class Query;
   } // namespace protocol
 
-  hash256_t sha3_256(const protocol::Transaction& tx);
-  hash256_t sha3_256(const protocol::Block& tx);
-  hash256_t sha3_256(const protocol::Query& tx);
+  hash256_t hash(const protocol::Transaction& tx);
+  hash256_t hash(const protocol::Block& tx);
+  hash256_t hash(const protocol::Query& tx);
 
 }  // namespace iroha
 

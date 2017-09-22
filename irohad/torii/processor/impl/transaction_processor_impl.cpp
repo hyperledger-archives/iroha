@@ -38,9 +38,9 @@ namespace iroha {
       // insert all txs from proposal to proposal set
       pcs_->on_proposal().subscribe([this](model::Proposal proposal) {
         for (const auto &tx : proposal.transactions) {
-          proposal_set_.insert(sha3_256(tx).to_string());
+          proposal_set_.insert(hash(tx).to_string());
           TransactionResponse response;
-          response.tx_hash = sha3_256(tx).to_string();
+          response.tx_hash = hash(tx).to_string();
           response.current_status =
               TransactionResponse::STATELESS_VALIDATION_SUCCESS;
           notifier_.get_subscriber().on_next(
@@ -55,11 +55,11 @@ namespace iroha {
             // on next..
             [this](model::Block block) {
               for (const auto &tx : block.transactions) {
-                if (this->proposal_set_.count(sha3_256(tx).to_string())) {
-                  proposal_set_.erase(sha3_256(tx).to_string());
-                  candidate_set_.insert(sha3_256(tx).to_string());
+                if (this->proposal_set_.count(hash(tx).to_string())) {
+                  proposal_set_.erase(hash(tx).to_string());
+                  candidate_set_.insert(hash(tx).to_string());
                   TransactionResponse response;
-                  response.tx_hash = sha3_256(tx).to_string();
+                  response.tx_hash = hash(tx).to_string();
                   response.current_status =
                       model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS;
                   notifier_.get_subscriber().on_next(
@@ -95,7 +95,7 @@ namespace iroha {
         std::shared_ptr<model::Transaction> transaction) {
       log_->info("handle transaction");
       model::TransactionResponse response;
-      response.tx_hash = sha3_256(*transaction).to_string();
+      response.tx_hash = hash(*transaction).to_string();
       response.current_status =
           model::TransactionResponse::Status::STATELESS_VALIDATION_FAILED;
 

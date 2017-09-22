@@ -150,7 +150,7 @@ TEST_F(ToriiServiceTest, StatusWhenTxWasNotReceivedBlocking) {
 
     auto iroha_tx = tx_factory.deserialize(new_tx);
     txs.push_back(*iroha_tx);
-    auto tx_hash = iroha::sha3_256(*iroha_tx);
+    auto tx_hash = iroha::hash(*iroha_tx);
     tx_hashes.push_back(tx_hash.to_string());
   }
 
@@ -196,7 +196,7 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
 
     auto iroha_tx = tx_factory.deserialize(new_tx);
     txs.push_back(*iroha_tx);
-    auto tx_hash = iroha::sha3_256(*iroha_tx);
+    auto tx_hash = iroha::hash(*iroha_tx);
     tx_hashes.push_back(tx_hash.to_string());
 
     ASSERT_TRUE(stat.ok());
@@ -292,7 +292,7 @@ TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
 
     auto iroha_tx = tx_factory.deserialize(new_tx);
     txs.push_back(*iroha_tx);
-    tx_hashes.push_back(iroha::sha3_256(*iroha_tx).to_string());
+    tx_hashes.push_back(iroha::hash(*iroha_tx).to_string());
   }
 
   // wait untill all transactions are sent

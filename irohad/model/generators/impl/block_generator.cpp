@@ -33,7 +33,7 @@ namespace iroha {
         TransactionGenerator tx_generator;
         block.transactions = {tx_generator.generateGenesisTransaction(
             block.created_ts, peers_address)};
-        block.hash = sha3_256(block);
+        block.hash = hash(block);
 
         return block;
       }

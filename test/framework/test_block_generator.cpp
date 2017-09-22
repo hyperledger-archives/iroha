@@ -101,7 +101,7 @@ namespace framework {
 
       Signature sign{};
       block.sigs = {sign};
-      block.hash = sha3_256(block);
+      block.hash = hash(block);
       return block;
     }
   } // namespace generator

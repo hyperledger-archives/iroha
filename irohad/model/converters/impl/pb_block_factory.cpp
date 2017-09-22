@@ -75,7 +75,7 @@ namespace iroha {
               *PbTransactionFactory::deserialize(pb_tx));
         }
 
-        block.hash = iroha::sha3_256(pb_block);
+        block.hash = iroha::hash(pb_block);
 
         return block;
       }

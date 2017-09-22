@@ -189,7 +189,7 @@ TEST_F(ClientServerTest, SendTxWhenStatelessInvalid) {
   ASSERT_EQ(iroha_cli::CliClient(Ip, Port).sendTx(tx).answer,
             iroha_cli::CliClient::OK);
   ASSERT_EQ(iroha_cli::CliClient(Ip, Port)
-                .getTxStatus(iroha::sha3_256(tx).to_string())
+                .getTxStatus(iroha::hash(tx).to_string())
                 .answer.tx_status(),
             iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED);
 }

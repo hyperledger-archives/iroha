@@ -76,7 +76,7 @@ namespace torii {
                                   google::protobuf::Empty &empty) {
     auto iroha_tx = pb_factory_->deserialize(request);
 
-    auto tx_hash = iroha::sha3_256(*iroha_tx).to_string();
+    auto tx_hash = iroha::hash(*iroha_tx).to_string();
 
     iroha::protocol::ToriiResponse response;
     response.set_tx_status(iroha::protocol::TxStatus::ON_PROCESS);

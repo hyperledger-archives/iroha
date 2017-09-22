@@ -347,7 +347,7 @@ Block createBlock(){
   block.transactions.push_back(createTransaction());
   block.height = 123;
 
-  block.hash = iroha::sha3_256(block);
+  block.hash = iroha::hash(block);
   return block;
 }
 

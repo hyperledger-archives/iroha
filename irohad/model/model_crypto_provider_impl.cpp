@@ -28,27 +28,27 @@ namespace iroha {
     bool ModelCryptoProviderImpl::verify(const Transaction &tx) const {
       if (tx.signatures.empty()) return false;
 
-      const auto hash = sha3_256(tx).to_string();
+      const auto hash_ = hash(tx).to_string();
 
       for (const auto &sign : tx.signatures) {
-        if (not iroha::verify(hash, sign.pubkey, sign.signature)) return false;
+        if (not iroha::verify(hash_, sign.pubkey, sign.signature)) return false;
       }
       return true;
     }
 
     bool ModelCryptoProviderImpl::verify(
         std::shared_ptr<const Query> query) const {
-      const auto hash = sha3_256(*query).to_string();
+      const auto hash_ = hash(*query).to_string();
       const auto sig = query->signature;
 
-      return iroha::verify(hash, sig.pubkey, sig.signature);
+      return iroha::verify(hash_, sig.pubkey, sig.signature);
     }
 
     bool ModelCryptoProviderImpl::verify(const Block &block) const {
-      const auto hash = sha3_256(block).to_string();
+      const auto hash_ = hash(block).to_string();
 
       for (const auto &sig : block.sigs)
-        if (not iroha::verify(hash, sig.pubkey, sig.signature)) {
+        if (not iroha::verify(hash_, sig.pubkey, sig.signature)) {
           return false;
         }
        return true;

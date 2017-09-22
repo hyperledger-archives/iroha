@@ -31,7 +31,7 @@ iroha::model::Transaction create_transaction() {
 
 iroha::model::Transaction sign(iroha::model::Transaction &tx, iroha::privkey_t privkey,
                  iroha::pubkey_t pubkey) {
-  auto tx_hash = iroha::sha3_256(tx);
+  auto tx_hash = iroha::hash(tx);
 
   auto sign = iroha::sign(tx_hash.data(), tx_hash.size(), pubkey, privkey);
 

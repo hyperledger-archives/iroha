@@ -79,23 +79,23 @@ namespace iroha {
   static model::converters::PbBlockFactory block_factory;
   static model::converters::PbQueryFactory query_factory;
 
-  hash256_t sha3_256(const model::Transaction& tx) {
+  hash256_t hash(const model::Transaction& tx) {
     auto &&pb_dat = tx_factory.serialize(tx);
-    return sha3_256(pb_dat);
+    return hash(pb_dat);
   }
 
-  hash256_t sha3_256(const model::Block& block) {
+  hash256_t hash(const model::Block& block) {
     auto &&pb_dat = block_factory.serialize(block);
-    return sha3_256(pb_dat);
+    return hash(pb_dat);
   }
 
-  hash256_t sha3_256(const model::Query& query) {
+  hash256_t hash(const model::Query& query) {
     std::shared_ptr<const model::Query> qptr(&query, [](auto){});
     auto &&pb_dat = query_factory.serialize(qptr);
-    return sha3_256(*pb_dat);
+    return hash(*pb_dat);
   }
 
-  hash256_t sha3_256(const protocol::Transaction& tx) {
+  hash256_t hash(const protocol::Transaction& tx) {
     return sha3_256(tx.payload().SerializeAsString());
   }
 
