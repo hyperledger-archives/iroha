@@ -115,7 +115,6 @@ namespace iroha {
         val->signature = sign;
         val->created_ts = pl.created_time();
         val->creator_account_id = pl.creator_account_id();
-        val->query_hash = hash(pb_query);
         return val;
       }
 

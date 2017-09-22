@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include "crypto/hash.hpp"
 #include "torii/query_service.hpp"
 
 namespace torii {
@@ -50,7 +51,7 @@ namespace torii {
       return;
     }
 
-    auto hash = query.value()->query_hash.to_string();
+    auto hash = iroha::hash(**query).to_string();
 
     if (handler_map_.count(hash) > 0) {
       // Query was already processed
