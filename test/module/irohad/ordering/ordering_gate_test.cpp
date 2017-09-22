@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "module/irohad/ordering/ordering_mocks.hpp"
+#include "ordering/impl/ordering_gate_transport_grpc.hpp"
 
 #include "framework/test_subscriber.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
@@ -29,7 +29,7 @@ using namespace framework::test_subscriber;
 using ::testing::_;
 
 class OrderingGateTest : public OrderingTest {
-public:
+ public:
   OrderingGateTest() {
     auto transport = std::make_shared<OrderingGateTransportGrpc>(address);
     gate_impl = std::make_shared<OrderingGateImpl>(transport);

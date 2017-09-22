@@ -28,24 +28,22 @@ namespace iroha {
   namespace ordering {
     class MockOrderingGate : public network::MockOrderingGate,
                              public proto::OrderingGateTransportGrpc::Service {
-    public:
-      MOCK_METHOD3(OnProposal,
-                   grpc::Status(::grpc::ServerContext
-                           *,
-                           const proto::Proposal*,
-                           ::google::protobuf::Empty*));
+     public:
+      MOCK_METHOD3(OnProposal, grpc::Status(::grpc::ServerContext *,
+                                            const proto::Proposal *,
+                                            ::google::protobuf::Empty *));
     };
 
     class MockOrderingService : public proto::OrderingService::Service {
-    public:
-      MOCK_METHOD3(SendTransaction, ::grpc::Status(::grpc::ServerContext
-              *,
-              const protocol::Transaction*,
-              ::google::protobuf::Empty*));
+     public:
+      MOCK_METHOD3(SendTransaction,
+                   ::grpc::Status(::grpc::ServerContext *,
+                                  const protocol::Transaction *,
+                                  ::google::protobuf::Empty *));
     };
 
     class OrderingTest : public ::testing::Test {
-    public:
+     public:
       OrderingTest() {
         address = "0.0.0.0:50051";
         peer.address = address;
@@ -90,7 +88,8 @@ namespace iroha {
       std::string address;
       model::Peer peer;
       std::unique_ptr<grpc::Server> server;
-      std::shared_ptr<proto::OrderingGateTransportGrpc::Service> gate_transport_service;
+      std::shared_ptr<proto::OrderingGateTransportGrpc::Service>
+          gate_transport_service;
       std::shared_ptr<iroha::network::OrderingGate> gate;
       std::shared_ptr<proto::OrderingService::Service> service;
       std::thread thread;

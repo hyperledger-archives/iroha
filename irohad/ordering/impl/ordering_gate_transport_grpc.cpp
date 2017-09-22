@@ -23,8 +23,7 @@ grpc::Status OrderingGateTransportGrpc::OnProposal(
     ::google::protobuf::Empty *response) {
   log_->info("receive proposal");
 
-  auto transactions =
-      decltype(std::declval<model::Proposal>().transactions)();
+  auto transactions = decltype(std::declval<model::Proposal>().transactions)();
   for (const auto &tx : request->transactions()) {
     transactions.push_back(*factory_.deserialize(tx));
   }
