@@ -17,28 +17,30 @@
 #include "model/execution/common_executor.hpp"
 #include "common/types.hpp"
 
+using namespace iroha::ametsuchi;
+
 namespace iroha {
   namespace model {
 
     bool checkAccountRolePermission(const std::string &account_id,
                                     WsvQuery &queries,
                                     const std::string &permission_id) {
-      auto roleHasPermission = [permission_id](auto permissions) {
+      auto roleHasPermission = [&permission_id](auto permissions) {
         return std::any_of(
             permissions.begin(), permissions.end(),
             [&permission_id](auto perm) { return permission_id == perm; });
       };
 
-      auto checkRolesPermission = [queries, permission_id](auto roles) {
+      auto checkRolesPermission = [&](auto roles) {
         return std::any_of(roles.begin(), roles.end(),
-                           [&queries, &permission_id](auto role) {
+                           [&](auto role) {
                              return queries.getRolePermissions(role)
-                                 | roleHasPermission(permission_id);
+                                 | roleHasPermission;
                            });
       };
 
       return queries.getAccountRoles(account_id)
-          | checkRolesPermission(queries, permission_id);
+          | checkRolesPermission;
     }
 
   }  // namespace model

@@ -23,6 +23,7 @@
 #include "model/queries/responses/error_response.hpp"
 #include "model/queries/responses/roles_response.hpp"
 #include "model/query_execution.hpp"
+#include "model/permissions.hpp"
 
 using ::testing::Return;
 using ::testing::AtLeast;
@@ -43,7 +44,6 @@ auto DOMAIN_NAME = "test";
 auto ADVERSARY_ID = "adversary@test";
 auto ASSET_ID = "coin";
 auto ADMIN_ROLE = "admin";
-auto ADIMIN_PERM = "can_something";
 
 /**
  * Default accounts for testing
@@ -100,7 +100,18 @@ void set_default_ametsuchi(MockWsvQuery &test_wsv,
 
   std::vector<std::string> roles = {ADMIN_ROLE};
   EXPECT_CALL(test_wsv, getRoles()).WillRepeatedly(Return(roles));
-  std::vector<std::string> perms = {ADIMIN_PERM};
+
+  EXPECT_CALL(test_wsv, getAccountRoles(_))
+      .WillRepeatedly(Return(nonstd::nullopt));
+  EXPECT_CALL(test_wsv, getAccountRoles(ADMIN_ID))
+      .WillRepeatedly(Return(roles));
+  std::vector<std::string> perms = {can_get_all_acc_ast_txs,
+                                    can_get_all_acc_ast,
+                                    can_get_all_acc_txs,
+                                    can_get_all_accounts,
+                                    can_get_all_signatories,
+                                    can_read_assets,
+                                    can_get_roles};
   EXPECT_CALL(test_wsv, getRolePermissions(_))
       .WillRepeatedly(Return(nonstd::nullopt));
   EXPECT_CALL(test_wsv, getRolePermissions(ADMIN_ROLE))
@@ -116,6 +127,11 @@ void set_default_ametsuchi(MockWsvQuery &test_wsv,
   acct_asset.balance = balance;
   EXPECT_CALL(test_wsv, getAccountAsset(ACCOUNT_ID, ASSET_ID))
       .WillRepeatedly(Return(acct_asset));
+  acct_asset.account_id = ADMIN_ID;
+  EXPECT_CALL(test_wsv, getAccountAsset(ADMIN_ID, ASSET_ID))
+      .WillRepeatedly(Return(acct_asset));
+  EXPECT_CALL(test_wsv, hasAccountGrantablePermission(_, _, _))
+      .WillRepeatedly(Return(false));
 }
 
 TEST(QueryExecutor, get_account) {
@@ -139,11 +155,11 @@ TEST(QueryExecutor, get_account) {
   ASSERT_EQ(cast_resp->account.account_id, ACCOUNT_ID);
 
   // 2. Account creator asks about his account
-  query->account_id = ACCOUNT_ID;
-  query->creator_account_id = ACCOUNT_ID;
+  query->account_id = ADMIN_ID;
+  query->creator_account_id = ADMIN_ID;
   response = query_proccesor.execute(query);
   cast_resp = std::static_pointer_cast<iroha::model::AccountResponse>(response);
-  ASSERT_EQ(cast_resp->account.account_id, ACCOUNT_ID);
+  ASSERT_EQ(cast_resp->account.account_id, ADMIN_ID);
 
   // --------- Non valid cases: -------
 
@@ -206,12 +222,12 @@ TEST(QueryExecutor, get_account_assets) {
   ASSERT_EQ(cast_resp->acct_asset.asset_id, ASSET_ID);
 
   // 2. Account creator asks about his account
-  query->account_id = ACCOUNT_ID;
-  query->creator_account_id = ACCOUNT_ID;
+  query->account_id = ADMIN_ID;
+  query->creator_account_id = ADMIN_ID;
   response = query_proccesor.execute(query);
   cast_resp =
       std::static_pointer_cast<iroha::model::AccountAssetResponse>(response);
-  ASSERT_EQ(cast_resp->acct_asset.account_id, ACCOUNT_ID);
+  ASSERT_EQ(cast_resp->acct_asset.account_id, ADMIN_ID);
   ASSERT_EQ(cast_resp->acct_asset.asset_id, ASSET_ID);
 
   // --------- Non valid cases: -------
@@ -298,7 +314,7 @@ TEST(QueryExecutor, get_roles) {
   auto cast_resp = std::static_pointer_cast<RolesResponse>(response);
   ASSERT_EQ(1, cast_resp->roles.size());
   ASSERT_EQ(ADMIN_ROLE, cast_resp->roles.at(0));
-  // TODO: add more test cases, i.e. bad ones
+  // TODO: add more test cases
 }
 
 TEST(QueryExecutor, get_role_permissions) {
@@ -314,8 +330,7 @@ TEST(QueryExecutor, get_role_permissions) {
   query->creator_account_id = ADMIN_ID;
   auto response = query_proccesor.execute(query);
   auto cast_resp = std::static_pointer_cast<RolePermissionsResponse>(response);
-  ASSERT_EQ(1, cast_resp->role_permissions.size());
-  ASSERT_EQ(ADIMIN_PERM, cast_resp->role_permissions.at(0));
-  // TODO: add more test cases, i.e. bad ones
+  ASSERT_GT(cast_resp->role_permissions.size(), 0);
+  // TODO: add more test cases
 }
 

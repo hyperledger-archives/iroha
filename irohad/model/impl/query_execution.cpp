@@ -41,14 +41,15 @@ bool hasQueryPermission(const std::string& creator,
                         const std::string& all_permission_id) {
   return
       // 1. Creator want to query his account, must have role permission on that
-      (creator == target_account and
-       checkAccountRolePermission(creator, wsv_query,
-                                  indiv_permission_id))
-          or  // 2. Creator has permission to get any account
+      (creator == target_account
+       and checkAccountRolePermission(creator, wsv_query,
+                                      indiv_permission_id))
+      or  // 2. Creator has permission to get any account
       (checkAccountRolePermission(creator, wsv_query, all_permission_id))
-          or  // 3. Creator has grant permission
-      (wsv_query.hasAccountGrantablePermission(creator, target_account,
-                                               indiv_permission_id));
+      or  // 3. Creator has grant permission
+      (creator != target_account
+       and wsv_query.hasAccountGrantablePermission(creator, target_account,
+                                                   indiv_permission_id));
   // TODO: add domain permissions
 }
 
