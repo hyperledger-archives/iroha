@@ -37,20 +37,20 @@ namespace iroha {
       template <>
       struct Convert<Amount> {
         template <typename T>
-        auto operator()(T &&x) {
+        nonstd::optional<Amount> operator()(T &&x) {
           auto des = makeFieldDeserializer(x);
           auto str_int_value = des.String("value");
-          //TODO: add checks below
-          /*
+
           if (!str_int_value.has_value()){
             return nonstd::nullopt;
           }
 
+          // check if value is actually number
           std::regex e("\\d+");
           if (!std::regex_match(str_int_value.value(), e)){
             return nonstd::nullopt;
           }
-           */
+
           uint256_t value(str_int_value.value());
           uint8_t precision;
           rapidjson::Document dd;
