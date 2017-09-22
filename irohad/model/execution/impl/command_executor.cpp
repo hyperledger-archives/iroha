@@ -61,7 +61,7 @@ bool AddAssetQuantityExecutor::execute(const Command &command,
   auto precision = asset.value().precision;
 
   if (add_asset_quantity.amount.getPrecision() != precision) {
-    log_->info("amount is wrong formed:");
+    log_->info("amount is wrongly formed:");
     return false;
   }
   if (not queries.getAccount(add_asset_quantity.account_id).has_value()) {
@@ -80,10 +80,9 @@ bool AddAssetQuantityExecutor::execute(const Command &command,
     account_asset->balance = add_asset_quantity.amount;
   } else {
     auto account_asset_value = account_asset.value();
-    std::cout << account_asset_value.balance.to_string() << " " << add_asset_quantity.amount.to_string() << std::endl;
     auto new_balance =
         account_asset_value.balance + add_asset_quantity.amount;
-    if (!new_balance.has_value()) {
+    if (not new_balance.has_value()) {
       return false;
     }
     account_asset->balance = new_balance.value();
@@ -458,7 +457,7 @@ bool TransferAssetExecutor::execute(const Command &command,
   auto src_balance = src_account_asset.value().balance;
   // TODO: handle non-trivial arithmetic
   auto new_src_balance = src_balance - transfer_asset.amount;
-  if (!new_src_balance.has_value()) {
+  if (not new_src_balance.has_value()) {
     return false;
   }
   src_balance = new_src_balance.value();
@@ -480,7 +479,7 @@ bool TransferAssetExecutor::execute(const Command &command,
     auto dest_balance = dest_account_asset.value().balance;
 
     auto new_dest_balance = dest_balance + transfer_asset.amount;
-    if (!new_dest_balance.has_value()) {
+    if (not new_dest_balance.has_value()) {
       return false;
     }
     dest_balance = new_dest_balance.value();
@@ -507,7 +506,7 @@ bool TransferAssetExecutor::isValid(const Command &command,
                                     ametsuchi::WsvQuery &queries) {
   auto transfer_asset = static_cast<const TransferAsset &>(command);
 
-  if (not(transfer_asset.amount.getIntValue() > 0)) {
+  if (transfer_asset.amount.getIntValue() == 0) {
     log_->info("amount must be not zero");
     return false;
   }

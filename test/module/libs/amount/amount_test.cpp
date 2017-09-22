@@ -68,5 +68,6 @@ TEST_F(AmountTest, TestBasic) {
       "12391826391263918264198246192846192846192412398162398"));
   auto vec = g.to_uint64s();
   iroha::Amount h(vec.at(0), vec.at(1), vec.at(2), vec.at(3));
+  ASSERT_EQ(h.getPrecision(), 0);
   ASSERT_EQ(g, h);
 }

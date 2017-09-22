@@ -41,13 +41,13 @@ namespace iroha {
           auto des = makeFieldDeserializer(x);
           auto str_int_value = des.String("value");
 
-          if (!str_int_value.has_value()){
+          if (not str_int_value.has_value()){
             return nonstd::nullopt;
           }
 
           // check if value is actually number
           std::regex e("\\d+");
-          if (!std::regex_match(str_int_value.value(), e)){
+          if (not std::regex_match(str_int_value.value(), e)){
             return nonstd::nullopt;
           }
 
