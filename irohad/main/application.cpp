@@ -109,10 +109,7 @@ void Irohad::run() {
   auto peer_address = wsv->getLedgerPeers().value().at(peer_number_).address;
 
   // Ordering gate
-  auto network_address = wsv->getLedgerPeers().value().front().address;
-
-  auto ordering_gate =
-      ordering_init.initOrderingGate(wsv, loop, 10, 5000, network_address);
+  auto ordering_gate = ordering_init.initOrderingGate(wsv, loop, 10, 5000);
   log_->info("[Init] => init ordering gate - [{}]",
              logger::logBool(ordering_gate));
 

@@ -62,7 +62,7 @@ namespace iroha {
       std::shared_ptr<ordering::OrderingGateImpl> initOrderingGate(
           std::shared_ptr<ametsuchi::PeerQuery> wsv,
           std::shared_ptr<uvw::Loop> loop, size_t max_size,
-          size_t delay_milliseconds, const std::string& network_address);
+          size_t delay_milliseconds);
 
       std::shared_ptr<ordering::OrderingServiceImpl> ordering_service;
       std::shared_ptr<ordering::OrderingGateImpl> ordering_gate;

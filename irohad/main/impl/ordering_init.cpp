@@ -36,7 +36,8 @@ namespace iroha {
     std::shared_ptr<ordering::OrderingGateImpl> OrderingInit::initOrderingGate(
         std::shared_ptr<ametsuchi::PeerQuery> wsv,
         std::shared_ptr<uvw::Loop> loop, size_t max_size,
-        size_t delay_milliseconds, const std::string& network_address) {
+        size_t delay_milliseconds) {
+      auto network_address = wsv->getLedgerPeers().value().front().address;
       ordering_gate_transport =
           std::make_shared<iroha::ordering::OrderingGateTransportGrpc>(
               network_address);
