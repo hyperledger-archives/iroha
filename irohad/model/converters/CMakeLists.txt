@@ -11,11 +11,6 @@ target_link_libraries(json_model_converters
     schema
     crypto
     logger
-    optional
-    hash
-    model
-    rapidjson
-    rxcpp
     )
 
 add_library(pb_model_converters
@@ -31,9 +26,4 @@ target_link_libraries(pb_model_converters
     schema
     crypto
     logger
-    optional
-    hash
-    model
-    rapidjson
-    rxcpp
     )

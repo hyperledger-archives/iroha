@@ -7,7 +7,6 @@ add_library(model
     impl/query_execution.cpp
     )
 target_link_libraries(model
-    pb_model_converters
     hash
     optional
     rxcpp
