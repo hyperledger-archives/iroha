@@ -17,6 +17,8 @@
 
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 
+#include <iterator>
+
 namespace iroha {
   namespace ametsuchi {
 
@@ -25,8 +27,8 @@ namespace iroha {
 
     bool PostgresWsvCommand::insertRole(const std::string &role_name) {
       try {
-        transaction_.exec("INSERT INTO role(role_id) VALUES (" +
-                          transaction_.quote(role_name) + ");");
+        transaction_.exec("INSERT INTO role(role_id) VALUES ("
+                          + transaction_.quote(role_name) + ");");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -38,9 +40,9 @@ namespace iroha {
                                                const std::string &role_name) {
       try {
         transaction_.exec(
-            "INSERT INTO account_has_roles(account_id, role_id) VALUES (" +
-            transaction_.quote(account_id) + ", " +
-            transaction_.quote(role_name) + ");");
+            "INSERT INTO account_has_roles(account_id, role_id) VALUES ("
+            + transaction_.quote(account_id) + ", "
+            + transaction_.quote(role_name) + ");");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -48,46 +50,62 @@ namespace iroha {
       return true;
     };
 
-   bool PostgresWsvCommand::insertRolePermissions(
+    bool PostgresWsvCommand::insertRolePermissions(
         const std::string &role_id,
         const std::vector<std::string> &permissions) {
-      // TODO: implement
-      return false;
+      auto entry = [this, &role_id](auto permission) {
+        return "(" + transaction_.quote(role_id) + ", "
+            + transaction_.quote(permission) + ")";
+      };
+      try {
+        transaction_.exec(
+            "INSERT INTO role_has_permissions(role_id, permission_id) VALUES "
+            + std::accumulate(
+                  std::next(permissions.begin()), permissions.end(),
+                  entry(permissions.front()),
+                  [&entry](auto acc, auto x) { return acc + ", " + entry(x); })
+            + ";");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return false;
+      }
+      return true;
     };
 
     bool PostgresWsvCommand::insertAccountGrantablePermission(
-      const std::string &permittee_account_id,
-      const std::string &account_id, const std::string &permission_id){
-     try {
-       transaction_.exec(
-           "INSERT INTO "
-           "account_has_grantable_permissions(permittee_account_id, "
-           "account_id, permission_id) VALUES (" +
-           transaction_.quote(permittee_account_id) + ", " +
-           transaction_.quote(account_id) + ", " +
-           transaction_.quote(permission_id) + ");");
-     } catch (const std::exception &e) {
-       log_->error(e.what());
-       return false;
-     }
+        const std::string &permittee_account_id, const std::string &account_id,
+        const std::string &permission_id) {
+      try {
+        transaction_.exec(
+            "INSERT INTO "
+            "account_has_grantable_permissions(permittee_account_id, "
+            "account_id, permission_id) VALUES ("
+            + transaction_.quote(permittee_account_id) + ", "
+            + transaction_.quote(account_id) + ", "
+            + transaction_.quote(permission_id) + ");");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return false;
+      }
       return true;
-   };
+    };
 
-  bool PostgresWsvCommand::deleteAccountGrantablePermission(
-      const std::string &permittee_account_id,
-      const std::string &account_id, const std::string &permission_id) {
-    try {
-      transaction_.exec(
-          "DELETE FROM public.account_has_grantable_permissions WHERE "
-          "permittee_account_id=" +
-          transaction_.quote(permittee_account_id) + " AND account_id=" +
-          transaction_.quote(account_id) + " AND permission_id=" +
-          transaction_.quote(permission_id) + " ;");
-    } catch (const std::exception &e) {
-      log_->error(e.what());
-    return false;
-  }return true;
-  };
+    bool PostgresWsvCommand::deleteAccountGrantablePermission(
+        const std::string &permittee_account_id, const std::string &account_id,
+        const std::string &permission_id) {
+      try {
+        transaction_.exec(
+            "DELETE FROM public.account_has_grantable_permissions WHERE "
+            "permittee_account_id="
+            + transaction_.quote(permittee_account_id) + " AND account_id="
+            + transaction_.quote(account_id) + " AND permission_id="
+            + transaction_.quote(permission_id) + " ;");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return false;
+      }
+      return true;
+    };
 
     bool PostgresWsvCommand::insertAccount(const model::Account &account) {
       std::stringstream permissions;
@@ -104,12 +122,12 @@ namespace iroha {
       try {
         transaction_.exec(
             "INSERT INTO public.account(account_id, domain_id, quorum, "
-            "transaction_count, permissions) VALUES (" +
-            transaction_.quote(account.account_id) + ", " +
-            transaction_.quote(account.domain_name) + ", " +
-            transaction_.quote(account.quorum) + ", " +
-            /*account.transaction_count*/ transaction_.quote(0) + ", " +
-            transaction_.quote(permissions.str()) + ");");
+            "transaction_count, permissions) VALUES ("
+            + transaction_.quote(account.account_id) + ", "
+            + transaction_.quote(account.domain_name) + ", "
+            + transaction_.quote(account.quorum) + ", " +
+            /*account.transaction_count*/ transaction_.quote(0) + ", "
+            + transaction_.quote(permissions.str()) + ");");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -195,8 +213,8 @@ namespace iroha {
         transaction_.exec(
             "DELETE FROM account_has_signatory\n"
             " WHERE account_id="
-            + transaction_.quote(account_id)
-            + " AND public_key=" + transaction_.quote(public_key) + ";");
+            + transaction_.quote(account_id) + " AND public_key="
+            + transaction_.quote(public_key) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -242,8 +260,8 @@ namespace iroha {
         transaction_.exec(
             "DELETE FROM peer\n"
             " WHERE public_key="
-            + transaction_.quote(public_key)
-            + " AND address=" + transaction_.quote(peer.address) + ";");
+            + transaction_.quote(public_key) + " AND address="
+            + transaction_.quote(peer.address) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;

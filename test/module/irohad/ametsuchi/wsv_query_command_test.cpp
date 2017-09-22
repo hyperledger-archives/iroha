@@ -141,6 +141,31 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
       ASSERT_EQ(0, roles->size());
     }
 
+    class RolePermissionsTest : public WsvQueryCommandTest {
+      void SetUp() override {
+        WsvQueryCommandTest::SetUp();
+        ASSERT_TRUE(command->insertRole(role));
+      }
+    };
+
+    TEST_F(RolePermissionsTest, InsertRolePermissionsWhenRoleExists) {
+      ASSERT_TRUE(command->insertRolePermissions(role, {permission}));
+
+      auto permissions = query->getRolePermissions(role);
+      ASSERT_TRUE(permissions);
+      ASSERT_EQ(1, permissions->size());
+      ASSERT_EQ(permission, permissions->front());
+    }
+
+    TEST_F(RolePermissionsTest, InsertRolePermissionsWhenNoRole) {
+      auto new_role = role + " ";
+      ASSERT_FALSE(command->insertRolePermissions(new_role, {permission}));
+
+      auto permissions = query->getRolePermissions(new_role);
+      ASSERT_TRUE(permissions);
+      ASSERT_EQ(0, permissions->size());
+    }
+
     class AccountRoleTest : public WsvQueryCommandTest {
       void SetUp() override {
         WsvQueryCommandTest::SetUp();
