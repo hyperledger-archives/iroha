@@ -16,32 +16,13 @@
  */
 
 #include "model/converters/pb_command_factory.hpp"
+#include "model/converters/pb_common.hpp"
 
 #include <string>
 
 namespace iroha {
   namespace model {
     namespace converters {
-
-      protocol::Amount PbCommandFactory::serializeAmount(
-          iroha::Amount iroha_amount) {
-        protocol::Amount res;
-        res.set_precision(iroha_amount.getPrecision());
-        auto value = res.mutable_value();
-        auto vectorUint64s = iroha_amount.to_uint64s();
-        value->set_first(vectorUint64s.at(0));
-        value->set_second(vectorUint64s.at(1));
-        value->set_third(vectorUint64s.at(2));
-        value->set_fourth(vectorUint64s.at(3));
-        return res;
-      }
-
-      iroha::Amount PbCommandFactory::deserializeAmount(
-          protocol::Amount pb_amount) {
-        auto value = pb_amount.value();
-        return {value.first(), value.second(), value.third(), value.fourth(),
-                pb_amount.precision()};
-      }
 
       // asset quantity
       protocol::AddAssetQuantity PbCommandFactory::serializeAddAssetQuantity(

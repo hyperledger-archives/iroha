@@ -17,6 +17,7 @@
 
 #include "model/converters/pb_query_response_factory.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
+#include "model/converters/pb_common.hpp"
 
 namespace iroha {
   namespace model {
@@ -131,7 +132,8 @@ namespace iroha {
         protocol::AccountAsset pb_account_asset;
         pb_account_asset.set_account_id(account_asset.account_id);
         pb_account_asset.set_asset_id(account_asset.asset_id);
-        pb_account_asset.set_balance(account_asset.balance);
+        auto pb_balance = pb_account_asset.mutable_balance();
+        pb_balance->CopyFrom(serializeAmount(account_asset.balance));
         return pb_account_asset;
       }
 
@@ -139,7 +141,7 @@ namespace iroha {
           const protocol::AccountAsset &account_asset) const {
         model::AccountAsset res;
         res.account_id = account_asset.account_id();
-        res.balance = account_asset.balance();
+        res.balance = deserializeAmount(account_asset.balance());
         res.asset_id = account_asset.asset_id();
         return res;
       }
@@ -153,7 +155,8 @@ namespace iroha {
             accountAssetResponse.acct_asset.asset_id);
         pb_account_asset->set_account_id(
             accountAssetResponse.acct_asset.account_id);
-        pb_account_asset->set_balance(accountAssetResponse.acct_asset.balance);
+        auto pb_amount = pb_account_asset->mutable_balance();
+        pb_amount->CopyFrom(serializeAmount(accountAssetResponse.acct_asset.balance));
         return pb_response;
       }
 
@@ -162,7 +165,7 @@ namespace iroha {
           const protocol::AccountAssetResponse &account_asset_response) const {
         model::AccountAssetResponse res;
         res.acct_asset.balance =
-            account_asset_response.account_asset().balance();
+            deserializeAmount(account_asset_response.account_asset().balance());
         res.acct_asset.account_id =
             account_asset_response.account_asset().account_id();
         res.acct_asset.asset_id =

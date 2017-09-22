@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "amount/amount.hpp"
+#include <regex>
 
 namespace iroha {
 
@@ -81,6 +82,29 @@ namespace iroha {
     std::swap(precision_, other.precision_);
     return *this;
   }
+
+nonstd::optional<Amount> Amount::createFromString(std::string str_amount) {
+  // check if valid number
+  std::regex e("([0-9]*\\.[0-9]+|[0-9]+)");
+  if (!std::regex_match(str_amount, e)) {
+    return nonstd::nullopt;
+  }
+
+  // get precision
+  auto dot_place = str_amount.find('.');
+  size_t precision;
+  if (dot_place > str_amount.size()) {
+    precision = 0;
+  } else {
+    precision = str_amount.size() - dot_place - 1;
+    // erase dot from the string
+    str_amount.erase(dot_place, dot_place);
+  }
+
+  // create uint256 value from obtained string
+  uint256_t value(str_amount);
+  return Amount(value, precision);
+}
 
   uint256_t Amount::getIntValue() {
     return value_;
@@ -161,9 +185,12 @@ namespace iroha {
     return compareTo(other) >= 0;
   }
 
-  std::string Amount::to_string() const {
+std::string Amount::to_string() const {
+  if (precision_ > 0) {
     cpp_dec_float_50 float50(value_);
     float50 /= pow(10, precision_);
     return float50.str(precision_, std::ios_base::fixed);
   }
+  return value_.str(0, std::ios_base::fixed);
+}
 }

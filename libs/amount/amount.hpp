@@ -53,12 +53,10 @@ namespace iroha {
 
     Amount(uint64_t first, uint64_t second, uint64_t third, uint64_t fourth);
 
-    Amount(uint64_t first, uint64_t second, uint64_t third, uint64_t fourth, uint8_t precision);
+    Amount(uint64_t first, uint64_t second, uint64_t third, uint64_t fourth,
+           uint8_t precision);
 
-    uint256_t getIntValue();
-    uint8_t getPrecision();
-
-    std::vector<uint64_t > to_uint64s();
+    std::vector<uint64_t> to_uint64s();
 
     /**
      * Copy constructor
@@ -71,6 +69,11 @@ namespace iroha {
      */
     Amount(Amount&&);
     Amount& operator=(Amount&&);
+
+    uint256_t getIntValue();
+    uint8_t getPrecision();
+
+    static nonstd::optional<Amount> createFromString(std::string str_amount);
 
     /**
      * Takes percentage from current amount

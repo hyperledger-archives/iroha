@@ -98,14 +98,14 @@ class AddAssetQuantityTest : public CommandValidateExecuteTest {
 
     add_asset_quantity = std::make_shared<AddAssetQuantity>();
     add_asset_quantity->account_id = account_id;
-    add_asset_quantity->amount.int_part = 3;
-    add_asset_quantity->amount.frac_part = 50;
+    Amount amount(350, 2);
+    add_asset_quantity->amount = amount;
     add_asset_quantity->asset_id = asset_id;
 
     command = add_asset_quantity;
   }
 
-  decltype(AccountAsset().balance) balance = 150ul;
+  decltype(AccountAsset().balance) balance = Amount(150ul, 2);
   Asset asset;
   AccountAsset wallet;
 
@@ -152,8 +152,8 @@ TEST_F(AddAssetQuantityTest, InvalidWhenNoPermission) {
 
 TEST_F(AddAssetQuantityTest, InvalidWhenZeroAmount) {
   // Amount is zero
-  add_asset_quantity->amount.int_part = 0;
-  add_asset_quantity->amount.frac_part = 0;
+  Amount amount(0);
+  add_asset_quantity->amount = amount;
 
   ASSERT_FALSE(validateAndExecute());
 }
@@ -161,7 +161,8 @@ TEST_F(AddAssetQuantityTest, InvalidWhenZeroAmount) {
 TEST_F(AddAssetQuantityTest, InvalidWhenWrongPrecision) {
   // Amount is with wrong precision (must be 2)
   creator.permissions.issue_assets = true;
-  add_asset_quantity->amount.frac_part = 300;
+  Amount amount(add_asset_quantity->amount.getIntValue(), 30);
+  add_asset_quantity->amount = amount;
 
   EXPECT_CALL(*wsv_query, getAsset(asset_id)).WillOnce(Return(asset));
 
@@ -596,13 +597,12 @@ class TransferAssetTest : public CommandValidateExecuteTest {
     transfer_asset->dest_account_id = account_id;
     transfer_asset->asset_id = asset_id;
     transfer_asset->description = description;
-    transfer_asset->amount.int_part = 1;
-    transfer_asset->amount.frac_part = 50;
-
+    Amount amount(150, 2);
+    transfer_asset->amount = amount;
     command = transfer_asset;
   }
 
-  decltype(AccountAsset().balance) balance = 150ul;
+  Amount balance = Amount(150, 2);
   Asset asset;
   AccountAsset src_wallet, dst_wallet;
 
@@ -691,8 +691,7 @@ TEST_F(TransferAssetTest, InvalidWhenNoSrcAccountAsset) {
 TEST_F(TransferAssetTest, InvalidWhenInsufficientFunds) {
   // No sufficient funds
   creator.permissions.can_transfer = true;
-  transfer_asset->amount.int_part = 1;
-  transfer_asset->amount.frac_part = 55;
+  Amount amount(155, 2);
 
   EXPECT_CALL(*wsv_query, getAccountAsset(transfer_asset->src_account_id,
                                           transfer_asset->asset_id))
@@ -708,7 +707,8 @@ TEST_F(TransferAssetTest, InvalidWhenInsufficientFunds) {
 TEST_F(TransferAssetTest, InvalidWhenWrongPrecision) {
   // Amount has wrong precision
   creator.permissions.can_transfer = true;
-  transfer_asset->amount.frac_part = 555;
+  Amount amount(transfer_asset->amount.getIntValue(), 30);
+  transfer_asset->amount = amount;
 
   EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
       .WillOnce(Return(asset));
@@ -727,8 +727,8 @@ TEST_F(TransferAssetTest, InvalidWhenDifferentCreator) {
 TEST_F(TransferAssetTest, InvalidWhenZeroAmount) {
   // Transfer zero assets
   creator.permissions.can_transfer = true;
-  transfer_asset->amount.int_part = 0;
-  transfer_asset->amount.frac_part = 0;
+  Amount amount(0, 2);
+  transfer_asset->amount = amount;
 
   ASSERT_FALSE(validateAndExecute());
 }

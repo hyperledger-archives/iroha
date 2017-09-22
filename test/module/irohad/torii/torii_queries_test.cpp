@@ -18,6 +18,9 @@ limitations under the License.
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
 
+// to compare pb amount and iroha amount
+#include "model/converters/pb_common.hpp"
+
 #include "main/server_runner.hpp"
 #include "torii/command_service.hpp"
 #include "torii/processor/query_processor_impl.hpp"
@@ -54,12 +57,10 @@ class ToriiServiceTest : public testing::Test {
       rxcpp::subjects::subject<iroha::model::Proposal> prop_notifier;
       rxcpp::subjects::subject<Commit> commit_notifier;
 
-      EXPECT_CALL(*pcsMock,
-                  on_proposal())
+      EXPECT_CALL(*pcsMock, on_proposal())
           .WillRepeatedly(Return(prop_notifier.get_observable()));
 
-      EXPECT_CALL(*pcsMock,
-                  on_commit())
+      EXPECT_CALL(*pcsMock, on_commit())
           .WillRepeatedly(Return(commit_notifier.get_observable()));
 
       auto tx_processor =
@@ -235,7 +236,8 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenStatefulInvalid) {
   iroha::model::AccountAsset account_asset;
   account_asset.account_id = "accountB";
   account_asset.asset_id = "usd";
-  account_asset.balance = 100;
+  iroha::Amount amount(100, 2);
+  account_asset.balance = amount;
 
   iroha::model::Asset asset;
   asset.asset_id = "usd";
@@ -272,7 +274,8 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenValid) {
   iroha::model::AccountAsset account_asset;
   account_asset.account_id = "accountA";
   account_asset.asset_id = "usd";
-  account_asset.balance = 100;
+  iroha::Amount amount(100, 2);
+  account_asset.balance = amount;
 
   iroha::model::Asset asset;
   asset.asset_id = "usd";
@@ -280,7 +283,8 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenValid) {
   asset.precision = 2;
 
   EXPECT_CALL(*wsv_query, getAccount("accountA")).WillOnce(Return(account));
-  EXPECT_CALL(*wsv_query, getAccountAsset(_, _)).WillOnce(Return(account_asset));
+  EXPECT_CALL(*wsv_query, getAccountAsset(_, _))
+      .WillOnce(Return(account_asset));
 
   iroha::protocol::QueryResponse response;
 
@@ -299,8 +303,9 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenValid) {
             account_asset.asset_id);
   ASSERT_EQ(response.account_assets_response().account_asset().account_id(),
             account_asset.account_id);
-  ASSERT_EQ(response.account_assets_response().account_asset().balance(),
-            account_asset.balance);
+  auto iroha_amount_asset = iroha::model::converters::deserializeAmount(
+      response.account_assets_response().account_asset().balance());
+  ASSERT_EQ(iroha_amount_asset, account_asset.balance);
 }
 
 /**
@@ -383,17 +388,16 @@ TEST_F(ToriiServiceTest, FindTransactionsWhenValid) {
   iroha::model::Account account;
   account.account_id = "accountA";
 
-  auto txs_observable  =
-          rxcpp::observable<>::iterate([account] {
-              std::vector<iroha::model::Transaction> result;
-              for (size_t i = 0; i < 3; ++i) {
-                iroha::model::Transaction current;
-                current.creator_account_id = account.account_id;
-                current.tx_counter = i;
-                result.push_back(current);
-              }
-              return result;
-          }());
+  auto txs_observable = rxcpp::observable<>::iterate([account] {
+    std::vector<iroha::model::Transaction> result;
+    for (size_t i = 0; i < 3; ++i) {
+      iroha::model::Transaction current;
+      current.creator_account_id = account.account_id;
+      current.tx_counter = i;
+      result.push_back(current);
+    }
+    return result;
+  }());
 
   EXPECT_CALL(*wsv_query, getAccount(_)).WillOnce(Return(account));
   EXPECT_CALL(*block_query, getAccountTransactions(account.account_id))

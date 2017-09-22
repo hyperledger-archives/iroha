@@ -19,6 +19,7 @@ add_library(pb_model_converters
     impl/pb_query_factory.cpp
     impl/pb_query_response_factory.cpp
     impl/pb_transaction_factory.cpp
+    impl/pb_common.cpp
     )
 target_link_libraries(pb_model_converters
     model

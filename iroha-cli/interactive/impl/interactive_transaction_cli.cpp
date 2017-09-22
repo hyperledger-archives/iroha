@@ -173,15 +173,14 @@ namespace iroha_cli {
         std::vector<std::string> params) {
       auto account_id = params[0];
       auto asset_id = params[1];
-      iroha::Amount amount;
-      auto val_int = parser::parseValue<uint64_t >(params[2]);
-      auto val_frac = parser::parseValue<uint64_t>(params[3]);
-      if (not val_int.has_value() || not val_frac.has_value()) {
+      auto val_int =
+          parser::parseValue<boost::multiprecision::uint256_t>(params[2]);
+      auto precision = parser::parseValue<uint8_t>(params[3]);
+      if (not val_int.has_value() || not precision.has_value()) {
         std::cout << "Wrong format for amount" << std::endl;
         return nullptr;
       }
-      amount.int_part = val_int.value();
-      amount.frac_part = val_frac.value();
+      iroha::Amount amount(val_int.value(), precision.value());
       return generator_.generateAddAssetQuantity(account_id, asset_id, amount);
     }
 
@@ -282,15 +281,13 @@ namespace iroha_cli {
       auto src_account_id = params[0];
       auto dest_account_id = params[1];
       auto asset_id = params[2];
-      iroha::Amount amount;
-      auto val_int = parser::parseValue<uint64_t>(params[3]);
-      auto val_frac = parser::parseValue<uint64_t>(params[4]);
-      if (not val_int.has_value() || not val_frac.has_value()) {
+      auto val_int = parser::parseValue<boost::multiprecision::uint256_t>(params[3]);
+      auto precision = parser::parseValue<uint8_t >(params[4]);
+      if (not val_int.has_value() || not precision.has_value()) {
         std::cout << "Wrong format for amount" << std::endl;
         return nullptr;
       }
-      amount.int_part = val_int.value();
-      amount.frac_part = val_frac.value();
+      iroha::Amount amount(val_int.value(), precision.value());
       return generator_.generateTransferAsset(src_account_id, dest_account_id,
                                               asset_id, amount);
     }

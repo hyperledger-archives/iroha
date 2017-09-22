@@ -17,6 +17,7 @@ limitations under the License.
 #define IROHA_ACCOUNT_ASSET_HPP
 
 #include <string>
+#include "amount/amount.hpp"
 
 namespace iroha {
   namespace model {
@@ -37,7 +38,7 @@ namespace iroha {
       /**
        * Current balance
        */
-      uint64_t balance;
+      Amount balance;
     };
   }
 }

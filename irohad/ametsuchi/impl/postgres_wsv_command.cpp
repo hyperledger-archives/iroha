@@ -84,7 +84,7 @@ namespace iroha {
             "    VALUES (" +
             transaction_.quote(asset.account_id) + ", " +
             transaction_.quote(asset.asset_id) + ", " +
-            transaction_.quote(asset.balance) + ", " +
+            transaction_.quote(asset.balance.to_string()) + ", " +
             /*asset.permissions*/ transaction_.quote(0) +
             ")\n"
             "    ON CONFLICT (account_id, asset_id)\n"
