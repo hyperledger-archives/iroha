@@ -15,15 +15,17 @@
  * limitations under the License.
  */
 
+#include "crypto/hash.hpp"
+
 extern "C" {
 #include <sha3.h>
 }
 
-#include "crypto/hash.hpp"
 #include "common/types.hpp"
-#include "model/converters/pb_transaction_factory.hpp"
 #include "model/converters/pb_block_factory.hpp"
+#include "model/converters/pb_common.hpp"
 #include "model/converters/pb_query_factory.hpp"
+#include "model/converters/pb_transaction_factory.hpp"
 
 namespace sha3 {
   void sha3_256_(const unsigned char *message,
@@ -93,18 +95,6 @@ namespace iroha {
     std::shared_ptr<const model::Query> qptr(&query, [](auto){});
     auto &&pb_dat = query_factory.serialize(qptr);
     return hash(*pb_dat);
-  }
-
-  hash256_t hash(const protocol::Transaction& tx) {
-    return sha3_256(tx.payload().SerializeAsString());
-  }
-
-  hash256_t sha3_256(const protocol::Block& block) {
-    return sha3_256(block.payload().SerializeAsString());
-  }
-
-  hash256_t sha3_256(const protocol::Query& query) {
-    return sha3_256(query.payload().SerializeAsString());
   }
 
 }  // namespace iroha

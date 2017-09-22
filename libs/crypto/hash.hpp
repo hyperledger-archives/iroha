@@ -19,6 +19,9 @@
 #define IROHA_HASH_H
 
 #include <common/types.hpp>
+#include "model/transaction.hpp"
+#include "model/block.hpp"
+#include "model/query.hpp"
 
 namespace iroha {
 
@@ -32,26 +35,9 @@ namespace iroha {
   hash512_t sha3_512(const uint8_t *input, size_t in_size);
   hash512_t sha3_512(const std::string &msg);
 
-  namespace model {
-    struct Transaction;
-    struct Block;
-    struct Query;
-  } // namespace model
-
   hash256_t hash(const model::Transaction& tx);
   hash256_t hash(const model::Block& tx);
   hash256_t hash(const model::Query& tx);
-
-  // forward declaration for proto objects
-  namespace protocol {
-    class Transaction;
-    class Block;
-    class Query;
-  } // namespace protocol
-
-  hash256_t hash(const protocol::Transaction& tx);
-  hash256_t hash(const protocol::Block& tx);
-  hash256_t hash(const protocol::Query& tx);
 
 }  // namespace iroha
 
