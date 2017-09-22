@@ -16,6 +16,7 @@
  */
 
 #include "module/irohad/ordering/ordering_mocks.hpp"
+#include "ordering/impl/ordering_gate_transport_grpc.hpp"
 
 #include "framework/test_subscriber.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
@@ -30,13 +31,16 @@ using ::testing::_;
 class OrderingGateTest : public OrderingTest {
  public:
   OrderingGateTest() {
-    gate_impl = std::make_shared<OrderingGateImpl>(address);
+    auto transport = std::make_shared<OrderingGateTransportGrpc>(address);
+    gate_impl = std::make_shared<OrderingGateImpl>(transport);
     gate = gate_impl;
-    fake_service = static_cast<MockOrderingService*>(service.get());
+    gate_transport_service = transport;
+    transport->subscribe(gate_impl);
+    fake_service = static_cast<MockOrderingService *>(service.get());
   }
 
   std::shared_ptr<OrderingGateImpl> gate_impl;
-  MockOrderingService* fake_service;
+  MockOrderingService *fake_service;
 };
 
 TEST_F(OrderingGateTest, TransactionReceivedByServerWhenSent) {
@@ -60,7 +64,7 @@ TEST_F(OrderingGateTest, ProposalReceivedByGateWhenSent) {
 
   google::protobuf::Empty response;
 
-  gate_impl->SendProposal(&context, &proposal, &response);
+  gate_transport_service->onProposal(&context, &proposal, &response);
 
   ASSERT_TRUE(wrapper.validate());
 }

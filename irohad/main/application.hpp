@@ -44,7 +44,6 @@
 
 class Irohad {
  public:
-
   /**
    * Constructor that initializes common iroha pipeline
    * @param block_store_dir - folder where blocks will be stored
@@ -81,20 +80,20 @@ class Irohad {
 
   std::unique_ptr<::torii::CommandService> createCommandService(
       std::shared_ptr<iroha::model::converters::PbTransactionFactory>
-      pb_factory,
+          pb_factory,
       std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor);
 
   std::unique_ptr<::torii::QueryService> createQueryService(
       std::shared_ptr<iroha::model::converters::PbQueryFactory>
-      pb_query_factory,
+          pb_query_factory,
       std::shared_ptr<iroha::model::converters::PbQueryResponseFactory>
-      pb_query_response_factory,
+          pb_query_response_factory,
       std::shared_ptr<iroha::torii::QueryProcessor> query_processor);
 
   std::shared_ptr<iroha::torii::QueryProcessor> createQueryProcessor(
       std::unique_ptr<iroha::model::QueryProcessingFactory> qpf,
       std::shared_ptr<iroha::validation::StatelessValidator>
-      stateless_validator);
+          stateless_validator);
 
   std::shared_ptr<iroha::torii::TransactionProcessor>
   createTransactionProcessor(

@@ -33,7 +33,6 @@ namespace iroha {
           max_size_(max_size),
           delay_milliseconds_(delay_milliseconds),
           proposal_height(2) {
-
       timer_->on<uvw::TimerEvent>([this](const auto &, auto &) {
         if (!queue_.empty()) {
           this->generateProposal();
@@ -89,14 +88,14 @@ namespace iroha {
       pb_proposal.set_height(proposal.height);
       for (const auto &tx : proposal.transactions) {
         auto pb_tx = pb_proposal.add_transactions();
-        new(pb_tx) protocol::Transaction(factory_.serialize(tx));
+        new (pb_tx) protocol::Transaction(factory_.serialize(tx));
       }
 
       for (const auto &peer : peers_) {
         auto call = new AsyncClientCall;
 
         call->response_reader =
-            peer.second->AsyncSendProposal(&call->context, pb_proposal, &cq_);
+            peer.second->AsynconProposal(&call->context, pb_proposal, &cq_);
 
         call->response_reader->Finish(&call->reply, &call->status, call);
       }
@@ -110,8 +109,9 @@ namespace iroha {
         return;
       }
       for (const auto &peer : round_peers.value()) {
-        peers_[peer.address] = proto::OrderingGate::NewStub(grpc::CreateChannel(
-            peer.address, grpc::InsecureChannelCredentials()));
+        peers_[peer.address] =
+            proto::OrderingGateTransportGrpc::NewStub(grpc::CreateChannel(
+                peer.address, grpc::InsecureChannelCredentials()));
       }
     }
 

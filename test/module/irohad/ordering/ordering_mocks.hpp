@@ -27,18 +27,19 @@
 namespace iroha {
   namespace ordering {
     class MockOrderingGate : public network::MockOrderingGate,
-                             public proto::OrderingGate::Service {
+                             public proto::OrderingGateTransportGrpc::Service {
      public:
-      MOCK_METHOD3(SendProposal,
-                   grpc::Status(::grpc::ServerContext*, const proto::Proposal*,
-                                ::google::protobuf::Empty*));
+      MOCK_METHOD3(onProposal, grpc::Status(::grpc::ServerContext *,
+                                            const proto::Proposal *,
+                                            ::google::protobuf::Empty *));
     };
 
     class MockOrderingService : public proto::OrderingService::Service {
      public:
-      MOCK_METHOD3(SendTransaction, ::grpc::Status(::grpc::ServerContext*,
-                                                   const protocol::Transaction*,
-                                                   ::google::protobuf::Empty*));
+      MOCK_METHOD3(SendTransaction,
+                   ::grpc::Status(::grpc::ServerContext *,
+                                  const protocol::Transaction *,
+                                  ::google::protobuf::Empty *));
     };
 
     class OrderingTest : public ::testing::Test {
@@ -46,7 +47,7 @@ namespace iroha {
       OrderingTest() {
         address = "0.0.0.0:50051";
         peer.address = address;
-        gate = std::make_shared<MockOrderingGate>();
+        gate_transport_service = std::make_shared<MockOrderingGate>();
         service = std::make_shared<MockOrderingService>();
       }
 
@@ -63,7 +64,7 @@ namespace iroha {
           builder.AddListeningPort(address, grpc::InsecureServerCredentials(),
                                    &port);
           builder.RegisterService(service.get());
-          builder.RegisterService(gate.get());
+          builder.RegisterService(gate_transport_service.get());
           server = builder.BuildAndStart();
           ASSERT_NE(port, 0);
           ASSERT_TRUE(server);
@@ -87,7 +88,9 @@ namespace iroha {
       std::string address;
       model::Peer peer;
       std::unique_ptr<grpc::Server> server;
-      std::shared_ptr<proto::OrderingGate::Service> gate;
+      std::shared_ptr<proto::OrderingGateTransportGrpc::Service>
+          gate_transport_service;
+      std::shared_ptr<iroha::network::OrderingGate> gate;
       std::shared_ptr<proto::OrderingService::Service> service;
       std::thread thread;
     };

@@ -16,10 +16,11 @@
  */
 
 #include "framework/test_subscriber.hpp"
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
+#include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
 #include "ordering_mocks.hpp"
-#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::model;
@@ -32,8 +33,11 @@ using ::testing::Return;
 class OrderingGateServiceTest : public OrderingTest {
  public:
   OrderingGateServiceTest() {
-    gate_impl = std::make_shared<OrderingGateImpl>(address);
+    auto transport = std::make_shared<OrderingGateTransportGrpc>(address);
+    gate_impl = std::make_shared<OrderingGateImpl>(transport);
     gate = gate_impl;
+    gate_transport_service = transport;
+    transport->subscribe(gate_impl);
     counter = 2;
   }
 
@@ -54,7 +58,8 @@ class OrderingGateServiceTest : public OrderingTest {
   }
 
   TestSubscriber<iroha::model::Proposal> init(size_t times) {
-    auto wrapper = make_test_subscriber<CallExact>(gate_impl->on_proposal(), times);
+    auto wrapper =
+        make_test_subscriber<CallExact>(gate_impl->on_proposal(), times);
     wrapper.subscribe([this](auto proposal) { proposals.push_back(proposal); });
     gate_impl->on_proposal().subscribe([this](auto) {
       counter--;
@@ -68,7 +73,7 @@ class OrderingGateServiceTest : public OrderingTest {
     tx->tx_counter = i;
     gate_impl->propagate_transaction(tx);
     // otherwise tx may come unordered
-    std::this_thread::sleep_for(1ms);
+    std::this_thread::sleep_for(20ms);
   }
 
   std::shared_ptr<uvw::Loop> loop;
@@ -84,15 +89,13 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   // 8 transaction -> proposal -> 2 transaction -> proposal
 
   std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
-  EXPECT_CALL(*wsv, getLedgerPeers()).WillRepeatedly(Return(std::vector<Peer>{
-      peer}));
+  EXPECT_CALL(*wsv, getLedgerPeers())
+      .WillRepeatedly(Return(std::vector<Peer>{peer}));
   const size_t max_proposal = 100;
   const size_t commit_delay = 400;
 
-  service = std::make_shared<OrderingServiceImpl>(wsv,
-                                                  max_proposal,
-                                                  commit_delay,
-                                                  loop);
+  service = std::make_shared<OrderingServiceImpl>(wsv, max_proposal,
+                                                  commit_delay, loop);
 
   start();
   std::unique_lock<std::mutex> lk(m);
@@ -103,7 +106,8 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   }
 
   cv.wait_for(lk, 10s);
-  send_transaction(8); send_transaction(9);
+  send_transaction(8);
+  send_transaction(9);
   cv.wait_for(lk, 10s);
 
   ASSERT_TRUE(wrapper.validate());
@@ -125,8 +129,8 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
   // 10 transaction -> proposal with 5 -> proposal with 5
 
   std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
-  EXPECT_CALL(*wsv, getLedgerPeers()).WillRepeatedly(Return(std::vector<Peer>{
-      peer}));
+  EXPECT_CALL(*wsv, getLedgerPeers())
+      .WillRepeatedly(Return(std::vector<Peer>{peer}));
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
 

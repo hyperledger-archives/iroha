@@ -14,46 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_ORDERING_GATE_TRANSPORT_GRPC_H
+#define IROHA_ORDERING_GATE_TRANSPORT_GRPC_H
 
-#ifndef IROHA_ORDERING_GATE_IMPL_HPP
-#define IROHA_ORDERING_GATE_IMPL_HPP
-
+#include <google/protobuf/empty.pb.h>
+#include "logger/logger.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
 #include "network/impl/async_grpc_client.hpp"
-#include "network/ordering_gate.hpp"
 #include "network/ordering_gate_transport.hpp"
-
-#include "logger/logger.hpp"
+#include "ordering.grpc.pb.h"
 
 namespace iroha {
   namespace ordering {
-
-    /**
-     * OrderingGate implementation with gRPC asynchronous client
-     * Interacts with given OrderingService
-     * by propagating transactions and receiving proposals
-     * @param server_address OrderingService address
-     */
-    class OrderingGateImpl : public network::OrderingGate,
-                             public network::OrderingGateNotification {
+    class OrderingGateTransportGrpc
+        : public iroha::network::OrderingGateTransport,
+          public proto::OrderingGateTransportGrpc::Service,
+          private network::AsyncGrpcClient<google::protobuf::Empty> {
      public:
-      explicit OrderingGateImpl(
-          std::shared_ptr<iroha::network::OrderingGateTransport> transport);
+      explicit OrderingGateTransportGrpc(const std::string &server_address);
+
+      grpc::Status onProposal(::grpc::ServerContext *context,
+                              const proto::Proposal *request,
+                              ::google::protobuf::Empty *response) override;
 
       void propagate_transaction(
           std::shared_ptr<const model::Transaction> transaction) override;
 
-      rxcpp::observable<model::Proposal> on_proposal() override;
-
-      void onProposal(model::Proposal proposal) override;
+      void subscribe(std::shared_ptr<iroha::network::OrderingGateNotification>
+                         subscriber) override;
 
      private:
-
-      rxcpp::subjects::subject<model::Proposal> proposals_;
-      std::shared_ptr<iroha::network::OrderingGateTransport> transport_;
+      std::shared_ptr<iroha::network::OrderingGateNotification> subscriber_;
+      std::unique_ptr<proto::OrderingService::Stub> client_;
+      model::converters::PbTransactionFactory factory_;
       logger::Logger log_;
     };
+
   }  // namespace ordering
 }  // namespace iroha
 
-#endif  // IROHA_ORDERING_GATE_IMPL_HPP
+#endif  // IROHA_ORDERING_GATE_TRANSPORT_GRPC_H

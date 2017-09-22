@@ -61,7 +61,9 @@ Irohad::~Irohad() {
 class MockCryptoProvider : public ModelCryptoProvider {
  public:
   MOCK_CONST_METHOD1(verify, bool(const Transaction &));
+
   MOCK_CONST_METHOD1(verify, bool(std::shared_ptr<const Query>));
+
   MOCK_CONST_METHOD1(verify, bool(const Block &));
 };
 
@@ -121,11 +123,8 @@ void Irohad::run() {
                                                   crypto_verifier);
 
   // Consensus gate
-  auto consensus_gate = yac_init.initConsensusGate(peer_address,
-                                                   loop,
-                                                   orderer,
-                                                   simulator,
-                                                   block_loader);
+  auto consensus_gate = yac_init.initConsensusGate(peer_address, loop, orderer,
+                                                   simulator, block_loader);
 
   // Synchronizer
   auto synchronizer = createSynchronizer(consensus_gate, chain_validator,
@@ -134,13 +133,11 @@ void Irohad::run() {
   // PeerCommunicationService
   auto pcs = createPeerCommunicationService(ordering_gate, synchronizer);
 
-  pcs->on_proposal().subscribe([this](auto) {
-    log_->info("~~~~~~~~~| PROPOSAL ^_^ |~~~~~~~~~ ");
-  });
+  pcs->on_proposal().subscribe(
+      [this](auto) { log_->info("~~~~~~~~~| PROPOSAL ^_^ |~~~~~~~~~ "); });
 
-  pcs->on_commit().subscribe([this](auto) {
-    log_->info("~~~~~~~~~| COMMIT =^._.^= |~~~~~~~~~ ");
-  });
+  pcs->on_commit().subscribe(
+      [this](auto) { log_->info("~~~~~~~~~| COMMIT =^._.^= |~~~~~~~~~ "); });
 
   // Torii:
   // --- Transactions:
@@ -160,9 +157,9 @@ void Irohad::run() {
 
   grpc::ServerBuilder builder;
   int port = 0;
-  builder.AddListeningPort(peer_address,
-                           grpc::InsecureServerCredentials(), &port);
-  builder.RegisterService(ordering_init.ordering_gate.get());
+  builder.AddListeningPort(peer_address, grpc::InsecureServerCredentials(),
+                           &port);
+  builder.RegisterService(ordering_init.ordering_gate_transport.get());
   builder.RegisterService(ordering_init.ordering_service.get());
   builder.RegisterService(yac_init.consensus_network.get());
   builder.RegisterService(loader_init.service.get());
