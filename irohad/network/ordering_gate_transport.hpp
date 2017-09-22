@@ -33,7 +33,7 @@ namespace iroha {
        * Callback on receiving proposal
        * @param proposal - proposal object itself
        */
-      virtual void OnProposal(model::Proposal) = 0;
+      virtual void onProposal(model::Proposal) = 0;
 
       virtual ~OrderingGateNotification() = default;
     };

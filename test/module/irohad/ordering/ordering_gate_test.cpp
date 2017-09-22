@@ -64,7 +64,7 @@ TEST_F(OrderingGateTest, ProposalReceivedByGateWhenSent) {
 
   google::protobuf::Empty response;
 
-  gate_transport_service->OnProposal(&context, &proposal, &response);
+  gate_transport_service->onProposal(&context, &proposal, &response);
 
   ASSERT_TRUE(wrapper.validate());
 }

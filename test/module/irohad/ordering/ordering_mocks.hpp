@@ -29,7 +29,7 @@ namespace iroha {
     class MockOrderingGate : public network::MockOrderingGate,
                              public proto::OrderingGateTransportGrpc::Service {
      public:
-      MOCK_METHOD3(OnProposal, grpc::Status(::grpc::ServerContext *,
+      MOCK_METHOD3(onProposal, grpc::Status(::grpc::ServerContext *,
                                             const proto::Proposal *,
                                             ::google::protobuf::Empty *));
     };

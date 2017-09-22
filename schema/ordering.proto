@@ -10,7 +10,7 @@ message Proposal {
 }
 
 service OrderingGateTransportGrpc {
-  rpc OnProposal (Proposal) returns (google.protobuf.Empty);
+  rpc onProposal (Proposal) returns (google.protobuf.Empty);
 }
 
 service OrderingService {

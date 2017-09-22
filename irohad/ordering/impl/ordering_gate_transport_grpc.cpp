@@ -18,7 +18,7 @@
 
 using namespace iroha::ordering;
 
-grpc::Status OrderingGateTransportGrpc::OnProposal(
+grpc::Status OrderingGateTransportGrpc::onProposal(
     ::grpc::ServerContext *context, const proto::Proposal *request,
     ::google::protobuf::Empty *response) {
   log_->info("receive proposal");
@@ -31,7 +31,7 @@ grpc::Status OrderingGateTransportGrpc::OnProposal(
 
   model::Proposal proposal(transactions);
   proposal.height = request->height();
-  subscriber_->OnProposal(std::move(proposal));
+  subscriber_->onProposal(std::move(proposal));
 
   return grpc::Status::OK;
 }

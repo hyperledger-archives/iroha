@@ -95,7 +95,7 @@ namespace iroha {
         auto call = new AsyncClientCall;
 
         call->response_reader =
-            peer.second->AsyncOnProposal(&call->context, pb_proposal, &cq_);
+            peer.second->AsynconProposal(&call->context, pb_proposal, &cq_);
 
         call->response_reader->Finish(&call->reply, &call->status, call);
       }

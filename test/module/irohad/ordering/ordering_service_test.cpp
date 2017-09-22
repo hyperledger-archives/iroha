@@ -108,9 +108,9 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
   service = std::make_shared<OrderingServiceImpl>(wsv, max_proposal,
                                                   commit_delay, loop);
 
-  EXPECT_CALL(*fake_gate, OnProposal(_, _, _)).Times(2);
+  EXPECT_CALL(*fake_gate, onProposal(_, _, _)).Times(2);
 
-  ON_CALL(*fake_gate, OnProposal(_, _, _))
+  ON_CALL(*fake_gate, onProposal(_, _, _))
       .WillByDefault(Invoke([this](auto, auto, auto) {
         cv.std::condition_variable::notify_one();
         log_->info("Proposal send to grpc");
@@ -144,8 +144,8 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   service = std::make_shared<OrderingServiceImpl>(wsv, max_proposal,
                                                   commit_delay, loop);
 
-  EXPECT_CALL(*fake_gate, OnProposal(_, _, _)).Times(2);
-  ON_CALL(*fake_gate, OnProposal(_, _, _))
+  EXPECT_CALL(*fake_gate, onProposal(_, _, _)).Times(2);
+  ON_CALL(*fake_gate, onProposal(_, _, _))
       .WillByDefault(Invoke([this](auto, auto, auto) {
         cv.std::condition_variable::notify_one();
         return grpc::Status::OK;

@@ -37,7 +37,7 @@ namespace iroha {
       return proposals_.get_observable();
     }
 
-    void OrderingGateImpl::OnProposal(model::Proposal proposal) {
+    void OrderingGateImpl::onProposal(model::Proposal proposal) {
       log_->info("Received new proposal");
       proposals_.get_subscriber().on_next(proposal);
     }

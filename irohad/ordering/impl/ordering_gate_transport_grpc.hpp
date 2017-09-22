@@ -33,7 +33,7 @@ namespace iroha {
      public:
       explicit OrderingGateTransportGrpc(const std::string &server_address);
 
-      grpc::Status OnProposal(::grpc::ServerContext *context,
+      grpc::Status onProposal(::grpc::ServerContext *context,
                               const proto::Proposal *request,
                               ::google::protobuf::Empty *response) override;
 

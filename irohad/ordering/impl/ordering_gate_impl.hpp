@@ -45,14 +45,9 @@ namespace iroha {
 
       rxcpp::observable<model::Proposal> on_proposal() override;
 
-      void OnProposal(model::Proposal proposal) override;
+      void onProposal(model::Proposal proposal) override;
 
      private:
-      /**
-       * Process proposal received from network
-       * Publishes proposal to on_proposal subscribers
-       * @param proposal
-       */
 
       rxcpp::subjects::subject<model::Proposal> proposals_;
       std::shared_ptr<iroha::network::OrderingGateTransport> transport_;
