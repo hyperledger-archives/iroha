@@ -52,6 +52,16 @@ namespace iroha {
       virtual bool insertAccountRole(const std::string &account_id,
                                      const std::string &role_name) = 0;
 
+
+      /**
+       * Bind role and permissions
+       * @param role_id
+       * @param permissions
+       * @return true is insert successful, false otherwise
+       */
+      virtual bool insertRolePermissions(const std::string &role_id,
+          const std::vector<std::string> &permissions) = 0;
+
       /**
        * Insert grantable permission
        * @param permittee_account_id to who give the grant permission

@@ -59,6 +59,10 @@ namespace iroha {
       MOCK_METHOD1(insertRole, bool(const std::string &role_name));
       MOCK_METHOD2(insertAccountRole, bool(const std::string &account_id,
                                            const std::string &role_name));
+      MOCK_METHOD2(insertRolePermissions,
+                   bool(const std::string &role_id,
+                        const std::vector<std::string> &permissions));
+
       MOCK_METHOD3(insertAccountGrantablePermission,
                    bool(const std::string &permittee_account_id,
                         const std::string &account_id,

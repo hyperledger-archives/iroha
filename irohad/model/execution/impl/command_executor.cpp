@@ -83,7 +83,9 @@ bool CreateRoleExecutor::execute(const Command &command,
                                  ametsuchi::WsvCommand &commands) {
   auto cmd_value = static_cast<const CreateRole &>(command);
 
-  return commands.insertRole(cmd_value.role_name);
+  return commands.insertRole(cmd_value.role_name)
+      and commands.insertRolePermissions(cmd_value.role_name,
+                                         cmd_value.permissions);
 }
 
 bool CreateRoleExecutor::hasPermissions(const Command &command,

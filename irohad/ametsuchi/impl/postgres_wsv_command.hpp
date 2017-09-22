@@ -31,6 +31,10 @@ namespace iroha {
       bool insertAccountRole(const std::string &account_id,
                              const std::string &role_name) override;
 
+      bool insertRolePermissions(
+          const std::string &role_id,
+          const std::vector<std::string> &permissions) override;
+
       bool insertAccount(const model::Account &account) override;
       bool updateAccount(const model::Account &account) override;
       bool insertAsset(const model::Asset &asset) override;

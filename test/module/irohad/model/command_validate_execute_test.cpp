@@ -51,6 +51,8 @@ class CommandValidateExecuteTest : public ::testing::Test {
   }
 
   void SetUp() override {
+    spdlog::set_level(spdlog::level::off);
+
     factory = CommandExecutorFactory::create().value();
 
     wsv_query = std::make_shared<StrictMock<MockWsvQuery>>();
@@ -774,6 +776,7 @@ class CreateRoleTest: public CommandValidateExecuteTest {
 
 TEST_F(CreateRoleTest, VadlidCase){
   EXPECT_CALL(*wsv_command, insertRole(_)).WillOnce(Return(true));
+  EXPECT_CALL(*wsv_command, insertRolePermissions(_, _)).WillOnce(Return(true));
   ASSERT_TRUE(validateAndExecute());
 }
 
