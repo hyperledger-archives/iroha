@@ -48,7 +48,7 @@ namespace iroha_cli {
       const auto ast_id = "Asset Id";
       const auto dom_id = "Domain Id";
       const auto ammout_a = "Amount to add (integer part)";
-      const auto ammout_b = "Amount to add (fractional part)";
+      const auto ammout_b = "Amount to add (precision)";
       const auto peer_id = "Full address of a peer";
       const auto pub_key = "Public Key";
       const auto acc_name = "Account Name";
@@ -175,11 +175,16 @@ namespace iroha_cli {
       auto asset_id = params[1];
       auto val_int =
           parser::parseValue<boost::multiprecision::uint256_t>(params[2]);
-      auto precision = parser::parseValue<uint8_t>(params[3]);
+      auto precision = parser::parseValue<uint32_t>(params[3]);
       if (not val_int.has_value() || not precision.has_value()) {
         std::cout << "Wrong format for amount" << std::endl;
         return nullptr;
       }
+      if (precision.value() > 255) {
+        std::cout << "Too big precision (should be less than 256)" << std::endl;
+        return nullptr;
+      }
+      std::cout << val_int.value() << " " << precision.value() << std::endl;
       iroha::Amount amount(val_int.value(), precision.value());
       return generator_.generateAddAssetQuantity(account_id, asset_id, amount);
     }
@@ -281,8 +286,9 @@ namespace iroha_cli {
       auto src_account_id = params[0];
       auto dest_account_id = params[1];
       auto asset_id = params[2];
-      auto val_int = parser::parseValue<boost::multiprecision::uint256_t>(params[3]);
-      auto precision = parser::parseValue<uint8_t >(params[4]);
+      auto val_int =
+          parser::parseValue<boost::multiprecision::uint256_t>(params[3]);
+      auto precision = parser::parseValue<uint8_t>(params[4]);
       if (not val_int.has_value() || not precision.has_value()) {
         std::cout << "Wrong format for amount" << std::endl;
         return nullptr;

@@ -19,13 +19,19 @@
 
 namespace parser {
 
-nonstd::optional<std::string> parseFirstCommand(std::string line){
-  auto vec = split(line);
-  if (vec.size() == 0) {
-    return nonstd::nullopt;
+  bool isIntNumber(const std::string& s) {
+    return !s.empty() && std::find_if(s.begin(), s.end(), [](char c) {
+      return not std::isdigit(c);
+    }) == s.end();
   }
-  return vec[0];
-};
+
+  nonstd::optional<std::string> parseFirstCommand(std::string line) {
+    auto vec = split(line);
+    if (vec.size() == 0) {
+      return nonstd::nullopt;
+    }
+    return vec[0];
+  };
 
   std::vector<std::string> split(std::string line) {
     std::transform(line.begin(), line.end(), line.begin(), ::tolower);
