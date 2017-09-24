@@ -101,8 +101,10 @@ namespace iroha {
 
       nonstd::optional<hash256_t> top_hash;
 
-      blocks_->getTopBlocks(1).as_blocking().subscribe(
-          [&top_hash](auto block) { top_hash = block.hash; });
+      blocks_->getTopBlocks(1)
+          .subscribe_on(rxcpp::observe_on_new_thread())
+          .as_blocking()
+          .subscribe([&top_hash](auto block) { top_hash = block.hash; });
 
       return std::make_unique<MutableStorageImpl>(
           top_hash.value_or(hash256_t{}),
