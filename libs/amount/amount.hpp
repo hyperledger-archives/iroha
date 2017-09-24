@@ -171,8 +171,8 @@ namespace iroha {
      */
     Amount subtract(const Amount&) const;
 
-    boost::multiprecision::uint256_t value_;
-    uint8_t precision_;
+    boost::multiprecision::uint256_t value_{0};
+    uint8_t precision_{0};
   };
 }
 #endif  // IROHA_AMOUNT_H

@@ -47,9 +47,9 @@ namespace iroha {
     return res;
   }
 
-  Amount::Amount() : value_(0), precision_(0) {}
+  Amount::Amount() {}
 
-  Amount::Amount(uint256_t value) : value_(value), precision_(0) {}
+  Amount::Amount(uint256_t value) : value_(value) {}
 
   Amount::Amount(uint256_t amount, uint8_t precision)
       : value_(amount), precision_(precision) {}
@@ -60,7 +60,7 @@ namespace iroha {
 
   Amount::Amount(uint64_t first, uint64_t second, uint64_t third,
                  uint64_t fourth, uint8_t precision)
-      : value_(0), precision_(precision) {
+      : precision_(precision) {
     value_ = getJointUint256(first, second, third, fourth);
   }
 
