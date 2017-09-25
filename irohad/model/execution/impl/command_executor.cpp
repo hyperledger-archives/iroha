@@ -154,7 +154,8 @@ bool AddSignatoryExecutor::execute(const Command &command,
                                    ametsuchi::WsvCommand &commands) {
   auto add_signatory = static_cast<const AddSignatory &>(command);
 
-  return commands.insertAccountSignatory(add_signatory.account_id,
+  return commands.insertSignatory(add_signatory.pubkey) &&
+         commands.insertAccountSignatory(add_signatory.account_id,
                                          add_signatory.pubkey);
 }
 
@@ -315,7 +316,8 @@ bool RemoveSignatoryExecutor::execute(const Command &command,
 
   // Delete will fail if account signatory doesn't exist
   return commands.deleteAccountSignatory(remove_signatory.account_id,
-                                         remove_signatory.pubkey);
+                                         remove_signatory.pubkey) &&
+         commands.deleteSignatory(remove_signatory.pubkey);
 }
 
 bool RemoveSignatoryExecutor::hasPermissions(const Command &command,
@@ -335,7 +337,17 @@ bool RemoveSignatoryExecutor::isValid(const Command &command,
   auto remove_signatory = static_cast<const RemoveSignatory &>(command);
 
   auto account = queries.getAccount(remove_signatory.account_id);
-  return account.has_value();
+  auto signatories = queries.getSignatories(remove_signatory.account_id);
+
+  if (not (account.has_value() and signatories.has_value())) {
+    // No account or signatories found
+    return false;
+  }
+
+  auto newSignatoriesSize = signatories.value().size() - 1;
+
+  // You can't remove if size of rest signatories less than the quorum
+  return newSignatoriesSize >= account.value().quorum;
 }
 
 // ----------------- SetAccountPermissions -----------------
