@@ -188,7 +188,7 @@ void Irohad::initBlockLoader() {
 }
 
 void Irohad::initConsensusGate() {
-  auto consensus_gate = yac_init.initConsensusGate(peer_address,
+  consensus_gate = yac_init.initConsensusGate(peer_address,
                                                    loop,
                                                    orderer,
                                                    simulator,

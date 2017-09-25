@@ -55,6 +55,7 @@ int main(int argc, char *argv[]) {
                 config[mbr::RedisPort].GetUint(),
                 config[mbr::PgOpt].GetString(),
                 config[mbr::ToriiPort].GetUint(), FLAGS_peer_number);
+  irohad.init();
   log->info("storage initialized: {}", logger::logBool(irohad.storage));
 
   iroha::main::BlockInserter inserter(irohad.storage);
