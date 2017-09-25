@@ -42,9 +42,7 @@ void command_converter_test(iroha::model::Command &abstract_command) {
 TEST(CommandTest, add_asset_quantity) {
   auto orig_command = iroha::model::AddAssetQuantity();
   orig_command.account_id = "23";
-  iroha::Amount amount;
-  amount.frac_part = 50;
-  amount.int_part = 1;
+  iroha::Amount amount(50,1);
 
   orig_command.amount = amount;
   orig_command.asset_id = "23";
@@ -175,7 +173,7 @@ TEST(CommandTest, set_transfer_asset) {
   auto factory = iroha::model::converters::PbCommandFactory();
 
   auto orig_command = iroha::model::TransferAsset();
-  orig_command.amount = {1, 20};
+  orig_command.amount = {120, 2};
   orig_command.asset_id = "tugrik";
   orig_command.src_account_id = "Vasya";
   orig_command.dest_account_id = "Petya";

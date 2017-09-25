@@ -60,8 +60,8 @@ bool AddAssetQuantityExecutor::execute(const Command &command,
   }
   auto precision = asset.value().precision;
 
-  if (add_asset_quantity.amount.get_frac_number() > precision) {
-    log_->info("amount is wrong formed:");
+  if (add_asset_quantity.amount.getPrecision() != precision) {
+    log_->info("amount is wrongly formed:");
     return false;
   }
   if (not queries.getAccount(add_asset_quantity.account_id).has_value()) {
@@ -71,22 +71,21 @@ bool AddAssetQuantityExecutor::execute(const Command &command,
   auto account_asset = queries.getAccountAsset(add_asset_quantity.account_id,
                                                add_asset_quantity.asset_id);
   if (not account_asset.has_value()) {
-    log_->info("create wallet {} for {}",
-               add_asset_quantity.asset_id,
+    log_->info("create wallet {} for {}", add_asset_quantity.asset_id,
                add_asset_quantity.account_id);
 
     account_asset = AccountAsset();
     account_asset->asset_id = add_asset_quantity.asset_id;
     account_asset->account_id = add_asset_quantity.account_id;
-    account_asset->balance =
-        add_asset_quantity.amount.get_joint_amount(precision);
+    account_asset->balance = add_asset_quantity.amount;
   } else {
-    account_asset = account_asset.value();
-    // TODO: handle non trivial arithmetic
-    auto new_balance = account_asset.value().balance +
-        add_asset_quantity.amount.get_joint_amount(precision);
-    // TODO: handle overflow
-    account_asset->balance = new_balance;
+    auto account_asset_value = account_asset.value();
+    auto new_balance =
+        account_asset_value.balance + add_asset_quantity.amount;
+    if (not new_balance.has_value()) {
+      return false;
+    }
+    account_asset->balance = new_balance.value();
   }
 
   // accountAsset.value().balance += amount;
@@ -106,18 +105,13 @@ bool AddAssetQuantityExecutor::isValid(const Command &command,
 
   // TODO move to stateless validation
 
-  // Amount must be in some meaningful range
-  return (add_asset_quantity.amount.int_part > 0 or
-      add_asset_quantity.amount.frac_part > 0) and
-      add_asset_quantity.amount.int_part <
-          (std::numeric_limits<uint32_t>::max)();
+  // TODO add some checks for amount if there will be a need
+  return true;
 }
 
 // ---------------------------------| AddPeer |---------------------------------
 
-AddPeerExecutor::AddPeerExecutor() {
-  log_ = logger::log("AddPeerExecutor");
-}
+AddPeerExecutor::AddPeerExecutor() { log_ = logger::log("AddPeerExecutor"); }
 
 bool AddPeerExecutor::execute(const Command &command,
                               ametsuchi::WsvQuery &queries,
@@ -165,10 +159,10 @@ bool AddSignatoryExecutor::hasPermissions(const Command &command,
   auto add_signatory = static_cast<const AddSignatory &>(command);
 
   return
-    // Case 1. When command creator wants to add signatory to their account
+      // Case 1. When command creator wants to add signatory to their account
       add_signatory.account_id == creator.account_id or
-          // Case 2. System admin wants to add signatory to account
-          creator.permissions.add_signatory;
+      // Case 2. System admin wants to add signatory to account
+      creator.permissions.add_signatory;
 }
 
 bool AddSignatoryExecutor::isValid(const Command &command,
@@ -199,9 +193,9 @@ bool CreateAccountExecutor::execute(const Command &command,
   account.permissions = permissions;
 
   return commands.insertSignatory(create_account.pubkey) and
-      commands.insertAccount(account) and
-      commands.insertAccountSignatory(account.account_id,
-                                      create_account.pubkey);
+         commands.insertAccount(account) and
+         commands.insertAccountSignatory(account.account_id,
+                                         create_account.pubkey);
 }
 
 bool CreateAccountExecutor::hasPermissions(const Command &command,
@@ -216,13 +210,13 @@ bool CreateAccountExecutor::isValid(const Command &command,
   auto create_account = static_cast<const CreateAccount &>(command);
 
   return
-    // Name is within some range
+      // Name is within some range
       not create_account.account_name.empty() and
-          create_account.account_name.size() < 8 and
-          // Account must be well-formed (no system symbols)
-          std::all_of(std::begin(create_account.account_name),
-                      std::end(create_account.account_name),
-                      [](char c) { return std::isalnum(c); });
+      create_account.account_name.size() < 8 and
+      // Account must be well-formed (no system symbols)
+      std::all_of(std::begin(create_account.account_name),
+                  std::end(create_account.account_name),
+                  [](char c) { return std::isalnum(c); });
 }
 
 // -------------------------------| CreateAsset |-------------------------------
@@ -256,13 +250,13 @@ bool CreateAssetExecutor::isValid(const Command &command,
   auto create_asset = static_cast<const CreateAsset &>(command);
 
   return
-    // Name is within some range
+      // Name is within some range
       not create_asset.asset_name.empty() &&
-          create_asset.asset_name.size() < 10 &&
-          // Account must be well-formed (no system symbols)
-          std::all_of(std::begin(create_asset.asset_name),
-                      std::end(create_asset.asset_name),
-                      [](char c) { return std::isalnum(c); });
+      create_asset.asset_name.size() < 10 &&
+      // Account must be well-formed (no system symbols)
+      std::all_of(std::begin(create_asset.asset_name),
+                  std::end(create_asset.asset_name),
+                  [](char c) { return std::isalnum(c); });
 }
 
 // ------------------------------| CreateDomain |-------------------------------
@@ -294,13 +288,13 @@ bool CreateDomainExecutor::isValid(const Command &command,
   auto create_domain = static_cast<const CreateDomain &>(command);
 
   return
-    // Name is within some range
+      // Name is within some range
       not create_domain.domain_name.empty() and
-          create_domain.domain_name.size() < 10 and
-          // Account must be well-formed (no system symbols)
-          std::all_of(std::begin(create_domain.domain_name),
-                      std::end(create_domain.domain_name),
-                      [](char c) { return std::isalnum(c); });
+      create_domain.domain_name.size() < 10 and
+      // Account must be well-formed (no system symbols)
+      std::all_of(std::begin(create_domain.domain_name),
+                  std::end(create_domain.domain_name),
+                  [](char c) { return std::isalnum(c); });
 }
 
 // -----------------------------| RemoveSignatory |-----------------------------
@@ -329,7 +323,7 @@ bool RemoveSignatoryExecutor::hasPermissions(const Command &command,
   // 1. Creator removes signatory from their account
   // 2. System admin
   return creator.account_id == remove_signatory.account_id or
-      creator.permissions.remove_signatory;
+         creator.permissions.remove_signatory;
 }
 
 bool RemoveSignatoryExecutor::isValid(const Command &command,
@@ -409,10 +403,10 @@ bool SetQuorumExecutor::hasPermissions(const Command &command,
   auto set_quorum = static_cast<const SetQuorum &>(command);
 
   return
-    // Case 1: creator sets quorum to their account
+      // Case 1: creator sets quorum to their account
       (creator.account_id == set_quorum.account_id or
-          // Case 2: system admin
-          creator.permissions.set_quorum);
+       // Case 2: system admin
+       creator.permissions.set_quorum);
 }
 
 bool SetQuorumExecutor::isValid(const Command &command,
@@ -437,11 +431,8 @@ bool TransferAssetExecutor::execute(const Command &command,
   auto src_account_asset = queries.getAccountAsset(
       transfer_asset.src_account_id, transfer_asset.asset_id);
   if (not src_account_asset.has_value()) {
-    log_->info("asset {} is absent of {}",
-               transfer_asset.asset_id,
-               transfer_asset.src_account_id,
-               transfer_asset.description
-    );
+    log_->info("asset {} is absent of {}", transfer_asset.asset_id,
+               transfer_asset.src_account_id, transfer_asset.description);
 
     return false;
   }
@@ -451,24 +442,25 @@ bool TransferAssetExecutor::execute(const Command &command,
       transfer_asset.dest_account_id, transfer_asset.asset_id);
   auto asset = queries.getAsset(transfer_asset.asset_id);
   if (not asset.has_value()) {
-    log_->info("asset {} is absent of {}",
-               transfer_asset.asset_id,
-               transfer_asset.dest_account_id,
-               transfer_asset.description
-    );
+    log_->info("asset {} is absent of {}", transfer_asset.asset_id,
+               transfer_asset.dest_account_id, transfer_asset.description);
 
     return false;
   }
   // Precision for both wallets
   auto precision = asset.value().precision;
-  if (transfer_asset.amount.get_frac_number() > precision) {
+  if (transfer_asset.amount.getPrecision() != precision) {
     log_->info("precision {} is wrong", precision);
     return false;
   }
   // Get src balance
   auto src_balance = src_account_asset.value().balance;
   // TODO: handle non-trivial arithmetic
-  src_balance -= transfer_asset.amount.get_joint_amount(precision);
+  auto new_src_balance = src_balance - transfer_asset.amount;
+  if (not new_src_balance.has_value()) {
+    return false;
+  }
+  src_balance = new_src_balance.value();
   // Set new balance for source account
   src_account_asset.value().balance = src_balance;
 
@@ -478,8 +470,7 @@ bool TransferAssetExecutor::execute(const Command &command,
     dest_AccountAsset.asset_id = transfer_asset.asset_id;
     dest_AccountAsset.account_id = transfer_asset.dest_account_id;
     // Set new balance for dest account
-    dest_AccountAsset.balance =
-        transfer_asset.amount.get_joint_amount(precision);
+    dest_AccountAsset.balance = transfer_asset.amount;
 
   } else {
     // Account already has such asset
@@ -487,13 +478,17 @@ bool TransferAssetExecutor::execute(const Command &command,
     // Get balance dest account
     auto dest_balance = dest_account_asset.value().balance;
 
-    dest_balance += transfer_asset.amount.get_joint_amount(precision);
+    auto new_dest_balance = dest_balance + transfer_asset.amount;
+    if (not new_dest_balance.has_value()) {
+      return false;
+    }
+    dest_balance = new_dest_balance.value();
     // Set new balance for dest
     dest_AccountAsset.balance = dest_balance;
   }
 
   return commands.upsertAccountAsset(dest_AccountAsset) and
-      commands.upsertAccountAsset(src_account_asset.value());
+         commands.upsertAccountAsset(src_account_asset.value());
 }
 
 bool TransferAssetExecutor::hasPermissions(const Command &command,
@@ -504,15 +499,14 @@ bool TransferAssetExecutor::hasPermissions(const Command &command,
   // Can account transfer assets
   // Creator can transfer only from their account
   return creator.permissions.can_transfer and
-      creator.account_id == transfer_asset.src_account_id;
+         creator.account_id == transfer_asset.src_account_id;
 }
 
 bool TransferAssetExecutor::isValid(const Command &command,
                                     ametsuchi::WsvQuery &queries) {
   auto transfer_asset = static_cast<const TransferAsset &>(command);
 
-  if (not(transfer_asset.amount.frac_part > 0 or
-      transfer_asset.amount.int_part > 0)) {
+  if (transfer_asset.amount.getIntValue() == 0) {
     log_->info("amount must be not zero");
     return false;
   }
@@ -522,16 +516,15 @@ bool TransferAssetExecutor::isValid(const Command &command,
     return false;
   }
   // Amount is formed wrong
-  if (transfer_asset.amount.get_frac_number() > asset.value().precision) {
+  if (transfer_asset.amount.getPrecision() != asset.value().precision) {
     return false;
   }
   auto account_asset = queries.getAccountAsset(transfer_asset.src_account_id,
                                                transfer_asset.asset_id);
 
   return account_asset.has_value() and
-      // Check if dest account exist
-      queries.getAccount(transfer_asset.dest_account_id) and
-      // Balance in your wallet should be at least amount of transfer
-      account_asset.value().balance >=
-          transfer_asset.amount.get_joint_amount(asset.value().precision);
+         // Check if dest account exist
+         queries.getAccount(transfer_asset.dest_account_id) and
+         // Balance in your wallet should be at least amount of transfer
+         account_asset.value().balance >= transfer_asset.amount;
 }

@@ -28,6 +28,13 @@
 namespace parser {
 
   /**
+   * Check if string is actually the integer number
+   * @param s
+   * @return
+   */
+  bool isIntNumber(const std::string& s);
+
+  /**
    * Parse the first command in the line
    * @param line string to parse
    * @return nullopt if no command found, string otherwise
@@ -44,6 +51,9 @@ namespace parser {
   template <typename T>
   nonstd::optional<T> parseValue(std::string word) {
     std::stringstream ss(word);
+    if (not isIntNumber(word)){
+      return nonstd::nullopt;
+    }
     T val;
     if (ss >> val) {
       return val;

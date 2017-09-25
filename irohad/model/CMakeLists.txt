@@ -12,6 +12,7 @@ target_link_libraries(model
     optional
     rxcpp
     logger
+    iroha_amount
     )
 
 

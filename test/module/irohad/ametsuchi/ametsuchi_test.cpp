@@ -113,9 +113,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   AddAssetQuantity addAssetQuantity;
   addAssetQuantity.asset_id = "RUB#ru";
   addAssetQuantity.account_id = "user1@ru";
-  iroha::Amount asset_amount;
-  asset_amount.int_part = 1;
-  asset_amount.frac_part = 50;
+  iroha::Amount asset_amount(150, 2);
   addAssetQuantity.amount = asset_amount;
   txn.commands.push_back(std::make_shared<AddAssetQuantity>(addAssetQuantity));
   TransferAsset transferAsset;
@@ -123,9 +121,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   transferAsset.dest_account_id = "user2@ru";
   transferAsset.asset_id = "RUB#ru";
   transferAsset.description = "test transfer";
-  iroha::Amount transfer_amount;
-  transfer_amount.int_part = 1;
-  transfer_amount.frac_part = 0;
+  iroha::Amount transfer_amount(100, 2);
   transferAsset.amount = transfer_amount;
   txn.commands.push_back(std::make_shared<TransferAsset>(transferAsset));
 
@@ -148,12 +144,12 @@ TEST_F(AmetsuchiTest, SampleTest) {
     ASSERT_TRUE(asset1);
     ASSERT_EQ(asset1->account_id, "user1@ru");
     ASSERT_EQ(asset1->asset_id, "RUB#ru");
-    ASSERT_EQ(asset1->balance, 50);
+    ASSERT_EQ(asset1->balance, iroha::Amount(50, 2));
     auto asset2 = wsv->getAccountAsset("user2@ru", "RUB#ru");
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, "user2@ru");
     ASSERT_EQ(asset2->asset_id, "RUB#ru");
-    ASSERT_EQ(asset2->balance, 100);
+    ASSERT_EQ(asset2->balance, iroha::Amount(100, 2));
   }
 
   // Block store tests
@@ -256,12 +252,12 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   AddAssetQuantity addAssetQuantity1;
   addAssetQuantity1.asset_id = asset1id;
   addAssetQuantity1.account_id = user1id;
-  addAssetQuantity1.amount = iroha::Amount(3, 00);
+  addAssetQuantity1.amount = iroha::Amount(300, 2);
   txn.commands.push_back(std::make_shared<AddAssetQuantity>(addAssetQuantity1));
   AddAssetQuantity addAssetQuantity2;
   addAssetQuantity2.asset_id = asset2id;
   addAssetQuantity2.account_id = user2id;
-  addAssetQuantity2.amount = iroha::Amount(2, 50);
+  addAssetQuantity2.amount = iroha::Amount(250, 2);
   txn.commands.push_back(std::make_shared<AddAssetQuantity>(addAssetQuantity2));
 
   Block block;
@@ -298,12 +294,12 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
     ASSERT_TRUE(asset1);
     ASSERT_EQ(asset1->account_id, user1id);
     ASSERT_EQ(asset1->asset_id, asset1id);
-    ASSERT_EQ(asset1->balance, 300);
+    ASSERT_EQ(asset1->balance, iroha::Amount(300, 2));
     auto asset2 = wsv->getAccountAsset(user2id, asset2id);
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, user2id);
     ASSERT_EQ(asset2->asset_id, asset2id);
-    ASSERT_EQ(asset2->balance, 250);
+    ASSERT_EQ(asset2->balance, iroha::Amount(250, 2));
   }
 
   // 2th tx (user1 -> user2 # asset1)
@@ -313,7 +309,7 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   transferAsset.src_account_id = user1id;
   transferAsset.dest_account_id = user2id;
   transferAsset.asset_id = asset1id;
-  transferAsset.amount = iroha::Amount(1, 20);
+  transferAsset.amount = iroha::Amount(120, 2);
   txn.commands.push_back(std::make_shared<TransferAsset>(transferAsset));
 
   block = Block();
@@ -335,12 +331,12 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
     ASSERT_TRUE(asset1);
     ASSERT_EQ(asset1->account_id, user1id);
     ASSERT_EQ(asset1->asset_id, asset1id);
-    ASSERT_EQ(asset1->balance, 180);
+    ASSERT_EQ(asset1->balance, iroha::Amount(180, 2));
     auto asset2 = wsv->getAccountAsset(user2id, asset1id);
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, user2id);
     ASSERT_EQ(asset2->asset_id, asset1id);
-    ASSERT_EQ(asset2->balance, 120);
+    ASSERT_EQ(asset2->balance, iroha::Amount(120, 2));
   }
 
   // 3rd tx
@@ -352,13 +348,13 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   transferAsset1.src_account_id = user2id;
   transferAsset1.dest_account_id = user3id;
   transferAsset1.asset_id = asset2id;
-  transferAsset1.amount = iroha::Amount(1, 50);
+  transferAsset1.amount = iroha::Amount(150, 2);
   txn.commands.push_back(std::make_shared<TransferAsset>(transferAsset1));
   TransferAsset transferAsset2;
   transferAsset2.src_account_id = user2id;
   transferAsset2.dest_account_id = user1id;
   transferAsset2.asset_id = asset2id;
-  transferAsset2.amount = iroha::Amount(0, 10);
+  transferAsset2.amount = iroha::Amount(10, 2);
   txn.commands.push_back(std::make_shared<TransferAsset>(transferAsset2));
 
   block = Block();
@@ -380,17 +376,17 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
     ASSERT_TRUE(asset1);
     ASSERT_EQ(asset1->account_id, user2id);
     ASSERT_EQ(asset1->asset_id, asset2id);
-    ASSERT_EQ(asset1->balance, 90);
+    ASSERT_EQ(asset1->balance, iroha::Amount(90, 2));
     auto asset2 = wsv->getAccountAsset(user3id, asset2id);
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, user3id);
     ASSERT_EQ(asset2->asset_id, asset2id);
-    ASSERT_EQ(asset2->balance, 150);
+    ASSERT_EQ(asset2->balance, iroha::Amount(150, 2));
     auto asset3 = wsv->getAccountAsset(user1id, asset2id);
     ASSERT_TRUE(asset3);
     ASSERT_EQ(asset3->account_id, user1id);
     ASSERT_EQ(asset3->asset_id, asset2id);
-    ASSERT_EQ(asset3->balance, 10);
+    ASSERT_EQ(asset3->balance, iroha::Amount(10, 2));
   }
 
   // Block store tests

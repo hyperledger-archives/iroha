@@ -152,7 +152,9 @@ namespace iroha {
       auto row = result.at(0);
       row.at("account_id") >> asset.account_id;
       row.at("asset_id") >> asset.asset_id;
-      row.at("amount") >> asset.balance;
+      std::string amount_str;
+      row.at("amount") >> amount_str;
+      asset.balance = Amount::createFromString(amount_str).value();
       //      row.at("permissions") >> ?
       return asset;
     }

@@ -273,6 +273,7 @@ namespace iroha {
   using ts64_t = uint64_t;
   using ts32_t = uint32_t;
 
+/*
   struct Amount {
     uint64_t int_part;
     uint64_t frac_part;
@@ -314,6 +315,7 @@ namespace iroha {
       return result;
     }
   };
+*/
 
   // check the type of the derived class
   template <typename Base, typename T>

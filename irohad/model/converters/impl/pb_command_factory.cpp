@@ -16,6 +16,7 @@
  */
 
 #include "model/converters/pb_command_factory.hpp"
+#include "model/converters/pb_common.hpp"
 
 #include <string>
 
@@ -30,8 +31,7 @@ namespace iroha {
         pb_add_asset_quantity.set_account_id(add_asset_quantity.account_id);
         pb_add_asset_quantity.set_asset_id(add_asset_quantity.asset_id);
         auto amount = pb_add_asset_quantity.mutable_amount();
-        amount->set_integer_part(add_asset_quantity.amount.int_part);
-        amount->set_fractial_part(add_asset_quantity.amount.frac_part);
+        amount->CopyFrom(serializeAmount(add_asset_quantity.amount));
         return pb_add_asset_quantity;
       }
 
@@ -40,10 +40,8 @@ namespace iroha {
         model::AddAssetQuantity add_asset_quantity;
         add_asset_quantity.account_id = pb_add_asset_quantity.account_id();
         add_asset_quantity.asset_id = pb_add_asset_quantity.asset_id();
-        Amount amount;
-        amount.int_part = pb_add_asset_quantity.amount().integer_part();
-        amount.frac_part = pb_add_asset_quantity.amount().fractial_part();
-        add_asset_quantity.amount = amount;
+        add_asset_quantity.amount =
+            deserializeAmount(pb_add_asset_quantity.amount());
 
         return add_asset_quantity;
       }
@@ -244,8 +242,7 @@ namespace iroha {
         pb_transfer_asset.set_asset_id(transfer_asset.asset_id);
         pb_transfer_asset.set_description(transfer_asset.description);
         auto amount = pb_transfer_asset.mutable_amount();
-        amount->set_integer_part(transfer_asset.amount.int_part);
-        amount->set_fractial_part(transfer_asset.amount.frac_part);
+        amount->CopyFrom(serializeAmount(transfer_asset.amount));
         return pb_transfer_asset;
       }
 
@@ -258,10 +255,8 @@ namespace iroha {
             pb_subtract_asset_quantity.dest_account_id();
         transfer_asset.asset_id = pb_subtract_asset_quantity.asset_id();
         transfer_asset.description = pb_subtract_asset_quantity.description();
-        transfer_asset.amount.int_part =
-            pb_subtract_asset_quantity.amount().integer_part();
-        transfer_asset.amount.frac_part =
-            pb_subtract_asset_quantity.amount().fractial_part();
+        transfer_asset.amount =
+            deserializeAmount(pb_subtract_asset_quantity.amount());
         return transfer_asset;
       }
 
@@ -294,9 +289,9 @@ namespace iroha {
         }
 
         // -----|CreateAsset|-----
-        if (instanceof<model::CreateAsset>(command)) {
+        if (instanceof <model::CreateAsset>(command)) {
           auto serialized = commandFactory.serializeCreateAsset(
-                  static_cast<const model::CreateAsset &>(command));
+              static_cast<const model::CreateAsset &>(command));
           cmd.set_allocated_create_asset(new protocol::CreateAsset(serialized));
         }
 

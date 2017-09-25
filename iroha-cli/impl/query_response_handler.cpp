@@ -16,6 +16,7 @@
  */
 
 #include "query_response_handler.hpp"
+#include "model/converters/pb_common.hpp"
 
 using namespace iroha::protocol;
 namespace iroha_cli {
@@ -52,7 +53,8 @@ namespace iroha_cli {
     if (it != handler_map_.end()) {
       (this->*it->second)(response);
     } else {
-      log_->error("Response Handle {} not Implemented", response.response_case());
+      log_->error("Response Handle {} not Implemented",
+                  response.response_case());
     }
   }
 
@@ -83,7 +85,9 @@ namespace iroha_cli {
     log_->info("[Account Assets]");
     log_->info("-Account Id- {}", acc_assets.account_id());
     log_->info("-Asset Id- {}", acc_assets.asset_id());
-    log_->info("-Balance- {}", acc_assets.balance());
+    auto balance =
+        iroha::model::converters::deserializeAmount(acc_assets.balance());
+    log_->info("-Balance- {}", balance.to_string());
   }
 
   void QueryResponseHandler::handleSignatoriesResponse(

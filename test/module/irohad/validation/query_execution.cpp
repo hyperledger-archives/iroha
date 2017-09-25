@@ -95,7 +95,8 @@ void set_default_ametsuchi(MockWsvQuery &test_wsv,
   auto acct_asset = iroha::model::AccountAsset();
   acct_asset.asset_id = ASSET_ID;
   acct_asset.account_id = ACCOUNT_ID;
-  acct_asset.balance = 150;
+  iroha::Amount balance(150);
+  acct_asset.balance = balance;
   EXPECT_CALL(test_wsv, getAccountAsset(ACCOUNT_ID, ASSET_ID))
       .WillRepeatedly(Return(acct_asset));
 }

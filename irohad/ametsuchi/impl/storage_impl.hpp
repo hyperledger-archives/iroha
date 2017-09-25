@@ -161,7 +161,7 @@ namespace iroha {
           "CREATE TABLE IF NOT EXISTS account_has_asset (\n"
           "    account_id character varying(197) NOT NULL REFERENCES account,\n"
           "    asset_id character varying(197) NOT NULL REFERENCES asset,\n"
-          "    amount bigint NOT NULL,\n"
+          "    amount decimal NOT NULL,\n"
           "    permissions bit varying NOT NULL,\n"
           "    PRIMARY KEY (account_id, asset_id)\n"
           ");\n"

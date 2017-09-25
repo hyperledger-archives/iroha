@@ -16,9 +16,9 @@
  */
 
 #include <gtest/gtest.h>
+#include <amount/amount.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
-#include <amount/amount.hpp>
 
 class AmountTest : public testing::Test {};
 
@@ -39,10 +39,11 @@ TEST_F(AmountTest, TestBasic) {
   ASSERT_TRUE(aa.has_value());
   ASSERT_EQ(a, *aa);
 
-  auto d = a.percentage(*c); // taking 1.84% of 1.23
+  auto d = a.percentage(*c);  // taking 1.84% of 1.23
   ASSERT_EQ(d.to_string(), "0.02");
 
-  auto e = a.percentage(iroha::Amount(256)); // taking 256% of the amount == 3.1488
+  auto e =
+      a.percentage(iroha::Amount(256));  // taking 256% of the amount == 3.1488
   // assuming that we round down
   ASSERT_EQ(e.to_string(), "3.14");
 
@@ -51,7 +52,7 @@ TEST_F(AmountTest, TestBasic) {
   ASSERT_EQ(f.to_string(), "1.23");
 
   // check equals when different precisions
-  ASSERT_EQ(iroha::Amount(110, 2), iroha::Amount(11,1));
+  ASSERT_EQ(iroha::Amount(110, 2), iroha::Amount(11, 1));
 
   // check comparisons
   ASSERT_LT(iroha::Amount(110, 2), iroha::Amount(111, 2));
@@ -61,4 +62,12 @@ TEST_F(AmountTest, TestBasic) {
   ASSERT_GT(iroha::Amount(111, 2), iroha::Amount(110, 2));
   ASSERT_GE(iroha::Amount(111, 2), iroha::Amount(110, 2));
   ASSERT_GE(iroha::Amount(111, 2), iroha::Amount(111, 2));
+
+  // check conversion to four uint64
+  iroha::Amount g(boost::multiprecision::uint256_t(
+      "12391826391263918264198246192846192846192412398162398"));
+  auto vec = g.to_uint64s();
+  iroha::Amount h(vec.at(0), vec.at(1), vec.at(2), vec.at(3));
+  ASSERT_EQ(h.getPrecision(), 0);
+  ASSERT_EQ(g, h);
 }

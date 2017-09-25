@@ -54,8 +54,8 @@ TEST(ModelOperatorTest, AddPeerTest) {
 AddAssetQuantity createAddAssetQuantity() {
   AddAssetQuantity aaq;
   aaq.account_id = "123";
-  aaq.amount.int_part = 10;
-  aaq.amount.frac_part = 10;
+  iroha::Amount amount(1010, 2);
+  aaq.amount = amount;
   aaq.asset_id = "123";
   return aaq;
 }
@@ -200,8 +200,8 @@ TEST(ModelOperatorTest, SetQuorumTest) {
 TransferAsset createTransferAsset() {
   TransferAsset transferAsset;
   transferAsset.asset_id = "123";
-  transferAsset.amount.int_part = 10;
-  transferAsset.amount.frac_part = 10;
+  iroha::Amount amount(1010, 2);
+  transferAsset.amount = amount;
   transferAsset.src_account_id = "1";
   transferAsset.dest_account_id = "2";
   transferAsset.description = "test";
@@ -220,17 +220,13 @@ TEST(ModelOperatorTest, TransferAssetTest) {
 // -----|Amount|-----
 
 TEST(ModelOperatorTest, AmountTest) {
-  iroha::Amount amount1;
-  amount1.int_part = 10;
-  amount1.frac_part = 10;
+  iroha::Amount amount1(1010, 2);
 
-  iroha::Amount amount2;
-  amount2.int_part = 10;
-  amount2.frac_part = 10;
+  iroha::Amount amount2(1010, 2);
 
   ASSERT_EQ(amount1, amount2);
-  amount2.frac_part = 11;
-  ASSERT_NE(amount1, amount2);
+  iroha::Amount amount3(1011, 2);
+  ASSERT_NE(amount1, amount3);
 }
 
 // -----|Signature|-----

@@ -21,6 +21,7 @@
 #include <model/command.hpp>
 #include <string>
 #include "common/types.hpp"
+#include "amount/amount.hpp"
 
 namespace iroha {
   namespace model {

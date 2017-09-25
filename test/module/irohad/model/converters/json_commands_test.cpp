@@ -18,6 +18,7 @@
 #include <algorithm>
 
 #include <gtest/gtest.h>
+#include <rapidjson/writer.h>
 
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
@@ -88,9 +89,7 @@ TEST_F(JsonCommandTest, InvalidWhenUnknownCommandType) {
 TEST_F(JsonCommandTest, add_asset_quantity) {
   auto orig_command = std::make_shared<AddAssetQuantity>();
   orig_command->account_id = "23";
-  iroha::Amount amount;
-  amount.frac_part = 50;
-  amount.int_part = 1;
+  iroha::Amount amount(150, 2);
 
   orig_command->amount = amount;
   orig_command->asset_id = "23";
