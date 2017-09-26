@@ -55,7 +55,6 @@ int main(int argc, char *argv[]) {
                 config[mbr::RedisPort].GetUint(),
                 config[mbr::PgOpt].GetString(),
                 config[mbr::ToriiPort].GetUint(), FLAGS_peer_number);
-  log->info("storage initialized: {}", logger::logBool(irohad.storage));
 
   iroha::main::BlockInserter inserter(irohad.storage);
   auto file = inserter.loadFile(FLAGS_genesis_block);
@@ -67,6 +66,8 @@ int main(int argc, char *argv[]) {
     log->info("Genesis block inserted, number of transactions: {}",
                block.value().transactions.size());
   }
+  // init pipeline components
+  irohad.init();
 
   // runs iroha
   log->info("Running iroha");
