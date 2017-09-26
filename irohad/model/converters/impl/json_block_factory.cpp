@@ -36,7 +36,8 @@ namespace iroha {
         Value signatures;
         signatures.SetArray();
         for (const auto &signature : block.sigs) {
-          signatures.PushBack(serializeSignature(signature, allocator), allocator);
+          signatures.PushBack(serializeSignature(signature, allocator),
+                              allocator);
         }
         document.AddMember("signatures", signatures, allocator);
 
@@ -67,14 +68,13 @@ namespace iroha {
         auto des = makeFieldDeserializer(document);
         auto des_transactions = [this](auto array) {
           auto acc_transactions = [this](auto init, auto &x) {
-            return init
-                | [this, &x](auto transactions) {
-                    return factory_.deserialize(x)
-                        | [&transactions](auto transaction) {
-                            transactions.push_back(transaction);
-                            return nonstd::make_optional(transactions);
-                          };
+            return init | [this, &x](auto transactions) {
+              return factory_.deserialize(x) |
+                  [&transactions](auto transaction) {
+                    transactions.push_back(transaction);
+                    return nonstd::make_optional(transactions);
                   };
+            };
           };
           return std::accumulate(
               array.begin(), array.end(),

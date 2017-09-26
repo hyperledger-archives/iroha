@@ -26,6 +26,12 @@ namespace iroha {
     class PostgresWsvQuery : public WsvQuery {
      public:
       explicit PostgresWsvQuery(pqxx::nontransaction &transaction);
+      nonstd::optional<std::vector<std::string>> getAccountRoles(
+          const std::string &account_id) override;
+
+      nonstd::optional<std::vector<std::string>> getRolePermissions(
+          const std::string &role_name) override;
+
       nonstd::optional<model::Account> getAccount(
           const std::string &account_id) override;
       nonstd::optional<std::vector<ed25519::pubkey_t>> getSignatories(
@@ -35,6 +41,10 @@ namespace iroha {
       nonstd::optional<model::AccountAsset> getAccountAsset(
           const std::string &account_id, const std::string &asset_id) override;
       nonstd::optional<std::vector<model::Peer>> getPeers() override;
+      nonstd::optional<std::vector<std::string>> getRoles() override;
+      bool hasAccountGrantablePermission(
+          const std::string &permitee_account_id, const std::string &account_id,
+          const std::string &permission_id) override;
 
      private:
       pqxx::nontransaction &transaction_;

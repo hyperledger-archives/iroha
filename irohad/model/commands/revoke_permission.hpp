@@ -15,26 +15,38 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_REVOKE_PERMISSION_HPP
+#define IROHA_REVOKE_PERMISSION_HPP
 
-#include <ametsuchi/wsv_command.hpp>
-#include <ametsuchi/wsv_query.hpp>
-#include <model/account.hpp>
+#include <string>
+#include "model/command.hpp"
 
 namespace iroha {
   namespace model {
+
     /**
-     * Abstract Command Model
+     * Revoke permission granted before by creator to account_id
      */
-    struct Command {
-      virtual ~Command() = default;
+    struct RevokePermission : public Command {
+      /**
+       * Account from which grant permission
+       */
+      std::string account_id;
 
-      virtual bool operator==(const Command& rhs) const = 0;
+      /**
+       * Permission to revoke
+       */
+      std::string permission_name;
 
-      virtual bool operator!=(const Command& rhs) const;
+      bool operator==(const Command &command) const override;
+
+      RevokePermission() {}
+
+      RevokePermission(const std::string &account_id_,
+                       const std::string &permission_name_)
+          : account_id(account_id_), permission_name(permission_name_) {}
     };
   }  // namespace model
 }  // namespace iroha
 
-#endif  // IROHA_COMMAND_HPP
+#endif  // IROHA_REVOKE_PERMISSION_HPP

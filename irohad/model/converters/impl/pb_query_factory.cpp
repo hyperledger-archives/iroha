@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
+#include <queries.pb.h>
 #include "model/converters/pb_query_factory.hpp"
-#include "model/common.hpp"
 #include "model/model_hash_provider_impl.hpp"
 #include "model/queries/get_account.hpp"
 #include "model/queries/get_account_assets.hpp"
+#include "model/queries/get_asset_info.hpp"
+#include "model/queries/get_roles.hpp"
 #include "model/queries/get_signatories.hpp"
 #include "model/queries/get_transactions.hpp"
 
@@ -30,16 +32,25 @@ namespace iroha {
       PbQueryFactory::PbQueryFactory() {
         log_ = logger::log("PbQueryFactory");
         serializers_[typeid(GetAccount)] = &PbQueryFactory::serializeGetAccount;
-        serializers_[typeid(GetAccountAssets)] = &PbQueryFactory::serializeGetAccountAssets;
-        serializers_[typeid(GetAccountTransactions)] = &PbQueryFactory::serializeGetAccountTransactions;
-        serializers_[typeid(GetAccountAssetTransactions)] = &PbQueryFactory::serializeGetAccountAssetTransactions;
-        serializers_[typeid(GetSignatories)] = &PbQueryFactory::serializeGetSignatories;
+        serializers_[typeid(GetAccountAssets)] =
+            &PbQueryFactory::serializeGetAccountAssets;
+        serializers_[typeid(GetAccountTransactions)] =
+            &PbQueryFactory::serializeGetAccountTransactions;
+        serializers_[typeid(GetAccountAssetTransactions)] =
+            &PbQueryFactory::serializeGetAccountAssetTransactions;
+        serializers_[typeid(GetSignatories)] =
+            &PbQueryFactory::serializeGetSignatories;
+        serializers_[typeid(GetRolePermissions)] =
+            &PbQueryFactory::serializeGetRolePermissions;
+        serializers_[typeid(GetAssetInfo)] =
+            &PbQueryFactory::serializeGetAssetInfo;
+        serializers_[typeid(GetRoles)] = &PbQueryFactory::serializeGetRoles;
       }
 
       optional_ptr<model::Query> PbQueryFactory::deserialize(
           const protocol::Query& pb_query) {
         std::shared_ptr<model::Query> val;
-
+        // TODO: refactor
         if (pb_query.has_get_account()) {
           // Convert to get Account
           auto pb_cast = pb_query.get_account();
@@ -73,12 +84,26 @@ namespace iroha {
         }
 
         if (pb_query.has_get_account_asset_transactions()) {
-          // Convert to get Signatories
+          // Convert to get Account Asset Transactions
           auto pb_cast = pb_query.get_account_asset_transactions();
           auto query = GetAccountAssetTransactions();
           query.account_id = pb_cast.account_id();
           query.asset_id = pb_cast.asset_id();
           val = std::make_shared<model::GetAccountAssetTransactions>(query);
+        }
+
+        if (pb_query.has_get_roles()) {
+          auto pb_cast = pb_query.get_roles();
+          val = std::make_shared<GetRoles>();
+        }
+
+        if (pb_query.has_get_asset_info()) {
+          auto pb_cast = pb_query.get_asset_info();
+          val = std::make_shared<GetAssetInfo>(pb_cast.asset_id());
+        }
+        if (pb_query.has_get_role_permissions()) {
+          auto pb_cast = pb_query.get_role_permissions();
+          val = std::make_shared <GetRolePermissions>(pb_cast.role_id());
         }
 
         if (!val) {
@@ -179,6 +204,37 @@ namespace iroha {
         auto account_id = tmp->account_id;
         auto pb_query_mut = pb_query.mutable_get_account_signatories();
         pb_query_mut->set_account_id(account_id);
+        return pb_query;
+      }
+
+      protocol::Query PbQueryFactory::serializeGetAssetInfo(
+          std::shared_ptr<Query> query) {
+        protocol::Query pb_query;
+        serializeQueryMetaData(pb_query, query);
+        auto tmp = std::static_pointer_cast<GetAssetInfo>(query);
+        auto ast_id = tmp->asset_id;
+        auto pb_query_mut = pb_query.mutable_get_asset_info();
+        pb_query_mut->set_asset_id(ast_id);
+        return pb_query;
+      }
+
+      protocol::Query PbQueryFactory::serializeGetRoles(
+          std::shared_ptr<Query> query) {
+        protocol::Query pb_query;
+        auto mut = pb_query.mutable_get_roles();
+        serializeQueryMetaData(pb_query, query);
+        auto tmp = std::static_pointer_cast<GetRoles>(query);
+        return pb_query;
+      }
+
+      protocol::Query PbQueryFactory::serializeGetRolePermissions(
+          std::shared_ptr<Query> query) {
+        protocol::Query pb_query;
+        serializeQueryMetaData(pb_query, query);
+        auto tmp = std::static_pointer_cast<GetRolePermissions>(query);
+        auto role = tmp->role_id;
+        auto pb_query_mut = pb_query.mutable_get_role_permissions();
+        pb_query_mut->set_role_id(role);
         return pb_query;
       }
 

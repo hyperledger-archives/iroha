@@ -30,6 +30,11 @@
 #include "model/commands/transfer_asset.hpp"
 #include "model/execution/command_executor.hpp"
 
+#include "model/commands/append_role.hpp"
+#include "model/commands/create_role.hpp"
+#include "model/commands/grant_permission.hpp"
+#include "model/commands/revoke_permission.hpp"
+
 using namespace iroha::model;
 using namespace iroha::ametsuchi;
 
@@ -40,6 +45,122 @@ CommandExecutor::CommandExecutor() {
 bool CommandExecutor::validate(const Command &command, WsvQuery &queries,
                                const Account &creator) {
   return hasPermissions(command, queries, creator) && isValid(command, queries);
+}
+
+// ----------------------------| Append Role |-----------------------------
+AppendRoleExecutor::AppendRoleExecutor() {
+  log_ = logger::log("AppendRoleExecutor");
+}
+
+bool AppendRoleExecutor::execute(const Command &command,
+                                 ametsuchi::WsvQuery &queries,
+                                 ametsuchi::WsvCommand &commands) {
+  auto cmd_value = static_cast<const AppendRole &>(command);
+
+  return commands.insertAccountRole(cmd_value.account_id, cmd_value.role_name);
+}
+
+bool AppendRoleExecutor::hasPermissions(const Command &command,
+                                        ametsuchi::WsvQuery &queries,
+                                        const Account &creator) {
+  // TODO: implement
+  return true;
+}
+
+bool AppendRoleExecutor::isValid(const Command &command,
+                                 ametsuchi::WsvQuery &queries) {
+  // TODO: check. No additional checks required ?
+  return true;
+}
+
+// ----------------------------| Create Role |-----------------------------
+CreateRoleExecutor::CreateRoleExecutor() {
+  log_ = logger::log("CreateRoleExecutor");
+}
+
+bool CreateRoleExecutor::execute(const Command &command,
+                                 ametsuchi::WsvQuery &queries,
+                                 ametsuchi::WsvCommand &commands) {
+  auto cmd_value = static_cast<const CreateRole &>(command);
+
+  return commands.insertRole(cmd_value.role_name)
+      and commands.insertRolePermissions(cmd_value.role_name,
+                                         cmd_value.permissions);
+}
+
+bool CreateRoleExecutor::hasPermissions(const Command &command,
+                                        ametsuchi::WsvQuery &queries,
+                                        const Account &creator) {
+  // TODO: implement
+  return true;
+}
+
+bool CreateRoleExecutor::isValid(const Command &command,
+                                 ametsuchi::WsvQuery &queries) {
+  // TODO: check. Add checks on naming of the role
+  return true;
+}
+
+// ----------------------------| Grant Permission |-----------------------------
+GrantPermissionExecutor::GrantPermissionExecutor() : creator_() {
+  log_ = logger::log("GrantPermissionExecutor");
+}
+
+bool GrantPermissionExecutor::execute(const Command &command,
+                                      ametsuchi::WsvQuery &queries,
+                                      ametsuchi::WsvCommand &commands) {
+  if (creator_.account_id.empty()) {
+    return false;
+  }
+  auto cmd_value = static_cast<const GrantPermission &>(command);
+  return commands.insertAccountGrantablePermission(
+      cmd_value.account_id, creator_.account_id, cmd_value.permission_name);
+}
+
+bool GrantPermissionExecutor::hasPermissions(const Command &command,
+                                             ametsuchi::WsvQuery &queries,
+                                             const Account &creator) {
+  // TODO: think how to make it better
+  creator_ = creator;
+  // TODO: implement
+  return true;
+}
+
+bool GrantPermissionExecutor::isValid(const Command &command,
+                                      ametsuchi::WsvQuery &queries) {
+  // TODO: check. Add checks on naming of the role
+  return true;
+}
+
+// ----------------------------| Revoke Permission |-----------------------------
+RevokePermissionExecutor::RevokePermissionExecutor() : creator_() {
+  log_ = logger::log("RevokePermissionExecutor");
+}
+
+bool RevokePermissionExecutor::execute(const Command &command,
+                                      ametsuchi::WsvQuery &queries,
+                                      ametsuchi::WsvCommand &commands) {
+  if (creator_.account_id.empty()) {
+    return false;
+  }
+  auto cmd_value = static_cast<const RevokePermission&>(command);
+  return commands.deleteAccountGrantablePermission(
+      cmd_value.account_id, creator_.account_id, cmd_value.permission_name);
+}
+
+bool RevokePermissionExecutor::hasPermissions(const Command &command,
+                                             ametsuchi::WsvQuery &queries,
+                                             const Account &creator) {
+  // TODO: think how to make it better
+  creator_ = creator;
+  // TODO: implement
+  return true;
+}
+
+bool RevokePermissionExecutor::isValid(const Command &command,
+                                      ametsuchi::WsvQuery &queries) {
+  // TODO: check. Add checks on naming of the role
+  return true;
 }
 
 // ----------------------------| AddAssetQuantity |-----------------------------

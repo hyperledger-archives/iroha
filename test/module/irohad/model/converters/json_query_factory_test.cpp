@@ -21,10 +21,22 @@
 #include "model/generators/query_generator.hpp"
 #include "model/generators/signature_generator.hpp"
 
+#include "model/queries/get_asset_info.hpp"
+#include "model/queries/get_roles.hpp"
+
 using namespace iroha;
 using namespace iroha::model;
 using namespace iroha::model::converters;
 using namespace iroha::model::generators;
+
+void runQueryTest(std::shared_ptr<Query> val){
+  JsonQueryFactory queryFactory;
+  auto json = queryFactory.serialize(val);
+  auto ser_val = queryFactory.deserialize(json);
+  ASSERT_TRUE(ser_val.has_value());
+  ASSERT_EQ(val->query_hash, ser_val.value()->query_hash);
+  ASSERT_EQ(val->signature.signature, ser_val.value()->signature.signature);
+}
 
 TEST(QuerySerializerTest, ClassHandlerTest) {
   JsonQueryFactory factory;
@@ -162,3 +174,26 @@ TEST(QuerySerializerTest, SerializeGetSignatories){
   ASSERT_EQ(val->query_hash, ser_val.value()->query_hash);
   ASSERT_EQ(val->signature.signature, ser_val.value()->signature.signature);
 }
+
+TEST(QuerySerializerTest, get_asset_info){
+  QueryGenerator queryGenerator;
+  auto val = queryGenerator.generateGetAssetInfo();
+  val->signature = generateSignature(42);
+  runQueryTest(val);
+}
+
+TEST(QuerySerializerTest, get_roles){
+  QueryGenerator queryGenerator;
+  auto val = queryGenerator.generateGetRoles();
+  val->signature = generateSignature(42);
+  runQueryTest(val);
+}
+
+TEST(QuerySerializerTest, get_role_permissions){
+  QueryGenerator queryGenerator;
+  auto val = queryGenerator.generateGetRolePermissions();
+  val->signature = generateSignature(42);
+  runQueryTest(val);
+}
+
+

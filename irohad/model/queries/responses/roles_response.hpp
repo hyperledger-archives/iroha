@@ -15,26 +15,36 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_ROLES_RESPONSE_HPP
+#define IROHA_ROLES_RESPONSE_HPP
 
-#include <ametsuchi/wsv_command.hpp>
-#include <ametsuchi/wsv_query.hpp>
-#include <model/account.hpp>
+#include "model/query_response.hpp"
 
 namespace iroha {
   namespace model {
+
+
     /**
-     * Abstract Command Model
+     * Response with all permissions related to role
      */
-    struct Command {
-      virtual ~Command() = default;
+    struct RolePermissionsResponse : QueryResponse {
+      /**
+       * All role's permissions
+       */
+      std::vector<std::string> role_permissions;
+    };
 
-      virtual bool operator==(const Command& rhs) const = 0;
 
-      virtual bool operator!=(const Command& rhs) const;
+    /**
+     * Provide response with all roles of the current system
+     */
+    struct RolesResponse : public QueryResponse {
+      /**
+       * Attached roles
+       */
+      std::vector<std::string> roles;
     };
   }  // namespace model
 }  // namespace iroha
 
-#endif  // IROHA_COMMAND_HPP
+#endif  // IROHA_ROLES_RESPONSE_HPP

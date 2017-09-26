@@ -20,32 +20,49 @@
 #include "client.hpp"
 #include "grpc_response_handler.hpp"
 #include "model/converters/json_query_factory.hpp"
-#include "parser/parser.hpp"
+
+#include "model/queries/get_asset_info.hpp"
+#include "model/queries/get_roles.hpp"
 
 using namespace std::chrono_literals;
+using namespace iroha::model;
 
 namespace iroha_cli {
   namespace interactive {
 
     void InteractiveQueryCli::create_queries_menu() {
-      description_map_ = {{GET_ACC, "Get Account Information"},
-                          {GET_ACC_AST, "Get Account's Assets"},
-                          {GET_ACC_TX, "Get Account's Transactions"},
-                          {GET_ACC_SIGN, "Get Account's Signatories"}};
+      description_map_ = {
+          {GET_ACC, "Get Account Information"},
+          {GET_ACC_AST, "Get Account's Assets"},
+          {GET_ACC_TX, "Get Account's Transactions"},
+          {GET_ACC_SIGN, "Get Account's Signatories"},
+          {GET_ROLES, "Get all current roles in the system"},
+          {GET_AST_INFO, "Get information about asset"},
+          {GET_ROLE_PERM, "Get all permissions related to role"}
+      };
 
       const auto acc_id = "Requested account Id";
       const auto ast_id = "Requested asset Id";
+      const auto role_id = "Requested role name";
 
-      query_params_descriptions_ = {{GET_ACC, {acc_id}},
-                                    {GET_ACC_AST, {acc_id, ast_id}},
-                                    {GET_ACC_TX, {acc_id}},
-                                    {GET_ACC_SIGN, {acc_id}}};
+      query_params_descriptions_ = {
+          {GET_ACC, {acc_id}},
+          {GET_ACC_AST, {acc_id, ast_id}},
+          {GET_ACC_TX, {acc_id}},
+          {GET_ACC_SIGN, {acc_id}},
+          {GET_ROLES, {}},
+          {GET_AST_INFO, {ast_id}},
+          {GET_ROLE_PERM, {role_id}}
+      };
 
       query_handlers_ = {
           {GET_ACC, &InteractiveQueryCli::parseGetAccount},
           {GET_ACC_AST, &InteractiveQueryCli::parseGetAccountAssets},
           {GET_ACC_TX, &InteractiveQueryCli::parseGetAccountTransactions},
           {GET_ACC_SIGN, &InteractiveQueryCli::parseGetSignatories},
+          {GET_ROLE_PERM, &InteractiveQueryCli::parseGetRolePermissions},
+          {GET_ROLES, &InteractiveQueryCli::parseGetRoles},
+          {GET_AST_INFO, &InteractiveQueryCli::parseGetAssetInfo}
       };
 
       menu_points_ = formMenu(query_handlers_, query_params_descriptions_,
@@ -96,15 +113,13 @@ namespace iroha_cli {
     }
 
     bool InteractiveQueryCli::parseQuery(std::string line) {
-
       if (isBackOption(line)) {
         // Stop parsing
         return false;
       }
 
       auto res = handleParse<std::shared_ptr<iroha::model::Query>>(
-          this, line, query_handlers_,
-          query_params_descriptions_);
+          this, line, query_handlers_, query_params_descriptions_);
       if (not res.has_value()) {
         // Continue parsing
         return true;
@@ -146,9 +161,28 @@ namespace iroha_cli {
                                                account_id);
     }
 
+    std::shared_ptr<iroha::model::Query> InteractiveQueryCli::parseGetAssetInfo(QueryParams params) {
+      auto asset_id = params[0];
+      auto query = std::make_shared<GetAssetInfo>(asset_id);
+      // TODO: refactor, move query meta data outside of this function
+      generator_.setQueryMetaData(query, local_time_, creator_, counter_);
+      return query;
+    }
+
+    std::shared_ptr<iroha::model::Query> InteractiveQueryCli::parseGetRoles(QueryParams params) {
+      auto query = std::make_shared<GetRoles>();
+      generator_.setQueryMetaData(query, local_time_, creator_, counter_);
+      return query;
+    }
+
+    std::shared_ptr<iroha::model::Query> InteractiveQueryCli::parseGetRolePermissions(QueryParams params) {
+      auto role_name = params[0];
+      auto query = std::make_shared<GetRolePermissions>(role_name);
+      generator_.setQueryMetaData(query, local_time_, creator_, counter_);
+      return query;
+    }
+
     bool InteractiveQueryCli::parseResult(std::string line) {
-
-
       if (isBackOption(line)) {
         // Give up the last query and start a new one
         current_context_ = MAIN;
@@ -161,7 +195,7 @@ namespace iroha_cli {
       auto res = handleParse<bool>(this, line, result_handlers_,
                                    result_params_descriptions_);
 
-      return not res.has_value()?true:res.value();
+      return not res.has_value() ? true : res.value();
     }
 
     bool InteractiveQueryCli::parseSendToIroha(QueryParams params) {

@@ -63,6 +63,9 @@ namespace iroha_cli {
       const std::string GET_ACC_AST = "get_acc_ast";
       const std::string GET_ACC_TX = "get_acc_tx";
       const std::string GET_ACC_SIGN = "get_acc_sign";
+      const std::string GET_ROLES = "get_roles";
+      const std::string GET_AST_INFO = "get_ast_info";
+      const std::string GET_ROLE_PERM = "get_role_perm";
 
       // ------  Query parsers ---------
       using QueryHandler = std::shared_ptr<iroha::model::Query> (
@@ -88,6 +91,12 @@ namespace iroha_cli {
       std::shared_ptr<iroha::model::Query> parseGetAccountTransactions(
           QueryParams params);
       std::shared_ptr<iroha::model::Query> parseGetSignatories(
+          QueryParams params);
+      std::shared_ptr<iroha::model::Query> parseGetRoles(
+          QueryParams params);
+      std::shared_ptr<iroha::model::Query> parseGetRolePermissions(
+          QueryParams params);
+      std::shared_ptr<iroha::model::Query> parseGetAssetInfo(
           QueryParams params);
       // ------ Result parsers -------
       using ResultHandler = bool (InteractiveQueryCli::*)(QueryParams);

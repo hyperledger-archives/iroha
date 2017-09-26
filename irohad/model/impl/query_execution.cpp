@@ -18,14 +18,47 @@
 #include "model/query_execution.hpp"
 #include "model/queries/responses/account_assets_response.hpp"
 #include "model/queries/responses/account_response.hpp"
+#include "model/queries/responses/asset_response.hpp"
 #include "model/queries/responses/error_response.hpp"
+#include "model/queries/responses/roles_response.hpp"
 #include "model/queries/responses/signatories_response.hpp"
 #include "model/queries/responses/transactions_response.hpp"
+
+using namespace iroha::model;
 
 iroha::model::QueryProcessingFactory::QueryProcessingFactory(
     std::shared_ptr<ametsuchi::WsvQuery> wsvQuery,
     std::shared_ptr<ametsuchi::BlockQuery> blockQuery)
     : _wsvQuery(wsvQuery), _blockQuery(blockQuery) {}
+
+bool iroha::model::QueryProcessingFactory::validate(
+    const model::GetAssetInfo& query) {
+  auto creator = _wsvQuery->getAccount(query.creator_account_id);
+  // TODO: check signatures
+  return
+      // Creator account exits
+      // TODO: add permission check
+      creator.has_value();
+}
+
+bool iroha::model::QueryProcessingFactory::validate(
+    const model::GetRoles& query) {
+  auto creator = _wsvQuery->getAccount(query.creator_account_id);
+  // TODO: check signatures
+  return
+      // Creator account exits
+      // TODO: add permission check
+      creator.has_value();
+}
+
+bool QueryProcessingFactory::validate(const model::GetRolePermissions& query) {
+  auto creator = _wsvQuery->getAccount(query.creator_account_id);
+  // TODO: check signatures
+  return
+      // Creator account exits
+      // TODO: add permission check
+      creator.has_value();
+}
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccount& query) {
@@ -84,6 +117,52 @@ bool iroha::model::QueryProcessingFactory::validate(
 }
 
 std::shared_ptr<iroha::model::QueryResponse>
+QueryProcessingFactory::executeGetAssetInfo(const model::GetAssetInfo& query) {
+  auto ast = _wsvQuery->getAsset(query.asset_id);
+  if (!ast.has_value()) {
+    iroha::model::ErrorResponse response;
+    response.query_hash = query.query_hash;
+    response.reason = iroha::model::ErrorResponse::NO_ASSET;
+    return std::make_shared<ErrorResponse>(response);
+  }
+  AssetResponse response;
+  response.asset = std::move(ast.value());
+  response.query_hash = query.query_hash;
+  return std::make_shared<AssetResponse>(response);
+}
+
+std::shared_ptr<iroha::model::QueryResponse>
+QueryProcessingFactory::executeGetRoles(const model::GetRoles& query) {
+  auto roles = _wsvQuery->getRoles();
+  if (not roles.has_value()) {
+    ErrorResponse response;
+    response.query_hash = query.query_hash;
+    response.reason = ErrorResponse::NO_ROLES;
+    return std::make_shared<ErrorResponse>(response);
+  }
+  RolesResponse response;
+  response.query_hash = query.query_hash;
+  response.roles = std::move(roles.value());
+  return std::make_shared<RolesResponse>(response);
+}
+
+std::shared_ptr<iroha::model::QueryResponse>
+QueryProcessingFactory::executeGetRolePermissions(
+    const model::GetRolePermissions& query) {
+  auto perm = _wsvQuery->getRolePermissions(query.role_id);
+  if (not perm.has_value()) {
+    ErrorResponse response;
+    response.query_hash = query.query_hash;
+    response.reason = ErrorResponse::NO_ROLES;
+    return std::make_shared<ErrorResponse>(response);
+  }
+  RolePermissionsResponse response;
+  response.query_hash = query.query_hash;
+  response.role_permissions = std::move(perm.value());
+  return std::make_shared<RolePermissionsResponse>(response);
+}
+
+std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetAccount(
     const model::GetAccount& query) {
   auto acc = _wsvQuery->getAccount(query.account_id);
@@ -102,7 +181,8 @@ iroha::model::QueryProcessingFactory::executeGetAccount(
 std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetAccountAssets(
     const model::GetAccountAssets& query) {
-  auto acct_asset = _wsvQuery->getAccountAsset(query.account_id, query.asset_id);
+  auto acct_asset =
+      _wsvQuery->getAccountAsset(query.account_id, query.asset_id);
   if (!acct_asset.has_value()) {
     iroha::model::ErrorResponse response;
     response.query_hash = query.query_hash;
@@ -120,7 +200,8 @@ iroha::model::QueryProcessingFactory::executeGetAccountAssets(
 std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetAccountAssetTransactions(
     const model::GetAccountAssetTransactions& query) {
-  auto acc_asset_tx = _blockQuery->getAccountAssetTransactions(query.account_id, query.asset_id);
+  auto acc_asset_tx = _blockQuery->getAccountAssetTransactions(query.account_id,
+                                                               query.asset_id);
   iroha::model::TransactionsResponse response;
   response.query_hash = query.query_hash;
   response.transactions = acc_asset_tx;
@@ -156,6 +237,7 @@ iroha::model::QueryProcessingFactory::executeGetSignatories(
 std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::execute(
     std::shared_ptr<const model::Query> query) {
+  // TODO: change to handler map or/with templates
   if (instanceof <iroha::model::GetAccount>(query.get())) {
     auto qry = std::static_pointer_cast<const iroha::model::GetAccount>(query);
 
@@ -211,6 +293,36 @@ iroha::model::QueryProcessingFactory::execute(
       return std::make_shared<iroha::model::ErrorResponse>(response);
     }
     return executeGetAccountAssetTransactions(*qry);
+  }
+  if (instanceof<GetRoles>(query.get())){
+    auto qry = std::static_pointer_cast<const GetRoles>(query);
+    if(not validate(*qry)){
+      ErrorResponse response;
+      response.query_hash = qry->query_hash;
+      response.reason = ErrorResponse::STATEFUL_INVALID;
+      return std::make_shared<ErrorResponse>(response);
+    }
+    return  executeGetRoles(*qry);
+  }
+  if (instanceof<GetRolePermissions>(query.get())){
+    auto qry = std::static_pointer_cast<const GetRolePermissions>(query);
+    if(not validate(*qry)){
+      ErrorResponse response;
+      response.query_hash = qry->query_hash;
+      response.reason = ErrorResponse::STATEFUL_INVALID;
+      return std::make_shared<ErrorResponse>(response);
+    }
+    return  executeGetRolePermissions(*qry);
+  }
+  if (instanceof<GetAssetInfo>(query.get())){
+    auto qry = std::static_pointer_cast<const GetAssetInfo>(query);
+    if(not validate(*qry)){
+      ErrorResponse response;
+      response.query_hash = qry->query_hash;
+      response.reason = ErrorResponse::STATEFUL_INVALID;
+      return std::make_shared<ErrorResponse>(response);
+    }
+    return  executeGetAssetInfo(*qry);
   }
   iroha::model::ErrorResponse response;
   response.query_hash = query->query_hash;

@@ -71,6 +71,11 @@ namespace iroha_cli {
       const std::string SUB_ASSET_QTY = "sub_ast_qty";
       const std::string TRAN_ASSET = "tran_ast";
 
+      const std::string CREATE_ROLE = "crt_role";
+      const std::string APPEND_ROLE = "apnd_role";
+      const std::string GRANT_PERM = "grant_perm";
+      const std::string REVOKE_PERM = "revoke_perm";
+
       // ---- Command parsers ----
       using CommandHandler = std::shared_ptr<iroha::model::Command> (
           InteractiveTransactionCli::*)(std::vector<std::string>);
@@ -113,6 +118,15 @@ namespace iroha_cli {
       std::shared_ptr<iroha::model::Command> parseSubtractAssetQuantity(
           std::vector<std::string> line);
       std::shared_ptr<iroha::model::Command> parseTransferAsset(
+          std::vector<std::string> line);
+
+      std::shared_ptr<iroha::model::Command> parseAppendRole(
+          std::vector<std::string> line);
+      std::shared_ptr<iroha::model::Command> parseCreateRole(
+          std::vector<std::string> line);
+      std::shared_ptr<iroha::model::Command> parseGrantPermission(
+          std::vector<std::string> line);
+      std::shared_ptr<iroha::model::Command> parseRevokePermission(
           std::vector<std::string> line);
 
       // ---- Result parsers ------

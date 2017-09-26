@@ -20,6 +20,8 @@
 #include "model/queries/get_transactions.hpp"
 
 #include "model/model_hash_provider_impl.hpp"
+#include "model/queries/get_asset_info.hpp"
+#include "model/queries/get_roles.hpp"
 
 #ifndef IROHA_QUERY_GENERATOR_HPP
 #define IROHA_QUERY_GENERATOR_HPP
@@ -51,6 +53,27 @@ namespace iroha {
         std::shared_ptr<GetAccountAssetTransactions> generateGetAccountAssetTransactions(
             ts64_t timestamp, std::string creator, uint64_t query_counter,
             std::string account_id, std::string asset_id);
+
+        /**
+         * Generate default query GetAssetInfo
+         * @return default GetAssetInfo
+         */
+        std::shared_ptr<GetAssetInfo> generateGetAssetInfo();
+
+        /**
+         * Generate default query GetRoles
+         * @return default GetRoles
+         */
+        std::shared_ptr<GetRoles> generateGetRoles();
+
+        /**
+         * Generate default query GetRolePermissions
+         * @return default GetRolePermissions
+         */
+        std::shared_ptr<GetRolePermissions> generateGetRolePermissions();
+
+        void setQueryMetaData(std::shared_ptr<Query> query, ts64_t timestamp,
+                              std::string creator, uint64_t query_counter);
 
        private:
         HashProviderImpl hash_provider_;

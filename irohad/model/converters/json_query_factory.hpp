@@ -18,17 +18,14 @@
 #ifndef IROHA_JSON_QUERY_FACTORY_HPP
 #define IROHA_JSON_QUERY_FACTORY_HPP
 
-#include "model/common.hpp"
-#include <memory>
-#include <nonstd/optional.hpp>
 #include <typeindex>
 #include <unordered_map>
+#include "logger/logger.hpp"
+#include "model/common.hpp"
+#include "model/converters/json_common.hpp"
+#include "model/model_hash_provider_impl.hpp"
 #include "model/query.hpp"
 #include "queries.pb.h"
-
-#include "logger/logger.hpp"
-#include "model/generators/query_generator.hpp"
-#include "model/converters/json_common.hpp"
 
 namespace iroha {
   namespace model {
@@ -71,6 +68,12 @@ namespace iroha {
             const rapidjson::Value &obj_query);
         optional_ptr<Query> deserializeGetAccountAssets(
             const rapidjson::Value &obj_query);
+        optional_ptr<Query> deserializeGetAssetInfo(
+            const rapidjson::Value &obj_query);
+        optional_ptr<Query> deserializeGetRoles(
+            const rapidjson::Value &obj_query);
+        optional_ptr<Query> deserializeGetRolePermissions(
+            const rapidjson::Value &obj_query);
         // Serializers:
         using Serializer = void (JsonQueryFactory::*)(rapidjson::Document &,
                                                       std::shared_ptr<Query>);
@@ -86,6 +89,13 @@ namespace iroha {
                                                   std::shared_ptr<Query> query);
         void serializeGetSignatories(rapidjson::Document &json_doc,
                                      std::shared_ptr<Query> query);
+
+        void serializeGetAssetInfo(rapidjson::Document &json_doc,
+                                   std::shared_ptr<Query> query);
+        void serializeGetRoles(rapidjson::Document &json_doc,
+                               std::shared_ptr<Query> query);
+        void serializeGetRolePermissions(rapidjson::Document &json_doc,
+                                         std::shared_ptr<Query> query);
 
         // Logger
         std::shared_ptr<spdlog::logger> log_;

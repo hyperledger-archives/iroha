@@ -15,36 +15,40 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SET_QUORUM_HPP
-#define IROHA_SET_QUORUM_HPP
+#ifndef IROHA_GRANT_PERMISSION_HPP
+#define IROHA_GRANT_PERMISSION_HPP
 
 #include <string>
-
 #include "model/command.hpp"
 
 namespace iroha {
   namespace model {
+
     /**
-     * Change quorum for account
+     * Grant permission from creator to account_id
      */
-    struct SetQuorum : public Command {
+    struct GrantPermission : public Command {
       /**
-       * Account in which change the quorum
+       * Account to which grant the permission.
+       * Permission will be granted from creator to account_id on
+       * *permission_name*
        */
       std::string account_id;
 
       /**
-       * New value of quorum
+       * Permission to grant (what)
        */
-      uint32_t new_quorum;
+      std::string permission_name;
 
       bool operator==(const Command &command) const override;
 
-      SetQuorum() {}
+      GrantPermission() {}
 
-      SetQuorum(const std::string &account_id, uint32_t new_quorum)
-          : account_id(account_id), new_quorum(new_quorum) {}
+      GrantPermission(const std::string &account_id_,
+                      const std::string &permission_name_)
+          : account_id(account_id_), permission_name(permission_name_) {}
     };
   }  // namespace model
 }  // namespace iroha
-#endif  // IROHA_SET_QUORUM_HPP
+
+#endif  // IROHA_GRANT_PERMISSION_HPP

@@ -18,12 +18,12 @@
 #ifndef IROHA_WSV_COMMAND_HPP
 #define IROHA_WSV_COMMAND_HPP
 
+#include <common/types.hpp>
+#include <model/account.hpp>
 #include <model/account_asset.hpp>
 #include <model/asset.hpp>
-#include <model/account.hpp>
-#include <model/peer.hpp>
 #include <model/domain.hpp>
-#include <common/types.hpp>
+#include <model/peer.hpp>
 #include <string>
 
 namespace iroha {
@@ -35,6 +35,54 @@ namespace iroha {
     class WsvCommand {
      public:
       virtual ~WsvCommand() = default;
+
+      /**
+       * Insert role entity
+       * @param role_name
+       * @return true if insert successful
+       */
+      virtual bool insertRole(const std::string &role_name) = 0;
+
+      /**
+       * Bind account and role
+       * @param account_id
+       * @param role_name
+       * @return true if insert successful
+       */
+      virtual bool insertAccountRole(const std::string &account_id,
+                                     const std::string &role_name) = 0;
+
+
+      /**
+       * Bind role and permissions
+       * @param role_id
+       * @param permissions
+       * @return true is insert successful, false otherwise
+       */
+      virtual bool insertRolePermissions(const std::string &role_id,
+          const std::vector<std::string> &permissions) = 0;
+
+      /**
+       * Insert grantable permission
+       * @param permittee_account_id to who give the grant permission
+       * @param account_id on which account
+       * @param permission_id what permission
+       * @return true is execution is successful
+       */
+      virtual bool insertAccountGrantablePermission(
+          const std::string &permittee_account_id,
+          const std::string &account_id, const std::string &permission_id) = 0;
+
+      /**
+       * Delete grantable permission
+       * @param permittee_account_id to who the grant permission was previously granted
+       * @param account_id on which account
+       * @param permission_id what permission
+       * @return true is execution is successful
+       */
+      virtual bool deleteAccountGrantablePermission(
+          const std::string &permittee_account_id,
+          const std::string &account_id, const std::string &permission_id) = 0;
 
       /**
        *
@@ -72,11 +120,11 @@ namespace iroha {
       virtual bool insertSignatory(const ed25519::pubkey_t &signatory) = 0;
 
       /**
-      * Insert account signatory relationship
-      * @param account_id
-      * @param signatory
-      * @return
-      */
+       * Insert account signatory relationship
+       * @param account_id
+       * @param signatory
+       * @return
+       */
       virtual bool insertAccountSignatory(
           const std::string &account_id,
           const ed25519::pubkey_t &signatory) = 0;
@@ -114,10 +162,10 @@ namespace iroha {
       virtual bool deletePeer(const model::Peer &peer) = 0;
 
       /**
-      *
-      * @param peer
-      * @return
-      */
+       *
+       * @param peer
+       * @return
+       */
       virtual bool insertDomain(const model::Domain &domain) = 0;
     };
 

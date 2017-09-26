@@ -25,6 +25,19 @@ message GetAccountAssets {
   string asset_id = 2;
 }
 
+message GetAssetInfo {
+  string asset_id = 1;
+}
+
+message GetRoles {
+
+}
+
+message GetRolePermissions{
+  string role_id = 1;
+}
+
+
 message Query {
   message Header {
     uint64 created_time = 1;
@@ -41,7 +54,10 @@ message Query {
     GetAccountTransactions get_account_transactions = 5;
     GetAccountAssetTransactions get_account_asset_transactions = 6;
     GetAccountAssets get_account_assets = 7;
+    GetRoles get_roles = 8;
+    GetAssetInfo get_asset_info = 9;
+    GetRolePermissions get_role_permissions = 10;
   }
   // used to prevent replay attacks.
-  uint64 query_counter = 8;
+  uint64 query_counter = 11;
 }

@@ -15,26 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_GET_ASSET_INFO_HPP
+#define IROHA_GET_ASSET_INFO_HPP
 
-#include <ametsuchi/wsv_command.hpp>
-#include <ametsuchi/wsv_query.hpp>
-#include <model/account.hpp>
+#include <string>
+#include "model/query.hpp"
 
 namespace iroha {
   namespace model {
     /**
-     * Abstract Command Model
+     * Get meta data of asset
      */
-    struct Command {
-      virtual ~Command() = default;
+    struct GetAssetInfo : Query {
 
-      virtual bool operator==(const Command& rhs) const = 0;
+      GetAssetInfo(){}
 
-      virtual bool operator!=(const Command& rhs) const;
+      GetAssetInfo(std::string asset_id): asset_id(asset_id){}
+
+      /**
+       * Asset Id
+       */
+      std::string asset_id;
     };
   }  // namespace model
 }  // namespace iroha
 
-#endif  // IROHA_COMMAND_HPP
+#endif  // IROHA_GET_ASSET_INFO_HPP

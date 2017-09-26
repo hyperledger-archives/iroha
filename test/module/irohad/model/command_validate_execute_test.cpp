@@ -29,6 +29,11 @@
 #include "model/commands/transfer_asset.hpp"
 #include "model/execution/command_executor_factory.hpp"
 
+#include "model/commands/create_role.hpp"
+#include "model/commands/append_role.hpp"
+#include "model/commands/grant_permission.hpp"
+#include "model/commands/revoke_permission.hpp"
+
 using ::testing::Return;
 using ::testing::AtLeast;
 using ::testing::_;
@@ -46,6 +51,8 @@ class CommandValidateExecuteTest : public ::testing::Test {
   }
 
   void SetUp() override {
+    spdlog::set_level(spdlog::level::off);
+
     factory = CommandExecutorFactory::create().value();
 
     wsv_query = std::make_shared<StrictMock<MockWsvQuery>>();
@@ -753,5 +760,68 @@ TEST_F(AddPeerTest, ValidCase) {
   // Valid case
   EXPECT_CALL(*wsv_command, insertPeer(_)).WillOnce(Return(true));
 
+  ASSERT_TRUE(validateAndExecute());
+}
+
+class CreateRoleTest: public CommandValidateExecuteTest {
+ public:
+  void SetUp() override {
+    CommandValidateExecuteTest::SetUp();
+    std::vector<std::string> perm = {"CanDoMagic"};
+    create_role = std::make_shared<CreateRole>("master", perm);
+    command = create_role;
+  }
+  std::shared_ptr<CreateRole> create_role;
+};
+
+TEST_F(CreateRoleTest, VadlidCase){
+  EXPECT_CALL(*wsv_command, insertRole(_)).WillOnce(Return(true));
+  EXPECT_CALL(*wsv_command, insertRolePermissions(_, _)).WillOnce(Return(true));
+  ASSERT_TRUE(validateAndExecute());
+}
+
+
+class AppendRoleTest: public CommandValidateExecuteTest {
+ public:
+  void SetUp() override {
+    CommandValidateExecuteTest::SetUp();
+    exact_command = std::make_shared<AppendRole>("yoda","master");
+    command = exact_command;
+  }
+  std::shared_ptr<AppendRole> exact_command;
+};
+
+TEST_F(AppendRoleTest, VadlidCase){
+  EXPECT_CALL(*wsv_command, insertAccountRole(_, _)).WillOnce(Return(true));
+  ASSERT_TRUE(validateAndExecute());
+}
+
+class GrantPermissionTest: public CommandValidateExecuteTest {
+ public:
+  void SetUp() override {
+    CommandValidateExecuteTest::SetUp();
+    exact_command = std::make_shared<GrantPermission>("yoda","can_teach");
+    command = exact_command;
+  }
+  std::shared_ptr<GrantPermission> exact_command;
+};
+
+TEST_F(GrantPermissionTest, VadlidCase){
+  EXPECT_CALL(*wsv_command, insertAccountGrantablePermission(_, _, _)).WillOnce(Return(true));
+  ASSERT_TRUE(validateAndExecute());
+}
+
+class RevokePermissionTest: public CommandValidateExecuteTest {
+ public:
+  void SetUp() override {
+    CommandValidateExecuteTest::SetUp();
+    exact_command = std::make_shared<RevokePermission>("yoda","can_teach");
+    command = exact_command;
+  }
+  std::shared_ptr<RevokePermission> exact_command;
+};
+
+TEST_F(RevokePermissionTest, VadlidCase){
+  EXPECT_CALL(*wsv_command, deleteAccountGrantablePermission(_, _, _)).WillOnce(Return(true));
   ASSERT_TRUE(validateAndExecute());
 }

@@ -57,6 +57,9 @@ namespace iroha {
         protocol::Query serializeGetAccountTransactions(std::shared_ptr<Query> query);
         protocol::Query serializeGetAccountAssetTransactions(std::shared_ptr<Query> query);
         protocol::Query serializeGetSignatories(std::shared_ptr<Query> query);
+        protocol::Query serializeGetAssetInfo(std::shared_ptr<Query> query);
+        protocol::Query serializeGetRoles(std::shared_ptr<Query> query);
+        protocol::Query serializeGetRolePermissions(std::shared_ptr<Query> query);
 
         /**
          * Serialize and add meta data of model query to proto query

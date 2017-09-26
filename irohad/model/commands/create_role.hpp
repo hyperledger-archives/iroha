@@ -14,27 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_CREATE_ROLE_HPP
+#define IROHA_CREATE_ROLE_HPP
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
-
-#include <ametsuchi/wsv_command.hpp>
-#include <ametsuchi/wsv_query.hpp>
-#include <model/account.hpp>
+#include <string>
+#include "model/command.hpp"
 
 namespace iroha {
   namespace model {
+
     /**
-     * Abstract Command Model
+     * Create new role in the system
      */
-    struct Command {
-      virtual ~Command() = default;
+    struct CreateRole : public Command {
+      /**
+       * Role to insert to the system
+       */
+      std::string role_name;
 
-      virtual bool operator==(const Command& rhs) const = 0;
+      /**
+       * Role permissions
+       */
+      std::vector<std::string> permissions;
 
-      virtual bool operator!=(const Command& rhs) const;
+      bool operator==(const Command &command) const override;
+
+      CreateRole() {}
+
+      CreateRole(const std::string &role_name_,
+                 const std::vector<std::string> &perms)
+          : role_name(role_name_), permissions(perms) {}
     };
   }  // namespace model
 }  // namespace iroha
-
-#endif  // IROHA_COMMAND_HPP
+#endif  // IROHA_CREATE_ROLE_HPP

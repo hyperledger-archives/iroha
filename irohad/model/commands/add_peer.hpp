@@ -33,12 +33,11 @@ namespace iroha {
 
       std::string address;
 
-      bool operator==(const Command& command) const override;
-      bool operator!=(const Command& command) const override;
+      bool operator==(const Command &command) const override;
 
       AddPeer() {}
 
-      AddPeer(ed25519::pubkey_t peer_key, std::string address)
+      AddPeer(const ed25519::pubkey_t &peer_key, const std::string &address)
           : peer_key(peer_key), address(address) {}
     };
   }  // namespace model

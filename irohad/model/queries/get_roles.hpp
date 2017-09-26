@@ -15,26 +15,33 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_GET_ROLES_HPP
+#define IROHA_GET_ROLES_HPP
 
-#include <ametsuchi/wsv_command.hpp>
-#include <ametsuchi/wsv_query.hpp>
-#include <model/account.hpp>
+#include "model/query.hpp"
 
 namespace iroha {
   namespace model {
     /**
-     * Abstract Command Model
+     * Get all roles in the current system
      */
-    struct Command {
-      virtual ~Command() = default;
+    struct GetRoles : Query {
+      GetRoles(){}
+    };
 
-      virtual bool operator==(const Command& rhs) const = 0;
+    /**
+     * Get all permissions related to specific role
+     */
+    struct GetRolePermissions : Query {
+      GetRolePermissions(){}
 
-      virtual bool operator!=(const Command& rhs) const;
+      GetRolePermissions(std::string role_id): role_id(role_id) {}
+      /**
+       * Role to query
+       */
+      std::string role_id;
     };
   }  // namespace model
 }  // namespace iroha
 
-#endif  // IROHA_COMMAND_HPP
+#endif  // IROHA_GET_ROLES_HPP

@@ -23,6 +23,8 @@
 
 #include "model/queries/get_account.hpp"
 #include "model/queries/get_account_assets.hpp"
+#include "model/queries/get_asset_info.hpp"
+#include "model/queries/get_roles.hpp"
 #include "model/queries/get_signatories.hpp"
 #include "model/queries/get_transactions.hpp"
 
@@ -54,6 +56,12 @@ namespace iroha {
                              std::shared_ptr<ametsuchi::BlockQuery> blockQuery);
 
      private:
+      bool validate(const model::GetAssetInfo& query);
+
+      bool validate(const model::GetRoles& query);
+
+      bool validate(const model::GetRolePermissions& query);
+
       bool validate(const model::GetAccountAssets& query);
 
       bool validate(const model::GetAccount& query);
@@ -63,6 +71,15 @@ namespace iroha {
       bool validate(const model::GetAccountTransactions& query);
 
       bool validate(const model::GetAccountAssetTransactions& query);
+
+      std::shared_ptr<iroha::model::QueryResponse> executeGetAssetInfo(
+          const model::GetAssetInfo& query);
+
+      std::shared_ptr<iroha::model::QueryResponse> executeGetRoles(
+          const model::GetRoles& query);
+
+      std::shared_ptr<iroha::model::QueryResponse> executeGetRolePermissions(
+          const model::GetRolePermissions& query);
 
       std::shared_ptr<iroha::model::QueryResponse> executeGetAccountAssets(
           const model::GetAccountAssets& query);

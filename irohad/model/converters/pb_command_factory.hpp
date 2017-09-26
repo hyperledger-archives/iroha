@@ -30,6 +30,11 @@
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 
+#include "model/commands/append_role.hpp"
+#include "model/commands/create_role.hpp"
+#include "model/commands/grant_permission.hpp"
+#include "model/commands/revoke_permission.hpp"
+
 namespace iroha {
   namespace model {
     namespace converters {
@@ -96,6 +101,30 @@ namespace iroha {
             const model::TransferAsset &subtractAssetQuantity);
         model::TransferAsset deserializeTransferAsset(
             const protocol::TransferAsset &subtractAssetQuantity);
+
+        // Append role
+        protocol::AppendRole serializeAppendRole(
+            const model::AppendRole &command);
+        model::AppendRole deserializeAppendRole(
+            const protocol::AppendRole &command);
+
+        // Create Role
+        protocol::CreateRole serializeCreateRole(
+            const model::CreateRole &command);
+        model::CreateRole deserializeCreateRole(
+            const protocol::CreateRole &command);
+
+        // Grant Permission
+        protocol::GrantPermission serializeGrantPermission(
+            const model::GrantPermission &command);
+        model::GrantPermission deserializeGrantPermission(
+            const protocol::GrantPermission &command);
+
+        // Revoke Permission
+        protocol::RevokePermission serializeRevokePermission(
+            const model::RevokePermission &command);
+        model::RevokePermission deserializeRevokePermission(
+            const protocol::RevokePermission &command);
 
         // abstract
         protocol::Command serializeAbstractCommand(

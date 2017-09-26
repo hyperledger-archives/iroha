@@ -29,20 +29,21 @@ namespace iroha {
       Document JsonTransactionFactory::serialize(
           const Transaction &transaction) {
         Document document;
-        auto& allocator = document.GetAllocator();
+        auto &allocator = document.GetAllocator();
         document.SetObject();
 
         Value signatures;
         signatures.SetArray();
         for (const auto &signature : transaction.signatures) {
-          signatures.PushBack(serializeSignature(signature, allocator), allocator);
+          signatures.PushBack(serializeSignature(signature, allocator),
+                              allocator);
         }
         document.AddMember("signatures", signatures, allocator);
 
         document.AddMember("created_ts", transaction.created_ts, allocator);
-        document.AddMember("creator_account_id", transaction.creator_account_id, allocator);
+        document.AddMember("creator_account_id", transaction.creator_account_id,
+                           allocator);
         document.AddMember("tx_counter", transaction.tx_counter, allocator);
-
 
         Value commands;
         commands.SetArray();
@@ -64,14 +65,13 @@ namespace iroha {
         auto des = makeFieldDeserializer(document);
         auto des_commands = [this](auto array) {
           auto acc_commands = [this](auto init, auto &x) {
-            return init
-                | [this, &x](auto commands) {
-                    return factory_.deserializeAbstractCommand(x)
-                        | [&commands](auto command) {
-                            commands.push_back(command);
-                            return nonstd::make_optional(commands);
-                          };
+            return init | [this, &x](auto commands) {
+              return factory_.deserializeAbstractCommand(x) |
+                  [&commands](auto command) {
+                    commands.push_back(command);
+                    return nonstd::make_optional(commands);
                   };
+            };
           };
           return std::accumulate(
               array.begin(), array.end(),
@@ -82,11 +82,11 @@ namespace iroha {
             | des.String(&Transaction::creator_account_id, "creator_account_id")
             | des.Uint64(&Transaction::tx_counter, "tx_counter")
             | des.Array(&Transaction::signatures, "signatures")
-            | des.Array(&Transaction::commands, "commands", des_commands)
-            | [this](auto transaction) {
-                transaction.tx_hash = hash_provider_.get_hash(transaction);
-                return nonstd::make_optional(transaction);
-              };
+            | des.Array(&Transaction::commands, "commands", des_commands) |
+            [this](auto transaction) {
+              transaction.tx_hash = hash_provider_.get_hash(transaction);
+              return nonstd::make_optional(transaction);
+            };
       }
 
     }  // namespace converters

@@ -18,11 +18,11 @@
 #ifndef IROHA_JSON_COMMAND_FACTORY_HPP
 #define IROHA_JSON_COMMAND_FACTORY_HPP
 
-#include "model/common.hpp"
 #include <memory>
 #include <typeindex>
 #include <unordered_map>
 #include "model/command.hpp"
+#include "model/common.hpp"
 #include "model/converters/json_common.hpp"
 
 namespace iroha {
@@ -91,10 +91,34 @@ namespace iroha {
         optional_ptr<Command> deserializeTransferAsset(
             const rapidjson::Value &document);
 
+        // AppendRole
+        rapidjson::Document serializeAppendRole(
+            std::shared_ptr<Command> command);
+        optional_ptr<Command> deserializeAppendRole(
+            const rapidjson::Value &document);
+
+        // CreateRole
+        rapidjson::Document serializeCreateRole(
+            std::shared_ptr<Command> command);
+        optional_ptr<Command> deserializeCreateRole(
+            const rapidjson::Value &document);
+
+        // GrantPermission
+        rapidjson::Document serializeGrantPermission(
+            std::shared_ptr<Command> command);
+        optional_ptr<Command> deserializeGrantPermission(
+            const rapidjson::Value &document);
+
+        // RevokePermission
+        rapidjson::Document serializeRevokePermission(
+            std::shared_ptr<Command> command);
+        optional_ptr<Command> deserializeRevokePermission(
+            const rapidjson::Value &document);
+
         // Abstract
         rapidjson::Document serializeAbstractCommand(
             std::shared_ptr<Command> command);
-        optional_ptr <model::Command> deserializeAbstractCommand(
+        optional_ptr<model::Command> deserializeAbstractCommand(
             const rapidjson::Value &document);
 
        private:
@@ -102,8 +126,8 @@ namespace iroha {
 
         using Serializer = rapidjson::Document (JsonCommandFactory::*)(
             std::shared_ptr<Command>);
-        using Deserializer = optional_ptr<Command> (
-            JsonCommandFactory::*)(const rapidjson::Value &);
+        using Deserializer = optional_ptr<Command> (JsonCommandFactory::*)(
+            const rapidjson::Value &);
 
         std::unordered_map<std::type_index, Serializer> serializers_;
         std::unordered_map<std::string, Deserializer> deserializers_;

@@ -24,8 +24,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "client.hpp"
-#include "grpc_response_handler.hpp"
 #include "parser/parser.hpp"
 
 namespace iroha_cli {

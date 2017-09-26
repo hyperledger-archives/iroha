@@ -15,26 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
+#ifndef IROHA_ASSET_RESPONSE_HPP
+#define IROHA_ASSET_RESPONSE_HPP
 
-#include <ametsuchi/wsv_command.hpp>
-#include <ametsuchi/wsv_query.hpp>
-#include <model/account.hpp>
+#include "model/asset.hpp"
+#include "model/query_response.hpp"
 
 namespace iroha {
   namespace model {
+
     /**
-     * Abstract Command Model
+     * Provide response with asset
      */
-    struct Command {
-      virtual ~Command() = default;
-
-      virtual bool operator==(const Command& rhs) const = 0;
-
-      virtual bool operator!=(const Command& rhs) const;
+    struct AssetResponse : public QueryResponse {
+      /**
+       * Attached asset
+       */
+      Asset asset;
     };
   }  // namespace model
 }  // namespace iroha
 
-#endif  // IROHA_COMMAND_HPP
+#endif  // IROHA_ASSET_RESPONSE_HPP

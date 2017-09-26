@@ -14,21 +14,67 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include <model/block.hpp>
-#include <model/commands/add_asset_quantity.hpp>
-#include <model/commands/add_peer.hpp>
-#include <model/commands/add_signatory.hpp>
-#include <model/commands/create_account.hpp>
-#include <model/commands/create_asset.hpp>
-#include <model/commands/create_domain.hpp>
-#include <model/commands/remove_signatory.hpp>
-#include <model/commands/set_permissions.hpp>
-#include <model/commands/set_quorum.hpp>
-#include <model/commands/transfer_asset.hpp>
+#include "model/block.hpp"
+#include "model/commands/add_asset_quantity.hpp"
+#include "model/commands/add_peer.hpp"
+#include "model/commands/add_signatory.hpp"
+#include "model/commands/append_role.hpp"
+#include "model/commands/create_account.hpp"
+#include "model/commands/create_asset.hpp"
+#include "model/commands/create_domain.hpp"
+#include "model/commands/create_role.hpp"
+#include "model/commands/grant_permission.hpp"
+#include "model/commands/remove_signatory.hpp"
+#include "model/commands/revoke_permission.hpp"
+#include "model/commands/set_permissions.hpp"
+#include "model/commands/set_quorum.hpp"
+#include "model/commands/transfer_asset.hpp"
 
 namespace iroha {
   namespace model {
+
+    bool Command::operator!=(const Command &rhs) const {
+      return not operator==(rhs);
+    }
+
+    bool Block::operator!=(const Block &rhs) const {
+      return not operator==(rhs);
+    }
+
+    bool Transaction::operator!=(const Transaction &rhs) const {
+      return not operator==(rhs);
+    }
+    
+    bool Signature::operator!=(const Signature& rhs) const{
+        return !operator==(rhs);
+      };
+    
+
+    bool AppendRole::operator==(const Command &command) const {
+      if (! instanceof <AppendRole>(command)) return false;
+      auto cmd = static_cast<const AppendRole &>(command);
+      return cmd.account_id == account_id and cmd.role_name == role_name;
+    }
+
+    bool CreateRole::operator==(const Command &command) const {
+      if (! instanceof <CreateRole>(command)) return false;
+      auto cmd = static_cast<const CreateRole &>(command);
+      return cmd.role_name == role_name and cmd.permissions == permissions;
+    }
+
+    bool GrantPermission::operator==(const Command &command) const {
+      if (! instanceof <GrantPermission>(command)) return false;
+      auto cmd = static_cast<const GrantPermission &>(command);
+      return cmd.account_id == account_id and
+             cmd.permission_name == permission_name;
+    }
+
+    bool RevokePermission::operator==(const Command &command) const {
+      if (! instanceof <RevokePermission>(command)) return false;
+      auto cmd = static_cast<const RevokePermission &>(command);
+      return cmd.account_id == account_id and
+             cmd.permission_name == permission_name;
+    }
 
     /* AddAssetQuantity */
     bool AddAssetQuantity::operator==(const Command &command) const {
@@ -39,19 +85,11 @@ namespace iroha {
              add_asset_quantity.amount == amount;
     }
 
-    bool AddAssetQuantity::operator!=(const Command &command) const {
-      return !operator==(command);
-    }
-
     /* AddPeer */
     bool AddPeer::operator==(const Command &command) const {
       if (! instanceof <AddPeer>(command)) return false;
       auto add_peer = static_cast<const AddPeer &>(command);
       return add_peer.peer_key == peer_key && add_peer.address == address;
-    }
-
-    bool AddPeer::operator!=(const Command &command) const {
-      return !operator==(command);
     }
 
     /* AddSignatory */
@@ -60,10 +98,6 @@ namespace iroha {
       auto add_signatory = static_cast<const AddSignatory &>(command);
       return add_signatory.account_id == account_id &&
              add_signatory.pubkey == pubkey;
-    }
-
-    bool AddSignatory::operator!=(const Command &command) const {
-      return !operator==(command);
     }
 
     /* CreateAccount */
@@ -75,10 +109,6 @@ namespace iroha {
              create_account.account_name == account_name;
     }
 
-    bool CreateAccount::operator!=(const Command &command) const {
-      return !operator==(command);
-    }
-
     /* CreateAsset */
     bool CreateAsset::operator==(const Command &command) const {
       if (! instanceof <CreateAsset>(command)) return false;
@@ -88,19 +118,11 @@ namespace iroha {
              create_asset.asset_name == asset_name;
     }
 
-    bool CreateAsset::operator!=(const Command &command) const {
-      return !operator==(command);
-    }
-
     /* Create domain */
     bool CreateDomain::operator==(const Command &command) const {
       if (! instanceof <CreateDomain>(command)) return false;
       auto create_domain = static_cast<const CreateDomain &>(command);
       return create_domain.domain_name == domain_name;
-    }
-
-    bool CreateDomain::operator!=(const Command &command) const {
-      return !operator==(command);
     }
 
     /* Remove signatory */
@@ -109,10 +131,6 @@ namespace iroha {
       auto remove_signatory = static_cast<const RemoveSignatory &>(command);
       return remove_signatory.pubkey == pubkey &&
              remove_signatory.account_id == account_id;
-    }
-
-    bool RemoveSignatory::operator!=(const Command &command) const {
-      return !operator==(command);
     }
 
     bool Account::Permissions::operator==(const Permissions &rhs) const {
@@ -128,10 +146,6 @@ namespace iroha {
              rhs.set_quorum == set_quorum;
     }
 
-    bool Account::Permissions::operator!=(const Permissions &rhs) const {
-      return !operator==(rhs);
-    }
-
     /* Set permissions */
     bool SetAccountPermissions::operator==(const Command &command) const {
       if (! instanceof <SetAccountPermissions>(command)) return false;
@@ -141,20 +155,12 @@ namespace iroha {
              set_account_permissions.new_permissions == new_permissions;
     }
 
-    bool SetAccountPermissions::operator!=(const Command &command) const {
-      return !operator==(command);
-    }
-
     /* Set Quorum*/
     bool SetQuorum::operator==(const Command &command) const {
       if (! instanceof <SetQuorum>(command)) return false;
       auto set_quorum = static_cast<const SetQuorum &>(command);
       return set_quorum.account_id == account_id &&
              set_quorum.new_quorum == new_quorum;
-    }
-
-    bool SetQuorum::operator!=(const Command &command) const {
-      return !operator==(command);
     }
 
     /* Transfer Asset */
@@ -167,17 +173,10 @@ namespace iroha {
              transfer_asset.dest_account_id == dest_account_id &&
              transfer_asset.description == description;
     }
-    bool TransferAsset::operator!=(const Command &command) const {
-      return !operator==(command);
-    }
 
     /* Signature */
     bool Signature::operator==(const Signature &rhs) const {
       return rhs.pubkey == pubkey && rhs.signature == signature;
-    }
-
-    bool Signature::operator!=(const Signature &rhs) const {
-      return !operator==(rhs);
     }
 
     /* Transaction */
@@ -190,10 +189,6 @@ namespace iroha {
              rhs.created_ts == created_ts;
     }
 
-    bool Transaction::operator!=(const Transaction &rhs) const {
-      return !operator==(rhs);
-    }
-
     /* Block */
     bool Block::operator==(const Block &rhs) const {
       return rhs.hash == hash && rhs.height == height &&
@@ -203,6 +198,5 @@ namespace iroha {
              rhs.hash == hash;
     }
 
-    bool Block::operator!=(const Block &rhs) const { return !operator==(rhs); }
-  }
-}
+  }  // namespace model
+}  // namespace iroha

@@ -39,7 +39,6 @@ namespace iroha {
       Account::Permissions new_permissions;
 
       bool operator==(const Command& command) const override;
-      bool operator!=(const Command& command) const override;
 
       SetAccountPermissions() {}
 

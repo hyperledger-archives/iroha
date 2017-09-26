@@ -14,27 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_APPEND_ROLE_HPP
+#define IROHA_APPEND_ROLE_HPP
 
-#ifndef IROHA_COMMAND_HPP
-#define IROHA_COMMAND_HPP
-
-#include <ametsuchi/wsv_command.hpp>
-#include <ametsuchi/wsv_query.hpp>
-#include <model/account.hpp>
+#include <string>
+#include "model/command.hpp"
 
 namespace iroha {
   namespace model {
+
     /**
-     * Abstract Command Model
+     * Add role to account
      */
-    struct Command {
-      virtual ~Command() = default;
+    struct AppendRole : public Command {
+      /**
+       * Account to which add new role
+       */
+      std::string account_id;
+      /**
+       * Role to add to account
+       */
+      std::string role_name;
 
-      virtual bool operator==(const Command& rhs) const = 0;
+      bool operator==(const Command &command) const override;
 
-      virtual bool operator!=(const Command& rhs) const;
+      AppendRole() {}
+
+      AppendRole(const std::string &account_id_, const std::string &role_name_)
+          : account_id(account_id_), role_name(role_name_) {}
     };
   }  // namespace model
 }  // namespace iroha
-
-#endif  // IROHA_COMMAND_HPP
+#endif  // IROHA_APPEND_ROLE_HPP

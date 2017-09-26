@@ -40,12 +40,12 @@ namespace iroha {
        */
       ed25519::pubkey_t pubkey;
 
-      bool operator==(const Command& command) const override;
-      bool operator!=(const Command& command) const override;
+      bool operator==(const Command &command) const override;
 
       RemoveSignatory() {}
 
-      RemoveSignatory(std::string account_id, ed25519::pubkey_t pubkey)
+      RemoveSignatory(const std::string &account_id,
+                      const ed25519::pubkey_t &pubkey)
           : account_id(account_id), pubkey(pubkey) {}
     };
   }  // namespace model

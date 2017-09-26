@@ -20,6 +20,18 @@ namespace iroha {
   namespace model {
     namespace generators {
 
+
+      void QueryGenerator::setQueryMetaData(std::shared_ptr<Query> query,
+                                            ts64_t timestamp,
+                                            std::string creator,
+                                            uint64_t query_counter) {
+        query->creator_account_id = creator;
+        query->query_counter = query_counter;
+        query->created_ts = timestamp;
+        // TODO: Refactor this with new hash system
+        query->query_hash = hash_provider_.get_hash(query);
+      }
+
       std::shared_ptr<GetAccount> QueryGenerator::generateGetAccount(ts64_t timestamp,
                                                     std::string creator,
                                                     uint64_t query_counter,
@@ -82,6 +94,33 @@ namespace iroha {
         query->query_counter = query_counter;
         query->account_id = account_id;
         query->asset_id = asset_id;
+        query->query_hash = hash_provider_.get_hash(query);
+        return query;
+      }
+
+      std::shared_ptr<GetAssetInfo> QueryGenerator::generateGetAssetInfo() {
+        auto query = std::make_shared<GetAssetInfo>("coin#test");
+        query->created_ts = 0;
+        query->creator_account_id = "admin@test";
+        query->query_counter = 0;
+        query->query_hash = hash_provider_.get_hash(query);
+        return query;
+      }
+
+      std::shared_ptr<GetRoles> QueryGenerator::generateGetRoles() {
+        auto query = std::make_shared<GetRoles>();
+        query->created_ts = 0;
+        query->creator_account_id = "admin@test";
+        query->query_counter = 0;
+        query->query_hash = hash_provider_.get_hash(query);
+        return query;
+      }
+
+      std::shared_ptr<GetRolePermissions> QueryGenerator::generateGetRolePermissions() {
+        auto query = std::make_shared<GetRolePermissions>("admin");
+        query->created_ts = 0;
+        query->creator_account_id = "admin@test";
+        query->query_counter = 0;
         query->query_hash = hash_provider_.get_hash(query);
         return query;
       }

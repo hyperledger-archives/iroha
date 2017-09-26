@@ -74,8 +74,8 @@ namespace iroha {
       template <typename T, typename D>
       nonstd::optional<T> deserializeField(const D &document,
                                            const std::string &field) {
-        if (document.HasMember(field.c_str()) and
-            document[field.c_str()].template Is<T>()) {
+        if (document.HasMember(field.c_str())
+            and document[field.c_str()].template Is<T>()) {
           return document[field.c_str()].template Get<T>();
         }
         return nonstd::nullopt;
@@ -111,8 +111,7 @@ namespace iroha {
         auto deserialize(V B::*member, const std::string &field,
                          Convert transform = Convert()) {
           return [this, member, field, transform](auto block) {
-            return deserializeField<T>(document, field)
-                | transform
+            return deserializeField<T>(document, field) | transform
                 | assignObjectField(block, member);
           };
         }
@@ -242,14 +241,12 @@ namespace iroha {
         template <typename T>
         auto operator()(T &&x) {
           auto acc_signatures = [](auto init, auto &x) {
-            return init
-                | [&x](auto signatures) {
-                    return Convert<Signature>()(x)
-                        | [&signatures](auto signature) {
-                            signatures.push_back(signature);
-                            return nonstd::make_optional(signatures);
-                          };
-                  };
+            return init | [&x](auto signatures) {
+              return Convert<Signature>()(x) | [&signatures](auto signature) {
+                signatures.push_back(signature);
+                return nonstd::make_optional(signatures);
+              };
+            };
           };
           return std::accumulate(x.begin(), x.end(),
                                  nonstd::make_optional<Block::SignaturesType>(),

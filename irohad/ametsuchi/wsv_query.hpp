@@ -38,6 +38,37 @@ namespace iroha {
       virtual ~WsvQuery() = default;
 
       /**
+       * Check if permitee has permission on account
+       * @param permitee_account_id
+       * @param account_id
+       * @param permission_id
+       * @return true if has permission, false otherwise
+       */
+      virtual bool
+      hasAccountGrantablePermission(const std::string &permitee_account_id,
+                                    const std::string &account_id,
+                                    const std::string &permission_id) = 0;
+
+      /**
+       * Get account's roles
+       * @param account_id
+       * @return
+       */
+      virtual nonstd::optional<std::vector<std::string>> getAccountRoles(
+          const std::string &account_id) = 0;
+      /**
+       * Get all permissions of a role
+       * @param role_name
+       * @return
+       */
+      virtual nonstd::optional<std::vector<std::string>> getRolePermissions(
+          const std::string &role_name) = 0;
+
+      /**
+       * @return All roles currently in the system
+       */
+      virtual nonstd::optional<std::vector<std::string>> getRoles() = 0;
+      /**
        * Get account by user account_id
        * @param account_id
        * @return
