@@ -48,6 +48,7 @@ Irohad::Irohad(const std::string &block_store_dir,
       peer_number_(peer_number) {
   log_ = logger::log("IROHAD");
   log_->info("created");
+  initStorage();
 }
 
 Irohad::~Irohad() {
@@ -58,7 +59,6 @@ Irohad::~Irohad() {
 }
 
 void Irohad::init() {
-  initStorage();
   initLoop();
   initProtoFactories();
   initCryptoProvider();
@@ -86,7 +86,7 @@ void Irohad::initStorage() {
                                 redis_port_,
                                 pg_conn_);
 
-  log_->info("[Init] => storage");
+  log_->info("[Init] => storage", logger::logBool(storage));
 }
 
 void Irohad::initLoop() {
