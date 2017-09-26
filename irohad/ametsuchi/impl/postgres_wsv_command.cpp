@@ -139,9 +139,8 @@ namespace iroha {
       uint32_t precision = asset.precision;
       try {
         transaction_.exec(
-            "INSERT INTO asset(\n"
-            "            asset_id, domain_id, \"precision\", data)\n"
-            "    VALUES ("
+            "INSERT INTO asset(asset_id, domain_id, \"precision\", data) "
+            "VALUES ("
             + transaction_.quote(asset.asset_id) + ", "
             + transaction_.quote(asset.domain_id) + ", "
             + transaction_.quote(precision) + ", " + /*asset.data*/ "NULL"
@@ -157,15 +156,13 @@ namespace iroha {
         const model::AccountAsset &asset) {
       try {
         transaction_.exec(
-            "INSERT INTO public.account_has_asset(\n"
-            "            account_id, asset_id, amount)\n"
-            "    VALUES (" +
-            transaction_.quote(asset.account_id) + ", " +
-            transaction_.quote(asset.asset_id) + ", " +
-            transaction_.quote(asset.balance.to_string()) + ")\n"
-            "    ON CONFLICT (account_id, asset_id)\n"
-            "    DO UPDATE SET \n"
-            "        amount=EXCLUDED.amount;");
+            "INSERT INTO account_has_asset(account_id, asset_id, amount) "
+            "VALUES ("
+            + transaction_.quote(asset.account_id) + ", "
+            + transaction_.quote(asset.asset_id) + ", "
+            + transaction_.quote(asset.balance.to_string())
+            + ") ON CONFLICT (account_id, asset_id) DO UPDATE SET "
+            "amount = EXCLUDED.amount;");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -177,11 +174,9 @@ namespace iroha {
         const pubkey_t &signatory) {
       try {
         pqxx::binarystring public_key(signatory.data(), signatory.size());
-        transaction_.exec(
-            "INSERT INTO signatory(public_key)\n"
-            "            SELECT " + transaction_.quote(public_key)+ "\n"+
-            "    WHERE NOT EXISTS (SELECT 1 FROM signatory WHERE public_key = " +
-            transaction_.quote(public_key) + ");");
+        transaction_.exec("INSERT INTO signatory(public_key) VALUES ("
+                          + transaction_.quote(public_key)
+                          + ") ON CONFLICT DO NOTHING;");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -194,9 +189,7 @@ namespace iroha {
       pqxx::binarystring public_key(signatory.data(), signatory.size());
       try {
         transaction_.exec(
-            "INSERT INTO account_has_signatory(\n"
-            "            account_id, public_key)\n"
-            "    VALUES ("
+            "INSERT INTO account_has_signatory(account_id, public_key) VALUES ("
             + transaction_.quote(account_id) + ", "
             + transaction_.quote(public_key) + ");");
       } catch (const std::exception &e) {
@@ -211,9 +204,8 @@ namespace iroha {
       pqxx::binarystring public_key(signatory.data(), signatory.size());
       try {
         transaction_.exec(
-            "DELETE FROM account_has_signatory\n"
-            " WHERE account_id="
-            + transaction_.quote(account_id) + " AND public_key="
+            "DELETE FROM account_has_signatory WHERE account_id = "
+            + transaction_.quote(account_id) + " AND public_key = "
             + transaction_.quote(public_key) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
@@ -225,12 +217,13 @@ namespace iroha {
     bool PostgresWsvCommand::deleteSignatory(const pubkey_t &signatory) {
       pqxx::binarystring public_key(signatory.data(), signatory.size());
       try {
-        transaction_.exec(
-            "DELETE FROM signatory\n"
-                " WHERE public_key=" + transaction_.quote(public_key) + "\n" +
-                " AND NOT EXISTS (SELECT 1 FROM account_has_signatory WHERE public_key = " + transaction_.quote(public_key) + ")" +
-                " AND NOT EXISTS (SELECT 1 FROM peer WHERE public_key = " + transaction_.quote(public_key) + ");"
-        );
+        transaction_.exec("DELETE FROM signatory WHERE public_key = "
+            + transaction_.quote(public_key)
+            + " AND NOT EXISTS (SELECT 1 FROM account_has_signatory "
+            "WHERE public_key = "
+            + transaction_.quote(public_key)
+            + ") AND NOT EXISTS (SELECT 1 FROM peer WHERE public_key = "
+            + transaction_.quote(public_key) + ");");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -241,12 +234,9 @@ namespace iroha {
     bool PostgresWsvCommand::insertPeer(const model::Peer &peer) {
       pqxx::binarystring public_key(peer.pubkey.data(), peer.pubkey.size());
       try {
-        transaction_.exec(
-            "INSERT INTO peer(\n"
-            "            public_key, address)\n"
-            "    VALUES ("
-            + transaction_.quote(public_key) + ", "
-            + transaction_.quote(peer.address) + ");");
+        transaction_.exec("INSERT INTO peer(public_key, address) VALUES ("
+                          + transaction_.quote(public_key) + ", "
+                          + transaction_.quote(peer.address) + ");");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -257,11 +247,9 @@ namespace iroha {
     bool PostgresWsvCommand::deletePeer(const model::Peer &peer) {
       pqxx::binarystring public_key(peer.pubkey.data(), peer.pubkey.size());
       try {
-        transaction_.exec(
-            "DELETE FROM peer\n"
-            " WHERE public_key="
-            + transaction_.quote(public_key) + " AND address="
-            + transaction_.quote(peer.address) + ";");
+        transaction_.exec("DELETE FROM peer WHERE public_key = "
+                          + transaction_.quote(public_key) + " AND address = "
+                          + transaction_.quote(peer.address) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -271,11 +259,8 @@ namespace iroha {
 
     bool PostgresWsvCommand::insertDomain(const model::Domain &domain) {
       try {
-        transaction_.exec(
-            "INSERT INTO domain(\n"
-            "            domain_id)\n"
-            "    VALUES ("
-            + transaction_.quote(domain.domain_id) + ");");
+        transaction_.exec("INSERT INTO domain(domain_id) VALUES ("
+                          + transaction_.quote(domain.domain_id) + ");");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -297,14 +282,12 @@ namespace iroha {
                   << account.permissions.set_quorum;
       try {
         transaction_.exec(
-            "UPDATE account\n"
-            "   SET quorum=" +
-            transaction_.quote(account.quorum) + ", transaction_count=" +
-            /*account.transaction_count*/ transaction_.quote(0) +
-            ", permissions=" + transaction_.quote(permissions.str()) +
-            "\n"
-            " WHERE account_id=" +
-            transaction_.quote(account.account_id) + ";");
+            "UPDATE account SET quorum = " + transaction_.quote(account.quorum)
+            + ", transaction_count = " +
+            /*account.transaction_count*/ transaction_.quote(0)
+            + ", permissions = " + transaction_.quote(permissions.str())
+            + " WHERE account_id = " + transaction_.quote(account.account_id)
+            + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;

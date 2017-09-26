@@ -104,20 +104,14 @@ namespace iroha {
     optional<Account> PostgresWsvQuery::getAccount(const string &account_id) {
       pqxx::result result;
       try {
-        result = transaction_.exec(
-            "SELECT \n"
-            "  *\n"
-            "FROM \n"
-            "  account\n"
-            "WHERE \n"
-            "  account.account_id = " +
-            transaction_.quote(account_id) + ";");
+        result = transaction_.exec("SELECT * FROM account WHERE account_id = "
+                                   + transaction_.quote(account_id) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return nullopt;
       }
-      if (result.size() != 1) {
-        log_->info("result.size(): " + std::to_string(result.size()));
+      if (result.empty()) {
+        log_->info("Account {} not found", account_id);
         return nullopt;
       }
       Account account;
@@ -146,13 +140,8 @@ namespace iroha {
       pqxx::result result;
       try {
         result = transaction_.exec(
-            "SELECT \n"
-            "  account_has_signatory.public_key\n"
-            "FROM \n"
-            "  account_has_signatory\n"
-            "WHERE \n"
-            "  account_has_signatory.account_id = " +
-            transaction_.quote(account_id) + ";");
+            "SELECT public_key FROM account_has_signatory WHERE account_id = "
+            + transaction_.quote(account_id) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return nullopt;
@@ -170,20 +159,14 @@ namespace iroha {
     optional<Asset> PostgresWsvQuery::getAsset(const string &asset_id) {
       pqxx::result result;
       try {
-        result = transaction_.exec(
-            "SELECT \n"
-            "  * \n"
-            "FROM \n"
-            "  asset\n"
-            "WHERE \n"
-            "  asset.asset_id = " +
-            transaction_.quote(asset_id) + ";");
+        result = transaction_.exec("SELECT * FROM asset WHERE asset_id = "
+                                   + transaction_.quote(asset_id) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return nullopt;
       }
-      if (result.size() != 1) {
-        log_->info("result.size(): " + std::to_string(result.size()));
+      if (result.empty()) {
+        log_->info("Asset {} not found", asset_id);
         return nullopt;
       }
       Asset asset;
@@ -202,22 +185,15 @@ namespace iroha {
       pqxx::result result;
       try {
         result = transaction_.exec(
-            "SELECT \n"
-            "  * \n"
-            "FROM \n"
-            "  account_has_asset\n"
-            "WHERE \n"
-            "  account_has_asset.account_id = " +
-            transaction_.quote(account_id) +
-            " AND \n"
-            "  account_has_asset.asset_id = " +
-            transaction_.quote(asset_id) + ";");
+            "SELECT * FROM account_has_asset WHERE account_id = "
+            + transaction_.quote(account_id) + " AND asset_id = "
+            + transaction_.quote(asset_id) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return nullopt;
       }
-      if (result.size() != 1) {
-        log_->info("result.size(): " + std::to_string(result.size()));
+      if (result.empty()) {
+        log_->info("Account {} does not have asset {}", account_id, asset_id);
         return nullopt;
       }
       model::AccountAsset asset;
@@ -233,11 +209,7 @@ namespace iroha {
     nonstd::optional<std::vector<model::Peer>> PostgresWsvQuery::getPeers() {
       pqxx::result result;
       try {
-        result = transaction_.exec(
-            "SELECT \n"
-            "  * \n"
-            "FROM \n"
-            "  peer;");
+        result = transaction_.exec("SELECT * FROM peer;");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return nullopt;
