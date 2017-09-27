@@ -24,7 +24,6 @@
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 
@@ -142,24 +141,6 @@ TEST(CommandTest, remove_signatory) {
   command_converter_test(orig_command);
 }
 
-TEST(CommandTest, set_acount_permissions) {
-  auto factory = iroha::model::converters::PbCommandFactory();
-
-  auto orig_command = iroha::model::SetAccountPermissions();
-  orig_command.account_id = "Vasya";
-  iroha::model::Account::Permissions perm;
-  perm.can_transfer = true;
-  perm.add_signatory = true;
-  perm.issue_assets = true;
-  orig_command.new_permissions = perm;
-
-  auto proto_command = factory.serializeSetAccountPermissions(orig_command);
-  auto serial_command = factory.deserializeSetAccountPermissions(proto_command);
-
-  ASSERT_EQ(orig_command, serial_command);
-
-  command_converter_test(orig_command);
-}
 
 TEST(CommandTest, set_account_quorum) {
   auto factory = iroha::model::converters::PbCommandFactory();

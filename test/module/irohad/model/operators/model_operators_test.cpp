@@ -25,7 +25,6 @@
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/transaction.hpp"
@@ -159,23 +158,6 @@ TEST(ModelOperatorTest, RemoveSignatoryTest) {
   auto first = createRemoveSignatory();
   auto second = createRemoveSignatory();
 
-  ASSERT_EQ(first, second);
-  second.account_id = "22";
-  ASSERT_NE(first, second);
-}
-
-// -----|SetAccountPermissions|-----
-
-SetAccountPermissions createSetAccountPermissions() {
-  SetAccountPermissions setAccountPermissions;
-  setAccountPermissions.account_id = "123";
-  setAccountPermissions.new_permissions.set_quorum = true;
-  return setAccountPermissions;
-}
-
-TEST(ModelOperatorTest, SetAccountPermissionsTest) {
-  auto first = createSetAccountPermissions();
-  auto second = createSetAccountPermissions();
   ASSERT_EQ(first, second);
   second.account_id = "22";
   ASSERT_NE(first, second);
@@ -319,8 +301,6 @@ Transaction createTransaction() {
       std::make_shared<CreateDomain>(createCreateDomain()));
   transaction.commands.push_back(
       std::make_shared<RemoveSignatory>(createRemoveSignatory()));
-  transaction.commands.push_back(
-      std::make_shared<SetAccountPermissions>(createSetAccountPermissions()));
   transaction.commands.push_back(
       std::make_shared<TransferAsset>(createTransferAsset()));
   return transaction;

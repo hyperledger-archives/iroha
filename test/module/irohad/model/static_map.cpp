@@ -30,24 +30,13 @@ TEST(HandlerTest, CommandRegistration) {
   auto log = logger::testLog("HandlerTest");
 
   CommandRegistry registry;
-
-  log->info("Available command types: {}",
-            logger::to_string(registry.command_handler.types(), [](auto index) {
-              return index.name();
-            }));
-
-  ASSERT_EQ(14, registry.command_handler.types().size());
+  ASSERT_EQ(13, registry.command_handler.types().size());
 }
 
 TEST(HandlerTest, QueryRegistration) {
   auto log = logger::testLog("HandlerTest");
 
   QueryRegistry registry;
-
-  log->info("Available query types: {}",
-            logger::to_string(registry.query_handler.types(), [](auto index) {
-              return index.name();
-            }));
 
   ASSERT_EQ(8, registry.query_handler.types().size());
 }
@@ -57,11 +46,6 @@ TEST(HandlerTest, QueryResponseRegistration) {
 
   QueryResponseRegistry registry;
 
-  log->info("Available query response types: {}",
-            logger::to_string(registry.query_response_handler.types(), [](auto index) {
-              return index.name();
-            }));
-
   ASSERT_EQ(8, registry.query_response_handler.types().size());
 }
 
@@ -69,11 +53,6 @@ TEST(HandlerTest, TransactionResponseRegistration) {
   auto log = logger::testLog("HandlerTest");
 
   TransactionResponseRegistry registry;
-
-  log->info("Available transaction response types: {}",
-            logger::to_string(registry.transaction_response_handler.types(), [](auto index) {
-              return index.name();
-            }));
 
   ASSERT_EQ(1, registry.transaction_response_handler.types().size());
 }

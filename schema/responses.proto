@@ -13,7 +13,6 @@ message Asset {
 message Account {
     string account_id = 1;
     string domain_name = 2;
-    Permissions permissions = 3;
     uint32 quorum = 4;
 }
 

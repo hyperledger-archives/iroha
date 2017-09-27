@@ -33,6 +33,7 @@
 #include "model/converters/json_common.hpp"
 #include "model/converters/json_query_factory.hpp"
 #include "model/converters/json_transaction_factory.hpp"
+#include "model/permissions.hpp"
 
 constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;
@@ -46,10 +47,12 @@ using namespace iroha::ametsuchi;
 using namespace iroha::network;
 using namespace iroha::validation;
 using namespace iroha::model::converters;
+using namespace iroha::model;
 
 class ClientServerTest : public testing::Test {
  public:
   virtual void SetUp() {
+    spdlog::set_level(spdlog::level::off);
     // Run a server
     runner = std::make_unique<ServerRunner>(std::string(Ip) + ":"
                                             + std::to_string(Port));
@@ -250,13 +253,13 @@ TEST_F(ClientServerTest, SendQueryWhenValid) {
       .WillOnce(Return(true));
   auto account_admin = iroha::model::Account();
   account_admin.account_id = "admin@test";
-  account_admin.permissions.read_all_accounts = true;
 
   auto account_test = iroha::model::Account();
   account_test.account_id = "test@test";
 
-  EXPECT_CALL(*wsv_query, getAccount("admin@test"))
-      .WillOnce(Return(account_admin));
+  EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(
+                              "admin@test", "test@test", can_get_my_account))
+      .WillOnce(Return(true));
   EXPECT_CALL(*wsv_query, getAccount("test@test"))
       .WillOnce(Return(account_test));
 
@@ -292,8 +295,9 @@ TEST_F(ClientServerTest, SendQueryWhenStatefulInvalid) {
   auto account_test = iroha::model::Account();
   account_test.account_id = "test@test";
 
-  EXPECT_CALL(*wsv_query, getAccount("admin@test"))
-      .WillOnce(Return(account_admin));
+  EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(
+      "admin@test", "test@test", can_get_my_account))
+      .WillOnce(Return(false));
   EXPECT_CALL(*wsv_query, getAccount("test@test")).Times(0);
 
   auto json_query =

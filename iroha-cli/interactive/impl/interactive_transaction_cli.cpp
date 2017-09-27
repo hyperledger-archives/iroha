@@ -45,7 +45,6 @@ namespace iroha_cli {
           {CREATE_DOMAIN, "Create Domain"},
           {CREATE_ASSET, "Create Asset"},
           {REMOVE_SIGN, "Remove Signatory"},
-          {SET_PERM, "Set Permissions to Account"},
           {SET_QUO, "Set Account Quorum"},
           {SUB_ASSET_QTY, "Subtract  Assets Quantity from Account"},
           {TRAN_ASSET, "Transfer Assets"},
@@ -78,7 +77,6 @@ namespace iroha_cli {
           {CREATE_DOMAIN, {dom_id}},
           {CREATE_ASSET, {ast_name, dom_id, ast_precision}},
           {REMOVE_SIGN, {acc_id, pub_key}},
-          {SET_PERM, {}},
           {SET_QUO, {acc_id, quorum}},
           {SUB_ASSET_QTY, {}},
           {TRAN_ASSET,
@@ -102,7 +100,6 @@ namespace iroha_cli {
           {CREATE_DOMAIN, &InteractiveTransactionCli::parseCreateDomain},
           {CREATE_ASSET, &InteractiveTransactionCli::parseCreateAsset},
           {REMOVE_SIGN, &InteractiveTransactionCli::parseRemoveSignatory},
-          {SET_PERM, &InteractiveTransactionCli::parseSetPermissions},
           {SET_QUO, &InteractiveTransactionCli::parseSetQuorum},
           {SUB_ASSET_QTY,
            &InteractiveTransactionCli::parseSubtractAssetQuantity},
@@ -319,14 +316,6 @@ namespace iroha_cli {
       iroha::pubkey_t pubkey;
       pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key).value();
       return generator_.generateRemoveSignatory(account_id, pubkey);
-    }
-
-    std::shared_ptr<iroha::model::Command>
-    InteractiveTransactionCli::parseSetPermissions(
-        std::vector<std::string> params) {
-      // TODO: implement when change permission model
-      std::cout << "Not implemented" << std::endl;
-      return nullptr;
     }
 
     std::shared_ptr<iroha::model::Command>

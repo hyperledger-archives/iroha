@@ -20,11 +20,8 @@
 #include "framework/test_block_generator.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/create_domain.hpp"
-#include "model/commands/create_domain.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_account.hpp"
-#include "model/commands/set_permissions.hpp"
-#include "common/types.hpp"
 
 using namespace iroha;
 using namespace iroha::model;
@@ -68,18 +65,8 @@ namespace framework {
       create_acc->domain_id = "test";
       create_acc->account_name = "test";
 
-      auto set_perm = std::make_shared<SetAccountPermissions>();
-      set_perm->account_id = "admin@test";
-      Account::Permissions permissions;
-      permissions.can_transfer = true;
-      permissions.read_all_accounts = true;
-      permissions.issue_assets = true;
-      permissions.set_permissions = true;
-      set_perm->new_permissions = permissions;
-
       transaction.commands =
-          {create_domain, create_asset, create_admin, create_acc,
-           set_perm};
+          {create_domain, create_asset, create_admin, create_acc};
       return transaction;
     }
 

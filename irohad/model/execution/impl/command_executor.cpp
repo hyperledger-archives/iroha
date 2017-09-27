@@ -24,7 +24,6 @@
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 
@@ -48,8 +47,8 @@ namespace iroha {
 
     bool CommandExecutor::validate(const Command &command, WsvQuery &queries,
                                    const Account &creator) {
-      return hasPermissions(command, queries, creator) &&
-             isValid(command, queries);
+      return hasPermissions(command, queries, creator)
+          && isValid(command, queries);
     }
 
     // ----------------------------| Append Role |-----------------------------
@@ -69,7 +68,8 @@ namespace iroha {
     bool AppendRoleExecutor::hasPermissions(const Command &command,
                                             ametsuchi::WsvQuery &queries,
                                             const Account &creator) {
-      return checkAccountRolePermission(creator.account_id, queries, can_append_role);
+      return checkAccountRolePermission(creator.account_id, queries,
+                                        can_append_role);
     }
 
 bool AppendRoleExecutor::isValid(const Command &command,
@@ -97,17 +97,20 @@ bool AppendRoleExecutor::isValid(const Command &command,
     bool CreateRoleExecutor::hasPermissions(const Command &command,
                                             ametsuchi::WsvQuery &queries,
                                             const Account &creator) {
-      return checkAccountRolePermission(creator.account_id, queries, can_create_role);
+      return checkAccountRolePermission(creator.account_id, queries,
+                                        can_create_role);
     }
 
     bool CreateRoleExecutor::isValid(const Command &command,
                                      ametsuchi::WsvQuery &queries) {
-      // TODO: check. Add checks on naming of the role (no system symbols, lower-case, regex)
+      // TODO: check. Add checks on naming of the role (no system symbols,
+      // lower-case, regex)
       // TODO: you can't create role more than you have
       return true;
     }
 
-    // ----------------------------| Grant Permission |----------------------------
+    // ----------------------------| Grant Permission
+    // |----------------------------
     GrantPermissionExecutor::GrantPermissionExecutor() : creator_() {
       log_ = logger::log("GrantPermissionExecutor");
     }
@@ -129,7 +132,7 @@ bool AppendRoleExecutor::isValid(const Command &command,
       creator_ = creator;
       auto cmd_value = static_cast<const GrantPermission &>(command);
       return checkAccountRolePermission(creator.account_id, queries,
-                                        "CanGrant"+cmd_value.permission_name);
+                                        "CanGrant" + cmd_value.permission_name);
     }
 
     bool GrantPermissionExecutor::isValid(const Command &command,
@@ -138,7 +141,8 @@ bool AppendRoleExecutor::isValid(const Command &command,
       return true;
     }
 
-    // --------------------------|Revoke Permission|-----------------------------
+    // --------------------------|Revoke
+    // Permission|-----------------------------
     RevokePermissionExecutor::RevokePermissionExecutor() : creator_() {
       log_ = logger::log("RevokePermissionExecutor");
     }
@@ -159,10 +163,10 @@ bool AppendRoleExecutor::isValid(const Command &command,
                                                   const Account &creator) {
       creator_ = creator;
       auto cmd_value = static_cast<const GrantPermission &>(command);
-      // Target account must have permission on creator's account -> creator can revoke his permission
-      return queries.hasAccountGrantablePermission(cmd_value.account_id,
-                                                   creator.account_id,
-                                                   cmd_value.permission_name);
+      // Target account must have permission on creator's account -> creator can
+      // revoke his permission
+      return queries.hasAccountGrantablePermission(
+          cmd_value.account_id, creator.account_id, cmd_value.permission_name);
     }
 
     bool RevokePermissionExecutor::isValid(const Command &command,
@@ -203,21 +207,20 @@ bool AppendRoleExecutor::isValid(const Command &command,
         log_->info("create wallet {} for {}", add_asset_quantity.asset_id,
                    add_asset_quantity.account_id);
 
-    account_asset = AccountAsset();
-    account_asset->asset_id = add_asset_quantity.asset_id;
-    account_asset->account_id = add_asset_quantity.account_id;
-    account_asset->balance =
-        add_asset_quantity.amount;
-  } else {
-    auto account_asset_value = account_asset.value();
+        account_asset = AccountAsset();
+        account_asset->asset_id = add_asset_quantity.asset_id;
+        account_asset->account_id = add_asset_quantity.account_id;
+        account_asset->balance = add_asset_quantity.amount;
+      } else {
+        auto account_asset_value = account_asset.value();
 
-    auto new_balance =
-                      account_asset_value.balance + add_asset_quantity.amount;
-    if (not new_balance.has_value()) {
-      return false;
-    }
-    account_asset->balance = new_balance.value();
-  }
+        auto new_balance =
+            account_asset_value.balance + add_asset_quantity.amount;
+        if (not new_balance.has_value()) {
+          return false;
+        }
+        account_asset->balance = new_balance.value();
+      }
 
       // accountAsset.value().balance += amount;
       return commands.upsertAccountAsset(account_asset.value());
@@ -235,15 +238,13 @@ bool AppendRoleExecutor::isValid(const Command &command,
                                          can_add_asset_qty);
     }
 
-bool AddAssetQuantityExecutor::isValid(const Command &command,
-                                       WsvQuery &queries) {
-  auto add_asset_quantity = static_cast<const AddAssetQuantity &>(command);
+    bool AddAssetQuantityExecutor::isValid(const Command &command,
+                                           WsvQuery &queries) {
+      auto add_asset_quantity = static_cast<const AddAssetQuantity &>(command);
 
-
-
-  // TODO add some checks foramountif there will be a need
-          return true;
-}
+      // TODO add some checks foramountif there will be a need
+      return true;
+    }
 
     // --------------------------|AddPeer|------------------------------
 
@@ -266,7 +267,8 @@ bool AddAssetQuantityExecutor::isValid(const Command &command,
     bool AddPeerExecutor::hasPermissions(const Command &command,
                                          ametsuchi::WsvQuery &queries,
                                          const Account &creator) {
-      return checkAccountRolePermission(creator.account_id, queries, can_add_peer);
+      return checkAccountRolePermission(creator.account_id, queries,
+                                        can_add_peer);
     }
 
     bool AddPeerExecutor::isValid(const Command &command,
@@ -285,8 +287,8 @@ bool AddAssetQuantityExecutor::isValid(const Command &command,
                                        ametsuchi::WsvCommand &commands) {
       auto add_signatory = static_cast<const AddSignatory &>(command);
 
-      return commands.insertSignatory(add_signatory.pubkey) &&
-         commands.insertAccountSignatory(add_signatory.account_id,
+      return commands.insertSignatory(add_signatory.pubkey)
+          && commands.insertAccountSignatory(add_signatory.account_id,
                                              add_signatory.pubkey);
     }
 
@@ -329,8 +331,6 @@ bool AddAssetQuantityExecutor::isValid(const Command &command,
 
       account.domain_name = create_account.domain_id;
       account.quorum = 1;
-      Account::Permissions permissions = iroha::model::Account::Permissions();
-      account.permissions = permissions;
       // TODO: Add some initial role(default) to account
       return commands.insertSignatory(create_account.pubkey)
           and commands.insertAccount(account)
@@ -342,7 +342,8 @@ bool AddAssetQuantityExecutor::isValid(const Command &command,
                                                ametsuchi::WsvQuery &queries,
                                                const Account &creator) {
       // Creator must have permission to create account
-      return checkAccountRolePermission(creator.account_id, queries, can_create_account);
+      return checkAccountRolePermission(creator.account_id, queries,
+                                        can_create_account);
     }
 
     bool CreateAccountExecutor::isValid(const Command &command,
@@ -383,7 +384,8 @@ bool AddAssetQuantityExecutor::isValid(const Command &command,
                                              ametsuchi::WsvQuery &queries,
                                              const Account &creator) {
       // Creator must have permission to create assets
-      return checkAccountRolePermission(creator.account_id, queries, can_create_asset);
+      return checkAccountRolePermission(creator.account_id, queries,
+                                        can_create_asset);
     }
 
     bool CreateAssetExecutor::isValid(const Command &command,
@@ -392,8 +394,8 @@ bool AddAssetQuantityExecutor::isValid(const Command &command,
 
       return
           // Name is within some range
-          not create_asset.asset_name.empty() &&
-          create_asset.asset_name.size() < 10 &&
+          not create_asset.asset_name.empty()
+          && create_asset.asset_name.size() < 10 &&
           // Account must be well-formed (no system symbols)
           std::all_of(std::begin(create_asset.asset_name),
                       std::end(create_asset.asset_name),
@@ -422,7 +424,8 @@ bool AddAssetQuantityExecutor::isValid(const Command &command,
                                               ametsuchi::WsvQuery &queries,
                                               const Account &creator) {
       // Creator must have permission to create domains
-      return checkAccountRolePermission(creator.account_id, queries, can_create_domain);
+      return checkAccountRolePermission(creator.account_id, queries,
+                                        can_create_domain);
     }
 
     bool CreateDomainExecutor::isValid(const Command &command,
@@ -431,8 +434,8 @@ bool AddAssetQuantityExecutor::isValid(const Command &command,
 
       return
           // Name is within some range
-          not create_domain.domain_name.empty() and
-          create_domain.domain_name.size() < 10 and
+          not create_domain.domain_name.empty()
+          and create_domain.domain_name.size() < 10 and
           // Account must be well-formed (no system symbols)
           std::all_of(std::begin(create_domain.domain_name),
                       std::end(create_domain.domain_name),
@@ -450,12 +453,11 @@ bool AddAssetQuantityExecutor::isValid(const Command &command,
                                           ametsuchi::WsvCommand &commands) {
       auto remove_signatory = static_cast<const RemoveSignatory &>(command);
 
-  // Delete will fail if account signatory doesn't exist
-  return commands.deleteAccountSignatory(remove_signatory.account_id,
-                                         remove_signatory.pubkey)&&
-commands.deleteSignatory(remove_signatory.pubkey);}
-
-
+      // Delete will fail if account signatory doesn't exist
+      return commands.deleteAccountSignatory(remove_signatory.account_id,
+                                             remove_signatory.pubkey)
+          && commands.deleteSignatory(remove_signatory.pubkey);
+    }
 
     bool RemoveSignatoryExecutor::hasPermissions(const Command &command,
                                                  ametsuchi::WsvQuery &queries,
@@ -480,51 +482,18 @@ commands.deleteSignatory(remove_signatory.pubkey);}
                                           ametsuchi::WsvQuery &queries) {
       auto remove_signatory = static_cast<const RemoveSignatory &>(command);
 
-  auto account = queries.getAccount(remove_signatory.account_id);
-  auto signatories = queries.getSignatories(remove_signatory.account_id);
+      auto account = queries.getAccount(remove_signatory.account_id);
+      auto signatories = queries.getSignatories(remove_signatory.account_id);
 
-  if (not ( account.has_value()and signatories.has_value())) {
-    // No account or signatories found
-    return false;
-  }
-
-  auto newSignatoriesSize = signatories.value().size() - 1;
-
-  // You can't remove if size of rest signatories less than the quorum
-  return newSignatoriesSize >= account.value().quorum;
-}
-
-    // ----------------- SetAccountPermissions -----------------
-
-    SetAccountPermissionsExecutor::SetAccountPermissionsExecutor() {
-      log_ = logger::log("SetAccountPermissionsExecutor");
-    }
-
-    bool SetAccountPermissionsExecutor::execute(
-        const Command &command, ametsuchi::WsvQuery &queries,
-        ametsuchi::WsvCommand &commands) {
-      auto set_account_permissions =
-          static_cast<const SetAccountPermissions &>(command);
-
-      auto account = queries.getAccount(set_account_permissions.account_id);
-      if (not account.has_value()) {
-        log_->info("account {} is absent", set_account_permissions.account_id);
+      if (not(account.has_value() and signatories.has_value())) {
+        // No account or signatories found
         return false;
       }
-      account.value().permissions = set_account_permissions.new_permissions;
-      return commands.updateAccount(account.value());
-    }
 
-    bool SetAccountPermissionsExecutor::hasPermissions(
-        const Command &command, ametsuchi::WsvQuery &queries,
-        const Account &creator) {
-      // check if creator has permission to set permissions
-      return creator.permissions.set_permissions;
-    }
+      auto newSignatoriesSize = signatories.value().size() - 1;
 
-    bool SetAccountPermissionsExecutor::isValid(const Command &command,
-                                                ametsuchi::WsvQuery &queries) {
-      return true;
+      // You can't remove if size of rest signatories less than the quorum
+      return newSignatoriesSize >= account.value().quorum;
     }
 
     // -----------------------|SetQuorum|-------------------------
@@ -597,33 +566,32 @@ commands.deleteSignatory(remove_signatory.pubkey);}
         log_->info("asset {} is absent of {}", transfer_asset.asset_id,
                    transfer_asset.dest_account_id, transfer_asset.description);
 
-    return false;
-  }
-  // Precision for both wallets
-  auto precision = asset.value().precision;
-  if (transfer_asset.amount.getPrecision() != precision) {
-    log_->info("precision {} is wrong", precision);
-    return false;
-  }
-  // Get src balance
-  auto src_balance = src_account_asset.value().balance;
-  // TODO: handle non-trivial arithmetic
-  auto new_src_balance =src_balance - transfer_asset.amount;
-  if (not new_src_balance.has_value()) {
-    return false;
-  }
-  src_balance = new_src_balance.value();
-  // Set new balance for source account
-  src_account_asset.value().balance = src_balance;
+        return false;
+      }
+      // Precision for both wallets
+      auto precision = asset.value().precision;
+      if (transfer_asset.amount.getPrecision() != precision) {
+        log_->info("precision {} is wrong", precision);
+        return false;
+      }
+      // Get src balance
+      auto src_balance = src_account_asset.value().balance;
+      // TODO: handle non-trivial arithmetic
+      auto new_src_balance = src_balance - transfer_asset.amount;
+      if (not new_src_balance.has_value()) {
+        return false;
+      }
+      src_balance = new_src_balance.value();
+      // Set new balance for source account
+      src_account_asset.value().balance = src_balance;
 
-  if (not dest_account_asset.has_value()) {
-    // This assert is new for this account - create new AccountAsset
-    dest_AccountAsset = AccountAsset();
-    dest_AccountAsset.asset_id = transfer_asset.asset_id;
-    dest_AccountAsset.account_id = transfer_asset.dest_account_id;
-    // Set new balance for dest account
-    dest_AccountAsset.balance =
-        transfer_asset.amount;
+      if (not dest_account_asset.has_value()) {
+        // This assert is new for this account - create new AccountAsset
+        dest_AccountAsset = AccountAsset();
+        dest_AccountAsset.asset_id = transfer_asset.asset_id;
+        dest_AccountAsset.account_id = transfer_asset.dest_account_id;
+        // Set new balance for dest account
+        dest_AccountAsset.balance = transfer_asset.amount;
 
       } else {
         // Account already has such asset
@@ -631,17 +599,17 @@ commands.deleteSignatory(remove_signatory.pubkey);}
         // Get balance dest account
         auto dest_balance = dest_account_asset.value().balance;
 
-    auto new_dest_balance =dest_balance + transfer_asset.amount;
-    if (not new_dest_balance.has_value()) {
-      return false;
-    }
-    dest_balance = new_dest_balance.value();
-    // Set new balance for dest
-    dest_AccountAsset.balance = dest_balance;
-  }
+        auto new_dest_balance = dest_balance + transfer_asset.amount;
+        if (not new_dest_balance.has_value()) {
+          return false;
+        }
+        dest_balance = new_dest_balance.value();
+        // Set new balance for dest
+        dest_AccountAsset.balance = dest_balance;
+      }
 
-      return commands.upsertAccountAsset(dest_AccountAsset) and
-             commands.upsertAccountAsset(src_account_asset.value());
+      return commands.upsertAccountAsset(dest_AccountAsset)
+          and commands.upsertAccountAsset(src_account_asset.value());
     }
 
     bool TransferAssetExecutor::hasPermissions(const Command &command,
@@ -650,21 +618,23 @@ commands.deleteSignatory(remove_signatory.pubkey);}
       auto transfer_asset = static_cast<const TransferAsset &>(command);
 
       // Can account transfer assets
-      // Creator can transfer only from their account, and must hve permission on that
-      return
-          creator.account_id == transfer_asset.src_account_id and
-          checkAccountRolePermission(creator.account_id, queries, can_transfer) and
-          checkAccountRolePermission(transfer_asset.dest_account_id, queries, can_receive);
+      // Creator can transfer only from their account, and must hve permission
+      // on that
+      return creator.account_id == transfer_asset.src_account_id
+          and checkAccountRolePermission(creator.account_id, queries,
+                                         can_transfer)
+          and checkAccountRolePermission(transfer_asset.dest_account_id,
+                                         queries, can_receive);
     }
 
     bool TransferAssetExecutor::isValid(const Command &command,
                                         ametsuchi::WsvQuery &queries) {
       auto transfer_asset = static_cast<const TransferAsset &>(command);
 
-  if (transfer_asset.amount.getIntValue() == 0) {
-    log_->info("amount must be not zero");
-    return false;
-  }
+      if (transfer_asset.amount.getIntValue() == 0) {
+        log_->info("amount must be not zero");
+        return false;
+      }
 
       auto asset = queries.getAsset(transfer_asset.asset_id);
       if (not asset.has_value()) {
@@ -677,13 +647,12 @@ commands.deleteSignatory(remove_signatory.pubkey);}
       auto account_asset = queries.getAccountAsset(
           transfer_asset.src_account_id, transfer_asset.asset_id);
 
-  return account_asset.has_value() and
-         // Check if dest account exist
-         queries.getAccount(transfer_asset.dest_account_id) and
-         // Balance in your wallet should be at least amount of transfer
-         account_asset.value().balance >=
-             transfer_asset.amount;
-}
+      return account_asset.has_value() and
+          // Check if dest account exist
+          queries.getAccount(transfer_asset.dest_account_id) and
+          // Balance in your wallet should be at least amount of transfer
+          account_asset.value().balance >= transfer_asset.amount;
+    }
 
   }  // namespace model
 }  // namespace iroha

@@ -28,7 +28,6 @@
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 
@@ -50,15 +49,9 @@ TEST(BlockTest, bl_test) {
   c2.precision = 2;
   c2.asset_name = "fedor-coin";
 
-  auto c3 = iroha::model::SetAccountPermissions();
-  c3.account_id = "fedor";
-  c3.new_permissions.can_transfer = true;
-  c3.new_permissions.create_assets = true;
-
   orig_tx.commands = {
       std::make_shared<iroha::model::CreateDomain>(c1),
-      std::make_shared<iroha::model::CreateAsset>(c2),
-      std::make_shared<iroha::model::SetAccountPermissions>(c3)};
+      std::make_shared<iroha::model::CreateAsset>(c2)};
 
   auto orig_block = iroha::model::Block();
   orig_block.created_ts = 1;

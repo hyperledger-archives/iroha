@@ -120,18 +120,7 @@ namespace iroha {
       row.at("domain_id") >> account.domain_name;
       row.at("quorum") >> account.quorum;
       //      row.at("transaction_count") >> ?
-      std::string permissions;
-      row.at("permissions") >> permissions;
-      account.permissions.add_signatory = permissions.at(0) - '0';
-      account.permissions.can_transfer = permissions.at(1) - '0';
-      account.permissions.create_accounts = permissions.at(2) - '0';
-      account.permissions.create_assets = permissions.at(3) - '0';
-      account.permissions.create_domains = permissions.at(4) - '0';
-      account.permissions.issue_assets = permissions.at(5) - '0';
-      account.permissions.read_all_accounts = permissions.at(6) - '0';
-      account.permissions.remove_signatory = permissions.at(7) - '0';
-      account.permissions.set_permissions = permissions.at(8) - '0';
-      account.permissions.set_quorum = permissions.at(9) - '0';
+      // TODO: remove permissions from account
       return account;
     }
 

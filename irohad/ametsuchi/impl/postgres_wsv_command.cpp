@@ -109,26 +109,22 @@ namespace iroha {
     };
 
     bool PostgresWsvCommand::insertAccount(const model::Account &account) {
-      std::stringstream permissions;
-      permissions << account.permissions.add_signatory
-                  << account.permissions.can_transfer
-                  << account.permissions.create_accounts
-                  << account.permissions.create_assets
-                  << account.permissions.create_domains
-                  << account.permissions.issue_assets
-                  << account.permissions.read_all_accounts
-                  << account.permissions.remove_signatory
-                  << account.permissions.set_permissions
-                  << account.permissions.set_quorum;
       try {
         transaction_.exec(
-            "INSERT INTO public.account(account_id, domain_id, quorum, "
-            "transaction_count, permissions) VALUES ("
-            + transaction_.quote(account.account_id) + ", "
-            + transaction_.quote(account.domain_name) + ", "
-            + transaction_.quote(account.quorum) + ", " +
-            /*account.transaction_count*/ transaction_.quote(0) + ", "
-            + transaction_.quote(permissions.str()) + ");");
+            "INSERT INTO account(\n"
+            "            account_id, domain_id, quorum, status, "
+            "transaction_count, \n"
+            "            permissions)\n"
+            "    VALUES (" +
+            transaction_.quote(account.account_id) + ", " +
+            transaction_.quote(account.domain_name) + ", " +
+            transaction_.quote(account.quorum) + ", " +
+            /*account.status*/ transaction_.quote(0) + ", " +
+            /*account.transaction_count*/ transaction_.quote(0) +
+            ", \n"
+            "            " +
+                // TODO: remove it
+            transaction_.quote("") + ");");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -270,25 +266,18 @@ namespace iroha {
     }
 
     bool PostgresWsvCommand::updateAccount(const model::Account &account) {
-      std::stringstream permissions;
-      permissions << account.permissions.add_signatory
-                  << account.permissions.can_transfer
-                  << account.permissions.create_accounts
-                  << account.permissions.create_assets
-                  << account.permissions.create_domains
-                  << account.permissions.issue_assets
-                  << account.permissions.read_all_accounts
-                  << account.permissions.remove_signatory
-                  << account.permissions.set_permissions
-                  << account.permissions.set_quorum;
       try {
         transaction_.exec(
-            "UPDATE account SET quorum = " + transaction_.quote(account.quorum)
-            + ", transaction_count = " +
-            /*account.transaction_count*/ transaction_.quote(0)
-            + ", permissions = " + transaction_.quote(permissions.str())
-            + " WHERE account_id = " + transaction_.quote(account.account_id)
-            + ";");
+            "UPDATE account\n"
+            "   SET quorum=" +
+            transaction_.quote(account.quorum) + ", status=" +
+            /*account.status*/ transaction_.quote(0) + ", transaction_count=" +
+            /*account.transaction_count*/ transaction_.quote(0) +
+                // TODO: remove this
+            ", permissions=" + transaction_.quote("") +
+            "\n"
+            " WHERE account_id=" +
+            transaction_.quote(account.account_id) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;

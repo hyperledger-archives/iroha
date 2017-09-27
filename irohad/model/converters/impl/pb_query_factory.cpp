@@ -233,7 +233,7 @@ namespace iroha {
       protocol::Query PbQueryFactory::serializeGetRoles(
           std::shared_ptr<const Query> query) const {
         protocol::Query pb_query;
-        auto mut = pb_query.mutable_payload()->mutable_get_roles();
+        pb_query.mutable_get_roles();
         serializeQueryMetaData(pb_query, query);
         auto tmp = std::static_pointer_cast<const GetRoles>(query);
         return pb_query;

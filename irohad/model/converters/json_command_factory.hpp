@@ -72,13 +72,7 @@ namespace iroha {
             std::shared_ptr<Command> command);
         optional_ptr<Command> deserializeRemoveSignatory(
             const rapidjson::Value &document);
-
-        // SetAccountPermissions
-        rapidjson::Document serializeSetAccountPermissions(
-            std::shared_ptr<Command> command);
-        optional_ptr<Command> deserializeSetAccountPermissions(
-            const rapidjson::Value &document);
-
+        
         // SetQuorum
         rapidjson::Document serializeSetQuorum(
             std::shared_ptr<Command> command);

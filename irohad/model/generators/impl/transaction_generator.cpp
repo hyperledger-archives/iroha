@@ -21,6 +21,8 @@
 #include "crypto/keys_manager_impl.hpp"
 #include "datetime/time.hpp"
 
+#include "model/commands/append_role.hpp"
+
 namespace iroha {
   namespace model {
     namespace generators {
@@ -59,7 +61,9 @@ namespace iroha {
             "test", "test", keypair.pubkey));
         // Add admin rights
         tx.commands.push_back(
-            command_generator.generateSetAdminPermissions("admin@test"));
+            command_generator.generateCreateAdminRole("admin"));
+        tx.commands.push_back(
+            std::make_shared<AppendRole>("admin@test", "admin"));
 
         return tx;
       }

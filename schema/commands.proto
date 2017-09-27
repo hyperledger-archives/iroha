@@ -39,11 +39,6 @@ message RemoveSignatory {
     bytes public_key = 2;
 }
 
-message SetAccountPermissions {
-    string account_id = 1;
-    Permissions permissions = 2;
-}
-
 message SetAccountQuorum {
     string account_id = 1;
     uint32 quorum = 2;
@@ -86,7 +81,6 @@ message Command {
         CreateAccount create_account = 5;
         CreateDomain create_domain = 6;
         RemoveSignatory remove_sign = 7;
-        SetAccountPermissions set_permission = 8;
         SetAccountQuorum set_quorum = 9;
         TransferAsset transfer_asset = 10;
         AppendRole append_role = 11;

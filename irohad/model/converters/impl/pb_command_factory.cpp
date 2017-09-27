@@ -159,65 +159,6 @@ namespace iroha {
                   remove_signatory.pubkey.begin());
         return remove_signatory;
       }
-
-      // set account permissions
-      protocol::SetAccountPermissions
-      PbCommandFactory::serializeSetAccountPermissions(
-          const model::SetAccountPermissions &set_account_permissions) {
-        protocol::SetAccountPermissions pb_set_account_permissions;
-        pb_set_account_permissions.set_account_id(
-            set_account_permissions.account_id);
-        auto permissions = pb_set_account_permissions.mutable_permissions();
-        permissions->set_issue_assets(
-            set_account_permissions.new_permissions.issue_assets);
-        permissions->set_create_assets(
-            set_account_permissions.new_permissions.create_assets);
-        permissions->set_create_accounts(
-            set_account_permissions.new_permissions.create_accounts);
-        permissions->set_create_domains(
-            set_account_permissions.new_permissions.create_domains);
-        permissions->set_read_all_accounts(
-            set_account_permissions.new_permissions.read_all_accounts);
-        permissions->set_add_signatory(
-            set_account_permissions.new_permissions.add_signatory);
-        permissions->set_remove_signatory(
-            set_account_permissions.new_permissions.remove_signatory);
-        permissions->set_set_quorum(
-            set_account_permissions.new_permissions.set_quorum);
-        permissions->set_can_transfer(
-            set_account_permissions.new_permissions.can_transfer);
-        return pb_set_account_permissions;
-      }
-
-      model::SetAccountPermissions
-      PbCommandFactory::deserializeSetAccountPermissions(
-          const protocol::SetAccountPermissions &pb_set_account_permissions) {
-        model::SetAccountPermissions set_account_permissions;
-        set_account_permissions.account_id =
-            pb_set_account_permissions.account_id();
-        set_account_permissions.new_permissions.issue_assets =
-            pb_set_account_permissions.permissions().issue_assets();
-        set_account_permissions.new_permissions.create_assets =
-            pb_set_account_permissions.permissions().create_assets();
-        set_account_permissions.new_permissions.create_accounts =
-            pb_set_account_permissions.permissions().create_accounts();
-        set_account_permissions.new_permissions.create_domains =
-            pb_set_account_permissions.permissions().create_domains();
-        set_account_permissions.new_permissions.read_all_accounts =
-            pb_set_account_permissions.permissions().read_all_accounts();
-        set_account_permissions.new_permissions.add_signatory =
-            pb_set_account_permissions.permissions().add_signatory();
-        set_account_permissions.new_permissions.remove_signatory =
-            pb_set_account_permissions.permissions().remove_signatory();
-        set_account_permissions.new_permissions.set_permissions =
-            pb_set_account_permissions.permissions().set_permissions();
-        set_account_permissions.new_permissions.set_quorum =
-            pb_set_account_permissions.permissions().set_quorum();
-        set_account_permissions.new_permissions.can_transfer =
-            pb_set_account_permissions.permissions().can_transfer();
-        return set_account_permissions;
-      }
-
       // set account quorum
       protocol::SetAccountQuorum PbCommandFactory::serializeSetQuorum(
           const model::SetQuorum &set_account_quorum) {
@@ -280,10 +221,9 @@ namespace iroha {
       model::CreateRole PbCommandFactory::deserializeCreateRole(
           const protocol::CreateRole &command) {
         std::vector<std::string> perms;
-        std::for_each(command.permissions().begin(), command.permissions().end(),
-                  [&perms](auto perm){
-                    perms.push_back(perm);
-                  });
+        std::for_each(command.permissions().begin(),
+                      command.permissions().end(),
+                      [&perms](auto perm) { perms.push_back(perm); });
         return CreateRole(command.role_name(), perms);
       }
 
@@ -291,10 +231,9 @@ namespace iroha {
           const model::CreateRole &command) {
         protocol::CreateRole cmd;
         cmd.set_role_name(command.role_name);
-        //cmd.mutable_permissions();
-        std::for_each(command.permissions.begin(), command.permissions.end(), [&cmd](auto perm){
-          cmd.add_permissions(perm);
-        });
+        // cmd.mutable_permissions();
+        std::for_each(command.permissions.begin(), command.permissions.end(),
+                      [&cmd](auto perm) { cmd.add_permissions(perm); });
         return cmd;
       }
 
@@ -416,14 +355,6 @@ namespace iroha {
               new protocol::RemoveSignatory(serialized));
         }
 
-        // -----|SetAccountPermissions|-----
-        if (instanceof <model::SetAccountPermissions>(command)) {
-          auto serialized = commandFactory.serializeSetAccountPermissions(
-              static_cast<const model::SetAccountPermissions &>(command));
-          cmd.set_allocated_set_permission(
-              new protocol::SetAccountPermissions(serialized));
-        }
-
         // -----|SetAccountQuorum|-----
         if (instanceof <model::SetQuorum>(command)) {
           auto serialized = commandFactory.serializeSetQuorum(
@@ -526,13 +457,6 @@ namespace iroha {
           val = std::make_shared<model::RemoveSignatory>(cmd);
         }
 
-        // -----|SetAccountPermissions|-----
-        if (command.has_set_permission()) {
-          auto pb_command = command.set_permission();
-          auto cmd =
-              commandFactory.deserializeSetAccountPermissions(pb_command);
-          val = std::make_shared<model::SetAccountPermissions>(cmd);
-        }
 
         // -----|SetAccountQuorum|-----
         if (command.has_set_quorum()) {

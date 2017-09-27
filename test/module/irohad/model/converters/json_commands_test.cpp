@@ -31,7 +31,6 @@
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/converters/json_command_factory.hpp"
@@ -62,7 +61,6 @@ TEST_F(JsonCommandTest, ClassHandlerTest) {
       std::make_shared<CreateAsset>(),
       std::make_shared<CreateDomain>(),
       std::make_shared<RemoveSignatory>(),
-      std::make_shared<SetAccountPermissions>(),
       std::make_shared<SetQuorum>(),
       std::make_shared<TransferAsset>()};
   for (const auto &command : commands) {
@@ -176,24 +174,6 @@ TEST_F(JsonCommandTest, remove_signatory) {
 
   auto json_command = factory.serializeRemoveSignatory(orig_command);
   auto serial_command = factory.deserializeRemoveSignatory(json_command);
-
-  ASSERT_TRUE(serial_command.has_value());
-  ASSERT_EQ(*orig_command, *serial_command.value());
-
-  command_converter_test(orig_command);
-}
-
-TEST_F(JsonCommandTest, set_acount_permissions) {
-  auto orig_command = std::make_shared<SetAccountPermissions>();
-  orig_command->account_id = "Vasya";
-  iroha::model::Account::Permissions perm;
-  perm.can_transfer = true;
-  perm.add_signatory = true;
-  perm.issue_assets = true;
-  orig_command->new_permissions = perm;
-
-  auto json_command = factory.serializeSetAccountPermissions(orig_command);
-  auto serial_command = factory.deserializeSetAccountPermissions(json_command);
 
   ASSERT_TRUE(serial_command.has_value());
   ASSERT_EQ(*orig_command, *serial_command.value());

@@ -26,7 +26,6 @@
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 
@@ -83,12 +82,6 @@ namespace iroha {
             const model::RemoveSignatory &removeSignatory);
         model::RemoveSignatory deserializeRemoveSignatory(
             const protocol::RemoveSignatory &removeSignatory);
-
-        // set account permissions
-        protocol::SetAccountPermissions serializeSetAccountPermissions(
-            const model::SetAccountPermissions &setAccountPermissions);
-        model::SetAccountPermissions deserializeSetAccountPermissions(
-            const protocol::SetAccountPermissions &setAccountPermissions);
 
         // set account quorum
         protocol::SetAccountQuorum serializeSetQuorum(

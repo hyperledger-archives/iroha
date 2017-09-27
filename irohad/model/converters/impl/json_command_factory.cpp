@@ -25,7 +25,6 @@
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 
@@ -78,8 +77,6 @@ namespace iroha {
             {typeid(CreateDomain), &JsonCommandFactory::serializeCreateDomain},
             {typeid(RemoveSignatory),
              &JsonCommandFactory::serializeRemoveSignatory},
-            {typeid(SetAccountPermissions),
-             &JsonCommandFactory::serializeSetAccountPermissions},
             {typeid(SetQuorum), &JsonCommandFactory::serializeSetQuorum},
             {typeid(TransferAsset),
              &JsonCommandFactory::serializeTransferAsset},
@@ -100,8 +97,6 @@ namespace iroha {
             {"CreateDomain", &JsonCommandFactory::deserializeCreateDomain},
             {"RemoveSignatory",
              &JsonCommandFactory::deserializeRemoveSignatory},
-            {"SetAccountPermissions",
-             &JsonCommandFactory::deserializeSetAccountPermissions},
             {"SetQuorum", &JsonCommandFactory::deserializeSetQuorum},
             {"TransferAsset", &JsonCommandFactory::deserializeTransferAsset},
             {"AppendRole", &JsonCommandFactory::deserializeAppendRole},
@@ -299,97 +294,6 @@ namespace iroha {
         return make_optional_ptr<RemoveSignatory>()
             | des.String(&RemoveSignatory::account_id, "account_id")
             | des.String(&RemoveSignatory::pubkey, "pubkey") | toCommand;
-      }
-
-      // SetAccountPermissions
-      Document JsonCommandFactory::serializeSetAccountPermissions(
-          std::shared_ptr<Command> command) {
-        auto set_account_permissions =
-            static_cast<SetAccountPermissions *>(command.get());
-
-        Document document;
-        auto &allocator = document.GetAllocator();
-
-        document.SetObject();
-        document.AddMember("command_type", "SetAccountPermissions", allocator);
-        document.AddMember("account_id", set_account_permissions->account_id,
-                           allocator);
-
-        Value new_permissions;
-        new_permissions.SetObject();
-        new_permissions.AddMember(
-            "add_signatory",
-            set_account_permissions->new_permissions.add_signatory, allocator);
-        new_permissions.AddMember(
-            "can_transfer",
-            set_account_permissions->new_permissions.can_transfer, allocator);
-        new_permissions.AddMember(
-            "create_accounts",
-            set_account_permissions->new_permissions.create_accounts,
-            allocator);
-        new_permissions.AddMember(
-            "create_assets",
-            set_account_permissions->new_permissions.create_assets, allocator);
-        new_permissions.AddMember(
-            "create_domains",
-            set_account_permissions->new_permissions.create_domains, allocator);
-        new_permissions.AddMember(
-            "issue_assets",
-            set_account_permissions->new_permissions.issue_assets, allocator);
-        new_permissions.AddMember(
-            "read_all_accounts",
-            set_account_permissions->new_permissions.read_all_accounts,
-            allocator);
-        new_permissions.AddMember(
-            "remove_signatory",
-            set_account_permissions->new_permissions.remove_signatory,
-            allocator);
-        new_permissions.AddMember(
-            "set_permissions",
-            set_account_permissions->new_permissions.set_permissions,
-            allocator);
-        new_permissions.AddMember(
-            "set_quorum", set_account_permissions->new_permissions.set_quorum,
-            allocator);
-
-        document.AddMember("new_permissions", new_permissions, allocator);
-
-        return document;
-      }
-
-      optional_ptr<Command>
-      JsonCommandFactory::deserializeSetAccountPermissions(
-          const Value &document) {
-        auto des = makeFieldDeserializer(document);
-        return make_optional_ptr<SetAccountPermissions>()
-            | des.String(&SetAccountPermissions::account_id, "account_id")
-            | des.Object(
-                  &SetAccountPermissions::new_permissions, "new_permissions",
-                  [](auto permissions) {
-                    auto des = makeFieldDeserializer(permissions);
-                    return nonstd::make_optional<Account::Permissions>()
-                        | des.Bool(&Account::Permissions::add_signatory,
-                                   "add_signatory")
-                        | des.Bool(&Account::Permissions::can_transfer,
-                                   "can_transfer")
-                        | des.Bool(&Account::Permissions::create_accounts,
-                                   "create_accounts")
-                        | des.Bool(&Account::Permissions::create_assets,
-                                   "create_assets")
-                        | des.Bool(&Account::Permissions::create_domains,
-                                   "create_domains")
-                        | des.Bool(&Account::Permissions::issue_assets,
-                                   "issue_assets")
-                        | des.Bool(&Account::Permissions::read_all_accounts,
-                                   "read_all_accounts")
-                        | des.Bool(&Account::Permissions::remove_signatory,
-                                   "remove_signatory")
-                        | des.Bool(&Account::Permissions::set_permissions,
-                                   "set_permissions")
-                        | des.Bool(&Account::Permissions::set_quorum,
-                                   "set_quorum");
-                  })
-            | toCommand;
       }
 
       // SetAccountQuorum

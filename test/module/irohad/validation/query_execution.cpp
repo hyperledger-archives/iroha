@@ -54,7 +54,7 @@ iroha::model::Account get_default_creator() {
   creator.account_id = ADMIN_ID;
   creator.domain_name = DOMAIN_NAME;
   creator.quorum = 1;
-  creator.permissions.read_all_accounts = true;
+  // TODO: add role based permission
   return creator;
 }
 
