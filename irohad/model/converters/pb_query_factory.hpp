@@ -53,14 +53,22 @@ namespace iroha {
 
        private:
         // Query serializer:
-        protocol::Query serializeGetAccount(std::shared_ptr<const Query> query);
-        protocol::Query serializeGetAccountAssets(std::shared_ptr<const Query> query);
-        protocol::Query serializeGetAccountTransactions(std::shared_ptr<const Query> query);
-        protocol::Query serializeGetAccountAssetTransactions(std::shared_ptr<const Query> query);
-        protocol::Query serializeGetSignatories(std::shared_ptr<const Query> query);
-        protocol::Query serializeGetAssetInfo(std::shared_ptr<const Query> query);
-        protocol::Query serializeGetRoles(std::shared_ptr<const Query> query);
-        protocol::Query serializeGetRolePermissions(std::shared_ptr<const Query> query);
+        protocol::Query serializeGetAccount(
+            std::shared_ptr<const Query> query) const;
+        protocol::Query serializeGetAccountAssets(
+            std::shared_ptr<const Query> query) const;
+        protocol::Query serializeGetAccountTransactions(
+            std::shared_ptr<const Query> query) const;
+        protocol::Query serializeGetAccountAssetTransactions(
+            std::shared_ptr<const Query> query) const;
+        protocol::Query serializeGetSignatories(
+            std::shared_ptr<const Query> query) const;
+        protocol::Query serializeGetAssetInfo(
+            std::shared_ptr<const Query> query) const;
+        protocol::Query serializeGetRoles(
+            std::shared_ptr<const Query> query) const;
+        protocol::Query serializeGetRolePermissions(
+            std::shared_ptr<const Query> query) const;
 
         /**
          * Serialize and add meta data of model query to proto query

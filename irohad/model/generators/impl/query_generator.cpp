@@ -31,8 +31,6 @@ namespace iroha {
         query->creator_account_id = creator;
         query->query_counter = query_counter;
         query->created_ts = timestamp;
-        // TODO: Refactor this with new hash system
-        query->query_hash = hash_provider_.get_hash(query);
       }
 
       std::shared_ptr<GetAccount> QueryGenerator::generateGetAccount(ts64_t timestamp,
@@ -98,7 +96,6 @@ namespace iroha {
         query->created_ts = 0;
         query->creator_account_id = "admin@test";
         query->query_counter = 0;
-        query->query_hash = hash_provider_.get_hash(query);
         return query;
       }
 
@@ -107,7 +104,6 @@ namespace iroha {
         query->created_ts = 0;
         query->creator_account_id = "admin@test";
         query->query_counter = 0;
-        query->query_hash = hash_provider_.get_hash(query);
         return query;
       }
 
@@ -116,7 +112,6 @@ namespace iroha {
         query->created_ts = 0;
         query->creator_account_id = "admin@test";
         query->query_counter = 0;
-        query->query_hash = hash_provider_.get_hash(query);
         return query;
       }
 

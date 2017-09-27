@@ -44,8 +44,7 @@ namespace iroha {
 
       AddSignatory() {}
 
-      AddSignatory(const std::string &account_id,
-                   const pubkey_t &pubkey)
+      AddSignatory(const std::string &account_id, const pubkey_t &pubkey)
           : account_id(account_id), pubkey(pubkey) {}
     };
   }  // namespace model

@@ -34,7 +34,7 @@ void runQueryTest(std::shared_ptr<Query> query){
   auto res_query = queryFactory.deserialize(pb_query.value());
   ASSERT_TRUE(res_query.has_value());
   // TODO: overload operator == for queries and replace with it
-  ASSERT_EQ(res_query.value()->query_hash, query->query_hash);
+  ASSERT_EQ(iroha::hash(*res_query.value()), iroha::hash(*query));
 }
 
 TEST(PbQueryFactoryTest, SerializeGetAccount){

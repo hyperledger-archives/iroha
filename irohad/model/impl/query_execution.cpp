@@ -122,13 +122,13 @@ QueryProcessingFactory::executeGetAssetInfo(const model::GetAssetInfo& query) {
   auto ast = _wsvQuery->getAsset(query.asset_id);
   if (!ast.has_value()) {
     iroha::model::ErrorResponse response;
-    response.query_hash = query.query_hash;
+    response.query_hash = iroha::hash(query);
     response.reason = iroha::model::ErrorResponse::NO_ASSET;
     return std::make_shared<ErrorResponse>(response);
   }
   AssetResponse response;
   response.asset = std::move(ast.value());
-  response.query_hash = query.query_hash;
+  response.query_hash = iroha::hash(query);
   return std::make_shared<AssetResponse>(response);
 }
 
@@ -137,12 +137,12 @@ QueryProcessingFactory::executeGetRoles(const model::GetRoles& query) {
   auto roles = _wsvQuery->getRoles();
   if (not roles.has_value()) {
     ErrorResponse response;
-    response.query_hash = query.query_hash;
+    response.query_hash = iroha::hash(query);
     response.reason = ErrorResponse::NO_ROLES;
     return std::make_shared<ErrorResponse>(response);
   }
   RolesResponse response;
-  response.query_hash = query.query_hash;
+  response.query_hash = iroha::hash(query);
   response.roles = std::move(roles.value());
   return std::make_shared<RolesResponse>(response);
 }
@@ -153,12 +153,12 @@ QueryProcessingFactory::executeGetRolePermissions(
   auto perm = _wsvQuery->getRolePermissions(query.role_id);
   if (not perm.has_value()) {
     ErrorResponse response;
-    response.query_hash = query.query_hash;
+    response.query_hash = iroha::hash(query);
     response.reason = ErrorResponse::NO_ROLES;
     return std::make_shared<ErrorResponse>(response);
   }
   RolePermissionsResponse response;
-  response.query_hash = query.query_hash;
+  response.query_hash = iroha::hash(query);
   response.role_permissions = std::move(perm.value());
   return std::make_shared<RolePermissionsResponse>(response);
 }
@@ -299,7 +299,7 @@ iroha::model::QueryProcessingFactory::execute(
     auto qry = std::static_pointer_cast<const GetRoles>(query);
     if(not validate(*qry)){
       ErrorResponse response;
-      response.query_hash = qry->query_hash;
+      response.query_hash = iroha::hash(*qry);
       response.reason = ErrorResponse::STATEFUL_INVALID;
       return std::make_shared<ErrorResponse>(response);
     }
@@ -309,7 +309,7 @@ iroha::model::QueryProcessingFactory::execute(
     auto qry = std::static_pointer_cast<const GetRolePermissions>(query);
     if(not validate(*qry)){
       ErrorResponse response;
-      response.query_hash = qry->query_hash;
+      response.query_hash = iroha::hash(*qry);
       response.reason = ErrorResponse::STATEFUL_INVALID;
       return std::make_shared<ErrorResponse>(response);
     }
@@ -319,7 +319,7 @@ iroha::model::QueryProcessingFactory::execute(
     auto qry = std::static_pointer_cast<const GetAssetInfo>(query);
     if(not validate(*qry)){
       ErrorResponse response;
-      response.query_hash = qry->query_hash;
+      response.query_hash = iroha::hash(*qry);
       response.reason = ErrorResponse::STATEFUL_INVALID;
       return std::make_shared<ErrorResponse>(response);
     }

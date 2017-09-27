@@ -18,6 +18,7 @@
 #ifndef IROHA_CLI_INTERACTIVE_QUERY_CLI_HPP
 #define IROHA_CLI_INTERACTIVE_QUERY_CLI_HPP
 
+#include <memory>
 #include <unordered_map>
 #include "interactive/interactive_common_cli.hpp"
 #include "model/generators/query_generator.hpp"

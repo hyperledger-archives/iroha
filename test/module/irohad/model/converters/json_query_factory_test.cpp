@@ -35,7 +35,7 @@ void runQueryTest(std::shared_ptr<Query> val){
   auto json = queryFactory.serialize(val);
   auto ser_val = queryFactory.deserialize(json);
   ASSERT_TRUE(ser_val.has_value());
-  ASSERT_EQ(val->query_hash, ser_val.value()->query_hash);
+  ASSERT_EQ(iroha::hash(*val), iroha::hash(*ser_val.value()));
   ASSERT_EQ(val->signature.signature, ser_val.value()->signature.signature);
 }
 

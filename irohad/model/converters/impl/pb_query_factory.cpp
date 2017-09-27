@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-#include "crypto/hash.hpp"
-#include <queries.pb.h>
 #include "model/converters/pb_query_factory.hpp"
+#include <queries.pb.h>
+#include "crypto/hash.hpp"
 #include "model/common.hpp"
 #include "model/queries/get_account.hpp"
 #include "model/queries/get_account_assets.hpp"
@@ -96,6 +96,23 @@ namespace iroha {
               auto query = GetAccountTransactions();
               query.account_id = pb_cast.account_id();
               val = std::make_shared<model::GetAccountTransactions>(query);
+              break;
+            }
+            case Query_Payload::QueryCase::kGetRoles: {
+              // Convert to get Roles
+              const auto &pb_cast = pl.get_roles();
+              val = std::make_shared<GetRoles>();
+              break;
+            }
+            case Query_Payload::QueryCase::kGetAssetInfo: {
+              // Convert to get asset info
+              const auto &pb_cast = pl.get_asset_info();
+              val = std::make_shared<GetAssetInfo>(pb_cast.asset_id());
+              break;
+            }
+            case Query_Payload::QueryCase::kGetRolePermissions: {
+              const auto &pb_cast = pl.get_role_permissions();
+              val = std::make_shared <GetRolePermissions>(pb_cast.role_id());
               break;
             }
             default: {
@@ -202,32 +219,34 @@ namespace iroha {
       }
 
       protocol::Query PbQueryFactory::serializeGetAssetInfo(
-          std::shared_ptr<Query> query) {
+          std::shared_ptr<const Query> query) const {
         protocol::Query pb_query;
         serializeQueryMetaData(pb_query, query);
-        auto tmp = std::static_pointer_cast<GetAssetInfo>(query);
+        auto tmp = std::static_pointer_cast<const GetAssetInfo>(query);
         auto ast_id = tmp->asset_id;
-        auto pb_query_mut = pb_query.mutable_get_asset_info();
+        auto pb_query_mut =
+            pb_query.mutable_payload()->mutable_get_asset_info();
         pb_query_mut->set_asset_id(ast_id);
         return pb_query;
       }
 
       protocol::Query PbQueryFactory::serializeGetRoles(
-          std::shared_ptr<Query> query) {
+          std::shared_ptr<const Query> query) const {
         protocol::Query pb_query;
-        auto mut = pb_query.mutable_get_roles();
+        auto mut = pb_query.mutable_payload()->mutable_get_roles();
         serializeQueryMetaData(pb_query, query);
-        auto tmp = std::static_pointer_cast<GetRoles>(query);
+        auto tmp = std::static_pointer_cast<const GetRoles>(query);
         return pb_query;
       }
 
       protocol::Query PbQueryFactory::serializeGetRolePermissions(
-          std::shared_ptr<Query> query) {
+          std::shared_ptr<const Query> query) const {
         protocol::Query pb_query;
         serializeQueryMetaData(pb_query, query);
-        auto tmp = std::static_pointer_cast<GetRolePermissions>(query);
+        auto tmp = std::static_pointer_cast<const GetRolePermissions>(query);
         auto role = tmp->role_id;
-        auto pb_query_mut = pb_query.mutable_get_role_permissions();
+        auto pb_query_mut =
+            pb_query.mutable_payload()->mutable_get_role_permissions();
         pb_query_mut->set_role_id(role);
         return pb_query;
       }

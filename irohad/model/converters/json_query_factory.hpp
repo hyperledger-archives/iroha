@@ -23,7 +23,6 @@
 #include "logger/logger.hpp"
 #include "model/common.hpp"
 #include "model/converters/json_common.hpp"
-#include "model/model_hash_provider_impl.hpp"
 #include "model/query.hpp"
 #include "queries.pb.h"
 
@@ -75,27 +74,31 @@ namespace iroha {
         optional_ptr<Query> deserializeGetRolePermissions(
             const rapidjson::Value &obj_query);
         // Serializers:
-        using Serializer = void (JsonQueryFactory::*)(rapidjson::Document &,
-                                                      std::shared_ptr<const model::Query>);
+        using Serializer = void (JsonQueryFactory::*)(
+            rapidjson::Document &, std::shared_ptr<const model::Query>);
         std::unordered_map<std::type_index, Serializer> serializers_;
         // Serialization handlers
         void serializeGetAccount(rapidjson::Document &json_doc,
                                  std::shared_ptr<const model::Query> query);
-        void serializeGetAccountAssets(rapidjson::Document &json_doc,
-                                       std::shared_ptr<const model::Query> query);
-        void serializeGetAccountTransactions(rapidjson::Document &json_doc,
-                                             std::shared_ptr<const model::Query> query);
-        void serializeGetAccountAssetTransactions(rapidjson::Document &json_doc,
-                                                  std::shared_ptr<const model::Query> query);
+        void serializeGetAccountAssets(
+            rapidjson::Document &json_doc,
+            std::shared_ptr<const model::Query> query);
+        void serializeGetAccountTransactions(
+            rapidjson::Document &json_doc,
+            std::shared_ptr<const model::Query> query);
+        void serializeGetAccountAssetTransactions(
+            rapidjson::Document &json_doc,
+            std::shared_ptr<const model::Query> query);
         void serializeGetSignatories(rapidjson::Document &json_doc,
                                      std::shared_ptr<const model::Query> query);
 
         void serializeGetAssetInfo(rapidjson::Document &json_doc,
-                                   std::shared_ptr<Query> query);
+                                   std::shared_ptr<const model::Query> query);
         void serializeGetRoles(rapidjson::Document &json_doc,
-                               std::shared_ptr<Query> query);
-        void serializeGetRolePermissions(rapidjson::Document &json_doc,
-                                         std::shared_ptr<Query> query);
+                               std::shared_ptr<const model::Query> query);
+        void serializeGetRolePermissions(
+            rapidjson::Document &json_doc,
+            std::shared_ptr<const model::Query> query);
 
         // Logger
         std::shared_ptr<spdlog::logger> log_;

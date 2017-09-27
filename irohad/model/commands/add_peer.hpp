@@ -34,7 +34,7 @@ namespace iroha {
       std::string address;
 
       bool operator==(const Command &command) const override;
-      bool operator!=(const Command& command) const override;
+      bool operator!=(const Command &command) const override;
 
       AddPeer() {}
 
