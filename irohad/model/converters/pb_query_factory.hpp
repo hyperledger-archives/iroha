@@ -38,7 +38,8 @@ namespace iroha {
          * @param pb_block - reference to proto query
          * @return model Query
          */
-        optional_ptr<model::Query> deserialize(const protocol::Query& pb_query);
+        optional_ptr<model::Query> deserialize(
+            const protocol::Query& pb_query) const;
 
         /**
          * Convert model query to proto query
@@ -46,7 +47,7 @@ namespace iroha {
          * @return nonstd::nullopt if no query type is found
          */
         nonstd::optional<protocol::Query> serialize(
-            std::shared_ptr<const model::Query> query);
+            std::shared_ptr<const model::Query> query) const;
 
         PbQueryFactory();
 
@@ -67,10 +68,10 @@ namespace iroha {
          * @param query - model query to serialize
          */
         void serializeQueryMetaData(protocol::Query& pb_query,
-                                    std::shared_ptr<const Query> query);
+                                    std::shared_ptr<const Query> query) const;
 
-        using Serializer =
-            protocol::Query (PbQueryFactory::*)(std::shared_ptr<const Query>);
+        using Serializer = protocol::Query (PbQueryFactory::*)(
+            std::shared_ptr<const Query>) const;
         std::unordered_map<std::type_index, Serializer> serializers_;
 
         logger::Logger log_;

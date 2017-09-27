@@ -145,7 +145,7 @@ namespace iroha {
        * @return
        */
       virtual bool deleteSignatory(
-          const ed25519::pubkey_t &signatory) = 0;
+          const pubkey_t &signatory) = 0;
 
       /**
        *

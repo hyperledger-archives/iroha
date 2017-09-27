@@ -62,8 +62,8 @@ namespace iroha {
 namespace std {
 
   template <>
-  struct hash<iroha::ed25519::pubkey_t> {
-    size_t operator()(const iroha::ed25519::pubkey_t &pub) const {
+  struct hash<iroha::pubkey_t> {
+    size_t operator()(const iroha::pubkey_t &pub) const {
       return hashlittle(pub.data(), pub.size(), 1337);
     }
   };

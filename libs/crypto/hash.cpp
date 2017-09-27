@@ -28,13 +28,11 @@ extern "C" {
 #include "model/converters/pb_transaction_factory.hpp"
 
 namespace sha3 {
-  void sha3_256_(const unsigned char *message,
-                 size_t message_len,
+  void sha3_256_(const unsigned char *message, size_t message_len,
                  unsigned char *out) {
     sha3_256(message, message_len, out);
   }
-  void sha3_512_(const unsigned char *message,
-                 size_t message_len,
+  void sha3_512_(const unsigned char *message, size_t message_len,
                  unsigned char *out) {
     sha3_512(message, message_len, out);
   }
@@ -42,13 +40,11 @@ namespace sha3 {
 
 namespace iroha {
 
-  void sha3_256(unsigned char *output, unsigned char *input,
-                size_t in_size) {
+  void sha3_256(unsigned char *output, unsigned char *input, size_t in_size) {
     sha3::sha3_256_(input, in_size, output);
   }
 
-  void sha3_512(unsigned char *output, unsigned char *input,
-                size_t in_size) {
+  void sha3_512(unsigned char *output, unsigned char *input, size_t in_size) {
     sha3::sha3_512_(input, in_size, output);
   }
 
@@ -76,23 +72,23 @@ namespace iroha {
     return h;
   }
 
-  // remove factories
-  static model::converters::PbTransactionFactory tx_factory;
-  static model::converters::PbBlockFactory block_factory;
-  static model::converters::PbQueryFactory query_factory;
+  // TODO: remove factories
+  const static model::converters::PbTransactionFactory tx_factory;
+  const static model::converters::PbBlockFactory block_factory;
+  const static model::converters::PbQueryFactory query_factory;
 
-  hash256_t hash(const model::Transaction& tx) {
+  hash256_t hash(const model::Transaction &tx) {
     auto &&pb_dat = tx_factory.serialize(tx);
     return hash(pb_dat);
   }
 
-  hash256_t hash(const model::Block& block) {
+  hash256_t hash(const model::Block &block) {
     auto &&pb_dat = block_factory.serialize(block);
     return hash(pb_dat);
   }
 
-  hash256_t hash(const model::Query& query) {
-    std::shared_ptr<const model::Query> qptr(&query, [](auto){});
+  hash256_t hash(const model::Query &query) {
+    std::shared_ptr<const model::Query> qptr(&query, [](auto) {});
     auto &&pb_dat = query_factory.serialize(qptr);
     return hash(*pb_dat);
   }

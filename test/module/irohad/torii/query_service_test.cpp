@@ -16,6 +16,7 @@
  */
 
 #include "torii/query_service.hpp"
+#include <generator/generator.hpp>
 #include "module/irohad/torii/torii_mocks.hpp"
 
 using namespace torii;
@@ -37,10 +38,11 @@ class QueryServiceTest : public ::testing::Test {
     // any query
     query.mutable_payload()->mutable_get_account();
 
-    // just random hex strings
-    query.mutable_signature()->set_pubkey("680ded3260f417635c4b19e77b2cf7fc");
+    // just random hex strings (same seed every time is ok here)
+    query.mutable_signature()->set_pubkey(
+        generator::random_blob<16>(0).to_hexstring());
     query.mutable_signature()->set_signature(
-        "781f3b66cabeb600f86d80e045564f59fbc1f07c1f4379d50edf52e934305439");
+        generator::random_blob<32>(0).to_hexstring());
   }
 
   void init() {

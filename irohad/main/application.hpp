@@ -86,8 +86,6 @@ class Irohad {
 
   virtual void initCryptoProvider();
 
-  virtual void initHashProvider();
-
   virtual void initValidators();
 
   virtual void initPeerQuery();

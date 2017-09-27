@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#include "crypto/hash.hpp"
 #include "model/generators/transaction_generator.hpp"
+#include "crypto/hash.hpp"
 
 namespace iroha {
   namespace model {
@@ -33,8 +33,7 @@ namespace iroha {
         for (size_t i = 0; i < peers_address.size(); ++i) {
           // TODO: replace with more flexible scheme, generate public keys with
           // specified parameters
-          auto peer_key =
-              generator::random_blob<pubkey_t::size()>(i + 1);
+          auto peer_key = generator::random_blob<pubkey_t::size()>(i + 1);
           tx.commands.push_back(
               command_generator.generateAddPeer(peers_address[i], peer_key));
         }

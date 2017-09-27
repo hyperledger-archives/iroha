@@ -101,7 +101,7 @@ TEST(QueryResponseTest, SignatoriesTest) {
   model::converters::PbQueryResponseFactory pb_factory;
 
   model::SignatoriesResponse signatories_response{};
-  ed25519::pubkey_t pubkey;
+  pubkey_t pubkey;
   std::fill(pubkey.begin(), pubkey.end(), 0x1);
   signatories_response.keys.push_back(pubkey);
 

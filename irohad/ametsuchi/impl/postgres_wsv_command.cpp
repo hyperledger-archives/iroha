@@ -175,7 +175,7 @@ namespace iroha {
       return true;
     }
 
-    bool PostgresWsvCommand::deleteSignatory(const ed25519::pubkey_t &signatory) {
+    bool PostgresWsvCommand::deleteSignatory(const pubkey_t &signatory) {
       pqxx::binarystring public_key(signatory.data(), signatory.size());
       try {
         transaction_.exec(

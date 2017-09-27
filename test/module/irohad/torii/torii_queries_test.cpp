@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <generator/generator.hpp>
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
@@ -111,9 +112,9 @@ class ToriiQueriesTest : public testing::Test {
   std::shared_ptr<MockBlockQuery> block_query;
 
   // just random hex strings
-  const std::string pubkey_test = "680ded3260f417635c4b19e77b2cf7fc";
+  const std::string pubkey_test = generator::random_blob<16>(0).to_hexstring();
   const std::string signature_test =
-      "781f3b66cabeb600f86d80e045564f59fbc1f07c1f4379d50edf52e934305439";
+      generator::random_blob<32>(0).to_hexstring();
 };
 
 /**
@@ -345,9 +346,9 @@ TEST_F(ToriiQueriesTest, FindSignatoriesWhenStatefulInvalid) {
   iroha::model::Account account;
   account.account_id = "accountB";
 
-  iroha::ed25519::pubkey_t pubkey;
+  iroha::pubkey_t pubkey;
   std::fill(pubkey.begin(), pubkey.end(), 0x1);
-  std::vector<iroha::ed25519::pubkey_t> keys;
+  std::vector<iroha::pubkey_t> keys;
   keys.push_back(pubkey);
 
   EXPECT_CALL(*wsv_query, getAccount("accountA")).WillOnce(Return(account));
@@ -378,9 +379,9 @@ TEST_F(ToriiQueriesTest, FindSignatoriesWhenValid) {
   iroha::model::Account account;
   account.account_id = "accountA";
 
-  iroha::ed25519::pubkey_t pubkey;
+  iroha::pubkey_t pubkey;
   std::fill(pubkey.begin(), pubkey.end(), 0x1);
-  std::vector<iroha::ed25519::pubkey_t> keys;
+  std::vector<iroha::pubkey_t> keys;
   keys.push_back(pubkey);
 
   EXPECT_CALL(*wsv_query, getAccount("accountA")).WillOnce(Return(account));
