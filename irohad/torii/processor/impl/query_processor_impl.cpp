@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include "crypto/hash.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "model/queries/responses/error_response.hpp"
 
@@ -30,7 +31,7 @@ namespace iroha {
       // if not valid send wrong response
       if (!validator_->validate(query)) {
         model::ErrorResponse response;
-        response.query_hash = query->query_hash;
+        response.query_hash = iroha::hash(*query);
         response.reason = model::ErrorResponse::STATELESS_INVALID;
         subject_.get_subscriber().on_next(
             std::make_shared<model::ErrorResponse>(response));

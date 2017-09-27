@@ -7,6 +7,7 @@ add_library(hash
 target_link_libraries(hash
     ed25519
     common
+    pb_model_converters
     )
 
 add_library(crypto

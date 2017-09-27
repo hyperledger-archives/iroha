@@ -130,7 +130,7 @@ namespace iroha {
     }
 
     bool PostgresWsvCommand::insertSignatory(
-        const ed25519::pubkey_t &signatory) {
+        const pubkey_t &signatory) {
       try {
         pqxx::binarystring public_key(signatory.data(), signatory.size());
         transaction_.exec(
@@ -145,7 +145,7 @@ namespace iroha {
     }
 
     bool PostgresWsvCommand::insertAccountSignatory(
-        const std::string &account_id, const ed25519::pubkey_t &signatory) {
+        const std::string &account_id, const pubkey_t &signatory) {
       pqxx::binarystring public_key(signatory.data(), signatory.size());
       try {
         transaction_.exec(
@@ -161,7 +161,7 @@ namespace iroha {
     }
 
     bool PostgresWsvCommand::deleteAccountSignatory(
-        const std::string &account_id, const ed25519::pubkey_t &signatory) {
+        const std::string &account_id, const pubkey_t &signatory) {
       pqxx::binarystring public_key(signatory.data(), signatory.size());
       try {
         transaction_.exec(
@@ -175,7 +175,7 @@ namespace iroha {
       return true;
     }
 
-    bool PostgresWsvCommand::deleteSignatory(const ed25519::pubkey_t &signatory) {
+    bool PostgresWsvCommand::deleteSignatory(const pubkey_t &signatory) {
       pqxx::binarystring public_key(signatory.data(), signatory.size());
       try {
         transaction_.exec(

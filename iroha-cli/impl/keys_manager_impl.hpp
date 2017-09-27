@@ -27,7 +27,7 @@ namespace iroha_cli {
    public:
     explicit KeysManagerImpl(std::string account_name);
 
-    nonstd::optional<iroha::ed25519::keypair_t> loadKeys() override;
+    nonstd::optional<iroha::keypair_t> loadKeys() override;
 
     bool createKeys(std::string pass_phrase) override;
 

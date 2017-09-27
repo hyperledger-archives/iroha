@@ -30,7 +30,7 @@ class KeysManager {
    * @param account_name
    * @return nullopt if no keypair found locally
    */
-  virtual nonstd::optional<iroha::ed25519::keypair_t> loadKeys() = 0;
+  virtual nonstd::optional<iroha::keypair_t> loadKeys() = 0;
 
   /**
    * Create keys and associate with account

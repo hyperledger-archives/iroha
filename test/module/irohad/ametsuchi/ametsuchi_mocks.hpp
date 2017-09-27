@@ -40,7 +40,7 @@ namespace iroha {
       MOCK_METHOD1(getAccount, nonstd::optional<model::Account>(
                                    const std::string &account_id));
       MOCK_METHOD1(getSignatories,
-                   nonstd::optional<std::vector<ed25519::pubkey_t>>(
+                   nonstd::optional<std::vector<pubkey_t>>(
                        const std::string &account_id));
       MOCK_METHOD1(getAsset,
                    nonstd::optional<model::Asset>(const std::string &asset_id));
@@ -76,14 +76,14 @@ namespace iroha {
       MOCK_METHOD1(updateAccount, bool(const model::Account &));
       MOCK_METHOD1(insertAsset, bool(const model::Asset &));
       MOCK_METHOD1(upsertAccountAsset, bool(const model::AccountAsset &));
-      MOCK_METHOD1(insertSignatory, bool(const ed25519::pubkey_t &));
-      MOCK_METHOD1(deleteSignatory, bool(const ed25519::pubkey_t &));
+      MOCK_METHOD1(insertSignatory, bool(const pubkey_t &));
+      MOCK_METHOD1(deleteSignatory, bool(const pubkey_t &));
 
       MOCK_METHOD2(insertAccountSignatory,
-                   bool(const std::string &, const ed25519::pubkey_t &));
+                   bool(const std::string &, const pubkey_t &));
 
       MOCK_METHOD2(deleteAccountSignatory,
-                   bool(const std::string &, const ed25519::pubkey_t &));
+                   bool(const std::string &, const pubkey_t &));
 
       MOCK_METHOD1(insertPeer, bool(const model::Peer &));
 

@@ -30,7 +30,7 @@ namespace iroha {
     bool StatelessValidatorImpl::validate(
         const model::Transaction& transaction) const {
       // signatures are correct
-      if (!crypto_provider_->verify(transaction)){
+      if (!crypto_provider_->verify(transaction)) {
         log_->warn("crypto verification broken");
         return false;
       }
@@ -38,7 +38,8 @@ namespace iroha {
       // time between creation and validation of tx
       uint64_t now = static_cast<uint64_t>(
           std::chrono::duration_cast<std::chrono::milliseconds>(
-              std::chrono::system_clock::now().time_since_epoch()).count());
+              std::chrono::system_clock::now().time_since_epoch())
+              .count());
 
       if (now - transaction.created_ts > MAX_DELAY) {
         log_->warn("timestamp broken: too old");
@@ -55,9 +56,10 @@ namespace iroha {
       return true;
     }
 
-    bool StatelessValidatorImpl::validate(std::shared_ptr<const model::Query> query) const {
+    bool StatelessValidatorImpl::validate(
+        std::shared_ptr<const model::Query> query) const {
       // signatures are correct
-      if (!crypto_provider_->verify(query)){
+      if (!crypto_provider_->verify(query)) {
         log_->warn("crypto verification broken");
         return false;
       }
@@ -65,20 +67,22 @@ namespace iroha {
       // time between creation and validation of the query
       uint64_t now = static_cast<uint64_t>(
           std::chrono::duration_cast<std::chrono::milliseconds>(
-              std::chrono::system_clock::now().time_since_epoch()).count());
+              std::chrono::system_clock::now().time_since_epoch())
+              .count());
 
       // query is not sent from future
       // todo make future gap for passing timestamp, like with old timestamps
       if (now < query->created_ts) {
-        log_->warn("timestamp broken: send from future: {}. Now {}", query->created_ts, now);
+        log_->warn("timestamp broken: send from future: {}. Now {}",
+                   query->created_ts, now);
         return false;
       }
 
       if (now - query->created_ts > MAX_DELAY) {
-        log_->warn("timestamp broken: too old: {}. Now {}", query->created_ts, now);
+        log_->warn("timestamp broken: too old: {}. Now {}", query->created_ts,
+                   now);
         return false;
       }
-
 
       log_->info("query validated");
       return true;

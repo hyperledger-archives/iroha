@@ -18,8 +18,8 @@
 #include <responses.pb.h>
 
 #include <endpoint.pb.h>
-#include <model/model_hash_provider_impl.hpp>
 
+#include "crypto/hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
@@ -185,13 +185,11 @@ TEST_F(ClientServerTest, SendTxWhenStatelessInvalid) {
   auto doc = iroha::model::converters::stringToJson(json_string).value();
   iroha::model::converters::JsonTransactionFactory transactionFactory;
   auto tx = transactionFactory.deserialize(doc).value();
-  iroha::model::HashProviderImpl hashProvider;
-  tx.tx_hash = hashProvider.get_hash(tx);
 
   ASSERT_EQ(iroha_cli::CliClient(Ip, Port).sendTx(tx).answer,
             iroha_cli::CliClient::OK);
   ASSERT_EQ(iroha_cli::CliClient(Ip, Port)
-                .getTxStatus(tx.tx_hash.to_string())
+                .getTxStatus(iroha::hash(tx).to_string())
                 .answer.tx_status(),
             iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED);
 }

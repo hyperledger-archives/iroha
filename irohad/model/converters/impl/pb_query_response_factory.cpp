@@ -208,7 +208,7 @@ namespace iroha {
           const protocol::SignatoriesResponse &signatoriesResponse) const {
         model::SignatoriesResponse res{};
         for (const auto &key : signatoriesResponse.keys()) {
-          ed25519::pubkey_t pubkey;
+          pubkey_t pubkey;
           std::copy(key.begin(), key.end(), pubkey.begin());
           res.keys.push_back(pubkey);
         }

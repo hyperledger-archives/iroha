@@ -16,7 +16,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <model/model_hash_provider_impl.hpp>
+#include "crypto/hash.hpp"
 #include "model/block.hpp"
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
@@ -347,8 +347,7 @@ Block createBlock(){
   block.transactions.push_back(createTransaction());
   block.height = 123;
 
-  HashProviderImpl hashProvider;
-  block.hash = hashProvider.get_hash(block);
+  block.hash = iroha::hash(block);
   return block;
 }
 

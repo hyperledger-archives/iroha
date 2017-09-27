@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include "crypto/hash.hpp"
 #include "model/generators/block_generator.hpp"
 #include <chrono>
 
@@ -32,8 +33,7 @@ namespace iroha {
         TransactionGenerator tx_generator;
         block.transactions = {tx_generator.generateGenesisTransaction(
             block.created_ts, peers_address)};
-        HashProviderImpl provider;
-        block.hash = provider.get_hash(block);
+        block.hash = hash(block);
 
         return block;
       }

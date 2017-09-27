@@ -16,6 +16,7 @@
  */
 
 #include "model/generators/transaction_generator.hpp"
+#include "crypto/hash.hpp"
 
 namespace iroha {
   namespace model {
@@ -32,18 +33,17 @@ namespace iroha {
         for (size_t i = 0; i < peers_address.size(); ++i) {
           // TODO: replace with more flexible scheme, generate public keys with
           // specified parameters
-          auto peer_key =
-              generator::random_blob<ed25519::pubkey_t::size()>(i + 1);
+          auto peer_key = generator::random_blob<pubkey_t::size()>(i + 1);
           tx.commands.push_back(
               command_generator.generateAddPeer(peers_address[i], peer_key));
         }
         // Add domain
         tx.commands.push_back(command_generator.generateCreateDomain("test"));
         // Create accounts
-        auto acc_key = generator::random_blob<ed25519::pubkey_t::size()>(1);
+        auto acc_key = generator::random_blob<pubkey_t::size()>(1);
         tx.commands.push_back(
             command_generator.generateCreateAccount("admin", "test", acc_key));
-        acc_key = generator::random_blob<ed25519::pubkey_t::size()>(2);
+        acc_key = generator::random_blob<pubkey_t::size()>(2);
         tx.commands.push_back(
             command_generator.generateCreateAccount("test", "test", acc_key));
         // Create asset
@@ -54,7 +54,6 @@ namespace iroha {
         tx.commands.push_back(
             command_generator.generateSetAdminPermissions("admin@test"));
 
-        tx.tx_hash = hash_provider_.get_hash(tx);
         return tx;
       }
 
@@ -66,7 +65,6 @@ namespace iroha {
         tx.creator_account_id = creator_account_id;
         tx.tx_counter = tx_counter;
         tx.commands = commands;
-        tx.tx_hash = hash_provider_.get_hash(tx);
         return tx;
       }
 

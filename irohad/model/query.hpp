@@ -47,11 +47,6 @@ namespace iroha {
       ts64_t created_ts;
 
       /**
-       * Query hash
-       */
-      hash256_t query_hash;
-
-      /**
        * Query counter
        */
       uint64_t query_counter;

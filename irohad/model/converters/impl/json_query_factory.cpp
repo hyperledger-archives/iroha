@@ -16,6 +16,7 @@
  */
 
 #include "model/converters/json_query_factory.hpp"
+#include "crypto/hash.hpp"
 
 #include "model/queries/get_account.hpp"
 #include "model/queries/get_account_assets.hpp"
@@ -63,7 +64,7 @@ namespace iroha {
       }
 
       optional_ptr<Query> JsonQueryFactory::deserialize(
-          const std::string query_json) {
+          const std::string &query_json) {
         return stringToJson(query_json) |
             [this](auto &json) { return this->deserialize(json); };
       }
@@ -76,10 +77,8 @@ namespace iroha {
             | des.Uint64(&Query::created_ts, "created_ts")
             | des.String(&Query::creator_account_id, "creator_account_id")
             | des.Uint64(&Query::query_counter, "query_counter")
-            | des.Object(&Query::signature, "signature") | [this](auto query) {
-                query->query_hash = hash_provider_.get_hash(query);
-                return nonstd::make_optional(query);
-              };
+            | des.Object(&Query::signature, "signature") |
+            [this](auto query) { return nonstd::make_optional(query); };
       }
 
       optional_ptr<Query> JsonQueryFactory::deserializeGetAccount(
@@ -144,7 +143,7 @@ namespace iroha {
       // --- Serialization:
 
       std::string JsonQueryFactory::serialize(
-          std::shared_ptr<Query> model_query) {
+          std::shared_ptr<const Query> model_query) {
         Document doc;
         auto &allocator = doc.GetAllocator();
         doc.SetObject();
@@ -159,75 +158,77 @@ namespace iroha {
 
         doc.AddMember("signature", signature, allocator);
 
-        makeMethodInvoke (*this, doc,
-                          model_query)(serializers_.at(typeid(*model_query)));
+        makeMethodInvoke(*this, doc,
+                         model_query)(serializers_.at(typeid(*model_query)));
         return jsonToString(doc);
       }
 
-      void JsonQueryFactory::serializeGetAccount(Document &json_doc,
-                                                 std::shared_ptr<Query> query) {
+      void JsonQueryFactory::serializeGetAccount(
+          Document &json_doc, std::shared_ptr<const Query> query) {
         auto &allocator = json_doc.GetAllocator();
         json_doc.AddMember("query_type", "GetAccount", allocator);
-        auto get_account = std::static_pointer_cast<GetAccount>(query);
+        auto get_account = std::static_pointer_cast<const GetAccount>(query);
         json_doc.AddMember("account_id", get_account->account_id, allocator);
       }
 
       void JsonQueryFactory::serializeGetAccountAssets(
-          Document &json_doc, std::shared_ptr<Query> query) {
+          Document &json_doc, std::shared_ptr<const Query> query) {
         auto &allocator = json_doc.GetAllocator();
         json_doc.AddMember("query_type", "GetAccountAssets", allocator);
-        auto casted_query = std::static_pointer_cast<GetAccountAssets>(query);
+        auto casted_query =
+            std::static_pointer_cast<const GetAccountAssets>(query);
         json_doc.AddMember("account_id", casted_query->account_id, allocator);
         json_doc.AddMember("asset_id", casted_query->asset_id, allocator);
       }
 
       void JsonQueryFactory::serializeGetSignatories(
-          Document &json_doc, std::shared_ptr<Query> query) {
+          Document &json_doc, std::shared_ptr<const Query> query) {
         auto &allocator = json_doc.GetAllocator();
         json_doc.AddMember("query_type", "GetAccountSignatories", allocator);
-        auto get_account = std::static_pointer_cast<GetSignatories>(query);
+        auto get_account =
+            std::static_pointer_cast<const GetSignatories>(query);
         json_doc.AddMember("account_id", get_account->account_id, allocator);
       }
 
       void JsonQueryFactory::serializeGetAccountTransactions(
-          Document &json_doc, std::shared_ptr<Query> query) {
+          Document &json_doc, std::shared_ptr<const Query> query) {
         auto &allocator = json_doc.GetAllocator();
         json_doc.AddMember("query_type", "GetAccountTransactions", allocator);
         auto get_account =
-            std::static_pointer_cast<GetAccountTransactions>(query);
+            std::static_pointer_cast<const GetAccountTransactions>(query);
         json_doc.AddMember("account_id", get_account->account_id, allocator);
       }
 
       void JsonQueryFactory::serializeGetAccountAssetTransactions(
-          Document &json_doc, std::shared_ptr<Query> query) {
+          Document &json_doc, std::shared_ptr<const Query> query) {
         auto &allocator = json_doc.GetAllocator();
         json_doc.AddMember("query_type", "GetAccountAssetTransactions",
                            allocator);
         auto get_account_asset =
-            std::static_pointer_cast<GetAccountAssetTransactions>(query);
+            std::static_pointer_cast<const GetAccountAssetTransactions>(query);
         json_doc.AddMember("account_id", get_account_asset->account_id,
                            allocator);
         json_doc.AddMember("asset_id", get_account_asset->asset_id, allocator);
       }
 
       void JsonQueryFactory::serializeGetAssetInfo(
-          rapidjson::Document &json_doc, std::shared_ptr<Query> query) {
+          rapidjson::Document &json_doc, std::shared_ptr<const Query> query) {
         auto &allocator = json_doc.GetAllocator();
         json_doc.AddMember("query_type", "GetAssetInfo", allocator);
-        auto cmd = std::static_pointer_cast<GetAssetInfo>(query);
+        auto cmd = std::static_pointer_cast<const GetAssetInfo>(query);
         json_doc.AddMember("asset_id", cmd->asset_id, allocator);
       }
 
       void JsonQueryFactory::serializeGetRolePermissions(
-          rapidjson::Document &json_doc, std::shared_ptr<Query> query) {
+          rapidjson::Document &json_doc, std::shared_ptr<const Query> query) {
         auto &allocator = json_doc.GetAllocator();
         json_doc.AddMember("query_type", "GetRolePermissions", allocator);
-        auto cmd = std::static_pointer_cast<GetRolePermissions>(query);
+        auto cmd = std::static_pointer_cast<const GetRolePermissions>(query);
         json_doc.AddMember("role_id", cmd->role_id, allocator);
       }
 
-      void JsonQueryFactory::serializeGetRoles(rapidjson::Document &json_doc,
-                                               std::shared_ptr<Query> query) {
+      void JsonQueryFactory::serializeGetRoles(
+          rapidjson::Document &json_doc, std::shared_ptr<const Query> query) {
         auto &allocator = json_doc.GetAllocator();
         json_doc.AddMember("query_type", "GetRoles", allocator);
       }

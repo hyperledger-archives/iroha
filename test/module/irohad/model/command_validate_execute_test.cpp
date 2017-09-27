@@ -400,7 +400,7 @@ class RemoveSignatoryTest : public CommandValidateExecuteTest {
   void SetUp() override {
     CommandValidateExecuteTest::SetUp();
 
-    ed25519::pubkey_t creator_key, account_key;
+    pubkey_t creator_key, account_key;
     creator_key.fill(0x1);
     account_key.fill(0x2);
 
@@ -414,8 +414,8 @@ class RemoveSignatoryTest : public CommandValidateExecuteTest {
     command = remove_signatory;
   }
 
-  std::vector<ed25519::pubkey_t> account_pubkeys;
-  std::vector<ed25519::pubkey_t> many_pubkeys;
+  std::vector<pubkey_t> account_pubkeys;
+  std::vector<pubkey_t> many_pubkeys;
   std::shared_ptr<RemoveSignatory> remove_signatory;
 };
 

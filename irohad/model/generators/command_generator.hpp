@@ -19,10 +19,10 @@
 #define IROHA_COMMAND_GENERATOR_HPP
 
 #include <memory>
+#include "amount/amount.hpp"
 #include "generator/generator.hpp"
 #include "model/account.hpp"
 #include "model/command.hpp"
-#include "amount/amount.hpp"
 
 namespace iroha {
   namespace model {
@@ -30,23 +30,24 @@ namespace iroha {
       class CommandGenerator {
        public:
         std::shared_ptr<Command> generateAddPeer(const std::string &address,
-                                                 const ed25519::pubkey_t &key);
+                                                 const pubkey_t &key);
 
-        std::shared_ptr<Command> generateAddSignatory(const std::string &account_id,
-                                                      const ed25519::pubkey_t &key);
+        std::shared_ptr<Command> generateAddSignatory(
+            const std::string &account_id, const pubkey_t &key);
 
         std::shared_ptr<Command> generateRemoveSignatory(
-            const std::string &account_id, const ed25519::pubkey_t &key);
+            const std::string &account_id, const pubkey_t &key);
 
         std::shared_ptr<Command> generateCreateAccount(
             const std::string &account_name, const std::string &domain_id,
-            const ed25519::pubkey_t &key);
+            const pubkey_t &key);
 
-        std::shared_ptr<Command> generateCreateDomain(const std::string &domain_name);
+        std::shared_ptr<Command> generateCreateDomain(
+            const std::string &domain_name);
 
-        std::shared_ptr<Command> generateCreateAsset(const std::string &asset_name,
-                                                     const std::string &domain_name,
-                                                     uint8_t precision);
+        std::shared_ptr<Command> generateCreateAsset(
+            const std::string &asset_name, const std::string &domain_name,
+            uint8_t precision);
 
         template <typename Type, typename... ParamTypes>
         std::shared_ptr<Command> generateCommand(ParamTypes... args) {
@@ -66,17 +67,20 @@ namespace iroha {
         std::shared_ptr<Command> generateSetAdminPermissions(
             const std::string &account_id);
 
-        std::shared_ptr<Command> generateSetQuorum(const std::string &account_id,
-                                                   uint32_t quorum);
+        std::shared_ptr<Command> generateSetQuorum(
+            const std::string &account_id, uint32_t quorum);
 
         std::shared_ptr<Command> generateSetPermissions(
-            const std::string &account_id, const Account::Permissions &permissions);
+            const std::string &account_id,
+            const Account::Permissions &permissions);
 
         std::shared_ptr<Command> generateAddAssetQuantity(
-            const std::string &account_id, const std::string &asset_id, const Amount &amount);
+            const std::string &account_id, const std::string &asset_id,
+            const Amount &amount);
 
         std::shared_ptr<Command> generateSubtractAssetQuantity(
-            const std::string &account_id, const std::string &asset_id, const Amount &amount);
+            const std::string &account_id, const std::string &asset_id,
+            const Amount &amount);
         /**
          * Generate transfer assets from source account_id to target account_id
          * @param src_account_id - source account identifier
@@ -86,8 +90,9 @@ namespace iroha {
          * @return
          */
         std::shared_ptr<Command> generateTransferAsset(
-            const std::string &src_account_id, const std::string &target_account_id,
-            const std::string &asset_id, const Amount &amount);
+            const std::string &src_account_id,
+            const std::string &target_account_id, const std::string &asset_id,
+            const Amount &amount);
       };
     }  // namespace generators
   }    // namespace model

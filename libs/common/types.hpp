@@ -20,11 +20,11 @@
 
 #include <array>
 #include <cstdio>
+#include <iomanip>
+#include <sstream>
 #include <string>
 #include <typeinfo>
 #include <vector>
-#include <sstream>
-#include <iomanip>
 
 #include <nonstd/optional.hpp>
 
@@ -38,6 +38,7 @@
  */
 
 namespace iroha {
+  using BadFormatException = std::invalid_argument;
   using byte_t = uint8_t;
 
   static const std::string code = {'0', '1', '2', '3', '4', '5', '6', '7',
@@ -53,7 +54,6 @@ namespace iroha {
    */
   template <size_t size_>
   class blob_t : public std::array<byte_t, size_> {
-
    public:
     /**
      * In compile-time returns size of current blob.
@@ -82,12 +82,23 @@ namespace iroha {
       uint8_t front, back;
       auto ptr = this->data();
       for (uint32_t i = 0, k = 0; i < size_; i++) {
-        front = (uint8_t) (ptr[i] & 0xF0) >> 4;
-        back = (uint8_t) (ptr[i] & 0xF);
+        front = (uint8_t)(ptr[i] & 0xF0) >> 4;
+        back = (uint8_t)(ptr[i] & 0xF);
         res[k++] = code[front];
         res[k++] = code[back];
       }
       return res;
+    }
+
+    static blob_t<size_> from_string(const std::string &data) {
+      if (data.size() != size_) {
+        throw BadFormatException("blob_t: input string has incorrect length");
+      }
+
+      blob_t<size_> b;
+      std::copy(data.begin(), data.end(), b.begin());
+
+      return b;
     }
   };
 
@@ -117,7 +128,7 @@ namespace iroha {
   inline std::string bytestringToHexstring(const std::string &str) {
     std::stringstream ss;
     ss << std::hex << std::setfill('0');
-    for(const auto &c : str) {
+    for (const auto &c : str) {
       ss << std::setw(2) << static_cast<int>(c);
     }
     return ss.str();
@@ -211,9 +222,7 @@ namespace iroha {
    */
   template <typename T, typename... Args>
   auto makeMethodInvoke(T &object, Args &&... args) {
-    return [&](auto f) {
-      return (object.*f)(std::forward<Args>(args)...);
-    };
+    return [&](auto f) { return (object.*f)(std::forward<Args>(args)...); };
   }
 
   /**
@@ -241,7 +250,7 @@ namespace iroha {
    * @param member - pointer to member in object
    * @return object with deserialized member on success, nullopt otherwise
    */
-  template <template<typename C> class P, typename V, typename B>
+  template <template <typename C> class P, typename V, typename B>
   auto assignObjectField(P<B> object, V B::*member) {
     return [=](auto value) mutable {
       (*object).*member = value;
@@ -258,73 +267,72 @@ namespace iroha {
   using hash384_t = hash_t<384 / 8>;
   using hash512_t = hash_t<512 / 8>;
 
-  namespace ed25519 {
-    using sig_t = blob_t<64>;  // ed25519 sig is 64 bytes length
-    using pubkey_t = blob_t<32>;
-    using privkey_t = blob_t<64>;
+  using sig_t = blob_t<64>;  // ed25519 sig is 64 bytes length
+  using pubkey_t = blob_t<32>;
+  using privkey_t = blob_t<64>;
 
-    struct keypair_t {
-      pubkey_t pubkey;
-      privkey_t privkey;
-    };
-  }
+  struct keypair_t {
+    pubkey_t pubkey;
+    privkey_t privkey;
+  };
 
   // timestamps
   using ts64_t = uint64_t;
   using ts32_t = uint32_t;
 
-/*
-  struct Amount {
-    uint64_t int_part;
-    uint64_t frac_part;
+  /*
+    struct Amount {
+      uint64_t int_part;
+      uint64_t frac_part;
 
-    Amount(uint64_t integer_part, uint64_t fractional_part) {
-      int_part = integer_part;
-      frac_part = fractional_part;
-    }
-
-    Amount() {
-      int_part = 0;
-      frac_part = 0;
-    }
-
-    uint32_t get_frac_number() { return std::to_string(frac_part).length(); }
-
-    uint64_t get_joint_amount(uint32_t precision) {
-      auto coef = ipow(10, precision);
-      return int_part * coef + frac_part;
-    }
-
-    bool operator==(const Amount &rhs) const {
-      return this->int_part == rhs.int_part && this->frac_part == rhs.frac_part;
-    }
-
-    bool operator!=(const Amount &rhs) const {
-      return !operator==(rhs);
-    }
-
-   private:
-    int ipow(int base, int exp) {
-      int result = 1;
-      while (exp) {
-        if (exp & 1) result *= base;
-        exp >>= 1;
-        base *= base;
+      Amount(uint64_t integer_part, uint64_t fractional_part) {
+        int_part = integer_part;
+        frac_part = fractional_part;
       }
 
-      return result;
-    }
-  };
-*/
+      Amount() {
+        int_part = 0;
+        frac_part = 0;
+      }
+
+      uint32_t get_frac_number() { return std::to_string(frac_part).length(); }
+
+      uint64_t get_joint_amount(uint32_t precision) {
+        auto coef = ipow(10, precision);
+        return int_part * coef + frac_part;
+      }
+
+      bool operator==(const Amount &rhs) const {
+        return this->int_part == rhs.int_part && this->frac_part ==
+    rhs.frac_part;
+      }
+
+      bool operator!=(const Amount &rhs) const {
+        return !operator==(rhs);
+      }
+
+     private:
+      int ipow(int base, int exp) {
+        int result = 1;
+        while (exp) {
+          if (exp & 1) result *= base;
+          exp >>= 1;
+          base *= base;
+        }
+
+        return result;
+      }
+    };
+  */
 
   // check the type of the derived class
   template <typename Base, typename T>
-  inline bool instanceof(const T *ptr) {
+  inline bool instanceof (const T *ptr) {
     return typeid(Base) == typeid(*ptr);
   }
 
   template <typename Base, typename T>
-  inline bool instanceof(const T &ptr) {
+  inline bool instanceof (const T &ptr) {
     return typeid(Base) == typeid(ptr);
   }
 

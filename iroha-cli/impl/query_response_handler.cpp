@@ -105,7 +105,7 @@ namespace iroha_cli {
     log_->info("[Transactions]");
     std::for_each(txs.begin(), txs.end(), [this](auto tx) {
       log_->info("-[tx]-");
-      log_->info("--[Creator Id] -- {}", tx.meta().creator_account_id());
+      log_->info("--[Creator Id] -- {}", tx.payload().creator_account_id());
       // TODO: add other fields: tx head, tx body
     });
   }

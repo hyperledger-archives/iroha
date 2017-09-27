@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-#include <queries.pb.h>
 #include "model/converters/pb_query_factory.hpp"
-#include "model/model_hash_provider_impl.hpp"
+#include <queries.pb.h>
+#include "crypto/hash.hpp"
+#include "model/common.hpp"
 #include "model/queries/get_account.hpp"
 #include "model/queries/get_account_assets.hpp"
 #include "model/queries/get_asset_info.hpp"
@@ -48,98 +49,105 @@ namespace iroha {
       }
 
       optional_ptr<model::Query> PbQueryFactory::deserialize(
-          const protocol::Query& pb_query) {
+          const protocol::Query &pb_query) const {
         std::shared_ptr<model::Query> val;
-        // TODO: refactor
-        if (pb_query.has_get_account()) {
-          // Convert to get Account
-          auto pb_cast = pb_query.get_account();
-          auto account_query = GetAccount();
-          account_query.account_id = pb_cast.account_id();
-          val = std::make_shared<model::GetAccount>(account_query);
+
+        const auto &pl = pb_query.payload();
+
+        {
+          using protocol::Query_Payload;
+          switch (pl.query_case()) {
+            case Query_Payload::QueryCase::kGetAccount: {
+              // Convert to get Account
+              const auto &pb_cast = pl.get_account();
+              auto account_query = GetAccount();
+              account_query.account_id = pb_cast.account_id();
+              val = std::make_shared<model::GetAccount>(account_query);
+              break;
+            }
+            case Query_Payload::QueryCase::kGetAccountAssets: {
+              // Convert to get Account Asset
+              const auto &pb_cast = pl.get_account_assets();
+              auto query = GetAccountAssets();
+              query.account_id = pb_cast.account_id();
+              query.asset_id = pb_cast.asset_id();
+              val = std::make_shared<model::GetAccountAssets>(query);
+              break;
+            }
+            case Query_Payload::QueryCase::kGetAccountAssetTransactions: {
+              const auto &pb_cast = pl.get_account_asset_transactions();
+              auto query = GetAccountAssetTransactions();
+              query.account_id = pb_cast.account_id();
+              query.asset_id = pb_cast.asset_id();
+              val = std::make_shared<model::GetAccountAssetTransactions>(query);
+              break;
+            }
+            case Query_Payload::QueryCase::kGetAccountSignatories: {
+              // Convert to get Signatories
+              const auto &pb_cast = pl.get_account_signatories();
+              auto query = GetSignatories();
+              query.account_id = pb_cast.account_id();
+              val = std::make_shared<model::GetSignatories>(query);
+              break;
+            }
+            case Query_Payload::QueryCase::kGetAccountTransactions: {
+              // Convert to get Signatories
+              const auto &pb_cast = pl.get_account_transactions();
+              auto query = GetAccountTransactions();
+              query.account_id = pb_cast.account_id();
+              val = std::make_shared<model::GetAccountTransactions>(query);
+              break;
+            }
+            case Query_Payload::QueryCase::kGetRoles: {
+              // Convert to get Roles
+              const auto &pb_cast = pl.get_roles();
+              val = std::make_shared<GetRoles>();
+              break;
+            }
+            case Query_Payload::QueryCase::kGetAssetInfo: {
+              // Convert to get asset info
+              const auto &pb_cast = pl.get_asset_info();
+              val = std::make_shared<GetAssetInfo>(pb_cast.asset_id());
+              break;
+            }
+            case Query_Payload::QueryCase::kGetRolePermissions: {
+              const auto &pb_cast = pl.get_role_permissions();
+              val = std::make_shared <GetRolePermissions>(pb_cast.role_id());
+              break;
+            }
+            default: {
+              // Query not implemented
+              return nonstd::nullopt;
+            }
+          }
         }
 
-        if (pb_query.has_get_account_assets()) {
-          // Convert to get Account Asset
-          auto pb_cast = pb_query.get_account_assets();
-          auto query = GetAccountAssets();
-          query.account_id = pb_cast.account_id();
-          query.asset_id = pb_cast.asset_id();
-          val = std::make_shared<model::GetAccountAssets>(query);
-        }
-        if (pb_query.has_get_account_signatories()) {
-          // Convert to get Signatories
-          auto pb_cast = pb_query.get_account_signatories();
-          auto query = GetSignatories();
-          query.account_id = pb_cast.account_id();
-          val = std::make_shared<model::GetSignatories>(query);
-        }
+        const auto &pb_sign = pb_query.signature();
 
-        if (pb_query.has_get_account_transactions()) {
-          // Convert to get Signatories
-          auto pb_cast = pb_query.get_account_transactions();
-          auto query = GetAccountTransactions();
-          query.account_id = pb_cast.account_id();
-          val = std::make_shared<model::GetAccountTransactions>(query);
-        }
+        Signature sign{};
+        sign.pubkey = pubkey_t::from_string(pb_sign.pubkey());
+        sign.signature = sig_t::from_string(pb_sign.signature());
 
-        if (pb_query.has_get_account_asset_transactions()) {
-          // Convert to get Account Asset Transactions
-          auto pb_cast = pb_query.get_account_asset_transactions();
-          auto query = GetAccountAssetTransactions();
-          query.account_id = pb_cast.account_id();
-          query.asset_id = pb_cast.asset_id();
-          val = std::make_shared<model::GetAccountAssetTransactions>(query);
-        }
-
-        if (pb_query.has_get_roles()) {
-          auto pb_cast = pb_query.get_roles();
-          val = std::make_shared<GetRoles>();
-        }
-
-        if (pb_query.has_get_asset_info()) {
-          auto pb_cast = pb_query.get_asset_info();
-          val = std::make_shared<GetAssetInfo>(pb_cast.asset_id());
-        }
-        if (pb_query.has_get_role_permissions()) {
-          auto pb_cast = pb_query.get_role_permissions();
-          val = std::make_shared <GetRolePermissions>(pb_cast.role_id());
-        }
-
-        if (!val) {
-          // Query not implemented
-          return nonstd::nullopt;
-        }
-        Signature sign;
-        auto pb_sign = pb_query.header().signature();
-        std::copy(pb_sign.pubkey().begin(), pb_sign.pubkey().end(),
-                  sign.pubkey.begin());
-
-        std::copy(pb_sign.signature().begin(), pb_sign.signature().end(),
-                  sign.signature.begin());
-        val->query_counter = pb_query.query_counter();
+        val->query_counter = pl.query_counter();
         val->signature = sign;
-        val->created_ts = pb_query.header().created_time();
-        val->creator_account_id = pb_query.creator_account_id();
-        model::HashProviderImpl hashProvider;  // TODO: get rid off unnecessary
-                                               // object initialization
-        val->query_hash = hashProvider.get_hash(val);
+        val->created_ts = pl.created_time();
+        val->creator_account_id = pl.creator_account_id();
         return val;
       }
 
       void PbQueryFactory::serializeQueryMetaData(
-          protocol::Query& pb_query, std::shared_ptr<Query> query) {
-        pb_query.set_creator_account_id(query->creator_account_id);
-        auto header = pb_query.mutable_header();
-        header->set_created_time(query->created_ts);
+          protocol::Query &pb_query, std::shared_ptr<const Query> query) const {
+        auto pl = pb_query.mutable_payload();
+        pl->set_creator_account_id(query->creator_account_id);
+        pl->set_created_time(query->created_ts);
         // Set signatures
-        auto sig = header->mutable_signature();
+        auto sig = pb_query.mutable_signature();
         sig->set_signature(query->signature.signature.to_string());
         sig->set_pubkey(query->signature.pubkey.to_string());
       }
 
       nonstd::optional<protocol::Query> PbQueryFactory::serialize(
-          std::shared_ptr<Query> query) {
+          std::shared_ptr<const Query> query) const {
         auto it = serializers_.find(typeid(*query));
         if (it != serializers_.end()) {
           return (this->*it->second)(query);
@@ -149,91 +157,96 @@ namespace iroha {
       }
 
       protocol::Query PbQueryFactory::serializeGetAccount(
-          std::shared_ptr<Query> query) {
+          std::shared_ptr<const Query> query) const {
         protocol::Query pb_query;
+        auto pl = pb_query.mutable_payload();
         serializeQueryMetaData(pb_query, query);
-        auto tmp = std::static_pointer_cast<GetAccount>(query);
+        auto tmp = std::static_pointer_cast<const GetAccount>(query);
         auto account_id = tmp->account_id;
-        auto pb_query_mut = pb_query.mutable_get_account();
+        auto pb_query_mut = pl->mutable_get_account();
         pb_query_mut->set_account_id(account_id);
         return pb_query;
       };
 
       protocol::Query PbQueryFactory::serializeGetAccountAssets(
-          std::shared_ptr<Query> query) {
+          std::shared_ptr<const Query> query) const {
         protocol::Query pb_query;
         serializeQueryMetaData(pb_query, query);
-        auto tmp = std::static_pointer_cast<GetAccountAssets>(query);
-        auto account_id = tmp->account_id;
-        auto asset_id = tmp->asset_id;
-        auto pb_query_mut = pb_query.mutable_get_account_assets();
-        pb_query_mut->set_account_id(account_id);
-        pb_query_mut->set_asset_id(asset_id);
+        auto tmp = std::static_pointer_cast<const GetAccountAssets>(query);
+        auto pb_query_mut =
+            pb_query.mutable_payload()->mutable_get_account_assets();
+        pb_query_mut->set_account_id(tmp->account_id);
+        pb_query_mut->set_asset_id(tmp->asset_id);
         return pb_query;
       };
 
       protocol::Query PbQueryFactory::serializeGetAccountTransactions(
-          std::shared_ptr<Query> query) {
+          std::shared_ptr<const Query> query) const {
         protocol::Query pb_query;
         serializeQueryMetaData(pb_query, query);
-        auto tmp = std::static_pointer_cast<GetAccountTransactions>(query);
-        auto account_id = tmp->account_id;
-        auto pb_query_mut = pb_query.mutable_get_account_transactions();
-        pb_query_mut->set_account_id(account_id);
+        auto tmp =
+            std::static_pointer_cast<const GetAccountTransactions>(query);
+        auto pb_query_mut =
+            pb_query.mutable_payload()->mutable_get_account_transactions();
+        pb_query_mut->set_account_id(tmp->account_id);
         return pb_query;
       }
 
       protocol::Query PbQueryFactory::serializeGetAccountAssetTransactions(
-          std::shared_ptr<Query> query) {
+          std::shared_ptr<const Query> query) const {
         protocol::Query pb_query;
         serializeQueryMetaData(pb_query, query);
-        auto tmp = std::static_pointer_cast<GetAccountAssetTransactions>(query);
+        auto tmp =
+            std::static_pointer_cast<const GetAccountAssetTransactions>(query);
         auto account_id = tmp->account_id;
         auto asset_id = tmp->asset_id;
-        auto pb_query_mut = pb_query.mutable_get_account_asset_transactions();
+        auto pb_query_mut = pb_query.mutable_payload()
+                                ->mutable_get_account_asset_transactions();
         pb_query_mut->set_account_id(account_id);
         pb_query_mut->set_asset_id(asset_id);
         return pb_query;
       }
 
       protocol::Query PbQueryFactory::serializeGetSignatories(
-          std::shared_ptr<Query> query) {
+          std::shared_ptr<const Query> query) const {
         protocol::Query pb_query;
         serializeQueryMetaData(pb_query, query);
-        auto tmp = std::static_pointer_cast<GetSignatories>(query);
-        auto account_id = tmp->account_id;
-        auto pb_query_mut = pb_query.mutable_get_account_signatories();
-        pb_query_mut->set_account_id(account_id);
+        auto tmp = std::static_pointer_cast<const GetSignatories>(query);
+        auto pb_query_mut =
+            pb_query.mutable_payload()->mutable_get_account_signatories();
+        pb_query_mut->set_account_id(tmp->account_id);
         return pb_query;
       }
 
       protocol::Query PbQueryFactory::serializeGetAssetInfo(
-          std::shared_ptr<Query> query) {
+          std::shared_ptr<const Query> query) const {
         protocol::Query pb_query;
         serializeQueryMetaData(pb_query, query);
-        auto tmp = std::static_pointer_cast<GetAssetInfo>(query);
+        auto tmp = std::static_pointer_cast<const GetAssetInfo>(query);
         auto ast_id = tmp->asset_id;
-        auto pb_query_mut = pb_query.mutable_get_asset_info();
+        auto pb_query_mut =
+            pb_query.mutable_payload()->mutable_get_asset_info();
         pb_query_mut->set_asset_id(ast_id);
         return pb_query;
       }
 
       protocol::Query PbQueryFactory::serializeGetRoles(
-          std::shared_ptr<Query> query) {
+          std::shared_ptr<const Query> query) const {
         protocol::Query pb_query;
-        auto mut = pb_query.mutable_get_roles();
+        auto mut = pb_query.mutable_payload()->mutable_get_roles();
         serializeQueryMetaData(pb_query, query);
-        auto tmp = std::static_pointer_cast<GetRoles>(query);
+        auto tmp = std::static_pointer_cast<const GetRoles>(query);
         return pb_query;
       }
 
       protocol::Query PbQueryFactory::serializeGetRolePermissions(
-          std::shared_ptr<Query> query) {
+          std::shared_ptr<const Query> query) const {
         protocol::Query pb_query;
         serializeQueryMetaData(pb_query, query);
-        auto tmp = std::static_pointer_cast<GetRolePermissions>(query);
+        auto tmp = std::static_pointer_cast<const GetRolePermissions>(query);
         auto role = tmp->role_id;
-        auto pb_query_mut = pb_query.mutable_get_role_permissions();
+        auto pb_query_mut =
+            pb_query.mutable_payload()->mutable_get_role_permissions();
         pb_query_mut->set_role_id(role);
         return pb_query;
       }

@@ -248,8 +248,8 @@ namespace iroha_cli {
     InteractiveTransactionCli::parseAddPeer(std::vector<std::string> params) {
       auto address = params[0];
       auto key = params[1];
-      iroha::ed25519::pubkey_t pubkey;
-      pubkey = iroha::hexstringToArray<iroha::ed25519::pubkey_t::size()>(key)
+      iroha::pubkey_t pubkey;
+      pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key)
                    .value();
       return generator_.generateAddPeer(address, pubkey);
     }
@@ -259,8 +259,8 @@ namespace iroha_cli {
         std::vector<std::string> params) {
       auto account_id = params[0];
       auto key = params[1];
-      iroha::ed25519::pubkey_t pubkey;
-      pubkey = iroha::hexstringToArray<iroha::ed25519::pubkey_t::size()>(key)
+      iroha::pubkey_t pubkey;
+      pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key)
                    .value();
       return generator_.generateAddSignatory(account_id, pubkey);
     }
@@ -271,8 +271,8 @@ namespace iroha_cli {
       auto account_id = params[0];
       auto domain_id = params[1];
       auto key = params[2];
-      iroha::ed25519::pubkey_t pubkey;
-      pubkey = iroha::hexstringToArray<iroha::ed25519::pubkey_t::size()>(key)
+      iroha::pubkey_t pubkey;
+      pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key)
                    .value();
       return generator_.generateCreateAccount(account_id, domain_id, pubkey);
     }
@@ -302,8 +302,8 @@ namespace iroha_cli {
         std::vector<std::string> params) {
       auto account_id = params[0];
       auto key = params[1];
-      iroha::ed25519::pubkey_t pubkey;
-      pubkey = iroha::hexstringToArray<iroha::ed25519::pubkey_t::size()>(key)
+      iroha::pubkey_t pubkey;
+      pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key)
                    .value();
       return generator_.generateRemoveSignatory(account_id, pubkey);
     }

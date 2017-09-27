@@ -20,15 +20,28 @@
 
 #include "commands.pb.h"
 #include "amount/amount.hpp"
+#include "common/types.hpp"
+#include "crypto/hash.hpp"
 
 namespace iroha {
   namespace model {
     namespace converters {
-
       // amount
       protocol::Amount serializeAmount(iroha::Amount iroha_amount);
       iroha::Amount deserializeAmount(protocol::Amount pb_amount);
     }
+
+  }
+
+  /**
+   * Calculate hash from protobuf model object
+   * @tparam T - protobuf model type
+   * @param pb - protobuf model object
+   * @return hash of object payload
+   */
+  template <typename T>
+  hash256_t hash(const T& pb) {
+    return sha3_256(pb.payload().SerializeAsString());
   }
 }
 

@@ -24,8 +24,8 @@ namespace iroha {
       Signature generateSignature(size_t seed) {
         Signature sign;
         // sign.pubkey
-        sign.pubkey = generator::random_blob<ed25519::pubkey_t::size()>(seed);
-        sign.signature = generator::random_blob<ed25519::sig_t::size()>(
+        sign.pubkey = generator::random_blob<pubkey_t::size()>(seed);
+        sign.signature = generator::random_blob<sig_t::size()>(
             generator::random_number(0, seed));
         return sign;
       }

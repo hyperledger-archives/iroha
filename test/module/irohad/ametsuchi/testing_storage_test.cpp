@@ -17,6 +17,7 @@
 
 #include "gtest/gtest.h"
 #include "logger/logger.hpp"
+#include "crypto/hash.hpp"
 #include "ametsuchi/impl/test_storage_impl.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 
@@ -26,7 +27,6 @@
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/transfer_asset.hpp"
-#include "model/model_hash_provider_impl.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
 using namespace iroha::ametsuchi;
@@ -40,7 +40,6 @@ class TestStorageFixture : public AmetsuchiTest {
 };
 
 Block getBlock() {
-  HashProviderImpl hashProvider;
   Transaction txn;
   txn.creator_account_id = "admin1";
   AddPeer add_peer;
@@ -50,7 +49,7 @@ Block getBlock() {
   block.transactions.push_back(txn);
   block.height = 1;
   block.prev_hash.fill(0);
-  auto block1hash = hashProvider.get_hash(block);
+  auto block1hash = iroha::hash(block);
   block.hash = block1hash;
   block.txs_number = block.transactions.size();
   return block;

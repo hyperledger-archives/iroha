@@ -63,11 +63,6 @@ namespace iroha {
       uint64_t tx_counter;
 
       /**
-       * Hash will be used in iroha for transaction identification
-       */
-      hash256_t tx_hash;
-
-      /**
        * Bunch of commands attached to transaction
        * shared_ptr is used since Proposal has to be copied
        * BODY field

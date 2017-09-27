@@ -19,18 +19,23 @@
 #define IROHA_HASH_H
 
 #include <common/types.hpp>
+#include "model/block.hpp"
+#include "model/query.hpp"
+#include "model/transaction.hpp"
 
 namespace iroha {
 
-  void sha3_256(unsigned char *output, unsigned char *input,
-                      size_t in_size);
-
-  void sha3_512(unsigned char *output, unsigned char *input,
-                      size_t in_size);
+  void sha3_256(unsigned char *output, unsigned char *input, size_t in_size);
+  void sha3_512(unsigned char *output, unsigned char *input, size_t in_size);
 
   hash256_t sha3_256(const uint8_t *input, size_t in_size);
-
+  hash256_t sha3_256(const std::string &msg);
   hash512_t sha3_512(const uint8_t *input, size_t in_size);
+  hash512_t sha3_512(const std::string &msg);
+
+  hash256_t hash(const model::Transaction &tx);
+  hash256_t hash(const model::Block &tx);
+  hash256_t hash(const model::Query &tx);
 
 }  // namespace iroha
 

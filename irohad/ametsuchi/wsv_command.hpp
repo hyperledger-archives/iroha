@@ -117,7 +117,7 @@ namespace iroha {
        * @param signatory
        * @return
        */
-      virtual bool insertSignatory(const ed25519::pubkey_t &signatory) = 0;
+      virtual bool insertSignatory(const pubkey_t &signatory) = 0;
 
       /**
        * Insert account signatory relationship
@@ -127,7 +127,7 @@ namespace iroha {
        */
       virtual bool insertAccountSignatory(
           const std::string &account_id,
-          const ed25519::pubkey_t &signatory) = 0;
+          const pubkey_t &signatory) = 0;
 
       /**
        * Delete account signatory relationship
@@ -137,7 +137,7 @@ namespace iroha {
        */
       virtual bool deleteAccountSignatory(
           const std::string &account_id,
-          const ed25519::pubkey_t &signatory) = 0;
+          const pubkey_t &signatory) = 0;
 
       /**
        * Delete signatory
@@ -145,7 +145,7 @@ namespace iroha {
        * @return
        */
       virtual bool deleteSignatory(
-          const ed25519::pubkey_t &signatory) = 0;
+          const pubkey_t &signatory) = 0;
 
       /**
        *

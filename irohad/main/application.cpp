@@ -62,7 +62,6 @@ void Irohad::init() {
   initLoop();
   initProtoFactories();
   initCryptoProvider();
-  initHashProvider();
   initValidators();
   initPeerQuery();
   initPeerOrderer();
@@ -120,12 +119,6 @@ void Irohad::initCryptoProvider() {
   log_->info("[Init] => crypto provider");
 }
 
-void Irohad::initHashProvider() {
-  hash_provider = std::make_shared<HashProviderImpl>();
-
-  log_->info("[Init] => hash provider");
-}
-
 void Irohad::initValidators() {
   stateless_validator =
       std::make_shared<StatelessValidatorImpl>(crypto_verifier);
@@ -173,8 +166,7 @@ void Irohad::initSimulator() {
   simulator = std::make_shared<Simulator>(ordering_gate,
                                           stateful_validator,
                                           storage,
-                                          storage->getBlockQuery(),
-                                          hash_provider);
+                                          storage->getBlockQuery());
 
   log_->info("[Init] => init simulator");
 }

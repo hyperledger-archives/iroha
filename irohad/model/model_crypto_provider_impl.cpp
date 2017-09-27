@@ -15,48 +15,43 @@
  * limitations under the License.
  */
 
+#include <crypto/crypto.hpp>
+#include <crypto/hash.hpp>
+#include <model/converters/pb_block_factory.hpp>
+#include <model/converters/pb_query_factory.hpp>
+#include <model/converters/pb_transaction_factory.hpp>
 #include <model/model_crypto_provider_impl.hpp>
-#include <model/model_hash_provider_impl.hpp>
 
 namespace iroha {
   namespace model {
 
     bool ModelCryptoProviderImpl::verify(const Transaction &tx) const {
-      HashProviderImpl hash_provider;
-      auto tx_hash = hash_provider.get_hash(tx);
+      if (tx.signatures.empty()) return false;
 
-      if (tx.signatures.size() == 0) return false;
+      const auto hash_ = hash(tx).to_string();
 
-      for (auto sign : tx.signatures) {
-        auto verified = iroha::verify(tx_hash.data(), tx_hash.size(),
-                                      sign.pubkey, sign.signature);
-        if (!verified) return false;
+      for (const auto &sign : tx.signatures) {
+        if (not iroha::verify(hash_, sign.pubkey, sign.signature)) return false;
       }
       return true;
     }
 
-    bool ModelCryptoProviderImpl::verify(std::shared_ptr<const Query> query) const {
-      HashProviderImpl hashProvider;
-      auto query_hash = hashProvider.get_hash(query);
-      auto sign = query->signature;
-      return iroha::verify(query_hash.data(), query_hash.size(), sign.pubkey,
-                           sign.signature);
+    bool ModelCryptoProviderImpl::verify(
+        std::shared_ptr<const Query> query) const {
+      const auto hash_ = hash(*query).to_string();
+      const auto sig = query->signature;
+
+      return iroha::verify(hash_, sig.pubkey, sig.signature);
     }
 
     bool ModelCryptoProviderImpl::verify(const Block &block) const {
-      HashProviderImpl hashProvider;
-      auto block_hash = hashProvider.get_hash(block);
+      const auto hash_ = hash(block).to_string();
 
-      if (block.sigs.size() == 0) {
-        return false;
-      }
-
-      for (auto sign : block.sigs) {
-        auto verified = iroha::verify(block_hash.data(), block_hash.size(),
-                                      sign.pubkey, sign.signature);
-        if (!verified) return false;
-      }
-      return true;
+      for (const auto &sig : block.sigs)
+        if (not iroha::verify(hash_, sig.pubkey, sig.signature)) {
+          return false;
+        }
+       return true;
     }
   }
 }

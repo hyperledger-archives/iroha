@@ -20,6 +20,7 @@
 #include <grpc++/server_builder.h>
 #include <gtest/gtest.h>
 
+#include "crypto/hash.hpp"
 #include "framework/test_subscriber.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/model/model_mocks.hpp"
@@ -141,7 +142,7 @@ TEST_F(BlockLoaderTest, ValidWhenMultipleBlocks) {
 TEST_F(BlockLoaderTest, ValidWhenBlockPresent) {
   // Request existing block => success
   Block requested_block;
-  requested_block.hash = HashProviderImpl().get_hash(requested_block);
+  requested_block.hash = iroha::hash(requested_block);
 
   EXPECT_CALL(*provider, verify(A<const Block &>())).WillOnce(Return(true));
   EXPECT_CALL(*peer_query, getLedgerPeers()).WillOnce(Return(peers));
@@ -156,7 +157,7 @@ TEST_F(BlockLoaderTest, ValidWhenBlockPresent) {
 TEST_F(BlockLoaderTest, ValidWhenBlockMissing) {
   // Request nonexisting block => failure
   Block present_block;
-  present_block.hash = HashProviderImpl().get_hash(present_block);
+  present_block.hash = iroha::hash(present_block);
 
   auto hash = present_block.hash;
   hash.fill(0);
