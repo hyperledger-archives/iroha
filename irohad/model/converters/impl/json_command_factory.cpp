@@ -411,12 +411,12 @@ namespace iroha {
         if (document.HasMember("role_name") and document["role_name"].IsString()
             and document.HasMember("permissions")
             and document["permissions"].IsArray()) {
-          std::vector<std::string> perms;
+          std::set<std::string> perms;
           for (auto &v : document["permissions"].GetArray()) {
             if (not v.IsString()) {
               return nonstd::nullopt;
             }
-            perms.push_back(v.GetString());
+            perms.insert(v.GetString());
           }
           auto role_name = document["role_name"].GetString();
           return make_optional_ptr<CreateRole>(role_name, perms) | toCommand;

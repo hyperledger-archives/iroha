@@ -59,17 +59,17 @@ message AppendRole {
 
 message CreateRole {
     string role_name = 1;
-    repeated string permissions = 2;
+    repeated RolePermission permissions = 2;
 }
 
 message GrantPermission {
     string account_id = 1;
-    string permission_name = 2;
+    GrantablePermission permission = 2;
 }
 
 message RevokePermission {
     string account_id = 1;
-    string permission_name = 2;
+    GrantablePermission permission = 2;
 }
 
 message Command {

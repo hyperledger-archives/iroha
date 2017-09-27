@@ -209,7 +209,7 @@ namespace iroha_cli {
         std::vector<std::string> params) {
       // TODO grimadas: implement scheme on working with permissions
       auto role = params[0];
-      std::vector<std::string> perms = {};
+      std::set<std::string> perms  = {};
       return std::make_shared<CreateRole>(role, perms);
     }
 

@@ -34,6 +34,11 @@
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/revoke_permission.hpp"
 
+#include <primitive.pb.h>
+#include "model/permissions.hpp"
+#include <unordered_map>
+#include <boost/bimap.hpp>
+
 namespace iroha {
   namespace model {
     namespace converters {
@@ -43,6 +48,7 @@ namespace iroha {
        */
       class PbCommandFactory {
        public:
+        PbCommandFactory();
         // asset quantity
         protocol::AddAssetQuantity serializeAddAssetQuantity(
             const model::AddAssetQuantity &addAssetQuantity);
@@ -124,6 +130,11 @@ namespace iroha {
             const model::Command &command);
         std::shared_ptr<model::Command> deserializeAbstractCommand(
             const protocol::Command &command);
+
+       private:
+        boost::bimap<iroha::protocol::RolePermission, std::string> pb_role_map_;
+        boost::bimap<iroha::protocol::GrantablePermission, std::string> pb_grant_map_;
+
       };
     }  // namespace converters
   }    // namespace model

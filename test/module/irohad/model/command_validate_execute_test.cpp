@@ -831,7 +831,7 @@ class CreateRoleTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
     CommandValidateExecuteTest::SetUp();
-    std::vector<std::string> perm = {"CanDoMagic"};
+    std::set<std::string> perm = {"CanDoMagic"};
     create_role = std::make_shared<CreateRole>("master", perm);
     command = create_role;
     role_permissions = {can_create_role};

@@ -33,8 +33,7 @@
 #include "model/commands/revoke_permission.hpp"
 
 #include "model/converters/pb_command_factory.hpp"
-
-#include <algorithm>
+#include "model/permissions.hpp"
 
 using namespace iroha::model;
 
@@ -178,7 +177,7 @@ TEST(CommandTest, set_transfer_asset) {
 TEST(CommandTest, create_role) {
   auto factory = iroha::model::converters::PbCommandFactory();
 
-  auto orig_command = CreateRole("master", {"CanDoMagic"});
+  auto orig_command = CreateRole("master", {can_add_signatory});
 
   auto proto_command = factory.serializeCreateRole(orig_command);
   auto serial_command = factory.deserializeCreateRole(proto_command);
@@ -204,7 +203,7 @@ TEST(CommandTest, append_role) {
 TEST(CommandTest, grant_permission) {
   auto factory = iroha::model::converters::PbCommandFactory();
 
-  auto orig_command = GrantPermission("admin@test", "can_read");
+  auto orig_command = GrantPermission("admin@test", can_add_signatory);
 
   auto proto_command = factory.serializeGrantPermission(orig_command);
   auto serial_command = factory.deserializeGrantPermission(proto_command);
@@ -217,7 +216,7 @@ TEST(CommandTest, grant_permission) {
 TEST(CommandTest, revoke_permission) {
   auto factory = iroha::model::converters::PbCommandFactory();
 
-  auto orig_command = RevokePermission("admin@test", "can_read");
+  auto orig_command = RevokePermission("admin@test", can_add_signatory);
 
   auto proto_command = factory.serializeRevokePermission(orig_command);
   auto serial_command = factory.deserializeRevokePermission(proto_command);

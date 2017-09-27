@@ -71,7 +71,7 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> CommandGenerator::generateCreateAdminRole(std::string role_name) {
-        std::vector<std::string> perms = {
+        std::set<std::string> perms = {
             can_create_domain,  can_add_signatory,  can_remove_signatory,
             can_set_quorum,     can_get_my_account, can_get_my_signatories,
             can_get_my_acc_ast, can_get_my_acc_txs};
