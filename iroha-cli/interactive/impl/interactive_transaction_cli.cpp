@@ -52,8 +52,7 @@ namespace iroha_cli {
           {CREATE_ROLE, "Create new role"},
           {APPEND_ROLE, "Add new role to account"},
           {GRANT_PERM, "Grant permission over your account"},
-          {REVOKE_PERM, "Revoke permission from account"}
-      };
+          {REVOKE_PERM, "Revoke permission from account"}};
 
       const auto acc_id = "Account Id";
       const auto ast_id = "Asset Id";
@@ -86,8 +85,7 @@ namespace iroha_cli {
           {CREATE_ROLE, {role}},
           {APPEND_ROLE, {acc_id, role}},
           {GRANT_PERM, {acc_id, perm}},
-          {REVOKE_PERM, {acc_id, perm}}
-      };
+          {REVOKE_PERM, {acc_id, perm}}};
 
       command_handlers_ = {
           {ADD_ASSET_QTY, &InteractiveTransactionCli::parseAddAssetQuantity},
@@ -105,8 +103,7 @@ namespace iroha_cli {
           {CREATE_ROLE, &InteractiveTransactionCli::parseCreateRole},
           {APPEND_ROLE, &InteractiveTransactionCli::parseAppendRole},
           {GRANT_PERM, &InteractiveTransactionCli::parseGrantPermission},
-          {REVOKE_PERM, &InteractiveTransactionCli::parseGrantPermission}
-      };
+          {REVOKE_PERM, &InteractiveTransactionCli::parseGrantPermission}};
 
       commands_menu_ = formMenu(command_handlers_, command_params_descriptions_,
                                 commands_description_map_);
@@ -134,8 +131,7 @@ namespace iroha_cli {
           {SAVE_CODE, &InteractiveTransactionCli::parseSaveFile},
           {SEND_CODE, &InteractiveTransactionCli::parseSendToIroha},
           {ADD_CMD, &InteractiveTransactionCli::parseAddCommand},
-          {BACK_CODE, &InteractiveTransactionCli::parseGoBack}
-      };
+          {BACK_CODE, &InteractiveTransactionCli::parseGoBack}};
 
       result_menu_ = formMenu(result_handlers_, result_params_descriptions,
                               result_desciption);
@@ -195,7 +191,7 @@ namespace iroha_cli {
         std::vector<std::string> params) {
       // TODO: implement scheme on working with permissions
       auto role = params[0];
-      std::vector<std::string> perms  = {};
+      std::vector<std::string> perms = {};
       return std::make_shared<CreateRole>(role, perms);
     }
 
@@ -249,8 +245,7 @@ namespace iroha_cli {
       auto address = params[0];
       auto key = params[1];
       iroha::pubkey_t pubkey;
-      pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key)
-                   .value();
+      pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key).value();
       return generator_.generateAddPeer(address, pubkey);
     }
 
@@ -260,8 +255,7 @@ namespace iroha_cli {
       auto account_id = params[0];
       auto key = params[1];
       iroha::pubkey_t pubkey;
-      pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key)
-                   .value();
+      pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key).value();
       return generator_.generateAddSignatory(account_id, pubkey);
     }
 
@@ -272,8 +266,7 @@ namespace iroha_cli {
       auto domain_id = params[1];
       auto key = params[2];
       iroha::pubkey_t pubkey;
-      pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key)
-                   .value();
+      pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key).value();
       return generator_.generateCreateAccount(account_id, domain_id, pubkey);
     }
 
@@ -303,8 +296,7 @@ namespace iroha_cli {
       auto account_id = params[0];
       auto key = params[1];
       iroha::pubkey_t pubkey;
-      pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key)
-                   .value();
+      pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key).value();
       return generator_.generateRemoveSignatory(account_id, pubkey);
     }
 
@@ -376,6 +368,8 @@ namespace iroha_cli {
       auto tx = tx_generator_.generateTransaction(time_stamp, creator_,
                                                   tx_counter_, commands_);
       // TODO: sign tx
+      tx.signatures.push_back(
+          {});  // get rid off fake signature when crypto is integrated
       CliClient client(address.value().first, address.value().second);
       GrpcResponseHandler response_handler;
       response_handler.handle(client.sendTx(tx));
@@ -399,7 +393,7 @@ namespace iroha_cli {
       auto tx = tx_generator_.generateTransaction(time_stamp, creator_,
                                                   tx_counter_, commands_);
       // TODO: sign tx
-
+      tx.signatures.push_back({});  // get rid off fake signature
       iroha::model::converters::JsonTransactionFactory json_factory;
       auto json_doc = json_factory.serialize(tx);
       auto json_string = iroha::model::converters::jsonToString(json_doc);

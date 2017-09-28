@@ -32,14 +32,16 @@ namespace iroha {
       auto checking_transaction = [](auto &tx, auto &queries) {
         auto account = queries.getAccount(tx.creator_account_id);
         // Check if tx creator has account and has quorum to execute transaction
-        if (!account || tx.signatures.size() < account.value().quorum)
+        if (!account || tx.signatures.size() < account.value().quorum) {
           return false;
+        }
 
         // Check if signatures in transaction are account signatory
         auto account_signs = queries.getSignatories(tx.creator_account_id);
-        if (not account_signs)
+        if (not account_signs) {
           // No signatories found
           return false;
+        }
 
         // TODO: Check if signatures in transaction are valid
         return true;
