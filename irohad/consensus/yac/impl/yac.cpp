@@ -56,14 +56,13 @@ namespace iroha {
       // ------|Hash gate|------
 
       void Yac::vote(YacHash hash, ClusterOrdering order) {
-
-        log_->info("Order for voting: {}", logger::to_string(order.getPeers(),
-                                                             [](auto val) {
-                                                               return val.address;
-                                                             }));
+        log_->info("Order for voting: {}",
+                   logger::to_string(order.getPeers(),
+                                     [](auto val) { return val.address; }));
 
         this->cluster_order_ = order;
-        votingStep(hash);
+        auto vote = crypto_->getVote(hash);
+        votingStep(vote);
       };
 
       rxcpp::observable<CommitMessage> Yac::on_commit() {
@@ -95,23 +94,21 @@ namespace iroha {
 
       // ------|Private interface|------
 
-      void Yac::votingStep(YacHash hash) {
-        auto committed = vote_storage_.isHashCommitted(hash.proposal_hash);
+      void Yac::votingStep(VoteMessage vote) {
+        auto committed = vote_storage_.isHashCommitted(vote.hash.proposal_hash);
         if (committed) {
           return;
         }
 
-        log_->info("Vote for hash ({}, {})",
-                   hash.proposal_hash, hash.block_hash);
+        log_->info("Vote for hash ({}, {})", vote.hash.proposal_hash,
+                   vote.hash.block_hash);
 
-        network_->send_vote(cluster_order_.currentLeader(),
-                            crypto_->getVote(hash));
-        timer_->invokeAfterDelay(delay_, [this, hash] {
-          cluster_order_.switchToNext();
-          if (cluster_order_.hasNext()) {
-            this->votingStep(hash);
-          }
-        });
+        network_->send_vote(cluster_order_.currentLeader(), vote);
+        cluster_order_.switchToNext();
+        if (cluster_order_.hasNext()) {
+          timer_->invokeAfterDelay(delay_,
+                                   [this, vote] { this->votingStep(vote); });
+        }
       }
 
       void Yac::closeRound() {

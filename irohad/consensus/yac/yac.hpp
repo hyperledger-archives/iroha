@@ -79,7 +79,7 @@ namespace iroha {
          * Voting step is strategy of propagating vote
          * until commit/reject message received
          */
-        void votingStep(YacHash hash);
+        void votingStep(VoteMessage vote);
 
         /**
          * Erase temporary data of current round
