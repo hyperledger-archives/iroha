@@ -1,0 +1,13 @@
+{
+    "signature": 
+        {
+            "pubkey": "3d14f814956883a83519deeab628e3856808884fb1b2b3906e280795f9f789db",
+            "signature": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        },
+    "created_ts": 1506465158885,
+    "creator_account_id": "bob@test",
+    "query_counter": 1,
+    "query_type" : "GetAccountAssets",
+    "account_id": "bob@test",
+    "asset_id": "usd#test"
+}
