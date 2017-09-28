@@ -38,7 +38,7 @@ grpc::Status OrderingGateTransportGrpc::onProposal(
 
 OrderingGateTransportGrpc::OrderingGateTransportGrpc(
     const std::string &server_address)
-    : client_(proto::OrderingService::NewStub(grpc::CreateChannel(
+    : client_(proto::OrderingServiceTransportGrpc::NewStub(grpc::CreateChannel(
           server_address, grpc::InsecureChannelCredentials()))),
       log_(logger::log("OrderingGate")) {}
 
@@ -47,7 +47,8 @@ void OrderingGateTransportGrpc::propagate_transaction(
   log_->info("Propagate tx (on transport");
   auto call = new AsyncClientCall;
 
-  call->response_reader = client_->AsyncSendTransaction(
+
+  call->response_reader = client_->AsynconTransaction(
       &call->context, factory_.serialize(*transaction), &cq_);
 
   call->response_reader->Finish(&call->reply, &call->status, call);

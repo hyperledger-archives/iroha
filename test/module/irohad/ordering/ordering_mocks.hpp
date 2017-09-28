@@ -18,11 +18,11 @@
 #ifndef IROHA_ORDERING_MOCKS_HPP
 #define IROHA_ORDERING_MOCKS_HPP
 
-#include "module/irohad/network/network_mocks.hpp"
-
 #include <grpc++/grpc++.h>
+#include "module/irohad/network/network_mocks.hpp"
 #include "network/ordering_gate.hpp"
 #include "ordering.grpc.pb.h"
+#include "ordering/impl/ordering_service_impl.hpp"
 
 namespace iroha {
   namespace ordering {
@@ -34,12 +34,12 @@ namespace iroha {
                                             ::google::protobuf::Empty *));
     };
 
-    class MockOrderingService : public proto::OrderingService::Service {
+    class MockOrderingService
+        : public proto::OrderingServiceTransportGrpc::Service {
      public:
-      MOCK_METHOD3(SendTransaction,
-                   ::grpc::Status(::grpc::ServerContext *,
-                                  const protocol::Transaction *,
-                                  ::google::protobuf::Empty *));
+      MOCK_METHOD3(onTransaction, ::grpc::Status(::grpc::ServerContext *,
+                                                 const protocol::Transaction *,
+                                                 ::google::protobuf::Empty *));
     };
 
     class OrderingTest : public ::testing::Test {
@@ -48,7 +48,7 @@ namespace iroha {
         address = "0.0.0.0:50051";
         peer.address = address;
         gate_transport_service = std::make_shared<MockOrderingGate>();
-        service = std::make_shared<MockOrderingService>();
+        service_transport_service = std::make_shared<MockOrderingService>();
       }
 
       void SetUp() override { start(); }
@@ -63,7 +63,7 @@ namespace iroha {
           int port = 0;
           builder.AddListeningPort(address, grpc::InsecureServerCredentials(),
                                    &port);
-          builder.RegisterService(service.get());
+          builder.RegisterService(service_transport_service.get());
           builder.RegisterService(gate_transport_service.get());
           server = builder.BuildAndStart();
           ASSERT_NE(port, 0);
@@ -90,8 +90,11 @@ namespace iroha {
       std::unique_ptr<grpc::Server> server;
       std::shared_ptr<proto::OrderingGateTransportGrpc::Service>
           gate_transport_service;
+      std::shared_ptr<proto::OrderingServiceTransportGrpc::Service>
+          service_transport_service;
+
       std::shared_ptr<iroha::network::OrderingGate> gate;
-      std::shared_ptr<proto::OrderingService::Service> service;
+      std::shared_ptr<iroha::ordering::OrderingServiceImpl> service;
       std::thread thread;
     };
   }  // namespace ordering

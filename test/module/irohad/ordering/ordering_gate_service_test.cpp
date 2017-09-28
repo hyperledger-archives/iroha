@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <ordering/impl/ordering_service_transport_grpc.hpp>
 #include "framework/test_subscriber.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
@@ -87,8 +88,10 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   const size_t max_proposal = 100;
   const size_t commit_delay = 400;
 
-  service = std::make_shared<OrderingServiceImpl>(wsv, max_proposal,
-                                                  commit_delay);
+  auto transport = std::make_shared<OrderingServiceTransportGrpc>();
+
+  service = std::make_shared<OrderingServiceImpl>(
+      wsv, max_proposal, commit_delay, transport, loop);
 
   start();
   std::unique_lock<std::mutex> lk(m);
@@ -127,8 +130,10 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
 
-  service = std::make_shared<OrderingServiceImpl>(wsv, max_proposal,
-                                                  commit_delay);
+  auto transport = std::make_shared<OrderingServiceTransportGrpc>();
+  service = std::make_shared<OrderingServiceImpl>(
+      wsv, max_proposal, commit_delay, transport, loop);
+  transport->subscribe(service);
 
   start();
   std::unique_lock<std::mutex> lk(m);

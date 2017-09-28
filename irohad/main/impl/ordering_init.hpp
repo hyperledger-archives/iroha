@@ -21,6 +21,8 @@
 #include "ametsuchi/peer_query.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
+#include "ordering/impl/ordering_service_transport_grpc.hpp"
+
 #include "ordering/impl/ordering_service_impl.hpp"
 
 namespace iroha {
@@ -45,9 +47,11 @@ namespace iroha {
        * @param delay_milliseconds - delay before emitting proposal
        * @param loop - handler of async events
        */
-      auto createService(std::shared_ptr<ametsuchi::PeerQuery> wsv,
-                         size_t max_size,
-                         size_t delay_milliseconds);
+      auto createService(
+          std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
+          size_t delay_milliseconds,
+          std::shared_ptr<network::OrderingServiceTransport> transport,
+          std::shared_ptr<uvw::Loop> loop);
 
      public:
       /**
@@ -65,8 +69,8 @@ namespace iroha {
 
       std::shared_ptr<ordering::OrderingServiceImpl> ordering_service;
       std::shared_ptr<ordering::OrderingGateImpl> ordering_gate;
-      std::shared_ptr<ordering::OrderingGateTransportGrpc>
-          ordering_gate_transport;
+      std::shared_ptr<ordering::OrderingGateTransportGrpc> ordering_gate_transport;
+      std::shared_ptr<ordering::OrderingServiceTransportGrpc> ordering_service_transport;
     };
   }  // namespace network
 }  // namespace iroha

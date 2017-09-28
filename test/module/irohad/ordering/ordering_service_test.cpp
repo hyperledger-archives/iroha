@@ -18,9 +18,11 @@
 #include "module/irohad/ordering/ordering_mocks.hpp"
 
 #include <grpc++/grpc++.h>
+#include <ordering/impl/ordering_service_transport_grpc.hpp>
 #include "logger/logger.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
+#include "../../../../headers/grpc++/impl/codegen/server_context.h"
 
 using namespace iroha;
 using namespace iroha::ordering;
@@ -36,6 +38,8 @@ using ::testing::DoAll;
 using ::testing::AtLeast;
 using ::testing::Return;
 
+static logger::Logger log_ = logger::testLog("OrderingService");
+
 class OrderingServiceTest : public OrderingTest {
  public:
   OrderingServiceTest() {
@@ -47,20 +51,26 @@ class OrderingServiceTest : public OrderingTest {
 
   void start() override {
     OrderingTest::start();
-    client = proto::OrderingService::NewStub(
-        grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
+    loop_thread = std::thread([this] { loop->run(); });
   }
 
   void send() {
-    grpc::ClientContext context;
+    grpc::ServerContext context;
     google::protobuf::Empty reply;
-    client->SendTransaction(&context, iroha::protocol::Transaction(), &reply);
+    const auto transaction = iroha::protocol::Transaction();
+    auto status = transport->onTransaction(&context, &transaction, &reply);
+    if(not status.ok()){
+      log_->error(status.error_details());
+      log_->error(status.error_message());
+
+    }
+    ASSERT_TRUE(status.ok());
   }
 
   void shutdown() override { OrderingTest::shutdown(); }
 
   ordering::MockOrderingGate *fake_gate;
-  std::unique_ptr<iroha::ordering::proto::OrderingService::Stub> client;
+  std::shared_ptr<OrderingServiceTransportGrpc> transport;
   std::condition_variable cv;
   std::mutex m;
 };
@@ -74,8 +84,10 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
 
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
-  service =
-      std::make_shared<OrderingServiceImpl>(wsv, max_proposal, commit_delay);
+  transport = std::make_shared<OrderingServiceTransportGrpc>();
+  service = std::make_shared<OrderingServiceImpl>(
+      wsv, max_proposal, commit_delay, transport, loop);
+  transport->subscribe(service);
 
   EXPECT_CALL(*fake_gate, onProposal(_, _, _)).Times(2);
 
@@ -106,8 +118,10 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
 
   const size_t max_proposal = 100;
   const size_t commit_delay = 400;
-  service =
-      std::make_shared<OrderingServiceImpl>(wsv, max_proposal, commit_delay);
+  auto transport = std::make_shared<ordering::OrderingServiceTransportGrpc>();
+  service = std::make_shared<OrderingServiceImpl>(
+      wsv, max_proposal, commit_delay, transport, loop);
+  transport->subscribe(service);
 
   EXPECT_CALL(*fake_gate, onProposal(_, _, _)).Times(2);
   ON_CALL(*fake_gate, onProposal(_, _, _))

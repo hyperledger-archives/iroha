@@ -76,6 +76,7 @@ namespace iroha {
       virtual nonstd::optional<model::Account> getAccount(
           const std::string &account_id) = 0;
 
+
       /**
        * Get signatories of account by user account_id
        * @param account_id

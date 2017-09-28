@@ -20,27 +20,24 @@
 namespace iroha {
   namespace ordering {
     OrderingServiceImpl::OrderingServiceImpl(
-        std::shared_ptr<ametsuchi::PeerQuery> wsv,
-        size_t max_size,
-        size_t delay_milliseconds)
-        : wsv_(wsv),
+        std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
+        size_t delay_milliseconds,
+        std::shared_ptr<network::OrderingServiceTransport> transport,
+        std::shared_ptr<uvw::Loop> loop)
+        : loop_(std::move(loop)),
+          timer_(loop_->resource<uvw::TimerHandle>()),
+          wsv_(wsv),
           max_size_(max_size),
           delay_milliseconds_(delay_milliseconds),
+          transport_(transport),
           proposal_height(2) {
       updateTimer();
     }
 
-    grpc::Status OrderingServiceImpl::SendTransaction(
-        ::grpc::ServerContext *context,
-        const protocol::Transaction *request,
-        ::google::protobuf::Empty *response) {
-      handleTransaction(std::move(*factory_.deserialize(*request)));
 
-      return grpc::Status::OK;
-    }
 
-    void OrderingServiceImpl::handleTransaction(
-        model::Transaction &&transaction) {
+    void OrderingServiceImpl::onTransaction(
+        model::Transaction transaction) {
       queue_.push(transaction);
 
       if (queue_.unsafe_size() >= max_size_) {
@@ -63,37 +60,15 @@ namespace iroha {
     }
 
     void OrderingServiceImpl::publishProposal(model::Proposal &&proposal) {
-      preparePeersForProposalRound();
-      proto::Proposal pb_proposal;
-      pb_proposal.set_height(proposal.height);
-      for (const auto &tx : proposal.transactions) {
-        auto pb_tx = pb_proposal.add_transactions();
-        new (pb_tx) protocol::Transaction(factory_.serialize(tx));
+      std::vector<std::string> peers;
+      for (const auto &peer : wsv_->getLedgerPeers().value()) {
+        peers.push_back(peer.address);
       }
+      transport_->publishProposal(std::move(proposal), peers);
 
-      for (const auto &peer : peers_) {
-        auto call = new AsyncClientCall;
-
-        call->response_reader =
-            peer.second->AsynconProposal(&call->context, pb_proposal, &cq_);
-
-        call->response_reader->Finish(&call->reply, &call->status, call);
-      }
     }
 
-    void OrderingServiceImpl::preparePeersForProposalRound() {
-      peers_.clear();
-      auto round_peers = wsv_->getLedgerPeers();
-      if (not round_peers.has_value()) {
-        // todo log error
-        return;
-      }
-      for (const auto &peer : round_peers.value()) {
-        peers_[peer.address] =
-            proto::OrderingGateTransportGrpc::NewStub(grpc::CreateChannel(
-                peer.address, grpc::InsecureChannelCredentials()));
-      }
-    }
+
 
     void OrderingServiceImpl::updateTimer() {
       if (not queue_.empty()) {

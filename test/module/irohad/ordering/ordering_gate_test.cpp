@@ -36,7 +36,7 @@ class OrderingGateTest : public OrderingTest {
     gate = gate_impl;
     gate_transport_service = transport;
     transport->subscribe(gate_impl);
-    fake_service = static_cast<MockOrderingService *>(service.get());
+    fake_service = static_cast<MockOrderingService *>(service_transport_service.get());
   }
 
   std::shared_ptr<OrderingGateImpl> gate_impl;
@@ -45,7 +45,7 @@ class OrderingGateTest : public OrderingTest {
 
 TEST_F(OrderingGateTest, TransactionReceivedByServerWhenSent) {
   // Init => send 5 transactions => 5 transactions are processed by server
-  EXPECT_CALL(*fake_service, SendTransaction(_, _, _)).Times(5);
+  EXPECT_CALL(*fake_service, onTransaction(_, _, _)).Times(5);
 
   for (size_t i = 0; i < 5; ++i) {
     gate_impl->propagate_transaction(std::make_shared<Transaction>());
