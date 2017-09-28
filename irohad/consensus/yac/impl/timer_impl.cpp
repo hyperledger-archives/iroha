@@ -23,8 +23,7 @@ namespace iroha {
     namespace yac {
 
       TimerImpl::TimerImpl(std::shared_ptr<uvw::Loop> loop)
-          : loop_(std::move(loop)),
-            timer_(loop_->resource<uvw::TimerHandle>()) {
+          : timer_(loop->resource<uvw::TimerHandle>()) {
         timer_->on<uvw::TimerEvent>([this](const auto&, auto&) { handler_(); });
       }
 
@@ -38,7 +37,10 @@ namespace iroha {
 
       void TimerImpl::deny() { timer_->stop(); }
 
-      TimerImpl::~TimerImpl() { timer_->close(); }
+      TimerImpl::~TimerImpl() {
+        timer_->stop();
+        timer_->close();
+      }
 
     }  // namespace yac
   }    // namespace consensus
