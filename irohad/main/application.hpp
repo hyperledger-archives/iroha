@@ -73,7 +73,7 @@ class Irohad {
    */
   virtual void run();
 
-  ~Irohad();
+  virtual ~Irohad();
 
  protected:
 // ------------------------| component initialization |-------------------------

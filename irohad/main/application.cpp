@@ -52,10 +52,18 @@ Irohad::Irohad(const std::string &block_store_dir,
 }
 
 Irohad::~Irohad() {
-  internal_server->Shutdown();
-  torii_server->shutdown();
-  internal_thread.join();
-  server_thread.join();
+  if (internal_server) {
+    internal_server->Shutdown();
+  }
+  if (torii_server) {
+    torii_server->shutdown();
+  }
+  if (internal_thread.joinable()) {
+    internal_thread.join();
+  }
+  if (server_thread.joinable()) {
+    server_thread.join();
+  }
 }
 
 void Irohad::init() {
