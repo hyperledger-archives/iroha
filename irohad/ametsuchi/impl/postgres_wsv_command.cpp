@@ -18,6 +18,7 @@
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 
 #include <iterator>
+#include <numeric>
 
 namespace iroha {
   namespace ametsuchi {
