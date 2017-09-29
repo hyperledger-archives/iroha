@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef IROHA_APPLICATION_HPP
 #define IROHA_APPLICATION_HPP
 
@@ -84,15 +85,15 @@ class Irohad {
 
   virtual void initProtoFactories();
 
+  virtual void initPeerQuery();
+
+  virtual void initPeer();
+
   virtual void initCryptoProvider();
 
   virtual void initValidators();
 
-  virtual void initPeerQuery();
-
   virtual void initPeerOrderer();
-
-  virtual void initPeerAddress();
 
   virtual void initOrderingGate();
 
@@ -141,8 +142,8 @@ class Irohad {
   // peer orderer
   std::shared_ptr<iroha::consensus::yac::YacPeerOrderer> orderer;
 
-  // peer address
-  iroha::model::Peer::AddressType peer_address;
+  // peer
+  iroha::model::Peer peer;
 
   // ordering gate
   std::shared_ptr<iroha::network::OrderingGate> ordering_gate;

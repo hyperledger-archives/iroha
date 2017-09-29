@@ -25,10 +25,12 @@ namespace iroha {
         std::shared_ptr<network::OrderingGate> ordering_gate,
         std::shared_ptr<validation::StatefulValidator> statefulValidator,
         std::shared_ptr<ametsuchi::TemporaryFactory> factory,
-        std::shared_ptr<ametsuchi::BlockQuery> blockQuery)
+        std::shared_ptr<ametsuchi::BlockQuery> blockQuery,
+        std::shared_ptr<model::ModelCryptoProvider> crypto_provider)
         : validator_(std::move(statefulValidator)),
           ametsuchi_factory_(std::move(factory)),
-          block_queries_(std::move(blockQuery)) {
+          block_queries_(std::move(blockQuery)),
+          crypto_provider_(std::move(crypto_provider)) {
       log_ = logger::log("Simulator");
       ordering_gate->on_proposal().subscribe(
           [this](auto proposal) { this->process_proposal(proposal); });
@@ -69,7 +71,7 @@ namespace iroha {
       new_block.created_ts = 0; // todo set timestamp from proposal
       new_block.merkle_root.fill(0); // todo make effective impl
       new_block.hash = hash(new_block);
-      new_block.sigs.push_back({});
+      new_block = crypto_provider_->sign(new_block);
 
       block_notifier_.get_subscriber().on_next(new_block);
     }

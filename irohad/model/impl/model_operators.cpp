@@ -41,17 +41,17 @@ namespace iroha {
       return not operator==(rhs);
     }
 
+    bool Proposal::operator!=(const Proposal &rhs) const {
+      return not operator==(rhs);
+    }
+
     bool Transaction::operator!=(const Transaction &rhs) const {
       return not operator==(rhs);
     }
 
     bool Signature::operator!=(const Signature &rhs) const {
-      return !operator==(rhs);
+      return not operator==(rhs);
     };
-
-    bool AddPeer::operator!=(const Command &command) const {
-      return !operator==(command);
-    }
 
     bool AppendRole::operator==(const Command &command) const {
       if (! instanceof <AppendRole>(command)) return false;
@@ -189,6 +189,11 @@ namespace iroha {
                         [](const auto &i, const auto &j) { return *i == *j; })
           && rhs.tx_counter == tx_counter && rhs.signatures == signatures
           && rhs.created_ts == created_ts;
+    }
+
+    /* Proposal */
+    bool Proposal::operator==(const Proposal &rhs) const {
+      return rhs.height == height and rhs.transactions == transactions;
     }
 
     /* Block */

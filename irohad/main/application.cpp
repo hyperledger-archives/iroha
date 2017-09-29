@@ -1,18 +1,19 @@
-/*
-Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-     http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * http://soramitsu.co.jp
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "main/application.hpp"
 
@@ -31,9 +32,20 @@ using namespace iroha::consensus::yac;
 
 class MockCryptoProvider : public ModelCryptoProvider {
  public:
+  MockCryptoProvider(const pubkey_t &pubkey) : pubkey_(pubkey) {}
+
   MOCK_CONST_METHOD1(verify, bool(const Transaction &));
   MOCK_CONST_METHOD1(verify, bool(std::shared_ptr<const Query>));
   MOCK_CONST_METHOD1(verify, bool(const Block &));
+
+  Block sign(const Block &block) const override {
+    auto signed_block = block;
+    signed_block.sigs.push_back(Signature{{}, pubkey_});
+    return signed_block;
+  }
+
+ private:
+  pubkey_t pubkey_;
 };
 
 Irohad::Irohad(const std::string &block_store_dir,
@@ -69,11 +81,11 @@ Irohad::~Irohad() {
 void Irohad::init() {
   initLoop();
   initProtoFactories();
+  initPeerQuery();
+  initPeer();
   initCryptoProvider();
   initValidators();
-  initPeerQuery();
   initPeerOrderer();
-  initPeerAddress();
   initOrderingGate();
   initSimulator();
   initBlockLoader();
@@ -110,8 +122,20 @@ void Irohad::initProtoFactories() {
   log_->info("[Init] => converters");
 }
 
+void Irohad::initPeerQuery() {
+  wsv = std::make_shared<ametsuchi::PeerQueryWsv>(storage->getWsvQuery());
+
+  log_->info("[Init] => peer query");
+}
+
+void Irohad::initPeer() {
+  peer = wsv->getLedgerPeers().value().at(peer_number_);
+
+  log_->info("[Init] => peer address is {}", peer.address);
+}
+
 void Irohad::initCryptoProvider() {
-  auto mock_crypto_verifier = std::make_shared<MockCryptoProvider>();
+  auto mock_crypto_verifier = std::make_shared<MockCryptoProvider>(peer.pubkey);
 
   EXPECT_CALL(*mock_crypto_verifier,
               verify(::testing::A<const Transaction &>()))
@@ -136,21 +160,9 @@ void Irohad::initValidators() {
   log_->info("[Init] => validators");
 }
 
-void Irohad::initPeerQuery() {
-  wsv = std::make_shared<ametsuchi::PeerQueryWsv>(storage->getWsvQuery());
-
-  log_->info("[Init] => peer query");
-}
-
 void Irohad::initPeerOrderer() {
   orderer = std::make_shared<PeerOrdererImpl>(wsv);
   log_->info("[Init] => peer orderer");
-}
-
-void Irohad::initPeerAddress() {
-  peer_address = wsv->getLedgerPeers().value().at(peer_number_).address;
-
-  log_->info("[Init] => peer address is {}", peer_address);
 }
 
 void Irohad::initOrderingGate() {
@@ -174,7 +186,8 @@ void Irohad::initSimulator() {
   simulator = std::make_shared<Simulator>(ordering_gate,
                                           stateful_validator,
                                           storage,
-                                          storage->getBlockQuery());
+                                          storage->getBlockQuery(),
+                                          crypto_verifier);
 
   log_->info("[Init] => init simulator");
 }
@@ -188,11 +201,8 @@ void Irohad::initBlockLoader() {
 }
 
 void Irohad::initConsensusGate() {
-  consensus_gate = yac_init.initConsensusGate(peer_address,
-                                                   loop,
-                                                   orderer,
-                                                   simulator,
-                                                   block_loader);
+  consensus_gate = yac_init.initConsensusGate(
+      peer.address, loop, orderer, simulator, block_loader);
 
   log_->info("[Init] => consensus gate");
 }
@@ -250,7 +260,8 @@ void Irohad::run() {
 
   grpc::ServerBuilder builder;
   int port = 0;
-  builder.AddListeningPort(peer_address, grpc::InsecureServerCredentials(), &port);
+  builder.AddListeningPort(
+      peer.address, grpc::InsecureServerCredentials(), &port);
   builder.RegisterService(ordering_init.ordering_gate_transport.get());
   builder.RegisterService(ordering_init.ordering_service.get());
   builder.RegisterService(yac_init.consensus_network.get());
@@ -265,4 +276,3 @@ void Irohad::run() {
   torii_server->waitForServersReady();
   loop->run();
 }
-

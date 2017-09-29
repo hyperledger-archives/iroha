@@ -150,9 +150,10 @@ namespace iroha {
 
       class MockYacHashProvider : public YacHashProvider {
        public:
-        MOCK_METHOD1(makeHash, YacHash(model::Block::HashType &));
+        MOCK_CONST_METHOD1(makeHash, YacHash(const model::Block &));
 
-        MOCK_METHOD1(toModelHash, model::Block::HashType(YacHash));
+        MOCK_CONST_METHOD1(toModelHash,
+                           model::Block::HashType(const YacHash &));
 
         MockYacHashProvider() = default;
 
