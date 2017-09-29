@@ -34,16 +34,13 @@ namespace iroha {
 
         auto block_signature = hash->mutable_block_signature();
         block_signature->set_signature(
-            vote.hash.block_signature.signature.data(),
-            vote.hash.block_signature.signature.size());
-        block_signature->set_pubkey(vote.hash.block_signature.pubkey.data(),
-                                    vote.hash.block_signature.pubkey.size());
+            vote.hash.block_signature.signature.to_string());
+        block_signature->set_pubkey(
+            vote.hash.block_signature.pubkey.to_string());
 
         auto signature = pb_vote.mutable_signature();
-        signature->set_signature(vote.signature.signature.data(),
-                                 vote.signature.signature.size());
-        signature->set_pubkey(vote.signature.pubkey.data(),
-                              vote.signature.pubkey.size());
+        signature->set_signature(vote.signature.signature.to_string());
+        signature->set_pubkey(vote.signature.pubkey.to_string());
 
         return pb_vote;
       }
@@ -117,7 +114,8 @@ namespace iroha {
         call->response_reader->Finish(&call->reply, &call->status, call);
 
         log_->info("Send votes bundle[size={}] commit to {}",
-                   commit.votes.size(), to.address);
+                   commit.votes.size(),
+                   to.address);
       }
 
       void NetworkImpl::send_reject(model::Peer to, RejectMessage reject) {
@@ -137,7 +135,8 @@ namespace iroha {
         call->response_reader->Finish(&call->reply, &call->status, call);
 
         log_->info("Send votes bundle[size={}] reject to {}",
-                   reject.votes.size(), to.address);
+                   reject.votes.size(),
+                   to.address);
       }
 
       grpc::Status NetworkImpl::SendVote(
@@ -146,6 +145,7 @@ namespace iroha {
           ::google::protobuf::Empty *response) {
         auto it = context->client_metadata().find("address");
         if (it == context->client_metadata().end()) {
+          log_->error("Missing source address");
           // TODO handle missing source address
         }
         auto address = std::string(it->second.data(), it->second.size());
@@ -153,8 +153,8 @@ namespace iroha {
 
         auto vote = *deserializeVote(*request);
 
-        log_->info("Receive vote {} from {}", vote.hash.block_hash,
-                   peer.address);
+        log_->info(
+            "Receive vote {} from {}", vote.hash.block_hash, peer.address);
 
         handler_.lock()->on_vote(peer, vote);
         return grpc::Status::OK;
@@ -166,6 +166,7 @@ namespace iroha {
           ::google::protobuf::Empty *response) {
         auto it = context->client_metadata().find("address");
         if (it == context->client_metadata().end()) {
+          log_->error("Missing source address");
           // TODO handle missing source address
         }
         auto address = std::string(it->second.data(), it->second.size());
@@ -177,7 +178,8 @@ namespace iroha {
           commit.votes.push_back(vote);
         }
 
-        log_->info("Receive commit[size={}] from {}", commit.votes.size(),
+        log_->info("Receive commit[size={}] from {}",
+                   commit.votes.size(),
                    peer.address);
 
         handler_.lock()->on_commit(peer, commit);
@@ -190,6 +192,7 @@ namespace iroha {
           ::google::protobuf::Empty *response) {
         auto it = context->client_metadata().find("address");
         if (it == context->client_metadata().end()) {
+          log_->error("Missing source address");
           // TODO handle missing source address
         }
         auto address = std::string(it->second.data(), it->second.size());
@@ -201,7 +204,8 @@ namespace iroha {
           reject.votes.push_back(vote);
         }
 
-        log_->info("Receive reject[size={}] from {}", reject.votes.size(),
+        log_->info("Receive reject[size={}] from {}",
+                   reject.votes.size(),
                    peer.address);
 
         handler_.lock()->on_reject(peer, reject);

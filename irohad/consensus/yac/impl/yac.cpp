@@ -136,6 +136,7 @@ namespace iroha {
           }
 
           if (answer->reject.has_value()) {
+            log_->warn("reject case");
             // todo work on reject case
           }
           vote_storage_.markAsProcessedState(proposal_hash);
