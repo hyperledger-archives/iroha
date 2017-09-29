@@ -43,7 +43,7 @@ namespace iroha {
       }
 
       void YacGateImpl::vote(model::Block block) {
-        auto hash = hash_provider_->makeHash(block.hash);
+        auto hash = hash_provider_->makeHash(block);
         log_->info("vote for block ({}, {})",
                    hash.proposal_hash,
                    hash.block_hash);
@@ -118,7 +118,7 @@ namespace iroha {
       void YacGateImpl::copySignatures(const CommitMessage &commit) {
         current_block_.second.sigs.clear();
         for (const auto &vote : commit.votes) {
-          current_block_.second.sigs.push_back(vote.signature);
+          current_block_.second.sigs.push_back(vote.hash.block_signature);
         }
       }
     }  // namespace yac

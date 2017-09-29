@@ -16,12 +16,56 @@
  */
 
 #include "consensus/yac/impl/network_impl.hpp"
+
 #include <grpc++/grpc++.h>
+
+#include "common/byteutils.hpp"
 #include "logger/logger.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
+      proto::Vote serializeVote(const VoteMessage &vote) {
+        proto::Vote pb_vote;
+
+        auto hash = pb_vote.mutable_hash();
+        hash->set_block(vote.hash.block_hash);
+        hash->set_proposal(vote.hash.proposal_hash);
+
+        auto block_signature = hash->mutable_block_signature();
+        block_signature->set_signature(
+            vote.hash.block_signature.signature.data(),
+            vote.hash.block_signature.signature.size());
+        block_signature->set_pubkey(vote.hash.block_signature.pubkey.data(),
+                                    vote.hash.block_signature.pubkey.size());
+
+        auto signature = pb_vote.mutable_signature();
+        signature->set_signature(vote.signature.signature.data(),
+                                 vote.signature.signature.size());
+        signature->set_pubkey(vote.signature.pubkey.data(),
+                              vote.signature.pubkey.size());
+
+        return pb_vote;
+      }
+
+      nonstd::optional<VoteMessage> deserializeVote(
+          const proto::Vote &pb_vote) {
+        VoteMessage vote;
+        vote.hash.proposal_hash = pb_vote.hash().proposal();
+        vote.hash.block_hash = pb_vote.hash().block();
+        vote.hash.block_signature.signature =
+            *stringToBlob<iroha::sig_t::size()>(
+                pb_vote.hash().block_signature().signature());
+        vote.hash.block_signature.pubkey =
+            *stringToBlob<iroha::pubkey_t::size()>(
+                pb_vote.hash().block_signature().pubkey());
+        vote.signature.signature = *stringToBlob<iroha::sig_t::size()>(
+            pb_vote.signature().signature());
+        vote.signature.pubkey = *stringToBlob<iroha::pubkey_t::size()>(
+            pb_vote.signature().pubkey());
+
+        return vote;
+      }
 
       // ----------| Public API |----------
 
@@ -42,15 +86,7 @@ namespace iroha {
       }
 
       void NetworkImpl::send_vote(model::Peer to, VoteMessage vote) {
-        proto::Vote request;
-        auto hash = request.mutable_hash();
-        hash->set_block(vote.hash.block_hash);
-        hash->set_proposal(vote.hash.proposal_hash);
-        auto signature = request.mutable_signature();
-        signature->set_signature(vote.signature.signature.data(),
-                                 vote.signature.signature.size());
-        signature->set_pubkey(vote.signature.pubkey.data(),
-                              vote.signature.pubkey.size());
+        auto request = serializeVote(vote);
 
         auto call = new AsyncClientCall;
 
@@ -68,14 +104,7 @@ namespace iroha {
         proto::Commit request;
         for (const auto &vote : commit.votes) {
           auto pb_vote = request.add_votes();
-          auto hash = pb_vote->mutable_hash();
-          hash->set_block(vote.hash.block_hash);
-          hash->set_proposal(vote.hash.proposal_hash);
-          auto signature = pb_vote->mutable_signature();
-          signature->set_signature(vote.signature.signature.data(),
-                                   vote.signature.signature.size());
-          signature->set_pubkey(vote.signature.pubkey.data(),
-                                vote.signature.pubkey.size());
+          *pb_vote = serializeVote(vote);
         }
 
         auto call = new AsyncClientCall;
@@ -88,22 +117,14 @@ namespace iroha {
         call->response_reader->Finish(&call->reply, &call->status, call);
 
         log_->info("Send votes bundle[size={}] commit to {}",
-                   commit.votes.size(),
-                   to.address);
+                   commit.votes.size(), to.address);
       }
 
       void NetworkImpl::send_reject(model::Peer to, RejectMessage reject) {
         proto::Reject request;
         for (const auto &vote : reject.votes) {
           auto pb_vote = request.add_votes();
-          auto hash = pb_vote->mutable_hash();
-          hash->set_block(vote.hash.block_hash);
-          hash->set_proposal(vote.hash.proposal_hash);
-          auto signature = pb_vote->mutable_signature();
-          signature->set_signature(vote.signature.signature.data(),
-                                   vote.signature.signature.size());
-          signature->set_pubkey(vote.signature.pubkey.data(),
-                                vote.signature.pubkey.size());
+          *pb_vote = serializeVote(vote);
         }
 
         auto call = new AsyncClientCall;
@@ -116,8 +137,7 @@ namespace iroha {
         call->response_reader->Finish(&call->reply, &call->status, call);
 
         log_->info("Send votes bundle[size={}] reject to {}",
-                   reject.votes.size(),
-                   to.address);
+                   reject.votes.size(), to.address);
       }
 
       grpc::Status NetworkImpl::SendVote(
@@ -131,18 +151,9 @@ namespace iroha {
         auto address = std::string(it->second.data(), it->second.size());
         auto peer = peers_addresses_.at(address);
 
-        VoteMessage vote;
-        vote.hash.proposal_hash = request->hash().proposal();
-        vote.hash.block_hash = request->hash().block();
-        std::copy(request->signature().signature().begin(),
-                  request->signature().signature().end(),
-                  vote.signature.signature.begin());
-        std::copy(request->signature().pubkey().begin(),
-                  request->signature().pubkey().end(),
-                  vote.signature.pubkey.begin());
+        auto vote = *deserializeVote(*request);
 
-        log_->info("Receive vote {} from {}",
-                   vote.hash.block_hash,
+        log_->info("Receive vote {} from {}", vote.hash.block_hash,
                    peer.address);
 
         handler_.lock()->on_vote(peer, vote);
@@ -162,20 +173,11 @@ namespace iroha {
 
         CommitMessage commit;
         for (const auto &pb_vote : request->votes()) {
-          VoteMessage vote;
-          vote.hash.proposal_hash = pb_vote.hash().proposal();
-          vote.hash.block_hash = pb_vote.hash().block();
-          std::copy(pb_vote.signature().signature().begin(),
-                    pb_vote.signature().signature().end(),
-                    vote.signature.signature.begin());
-          std::copy(pb_vote.signature().pubkey().begin(),
-                    pb_vote.signature().pubkey().end(),
-                    vote.signature.pubkey.begin());
+          auto vote = *deserializeVote(pb_vote);
           commit.votes.push_back(vote);
         }
 
-        log_->info("Receive commit[size={}] from {}",
-                   commit.votes.size(),
+        log_->info("Receive commit[size={}] from {}", commit.votes.size(),
                    peer.address);
 
         handler_.lock()->on_commit(peer, commit);
@@ -195,20 +197,11 @@ namespace iroha {
 
         RejectMessage reject;
         for (const auto &pb_vote : request->votes()) {
-          VoteMessage vote;
-          vote.hash.proposal_hash = pb_vote.hash().proposal();
-          vote.hash.block_hash = pb_vote.hash().block();
-          std::copy(pb_vote.signature().signature().begin(),
-                    pb_vote.signature().signature().end(),
-                    vote.signature.signature.begin());
-          std::copy(pb_vote.signature().pubkey().begin(),
-                    pb_vote.signature().pubkey().end(),
-                    vote.signature.pubkey.begin());
+          auto vote = *deserializeVote(pb_vote);
           reject.votes.push_back(vote);
         }
 
-        log_->info("Receive reject[size={}] from {}",
-                   reject.votes.size(),
+        log_->info("Receive reject[size={}] from {}", reject.votes.size(),
                    peer.address);
 
         handler_.lock()->on_reject(peer, reject);

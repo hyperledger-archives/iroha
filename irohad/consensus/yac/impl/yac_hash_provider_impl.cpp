@@ -22,18 +22,20 @@ namespace iroha {
   namespace consensus {
     namespace yac {
 
-      YacHash YacHashProviderImpl::makeHash(model::Block::HashType &hash) {
+      YacHash YacHashProviderImpl::makeHash(const model::Block &block) const {
         YacHash result;
         // todo add proposal hash from block.proposal_hash
-        auto hex_hash = hash.to_hexstring();
+        auto hex_hash = block.hash.to_hexstring();
         result.proposal_hash = hex_hash;
         result.block_hash = hex_hash;
+        result.block_signature = block.sigs.front();
         return result;
       }
 
-      model::Block::HashType YacHashProviderImpl::toModelHash(YacHash hash) {
-        return hexstringToArray<model::Block::HashType::size()>(
-            hash.block_hash).value();
+      model::Block::HashType YacHashProviderImpl::toModelHash(
+          const YacHash &hash) const {
+        return hexstringToArray<model::Block::HashType::size()>(hash.block_hash)
+            .value();
       }
     }  // namespace yac
   }    // namespace consensus
