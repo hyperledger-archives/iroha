@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include <ametsuchi/impl/postgres_wsv_query.hpp>
+#include "ametsuchi/impl/postgres_wsv_query.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -30,48 +30,88 @@ namespace iroha {
     using model::Peer;
 
     PostgresWsvQuery::PostgresWsvQuery(pqxx::nontransaction &transaction)
-        : transaction_(transaction) {}
+        : transaction_(transaction), log_(logger::log("PostgresWsvQuery")) {}
 
     bool PostgresWsvQuery::hasAccountGrantablePermission(
         const std::string &permitee_account_id, const std::string &account_id,
         const std::string &permission_id) {
-      // TODO: implement
-      return false;
+      pqxx::result result;
+      try {
+        result = transaction_.exec(
+            "SELECT * FROM account_has_grantable_permissions WHERE "
+            "permittee_account_id = " +
+            transaction_.quote(permitee_account_id) + " AND account_id = " +
+            transaction_.quote(account_id) + " AND permission_id = " +
+            transaction_.quote(permission_id) + ";");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return false;
+      }
+      return result.size() == 1;
     };
 
     nonstd::optional<std::vector<std::string>>
     PostgresWsvQuery::getAccountRoles(const std::string &account_id) {
-      // TODO: implement
-      return nonstd::nullopt;
+      pqxx::result result;
+      try {
+        result = transaction_.exec(
+            "SELECT role_id FROM account_has_roles WHERE account_id = " +
+            transaction_.quote(account_id) + ";");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return nullopt;
+      }
+      std::vector<std::string> roles;
+      for (const auto &row : result) {
+        roles.emplace_back(row.at("role_id").c_str());
+      }
+      return roles;
     };
 
     nonstd::optional<std::vector<std::string>>
     PostgresWsvQuery::getRolePermissions(const std::string &role_name) {
-      // TODO: implement
-      return nonstd::nullopt;
+      pqxx::result result;
+      try {
+        result = transaction_.exec(
+            "SELECT permission_id FROM role_has_permissions WHERE role_id = " +
+            transaction_.quote(role_name) + ";");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return nullopt;
+      }
+      std::vector<std::string> permissions;
+      for (const auto &row : result) {
+        permissions.emplace_back(row.at("permission_id").c_str());
+      }
+      return permissions;
     };
 
     nonstd::optional<std::vector<std::string>> PostgresWsvQuery::getRoles() {
-      // TODO: implement
-      return nonstd::nullopt;
+      pqxx::result result;
+      try {
+        result = transaction_.exec("SELECT role_id FROM role;");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return nullopt;
+      }
+      std::vector<std::string> roles;
+      for (const auto &row : result) {
+        roles.emplace_back(row.at("role_id").c_str());
+      }
+      return roles;
     };
 
     optional<Account> PostgresWsvQuery::getAccount(const string &account_id) {
       pqxx::result result;
       try {
-        result = transaction_.exec(
-            "SELECT \n"
-            "  *\n"
-            "FROM \n"
-            "  account\n"
-            "WHERE \n"
-            "  account.account_id = " +
-            transaction_.quote(account_id) + ";");
+        result = transaction_.exec("SELECT * FROM account WHERE account_id = "
+                                   + transaction_.quote(account_id) + ";");
       } catch (const std::exception &e) {
-        // TODO log
+        log_->error(e.what());
         return nullopt;
       }
-      if (result.size() != 1) {
+      if (result.empty()) {
+        log_->info("Account {} not found", account_id);
         return nullopt;
       }
       Account account;
@@ -79,7 +119,6 @@ namespace iroha {
       row.at("account_id") >> account.account_id;
       row.at("domain_id") >> account.domain_name;
       row.at("quorum") >> account.quorum;
-      //      row.at("status") >> ?
       //      row.at("transaction_count") >> ?
       std::string permissions;
       row.at("permissions") >> permissions;
@@ -101,15 +140,10 @@ namespace iroha {
       pqxx::result result;
       try {
         result = transaction_.exec(
-            "SELECT \n"
-            "  account_has_signatory.public_key\n"
-            "FROM \n"
-            "  account_has_signatory\n"
-            "WHERE \n"
-            "  account_has_signatory.account_id = " +
-            transaction_.quote(account_id) + ";");
+            "SELECT public_key FROM account_has_signatory WHERE account_id = "
+            + transaction_.quote(account_id) + ";");
       } catch (const std::exception &e) {
-        // TODO log
+        log_->error(e.what());
         return nullopt;
       }
       std::vector<pubkey_t> signatories;
@@ -125,19 +159,14 @@ namespace iroha {
     optional<Asset> PostgresWsvQuery::getAsset(const string &asset_id) {
       pqxx::result result;
       try {
-        result = transaction_.exec(
-            "SELECT \n"
-            "  * \n"
-            "FROM \n"
-            "  asset\n"
-            "WHERE \n"
-            "  asset.asset_id = " +
-            transaction_.quote(asset_id) + ";");
+        result = transaction_.exec("SELECT * FROM asset WHERE asset_id = "
+                                   + transaction_.quote(asset_id) + ";");
       } catch (const std::exception &e) {
-        // TODO log
+        log_->error(e.what());
         return nullopt;
       }
-      if (result.size() != 1) {
+      if (result.empty()) {
+        log_->info("Asset {} not found", asset_id);
         return nullopt;
       }
       Asset asset;
@@ -156,20 +185,15 @@ namespace iroha {
       pqxx::result result;
       try {
         result = transaction_.exec(
-            "SELECT \n"
-            "  * \n"
-            "FROM \n"
-            "  account_has_asset\n"
-            "WHERE \n"
-            "  account_has_asset.account_id = " +
-            transaction_.quote(account_id) +
-            " AND \n"
-            "  account_has_asset.asset_id = " +
-            transaction_.quote(asset_id) + ";");
+            "SELECT * FROM account_has_asset WHERE account_id = "
+            + transaction_.quote(account_id) + " AND asset_id = "
+            + transaction_.quote(asset_id) + ";");
       } catch (const std::exception &e) {
+        log_->error(e.what());
         return nullopt;
       }
-      if (result.size() != 1) {
+      if (result.empty()) {
+        log_->info("Account {} does not have asset {}", account_id, asset_id);
         return nullopt;
       }
       model::AccountAsset asset;
@@ -179,19 +203,15 @@ namespace iroha {
       std::string amount_str;
       row.at("amount") >> amount_str;
       asset.balance = Amount::createFromString(amount_str).value();
-      //      row.at("permissions") >> ?
       return asset;
     }
 
     nonstd::optional<std::vector<model::Peer>> PostgresWsvQuery::getPeers() {
       pqxx::result result;
       try {
-        result = transaction_.exec(
-            "SELECT \n"
-            "  * \n"
-            "FROM \n"
-            "  peer;");
+        result = transaction_.exec("SELECT * FROM peer;");
       } catch (const std::exception &e) {
+        log_->error(e.what());
         return nullopt;
       }
       std::vector<Peer> peers;

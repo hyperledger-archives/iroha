@@ -18,8 +18,11 @@
 #ifndef IROHA_POSTGRES_WSV_QUERY_HPP
 #define IROHA_POSTGRES_WSV_QUERY_HPP
 
-#include <pqxx/nontransaction>
 #include "ametsuchi/wsv_query.hpp"
+
+#include <pqxx/nontransaction>
+
+#include "logger/logger.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -48,6 +51,8 @@ namespace iroha {
 
      private:
       pqxx::nontransaction &transaction_;
+
+      logger::Logger log_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha
