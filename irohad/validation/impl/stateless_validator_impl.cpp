@@ -19,6 +19,8 @@
 #include <chrono>
 #include <utility>
 
+using namespace std::chrono_literals;
+
 namespace iroha {
   namespace validation {
     StatelessValidatorImpl::StatelessValidatorImpl(
@@ -36,22 +38,24 @@ namespace iroha {
       }
 
       // time between creation and validation of tx
-      uint64_t now = static_cast<uint64_t>(
-          std::chrono::duration_cast<std::chrono::milliseconds>(
-              std::chrono::system_clock::now().time_since_epoch())
-              .count());
-
-      if (now - transaction.created_ts > MAX_DELAY) {
-        log_->warn("timestamp broken: too old");
-        return false;
-      }
+      ts64_t now = std::chrono::system_clock::now().time_since_epoch() / 1ms;
 
       // tx is not sent from future
       // todo make future gap for passing timestamp, like with old timestamps
       if (now < transaction.created_ts) {
-        log_->warn("timestamp broken: send from future");
+        log_->warn("timestamp broken: send from future ({}, now {})",
+                   transaction.created_ts,
+                   now);
         return false;
       }
+
+      if (now - transaction.created_ts > MAX_DELAY) {
+        log_->warn("timestamp broken: too old ({}, now {})",
+                   transaction.created_ts,
+                   now);
+        return false;
+      }
+
       log_->info("transaction validated");
       return true;
     }
@@ -65,10 +69,7 @@ namespace iroha {
       }
 
       // time between creation and validation of the query
-      uint64_t now = static_cast<uint64_t>(
-          std::chrono::duration_cast<std::chrono::milliseconds>(
-              std::chrono::system_clock::now().time_since_epoch())
-              .count());
+      ts64_t now = std::chrono::system_clock::now().time_since_epoch() / 1ms;
 
       // query is not sent from future
       // todo make future gap for passing timestamp, like with old timestamps
