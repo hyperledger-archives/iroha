@@ -43,6 +43,9 @@ namespace iroha {
        * Note: This height must be consistent with your last block height
        */
       uint64_t height;
+
+      bool operator==(const Proposal& rhs) const;
+      bool operator!=(const Proposal& rhs) const;
     };
   }  // namespace model
 }  // namespace iroha
