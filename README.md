@@ -20,13 +20,6 @@ Iroha has the following features:
 
 Among the non-functional requirements can be noted a high degree of network fault tolerance _(Byzantine Fault Tolerant)_.
 
-## Current Status
-
-Iroha v0.95 preview version is released on 6 of August.
-Please, get familiar with [preview notes](https://github.com/hyperledger/iroha/releases).
-
-Next milestone is [Alpha](https://github.com/hyperledger/iroha/wiki/Iroha-release-lifecycle) version, coming at [September 2017] (https://github.com/hyperledger/iroha/wiki/Iroha-release-plan).
-
 ## Iroha repository 101
 
 Iroha runs as a daemon _(irohad)_, representing a single peer in the Iroha network. For each peer, there is the following package structure, corresponding to components in the system:
@@ -45,33 +38,15 @@ For other components and more explanations, please take a look at the *technical
 
 ## Quickstart
 
-### Docker
+Please, follow [build process](https://hyperledger.github.io/iroha-api/#build).
+After building Iroha daemon, try to use [CLI](https://hyperledger.github.io/iroha-api/#command-line-interface) or launch Iroha [peer network](https://soramitsu.atlassian.net/wiki/spaces/IS/pages/12517377/Create+swarm+network+of+Iroha+nodes). 
 
-You may use the docker ennvironment to build and run the system, by executing the following:
-
-```
-git clone https://github.com/hyperledger/iroha.git
-sh iroha/docker/run-ametsuchi-dev.sh
-```
-
-After that, the container will run in interactive mode. So, you can run any IDE or editor on your local environment, while building the system in docker environment
-
-### Build
-
-To build the system, execute the the following:
-
-```
-cmake -H. -Bbuild; cmake --build build -- -j4;
-```
-
-Consider executing ``` git clean -ix``` and choosing the `c` option when you want to rebuild the system (to clean up generated protobuf code).
-Also, use the `--clean-first` flag for rebuild.
 
 ## Find out more
 
 | Technical docs | Guides | Contributing |
 |---|---|---|
-|[![Technical docs](docs/icons/docs.png)](https://hyperledger.github.io/iroha-api)| [![How-to](docs/icons/how-to.png)](http://google.com/) |[![Contributing](docs/icons/contributing.png)](https://github.com/hyperledger/iroha/wiki/How-to-contribute)|
+|[![Technical docs](docs/icons/docs.png)](https://hyperledger.github.io/iroha-api)| [![How-to](docs/icons/how-to.png)](https://github.com/hyperledger/iroha/wiki) |[![Contributing](docs/icons/contributing.png)](https://github.com/hyperledger/iroha/wiki/How-to-contribute)|
 
 ## Need help?
 
