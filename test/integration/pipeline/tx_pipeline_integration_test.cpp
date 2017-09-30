@@ -91,6 +91,8 @@ class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
 };
 
 TEST_F(TxPipelineIntegrationTest, TxPipelineTest) {
+  ASSERT_TRUE(irohad->storage);
+
   using namespace std::chrono_literals;
 
   // insert genesis block

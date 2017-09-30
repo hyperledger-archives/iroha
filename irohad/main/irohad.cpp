@@ -56,6 +56,11 @@ int main(int argc, char *argv[]) {
                 config[mbr::PgOpt].GetString(),
                 config[mbr::ToriiPort].GetUint(), FLAGS_peer_number);
 
+  if (not irohad.storage) {
+    log->error("Failed to initialize storage");
+    return EXIT_FAILURE;
+  }
+
   iroha::main::BlockInserter inserter(irohad.storage);
   auto file = inserter.loadFile(FLAGS_genesis_block);
   auto block = inserter.parseBlock(file.value());
