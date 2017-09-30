@@ -120,6 +120,12 @@ int main(int argc, char* argv[]) {
 
   } else if (FLAGS_genesis_block) {
     BlockGenerator generator;
+
+    if (FLAGS_peers_address.empty()){
+      logger->error("--peers_address is empty");
+      return -1;
+    }
+
     std::ifstream file(FLAGS_peers_address);
     std::vector<std::string> peers_address;
     std::copy(std::istream_iterator<std::string>(file),
