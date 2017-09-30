@@ -74,25 +74,24 @@
 #
 #------------------------------------------------------------------------
 
-IROHA_NODE=iroha_node_1
-IROHA_HOME=/opt/iroha/build/bin
-IROHA_CLI=/opt/iroha/build/bin/iroha-cli
-IROHA_SEND="--grpc --json_transaction"
-IROHA_RECV="--grpc --json_query"
+#IROHA_NODE=iroha_node_1
+#IROHA_HOME=/opt/iroha/build/bin
+#IROHA_CLI=/opt/iroha/build/bin/iroha-cli
+#IROHA_SEND="--grpc --json_transaction"
+#IROHA_RECV="--grpc --json_query"
 
 tx_counter=0
-rx_counter=0
 
-CURDIR=$(basename $(pwd))
+#CURDIR=$(basename $(pwd))
 
 function send() {
   echo "=== $1 ==="
-  read junk
+  read
 
   created_ts=$(./current_millis)
   ((tx_counter+=1))
 
-  cat $(basename $2) | \
+  < $(basename $2) \
     sed -e "s/\"created_ts\".*/\"created_ts\": $created_ts,/" \
         -e "s/\"tx_counter\".*/\"tx_counter\": $tx_counter,/" >tx.json
 
@@ -102,12 +101,12 @@ function send() {
 
 function recv() {
   echo "=== $1 ==="
-  read junk
+  read
 
   created_ts=$(./current_millis)
   ((tx_counter+=1))
 
-  cat $(basename $2) | \
+  < $(basename $2)  \
     sed -e "s/\"created_ts\".*/\"created_ts\": $created_ts,/" \
         -e "s/\"tx_counter\".*/\"tx_counter\": $tx_counter,/" >rx.json
 
