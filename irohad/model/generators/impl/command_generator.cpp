@@ -73,6 +73,8 @@ namespace iroha {
         permissions.set_permissions = true;
         permissions.issue_assets = true;
         permissions.can_transfer = true;
+        permissions.create_domains = true;
+        permissions.create_accounts = true;
         return generateCommand<SetAccountPermissions>(account_id, permissions);
       }
 

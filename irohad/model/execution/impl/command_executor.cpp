@@ -311,6 +311,10 @@ bool CreateAccountExecutor::execute(const Command &command,
   account.domain_name = create_account.domain_id;
   account.quorum = 1;
   Account::Permissions permissions = iroha::model::Account::Permissions();
+
+  // TODO: change to the role user, when roles are implemented
+  permissions.can_transfer = true;
+
   account.permissions = permissions;
 
   return commands.insertSignatory(create_account.pubkey) and

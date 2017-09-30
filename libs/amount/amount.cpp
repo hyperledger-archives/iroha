@@ -17,6 +17,7 @@
 
 #include <utility>
 
+#include <logger/logger.hpp>
 #include <regex>
 #include "amount/amount.hpp"
 
@@ -98,7 +99,8 @@ namespace iroha {
     } else {
       precision = str_amount.size() - dot_place - 1;
       // erase dot from the string
-      str_amount.erase(dot_place, dot_place);
+      str_amount.erase(std::remove(str_amount.begin(), str_amount.end(), '.'),
+                       str_amount.end());
     }
 
     auto begin = str_amount.find_first_not_of('0');
