@@ -21,27 +21,18 @@
 namespace iroha {
   namespace consensus {
     namespace yac {
-
-      TimerImpl::TimerImpl(std::shared_ptr<uvw::Loop> loop)
-          : timer_(loop->resource<uvw::TimerHandle>()) {
-        timer_->on<uvw::TimerEvent>([this](const auto&, auto&) { handler_(); });
-      }
-
       void TimerImpl::invokeAfterDelay(uint64_t millis,
                                        std::function<void()> handler) {
         deny();
         handler_ = std::move(handler);
-        timer_->start(uvw::TimerHandle::Time(millis),
-                      uvw::TimerHandle::Time(0));
+        timer = rxcpp::observable<>::timer(std::chrono::milliseconds(millis));
+        handle = timer.subscribe_on(rxcpp::observe_on_new_thread())
+                     .subscribe([this](auto) { handler_(); });
       }
 
-      void TimerImpl::deny() { timer_->stop(); }
+      void TimerImpl::deny() { handle.unsubscribe(); }
 
-      TimerImpl::~TimerImpl() {
-        timer_->stop();
-        timer_->close();
-      }
-
+      TimerImpl::~TimerImpl() { deny(); }
     }  // namespace yac
   }    // namespace consensus
 }  // namespace iroha

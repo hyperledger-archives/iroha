@@ -18,19 +18,15 @@
 #ifndef IROHA_TIMER_IMPL_HPP
 #define IROHA_TIMER_IMPL_HPP
 
-#include <uvw/loop.hpp>
-#include <uvw/timer.hpp>
 #include "consensus/yac/timer.hpp"
+#include <rxcpp/rx.hpp>
 
 namespace iroha {
   namespace consensus {
     namespace yac {
-
       class TimerImpl : public Timer {
        public:
-        explicit TimerImpl(
-            std::shared_ptr<uvw::Loop> loop = uvw::Loop::getDefault());
-
+        TimerImpl() = default;
         TimerImpl(const TimerImpl&) = delete;
         TimerImpl& operator=(const TimerImpl&) = delete;
 
@@ -41,10 +37,11 @@ namespace iroha {
         ~TimerImpl() override;
 
        private:
-        std::shared_ptr<uvw::TimerHandle> timer_;
         std::function<void()> handler_;
-      };
 
+        rxcpp::observable<long> timer;
+        rxcpp::composite_subscription handle;
+      };
     }  // namespace yac
   }    // namespace consensus
 }  // namespace iroha

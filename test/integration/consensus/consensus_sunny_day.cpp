@@ -53,9 +53,8 @@ class FixedCryptoProvider : public MockYacCryptoProvider {
 
 class ConsensusSunnyDayTest : public ::testing::Test {
  public:
-  std::thread thread, loop_thread;
+  std::thread thread;
   std::unique_ptr<grpc::Server> server;
-  std::shared_ptr<uvw::Loop> loop;
   std::shared_ptr<NetworkImpl> network;
   std::shared_ptr<MockYacCryptoProvider> crypto;
   std::shared_ptr<TimerImpl> timer;
@@ -89,17 +88,9 @@ class ConsensusSunnyDayTest : public ::testing::Test {
     // wait until server woke up
     std::unique_lock<std::mutex> lock(mtx);
     cv.wait(lock);
-
-    loop = uvw::Loop::create();
-    loop_thread = std::thread([this] { loop->run(); });
   }
 
   void TearDown() override {
-    loop->stop();
-    if (loop_thread.joinable()) {
-      loop_thread.join();
-    }
-
     server->Shutdown();
     if (thread.joinable()) {
       thread.join();

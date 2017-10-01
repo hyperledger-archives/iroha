@@ -202,7 +202,7 @@ void Irohad::initBlockLoader() {
 
 void Irohad::initConsensusGate() {
   consensus_gate = yac_init.initConsensusGate(
-      peer.address, loop, orderer, simulator, block_loader);
+      peer.address, orderer, simulator, block_loader);
 
   log_->info("[Init] => consensus gate");
 }
