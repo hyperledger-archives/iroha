@@ -24,6 +24,7 @@
 #include "crypto/crypto.hpp"
 #include "crypto/hash.hpp"
 #include "module/irohad/model/model_mocks.hpp"
+#include "datetime/time.hpp"
 
 using namespace std::chrono_literals;
 using ::testing::A;
@@ -35,7 +36,7 @@ iroha::model::Transaction create_transaction() {
 
   tx.tx_counter = 0;
 
-  auto ts = std::chrono::system_clock::now().time_since_epoch() / 1ms;
+  auto ts = iroha::time::now();
   tx.created_ts = ts;
   return tx;
 }
@@ -83,7 +84,7 @@ TEST(stateless_validation,
   EXPECT_CALL(*crypto_provider, verify(A<const iroha::model::Transaction &>()))
       .WillRepeatedly(Return(true));
 
-  auto ts = (std::chrono::system_clock::now().time_since_epoch() - 25h) / 1ms;
+  auto ts = iroha::time::now(-25h);
   tx.created_ts = ts;  // tx created 25 hours ago
 
   ASSERT_FALSE(transaction_validator.validate(tx));
@@ -102,7 +103,7 @@ TEST(stateless_validation,
   EXPECT_CALL(*crypto_provider, verify(A<const iroha::model::Transaction &>()))
       .WillRepeatedly(Return(true));
 
-  auto ts = (std::chrono::system_clock::now().time_since_epoch() + 1h) / 1ms;
+  auto ts = iroha::time::now(1h);
   tx.created_ts = ts;  // tx created 1 hour later
 
   ASSERT_FALSE(transaction_validator.validate(tx));

@@ -18,10 +18,10 @@
 #ifndef IROHA_STATELESS_VALIDATOR_IMPL_HPP
 #define IROHA_STATELESS_VALIDATOR_IMPL_HPP
 
-#include "model/model_crypto_provider.hpp"
 #include "validation/stateless_validator.hpp"
 
 #include "logger/logger.hpp"
+#include "model/model_crypto_provider.hpp"
 
 namespace iroha {
   namespace validation {
@@ -34,8 +34,10 @@ namespace iroha {
       bool validate(std::shared_ptr<const model::Query> query) const override;
 
      private:
-      static constexpr uint64_t MAX_DELAY =
-          1000 * 3600 * 24;  // max-delay between tx creation and validation
+      static constexpr auto MAX_DELAY =
+          std::chrono::hours(24)
+          / std::chrono::milliseconds(
+                1);  // max-delay between tx creation and validation
       std::shared_ptr<model::ModelCryptoProvider> crypto_provider_;
 
       logger::Logger log_;

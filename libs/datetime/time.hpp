@@ -24,15 +24,23 @@ namespace iroha {
 
   namespace time {
 
-    using namespace std::chrono;
-    using namespace std::chrono_literals;
-
     /**
      * Returns current UNIX timestamp.
      * Represents number of milliseconds since epoch.
      */
     inline auto now() {
-      return system_clock::now().time_since_epoch() / 1ms;
+      return std::chrono::system_clock::now().time_since_epoch()
+          / std::chrono::milliseconds(1);
+    }
+
+    /**
+     * Return UNIX timestamp with given offset.
+     * Represents number of milliseconds since epoch.
+     */
+    template <typename T>
+    inline auto now(const T &offset) {
+      return (std::chrono::system_clock::now().time_since_epoch() + offset)
+          / std::chrono::milliseconds(1);
     }
   }
 }

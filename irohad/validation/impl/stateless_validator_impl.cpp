@@ -16,8 +16,11 @@
  */
 
 #include "validation/impl/stateless_validator_impl.hpp"
+
 #include <chrono>
 #include <utility>
+
+#include "datetime/time.hpp"
 
 using namespace std::chrono_literals;
 
@@ -38,7 +41,7 @@ namespace iroha {
       }
 
       // time between creation and validation of tx
-      ts64_t now = std::chrono::system_clock::now().time_since_epoch() / 1ms;
+      ts64_t now = time::now();
 
       // tx is not sent from future
       // todo make future gap for passing timestamp, like with old timestamps
@@ -69,7 +72,7 @@ namespace iroha {
       }
 
       // time between creation and validation of the query
-      ts64_t now = std::chrono::system_clock::now().time_since_epoch() / 1ms;
+      ts64_t now = time::now();
 
       // query is not sent from future
       // todo make future gap for passing timestamp, like with old timestamps
