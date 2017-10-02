@@ -24,6 +24,8 @@
 
 namespace iroha {
   namespace model {
+    ModelCryptoProviderImpl::ModelCryptoProviderImpl(const keypair_t &keypair)
+        : keypair_(keypair) {}
 
     bool ModelCryptoProviderImpl::verify(const Transaction &tx) const {
       if (tx.signatures.empty()) return false;
@@ -52,6 +54,16 @@ namespace iroha {
           return false;
         }
        return true;
+    }
+
+    const static model::converters::PbBlockFactory block_factory;
+
+    Block ModelCryptoProviderImpl::sign(const Block &block) const {
+      auto signed_block = block;
+      auto blob = block_factory.serialize(signed_block).SerializeAsString();
+      auto signature = iroha::sign(blob, keypair_.pubkey, keypair_.privkey);
+      signed_block.sigs.push_back(Signature{std::move(signature), keypair_.pubkey});
+      return signed_block;
     }
   }
 }

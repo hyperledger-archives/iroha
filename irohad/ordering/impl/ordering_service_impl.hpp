@@ -80,7 +80,6 @@ namespace iroha {
        */
       void preparePeersForProposalRound();
 
-      std::shared_ptr<uvw::Loop> loop_;
       std::shared_ptr<uvw::TimerHandle> timer_;
       std::shared_ptr<ametsuchi::PeerQuery> wsv_;
 

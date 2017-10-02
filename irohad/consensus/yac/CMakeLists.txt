@@ -16,7 +16,7 @@ add_library(yac
     impl/yac.cpp
     impl/cluster_order.cpp
     impl/timer_impl.cpp
-    impl/network_impl.cpp
+    transport/impl/network_impl.cpp
     impl/peer_orderer_impl.cpp
     impl/yac_gate_impl.cpp
     impl/yac_hash_provider_impl.cpp

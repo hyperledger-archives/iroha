@@ -31,6 +31,7 @@ namespace iroha {
       MOCK_CONST_METHOD1(verify, bool(const Transaction &));
       MOCK_CONST_METHOD1(verify, bool(std::shared_ptr<const Query>));
       MOCK_CONST_METHOD1(verify, bool(const Block &));
+      MOCK_CONST_METHOD1(sign, Block(const Block &));
     };
 
     class MockCommand : public Command {

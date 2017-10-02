@@ -15,14 +15,16 @@
  * limitations under the License.
  */
 
-#include "consensus/yac/impl/network_impl.hpp"
+#include "consensus/yac/transport/impl/network_impl.hpp"
+
 #include <grpc++/grpc++.h>
+
+#include "consensus/yac/transport/yac_pb_converters.hpp"
 #include "logger/logger.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
-
       // ----------| Public API |----------
 
       NetworkImpl::NetworkImpl(const std::string &address,
@@ -42,15 +44,7 @@ namespace iroha {
       }
 
       void NetworkImpl::send_vote(model::Peer to, VoteMessage vote) {
-        proto::Vote request;
-        auto hash = request.mutable_hash();
-        hash->set_block(vote.hash.block_hash);
-        hash->set_proposal(vote.hash.proposal_hash);
-        auto signature = request.mutable_signature();
-        signature->set_signature(vote.signature.signature.data(),
-                                 vote.signature.signature.size());
-        signature->set_pubkey(vote.signature.pubkey.data(),
-                              vote.signature.pubkey.size());
+        auto request = serializeVote(vote);
 
         auto call = new AsyncClientCall;
 
@@ -68,14 +62,7 @@ namespace iroha {
         proto::Commit request;
         for (const auto &vote : commit.votes) {
           auto pb_vote = request.add_votes();
-          auto hash = pb_vote->mutable_hash();
-          hash->set_block(vote.hash.block_hash);
-          hash->set_proposal(vote.hash.proposal_hash);
-          auto signature = pb_vote->mutable_signature();
-          signature->set_signature(vote.signature.signature.data(),
-                                   vote.signature.signature.size());
-          signature->set_pubkey(vote.signature.pubkey.data(),
-                                vote.signature.pubkey.size());
+          *pb_vote = serializeVote(vote);
         }
 
         auto call = new AsyncClientCall;
@@ -96,14 +83,7 @@ namespace iroha {
         proto::Reject request;
         for (const auto &vote : reject.votes) {
           auto pb_vote = request.add_votes();
-          auto hash = pb_vote->mutable_hash();
-          hash->set_block(vote.hash.block_hash);
-          hash->set_proposal(vote.hash.proposal_hash);
-          auto signature = pb_vote->mutable_signature();
-          signature->set_signature(vote.signature.signature.data(),
-                                   vote.signature.signature.size());
-          signature->set_pubkey(vote.signature.pubkey.data(),
-                                vote.signature.pubkey.size());
+          *pb_vote = serializeVote(vote);
         }
 
         auto call = new AsyncClientCall;
@@ -126,24 +106,17 @@ namespace iroha {
           ::google::protobuf::Empty *response) {
         auto it = context->client_metadata().find("address");
         if (it == context->client_metadata().end()) {
+          log_->error("Missing source address");
           // TODO handle missing source address
+          return grpc::Status::CANCELLED;
         }
         auto address = std::string(it->second.data(), it->second.size());
         auto peer = peers_addresses_.at(address);
 
-        VoteMessage vote;
-        vote.hash.proposal_hash = request->hash().proposal();
-        vote.hash.block_hash = request->hash().block();
-        std::copy(request->signature().signature().begin(),
-                  request->signature().signature().end(),
-                  vote.signature.signature.begin());
-        std::copy(request->signature().pubkey().begin(),
-                  request->signature().pubkey().end(),
-                  vote.signature.pubkey.begin());
+        auto vote = *deserializeVote(*request);
 
-        log_->info("Receive vote {} from {}",
-                   vote.hash.block_hash,
-                   peer.address);
+        log_->info(
+            "Receive vote {} from {}", vote.hash.block_hash, peer.address);
 
         handler_.lock()->on_vote(peer, vote);
         return grpc::Status::OK;
@@ -155,22 +128,16 @@ namespace iroha {
           ::google::protobuf::Empty *response) {
         auto it = context->client_metadata().find("address");
         if (it == context->client_metadata().end()) {
+          log_->error("Missing source address");
           // TODO handle missing source address
+          return grpc::Status::CANCELLED;
         }
         auto address = std::string(it->second.data(), it->second.size());
         auto peer = peers_addresses_.at(address);
 
         CommitMessage commit;
         for (const auto &pb_vote : request->votes()) {
-          VoteMessage vote;
-          vote.hash.proposal_hash = pb_vote.hash().proposal();
-          vote.hash.block_hash = pb_vote.hash().block();
-          std::copy(pb_vote.signature().signature().begin(),
-                    pb_vote.signature().signature().end(),
-                    vote.signature.signature.begin());
-          std::copy(pb_vote.signature().pubkey().begin(),
-                    pb_vote.signature().pubkey().end(),
-                    vote.signature.pubkey.begin());
+          auto vote = *deserializeVote(pb_vote);
           commit.votes.push_back(vote);
         }
 
@@ -188,22 +155,16 @@ namespace iroha {
           ::google::protobuf::Empty *response) {
         auto it = context->client_metadata().find("address");
         if (it == context->client_metadata().end()) {
+          log_->error("Missing source address");
           // TODO handle missing source address
+          return grpc::Status::CANCELLED;
         }
         auto address = std::string(it->second.data(), it->second.size());
         auto peer = peers_addresses_.at(address);
 
         RejectMessage reject;
         for (const auto &pb_vote : request->votes()) {
-          VoteMessage vote;
-          vote.hash.proposal_hash = pb_vote.hash().proposal();
-          vote.hash.block_hash = pb_vote.hash().block();
-          std::copy(pb_vote.signature().signature().begin(),
-                    pb_vote.signature().signature().end(),
-                    vote.signature.signature.begin());
-          std::copy(pb_vote.signature().pubkey().begin(),
-                    pb_vote.signature().pubkey().end(),
-                    vote.signature.pubkey.begin());
+          auto vote = *deserializeVote(pb_vote);
           reject.votes.push_back(vote);
         }
 

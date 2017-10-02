@@ -19,18 +19,10 @@
 #include <datetime/time.hpp>
 #include <gtest/gtest.h>
 
-TEST(Time, Now32) {
-  auto time = iroha::time::now32();
-  std::cout << "Unix timestamp32: " << time << std::endl;
-
-  ASSERT_GT(time, 1497447645);  // 06/14/2017 @ 1:40pm (UTC)
-  ASSERT_EQ(sizeof(time), 4);
-}
-
-TEST(Time, Now64) {
-  auto time = iroha::time::now64();
+TEST(Time, Now) {
+  auto time = iroha::time::now();
   std::cout << "Unix timestamp64: " << time << std::endl;
 
-  ASSERT_GT(time, 1497447645);  // 06/14/2017 @ 1:40pm (UTC)
+  ASSERT_GT(time, 1497447645000);  // 06/14/2017 @ 1:40pm (UTC)
   ASSERT_EQ(sizeof(time), 8);
 }

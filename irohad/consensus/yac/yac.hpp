@@ -27,7 +27,7 @@
 #include <nonstd/optional.hpp>
 
 #include "consensus/yac/yac_gate.hpp"
-#include "consensus/yac/yac_network_interface.hpp"
+#include "consensus/yac/transport/yac_network_interface.hpp"
 #include "consensus/yac/yac_crypto_provider.hpp"
 #include "consensus/yac/timer.hpp"
 #include "consensus/yac/storage/yac_vote_storage.hpp"
@@ -79,7 +79,7 @@ namespace iroha {
          * Voting step is strategy of propagating vote
          * until commit/reject message received
          */
-        void votingStep(YacHash hash);
+        void votingStep(VoteMessage vote);
 
         /**
          * Erase temporary data of current round

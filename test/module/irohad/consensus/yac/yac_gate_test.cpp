@@ -43,6 +43,7 @@ class YacGateTest : public ::testing::Test {
     expected_hash = YacHash("proposal", "block");
     expected_block.sigs.emplace_back();
     expected_block.sigs.back().pubkey.fill(1);
+    expected_hash.block_signature = expected_block.sigs.front();
     message.hash = expected_hash;
     message.signature = expected_block.sigs.front();
     commit_message = CommitMessage({message});

@@ -48,6 +48,11 @@ namespace iroha {
          */
         std::string block_hash;
 
+        /**
+         * Peer signature of block
+         */
+        model::Signature block_signature;
+
         bool operator==(const YacHash &obj) const {
           return proposal_hash == obj.proposal_hash and
               block_hash == obj.block_hash;
@@ -68,29 +73,20 @@ namespace iroha {
          * @param block - for hashing
          * @return hashed value of block
          */
-        virtual YacHash makeHash(model::Block::HashType &hash) = 0;
+        virtual YacHash makeHash(const model::Block &block) const = 0;
 
         /**
          * Convert YacHash to model hash
          * @param hash - for converting
          * @return HashType of model hash
          */
-        virtual model::Block::HashType toModelHash(YacHash hash) = 0;
+        virtual model::Block::HashType toModelHash(
+            const YacHash &hash) const = 0;
 
         virtual ~YacHashProvider() = default;
       };
     }  // namespace yac
   }    // namespace consensus
 }  // namespace iroha
-
-namespace std {
-
-  template <>
-  struct hash<iroha::consensus::yac::YacHash> {
-    std::size_t operator()(const iroha::consensus::yac::YacHash &obj) const {
-      return std::hash<std::string>()(obj.proposal_hash + obj.block_hash);
-    }
-  };
-}
 
 #endif  // IROHA_YAC_HASH_PROVIDER_HPP

@@ -41,7 +41,6 @@ namespace iroha {
         ~TimerImpl() override;
 
        private:
-        std::shared_ptr<uvw::Loop> loop_;
         std::shared_ptr<uvw::TimerHandle> timer_;
         std::function<void()> handler_;
       };

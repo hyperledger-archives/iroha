@@ -18,19 +18,25 @@
 #ifndef IROHA_MODEL_CRYPTO_PROVIDER_IMPL_HPP
 #define IROHA_MODEL_CRYPTO_PROVIDER_IMPL_HPP
 
-#include <model/model_crypto_provider.hpp>
+#include "model/model_crypto_provider.hpp"
 
 namespace iroha {
   namespace model {
 
     class ModelCryptoProviderImpl : public ModelCryptoProvider {
      public:
+      explicit ModelCryptoProviderImpl(const keypair_t &keypair);
+
       bool verify(const Transaction &tx) const override;
 
-      bool verify(std::shared_ptr<const Query> tx) const override;
+      bool verify(std::shared_ptr<const Query> query) const override;
 
-      bool verify(const Block& block) const override;
+      bool verify(const Block &block) const override;
 
+      Block sign(const Block &block) const override;
+
+     private:
+      keypair_t keypair_;
     };
   }
 }

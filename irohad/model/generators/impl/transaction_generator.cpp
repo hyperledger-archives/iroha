@@ -16,7 +16,9 @@
  */
 
 #include "model/generators/transaction_generator.hpp"
+
 #include "crypto/hash.hpp"
+#include "datetime/time.hpp"
 
 namespace iroha {
   namespace model {
@@ -58,7 +60,9 @@ namespace iroha {
       }
 
       Transaction TransactionGenerator::generateTransaction(
-          ts64_t timestamp, std::string creator_account_id, uint64_t tx_counter,
+          ts64_t timestamp,
+          std::string creator_account_id,
+          uint64_t tx_counter,
           std::vector<std::shared_ptr<Command>> commands) {
         Transaction tx;
         tx.created_ts = timestamp;
@@ -66,6 +70,14 @@ namespace iroha {
         tx.tx_counter = tx_counter;
         tx.commands = commands;
         return tx;
+      }
+
+      Transaction TransactionGenerator::generateTransaction(
+          std::string creator_account_id,
+          uint64_t tx_counter,
+          std::vector<std::shared_ptr<Command>> commands) {
+        return generateTransaction(
+            iroha::time::now(), creator_account_id, tx_counter, commands);
       }
 
     }  // namespace generators

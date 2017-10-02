@@ -24,7 +24,7 @@
 #include "consensus/yac/yac.hpp"
 #include "consensus/yac/messages.hpp"
 #include "consensus/yac/impl/yac_gate_impl.hpp"
-#include "consensus/yac/impl/network_impl.hpp"
+#include "consensus/yac/transport/impl/network_impl.hpp"
 #include "consensus/yac/impl/timer_impl.hpp"
 #include "consensus/yac/impl/peer_orderer_impl.hpp"
 #include "consensus/yac/impl/yac_hash_provider_impl.hpp"

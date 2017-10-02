@@ -25,11 +25,12 @@ using namespace iroha::consensus::yac;
 TEST(YacHashProviderTest, MakeYacHashTest) {
   YacHashProviderImpl hash_provider;
   iroha::model::Block block;
+  block.sigs.emplace_back();
   std::string test_hash = std::string(block.hash.size(), 'f');
   std::copy(test_hash.begin(), test_hash.end(), block.hash.begin());
   auto hex_test_hash = block.hash.to_hexstring();
 
-  auto yac_hash = hash_provider.makeHash(block.hash);
+  auto yac_hash = hash_provider.makeHash(block);
 
   ASSERT_EQ(hex_test_hash, yac_hash.proposal_hash);
   ASSERT_EQ(hex_test_hash, yac_hash.block_hash);
@@ -38,9 +39,10 @@ TEST(YacHashProviderTest, MakeYacHashTest) {
 TEST(YacHashProviderTest, ToModelHashTest) {
   YacHashProviderImpl hash_provider;
   iroha::model::Block block;
+  block.sigs.emplace_back();
   block.hash.fill('f');
 
-  auto yac_hash = hash_provider.makeHash(block.hash);
+  auto yac_hash = hash_provider.makeHash(block);
 
   auto model_hash = hash_provider.toModelHash(yac_hash);
 

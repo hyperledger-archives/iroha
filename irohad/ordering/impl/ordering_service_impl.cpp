@@ -27,8 +27,7 @@ namespace iroha {
     OrderingServiceImpl::OrderingServiceImpl(
         std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
         size_t delay_milliseconds, std::shared_ptr<uvw::Loop> loop)
-        : loop_(std::move(loop)),
-          timer_(loop_->resource<uvw::TimerHandle>()),
+        : timer_(loop->resource<uvw::TimerHandle>()),
           wsv_(wsv),
           max_size_(max_size),
           delay_milliseconds_(delay_milliseconds),
@@ -115,6 +114,9 @@ namespace iroha {
       }
     }
 
-    OrderingServiceImpl::~OrderingServiceImpl() { timer_->close(); }
+    OrderingServiceImpl::~OrderingServiceImpl() {
+      timer_->stop();
+      timer_->close();
+    }
   }  // namespace ordering
 }  // namespace iroha
