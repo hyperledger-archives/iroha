@@ -45,7 +45,21 @@ namespace iroha {
          * @return
          */
         Transaction generateTransaction(
-            ts64_t timestamp, std::string creator_account_id,
+            ts64_t timestamp,
+            std::string creator_account_id,
+            uint64_t tx_counter,
+            std::vector<std::shared_ptr<Command>> commands);
+
+        /**
+         * Generate transaction from give meta data and commands list
+         * @param timestamp
+         * @param creator_account_id
+         * @param tx_counter
+         * @param commands
+         * @return
+         */
+        Transaction generateTransaction(
+            std::string creator_account_id,
             uint64_t tx_counter,
             std::vector<std::shared_ptr<Command>> commands);
       };

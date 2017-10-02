@@ -178,10 +178,9 @@ TEST_F(TxPipelineIntegrationTest, TxPipelineTest) {
           iroha::Amount().createFromString("20.00").value());
 
   // generate test transaction
-  auto ts = iroha::time::now();
   auto tx =
       iroha::model::generators::TransactionGenerator().generateTransaction(
-          ts, "admin@test", 1, {cmd});
+          "admin@test", 1, {cmd});
   tx.signatures.emplace_back();
 
   sendTransactions({tx});
