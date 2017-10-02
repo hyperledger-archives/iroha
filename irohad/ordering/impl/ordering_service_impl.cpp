@@ -17,44 +17,22 @@
 
 #include "ordering/impl/ordering_service_impl.hpp"
 
-/**
- * Will be published when transaction is received.
- */
-struct TransactionEvent {};
-
 namespace iroha {
   namespace ordering {
     OrderingServiceImpl::OrderingServiceImpl(
-        std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
-        size_t delay_milliseconds, std::shared_ptr<uvw::Loop> loop)
-        : timer_(loop->resource<uvw::TimerHandle>()),
-          wsv_(wsv),
+        std::shared_ptr<ametsuchi::PeerQuery> wsv,
+        size_t max_size,
+        size_t delay_milliseconds)
+        : wsv_(wsv),
           max_size_(max_size),
           delay_milliseconds_(delay_milliseconds),
           proposal_height(2) {
-      timer_->on<uvw::TimerEvent>([this](const auto &, auto &) {
-        if (!queue_.empty()) {
-          this->generateProposal();
-        }
-        timer_->start(uvw::TimerHandle::Time(delay_milliseconds_),
-                      uvw::TimerHandle::Time(0));
-      });
-
-      this->on<TransactionEvent>([this](const auto &, auto &) {
-        if (queue_.unsafe_size() >= max_size_) {
-          timer_->stop();
-          this->generateProposal();
-          timer_->start(uvw::TimerHandle::Time(delay_milliseconds_),
-                        uvw::TimerHandle::Time(0));
-        }
-      });
-
-      timer_->start(uvw::TimerHandle::Time(delay_milliseconds_),
-                    uvw::TimerHandle::Time(0));
+      updateTimer();
     }
 
     grpc::Status OrderingServiceImpl::SendTransaction(
-        ::grpc::ServerContext *context, const protocol::Transaction *request,
+        ::grpc::ServerContext *context,
+        const protocol::Transaction *request,
         ::google::protobuf::Empty *response) {
       handleTransaction(std::move(*factory_.deserialize(*request)));
 
@@ -65,7 +43,10 @@ namespace iroha {
         model::Transaction &&transaction) {
       queue_.push(transaction);
 
-      publish(TransactionEvent{});
+      if (queue_.unsafe_size() >= max_size_) {
+        handle.unsubscribe();
+        updateTimer();
+      }
     }
 
     void OrderingServiceImpl::generateProposal() {
@@ -114,9 +95,18 @@ namespace iroha {
       }
     }
 
-    OrderingServiceImpl::~OrderingServiceImpl() {
-      timer_->stop();
-      timer_->close();
+    void OrderingServiceImpl::updateTimer() {
+      if (not queue_.empty()) {
+        this->generateProposal();
+      }
+      timer = rxcpp::observable<>::timer(
+          std::chrono::milliseconds(delay_milliseconds_));
+      handle = timer.subscribe_on(rxcpp::observe_on_new_thread())
+          .subscribe([this](auto) {
+            this->updateTimer();
+          });
     }
+
+    OrderingServiceImpl::~OrderingServiceImpl() { handle.unsubscribe(); }
   }  // namespace ordering
 }  // namespace iroha

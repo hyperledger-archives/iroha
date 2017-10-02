@@ -33,6 +33,5 @@ target_link_libraries(yac
     optional
     model
     yac_grpc
-    uvw
     logger
     )

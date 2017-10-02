@@ -24,7 +24,6 @@ target_link_libraries(ordering_service
     optional
     tbb
     model
-    uvw
     ordering_grpc
     logger
     )

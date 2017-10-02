@@ -18,8 +18,6 @@
 #ifndef IROHA_APPLICATION_HPP
 #define IROHA_APPLICATION_HPP
 
-#include <uvw/loop.hpp>
-
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "crypto/crypto.hpp"
 #include "logger/logger.hpp"
@@ -42,7 +40,6 @@
 #include "validation/impl/stateless_validator_impl.hpp"
 #include "validation/stateful_validator.hpp"
 
-
 #include "ametsuchi/impl/peer_query_wsv.hpp"
 #include "network/impl/peer_communication_service_impl.hpp"
 #include "synchronizer/impl/synchronizer_impl.hpp"
@@ -60,8 +57,11 @@ class Irohad {
    * @param torii_port - port for torii binding
    * @param peer_number - number of peer in ledger // todo replace with pub key
    */
-  Irohad(const std::string &block_store_dir, const std::string &redis_host,
-         size_t redis_port, const std::string &pg_conn, size_t torii_port,
+  Irohad(const std::string &block_store_dir,
+         const std::string &redis_host,
+         size_t redis_port,
+         const std::string &pg_conn,
+         size_t torii_port,
          uint64_t peer_number);
 
   /**
@@ -77,11 +77,9 @@ class Irohad {
   virtual ~Irohad();
 
  protected:
-// ------------------------| component initialization |-------------------------
+  // -----------------------| component initialization |------------------------
 
   virtual void initStorage();
-
-  virtual void initLoop();
 
   virtual void initProtoFactories();
 
@@ -118,15 +116,13 @@ class Irohad {
   std::string pg_conn_;
   size_t torii_port_;
 
-// ---------------------------| internal dependencies |----------------------------
-
-  // loop
-  std::shared_ptr<uvw::Loop> loop;
+  // ------------------------| internal dependencies |-------------------------
 
   // converter factories
   std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_tx_factory;
   std::shared_ptr<iroha::model::converters::PbQueryFactory> pb_query_factory;
-  std::shared_ptr<iroha::model::converters::PbQueryResponseFactory> pb_query_response_factory;
+  std::shared_ptr<iroha::model::converters::PbQueryResponseFactory>
+      pb_query_response_factory;
 
   // crypto provider
   std::shared_ptr<iroha::model::ModelCryptoProvider> crypto_verifier;

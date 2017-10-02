@@ -59,20 +59,7 @@ class TestIrohad : public Irohad {
     internal_server = builder.BuildAndStart();
     internal_thread = std::thread([this] { internal_server->Wait(); });
     log_->info("===> iroha initialized");
-    loop_thread = std::thread([this] { loop->run(); });
   }
-
-  ~TestIrohad() override {
-    if (loop) {
-      loop->stop();
-      loop->close();
-    }
-    if (loop_thread.joinable()) {
-      loop_thread.join();
-    }
-  }
-
-  std::thread loop_thread;
 };
 
 class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
