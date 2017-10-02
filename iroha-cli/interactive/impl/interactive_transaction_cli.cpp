@@ -30,6 +30,8 @@
 #include "model/converters/json_transaction_factory.hpp"
 #include "model/converters/pb_common.hpp"
 #include "model/generators/transaction_generator.hpp"
+#include "parser/parser.hpp"
+#include "model/permissions.hpp"
 
 using namespace iroha::model;
 
@@ -69,12 +71,19 @@ namespace iroha_cli {
       const auto role = "Role name";
       const auto perm = "Permission name";
 
+      const auto can_read_self = "Can read all information about his account";
+      const auto can_edit_self = "Can change his quorum/signatory";
+      const auto can_read_all = "Can read all other accounts";
+      const auto can_transfer_receive = "Can receive/transfer assets";
+      const auto can_asset_creator = "Can create/add new assets";
+      const auto can_roles = "Can create/append roles";
+
       command_params_descriptions_ = {
           {ADD_ASSET_QTY, {acc_id, ast_id, ammout_a, ammout_b}},
           {ADD_PEER, {peer_id, pub_key}},
           {ADD_SIGN, {acc_id, pub_key}},
           {CREATE_ACC, {acc_name, dom_id, pub_key}},
-          {CREATE_DOMAIN, {dom_id}},
+          {CREATE_DOMAIN, {dom_id, std::string("Default ")+ role}},
           {CREATE_ASSET, {ast_name, dom_id, ast_precision}},
           {REMOVE_SIGN, {acc_id, pub_key}},
           {SET_QUO, {acc_id, quorum}},
@@ -85,7 +94,13 @@ namespace iroha_cli {
             ast_id,
             ammout_a,
             ammout_b}},
-          {CREATE_ROLE, {role}},
+          {CREATE_ROLE,
+           {
+               role, can_read_self, can_edit_self,
+               can_read_all, can_transfer_receive,
+               can_asset_creator, can_create_domain,
+               can_roles, can_create_account
+           }},
           {APPEND_ROLE, {acc_id, role}},
           {GRANT_PERM, {acc_id, perm}},
           {REVOKE_PERM, {acc_id, perm}}
@@ -207,9 +222,69 @@ namespace iroha_cli {
     std::shared_ptr<iroha::model::Command>
     InteractiveTransactionCli::parseCreateRole(
         std::vector<std::string> params) {
-      // TODO grimadas: implement scheme on working with permissions
       auto role = params[0];
-      std::set<std::string> perms  = {};
+      auto read_self = parser::parseValue<bool>(params[1]);
+      auto edit_self = parser::parseValue<bool>(params[2]);
+      auto read_all = parser::parseValue<bool>(params[3]);
+      auto transfer_receive = parser::parseValue<bool>(params[4]);
+      auto asset_create = parser::parseValue<bool>(params[5]);
+      auto create_domain = parser::parseValue<bool>(params[6]);
+      auto roles = parser::parseValue<bool>(params[7]);
+      auto create_account = parser::parseValue<bool>(params[8]);
+
+      if (not read_self.has_value() or not edit_self.has_value()
+          or not read_all.has_value() or not transfer_receive.has_value()
+          or not asset_create.has_value() or not create_domain.has_value()
+          or not roles.has_value() or not create_account.has_value()) {
+        std::cout << "Wrong format for permission" << std::endl;
+        return nullptr;
+      }
+      std::set<std::string> perms;
+      if (read_self.value()){
+        perms.insert(can_get_my_account);
+        perms.insert(can_get_my_acc_txs);
+        perms.insert(can_get_my_acc_ast);
+        perms.insert(can_get_my_acc_ast_txs);
+        perms.insert(can_get_my_signatories);
+      }
+      if (edit_self.value()){
+        perms.insert(can_set_quorum);
+        perms.insert(can_add_signatory);
+        perms.insert(can_remove_signatory);
+      }
+      // By default everybody can grant??
+      perms.insert("CanGrant"+can_set_quorum);
+      perms.insert("CanGrant"+can_add_signatory);
+      perms.insert("CanGrant"+can_remove_signatory);
+
+      if (read_all.value()){
+        perms.insert(can_get_all_acc_txs);
+        perms.insert(can_get_all_acc_ast);
+        perms.insert(can_get_all_signatories);
+        perms.insert(can_get_all_accounts);
+        perms.insert(can_get_all_acc_ast_txs);
+        perms.insert(can_read_assets);
+      }
+      if(transfer_receive.value()){
+        perms.insert(can_transfer);
+        perms.insert(can_receive);
+      }
+      if (asset_create.value()){
+        perms.insert(can_create_asset);
+        perms.insert(can_add_asset_qty);
+      }
+      if (create_domain.value()){
+        perms.insert(can_create_domain);
+      }
+      if(roles.value()){
+        perms.insert(can_create_role);
+        perms.insert(can_append_role);
+      }
+      if (create_account.value()){
+        perms.insert(can_create_account);
+      }
+
+
       return std::make_shared<CreateRole>(role, perms);
     }
 
