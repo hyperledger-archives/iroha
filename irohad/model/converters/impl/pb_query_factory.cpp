@@ -100,7 +100,6 @@ namespace iroha {
             }
             case Query_Payload::QueryCase::kGetRoles: {
               // Convert to get Roles
-              const auto &pb_cast = pl.get_roles();
               val = std::make_shared<GetRoles>();
               break;
             }
@@ -233,7 +232,7 @@ namespace iroha {
       protocol::Query PbQueryFactory::serializeGetRoles(
           std::shared_ptr<const Query> query) const {
         protocol::Query pb_query;
-        pb_query.mutable_get_roles();
+        pb_query.mutable_payload()->mutable_get_roles();
         serializeQueryMetaData(pb_query, query);
         auto tmp = std::static_pointer_cast<const GetRoles>(query);
         return pb_query;

@@ -87,6 +87,14 @@ TEST_F(JsonCommandTest, InvalidWhenUnknownCommandType) {
   ASSERT_FALSE(factory.deserializeAbstractCommand(json.value()).has_value());
 }
 
+TEST_F(JsonCommandTest, create_domain) {
+  auto orig_command = std::make_shared<CreateDomain>("soramitsu", "jp-user");
+  auto json = factory.serializeCreateDomain(orig_command);
+  auto serial_command = factory.deserializeCreateDomain(json);
+  ASSERT_EQ(*orig_command, *serial_command.value());
+  command_converter_test(orig_command);
+}
+
 TEST_F(JsonCommandTest, add_asset_quantity) {
   auto orig_command = std::make_shared<AddAssetQuantity>();
   orig_command->account_id = "23";

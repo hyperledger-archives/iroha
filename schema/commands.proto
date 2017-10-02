@@ -32,6 +32,7 @@ message CreateAccount {
 
 message CreateDomain {
     string domain_name = 1;
+    string default_role = 2;
 }
 
 message RemoveSignatory {

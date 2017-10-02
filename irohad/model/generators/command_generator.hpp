@@ -43,7 +43,7 @@ namespace iroha {
             const pubkey_t &key);
 
         std::shared_ptr<Command> generateCreateDomain(
-            const std::string &domain_name);
+            const std::string &domain_name, const std::string &default_role);
 
         std::shared_ptr<Command> generateCreateAsset(
             const std::string &asset_name, const std::string &domain_name,

@@ -173,6 +173,7 @@ namespace iroha {
           const model::CreateDomain &create_domain) {
         protocol::CreateDomain pb_create_domain;
         pb_create_domain.set_domain_name(create_domain.domain_name);
+        pb_create_domain.set_default_role(create_domain.default_role);
         return pb_create_domain;
       }
 
@@ -180,6 +181,7 @@ namespace iroha {
           const protocol::CreateDomain &pb_create_domain) {
         model::CreateDomain create_domain;
         create_domain.domain_name = pb_create_domain.domain_name();
+        create_domain.default_role = pb_create_domain.default_role();
         return create_domain;
       }
 

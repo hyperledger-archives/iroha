@@ -43,7 +43,7 @@ namespace iroha {
               peers_address[i], keypair.pubkey));
         }
         // Add domain
-        tx.commands.push_back(command_generator.generateCreateDomain("test"));
+        tx.commands.push_back(command_generator.generateCreateDomain("test", "user"));
         // Create asset
         auto precision = 2;
         tx.commands.push_back(

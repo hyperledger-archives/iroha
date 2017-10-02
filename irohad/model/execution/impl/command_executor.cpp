@@ -415,6 +415,7 @@ bool AppendRoleExecutor::isValid(const Command &command,
 
       Domain new_domain;
       new_domain.domain_id = create_domain.domain_name;
+      new_domain.default_role = create_domain.default_role;
       // TODO: Add default role in the domain
       // The insert will fail if domain already exist
       return commands.insertDomain(new_domain);
@@ -424,6 +425,7 @@ bool AppendRoleExecutor::isValid(const Command &command,
                                               ametsuchi::WsvQuery &queries,
                                               const Account &creator) {
       // Creator must have permission to create domains
+      // TODO: add check on roles: i.e. can creator use default_role ?
       return checkAccountRolePermission(creator.account_id, queries,
                                         can_create_domain);
     }

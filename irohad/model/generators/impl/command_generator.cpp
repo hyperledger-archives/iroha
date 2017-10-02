@@ -59,8 +59,8 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> CommandGenerator::generateCreateDomain(
-          const std::string &domain_id) {
-        return generateCommand<CreateDomain>(domain_id);
+          const std::string &domain_id, const std::string &default_role) {
+        return generateCommand<CreateDomain>(domain_id, default_role);
       }
 
       std::shared_ptr<Command> CommandGenerator::generateCreateAsset(

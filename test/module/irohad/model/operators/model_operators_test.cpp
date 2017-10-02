@@ -133,6 +133,7 @@ TEST(ModelOperatorTest, CreateAssetTest) {
 CreateDomain createCreateDomain() {
   CreateDomain createDomain;
   createDomain.domain_name = "rus";
+  createDomain.default_role = "test";
   return createDomain;
 }
 

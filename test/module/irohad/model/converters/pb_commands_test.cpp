@@ -98,6 +98,15 @@ TEST(CommandTest, add_signatory_abstract_factory) {
   command_converter_test(orig_command);
 }
 
+TEST(CommandTest, create_domain){
+  auto factory = iroha::model::converters::PbCommandFactory();
+  auto orig_command = CreateDomain("soramitsu", "jp-user");
+  auto proto_command = factory.serializeCreateDomain(orig_command);
+  auto serial_command = factory.deserializeCreateDomain(proto_command);
+  ASSERT_EQ(orig_command, serial_command);
+  command_converter_test(orig_command);
+}
+
 TEST(CommandTest, create_asset) {
   auto factory = iroha::model::converters::PbCommandFactory();
 

@@ -259,6 +259,8 @@ namespace iroha {
         document.AddMember("command_type", "CreateDomain", allocator);
         document.AddMember("domain_name", create_domain->domain_name,
                            allocator);
+        document.AddMember("default_role", create_domain->default_role,
+                           allocator);
 
         return document;
       }
@@ -267,7 +269,9 @@ namespace iroha {
           const Value &document) {
         auto des = makeFieldDeserializer(document);
         return make_optional_ptr<CreateDomain>()
-            | des.String(&CreateDomain::domain_name, "domain_name") | toCommand;
+            | des.String(&CreateDomain::domain_name, "domain_name")
+            | des.String(&CreateDomain::default_role, "default_role")
+            | toCommand;
       }
 
       // RemoveSignatory

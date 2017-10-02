@@ -58,12 +58,14 @@ namespace iroha {
         return "(" + transaction_.quote(role_id) + ", "
             + transaction_.quote(permission) + ")";
       };
+      std::vector<std::string> perm_copy;
+      std::copy(permissions.begin(), permissions.end(), std::back_inserter(perm_copy));
       try {
         transaction_.exec(
             "INSERT INTO role_has_permissions(role_id, permission_id) VALUES "
             + std::accumulate(
-                  std::next(permissions.begin()), permissions.end(),
-                  entry(permissions.front()),
+                  std::next(perm_copy.begin()), perm_copy.end(),
+                  entry(perm_copy.front()),
                   [&entry](auto acc, auto x) { return acc + ", " + entry(x); })
             + ";");
       } catch (const std::exception &e) {

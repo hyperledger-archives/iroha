@@ -32,11 +32,18 @@ namespace iroha {
        */
       std::string domain_name{};
 
+      /**
+       * Default role for users in the domain
+       */
+      std::string default_role;
+
       bool operator==(const Command& command) const override;
 
       CreateDomain() {}
 
-      CreateDomain(const std::string& domain_name) : domain_name(domain_name) {}
+      CreateDomain(const std::string& domain_name,
+                   const std::string& default_role)
+          : domain_name(domain_name), default_role(default_role) {}
     };
   }  // namespace model
 }  // namespace iroha

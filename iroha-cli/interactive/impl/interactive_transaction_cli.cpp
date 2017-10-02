@@ -292,7 +292,8 @@ namespace iroha_cli {
     InteractiveTransactionCli::parseCreateDomain(
         std::vector<std::string> params) {
       auto domain_id = params[0];
-      return generator_.generateCreateDomain(domain_id);
+      auto role = params[1];
+      return generator_.generateCreateDomain(domain_id, role);
     }
 
     std::shared_ptr<iroha::model::Command>
