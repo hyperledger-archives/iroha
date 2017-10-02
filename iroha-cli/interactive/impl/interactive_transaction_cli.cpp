@@ -151,6 +151,7 @@ namespace iroha_cli {
         : creator_(creator_account),
           tx_counter_(tx_counter),
           keysManager_(creator_account) {
+      keypair_ = keysManager_.loadKeys();
       log_ = logger::log("InteractiveTransactionCli");
       createCommandMenu();
       createResultMenu();
@@ -385,12 +386,11 @@ namespace iroha_cli {
       // clear commands so that we can start creating new tx
       commands_.clear();
 
-      auto keys = keysManager_.loadKeys();
-      if (keys) {
-        auto sig = iroha::sign(iroha::hash(tx).to_string(), keys->pubkey,
-                               keys->privkey);
+      if (keypair_) {
+        auto sig = iroha::sign(
+            iroha::hash(tx).to_string(), keypair_->pubkey, keypair_->privkey);
         tx.signatures.push_back(
-            Signature{.signature = sig, .pubkey = keys->pubkey});
+            Signature{.signature = sig, .pubkey = keypair_->pubkey});
       } else {
         // TODO: check what should we do - generate new keys or return an error
         // or may be something else
@@ -405,6 +405,7 @@ namespace iroha_cli {
       // Stop parsing
       return false;
     }
+
     bool InteractiveTransactionCli::parseSaveFile(
         std::vector<std::string> params) {
       auto path = params[0];
@@ -423,12 +424,11 @@ namespace iroha_cli {
 
       // clear commands so that we can start creating new tx
       commands_.clear();
-      auto keys = keysManager_.loadKeys();
-      if (keys) {
-        auto sig = iroha::sign(iroha::hash(tx).to_string(), keys->pubkey,
-                               keys->privkey);
+      if (keypair_) {
+        auto sig = iroha::sign(
+            iroha::hash(tx).to_string(), keypair_->pubkey, keypair_->privkey);
         tx.signatures.push_back(
-            Signature{.signature = sig, .pubkey = keys->pubkey});
+            Signature{.signature = sig, .pubkey = keypair_->pubkey});
       } else {
         // TODO: check what should we do - generate new keys or return an error
         // or may be something else
@@ -458,6 +458,7 @@ namespace iroha_cli {
       // Continue parsing
       return true;
     }
+
     bool InteractiveTransactionCli::parseAddCommand(
         std::vector<std::string> params) {
       current_context_ = MAIN;
