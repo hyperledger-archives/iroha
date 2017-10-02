@@ -1,7 +1,6 @@
 add_subdirectory(amount)
 add_subdirectory(common)
 add_subdirectory(crypto)
-add_subdirectory(datetime)
 add_subdirectory(timer)
 add_subdirectory(logger)
 add_subdirectory(torii_utils)

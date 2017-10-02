@@ -16,6 +16,7 @@
  */
 
 #include "crypto/hash.hpp"
+#include "datetime/time.hpp"
 #include "framework/test_subscriber.hpp"
 #include "main/application.hpp"
 #include "main/raw_block_insertion.hpp"
@@ -23,6 +24,7 @@
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 
 using namespace framework::test_subscriber;
+using namespace std::chrono_literals;
 
 class TestIrohad : public Irohad {
  public:
@@ -75,10 +77,84 @@ class TestIrohad : public Irohad {
 
 class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
  public:
-  TxPipelineIntegrationTest() {
-    spdlog::set_level(spdlog::level::off);
+  TxPipelineIntegrationTest() { spdlog::set_level(spdlog::level::off); }
+
+  void SetUp() override {
     irohad = std::make_shared<TestIrohad>(
         block_store_path, redishost_, redisport_, pgopt_, 0, 0);
+
+    ASSERT_TRUE(irohad->storage);
+
+    // insert genesis block
+    iroha::main::BlockInserter inserter(irohad->storage);
+
+    genesis_block =
+        iroha::model::generators::BlockGenerator().generateGenesisBlock(
+            {"0.0.0.0:10000"});
+    inserter.applyToLedger({genesis_block});
+
+    // initialize irohad
+    irohad->init();
+
+    // start irohad
+    irohad->run();
+  }
+
+  void sendTransactions(std::vector<iroha::model::Transaction> transactions) {
+    // generate expected proposal
+    expected_proposal = std::make_shared<iroha::model::Proposal>(transactions);
+    expected_proposal->height = 2;
+
+    // generate expected block
+    expected_block = iroha::model::Block{};
+    expected_block.height = expected_proposal->height;
+    expected_block.prev_hash = genesis_block.hash;
+    expected_block.transactions = transactions;
+    expected_block.txs_number = transactions.size();
+    expected_block.created_ts = 0;
+    expected_block.merkle_root.fill(0);
+    expected_block.hash = iroha::hash(expected_block);
+    expected_block = irohad->getCryptoProvider()->sign(expected_block);
+
+    // send transactions to torii
+    for (const auto &tx : transactions) {
+      auto pb_tx =
+          iroha::model::converters::PbTransactionFactory().serialize(tx);
+
+      google::protobuf::Empty response;
+      irohad->getCommandService()->ToriiAsync(pb_tx, response);
+    }
+  }
+
+  void validate() {
+    // verify proposal
+    auto proposal_wrapper = make_test_subscriber<CallExact>(
+        irohad->getPeerCommunicationService()->on_proposal(), 1);
+    proposal_wrapper.subscribe(
+        [this](auto proposal) { proposals.push_back(proposal); });
+
+    // verify commit and block
+    auto commit_wrapper = make_test_subscriber<CallExact>(
+        irohad->getPeerCommunicationService()->on_commit(), 1);
+    commit_wrapper.subscribe([this](auto commit) {
+      auto block_wrapper = make_test_subscriber<CallExact>(commit, 1);
+      block_wrapper.subscribe([this](auto block) { blocks.push_back(block); });
+    });
+    irohad->getPeerCommunicationService()->on_commit().subscribe(
+        [this](auto) { cv.notify_one(); });
+
+    // wait for commit
+    std::unique_lock<std::mutex> lk(m);
+
+    cv.wait_for(lk, 10s, [this] { return blocks.size() == 1; });
+
+    ASSERT_TRUE(proposal_wrapper.validate());
+    ASSERT_EQ(1, proposals.size());
+    ASSERT_EQ(*expected_proposal, proposals.front());
+
+    ASSERT_TRUE(commit_wrapper.validate());
+    ASSERT_EQ(1, blocks.size());
+    ASSERT_EQ(expected_block, blocks.front());
   }
 
   std::shared_ptr<TestIrohad> irohad;
@@ -86,26 +162,14 @@ class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
   std::condition_variable cv;
   std::mutex m;
 
+  std::shared_ptr<iroha::model::Proposal> expected_proposal;
+  iroha::model::Block genesis_block, expected_block;
+
   std::vector<iroha::model::Proposal> proposals;
   std::vector<iroha::model::Block> blocks;
 };
 
 TEST_F(TxPipelineIntegrationTest, TxPipelineTest) {
-  ASSERT_TRUE(irohad->storage);
-
-  using namespace std::chrono_literals;
-
-  // insert genesis block
-  iroha::main::BlockInserter inserter(irohad->storage);
-
-  auto genesis_block =
-      iroha::model::generators::BlockGenerator().generateGenesisBlock(
-          {"0.0.0.0:10000"});
-  inserter.applyToLedger({genesis_block});
-
-  // initialize irohad
-  irohad->init();
-
   // generate test command
   auto cmd =
       iroha::model::generators::CommandGenerator().generateAddAssetQuantity(
@@ -114,62 +178,13 @@ TEST_F(TxPipelineIntegrationTest, TxPipelineTest) {
           iroha::Amount().createFromString("20.00").value());
 
   // generate test transaction
-  auto ts = std::chrono::system_clock::now().time_since_epoch() / 1ms;
+  auto ts = iroha::time::now();
   auto tx =
       iroha::model::generators::TransactionGenerator().generateTransaction(
           ts, "admin@test", 1, {cmd});
   tx.signatures.emplace_back();
 
-  // generate expected proposal
-  iroha::model::Proposal proposal({tx});
-  proposal.height = 2;
+  sendTransactions({tx});
 
-  // generate expected block
-  iroha::model::Block block{};
-  block.height = proposal.height;
-  block.prev_hash = genesis_block.hash;
-  block.transactions = {tx};
-  block.txs_number = 1;
-  block.created_ts = 0;
-  block.merkle_root.fill(0);
-  block.hash = iroha::hash(block);
-  block = irohad->getCryptoProvider()->sign(block);
-
-  // verify proposal
-  auto proposal_wrapper = make_test_subscriber<CallExact>(
-      irohad->getPeerCommunicationService()->on_proposal(), 1);
-  proposal_wrapper.subscribe(
-      [this](auto proposal) { proposals.push_back(proposal); });
-
-  // verify commit and block
-  auto commit_wrapper = make_test_subscriber<CallExact>(
-      irohad->getPeerCommunicationService()->on_commit(), 1);
-  commit_wrapper.subscribe([this](auto commit) {
-    auto block_wrapper = make_test_subscriber<CallExact>(commit, 1);
-    block_wrapper.subscribe([this](auto block) { blocks.push_back(block); });
-  });
-  irohad->getPeerCommunicationService()->on_commit().subscribe(
-      [this](auto) { cv.notify_one(); });
-
-  // start irohad
-  irohad->run();
-
-  // send transaction to torii
-  auto pb_tx = iroha::model::converters::PbTransactionFactory().serialize(tx);
-
-  google::protobuf::Empty response;
-  irohad->getCommandService()->ToriiAsync(pb_tx, response);
-
-  // wait for commit
-  std::unique_lock<std::mutex> lk(m);
-
-  cv.wait_for(lk, 10s, [this] { return blocks.size() == 1; });
-
-  ASSERT_TRUE(proposal_wrapper.validate());
-  ASSERT_EQ(1, proposals.size());
-  ASSERT_EQ(proposal, proposals.front());
-
-  ASSERT_TRUE(commit_wrapper.validate());
-  ASSERT_EQ(1, blocks.size());
-  ASSERT_EQ(block, blocks.front());
+  validate();
 }

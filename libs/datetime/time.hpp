@@ -28,19 +28,11 @@ namespace iroha {
     using namespace std::chrono_literals;
 
     /**
-     * Returns current UNIX timestamp represented in 4 bytes.
-     * Represents number of seconds since epoch.
+     * Returns current UNIX timestamp.
+     * Represents number of milliseconds since epoch.
      */
-    inline uint32_t now32() {
-      return system_clock::now().time_since_epoch() / 1s;
-    }
-
-    /**
-     * Returns current UNIX timestamp represented in 8 bytes.
-     * Represents number of seconds since epoch.
-     */
-    inline uint64_t now64() {
-      return system_clock::now().time_since_epoch() / 1s;
+    inline auto now() {
+      return system_clock::now().time_since_epoch() / 1ms;
     }
   }
 }
