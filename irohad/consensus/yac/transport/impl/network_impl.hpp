@@ -22,7 +22,7 @@
 #include <thread>
 #include <unordered_map>
 #include "network/impl/async_grpc_client.hpp"
-#include "consensus/yac/yac_network_interface.hpp"
+#include "consensus/yac/transport/yac_network_interface.hpp"
 #include "yac.grpc.pb.h"
 #include "logger/logger.hpp"
 

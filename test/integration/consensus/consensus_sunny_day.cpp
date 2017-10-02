@@ -18,7 +18,7 @@
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
 
 #include <grpc++/grpc++.h>
-#include "consensus/yac/impl/network_impl.hpp"
+#include "consensus/yac/transport/impl/network_impl.hpp"
 #include "consensus/yac/impl/timer_impl.hpp"
 #include "framework/test_subscriber.hpp"
 

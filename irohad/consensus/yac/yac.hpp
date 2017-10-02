@@ -27,7 +27,7 @@
 #include <nonstd/optional.hpp>
 
 #include "consensus/yac/yac_gate.hpp"
-#include "consensus/yac/yac_network_interface.hpp"
+#include "consensus/yac/transport/yac_network_interface.hpp"
 #include "consensus/yac/yac_crypto_provider.hpp"
 #include "consensus/yac/timer.hpp"
 #include "consensus/yac/storage/yac_vote_storage.hpp"
