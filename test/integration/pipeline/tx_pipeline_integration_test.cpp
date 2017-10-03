@@ -80,6 +80,7 @@ class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
   TxPipelineIntegrationTest() { spdlog::set_level(spdlog::level::off); }
 
   void SetUp() override {
+    iroha::ametsuchi::AmetsuchiTest::SetUp();
     irohad = std::make_shared<TestIrohad>(
         block_store_path, redishost_, redisport_, pgopt_, 0, 0);
 
