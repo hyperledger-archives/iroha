@@ -74,7 +74,7 @@ namespace iroha {
         std::set<std::string> perms = {
             can_create_domain,  can_add_signatory,  can_remove_signatory,
             can_set_quorum,     can_get_my_account, can_get_my_signatories,
-            can_get_my_acc_ast, can_get_my_acc_txs};
+            can_get_my_acc_ast, can_get_my_acc_txs, can_create_asset, can_add_asset_qty};
         return std::make_shared<CreateRole>(role_name, perms);
       }
 

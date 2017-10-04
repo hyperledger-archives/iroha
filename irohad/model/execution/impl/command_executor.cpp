@@ -331,11 +331,18 @@ bool AppendRoleExecutor::isValid(const Command &command,
 
       account.domain_name = create_account.domain_id;
       account.quorum = 1;
-      // TODO: Add some initial role(default) to account
-      return commands.insertSignatory(create_account.pubkey)
+      auto domain = queries.getDomain(create_account.domain_id);
+      if (not domain.has_value()){
+        log_->error("Domain {} not found", create_account.domain_id);
+        return false;
+      }
+      // TODO: remove insert signatory from here ?
+      return
+          commands.insertSignatory(create_account.pubkey)
           and commands.insertAccount(account)
           and commands.insertAccountSignatory(account.account_id,
-                                              create_account.pubkey);
+                                              create_account.pubkey)
+          and commands.insertAccountRole(account.account_id, domain.value().default_role);
     }
 
     bool CreateAccountExecutor::hasPermissions(const Command &command,
@@ -416,7 +423,6 @@ bool AppendRoleExecutor::isValid(const Command &command,
       Domain new_domain;
       new_domain.domain_id = create_domain.domain_name;
       new_domain.default_role = create_domain.default_role;
-      // TODO: Add default role in the domain
       // The insert will fail if domain already exist
       return commands.insertDomain(new_domain);
     }
@@ -425,7 +431,6 @@ bool AppendRoleExecutor::isValid(const Command &command,
                                               ametsuchi::WsvQuery &queries,
                                               const Account &creator) {
       // Creator must have permission to create domains
-      // TODO: add check on roles: i.e. can creator use default_role ?
       return checkAccountRolePermission(creator.account_id, queries,
                                         can_create_domain);
     }

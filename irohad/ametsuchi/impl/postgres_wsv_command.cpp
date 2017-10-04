@@ -114,19 +114,14 @@ namespace iroha {
       try {
         transaction_.exec(
             "INSERT INTO account(\n"
-            "            account_id, domain_id, quorum, status, "
-            "transaction_count, \n"
-            "            permissions)\n"
+            "            account_id, domain_id, quorum, "
+            "transaction_count \n"
+            "            )\n"
             "    VALUES (" +
             transaction_.quote(account.account_id) + ", " +
             transaction_.quote(account.domain_name) + ", " +
             transaction_.quote(account.quorum) + ", " +
-            /*account.status*/ transaction_.quote(0) + ", " +
-            /*account.transaction_count*/ transaction_.quote(0) +
-            ", \n"
-            "            " +
-                // TODO: remove it
-            transaction_.quote("") + ");");
+            /*account.transaction_count*/ transaction_.quote(0) + ");");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -258,8 +253,11 @@ namespace iroha {
 
     bool PostgresWsvCommand::insertDomain(const model::Domain &domain) {
       try {
-        transaction_.exec("INSERT INTO domain(domain_id) VALUES ("
-                          + transaction_.quote(domain.domain_id) + ");");
+        transaction_.exec("INSERT INTO domain(domain_id, default_role) VALUES ("
+                          + transaction_.quote(domain.domain_id)
+                          + ", "
+                          + transaction_.quote(domain.default_role)
+                          + ");");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -272,11 +270,9 @@ namespace iroha {
         transaction_.exec(
             "UPDATE account\n"
             "   SET quorum=" +
-            transaction_.quote(account.quorum) + ", status=" +
-            /*account.status*/ transaction_.quote(0) + ", transaction_count=" +
+            transaction_.quote(account.quorum) +
+            ", transaction_count=" +
             /*account.transaction_count*/ transaction_.quote(0) +
-                // TODO: remove this
-            ", permissions=" + transaction_.quote("") +
             "\n"
             " WHERE account_id=" +
             transaction_.quote(account.account_id) + ";");

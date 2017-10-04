@@ -26,6 +26,7 @@
 #include <nonstd/optional.hpp>
 #include <string>
 #include <vector>
+#include "model/domain.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -48,6 +49,14 @@ namespace iroha {
       hasAccountGrantablePermission(const std::string &permitee_account_id,
                                     const std::string &account_id,
                                     const std::string &permission_id) = 0;
+
+      /**
+       * Get iroha domain
+       * @param domain_id - id in the system
+       * @return Domain if exist, nullopt otherwise
+       */
+      virtual nonstd::optional<model::Domain> getDomain(
+          const std::string &domain_id) = 0;
 
       /**
        * Get account's roles

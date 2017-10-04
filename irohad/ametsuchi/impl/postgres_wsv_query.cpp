@@ -28,6 +28,7 @@ namespace iroha {
     using model::Asset;
     using model::AccountAsset;
     using model::Peer;
+    using model::Domain;
 
     PostgresWsvQuery::PostgresWsvQuery(pqxx::nontransaction &transaction)
         : transaction_(transaction), log_(logger::log("PostgresWsvQuery")) {}
@@ -120,7 +121,6 @@ namespace iroha {
       row.at("domain_id") >> account.domain_name;
       row.at("quorum") >> account.quorum;
       //      row.at("transaction_count") >> ?
-      // TODO: remove permissions from account
       return account;
     }
 
@@ -193,6 +193,26 @@ namespace iroha {
       row.at("amount") >> amount_str;
       asset.balance = Amount::createFromString(amount_str).value();
       return asset;
+    }
+
+    nonstd::optional<model::Domain> PostgresWsvQuery::getDomain(const std::string &domain_id) {
+      pqxx::result result;
+      try {
+        result = transaction_.exec("SELECT * FROM domain WHERE domain_id = "
+                                       + transaction_.quote(domain_id) + ";");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return nullopt;
+      }
+      if (result.empty()) {
+        log_->info("Domain {} not found", domain_id);
+        return nullopt;
+      }
+      Domain domain;
+      auto row = result.at(0);
+      row.at("domain_id") >> domain.domain_id;
+      row.at("default_role") >> domain.default_role;
+      return domain;
     }
 
     nonstd::optional<std::vector<model::Peer>> PostgresWsvQuery::getPeers() {

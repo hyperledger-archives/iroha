@@ -124,6 +124,7 @@ namespace iroha {
       const std::string init_ = R"(
 CREATE TABLE IF NOT EXISTS domain (
     domain_id character varying(164),
+    default_role character varying(164),
     PRIMARY KEY (domain_id)
 );
 CREATE TABLE IF NOT EXISTS signatory (
@@ -135,7 +136,6 @@ CREATE TABLE IF NOT EXISTS account (
     domain_id character varying(164) NOT NULL REFERENCES domain,
     quorum int NOT NULL,
     transaction_count int NOT NULL DEFAULT 0,
-    permissions bit varying NOT NULL,
     PRIMARY KEY (account_id)
 );
 CREATE TABLE IF NOT EXISTS account_has_signatory (

@@ -61,6 +61,9 @@ class CommandValidateExecuteTest : public ::testing::Test {
     account.account_id = account_id;
     account.domain_name = domain_id;
     account.quorum = 1;
+
+    default_domain.domain_id = domain_id;
+    default_domain.default_role = admin_role;
   }
 
   bool validateAndExecute() {
@@ -77,6 +80,7 @@ class CommandValidateExecuteTest : public ::testing::Test {
 
   std::vector<std::string> admin_roles = {admin_role};
   std::vector<std::string> role_permissions;
+  model::Domain default_domain;
 
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockWsvCommand> wsv_command;
@@ -309,6 +313,8 @@ TEST_F(CreateAccountTest, ValidWhenNewAccount) {
       .WillOnce(Return(admin_roles));
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getDomain(domain_id))
+      .WillOnce(Return(default_domain));
 
   EXPECT_CALL(*wsv_command, insertSignatory(create_account->pubkey))
       .Times(1)
@@ -318,6 +324,10 @@ TEST_F(CreateAccountTest, ValidWhenNewAccount) {
 
   EXPECT_CALL(*wsv_command,
               insertAccountSignatory(account_id, create_account->pubkey))
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(*wsv_command,
+              insertAccountRole(account_id, admin_role))
       .WillOnce(Return(true));
 
   ASSERT_TRUE(validateAndExecute());

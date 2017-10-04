@@ -48,6 +48,7 @@ namespace iroha {
                                         const std::string &account_id,
                                         const std::string &asset_id));
       MOCK_METHOD0(getPeers, nonstd::optional<std::vector<model::Peer>>());
+      MOCK_METHOD1(getDomain, nonstd::optional<model::Domain>(const std::string &domain_id));
       MOCK_METHOD3(hasAccountGrantablePermission,
                    bool(const std::string &permitee_account_id,
                        const std::string &account_id,

@@ -42,8 +42,11 @@ namespace iroha {
           tx.commands.push_back(command_generator.generateAddPeer(
               peers_address[i], keypair.pubkey));
         }
+        // Create admin role
+        tx.commands.push_back(
+            command_generator.generateCreateAdminRole("admin"));
         // Add domain
-        tx.commands.push_back(command_generator.generateCreateDomain("test", "user"));
+        tx.commands.push_back(command_generator.generateCreateDomain("test", "admin"));
         // Create asset
         auto precision = 2;
         tx.commands.push_back(
