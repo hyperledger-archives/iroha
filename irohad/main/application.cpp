@@ -17,8 +17,6 @@
 
 #include "main/application.hpp"
 
-#include <gmock/gmock.h>
-
 using namespace iroha;
 using namespace iroha::ametsuchi;
 using namespace iroha::simulator;
@@ -70,7 +68,6 @@ void Irohad::init() {
   initPeer();
   initCryptoProvider();
   initValidators();
-  initPeerOrderer();
   initOrderingGate();
   initSimulator();
   initBlockLoader();
@@ -128,11 +125,6 @@ void Irohad::initValidators() {
   log_->info("[Init] => validators");
 }
 
-void Irohad::initPeerOrderer() {
-  orderer = std::make_shared<PeerOrdererImpl>(wsv);
-  log_->info("[Init] => peer orderer");
-}
-
 void Irohad::initOrderingGate() {
   // const set maximum transactions that possible appears in one proposal
   auto max_transactions_in_proposal = 10u;
@@ -166,7 +158,7 @@ void Irohad::initBlockLoader() {
 
 void Irohad::initConsensusGate() {
   consensus_gate = yac_init.initConsensusGate(
-      peer.address, orderer, simulator, block_loader);
+      peer.address, wsv, simulator, block_loader, keypair);
 
   log_->info("[Init] => consensus gate");
 }
