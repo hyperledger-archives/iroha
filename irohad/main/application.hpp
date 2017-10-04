@@ -62,7 +62,6 @@ class Irohad {
          size_t redis_port,
          const std::string &pg_conn,
          size_t torii_port,
-         uint64_t peer_number,
          const iroha::keypair_t &keypair);
 
   /**
@@ -175,7 +174,6 @@ class Irohad {
 
  public:
   std::shared_ptr<iroha::ametsuchi::Storage> storage;
-  uint64_t peer_number_;
   iroha::keypair_t keypair;
 };
 
