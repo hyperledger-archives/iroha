@@ -18,7 +18,6 @@
 #ifndef IROHA_ORDERING_INIT_HPP
 #define IROHA_ORDERING_INIT_HPP
 
-#include <uvw.hpp>
 #include "ametsuchi/peer_query.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
@@ -47,8 +46,8 @@ namespace iroha {
        * @param loop - handler of async events
        */
       auto createService(std::shared_ptr<ametsuchi::PeerQuery> wsv,
-                         size_t max_size, size_t delay_milliseconds,
-                         std::shared_ptr<uvw::Loop> loop);
+                         size_t max_size,
+                         size_t delay_milliseconds);
 
      public:
       /**
@@ -61,7 +60,7 @@ namespace iroha {
        */
       std::shared_ptr<ordering::OrderingGateImpl> initOrderingGate(
           std::shared_ptr<ametsuchi::PeerQuery> wsv,
-          std::shared_ptr<uvw::Loop> loop, size_t max_size,
+          size_t max_size,
           size_t delay_milliseconds);
 
       std::shared_ptr<ordering::OrderingServiceImpl> ordering_service;

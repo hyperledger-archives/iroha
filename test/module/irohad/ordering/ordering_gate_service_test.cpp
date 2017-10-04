@@ -41,19 +41,14 @@ class OrderingGateServiceTest : public OrderingTest {
     counter = 2;
   }
 
-  void SetUp() override { loop = uvw::Loop::create(); }
+  void SetUp() override { }
 
   void start() override {
     OrderingTest::start();
-    loop_thread = std::thread([this] { loop->run(); });
   }
 
   void shutdown() override {
     proposals.clear();
-    loop->stop();
-    if (loop_thread.joinable()) {
-      loop_thread.join();
-    }
     OrderingTest::shutdown();
   }
 
@@ -76,8 +71,6 @@ class OrderingGateServiceTest : public OrderingTest {
     std::this_thread::sleep_for(20ms);
   }
 
-  std::shared_ptr<uvw::Loop> loop;
-  std::thread loop_thread;
   std::shared_ptr<OrderingGateImpl> gate_impl;
   std::vector<Proposal> proposals;
   std::atomic<size_t> counter;
@@ -95,7 +88,7 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   const size_t commit_delay = 400;
 
   service = std::make_shared<OrderingServiceImpl>(wsv, max_proposal,
-                                                  commit_delay, loop);
+                                                  commit_delay);
 
   start();
   std::unique_lock<std::mutex> lk(m);
@@ -135,7 +128,7 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
   const size_t commit_delay = 1000;
 
   service = std::make_shared<OrderingServiceImpl>(wsv, max_proposal,
-                                                  commit_delay, loop);
+                                                  commit_delay);
 
   start();
   std::unique_lock<std::mutex> lk(m);

@@ -49,8 +49,10 @@ class MockCryptoProvider : public ModelCryptoProvider {
 };
 
 Irohad::Irohad(const std::string &block_store_dir,
-               const std::string &redis_host, size_t redis_port,
-               const std::string &pg_conn, size_t torii_port,
+               const std::string &redis_host,
+               size_t redis_port,
+               const std::string &pg_conn,
+               size_t torii_port,
                uint64_t peer_number)
     : block_store_dir_(block_store_dir),
       redis_host_(redis_host),
@@ -79,7 +81,6 @@ Irohad::~Irohad() {
 }
 
 void Irohad::init() {
-  initLoop();
   initProtoFactories();
   initPeerQuery();
   initPeer();
@@ -96,22 +97,13 @@ void Irohad::init() {
   // Torii
   initTransactionCommandService();
   initQueryService();
-
 }
 
 void Irohad::initStorage() {
-  storage = StorageImpl::create(block_store_dir_,
-                                redis_host_,
-                                redis_port_,
-                                pg_conn_);
+  storage =
+      StorageImpl::create(block_store_dir_, redis_host_, redis_port_, pg_conn_);
 
   log_->info("[Init] => storage", logger::logBool(storage));
-}
-
-void Irohad::initLoop() {
-  loop = uvw::Loop::create();
-
-  log_->info("[Init] => loop");
 }
 
 void Irohad::initProtoFactories() {
@@ -166,17 +158,14 @@ void Irohad::initPeerOrderer() {
 }
 
 void Irohad::initOrderingGate() {
-
   // const set maximum transactions that possible appears in one proposal
   auto max_transactions_in_proposal = 10u;
 
   // const set maximum waiting time util emitting new proposal
   auto delay_for_new_proposal = 5000u;
 
-  ordering_gate = ordering_init.initOrderingGate(wsv,
-                                                 loop,
-                                                 max_transactions_in_proposal,
-                                                 delay_for_new_proposal);
+  ordering_gate = ordering_init.initOrderingGate(
+      wsv, max_transactions_in_proposal, delay_for_new_proposal);
 
   log_->info("[Init] => init ordering gate - [{}]",
              logger::logBool(ordering_gate));
@@ -193,25 +182,22 @@ void Irohad::initSimulator() {
 }
 
 void Irohad::initBlockLoader() {
-  block_loader = loader_init.initBlockLoader(wsv,
-                                             storage->getBlockQuery(),
-                                             crypto_verifier);
+  block_loader = loader_init.initBlockLoader(
+      wsv, storage->getBlockQuery(), crypto_verifier);
 
   log_->info("[Init] => block loader");
 }
 
 void Irohad::initConsensusGate() {
   consensus_gate = yac_init.initConsensusGate(
-      peer.address, loop, orderer, simulator, block_loader);
+      peer.address, orderer, simulator, block_loader);
 
   log_->info("[Init] => consensus gate");
 }
 
 void Irohad::initSynchronizer() {
-  synchronizer = std::make_shared<SynchronizerImpl>(consensus_gate,
-                                                    chain_validator,
-                                                    storage,
-                                                    block_loader);
+  synchronizer = std::make_shared<SynchronizerImpl>(
+      consensus_gate, chain_validator, storage, block_loader);
 
   log_->info("[Init] => synchronizer");
 }
@@ -220,13 +206,11 @@ void Irohad::initPeerCommunicationService() {
   pcs = std::make_shared<PeerCommunicationServiceImpl>(ordering_gate,
                                                        synchronizer);
 
-  pcs->on_proposal().subscribe([this](auto) {
-    log_->info("~~~~~~~~~| PROPOSAL ^_^ |~~~~~~~~~ ");
-  });
+  pcs->on_proposal().subscribe(
+      [this](auto) { log_->info("~~~~~~~~~| PROPOSAL ^_^ |~~~~~~~~~ "); });
 
-  pcs->on_commit().subscribe([this](auto) {
-    log_->info("~~~~~~~~~| COMMIT =^._.^= |~~~~~~~~~ ");
-  });
+  pcs->on_commit().subscribe(
+      [this](auto) { log_->info("~~~~~~~~~| COMMIT =^._.^= |~~~~~~~~~ "); });
 
   log_->info("[Init] => pcs");
 }
@@ -267,12 +251,10 @@ void Irohad::run() {
   builder.RegisterService(yac_init.consensus_network.get());
   builder.RegisterService(loader_init.service.get());
   internal_server = builder.BuildAndStart();
-  internal_thread = std::thread([this] { internal_server->Wait(); });
   server_thread = std::thread([this] {
-    torii_server->run(std::move(command_service),
-                      std::move(query_service));
+    torii_server->run(std::move(command_service), std::move(query_service));
   });
   log_->info("===> iroha initialized");
   torii_server->waitForServersReady();
-  loop->run();
+  internal_server->Wait();
 }

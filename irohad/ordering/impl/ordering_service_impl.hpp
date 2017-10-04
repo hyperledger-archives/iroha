@@ -21,12 +21,12 @@
 #include <tbb/concurrent_queue.h>
 #include <memory>
 #include <unordered_map>
-#include <uvw.hpp>
 #include "ametsuchi/peer_query.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/proposal.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "ordering.grpc.pb.h"
+#include <rxcpp/rx.hpp>
 
 namespace iroha {
   namespace ordering {
@@ -41,13 +41,11 @@ namespace iroha {
      */
     class OrderingServiceImpl
         : public proto::OrderingService::Service,
-          public uvw::Emitter<OrderingServiceImpl>,
           network::AsyncGrpcClient<google::protobuf::Empty> {
      public:
       OrderingServiceImpl(
           std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
-          size_t delay_milliseconds,
-          std::shared_ptr<uvw::Loop> loop = uvw::Loop::getDefault());
+          size_t delay_milliseconds);
 
       grpc::Status SendTransaction(
           ::grpc::ServerContext *context, const protocol::Transaction *request,
@@ -80,7 +78,13 @@ namespace iroha {
        */
       void preparePeersForProposalRound();
 
-      std::shared_ptr<uvw::TimerHandle> timer_;
+      /**
+       * Update the timer to be called after delay_milliseconds_
+       */
+      void updateTimer();
+
+      rxcpp::observable<long> timer;
+      rxcpp::composite_subscription handle;
       std::shared_ptr<ametsuchi::PeerQuery> wsv_;
 
       model::converters::PbTransactionFactory factory_;

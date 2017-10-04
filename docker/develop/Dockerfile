@@ -121,21 +121,6 @@ RUN git clone https://github.com/Cylix/cpp_redis /tmp/cpp_redis; \
     cmake --build /tmp/cpp_redis/build --target install -- -j${PARALLELISM}; \
     rm -rf /tmp/cpp_redis
 
-# install libuv
-RUN git clone https://github.com/libuv/libuv /tmp/libuv; \
-    (cd /tmp/libuv ; git checkout 2bb4b68758f07cd8617838e68c44c125bc567ba6); \
-    /tmp/libuv/autogen.sh; \
-    (cd /tmp/libuv ; /tmp/libuv/configure); \
-    make -j${PARALLELISM} -C /tmp/libuv; \
-    make -C /tmp/libuv install; \
-    rm -rf /tmp/libuv
-
-# install uvw
-RUN git clone https://github.com/skypjack/uvw /tmp/uvw; \
-    (cd /tmp/uvw ; git checkout 00de1f1110ce4a9803a85a214af5326529f11312); \
-    cp -r /tmp/uvw/src/* /usr/local/include; \
-    rm -rf /tmp/uvw
-
 # install tbb
 RUN git clone https://github.com/01org/tbb /tmp/tbb; \
     (cd /tmp/tbb ; git checkout eb6336ad29450f2a64af5123ca1b9429ff6bc11d); \

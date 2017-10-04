@@ -21,13 +21,13 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "consensus/yac/yac.hpp"
-#include "consensus/yac/messages.hpp"
-#include "consensus/yac/impl/yac_gate_impl.hpp"
-#include "consensus/yac/transport/impl/network_impl.hpp"
-#include "consensus/yac/impl/timer_impl.hpp"
 #include "consensus/yac/impl/peer_orderer_impl.hpp"
+#include "consensus/yac/impl/timer_impl.hpp"
+#include "consensus/yac/impl/yac_gate_impl.hpp"
 #include "consensus/yac/impl/yac_hash_provider_impl.hpp"
+#include "consensus/yac/messages.hpp"
+#include "consensus/yac/transport/impl/network_impl.hpp"
+#include "consensus/yac/yac.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -42,28 +42,26 @@ namespace iroha {
 
         auto createCryptoProvider(model::Peer::KeyType pubkey);
 
-        auto createTimer(std::shared_ptr<uvw::Loop> loop);
+        auto createTimer();
 
         auto createHashProvider();
 
-        std::shared_ptr<consensus::yac::Yac> createYac(std::string network_address,
-                                                       std::shared_ptr<uvw::Loop> loop,
-                                                       ClusterOrdering initial_order);
+        std::shared_ptr<consensus::yac::Yac> createYac(
+            std::string network_address, ClusterOrdering initial_order);
 
         uint64_t delay_seconds_ = 5;
 
        public:
-        std::shared_ptr<YacGateImpl> initConsensusGate(std::string network_address,
-                                                       std::shared_ptr<uvw::Loop> loop,
-                                                       std::shared_ptr<
-                                                           YacPeerOrderer> peer_orderer,
-                                                       std::shared_ptr<simulator::BlockCreator> block_creator,
-                                                       std::shared_ptr<network::BlockLoader> block_loader);
+        std::shared_ptr<YacGateImpl> initConsensusGate(
+            std::string network_address,
+            std::shared_ptr<YacPeerOrderer> peer_orderer,
+            std::shared_ptr<simulator::BlockCreator> block_creator,
+            std::shared_ptr<network::BlockLoader> block_loader);
 
         std::shared_ptr<NetworkImpl> consensus_network;
       };
-    } // namespace yac
-  } // namespace consensus
-} // namespace iroha
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha
 
-#endif //IROHA_CONSENSUS_INIT_HPP
+#endif  // IROHA_CONSENSUS_INIT_HPP
