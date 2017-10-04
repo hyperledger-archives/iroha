@@ -12,8 +12,8 @@ message Asset {
 
 message Account {
     string account_id = 1;
-    string domain_name = 2;
-    uint32 quorum = 4;
+    string domain_id = 2;
+    uint32 quorum = 3;
 }
 
 message AccountAsset {

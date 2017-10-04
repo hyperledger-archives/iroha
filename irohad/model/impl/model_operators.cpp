@@ -124,8 +124,8 @@ namespace iroha {
     bool CreateDomain::operator==(const Command &command) const {
       if (! instanceof <CreateDomain>(command)) return false;
       auto create_domain = static_cast<const CreateDomain &>(command);
-      return create_domain.domain_name == domain_name
-          && create_domain.default_role == default_role;
+      return create_domain.domain_id == domain_id
+          && create_domain.user_default_role == user_default_role;
     }
 
     /* Remove signatory */

@@ -55,11 +55,11 @@ class CommandValidateExecuteTest : public ::testing::Test {
     wsv_command = std::make_shared<StrictMock<MockWsvCommand>>();
 
     creator.account_id = admin_id;
-    creator.domain_name = domain_id;
+    creator.domain_id = domain_id;
     creator.quorum = 1;
 
     account.account_id = account_id;
-    account.domain_name = domain_id;
+    account.domain_id = domain_id;
     account.quorum = 1;
 
     default_domain.domain_id = domain_id;
@@ -350,13 +350,25 @@ TEST_F(CreateAccountTest, InvalidWhenLongName) {
   ASSERT_FALSE(validateAndExecute());
 }
 
-TEST_F(CreateAccountTest, InvalidWhenBadName) {
+TEST_F(CreateAccountTest, InvalidWhenNameWithSystemSymbols) {
   // Not valid name for account (system symbols)
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
       .WillOnce(Return(admin_roles));
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(role_permissions));
   create_account->account_name = "test@";
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
+
+TEST_F(CreateAccountTest, InvalidWhenUpperCaseName) {
+  // Not valid name for account (system symbols)
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  create_account->account_name = "TEST";
 
   ASSERT_FALSE(validateAndExecute());
 }
@@ -406,7 +418,7 @@ class CreateDomainTest : public CommandValidateExecuteTest {
     CommandValidateExecuteTest::SetUp();
 
     create_domain = std::make_shared<CreateDomain>();
-    create_domain->domain_name = "CN";
+    create_domain->domain_id = "CN";
 
     command = create_domain;
     role_permissions = {can_create_domain};
@@ -542,14 +554,20 @@ class SetQuorumTest : public CommandValidateExecuteTest {
   void SetUp() override {
     CommandValidateExecuteTest::SetUp();
 
+    pubkey_t creator_key, account_key;
+    creator_key.fill(0x1);
+    account_key.fill(0x2);
+    account_pubkeys = {creator_key, account_key};
     set_quorum = std::make_shared<SetQuorum>();
     set_quorum->account_id = account_id;
     set_quorum->new_quorum = 2;
 
     command = set_quorum;
     role_permissions = {can_set_quorum};
+
   }
 
+  std::vector<pubkey_t> account_pubkeys;
   std::shared_ptr<SetQuorum> set_quorum;
 };
 
@@ -561,6 +579,10 @@ TEST_F(SetQuorumTest, ValidWhenCreatorHasPermissions) {
 
   EXPECT_CALL(*wsv_query, getAccount(set_quorum->account_id))
       .WillOnce(Return(account));
+
+  EXPECT_CALL(*wsv_query, getSignatories(set_quorum->account_id))
+      .WillOnce(Return(account_pubkeys));
+
   EXPECT_CALL(*wsv_command, updateAccount(_)).WillOnce(Return(true));
 
   ASSERT_TRUE(validateAndExecute());
@@ -575,6 +597,8 @@ TEST_F(SetQuorumTest, ValidWhenSameAccount) {
   set_quorum->account_id = creator.account_id;
   EXPECT_CALL(*wsv_query, getAccount(set_quorum->account_id))
       .WillOnce(Return(account));
+  EXPECT_CALL(*wsv_query, getSignatories(set_quorum->account_id))
+      .WillOnce(Return(account_pubkeys));
   EXPECT_CALL(*wsv_command, updateAccount(_)).WillOnce(Return(true));
 
   ASSERT_TRUE(validateAndExecute());
@@ -595,6 +619,26 @@ TEST_F(SetQuorumTest, InvalidWhenNoAccount) {
   EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(
                               admin_id, set_quorum->account_id, can_set_quorum))
       .WillOnce(Return(false));
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
+
+TEST_F(SetQuorumTest, InvalidWhenNotEnoughSignatories) {
+  // Creator is the account
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  set_quorum->account_id = creator.account_id;
+  EXPECT_CALL(*wsv_query, getAccount(set_quorum->account_id))
+      .Times(0);
+  pubkey_t key;
+  key.fill(0x1);
+  std::vector<pubkey_t> acc_pubkeys = {key};
+  EXPECT_CALL(*wsv_query, getSignatories(set_quorum->account_id))
+      .WillOnce(Return(acc_pubkeys));
+  EXPECT_CALL(*wsv_command, updateAccount(_)).Times(0);
 
   ASSERT_FALSE(validateAndExecute());
 }
@@ -841,7 +885,7 @@ class CreateRoleTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
     CommandValidateExecuteTest::SetUp();
-    std::set<std::string> perm = {"CanDoMagic"};
+    std::unordered_set<std::string> perm = {"CanDoMagic"};
     create_role = std::make_shared<CreateRole>("master", perm);
     command = create_role;
     role_permissions = {can_create_role};

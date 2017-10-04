@@ -36,9 +36,9 @@ namespace iroha {
 
       /**
        * Account has only one domain.
-       * Name of the domain of a account
+       * Id of the domain of a account
        */
-      std::string domain_name;
+      std::string domain_id;
 
       /**
        * Minimum quorum of signatures need for transactions

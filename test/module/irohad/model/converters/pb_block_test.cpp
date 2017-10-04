@@ -43,7 +43,7 @@ TEST(BlockTest, bl_test) {
   orig_tx.tx_counter = 1;
 
   auto c1 = iroha::model::CreateDomain();
-  c1.domain_name = "keker";
+  c1.domain_id = "keker";
   auto c2 = iroha::model::CreateAsset();
   c2.domain_id = "keker";
   c2.precision = 2;

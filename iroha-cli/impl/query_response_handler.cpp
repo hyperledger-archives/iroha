@@ -76,7 +76,7 @@ namespace iroha_cli {
     log_->info("[Account]:");
     log_->info("-Id:- {}", account.account_id());
     // TODO 06/08/17 grimadas: print roles IR-506
-    log_->info("-Domain- {}", account.domain_name());
+    log_->info("-Domain- {}", account.domain_id());
   }
 
   void QueryResponseHandler::handleAccountAssetsResponse(

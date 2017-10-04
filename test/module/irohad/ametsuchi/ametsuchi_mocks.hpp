@@ -62,7 +62,7 @@ namespace iroha {
                                            const std::string &role_name));
       MOCK_METHOD2(insertRolePermissions,
                    bool(const std::string &role_id,
-                        const std::set<std::string> &permissions));
+                        const std::unordered_set<std::string> &permissions));
 
       MOCK_METHOD3(insertAccountGrantablePermission,
                    bool(const std::string &permittee_account_id,

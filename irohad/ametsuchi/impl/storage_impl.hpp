@@ -122,9 +122,13 @@ namespace iroha {
 
      protected:
       const std::string init_ = R"(
+CREATE TABLE IF NOT EXISTS role (
+    role_id character varying(45),
+    PRIMARY KEY (role_id)
+);
 CREATE TABLE IF NOT EXISTS domain (
     domain_id character varying(164),
-    default_role character varying(164),
+    default_role character varying(45) NOT NULL REFERENCES role(role_id),
     PRIMARY KEY (domain_id)
 );
 CREATE TABLE IF NOT EXISTS signatory (
@@ -160,10 +164,6 @@ CREATE TABLE IF NOT EXISTS account_has_asset (
     asset_id character varying(197) NOT NULL REFERENCES asset,
     amount decimal NOT NULL,
     PRIMARY KEY (account_id, asset_id)
-);
-CREATE TABLE IF NOT EXISTS role (
-    role_id character varying(45),
-    PRIMARY KEY (role_id)
 );
 CREATE TABLE IF NOT EXISTS role_has_permissions (
     role_id character varying(45) NOT NULL REFERENCES role,

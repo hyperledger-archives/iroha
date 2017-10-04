@@ -19,15 +19,15 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
+#include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
+#include "model/commands/create_role.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/subtract_asset_quantity.hpp"
 #include "model/commands/transfer_asset.hpp"
-#include "model/commands/create_role.hpp"
-#include "model/commands/append_role.hpp"
 #include "model/permissions.hpp"
 
 using namespace generator;
@@ -70,14 +70,33 @@ namespace iroha {
         return generateCommand<CreateAsset>(asset_name, domain_id, precision);
       }
 
-      std::shared_ptr<Command> CommandGenerator::generateCreateAdminRole(std::string role_name) {
-        std::set<std::string> perms = {
-            can_create_domain,  can_add_signatory,  can_remove_signatory,
-            can_set_quorum,     can_get_my_account, can_get_my_signatories,
-            can_get_my_acc_ast, can_get_my_acc_txs, can_create_asset, can_add_asset_qty};
+      std::shared_ptr<Command> CommandGenerator::generateCreateAdminRole(
+          std::string role_name) {
+        std::unordered_set<std::string> perms = {
+            can_create_domain, can_create_account, can_add_peer};
+        perms.insert(edit_self_group.begin(), edit_self_group.end());
+        perms.insert(read_all_group.begin(), read_all_group.end());
         return std::make_shared<CreateRole>(role_name, perms);
       }
 
+      std::shared_ptr<Command> CommandGenerator::generateCreateUserRole(
+          std::string role_name) {
+        std::unordered_set<std::string> perms = {can_receive, can_transfer};
+        // User can read their account
+        perms.insert(read_self_group.begin(), read_self_group.end());
+        // User can grant permissions to others
+        perms.insert(grant_group.begin(), grant_group.end());
+        perms.insert(edit_self_group.begin(), edit_self_group.end());
+        return std::make_shared<CreateRole>(role_name, perms);
+      }
+
+      std::shared_ptr<Command> CommandGenerator::generateCreateAssetCreatorRole(
+          std::string role_name) {
+        std::unordered_set<std::string> perms = {can_receive, can_transfer};
+        perms.insert(asset_creator_group.begin(), asset_creator_group.end());
+        perms.insert(read_self_group.begin(), read_self_group.begin());
+        return std::make_shared<CreateRole>(role_name, perms);
+      }
 
       std::shared_ptr<Command> CommandGenerator::generateAddAssetQuantity(
           const std::string &account_id,

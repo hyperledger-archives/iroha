@@ -28,8 +28,10 @@ namespace iroha {
         spdlog::set_level(spdlog::level::off);
 
         domain.domain_id = "domain";
-        account.domain_name = domain.domain_id;
-        account.account_id = "id@" + account.domain_name;
+        domain.default_role = role;
+        account.domain_id = domain.domain_id;
+        account.account_id = "id@" + account.domain_id;
+        account.quorum = 1;
       }
 
       void SetUp() override {
@@ -60,9 +62,13 @@ namespace iroha {
       std::unique_ptr<WsvQuery> query;
 
       const std::string init_ = R"(
+CREATE TABLE IF NOT EXISTS role (
+    role_id character varying(45),
+    PRIMARY KEY (role_id)
+);
 CREATE TABLE IF NOT EXISTS domain (
     domain_id character varying(164),
-    default_role character varying(164),
+    default_role character varying(45) NOT NULL REFERENCES role(role_id),
     PRIMARY KEY (domain_id)
 );
 CREATE TABLE IF NOT EXISTS signatory (
@@ -98,10 +104,6 @@ CREATE TABLE IF NOT EXISTS account_has_asset (
     asset_id character varying(197) NOT NULL REFERENCES asset,
     amount bigint NOT NULL,
     PRIMARY KEY (account_id, asset_id)
-);
-CREATE TABLE IF NOT EXISTS role (
-    role_id character varying(45),
-    PRIMARY KEY (role_id)
 );
 CREATE TABLE IF NOT EXISTS role_has_permissions (
     role_id character varying(45) NOT NULL REFERENCES role,
@@ -206,11 +208,13 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
      public:
       AccountGrantablePermissionTest() {
         permittee_account = account;
-        permittee_account.account_id = "id2@" + permittee_account.domain_name;
+        permittee_account.account_id = "id2@" + permittee_account.domain_id;
+        permittee_account.quorum = 1;
       }
 
       void SetUp() override {
         WsvQueryCommandTest::SetUp();
+        ASSERT_TRUE(command->insertRole(role));
         ASSERT_TRUE(command->insertDomain(domain));
         ASSERT_TRUE(command->insertAccount(account));
         ASSERT_TRUE(command->insertAccount(permittee_account));

@@ -232,7 +232,7 @@ TEST_F(JsonCommandTest, append_role) {
 }
 
 TEST_F(JsonCommandTest, create_role) {
-  std::set<std::string> perms = {"CanDoMagic"};
+  std::unordered_set<std::string> perms = {"CanDoMagic"};
   auto orig_command = std::make_shared<CreateRole>("master", perms);
   auto json_command = factory.serializeCreateRole(orig_command);
   auto serial_command = factory.deserializeCreateRole(json_command);

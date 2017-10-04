@@ -53,19 +53,17 @@ namespace iroha {
 
     bool PostgresWsvCommand::insertRolePermissions(
         const std::string &role_id,
-        const std::set<std::string> &permissions) {
+        const std::unordered_set<std::string> &permissions) {
       auto entry = [this, &role_id](auto permission) {
         return "(" + transaction_.quote(role_id) + ", "
             + transaction_.quote(permission) + ")";
       };
-      std::vector<std::string> perm_copy;
-      std::copy(permissions.begin(), permissions.end(), std::back_inserter(perm_copy));
       try {
         transaction_.exec(
             "INSERT INTO role_has_permissions(role_id, permission_id) VALUES "
             + std::accumulate(
-                  std::next(perm_copy.begin()), perm_copy.end(),
-                  entry(perm_copy.front()),
+                  std::next(permissions.begin()), permissions.end(),
+                  entry(*permissions.begin()),
                   [&entry](auto acc, auto x) { return acc + ", " + entry(x); })
             + ";");
       } catch (const std::exception &e) {
@@ -119,7 +117,7 @@ namespace iroha {
             "            )\n"
             "    VALUES (" +
             transaction_.quote(account.account_id) + ", " +
-            transaction_.quote(account.domain_name) + ", " +
+            transaction_.quote(account.domain_id) + ", " +
             transaction_.quote(account.quorum) + ", " +
             /*account.transaction_count*/ transaction_.quote(0) + ");");
       } catch (const std::exception &e) {

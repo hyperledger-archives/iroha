@@ -16,12 +16,15 @@
  */
 
 #include <chrono>
+#include <model/commands/create_role.hpp>
 #include "crypto/hash.hpp"
 #include "framework/test_block_generator.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_account.hpp"
+#include "model/commands/create_role.hpp"
+#include "model/permissions.hpp"
 
 using namespace iroha;
 using namespace iroha::model;
@@ -49,8 +52,11 @@ namespace framework {
       Signature sign{};
       transaction.signatures = {sign};
 
+      auto create_role = std::make_shared<CreateRole>("user", all_perm_group);
+
       auto create_domain = std::make_shared<CreateDomain>();
-      create_domain->domain_name = "test";
+      create_domain->domain_id = "test";
+      create_domain->user_default_role = "user";
 
       auto create_asset = std::make_shared<CreateAsset>();
       create_asset->domain_id = "test";

@@ -77,8 +77,8 @@ TEST_F(AmetsuchiTest, SampleTest) {
   // Create domain ru
   txn.commands.push_back(std::make_shared<CreateRole>(createRole));
   CreateDomain createDomain;
-  createDomain.domain_name = "ru";
-  createDomain.default_role = "user";
+  createDomain.domain_id = "ru";
+  createDomain.user_default_role = "user";
   txn.commands.push_back(std::make_shared<CreateDomain>(createDomain));
 
   // Create account user1
@@ -110,7 +110,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
     ASSERT_TRUE(account);
     ASSERT_EQ(account->account_id,
               createAccount.account_name + "@" + createAccount.domain_id);
-    ASSERT_EQ(account->domain_name, createAccount.domain_id);
+    ASSERT_EQ(account->domain_id, createAccount.domain_id);
   }
 
   // Tx 2
@@ -281,8 +281,8 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   // Create domain
   CreateDomain createDomain;
   txn.commands.push_back(std::make_shared<CreateRole>(createRole));
-  createDomain.domain_name = domain;
-  createDomain.default_role = "user";
+  createDomain.domain_id = domain;
+  createDomain.user_default_role = "user";
   txn.commands.push_back(std::make_shared<CreateDomain>(createDomain));
 
   // Create account 1
@@ -352,19 +352,19 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
     auto account1 = wsv->getAccount(user1id);
     ASSERT_TRUE(account1);
     ASSERT_EQ(account1->account_id, user1id);
-    ASSERT_EQ(account1->domain_name, domain);
+    ASSERT_EQ(account1->domain_id, domain);
 
     // Check querying account 2
     auto account2 = wsv->getAccount(user2id);
     ASSERT_TRUE(account2);
     ASSERT_EQ(account2->account_id, user2id);
-    ASSERT_EQ(account2->domain_name, domain);
+    ASSERT_EQ(account2->domain_id, domain);
 
     // Check querying account 3
     auto account3 = wsv->getAccount(user3id);
     ASSERT_TRUE(account3);
     ASSERT_EQ(account3->account_id, user3id);
-    ASSERT_EQ(account3->domain_name, domain);
+    ASSERT_EQ(account3->domain_id, domain);
 
     // Check querying asset 1 for user 1
     auto asset1 = wsv->getAccountAsset(user1id, asset1id);
@@ -543,8 +543,8 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
 
   txn.commands.push_back(std::make_shared<CreateRole>(createRole));
   CreateDomain createDomain;
-  createDomain.domain_name = "domain";
-  createDomain.default_role = "user";
+  createDomain.domain_id = "domain";
+  createDomain.user_default_role = "user";
   txn.commands.push_back(std::make_shared<CreateDomain>(createDomain));
 
   CreateAccount createAccount;
@@ -573,7 +573,7 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
     auto account = wsv->getAccount(user1id);
     ASSERT_TRUE(account);
     ASSERT_EQ(account->account_id, user1id);
-    ASSERT_EQ(account->domain_name, createAccount.domain_id);
+    ASSERT_EQ(account->domain_id, createAccount.domain_id);
 
     auto signatories = wsv->getSignatories(user1id);
     ASSERT_TRUE(signatories);

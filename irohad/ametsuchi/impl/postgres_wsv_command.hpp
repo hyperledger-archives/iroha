@@ -36,7 +36,7 @@ namespace iroha {
 
       bool insertRolePermissions(
           const std::string &role_id,
-          const std::set<std::string> &permissions) override;
+          const std::unordered_set<std::string> &permissions) override;
 
       bool insertAccount(const model::Account &account) override;
       bool updateAccount(const model::Account &account) override;

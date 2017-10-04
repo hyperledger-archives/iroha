@@ -257,9 +257,9 @@ namespace iroha {
 
         document.SetObject();
         document.AddMember("command_type", "CreateDomain", allocator);
-        document.AddMember("domain_name", create_domain->domain_name,
+        document.AddMember("domain_id", create_domain->domain_id,
                            allocator);
-        document.AddMember("default_role", create_domain->default_role,
+        document.AddMember("user_default_role", create_domain->user_default_role,
                            allocator);
 
         return document;
@@ -269,8 +269,8 @@ namespace iroha {
           const Value &document) {
         auto des = makeFieldDeserializer(document);
         return make_optional_ptr<CreateDomain>()
-            | des.String(&CreateDomain::domain_name, "domain_name")
-            | des.String(&CreateDomain::default_role, "default_role")
+            | des.String(&CreateDomain::domain_id, "domain_id")
+            | des.String(&CreateDomain::user_default_role, "user_default_role")
             | toCommand;
       }
 
@@ -410,12 +410,10 @@ namespace iroha {
 
       optional_ptr<Command> JsonCommandFactory::deserializeCreateRole(
           const rapidjson::Value &document) {
-        // TODO: hard to do with current scheme, takes more time and effort to
-        // get into current implementation. Consider refactoring
         if (document.HasMember("role_name") and document["role_name"].IsString()
             and document.HasMember("permissions")
             and document["permissions"].IsArray()) {
-          std::set<std::string> perms;
+          std::unordered_set<std::string> perms;
           for (auto &v : document["permissions"].GetArray()) {
             if (not v.IsString()) {
               return nonstd::nullopt;

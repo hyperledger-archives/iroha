@@ -24,14 +24,14 @@ TEST(QueryResponseTest, AccountTest) {
   model::converters::PbQueryResponseFactory pb_factory;
   model::Account account;
   account.account_id = "123";
-  account.domain_name = "domain";
+  account.domain_id = "domain";
   account.quorum = 32;
 
   auto pb_account = pb_factory.serializeAccount(account);
   auto des_account = pb_factory.deserializeAccount(pb_account);
 
   ASSERT_EQ(account.account_id, des_account.account_id);
-  ASSERT_EQ(account.domain_name, des_account.domain_name);
+  ASSERT_EQ(account.domain_id, des_account.domain_id);
   ASSERT_EQ(account.quorum, account.quorum);
 }
 
@@ -40,7 +40,7 @@ TEST(QueryResponseTest, AccountResponseTest) {
 
   model::Account account;
   account.account_id = "123";
-  account.domain_name = "domain";
+  account.domain_id = "domain";
   account.quorum = 32;
 
   model::AccountResponse accountResponse;
@@ -53,8 +53,8 @@ TEST(QueryResponseTest, AccountResponseTest) {
 
   ASSERT_EQ(accountResponse.account.account_id,
             des_account_response.account.account_id);
-  ASSERT_EQ(accountResponse.account.domain_name,
-            des_account_response.account.domain_name);
+  ASSERT_EQ(accountResponse.account.domain_id,
+            des_account_response.account.domain_id);
   ASSERT_EQ(accountResponse.account.quorum, account.quorum);
 }
 

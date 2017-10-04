@@ -132,8 +132,8 @@ TEST(ModelOperatorTest, CreateAssetTest) {
 
 CreateDomain createCreateDomain() {
   CreateDomain createDomain;
-  createDomain.domain_name = "rus";
-  createDomain.default_role = "test";
+  createDomain.domain_id = "rus";
+  createDomain.user_default_role = "test";
   return createDomain;
 }
 
@@ -142,7 +142,7 @@ TEST(ModelOperatorTest, CreateDomainTest) {
   auto second = createCreateDomain();
 
   ASSERT_EQ(first, second);
-  second.domain_name = "jp";
+  second.domain_id = "jp";
   ASSERT_NE(first, second);
 }
 

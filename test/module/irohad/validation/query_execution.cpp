@@ -52,7 +52,7 @@ auto ADMIN_ROLE = "admin";
 iroha::model::Account get_default_creator() {
   iroha::model::Account creator = iroha::model::Account();
   creator.account_id = ADMIN_ID;
-  creator.domain_name = DOMAIN_NAME;
+  creator.domain_id = DOMAIN_NAME;
   creator.quorum = 1;
   // TODO: add role based permission
   return creator;
@@ -61,7 +61,7 @@ iroha::model::Account get_default_creator() {
 iroha::model::Account get_default_account() {
   auto dummy = iroha::model::Account();
   dummy.account_id = ACCOUNT_ID;
-  dummy.domain_name = DOMAIN_NAME;
+  dummy.domain_id = DOMAIN_NAME;
   dummy.quorum = 1;
   return dummy;
 }
@@ -69,7 +69,7 @@ iroha::model::Account get_default_account() {
 iroha::model::Account get_default_adversary() {
   auto dummy = iroha::model::Account();
   dummy.account_id = ADVERSARY_ID;
-  dummy.domain_name = DOMAIN_NAME;
+  dummy.domain_id = DOMAIN_NAME;
   dummy.quorum = 1;
   return dummy;
 }

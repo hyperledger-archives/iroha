@@ -48,7 +48,7 @@ namespace iroha_cli {
           {CREATE_ASSET, "Create Asset"},
           {REMOVE_SIGN, "Remove Signatory"},
           {SET_QUO, "Set Account Quorum"},
-          {SUB_ASSET_QTY, "Subtract  Assets Quantity from Account"},
+          {SUB_ASSET_QTY, "Subtract Assets Quantity from Account"},
           {TRAN_ASSET, "Transfer Assets"},
           {CREATE_ROLE, "Create new role"},
           {APPEND_ROLE, "Add new role to account"},
@@ -60,8 +60,8 @@ namespace iroha_cli {
       const auto acc_id = "Account Id";
       const auto ast_id = "Asset Id";
       const auto dom_id = "Domain Id";
-      const auto ammout_a = "Amount to add (integer part)";
-      const auto ammout_b = "Amount to add (precision)";
+      const auto amount_a = "Amount to add (integer part)";
+      const auto amount_b = "Amount to add (precision)";
       const auto peer_id = "Full address of a peer";
       const auto pub_key = "Public Key";
       const auto acc_name = "Account Name";
@@ -71,19 +71,19 @@ namespace iroha_cli {
       const auto role = "Role name";
       const auto perm = "Permission name";
 
-      const auto can_read_self = "Can read all information about his account";
-      const auto can_edit_self = "Can change his quorum/signatory";
+      const auto can_read_self = "Can read all information about their account";
+      const auto can_edit_self = "Can change their quorum/signatory";
       const auto can_read_all = "Can read all other accounts";
       const auto can_transfer_receive = "Can receive/transfer assets";
       const auto can_asset_creator = "Can create/add new assets";
       const auto can_roles = "Can create/append roles";
 
       command_params_descriptions_ = {
-          {ADD_ASSET_QTY, {acc_id, ast_id, ammout_a, ammout_b}},
+          {ADD_ASSET_QTY, {acc_id, ast_id, amount_a, amount_b}},
           {ADD_PEER, {peer_id, pub_key}},
           {ADD_SIGN, {acc_id, pub_key}},
           {CREATE_ACC, {acc_name, dom_id, pub_key}},
-          {CREATE_DOMAIN, {dom_id, std::string("Default ")+ role}},
+          {CREATE_DOMAIN, {dom_id, std::string("Default ") + role}},
           {CREATE_ASSET, {ast_name, dom_id, ast_precision}},
           {REMOVE_SIGN, {acc_id, pub_key}},
           {SET_QUO, {acc_id, quorum}},
@@ -92,19 +92,22 @@ namespace iroha_cli {
            {std::string("Src") + acc_id,
             std::string("Dest") + acc_id,
             ast_id,
-            ammout_a,
-            ammout_b}},
+            amount_a,
+            amount_b}},
           {CREATE_ROLE,
-           {
-               role, can_read_self, can_edit_self,
-               can_read_all, can_transfer_receive,
-               can_asset_creator, can_create_domain,
-               can_roles, can_create_account
-           }},
+           {role,
+            can_read_self,
+            can_edit_self,
+            can_read_all,
+            can_transfer_receive,
+            can_asset_creator,
+            can_create_domain,
+            can_roles,
+            can_create_account}},
           {APPEND_ROLE, {acc_id, role}},
           {GRANT_PERM, {acc_id, perm}},
           {REVOKE_PERM, {acc_id, perm}}
-          // command_params_descriptions_
+          // command parameters descriptions
       };
 
       command_handlers_ = {
@@ -123,7 +126,7 @@ namespace iroha_cli {
           {APPEND_ROLE, &InteractiveTransactionCli::parseAppendRole},
           {GRANT_PERM, &InteractiveTransactionCli::parseGrantPermission},
           {REVOKE_PERM, &InteractiveTransactionCli::parseGrantPermission}
-          // command_handlers_
+          // Command parsers
       };
 
       commands_menu_ = formMenu(command_handlers_,
@@ -154,7 +157,7 @@ namespace iroha_cli {
           {SEND_CODE, &InteractiveTransactionCli::parseSendToIroha},
           {ADD_CMD, &InteractiveTransactionCli::parseAddCommand},
           {BACK_CODE, &InteractiveTransactionCli::parseGoBack}
-          // result_handlers_
+          // Parsers for result
       };
 
       result_menu_ = formMenu(
@@ -233,57 +236,44 @@ namespace iroha_cli {
       auto create_account = parser::parseValue<bool>(params[8]);
 
       if (not read_self.has_value() or not edit_self.has_value()
-          or not read_all.has_value() or not transfer_receive.has_value()
-          or not asset_create.has_value() or not create_domain.has_value()
-          or not roles.has_value() or not create_account.has_value()) {
+          or not read_all.has_value()
+          or not transfer_receive.has_value()
+          or not asset_create.has_value()
+          or not create_domain.has_value()
+          or not roles.has_value()
+          or not create_account.has_value()) {
         std::cout << "Wrong format for permission" << std::endl;
         return nullptr;
       }
-      std::set<std::string> perms;
-      if (read_self.value()){
-        perms.insert(can_get_my_account);
-        perms.insert(can_get_my_acc_txs);
-        perms.insert(can_get_my_acc_ast);
-        perms.insert(can_get_my_acc_ast_txs);
-        perms.insert(can_get_my_signatories);
+      std::unordered_set<std::string> perms;
+      if (read_self.value()) {
+        perms.insert(read_self_group.begin(), read_self_group.end());
       }
-      if (edit_self.value()){
-        perms.insert(can_set_quorum);
-        perms.insert(can_add_signatory);
-        perms.insert(can_remove_signatory);
+      if (edit_self.value()) {
+        perms.insert(edit_self_group.begin(), edit_self_group.end());
+        perms.insert(grant_group.begin(), grant_group.end());
       }
-      // By default everybody can grant??
-      perms.insert("CanGrant"+can_set_quorum);
-      perms.insert("CanGrant"+can_add_signatory);
-      perms.insert("CanGrant"+can_remove_signatory);
 
-      if (read_all.value()){
-        perms.insert(can_get_all_acc_txs);
-        perms.insert(can_get_all_acc_ast);
-        perms.insert(can_get_all_signatories);
-        perms.insert(can_get_all_accounts);
-        perms.insert(can_get_all_acc_ast_txs);
-        perms.insert(can_read_assets);
+      if (read_all.value()) {
+        perms.insert(read_all_group.begin(), read_all_group.end());
       }
-      if(transfer_receive.value()){
+      if (transfer_receive.value()) {
         perms.insert(can_transfer);
         perms.insert(can_receive);
       }
-      if (asset_create.value()){
-        perms.insert(can_create_asset);
-        perms.insert(can_add_asset_qty);
+      if (asset_create.value()) {
+        perms.insert(asset_creator_group.begin(), asset_creator_group.end());
       }
-      if (create_domain.value()){
+      if (create_domain.value()) {
         perms.insert(can_create_domain);
       }
-      if(roles.value()){
+      if (roles.value()) {
         perms.insert(can_create_role);
         perms.insert(can_append_role);
       }
-      if (create_account.value()){
+      if (create_account.value()) {
         perms.insert(can_create_account);
       }
-
 
       return std::make_shared<CreateRole>(role, perms);
     }
@@ -367,8 +357,8 @@ namespace iroha_cli {
     InteractiveTransactionCli::parseCreateDomain(
         std::vector<std::string> params) {
       auto domain_id = params[0];
-      auto role = params[1];
-      return generator_.generateCreateDomain(domain_id, role);
+      auto user_default_role = params[1];
+      return generator_.generateCreateDomain(domain_id, user_default_role);
     }
 
     std::shared_ptr<iroha::model::Command>
@@ -448,9 +438,9 @@ namespace iroha_cli {
       }
 
       // Forming a transaction
-      auto tx =
-          tx_generator_.generateTransaction(creator_, tx_counter_, commands_);
 
+      auto tx = tx_generator_.generateTransaction( creator_,
+                                                  tx_counter_, commands_);
       // clear commands so that we can start creating new tx
       commands_.clear();
 

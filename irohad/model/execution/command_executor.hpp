@@ -104,6 +104,8 @@ namespace iroha {
 
       bool isValid(const Command &command,
                    ametsuchi::WsvQuery &queries) override;
+     private:
+      Account creator_;
     };
 
     class GrantPermissionExecutor : public CommandExecutor {

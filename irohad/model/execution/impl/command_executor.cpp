@@ -48,7 +48,7 @@ namespace iroha {
     bool CommandExecutor::validate(const Command &command, WsvQuery &queries,
                                    const Account &creator) {
       return hasPermissions(command, queries, creator)
-          && isValid(command, queries);
+          and isValid(command, queries);
     }
 
     // ----------------------------| Append Role |-----------------------------
@@ -97,20 +97,27 @@ bool AppendRoleExecutor::isValid(const Command &command,
     bool CreateRoleExecutor::hasPermissions(const Command &command,
                                             ametsuchi::WsvQuery &queries,
                                             const Account &creator) {
+      creator_ = creator;
       return checkAccountRolePermission(creator.account_id, queries,
                                         can_create_role);
     }
 
     bool CreateRoleExecutor::isValid(const Command &command,
                                      ametsuchi::WsvQuery &queries) {
-      // TODO: check. Add checks on naming of the role (no system symbols,
-      // lower-case, regex)
-      // TODO: you can't create role more than you have
-      return true;
+      auto cmd_value = static_cast<const CreateRole &>(command);
+      cmd_value.role_name.size();
+
+      // TODO: Check that new role has a subset of already owned permissions
+
+      return not cmd_value.role_name.empty() and cmd_value.role_name.size() < 8
+          and
+          // Account must be well-formed (no system symbols)
+          std::all_of(std::begin(cmd_value.role_name),
+                      std::end(cmd_value.role_name),
+                      [](char c) { return std::isalnum(c) and islower(c); });
     }
 
-    // ----------------------------| Grant Permission
-    // |----------------------------
+    // --------------------|Grant Permission|-----------------------
     GrantPermissionExecutor::GrantPermissionExecutor() : creator_() {
       log_ = logger::log("GrantPermissionExecutor");
     }
@@ -241,8 +248,6 @@ bool AppendRoleExecutor::isValid(const Command &command,
     bool AddAssetQuantityExecutor::isValid(const Command &command,
                                            WsvQuery &queries) {
       auto add_asset_quantity = static_cast<const AddAssetQuantity &>(command);
-
-      // TODO add some checks foramountif there will be a need
       return true;
     }
 
@@ -311,7 +316,6 @@ bool AppendRoleExecutor::isValid(const Command &command,
 
     bool AddSignatoryExecutor::isValid(const Command &command,
                                        ametsuchi::WsvQuery &queries) {
-      // TODO: no checks ?
       return true;
     }
 
@@ -329,7 +333,7 @@ bool AppendRoleExecutor::isValid(const Command &command,
       account.account_id =
           create_account.account_name + "@" + create_account.domain_id;
 
-      account.domain_name = create_account.domain_id;
+      account.domain_id = create_account.domain_id;
       account.quorum = 1;
       auto domain = queries.getDomain(create_account.domain_id);
       if (not domain.has_value()){
@@ -364,7 +368,7 @@ bool AppendRoleExecutor::isValid(const Command &command,
           // Account must be well-formed (no system symbols)
           std::all_of(std::begin(create_account.account_name),
                       std::end(create_account.account_name),
-                      [](char c) { return std::isalnum(c); });
+                      [](char c) { return std::isalnum(c) and islower(c); });
     }
 
     // --------------------------|CreateAsset|---------------------------
@@ -421,8 +425,8 @@ bool AppendRoleExecutor::isValid(const Command &command,
       auto create_domain = static_cast<const CreateDomain &>(command);
 
       Domain new_domain;
-      new_domain.domain_id = create_domain.domain_name;
-      new_domain.default_role = create_domain.default_role;
+      new_domain.domain_id = create_domain.domain_id;
+      new_domain.default_role = create_domain.user_default_role;
       // The insert will fail if domain already exist
       return commands.insertDomain(new_domain);
     }
@@ -441,11 +445,11 @@ bool AppendRoleExecutor::isValid(const Command &command,
 
       return
           // Name is within some range
-          not create_domain.domain_name.empty()
-          and create_domain.domain_name.size() < 10 and
+          not create_domain.domain_id.empty()
+          and create_domain.domain_id.size() < 10 and
           // Account must be well-formed (no system symbols)
-          std::all_of(std::begin(create_domain.domain_name),
-                      std::end(create_domain.domain_name),
+          std::all_of(std::begin(create_domain.domain_id),
+                      std::end(create_domain.domain_id),
                       [](char c) { return std::isalnum(c); });
     }
 
@@ -541,9 +545,15 @@ bool AppendRoleExecutor::isValid(const Command &command,
     bool SetQuorumExecutor::isValid(const Command &command,
                                     ametsuchi::WsvQuery &queries) {
       auto set_quorum = static_cast<const SetQuorum &>(command);
+      auto signatories = queries.getSignatories(set_quorum.account_id);
 
-      // Quorum must be from 1 to N
-      return set_quorum.new_quorum > 0 and set_quorum.new_quorum < 10;
+      if (not(signatories.has_value())) {
+        // No  signatories of an account found
+        return false;
+      }
+      // You can't remove if size of rest signatories less than the quorum
+      return set_quorum.new_quorum > 0 and set_quorum.new_quorum < 10
+          and signatories.value().size() >= set_quorum.new_quorum;
     }
 
     // ------------------------|TransferAsset|-------------------------
@@ -583,7 +593,6 @@ bool AppendRoleExecutor::isValid(const Command &command,
       }
       // Get src balance
       auto src_balance = src_account_asset.value().balance;
-      // TODO: handle non-trivial arithmetic
       auto new_src_balance = src_balance - transfer_asset.amount;
       if (not new_src_balance.has_value()) {
         return false;

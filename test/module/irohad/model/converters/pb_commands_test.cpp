@@ -183,16 +183,35 @@ TEST(CommandTest, set_transfer_asset) {
   command_converter_test(orig_command);
 }
 
+class TestablePbCommandFactory : public iroha::model::converters::PbCommandFactory{
+ public:
+  auto& getPermMap(){
+    return pb_role_map_;
+  }
+};
+
+
 TEST(CommandTest, create_role) {
   auto factory = iroha::model::converters::PbCommandFactory();
+  std::unordered_set<std::string> perms;
+  perms.insert(all_perm_group.begin(), all_perm_group.end());
 
-  auto orig_command = CreateRole("master", {can_add_signatory});
+  for (auto perm : perms){
+    TestablePbCommandFactory test_factory;
+    auto map = test_factory.getPermMap();
+    auto it = map.right.find(perm);
+    ASSERT_NE(map.right.end(), it) << "On permission " << perm;
+    std::unordered_set<std::string> tmp_perms = {perm};
+    auto orig_command = CreateRole("master", tmp_perms);
+    auto proto_command = factory.serializeCreateRole(orig_command);
+    auto serial_command = factory.deserializeCreateRole(proto_command);
+    ASSERT_EQ(orig_command, serial_command);
 
+  }
+  auto orig_command = CreateRole("master", perms);
   auto proto_command = factory.serializeCreateRole(orig_command);
   auto serial_command = factory.deserializeCreateRole(proto_command);
-
   ASSERT_EQ(orig_command, serial_command);
-
   command_converter_test(orig_command);
 }
 
