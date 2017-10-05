@@ -42,7 +42,7 @@ namespace iroha {
       rxcpp::observable<model::Transaction> getAccountAssetTransactions(
           std::string account_id, std::string asset_id) override;
 
-     private:
+     protected:
       FlatFile &block_store_;
 
       model::converters::JsonBlockFactory serializer_;

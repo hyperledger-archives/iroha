@@ -20,7 +20,8 @@
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
-#include "ametsuchi/impl/flat_file_block_query.hpp"
+//#include "ametsuchi/impl/flat_file_block_query.hpp"
+#include "ametsuchi/impl/redis_flat_block_query.hpp"
 #include "model/converters/json_common.hpp"
 
 namespace iroha {
@@ -34,7 +35,7 @@ namespace iroha {
         std::unique_ptr<pqxx::lazyconnection> wsv_connection,
         std::unique_ptr<pqxx::nontransaction> wsv_transaction)
         : block_store_dir_(std::move(block_store_dir)),
-          redis_host_(std::move(redis_host)),
+          redis_host_(redis_host),
           redis_port_(redis_port),
           postgres_options_(std::move(postgres_options)),
           block_store_(std::move(block_store)),
@@ -42,7 +43,7 @@ namespace iroha {
           wsv_connection_(std::move(wsv_connection)),
           wsv_transaction_(std::move(wsv_transaction)),
           wsv_(std::make_shared<PostgresWsvQuery>(*wsv_transaction_)),
-          blocks_(std::make_shared<FlatFileBlockQuery>(*block_store_)) {
+          blocks_(std::make_shared<RedisFlatBlockFile>(redis_host, redis_port, *block_store_)) {
       log_ = logger::log("StorageImpl");
 
       wsv_transaction_->exec(init_);
@@ -104,7 +105,9 @@ namespace iroha {
       blocks_->getTopBlocks(1)
           .subscribe_on(rxcpp::observe_on_new_thread())
           .as_blocking()
-          .subscribe([&top_hash](auto block) { top_hash = block.hash; });
+          .subscribe([&top_hash](auto block) {
+            top_hash = block.hash;
+          });
 
       return std::make_unique<MutableStorageImpl>(
           top_hash.value_or(hash256_t{}),
@@ -186,6 +189,8 @@ namespace iroha {
                               serializer_.serialize(block.second))));
       }
       storage->index_->exec();
+      storage->index_->sync_commit();
+
       storage->transaction_->exec("COMMIT;");
       storage->committed = true;
     }

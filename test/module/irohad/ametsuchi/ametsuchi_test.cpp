@@ -32,6 +32,8 @@
 #include "model/converters/pb_block_factory.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 
+#include "ametsuchi/impl/redis_flat_block_query.hpp"
+
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
 using namespace framework::test_subscriber;
@@ -63,16 +65,22 @@ TEST_F(AmetsuchiTest, SampleTest) {
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
 
+  // Tx 1
   Transaction txn;
   txn.creator_account_id = "admin1";
+
+  // Create domain ru
   CreateDomain createDomain;
   createDomain.domain_name = "ru";
   txn.commands.push_back(std::make_shared<CreateDomain>(createDomain));
+
+  // Create account user1
   CreateAccount createAccount;
   createAccount.account_name = "user1";
   createAccount.domain_id = "ru";
   txn.commands.push_back(std::make_shared<CreateAccount>(createAccount));
 
+  // Compose block
   Block block;
   block.transactions.push_back(txn);
   block.height = 1;
@@ -90,31 +98,40 @@ TEST_F(AmetsuchiTest, SampleTest) {
   }
 
   {
-    auto account = wsv->getAccount(createAccount.account_name + "@" +
-                                       createAccount.domain_id);
+    auto account = wsv->getAccount(createAccount.account_name + "@"
+                                   + createAccount.domain_id);
     ASSERT_TRUE(account);
     ASSERT_EQ(account->account_id,
               createAccount.account_name + "@" + createAccount.domain_id);
     ASSERT_EQ(account->domain_name, createAccount.domain_id);
   }
 
+  // Tx 2
   txn = Transaction();
   txn.creator_account_id = "admin2";
+
+  // Create account user2
   createAccount = CreateAccount();
   createAccount.account_name = "user2";
   createAccount.domain_id = "ru";
   txn.commands.push_back(std::make_shared<CreateAccount>(createAccount));
+
+  // Create asset RUB#ru
   CreateAsset createAsset;
   createAsset.domain_id = "ru";
   createAsset.asset_name = "RUB";
   createAsset.precision = 2;
   txn.commands.push_back(std::make_shared<CreateAsset>(createAsset));
+
+  // Add RUB#ru to user1
   AddAssetQuantity addAssetQuantity;
   addAssetQuantity.asset_id = "RUB#ru";
   addAssetQuantity.account_id = "user1@ru";
   iroha::Amount asset_amount(150, 2);
   addAssetQuantity.amount = asset_amount;
   txn.commands.push_back(std::make_shared<AddAssetQuantity>(addAssetQuantity));
+
+  // Transfer asset from user 1
   TransferAsset transferAsset;
   transferAsset.src_account_id = "user1@ru";
   transferAsset.dest_account_id = "user2@ru";
@@ -124,6 +141,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   transferAsset.amount = transfer_amount;
   txn.commands.push_back(std::make_shared<TransferAsset>(transferAsset));
 
+  // Compose block
   block = Block();
   block.transactions.push_back(txn);
   block.height = 2;
@@ -144,6 +162,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
     ASSERT_EQ(asset1->account_id, "user1@ru");
     ASSERT_EQ(asset1->asset_id, "RUB#ru");
     ASSERT_EQ(asset1->balance, iroha::Amount(50, 2));
+
     auto asset2 = wsv->getAccountAsset("user2@ru", "RUB#ru");
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, "user2@ru");
@@ -160,15 +179,19 @@ TEST_F(AmetsuchiTest, SampleTest) {
     }
   });
 
-  blocks->getAccountTransactions("admin1").subscribe(
-      [](auto tx) { EXPECT_EQ(tx.commands.size(), 2); });
-  blocks->getAccountTransactions("admin2").subscribe(
-      [](auto tx) { EXPECT_EQ(tx.commands.size(), 4); });
+  blocks->getAccountTransactions("admin1").subscribe([](auto tx) {
+    EXPECT_EQ(tx.creator_account_id, "admin1");
+    EXPECT_EQ(tx.commands.size(), 2);
+  });
+  blocks->getAccountTransactions("admin2").subscribe([](auto tx) {
+    EXPECT_EQ(tx.creator_account_id, "admin2");
+    EXPECT_EQ(tx.commands.size(), 4);
+  });
 
-  blocks->getAccountAssetTransactions("user1@ru", "RUB#ru").subscribe(
-      [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  blocks->getAccountAssetTransactions("user2@ru", "RUB#ru").subscribe(
-      [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
+  blocks->getAccountAssetTransactions("user1@ru", "RUB#ru")
+      .subscribe([](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
+  blocks->getAccountAssetTransactions("user2@ru", "RUB#ru")
+      .subscribe([](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
 }
 
 TEST_F(AmetsuchiTest, PeerTest) {
@@ -200,7 +223,8 @@ TEST_F(AmetsuchiTest, PeerTest) {
 }
 
 TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
-  auto storage = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storage =
+      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
@@ -221,36 +245,52 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   // 1st tx
   Transaction txn;
   txn.creator_account_id = admin;
+
+  // Create domain
   CreateDomain createDomain;
   createDomain.domain_name = domain;
   txn.commands.push_back(std::make_shared<CreateDomain>(createDomain));
+
+  // Create account 1
   CreateAccount createAccount1;
   createAccount1.account_name = user1name;
   createAccount1.domain_id = domain;
   txn.commands.push_back(std::make_shared<CreateAccount>(createAccount1));
+
+  // Create account 2
   CreateAccount createAccount2;
   createAccount2.account_name = user2name;
   createAccount2.domain_id = domain;
   txn.commands.push_back(std::make_shared<CreateAccount>(createAccount2));
+
+  // Create account 3
   CreateAccount createAccount3;
   createAccount3.account_name = user3name;
   createAccount3.domain_id = domain;
   txn.commands.push_back(std::make_shared<CreateAccount>(createAccount3));
+
+  // Create asset 1
   CreateAsset createAsset1;
   createAsset1.domain_id = domain;
   createAsset1.asset_name = asset1name;
   createAsset1.precision = 2;
   txn.commands.push_back(std::make_shared<CreateAsset>(createAsset1));
+
+  // Create asset 2
   CreateAsset createAsset2;
   createAsset2.domain_id = domain;
   createAsset2.asset_name = asset2name;
   createAsset2.precision = 2;
   txn.commands.push_back(std::make_shared<CreateAsset>(createAsset2));
+
+  // Add 3.00 to user 1
   AddAssetQuantity addAssetQuantity1;
   addAssetQuantity1.asset_id = asset1id;
   addAssetQuantity1.account_id = user1id;
   addAssetQuantity1.amount = iroha::Amount(300, 2);
   txn.commands.push_back(std::make_shared<AddAssetQuantity>(addAssetQuantity1));
+
+  // Add 2.50 to user 2
   AddAssetQuantity addAssetQuantity2;
   addAssetQuantity2.asset_id = asset2id;
   addAssetQuantity2.account_id = user2id;
@@ -274,24 +314,32 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   }
 
   {
+    // Check querying account 1
     auto account1 = wsv->getAccount(user1id);
     ASSERT_TRUE(account1);
     ASSERT_EQ(account1->account_id, user1id);
     ASSERT_EQ(account1->domain_name, domain);
+
+    // Check querying account 2
     auto account2 = wsv->getAccount(user2id);
     ASSERT_TRUE(account2);
     ASSERT_EQ(account2->account_id, user2id);
     ASSERT_EQ(account2->domain_name, domain);
+
+    // Check querying account 3
     auto account3 = wsv->getAccount(user3id);
     ASSERT_TRUE(account3);
     ASSERT_EQ(account3->account_id, user3id);
     ASSERT_EQ(account3->domain_name, domain);
 
+    // Check querying asset 1 for user 1
     auto asset1 = wsv->getAccountAsset(user1id, asset1id);
     ASSERT_TRUE(asset1);
     ASSERT_EQ(asset1->account_id, user1id);
     ASSERT_EQ(asset1->asset_id, asset1id);
     ASSERT_EQ(asset1->balance, iroha::Amount(300, 2));
+
+    // Check querying asset 2 for user 2
     auto asset2 = wsv->getAccountAsset(user2id, asset2id);
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, user2id);
@@ -302,6 +350,8 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   // 2th tx (user1 -> user2 # asset1)
   txn = Transaction();
   txn.creator_account_id = user1id;
+
+  // Create transfer asset from user 1 to user 2
   TransferAsset transferAsset;
   transferAsset.src_account_id = user1id;
   transferAsset.dest_account_id = user2id;
@@ -324,11 +374,13 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   }
 
   {
+    // Check account asset after transfer assets
     auto asset1 = wsv->getAccountAsset(user1id, asset1id);
     ASSERT_TRUE(asset1);
     ASSERT_EQ(asset1->account_id, user1id);
     ASSERT_EQ(asset1->asset_id, asset1id);
     ASSERT_EQ(asset1->balance, iroha::Amount(180, 2));
+
     auto asset2 = wsv->getAccountAsset(user2id, asset1id);
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, user2id);
@@ -341,12 +393,14 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   //   (user2 -> user1 # asset2)
   txn = Transaction();
   txn.creator_account_id = user2id;
+
   TransferAsset transferAsset1;
   transferAsset1.src_account_id = user2id;
   transferAsset1.dest_account_id = user3id;
   transferAsset1.asset_id = asset2id;
   transferAsset1.amount = iroha::Amount(150, 2);
   txn.commands.push_back(std::make_shared<TransferAsset>(transferAsset1));
+
   TransferAsset transferAsset2;
   transferAsset2.src_account_id = user2id;
   transferAsset2.dest_account_id = user1id;
@@ -374,11 +428,13 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
     ASSERT_EQ(asset1->account_id, user2id);
     ASSERT_EQ(asset1->asset_id, asset2id);
     ASSERT_EQ(asset1->balance, iroha::Amount(90, 2));
+
     auto asset2 = wsv->getAccountAsset(user3id, asset2id);
     ASSERT_TRUE(asset2);
     ASSERT_EQ(asset2->account_id, user3id);
     ASSERT_EQ(asset2->asset_id, asset2id);
     ASSERT_EQ(asset2->balance, iroha::Amount(150, 2));
+
     auto asset3 = wsv->getAccountAsset(user1id, asset2id);
     ASSERT_TRUE(asset3);
     ASSERT_EQ(asset3->account_id, user1id);
@@ -387,15 +443,16 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   }
 
   // Block store tests
-  blocks->getBlocks(1, 3).subscribe([block1hash, block2hash, block3hash](auto eachBlock) {
-    if (eachBlock.height == 1) {
-      EXPECT_EQ(eachBlock.hash, block1hash);
-    } else if (eachBlock.height == 2) {
-      EXPECT_EQ(eachBlock.hash, block2hash);
-    } else if (eachBlock.height == 3) {
-      EXPECT_EQ(eachBlock.hash, block3hash);
-    }
-  });
+  blocks->getBlocks(1, 3).subscribe(
+      [block1hash, block2hash, block3hash](auto eachBlock) {
+        if (eachBlock.height == 1) {
+          EXPECT_EQ(eachBlock.hash, block1hash);
+        } else if (eachBlock.height == 2) {
+          EXPECT_EQ(eachBlock.hash, block2hash);
+        } else if (eachBlock.height == 3) {
+          EXPECT_EQ(eachBlock.hash, block3hash);
+        }
+      });
 
   blocks->getAccountTransactions(admin).subscribe(
       [](auto tx) { EXPECT_EQ(tx.commands.size(), 8); });
@@ -409,22 +466,29 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   // (user1 -> user2 # asset1)
   // (user2 -> user3 # asset2)
   // (user2 -> user1 # asset2)
-  blocks->getAccountAssetTransactions(user1id, asset1id).subscribe(
-      [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  blocks->getAccountAssetTransactions(user2id, asset1id).subscribe(
-      [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  blocks->getAccountAssetTransactions(user3id, asset1id).subscribe(
-      [](auto tx) { EXPECT_EQ(tx.commands.size(), 0); });
-  blocks->getAccountAssetTransactions(user1id, asset2id).subscribe(
-      [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  blocks->getAccountAssetTransactions(user2id, asset2id).subscribe(
-      [](auto tx) { EXPECT_EQ(tx.commands.size(), 2); });
-  blocks->getAccountAssetTransactions(user3id, asset2id).subscribe(
-      [](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
+  blocks->getAccountAssetTransactions(user1id, asset1id).subscribe([](auto tx) {
+    EXPECT_EQ(tx.commands.size(), 1);
+  });
+  blocks->getAccountAssetTransactions(user2id, asset1id).subscribe([](auto tx) {
+    EXPECT_EQ(tx.commands.size(), 1);
+  });
+  blocks->getAccountAssetTransactions(user3id, asset1id).subscribe([](auto tx) {
+    EXPECT_EQ(tx.commands.size(), 0);
+  });
+  blocks->getAccountAssetTransactions(user1id, asset2id).subscribe([](auto tx) {
+    EXPECT_EQ(tx.commands.size(), 1);
+  });
+  blocks->getAccountAssetTransactions(user2id, asset2id).subscribe([](auto tx) {
+    EXPECT_EQ(tx.commands.size(), 2);
+  });
+  blocks->getAccountAssetTransactions(user3id, asset2id).subscribe([](auto tx) {
+    EXPECT_EQ(tx.commands.size(), 1);
+  });
 }
 
 TEST_F(AmetsuchiTest, AddSignatoryTest) {
-  auto storage = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storage =
+      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
 
@@ -438,9 +502,11 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   // 1st tx (create user1 with pubkey1)
   Transaction txn;
   txn.creator_account_id = "admin1";
+
   CreateDomain createDomain;
   createDomain.domain_name = "domain";
   txn.commands.push_back(std::make_shared<CreateDomain>(createDomain));
+
   CreateAccount createAccount;
   createAccount.account_name = "user1";
   createAccount.domain_id = "domain";
@@ -478,6 +544,7 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   // 2nd tx (add sig2 to user1)
   txn = Transaction();
   txn.creator_account_id = user1id;
+
   auto addSignatory = AddSignatory();
   addSignatory.account_id = user1id;
   addSignatory.pubkey = pubkey2;
@@ -511,10 +578,11 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   // 3rd tx (create user2 with pubkey1 that is same as user1's key)
   txn = Transaction();
   txn.creator_account_id = "admin2";
+
   createAccount = CreateAccount();
   createAccount.account_name = "user2";
   createAccount.domain_id = "domain";
-  createAccount.pubkey = pubkey1; // same as user1's pubkey1
+  createAccount.pubkey = pubkey1;  // same as user1's pubkey1
   txn.commands.push_back(std::make_shared<CreateAccount>(createAccount));
 
   block = Block();
@@ -553,6 +621,7 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   // 4th tx (remove pubkey1 from user1)
   txn = Transaction();
   txn.creator_account_id = user1id;
+
   auto removeSignatory = RemoveSignatory();
   removeSignatory.account_id = user1id;
   removeSignatory.pubkey = pubkey1;
@@ -592,10 +661,12 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   // 5th tx (add sig2 to user2 and set quorum = 1)
   txn = Transaction();
   txn.creator_account_id = user2id;
+
   addSignatory = AddSignatory();
   addSignatory.account_id = user2id;
   addSignatory.pubkey = pubkey2;
   txn.commands.push_back(std::make_shared<AddSignatory>(addSignatory));
+
   auto seqQuorum = SetQuorum();
   seqQuorum.account_id = user2id;
   seqQuorum.new_quorum = 2;
@@ -631,6 +702,7 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   // 6th tx (remove sig2 fro user2: This must success)
   txn = Transaction();
   txn.creator_account_id = user2id;
+
   removeSignatory = RemoveSignatory();
   removeSignatory.account_id = user2id;
   removeSignatory.pubkey = pubkey2;
