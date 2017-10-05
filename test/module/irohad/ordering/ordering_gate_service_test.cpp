@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-#include <ordering/impl/ordering_service_transport_grpc.hpp>
 #include "framework/test_subscriber.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+
+#include "ordering/impl/ordering_service_transport_grpc.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
-#include "ordering_mocks.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::model;
@@ -31,33 +31,66 @@ using namespace iroha::ametsuchi;
 using namespace std::chrono_literals;
 using ::testing::Return;
 
-class OrderingGateServiceTest : public OrderingTest {
+class OrderingGateServiceTest : public ::testing::Test {
  public:
   OrderingGateServiceTest() {
-    auto transport = std::make_shared<OrderingGateTransportGrpc>(address);
-    gate_impl = std::make_shared<OrderingGateImpl>(transport);
-    gate = gate_impl;
-    gate_transport_service = transport;
-    transport->subscribe(gate_impl);
+    peer.address = address;
+    gate_transport = std::make_shared<OrderingGateTransportGrpc>(address);
+    gate = std::make_shared<OrderingGateImpl>(gate_transport);
+    gate_transport->subscribe(gate);
+
+    service_transport = std::make_shared<OrderingServiceTransportGrpc>();
     counter = 2;
   }
 
   void SetUp() override { }
 
-  void start() override {
-    OrderingTest::start();
+  void start()  {
+    std::mutex mtx;
+    std::condition_variable cv;
+    thread = std::thread([&cv, this] {
+      grpc::ServerBuilder builder;
+      int port = 0;
+      builder.AddListeningPort(address, grpc::InsecureServerCredentials(),
+                               &port);
+
+      builder.RegisterService(gate_transport.get());
+
+      builder.RegisterService(service_transport.get());
+
+
+
+      server = builder.BuildAndStart();
+      ASSERT_NE(port, 0);
+      ASSERT_TRUE(server);
+      cv.notify_one();
+      server->Wait();
+    });
+
+    std::unique_lock<std::mutex> lock(mtx);
+    cv.wait_for(lock, std::chrono::seconds(1));
+
+    loop_thread = std::thread([this] { loop->run(); });
   }
 
-  void shutdown() override {
+  void TearDown() override  {
     proposals.clear();
-    OrderingTest::shutdown();
+    loop->stop();
+    if (loop_thread.joinable()) {
+      loop_thread.join();
+    }
+
+    server->Shutdown();
+    if (thread.joinable()) {
+      thread.join();
+    }
   }
 
   TestSubscriber<iroha::model::Proposal> init(size_t times) {
     auto wrapper =
-        make_test_subscriber<CallExact>(gate_impl->on_proposal(), times);
+        make_test_subscriber<CallExact>(gate->on_proposal(), times);
     wrapper.subscribe([this](auto proposal) { proposals.push_back(proposal); });
-    gate_impl->on_proposal().subscribe([this](auto) {
+    gate->on_proposal().subscribe([this](auto) {
       counter--;
       cv.notify_one();
     });
@@ -67,17 +100,31 @@ class OrderingGateServiceTest : public OrderingTest {
   void send_transaction(size_t i) {
     auto tx = std::make_shared<Transaction>();
     tx->tx_counter = i;
-    gate_impl->propagate_transaction(tx);
+    gate->propagate_transaction(tx);
     // otherwise tx may come unordered
     std::this_thread::sleep_for(20ms);
   }
 
-  std::shared_ptr<OrderingGateImpl> gate_impl;
+  std::string address {"0.0.0.0:50051"};
+  std::shared_ptr<uvw::Loop> loop;
+  std::thread loop_thread;
+  std::shared_ptr<OrderingGateImpl> gate;
+  std::shared_ptr<OrderingServiceImpl> service;
+
   std::vector<Proposal> proposals;
   std::atomic<size_t> counter;
   std::condition_variable cv;
   std::mutex m;
+  std::thread thread;
+  std::shared_ptr<grpc::Server> server;
+
+  Peer peer;
+  std::shared_ptr<OrderingGateTransportGrpc> gate_transport;
+  std::shared_ptr<OrderingServiceTransportGrpc> service_transport;
+
 };
+
+
 
 TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   // 8 transaction -> proposal -> 2 transaction -> proposal
@@ -88,10 +135,11 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   const size_t max_proposal = 100;
   const size_t commit_delay = 400;
 
-  auto transport = std::make_shared<OrderingServiceTransportGrpc>();
 
   service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, transport, loop);
+      wsv, max_proposal, commit_delay, service_transport, loop);
+  service_transport->subscribe(service);
+
 
   start();
   std::unique_lock<std::mutex> lk(m);
@@ -106,11 +154,13 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   send_transaction(9);
   cv.wait_for(lk, 10s);
 
-  ASSERT_TRUE(wrapper.validate());
+
+  std::this_thread::sleep_for(1s);
   ASSERT_EQ(proposals.size(), 2);
   ASSERT_EQ(proposals.at(0).transactions.size(), 8);
   ASSERT_EQ(proposals.at(1).transactions.size(), 2);
   ASSERT_EQ(counter, 0);
+  ASSERT_TRUE(wrapper.validate());
 
   size_t i = 0;
   for (auto &&proposal : proposals) {
@@ -130,10 +180,9 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
 
-  auto transport = std::make_shared<OrderingServiceTransportGrpc>();
   service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, transport, loop);
-  transport->subscribe(service);
+      wsv, max_proposal, commit_delay, service_transport, loop);
+  service_transport->subscribe(service);
 
   start();
   std::unique_lock<std::mutex> lk(m);

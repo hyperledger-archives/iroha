@@ -61,7 +61,9 @@ namespace iroha {
 
     void OrderingServiceImpl::publishProposal(model::Proposal &&proposal) {
       std::vector<std::string> peers;
-      for (const auto &peer : wsv_->getLedgerPeers().value()) {
+
+      auto lst = wsv_->getLedgerPeers().value();
+      for (const auto &peer : lst) {
         peers.push_back(peer.address);
       }
       transport_->publishProposal(std::move(proposal), peers);
@@ -70,7 +72,7 @@ namespace iroha {
 
 
 
-    void OrderingServiceImpl::updateTimer() {
+   void OrderingServiceImpl::updateTimer() {
       if (not queue_.empty()) {
         this->generateProposal();
       }
@@ -80,8 +82,6 @@ namespace iroha {
           .subscribe([this](auto) {
             this->updateTimer();
           });
-    }
-
-    OrderingServiceImpl::~OrderingServiceImpl() { handle.unsubscribe(); }
+    }OrderingServiceImpl::~OrderingServiceImpl() { handle.unsubscribe(); }
   }  // namespace ordering
 }  // namespace iroha

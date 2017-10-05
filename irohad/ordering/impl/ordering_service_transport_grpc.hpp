@@ -20,9 +20,10 @@
 #include <block.pb.h>
 #include <google/protobuf/empty.pb.h>
 #include <ordering.grpc.pb.h>
-#include <model/converters/pb_transaction_factory.hpp>
-#include <network/impl/async_grpc_client.hpp>
-#include <network/ordering_service_transport.hpp>
+
+#include "model/converters/pb_transaction_factory.hpp"
+#include "network/impl/async_grpc_client.hpp"
+#include "network/ordering_service_transport.hpp"
 
 namespace iroha {
   namespace ordering {
@@ -43,8 +44,10 @@ namespace iroha {
                                  const protocol::Transaction *request,
                                  ::google::protobuf::Empty *response) override;
 
+      ~OrderingServiceTransportGrpc() = default;
+
      private:
-      std::shared_ptr<iroha::network::OrderingServiceNotification> subscriber_;
+      std::weak_ptr<iroha::network::OrderingServiceNotification> subscriber_;
       model::converters::PbTransactionFactory factory_;
     };
 

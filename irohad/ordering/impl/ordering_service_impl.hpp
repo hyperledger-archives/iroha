@@ -20,9 +20,16 @@
 
 #include <tbb/concurrent_queue.h>
 #include <memory>
-#include <network/ordering_service_transport.hpp>
 #include <unordered_map>
+#include <uvw.hpp>
+
+#include "network/ordering_service.hpp"
+#include "network/ordering_service_transport.hpp"
+#include "network/impl/async_grpc_client.hpp"
+
 #include "ametsuchi/peer_query.hpp"
+#include "ordering.grpc.pb.h"
+
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/proposal.hpp"
 #include "network/impl/async_grpc_client.hpp"
@@ -41,7 +48,7 @@ namespace iroha {
      * @param max_size proposal size
      */
     class OrderingServiceImpl : public uvw::Emitter<OrderingServiceImpl>,
-                                public network::OrderingServiceNotification {
+                                public network::OrderingService {
      public:
       OrderingServiceImpl(
           std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
@@ -58,18 +65,20 @@ namespace iroha {
 
       ~OrderingServiceImpl() override;
 
-     private:
+    protected:
+     /**
+      * Transform model proposal to transport object and send to peers
+      * @param proposal - object for propagation
+      */
+     void publishProposal(model::Proposal &&proposal) override;
+
+    private:
       /**
        * Collect transactions from queue
        * Passes the generated proposal to publishProposal
        */
-      void generateProposal();
+      void generateProposal() override ;
 
-      /**
-       * Transform model proposal to transport object and send to peers
-       * @param proposal - object for propagation
-       */
-      void publishProposal(model::Proposal &&proposal);
 
       /**
        * Method update peers for sending proposal
@@ -84,10 +93,6 @@ namespace iroha {
       rxcpp::composite_subscription handle;
       std::shared_ptr<ametsuchi::PeerQuery> wsv_;
 
-      model::converters::PbTransactionFactory factory_;
-
-      std::shared_ptr<network::OrderingServiceTransport> transport_;
-
       tbb::concurrent_queue<model::Transaction> queue_;
 
       /**
@@ -99,7 +104,9 @@ namespace iroha {
        *  wait for specified time if queue is empty
        */
       const size_t delay_milliseconds_;
+      std::shared_ptr<network::OrderingServiceTransport> transport_;
       size_t proposal_height;
+
     };
   }  // namespace ordering
 }  // namespace iroha

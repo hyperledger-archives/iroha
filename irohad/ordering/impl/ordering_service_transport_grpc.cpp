@@ -15,28 +15,28 @@
  * limitations under the License.
  */
 #include "ordering_service_transport_grpc.hpp"
-#include <block.pb.h>
-#include <grpc++/create_channel.h>
-#include <ordering.grpc.pb.h>
-#include <ordering.pb.h>
-#include <unordered_map>
-#include "ordering.pb.h"
 
 using namespace iroha::ordering;
-void iroha::ordering::OrderingServiceTransportGrpc::subscribe(
-    std::shared_ptr<iroha::network::OrderingServiceNotification> subscriber) {
+using namespace iroha::model;
+using namespace iroha::network;
+
+void OrderingServiceTransportGrpc::subscribe(
+    std::shared_ptr<OrderingServiceNotification> subscriber) {
   subscriber_ = subscriber;
 }
 
 grpc::Status OrderingServiceTransportGrpc::onTransaction(::grpc::ServerContext *context,
                            const protocol::Transaction *request,
                            ::google::protobuf::Empty *response) {
-  subscriber_->onTransaction(*factory_.deserialize(*request));
+  if (subscriber_.expired())
+    throw std::runtime_error("No subscriber");
+
+  subscriber_.lock()->onTransaction(*factory_.deserialize(*request));
   return ::grpc::Status::OK;
 }
 
-void iroha::ordering::OrderingServiceTransportGrpc::publishProposal(
-    iroha::model::Proposal &&proposal, const std::vector<std::string> &peers) {
+void OrderingServiceTransportGrpc::publishProposal(
+    Proposal &&proposal, const std::vector<std::string> &peers) {
   std::unordered_map<std::string,
                      std::unique_ptr<proto::OrderingGateTransportGrpc::Stub>>
       peers_map;

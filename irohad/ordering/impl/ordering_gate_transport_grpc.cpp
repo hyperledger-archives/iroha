@@ -27,11 +27,14 @@ grpc::Status OrderingGateTransportGrpc::onProposal(
   for (const auto &tx : request->transactions()) {
     transactions.push_back(*factory_.deserialize(tx));
   }
-  log_->info("transactions in proposal: {}", transactions.size());
+  log_->info("transactions in proposal: {}" + std::to_string(transactions.size()));
 
   model::Proposal proposal(transactions);
   proposal.height = request->height();
-  subscriber_->onProposal(std::move(proposal));
+  if(not subscriber_.expired())
+    subscriber_.lock()->onProposal(std::move(proposal));
+  else
+    log_->error("(onProposal) No subscriber");
 
   return grpc::Status::OK;
 }
@@ -44,7 +47,7 @@ OrderingGateTransportGrpc::OrderingGateTransportGrpc(
 
 void OrderingGateTransportGrpc::propagate_transaction(
     std::shared_ptr<const model::Transaction> transaction) {
-  log_->info("Propagate tx (on transport");
+  log_->info("Propagate tx (on transport)");
   auto call = new AsyncClientCall;
 
 
@@ -57,6 +60,5 @@ void OrderingGateTransportGrpc::propagate_transaction(
 void OrderingGateTransportGrpc::subscribe(
     std::shared_ptr<iroha::network::OrderingGateNotification> subscriber) {
   log_->info("Subscribe");
-
   subscriber_ = subscriber;
 }

@@ -14,12 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include "module/irohad/ordering/ordering_mocks.hpp"
-#include "ordering/impl/ordering_gate_transport_grpc.hpp"
+#include <grpc++/grpc++.h>
+#include <gtest/gtest.h>
 
 #include "framework/test_subscriber.hpp"
+
+#include "module/irohad/network/network_mocks.hpp"
+#include "network/ordering_service.hpp"
+
 #include "ordering/impl/ordering_gate_impl.hpp"
+#include "ordering/impl/ordering_service_impl.hpp"
+#include "ordering/impl/ordering_service_transport_grpc.hpp"
+#include "ordering/impl/ordering_gate_transport_grpc.hpp"
+
 
 using namespace iroha::ordering;
 using namespace iroha::model;
@@ -28,24 +35,68 @@ using namespace framework::test_subscriber;
 
 using ::testing::_;
 
-class OrderingGateTest : public OrderingTest {
+class MockOrderingGateTransportGrpcService
+    : public proto::OrderingServiceTransportGrpc::Service {
+public:
+  MOCK_METHOD3(onTransaction, ::grpc::Status(::grpc::ServerContext *,
+                                             const iroha::protocol::Transaction *,
+                                             ::google::protobuf::Empty *));
+};
+
+class OrderingGateTest : public ::testing::Test {
  public:
   OrderingGateTest() {
-    auto transport = std::make_shared<OrderingGateTransportGrpc>(address);
+    transport = std::make_shared<OrderingGateTransportGrpc>(address);
     gate_impl = std::make_shared<OrderingGateImpl>(transport);
-    gate = gate_impl;
-    gate_transport_service = transport;
     transport->subscribe(gate_impl);
-    fake_service = static_cast<MockOrderingService *>(service_transport_service.get());
+    fake_service = std::make_shared<MockOrderingGateTransportGrpcService>();
+
   }
 
+  void SetUp() override {
+
+    std::mutex mtx;
+    std::condition_variable cv;
+    thread = std::thread([&cv, this] {
+      grpc::ServerBuilder builder;
+      int port = 0;
+      builder.AddListeningPort(address, grpc::InsecureServerCredentials(),
+                               &port);
+
+      builder.RegisterService(fake_service.get());
+
+      server = builder.BuildAndStart();
+
+      ASSERT_NE(port, 0);
+      ASSERT_TRUE(server);
+      cv.notify_one();
+      server->Wait();
+    });
+
+    std::unique_lock<std::mutex> lock(mtx);
+    cv.wait_for(lock, std::chrono::seconds(1));
+  }
+
+  void TearDown() override {
+    server->Shutdown();
+    if (thread.joinable()) {
+      thread.join();
+    }
+  }
+
+  std::unique_ptr<grpc::Server> server;
+
+  std::string address {"0.0.0.0:50051"};
+  std::shared_ptr<OrderingGateTransportGrpc> transport;
   std::shared_ptr<OrderingGateImpl> gate_impl;
-  MockOrderingService *fake_service;
+  std::shared_ptr<MockOrderingGateTransportGrpcService> fake_service;
+  std::thread thread;
 };
 
 TEST_F(OrderingGateTest, TransactionReceivedByServerWhenSent) {
   // Init => send 5 transactions => 5 transactions are processed by server
-  EXPECT_CALL(*fake_service, onTransaction(_, _, _)).Times(5);
+
+  EXPECT_CALL(*fake_service, onTransaction(_,_,_)).Times(5);
 
   for (size_t i = 0; i < 5; ++i) {
     gate_impl->propagate_transaction(std::make_shared<Transaction>());
@@ -64,7 +115,7 @@ TEST_F(OrderingGateTest, ProposalReceivedByGateWhenSent) {
 
   google::protobuf::Empty response;
 
-  gate_transport_service->onProposal(&context, &proposal, &response);
+  transport->onProposal(&context, &proposal, &response);
 
   ASSERT_TRUE(wrapper.validate());
 }

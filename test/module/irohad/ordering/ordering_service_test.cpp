@@ -15,14 +15,20 @@
  * limitations under the License.
  */
 
-#include "module/irohad/ordering/ordering_mocks.hpp"
-
 #include <grpc++/grpc++.h>
-#include <ordering/impl/ordering_service_transport_grpc.hpp>
+#include <grpc++/impl/codegen/server_context.h>
+
 #include "logger/logger.hpp"
+#include "network/ordering_service.hpp"
+
+#include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+
+#include "ordering/impl/ordering_gate_impl.hpp"
+#include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
-#include "../../../../headers/grpc++/impl/codegen/server_context.h"
+#include "ordering/impl/ordering_service_transport_grpc.hpp"
+
 
 using namespace iroha;
 using namespace iroha::ordering;
@@ -40,17 +46,38 @@ using ::testing::Return;
 
 static logger::Logger log_ = logger::testLog("OrderingService");
 
-class OrderingServiceTest : public OrderingTest {
+class MockOrderingServiceTransport : public network::OrderingServiceTransport {
+public:
+   void publishProposal(model::Proposal &&proposal, const std::vector<std::string> &peers) override {
+     publishProposal(proposal, peers);
+   };
+  void subscribe(std::shared_ptr<network::OrderingServiceNotification> subscriber) override {
+    subscriber_ = subscriber;
+  }
+  MOCK_METHOD2(publishProposal, void(const model::Proposal &proposal, const std::vector<std::string> &peers));
+
+  ~MockOrderingServiceTransport() override = default;
+
+  std::weak_ptr<network::OrderingServiceNotification> subscriber_;
+};
+
+
+
+class OrderingServiceTest : public ::testing::Test {
  public:
   OrderingServiceTest() {
-    fake_gate =
-        static_cast<ordering::MockOrderingGate *>(gate_transport_service.get());
+    peer.address = address;
+    loop = uvw::Loop::create();
+
   }
 
-  void SetUp() override {}
+  void SetUp() override {
+    wsv = std::make_shared<MockPeerQuery>();
+    fake_transport = std::make_shared<MockOrderingServiceTransport>();
 
-  void start() override {
-    OrderingTest::start();
+  }
+
+  void start()  {
     loop_thread = std::thread([this] { loop->run(); });
   }
 
@@ -68,28 +95,65 @@ class OrderingServiceTest : public OrderingTest {
   }
 
   void shutdown() override { OrderingTest::shutdown(); }
+  void TearDown() override  {
+    if(loop)
+      loop->stop();
+    if (loop_thread.joinable())
+      loop_thread.join();
+    }
 
+  ~OrderingServiceTest() = default;
+
+  std::shared_ptr<uvw::Loop> loop;
+  std::thread loop_thread;
+  std::shared_ptr<MockOrderingServiceTransport> fake_transport;
   ordering::MockOrderingGate *fake_gate;
   std::shared_ptr<OrderingServiceTransportGrpc> transport;
   std::condition_variable cv;
   std::mutex m;
+  std::string address {"0.0.0.0:50051"};
+  model::Peer peer;
+  std::shared_ptr<MockPeerQuery> wsv;
+
+ private:
+  std::atomic_bool watchdog_timeout_;
+  std::condition_variable cv_;
+  std::shared_ptr<std::thread> t_;
 };
 
-TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
-  // Init => proposal size 5 => 2 proposals after 10 transactions
 
-  std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
-  EXPECT_CALL(*wsv, getLedgerPeers())
-      .WillRepeatedly(Return(std::vector<Peer>{peer}));
+TEST_F(OrderingServiceTest, ExampleTest) {
+  const size_t max_proposal = 5;
+  const size_t commit_delay = 1000;
+
+  auto ordering_service = std::make_shared<OrderingServiceImpl>(
+          wsv, max_proposal, commit_delay, fake_transport, loop);
+  fake_transport->subscribe(ordering_service);
+
+  EXPECT_CALL(*fake_transport, publishProposal(_, _)).Times(1);
+  start();
+
+  fake_transport->publishProposal(model::Proposal({}), {});
+
+
+}
+
+TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
 
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
-  transport = std::make_shared<OrderingServiceTransportGrpc>();
-  service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, transport, loop);
-  transport->subscribe(service);
 
-  EXPECT_CALL(*fake_gate, onProposal(_, _, _)).Times(2);
+  auto ordering_service = std::make_shared<OrderingServiceImpl>(
+          wsv, max_proposal, commit_delay, fake_transport, loop);
+  fake_transport->subscribe(ordering_service);
+
+  // Init => proposal size 5 => 2 proposals after 10 transactions
+  EXPECT_CALL(*fake_transport, publishProposal(_, _)).Times(2);
+
+  EXPECT_CALL(*wsv, getLedgerPeers())
+      .WillRepeatedly(Return(std::vector<Peer>{peer}));
+
+
 
   size_t call_count = 0;
   ON_CALL(*fake_gate, onProposal(_, _, _))
@@ -103,6 +167,10 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
 
   for (size_t i = 0; i < 10; ++i) {
     send();
+    ordering_service->onTransaction(model::Transaction());
+    if (i != 0 && i % max_proposal == 0) {
+      cv.wait_for(lk, 10s);
+    }
   }
 
   std::unique_lock<std::mutex> lock(m);
@@ -112,16 +180,11 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
 TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   // Init => proposal timer 400 ms => 10 tx by 50 ms => 2 proposals in 1 second
 
-  std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
   EXPECT_CALL(*wsv, getLedgerPeers())
       .WillRepeatedly(Return(std::vector<Peer>{peer}));
 
   const size_t max_proposal = 100;
   const size_t commit_delay = 400;
-  auto transport = std::make_shared<ordering::OrderingServiceTransportGrpc>();
-  service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, transport, loop);
-  transport->subscribe(service);
 
   EXPECT_CALL(*fake_gate, onProposal(_, _, _)).Times(2);
   ON_CALL(*fake_gate, onProposal(_, _, _))
@@ -133,13 +196,13 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   start();
 
   for (size_t i = 0; i < 8; ++i) {
-    send();
+    ordering_service->onTransaction(model::Transaction());
   }
 
   std::unique_lock<std::mutex> lk(m);
   cv.wait_for(lk, 10s);
 
-  send();
-  send();
+  ordering_service->onTransaction(model::Transaction());
+  ordering_service->onTransaction(model::Transaction());
   cv.wait_for(lk, 10s);
 }
