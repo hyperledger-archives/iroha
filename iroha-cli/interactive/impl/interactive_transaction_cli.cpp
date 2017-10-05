@@ -145,11 +145,12 @@ namespace iroha_cli {
     }
 
     InteractiveTransactionCli::InteractiveTransactionCli(
-        std::string creator_account, uint64_t tx_counter, std::string key_path)
+        std::string creator_account,
+        uint64_t tx_counter,
+        nonstd::optional<iroha::keypair_t> keypair)
         : creator_(creator_account),
           tx_counter_(tx_counter),
-          keysManager_("./" + key_path + "/" + creator_account) {
-      keypair_ = keysManager_.loadKeys();
+          keypair_(keypair) {
       log_ = logger::log("InteractiveTransactionCli");
       createCommandMenu();
       createResultMenu();
@@ -384,18 +385,11 @@ namespace iroha_cli {
       // clear commands so that we can start creating new tx
       commands_.clear();
 
-      if (keypair_) {
-        auto sig = iroha::sign(
-            iroha::hash(tx).to_string(), keypair_->pubkey, keypair_->privkey);
-        tx.signatures.push_back(
-            Signature{.signature = sig, .pubkey = keypair_->pubkey});
-      } else {
-        // TODO: check what should we do - generate new keys or return an error
-        // or may be something else
-        log_->warn(
-            "Could not load keypair for {}, transaction remains unsigned",
-            creator_);
-      }
+      auto sig = iroha::sign(
+          iroha::hash(tx).to_string(), keypair_->pubkey, keypair_->privkey);
+      tx.signatures.push_back(
+          Signature{.signature = sig, .pubkey = keypair_->pubkey});
+
       CliClient client(address.value().first, address.value().second);
       GrpcResponseHandler response_handler;
       response_handler.handle(client.sendTx(tx));
@@ -422,18 +416,10 @@ namespace iroha_cli {
 
       // clear commands so that we can start creating new tx
       commands_.clear();
-      if (keypair_) {
-        auto sig = iroha::sign(
-            iroha::hash(tx).to_string(), keypair_->pubkey, keypair_->privkey);
-        tx.signatures.push_back(
-            Signature{.signature = sig, .pubkey = keypair_->pubkey});
-      } else {
-        // TODO: check what should we do - generate new keys or return an error
-        // or may be something else
-        log_->warn(
-            "Could not load keypair for {}, transaction remains unsigned",
-            creator_);
-      }
+      auto sig = iroha::sign(
+          iroha::hash(tx).to_string(), keypair_->pubkey, keypair_->privkey);
+      tx.signatures.push_back(
+          Signature{.signature = sig, .pubkey = keypair_->pubkey});
 
       iroha::model::converters::JsonTransactionFactory json_factory;
       auto json_doc = json_factory.serialize(tx);
