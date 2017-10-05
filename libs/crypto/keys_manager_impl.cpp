@@ -16,9 +16,11 @@
  */
 
 #include "keys_manager_impl.hpp"
+#include "crypto/crypto.hpp"
+#include "crypto/hash.hpp"
 
-#include <utility>
 #include <fstream>
+#include <utility>
 
 using iroha::operator|;
 
@@ -32,9 +34,8 @@ namespace iroha {
    * @param value - value to be deserialized
    * @return keypair on success, otherwise nullopt
    */
-  template<typename T, typename V>
-  auto deserializeKeypairField(T iroha::keypair_t::*field,
-                               const V &value) {
+  template <typename T, typename V>
+  auto deserializeKeypairField(T iroha::keypair_t::*field, const V &value) {
     return [=](auto keypair) mutable {
       return iroha::hexstringToArray<T::size()>(value)
           | iroha::assignObjectField(keypair, field);
@@ -57,10 +58,25 @@ namespace iroha {
     pub_file >> client_pub_key_;
 
     return nonstd::make_optional<iroha::keypair_t>()
-        | deserializeKeypairField(&iroha::keypair_t::pubkey,
-                                  client_pub_key_)
-        | deserializeKeypairField(&iroha::keypair_t::privkey,
-                                  client_priv_key_);
+        | deserializeKeypairField(&iroha::keypair_t::pubkey, client_pub_key_)
+        | deserializeKeypairField(&iroha::keypair_t::privkey, client_priv_key_);
+  }
+
+  bool KeysManagerImpl::checkKeys() {
+    auto keypair = loadKeys();
+    if (not keypair) {
+      return false;
+    }
+
+    std::string test = "12345";
+    auto sig = iroha::sign(
+        iroha::sha3_256(test).to_string(), keypair->pubkey, keypair->privkey);
+    if (not iroha::verify(
+            iroha::sha3_256(test).to_string(), keypair->pubkey, sig)) {
+      return false;
+    }
+
+    return true;
   }
 
   bool KeysManagerImpl::createKeys(std::string pass_phrase) {

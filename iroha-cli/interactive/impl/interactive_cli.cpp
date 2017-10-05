@@ -16,8 +16,6 @@
  */
 
 #include "interactive/interactive_cli.hpp"
-#include "crypto/crypto.hpp"
-#include "crypto/hash.hpp"
 #include "interactive/interactive_transaction_cli.hpp"
 #include "parser/parser.hpp"
 
@@ -66,25 +64,9 @@ namespace iroha_cli {
 
     void InteractiveCli::startTx() { tx_cli_.run(); }
 
-    bool InteractiveCli::checkKeys() {
-      auto keypair = keysManager_.loadKeys();
-      if (not keypair) {
-        return false;
-      }
-
-      std::string test = "12345";
-      auto sig =
-          iroha::sign(iroha::sha3_256(test).to_string(), keypair->pubkey, keypair->privkey);
-      if (not iroha::verify(iroha::sha3_256(test).to_string(), keypair->pubkey, sig)) {
-        return false;
-      }
-
-      return true;
-    }
-
     void InteractiveCli::run() {
       std::cout << "Welcome to Iroha-Cli. " << std::endl;
-      if (not checkKeys()) {
+      if (not keysManager_.checkKeys()) {
         std::cout << "Could not load keys for " + creator_
                 + " or keys are invalid"
                   << std::endl;

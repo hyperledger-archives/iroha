@@ -29,6 +29,8 @@ namespace iroha {
 
     nonstd::optional<iroha::keypair_t> loadKeys() override;
 
+    bool checkKeys() override ;
+
     bool createKeys(std::string pass_phrase) override;
 
    private:

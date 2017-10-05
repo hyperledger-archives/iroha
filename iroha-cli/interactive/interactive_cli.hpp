@@ -59,11 +59,6 @@ namespace iroha_cli {
        */
       void startTx();
 
-      /**
-       * Validate user keypair
-       */
-      bool checkKeys();
-
       const std::string TX_CODE = "tx";
       const std::string QRY_CODE = "qry";
 

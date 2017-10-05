@@ -23,24 +23,30 @@
 
 namespace iroha {
 
-class KeysManager {
- public:
-  /**
-   * Load keys associated with account
-   * @param account_name
-   * @return nullopt if no keypair found locally
-   */
-  virtual nonstd::optional<iroha::keypair_t> loadKeys() = 0;
+  class KeysManager {
+   public:
+    /**
+     * Load keys associated with account
+     * @param account_name
+     * @return nullopt if no keypair found locally
+     */
+    virtual nonstd::optional<iroha::keypair_t> loadKeys() = 0;
 
-  /**
-   * Create keys and associate with account
-   * @param account_name
-   * @param pass_phrase
-   * @return false if create account failed
-   */
-  virtual bool createKeys(std::string pass_phrase) = 0;
+    /**
+     * Validate loaded keypair by signing and verifying signature
+     * of test message
+     * @return true if verifying was successful or false otherwise
+     */
+    virtual bool checkKeys() = 0;
 
-};
+    /**
+     * Create keys and associate with account
+     * @param account_name
+     * @param pass_phrase
+     * @return false if create account failed
+     */
+    virtual bool createKeys(std::string pass_phrase) = 0;
+  };
 
-} // namepsace iroha_cli
+}  // namepsace iroha_cli
 #endif  // IROHA_CLI_KEYS_MANAGER_HPP
