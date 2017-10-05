@@ -18,15 +18,14 @@
 #include "model/generators/transaction_generator.hpp"
 
 #include "crypto/hash.hpp"
+#include "crypto/keys_manager_impl.hpp"
 #include "datetime/time.hpp"
 
 namespace iroha {
   namespace model {
     namespace generators {
       Transaction TransactionGenerator::generateGenesisTransaction(
-          ts64_t timestamp,
-          std::vector<std::string> peers_address,
-          std::vector<pubkey_t> public_keys) {
+          ts64_t timestamp, std::vector<std::string> peers_address) {
         Transaction tx;
         tx.created_ts = timestamp;
         tx.creator_account_id = "";
@@ -35,19 +34,25 @@ namespace iroha {
         CommandGenerator command_generator;
         // Add peers
         for (size_t i = 0; i < peers_address.size(); ++i) {
-          auto peer_key = public_keys.at(i);
-          tx.commands.push_back(
-              command_generator.generateAddPeer(peers_address[i], peer_key));
+          KeysManagerImpl manager("node" + std::to_string(i));
+          manager.createKeys("node" + std::to_string(i));
+          auto keypair = *manager.loadKeys();
+          tx.commands.push_back(command_generator.generateAddPeer(
+              peers_address[i], keypair.pubkey));
         }
         // Add domain
         tx.commands.push_back(command_generator.generateCreateDomain("test"));
         // Create accounts
-        auto acc_key = generator::random_blob<pubkey_t::size()>(1);
-        tx.commands.push_back(
-            command_generator.generateCreateAccount("admin", "test", acc_key));
-        acc_key = generator::random_blob<pubkey_t::size()>(2);
-        tx.commands.push_back(
-            command_generator.generateCreateAccount("test", "test", acc_key));
+        KeysManagerImpl manager("admin@test");
+        manager.createKeys("admin@test");
+        auto keypair = *manager.loadKeys();
+        tx.commands.push_back(command_generator.generateCreateAccount(
+            "admin", "test", keypair.pubkey));
+        manager = KeysManagerImpl("test@test");
+        manager.createKeys("test@test");
+        keypair = *manager.loadKeys();
+        tx.commands.push_back(command_generator.generateCreateAccount(
+            "test", "test", keypair.pubkey));
         // Create asset
         auto precision = 2;
         tx.commands.push_back(
@@ -57,18 +62,6 @@ namespace iroha {
             command_generator.generateSetAdminPermissions("admin@test"));
 
         return tx;
-      }
-
-      Transaction TransactionGenerator::generateGenesisTransaction(
-          ts64_t timestamp,
-          std::vector<std::string> peers_address) {
-        std::vector<pubkey_t> public_keys;
-        for (size_t i = 0; i < peers_address.size(); ++i) {
-          public_keys.push_back(
-              generator::random_blob<pubkey_t::size()>(i + 1));
-        }
-        return generateGenesisTransaction(
-            timestamp, peers_address, public_keys);
       }
 
       Transaction TransactionGenerator::generateTransaction(

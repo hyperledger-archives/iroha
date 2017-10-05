@@ -17,28 +17,12 @@
 
 #include "model/generators/block_generator.hpp"
 #include <chrono>
+#include <utility>
 #include "crypto/hash.hpp"
 
 namespace iroha {
   namespace model {
     namespace generators {
-      Block BlockGenerator::generateGenesisBlock(
-          std::vector<std::string> peers_address,
-          std::vector<pubkey_t> public_keys) {
-        Block block{};
-        block.created_ts = 0;
-        block.height = 1;
-        std::fill(block.prev_hash.begin(), block.prev_hash.end(), 0);
-        std::fill(block.merkle_root.begin(), block.merkle_root.end(), 0);
-        block.txs_number = 1;
-        TransactionGenerator tx_generator;
-        block.transactions = {tx_generator.generateGenesisTransaction(
-            block.created_ts, peers_address, public_keys)};
-        block.hash = hash(block);
-
-        return block;
-      }
-
       Block BlockGenerator::generateGenesisBlock(
           std::vector<std::string> peers_address) {
         Block block{};
@@ -49,7 +33,7 @@ namespace iroha {
         block.txs_number = 1;
         TransactionGenerator tx_generator;
         block.transactions = {tx_generator.generateGenesisTransaction(
-            block.created_ts, peers_address)};
+            block.created_ts, std::move(peers_address))};
         block.hash = hash(block);
 
         return block;
