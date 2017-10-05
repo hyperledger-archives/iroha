@@ -20,6 +20,7 @@
 #include <crypto/hash.hpp>
 #include <model/model_crypto_provider_impl.hpp>
 #include <model/queries/get_asset_info.hpp>
+#include "model/generators/query_generator.hpp"
 
 iroha::model::Transaction create_transaction() {
   iroha::model::Transaction tx{};
@@ -28,15 +29,6 @@ iroha::model::Transaction create_transaction() {
   tx.tx_counter = 0;
   tx.created_ts = 0;
   return tx;
-}
-
-iroha::model::GetAssetInfo createQuery() {
-  iroha::model::GetAssetInfo query{};
-  query.creator_account_id = "test";
-  query.query_counter = 12345;
-  query.created_ts = 54321;
-  query.asset_id = "irohacoin";
-  return query;
 }
 
 TEST(CryptoProvider, SignAndVerify) {
@@ -57,12 +49,26 @@ TEST(CryptoProvider, SignAndVerify) {
   // same for query
   // we can't work with generic queries so I've selected one of them
   // TODO: do we need checks for others?
-  auto query = createQuery();
-  auto signed_query = crypto_provider.sign(query);
-  query.signature = signed_query.signature;
-  ASSERT_TRUE(crypto_provider.verify(
-      std::make_shared<iroha::model::GetAssetInfo>(query)));
-  query.creator_account_id = "kappa";
-  ASSERT_FALSE(crypto_provider.verify(
-      std::make_shared<iroha::model::GetAssetInfo>(query)));
+  auto query = iroha::model::generators::QueryGenerator().generateGetAccount(
+      0, "test", 0, "test");
+  auto signed_query = crypto_provider.sign(*query);
+  query->signature = signed_query->signature;
+  ASSERT_TRUE(crypto_provider.verify(query));
+  query->account_id = "kappa";
+  ASSERT_FALSE(crypto_provider.verify(query));
+}
+
+TEST(CryptoProvider, SameHashAfterSign) {
+  auto keypair = iroha::create_keypair();
+  auto query = iroha::model::generators::QueryGenerator().generateGetAccount(
+      0, "test", 0, "test");
+
+  auto hash = iroha::hash(*query);
+
+  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair);
+  auto signed_query = crypto_provider.sign(*query);
+
+  auto hash_signed = iroha::hash(*signed_query);
+
+  ASSERT_EQ(hash_signed, hash);
 }

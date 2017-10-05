@@ -34,7 +34,7 @@ namespace iroha_cli {
        */
       InteractiveTransactionCli(std::string creator_account,
                                 uint64_t tx_counter,
-                                nonstd::optional<iroha::keypair_t> keypair);
+                                iroha::keypair_t keypair);
       /**
        * Run interactive query command line
        */
@@ -169,7 +169,7 @@ namespace iroha_cli {
       // Logger
       logger::Logger log_;
 
-      nonstd::optional<iroha::keypair_t> keypair_;
+      iroha::keypair_t keypair_;
     };
   }  // namespace interactive
 }  // namespace iroha_cli

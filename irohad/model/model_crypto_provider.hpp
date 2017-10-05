@@ -71,7 +71,7 @@ namespace iroha {
        * @param query - query to sign
        * @return signed query
        */
-      virtual Query sign(const Query &query) const = 0;
+      virtual std::shared_ptr<const Query> sign(const Query &query) const = 0;
     };
   }
 }

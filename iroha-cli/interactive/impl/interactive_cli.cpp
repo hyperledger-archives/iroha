@@ -38,11 +38,10 @@ namespace iroha_cli {
     InteractiveCli::InteractiveCli(std::string account_name,
                                    uint64_t tx_counter,
                                    uint64_t qry_counter,
-                                   std::string key_path)
+                                   const iroha::keypair_t &keypair)
         : creator_(account_name),
-          keysManager_("./" + key_path + "/" + account_name),
-          tx_cli_(creator_, tx_counter, keysManager_.loadKeys()),
-          query_cli_(creator_, qry_counter, keysManager_.loadKeys()) {
+          tx_cli_(creator_, tx_counter, keypair),
+          query_cli_(creator_, qry_counter, keypair) {
       assign_main_handlers();
     }
 
@@ -66,13 +65,6 @@ namespace iroha_cli {
 
     void InteractiveCli::run() {
       std::cout << "Welcome to Iroha-Cli. " << std::endl;
-      if (not keysManager_.checkKeys()) {
-        std::cout << "Could not load keys for " + creator_
-                + " or keys are invalid"
-                  << std::endl;
-        std::cout << "Did you forget --key_path param?" << std::endl;
-        return;
-      }
       // Parsing cycle
       while (true) {
         printMenu("Choose what to do:", menu_points_);

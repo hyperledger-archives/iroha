@@ -18,9 +18,9 @@
 #ifndef IROHA_CLI_KEYS_MANAGER_IMPL_HPP
 #define IROHA_CLI_KEYS_MANAGER_IMPL_HPP
 
-#include "keys_manager.hpp"
-#include "common/types.hpp"
 #include "common/byteutils.hpp"
+#include "common/types.hpp"
+#include "crypto/keys_manager.hpp"
 
 namespace iroha {
   class KeysManagerImpl : public KeysManager {
@@ -28,8 +28,6 @@ namespace iroha {
     explicit KeysManagerImpl(std::string account_name);
 
     nonstd::optional<iroha::keypair_t> loadKeys() override;
-
-    bool checkKeys() override ;
 
     bool createKeys(std::string pass_phrase) override;
 

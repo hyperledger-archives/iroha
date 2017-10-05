@@ -21,9 +21,9 @@
 #include "model/converters/json_transaction_factory.hpp"
 #include "model/generators/transaction_generator.hpp"
 
-#include <chrono>
 #include "client.hpp"
 #include "crypto/hash.hpp"
+#include "datetime/time.hpp"
 #include "grpc_response_handler.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
@@ -33,7 +33,6 @@
 #include <model/converters/pb_common.hpp>
 #include <model/model_crypto_provider_impl.hpp>
 
-using namespace std::chrono_literals;
 using namespace iroha::model;
 
 namespace iroha_cli {
@@ -55,7 +54,9 @@ namespace iroha_cli {
           {CREATE_ROLE, "Create new role"},
           {APPEND_ROLE, "Add new role to account"},
           {GRANT_PERM, "Grant permission over your account"},
-          {REVOKE_PERM, "Revoke permission from account"}};
+          {REVOKE_PERM, "Revoke permission from account"}
+          // commands_description_map_
+      };
 
       const auto acc_id = "Account Id";
       const auto ast_id = "Asset Id";
@@ -91,7 +92,9 @@ namespace iroha_cli {
           {CREATE_ROLE, {role}},
           {APPEND_ROLE, {acc_id, role}},
           {GRANT_PERM, {acc_id, perm}},
-          {REVOKE_PERM, {acc_id, perm}}};
+          {REVOKE_PERM, {acc_id, perm}}
+          // command_params_descriptions_
+      };
 
       command_handlers_ = {
           {ADD_ASSET_QTY, &InteractiveTransactionCli::parseAddAssetQuantity},
@@ -109,7 +112,9 @@ namespace iroha_cli {
           {CREATE_ROLE, &InteractiveTransactionCli::parseCreateRole},
           {APPEND_ROLE, &InteractiveTransactionCli::parseAppendRole},
           {GRANT_PERM, &InteractiveTransactionCli::parseGrantPermission},
-          {REVOKE_PERM, &InteractiveTransactionCli::parseGrantPermission}};
+          {REVOKE_PERM, &InteractiveTransactionCli::parseGrantPermission}
+          // command_handlers_
+      };
 
       commands_menu_ = formMenu(command_handlers_,
                                 command_params_descriptions_,
@@ -138,7 +143,9 @@ namespace iroha_cli {
           {SAVE_CODE, &InteractiveTransactionCli::parseSaveFile},
           {SEND_CODE, &InteractiveTransactionCli::parseSendToIroha},
           {ADD_CMD, &InteractiveTransactionCli::parseAddCommand},
-          {BACK_CODE, &InteractiveTransactionCli::parseGoBack}};
+          {BACK_CODE, &InteractiveTransactionCli::parseGoBack}
+          // result_handlers_
+      };
 
       result_menu_ = formMenu(
           result_handlers_, result_params_descriptions, result_desciption);
@@ -147,7 +154,7 @@ namespace iroha_cli {
     InteractiveTransactionCli::InteractiveTransactionCli(
         std::string creator_account,
         uint64_t tx_counter,
-        nonstd::optional<iroha::keypair_t> keypair)
+        iroha::keypair_t keypair)
         : creator_(creator_account),
           tx_counter_(tx_counter),
           keypair_(keypair) {
@@ -378,17 +385,16 @@ namespace iroha_cli {
 
       // Forming a transaction
       iroha::model::generators::TransactionGenerator tx_generator_;
-      auto time_stamp =
-          std::chrono::system_clock::now().time_since_epoch() / 1ms;
+      auto time_stamp = iroha::time::now();
       auto tx = tx_generator_.generateTransaction(
           time_stamp, creator_, tx_counter_, commands_);
       // clear commands so that we can start creating new tx
       commands_.clear();
 
       auto sig = iroha::sign(
-          iroha::hash(tx).to_string(), keypair_->pubkey, keypair_->privkey);
+          iroha::hash(tx).to_string(), keypair_.pubkey, keypair_.privkey);
       tx.signatures.push_back(
-          Signature{.signature = sig, .pubkey = keypair_->pubkey});
+          Signature{.signature = sig, .pubkey = keypair_.pubkey});
 
       CliClient client(address.value().first, address.value().second);
       GrpcResponseHandler response_handler;
@@ -409,17 +415,16 @@ namespace iroha_cli {
       }
       // Forming a transaction
       iroha::model::generators::TransactionGenerator tx_generator_;
-      auto time_stamp =
-          std::chrono::system_clock::now().time_since_epoch() / 1ms;
+      auto time_stamp = iroha::time::now();
       auto tx = tx_generator_.generateTransaction(
           time_stamp, creator_, tx_counter_, commands_);
 
       // clear commands so that we can start creating new tx
       commands_.clear();
       auto sig = iroha::sign(
-          iroha::hash(tx).to_string(), keypair_->pubkey, keypair_->privkey);
+          iroha::hash(tx).to_string(), keypair_.pubkey, keypair_.privkey);
       tx.signatures.push_back(
-          Signature{.signature = sig, .pubkey = keypair_->pubkey});
+          Signature{.signature = sig, .pubkey = keypair_.pubkey});
 
       iroha::model::converters::JsonTransactionFactory json_factory;
       auto json_doc = json_factory.serialize(tx);

@@ -19,17 +19,17 @@
 #include <responses.pb.h>
 #include <fstream>
 #include <iostream>
-#include "model/converters/json_query_factory.hpp"
 #include "common/assert_config.hpp"
 #include "model/converters/json_block_factory.hpp"
 #include "model/converters/json_common.hpp"
+#include "model/converters/json_query_factory.hpp"
 #include "model/generators/block_generator.hpp"
 #include "model/generators/signature_generator.hpp"
 #include "validators.hpp"
 
 #include "client.hpp"
-#include "grpc_response_handler.hpp"
 #include "crypto/keys_manager_impl.hpp"
+#include "grpc_response_handler.hpp"
 #include "logger/logger.hpp"
 
 #include "interactive/interactive_cli.hpp"
@@ -58,7 +58,8 @@ DEFINE_string(json_transaction, "", "Transaction in json format");
 DEFINE_string(json_query, "", "Query in json format");
 
 // Genesis block generator:
-DEFINE_bool(genesis_block, false,
+DEFINE_bool(genesis_block,
+            false,
             "Generate genesis block for new Iroha network");
 DEFINE_string(peers_address, "", "File with peers address");
 
@@ -69,6 +70,9 @@ using namespace iroha::protocol;
 using namespace iroha::model::generators;
 using namespace iroha::model::converters;
 using namespace iroha_cli::interactive;
+
+// todo rework separator with platform independent approach
+const std::string SEPARATOR = "/";
 
 int main(int argc, char* argv[]) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -87,8 +91,8 @@ int main(int argc, char* argv[]) {
     iroha_cli::CliClient client(FLAGS_address, FLAGS_torii_port);
     iroha_cli::GrpcResponseHandler response_handler;
     if (not FLAGS_json_transaction.empty()) {
-      logger->info("Send transaction to {}:{} ", FLAGS_address,
-                   FLAGS_torii_port);
+      logger->info(
+          "Send transaction to {}:{} ", FLAGS_address, FLAGS_torii_port);
       // Read from file
       std::ifstream file(FLAGS_json_transaction);
       std::string str((std::istreambuf_iterator<char>(file)),
@@ -122,7 +126,7 @@ int main(int argc, char* argv[]) {
   } else if (FLAGS_genesis_block) {
     BlockGenerator generator;
 
-    if (FLAGS_peers_address.empty()){
+    if (FLAGS_peers_address.empty()) {
       logger->error("--peers_address is empty");
       return -1;
     }
@@ -147,8 +151,14 @@ int main(int argc, char* argv[]) {
       logger->error("Specify account name");
       return -1;
     }
+    iroha::KeysManagerImpl manager(FLAGS_key_path + SEPARATOR + FLAGS_name);
+    auto keypair = manager.loadKeys();
+    if (not keypair.has_value()) {
+      logger->error("Cannot load specified keypair, or keypair is invalid");
+      return EXIT_FAILURE;
+    }
     // TODO: Init counters from Iroha, or read from disk?
-    InteractiveCli interactiveCli(FLAGS_name, 0, 0, FLAGS_key_path);
+    InteractiveCli interactiveCli(FLAGS_name, 0, 0, *keypair);
     interactiveCli.run();
   } else {
     assert_config::assert_fatal(false, "Invalid flags");

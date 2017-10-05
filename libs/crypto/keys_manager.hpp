@@ -27,17 +27,12 @@ namespace iroha {
    public:
     /**
      * Load keys associated with account
-     * @param account_name
-     * @return nullopt if no keypair found locally
-     */
-    virtual nonstd::optional<iroha::keypair_t> loadKeys() = 0;
-
-    /**
      * Validate loaded keypair by signing and verifying signature
      * of test message
-     * @return true if verifying was successful or false otherwise
+     * @param account_name
+     * @return nullopt if no keypair found locally, or verification failure
      */
-    virtual bool checkKeys() = 0;
+    virtual nonstd::optional<iroha::keypair_t> loadKeys() = 0;
 
     /**
      * Create keys and associate with account

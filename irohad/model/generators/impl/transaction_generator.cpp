@@ -42,6 +42,10 @@ namespace iroha {
         }
         // Add domain
         tx.commands.push_back(command_generator.generateCreateDomain("test"));
+        // Create asset
+        auto precision = 2;
+        tx.commands.push_back(
+            command_generator.generateCreateAsset("coin", "test", precision));
         // Create accounts
         KeysManagerImpl manager("admin@test");
         manager.createKeys("admin@test");
@@ -53,10 +57,6 @@ namespace iroha {
         keypair = *manager.loadKeys();
         tx.commands.push_back(command_generator.generateCreateAccount(
             "test", "test", keypair.pubkey));
-        // Create asset
-        auto precision = 2;
-        tx.commands.push_back(
-            command_generator.generateCreateAsset("coin", "test", precision));
         // Add admin rights
         tx.commands.push_back(
             command_generator.generateSetAdminPermissions("admin@test"));

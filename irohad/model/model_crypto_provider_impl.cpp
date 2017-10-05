@@ -19,6 +19,13 @@
 #include "crypto/crypto.hpp"
 #include "crypto/hash.hpp"
 
+#include "model/queries/get_account.hpp"
+#include "model/queries/get_account_assets.hpp"
+#include "model/queries/get_asset_info.hpp"
+#include "model/queries/get_roles.hpp"
+#include "model/queries/get_signatories.hpp"
+#include "model/queries/get_transactions.hpp"
+
 namespace iroha {
   namespace model {
     ModelCryptoProviderImpl::ModelCryptoProviderImpl(const keypair_t &keypair)
@@ -36,9 +43,9 @@ namespace iroha {
 
     bool ModelCryptoProviderImpl::verify(
         std::shared_ptr<const Query> query) const {
-            return iroha::verify(iroha::hash(*query).to_string(),
-                                 query->signature.pubkey,
-                                 query->signature.signature);
+      return iroha::verify(iroha::hash(*query).to_string(),
+                           query->signature.pubkey,
+                           query->signature.signature);
     }
 
     bool ModelCryptoProviderImpl::verify(const Block &block) const {
@@ -68,13 +75,42 @@ namespace iroha {
       return signed_transaction;
     }
 
-    Query ModelCryptoProviderImpl::sign(const Query &query) const {
-      auto signedQuery = query;
-      auto sig = iroha::sign(
+    std::shared_ptr<const Query> ModelCryptoProviderImpl::sign(
+        const Query &query) const {
+      auto signature = iroha::sign(
           iroha::hash(query).to_string(), keypair_.pubkey, keypair_.privkey);
-      signedQuery.signature =
-          Signature{.signature = sig, .pubkey = keypair_.pubkey};
-      return signedQuery;
+
+      // TODO something is wrong with the model?
+      std::shared_ptr<Query> signed_query;
+      if (instanceof <GetAccount>(query)) {
+        signed_query = std::make_shared<GetAccount>(
+            static_cast<const GetAccount &>(query));
+      } else if (instanceof <GetAccountAssets>(query)) {
+        signed_query = std::make_shared<GetAccountAssets>(
+            static_cast<const GetAccountAssets &>(query));
+      } else if (instanceof <GetAssetInfo>(query)) {
+        signed_query = std::make_shared<GetAssetInfo>(
+            static_cast<const GetAssetInfo &>(query));
+      } else if (instanceof <GetRoles>(query)) {
+        signed_query =
+            std::make_shared<GetRoles>(static_cast<const GetRoles &>(query));
+      } else if (instanceof <GetRolePermissions>(query)) {
+        signed_query = std::make_shared<GetRolePermissions>(
+            static_cast<const GetRolePermissions &>(query));
+      } else if (instanceof <GetSignatories>(query)) {
+        signed_query = std::make_shared<GetSignatories>(
+            static_cast<const GetSignatories &>(query));
+      } else if (instanceof <GetAccountAssetTransactions>(query)) {
+        signed_query = std::make_shared<GetAccountAssetTransactions>(
+            static_cast<const GetAccountAssetTransactions &>(query));
+      } else if (instanceof <GetAccountAssets>(query)) {
+        signed_query = std::make_shared<GetAccountAssets>(
+            static_cast<const GetAccountAssets &>(query));
+      }
+
+      signed_query->signature =
+          Signature{.signature = signature, .pubkey = keypair_.pubkey};
+      return signed_query;
     }
   }
 }

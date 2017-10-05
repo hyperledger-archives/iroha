@@ -33,7 +33,7 @@ namespace iroha_cli {
       InteractiveCli(std::string account_name,
                      uint64_t tx_counter,
                      uint64_t qry_counter,
-                     std::string key_path);
+                     const iroha::keypair_t &keypair);
       /**
        * Run interactive cli. Print menu and parse command
        */
@@ -66,11 +66,6 @@ namespace iroha_cli {
        * Account id of creator
        */
       std::string creator_;
-
-      /**
-       * To read a keypair
-       */
-      iroha::KeysManagerImpl keysManager_;
 
       // -- Query, tx cli --
       InteractiveTransactionCli tx_cli_;

@@ -16,18 +16,19 @@
  */
 
 #include "interactive/interactive_query_cli.hpp"
+
 #include <fstream>
+
 #include "client.hpp"
 #include "crypto/crypto.hpp"
 #include "crypto/hash.hpp"
 #include "crypto/keys_manager_impl.hpp"
+#include "datetime/time.hpp"
 #include "grpc_response_handler.hpp"
 #include "model/converters/json_query_factory.hpp"
-
 #include "model/queries/get_asset_info.hpp"
 #include "model/queries/get_roles.hpp"
 
-using namespace std::chrono_literals;
 using namespace iroha::model;
 
 namespace iroha_cli {
@@ -41,19 +42,24 @@ namespace iroha_cli {
           {GET_ACC_SIGN, "Get Account's Signatories"},
           {GET_ROLES, "Get all current roles in the system"},
           {GET_AST_INFO, "Get information about asset"},
-          {GET_ROLE_PERM, "Get all permissions related to role"}};
+          {GET_ROLE_PERM, "Get all permissions related to role"}
+          // description_map_
+      };
 
       const auto acc_id = "Requested account Id";
       const auto ast_id = "Requested asset Id";
       const auto role_id = "Requested role name";
 
-      query_params_descriptions_ = {{GET_ACC, {acc_id}},
-                                    {GET_ACC_AST, {acc_id, ast_id}},
-                                    {GET_ACC_TX, {acc_id}},
-                                    {GET_ACC_SIGN, {acc_id}},
-                                    {GET_ROLES, {}},
-                                    {GET_AST_INFO, {ast_id}},
-                                    {GET_ROLE_PERM, {role_id}}};
+      query_params_descriptions_ = {
+          {GET_ACC, {acc_id}},
+          {GET_ACC_AST, {acc_id, ast_id}},
+          {GET_ACC_TX, {acc_id}},
+          {GET_ACC_SIGN, {acc_id}},
+          {GET_ROLES, {}},
+          {GET_AST_INFO, {ast_id}},
+          {GET_ROLE_PERM, {role_id}}
+          // query_params_descriptions_
+      };
 
       query_handlers_ = {
           {GET_ACC, &InteractiveQueryCli::parseGetAccount},
@@ -62,7 +68,9 @@ namespace iroha_cli {
           {GET_ACC_SIGN, &InteractiveQueryCli::parseGetSignatories},
           {GET_ROLE_PERM, &InteractiveQueryCli::parseGetRolePermissions},
           {GET_ROLES, &InteractiveQueryCli::parseGetRoles},
-          {GET_AST_INFO, &InteractiveQueryCli::parseGetAssetInfo}};
+          {GET_AST_INFO, &InteractiveQueryCli::parseGetAssetInfo}
+          // query_handlers_
+      };
 
       menu_points_ = formMenu(
           query_handlers_, query_params_descriptions_, description_map_);
@@ -81,10 +89,9 @@ namespace iroha_cli {
       addBackOption(result_points_);
     }
 
-    InteractiveQueryCli::InteractiveQueryCli(
-        std::string account_name,
-        uint64_t query_counter,
-        nonstd::optional<iroha::keypair_t> keypair)
+    InteractiveQueryCli::InteractiveQueryCli(std::string account_name,
+                                             uint64_t query_counter,
+                                             iroha::keypair_t keypair)
         : creator_(account_name), counter_(query_counter), keypair_(keypair) {
       log_ = logger::log("InteractiveQueryCli");
       create_queries_menu();
@@ -99,7 +106,7 @@ namespace iroha_cli {
       // Creating a new query, increment local counter
       ++counter_;
       // Init timestamp for a new query
-      local_time_ = std::chrono::system_clock::now().time_since_epoch() / 1ms;
+      local_time_ = iroha::time::now();
 
       while (is_parsing) {
         line = promtString("> ");
@@ -209,11 +216,10 @@ namespace iroha_cli {
         return true;
       }
 
-      auto sig = iroha::sign(iroha::hash(*query_).to_string(),
-                             keypair_->pubkey,
-                             keypair_->privkey);
+      auto sig = iroha::sign(
+          iroha::hash(*query_).to_string(), keypair_.pubkey, keypair_.privkey);
       query_->signature =
-          Signature{.signature = sig, .pubkey = keypair_->pubkey};
+          Signature{.signature = sig, .pubkey = keypair_.pubkey};
 
       CliClient client(address.value().first, address.value().second);
       GrpcResponseHandler{}.handle(client.sendQuery(query_));
@@ -223,11 +229,10 @@ namespace iroha_cli {
     }
 
     bool InteractiveQueryCli::parseSaveFile(QueryParams params) {
-      auto sig = iroha::sign(iroha::hash(*query_).to_string(),
-                             keypair_->pubkey,
-                             keypair_->privkey);
+      auto sig = iroha::sign(
+          iroha::hash(*query_).to_string(), keypair_.pubkey, keypair_.privkey);
       query_->signature =
-          Signature{.signature = sig, .pubkey = keypair_->pubkey};
+          Signature{.signature = sig, .pubkey = keypair_.pubkey};
 
       auto path = params[0];
       iroha::model::converters::JsonQueryFactory json_factory;

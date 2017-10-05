@@ -58,25 +58,20 @@ namespace iroha {
     pub_file >> client_pub_key_;
 
     return nonstd::make_optional<iroha::keypair_t>()
-        | deserializeKeypairField(&iroha::keypair_t::pubkey, client_pub_key_)
-        | deserializeKeypairField(&iroha::keypair_t::privkey, client_priv_key_);
-  }
-
-  bool KeysManagerImpl::checkKeys() {
-    auto keypair = loadKeys();
-    if (not keypair) {
-      return false;
-    }
-
-    std::string test = "12345";
-    auto sig = iroha::sign(
-        iroha::sha3_256(test).to_string(), keypair->pubkey, keypair->privkey);
-    if (not iroha::verify(
-            iroha::sha3_256(test).to_string(), keypair->pubkey, sig)) {
-      return false;
-    }
-
-    return true;
+               | deserializeKeypairField(&iroha::keypair_t::pubkey,
+                                         client_pub_key_)
+               | deserializeKeypairField(&iroha::keypair_t::privkey,
+                                         client_priv_key_)
+               | [](auto keypair) -> nonstd::optional<iroha::keypair_t> {
+      std::string test = "12345";
+      auto sig = iroha::sign(
+          iroha::sha3_256(test).to_string(), keypair.pubkey, keypair.privkey);
+      if (not iroha::verify(
+              iroha::sha3_256(test).to_string(), keypair.pubkey, sig)) {
+        return nonstd::nullopt;
+      }
+      return nonstd::make_optional(keypair);
+    };
   }
 
   bool KeysManagerImpl::createKeys(std::string pass_phrase) {

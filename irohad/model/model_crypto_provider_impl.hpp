@@ -37,7 +37,7 @@ namespace iroha {
 
       Transaction sign(const Transaction &transaction) const override;
 
-      Query sign(const Query &query) const override;
+      std::shared_ptr<const Query> sign(const Query &query) const override;
 
      private:
       keypair_t keypair_;

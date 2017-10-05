@@ -18,10 +18,10 @@ limitations under the License.
 #include <grpc++/grpc++.h>
 #include <fstream>
 #include <thread>
+#include "crypto/keys_manager_impl.hpp"
 #include "main/application.hpp"
 #include "main/iroha_conf_loader.hpp"
 #include "main/raw_block_insertion.hpp"
-#include "crypto/keys_manager_impl.hpp"
 
 #include "logger/logger.hpp"
 
@@ -61,12 +61,6 @@ int main(int argc, char *argv[]) {
   iroha::keypair_t keypair{};
   if (auto loadedKeypair = keysManager.loadKeys()) {
     keypair = *loadedKeypair;
-    std::string keypair_test = "1";
-    auto signature = iroha::sign(keypair_test, keypair.pubkey, keypair.privkey);
-    if (not iroha::verify(keypair_test, keypair.pubkey, signature)) {
-      log->error("Failed to verify loaded keypair");
-      return EXIT_FAILURE;
-    }
   } else {
     log->error("Failed to load keypair");
     return EXIT_FAILURE;

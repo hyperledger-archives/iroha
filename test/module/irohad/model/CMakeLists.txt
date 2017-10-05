@@ -17,6 +17,7 @@ target_link_libraries(model_crypto_provider_test
     model
     hash
     crypto
+    model_generators
     )
 
 addtest(command_converter_test converters/pb_commands_test.cpp)
