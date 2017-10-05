@@ -33,6 +33,7 @@ namespace iroha {
       MOCK_CONST_METHOD1(verify, bool(const Block &));
       MOCK_CONST_METHOD1(sign, Block(const Block &));
       MOCK_CONST_METHOD1(sign, Transaction(const Transaction &));
+      MOCK_CONST_METHOD1(sign, Query(const Query &));
     };
 
     class MockCommand : public Command {

@@ -36,8 +36,9 @@ namespace iroha {
 
     bool ModelCryptoProviderImpl::verify(
         std::shared_ptr<const Query> query) const {
-      return iroha::verify(
-          iroha::hash(*query).to_string(), keypair_.pubkey, keypair_.privkey);
+            return iroha::verify(iroha::hash(*query).to_string(),
+                                 query->signature.pubkey,
+                                 query->signature.signature);
     }
 
     bool ModelCryptoProviderImpl::verify(const Block &block) const {
@@ -65,6 +66,15 @@ namespace iroha {
       signed_transaction.signatures.push_back(
           Signature{signature, keypair_.pubkey});
       return signed_transaction;
+    }
+
+    Query ModelCryptoProviderImpl::sign(const Query &query) const {
+      auto signedQuery = query;
+      auto sig = iroha::sign(
+          iroha::hash(query).to_string(), keypair_.pubkey, keypair_.privkey);
+      signedQuery.signature =
+          Signature{.signature = sig, .pubkey = keypair_.pubkey};
+      return signedQuery;
     }
   }
 }

@@ -65,6 +65,13 @@ namespace iroha {
        * @return signed transaction
        */
       virtual Transaction sign(const Transaction &transaction) const = 0;
+
+      /**
+       * Method for signing a query with stored keypair
+       * @param query - query to sign
+       * @return signed query
+       */
+      virtual Query sign(const Query &query) const = 0;
     };
   }
 }
