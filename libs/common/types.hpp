@@ -85,11 +85,10 @@ namespace iroha {
      */
     std::string to_hexstring() const noexcept {
       std::string res(size_ * 2, 0);
-      uint8_t front, back;
       auto ptr = this->data();
       for (uint32_t i = 0, k = 0; i < size_; i++) {
-        front = (uint8_t)(ptr[i] & 0xF0) >> 4;
-        back = (uint8_t)(ptr[i] & 0xF);
+        const auto front = (uint8_t)(ptr[i] & 0xF0) >> 4;
+        const auto back = (uint8_t)(ptr[i] & 0xF);
         res[k++] = code[front];
         res[k++] = code[back];
       }
@@ -285,51 +284,6 @@ namespace iroha {
   // timestamps
   using ts64_t = uint64_t;
   using ts32_t = uint32_t;
-
-  /*
-    struct Amount {
-      uint64_t int_part;
-      uint64_t frac_part;
-
-      Amount(uint64_t integer_part, uint64_t fractional_part) {
-        int_part = integer_part;
-        frac_part = fractional_part;
-      }
-
-      Amount() {
-        int_part = 0;
-        frac_part = 0;
-      }
-
-      uint32_t get_frac_number() { return std::to_string(frac_part).length(); }
-
-      uint64_t get_joint_amount(uint32_t precision) {
-        auto coef = ipow(10, precision);
-        return int_part * coef + frac_part;
-      }
-
-      bool operator==(const Amount &rhs) const {
-        return this->int_part == rhs.int_part && this->frac_part ==
-    rhs.frac_part;
-      }
-
-      bool operator!=(const Amount &rhs) const {
-        return !operator==(rhs);
-      }
-
-     private:
-      int ipow(int base, int exp) {
-        int result = 1;
-        while (exp) {
-          if (exp & 1) result *= base;
-          exp >>= 1;
-          base *= base;
-        }
-
-        return result;
-      }
-    };
-  */
 
   // check the type of the derived class
   template <typename Base, typename T>
