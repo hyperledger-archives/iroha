@@ -31,7 +31,7 @@ struct TransactionStatelessResponse : TransactionResponse {
   /**
    * Is stateless validation passed
    */
-  bool passed;
+  bool passed{};
 };
 } // namespace model
 } // namespace iroha

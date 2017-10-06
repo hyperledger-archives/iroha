@@ -48,7 +48,7 @@ namespace iroha {
         query_handler.register_type(typeid(GetRolePermissions));
       }
 
-      ClassHandler query_handler;
+      ClassHandler query_handler{};
     };
 
   }  // namespace model

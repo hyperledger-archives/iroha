@@ -30,7 +30,7 @@ namespace iroha {
       /**
        * Asset to insert to the system
        */
-      std::string domain_name;
+      std::string domain_name{};
 
       bool operator==(const Command& command) const override;
 

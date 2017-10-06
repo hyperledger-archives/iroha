@@ -35,7 +35,7 @@ namespace iroha {
       /**
        * Asset Id
        */
-      std::string asset_id;
+      std::string asset_id{};
     };
   }  // namespace model
 }  // namespace iroha

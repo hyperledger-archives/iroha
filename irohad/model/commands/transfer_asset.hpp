@@ -32,27 +32,27 @@ namespace iroha {
       /**
        * Source account
        */
-      std::string src_account_id;
+      std::string src_account_id{};
 
       /**
        * Destination account
        */
-      std::string dest_account_id;
+      std::string dest_account_id{};
 
       /**
        * Asset to transfer. Identifier is asset_id
        */
-      std::string asset_id;
+      std::string asset_id{};
 
       /**
        * Transfer description
        */
-      std::string description;
+      std::string description{};
 
       /**
        * Amount of transferred asset
        */
-      Amount amount;
+      Amount amount{};
 
       bool operator==(const Command &command) const override;
 

@@ -32,12 +32,12 @@ namespace iroha {
       /**
        * Account to add new signatory
        */
-      std::string account_id;
+      std::string account_id{};
 
       /**
        * New signatory is identified with public key
        */
-      pubkey_t pubkey;
+      pubkey_t pubkey{};
 
       bool operator==(const Command &command) const override;
 

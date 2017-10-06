@@ -32,17 +32,17 @@ namespace iroha {
       /**
        * Asset to create in the system
        */
-      std::string asset_name;
+      std::string asset_name{};
 
       /**
        * Domain id (full name)
        */
-      std::string domain_id;
+      std::string domain_id{};
 
       /**
        * Asset precision
        */
-      uint8_t precision;
+      uint8_t precision{};
 
       bool operator==(const Command &command) const override;
 

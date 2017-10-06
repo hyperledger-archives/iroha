@@ -32,7 +32,7 @@ namespace iroha {
       /**
        * Vector with all public keys attached to account
        */
-      std::vector<pubkey_t> keys;
+      std::vector<pubkey_t> keys{};
     };
   }  // namespace model
 }  // namespace iroha

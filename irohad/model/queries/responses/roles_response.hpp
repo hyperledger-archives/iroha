@@ -31,7 +31,7 @@ namespace iroha {
       /**
        * All role's permissions
        */
-      std::vector<std::string> role_permissions;
+      std::vector<std::string> role_permissions{};
     };
 
 
@@ -42,7 +42,7 @@ namespace iroha {
       /**
        * Attached roles
        */
-      std::vector<std::string> roles;
+      std::vector<std::string> roles{};
     };
   }  // namespace model
 }  // namespace iroha

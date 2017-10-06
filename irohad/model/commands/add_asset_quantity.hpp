@@ -33,18 +33,18 @@ namespace iroha {
       /**
        * Account where to add assets
        */
-      std::string account_id;
+      std::string account_id{};
 
       /**
        * Asset to issue
        * Note: must exist in the system
        */
-      std::string asset_id;
+      std::string asset_id{};
 
       /**
        * Amount to add to account asset
        */
-      Amount amount;
+      Amount amount{};
 
       bool operator==(const Command &command) const override;
 

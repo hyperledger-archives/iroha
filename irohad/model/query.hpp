@@ -32,24 +32,24 @@ namespace iroha {
       /**
        * Signature of query's creator
        */
-      Signature signature;
+      Signature signature{};
 
       /**
       * Account id of transaction creator.
       *
       */
-      std::string creator_account_id;
+      std::string creator_account_id{};
 
       /**
        * Creation timestamp
        *
        */
-      ts64_t created_ts;
+      ts64_t created_ts{};
 
       /**
        * Query counter
        */
-      uint64_t query_counter;
+      uint64_t query_counter{};
 
       virtual ~Query() {}
     };

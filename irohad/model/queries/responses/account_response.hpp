@@ -31,7 +31,7 @@ namespace iroha {
       /**
        * Attached account
        */
-      Account account;
+      Account account{};
     };
   }  // namespace model
 }  // namespace iroha
