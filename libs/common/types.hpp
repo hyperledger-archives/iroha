@@ -55,6 +55,12 @@ namespace iroha {
   template <size_t size_>
   class blob_t : public std::array<byte_t, size_> {
    public:
+
+    /**
+     * Initialize blob value
+     */
+    blob_t() { this->fill(0); }
+
     /**
      * In compile-time returns size of current blob.
      */
