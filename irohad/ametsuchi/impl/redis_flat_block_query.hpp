@@ -46,7 +46,7 @@ namespace iroha {
        * @param account_id
        * @return vector of block ids
        */
-      std::vector<uint64_t> getBlockIds(std::string& account_id);
+      std::vector<uint64_t> getBlockIds(const std::string& account_id);
 
       /**
        * creates callback to lrange query to redis to supply result to

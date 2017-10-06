@@ -30,7 +30,7 @@ namespace iroha {
     RedisFlatBlockQuery::~RedisFlatBlockQuery() { client_.disconnect(); }
 
     std::vector<uint64_t> RedisFlatBlockQuery::getBlockIds(
-        std::string& account_id) {
+        const std::string& account_id) {
       std::vector<uint64_t> block_ids;
       client_.lrange(
           account_id, 0, -1, [this, &block_ids](cpp_redis::reply& reply) {
@@ -72,7 +72,7 @@ namespace iroha {
     rxcpp::observable<model::Transaction>
     RedisFlatBlockQuery::getAccountTransactions(std::string account_id) {
       return rxcpp::observable<>::create<model::Transaction>(
-          [this, &account_id](auto subscriber) {
+          [this, account_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
             for (auto block_id : block_ids) {
               this->client_.lrange(
@@ -89,7 +89,7 @@ namespace iroha {
     RedisFlatBlockQuery::getAccountAssetTransactions(std::string account_id,
                                                     std::string asset_id) {
       return rxcpp::observable<>::create<model::Transaction>(
-          [this, &account_id, &asset_id](auto subscriber) {
+          [this, account_id, asset_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
             for (auto block_id : block_ids) {
               // create key for querying redis
