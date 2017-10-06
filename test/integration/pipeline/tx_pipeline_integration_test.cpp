@@ -24,6 +24,8 @@
 #include "model/generators/block_generator.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 
+#include <cstdio>
+
 using namespace framework::test_subscriber;
 using namespace std::chrono_literals;
 

@@ -116,10 +116,7 @@ void Irohad::initPeer() {
 }
 
 void Irohad::initCryptoProvider() {
-  auto model_crypto_verifier =
-      std::make_shared<ModelCryptoProviderImpl>(keypair);
-
-  crypto_verifier = model_crypto_verifier;
+  crypto_verifier = std::make_shared<ModelCryptoProviderImpl>(keypair);
 
   log_->info("[Init] => crypto provider");
 }
