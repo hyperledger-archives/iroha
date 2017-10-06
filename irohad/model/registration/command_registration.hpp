@@ -63,7 +63,7 @@ namespace iroha {
         command_handler.register_type(typeid(RevokePermission));
       }
 
-      ClassHandler command_handler;
+      ClassHandler command_handler{};
     };
 
   } // namespace model

@@ -29,9 +29,9 @@ namespace iroha {
      * Provide user's intent for adding peer to current network
      */
     struct AddPeer : public Command {
-      pubkey_t peer_key;
+      pubkey_t peer_key{};
 
-      std::string address;
+      std::string address{};
 
       bool operator==(const Command &command) const override;
 

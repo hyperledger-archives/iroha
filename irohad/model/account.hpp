@@ -27,74 +27,61 @@ namespace iroha {
      */
     struct Account {
       struct Permissions {
-        Permissions() {
-          issue_assets = false;
-          create_assets = false;
-          create_accounts = false;
-          create_domains = false;
-          read_all_accounts = false;
-          add_signatory = false;
-          remove_signatory = false;
-          set_permissions = false;
-          set_quorum = false;
-          can_transfer = false;
-        }
-
         /**
          * Can account add assets to own account;
          * Dangerous operation - require high number of quorum;
          */
-        bool issue_assets;
+        bool issue_assets{};
 
         /**
          * Can account create new type of assets;
          * Dangerous operation - require high number of quorum;
          */
-        bool create_assets;
+        bool create_assets{};
 
         /**
         * Can create new accounts
         */
-        bool create_accounts;
+        bool create_accounts{};
 
         /**
         * Can create new domains
         */
-        bool create_domains;
+        bool create_domains{};
 
         /**
          * Can account read private information of other accounts;
          * Auditor's permission
          */
-        bool read_all_accounts;
+        bool read_all_accounts{};
 
         /**
          * Can add signatory to all other accounts
          */
-        bool add_signatory;
+        bool add_signatory{};
 
         /**
          * Can add signatory to all other accounts
          */
-        bool remove_signatory;
+        bool remove_signatory{};
 
         /**
          * Set permissions to all other accounts
          * Administrator's account permission
          */
-        bool set_permissions;
+        bool set_permissions{};
 
         /**
          * Permission to set quorum
          * Administrator's account permission
          */
-        bool set_quorum;
+        bool set_quorum{};
 
         /**
          * Can account provide unlimited transfers to other accounts;
          * User's account permission
          */
-        bool can_transfer;
+        bool can_transfer{};
 
         bool operator==(const Permissions &rhs) const;
         bool operator!=(const Permissions &rhs) const;
@@ -103,23 +90,23 @@ namespace iroha {
       /**
        * User name is used as unique identifier of an account
        */
-      std::string account_id;
+      std::string account_id{};
 
       /**
        * Account has only one domain.
        * Name of the domain of a account
        */
-      std::string domain_name;
+      std::string domain_name{};
 
       /**
        * Account permissions
        */
-      Permissions permissions;
+      Permissions permissions{};
 
       /**
        * Minimum quorum of signatures need for transactions
        */
-      uint32_t quorum;
+      uint32_t quorum{};
     };
   }
 }

@@ -65,7 +65,7 @@ namespace iroha {
          */
         NOT_SUPPORTED
       };
-      Reason reason;
+      Reason reason{};
     };
   }  // namespace model
 }  // namespace iroha

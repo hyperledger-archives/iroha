@@ -37,19 +37,19 @@ namespace iroha {
        * List of signatories that sign transaction
        * HEADER field
        */
-      std::vector<Signature> signatures;
+      std::vector<Signature> signatures{};
 
       /**
        * Creation timestamp
        * HEADER field
        */
-      ts64_t created_ts;
+      ts64_t created_ts{};
 
       /**
        * Account id of transaction creator.
        * META field
        */
-      std::string creator_account_id;
+      std::string creator_account_id{};
 
       /**
        * Number for protecting against replay attack.
@@ -60,14 +60,14 @@ namespace iroha {
        * this transaction is replayed.
        * META field
        */
-      uint64_t tx_counter;
+      uint64_t tx_counter{};
 
       /**
        * Bunch of commands attached to transaction
        * shared_ptr is used since Proposal has to be copied
        * BODY field
        */
-      std::vector<std::shared_ptr<Command>> commands;
+      std::vector<std::shared_ptr<Command>> commands{};
 
       using CommandsType = decltype(commands);
 

@@ -31,12 +31,12 @@ namespace iroha {
       /**
        * Account identifier
        */
-      std::string account_id;
+      std::string account_id{};
 
       /**
        * Asset identifier
        */
-      std::string asset_id;
+      std::string asset_id{};
     };
 
     /**
@@ -46,7 +46,7 @@ namespace iroha {
       /**
        * Account identifier
        */
-      std::string account_id;
+      std::string account_id{};
     };
   }  // namespace model
 }  // namespace iroha

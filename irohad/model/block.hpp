@@ -37,7 +37,7 @@ namespace iroha {
        * NOT a part of payload
        * TODO: replace by a method call
        */
-      hash256_t hash;
+      hash256_t hash{};
 
       using HashType = decltype(hash);
 
@@ -53,33 +53,33 @@ namespace iroha {
        * Timestamp of block creation(signing)
        * part of PAYLOAD
        */
-      ts64_t created_ts;
+      ts64_t created_ts{};
 
       /**
        * Block number in the ledger
        * Height can be used as block_id
        * part of PAYLOAD
        */
-      uint64_t height;
+      uint64_t height{};
 
       /**
        * Hash of a previous block in the ledger
        * part of PAYLOAD
        */
-      hash256_t prev_hash;
+      hash256_t prev_hash{};
 
       /**
        * Number of transactions in block body
        * part of PAYLOAD
        */
-      uint16_t txs_number;
+      uint16_t txs_number{};
 
       /**
        * Root of merkle tree based on the block and all previous blocks
        * in the ledger
        * part of PAYLOAD
        */
-      hash256_t merkle_root;
+      hash256_t merkle_root{};
 
       /**
        * Attached transactions

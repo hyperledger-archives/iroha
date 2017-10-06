@@ -30,12 +30,12 @@ namespace iroha {
       /**
        * Role to insert to the system
        */
-      std::string role_name;
+      std::string role_name{};
 
       /**
        * Role permissions
        */
-      std::vector<std::string> permissions;
+      std::vector<std::string> permissions{};
 
       bool operator==(const Command &command) const override;
 

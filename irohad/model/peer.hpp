@@ -29,14 +29,14 @@ namespace iroha {
       /**
        * IP address of peer for connection
        */
-      std::string address;
+      std::string address{};
 
       using AddressType = decltype(address);
 
       /**
        * Public key of peer
        */
-      pubkey_t pubkey;
+      pubkey_t pubkey{};
 
       using KeyType = decltype(pubkey);
 

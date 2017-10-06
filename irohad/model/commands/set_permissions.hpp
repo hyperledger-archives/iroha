@@ -31,12 +31,12 @@ namespace iroha {
       /**
        * Identifier of account to set permission
        */
-      std::string account_id;
+      std::string account_id{};
 
       /**
        * New permissions of account
        */
-      Account::Permissions new_permissions;
+      Account::Permissions new_permissions{};
 
       bool operator==(const Command& command) const override;
 

@@ -31,7 +31,7 @@ namespace iroha {
       /**
        * Client query
        */
-      hash256_t query_hash;
+      hash256_t query_hash{};
 
       virtual ~QueryResponse() {}
     };

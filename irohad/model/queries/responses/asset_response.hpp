@@ -31,7 +31,7 @@ namespace iroha {
       /**
        * Attached asset
        */
-      Asset asset;
+      Asset asset{};
     };
   }  // namespace model
 }  // namespace iroha

@@ -39,7 +39,7 @@ namespace iroha {
       /**
        * Role to query
        */
-      std::string role_id;
+      std::string role_id{};
     };
   }  // namespace model
 }  // namespace iroha

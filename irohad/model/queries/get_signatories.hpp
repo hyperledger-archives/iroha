@@ -31,7 +31,7 @@ namespace iroha {
       /**
        * Account identifier
        */
-      std::string account_id;
+      std::string account_id{};
     };
   }  // namespace model
 }  // namespace iroha

@@ -33,14 +33,14 @@ namespace iroha {
       /**
        * Asset unique identifier
        */
-      std::string asset_id;
+      std::string asset_id{};
 
-      std::string domain_id;
+      std::string domain_id{};
 
       /**
        * Precision of asset
        */
-      uint8_t precision;
+      uint8_t precision{};
     };
   }  // namespace model
 }  // namespace iroha

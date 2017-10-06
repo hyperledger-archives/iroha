@@ -38,7 +38,7 @@ namespace iroha {
         transaction_response_handler.register_type(typeid(TransactionStatelessResponse));
       }
 
-      ClassHandler transaction_response_handler;
+      ClassHandler transaction_response_handler{};
     };
 
   } // namespace model
