@@ -166,6 +166,10 @@ namespace iroha_cli {
           case RESULT:
             is_parsing = parseResult(line);
             break;
+          default:
+            // shouldn't get here
+            BOOST_ASSERT_MSG(false, "not implemented");
+            break;
         }
       }
     }
