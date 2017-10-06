@@ -100,9 +100,9 @@ namespace iroha {
 
       transaction_->exec("SAVEPOINT savepoint_;");
       auto result = function(block, *wsv_, top_hash_)
-          && std::all_of(block.transactions.begin(),
-                         block.transactions.end(),
-                         execute_transaction);
+          and std::all_of(block.transactions.begin(),
+                          block.transactions.end(),
+                          execute_transaction);
 
       if (result) {
         block_store_.insert(std::make_pair(block.height, block));

@@ -18,24 +18,21 @@
 #ifndef IROHA_REDIS_FLAT_BLOCK_QUERY_HPP
 #define IROHA_REDIS_FLAT_BLOCK_QUERY_HPP
 
-#include <ametsuchi/impl/flat_file/flat_file.hpp>
 #include <cpp_redis/redis_client.hpp>
-//#include "ametsuchi/block_query.hpp"
+#include "ametsuchi/impl/flat_file/flat_file.hpp"
 #include "ametsuchi/impl/flat_file_block_query.hpp"
 
 #include "model/converters/json_block_factory.hpp"
 
 namespace iroha {
   namespace ametsuchi {
-    class RedisFlatBlockFile : public FlatFileBlockQuery {
+    class RedisFlatBlockQuery : public FlatFileBlockQuery {
      public:
-      RedisFlatBlockFile(std::string redis_host,
+      RedisFlatBlockQuery(std::string redis_host,
                          size_t redis_port,
                          FlatFile& file_store);
 
-      RedisFlatBlockFile(FlatFile& block_store) = delete;
-
-      ~RedisFlatBlockFile() override;
+      ~RedisFlatBlockQuery() override;
 
       rxcpp::observable<model::Transaction> getAccountTransactions(
           std::string account_id) override;
@@ -49,7 +46,7 @@ namespace iroha {
        * @param account_id
        * @return vector of block ids
        */
-      std::vector<uint64_t> getBlockIdsByAccountId(std::string& account_id);
+      std::vector<uint64_t> getBlockIds(std::string& account_id);
 
       /**
        * creates callback to lrange query to redis to supply result to
