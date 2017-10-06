@@ -28,11 +28,8 @@ namespace iroha {
   namespace ametsuchi {
     class RedisFlatBlockQuery : public FlatFileBlockQuery {
      public:
-      RedisFlatBlockQuery(std::string redis_host,
-                         size_t redis_port,
-                         FlatFile& file_store);
-
-      ~RedisFlatBlockQuery() override;
+      RedisFlatBlockQuery(cpp_redis::redis_client &client,
+                          FlatFile &file_store);
 
       rxcpp::observable<model::Transaction> getAccountTransactions(
           std::string account_id) override;
@@ -46,7 +43,7 @@ namespace iroha {
        * @param account_id
        * @return vector of block ids
        */
-      std::vector<uint64_t> getBlockIds(const std::string& account_id);
+      std::vector<uint64_t> getBlockIds(const std::string &account_id);
 
       /**
        * creates callback to lrange query to redis to supply result to
@@ -55,10 +52,10 @@ namespace iroha {
        * @param block_id
        * @return
        */
-      std::function<void(cpp_redis::reply&)> callbackToLrange(
-          const rxcpp::subscriber<model::Transaction>& s, uint64_t block_id);
+      std::function<void(cpp_redis::reply &)> callbackToLrange(
+          const rxcpp::subscriber<model::Transaction> &s, uint64_t block_id);
 
-      cpp_redis::redis_client client_;
+      cpp_redis::redis_client &client_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

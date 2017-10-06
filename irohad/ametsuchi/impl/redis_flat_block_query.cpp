@@ -20,21 +20,16 @@
 namespace iroha {
   namespace ametsuchi {
 
-    RedisFlatBlockQuery::RedisFlatBlockQuery(std::string redis_host,
-                                           size_t redis_port,
-                                           FlatFile& file_store)
-        : FlatFileBlockQuery(file_store), client_() {
-      client_.connect(redis_host, redis_port);
-    }
-
-    RedisFlatBlockQuery::~RedisFlatBlockQuery() { client_.disconnect(); }
+    RedisFlatBlockQuery::RedisFlatBlockQuery(cpp_redis::redis_client &client,
+                                             FlatFile &file_store)
+        : FlatFileBlockQuery(file_store), client_(client) {}
 
     std::vector<uint64_t> RedisFlatBlockQuery::getBlockIds(
-        const std::string& account_id) {
+        const std::string &account_id) {
       std::vector<uint64_t> block_ids;
       client_.lrange(
-          account_id, 0, -1, [this, &block_ids](cpp_redis::reply& reply) {
-            for (const auto& block_reply : reply.as_array()) {
+          account_id, 0, -1, [this, &block_ids](cpp_redis::reply &reply) {
+            for (const auto &block_reply : reply.as_array()) {
               block_ids.push_back(std::stoul(block_reply.as_string()));
             }
           });
@@ -42,9 +37,10 @@ namespace iroha {
       return block_ids;
     }
 
-    std::function<void(cpp_redis::reply&)> RedisFlatBlockQuery::callbackToLrange(
-        const rxcpp::subscriber<model::Transaction>& s, uint64_t block_id) {
-      return [this, &s, block_id](cpp_redis::reply& reply) {
+    std::function<void(cpp_redis::reply &)>
+    RedisFlatBlockQuery::callbackToLrange(
+        const rxcpp::subscriber<model::Transaction> &s, uint64_t block_id) {
+      return [this, &s, block_id](cpp_redis::reply &reply) {
         auto tx_ids_reply = reply.as_array();
 
         auto bytes = block_store_.get(block_id);
@@ -60,9 +56,9 @@ namespace iroha {
           return;
         }
 
-        for (const auto& tx_reply : tx_ids_reply) {
+        for (const auto &tx_reply : tx_ids_reply) {
           auto tx_id = std::stoul(tx_reply.as_string());
-          auto&& tx = block->transactions.at(tx_id);
+          auto &&tx = block->transactions.at(tx_id);
           s.on_next(tx);
         }
         s.on_completed();
@@ -71,23 +67,22 @@ namespace iroha {
 
     rxcpp::observable<model::Transaction>
     RedisFlatBlockQuery::getAccountTransactions(std::string account_id) {
-      return rxcpp::observable<>::create<model::Transaction>(
-          [this, account_id](auto subscriber) {
-            auto block_ids = this->getBlockIds(account_id);
-            for (auto block_id : block_ids) {
-              this->client_.lrange(
-                  account_id + ":" + std::to_string(block_id),
-                  0,
-                  -1,
-                  this->callbackToLrange(subscriber, block_id));
-            }
-            this->client_.sync_commit();
-          });
+      return rxcpp::observable<>::create<model::Transaction>([this, account_id](
+          auto subscriber) {
+        auto block_ids = this->getBlockIds(account_id);
+        for (auto block_id : block_ids) {
+          this->client_.lrange(account_id + ":" + std::to_string(block_id),
+                               0,
+                               -1,
+                               this->callbackToLrange(subscriber, block_id));
+        }
+        this->client_.sync_commit();
+      });
     }
 
     rxcpp::observable<model::Transaction>
     RedisFlatBlockQuery::getAccountAssetTransactions(std::string account_id,
-                                                    std::string asset_id) {
+                                                     std::string asset_id) {
       return rxcpp::observable<>::create<model::Transaction>(
           [this, account_id, asset_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
