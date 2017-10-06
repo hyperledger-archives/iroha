@@ -30,7 +30,12 @@ namespace iroha {
       client_.lrange(
           account_id, 0, -1, [this, &block_ids](cpp_redis::reply &reply) {
             for (const auto &block_reply : reply.as_array()) {
-              block_ids.push_back(std::stoul(block_reply.as_string()));
+              const auto &string_reply = block_reply.as_string();
+
+              // check if reply is an integer
+              if (isdigit(string_reply.c_str()[0])) {
+                block_ids.push_back(std::stoul(string_reply));
+              }
             }
           });
       client_.sync_commit();
@@ -67,17 +72,18 @@ namespace iroha {
 
     rxcpp::observable<model::Transaction>
     RedisFlatBlockQuery::getAccountTransactions(std::string account_id) {
-      return rxcpp::observable<>::create<model::Transaction>([this, account_id](
-          auto subscriber) {
-        auto block_ids = this->getBlockIds(account_id);
-        for (auto block_id : block_ids) {
-          this->client_.lrange(account_id + ":" + std::to_string(block_id),
-                               0,
-                               -1,
-                               this->callbackToLrange(subscriber, block_id));
-        }
-        this->client_.sync_commit();
-      });
+      return rxcpp::observable<>::create<model::Transaction>(
+          [this, account_id](auto subscriber) {
+            auto block_ids = this->getBlockIds(account_id);
+            for (auto block_id : block_ids) {
+              this->client_.lrange(
+                  account_id + ":" + std::to_string(block_id),
+                  0,
+                  -1,
+                  this->callbackToLrange(subscriber, block_id));
+            }
+            this->client_.sync_commit();
+          });
     }
 
     rxcpp::observable<model::Transaction>
