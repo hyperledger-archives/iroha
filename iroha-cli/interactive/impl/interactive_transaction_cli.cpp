@@ -80,8 +80,11 @@ namespace iroha_cli {
           {SET_QUO, {acc_id, quorum}},
           {SUB_ASSET_QTY, {}},
           {TRAN_ASSET,
-           {std::string("Src") + acc_id, std::string("Dest") + acc_id, ast_id,
-            ammout_a, ammout_b}},
+           {std::string("Src") + acc_id,
+            std::string("Dest") + acc_id,
+            ast_id,
+            ammout_a,
+            ammout_b}},
           {CREATE_ROLE, {role}},
           {APPEND_ROLE, {acc_id, role}},
           {GRANT_PERM, {acc_id, perm}},
@@ -105,7 +108,8 @@ namespace iroha_cli {
           {GRANT_PERM, &InteractiveTransactionCli::parseGrantPermission},
           {REVOKE_PERM, &InteractiveTransactionCli::parseGrantPermission}};
 
-      commands_menu_ = formMenu(command_handlers_, command_params_descriptions_,
+      commands_menu_ = formMenu(command_handlers_,
+                                command_params_descriptions_,
                                 commands_description_map_);
       // Add "go back" option
       addBackOption(commands_menu_);
@@ -133,8 +137,8 @@ namespace iroha_cli {
           {ADD_CMD, &InteractiveTransactionCli::parseAddCommand},
           {BACK_CODE, &InteractiveTransactionCli::parseGoBack}};
 
-      result_menu_ = formMenu(result_handlers_, result_params_descriptions,
-                              result_desciption);
+      result_menu_ = formMenu(
+          result_handlers_, result_params_descriptions, result_desciption);
     }
 
     InteractiveTransactionCli::InteractiveTransactionCli(
@@ -282,7 +286,7 @@ namespace iroha_cli {
         std::vector<std::string> params) {
       auto asset_name = params[0];
       auto domain_id = params[1];
-      auto val = parser::parseValue<uint8_t>(params[2]);
+      auto val = parser::parseValue<uint32_t>(params[2]);
       if (not val.has_value()) {
         std::cout << "Wrong format for precision" << std::endl;
         return nullptr;
@@ -341,16 +345,16 @@ namespace iroha_cli {
         return nullptr;
       }
       iroha::Amount amount(val_int.value(), precision.value());
-      return generator_.generateTransferAsset(src_account_id, dest_account_id,
-                                              asset_id, amount);
+      return generator_.generateTransferAsset(
+          src_account_id, dest_account_id, asset_id, amount);
     }
 
     // --------- Result parsers -------------
 
     bool InteractiveTransactionCli::parseResult(std::string line) {
       // Find in result handler map
-      auto res = handleParse<bool>(this, line, result_handlers_,
-                                   result_params_descriptions);
+      auto res = handleParse<bool>(
+          this, line, result_handlers_, result_params_descriptions);
       return not res.has_value() ? true : res.value();
     }
 
@@ -365,8 +369,11 @@ namespace iroha_cli {
       iroha::model::generators::TransactionGenerator tx_generator_;
       auto time_stamp =
           std::chrono::system_clock::now().time_since_epoch() / 1ms;
-      auto tx = tx_generator_.generateTransaction(time_stamp, creator_,
-                                                  tx_counter_, commands_);
+      auto tx = tx_generator_.generateTransaction(
+          time_stamp, creator_, tx_counter_, commands_);
+      // clear commands so that we can start creating new tx
+      commands_.clear();
+
       // TODO: sign tx
       tx.signatures.push_back(
           {});  // get rid off fake signature when crypto is integrated
@@ -390,8 +397,11 @@ namespace iroha_cli {
       iroha::model::generators::TransactionGenerator tx_generator_;
       auto time_stamp =
           std::chrono::system_clock::now().time_since_epoch() / 1ms;
-      auto tx = tx_generator_.generateTransaction(time_stamp, creator_,
-                                                  tx_counter_, commands_);
+      auto tx = tx_generator_.generateTransaction(
+          time_stamp, creator_, tx_counter_, commands_);
+
+      // clear commands so that we can start creating new tx
+      commands_.clear();
       // TODO: sign tx
       tx.signatures.push_back({});  // get rid off fake signature
       iroha::model::converters::JsonTransactionFactory json_factory;
