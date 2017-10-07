@@ -24,6 +24,7 @@
 #include <sstream>
 #include <string>
 #include <typeinfo>
+#include <type_traits>
 #include <vector>
 
 #include <nonstd/optional.hpp>
@@ -167,6 +168,7 @@ namespace iroha {
    * Bind operator. If argument has value, dereferences argument and calls
    * given function, which should return wrapped value
    * operator| is used since it has to be binary and left-associative
+   * Non-void returning specialization
    *
    * nonstd::optional<int> f();
    * nonstd::optional<double> g(int);
@@ -182,11 +184,40 @@ namespace iroha {
    * @return monadic value, which can be of another type
    */
   template <typename T, typename Transform>
-  auto operator|(T t, Transform f) -> decltype(f(*t)) {
+  auto operator|(T t, Transform f) ->
+      typename std::enable_if<not std::is_same<decltype(f(*t)), void>::value,
+                              decltype(f(*t))>::type {
     if (t) {
       return f(*t);
     }
     return {};
+  }
+
+  /**
+   * Bind operator. If argument has value, dereferences argument and calls
+   * given function, which should return wrapped value
+   * operator| is used since it has to be binary and left-associative
+   * Void specialization
+   *
+   * nonstd::optional<int> f();
+   * void g(int);
+   *
+   * f() | g;
+   *
+   * @tparam T - monadic type
+   * @tparam Transform - transform function type
+   * @param t - monadic value
+   * @param f - function, which takes dereferenced value, and returns
+   * wrapped value
+   * @return monadic value, which can be of another type
+   */
+  template <typename T, typename Transform>
+  auto operator|(T t, Transform f) ->
+      typename std::enable_if<std::is_same<decltype(f(*t)),
+                                           void>::value>::type {
+    if (t) {
+      f(*t);
+    }
   }
 
   /**

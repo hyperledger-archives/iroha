@@ -48,24 +48,17 @@ namespace iroha {
       return [this, &s, block_id](cpp_redis::reply &reply) {
         auto tx_ids_reply = reply.as_array();
 
-        auto bytes = block_store_.get(block_id);
-        auto document =
-            model::converters::stringToJson(bytesToString(bytes.value()));
-        if (not document.has_value()) {
-          s.on_completed();
-          return;
-        }
-        auto block = serializer_.deserialize(document.value());
-        if (not block.has_value()) {
-          s.on_completed();
-          return;
-        }
-
-        for (const auto &tx_reply : tx_ids_reply) {
-          auto tx_id = std::stoul(tx_reply.as_string());
-          auto &&tx = block->transactions.at(tx_id);
-          s.on_next(tx);
-        }
+        block_store_.get(block_id) | [](auto bytes) {
+          return model::converters::stringToJson(bytesToString(bytes));
+        } | [this](const auto &json) {
+          return serializer_.deserialize(json);
+        } | [&](const auto &block) {
+          for (const auto &tx_reply : tx_ids_reply) {
+            auto tx_id = std::stoul(tx_reply.as_string());
+            auto &&tx = block.transactions.at(tx_id);
+            s.on_next(tx);
+          }
+        };
         s.on_completed();
       };
     }
