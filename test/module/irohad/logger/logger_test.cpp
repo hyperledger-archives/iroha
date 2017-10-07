@@ -42,7 +42,7 @@ TEST(LoggerTest, logBoolTest) {
 }
 
 TEST(LoggerTest, collectionToStringNotEmpty) {
-  std::vector<int> collection({1, 2, 3});
+  std::vector<int> collection{1, 2, 3};
   auto res = logger::to_string(collection, [](auto val) {
     return std::to_string(val);
   });
@@ -50,7 +50,7 @@ TEST(LoggerTest, collectionToStringNotEmpty) {
 }
 
 TEST(LoggerTest, collectionToStringEmpty) {
-  std::vector<int> collection({});
+  std::vector<int> collection{};
   auto res = logger::to_string(collection, [](auto val) {
     return std::to_string(val);
   });

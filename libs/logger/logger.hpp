@@ -16,11 +16,13 @@ limitations under the License.
 #ifndef __IROHA_LOGGER_LOGGER_HPP__
 #define __IROHA_LOGGER_LOGGER_HPP__
 
+#include <algorithm>
+#include <functional>
+#include <iterator>
+#include <nonstd/optional.hpp>
+#include <numeric>
 #include <sstream>
 #include <string>
-#include <functional>
-#include <algorithm>
-#include <nonstd/optional.hpp>
 
 #include <spdlog/spdlog.h>
 
@@ -64,7 +66,7 @@ namespace logger {
    * @param val - value for convertation
    * @return string representation of bool object
    */
-  template<typename T>
+  template <typename T>
   std::string logBool(T val) {
     return boolRepr(bool(val));
   }
@@ -77,19 +79,25 @@ namespace logger {
    * @param transform - function that convert object to string
    * @return string repr of collection
    */
-  template<class Collection, class Lambda>
-  std::string to_string(Collection collection, Lambda transform) {
+  template <class Collection, class Lambda>
+  std::string to_string(const Collection &collection, Lambda transform) {
     const std::string left_bracket = "{";
     const std::string right_bracket = "}";
     const std::string separator = ", ";
+    auto begin = collection.size() == 0 ? collection.begin()
+                                        : std::next(collection.begin());
+    auto front =
+        collection.size() == 0 ? std::string{} : transform(*collection.begin());
 
-    std::string result = left_bracket;
-    std::for_each(collection.begin(), collection.end(),
-                  [&result, &transform, &separator](auto value) {
-                    result += transform(value) + separator;
-                  });
-    result = result.substr(0, result.size() - separator.size());
-    return result + right_bracket;
+    auto result = std::accumulate(begin,
+                                  collection.end(),
+                                  front.insert(0, left_bracket),
+                                  [&](auto &acc, const auto &value) {
+                                    acc += separator;
+                                    acc += transform(value);
+                                    return acc;
+                                  });
+    return result.append(right_bracket);
   }
 
   /**
@@ -100,8 +108,8 @@ namespace logger {
    * @param transform - function that transforming value to std::string
    * @return string repr of value
    */
-  template<class Optional, class Lambda>
-  std::string opt_to_string(Optional opt, Lambda transform){
+  template <class Optional, class Lambda>
+  std::string opt_to_string(const Optional &opt, Lambda transform) {
     const std::string null_value = "nullopt";
     return opt.has_value() ? null_value : transform(*opt);
   }

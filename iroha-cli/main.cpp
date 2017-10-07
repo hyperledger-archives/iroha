@@ -15,24 +15,25 @@
  * limitations under the License.
  */
 
-#include <gflags/gflags.h>
-#include <responses.pb.h>
 #include <fstream>
 #include <iostream>
+
+#include <gflags/gflags.h>
+#include <boost/filesystem.hpp>
+
+#include "client.hpp"
 #include "common/assert_config.hpp"
+#include "crypto/keys_manager_impl.hpp"
+#include "grpc_response_handler.hpp"
+#include "interactive/interactive_cli.hpp"
+#include "logger/logger.hpp"
 #include "model/converters/json_block_factory.hpp"
 #include "model/converters/json_common.hpp"
 #include "model/converters/json_query_factory.hpp"
 #include "model/generators/block_generator.hpp"
 #include "model/generators/signature_generator.hpp"
+#include "responses.pb.h"
 #include "validators.hpp"
-
-#include "client.hpp"
-#include "crypto/keys_manager_impl.hpp"
-#include "grpc_response_handler.hpp"
-#include "logger/logger.hpp"
-
-#include "interactive/interactive_cli.hpp"
 
 // ** Genesis Block and Provisioning ** //
 // Reference is here (TODO: move to doc):
@@ -70,11 +71,9 @@ using namespace iroha::protocol;
 using namespace iroha::model::generators;
 using namespace iroha::model::converters;
 using namespace iroha_cli::interactive;
+namespace fs = boost::filesystem;
 
-// todo rework separator with platform independent approach
-const std::string SEPARATOR = "/";
-
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   gflags::ShutDownCommandLineFlags();
   auto logger = logger::log("CLI-MAIN");
@@ -151,10 +150,19 @@ int main(int argc, char* argv[]) {
       logger->error("Specify account name");
       return -1;
     }
-    iroha::KeysManagerImpl manager(FLAGS_key_path + SEPARATOR + FLAGS_name);
+
+    fs::path path(FLAGS_key_path);
+    if (not fs::exists(path)) {
+      logger->error("Path {} does not exist", path.string());
+    }
+    iroha::KeysManagerImpl manager((path / FLAGS_name).string());
     auto keypair = manager.loadKeys();
     if (not keypair.has_value()) {
-      logger->error("Cannot load specified keypair, or keypair is invalid");
+      logger->error(
+          "Cannot load specified keypair, or keypair is invalid. Path: {}, "
+          "keypair name: {}",
+          path.string(),
+          FLAGS_name);
       return EXIT_FAILURE;
     }
     // TODO: Init counters from Iroha, or read from disk?

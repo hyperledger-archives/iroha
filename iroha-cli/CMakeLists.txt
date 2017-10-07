@@ -61,4 +61,6 @@ target_link_libraries(iroha-cli
     client
     cli-flags_validators
     keys_manager
+    ${Boost_SYSTEM_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
     )

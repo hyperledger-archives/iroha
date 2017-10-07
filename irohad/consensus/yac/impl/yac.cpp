@@ -23,6 +23,28 @@ namespace iroha {
   namespace consensus {
     namespace yac {
 
+      template <typename T>
+      std::string cryptoError(const model::Peer &peer, const T &votes) {
+        std::string result = "Crypto verification failed for message from ";
+        result += peer.address;
+        result += ". \nVotes: ";
+        result += logger::to_string(votes, [](const auto &vote) {
+          std::string result = "(Public key: ";
+          result += vote.signature.pubkey.to_hexstring();
+          result += ", Signature: ";
+          result += vote.signature.signature.to_hexstring();
+          result += ")\n";
+          return result;
+        });
+        return result;
+      }
+
+      template <typename T>
+      std::string cryptoError(const model::Peer &peer,
+                              const std::initializer_list<T> &votes) {
+        return cryptoError<std::initializer_list<T>>(peer, votes);
+      }
+
       std::shared_ptr<Yac> Yac::create(
           YacVoteStorage vote_storage,
           std::shared_ptr<YacNetwork> network,
@@ -69,15 +91,10 @@ namespace iroha {
 
       void Yac::on_vote(model::Peer from, VoteMessage vote) {
         std::lock_guard<std::mutex> guard(mutex_);
-        if (not crypto_->verify(vote)) {
-          log_->warn(
-              "Crypto verification failed for vote from {}. Signature: {}, "
-              "public key: {}",
-              from.address,
-              vote.signature.signature.to_hexstring(),
-              vote.signature.pubkey.to_hexstring());
-        } else {
+        if (crypto_->verify(vote)) {
           this->applyVote(from, vote);
+        } else {
+          log_->warn(cryptoError(from, {vote}));
         }
       }
 
@@ -86,13 +103,7 @@ namespace iroha {
         if (crypto_->verify(commit)) {
           this->applyCommit(from, commit);
         } else {
-          log_->warn("Crypto verification failed for commit from {}",
-                     from.address);
-          for (const auto &vote : commit.votes) {
-            log_->warn("Signature: {}, public key: {}",
-                       vote.signature.signature.to_hexstring(),
-                       vote.signature.pubkey.to_hexstring());
-          }
+          log_->warn(cryptoError(from, commit.votes));
         }
       }
 
@@ -101,13 +112,7 @@ namespace iroha {
         if (crypto_->verify(reject)) {
           this->applyReject(from, reject);
         } else {
-          log_->warn("Crypto verification failed for vote from {}",
-                     from.address);
-          for (const auto &vote : reject.votes) {
-            log_->warn("Signature: {}, public key: {}",
-                       vote.signature.signature.to_hexstring(),
-                       vote.signature.pubkey.to_hexstring());
-          }
+          log_->warn(cryptoError(from, reject.votes));
         }
       }
 
