@@ -16,59 +16,56 @@
  */
 
 #include <gtest/gtest.h>
-#include <crypto/crypto.hpp>
-#include <crypto/hash.hpp>
-#include <model/model_crypto_provider_impl.hpp>
-#include <model/queries/get_asset_info.hpp>
+
+#include "crypto/crypto.hpp"
+#include "crypto/hash.hpp"
 #include "model/generators/query_generator.hpp"
+#include "model/generators/transaction_generator.hpp"
+#include "model/model_crypto_provider_impl.hpp"
 
-iroha::model::Transaction create_transaction() {
-  iroha::model::Transaction tx{};
-  tx.creator_account_id = "test";
+namespace iroha {
+  namespace model {
+    class CryptoProviderTest : public ::testing::Test {
+     public:
+      CryptoProviderTest() : provider(create_keypair()) {}
 
-  tx.tx_counter = 0;
-  tx.created_ts = 0;
-  return tx;
-}
+      ModelCryptoProviderImpl provider;
+    };
 
-TEST(CryptoProvider, SignAndVerify) {
-  // generate privkey/pubkey keypair
-  auto seed = iroha::create_seed();
-  auto keypair = iroha::create_keypair(seed);
+    TEST_F(CryptoProviderTest, SignAndVerifyTransaction) {
+      auto model_tx =
+          generators::TransactionGenerator().generateTransaction("test", 0, {});
 
-  auto model_tx = create_transaction();
+      provider.sign(model_tx);
+      ASSERT_TRUE(provider.verify(model_tx));
 
-  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair);
-  model_tx = crypto_provider.sign(model_tx);
-  ASSERT_TRUE(crypto_provider.verify(model_tx));
+      // now modify transaction's meta, so verify should fail
+      model_tx.creator_account_id = "test1";
+      ASSERT_FALSE(provider.verify(model_tx));
+    }
 
-  // now modify transaction's meta, so verify should fail
-  model_tx.creator_account_id = "test1";
-  ASSERT_FALSE(crypto_provider.verify(model_tx));
+    TEST_F(CryptoProviderTest, SignAndVerifyQuery) {
+      auto query =
+          generators::QueryGenerator().generateGetAccount(0, "test", 0, "test");
 
-  // same for query
-  // we can't work with generic queries so I've selected one of them
-  // TODO: do we need checks for others?
-  auto query = iroha::model::generators::QueryGenerator().generateGetAccount(
-      0, "test", 0, "test");
-  auto signed_query = crypto_provider.sign(*query);
-  query->signature = signed_query->signature;
-  ASSERT_TRUE(crypto_provider.verify(query));
-  query->account_id = "kappa";
-  ASSERT_FALSE(crypto_provider.verify(query));
-}
+      provider.sign(*query);
+      ASSERT_TRUE(provider.verify(*query));
 
-TEST(CryptoProvider, SameHashAfterSign) {
-  auto keypair = iroha::create_keypair();
-  auto query = iroha::model::generators::QueryGenerator().generateGetAccount(
-      0, "test", 0, "test");
+      // modify account id, verification should fail
+      query->account_id = "kappa";
+      ASSERT_FALSE(provider.verify(*query));
+    }
 
-  auto hash = iroha::hash(*query);
+    TEST_F(CryptoProviderTest, SameQueryHashAfterSign) {
+      auto query =
+          iroha::model::generators::QueryGenerator().generateGetAccount(
+              0, "test", 0, "test");
 
-  iroha::model::ModelCryptoProviderImpl crypto_provider(keypair);
-  auto signed_query = crypto_provider.sign(*query);
+      auto hash = iroha::hash(*query);
+      provider.sign(*query);
 
-  auto hash_signed = iroha::hash(*signed_query);
-
-  ASSERT_EQ(hash_signed, hash);
-}
+      auto hash_signed = iroha::hash(*query);
+      ASSERT_EQ(hash_signed, hash);
+    }
+  }  // namespace model
+}  // namespace iroha

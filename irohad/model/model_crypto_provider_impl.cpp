@@ -41,11 +41,10 @@ namespace iroha {
                          });
     }
 
-    bool ModelCryptoProviderImpl::verify(
-        std::shared_ptr<const Query> query) const {
-      return iroha::verify(iroha::hash(*query).to_string(),
-                           query->signature.pubkey,
-                           query->signature.signature);
+    bool ModelCryptoProviderImpl::verify(const Query &query) const {
+      return iroha::verify(iroha::hash(query).to_string(),
+                           query.signature.pubkey,
+                           query.signature.signature);
     }
 
     bool ModelCryptoProviderImpl::verify(const Block &block) const {
@@ -56,61 +55,29 @@ namespace iroha {
           });
     }
 
-    Block ModelCryptoProviderImpl::sign(const Block &block) const {
+    void ModelCryptoProviderImpl::sign(Block &block) const {
       auto signature = iroha::sign(
           iroha::hash(block).to_string(), keypair_.pubkey, keypair_.privkey);
-      auto signed_block = block;
-      signed_block.sigs.push_back(Signature{signature, keypair_.pubkey});
-      return signed_block;
+
+      block.sigs.push_back(
+          Signature{.signature = signature, .pubkey = keypair_.pubkey});
     }
 
-    Transaction ModelCryptoProviderImpl::sign(
-        const Transaction &transaction) const {
+    void ModelCryptoProviderImpl::sign(Transaction &transaction) const {
       auto signature = iroha::sign(iroha::hash(transaction).to_string(),
                                    keypair_.pubkey,
                                    keypair_.privkey);
-      auto signed_transaction = transaction;
-      signed_transaction.signatures.push_back(
-          Signature{signature, keypair_.pubkey});
-      return signed_transaction;
+
+      transaction.signatures.push_back(
+          Signature{.signature = signature, .pubkey = keypair_.pubkey});
     }
 
-    std::shared_ptr<const Query> ModelCryptoProviderImpl::sign(
-        const Query &query) const {
+    void ModelCryptoProviderImpl::sign(Query &query) const {
       auto signature = iroha::sign(
           iroha::hash(query).to_string(), keypair_.pubkey, keypair_.privkey);
 
-      // TODO something is wrong with the model?
-      std::shared_ptr<Query> signed_query;
-      if (instanceof <GetAccount>(query)) {
-        signed_query = std::make_shared<GetAccount>(
-            static_cast<const GetAccount &>(query));
-      } else if (instanceof <GetAccountAssets>(query)) {
-        signed_query = std::make_shared<GetAccountAssets>(
-            static_cast<const GetAccountAssets &>(query));
-      } else if (instanceof <GetAssetInfo>(query)) {
-        signed_query = std::make_shared<GetAssetInfo>(
-            static_cast<const GetAssetInfo &>(query));
-      } else if (instanceof <GetRoles>(query)) {
-        signed_query =
-            std::make_shared<GetRoles>(static_cast<const GetRoles &>(query));
-      } else if (instanceof <GetRolePermissions>(query)) {
-        signed_query = std::make_shared<GetRolePermissions>(
-            static_cast<const GetRolePermissions &>(query));
-      } else if (instanceof <GetSignatories>(query)) {
-        signed_query = std::make_shared<GetSignatories>(
-            static_cast<const GetSignatories &>(query));
-      } else if (instanceof <GetAccountAssetTransactions>(query)) {
-        signed_query = std::make_shared<GetAccountAssetTransactions>(
-            static_cast<const GetAccountAssetTransactions &>(query));
-      } else if (instanceof <GetAccountAssets>(query)) {
-        signed_query = std::make_shared<GetAccountAssets>(
-            static_cast<const GetAccountAssets &>(query));
-      }
-
-      signed_query->signature =
+      query.signature =
           Signature{.signature = signature, .pubkey = keypair_.pubkey};
-      return signed_query;
     }
   }
 }

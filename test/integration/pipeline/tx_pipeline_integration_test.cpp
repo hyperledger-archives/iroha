@@ -118,7 +118,7 @@ class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
     expected_block.created_ts = 0;
     expected_block.merkle_root.fill(0);
     expected_block.hash = iroha::hash(expected_block);
-    expected_block = irohad->getCryptoProvider()->sign(expected_block);
+    irohad->getCryptoProvider()->sign(expected_block);
 
     // send transactions to torii
     for (const auto &tx : transactions) {

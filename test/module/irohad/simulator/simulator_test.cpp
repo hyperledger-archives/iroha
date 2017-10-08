@@ -87,8 +87,8 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
   EXPECT_CALL(*ordering_gate, on_proposal())
       .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
 
-  EXPECT_CALL(*crypto_provider, sign(A<const Block &>()))
-      .WillOnce(ReturnArg<0>());
+  EXPECT_CALL(*crypto_provider, sign(A<Block &>()))
+      .Times(1);
 
   init();
 
@@ -128,7 +128,7 @@ TEST_F(SimulatorTest, FailWhenNoBlock) {
   EXPECT_CALL(*ordering_gate, on_proposal())
       .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
 
-  EXPECT_CALL(*crypto_provider, sign(A<const Block &>())).Times(0);
+  EXPECT_CALL(*crypto_provider, sign(A<Block &>())).Times(0);
 
   init();
 
@@ -165,7 +165,7 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
   EXPECT_CALL(*ordering_gate, on_proposal())
       .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
 
-  EXPECT_CALL(*crypto_provider, sign(A<const Block &>())).Times(0);
+  EXPECT_CALL(*crypto_provider, sign(A<Block &>())).Times(0);
 
   init();
 

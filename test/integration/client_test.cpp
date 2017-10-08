@@ -51,8 +51,8 @@ class ClientServerTest : public testing::Test {
  public:
   virtual void SetUp() {
     // Run a server
-    runner = std::make_unique<ServerRunner>(std::string(Ip) + ":" +
-                                            std::to_string(Port));
+    runner = std::make_unique<ServerRunner>(std::string(Ip) + ":"
+                                            + std::to_string(Port));
     th = std::thread([this] {
       // ----------- Command Service --------------
       pcsMock = std::make_shared<MockPeerCommunicationService>();
@@ -198,9 +198,7 @@ TEST_F(ClientServerTest, SendQueryWhenInvalidJson) {
   iroha_cli::CliClient client(Ip, Port);
   // Must not call stateful validation since json is invalid and shouldn't be
   // passed to stateless validation
-  EXPECT_CALL(*svMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
-      .Times(0);
+  EXPECT_CALL(*svMock, validate(A<const iroha::model::Query &>())).Times(0);
 
   auto json_query =
       R"({"creator_account_id": "test",
@@ -218,8 +216,7 @@ TEST_F(ClientServerTest, SendQueryWhenInvalidJson) {
 
 TEST_F(ClientServerTest, SendQueryWhenStatelessInvalid) {
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(*svMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+  EXPECT_CALL(*svMock, validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(false));
 
   auto json_query =
@@ -249,8 +246,7 @@ TEST_F(ClientServerTest, SendQueryWhenStatelessInvalid) {
 
 TEST_F(ClientServerTest, SendQueryWhenValid) {
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(*svMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+  EXPECT_CALL(*svMock, validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
   auto account_admin = iroha::model::Account();
   account_admin.account_id = "admin@test";
@@ -288,8 +284,7 @@ TEST_F(ClientServerTest, SendQueryWhenValid) {
 
 TEST_F(ClientServerTest, SendQueryWhenStatefulInvalid) {
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(*svMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+  EXPECT_CALL(*svMock, validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
   auto account_admin = iroha::model::Account();
   account_admin.account_id = "admin@test";

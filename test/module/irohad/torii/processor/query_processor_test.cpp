@@ -36,11 +36,11 @@ using ::testing::A;
 TEST(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
   auto wsv_queries = std::make_shared<MockWsvQuery>();
   auto block_queries = std::make_shared<MockBlockQuery>();
-  auto qpf =
-      std::make_unique<model::QueryProcessingFactory>(wsv_queries, block_queries);
+  auto qpf = std::make_unique<model::QueryProcessingFactory>(wsv_queries,
+                                                             block_queries);
 
   auto validation = std::make_shared<MockStatelessValidator>();
-  EXPECT_CALL(*validation, validate(A<std::shared_ptr<const model::Query>>()))
+  EXPECT_CALL(*validation, validate(A<const model::Query &>()))
       .WillRepeatedly(Return(false));
 
   iroha::torii::QueryProcessorImpl qpi(std::move(qpf), validation);
@@ -49,7 +49,8 @@ TEST(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
   auto wrapper = make_test_subscriber<CallExact>(
       qpi.queryNotifier().filter([](auto response) {
         return instanceof <model::ErrorResponse>(response);
-      }), 1);
+      }),
+      1);
   wrapper.subscribe([](auto response) {
     auto resp = static_cast<model::ErrorResponse &>(*response);
     ASSERT_EQ(resp.reason, iroha::model::ErrorResponse::STATELESS_INVALID);

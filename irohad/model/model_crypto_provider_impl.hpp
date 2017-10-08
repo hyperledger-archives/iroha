@@ -29,15 +29,15 @@ namespace iroha {
 
       bool verify(const Transaction &tx) const override;
 
-      bool verify(std::shared_ptr<const Query> query) const override;
+      bool verify(const Query &query) const override;
 
       bool verify(const Block &block) const override;
 
-      Block sign(const Block &block) const override;
+      void sign(Block &block) const override;
 
-      Transaction sign(const Transaction &transaction) const override;
+      void sign(Transaction &transaction) const override;
 
-      std::shared_ptr<const Query> sign(const Query &query) const override;
+      void sign(Query &query) const override;
 
      private:
       keypair_t keypair_;

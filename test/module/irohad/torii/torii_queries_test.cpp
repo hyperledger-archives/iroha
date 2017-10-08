@@ -123,7 +123,7 @@ class ToriiQueriesTest : public testing::Test {
 
 TEST_F(ToriiQueriesTest, FindWhenResponseInvalid) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(false));
 
   iroha::protocol::QueryResponse response;
@@ -147,7 +147,7 @@ TEST_F(ToriiQueriesTest, FindWhenResponseInvalid) {
 
 TEST_F(ToriiQueriesTest, FindAccountWhenStatefulInvalid) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
@@ -177,7 +177,7 @@ TEST_F(ToriiQueriesTest, FindAccountWhenStatefulInvalid) {
 
 TEST_F(ToriiQueriesTest, FindAccountWhenHasReadPermissions) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account accountA;
@@ -213,7 +213,7 @@ TEST_F(ToriiQueriesTest, FindAccountWhenHasReadPermissions) {
 
 TEST_F(ToriiQueriesTest, FindAccountWhenValid) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
@@ -246,7 +246,7 @@ TEST_F(ToriiQueriesTest, FindAccountWhenValid) {
 
 TEST_F(ToriiQueriesTest, FindAccountAssetWhenStatefulInvalid) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
@@ -288,7 +288,7 @@ TEST_F(ToriiQueriesTest, FindAccountAssetWhenStatefulInvalid) {
 
 TEST_F(ToriiQueriesTest, FindAccountAssetWhenValid) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
@@ -340,7 +340,7 @@ TEST_F(ToriiQueriesTest, FindAccountAssetWhenValid) {
 
 TEST_F(ToriiQueriesTest, FindSignatoriesWhenStatefulInvalid) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
@@ -373,7 +373,7 @@ TEST_F(ToriiQueriesTest, FindSignatoriesWhenStatefulInvalid) {
 
 TEST_F(ToriiQueriesTest, FindSignatoriesWhenValid) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
@@ -415,7 +415,7 @@ TEST_F(ToriiQueriesTest, FindSignatoriesWhenValid) {
 
 TEST_F(ToriiQueriesTest, FindTransactionsWhenValid) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
@@ -465,7 +465,7 @@ TEST_F(ToriiQueriesTest, FindTransactionsWhenValid) {
 
 TEST_F(ToriiQueriesTest, FindManyTimesWhereQueryServiceSync) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(false));
 
   for (size_t i = 0; i < TimesFind; ++i) {
