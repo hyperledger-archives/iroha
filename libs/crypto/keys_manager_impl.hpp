@@ -32,6 +32,14 @@ namespace iroha {
     bool createKeys(std::string pass_phrase) override;
 
    private:
+
+    /**
+     * Check if keypair provides valid signature
+     * @param keypair - keypair for validation
+     * @return true, if verification of signature is successful
+     */
+    bool validate(const iroha::keypair_t &keypair) const;
+
     std::string account_name_;
   };
 }  // namespace iroha_cli

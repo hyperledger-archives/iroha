@@ -26,11 +26,13 @@ namespace iroha {
     namespace yac {
       class YacCryptoProviderTest : public ::testing::Test {
        public:
+        YacCryptoProviderTest() : keypair(create_keypair()) {}
+
         void SetUp() override {
-          crypto_provider =
-              std::make_shared<CryptoProviderImpl>(create_keypair());
+          crypto_provider = std::make_shared<CryptoProviderImpl>(keypair);
         }
 
+        const keypair_t keypair;
         std::shared_ptr<CryptoProviderImpl> crypto_provider;
       };
 
@@ -51,7 +53,7 @@ namespace iroha {
 
         auto vote = crypto_provider->getVote(hash);
 
-        vote.hash.block_hash = "2";
+        vote.hash.block_hash = "hash changed";
 
         ASSERT_FALSE(crypto_provider->verify(vote));
       }

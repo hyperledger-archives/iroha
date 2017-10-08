@@ -31,49 +31,20 @@ namespace iroha {
         ametsuchi::TemporaryWsv &temporaryWsv) {
       log_->info("transactions in proposal: {}", proposal.transactions.size());
       auto checking_transaction = [this](auto &tx, auto &queries) {
-        auto account = queries.getAccount(tx.creator_account_id);
-        // Check if tx creator has account and has quorum to execute transaction
-        if (not account.has_value()
-            || tx.signatures.size() < account.value().quorum) {
-          return false;
-        }
-
-        // Check if signatures in transaction are account signatory
-        auto account_signs = queries.getSignatories(tx.creator_account_id);
-        if (not account_signs.has_value()) {
-          // No signatories found
-          return false;
-        }
-
-        // check if a set of account public keys contains a set
-        // of transaction public keys
-        std::set<pubkey_t> txPubkeys;
-        for (auto sign : tx.signatures) {
-          txPubkeys.insert(sign.pubkey);
-        }
-        std::set<pubkey_t> accPubkeys;
-        for (auto pubkey : *account_signs) {
-          accPubkeys.insert(pubkey);
-        }
-
-        if (not std::includes(accPubkeys.begin(),
-                              accPubkeys.end(),
-                              txPubkeys.begin(),
-                              txPubkeys.end())) {
-          log_->warn(
-              "Account public keys do not contain transaction public keys");
-          log_->warn("Account public keys: ");
-          for (const auto &pubkey : *account_signs) {
-            log_->warn("{}", pubkey.to_hexstring());
-          }
-          log_->warn("Transaction public keys: ");
-          for (const auto &sign : tx.signatures) {
-            log_->warn("{}", sign.pubkey.to_hexstring());
-          }
-          return false;
-        }
-
-        return true;
+        return (queries.getAccount(tx.creator_account_id)
+        | [&](const auto &account) {
+              // Check if tx creator has account and has quorum to execute
+              // transaction
+              return tx.signatures.size() >= account.quorum
+                  ? queries.getSignatories(tx.creator_account_id)
+                  : nonstd::nullopt;
+            }
+        | [&](const auto &signatories) {
+            // Check if signatures in transaction are account signatory
+            return this->signaturesSubset(tx.signatures, signatories)
+                ? nonstd::make_optional(signatories)
+                : nonstd::nullopt;
+          }).has_value();
       };
 
       // Filter only valid transactions
@@ -95,6 +66,24 @@ namespace iroha {
       log_->info("transactions in verified proposal: {}",
                  validated_proposal.transactions.size());
       return validated_proposal;
+    }
+
+    bool StatefulValidatorImpl::signaturesSubset(
+        const model::Transaction::SignaturesType &signatures,
+        const std::vector<pubkey_t> &public_keys) {
+      // TODO simplify the subset verification
+      std::set<pubkey_t> txPubkeys;
+      for (auto sign : signatures) {
+        txPubkeys.insert(sign.pubkey);
+      }
+      std::set<pubkey_t> accPubkeys;
+      for (auto pubkey : public_keys) {
+        accPubkeys.insert(pubkey);
+      }
+      return std::includes(accPubkeys.begin(),
+                           accPubkeys.end(),
+                           txPubkeys.begin(),
+                           txPubkeys.end());
     }
 
   }  // namespace validation

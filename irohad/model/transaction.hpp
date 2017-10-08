@@ -40,6 +40,8 @@ namespace iroha {
        */
       std::vector<Signature> signatures{};
 
+      using SignaturesType = decltype(signatures);
+
       /**
        * Creation timestamp
        * HEADER field
