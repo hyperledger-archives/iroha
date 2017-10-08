@@ -69,13 +69,13 @@ namespace iroha {
           [this, account_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
             for (auto block_id : block_ids) {
-              this->client_.lrange(
+              client_.lrange(
                   account_id + ":" + std::to_string(block_id),
                   0,
                   -1,
                   this->callbackToLrange(subscriber, block_id));
             }
-            this->client_.sync_commit();
+            client_.sync_commit();
           });
     }
 
