@@ -15,39 +15,49 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_FLAT_FILE_BLOCK_QUERY_HPP
-#define IROHA_FLAT_FILE_BLOCK_QUERY_HPP
+#ifndef IROHA_REDIS_FLAT_BLOCK_QUERY_HPP
+#define IROHA_REDIS_FLAT_BLOCK_QUERY_HPP
 
-#include "ametsuchi/block_query.hpp"
-
+#include <cpp_redis/redis_client.hpp>
 #include "ametsuchi/impl/flat_file/flat_file.hpp"
+#include "ametsuchi/impl/flat_file_block_query.hpp"
+
 #include "model/converters/json_block_factory.hpp"
 
 namespace iroha {
   namespace ametsuchi {
-    class FlatFileBlockQuery : public BlockQuery {
+    class RedisFlatBlockQuery : public FlatFileBlockQuery {
      public:
-      explicit FlatFileBlockQuery(FlatFile &block_store);
+      RedisFlatBlockQuery(cpp_redis::redis_client &client,
+                          FlatFile &file_store);
 
       rxcpp::observable<model::Transaction> getAccountTransactions(
           std::string account_id) override;
 
-      rxcpp::observable<model::Block> getBlocks(uint32_t height,
-                                                uint32_t count) override;
-
-      rxcpp::observable<model::Block> getBlocksFrom(uint32_t height) override;
-
-      rxcpp::observable<model::Block> getTopBlocks(uint32_t count) override;
-
       rxcpp::observable<model::Transaction> getAccountAssetTransactions(
           std::string account_id, std::string asset_id) override;
 
-     protected:
-      FlatFile &block_store_;
+     private:
+      /**
+       * Returns all blocks' ids containing given account id
+       * @param account_id
+       * @return vector of block ids
+       */
+      std::vector<uint64_t> getBlockIds(const std::string &account_id);
 
-      model::converters::JsonBlockFactory serializer_;
+      /**
+       * creates callback to lrange query to redis to supply result to
+       * subscriber s
+       * @param s
+       * @param block_id
+       * @return
+       */
+      std::function<void(cpp_redis::reply &)> callbackToLrange(
+          const rxcpp::subscriber<model::Transaction> &s, uint64_t block_id);
+
+      cpp_redis::redis_client &client_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha
 
-#endif  // IROHA_FLAT_FILE_BLOCK_QUERY_HPP
+#endif  // IROHA_REDIS_FLAT_BLOCK_QUERY_HPP

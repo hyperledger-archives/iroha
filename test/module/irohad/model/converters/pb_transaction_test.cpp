@@ -61,20 +61,6 @@ TEST(TransactionTest, tx_test) {
 
   auto factory = iroha::model::converters::PbTransactionFactory();
   auto proto_tx = factory.serialize(orig_tx);
-  switch (proto_tx.payload().commands().Get(0).command_case()){
-
-    case iroha::protocol::Command::kAddAssetQuantity:break;
-    case iroha::protocol::Command::kAddPeer:break;
-    case iroha::protocol::Command::kAddSignatory:break;
-    case iroha::protocol::Command::kCreateAsset:break;
-    case iroha::protocol::Command::kCreateAccount:break;
-    case iroha::protocol::Command::kCreateDomain:break;
-    case iroha::protocol::Command::kRemoveSign:break;
-    case iroha::protocol::Command::kSetPermission:break;
-    case iroha::protocol::Command::kSetQuorum:break;
-    case iroha::protocol::Command::kTransferAsset:break;
-    case iroha::protocol::Command::COMMAND_NOT_SET:break;
-  }
   auto serial_tx = factory.deserialize(proto_tx);
   ASSERT_EQ(orig_tx, *serial_tx);
 }

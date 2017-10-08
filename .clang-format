@@ -6,3 +6,5 @@ DerivePointerAlignment: false
 PointerAlignment: Right
 BinPackArguments: false
 BinPackParameters: false
+DerivePointerAlignment: false
+PointerAlignment: Right
