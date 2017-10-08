@@ -103,7 +103,7 @@ namespace iroha {
       result.second = (1u << cidrmask) - 2;
 
       return result;
-    };
+    }
 
   }  // namespace ip_tools
 }  // namespace iroha

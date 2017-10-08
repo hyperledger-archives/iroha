@@ -195,9 +195,8 @@ namespace iroha {
           network = std::make_shared<MockYacNetwork>();
           crypto = std::make_shared<MockYacCryptoProvider>();
           timer = std::make_shared<MockTimer>();
-          yac = Yac::create(
-              std::move(YacVoteStorage()), network, crypto,
-              timer, ClusterOrdering(default_peers), delay);
+          yac = Yac::create(YacVoteStorage(), network, crypto, timer,
+                            ClusterOrdering(default_peers), delay);
           network->subscribe(yac);
         };
 

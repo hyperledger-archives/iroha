@@ -54,7 +54,6 @@ namespace iroha {
                                pub.data());
   }
 
-
   /**
    * Generate seed
    */
@@ -82,7 +81,7 @@ namespace iroha {
 
     ed25519_create_keypair(pub.data(), priv.data(), seed.data());
 
-    return keypair_t{.pubkey = pub, .privkey = priv};
+    return keypair_t(pub, priv);
   }
 
   keypair_t create_keypair() { return create_keypair(create_seed()); }

@@ -53,7 +53,7 @@ grpc::Status BlockLoaderService::retrieveBlock(
 
   nonstd::optional<protocol::Block> result;
   storage_->getBlocksFrom(1)
-      .filter([this, hash](auto block) {
+      .filter([hash](auto block) {
         return block.hash == hash.value();
       })
       .map([this](auto block) { return factory_.serialize(block); })

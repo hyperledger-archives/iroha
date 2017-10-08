@@ -31,8 +31,6 @@ limitations under the License.
 constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;
 
-constexpr size_t TimesToriiBlocking = 5;
-constexpr size_t TimesToriiNonBlocking = 5;
 constexpr size_t TimesFind = 1;
 
 using ::testing::Return;

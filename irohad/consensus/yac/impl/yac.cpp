@@ -81,7 +81,7 @@ namespace iroha {
         this->cluster_order_ = order;
         auto vote = crypto_->getVote(hash);
         votingStep(vote);
-      };
+      }
 
       rxcpp::observable<CommitMessage> Yac::on_commit() {
         return this->notifier_.get_observable();
@@ -136,7 +136,7 @@ namespace iroha {
         }
       }
 
-      void Yac::closeRound() { timer_->deny(); };
+      void Yac::closeRound() { timer_->deny(); }
 
       // ------|Apply data|------
 
@@ -164,12 +164,12 @@ namespace iroha {
           vote_storage_.markAsProcessedState(proposal_hash);
         }
         closeRound();
-      };
+      }
 
       void Yac::applyReject(model::Peer from, RejectMessage reject) {
         // TODO 01/08/17 Muratov: apply to vote storage IR-497
         closeRound();
-      };
+      }
 
       void Yac::applyVote(model::Peer from, VoteMessage vote) {
         log_->info(
@@ -217,7 +217,7 @@ namespace iroha {
             propagateRejectDirectly(from, answer->reject.value());
           }
         }
-      };
+      }
 
       // ------|Propagation|------
 

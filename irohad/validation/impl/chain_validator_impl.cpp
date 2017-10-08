@@ -29,8 +29,8 @@ namespace iroha {
                                            ametsuchi::MutableStorage &storage) {
       log_->info("validate block: height {}, hash {}", block.height,
                  block.hash.to_hexstring());
-      auto apply_block = [this](const auto &block, auto &queries,
-                                const auto &top_hash) {
+      auto apply_block = [](const auto &block, auto &queries,
+                            const auto &top_hash) {
         auto peers = queries.getPeers();
         if (not peers.has_value()) {
           return false;

@@ -67,7 +67,7 @@ class ConsensusSunnyDayTest : public ::testing::Test {
     network = std::make_shared<NetworkImpl>(my_peer.address, default_peers);
     crypto = std::make_shared<FixedCryptoProvider>(std::to_string(my_num));
     timer = std::make_shared<TimerImpl>();
-    yac = Yac::create(std::move(YacVoteStorage()),
+    yac = Yac::create(YacVoteStorage(),
                       network,
                       crypto,
                       timer,
