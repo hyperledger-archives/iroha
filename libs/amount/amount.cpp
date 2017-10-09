@@ -27,7 +27,9 @@ namespace iroha {
   int ipow(int base, int exp) {
     int result = 1;
     while (exp != 0) {
-      if (exp & 1) result *= base;
+      if (exp & 1) {
+        result *= base;
+      }
       exp >>= 1;
       base *= base;
     }
@@ -39,6 +41,7 @@ namespace iroha {
                             uint64_t second,
                             uint64_t third,
                             uint64_t fourth) {
+    // join 4 uint64_t into single uint256_t by means of logic or operator
     uint256_t res(0);
     res |= first;
     res <<= 64;
@@ -112,12 +115,9 @@ namespace iroha {
 
     auto begin = str_amount.find_first_not_of('0');
 
-    uint256_t value;
     // create uint256 value from obtained string
-    if (begin > str_amount.size()) {
-      // if got here, then the number is made of only zeros
-      value = 0;
-    } else {
+    uint256_t value = 0;
+    if (begin <= str_amount.size()) {
       value = uint256_t(str_amount.substr(begin));
     }
     return Amount(value, precision);
