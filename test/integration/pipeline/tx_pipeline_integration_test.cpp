@@ -16,12 +16,15 @@
  */
 
 #include "crypto/hash.hpp"
+#include "crypto/keys_manager_impl.hpp"
 #include "datetime/time.hpp"
 #include "framework/test_subscriber.hpp"
 #include "main/application.hpp"
 #include "main/raw_block_insertion.hpp"
 #include "model/generators/block_generator.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
+
+#include <cstdio>
 
 using namespace framework::test_subscriber;
 using namespace std::chrono_literals;
@@ -33,13 +36,13 @@ class TestIrohad : public Irohad {
              size_t redis_port,
              const std::string &pg_conn,
              size_t torii_port,
-             uint64_t peer_number)
+             const iroha::keypair_t &keypair)
       : Irohad(block_store_dir,
                redis_host,
                redis_port,
                pg_conn,
                torii_port,
-               peer_number) {}
+               keypair) {}
 
   auto &getCommandService() { return command_service; }
 
@@ -68,17 +71,20 @@ class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
 
   void SetUp() override {
     iroha::ametsuchi::AmetsuchiTest::SetUp();
+    genesis_block =
+        iroha::model::generators::BlockGenerator().generateGenesisBlock(
+            {"0.0.0.0:10000"});
+    manager = std::make_shared<iroha::KeysManagerImpl>("node0");
+    auto keypair = manager->loadKeys().value();
+
     irohad = std::make_shared<TestIrohad>(
-        block_store_path, redishost_, redisport_, pgopt_, 0, 0);
+        block_store_path, redishost_, redisport_, pgopt_, 0, keypair);
 
     ASSERT_TRUE(irohad->storage);
 
     // insert genesis block
     iroha::main::BlockInserter inserter(irohad->storage);
 
-    genesis_block =
-        iroha::model::generators::BlockGenerator().generateGenesisBlock(
-            {"0.0.0.0:10000"});
     inserter.applyToLedger({genesis_block});
 
     // initialize irohad
@@ -86,6 +92,16 @@ class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
 
     // start irohad
     irohad->run();
+  }
+
+  void TearDown() override {
+    iroha::ametsuchi::AmetsuchiTest::TearDown();
+    std::remove("node0.pub");
+    std::remove("node0.priv");
+    std::remove("admin@test.pub");
+    std::remove("admin@test.priv");
+    std::remove("test@test.pub");
+    std::remove("test@test.priv");
   }
 
   void sendTransactions(std::vector<iroha::model::Transaction> transactions) {
@@ -102,7 +118,7 @@ class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
     expected_block.created_ts = 0;
     expected_block.merkle_root.fill(0);
     expected_block.hash = iroha::hash(expected_block);
-    expected_block = irohad->getCryptoProvider()->sign(expected_block);
+    irohad->getCryptoProvider()->sign(expected_block);
 
     // send transactions to torii
     for (const auto &tx : transactions) {
@@ -155,6 +171,8 @@ class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
 
   std::vector<iroha::model::Proposal> proposals;
   std::vector<iroha::model::Block> blocks;
+
+  std::shared_ptr<iroha::KeysManager> manager;
 };
 
 TEST_F(TxPipelineIntegrationTest, TxPipelineTest) {
@@ -169,7 +187,10 @@ TEST_F(TxPipelineIntegrationTest, TxPipelineTest) {
   auto tx =
       iroha::model::generators::TransactionGenerator().generateTransaction(
           "admin@test", 1, {cmd});
-  tx.signatures.emplace_back();
+  iroha::KeysManagerImpl manager("admin@test");
+  auto keypair = manager.loadKeys().value();
+  iroha::model::ModelCryptoProviderImpl provider(keypair);
+  provider.sign(tx);
 
   sendTransactions({tx});
 

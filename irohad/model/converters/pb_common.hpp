@@ -18,10 +18,12 @@
 #ifndef IROHA_PB_COMMON_HPP
 #define IROHA_PB_COMMON_HPP
 
-#include "commands.pb.h"
 #include "amount/amount.hpp"
+#include "commands.pb.h"
 #include "common/types.hpp"
+#include "crypto/crypto.hpp"
 #include "crypto/hash.hpp"
+#include "model/signature.hpp"
 
 namespace iroha {
   namespace model {
@@ -30,7 +32,6 @@ namespace iroha {
       protocol::Amount serializeAmount(iroha::Amount iroha_amount);
       iroha::Amount deserializeAmount(protocol::Amount pb_amount);
     }
-
   }
 
   /**
@@ -40,7 +41,7 @@ namespace iroha {
    * @return hash of object payload
    */
   template <typename T>
-  hash256_t hash(const T& pb) {
+  hash256_t hash(const T &pb) {
     return sha3_256(pb.payload().SerializeAsString());
   }
 }

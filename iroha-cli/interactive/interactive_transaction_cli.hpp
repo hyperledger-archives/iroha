@@ -19,9 +19,12 @@
 #define IROHA_CLI_INTERACTIVE_TRANSACTION_CLI_HPP
 
 #include <unordered_map>
+
 #include "interactive/interactive_common_cli.hpp"
+#include "logger/logger.hpp"
 #include "model/command.hpp"
-#include "model/generators/command_generator.hpp"
+#include "model/generators/transaction_generator.hpp"
+#include "model/model_crypto_provider.hpp"
 
 namespace iroha_cli {
   namespace interactive {
@@ -31,8 +34,10 @@ namespace iroha_cli {
        * @param creator_account - Account of a creator
        * @param tx_counter - local counter for transaction
        */
-      InteractiveTransactionCli(std::string creator_account,
-                                uint64_t tx_counter);
+      InteractiveTransactionCli(
+          const std::string &creator_account,
+          uint64_t tx_counter,
+          const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider);
       /**
        * Run interactive query command line
        */
@@ -163,6 +168,15 @@ namespace iroha_cli {
 
       // Commands to be formed
       std::vector<std::shared_ptr<iroha::model::Command>> commands_;
+
+      // Logger
+      logger::Logger log_;
+
+      // Crypto provider
+      std::shared_ptr<iroha::model::ModelCryptoProvider> provider_;
+
+      // Transaction generator
+      iroha::model::generators::TransactionGenerator tx_generator_;
     };
   }  // namespace interactive
 }  // namespace iroha_cli

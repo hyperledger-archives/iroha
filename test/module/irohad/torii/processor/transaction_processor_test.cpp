@@ -18,9 +18,9 @@
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
 
-#include "torii/processor/transaction_processor_impl.hpp"
-#include "model/transaction_response.hpp"
 #include "framework/test_subscriber.hpp"
+#include "model/transaction_response.hpp"
+#include "torii/processor/transaction_processor_impl.hpp"
 
 using namespace iroha;
 using namespace iroha::network;
@@ -35,7 +35,6 @@ using ::testing::A;
 
 class TransactionProcessorTest : public ::testing::Test {
  public:
-
   void SetUp() override {
     pcs = std::make_shared<MockPeerCommunicationService>();
     validation = std::make_shared<MockStatelessValidator>();
@@ -43,12 +42,10 @@ class TransactionProcessorTest : public ::testing::Test {
     rxcpp::subjects::subject<iroha::model::Proposal> prop_notifier;
     rxcpp::subjects::subject<Commit> commit_notifier;
 
-    EXPECT_CALL(*pcs,
-                on_proposal())
+    EXPECT_CALL(*pcs, on_proposal())
         .WillRepeatedly(Return(prop_notifier.get_observable()));
 
-    EXPECT_CALL(*pcs,
-                on_commit())
+    EXPECT_CALL(*pcs, on_commit())
         .WillRepeatedly(Return(commit_notifier.get_observable()));
 
     tp = std::make_shared<TransactionProcessorImpl>(pcs, validation);
@@ -63,18 +60,19 @@ class TransactionProcessorTest : public ::testing::Test {
  * Transaction processor test case, when handling stateless valid transaction
  */
 TEST_F(TransactionProcessorTest,
-     TransactionProcessorWhereInvokeValidTransaction) {
-
+       TransactionProcessorWhereInvokeValidTransaction) {
   EXPECT_CALL(*pcs, propagate_transaction(_)).Times(1);
 
-  EXPECT_CALL(*validation, validate(A<const Transaction&>())).WillRepeatedly(Return(true));
+  EXPECT_CALL(*validation, validate(A<const Transaction &>()))
+      .WillRepeatedly(Return(true));
 
   auto tx = std::make_shared<Transaction>();
 
   auto wrapper = make_test_subscriber<CallExact>(tp->transactionNotifier(), 1);
   wrapper.subscribe([](auto response) {
     auto resp = static_cast<TransactionResponse &>(*response);
-    ASSERT_EQ(resp.current_status, iroha::model::TransactionResponse::STATELESS_VALIDATION_SUCCESS);
+    ASSERT_EQ(resp.current_status,
+              iroha::model::TransactionResponse::STATELESS_VALIDATION_SUCCESS);
   });
   tp->transactionHandle(tx);
 
@@ -85,19 +83,19 @@ TEST_F(TransactionProcessorTest,
  * Transaction processor test case, when handling invalid transaction
  */
 TEST_F(TransactionProcessorTest,
-     TransactionProcessorWhereInvokeInvalidTransaction) {
-
+       TransactionProcessorWhereInvokeInvalidTransaction) {
   EXPECT_CALL(*pcs, propagate_transaction(_)).Times(0);
 
-  EXPECT_CALL(*validation, validate(A<const Transaction&>())).WillRepeatedly(Return(false));
-  EXPECT_CALL(*validation, validate(A<std::shared_ptr<const Query>>())).WillRepeatedly(Return(false));
+  EXPECT_CALL(*validation, validate(A<const Transaction &>()))
+      .WillRepeatedly(Return(false));
 
   auto tx = std::make_shared<Transaction>();
 
   auto wrapper = make_test_subscriber<CallExact>(tp->transactionNotifier(), 1);
   wrapper.subscribe([](auto response) {
     auto resp = static_cast<TransactionResponse &>(*response);
-    ASSERT_EQ(resp.current_status, iroha::model::TransactionResponse::STATELESS_VALIDATION_FAILED);
+    ASSERT_EQ(resp.current_status,
+              iroha::model::TransactionResponse::STATELESS_VALIDATION_FAILED);
   });
   tp->transactionHandle(tx);
 

@@ -20,8 +20,11 @@
 
 #include <memory>
 #include <unordered_map>
+
 #include "interactive/interactive_common_cli.hpp"
+#include "logger/logger.hpp"
 #include "model/generators/query_generator.hpp"
+#include "model/model_crypto_provider.hpp"
 #include "model/query.hpp"
 
 namespace iroha_cli {
@@ -32,14 +35,16 @@ namespace iroha_cli {
        * @param account_id creator's account identification
        * @param query_counter counter associated with creator's account
        */
-      InteractiveQueryCli(std::string account_id, uint64_t query_counter);
+      InteractiveQueryCli(
+          const std::string &account_id,
+          uint64_t query_counter,
+          const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider);
       /**
        * Run interactive query command line
        */
       void run();
 
      private:
-
       using QueryName = std::string;
       using QueryParams = std::vector<std::string>;
 
@@ -93,8 +98,7 @@ namespace iroha_cli {
           QueryParams params);
       std::shared_ptr<iroha::model::Query> parseGetSignatories(
           QueryParams params);
-      std::shared_ptr<iroha::model::Query> parseGetRoles(
-          QueryParams params);
+      std::shared_ptr<iroha::model::Query> parseGetRoles(QueryParams params);
       std::shared_ptr<iroha::model::Query> parseGetRolePermissions(
           QueryParams params);
       std::shared_ptr<iroha::model::Query> parseGetAssetInfo(
@@ -117,7 +121,6 @@ namespace iroha_cli {
       bool parseSendToIroha(QueryParams line);
       bool parseSaveFile(QueryParams line);
 
-
       // Current context for query forming
       MenuContext current_context_;
 
@@ -136,6 +139,12 @@ namespace iroha_cli {
 
       // Query generator for new queries
       iroha::model::generators::QueryGenerator generator_;
+
+      // Logger
+      logger::Logger log_;
+
+      // Crypto provider
+      std::shared_ptr<iroha::model::ModelCryptoProvider> provider_;
     };
   }  // namespace interactive
 }  // namespace iroha_cli

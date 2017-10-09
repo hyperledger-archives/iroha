@@ -27,11 +27,15 @@ namespace iroha {
      * Signature is a Model structure to store crypto information
      */
     struct Signature {
-      sig_t signature{};
+      Signature() = default;
+      Signature(sig_t signature, pubkey_t public_key)
+          : signature(signature), pubkey(public_key) {}
+
+      sig_t signature;
 
       using SignatureType = decltype(signature);
 
-      pubkey_t pubkey{};
+      pubkey_t pubkey;
 
       using KeyType = decltype(pubkey);
 

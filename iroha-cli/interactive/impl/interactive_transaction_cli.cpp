@@ -16,21 +16,21 @@
  */
 
 #include "interactive/interactive_transaction_cli.hpp"
-#include <fstream>
-#include "model/converters/json_common.hpp"
-#include "model/converters/json_transaction_factory.hpp"
-#include "model/generators/transaction_generator.hpp"
 
-#include <chrono>
+#include <fstream>
+
 #include "client.hpp"
+#include "crypto/hash.hpp"
 #include "grpc_response_handler.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/revoke_permission.hpp"
-#include "parser/parser.hpp"
+#include "model/converters/json_common.hpp"
+#include "model/converters/json_transaction_factory.hpp"
+#include "model/converters/pb_common.hpp"
+#include "model/generators/transaction_generator.hpp"
 
-using namespace std::chrono_literals;
 using namespace iroha::model;
 
 namespace iroha_cli {
@@ -52,7 +52,9 @@ namespace iroha_cli {
           {CREATE_ROLE, "Create new role"},
           {APPEND_ROLE, "Add new role to account"},
           {GRANT_PERM, "Grant permission over your account"},
-          {REVOKE_PERM, "Revoke permission from account"}};
+          {REVOKE_PERM, "Revoke permission from account"}
+          // commands_description_map_
+      };
 
       const auto acc_id = "Account Id";
       const auto ast_id = "Asset Id";
@@ -88,7 +90,9 @@ namespace iroha_cli {
           {CREATE_ROLE, {role}},
           {APPEND_ROLE, {acc_id, role}},
           {GRANT_PERM, {acc_id, perm}},
-          {REVOKE_PERM, {acc_id, perm}}};
+          {REVOKE_PERM, {acc_id, perm}}
+          // command_params_descriptions_
+      };
 
       command_handlers_ = {
           {ADD_ASSET_QTY, &InteractiveTransactionCli::parseAddAssetQuantity},
@@ -106,7 +110,9 @@ namespace iroha_cli {
           {CREATE_ROLE, &InteractiveTransactionCli::parseCreateRole},
           {APPEND_ROLE, &InteractiveTransactionCli::parseAppendRole},
           {GRANT_PERM, &InteractiveTransactionCli::parseGrantPermission},
-          {REVOKE_PERM, &InteractiveTransactionCli::parseGrantPermission}};
+          {REVOKE_PERM, &InteractiveTransactionCli::parseGrantPermission}
+          // command_handlers_
+      };
 
       commands_menu_ = formMenu(command_handlers_,
                                 command_params_descriptions_,
@@ -135,16 +141,23 @@ namespace iroha_cli {
           {SAVE_CODE, &InteractiveTransactionCli::parseSaveFile},
           {SEND_CODE, &InteractiveTransactionCli::parseSendToIroha},
           {ADD_CMD, &InteractiveTransactionCli::parseAddCommand},
-          {BACK_CODE, &InteractiveTransactionCli::parseGoBack}};
+          {BACK_CODE, &InteractiveTransactionCli::parseGoBack}
+          // result_handlers_
+      };
 
       result_menu_ = formMenu(
           result_handlers_, result_params_descriptions, result_desciption);
     }
 
     InteractiveTransactionCli::InteractiveTransactionCli(
-        std::string creator_account, uint64_t tx_counter) {
-      creator_ = creator_account;
-      tx_counter_ = tx_counter;
+        const std::string &creator_account,
+        uint64_t tx_counter,
+        const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider)
+        : current_context_(MAIN),
+          creator_(creator_account),
+          tx_counter_(tx_counter),
+          provider_(provider) {
+      log_ = logger::log("InteractiveTransactionCli");
       createCommandMenu();
       createResultMenu();
     }
@@ -370,17 +383,14 @@ namespace iroha_cli {
       }
 
       // Forming a transaction
-      iroha::model::generators::TransactionGenerator tx_generator_;
-      auto time_stamp =
-          std::chrono::system_clock::now().time_since_epoch() / 1ms;
-      auto tx = tx_generator_.generateTransaction(
-          time_stamp, creator_, tx_counter_, commands_);
+      auto tx =
+          tx_generator_.generateTransaction(creator_, tx_counter_, commands_);
+
       // clear commands so that we can start creating new tx
       commands_.clear();
 
-      // TODO: sign tx
-      tx.signatures.push_back(
-          {});  // get rid off fake signature when crypto is integrated
+      provider_->sign(tx);
+
       CliClient client(address.value().first, address.value().second);
       GrpcResponseHandler response_handler;
       response_handler.handle(client.sendTx(tx));
@@ -388,6 +398,7 @@ namespace iroha_cli {
       // Stop parsing
       return false;
     }
+
     bool InteractiveTransactionCli::parseSaveFile(
         std::vector<std::string> params) {
       auto path = params[0];
@@ -397,17 +408,16 @@ namespace iroha_cli {
         // Continue parsing
         return true;
       }
+
       // Forming a transaction
-      iroha::model::generators::TransactionGenerator tx_generator_;
-      auto time_stamp =
-          std::chrono::system_clock::now().time_since_epoch() / 1ms;
-      auto tx = tx_generator_.generateTransaction(
-          time_stamp, creator_, tx_counter_, commands_);
+      auto tx =
+          tx_generator_.generateTransaction(creator_, tx_counter_, commands_);
 
       // clear commands so that we can start creating new tx
       commands_.clear();
-      // TODO: sign tx
-      tx.signatures.push_back({});  // get rid off fake signature
+
+      provider_->sign(tx);
+
       iroha::model::converters::JsonTransactionFactory json_factory;
       auto json_doc = json_factory.serialize(tx);
       auto json_string = iroha::model::converters::jsonToString(json_doc);
@@ -429,6 +439,7 @@ namespace iroha_cli {
       // Continue parsing
       return true;
     }
+
     bool InteractiveTransactionCli::parseAddCommand(
         std::vector<std::string> params) {
       current_context_ = MAIN;

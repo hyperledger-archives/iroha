@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-#include "crypto/hash.hpp"
 #include "model/generators/block_generator.hpp"
 #include <chrono>
+#include <utility>
+#include "crypto/hash.hpp"
 
 namespace iroha {
   namespace model {
@@ -32,7 +33,7 @@ namespace iroha {
         block.txs_number = 1;
         TransactionGenerator tx_generator;
         block.transactions = {tx_generator.generateGenesisTransaction(
-            block.created_ts, peers_address)};
+            block.created_ts, std::move(peers_address))};
         block.hash = hash(block);
 
         return block;

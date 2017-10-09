@@ -29,7 +29,7 @@ namespace iroha {
 
     void QueryProcessorImpl::queryHandle(std::shared_ptr<model::Query> query) {
       // if not valid send wrong response
-      if (!validator_->validate(query)) {
+      if (!validator_->validate(*query)) {
         model::ErrorResponse response;
         response.query_hash = iroha::hash(*query);
         response.reason = model::ErrorResponse::STATELESS_INVALID;

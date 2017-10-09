@@ -36,6 +36,7 @@ namespace iroha {
          */
         Transaction generateGenesisTransaction(
             ts64_t timestamp, std::vector<std::string> peers_address);
+
         /**
          * Generate transaction from give meta data and commands list
          * @param timestamp

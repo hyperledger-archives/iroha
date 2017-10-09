@@ -18,9 +18,9 @@
 #ifndef IROHA_MODEL_CRYPTO_PROVIDER_HPP
 #define IROHA_MODEL_CRYPTO_PROVIDER_HPP
 
-#include "model/transaction.hpp"
-#include "model/query.hpp"
 #include "model/block.hpp"
+#include "model/query.hpp"
+#include "model/transaction.hpp"
 
 namespace iroha {
   namespace model {
@@ -43,7 +43,7 @@ namespace iroha {
        * @param query - query for verification
        * @return true if query signature is valid, otherwise false
        */
-      virtual bool verify(std::shared_ptr<const Query> query) const = 0;
+      virtual bool verify(const Query &query) const = 0;
 
       /**
        * Method for signature verification of a block.
@@ -55,9 +55,20 @@ namespace iroha {
       /**
        * Method for signing a block with stored keypair
        * @param block - block for signing
-       * @return signed block
        */
-      virtual Block sign(const Block &block) const = 0;
+      virtual void sign(Block &block) const = 0;
+
+      /**
+       * Method for signing a transaction with stored keypair
+       * @param transaction - transaction for signing
+       */
+      virtual void sign(Transaction &transaction) const = 0;
+
+      /**
+       * Method for signing a query with stored keypair
+       * @param query - query to sign
+       */
+      virtual void sign(Query &query) const = 0;
     };
   }
 }

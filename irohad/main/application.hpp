@@ -62,7 +62,7 @@ class Irohad {
          size_t redis_port,
          const std::string &pg_conn,
          size_t torii_port,
-         uint64_t peer_number);
+         const iroha::keypair_t &keypair);
 
   /**
    * Initialization of whole objects in system
@@ -90,8 +90,6 @@ class Irohad {
   virtual void initCryptoProvider();
 
   virtual void initValidators();
-
-  virtual void initPeerOrderer();
 
   virtual void initOrderingGate();
 
@@ -133,10 +131,7 @@ class Irohad {
   std::shared_ptr<iroha::validation::ChainValidator> chain_validator;
 
   // peer query
-  std::shared_ptr<iroha::ametsuchi::PeerQueryWsv> wsv;
-
-  // peer orderer
-  std::shared_ptr<iroha::consensus::yac::YacPeerOrderer> orderer;
+  std::shared_ptr<iroha::ametsuchi::PeerQuery> wsv;
 
   // peer
   iroha::model::Peer peer;
@@ -151,7 +146,7 @@ class Irohad {
   std::shared_ptr<iroha::network::BlockLoader> block_loader;
 
   // consensus gate
-  std::shared_ptr<iroha::consensus::yac::YacGate> consensus_gate;
+  std::shared_ptr<iroha::network::ConsensusGate> consensus_gate;
 
   // synchronizer
   std::shared_ptr<iroha::synchronizer::Synchronizer> synchronizer;
@@ -179,7 +174,7 @@ class Irohad {
 
  public:
   std::shared_ptr<iroha::ametsuchi::Storage> storage;
-  uint64_t peer_number_;
+  iroha::keypair_t keypair;
 };
 
 #endif  // IROHA_APPLICATION_HPP

@@ -18,11 +18,11 @@
 #ifndef IROHA_CLI_KEYS_MANAGER_IMPL_HPP
 #define IROHA_CLI_KEYS_MANAGER_IMPL_HPP
 
-#include "keys_manager.hpp"
-#include "common/types.hpp"
 #include "common/byteutils.hpp"
+#include "common/types.hpp"
+#include "crypto/keys_manager.hpp"
 
-namespace iroha_cli {
+namespace iroha {
   class KeysManagerImpl : public KeysManager {
    public:
     explicit KeysManagerImpl(std::string account_name);
@@ -32,6 +32,14 @@ namespace iroha_cli {
     bool createKeys(std::string pass_phrase) override;
 
    private:
+
+    /**
+     * Check if keypair provides valid signature
+     * @param keypair - keypair for validation
+     * @return true, if verification of signature is successful
+     */
+    bool validate(const iroha::keypair_t &keypair) const;
+
     std::string account_name_;
   };
 }  // namespace iroha_cli

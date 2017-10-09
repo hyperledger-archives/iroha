@@ -15,14 +15,16 @@
  * limitations under the License.
  */
 
-#include "impl/keys_manager_impl.hpp"
+#include "keys_manager_impl.hpp"
+#include "crypto/crypto.hpp"
+#include "crypto/hash.hpp"
 
-#include <utility>
 #include <fstream>
+#include <utility>
 
 using iroha::operator|;
 
-namespace iroha_cli {
+namespace iroha {
   /**
    * Return function which will try to deserialize specified value to specified
    * field in given keypair
@@ -32,9 +34,8 @@ namespace iroha_cli {
    * @param value - value to be deserialized
    * @return keypair on success, otherwise nullopt
    */
-  template<typename T, typename V>
-  auto deserializeKeypairField(T iroha::keypair_t::*field,
-                               const V &value) {
+  template <typename T, typename V>
+  auto deserializeKeypairField(T iroha::keypair_t::*field, const V &value) {
     return [=](auto keypair) mutable {
       return iroha::hexstringToArray<T::size()>(value)
           | iroha::assignObjectField(keypair, field);
@@ -43,6 +44,14 @@ namespace iroha_cli {
 
   KeysManagerImpl::KeysManagerImpl(std::string account_name)
       : account_name_(std::move(account_name)) {}
+
+  bool KeysManagerImpl::validate(const iroha::keypair_t &keypair) const {
+    std::string test = "12345";
+    auto sig = iroha::sign(
+        iroha::sha3_256(test).to_string(), keypair.pubkey, keypair.privkey);
+    return iroha::verify(
+        iroha::sha3_256(test).to_string(), keypair.pubkey, sig);
+  }
 
   nonstd::optional<iroha::keypair_t> KeysManagerImpl::loadKeys() {
     // Try to load from local file
@@ -57,10 +66,14 @@ namespace iroha_cli {
     pub_file >> client_pub_key_;
 
     return nonstd::make_optional<iroha::keypair_t>()
-        | deserializeKeypairField(&iroha::keypair_t::pubkey,
-                                  client_pub_key_)
-        | deserializeKeypairField(&iroha::keypair_t::privkey,
-                                  client_priv_key_);
+               | deserializeKeypairField(&iroha::keypair_t::pubkey,
+                                         client_pub_key_)
+               | deserializeKeypairField(&iroha::keypair_t::privkey,
+                                         client_priv_key_)
+               | [this](auto keypair) -> nonstd::optional<iroha::keypair_t> {
+      return this->validate(keypair) ? nonstd::make_optional(keypair)
+                                     : nonstd::nullopt;
+    };
   }
 
   bool KeysManagerImpl::createKeys(std::string pass_phrase) {
@@ -86,4 +99,4 @@ namespace iroha_cli {
     return true;
   }
 
-}  // namespace iroha_cli
+}  // namespace iroha

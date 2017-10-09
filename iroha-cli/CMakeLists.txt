@@ -1,3 +1,20 @@
+#
+# Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+# http://soramitsu.co.jp
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 add_subdirectory(interactive)
@@ -8,17 +25,6 @@ add_library(cli-flags_validators
     )
 target_link_libraries(cli-flags_validators
     gflags
-    )
-
-add_library(keys_manager
-    impl/keys_manager_impl.cpp
-    )
-target_link_libraries(keys_manager
-    optional
-    crypto
-    )
-target_include_directories(keys_manager PUBLIC
-    ${PROJECT_SOURCE_DIR}/iroha-cli
     )
 
 add_library(client
@@ -55,4 +61,6 @@ target_link_libraries(iroha-cli
     client
     cli-flags_validators
     keys_manager
+    ${Boost_SYSTEM_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
     )

@@ -50,7 +50,8 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> CommandGenerator::generateCreateAccount(
-          const std::string &account_name, const std::string &domain_id,
+          const std::string &account_name,
+          const std::string &domain_id,
           const pubkey_t &key) {
         return generateCommand<CreateAccount>(account_name, domain_id, key);
       }
@@ -61,7 +62,8 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> CommandGenerator::generateCreateAsset(
-          const std::string &asset_name, const std::string &domain_name,
+          const std::string &asset_name,
+          const std::string &domain_name,
           uint8_t precision) {
         return generateCommand<CreateAsset>(asset_name, domain_name, precision);
       }
@@ -69,17 +71,23 @@ namespace iroha {
       std::shared_ptr<Command> CommandGenerator::generateSetAdminPermissions(
           const std::string &account_id) {
         Account::Permissions permissions;
-        permissions.read_all_accounts = true;
-        permissions.set_permissions = true;
         permissions.issue_assets = true;
-        permissions.can_transfer = true;
-        permissions.create_domains = true;
+        permissions.create_assets = true;
         permissions.create_accounts = true;
+        permissions.create_domains = true;
+        permissions.read_all_accounts = true;
+        permissions.add_signatory = true;
+        permissions.remove_signatory = true;
+        permissions.set_permissions = true;
+        permissions.set_quorum = true;
+        permissions.can_transfer = true;
         return generateCommand<SetAccountPermissions>(account_id, permissions);
       }
 
       std::shared_ptr<Command> CommandGenerator::generateAddAssetQuantity(
-          const std::string &account_id, const std::string &asset_id, const Amount &amount) {
+          const std::string &account_id,
+          const std::string &asset_id,
+          const Amount &amount) {
         return generateCommand<AddAssetQuantity>(account_id, asset_id, amount);
       }
 
@@ -89,21 +97,26 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> CommandGenerator::generateSetPermissions(
-          const std::string &account_id, const Account::Permissions &permissions) {
+          const std::string &account_id,
+          const Account::Permissions &permissions) {
         return generateCommand<SetAccountPermissions>(account_id, permissions);
       }
 
       std::shared_ptr<Command> CommandGenerator::generateSubtractAssetQuantity(
-          const std::string &account_id, const std::string &asset_id, const Amount &amount) {
+          const std::string &account_id,
+          const std::string &asset_id,
+          const Amount &amount) {
         // TODO: implement
         return nullptr;
       }
 
       std::shared_ptr<Command> CommandGenerator::generateTransferAsset(
-          const std::string &src_account, const std::string &dest_account,
-          const std::string &asset_id, const Amount &amount) {
-        return generateCommand<TransferAsset>(src_account, dest_account,
-                                              asset_id, amount);
+          const std::string &src_account,
+          const std::string &dest_account,
+          const std::string &asset_id,
+          const Amount &amount) {
+        return generateCommand<TransferAsset>(
+            src_account, dest_account, asset_id, amount);
       }
 
     }  // namespace generators

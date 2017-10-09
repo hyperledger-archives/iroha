@@ -21,13 +21,21 @@ namespace iroha_cli {
   namespace interactive {
 
     DescriptionMap getCommonDescriptionMap() {
-      return {{SAVE_CODE, "Save as json file"},
-              {SEND_CODE, "Send to Iroha peer"}};
+      return {
+          // commonDescriptionMap
+          {SAVE_CODE, "Save as json file"},
+          {SEND_CODE, "Send to Iroha peer"}
+          // commonDescriptionMap
+      };
     };
 
     ParamsMap getCommonParamsMap() {
-      return {{SAVE_CODE, {"Path to save json file"}},
-              {SEND_CODE, {"Peer address", "Peer port"}}};
+      return {
+          // commonParamsMap
+          {SAVE_CODE, {"Path to save json file"}},
+          {SEND_CODE, {"Peer address", "Peer port"}}
+          // commonParamsMap
+      };
     };
 
     void handleEmptyCommand() {
@@ -44,22 +52,24 @@ namespace iroha_cli {
 
     bool isBackOption(std::string line) {
       auto command = parser::parseFirstCommand(line);
-      return command.has_value() &&
-             (command.value() == "0" || command.value() == BACK_CODE);
+      return command.has_value()
+          and (command.value() == "0" or command.value() == BACK_CODE);
     };
 
     void printCommandParameters(std::string &command,
                                 std::vector<std::string> parameters) {
       std::cout << "Run " << command
                 << " with following parameters: " << std::endl;
-      std::for_each(parameters.begin(), parameters.end(),
-                    [](auto el) { std::cout << "  " << el << std::endl; });
+      std::for_each(parameters.begin(), parameters.end(), [](auto el) {
+        std::cout << "  " << el << std::endl;
+      });
     };
 
     void printMenu(const std::string &message, MenuPoints menu_points) {
       std::cout << message << std::endl;
-      std::for_each(menu_points.begin(), menu_points.end(),
-                    [](auto el) { std::cout << el << std::endl; });
+      std::for_each(menu_points.begin(), menu_points.end(), [](auto el) {
+        std::cout << el << std::endl;
+      });
     };
 
     std::string promtString(const std::string &message) {
@@ -96,10 +106,10 @@ namespace iroha_cli {
       if (words.size() == 1) {
         // Start interactive mode
         std::vector<std::string> params;
-        std::for_each(params_description.value().begin(),
-                      params_description.value().end(), [&params](auto param) {
-                        params.push_back(promtString(param));
-                      });
+        std::for_each(
+            params_description.value().begin(),
+            params_description.value().end(),
+            [&params](auto param) { params.push_back(promtString(param)); });
         return params;
       } else if (words.size() != params_description.value().size() + 1) {
         // Not enough parameters passed
@@ -115,8 +125,10 @@ namespace iroha_cli {
     size_t addMenuPoint(std::vector<std::string> &menu_points,
                         const std::string &description,
                         const std::string &command_short_name) {
-      menu_points.push_back(std::to_string(menu_points.size() + 1) + ". " +
-                            description + " (" + command_short_name + ")");
+      menu_points.push_back(
+          std::to_string(menu_points.size() + 1) + ". " + description + " ("
+          + command_short_name
+          + ")");
       return menu_points.size();
     }
   }  // namespace interactive
