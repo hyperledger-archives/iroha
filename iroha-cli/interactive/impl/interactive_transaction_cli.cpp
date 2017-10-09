@@ -16,22 +16,20 @@
  */
 
 #include "interactive/interactive_transaction_cli.hpp"
+
 #include <fstream>
-#include "model/converters/json_common.hpp"
-#include "model/converters/json_transaction_factory.hpp"
-#include "model/generators/transaction_generator.hpp"
 
 #include "client.hpp"
 #include "crypto/hash.hpp"
-#include "datetime/time.hpp"
 #include "grpc_response_handler.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/revoke_permission.hpp"
-
-#include <model/converters/pb_common.hpp>
-#include <model/model_crypto_provider_impl.hpp>
+#include "model/converters/json_common.hpp"
+#include "model/converters/json_transaction_factory.hpp"
+#include "model/converters/pb_common.hpp"
+#include "model/generators/transaction_generator.hpp"
 
 using namespace iroha::model;
 
@@ -152,12 +150,13 @@ namespace iroha_cli {
     }
 
     InteractiveTransactionCli::InteractiveTransactionCli(
-        std::string creator_account,
+        const std::string &creator_account,
         uint64_t tx_counter,
-        iroha::keypair_t keypair)
-        : creator_(creator_account),
+        const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider)
+        : current_context_(MAIN),
+          creator_(creator_account),
           tx_counter_(tx_counter),
-          keypair_(keypair) {
+          provider_(provider) {
       log_ = logger::log("InteractiveTransactionCli");
       createCommandMenu();
       createResultMenu();
@@ -384,17 +383,13 @@ namespace iroha_cli {
       }
 
       // Forming a transaction
-      iroha::model::generators::TransactionGenerator tx_generator_;
-      auto time_stamp = iroha::time::now();
-      auto tx = tx_generator_.generateTransaction(
-          time_stamp, creator_, tx_counter_, commands_);
+      auto tx =
+          tx_generator_.generateTransaction(creator_, tx_counter_, commands_);
+
       // clear commands so that we can start creating new tx
       commands_.clear();
 
-      auto sig = iroha::sign(
-          iroha::hash(tx).to_string(), keypair_.pubkey, keypair_.privkey);
-      tx.signatures.push_back(
-          Signature{.signature = sig, .pubkey = keypair_.pubkey});
+      provider_->sign(tx);
 
       CliClient client(address.value().first, address.value().second);
       GrpcResponseHandler response_handler;
@@ -413,18 +408,15 @@ namespace iroha_cli {
         // Continue parsing
         return true;
       }
+
       // Forming a transaction
-      iroha::model::generators::TransactionGenerator tx_generator_;
-      auto time_stamp = iroha::time::now();
-      auto tx = tx_generator_.generateTransaction(
-          time_stamp, creator_, tx_counter_, commands_);
+      auto tx =
+          tx_generator_.generateTransaction(creator_, tx_counter_, commands_);
 
       // clear commands so that we can start creating new tx
       commands_.clear();
-      auto sig = iroha::sign(
-          iroha::hash(tx).to_string(), keypair_.pubkey, keypair_.privkey);
-      tx.signatures.push_back(
-          Signature{.signature = sig, .pubkey = keypair_.pubkey});
+
+      provider_->sign(tx);
 
       iroha::model::converters::JsonTransactionFactory json_factory;
       auto json_doc = json_factory.serialize(tx);

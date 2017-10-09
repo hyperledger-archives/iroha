@@ -32,6 +32,7 @@
 #include "model/converters/json_query_factory.hpp"
 #include "model/generators/block_generator.hpp"
 #include "model/generators/signature_generator.hpp"
+#include "model/model_crypto_provider_impl.hpp"
 #include "responses.pb.h"
 #include "validators.hpp"
 
@@ -154,6 +155,7 @@ int main(int argc, char *argv[]) {
     fs::path path(FLAGS_key_path);
     if (not fs::exists(path)) {
       logger->error("Path {} does not exist", path.string());
+      return EXIT_FAILURE;
     }
     iroha::KeysManagerImpl manager((path / FLAGS_name).string());
     auto keypair = manager.loadKeys();
@@ -166,7 +168,12 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
     // TODO: Init counters from Iroha, or read from disk?
-    InteractiveCli interactiveCli(FLAGS_name, 0, 0, *keypair);
+    InteractiveCli interactiveCli(
+        FLAGS_name,
+        0,
+        0,
+        std::make_shared<iroha::model::ModelCryptoProviderImpl>(
+            keypair.value()));
     interactiveCli.run();
   } else {
     assert_config::assert_fatal(false, "Invalid flags");

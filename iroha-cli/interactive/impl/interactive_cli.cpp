@@ -16,8 +16,6 @@
  */
 
 #include "interactive/interactive_cli.hpp"
-#include "interactive/interactive_transaction_cli.hpp"
-#include "parser/parser.hpp"
 
 namespace iroha_cli {
   namespace interactive {
@@ -35,13 +33,14 @@ namespace iroha_cli {
                     &InteractiveCli::startQuery);
     }
 
-    InteractiveCli::InteractiveCli(std::string account_name,
-                                   uint64_t tx_counter,
-                                   uint64_t qry_counter,
-                                   const iroha::keypair_t &keypair)
+    InteractiveCli::InteractiveCli(
+        const std::string &account_name,
+        uint64_t tx_counter,
+        uint64_t qry_counter,
+        const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider)
         : creator_(account_name),
-          tx_cli_(creator_, tx_counter, keypair),
-          query_cli_(creator_, qry_counter, keypair) {
+          tx_cli_(creator_, tx_counter, provider),
+          query_cli_(creator_, qry_counter, provider) {
       assign_main_handlers();
     }
 

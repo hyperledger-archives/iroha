@@ -59,8 +59,7 @@ namespace iroha {
       auto signature = iroha::sign(
           iroha::hash(block).to_string(), keypair_.pubkey, keypair_.privkey);
 
-      block.sigs.push_back(
-          Signature{.signature = signature, .pubkey = keypair_.pubkey});
+      block.sigs.emplace_back(signature, keypair_.pubkey);
     }
 
     void ModelCryptoProviderImpl::sign(Transaction &transaction) const {
@@ -68,16 +67,14 @@ namespace iroha {
                                    keypair_.pubkey,
                                    keypair_.privkey);
 
-      transaction.signatures.push_back(
-          Signature{.signature = signature, .pubkey = keypair_.pubkey});
+      transaction.signatures.emplace_back(signature, keypair_.pubkey);
     }
 
     void ModelCryptoProviderImpl::sign(Query &query) const {
       auto signature = iroha::sign(
           iroha::hash(query).to_string(), keypair_.pubkey, keypair_.privkey);
 
-      query.signature =
-          Signature{.signature = signature, .pubkey = keypair_.pubkey};
+      query.signature = Signature{signature, keypair_.pubkey};
     }
   }
 }

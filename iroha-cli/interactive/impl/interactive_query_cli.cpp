@@ -89,10 +89,14 @@ namespace iroha_cli {
       addBackOption(result_points_);
     }
 
-    InteractiveQueryCli::InteractiveQueryCli(std::string account_name,
-                                             uint64_t query_counter,
-                                             iroha::keypair_t keypair)
-        : creator_(account_name), counter_(query_counter), keypair_(keypair) {
+    InteractiveQueryCli::InteractiveQueryCli(
+        const std::string &account_name,
+        uint64_t query_counter,
+        const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider)
+        : current_context_(MAIN),
+          creator_(account_name),
+          counter_(query_counter),
+          provider_(provider) {
       log_ = logger::log("InteractiveQueryCli");
       create_queries_menu();
       create_result_menu();
@@ -216,10 +220,7 @@ namespace iroha_cli {
         return true;
       }
 
-      auto sig = iroha::sign(
-          iroha::hash(*query_).to_string(), keypair_.pubkey, keypair_.privkey);
-      query_->signature =
-          Signature{.signature = sig, .pubkey = keypair_.pubkey};
+      provider_->sign(*query_);
 
       CliClient client(address.value().first, address.value().second);
       GrpcResponseHandler{}.handle(client.sendQuery(query_));
@@ -229,10 +230,7 @@ namespace iroha_cli {
     }
 
     bool InteractiveQueryCli::parseSaveFile(QueryParams params) {
-      auto sig = iroha::sign(
-          iroha::hash(*query_).to_string(), keypair_.pubkey, keypair_.privkey);
-      query_->signature =
-          Signature{.signature = sig, .pubkey = keypair_.pubkey};
+      provider_->sign(*query_);
 
       auto path = params[0];
       iroha::model::converters::JsonQueryFactory json_factory;

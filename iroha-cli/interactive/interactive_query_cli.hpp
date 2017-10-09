@@ -20,9 +20,11 @@
 
 #include <memory>
 #include <unordered_map>
+
 #include "interactive/interactive_common_cli.hpp"
 #include "logger/logger.hpp"
 #include "model/generators/query_generator.hpp"
+#include "model/model_crypto_provider.hpp"
 #include "model/query.hpp"
 
 namespace iroha_cli {
@@ -33,9 +35,10 @@ namespace iroha_cli {
        * @param account_id creator's account identification
        * @param query_counter counter associated with creator's account
        */
-      InteractiveQueryCli(std::string account_id,
-                          uint64_t query_counter,
-                          iroha::keypair_t keypair);
+      InteractiveQueryCli(
+          const std::string &account_id,
+          uint64_t query_counter,
+          const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider);
       /**
        * Run interactive query command line
        */
@@ -140,7 +143,8 @@ namespace iroha_cli {
       // Logger
       logger::Logger log_;
 
-      iroha::keypair_t keypair_;
+      // Crypto provider
+      std::shared_ptr<iroha::model::ModelCryptoProvider> provider_;
     };
   }  // namespace interactive
 }  // namespace iroha_cli

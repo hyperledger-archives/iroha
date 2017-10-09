@@ -20,7 +20,7 @@
 
 #include "crypto/keys_manager_impl.hpp"
 #include "interactive/interactive_query_cli.hpp"
-#include "interactive_transaction_cli.hpp"
+#include "interactive/interactive_transaction_cli.hpp"
 
 namespace iroha_cli {
   namespace interactive {
@@ -30,10 +30,11 @@ namespace iroha_cli {
       /**
        * @param account_id account id used as transaction or query creator
        */
-      InteractiveCli(std::string account_name,
-                     uint64_t tx_counter,
-                     uint64_t qry_counter,
-                     const iroha::keypair_t &keypair);
+      InteractiveCli(
+          const std::string &account_name,
+          uint64_t tx_counter,
+          uint64_t qry_counter,
+          const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider);
       /**
        * Run interactive cli. Print menu and parse command
        */
