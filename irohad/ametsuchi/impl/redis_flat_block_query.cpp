@@ -68,12 +68,16 @@ namespace iroha {
       return rxcpp::observable<>::create<model::Transaction>(
           [this, account_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
+            if (block_ids.empty()) {
+              subscriber.on_completed();
+              return;
+            }
+
             for (auto block_id : block_ids) {
-              client_.lrange(
-                  account_id + ":" + std::to_string(block_id),
-                  0,
-                  -1,
-                  this->callbackToLrange(subscriber, block_id));
+              client_.lrange(account_id + ":" + std::to_string(block_id),
+                             0,
+                             -1,
+                             this->callbackToLrange(subscriber, block_id));
             }
             client_.sync_commit();
           });
@@ -85,6 +89,11 @@ namespace iroha {
       return rxcpp::observable<>::create<model::Transaction>(
           [this, account_id, asset_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
+            if (block_ids.empty()) {
+              subscriber.on_completed();
+              return;
+            }
+
             for (auto block_id : block_ids) {
               // create key for querying redis
               std::string account_assets_key;

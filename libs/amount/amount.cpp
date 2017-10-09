@@ -27,7 +27,9 @@ namespace iroha {
   int ipow(int base, int exp) {
     int result = 1;
     while (exp != 0) {
-      if (exp & 1) result *= base;
+      if (exp & 1) {
+        result *= base;
+      }
       exp >>= 1;
       base *= base;
     }
@@ -35,8 +37,11 @@ namespace iroha {
     return result;
   }
 
-  uint256_t getJointUint256(uint64_t first, uint64_t second, uint64_t third,
+  uint256_t getJointUint256(uint64_t first,
+                            uint64_t second,
+                            uint64_t third,
                             uint64_t fourth) {
+    // join 4 uint64_t into single uint256_t by means of logic or operator
     uint256_t res(0);
     res |= first;
     res <<= 64;
@@ -55,12 +60,17 @@ namespace iroha {
   Amount::Amount(uint256_t amount, uint8_t precision)
       : value_(amount), precision_(precision) {}
 
-  Amount::Amount(uint64_t first, uint64_t second, uint64_t third,
+  Amount::Amount(uint64_t first,
+                 uint64_t second,
+                 uint64_t third,
                  uint64_t fourth)
       : Amount(first, second, third, fourth, 0) {}
 
-  Amount::Amount(uint64_t first, uint64_t second, uint64_t third,
-                 uint64_t fourth, uint8_t precision)
+  Amount::Amount(uint64_t first,
+                 uint64_t second,
+                 uint64_t third,
+                 uint64_t fourth,
+                 uint8_t precision)
       : precision_(precision) {
     value_ = getJointUint256(first, second, third, fourth);
   }
@@ -106,7 +116,10 @@ namespace iroha {
     auto begin = str_amount.find_first_not_of('0');
 
     // create uint256 value from obtained string
-    uint256_t value(str_amount.substr(begin));
+    uint256_t value = 0;
+    if (begin <= str_amount.size()) {
+      value = uint256_t(str_amount.substr(begin));
+    }
     return Amount(value, precision);
   }
 
