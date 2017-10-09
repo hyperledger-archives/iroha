@@ -19,7 +19,8 @@
 
 #include <block.pb.h>
 #include <google/protobuf/empty.pb.h>
-#include <ordering.grpc.pb.h>
+#include "logger/logger.hpp"
+#include "ordering.grpc.pb.h"
 
 #include "model/converters/pb_transaction_factory.hpp"
 #include "network/impl/async_grpc_client.hpp"
@@ -33,6 +34,7 @@ namespace iroha {
           public proto::OrderingServiceTransportGrpc::Service,
           network::AsyncGrpcClient<google::protobuf::Empty> {
      public:
+      OrderingServiceTransportGrpc();
       void subscribe(
           std::shared_ptr<iroha::network::OrderingServiceNotification>
               subscriber) override;
@@ -44,11 +46,12 @@ namespace iroha {
                                  const protocol::Transaction *request,
                                  ::google::protobuf::Empty *response) override;
 
-      ~OrderingServiceTransportGrpc() = default;
 
+      ~OrderingServiceTransportGrpc()  = default;
      private:
       std::weak_ptr<iroha::network::OrderingServiceNotification> subscriber_;
       model::converters::PbTransactionFactory factory_;
+      logger::Logger log_;
     };
 
   }  // namespace ordering

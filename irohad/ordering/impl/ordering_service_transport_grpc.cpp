@@ -25,13 +25,15 @@ void OrderingServiceTransportGrpc::subscribe(
   subscriber_ = subscriber;
 }
 
-grpc::Status OrderingServiceTransportGrpc::onTransaction(::grpc::ServerContext *context,
-                           const protocol::Transaction *request,
-                           ::google::protobuf::Empty *response) {
+grpc::Status OrderingServiceTransportGrpc::onTransaction(
+    ::grpc::ServerContext *context,
+    const protocol::Transaction *request,
+    ::google::protobuf::Empty *response) {
   if (subscriber_.expired())
-    throw std::runtime_error("No subscriber");
+    log_->error("No subscriber");
+  else
+    subscriber_.lock()->onTransaction(*factory_.deserialize(*request));
 
-  subscriber_.lock()->onTransaction(*factory_.deserialize(*request));
   return ::grpc::Status::OK;
 }
 
@@ -62,3 +64,6 @@ void OrderingServiceTransportGrpc::publishProposal(
     call->response_reader->Finish(&call->reply, &call->status, call);
   }
 }
+
+OrderingServiceTransportGrpc::OrderingServiceTransportGrpc()
+    : log_(logger::testLog("OrderingServiceTransportGrpc")) {}

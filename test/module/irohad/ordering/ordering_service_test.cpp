@@ -47,10 +47,11 @@ using ::testing::Return;
 static logger::Logger log_ = logger::testLog("OrderingService");
 
 class MockOrderingServiceTransport : public network::OrderingServiceTransport {
-public:
-   void publishProposal(model::Proposal &&proposal, const std::vector<std::string> &peers) override {
-     publishProposal(proposal, peers);
-   };
+ public:
+  void publishProposal(model::Proposal &&proposal,
+                       const std::vector<std::string> &peers) override {
+    publishProposal(proposal, peers);
+  };
   void subscribe(std::shared_ptr<network::OrderingServiceNotification> subscriber) override {
     subscriber_ = subscriber;
   }
@@ -67,7 +68,6 @@ class OrderingServiceTest : public ::testing::Test {
  public:
   OrderingServiceTest() {
     peer.address = address;
-    loop = uvw::Loop::create();
 
   }
 
@@ -77,48 +77,22 @@ class OrderingServiceTest : public ::testing::Test {
 
   }
 
-  void start()  {
-    loop_thread = std::thread([this] { loop->run(); });
-  }
 
-  void send() {
-    grpc::ServerContext context;
-    google::protobuf::Empty reply;
-    const auto transaction = iroha::protocol::Transaction();
-    auto status = transport->onTransaction(&context, &transaction, &reply);
-    if(not status.ok()){
-      log_->error(status.error_details());
-      log_->error(status.error_message());
-
-    }
-    ASSERT_TRUE(status.ok());
-  }
-
-  void shutdown() override { OrderingTest::shutdown(); }
   void TearDown() override  {
-    if(loop)
-      loop->stop();
     if (loop_thread.joinable())
       loop_thread.join();
     }
 
   ~OrderingServiceTest() = default;
 
-  std::shared_ptr<uvw::Loop> loop;
   std::thread loop_thread;
   std::shared_ptr<MockOrderingServiceTransport> fake_transport;
-  ordering::MockOrderingGate *fake_gate;
-  std::shared_ptr<OrderingServiceTransportGrpc> transport;
   std::condition_variable cv;
   std::mutex m;
   std::string address {"0.0.0.0:50051"};
   model::Peer peer;
   std::shared_ptr<MockPeerQuery> wsv;
 
- private:
-  std::atomic_bool watchdog_timeout_;
-  std::condition_variable cv_;
-  std::shared_ptr<std::thread> t_;
 };
 
 
@@ -127,11 +101,10 @@ TEST_F(OrderingServiceTest, ExampleTest) {
   const size_t commit_delay = 1000;
 
   auto ordering_service = std::make_shared<OrderingServiceImpl>(
-          wsv, max_proposal, commit_delay, fake_transport, loop);
+          wsv, max_proposal, commit_delay, fake_transport);
   fake_transport->subscribe(ordering_service);
 
   EXPECT_CALL(*fake_transport, publishProposal(_, _)).Times(1);
-  start();
 
   fake_transport->publishProposal(model::Proposal({}), {});
 
@@ -144,7 +117,7 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
   const size_t commit_delay = 1000;
 
   auto ordering_service = std::make_shared<OrderingServiceImpl>(
-          wsv, max_proposal, commit_delay, fake_transport, loop);
+          wsv, max_proposal, commit_delay, fake_transport);
   fake_transport->subscribe(ordering_service);
 
   // Init => proposal size 5 => 2 proposals after 10 transactions
@@ -156,21 +129,16 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
 
 
   size_t call_count = 0;
-  ON_CALL(*fake_gate, onProposal(_, _, _))
-      .WillByDefault(InvokeWithoutArgs([&] {
+  ON_CALL(*fake_transport, publishProposal(_, _))
+      .WillByDefault(Invoke([&](auto, auto) {
         ++call_count;
         cv.notify_one();
         return grpc::Status::OK;
       }));
 
-  start();
 
   for (size_t i = 0; i < 10; ++i) {
-    send();
     ordering_service->onTransaction(model::Transaction());
-    if (i != 0 && i % max_proposal == 0) {
-      cv.wait_for(lk, 10s);
-    }
   }
 
   std::unique_lock<std::mutex> lock(m);
@@ -186,14 +154,17 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   const size_t max_proposal = 100;
   const size_t commit_delay = 400;
 
-  EXPECT_CALL(*fake_gate, onProposal(_, _, _)).Times(2);
-  ON_CALL(*fake_gate, onProposal(_, _, _))
-      .WillByDefault(InvokeWithoutArgs([&] {
+  auto ordering_service = std::make_shared<OrderingServiceImpl>(
+          wsv, max_proposal, commit_delay, fake_transport);
+  fake_transport->subscribe(ordering_service);
+
+  EXPECT_CALL(*fake_transport, publishProposal(_, _)).Times(2);
+  ON_CALL(*fake_transport, publishProposal(_, _))
+      .WillByDefault(Invoke([&](auto, auto) {
+        log_->info("Proposal send to grpc");
         cv.notify_one();
         return grpc::Status::OK;
       }));
-
-  start();
 
   for (size_t i = 0; i < 8; ++i) {
     ordering_service->onTransaction(model::Transaction());

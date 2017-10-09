@@ -18,7 +18,7 @@
 #define IROHA_ORDERING_GATE_TRANSPORT_GRPC_H
 
 #include <google/protobuf/empty.pb.h>
-#include <ordering.grpc.pb.h>
+#include "ordering.grpc.pb.h"
 #include "logger/logger.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
 #include "network/impl/async_grpc_client.hpp"

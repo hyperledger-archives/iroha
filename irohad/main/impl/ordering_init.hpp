@@ -50,8 +50,7 @@ namespace iroha {
       auto createService(
           std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
           size_t delay_milliseconds,
-          std::shared_ptr<network::OrderingServiceTransport> transport,
-          std::shared_ptr<uvw::Loop> loop);
+          std::shared_ptr<network::OrderingServiceTransport> transport);
 
      public:
       /**

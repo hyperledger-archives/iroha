@@ -20,13 +20,11 @@
 namespace iroha {
   namespace ordering {
     OrderingServiceImpl::OrderingServiceImpl(
-        std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
+        std::shared_ptr<ametsuchi::PeerQuery> wsv,
+        size_t max_size,
         size_t delay_milliseconds,
-        std::shared_ptr<network::OrderingServiceTransport> transport,
-        std::shared_ptr<uvw::Loop> loop)
-        : loop_(std::move(loop)),
-          timer_(loop_->resource<uvw::TimerHandle>()),
-          wsv_(wsv),
+        std::shared_ptr<network::OrderingServiceTransport> transport)
+        : wsv_(wsv),
           max_size_(max_size),
           delay_milliseconds_(delay_milliseconds),
           transport_(transport),
@@ -34,12 +32,10 @@ namespace iroha {
       updateTimer();
     }
 
-
-
     void OrderingServiceImpl::onTransaction(
-        model::Transaction transaction) {
+        const model::Transaction &transaction) {
       queue_.push(transaction);
-
+      std::cout<<"Got transaction"<<std::endl;
       if (queue_.unsafe_size() >= max_size_) {
         handle.unsubscribe();
         updateTimer();

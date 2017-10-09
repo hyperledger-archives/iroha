@@ -27,7 +27,7 @@ grpc::Status OrderingGateTransportGrpc::onProposal(
   for (const auto &tx : request->transactions()) {
     transactions.push_back(*factory_.deserialize(tx));
   }
-  log_->info("transactions in proposal: {}" + std::to_string(transactions.size()));
+  log_->info("transactions in proposal: {}", transactions.size());
 
   model::Proposal proposal(transactions);
   proposal.height = request->height();

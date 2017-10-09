@@ -33,7 +33,7 @@ namespace iroha {
        * Callback on receiving transaction
        * @param proposal - transaction object itself
        */
-      virtual void onTransaction(model::Transaction) = 0;
+      virtual void onTransaction(const model::Transaction &) = 0;
 
       virtual ~OrderingServiceNotification() = default;
     };

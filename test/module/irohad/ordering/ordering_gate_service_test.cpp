@@ -70,16 +70,10 @@ class OrderingGateServiceTest : public ::testing::Test {
     std::unique_lock<std::mutex> lock(mtx);
     cv.wait_for(lock, std::chrono::seconds(1));
 
-    loop_thread = std::thread([this] { loop->run(); });
   }
 
   void TearDown() override  {
     proposals.clear();
-    loop->stop();
-    if (loop_thread.joinable()) {
-      loop_thread.join();
-    }
-
     server->Shutdown();
     if (thread.joinable()) {
       thread.join();
@@ -106,8 +100,6 @@ class OrderingGateServiceTest : public ::testing::Test {
   }
 
   std::string address {"0.0.0.0:50051"};
-  std::shared_ptr<uvw::Loop> loop;
-  std::thread loop_thread;
   std::shared_ptr<OrderingGateImpl> gate;
   std::shared_ptr<OrderingServiceImpl> service;
 
@@ -137,7 +129,7 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
 
 
   service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, service_transport, loop);
+      wsv, max_proposal, commit_delay, service_transport);
   service_transport->subscribe(service);
 
 
@@ -181,7 +173,7 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
   const size_t commit_delay = 1000;
 
   service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, service_transport, loop);
+      wsv, max_proposal, commit_delay, service_transport);
   service_transport->subscribe(service);
 
   start();

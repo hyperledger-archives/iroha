@@ -105,7 +105,7 @@ class ConsensusSunnyDayTest : public ::testing::Test {
     my_num = num;
     my_peer = mk_local_peer(10000 + my_num);
     for (decltype(num_peers) i = 0; i < num_peers; ++i) {
-      default_peers.push_back(mk_local_peer(10000 + i));
+      default_peers.push_back(mk_local_peer(10001 + i));
     }
     if (num_peers == 1) {
       delay_before = 0;
@@ -147,10 +147,10 @@ TEST_F(ConsensusSunnyDayTest, SunnyDayTest) {
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
-  uint64_t num_peers = 1, my_num = 0;
+  uint64_t num_peers = 1, my_num = 1;
   if (argc == 3) {
     num_peers = std::stoul(argv[1]);
-    my_num = std::stoul(argv[2]);
+    my_num = std::stoul(argv[2]) + 1;
   }
   ConsensusSunnyDayTest::init(num_peers, my_num);
   return RUN_ALL_TESTS();

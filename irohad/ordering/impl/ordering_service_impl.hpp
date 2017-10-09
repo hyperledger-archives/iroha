@@ -21,7 +21,6 @@
 #include <tbb/concurrent_queue.h>
 #include <memory>
 #include <unordered_map>
-#include <uvw.hpp>
 
 #include "network/ordering_service.hpp"
 #include "network/ordering_service_transport.hpp"
@@ -30,11 +29,11 @@
 #include "ametsuchi/peer_query.hpp"
 #include "ordering.grpc.pb.h"
 
+#include <rxcpp/rx.hpp>
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/proposal.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "ordering.grpc.pb.h"
-#include <rxcpp/rx.hpp>
 
 namespace iroha {
   namespace ordering {
@@ -47,21 +46,19 @@ namespace iroha {
      * @param delay_milliseconds timer delay
      * @param max_size proposal size
      */
-    class OrderingServiceImpl : public uvw::Emitter<OrderingServiceImpl>,
-                                public network::OrderingService {
+    class OrderingServiceImpl : public network::OrderingService {
      public:
       OrderingServiceImpl(
           std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
           size_t delay_milliseconds,
-          std::shared_ptr<network::OrderingServiceTransport> transport,
-          std::shared_ptr<uvw::Loop> loop = uvw::Loop::getDefault());
+          std::shared_ptr<network::OrderingServiceTransport> transport);
 
       /**
        * Process transaction received from network
        * Enqueues transaction and publishes corresponding event
        * @param transaction
        */
-      void onTransaction(model::Transaction tx) override;
+      void onTransaction(const model::Transaction& tx) override;
 
       ~OrderingServiceImpl() override;
 
