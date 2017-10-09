@@ -48,21 +48,24 @@ static logger::Logger log_ = logger::testLog("OrderingService");
 
 class MockOrderingServiceTransport : public network::OrderingServiceTransport {
  public:
+
   void publishProposal(model::Proposal &&proposal,
                        const std::vector<std::string> &peers) override {
     publishProposal(proposal, peers);
   };
+
   void subscribe(std::shared_ptr<network::OrderingServiceNotification> subscriber) override {
     subscriber_ = subscriber;
   }
-  MOCK_METHOD2(publishProposal, void(const model::Proposal &proposal, const std::vector<std::string> &peers));
+
+  MOCK_METHOD2(publishProposal,
+               void(const model::Proposal &proposal,
+                    const std::vector<std::string> &peers));
 
   ~MockOrderingServiceTransport() override = default;
 
   std::weak_ptr<network::OrderingServiceNotification> subscriber_;
 };
-
-
 
 class OrderingServiceTest : public ::testing::Test {
  public:
@@ -111,6 +114,7 @@ TEST_F(OrderingServiceTest, ExampleTest) {
 
 }
 
+
 TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
 
   const size_t max_proposal = 5;
@@ -133,7 +137,6 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
       .WillByDefault(Invoke([&](auto, auto) {
         ++call_count;
         cv.notify_one();
-        return grpc::Status::OK;
       }));
 
 
@@ -144,6 +147,7 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
   std::unique_lock<std::mutex> lock(m);
   cv.wait_for(lock, 10s, [&] { return call_count == 2; });
 }
+
 
 TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   // Init => proposal timer 400 ms => 10 tx by 50 ms => 2 proposals in 1 second
@@ -163,7 +167,6 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
       .WillByDefault(Invoke([&](auto, auto) {
         log_->info("Proposal send to grpc");
         cv.notify_one();
-        return grpc::Status::OK;
       }));
 
   for (size_t i = 0; i < 8; ++i) {
@@ -177,3 +180,4 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   ordering_service->onTransaction(model::Transaction());
   cv.wait_for(lk, 10s);
 }
+
