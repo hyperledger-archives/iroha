@@ -71,3 +71,26 @@ TEST_F(AmountTest, TestBasic) {
   ASSERT_EQ(h.getPrecision(), 0);
   ASSERT_EQ(g, h);
 }
+
+
+// test with different precisions and values
+TEST_F(AmountTest, TestStringConversion) {
+  for (uint8_t precision = 0; precision < 255; precision++) {
+    for (int val = 0; val < 10; val++) {
+      iroha::Amount amount(val, precision);
+      auto amount_str = amount.to_string();
+      auto converted_amount = iroha::Amount::createFromString(amount_str);
+      ASSERT_TRUE(converted_amount);
+      ASSERT_EQ(converted_amount.value(), amount);
+      ASSERT_EQ(converted_amount->to_string(), amount.to_string());
+    }
+  }
+
+  auto a = iroha::Amount::createFromString(".20");
+  ASSERT_EQ(a.value(), iroha::Amount(20, 2));
+
+  ASSERT_FALSE(iroha::Amount::createFromString("-0.20"));
+  ASSERT_FALSE(iroha::Amount::createFromString("-0..20"));
+  ASSERT_FALSE(iroha::Amount::createFromString("0..20"));
+  ASSERT_FALSE(iroha::Amount::createFromString("-0.20"));
+}

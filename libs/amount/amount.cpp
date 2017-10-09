@@ -35,7 +35,9 @@ namespace iroha {
     return result;
   }
 
-  uint256_t getJointUint256(uint64_t first, uint64_t second, uint64_t third,
+  uint256_t getJointUint256(uint64_t first,
+                            uint64_t second,
+                            uint64_t third,
                             uint64_t fourth) {
     uint256_t res(0);
     res |= first;
@@ -55,12 +57,17 @@ namespace iroha {
   Amount::Amount(uint256_t amount, uint8_t precision)
       : value_(amount), precision_(precision) {}
 
-  Amount::Amount(uint64_t first, uint64_t second, uint64_t third,
+  Amount::Amount(uint64_t first,
+                 uint64_t second,
+                 uint64_t third,
                  uint64_t fourth)
       : Amount(first, second, third, fourth, 0) {}
 
-  Amount::Amount(uint64_t first, uint64_t second, uint64_t third,
-                 uint64_t fourth, uint8_t precision)
+  Amount::Amount(uint64_t first,
+                 uint64_t second,
+                 uint64_t third,
+                 uint64_t fourth,
+                 uint8_t precision)
       : precision_(precision) {
     value_ = getJointUint256(first, second, third, fourth);
   }
@@ -105,8 +112,14 @@ namespace iroha {
 
     auto begin = str_amount.find_first_not_of('0');
 
+    uint256_t value;
     // create uint256 value from obtained string
-    uint256_t value(str_amount.substr(begin));
+    if (begin > str_amount.size()) {
+      // if got here, then the number is made of only zeros
+      value = 0;
+    } else {
+      value = uint256_t(str_amount.substr(begin));
+    }
     return Amount(value, precision);
   }
 
