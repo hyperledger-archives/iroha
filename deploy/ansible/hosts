@@ -1,0 +1,7 @@
+#Inventory file, example configuration is presented below
+
+[CentOS]
+35.195.103.159
+
+[Ubuntu]
+104.199.58.74

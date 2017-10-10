@@ -1,0 +1,25 @@
+---
+- hosts: all
+  vars:
+    user: dumitru #your user here
+
+  tasks:
+    - name: Get docker script 
+      get_url:
+        url: https://get.docker.com
+        dest: /tmp/script.sh
+        mode: 0755
+        validate_certs: false
+
+    - name: Execute install script
+      shell: /tmp/script.sh
+      args:
+        chdir: /tmp
+
+    - name: add user mod
+      command: usermod -aG docker {{user}}
+      become: yes
+    
+    - name: start docker service
+      service: name=docker state=started
+      become: yes
