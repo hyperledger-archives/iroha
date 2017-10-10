@@ -18,8 +18,8 @@ set_target_description(gflags "Flag parsing engine" ${URL} ${VERSION})
 
 if (NOT gflags_FOUND)
   externalproject_add(gflags_gflags
-      GIT_REPOSITORY ${GITHUB}
-      GIT_TAG ${VERSION}
+      GIT_REPOSITORY ${URL}
+      GIT_TAG        ${VERSION}
       INSTALL_COMMAND "" # remove install step
       TEST_COMMAND "" # remove test step
       UPDATE_COMMAND "" # remove update step
