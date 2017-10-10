@@ -53,6 +53,7 @@ function(compile_proto_to_cpp PROTO)
       )
 endfunction()
 
+
 function(compile_proto_to_grpc_cpp PROTO)
   compile_proto_to_cpp(${PROTO})
   string(REGEX REPLACE "\\.proto$" ".grpc.pb.h" GEN_GRPC_PB_HEADER ${PROTO})
@@ -66,6 +67,7 @@ function(compile_proto_to_grpc_cpp PROTO)
       )
 endfunction()
 
+
 macro(set_target_description target description url commit)
   set_package_properties(${target}
       PROPERTIES
@@ -73,4 +75,35 @@ macro(set_target_description target description url commit)
       DESCRIPTION ${description}
       PURPOSE "commit: ${commit}"
       )
+endmacro()
+
+
+macro(add_install_step_for_bin target)
+  install(TARGETS ${target}
+      RUNTIME DESTINATION bin
+      COMPONENT binaries)
+endmacro()
+
+
+macro(add_install_step_for_lib libpath)
+  # full path with resolved symlinks:
+  # /usr/local/lib/libprotobuf.so -> /usr/local/lib/libprotobuf.so.13.0.0
+  get_filename_component(lib_major_minor_patch ${libpath} REALPATH)
+  # /usr/local/lib/libprotobuf.so.13.0.0 -> /usr/local/lib/libprotobuf.so.13.0
+  string(REGEX REPLACE "\\.[0-9]+$" "" lib_major_minor ${lib_major_minor_patch})
+  # /usr/local/lib/libprotobuf.so.13.0 -> /usr/local/lib/libprotobuf.so.13
+  string(REGEX REPLACE "\\.[0-9]+$" "" lib_major ${lib_major_minor})
+
+  get_filename_component(lib_major_name ${lib_major} NAME)
+
+  install(FILES ${lib_major_minor_patch}
+      DESTINATION lib
+      CONFIGURATIONS Release
+      RENAME ${lib_major_name}
+      COMPONENT libraries)
+endmacro()
+
+
+macro(remove_line_terminators str output)
+  string(REGEX REPLACE "\r|\n" "" ${output} ${str})
 endmacro()

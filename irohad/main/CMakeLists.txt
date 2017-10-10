@@ -64,11 +64,4 @@ target_link_libraries(irohad
     keys_manager
     )
 
-
-install(
-    TARGETS irohad
-    RUNTIME DESTINATION bin
-    BUNDLE  DESTINATION .
-    CONFIGURATIONS Release
-    COMPONENT irohad
-)
+add_install_step_for_bin(irohad)

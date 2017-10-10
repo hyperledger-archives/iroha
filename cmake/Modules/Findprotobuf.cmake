@@ -53,3 +53,6 @@ set_target_properties(protobuf PROPERTIES
 set_target_properties(protoc PROPERTIES
     IMPORTED_LOCATION ${protoc_EXECUTABLE}
     )
+
+
+add_install_step_for_lib(${protobuf_LIBRARY})

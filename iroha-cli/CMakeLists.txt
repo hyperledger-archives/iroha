@@ -65,11 +65,5 @@ target_link_libraries(iroha-cli
     ${Boost_FILESYSTEM_LIBRARY}
     )
 
-install(
-    TARGETS iroha-cli
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    BUNDLE  DESTINATION .
-    CONFIGURATIONS Release
-    COMPONENT iroha-cli
-)
+add_install_step_for_bin(iroha-cli)
+

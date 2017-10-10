@@ -1,4 +1,4 @@
-add_library(ed25519 SHARED
+add_library(ed25519 STATIC
     add_scalar.c
     fe.c
     ge.c
