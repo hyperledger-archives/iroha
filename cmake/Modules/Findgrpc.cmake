@@ -20,7 +20,6 @@ if (FIND_GRPC)
   mark_as_advanced(grpc_CPP_PLUGIN)
 endif()
 
-find_package(PackageHandleStandardArgs REQUIRED)
 find_package_handle_standard_args(grpc DEFAULT_MSG
     grpc_LIBRARY
     grpc_INCLUDE_DIR
@@ -28,11 +27,15 @@ find_package_handle_standard_args(grpc DEFAULT_MSG
     grpc_CPP_PLUGIN
     )
 
+set(URL https://github.com/grpc/grpc)
+set(VERSION bfcbad3b86c7912968dc8e64f2121c920dad4dfb)
+set_target_description(grpc "Remote Procedure Call library" ${URL} ${VERSION})
+
 if (NOT grpc_FOUND)
   find_package(Git REQUIRED)
   externalproject_add(grpc_grpc
-      GIT_REPOSITORY https://github.com/grpc/grpc
-      GIT_TAG bfcbad3b86c7912968dc8e64f2121c920dad4dfb
+      GIT_REPOSITORY ${URL}
+      GIT_TAG        ${VERSION}
       CMAKE_ARGS -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_PROTOBUF_PACKAGE_TYPE=CONFIG -DProtobuf_DIR=${EP_PREFIX}/src/google_protobuf-build/lib/cmake/protobuf -DgRPC_ZLIB_PROVIDER=package -DBUILD_SHARED_LIBS=ON
       PATCH_COMMAND ${GIT_EXECUTABLE} apply ${PROJECT_SOURCE_DIR}/patch/fix-protobuf-package-include.patch || true
       INSTALL_COMMAND "" # remove install step

@@ -65,3 +65,12 @@ function(compile_proto_to_grpc_cpp PROTO)
       WORKING_DIRECTORY ${IROHA_SCHEMA_DIR}
       )
 endfunction()
+
+macro(set_target_description target description url commit)
+  set_package_properties(${target}
+      PROPERTIES
+      URL ${url}
+      DESCRIPTION ${description}
+      PURPOSE "commit: ${commit}"
+      )
+endmacro()

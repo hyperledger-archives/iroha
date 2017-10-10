@@ -63,3 +63,12 @@ target_link_libraries(irohad
     rapidjson
     keys_manager
     )
+
+
+install(
+    TARGETS irohad
+    RUNTIME DESTINATION bin
+    BUNDLE  DESTINATION .
+    CONFIGURATIONS Release
+    COMPONENT irohad
+)

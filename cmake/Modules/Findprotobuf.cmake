@@ -12,17 +12,20 @@ if (FIND_PROTOBUF)
   mark_as_advanced(protoc_EXECUTABLE)
 endif()
 
-find_package(PackageHandleStandardArgs REQUIRED)
 find_package_handle_standard_args(protobuf DEFAULT_MSG
     protobuf_INCLUDE_DIR
     protobuf_LIBRARY
     protoc_EXECUTABLE
     )
 
+set(URL https://github.com/google/protobuf.git)
+set(VERSION 80a37e0782d2d702d52234b62dd4b9ec74fd2c95)
+set_target_description(protobuf "Protocol buffers library" ${URL} ${VERSION})
+
 if (NOT protobuf_FOUND)
   externalproject_add(google_protobuf
-      GIT_REPOSITORY https://github.com/google/protobuf
-      GIT_TAG 80a37e0782d2d702d52234b62dd4b9ec74fd2c95
+      GIT_REPOSITORY  ${URL}
+      GIT_TAG         ${VERSION}
       CONFIGURE_COMMAND ${CMAKE_COMMAND} -G${CMAKE_GENERATOR} -H${EP_PREFIX}/src/google_protobuf/cmake -B${EP_PREFIX}/src/google_protobuf-build -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_SHARED_LIBS=ON
       INSTALL_COMMAND ""
       TEST_COMMAND "" # remove test step

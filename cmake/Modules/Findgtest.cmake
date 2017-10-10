@@ -19,7 +19,6 @@ mark_as_advanced(gmock_LIBRARY)
 find_library(gmock_MAIN_LIBRARY gmock_main)
 mark_as_advanced(gmock_MAIN_LIBRARY)
 
-find_package(PackageHandleStandardArgs REQUIRED)
 find_package_handle_standard_args(gtest DEFAULT_MSG
     gtest_INCLUDE_DIR
     gtest_LIBRARY
@@ -29,10 +28,15 @@ find_package_handle_standard_args(gtest DEFAULT_MSG
     gmock_MAIN_LIBRARY
     )
 
+set(URL https://github.com/google/googletest)
+set(VERSION ec44c6c1675c25b9827aacd08c02433cccde7780)
+set_target_description(gtest "Unit testing library" ${URL} ${VERSION})
+set_target_description(gmock "Mocking library" ${URL} ${VERSION})
+
 if (NOT gtest_FOUND)
   ExternalProject_Add(google_test
-      GIT_REPOSITORY "https://github.com/google/googletest.git"
-      GIT_TAG ec44c6c1675c25b9827aacd08c02433cccde7780
+      GIT_REPOSITORY ${URL}
+      GIT_TAG        ${VERSION}
       CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
       -Dgtest_force_shared_crt=ON

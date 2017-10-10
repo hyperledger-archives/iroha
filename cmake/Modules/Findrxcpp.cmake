@@ -3,15 +3,20 @@ add_library(rxcpp INTERFACE IMPORTED)
 find_path(rxcpp_INCLUDE_DIR rxcpp/rx.hpp)
 mark_as_advanced(rxcpp_INCLUDE_DIR)
 
-find_package(PackageHandleStandardArgs REQUIRED)
 find_package_handle_standard_args(rxcpp DEFAULT_MSG
     rxcpp_INCLUDE_DIR
     )
 
+
+set(GITHUB https://github.com/Reactive-Extensions/rxcpp.git)
+set(VERSION 1b2e0589f19cb34d8cd58803677701dcf2161876)
+set_target_description(rxcpp "Library for reactive programming" ${URL} ${VERSION})
+
+
 if (NOT rxcpp_FOUND)
   externalproject_add(reactive_extensions_rxcpp
-      GIT_REPOSITORY https://github.com/Reactive-Extensions/rxcpp
-      GIT_TAG 1b2e0589f19cb34d8cd58803677701dcf2161876
+      GIT_REPOSITORY ${URL}
+      GIT_TAG        ${VERSION}
       CONFIGURE_COMMAND ""
       BUILD_COMMAND ""
       INSTALL_COMMAND "" # remove install step
