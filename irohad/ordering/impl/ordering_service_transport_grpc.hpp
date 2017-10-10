@@ -17,8 +17,8 @@
 #ifndef IROHA_ORDERING_SERVICE_TRANSPORT_GRPC_HPP
 #define IROHA_ORDERING_SERVICE_TRANSPORT_GRPC_HPP
 
-#include <block.pb.h>
 #include <google/protobuf/empty.pb.h>
+#include "block.pb.h"
 #include "logger/logger.hpp"
 #include "ordering.grpc.pb.h"
 

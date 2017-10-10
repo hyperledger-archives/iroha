@@ -21,14 +21,13 @@
 #include "logger/logger.hpp"
 #include "network/ordering_service.hpp"
 
-#include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/network/network_mocks.hpp"
 
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
-
 
 using namespace iroha;
 using namespace iroha::ordering;
@@ -48,13 +47,13 @@ static logger::Logger log_ = logger::testLog("OrderingService");
 
 class MockOrderingServiceTransport : public network::OrderingServiceTransport {
  public:
-
   void publishProposal(model::Proposal &&proposal,
                        const std::vector<std::string> &peers) override {
     publishProposal(proposal, peers);
   };
 
-  void subscribe(std::shared_ptr<network::OrderingServiceNotification> subscriber) override {
+  void subscribe(std::shared_ptr<network::OrderingServiceNotification>
+                     subscriber) override {
     subscriber_ = subscriber;
   }
 
@@ -62,29 +61,21 @@ class MockOrderingServiceTransport : public network::OrderingServiceTransport {
                void(const model::Proposal &proposal,
                     const std::vector<std::string> &peers));
 
-  ~MockOrderingServiceTransport() override = default;
-
   std::weak_ptr<network::OrderingServiceNotification> subscriber_;
 };
 
 class OrderingServiceTest : public ::testing::Test {
  public:
-  OrderingServiceTest() {
-    peer.address = address;
-
-  }
+  OrderingServiceTest() { peer.address = address; }
 
   void SetUp() override {
     wsv = std::make_shared<MockPeerQuery>();
     fake_transport = std::make_shared<MockOrderingServiceTransport>();
-
   }
 
-
-  void TearDown() override  {
-    if (loop_thread.joinable())
-      loop_thread.join();
-    }
+  void TearDown() override {
+    if (loop_thread.joinable()) loop_thread.join();
+  }
 
   ~OrderingServiceTest() = default;
 
@@ -92,36 +83,33 @@ class OrderingServiceTest : public ::testing::Test {
   std::shared_ptr<MockOrderingServiceTransport> fake_transport;
   std::condition_variable cv;
   std::mutex m;
-  std::string address {"0.0.0.0:50051"};
+  std::string address{"0.0.0.0:50051"};
   model::Peer peer;
   std::shared_ptr<MockPeerQuery> wsv;
-
 };
 
+TEST_F(OrderingServiceTest, SimpleTest) {
+  // Direct publishProposal call, used for basic case test and for debug
+  // simplicity
 
-TEST_F(OrderingServiceTest, ExampleTest) {
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
 
   auto ordering_service = std::make_shared<OrderingServiceImpl>(
-          wsv, max_proposal, commit_delay, fake_transport);
+      wsv, max_proposal, commit_delay, fake_transport);
   fake_transport->subscribe(ordering_service);
 
   EXPECT_CALL(*fake_transport, publishProposal(_, _)).Times(1);
 
   fake_transport->publishProposal(model::Proposal({}), {});
-
-
 }
 
-
 TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
-
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
 
   auto ordering_service = std::make_shared<OrderingServiceImpl>(
-          wsv, max_proposal, commit_delay, fake_transport);
+      wsv, max_proposal, commit_delay, fake_transport);
   fake_transport->subscribe(ordering_service);
 
   // Init => proposal size 5 => 2 proposals after 10 transactions
@@ -130,15 +118,12 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
   EXPECT_CALL(*wsv, getLedgerPeers())
       .WillRepeatedly(Return(std::vector<Peer>{peer}));
 
-
-
   size_t call_count = 0;
   ON_CALL(*fake_transport, publishProposal(_, _))
       .WillByDefault(Invoke([&](auto, auto) {
         ++call_count;
         cv.notify_one();
       }));
-
 
   for (size_t i = 0; i < 10; ++i) {
     ordering_service->onTransaction(model::Transaction());
@@ -147,7 +132,6 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
   std::unique_lock<std::mutex> lock(m);
   cv.wait_for(lock, 10s, [&] { return call_count == 2; });
 }
-
 
 TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   // Init => proposal timer 400 ms => 10 tx by 50 ms => 2 proposals in 1 second
@@ -159,7 +143,7 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   const size_t commit_delay = 400;
 
   auto ordering_service = std::make_shared<OrderingServiceImpl>(
-          wsv, max_proposal, commit_delay, fake_transport);
+      wsv, max_proposal, commit_delay, fake_transport);
   fake_transport->subscribe(ordering_service);
 
   EXPECT_CALL(*fake_transport, publishProposal(_, _)).Times(2);
@@ -180,4 +164,3 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   ordering_service->onTransaction(model::Transaction());
   cv.wait_for(lk, 10s);
 }
-

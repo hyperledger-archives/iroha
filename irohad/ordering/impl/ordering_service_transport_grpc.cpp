@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "ordering_service_transport_grpc.hpp"
+#include "ordering/impl/ordering_service_transport_grpc.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::model;

@@ -35,7 +35,7 @@ namespace iroha {
     void OrderingServiceImpl::onTransaction(
         const model::Transaction &transaction) {
       queue_.push(transaction);
-      std::cout<<"Got transaction"<<std::endl;
+
       if (queue_.unsafe_size() >= max_size_) {
         handle.unsubscribe();
         updateTimer();
@@ -63,21 +63,18 @@ namespace iroha {
         peers.push_back(peer.address);
       }
       transport_->publishProposal(std::move(proposal), peers);
-
     }
 
-
-
-   void OrderingServiceImpl::updateTimer() {
+    void OrderingServiceImpl::updateTimer() {
       if (not queue_.empty()) {
         this->generateProposal();
       }
       timer = rxcpp::observable<>::timer(
           std::chrono::milliseconds(delay_milliseconds_));
       handle = timer.subscribe_on(rxcpp::observe_on_new_thread())
-          .subscribe([this](auto) {
-            this->updateTimer();
-          });
-    }OrderingServiceImpl::~OrderingServiceImpl() { handle.unsubscribe(); }
+                   .subscribe([this](auto) { this->updateTimer(); });
+    }
+
+    OrderingServiceImpl::~OrderingServiceImpl() { handle.unsubscribe(); }
   }  // namespace ordering
 }  // namespace iroha

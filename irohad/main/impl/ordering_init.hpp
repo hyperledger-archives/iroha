@@ -48,7 +48,8 @@ namespace iroha {
        * @param loop - handler of async events
        */
       auto createService(
-          std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
+          std::shared_ptr<ametsuchi::PeerQuery> wsv,
+          size_t max_size,
           size_t delay_milliseconds,
           std::shared_ptr<network::OrderingServiceTransport> transport);
 

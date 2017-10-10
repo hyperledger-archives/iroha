@@ -18,8 +18,8 @@
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
 
 #include <grpc++/grpc++.h>
-#include "consensus/yac/transport/impl/network_impl.hpp"
 #include "consensus/yac/impl/timer_impl.hpp"
+#include "consensus/yac/transport/impl/network_impl.hpp"
 #include "framework/test_subscriber.hpp"
 
 using ::testing::Return;
@@ -61,12 +61,18 @@ class ConsensusSunnyDayTest : public ::testing::Test {
   uint64_t delay = 3 * 1000;
   std::shared_ptr<Yac> yac;
 
+  static const size_t port = 10001;
+
   void SetUp() override {
     network = std::make_shared<NetworkImpl>(my_peer.address, default_peers);
     crypto = std::make_shared<FixedCryptoProvider>(std::to_string(my_num));
     timer = std::make_shared<TimerImpl>();
-    yac = Yac::create(std::move(YacVoteStorage()), network, crypto, timer,
-                      ClusterOrdering(default_peers), delay);
+    yac = Yac::create(std::move(YacVoteStorage()),
+                      network,
+                      crypto,
+                      timer,
+                      ClusterOrdering(default_peers),
+                      delay);
     network->subscribe(yac);
 
     std::mutex mtx;
@@ -75,8 +81,8 @@ class ConsensusSunnyDayTest : public ::testing::Test {
     thread = std::thread([&cv, this] {
       grpc::ServerBuilder builder;
       int port = 0;
-      builder.AddListeningPort(my_peer.address,
-                               grpc::InsecureServerCredentials(), &port);
+      builder.AddListeningPort(
+          my_peer.address, grpc::InsecureServerCredentials(), &port);
       builder.RegisterService(network.get());
       server = builder.BuildAndStart();
       ASSERT_TRUE(server);
@@ -103,15 +109,14 @@ class ConsensusSunnyDayTest : public ::testing::Test {
 
   static void init(uint64_t num_peers, uint64_t num) {
     my_num = num;
-    my_peer = mk_local_peer(10000 + my_num);
+    my_peer = mk_local_peer(port + my_num);
     for (decltype(num_peers) i = 0; i < num_peers; ++i) {
-      default_peers.push_back(mk_local_peer(10001 + i));
+      default_peers.push_back(mk_local_peer(port + i));
     }
     if (num_peers == 1) {
       delay_before = 0;
       delay_after = 50;
-    }
-    else {
+    } else {
       delay_before = 10 * 1000;
       delay_after = 3 * default_peers.size() + 10 * 1000;
     }
@@ -139,15 +144,14 @@ TEST_F(ConsensusSunnyDayTest, SunnyDayTest) {
 
   YacHash my_hash("proposal_hash", "block_hash");
   yac->vote(my_hash, ClusterOrdering(default_peers));
-  std::this_thread::sleep_for(
-      std::chrono::milliseconds(delay_after));
+  std::this_thread::sleep_for(std::chrono::milliseconds(delay_after));
 
   ASSERT_TRUE(wrapper.validate());
 }
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
-  uint64_t num_peers = 1, my_num = 1;
+  uint64_t num_peers = 1, my_num = 0;
   if (argc == 3) {
     num_peers = std::stoul(argv[1]);
     my_num = std::stoul(argv[2]) + 1;

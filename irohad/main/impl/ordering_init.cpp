@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include <ordering/impl/ordering_service_transport_grpc.hpp>
+#include "ordering/impl/ordering_service_transport_grpc.hpp"
 #include "main/impl/ordering_init.hpp"
 
 namespace iroha {
