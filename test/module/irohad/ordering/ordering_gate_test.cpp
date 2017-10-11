@@ -31,8 +31,10 @@ using namespace iroha::ordering;
 using namespace iroha::model;
 using namespace iroha::network;
 using namespace framework::test_subscriber;
+using namespace std::chrono_literals;
 
 using ::testing::_;
+using ::testing::InvokeWithoutArgs;
 
 class MockOrderingGateTransportGrpcService
     : public proto::OrderingServiceTransportGrpc::Service {
@@ -53,9 +55,7 @@ class OrderingGateTest : public ::testing::Test {
   }
 
   void SetUp() override {
-    std::mutex mtx;
-    std::condition_variable cv;
-    thread = std::thread([&cv, this] {
+    thread = std::thread([this] {
       grpc::ServerBuilder builder;
       int port = 0;
       builder.AddListeningPort(
@@ -71,7 +71,7 @@ class OrderingGateTest : public ::testing::Test {
       server->Wait();
     });
 
-    std::unique_lock<std::mutex> lock(mtx);
+    std::unique_lock<std::mutex> lock(m);
     cv.wait_for(lock, std::chrono::seconds(1));
   }
 
@@ -89,19 +89,27 @@ class OrderingGateTest : public ::testing::Test {
   std::shared_ptr<OrderingGateImpl> gate_impl;
   std::shared_ptr<MockOrderingGateTransportGrpcService> fake_service;
   std::thread thread;
+  std::condition_variable cv;
+  std::mutex m;
 };
 
 TEST_F(OrderingGateTest, TransactionReceivedByServerWhenSent) {
   // Init => send 5 transactions => 5 transactions are processed by server
 
-  EXPECT_CALL(*fake_service, onTransaction(_, _, _)).Times(5);
+  size_t call_count = 0;
+  EXPECT_CALL(*fake_service, onTransaction(_, _, _))
+      .Times(5)
+      .WillRepeatedly(InvokeWithoutArgs([&] {
+        ++call_count;
+        cv.notify_one();
+      }));
 
   for (size_t i = 0; i < 5; ++i) {
     gate_impl->propagate_transaction(std::make_shared<Transaction>());
   }
 
-  // Ensure that server processed the transactions
-  std::this_thread::sleep_for(std::chrono::seconds(1));
+  std::unique_lock<std::mutex> lock(m);
+  cv.wait_for(lock, 10s, [&] { return call_count == 5; });
 }
 
 TEST_F(OrderingGateTest, ProposalReceivedByGateWhenSent) {

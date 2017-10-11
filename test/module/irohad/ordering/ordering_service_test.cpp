@@ -72,13 +72,6 @@ class OrderingServiceTest : public ::testing::Test {
     fake_transport = std::make_shared<MockOrderingServiceTransport>();
   }
 
-  void TearDown() override {
-    if (loop_thread.joinable()) loop_thread.join();
-  }
-
-  ~OrderingServiceTest() = default;
-
-  std::thread loop_thread;
   std::shared_ptr<MockOrderingServiceTransport> fake_transport;
   std::condition_variable cv;
   std::mutex m;
@@ -112,17 +105,16 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
   fake_transport->subscribe(ordering_service);
 
   // Init => proposal size 5 => 2 proposals after 10 transactions
-  EXPECT_CALL(*fake_transport, publishProposal(_, _)).Times(2);
-
-  EXPECT_CALL(*wsv, getLedgerPeers())
-      .WillRepeatedly(Return(std::vector<Peer>{peer}));
-
   size_t call_count = 0;
-  ON_CALL(*fake_transport, publishProposal(_, _))
-      .WillByDefault(Invoke([&](auto, auto) {
+  EXPECT_CALL(*fake_transport, publishProposal(_, _))
+      .Times(2)
+      .WillRepeatedly(InvokeWithoutArgs([&] {
         ++call_count;
         cv.notify_one();
       }));
+
+  EXPECT_CALL(*wsv, getLedgerPeers())
+      .WillRepeatedly(Return(std::vector<Peer>{peer}));
 
   for (size_t i = 0; i < 10; ++i) {
     ordering_service->onTransaction(model::Transaction());
@@ -145,9 +137,9 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
       wsv, max_proposal, commit_delay, fake_transport);
   fake_transport->subscribe(ordering_service);
 
-  EXPECT_CALL(*fake_transport, publishProposal(_, _)).Times(2);
-  ON_CALL(*fake_transport, publishProposal(_, _))
-      .WillByDefault(Invoke([&](auto, auto) {
+  EXPECT_CALL(*fake_transport, publishProposal(_, _))
+      .Times(2)
+      .WillRepeatedly(InvokeWithoutArgs([&] {
         log_->info("Proposal send to grpc");
         cv.notify_one();
       }));
