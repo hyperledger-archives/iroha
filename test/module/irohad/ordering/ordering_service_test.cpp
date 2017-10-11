@@ -16,7 +16,6 @@
  */
 
 #include <grpc++/grpc++.h>
-#include <grpc++/impl/codegen/server_context.h>
 
 #include "logger/logger.hpp"
 #include "network/ordering_service.hpp"

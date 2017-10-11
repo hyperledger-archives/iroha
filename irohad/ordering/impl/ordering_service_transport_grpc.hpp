@@ -46,8 +46,8 @@ namespace iroha {
                                  const protocol::Transaction *request,
                                  ::google::protobuf::Empty *response) override;
 
+      ~OrderingServiceTransportGrpc() = default;
 
-      ~OrderingServiceTransportGrpc()  = default;
      private:
       std::weak_ptr<iroha::network::OrderingServiceNotification> subscriber_;
       model::converters::PbTransactionFactory factory_;

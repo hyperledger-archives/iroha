@@ -19,7 +19,8 @@
 using namespace iroha::ordering;
 
 grpc::Status OrderingGateTransportGrpc::onProposal(
-    ::grpc::ServerContext *context, const proto::Proposal *request,
+    ::grpc::ServerContext *context,
+    const proto::Proposal *request,
     ::google::protobuf::Empty *response) {
   log_->info("receive proposal");
 
@@ -31,7 +32,7 @@ grpc::Status OrderingGateTransportGrpc::onProposal(
 
   model::Proposal proposal(transactions);
   proposal.height = request->height();
-  if(not subscriber_.expired())
+  if (not subscriber_.expired())
     subscriber_.lock()->onProposal(std::move(proposal));
   else
     log_->error("(onProposal) No subscriber");
@@ -49,7 +50,6 @@ void OrderingGateTransportGrpc::propagate_transaction(
     std::shared_ptr<const model::Transaction> transaction) {
   log_->info("Propagate tx (on transport)");
   auto call = new AsyncClientCall;
-
 
   call->response_reader = client_->AsynconTransaction(
       &call->context, factory_.serialize(*transaction), &cq_);

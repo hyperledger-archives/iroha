@@ -18,10 +18,10 @@
 #include "framework/test_subscriber.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
-#include "ordering/impl/ordering_service_transport_grpc.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
+#include "ordering/impl/ordering_service_transport_grpc.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::model;
@@ -43,22 +43,20 @@ class OrderingGateServiceTest : public ::testing::Test {
     counter = 2;
   }
 
-  void SetUp() override { }
+  void SetUp() override {}
 
-  void start()  {
+  void start() {
     std::mutex mtx;
     std::condition_variable cv;
     thread = std::thread([&cv, this] {
       grpc::ServerBuilder builder;
       int port = 0;
-      builder.AddListeningPort(address, grpc::InsecureServerCredentials(),
-                               &port);
+      builder.AddListeningPort(
+          address, grpc::InsecureServerCredentials(), &port);
 
       builder.RegisterService(gate_transport.get());
 
       builder.RegisterService(service_transport.get());
-
-
 
       server = builder.BuildAndStart();
       ASSERT_NE(port, 0);
@@ -69,10 +67,9 @@ class OrderingGateServiceTest : public ::testing::Test {
 
     std::unique_lock<std::mutex> lock(mtx);
     cv.wait_for(lock, std::chrono::seconds(1));
-
   }
 
-  void TearDown() override  {
+  void TearDown() override {
     proposals.clear();
     server->Shutdown();
     if (thread.joinable()) {
@@ -81,8 +78,7 @@ class OrderingGateServiceTest : public ::testing::Test {
   }
 
   TestSubscriber<iroha::model::Proposal> init(size_t times) {
-    auto wrapper =
-        make_test_subscriber<CallExact>(gate->on_proposal(), times);
+    auto wrapper = make_test_subscriber<CallExact>(gate->on_proposal(), times);
     wrapper.subscribe([this](auto proposal) { proposals.push_back(proposal); });
     gate->on_proposal().subscribe([this](auto) {
       counter--;
@@ -99,7 +95,7 @@ class OrderingGateServiceTest : public ::testing::Test {
     std::this_thread::sleep_for(20ms);
   }
 
-  std::string address {"0.0.0.0:50051"};
+  std::string address{"0.0.0.0:50051"};
   std::shared_ptr<OrderingGateImpl> gate;
   std::shared_ptr<OrderingServiceImpl> service;
 
@@ -113,10 +109,7 @@ class OrderingGateServiceTest : public ::testing::Test {
   Peer peer;
   std::shared_ptr<OrderingGateTransportGrpc> gate_transport;
   std::shared_ptr<OrderingServiceTransportGrpc> service_transport;
-
 };
-
-
 
 TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   // 8 transaction -> proposal -> 2 transaction -> proposal
@@ -127,11 +120,9 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   const size_t max_proposal = 100;
   const size_t commit_delay = 400;
 
-
   service = std::make_shared<OrderingServiceImpl>(
       wsv, max_proposal, commit_delay, service_transport);
   service_transport->subscribe(service);
-
 
   start();
   std::unique_lock<std::mutex> lk(m);
@@ -145,7 +136,6 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   send_transaction(8);
   send_transaction(9);
   cv.wait_for(lk, 10s);
-
 
   std::this_thread::sleep_for(1s);
   ASSERT_EQ(proposals.size(), 2);

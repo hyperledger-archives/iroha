@@ -57,8 +57,8 @@ namespace iroha {
        * Publishes proposal over network
        * @param proposal : proposal to be published
        */
-      virtual void publishProposal(model::Proposal&& proposal,
-                                   const std::vector<std::string>& peers) = 0;
+      virtual void publishProposal(model::Proposal &&proposal,
+                                   const std::vector<std::string> &peers) = 0;
 
       virtual ~OrderingServiceTransport() = default;
     };

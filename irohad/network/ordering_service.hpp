@@ -36,6 +36,6 @@ namespace iroha {
        */
       virtual void publishProposal(model::Proposal &&proposal) = 0;
     };
-  }
-}
-#endif //IROHA_ORDERINGSERVICE_H
+  }  // namespace network
+}  // namespace iroha
+#endif  // IROHA_ORDERINGSERVICE_H

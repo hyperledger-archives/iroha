@@ -22,9 +22,9 @@
 #include <memory>
 #include <unordered_map>
 
+#include "network/impl/async_grpc_client.hpp"
 #include "network/ordering_service.hpp"
 #include "network/ordering_service_transport.hpp"
-#include "network/impl/async_grpc_client.hpp"
 
 #include "ametsuchi/peer_query.hpp"
 #include "ordering.grpc.pb.h"
@@ -49,7 +49,8 @@ namespace iroha {
     class OrderingServiceImpl : public network::OrderingService {
      public:
       OrderingServiceImpl(
-          std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
+          std::shared_ptr<ametsuchi::PeerQuery> wsv,
+          size_t max_size,
           size_t delay_milliseconds,
           std::shared_ptr<network::OrderingServiceTransport> transport);
 
@@ -58,24 +59,23 @@ namespace iroha {
        * Enqueues transaction and publishes corresponding event
        * @param transaction
        */
-      void onTransaction(const model::Transaction& transaction) override;
+      void onTransaction(const model::Transaction &transaction) override;
 
       ~OrderingServiceImpl() override;
 
-    protected:
-     /**
-      * Transform model proposal to transport object and send to peers
-      * @param proposal - object for propagation
-      */
-     void publishProposal(model::Proposal &&proposal) override;
+     protected:
+      /**
+       * Transform model proposal to transport object and send to peers
+       * @param proposal - object for propagation
+       */
+      void publishProposal(model::Proposal &&proposal) override;
 
-    private:
+     private:
       /**
        * Collect transactions from queue
        * Passes the generated proposal to publishProposal
        */
-      void generateProposal() override ;
-
+      void generateProposal() override;
 
       /**
        * Method update peers for sending proposal
@@ -103,7 +103,6 @@ namespace iroha {
       const size_t delay_milliseconds_;
       std::shared_ptr<network::OrderingServiceTransport> transport_;
       size_t proposal_height;
-
     };
   }  // namespace ordering
 }  // namespace iroha

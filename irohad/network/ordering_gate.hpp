@@ -18,8 +18,8 @@
 #ifndef IROHA_ORDERING_SERVICE_HPP
 #define IROHA_ORDERING_SERVICE_HPP
 
-#include <model/transaction.hpp>
-#include <model/proposal.hpp>
+#include "model/proposal.hpp"
+#include "model/transaction.hpp"
 #include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
@@ -30,12 +30,12 @@ namespace iroha {
      */
     class OrderingGate {
      public:
-
       /**
        * Propagate a signed transaction for further processing
        * @param transaction
        */
-      virtual void propagate_transaction(std::shared_ptr<const model::Transaction> transaction) = 0;
+      virtual void propagate_transaction(
+          std::shared_ptr<const model::Transaction> transaction) = 0;
 
       /**
        * Return observable of all proposals in the consensus
@@ -45,7 +45,7 @@ namespace iroha {
 
       virtual ~OrderingGate() = default;
     };
-  }//namespace network
-}// namespace iroha
+  }  // namespace network
+}  // namespace iroha
 
-#endif //IROHA_ORDERING_SERVICE_HPP
+#endif  // IROHA_ORDERING_SERVICE_HPP

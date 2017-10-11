@@ -29,10 +29,11 @@ grpc::Status OrderingServiceTransportGrpc::onTransaction(
     ::grpc::ServerContext *context,
     const protocol::Transaction *request,
     ::google::protobuf::Empty *response) {
-  if (subscriber_.expired())
+  if (subscriber_.expired()) {
     log_->error("No subscriber");
-  else
+  } else {
     subscriber_.lock()->onTransaction(*factory_.deserialize(*request));
+  }
 
   return ::grpc::Status::OK;
 }
