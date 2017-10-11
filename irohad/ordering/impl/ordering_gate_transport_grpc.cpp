@@ -19,7 +19,8 @@
 using namespace iroha::ordering;
 
 grpc::Status OrderingGateTransportGrpc::onProposal(
-    ::grpc::ServerContext *context, const proto::Proposal *request,
+    ::grpc::ServerContext *context,
+    const proto::Proposal *request,
     ::google::protobuf::Empty *response) {
   log_->info("receive proposal");
 
@@ -31,23 +32,26 @@ grpc::Status OrderingGateTransportGrpc::onProposal(
 
   model::Proposal proposal(transactions);
   proposal.height = request->height();
-  subscriber_->onProposal(std::move(proposal));
+  if (not subscriber_.expired())
+    subscriber_.lock()->onProposal(std::move(proposal));
+  else
+    log_->error("(onProposal) No subscriber");
 
   return grpc::Status::OK;
 }
 
 OrderingGateTransportGrpc::OrderingGateTransportGrpc(
     const std::string &server_address)
-    : client_(proto::OrderingService::NewStub(grpc::CreateChannel(
+    : client_(proto::OrderingServiceTransportGrpc::NewStub(grpc::CreateChannel(
           server_address, grpc::InsecureChannelCredentials()))),
       log_(logger::log("OrderingGate")) {}
 
 void OrderingGateTransportGrpc::propagate_transaction(
     std::shared_ptr<const model::Transaction> transaction) {
-  log_->info("Propagate tx (on transport");
+  log_->info("Propagate tx (on transport)");
   auto call = new AsyncClientCall;
 
-  call->response_reader = client_->AsyncSendTransaction(
+  call->response_reader = client_->AsynconTransaction(
       &call->context, factory_.serialize(*transaction), &cq_);
 
   call->response_reader->Finish(&call->reply, &call->status, call);
@@ -56,6 +60,5 @@ void OrderingGateTransportGrpc::propagate_transaction(
 void OrderingGateTransportGrpc::subscribe(
     std::shared_ptr<iroha::network::OrderingGateNotification> subscriber) {
   log_->info("Subscribe");
-
   subscriber_ = subscriber;
 }

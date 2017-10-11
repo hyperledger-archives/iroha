@@ -56,7 +56,7 @@ class TestIrohad : public Irohad {
     builder.AddListeningPort(
         peer.address, grpc::InsecureServerCredentials(), &port);
     builder.RegisterService(ordering_init.ordering_gate_transport.get());
-    builder.RegisterService(ordering_init.ordering_service.get());
+    builder.RegisterService(ordering_init.ordering_service_transport.get());
     builder.RegisterService(yac_init.consensus_network.get());
     builder.RegisterService(loader_init.service.get());
     internal_server = builder.BuildAndStart();
@@ -73,7 +73,7 @@ class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
     iroha::ametsuchi::AmetsuchiTest::SetUp();
     genesis_block =
         iroha::model::generators::BlockGenerator().generateGenesisBlock(
-            {"0.0.0.0:10000"});
+            {"0.0.0.0:10001"});
     manager = std::make_shared<iroha::KeysManagerImpl>("node0");
     auto keypair = manager->loadKeys().value();
 

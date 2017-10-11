@@ -5,6 +5,7 @@ services:
     image: hyperledger/iroha-docker-develop
     ports:
       - "50051:50051"
+      - "20000:20000"
     environment:
       - IROHA_POSTGRES_HOST=${COMPOSE_PROJECT_NAME}_postgres_1
       - IROHA_POSTGRES_PORT=5432
@@ -21,7 +22,8 @@ services:
       - ../:/opt/iroha
       - ccache-data:/tmp/ccache
     working_dir: /opt/iroha
-
+    cap_add:
+      - SYS_PTRACE
   redis:
     image: redis:3.2.8
 

@@ -21,12 +21,19 @@
 #include <tbb/concurrent_queue.h>
 #include <memory>
 #include <unordered_map>
+
+#include "network/impl/async_grpc_client.hpp"
+#include "network/ordering_service.hpp"
+#include "network/ordering_service_transport.hpp"
+
 #include "ametsuchi/peer_query.hpp"
+#include "ordering.grpc.pb.h"
+
+#include <rxcpp/rx.hpp>
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/proposal.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "ordering.grpc.pb.h"
-#include <rxcpp/rx.hpp>
 
 namespace iroha {
   namespace ordering {
@@ -39,44 +46,40 @@ namespace iroha {
      * @param delay_milliseconds timer delay
      * @param max_size proposal size
      */
-    class OrderingServiceImpl
-        : public proto::OrderingService::Service,
-          network::AsyncGrpcClient<google::protobuf::Empty> {
+    class OrderingServiceImpl : public network::OrderingService {
      public:
       OrderingServiceImpl(
-          std::shared_ptr<ametsuchi::PeerQuery> wsv, size_t max_size,
-          size_t delay_milliseconds);
+          std::shared_ptr<ametsuchi::PeerQuery> wsv,
+          size_t max_size,
+          size_t delay_milliseconds,
+          std::shared_ptr<network::OrderingServiceTransport> transport);
 
-      grpc::Status SendTransaction(
-          ::grpc::ServerContext *context, const protocol::Transaction *request,
-          ::google::protobuf::Empty *response) override;
-
-      ~OrderingServiceImpl() override;
-
-     private:
       /**
        * Process transaction received from network
        * Enqueues transaction and publishes corresponding event
        * @param transaction
        */
-      void handleTransaction(model::Transaction &&transaction);
+      void onTransaction(const model::Transaction &transaction) override;
 
-      /**
-       * Collect transactions from queue
-       * Passes the generated proposal to publishProposal
-       */
-      void generateProposal();
+      ~OrderingServiceImpl() override;
 
+     protected:
       /**
        * Transform model proposal to transport object and send to peers
        * @param proposal - object for propagation
        */
-      void publishProposal(model::Proposal &&proposal);
+      void publishProposal(model::Proposal &&proposal) override;
+
+     private:
+      /**
+       * Collect transactions from queue
+       * Passes the generated proposal to publishProposal
+       */
+      void generateProposal() override;
 
       /**
        * Method update peers for sending proposal
        */
-      void preparePeersForProposalRound();
 
       /**
        * Update the timer to be called after delay_milliseconds_
@@ -86,12 +89,6 @@ namespace iroha {
       rxcpp::observable<long> timer;
       rxcpp::composite_subscription handle;
       std::shared_ptr<ametsuchi::PeerQuery> wsv_;
-
-      model::converters::PbTransactionFactory factory_;
-
-      std::unordered_map<
-          std::string, std::unique_ptr<proto::OrderingGateTransportGrpc::Stub>>
-          peers_;
 
       tbb::concurrent_queue<model::Transaction> queue_;
 
@@ -104,6 +101,7 @@ namespace iroha {
        *  wait for specified time if queue is empty
        */
       const size_t delay_milliseconds_;
+      std::shared_ptr<network::OrderingServiceTransport> transport_;
       size_t proposal_height;
     };
   }  // namespace ordering

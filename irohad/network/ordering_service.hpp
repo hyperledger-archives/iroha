@@ -15,37 +15,27 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ORDERING_SERVICE_HPP
-#define IROHA_ORDERING_SERVICE_HPP
+#ifndef IROHA_ORDERINGSERVICE_H
+#define IROHA_ORDERINGSERVICE_H
 
-#include "model/proposal.hpp"
-#include "model/transaction.hpp"
-#include <rxcpp/rx-observable.hpp>
+#include "network/ordering_service_transport.hpp"
 
 namespace iroha {
   namespace network {
-
-    /**
-     * Ordering gate provide interface with network transaction order
-     */
-    class OrderingGate {
+    class OrderingService : public network::OrderingServiceNotification {
      public:
       /**
-       * Propagate a signed transaction for further processing
-       * @param transaction
+       * Collect transactions from queue
+       * Passes the generated proposal to publishProposal
        */
-      virtual void propagate_transaction(
-          std::shared_ptr<const model::Transaction> transaction) = 0;
+      virtual void generateProposal() = 0;
 
       /**
-       * Return observable of all proposals in the consensus
-       * @return observable with notifications
+       * Transform model proposal to transport object and send to peers
+       * @param proposal - object for propagation
        */
-      virtual rxcpp::observable<model::Proposal> on_proposal() = 0;
-
-      virtual ~OrderingGate() = default;
+      virtual void publishProposal(model::Proposal &&proposal) = 0;
     };
   }  // namespace network
 }  // namespace iroha
-
-#endif  // IROHA_ORDERING_SERVICE_HPP
+#endif  // IROHA_ORDERINGSERVICE_H
