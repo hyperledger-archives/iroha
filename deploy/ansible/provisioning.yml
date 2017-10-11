@@ -1,25 +1,25 @@
 ---
 - hosts: all
   vars:
-    user: dumitru #your user here
+    user: iroha #your user on the remote machine
 
   tasks:
-    - name: Get docker script 
+    - name: Download docker installation script
       get_url:
         url: https://get.docker.com
         dest: /tmp/script.sh
         mode: 0755
         validate_certs: false
 
-    - name: Execute install script
+    - name: Install docker using downloaded script
       shell: /tmp/script.sh
       args:
         chdir: /tmp
 
-    - name: add user mod
+    - name: Add usermod to run docker from {{ user }} user
       command: usermod -aG docker {{user}}
       become: yes
     
-    - name: start docker service
+    - name: Start docker service
       service: name=docker state=started
       become: yes
