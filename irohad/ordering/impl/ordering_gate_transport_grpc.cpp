@@ -32,10 +32,11 @@ grpc::Status OrderingGateTransportGrpc::onProposal(
 
   model::Proposal proposal(transactions);
   proposal.height = request->height();
-  if (not subscriber_.expired())
+  if (not subscriber_.expired()) {
     subscriber_.lock()->onProposal(std::move(proposal));
-  else
+  } else {
     log_->error("(onProposal) No subscriber");
+  }
 
   return grpc::Status::OK;
 }
