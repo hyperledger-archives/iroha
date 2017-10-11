@@ -31,7 +31,7 @@ namespace iroha {
      public:
       /**
        * Callback on receiving transaction
-       * @param proposal - transaction object itself
+       * @param transaction - transaction object itself
        */
       virtual void onTransaction(const model::Transaction &transaction) = 0;
 
