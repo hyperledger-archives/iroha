@@ -10,7 +10,7 @@ function(strictmode target)
   if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
   (CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
   (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang"))
-    target_compile_options(${target} PRIVATE -Wall -Wpedantic)
+    target_compile_options(${target} PRIVATE -Wall -Wpedantic -Werror -Wno-potentially-evaluated-expression)
   elseif ((CMAKE_CXX_COMPILER_ID STREQUAL "MSVC") OR
   (CMAKE_CXX_COMPILER_ID STREQUAL "Intel"))
     target_compile_options(${target} PRIVATE /W3 /WX)
