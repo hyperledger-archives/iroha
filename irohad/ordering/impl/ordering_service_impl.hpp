@@ -58,7 +58,7 @@ namespace iroha {
        * Enqueues transaction and publishes corresponding event
        * @param transaction
        */
-      void onTransaction(const model::Transaction& tx) override;
+      void onTransaction(const model::Transaction& transaction) override;
 
       ~OrderingServiceImpl() override;
 
