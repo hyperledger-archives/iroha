@@ -77,9 +77,3 @@ endif()
 # must be in the end
 include(cmake/release.cmake)
 
-# prints the list of required packages
-# change to REQUIRED_PACKAGES_FOUND for debug
-feature_summary(WHAT PACKAGES_NOT_FOUND
-    DESCRIPTION "These REQUIRED packages have not been found:"
-    FATAL_ON_MISSING_REQUIRED_PACKAGES
-    )

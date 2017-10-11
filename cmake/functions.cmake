@@ -107,3 +107,23 @@ endmacro()
 macro(remove_line_terminators str output)
   string(REGEX REPLACE "\r|\n" "" ${output} ${str})
 endmacro()
+
+
+macro(get_git_revision commit)
+  find_package(Git)
+  execute_process(
+      COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
+      OUTPUT_VARIABLE ${commit}
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  )
+endmacro()
+
+
+macro(get_current_architecture arch)
+  execute_process(
+      COMMAND dpkg --print-architecture
+      OUTPUT_VARIABLE arch_raw
+  )
+
+  remove_line_terminators(${arch_raw} ${arch})
+endmacro()

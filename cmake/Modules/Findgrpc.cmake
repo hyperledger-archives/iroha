@@ -79,10 +79,3 @@ set_target_properties(grpc++_reflection PROPERTIES
 set_target_properties(grpc_cpp_plugin PROPERTIES
     IMPORTED_LOCATION ${grpc_CPP_PLUGIN}
     )
-
-
-add_install_step_for_lib(${grpc_LIBRARY})
-add_install_step_for_lib(${grpc_grpc++_LIBRARY})
-
-# not sure if it is needed
-#add_install_step_for_lib(${grpc_grpc++_reflection_LIBRARY})

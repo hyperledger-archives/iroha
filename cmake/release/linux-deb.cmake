@@ -1,14 +1,9 @@
 # add deb to list of generators
 list(APPEND CPACK_GENERATOR DEB)
 
-execute_process(
-    COMMAND dpkg --print-architecture
-    OUTPUT_VARIABLE arch_raw
-)
+get_current_architecture(arch)
 
-remove_line_terminators(${arch_raw} arch)
-
-message(STATUS "[package-${arch}] linux-deb standalone can be built")
+message(STATUS "[package-${arch}] linux-deb standalone will be packaged. Use -DNO_DEB to disable.")
 
 set(CPACK_DEBIAN_PACKAGE_NAME          iroha  )
 set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE  ${arch})  # dpkg --print-architecture
