@@ -96,6 +96,11 @@ nonstd::optional<Identifier> check_consistency(const std::string &dump_dir) {
   }
   if (status < 3) {
     log->info("check_consistency({}), directory is empty", dump_dir);
+    auto n = static_cast<uint32_t>(status);
+    for (auto j = 0u; j < n; ++j) {
+      free(namelist[j]);
+    }
+    free(namelist);
     return 0;
   }
 
