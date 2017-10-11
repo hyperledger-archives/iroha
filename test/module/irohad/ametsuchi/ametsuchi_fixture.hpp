@@ -79,7 +79,6 @@ DROP TABLE IF EXISTS role;
         client.connect(redishost_, redisport_);
         client.flushall();
         client.sync_commit();
-        client.disconnect();
 
         iroha::remove_all(block_store_path);
       }
