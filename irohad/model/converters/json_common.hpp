@@ -22,10 +22,6 @@
 #include <string>
 #include <unordered_map>
 
-// omit -Wmacro-redefined
-#ifdef RAPIDJSON_HAS_STDSTRING
-  #undef RAPIDJSON_HAS_STDSTRING
-#endif
 // Enable std::string support in rapidjson
 #define RAPIDJSON_HAS_STDSTRING 1
 #include <rapidjson/document.h>
