@@ -27,8 +27,8 @@
 #define SHA3_TRACE( format, ...)
 #define SHA3_TRACE_BUF( format, buf, l, ...)
 #else
-#define SHA3_TRACE(format, args...)
-#define SHA3_TRACE_BUF(format, buf, l, args...)
+#define SHA3_TRACE(format, ...)
+#define SHA3_TRACE_BUF(format, buf, l)
 #endif
 
 //#define SHA3_USE_KECCAK
