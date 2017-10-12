@@ -75,4 +75,14 @@ find_package(tbb)
 ##########################
 # boost multiprecision   #
 ##########################
-find_package(Boost REQUIRED COMPONENTS filesystem)
+find_package(Boost REQUIRED
+    COMPONENTS
+    filesystem
+    system
+    )
+
+
+##########################
+#       benchmark        #
+##########################
+find_package(benchmark)
