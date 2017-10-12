@@ -21,9 +21,9 @@ namespace shared_model {
   namespace interface {
 
     class Proposal {
-
+      // TODO implement
     };
 
-  } // namespace interface
-} // namespace shared_model
-#endif //IROHA_PROPOSAL_HPP
+  }  // namespace interface
+}  // namespace shared_model
+#endif  // IROHA_PROPOSAL_HPP

@@ -21,9 +21,9 @@ namespace shared_model {
   namespace interface {
 
     class Block {
-
+      // TODO implement
     };
 
-  } // namespace interface
-} // namespace shared_model
-#endif //IROHA_BLOCK_HPP
+  }  // namespace interface
+}  // namespace shared_model
+#endif  // IROHA_BLOCK_HPP

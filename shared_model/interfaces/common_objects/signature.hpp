@@ -24,4 +24,4 @@ namespace shared_model {
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif //IROHA_SIGNATURE_HPP
+#endif  // IROHA_SIGNATURE_HPP

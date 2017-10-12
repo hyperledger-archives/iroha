@@ -18,17 +18,17 @@
 #ifndef IROHA_PRIMITIVE_HPP
 #define IROHA_PRIMITIVE_HPP
 
-#include <typeinfo>
 #include <string>
+#include <typeinfo>
 
 namespace shared_model {
   namespace interface {
 
     class Primitive {
-      virtual std::string toString()  const {
+      virtual std::string toString() const {
         using namespace std::string_literals;
         // TODO rework with format
-        return "Primitive at address["s  + "]";
+        return "Primitive at address["s + "]";
       }
 
       // may be make as friend
@@ -36,11 +36,11 @@ namespace shared_model {
         return typeid(*this) == typeid(primitive) ? equals(primitive) : false;
       }
 
-      bool operator!=(const Primitive &primitive)  const {
-        return not (*this == primitive);
+      bool operator!=(const Primitive &primitive) const {
+        return not(*this == primitive);
       }
 
-      virtual Primitive *copy()  const = 0;
+      virtual Primitive *copy() const = 0;
 
      private:
       // may be provide as template

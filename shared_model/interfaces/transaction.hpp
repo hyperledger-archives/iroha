@@ -51,7 +51,7 @@ namespace shared_model {
      private:
       bool equals(const Primitive &primitive) const override {
         // TODO implement as model comparison (without signatures)
-        // TODO cond. no reason to implement field in lower cast classes
+        // TODO cond. no reason to implement function in lower cast classes
         return true;
       }
     };

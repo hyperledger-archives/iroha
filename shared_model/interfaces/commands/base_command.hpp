@@ -21,9 +21,9 @@ namespace shared_model {
   namespace interface {
 
     class BaseCommand {
-
+      // TODO implement
     };
 
   }  // namespace interface
 }  // namespace shared_model
-#endif //IROHA_BASE_COMMAND_HPP
+#endif  // IROHA_BASE_COMMAND_HPP
