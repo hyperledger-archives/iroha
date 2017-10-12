@@ -56,6 +56,7 @@ message(STATUS "-DENABLE_LIBS_PACKAGING=${ENABLE_LIBS_PACKAGING}")
 SET(IROHA_SCHEMA_DIR "${PROJECT_SOURCE_DIR}/schema")
 include_directories(
   ${PROJECT_SOURCE_DIR}/irohad
+  ${PROJECT_SOURCE_DIR}/shared_model
   ${PROJECT_SOURCE_DIR}/libs
   ${IROHA_SCHEMA_DIR}
 )
@@ -72,7 +73,7 @@ add_subdirectory(schema)
 add_subdirectory(libs)
 add_subdirectory(irohad)
 add_subdirectory(iroha-cli)
-
+add_subdirectory(shared_model)
 
 if(TESTING)
   enable_testing()
