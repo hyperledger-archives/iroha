@@ -7,7 +7,7 @@ find_package_handle_standard_args(rapidjson DEFAULT_MSG
     rapidjson_INCLUDE_DIR
     )
 
-set(GITHUB https://github.com/miloyip/rapidjson.git)
+set(URL https://github.com/miloyip/rapidjson.git)
 set(VERSION f54b0e47a08782a6131cc3d60f94d038fa6e0a51)
 set_target_description(rapidjson "JSON library" ${URL} ${VERSION})
 

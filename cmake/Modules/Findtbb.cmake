@@ -46,3 +46,5 @@ set_target_properties(tbb PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${tbb_INCLUDE_DIR}
     IMPORTED_LOCATION ${tbb_LIBRARY}
     )
+
+#add_install_step_for_lib(${tbb_LIBRARY})

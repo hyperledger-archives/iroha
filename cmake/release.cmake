@@ -1,6 +1,11 @@
 INCLUDE(InstallRequiredSystemLibraries)
 
-SET(CPACK_GENERATOR TGZ)
+if(PACKAGE_TGZ)
+  list(APPEND CPACK_GENERATOR TGZ)
+endif()
+if(PACKAGE_ZIP)
+  list(APPEND CPACK_GENERATOR ZIP)
+endif()
 
 set(CPACK_PACKAGE_NAME "iroha")
 set(CPACK_PACKAGE_VENDOR "Soramitsu LLC")
@@ -28,22 +33,23 @@ SET(CPACK_STRIP_FILES TRUE)
 
 set(CPACK_COMPONENTS_ALL binaries libraries)
 
-if(WIN32)
-  # cmake is running on windows
-elseif (APPLE)
+if (APPLE)
+  message(WARNING "On OSX only TGZ/ZIP packaging is supported")
   # cmake is running on mac os
-  include(cmake/release/osx-bundle.cmake)
+#  include(cmake/release/osx-bundle.cmake)
 elseif(UNIX)
   # cmake is running on unix
 
-  if(NOT NO_DEB)
-    include(cmake/release/linux-deb.cmake)
+  if(PACKAGE_DEB)
+    include(cmake/release/linux/deb/iroha.cmake)
   endif()
 
-  if(NOT NO_RPM)
-    include(cmake/release/linux-rpm.cmake)
+  if(PACKAGE_RPM)
+    include(cmake/release/linux/rpm/iroha.cmake)
   endif()
 
+else()
+  message(WARNING "Packaging is supported only for APPLE and UNIX operating systems.")
 endif()
 
 INCLUDE(CPack)

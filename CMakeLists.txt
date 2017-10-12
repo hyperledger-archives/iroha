@@ -8,13 +8,14 @@ endif()
 
 PROJECT(iroha C CXX)
 
-SET(CMAKE_CXX_FLAGS "-std=c++1y -Wall -fPIC -fPIE")
-SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
+SET(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+SET(CMAKE_CXX_FLAGS "-std=c++1y -Wall")
+SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -s")
 SET(CMAKE_CXX_FLAGS_DEBUG   "-g -Wextra -Wno-unused-parameter -O0")
 SET(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 SET(CMAKE_INSTALL_RPATH "lib:../lib:.")
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+#SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+#SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 if(COVERAGE)
   set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
@@ -34,6 +35,10 @@ option(BENCHMARKING "Build benchmarks"       OFF)
 option(TESTING      "Build tests"            ON )
 option(COVERAGE     "Enable coverage"        OFF)
 option(FUZZING      "Build fuzzing binaries" OFF)
+option(PACKAGE_ZIP  "Create ZIP package"     OFF)
+option(PACKAGE_TGZ  "Create TGZ package"     ON )
+option(PACKAGE_RPM  "Create RPM package"     OFF)
+option(PACKAGE_DEB  "Create DEB package"     OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Debug)
@@ -43,6 +48,10 @@ message(STATUS "-DTESTING=${TESTING}")
 message(STATUS "-DBENCHMARKING=${BENCHMARKING}")
 message(STATUS "-DFUZZING=${FUZZING}")
 message(STATUS "-DCOVERAGE=${COVERAGE}")
+message(STATUS "-DPACKAGE_ZIP=${PACKAGE_ZIP}")
+message(STATUS "-DPACKAGE_TGZ=${PACKAGE_TGZ}")
+message(STATUS "-DPACKAGE_RPM=${PACKAGE_RPM}")
+message(STATUS "-DPACKAGE_DEB=${PACKAGE_DEB}")
 
 SET(IROHA_SCHEMA_DIR "${PROJECT_SOURCE_DIR}/schema")
 include_directories(
@@ -54,6 +63,8 @@ include_directories(
 include(FeatureSummary)
 include(cmake/functions.cmake)
 include(cmake/dependencies.cmake)
+include(cmake/release.cmake)
+
 add_subdirectory(schema)
 add_subdirectory(libs)
 add_subdirectory(irohad)
@@ -74,6 +85,5 @@ if (FUZZING)
 endif()
 
 
-# must be in the end
-include(cmake/release.cmake)
+
 

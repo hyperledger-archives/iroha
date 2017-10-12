@@ -81,25 +81,31 @@ endmacro()
 macro(add_install_step_for_bin target)
   install(TARGETS ${target}
       RUNTIME DESTINATION bin
+      CONFIGURATIONS Release
       COMPONENT binaries)
 endmacro()
+
+
+# does not work (yet) for system libraries, since we need root
+# access to change them.
+#macro(strip_at_install_step path)
+#  # strip library
+#  find_program(STRIP strip)
+#  if(NOT STRIP STREQUAL "STRIP-NOTFOUND")
+#    install(CODE "MESSAGE(STATUS \"stripping ${path}\")")
+#    install(CODE "execute_process(COMMAND ${STRIP} -s ${path})")
+#  endif()
+#endmacro()
 
 
 macro(add_install_step_for_lib libpath)
   # full path with resolved symlinks:
   # /usr/local/lib/libprotobuf.so -> /usr/local/lib/libprotobuf.so.13.0.0
   get_filename_component(lib_major_minor_patch ${libpath} REALPATH)
-  # /usr/local/lib/libprotobuf.so.13.0.0 -> /usr/local/lib/libprotobuf.so.13.0
-  string(REGEX REPLACE "\\.[0-9]+$" "" lib_major_minor ${lib_major_minor_patch})
-  # /usr/local/lib/libprotobuf.so.13.0 -> /usr/local/lib/libprotobuf.so.13
-  string(REGEX REPLACE "\\.[0-9]+$" "" lib_major ${lib_major_minor})
-
-  get_filename_component(lib_major_name ${lib_major} NAME)
 
   install(FILES ${lib_major_minor_patch}
       DESTINATION lib
       CONFIGURATIONS Release
-      RENAME ${lib_major_name}
       COMPONENT libraries)
 endmacro()
 
@@ -116,14 +122,4 @@ macro(get_git_revision commit)
       OUTPUT_VARIABLE ${commit}
       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   )
-endmacro()
-
-
-macro(get_current_architecture arch)
-  execute_process(
-      COMMAND dpkg --print-architecture
-      OUTPUT_VARIABLE arch_raw
-  )
-
-  remove_line_terminators(${arch_raw} ${arch})
 endmacro()

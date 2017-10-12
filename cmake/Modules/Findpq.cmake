@@ -59,3 +59,5 @@ set_target_properties(pq PROPERTIES
 set_target_properties(pg_config PROPERTIES
     IMPORTED_LOCATION ${pg_config_EXECUTABLE}
     )
+
+add_install_step_for_lib(${pq_LIBRARY})

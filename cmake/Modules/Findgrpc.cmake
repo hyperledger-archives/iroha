@@ -1,28 +1,31 @@
 add_library(grpc UNKNOWN IMPORTED)
 add_library(grpc++ UNKNOWN IMPORTED)
 add_library(grpc++_reflection UNKNOWN IMPORTED)
+add_library(gpr UNKNOWN IMPORTED)
 add_executable(grpc_cpp_plugin IMPORTED)
 
-if (FIND_GRPC)
-  find_path(grpc_INCLUDE_DIR grpc/grpc.h)
-  mark_as_advanced(grpc_INCLUDE_DIR)
+find_path(grpc_INCLUDE_DIR grpc/grpc.h)
+mark_as_advanced(grpc_INCLUDE_DIR)
 
-  find_library(grpc_LIBRARY grpc)
-  mark_as_advanced(grpc_LIBRARY)
+find_library(grpc_LIBRARY grpc)
+mark_as_advanced(grpc_LIBRARY)
 
-  find_library(grpc_grpc++_LIBRARY grpc++)
-  mark_as_advanced(grpc_grpc++_LIBRARY)
+find_library(grpc_grpc++_LIBRARY grpc++)
+mark_as_advanced(grpc_grpc++_LIBRARY)
 
-  find_library(grpc_grpc++_reflection_LIBRARY grpc++_reflection)
-  mark_as_advanced(grpc_grpc++_reflection_LIBRARY)
+find_library(grpc_grpc++_reflection_LIBRARY grpc++_reflection)
+mark_as_advanced(grpc_grpc++_reflection_LIBRARY)
 
-  find_program(grpc_CPP_PLUGIN grpc_cpp_plugin)
-  mark_as_advanced(grpc_CPP_PLUGIN)
-endif()
+find_library(gpr_LIBRARY gpr)
+mark_as_advanced(gpr_LIBRARY)
+
+find_program(grpc_CPP_PLUGIN grpc_cpp_plugin)
+mark_as_advanced(grpc_CPP_PLUGIN)
 
 find_package_handle_standard_args(grpc DEFAULT_MSG
     grpc_LIBRARY
     grpc_INCLUDE_DIR
+    gpr_LIBRARY
     grpc_grpc++_reflection_LIBRARY
     grpc_CPP_PLUGIN
     )
@@ -36,7 +39,7 @@ if (NOT grpc_FOUND)
   externalproject_add(grpc_grpc
       GIT_REPOSITORY ${URL}
       GIT_TAG        ${VERSION}
-      CMAKE_ARGS -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_PROTOBUF_PACKAGE_TYPE=CONFIG -DProtobuf_DIR=${EP_PREFIX}/src/google_protobuf-build/lib/cmake/protobuf -DgRPC_ZLIB_PROVIDER=package -DBUILD_SHARED_LIBS=ON
+      CMAKE_ARGS -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_PROTOBUF_PACKAGE_TYPE=CONFIG -DProtobuf_DIR=${EP_PREFIX}/src/google_protobuf-build/lib/cmake/protobuf -DgRPC_ZLIB_PROVIDER=package -DBUILD_SHARED_LIBS=OFF
       PATCH_COMMAND ${GIT_EXECUTABLE} apply ${PROJECT_SOURCE_DIR}/patch/fix-protobuf-package-include.patch || true
       INSTALL_COMMAND "" # remove install step
       TEST_COMMAND "" # remove test step
@@ -79,3 +82,11 @@ set_target_properties(grpc++_reflection PROPERTIES
 set_target_properties(grpc_cpp_plugin PROPERTIES
     IMPORTED_LOCATION ${grpc_CPP_PLUGIN}
     )
+
+set_target_properties(gpr PROPERTIES
+	IMPORTED_LOCATION ${gpr_LIBRARY}
+	)
+
+add_install_step_for_lib(${grpc_LIBRARY})
+add_install_step_for_lib(${grpc_grpc++_LIBRARY})
+add_install_step_for_lib(${gpr_LIBRARY})
