@@ -1,5 +1,3 @@
-#Inventory file, example configuration is presented below
-
 ---
 - hosts: all
   vars:
