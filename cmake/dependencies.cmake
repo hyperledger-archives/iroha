@@ -85,4 +85,8 @@ find_package(Boost REQUIRED
 ##########################
 #       benchmark        #
 ##########################
-find_package(benchmark)
+if(BENCHMARKING)
+  find_package(benchmark)
+endif()
+
+
