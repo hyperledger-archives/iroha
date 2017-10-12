@@ -1,25 +1,34 @@
+#Inventory file, example configuration is presented below
+
 ---
 - hosts: all
   vars:
     user: iroha #your user on the remote machine
 
   tasks:
+    - name: Test if docker is installed
+      command: docker --version
+      register: docker_exists
+      failed_when: false
+
     - name: Download docker installation script
       get_url:
         url: https://get.docker.com
         dest: /tmp/script.sh
         mode: 0755
         validate_certs: false
+      when: docker_exists.rc|int > 0
 
     - name: Install docker using downloaded script
       shell: /tmp/script.sh
       args:
         chdir: /tmp
+      when: docker_exists.rc|int > 0
 
     - name: Add usermod to run docker from {{ user }} user
       command: usermod -aG docker {{user}}
       become: yes
-    
-    - name: Start docker service
+
+    - name: Make sure docker is running
       service: name=docker state=started
       become: yes

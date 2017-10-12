@@ -1,7 +1,11 @@
-#Inventory file, example configuration is presented below
+[centos7]
+35.195.89.33
 
-[CentOS]
-35.195.103.159
+[debian8]
+104.155.33.227
 
-[Ubuntu]
-104.199.58.74
+[ubuntu16]
+35.195.93.48
+
+[all:vars]
+ansible_ssh_user=iroha
