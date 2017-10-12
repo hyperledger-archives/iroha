@@ -64,10 +64,6 @@ if(TESTING)
   add_subdirectory(test)
 endif()
 
-if(BENCHMARKING)
-  add_subdirectory(benchmark)
-endif()
-
 if (FUZZING)
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     add_subdirectory(fuzz)
