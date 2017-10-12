@@ -8,7 +8,7 @@ find_package_handle_standard_args(spdlog DEFAULT_MSG
     )
 
 
-set(GITHUB https://github.com/gabime/spdlog.git)
+set(URL https://github.com/gabime/spdlog.git)
 set(VERSION f85a08622e20b74bff34381cafcb8ef8167b29d0)
 set_target_description(spdlog "Logging library" ${URL} ${VERSION})
 

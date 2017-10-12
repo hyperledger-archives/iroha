@@ -12,7 +12,7 @@ find_package_handle_standard_args(tbb DEFAULT_MSG
     )
 
 
-set(GITHUB https://github.com/01org/tbb.git)
+set(URL https://github.com/01org/tbb.git)
 set(VERSION eb6336ad29450f2a64af5123ca1b9429ff6bc11d)
 set_target_description(tbb "Concurrent queue" ${URL} ${VERSION})
 
