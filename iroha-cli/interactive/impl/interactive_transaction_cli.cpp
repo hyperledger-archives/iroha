@@ -356,7 +356,7 @@ namespace iroha_cli {
       auto asset_id = params[2];
       auto val_int =
           parser::parseValue<boost::multiprecision::uint256_t>(params[3]);
-      auto precision = parser::parseValue<uint8_t>(params[4]);
+      auto precision = parser::parseValue<uint32_t>(params[4]);
       if (not val_int.has_value() || not precision.has_value()) {
         std::cout << "Wrong format for amount" << std::endl;
         return nullptr;

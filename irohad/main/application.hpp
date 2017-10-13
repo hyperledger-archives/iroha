@@ -55,7 +55,7 @@ class Irohad {
    * @param redis_port - port of redis connection
    * @param pg_conn - initialization string for postgre
    * @param torii_port - port for torii binding
-   * @param peer_number - number of peer in ledger // todo replace with pub key
+   * @param keypair - public and private keys for crypto provider
    */
   Irohad(const std::string &block_store_dir,
          const std::string &redis_host,
