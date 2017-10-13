@@ -35,7 +35,7 @@ iroha::model::QueryProcessingFactory::QueryProcessingFactory(
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAssetInfo& query) {
   auto creator = _wsvQuery->getAccount(query.creator_account_id);
-  // TODO: check signatures
+  // TODO 26/09/17 grimadas: check signatures IR-499
   return
       // Creator account exits
       // TODO: add permission check
@@ -45,7 +45,7 @@ bool iroha::model::QueryProcessingFactory::validate(
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetRoles& query) {
   auto creator = _wsvQuery->getAccount(query.creator_account_id);
-  // TODO: check signatures
+  // TODO 26/09/17 grimadas: check signatures IR-499
   return
       // Creator account exits
       // TODO: add permission check
@@ -54,7 +54,7 @@ bool iroha::model::QueryProcessingFactory::validate(
 
 bool QueryProcessingFactory::validate(const model::GetRolePermissions& query) {
   auto creator = _wsvQuery->getAccount(query.creator_account_id);
-  // TODO: check signatures
+  // TODO 26/09/17 grimadas: check signatures IR-499
   return
       // Creator account exits
       // TODO: add permission check
@@ -64,7 +64,7 @@ bool QueryProcessingFactory::validate(const model::GetRolePermissions& query) {
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccount& query) {
   auto creator = _wsvQuery->getAccount(query.creator_account_id);
-  // TODO: check signatures
+  // TODO 20/07/17 grimadas: check signatures IR-499
   return
       // Creator account exits
       creator.has_value() &&
@@ -190,8 +190,6 @@ iroha::model::QueryProcessingFactory::executeGetAccountAssets(
     response.reason = iroha::model::ErrorResponse::NO_ACCOUNT_ASSETS;
     return std::make_shared<iroha::model::ErrorResponse>(response);
   }
-  auto asset = _wsvQuery->getAsset(query.asset_id);
-  // TODO: Add format with precision balance
   iroha::model::AccountAssetResponse response;
   response.acct_asset = acct_asset.value();
   response.query_hash = iroha::hash(query);
@@ -238,7 +236,7 @@ iroha::model::QueryProcessingFactory::executeGetSignatories(
 std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::execute(
     std::shared_ptr<const model::Query> query) {
-  // TODO: change to handler map or/with templates
+  // TODO 26/09/17 Nasrulin: change to handler map or/with templates #VARIANT
   if (instanceof <iroha::model::GetAccount>(query.get())) {
     auto qry = std::static_pointer_cast<const iroha::model::GetAccount>(query);
 

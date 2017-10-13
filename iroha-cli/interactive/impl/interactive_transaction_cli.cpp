@@ -210,7 +210,7 @@ namespace iroha_cli {
     std::shared_ptr<iroha::model::Command>
     InteractiveTransactionCli::parseCreateRole(
         std::vector<std::string> params) {
-      // TODO: implement scheme on working with permissions
+      // TODO grimadas: implement scheme on working with permissions
       auto role = params[0];
       std::vector<std::string> perms = {};
       return std::make_shared<CreateRole>(role, perms);
@@ -343,7 +343,7 @@ namespace iroha_cli {
     std::shared_ptr<iroha::model::Command>
     InteractiveTransactionCli::parseSubtractAssetQuantity(
         std::vector<std::string> params) {
-      // TODO: implement
+      // TODO 13/09/17 grimadas: implement command IR-498
       std::cout << "Not implemented" << std::endl;
       return nullptr;
     }

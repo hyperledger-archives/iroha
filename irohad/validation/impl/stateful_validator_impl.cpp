@@ -71,7 +71,7 @@ namespace iroha {
     bool StatefulValidatorImpl::signaturesSubset(
         const model::Transaction::SignaturesType &signatures,
         const std::vector<pubkey_t> &public_keys) {
-      // TODO simplify the subset verification
+        // TODO 09/10/17 Lebedev: simplify the subset verification IR-510 #goodfirstissue
       std::set<pubkey_t> txPubkeys;
       for (auto sign : signatures) {
         txPubkeys.insert(sign.pubkey);

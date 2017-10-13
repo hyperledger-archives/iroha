@@ -36,7 +36,6 @@ namespace iroha {
       /**
        * Calculated as hash(PAYLOAD field)
        * NOT a part of payload
-       * TODO: replace by a method call
        */
       hash256_t hash{};
 

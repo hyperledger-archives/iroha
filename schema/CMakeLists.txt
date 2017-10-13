@@ -21,7 +21,6 @@ compile_proto_to_cpp(commands.proto)
 compile_proto_to_cpp(queries.proto)
 compile_proto_to_cpp(responses.proto)
 compile_proto_to_grpc_cpp(endpoint.proto)
-compile_proto_to_grpc_cpp(peer_service.proto)
 compile_proto_to_grpc_cpp(yac.proto)
 compile_proto_to_grpc_cpp(ordering.proto)
 compile_proto_to_grpc_cpp(loader.proto)
@@ -45,15 +44,6 @@ target_link_libraries(endpoint
     protobuf
     grpc++
     schema
-    )
-
-add_library(peer_service_grpc
-    peer_service.grpc.pb.cc
-    peer_service.pb.cc
-    )
-target_link_libraries(peer_service_grpc
-    protobuf
-    grpc++
     )
 
 add_library(yac_grpc

@@ -32,7 +32,7 @@ using ::testing::AllOf;
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
 
-// TODO: refactor and move to model
+// TODO 26/09/17 grimadas: refactor (check CommandValidateExecuteTest test) IR-513
 
 /**
  * Variables for testing

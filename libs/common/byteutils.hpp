@@ -23,9 +23,7 @@
 #include <nonstd/optional.hpp>
 
 #include "crypto/base64.hpp"
-extern "C" {
-#include "crypto/lookup3.h"
-}
+
 #include "common/types.hpp"
 
 namespace iroha {
@@ -56,17 +54,6 @@ namespace iroha {
   nonstd::optional<blob_t<size>> hexstringToArray(const std::string &string) {
     return hexstringToBytestring(string) | stringToBlob<size>;
   }
-}
-
-// extend namespace std with custom hashing function for public key
-namespace std {
-
-  template <>
-  struct hash<iroha::pubkey_t> {
-    size_t operator()(const iroha::pubkey_t &pub) const {
-      return hashlittle(pub.data(), pub.size(), 1337);
-    }
-  };
 }
 
 #endif  // IROHA_BYTEUTILS_H

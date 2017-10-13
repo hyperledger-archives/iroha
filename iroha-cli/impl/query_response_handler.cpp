@@ -75,7 +75,7 @@ namespace iroha_cli {
     auto account = response.account_response().account();
     log_->info("[Account]:");
     log_->info("-Id:- {}", account.account_id());
-    // TODO : print permissions
+    // TODO 06/08/17 grimadas: print roles IR-506
     log_->info("-Domain- {}", account.domain_name());
   }
 
@@ -106,7 +106,7 @@ namespace iroha_cli {
     std::for_each(txs.begin(), txs.end(), [this](auto tx) {
       log_->info("-[tx]-");
       log_->info("--[Creator Id] -- {}", tx.payload().creator_account_id());
-      // TODO: add other fields: tx head, tx body
+      // TODO 13/09/17 grimadas: add other fields: tx head, tx body IR-507
     });
   }
 

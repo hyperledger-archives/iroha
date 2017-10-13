@@ -36,6 +36,8 @@ namespace iroha_cli {
     auto pb_tx = factory.serialize(tx);
     // Send to iroha:
     response.status = command_client_.Torii(pb_tx);
+
+    //TODO 12/10/2017 neewy implement return of real transaction status IR-494
     response.answer = TxStatus::OK;
 
     return response;

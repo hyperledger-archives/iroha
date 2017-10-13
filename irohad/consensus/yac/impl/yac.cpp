@@ -159,7 +159,7 @@ namespace iroha {
 
           if (answer->reject.has_value()) {
             log_->warn("reject case");
-            // todo work on reject case
+            // TODO 14/08/17 Muratov: work on reject case IR-497
           }
           vote_storage_.markAsProcessedState(proposal_hash);
         }
@@ -167,7 +167,7 @@ namespace iroha {
       };
 
       void Yac::applyReject(model::Peer from, RejectMessage reject) {
-        // todo apply to vote storage
+        // TODO 01/08/17 Muratov: apply to vote storage IR-497
         closeRound();
       };
 

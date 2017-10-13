@@ -57,8 +57,7 @@ namespace std {
   template<>
   struct hash<iroha::model::Peer> {
     std::size_t operator()(const iroha::model::Peer &obj) const {
-      // todo add pubkey hash combination to result
-      return std::hash<std::string>()(obj.address);
+      return std::hash<std::string>()(obj.address + obj.pubkey.to_string());
     }
   };
 }

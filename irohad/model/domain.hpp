@@ -25,7 +25,6 @@ namespace iroha {
 
     /**
      * Domain Model
-     * //TODO: rethink in next version, currently only default domain is used
      */
     struct Domain {
       /**

@@ -106,7 +106,7 @@ namespace iroha {
           const std::string &account_id,
           const std::string &asset_id,
           const Amount &amount) {
-        // TODO: implement
+        // TODO 13/09/17 grimadas: implement IR-498
         return nullptr;
       }
 

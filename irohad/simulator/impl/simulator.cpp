@@ -68,8 +68,8 @@ namespace iroha {
       new_block.prev_hash = last_block.value().hash;
       new_block.transactions = proposal.transactions;
       new_block.txs_number = proposal.transactions.size();
-      new_block.created_ts = 0; // todo set timestamp from proposal
-      new_block.merkle_root.fill(0); // todo make effective impl
+      new_block.created_ts = 0; // TODO 14/08/17 Muratov set timestamp from proposal & for new model IR-501
+      new_block.merkle_root.fill(0); // TODO 14/08/17 Muratov make effective impl IR-464
       new_block.hash = hash(new_block);
       crypto_provider_->sign(new_block);
 
