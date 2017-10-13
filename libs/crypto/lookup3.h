@@ -21,7 +21,7 @@
 #include <stdint.h> // for uint32_t
 #include <stddef.h> // for size_t
 
-/// TODO there are more functions, but we use only this
+// TODO 19/07/17 there are more functions, but we use only this IR-???
 
 uint32_t hashlittle( const void *key, size_t length, uint32_t initval);
 

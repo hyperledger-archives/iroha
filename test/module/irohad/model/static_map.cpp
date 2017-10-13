@@ -27,7 +27,7 @@ using namespace std;
 using namespace iroha::model;
 
 TEST(HandlerTest, CommandRegistration) {
-  auto log = logger::log("HandlerTest"); // todo switch with test logger
+  auto log = logger::testLog("HandlerTest");
 
   CommandRegistry registry;
 
@@ -40,7 +40,7 @@ TEST(HandlerTest, CommandRegistration) {
 }
 
 TEST(HandlerTest, QueryRegistration) {
-  auto log = logger::log("HandlerTest"); // todo switch with test logger
+  auto log = logger::testLog("HandlerTest");
 
   QueryRegistry registry;
 
@@ -53,7 +53,7 @@ TEST(HandlerTest, QueryRegistration) {
 }
 
 TEST(HandlerTest, QueryResponseRegistration) {
-  auto log = logger::log("HandlerTest"); // todo switch with test logger
+  auto log = logger::testLog("HandlerTest");
 
   QueryResponseRegistry registry;
 
@@ -66,7 +66,7 @@ TEST(HandlerTest, QueryResponseRegistration) {
 }
 
 TEST(HandlerTest, TransactionResponseRegistration) {
-  auto log = logger::log("HandlerTest"); // todo switch with test logger
+  auto log = logger::testLog("HandlerTest");
 
   TransactionResponseRegistry registry;
 

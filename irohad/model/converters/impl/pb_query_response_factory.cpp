@@ -27,7 +27,7 @@ namespace iroha {
       PbQueryResponseFactory::serialize(
           const std::shared_ptr<QueryResponse> query_response) const {
         nonstd::optional<protocol::QueryResponse> response = nonstd::nullopt;
-        // TODO: refactor
+        // TODO 26/09/17 grimadas: refactor IR-???
         if (instanceof <model::ErrorResponse>(*query_response)) {
           response = nonstd::make_optional<protocol::QueryResponse>();
           auto er = static_cast<model::ErrorResponse &>(*query_response);

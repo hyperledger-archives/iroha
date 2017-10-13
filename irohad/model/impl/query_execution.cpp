@@ -191,7 +191,7 @@ iroha::model::QueryProcessingFactory::executeGetAccountAssets(
     return std::make_shared<iroha::model::ErrorResponse>(response);
   }
   auto asset = _wsvQuery->getAsset(query.asset_id);
-  // TODO: Add format with precision balance
+  // TODO: Add format with precision balance IR-???
   iroha::model::AccountAssetResponse response;
   response.acct_asset = acct_asset.value();
   response.query_hash = iroha::hash(query);

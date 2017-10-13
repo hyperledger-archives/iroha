@@ -33,7 +33,7 @@ void runQueryTest(std::shared_ptr<Query> query){
   ASSERT_TRUE(pb_query.has_value());
   auto res_query = queryFactory.deserialize(pb_query.value());
   ASSERT_TRUE(res_query.has_value());
-  // TODO: overload operator == for queries and replace with it
+  // TODO 26/09/17 grimadas: overload operator == for queries and replace with it IR-???
   ASSERT_EQ(iroha::hash(*res_query.value()), iroha::hash(*query));
 }
 
@@ -45,7 +45,7 @@ TEST(PbQueryFactoryTest, SerializeGetAccount){
   ASSERT_TRUE(pb_query.has_value());
   auto res_query = queryFactory.deserialize(pb_query.value());
   ASSERT_TRUE(res_query.has_value());
-  // TODO: overload operator == for queries and replace with it
+  // TODO 26/09/17 grimadas: overload operator == for queries and replace with it IR-???
   ASSERT_EQ(iroha::hash(*res_query.value()), iroha::hash(*query));
 }
 
@@ -57,7 +57,7 @@ TEST(PbQueryFactoryTest, SerializeGetAccountAssets){
   ASSERT_TRUE(pb_query.has_value());
   auto res_query = queryFactory.deserialize(pb_query.value());
   ASSERT_TRUE(res_query.has_value());
-  // TODO: overload operator == for queries and replace with it
+  // TODO 26/09/17 grimadas: overload operator == for queries and replace with it IR-???
   ASSERT_EQ(iroha::hash(*res_query.value()), iroha::hash(*query));
 }
 
@@ -69,7 +69,7 @@ TEST(PbQueryFactoryTest, SerializeGetAccountTransactions){
   ASSERT_TRUE(pb_query.has_value());
   auto res_query = queryFactory.deserialize(pb_query.value());
   ASSERT_TRUE(res_query.has_value());
-  // TODO: overload operator == for queries and replace with it
+  // TODO 26/09/17 grimadas: overload operator == for queries and replace with it IR-???
   ASSERT_EQ(iroha::hash(*res_query.value()), iroha::hash(*query));
 }
 
@@ -81,7 +81,7 @@ TEST(PbQueryFactoryTest, SerializeGetSignatories){
   ASSERT_TRUE(pb_query.has_value());
   auto res_query = queryFactory.deserialize(pb_query.value());
   ASSERT_TRUE(res_query.has_value());
-  // TODO: overload operator == for queries and replace with it
+  // TODO 26/09/17 grimadas: overload operator == for queries and replace with it IR-???
   ASSERT_EQ(iroha::hash(*res_query.value()), iroha::hash(*query));
 }
 

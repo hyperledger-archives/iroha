@@ -32,7 +32,7 @@ using ::testing::AllOf;
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
 
-// TODO: refactor and move to model
+// TODO 26/09/17 grimadas: refactor and move to model IR-???
 
 /**
  * Variables for testing

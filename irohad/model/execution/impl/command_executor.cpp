@@ -69,7 +69,7 @@ bool AppendRoleExecutor::hasPermissions(const Command &command,
 
 bool AppendRoleExecutor::isValid(const Command &command,
                                  ametsuchi::WsvQuery &queries) {
-  // TODO: check. No additional checks required ?
+  // TODO 26/09/17 grimadas: check. No additional checks required IR-???
   return true;
 }
 
@@ -91,7 +91,7 @@ bool CreateRoleExecutor::execute(const Command &command,
 bool CreateRoleExecutor::hasPermissions(const Command &command,
                                         ametsuchi::WsvQuery &queries,
                                         const Account &creator) {
-  // TODO: implement
+  // TODO: implement OK
   return true;
 }
 
@@ -159,7 +159,7 @@ bool RevokePermissionExecutor::hasPermissions(const Command &command,
 
 bool RevokePermissionExecutor::isValid(const Command &command,
                                       ametsuchi::WsvQuery &queries) {
-  // TODO: check. Add checks on naming of the role
+  // TODO: check. Add checks on naming of the role WHY NO CHECKS OF role naming?
   return true;
 }
 

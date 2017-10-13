@@ -330,7 +330,7 @@ namespace iroha {
           const model::Command &command) {
         PbCommandFactory commandFactory;
         auto cmd = protocol::Command();
-        // TODO: refactor this
+        // TODO 26/09/17 grimadas: refactor this IR-???
 
         // -----|CreateRole|-----
         if (instanceof <model::CreateRole>(command)) {
