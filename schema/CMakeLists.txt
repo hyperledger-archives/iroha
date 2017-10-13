@@ -86,3 +86,4 @@ target_link_libraries(mst_grpc
     schema
     grpc++
     )
+
