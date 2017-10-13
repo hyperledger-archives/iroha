@@ -27,7 +27,7 @@ namespace iroha {
 
       model::Peer ClusterOrdering::currentLeader() {
         if (index_ >= order_.size()) {
-          index_ = 0;  // todo dangerous indexing, what if order_.size == 0?
+          index_ = 0;  // TODO 01/08/17 Muratov: dangerous indexing, what if order_.size == 0? IR-???
         }
         return order_.at(index_);
       }

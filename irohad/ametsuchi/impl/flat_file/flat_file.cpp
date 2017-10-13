@@ -26,7 +26,7 @@ using namespace iroha::ametsuchi;
 
 const uint32_t DIGIT_CAPACITY = 16;
 
-// todo rework separator with platform independent approach
+// TODO 19/08/17 Muratov rework separator with platform independent approach IR-495
 const std::string SEPARATOR = "/";
 
 /**
@@ -135,7 +135,7 @@ long file_size(const std::string &filename) {
 std::unique_ptr<FlatFile> FlatFile::create(const std::string &path) {
   auto log_ = logger::log("FlatFile::create()");
 
-  // todo change creating folder with system independent approach
+  // TODO 19/08/17 Muratov change creating folder with system independent approach IR-496
   if (mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1) {
     if (errno != EEXIST) {
       log_->error("Cannot create storage dir: {}", path);

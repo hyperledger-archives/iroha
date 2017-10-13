@@ -25,7 +25,7 @@ namespace iroha {
 
     /**
      * Domain Model
-     * //TODO: rethink in next version, currently only default domain is used
+     * //TODO 12/07/17 Grimadas: rethink in next version, currently only default domain is used IR-???
      */
     struct Domain {
       /**

@@ -22,7 +22,7 @@
 namespace iroha_cli {
 
   bool validate_port(const char*, gflags::int32 port) {
-    // fixme port max num macro
+    // FIXME 25/07/17 Kitsu port max num macro
     if (port > 0 && port < 65535) return 1;
 
     std::cout<<"Port can be only in range (0, 32768)\n";
@@ -33,7 +33,7 @@ namespace iroha_cli {
     std::stringstream ss(s);
     std::string tmp;
     while (std::getline(ss, tmp, ';')){
-      // fixme macro
+      // FIXME 25/07/17 Kitsu macro
       if (tmp.size() != 32) {
         printf("\"%s\" doesn't look like pubkey (size != 32)\n", tmp.c_str());
         return 0;

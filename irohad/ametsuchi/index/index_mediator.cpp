@@ -34,10 +34,10 @@ namespace iroha {
       iroha::protocol::Block block;
       block.ParseFromArray(blob.data(), blob.size());
       ametsuchi_->insert_block_index(last_block_id_index,
-                                     std::string());  // TODO calculate hash
+                                     std::string());  // TODO 19/06/17 Lebedev: calculate hash
       for (int i = 0; i < block.body().txs_size(); ++i) {
         ametsuchi_->insert_tx_index(
-            i, std::string(), last_block_id_index);  // TODO calculate hash
+            i, std::string(), last_block_id_index);  // TODO 19/06/17 Lebedev: calculate hash
       }
     }
   }

@@ -17,7 +17,7 @@
 #ifndef IROHA_SUBTRACT_ASSET_QUANTITY_HPP
 #define IROHA_SUBTRACT_ASSET_QUANTITY_HPP
 
-// TODO: implement in next versions
+// TODO 12/07/17 grimadas: implement in next versions IR-498
 // Subtract asset quantity from a given account from the system.
 // Only issuer can do this
 

@@ -35,7 +35,7 @@ namespace iroha_cli {
       T answer;
     };
 
-    //TODO: check if we need more status codes
+    //TODO 13/09/17 luckychess: check if we need more status codes IR-494
     enum TxStatus { OK };
 
     CliClient(std::string target_ip, int port);

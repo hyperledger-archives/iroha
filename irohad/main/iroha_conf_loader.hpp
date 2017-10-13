@@ -26,7 +26,7 @@
 
 namespace config_members {
   const char* BlockStorePath = "block_store_path";
-  const char* ToriiPort = "torii_port";  // TODO: Needs AddPeer.
+  const char* ToriiPort = "torii_port";
   const char* KeyPairPath = "key_pair_path";
   const char* PgOpt = "pg_opt";
   const char* RedisHost = "redis_host";
