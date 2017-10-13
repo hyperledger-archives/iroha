@@ -56,8 +56,6 @@ inline rapidjson::Document parse_iroha_config(std::string const& iroha_conf_path
   assert_fatal(doc[mbr::ToriiPort].IsUint(),
                type_error(mbr::ToriiPort, "uint"));
 
-  // TODO restore key pair path parameter when crypto is ready
-
   assert_fatal(doc.HasMember(mbr::PgOpt), no_member_error(mbr::PgOpt));
   assert_fatal(doc[mbr::PgOpt].IsString(), type_error(mbr::PgOpt, "string"));
 
