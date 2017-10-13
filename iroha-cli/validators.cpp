@@ -22,7 +22,7 @@
 namespace iroha_cli {
 
   bool validate_port(const char*, gflags::int32 port) {
-    //TODO 13/10/2017 neewy: Use iroha::network::util::is_port_valid
+    // TODO 13/10/2017 neewy: Use iroha::network::util::is_port_valid IR-509 #goodfirstissue
     if (port > 0 && port < 65535) return 1;
 
     std::cout<<"Port can be only in range (0, 65535)\n";

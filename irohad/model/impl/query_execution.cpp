@@ -190,8 +190,6 @@ iroha::model::QueryProcessingFactory::executeGetAccountAssets(
     response.reason = iroha::model::ErrorResponse::NO_ACCOUNT_ASSETS;
     return std::make_shared<iroha::model::ErrorResponse>(response);
   }
-  auto asset = _wsvQuery->getAsset(query.asset_id);
-  // TODO: Add format with precision balance IR-???
   iroha::model::AccountAssetResponse response;
   response.acct_asset = acct_asset.value();
   response.query_hash = iroha::hash(query);
@@ -238,7 +236,7 @@ iroha::model::QueryProcessingFactory::executeGetSignatories(
 std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::execute(
     std::shared_ptr<const model::Query> query) {
-  // TODO 26/09/17 Nasrulin: change to handler map or/with templates IR-???
+  // TODO 26/09/17 Nasrulin: change to handler map or/with templates #VARIANT
   if (instanceof <iroha::model::GetAccount>(query.get())) {
     auto qry = std::static_pointer_cast<const iroha::model::GetAccount>(query);
 

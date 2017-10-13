@@ -33,7 +33,7 @@ namespace iroha {
 
       nonstd::optional<ClusterOrdering> PeerOrdererImpl::getOrdering(
           YacHash hash) {
-        // TODO 01/08/17 Muratov: implement effective ordering based on hash value IR-???
+        // TODO 01/08/17 Muratov: implement effective ordering based on hash value IR-504
         return getInitialOrdering();
       }
 

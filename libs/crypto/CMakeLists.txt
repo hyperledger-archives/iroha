@@ -35,10 +35,6 @@ target_link_libraries(crypto
     hash
     )
 
-add_library(lookup3
-    lookup3.c
-    )
-
 add_library(keys_manager
     keys_manager_impl.cpp
     )

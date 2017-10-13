@@ -142,7 +142,6 @@ int main(int argc, char *argv[]) {
     output_file << jsonToString(doc);
     logger->info("File saved to genesis.block");
   } else if (FLAGS_interactive) {
-    // TODO 13/09/17 grimadas: add login logic (e.g. password check) IR-???
     if (FLAGS_name.empty()) {
       logger->error("Specify account name");
       return -1;

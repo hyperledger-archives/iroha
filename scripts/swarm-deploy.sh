@@ -55,7 +55,7 @@ do
     done
 
     # generate config
-    # TODO 22/08/17 Lebedev: replace with environment variables IR-???
+    # TODO 22/08/17 Lebedev: replace with environment variables IR-502
     echo "{
       \"block_store_path\" : \"/tmp/block_store/\",
       \"torii_port\" : 50051,

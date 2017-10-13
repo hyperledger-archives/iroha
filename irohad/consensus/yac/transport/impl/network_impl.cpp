@@ -107,7 +107,6 @@ namespace iroha {
         auto it = context->client_metadata().find("address");
         if (it == context->client_metadata().end()) {
           log_->error("Missing source address");
-          // TODO 01/08/17 Lebedev: handle missing source address IR-???
           return grpc::Status::CANCELLED;
         }
         auto address = std::string(it->second.data(), it->second.size());
@@ -129,7 +128,6 @@ namespace iroha {
         auto it = context->client_metadata().find("address");
         if (it == context->client_metadata().end()) {
           log_->error("Missing source address");
-          // TODO 01/08/17 Lebedev: handle missing source address IR-???
           return grpc::Status::CANCELLED;
         }
         auto address = std::string(it->second.data(), it->second.size());
@@ -156,7 +154,6 @@ namespace iroha {
         auto it = context->client_metadata().find("address");
         if (it == context->client_metadata().end()) {
           log_->error("Missing source address");
-          // TODO 01/08/17 Lebedev: handle missing source address IR-???
           return grpc::Status::CANCELLED;
         }
         auto address = std::string(it->second.data(), it->second.size());

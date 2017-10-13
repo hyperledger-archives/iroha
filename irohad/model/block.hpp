@@ -36,7 +36,6 @@ namespace iroha {
       /**
        * Calculated as hash(PAYLOAD field)
        * NOT a part of payload
-       * TODO 27/09/17 luckychess: replace by a method call IR-???
        */
       hash256_t hash{};
 

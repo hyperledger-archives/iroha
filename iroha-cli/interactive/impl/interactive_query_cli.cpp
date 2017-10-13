@@ -178,7 +178,7 @@ namespace iroha_cli {
         QueryParams params) {
       auto asset_id = params[0];
       auto query = std::make_shared<GetAssetInfo>(asset_id);
-      //TODO 26/09/17 grimadas: refactor, move query meta data outside of this function
+      //TODO 26/09/17 grimadas: remove duplicated code and move setQueryMetaData calls to private method IR-508 #goodfirstissue
       generator_.setQueryMetaData(query, local_time_, creator_, counter_);
       return query;
     }
