@@ -2,6 +2,15 @@
 - hosts: all
   vars:
     user: iroha #your user on the remote machine
+    tmp: "{{9999999 | random | to_uuid }}"
+
+    postgres_host: iroha_postgres
+    postgres_user: '{{ user }}'
+    postgres_passwd: "{{ tmp[:8] }}"
+    postgres_port: 5432
+
+    redis_host: iroha_redis
+    redis_port: 6379
 
   tasks:
     - name: Test if docker is installed
@@ -27,6 +36,90 @@
       command: usermod -aG docker {{user}}
       become: yes
 
+    - name: Reconnect to use Docker as {{ user }}
+      shell: sleep 1; pkill -u {{ ansible_ssh_user }} sshd
+      async: 3
+      poll: 2
+
     - name: Make sure docker is running
       service: name=docker state=started
       become: yes
+
+
+    - name: Write env file
+      blockinfile:
+        dest: "{{ ansible_env.HOME }}/.bashrc.d"
+        block: |
+          export POSTGRES_HOST={{ postgres_host }}
+          export POSTGRES_PORT={{ postgres_port }}
+          export POSTGRES_PASSWORD={{ postgres_passwd }}
+          export POSTGRES_USER={{ postgres_user }}
+          export REDIS_HOST={{ redis_host }}
+          export REDIS_PORT={{ redis_port }}
+        insertbefore: BOF
+        create: yes
+
+    - name: Install python-pip
+      package:
+        update_cache: yes
+        name: python-pip
+        state: present
+      become: yes
+
+    - name: Install py-docker
+      pip:
+        name: docker
+      become: yes
+
+    - name: Setup iroha docker network
+      docker_network:
+        name: iroha_network
+
+
+    - name: Run postgres in docker
+      docker_container:
+        name: iroha_postgres
+        image: postgres:9.5
+        state: started
+        restart: yes
+        env:
+          IROHA_POSTGRES_USER: '{{ user }}'
+          IROHA_POSTGRES_PASSWORD: '{{ postgres_passwd }}'
+        networks:
+          - name: iroha_network
+        volumes:
+          - /opt/iroha/data/postgres:/var/lib/postgresql/data
+
+    - name: Run redis in docker
+      docker_container:
+        name: iroha_redis
+        image: redis:3.2.8
+        state: started
+        restart: yes
+        networks:
+          - name: iroha_network
+
+
+    - name: Run iroha in docker
+      docker_container:
+        name: iroha
+        image: hyperledger/iroha-docker
+        state: started
+        restart: yes
+        ports:
+          - "50051:50051"
+        networks:
+          - name: iroha_network
+        volumes:
+          - ../:/opt/iroha
+          - ccache-data:/tmp/ccache
+        working_dir: /opt/iroha
+        env:
+          POSTGRES_HOST={{ postgres_host }}
+          POSTGRES_PORT={{ postgres_port }}
+          POSTGRES_PASSWORD={{ postgres_passwd }}
+          POSTGRES_USER={{ postgres_user }}
+          REDIS_HOST={{ redis_host }}
+          REDIS_PORT={{ redis_port }}
+
+        command: /bin/bash -c "while sleep 1; do echo 1; done"
