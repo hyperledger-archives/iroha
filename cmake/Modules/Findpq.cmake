@@ -13,7 +13,6 @@ mark_as_advanced(pq_LIBRARY)
 find_program(pg_config_EXECUTABLE pg_config)
 mark_as_advanced(pg_config_EXECUTABLE)
 
-find_package(PackageHandleStandardArgs REQUIRED)
 find_package_handle_standard_args(pq DEFAULT_MSG
     pq_INCLUDE_DIR
     postgres_INCLUDE_DIR
@@ -21,10 +20,16 @@ find_package_handle_standard_args(pq DEFAULT_MSG
     pg_config_EXECUTABLE
     )
 
+
+set(URL https://git.postgresql.org/git/postgresql.git)
+set(VERSION 029386ccbddd0a33d481b94e511f5219b03e6636)
+set_target_description(pq "C postgres client library" ${URL} ${VERSION})
+
+
 if (NOT pq_FOUND)
   externalproject_add(postgres_postgres
-      GIT_REPOSITORY https://git.postgresql.org/git/postgresql
-      GIT_TAG 029386ccbddd0a33d481b94e511f5219b03e6636
+      GIT_REPOSITORY  ${URL}
+      GIT_TAG         ${VERSION}
       CONFIGURE_COMMAND ./configure --without-readline
       BUILD_IN_SOURCE 1
       BUILD_COMMAND $(MAKE) -C ./src/bin/pg_config && $(MAKE) -C ./src/interfaces/libpq
@@ -54,3 +59,7 @@ set_target_properties(pq PROPERTIES
 set_target_properties(pg_config PROPERTIES
     IMPORTED_LOCATION ${pg_config_EXECUTABLE}
     )
+
+if(ENABLE_LIBS_PACKAGING)
+  add_install_step_for_lib(${pq_LIBRARY})
+endif()

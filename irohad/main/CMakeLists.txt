@@ -63,3 +63,5 @@ target_link_libraries(irohad
     rapidjson
     keys_manager
     )
+
+add_install_step_for_bin(irohad)

@@ -1,3 +1,5 @@
+find_package(PackageHandleStandardArgs)
+
 include(ExternalProject)
 set(EP_PREFIX "${PROJECT_SOURCE_DIR}/external")
 set_directory_properties(PROPERTIES
@@ -12,7 +14,7 @@ find_package(Threads REQUIRED)
 ##########################
 # testing is an option. Look at the main CMakeLists.txt for details.
 if (TESTING)
-find_package(gtest)
+  find_package(gtest)
 endif ()
 
 #############################

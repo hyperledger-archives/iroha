@@ -9,17 +9,24 @@ mark_as_advanced(cpp_redis_LIBRARY)
 find_library(tacopie_LIBRARY tacopie)
 mark_as_advanced(cpp_redis_LIBRARY)
 
-find_package(PackageHandleStandardArgs REQUIRED)
 find_package_handle_standard_args(cpp_redis DEFAULT_MSG
     cpp_redis_INCLUDE_DIR
     cpp_redis_LIBRARY
     tacopie_LIBRARY
     )
 
+set(URL1 https://github.com/Cylix/cpp_redis.git)
+set(VERSION1 727aa5f06c8ce498168cbab5a023cad5b9c00bc0)
+set_target_description(cpp_redis "C++ redis client" ${URL1} ${VERSION1})
+
+set(URL2 https://github.com/Cylix/tacopie.git)
+set(VERSION2 290dc38681f346adae41d3cc8feabbe534424675)
+set_target_description(tacopie "C++ tcp library" ${URL2} ${VERSION2})
+
 if (NOT cpp_redis_FOUND)
   externalproject_add(cylix_cpp_redis
-      GIT_REPOSITORY https://github.com/Cylix/cpp_redis
-      GIT_TAG 727aa5f06c8ce498168cbab5a023cad5b9c00bc0
+      GIT_REPOSITORY ${URL1}
+      GIT_TAG        ${VERSION1}
       CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
       INSTALL_COMMAND "" # remove install step
@@ -34,8 +41,8 @@ if (NOT cpp_redis_FOUND)
   file(MAKE_DIRECTORY ${cpp_redis_INCLUDE_DIR})
 
   externalproject_add(cylix_tacopie
-      GIT_REPOSITORY https://github.com/Cylix/tacopie
-      GIT_TAG 290dc38681f346adae41d3cc8feabbe534424675
+      GIT_REPOSITORY  ${URL2}
+      GIT_TAG         ${VERSION2}
       SOURCE_DIR ${tacopie_SOURCE_DIR}
       CONFIGURE_COMMAND ""
       BUILD_COMMAND ""

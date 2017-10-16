@@ -3,15 +3,20 @@ add_library(spdlog INTERFACE IMPORTED)
 find_path(spdlog_INCLUDE_DIR spdlog/spdlog.h)
 mark_as_advanced(spdlog_INCLUDE_DIR)
 
-find_package(PackageHandleStandardArgs REQUIRED)
 find_package_handle_standard_args(spdlog DEFAULT_MSG
     spdlog_INCLUDE_DIR
     )
 
+
+set(URL https://github.com/gabime/spdlog.git)
+set(VERSION f85a08622e20b74bff34381cafcb8ef8167b29d0)
+set_target_description(spdlog "Logging library" ${URL} ${VERSION})
+
+
 if (NOT SPDLOG_FOUND)
   externalproject_add(gabime_spdlog
-      GIT_REPOSITORY https://github.com/gabime/spdlog
-      GIT_TAG f85a08622e20b74bff34381cafcb8ef8167b29d0
+      GIT_REPOSITORY  ${URL}
+      GIT_TAG         ${VERSION}
       CONFIGURE_COMMAND "" # remove configure step
       BUILD_COMMAND "" # remove build step
       INSTALL_COMMAND "" # remove install step

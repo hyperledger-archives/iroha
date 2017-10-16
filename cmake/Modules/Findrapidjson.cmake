@@ -3,15 +3,18 @@ add_library(rapidjson INTERFACE IMPORTED)
 find_path(rapidjson_INCLUDE_DIR rapidjson/rapidjson.h)
 mark_as_advanced(rapidjson_INCLUDE_DIR)
 
-find_package(PackageHandleStandardArgs REQUIRED)
 find_package_handle_standard_args(rapidjson DEFAULT_MSG
     rapidjson_INCLUDE_DIR
     )
 
+set(URL https://github.com/miloyip/rapidjson.git)
+set(VERSION f54b0e47a08782a6131cc3d60f94d038fa6e0a51)
+set_target_description(rapidjson "JSON library" ${URL} ${VERSION})
+
 if (NOT rapidjson_FOUND)
   externalproject_add(miloyip_rapidjson
-      GIT_REPOSITORY https://github.com/miloyip/rapidjson
-      GIT_TAG f54b0e47a08782a6131cc3d60f94d038fa6e0a51
+      GIT_REPOSITORY ${URL}
+      GIT_TAG        ${VERSION}
       BUILD_COMMAND "" # remove build step, header only lib
       CONFIGURE_COMMAND "" # remove configure step
       INSTALL_COMMAND "" # remove install step

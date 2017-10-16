@@ -53,6 +53,7 @@ function(compile_proto_to_cpp PROTO)
       )
 endfunction()
 
+
 function(compile_proto_to_grpc_cpp PROTO)
   compile_proto_to_cpp(${PROTO})
   string(REGEX REPLACE "\\.proto$" ".grpc.pb.h" GEN_GRPC_PB_HEADER ${PROTO})
@@ -65,3 +66,48 @@ function(compile_proto_to_grpc_cpp PROTO)
       WORKING_DIRECTORY ${IROHA_SCHEMA_DIR}
       )
 endfunction()
+
+
+macro(set_target_description target description url commit)
+  set_package_properties(${target}
+      PROPERTIES
+      URL ${url}
+      DESCRIPTION ${description}
+      PURPOSE "commit: ${commit}"
+      )
+endmacro()
+
+
+macro(add_install_step_for_bin target)
+  install(TARGETS ${target}
+      RUNTIME DESTINATION bin
+      CONFIGURATIONS Release
+      COMPONENT binaries)
+endmacro()
+
+
+macro(add_install_step_for_lib libpath)
+  # full path with resolved symlinks:
+  # /usr/local/lib/libprotobuf.so -> /usr/local/lib/libprotobuf.so.13.0.0
+  get_filename_component(lib_major_minor_patch ${libpath} REALPATH)
+
+  install(FILES ${lib_major_minor_patch}
+      DESTINATION lib
+      CONFIGURATIONS Release
+      COMPONENT libraries)
+endmacro()
+
+
+macro(remove_line_terminators str output)
+  string(REGEX REPLACE "\r|\n" "" ${output} ${str})
+endmacro()
+
+
+macro(get_git_revision commit)
+  find_package(Git)
+  execute_process(
+      COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
+      OUTPUT_VARIABLE ${commit}
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  )
+endmacro()
