@@ -34,7 +34,7 @@ target_link_libraries(model
     iroha_amount
     common_execution
     schema
-    crypto
+    cryptography
     rapidjson
     )
 

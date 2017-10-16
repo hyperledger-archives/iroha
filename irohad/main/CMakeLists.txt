@@ -49,7 +49,7 @@ target_link_libraries(application
     stateless_validator
     stateful_validator
     processors
-    crypto
+    cryptography
     simulator
     block_loader
     block_loader_service
