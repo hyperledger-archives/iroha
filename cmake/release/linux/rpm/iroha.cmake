@@ -10,5 +10,3 @@ else()
   SET(CPACK_RPM_PACKAGE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
   SET(CPACK_RPM_PACKAGE_REQUIRES "libstdc++5, libpq-dev, libtbb-dev, libboost-system-dev, libboost-filesystem-dev, libc-ares-dev")
 endif()
-
-#   SET(CPACK_RPM_PACKAGE_REQUIRES "libstdc++5, libpq-dev (>= 9.5), libtbb-dev (>= 4.4), libboost-system-dev (>= 1.56.0), libboost-filesystem-dev (>= 1.56.0), libc-ares-dev (>= 1.10.0)")

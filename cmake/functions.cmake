@@ -86,18 +86,6 @@ macro(add_install_step_for_bin target)
 endmacro()
 
 
-# does not work (yet) for system libraries, since we need root
-# access to change them.
-#macro(strip_at_install_step path)
-#  # strip library
-#  find_program(STRIP strip)
-#  if(NOT STRIP STREQUAL "STRIP-NOTFOUND")
-#    install(CODE "MESSAGE(STATUS \"stripping ${path}\")")
-#    install(CODE "execute_process(COMMAND ${STRIP} -s ${path})")
-#  endif()
-#endmacro()
-
-
 macro(add_install_step_for_lib libpath)
   # full path with resolved symlinks:
   # /usr/local/lib/libprotobuf.so -> /usr/local/lib/libprotobuf.so.13.0.0

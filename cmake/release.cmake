@@ -34,9 +34,8 @@ SET(CPACK_STRIP_FILES TRUE)
 set(CPACK_COMPONENTS_ALL binaries libraries)
 
 if (APPLE)
-  message(WARNING "On OSX only TGZ/ZIP packaging is supported")
   # cmake is running on mac os
-#  include(cmake/release/osx-bundle.cmake)
+  message(WARNING "On OSX only TGZ/ZIP packaging is supported")
 elseif(UNIX)
   # cmake is running on unix
 
