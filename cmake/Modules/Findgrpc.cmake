@@ -87,6 +87,8 @@ set_target_properties(gpr PROPERTIES
 	IMPORTED_LOCATION ${gpr_LIBRARY}
 	)
 
-add_install_step_for_lib(${grpc_LIBRARY})
-add_install_step_for_lib(${grpc_grpc++_LIBRARY})
-add_install_step_for_lib(${gpr_LIBRARY})
+if(ENABLE_LIBS_PACKAGING)
+  add_install_step_for_lib(${grpc_LIBRARY})
+  add_install_step_for_lib(${grpc_grpc++_LIBRARY})
+  add_install_step_for_lib(${gpr_LIBRARY})
+endif()

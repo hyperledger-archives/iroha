@@ -55,4 +55,6 @@ set_target_properties(protoc PROPERTIES
     )
 
 
-add_install_step_for_lib(${protobuf_LIBRARY})
+if(ENABLE_LIBS_PACKAGING)
+  add_install_step_for_lib(${protobuf_LIBRARY})
+endif()
