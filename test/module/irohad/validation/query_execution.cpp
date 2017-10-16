@@ -105,6 +105,9 @@ void set_default_ametsuchi(MockWsvQuery &test_wsv,
       .WillRepeatedly(Return(nonstd::nullopt));
   EXPECT_CALL(test_wsv, getAccountRoles(ADMIN_ID))
       .WillRepeatedly(Return(roles));
+  EXPECT_CALL(test_wsv, getAccountRoles(ACCOUNT_ID))
+      .WillRepeatedly(Return(roles));
+
   std::vector<std::string> perms = {can_get_all_acc_ast_txs,
                                     can_get_all_acc_ast,
                                     can_get_all_acc_txs,

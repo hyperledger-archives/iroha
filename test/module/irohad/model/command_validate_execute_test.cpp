@@ -885,7 +885,7 @@ class CreateRoleTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
     CommandValidateExecuteTest::SetUp();
-    std::unordered_set<std::string> perm = {"CanDoMagic"};
+    std::unordered_set<std::string> perm = {can_create_role};
     create_role = std::make_shared<CreateRole>("master", perm);
     command = create_role;
     role_permissions = {can_create_role};
@@ -895,9 +895,9 @@ class CreateRoleTest : public CommandValidateExecuteTest {
 
 TEST_F(CreateRoleTest, ValidCase) {
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
-      .WillOnce(Return(admin_roles));
+      .WillRepeatedly(Return(admin_roles));
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
-      .WillOnce(Return(role_permissions));
+      .WillRepeatedly(Return(role_permissions));
   EXPECT_CALL(*wsv_command, insertRole(_)).WillOnce(Return(true));
   EXPECT_CALL(*wsv_command, insertRolePermissions(_, _)).WillOnce(Return(true));
   ASSERT_TRUE(validateAndExecute());
@@ -905,11 +905,32 @@ TEST_F(CreateRoleTest, ValidCase) {
 
 TEST_F(CreateRoleTest, InvalidCaseWhenNoPermissions) {
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
-      .WillOnce(Return(admin_roles));
+      .WillRepeatedly(Return(admin_roles));
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
-      .WillOnce(Return(nonstd::nullopt));
+      .WillRepeatedly(Return(nonstd::nullopt));
   ASSERT_FALSE(validateAndExecute());
 }
+
+TEST_F(CreateRoleTest, InvalidCaseWhenRoleSuperset) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillRepeatedly(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillRepeatedly(Return(role_permissions));
+  std::unordered_set<std::string> perms = {can_add_peer, can_append_role};
+  command = std::make_shared<CreateRole>("master", perms);
+  ASSERT_FALSE(validateAndExecute());
+}
+
+TEST_F(CreateRoleTest, InvalidCaseWhenWrongRoleName) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillRepeatedly(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillRepeatedly(Return(role_permissions));
+  std::unordered_set<std::string> perms = {can_create_role};
+  command = std::make_shared<CreateRole>("m!Aster", perms);
+  ASSERT_FALSE(validateAndExecute());
+}
+
 
 class AppendRoleTest : public CommandValidateExecuteTest {
  public:

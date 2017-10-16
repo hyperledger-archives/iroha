@@ -37,6 +37,8 @@ namespace iroha_cli {
         &QueryResponseHandler::handleRolesResponse;
     handler_map_[QueryResponse::ResponseCase::kRolePermissionsResponse] =
         &QueryResponseHandler::handleRolePermissionsResponse;
+    handler_map_[QueryResponse::ResponseCase::kAssetResponse] =
+        &QueryResponseHandler::handleAssetResponse;
 
     // Error responses:
     error_handler_map_[ErrorResponse::STATEFUL_INVALID] =
@@ -50,6 +52,7 @@ namespace iroha_cli {
     error_handler_map_[ErrorResponse::NOT_SUPPORTED] = "Query not supported";
     error_handler_map_[ErrorResponse::WRONG_FORMAT] = "Query has wrong format";
     error_handler_map_[ErrorResponse::NO_ROLES] = "No roles in the system";
+    error_handler_map_[ErrorResponse::NO_ASSET] = "No asset found";
   }
 
   void QueryResponseHandler::handle(
@@ -123,6 +126,14 @@ namespace iroha_cli {
         signatories.begin(), signatories.end(), [this](auto signatory) {
           log_->info("-Signatory- {}", signatory);
         });
+  }
+
+  void QueryResponseHandler::handleAssetResponse(const iroha::protocol::QueryResponse &response) {
+    auto asset = response.asset_response().asset();
+    log_->info("[Asset]");
+    log_->info("-Asset Id- {}", asset.asset_id());
+    log_->info("-Domain Id- {}", asset.domain_id());
+    log_->info("-Precision- {}", asset.precision());
   }
 
   void QueryResponseHandler::handleTransactionsResponse(

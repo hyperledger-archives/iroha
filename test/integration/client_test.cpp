@@ -263,6 +263,12 @@ TEST_F(ClientServerTest, SendQueryWhenValid) {
   EXPECT_CALL(*wsv_query, getAccount("test@test"))
       .WillOnce(Return(account_test));
 
+  std::vector<std::string> roles = {"user"};
+  EXPECT_CALL(*wsv_query, getAccountRoles("test@test"))
+      .WillOnce(Return(roles));
+  EXPECT_CALL(*wsv_query, getAccountRoles("admin@test"))
+      .WillOnce(Return(nonstd::nullopt));
+
   auto json_query =
       R"({"signature": {
             "pubkey":

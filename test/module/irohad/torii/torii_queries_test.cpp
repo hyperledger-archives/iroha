@@ -201,6 +201,10 @@ TEST_F(ToriiQueriesTest, FindAccountWhenHasReadPermissions) {
   EXPECT_CALL(*wsv_query, getAccount(accountB.account_id))
       .WillOnce(Return(accountB));
 
+  std::vector<std::string> roles = {"user"};
+  EXPECT_CALL(*wsv_query, getAccountRoles(_))
+      .WillRepeatedly(Return(roles));
+
   iroha::protocol::QueryResponse response;
 
   auto query = iroha::protocol::Query();
@@ -215,6 +219,7 @@ TEST_F(ToriiQueriesTest, FindAccountWhenHasReadPermissions) {
   // Should not return Error Response because tx is stateless and stateful valid
   ASSERT_FALSE(response.has_error_response());
   ASSERT_EQ(response.account_response().account().account_id(), "accountB");
+  ASSERT_EQ(response.account_response().account_roles().size(), 1);
 }
 
 TEST_F(ToriiQueriesTest, FindAccountWhenHasRolePermission) {
@@ -232,7 +237,7 @@ TEST_F(ToriiQueriesTest, FindAccountWhenHasRolePermission) {
   auto creator =  "accountA";
   std::vector<std::string> roles = {"test"};
   EXPECT_CALL(*wsv_query, getAccountRoles(creator))
-      .WillOnce(Return(roles));
+      .WillRepeatedly(Return(roles));
   std::vector<std::string> perm = {can_get_my_account};
   EXPECT_CALL(*wsv_query, getRolePermissions("test"))
       .WillOnce(Return(perm));
