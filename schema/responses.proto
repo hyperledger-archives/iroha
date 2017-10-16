@@ -29,6 +29,7 @@ message AccountAssetResponse {
 
 message AccountResponse {
     Account account = 1;
+    repeated string account_roles = 2;
 }
 
 message AssetResponse {

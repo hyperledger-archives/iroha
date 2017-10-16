@@ -164,14 +164,17 @@ std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetAccount(
     const model::GetAccount& query) {
   auto acc = _wsvQuery->getAccount(query.account_id);
-  if (!acc.has_value()) {
+  auto roles = _wsvQuery->getAccountRoles(query.account_id);
+  if (not acc.has_value() or not roles.has_value()) {
     iroha::model::ErrorResponse response;
     response.query_hash = iroha::hash(query);
     response.reason = iroha::model::ErrorResponse::NO_ACCOUNT;
     return std::make_shared<ErrorResponse>(response);
   }
+
   iroha::model::AccountResponse response;
   response.account = acc.value();
+  response.roles = roles.value();
   response.query_hash = iroha::hash(query);
   return std::make_shared<iroha::model::AccountResponse>(response);
 }

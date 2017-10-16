@@ -103,6 +103,9 @@ namespace iroha {
         protocol::AccountResponse pb_response;
         pb_response.mutable_account()->CopyFrom(
             serializeAccount(accountResponse.account));
+        for (auto role : accountResponse.roles){
+          pb_response.add_account_roles(role);
+        }
         return pb_response;
       }
 
