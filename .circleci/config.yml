@@ -112,19 +112,21 @@ jobs:
       - run:
           name: execute sonar-scanner to analyze PR
           command: >
-            if [ -z "$CI_PULL_REQUEST" ]; then
-              echo "sonar-pr is executed for non-existent PR"
-              exit 0
-            else
-              sonar-scanner \
-                -Dsonar.github.disableInlineComments \
-                -Dsonar.github.repository="hyperledger/iroha" \
-                -Dsonar.analysis.mode=preview \
-                -Dsonar.login=${SONAR_TOKEN} \
-                -Dsonar.projectVersion="${CIRCLE_BUILD_NUM}" \
-                -Dsonar.github.oauth="${SORABOT_TOKEN}" \
-                -Dsonar.github.pullRequest="$(echo $CI_PULL_REQUEST | egrep -o "[0-9]+")"
-            fi
+            [ ! -z "$SONAR_TOKEN" ] && \
+              [ ! -z "$SORABOT_TOKEN" ] && \
+              [ ! -z "$CIRCLE_BUILD_NUM" ] && \
+              [ ! -z "$CI_PULL_REQUEST" ] || \
+              (echo "required env vars not found"; exit 0)
+
+            sonar-scanner \
+              -Dsonar.github.disableInlineComments \
+              -Dsonar.github.repository="hyperledger/iroha" \
+              -Dsonar.analysis.mode=preview \
+              -Dsonar.login=${SONAR_TOKEN} \
+              -Dsonar.projectVersion="${CIRCLE_BUILD_NUM}" \
+              -Dsonar.github.oauth="${SORABOT_TOKEN}" \
+              -Dsonar.github.pullRequest="$(echo $CI_PULL_REQUEST | egrep -o "[0-9]+")"
+
       - save_cache:
           key: sonar-{{ epoch }}
           paths:
@@ -199,7 +201,7 @@ workflows:
                 - develop
                 - master
             tags:
-              only: /v[\.0-9]+.*/ 
+              only: /v[\.0-9]+.*/
 
 
       # - dockerize:
