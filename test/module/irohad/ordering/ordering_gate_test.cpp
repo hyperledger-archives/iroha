@@ -102,6 +102,7 @@ TEST_F(OrderingGateTest, TransactionReceivedByServerWhenSent) {
       .WillRepeatedly(InvokeWithoutArgs([&] {
         ++call_count;
         cv.notify_one();
+        return grpc::Status::OK;
       }));
 
   for (size_t i = 0; i < 5; ++i) {
