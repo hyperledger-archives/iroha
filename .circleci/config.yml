@@ -16,10 +16,6 @@ jobs:
       - image: redis:3.2.8
     steps:
       - checkout
-      - run:
-          name: notify upsource about current build
-          command: |
-            python3 housekeeping/upsource-webhook.py --in-progress || true
       - restore_cache:
           keys:
             - build-cache-{{ .Branch }}-
@@ -34,7 +30,8 @@ jobs:
             ccache --version
             ccache --show-stats
             ccache --zero-stats
-            ccache --max-size=1G
+            ccache -F 0
+            ccache -M 0
 
       # cmake and make
       - run:
@@ -75,23 +72,6 @@ jobs:
             - compile_commands.json
             - reports
 
-
-      # - run:
-      #     name: prepare redistributable dir
-      #     command: |
-      #       IROHAD=$IROHA_BUILD/bin/irohad
-      #       IROHA_CLI=$IROHA_BUILD/bin/iroha-cli
-      #       TEST_DIR=$IROHA_BUILD/test_bin
-      #       RELEASE=$IROHA_BUILD/release
-      #       mkdir -p $RELEASE
-
-
-
-      # - persist_to_workspace:
-      #     root: /opt/iroha/build/release
-      #     paths:
-      #       - bin
-      #       - test_bin
 
 
   # used to push info about issues to github
@@ -161,23 +141,67 @@ jobs:
             - ~/.sonar
 
 
-  # dockerize:
-  #   <<: *defaults
-  #   machine: true
-  #   steps:
-  #     - attach_workspace:
-  #         at: /opt/iroha/build
-  #     - run: TODO
-  #         name: todo
-  #         command: echo "I am happy albatross"
+  macos-build:
+    #docker:
+    #  - image: postgres:9.5
+    #  - image: redis:3.2.8
+    macos:
+      xcode: 9.0.0
+    steps:
+      - checkout
+      
+      - restore_cache:
+          keys:
+            - brew-
 
+      - restore_cache:
+          keys:
+            - build-cache-{{ .Branch }}-
+            - build-cache-
+          paths:
+            - ~/.ccache
+      
+      - run:
+          name: install dev dependencies
+          command: brew install cmake boost postgres grpc autoconf automake libtool ccache
 
+      - save_cache:
+          key: brew-{{ epoch }}
+          paths:
+            - $HOME/Library/Caches/Homebrew
+
+      - run:
+          name: ccache setup
+          command: |
+            ccache -F 0
+            ccache -M 0      
+      
+      - run:
+          name: build
+          command: |
+            cmake -H. -Bbuild
+            cmake --build build -- -j$(sysctl -n hw.ncpu)
+
+      - run:
+          name: ccache teardown
+          command: |
+            ccache --cleanup
+            ccache --show-stats
+      
+      - save_cache:
+          key: build-cache-{{ .Branch }}-{{ epoch }}
+          paths:
+            - ~/.ccache
+
+      - run: ccache --show-stats
+     
 
 workflows:
   version: 2
   full_pipeline:
     jobs:
-      # build -> sonar -> dockerize
+      # macos-build/build -> sonar -> dockerize
+      - macos-build
       - build
       - sonar-pr:
           requires:
@@ -204,11 +228,7 @@ workflows:
               only: /v[\.0-9]+.*/
 
 
-      # - dockerize:
-      #     requires:
-      #       - sonar
+      # # - dockerize:
+      # #     requires:
+      # #       - sonar
 
-
-notify:
-  webhooks:
-    - url: http://upsource.soramitsu.co.jp:1112
