@@ -30,6 +30,8 @@
 #include "model/converters/json_transaction_factory.hpp"
 #include "model/converters/pb_common.hpp"
 #include "model/generators/transaction_generator.hpp"
+#include "parser/parser.hpp"
+#include "model/permissions.hpp"
 
 using namespace iroha::model;
 
@@ -45,9 +47,8 @@ namespace iroha_cli {
           {CREATE_DOMAIN, "Create Domain"},
           {CREATE_ASSET, "Create Asset"},
           {REMOVE_SIGN, "Remove Signatory"},
-          {SET_PERM, "Set Permissions to Account"},
           {SET_QUO, "Set Account Quorum"},
-          {SUB_ASSET_QTY, "Subtract  Assets Quantity from Account"},
+          {SUB_ASSET_QTY, "Subtract Assets Quantity from Account"},
           {TRAN_ASSET, "Transfer Assets"},
           {CREATE_ROLE, "Create new role"},
           {APPEND_ROLE, "Add new role to account"},
@@ -59,8 +60,8 @@ namespace iroha_cli {
       const auto acc_id = "Account Id";
       const auto ast_id = "Asset Id";
       const auto dom_id = "Domain Id";
-      const auto ammout_a = "Amount to add (integer part)";
-      const auto ammout_b = "Amount to add (precision)";
+      const auto amount_a = "Amount to add (integer part)";
+      const auto amount_b = "Amount to add (precision)";
       const auto peer_id = "Full address of a peer";
       const auto pub_key = "Public Key";
       const auto acc_name = "Account Name";
@@ -70,28 +71,43 @@ namespace iroha_cli {
       const auto role = "Role name";
       const auto perm = "Permission name";
 
+      const auto can_read_self = "Can read all information about their account";
+      const auto can_edit_self = "Can change their quorum/signatory";
+      const auto can_read_all = "Can read all other accounts";
+      const auto can_transfer_receive = "Can receive/transfer assets";
+      const auto can_asset_creator = "Can create/add new assets";
+      const auto can_roles = "Can create/append roles";
+
       command_params_descriptions_ = {
-          {ADD_ASSET_QTY, {acc_id, ast_id, ammout_a, ammout_b}},
+          {ADD_ASSET_QTY, {acc_id, ast_id, amount_a, amount_b}},
           {ADD_PEER, {peer_id, pub_key}},
           {ADD_SIGN, {acc_id, pub_key}},
           {CREATE_ACC, {acc_name, dom_id, pub_key}},
-          {CREATE_DOMAIN, {dom_id}},
+          {CREATE_DOMAIN, {dom_id, std::string("Default ") + role}},
           {CREATE_ASSET, {ast_name, dom_id, ast_precision}},
           {REMOVE_SIGN, {acc_id, pub_key}},
-          {SET_PERM, {}},
           {SET_QUO, {acc_id, quorum}},
           {SUB_ASSET_QTY, {}},
           {TRAN_ASSET,
            {std::string("Src") + acc_id,
             std::string("Dest") + acc_id,
             ast_id,
-            ammout_a,
-            ammout_b}},
-          {CREATE_ROLE, {role}},
+            amount_a,
+            amount_b}},
+          {CREATE_ROLE,
+           {role,
+            can_read_self,
+            can_edit_self,
+            can_read_all,
+            can_transfer_receive,
+            can_asset_creator,
+            can_create_domain,
+            can_roles,
+            can_create_account}},
           {APPEND_ROLE, {acc_id, role}},
           {GRANT_PERM, {acc_id, perm}},
           {REVOKE_PERM, {acc_id, perm}}
-          // command_params_descriptions_
+          // command parameters descriptions
       };
 
       command_handlers_ = {
@@ -102,7 +118,6 @@ namespace iroha_cli {
           {CREATE_DOMAIN, &InteractiveTransactionCli::parseCreateDomain},
           {CREATE_ASSET, &InteractiveTransactionCli::parseCreateAsset},
           {REMOVE_SIGN, &InteractiveTransactionCli::parseRemoveSignatory},
-          {SET_PERM, &InteractiveTransactionCli::parseSetPermissions},
           {SET_QUO, &InteractiveTransactionCli::parseSetQuorum},
           {SUB_ASSET_QTY,
            &InteractiveTransactionCli::parseSubtractAssetQuantity},
@@ -111,7 +126,7 @@ namespace iroha_cli {
           {APPEND_ROLE, &InteractiveTransactionCli::parseAppendRole},
           {GRANT_PERM, &InteractiveTransactionCli::parseGrantPermission},
           {REVOKE_PERM, &InteractiveTransactionCli::parseGrantPermission}
-          // command_handlers_
+          // Command parsers
       };
 
       commands_menu_ = formMenu(command_handlers_,
@@ -142,7 +157,7 @@ namespace iroha_cli {
           {SEND_CODE, &InteractiveTransactionCli::parseSendToIroha},
           {ADD_CMD, &InteractiveTransactionCli::parseAddCommand},
           {BACK_CODE, &InteractiveTransactionCli::parseGoBack}
-          // result_handlers_
+          // Parsers for result
       };
 
       result_menu_ = formMenu(
@@ -210,9 +225,56 @@ namespace iroha_cli {
     std::shared_ptr<iroha::model::Command>
     InteractiveTransactionCli::parseCreateRole(
         std::vector<std::string> params) {
-      // TODO grimadas: implement scheme on working with permissions
       auto role = params[0];
-      std::vector<std::string> perms = {};
+      auto read_self = parser::parseValue<bool>(params[1]);
+      auto edit_self = parser::parseValue<bool>(params[2]);
+      auto read_all = parser::parseValue<bool>(params[3]);
+      auto transfer_receive = parser::parseValue<bool>(params[4]);
+      auto asset_create = parser::parseValue<bool>(params[5]);
+      auto create_domain = parser::parseValue<bool>(params[6]);
+      auto roles = parser::parseValue<bool>(params[7]);
+      auto create_account = parser::parseValue<bool>(params[8]);
+
+      if (not read_self.has_value() or not edit_self.has_value()
+          or not read_all.has_value()
+          or not transfer_receive.has_value()
+          or not asset_create.has_value()
+          or not create_domain.has_value()
+          or not roles.has_value()
+          or not create_account.has_value()) {
+        std::cout << "Wrong format for permission" << std::endl;
+        return nullptr;
+      }
+      std::unordered_set<std::string> perms;
+      if (read_self.value()) {
+        perms.insert(read_self_group.begin(), read_self_group.end());
+      }
+      if (edit_self.value()) {
+        perms.insert(edit_self_group.begin(), edit_self_group.end());
+        perms.insert(grant_group.begin(), grant_group.end());
+      }
+
+      if (read_all.value()) {
+        perms.insert(read_all_group.begin(), read_all_group.end());
+      }
+      if (transfer_receive.value()) {
+        perms.insert(can_transfer);
+        perms.insert(can_receive);
+      }
+      if (asset_create.value()) {
+        perms.insert(asset_creator_group.begin(), asset_creator_group.end());
+      }
+      if (create_domain.value()) {
+        perms.insert(can_create_domain);
+      }
+      if (roles.value()) {
+        perms.insert(can_create_role);
+        perms.insert(can_append_role);
+      }
+      if (create_account.value()) {
+        perms.insert(can_create_account);
+      }
+
       return std::make_shared<CreateRole>(role, perms);
     }
 
@@ -295,7 +357,8 @@ namespace iroha_cli {
     InteractiveTransactionCli::parseCreateDomain(
         std::vector<std::string> params) {
       auto domain_id = params[0];
-      return generator_.generateCreateDomain(domain_id);
+      auto user_default_role = params[1];
+      return generator_.generateCreateDomain(domain_id, user_default_role);
     }
 
     std::shared_ptr<iroha::model::Command>
@@ -319,14 +382,6 @@ namespace iroha_cli {
       iroha::pubkey_t pubkey;
       pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key).value();
       return generator_.generateRemoveSignatory(account_id, pubkey);
-    }
-
-    std::shared_ptr<iroha::model::Command>
-    InteractiveTransactionCli::parseSetPermissions(
-        std::vector<std::string> params) {
-      // TODO: implement when change permission model
-      std::cout << "Not implemented" << std::endl;
-      return nullptr;
     }
 
     std::shared_ptr<iroha::model::Command>
@@ -383,9 +438,9 @@ namespace iroha_cli {
       }
 
       // Forming a transaction
-      auto tx =
-          tx_generator_.generateTransaction(creator_, tx_counter_, commands_);
 
+      auto tx = tx_generator_.generateTransaction( creator_,
+                                                  tx_counter_, commands_);
       // clear commands so that we can start creating new tx
       commands_.clear();
 

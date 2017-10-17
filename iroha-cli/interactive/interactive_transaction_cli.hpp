@@ -71,7 +71,6 @@ namespace iroha_cli {
       const std::string CREATE_ASSET = "crt_ast";
       const std::string CREATE_DOMAIN = "crt_dmn";
       const std::string REMOVE_SIGN = "rem_sign";
-      const std::string SET_PERM = "set_perm";
       const std::string SET_QUO = "set_qrm";
       const std::string SUB_ASSET_QTY = "sub_ast_qty";
       const std::string TRAN_ASSET = "tran_ast";
@@ -115,8 +114,6 @@ namespace iroha_cli {
       std::shared_ptr<iroha::model::Command> parseCreateDomain(
           std::vector<std::string> line);
       std::shared_ptr<iroha::model::Command> parseRemoveSignatory(
-          std::vector<std::string> line);
-      std::shared_ptr<iroha::model::Command> parseSetPermissions(
           std::vector<std::string> line);
       std::shared_ptr<iroha::model::Command> parseSetQuorum(
           std::vector<std::string> line);

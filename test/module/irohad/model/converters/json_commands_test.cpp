@@ -31,7 +31,6 @@
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/converters/json_command_factory.hpp"
@@ -62,7 +61,6 @@ TEST_F(JsonCommandTest, ClassHandlerTest) {
       std::make_shared<CreateAsset>(),
       std::make_shared<CreateDomain>(),
       std::make_shared<RemoveSignatory>(),
-      std::make_shared<SetAccountPermissions>(),
       std::make_shared<SetQuorum>(),
       std::make_shared<TransferAsset>()};
   for (const auto &command : commands) {
@@ -87,6 +85,14 @@ TEST_F(JsonCommandTest, InvalidWhenUnknownCommandType) {
   auto json = stringToJson(cmd);
   ASSERT_TRUE(json.has_value());
   ASSERT_FALSE(factory.deserializeAbstractCommand(json.value()).has_value());
+}
+
+TEST_F(JsonCommandTest, create_domain) {
+  auto orig_command = std::make_shared<CreateDomain>("soramitsu", "jp-user");
+  auto json = factory.serializeCreateDomain(orig_command);
+  auto serial_command = factory.deserializeCreateDomain(json);
+  ASSERT_EQ(*orig_command, *serial_command.value());
+  command_converter_test(orig_command);
 }
 
 TEST_F(JsonCommandTest, add_asset_quantity) {
@@ -183,24 +189,6 @@ TEST_F(JsonCommandTest, remove_signatory) {
   command_converter_test(orig_command);
 }
 
-TEST_F(JsonCommandTest, set_acount_permissions) {
-  auto orig_command = std::make_shared<SetAccountPermissions>();
-  orig_command->account_id = "Vasya";
-  iroha::model::Account::Permissions perm;
-  perm.can_transfer = true;
-  perm.add_signatory = true;
-  perm.issue_assets = true;
-  orig_command->new_permissions = perm;
-
-  auto json_command = factory.serializeSetAccountPermissions(orig_command);
-  auto serial_command = factory.deserializeSetAccountPermissions(json_command);
-
-  ASSERT_TRUE(serial_command.has_value());
-  ASSERT_EQ(*orig_command, *serial_command.value());
-
-  command_converter_test(orig_command);
-}
-
 TEST_F(JsonCommandTest, set_account_quorum) {
   auto orig_command = std::make_shared<SetQuorum>();
   orig_command->new_quorum = 11;
@@ -244,7 +232,7 @@ TEST_F(JsonCommandTest, append_role) {
 }
 
 TEST_F(JsonCommandTest, create_role) {
-  std::vector<std::string> perms = {"CanDoMagic"};
+  std::unordered_set<std::string> perms = {"CanDoMagic"};
   auto orig_command = std::make_shared<CreateRole>("master", perms);
   auto json_command = factory.serializeCreateRole(orig_command);
   auto serial_command = factory.deserializeCreateRole(json_command);

@@ -27,7 +27,6 @@
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 
@@ -43,21 +42,16 @@ TEST(TransactionTest, tx_test) {
   orig_tx.tx_counter = 1;
 
   auto c1 = iroha::model::CreateDomain();
-  c1.domain_name = "keker";
+  c1.domain_id = "keker";
   auto c2 = iroha::model::CreateAsset();
   c2.domain_id = "keker";
   c2.precision = 2;
   c2.asset_name = "fedor-coin";
 
-  auto c3 = iroha::model::SetAccountPermissions();
-  c3.account_id = "fedor";
-  c3.new_permissions.can_transfer = true;
-  c3.new_permissions.create_assets = true;
 
   orig_tx.commands = {
       std::make_shared<iroha::model::CreateDomain>(c1),
-      std::make_shared<iroha::model::CreateAsset>(c2),
-      std::make_shared<iroha::model::SetAccountPermissions>(c3)};
+      std::make_shared<iroha::model::CreateAsset>(c2)};
 
   auto factory = iroha::model::converters::PbTransactionFactory();
   auto proto_tx = factory.serialize(orig_tx);

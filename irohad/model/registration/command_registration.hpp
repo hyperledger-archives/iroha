@@ -28,7 +28,6 @@
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 
@@ -54,7 +53,6 @@ namespace iroha {
         command_handler.register_type(typeid(CreateAsset));
         command_handler.register_type(typeid(CreateDomain));
         command_handler.register_type(typeid(RemoveSignatory));
-        command_handler.register_type(typeid(SetAccountPermissions));
         command_handler.register_type(typeid(SetQuorum));
         command_handler.register_type(typeid(TransferAsset));
         command_handler.register_type(typeid(AppendRole));

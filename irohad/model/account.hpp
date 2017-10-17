@@ -28,87 +28,24 @@ namespace iroha {
      * Account Model
      */
     struct Account {
-      struct Permissions {
-        /**
-         * Can account add assets to own account;
-         * Dangerous operation - require high number of quorum;
-         */
-        bool issue_assets{};
-
-        /**
-         * Can account create new type of assets;
-         * Dangerous operation - require high number of quorum;
-         */
-        bool create_assets{};
-
-        /**
-        * Can create new accounts
-        */
-        bool create_accounts{};
-
-        /**
-        * Can create new domains
-        */
-        bool create_domains{};
-
-        /**
-         * Can account read private information of other accounts;
-         * Auditor's permission
-         */
-        bool read_all_accounts{};
-
-        /**
-         * Can add signatory to all other accounts
-         */
-        bool add_signatory{};
-
-        /**
-         * Can add signatory to all other accounts
-         */
-        bool remove_signatory{};
-
-        /**
-         * Set permissions to all other accounts
-         * Administrator's account permission
-         */
-        bool set_permissions{};
-
-        /**
-         * Permission to set quorum
-         * Administrator's account permission
-         */
-        bool set_quorum{};
-
-        /**
-         * Can account provide unlimited transfers to other accounts;
-         * User's account permission
-         */
-        bool can_transfer{};
-
-        bool operator==(const Permissions &rhs) const;
-        bool operator!=(const Permissions &rhs) const;
-      };
 
       /**
        * User name is used as unique identifier of an account
        */
-      std::string account_id{};
+      std::string account_id;
 
       /**
        * Account has only one domain.
-       * Name of the domain of a account
+       * Id of the domain of a account
        */
-      std::string domain_name{};
-
-      /**
-       * Account permissions
-       */
-      Permissions permissions{};
+      std::string domain_id;
 
       /**
        * Minimum quorum of signatures need for transactions
        */
-      uint32_t quorum{};
+      uint32_t quorum;
+
+      Account() {}
     };
   }
 }

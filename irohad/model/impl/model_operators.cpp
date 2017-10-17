@@ -26,7 +26,6 @@
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 
@@ -125,7 +124,8 @@ namespace iroha {
     bool CreateDomain::operator==(const Command &command) const {
       if (! instanceof <CreateDomain>(command)) return false;
       auto create_domain = static_cast<const CreateDomain &>(command);
-      return create_domain.domain_name == domain_name;
+      return create_domain.domain_id == domain_id
+          && create_domain.user_default_role == user_default_role;
     }
 
     /* Remove signatory */
@@ -134,28 +134,6 @@ namespace iroha {
       auto remove_signatory = static_cast<const RemoveSignatory &>(command);
       return remove_signatory.pubkey == pubkey
           && remove_signatory.account_id == account_id;
-    }
-
-    bool Account::Permissions::operator==(const Permissions &rhs) const {
-      return rhs.add_signatory == add_signatory
-          && rhs.can_transfer == can_transfer
-          && rhs.create_accounts == create_accounts
-          && rhs.create_assets == create_assets
-          && rhs.create_domains == create_domains
-          && rhs.issue_assets == issue_assets
-          && rhs.read_all_accounts == read_all_accounts
-          && rhs.remove_signatory == remove_signatory
-          && rhs.set_permissions == set_permissions
-          && rhs.set_quorum == set_quorum;
-    }
-
-    /* Set permissions */
-    bool SetAccountPermissions::operator==(const Command &command) const {
-      if (! instanceof <SetAccountPermissions>(command)) return false;
-      auto set_account_permissions =
-          static_cast<const SetAccountPermissions &>(command);
-      return set_account_permissions.account_id == account_id
-          && set_account_permissions.new_permissions == new_permissions;
     }
 
     /* Set Quorum*/

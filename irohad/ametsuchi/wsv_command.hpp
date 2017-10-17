@@ -25,6 +25,7 @@
 #include <model/domain.hpp>
 #include <model/peer.hpp>
 #include <string>
+#include <unordered_set>
 
 namespace iroha {
   namespace ametsuchi {
@@ -60,7 +61,7 @@ namespace iroha {
        * @return true is insert successful, false otherwise
        */
       virtual bool insertRolePermissions(const std::string &role_id,
-          const std::vector<std::string> &permissions) = 0;
+          const std::unordered_set<std::string> &permissions) = 0;
 
       /**
        * Insert grantable permission

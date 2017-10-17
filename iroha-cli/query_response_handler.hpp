@@ -57,6 +57,9 @@ namespace iroha_cli {
         const iroha::protocol::QueryResponse& response);
     void handleSignatoriesResponse(
         const iroha::protocol::QueryResponse& response);
+    void handleRolesResponse(const iroha::protocol::QueryResponse& response);
+    void handleRolePermissionsResponse(const iroha::protocol::QueryResponse& response);
+    void handleAssetResponse(const iroha::protocol::QueryResponse& response);
     // -- --
     using Handler =
         void (QueryResponseHandler::*)(const iroha::protocol::QueryResponse&);

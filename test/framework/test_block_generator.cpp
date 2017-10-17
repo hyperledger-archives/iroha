@@ -16,15 +16,15 @@
  */
 
 #include <chrono>
+#include <model/commands/create_role.hpp>
 #include "crypto/hash.hpp"
 #include "framework/test_block_generator.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/create_domain.hpp"
-#include "model/commands/create_domain.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_account.hpp"
-#include "model/commands/set_permissions.hpp"
-#include "common/types.hpp"
+#include "model/commands/create_role.hpp"
+#include "model/permissions.hpp"
 
 using namespace iroha;
 using namespace iroha::model;
@@ -52,8 +52,11 @@ namespace framework {
       Signature sign{};
       transaction.signatures = {sign};
 
+      auto create_role = std::make_shared<CreateRole>("user", all_perm_group);
+
       auto create_domain = std::make_shared<CreateDomain>();
-      create_domain->domain_name = "test";
+      create_domain->domain_id = "test";
+      create_domain->user_default_role = "user";
 
       auto create_asset = std::make_shared<CreateAsset>();
       create_asset->domain_id = "test";
@@ -68,18 +71,8 @@ namespace framework {
       create_acc->domain_id = "test";
       create_acc->account_name = "test";
 
-      auto set_perm = std::make_shared<SetAccountPermissions>();
-      set_perm->account_id = "admin@test";
-      Account::Permissions permissions;
-      permissions.can_transfer = true;
-      permissions.read_all_accounts = true;
-      permissions.issue_assets = true;
-      permissions.set_permissions = true;
-      set_perm->new_permissions = permissions;
-
       transaction.commands =
-          {create_domain, create_asset, create_admin, create_acc,
-           set_perm};
+          {create_domain, create_asset, create_admin, create_acc};
       return transaction;
     }
 

@@ -53,7 +53,7 @@ namespace iroha {
 
     bool PostgresWsvCommand::insertRolePermissions(
         const std::string &role_id,
-        const std::vector<std::string> &permissions) {
+        const std::unordered_set<std::string> &permissions) {
       auto entry = [this, &role_id](auto permission) {
         return "(" + transaction_.quote(role_id) + ", "
             + transaction_.quote(permission) + ")";
@@ -63,7 +63,7 @@ namespace iroha {
             "INSERT INTO role_has_permissions(role_id, permission_id) VALUES "
             + std::accumulate(
                   std::next(permissions.begin()), permissions.end(),
-                  entry(permissions.front()),
+                  entry(*permissions.begin()),
                   [&entry](auto acc, auto x) { return acc + ", " + entry(x); })
             + ";");
       } catch (const std::exception &e) {
@@ -109,26 +109,17 @@ namespace iroha {
     };
 
     bool PostgresWsvCommand::insertAccount(const model::Account &account) {
-      std::stringstream permissions;
-      permissions << account.permissions.add_signatory
-                  << account.permissions.can_transfer
-                  << account.permissions.create_accounts
-                  << account.permissions.create_assets
-                  << account.permissions.create_domains
-                  << account.permissions.issue_assets
-                  << account.permissions.read_all_accounts
-                  << account.permissions.remove_signatory
-                  << account.permissions.set_permissions
-                  << account.permissions.set_quorum;
       try {
         transaction_.exec(
-            "INSERT INTO public.account(account_id, domain_id, quorum, "
-            "transaction_count, permissions) VALUES ("
-            + transaction_.quote(account.account_id) + ", "
-            + transaction_.quote(account.domain_name) + ", "
-            + transaction_.quote(account.quorum) + ", " +
-            /*account.transaction_count*/ transaction_.quote(0) + ", "
-            + transaction_.quote(permissions.str()) + ");");
+            "INSERT INTO account(\n"
+            "            account_id, domain_id, quorum, "
+            "transaction_count \n"
+            "            )\n"
+            "    VALUES (" +
+            transaction_.quote(account.account_id) + ", " +
+            transaction_.quote(account.domain_id) + ", " +
+            transaction_.quote(account.quorum) + ", " +
+            /*account.transaction_count*/ transaction_.quote(0) + ");");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -260,8 +251,11 @@ namespace iroha {
 
     bool PostgresWsvCommand::insertDomain(const model::Domain &domain) {
       try {
-        transaction_.exec("INSERT INTO domain(domain_id) VALUES ("
-                          + transaction_.quote(domain.domain_id) + ");");
+        transaction_.exec("INSERT INTO domain(domain_id, default_role) VALUES ("
+                          + transaction_.quote(domain.domain_id)
+                          + ", "
+                          + transaction_.quote(domain.default_role)
+                          + ");");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -270,25 +264,16 @@ namespace iroha {
     }
 
     bool PostgresWsvCommand::updateAccount(const model::Account &account) {
-      std::stringstream permissions;
-      permissions << account.permissions.add_signatory
-                  << account.permissions.can_transfer
-                  << account.permissions.create_accounts
-                  << account.permissions.create_assets
-                  << account.permissions.create_domains
-                  << account.permissions.issue_assets
-                  << account.permissions.read_all_accounts
-                  << account.permissions.remove_signatory
-                  << account.permissions.set_permissions
-                  << account.permissions.set_quorum;
       try {
         transaction_.exec(
-            "UPDATE account SET quorum = " + transaction_.quote(account.quorum)
-            + ", transaction_count = " +
-            /*account.transaction_count*/ transaction_.quote(0)
-            + ", permissions = " + transaction_.quote(permissions.str())
-            + " WHERE account_id = " + transaction_.quote(account.account_id)
-            + ";");
+            "UPDATE account\n"
+            "   SET quorum=" +
+            transaction_.quote(account.quorum) +
+            ", transaction_count=" +
+            /*account.transaction_count*/ transaction_.quote(0) +
+            "\n"
+            " WHERE account_id=" +
+            transaction_.quote(account.account_id) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;

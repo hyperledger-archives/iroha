@@ -31,17 +31,13 @@ message CreateAccount {
 }
 
 message CreateDomain {
-    string domain_name = 1;
+    string domain_id = 1;
+    string default_role = 2;
 }
 
 message RemoveSignatory {
     string account_id = 1;
     bytes public_key = 2;
-}
-
-message SetAccountPermissions {
-    string account_id = 1;
-    Permissions permissions = 2;
 }
 
 message SetAccountQuorum {
@@ -64,17 +60,17 @@ message AppendRole {
 
 message CreateRole {
     string role_name = 1;
-    repeated string permissions = 2;
+    repeated RolePermission permissions = 2;
 }
 
 message GrantPermission {
     string account_id = 1;
-    string permission_name = 2;
+    GrantablePermission permission = 2;
 }
 
 message RevokePermission {
     string account_id = 1;
-    string permission_name = 2;
+    GrantablePermission permission = 2;
 }
 
 message Command {
@@ -86,7 +82,6 @@ message Command {
         CreateAccount create_account = 5;
         CreateDomain create_domain = 6;
         RemoveSignatory remove_sign = 7;
-        SetAccountPermissions set_permission = 8;
         SetAccountQuorum set_quorum = 9;
         TransferAsset transfer_asset = 10;
         AppendRole append_role = 11;

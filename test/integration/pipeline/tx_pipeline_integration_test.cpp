@@ -67,7 +67,9 @@ class TestIrohad : public Irohad {
 
 class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
  public:
-  TxPipelineIntegrationTest() { spdlog::set_level(spdlog::level::off); }
+  TxPipelineIntegrationTest() {
+    //spdlog::set_level(spdlog::level::off);
+  }
 
   void SetUp() override {
     iroha::ametsuchi::AmetsuchiTest::SetUp();
@@ -84,6 +86,7 @@ class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
 
     // insert genesis block
     iroha::main::BlockInserter inserter(irohad->storage);
+
 
     inserter.applyToLedger({genesis_block});
 
@@ -179,7 +182,7 @@ TEST_F(TxPipelineIntegrationTest, TxPipelineTest) {
   // generate test command
   auto cmd =
       iroha::model::generators::CommandGenerator().generateAddAssetQuantity(
-          "test@test",
+          "admin@test",
           "coin#test",
           iroha::Amount().createFromString("20.00").value());
 

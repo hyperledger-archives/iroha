@@ -36,8 +36,6 @@ CommandExecutorFactory::create() {
   executors[typeid(CreateDomain)] = std::make_shared<CreateDomainExecutor>();
   executors[typeid(RemoveSignatory)] =
       std::make_shared<RemoveSignatoryExecutor>();
-  executors[typeid(SetAccountPermissions)] =
-      std::make_shared<SetAccountPermissionsExecutor>();
   executors[typeid(SetQuorum)] = std::make_shared<SetQuorumExecutor>();
   executors[typeid(TransferAsset)] = std::make_shared<TransferAssetExecutor>();
   executors[typeid(AppendRole)] = std::make_shared<AppendRoleExecutor>();

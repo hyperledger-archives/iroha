@@ -12,9 +12,8 @@ message Asset {
 
 message Account {
     string account_id = 1;
-    string domain_name = 2;
-    Permissions permissions = 3;
-    uint32 quorum = 4;
+    string domain_id = 2;
+    uint32 quorum = 3;
 }
 
 message AccountAsset {
@@ -30,6 +29,7 @@ message AccountAssetResponse {
 
 message AccountResponse {
     Account account = 1;
+    repeated string account_roles = 2;
 }
 
 message AssetResponse {

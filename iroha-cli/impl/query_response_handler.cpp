@@ -33,6 +33,12 @@ namespace iroha_cli {
         &QueryResponseHandler::handleSignatoriesResponse;
     handler_map_[QueryResponse::ResponseCase::kTransactionsResponse] =
         &QueryResponseHandler::handleTransactionsResponse;
+    handler_map_[QueryResponse::ResponseCase::kRolesResponse] =
+        &QueryResponseHandler::handleRolesResponse;
+    handler_map_[QueryResponse::ResponseCase::kRolePermissionsResponse] =
+        &QueryResponseHandler::handleRolePermissionsResponse;
+    handler_map_[QueryResponse::ResponseCase::kAssetResponse] =
+        &QueryResponseHandler::handleAssetResponse;
 
     // Error responses:
     error_handler_map_[ErrorResponse::STATEFUL_INVALID] =
@@ -45,6 +51,8 @@ namespace iroha_cli {
     error_handler_map_[ErrorResponse::NO_SIGNATORIES] = "No signatories found";
     error_handler_map_[ErrorResponse::NOT_SUPPORTED] = "Query not supported";
     error_handler_map_[ErrorResponse::WRONG_FORMAT] = "Query has wrong format";
+    error_handler_map_[ErrorResponse::NO_ROLES] = "No roles in the system";
+    error_handler_map_[ErrorResponse::NO_ASSET] = "No asset found";
   }
 
   void QueryResponseHandler::handle(
@@ -75,8 +83,28 @@ namespace iroha_cli {
     auto account = response.account_response().account();
     log_->info("[Account]:");
     log_->info("-Id:- {}", account.account_id());
-    // TODO 06/08/17 grimadas: print roles IR-506
-    log_->info("-Domain- {}", account.domain_name());
+    log_->info("-Domain- {}", account.domain_id());
+
+    log_->info("-Roles-: ");
+    auto roles = response.account_response().account_roles();
+    std::for_each(roles.begin(), roles.end(), [](auto role){
+      std::cout << " " << role;
+    });
+  }
+
+  void QueryResponseHandler::handleRolesResponse(
+      const iroha::protocol::QueryResponse &response) {
+    auto roles = response.roles_response().roles();
+    std::for_each(roles.begin(), roles.end(), [this](auto role) {
+      log_->info(" {} ", role);
+    });
+  }
+
+  void QueryResponseHandler::handleRolePermissionsResponse(const iroha::protocol::QueryResponse &response) {
+    auto perms = response.role_permissions_response().permissions();
+    std::for_each(perms.begin(), perms.end(), [this](auto perm) {
+      log_->info(" {} ", perm);
+    });
   }
 
   void QueryResponseHandler::handleAccountAssetsResponse(
@@ -95,8 +123,17 @@ namespace iroha_cli {
     auto signatories = response.signatories_response().keys();
     log_->info("[Signatories]");
     std::for_each(
-        signatories.begin(), signatories.end(),
-        [this](auto signatory) { log_->info("-Signatory- {}", signatory); });
+        signatories.begin(), signatories.end(), [this](auto signatory) {
+          log_->info("-Signatory- {}", signatory);
+        });
+  }
+
+  void QueryResponseHandler::handleAssetResponse(const iroha::protocol::QueryResponse &response) {
+    auto asset = response.asset_response().asset();
+    log_->info("[Asset]");
+    log_->info("-Asset Id- {}", asset.asset_id());
+    log_->info("-Domain Id- {}", asset.domain_id());
+    log_->info("-Precision- {}", asset.precision());
   }
 
   void QueryResponseHandler::handleTransactionsResponse(

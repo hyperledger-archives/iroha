@@ -15,30 +15,26 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ACCOUNT_RESPONSE_HPP
-#define IROHA_ACCOUNT_RESPONSE_HPP
+#ifndef IROHA_COMMON_EXECUTOR_HPP
+#define IROHA_COMMON_EXECUTOR_HPP
 
-#include "model/account.hpp"
-#include "model/query_response.hpp"
+#include "ametsuchi/wsv_query.hpp"
 
 namespace iroha {
   namespace model {
 
-    /**
-     * Provide response with account
-     */
-    struct AccountResponse : public QueryResponse {
-      /**
-       * Attached account
-       */
-      Account account;
+  /**
+   * Check that account has role permission
+   * @param account_id - account to check
+   * @param queries - WsvQueries
+   * @param permission_id  = permission to check
+   * @return  True if account has permission, false otherwise
+   */
+  bool checkAccountRolePermission(const std::string &account_id,
+                                  iroha::ametsuchi::WsvQuery &queries,
+                                  const std::string &permission_id);
 
-      /**
-       * Account's roles
-       */
-      std::vector<std::string> roles;
-
-    };
-  }  // namespace model
+  }
 }  // namespace iroha
-#endif  // IROHA_ACCOUNT_RESPONSE_HPP
+
+#endif  // IROHA_COMMON_EXECUTOR_HPP

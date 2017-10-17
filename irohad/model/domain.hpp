@@ -31,6 +31,11 @@ namespace iroha {
        * Domain unique identifier (full name)
        */
       std::string domain_id;
+
+      /**
+       * Default role for users in this domain
+       */
+      std::string default_role;
     };
   }
 }

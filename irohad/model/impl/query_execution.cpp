@@ -17,6 +17,8 @@
 
 #include "crypto/hash.hpp"
 #include "model/query_execution.hpp"
+#include "model/execution/common_executor.hpp"
+#include "model/permissions.hpp"
 #include "model/queries/responses/account_assets_response.hpp"
 #include "model/queries/responses/account_response.hpp"
 #include "model/queries/responses/asset_response.hpp"
@@ -26,95 +28,90 @@
 #include "model/queries/responses/transactions_response.hpp"
 
 using namespace iroha::model;
+using namespace iroha::ametsuchi;
 
 iroha::model::QueryProcessingFactory::QueryProcessingFactory(
     std::shared_ptr<ametsuchi::WsvQuery> wsvQuery,
     std::shared_ptr<ametsuchi::BlockQuery> blockQuery)
     : _wsvQuery(wsvQuery), _blockQuery(blockQuery) {}
 
+bool hasQueryPermission(const std::string& creator,
+                        const std::string& target_account, WsvQuery& wsv_query,
+                        const std::string& indiv_permission_id,
+                        const std::string& all_permission_id) {
+  return
+      // 1. Creator want to query his account, must have role permission on that
+      (creator == target_account
+       and checkAccountRolePermission(creator, wsv_query,
+                                      indiv_permission_id))
+      or  // 2. Creator has permission to get any account
+      (checkAccountRolePermission(creator, wsv_query, all_permission_id))
+      or  // 3. Creator has grant permission
+      (creator != target_account
+       and wsv_query.hasAccountGrantablePermission(creator, target_account,
+                                                   indiv_permission_id));
+  // TODO: add domain permissions
+}
+
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAssetInfo& query) {
-  auto creator = _wsvQuery->getAccount(query.creator_account_id);
-  // TODO 26/09/17 grimadas: check signatures IR-499
-  return
-      // Creator account exits
-      // TODO: add permission check
-      creator.has_value();
+  // TODO: check signatures
+  // TODO: add can read assets in domain
+  return checkAccountRolePermission(query.creator_account_id, *_wsvQuery,
+                                    can_read_assets);
 }
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetRoles& query) {
-  auto creator = _wsvQuery->getAccount(query.creator_account_id);
-  // TODO 26/09/17 grimadas: check signatures IR-499
-  return
-      // Creator account exits
-      // TODO: add permission check
-      creator.has_value();
+  // TODO: check signatures
+  return checkAccountRolePermission(query.creator_account_id, *_wsvQuery,
+                                    can_get_roles);
 }
 
 bool QueryProcessingFactory::validate(const model::GetRolePermissions& query) {
-  auto creator = _wsvQuery->getAccount(query.creator_account_id);
-  // TODO 26/09/17 grimadas: check signatures IR-499
-  return
-      // Creator account exits
-      // TODO: add permission check
-      creator.has_value();
+  // TODO: check signatures
+  return checkAccountRolePermission(query.creator_account_id, *_wsvQuery,
+                                    can_get_roles);
 }
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccount& query) {
-  auto creator = _wsvQuery->getAccount(query.creator_account_id);
-  // TODO 20/07/17 grimadas: check signatures IR-499
-  return
-      // Creator account exits
-      creator.has_value() &&
-      // Creator has permission to read, or account = creator
-      (creator.value().permissions.read_all_accounts ||
-       query.account_id == query.creator_account_id);
+  // TODO: check signatures
+  return hasQueryPermission(query.creator_account_id, query.account_id,
+                            *_wsvQuery, can_get_my_account,
+                            can_get_all_accounts);
 }
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetSignatories& query) {
-  auto creator = _wsvQuery->getAccount(query.creator_account_id);
+  // TODO: check signatures
   return
-      // Creator account exits
-      creator.has_value() &&
-      // Creator has permission to read, or account = creator
-      (creator.value().permissions.read_all_accounts ||
-       query.account_id == query.creator_account_id);
+      hasQueryPermission(query.creator_account_id, query.account_id, *_wsvQuery,
+                         can_get_my_signatories, can_get_all_signatories);
 }
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccountAssets& query) {
-  auto creator = _wsvQuery->getAccount(query.creator_account_id);
+  // TODO: check signatures
   return
-      // Creator account exits
-      creator.has_value() &&
-      // Creator has permission to read, or account = creator
-      (creator.value().permissions.read_all_accounts ||
-       query.account_id == query.creator_account_id);
+      hasQueryPermission(query.creator_account_id, query.account_id, *_wsvQuery,
+                         can_get_my_acc_ast, can_get_all_acc_ast);
 }
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccountTransactions& query) {
-  auto creator = _wsvQuery->getAccount(query.creator_account_id);
+  // TODO: check signatures
   return
-      // Creator account exits
-      creator.has_value() &&
-      // Creator has permission to read, or account = creator
-      (creator.value().permissions.read_all_accounts ||
-       query.account_id == query.creator_account_id);
+      hasQueryPermission(query.creator_account_id, query.account_id, *_wsvQuery,
+                         can_get_my_acc_txs, can_get_all_acc_txs);
 }
 
 bool iroha::model::QueryProcessingFactory::validate(
     const model::GetAccountAssetTransactions& query) {
-  auto creator = _wsvQuery->getAccount(query.creator_account_id);
+  // TODO: check signatures
   return
-      // Creator account exits
-      creator.has_value() &&
-      // Creator has permission to read, or account = creator
-      (creator.value().permissions.read_all_accounts ||
-       query.account_id == query.creator_account_id);
+      hasQueryPermission(query.creator_account_id, query.account_id, *_wsvQuery,
+                         can_get_my_acc_ast_txs, can_get_all_acc_ast_txs);
 }
 
 std::shared_ptr<iroha::model::QueryResponse>
@@ -167,14 +164,17 @@ std::shared_ptr<iroha::model::QueryResponse>
 iroha::model::QueryProcessingFactory::executeGetAccount(
     const model::GetAccount& query) {
   auto acc = _wsvQuery->getAccount(query.account_id);
-  if (!acc.has_value()) {
+  auto roles = _wsvQuery->getAccountRoles(query.account_id);
+  if (not acc.has_value() or not roles.has_value()) {
     iroha::model::ErrorResponse response;
     response.query_hash = iroha::hash(query);
     response.reason = iroha::model::ErrorResponse::NO_ACCOUNT;
     return std::make_shared<ErrorResponse>(response);
   }
+
   iroha::model::AccountResponse response;
   response.account = acc.value();
+  response.roles = roles.value();
   response.query_hash = iroha::hash(query);
   return std::make_shared<iroha::model::AccountResponse>(response);
 }
@@ -293,35 +293,35 @@ iroha::model::QueryProcessingFactory::execute(
     }
     return executeGetAccountAssetTransactions(*qry);
   }
-  if (instanceof<GetRoles>(query.get())){
+  if (instanceof <GetRoles>(query.get())) {
     auto qry = std::static_pointer_cast<const GetRoles>(query);
-    if(not validate(*qry)){
+    if (not validate(*qry)) {
       ErrorResponse response;
       response.query_hash = iroha::hash(*qry);
       response.reason = ErrorResponse::STATEFUL_INVALID;
       return std::make_shared<ErrorResponse>(response);
     }
-    return  executeGetRoles(*qry);
+    return executeGetRoles(*qry);
   }
-  if (instanceof<GetRolePermissions>(query.get())){
+  if (instanceof <GetRolePermissions>(query.get())) {
     auto qry = std::static_pointer_cast<const GetRolePermissions>(query);
-    if(not validate(*qry)){
+    if (not validate(*qry)) {
       ErrorResponse response;
       response.query_hash = iroha::hash(*qry);
       response.reason = ErrorResponse::STATEFUL_INVALID;
       return std::make_shared<ErrorResponse>(response);
     }
-    return  executeGetRolePermissions(*qry);
+    return executeGetRolePermissions(*qry);
   }
-  if (instanceof<GetAssetInfo>(query.get())){
+  if (instanceof <GetAssetInfo>(query.get())) {
     auto qry = std::static_pointer_cast<const GetAssetInfo>(query);
-    if(not validate(*qry)){
+    if (not validate(*qry)) {
       ErrorResponse response;
       response.query_hash = iroha::hash(*qry);
       response.reason = ErrorResponse::STATEFUL_INVALID;
       return std::make_shared<ErrorResponse>(response);
     }
-    return  executeGetAssetInfo(*qry);
+    return executeGetAssetInfo(*qry);
   }
   iroha::model::ErrorResponse response;
   response.query_hash = iroha::hash(*query);

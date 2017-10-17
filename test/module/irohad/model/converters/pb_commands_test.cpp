@@ -24,7 +24,6 @@
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 
@@ -34,8 +33,7 @@
 #include "model/commands/revoke_permission.hpp"
 
 #include "model/converters/pb_command_factory.hpp"
-
-#include <algorithm>
+#include "model/permissions.hpp"
 
 using namespace iroha::model;
 
@@ -100,6 +98,15 @@ TEST(CommandTest, add_signatory_abstract_factory) {
   command_converter_test(orig_command);
 }
 
+TEST(CommandTest, create_domain){
+  auto factory = iroha::model::converters::PbCommandFactory();
+  auto orig_command = CreateDomain("soramitsu", "jp-user");
+  auto proto_command = factory.serializeCreateDomain(orig_command);
+  auto serial_command = factory.deserializeCreateDomain(proto_command);
+  ASSERT_EQ(orig_command, serial_command);
+  command_converter_test(orig_command);
+}
+
 TEST(CommandTest, create_asset) {
   auto factory = iroha::model::converters::PbCommandFactory();
 
@@ -142,24 +149,6 @@ TEST(CommandTest, remove_signatory) {
   command_converter_test(orig_command);
 }
 
-TEST(CommandTest, set_acount_permissions) {
-  auto factory = iroha::model::converters::PbCommandFactory();
-
-  auto orig_command = iroha::model::SetAccountPermissions();
-  orig_command.account_id = "Vasya";
-  iroha::model::Account::Permissions perm;
-  perm.can_transfer = true;
-  perm.add_signatory = true;
-  perm.issue_assets = true;
-  orig_command.new_permissions = perm;
-
-  auto proto_command = factory.serializeSetAccountPermissions(orig_command);
-  auto serial_command = factory.deserializeSetAccountPermissions(proto_command);
-
-  ASSERT_EQ(orig_command, serial_command);
-
-  command_converter_test(orig_command);
-}
 
 TEST(CommandTest, set_account_quorum) {
   auto factory = iroha::model::converters::PbCommandFactory();
@@ -194,16 +183,35 @@ TEST(CommandTest, set_transfer_asset) {
   command_converter_test(orig_command);
 }
 
+class TestablePbCommandFactory : public iroha::model::converters::PbCommandFactory{
+ public:
+  auto& getPermMap(){
+    return pb_role_map_;
+  }
+};
+
+
 TEST(CommandTest, create_role) {
   auto factory = iroha::model::converters::PbCommandFactory();
+  std::unordered_set<std::string> perms;
+  perms.insert(all_perm_group.begin(), all_perm_group.end());
 
-  auto orig_command = CreateRole("master", {"CanDoMagic"});
+  for (auto perm : perms){
+    TestablePbCommandFactory test_factory;
+    auto map = test_factory.getPermMap();
+    auto it = map.right.find(perm);
+    ASSERT_NE(map.right.end(), it) << "On permission " << perm;
+    std::unordered_set<std::string> tmp_perms = {perm};
+    auto orig_command = CreateRole("master", tmp_perms);
+    auto proto_command = factory.serializeCreateRole(orig_command);
+    auto serial_command = factory.deserializeCreateRole(proto_command);
+    ASSERT_EQ(orig_command, serial_command);
 
+  }
+  auto orig_command = CreateRole("master", perms);
   auto proto_command = factory.serializeCreateRole(orig_command);
   auto serial_command = factory.deserializeCreateRole(proto_command);
-
   ASSERT_EQ(orig_command, serial_command);
-
   command_converter_test(orig_command);
 }
 
@@ -223,7 +231,7 @@ TEST(CommandTest, append_role) {
 TEST(CommandTest, grant_permission) {
   auto factory = iroha::model::converters::PbCommandFactory();
 
-  auto orig_command = GrantPermission("admin@test", "can_read");
+  auto orig_command = GrantPermission("admin@test", can_add_signatory);
 
   auto proto_command = factory.serializeGrantPermission(orig_command);
   auto serial_command = factory.deserializeGrantPermission(proto_command);
@@ -236,7 +244,7 @@ TEST(CommandTest, grant_permission) {
 TEST(CommandTest, revoke_permission) {
   auto factory = iroha::model::converters::PbCommandFactory();
 
-  auto orig_command = RevokePermission("admin@test", "can_read");
+  auto orig_command = RevokePermission("admin@test", can_add_signatory);
 
   auto proto_command = factory.serializeRevokePermission(orig_command);
   auto serial_command = factory.deserializeRevokePermission(proto_command);

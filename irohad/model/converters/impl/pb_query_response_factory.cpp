@@ -84,21 +84,7 @@ namespace iroha {
         protocol::Account pb_account;
         pb_account.set_quorum(account.quorum);
         pb_account.set_account_id(account.account_id);
-        pb_account.set_domain_name(account.domain_name);
-
-        auto permissions = pb_account.mutable_permissions();
-        permissions->set_set_quorum(account.permissions.set_quorum);
-        permissions->set_set_permissions(account.permissions.set_permissions);
-        permissions->set_remove_signatory(account.permissions.remove_signatory);
-        permissions->set_read_all_accounts(
-            account.permissions.read_all_accounts);
-        permissions->set_issue_assets(account.permissions.issue_assets);
-        permissions->set_create_domains(account.permissions.create_domains);
-        permissions->set_create_accounts(account.permissions.create_accounts);
-        permissions->set_create_assets(account.permissions.create_assets);
-        permissions->set_can_transfer(account.permissions.can_transfer);
-        permissions->set_add_signatory(account.permissions.add_signatory);
-
+        pb_account.set_domain_id(account.domain_id);
         return pb_account;
       }
 
@@ -107,26 +93,7 @@ namespace iroha {
         model::Account res;
         res.account_id = pb_account.account_id();
         res.quorum = pb_account.quorum();
-        res.domain_name = pb_account.domain_name();
-
-        res.permissions.add_signatory =
-            pb_account.permissions().add_signatory();
-        res.permissions.can_transfer = pb_account.permissions().can_transfer();
-        res.permissions.create_assets =
-            pb_account.permissions().create_assets();
-        res.permissions.create_accounts =
-            pb_account.permissions().create_accounts();
-        res.permissions.create_domains =
-            pb_account.permissions().create_domains();
-        res.permissions.issue_assets = pb_account.permissions().issue_assets();
-        res.permissions.read_all_accounts =
-            pb_account.permissions().read_all_accounts();
-        res.permissions.remove_signatory =
-            pb_account.permissions().remove_signatory();
-        res.permissions.set_permissions =
-            pb_account.permissions().set_permissions();
-        res.permissions.set_quorum = pb_account.permissions().set_quorum();
-
+        res.domain_id = pb_account.domain_id();
         return res;
       }
 
@@ -136,6 +103,9 @@ namespace iroha {
         protocol::AccountResponse pb_response;
         pb_response.mutable_account()->CopyFrom(
             serializeAccount(accountResponse.account));
+        for (auto role : accountResponse.roles){
+          pb_response.add_account_roles(role);
+        }
         return pb_response;
       }
 
