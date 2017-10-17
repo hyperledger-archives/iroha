@@ -15,15 +15,20 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_BASE_COMMAND_HPP
-#define IROHA_BASE_COMMAND_HPP
+#ifndef IROHA_SHARED_MODEL_COMMAND_HPP
+#define IROHA_SHARED_MODEL_COMMAND_HPP
+
+#include "interfaces/primitive.hpp"
+#include "model/command.hpp"
+#include "boost/variant.hpp"
+
 namespace shared_model {
   namespace interface {
 
-    class BaseCommand {
-      // TODO implement
+    class Command : public Primitive<Command, iroha::model::Command> {
+      boost::variant<...>;
     };
 
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_BASE_COMMAND_HPP
+#endif  // IROHA_SHARED_MODEL_COMMAND_HPP

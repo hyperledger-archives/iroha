@@ -15,3 +15,8 @@
 add_library(model_interfaces
     impl.cpp
     )
+
+target_link_libraries(model_interfaces
+    model
+    ${Boost_LIBRARIES}
+    )

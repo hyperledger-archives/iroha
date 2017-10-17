@@ -24,27 +24,59 @@
 namespace shared_model {
   namespace interface {
 
+    /**
+     * Primitive is a base class of whole domain objects in system.
+     * This class required for guarantee consistent interface on whole model
+     * objects.
+     * @tparam Model - your new style model;
+     * @tparam OldModel - old-style model, that changed with new model;
+     */
+    template <typename Model, typename OldModel>
     class Primitive {
+     public:
+      /**
+       * Reference for model type.
+       */
+      using ModelType = Model;
+
+      /**
+       * Reference for old-style model type
+       */
+      using OldModelType = OldModel;
+
+      /**
+       * Make string developer representation of object
+       * @return string with internal state of object
+       */
       virtual std::string toString() const {
-        using namespace std::string_literals;
-        // TODO rework with format
-        return "Primitive at address["s + "]";
+        std::string s = "Primitive at address[";
+        s += std::string(&this);
+        s += "]";
+        return s;
       }
 
-      // may be make as friend
-      bool operator==(const Primitive &primitive) const {
-        return typeid(*this) == typeid(primitive) ? equals(primitive) : false;
+      virtual bool operator==(const ModelType &rhs) const = 0;
+
+      virtual bool operator!=(const ModelType &rhs) const {
+        return not(*this == rhs);
       }
 
-      bool operator!=(const Primitive &primitive) const {
-        return not(*this == primitive);
-      }
+      /**
+       * Create new old-style object for model.
+       * Useful for backward compatibility.
+       * You should to avoid this method and write code with new model.
+       * This method should be removed when all components reworked with new
+       * model
+       * @return pointer for old-style object
+       */
+      [[deprecated]] virtual OldModelType *makeOldModel() const = 0;
 
-      virtual Primitive *copy() const = 0;
-
-     private:
-      // may be provide as template
-      virtual bool equals(const Primitive &primitive) const = 0;
+      /**
+       * Polymorphic copy constructor.
+       * Method guarantee deep-copy.
+       * @return pointer to copied object
+       */
+      virtual ModelType *copy() const = 0;
     };
 
   }  // namespace interface

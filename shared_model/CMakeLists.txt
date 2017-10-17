@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-
 add_subdirectory(backend)
 add_subdirectory(builders)
 add_subdirectory(converters)
 add_subdirectory(crypto)
 add_subdirectory(interfaces)
 add_subdirectory(validators)
+
+
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/shared_model_bin)

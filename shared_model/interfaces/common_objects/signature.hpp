@@ -15,13 +15,46 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SIGNATURE_HPP
-#define IROHA_SIGNATURE_HPP
+#ifndef IROHA_SHARED_MODEL_SIGNATURE_HPP
+#define IROHA_SHARED_MODEL_SIGNATURE_HPP
+
+#include "interfaces/primitive.hpp"
+#include "model/signature.hpp"
+
 namespace shared_model {
   namespace interface {
-    class Signature {
-      // TODO implement
+
+    /**
+     * Class represents signature of high-level domain objects.
+     */
+    class Signature : public Primitive<Signature, iroha::model::Signature> {
+     public:
+
+      /**
+       * Type of hashes
+       */
+      using HashType = Hash;
+
+      /**
+       * @return public key of signatory
+       */
+      virtual const HashType &publicKey() const;
+
+      /**
+       * @return signed hash of message
+       */
+      virtual const HashType &signedHash() const;
+
+      bool operator==(const Signature &rhs) const override {
+        return this->publicKey() == rhs.publicKey() and
+            this->signedHash() == rhs.signedHash();
+      }
+
+      iroha::model::Signature *makeOldModel() const override {
+        // todo implement
+        return nullptr;
+      }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SIGNATURE_HPP
+#endif  // IROHA_SHARED_MODEL_SIGNATURE_HPP
