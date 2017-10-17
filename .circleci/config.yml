@@ -27,9 +27,6 @@ jobs:
       - run:
           name: ccache setup
           command: |
-            ccache --version
-            ccache --show-stats
-            ccache --zero-stats
             ccache -F 0
             ccache -M 0
 
@@ -51,6 +48,8 @@ jobs:
           key: build-cache-{{ .Branch }}-{{ epoch }}
           paths:
             - ~/.ccache
+
+      - run: ccache --show-stats
 
       # test and coverage info
       - run:
@@ -92,20 +91,22 @@ jobs:
       - run:
           name: execute sonar-scanner to analyze PR
           command: >
-            [ ! -z "$SONAR_TOKEN" ] && \
+            if [ ! -z "$SONAR_TOKEN" ] && \
               [ ! -z "$SORABOT_TOKEN" ] && \
               [ ! -z "$CIRCLE_BUILD_NUM" ] && \
-              [ ! -z "$CI_PULL_REQUEST" ] || \
-              (echo "required env vars not found"; exit 0)
-
-            sonar-scanner \
-              -Dsonar.github.disableInlineComments \
-              -Dsonar.github.repository="hyperledger/iroha" \
-              -Dsonar.analysis.mode=preview \
-              -Dsonar.login=${SONAR_TOKEN} \
-              -Dsonar.projectVersion="${CIRCLE_BUILD_NUM}" \
-              -Dsonar.github.oauth="${SORABOT_TOKEN}" \
-              -Dsonar.github.pullRequest="$(echo $CI_PULL_REQUEST | egrep -o "[0-9]+")"
+              [ ! -z "$CI_PULL_REQUEST" ]; then
+              echo "required env vars not found"
+              exit 0
+            else
+              sonar-scanner \
+                -Dsonar.github.disableInlineComments \
+                -Dsonar.github.repository="hyperledger/iroha" \
+                -Dsonar.analysis.mode=preview \
+                -Dsonar.login=${SONAR_TOKEN} \
+                -Dsonar.projectVersion="${CIRCLE_BUILD_NUM}" \
+                -Dsonar.github.oauth="${SORABOT_TOKEN}" \
+                -Dsonar.github.pullRequest="$(echo $CI_PULL_REQUEST | egrep -o "[0-9]+")"
+            fi
 
       - save_cache:
           key: sonar-{{ epoch }}
@@ -226,9 +227,3 @@ workflows:
                 - master
             tags:
               only: /v[\.0-9]+.*/
-
-
-      # # - dockerize:
-      # #     requires:
-      # #       - sonar
-
