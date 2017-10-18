@@ -129,9 +129,6 @@ jobs:
 
 
   macos-build:
-    #docker:
-    #  - image: postgres:9.5
-    #  - image: redis:3.2.8
     macos:
       xcode: 9.0.0
     steps:
