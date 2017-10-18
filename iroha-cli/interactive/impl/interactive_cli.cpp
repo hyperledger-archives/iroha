@@ -31,6 +31,11 @@ namespace iroha_cli {
                     QRY_CODE,
                     "New query",
                     &InteractiveCli::startQuery);
+      addCliCommand(menu_points_,
+                    main_handler_map_,
+                    ST_CODE,
+                    "New transaction status request",
+                    &InteractiveCli::startTxStatusRequest);
     }
 
     InteractiveCli::InteractiveCli(
@@ -61,6 +66,8 @@ namespace iroha_cli {
     void InteractiveCli::startQuery() { query_cli_.run(); }
 
     void InteractiveCli::startTx() { tx_cli_.run(); }
+
+    void InteractiveCli::startTxStatusRequest() { customActionCli_.run(); }
 
     void InteractiveCli::run() {
       std::cout << "Welcome to Iroha-Cli. " << std::endl;

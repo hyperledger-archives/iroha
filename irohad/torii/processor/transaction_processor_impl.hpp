@@ -30,9 +30,7 @@ namespace iroha {
      public:
       /**
        * @param pcs - provide information proposals and commits
-       * @param os - ordering service for sharing transactions
        * @param validator - perform stateless validation
-       * @param crypto_provider - sign income transactions
        */
       TransactionProcessorImpl(
           std::shared_ptr<network::PeerCommunicationService> pcs,

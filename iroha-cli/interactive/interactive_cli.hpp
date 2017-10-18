@@ -21,6 +21,7 @@
 #include "crypto/keys_manager_impl.hpp"
 #include "interactive/interactive_query_cli.hpp"
 #include "interactive/interactive_transaction_cli.hpp"
+#include "interactive/interactive_custom_action_cli.hpp"
 
 namespace iroha_cli {
   namespace interactive {
@@ -55,13 +56,20 @@ namespace iroha_cli {
        * Start new query
        */
       void startQuery();
+
       /**
        * Start new transaction
        */
       void startTx();
 
+      /**
+       * Start new request about tx status
+       */
+      void startTxStatusRequest();
+
       const std::string TX_CODE = "tx";
       const std::string QRY_CODE = "qry";
+      const std::string ST_CODE = "st";
 
       /**
        * Account id of creator
@@ -71,6 +79,7 @@ namespace iroha_cli {
       // -- Query, tx cli --
       InteractiveTransactionCli tx_cli_;
       InteractiveQueryCli query_cli_;
+      InteractiveCustomActionCli customActionCli_;
 
       /**
        * Main menu points
