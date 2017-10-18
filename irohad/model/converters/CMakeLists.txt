@@ -27,3 +27,6 @@ target_link_libraries(pb_model_converters
     cryptography
     logger
     )
+target_include_directories(pb_model_converters PUBLIC
+    ${Boost_INCLUDE_DIRS}
+    )

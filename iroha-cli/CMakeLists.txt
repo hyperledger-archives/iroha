@@ -64,6 +64,9 @@ target_link_libraries(iroha-cli
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}
     )
+target_include_directories(iroha-cli PUBLIC
+    ${Boost_INCLUDE_DIRS}
+    )
 
 add_install_step_for_bin(iroha-cli)
 
