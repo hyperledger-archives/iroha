@@ -84,6 +84,11 @@ namespace iroha {
 
        private:
 
+        /**
+         * Create GRPC connection for given peer if it does not exist in
+         * peers map
+         * @param peer to instantiate connection with
+         */
         void createPeerConnection(const model::Peer &peer);
 
         /**
