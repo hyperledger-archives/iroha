@@ -3,7 +3,7 @@ defaults: &defaults
   environment:
     IROHA_HOME: /opt/iroha
     IROHA_BUILD: /opt/iroha/build
-
+    CCACHE_DIR: ~/.ccache
 
 version: 2
 
@@ -18,19 +18,14 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - build-cache-{{ .Branch }}-
-            - build-cache-
+            - build-cache-{{ .Branch }}-{{ arch }}
           paths:
             - ~/.ccache
-
-      # build and cache build results
       - run:
           name: ccache setup
           command: |
             ccache -F 0
             ccache -M 0
-
-      # cmake and make
       - run:
           name: cmake
           command: cmake -DCOVERAGE=ON -H$IROHA_HOME -B$IROHA_BUILD
@@ -38,33 +33,20 @@ jobs:
           name: make
           command: |
             cmake --build $IROHA_BUILD -- -j4
-      # save cache
-      - run:
-          name: ccache teardown
-          command: |
-            ccache --cleanup
-            ccache --show-stats
       - save_cache:
-          key: build-cache-{{ .Branch }}-{{ epoch }}
+          key: build-cache-{{ .Branch }}-{{ arch }}-{{ epoch }}
           paths:
             - ~/.ccache
-
       - run: ccache --show-stats
-
-      # test and coverage info
       - run:
           name: unit tests, generate xunit-*.xml
           command: cmake --build $IROHA_BUILD --target test
       - run:
           name: coverage info
           command: cmake --build $IROHA_BUILD --target gcovr
-
-      # analysis
       - run:
           name: cppcheck
           command: cmake --build $IROHA_BUILD --target cppcheck
-
-      # persist reports
       - persist_to_workspace:
           root: /opt/iroha/build
           paths:
@@ -95,9 +77,6 @@ jobs:
               [ ! -z "$SORABOT_TOKEN" ] && \
               [ ! -z "$CIRCLE_BUILD_NUM" ] && \
               [ ! -z "$CI_PULL_REQUEST" ]; then
-              echo "required env vars not found"
-              exit 0
-            else
               sonar-scanner \
                 -Dsonar.github.disableInlineComments \
                 -Dsonar.github.repository="hyperledger/iroha" \
@@ -106,8 +85,9 @@ jobs:
                 -Dsonar.projectVersion="${CIRCLE_BUILD_NUM}" \
                 -Dsonar.github.oauth="${SORABOT_TOKEN}" \
                 -Dsonar.github.pullRequest="$(echo $CI_PULL_REQUEST | egrep -o "[0-9]+")"
+            else
+              echo "required env vars not found"
             fi
-
       - save_cache:
           key: sonar-{{ epoch }}
           paths:
@@ -132,10 +112,16 @@ jobs:
       - run:
           name: execute sonar-scanner
           command: >
-            sonar-scanner \
-              -Dsonar.login="${SONAR_TOKEN}" \
-              -Dsonar.projectVersion="${CIRCLE_BUILD_NUM}" \
-              -Dsonar.branch="${CIRCLE_BRANCH}"
+            if [ ! -z "$SONAR_TOKEN" ] && \
+              [ ! -z "$CIRCLE_BUILD_NUM" ] && \
+              [ ! -z "$CIRCLE_BRANCH" ]; then
+              sonar-scanner \
+                -Dsonar.login="${SONAR_TOKEN}" \
+                -Dsonar.projectVersion="${CIRCLE_BUILD_NUM}" \
+                -Dsonar.branch="${CIRCLE_BRANCH}"
+            else
+              echo "required env vars not found"
+            fi
       - save_cache:
           key: sonar-{{ epoch }}
           paths:
@@ -150,49 +136,43 @@ jobs:
       xcode: 9.0.0
     steps:
       - checkout
-      
       - restore_cache:
           keys:
             - brew-
-
-      - restore_cache:
-          keys:
-            - build-cache-{{ .Branch }}-
-            - build-cache-
           paths:
-            - ~/.ccache
-      
+            - Library/Caches/Homebrew
       - run:
           name: install dev dependencies
           command: brew install cmake boost postgres grpc autoconf automake libtool ccache
-
       - save_cache:
-          key: brew-{{ epoch }}
+          key: brew-{{ arch }}-{{ epoch }}
           paths:
-            - $HOME/Library/Caches/Homebrew
-
-      - run:
-          name: ccache setup
-          command: |
-            ccache -F 0
-            ccache -M 0      
-      
+            - Library/Caches/Homebrew
+      - restore_cache:
+          keys:
+            - build-cache-{{ .Branch }}-{{ arch }}
+          paths:
+            - ~/.ccache
+      - restore_cache:
+          keys:
+            - external-{{ arch }}-{{ .Branch }}
+            - external-{{ arch }}
+          paths:
+            - external
+      - run: ccache --show-stats
       - run:
           name: build
           command: |
             cmake -H. -Bbuild
             cmake --build build -- -j$(sysctl -n hw.ncpu)
-
-      - run:
-          name: ccache teardown
-          command: |
-            ccache --cleanup
-            ccache --show-stats
-      
       - save_cache:
-          key: build-cache-{{ .Branch }}-{{ epoch }}
+          key: build-cache-{{ .Branch }}-{{ arch }}-{{ epoch }}
           paths:
             - ~/.ccache
+      - save_cache:
+          key: external-{{ arch }}-{{ .Branch }}-{{ epoch }}
+          paths:
+            - external
 
       - run: ccache --show-stats
      
