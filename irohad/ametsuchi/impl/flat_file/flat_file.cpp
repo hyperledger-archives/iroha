@@ -150,6 +150,11 @@ std::unique_ptr<FlatFile> FlatFile::create(const std::string &path) {
 }
 
 void FlatFile::add(Identifier id, const std::vector<uint8_t> &block) {
+  if (id != current_id_ + 1) {
+    log_->warn("Cannot append non-consecutive block");
+    return;
+  }
+
   auto next_id = id;
   auto file_name = dump_dir_ + SEPARATOR + id_to_name(id);
 

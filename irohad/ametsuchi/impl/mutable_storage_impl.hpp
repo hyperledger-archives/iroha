@@ -49,7 +49,7 @@ namespace iroha {
       void index_block(uint64_t height, model::Block block);
 
       hash256_t top_hash_;
-      std::unordered_map<uint32_t, model::Block> block_store_;
+      std::map<uint32_t, model::Block> block_store_;
       std::unique_ptr<cpp_redis::redis_client> index_;
 
       std::unique_ptr<pqxx::lazyconnection> connection_;
