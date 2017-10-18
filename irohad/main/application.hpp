@@ -62,6 +62,7 @@ class Irohad {
          size_t redis_port,
          const std::string &pg_conn,
          size_t torii_port,
+         size_t internal_port,
          const iroha::keypair_t &keypair);
 
   /**
@@ -84,8 +85,6 @@ class Irohad {
   virtual void initProtoFactories();
 
   virtual void initPeerQuery();
-
-  virtual void initPeer();
 
   virtual void initCryptoProvider();
 
@@ -113,6 +112,7 @@ class Irohad {
   size_t redis_port_;
   std::string pg_conn_;
   size_t torii_port_;
+  size_t internal_port_;
 
   // ------------------------| internal dependencies |-------------------------
 
@@ -132,9 +132,6 @@ class Irohad {
 
   // peer query
   std::shared_ptr<iroha::ametsuchi::PeerQuery> wsv;
-
-  // peer
-  iroha::model::Peer peer;
 
   // ordering gate
   std::shared_ptr<iroha::network::OrderingGate> ordering_gate;

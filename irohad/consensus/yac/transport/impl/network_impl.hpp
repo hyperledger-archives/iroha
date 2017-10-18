@@ -21,10 +21,12 @@
 #include <atomic>
 #include <thread>
 #include <unordered_map>
-#include "network/impl/async_grpc_client.hpp"
+
+#include "ametsuchi/peer_query.hpp"
 #include "consensus/yac/transport/yac_network_interface.hpp"
-#include "yac.grpc.pb.h"
 #include "logger/logger.hpp"
+#include "network/impl/async_grpc_client.hpp"
+#include "yac.grpc.pb.h"
 
 namespace iroha {
   namespace consensus {
@@ -81,6 +83,8 @@ namespace iroha {
             ::google::protobuf::Empty *response) override;
 
        private:
+
+        void createPeerConnection(const model::Peer &peer);
 
         /**
          * Address of current peer
