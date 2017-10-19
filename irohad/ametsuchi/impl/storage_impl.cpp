@@ -21,6 +21,7 @@
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/redis_flat_block_query.hpp"
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
+#include "common/files.hpp"
 #include "model/converters/json_common.hpp"
 
 namespace iroha {
@@ -116,6 +117,59 @@ namespace iroha {
           std::move(postgres_connection),
           std::move(wsv_transaction),
           std::move(command_executors.value()));
+    }
+
+    bool StorageImpl::insertBlock(model::Block block) {
+      log_->info("create mutable storage");
+      auto storage = createMutableStorage();
+      auto inserted = storage->apply(
+          block,
+          [](const auto &current_block, auto &query, const auto &top_hash) {
+            return true;
+          });
+      log_->info("block inserted: {}", inserted);
+      commit(std::move(storage));
+      return inserted;
+    }
+
+    void StorageImpl::dropStorage() {
+      log_->info("Drop ledger");
+      auto drop = R"(
+DROP TABLE IF EXISTS account_has_signatory;
+DROP TABLE IF EXISTS account_has_asset;
+DROP TABLE IF EXISTS role_has_permissions;
+DROP TABLE IF EXISTS account_has_roles;
+DROP TABLE IF EXISTS account_has_grantable_permissions;
+DROP TABLE IF EXISTS account;
+DROP TABLE IF EXISTS asset;
+DROP TABLE IF EXISTS domain;
+DROP TABLE IF EXISTS signatory;
+DROP TABLE IF EXISTS peer;
+DROP TABLE IF EXISTS role;
+)";
+
+      // erase db
+      log_->info("drop dp");
+      pqxx::connection connection(postgres_options_);
+      pqxx::work txn(connection);
+      txn.exec(drop);
+      txn.commit();
+
+      pqxx::connection init_connection(postgres_options_);
+      pqxx::work init_txn(connection);
+      init_txn.exec(init_);
+      init_txn.commit();
+
+      // erase tx index
+      log_->info("drop redis");
+      cpp_redis::redis_client client;
+      client.connect(redis_host_, redis_port_);
+      client.flushall();
+      client.sync_commit();
+
+      // erase blocks
+      log_->info("drop block store");
+      remove_all(block_store_dir_);
     }
 
     nonstd::optional<ConnectionContext> StorageImpl::initConnections(

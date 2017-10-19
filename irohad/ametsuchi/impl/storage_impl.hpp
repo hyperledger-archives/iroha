@@ -67,6 +67,10 @@ namespace iroha {
 
       std::unique_ptr<MutableStorage> createMutableStorage() override;
 
+      virtual bool insertBlock(model::Block block) override;
+
+      virtual void dropStorage() override;
+
       void commit(std::unique_ptr<MutableStorage> mutableStorage) override;
 
       std::shared_ptr<WsvQuery> getWsvQuery() const override;

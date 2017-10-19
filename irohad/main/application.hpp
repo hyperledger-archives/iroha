@@ -19,7 +19,6 @@
 #define IROHA_APPLICATION_HPP
 
 #include "ametsuchi/impl/storage_impl.hpp"
-#include "ametsuchi/impl/test_storage_impl.hpp"
 #include "crypto/crypto.hpp"
 #include "logger/logger.hpp"
 #include "main/impl/block_loader_init.hpp"
@@ -172,9 +171,6 @@ class Irohad {
   iroha::network::OrderingInit ordering_init;
   iroha::consensus::yac::YacInit yac_init;
   iroha::network::BlockLoaderInit loader_init;
-
-  // drop storage
-  std::shared_ptr<iroha::ametsuchi::TestStorage> test_storage_;
 
   std::thread internal_thread, server_thread;
 

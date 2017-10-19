@@ -79,9 +79,6 @@ int main(int argc, char *argv[]) {
   }
 
   if (not FLAGS_genesis_block.empty()) {
-    // clear previous storage if any
-    irohad.dropStorage();
-
     iroha::main::BlockInserter inserter(irohad.storage);
     auto file = inserter.loadFile(FLAGS_genesis_block);
     auto block = inserter.parseBlock(file.value());
@@ -90,6 +87,9 @@ int main(int argc, char *argv[]) {
       log->error("Failed to parse genesis block");
       return EXIT_FAILURE;
     }
+
+    // clear previous storage if any
+    irohad.dropStorage();
 
     log->info("Block is parsed");
 
