@@ -18,14 +18,15 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - build-cache-{{ .Branch }}-{{ arch }}
+            - build-cache-{{ arch }}-{{ .Branch }}
+            - build-cache-{{ arch }}
           paths:
             - ~/.ccache
       - run:
           name: ccache setup
           command: |
-            ccache -F 0
-            ccache -M 0
+            ccache --max-files=0
+            ccache --max-size=1G
       - run:
           name: cmake
           command: cmake -DCOVERAGE=ON -H$IROHA_HOME -B$IROHA_BUILD
@@ -34,7 +35,7 @@ jobs:
           command: |
             cmake --build $IROHA_BUILD -- -j4
       - save_cache:
-          key: build-cache-{{ .Branch }}-{{ arch }}-{{ epoch }}
+          key: build-cache-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
             - ~/.ccache
       - run: ccache --show-stats
@@ -135,7 +136,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - brew-
+            - brew-{{ arch }}
           paths:
             - Library/Caches/Homebrew
       - run:
@@ -147,7 +148,7 @@ jobs:
             - Library/Caches/Homebrew
       - restore_cache:
           keys:
-            - build-cache-{{ .Branch }}-{{ arch }}
+            - build-cache-{{ arch }}-{{ .Branch }}
           paths:
             - ~/.ccache
       - restore_cache:
@@ -163,7 +164,7 @@ jobs:
             cmake -H. -Bbuild
             cmake --build build -- -j$(sysctl -n hw.ncpu)
       - save_cache:
-          key: build-cache-{{ .Branch }}-{{ arch }}-{{ epoch }}
+          key: build-cache-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
             - ~/.ccache
       - save_cache:
