@@ -31,6 +31,7 @@ namespace torii {
         std::shared_ptr<iroha::model::TransactionResponse> iroha_response) {
       // Find response in handler map
       auto res = this->handler_map_.find(iroha_response->tx_hash);
+      std::cout << "stat: " << iroha_response->current_status << std::endl;
       if (res == this->handler_map_.end()) {
         iroha::protocol::ToriiResponse response;
         response.set_tx_status(iroha::protocol::NOT_RECEIVED);
@@ -95,7 +96,11 @@ namespace torii {
       iroha::protocol::ToriiResponse &response) {
     auto resp = handler_map_.find(request.tx_hash());
 
+    std::cout << "request: " << request.tx_hash() << std::endl;
+
     if (resp == handler_map_.end()) {
+      // TODO: request blockstore
+
       response.set_tx_status(
           iroha::protocol::TxStatus::NOT_RECEIVED);
       return;

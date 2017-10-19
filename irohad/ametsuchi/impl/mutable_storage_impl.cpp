@@ -21,6 +21,8 @@
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 
+#include "crypto/hash.hpp"
+
 namespace iroha {
   namespace ametsuchi {
     MutableStorageImpl::MutableStorageImpl(
@@ -45,6 +47,10 @@ namespace iroha {
       for (size_t i = 0; i < block.transactions.size(); i++) {
         auto tx = block.transactions.at(i);
         auto account_id = tx.creator_account_id;
+        auto hash = iroha::hash(tx).to_hexstring();
+
+        // tx hash -> block where hash is stored
+        index_->set(hash, std::to_string(height));
 
         // to make index account_id -> list of blocks where his txs exist
         index_->rpush(account_id, {std::to_string(height)});

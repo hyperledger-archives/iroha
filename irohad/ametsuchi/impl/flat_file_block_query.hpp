@@ -42,6 +42,9 @@ namespace iroha {
       rxcpp::observable<model::Transaction> getAccountAssetTransactions(
           std::string account_id, std::string asset_id) override;
 
+      rxcpp::observable<model::Transaction> getTxByHash(
+          std::string hash) override;
+
      protected:
       FlatFile &block_store_;
 

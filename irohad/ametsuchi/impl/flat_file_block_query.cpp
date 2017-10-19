@@ -102,5 +102,10 @@ namespace iroha {
                 });
           });
     }
+
+    rxcpp::observable<model::Transaction>
+    FlatFileBlockQuery::getTxByHash(std::string hash) {
+      // TODO: I have no idea what to do here
+    }
   }  // namespace ametsuchi
 }  // namespace iroha

@@ -853,3 +853,76 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
   ASSERT_EQ(0, wsv->getPeers().value().size());
   new_storage->dropStorage();
 }
+
+TEST_F(AmetsuchiTest, FindTxByHashTest) {
+  auto storage =
+      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  ASSERT_TRUE(storage);
+  auto blocks = storage->getBlockQuery();
+
+  iroha::pubkey_t pubkey1, pubkey2;
+  pubkey1.at(0) = 1;
+  pubkey2.at(0) = 2;
+
+  Transaction tx1;
+  tx1.creator_account_id = "admin1";
+
+  CreateDomain createDomain;
+  createDomain.domain_name = "domain";
+  tx1.commands.push_back(std::make_shared<CreateDomain>(createDomain));
+
+  CreateAccount createAccount;
+  createAccount.account_name = "user1";
+  createAccount.domain_id = "domain";
+  createAccount.pubkey = pubkey1;
+  tx1.commands.push_back(std::make_shared<CreateAccount>(createAccount));
+
+
+  Transaction tx2;
+  CreateDomain createDomain2;
+  createDomain2.domain_name = "domain2";
+  tx2.commands.push_back(std::make_shared<CreateDomain>(createDomain2));
+
+  Block block;
+  block.transactions.push_back(tx1);
+  block.transactions.push_back(tx2);
+  block.height = 1;
+  block.prev_hash.fill(0);
+  block.hash = iroha::hash(block);
+  block.txs_number = block.transactions.size();
+
+  {
+    auto ms = storage->createMutableStorage();
+    ms->apply(block, [](const auto &blk, auto &query, const auto &top_hash) {
+      return true;
+    });
+    storage->commit(std::move(ms));
+  }
+
+  auto tx1hash = iroha::hash(tx1).to_hexstring();
+  auto tx2hash = iroha::hash(tx2).to_hexstring();
+
+  auto numberOfCalls = 0;
+
+  blocks->getTxByHash(tx1hash)
+      .subscribe([tx1hash, &numberOfCalls](auto tx) {
+        ++numberOfCalls;
+        EXPECT_EQ(iroha::hash(tx).to_hexstring(), tx1hash);
+      });
+
+  blocks->getTxByHash(tx2hash)
+      .subscribe([tx2hash, &numberOfCalls](auto tx) {
+        ++numberOfCalls;
+        EXPECT_EQ(iroha::hash(tx).to_hexstring(), tx2hash);
+      });
+
+  auto tx3hash = "some garbage";
+
+  blocks->getTxByHash(tx3hash)
+      .subscribe([tx3hash, &numberOfCalls](auto tx) {
+        ++numberOfCalls;
+        EXPECT_EQ(iroha::hash(tx).to_hexstring(), tx3hash);
+      });
+
+  ASSERT_EQ(numberOfCalls, 2);
+}

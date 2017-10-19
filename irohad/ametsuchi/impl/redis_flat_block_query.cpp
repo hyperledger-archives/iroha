@@ -16,6 +16,7 @@
  */
 
 #include "ametsuchi/impl/redis_flat_block_query.hpp"
+#include <crypto/hash.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -40,6 +41,21 @@ namespace iroha {
           });
       client_.sync_commit();
       return block_ids;
+    }
+
+    boost::optional<uint64_t> RedisFlatBlockQuery::getBlockId(
+        const std::string &hash) {
+      boost::optional<uint64_t> blockId;
+      client_.get(hash, [this, &blockId](cpp_redis::reply &reply) {
+        if (reply.is_null()) {
+          blockId = boost::none;
+        } else {
+          blockId = std::stoul(reply.as_string());
+        }
+      });
+      client_.sync_commit();
+
+      return blockId;
     }
 
     std::function<void(cpp_redis::reply &)>
@@ -108,6 +124,31 @@ namespace iroha {
                              this->callbackToLrange(subscriber, block_id));
             }
             client_.sync_commit();
+            subscriber.on_completed();
+          });
+    }
+
+    rxcpp::observable<model::Transaction> RedisFlatBlockQuery::getTxByHash(
+        std::string hash) {
+      return rxcpp::observable<>::create<model::Transaction>(
+          [this, hash](auto subscriber) {
+            auto blockId = this->getBlockId(hash);
+            if (not blockId) {
+              subscriber.on_completed();
+              return;
+            }
+
+            block_store_.get(blockId.value()) | [](auto bytes) {
+              return model::converters::stringToJson(bytesToString(bytes));
+            } | [this](const auto &json) {
+              return serializer_.deserialize(json);
+            } | [&](const auto &block) {
+              for (auto &tx : block.transactions) {
+                if (iroha::hash(tx).to_hexstring() == hash) {
+                  subscriber.on_next(tx);
+                }
+              }
+            };
             subscriber.on_completed();
           });
     }
