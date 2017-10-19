@@ -32,9 +32,6 @@ bool validate_config(const char *flag_name, std::string const &path) {
   return not path.empty();
 }
 
-bool validate_genesis_path(const char *flag_name, std::string const &path) {
-  return true;
-}
 
 bool validate_keypair_name(const char *flag_name, std::string const &path) {
   return not path.empty();
@@ -44,7 +41,6 @@ DEFINE_string(config, "", "Specify iroha provisioning path.");
 DEFINE_validator(config, &validate_config);
 
 DEFINE_string(genesis_block, "", "Specify file with initial block");
-DEFINE_validator(genesis_block, &validate_genesis_path);
 
 DEFINE_string(keypair_name, "", "Specify name of .pub and .priv files");
 DEFINE_validator(keypair_name, &validate_keypair_name);
