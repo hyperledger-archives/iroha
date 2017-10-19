@@ -35,7 +35,7 @@ add_library(client
     )
 target_link_libraries(client
     interactive_cli
-    crypto
+    cryptography
     optional
     logger
     rapidjson
@@ -63,6 +63,9 @@ target_link_libraries(iroha-cli
     keys_manager
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}
+    )
+target_include_directories(iroha-cli PUBLIC
+    ${Boost_INCLUDE_DIRS}
     )
 
 add_install_step_for_bin(iroha-cli)

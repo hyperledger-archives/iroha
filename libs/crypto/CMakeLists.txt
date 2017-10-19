@@ -27,10 +27,10 @@ target_link_libraries(hash
     pb_model_converters
     )
 
-add_library(crypto
+add_library(cryptography
     ed25519_impl.cpp
     )
-target_link_libraries(crypto
+target_link_libraries(cryptography
     ed25519
     hash
     )
@@ -41,5 +41,5 @@ add_library(keys_manager
 
 target_link_libraries(keys_manager
     optional
-    crypto
+    cryptography
     )
