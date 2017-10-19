@@ -49,6 +49,8 @@ namespace iroha {
       void index_block(uint64_t height, model::Block block);
 
       hash256_t top_hash_;
+      // ordered collection is used to enforce block insertion order in
+      // StorageImpl::commit
       std::map<uint32_t, model::Block> block_store_;
       std::unique_ptr<cpp_redis::redis_client> index_;
 

@@ -55,6 +55,8 @@ class Irohad {
    * @param redis_port - port of redis connection
    * @param pg_conn - initialization string for postgre
    * @param torii_port - port for torii binding
+   * @param internal_port - port for internal communication - ordering service,
+   * consensus, and block loader
    * @param keypair - public and private keys for crypto provider
    */
   Irohad(const std::string &block_store_dir,
