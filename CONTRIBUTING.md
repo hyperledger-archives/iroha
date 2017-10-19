@@ -22,7 +22,7 @@ Do anything that is more convenient to you:
 
 ## 4. Check codestyle
 
-Take a look briefly at [CppCoreGuidelines](https://github.com/isocpp/CppCoreGuidelines) and use [linter](https://github.com/hyperledger/iroha/blob/master/.clang-format) to check your code before creating pull request.
+Take a look briefly at [CppCoreGuidelines](https://github.com/isocpp/CppCoreGuidelines) and use [clang-format](https://github.com/hyperledger/iroha/blob/master/.clang-format) to check your code style before creating pull request.
 
 ## 5. Get acquainted with design
 
