@@ -31,9 +31,7 @@ namespace iroha {
                                const std::vector<model::Peer> &peers)
           : address_(address) {
         for (const auto &peer : peers) {
-          peers_[peer] = proto::Yac::NewStub(grpc::CreateChannel(
-              peer.address, grpc::InsecureChannelCredentials()));
-          peers_addresses_[peer.address] = peer;
+          createPeerConnection(peer);
         }
         log_ = logger::log("YacNetwork");
       }
@@ -44,6 +42,8 @@ namespace iroha {
       }
 
       void NetworkImpl::send_vote(model::Peer to, VoteMessage vote) {
+        createPeerConnection(to);
+
         auto request = PbConverters::serializeVote(vote);
 
         auto call = new AsyncClientCall;
@@ -59,6 +59,8 @@ namespace iroha {
       }
 
       void NetworkImpl::send_commit(model::Peer to, CommitMessage commit) {
+        createPeerConnection(to);
+
         proto::Commit request;
         for (const auto &vote : commit.votes) {
           auto pb_vote = request.add_votes();
@@ -80,6 +82,8 @@ namespace iroha {
       }
 
       void NetworkImpl::send_reject(model::Peer to, RejectMessage reject) {
+        createPeerConnection(to);
+
         proto::Reject request;
         for (const auto &vote : reject.votes) {
           auto pb_vote = request.add_votes();
@@ -171,6 +175,14 @@ namespace iroha {
 
         handler_.lock()->on_reject(peer, reject);
         return grpc::Status::OK;
+      }
+
+      void NetworkImpl::createPeerConnection(const model::Peer &peer) {
+        if (peers_.count(peer) == 0) {
+          peers_[peer] = proto::Yac::NewStub(grpc::CreateChannel(
+              peer.address, grpc::InsecureChannelCredentials()));
+          peers_addresses_[peer.address] = peer;
+        }
       }
 
     }  // namespace yac

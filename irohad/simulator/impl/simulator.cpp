@@ -52,8 +52,14 @@ namespace iroha {
           .subscribe([this](auto block) {
             last_block = block;
           });
-      if (not last_block.has_value() or
-          last_block.value().height + 1 != proposal.height) {
+      if (not last_block.has_value()) {
+        log_->warn("Could not fetch last block");
+        return;
+      }
+      if (last_block.value().height + 1 != proposal.height) {
+        log_->warn("Last block height: {}, proposal height: {}",
+                   last_block.value().height,
+                   proposal.height);
         return;
       }
       auto temporaryStorage = ametsuchi_factory_->createTemporaryWsv();

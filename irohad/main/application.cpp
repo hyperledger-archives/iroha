@@ -33,12 +33,14 @@ Irohad::Irohad(const std::string &block_store_dir,
                size_t redis_port,
                const std::string &pg_conn,
                size_t torii_port,
+               size_t internal_port,
                const keypair_t &keypair)
     : block_store_dir_(block_store_dir),
       redis_host_(redis_host),
       redis_port_(redis_port),
       pg_conn_(pg_conn),
       torii_port_(torii_port),
+      internal_port_(internal_port),
       keypair(keypair) {
   log_ = logger::log("IROHAD");
   log_->info("created");
@@ -63,7 +65,6 @@ Irohad::~Irohad() {
 void Irohad::init() {
   initProtoFactories();
   initPeerQuery();
-  initPeer();
   initCryptoProvider();
   initValidators();
   initOrderingGate();
@@ -97,22 +98,6 @@ void Irohad::initPeerQuery() {
   wsv = std::make_shared<ametsuchi::PeerQueryWsv>(storage->getWsvQuery());
 
   log_->info("[Init] => peer query");
-}
-
-void Irohad::initPeer() {
-  auto peers = wsv->getLedgerPeers().value();
-
-  auto it = std::find_if(peers.begin(), peers.end(), [this](auto peer) {
-    return peer.pubkey == keypair.pubkey;
-  });
-
-  if (it == peers.end()) {
-    log_->error("Cannot find peer with given public key");
-  }
-
-  peer = *it;
-
-  log_->info("[Init] => peer address is {}", peer.address);
 }
 
 void Irohad::initCryptoProvider() {
@@ -162,8 +147,12 @@ void Irohad::initBlockLoader() {
 }
 
 void Irohad::initConsensusGate() {
-  consensus_gate = yac_init.initConsensusGate(
-      peer.address, wsv, simulator, block_loader, keypair);
+  consensus_gate =
+      yac_init.initConsensusGate("0.0.0.0:" + std::to_string(internal_port_),
+                                 wsv,
+                                 simulator,
+                                 block_loader,
+                                 keypair);
 
   log_->info("[Init] => consensus gate");
 }
@@ -217,8 +206,9 @@ void Irohad::run() {
 
   grpc::ServerBuilder builder;
   int port = 0;
-  builder.AddListeningPort(
-      peer.address, grpc::InsecureServerCredentials(), &port);
+  builder.AddListeningPort("0.0.0.0:" + std::to_string(internal_port_),
+                           grpc::InsecureServerCredentials(),
+                           &port);
   builder.RegisterService(ordering_init.ordering_gate_transport.get());
   builder.RegisterService(ordering_init.ordering_service_transport.get());
   builder.RegisterService(yac_init.consensus_network.get());

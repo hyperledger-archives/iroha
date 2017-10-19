@@ -36,12 +36,14 @@ class TestIrohad : public Irohad {
              size_t redis_port,
              const std::string &pg_conn,
              size_t torii_port,
+             size_t internal_port,
              const iroha::keypair_t &keypair)
       : Irohad(block_store_dir,
                redis_host,
                redis_port,
                pg_conn,
                torii_port,
+               internal_port,
                keypair) {}
 
   auto &getCommandService() { return command_service; }
@@ -53,8 +55,9 @@ class TestIrohad : public Irohad {
   void run() override {
     grpc::ServerBuilder builder;
     int port = 0;
-    builder.AddListeningPort(
-        peer.address, grpc::InsecureServerCredentials(), &port);
+    builder.AddListeningPort("0.0.0.0:" + std::to_string(internal_port_),
+                             grpc::InsecureServerCredentials(),
+                             &port);
     builder.RegisterService(ordering_init.ordering_gate_transport.get());
     builder.RegisterService(ordering_init.ordering_service_transport.get());
     builder.RegisterService(yac_init.consensus_network.get());
@@ -80,7 +83,7 @@ class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
     auto keypair = manager->loadKeys().value();
 
     irohad = std::make_shared<TestIrohad>(
-        block_store_path, redishost_, redisport_, pgopt_, 0, keypair);
+        block_store_path, redishost_, redisport_, pgopt_, 0, 10001, keypair);
 
     ASSERT_TRUE(irohad->storage);
 

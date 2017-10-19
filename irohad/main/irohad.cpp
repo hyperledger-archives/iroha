@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
                 config[mbr::RedisPort].GetUint(),
                 config[mbr::PgOpt].GetString(),
                 config[mbr::ToriiPort].GetUint(),
+                config[mbr::InternalPort].GetUint(),
                 keypair);
 
   if (not irohad.storage) {
@@ -84,11 +85,15 @@ int main(int argc, char *argv[]) {
   auto block = inserter.parseBlock(file.value());
   log->info("Block is parsed");
 
-  if (block.has_value()) {
-    inserter.applyToLedger({block.value()});
-    log->info("Genesis block inserted, number of transactions: {}",
-              block.value().transactions.size());
+  if (not block.has_value()) {
+    log->error("Failed to parse genesis block");
+    return EXIT_FAILURE;
   }
+
+  inserter.applyToLedger({block.value()});
+  log->info("Genesis block inserted, number of transactions: {}",
+            block.value().transactions.size());
+
   // init pipeline components
   irohad.init();
 

@@ -55,6 +55,8 @@ class Irohad {
    * @param redis_port - port of redis connection
    * @param pg_conn - initialization string for postgre
    * @param torii_port - port for torii binding
+   * @param internal_port - port for internal communication - ordering service,
+   * consensus, and block loader
    * @param keypair - public and private keys for crypto provider
    */
   Irohad(const std::string &block_store_dir,
@@ -62,6 +64,7 @@ class Irohad {
          size_t redis_port,
          const std::string &pg_conn,
          size_t torii_port,
+         size_t internal_port,
          const iroha::keypair_t &keypair);
 
   /**
@@ -84,8 +87,6 @@ class Irohad {
   virtual void initProtoFactories();
 
   virtual void initPeerQuery();
-
-  virtual void initPeer();
 
   virtual void initCryptoProvider();
 
@@ -113,6 +114,7 @@ class Irohad {
   size_t redis_port_;
   std::string pg_conn_;
   size_t torii_port_;
+  size_t internal_port_;
 
   // ------------------------| internal dependencies |-------------------------
 
@@ -132,9 +134,6 @@ class Irohad {
 
   // peer query
   std::shared_ptr<iroha::ametsuchi::PeerQuery> wsv;
-
-  // peer
-  iroha::model::Peer peer;
 
   // ordering gate
   std::shared_ptr<iroha::network::OrderingGate> ordering_gate;
