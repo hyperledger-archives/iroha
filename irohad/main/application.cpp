@@ -41,7 +41,9 @@ Irohad::Irohad(const std::string &block_store_dir,
       pg_conn_(pg_conn),
       torii_port_(torii_port),
       internal_port_(internal_port),
-      keypair(keypair) {
+      keypair(keypair),
+      test_storage_(TestStorageImpl::create(
+          block_store_dir_, redis_host_, redis_port_, pg_conn_)) {
   log_ = logger::log("IROHAD");
   log_->info("created");
   initStorage();
@@ -77,6 +79,10 @@ void Irohad::init() {
   // Torii
   initTransactionCommandService();
   initQueryService();
+}
+
+void Irohad::dropStorage() {
+  test_storage_->dropStorage();
 }
 
 void Irohad::initStorage() {

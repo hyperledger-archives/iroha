@@ -17,6 +17,8 @@
 
 #include <gflags/gflags.h>
 #include <grpc++/grpc++.h>
+#include <ametsuchi/impl/test_storage_impl.hpp>
+#include <ametsuchi/test_storage.hpp>
 #include <fstream>
 #include <thread>
 #include "crypto/keys_manager_impl.hpp"
@@ -31,7 +33,7 @@ bool validate_config(const char *flag_name, std::string const &path) {
 }
 
 bool validate_genesis_path(const char *flag_name, std::string const &path) {
-  return not path.empty();
+  return true;
 }
 
 bool validate_keypair_name(const char *flag_name, std::string const &path) {
@@ -41,7 +43,7 @@ bool validate_keypair_name(const char *flag_name, std::string const &path) {
 DEFINE_string(config, "", "Specify iroha provisioning path.");
 DEFINE_validator(config, &validate_config);
 
-DEFINE_string(genesis_block, "genesis.json", "Specify file with initial block");
+DEFINE_string(genesis_block, "", "Specify file with initial block");
 DEFINE_validator(genesis_block, &validate_genesis_path);
 
 DEFINE_string(keypair_name, "", "Specify name of .pub and .priv files");
@@ -80,20 +82,25 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  iroha::main::BlockInserter inserter(irohad.storage);
-  auto file = inserter.loadFile(FLAGS_genesis_block);
-  auto block = inserter.parseBlock(file.value());
-  log->info("Block is parsed");
+  if (not FLAGS_genesis_block.empty()) {
+    // clear previous storage if any
+    irohad.dropStorage();
 
-  if (not block.has_value()) {
-    log->error("Failed to parse genesis block");
-    return EXIT_FAILURE;
+    iroha::main::BlockInserter inserter(irohad.storage);
+    auto file = inserter.loadFile(FLAGS_genesis_block);
+    auto block = inserter.parseBlock(file.value());
+
+    if (not block.has_value()) {
+      log->error("Failed to parse genesis block");
+      return EXIT_FAILURE;
+    }
+
+    log->info("Block is parsed");
+
+    inserter.applyToLedger({block.value()});
+    log->info("Genesis block inserted, number of transactions: {}",
+              block.value().transactions.size());
   }
-
-  inserter.applyToLedger({block.value()});
-  log->info("Genesis block inserted, number of transactions: {}",
-            block.value().transactions.size());
-
   // init pipeline components
   irohad.init();
 
