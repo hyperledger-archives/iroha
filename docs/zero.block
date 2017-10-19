@@ -1,7 +1,7 @@
 {
     "signatures": [],
     "created_ts": 0,
-    "hash": "93bf625495080e69b7ddfda8ee1b98e44c740d95dace6a8c4d0bb0aa59210dc4",
+    "hash": "9c944ef030a39c4d835c8c3ec81c4a7c15c0ad0efcb29e9256f1ab6af4a00ff3",
     "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
     "height": 1,
     "txs_number": 1,
@@ -16,11 +16,60 @@
                 {
                     "command_type": "AddPeer",
                     "address": "0.0.0.0:10001",
-                    "peer_key": "292a8714694095edce6be799398ed5d6244cd7be37eb813106b217d850d261f2"
+                    "peer_key": "19f5bf5dec59a7ee40e3e609b9d54a0f048633a6db42f27b1609d2d06aa9234e"
+                },
+                {
+                    "command_type": "CreateRole",
+                    "role_name": "admin",
+                    "permissions": [
+                        "CanGetAllAccounts",
+                        "CanGetAllAccountAssets",
+                        "CanGetAllAccountTransactions",
+                        "CanGetAllSignatories",
+                        "CanGetAllAccountAssetsTransactions",
+                        "CanGetRoles",
+                        "CanReadAssets",
+                        "CanAddPeer",
+                        "CanCreateAccount",
+                        "CanCreateDomain",
+                        "CanRemoveSignatory",
+                        "CanAddSignatory",
+                        "CanSetQuorum"
+                    ]
+                },
+                {
+                    "command_type": "CreateRole",
+                    "role_name": "user",
+                    "permissions": [
+                        "CanSetQuorum",
+                        "CanAddSignatory",
+                        "CanReceive",
+                        "CanGetMySignatories",
+                        "CanGrantCanRemoveSignatory",
+                        "CanGetMyAccountAssetsTransactions",
+                        "CanGetMyAccountAssets",
+                        "CanGetMyAccount",
+                        "CanGetMyAccountTransactions",
+                        "CanRemoveSignatory",
+                        "CanGrantCanAddSignatory",
+                        "CanTransfer",
+                        "CanGrantCanSetQuorum"
+                    ]
+                },
+                {
+                    "command_type": "CreateRole",
+                    "role_name": "money_creator",
+                    "permissions": [
+                        "CanCreateAsset",
+                        "CanAddAssetQuantity",
+                        "CanReceive",
+                        "CanTransfer"
+                    ]
                 },
                 {
                     "command_type": "CreateDomain",
-                    "domain_name": "test"
+                    "domain_id": "test",
+                    "user_default_role": "user"
                 },
                 {
                     "command_type": "CreateAsset",
@@ -32,29 +81,23 @@
                     "command_type": "CreateAccount",
                     "account_name": "admin",
                     "domain_id": "test",
-                    "pubkey": "407e57f50ca48969b08ba948171bb2435e035d82cec417e18e4a38f5fb113f83"
+                    "pubkey": "b373ff6f6ecacb16addd03a0691b827f675aac402236d95022dedf8202fcccbd"
                 },
                 {
                     "command_type": "CreateAccount",
                     "account_name": "test",
                     "domain_id": "test",
-                    "pubkey": "359f925e4eeecfdd6aa1abc0b79a6a121a5dd63bb612b603247ea4f8ad160156"
+                    "pubkey": "c52162d1bafc0ec036de2dea556780580d324cae09364505d30034d46e3e44a3"
                 },
                 {
-                    "command_type": "SetAccountPermissions",
+                    "command_type": "AppendRole",
                     "account_id": "admin@test",
-                    "new_permissions": {
-                        "add_signatory": true,
-                        "can_transfer": true,
-                        "create_accounts": true,
-                        "create_assets": true,
-                        "create_domains": true,
-                        "issue_assets": true,
-                        "read_all_accounts": true,
-                        "remove_signatory": true,
-                        "set_permissions": true,
-                        "set_quorum": true
-                    }
+                    "role_name": "admin"
+                },
+                {
+                    "command_type": "AppendRole",
+                    "account_id": "admin@test",
+                    "role_name": "money_creator"
                 }
             ]
         }
