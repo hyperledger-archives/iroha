@@ -73,6 +73,9 @@ class Irohad {
    */
   virtual void init();
 
+  /**
+   * Drop wsv and block store
+   */
   virtual void dropStorage();
 
   /**
