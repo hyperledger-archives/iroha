@@ -18,6 +18,7 @@
 #ifndef IROHA_SHARED_MODEL_HASH_HPP
 #define IROHA_SHARED_MODEL_HASH_HPP
 
+#include <string>
 #include "interfaces/primitive.hpp"
 #include "model/signature.hpp"
 
@@ -25,8 +26,21 @@ namespace shared_model {
   namespace interface {
     // TODO discuss naming, may be blob will be more applicable
     class Hash : public Primitive<Hash, Hash> {
-      // TODO change second type with model hash
+      /**
+       * @return provides raw representation of hash
+       */
+      virtual const std::string &blobRepr() const = 0;
+
+      /**
+       * @return provides human-readable representation of hash
+       */
+      virtual const std::string &hexRepr() const = 0;
+
+      /**
+       * @return size of raw representation of hash
+       */
+      virtual size_t size() const = 0;
     };
-  } // namespace interface
-} // namespace shared_model
-#endif //IROHA_SHARED_MODEL_HASH_HPP
+  }  // namespace interface
+}  // namespace shared_model
+#endif  // IROHA_SHARED_MODEL_HASH_HPP
