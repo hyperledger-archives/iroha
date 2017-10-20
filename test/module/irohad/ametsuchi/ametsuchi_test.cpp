@@ -31,8 +31,8 @@
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/converters/pb_block_factory.hpp"
-#include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 #include "model/permissions.hpp"
+#include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 
 #include "ametsuchi/impl/redis_flat_block_query.hpp"
 
@@ -199,7 +199,8 @@ TEST_F(AmetsuchiTest, SampleTest) {
   auto number_of_calls = 0;
   auto getAccountsTxWrapper = make_test_subscriber<CallExact>(
       blocks->getAccountTransactions("non_existing_user"), 0);
-  getAccountsTxWrapper.subscribe([&number_of_calls](auto val) { number_of_calls++; });
+  getAccountsTxWrapper.subscribe(
+      [&number_of_calls](auto val) { number_of_calls++; });
 
   ASSERT_TRUE(getAccountsTxWrapper.validate());
   ASSERT_EQ(number_of_calls, 0);
@@ -215,7 +216,8 @@ TEST_F(AmetsuchiTest, SampleTest) {
       blocks->getAccountAssetTransactions("non_existing_user",
                                           "non_existing_asset"),
       0);
-  getAccountAssetTxWrapper.subscribe([&number_of_calls](auto val) { number_of_calls++; });
+  getAccountAssetTxWrapper.subscribe(
+      [&number_of_calls](auto val) { number_of_calls++; });
 
   ASSERT_TRUE(getAccountAssetTxWrapper.validate());
   ASSERT_EQ(number_of_calls, 0);
@@ -268,7 +270,6 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   const auto asset2name = "asset2";
   const auto asset1id = "asset1#domain";
   const auto asset2id = "asset2#domain";
-
 
   CreateRole createRole;
   createRole.role_name = "user";
@@ -769,4 +770,86 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
     ASSERT_EQ(signatories->size(), 1);
     ASSERT_EQ(signatories->at(0), pubkey1);
   }
+}
+
+Block getBlock() {
+  Transaction txn;
+  txn.creator_account_id = "admin1";
+  AddPeer add_peer;
+  add_peer.address = "192.168.0.0";
+  txn.commands.push_back(std::make_shared<AddPeer>(add_peer));
+  Block block;
+  block.transactions.push_back(txn);
+  block.height = 1;
+  block.prev_hash.fill(0);
+  auto block1hash = iroha::hash(block);
+  block.hash = block1hash;
+  block.txs_number = block.transactions.size();
+  return block;
+}
+
+TEST_F(AmetsuchiTest, TestingStorageWhenInsertBlock) {
+  auto log = logger::testLog("TestStorage");
+  log->info(
+      "Test case: create storage "
+      "=> insert block "
+      "=> assert that inserted");
+  auto storage =
+      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  ASSERT_TRUE(storage);
+  auto wsv = storage->getWsvQuery();
+  ASSERT_EQ(0, wsv->getPeers().value().size());
+
+  log->info("Try insert block");
+
+  auto inserted = storage->insertBlock(getBlock());
+  ASSERT_TRUE(inserted);
+
+  log->info("Request ledger information");
+
+  ASSERT_NE(0, wsv->getPeers().value().size());
+
+  log->info("Drop ledger");
+
+  storage->dropStorage();
+}
+
+TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
+  auto logger = logger::testLog("TestStorage");
+  logger->info(
+      "Test case: create storage "
+      "=> insert block "
+      "=> assert that written"
+      " => drop all "
+      "=> assert that all deleted ");
+
+  auto log = logger::testLog("TestStorage");
+  log->info(
+      "Test case: create storage "
+      "=> insert block "
+      "=> assert that inserted");
+  auto storage =
+      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  ASSERT_TRUE(storage);
+  auto wsv = storage->getWsvQuery();
+  ASSERT_EQ(0, wsv->getPeers().value().size());
+
+  log->info("Try insert block");
+
+  auto inserted = storage->insertBlock(getBlock());
+  ASSERT_TRUE(inserted);
+
+  log->info("Request ledger information");
+
+  ASSERT_NE(0, wsv->getPeers().value().size());
+
+  log->info("Drop ledger");
+
+  storage->dropStorage();
+
+  ASSERT_EQ(0, wsv->getPeers().value().size());
+  auto new_storage =
+      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  ASSERT_EQ(0, wsv->getPeers().value().size());
+  new_storage->dropStorage();
 }

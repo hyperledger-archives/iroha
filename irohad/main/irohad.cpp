@@ -17,8 +17,6 @@
 
 #include <gflags/gflags.h>
 #include <grpc++/grpc++.h>
-#include <ametsuchi/impl/test_storage_impl.hpp>
-#include <ametsuchi/test_storage.hpp>
 #include <fstream>
 #include <thread>
 #include "crypto/keys_manager_impl.hpp"
