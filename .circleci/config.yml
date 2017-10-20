@@ -29,11 +29,15 @@ jobs:
             ccache --max-size=1G
       - run:
           name: cmake
-          command: cmake -DCOVERAGE=ON -H$IROHA_HOME -B$IROHA_BUILD
+          command: cmake -DCOVERAGE=ON -H$IROHA_HOME -B$IROHA_BUILD -DPACKAGE_DEB=ON
       - run:
           name: make
           command: |
             cmake --build $IROHA_BUILD -- -j4
+      - run:
+          name: make package
+          command: |
+            cmake --build $IROHA_BUILD --target package -- -j4
       - save_cache:
           key: build-cache-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
