@@ -20,7 +20,7 @@
 
 #include <interfaces/visitor_apply_for_all.hpp>
 #include <utility>
-#include "boost/variant.hpp"
+#include <boost/variant.hpp>
 #include "interfaces/commands/add_asset_quantity.hpp"
 #include "interfaces/polymorphic_wrapper.hpp"
 #include "interfaces/primitive.hpp"
@@ -52,18 +52,18 @@ namespace shared_model {
       boost::variant<w<AddAssetQuantity>> command_variant;
 
      public:
+
+      /// Type of variant, that handle concrete command
+      using CommandVariantType = decltype(command_variant);
       /**
        * @return const reference for attached variant with concrete commands
        */
-      const auto get() const -> const decltype(command_variant) & {
+      const CommandVariantType get() const  {
         return command_variant;
       }
 
       /// Types of concrete commands, in attached variant
       using CommandListType = decltype(command_variant)::types;
-
-      /// Type of variant, that handle concrete command
-      using CommandVariantType = decltype(command_variant);
 
       std::string toString() const override {
         return boost::apply_visitor(detail::ToStringVisitor(), command_variant);
