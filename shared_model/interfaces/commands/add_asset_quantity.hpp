@@ -19,11 +19,18 @@
 #define IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
 
 #include <string>
-#include "amount/amount.hpp"
+#include "amount/amount.hpp"  // TODO replace with lib amount
+#include "interfaces/primitive.hpp"
+#include "model/commands/add_asset_quantity.hpp"
 
 namespace shared_model {
   namespace interface {
-    class AddAssetQuantity {
+
+    /**
+     * TODO add business logic description
+     */
+    class AddAssetQuantity
+        : public Primitive<AddAssetQuantity, iroha::model::AddAssetQuantity> {
       /// Type of account id
       using AccountIdType = std::string;
       /**
@@ -32,7 +39,7 @@ namespace shared_model {
       virtual const AccountIdType &accountId() const = 0;
 
       /// Type of asset id
-      using AssetIdType = std::asset_id;
+      using AssetIdType = std::string;
       /**
        * @return asset identifier
        */

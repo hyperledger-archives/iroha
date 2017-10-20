@@ -50,7 +50,8 @@ namespace shared_model {
        */
       virtual std::string toString() const {
         std::string s = "Primitive at address[";
-        s += std::string(&this);
+        // TODO add address of this
+        // s += std::string(this);
         s += "]";
         return s;
       }
