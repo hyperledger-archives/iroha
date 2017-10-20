@@ -60,7 +60,10 @@ namespace shared_model {
       }
 
       /// Types of concrete commands, in attached variant
-      using CommandsType = decltype(command_variant)::types;
+      using CommandListType = decltype(command_variant)::types;
+
+      /// Type of variant, that handle concrete command
+      using CommandVariantType = decltype(command_variant);
 
       std::string toString() const override {
         return boost::apply_visitor(detail::ToStringVisitor(), command_variant);
