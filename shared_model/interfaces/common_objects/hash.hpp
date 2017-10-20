@@ -29,12 +29,12 @@ namespace shared_model {
       /**
        * @return provides raw representation of hash
        */
-      virtual const std::string &blobRepr() const = 0;
+      virtual const std::string &blob() const = 0;
 
       /**
        * @return provides human-readable representation of hash
        */
-      virtual const std::string &hexRepr() const = 0;
+      virtual const std::string &hex() const = 0;
 
       /**
        * @return size of raw representation of hash

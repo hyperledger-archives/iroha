@@ -26,7 +26,7 @@ namespace shared_model {
      * @tparam T - type of wrapped object
      */
     template <class T>
-    class PolymorphicWrapper {
+    class PolymorphicWrapper final {
      public:
       /// Type of wrapped object
       using WrappedType = T;
@@ -42,21 +42,20 @@ namespace shared_model {
        * Value constructor
        * @param value - pointer for wrapping
        */
-      PolymorphicWrapper(const T *value) { ptr = std::shared_ptr<T>(value); }
+      PolymorphicWrapper(const T *value) : ptr(std::shared_ptr<T>(value)) {}
 
       /**
        * Copy constructor that performs deep copy
        * @param rhs - another wrapped value
        */
-      PolymorphicWrapper(const PolymorphicWrapper &rhs) {
-        ptr = std::shared_ptr<WrappedType>(rhs.ptr->copy());
-      }
+      PolymorphicWrapper(const PolymorphicWrapper &rhs)
+          : ptr(std::shared_ptr<T>(rhs.ptr->copy())) {}
 
       /**
-       * Move copy constructor
+       * Move constructor
        * @param rhs - wrapped temporary value
        */
-      PolymorphicWrapper(PolymorphicWrapper &&rhs) {
+      PolymorphicWrapper(PolymorphicWrapper &&rhs) noexcept {
         std::swap(this->ptr, rhs.ptr);
       }
 
@@ -66,7 +65,7 @@ namespace shared_model {
        * @return *this
        */
       PolymorphicWrapper &operator=(const PolymorphicWrapper &rhs) {
-        ptr = std::shared_ptr<T>(rhs.ptr.get()->copy());
+        ptr = std::shared_ptr<T>(rhs.ptr->copy());
         return *this;
       }
 
@@ -75,7 +74,7 @@ namespace shared_model {
        * @param rhs - another temporary wrapped value
        * @return *this
        */
-      PolymorphicWrapper &operator=(PolymorphicWrapper &&rhs) {
+      PolymorphicWrapper &operator=(PolymorphicWrapper &&rhs) noexcept {
         std::swap(this->ptr, rhs.ptr);
         return *this;
       }
@@ -83,7 +82,7 @@ namespace shared_model {
       /**
        * Checks equality of objects inside
        * @param rhs - other wrapped value
-       * @return true, if wpapped objects are same
+       * @return true, if wrapped objects are same
        */
       bool operator==(const PolymorphicWrapper &rhs) const {
         return *ptr == *rhs.ptr;

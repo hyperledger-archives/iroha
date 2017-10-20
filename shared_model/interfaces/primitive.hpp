@@ -26,7 +26,7 @@ namespace shared_model {
 
     /**
      * Primitive is a base class of whole domain objects in system.
-     * This class required for guarantee consistent interface on whole model
+     * This class required for guarantee consistent interface on all model
      * objects.
      * @tparam Model - your new style model;
      * @tparam OldModel - old-style model, that changed with new model;
@@ -78,6 +78,8 @@ namespace shared_model {
        * @return pointer to copied object
        */
       virtual ModelType *copy() const = 0;
+
+      virtual ~Primitive() = default;
     };
 
   }  // namespace interface
