@@ -24,7 +24,11 @@
 
 namespace shared_model {
   namespace interface {
-    // TODO discuss naming, may be blob will be more applicable
+
+    /**
+     * Hash interface present user-friendly blob for working with low-level
+     * stuff, such as cryptography and object hashing
+     */
     class Hash : public Primitive<Hash, Hash> {
       /**
        * @return provides raw representation of hash

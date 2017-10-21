@@ -50,7 +50,7 @@ namespace shared_model {
             this->signedHash() == rhs.signedHash();
       }
 
-      iroha::model::Signature *makeOldModel() const override {
+      OldModelType *makeOldModel() const override {
         // todo implement
         return nullptr;
       }

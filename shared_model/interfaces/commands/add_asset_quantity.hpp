@@ -27,7 +27,7 @@ namespace shared_model {
   namespace interface {
 
     /**
-     * TODO add business logic description
+     * Add amount of asset to an account
      */
     class AddAssetQuantity
         : public Primitive<AddAssetQuantity, iroha::model::AddAssetQuantity> {

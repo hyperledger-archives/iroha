@@ -19,7 +19,6 @@
 #define IROHA_PRIMITIVE_HPP
 
 #include <string>
-#include <typeinfo>
 
 namespace shared_model {
   namespace interface {
@@ -50,8 +49,7 @@ namespace shared_model {
        */
       virtual std::string toString() const {
         std::string s = "Primitive at address[";
-        // TODO add address of this
-        // s += std::string(this);
+        s += std::to_string(reinterpret_cast<uint64_t>(this));
         s += "]";
         return s;
       }
