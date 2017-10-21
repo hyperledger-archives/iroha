@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <iostream>
 #include <fstream>
+#include "common/files.hpp"
 
 using namespace iroha::ametsuchi;
 
@@ -142,7 +143,7 @@ std::unique_ptr<FlatFile> FlatFile::create(const std::string &path) {
     }
   }
   auto res = check_consistency(path);
-  if (!res) {
+  if (not res) {
     log_->error("Checking consistency for {} - failed", path);
     return nullptr;
   }
@@ -201,6 +202,12 @@ nonstd::optional<std::vector<uint8_t>> FlatFile::get(Identifier id) const {
 std::string FlatFile::directory() const { return dump_dir_; }
 
 Identifier FlatFile::last_id() const { return current_id_.load(); }
+
+void FlatFile::dropAll() {
+  remove_all(dump_dir_);
+  auto res = check_consistency(dump_dir_);
+  current_id_.store(*res);
+}
 
 // ----------| private API |----------
 

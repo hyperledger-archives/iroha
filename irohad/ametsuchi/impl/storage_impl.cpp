@@ -21,7 +21,6 @@
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/redis_flat_block_query.hpp"
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
-#include "common/files.hpp"
 #include "model/converters/json_common.hpp"
 
 namespace iroha {
@@ -169,7 +168,7 @@ DROP TABLE IF EXISTS role;
 
       // erase blocks
       log_->info("drop block store");
-      remove_all(block_store_dir_);
+      block_store_->dropAll();
     }
 
     nonstd::optional<ConnectionContext> StorageImpl::initConnections(
