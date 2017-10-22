@@ -62,6 +62,7 @@ class ClientServerTest : public testing::Test {
       svMock = std::make_shared<MockStatelessValidator>();
       wsv_query = std::make_shared<MockWsvQuery>();
       block_query = std::make_shared<MockBlockQuery>();
+      storageMock = std::make_shared<MockStorage>();
 
       rxcpp::subjects::subject<iroha::model::Proposal> prop_notifier;
       rxcpp::subjects::subject<Commit> commit_notifier;
@@ -77,8 +78,8 @@ class ClientServerTest : public testing::Test {
                                                                    svMock);
       auto pb_tx_factory =
           std::make_shared<iroha::model::converters::PbTransactionFactory>();
-      auto command_service =
-          std::make_unique<torii::CommandService>(pb_tx_factory, tx_processor);
+      auto command_service = std::make_unique<torii::CommandService>(
+          pb_tx_factory, tx_processor, storageMock);
 
       //----------- Query Service ----------
       auto qpf = std::make_unique<iroha::model::QueryProcessingFactory>(
@@ -114,6 +115,7 @@ class ClientServerTest : public testing::Test {
 
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
+  std::shared_ptr<MockStorage> storageMock;
 };
 
 TEST_F(ClientServerTest, SendTxWhenValid) {

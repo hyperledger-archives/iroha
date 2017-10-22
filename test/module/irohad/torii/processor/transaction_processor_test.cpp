@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
 
@@ -27,6 +28,7 @@ using namespace iroha::network;
 using namespace iroha::validation;
 using namespace iroha::torii;
 using namespace iroha::model;
+using namespace iroha::ametsuchi;
 using namespace framework::test_subscriber;
 
 using ::testing::Return;

@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#include <crypto/hash.hpp>
 #include <endpoint.pb.h>
+#include <crypto/hash.hpp>
 #include <iostream>
 #include <model/transaction_response.hpp>
 #include <torii/processor/transaction_processor_impl.hpp>
@@ -104,9 +104,10 @@ namespace iroha {
             TransactionResponse::Status::STATELESS_VALIDATION_SUCCESS;
         pcs_->propagate_transaction(transaction);
       }
-      log_->info("stateless validation status: {}",
-                 response.current_status ==
-                     TransactionResponse::Status::STATELESS_VALIDATION_SUCCESS);
+      log_->info(
+          "stateless validation status: {}",
+          response.current_status
+              == TransactionResponse::Status::STATELESS_VALIDATION_SUCCESS);
       notifier_.get_subscriber().on_next(
           std::make_shared<model::TransactionResponse>(response));
     }

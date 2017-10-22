@@ -186,18 +186,18 @@ void Irohad::initTransactionCommandService() {
   auto tx_processor =
       std::make_shared<TransactionProcessorImpl>(pcs, stateless_validator);
 
-  command_service =
-      std::make_unique<::torii::CommandService>(pb_tx_factory, tx_processor);
+  command_service = std::make_unique<::torii::CommandService>(
+      pb_tx_factory, tx_processor, storage);
 
   log_->info("[Init] => command service");
 }
 
 void Irohad::initQueryService() {
-  auto query_proccessing_factory = std::make_unique<QueryProcessingFactory>(
+  auto query_processing_factory = std::make_unique<QueryProcessingFactory>(
       storage->getWsvQuery(), storage->getBlockQuery());
 
   auto query_processor = std::make_shared<QueryProcessorImpl>(
-      std::move(query_proccessing_factory), stateless_validator);
+      std::move(query_processing_factory), stateless_validator);
 
   query_service = std::make_unique<::torii::QueryService>(
       pb_query_factory, pb_query_response_factory, query_processor);

@@ -45,6 +45,9 @@ namespace iroha {
       rxcpp::observable<model::Transaction> getTxByHash(
           std::string hash) override;
 
+      boost::optional<model::Transaction> getTxByHashSync(
+          std::string hash) override;
+
      protected:
       FlatFile &block_store_;
 

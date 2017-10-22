@@ -920,9 +920,14 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
 
   blocks->getTxByHash(tx3hash)
       .subscribe([tx3hash, &numberOfCalls](auto tx) {
+        // should not be called
         ++numberOfCalls;
         EXPECT_EQ(iroha::hash(tx).to_hexstring(), tx3hash);
       });
 
   ASSERT_EQ(numberOfCalls, 2);
+
+  ASSERT_EQ(*blocks->getTxByHashSync(tx1hash), tx1);
+  ASSERT_EQ(*blocks->getTxByHashSync(tx2hash), tx2);
+  ASSERT_EQ(blocks->getTxByHashSync(tx3hash), boost::none);
 }

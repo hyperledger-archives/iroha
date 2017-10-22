@@ -17,8 +17,8 @@
 
 #include "ametsuchi/impl/flat_file_block_query.hpp"
 
-#include "model/converters/json_common.hpp"
 #include "model/commands/transfer_asset.hpp"
+#include "model/converters/json_common.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -90,22 +90,28 @@ namespace iroha {
       return getAccountTransactions(account_id)
           .filter([account_id, asset_id](auto tx) {
             return std::any_of(
-                tx.commands.begin(), tx.commands.end(),
+                tx.commands.begin(),
+                tx.commands.end(),
                 [account_id, asset_id](auto command) {
                   if (instanceof <model::TransferAsset>(*command)) {
                     auto transferAsset = (model::TransferAsset *)command.get();
-                    return (transferAsset->src_account_id == account_id or
-                            transferAsset->dest_account_id == account_id) and
-                           transferAsset->asset_id == asset_id;
+                    return (transferAsset->src_account_id == account_id
+                            or transferAsset->dest_account_id == account_id)
+                        and transferAsset->asset_id == asset_id;
                   }
                   return false;
                 });
           });
     }
 
-    rxcpp::observable<model::Transaction>
-    FlatFileBlockQuery::getTxByHash(std::string hash) {
+    rxcpp::observable<model::Transaction> FlatFileBlockQuery::getTxByHash(
+        std::string hash) {
       // TODO: I have no idea what to do here
+    }
+
+    boost::optional<model::Transaction> FlatFileBlockQuery::getTxByHashSync(
+        std::string hash) {
+      // TODO: I have no idea what to do here too
     }
   }  // namespace ametsuchi
 }  // namespace iroha

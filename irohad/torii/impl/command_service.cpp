@@ -14,24 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <endpoint.pb.h>
-#include "crypto/hash.hpp"
 #include "torii/command_service.hpp"
+#include <endpoint.pb.h>
 #include "common/types.hpp"
+#include "crypto/hash.hpp"
 
 namespace torii {
 
   CommandService::CommandService(
       std::shared_ptr<iroha::model::converters::PbTransactionFactory>
           pb_factory,
-      std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor)
-      : pb_factory_(pb_factory), tx_processor_(txProccesor) {
+      std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor,
+      std::shared_ptr<iroha::ametsuchi::Storage> storage)
+      : pb_factory_(pb_factory), tx_processor_(txProccesor), storage_(storage) {
     // Notifier for all clients
     tx_processor_->transactionNotifier().subscribe([this](
         std::shared_ptr<iroha::model::TransactionResponse> iroha_response) {
       // Find response in handler map
       auto res = this->handler_map_.find(iroha_response->tx_hash);
-      std::cout << "stat: " << iroha_response->current_status << std::endl;
       if (res == this->handler_map_.end()) {
         iroha::protocol::ToriiResponse response;
         response.set_tx_status(iroha::protocol::NOT_RECEIVED);
@@ -40,32 +40,29 @@ namespace torii {
       }
       switch (iroha_response->current_status) {
         case iroha::model::TransactionResponse::STATELESS_VALIDATION_FAILED:
-          res->second.set_tx_status(iroha::protocol::TxStatus::
-                                         STATELESS_VALIDATION_FAILED);
+          res->second.set_tx_status(
+              iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED);
           break;
         case iroha::model::TransactionResponse::STATELESS_VALIDATION_SUCCESS:
-          res->second.set_tx_status(iroha::protocol::TxStatus::
-                                         STATELESS_VALIDATION_SUCCESS);
+          res->second.set_tx_status(
+              iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
           break;
         case iroha::model::TransactionResponse::STATEFUL_VALIDATION_FAILED:
           res->second.set_tx_status(
               iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED);
           break;
         case iroha::model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS:
-          res->second.set_tx_status(iroha::protocol::TxStatus::
-                                         STATEFUL_VALIDATION_SUCCESS);
+          res->second.set_tx_status(
+              iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS);
           break;
         case iroha::model::TransactionResponse::COMMITTED:
-          res->second.set_tx_status(
-              iroha::protocol::TxStatus::COMMITTED);
+          res->second.set_tx_status(iroha::protocol::TxStatus::COMMITTED);
           break;
         case iroha::model::TransactionResponse::ON_PROCESS:
-          res->second.set_tx_status(
-              iroha::protocol::TxStatus::ON_PROCESS);
+          res->second.set_tx_status(iroha::protocol::TxStatus::ON_PROCESS);
           break;
         case iroha::model::TransactionResponse::NOT_RECEIVED:
-          res->second.set_tx_status(
-              iroha::protocol::TxStatus::NOT_RECEIVED);
+          res->second.set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);
           break;
       }
 
@@ -95,17 +92,15 @@ namespace torii {
       iroha::protocol::TxStatusRequest const &request,
       iroha::protocol::ToriiResponse &response) {
     auto resp = handler_map_.find(request.tx_hash());
-
-    std::cout << "request: " << request.tx_hash() << std::endl;
-
-    if (resp == handler_map_.end()) {
-      // TODO: request blockstore
-
-      response.set_tx_status(
-          iroha::protocol::TxStatus::NOT_RECEIVED);
-      return;
+    if (resp != handler_map_.end()) {
+      response.CopyFrom(resp->second);
+    } else {
+      if (storage_->getBlockQuery()->getTxByHashSync(request.tx_hash())) {
+        response.set_tx_status(iroha::protocol::TxStatus::COMMITTED);
+      } else {
+        response.set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);
+      }
     }
-    response.CopyFrom(resp->second);
   }
 
 }  // namespace torii

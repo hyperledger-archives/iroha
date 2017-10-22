@@ -153,5 +153,29 @@ namespace iroha {
           });
     }
 
+    boost::optional<model::Transaction> RedisFlatBlockQuery::getTxByHashSync(
+        std::string hash) {
+      auto blockId = this->getBlockId(hash);
+      if (not blockId) {
+        return boost::none;
+      }
+      return block_store_.get(blockId.value()) |
+          [](auto bytes) {
+            return model::converters::stringToJson(bytesToString(bytes));
+          }
+      | [this](const auto &json) { return serializer_.deserialize(json); } |
+          [&](const auto &block) {
+            auto it =
+                std::find_if(block.transactions.begin(),
+                             block.transactions.end(),
+                             [&hash](auto tx) {
+                               return iroha::hash(tx).to_hexstring() == hash;
+                             });
+            return (it == block.transactions.end())
+                ? boost::none
+                : boost::make_optional<model::Transaction>(*it);
+          };
+    }
+
   }  // namespace ametsuchi
 }  // namespace iroha

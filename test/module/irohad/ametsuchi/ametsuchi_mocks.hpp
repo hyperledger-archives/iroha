@@ -23,9 +23,12 @@
 #include "ametsuchi/mutable_factory.hpp"
 #include "ametsuchi/mutable_storage.hpp"
 #include "ametsuchi/peer_query.hpp"
+#include "ametsuchi/storage.hpp"
 #include "ametsuchi/temporary_factory.hpp"
 #include "ametsuchi/temporary_wsv.hpp"
 #include "ametsuchi/wsv_query.hpp"
+
+#include <boost/optional.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -104,6 +107,8 @@ namespace iroha {
           rxcpp::observable<model::Transaction>(std::string account_id));
       MOCK_METHOD1(getTxByHash,
                    rxcpp::observable<model::Transaction>(std::string hash));
+      MOCK_METHOD1(getTxByHashSync,
+                   boost::optional<model::Transaction>(std::string hash));
       MOCK_METHOD2(getAccountAssetTransactions,
                    rxcpp::observable<model::Transaction>(std::string account_id,
                                                          std::string asset_id));
@@ -154,6 +159,19 @@ namespace iroha {
 
       MOCK_METHOD0(getLedgerPeers,
                    nonstd::optional<std::vector<model::Peer>>());
+    };
+
+    class MockStorage : public Storage {
+     public:
+      MOCK_CONST_METHOD0(getWsvQuery, std::shared_ptr<WsvQuery>(void));
+      MOCK_CONST_METHOD0(getBlockQuery, std::shared_ptr<BlockQuery>(void));
+      MOCK_METHOD0(createTemporaryWsv, std::unique_ptr<TemporaryWsv>(void));
+      MOCK_METHOD0(createMutableStorage, std::unique_ptr<MutableStorage>(void));
+      MOCK_METHOD1(doCommit, void(MutableStorage *storage));
+
+      void commit(std::unique_ptr<MutableStorage> storage) override {
+        doCommit(storage.get());
+      }
     };
 
   }  // namespace ametsuchi
