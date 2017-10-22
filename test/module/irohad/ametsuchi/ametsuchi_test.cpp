@@ -899,21 +899,21 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
     storage->commit(std::move(ms));
   }
 
-  auto tx1hash = iroha::hash(tx1).to_hexstring();
-  auto tx2hash = iroha::hash(tx2).to_hexstring();
+  auto tx1hash = iroha::hash(tx1).to_string();
+  auto tx2hash = iroha::hash(tx2).to_string();
 
   auto numberOfCalls = 0;
 
   blocks->getTxByHash(tx1hash)
       .subscribe([tx1hash, &numberOfCalls](auto tx) {
         ++numberOfCalls;
-        EXPECT_EQ(iroha::hash(tx).to_hexstring(), tx1hash);
+        EXPECT_EQ(iroha::hash(tx).to_string(), tx1hash);
       });
 
   blocks->getTxByHash(tx2hash)
       .subscribe([tx2hash, &numberOfCalls](auto tx) {
         ++numberOfCalls;
-        EXPECT_EQ(iroha::hash(tx).to_hexstring(), tx2hash);
+        EXPECT_EQ(iroha::hash(tx).to_string(), tx2hash);
       });
 
   auto tx3hash = "some garbage";
@@ -922,7 +922,7 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
       .subscribe([tx3hash, &numberOfCalls](auto tx) {
         // should not be called
         ++numberOfCalls;
-        EXPECT_EQ(iroha::hash(tx).to_hexstring(), tx3hash);
+        EXPECT_EQ(iroha::hash(tx).to_string(), tx3hash);
       });
 
   ASSERT_EQ(numberOfCalls, 2);

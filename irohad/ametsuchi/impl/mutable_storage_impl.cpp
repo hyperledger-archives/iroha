@@ -47,7 +47,7 @@ namespace iroha {
       for (size_t i = 0; i < block.transactions.size(); i++) {
         auto tx = block.transactions.at(i);
         auto account_id = tx.creator_account_id;
-        auto hash = iroha::hash(tx).to_hexstring();
+        auto hash = iroha::hash(tx).to_string();
 
         // tx hash -> block where hash is stored
         index_->set(hash, std::to_string(height));

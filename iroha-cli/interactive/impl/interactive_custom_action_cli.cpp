@@ -109,9 +109,13 @@ namespace iroha_cli {
         return true;
       }
 
-      auto status = CliClient(address.value().first, address.value().second)
-                        .getTxStatus(*(iroha::hexstringToBytestring(txHash_)))
-                        .answer.tx_status();
+      auto status = iroha::protocol::TxStatus::NOT_RECEIVED;
+      if (iroha::hexstringToBytestring(txHash_)) {
+        status = CliClient(address.value().first, address.value().second)
+                     .getTxStatus(*(iroha::hexstringToBytestring(txHash_)))
+                     .answer.tx_status();
+      }
+
       std::string message;
 
       // not happy about this switch

@@ -144,7 +144,7 @@ namespace iroha {
               return serializer_.deserialize(json);
             } | [&](const auto &block) {
               for (auto &tx : block.transactions) {
-                if (iroha::hash(tx).to_hexstring() == hash) {
+                if (iroha::hash(tx).to_string() == hash) {
                   subscriber.on_next(tx);
                 }
               }
@@ -169,7 +169,7 @@ namespace iroha {
                 std::find_if(block.transactions.begin(),
                              block.transactions.end(),
                              [&hash](auto tx) {
-                               return iroha::hash(tx).to_hexstring() == hash;
+                               return iroha::hash(tx).to_string() == hash;
                              });
             return (it == block.transactions.end())
                 ? boost::none
