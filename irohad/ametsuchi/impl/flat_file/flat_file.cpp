@@ -58,7 +58,7 @@ Identifier name_to_id(const std::string &name) {
  */
 bool file_exist(const std::string &name) {
   struct stat buffer{};
-  return (stat(name.c_str(), &buffer) == 0);
+  return stat(name.c_str(), &buffer) == 0;
 }
 
 /**

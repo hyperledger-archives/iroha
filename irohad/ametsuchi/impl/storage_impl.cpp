@@ -154,7 +154,6 @@ DROP TABLE IF EXISTS role;
       txn.exec(drop);
       txn.commit();
 
-      pqxx::connection init_connection(postgres_options_);
       pqxx::work init_txn(connection);
       init_txn.exec(init_);
       init_txn.commit();
