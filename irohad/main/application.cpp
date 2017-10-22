@@ -79,6 +79,8 @@ void Irohad::init() {
   initQueryService();
 }
 
+void Irohad::dropStorage() { storage->dropStorage(); }
+
 void Irohad::initStorage() {
   storage =
       StorageImpl::create(block_store_dir_, redis_host_, redis_port_, pg_conn_);

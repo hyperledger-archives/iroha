@@ -73,6 +73,11 @@ class Irohad {
   virtual void init();
 
   /**
+   * Drop wsv and block store
+   */
+  virtual void dropStorage();
+
+  /**
    * Run worker threads for start performing
    */
   virtual void run();

@@ -72,6 +72,8 @@ namespace iroha {
        */
       Identifier last_id() const;
 
+      void dropAll();
+
       // ----------| modify operations |----------
 
       FlatFile(const FlatFile &rhs) = delete;

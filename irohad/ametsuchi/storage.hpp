@@ -38,6 +38,18 @@ namespace iroha {
 
       virtual std::shared_ptr<BlockQuery> getBlockQuery() const = 0;
 
+      /**
+       * Raw insertion of blocks without validation
+       * @param block - block for insertion
+       * @return true if inserted
+       */
+      virtual bool insertBlock(model::Block block) = 0;
+
+      /**
+       * Remove all information from ledger
+       */
+      virtual void dropStorage() = 0;
+
       virtual ~Storage() = default;
     };
 
