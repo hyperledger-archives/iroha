@@ -55,7 +55,7 @@ namespace shared_model {
        * Move constructor
        * @param rhs - wrapped temporary value
        */
-      PolymorphicWrapper(PolymorphicWrapper &&rhs) noexcept {
+      PolymorphicWrapper(PolymorphicWrapper &&rhs) noexcept : ptr(nullptr) {
         std::swap(this->ptr, rhs.ptr);
       }
 
