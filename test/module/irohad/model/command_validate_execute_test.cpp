@@ -823,10 +823,47 @@ TEST_F(TransferAssetTest, InvalidWhenWrongPrecision) {
   ASSERT_FALSE(validateAndExecute());
 }
 
-TEST_F(TransferAssetTest, InvalidWhenDifferentCreator) {
+TEST_F(TransferAssetTest, InvalidWhenCreatorHasNoPermission) {
   // Transfer creator is not connected to account
-  transfer_asset->src_account_id = "other";
+  transfer_asset->src_account_id = account_id;
+  transfer_asset->dest_account_id = admin_id;
+  EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(admin_id, account_id, can_transfer))
+        .WillOnce(Return(false));
   ASSERT_FALSE(validateAndExecute());
+}
+
+TEST_F(TransferAssetTest, ValidWhenCreatorHasPermission) {
+  // Transfer creator is not connected to account
+  transfer_asset->src_account_id = account_id;
+  transfer_asset->dest_account_id = admin_id;
+  EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(admin_id, account_id, can_transfer))
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(*wsv_query, getAccountRoles(transfer_asset->dest_account_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+
+  EXPECT_CALL(*wsv_query, getAccountAsset(transfer_asset->dest_account_id, _))
+      .WillOnce(Return(nonstd::nullopt));
+
+  EXPECT_CALL(*wsv_query, getAccountAsset(transfer_asset->src_account_id,
+                                          transfer_asset->asset_id))
+      .Times(2)
+      .WillRepeatedly(Return(src_wallet));
+  EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
+      .Times(2)
+      .WillRepeatedly(Return(asset));
+  EXPECT_CALL(*wsv_query, getAccount(transfer_asset->dest_account_id))
+      .WillOnce(Return(account));
+
+  EXPECT_CALL(*wsv_command, upsertAccountAsset(_))
+      .Times(2)
+      .WillRepeatedly(Return(true));
+
+
+  ASSERT_TRUE(validateAndExecute());
+
 }
 
 TEST_F(TransferAssetTest, InvalidWhenZeroAmount) {

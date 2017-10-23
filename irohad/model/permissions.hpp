@@ -76,7 +76,9 @@ namespace iroha {
     const std::set<std::string> grant_group = {
         can_grant + can_set_quorum,
         can_grant + can_add_signatory,
-        can_grant + can_remove_signatory};
+        can_grant + can_remove_signatory,
+        can_grant + can_transfer
+        };
 
     const std::set<std::string> edit_self_group = {
         can_set_quorum, can_add_signatory, can_remove_signatory};
@@ -100,6 +102,7 @@ namespace iroha {
         can_grant + can_set_quorum,
         can_grant + can_add_signatory,
         can_grant + can_remove_signatory,
+        can_grant + can_transfer,
         can_set_quorum,
         can_add_signatory,
         can_remove_signatory,

@@ -645,12 +645,21 @@ bool AppendRoleExecutor::isValid(const Command &command,
                                                const Account &creator) {
       auto transfer_asset = static_cast<const TransferAsset &>(command);
 
-      // Can account transfer assets
-      // Creator can transfer only from their account, and must hve permission
-      // on that
-      return creator.account_id == transfer_asset.src_account_id
-          and checkAccountRolePermission(
-                  creator.account_id, queries, can_transfer)
+      return
+
+          (
+              // 1. Creator has granted permission on src_account_id
+              (creator.account_id != transfer_asset.src_account_id
+               and queries.hasAccountGrantablePermission(
+                       creator.account_id,
+                       transfer_asset.src_account_id,
+                       can_transfer))
+              or
+              // 2. Creator transfer from his account
+              (creator.account_id == transfer_asset.src_account_id
+               and checkAccountRolePermission(
+                       creator.account_id, queries, can_transfer)))
+          // For both cases, dest_account must have can_receive
           and checkAccountRolePermission(
                   transfer_asset.dest_account_id, queries, can_receive);
     }
