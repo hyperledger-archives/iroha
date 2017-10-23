@@ -35,16 +35,11 @@ namespace shared_model {
      * avoid this misunderstanding class should be final
      */
     class Command final : public Primitive<Command, iroha::model::Command> {
-     public:
-      Command(const Command &rhs) {
-        this->command_variant = rhs.command_variant;
-      }
-
+     private:
       /// Shortcut type for polymorphic wrapper
       template <typename Value>
       using w = detail::PolymorphicWrapper<Value>;
 
-     private:
       /**
        * Variant with wrapper on current concrete command
        * @return variant with concrete command
@@ -52,12 +47,14 @@ namespace shared_model {
       boost::variant<w<AddAssetQuantity>> command_variant;
 
      public:
+      Command(const Command &rhs) : command_variant(rhs.command_variant) {}
+
       /// Type of variant, that handle concrete command
       using CommandVariantType = decltype(command_variant);
       /**
-       * @return const reference for attached variant with concrete commands
+       * @return reference to const variant with concrete command
        */
-      const CommandVariantType get() const { return command_variant; }
+      const CommandVariantType &get() const { return command_variant; }
 
       /// Types of concrete commands, in attached variant
       using CommandListType = decltype(command_variant)::types;
