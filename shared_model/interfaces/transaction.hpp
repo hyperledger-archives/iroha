@@ -22,8 +22,8 @@
 #include <vector>
 #include "interfaces/commands/command.hpp"
 #include "interfaces/common_objects/hash.hpp"
-#include "interfaces/common_objects/signature.hpp"
 #include "interfaces/primitive.hpp"
+#include "interfaces/signable.hpp"
 #include "model/transaction.hpp"
 
 namespace shared_model {
@@ -34,21 +34,9 @@ namespace shared_model {
      * state of ledger.
      */
     class Transaction
-        : public Primitive<Transaction, iroha::model::Transaction> {
+        : public Primitive<Transaction, iroha::model::Transaction>,
+          public Signable<Transaction> {
      public:
-      /// Type of transaction signature
-      using SignatureType = Signature;
-
-      /// Type of set of signatures
-      using SignatureSetType = std::unordered_set<const SignatureType>;
-
-      // TODO discuss adding signatures
-
-      /**
-       * @return attached signatures
-       */
-      virtual const SignatureSetType &signatures() const = 0;
-
       /// Type of timestamp
       using TimestampType = uint64_t;
 

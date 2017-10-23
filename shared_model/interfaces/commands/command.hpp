@@ -18,12 +18,12 @@
 #ifndef IROHA_SHARED_MODEL_COMMAND_HPP
 #define IROHA_SHARED_MODEL_COMMAND_HPP
 
-#include <interfaces/visitor_apply_for_all.hpp>
-#include <utility>
 #include <boost/variant.hpp>
+#include <utility>
 #include "interfaces/commands/add_asset_quantity.hpp"
 #include "interfaces/polymorphic_wrapper.hpp"
 #include "interfaces/primitive.hpp"
+#include "interfaces/visitor_apply_for_all.hpp"
 #include "model/command.hpp"
 
 namespace shared_model {
@@ -52,15 +52,12 @@ namespace shared_model {
       boost::variant<w<AddAssetQuantity>> command_variant;
 
      public:
-
       /// Type of variant, that handle concrete command
       using CommandVariantType = decltype(command_variant);
       /**
        * @return const reference for attached variant with concrete commands
        */
-      const CommandVariantType get() const  {
-        return command_variant;
-      }
+      const CommandVariantType get() const { return command_variant; }
 
       /// Types of concrete commands, in attached variant
       using CommandListType = decltype(command_variant)::types;
