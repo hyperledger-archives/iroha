@@ -30,6 +30,7 @@ namespace shared_model {
      * stuff, such as cryptography and object hashing
      */
     class Hash : public Primitive<Hash, Hash> {
+     public:
       /**
        * @return provides raw representation of hash
        */

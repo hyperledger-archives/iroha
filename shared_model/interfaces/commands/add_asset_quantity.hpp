@@ -31,6 +31,7 @@ namespace shared_model {
      */
     class AddAssetQuantity
         : public Primitive<AddAssetQuantity, iroha::model::AddAssetQuantity> {
+     public:
       /// Type of account id
       using AccountIdType = std::string;
       /**
