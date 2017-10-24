@@ -39,7 +39,7 @@ if (NOT grpc_FOUND)
   externalproject_add(grpc_grpc
       GIT_REPOSITORY ${URL}
       GIT_TAG        ${VERSION}
-      CMAKE_ARGS -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_PROTOBUF_PACKAGE_TYPE=CONFIG -DProtobuf_DIR=${EP_PREFIX}/src/google_protobuf-build/lib/cmake/protobuf -DgRPC_ZLIB_PROVIDER=package -DBUILD_SHARED_LIBS=OFF
+      CMAKE_ARGS -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_PROTOBUF_PACKAGE_TYPE=CONFIG -DProtobuf_DIR=${EP_PREFIX}/src/google_protobuf-build/lib/cmake/protobuf -DgRPC_ZLIB_PROVIDER=package -DBUILD_SHARED_LIBS=ON
       PATCH_COMMAND ${GIT_EXECUTABLE} apply ${PROJECT_SOURCE_DIR}/patch/fix-protobuf-package-include.patch || true
       INSTALL_COMMAND "" # remove install step
       TEST_COMMAND "" # remove test step
