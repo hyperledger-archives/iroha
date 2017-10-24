@@ -38,9 +38,9 @@ class TestIrohad : public Irohad {
              size_t torii_port,
              size_t internal_port,
              size_t max_proposal_size,
-             size_t proposal_delay,
-             size_t vote_delay,
-             size_t load_delay,
+             std::chrono::milliseconds proposal_delay,
+             std::chrono::milliseconds vote_delay,
+             std::chrono::milliseconds load_delay,
              const iroha::keypair_t &keypair)
       : Irohad(block_store_dir,
                redis_host,
@@ -97,9 +97,9 @@ class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
                                           0,
                                           10001,
                                           10,
-                                          5000,
-                                          5000,
-                                          5000,
+                                          5000ms,
+                                          5000ms,
+                                          5000ms,
                                           keypair);
 
     ASSERT_TRUE(irohad->storage);

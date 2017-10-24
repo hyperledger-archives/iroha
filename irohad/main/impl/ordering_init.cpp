@@ -27,17 +27,19 @@ namespace iroha {
       return gate;
     }
 
-    auto OrderingInit::createService(std::shared_ptr<ametsuchi::PeerQuery> wsv,
-                                     size_t max_size, size_t delay_milliseconds,
-                                     std::shared_ptr<network::OrderingServiceTransport> transport) {
+    auto OrderingInit::createService(
+        std::shared_ptr<ametsuchi::PeerQuery> wsv,
+        size_t max_size,
+        std::chrono::milliseconds delay_milliseconds,
+        std::shared_ptr<network::OrderingServiceTransport> transport) {
       return std::make_shared<ordering::OrderingServiceImpl>(
-          wsv, max_size, delay_milliseconds, transport);
+          wsv, max_size, delay_milliseconds.count(), transport);
     }
 
     std::shared_ptr<ordering::OrderingGateImpl> OrderingInit::initOrderingGate(
         std::shared_ptr<ametsuchi::PeerQuery> wsv,
         size_t max_size,
-        size_t delay_milliseconds) {
+        std::chrono::milliseconds delay_milliseconds) {
       auto network_address = wsv->getLedgerPeers().value().front().address;
       ordering_gate_transport =
           std::make_shared<iroha::ordering::OrderingGateTransportGrpc>(

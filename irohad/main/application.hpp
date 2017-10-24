@@ -72,9 +72,9 @@ class Irohad {
          size_t torii_port,
          size_t internal_port,
          size_t max_proposal_size,
-         size_t proposal_delay,
-         size_t vote_delay,
-         size_t load_delay,
+         std::chrono::milliseconds proposal_delay,
+         std::chrono::milliseconds vote_delay,
+         std::chrono::milliseconds load_delay,
          const iroha::keypair_t &keypair);
 
   /**
@@ -131,9 +131,9 @@ class Irohad {
   size_t torii_port_;
   size_t internal_port_;
   size_t max_proposal_size_;
-  size_t proposal_delay_;
-  size_t vote_delay_;
-  size_t load_delay_;
+  std::chrono::milliseconds proposal_delay_;
+  std::chrono::milliseconds vote_delay_;
+  std::chrono::milliseconds load_delay_;
 
   // ------------------------| internal dependencies |-------------------------
 
