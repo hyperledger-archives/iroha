@@ -18,6 +18,7 @@
 #ifndef IROHA_SIGNABLE_HPP
 #define IROHA_SIGNABLE_HPP
 
+#include "interfaces/common_object/hash.hpp"
 #include "interfaces/common_objects/signature.hpp"
 
 namespace shared_model {
@@ -47,6 +48,24 @@ namespace shared_model {
        * @return true, if signature was added
        */
       virtual bool addSignature(const SignatureType &signature) = 0;
+
+      /// Type of timestamp
+      using TimestampType = uint64_t;
+
+      /**
+       * @return time of creation
+       */
+      virtual const TimestampType &created_time() const = 0;
+
+      /// Type of hash
+      using HashType = Hash;
+
+      /**
+       * @return hash of object.
+       * Equality of hashes means equality of objects.
+       * Signatures are not affected on hash.
+       */
+      virtual const HashType &hash() const;
 
       virtual ~Signable() = default;
     };

@@ -37,14 +37,6 @@ namespace shared_model {
         : public Primitive<Transaction, iroha::model::Transaction>,
           public Signable<Transaction> {
      public:
-      /// Type of timestamp
-      using TimestampType = uint64_t;
-
-      /**
-       * @return time of creation
-       */
-      virtual const TimestampType &created_time() const = 0;
-
       /// Type of creator id
       using CreatorIdType = std::string;
 
@@ -80,16 +72,6 @@ namespace shared_model {
        * transaction.
        */
       virtual const QuorumType &quorum() const;
-
-      /// Type of hash
-      using HashType = Hash;
-
-      /**
-       * @return hash of transaction.
-       * Equality of hashes means equality of transactions.
-       * Signatures are not affected on hash
-       */
-      virtual const HashType &hash() const;
 
       /**
        * Equality of transactions means equality of hashes only.
