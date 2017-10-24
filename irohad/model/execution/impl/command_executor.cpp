@@ -655,7 +655,7 @@ bool AppendRoleExecutor::isValid(const Command &command,
                        transfer_asset.src_account_id,
                        can_transfer))
               or
-              // 2. Creator transfer from his account
+              // 2. Creator transfer from their account
               (creator.account_id == transfer_asset.src_account_id
                and checkAccountRolePermission(
                        creator.account_id, queries, can_transfer)))
