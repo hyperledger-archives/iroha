@@ -48,7 +48,7 @@ namespace shared_model {
       /// Type of amount
       using AmountType = iroha::Amount;
       /**
-       * @return quantity of asset for addin§g
+       * @return quantity of asset for adding
        */
       virtual const AmountType &amount() const = 0;
     };
