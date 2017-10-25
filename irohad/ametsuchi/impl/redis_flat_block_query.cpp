@@ -59,7 +59,6 @@ namespace iroha {
             s.on_next(tx);
           }
         };
-        s.on_completed();
       };
     }
 
@@ -80,6 +79,7 @@ namespace iroha {
                              this->callbackToLrange(subscriber, block_id));
             }
             client_.sync_commit();
+            subscriber.on_completed();
           });
     }
 
@@ -108,6 +108,7 @@ namespace iroha {
                              this->callbackToLrange(subscriber, block_id));
             }
             client_.sync_commit();
+            subscriber.on_completed();
           });
     }
 
