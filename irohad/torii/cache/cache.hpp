@@ -41,6 +41,8 @@ namespace torii {
       uint32_t getIndexSizeHigh() const;
       uint32_t getIndexSizeLow() const;
 
+      uint64_t getCacheItemCount() const;
+
       /**
        * Adds new item to cache. Note: cache doe not have a remove method,
        * deletion performs automatically.

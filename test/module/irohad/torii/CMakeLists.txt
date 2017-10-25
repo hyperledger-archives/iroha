@@ -13,6 +13,7 @@
 # limitations under the License.
 
 add_subdirectory(processor)
+add_subdirectory(cache)
 
 # command service test
 addtest(torii_service_test torii_service_test.cpp)

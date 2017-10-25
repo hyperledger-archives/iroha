@@ -53,5 +53,9 @@ namespace torii {
     uint32_t ToriiResponseCache::getIndexSizeLow() const {
       return MAX_HANDLER_MAP_SIZE_LOW;
     }
+
+    uint64_t ToriiResponseCache::getCacheItemCount() const {
+      return handler_map_.size();
+    }
   }
 }
