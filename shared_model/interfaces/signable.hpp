@@ -18,8 +18,8 @@
 #ifndef IROHA_SIGNABLE_HPP
 #define IROHA_SIGNABLE_HPP
 
-#include "interfaces/common_object/hash.hpp"
 #include "interfaces/common_objects/signature.hpp"
+#include "interfaces/hashable.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -28,8 +28,8 @@ namespace shared_model {
      * Interface provides signatures and adding them to model object
      * @tparam Model - your new style model
      */
-    template <typename Model>
-    class Signable {
+    template <typename Model, typename OldModel>
+    class Signable : public Hashable<Model, OldModel> {
      public:
       /// Type of transaction signature
       using SignatureType = Signature;
@@ -55,19 +55,8 @@ namespace shared_model {
       /**
        * @return time of creation
        */
-      virtual const TimestampType &created_time() const = 0;
+      virtual const TimestampType &createdTime() const = 0;
 
-      /// Type of hash
-      using HashType = Hash;
-
-      /**
-       * @return hash of object.
-       * Equality of hashes means equality of objects.
-       * Signatures are not affected on hash.
-       */
-      virtual const HashType &hash() const;
-
-      virtual ~Signable() = default;
     };
   }  // namespace interface
 }  // namespace shared_model

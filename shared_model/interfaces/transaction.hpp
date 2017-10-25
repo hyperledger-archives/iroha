@@ -25,6 +25,7 @@
 #include "interfaces/primitive.hpp"
 #include "interfaces/signable.hpp"
 #include "model/transaction.hpp"
+#include "interfaces/common_objects/types.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -34,8 +35,7 @@ namespace shared_model {
      * state of ledger.
      */
     class Transaction
-        : public Primitive<Transaction, iroha::model::Transaction>,
-          public Signable<Transaction> {
+        : public Signable<Transaction, iroha::model::Transaction> {
      public:
       /// Type of creator id
       using CreatorIdType = std::string;
@@ -43,7 +43,7 @@ namespace shared_model {
       /**
        * @return creator of transaction
        */
-      virtual const CreatorIdType &creator_account_id() const = 0;
+      virtual const types::AccountIdType &creatorAccountId() const = 0;
 
       /// Type of counter
       using TxCounterType = uint64_t;
@@ -51,7 +51,7 @@ namespace shared_model {
       /**
        * @return actual number of transaction of this user
        */
-      virtual TxCounterType transaction_counter() const = 0;
+      virtual TxCounterType transactionCounter() const = 0;
 
       /// Type of command
       using CommandType = Command;

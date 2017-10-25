@@ -15,43 +15,24 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
-#define IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
+#ifndef IROHA_SHARED_MODEL_GET_ACCOUNT_HPP
+#define IROHA_SHARED_MODEL_GET_ACCOUNT_HPP
 
-#include <string>
-#include "amount/amount.hpp"  // TODO replace with lib amount
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/primitive.hpp"
-#include "model/commands/add_asset_quantity.hpp"
+#include "interfaces/hashable.hpp"
+#include "model/queries/get_account.hpp"
 
 namespace shared_model {
   namespace interface {
-
-    /**
-     * Add amount of asset to an account
-     */
-    class AddAssetQuantity
-        : public Primitive<AddAssetQuantity, iroha::model::AddAssetQuantity> {
+    class GetAccount : public Hashable<GetAccount, iroha::model::GetAccount> {
      public:
       /**
-       * @return Identity of user, that add quantity
+       * @return Identity of user, for fetching data
        */
       virtual const types::AccountIdType &accountId() const = 0;
 
-      /// Type of asset id
-      using AssetIdType = std::string;
-      /**
-       * @return asset identifier
-       */
-      virtual const AssetIdType &assetId() const = 0;
-
-      /// Type of amount
-      using AmountType = iroha::Amount;
-      /**
-       * @return quantity of asset for addin§g
-       */
-      virtual const AmountType &amount() const = 0;
+      // TODO add primitive methods
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
+#endif  // IROHA_SHARED_MODEL_GET_ACCOUNT_HPP

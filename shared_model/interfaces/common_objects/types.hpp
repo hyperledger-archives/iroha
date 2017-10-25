@@ -15,5 +15,14 @@
  * limitations under the License.
  */
 
-#include "interfaces/transaction.hpp"
-#include "interfaces/queries/query.hpp"
+#ifndef IROHA_SHARED_MODEL_TYPES_HPP
+#define IROHA_SHARED_MODEL_TYPES_HPP
+namespace shared_model {
+  namespace interface {
+    namespace types {
+      /// Type of account id
+      using AccountIdType = std::string;
+    } // namespace types
+  }  // namespace interface
+}  // namespace shared_model
+#endif //IROHA_SHARED_MODEL_TYPES_HPP

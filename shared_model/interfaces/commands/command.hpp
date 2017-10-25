@@ -47,7 +47,14 @@ namespace shared_model {
       boost::variant<w<AddAssetQuantity>> command_variant;
 
      public:
+      /**
+       * Copy constructor
+       * @param rhs - copyable object
+       */
       Command(const Command &rhs) : command_variant(rhs.command_variant) {}
+
+      /// Types of concrete commands, in attached variant
+      using CommandListType = decltype(command_variant)::types;
 
       /// Type of variant, that handle concrete command
       using CommandVariantType = decltype(command_variant);
@@ -56,21 +63,18 @@ namespace shared_model {
        */
       const CommandVariantType &get() const { return command_variant; }
 
-      /// Types of concrete commands, in attached variant
-      using CommandListType = decltype(command_variant)::types;
-
       std::string toString() const override {
         return boost::apply_visitor(detail::ToStringVisitor(), command_variant);
       }
 
-      Command *copy() const override { return new Command(*this); }
+      ModelType *copy() const override { return new ModelType(*this); }
 
       OldModelType *makeOldModel() const {
         return boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), command_variant);
       }
 
-      bool operator==(const Command &rhs) const override {
+      bool operator==(const ModelType &rhs) const override {
         return this->command_variant == rhs.command_variant;
       }
     };
