@@ -22,7 +22,7 @@ namespace shared_model {
     namespace types {
       /// Type of account id
       using AccountIdType = std::string;
-    } // namespace types
-  }  // namespace interface
+    }  // namespace types
+  }    // namespace interface
 }  // namespace shared_model
-#endif //IROHA_SHARED_MODEL_TYPES_HPP
+#endif  // IROHA_SHARED_MODEL_TYPES_HPP

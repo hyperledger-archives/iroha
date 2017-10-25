@@ -56,7 +56,6 @@ namespace shared_model {
        * @return time of creation
        */
       virtual const TimestampType &createdTime() const = 0;
-
     };
   }  // namespace interface
 }  // namespace shared_model

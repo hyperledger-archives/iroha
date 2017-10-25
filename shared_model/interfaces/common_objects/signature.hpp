@@ -29,7 +29,6 @@ namespace shared_model {
      */
     class Signature : public Primitive<Signature, iroha::model::Signature> {
      public:
-
       /**
        * Type of hashes
        */
@@ -46,8 +45,8 @@ namespace shared_model {
       virtual const HashType &signedHash() const;
 
       bool operator==(const Signature &rhs) const override {
-        return this->publicKey() == rhs.publicKey() and
-            this->signedHash() == rhs.signedHash();
+        return this->publicKey() == rhs.publicKey()
+            and this->signedHash() == rhs.signedHash();
       }
 
       OldModelType *makeOldModel() const override {

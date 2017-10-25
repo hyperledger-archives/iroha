@@ -33,7 +33,7 @@ namespace shared_model {
        * @return hash of object.
        * Equality of hashes means equality of objects.
        */
-      virtual const HashType &hash() const;
+      virtual const HashType &hash() const = 0;
 
       /**
        * Overriding operator== with equality hash semantics

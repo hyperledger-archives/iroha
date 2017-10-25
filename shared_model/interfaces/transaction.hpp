@@ -22,10 +22,10 @@
 #include <vector>
 #include "interfaces/commands/command.hpp"
 #include "interfaces/common_objects/hash.hpp"
+#include "interfaces/common_objects/types.hpp"
 #include "interfaces/primitive.hpp"
 #include "interfaces/signable.hpp"
 #include "model/transaction.hpp"
-#include "interfaces/common_objects/types.hpp"
 
 namespace shared_model {
   namespace interface {
