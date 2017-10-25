@@ -112,6 +112,8 @@ class ToriiServiceTest : public testing::Test {
 
       EXPECT_CALL(*storageMock, getBlockQuery())
           .WillRepeatedly(Return(block_query));
+      EXPECT_CALL(*block_query, getTxByHashSync(_))
+          .WillRepeatedly(Return(boost::none));
 
       //----------- Server run ----------------
       runner->run(std::move(command_service), std::move(query_service));
@@ -157,8 +159,6 @@ TEST_F(ToriiServiceTest, StatusWhenTxWasNotReceivedBlocking) {
     txs.push_back(*iroha_tx);
     auto tx_hash = iroha::hash(*iroha_tx);
     tx_hashes.push_back(tx_hash.to_string());
-    EXPECT_CALL(*block_query, getTxByHashSync(tx_hash.to_string()))
-        .WillRepeatedly(Return(boost::none));
   }
 
   // get statuses of unsent transactions
@@ -205,10 +205,6 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
     txs.push_back(*iroha_tx);
     auto tx_hash = iroha::hash(*iroha_tx);
     tx_hashes.push_back(tx_hash.to_string());
-
-    EXPECT_CALL(*block_query, getTxByHashSync(tx_hash.to_string()))
-        .WillRepeatedly(
-            Return(boost::make_optional<iroha::model::Transaction>(*iroha_tx)));
 
     ASSERT_TRUE(stat.ok());
   }
@@ -301,14 +297,9 @@ TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
     auto iroha_tx = tx_factory.deserialize(new_tx);
     txs.push_back(*iroha_tx);
     tx_hashes.push_back(iroha::hash(*iroha_tx).to_string());
-
-    EXPECT_CALL(*block_query,
-                getTxByHashSync(iroha::hash(*iroha_tx).to_string()))
-        .WillRepeatedly(
-            Return(boost::make_optional<iroha::model::Transaction>(*iroha_tx)));
   }
 
-  // wait untill all transactions are sent
+  // wait until all transactions are sent
   while (torii_count < (int)TimesToriiNonBlocking)
     ;
   ASSERT_EQ(torii_count, TimesToriiNonBlocking);

@@ -16,7 +16,6 @@ limitations under the License.
 
 #include "torii/command_service.hpp"
 #include <endpoint.pb.h>
-#include "common/types.hpp"
 #include "crypto/hash.hpp"
 
 namespace torii {
@@ -24,66 +23,68 @@ namespace torii {
   CommandService::CommandService(
       std::shared_ptr<iroha::model::converters::PbTransactionFactory>
           pb_factory,
-      std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor,
+      std::shared_ptr<iroha::torii::TransactionProcessor> txProcessor,
       std::shared_ptr<iroha::ametsuchi::Storage> storage)
-      : pb_factory_(pb_factory), tx_processor_(txProccesor), storage_(storage) {
+      : pb_factory_(pb_factory),
+        tx_processor_(txProcessor),
+        storage_(storage),
+        cache_(std::make_shared<cache::ToriiResponseCache>()) {
     // Notifier for all clients
     tx_processor_->transactionNotifier().subscribe([this](
         std::shared_ptr<iroha::model::TransactionResponse> iroha_response) {
-      // Find response in handler map
-      auto res = this->handler_map_.find(iroha_response->tx_hash);
-      if (res == this->handler_map_.end()) {
+      // Find response in cache
+      auto res = cache_->findItem(iroha_response->tx_hash);
+      if (not res) {
         iroha::protocol::ToriiResponse response;
         response.set_tx_status(iroha::protocol::NOT_RECEIVED);
-        this->handler_map_.insert({iroha_response->tx_hash, response});
+        cache_->addItem(response, iroha_response->tx_hash);
         return;
       }
       switch (iroha_response->current_status) {
         case iroha::model::TransactionResponse::STATELESS_VALIDATION_FAILED:
-          res->second.set_tx_status(
+          res->set_tx_status(
               iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED);
           break;
         case iroha::model::TransactionResponse::STATELESS_VALIDATION_SUCCESS:
-          res->second.set_tx_status(
+          res->set_tx_status(
               iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
           break;
         case iroha::model::TransactionResponse::STATEFUL_VALIDATION_FAILED:
-          res->second.set_tx_status(
+          res->set_tx_status(
               iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED);
           break;
         case iroha::model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS:
-          res->second.set_tx_status(
+          res->set_tx_status(
               iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS);
           break;
         case iroha::model::TransactionResponse::COMMITTED:
-          res->second.set_tx_status(iroha::protocol::TxStatus::COMMITTED);
+          res->set_tx_status(iroha::protocol::TxStatus::COMMITTED);
           break;
         case iroha::model::TransactionResponse::ON_PROCESS:
-          res->second.set_tx_status(iroha::protocol::TxStatus::ON_PROCESS);
+          res->set_tx_status(iroha::protocol::TxStatus::ON_PROCESS);
           break;
         case iroha::model::TransactionResponse::NOT_RECEIVED:
-          res->second.set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);
+          res->set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);
           break;
       }
 
-      this->handler_map_.insert({iroha_response->tx_hash, res->second});
+      cache_->addItem(*res, iroha_response->tx_hash);
     });
   }
 
   void CommandService::ToriiAsync(iroha::protocol::Transaction const &request,
                                   google::protobuf::Empty &empty) {
     auto iroha_tx = pb_factory_->deserialize(request);
-
     auto tx_hash = iroha::hash(*iroha_tx).to_string();
+
+    if (cache_->findItem(tx_hash)) {
+      return;
+    }
 
     iroha::protocol::ToriiResponse response;
     response.set_tx_status(iroha::protocol::TxStatus::ON_PROCESS);
 
-    if (handler_map_.count(tx_hash) > 0) {
-      return;
-    }
-
-    handler_map_.emplace(tx_hash, response);
+    cache_->addItem(response, tx_hash);
     // Send transaction to iroha
     tx_processor_->transactionHandle(iroha_tx);
   }
@@ -91,15 +92,16 @@ namespace torii {
   void CommandService::StatusAsync(
       iroha::protocol::TxStatusRequest const &request,
       iroha::protocol::ToriiResponse &response) {
-    auto resp = handler_map_.find(request.tx_hash());
-    if (resp != handler_map_.end()) {
-      response.CopyFrom(resp->second);
+    auto resp = cache_->findItem(request.tx_hash());
+    if (resp) {
+      response.CopyFrom(*resp);
     } else {
       if (storage_->getBlockQuery()->getTxByHashSync(request.tx_hash())) {
         response.set_tx_status(iroha::protocol::TxStatus::COMMITTED);
       } else {
         response.set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);
       }
+      cache_->addItem(response, request.tx_hash());
     }
   }
 

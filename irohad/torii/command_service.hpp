@@ -26,6 +26,7 @@ limitations under the License.
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/transaction_response.hpp"
 #include "torii/processor/transaction_processor.hpp"
+#include "torii/cache/cache.hpp"
 
 namespace torii {
 
@@ -39,7 +40,7 @@ namespace torii {
     CommandService(
         std::shared_ptr<iroha::model::converters::PbTransactionFactory>
             pb_factory,
-        std::shared_ptr<iroha::torii::TransactionProcessor> txProccesor,
+        std::shared_ptr<iroha::torii::TransactionProcessor> txProcessor,
         std::shared_ptr<iroha::ametsuchi::Storage> storage);
 
     CommandService(const CommandService &) = delete;
@@ -58,9 +59,8 @@ namespace torii {
    private:
     std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory_;
     std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor_;
-    std::unordered_map<std::string, iroha::protocol::ToriiResponse>
-        handler_map_;
     std::shared_ptr<iroha::ametsuchi::Storage> storage_;
+    std::shared_ptr<cache::ToriiResponseCache> cache_;
   };
 
 }  // namespace torii
