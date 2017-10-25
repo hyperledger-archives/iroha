@@ -34,6 +34,10 @@ Irohad::Irohad(const std::string &block_store_dir,
                const std::string &pg_conn,
                size_t torii_port,
                size_t internal_port,
+               size_t max_proposal_size,
+               std::chrono::milliseconds proposal_delay,
+               std::chrono::milliseconds vote_delay,
+               std::chrono::milliseconds load_delay,
                const keypair_t &keypair)
     : block_store_dir_(block_store_dir),
       redis_host_(redis_host),
@@ -41,6 +45,10 @@ Irohad::Irohad(const std::string &block_store_dir,
       pg_conn_(pg_conn),
       torii_port_(torii_port),
       internal_port_(internal_port),
+      max_proposal_size_(max_proposal_size),
+      proposal_delay_(proposal_delay),
+      vote_delay_(vote_delay),
+      load_delay_(load_delay),
       keypair(keypair) {
   log_ = logger::log("IROHAD");
   log_->info("created");
@@ -118,15 +126,8 @@ void Irohad::initValidators() {
 }
 
 void Irohad::initOrderingGate() {
-  // const set maximum transactions that possible appears in one proposal
-
-  auto max_transactions_in_proposal = 10u;
-
-  // const set maximum waiting time util emitting new proposal
-  auto delay_for_new_proposal = 5000u;
-
-  ordering_gate = ordering_init.initOrderingGate(
-      wsv, max_transactions_in_proposal, delay_for_new_proposal);
+  ordering_gate =
+      ordering_init.initOrderingGate(wsv, max_proposal_size_, proposal_delay_);
   log_->info("[Init] => init ordering gate - [{}]",
              logger::logBool(ordering_gate));
 }
@@ -154,7 +155,9 @@ void Irohad::initConsensusGate() {
                                  wsv,
                                  simulator,
                                  block_loader,
-                                 keypair);
+                                 keypair,
+                                 vote_delay_,
+                                 load_delay_);
 
   log_->info("[Init] => consensus gate");
 }

@@ -69,6 +69,10 @@ int main(int argc, char *argv[]) {
                 config[mbr::PgOpt].GetString(),
                 config[mbr::ToriiPort].GetUint(),
                 config[mbr::InternalPort].GetUint(),
+                config[mbr::MaxProposalSize].GetUint(),
+                std::chrono::milliseconds(config[mbr::ProposalDelay].GetUint()),
+                std::chrono::milliseconds(config[mbr::VoteDelay].GetUint()),
+                std::chrono::milliseconds(config[mbr::LoadDelay].GetUint()),
                 keypair);
 
   if (not irohad.storage) {

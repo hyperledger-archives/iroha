@@ -55,9 +55,8 @@ namespace iroha {
         std::shared_ptr<consensus::yac::Yac> createYac(
             std::string network_address,
             ClusterOrdering initial_order,
-            const keypair_t &keypair);
-
-        uint64_t delay_seconds_ = 5;
+            const keypair_t &keypair,
+            std::chrono::milliseconds delay_milliseconds);
 
        public:
         std::shared_ptr<YacGate> initConsensusGate(
@@ -65,7 +64,9 @@ namespace iroha {
             std::shared_ptr<ametsuchi::PeerQuery> wsv,
             std::shared_ptr<simulator::BlockCreator> block_creator,
             std::shared_ptr<network::BlockLoader> block_loader,
-            const keypair_t &keypair);
+            const keypair_t &keypair,
+            std::chrono::milliseconds vote_delay_milliseconds,
+            std::chrono::milliseconds load_delay_milliseconds);
 
         std::shared_ptr<NetworkImpl> consensus_network;
       };

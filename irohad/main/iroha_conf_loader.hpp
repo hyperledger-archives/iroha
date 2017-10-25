@@ -32,6 +32,10 @@ namespace config_members {
   const char* PgOpt = "pg_opt";
   const char* RedisHost = "redis_host";
   const char* RedisPort = "redis_port";
+  const char* MaxProposalSize = "max_proposal_size";
+  const char* ProposalDelay = "proposal_delay";
+  const char* VoteDelay = "vote_delay";
+  const char* LoadDelay = "load_delay";
 }  // namespace config_members
 
 /**
@@ -71,6 +75,22 @@ inline rapidjson::Document parse_iroha_config(std::string const& iroha_conf_path
   assert_fatal(doc.HasMember(mbr::RedisPort), no_member_error(mbr::RedisPort));
   assert_fatal(doc[mbr::RedisPort].IsUint(),
                type_error(mbr::RedisPort, "uint"));
+
+  assert_fatal(doc.HasMember(mbr::MaxProposalSize), no_member_error(mbr::MaxProposalSize));
+  assert_fatal(doc[mbr::MaxProposalSize].IsUint(),
+               type_error(mbr::MaxProposalSize, "uint"));
+
+  assert_fatal(doc.HasMember(mbr::ProposalDelay), no_member_error(mbr::ProposalDelay));
+  assert_fatal(doc[mbr::ProposalDelay].IsUint(),
+               type_error(mbr::ProposalDelay, "uint"));
+
+  assert_fatal(doc.HasMember(mbr::VoteDelay), no_member_error(mbr::VoteDelay));
+  assert_fatal(doc[mbr::VoteDelay].IsUint(),
+               type_error(mbr::VoteDelay, "uint"));
+
+  assert_fatal(doc.HasMember(mbr::LoadDelay), no_member_error(mbr::LoadDelay));
+  assert_fatal(doc[mbr::LoadDelay].IsUint(),
+               type_error(mbr::LoadDelay, "uint"));
   return doc;
 }
 

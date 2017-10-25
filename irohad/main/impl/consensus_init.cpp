@@ -55,14 +55,15 @@ namespace iroha {
       std::shared_ptr<consensus::yac::Yac> YacInit::createYac(
           std::string network_address,
           ClusterOrdering initial_order,
-          const keypair_t &keypair) {
+          const keypair_t &keypair,
+          std::chrono::milliseconds delay_milliseconds) {
         return Yac::create(
             YacVoteStorage(),
             createNetwork(std::move(network_address), initial_order.getPeers()),
             createCryptoProvider(keypair),
             createTimer(),
             initial_order,
-            delay_seconds_ * 1000);
+            delay_milliseconds.count());
       }
 
       std::shared_ptr<YacGate> YacInit::initConsensusGate(
@@ -70,12 +71,15 @@ namespace iroha {
           std::shared_ptr<ametsuchi::PeerQuery> wsv,
           std::shared_ptr<simulator::BlockCreator> block_creator,
           std::shared_ptr<network::BlockLoader> block_loader,
-          const keypair_t &keypair) {
+          const keypair_t &keypair,
+          std::chrono::milliseconds vote_delay_milliseconds,
+          std::chrono::milliseconds load_delay_milliseconds) {
         auto peer_orderer = createPeerOrderer(wsv);
 
         auto yac = createYac(std::move(network_address),
                              peer_orderer->getInitialOrdering().value(),
-                             keypair);
+                             keypair,
+                             vote_delay_milliseconds);
         consensus_network->subscribe(yac);
 
         auto hash_provider = createHashProvider();
@@ -84,7 +88,7 @@ namespace iroha {
                                              hash_provider,
                                              block_creator,
                                              block_loader,
-                                             delay_seconds_ * 1000);
+                                             load_delay_milliseconds.count());
       }
 
     }  // namespace yac

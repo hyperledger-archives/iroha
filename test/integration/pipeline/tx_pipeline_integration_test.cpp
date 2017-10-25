@@ -37,6 +37,10 @@ class TestIrohad : public Irohad {
              const std::string &pg_conn,
              size_t torii_port,
              size_t internal_port,
+             size_t max_proposal_size,
+             std::chrono::milliseconds proposal_delay,
+             std::chrono::milliseconds vote_delay,
+             std::chrono::milliseconds load_delay,
              const iroha::keypair_t &keypair)
       : Irohad(block_store_dir,
                redis_host,
@@ -44,6 +48,10 @@ class TestIrohad : public Irohad {
                pg_conn,
                torii_port,
                internal_port,
+               max_proposal_size,
+               proposal_delay,
+               vote_delay,
+               load_delay,
                keypair) {}
 
   auto &getCommandService() { return command_service; }
@@ -82,8 +90,17 @@ class TxPipelineIntegrationTest : public iroha::ametsuchi::AmetsuchiTest {
     manager = std::make_shared<iroha::KeysManagerImpl>("node0");
     auto keypair = manager->loadKeys().value();
 
-    irohad = std::make_shared<TestIrohad>(
-        block_store_path, redishost_, redisport_, pgopt_, 0, 10001, keypair);
+    irohad = std::make_shared<TestIrohad>(block_store_path,
+                                          redishost_,
+                                          redisport_,
+                                          pgopt_,
+                                          0,
+                                          10001,
+                                          10,
+                                          5000ms,
+                                          5000ms,
+                                          5000ms,
+                                          keypair);
 
     ASSERT_TRUE(irohad->storage);
 

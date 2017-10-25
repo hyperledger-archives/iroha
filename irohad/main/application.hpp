@@ -57,6 +57,12 @@ class Irohad {
    * @param torii_port - port for torii binding
    * @param internal_port - port for internal communication - ordering service,
    * consensus, and block loader
+   * @param max_proposal_size - maximum transactions that possible appears in
+   * one proposal
+   * @param proposal_delay - maximum waiting time util emitting new proposal
+   * @param vote_delay - waiting time before sending vote to next peer
+   * @param load_delay - waiting time before loading committed block from next
+   * peer
    * @param keypair - public and private keys for crypto provider
    */
   Irohad(const std::string &block_store_dir,
@@ -65,6 +71,10 @@ class Irohad {
          const std::string &pg_conn,
          size_t torii_port,
          size_t internal_port,
+         size_t max_proposal_size,
+         std::chrono::milliseconds proposal_delay,
+         std::chrono::milliseconds vote_delay,
+         std::chrono::milliseconds load_delay,
          const iroha::keypair_t &keypair);
 
   /**
@@ -120,6 +130,10 @@ class Irohad {
   std::string pg_conn_;
   size_t torii_port_;
   size_t internal_port_;
+  size_t max_proposal_size_;
+  std::chrono::milliseconds proposal_delay_;
+  std::chrono::milliseconds vote_delay_;
+  std::chrono::milliseconds load_delay_;
 
   // ------------------------| internal dependencies |-------------------------
 
