@@ -104,14 +104,5 @@ namespace iroha {
           });
     }
 
-    rxcpp::observable<model::Transaction> FlatFileBlockQuery::getTxByHash(
-        std::string hash) {
-      // TODO: I have no idea what to do here
-    }
-
-    boost::optional<model::Transaction> FlatFileBlockQuery::getTxByHashSync(
-        std::string hash) {
-      // TODO: I have no idea what to do here too
-    }
   }  // namespace ametsuchi
 }  // namespace iroha
