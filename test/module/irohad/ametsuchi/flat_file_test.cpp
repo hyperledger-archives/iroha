@@ -101,3 +101,24 @@ TEST_F(BlStore_Test, BlockStoreWhenAbsentFolder) {
   }
   rmdir(target_path.c_str());
 }
+
+TEST_F(BlStore_Test, BlockStoreInitializationWhenPreviousStorageExist){
+  auto bl_store1 = FlatFile::create(block_store_path);
+  ASSERT_TRUE(bl_store1);
+
+  // Add two blocks to storage
+  std::vector<uint8_t > block1(1000, 5);
+  auto id1 = 1u;
+  bl_store1->add(id1, block1);
+
+  std::vector<uint8_t > block2(1000, 5);
+  auto id2 = 2u;
+  bl_store1->add(id2, block2);
+
+  // create second block storage from the same folder
+  auto bl_store2 = FlatFile::create(block_store_path);
+  ASSERT_TRUE(bl_store2);
+
+  // check that last ids of both block storages are the same
+  ASSERT_EQ(bl_store1->last_id(), bl_store2->last_id());
+}
