@@ -413,7 +413,7 @@ namespace iroha {
         if (document.HasMember("role_name") and document["role_name"].IsString()
             and document.HasMember("permissions")
             and document["permissions"].IsArray()) {
-          std::unordered_set<std::string> perms;
+          std::set<std::string> perms;
           for (auto &v : document["permissions"].GetArray()) {
             if (not v.IsString()) {
               return nonstd::nullopt;

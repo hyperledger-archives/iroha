@@ -35,6 +35,8 @@
 #include "model/commands/transfer_asset.hpp"
 #include "model/converters/json_command_factory.hpp"
 
+#include "crypto/hash.hpp"
+
 using namespace rapidjson;
 using namespace iroha;
 using namespace iroha::model;
@@ -232,7 +234,8 @@ TEST_F(JsonCommandTest, append_role) {
 }
 
 TEST_F(JsonCommandTest, create_role) {
-  std::unordered_set<std::string> perms = {"CanDoMagic"};
+  std::set<std::string> perms = {
+      "CanGetMyAccount", "CanCreateAsset", "CanAddPeer"};
   auto orig_command = std::make_shared<CreateRole>("master", perms);
   auto json_command = factory.serializeCreateRole(orig_command);
   auto serial_command = factory.deserializeCreateRole(json_command);
@@ -240,11 +243,17 @@ TEST_F(JsonCommandTest, create_role) {
   ASSERT_TRUE(serial_command.has_value());
   ASSERT_EQ(*orig_command, *serial_command.value());
 
+  model::Transaction tx1, tx2;
+  tx1.commands.push_back(orig_command);
+  tx2.commands.push_back(serial_command.value());
+  ASSERT_EQ(iroha::hash(tx1), iroha::hash(tx2));
+
   command_converter_test(orig_command);
 }
 
 TEST_F(JsonCommandTest, grant_permission) {
-  auto orig_command = std::make_shared<GrantPermission>("admin@test","can_read");
+  auto orig_command =
+      std::make_shared<GrantPermission>("admin@test", "can_read");
   auto json_command = factory.serializeGrantPermission(orig_command);
   auto serial_command = factory.deserializeGrantPermission(json_command);
 
@@ -255,7 +264,8 @@ TEST_F(JsonCommandTest, grant_permission) {
 }
 
 TEST_F(JsonCommandTest, revoke_permission) {
-  auto orig_command = std::make_shared<RevokePermission>("admin@test","can_read");
+  auto orig_command =
+      std::make_shared<RevokePermission>("admin@test", "can_read");
   auto json_command = factory.serializeRevokePermission(orig_command);
   auto serial_command = factory.deserializeRevokePermission(json_command);
 
