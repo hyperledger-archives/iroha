@@ -81,7 +81,6 @@ int main(int argc, char *argv[]) {
   }
 
   if (not FLAGS_genesis_block.empty()) {
-    log->info("Genesis block specified");
     iroha::main::BlockInserter inserter(irohad.storage);
     auto file = inserter.loadFile(FLAGS_genesis_block);
     auto block = inserter.parseBlock(file.value());
@@ -99,9 +98,6 @@ int main(int argc, char *argv[]) {
     inserter.applyToLedger({block.value()});
     log->info("Genesis block inserted, number of transactions: {}",
               block.value().transactions.size());
-  }
-  else {
-    log->info("Genesis block not specified");
   }
   // init pipeline components
   irohad.init();
