@@ -17,10 +17,7 @@
 
 #include "ametsuchi/impl/flat_file/flat_file.hpp"
 #include <dirent.h>
-#include <stdio.h>
-#include <sys/stat.h>
 #include <fstream>
-#include <iostream>
 #include "common/files.hpp"
 
 using namespace iroha::ametsuchi;
