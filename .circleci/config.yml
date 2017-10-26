@@ -29,7 +29,7 @@ jobs:
             ccache --max-size=1G
       - run:
           name: cmake
-          command: cmake -DCOVERAGE=ON -H$IROHA_HOME -B$IROHA_BUILD -DPACKAGE_DEB=ON
+          command: cmake -DCOVERAGE=ON -H$IROHA_HOME -B$IROHA_BUILD -DPACKAGE_DEB=ON -DCMAKE_BUILD_TYPE=Release
       - run:
           name: make
           command: |
@@ -52,12 +52,54 @@ jobs:
       - run:
           name: cppcheck
           command: cmake --build $IROHA_BUILD --target cppcheck
+      - run:
+          name: copy deb file
+          command: cd $IROHA_BUILD && cp *.deb ./iroha.deb && cd $IROHA_HOME
+      - run:
+          name: Copy dockerfile to build dir
+          command: cp $IROHA_HOME/docker/release_dockerfile $IROHA_HOME/build/release_dockerfile.tmp
       - persist_to_workspace:
           root: /opt/iroha/build
           paths:
             - compile_commands.json
             - reports
+            - iroha.deb
+            - release_dockerfile.tmp
 
+  dockerize:
+    <<: *defaults
+    docker:
+      - image: hyperledger/iroha-docker-develop
+      - image: docker:17.05.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: /opt/iroha/build
+
+      - run:
+          name: Copy deb
+          command: |
+            cp $IROHA_BUILD/iroha.deb $IROHA_HOME/docker/iroha.deb
+      - run:
+          name: Copy dockerfile
+          command: cp $IROHA_HOME/build/release_dockerfile.tmp $IROHA_HOME/docker
+      - run:
+          name: Docker login
+          command: |
+              docker login -u $DOCKER_USER -p "$DOCKER_PASS"
+      - run:
+          name: Build and push iroha image
+          command: |
+              tag=test
+              if [ "$CIRCLE_BRANCH" == "develop" ]; then
+                tag=develop
+              elif [ "$CIRCLE_BRANCH" == "master" ]; then
+                tag=latest
+              fi
+              cd $IROHA_HOME/docker
+              docker build -f release_dockerfile -t hyperledger/iroha-docker:$tag .
+              docker push hyperledger/iroha-docker:$tag
 
 
   # used to push info about issues to github
@@ -186,6 +228,10 @@ workflows:
       # macos-build/build -> sonar -> dockerize
       - macos-build
       - build
+      - dockerize:
+          requires:
+            - build
+
       - sonar-pr:
           requires:
             - build
