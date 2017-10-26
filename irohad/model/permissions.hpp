@@ -19,7 +19,7 @@
 #define IROHA_PERMISSIONS_HPP
 
 #include <string>
-#include <unordered_set>
+#include <set>
 
 namespace iroha {
   namespace model {
@@ -57,14 +57,14 @@ namespace iroha {
     const std::string can_get_all_acc_ast_txs =
         "CanGetAllAccountAssetsTransactions";
 
-    const std::unordered_set<std::string> read_self_group = {
+    const std::set<std::string> read_self_group = {
         can_get_my_account,
         can_get_my_acc_txs,
         can_get_my_acc_ast,
         can_get_my_acc_ast_txs,
         can_get_my_signatories};
 
-    const std::unordered_set<std::string> read_all_group = {
+    const std::set<std::string> read_all_group = {
         can_get_all_accounts,
         can_get_all_acc_txs,
         can_get_all_acc_ast,
@@ -73,18 +73,18 @@ namespace iroha {
         can_get_roles,
         can_read_assets};
     const std::string can_grant = "CanGrant";
-    const std::unordered_set<std::string> grant_group = {
+    const std::set<std::string> grant_group = {
         can_grant + can_set_quorum,
         can_grant + can_add_signatory,
         can_grant + can_remove_signatory};
 
-    const std::unordered_set<std::string> edit_self_group = {
+    const std::set<std::string> edit_self_group = {
         can_set_quorum, can_add_signatory, can_remove_signatory};
 
-    const std::unordered_set<std::string> asset_creator_group = {
+    const std::set<std::string> asset_creator_group = {
         can_create_asset, can_add_asset_qty};
 
-    const std::unordered_set<std::string> all_perm_group = {
+    const std::set<std::string> all_perm_group = {
         can_get_my_account,
         can_get_my_acc_txs,
         can_get_my_acc_ast,

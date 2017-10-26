@@ -72,7 +72,7 @@ namespace iroha {
 
       std::shared_ptr<Command> CommandGenerator::generateCreateAdminRole(
           std::string role_name) {
-        std::unordered_set<std::string> perms = {
+        std::set<std::string> perms = {
             can_create_domain, can_create_account, can_add_peer};
         perms.insert(edit_self_group.begin(), edit_self_group.end());
         perms.insert(read_all_group.begin(), read_all_group.end());
@@ -81,7 +81,7 @@ namespace iroha {
 
       std::shared_ptr<Command> CommandGenerator::generateCreateUserRole(
           std::string role_name) {
-        std::unordered_set<std::string> perms = {can_receive, can_transfer};
+        std::set<std::string> perms = {can_receive, can_transfer};
         // User can read their account
         perms.insert(read_self_group.begin(), read_self_group.end());
         // User can grant permissions to others
@@ -92,7 +92,7 @@ namespace iroha {
 
       std::shared_ptr<Command> CommandGenerator::generateCreateAssetCreatorRole(
           std::string role_name) {
-        std::unordered_set<std::string> perms = {can_receive, can_transfer};
+        std::set<std::string> perms = {can_receive, can_transfer};
         perms.insert(asset_creator_group.begin(), asset_creator_group.end());
         perms.insert(read_self_group.begin(), read_self_group.begin());
         return std::make_shared<CreateRole>(role_name, perms);

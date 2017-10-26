@@ -245,7 +245,7 @@ namespace iroha_cli {
         std::cout << "Wrong format for permission" << std::endl;
         return nullptr;
       }
-      std::unordered_set<std::string> perms;
+      std::set<std::string> perms;
       if (read_self.value()) {
         perms.insert(read_self_group.begin(), read_self_group.end());
       }

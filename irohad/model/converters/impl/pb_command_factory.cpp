@@ -304,7 +304,7 @@ namespace iroha {
       // Create Role
       model::CreateRole PbCommandFactory::deserializeCreateRole(
           const protocol::CreateRole &command) {
-        std::unordered_set<std::string> perms;
+        std::set<std::string> perms;
 
         std::for_each(command.permissions().begin(),
                       command.permissions().end(),

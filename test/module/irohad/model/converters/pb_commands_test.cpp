@@ -193,7 +193,7 @@ class TestablePbCommandFactory : public iroha::model::converters::PbCommandFacto
 
 TEST(CommandTest, create_role) {
   auto factory = iroha::model::converters::PbCommandFactory();
-  std::unordered_set<std::string> perms;
+  std::set<std::string> perms;
   perms.insert(all_perm_group.begin(), all_perm_group.end());
 
   for (auto perm : perms){
@@ -201,7 +201,7 @@ TEST(CommandTest, create_role) {
     auto map = test_factory.getPermMap();
     auto it = map.right.find(perm);
     ASSERT_NE(map.right.end(), it) << "On permission " << perm;
-    std::unordered_set<std::string> tmp_perms = {perm};
+    std::set<std::string> tmp_perms = {perm};
     auto orig_command = CreateRole("master", tmp_perms);
     auto proto_command = factory.serializeCreateRole(orig_command);
     auto serial_command = factory.deserializeCreateRole(proto_command);
