@@ -168,6 +168,8 @@ namespace iroha {
       MOCK_METHOD0(createTemporaryWsv, std::unique_ptr<TemporaryWsv>(void));
       MOCK_METHOD0(createMutableStorage, std::unique_ptr<MutableStorage>(void));
       MOCK_METHOD1(doCommit, void(MutableStorage *storage));
+      MOCK_METHOD1(insertBlock, bool(model::Block block));
+      MOCK_METHOD0(dropStorage, void(void));
 
       void commit(std::unique_ptr<MutableStorage> storage) override {
         doCommit(storage.get());

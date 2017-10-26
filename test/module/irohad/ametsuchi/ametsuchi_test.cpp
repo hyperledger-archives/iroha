@@ -783,8 +783,8 @@ Block getBlock() {
   block.height = 1;
   block.prev_hash.fill(0);
   auto block1hash = iroha::hash(block);
-  block.hash = block1hash;
   block.txs_number = block.transactions.size();
+  block.hash = block1hash;
   return block;
 }
 
@@ -864,11 +864,17 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
   pubkey1.at(0) = 1;
   pubkey2.at(0) = 2;
 
+  CreateRole createRole;
+  createRole.role_name = "user";
+  createRole.permissions = {can_add_peer, can_create_asset, can_get_my_account};
+
   Transaction tx1;
   tx1.creator_account_id = "admin1";
 
+  tx1.commands.push_back(std::make_shared<CreateRole>(createRole));
   CreateDomain createDomain;
-  createDomain.domain_name = "domain";
+  createDomain.domain_id = "domain";
+  createDomain.user_default_role = "user";
   tx1.commands.push_back(std::make_shared<CreateDomain>(createDomain));
 
   CreateAccount createAccount;
@@ -877,10 +883,16 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
   createAccount.pubkey = pubkey1;
   tx1.commands.push_back(std::make_shared<CreateAccount>(createAccount));
 
+  CreateRole createRole2;
+  createRole2.role_name = "user2";
+  createRole2.permissions = {
+      can_add_peer, can_create_asset, can_get_my_account};
 
   Transaction tx2;
+  tx2.commands.push_back(std::make_shared<CreateRole>(createRole2));
   CreateDomain createDomain2;
-  createDomain2.domain_name = "domain2";
+  createDomain2.domain_id = "domain2";
+  createDomain2.user_default_role = "user";
   tx2.commands.push_back(std::make_shared<CreateDomain>(createDomain2));
 
   Block block;
@@ -888,8 +900,8 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
   block.transactions.push_back(tx2);
   block.height = 1;
   block.prev_hash.fill(0);
-  block.hash = iroha::hash(block);
   block.txs_number = block.transactions.size();
+  block.hash = iroha::hash(block);
 
   {
     auto ms = storage->createMutableStorage();
@@ -904,26 +916,23 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
 
   auto numberOfCalls = 0;
 
-  blocks->getTxByHash(tx1hash)
-      .subscribe([tx1hash, &numberOfCalls](auto tx) {
-        ++numberOfCalls;
-        EXPECT_EQ(iroha::hash(tx).to_string(), tx1hash);
-      });
+  blocks->getTxByHash(tx1hash).subscribe([tx1hash, &numberOfCalls](auto tx) {
+    ++numberOfCalls;
+    EXPECT_EQ(iroha::hash(tx).to_string(), tx1hash);
+  });
 
-  blocks->getTxByHash(tx2hash)
-      .subscribe([tx2hash, &numberOfCalls](auto tx) {
-        ++numberOfCalls;
-        EXPECT_EQ(iroha::hash(tx).to_string(), tx2hash);
-      });
+  blocks->getTxByHash(tx2hash).subscribe([tx2hash, &numberOfCalls](auto tx) {
+    ++numberOfCalls;
+    EXPECT_EQ(iroha::hash(tx).to_string(), tx2hash);
+  });
 
   auto tx3hash = "some garbage";
 
-  blocks->getTxByHash(tx3hash)
-      .subscribe([tx3hash, &numberOfCalls](auto tx) {
-        // should not be called
-        ++numberOfCalls;
-        EXPECT_EQ(iroha::hash(tx).to_string(), tx3hash);
-      });
+  blocks->getTxByHash(tx3hash).subscribe([tx3hash, &numberOfCalls](auto tx) {
+    // should not be called
+    ++numberOfCalls;
+    EXPECT_EQ(iroha::hash(tx).to_string(), tx3hash);
+  });
 
   ASSERT_EQ(numberOfCalls, 2);
 
