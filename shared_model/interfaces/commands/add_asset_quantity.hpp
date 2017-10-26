@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
 
 #include <string>
-#include "amount/amount.hpp"  // TODO replace with lib amount
+#include "amount/amount.hpp"  // TODO 26/10/2017 muratovv replace with amount from shared lib
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/primitive.hpp"
 #include "model/commands/add_asset_quantity.hpp"

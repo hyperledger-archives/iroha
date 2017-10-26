@@ -31,7 +31,7 @@ namespace shared_model {
        */
       virtual const types::AccountIdType &accountId() const = 0;
 
-      // TODO add primitive methods
+      // TODO 26/10/2017 muratovv add primitive methods
     };
   }  // namespace interface
 }  // namespace shared_model
