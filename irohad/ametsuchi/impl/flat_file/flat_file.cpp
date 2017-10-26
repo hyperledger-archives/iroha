@@ -102,7 +102,7 @@ nonstd::optional<Identifier> check_consistency(const std::string &dump_dir) {
   auto n = static_cast<uint32_t>(status);
   tmp_id++;
 
-  // get last available identificator
+  // get last available identifier
   auto last = tmp_id;
   for (auto i = 2u; i < n; ++i) {
     if (id_to_name(tmp_id) != namelist[i]->d_name) {

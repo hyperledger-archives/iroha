@@ -102,7 +102,12 @@ TEST_F(BlStore_Test, BlockStoreWhenAbsentFolder) {
   rmdir(target_path.c_str());
 }
 
-TEST_F(BlStore_Test, BlockStoreInitializationWhenPreviousStorageExist){
+/**
+ * @given non-empty folder from previous block store
+ * @when new block storage is initialized
+ * @then new block storage has all blocks from the folder
+ */
+TEST_F(BlStore_Test, BlockStoreInitializationFromNonemptyFolder){
   auto bl_store1 = FlatFile::create(block_store_path);
   ASSERT_TRUE(bl_store1);
 
