@@ -112,13 +112,8 @@ TEST_F(BlStore_Test, BlockStoreInitializationFromNonemptyFolder){
   ASSERT_TRUE(bl_store1);
 
   // Add two blocks to storage
-  std::vector<uint8_t > block1(1000, 5);
-  auto id1 = 1u;
-  bl_store1->add(id1, block1);
-
-  std::vector<uint8_t > block2(1000, 5);
-  auto id2 = 2u;
-  bl_store1->add(id2, block2);
+  bl_store1->add(1u, std::vector<uint8_t>(1000, 5));
+  bl_store1->add(2u, std::vector<uint8_t>(1000, 5));
 
   // create second block storage from the same folder
   auto bl_store2 = FlatFile::create(block_store_path);

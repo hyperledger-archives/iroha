@@ -100,19 +100,13 @@ nonstd::optional<Identifier> check_consistency(const std::string &dump_dir) {
   }
 
   auto n = static_cast<uint32_t>(status);
-  tmp_id++;
+  tmp_id = 2;
 
-  // get last available identifier
-  auto last = tmp_id;
-  for (auto i = 2u; i < n; ++i) {
-    if (id_to_name(tmp_id) != namelist[i]->d_name) {
-      for (auto j = i; j < n; ++j) {
-        remove(dump_dir, namelist[j]->d_name);
-      }
-      break;
-    }
-    tmp_id++;
-    last = name_to_id(namelist[i]->d_name);
+  while (tmp_id < n and id_to_name(tmp_id - 1) == namelist[tmp_id]->d_name) {
+    ++tmp_id;
+  }
+  for (auto j = tmp_id; j < n; ++j) {
+    remove(dump_dir, namelist[j]->d_name);
   }
 
   for (auto j = 0u; j < n; ++j) {
@@ -120,7 +114,7 @@ nonstd::optional<Identifier> check_consistency(const std::string &dump_dir) {
   }
   free(namelist);
 
-  return last;
+  return tmp_id - 2;
 }
 
 /**
