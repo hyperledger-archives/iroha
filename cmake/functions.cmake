@@ -32,6 +32,13 @@ function(addtest test_name SOURCES)
       COMMAND $<TARGET_FILE:${test_name}> ${test_xml_output}
   )
   strictmode(${test_name})
+  if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
+  (CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
+  (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang"))
+    target_compile_options(${test_name} PRIVATE -Wno-inconsistent-missing-override)
+  else ()
+    message(AUTHOR_WARNING "Unknown compiler: building target ${target} with default options")
+  endif ()
 endfunction()
 
 # Creates benchmark "bench_name", with "SOURCES" (use string as second argument)

@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
   auto log = logger::log("MAIN");
   log->info("start");
 
-  if (not config_validator_registered or not genesis_block_validator_registered
+  if (not config_validator_registered
       or not keypair_name_validator_registered) {
     log->error("Flag validator is not registered");
     return EXIT_FAILURE;
