@@ -17,9 +17,6 @@
 
 #include "ametsuchi/impl/flat_file/flat_file.hpp"
 #include <dirent.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <iostream>
 #include <fstream>
 #include "common/files.hpp"
 
@@ -27,7 +24,8 @@ using namespace iroha::ametsuchi;
 
 const uint32_t DIGIT_CAPACITY = 16;
 
-// TODO 19/08/17 Muratov rework separator with platform independent approach IR-495 #goodfirstissue
+// TODO 19/08/17 Muratov rework separator with platform independent approach
+// IR-495 #goodfirstissue
 const std::string SEPARATOR = "/";
 
 /**
@@ -57,7 +55,7 @@ Identifier name_to_id(const std::string &name) {
  * @return true, if exists
  */
 bool file_exist(const std::string &name) {
-  struct stat buffer{};
+  struct stat buffer {};
   return stat(name.c_str(), &buffer) == 0;
 }
 
@@ -70,13 +68,14 @@ void remove(const std::string &dump_dir, std::string filename) {
   auto f_name = dump_dir + SEPARATOR + filename;
 
   if (std::remove(f_name.c_str()) != 0) {
-    logger::log("FLAT_FILE")->error("remove({}, {}): error on deleting file",
-                                    dump_dir, filename);
+    logger::log("FLAT_FILE")
+        ->error("remove({}, {}): error on deleting file", dump_dir, filename);
   }
 }
 
 /**
  * Checking consistency of storage for provided folder
+ * If some block in the middle is missing all blocks following it are deleted
  * @param dump_dir - folder of storage
  * @return - last available identifier
  */
@@ -101,15 +100,13 @@ nonstd::optional<Identifier> check_consistency(const std::string &dump_dir) {
   }
 
   auto n = static_cast<uint32_t>(status);
-  tmp_id++;
-  for (auto i = 2u; i < n; ++i) {
-    if (id_to_name(tmp_id) != namelist[i]->d_name) {
-      for (auto j = i; j < n; ++j) {
-        remove(dump_dir, namelist[j]->d_name);
-      }
-      break;
-    }
-    tmp_id = name_to_id(namelist[i]->d_name);
+  tmp_id = 2;
+
+  while (tmp_id < n and id_to_name(tmp_id - 1) == namelist[tmp_id]->d_name) {
+    ++tmp_id;
+  }
+  for (auto j = tmp_id; j < n; ++j) {
+    remove(dump_dir, namelist[j]->d_name);
   }
 
   for (auto j = 0u; j < n; ++j) {
@@ -117,7 +114,7 @@ nonstd::optional<Identifier> check_consistency(const std::string &dump_dir) {
   }
   free(namelist);
 
-  return tmp_id;
+  return tmp_id - 2;
 }
 
 /**
@@ -126,7 +123,7 @@ nonstd::optional<Identifier> check_consistency(const std::string &dump_dir) {
  * @return number of bytes contains in file
  */
 long file_size(const std::string &filename) {
-  struct stat stat_buf{};
+  struct stat stat_buf {};
   int rc = stat(filename.c_str(), &stat_buf);
   return rc == 0 ? stat_buf.st_size : 0u;
 }
@@ -136,7 +133,8 @@ long file_size(const std::string &filename) {
 std::unique_ptr<FlatFile> FlatFile::create(const std::string &path) {
   auto log_ = logger::log("FlatFile::create()");
 
-  // TODO 19/08/17 Muratov change creating folder with system independent approach IR-496 #goodfirstissue
+  // TODO 19/08/17 Muratov change creating folder with system independent
+  // approach IR-496 #goodfirstissue
   if (mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1) {
     if (errno != EEXIST) {
       log_->error("Cannot create storage dir: {}", path);
@@ -171,8 +169,8 @@ void FlatFile::add(Identifier id, const std::vector<uint8_t> &block) {
     log_->warn("Cannot open file by index {} for writing", id);
   }
 
-  auto val_size = sizeof(std::remove_reference<decltype(block)>::
-  type::value_type);
+  auto val_size =
+      sizeof(std::remove_reference<decltype(block)>::type::value_type);
 
   file.write(reinterpret_cast<const char *>(block.data()),
              block.size() * val_size);

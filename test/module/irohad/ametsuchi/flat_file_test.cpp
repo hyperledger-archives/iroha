@@ -101,3 +101,24 @@ TEST_F(BlStore_Test, BlockStoreWhenAbsentFolder) {
   }
   rmdir(target_path.c_str());
 }
+
+/**
+ * @given non-empty folder from previous block store
+ * @when new block storage is initialized
+ * @then new block storage has all blocks from the folder
+ */
+TEST_F(BlStore_Test, BlockStoreInitializationFromNonemptyFolder){
+  auto bl_store1 = FlatFile::create(block_store_path);
+  ASSERT_TRUE(bl_store1);
+
+  // Add two blocks to storage
+  bl_store1->add(1u, std::vector<uint8_t>(1000, 5));
+  bl_store1->add(2u, std::vector<uint8_t>(1000, 5));
+
+  // create second block storage from the same folder
+  auto bl_store2 = FlatFile::create(block_store_path);
+  ASSERT_TRUE(bl_store2);
+
+  // check that last ids of both block storages are the same
+  ASSERT_EQ(bl_store1->last_id(), bl_store2->last_id());
+}
