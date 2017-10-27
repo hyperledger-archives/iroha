@@ -8,3 +8,5 @@ BinPackArguments: false
 BinPackParameters: false
 DerivePointerAlignment: false
 PointerAlignment: Right
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false

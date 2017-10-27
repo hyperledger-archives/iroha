@@ -258,7 +258,9 @@ namespace iroha {
    */
   template <typename T, typename... Args>
   auto makeMethodInvoke(T &object, Args &&... args) {
-    return [&](auto f) { return (object.*f)(std::forward<Args>(args)...); };
+    return [&](auto f) {
+      return (object.*f)(std::forward<Args>(args)...);
+    };
   }
 
   /**
@@ -308,11 +310,13 @@ namespace iroha {
   using privkey_t = blob_t<64>;
 
   struct keypair_t {
+    keypair_t() = default;
+
+    keypair_t(pubkey_t pubkey, privkey_t privkey)
+        : pubkey(pubkey), privkey(privkey) {}
+
     pubkey_t pubkey;
     privkey_t privkey;
-
-    keypair_t() = default;
-    keypair_t(pubkey_t pubkey, privkey_t privkey): pubkey(pubkey), privkey(privkey) {}
   };
 
   // timestamps
