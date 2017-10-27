@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
+#include "torii/processor/transaction_processor_impl.hpp"
 #include <endpoint.pb.h>
-#include <crypto/hash.hpp>
 #include <iostream>
-#include <model/transaction_response.hpp>
-#include <torii/processor/transaction_processor_impl.hpp>
 #include <utility>
+#include "crypto/hash.hpp"
+#include "model/transaction_response.hpp"
 
 namespace iroha {
   namespace torii {

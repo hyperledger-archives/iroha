@@ -20,10 +20,10 @@
 
 #include <cmath>
 
+#include <boost/optional.hpp>
 #include <model/block.hpp>
 #include <model/transaction.hpp>
 #include <rxcpp/rx-observable.hpp>
-#include <boost/optional.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -39,7 +39,7 @@ namespace iroha {
        * @return observable of Model Transaction
        */
       virtual rxcpp::observable<model::Transaction> getAccountTransactions(
-          std::string account_id) = 0;
+          const std::string &account_id) = 0;
 
       /**
        * Get asset transactions of an account.
@@ -48,7 +48,7 @@ namespace iroha {
        * @return observable of Model Transaction
        */
       virtual rxcpp::observable<model::Transaction> getAccountAssetTransactions(
-          std::string account_id, std::string asset_id) = 0;
+          const std::string &account_id, const std::string &asset_id) = 0;
 
       /**
       * Get given number of blocks starting with given height.
@@ -79,14 +79,16 @@ namespace iroha {
        * @param hash - hash to search
        * @return observable of Model Transaction
        */
-      virtual rxcpp::observable<model::Transaction> getTxByHash(std::string hash) = 0;
+      virtual rxcpp::observable<model::Transaction> getTxByHash(
+          const std::string &hash) = 0;
 
       /**
        * Synchronously gets transaction by its hash
        * @param hash - hash to search
        * @return transaction or boost::none
        */
-      virtual boost::optional<model::Transaction> getTxByHashSync(std::string hash) = 0;
+      virtual boost::optional<model::Transaction> getTxByHashSync(
+          const std::string &hash) = 0;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

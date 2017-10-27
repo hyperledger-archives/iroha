@@ -25,8 +25,8 @@ limitations under the License.
 #include "ametsuchi/storage.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/transaction_response.hpp"
-#include "torii/processor/transaction_processor.hpp"
 #include "torii/cache/cache.hpp"
+#include "torii/processor/transaction_processor.hpp"
 
 namespace torii {
 

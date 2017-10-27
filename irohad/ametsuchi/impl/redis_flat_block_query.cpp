@@ -16,7 +16,7 @@
  */
 
 #include "ametsuchi/impl/redis_flat_block_query.hpp"
-#include <crypto/hash.hpp>
+#include "crypto/hash.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -79,7 +79,7 @@ namespace iroha {
     }
 
     rxcpp::observable<model::Transaction>
-    RedisFlatBlockQuery::getAccountTransactions(std::string account_id) {
+    RedisFlatBlockQuery::getAccountTransactions(const std::string &account_id) {
       return rxcpp::observable<>::create<model::Transaction>(
           [this, account_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
@@ -100,8 +100,8 @@ namespace iroha {
     }
 
     rxcpp::observable<model::Transaction>
-    RedisFlatBlockQuery::getAccountAssetTransactions(std::string account_id,
-                                                     std::string asset_id) {
+    RedisFlatBlockQuery::getAccountAssetTransactions(
+        const std::string &account_id, const std::string &asset_id) {
       return rxcpp::observable<>::create<model::Transaction>(
           [this, account_id, asset_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
@@ -129,7 +129,7 @@ namespace iroha {
     }
 
     rxcpp::observable<model::Transaction> RedisFlatBlockQuery::getTxByHash(
-        std::string hash) {
+        const std::string &hash) {
       return rxcpp::observable<>::create<model::Transaction>(
           [this, hash](auto subscriber) {
             auto blockId = this->getBlockId(hash);
@@ -154,7 +154,7 @@ namespace iroha {
     }
 
     boost::optional<model::Transaction> RedisFlatBlockQuery::getTxByHashSync(
-        std::string hash) {
+        const std::string &hash) {
       auto blockId = this->getBlockId(hash);
       if (not blockId) {
         return boost::none;
@@ -163,18 +163,16 @@ namespace iroha {
           [](auto bytes) {
             return model::converters::stringToJson(bytesToString(bytes));
           }
-      | [this](const auto &json) { return serializer_.deserialize(json); } |
-          [&](const auto &block) {
-            auto it =
-                std::find_if(block.transactions.begin(),
-                             block.transactions.end(),
-                             [&hash](auto tx) {
-                               return iroha::hash(tx).to_string() == hash;
-                             });
-            return (it == block.transactions.end())
-                ? boost::none
-                : boost::make_optional<model::Transaction>(*it);
-          };
+      | [this](const auto &json) { return serializer_.deserialize(json); }
+      | [&](const auto &block) {
+          auto it = std::find_if(
+              block.transactions.begin(),
+              block.transactions.end(),
+              [&hash](auto tx) { return iroha::hash(tx).to_string() == hash; });
+          return (it == block.transactions.end())
+              ? boost::none
+              : boost::make_optional<model::Transaction>(*it);
+        };
     }
 
   }  // namespace ametsuchi

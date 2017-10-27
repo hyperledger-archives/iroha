@@ -21,7 +21,7 @@
 #include "crypto/keys_manager_impl.hpp"
 #include "interactive/interactive_query_cli.hpp"
 #include "interactive/interactive_transaction_cli.hpp"
-#include "interactive/interactive_custom_action_cli.hpp"
+#include "interactive/interactive_status_cli.hpp"
 
 namespace iroha_cli {
   namespace interactive {
@@ -79,7 +79,7 @@ namespace iroha_cli {
       // -- Query, tx cli --
       InteractiveTransactionCli tx_cli_;
       InteractiveQueryCli query_cli_;
-      InteractiveCustomActionCli customActionCli_;
+      InteractiveStatusCli statusCli_;
 
       /**
        * Main menu points

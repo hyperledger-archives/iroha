@@ -18,11 +18,11 @@
 #ifndef IROHA_TRANSACTION_PROCESSOR_STUB_HPP
 #define IROHA_TRANSACTION_PROCESSOR_STUB_HPP
 
-#include <model/transaction_response.hpp>
-#include <network/peer_communication_service.hpp>
-#include <torii/processor/transaction_processor.hpp>
-#include <validation/stateless_validator.hpp>
 #include "logger/logger.hpp"
+#include "model/transaction_response.hpp"
+#include "network/peer_communication_service.hpp"
+#include "torii/processor/transaction_processor.hpp"
+#include "validation/stateless_validator.hpp"
 
 namespace iroha {
   namespace torii {

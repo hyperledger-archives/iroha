@@ -15,34 +15,48 @@
  * limitations under the License.
  */
 
-#include "interactive/interactive_custom_action_cli.hpp"
-#include <client.hpp>
+#include "interactive/interactive_status_cli.hpp"
+#include "client.hpp"
 
 namespace iroha_cli {
   namespace interactive {
+    static const std::map<iroha::protocol::TxStatus, std::string>
+        userMessageMap = {
+            {iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED,
+             "Transaction has not passed stateless validation."},
+            {iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS,
+             "Transaction has successfully passed stateless validation."},
+            {iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED,
+             "Transaction has not passed stateful validation."},
+            {iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS,
+             "Transaction has successfully passed stateful validation."},
+            {iroha::protocol::TxStatus::COMMITTED,
+             "Transaction was successfully committed."},
+            {iroha::protocol::TxStatus::ON_PROCESS,
+             "Transaction is being processed at the moment."},
+            {iroha::protocol::TxStatus::NOT_RECEIVED,
+             "Transaction was not found in the system."}};
 
-    InteractiveCustomActionCli::InteractiveCustomActionCli() {
+    InteractiveStatusCli::InteractiveStatusCli() {
       createActionsMenu();
       createResultMenu();
     }
 
-    void InteractiveCustomActionCli::createActionsMenu() {
+    void InteractiveStatusCli::createActionsMenu() {
       descriptionMap_ = {{GET_TX_INFO, "Get status of transaction"}};
       const auto tx_id = "Requested tx hash";
 
       requestParamsDescriptions_ = {{GET_TX_INFO, {tx_id}}};
-      actionHandlers_ = {
-          {GET_TX_INFO, &InteractiveCustomActionCli::parseGetHash}};
+      actionHandlers_ = {{GET_TX_INFO, &InteractiveStatusCli::parseGetHash}};
 
       menuPoints_ = formMenu(
           actionHandlers_, requestParamsDescriptions_, descriptionMap_);
       addBackOption(menuPoints_);
     }
 
-    void InteractiveCustomActionCli::createResultMenu() {
-      resultHandlers_ = {
-          {SEND_CODE, &InteractiveCustomActionCli::parseSendToIroha},
-          {SAVE_CODE, &InteractiveCustomActionCli::parseSaveFile}};
+    void InteractiveStatusCli::createResultMenu() {
+      resultHandlers_ = {{SEND_CODE, &InteractiveStatusCli::parseSendToIroha},
+                         {SAVE_CODE, &InteractiveStatusCli::parseSaveFile}};
       resultParamsDescriptions_ = getCommonParamsMap();
 
       resultPoints_ = formMenu(resultHandlers_,
@@ -51,7 +65,7 @@ namespace iroha_cli {
       addBackOption(resultPoints_);
     }
 
-    void InteractiveCustomActionCli::run() {
+    void InteractiveStatusCli::run() {
       bool isParsing = true;
       currentContext_ = MAIN;
       printMenu("Choose action: ", menuPoints_);
@@ -68,7 +82,7 @@ namespace iroha_cli {
       }
     }
 
-    bool InteractiveCustomActionCli::parseAction(std::string &line) {
+    bool InteractiveStatusCli::parseAction(std::string &line) {
       if (isBackOption(line)) {
         return false;
       }
@@ -87,7 +101,7 @@ namespace iroha_cli {
       return true;
     }
 
-    bool InteractiveCustomActionCli::parseResult(std::string &line) {
+    bool InteractiveStatusCli::parseResult(std::string &line) {
       if (isBackOption(line)) {
         // Give up the last query and start a new one
         currentContext_ = MAIN;
@@ -103,65 +117,40 @@ namespace iroha_cli {
       return not res.has_value() ? true : res.value();
     }
 
-    bool InteractiveCustomActionCli::parseSendToIroha(ActionParams line) {
+    bool InteractiveStatusCli::parseSendToIroha(ActionParams line) {
       auto address = parseIrohaPeerParams(line);
       if (not address.has_value()) {
         return true;
       }
 
       auto status = iroha::protocol::TxStatus::NOT_RECEIVED;
-      if (iroha::hexstringToBytestring(txHash_)) {
+      if (iroha::hexstringToBytestring(txHash_).has_value()) {
         status = CliClient(address.value().first, address.value().second)
-                     .getTxStatus(*(iroha::hexstringToBytestring(txHash_)))
+                     .getTxStatus(*iroha::hexstringToBytestring(txHash_))
                      .answer.tx_status();
       }
 
       std::string message;
-
-      // not happy about this switch
-      switch (status) {
-        case iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED:
-          message = "Transaction has not passed stateless validation.";
-          break;
-        case iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS:
-          message = "Transaction has successfully passed stateless validation.";
-          break;
-        case iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED:
-          message = "Transaction has not passed stateful validation.";
-          break;
-        case iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS:
-          message = "Transaction has successfully passed stateful validation.";
-          break;
-        case iroha::protocol::TxStatus::COMMITTED:
-          message = "Transaction was successfully committed.";
-          break;
-        case iroha::protocol::TxStatus::ON_PROCESS:
-          message = "Transaction is being processed at the moment.";
-          break;
-        case iroha::protocol::TxStatus::NOT_RECEIVED:
-          message = "Transaction was not found in the system.";
-          break;
-        default:
-          message =
-              "A problem detected while retrieving transaction status. Please "
-              "try again later.";
-          break;
+      try {
+        message = userMessageMap.at(status);
+      } catch (const std::out_of_range &e) {
+        message =
+            "A problem detected while retrieving transaction status. Please "
+            "try again later.";
       }
-
       std::cout << message << std::endl;
 
       printEnd();
       return false;
     }
 
-    bool InteractiveCustomActionCli::parseSaveFile(ActionParams line) {
+    bool InteractiveStatusCli::parseSaveFile(ActionParams line) {
       std::cout << "Not implemented yet" << std::endl;
       return true;
     }
 
-    std::string InteractiveCustomActionCli::parseGetHash(ActionParams params) {
-      auto hash = params[0];
-      return hash;
+    std::string InteractiveStatusCli::parseGetHash(ActionParams params) {
+      return params[0];
     }
   }
 }

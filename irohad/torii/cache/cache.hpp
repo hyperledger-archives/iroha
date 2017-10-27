@@ -60,7 +60,7 @@ namespace torii {
        * @return Optional of ToriiResponse
        */
       boost::optional<iroha::protocol::ToriiResponse> findItem(
-          const std::string &hash);
+          const std::string &hash) const;
 
      private:
       std::unordered_map<std::string, iroha::protocol::ToriiResponse>
@@ -69,10 +69,10 @@ namespace torii {
       std::mutex handler_map_mutex_;
 
       /**
-     * Protection from handler map overflow.
-     * Values are quite random and should be tuned for better performance
-     * and may be even move to config.
-     */
+      * Protection from handler map overflow.
+      * TODO 27/10/2017 luckychess Values are quite random and should be tuned
+      * for better performance and may be even move to config IR-579
+      */
       const uint32_t MAX_HANDLER_MAP_SIZE_HIGH = 20000;
       const uint32_t MAX_HANDLER_MAP_SIZE_LOW = 10000;
     };

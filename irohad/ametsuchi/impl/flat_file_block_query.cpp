@@ -26,7 +26,7 @@ namespace iroha {
         : block_store_(block_store) {}
 
     rxcpp::observable<model::Transaction>
-    FlatFileBlockQuery::getAccountTransactions(std::string account_id) {
+    FlatFileBlockQuery::getAccountTransactions(const std::string &account_id) {
       return getBlocksFrom(1)
           .flat_map([](auto block) {
             return rxcpp::observable<>::iterate(block.transactions);
@@ -85,8 +85,8 @@ namespace iroha {
     }
 
     rxcpp::observable<model::Transaction>
-    FlatFileBlockQuery::getAccountAssetTransactions(std::string account_id,
-                                                    std::string asset_id) {
+    FlatFileBlockQuery::getAccountAssetTransactions(
+        const std::string &account_id, const std::string &asset_id) {
       return getAccountTransactions(account_id)
           .filter([account_id, asset_id](auto tx) {
             return std::any_of(

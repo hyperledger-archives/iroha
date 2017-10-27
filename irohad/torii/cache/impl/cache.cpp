@@ -35,7 +35,7 @@ namespace torii {
     }
 
     boost::optional<iroha::protocol::ToriiResponse>
-    ToriiResponseCache::findItem(const std::string &hash) {
+    ToriiResponseCache::findItem(const std::string &hash) const {
       auto found = handler_map_.find(hash);
       if (found == handler_map_.end()) {
         return boost::none;

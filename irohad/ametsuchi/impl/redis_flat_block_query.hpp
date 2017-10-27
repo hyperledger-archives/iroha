@@ -34,16 +34,16 @@ namespace iroha {
                           FlatFile &file_store);
 
       rxcpp::observable<model::Transaction> getAccountTransactions(
-          std::string account_id) override;
+          const std::string &account_id) override;
 
       rxcpp::observable<model::Transaction> getAccountAssetTransactions(
-          std::string account_id, std::string asset_id) override;
+          const std::string &account_id, const std::string &asset_id) override;
 
       rxcpp::observable<model::Transaction> getTxByHash(
-          std::string hash) override;
+          const std::string &hash) override;
 
       boost::optional<model::Transaction> getTxByHashSync(
-          std::string hash) override;
+          const std::string &hash) override;
 
      private:
       /**

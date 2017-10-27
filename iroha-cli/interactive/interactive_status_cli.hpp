@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_INTERACTIVE_CUSTOM_ACTION_CLI_HPP
-#define IROHA_INTERACTIVE_CUSTOM_ACTION_CLI_HPP
+#ifndef IROHA_INTERACTIVE_STATUS_CLI_HPP
+#define IROHA_INTERACTIVE_STATUS_CLI_HPP
 
+#include <endpoint.pb.h>
 #include <string>
 #include "interactive/interactive_common_cli.hpp"
 
@@ -28,15 +29,16 @@ namespace iroha_cli {
    * It's not a transaction and not a query so it should be
    * processed separately.
    */
-    class InteractiveCustomActionCli {
+    class InteractiveStatusCli {
      public:
-      InteractiveCustomActionCli();
+      InteractiveStatusCli();
       void run();
 
      private:
       using ActionName = std::string;
       using ActionParams = std::vector<std::string>;
-      using ActionHandler = std::string (InteractiveCustomActionCli::*)(ActionParams);
+      using ActionHandler = std::string (InteractiveStatusCli::*)(ActionParams);
+      using ResultHandler = bool (InteractiveStatusCli::*)(ActionParams);
       std::unordered_map<ActionName, ActionHandler> actionHandlers_;
 
       bool parseAction(std::string &line);
@@ -52,7 +54,6 @@ namespace iroha_cli {
 
       const std::string GET_TX_INFO = "get_tx_info";
 
-      using ResultHandler = bool (InteractiveCustomActionCli::*)(ActionParams);
       std::unordered_map<ActionName, ResultHandler> resultHandlers_;
       ParamsMap resultParamsDescriptions_;
 
@@ -67,4 +68,4 @@ namespace iroha_cli {
   }
 }
 
-#endif  // IROHA_INTERACTIVE_CUSTOM_ACTION_CLI_HPP
+#endif  // IROHA_INTERACTIVE_STATUS_CLI_HPP

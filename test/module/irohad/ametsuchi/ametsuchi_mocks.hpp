@@ -54,7 +54,9 @@ namespace iroha {
           nonstd::optional<model::AccountAsset>(const std::string &account_id,
                                                 const std::string &asset_id));
       MOCK_METHOD0(getPeers, nonstd::optional<std::vector<model::Peer>>());
-      MOCK_METHOD1(getDomain, nonstd::optional<model::Domain>(const std::string &domain_id));
+      MOCK_METHOD1(
+          getDomain,
+          nonstd::optional<model::Domain>(const std::string &domain_id));
       MOCK_METHOD3(hasAccountGrantablePermission,
                    bool(const std::string &permitee_account_id,
                         const std::string &account_id,
@@ -104,14 +106,17 @@ namespace iroha {
      public:
       MOCK_METHOD1(
           getAccountTransactions,
-          rxcpp::observable<model::Transaction>(std::string account_id));
-      MOCK_METHOD1(getTxByHash,
-                   rxcpp::observable<model::Transaction>(std::string hash));
-      MOCK_METHOD1(getTxByHashSync,
-                   boost::optional<model::Transaction>(std::string hash));
-      MOCK_METHOD2(getAccountAssetTransactions,
-                   rxcpp::observable<model::Transaction>(std::string account_id,
-                                                         std::string asset_id));
+          rxcpp::observable<model::Transaction>(const std::string &account_id));
+      MOCK_METHOD1(
+          getTxByHash,
+          rxcpp::observable<model::Transaction>(const std::string &hash));
+      MOCK_METHOD1(
+          getTxByHashSync,
+          boost::optional<model::Transaction>(const std::string &hash));
+      MOCK_METHOD2(
+          getAccountAssetTransactions,
+          rxcpp::observable<model::Transaction>(const std::string &account_id,
+                                                const std::string &asset_id));
       MOCK_METHOD2(getBlocks,
                    rxcpp::observable<model::Block>(uint32_t, uint32_t));
       MOCK_METHOD1(getBlocksFrom, rxcpp::observable<model::Block>(uint32_t));
