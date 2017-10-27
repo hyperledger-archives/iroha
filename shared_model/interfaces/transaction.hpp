@@ -57,12 +57,12 @@ namespace shared_model {
       using CommandType = Command;
 
       /// Type of ordered collection of commands
-      using CommnadsType = std::vector<Command>;
+      using CommandsType = std::vector<Command>;
 
       /**
        * @return attached commands
        */
-      virtual CommnadsType &commands() const = 0;
+      virtual CommandsType &commands() const = 0;
 
       /// Quorum type
       using QuorumType = uint8_t;
@@ -72,16 +72,6 @@ namespace shared_model {
        * transaction.
        */
       virtual const QuorumType &quorum() const;
-
-      /**
-       * Equality of transactions means equality of hashes only.
-       * This invariant useful for checking transaction in fast way.
-       * @param rhs - other transaction.
-       * @return true if hashes equal.
-       */
-      bool operator==(const Transaction &rhs) const override {
-        return this->hash() == rhs.hash();
-      }
 
       iroha::model::Transaction *makeOldModel() const {
         // TODO implement conversion to old style transaction
