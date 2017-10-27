@@ -30,7 +30,7 @@ namespace shared_model {
      * available in the system.
      * General note: this class is container for QRs but not a base class.
      * Architecture note: query responses should be attached to following query.
-     * For perform it make QueryResponse hashable, thus, in hash() method
+     * To perform it make QueryResponse hashable, thus, in hash() method
      * expects hash of the following query.
      */
     class QueryResponse

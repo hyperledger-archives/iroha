@@ -32,8 +32,8 @@ namespace shared_model {
 
     /**
      * Class Query provides container with one of concrete query available in
-     * system. General note: this class is container for queries but not a base
-     * class.
+     * system.
+     * General note: this class is container for queries but not a base class.
      */
     class Query : public Signable<Query, iroha::model::Query> {
      private:

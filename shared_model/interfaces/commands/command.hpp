@@ -31,8 +31,7 @@ namespace shared_model {
 
     /**
      * Class provides commands container for all commands in system.
-     * General note: this class is container for commands, not a base class, for
-     * avoid this misunderstanding class should be final
+     * General note: this class is container for commands, not a base class.
      */
     class Command : public Primitive<Command, iroha::model::Command> {
      private:
