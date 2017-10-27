@@ -145,8 +145,9 @@ TEST_F(AddAssetQuantityTest, ValidWhenNewWallet) {
 TEST_F(AddAssetQuantityTest, ValidWhenExistingWallet) {
   // There is already asset- there is a wallet
   // When there is a wallet - no new accountAsset created
-  EXPECT_CALL(*wsv_query, getAccountAsset(add_asset_quantity->account_id,
-                                          add_asset_quantity->asset_id))
+  EXPECT_CALL(*wsv_query,
+              getAccountAsset(add_asset_quantity->account_id,
+                              add_asset_quantity->asset_id))
       .WillOnce(Return(wallet));
 
   EXPECT_CALL(*wsv_query, getAsset(asset_id)).WillOnce(Return(asset));
@@ -229,13 +230,14 @@ class AddSignatoryTest : public CommandValidateExecuteTest {
 TEST_F(AddSignatoryTest, ValidWhenCreatorHasPermissions) {
   // Creator has role permissions to add signatory
   EXPECT_CALL(*wsv_query,
-              hasAccountGrantablePermission(admin_id, add_signatory->account_id,
-                                            can_add_signatory))
+              hasAccountGrantablePermission(
+                  admin_id, add_signatory->account_id, can_add_signatory))
       .WillOnce(Return(true));
   EXPECT_CALL(*wsv_command, insertSignatory(add_signatory->pubkey))
       .WillOnce(Return(true));
-  EXPECT_CALL(*wsv_command, insertAccountSignatory(add_signatory->account_id,
-                                                   add_signatory->pubkey))
+  EXPECT_CALL(
+      *wsv_command,
+      insertAccountSignatory(add_signatory->account_id, add_signatory->pubkey))
       .WillOnce(Return(true));
   ASSERT_TRUE(validateAndExecute());
 }
@@ -250,8 +252,9 @@ TEST_F(AddSignatoryTest, ValidWhenSameAccount) {
 
   EXPECT_CALL(*wsv_command, insertSignatory(add_signatory->pubkey))
       .WillOnce(Return(true));
-  EXPECT_CALL(*wsv_command, insertAccountSignatory(add_signatory->account_id,
-                                                   add_signatory->pubkey))
+  EXPECT_CALL(
+      *wsv_command,
+      insertAccountSignatory(add_signatory->account_id, add_signatory->pubkey))
       .WillOnce(Return(true));
 
   ASSERT_TRUE(validateAndExecute());
@@ -260,8 +263,8 @@ TEST_F(AddSignatoryTest, ValidWhenSameAccount) {
 TEST_F(AddSignatoryTest, InvalidWhenNoPermissions) {
   // Creator has no permission
   EXPECT_CALL(*wsv_query,
-              hasAccountGrantablePermission(admin_id, add_signatory->account_id,
-                                            can_add_signatory))
+              hasAccountGrantablePermission(
+                  admin_id, add_signatory->account_id, can_add_signatory))
       .WillOnce(Return(false));
   ASSERT_FALSE(validateAndExecute());
 }
@@ -271,8 +274,8 @@ TEST_F(AddSignatoryTest, InvalidWhenNoAccount) {
   add_signatory->account_id = "noacc";
 
   EXPECT_CALL(*wsv_query,
-              hasAccountGrantablePermission(admin_id, add_signatory->account_id,
-                                            can_add_signatory))
+              hasAccountGrantablePermission(
+                  admin_id, add_signatory->account_id, can_add_signatory))
       .WillOnce(Return(false));
   ASSERT_FALSE(validateAndExecute());
 }
@@ -280,8 +283,8 @@ TEST_F(AddSignatoryTest, InvalidWhenNoAccount) {
 TEST_F(AddSignatoryTest, InvalidWhenSameKey) {
   // Add same signatory
   EXPECT_CALL(*wsv_query,
-              hasAccountGrantablePermission(admin_id, add_signatory->account_id,
-                                            can_add_signatory))
+              hasAccountGrantablePermission(
+                  admin_id, add_signatory->account_id, can_add_signatory))
       .WillOnce(Return(true));
   add_signatory->pubkey.fill(2);
   EXPECT_CALL(*wsv_command, insertSignatory(add_signatory->pubkey))
@@ -326,8 +329,7 @@ TEST_F(CreateAccountTest, ValidWhenNewAccount) {
               insertAccountSignatory(account_id, create_account->pubkey))
       .WillOnce(Return(true));
 
-  EXPECT_CALL(*wsv_command,
-              insertAccountRole(account_id, admin_role))
+  EXPECT_CALL(*wsv_command, insertAccountRole(account_id, admin_role))
       .WillOnce(Return(true));
 
   ASSERT_TRUE(validateAndExecute());
@@ -360,7 +362,6 @@ TEST_F(CreateAccountTest, InvalidWhenNameWithSystemSymbols) {
 
   ASSERT_FALSE(validateAndExecute());
 }
-
 
 TEST_F(CreateAccountTest, InvalidWhenUpperCaseName) {
   // Not valid name for account (system symbols)
@@ -480,15 +481,15 @@ TEST_F(RemoveSignatoryTest, ValidWhenMultipleKeys) {
                   admin_id, remove_signatory->account_id, can_remove_signatory))
       .WillOnce(Return(true));
 
-
   EXPECT_CALL(*wsv_query, getAccount(remove_signatory->account_id))
       .WillOnce(Return(account));
 
   EXPECT_CALL(*wsv_query, getSignatories(remove_signatory->account_id))
       .WillOnce(Return(many_pubkeys));
 
-  EXPECT_CALL(*wsv_command, deleteAccountSignatory(remove_signatory->account_id,
-                                                   remove_signatory->pubkey))
+  EXPECT_CALL(*wsv_command,
+              deleteAccountSignatory(remove_signatory->account_id,
+                                     remove_signatory->pubkey))
       .WillOnce(Return(true));
   EXPECT_CALL(*wsv_command, deleteSignatory(remove_signatory->pubkey))
       .WillOnce(Return(true));
@@ -511,8 +512,9 @@ TEST_F(RemoveSignatoryTest, InvalidWhenSingleKey) {
       .WillOnce(Return(account_pubkeys));
 
   // delete methods must not be called because the account quorum is 1.
-  EXPECT_CALL(*wsv_command, deleteAccountSignatory(remove_signatory->account_id,
-                                                   remove_signatory->pubkey))
+  EXPECT_CALL(*wsv_command,
+              deleteAccountSignatory(remove_signatory->account_id,
+                                     remove_signatory->pubkey))
       .Times(0);
   EXPECT_CALL(*wsv_command, deleteSignatory(remove_signatory->pubkey)).Times(0);
 
@@ -537,7 +539,6 @@ TEST_F(RemoveSignatoryTest, InvalidWhenNoKey) {
                   admin_id, remove_signatory->account_id, can_remove_signatory))
       .WillOnce(Return(true));
   remove_signatory->pubkey.fill(0xF);
-
 
   EXPECT_CALL(*wsv_query, getAccount(remove_signatory->account_id))
       .WillOnce(Return(account));
@@ -564,7 +565,6 @@ class SetQuorumTest : public CommandValidateExecuteTest {
 
     command = set_quorum;
     role_permissions = {can_set_quorum};
-
   }
 
   std::vector<pubkey_t> account_pubkeys;
@@ -573,8 +573,9 @@ class SetQuorumTest : public CommandValidateExecuteTest {
 
 TEST_F(SetQuorumTest, ValidWhenCreatorHasPermissions) {
   // Creator is admin
-  EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(
-                              admin_id, set_quorum->account_id, can_set_quorum))
+  EXPECT_CALL(*wsv_query,
+              hasAccountGrantablePermission(
+                  admin_id, set_quorum->account_id, can_set_quorum))
       .WillOnce(Return(true));
 
   EXPECT_CALL(*wsv_query, getAccount(set_quorum->account_id))
@@ -606,8 +607,9 @@ TEST_F(SetQuorumTest, ValidWhenSameAccount) {
 
 TEST_F(SetQuorumTest, InvalidWhenNoPermissions) {
   // Creator has no permissions
-  EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(
-                              admin_id, set_quorum->account_id, can_set_quorum))
+  EXPECT_CALL(*wsv_query,
+              hasAccountGrantablePermission(
+                  admin_id, set_quorum->account_id, can_set_quorum))
       .WillOnce(Return(false));
 
   ASSERT_FALSE(validateAndExecute());
@@ -616,13 +618,13 @@ TEST_F(SetQuorumTest, InvalidWhenNoPermissions) {
 TEST_F(SetQuorumTest, InvalidWhenNoAccount) {
   // No such account exists
   set_quorum->account_id = "noacc";
-  EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(
-                              admin_id, set_quorum->account_id, can_set_quorum))
+  EXPECT_CALL(*wsv_query,
+              hasAccountGrantablePermission(
+                  admin_id, set_quorum->account_id, can_set_quorum))
       .WillOnce(Return(false));
 
   ASSERT_FALSE(validateAndExecute());
 }
-
 
 TEST_F(SetQuorumTest, InvalidWhenNotEnoughSignatories) {
   // Creator is the account
@@ -631,8 +633,7 @@ TEST_F(SetQuorumTest, InvalidWhenNotEnoughSignatories) {
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(role_permissions));
   set_quorum->account_id = creator.account_id;
-  EXPECT_CALL(*wsv_query, getAccount(set_quorum->account_id))
-      .Times(0);
+  EXPECT_CALL(*wsv_query, getAccount(set_quorum->account_id)).Times(0);
   pubkey_t key;
   key.fill(0x1);
   std::vector<pubkey_t> acc_pubkeys = {key};
@@ -692,8 +693,9 @@ TEST_F(TransferAssetTest, ValidWhenNewWallet) {
   EXPECT_CALL(*wsv_query, getAccountAsset(transfer_asset->dest_account_id, _))
       .WillOnce(Return(nonstd::nullopt));
 
-  EXPECT_CALL(*wsv_query, getAccountAsset(transfer_asset->src_account_id,
-                                          transfer_asset->asset_id))
+  EXPECT_CALL(
+      *wsv_query,
+      getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id))
       .Times(2)
       .WillRepeatedly(Return(src_wallet));
   EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
@@ -719,12 +721,14 @@ TEST_F(TransferAssetTest, ValidWhenExistingWallet) {
       .Times(2)
       .WillRepeatedly(Return(role_permissions));
 
-  EXPECT_CALL(*wsv_query, getAccountAsset(transfer_asset->dest_account_id,
-                                          transfer_asset->asset_id))
+  EXPECT_CALL(*wsv_query,
+              getAccountAsset(transfer_asset->dest_account_id,
+                              transfer_asset->asset_id))
       .WillOnce(Return(dst_wallet));
 
-  EXPECT_CALL(*wsv_query, getAccountAsset(transfer_asset->src_account_id,
-                                          transfer_asset->asset_id))
+  EXPECT_CALL(
+      *wsv_query,
+      getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id))
       .Times(2)
       .WillRepeatedly(Return(src_wallet));
   EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
@@ -774,8 +778,9 @@ TEST_F(TransferAssetTest, InvalidWhenNoSrcAccountAsset) {
 
   EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
       .WillOnce(Return(asset));
-  EXPECT_CALL(*wsv_query, getAccountAsset(transfer_asset->src_account_id,
-                                          transfer_asset->asset_id))
+  EXPECT_CALL(
+      *wsv_query,
+      getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id))
       .WillOnce(Return(nonstd::nullopt));
 
   ASSERT_FALSE(validateAndExecute());
@@ -793,8 +798,9 @@ TEST_F(TransferAssetTest, InvalidWhenInsufficientFunds) {
 
   Amount amount(155, 2);
 
-  EXPECT_CALL(*wsv_query, getAccountAsset(transfer_asset->src_account_id,
-                                          transfer_asset->asset_id))
+  EXPECT_CALL(
+      *wsv_query,
+      getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id))
       .WillOnce(Return(src_wallet));
   EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
       .WillOnce(Return(asset));
@@ -827,8 +833,9 @@ TEST_F(TransferAssetTest, InvalidWhenCreatorHasNoPermission) {
   // Transfer creator is not connected to account
   transfer_asset->src_account_id = account_id;
   transfer_asset->dest_account_id = admin_id;
-  EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(admin_id, account_id, can_transfer))
-        .WillOnce(Return(false));
+  EXPECT_CALL(*wsv_query,
+              hasAccountGrantablePermission(admin_id, account_id, can_transfer))
+      .WillOnce(Return(false));
   ASSERT_FALSE(validateAndExecute());
 }
 
@@ -836,7 +843,8 @@ TEST_F(TransferAssetTest, ValidWhenCreatorHasPermission) {
   // Transfer creator is not connected to account
   transfer_asset->src_account_id = account_id;
   transfer_asset->dest_account_id = admin_id;
-  EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(admin_id, account_id, can_transfer))
+  EXPECT_CALL(*wsv_query,
+              hasAccountGrantablePermission(admin_id, account_id, can_transfer))
       .WillOnce(Return(true));
 
   EXPECT_CALL(*wsv_query, getAccountRoles(transfer_asset->dest_account_id))
@@ -847,8 +855,9 @@ TEST_F(TransferAssetTest, ValidWhenCreatorHasPermission) {
   EXPECT_CALL(*wsv_query, getAccountAsset(transfer_asset->dest_account_id, _))
       .WillOnce(Return(nonstd::nullopt));
 
-  EXPECT_CALL(*wsv_query, getAccountAsset(transfer_asset->src_account_id,
-                                          transfer_asset->asset_id))
+  EXPECT_CALL(
+      *wsv_query,
+      getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id))
       .Times(2)
       .WillRepeatedly(Return(src_wallet));
   EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
@@ -861,9 +870,7 @@ TEST_F(TransferAssetTest, ValidWhenCreatorHasPermission) {
       .Times(2)
       .WillRepeatedly(Return(true));
 
-
   ASSERT_TRUE(validateAndExecute());
-
 }
 
 TEST_F(TransferAssetTest, InvalidWhenZeroAmount) {
@@ -968,7 +975,6 @@ TEST_F(CreateRoleTest, InvalidCaseWhenWrongRoleName) {
   ASSERT_FALSE(validateAndExecute());
 }
 
-
 class AppendRoleTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
@@ -1037,9 +1043,10 @@ class RevokePermissionTest : public CommandValidateExecuteTest {
 };
 
 TEST_F(RevokePermissionTest, ValidCase) {
-  EXPECT_CALL(*wsv_query,
-              hasAccountGrantablePermission(exact_command->account_id, admin_id,
-                                            exact_command->permission_name))
+  EXPECT_CALL(
+      *wsv_query,
+      hasAccountGrantablePermission(
+          exact_command->account_id, admin_id, exact_command->permission_name))
       .WillOnce(Return(true));
   EXPECT_CALL(*wsv_command, deleteAccountGrantablePermission(_, _, _))
       .WillOnce(Return(true));
@@ -1047,9 +1054,10 @@ TEST_F(RevokePermissionTest, ValidCase) {
 }
 
 TEST_F(RevokePermissionTest, InvalidCaseNoPermissions) {
-  EXPECT_CALL(*wsv_query,
-              hasAccountGrantablePermission(exact_command->account_id, admin_id,
-                                            exact_command->permission_name))
+  EXPECT_CALL(
+      *wsv_query,
+      hasAccountGrantablePermission(
+          exact_command->account_id, admin_id, exact_command->permission_name))
       .WillOnce(Return(false));
   ASSERT_FALSE(validateAndExecute());
 }

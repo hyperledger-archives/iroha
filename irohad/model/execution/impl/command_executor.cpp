@@ -73,11 +73,11 @@ namespace iroha {
           creator.account_id, queries, can_append_role);
     }
 
-bool AppendRoleExecutor::isValid(const Command &command,
-                                 ametsuchi::WsvQuery &queries) {
-  // TODO 26/09/17 grimadas: check. No additional checks required
-  return true;
-}
+    bool AppendRoleExecutor::isValid(const Command &command,
+                                     ametsuchi::WsvQuery &queries) {
+      // TODO 26/09/17 grimadas: check. No additional checks required
+      return true;
+    }
 
     // ----------------------------| Create Role |-----------------------------
 
