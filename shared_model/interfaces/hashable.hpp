@@ -15,45 +15,35 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_SIGNATURE_HPP
-#define IROHA_SHARED_MODEL_SIGNATURE_HPP
+#ifndef IROHA_HASHABLE_HPP
+#define IROHA_HASHABLE_HPP
 
+#include "interfaces/common_objects/hash.hpp"
 #include "interfaces/primitive.hpp"
-#include "model/signature.hpp"
 
 namespace shared_model {
   namespace interface {
-
-    /**
-     * Class represents signature of high-level domain objects.
-     */
-    class Signature : public Primitive<Signature, iroha::model::Signature> {
+    template <typename ModelType, typename OldModel>
+    class Hashable : public Primitive<ModelType, OldModel> {
      public:
-      /**
-       * Type of hashes
-       */
+      /// Type of hash
       using HashType = Hash;
 
       /**
-       * @return public key of signatory
+       * @return hash of object.
+       * Equality of hashes means equality of objects.
        */
-      virtual const HashType &publicKey() const;
+      virtual const HashType &hash() const = 0;
 
       /**
-       * @return signed hash of message
+       * Overriding operator== with equality hash semantics
+       * @param rhs - another model object
+       * @return true, if hashes are equal, false otherwise
        */
-      virtual const HashType &signedHash() const;
-
-      bool operator==(const Signature &rhs) const override {
-        return this->publicKey() == rhs.publicKey()
-            and this->signedHash() == rhs.signedHash();
-      }
-
-      OldModelType *makeOldModel() const override {
-        // todo implement
-        return nullptr;
+      bool operator==(const ModelType &rhs) const override {
+        return this->hash() == rhs.hash();
       }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_SIGNATURE_HPP
+#endif  // IROHA_HASHABLE_HPP

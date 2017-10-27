@@ -19,7 +19,8 @@
 #define IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
 
 #include <string>
-#include "amount/amount.hpp"  // TODO replace with lib amount
+#include "amount/amount.hpp"  // TODO 26/10/2017 muratovv replace with amount from shared lib
+#include "interfaces/common_objects/types.hpp"
 #include "interfaces/primitive.hpp"
 #include "model/commands/add_asset_quantity.hpp"
 
@@ -32,12 +33,10 @@ namespace shared_model {
     class AddAssetQuantity
         : public Primitive<AddAssetQuantity, iroha::model::AddAssetQuantity> {
      public:
-      /// Type of account id
-      using AccountIdType = std::string;
       /**
        * @return Identity of user, that add quantity
        */
-      virtual const AccountIdType &accountId() const = 0;
+      virtual const types::AccountIdType &accountId() const = 0;
 
       /// Type of asset id
       using AssetIdType = std::string;

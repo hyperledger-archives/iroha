@@ -22,6 +22,7 @@
 #include <vector>
 #include "interfaces/commands/command.hpp"
 #include "interfaces/common_objects/hash.hpp"
+#include "interfaces/common_objects/types.hpp"
 #include "interfaces/primitive.hpp"
 #include "interfaces/signable.hpp"
 #include "model/transaction.hpp"
@@ -34,24 +35,15 @@ namespace shared_model {
      * state of ledger.
      */
     class Transaction
-        : public Primitive<Transaction, iroha::model::Transaction>,
-          public Signable<Transaction> {
+        : public Signable<Transaction, iroha::model::Transaction> {
      public:
-      /// Type of timestamp
-      using TimestampType = uint64_t;
-
-      /**
-       * @return time of creation
-       */
-      virtual const TimestampType &created_time() const = 0;
-
       /// Type of creator id
       using CreatorIdType = std::string;
 
       /**
        * @return creator of transaction
        */
-      virtual const CreatorIdType &creator_account_id() const = 0;
+      virtual const types::AccountIdType &creatorAccountId() const = 0;
 
       /// Type of counter
       using TxCounterType = uint64_t;
@@ -59,7 +51,7 @@ namespace shared_model {
       /**
        * @return actual number of transaction of this user
        */
-      virtual TxCounterType transaction_counter() const = 0;
+      virtual TxCounterType transactionCounter() const = 0;
 
       /// Type of command
       using CommandType = Command;
@@ -80,16 +72,6 @@ namespace shared_model {
        * transaction.
        */
       virtual const QuorumType &quorum() const;
-
-      /// Type of hash
-      using HashType = Hash;
-
-      /**
-       * @return hash of transaction.
-       * Equality of hashes means equality of transactions.
-       * Signatures are not affected on hash
-       */
-      virtual const HashType &hash() const;
 
       /**
        * Equality of transactions means equality of hashes only.
