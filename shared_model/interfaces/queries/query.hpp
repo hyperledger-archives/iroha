@@ -29,24 +29,29 @@
 
 namespace shared_model {
   namespace interface {
+
+    /**
+     * Class Query provides container with one of concrete query available in
+     * system. General note: this class is container for queries but not a base
+     * class.
+     */
     class Query : public Signable<Query, iroha::model::Query> {
      private:
       /// Shortcut type for polymorphic wrapper
       template <typename Value>
       using w = detail::PolymorphicWrapper<Value>;
 
-      /**
-       * Variant with wrapper on current concrete query
-       * @return variant with concrete query
-       */
-      boost::variant<w<GetAccount>> query_variant;
-
      public:
+      /// Type of variant, that handle concrete query
+      using QueryVariantType = boost::variant<w<GetAccount>>;
+
+      /// Types of concrete commands, in attached variant
+      using QueryListType = QueryVariantType::types;
+
       /**
-       * Copy constructor
-       * @param rhs - copyable object
+       * @return reference to const variant with concrete command
        */
-      Query(const ModelType &rhs) : query_variant(rhs.query_variant) {}
+      virtual const QueryVariantType &get() const = 0;
 
       /**
        * @return id of query creator
@@ -55,7 +60,6 @@ namespace shared_model {
 
       /// Type of query counter
       using QueryCounterType = uint64_t;
-
       /**
        * Query counter - incremental variable reflect for number of sent to
        * system queries plus 1. Required for preventing replay attacks.
@@ -63,25 +67,19 @@ namespace shared_model {
        */
       virtual const QueryCounterType &queryCounter() = 0;
 
-      /// Types of concrete commands, in attached variant
-      using QueryListType = decltype(query_variant)::types;
-
-      /// Type of variant, that handle concrete query
-      using QueryVariantType = decltype(query_variant);
-      /**
-       * @return reference to const variant with concrete command
-       */
-      const QueryVariantType &get() const { return query_variant; }
-
       // ------------------------| Primitive override |-------------------------
 
       std::string toString() const override {
-        return boost::apply_visitor(detail::ToStringVisitor(), query_variant);
+        return boost::apply_visitor(detail::ToStringVisitor(), get());
       }
 
       OldModelType *makeOldModel() const {
         return boost::apply_visitor(
-            detail::OldModelCreatorVisitor<OldModelType *>(), query_variant);
+            detail::OldModelCreatorVisitor<OldModelType *>(), get());
+      }
+
+      bool operator==(const ModelType &rhs) const override {
+        return this->get() == rhs.get();
       }
     };
   }  // namespace interface

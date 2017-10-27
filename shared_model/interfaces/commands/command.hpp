@@ -34,48 +34,37 @@ namespace shared_model {
      * General note: this class is container for commands, not a base class, for
      * avoid this misunderstanding class should be final
      */
-    class Command final : public Primitive<Command, iroha::model::Command> {
+    class Command : public Primitive<Command, iroha::model::Command> {
      private:
       /// Shortcut type for polymorphic wrapper
       template <typename Value>
       using w = detail::PolymorphicWrapper<Value>;
 
-      /**
-       * Variant with wrapper on current concrete command
-       * @return variant with concrete command
-       */
-      boost::variant<w<AddAssetQuantity>> command_variant;
-
      public:
-      /**
-       * Copy constructor
-       * @param rhs - copyable object
-       */
-      Command(const Command &rhs) : command_variant(rhs.command_variant) {}
+      /// Type of variant, that handle concrete command
+      using CommandVariantType = boost::variant<w<AddAssetQuantity>>;
 
       /// Types of concrete commands, in attached variant
-      using CommandListType = decltype(command_variant)::types;
+      using CommandListType = CommandVariantType::types;
 
-      /// Type of variant, that handle concrete command
-      using CommandVariantType = decltype(command_variant);
       /**
        * @return reference to const variant with concrete command
        */
-      const CommandVariantType &get() const { return command_variant; }
+      virtual const CommandVariantType &get() const = 0;
+
+      // ------------------------| Primitive override |-------------------------
 
       std::string toString() const override {
-        return boost::apply_visitor(detail::ToStringVisitor(), command_variant);
+        return boost::apply_visitor(detail::ToStringVisitor(), get());
       }
-
-      ModelType *copy() const override { return new ModelType(*this); }
 
       OldModelType *makeOldModel() const {
         return boost::apply_visitor(
-            detail::OldModelCreatorVisitor<OldModelType *>(), command_variant);
+            detail::OldModelCreatorVisitor<OldModelType *>(), get());
       }
 
       bool operator==(const ModelType &rhs) const override {
-        return this->command_variant == rhs.command_variant;
+        return this->get() == rhs.get();
       }
     };
 
