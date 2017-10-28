@@ -34,10 +34,10 @@ namespace shared_model {
     class Signable : public Hashable<Model, OldModel> {
      public:
       /// Type of transaction signature
-      using SignatureType = Signature;
+      using SignatureType = detail::PolymorphicWrapper<Signature>;
 
       /// Type of set of signatures
-      using SignatureSetType = std::unordered_set<const SignatureType>;
+      using SignatureSetType = std::unordered_set<SignatureType>;
 
       /**
        * @return attached signatures
@@ -61,4 +61,18 @@ namespace shared_model {
     };
   }  // namespace interface
 }  // namespace shared_model
+
+namespace std {
+  template <>
+  struct hash<shared_model::detail::
+                  PolymorphicWrapper<shared_model::interface::Signature>> {
+    size_t operator()(
+        const shared_model::detail::
+            PolymorphicWrapper<shared_model::interface::Signature> &sig) const {
+      return hash<std::string>()(sig->publicKey().blob()
+                                 + sig->signedHash().blob());
+    }
+  };
+}
+
 #endif  // IROHA_SIGNABLE_HPP

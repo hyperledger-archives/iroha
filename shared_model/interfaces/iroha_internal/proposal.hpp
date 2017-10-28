@@ -41,10 +41,10 @@ namespace shared_model {
        */
       virtual ProposalHeight &height() const = 0;
 
-      iroha::model::Proposal *makeOldModel() const {
+      iroha::model::Proposal *makeOldModel() const override {
         std::vector<iroha::model::Transaction> txs;
         for (auto &tx : transactions()) {
-          txs.push_back(*tx.makeOldModel());
+          txs.push_back(tx->makeOldModel());
         }
         iroha::model::Proposal *oldStyleProposal =
             new iroha::model::Proposal(txs);
@@ -52,9 +52,9 @@ namespace shared_model {
         return oldStyleProposal;
       }
 
-      std::string toString() const {
+      std::string toString() const override {
         std::string result("Proposal: [");
-        result += "height=" + height() + ", ";
+        result += "height=" + std::to_string(height()) + ", ";
         result += "transactions=[";
         for (auto &tx : transactions()) {
           result += tx.toString() + " ";

@@ -62,31 +62,34 @@ namespace shared_model {
        */
       virtual TransactionsType &transactions() const = 0;
 
-      iroha::model::Block *makeOldModel() const {
+      iroha::model::Block *makeOldModel() const override {
         iroha::model::Block *oldStyleBlock = new iroha::model::Block();
         oldStyleBlock->height = height();
-        oldStyleBlock->prev_hash = prevHash();
+        oldStyleBlock->prev_hash =
+            iroha::blob_t<256 / 8>::from_string(prevHash().toString());
         oldStyleBlock->txs_number = txsNumber();
-        oldStyleBlock->merkle_root = merkleRoot();
+        oldStyleBlock->merkle_root =
+            iroha::blob_t<256 / 8>::from_string(merkleRoot().toString());
         for (auto &tx : transactions()) {
-          oldStyleBlock->transactions.push_back(*tx.makeOldModel());
+          oldStyleBlock->transactions.push_back(*tx->makeOldModel());
         }
         oldStyleBlock->created_ts = createdTime();
-        oldStyleBlock->hash = hash();
+        oldStyleBlock->hash =
+            iroha::blob_t<256 / 8>::from_string(hash().toString());
         for (auto &sig : signatures()) {
-          oldStyleBlock->sigs.push_back(sig);
+          oldStyleBlock->sigs.push_back(*sig->makeOldModel());
         }
         return oldStyleBlock;
       }
 
-      std::string toString() const {
+      std::string toString() const override {
         std::string result("Block: [");
         result += "hash=" + hash().hex() + ", ";
-        result += "height=" + height() + ", ";
+        result += "height=" + std::to_string(height()) + ", ";
         result += "prevHash=" + prevHash().hex() + ", ";
-        result += "txsNumber=" + txsNumber() + ", ";
+        result += "txsNumber=" + std::to_string(txsNumber()) + ", ";
         result += "merkleRoot=" + merkleRoot().hex() + ", ";
-        result += "created time=" + createdTime() + ", ";
+        result += "created time=" + std::to_string(createdTime()) + ", ";
         result += "transactions=[";
         for (auto &tx : transactions()) {
           result += tx.toString() + " ";
@@ -94,7 +97,7 @@ namespace shared_model {
         result += "], ";
         result += "signatures=[";
         for (auto &sig : signatures()) {
-          result += sig.toString() + " ";
+          result += sig->toString() + " ";
         }
         result += "]]";
         return result;

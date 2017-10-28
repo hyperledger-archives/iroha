@@ -71,11 +71,43 @@ namespace shared_model {
        * Quorum means how much signatures of account required for performing
        * transaction.
        */
-      virtual const QuorumType &quorum() const;
+      virtual const QuorumType &quorum() const = 0;
 
       iroha::model::Transaction *makeOldModel() const {
-        // TODO implement conversion to old style transaction
-        return nullptr;
+        iroha::model::Transaction *oldStyleTransaction =
+            new iroha::model::Transaction();
+        oldStyleTransaction->created_ts = createdTime();
+        oldStyleTransaction->creator_account_id = creatorAccountId();
+        oldStyleTransaction->tx_counter = transactionCounter();
+        for (auto &command : commands()) {
+          oldStyleTransaction->commands.push_back(
+              std::shared_ptr<iroha::model::Command>(command.makeOldModel()));
+        }
+        for (auto &sig : signatures()) {
+          oldStyleTransaction->signatures.push_back(*sig->makeOldModel());
+        }
+        return oldStyleTransaction;
+      }
+
+      std::string toString() const {
+        std::string result("Transaction: [");
+        result += "hash=" + hash().hex() + ", ";
+        result += "txCounter=" + std::to_string(transactionCounter()) + ", ";
+        result += "creatorAccountId=" + creatorAccountId() + ", ";
+        result += "quorum=" + std::to_string(quorum()) + ", ";
+        result += "created time=" + std::to_string(createdTime()) + ", ";
+        result += "commands=[";
+        for (auto &command : commands()) {
+          result += command.toString() + " ";
+        }
+        result += "], ";
+        result += "signatures=[";
+
+        for (auto &sig : signatures()) {
+          result += sig->toString() + " ";
+        }
+        result += "]]";
+        return result;
       }
     };
 

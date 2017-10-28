@@ -18,6 +18,7 @@
 #ifndef IROHA_SHARED_MODEL_SIGNATURE_HPP
 #define IROHA_SHARED_MODEL_SIGNATURE_HPP
 
+#include "common/types.hpp"
 #include "interfaces/primitive.hpp"
 #include "model/signature.hpp"
 
@@ -37,12 +38,12 @@ namespace shared_model {
       /**
        * @return public key of signatory
        */
-      virtual const HashType &publicKey() const;
+      virtual const HashType &publicKey() const = 0;
 
       /**
        * @return signed hash of message
        */
-      virtual const HashType &signedHash() const;
+      virtual const HashType &signedHash() const = 0;
 
       bool operator==(const Signature &rhs) const override {
         return this->publicKey() == rhs.publicKey()
@@ -50,8 +51,21 @@ namespace shared_model {
       }
 
       OldModelType *makeOldModel() const override {
-        // todo implement
-        return nullptr;
+        iroha::model::Signature *oldStyleSignature =
+            new iroha::model::Signature();
+        oldStyleSignature->signature =
+            iroha::blob_t<64>::from_string(signedHash().toString());
+        oldStyleSignature->pubkey =
+            iroha::blob_t<32>::from_string(publicKey().toString());
+        return oldStyleSignature;
+      }
+
+      std::string toString() const override {
+        std::string result("Signature: [");
+        result += "publicKey=" + publicKey().hex() + ", ";
+        result += "signedHash=" + signedHash().hex();
+        result += "]";
+        return result;
       }
     };
   }  // namespace interface
