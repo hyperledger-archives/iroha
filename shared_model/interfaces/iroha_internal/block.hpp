@@ -20,6 +20,7 @@
 
 #include "interfaces/signable.hpp"
 #include "interfaces/transaction.hpp"
+#include "model/block.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -62,7 +63,7 @@ namespace shared_model {
       virtual TransactionsType &transactions() const = 0;
 
       iroha::model::Block *makeOldModel() const {
-        iroha::model::Block *oldStyleBlock;
+        iroha::model::Block *oldStyleBlock = new iroha::model::Block();
         oldStyleBlock->height = height();
         oldStyleBlock->prev_hash = prevHash();
         oldStyleBlock->txs_number = txsNumber();
@@ -76,6 +77,27 @@ namespace shared_model {
           oldStyleBlock->sigs.push_back(sig);
         }
         return oldStyleBlock;
+      }
+
+      std::string toString() const {
+        std::string result("Block: [");
+        result += "hash=" + hash().hex() + ", ";
+        result += "height=" + height() + ", ";
+        result += "prevHash=" + prevHash().hex() + ", ";
+        result += "txsNumber=" + txsNumber() + ", ";
+        result += "merkleRoot=" + merkleRoot().hex() + ", ";
+        result += "created time=" + createdTime() + ", ";
+        result += "transactions=[";
+        for (auto &tx : transactions()) {
+          result += tx.toString() + " ";
+        }
+        result += "], ";
+        result += "signatures=[";
+        for (auto &sig : signatures()) {
+          result += sig.toString() + " ";
+        }
+        result += "]]";
+        return result;
       }
     };
 

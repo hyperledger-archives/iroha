@@ -15,15 +15,55 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_PROPOSAL_HPP
-#define IROHA_PROPOSAL_HPP
+#include "interfaces/hashable.hpp"
+#include "interfaces/transaction.hpp"
+#include "model/proposal.hpp"
+
+#ifndef IROHA_SHARED_MODEL_PROPOSAL_HPP
+#define IROHA_SHARED_MODEL_PROPOSAL_HPP
 namespace shared_model {
   namespace interface {
 
-    class Proposal {
-      // TODO implement
+    class Proposal : public Hashable<Proposal, iroha::model::Proposal> {
+      /// Type of proposal transactions' collection
+      using ProposalTransactionsType = std::vector<Transaction>;
+
+      /**
+       * @return collection of proposal's transactions
+       */
+      virtual ProposalTransactionsType &transactions() const = 0;
+
+      /// Type of proposal height
+      using ProposalHeight = uint64_t;
+
+      /**
+       * @return height of proposal
+       */
+      virtual ProposalHeight &height() const = 0;
+
+      iroha::model::Proposal *makeOldModel() const {
+        std::vector<iroha::model::Transaction> txs;
+        for (auto &tx : transactions()) {
+          txs.push_back(*tx.makeOldModel());
+        }
+        iroha::model::Proposal *oldStyleProposal =
+            new iroha::model::Proposal(txs);
+        oldStyleProposal->height = height();
+        return oldStyleProposal;
+      }
+
+      std::string toString() const {
+        std::string result("Proposal: [");
+        result += "height=" + height() + ", ";
+        result += "transactions=[";
+        for (auto &tx : transactions()) {
+          result += tx.toString() + " ";
+        }
+        result += "]]";
+        return result;
+      }
     };
 
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_PROPOSAL_HPP
+#endif  // IROHA_SHARED_MODEL_PROPOSAL_HPP
