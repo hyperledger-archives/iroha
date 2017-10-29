@@ -30,6 +30,12 @@ message CreateAccount {
     bytes main_pubkey = 3;
 }
 
+message SetAccountDetail{
+    string account_id = 1;
+    string key = 2;
+    string value = 3;
+}
+
 message CreateDomain {
     string domain_id = 1;
     string default_role = 2;
@@ -88,5 +94,6 @@ message Command {
         CreateRole create_role = 12;
         GrantPermission grant_permission = 13;
         RevokePermission revoke_permission = 14;
+        SetAccountDetail set_account_detail = 15;
     }
 }

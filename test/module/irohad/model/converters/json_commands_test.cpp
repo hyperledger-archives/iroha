@@ -31,6 +31,7 @@
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
+#include "model/commands/set_account_detail.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/converters/json_command_factory.hpp"
@@ -171,6 +172,20 @@ TEST_F(JsonCommandTest, create_account) {
 
   auto json_command = factory.serializeCreateAccount(orig_command);
   auto serial_command = factory.deserializeCreateAccount(json_command);
+
+  ASSERT_TRUE(serial_command.has_value());
+  ASSERT_EQ(*orig_command, *serial_command.value());
+  command_converter_test(orig_command);
+}
+
+TEST_F(JsonCommandTest, set_account_detail) {
+  auto orig_command = std::make_shared<SetAccountDetail>();
+  orig_command->account_id = "kek";
+  orig_command->key = "key";
+  orig_command->value = "value";
+
+  auto json_command = factory.serializeSetAccountDetail(orig_command);
+  auto serial_command = factory.deserializeSetAccountDetail(json_command);
 
   ASSERT_TRUE(serial_command.has_value());
   ASSERT_EQ(*orig_command, *serial_command.value());

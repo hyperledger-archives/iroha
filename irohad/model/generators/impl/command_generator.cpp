@@ -16,6 +16,7 @@
  */
 
 #include "model/generators/command_generator.hpp"
+#include <model/commands/set_account_detail.hpp>
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
@@ -55,7 +56,8 @@ namespace iroha {
           const std::string &account_name,
           const std::string &domain_id,
           const pubkey_t &key) {
-        return generateCommand<CreateAccount>(account_name, domain_id, key);
+        return generateCommand<CreateAccount>(
+            account_name, domain_id, key);
       }
 
       std::shared_ptr<Command> CommandGenerator::generateCreateDomain(
@@ -110,6 +112,12 @@ namespace iroha {
         return generateCommand<SetQuorum>(account_id, quorum);
       }
 
+      std::shared_ptr<Command> CommandGenerator::generateSetAccountDetail(
+          const std::string &account_id,
+          const std::string &key,
+          const std::string &value) {
+        return generateCommand<SetAccountDetail>(account_id, key, value);
+      }
 
       std::shared_ptr<Command> CommandGenerator::generateSubtractAssetQuantity(
           const std::string &account_id,

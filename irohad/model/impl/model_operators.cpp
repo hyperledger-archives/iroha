@@ -26,6 +26,7 @@
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
+#include "model/commands/set_account_detail.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 
@@ -111,6 +112,16 @@ namespace iroha {
           && create_account.account_name == account_name;
     }
 
+    /* SetAccountDetail */
+    bool SetAccountDetail::operator==(const Command &rhs) const {
+      if (! instanceof <SetAccountDetail>(rhs)) {
+        return false;
+      }
+      auto setAccountDetail = static_cast<const SetAccountDetail &>(rhs);
+      return setAccountDetail.account_id == account_id
+          and setAccountDetail.key == key and setAccountDetail.value == value;
+    }
+
     /* CreateAsset */
     bool CreateAsset::operator==(const Command &command) const {
       if (! instanceof <CreateAsset>(command)) return false;
@@ -162,7 +173,9 @@ namespace iroha {
 
     /* Transaction */
     bool Transaction::operator==(const Transaction &rhs) const {
-      return std::equal(commands.begin(), commands.end(), rhs.commands.begin(),
+      return std::equal(commands.begin(),
+                        commands.end(),
+                        rhs.commands.begin(),
                         rhs.commands.end(),
                         [](const auto &i, const auto &j) { return *i == *j; })
           && rhs.tx_counter == tx_counter && rhs.signatures == signatures
