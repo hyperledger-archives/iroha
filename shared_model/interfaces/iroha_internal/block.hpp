@@ -53,7 +53,7 @@ namespace shared_model {
       virtual HashType &merkleRoot() const = 0;
 
       /// Type of a single Transaction
-      using TransactionType = Transaction;
+      using TransactionType = detail::PolymorphicWrapper<Transaction>;
 
       /// Type of transactions' collection
       using TransactionsCollectionType = std::vector<TransactionType>;
@@ -75,7 +75,7 @@ namespace shared_model {
             transactions().begin(),
             transactions().end(),
             [oldStyleBlock](auto &tx) {
-              oldStyleBlock->transactions.emplace_back(*tx.makeOldModel());
+              oldStyleBlock->transactions.emplace_back(*tx->makeOldModel());
             });
         oldStyleBlock->created_ts = createdTime();
         oldStyleBlock->hash = iroha::hash256_t::from_string(hash().toString());
@@ -100,7 +100,7 @@ namespace shared_model {
         builder.insertLevel();
         std::for_each(
             transactions().begin(), transactions().end(), [&builder](auto &tx) {
-              builder.appendField(tx.toString());
+              builder.appendField(tx->toString());
             });
         builder.removeLevel();
         builder.appendField("signatures");

@@ -55,10 +55,10 @@ namespace shared_model {
       virtual TxCounterType transactionCounter() const = 0;
 
       /// Type of command
-      using CommandType = Command;
+      using CommandType = detail::PolymorphicWrapper<Command>;
 
       /// Type of ordered collection of commands
-      using CommandsType = std::vector<Command>;
+      using CommandsType = std::vector<CommandType>;
 
       /**
        * @return attached commands
@@ -86,7 +86,7 @@ namespace shared_model {
                       [oldStyleTransaction](auto &command) {
                         oldStyleTransaction->commands.emplace_back(
                             std::shared_ptr<iroha::model::Command>(
-                                command.makeOldModel()));
+                                command->makeOldModel()));
                       });
 
         std::for_each(signatures().begin(),
@@ -111,7 +111,7 @@ namespace shared_model {
         builder.insertLevel();
         std::for_each(
             commands().begin(), commands().end(), [&builder](auto &command) {
-              builder.appendField(command.toString());
+              builder.appendField(command->toString());
             });
         builder.removeLevel();
         builder.appendField("signatures");

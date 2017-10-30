@@ -27,10 +27,10 @@ namespace shared_model {
 
     class Proposal : public Hashable<Proposal, iroha::model::Proposal> {
       /// Type of a single Transaction
-      using TransactionType = Transaction;
+      using TransactionType = detail::PolymorphicWrapper<Transaction>;
 
       /// Type of proposal transactions' collection
-      using TransactionsCollectionType = std::vector<Transaction>;
+      using TransactionsCollectionType = std::vector<TransactionType>;
 
       /**
        * @return collection of proposal's transactions
@@ -46,7 +46,7 @@ namespace shared_model {
         std::vector<iroha::model::Transaction> txs;
         std::for_each(
             transactions().begin(), transactions().end(), [&txs](auto &tx) {
-              txs.emplace_back(*tx.makeOldModel());
+              txs.emplace_back(*tx->makeOldModel());
             });
         iroha::model::Proposal *oldStyleProposal =
             new iroha::model::Proposal(txs);
@@ -62,7 +62,7 @@ namespace shared_model {
         builder.insertLevel();
         std::for_each(
             transactions().begin(), transactions().end(), [&builder](auto &tx) {
-              builder.appendField(tx.toString());
+              builder.appendField(tx->toString());
             });
         builder.removeLevel();
         builder.finalizeString();
