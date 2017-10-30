@@ -32,17 +32,17 @@ namespace shared_model {
         : public Hashable<GetSignatories, iroha::model::GetSignatories> {
      public:
       /**
-       * @return account_id of corresponding signatories
+       * @return account_id of requested signatories
        */
       virtual const types::AccountIdType &accountId() const = 0;
 
-      virtual OldModelType *makeOldModel() const override {
+      OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::GetSignatories;
         oldModel->account_id = accountId();
         return oldModel;
       }
 
-      virtual std::string toString() const override {
+      std::string toString() const override {
         // TODO 30/10/2017 kamilsa implement to string with builders
         return Primitive::toString();
       }

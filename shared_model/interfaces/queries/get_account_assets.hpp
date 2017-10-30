@@ -30,22 +30,22 @@ namespace shared_model {
     class GetAccountAssets
         : public Hashable<GetAccountAssets, iroha::model::GetAccountAssets> {
       /**
-       * @return account_id of requested user
+       * @return account identifier
        */
       virtual const types::AccountIdType &accountId() const = 0;
       /**
-       * @return assetId of requested asset
+       * @return asset identifier
        */
       virtual const types::AssetIdType &assetId() const = 0;
 
-      virtual OldModelType *makeOldModel() const override {
+      OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::GetAccountAssets;
         oldModel->account_id = accountId();
         oldModel->asset_id = assetId();
         return oldModel;
       }
 
-      virtual std::string toString() const override {
+      std::string toString() const override {
         //TODO 30/10/2017 kamilsa implement to string with builders
         return Primitive::toString();
       }

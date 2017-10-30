@@ -29,11 +29,11 @@ namespace shared_model {
      */
     class GetRoles : public Hashable<GetRoles, iroha::model::GetRoles> {
      public:
-      virtual OldModelType *makeOldModel() const {
+      OldModelType *makeOldModel() const {
         return new iroha::model::GetRoles;
       }
 
-      virtual std::string toString() const {
+      std::string toString() const {
         // TODO 30/10/2017 kamilsa implement to string with builders
         return Primitive::toString();
       }
@@ -47,17 +47,17 @@ namespace shared_model {
                           iroha::model::GetRolePermissions> {
      public:
       /**
-       * @return role containing requested permissions
+       * @return role identifier containing requested permissions
        */
       virtual const types::RoleIdType &roleId() const = 0;
 
-      virtual OldModelType *makeOldModel() const override {
+      OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::GetRolePermissions;
         oldModel->role_id = roleId();
         return oldModel;
       }
 
-      virtual std::string toString() const override {
+      std::string toString() const override {
         // TODO 30/10/2017 kamilsa implement to string with builders
         return Primitive::toString();
       }

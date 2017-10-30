@@ -31,17 +31,17 @@ namespace shared_model {
         : public Hashable<GetAssetInfo, iroha::model::GetAssetInfo> {
      public:
       /**
-       * @return assetId of requested asset
+       * @return asset identifier to get asset's information
        */
       virtual const types::AssetIdType &assetId() const = 0;
 
-      virtual OldModelType *makeOldModel() const override {
+      OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::GetAssetInfo;
         oldModel->asset_id = assetId();
         return oldModel;
       }
 
-      virtual std::string toString() const override {
+      std::string toString() const override {
         // TODO 30/10/2017 kamilsa implement to string with builders
         return Primitive::toString();
       }
