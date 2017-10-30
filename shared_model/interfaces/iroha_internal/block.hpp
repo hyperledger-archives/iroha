@@ -21,6 +21,7 @@
 #include "interfaces/signable.hpp"
 #include "interfaces/transaction.hpp"
 #include "model/block.hpp"
+#include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -87,24 +88,30 @@ namespace shared_model {
       }
 
       std::string toString() const override {
-        std::string result("Block: [");
-        result += "hash=" + hash().hex() + ", ";
-        result += "height=" + std::to_string(height()) + ", ";
-        result += "prevHash=" + prevHash().hex() + ", ";
-        result += "txsNumber=" + std::to_string(txsNumber()) + ", ";
-        result += "merkleRoot=" + merkleRoot().hex() + ", ";
-        result += "created time=" + std::to_string(createdTime()) + ", ";
-        result += "transactions=[";
-        for (auto &tx : transactions()) {
-          result += tx.toString() + " ";
-        }
-        result += "], ";
-        result += "signatures=[";
-        for (auto &sig : signatures()) {
-          result += sig->toString() + " ";
-        }
-        result += "]]";
-        return result;
+        util::PrettyStringBuilder builder;
+        builder.initString("Block");
+        builder.appendField("hash", hash().hex());
+        builder.appendField("height", std::to_string(height()));
+        builder.appendField("prevHash", prevHash().hex());
+        builder.appendField("txsNumber", std::to_string(txsNumber()));
+        builder.appendField("merkleRoot", merkleRoot().hex());
+        builder.appendField("createdtime", std::to_string(createdTime()));
+        builder.appendField("transactions");
+        builder.insertLevel();
+        std::for_each(
+            transactions().begin(), transactions().end(), [&builder](auto &tx) {
+              builder.appendField(tx.toString());
+            });
+        builder.removeLevel();
+        builder.appendField("signatures");
+        builder.insertLevel();
+        std::for_each(
+            signatures().begin(), signatures().end(), [&builder](auto &sig) {
+              builder.appendField(sig->toString());
+            });
+        builder.removeLevel();
+        builder.finalizeString();
+        return builder.getResult();
       }
     };
 

@@ -18,6 +18,7 @@
 #include "interfaces/hashable.hpp"
 #include "interfaces/transaction.hpp"
 #include "model/proposal.hpp"
+#include "utils/string_builder.hpp"
 
 #ifndef IROHA_SHARED_MODEL_PROPOSAL_HPP
 #define IROHA_SHARED_MODEL_PROPOSAL_HPP
@@ -54,14 +55,18 @@ namespace shared_model {
       }
 
       std::string toString() const override {
-        std::string result("Proposal: [");
-        result += "height=" + std::to_string(height()) + ", ";
-        result += "transactions=[";
-        for (auto &tx : transactions()) {
-          result += tx.toString() + " ";
-        }
-        result += "]]";
-        return result;
+        util::PrettyStringBuilder builder;
+        builder.initString("Proposal");
+        builder.appendField("height", std::to_string(height()));
+        builder.appendField("transactions");
+        builder.insertLevel();
+        std::for_each(
+            transactions().begin(), transactions().end(), [&builder](auto &tx) {
+              builder.appendField(tx.toString());
+            });
+        builder.removeLevel();
+        builder.finalizeString();
+        return builder.getResult();
       }
     };
 

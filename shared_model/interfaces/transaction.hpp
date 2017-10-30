@@ -26,6 +26,7 @@
 #include "interfaces/primitive.hpp"
 #include "interfaces/signable.hpp"
 #include "model/transaction.hpp"
+#include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -99,24 +100,29 @@ namespace shared_model {
       }
 
       std::string toString() const {
-        std::string result("Transaction: [");
-        result += "hash=" + hash().hex() + ", ";
-        result += "txCounter=" + std::to_string(transactionCounter()) + ", ";
-        result += "creatorAccountId=" + creatorAccountId() + ", ";
-        result += "quorum=" + std::to_string(quorum()) + ", ";
-        result += "created time=" + std::to_string(createdTime()) + ", ";
-        result += "commands=[";
-        for (auto &command : commands()) {
-          result += command.toString() + " ";
-        }
-        result += "], ";
-        result += "signatures=[";
-
-        for (auto &sig : signatures()) {
-          result += sig->toString() + " ";
-        }
-        result += "]]";
-        return result;
+        util::PrettyStringBuilder builder;
+        builder.initString("Transaction");
+        builder.appendField("hash", hash().hex());
+        builder.appendField("txCounter", std::to_string(transactionCounter()));
+        builder.appendField("creatorAccountId", creatorAccountId());
+        builder.appendField("quorum", std::to_string(quorum()));
+        builder.appendField("createdTime", std::to_string(createdTime()));
+        builder.appendField("commands");
+        builder.insertLevel();
+        std::for_each(
+            commands().begin(), commands().end(), [&builder](auto &command) {
+              builder.appendField(command.toString());
+            });
+        builder.removeLevel();
+        builder.appendField("signatures");
+        builder.insertLevel();
+        std::for_each(
+            signatures().begin(), signatures().end(), [&builder](auto &sig) {
+              builder.appendField(sig->toString());
+            });
+        builder.removeLevel();
+        builder.finalizeString();
+        return builder.getResult();
       }
     };
 

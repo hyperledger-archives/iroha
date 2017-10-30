@@ -22,6 +22,7 @@
 #include "interfaces/common_objects/hash.hpp"
 #include "interfaces/primitive.hpp"
 #include "model/signature.hpp"
+#include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -62,11 +63,12 @@ namespace shared_model {
       }
 
       std::string toString() const override {
-        std::string result("Signature: [");
-        result += "publicKey=" + publicKey().hex() + ", ";
-        result += "signedHash=" + signedHash().hex();
-        result += "]";
-        return result;
+        util::PrettyStringBuilder builder;
+        builder.initString("Signature");
+        builder.appendField("publicKey", publicKey().hex());
+        builder.appendField("signedHash", signedHash().hex());
+        builder.finalizeString();
+        return builder.getResult();
       }
     };
   }  // namespace interface

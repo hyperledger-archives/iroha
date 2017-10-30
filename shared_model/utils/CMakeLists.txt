@@ -11,11 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-add_subdirectory(backend)
-add_subdirectory(builders)
-add_subdirectory(converters)
-add_subdirectory(crypto)
-add_subdirectory(interfaces)
-add_subdirectory(validators)
-add_subdirectory(utils)
