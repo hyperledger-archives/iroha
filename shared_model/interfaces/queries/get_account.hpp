@@ -31,7 +31,11 @@ namespace shared_model {
        */
       virtual const types::AccountIdType &accountId() const = 0;
 
-      // TODO 26/10/2017 muratovv add primitive methods
+      virtual OldModelType *makeOldModel() const {
+        auto oldModel = new iroha::model::GetAccount;
+        oldModel->account_id = accountId();
+        return oldModel;
+      }
     };
   }  // namespace interface
 }  // namespace shared_model
