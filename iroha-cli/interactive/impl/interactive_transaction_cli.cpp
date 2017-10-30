@@ -392,15 +392,6 @@ namespace iroha_cli {
       return generator_.generateSetQuorum(account_id, quorum.value());
     }
 
-    std::shared_ptr<Command>
-    InteractiveTransactionCli::parseSetAccountDetail(
-        std::vector<std::string> params) {
-      auto account_id = params[0];
-      auto key = params[1];
-      auto value = params[2];
-      return generator_.generateSetAccountDetail(account_id, key, value);
-    }
-
     std::shared_ptr<iroha::model::Command>
     InteractiveTransactionCli::parseSubtractAssetQuantity(
         std::vector<std::string> params) {

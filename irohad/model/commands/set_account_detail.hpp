@@ -24,9 +24,9 @@ namespace iroha {
   namespace model {
 
     struct SetAccountDetail : public Command {
-      std::string account_id{};
-      std::string key{};
-      std::string value{};
+      std::string account_id;
+      std::string key;
+      std::string value;
 
       bool operator==(const Command &command) const override;
 

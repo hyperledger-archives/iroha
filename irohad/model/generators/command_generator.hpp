@@ -66,11 +66,6 @@ namespace iroha {
         std::shared_ptr<Command> generateSetQuorum(
             const std::string &account_id, uint32_t quorum);
 
-        std::shared_ptr<Command> generateSetAccountDetail(
-            const std::string &account_id,
-            const std::string &key,
-            const std::string &value);
-
         std::shared_ptr<Command> generateAddAssetQuantity(
             const std::string &account_id,
             const std::string &asset_id,

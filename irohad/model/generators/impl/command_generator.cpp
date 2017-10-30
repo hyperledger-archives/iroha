@@ -112,13 +112,6 @@ namespace iroha {
         return generateCommand<SetQuorum>(account_id, quorum);
       }
 
-      std::shared_ptr<Command> CommandGenerator::generateSetAccountDetail(
-          const std::string &account_id,
-          const std::string &key,
-          const std::string &value) {
-        return generateCommand<SetAccountDetail>(account_id, key, value);
-      }
-
       std::shared_ptr<Command> CommandGenerator::generateSubtractAssetQuantity(
           const std::string &account_id,
           const std::string &asset_id,

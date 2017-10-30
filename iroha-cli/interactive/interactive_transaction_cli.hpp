@@ -117,13 +117,10 @@ namespace iroha_cli {
           std::vector<std::string> line);
       std::shared_ptr<iroha::model::Command> parseSetQuorum(
           std::vector<std::string> line);
-      std::shared_ptr<iroha::model::Command> parseSetAccountDetail(
-          std::vector<std::string> line);
       std::shared_ptr<iroha::model::Command> parseSubtractAssetQuantity(
           std::vector<std::string> line);
       std::shared_ptr<iroha::model::Command> parseTransferAsset(
           std::vector<std::string> line);
-
       std::shared_ptr<iroha::model::Command> parseAppendRole(
           std::vector<std::string> line);
       std::shared_ptr<iroha::model::Command> parseCreateRole(
