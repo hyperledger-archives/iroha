@@ -29,7 +29,13 @@ namespace shared_model {
      */
     class GetAccountAssets
         : public Hashable<GetAccountAssets, iroha::model::GetAccountAssets> {
+      /**
+       * @return account_id of requested user
+       */
       virtual const types::AccountIdType &accountId() const = 0;
+      /**
+       * @return assetId of requested asset
+       */
       virtual const types::AssetIdType &assetId() const = 0;
 
       virtual OldModelType *makeOldModel() const override {

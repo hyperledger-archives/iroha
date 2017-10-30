@@ -24,6 +24,9 @@
 
 namespace shared_model {
   namespace interface {
+    /**
+     * Get all roles in the current system
+     */
     class GetRoles : public Hashable<GetRoles, iroha::model::GetRoles> {
      public:
       virtual OldModelType *makeOldModel() const {
@@ -36,9 +39,16 @@ namespace shared_model {
       }
     };
 
+    /**
+     * Get all permissions related to specific role
+     */
     class GetRolePermissions
-        : public Hashable<GetRolePermissions, iroha::model::GetRolePermissions> {
+        : public Hashable<GetRolePermissions,
+                          iroha::model::GetRolePermissions> {
      public:
+      /**
+       * @return role containing requested permissions
+       */
       virtual const types::RoleIdType &roleId() const = 0;
 
       virtual OldModelType *makeOldModel() const override {
@@ -48,7 +58,7 @@ namespace shared_model {
       }
 
       virtual std::string toString() const override {
-        //TODO 30/10/2017 kamilsa implement to string with builders
+        // TODO 30/10/2017 kamilsa implement to string with builders
         return Primitive::toString();
       }
     };

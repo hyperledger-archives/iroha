@@ -24,30 +24,46 @@
 
 namespace shared_model {
   namespace interface {
+
+    /**
+     * Query for getting transactions of given asset of an account
+     */
     class GetAccountAssetTransactions
         : public Hashable<GetAccountAssetTransactions,
                           iroha::model::GetAccountAssetTransactions> {
      public:
+      /**
+       * @return account_id of requested transactions
+       */
       virtual const types::AccountIdType &accountId() const = 0;
+      /**
+       * @return assetId of requested transactions
+       */
       virtual const types::AccountIdType &assetId() const = 0;
 
-      virtual OldModelType *makeOldModel() const {
+      virtual OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::GetAccountAssetTransactions;
         oldModel->account_id = accountId();
         oldModel->asset_id = assetId();
         return oldModel;
       }
 
-      virtual std::string toString() const {
+      virtual std::string toString() const override {
         // TODO 30/10/2017 kamilsa implement to string with builders
         return Primitive::toString();
       }
     };
 
+    /**
+     * Query for getting transactions of account
+     */
     class GetAccountTransactions
         : public Hashable<GetAccountTransactions,
                           iroha::model::GetAccountTransactions> {
      public:
+      /**
+       * @return account_id of requested transactions
+       */
       virtual const types::AccountIdType &accountId() const = 0;
 
       virtual OldModelType *makeOldModel() const override {

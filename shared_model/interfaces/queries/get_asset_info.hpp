@@ -24,9 +24,15 @@
 
 namespace shared_model {
   namespace interface {
+    /**
+     * Get meta data of asset
+     */
     class GetAssetInfo
         : public Hashable<GetAssetInfo, iroha::model::GetAssetInfo> {
      public:
+      /**
+       * @return assetId of requested asset
+       */
       virtual const types::AssetIdType &assetId() const = 0;
 
       virtual OldModelType *makeOldModel() const override {

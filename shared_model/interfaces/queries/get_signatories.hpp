@@ -24,9 +24,16 @@
 
 namespace shared_model {
   namespace interface {
+
+    /**
+     * Query for getting all signatories attached to account
+     */
     class GetSignatories
         : public Hashable<GetSignatories, iroha::model::GetSignatories> {
      public:
+      /**
+       * @return account_id of corresponding signatories
+       */
       virtual const types::AccountIdType &accountId() const = 0;
 
       virtual OldModelType *makeOldModel() const override {
