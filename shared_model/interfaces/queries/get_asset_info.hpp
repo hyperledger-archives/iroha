@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_ASSET_INFO_HPP
-#define IROHA_GET_ASSET_INFO_HPP
+#ifndef IROHA_SHARED_MODEL_GET_ASSET_INFO_HPP
+#define IROHA_SHARED_MODEL_GET_ASSET_INFO_HPP
 
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
@@ -43,4 +43,4 @@ namespace shared_model {
   }  // namespace interface
 }  // namespace shared_model
 
-#endif  // IROHA_GET_ASSET_INFO_HPP
+#endif  // IROHA_SHARED_MODEL_GET_ASSET_INFO_HPP

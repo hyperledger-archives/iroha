@@ -19,8 +19,8 @@
 #include "interfaces/hashable.hpp"
 #include "model/queries/get_transactions.hpp"
 
-#ifndef IROHA_GET_TRANSACTIONS_HPP
-#define IROHA_GET_TRANSACTIONS_HPP
+#ifndef IROHA_SHARED_MODEL_GET_TRANSACTIONS_HPP
+#define IROHA_SHARED_MODEL_GET_TRANSACTIONS_HPP
 
 namespace shared_model {
   namespace interface {
@@ -64,4 +64,4 @@ namespace shared_model {
   }  // namespace interface
 }  // namespace shared_model
 
-#endif  // IROHA_GET_TRANSACTIONS_HPP
+#endif  // IROHA_SHARED_MODEL_GET_TRANSACTIONS_HPP
