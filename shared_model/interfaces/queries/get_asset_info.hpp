@@ -29,13 +29,13 @@ namespace shared_model {
      public:
       virtual const types::AssetIdType &assetId() const = 0;
 
-      virtual OldModelType *makeOldModel() const {
+      virtual OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::GetAssetInfo;
         oldModel->asset_id = assetId();
         return oldModel;
       }
 
-      virtual std::string toString() const {
+      virtual std::string toString() const override {
         // TODO 30/10/2017 kamilsa implement to string with builders
         return Primitive::toString();
       }

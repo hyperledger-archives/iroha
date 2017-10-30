@@ -32,7 +32,7 @@ namespace shared_model {
       virtual const types::AccountIdType &assetId() const = 0;
 
       virtual OldModelType *makeOldModel() const {
-        auto oldModel = new iroha::model::GetAccount;
+        auto oldModel = new iroha::model::GetAccountAssetTransactions;
         oldModel->account_id = accountId();
         oldModel->asset_id = assetId();
         return oldModel;
@@ -50,13 +50,13 @@ namespace shared_model {
      public:
       virtual const types::AccountIdType &accountId() const = 0;
 
-      virtual OldModelType *makeOldModel() const {
-        auto oldModel = new iroha::model::GetAccount;
+      virtual OldModelType *makeOldModel() const override {
+        auto oldModel = new iroha::model::GetAccountTransactions;
         oldModel->account_id = accountId();
         return oldModel;
       }
 
-      virtual std::string toString() const {
+      virtual std::string toString() const override {
         // TODO 30/10/2017 kamilsa implement to string with builders
         return Primitive::toString();
       }

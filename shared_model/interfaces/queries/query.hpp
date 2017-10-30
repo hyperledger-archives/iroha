@@ -25,6 +25,12 @@
 #include "interfaces/queries/get_account.hpp"
 #include "interfaces/signable.hpp"
 #include "interfaces/visitor_apply_for_all.hpp"
+#include "interfaces/queries/get_account.hpp"
+#include "interfaces/queries/get_account_assets.hpp"
+#include "interfaces/queries/get_asset_info.hpp"
+#include "interfaces/queries/get_roles.hpp"
+#include "interfaces/queries/get_transactions.hpp"
+#include "interfaces/queries/get_signatories.hpp"
 #include "model/query.hpp"
 
 namespace shared_model {
@@ -73,7 +79,7 @@ namespace shared_model {
         return boost::apply_visitor(detail::ToStringVisitor(), get());
       }
 
-      OldModelType *makeOldModel() const {
+      OldModelType *makeOldModel() const override {
         return boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), get());
       }

@@ -75,7 +75,7 @@ namespace shared_model {
        */
       virtual const QuorumType &quorum() const = 0;
 
-      iroha::model::Transaction *makeOldModel() const {
+      iroha::model::Transaction *makeOldModel() const override {
         iroha::model::Transaction *oldStyleTransaction =
             new iroha::model::Transaction();
         oldStyleTransaction->created_ts = createdTime();
