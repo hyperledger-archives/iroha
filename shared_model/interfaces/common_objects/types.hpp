@@ -22,6 +22,7 @@ namespace shared_model {
     namespace types {
       /// Type of account id
       using AccountIdType = std::string;
+      using AssetIdType = std::string;
       /// Type of height (for Block, Proposal etc)
       using HeightType = uint64_t;
     }  // namespace types
