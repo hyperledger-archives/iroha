@@ -62,7 +62,7 @@ namespace shared_model {
       /**
        * @return attached commands
        */
-      virtual CommandsType &commands() const = 0;
+      virtual const CommandsType &commands() const = 0;
 
       /// Quorum type
       using QuorumType = uint8_t;
@@ -79,13 +79,22 @@ namespace shared_model {
         oldStyleTransaction->created_ts = createdTime();
         oldStyleTransaction->creator_account_id = creatorAccountId();
         oldStyleTransaction->tx_counter = transactionCounter();
-        for (auto &command : commands()) {
-          oldStyleTransaction->commands.push_back(
-              std::shared_ptr<iroha::model::Command>(command.makeOldModel()));
-        }
-        for (auto &sig : signatures()) {
-          oldStyleTransaction->signatures.push_back(*sig->makeOldModel());
-        }
+
+        std::for_each(commands().begin(),
+                      commands().end(),
+                      [oldStyleTransaction](auto &command) {
+                        oldStyleTransaction->commands.emplace_back(
+                            std::shared_ptr<iroha::model::Command>(
+                                command.makeOldModel()));
+                      });
+
+        std::for_each(signatures().begin(),
+                      signatures().end(),
+                      [oldStyleTransaction](auto &sig) {
+                        oldStyleTransaction->signatures.emplace_back(
+                            *sig->makeOldModel());
+                      });
+
         return oldStyleTransaction;
       }
 

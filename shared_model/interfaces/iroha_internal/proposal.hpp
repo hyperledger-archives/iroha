@@ -25,27 +25,28 @@ namespace shared_model {
   namespace interface {
 
     class Proposal : public Hashable<Proposal, iroha::model::Proposal> {
+      /// Type of a single Transaction
+      using TransactionType = Transaction;
+
       /// Type of proposal transactions' collection
-      using ProposalTransactionsType = std::vector<Transaction>;
+      using TransactionsCollectionType = std::vector<Transaction>;
 
       /**
        * @return collection of proposal's transactions
        */
-      virtual ProposalTransactionsType &transactions() const = 0;
-
-      /// Type of proposal height
-      using ProposalHeight = uint64_t;
+      virtual const TransactionsCollectionType &transactions() const = 0;
 
       /**
-       * @return height of proposal
+       * @return number of proposal
        */
-      virtual ProposalHeight &height() const = 0;
+      virtual types::HeightType &height() const = 0;
 
       iroha::model::Proposal *makeOldModel() const override {
         std::vector<iroha::model::Transaction> txs;
-        for (auto &tx : transactions()) {
-          txs.push_back(tx->makeOldModel());
-        }
+        std::for_each(
+            transactions().begin(), transactions().end(), [&txs](auto &tx) {
+              txs.emplace_back(*tx.makeOldModel());
+            });
         iroha::model::Proposal *oldStyleProposal =
             new iroha::model::Proposal(txs);
         oldStyleProposal->height = height();

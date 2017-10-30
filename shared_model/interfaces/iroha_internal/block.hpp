@@ -27,13 +27,10 @@ namespace shared_model {
 
     class Block : public Signable<Block, iroha::model::Block> {
      public:
-      /// Block number (height) type
-      using BlockHeightType = uint64_t;
-
       /**
        * @return block number in the ledger
        */
-      virtual BlockHeightType &height() const = 0;
+      virtual types::HeightType &height() const = 0;
 
       /**
        * @return hash of a previous block
@@ -54,31 +51,38 @@ namespace shared_model {
        */
       virtual HashType &merkleRoot() const = 0;
 
+      /// Type of a single Transaction
+      using TransactionType = Transaction;
+
       /// Type of transactions' collection
-      using TransactionsType = std::vector<Transaction>;
+      using TransactionsCollectionType = std::vector<TransactionType>;
 
       /**
        * @return collection of transactions
        */
-      virtual TransactionsType &transactions() const = 0;
+      virtual const TransactionsCollectionType &transactions() const = 0;
 
       iroha::model::Block *makeOldModel() const override {
         iroha::model::Block *oldStyleBlock = new iroha::model::Block();
         oldStyleBlock->height = height();
         oldStyleBlock->prev_hash =
-            iroha::blob_t<256 / 8>::from_string(prevHash().toString());
+            iroha::hash256_t::from_string(prevHash().toString());
         oldStyleBlock->txs_number = txsNumber();
         oldStyleBlock->merkle_root =
-            iroha::blob_t<256 / 8>::from_string(merkleRoot().toString());
-        for (auto &tx : transactions()) {
-          oldStyleBlock->transactions.push_back(*tx->makeOldModel());
-        }
+            iroha::hash256_t::from_string(merkleRoot().toString());
+        std::for_each(
+            transactions().begin(),
+            transactions().end(),
+            [oldStyleBlock](auto &tx) {
+              oldStyleBlock->transactions.emplace_back(*tx.makeOldModel());
+            });
         oldStyleBlock->created_ts = createdTime();
-        oldStyleBlock->hash =
-            iroha::blob_t<256 / 8>::from_string(hash().toString());
-        for (auto &sig : signatures()) {
-          oldStyleBlock->sigs.push_back(*sig->makeOldModel());
-        }
+        oldStyleBlock->hash = iroha::hash256_t::from_string(hash().toString());
+        std::for_each(signatures().begin(),
+                      signatures().end(),
+                      [oldStyleBlock](auto &sig) {
+                        oldStyleBlock->sigs.emplace_back(*sig->makeOldModel());
+                      });
         return oldStyleBlock;
       }
 

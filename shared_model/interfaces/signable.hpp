@@ -18,8 +18,11 @@
 #ifndef IROHA_SIGNABLE_HPP
 #define IROHA_SIGNABLE_HPP
 
+#include <boost/functional/hash.hpp>
+#include <unordered_set>
 #include "interfaces/common_objects/signature.hpp"
 #include "interfaces/hashable.hpp"
+#include "interfaces/polymorphic_wrapper.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -37,6 +40,11 @@ namespace shared_model {
       using SignatureType = detail::PolymorphicWrapper<Signature>;
 
       /// Type of set of signatures
+      /**
+       * Note: we can't use const SignatureType due to unordered_set
+       * limitations: it requires to have write access for elements for some
+       * internal operations.
+       */
       using SignatureSetType = std::unordered_set<SignatureType>;
 
       /**
@@ -63,14 +71,21 @@ namespace shared_model {
 }  // namespace shared_model
 
 namespace std {
+  /**
+   * Hash for SignatureSetType. It's required because std::unordered_set uses
+   * hash inside and it should be declared explicitly for user-defined types.
+   */
+
+  using SigWrapper = shared_model::detail::
+      PolymorphicWrapper<shared_model::interface::Signature>;
+
   template <>
-  struct hash<shared_model::detail::
-                  PolymorphicWrapper<shared_model::interface::Signature>> {
-    size_t operator()(
-        const shared_model::detail::
-            PolymorphicWrapper<shared_model::interface::Signature> &sig) const {
-      return hash<std::string>()(sig->publicKey().blob()
-                                 + sig->signedHash().blob());
+  struct hash<SigWrapper> {
+    size_t operator()(const SigWrapper &sig) const {
+      std::size_t seed = 0;
+      boost::hash_combine(seed, sig->publicKey().blob());
+      boost::hash_combine(seed, sig->signedHash().blob());
+      return seed;
     }
   };
 }

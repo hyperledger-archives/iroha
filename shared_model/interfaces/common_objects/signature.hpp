@@ -19,6 +19,7 @@
 #define IROHA_SHARED_MODEL_SIGNATURE_HPP
 
 #include "common/types.hpp"
+#include "interfaces/common_objects/hash.hpp"
 #include "interfaces/primitive.hpp"
 #include "model/signature.hpp"
 
@@ -54,9 +55,9 @@ namespace shared_model {
         iroha::model::Signature *oldStyleSignature =
             new iroha::model::Signature();
         oldStyleSignature->signature =
-            iroha::blob_t<64>::from_string(signedHash().toString());
+            iroha::sig_t::from_string(signedHash().toString());
         oldStyleSignature->pubkey =
-            iroha::blob_t<32>::from_string(publicKey().toString());
+            iroha::pubkey_t::from_string(publicKey().toString());
         return oldStyleSignature;
       }
 
