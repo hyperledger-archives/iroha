@@ -15,36 +15,32 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_GET_ACCOUNT_ASSETS_HPP
-#define IROHA_GET_ACCOUNT_ASSETS_HPP
+#ifndef IROHA_GET_ASSET_INFO_HPP
+#define IROHA_GET_ASSET_INFO_HPP
 
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
-#include "model/queries/get_account_assets.hpp"
+#include "model/queries/get_asset_info.hpp"
 
 namespace shared_model {
   namespace interface {
-    /**
-     * Query for get all account's assets and balance
-     */
-    class GetAccountAssets
-        : public Hashable<GetAccountAssets, iroha::model::GetAccountAssets> {
-      virtual const types::AccountIdType &accountId() const = 0;
+    class GetAssetInfo
+        : public Hashable<GetAssetInfo, iroha::model::GetAssetInfo> {
+     public:
       virtual const types::AssetIdType &assetId() const = 0;
 
       virtual OldModelType *makeOldModel() const {
-        auto oldModel = new iroha::model::GetAccountAssets;
-        oldModel->account_id = accountId();
+        auto oldModel = new iroha::model::GetAssetInfo;
         oldModel->asset_id = assetId();
         return oldModel;
       }
 
       virtual std::string toString() const {
-        //TODO 30/10/2017 kamilsa implement to string with builders
+        // TODO 30/10/2017 kamilsa implement to string with builders
         return Primitive::toString();
       }
     };
   }  // namespace interface
 }  // namespace shared_model
 
-#endif  // IROHA_GET_ACCOUNT_ASSETS_HPP
+#endif  // IROHA_GET_ASSET_INFO_HPP
