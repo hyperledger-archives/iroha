@@ -29,6 +29,7 @@ namespace shared_model {
      */
     class GetAccountAssets
         : public Hashable<GetAccountAssets, iroha::model::GetAccountAssets> {
+     public:
       /**
        * @return account identifier
        */
@@ -46,7 +47,7 @@ namespace shared_model {
       }
 
       std::string toString() const override {
-        //TODO 30/10/2017 kamilsa implement to string with builders
+        // TODO 30/10/2017 kamilsa implement to string with builders
         return Primitive::toString();
       }
     };
