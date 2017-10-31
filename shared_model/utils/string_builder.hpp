@@ -32,7 +32,7 @@ namespace shared_model {
        * Initializes new string with a provided name
        * @param name - name to initialize
        */
-      PrettyStringBuilder initString(const std::string &name) {
+      PrettyStringBuilder &initString(const std::string &name) {
         result_.append(name + initSeparator + spaceSeparator
                        + beginBlockMarker);
         return *this;
@@ -41,7 +41,7 @@ namespace shared_model {
       /**
        * Inserts new level marker
        */
-      PrettyStringBuilder insertLevel() {
+      PrettyStringBuilder &insertLevel() {
         result_.append(beginBlockMarker);
         return *this;
       }
@@ -49,7 +49,7 @@ namespace shared_model {
       /**
        * Closes new level marker
        */
-      PrettyStringBuilder removeLevel() {
+      PrettyStringBuilder &removeLevel() {
         result_.append(endBlockMarker);
         return *this;
       }
@@ -59,8 +59,8 @@ namespace shared_model {
        * @param name - field name to append
        * @param value - field value
        */
-      PrettyStringBuilder appendField(const std::string &name,
-                                      const std::string &value) {
+      PrettyStringBuilder &appendField(const std::string &name,
+                                       const std::string &value) {
         result_.append(name);
         result_.append(keyValueSeparator);
         result_.append(value);
@@ -72,7 +72,7 @@ namespace shared_model {
        * Appends new single value to string
        * @param value - value to append
        */
-      PrettyStringBuilder appendField(const std::string &value) {
+      PrettyStringBuilder &appendField(const std::string &value) {
         result_.append(value);
         result_.append(spaceSeparator);
         return *this;
@@ -86,7 +86,7 @@ namespace shared_model {
        * @param t - transformation function
        */
       template <typename Collection, typename Transform>
-      PrettyStringBuilder appendCollection(Collection c, Transform t) {
+      PrettyStringBuilder &appendCollection(Collection c, Transform t) {
         insertLevel();
         std::for_each(c.begin(), c.end(), [this, &t](auto &val) {
           this->appendField(t(val));
