@@ -3,7 +3,6 @@ defaults: &defaults
   environment:
     IROHA_HOME: /opt/iroha
     IROHA_BUILD: /opt/iroha/build
-    CCACHE_DIR: ~/.ccache
 
 version: 2
 
@@ -18,28 +17,24 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - build-cache-{{ arch }}-{{ .Branch }}
-            - build-cache-{{ arch }}
+            - build-cache-debug-{{ arch }}-{{ .Branch }}-
+            - build-cache-debug-{{ arch }}-
           paths:
             - ~/.ccache
       - run:
-          name: ccache setup
-          command: |
-            ccache --max-files=0
-            ccache --max-size=1G
-      - run:
           name: cmake
-          command: cmake -DCOVERAGE=ON -H$IROHA_HOME -B$IROHA_BUILD -DPACKAGE_DEB=ON -DCMAKE_BUILD_TYPE=Release
+          command: >
+            cmake \
+              -DCOVERAGE=ON \
+              -H$IROHA_HOME \
+              -B$IROHA_BUILD \
+              -DCMAKE_BUILD_TYPE=Debug
       - run:
           name: make
           command: |
             cmake --build $IROHA_BUILD -- -j4
-      - run:
-          name: make package
-          command: |
-            cmake --build $IROHA_BUILD --target package -- -j4
       - save_cache:
-          key: build-cache-{{ arch }}-{{ .Branch }}-{{ epoch }}
+          key: build-cache-debug-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
             - ~/.ccache
       - run: ccache --show-stats
@@ -52,19 +47,73 @@ jobs:
       - run:
           name: cppcheck
           command: cmake --build $IROHA_BUILD --target cppcheck
-      - run:
-          name: copy deb file
-          command: cd $IROHA_BUILD && cp *.deb ./iroha.deb && cd $IROHA_HOME
-      - run:
-          name: Copy dockerfile to build dir
-          command: cp $IROHA_HOME/docker/release_dockerfile $IROHA_HOME/build/release_dockerfile.tmp
       - persist_to_workspace:
           root: /opt/iroha/build
           paths:
             - compile_commands.json
             - reports
+
+
+
+  build-linux-release:
+    <<: *defaults
+    docker:
+      - image: hyperledger/iroha-docker-develop
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - build-cache-release-{{ arch }}-{{ .Branch }}-
+            - build-cache-release-{{ arch }}-
+          paths:
+            - ~/.ccache
+      - run:
+          name: cmake
+          command: >
+            cmake \
+              -DCOVERAGE=OFF \
+              -DTESTING=OFF \
+              -H$IROHA_HOME \
+              -B$IROHA_BUILD \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DPACKAGE_DEB=ON \
+              -DPACKAGE_TGZ=ON
+      - run:
+          name: make and package
+          command: |
+            cmake --build $IROHA_BUILD --target package -- -j4
+      - save_cache:
+          key: build-cache-release-{{ arch }}-{{ .Branch }}-{{ epoch }}
+          paths:
+            - ~/.ccache
+      - run:
+          name: copy deb file
+          command: |
+            cd $IROHA_BUILD
+            cp *.deb ./iroha.deb
+            cp *.tar.gz ./iroha.tar.gz
+            # if IROHA_VERSION is not set, then CIRCLE_BUILD_NUM
+            echo ${IROHA_VERSION:-$CIRCLE_BUILD_NUM} > version.txt
+            cd $IROHA_HOME
+      - run:
+          name: copy dockerfile to build dir
+          command: cp $IROHA_HOME/docker/release_dockerfile $IROHA_HOME/build/release_dockerfile.tmp
+      - store_artifacts:
+          path: build/iroha.deb
+          destination: iroha-linux.deb
+      - store_artifacts:
+          path: build/iroha.tar.gz
+          destination: iroha-linux.tar.gz
+      - store_artifacts:
+          path: build/version.txt
+          destination: version.txt
+      - persist_to_workspace:
+          root: build
+          paths:
             - iroha.deb
             - release_dockerfile.tmp
+
+
 
   dockerize:
     <<: *defaults
@@ -76,7 +125,6 @@ jobs:
       - setup_remote_docker
       - attach_workspace:
           at: /opt/iroha/build
-
       - run:
           name: Copy deb
           command: |
@@ -175,7 +223,7 @@ jobs:
             - ~/.sonar
 
 
-  macos-build:
+  build-macos-release:
     macos:
       xcode: 9.0.0
     steps:
@@ -205,10 +253,17 @@ jobs:
             - external
       - run: ccache --show-stats
       - run:
-          name: build
+          name: cmake
+          command: >
+            cmake -H. -Bbuild \
+              -DCOVERAGE=OFF \
+              -DTESTING=OFF \
+              -DPACKAGE_TGZ=ON \
+              -DCMAKE_BUILD_TYPE=Release
+      - run:
+          name: make
           command: |
-            cmake -H. -Bbuild
-            cmake --build build -- -j$(sysctl -n hw.ncpu)
+            cmake --build build --target package -- -j$(sysctl -n hw.ncpu)
       - save_cache:
           key: build-cache-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
@@ -217,21 +272,29 @@ jobs:
           key: external-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
             - external
-
       - run: ccache --show-stats
+      - run:
+          name: rename artifacts
+          command: |
+            cp build/*.tar.gz build/iroha-darwin.tar.gz
+            # if IROHA_VERSION is not set, then CIRCLE_BUILD_NUM
+            echo ${IROHA_VERSION:-$CIRCLE_BUILD_NUM} > build/version.txt
+      - store_artifacts:
+          path: build/iroha-darwin.tar.gz
+          destination: iroha-darwin.tar.gz
+      - store_artifacts:
+          path: build/version.txt
+          destination: version.txt
+
      
 
 workflows:
   version: 2
   full_pipeline:
     jobs:
-      # macos-build/build -> sonar -> dockerize
-      - macos-build
+      # build-macos-release + build -> sonar(pr/release)
+      - build-macos-release
       - build
-      - dockerize:
-          requires:
-            - build
-
       - sonar-pr:
           requires:
             - build
@@ -248,6 +311,26 @@ workflows:
       - sonar-release:
           requires:
             - build
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+            tags:
+              only: /v[\.0-9]+.*/
+
+      # build-linux-release -> dockerize
+      - build-linux-release:
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+            tags:
+              only: /v[\.0-9]+.*/
+      - dockerize:
+          requires:
+            - build-linux-release
           filters:
             branches:
               only:
