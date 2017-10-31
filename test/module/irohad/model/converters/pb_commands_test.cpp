@@ -253,3 +253,16 @@ TEST(CommandTest, revoke_permission) {
 
   command_converter_test(orig_command);
 }
+
+TEST(CommandTest, set_account_detail) {
+  auto factory = iroha::model::converters::PbCommandFactory();
+
+  auto orig_command = SetAccountDetail("test@test", "key", "value");
+
+  auto proto_command = factory.serializeSetAccountDetail(orig_command);
+  auto serial_command = factory.deserializeSetAccountDetail(proto_command);
+
+  ASSERT_EQ(orig_command, serial_command);
+  
+  command_converter_test(orig_command);
+}

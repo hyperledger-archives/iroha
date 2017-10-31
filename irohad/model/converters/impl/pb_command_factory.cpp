@@ -142,7 +142,8 @@ namespace iroha {
           const protocol::AddPeer &pb_add_peer) {
         model::AddPeer add_peer;
         add_peer.address = pb_add_peer.address();
-        std::copy(pb_add_peer.peer_key().begin(), pb_add_peer.peer_key().end(),
+        std::copy(pb_add_peer.peer_key().begin(),
+                  pb_add_peer.peer_key().end(),
                   add_peer.peer_key.begin());
         return add_peer;
       }
@@ -322,7 +323,8 @@ namespace iroha {
           const model::CreateRole &command) {
         protocol::CreateRole cmd;
         cmd.set_role_name(command.role_name);
-        std::for_each(command.permissions.begin(), command.permissions.end(),
+        std::for_each(command.permissions.begin(),
+                      command.permissions.end(),
                       [&cmd, this](auto perm) {
                         auto perm_name = this->pb_role_map_.right.at(perm);
                         cmd.add_permissions(perm_name);
@@ -343,7 +345,7 @@ namespace iroha {
       model::GrantPermission PbCommandFactory::deserializeGrantPermission(
           const protocol::GrantPermission &command) {
         auto it = pb_grant_map_.left.find(command.permission());
-        if (it == pb_grant_map_.left.end()){
+        if (it == pb_grant_map_.left.end()) {
           return {};
         }
         return GrantPermission(command.account_id(), it->second);
@@ -361,10 +363,28 @@ namespace iroha {
       model::RevokePermission PbCommandFactory::deserializeRevokePermission(
           const protocol::RevokePermission &command) {
         auto it = pb_grant_map_.left.find(command.permission());
-        if (it == pb_grant_map_.left.end()){
+        if (it == pb_grant_map_.left.end()) {
           return {};
         }
         return RevokePermission(command.account_id(), it->second);
+      }
+
+      protocol::SetAccountDetail PbCommandFactory::serializeSetAccountDetail(
+          const model::SetAccountDetail &command) {
+        protocol::SetAccountDetail cmd;
+        cmd.set_account_id(command.account_id);
+        cmd.set_key(command.key);
+        cmd.set_value(command.value);
+        return cmd;
+      }
+
+      model::SetAccountDetail PbCommandFactory::deserializeSetAccountDetail(
+          const protocol::SetAccountDetail &command) {
+        model::SetAccountDetail setAccountDetail;
+        setAccountDetail.account_id = command.account_id();
+        setAccountDetail.key = command.key();
+        setAccountDetail.value = command.value();
+        return setAccountDetail;
       }
 
       protocol::Command PbCommandFactory::serializeAbstractCommand(
@@ -439,6 +459,14 @@ namespace iroha {
               static_cast<const model::CreateAccount &>(command));
           cmd.set_allocated_create_account(
               new protocol::CreateAccount(serialized));
+        }
+
+        // -----|SetAccountDetail|-----
+        if (instanceof <model::SetAccountDetail>(command)) {
+          auto serialized = commandFactory.serializeSetAccountDetail(
+              static_cast<const model::SetAccountDetail &>(command));
+          cmd.set_allocated_set_account_detail(
+              new protocol::SetAccountDetail(serialized));
         }
 
         // -----|CreateDomain|-----
@@ -545,6 +573,13 @@ namespace iroha {
           val = std::make_shared<model::CreateAccount>(cmd);
         }
 
+        // -----|SetAccountDetail|-----
+        if (command.has_set_account_detail()) {
+          auto pb_command = command.set_account_detail();
+          auto cmd = commandFactory.deserializeSetAccountDetail(pb_command);
+          val = std::make_shared<model::SetAccountDetail>(cmd);
+        }
+
         // -----|CreateDomain|-----
         if (command.has_create_domain()) {
           auto pb_command = command.create_domain();
@@ -558,7 +593,6 @@ namespace iroha {
           auto cmd = commandFactory.deserializeRemoveSignatory(pb_command);
           val = std::make_shared<model::RemoveSignatory>(cmd);
         }
-
 
         // -----|SetAccountQuorum|-----
         if (command.has_set_quorum()) {

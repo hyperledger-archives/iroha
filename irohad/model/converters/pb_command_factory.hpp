@@ -33,6 +33,7 @@
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
+#include "model/commands/set_account_detail.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/permissions.hpp"
@@ -123,6 +124,12 @@ namespace iroha {
         model::RevokePermission deserializeRevokePermission(
             const protocol::RevokePermission &command);
 
+        // Set Account Detail
+        protocol::SetAccountDetail serializeSetAccountDetail(
+            const model::SetAccountDetail &command);
+        model::SetAccountDetail deserializeSetAccountDetail(
+            const protocol::SetAccountDetail &command);
+
         // abstract
         protocol::Command serializeAbstractCommand(
             const model::Command &command);
@@ -131,8 +138,8 @@ namespace iroha {
 
        protected:
         boost::bimap<iroha::protocol::RolePermission, std::string> pb_role_map_;
-        boost::bimap<iroha::protocol::GrantablePermission, std::string> pb_grant_map_;
-
+        boost::bimap<iroha::protocol::GrantablePermission, std::string>
+            pb_grant_map_;
       };
     }  // namespace converters
   }    // namespace model

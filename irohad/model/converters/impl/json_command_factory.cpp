@@ -17,6 +17,7 @@
 
 #include "model/converters/json_command_factory.hpp"
 
+#include <model/commands/set_account_detail.hpp>
 #include <regex>
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
@@ -75,6 +76,8 @@ namespace iroha {
              &JsonCommandFactory::serializeCreateAccount},
             {typeid(CreateAsset), &JsonCommandFactory::serializeCreateAsset},
             {typeid(CreateDomain), &JsonCommandFactory::serializeCreateDomain},
+            {typeid(SetAccountDetail),
+             &JsonCommandFactory::serializeSetAccountDetail},
             {typeid(RemoveSignatory),
              &JsonCommandFactory::serializeRemoveSignatory},
             {typeid(SetQuorum), &JsonCommandFactory::serializeSetQuorum},
@@ -95,6 +98,8 @@ namespace iroha {
             {"CreateAccount", &JsonCommandFactory::deserializeCreateAccount},
             {"CreateAsset", &JsonCommandFactory::deserializeCreateAsset},
             {"CreateDomain", &JsonCommandFactory::deserializeCreateDomain},
+            {"SetAccountDetail",
+             &JsonCommandFactory::deserializeSetAccountDetail},
             {"RemoveSignatory",
              &JsonCommandFactory::deserializeRemoveSignatory},
             {"SetQuorum", &JsonCommandFactory::deserializeSetQuorum},
@@ -118,16 +123,16 @@ namespace iroha {
 
         document.SetObject();
         document.AddMember("command_type", "AddAssetQuantity", allocator);
-        document.AddMember("account_id", add_asset_quantity->account_id,
-                           allocator);
+        document.AddMember(
+            "account_id", add_asset_quantity->account_id, allocator);
         document.AddMember("asset_id", add_asset_quantity->asset_id, allocator);
 
         Value amount;
         amount.SetObject();
         amount.AddMember(
             "value", add_asset_quantity->amount.getIntValue().str(), allocator);
-        amount.AddMember("precision", add_asset_quantity->amount.getPrecision(),
-                         allocator);
+        amount.AddMember(
+            "precision", add_asset_quantity->amount.getPrecision(), allocator);
 
         document.AddMember("amount", amount, allocator);
 
@@ -154,8 +159,8 @@ namespace iroha {
         document.SetObject();
         document.AddMember("command_type", "AddPeer", allocator);
         document.AddMember("address", add_peer->address, allocator);
-        document.AddMember("peer_key", add_peer->peer_key.to_hexstring(),
-                           allocator);
+        document.AddMember(
+            "peer_key", add_peer->peer_key.to_hexstring(), allocator);
 
         return document;
       }
@@ -179,8 +184,8 @@ namespace iroha {
         document.SetObject();
         document.AddMember("command_type", "AddSignatory", allocator);
         document.AddMember("account_id", add_signatory->account_id, allocator);
-        document.AddMember("pubkey", add_signatory->pubkey.to_hexstring(),
-                           allocator);
+        document.AddMember(
+            "pubkey", add_signatory->pubkey.to_hexstring(), allocator);
 
         return document;
       }
@@ -203,11 +208,11 @@ namespace iroha {
 
         document.SetObject();
         document.AddMember("command_type", "CreateAccount", allocator);
-        document.AddMember("account_name", create_account->account_name,
-                           allocator);
+        document.AddMember(
+            "account_name", create_account->account_name, allocator);
         document.AddMember("domain_id", create_account->domain_id, allocator);
-        document.AddMember("pubkey", create_account->pubkey.to_hexstring(),
-                           allocator);
+        document.AddMember(
+            "pubkey", create_account->pubkey.to_hexstring(), allocator);
 
         return document;
       }
@@ -219,6 +224,34 @@ namespace iroha {
             | des.String(&CreateAccount::account_name, "account_name")
             | des.String(&CreateAccount::domain_id, "domain_id")
             | des.String(&CreateAccount::pubkey, "pubkey") | toCommand;
+      }
+
+      // Set Account Detail
+      rapidjson::Document JsonCommandFactory::serializeSetAccountDetail(
+          std::shared_ptr<Command> command) {
+        auto set_account_detail =
+            static_cast<SetAccountDetail *>(command.get());
+
+        Document document;
+        auto &allocator = document.GetAllocator();
+
+        document.SetObject();
+        document.AddMember("command_type", "SetAccountDetail", allocator);
+        document.AddMember(
+            "account_id", set_account_detail->account_id, allocator);
+        document.AddMember("key", set_account_detail->key, allocator);
+        document.AddMember("value", set_account_detail->value, allocator);
+
+        return document;
+      }
+
+      optional_ptr<Command> JsonCommandFactory::deserializeSetAccountDetail(
+          const rapidjson::Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<SetAccountDetail>()
+            | des.String(&SetAccountDetail::account_id, "account_id")
+            | des.String(&SetAccountDetail::key, "key")
+            | des.String(&SetAccountDetail::value, "value") | toCommand;
       }
 
       // CreateAsset
@@ -257,10 +290,9 @@ namespace iroha {
 
         document.SetObject();
         document.AddMember("command_type", "CreateDomain", allocator);
-        document.AddMember("domain_id", create_domain->domain_id,
-                           allocator);
-        document.AddMember("user_default_role", create_domain->user_default_role,
-                           allocator);
+        document.AddMember("domain_id", create_domain->domain_id, allocator);
+        document.AddMember(
+            "user_default_role", create_domain->user_default_role, allocator);
 
         return document;
       }
@@ -284,10 +316,10 @@ namespace iroha {
 
         document.SetObject();
         document.AddMember("command_type", "RemoveSignatory", allocator);
-        document.AddMember("account_id", remove_signatory->account_id,
-                           allocator);
-        document.AddMember("pubkey", remove_signatory->pubkey.to_hexstring(),
-                           allocator);
+        document.AddMember(
+            "account_id", remove_signatory->account_id, allocator);
+        document.AddMember(
+            "pubkey", remove_signatory->pubkey.to_hexstring(), allocator);
 
         return document;
       }
@@ -334,20 +366,20 @@ namespace iroha {
 
         document.SetObject();
         document.AddMember("command_type", "TransferAsset", allocator);
-        document.AddMember("src_account_id", transfer_asset->src_account_id,
-                           allocator);
-        document.AddMember("dest_account_id", transfer_asset->dest_account_id,
-                           allocator);
+        document.AddMember(
+            "src_account_id", transfer_asset->src_account_id, allocator);
+        document.AddMember(
+            "dest_account_id", transfer_asset->dest_account_id, allocator);
         document.AddMember("asset_id", transfer_asset->asset_id, allocator);
-        document.AddMember("description", transfer_asset->description,
-                           allocator);
+        document.AddMember(
+            "description", transfer_asset->description, allocator);
 
         Value amount;
         amount.SetObject();
-        amount.AddMember("value", transfer_asset->amount.getIntValue().str(),
-                         allocator);
-        amount.AddMember("precision", transfer_asset->amount.getPrecision(),
-                         allocator);
+        amount.AddMember(
+            "value", transfer_asset->amount.getIntValue().str(), allocator);
+        amount.AddMember(
+            "precision", transfer_asset->amount.getPrecision(), allocator);
 
         document.AddMember("amount", amount, allocator);
 
