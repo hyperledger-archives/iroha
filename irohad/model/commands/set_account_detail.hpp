@@ -32,9 +32,9 @@ namespace iroha {
 
       SetAccountDetail() {}
 
-      SetAccountDetail(std::string account_id,
-                       std::string key,
-                       std::string value)
+      SetAccountDetail(const std::string &account_id,
+                       const std::string &key,
+                       const std::string &value)
           : account_id(account_id), key(key), value(value) {}
     };
 
