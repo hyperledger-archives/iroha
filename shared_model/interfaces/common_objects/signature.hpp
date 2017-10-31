@@ -64,11 +64,11 @@ namespace shared_model {
       }
 
       std::string toString() const override {
-        detail::PrettyStringBuilder()
-            .initString("Signature")
-            .appendField("publicKey", publicKey().hex())
-            .appendField("signedHash", signedHash().hex())
-            .finalizeAndGetResult();
+        return detail::PrettyStringBuilder()
+            .init("Signature")
+            .append("publicKey", publicKey().hex())
+            .append("signedHash", signedHash().hex())
+            .finalize();
       }
     };
   }  // namespace interface

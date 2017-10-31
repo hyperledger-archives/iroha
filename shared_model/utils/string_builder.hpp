@@ -32,9 +32,11 @@ namespace shared_model {
        * Initializes new string with a provided name
        * @param name - name to initialize
        */
-      PrettyStringBuilder &initString(const std::string &name) {
-        result_.append(name + initSeparator + spaceSeparator
-                       + beginBlockMarker);
+      PrettyStringBuilder &init(const std::string &name) {
+        result_.append(name);
+        result_.append(initSeparator);
+        result_.append(spaceSeparator);
+        result_.append(beginBlockMarker);
         return *this;
       }
 
@@ -59,12 +61,13 @@ namespace shared_model {
        * @param name - field name to append
        * @param value - field value
        */
-      PrettyStringBuilder &appendField(const std::string &name,
-                                       const std::string &value) {
+      PrettyStringBuilder &append(const std::string &name,
+                                  const std::string &value) {
         result_.append(name);
         result_.append(keyValueSeparator);
         result_.append(value);
-        result_.append(singleFieldsSeparator + spaceSeparator);
+        result_.append(singleFieldsSeparator);
+        result_.append(spaceSeparator);
         return *this;
       }
 
@@ -72,7 +75,7 @@ namespace shared_model {
        * Appends new single value to string
        * @param value - value to append
        */
-      PrettyStringBuilder &appendField(const std::string &value) {
+      PrettyStringBuilder &append(const std::string &value) {
         result_.append(value);
         result_.append(spaceSeparator);
         return *this;
@@ -86,10 +89,10 @@ namespace shared_model {
        * @param t - transformation function
        */
       template <typename Collection, typename Transform>
-      PrettyStringBuilder &appendCollection(Collection c, Transform t) {
+      PrettyStringBuilder &appendAll(Collection c, Transform t) {
         insertLevel();
         std::for_each(c.begin(), c.end(), [this, &t](auto &val) {
-          this->appendField(t(val));
+          this->append(t(val));
         });
         removeLevel();
         return *this;
@@ -99,7 +102,7 @@ namespace shared_model {
        * Finalizes appending and returns constructed string.
        * @return resulted string
        */
-      std::string finalizeAndGetResult() {
+      std::string finalize() {
         result_.append(endBlockMarker);
         return result_;
       }

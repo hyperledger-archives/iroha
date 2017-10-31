@@ -27,6 +27,8 @@
 namespace shared_model {
   namespace interface {
 
+    using SigWrapper = detail::PolymorphicWrapper<interface::Signature>;
+
     /**
      * Interface provides signatures and adding them to model object
      * @tparam Model - your new style model
@@ -72,26 +74,18 @@ namespace shared_model {
 
 namespace std {
   /**
-   * Hash for SignatureSetType. It's required because std::unordered_set uses
-   * hash inside and it should be declared explicitly for user-defined types.
-   */
-
-  using SigWrapper = shared_model::detail::
-      PolymorphicWrapper<shared_model::interface::Signature>;
-
-  /**
    * Hash class for SigWrapper type. It's required since std::unordered_set uses
    * hash inside and it should be declared explicitly for user-defined types.
    */
   template <>
-  struct hash<SigWrapper> {
+  struct hash<shared_model::interface::SigWrapper> {
     /**
      * Operator which actually calculates hash. Uses boost::hash_combine to
      * calculate hash from several fields.
      * @param sig - item to find hash from
      * @return calculated hash
      */
-    size_t operator()(const SigWrapper &sig) const {
+    size_t operator()(const shared_model::interface::SigWrapper &sig) const {
       std::size_t seed = 0;
       boost::hash_combine(seed, sig->publicKey().blob());
       boost::hash_combine(seed, sig->signedHash().blob());

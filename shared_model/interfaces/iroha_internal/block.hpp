@@ -89,21 +89,19 @@ namespace shared_model {
       }
 
       std::string toString() const override {
-        detail::PrettyStringBuilder()
-            .initString("Block")
-            .appendField("hash", hash().hex())
-            .appendField("height", std::to_string(height()))
-            .appendField("prevHash", prevHash().hex())
-            .appendField("txsNumber", std::to_string(txsNumber()))
-            .appendField("merkleRoot", merkleRoot().hex())
-            .appendField("createdtime", std::to_string(createdTime()))
-            .appendField("transactions")
-            .appendCollection(transactions(),
-                              [](auto &tx) { return tx->toString(); })
-            .appendField("signatures")
-            .appendCollection(signatures(),
-                              [](auto &sig) { return sig->toString(); })
-            .finalizeAndGetResult();
+        return detail::PrettyStringBuilder()
+            .init("Block")
+            .append("hash", hash().hex())
+            .append("height", std::to_string(height()))
+            .append("prevHash", prevHash().hex())
+            .append("txsNumber", std::to_string(txsNumber()))
+            .append("merkleRoot", merkleRoot().hex())
+            .append("createdtime", std::to_string(createdTime()))
+            .append("transactions")
+            .appendAll(transactions(), [](auto &tx) { return tx->toString(); })
+            .append("signatures")
+            .appendAll(signatures(), [](auto &sig) { return sig->toString(); })
+            .finalize();
       }
     };
 

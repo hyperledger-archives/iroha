@@ -100,20 +100,19 @@ namespace shared_model {
       }
 
       std::string toString() const {
-        detail::PrettyStringBuilder()
-            .initString("Transaction")
-            .appendField("hash", hash().hex())
-            .appendField("txCounter", std::to_string(transactionCounter()))
-            .appendField("creatorAccountId", creatorAccountId())
-            .appendField("quorum", std::to_string(quorum()))
-            .appendField("createdTime", std::to_string(createdTime()))
-            .appendField("commands")
-            .appendCollection(commands(),
-                              [](auto &command) { return command->toString(); })
-            .appendField("signatures")
-            .appendCollection(signatures(),
-                              [](auto &sig) { return sig->toString(); })
-            .finalizeAndGetResult();
+        return detail::PrettyStringBuilder()
+            .init("Transaction")
+            .append("hash", hash().hex())
+            .append("txCounter", std::to_string(transactionCounter()))
+            .append("creatorAccountId", creatorAccountId())
+            .append("quorum", std::to_string(quorum()))
+            .append("createdTime", std::to_string(createdTime()))
+            .append("commands")
+            .appendAll(commands(),
+                       [](auto &command) { return command->toString(); })
+            .append("signatures")
+            .appendAll(signatures(), [](auto &sig) { return sig->toString(); })
+            .finalize();
       }
     };
 
