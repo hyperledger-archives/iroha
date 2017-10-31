@@ -80,8 +80,7 @@ namespace std {
       PolymorphicWrapper<shared_model::interface::Signature>;
 
   /**
-   * Hash class for SigWrapper type. It's required because std::unordered_set
-   * uses
+   * Hash class for SigWrapper type. It's required since std::unordered_set uses
    * hash inside and it should be declared explicitly for user-defined types.
    */
   template <>

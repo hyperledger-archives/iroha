@@ -64,8 +64,8 @@ namespace shared_model {
       }
 
       std::string toString() const override {
-        detail::PrettyStringBuilder builder;
-        return builder.initString("Signature")
+        detail::PrettyStringBuilder()
+            .initString("Signature")
             .appendField("publicKey", publicKey().hex())
             .appendField("signedHash", signedHash().hex())
             .finalizeAndGetResult();

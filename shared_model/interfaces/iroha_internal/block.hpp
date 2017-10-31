@@ -89,8 +89,8 @@ namespace shared_model {
       }
 
       std::string toString() const override {
-        detail::PrettyStringBuilder builder;
-        return builder.initString("Block")
+        detail::PrettyStringBuilder()
+            .initString("Block")
             .appendField("hash", hash().hex())
             .appendField("height", std::to_string(height()))
             .appendField("prevHash", prevHash().hex())

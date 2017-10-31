@@ -100,8 +100,8 @@ namespace shared_model {
       }
 
       std::string toString() const {
-        detail::PrettyStringBuilder builder;
-        return builder.initString("Transaction")
+        detail::PrettyStringBuilder()
+            .initString("Transaction")
             .appendField("hash", hash().hex())
             .appendField("txCounter", std::to_string(transactionCounter()))
             .appendField("creatorAccountId", creatorAccountId())
