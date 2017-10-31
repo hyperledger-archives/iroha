@@ -26,6 +26,7 @@
 #include "interfaces/primitive.hpp"
 #include "interfaces/signable.hpp"
 #include "model/transaction.hpp"
+#include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -54,15 +55,15 @@ namespace shared_model {
       virtual TxCounterType transactionCounter() const = 0;
 
       /// Type of command
-      using CommandType = Command;
+      using CommandType = detail::PolymorphicWrapper<Command>;
 
       /// Type of ordered collection of commands
-      using CommnadsType = std::vector<Command>;
+      using CommandsType = std::vector<CommandType>;
 
       /**
        * @return attached commands
        */
-      virtual CommnadsType &commands() const = 0;
+      virtual const CommandsType &commands() const = 0;
 
       /// Quorum type
       using QuorumType = uint8_t;
@@ -71,21 +72,47 @@ namespace shared_model {
        * Quorum means how much signatures of account required for performing
        * transaction.
        */
-      virtual const QuorumType &quorum() const;
-
-      /**
-       * Equality of transactions means equality of hashes only.
-       * This invariant useful for checking transaction in fast way.
-       * @param rhs - other transaction.
-       * @return true if hashes equal.
-       */
-      bool operator==(const Transaction &rhs) const override {
-        return this->hash() == rhs.hash();
-      }
+      virtual const QuorumType &quorum() const = 0;
 
       iroha::model::Transaction *makeOldModel() const {
-        // TODO implement conversion to old style transaction
-        return nullptr;
+        iroha::model::Transaction *oldStyleTransaction =
+            new iroha::model::Transaction();
+        oldStyleTransaction->created_ts = createdTime();
+        oldStyleTransaction->creator_account_id = creatorAccountId();
+        oldStyleTransaction->tx_counter = transactionCounter();
+
+        std::for_each(commands().begin(),
+                      commands().end(),
+                      [oldStyleTransaction](auto &command) {
+                        oldStyleTransaction->commands.emplace_back(
+                            std::shared_ptr<iroha::model::Command>(
+                                command->makeOldModel()));
+                      });
+
+        std::for_each(signatures().begin(),
+                      signatures().end(),
+                      [oldStyleTransaction](auto &sig) {
+                        oldStyleTransaction->signatures.emplace_back(
+                            *sig->makeOldModel());
+                      });
+
+        return oldStyleTransaction;
+      }
+
+      std::string toString() const {
+        return detail::PrettyStringBuilder()
+            .init("Transaction")
+            .append("hash", hash().hex())
+            .append("txCounter", std::to_string(transactionCounter()))
+            .append("creatorAccountId", creatorAccountId())
+            .append("quorum", std::to_string(quorum()))
+            .append("createdTime", std::to_string(createdTime()))
+            .append("commands")
+            .appendAll(commands(),
+                       [](auto &command) { return command->toString(); })
+            .append("signatures")
+            .appendAll(signatures(), [](auto &sig) { return sig->toString(); })
+            .finalize();
       }
     };
 

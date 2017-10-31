@@ -15,15 +15,55 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_PROPOSAL_HPP
-#define IROHA_PROPOSAL_HPP
+#include "interfaces/hashable.hpp"
+#include "interfaces/transaction.hpp"
+#include "model/proposal.hpp"
+#include "utils/string_builder.hpp"
+
+#ifndef IROHA_SHARED_MODEL_PROPOSAL_HPP
+#define IROHA_SHARED_MODEL_PROPOSAL_HPP
 namespace shared_model {
   namespace interface {
 
-    class Proposal {
-      // TODO implement
+    class Proposal : public Hashable<Proposal, iroha::model::Proposal> {
+      /// Type of a single Transaction
+      using TransactionType = detail::PolymorphicWrapper<Transaction>;
+
+      /// Type of proposal transactions' collection
+      using TransactionsCollectionType = std::vector<TransactionType>;
+
+      /**
+       * @return collection of proposal's transactions
+       */
+      virtual const TransactionsCollectionType &transactions() const = 0;
+
+      /**
+       * @return number of proposal
+       */
+      virtual types::HeightType &height() const = 0;
+
+      iroha::model::Proposal *makeOldModel() const override {
+        std::vector<iroha::model::Transaction> txs;
+        std::for_each(
+            transactions().begin(), transactions().end(), [&txs](auto &tx) {
+              txs.emplace_back(*tx->makeOldModel());
+            });
+        iroha::model::Proposal *oldStyleProposal =
+            new iroha::model::Proposal(txs);
+        oldStyleProposal->height = height();
+        return oldStyleProposal;
+      }
+
+      std::string toString() const override {
+        return detail::PrettyStringBuilder()
+            .init("Proposal")
+            .append("height", std::to_string(height()))
+            .append("transactions")
+            .appendAll(transactions(), [](auto &tx) { return tx->toString(); })
+            .finalize();
+      }
     };
 
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_PROPOSAL_HPP
+#endif  // IROHA_SHARED_MODEL_PROPOSAL_HPP

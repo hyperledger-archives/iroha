@@ -18,11 +18,16 @@
 #ifndef IROHA_SIGNABLE_HPP
 #define IROHA_SIGNABLE_HPP
 
+#include <boost/functional/hash.hpp>
+#include <unordered_set>
 #include "interfaces/common_objects/signature.hpp"
 #include "interfaces/hashable.hpp"
+#include "interfaces/polymorphic_wrapper.hpp"
 
 namespace shared_model {
   namespace interface {
+
+    using SigWrapper = detail::PolymorphicWrapper<interface::Signature>;
 
     /**
      * Interface provides signatures and adding them to model object
@@ -34,10 +39,15 @@ namespace shared_model {
     class Signable : public Hashable<Model, OldModel> {
      public:
       /// Type of transaction signature
-      using SignatureType = Signature;
+      using SignatureType = detail::PolymorphicWrapper<Signature>;
 
       /// Type of set of signatures
-      using SignatureSetType = std::unordered_set<const SignatureType>;
+      /**
+       * Note: we can't use const SignatureType due to unordered_set
+       * limitations: it requires to have write access for elements for some
+       * internal operations.
+       */
+      using SignatureSetType = std::unordered_set<SignatureType>;
 
       /**
        * @return attached signatures
@@ -61,4 +71,27 @@ namespace shared_model {
     };
   }  // namespace interface
 }  // namespace shared_model
+
+namespace std {
+  /**
+   * Hash class for SigWrapper type. It's required since std::unordered_set uses
+   * hash inside and it should be declared explicitly for user-defined types.
+   */
+  template <>
+  struct hash<shared_model::interface::SigWrapper> {
+    /**
+     * Operator which actually calculates hash. Uses boost::hash_combine to
+     * calculate hash from several fields.
+     * @param sig - item to find hash from
+     * @return calculated hash
+     */
+    size_t operator()(const shared_model::interface::SigWrapper &sig) const {
+      std::size_t seed = 0;
+      boost::hash_combine(seed, sig->publicKey().blob());
+      boost::hash_combine(seed, sig->signedHash().blob());
+      return seed;
+    }
+  };
+}
+
 #endif  // IROHA_SIGNABLE_HPP

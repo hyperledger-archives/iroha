@@ -18,6 +18,8 @@
 #ifndef IROHA_POLYMORPHIC_WRAPPER_HPP
 #define IROHA_POLYMORPHIC_WRAPPER_HPP
 
+#include <memory>
+
 namespace shared_model {
   namespace detail {
 

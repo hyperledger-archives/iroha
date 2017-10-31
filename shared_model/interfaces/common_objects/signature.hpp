@@ -18,8 +18,10 @@
 #ifndef IROHA_SHARED_MODEL_SIGNATURE_HPP
 #define IROHA_SHARED_MODEL_SIGNATURE_HPP
 
+#include "interfaces/common_objects/hash.hpp"
 #include "interfaces/primitive.hpp"
 #include "model/signature.hpp"
+#include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -37,12 +39,12 @@ namespace shared_model {
       /**
        * @return public key of signatory
        */
-      virtual const HashType &publicKey() const;
+      virtual const HashType &publicKey() const = 0;
 
       /**
        * @return signed hash of message
        */
-      virtual const HashType &signedHash() const;
+      virtual const HashType &signedHash() const = 0;
 
       bool operator==(const Signature &rhs) const override {
         return this->publicKey() == rhs.publicKey()
@@ -50,8 +52,23 @@ namespace shared_model {
       }
 
       OldModelType *makeOldModel() const override {
-        // todo implement
-        return nullptr;
+        iroha::model::Signature *oldStyleSignature =
+            new iroha::model::Signature();
+        oldStyleSignature->signature =
+            iroha::model::Signature::SignatureType::from_string(
+                signedHash().toString());
+        oldStyleSignature->pubkey =
+            iroha::model::Signature::KeyType::from_string(
+                publicKey().toString());
+        return oldStyleSignature;
+      }
+
+      std::string toString() const override {
+        return detail::PrettyStringBuilder()
+            .init("Signature")
+            .append("publicKey", publicKey().hex())
+            .append("signedHash", signedHash().hex())
+            .finalize();
       }
     };
   }  // namespace interface
