@@ -79,8 +79,19 @@ namespace std {
   using SigWrapper = shared_model::detail::
       PolymorphicWrapper<shared_model::interface::Signature>;
 
+  /**
+   * Hash class for SigWrapper type. It's required because std::unordered_set
+   * uses
+   * hash inside and it should be declared explicitly for user-defined types.
+   */
   template <>
   struct hash<SigWrapper> {
+    /**
+     * Operator which actually calculates hash. Uses boost::hash_combine to
+     * calculate hash from several fields.
+     * @param sig - item to find hash from
+     * @return calculated hash
+     */
     size_t operator()(const SigWrapper &sig) const {
       std::size_t seed = 0;
       boost::hash_combine(seed, sig->publicKey().blob());

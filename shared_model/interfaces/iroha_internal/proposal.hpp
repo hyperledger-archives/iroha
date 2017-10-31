@@ -55,18 +55,13 @@ namespace shared_model {
       }
 
       std::string toString() const override {
-        util::PrettyStringBuilder builder;
-        builder.initString("Proposal");
-        builder.appendField("height", std::to_string(height()));
-        builder.appendField("transactions");
-        builder.insertLevel();
-        std::for_each(
-            transactions().begin(), transactions().end(), [&builder](auto &tx) {
-              builder.appendField(tx->toString());
-            });
-        builder.removeLevel();
-        builder.finalizeString();
-        return builder.getResult();
+        detail::PrettyStringBuilder builder;
+        return builder.initString("Proposal")
+            .appendField("height", std::to_string(height()))
+            .appendField("transactions")
+            .appendCollection(transactions(),
+                              [](auto &tx) { return tx->toString(); })
+            .finalizeAndGetResult();
       }
     };
 

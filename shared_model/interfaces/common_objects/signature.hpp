@@ -18,7 +18,6 @@
 #ifndef IROHA_SHARED_MODEL_SIGNATURE_HPP
 #define IROHA_SHARED_MODEL_SIGNATURE_HPP
 
-#include "common/types.hpp"
 #include "interfaces/common_objects/hash.hpp"
 #include "interfaces/primitive.hpp"
 #include "model/signature.hpp"
@@ -56,19 +55,20 @@ namespace shared_model {
         iroha::model::Signature *oldStyleSignature =
             new iroha::model::Signature();
         oldStyleSignature->signature =
-            iroha::sig_t::from_string(signedHash().toString());
+            iroha::model::Signature::SignatureType::from_string(
+                signedHash().toString());
         oldStyleSignature->pubkey =
-            iroha::pubkey_t::from_string(publicKey().toString());
+            iroha::model::Signature::KeyType::from_string(
+                publicKey().toString());
         return oldStyleSignature;
       }
 
       std::string toString() const override {
-        util::PrettyStringBuilder builder;
-        builder.initString("Signature");
-        builder.appendField("publicKey", publicKey().hex());
-        builder.appendField("signedHash", signedHash().hex());
-        builder.finalizeString();
-        return builder.getResult();
+        detail::PrettyStringBuilder builder;
+        return builder.initString("Signature")
+            .appendField("publicKey", publicKey().hex())
+            .appendField("signedHash", signedHash().hex())
+            .finalizeAndGetResult();
       }
     };
   }  // namespace interface

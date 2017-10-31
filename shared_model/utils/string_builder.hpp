@@ -18,10 +18,11 @@
 #ifndef IROHA_SHARED_MODEL_STRING_BUILDER_HPP
 #define IROHA_SHARED_MODEL_STRING_BUILDER_HPP
 
+#include <algorithm>
 #include <string>
 
 namespace shared_model {
-  namespace util {
+  namespace detail {
     /**
      * A simple string builder class for building pretty looking strings
      */
@@ -29,52 +30,88 @@ namespace shared_model {
      public:
       /**
        * Initializes new string with a provided name
-       * @param name
+       * @param name - name to initialize
        */
-      void initString(const std::string &name) { result_.append(name + ": ["); }
+      PrettyStringBuilder initString(const std::string &name) {
+        result_.append(name + initSeparator + spaceSeparator
+                       + beginBlockMarker);
+        return *this;
+      }
 
       /**
        * Inserts new level marker
        */
-      void insertLevel() { result_.append("["); }
+      PrettyStringBuilder insertLevel() {
+        result_.append(beginBlockMarker);
+        return *this;
+      }
 
       /**
        * Closes new level marker
        */
-      void removeLevel() { result_.append("]"); }
+      PrettyStringBuilder removeLevel() {
+        result_.append(endBlockMarker);
+        return *this;
+      }
 
       /**
-       * Appends new field to string
+       * Appends new field to string as a "name=value" pair
+       * @param name - field name to append
+       * @param value - field value
        */
-      void appendField(const std::string &name, const std::string &value) {
+      PrettyStringBuilder appendField(const std::string &name,
+                                      const std::string &value) {
         result_.append(name);
-        result_.append("=");
+        result_.append(keyValueSeparator);
         result_.append(value);
-        result_.append(", ");
+        result_.append(singleFieldsSeparator + spaceSeparator);
+        return *this;
       }
 
       /**
-       * Appends new field to string
+       * Appends new single value to string
+       * @param value - value to append
        */
-      void appendField(const std::string &name) {
-        result_.append(name);
-        result_.append(" ");
+      PrettyStringBuilder appendField(const std::string &value) {
+        result_.append(value);
+        result_.append(spaceSeparator);
+        return *this;
       }
 
       /**
-       * Finishes string construction
+       * Appends a new collection to string
+       * @tparam Collection - type of collection
+       * @tparam Transform - type of transformation function
+       * @param c - collection to append
+       * @param t - transformation function
        */
-      void finalizeString() { result_.append("]"); }
+      template <typename Collection, typename Transform>
+      PrettyStringBuilder appendCollection(Collection c, Transform t) {
+        insertLevel();
+        std::for_each(c.begin(), c.end(), [this, &t](auto &val) {
+          this->appendField(t(val));
+        });
+        removeLevel();
+        return *this;
+      }
 
       /**
-       * Returns constructed string. For the best result call after
-       * finalizeString().
-       * @return
+       * Finalizes appending and returns constructed string.
+       * @return resulted string
        */
-      std::string getResult() const { return result_; }
+      std::string finalizeAndGetResult() {
+        result_.append(endBlockMarker);
+        return result_;
+      }
 
      private:
       std::string result_;
+      const std::string beginBlockMarker = "[";
+      const std::string endBlockMarker = "]";
+      const std::string keyValueSeparator = "=";
+      const std::string singleFieldsSeparator = ",";
+      const std::string initSeparator = ":";
+      const std::string spaceSeparator = " ";
     };
   }
 }

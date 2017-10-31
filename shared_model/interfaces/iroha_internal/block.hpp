@@ -67,10 +67,10 @@ namespace shared_model {
         iroha::model::Block *oldStyleBlock = new iroha::model::Block();
         oldStyleBlock->height = height();
         oldStyleBlock->prev_hash =
-            iroha::hash256_t::from_string(prevHash().toString());
+            iroha::model::Block::HashType::from_string(prevHash().toString());
         oldStyleBlock->txs_number = txsNumber();
         oldStyleBlock->merkle_root =
-            iroha::hash256_t::from_string(merkleRoot().toString());
+            iroha::model::Block::HashType::from_string(merkleRoot().toString());
         std::for_each(
             transactions().begin(),
             transactions().end(),
@@ -78,7 +78,8 @@ namespace shared_model {
               oldStyleBlock->transactions.emplace_back(*tx->makeOldModel());
             });
         oldStyleBlock->created_ts = createdTime();
-        oldStyleBlock->hash = iroha::hash256_t::from_string(hash().toString());
+        oldStyleBlock->hash =
+            iroha::model::Block::HashType::from_string(hash().toString());
         std::for_each(signatures().begin(),
                       signatures().end(),
                       [oldStyleBlock](auto &sig) {
@@ -88,30 +89,21 @@ namespace shared_model {
       }
 
       std::string toString() const override {
-        util::PrettyStringBuilder builder;
-        builder.initString("Block");
-        builder.appendField("hash", hash().hex());
-        builder.appendField("height", std::to_string(height()));
-        builder.appendField("prevHash", prevHash().hex());
-        builder.appendField("txsNumber", std::to_string(txsNumber()));
-        builder.appendField("merkleRoot", merkleRoot().hex());
-        builder.appendField("createdtime", std::to_string(createdTime()));
-        builder.appendField("transactions");
-        builder.insertLevel();
-        std::for_each(
-            transactions().begin(), transactions().end(), [&builder](auto &tx) {
-              builder.appendField(tx->toString());
-            });
-        builder.removeLevel();
-        builder.appendField("signatures");
-        builder.insertLevel();
-        std::for_each(
-            signatures().begin(), signatures().end(), [&builder](auto &sig) {
-              builder.appendField(sig->toString());
-            });
-        builder.removeLevel();
-        builder.finalizeString();
-        return builder.getResult();
+        detail::PrettyStringBuilder builder;
+        return builder.initString("Block")
+            .appendField("hash", hash().hex())
+            .appendField("height", std::to_string(height()))
+            .appendField("prevHash", prevHash().hex())
+            .appendField("txsNumber", std::to_string(txsNumber()))
+            .appendField("merkleRoot", merkleRoot().hex())
+            .appendField("createdtime", std::to_string(createdTime()))
+            .appendField("transactions")
+            .appendCollection(transactions(),
+                              [](auto &tx) { return tx->toString(); })
+            .appendField("signatures")
+            .appendCollection(signatures(),
+                              [](auto &sig) { return sig->toString(); })
+            .finalizeAndGetResult();
       }
     };
 

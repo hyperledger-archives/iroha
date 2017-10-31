@@ -100,29 +100,20 @@ namespace shared_model {
       }
 
       std::string toString() const {
-        util::PrettyStringBuilder builder;
-        builder.initString("Transaction");
-        builder.appendField("hash", hash().hex());
-        builder.appendField("txCounter", std::to_string(transactionCounter()));
-        builder.appendField("creatorAccountId", creatorAccountId());
-        builder.appendField("quorum", std::to_string(quorum()));
-        builder.appendField("createdTime", std::to_string(createdTime()));
-        builder.appendField("commands");
-        builder.insertLevel();
-        std::for_each(
-            commands().begin(), commands().end(), [&builder](auto &command) {
-              builder.appendField(command->toString());
-            });
-        builder.removeLevel();
-        builder.appendField("signatures");
-        builder.insertLevel();
-        std::for_each(
-            signatures().begin(), signatures().end(), [&builder](auto &sig) {
-              builder.appendField(sig->toString());
-            });
-        builder.removeLevel();
-        builder.finalizeString();
-        return builder.getResult();
+        detail::PrettyStringBuilder builder;
+        return builder.initString("Transaction")
+            .appendField("hash", hash().hex())
+            .appendField("txCounter", std::to_string(transactionCounter()))
+            .appendField("creatorAccountId", creatorAccountId())
+            .appendField("quorum", std::to_string(quorum()))
+            .appendField("createdTime", std::to_string(createdTime()))
+            .appendField("commands")
+            .appendCollection(commands(),
+                              [](auto &command) { return command->toString(); })
+            .appendField("signatures")
+            .appendCollection(signatures(),
+                              [](auto &sig) { return sig->toString(); })
+            .finalizeAndGetResult();
       }
     };
 
