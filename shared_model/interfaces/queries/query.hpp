@@ -85,26 +85,30 @@ namespace shared_model {
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("Query")
-            .append("creator_id", creatorAccountId())
-            .append("query_counter", std::to_string(this->queryCounter()))
+            .append("creatorId", creatorAccountId())
+            .append("queryCounter", std::to_string(this->queryCounter()))
             .append(Signable::toString())
-            .append("domain_data",
-                    boost::apply_visitor(detail::ToStringVisitor(), get()))
+            .append(boost::apply_visitor(detail::ToStringVisitor(), get()))
             .finalize();
       }
 
       OldModelType *makeOldModel() const override {
-         auto old_model = boost::apply_visitor(
+        auto old_model = boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), get());
         old_model->creator_account_id = creatorAccountId();
         old_model->query_counter = queryCounter();
         // signature related
         old_model->created_ts = createdTime();
-        std::for_each(signatures().begin(), signatures().end(), [&old_model](auto &signature_wrapper) {
-          auto old_sig = signature_wrapper->makeOldModel();
-          old_model->signature = *old_sig;
-          delete old_sig;
-        });
+        std::for_each(signatures().begin(),
+                      signatures().end(),
+                      [&old_model](auto &signature_wrapper) {
+                        // for_each cycle will assign last signature for old
+                        // model. Also, if in new model absence at least one
+                        // signature, this part will be worked correctly.
+                        auto old_sig = signature_wrapper->makeOldModel();
+                        old_model->signature = *old_sig;
+                        delete old_sig;
+                      });
         return old_model;
       }
 
