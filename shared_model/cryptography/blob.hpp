@@ -15,35 +15,37 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_HASHABLE_HPP
-#define IROHA_HASHABLE_HPP
+#ifndef IROHA_SHARED_MODEL_BLOB_HPP
+#define IROHA_SHARED_MODEL_BLOB_HPP
 
-#include "cryptography/hash.hpp"
+#include <string>
 #include "interfaces/primitive.hpp"
+#include "model/signature.hpp"
 
 namespace shared_model {
-  namespace interface {
-    template <typename ModelType, typename OldModel>
-    class Hashable : public Primitive<ModelType, OldModel> {
+  namespace crypto {
+
+    /**
+     * Blob interface present user-friendly blob for working with low-level
+     * binary stuff
+     */
+    class Blob : public interface::Primitive<Blob, Blob> {
      public:
-      /// Type of hash
-      using HashType = crypto::Hash;
+      /**
+       * @return provides raw representation of blob
+       */
+      virtual const std::string &blob() const = 0;
 
       /**
-       * @return hash of object.
-       * Equality of hashes means equality of objects.
+       * @return provides human-readable representation of blob
        */
-      virtual const HashType &hash() const = 0;
+      virtual const std::string &hex() const = 0;
 
       /**
-       * Overriding operator== with equality hash semantics
-       * @param rhs - another model object
-       * @return true, if hashes are equal, false otherwise
+       * @return size of raw representation of blob
        */
-      bool operator==(const ModelType &rhs) const override {
-        return this->hash() == rhs.hash();
-      }
+      virtual size_t size() const = 0;
     };
-  }  // namespace interface
+  }  // namespace crypto
 }  // namespace shared_model
-#endif  // IROHA_HASHABLE_HPP
+#endif  // IROHA_SHARED_MODEL_BLOB_HPP

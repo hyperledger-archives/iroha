@@ -15,6 +15,6 @@
 add_subdirectory(backend)
 add_subdirectory(builders)
 add_subdirectory(converters)
-add_subdirectory(crypto)
+add_subdirectory(cryptography)
 add_subdirectory(interfaces)
 add_subdirectory(validators)

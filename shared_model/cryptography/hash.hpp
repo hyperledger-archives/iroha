@@ -18,34 +18,24 @@
 #ifndef IROHA_SHARED_MODEL_HASH_HPP
 #define IROHA_SHARED_MODEL_HASH_HPP
 
-#include <string>
-#include "interfaces/primitive.hpp"
-#include "model/signature.hpp"
+#include "cryptography/blob.hpp"
+#include "utils/string_builder.hpp"
 
 namespace shared_model {
-  namespace interface {
-
+  namespace crypto {
     /**
-     * Hash interface present user-friendly blob for working with low-level
-     * stuff, such as cryptography and object hashing
+     * A special class for storing hashes. Does not contain any special stuff.
      */
-    class Hash : public Primitive<Hash, Hash> {
+    class Hash : public Blob {
      public:
-      /**
-       * @return provides raw representation of hash
-       */
-      virtual const std::string &blob() const = 0;
-
-      /**
-       * @return provides human-readable representation of hash
-       */
-      virtual const std::string &hex() const = 0;
-
-      /**
-       * @return size of raw representation of hash
-       */
-      virtual size_t size() const = 0;
+      std::string toString() const override {
+        return detail::PrettyStringBuilder()
+            .init("Hash")
+            .append(Blob::hex())
+            .finalize();
+      }
     };
-  }  // namespace interface
-}  // namespace shared_model
+  }
+}
+
 #endif  // IROHA_SHARED_MODEL_HASH_HPP
