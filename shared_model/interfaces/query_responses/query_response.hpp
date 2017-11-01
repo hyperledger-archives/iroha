@@ -15,41 +15,42 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_COMMAND_HPP
-#define IROHA_SHARED_MODEL_COMMAND_HPP
+#ifndef IROHA_SHARED_MODEL_QUERY_RESPONSE_HPP
+#define IROHA_SHARED_MODEL_QUERY_RESPONSE_HPP
 
 #include <boost/variant.hpp>
-#include <utility>
-#include "interfaces/commands/add_asset_quantity.hpp"
-#include "interfaces/polymorphic_wrapper.hpp"
-#include "interfaces/primitive.hpp"
-#include "interfaces/visitor_apply_for_all.hpp"
-#include "model/command.hpp"
+#include "interfaces/hashable.hpp"
+#include "interfaces/query_responses/account_assets_response.hpp"
+#include "model/query_response.hpp"
 
 namespace shared_model {
   namespace interface {
-
     /**
-     * Class provides commands container for all commands in system.
-     * General note: this class is container for commands, not a base class.
+     * Class QueryResponse(qr) provides container with concrete query responses
+     * available in the system.
+     * General note: this class is container for QRs but not a base class.
+     * Architecture note: query responses should be attached to following query.
+     * To perform it make QueryResponse hashable, thus, in hash() method
+     * expects hash of the following query.
      */
-    class Command : public Primitive<Command, iroha::model::Command> {
+    class QueryResponse
+        : public Hashable<QueryResponse, iroha::model::QueryResponse> {
      private:
       /// Shortcut type for polymorphic wrapper
       template <typename Value>
       using w = detail::PolymorphicWrapper<Value>;
 
      public:
-      /// Type of variant, that handle concrete command
-      using CommandVariantType = boost::variant<w<AddAssetQuantity>>;
+      /// Type of container with all concrete query response
+      using QueryResponseVariantType = boost::variant<w<AccountAssetResponse>>;
 
-      /// Types of concrete commands, in attached variant
-      using CommandListType = CommandVariantType::types;
+      /// Type of all available query responses
+      using QueryResponseListType = QueryResponseVariantType::types;
 
       /**
-       * @return reference to const variant with concrete command
+       * @return reference to const variant with concrete qr
        */
-      virtual const CommandVariantType &get() const = 0;
+      virtual const QueryResponseVariantType &get() const = 0;
 
       // ------------------------| Primitive override |-------------------------
 
@@ -66,7 +67,6 @@ namespace shared_model {
         return this->get() == rhs.get();
       }
     };
-
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_COMMAND_HPP
+#endif  // IROHA_SHARED_MODEL_QUERY_RESPONSE_HPP

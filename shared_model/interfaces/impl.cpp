@@ -18,4 +18,5 @@
 #include "interfaces/iroha_internal/block.hpp"
 #include "interfaces/iroha_internal/proposal.hpp"
 #include "interfaces/queries/query.hpp"
+#include "interfaces/query_responses/query_response.hpp"
 #include "interfaces/transaction.hpp"
