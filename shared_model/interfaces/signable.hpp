@@ -95,10 +95,12 @@ namespace shared_model {
        * @param rhs - another model object
        * @return true, if objects totally equal
        */
-      virtual bool equals(const Model &rhs) {
+      virtual bool equals(const Model &rhs) const {
         return *this == rhs and this->signatures() == rhs.signatures()
             and this->createdTime() == rhs.createdTime();
       }
+
+      // ------------------------| Primitive override |-------------------------
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
