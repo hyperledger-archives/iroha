@@ -58,7 +58,7 @@ namespace shared_model {
         return boost::apply_visitor(detail::ToStringVisitor(), get());
       }
 
-      OldModelType *makeOldModel() const {
+      OldModelType *makeOldModel() const override {
         return boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), get());
       }

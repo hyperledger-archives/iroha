@@ -55,7 +55,7 @@ namespace shared_model {
                                               w<GetRolePermissions>,
                                               w<GetAccountAssetTransactions>,
                                               w<GetAccountTransactions>,
-                                              w<GetSignatories>>
+                                              w<GetSignatories>>;
 
       /// Types of concrete commands, in attached variant
       using QueryListType = QueryVariantType::types;

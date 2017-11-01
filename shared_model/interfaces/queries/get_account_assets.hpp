@@ -47,8 +47,11 @@ namespace shared_model {
       }
 
       std::string toString() const override {
-        // TODO 30/10/2017 kamilsa implement to string with builders
-        return Primitive::toString();
+        return detail::PrettyStringBuilder()
+            .init("GetAccountAssets")
+            .append("account_id", accountId())
+            .append("asset_id", assetId())
+            .finalize();
       }
     };
   }  // namespace interface

@@ -29,13 +29,10 @@ namespace shared_model {
      */
     class GetRoles : public Hashable<GetRoles, iroha::model::GetRoles> {
      public:
-      OldModelType *makeOldModel() const {
-        return new iroha::model::GetRoles;
-      }
+      OldModelType *makeOldModel() const { return new iroha::model::GetRoles; }
 
       std::string toString() const {
-        // TODO 30/10/2017 kamilsa implement to string with builders
-        return Primitive::toString();
+        return detail::PrettyStringBuilder().init("GetRoles").finalize();
       }
     };
 
@@ -58,8 +55,10 @@ namespace shared_model {
       }
 
       std::string toString() const override {
-        // TODO 30/10/2017 kamilsa implement to string with builders
-        return Primitive::toString();
+        return detail::PrettyStringBuilder()
+            .init("GetRolePermissions")
+            .append("role_id", roleId())
+            .finalize();
       }
     };
   }  // namespace interface

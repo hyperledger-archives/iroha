@@ -49,8 +49,11 @@ namespace shared_model {
       }
 
       std::string toString() const override {
-        // TODO 30/10/2017 kamilsa implement to string with builders
-        return Primitive::toString();
+        return detail::PrettyStringBuilder()
+            .init("GetAccountAssetTransactions")
+            .append("account_id", accountId())
+            .append("asset_id", assetId())
+            .finalize();
       }
     };
 
@@ -73,8 +76,10 @@ namespace shared_model {
       }
 
       virtual std::string toString() const override {
-        // TODO 30/10/2017 kamilsa implement to string with builders
-        return Primitive::toString();
+        return detail::PrettyStringBuilder()
+            .init("GetAccountTransactions")
+            .append("account_id", accountId())
+            .finalize();
       }
     };
   }  // namespace interface

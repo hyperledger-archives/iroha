@@ -100,7 +100,7 @@ namespace shared_model {
         return oldStyleTransaction;
       }
 
-      std::string toString() const {
+      std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("Transaction")
             .append("hash", hash().hex())
