@@ -19,7 +19,7 @@
 #include <endpoint.pb.h>
 #include <gtest/gtest.h>
 
-using namespace torii::cache;
+using namespace iroha::cache;
 using namespace iroha::protocol;
 
 const int typicalInsertAmount = 5;
@@ -30,12 +30,12 @@ const int typicalInsertAmount = 5;
  * @then amount of items in cache equals N
  */
 TEST(CacheTest, InsertValues) {
-  ToriiResponseCache cache;
+  Cache<std::string, ToriiResponse> cache;
   ASSERT_EQ(cache.getCacheItemCount(), 0);
   for (int i = 0; i < typicalInsertAmount; ++i) {
     ToriiResponse response;
     response.set_tx_status(TxStatus::STATELESS_VALIDATION_SUCCESS);
-    cache.addItem(response, "abcdefg" + std::to_string(i));
+    cache.addItem("abcdefg" + std::to_string(i), response);
   }
   ASSERT_EQ(cache.getCacheItemCount(), typicalInsertAmount);
 }
@@ -47,16 +47,16 @@ TEST(CacheTest, InsertValues) {
  * cache.getIndexSizeLow()
  */
 TEST(CacheTest, InsertMoreThanLimit) {
-  ToriiResponseCache cache;
+  Cache<std::string, ToriiResponse> cache;
   for (uint32_t i = 0; i < cache.getIndexSizeHigh(); ++i) {
     ToriiResponse response;
     response.set_tx_status(TxStatus::STATEFUL_VALIDATION_FAILED);
-    cache.addItem(response, "abcdefg" + std::to_string(i));
+    cache.addItem("abcdefg" + std::to_string(i), response);
   }
   ASSERT_EQ(cache.getCacheItemCount(), cache.getIndexSizeHigh());
   ToriiResponse resp;
   resp.set_tx_status(TxStatus::COMMITTED);
-  cache.addItem(resp, "1234");
+  cache.addItem("1234", resp);
   ASSERT_EQ(cache.getCacheItemCount(), cache.getIndexSizeLow());
 }
 
@@ -67,18 +67,18 @@ TEST(CacheTest, InsertMoreThanLimit) {
  * but their statuses should be updated
  */
 TEST(CacheTest, InsertSameHashes) {
-  ToriiResponseCache cache;
+  Cache<std::string, ToriiResponse> cache;
   for (int i = 0; i < typicalInsertAmount; ++i) {
     ToriiResponse response;
     response.set_tx_status(TxStatus::NOT_RECEIVED);
-    cache.addItem(response, std::to_string(i));
+    cache.addItem(std::to_string(i), response);
   }
   ToriiResponse resp;
   resp.set_tx_status(TxStatus::COMMITTED);
-  cache.addItem(resp, "0");
+  cache.addItem("0", resp);
   ASSERT_EQ(cache.getCacheItemCount(), typicalInsertAmount);
   ASSERT_EQ(cache.findItem("0")->tx_status(), TxStatus::COMMITTED);
-  cache.addItem(resp, "1");
+  cache.addItem("1", resp);
   ASSERT_EQ(cache.getCacheItemCount(), typicalInsertAmount);
   ASSERT_EQ(cache.findItem("1")->tx_status(), TxStatus::COMMITTED);
 }
@@ -90,13 +90,13 @@ TEST(CacheTest, InsertSameHashes) {
  * insertion
  */
 TEST(CacheTest, FindValues) {
-  ToriiResponseCache cache;
+  Cache<std::string, ToriiResponse> cache;
   auto item = cache.findItem("0");
   ASSERT_EQ(item, boost::none);
   for (int i = 0; i < typicalInsertAmount; ++i) {
     ToriiResponse response;
     response.set_tx_status(TxStatus::STATEFUL_VALIDATION_SUCCESS);
-    cache.addItem(response, std::to_string(i));
+    cache.addItem(std::to_string(i), response);
   }
   item = cache.findItem("2");
   ASSERT_NE(item, boost::none);
@@ -109,7 +109,7 @@ TEST(CacheTest, FindValues) {
  * @then item should not be found
  */
 TEST(CacheTest, FindInEmptyCache) {
-  ToriiResponseCache cache;
+  Cache<std::string, ToriiResponse> cache;
   auto item = cache.findItem("0");
   ASSERT_EQ(item, boost::none);
 }

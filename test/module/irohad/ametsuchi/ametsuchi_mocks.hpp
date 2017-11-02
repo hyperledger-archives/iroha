@@ -108,9 +108,6 @@ namespace iroha {
           getAccountTransactions,
           rxcpp::observable<model::Transaction>(const std::string &account_id));
       MOCK_METHOD1(
-          getTxByHash,
-          rxcpp::observable<model::Transaction>(const std::string &hash));
-      MOCK_METHOD1(
           getTxByHashSync,
           boost::optional<model::Transaction>(const std::string &hash));
       MOCK_METHOD2(

@@ -18,54 +18,49 @@
 #ifndef IROHA_CACHE_HPP
 #define IROHA_CACHE_HPP
 
-#include <endpoint.pb.h>
-#include <boost/optional.hpp>
-#include <list>
-#include <mutex>
-#include <string>
+#include "torii/cache/abstract_cache.hpp"
 
-namespace torii {
+namespace iroha {
   namespace cache {
-    /**
-     * Cache for torii responses.
-     * Internally it uses uses a map to cache tx statuses and linked list
-     * based index to remove oldest items when getIndexSizeHigh() is reached.
-     */
-    class ToriiResponseCache {
+    template <typename KeyType, typename ValueType>
+    class Cache
+        : public AbstractCache<KeyType, ValueType, Cache<KeyType, ValueType>> {
      public:
-      /**
-       * When amount of cache records reaches getIndexSizeHigh() a clean
-       * procedure is started until getIndexSizeLow() records left.
-       * Mostly done for tests but feel free to use anywhere if you need.
-       */
-      uint32_t getIndexSizeHigh() const;
-      uint32_t getIndexSizeLow() const;
+      uint32_t getIndexSizeHighImpl() const {
+        return MAX_HANDLER_MAP_SIZE_HIGH;
+      }
 
-      uint64_t getCacheItemCount() const;
+      uint32_t getIndexSizeLowImpl() const { return MAX_HANDLER_MAP_SIZE_LOW; }
 
-      /**
-       * Adds new item to cache. Note: cache doe not have a remove method,
-       * deletion performs automatically.
-       * Since every add operation can potentially lead to deletion,
-       * it should be protected by mutex.
-       * @param response - response status of transaction
-       * @param hash - hash of transaction
-       */
-      void addItem(const iroha::protocol::ToriiResponse &response,
-                   const std::string &hash);
+      uint32_t getCacheItemCountImpl() const {
+        return (uint32_t)handler_map_.size();
+      }
 
-      /**
-       * Performs a search for an item with a specific hash.
-       * @param hash - hash to find
-       * @return Optional of ToriiResponse
-       */
-      boost::optional<iroha::protocol::ToriiResponse> findItem(
-          const std::string &hash) const;
+      void addItemImpl(const KeyType &key, const ValueType &value) {
+        std::lock_guard<std::mutex> lock(handler_map_mutex_);
+        // elements with the same hash should be replaced
+        handler_map_[key] = value;
+        handler_map_index_.push_back(key);
+        if (handler_map_.size() > getIndexSizeHighImpl()) {
+          while (handler_map_.size() > getIndexSizeLowImpl()) {
+            handler_map_.erase(handler_map_index_.front());
+            handler_map_index_.pop_front();
+          }
+        }
+      }
+
+      boost::optional<ValueType> findItemImpl(const KeyType &key) const {
+        auto found = handler_map_.find(key);
+        if (found == handler_map_.end()) {
+          return boost::none;
+        } else {
+          return boost::make_optional<ValueType>(handler_map_.at(key));
+        }
+      }
 
      private:
-      std::unordered_map<std::string, iroha::protocol::ToriiResponse>
-          handler_map_;
-      std::list<std::string> handler_map_index_;
+      std::unordered_map<KeyType, ValueType> handler_map_;
+      std::list<KeyType> handler_map_index_;
       std::mutex handler_map_mutex_;
 
       /**

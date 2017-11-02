@@ -854,6 +854,12 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
   new_storage->dropStorage();
 }
 
+/**
+ * @given initialized storage
+ * @when insert block with 2 transactions in
+ * @then both of them are found with getTxByHashSync call by hash. Transaction
+ * with some other hash is not found.
+ */
 TEST_F(AmetsuchiTest, FindTxByHashTest) {
   auto storage =
       StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
@@ -911,30 +917,11 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
     storage->commit(std::move(ms));
   }
 
+  // TODO: 31.10.2017 luckychess move tx3hash case into a separate test after
+  // ametsuchi_test redesign
   auto tx1hash = iroha::hash(tx1).to_string();
   auto tx2hash = iroha::hash(tx2).to_string();
-
-  auto numberOfCalls = 0;
-
-  blocks->getTxByHash(tx1hash).subscribe([tx1hash, &numberOfCalls](auto tx) {
-    ++numberOfCalls;
-    EXPECT_EQ(iroha::hash(tx).to_string(), tx1hash);
-  });
-
-  blocks->getTxByHash(tx2hash).subscribe([tx2hash, &numberOfCalls](auto tx) {
-    ++numberOfCalls;
-    EXPECT_EQ(iroha::hash(tx).to_string(), tx2hash);
-  });
-
   auto tx3hash = "some garbage";
-
-  blocks->getTxByHash(tx3hash).subscribe([tx3hash, &numberOfCalls](auto tx) {
-    // should not be called
-    ++numberOfCalls;
-    EXPECT_EQ(iroha::hash(tx).to_string(), tx3hash);
-  });
-
-  ASSERT_EQ(numberOfCalls, 2);
 
   ASSERT_EQ(*blocks->getTxByHashSync(tx1hash), tx1);
   ASSERT_EQ(*blocks->getTxByHashSync(tx2hash), tx2);

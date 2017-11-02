@@ -13,7 +13,6 @@
 # limitations under the License.
 
 add_subdirectory(processor)
-add_subdirectory(cache)
 
 add_library(command_client command_client.cpp)
 target_link_libraries(command_client
@@ -32,6 +31,5 @@ target_link_libraries(torii_service
     endpoint
     stateless_validator
     model
-    cache
     logger
     )

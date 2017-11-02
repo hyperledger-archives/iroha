@@ -42,13 +42,6 @@ namespace iroha {
       rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
       transactionNotifier() override;
 
-      /**
-       * Request
-       * @param tx
-       * @return
-       */
-      bool findTxInBlockStore(std::shared_ptr<model::Transaction> tx);
-
      private:
       // connections
       std::shared_ptr<network::PeerCommunicationService> pcs_;

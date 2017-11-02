@@ -39,9 +39,6 @@ namespace iroha {
       rxcpp::observable<model::Transaction> getAccountAssetTransactions(
           const std::string &account_id, const std::string &asset_id) override;
 
-      rxcpp::observable<model::Transaction> getTxByHash(
-          const std::string &hash) override;
-
       boost::optional<model::Transaction> getTxByHashSync(
           const std::string &hash) override;
 
@@ -51,14 +48,16 @@ namespace iroha {
        * @param account_id
        * @return vector of block ids
        */
-      std::vector<uint64_t> getBlockIds(const std::string &account_id);
+      std::vector<iroha::model::Block::BlockHeightType> getBlockIds(
+          const std::string &account_id);
 
       /**
        * Returns block id which contains transaction with a given hash
        * @param hash - hash of transaction
        * @return block id or boost::none
        */
-      boost::optional<uint64_t> getBlockId(const std::string &hash);
+      boost::optional<iroha::model::Block::BlockHeightType> getBlockId(
+          const std::string &hash);
 
       /**
        * creates callback to lrange query to redis to supply result to

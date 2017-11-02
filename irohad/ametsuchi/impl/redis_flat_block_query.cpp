@@ -25,8 +25,8 @@ namespace iroha {
                                              FlatFile &file_store)
         : FlatFileBlockQuery(file_store), client_(client) {}
 
-    std::vector<uint64_t> RedisFlatBlockQuery::getBlockIds(
-        const std::string &account_id) {
+    std::vector<iroha::model::Block::BlockHeightType>
+    RedisFlatBlockQuery::getBlockIds(const std::string &account_id) {
       std::vector<uint64_t> block_ids;
       client_.lrange(
           account_id, 0, -1, [this, &block_ids](cpp_redis::reply &reply) {
@@ -43,8 +43,8 @@ namespace iroha {
       return block_ids;
     }
 
-    boost::optional<uint64_t> RedisFlatBlockQuery::getBlockId(
-        const std::string &hash) {
+    boost::optional<iroha::model::Block::BlockHeightType>
+    RedisFlatBlockQuery::getBlockId(const std::string &hash) {
       boost::optional<uint64_t> blockId;
       client_.get(hash, [this, &blockId](cpp_redis::reply &reply) {
         if (reply.is_null()) {
@@ -128,38 +128,10 @@ namespace iroha {
           });
     }
 
-    rxcpp::observable<model::Transaction> RedisFlatBlockQuery::getTxByHash(
-        const std::string &hash) {
-      return rxcpp::observable<>::create<model::Transaction>(
-          [this, hash](auto subscriber) {
-            auto blockId = this->getBlockId(hash);
-            if (not blockId) {
-              subscriber.on_completed();
-              return;
-            }
-
-            block_store_.get(blockId.value()) | [](auto bytes) {
-              return model::converters::stringToJson(bytesToString(bytes));
-            } | [this](const auto &json) {
-              return serializer_.deserialize(json);
-            } | [&](const auto &block) {
-              for (auto &tx : block.transactions) {
-                if (iroha::hash(tx).to_string() == hash) {
-                  subscriber.on_next(tx);
-                }
-              }
-            };
-            subscriber.on_completed();
-          });
-    }
-
     boost::optional<model::Transaction> RedisFlatBlockQuery::getTxByHashSync(
         const std::string &hash) {
-      auto blockId = this->getBlockId(hash);
-      if (not blockId) {
-        return boost::none;
-      }
-      return block_store_.get(blockId.value()) |
+      return getBlockId(hash) |
+          [this](auto blockId) { return block_store_.get(blockId); } |
           [](auto bytes) {
             return model::converters::stringToJson(bytesToString(bytes));
           }
@@ -171,7 +143,7 @@ namespace iroha {
               [&hash](auto tx) { return iroha::hash(tx).to_string() == hash; });
           return (it == block.transactions.end())
               ? boost::none
-              : boost::make_optional<model::Transaction>(*it);
+              : boost::optional<model::Transaction>(*it);
         };
     }
 

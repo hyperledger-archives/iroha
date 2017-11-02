@@ -75,14 +75,6 @@ namespace iroha {
       virtual rxcpp::observable<model::Block> getTopBlocks(uint32_t count) = 0;
 
       /**
-       * Get transaction by its hash
-       * @param hash - hash to search
-       * @return observable of Model Transaction
-       */
-      virtual rxcpp::observable<model::Transaction> getTxByHash(
-          const std::string &hash) = 0;
-
-      /**
        * Synchronously gets transaction by its hash
        * @param hash - hash to search
        * @return transaction or boost::none

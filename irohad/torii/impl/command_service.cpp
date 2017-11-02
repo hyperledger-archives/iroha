@@ -28,7 +28,9 @@ namespace torii {
       : pb_factory_(pb_factory),
         tx_processor_(txProcessor),
         storage_(storage),
-        cache_(std::make_shared<cache::ToriiResponseCache>()) {
+        cache_(std::make_shared<iroha::cache::
+                                    Cache<std::string,
+                                          iroha::protocol::ToriiResponse>>()) {
     // Notifier for all clients
     tx_processor_->transactionNotifier().subscribe([this](
         std::shared_ptr<iroha::model::TransactionResponse> iroha_response) {
@@ -37,7 +39,7 @@ namespace torii {
       if (not res) {
         iroha::protocol::ToriiResponse response;
         response.set_tx_status(iroha::protocol::NOT_RECEIVED);
-        cache_->addItem(response, iroha_response->tx_hash);
+        cache_->addItem(iroha_response->tx_hash, response);
         return;
       }
       switch (iroha_response->current_status) {
@@ -68,7 +70,7 @@ namespace torii {
           break;
       }
 
-      cache_->addItem(*res, iroha_response->tx_hash);
+      cache_->addItem(iroha_response->tx_hash, *res);
     });
   }
 
@@ -84,7 +86,7 @@ namespace torii {
     iroha::protocol::ToriiResponse response;
     response.set_tx_status(iroha::protocol::TxStatus::ON_PROCESS);
 
-    cache_->addItem(response, tx_hash);
+    cache_->addItem(tx_hash, response);
     // Send transaction to iroha
     tx_processor_->transactionHandle(iroha_tx);
   }
@@ -101,7 +103,7 @@ namespace torii {
       } else {
         response.set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);
       }
-      cache_->addItem(response, request.tx_hash());
+      cache_->addItem(request.tx_hash(), response);
     }
   }
 

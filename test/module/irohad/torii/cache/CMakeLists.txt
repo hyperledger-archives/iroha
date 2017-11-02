@@ -14,5 +14,5 @@
 
 addtest(cache_test cache_test.cpp)
 target_link_libraries(cache_test
-        cache
+        torii_service
         )
