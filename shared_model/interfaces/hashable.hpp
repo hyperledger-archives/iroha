@@ -18,7 +18,7 @@
 #ifndef IROHA_HASHABLE_HPP
 #define IROHA_HASHABLE_HPP
 
-#include "interfaces/common_objects/hash.hpp"
+#include "cryptography/hash.hpp"
 #include "interfaces/primitive.hpp"
 
 namespace shared_model {
@@ -27,7 +27,7 @@ namespace shared_model {
     class Hashable : public Primitive<ModelType, OldModel> {
      public:
       /// Type of hash
-      using HashType = Hash;
+      using HashType = crypto::Hash;
 
       /**
        * @return hash of object.

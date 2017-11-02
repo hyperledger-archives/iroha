@@ -18,7 +18,9 @@
 #ifndef IROHA_SHARED_MODEL_SIGNATURE_HPP
 #define IROHA_SHARED_MODEL_SIGNATURE_HPP
 
-#include "interfaces/common_objects/hash.hpp"
+#include "cryptography/blob.hpp"
+#include "cryptography/public_key.hpp"
+#include "cryptography/signed.hpp"
 #include "interfaces/primitive.hpp"
 #include "model/signature.hpp"
 #include "utils/string_builder.hpp"
@@ -32,23 +34,28 @@ namespace shared_model {
     class Signature : public Primitive<Signature, iroha::model::Signature> {
      public:
       /**
-       * Type of hashes
+       * Type of public key
        */
-      using HashType = Hash;
+      using PublicKeyType = crypto::PublicKey;
 
       /**
        * @return public key of signatory
        */
-      virtual const HashType &publicKey() const = 0;
+      virtual const PublicKeyType &publicKey() const = 0;
 
       /**
-       * @return signed hash of message
+       * Type of signed data
        */
-      virtual const HashType &signedHash() const = 0;
+      using SignedType = crypto::Signed;
+
+      /**
+       * @return signed data
+       */
+      virtual const SignedType &signedData() const = 0;
 
       bool operator==(const Signature &rhs) const override {
-        return this->publicKey() == rhs.publicKey()
-            and this->signedHash() == rhs.signedHash();
+        return publicKey() == rhs.publicKey()
+            and signedData() == rhs.signedData();
       }
 
       OldModelType *makeOldModel() const override {
@@ -56,7 +63,7 @@ namespace shared_model {
             new iroha::model::Signature();
         oldStyleSignature->signature =
             iroha::model::Signature::SignatureType::from_string(
-                signedHash().toString());
+                signedData().toString());
         oldStyleSignature->pubkey =
             iroha::model::Signature::KeyType::from_string(
                 publicKey().toString());
@@ -67,7 +74,7 @@ namespace shared_model {
         return detail::PrettyStringBuilder()
             .init("Signature")
             .append("publicKey", publicKey().hex())
-            .append("signedHash", signedHash().hex())
+            .append("signedData", signedData().hex())
             .finalize();
       }
     };

@@ -15,37 +15,47 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_HASH_HPP
-#define IROHA_SHARED_MODEL_HASH_HPP
+#ifndef IROHA_SHARED_MODEL_BLOB_HPP
+#define IROHA_SHARED_MODEL_BLOB_HPP
 
-#include <string>
 #include "interfaces/primitive.hpp"
-#include "model/signature.hpp"
+#include "utils/string_builder.hpp"
 
 namespace shared_model {
-  namespace interface {
+  namespace crypto {
 
     /**
-     * Hash interface present user-friendly blob for working with low-level
-     * stuff, such as cryptography and object hashing
+     * Blob interface present user-friendly blob for working with low-level
+     * binary stuff. Its length is not fixed in compile time.
      */
-    class Hash : public Primitive<Hash, Hash> {
+    class Blob : public interface::Primitive<Blob, Blob> {
      public:
       /**
-       * @return provides raw representation of hash
+       * @return provides raw representation of blob
        */
       virtual const std::string &blob() const = 0;
 
       /**
-       * @return provides human-readable representation of hash
+       * @return provides human-readable representation of blob
        */
       virtual const std::string &hex() const = 0;
 
       /**
-       * @return size of raw representation of hash
+       * @return size of raw representation of blob
        */
       virtual size_t size() const = 0;
+
+      std::string toString() const override {
+        return detail::PrettyStringBuilder()
+            .init("Blob")
+            .append(hex())
+            .finalize();
+      }
+
+      bool operator==(const Blob &rhs) const override {
+        return blob() == rhs.blob();
+      }
     };
-  }  // namespace interface
+  }  // namespace crypto
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_HASH_HPP
+#endif  // IROHA_SHARED_MODEL_BLOB_HPP

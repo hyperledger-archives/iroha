@@ -21,7 +21,6 @@
 #include <unordered_set>
 #include <vector>
 #include "interfaces/commands/command.hpp"
-#include "interfaces/common_objects/hash.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/polymorphic_wrapper.hpp"
 #include "interfaces/primitive.hpp"
