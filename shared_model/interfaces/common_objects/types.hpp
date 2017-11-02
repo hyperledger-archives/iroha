@@ -20,6 +20,7 @@
 namespace shared_model {
   namespace interface {
     namespace types {
+      /// Type of account id
       using AccountIdType = std::string;
       /// Type of asset id
       using AssetIdType = std::string;
