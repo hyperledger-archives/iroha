@@ -24,8 +24,7 @@
 namespace shared_model {
   namespace crypto {
     /**
-     * A special class for storing public keys. Does not contain any special
-     * stuff here.
+     * A special class for storing public keys.
      */
     class PublicKey : public Blob {
      public:

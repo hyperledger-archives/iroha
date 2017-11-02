@@ -24,7 +24,9 @@
 namespace shared_model {
   namespace crypto {
     /**
-     * A special class for storing hashes. Does not contain any special stuff.
+     * A special class for storing hashes. Main reason to introduce it is to
+     * make difference between Hash which should represent a hashing result and
+     * a generic Blob which should represent any binary data.
      */
     class Hash : public Blob {
      public:

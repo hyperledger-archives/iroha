@@ -28,17 +28,24 @@ namespace shared_model {
     /**
      * Class for holding a keypair: public key and private key
      */
+    // TODO: luckychess 02.11.2017 Think about type for old model IR-559
     class Keypair : public interface::Primitive<Keypair, Keypair> {
      public:
+      /// Type of public key
+      using PublicKeyType = PublicKey;
+
       /**
        * @return public key
        */
-      virtual const PublicKey &publicKey() const = 0;
+      virtual const PublicKeyType &publicKey() const = 0;
+
+      /// Type of private key
+      using PrivateKeyType = PrivateKey;
 
       /**
        * @return private key
        */
-      virtual const PrivateKey &privateKey() const = 0;
+      virtual const PrivateKeyType &privateKey() const = 0;
 
       bool operator==(const Keypair &keypair) const override {
         return publicKey() == keypair.publicKey()

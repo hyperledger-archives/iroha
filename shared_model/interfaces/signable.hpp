@@ -56,7 +56,7 @@ namespace shared_model {
         size_t operator()(const SignatureType &sig) const {
           std::size_t seed = 0;
           boost::hash_combine(seed, sig->publicKey().blob());
-          boost::hash_combine(seed, sig->signedHash().blob());
+          boost::hash_combine(seed, sig->signedData().blob());
           return seed;
         }
       };

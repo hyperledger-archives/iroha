@@ -44,18 +44,18 @@ namespace shared_model {
       virtual const PublicKeyType &publicKey() const = 0;
 
       /**
-       * Type of signed hash
+       * Type of signed data
        */
-      using SignedHashType = crypto::Signed;
+      using SignedType = crypto::Signed;
 
       /**
-       * @return signed hash of message
+       * @return signed data
        */
-      virtual const SignedHashType &signedHash() const = 0;
+      virtual const SignedType &signedData() const = 0;
 
       bool operator==(const Signature &rhs) const override {
-        return this->publicKey() == rhs.publicKey()
-            and this->signedHash() == rhs.signedHash();
+        return publicKey() == rhs.publicKey()
+            and signedData() == rhs.signedData();
       }
 
       OldModelType *makeOldModel() const override {
@@ -63,7 +63,7 @@ namespace shared_model {
             new iroha::model::Signature();
         oldStyleSignature->signature =
             iroha::model::Signature::SignatureType::from_string(
-                signedHash().toString());
+                signedData().toString());
         oldStyleSignature->pubkey =
             iroha::model::Signature::KeyType::from_string(
                 publicKey().toString());
@@ -74,7 +74,7 @@ namespace shared_model {
         return detail::PrettyStringBuilder()
             .init("Signature")
             .append("publicKey", publicKey().hex())
-            .append("signedHash", signedHash().hex())
+            .append("signedData", signedData().hex())
             .finalize();
       }
     };

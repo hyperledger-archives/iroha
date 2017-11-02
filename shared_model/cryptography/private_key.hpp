@@ -24,15 +24,14 @@
 namespace shared_model {
   namespace crypto {
     /**
-     * A special class for storing private keys. Does not contain any special
-     * stuff here.
+     * A special class for storing private keys.
      */
     class PrivateKey : public Blob {
      public:
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("PrivateKey")
-            .append(Blob::hex())
+            .append("<Data is hidden>")
             .finalize();
       }
     };

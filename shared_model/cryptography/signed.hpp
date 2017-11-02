@@ -23,6 +23,10 @@
 
 namespace shared_model {
   namespace crypto {
+    /**
+     * Class for storing signed data. It could be used not only for storing
+     * signed hashes but for other signed objects too.
+     */
     class Signed : public Blob {
      public:
       std::string toString() const override {

@@ -19,13 +19,14 @@
 #define IROHA_SHARED_MODEL_BLOB_HPP
 
 #include "interfaces/primitive.hpp"
+#include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace crypto {
 
     /**
      * Blob interface present user-friendly blob for working with low-level
-     * binary stuff
+     * binary stuff. Its length is not fixed in compile time.
      */
     class Blob : public interface::Primitive<Blob, Blob> {
      public:
@@ -43,6 +44,17 @@ namespace shared_model {
        * @return size of raw representation of blob
        */
       virtual size_t size() const = 0;
+
+      std::string toString() const override {
+        return detail::PrettyStringBuilder()
+            .init("Blob")
+            .append(hex())
+            .finalize();
+      }
+
+      bool operator==(const Blob &rhs) const override {
+        return blob() == rhs.blob();
+      }
     };
   }  // namespace crypto
 }  // namespace shared_model
