@@ -4,15 +4,13 @@ ENV IROHA_HOME /opt/iroha
 ENV IROHA_BUILD /opt/iroha/build
 
 COPY iroha.deb /tmp/iroha.deb
-RUN apt-get update
-
-RUN apt-get install libc-ares-dev -y
+RUN apt-get update;\
+    apt-get upgrade; \
+    apt-get install -y \
+        libc-ares-dev \
+        gdebi-core
 
 #Install iroha
-RUN dpkg -i /tmp/iroha.deb || true //continue executing even if command fails
+RUN gdebi /tmp/iroha.deb
 
-#Install iroha dependecies
-RUN apt-get install -y -f
-
-#Insall iroha again
-RUN dpkg -i /tmp/iroha.deb
+CMD ["bash"]

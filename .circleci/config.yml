@@ -90,8 +90,8 @@ jobs:
           name: copy deb file
           command: |
             cd $IROHA_BUILD
-            cp *.deb ./iroha.deb
-            cp *.tar.gz ./iroha.tar.gz
+            cp iroha-*.deb ./iroha.deb
+            cp iroha-*.tar.gz ./iroha.tar.gz
             # if IROHA_VERSION is not set, then CIRCLE_BUILD_NUM
             echo ${IROHA_VERSION:-$CIRCLE_BUILD_NUM} > version.txt
             cd $IROHA_HOME
@@ -135,7 +135,7 @@ jobs:
       - run:
           name: Docker login
           command: |
-              docker login -u $DOCKER_USER -p "$DOCKER_PASS"
+              docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
       - run:
           name: Build and push iroha image
           command: |
@@ -276,7 +276,7 @@ jobs:
       - run:
           name: rename artifacts
           command: |
-            cp build/*.tar.gz build/iroha-darwin.tar.gz
+            cp build/iroha-*.tar.gz build/iroha-darwin.tar.gz
             # if IROHA_VERSION is not set, then CIRCLE_BUILD_NUM
             echo ${IROHA_VERSION:-$CIRCLE_BUILD_NUM} > build/version.txt
       - store_artifacts:
