@@ -15,25 +15,34 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_TYPES_HPP
-#define IROHA_SHARED_MODEL_TYPES_HPP
+#ifndef IROHA_SHARED_MODEL_ADD_PEER_HPP
+#define IROHA_SHARED_MODEL_ADD_PEER_HPP
 
-#include "common/types.hpp"
+#include "interfaces/common_objects/types.hpp"
+#include "interfaces/primitive.hpp"
+#include "model/commands/add_peer.hpp"
 
 namespace shared_model {
   namespace interface {
-    namespace types {
-      /// Type of account id
-      using AccountIdType = std::string;
-      /// Type of asset id
-      using AssetIdType = std::string;
-      /// Type of height (for Block, Proposal etc)
-      using HeightType = uint64_t;
-      /// Type of public key
-      using PubkeyType = iroha::pubkey_t; // TODO: replace with shared
-      /// Type of role (i.e admin, user)
-      using RoleIdType = std::string;
-    }  // namespace types
-  }    // namespace interface
+
+    /**
+     * Add amount of asset to an account
+     */
+    class AddPeer : public Primitive<AddPeer, iroha::model::AddPeer> {
+     public:
+      /**
+       * @return Peer key, acts like peer identifier
+       */
+      virtual const types::PubkeyType &peer_key() const = 0;
+
+      /// Type of peer address
+      using AddressType = std::string;
+      /**
+       * @return peer address
+       */
+      virtual const AddressType &address() const = 0;
+    };
+  }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_TYPES_HPP
+
+#endif  // IROHA_SHARED_MODEL_ADD_PEER_HPP

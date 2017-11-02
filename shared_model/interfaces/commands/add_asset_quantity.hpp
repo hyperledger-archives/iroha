@@ -18,7 +18,7 @@
 #ifndef IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
 #define IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
 
-#include <string>
+
 #include "amount/amount.hpp"  // TODO 26/10/2017 muratovv replace with amount from shared lib
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/primitive.hpp"
@@ -36,14 +36,14 @@ namespace shared_model {
       /**
        * @return Identity of user, that add quantity
        */
-      virtual const types::AccountIdType &accountId() const = 0;
+      virtual const types::AccountIdType &account_id() const = 0;
 
       /// Type of asset id
       using AssetIdType = std::string;
       /**
        * @return asset identifier
        */
-      virtual const AssetIdType &assetId() const = 0;
+      virtual const AssetIdType &asset_id() const = 0;
 
       /// Type of amount
       using AmountType = iroha::Amount;
