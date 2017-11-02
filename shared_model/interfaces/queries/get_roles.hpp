@@ -29,9 +29,9 @@ namespace shared_model {
      */
     class GetRoles : public Hashable<GetRoles, iroha::model::GetRoles> {
      public:
-      OldModelType *makeOldModel() const { return new iroha::model::GetRoles; }
+      OldModelType *makeOldModel() const override { return new iroha::model::GetRoles; }
 
-      std::string toString() const {
+      std::string toString() const override {
         return detail::PrettyStringBuilder().init("GetRoles").finalize();
       }
     };
